@@ -1,18 +1,21 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 9E665DDF60
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 May 2007 02:08:41 +1000 (EST)
-Date: Thu, 3 May 2007 11:10:00 -0500
-To: Jon Loeliger <jdl@freescale.com>
-Subject: Re: [PATCH] 86xx: Enable the AC97 interface on 8641D board.
-Message-ID: <20070503161000.GA31881@lixom.net>
-References: <1178142818.32136.51.camel@ld0161-tx32>
-	<08D3A1CE-12E0-4759-B055-DE227EA4135E@kernel.crashing.org>
-	<1178207725.17201.33.camel@ld0161-tx32>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1178207725.17201.33.camel@ld0161-tx32>
-From: olof@lixom.net (Olof Johansson)
+Return-Path: <jdl@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 074A1DDFE1
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 May 2007 02:14:14 +1000 (EST)
+Subject: Re: [PATCH] Remove CPU_FTR_NEED_COHERENT for 7448.
+From: Jon Loeliger <jdl@freescale.com>
+To: Adrian Cox <adrian@humboldt.co.uk>
+In-Reply-To: <1178187440.20944.12.camel@localhost.localdomain>
+References: <1178141683.32136.46.camel@ld0161-tx32>
+	<1178187440.20944.12.camel@localhost.localdomain>
+Content-Type: text/plain
+Message-Id: <1178208838.17201.52.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Thu, 03 May 2007 11:13:58 -0500
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,43 +26,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 03, 2007 at 10:55:25AM -0500, Jon Loeliger wrote:
-> On Thu, 2007-05-03 at 09:44, Kumar Gala wrote:
-> > On May 2, 2007, at 4:53 PM, Jon Loeliger wrote:
+On Thu, 2007-05-03 at 05:17, Adrian Cox wrote:
+> On Wed, 2007-05-02 at 16:34 -0500, Jon Loeliger wrote: 
+> > From: James.Yang <James.Yang@freescale.com>
 > > 
-> > > From: Jason Jin <jason.jin@freescale.com>
-> > >
-> > > HD interface and AC97 interface share some pins and they are  
-> > > enabled at
-> > > the same time, In order to use AC97 interface, we need to disable  
-> > > the HD
-> > > interface first.
-> > >
-> > > Signed-off-by:Jason Jin<jason.jin@freescale.com>
-> > > Acked-by: Jon Loeliger <jdl@freescale.com>
-> > > ---
-> > >  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    7 ++++++-
-> > >  1 files changed, 6 insertions(+), 1 deletions(-)
-> > 
-> > Is the HD feature not used at all?  Is there a AC97 Driver CONFIG_  
-> > that makes sense to wrap that with?  Just wondering about the mutual  
-> > exclusion (and how to provide flexibility to the user).
-> > 
-> > - k
+> > Remove CPU_FTR_NEED_COHERENT for MPC7448 (and single-core MPC86xx).
+> > This prevents needlessly setting M=1 when not SMP.
 > 
+> There may be side effects to removing this. Most of the 74xx processors
+> had this flag added because of the L2 prefetch bug (erratum #16 on the
+> 7447A). I see that bug is missing from the 7448 errata.
 > 
-> The ULI supports both the HD and AC97 interfaces, but the 8641
-> only supports the AC97 interface.  Thus we can straight disable
-> the HD and convert/configure the shared pins to be AC97.  Thus,
-> there is no real CONFIG_ need at all.  It's only AC97.  And then
-> ultimately, the presence of sound support is controlled by
-> the ALSA config options as per normal.
+> The problem is that many 32-bit PowerPC machines needed
+> CPU_FTR_NEED_COHERENT set for a second reason: compatibility with the
+> cache in the MPC107. This was handled by CPU_FTR_COMMON in cputable.h
+> before the L2 prefetch bug was known.  There may be other host bridges
+> that cache, but nobody will have noticed because all the CPUs had
+> CPU_FTR_NEED_COHERENT set already.
 
-This sounds like something that firmware should take care of, not
-hardcoded in the board code.  Seems like the device is just a PCI device
-that doesn't have a device tree entry.
+Adrian,
 
-Why not do this in u-boot instead?
+Yes, you are correct and your concern is valid.  However,
+this case is still being handled by CONFIG_MPC10X_BRIDGE
+to deal with the MPC106/MPC107/etc north bridges.
 
+Here:
+    include/asm-powerpc/cputable.h:183
 
--Olof
+/* We need to mark all pages as being coherent if we're SMP or we
+ * have a 74[45]x and an MPC107 host bridge. Also 83xx requires
+ * it for PCI "streaming/prefetch" to work properly.
+ */
+#if defined(CONFIG_SMP) || defined(CONFIG_MPC10X_BRIDGE) \
+	|| defined(CONFIG_PPC_83xx)
+#define CPU_FTR_COMMON                  CPU_FTR_NEED_COHERENT
+#else
+#define CPU_FTR_COMMON                  0
+#endif
+
+The CPU doesn't impose this requirement, the north bridge does.
+It might even better be named something like
+    CPU_FTR_NORTHBRDIGE_NEEDS_COHERENT.
+
+Thanks,
+jdl
