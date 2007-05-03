@@ -1,17 +1,16 @@
-Return-Path: <dale@farnsworth.org>
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Wed, 2 May 2007 19:57:18 -0700
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 10/13] powerpc: Add arch/powerpc mv64x60 PCI setup
-Message-ID: <20070503025718.GC26019@xyzzy.farnsworth.org>
-References: <20070425234630.GA4046@mag.az.mvista.com>
-	<20070426000107.GL4046@mag.az.mvista.com>
-	<20070502214609.GE27253@xyzzy.farnsworth.org>
-	<20070503121358.aabc2755.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070503121358.aabc2755.sfr@canb.auug.org.au>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Date: Thu, 3 May 2007 13:28:24 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Dale Farnsworth" <dale@farnsworth.org>
+Subject: Re: [PATCH] powerpc: check cache coherency of kernel vs firmware
+Message-Id: <20070503132824.76b15c67.sfr@canb.auug.org.au>
+In-Reply-To: <20070502215938.GF27253@xyzzy.farnsworth.org>
+References: <20070502215938.GF27253@xyzzy.farnsworth.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__3_May_2007_13_28_24_+1000_jWcYc48/=_va7BqH"
+Cc: Linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,28 +20,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 03, 2007 at 12:13:58PM +1000, Stephen Rothwell wrote:
-> On Wed, 2 May 2007 14:46:09 -0700 "Dale Farnsworth" <dale@farnsworth.org> wrote:
-> >
-> > +DECLARE_MUTEX(mv64x60_hs_lock);
-> 
-> Does this need to be global (it is not declared in a header file)?
+--Signature=_Thu__3_May_2007_13_28_24_+1000_jWcYc48/=_va7BqH
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-Nope.  Fixed.
+On Wed, 2 May 2007 14:59:38 -0700 "Dale Farnsworth" <dale@farnsworth.org> wrote:
+>
+> +#ifdef CONFIG_CHECK_CACHE_COHERENCY
+> +#endif /* CONFIG_CHECK_CACHE_COHERENCY */
 
-> > +	np = of_find_compatible_node(NULL, NULL, "mv64x60");
-> > +	if (!np)
-> > +		return 0;
-> > +
-> > +	pdev = platform_device_register_simple("mv64x60", 0, NULL, 0);
-> > +	if (IS_ERR(pdev))
-> > +		return PTR_ERR(pdev);
-> 
-> This error leaks a reference count on np.
+These ...
 
-Good find.  Fixed.
+> +config CHECK_COHERENT_CACHE
 
-Stephen, thanks for taking the time to review and comment.
-I'll wait to see what other comments I get before reposting.
+don't match this.
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
--Dale
+--Signature=_Thu__3_May_2007_13_28_24_+1000_jWcYc48/=_va7BqH
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGOVbeFdBgD/zoJvwRAufsAJ9AQI6dDxzERowHAfB9vL+ktVTpXQCgiDzW
+VJ9i5oMITTQeTdorMqy44g0=
+=K8Vk
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__3_May_2007_13_28_24_+1000_jWcYc48/=_va7BqH--
