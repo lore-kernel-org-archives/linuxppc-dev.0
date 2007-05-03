@@ -1,18 +1,22 @@
-Return-Path: <akonovalov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id DBCC5DDD04
+Return-Path: <adaplas@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.239])
+	by ozlabs.org (Postfix) with ESMTP id F2238DDE16
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 May 2007 03:24:10 +1000 (EST)
-Message-ID: <463A1BEC.4040700@ru.mvista.com>
-Date: Thu, 03 May 2007 21:29:16 +0400
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] Xilinx framebuffer device driver - 3d version
-References: <463A1B58.8000804@ru.mvista.com>
+	Fri,  4 May 2007 05:57:20 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id 50so638386wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 03 May 2007 12:57:19 -0700 (PDT)
+Subject: Re: [Linux-fbdev-devel] [PATCH] Xilinx framebuffer device driver -
+	3d version
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: linux-fbdev-devel@lists.sourceforge.net
 In-Reply-To: <463A1B58.8000804@ru.mvista.com>
-Content-Type: multipart/mixed; boundary="------------060006050800040705020502"
-Cc: Arnd Bergmann <arnd@arndb.de>
+References: <463A1B58.8000804@ru.mvista.com>
+Content-Type: text/plain
+Date: Fri, 04 May 2007 03:57:12 +0800
+Message-Id: <1178222232.28617.28.camel@daplas>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,14 +27,7 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------060006050800040705020502
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Hello,
-
-Andrei Konovalov wrote:
+On Thu, 2007-05-03 at 21:26 +0400, Andrei Konovalov wrote:
 > Add support for the video controller IP block included into Xilinx ML300
 > and ML403 reference designs.
 > 
@@ -45,123 +42,139 @@ Andrei Konovalov wrote:
 > The platform device registration for Xilinx ML300 and ML403
 > moved into separate patch (will be posted to linuxppc-embedded
 > in couple minutes).
+> 
+> Would be nice to get this driver into mainline for the 2.6.22.
+> Reviews and comments are welcome.
 
-Here is the platform device registration part.
+It's hard to make comments when you submit patches as attachment, but
+here goes.
 
-
-Thanks,
-Andrei
-
---------------060006050800040705020502
-Content-Type: text/x-patch;
- name="ppc32-enable-xilinx_fb.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="ppc32-enable-xilinx_fb.patch"
-
-Index: linux-2.6.20/arch/ppc/platforms/4xx/xilinx_ml403.c
-===================================================================
---- linux-2.6.20.orig/arch/ppc/platforms/4xx/xilinx_ml403.c
-+++ linux-2.6.20/arch/ppc/platforms/4xx/xilinx_ml403.c
-@@ -118,3 +118,20 @@ platform_init(unsigned long r3, unsigned
- #endif
- }
- 
-+static struct xilinxfb_platform_data xilinxfb_ml403_pdata = {
-+	.rotate_screen = 0,
-+	.screen_height_mm = -1,
-+	.screen_width_mm = -1,
-+};
-+
-+int __init virtex_device_fixup(struct platform_device *dev)
++static int
++xilinx_fb_blank(int blank_mode, struct fb_info *fbi)
 +{
-+	if (strcmp(dev->name, "xilinxfb") == 0) {
-+		if (dev->id != 0) /* paranoic */
-+			return 1;
-+		dev->dev.platform_data = &xilinxfb_ml403_pdata;
-+		return 0;
++	struct xilinxfb_drvdata *drvdata = to_xilinxfb_drvdata(fbi);
++
++	switch (blank_mode) {
++	case VESA_NO_BLANKING:
++		/* turn on panel */
++		xilinx_fb_out_be32(drvdata, REG_CTRL, drvdata->reg_ctrl_default);
++		break;
++
++	case VESA_VSYNC_SUSPEND:
++	case VESA_HSYNC_SUSPEND:
++	case VESA_POWERDOWN:
++		/* turn off panel */
++		xilinx_fb_out_be32(drvdata, REG_CTRL, 0);
++	default:
++		break;
++
 +	}
++	return 0; /* success */
++}
++
+
+Use the FB_BLANK_* constants defined in include/linux/fb.h instead of
+the VESA_* constants.
+
++static int
++xilinx_fb_pan_display(struct fb_var_screeninfo *var, struct fb_info
+*fbi)
++{
++	if (var->xoffset != 0 || var->yoffset != 0)
++		return -EINVAL;
++
 +	return 0;
 +}
 +
-Index: linux-2.6.20/arch/ppc/platforms/4xx/xilinx_ml300.c
-===================================================================
---- linux-2.6.20.orig/arch/ppc/platforms/4xx/xilinx_ml300.c
-+++ linux-2.6.20/arch/ppc/platforms/4xx/xilinx_ml300.c
-@@ -116,3 +116,20 @@ platform_init(unsigned long r3, unsigned
- #endif
- }
- 
-+static struct xilinxfb_platform_data xilinxfb_ml300_pdata = {
-+	.rotate_screen = 1,
-+	.screen_height_mm = 99,
-+	.screen_width_mm = 132,
-+};
-+
-+int __init virtex_device_fixup(struct platform_device *dev)
-+{
-+	if (strcmp(dev->name, "xilinxfb") == 0) {
-+		if (dev->id != 0) /* paranoic */
-+			return 1;
-+		dev->dev.platform_data = &xilinxfb_ml300_pdata;
-+		return 0;
-+	}
-+	return 0;
-+}
-+
-Index: linux-2.6.20/arch/ppc/syslib/virtex_devices.c
-===================================================================
---- linux-2.6.20.orig/arch/ppc/syslib/virtex_devices.c
-+++ linux-2.6.20/arch/ppc/syslib/virtex_devices.c
-@@ -71,7 +71,23 @@
- 	}, \
- }
- 
-+/*
-+ * ML300/ML403 Video Device: shortcut macro for single instance
-+ */
-+#define XPAR_TFT(num) { \
-+	.name = "xilinxfb", \
-+	.id = num, \
-+	.num_resources = 1, \
-+	.resource = (struct resource[]) { \
-+		{ \
-+			.start = XPAR_TFT_##num##_BASEADDR, \
-+			.end = XPAR_TFT_##num##_BASEADDR+7, \
-+			.flags = IORESOURCE_IO, \
-+		}, \
-+	}, \
-+}
- 
-+ 
- /* UART 8250 driver platform data table */
- struct plat_serial8250_port virtex_serial_platform_data[] = {
- #if defined(XPAR_UARTNS550_0_BASEADDR)
-@@ -146,20 +162,12 @@ struct platform_device virtex_platform_d
- 	XPAR_SYSACE(1),
- #endif
- 
--	/* ML300/403 reference design framebuffer */
-+	/* ML300/ML403 reference design framebuffer */
- #if defined(XPAR_TFT_0_BASEADDR)
--	{
--		.name		= "xilinxfb",
--		.id		= 0,
--		.num_resources	= 1,
--		.resource = (struct resource[]) {
--			{
--				.start	= XPAR_TFT_0_BASEADDR,
--				.end	= XPAR_TFT_0_BASEADDR+7,
--				.flags	= IORESOURCE_IO,
--			},
--		},
--	},
-+	XPAR_TFT(0),
-+#endif
-+#if defined(XPAR_TFT_1_BASEADDR)
-+	XPAR_TFT(1),
- #endif
- };
- 
 
---------------060006050800040705020502--
+This silently succeeds.  If you don't have a pan_display() hook, might
+as well remove it.
+
++static int
++xilinxfb_drv_probe(struct device *dev)
++{
++	struct platform_device *pdev;
++	struct xilinxfb_platform_data *pdata;
++	struct xilinxfb_drvdata *drvdata;
++	struct resource *regs_res;
++	int retval;
++
++	if (!dev)
++		return -EINVAL;
++
++	pdev = to_platform_device(dev);
++	pdata = (struct xilinxfb_platform_data *)pdev->dev.platform_data;
+
+Is the cast really needed?
+
++
++	if (pdata == NULL) {
++		printk(KERN_ERR "Couldn't find platform data.\n");
++		return -EFAULT;
++	}
++
++	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
++	if (!drvdata) {
++		printk(KERN_ERR "Couldn't allocate device private record\n");
++		return -ENOMEM;
++	}
++	dev_set_drvdata(dev, (void *)drvdata);
+
+Here also.
+
++
++	/* Map the control registers in */
++	regs_res = platform_get_resource(pdev, IORESOURCE_IO, 0);
++	if (!regs_res || (regs_res->end - regs_res->start + 1 < 8)) {
++		printk(KERN_ERR "Couldn't get registers resource\n");
++		retval = -EFAULT;
++		goto failed1;
++	}
++
++	if (!request_mem_region(regs_res->start, 8, DRIVER_NAME)) {
++		printk(KERN_ERR
++		       "Couldn't lock memory region at 0x%08X\n",
++		       regs_res->start);
++		retval = -EBUSY;
++		goto failed1;
++	}
++	drvdata->regs = (u32 __iomem*) ioremap(regs_res->start, 8);
++	drvdata->regs_phys = regs_res->start;
++
++	/* Allocate the framebuffer memory */
++	drvdata->fb_virt = dma_alloc_coherent(dev, PAGE_ALIGN(FB_SIZE),
++				&drvdata->fb_phys, GFP_KERNEL);
++	if (!drvdata->fb_virt) {
++		printk(KERN_ERR "Could not allocate frame buffer memory\n");
++		retval = -ENOMEM;
++		goto failed2;
++	}
++
++	/* Clear (turn to black) the framebuffer */
++	memset((void *) drvdata->fb_virt, 0, FB_SIZE);
+
+memset() or memset_io()?
+
++
++	/* Tell the hardware where the frame buffer is */
++	xilinx_fb_out_be32(drvdata, REG_FB_ADDR, drvdata->fb_phys);
++
++	/* Turn on the display */
++	if (pdata->rotate_screen) {
++		drvdata->reg_ctrl_default = REG_CTRL_ENABLE | REG_CTRL_ROTATE;
++	} else {
++		drvdata->reg_ctrl_default = REG_CTRL_ENABLE;
++	}
++	xilinx_fb_out_be32(drvdata, REG_CTRL, drvdata->reg_ctrl_default);
++
++	/* Fill struct fb_info */
++	drvdata->info.screen_base = drvdata->fb_virt;
++	drvdata->info.fbops = &xilinxfb_ops;
++	drvdata->info.fix = xilinx_fb_fix;
++	drvdata->info.fix.smem_start = drvdata->fb_phys;
++	drvdata->info.pseudo_palette = drvdata->pseudo_palette;
+
+If you cannot use framebuffer_alloc()/release(), set
+drvdata->info.device so your driver shows up in /sys/class/graphics.
+
+Tony
