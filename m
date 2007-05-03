@@ -1,21 +1,21 @@
-Return-Path: <adrian@humboldt.co.uk>
-Received: from mail.humboldt.co.uk (mail.humboldt.co.uk [80.68.93.146])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5A4A4DDFB7
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 May 2007 03:07:17 +1000 (EST)
-Subject: Re: [PATCH] Remove CPU_FTR_NEED_COHERENT for 7448.
-From: Adrian Cox <adrian@humboldt.co.uk>
-To: Jon Loeliger <jdl@freescale.com>
-In-Reply-To: <1178208838.17201.52.camel@ld0161-tx32>
-References: <1178141683.32136.46.camel@ld0161-tx32>
-	<1178187440.20944.12.camel@localhost.localdomain>
-	<1178208838.17201.52.camel@ld0161-tx32>
-Content-Type: text/plain
-Date: Thu, 03 May 2007 17:07:06 +0000
-Message-Id: <1178212026.5586.17.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 0C5F8DDF77
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 May 2007 03:16:18 +1000 (EST)
+Message-ID: <463A1941.3090608@ru.mvista.com>
+Date: Thu, 03 May 2007 21:17:53 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: powerpc_flash_init(), wtf!?
+References: <20070501051804.GB3881@localhost.localdomain>
+	<4639CBD8.6010205@ru.mvista.com>
+	<20070503123055.GE26659@localhost.localdomain>
+	<4639DDE1.40904@ru.mvista.com>
+	<71e4c68de5240a652b561d8cfa2e05f3@kernel.crashing.org>
+In-Reply-To: <71e4c68de5240a652b561d8cfa2e05f3@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,31 +25,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-05-03 at 11:13 -0500, Jon Loeliger wrote:
-> > The problem is that many 32-bit PowerPC machines needed
-> > CPU_FTR_NEED_COHERENT set for a second reason: compatibility with the
-> > cache in the MPC107. This was handled by CPU_FTR_COMMON in cputable.h
-> > before the L2 prefetch bug was known.  There may be other host bridges
-> > that cache, but nobody will have noticed because all the CPUs had
-> > CPU_FTR_NEED_COHERENT set already.
+Hello.
 
-> Yes, you are correct and your concern is valid.  However,
-> this case is still being handled by CONFIG_MPC10X_BRIDGE
-> to deal with the MPC106/MPC107/etc north bridges.
+Segher Boessenkool wrote:
 
-My only concern here is that some other Northbridges may have a similar
-cache issue to the MPC107, but that we haven't noticed because the
-cputable entry has been a crutch for them. If we remove the entry, will
-some other 7448 designs quietly stop working?  I think the Tsi108/109
-are probably safe, but I don't know about other bridges.
+>>>>   We weren't aware of the of_platform.c work when writing the MTD 
+>>>> support.
+>>>>   Note that this function usually probes only the specified set of 
+>>>> (SoC)
+>>>> busses, none of which usully contains NOR flash (which is located at 
+>>>> the
+>>>> root level).
 
-> The CPU doesn't impose this requirement, the north bridge does.
-> It might even better be named something like
->     CPU_FTR_NORTHBRDIGE_NEEDS_COHERENT.
+>>> The root level?  Um... I don't think so...
 
-Yes - we end up turning on coherency for multiple reasons - SMP, the L2
-prefetch bug, or the cache in the MPC107. I quite like Ben H's idea of
-doing this in machine_probe().
+>>     "Trust me". :-)
+>>     NOR flashes are at the same level as the "memory" node (where else 
+>> you
+>> expect them to appear I wonder?).
 
--- 
-Adrian Cox <adrian@humboldt.co.uk>
+> The "memory" node doesn't describe the RAM devices;
+> it describes the RAM address space, instead.  You can
+> have separate nodes for the actual devices.
+
+    If you can remember our prior discussion, the "rom" nodes don't describe 
+"the actual devices" as well, only their mapping into the address space. ;-)
+
+> Now for ROM/flash/NVRAM, nodes _can_ appear directly
+> under the root, but only if that is where they belong
+> on your platform (i.e., they sit directly on the "system
+> bus" (whatever that means on your platform); on most
+> platforms though, such devices are connected via some
+> I/O busses, so the nodes should appear under their
+> respective controllers.
+
+    Yeah, you're right here, and I've probably misunderstood what "memory" 
+node was. In fact, the flash in my system resides on the same local bus as 
+RAM, so the proper place would be behind the "lbc" (or whatever -- it doesn't 
+exist as yet) node on the "soc" bus.  Do you think I need to go and document 
+it as well for such cause? :-]
+
+>>> I believe the arrangement is similar for most other 4xx systems.  More
+>>> PC or desktop like systems sometimes have boot flash connected to the
+>>> south bridge, which I believe puts it on the ISA bus, topologically
+>>> speaking.
+
+> Some have it on the LPC bus as an LPC device, some
+> have it on the LPC bus but accessed with a separate
+> protocol,  some have it attached to another LPC device
+> (some "superio" typically), some have it attached
+> directly to the "south bridge".
+
+>>     Not exactly. Boot flash is mapped beyond ISA address space on 386+ 
+>> -- at
+>> the top of 4GB (where the "reset vector" is). Although it may be dual 
+>> mapped
+>> below 1MB as well (I'm starting to forget x86 :-).
+
+> Most "north bridges" have some bits that enable
+> translation of accesses in the "low bios" area to
+> the 4GB-minus-a-bit area.  There are many variations
+> and it all is a big mess :-)
+
+    Human perversion knows no limits. O:-)
+
+> Now, back to the case at hand -- it would be nice to
+> have a platform-independent way to probe the simple
+> case -- a single direct-mapped device -- but it isn't
+> obvious how to make that not clash with the not-so-simple
+> cases.  A helper function that does the work but is
+> only called by the platforms that want it would do, I
+> suppose?
+
+    It probably doesn't even worth a helper (since out of those 15 lines, 6 
+were pretty useless anyway)
+
+> Segher
+
+WBR, Sergei
