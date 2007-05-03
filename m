@@ -1,27 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 89F64DDF98
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 12:14:49 +1000 (EST)
-Date: Wed, 2 May 2007 21:10:17 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2] gianfar: Add I/O barriers when touching buffer
-	descriptor ownership.
-In-Reply-To: <463902EB.8070401@freescale.com>
-Message-ID: <Pine.LNX.4.64.0705022109350.1690@localhost.localdomain>
-References: <20070502195712.GA16541@ld0162-tx32.am.freescale.net>
-	<F1B250DD-A472-470F-B3D0-EBB2F042E454@kernel.crashing.org>
-	<4638F0C4.2000406@freescale.com>
-	<FA9554A4-5A7D-4E03-BE28-C4B6B80D9DB9@kernel.crashing.org>
-	<4638F734.2040809@freescale.com>
-	<41B347BE-06AA-4346-BEFB-19DFB52AC533@kernel.crashing.org>
-	<463902EB.8070401@freescale.com>
+Return-Path: <dale@farnsworth.org>
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Wed, 2 May 2007 19:55:16 -0700
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 6/13] powerpc: Add arch/powerpc interrupt handler for
+	mv64x60
+Message-ID: <20070503025515.GA26019@xyzzy.farnsworth.org>
+References: <20070425234630.GA4046@mag.az.mvista.com>
+	<20070425235858.GH4046@mag.az.mvista.com>
+	<20070502213830.GA27253@xyzzy.farnsworth.org>
+	<20070503114705.a8f305ec.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070503114705.a8f305ec.sfr@canb.auug.org.au>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,88 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2 May 2007, Scott Wood wrote:
+On Thu, May 03, 2007 at 11:47:05AM +1000, Stephen Rothwell wrote:
+> On Wed, 2 May 2007 14:38:30 -0700 "Dale Farnsworth" <dale@farnsworth.org> wrote:
+> >
+> > +DEFINE_SPINLOCK(mv64x60_lock);
+> 
+> Does this need to be global (it is not declared in the header file)?
 
-> Kumar Gala wrote:
-> > Why doesn't marking the bdp pointer volatile resolve the issue in
-> > gfar_clean_rx_ring() to ensure load ordering?
->
-> Because that only addresses compiler reordering (and does so in a rather
-> clumsy way -- not all accesses need to be strongly ordered), not hardware
-> reordering.
->
-> -Scott
->
+No, it doesn't.  I made it static.
 
-So what about some thing like this where we do the read only once?
+> > +static u32 mv64x60_cached_low_mask  = 0;
+> > +static u32 mv64x60_cached_high_mask = MV64X60_HIGH_GPP_GROUPS;
+> > +static u32 mv64x60_cached_gpp_mask  = 0;
+> 
+> Don't initialise things to zero, please.  If you feel it is necessary,
+> put the "= 0" in a comment.  But generally we know that globals are
+> initially zero.
 
-- k
+OK.  Thanks.
 
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index a06d8d1..9cd7d1e 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -1438,31 +1438,35 @@ int gfar_clean_rx_ring(struct net_device *dev, int rx_work_limit)
- {
- 	struct rxbd8 *bdp;
- 	struct sk_buff *skb;
--	u16 pkt_len;
-+	u16 pkt_len, status;
-+	u32 bd_info;
- 	int howmany = 0;
- 	struct gfar_private *priv = netdev_priv(dev);
-
- 	/* Get the first full descriptor */
- 	bdp = priv->cur_rx;
-
--	while (!((bdp->status & RXBD_EMPTY) || (--rx_work_limit < 0))) {
-+	bd_info = *bdp;
-+
-+	status = bd_info >> 16;
-+	/* Remove the FCS from the packet length */
-+	pkt_len = (bd_info & 0xffff) - 4;
-+
-+	while (!((status & RXBD_EMPTY) || (--rx_work_limit < 0))) {
- 		skb = priv->rx_skbuff[priv->skb_currx];
-
--		if (!(bdp->status &
-+		if (!(status &
- 		      (RXBD_LARGE | RXBD_SHORT | RXBD_NONOCTET
- 		       | RXBD_CRCERR | RXBD_OVERRUN | RXBD_TRUNCATED))) {
- 			/* Increment the number of packets */
- 			priv->stats.rx_packets++;
- 			howmany++;
-
--			/* Remove the FCS from the packet length */
--			pkt_len = bdp->length - 4;
--
- 			gfar_process_frame(dev, skb, pkt_len);
-
- 			priv->stats.rx_bytes += pkt_len;
- 		} else {
--			count_errors(bdp->status, priv);
-+			count_errors(status, priv);
-
- 			if (skb)
- 				dev_kfree_skb_any(skb);
-@@ -1480,7 +1484,7 @@ int gfar_clean_rx_ring(struct net_device *dev, int rx_work_limit)
- 		priv->rx_skbuff[priv->skb_currx] = skb;
-
- 		/* Update to the next pointer */
--		if (bdp->status & RXBD_WRAP)
-+		if (status & RXBD_WRAP)
- 			bdp = priv->rx_bd_base;
- 		else
- 			bdp++;
-@@ -1490,6 +1494,11 @@ int gfar_clean_rx_ring(struct net_device *dev, int rx_work_limit)
- 		    (priv->skb_currx +
- 		     1) & RX_RING_MOD_MASK(priv->rx_ring_size);
-
-+		bd_info = *bdp;
-+
-+		status = bd_info >> 16;
-+		/* Remove the FCS from the packet length */
-+		pkt_len = (bd_info & 0xffff) - 4;
- 	}
-
- 	/* Update the current rxbd pointer to be the next one */
+-Dale
