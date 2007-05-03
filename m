@@ -4,27 +4,28 @@ Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 020F9DDFE7
+	by ozlabs.org (Postfix) with ESMTP id 325FDDDFE8
 	for <linuxppc-dev@ozlabs.org>; Fri,  4 May 2007 02:49:43 +1000 (EST)
-In-Reply-To: <463A0732.2060802@freescale.com>
-References: <20070502195712.GA16541@ld0162-tx32.am.freescale.net>
-	<F1B250DD-A472-470F-B3D0-EBB2F042E454@kernel.crashing.org>
-	<4638F0C4.2000406@freescale.com>
-	<FA9554A4-5A7D-4E03-BE28-C4B6B80D9DB9@kernel.crashing.org>
-	<4638F734.2040809@freescale.com>
-	<41B347BE-06AA-4346-BEFB-19DFB52AC533@kernel.crashing.org>
-	<463902EB.8070401@freescale.com>
-	<Pine.LNX.4.64.0705022109350.1690@localhost.localdomain>
-	<463A0732.2060802@freescale.com>
+In-Reply-To: <1178158307.17299.55.camel@localhost.localdomain>
+References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
+	<1178086872.13233.27.camel@johannes.berg>
+	<17976.28170.695715.416339@cargo.ozlabs.ibm.com>
+	<1178116438.13233.65.camel@johannes.berg>
+	<1178143429.17299.7.camel@localhost.localdomain>
+	<17977.9796.15991.630737@cargo.ozlabs.ibm.com>
+	<f885d6b1472525fb5bebdd96ae4c3157@kernel.crashing.org>
+	<1178151690.17299.46.camel@localhost.localdomain>
+	<15a6025d58d0f62ee10efab20dc98278@kernel.crashing.org>
+	<1178158307.17299.55.camel@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <4561c9f5d97ee3ed3d2ec661068cdd08@kernel.crashing.org>
+Message-Id: <3796663898c24f426d39466404271eb2@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v2] gianfar: Add I/O barriers when touching buffer
-	descriptor ownership.
-Date: Thu, 3 May 2007 18:38:34 +0200
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com, netdev@vger.kernel.org
+Subject: Re: [PATCH] powermac: support G5 CPU hotplug
+Date: Thu, 3 May 2007 18:49:00 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,54 +35,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> So what about some thing like this where we do the read only once?
->>
->> - k
->>
->> diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
->> index a06d8d1..9cd7d1e 100644
->> --- a/drivers/net/gianfar.c
->> +++ b/drivers/net/gianfar.c
->> @@ -1438,31 +1438,35 @@ int gfar_clean_rx_ring(struct net_device 
->> *dev, int rx_work_limit)
->>  {
->>  	struct rxbd8 *bdp;
->>  	struct sk_buff *skb;
->> -	u16 pkt_len;
->> +	u16 pkt_len, status;
->> +	u32 bd_info;
+>> Isn't it just a GPIO, like on older Macs?  Of course, we
+>> cannot bring a CPU back online after doing that so it's
+>> pretty useless I suppose.
 >
->
-> I suggested that on IRC yesterday, and Segher was concerned that the
-> compiler might, in theory, "optimize" it into to two lhz instructions.
+> We don't know for sure what the gpio does... wether it does a CPU soft
+> reset or tickles the SPU to make it do special things that cause us to
+> branch at 0x100. We do get the CPU back after that though. We use that
+> to bring them in after boot.
 
-Yes.  The same is true of the original code btw, but since
-you test only one bit there, all is fine.
+Yeah.  It's probably the SRESET pin, come to think of it.
 
-> I'm rather skeptical that it would actually do so (even if it needs to
-> load twice due to register pressure, why not just use lwz both times?),
-
-Sure.  That doesn't make this code correct though.
-
-> and there's probably many other places that would break if it did,
-
-Most other network drivers read from an MMIO reg to see
-which RX ring entries are kernel owned AFAICS.
-
-> but I wasn't up for digging around GCC to prove otherwise.
-
-It doesn't matter what current GCC does -- simply look
-at what it is *allowed* to do instead.
-
-If you want a 32-bit read to be atomic, you should
-do the read via a (volatile u32 *).  Doing this with
-a cast in the places where you need the atomic access
-makes sure you don't get unnecessary rereads.
-
-> Plus, that wouldn't synchronize the bd_info read with the buffer data 
-> reads.
-
-Yes, you still need the rmb().
+It doesn't seem logical that this would save more power
+than (deep) NAP mode, so forget the whole idea.  Or
+someone could measure it if they think it might help
+still.
 
 
 Segher
