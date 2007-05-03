@@ -1,20 +1,17 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0DE42DDF9D
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 22:28:30 +1000 (EST)
-Subject: [PATCH] powerpc: mark pages that don't exist as nosave
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <1178195106.13233.108.camel@johannes.berg>
-References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
-	<1178195106.13233.108.camel@johannes.berg>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: powerpc_flash_init(), wtf!?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+In-Reply-To: <4639CF44.6020608@ru.mvista.com>
+References: <20070501051804.GB3881@localhost.localdomain>
+	<20070503103534.63ff67b6@localhost.localdomain>
+	<20070503070358.GA9430@localhost.localdomain>
+	<4639CF44.6020608@ru.mvista.com>
 Content-Type: text/plain
-Date: Thu, 03 May 2007 14:29:30 +0200
-Message-Id: <1178195370.13233.113.camel@johannes.berg>
+Date: Thu, 03 May 2007 22:29:13 +1000
+Message-Id: <1178195353.6353.38.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,67 +21,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On some powerpc architectures (notably 64-bit powermac) there is a memory
-hole, for example on powermacs between 2G and 4G. Since we use the flat
-memory model regardless, these pages must be marked as nosave (for suspend
-to disk.)
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
+>     It doesn't seem a flexible enough approach. We could continue using 
+> platform devices then.
 
----
-Tested on powerbook and G5 powermac.
+The problem is trivial enough tho... who ends up creating an
+of_platform_device for that rom node ... to be picked up by the driver.
 
----
- arch/powerpc/mm/mem.c |   25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+Creating of_platform devices is platform code responsibility... either
+by calling of_platform_bus_probe() (or whatever I called it ...) to
+generate them from known bus type or by creating them directly, that
+doesn't matter, that's still platform code business.
 
---- wireless-dev.orig/arch/powerpc/mm/mem.c	2007-05-03 14:20:25.959165535 +0200
-+++ wireless-dev/arch/powerpc/mm/mem.c	2007-05-03 14:21:09.659165535 +0200
-@@ -31,6 +31,7 @@
- #include <linux/highmem.h>
- #include <linux/initrd.h>
- #include <linux/pagemap.h>
-+#include <linux/suspend.h>
- 
- #include <asm/pgalloc.h>
- #include <asm/prom.h>
-@@ -277,6 +278,28 @@ void __init do_init_bootmem(void)
- 	init_bootmem_done = 1;
- }
- 
-+/* mark pages that don't exist as nosave */
-+static int __init mark_nonram_nosave(void)
-+{
-+	unsigned long lmb_next_region_start_pfn,
-+		      lmb_region_max_pfn;
-+	int i;
-+
-+	for (i = 0; i < lmb.memory.cnt - 1; i++) {
-+		lmb_region_max_pfn =
-+			(lmb.memory.region[i].base >> PAGE_SHIFT) +
-+			(lmb.memory.region[i].size >> PAGE_SHIFT);
-+		lmb_next_region_start_pfn =
-+			lmb.memory.region[i+1].base >> PAGE_SHIFT;
-+
-+		if (lmb_region_max_pfn < lmb_next_region_start_pfn)
-+			register_nosave_region(lmb_region_max_pfn,
-+					       lmb_next_region_start_pfn);
-+	}
-+
-+	return 0;
-+}
-+
- /*
-  * paging_init() sets up the page tables - in fact we've already done this.
-  */
-@@ -308,6 +331,8 @@ void __init paging_init(void)
- 	max_zone_pfns[ZONE_DMA] = top_of_ram >> PAGE_SHIFT;
- #endif
- 	free_area_init_nodes(max_zone_pfns);
-+
-+	mark_nonram_nosave();
- }
- #endif /* ! CONFIG_NEED_MULTIPLE_NODES */
- 
+Ben.
