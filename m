@@ -1,29 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-13.arcor-online.net (mail-in-13.arcor-online.net
-	[151.189.21.53])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A40DADDFCE
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 11:01:23 +1000 (EST)
-In-Reply-To: <1178151690.17299.46.camel@localhost.localdomain>
-References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
-	<1178086872.13233.27.camel@johannes.berg>
-	<17976.28170.695715.416339@cargo.ozlabs.ibm.com>
-	<1178116438.13233.65.camel@johannes.berg>
-	<1178143429.17299.7.camel@localhost.localdomain>
-	<17977.9796.15991.630737@cargo.ozlabs.ibm.com>
-	<f885d6b1472525fb5bebdd96ae4c3157@kernel.crashing.org>
-	<1178151690.17299.46.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <15a6025d58d0f62ee10efab20dc98278@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powermac: support G5 CPU hotplug
-Date: Thu, 3 May 2007 03:01:16 +0200
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 2/2] powerpc: change topology_init() to a subsys_initcall
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Kevin Corry <kevcorry@us.ibm.com>
+In-Reply-To: <200705021211.49331.kevcorry@us.ibm.com>
+References: <200705021208.59068.kevcorry@us.ibm.com>
+	<200705021211.49331.kevcorry@us.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-ngDdP6kHko+NmyBGljhp"
+Date: Thu, 03 May 2007 11:11:47 +1000
+Message-Id: <1178154707.5338.11.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Carl Love <carll@us.ibm.com>,
+	linux-kernel@vger.kernel.org, Stephane Eranian <eranian@hpl.hp.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,49 +23,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> The difference between doze and nap is that in nap mode
->> the bus interface unit is switched off; on the 970 and
->> 970FX this means that the L2 cache has to be flushed
->> before entering nap mode (or otherwise snoops will go
->> missing in action);
->
-> BZZZT... incorrect... the 970FX and MP behave the same here.
 
-Yeah I goofed here -- cache flush is only required if
-you take a CPU offline.
+--=-ngDdP6kHko+NmyBGljhp
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> There is
-> only one state you can "manually" enter and it's NAP.
+On Wed, 2007-05-02 at 12:11 -0500, Kevin Corry wrote:
+> Change the powerpc version of topology_init() from an __initcall to
+> a subsys_initcall to match all other architectures.
+>=20
+> Signed-off-by: Kevin Corry <kevcorry@us.ibm.com>
+>=20
+> Index: linux-2.6.21/arch/powerpc/kernel/sysfs.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-2.6.21.orig/arch/powerpc/kernel/sysfs.c
+> +++ linux-2.6.21/arch/powerpc/kernel/sysfs.c
+> @@ -498,4 +498,4 @@ static int __init topology_init(void)
+> =20
+>  	return 0;
+>  }
+> -__initcall(topology_init);
+> +subsys_initcall(topology_init);     =20
 
-BZZZT... incorrect... you can "manually" switch to
-all of doze, nap, and deep nap.
+topology_init() depends on the register_one_node() stuff being
+available, which relies on register_node_type() being called AFAICT -
+which is a postcore_initcall(). So that's OK.
 
-> Transitions
-> between DOZE and NAP are automatic to handle snooping in both cases.
-> Cache flushing is never needed ... unless in our case the CPU gets
-> actually powered down for suspend-to-ram.
+It also creates sysfs files, which is OK because long before initcalls
+run vfs_caches_init() called mnt_init() which called sysfs_init().
 
-Yeah.  Or to hot-unplug it ;-)
+Just to be super safe it'd be good to diff your sysfs before and after
+the change. But assuming that show's nothing this looks fine to me.
 
->> the 970MP automatically transitions
->> from nap to doze mode if snoops are requested (and back
->> to nap again), so no L2 flush is required.  The 970MP
->> also has a "deep nap" mode which saves more power by
->> automatically clocking the CPU down.
->
-> Also deep nap only really works on 970MP DD3 and later I think
+cheers
 
-Yes, we put that knowledge into the kernel already.
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
->> One more thing -- perhaps keeping the CPU in reset
->> state saves even more power?
->
-> Dunno... Somebody can try... but I don't think we have access to the
-> reset line on 970's..
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
-Isn't it just a GPIO, like on older Macs?  Of course, we
-cannot bring a CPU back online after doing that so it's
-pretty useless I suppose.
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
 
+--=-ngDdP6kHko+NmyBGljhp
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Segher
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGOTbTdSjSd0sB4dIRAg3eAJ9SzedIToDo6fj3fE9jM0jZivdcLQCfZTNW
+qeGUuy+Tn8RAGYLafOGTnvo=
+=PqzK
+-----END PGP SIGNATURE-----
+
+--=-ngDdP6kHko+NmyBGljhp--
