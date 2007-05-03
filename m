@@ -1,27 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
+	[151.189.21.50])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 767EBDDFBC
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 10:24:27 +1000 (EST)
-Subject: Re: [PATCH] powermac: support G5 CPU hotplug
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <1178151690.17299.46.camel@localhost.localdomain>
-References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
-	<1178086872.13233.27.camel@johannes.berg>
-	<17976.28170.695715.416339@cargo.ozlabs.ibm.com>
-	<1178116438.13233.65.camel@johannes.berg>
-	<1178143429.17299.7.camel@localhost.localdomain>
-	<17977.9796.15991.630737@cargo.ozlabs.ibm.com>
-	<f885d6b1472525fb5bebdd96ae4c3157@kernel.crashing.org>
-	<1178151690.17299.46.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 03 May 2007 10:24:21 +1000
-Message-Id: <1178151861.17299.48.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>,
-	Paul Mackerras <paulus@samba.org>
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 76ED4DDEB9
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 10:48:44 +1000 (EST)
+In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302D5E195@az33exm25.fsl.freescale.net>
+References: <20070425213700.GA8814@blade.az.mvista.com><20070426000852.GA2193@localhost.localdomain><20070426003748.GA30730@blade.az.mvista.com><9903F55A-5E4E-42CE-8C27-6B7143B9FE25@kernel.crashing.org><4630D9AB.2040605@mvista.com>
+	<e359e43198096bc73cdac058c6e5ad6d@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302D5DC6F@az33exm25.fsl.freescale.net>
+	<567cddf8855d809f2e0c5b4101c2c15a@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302D5E195@az33exm25.fsl.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <1624cd331b61117d7251f70caaa86292@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: RFC: new device types in the device tree (RE: [PATCH] powerpc:
+	Add EDAC platform devices for 85xx)
+Date: Thu, 3 May 2007 02:48:19 +0200
+To: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au,
+	bluesmoke-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,39 +31,93 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-05-03 at 10:21 +1000, Benjamin Herrenschmidt wrote:
-> > The difference between doze and nap is that in nap mode
-> > the bus interface unit is switched off; on the 970 and
-> > 970FX this means that the L2 cache has to be flushed
-> > before entering nap mode (or otherwise snoops will go
-> > missing in action); 
-> 
-> BZZZT... incorrect... the 970FX and MP behave the same here. There is
-> only one state you can "manually" enter and it's NAP. 
+>>> The 1275 spec is 'Open Firmware centric' in that it says
+>>> you don't need a device_type if the node is not used
+>>> by Open Firmware.
+>>
+>> It is "Open firmware centric" in every way; it is
+>> the Open firmware definition after all.
+>>
+>> "device_type" specifies what firmware interfaces a
+>> node implements.  "name" and "compatible" are for
+>> the client (i.e., OS, bootloader, etc.) to use for
+>> matching drivers to device nodes.
+>
+> The flat device tree standard (i.e. booting-without-of.txt)
+> certainly inherited stuff from IEEE-1275, but can diverge
+> if need be.
 
-Actually, I'm not totally correct here neither, that's what 745x does...
-the 970 _do_ give manual access to DOZE. But the rest is still true, it
-will transition automatically to do snoops.
+It shares the kernel interface.  You cannot go diverge
+on fundamental things.
 
-> Transitions
-> between DOZE and NAP are automatic to handle snooping in both cases.
-> Cache flushing is never needed ... unless in our case the CPU gets
-> actually powered down for suspend-to-ram.
-> 
-> > the 970MP automatically transitions
-> > from nap to doze mode if snoops are requested (and back
-> > to nap again), so no L2 flush is required.  The 970MP
-> > also has a "deep nap" mode which saves more power by
-> > automatically clocking the CPU down.
-> 
-> Also deep nap only really works on 970MP DD3 and later I think
-> 
-> > One more thing -- perhaps keeping the CPU in reset
-> > state saves even more power?
-> 
-> Dunno... Somebody can try... but I don't think we have access to the
-> reset line on 970's..
-> 
-> Ben.
-> 
-> 
+> name is always optional (as defined by b-w-of.txt)
+
+Where does it say that?  "name" is always required!  In
+the newer flat tree format, it's even impossible to
+create a node without "name".
+
+> There are no interfaces or methods with the device trees
+> defined in DTS files.  Given that, does the the device_type
+> property have any value at all?
+
+Not much, but still a bit, like you can find all
+"serial" devices if you want to.  And of course,
+many bindings require a specific "device_type",
+so you should have one.
+
+> There are a slew of device_types defined in the DTS files
+> and in booting-without-of.txt.  Should all these be
+> removed?
+
+Most should yes.
+
+>> It typically makes no sense to create a new "device_type"
+>> value for anything else than very generic classes of
+>> device, where you can drive the device without knowing
+>> anything else than what is defined in the binding for
+>> that "device_type".
+>
+> What types devices get a device_type and which don't?  Linux
+> drives the devices based on "compatible".
+
+No, Linux selects which driver to use based on "compatible".
+That's a crucial difference.
+
+>> And the associated methods and anything else that is
+>> needed.  It would be a big mistake to create incompatibilities
+>> with "real OF" where those can be avoided just as easily.
+>
+> But there are no methods.
+
+Again, you should not create incompatibilities where
+not needed.  Since "device_type" is primarily useful
+for (talking to / using) the firmware, and hardly
+useful at all for the flat device tree, the flat tree
+"standard" shouldn't define new "device_type"s without
+making it a real OF binding.
+
+> Even if the kernel does not use 'device_type', the property
+> still seems to have some value in that it specifies a
+> required set of properties and their values for various
+> classes of devices.
+
+Sure.  "network", "block", "serial", etc.
+
+> Take a flash device for instance--
+
+Yes, "flash" could be made into a nice generic binding
+(except that no one has succeeded so far, there are just
+way too many different kinds of flash/rom/nvram, and
+many ways to hook them up).
+
+> I suppose we can delete the device_type property and the
+> kernel will still be happy, but it's nice to have a standard
+> set of properties that everyone uses when describing a given
+> class of device.  The device_type is just a convenient
+> identifer to refer to this device class and set of properties.
+
+Unfortunately, there is no standard "device_type" for
+flash yet.
+
+
+Segher
