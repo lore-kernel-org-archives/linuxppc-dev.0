@@ -1,20 +1,20 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id B1F9DDDFF0
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 16:40:49 +1000 (EST)
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 4980FDDFFE
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 16:44:00 +1000 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 7/13] powerpc: Add arch/powerpc mv64x60 MPSC platform data
+Subject: Re: [PATCH 8/13] powerpc: Add arch/powerpc mv64x60_eth platform data
 	setup
-Date: Thu, 3 May 2007 08:40:32 +0200
+Date: Thu, 3 May 2007 08:43:56 +0200
 References: <20070425234630.GA4046@mag.az.mvista.com>
-	<20070425235939.GI4046@mag.az.mvista.com>
-	<20070502214104.GB27253@xyzzy.farnsworth.org>
-In-Reply-To: <20070502214104.GB27253@xyzzy.farnsworth.org>
+	<20070426000009.GJ4046@mag.az.mvista.com>
+	<20070502214312.GC27253@xyzzy.farnsworth.org>
+In-Reply-To: <20070502214312.GC27253@xyzzy.farnsworth.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200705030840.32739.arnd@arndb.de>
+Message-Id: <200705030843.56688.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,9 +26,5 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On Wednesday 02 May 2007, Dale Farnsworth wrote:
 > Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
-
-A patch comment about what functionality exactly gets added
-would be good, I forgot to mention that when first looking at
-the patch. Otherwise looks good.
 
 Acked-by: Arnd Bergmann <arnd@arndb.de>
