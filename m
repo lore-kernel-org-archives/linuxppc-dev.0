@@ -1,35 +1,21 @@
-Return-Path: <kevcorry@us.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5D222DDFB5
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 23:27:01 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l43DQvw4018445
-	for <linuxppc-dev@ozlabs.org>; Thu, 3 May 2007 09:26:57 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l43DQuQG205882
-	for <linuxppc-dev@ozlabs.org>; Thu, 3 May 2007 07:26:56 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l43DQutR016379
-	for <linuxppc-dev@ozlabs.org>; Thu, 3 May 2007 07:26:56 -0600
-From: Kevin Corry <kevcorry@us.ibm.com>
-To: michael@ellerman.id.au
-Subject: Re: [PATCH 2/2] powerpc: change topology_init() to a subsys_initcall
-Date: Thu, 3 May 2007 08:26:54 -0500
-References: <200705021208.59068.kevcorry@us.ibm.com>
-	<200705021211.49331.kevcorry@us.ibm.com>
-	<1178154707.5338.11.camel@concordia.ozlabs.ibm.com>
-In-Reply-To: <1178154707.5338.11.camel@concordia.ozlabs.ibm.com>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 6734EDE058
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 23:27:08 +1000 (EST)
+Message-ID: <4639E389.4040604@ru.mvista.com>
+Date: Thu, 03 May 2007 17:28:41 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200705030826.55427.kevcorry@us.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Carl Love <carll@us.ibm.com>,
-	linux-kernel@vger.kernel.org, Stephane Eranian <eranian@hpl.hp.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: powerpc_flash_init(), wtf!?
+References: <20070501051804.GB3881@localhost.localdomain>
+	<20070503103534.63ff67b6@localhost.localdomain>
+	<20070503070358.GA9430@localhost.localdomain>
+	<4639CF44.6020608@ru.mvista.com>
+	<20070503122213.GD26659@localhost.localdomain>
+In-Reply-To: <20070503122213.GD26659@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,41 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Michael,
+Hello.
 
-On Wed May 2 2007 8:11 pm, Michael Ellerman wrote:
-> On Wed, 2007-05-02 at 12:11 -0500, Kevin Corry wrote:
-> > Change the powerpc version of topology_init() from an __initcall to
-> > a subsys_initcall to match all other architectures.
-> >
-> > Signed-off-by: Kevin Corry <kevcorry@us.ibm.com>
-> >
-> > Index: linux-2.6.21/arch/powerpc/kernel/sysfs.c
-> > ===================================================================
-> > --- linux-2.6.21.orig/arch/powerpc/kernel/sysfs.c
-> > +++ linux-2.6.21/arch/powerpc/kernel/sysfs.c
-> > @@ -498,4 +498,4 @@ static int __init topology_init(void)
-> >
-> >  	return 0;
-> >  }
-> > -__initcall(topology_init);
-> > +subsys_initcall(topology_init);
->
-> topology_init() depends on the register_one_node() stuff being
-> available, which relies on register_node_type() being called AFAICT -
-> which is a postcore_initcall(). So that's OK.
->
-> It also creates sysfs files, which is OK because long before initcalls
-> run vfs_caches_init() called mnt_init() which called sysfs_init().
->
-> Just to be super safe it'd be good to diff your sysfs before and after
-> the change. But assuming that show's nothing this looks fine to me.
+David Gibson wrote:
 
-I booted with and without this patch applied, and the file listings of /sys on 
-both kernels show no differences (other than timestamps).
+>>>>>Unless someone who actually knows how this code was intended to be
+>>>>>used can suggest a more polite way of fixing it.
 
-Thanks for the feedback.
--- 
-Kevin Corry
-kevcorry@us.ibm.com
-http://www.ibm.com/linux/
+>>>>I guess, the idea was for this stuff to be updated once one of the
+>>>>dts inside boot/ would have physmap nodes added. I have
+>>>>rom/physmap[dts] rehaul in my TODO list, but it has (so far at
+>>>>least) little chance to happen during this merge window. Yet, if
+>>>>someone has suggestions and/or some interest for this to be cured,
+>>>>it will gain priority. Otherwise, I'll replace actual erroneous code
+>>>>with kind of rant that it's up to BSP code to take care of
+>>>>of_devices to be registered, using of_platform_bus_probe() or other
+>>>>way.
+
+>>>I'm having some trouble parsing that paragraph.  At this stage I don't
+>>>see any reason to hold off on tearing out arch/powerpc/sysdev/rom.c,
+>>>any necessary changes to replace it will go in the platform code or
+
+>>    It doesn't seem a flexible enough approach. We could continue using 
+>>platform devices then.
+
+> Sorry, I don't follow you.
+
+    Well, IIUC, the idea behind the device is to free the platform code of as 
+much burden of registering the platform devices itself as possible, isn't it?
+
+>>>other places.
+
+>>    Any ideas where else?
+
+> Not really.  I don't immediately see a case where doing it from the
+> platform code wouldn't be right.
+
+    BTW, is it legal/appropriate to specify device (not bus) types for 
+of_platform_bus_probe()?
+
+WBR, Sergei
