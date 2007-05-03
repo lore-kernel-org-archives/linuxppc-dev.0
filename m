@@ -1,26 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
-	[151.189.21.43])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 00D1BDDFB4
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 10:17:21 +1000 (EST)
-In-Reply-To: <17977.9796.15991.630737@cargo.ozlabs.ibm.com>
-References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
-	<1178086872.13233.27.camel@johannes.berg>
-	<17976.28170.695715.416339@cargo.ozlabs.ibm.com>
-	<1178116438.13233.65.camel@johannes.berg>
-	<1178143429.17299.7.camel@localhost.localdomain>
-	<17977.9796.15991.630737@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <f885d6b1472525fb5bebdd96ae4c3157@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powermac: support G5 CPU hotplug
-Date: Thu, 3 May 2007 02:17:15 +0200
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 3 May 2007 10:17:29 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Yoder Stuart-B08248 <stuart.yoder@freescale.com>
+Subject: Re: RFC: new device types in the device tree (RE: [PATCH] powerpc:
+	Add EDAC platform devices for 85xx)
+Message-ID: <20070503001729.GB4331@localhost.localdomain>
+References: <e359e43198096bc73cdac058c6e5ad6d@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302D5DC6F@az33exm25.fsl.freescale.net>
+	<567cddf8855d809f2e0c5b4101c2c15a@kernel.crashing.org>
+	<20070502011957.GA12876@localhost.localdomain>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302D5E1A9@az33exm25.fsl.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302D5E1A9@az33exm25.fsl.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, bluesmoke-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,34 +23,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>> Ultimately we want to put the disabled cpus in sleep mode, but that
->>>> will require a suitable cache flush routine.
->>>
->>> I don't have any docs for the particular processors the G5s have, do
->>> they have a sleep mode?
->>
->> They have, but the cache flush is not trivial to do (and might imply
->> access to non documented bits). So let's put that on the to-do list 
->> and
->> stick to NAP for now while I dig something.
->
-> Hmmm, I went looking in the 970FX manual for sleep mode and didn't
-> find it, only nap and doze...
+On Wed, May 02, 2007 at 12:04:11PM -0700, Yoder Stuart-B08248 wrote:
+>  
+> 
+> > -----Original Message-----
+> > From: David Gibson [mailto:david@gibson.dropbear.id.au] 
+> > Sent: Tuesday, May 01, 2007 8:20 PM
+> > To: Segher Boessenkool
+> > Cc: Yoder Stuart-B08248; linuxppc-dev@ozlabs.org; 
+> > bluesmoke-devel@lists.sourceforge.net
+> > Subject: Re: RFC: new device types in the device tree (RE: 
+> > [PATCH] powerpc: Add EDAC platform devices for 85xx)
+> > 
+> > On Wed, May 02, 2007 at 02:34:45AM +0200, Segher Boessenkool wrote:
+> > > >> "name" = "memory-controller"
+> > > >> "compatible" = "fsl,85xx-memory-controller"
+> > > >> (or a more specific 85xx model if the controller
+> > > >> isn't identical across those chips)
+> > > >> No "device_type" at all, since there is no binding
+> > > >> for this kind of device.
+> > > >
+> > > > Is "no device_type" really the approach that should be
+> > > > taken?
+> > > 
+> > > Yes.
+> > > 
+> > > > booting-without-of.txt currently reads:
+> > > >
+> > > >    Every node which actually represents an actual device
+> > > >    (that is, a node which isn't only a virtual "container"
+> > > >    for more nodes, like "/cpus" is) is also required to
+> > > >    have a "device_type" property indicating the type of
+> > > >    node
+> > > 
+> > > That is wrong, IMNSHO.
+> > 
+> > I tend to agree. Device drivers should generally be searching on the
+> > "compatible" property, not "device_type".  Defining new device_type
+> > values isn't really of any use to the kernel, so we should just avoid
+> > it.
+> 
+> Right-- drivers search on "compatible".
+> 
+> But, don't we want to keep standardized sets of properties for
+> certain classes/types of devices?  Defining a standardized,
+> required set of properties for a "network", "rom", or "i2c"
+> class of device is helpful.  Without a standardized 'template'
+> of properties, developers may make up whatever properties they
+> want and things will work fine as long as the device tree and
+> driver are in sync.  It works, but you wind up with a plethora
+> of properties each describing the same thing.
 
-"Sleep" is a generic term for both "doze" and "nap", heh.
+If there's an obvious new class, with common properties, then yes,
+sure.  But I don't think we need to feel impelled to think up new
+classes (and therefore a device_type value) for each new device.  
 
-The difference between doze and nap is that in nap mode
-the bus interface unit is switched off; on the 970 and
-970FX this means that the L2 cache has to be flushed
-before entering nap mode (or otherwise snoops will go
-missing in action); the 970MP automatically transitions
-from nap to doze mode if snoops are requested (and back
-to nap again), so no L2 flush is required.  The 970MP
-also has a "deep nap" mode which saves more power by
-automatically clocking the CPU down.
+And even in the case of new classes, I think we might be best off
+waiting for a few devices to appear so we can tell what's really
+common information before we define the class's device_type and
+required properties.
 
-One more thing -- perhaps keeping the CPU in reset
-state saves even more power?
+> If we do away with device_type,
+> what is it that defines a particular node to be a certain class
+> of device.
 
+I'm not suggesting doing away with device_type, just making it
+optional.
 
-Segher
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
