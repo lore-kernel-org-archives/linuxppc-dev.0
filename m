@@ -1,21 +1,21 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 0C5F8DDF77
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 May 2007 03:16:18 +1000 (EST)
-Message-ID: <463A1941.3090608@ru.mvista.com>
-Date: Thu, 03 May 2007 21:17:53 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 8E1B5DE024
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 May 2007 03:25:38 +1000 (EST)
+Date: Thu, 3 May 2007 12:26:57 -0500
+To: Jon Loeliger <jdl@freescale.com>
+Subject: Re: [PATCH] 86xx: Enable the AC97 interface on 8641D board.
+Message-ID: <20070503172657.GA32312@lixom.net>
+References: <1178142818.32136.51.camel@ld0161-tx32>
+	<08D3A1CE-12E0-4759-B055-DE227EA4135E@kernel.crashing.org>
+	<1178207725.17201.33.camel@ld0161-tx32>
+	<20070503161000.GA31881@lixom.net>
+	<1178209046.17201.55.camel@ld0161-tx32>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: powerpc_flash_init(), wtf!?
-References: <20070501051804.GB3881@localhost.localdomain>
-	<4639CBD8.6010205@ru.mvista.com>
-	<20070503123055.GE26659@localhost.localdomain>
-	<4639DDE1.40904@ru.mvista.com>
-	<71e4c68de5240a652b561d8cfa2e05f3@kernel.crashing.org>
-In-Reply-To: <71e4c68de5240a652b561d8cfa2e05f3@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1178209046.17201.55.camel@ld0161-tx32>
+From: olof@lixom.net (Olof Johansson)
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,81 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+On Thu, May 03, 2007 at 11:17:26AM -0500, Jon Loeliger wrote:
+> On Thu, 2007-05-03 at 11:10, Olof Johansson wrote:
+> 
+> > 
+> > This sounds like something that firmware should take care of, not
+> > hardcoded in the board code.  Seems like the device is just a PCI device
+> > that doesn't have a device tree entry.
+> 
+> Well, it's not a PCI device at all.
 
-Segher Boessenkool wrote:
+Really? You use a PCI quirk to manipulate it.
 
->>>>   We weren't aware of the of_platform.c work when writing the MTD 
->>>> support.
->>>>   Note that this function usually probes only the specified set of 
->>>> (SoC)
->>>> busses, none of which usully contains NOR flash (which is located at 
->>>> the
->>>> root level).
+> > Why not do this in u-boot instead?
+> 
+> Why do it there?  We'd have to do it _again_ in Linux
+> if we didn't come in from U-Boot anyway.
 
->>> The root level?  Um... I don't think so...
+The same argument could be used to motivate not doing any kind of board
+inits in any firmware and do it all from the board code in linux.
 
->>     "Trust me". :-)
->>     NOR flashes are at the same level as the "memory" node (where else 
->> you
->> expect them to appear I wonder?).
+Don't you guys use M1575 on other eval boards too, so you'll need the
+same board quirk duplicated?
 
-> The "memory" node doesn't describe the RAM devices;
-> it describes the RAM address space, instead.  You can
-> have separate nodes for the actual devices.
 
-    If you can remember our prior discussion, the "rom" nodes don't describe 
-"the actual devices" as well, only their mapping into the address space. ;-)
-
-> Now for ROM/flash/NVRAM, nodes _can_ appear directly
-> under the root, but only if that is where they belong
-> on your platform (i.e., they sit directly on the "system
-> bus" (whatever that means on your platform); on most
-> platforms though, such devices are connected via some
-> I/O busses, so the nodes should appear under their
-> respective controllers.
-
-    Yeah, you're right here, and I've probably misunderstood what "memory" 
-node was. In fact, the flash in my system resides on the same local bus as 
-RAM, so the proper place would be behind the "lbc" (or whatever -- it doesn't 
-exist as yet) node on the "soc" bus.  Do you think I need to go and document 
-it as well for such cause? :-]
-
->>> I believe the arrangement is similar for most other 4xx systems.  More
->>> PC or desktop like systems sometimes have boot flash connected to the
->>> south bridge, which I believe puts it on the ISA bus, topologically
->>> speaking.
-
-> Some have it on the LPC bus as an LPC device, some
-> have it on the LPC bus but accessed with a separate
-> protocol,  some have it attached to another LPC device
-> (some "superio" typically), some have it attached
-> directly to the "south bridge".
-
->>     Not exactly. Boot flash is mapped beyond ISA address space on 386+ 
->> -- at
->> the top of 4GB (where the "reset vector" is). Although it may be dual 
->> mapped
->> below 1MB as well (I'm starting to forget x86 :-).
-
-> Most "north bridges" have some bits that enable
-> translation of accesses in the "low bios" area to
-> the 4GB-minus-a-bit area.  There are many variations
-> and it all is a big mess :-)
-
-    Human perversion knows no limits. O:-)
-
-> Now, back to the case at hand -- it would be nice to
-> have a platform-independent way to probe the simple
-> case -- a single direct-mapped device -- but it isn't
-> obvious how to make that not clash with the not-so-simple
-> cases.  A helper function that does the work but is
-> only called by the platforms that want it would do, I
-> suppose?
-
-    It probably doesn't even worth a helper (since out of those 15 lines, 6 
-were pretty useless anyway)
-
-> Segher
-
-WBR, Sergei
+-Olof
