@@ -1,18 +1,24 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id CE806DE017
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 May 2007 03:51:46 +1000 (EST)
-Message-ID: <463A2192.6020308@ru.mvista.com>
-Date: Thu, 03 May 2007 21:53:22 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <andrew.vasquez@qlogic.com>
+Received: from avexch1.qlogic.com (avexch1.qlogic.com [198.70.193.115])
+	by ozlabs.org (Postfix) with ESMTP id B2D6BDDDF4
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 May 2007 03:57:05 +1000 (EST)
+Date: Thu, 3 May 2007 10:44:46 -0700
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Subject: Re: qla_wxyz pci_set_mwi question
+Message-ID: <20070503174446.GB6605@andrew-vasquezs-computer.local>
+References: <20070411221507.69c97257.randy.dunlap@oracle.com>
+	<20070412172038.GG10124@andrew-vasquezs-computer.local>
+	<20070412185347.GL26692@parisc-linux.org>
+	<20070412193713.GB14510@andrew-vasquezs-computer.local>
+	<20070412200438.GM26692@parisc-linux.org>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: powerpc_flash_init(), wtf!?
-References: <20070501051804.GB3881@localhost.localdomain>	<4639CBD8.6010205@ru.mvista.com>	<20070503123055.GE26659@localhost.localdomain>	<4639DDE1.40904@ru.mvista.com>	<71e4c68de5240a652b561d8cfa2e05f3@kernel.crashing.org>
-	<463A1941.3090608@ru.mvista.com>
-In-Reply-To: <463A1941.3090608@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070412200438.GM26692@parisc-linux.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, scsi <linux-scsi@vger.kernel.org>,
+	gregkh <greg@kroah.com>, David Somayajulu <david.somayajulu@qlogic.com>,
+	linuxppc-dev@ozlabs.org, linux-driver@qlogic.com,
+	PCI <linux-pci@atrey.karlin.mff.cuni.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,26 +28,123 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello, I wrote:
+On Thu, 12 Apr 2007, Matthew Wilcox wrote:
 
->>Now for ROM/flash/NVRAM, nodes _can_ appear directly
->>under the root, but only if that is where they belong
->>on your platform (i.e., they sit directly on the "system
->>bus" (whatever that means on your platform); on most
->>platforms though, such devices are connected via some
->>I/O busses, so the nodes should appear under their
->>respective controllers.
+> On Thu, Apr 12, 2007 at 12:37:13PM -0700, Andrew Vasquez wrote:
+> > On Thu, 12 Apr 2007, Matthew Wilcox wrote:
+> > > Why should it fail?  If there's a platform which can't support a
+> > > cacheline size that the qla2xyz card can handle, it should be able to
+> > > happily fall back to doing plain writes instead of MWIs.  IMO, it should
+> > > just call pci_set_mwi() and ignore the result.
+> > 
+> > I believe there were some erratas on some ISP2xxx chips where MWI
+> > needed to be set for proper operation.  I'll go back, verify and
+> > update the patch accordingly.
+> 
+> Hmm.  The thing is that pci_set_mwi() returns success on machines where
+> MWI is disabled (currently only PPC64).  Perhaps it needs to fail
+> instead.
 
->     Yeah, you're right here, and I've probably misunderstood what "memory" 
-> node was. In fact, the flash in my system resides on the same local bus as 
-> RAM, so the proper place would be behind the "lbc" (or whatever -- it doesn't 
-> exist as yet) node on the "soc" bus.  Do you think I need to go and document 
-> it as well for such cause? :-]
+Sorry for the latency on getting this one resolved...  So is Randy's
+proposal for pci_try_set_mwi():
 
-    No, that probably won't do. MPC85xx SoC bus has ranges = <e0000000 
-00100000> and the NOR flash is mapped at 0xff000000, so it seems that it can't 
-be located under the "soc" bus (unless that latter has "ranges" prop extended?).
+	http://article.gmane.org/gmane.linux.kernel/516349
 
->>Segher
+going to be added in 2.6.22?  If so, I'd like to propose the following
+to qla2xxx which handles the 2300 errata.
 
-WBR, Sergei
+--
+
+diff --git a/drivers/scsi/qla2xxx/qla_init.c b/drivers/scsi/qla2xxx/qla_init.c
+index 6ad1588..8b83e1c 100644
+--- a/drivers/scsi/qla2xxx/qla_init.c
++++ b/drivers/scsi/qla2xxx/qla_init.c
+@@ -130,18 +130,16 @@ qla2x00_initialize_adapter(scsi_qla_host_t *ha)
+ int
+ qla2100_pci_config(scsi_qla_host_t *ha)
+ {
+-	uint16_t w, mwi;
++	uint16_t w;
+ 	uint32_t d;
+ 	unsigned long flags;
+ 	struct device_reg_2xxx __iomem *reg = &ha->iobase->isp;
+ 
+ 	pci_set_master(ha->pdev);
+-	mwi = 0;
+-	if (pci_set_mwi(ha->pdev))
+-		mwi = PCI_COMMAND_INVALIDATE;
++	pci_try_set_mwi(ha->pdev);
+ 
+ 	pci_read_config_word(ha->pdev, PCI_COMMAND, &w);
+-	w |= mwi | (PCI_COMMAND_PARITY | PCI_COMMAND_SERR);
++	w |= (PCI_COMMAND_PARITY | PCI_COMMAND_SERR);
+ 	pci_write_config_word(ha->pdev, PCI_COMMAND, w);
+ 
+ 	/* Reset expansion ROM address decode enable */
+@@ -166,22 +164,21 @@ qla2100_pci_config(scsi_qla_host_t *ha)
+ int
+ qla2300_pci_config(scsi_qla_host_t *ha)
+ {
+-	uint16_t	w, mwi;
++	uint16_t	w;
+ 	uint32_t	d;
+ 	unsigned long   flags = 0;
+ 	uint32_t	cnt;
+ 	struct device_reg_2xxx __iomem *reg = &ha->iobase->isp;
+ 
+ 	pci_set_master(ha->pdev);
+-	mwi = 0;
+-	if (pci_set_mwi(ha->pdev))
+-		mwi = PCI_COMMAND_INVALIDATE;
++	pci_try_set_mwi(ha->pdev);
+ 
+ 	pci_read_config_word(ha->pdev, PCI_COMMAND, &w);
+-	w |= mwi | (PCI_COMMAND_PARITY | PCI_COMMAND_SERR);
++	w |= (PCI_COMMAND_PARITY | PCI_COMMAND_SERR);
+ 
+ 	if (IS_QLA2322(ha) || IS_QLA6322(ha))
+ 		w &= ~PCI_COMMAND_INTX_DISABLE;
++	pci_write_config_word(ha->pdev, PCI_COMMAND, w);
+ 
+ 	/*
+ 	 * If this is a 2300 card and not 2312, reset the
+@@ -210,7 +207,7 @@ qla2300_pci_config(scsi_qla_host_t *ha)
+ 		ha->fb_rev = RD_FB_CMD_REG(ha, reg);
+ 
+ 		if (ha->fb_rev == FPM_2300)
+-			w &= ~PCI_COMMAND_INVALIDATE;
++			pci_clear_mwi(ha->pdev);
+ 
+ 		/* Deselect FPM registers. */
+ 		WRT_REG_WORD(&reg->ctrl_status, 0x0);
+@@ -227,7 +224,6 @@ qla2300_pci_config(scsi_qla_host_t *ha)
+ 
+ 		spin_unlock_irqrestore(&ha->hardware_lock, flags);
+ 	}
+-	pci_write_config_word(ha->pdev, PCI_COMMAND, w);
+ 
+ 	pci_write_config_byte(ha->pdev, PCI_LATENCY_TIMER, 0x80);
+ 
+@@ -253,19 +249,17 @@ qla2300_pci_config(scsi_qla_host_t *ha)
+ int
+ qla24xx_pci_config(scsi_qla_host_t *ha)
+ {
+-	uint16_t w, mwi;
++	uint16_t w;
+ 	uint32_t d;
+ 	unsigned long flags = 0;
+ 	struct device_reg_24xx __iomem *reg = &ha->iobase->isp24;
+ 	int pcix_cmd_reg, pcie_dctl_reg;
+ 
+ 	pci_set_master(ha->pdev);
+-	mwi = 0;
+-	if (pci_set_mwi(ha->pdev))
+-		mwi = PCI_COMMAND_INVALIDATE;
++	pci_try_set_mwi(ha->pdev);
+ 
+ 	pci_read_config_word(ha->pdev, PCI_COMMAND, &w);
+-	w |= mwi | (PCI_COMMAND_PARITY | PCI_COMMAND_SERR);
++	w |= (PCI_COMMAND_PARITY | PCI_COMMAND_SERR);
+ 	w &= ~PCI_COMMAND_INTX_DISABLE;
+ 	pci_write_config_word(ha->pdev, PCI_COMMAND, w);
+ 
