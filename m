@@ -1,29 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8550CDDFDA
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 May 2007 02:00:59 +1000 (EST)
-Message-ID: <463A0732.2060802@freescale.com>
-Date: Thu, 03 May 2007 11:00:50 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2] gianfar: Add I/O barriers when touching buffer
-	descriptor ownership.
-References: <20070502195712.GA16541@ld0162-tx32.am.freescale.net>
-	<F1B250DD-A472-470F-B3D0-EBB2F042E454@kernel.crashing.org>
-	<4638F0C4.2000406@freescale.com>
-	<FA9554A4-5A7D-4E03-BE28-C4B6B80D9DB9@kernel.crashing.org>
-	<4638F734.2040809@freescale.com>
-	<41B347BE-06AA-4346-BEFB-19DFB52AC533@kernel.crashing.org>
-	<463902EB.8070401@freescale.com>
-	<Pine.LNX.4.64.0705022109350.1690@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0705022109350.1690@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1861EDDFCB
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 May 2007 02:01:59 +1000 (EST)
+In-Reply-To: <1178207725.17201.33.camel@ld0161-tx32>
+References: <1178142818.32136.51.camel@ld0161-tx32>
+	<08D3A1CE-12E0-4759-B055-DE227EA4135E@kernel.crashing.org>
+	<1178207725.17201.33.camel@ld0161-tx32>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <10979137-FCDB-40D4-98F4-45CC00AE3358@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] 86xx: Enable the AC97 interface on 8641D board.
+Date: Thu, 3 May 2007 11:01:01 -0500
+To: Jon Loeliger <jdl@freescale.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,31 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> So what about some thing like this where we do the read only once?
-> 
-> - k
-> 
-> diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-> index a06d8d1..9cd7d1e 100644
-> --- a/drivers/net/gianfar.c
-> +++ b/drivers/net/gianfar.c
-> @@ -1438,31 +1438,35 @@ int gfar_clean_rx_ring(struct net_device *dev, int rx_work_limit)
->  {
->  	struct rxbd8 *bdp;
->  	struct sk_buff *skb;
-> -	u16 pkt_len;
-> +	u16 pkt_len, status;
-> +	u32 bd_info;
 
+On May 3, 2007, at 10:55 AM, Jon Loeliger wrote:
 
-I suggested that on IRC yesterday, and Segher was concerned that the 
-compiler might, in theory, "optimize" it into to two lhz instructions. 
-I'm rather skeptical that it would actually do so (even if it needs to 
-load twice due to register pressure, why not just use lwz both times?), 
-and there's probably many other places that would break if it did, but I 
-wasn't up for digging around GCC to prove otherwise.
+> On Thu, 2007-05-03 at 09:44, Kumar Gala wrote:
+>> On May 2, 2007, at 4:53 PM, Jon Loeliger wrote:
+>>
+>>> From: Jason Jin <jason.jin@freescale.com>
+>>>
+>>> HD interface and AC97 interface share some pins and they are
+>>> enabled at
+>>> the same time, In order to use AC97 interface, we need to disable
+>>> the HD
+>>> interface first.
+>>>
+>>> Signed-off-by:Jason Jin<jason.jin@freescale.com>
+>>> Acked-by: Jon Loeliger <jdl@freescale.com>
+>>> ---
+>>>  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    7 ++++++-
+>>>  1 files changed, 6 insertions(+), 1 deletions(-)
+>>
+>> Is the HD feature not used at all?  Is there a AC97 Driver CONFIG_
+>> that makes sense to wrap that with?  Just wondering about the mutual
+>> exclusion (and how to provide flexibility to the user).
+>>
+>> - k
+>
+>
+> The ULI supports both the HD and AC97 interfaces, but the 8641
+> only supports the AC97 interface.  Thus we can straight disable
+> the HD and convert/configure the shared pins to be AC97.  Thus,
+> there is no real CONFIG_ need at all.  It's only AC97.  And then
+> ultimately, the presence of sound support is controlled by
+> the ALSA config options as per normal.
 
-Plus, that wouldn't synchronize the bd_info read with the buffer data reads.
+Ok.  I'm guessing HD here isn't hard disk, but some audio thing.
 
--Scott
+- k
