@@ -1,17 +1,20 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id ABC7BDE04C
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 22:00:36 +1000 (EST)
-Message-ID: <4639CF44.6020608@ru.mvista.com>
-Date: Thu, 03 May 2007 16:02:12 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: powerpc_flash_init(), wtf!?
-References: <20070501051804.GB3881@localhost.localdomain>	<20070503103534.63ff67b6@localhost.localdomain>
-	<20070503070358.GA9430@localhost.localdomain>
-In-Reply-To: <20070503070358.GA9430@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D9968DDEDC
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 22:24:07 +1000 (EST)
+Subject: Re: patches for 2.6.22
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
+References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-Rp0Epr26xYui4Pi4aJso"
+Date: Thu, 03 May 2007 14:25:05 +0200
+Message-Id: <1178195106.13233.108.camel@johannes.berg>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,32 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
 
-David Gibson wrote:
+--=-Rp0Epr26xYui4Pi4aJso
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
->>>Unless someone who actually knows how this code was intended to be
->>>used can suggest a more polite way of fixing it.
+Hi,
 
->>I guess, the idea was for this stuff to be updated once one of the
->>dts inside boot/ would have physmap nodes added. I have
->>rom/physmap[dts] rehaul in my TODO list, but it has (so far at
->>least) little chance to happen during this merge window. Yet, if
->>someone has suggestions and/or some interest for this to be cured,
->>it will gain priority. Otherwise, I'll replace actual erroneous code
->>with kind of rant that it's up to BSP code to take care of
->>of_devices to be registered, using of_platform_bus_probe() or other
->>way.
+I'll reply to this message with 3 more patches that I will send as soon
+as akpm sends Rafael's swsusp patches from -mm to Linus. Please take a
+look anyway, only some register_nosave_region{_late,}() calls are in
+these patches that are not possible yet.
 
-> I'm having some trouble parsing that paragraph.  At this stage I don't
-> see any reason to hold off on tearing out arch/powerpc/sysdev/rom.c,
-> any necessary changes to replace it will go in the platform code or
+I'd love to have the G5 suspend merged even though nvidiafb still breaks
+it, I do think it's a bug in nvidiafb and not the generic code.
 
-    It doesn't seem a flexible enough approach. We could continue using 
-platform devices then.
+johannes
 
-> other places.
+--=-Rp0Epr26xYui4Pi4aJso
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-    Any ideas where else?
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-WBR, Sergei
+iD8DBQBGOdSh/ETPhpq3jKURAuxQAJ9a0e4WozFwfIi2CfKvO2j3EYJjmwCguFia
+pCchm702l8EzIGqIJ9WqqJ0=
+=Rn4w
+-----END PGP SIGNATURE-----
+
+--=-Rp0Epr26xYui4Pi4aJso--
