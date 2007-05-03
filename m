@@ -1,18 +1,28 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17977.9796.15991.630737@cargo.ozlabs.ibm.com>
-Date: Thu, 3 May 2007 10:01:08 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powermac: support G5 CPU hotplug
-In-Reply-To: <1178143429.17299.7.camel@localhost.localdomain>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
+	[151.189.21.44])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 58467DDFB1
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 10:06:15 +1000 (EST)
+In-Reply-To: <1178150380.17299.34.camel@localhost.localdomain>
 References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
 	<1178086872.13233.27.camel@johannes.berg>
 	<17976.28170.695715.416339@cargo.ozlabs.ibm.com>
 	<1178116438.13233.65.camel@johannes.berg>
 	<1178143429.17299.7.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>
+	<8dffc34312d10f0f93c7adfe9ec60003@kernel.crashing.org>
+	<1178150380.17299.34.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <3b16ca8bab1f2f05ea9c1f25e1010464@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powermac: support G5 CPU hotplug
+Date: Thu, 3 May 2007 02:05:52 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,22 +32,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt writes:
+>>> They have, but the cache flush is not trivial to do (and might imply
+>>> access to non documented bits).
+>>
+>> It is (publicly) documented just fine :-)
+>
+> Ah good... you happen to have a pointer ? Last I looked, it wasn't ...
 
-> On Wed, 2007-05-02 at 16:33 +0200, Johannes Berg wrote:
-> > On Wed, 2007-05-02 at 20:55 +1000, Paul Mackerras wrote:
-> > 
-> > > Ultimately we want to put the disabled cpus in sleep mode, but that
-> > > will require a suitable cache flush routine.
-> > 
-> > I don't have any docs for the particular processors the G5s have, do
-> > they have a sleep mode?
-> 
-> They have, but the cache flush is not trivial to do (and might imply
-> access to non documented bits). So let's put that on the to-do list and
-> stick to NAP for now while I dig something.
+It's in the UM, search for "L2 cache flush".
 
-Hmmm, I went looking in the 970FX manual for sleep mode and didn't
-find it, only nap and doze...
 
-Paul.
+Segher
