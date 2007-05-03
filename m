@@ -1,15 +1,15 @@
-Return-Path: <dale@farnsworth.org>
-Resent-Message-ID: <20070503051037.GA7936@xyzzy.farnsworth.org>
-Date: Wed, 2 May 2007 22:08:22 -0700
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] powerpc: check cache coherency of kernel vs firmware
-Message-ID: <20070503050822.GA7491@xyzzy.farnsworth.org>
-References: <20070502215938.GF27253@xyzzy.farnsworth.org>
-	<20070503132824.76b15c67.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070503132824.76b15c67.sfr@canb.auug.org.au>
-Cc: Linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 68D64DDFE4
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 15:19:07 +1000 (EST)
+Date: Thu, 3 May 2007 15:19:05 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] iSeries: suppress build warning in lparmap.c
+Message-Id: <20070503151905.e60226e0.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,19 +19,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 03, 2007 at 01:28:24PM +1000, Stephen Rothwell wrote:
-> On Wed, 2 May 2007 14:59:38 -0700 "Dale Farnsworth" <dale@farnsworth.org> wrote:
-> >
-> > +#ifdef CONFIG_CHECK_CACHE_COHERENCY
-> > +#endif /* CONFIG_CHECK_CACHE_COHERENCY */
-> 
-> These ...
-> 
-> > +config CHECK_COHERENT_CACHE
-> 
-> don't match this.
+lparmap.c: Assembler messages:
+lparmap.c:51: Warning: ignoring changed section attributes for .text
 
-Oops.  Brown paper bag time.
+Idea from Segher Boessenkool.
 
-Thanks,
--Dale
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/kernel/lparmap.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/arch/powerpc/kernel/lparmap.c b/arch/powerpc/kernel/lparmap.c
+index 584d1e3..af11285 100644
+--- a/arch/powerpc/kernel/lparmap.c
++++ b/arch/powerpc/kernel/lparmap.c
+@@ -10,7 +10,8 @@
+ #include <asm/pgtable.h>
+ #include <asm/iseries/lpar_map.h>
+ 
+-const struct LparMap __attribute__((__section__(".text"))) xLparMap = {
++/* The # is to stop gcc trying to make .text nonexecutable */
++const struct LparMap __attribute__((__section__(".text #"))) xLparMap = {
+ 	.xNumberEsids = HvEsidsToMap,
+ 	.xNumberRanges = HvRangesToMap,
+ 	.xSegmentTableOffs = STAB0_PAGE,
+-- 
+1.5.1.3
