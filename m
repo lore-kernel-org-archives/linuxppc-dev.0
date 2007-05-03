@@ -1,23 +1,19 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id DB463DDFA8
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 May 2007 04:17:43 +1000 (EST)
-Message-ID: <463A27A6.5050601@ru.mvista.com>
-Date: Thu, 03 May 2007 22:19:18 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <mgreer@mvista.com>
+Date: Thu, 3 May 2007 11:44:02 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 3/13] powerpc: Add bootwrapper support for Marvell/mv64x60
+	hostbridge
+Message-ID: <20070503184402.GA5600@mag.az.mvista.com>
+References: <20070425234630.GA4046@mag.az.mvista.com>
+	<20070425235619.GE4046@mag.az.mvista.com>
+	<17969.37331.228482.225919@cargo.ozlabs.ibm.com>
+	<20070427220245.GC14490@mag.az.mvista.com>
+	<17977.29234.367271.820951@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: powerpc_flash_init(), wtf!?
-References: <20070501051804.GB3881@localhost.localdomain>
-	<4639CBD8.6010205@ru.mvista.com>
-	<20070503123055.GE26659@localhost.localdomain>
-	<4639DDE1.40904@ru.mvista.com>
-	<71e4c68de5240a652b561d8cfa2e05f3@kernel.crashing.org>
-	<463A1941.3090608@ru.mvista.com>
-	<4e36fd0fc67f14fc4ff2178468c053f0@kernel.crashing.org>
-In-Reply-To: <4e36fd0fc67f14fc4ff2178468c053f0@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17977.29234.367271.820951@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,77 +23,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+On Thu, May 03, 2007 at 03:25:06PM +1000, Paul Mackerras wrote:
+> Mark A. Greer writes:
+> 
+> > Well, the firmware just doesn't do all the init that's required.  And,
+> > some of the init that it does do is wrong.  For example, the window for
+> > the MPSC (serial ctlr) to access main memory isn't set up so the kernel
+> > mpsc driver can't dma.  There are several other examles.
+> > 
+> > All of this init should be in the firmware but its Motorola/ECC's
+> > firmware and I/we have no control over it.  Given that, I/we have to do
+> > the init somewhere.  Either in the kernel or the bootwrapper.
+> > I vote for the bootwrapper but then your vote is the only one that actually
+> > counts.  :)
+> 
+> How much of the setup is actually necessary for the bootwrapper to
+> run, and how much could be deferred to setup_arch() time in the
+> kernel?
 
-Segher Boessenkool wrote:
+Actually, none of the config code should be needed by the bootwrapper
+itself because the bootwrapper mpsc and i2c drivers use PIO (so accessing
+memory isn't an issue).  The "get info" type routines are still needed.
 
->>>>     NOR flashes are at the same level as the "memory" node (where 
->>>> else you
->>>> expect them to appear I wonder?).
+> If nothing else, doing it in the kernel means that the code
+> and data for it exist in compressed form in the zImage rather than
+> uncompressed form. :)
 
->>> The "memory" node doesn't describe the RAM devices;
->>> it describes the RAM address space, instead.  You can
->>> have separate nodes for the actual devices.
+mv64x60.o is 4804 bytes, .text is 2188 bytes, .data 64 bytes, .bss 0
+bytes.  So we're probably only saving ~1-2KB by compressing.
 
->>    If you can remember our prior discussion, the "rom" nodes don't 
->> describe "the actual devices" as well, only their mapping into the 
->> address space. ;-)
+> Also, how many lines of code (including definitions) would we avoid
+> having in the kernel by having this stuff in the bootwrapper?
 
-> I don't remember that no.  And having a node for the
+Its pretty much 1:1.  Whatever is in the bootwrapper (including
+#define's) isn't needed in the kernel.
 
-    That's a pity. :-)
+> Another question - is this setup something that will need to be done
+> differently for different boards using the mv64x60, or is the same
+> setup needed for all applications of the mv64x60?
 
-> "ROM address space" isn't useful in the same way as
-> having one for the "RAM address space" is -- flash
-> memory is not a resource you randomly hand out to
-> anyone who wants a piece.  You also need to know some
-> _specifics_ about a certain ROM device before you can
-> map it into CPU address space properly.
+I expect that the setup will be done the same for all of the boards
+that need it.  Not all of the boards will need it, though.  It depends
+on their firmware.  The config code is filling the gap between what the
+firmware should have done and what the kernel drivers require (i.e.,
+allowing the ctlrs to access system memory and pci mem/io space).
 
-    Almost all of that is handled by MTD subsys transparently by probing.
-What one *must* supply are the bank width and the address mapping (may 
-optionally supply a probe type).
+Paul, I'm a little perplexed by you wanting this code pushed back into
+the kernel.  A while back there was a definite desire to push stuff like
+this out of the kernel (mainly by Ben).  I tend to agree with Ben on
+this.  Either way, it would good to have everyone pushing in the same
+direction. :)
 
->>> Now for ROM/flash/NVRAM, nodes _can_ appear directly
->>> under the root, but only if that is where they belong
->>> on your platform (i.e., they sit directly on the "system
->>> bus" (whatever that means on your platform); on most
->>> platforms though, such devices are connected via some
->>> I/O busses, so the nodes should appear under their
->>> respective controllers.
-
->>    Yeah, you're right here, and I've probably misunderstood what 
->> "memory" node was. In fact, the flash in my system resides on the same 
->> local bus as RAM, so the proper place would be behind the "lbc" (or 
->> whatever -- it doesn't exist as yet) node on the "soc" bus.  Do you 
->> think I need to go and document it as well for such cause? :-]
-
-> If the "lbc" isn't software visible, you can/should put
-> the RAM/ROM nodes directly under the SoC node.
-
-    It has a register set of its own.
-
->>> Now, back to the case at hand -- it would be nice to
->>> have a platform-independent way to probe the simple
->>> case -- a single direct-mapped device -- but it isn't
->>> obvious how to make that not clash with the not-so-simple
->>> cases.  A helper function that does the work but is
->>> only called by the platforms that want it would do, I
->>> suppose?
-
->>    It probably doesn't even worth a helper (since out of those 15 
->> lines, 6 were pretty useless anyway)
-
-> Sure -- but since it is such a common device to have (a
-> simple NOR boot flash), it would be nice to avoid any
-> code duplication.  Compare to the serial port and RTC
-> situation.
-
-    UARTs should be registered as of_device by the same bus probing mechanism 
-(and there was an attempt at OF based driver, IIRC). 
-arch/powerpc/kernel/legacy_serial.c only facilitates the old, platform device 
-based approach.
-
-> Segher
-
-WBR, Sergei
+Mark
