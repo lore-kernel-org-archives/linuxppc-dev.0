@@ -1,17 +1,16 @@
 Return-Path: <dale@farnsworth.org>
 From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Wed, 2 May 2007 19:55:16 -0700
+Date: Wed, 2 May 2007 19:57:18 -0700
 To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 6/13] powerpc: Add arch/powerpc interrupt handler for
-	mv64x60
-Message-ID: <20070503025515.GA26019@xyzzy.farnsworth.org>
+Subject: Re: [PATCH 10/13] powerpc: Add arch/powerpc mv64x60 PCI setup
+Message-ID: <20070503025718.GC26019@xyzzy.farnsworth.org>
 References: <20070425234630.GA4046@mag.az.mvista.com>
-	<20070425235858.GH4046@mag.az.mvista.com>
-	<20070502213830.GA27253@xyzzy.farnsworth.org>
-	<20070503114705.a8f305ec.sfr@canb.auug.org.au>
+	<20070426000107.GL4046@mag.az.mvista.com>
+	<20070502214609.GE27253@xyzzy.farnsworth.org>
+	<20070503121358.aabc2755.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070503114705.a8f305ec.sfr@canb.auug.org.au>
+In-Reply-To: <20070503121358.aabc2755.sfr@canb.auug.org.au>
 Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,23 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 03, 2007 at 11:47:05AM +1000, Stephen Rothwell wrote:
-> On Wed, 2 May 2007 14:38:30 -0700 "Dale Farnsworth" <dale@farnsworth.org> wrote:
+On Thu, May 03, 2007 at 12:13:58PM +1000, Stephen Rothwell wrote:
+> On Wed, 2 May 2007 14:46:09 -0700 "Dale Farnsworth" <dale@farnsworth.org> wrote:
 > >
-> > +DEFINE_SPINLOCK(mv64x60_lock);
+> > +DECLARE_MUTEX(mv64x60_hs_lock);
 > 
-> Does this need to be global (it is not declared in the header file)?
+> Does this need to be global (it is not declared in a header file)?
 
-No, it doesn't.  I made it static.
+Nope.  Fixed.
 
-> > +static u32 mv64x60_cached_low_mask  = 0;
-> > +static u32 mv64x60_cached_high_mask = MV64X60_HIGH_GPP_GROUPS;
-> > +static u32 mv64x60_cached_gpp_mask  = 0;
+> > +	np = of_find_compatible_node(NULL, NULL, "mv64x60");
+> > +	if (!np)
+> > +		return 0;
+> > +
+> > +	pdev = platform_device_register_simple("mv64x60", 0, NULL, 0);
+> > +	if (IS_ERR(pdev))
+> > +		return PTR_ERR(pdev);
 > 
-> Don't initialise things to zero, please.  If you feel it is necessary,
-> put the "= 0" in a comment.  But generally we know that globals are
-> initially zero.
+> This error leaks a reference count on np.
 
-OK.  Thanks.
+Good find.  Fixed.
+
+Stephen, thanks for taking the time to review and comment.
+I'll wait to see what other comments I get before reposting.
 
 -Dale
