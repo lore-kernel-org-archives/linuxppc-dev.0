@@ -1,20 +1,20 @@
-Return-Path: <mgreer@mvista.com>
-Date: Thu, 3 May 2007 12:00:27 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [PATCH 3/13] powerpc: Add bootwrapper support for Marvell/mv64x60
-	hostbridge
-Message-ID: <20070503190027.GB5600@mag.az.mvista.com>
-References: <20070425234630.GA4046@mag.az.mvista.com>
-	<20070425235619.GE4046@mag.az.mvista.com>
-	<17969.37331.228482.225919@cargo.ozlabs.ibm.com>
-	<20070427220245.GC14490@mag.az.mvista.com>
-	<17977.29234.367271.820951@cargo.ozlabs.ibm.com>
-	<20070503184402.GA5600@mag.az.mvista.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 307DDDDF09
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 May 2007 05:04:01 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] [POWERPC] 8xx: mpc885ads pcmcia support
+Date: Thu, 3 May 2007 21:03:33 +0200
+References: <20070503065435.4533.64938.stgit@localhost.localdomain>
+	<200705030948.03984.arnd@arndb.de>
+	<5a7e02f6d1520d8ad02e28ace218981c@kernel.crashing.org>
+In-Reply-To: <5a7e02f6d1520d8ad02e28ace218981c@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070503184402.GA5600@mag.az.mvista.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200705032103.33809.arnd@arndb.de>
+Cc: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,22 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 03, 2007 at 11:44:02AM -0700, Mark A. Greer wrote:
-> On Thu, May 03, 2007 at 03:25:06PM +1000, Paul Mackerras wrote:
-> > Mark A. Greer writes:
-> > Another question - is this setup something that will need to be done
-> > differently for different boards using the mv64x60, or is the same
-> > setup needed for all applications of the mv64x60?
-> 
-> I expect that the setup will be done the same for all of the boards
-> that need it.  Not all of the boards will need it, though.  It depends
-> on their firmware.  The config code is filling the gap between what the
-> firmware should have done and what the kernel drivers require (i.e.,
+On Thursday 03 May 2007, Segher Boessenkool wrote:
+> > For example, you could make this
+> >
+> > =A0=A0=A0=A0=A0=A0compatible =3D "8xx\0mpc885ads";
+>=20
+> "mpc885ads-pcmcia\0mpc8xx-pcmcia" or something like that.
 
-> allowing the ctlrs to access system memory and pci mem/io space).
+Right. I can never remember what goes first...
 
-I'll clarify the last line: "allowing ctlrs on the bridge to access
-system memory, allowing the cpu to access pci mem/io space, and allowing
-pci devices to access system memory via pci mem reference."
-
-Mark
+	Arnd <><
