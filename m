@@ -1,28 +1,22 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
-	[151.189.21.50])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id ECDCFDE01B
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 May 2007 03:26:02 +1000 (EST)
-In-Reply-To: <463A14E6.5010608@ru.mvista.com>
-References: <20070501051804.GB3881@localhost.localdomain>
-	<20070503103534.63ff67b6@localhost.localdomain>
-	<20070503070358.GA9430@localhost.localdomain>
-	<4639CF44.6020608@ru.mvista.com>
-	<20070503122213.GD26659@localhost.localdomain>
-	<4639E389.4040604@ru.mvista.com>
-	<a8625bde363025ce23393d5b2bb6ec07@kernel.crashing.org>
-	<463A14E6.5010608@ru.mvista.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <e6d461fe5adb92e08ba5bf920c4027fb@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: powerpc_flash_init(), wtf!?
-Date: Thu, 3 May 2007 19:25:55 +0200
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 79AD6DE039
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 May 2007 03:26:58 +1000 (EST)
+Date: Thu, 3 May 2007 12:28:19 -0500
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] 86xx: Enable the AC97 interface on 8641D board.
+Message-ID: <20070503172819.GA32653@lixom.net>
+References: <1178142818.32136.51.camel@ld0161-tx32>
+	<08D3A1CE-12E0-4759-B055-DE227EA4135E@kernel.crashing.org>
+	<1178207725.17201.33.camel@ld0161-tx32>
+	<20070503161000.GA31881@lixom.net>
+	<1178209046.17201.55.camel@ld0161-tx32>
+	<3C4D879A-E756-45EA-AB67-70902797ED35@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3C4D879A-E756-45EA-AB67-70902797ED35@kernel.crashing.org>
+From: olof@lixom.net (Olof Johansson)
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,26 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>     BTW, is it legal/appropriate to specify device (not bus) types 
->>> for
->>> of_platform_bus_probe()?
->
->> In almost all cases you should probe on "name"/"compatible",
->
->    Probing on name is not a good idea, since those are mostly generic.
+On Thu, May 03, 2007 at 11:19:21AM -0500, Kumar Gala wrote:
+> 
+> On May 3, 2007, at 11:17 AM, Jon Loeliger wrote:
+> >>Why not do this in u-boot instead?
+> >
+> >Why do it there?  We'd have to do it _again_ in Linux
+> >if we didn't come in from U-Boot anyway.
+> 
+> I agree with Jon here.  This is in board specific code so I don't see  
+> any issue with it.
 
-The OF standard tells you to probe on "name" before
-probing on "compatible".  If the "name" in a certain
-node is generic, that doesn't harm at all, since you
-probe for the more specific names only.
-
->> and not use "device_type" at all.
->
->    Heh, SPARC device trees I saw seem to not have this "useless" prop 
-> at all. :-)
-
-Well they have it in the nodes for which they _should_
-have it, but not anywhere else no.
+Good to know. I'll keep that in mind myself for future reference, no
+need to waste effort trying to get clean board ports.
 
 
-Segher
+-Olof
