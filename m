@@ -1,27 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
-	[151.189.21.50])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 76ED4DDEB9
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 10:48:44 +1000 (EST)
-In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302D5E195@az33exm25.fsl.freescale.net>
-References: <20070425213700.GA8814@blade.az.mvista.com><20070426000852.GA2193@localhost.localdomain><20070426003748.GA30730@blade.az.mvista.com><9903F55A-5E4E-42CE-8C27-6B7143B9FE25@kernel.crashing.org><4630D9AB.2040605@mvista.com>
-	<e359e43198096bc73cdac058c6e5ad6d@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302D5DC6F@az33exm25.fsl.freescale.net>
-	<567cddf8855d809f2e0c5b4101c2c15a@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302D5E195@az33exm25.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <1624cd331b61117d7251f70caaa86292@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: RFC: new device types in the device tree (RE: [PATCH] powerpc:
-	Add EDAC platform devices for 85xx)
-Date: Thu, 3 May 2007 02:48:19 +0200
-To: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au,
-	bluesmoke-devel@lists.sourceforge.net
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] add smp_call_function_map and smp_call_function_single
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Will Schmidt <will_schmidt@vnet.ibm.com>
+In-Reply-To: <20070502171234.13831.8483.stgit@farscape.rchland.ibm.com>
+References: <20070502171234.13831.8483.stgit@farscape.rchland.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-M3EfaXDWN71yawkPsTw9"
+Date: Thu, 03 May 2007 10:53:58 +1000
+Message-Id: <1178153638.5338.2.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org,
+	Kevin Corry <kevcorry@us.ibm.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,93 +22,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> The 1275 spec is 'Open Firmware centric' in that it says
->>> you don't need a device_type if the node is not used
->>> by Open Firmware.
->>
->> It is "Open firmware centric" in every way; it is
->> the Open firmware definition after all.
->>
->> "device_type" specifies what firmware interfaces a
->> node implements.  "name" and "compatible" are for
->> the client (i.e., OS, bootloader, etc.) to use for
->> matching drivers to device nodes.
->
-> The flat device tree standard (i.e. booting-without-of.txt)
-> certainly inherited stuff from IEEE-1275, but can diverge
-> if need be.
 
-It shares the kernel interface.  You cannot go diverge
-on fundamental things.
+--=-M3EfaXDWN71yawkPsTw9
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> name is always optional (as defined by b-w-of.txt)
+On Wed, 2007-05-02 at 12:12 -0500, Will Schmidt wrote:
+> Add a new function named smp_call_function_single().  This matches a gene=
+ric
+> prototype from include/linux/smp.h.
+>=20
+> Add a function smp_call_function_map().  This is, for the most part, a re=
+name
+> of smp_call_function, with some added cpumask support.  smp_call_function=
+ and
+> smp_call_function_single call into smp_call_function_map.
+>=20
+> Lightly tested on 970mp (blade), power4 and power5.
+>=20
+> Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
+> cc: Anton Blanchard <anton@samba.org>
+> ---
+>=20
+>  arch/powerpc/kernel/smp.c |   73 ++++++++++++++++++++++++++++++++-------=
+------
+>  1 files changed, 52 insertions(+), 21 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> index 924d692..4878588 100644
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@ -176,10 +176,10 @@ static struct call_data_struct {
+>  #define SMP_CALL_TIMEOUT	8
+> =20
+>  /*
+> - * This function sends a 'generic call function' IPI to all other CPUs
+> - * in the system.
+> + * These functions send a 'generic call function' IPI to other online
+> + * CPUS in the system.
+>   *
+> - * [SUMMARY] Run a function on all other CPUs.
+> + * [SUMMARY] Run a function on other CPUs.
+>   * <func> The function to run. This must be fast and non-blocking.
+>   * <info> An arbitrary pointer to pass to the function.
+>   * <nonatomic> currently unused.
 
-Where does it say that?  "name" is always required!  In
-the newer flat tree format, it's even impossible to
-create a node without "name".
+While you're there, or as a separate patch, can you fix up this
+not-quite-kernel-doc commenting?
 
-> There are no interfaces or methods with the device trees
-> defined in DTS files.  Given that, does the the device_type
-> property have any value at all?
+cheers
 
-Not much, but still a bit, like you can find all
-"serial" devices if you want to.  And of course,
-many bindings require a specific "device_type",
-so you should have one.
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-> There are a slew of device_types defined in the DTS files
-> and in booting-without-of.txt.  Should all these be
-> removed?
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
-Most should yes.
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
 
->> It typically makes no sense to create a new "device_type"
->> value for anything else than very generic classes of
->> device, where you can drive the device without knowing
->> anything else than what is defined in the binding for
->> that "device_type".
->
-> What types devices get a device_type and which don't?  Linux
-> drives the devices based on "compatible".
+--=-M3EfaXDWN71yawkPsTw9
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-No, Linux selects which driver to use based on "compatible".
-That's a crucial difference.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
->> And the associated methods and anything else that is
->> needed.  It would be a big mistake to create incompatibilities
->> with "real OF" where those can be avoided just as easily.
->
-> But there are no methods.
+iD8DBQBGOTKmdSjSd0sB4dIRAk/tAKCrUP3u/PcpemW4OI0Lz5qT19ZZMgCcDVIQ
++TBquWpD2brTlDs+7m30dS0=
+=+vsK
+-----END PGP SIGNATURE-----
 
-Again, you should not create incompatibilities where
-not needed.  Since "device_type" is primarily useful
-for (talking to / using) the firmware, and hardly
-useful at all for the flat device tree, the flat tree
-"standard" shouldn't define new "device_type"s without
-making it a real OF binding.
-
-> Even if the kernel does not use 'device_type', the property
-> still seems to have some value in that it specifies a
-> required set of properties and their values for various
-> classes of devices.
-
-Sure.  "network", "block", "serial", etc.
-
-> Take a flash device for instance--
-
-Yes, "flash" could be made into a nice generic binding
-(except that no one has succeeded so far, there are just
-way too many different kinds of flash/rom/nvram, and
-many ways to hook them up).
-
-> I suppose we can delete the device_type property and the
-> kernel will still be happy, but it's nice to have a standard
-> set of properties that everyone uses when describing a given
-> class of device.  The device_type is just a convenient
-> identifer to refer to this device class and set of properties.
-
-Unfortunately, there is no standard "device_type" for
-flash yet.
-
-
-Segher
+--=-M3EfaXDWN71yawkPsTw9--
