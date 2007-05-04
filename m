@@ -1,18 +1,21 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id C493EDDED3
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 May 2007 13:14:47 +1000 (EST)
-Date: Thu, 3 May 2007 22:16:12 -0500
-To: paulus@samba.org
-Subject: [PATCH v3] powerpc: Show current speed in /proc/cpuinfo
-Message-ID: <20070504031611.GB5567@lixom.net>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id A82F2DDEF0
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 May 2007 13:40:18 +1000 (EST)
+Date: Fri, 4 May 2007 13:39:57 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: olof@lixom.net (Olof Johansson)
+Subject: Re: [PATCH v3] powerpc: Show current speed in /proc/cpuinfo
+Message-Id: <20070504133957.1955b1db.sfr@canb.auug.org.au>
+In-Reply-To: <20070504031611.GB5567@lixom.net>
 References: <20070427084118.GA8842@lixom.net>
 	<20070430035339.GA15771@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070430035339.GA15771@lixom.net>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, arnd@arndb.de
+	<20070504031611.GB5567@lixom.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__4_May_2007_13_39_57_+1000_q1zbmJEcmBEGng/3"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,61 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On other architectures, the frequency in /proc/cpuinfo moves with cpufreq
-changes. It makes sense to do the same on powerpc to keep users from
-getting confused.
+--Signature=_Fri__4_May_2007_13_39_57_+1000_q1zbmJEcmBEGng/3
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-Change the format to three decimals, having full Hz granularity is silly
-these days. Also specify in output if it's cpufreq or firmware-reported:
+On Thu, 3 May 2007 22:16:12 -0500 olof@lixom.net (Olof Johansson) wrote:
+>
+> +	/* ppc_proc_freq is in MHz */
+                               ^^^
+Actually Hz :-)
 
-clock           : 1250.000MHz (from firmware)
-or:
-clock           : 2500.000MHz (actual speed)
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Fri__4_May_2007_13_39_57_+1000_q1zbmJEcmBEGng/3
+Content-Type: application/pgp-signature
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
+iD8DBQFGOqsfFdBgD/zoJvwRAnYRAKCHAxqRUrJ55XLiqsc3MK1Ghg+HjQCfXuCq
+xkLc110EqW9zT53OTrDAVPs=
+=B2rY
+-----END PGP SIGNATURE-----
 
-Index: 2.6.21/arch/powerpc/kernel/setup-common.c
-===================================================================
---- 2.6.21.orig/arch/powerpc/kernel/setup-common.c
-+++ 2.6.21/arch/powerpc/kernel/setup-common.c
-@@ -29,6 +29,7 @@
- #include <linux/root_dev.h>
- #include <linux/notifier.h>
- #include <linux/cpu.h>
-+#include <linux/cpufreq.h>
- #include <linux/unistd.h>
- #include <linux/serial.h>
- #include <linux/serial_8250.h>
-@@ -160,6 +161,7 @@ static int show_cpuinfo(struct seq_file 
- 	unsigned int pvr;
- 	unsigned short maj;
- 	unsigned short min;
-+	unsigned int freq;
- 
- 	if (cpu_id == NR_CPUS) {
- #if defined(CONFIG_SMP) && defined(CONFIG_PPC32)
-@@ -226,14 +228,18 @@ static int show_cpuinfo(struct seq_file 
- 	}
- #endif /* CONFIG_TAU */
- 
--	/*
--	 * Assume here that all clock rates are the same in a
--	 * smp system.  -- Cort
--	 */
-+	/* ppc_proc_freq is in MHz */
- 	if (ppc_proc_freq)
- 		seq_printf(m, "clock\t\t: %lu.%06luMHz\n",
- 			   ppc_proc_freq / 1000000, ppc_proc_freq % 1000000);
- 
-+	/* cpufreq_quick_get() is in kHz */
-+	freq = cpufreq_quick_get(cpu_id);
-+
-+	if (freq)
-+		seq_printf(m, "current-clock\t: %u.%03u000MHz\n",
-+			   freq / 1000, freq % 1000);
-+
- 	if (ppc_md.show_percpuinfo != NULL)
- 		ppc_md.show_percpuinfo(m, cpu_id);
- 
+--Signature=_Fri__4_May_2007_13_39_57_+1000_q1zbmJEcmBEGng/3--
