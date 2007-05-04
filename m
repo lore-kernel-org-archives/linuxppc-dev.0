@@ -1,12 +1,25 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 4 May 2007 17:14:13 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: powerpc: Fix some missing build dependencies in arch/powerpc/boot
-Message-ID: <20070504071413.GA8785@localhost.localdomain>
-MIME-Version: 1.0
+Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+	[217.147.92.249])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A3808DDF06
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 May 2007 17:45:14 +1000 (EST)
+Date: Fri, 4 May 2007 08:44:53 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Stefan Roese <ml@stefan-roese.de>
+Subject: Re: Correct location for ADC/DAC drivers
+Message-ID: <20070504074453.GA18212@flint.arm.linux.org.uk>
+References: <200705011435.45046.ml@stefan-roese.de>
+	<20070502133512.GK22585@pengutronix.de>
+	<20070502191101.GB16696@flint.arm.linux.org.uk>
+	<200705040811.43312.ml@stefan-roese.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <200705040811.43312.ml@stefan-roese.de>
+Sender: Russell King <rmk@arm.linux.org.uk>
+Cc: linuxppc-dev@ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,66 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch fixes a couple of missing dependencies in
-arch/powerpc/boot/Makefile.  First, it ensures that the zlib.h header
-is linked in before attempting to build gunzip_util.o, as it is,
-building gunzip_util.o usually works, but not always depending on make
-order.
+On Fri, May 04, 2007 at 08:11:42AM +0200, Stefan Roese wrote:
+> On Wednesday 02 May 2007 21:11, Russell King wrote:
+> > > > Is there a maintainer for this "drivers/mfd" directory?
+> > >
+> > > rmk
+> >
+> > I wouldn't go that far.  There's no real infrastructure there
+> > to maintain, so I'd actually say that the directory was
+> > maintainerless.  However, I'll own up to the UCB/MCP drivers
+> > in there.
+> 
+> So perhaps you could answer is you feel that these ADC & DAC chrdev device 
+> drivers would fit into this drivers/mfd directory, or are better suited for 
+> the drivers/char directory?
 
-Second, it makes the final images which are built using a dts
-dependent on that dts, so the image will be correctly rebuilt if the
-dts changes.  This in turn requires fixing the definition of the dts
-variable.  CONFIG_DEVICE_TREE from Kconfig will have quotes around it,
-which don't matter when passing the variable to a shell, but which
-need to be removed when incorporating it into a filename for make's
-use.
-
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-
----
- arch/powerpc/boot/Makefile |   13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
-
-Index: working-2.6/arch/powerpc/boot/Makefile
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/Makefile	2007-05-04 17:10:29.000000000 +1000
-+++ working-2.6/arch/powerpc/boot/Makefile	2007-05-04 17:10:30.000000000 +1000
-@@ -37,8 +37,8 @@ zlib       := inffast.c inflate.c inftre
- zlibheader := inffast.h inffixed.h inflate.h inftrees.h infutil.h
- zliblinuxheader := zlib.h zconf.h zutil.h
- 
--$(addprefix $(obj)/,$(zlib) main.o): $(addprefix $(obj)/,$(zliblinuxheader)) \
--		$(addprefix $(obj)/,$(zlibheader))
-+$(addprefix $(obj)/,$(zlib) gunzip_util.o main.o): \
-+	$(addprefix $(obj)/,$(zliblinuxheader)) $(addprefix $(obj)/,$(zlibheader))
- 
- src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
- 		ns16550.c serial.c simple_alloc.c div64.S util.S \
-@@ -167,16 +167,17 @@ $(obj)/zImage.initrd.ps3: vmlinux
- $(obj)/uImage: vmlinux $(wrapperbits)
- 	$(call if_changed,wrap,uboot)
- 
-+# CONFIG_DEVICE_TREE will have "" around it, make sure to strip them
- dts = $(if $(shell echo $(CONFIG_DEVICE_TREE) | grep '^/'),\
--       ,$(srctree)/$(src)/dts/)$(CONFIG_DEVICE_TREE)
-+	,$(srctree)/$(src)/dts/)$(CONFIG_DEVICE_TREE:"%"=%)
- 
--$(obj)/cuImage.%: vmlinux $(wrapperbits)
-+$(obj)/cuImage.%: vmlinux $(dts) $(wrapperbits)
- 	$(call if_changed,wrap,cuboot-$*,$(dts))
- 
--$(obj)/treeImage.%: vmlinux $(wrapperbits)
-+$(obj)/treeImage.%: vmlinux $(dts) $(wrapperbits)
- 	$(call if_changed,wrap,treeboot-$*,$(dts))
- 
--$(obj)/treeImage.initrd.%: vmlinux $(wrapperbits)
-+$(obj)/treeImage.initrd.%: vmlinux $(dts) $(wrapperbits)
- 	$(call if_changed,wrap,treeboot-$*,$(dts),,$(obj)/ramdisk.image.gz)
- 
- $(obj)/zImage:		$(addprefix $(obj)/, $(image-y))
+No idea; firstly I've long since deleted the email, secondly I've not much
+interest in the directory itself, and thirdly I've enough patches to review
+already.  Finally, I'm out all day today, including the evening.  I doubt
+I'll read any further email until the weekend.
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
