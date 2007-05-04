@@ -1,19 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 4 May 2007 11:28:35 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: powerpc_flash_init(), wtf!?
-Message-ID: <20070504012835.GA1914@localhost.localdomain>
-References: <20070501051804.GB3881@localhost.localdomain>
-	<20070503103534.63ff67b6@localhost.localdomain>
-	<20070503070358.GA9430@localhost.localdomain>
-	<4639CF44.6020608@ru.mvista.com>
-	<1178195353.6353.38.camel@localhost.localdomain>
-	<20070504043056.14ab94cf@localhost.localdomain>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id BF44DDDF69
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 May 2007 13:13:53 +1000 (EST)
+Date: Thu, 3 May 2007 22:15:15 -0500
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH v2] powerpc: Show current speed in /proc/cpuinfo
+Message-ID: <20070504031515.GA5567@lixom.net>
+References: <20070427084118.GA8842@lixom.net>
+	<20070430035339.GA15771@lixom.net>
+	<200705020148.07954.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070504043056.14ab94cf@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <200705020148.07954.arnd@arndb.de>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,33 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 04, 2007 at 04:30:56AM +0400, Vitaly Bordug wrote:
-> On Thu, 03 May 2007 22:29:13 +1000
-> Benjamin Herrenschmidt wrote:
+On Wed, May 02, 2007 at 01:48:07AM +0200, Arnd Bergmann wrote:
+> On Monday 30 April 2007, Olof Johansson wrote:
+> > On other architectures, the frequency in /proc/cpuinfo moves with cpufreq
+> > changes. It makes sense to do the same on powerpc to keep users from
+> > getting confused.
+> > 
+> > Change the format to three decimals, having full Hz granularity is silly
+> > these days. Also specify in output if it's cpufreq or firmware-reported:
+> > 
+> > clock ? ? ? ? ? : 1250.000MHz (from firmware)
+> > or:
+> > clock ? ? ? ? ? : 2500.000MHz (actual speed)
 > 
-> > 
-> > >     It doesn't seem a flexible enough approach. We could continue
-> > > using platform devices then.
-> > 
-> > The problem is trivial enough tho... who ends up creating an
-> > of_platform_device for that rom node ... to be picked up by the
-> > driver.
-> > 
-> > Creating of_platform devices is platform code responsibility... either
-> > by calling of_platform_bus_probe() (or whatever I called it ...) to
-> > generate them from known bus type or by creating them directly, that
-> > doesn't matter, that's still platform code business.
-> > 
-> Still, there is code duplication problem.
 > 
-> So, assuming we'd need 6 lines of code to do it properly in platform
-> code, we may face tens of different targets that require exactly the
-> same process to provide mtd of_devices stuff.
+> Good idea, but I'd be _very_ careful with changing any field in
+> /proc/cpuinfo. Having the extra text in there can easily confuse
+> parsers in poorly written user applications, maybe even in good ones ;-)
+> 
+> How about rather adding a new line in there for one of the fields, either
 
-So make a helper function.
+Yeah, good point. Actually, taking away the extra decimals is maybe a
+bad idea as well.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+I'll settle for clock/current-clock. See patch posted separately.
+
+
+Thanks,
+
+Olof
