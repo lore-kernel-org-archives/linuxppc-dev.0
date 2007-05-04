@@ -1,33 +1,33 @@
 Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 21DF1DDD07
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 May 2007 04:19:28 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l44IJP98011642
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 May 2007 14:19:25 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l44IJPkc175232
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 May 2007 12:19:25 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l44IJOQQ026494
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 May 2007 12:19:24 -0600
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B5803DDD08
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 May 2007 04:20:15 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l44IKB8c032221
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 May 2007 14:20:11 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l44IKBPm177202
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 May 2007 12:20:11 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l44IKBEq018701
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 May 2007 12:20:11 -0600
 Received: from [9.10.86.166] (zod.rchland.ibm.com [9.10.86.166])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	l44IJOUk026464
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 May 2007 12:19:24 -0600
-Subject: [PATCH 1/4] Add support for 750CL Holly board
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	l44IKAOw018667
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 May 2007 12:20:10 -0600
+Subject: [PATCH 2/4] Holly defconfig
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
 In-Reply-To: <1178302414.3026.202.camel@zod.rchland.ibm.com>
 References: <1178302414.3026.202.camel@zod.rchland.ibm.com>
 Content-Type: text/plain
-Date: Fri, 04 May 2007 13:14:29 -0500
-Message-Id: <1178302469.3026.204.camel@zod.rchland.ibm.com>
+Date: Fri, 04 May 2007 13:15:16 -0500
+Message-Id: <1178302516.3026.207.camel@zod.rchland.ibm.com>
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -38,444 +38,1081 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add PowerPC 750 Holly/Hickory platform support
+Holly/Hickory defconfig
 
 Signed-off-by: Stephen Winiecki <stevewin@us.ibm.com>
 Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 ---
- arch/powerpc/Kconfig                        |    2 
- arch/powerpc/platforms/embedded6xx/Kconfig  |   12 -
- arch/powerpc/platforms/embedded6xx/Makefile |    1 
- arch/powerpc/platforms/embedded6xx/holly.c  |  326 ++++++++++++++++++++++++++++
- arch/powerpc/platforms/embedded6xx/holly.h  |   24 ++
- drivers/net/tsi108_eth.h                    |    4 
- include/asm-powerpc/tsi108.h                |    4 
- 7 files changed, 371 insertions(+), 2 deletions(-)
+ arch/powerpc/configs/holly_defconfig | 1067 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 1067 insertions(+)
 
---- linux-2.6.orig/arch/powerpc/Kconfig
-+++ linux-2.6/arch/powerpc/Kconfig
-@@ -659,7 +659,7 @@ config MCA
- config PCI
- 	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx || PPC_86xx \
- 		|| PPC_MPC52xx || (EMBEDDED && (PPC_PSERIES || PPC_ISERIES)) \
--		|| MPC7448HPC2 || PPC_PS3
-+		|| MPC7448HPC2 || PPC_PS3 || HOLLY
- 	default y if !40x && !CPM2 && !8xx && !APUS && !PPC_83xx \
- 		&& !PPC_85xx && !PPC_86xx
- 	default PCI_PERMEDIA if !4xx && !CPM2 && !8xx && APUS
---- linux-2.6.orig/arch/powerpc/platforms/embedded6xx/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/embedded6xx/Kconfig
-@@ -25,11 +25,21 @@ config MPC7448HPC2
- 	help
- 	  Select MPC7448HPC2 if configuring for Freescale MPC7448HPC2 (Taiga)
- 	  platform
-+
-+config HOLLY
-+	bool "PPC750GX/CL with TSI10x bridge (Hickory/Holly)"
-+	select TSI108_BRIDGE
-+	select PPC_UDBG_16550
-+	select MPIC
-+	select MPIC_WEIRD
-+	help
-+	  Select HOLLY if configuring for an IBM 750GX/CL Eval
-+	  Board with TSI108/9 bridge (Hickory/Holly)
- endchoice
- 
- config TSI108_BRIDGE
- 	bool
--	depends on MPC7448HPC2
-+	depends on MPC7448HPC2 || HOLLY
- 	default y
- 
- config MPC10X_BRIDGE
---- linux-2.6.orig/arch/powerpc/platforms/embedded6xx/Makefile
-+++ linux-2.6/arch/powerpc/platforms/embedded6xx/Makefile
-@@ -3,3 +3,4 @@
- #
- obj-$(CONFIG_MPC7448HPC2)	+= mpc7448_hpc2.o
- obj-$(CONFIG_LINKSTATION)	+= linkstation.o ls_uart.o
-+obj-$(CONFIG_HOLLY)		+= holly.o
 --- /dev/null
-+++ linux-2.6/arch/powerpc/platforms/embedded6xx/holly.c
-@@ -0,0 +1,326 @@
-+/*
-+ * Board setup routines for the IBM 750GX/CL platform w/ TSI10x bridge
-+ *
-+ * Copyright 2007 IBM Corporation
-+ *
-+ * Stephen Winiecki <stevewin@us.ibm.com>
-+ * Josh Boyer <jwboyer@linux.vnet.ibm.com>
-+ *
-+ * Based on code from mpc7448_hpc2.c
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * version 2 as published by the Free Software Foundation.
-+ */
++++ linux-2.6/arch/powerpc/configs/holly_defconfig
+@@ -0,0 +1,1067 @@
++#
++# Automatically generated make config: don't edit
++# Linux kernel version: 2.6.21
++# Mon Apr 30 12:51:49 2007
++#
++# CONFIG_PPC64 is not set
++CONFIG_PPC32=y
++CONFIG_PPC_MERGE=y
++CONFIG_MMU=y
++CONFIG_GENERIC_HARDIRQS=y
++CONFIG_IRQ_PER_CPU=y
++CONFIG_RWSEM_XCHGADD_ALGORITHM=y
++CONFIG_ARCH_HAS_ILOG2_U32=y
++CONFIG_GENERIC_HWEIGHT=y
++CONFIG_GENERIC_CALIBRATE_DELAY=y
++CONFIG_GENERIC_FIND_NEXT_BIT=y
++CONFIG_PPC=y
++CONFIG_EARLY_PRINTK=y
++CONFIG_GENERIC_NVRAM=y
++CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
++CONFIG_ARCH_MAY_HAVE_PC_FDC=y
++CONFIG_PPC_OF=y
++CONFIG_PPC_UDBG_16550=y
++# CONFIG_GENERIC_TBSYNC is not set
++CONFIG_AUDIT_ARCH=y
++CONFIG_GENERIC_BUG=y
++# CONFIG_DEFAULT_UIMAGE is not set
 +
-+#include <linux/stddef.h>
-+#include <linux/kernel.h>
-+#include <linux/pci.h>
-+#include <linux/kdev_t.h>
-+#include <linux/console.h>
-+#include <linux/delay.h>
-+#include <linux/irq.h>
-+#include <linux/ide.h>
-+#include <linux/seq_file.h>
-+#include <linux/root_dev.h>
-+#include <linux/serial.h>
-+#include <linux/tty.h>
-+#include <linux/serial_core.h>
++#
++# Processor support
++#
++CONFIG_CLASSIC32=y
++# CONFIG_PPC_82xx is not set
++# CONFIG_PPC_83xx is not set
++# CONFIG_PPC_85xx is not set
++# CONFIG_PPC_86xx is not set
++# CONFIG_PPC_8xx is not set
++# CONFIG_40x is not set
++# CONFIG_44x is not set
++# CONFIG_E200 is not set
++CONFIG_6xx=y
++CONFIG_PPC_FPU=y
++# CONFIG_PPC_DCR_NATIVE is not set
++# CONFIG_PPC_DCR_MMIO is not set
++# CONFIG_ALTIVEC is not set
++CONFIG_PPC_STD_MMU=y
++CONFIG_PPC_STD_MMU_32=y
++# CONFIG_SMP is not set
++CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
 +
-+#include <asm/system.h>
-+#include <asm/time.h>
-+#include <asm/machdep.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
-+#include <asm/tsi108.h>
-+#include <asm/pci-bridge.h>
-+#include <asm/reg.h>
-+#include <mm/mmu_decl.h>
-+#include "holly.h"
-+#include <asm/tsi108_irq.h>
-+#include <asm/mpic.h>
-+#include <asm/of_platform.h>
++#
++# Code maturity level options
++#
++CONFIG_EXPERIMENTAL=y
++CONFIG_BROKEN_ON_SMP=y
++CONFIG_INIT_ENV_ARG_LIMIT=32
 +
-+#undef DEBUG
-+#ifdef DEBUG
-+#define DBG(fmt...) do { printk(fmt); } while(0)
-+#else
-+#define DBG(fmt...) do { } while(0)
-+#endif
++#
++# General setup
++#
++CONFIG_LOCALVERSION=""
++CONFIG_LOCALVERSION_AUTO=y
++CONFIG_SWAP=y
++CONFIG_SYSVIPC=y
++# CONFIG_IPC_NS is not set
++CONFIG_SYSVIPC_SYSCTL=y
++# CONFIG_POSIX_MQUEUE is not set
++# CONFIG_BSD_PROCESS_ACCT is not set
++# CONFIG_TASKSTATS is not set
++# CONFIG_UTS_NS is not set
++# CONFIG_AUDIT is not set
++# CONFIG_IKCONFIG is not set
++CONFIG_SYSFS_DEPRECATED=y
++# CONFIG_RELAY is not set
++CONFIG_BLK_DEV_INITRD=y
++CONFIG_INITRAMFS_SOURCE=""
++# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
++CONFIG_SYSCTL=y
++CONFIG_EMBEDDED=y
++CONFIG_SYSCTL_SYSCALL=y
++CONFIG_KALLSYMS=y
++# CONFIG_KALLSYMS_ALL is not set
++# CONFIG_KALLSYMS_EXTRA_PASS is not set
++CONFIG_HOTPLUG=y
++CONFIG_PRINTK=y
++CONFIG_BUG=y
++CONFIG_ELF_CORE=y
++CONFIG_BASE_FULL=y
++CONFIG_FUTEX=y
++CONFIG_EPOLL=y
++CONFIG_SHMEM=y
++CONFIG_SLAB=y
++CONFIG_VM_EVENT_COUNTERS=y
++CONFIG_RT_MUTEXES=y
++# CONFIG_TINY_SHMEM is not set
++CONFIG_BASE_SMALL=0
++# CONFIG_SLOB is not set
 +
-+#ifndef CONFIG_PCI
-+pci_dram_offset = PPC750GXCL_TSI_PCI_MEM_OFFSET;
-+#endif
++#
++# Loadable module support
++#
++# CONFIG_MODULES is not set
 +
-+extern int tsi108_setup_pci(struct device_node *dev);
-+extern void tsi108_pci_int_init(struct device_node *node);
-+extern void tsi108_irq_cascade(unsigned int irq, struct irq_desc *desc);
++#
++# Block layer
++#
++CONFIG_BLOCK=y
++CONFIG_LBD=y
++# CONFIG_BLK_DEV_IO_TRACE is not set
++# CONFIG_LSF is not set
 +
-+int holly_exclude_device(u_char bus, u_char devfn)
-+{
-+	if (bus == 0 && PCI_SLOT(devfn) == 0)
-+		return PCIBIOS_DEVICE_NOT_FOUND;
-+	else
-+		return PCIBIOS_SUCCESSFUL;
-+}
++#
++# IO Schedulers
++#
++CONFIG_IOSCHED_NOOP=y
++CONFIG_IOSCHED_AS=y
++CONFIG_IOSCHED_DEADLINE=y
++CONFIG_IOSCHED_CFQ=y
++CONFIG_DEFAULT_AS=y
++# CONFIG_DEFAULT_DEADLINE is not set
++# CONFIG_DEFAULT_CFQ is not set
++# CONFIG_DEFAULT_NOOP is not set
++CONFIG_DEFAULT_IOSCHED="anticipatory"
 +
-+static void holly_remap_bridge(void)
-+{
-+	u32 lut_val, lut_addr = 0x900, misc_cfg;
-+	int i;
++#
++# Platform support
++#
++# CONFIG_PPC_MULTIPLATFORM is not set
++CONFIG_EMBEDDED6xx=y
++# CONFIG_APUS is not set
++# CONFIG_PPC_MPC52xx is not set
++# CONFIG_PPC_MPC5200 is not set
++# CONFIG_PPC_CELL is not set
++# CONFIG_PPC_CELL_NATIVE is not set
++# CONFIG_PQ2ADS is not set
++# CONFIG_LINKSTATION is not set
++# CONFIG_MPC7448HPC2 is not set
++CONFIG_HOLLY=y
++CONFIG_TSI108_BRIDGE=y
++CONFIG_MPIC=y
++CONFIG_MPIC_WEIRD=y
++# CONFIG_PPC_I8259 is not set
++# CONFIG_PPC_RTAS is not set
++# CONFIG_MMIO_NVRAM is not set
++# CONFIG_PPC_MPC106 is not set
++# CONFIG_PPC_970_NAP is not set
++# CONFIG_PPC_INDIRECT_IO is not set
++# CONFIG_GENERIC_IOMAP is not set
 +
-+	printk(KERN_ERR "Remapping PCI bridge\n");
++#
++# CPU Frequency support
++#
++# CONFIG_CPU_FREQ is not set
++# CONFIG_TAU is not set
++# CONFIG_CPM2 is not set
 +
-+	/* Re-init the PCI bridge and LUT registers to have mappings that don't
-+	 * rely on PIBS */
-+	for (i = 0; i < 31; i++) {
-+		tsi108_write_reg(TSI108_PB_OFFSET + lut_addr, 0x00000201);
-+		lut_addr += 4;
-+		tsi108_write_reg(TSI108_PB_OFFSET + lut_addr, 0x0);
-+		lut_addr += 4;
-+	}
++#
++# Kernel options
++#
++# CONFIG_HIGHMEM is not set
++# CONFIG_HZ_100 is not set
++CONFIG_HZ_250=y
++# CONFIG_HZ_300 is not set
++# CONFIG_HZ_1000 is not set
++CONFIG_HZ=250
++CONFIG_PREEMPT_NONE=y
++# CONFIG_PREEMPT_VOLUNTARY is not set
++# CONFIG_PREEMPT is not set
++CONFIG_BINFMT_ELF=y
++CONFIG_BINFMT_MISC=y
++CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
++CONFIG_ARCH_FLATMEM_ENABLE=y
++CONFIG_ARCH_POPULATES_NODE_MAP=y
++CONFIG_SELECT_MEMORY_MODEL=y
++CONFIG_FLATMEM_MANUAL=y
++# CONFIG_DISCONTIGMEM_MANUAL is not set
++# CONFIG_SPARSEMEM_MANUAL is not set
++CONFIG_FLATMEM=y
++CONFIG_FLAT_NODE_MEM_MAP=y
++# CONFIG_SPARSEMEM_STATIC is not set
++CONFIG_SPLIT_PTLOCK_CPUS=4
++# CONFIG_RESOURCES_64BIT is not set
++CONFIG_ZONE_DMA_FLAG=1
++CONFIG_PROC_DEVICETREE=y
++# CONFIG_CMDLINE_BOOL is not set
++# CONFIG_PM is not set
++# CONFIG_SECCOMP is not set
++# CONFIG_WANT_DEVICE_TREE is not set
++CONFIG_ISA_DMA_API=y
 +
-+	/* Reserve the last LUT entry for PCI I/O space */
-+	tsi108_write_reg(TSI108_PB_OFFSET + lut_addr, 0x00000241);
-+	lut_addr += 4;
-+	tsi108_write_reg(TSI108_PB_OFFSET + lut_addr, 0x0);
++#
++# Bus options
++#
++CONFIG_ZONE_DMA=y
++CONFIG_GENERIC_ISA_DMA=y
++# CONFIG_PPC_INDIRECT_PCI is not set
++CONFIG_PCI=y
++CONFIG_PCI_DOMAINS=y
++# CONFIG_PCIEPORTBUS is not set
++# CONFIG_PCI_DEBUG is not set
 +
-+	/* Map PCI I/O space */
-+	tsi108_write_reg(TSI108_PCI_OFFSET + 0x210, 0x0);
-+	tsi108_write_reg(TSI108_PCI_OFFSET + 0x20c, 0x1);
++#
++# PCCARD (PCMCIA/CardBus) support
++#
++# CONFIG_PCCARD is not set
 +
-+	/* Map PCI CFG space */
-+	tsi108_write_reg(TSI108_PCI_OFFSET + 0x208, 0x0);
-+	tsi108_write_reg(TSI108_PCI_OFFSET + 0x204, 0x7c000000 | 0x01);
++#
++# PCI Hotplug Support
++#
++# CONFIG_HOTPLUG_PCI is not set
 +
-+	/* We don't need MEM32 and PRM remapping so disable them */
-+	tsi108_write_reg(TSI108_PCI_OFFSET + 0x214, 0x0);
-+	tsi108_write_reg(TSI108_PCI_OFFSET + 0x220, 0x0);
-+	tsi108_write_reg(TSI108_PCI_OFFSET + 0x230, 0x0);
++#
++# Advanced setup
++#
++# CONFIG_ADVANCED_OPTIONS is not set
 +
-+	/* Set P2O_BAR0 */
-+	tsi108_write_reg(TSI108_PCI_OFFSET + 0x14, 0x0);
-+	tsi108_write_reg(TSI108_PCI_OFFSET + 0x10, 0xc0000000);
++#
++# Default settings for advanced configuration options are used
++#
++CONFIG_HIGHMEM_START=0xfe000000
++CONFIG_LOWMEM_SIZE=0x30000000
++CONFIG_KERNEL_START=0xc0000000
++CONFIG_TASK_SIZE=0x80000000
++CONFIG_BOOT_LOAD=0x00800000
 +
-+	/* Init the PCI LUTs to do no remapping */
-+	lut_addr = 0x500;
-+	lut_val = 0x00000002;
++#
++# Networking
++#
++CONFIG_NET=y
 +
-+	for (i = 0; i < 32; i++) {
-+		tsi108_write_reg(TSI108_PCI_OFFSET + lut_addr, lut_val);
-+		lut_addr += 4;
-+		tsi108_write_reg(TSI108_PCI_OFFSET + lut_addr, 0x40000000);
-+		lut_addr += 4;
-+		lut_val += 0x02000000;
-+	}
-+	tsi108_write_reg(TSI108_PCI_OFFSET + 0x4c, 0x00007900);
++#
++# Networking options
++#
++# CONFIG_NETDEBUG is not set
++CONFIG_PACKET=y
++# CONFIG_PACKET_MMAP is not set
++CONFIG_UNIX=y
++CONFIG_XFRM=y
++CONFIG_XFRM_USER=y
++# CONFIG_XFRM_SUB_POLICY is not set
++# CONFIG_XFRM_MIGRATE is not set
++# CONFIG_NET_KEY is not set
++CONFIG_INET=y
++CONFIG_IP_MULTICAST=y
++# CONFIG_IP_ADVANCED_ROUTER is not set
++CONFIG_IP_FIB_HASH=y
++CONFIG_IP_PNP=y
++CONFIG_IP_PNP_DHCP=y
++CONFIG_IP_PNP_BOOTP=y
++# CONFIG_IP_PNP_RARP is not set
++# CONFIG_NET_IPIP is not set
++# CONFIG_NET_IPGRE is not set
++# CONFIG_IP_MROUTE is not set
++# CONFIG_ARPD is not set
++CONFIG_SYN_COOKIES=y
++# CONFIG_INET_AH is not set
++# CONFIG_INET_ESP is not set
++# CONFIG_INET_IPCOMP is not set
++# CONFIG_INET_XFRM_TUNNEL is not set
++# CONFIG_INET_TUNNEL is not set
++CONFIG_INET_XFRM_MODE_TRANSPORT=y
++CONFIG_INET_XFRM_MODE_TUNNEL=y
++CONFIG_INET_XFRM_MODE_BEET=y
++CONFIG_INET_DIAG=y
++CONFIG_INET_TCP_DIAG=y
++# CONFIG_TCP_CONG_ADVANCED is not set
++CONFIG_TCP_CONG_CUBIC=y
++CONFIG_DEFAULT_TCP_CONG="cubic"
++# CONFIG_TCP_MD5SIG is not set
++# CONFIG_IPV6 is not set
++# CONFIG_INET6_XFRM_TUNNEL is not set
++# CONFIG_INET6_TUNNEL is not set
++# CONFIG_NETWORK_SECMARK is not set
++# CONFIG_NETFILTER is not set
 +
-+	/* Set 64-bit PCI bus address for system memory */
-+	tsi108_write_reg(TSI108_PCI_OFFSET + 0x1c, 0x0);
-+	tsi108_write_reg(TSI108_PCI_OFFSET + 0x18, 0x0);
-+}
++#
++# DCCP Configuration (EXPERIMENTAL)
++#
++# CONFIG_IP_DCCP is not set
 +
-+static void __init holly_setup_arch(void)
-+{
-+	struct device_node *cpu;
-+	struct device_node *np;
++#
++# SCTP Configuration (EXPERIMENTAL)
++#
++# CONFIG_IP_SCTP is not set
 +
-+	if (ppc_md.progress)
-+		ppc_md.progress("holly_setup_arch():set_bridge", 0);
++#
++# TIPC Configuration (EXPERIMENTAL)
++#
++# CONFIG_TIPC is not set
++# CONFIG_ATM is not set
++# CONFIG_BRIDGE is not set
++# CONFIG_VLAN_8021Q is not set
++# CONFIG_DECNET is not set
++# CONFIG_LLC2 is not set
++# CONFIG_IPX is not set
++# CONFIG_ATALK is not set
++# CONFIG_X25 is not set
++# CONFIG_LAPB is not set
++# CONFIG_ECONET is not set
++# CONFIG_WAN_ROUTER is not set
 +
-+	cpu = of_find_node_by_type(NULL, "cpu");
-+	if (cpu != 0) {
-+		const unsigned int *fp;
++#
++# QoS and/or fair queueing
++#
++# CONFIG_NET_SCHED is not set
 +
-+		fp = of_get_property(cpu, "clock-frequency", NULL);
-+		if (fp != 0)
-+			loops_per_jiffy = *fp / HZ;
-+		else
-+			loops_per_jiffy = 50000000 / HZ;
-+		of_node_put(cpu);
-+	}
-+	tsi108_csr_vir_base = get_vir_csrbase();
++#
++# Network testing
++#
++# CONFIG_NET_PKTGEN is not set
++# CONFIG_HAMRADIO is not set
++# CONFIG_IRDA is not set
++# CONFIG_BT is not set
++# CONFIG_IEEE80211 is not set
 +
-+	/* setup PCI host bridge */
-+	holly_remap_bridge();
-+#ifdef CONFIG_PCI
-+	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
-+		tsi108_setup_pci(np);
++#
++# Device Drivers
++#
 +
-+	ppc_md.pci_exclude_device = holly_exclude_device;
-+	if (ppc_md.progress)
-+		ppc_md.progress("tsi108: resources set", 0x100);
-+#endif
-+	printk(KERN_INFO "PPC750GX/CL Platform\n");
-+}
++#
++# Generic Driver Options
++#
++CONFIG_STANDALONE=y
++CONFIG_PREVENT_FIRMWARE_BUILD=y
++# CONFIG_FW_LOADER is not set
++# CONFIG_DEBUG_DRIVER is not set
++# CONFIG_DEBUG_DEVRES is not set
++# CONFIG_SYS_HYPERVISOR is not set
 +
-+/*
-+ * Interrupt setup and service.  Interrrupts on the holly come
-+ * from the four external INT pins, PCI interrupts are routed via
-+ * PCI interrupt control registers, it generates internal IRQ23
-+ *
-+ * Interrupt routing on the Holly Board:
-+ * TSI108:PB_INT[0] -> CPU0:INT#
-+ * TSI108:PB_INT[1] -> CPU0:MCP#
-+ * TSI108:PB_INT[2] -> N/C
-+ * TSI108:PB_INT[3] -> N/C
-+ */
-+static void __init holly_init_IRQ(void)
-+{
-+	struct mpic *mpic;
-+	phys_addr_t mpic_paddr = 0;
-+	struct device_node *tsi_pic;
-+#ifdef CONFIG_PCI
-+	unsigned int cascade_pci_irq;
-+	struct device_node *tsi_pci;
-+	struct device_node *cascade_node = NULL;
-+#endif
++#
++# Connector - unified userspace <-> kernelspace linker
++#
++# CONFIG_CONNECTOR is not set
 +
-+	tsi_pic = of_find_node_by_type(NULL, "open-pic");
-+	if (tsi_pic) {
-+		unsigned int size;
-+		const void *prop = of_get_property(tsi_pic, "reg", &size);
-+		mpic_paddr = of_translate_address(tsi_pic, prop);
-+	}
++#
++# Memory Technology Devices (MTD)
++#
++# CONFIG_MTD is not set
 +
-+	if (mpic_paddr == 0) {
-+		printk(KERN_ERR "%s: No tsi108 PIC found !\n", __func__);
-+		return;
-+	}
++#
++# Parallel port support
++#
++# CONFIG_PARPORT is not set
 +
-+	DBG("%s: tsi108 pic phys_addr = 0x%x\n", __func__, (u32) mpic_paddr);
++#
++# Plug and Play support
++#
++# CONFIG_PNPACPI is not set
 +
-+	mpic = mpic_alloc(tsi_pic, mpic_paddr,
-+			MPIC_PRIMARY | MPIC_BIG_ENDIAN | MPIC_WANTS_RESET |
-+			MPIC_SPV_EOI | MPIC_NO_PTHROU_DIS | MPIC_REGSET_TSI108,
-+			24,
-+			NR_IRQS-4, /* num_sources used */
-+			"Tsi108_PIC");
++#
++# Block devices
++#
++# CONFIG_BLK_DEV_FD is not set
++# CONFIG_BLK_CPQ_DA is not set
++# CONFIG_BLK_CPQ_CISS_DA is not set
++# CONFIG_BLK_DEV_DAC960 is not set
++# CONFIG_BLK_DEV_UMEM is not set
++# CONFIG_BLK_DEV_COW_COMMON is not set
++CONFIG_BLK_DEV_LOOP=y
++# CONFIG_BLK_DEV_CRYPTOLOOP is not set
++# CONFIG_BLK_DEV_NBD is not set
++# CONFIG_BLK_DEV_SX8 is not set
++CONFIG_BLK_DEV_RAM=y
++CONFIG_BLK_DEV_RAM_COUNT=16
++CONFIG_BLK_DEV_RAM_SIZE=131072
++CONFIG_BLK_DEV_RAM_BLOCKSIZE=1024
++# CONFIG_CDROM_PKTCDVD is not set
++# CONFIG_ATA_OVER_ETH is not set
 +
-+	BUG_ON(mpic == NULL);
++#
++# Misc devices
++#
++# CONFIG_SGI_IOC4 is not set
++# CONFIG_TIFM_CORE is not set
 +
-+	mpic_assign_isu(mpic, 0, mpic_paddr + 0x100);
++#
++# ATA/ATAPI/MFM/RLL support
++#
++# CONFIG_IDE is not set
 +
-+	mpic_init(mpic);
++#
++# SCSI device support
++#
++# CONFIG_RAID_ATTRS is not set
++CONFIG_SCSI=y
++# CONFIG_SCSI_TGT is not set
++# CONFIG_SCSI_NETLINK is not set
++CONFIG_SCSI_PROC_FS=y
 +
-+#ifdef CONFIG_PCI
-+	tsi_pci = of_find_node_by_type(NULL, "pci");
-+	if (tsi_pci == NULL) {
-+		printk(KERN_ERR "%s: No tsi108 pci node found !\n", __func__);
-+		return;
-+	}
++#
++# SCSI support type (disk, tape, CD-ROM)
++#
++CONFIG_BLK_DEV_SD=y
++# CONFIG_CHR_DEV_ST is not set
++# CONFIG_CHR_DEV_OSST is not set
++# CONFIG_BLK_DEV_SR is not set
++# CONFIG_CHR_DEV_SG is not set
++# CONFIG_CHR_DEV_SCH is not set
 +
-+	cascade_node = of_find_node_by_type(NULL, "pic-router");
-+	if (cascade_node == NULL) {
-+		printk(KERN_ERR "%s: No tsi108 pci cascade node found !\n", __func__);
-+		return;
-+	}
++#
++# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
++#
++# CONFIG_SCSI_MULTI_LUN is not set
++# CONFIG_SCSI_CONSTANTS is not set
++# CONFIG_SCSI_LOGGING is not set
++# CONFIG_SCSI_SCAN_ASYNC is not set
 +
-+	cascade_pci_irq = irq_of_parse_and_map(tsi_pci, 0);
-+	DBG("%s: tsi108 cascade_pci_irq = 0x%x\n", __func__, (u32) cascade_pci_irq);
-+	tsi108_pci_int_init(cascade_node);
-+	set_irq_data(cascade_pci_irq, mpic);
-+	set_irq_chained_handler(cascade_pci_irq, tsi108_irq_cascade);
-+#endif
-+	/* Configure MPIC outputs to CPU0 */
-+	tsi108_write_reg(TSI108_MPIC_OFFSET + 0x30c, 0);
-+	of_node_put(tsi_pic);
-+}
++#
++# SCSI Transports
++#
++# CONFIG_SCSI_SPI_ATTRS is not set
++# CONFIG_SCSI_FC_ATTRS is not set
++# CONFIG_SCSI_ISCSI_ATTRS is not set
++# CONFIG_SCSI_SAS_ATTRS is not set
++# CONFIG_SCSI_SAS_LIBSAS is not set
 +
-+void holly_show_cpuinfo(struct seq_file *m)
-+{
-+	seq_printf(m, "vendor\t\t: IBM\n");
-+	seq_printf(m, "machine\t\t: PPC750 GX/CL\n");
-+}
++#
++# SCSI low-level drivers
++#
++# CONFIG_ISCSI_TCP is not set
++# CONFIG_BLK_DEV_3W_XXXX_RAID is not set
++# CONFIG_SCSI_3W_9XXX is not set
++# CONFIG_SCSI_ACARD is not set
++# CONFIG_SCSI_AACRAID is not set
++# CONFIG_SCSI_AIC7XXX is not set
++# CONFIG_SCSI_AIC7XXX_OLD is not set
++# CONFIG_SCSI_AIC79XX is not set
++# CONFIG_SCSI_AIC94XX is not set
++# CONFIG_SCSI_DPT_I2O is not set
++# CONFIG_SCSI_ARCMSR is not set
++# CONFIG_MEGARAID_NEWGEN is not set
++# CONFIG_MEGARAID_LEGACY is not set
++# CONFIG_MEGARAID_SAS is not set
++# CONFIG_SCSI_HPTIOP is not set
++# CONFIG_SCSI_BUSLOGIC is not set
++# CONFIG_SCSI_DMX3191D is not set
++# CONFIG_SCSI_EATA is not set
++# CONFIG_SCSI_FUTURE_DOMAIN is not set
++# CONFIG_SCSI_GDTH is not set
++# CONFIG_SCSI_IPS is not set
++# CONFIG_SCSI_INITIO is not set
++# CONFIG_SCSI_INIA100 is not set
++# CONFIG_SCSI_STEX is not set
++# CONFIG_SCSI_SYM53C8XX_2 is not set
++# CONFIG_SCSI_IPR is not set
++# CONFIG_SCSI_QLOGIC_1280 is not set
++# CONFIG_SCSI_QLA_FC is not set
++# CONFIG_SCSI_QLA_ISCSI is not set
++# CONFIG_SCSI_LPFC is not set
++# CONFIG_SCSI_DC395x is not set
++# CONFIG_SCSI_DC390T is not set
++# CONFIG_SCSI_NSP32 is not set
++# CONFIG_SCSI_DEBUG is not set
++# CONFIG_SCSI_SRP is not set
 +
-+void holly_restart(char *cmd)
-+{
-+	unsigned long *ocn_bar1 = NULL;
-+	unsigned long bar;
-+	struct device_node *bridge = NULL;
-+	const void *prop;
-+	int size;
-+	phys_addr_t addr = 0xc0000000;
++#
++# Serial ATA (prod) and Parallel ATA (experimental) drivers
++#
++CONFIG_ATA=y
++# CONFIG_ATA_NONSTANDARD is not set
++# CONFIG_SATA_AHCI is not set
++# CONFIG_SATA_SVW is not set
++# CONFIG_ATA_PIIX is not set
++CONFIG_SATA_MV=y
++# CONFIG_SATA_NV is not set
++# CONFIG_PDC_ADMA is not set
++# CONFIG_SATA_QSTOR is not set
++# CONFIG_SATA_PROMISE is not set
++# CONFIG_SATA_SX4 is not set
++# CONFIG_SATA_SIL is not set
++# CONFIG_SATA_SIL24 is not set
++# CONFIG_SATA_SIS is not set
++# CONFIG_SATA_ULI is not set
++# CONFIG_SATA_VIA is not set
++# CONFIG_SATA_VITESSE is not set
++# CONFIG_SATA_INIC162X is not set
++# CONFIG_PATA_ALI is not set
++# CONFIG_PATA_AMD is not set
++# CONFIG_PATA_ARTOP is not set
++# CONFIG_PATA_ATIIXP is not set
++# CONFIG_PATA_CMD64X is not set
++# CONFIG_PATA_CS5520 is not set
++# CONFIG_PATA_CS5530 is not set
++# CONFIG_PATA_CYPRESS is not set
++# CONFIG_PATA_EFAR is not set
++# CONFIG_ATA_GENERIC is not set
++# CONFIG_PATA_HPT366 is not set
++# CONFIG_PATA_HPT37X is not set
++# CONFIG_PATA_HPT3X2N is not set
++# CONFIG_PATA_HPT3X3 is not set
++# CONFIG_PATA_IT821X is not set
++# CONFIG_PATA_IT8213 is not set
++# CONFIG_PATA_JMICRON is not set
++# CONFIG_PATA_TRIFLEX is not set
++# CONFIG_PATA_MARVELL is not set
++# CONFIG_PATA_MPIIX is not set
++# CONFIG_PATA_OLDPIIX is not set
++# CONFIG_PATA_NETCELL is not set
++# CONFIG_PATA_NS87410 is not set
++# CONFIG_PATA_OPTI is not set
++# CONFIG_PATA_OPTIDMA is not set
++# CONFIG_PATA_PDC_OLD is not set
++# CONFIG_PATA_RADISYS is not set
++# CONFIG_PATA_RZ1000 is not set
++# CONFIG_PATA_SC1200 is not set
++# CONFIG_PATA_SERVERWORKS is not set
++# CONFIG_PATA_PDC2027X is not set
++# CONFIG_PATA_SIL680 is not set
++# CONFIG_PATA_SIS is not set
++# CONFIG_PATA_VIA is not set
++# CONFIG_PATA_WINBOND is not set
++# CONFIG_PATA_PLATFORM is not set
 +
-+	local_irq_disable();
++#
++# Multi-device support (RAID and LVM)
++#
++# CONFIG_MD is not set
 +
-+	bridge = of_find_node_by_type(NULL, "tsi-bridge");
-+	if (bridge) {
-+		prop = of_get_property(bridge, "reg", &size);
-+		addr = of_translate_address(bridge, prop);
-+	}
-+	addr += (TSI108_PB_OFFSET + 0x414);
++#
++# Fusion MPT device support
++#
++# CONFIG_FUSION is not set
++# CONFIG_FUSION_SPI is not set
++# CONFIG_FUSION_FC is not set
++# CONFIG_FUSION_SAS is not set
 +
-+	ocn_bar1 = ioremap(addr, 0x4);
++#
++# IEEE 1394 (FireWire) support
++#
++# CONFIG_IEEE1394 is not set
 +
-+	/* Turn on the BOOT bit so the addresses are correctly
-+	 * routed to the HLP interface */
-+	bar = ioread32be(ocn_bar1);
-+	bar |= 2;
-+	iowrite32be(bar, ocn_bar1);
-+	iosync();
++#
++# I2O device support
++#
++# CONFIG_I2O is not set
 +
-+	/* Set SRR0 to the reset vector and turn on MSR_IP */
-+	mtspr(SPRN_SRR0, 0xfff00100);
-+	mtspr(SPRN_SRR1, MSR_IP);
++#
++# Macintosh device drivers
++#
++# CONFIG_MAC_EMUMOUSEBTN is not set
++# CONFIG_WINDFARM is not set
 +
-+	/* Do an rfi to jump back to firmware.  Somewhat evil,
-+	 * but it works
-+	 */
-+	__asm__ __volatile__("rfi" : : : "memory");
++#
++# Network device support
++#
++CONFIG_NETDEVICES=y
++# CONFIG_DUMMY is not set
++# CONFIG_BONDING is not set
++# CONFIG_EQUALIZER is not set
++# CONFIG_TUN is not set
 +
-+	/* Spin until reset happens.  Shouldn't really get here */
-+	for (;;) ;
-+}
++#
++# ARCnet devices
++#
++# CONFIG_ARCNET is not set
 +
-+void holly_power_off(void)
-+{
-+	local_irq_disable();
-+	/* No way to shut power off with software */
-+	for (;;) ;
-+}
++#
++# PHY device support
++#
++CONFIG_PHYLIB=y
 +
-+void holly_halt(void)
-+{
-+	holly_power_off();
-+}
++#
++# MII PHY device drivers
++#
++# CONFIG_MARVELL_PHY is not set
++# CONFIG_DAVICOM_PHY is not set
++# CONFIG_QSEMI_PHY is not set
++# CONFIG_LXT_PHY is not set
++# CONFIG_CICADA_PHY is not set
++# CONFIG_VITESSE_PHY is not set
++# CONFIG_SMSC_PHY is not set
++# CONFIG_BROADCOM_PHY is not set
++# CONFIG_FIXED_PHY is not set
 +
-+/*
-+ * Called very early, device-tree isn't unflattened
-+ */
-+static int __init holly_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
++#
++# Ethernet (10 or 100Mbit)
++#
++CONFIG_NET_ETHERNET=y
++CONFIG_MII=y
++# CONFIG_HAPPYMEAL is not set
++# CONFIG_SUNGEM is not set
++# CONFIG_CASSINI is not set
++# CONFIG_NET_VENDOR_3COM is not set
 +
-+	if (!of_flat_dt_is_compatible(root, "ppc750"))
-+		return 0;
-+	return 1;
-+}
++#
++# Tulip family network device support
++#
++# CONFIG_NET_TULIP is not set
++# CONFIG_HP100 is not set
++# CONFIG_NET_PCI is not set
 +
-+static int ppc750_machine_check_exception(struct pt_regs *regs)
-+{
-+	extern void tsi108_clear_pci_cfg_error(void);
-+	const struct exception_table_entry *entry;
++#
++# Ethernet (1000 Mbit)
++#
++# CONFIG_ACENIC is not set
++# CONFIG_DL2K is not set
++# CONFIG_E1000 is not set
++# CONFIG_NS83820 is not set
++# CONFIG_HAMACHI is not set
++# CONFIG_YELLOWFIN is not set
++# CONFIG_R8169 is not set
++# CONFIG_SIS190 is not set
++# CONFIG_SKGE is not set
++# CONFIG_SKY2 is not set
++# CONFIG_SK98LIN is not set
++# CONFIG_TIGON3 is not set
++# CONFIG_BNX2 is not set
++CONFIG_TSI108_ETH=y
++# CONFIG_QLA3XXX is not set
++# CONFIG_ATL1 is not set
 +
-+	/* Are we prepared to handle this fault */
-+	if ((entry = search_exception_tables(regs->nip)) != NULL) {
-+		tsi108_clear_pci_cfg_error();
-+		regs->msr |= MSR_RI;
-+		regs->nip = entry->fixup;
-+		return 1;
-+	}
-+	return 0;
-+}
++#
++# Ethernet (10000 Mbit)
++#
++# CONFIG_CHELSIO_T1 is not set
++# CONFIG_CHELSIO_T3 is not set
++# CONFIG_IXGB is not set
++# CONFIG_S2IO is not set
++# CONFIG_MYRI10GE is not set
++# CONFIG_NETXEN_NIC is not set
 +
-+define_machine(holly){
-+	.name 						= "PPC750 GX/CL TSI",
-+	.probe 						= holly_probe,
-+	.setup_arch 				= holly_setup_arch,
-+	.init_IRQ 					= holly_init_IRQ,
-+	.show_cpuinfo 				= holly_show_cpuinfo,
-+	.get_irq 					= mpic_get_irq,
-+	.restart 					= holly_restart,
-+	.calibrate_decr 			= generic_calibrate_decr,
-+	.machine_check_exception	= ppc750_machine_check_exception,
-+	.progress 					= udbg_progress,
-+};
---- /dev/null
-+++ linux-2.6/arch/powerpc/platforms/embedded6xx/holly.h
-@@ -0,0 +1,24 @@
-+/*
-+ * Definitions for the IBM 750GX/CL platform w/ TSI10x bridge
-+ *
-+ * Copyright 2007 IBM Corporation
-+ *
-+ * Stephen Winiecki <stevewin@us.ibm.com>
-+ * Josh Boyer <jwboyer@linux.vnet.ibm.com>
-+ *
-+ * Based on code from mpc7448_hpc2.h
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * version 2 as published by the Free Software Foundation.
-+ */
++#
++# Token Ring devices
++#
++# CONFIG_TR is not set
 +
-+#ifndef __PPC_PLATFORMS_PPC750GXCL_TSI_H
-+#define __PPC_PLATFORMS_PPC750GXCL_TSI_H
++#
++# Wireless LAN (non-hamradio)
++#
++# CONFIG_NET_RADIO is not set
 +
-+#include <asm/ppcboot.h>
++#
++# Wan interfaces
++#
++# CONFIG_WAN is not set
++# CONFIG_FDDI is not set
++# CONFIG_HIPPI is not set
++# CONFIG_PPP is not set
++# CONFIG_SLIP is not set
++# CONFIG_NET_FC is not set
++# CONFIG_SHAPER is not set
++# CONFIG_NETCONSOLE is not set
++# CONFIG_NETPOLL is not set
++# CONFIG_NET_POLL_CONTROLLER is not set
 +
-+/* Base Addresses for the PCI bus
-+ */
-+#define PPC750GXCL_TSI_PCI_MEM_OFFSET	(0x00000000)
-+#endif				/* __PPC_PLATFORMS_H */
---- linux-2.6.orig/drivers/net/tsi108_eth.h
-+++ linux-2.6/drivers/net/tsi108_eth.h
-@@ -49,7 +49,11 @@
-  */
- #define PHY_MV88E	1	/* Marvel 88Exxxx PHY */
- #define PHY_BCM54XX	2	/* Broardcom BCM54xx PHY */
-+#if defined(CONFIG_HOLLY)
-+#define TSI108_PHY_TYPE PHY_BCM54XX
-+#else
- #define TSI108_PHY_TYPE	PHY_MV88E
-+#endif
- 
- /*
-  * TSI108 GIGE port registers
---- linux-2.6.orig/include/asm-powerpc/tsi108.h
-+++ linux-2.6/include/asm-powerpc/tsi108.h
-@@ -68,7 +68,11 @@
- #define TSI108_PB_ERRCS_ES		(1 << 1)
- #define TSI108_PB_ISR_PBS_RD_ERR	(1 << 8)
- 
-+#ifdef CONFIG_HOLLY
-+#define TSI108_PCI_CFG_BASE_PHYS	(0x7c000000)
-+#else
- #define TSI108_PCI_CFG_BASE_PHYS	(0xfb000000)
-+#endif
- #define TSI108_PCI_CFG_SIZE		(0x01000000)
- /* Global variables */
- 
++#
++# ISDN subsystem
++#
++# CONFIG_ISDN is not set
++
++#
++# Telephony Support
++#
++# CONFIG_PHONE is not set
++
++#
++# Input device support
++#
++CONFIG_INPUT=y
++# CONFIG_INPUT_FF_MEMLESS is not set
++
++#
++# Userland interfaces
++#
++# CONFIG_INPUT_MOUSEDEV is not set
++# CONFIG_INPUT_JOYDEV is not set
++# CONFIG_INPUT_TSDEV is not set
++# CONFIG_INPUT_EVDEV is not set
++# CONFIG_INPUT_EVBUG is not set
++
++#
++# Input Device Drivers
++#
++# CONFIG_INPUT_KEYBOARD is not set
++# CONFIG_INPUT_MOUSE is not set
++# CONFIG_INPUT_JOYSTICK is not set
++# CONFIG_INPUT_TOUCHSCREEN is not set
++# CONFIG_INPUT_MISC is not set
++
++#
++# Hardware I/O ports
++#
++# CONFIG_SERIO is not set
++# CONFIG_GAMEPORT is not set
++
++#
++# Character devices
++#
++# CONFIG_VT is not set
++# CONFIG_SERIAL_NONSTANDARD is not set
++
++#
++# Serial drivers
++#
++CONFIG_SERIAL_8250=y
++CONFIG_SERIAL_8250_CONSOLE=y
++# CONFIG_SERIAL_8250_PCI is not set
++CONFIG_SERIAL_8250_NR_UARTS=4
++CONFIG_SERIAL_8250_RUNTIME_UARTS=4
++CONFIG_SERIAL_8250_EXTENDED=y
++# CONFIG_SERIAL_8250_MANY_PORTS is not set
++CONFIG_SERIAL_8250_SHARE_IRQ=y
++# CONFIG_SERIAL_8250_DETECT_IRQ is not set
++# CONFIG_SERIAL_8250_RSA is not set
++
++#
++# Non-8250 serial port support
++#
++# CONFIG_SERIAL_UARTLITE is not set
++CONFIG_SERIAL_CORE=y
++CONFIG_SERIAL_CORE_CONSOLE=y
++# CONFIG_SERIAL_JSM is not set
++CONFIG_SERIAL_OF_PLATFORM=y
++CONFIG_UNIX98_PTYS=y
++CONFIG_LEGACY_PTYS=y
++CONFIG_LEGACY_PTY_COUNT=256
++
++#
++# IPMI
++#
++# CONFIG_IPMI_HANDLER is not set
++
++#
++# Watchdog Cards
++#
++# CONFIG_WATCHDOG is not set
++# CONFIG_HW_RANDOM is not set
++# CONFIG_NVRAM is not set
++CONFIG_GEN_RTC=y
++# CONFIG_GEN_RTC_X is not set
++# CONFIG_DTLK is not set
++# CONFIG_R3964 is not set
++# CONFIG_APPLICOM is not set
++# CONFIG_AGP is not set
++# CONFIG_DRM is not set
++# CONFIG_RAW_DRIVER is not set
++
++#
++# TPM devices
++#
++# CONFIG_TCG_TPM is not set
++
++#
++# I2C support
++#
++# CONFIG_I2C is not set
++
++#
++# SPI support
++#
++# CONFIG_SPI is not set
++# CONFIG_SPI_MASTER is not set
++
++#
++# Dallas's 1-wire bus
++#
++# CONFIG_W1 is not set
++
++#
++# Hardware Monitoring support
++#
++CONFIG_HWMON=y
++# CONFIG_HWMON_VID is not set
++# CONFIG_SENSORS_ABITUGURU is not set
++# CONFIG_SENSORS_F71805F is not set
++# CONFIG_SENSORS_PC87427 is not set
++# CONFIG_SENSORS_VT1211 is not set
++# CONFIG_HWMON_DEBUG_CHIP is not set
++
++#
++# Multifunction device drivers
++#
++# CONFIG_MFD_SM501 is not set
++
++#
++# Multimedia devices
++#
++# CONFIG_VIDEO_DEV is not set
++
++#
++# Digital Video Broadcasting Devices
++#
++# CONFIG_DVB is not set
++
++#
++# Graphics support
++#
++# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
++# CONFIG_FB is not set
++# CONFIG_FB_IBM_GXT4500 is not set
++
++#
++# Sound
++#
++# CONFIG_SOUND is not set
++
++#
++# HID Devices
++#
++CONFIG_HID=y
++# CONFIG_HID_DEBUG is not set
++
++#
++# USB support
++#
++CONFIG_USB_ARCH_HAS_HCD=y
++CONFIG_USB_ARCH_HAS_OHCI=y
++CONFIG_USB_ARCH_HAS_EHCI=y
++# CONFIG_USB is not set
++
++#
++# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
++#
++
++#
++# USB Gadget Support
++#
++# CONFIG_USB_GADGET is not set
++
++#
++# MMC/SD Card support
++#
++# CONFIG_MMC is not set
++
++#
++# LED devices
++#
++# CONFIG_NEW_LEDS is not set
++
++#
++# LED drivers
++#
++
++#
++# LED Triggers
++#
++
++#
++# InfiniBand support
++#
++# CONFIG_INFINIBAND is not set
++
++#
++# EDAC - error detection and reporting (RAS) (EXPERIMENTAL)
++#
++
++#
++# Real Time Clock
++#
++# CONFIG_RTC_CLASS is not set
++
++#
++# DMA Engine support
++#
++# CONFIG_DMA_ENGINE is not set
++
++#
++# DMA Clients
++#
++
++#
++# DMA Devices
++#
++
++#
++# Auxiliary Display support
++#
++
++#
++# Virtualization
++#
++
++#
++# File systems
++#
++CONFIG_EXT2_FS=y
++# CONFIG_EXT2_FS_XATTR is not set
++# CONFIG_EXT2_FS_XIP is not set
++CONFIG_EXT3_FS=y
++CONFIG_EXT3_FS_XATTR=y
++# CONFIG_EXT3_FS_POSIX_ACL is not set
++# CONFIG_EXT3_FS_SECURITY is not set
++# CONFIG_EXT4DEV_FS is not set
++CONFIG_JBD=y
++# CONFIG_JBD_DEBUG is not set
++CONFIG_FS_MBCACHE=y
++# CONFIG_REISERFS_FS is not set
++# CONFIG_JFS_FS is not set
++# CONFIG_FS_POSIX_ACL is not set
++# CONFIG_XFS_FS is not set
++# CONFIG_GFS2_FS is not set
++# CONFIG_OCFS2_FS is not set
++# CONFIG_MINIX_FS is not set
++# CONFIG_ROMFS_FS is not set
++CONFIG_INOTIFY=y
++CONFIG_INOTIFY_USER=y
++# CONFIG_QUOTA is not set
++CONFIG_DNOTIFY=y
++# CONFIG_AUTOFS_FS is not set
++# CONFIG_AUTOFS4_FS is not set
++# CONFIG_FUSE_FS is not set
++
++#
++# CD-ROM/DVD Filesystems
++#
++# CONFIG_ISO9660_FS is not set
++# CONFIG_UDF_FS is not set
++
++#
++# DOS/FAT/NT Filesystems
++#
++# CONFIG_MSDOS_FS is not set
++# CONFIG_VFAT_FS is not set
++# CONFIG_NTFS_FS is not set
++
++#
++# Pseudo filesystems
++#
++CONFIG_PROC_FS=y
++CONFIG_PROC_KCORE=y
++CONFIG_PROC_SYSCTL=y
++CONFIG_SYSFS=y
++CONFIG_TMPFS=y
++# CONFIG_TMPFS_POSIX_ACL is not set
++# CONFIG_HUGETLB_PAGE is not set
++CONFIG_RAMFS=y
++# CONFIG_CONFIGFS_FS is not set
++
++#
++# Miscellaneous filesystems
++#
++# CONFIG_ADFS_FS is not set
++# CONFIG_AFFS_FS is not set
++# CONFIG_HFS_FS is not set
++# CONFIG_HFSPLUS_FS is not set
++# CONFIG_BEFS_FS is not set
++# CONFIG_BFS_FS is not set
++# CONFIG_EFS_FS is not set
++# CONFIG_CRAMFS is not set
++# CONFIG_VXFS_FS is not set
++# CONFIG_HPFS_FS is not set
++# CONFIG_QNX4FS_FS is not set
++# CONFIG_SYSV_FS is not set
++# CONFIG_UFS_FS is not set
++
++#
++# Network File Systems
++#
++CONFIG_NFS_FS=y
++# CONFIG_NFS_V3 is not set
++# CONFIG_NFS_V4 is not set
++# CONFIG_NFS_DIRECTIO is not set
++# CONFIG_NFSD is not set
++CONFIG_ROOT_NFS=y
++CONFIG_LOCKD=y
++CONFIG_NFS_COMMON=y
++CONFIG_SUNRPC=y
++# CONFIG_RPCSEC_GSS_KRB5 is not set
++# CONFIG_RPCSEC_GSS_SPKM3 is not set
++# CONFIG_SMB_FS is not set
++# CONFIG_CIFS is not set
++# CONFIG_NCP_FS is not set
++# CONFIG_CODA_FS is not set
++# CONFIG_AFS_FS is not set
++# CONFIG_9P_FS is not set
++
++#
++# Partition Types
++#
++CONFIG_PARTITION_ADVANCED=y
++# CONFIG_ACORN_PARTITION is not set
++# CONFIG_OSF_PARTITION is not set
++# CONFIG_AMIGA_PARTITION is not set
++# CONFIG_ATARI_PARTITION is not set
++# CONFIG_MAC_PARTITION is not set
++CONFIG_MSDOS_PARTITION=y
++# CONFIG_BSD_DISKLABEL is not set
++# CONFIG_MINIX_SUBPARTITION is not set
++# CONFIG_SOLARIS_X86_PARTITION is not set
++# CONFIG_UNIXWARE_DISKLABEL is not set
++# CONFIG_LDM_PARTITION is not set
++# CONFIG_SGI_PARTITION is not set
++# CONFIG_ULTRIX_PARTITION is not set
++# CONFIG_SUN_PARTITION is not set
++# CONFIG_KARMA_PARTITION is not set
++# CONFIG_EFI_PARTITION is not set
++
++#
++# Native Language Support
++#
++# CONFIG_NLS is not set
++
++#
++# Distributed Lock Manager
++#
++# CONFIG_DLM is not set
++# CONFIG_UCC_SLOW is not set
++# CONFIG_UCC_FAST is not set
++
++#
++# Library routines
++#
++CONFIG_BITREVERSE=y
++# CONFIG_CRC_CCITT is not set
++# CONFIG_CRC16 is not set
++CONFIG_CRC32=y
++# CONFIG_LIBCRC32C is not set
++CONFIG_PLIST=y
++CONFIG_HAS_IOMEM=y
++CONFIG_HAS_IOPORT=y
++
++#
++# Instrumentation Support
++#
++# CONFIG_PROFILING is not set
++
++#
++# Kernel hacking
++#
++# CONFIG_PRINTK_TIME is not set
++CONFIG_ENABLE_MUST_CHECK=y
++CONFIG_MAGIC_SYSRQ=y
++# CONFIG_UNUSED_SYMBOLS is not set
++# CONFIG_DEBUG_FS is not set
++# CONFIG_HEADERS_CHECK is not set
++CONFIG_DEBUG_KERNEL=y
++# CONFIG_DEBUG_SHIRQ is not set
++CONFIG_LOG_BUF_SHIFT=14
++CONFIG_DETECT_SOFTLOCKUP=y
++# CONFIG_SCHEDSTATS is not set
++# CONFIG_TIMER_STATS is not set
++# CONFIG_DEBUG_SLAB is not set
++# CONFIG_DEBUG_RT_MUTEXES is not set
++# CONFIG_RT_MUTEX_TESTER is not set
++# CONFIG_DEBUG_SPINLOCK is not set
++# CONFIG_DEBUG_MUTEXES is not set
++# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
++# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
++# CONFIG_DEBUG_KOBJECT is not set
++# CONFIG_DEBUG_BUGVERBOSE is not set
++# CONFIG_DEBUG_INFO is not set
++# CONFIG_DEBUG_VM is not set
++# CONFIG_DEBUG_LIST is not set
++CONFIG_FORCED_INLINING=y
++# CONFIG_RCU_TORTURE_TEST is not set
++# CONFIG_FAULT_INJECTION is not set
++# CONFIG_DEBUG_STACKOVERFLOW is not set
++# CONFIG_DEBUG_STACK_USAGE is not set
++# CONFIG_DEBUG_PAGEALLOC is not set
++CONFIG_DEBUGGER=y
++CONFIG_XMON=y
++CONFIG_XMON_DEFAULT=y
++CONFIG_XMON_DISASSEMBLY=y
++# CONFIG_BDI_SWITCH is not set
++# CONFIG_BOOTX_TEXT is not set
++# CONFIG_PPC_EARLY_DEBUG is not set
++
++#
++# Security options
++#
++# CONFIG_KEYS is not set
++# CONFIG_SECURITY is not set
++
++#
++# Cryptographic options
++#
++# CONFIG_CRYPTO is not set
