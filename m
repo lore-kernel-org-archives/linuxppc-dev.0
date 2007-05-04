@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 2/6] Use resource_size_t for serial port IO addresses
+Subject: [PATCH 3/6] Add device tree for Ebony
 In-Reply-To: <20070504055455.GA25922@localhost.localdomain>
-Message-Id: <20070504055733.63E57DDFF9@ozlabs.org>
+Message-Id: <20070504055733.74FD7DDFF0@ozlabs.org>
 Date: Fri,  4 May 2007 15:57:33 +1000 (EST)
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -15,145 +15,325 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-At present, various parts of the serial code use unsigned long to
-define resource addresses.  This is a problem, because some 32-bit
-platforms have physical addresses larger than 32-bits, and have mmio
-serial uarts located above the 4GB point.
-
-This patch changes the type of mapbase in both struct uart_port and
-struct plat_serial8250_port to resource_size_t, which can be
-configured to be 64 bits on such platforms.  The mapbase in
-serial_struct can't safely be changed, because that structure is user
-visible.
+Add a device tree for the Ebony evaluation board (440GP based).  This
+tree is not complete or finalized.  This tree needs a version of dtc
+recent enough to include reference-to-labels to process.
 
 Signed-off-by: David Gibson <dwg@au1.ibm.com>
 ---
 
- drivers/serial/8250.c        |    5 +++--
- drivers/serial/8250_early.c  |   16 +++++++++-------
- drivers/serial/serial_core.c |    9 +++++----
- include/linux/serial_8250.h  |    2 +-
- include/linux/serial_core.h  |    2 +-
- 5 files changed, 19 insertions(+), 15 deletions(-)
+ arch/powerpc/boot/dts/ebony.dts |  307 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 307 insertions(+)
 
-Index: working-2.6/include/linux/serial_core.h
+Index: working-2.6/arch/powerpc/boot/dts/ebony.dts
 ===================================================================
---- working-2.6.orig/include/linux/serial_core.h	2007-05-03 15:10:18.000000000 +1000
-+++ working-2.6/include/linux/serial_core.h	2007-05-03 15:10:19.000000000 +1000
-@@ -273,7 +273,7 @@ struct uart_port {
- 	const struct uart_ops	*ops;
- 	unsigned int		custom_divisor;
- 	unsigned int		line;			/* port index */
--	unsigned long		mapbase;		/* for ioremap */
-+	resource_size_t		mapbase;		/* for ioremap */
- 	struct device		*dev;			/* parent device */
- 	unsigned char		hub6;			/* this should be in the 8250 driver */
- 	unsigned char		unused[3];
-Index: working-2.6/drivers/serial/serial_core.c
-===================================================================
---- working-2.6.orig/drivers/serial/serial_core.c	2007-05-03 15:10:18.000000000 +1000
-+++ working-2.6/drivers/serial/serial_core.c	2007-05-03 15:10:19.000000000 +1000
-@@ -633,7 +633,7 @@ static int uart_get_info(struct uart_sta
- 	tmp.hub6	    = port->hub6;
- 	tmp.io_type         = port->iotype;
- 	tmp.iomem_reg_shift = port->regshift;
--	tmp.iomem_base      = (void *)port->mapbase;
-+	tmp.iomem_base      = (void *)(unsigned long)port->mapbase;
- 
- 	if (copy_to_user(retinfo, &tmp, sizeof(*retinfo)))
- 		return -EFAULT;
-@@ -1673,10 +1673,11 @@ static int uart_line_info(char *buf, str
- 		return 0;
- 
- 	mmio = port->iotype >= UPIO_MEM;
--	ret = sprintf(buf, "%d: uart:%s %s%08lX irq:%d",
-+	ret = sprintf(buf, "%d: uart:%s %s%08llX irq:%d",
- 			port->line, uart_type(port),
- 			mmio ? "mmio:0x" : "port:",
--			mmio ? port->mapbase : (unsigned long) port->iobase,
-+			mmio ? (unsigned long long)port->mapbase
-+		             : (unsigned long long) port->iobase,
- 			port->irq);
- 
- 	if (port->type == PORT_UNKNOWN) {
-@@ -2069,7 +2070,7 @@ uart_report_port(struct uart_driver *drv
- 	case UPIO_AU:
- 	case UPIO_TSI:
- 		snprintf(address, sizeof(address),
--			 "MMIO 0x%lx", port->mapbase);
-+			 "MMIO 0x%llx", (unsigned long long)port->mapbase);
- 		break;
- 	default:
- 		strlcpy(address, "*unknown*", sizeof(address));
-Index: working-2.6/drivers/serial/8250_early.c
-===================================================================
---- working-2.6.orig/drivers/serial/8250_early.c	2007-05-03 15:10:18.000000000 +1000
-+++ working-2.6/drivers/serial/8250_early.c	2007-05-03 15:10:19.000000000 +1000
-@@ -145,8 +145,9 @@ static int __init parse_options(struct e
- 		port->mapbase = simple_strtoul(options + 5, &options, 0);
- 		port->membase = ioremap(port->mapbase, mapsize);
- 		if (!port->membase) {
--			printk(KERN_ERR "%s: Couldn't ioremap 0x%lx\n",
--				__FUNCTION__, port->mapbase);
-+			printk(KERN_ERR "%s: Couldn't ioremap 0x%llx\n",
-+				__FUNCTION__,
-+			       (unsigned long long)port->mapbase);
- 			return -ENOMEM;
- 		}
- 		mmio = 1;
-@@ -168,9 +169,10 @@ static int __init parse_options(struct e
- 			device->baud);
- 	}
- 
--	printk(KERN_INFO "Early serial console at %s 0x%lx (options '%s')\n",
-+	printk(KERN_INFO "Early serial console at %s 0x%llx (options '%s')\n",
- 		mmio ? "MMIO" : "I/O port",
--		mmio ? port->mapbase : (unsigned long) port->iobase,
-+		mmio ? (unsigned long long) port->mapbase
-+	             : (unsigned long long) port->iobase,
- 		device->options);
- 	return 0;
- }
-@@ -236,10 +238,10 @@ static int __init early_uart_console_swi
- 	mmio = (port->iotype == UPIO_MEM);
- 	line = serial8250_start_console(port, device->options);
- 	if (line < 0)
--		printk("No ttyS device at %s 0x%lx for console\n",
-+		printk("No ttyS device at %s 0x%llx for console\n",
- 			mmio ? "MMIO" : "I/O port",
--			mmio ? port->mapbase :
--			    (unsigned long) port->iobase);
-+			mmio ? (unsigned long long) port->mapbase
-+		             : (unsigned long long) port->iobase);
- 
- 	unregister_console(&early_uart_console);
- 	if (mmio)
-Index: working-2.6/include/linux/serial_8250.h
-===================================================================
---- working-2.6.orig/include/linux/serial_8250.h	2007-05-03 15:10:18.000000000 +1000
-+++ working-2.6/include/linux/serial_8250.h	2007-05-03 15:10:19.000000000 +1000
-@@ -20,7 +20,7 @@
- struct plat_serial8250_port {
- 	unsigned long	iobase;		/* io base address */
- 	void __iomem	*membase;	/* ioremap cookie or NULL */
--	unsigned long	mapbase;	/* resource base */
-+	resource_size_t	mapbase;	/* resource base */
- 	unsigned int	irq;		/* interrupt number */
- 	unsigned int	uartclk;	/* UART clock rate */
- 	unsigned char	regshift;	/* register shift */
-Index: working-2.6/drivers/serial/8250.c
-===================================================================
---- working-2.6.orig/drivers/serial/8250.c	2007-05-03 15:10:18.000000000 +1000
-+++ working-2.6/drivers/serial/8250.c	2007-05-03 15:10:19.000000000 +1000
-@@ -2553,8 +2553,9 @@ static int __devinit serial8250_probe(st
- 		ret = serial8250_register_port(&port);
- 		if (ret < 0) {
- 			dev_err(&dev->dev, "unable to register port at index %d "
--				"(IO%lx MEM%lx IRQ%d): %d\n", i,
--				p->iobase, p->mapbase, p->irq, ret);
-+				"(IO%lx MEM%llx IRQ%d): %d\n", i,
-+				p->iobase, (unsigned long long)p->mapbase,
-+				p->irq, ret);
- 		}
- 	}
- 	return 0;
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ working-2.6/arch/powerpc/boot/dts/ebony.dts	2007-05-01 15:37:24.000000000 +1000
+@@ -0,0 +1,307 @@
++/*
++ * Device Tree Source for IBM Ebony
++ *
++ * Copyright (c) 2006, 2007 IBM Corp.
++ * Josh Boyer <jwboyer@linux.vnet.ibm.com>, David Gibson <dwg@au1.ibm.com>
++ *
++ * FIXME: Draft only!
++ *
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2.  This program is licensed "as is" without
++ * any warranty of any kind, whether express or implied.
++ *
++ * To build:
++ *   dtc -I dts -O asm -o ebony.S -b 0 ebony.dts
++ *   dtc -I dts -O dtb -o ebony.dtb -b 0 ebony.dts
++ */
++
++/ {
++	#address-cells = <2>;
++	#size-cells = <1>;
++	model = "Ebony";
++	compatible = "Ebony";
++	dcr-parent = <&/cpus/PowerPC,440GP@0>;
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,440GP@0 {
++			device_type = "cpu";
++			reg = <0>;
++			clock-frequency = <0>; // Filled in by zImage
++			timebase-frequency = <0>; // Filled in by zImage
++			i-cache-line-size = <32>;
++			d-cache-line-size = <32>;
++			i-cache-size = <0>;
++			d-cache-size = <0>;
++			dcr-controller;
++			dcr-access-method = "native";
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0 0 0>; // Filled in by zImage
++	};
++
++	UIC0: interrupt-controller0 {
++		device_type = "ibm,uic";
++		compatible = "ibm,uic-440gp", "ibm,uic";
++		interrupt-controller;
++		cell-index = <0>;
++		dcr-reg = <0c0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++
++	};
++
++	UIC1: interrupt-controller1 {
++		device_type = "ibm,uic";
++		compatible = "ibm,uic-440gp", "ibm,uic";
++		interrupt-controller;
++		cell-index = <1>;
++		dcr-reg = <0d0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++		interrupts = <1e 4 1f 4>; /* cascade */
++		interrupt-parent = <&UIC0>;
++	};
++
++	CPC0: cpc {
++		device_type = "ibm,cpc";
++		compatible = "ibm,cpc-440gp";
++		dcr-reg = <0b0 003 0e0 010>;
++		// FIXME: anything else?
++	};
++
++	plb {
++		device_type = "ibm,plb";
++		compatible = "ibm,plb-440gp", "ibm,plb4";
++		#address-cells = <2>;
++		#size-cells = <1>;
++		ranges;
++		clock-frequency = <0>; // Filled in by zImage
++
++		SDRAM0: sdram {
++			device_type = "memory-controller";
++			compatible = "ibm,sdram-440gp", "ibm,sdram";
++			dcr-reg = <010 2>;
++			// FIXME: anything else?
++		};
++
++		DMA0: dma {
++			// FIXME: ???
++			device_type = "ibm,dma-4xx";
++			compatible = "ibm,dma-440gp", "ibm,dma-4xx";
++			dcr-reg = <100 027>;
++		};
++
++		MAL0: mcmal {
++			device_type = "mcmal-dma";
++			compatible = "ibm,mcmal-440gp", "ibm,mcmal";
++			dcr-reg = <180 62>;
++			num-tx-chans = <4>;
++			num-rx-chans = <4>;
++			interrupt-parent = <&MAL0>;
++			interrupts = <0 1 2 3 4>;
++			#interrupt-cells = <1>;
++			#address-cells = <0>;
++			#size-cells = <0>;
++			interrupt-map = </*TXEOB*/ 0 &UIC0 a 4
++					 /*RXEOB*/ 1 &UIC0 b 4
++					 /*SERR*/  2 &UIC1 0 4
++					 /*TXDE*/  3 &UIC1 1 4
++					 /*RXDE*/  4 &UIC1 2 4>;
++			interrupt-map-mask = <ffffffff>;
++		};
++
++		POB0: opb {
++			device_type = "ibm,opb";
++			compatible = "ibm,opb-440gp", "ibm,opb";
++			#address-cells = <1>;
++			#size-cells = <1>;
++			/* Wish there was a nicer way of specifying a full 32-bit
++			   range */
++			ranges = <00000000 1 00000000 80000000
++				  80000000 1 80000000 80000000>;
++			dcr-reg = <090 00b>;
++			interrupt-parent = <&UIC1>;
++			interrupts = <7 4>;
++			clock-frequency = <0>; // Filled in by zImage
++
++			EBC0: ebc {
++				device_type = "ibm,ebc";
++				compatible = "ibm,ebc-440gp";
++				dcr-reg = <012 2>;
++				#address-cells = <2>;
++				#size-cells = <1>;
++				clock-frequency = <0>; // Filled in by zImage
++				ranges = <0 00000000 fff00000 100000
++					  1 00000000 48000000 100000
++					  2 00000000 ff800000 400000
++					  3 00000000 48200000 100000
++					  7 00000000 48300000 100000>;
++				interrupts = <5 4>;
++				interrupt-parent = <&UIC1>;
++
++				small-flash@0,0 {
++					device_type = "rom";
++					compatible = "direct-mapped";
++					probe-type = "JEDEC";
++					bank-width = <1>;
++					partitions = <0 80000>;
++					partition-names = "OpenBIOS";
++					reg = <0 80000 80000>;
++				};
++
++				ds1743@1,0 {
++					/* NVRAM & RTC */
++					device_type = "nvram";
++					compatible = "ds1743";
++					reg = <1 0 2000>;
++				};
++
++				large-flash@2,0 {
++					device_type = "rom";
++					compatible = "direct-mapped";
++					probe-type = "JEDEC";
++					bank-width = <1>;
++					partitions = <0 380000
++						      280000 80000>;
++					partition-names = "fs", "firmware";
++					reg = <2 0 400000>;
++				};
++
++				ir@3,0 {
++					reg = <3 0 10>;
++				};
++
++				fpga@7,0 {
++					compatible = "Ebony-FPGA";
++					reg = <7 0 10>;
++				};
++			};
++
++			UART0: serial@40000200 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <40000200 8>;
++				virtual-reg = <e0000200>;
++				clock-frequency = <A8C000>;
++				current-speed = <2580>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <0 4>;
++			};
++
++			UART1: serial@40000300 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <40000300 8>;
++				virtual-reg = <e0000300>;
++				clock-frequency = <A8C000>;
++				current-speed = <2580>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <1 4>;
++			};
++
++			IIC0: i2c@40000400 {
++				/* FIXME */
++				device_type = "i2c";
++				compatible = "ibm,iic-440gp", "ibm,iic";
++				reg = <40000400 14>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <2 4>;
++			};
++			IIC1: i2c@40000500 {
++				/* FIXME */
++				device_type = "i2c";
++				compatible = "ibm,iic-440gp", "ibm,iic";
++				reg = <40000500 14>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <3 4>;
++			};
++
++			GPIO0: gpio@40000700 {
++				/* FIXME */
++				device_type = "gpio";
++				compatible = "ibm,gpio-440gp";
++				reg = <40000700 20>;
++			};
++
++			ZMII0: emac-zmii@40000780 {
++				device_type = "emac-zmii";
++				compatible = "ibm,zmii-440gp", "ibm,zmii";
++				reg = <40000780 c>;
++			};
++
++			EMAC0: ethernet@40000800 {
++				linux,network-index = <0>;
++				device_type = "network";
++				compatible = "ibm,emac-440gp", "ibm,emac";
++				interrupt-parent = <&UIC1>;
++				interrupts = <1c 4 1d 4>;
++				reg = <40000800 70>;
++				local-mac-address = [000000000000]; // Filled in by zImage
++				mal-device = <&MAL0>;
++				mal-tx-channel = <0 1>;
++				mal-rx-channel = <0>;
++				cell-index = <0>;
++				max-frame-size = <5dc>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rmii";
++				phy-map = <00000001>;
++				zmii-device = <&ZMII0>;
++				zmii-channel = <0>;
++			};
++			EMAC1: ethernet@40000900 {
++				linux,network-index = <1>;
++				device_type = "network";
++				compatible = "ibm,emac-440gp", "ibm,emac";
++				interrupt-parent = <&UIC1>;
++				interrupts = <1e 4 1f 4>;
++				reg = <40000900 70>;
++				local-mac-address = [000000000000]; // Filled in by zImage
++				mal-device = <&MAL0>;
++				mal-tx-channel = <2 3>;
++				mal-rx-channel = <1>;
++				cell-index = <1>;
++				max-frame-size = <5dc>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rmii";
++				phy-map = <00000001>;
++				zmii-device = <&ZMII0>;
++				zmii-channel = <1>;
++			};
++
++
++			GPT0: gpt@40000a00 {
++				/* FIXME */
++				reg = <40000a00 d4>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <12 4 13 4 14 4 15 4 16 4>;
++			};
++
++		};
++
++		PCIX0: pci@1234 {
++			device_type = "pci";
++			/* FIXME */
++			reg = <2 0ec00000 8
++			       2 0ec80000 f0
++			       2 0ec80100 fc>;
++		};
++	};
++
++	chosen {
++		linux,stdout-path = "/plb/opb/serial@40000200";
++//		linux,initrd-start = <0>; /* FIXME */
++//		linux,initrd-end = <0>;
++//		bootargs = "";
++	};
++};
++
