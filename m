@@ -1,21 +1,18 @@
-Return-Path: <rsc@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 7D955DDE42
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 May 2007 06:52:19 +1000 (EST)
-Date: Fri, 4 May 2007 22:52:13 +0200
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Subject: Re: Correct location for ADC/DAC drivers
-Message-ID: <20070504205213.GQ22585@pengutronix.de>
-References: <200705011435.45046.ml@stefan-roese.de>
-	<20070504082434.GA22585@pengutronix.de>
-	<200705041054.05650.ml@stefan-roese.de>
-	<200705041421.50830.rgetz@blackfin.uclinux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <200705041421.50830.rgetz@blackfin.uclinux.org>
-Sender: Robert Schwebel <rsc@pengutronix.de>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <dale@farnsworth.org>
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Fri, 4 May 2007 14:03:15 -0700
+To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Subject: [PATCH 7/13] powerpc: Create Marvell mv64x60 MPSC (serial)
+	platform_data
+Message-ID: <20070504210315.GA3166@xyzzy.farnsworth.org>
+References: <20070425234630.GA4046@mag.az.mvista.com>
+	<20070425235939.GI4046@mag.az.mvista.com>
+	<20070502214104.GB27253@xyzzy.farnsworth.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070502214104.GB27253@xyzzy.farnsworth.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Paul Mackerras <paulus@samba.org>,
+	Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,32 +22,270 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Robin,
+This patch creates platform_device entries for the Marvell mv64x60
+MPSC (multi-protocol serial controller) ports, based on information
+contained in the device tree.
 
-On Fri, May 04, 2007 at 02:21:50PM -0400, Robin Getz wrote:
-> We also have DAC and ADC drivers (up to 16 bits @ 64MS/s, via DMA),
-> that would be nice to put in the "right" place  - I don't think that
-> drivers/char is the right place, nor drivers/misc - I also don't think
-> that /adc is a descriptive place for DAC or mixed signal front ends
-> (MxFE).
+Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+---
+Latest rev.  I believe I have address all the issues raised by
+Stephen Rothwell and Arnd Bergmann.
 
-What userspace interface do your drivers have? I don't think that there
-is anything generic available at the moment, other than COMEDI (which is
-rather outdated as far as I know).
+ arch/powerpc/platforms/embedded6xx/Kconfig |    3 
+ arch/powerpc/sysdev/Makefile               |    2 
+ arch/powerpc/sysdev/mv64x60_dev.c          |  221 +++++++++++++++++++
+ 3 files changed, 225 insertions(+), 1 deletion(-)
+
+Index: linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60_dev.c
+===================================================================
+--- /dev/null
++++ linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60_dev.c
+@@ -0,0 +1,221 @@
++/*
++ * Platform device setup for Marvell mv64360/mv64460 host bridges (Discovery)
++ *
++ * Author: Dale Farnsworth <dale@farnsworth.org>
++ *
++ * 2007 (c) MontaVista, Software, Inc.  This file is licensed under
++ * the terms of the GNU General Public License version 2.  This program
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
++ */
++
++#include <linux/stddef.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/mv643xx.h>
++#include <linux/platform_device.h>
++
++#include <asm/prom.h>
++
++/*
++ * These functions provide the necessary setup for the mv64x60 drivers.
++ * These drivers are unusual in that they work on both the MIPS and PowerPC
++ * architectures.  Because of that, the drivers do not support the normal
++ * PowerPC of_platform_bus_type.  They support platform_bus_type instead.
++ */
++
++/*
++ * Create MPSC platform device
++ */
++static int __init mv64x60_mpsc_register_shared_pdev(struct device_node *np)
++{
++	struct platform_device *pdev;
++	struct resource r[2];
++	struct mpsc_shared_pdata pdata;
++	const phandle *ph;
++	struct device_node *mpscrouting, *mpscintr;
++	int err;
++
++	ph = of_get_property(np, "mpscrouting", NULL);
++	mpscrouting = of_find_node_by_phandle(*ph);
++	if (!mpscrouting)
++		return -ENODEV;
++
++	err = of_address_to_resource(mpscrouting, 0, &r[0]);
++	of_node_put(mpscrouting);
++	if (err)
++		return err;
++
++	ph = of_get_property(np, "mpscintr", NULL);
++	mpscintr = of_find_node_by_phandle(*ph);
++	if (!mpscintr)
++		return -ENODEV;
++
++	err = of_address_to_resource(mpscintr, 0, &r[1]);
++	of_node_put(mpscintr);
++	if (err)
++		return err;
++
++	memset(&pdata, 0, sizeof(pdata));
++
++	pdev = platform_device_alloc(MPSC_SHARED_NAME, 0);
++	if (!pdev)
++		return -ENOMEM;
++
++	err = platform_device_add_resources(pdev, r, 2);
++	if (err)
++		goto error;
++
++	err = platform_device_add_data(pdev, &pdata, sizeof(pdata));
++	if (err)
++		goto error;
++
++	err = platform_device_add(pdev);
++	if (err)
++		goto error;
++
++	return 0;
++
++error:
++	platform_device_put(pdev);
++	return err;
++}
++
++
++static int __init mv64x60_mpsc_device_setup(struct device_node *np, int id)
++{
++	struct resource r[5];
++	struct mpsc_pdata pdata;
++	struct platform_device *pdev;
++	const unsigned int *prop;
++	const phandle *ph;
++	struct device_node *sdma, *brg;
++	int err;
++	int port_number;
++
++	/* only register the shared platform device the first time through */
++	if (id == 0 && (err = mv64x60_mpsc_register_shared_pdev(np)))
++		return err;
++
++	memset(&r, 0, sizeof(r));
++
++	err = of_address_to_resource(np, 0, &r[0]);
++	if (err)
++		return err;
++
++	of_irq_to_resource(np, 0, &r[4]);
++
++	ph = of_get_property(np, "sdma", NULL);
++	sdma = of_find_node_by_phandle(*ph);
++	if (!sdma)
++		return -ENODEV;
++
++	of_irq_to_resource(sdma, 0, &r[3]);
++	err = of_address_to_resource(sdma, 0, &r[1]);
++	of_node_put(sdma);
++	if (err)
++		return err;
++
++	ph = of_get_property(np, "brg", NULL);
++	brg = of_find_node_by_phandle(*ph);
++	if (!brg)
++		return -ENODEV;
++
++	err = of_address_to_resource(brg, 0, &r[2]);
++	of_node_put(brg);
++	if (err)
++		return err;
++
++	prop = of_get_property(np, "block-index", NULL);
++	if (!prop)
++		return -ENODEV;
++	port_number = *(int *)prop;
++
++	memset(&pdata, 0, sizeof(pdata));
++
++	pdata.cache_mgmt = 1; /* All current revs need this set */
++
++	prop = of_get_property(np, "max_idle", NULL);
++	if (prop)
++		pdata.max_idle = *prop;
++
++	prop = of_get_property(brg, "current-speed", NULL);
++	if (prop)
++		pdata.default_baud = *prop;
++
++	/* Default is 8 bits, no parity, no flow control */
++	pdata.default_bits = 8;
++	pdata.default_parity = 'n';
++	pdata.default_flow = 'n';
++
++	prop = of_get_property(np, "chr_1", NULL);
++	if (prop)
++		pdata.chr_1_val = *prop;
++
++	prop = of_get_property(np, "chr_2", NULL);
++	if (prop)
++		pdata.chr_2_val = *prop;
++
++	prop = of_get_property(np, "chr_10", NULL);
++	if (prop)
++		pdata.chr_10_val = *prop;
++
++	prop = of_get_property(np, "mpcr", NULL);
++	if (prop)
++		pdata.mpcr_val = *prop;
++
++	prop = of_get_property(brg, "bcr", NULL);
++	if (prop)
++		pdata.bcr_val = *prop;
++
++	pdata.brg_can_tune = 1; /* All current revs need this set */
++
++	prop = of_get_property(brg, "clock-src", NULL);
++	if (prop)
++		pdata.brg_clk_src = *prop;
++
++	prop = of_get_property(brg, "clock-frequency", NULL);
++	if (prop)
++		pdata.brg_clk_freq = *prop;
++
++	pdev = platform_device_alloc(MPSC_CTLR_NAME, port_number);
++	if (!pdev)
++		return -ENOMEM;
++
++	err = platform_device_add_resources(pdev, r, 5);
++	if (err)
++		goto error;
++
++	err = platform_device_add_data(pdev, &pdata, sizeof(pdata));
++	if (err)
++		goto error;
++
++	err = platform_device_add(pdev);
++	if (err)
++		goto error;
++
++	return 0;
++
++error:
++	platform_device_put(pdev);
++	return err;
++}
++
++static int __init mv64x60_device_setup(void)
++{
++	struct device_node *np = NULL;
++	int id;
++	int err;
++
++	for (id = 0;
++	     (np = of_find_compatible_node(np, "serial", "mpsc")); id++)
++		if ((err = mv64x60_mpsc_device_setup(np, id)))
++			goto error;
++
++	return 0;
++
++error:
++	of_node_put(np);
++	return err;
++}
++arch_initcall(mv64x60_device_setup);
+Index: linux-2.6-powerpc-df/arch/powerpc/sysdev/Makefile
+===================================================================
+--- linux-2.6-powerpc-df.orig/arch/powerpc/sysdev/Makefile
++++ linux-2.6-powerpc-df/arch/powerpc/sysdev/Makefile
+@@ -14,7 +14,7 @@ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
+ obj-$(CONFIG_FSL_PCIE)		+= fsl_pcie.o
+ obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
+ obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
+-obj-$(CONFIG_MV64X60)		+= mv64x60_pic.o
++obj-$(CONFIG_MV64X60)		+= mv64x60_pic.o mv64x60_dev.o
  
-> What about /drivers/char/daq or just drivers/daq - drivers for
-> non-PCI/USB/ISA/PCMCIA Data Acquisition Hardware, D/A and A/D
-> converters, Analog Front ends, etc.
-
-I'd like drivers/daq better, because it doesn't have anything to do with
-the bus it is connected to; a chipselect bus connectable ADC may be
-connected to a SoC CS-bus or to a PCI bridge and you want to use the
-same driver for it.
-
-Robert
--- 
- Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
-     Hannoversche Str. 2, 31134 Hildesheim, Germany
-   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
+ # contains only the suspend handler for time
+ obj-$(CONFIG_PM)		+= timer.o
+Index: linux-2.6-powerpc-df/arch/powerpc/platforms/embedded6xx/Kconfig
+===================================================================
+--- linux-2.6-powerpc-df.orig/arch/powerpc/platforms/embedded6xx/Kconfig
++++ linux-2.6-powerpc-df/arch/powerpc/platforms/embedded6xx/Kconfig
+@@ -38,6 +38,9 @@ config MPC10X_BRIDGE
+ 	select PPC_INDIRECT_PCI
+ 	default y
+ 
++config MV64X60
++	bool
++
+ config MPC10X_OPENPIC
+ 	bool
+ 	depends on LINKSTATION
