@@ -1,22 +1,18 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[65.172.181.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.osdl.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 68FA8DDED8
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 May 2007 05:35:56 +1000 (EST)
-Date: Fri, 4 May 2007 12:35:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] 8xx: mpc885ads pcmcia support
-Message-Id: <20070504123543.5e3fd908.akpm@linux-foundation.org>
-In-Reply-To: <20070503235747.29275.37271.stgit@localhost.localdomain>
-References: <20070503235747.29275.37271.stgit@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-pcmcia@lists.infradead.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 26D67DDEDF
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 May 2007 05:44:36 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/4] Add support for 750CL Holly board
+Date: Fri, 4 May 2007 21:44:30 +0200
+References: <1178302414.3026.202.camel@zod.rchland.ibm.com>
+	<1178302469.3026.204.camel@zod.rchland.ibm.com>
+In-Reply-To: <1178302469.3026.204.camel@zod.rchland.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200705042144.31194.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,306 +22,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 04 May 2007 03:57:51 +0400
-Vitaly Bordug <vitb@kernel.crashing.org> wrote:
-
-> 
-> Adds support for PowerQuicc on-chip PCMCIA. The driver is implemented as
-> of_device, so only arch/powerpc stuff is capable to use it, which now
-> implies only mpc885ads reference board.
-> 
-> To cope with the code that should be hooked inside driver, but is really
-> board specific (like set_voltage), global structure mpc8xx_pcmcia_ops
-> holds necessary function pointers that are filled in the BSP code.
-> 
-
-argh.
-
-akpm:/home/akpm> grep '^.*        ' x | wc -l 
-72
-
-please, Linux uses hard-tabs, not spacespacespacespacespacespacespacespace
-everywhere.
-
+On Friday 04 May 2007, Josh Boyer wrote:
 > +
->  		cpm@ff000000 {
->  			linux,phandle = <ff000000>;
->  			#address-cells = <1>;
-> diff --git a/arch/powerpc/platforms/8xx/m8xx_setup.c b/arch/powerpc/platforms/8xx/m8xx_setup.c
-> index 0901dba..f169355 100644
-> --- a/arch/powerpc/platforms/8xx/m8xx_setup.c
-> +++ b/arch/powerpc/platforms/8xx/m8xx_setup.c
-> @@ -32,6 +32,7 @@
->  #include <linux/root_dev.h>
->  #include <linux/time.h>
->  #include <linux/rtc.h>
-> +#include <linux/fsl_devices.h>
->  
->  #include <asm/mmu.h>
->  #include <asm/reg.h>
-> @@ -49,6 +50,10 @@
->  
->  #include "sysdev/mpc8xx_pic.h"
->  
-> +#ifdef CONFIG_PCMCIA_M8XX
-> +struct mpc8xx_pcmcia_ops m8xx_pcmcia_ops;
+> +#undef DEBUG
+> +#ifdef DEBUG
+> +#define DBG(fmt...) do { printk(fmt); } while(0)
+> +#else
+> +#define DBG(fmt...) do { } while(0)
 > +#endif
 
-Please declare this in a header file.
+Please replace this with the generic pr_debug()
 
-> +/* Some internal interrupt registers use an 8-bit mask for the interrupt
-> + * level instead of a number.
-> + */
-
-Standard Linux commenting style is:
-
-/*
- * Some internal interrupt registers use an 8-bit mask for the interrupt
- * level instead of a number.
- */
-
-> +#define mk_int_int_mask(IL) (1 << (7 - (IL/2)))
-
-Insufficiently parenthesised?
-
-static inline functions are preferred.
-
-> +#ifdef CONFIG_PCMCIA_M8XX
-> +extern struct mpc8xx_pcmcia_ops m8xx_pcmcia_ops;
-
-Please don't ever put extern declarations in C files.  Declare it in a
-header, include that header in the C file which contains the definition as
-well as within all C files which use the symbol.
-
-> +static void pcmcia_hw_setup(int slot, int enable);
-> +static int pcmcia_set_voltage(int slot, int vcc, int vpp);
+> +#ifndef CONFIG_PCI
+> +pci_dram_offset = PPC750GXCL_TSI_PCI_MEM_OFFSET;
 > +#endif
-> +
->  void __init mpc885ads_board_setup(void)
->  {
->  	cpm8xx_t *cp;
-> @@ -115,6 +122,12 @@ void __init mpc885ads_board_setup(void)
->  	immr_unmap(io_port);
->  
->  #endif
-> +
-> +#ifdef CONFIG_PCMCIA_M8XX
-> +	/*Set up board specific hook-ups*/
-> +	m8xx_pcmcia_ops.hw_ctrl = pcmcia_hw_setup;
-> +	m8xx_pcmcia_ops.voltage_set = pcmcia_set_voltage;
-> +#endif
->  }
->  
->  
-> @@ -322,6 +335,70 @@ void init_smc_ioports(struct fs_uart_platform_info *data)
->  	}
->  }
->  
-> +#ifdef CONFIG_PCMCIA_M8XX
-> +static void pcmcia_hw_setup(int slot, int enable)
+
+This looks like the compile would expect a type.
+
+> +extern int tsi108_setup_pci(struct device_node *dev);
+> +extern void tsi108_pci_int_init(struct device_node *node);
+> +extern void tsi108_irq_cascade(unsigned int irq, struct irq_desc *desc);
+
+please move any extern declarations into a header file that
+is included by both the file that defines and uses them
+
+> +static void holly_remap_bridge(void)
 > +{
-> +	unsigned *bcsr_io;
+> +	u32 lut_val, lut_addr = 0x900, misc_cfg;
+> +	int i;
 > +
-> +	bcsr_io = ioremap(BCSR1, sizeof(unsigned long));
-> +	if (enable)
-> +	clrbits32(bcsr_io, BCSR1_PCCEN);
-> +	else
-> +		setbits32(bcsr_io, BCSR1_PCCEN);
+> +	printk(KERN_ERR "Remapping PCI bridge\n");
 
-Missing a tab.
+Is it an error to remap the bridge? If not, KERN_INFO would be more
+appropriate ;-)
 
-> +	iounmap(bcsr_io);
+> +void holly_show_cpuinfo(struct seq_file *m)
+> +{
+> +	seq_printf(m, "vendor\t\t: IBM\n");
+> +	seq_printf(m, "machine\t\t: PPC750 GX/CL\n");
 > +}
-> +
-> +static int pcmcia_set_voltage(int slot, int vcc, int vpp)
+
+If it's an IBM product, it should come with a product code like 123-4567,
+which fits in here, instead of just listing the CPU.
+
+> +static int ppc750_machine_check_exception(struct pt_regs *regs)
 > +{
-> +        u32 reg = 0;
-> +        unsigned *bcsr_io;
+> +	extern void tsi108_clear_pci_cfg_error(void);
+
+move declaration to header file.
+
+> +	const struct exception_table_entry *entry;
 > +
-> +        bcsr_io = ioremap(BCSR1, sizeof(unsigned long));
-> +
-> +        switch(vcc) {
-> +                case 0:
-> +                        break;
-> +                case 33:
-> +                        reg |= BCSR1_PCCVCC0;
-> +                        break;
-> +                case 50:
-> +                        reg |= BCSR1_PCCVCC1;
-> +                        break;
-> +                default:
-> +                        return 1;
-> +        }
-
-Standard Linux layout for switch statements is:
-
-        switch(vcc) {
-	case 0:
-		break;
-	case 33:
-		reg |= BCSR1_PCCVCC0;
-		break;
-	case 50:
-		reg |= BCSR1_PCCVCC1;
-		break;
-	default:
-		return 1;
-        }
-
-
-> +        switch(vpp) {
-> +                case 0:
-> +                        break;
-> +                case 33:
-> +                case 50:
-> +                        if(vcc == vpp)
-> +                                reg |= BCSR1_PCCVPP1;
-> +                        else
-> +                                return 1;
-> +                        break;
-> +                case 120:
-> +                        if ((vcc == 33) || (vcc == 50))
-> +                                reg |= BCSR1_PCCVPP0;
-> +                        else
-> +                                return 1;
-> +                default:
-> +                        return 1;
-> +        }
-
-Ditto.
-
-> +        /* first, turn off all power */
-> +        clrbits32(bcsr_io, 0x00610000);
-> +
-> +        /* enable new powersettings */
-> +        setbits32(bcsr_io, reg);
-> +
-> +        iounmap(bcsr_io);
-> +        return 0;
-> +}
-> +#endif
-> +
->  int platform_device_skip(const char *model, int id)
->  {
->  #ifdef CONFIG_MPC8xx_SECOND_ETH_SCC3
-> diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-> index 8a123c7..01e4a40 100644
-> --- a/arch/powerpc/sysdev/fsl_soc.c
-> +++ b/arch/powerpc/sysdev/fsl_soc.c
-> @@ -1028,6 +1028,18 @@ err:
->  
->  arch_initcall(fs_enet_of_init);
->  
-> +static int __init fsl_pcmcia_of_init(void)
-> +{
-> +	struct device_node *np = NULL;
-> +	/*
-> +	 * Register all the devices which type is "pcmcia"
-> +	 */
-> +	while ((np = of_find_compatible_node(np, "pcmcia", "fsl,pq-pcmcia")) != NULL)
-> +		of_platform_device_create(np, "m8xx-pcmcia", NULL);
-
-please try to fit code into 80 columns.
-
->  
-> -static DEFINE_SPINLOCK(events_lock);
-> +static spinlock_t events_lock = SPIN_LOCK_UNLOCKED;
-
-This is wrong.  DEFINE_SPINLOCK is required for correct lockdep operation.
-
-> +#define hardware_enable(_slot_) m8xx_pcmcia_ops.hw_ctrl(_slot_, 1)
-> +#define hardware_disable(_slot_) m8xx_pcmcia_ops.hw_ctrl(_slot_, 0)
-> +#define voltage_set(slot, vcc, vpp) m8xx_pcmcia_ops.voltage_set(slot, vcc, vpp)
-
-static inline functions are preferred.  One reason is that people are more
-inclined to add comments to them than to macros.
-
-> -static DEFINE_SPINLOCK(pending_event_lock);
-> +static spinlock_t pending_event_lock = SPIN_LOCK_UNLOCKED;
-
-again, you added a bug.
-
-> +	for(i = 0; i < PCMCIA_SOCKETS_NO; i++){
-
-No, we format `for' statements as:
-
-	for (i = 0; i < PCMCIA_SOCKETS_NO; i++) {
-
-> +		w = (void *) &pcmcia->pcmc_pbr0;
->  
-> +		out_be32(&pcmcia->pcmc_pscr, M8XX_PCMCIA_MASK(i));
-> +		out_be32(&pcmcia->pcmc_per, in_be32(&pcmcia->pcmc_per) & ~M8XX_PCMCIA_MASK(i));
-
-80-cols
-
-> +
-> +		/* turn off interrupt and disable CxOE */
-> +		out_be32(M8XX_PGCRX(i), M8XX_PGCRX_CXOE);
-> +
-> +		/* turn off memory windows */
-> +		for(m = 0; m < PCMCIA_MEM_WIN_NO; m++) {
-
-formatting
-
-> +			out_be32(&w->or, 0); /* set to not valid */
-> +			w++;
-> +		}
-> +
-> +		/* turn off voltage */
-> +		voltage_set(i, 0, 0);
-> +
-> +		/* disable external hardware */
-> +		hardware_disable(i);
+> +	/* Are we prepared to handle this fault */
+> +	if ((entry = search_exception_tables(regs->nip)) != NULL) {
+> +		tsi108_clear_pci_cfg_error();
+> +		regs->msr |= MSR_RI;
+> +		regs->nip = entry->fixup;
+> +		return 1;
 > +	}
->  	for (i = 0; i < PCMCIA_SOCKETS_NO; i++)
->  		pcmcia_unregister_socket(&socket[i].socket);
->  
-> -	m8xx_shutdown();
-> +	free_irq(pcmcia_schlvl, NULL);
-> +
 > +	return 0;
 > +}
 
+Are you sure that you can use the generic exception table mechanism
+like this? I can't see why it doesn't work, but it's something I haven't
+seen anyone do like this.
 
-> -	platform_device_unregister(&m8xx_device);
-> -	driver_unregister(&m8xx_driver);
-> +#ifdef CONFIG_PM
-> +static int m8xx_suspend(struct platform_device *pdev, pm_message_t state)
-> +{
-> +        return pcmcia_socket_dev_suspend(&pdev->dev, state);
-> +}
-> +
-> +static int m8xx_resume(struct platform_device *pdev)
-> +{
-> +        return pcmcia_socket_dev_resume(&pdev->dev);
-> +}
+> --- linux-2.6.orig/drivers/net/tsi108_eth.h
+> +++ linux-2.6/drivers/net/tsi108_eth.h
+> @@ -49,7 +49,11 @@
+>   */
+>  #define PHY_MV88E	1	/* Marvel 88Exxxx PHY */
+>  #define PHY_BCM54XX	2	/* Broardcom BCM54xx PHY */
+> +#if defined(CONFIG_HOLLY)
+> +#define TSI108_PHY_TYPE PHY_BCM54XX
+> +#else
+>  #define TSI108_PHY_TYPE	PHY_MV88E
 > +#endif
+>  
 
-Here, use
+this breaks multiplatform setups.
 
-#else
-#define m8xx_suspend NULL
-#define m8xx_resume NULL
-#endif
-
-> +static struct of_device_id m8xx_pcmcia_match[] = {
-> +	{
-> +		.type = "pcmcia",
-> +		.compatible = "fsl,pq-pcmcia",
-> +	},
-> +	{},
-> +};
-> +
-> +MODULE_DEVICE_TABLE(of, m8xx_pcmcia_match);
-> +
-> +static struct of_platform_driver m8xx_pcmcia_driver = {
-> +	.name		= (char *) driver_name,
-> +	.match_table	= m8xx_pcmcia_match,
-> +	.probe		= m8xx_probe,
-> +	.remove		= m8xx_remove,
-> +#ifdef CONFIG_PM
-> +	.suspend	= m8xx_suspend,
-> +	.resume		= m8xx_resume,
+> --- linux-2.6.orig/include/asm-powerpc/tsi108.h
+> +++ linux-2.6/include/asm-powerpc/tsi108.h
+> @@ -68,7 +68,11 @@
+>  #define TSI108_PB_ERRCS_ES		(1 << 1)
+>  #define TSI108_PB_ISR_PBS_RD_ERR	(1 << 8)
+>  
+> +#ifdef CONFIG_HOLLY
+> +#define TSI108_PCI_CFG_BASE_PHYS	(0x7c000000)
+> +#else
+>  #define TSI108_PCI_CFG_BASE_PHYS	(0xfb000000)
 > +#endif
+>  #define TSI108_PCI_CFG_SIZE		(0x01000000)
+>  /* Global variables */
+> 
 
-then remove this ifdef.
+Same here.
+
+	Arnd <><
