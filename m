@@ -1,23 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8ED40DDE40
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 May 2007 08:26:03 +1000 (EST)
-Subject: Re: [PATCH] Remove CPU_FTR_NEED_COHERENT for 7448.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jon Loeliger <jdl@jdl.com>
-In-Reply-To: <E1HjzWH-0001Wg-Ps@jdl.com>
-References: <1178141683.32136.46.camel@ld0161-tx32>
-	<1178187440.20944.12.camel@localhost.localdomain>
-	<1178208838.17201.52.camel@ld0161-tx32>
-	<1178228208.6353.55.camel@localhost.localdomain>
-	<E1HjzWH-0001Wg-Ps@jdl.com>
-Content-Type: text/plain
-Date: Sat, 05 May 2007 08:25:26 +1000
-Message-Id: <1178317526.6353.106.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 83B4DDDE06
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 May 2007 09:23:21 +1000 (EST)
+Date: Fri, 4 May 2007 18:24:51 -0500
+To: Linas Vepstas <linas@austin.ibm.com>
+Subject: Re: [PATCH v2] gianfar: Add I/O barriers when touching buffer
+	descriptor ownership.
+Message-ID: <20070504232451.GA15433@lixom.net>
+References: <20070502195712.GA16541@ld0162-tx32.am.freescale.net>
+	<F1B250DD-A472-470F-B3D0-EBB2F042E454@kernel.crashing.org>
+	<4638F0C4.2000406@freescale.com>
+	<FA9554A4-5A7D-4E03-BE28-C4B6B80D9DB9@kernel.crashing.org>
+	<4638F734.2040809@freescale.com>
+	<20070504221309.GR6193@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070504221309.GR6193@austin.ibm.com>
+From: olof@lixom.net (Olof Johansson)
+Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,23 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-05-04 at 10:16 -0500, Jon Loeliger wrote:
-> So, like, the other day Benjamin Herrenschmidt mumbled:
+On Fri, May 04, 2007 at 05:13:09PM -0500, Linas Vepstas wrote:
+> On Wed, May 02, 2007 at 03:40:20PM -0500, Scott Wood wrote:
 > > 
-> > I still maintain it should be a runtime thing tho :-)
-> > 
-> > Ben.
+> > Well, Segher doesn't want me to use iobarrier (because it's not I/O). 
+> > Andy doesn't want me to use wmb() (because it's sync).  I don't think 
+> > something like gfar_wmb() would be appropriate.  So the remaining 
+> > options are either eieio(), 
 > 
-> So, could you comment on my proposed solution doing
-> things exactly this way?  Speifically, would folks
-> prefer the dynamic 
+> ? Just curious... the original intent of eieio was to order I/O, 
+> such as MMIO; it has no effect on memory that isn't marked 
+> cache-inhibited or write-trhough or guarded. Has this changed?
+> I guess I haven't kept up with the times ... is eieio now
+> being used to provide some other kind of barrier?
+> Is eieio providing some sort of SMP synchronization side-effect?
 > 
->     number_of_cpus() == 1 
+> Point being: if Segher doesn't let you "use iobarrier (because 
+> it's not I/O)", then I don't understand why eieio would work (since
+> that's for io only).  
 
-Sorry I don't remember the actual patch, must have missed it... I
-suppose we could have generic code in early_init_devtree set the default
-for this based on cpu_possible_map() containing more than one bit and
-have platforms using one of those broken bridges force the bit in from
-their probe routine.
+Eieio has always worked for regular cachable memory as well, it just never
+orders _between_ cache inhibited/guarded and cachable memory.
 
-Ben.
+Book II 2.03 has a pretty good description of it on page 367.
+
+
+
+-Olof
