@@ -1,20 +1,23 @@
-Return-Path: <rgetz@blackfin.uclinux.org>
-Received: from nwd2mail10.analog.com (nwd2mail10.analog.com [137.71.25.55])
-	by ozlabs.org (Postfix) with ESMTP id 3CDB5DDEDA
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 May 2007 08:13:49 +1000 (EST)
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-To: "Robert Schwebel" <r.schwebel@pengutronix.de>
-Subject: Re: Correct location for ADC/DAC drivers
-Date: Fri, 4 May 2007 18:16:01 -0400
-References: <200705011435.45046.ml@stefan-roese.de>
-	<200705041421.50830.rgetz@blackfin.uclinux.org>
-	<20070504205213.GQ22585@pengutronix.de>
-In-Reply-To: <20070504205213.GQ22585@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200705041816.01572.rgetz@blackfin.uclinux.org>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8ED40DDE40
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 May 2007 08:26:03 +1000 (EST)
+Subject: Re: [PATCH] Remove CPU_FTR_NEED_COHERENT for 7448.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jon Loeliger <jdl@jdl.com>
+In-Reply-To: <E1HjzWH-0001Wg-Ps@jdl.com>
+References: <1178141683.32136.46.camel@ld0161-tx32>
+	<1178187440.20944.12.camel@localhost.localdomain>
+	<1178208838.17201.52.camel@ld0161-tx32>
+	<1178228208.6353.55.camel@localhost.localdomain>
+	<E1HjzWH-0001Wg-Ps@jdl.com>
+Content-Type: text/plain
+Date: Sat, 05 May 2007 08:25:26 +1000
+Message-Id: <1178317526.6353.106.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,44 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri 4 May 2007 16:52, Robert Schwebel pondered:
-> Robin,
->
-> On Fri, May 04, 2007 at 02:21:50PM -0400, Robin Getz wrote:
-> > We also have DAC and ADC drivers (up to 16 bits @ 64MS/s, via DMA),
-> > that would be nice to put in the "right" place  - I don't think that
-> > drivers/char is the right place, nor drivers/misc - I also don't think
-> > that /adc is a descriptive place for DAC or mixed signal front ends
-> > (MxFE).
->
-> What userspace interface do your drivers have?
+On Fri, 2007-05-04 at 10:16 -0500, Jon Loeliger wrote:
+> So, like, the other day Benjamin Herrenschmidt mumbled:
+> > 
+> > I still maintain it should be a runtime thing tho :-)
+> > 
+> > Ben.
+> 
+> So, could you comment on my proposed solution doing
+> things exactly this way?  Speifically, would folks
+> prefer the dynamic 
+> 
+>     number_of_cpus() == 1 
 
-Right now, it is a little rudimentary char interface, it needs a little care 
-to be a bit more general purpose, but it suited needs of what the people who 
-were using it.
+Sorry I don't remember the actual patch, must have missed it... I
+suppose we could have generic code in early_init_devtree set the default
+for this based on cpu_possible_map() containing more than one bit and
+have platforms using one of those broken bridges force the bit in from
+their probe routine.
 
-http://blackfin.uclinux.org/gf/project/linux-kernel/scmsvn/?view=markup&path=/trunk/drivers/char/ad9960.c
-
-> I don't think that there 
-> is anything generic available at the moment, other than COMEDI (which is
-> rather outdated as far as I know).
-
-I would be interested in having a detailed discussion/random thoughts on 
-this - what is the best way to expose these types of devices?
-
-I never actually used COMEDI, to understand the pro/cons of what it did.
-
-> > What about /drivers/char/daq or just drivers/daq - drivers for
-> > non-PCI/USB/ISA/PCMCIA Data Acquisition Hardware, D/A and A/D
-> > converters, Analog Front ends, etc.
->
-> I'd like drivers/daq better, because it doesn't have anything to do with
-> the bus it is connected to; a chipselect bus connectable ADC may be
-> connected to a SoC CS-bus or to a PCI bridge and you want to use the
-> same driver for it.
-
-That makes sense - I have seen more and more parts with selectable interfaces 
-(I2C or SPI), and you should be able to use the same base driver, independent 
-of the bus - so drivers/daq would suite me fine. 
-
--Robin
+Ben.
