@@ -1,10 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 1/6] Only legacy ports should allow addr/irq changes via
-	setserial
+Subject: [PATCH 2/6] Use resource_size_t for serial port IO addresses
 In-Reply-To: <20070504055455.GA25922@localhost.localdomain>
-Message-Id: <20070504055733.54EA2DDFF7@ozlabs.org>
+Message-Id: <20070504055733.63E57DDFF9@ozlabs.org>
 Date: Fri,  4 May 2007 15:57:33 +1000 (EST)
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -16,105 +15,145 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-At present, the serial core always allows setserial in userspace to
-change the port address, irq and base clock of any serial port.  That
-makes sense for legacy ISA ports, but not for PCI serial ports or
-(say) embedded ns16550 compatible serial ports at peculiar addresses.
-In these cases, the kernel code configuring the ports must know
-exactly where they are, and their clocking arrangements (which can be
-unusual on embedded boards).  It doesn't make sense for userspace to
-change these settings.
+At present, various parts of the serial code use unsigned long to
+define resource addresses.  This is a problem, because some 32-bit
+platforms have physical addresses larger than 32-bits, and have mmio
+serial uarts located above the 4GB point.
 
-Therefore, this patch alters uart_set_info() to ignore attempts to
-change a port's type, io address irq or base clock with setserial,
-unless that port has a new UPF_SETSERIAL_MOVABLE flag set.  That flag
-is set only on the ports associated with the serial8250_isa_devs
-platform_device defined within 8250.c itself.
+This patch changes the type of mapbase in both struct uart_port and
+struct plat_serial8250_port to resource_size_t, which can be
+configured to be 64 bits on such platforms.  The mapbase in
+serial_struct can't safely be changed, because that structure is user
+visible.
 
 Signed-off-by: David Gibson <dwg@au1.ibm.com>
 ---
 
- drivers/serial/8250.c        |    3 ++-
- drivers/serial/serial_core.c |   22 +++++++++++++---------
- include/linux/serial_core.h  |    1 +
- 3 files changed, 16 insertions(+), 10 deletions(-)
+ drivers/serial/8250.c        |    5 +++--
+ drivers/serial/8250_early.c  |   16 +++++++++-------
+ drivers/serial/serial_core.c |    9 +++++----
+ include/linux/serial_8250.h  |    2 +-
+ include/linux/serial_core.h  |    2 +-
+ 5 files changed, 19 insertions(+), 15 deletions(-)
 
-Index: working-2.6/drivers/serial/serial_core.c
-===================================================================
---- working-2.6.orig/drivers/serial/serial_core.c	2007-02-19 11:05:32.000000000 +1100
-+++ working-2.6/drivers/serial/serial_core.c	2007-05-03 15:04:12.000000000 +1000
-@@ -646,6 +646,7 @@ static int uart_set_info(struct uart_sta
- 	struct serial_struct new_serial;
- 	struct uart_port *port = state->port;
- 	unsigned long new_port;
-+	int allow_hw_change = port->flags & UPF_SETSERIAL_MOVABLE;
- 	unsigned int change_irq, change_port, closing_wait;
- 	unsigned int old_custom_divisor, close_delay;
- 	upf_t old_flags, new_flags;
-@@ -672,19 +673,20 @@ static int uart_set_info(struct uart_sta
- 	 */
- 	mutex_lock(&state->mutex);
- 
--	change_irq  = new_serial.irq != port->irq;
-+	change_irq  = allow_hw_change && (new_serial.irq != port->irq);
- 
- 	/*
- 	 * Since changing the 'type' of the port changes its resource
- 	 * allocations, we should treat type changes the same as
- 	 * IO port changes.
- 	 */
--	change_port = new_port != port->iobase ||
--		      (unsigned long)new_serial.iomem_base != port->mapbase ||
--		      new_serial.hub6 != port->hub6 ||
--		      new_serial.io_type != port->iotype ||
--		      new_serial.iomem_reg_shift != port->regshift ||
--		      new_serial.type != port->type;
-+	change_port = allow_hw_change &&
-+		(new_port != port->iobase ||
-+		 (unsigned long)new_serial.iomem_base != port->mapbase ||
-+		 new_serial.hub6 != port->hub6 ||
-+		 new_serial.io_type != port->iotype ||
-+		 new_serial.iomem_reg_shift != port->regshift ||
-+		 new_serial.type != port->type);
- 
- 	old_flags = port->flags;
- 	new_flags = new_serial.flags;
-@@ -796,8 +798,10 @@ static int uart_set_info(struct uart_sta
- 		}
- 	}
- 
--	port->irq              = new_serial.irq;
--	port->uartclk          = new_serial.baud_base * 16;
-+	if (change_irq)
-+		port->irq      = new_serial.irq;
-+	if (allow_hw_change)
-+		port->uartclk  = new_serial.baud_base * 16;
- 	port->flags            = (port->flags & ~UPF_CHANGE_MASK) |
- 				 (new_flags & UPF_CHANGE_MASK);
- 	port->custom_divisor   = new_serial.custom_divisor;
 Index: working-2.6/include/linux/serial_core.h
 ===================================================================
---- working-2.6.orig/include/linux/serial_core.h	2007-02-19 11:05:32.000000000 +1100
-+++ working-2.6/include/linux/serial_core.h	2007-05-03 15:04:08.000000000 +1000
-@@ -260,6 +260,7 @@ struct uart_port {
- #define UPF_CONS_FLOW		((__force upf_t) (1 << 23))
- #define UPF_SHARE_IRQ		((__force upf_t) (1 << 24))
- #define UPF_BOOT_AUTOCONF	((__force upf_t) (1 << 28))
-+#define UPF_SETSERIAL_MOVABLE	((__force upf_t) (1 << 29))
- #define UPF_DEAD		((__force upf_t) (1 << 30))
- #define UPF_IOREMAP		((__force upf_t) (1 << 31))
+--- working-2.6.orig/include/linux/serial_core.h	2007-05-03 15:10:18.000000000 +1000
++++ working-2.6/include/linux/serial_core.h	2007-05-03 15:10:19.000000000 +1000
+@@ -273,7 +273,7 @@ struct uart_port {
+ 	const struct uart_ops	*ops;
+ 	unsigned int		custom_divisor;
+ 	unsigned int		line;			/* port index */
+-	unsigned long		mapbase;		/* for ioremap */
++	resource_size_t		mapbase;		/* for ioremap */
+ 	struct device		*dev;			/* parent device */
+ 	unsigned char		hub6;			/* this should be in the 8250 driver */
+ 	unsigned char		unused[3];
+Index: working-2.6/drivers/serial/serial_core.c
+===================================================================
+--- working-2.6.orig/drivers/serial/serial_core.c	2007-05-03 15:10:18.000000000 +1000
++++ working-2.6/drivers/serial/serial_core.c	2007-05-03 15:10:19.000000000 +1000
+@@ -633,7 +633,7 @@ static int uart_get_info(struct uart_sta
+ 	tmp.hub6	    = port->hub6;
+ 	tmp.io_type         = port->iotype;
+ 	tmp.iomem_reg_shift = port->regshift;
+-	tmp.iomem_base      = (void *)port->mapbase;
++	tmp.iomem_base      = (void *)(unsigned long)port->mapbase;
  
+ 	if (copy_to_user(retinfo, &tmp, sizeof(*retinfo)))
+ 		return -EFAULT;
+@@ -1673,10 +1673,11 @@ static int uart_line_info(char *buf, str
+ 		return 0;
+ 
+ 	mmio = port->iotype >= UPIO_MEM;
+-	ret = sprintf(buf, "%d: uart:%s %s%08lX irq:%d",
++	ret = sprintf(buf, "%d: uart:%s %s%08llX irq:%d",
+ 			port->line, uart_type(port),
+ 			mmio ? "mmio:0x" : "port:",
+-			mmio ? port->mapbase : (unsigned long) port->iobase,
++			mmio ? (unsigned long long)port->mapbase
++		             : (unsigned long long) port->iobase,
+ 			port->irq);
+ 
+ 	if (port->type == PORT_UNKNOWN) {
+@@ -2069,7 +2070,7 @@ uart_report_port(struct uart_driver *drv
+ 	case UPIO_AU:
+ 	case UPIO_TSI:
+ 		snprintf(address, sizeof(address),
+-			 "MMIO 0x%lx", port->mapbase);
++			 "MMIO 0x%llx", (unsigned long long)port->mapbase);
+ 		break;
+ 	default:
+ 		strlcpy(address, "*unknown*", sizeof(address));
+Index: working-2.6/drivers/serial/8250_early.c
+===================================================================
+--- working-2.6.orig/drivers/serial/8250_early.c	2007-05-03 15:10:18.000000000 +1000
++++ working-2.6/drivers/serial/8250_early.c	2007-05-03 15:10:19.000000000 +1000
+@@ -145,8 +145,9 @@ static int __init parse_options(struct e
+ 		port->mapbase = simple_strtoul(options + 5, &options, 0);
+ 		port->membase = ioremap(port->mapbase, mapsize);
+ 		if (!port->membase) {
+-			printk(KERN_ERR "%s: Couldn't ioremap 0x%lx\n",
+-				__FUNCTION__, port->mapbase);
++			printk(KERN_ERR "%s: Couldn't ioremap 0x%llx\n",
++				__FUNCTION__,
++			       (unsigned long long)port->mapbase);
+ 			return -ENOMEM;
+ 		}
+ 		mmio = 1;
+@@ -168,9 +169,10 @@ static int __init parse_options(struct e
+ 			device->baud);
+ 	}
+ 
+-	printk(KERN_INFO "Early serial console at %s 0x%lx (options '%s')\n",
++	printk(KERN_INFO "Early serial console at %s 0x%llx (options '%s')\n",
+ 		mmio ? "MMIO" : "I/O port",
+-		mmio ? port->mapbase : (unsigned long) port->iobase,
++		mmio ? (unsigned long long) port->mapbase
++	             : (unsigned long long) port->iobase,
+ 		device->options);
+ 	return 0;
+ }
+@@ -236,10 +238,10 @@ static int __init early_uart_console_swi
+ 	mmio = (port->iotype == UPIO_MEM);
+ 	line = serial8250_start_console(port, device->options);
+ 	if (line < 0)
+-		printk("No ttyS device at %s 0x%lx for console\n",
++		printk("No ttyS device at %s 0x%llx for console\n",
+ 			mmio ? "MMIO" : "I/O port",
+-			mmio ? port->mapbase :
+-			    (unsigned long) port->iobase);
++			mmio ? (unsigned long long) port->mapbase
++		             : (unsigned long long) port->iobase);
+ 
+ 	unregister_console(&early_uart_console);
+ 	if (mmio)
+Index: working-2.6/include/linux/serial_8250.h
+===================================================================
+--- working-2.6.orig/include/linux/serial_8250.h	2007-05-03 15:10:18.000000000 +1000
++++ working-2.6/include/linux/serial_8250.h	2007-05-03 15:10:19.000000000 +1000
+@@ -20,7 +20,7 @@
+ struct plat_serial8250_port {
+ 	unsigned long	iobase;		/* io base address */
+ 	void __iomem	*membase;	/* ioremap cookie or NULL */
+-	unsigned long	mapbase;	/* resource base */
++	resource_size_t	mapbase;	/* resource base */
+ 	unsigned int	irq;		/* interrupt number */
+ 	unsigned int	uartclk;	/* UART clock rate */
+ 	unsigned char	regshift;	/* register shift */
 Index: working-2.6/drivers/serial/8250.c
 ===================================================================
---- working-2.6.orig/drivers/serial/8250.c	2007-04-30 10:57:48.000000000 +1000
-+++ working-2.6/drivers/serial/8250.c	2007-05-03 15:04:08.000000000 +1000
-@@ -2308,7 +2308,8 @@ static void __init serial8250_isa_init_p
- 		up->port.iobase   = old_serial_port[i].port;
- 		up->port.irq      = irq_canonicalize(old_serial_port[i].irq);
- 		up->port.uartclk  = old_serial_port[i].baud_base * 16;
--		up->port.flags    = old_serial_port[i].flags;
-+		up->port.flags    = old_serial_port[i].flags
-+			| UPF_SETSERIAL_MOVABLE;
- 		up->port.hub6     = old_serial_port[i].hub6;
- 		up->port.membase  = old_serial_port[i].iomem_base;
- 		up->port.iotype   = old_serial_port[i].io_type;
+--- working-2.6.orig/drivers/serial/8250.c	2007-05-03 15:10:18.000000000 +1000
++++ working-2.6/drivers/serial/8250.c	2007-05-03 15:10:19.000000000 +1000
+@@ -2553,8 +2553,9 @@ static int __devinit serial8250_probe(st
+ 		ret = serial8250_register_port(&port);
+ 		if (ret < 0) {
+ 			dev_err(&dev->dev, "unable to register port at index %d "
+-				"(IO%lx MEM%lx IRQ%d): %d\n", i,
+-				p->iobase, p->mapbase, p->irq, ret);
++				"(IO%lx MEM%llx IRQ%d): %d\n", i,
++				p->iobase, (unsigned long long)p->mapbase,
++				p->irq, ret);
+ 		}
+ 	}
+ 	return 0;
