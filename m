@@ -1,14 +1,21 @@
-Return-Path: <dale@farnsworth.org>
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Fri, 4 May 2007 14:16:32 -0700
-To: Linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: check cache coherency of kernel vs firmware
-Message-ID: <20070504211632.GA4776@xyzzy.farnsworth.org>
-References: <20070502215938.GF27253@xyzzy.farnsworth.org>
+Return-Path: <clameter@sgi.com>
+Received: from relay.sgi.com (netops-testserver-3-out.sgi.com [192.48.171.28])
+	by ozlabs.org (Postfix) with ESMTP id 398DFDDED3
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 May 2007 07:26:55 +1000 (EST)
+Date: Fri, 4 May 2007 14:21:46 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Re: 2.6.21-rc7-mm2 -- hvsi console driver registration
+	failure
+In-Reply-To: <20070504130952.b43fc676.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0705041410440.25716@schroedinger.engr.sgi.com>
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
+	<4fe4528cb20beb569a8f2ac817c776e5@pinky>
+	<20070504130952.b43fc676.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070502215938.GF27253@xyzzy.farnsworth.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Paul Mackerras <paulus@samba.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, Christoph Lameter <clameter@cthulhu.engr.sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,92 +25,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-check_cache_coherency() verifies that the cache coherency setting of
-the kernel (CONFIG_NOT_COHERENT_CACHE) matches that left by the firmware,
-as indicated by coherency-off device tree property.
+On Fri, 4 May 2007, Andrew Morton wrote:
 
-Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+> Better, we should be emitting loud warnigns which then disable themselves
+> and then succeeding the allocation so that people can proceed with their
+> kernel testing.
+> 
+> When all the loud-warning sites have been fixed, we can take that code out
+> again.
+> 
+> The present situation is maximally tester-hostile.
+i
+
+SLUB: Allocate smallest object size if the user asks for 0 bytes.
+
+Makes SLUB behave like SLAB in this area to avoid issues....
+
+Throw a stack dump to alert people.
+
+At some point the behavior should be switched back. NULL is no
+memory as far as I can tell and if the use asked for 0 bytes then
+he need to get no memory.
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
-New, improved!  Now with matching config var names.  Thanks Stephen.
+ include/linux/slub_def.h |    8 ++++++--
+ mm/slub.c                |    2 +-
+ 2 files changed, 7 insertions(+), 3 deletions(-)
 
- arch/powerpc/Kconfig                       |    3 +
- arch/powerpc/kernel/setup-common.c         |   41 +++++++++++++++++++
- arch/powerpc/platforms/embedded6xx/Kconfig |    1 
- 3 files changed, 45 insertions(+)
-
-Index: linux-2.6-powerpc-df/arch/powerpc/kernel/setup-common.c
+Index: slub/mm/slub.c
 ===================================================================
---- linux-2.6-powerpc-df.orig/arch/powerpc/kernel/setup-common.c
-+++ linux-2.6-powerpc-df/arch/powerpc/kernel/setup-common.c
-@@ -530,3 +530,44 @@ void __init setup_panic(void)
+--- slub.orig/mm/slub.c	2007-05-04 14:17:22.000000000 -0700
++++ slub/mm/slub.c	2007-05-04 14:19:36.000000000 -0700
+@@ -2009,7 +2009,7 @@ static struct kmem_cache *get_slab(size_
  {
- 	atomic_notifier_chain_register(&panic_notifier_list, &ppc_panic_block);
- }
-+
-+#ifdef CONFIG_CHECK_CACHE_COHERENCY
-+/*
-+ * For platforms that have configurable cache-coherency.  This function
-+ * checks that the cache coherency setting of the kernel matches the setting
-+ * left by the firmware, as indicated in the device tree.  Since a mismatch
-+ * will eventually result in DMA failures, we print * and error and call
-+ * BUG() in that case.
-+ */
-+
-+#ifdef CONFIG_NOT_COHERENT_CACHE
-+#define KERNEL_COHERENCY	0
-+#else
-+#define KERNEL_COHERENCY	1
-+#endif
-+
-+static int __init check_cache_coherency(void)
-+{
-+	struct device_node *np;
-+	const void *prop;
-+	int devtree_coherency;
-+
-+	np = of_find_node_by_path("/");
-+	prop = of_get_property(np, "coherency-off", NULL);
-+	of_node_put(np);
-+
-+	devtree_coherency = prop ? 0 : 1;
-+
-+	if (devtree_coherency != KERNEL_COHERENCY) {
-+		printk(KERN_ERR
-+			"kernel coherency:%s != device tree_coherency:%s\n",
-+			KERNEL_COHERENCY ? "on" : "off",
-+			devtree_coherency ? "on" : "off");
-+		BUG();
-+	}
-+
-+	return 0;
-+}
-+
-+late_initcall(check_cache_coherency);
-+#endif /* CONFIG_CHECK_CACHE_COHERENCY */
-Index: linux-2.6-powerpc-df/arch/powerpc/Kconfig
-===================================================================
---- linux-2.6-powerpc-df.orig/arch/powerpc/Kconfig
-+++ linux-2.6-powerpc-df/arch/powerpc/Kconfig
-@@ -373,6 +373,9 @@ config NOT_COHERENT_CACHE
- 	bool
- 	depends on 4xx || 8xx || E200
- 	default y
-+
-+config CONFIG_CHECK_CACHE_COHERENCY
-+	bool
- endmenu
+ 	int index = kmalloc_index(size);
  
- source "init/Kconfig"
-Index: linux-2.6-powerpc-df/arch/powerpc/platforms/embedded6xx/Kconfig
-===================================================================
---- linux-2.6-powerpc-df.orig/arch/powerpc/platforms/embedded6xx/Kconfig
-+++ linux-2.6-powerpc-df/arch/powerpc/platforms/embedded6xx/Kconfig
-@@ -41,6 +41,7 @@ config MPC10X_BRIDGE
- config MV64X60
- 	bool
- 	select PPC_INDIRECT_PCI
-+	select CONFIG_CHECK_CACHE_COHERENCY
+-	if (!size)
++	if (!index)
+ 		return NULL;
  
- config MPC10X_OPENPIC
- 	bool
+ 	/* Allocation too large? */
+Index: slub/include/linux/slub_def.h
+===================================================================
+--- slub.orig/include/linux/slub_def.h	2007-05-04 14:13:40.000000000 -0700
++++ slub/include/linux/slub_def.h	2007-05-04 14:18:25.000000000 -0700
+@@ -81,8 +81,12 @@ extern struct kmem_cache kmalloc_caches[
+  */
+ static inline int kmalloc_index(int size)
+ {
+-	if (size == 0)
+-		return 0;
++	/*
++	 * We should return 0 if size == 0 but we use the smallest object
++	 * here for SLAB legacy reasons.
++	 */
++	WARN_ON(size == 0);
++
+ 	if (size > 64 && size <= 96)
+ 		return 1;
+ 	if (size > 128 && size <= 192)
