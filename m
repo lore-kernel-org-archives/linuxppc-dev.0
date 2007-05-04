@@ -1,27 +1,31 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
-	[151.189.21.43])
+Return-Path: <dwg@au1.ibm.com>
+Received: from ausmtp05.au.ibm.com (ausmtp05.au.ibm.com [202.81.18.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 03535DDED7
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 May 2007 10:41:48 +1000 (EST)
-In-Reply-To: <20070504221309.GR6193@austin.ibm.com>
-References: <20070502195712.GA16541@ld0162-tx32.am.freescale.net>
-	<F1B250DD-A472-470F-B3D0-EBB2F042E454@kernel.crashing.org>
-	<4638F0C4.2000406@freescale.com>
-	<FA9554A4-5A7D-4E03-BE28-C4B6B80D9DB9@kernel.crashing.org>
-	<4638F734.2040809@freescale.com>
-	<20070504221309.GR6193@austin.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <319ad63a0d38335a6b0c221e8f3c26b0@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v2] gianfar: Add I/O barriers when touching buffer
-	descriptor ownership.
-Date: Sat, 5 May 2007 02:41:20 +0200
-To: linas@austin.ibm.com (Linas Vepstas)
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
+	(Client CN "ausmtp05.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 561CADDECF
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 May 2007 13:08:56 +1000 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by ausmtp05.au.ibm.com (8.13.8/8.13.8) with ESMTP id l453Agg11925374
+	for <linuxppc-dev@ozlabs.org>; Sat, 5 May 2007 13:10:42 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.250.243])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l453CQxR155312
+	for <linuxppc-dev@ozlabs.org>; Sat, 5 May 2007 13:12:26 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4538s3c003799
+	for <linuxppc-dev@ozlabs.org>; Sat, 5 May 2007 13:08:54 +1000
+Date: Sat, 5 May 2007 09:51:11 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/4] Holly DTS
+Message-ID: <20070504235111.GA19615@localhost.localdomain>
+References: <1178302414.3026.202.camel@zod.rchland.ibm.com>
+	<1178302560.3026.210.camel@zod.rchland.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1178302560.3026.210.camel@zod.rchland.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,36 +35,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Well, Segher doesn't want me to use iobarrier (because it's not I/O).
->> Andy doesn't want me to use wmb() (because it's sync).  I don't think
->> something like gfar_wmb() would be appropriate.  So the remaining
->> options are either eieio(),
->
-> ? Just curious... the original intent of eieio was to order I/O,
-> such as MMIO; it has no effect on memory that isn't marked
-> cache-inhibited or write-trhough or guarded. Has this changed?
+On Fri, May 04, 2007 at 01:16:00PM -0500, Josh Boyer wrote:
+> Add Holly/Hickory DTS file
 
-eieio orders all accesses to address space that is WIMG=1xxx
-or WIMG=x1x1; separately, it orders stores to address space
-that is WIMG=001x.
+[...]
+> +		mdio@6000 {
+> +			name = "mdio";
+> +			device_type = "mdio";
+> +			compatible = "tsi-ethernet";
+> +			ethernet-phy@6000 {
+> +				name = "ethernet-phy";
+> +				device_type = "ethernet-phy";
+> +				reg = <6000 50>;
+> +				phy-id = <1>;
+> +				linux,phandle = <421>;
 
-> I guess I haven't kept up with the times ... is eieio now
-> being used to provide some other kind of barrier?
+Kill the explicit phandles, please.
 
-Nothing changed.
-
-> Is eieio providing some sort of SMP synchronization side-effect?
-
-It orders stores to "well-behaved" memory yes.
-
-> Point being: if Segher doesn't let you "use iobarrier (because
-> it's not I/O)", then I don't understand why eieio would work (since
-> that's for io only).
-
-iobarrier() is a kernel-level primitive, meant for ordering
-I/O only, as its name indicates.  eieio is a CPU insn that
-orders stores to main memory (amongst other things), not that
-its name would tell you.
-
-
-Segher
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
