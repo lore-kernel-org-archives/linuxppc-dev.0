@@ -1,32 +1,31 @@
 Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 81263DDEC6
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 May 2007 05:16:23 +1000 (EST)
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B2FDADDECD
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 May 2007 05:23:23 +1000 (EST)
 Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
 	[9.17.195.227])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l44JD7D2002025
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 May 2007 15:13:07 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l44JNK6D019828
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 May 2007 15:23:20 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
 	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l44JGKV3175174
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 May 2007 13:16:20 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l44JGKgg029967
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 May 2007 13:16:20 -0600
+	l44JNKJO178384
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 May 2007 13:23:20 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l44JNKXD013880
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 May 2007 13:23:20 -0600
 Subject: Re: [PATCH 1/4] Add support for 750CL Holly board
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <7BB5A3C3-DBE6-475A-A826-1A95E7B69A4F@kernel.crashing.org>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20070504190140.GA13067@lixom.net>
 References: <1178302414.3026.202.camel@zod.rchland.ibm.com>
 	<1178302469.3026.204.camel@zod.rchland.ibm.com>
-	<7BB5A3C3-DBE6-475A-A826-1A95E7B69A4F@kernel.crashing.org>
+	<20070504190140.GA13067@lixom.net>
 Content-Type: text/plain
-Date: Fri, 04 May 2007 14:11:24 -0500
-Message-Id: <1178305884.3026.222.camel@zod.rchland.ibm.com>
+Date: Fri, 04 May 2007 14:18:24 -0500
+Message-Id: <1178306304.3026.231.camel@zod.rchland.ibm.com>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -38,63 +37,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-05-04 at 13:35 -0500, Kumar Gala wrote:
-> On May 4, 2007, at 1:14 PM, Josh Boyer wrote:
-> > +
-> > +config HOLLY
-> > +	bool "PPC750GX/CL with TSI10x bridge (Hickory/Holly)"
-> > +	select TSI108_BRIDGE
-> > +	select PPC_UDBG_16550
-> > +	select MPIC
-> > +	select MPIC_WEIRD
-> > +	help
-> > +	  Select HOLLY if configuring for an IBM 750GX/CL Eval
-> > +	  Board with TSI108/9 bridge (Hickory/Holly)
-> >  endchoice
-> >
-> >  config TSI108_BRIDGE
-> >  	bool
+On Fri, 2007-05-04 at 14:01 -0500, Olof Johansson wrote:
+> > +#undef DEBUG
+> > +#ifdef DEBUG
+> > +#define DBG(fmt...) do { printk(fmt); } while(0)
+> > +#else
+> > +#define DBG(fmt...) do { } while(0)
+> > +#endif
 > 
-> I wondering if we should have select MPIC and MPIC_WEIRD here instead  
-> of on the board config.
+> Please use pr_debug() instead.
 
-Could be done, yes.  I don't have an mpc7448hpc2 to test with, but I can
-make that change.
+/me hides head in shame.  I'm guilt of the copy/paste crime.  Will fix.
 
-> > +	printk(KERN_INFO "PPC750GX/CL Platform\n");
+
+> > +#ifndef CONFIG_PCI
+> > +pci_dram_offset = PPC750GXCL_TSI_PCI_MEM_OFFSET;
+> > +#endif
 > 
-> Should this be something like "Holly PPC750GX/CL Platform"
+> What's this about?
 
-Well... no.  It should really be "Hickory/Holly PPC750GX/CL Platform" to
-be correct.  But that sucks.  Suppose I could match off of the cpu node
-in the DT and just print one or the other... except they share a DT too
-at the moment.
+To be honest, I'm not sure.  I haven't tried compiling without PCI.
+Just following the Taiga board's example again.
 
-I'll think about what to do.
-
-> > +void holly_show_cpuinfo(struct seq_file *m)
+> > +static void holly_remap_bridge(void)
 > > +{
-> > +	seq_printf(m, "vendor\t\t: IBM\n");
-> > +	seq_printf(m, "machine\t\t: PPC750 GX/CL\n");
+> > +	u32 lut_val, lut_addr = 0x900, misc_cfg;
 > 
-> Should 'Holly' be in the machine name?
+> Please initialize lut_addr right before using it instead of here, especially
+> since you re-assign it later on.
 
-Again, the whole "Hickory/Holly" thing.
+Ok.
 
 > 
-> > +}
+> > +	int i;
 > > +
-> > +void holly_restart(char *cmd)
-> > +{
-> > +	unsigned long *ocn_bar1 = NULL;
+> > +	printk(KERN_ERR "Remapping PCI bridge\n");
+> > +
+> > +	/* Re-init the PCI bridge and LUT registers to have mappings that don't
+> > +	 * rely on PIBS */
 > 
-> This should probably be __be32 __iomem
+> Comment style
 
-Good catch.  I need to run this through sparse.
+Yep.
 
-> > +/*
-> > + * Called very early, device-tree isn't unflattened
-> > + */
+> > +
+> > +	/* We don't need MEM32 and PRM remapping so disable them */
+> > +	tsi108_write_reg(TSI108_PCI_OFFSET + 0x214, 0x0);
+> > +	tsi108_write_reg(TSI108_PCI_OFFSET + 0x220, 0x0);
+> > +	tsi108_write_reg(TSI108_PCI_OFFSET + 0x230, 0x0);
+> 
+> It would be nice to get these constants defined up, but I know it's not always
+> practical. I'll bring it up anyway. :-)
+
+This is part of the on-going PCI fixup stuff.  It'll get cleaned up in
+the final version.
+
+> > +	/* setup PCI host bridge */
+> > +	holly_remap_bridge();
+> > +#ifdef CONFIG_PCI
+> > +	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
+> > +		tsi108_setup_pci(np);
+> 
+> On an environment without PCI, wouldn't it make more sense to leave it
+> out of the device tree, and thus not have a match in the above, instead
+> of taking out CONFIG_PCI?
+
+Yes, actually.  Good catch.
+
 > > +static int __init holly_probe(void)
 > > +{
 > > +	unsigned long root = of_get_flat_dt_root();
@@ -102,9 +111,25 @@ Good catch.  I need to run this through sparse.
 > > +	if (!of_flat_dt_is_compatible(root, "ppc750"))
 > > +		return 0;
 > 
-> This seems like to generic of a match.
+> That's a pretty broad compatible check?
 
-Likely is, yes.
+Yeah, will fix.
+
+> > +define_machine(holly){
+> > +	.name 						= "PPC750 GX/CL TSI",
+> > +	.probe 						= holly_probe,
+> > +	.setup_arch 				= holly_setup_arch,
+> > +	.init_IRQ 					= holly_init_IRQ,
+> > +	.show_cpuinfo 				= holly_show_cpuinfo,
+> > +	.get_irq 					= mpic_get_irq,
+> > +	.restart 					= holly_restart,
+> > +	.calibrate_decr 			= generic_calibrate_decr,
+> > +	.machine_check_exception	= ppc750_machine_check_exception,
+> > +	.progress 					= udbg_progress,
+> 
+> These look all unaligned for me.
+
+Erg.
 
 > > --- linux-2.6.orig/drivers/net/tsi108_eth.h
 > > +++ linux-2.6/drivers/net/tsi108_eth.h
@@ -118,11 +143,28 @@ Likely is, yes.
 > >  #define TSI108_PHY_TYPE	PHY_MV88E
 > > +#endif
 > 
-> This seems pretty bad.  Can we at least make this some type of kernel  
-> config since I'm guessing the tsi108 isn't using the phylib.
+> This won't work well if you ever want to build a multiplatform kernel.
 
-Yep.
+I know.  What do you suggest?  TSI doesn't use phylib, and adding a
+property to specify PHY type in the DT seems like a hack too...
 
-Thanks for the comments.  I'll fix it up in the next round.
+> >   * TSI108 GIGE port registers
+> > --- linux-2.6.orig/include/asm-powerpc/tsi108.h
+> > +++ linux-2.6/include/asm-powerpc/tsi108.h
+> > @@ -68,7 +68,11 @@
+> >  #define TSI108_PB_ERRCS_ES		(1 << 1)
+> >  #define TSI108_PB_ISR_PBS_RD_ERR	(1 << 8)
+> >  
+> > +#ifdef CONFIG_HOLLY
+> > +#define TSI108_PCI_CFG_BASE_PHYS	(0x7c000000)
+> > +#else
+> >  #define TSI108_PCI_CFG_BASE_PHYS	(0xfb000000)
+> > +#endif
+> >  #define TSI108_PCI_CFG_SIZE		(0x01000000)
+> 
+> Same here. Shouldn't this come out of the devicetree?
+
+As a "reg" property perhaps?  I'm not a DT guru, so I was a bit lost as
+to how to fix that up.
 
 josh
