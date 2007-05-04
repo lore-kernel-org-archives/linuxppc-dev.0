@@ -1,21 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 25E0FDDE27
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 May 2007 06:20:21 +1000 (EST)
-In-Reply-To: <1178187440.20944.12.camel@localhost.localdomain>
-References: <1178141683.32136.46.camel@ld0161-tx32>
-	<1178187440.20944.12.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <9F12C74C-0C14-4D43-9EE0-F0C5FF0AC798@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Remove CPU_FTR_NEED_COHERENT for 7448.
-Date: Fri, 4 May 2007 15:19:22 -0500
-To: Adrian Cox <adrian@humboldt.co.uk>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <rsc@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 7D955DDE42
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 May 2007 06:52:19 +1000 (EST)
+Date: Fri, 4 May 2007 22:52:13 +0200
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Subject: Re: Correct location for ADC/DAC drivers
+Message-ID: <20070504205213.GQ22585@pengutronix.de>
+References: <200705011435.45046.ml@stefan-roese.de>
+	<20070504082434.GA22585@pengutronix.de>
+	<200705041054.05650.ml@stefan-roese.de>
+	<200705041421.50830.rgetz@blackfin.uclinux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <200705041421.50830.rgetz@blackfin.uclinux.org>
+Sender: Robert Schwebel <rsc@pengutronix.de>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Robin,
 
-On May 3, 2007, at 5:17 AM, Adrian Cox wrote:
+On Fri, May 04, 2007 at 02:21:50PM -0400, Robin Getz wrote:
+> We also have DAC and ADC drivers (up to 16 bits @ 64MS/s, via DMA),
+> that would be nice to put in the "right" place  - I don't think that
+> drivers/char is the right place, nor drivers/misc - I also don't think
+> that /adc is a descriptive place for DAC or mixed signal front ends
+> (MxFE).
 
-> On Wed, 2007-05-02 at 16:34 -0500, Jon Loeliger wrote:
->> From: James.Yang <James.Yang@freescale.com>
->>
->> Remove CPU_FTR_NEED_COHERENT for MPC7448 (and single-core MPC86xx).
->> This prevents needlessly setting M=1 when not SMP.
->
-> There may be side effects to removing this. Most of the 74xx  
-> processors
-> had this flag added because of the L2 prefetch bug (erratum #16 on the
-> 7447A). I see that bug is missing from the 7448 errata.
->
-> The problem is that many 32-bit PowerPC machines needed
-> CPU_FTR_NEED_COHERENT set for a second reason: compatibility with the
-> cache in the MPC107. This was handled by CPU_FTR_COMMON in cputable.h
-> before the L2 prefetch bug was known.  There may be other host bridges
-> that cache, but nobody will have noticed because all the CPUs had
-> CPU_FTR_NEED_COHERENT set already.
+What userspace interface do your drivers have? I don't think that there
+is anything generic available at the moment, other than COMEDI (which is
+rather outdated as far as I know).
+ 
+> What about /drivers/char/daq or just drivers/daq - drivers for
+> non-PCI/USB/ISA/PCMCIA Data Acquisition Hardware, D/A and A/D
+> converters, Analog Front ends, etc.
 
-While this may be the case for non-10X bridges I don't think we  
-should impose the restriction if we don't know its actually needed.
+I'd like drivers/daq better, because it doesn't have anything to do with
+the bus it is connected to; a chipselect bus connectable ADC may be
+connected to a SoC CS-bus or to a PCI bridge and you want to use the
+same driver for it.
 
-- k
+Robert
+-- 
+ Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
+     Hannoversche Str. 2, 31134 Hildesheim, Germany
+   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
