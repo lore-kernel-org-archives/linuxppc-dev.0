@@ -1,19 +1,26 @@
-Return-Path: <ml@stefan-roese.de>
-Received: from mo-p00-ob.rzone.de (mo-p00-ob.rzone.de [81.169.146.161])
-	by ozlabs.org (Postfix) with ESMTP id 17967DDDF5
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 May 2007 18:53:41 +1000 (EST)
-From: Stefan Roese <ml@stefan-roese.de>
-To: Robert Schwebel <r.schwebel@pengutronix.de>
-Subject: Re: Correct location for ADC/DAC drivers
-Date: Fri, 4 May 2007 10:54:05 +0200
-References: <200705011435.45046.ml@stefan-roese.de>
-	<20070504082434.GA22585@pengutronix.de>
-In-Reply-To: <20070504082434.GA22585@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200705041054.05650.ml@stefan-roese.de>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 46A97DE004
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 May 2007 20:51:14 +1000 (EST)
+Subject: Re: [PATCH] powerpc: dart iommu suspend
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20070503142441.GA31110@lixom.net>
+References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
+	<1178195106.13233.108.camel@johannes.berg>
+	<1178195312.13233.111.camel@johannes.berg>
+	<1178195447.6353.40.camel@localhost.localdomain>
+	<1178196492.8233.1.camel@johannes.berg>
+	<20070503142441.GA31110@lixom.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-SHo/5FCyBN5z6IPPttrn"
+Date: Fri, 04 May 2007 12:51:42 +0200
+Message-Id: <1178275903.7408.3.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,30 +30,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 04 May 2007 10:24, Robert Schwebel wrote:
-> On Tue, May 01, 2007 at 02:35:44PM +0200, Stefan Roese wrote:
-> > I'm in the stage of integrating some ADC and DAC drivers for the AMCC
-> > 405EZ PPC and looking for the correct location to place these drivers
-> > in the Linux source tree. The drivers are basically character-drivers,
-> > so my first thought is to put them in "drivers/char/adc/foo.c" or
-> > "drivers/char/adc_foo.c". Is this a good solution?
-> >
-> > Any suggestions welcome (could be that I missed an already existing
-> > example).
-> >
-> > BTW: I am aware of the hwmon subsystem, but I don't think it fits my
-> > needs in this case.
->
-> Could you elaborate the requirements a bit more? ADC is not ADC, because
-> slow i2c ADCs which measure a temperature every five minutes have other
-> requirements than multi-megabyte-per-second-dma-driven ADCs.
 
-The hardware (PPC405EZ) actually implements an high speed, dma capable, ADC 
-controller with 10-bit resolution and up to 4MHz sample rate. The current 
-driver doesn't support all these features though (dma is not supported right 
-now for example). Could be that this will be added in future releases. It 
-would be good though, to have the driver located at the "correct" place in 
-the kernel tree right away.
+--=-SHo/5FCyBN5z6IPPttrn
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Best regards,
-Stefan
+On Thu, 2007-05-03 at 09:24 -0500, Olof Johansson wrote:
+
+> > Maybe somebody can offer opinions on other iommus?
+>=20
+> The PWRficient iommu
+
+[...]
+
+> I don't know what's happened to the IBM bloa^WPAPR platforms
+
+[...]
+
+Thanks for this analysis. I guess that we really want the save/restore
+hooks there, and then it doesn't matter if the dart code right now
+actually does the copy or if we manage to map it CI up front, we can fix
+that later.
+
+johannes
+
+
+--=-SHo/5FCyBN5z6IPPttrn
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGOxA+/ETPhpq3jKURAtErAJ0TURiiCrX8AQ2jNPyT8LuwanF5lgCfczzT
+r/C9aXz14jCUT5NlH9iLWNc=
+=o4TM
+-----END PGP SIGNATURE-----
+
+--=-SHo/5FCyBN5z6IPPttrn--
