@@ -1,36 +1,20 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 83A72DDE42
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 May 2007 08:13:14 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l44MDALL006624
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 May 2007 18:13:10 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l44MD9Cj179748
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 May 2007 16:13:09 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l44MD9VF013339
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 May 2007 16:13:09 -0600
-Date: Fri, 4 May 2007 17:13:09 -0500
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2] gianfar: Add I/O barriers when touching buffer
-	descriptor ownership.
-Message-ID: <20070504221309.GR6193@austin.ibm.com>
-References: <20070502195712.GA16541@ld0162-tx32.am.freescale.net>
-	<F1B250DD-A472-470F-B3D0-EBB2F042E454@kernel.crashing.org>
-	<4638F0C4.2000406@freescale.com>
-	<FA9554A4-5A7D-4E03-BE28-C4B6B80D9DB9@kernel.crashing.org>
-	<4638F734.2040809@freescale.com>
+Return-Path: <rgetz@blackfin.uclinux.org>
+Received: from nwd2mail10.analog.com (nwd2mail10.analog.com [137.71.25.55])
+	by ozlabs.org (Postfix) with ESMTP id 3CDB5DDEDA
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 May 2007 08:13:49 +1000 (EST)
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+To: "Robert Schwebel" <r.schwebel@pengutronix.de>
+Subject: Re: Correct location for ADC/DAC drivers
+Date: Fri, 4 May 2007 18:16:01 -0400
+References: <200705011435.45046.ml@stefan-roese.de>
+	<200705041421.50830.rgetz@blackfin.uclinux.org>
+	<20070504205213.GQ22585@pengutronix.de>
+In-Reply-To: <20070504205213.GQ22585@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4638F734.2040809@freescale.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200705041816.01572.rgetz@blackfin.uclinux.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,22 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 02, 2007 at 03:40:20PM -0500, Scott Wood wrote:
-> 
-> Well, Segher doesn't want me to use iobarrier (because it's not I/O). 
-> Andy doesn't want me to use wmb() (because it's sync).  I don't think 
-> something like gfar_wmb() would be appropriate.  So the remaining 
-> options are either eieio(), 
+On Fri 4 May 2007 16:52, Robert Schwebel pondered:
+> Robin,
+>
+> On Fri, May 04, 2007 at 02:21:50PM -0400, Robin Getz wrote:
+> > We also have DAC and ADC drivers (up to 16 bits @ 64MS/s, via DMA),
+> > that would be nice to put in the "right" place  - I don't think that
+> > drivers/char is the right place, nor drivers/misc - I also don't think
+> > that /adc is a descriptive place for DAC or mixed signal front ends
+> > (MxFE).
+>
+> What userspace interface do your drivers have?
 
-? Just curious... the original intent of eieio was to order I/O, 
-such as MMIO; it has no effect on memory that isn't marked 
-cache-inhibited or write-trhough or guarded. Has this changed?
-I guess I haven't kept up with the times ... is eieio now
-being used to provide some other kind of barrier?
-Is eieio providing some sort of SMP synchronization side-effect?
+Right now, it is a little rudimentary char interface, it needs a little care 
+to be a bit more general purpose, but it suited needs of what the people who 
+were using it.
 
-Point being: if Segher doesn't let you "use iobarrier (because 
-it's not I/O)", then I don't understand why eieio would work (since
-that's for io only).  
+http://blackfin.uclinux.org/gf/project/linux-kernel/scmsvn/?view=markup&path=/trunk/drivers/char/ad9960.c
 
---linas
+> I don't think that there 
+> is anything generic available at the moment, other than COMEDI (which is
+> rather outdated as far as I know).
+
+I would be interested in having a detailed discussion/random thoughts on 
+this - what is the best way to expose these types of devices?
+
+I never actually used COMEDI, to understand the pro/cons of what it did.
+
+> > What about /drivers/char/daq or just drivers/daq - drivers for
+> > non-PCI/USB/ISA/PCMCIA Data Acquisition Hardware, D/A and A/D
+> > converters, Analog Front ends, etc.
+>
+> I'd like drivers/daq better, because it doesn't have anything to do with
+> the bus it is connected to; a chipselect bus connectable ADC may be
+> connected to a SoC CS-bus or to a PCI bridge and you want to use the
+> same driver for it.
+
+That makes sense - I have seen more and more parts with selectable interfaces 
+(I2C or SPI), and you should be able to use the same base driver, independent 
+of the bus - so drivers/daq would suite me fine. 
+
+-Robin
