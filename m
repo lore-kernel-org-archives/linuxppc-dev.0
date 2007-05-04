@@ -1,25 +1,18 @@
-Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
-	[217.147.92.249])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A3808DDF06
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 May 2007 17:45:14 +1000 (EST)
-Date: Fri, 4 May 2007 08:44:53 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
+Return-Path: <rsc@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 27B56DDED2
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 May 2007 18:24:37 +1000 (EST)
+Date: Fri, 4 May 2007 10:24:34 +0200
+From: Robert Schwebel <r.schwebel@pengutronix.de>
 To: Stefan Roese <ml@stefan-roese.de>
 Subject: Re: Correct location for ADC/DAC drivers
-Message-ID: <20070504074453.GA18212@flint.arm.linux.org.uk>
+Message-ID: <20070504082434.GA22585@pengutronix.de>
 References: <200705011435.45046.ml@stefan-roese.de>
-	<20070502133512.GK22585@pengutronix.de>
-	<20070502191101.GB16696@flint.arm.linux.org.uk>
-	<200705040811.43312.ml@stefan-roese.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200705040811.43312.ml@stefan-roese.de>
-Sender: Russell King <rmk@arm.linux.org.uk>
-Cc: linuxppc-dev@ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <200705011435.45046.ml@stefan-roese.de>
+Sender: Robert Schwebel <rsc@pengutronix.de>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,27 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 04, 2007 at 08:11:42AM +0200, Stefan Roese wrote:
-> On Wednesday 02 May 2007 21:11, Russell King wrote:
-> > > > Is there a maintainer for this "drivers/mfd" directory?
-> > >
-> > > rmk
-> >
-> > I wouldn't go that far.  There's no real infrastructure there
-> > to maintain, so I'd actually say that the directory was
-> > maintainerless.  However, I'll own up to the UCB/MCP drivers
-> > in there.
+On Tue, May 01, 2007 at 02:35:44PM +0200, Stefan Roese wrote:
+> I'm in the stage of integrating some ADC and DAC drivers for the AMCC
+> 405EZ PPC and looking for the correct location to place these drivers
+> in the Linux source tree. The drivers are basically character-drivers,
+> so my first thought is to put them in "drivers/char/adc/foo.c" or
+> "drivers/char/adc_foo.c". Is this a good solution?
 > 
-> So perhaps you could answer is you feel that these ADC & DAC chrdev device 
-> drivers would fit into this drivers/mfd directory, or are better suited for 
-> the drivers/char directory?
+> Any suggestions welcome (could be that I missed an already existing
+> example).
+> 
+> BTW: I am aware of the hwmon subsystem, but I don't think it fits my
+> needs in this case.
 
-No idea; firstly I've long since deleted the email, secondly I've not much
-interest in the directory itself, and thirdly I've enough patches to review
-already.  Finally, I'm out all day today, including the evening.  I doubt
-I'll read any further email until the weekend.
+Could you elaborate the requirements a bit more? ADC is not ADC, because
+slow i2c ADCs which measure a temperature every five minutes have other
+requirements than multi-megabyte-per-second-dma-driven ADCs.
 
+Robert
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+ Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
+     Hannoversche Str. 2, 31134 Hildesheim, Germany
+   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
