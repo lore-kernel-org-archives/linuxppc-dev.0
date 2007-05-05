@@ -1,20 +1,32 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id DC73EDDE49
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 May 2007 00:40:11 +1000 (EST)
-Date: Sat, 5 May 2007 09:41:49 -0500
-To: Arnd Bergmann <arnd@arndb.de>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5A51ADDEE0
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 May 2007 01:16:25 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l45FGMvh006648
+	for <linuxppc-dev@ozlabs.org>; Sat, 5 May 2007 11:16:22 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l45FGMVQ544770
+	for <linuxppc-dev@ozlabs.org>; Sat, 5 May 2007 11:16:22 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l45FGLYe006508
+	for <linuxppc-dev@ozlabs.org>; Sat, 5 May 2007 11:16:21 -0400
 Subject: Re: [PATCH 1/4] Add support for 750CL Holly board
-Message-ID: <20070505144149.GB21503@lixom.net>
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20070505143925.GA21503@lixom.net>
 References: <1178302414.3026.202.camel@zod.rchland.ibm.com>
-	<200705042144.31194.arnd@arndb.de>
-	<1178308913.3026.238.camel@zod.rchland.ibm.com>
-	<200705051308.11457.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200705051308.11457.arnd@arndb.de>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org
+	<1178302469.3026.204.camel@zod.rchland.ibm.com>
+	<200705042144.31194.arnd@arndb.de> <20070505143925.GA21503@lixom.net>
+Content-Type: text/plain
+Date: Sat, 05 May 2007 10:11:14 -0500
+Message-Id: <1178377874.3393.17.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,50 +36,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, May 05, 2007 at 01:08:11PM +0200, Arnd Bergmann wrote:
-> On Friday 04 May 2007, Josh Boyer wrote:
-> > 
-> > > If it's an IBM product, it should come with a product code like 123-4567,
-> > > which fits in here, instead of just listing the CPU.
-> > 
-> > Erm... why? ?There are other boards that don't do this as well...
+On Sat, 2007-05-05 at 09:39 -0500, Olof Johansson wrote:
+> On Fri, May 04, 2007 at 09:44:30PM +0200, Arnd Bergmann wrote:
 > 
-> We did it on the Cell blade because we were asked to do it by
-> the people responsible for the hardware, who were following
-> their rules. I assumed that the same rules apply here as well,
-> but maybe they are specific to the server line.
-> 
-> > > > --- linux-2.6.orig/drivers/net/tsi108_eth.h
-> > > > +++ linux-2.6/drivers/net/tsi108_eth.h
-> > > > @@ -49,7 +49,11 @@
-> > > > ? */
-> > > > ?#define PHY_MV88E??1???????/* Marvel 88Exxxx PHY */
-> > > > ?#define PHY_BCM54XX????????2???????/* Broardcom BCM54xx PHY */
-> > > > +#if defined(CONFIG_HOLLY)
-> > > > +#define TSI108_PHY_TYPE PHY_BCM54XX
-> > > > +#else
-> > > > ?#define TSI108_PHY_TYPE????PHY_MV88E
-> > > > +#endif
-> > > > ?
+> > > --- linux-2.6.orig/include/asm-powerpc/tsi108.h
+> > > +++ linux-2.6/include/asm-powerpc/tsi108.h
+> > > @@ -68,7 +68,11 @@
+> > >  #define TSI108_PB_ERRCS_ES		(1 << 1)
+> > >  #define TSI108_PB_ISR_PBS_RD_ERR	(1 << 8)
+> > >  
+> > > +#ifdef CONFIG_HOLLY
+> > > +#define TSI108_PCI_CFG_BASE_PHYS	(0x7c000000)
+> > > +#else
+> > >  #define TSI108_PCI_CFG_BASE_PHYS	(0xfb000000)
+> > > +#endif
+> > >  #define TSI108_PCI_CFG_SIZE		(0x01000000)
+> > >  /* Global variables */
 > > > 
-> > > this breaks multiplatform setups.
 > > 
-> > I know. ?Looking for a better suggestions. ?Kumar suggested a Kconfig
-> > option at least, which is what I'm going to go with unless someone has a
-> > better idea...
+> > Same here.
 > 
-> A Kconfig option won't help at all. The phy should come as a device node
-> below the ethernet device. When probing the device, look at the
-> "compatible" and "reg" properties in there.
+> It would be very easy to take tsi108_setup_pci take the config base as
+> a function paramter and pass it in from the board setup code, and store
+> it in a static variable to be used for the tsi108_clear_pci_cfg_error
+> function.
+> 
+> That'd easily make the code multiplatform friendly without having to
+> add it to the device tree. Very few other platforms have the config base
+> address in there, if any. It shouldn't be a requirement that Holly has it.
 
-In a perfect world, yes, but does it need to hold up the rest of the
-code being merged if it's changed later? It's just used to blast a few
-values at init time now, I'm suspecting to set things such as LED settings
-(but I can't verify since I don't have any broadcom datasheets).
+Yeah, after thinking about it, that's what I plan on doing actually.
 
-Even better long-term would be to have a phylib driver for the TSI and
-autoprobe the model. Neither should have to hold up a board port merge
-in my opinion.
-
-
--Olof
+josh
