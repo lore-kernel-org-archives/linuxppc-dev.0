@@ -1,23 +1,29 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 83B4DDDE06
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 May 2007 09:23:21 +1000 (EST)
-Date: Fri, 4 May 2007 18:24:51 -0500
-To: Linas Vepstas <linas@austin.ibm.com>
-Subject: Re: [PATCH v2] gianfar: Add I/O barriers when touching buffer
-	descriptor ownership.
-Message-ID: <20070504232451.GA15433@lixom.net>
-References: <20070502195712.GA16541@ld0162-tx32.am.freescale.net>
-	<F1B250DD-A472-470F-B3D0-EBB2F042E454@kernel.crashing.org>
-	<4638F0C4.2000406@freescale.com>
-	<FA9554A4-5A7D-4E03-BE28-C4B6B80D9DB9@kernel.crashing.org>
-	<4638F734.2040809@freescale.com>
-	<20070504221309.GR6193@austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070504221309.GR6193@austin.ibm.com>
-From: olof@lixom.net (Olof Johansson)
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-08.arcor-online.net (mail-in-08.arcor-online.net
+	[151.189.21.48])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 598D1DDED8
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 May 2007 10:07:19 +1000 (EST)
+In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302D5E891@az33exm25.fsl.freescale.net>
+References: <20070425213700.GA8814@blade.az.mvista.com><20070426000852.GA2193@localhost.localdomain><20070426003748.GA30730@blade.az.mvista.com><9903F55A-5E4E-42CE-8C27-6B7143B9FE25@kernel.crashing.org><4630D9AB.2040605@mvista.com>
+	<e359e43198096bc73cdac058c6e5ad6d@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302D5DC6F@az33exm25.fsl.freescale.net>
+	<567cddf8855d809f2e0c5b4101c2c15a@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302D5E195@az33exm25.fsl.freescale.net>
+	<1624cd331b61117d7251f70caaa86292@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302D5E891@az33exm25.fsl.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <9585558cf3330e1b18e9becfa3b24864@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: RFC: new device types in the device tree (RE: [PATCH] powerpc:
+	Add EDAC platform devices for 85xx)
+Date: Sat, 5 May 2007 02:07:08 +0200
+To: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au,
+	bluesmoke-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,30 +33,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 04, 2007 at 05:13:09PM -0500, Linas Vepstas wrote:
-> On Wed, May 02, 2007 at 03:40:20PM -0500, Scott Wood wrote:
-> > 
-> > Well, Segher doesn't want me to use iobarrier (because it's not I/O). 
-> > Andy doesn't want me to use wmb() (because it's sync).  I don't think 
-> > something like gfar_wmb() would be appropriate.  So the remaining 
-> > options are either eieio(), 
-> 
-> ? Just curious... the original intent of eieio was to order I/O, 
-> such as MMIO; it has no effect on memory that isn't marked 
-> cache-inhibited or write-trhough or guarded. Has this changed?
-> I guess I haven't kept up with the times ... is eieio now
-> being used to provide some other kind of barrier?
-> Is eieio providing some sort of SMP synchronization side-effect?
-> 
-> Point being: if Segher doesn't let you "use iobarrier (because 
-> it's not I/O)", then I don't understand why eieio would work (since
-> that's for io only).  
+>>> name is always optional (as defined by b-w-of.txt)
+>>
+>> Where does it say that?  "name" is always required!  In
+>> the newer flat tree format, it's even impossible to
+>> create a node without "name".
+>
+> I'm specifically referring to the "name" property.  Here is
+> what booting-without-of.txt says:
 
-Eieio has always worked for regular cachable memory as well, it just never
-orders _between_ cache inhibited/guarded and cachable memory.
+Okay, a few separate issues here...
 
-Book II 2.03 has a pretty good description of it on page 367.
+>    While earlier users of Open Firmware like OldWorld
+>    macintoshes tended to use the actual device name for
+>    the "name" property, it's nowadays considered a good
+>    practice to use a name that is closer to the device
+>    class (often equal to device_type)...
+
+Yes, this is known as "generic names" -- it makes device
+trees more readable and easier to use (on real OF).  See
+the "generic names" recommended practice document.
+
+> [snip]... However,
+>    the kernel doesn't generally put any restriction on the
+>    "name" property; it is simply considered good practice
+>    to follow the standard and its evolutions as closely as
+>    possible.
+
+When the kernel looks for a driver for a device node,
+it should first consider "name" and after that the
+entries in "compatible", in order.
+
+Yes I know this is not what the kernel does most of
+the time.
+
+>    Note also that the new format version 16 makes the
+>    "name" property optional. If it's absent for a node, then
+>    the node's unit name is then used to reconstruct the name.
+>    That is, the part of the unit name before the "@" sign
+>    is used (or the entire unit name if no "@" sign is present).
+>
+> If the name property is missing the kernel contructs it from
+> the unit name.
+
+So there _always_ is a "name" property.  Who cares how
+it is encoded in the DTB.
+
+> I guess my point is the name property implies
+> nothing and the kernel doesn't seem to care what name is used.
+
+It does, in some cases.  See the bindings for "isa" and "pci"
+busses for example (for the bus nodes, not the device nodes
+under those).
+
+> It certainly doesn't imply a required set of properties.
+
+That depends on the specific binding for the type of
+device; in most cases, some binding specific properties
+_are_ required.
 
 
-
--Olof
+Segher
