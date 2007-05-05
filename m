@@ -1,33 +1,32 @@
 Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 65F42DDDDB
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 May 2007 02:20:51 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l45GKlwV015551
-	for <linuxppc-dev@ozlabs.org>; Sat, 5 May 2007 12:20:47 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l45GKlgD182204
-	for <linuxppc-dev@ozlabs.org>; Sat, 5 May 2007 10:20:47 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l45GKkW1014518
-	for <linuxppc-dev@ozlabs.org>; Sat, 5 May 2007 10:20:47 -0600
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 51EB0DDECD
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 May 2007 02:22:02 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l45GLxe5001469
+	for <linuxppc-dev@ozlabs.org>; Sat, 5 May 2007 12:21:59 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l45GLx6e546314
+	for <linuxppc-dev@ozlabs.org>; Sat, 5 May 2007 12:21:59 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l45GLxNs004495
+	for <linuxppc-dev@ozlabs.org>; Sat, 5 May 2007 12:21:59 -0400
 Received: from [9.67.207.4] (wecm-9-67-207-4.wecm.ibm.com [9.67.207.4])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	l45GKjBM014510
-	for <linuxppc-dev@ozlabs.org>; Sat, 5 May 2007 10:20:46 -0600
-Subject: [PATCH v2 2/7] Generalize tsi108 PHY types
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	l45GLwx9004492
+	for <linuxppc-dev@ozlabs.org>; Sat, 5 May 2007 12:21:59 -0400
+Subject: [PATCH v2 3/7] Generalize TSI 108 PCI setup
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
 In-Reply-To: <1178381611.3393.25.camel@zod.rchland.ibm.com>
 References: <1178381611.3393.25.camel@zod.rchland.ibm.com>
 Content-Type: text/plain
-Date: Sat, 05 May 2007 11:15:39 -0500
-Message-Id: <1178381739.3393.28.camel@zod.rchland.ibm.com>
+Date: Sat, 05 May 2007 11:16:52 -0500
+Message-Id: <1178381812.3393.31.camel@zod.rchland.ibm.com>
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -38,107 +37,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add a phy_type field to the tsi108 ethernet structures to indicate which PHY
-is used on a board.  This is derived from the "compatible" property in the
-ethernet-phy node of the device tree.  The default remains the MV88E PHY.
+Generalize tsi108_setup_pci to take the config space physical address as
+a parameter.
 
 Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
 ---
- arch/powerpc/sysdev/tsi108_dev.c |    2 ++
- drivers/net/tsi108_eth.c         |   12 +++++++-----
- drivers/net/tsi108_eth.h         |    9 ---------
- include/asm-powerpc/tsi108.h     |   11 +++++++++++
- 4 files changed, 20 insertions(+), 14 deletions(-)
+ arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c |    2 +-
+ arch/powerpc/sysdev/tsi108_pci.c                  |    9 +++++----
+ include/asm-powerpc/tsi108_pci.h                  |    2 +-
+ 3 files changed, 7 insertions(+), 6 deletions(-)
 
---- linux-2.6.orig/arch/powerpc/sysdev/tsi108_dev.c
-+++ linux-2.6/arch/powerpc/sysdev/tsi108_dev.c
-@@ -129,6 +129,8 @@ static int __init tsi108_eth_of_init(voi
- 		tsi_eth_data.phyregs = res.start;
- 		tsi_eth_data.phy = *phy_id;
- 		tsi_eth_data.irq_num = irq_of_parse_and_map(np, 0);
-+		if (of_device_is_compatible(phy, "bcm54xx"))
-+			tsi_eth_data.phy_type = TSI108_PHY_BCM54XX;
- 		of_node_put(phy);
- 		ret =
- 		    platform_device_add_data(tsi_eth_dev, &tsi_eth_data,
---- linux-2.6.orig/drivers/net/tsi108_eth.c
-+++ linux-2.6/drivers/net/tsi108_eth.c
-@@ -82,6 +82,7 @@ struct tsi108_prv_data {
- 	unsigned int phy;		/* Index of PHY for this interface */
- 	unsigned int irq_num;
- 	unsigned int id;
-+	unsigned int phy_type;
+--- linux-2.6.orig/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
++++ linux-2.6/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
+@@ -79,7 +79,7 @@ static void __init mpc7448_hpc2_setup_ar
+ 	/* setup PCI host bridge */
+ #ifdef CONFIG_PCI
+ 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
+-		tsi108_setup_pci(np);
++		tsi108_setup_pci(np, TSI108_CFG_BASE_PHYS);
  
- 	struct timer_list timer;/* Timer that triggers the check phy function */
- 	unsigned int rxtail;	/* Next entry in rxring to read */
-@@ -1256,11 +1257,11 @@ static void tsi108_init_phy(struct net_d
- 	if (i == 0)
- 		printk(KERN_ERR "%s function time out \n", __FUNCTION__);
+ 	ppc_md.pci_exclude_device = mpc7448_hpc2_exclude_device;
+ 	if (ppc_md.progress)
+--- linux-2.6.orig/arch/powerpc/sysdev/tsi108_pci.c
++++ linux-2.6/arch/powerpc/sysdev/tsi108_pci.c
+@@ -50,6 +50,7 @@
+ 	((((bus)<<16) | ((devfunc)<<8) | (offset & 0xfc)) + tsi108_pci_cfg_base)
  
--#if (TSI108_PHY_TYPE == PHY_BCM54XX)	/* Broadcom BCM54xx PHY */
--	tsi108_write_mii(data, 0x09, 0x0300);
--	tsi108_write_mii(data, 0x10, 0x1020);
--	tsi108_write_mii(data, 0x1c, 0x8c00);
--#endif
-+	if (data->phy_type == TSI108_PHY_BCM54XX) {
-+		tsi108_write_mii(data, 0x09, 0x0300);
-+		tsi108_write_mii(data, 0x10, 0x1020);
-+		tsi108_write_mii(data, 0x1c, 0x8c00);
-+	}
+ u32 tsi108_pci_cfg_base;
++static u32 tsi108_pci_cfg_phys;
+ u32 tsi108_csr_vir_base;
+ static struct device_node *pci_irq_node;
+ static struct irq_host *pci_irq_host;
+@@ -186,7 +187,7 @@ tsi108_direct_read_config(struct pci_bus
  
- 	tsi108_write_mii(data,
- 			 MII_BMCR,
-@@ -1587,6 +1588,7 @@ tsi108_init_one(struct platform_device *
- 	data->mii_if.supports_gmii = mii_check_gmii_support(&data->mii_if);
+ void tsi108_clear_pci_cfg_error(void)
+ {
+-	tsi108_clear_pci_error(TSI108_PCI_CFG_BASE_PHYS);
++	tsi108_clear_pci_error(tsi108_pci_cfg_phys);
+ }
  
- 	data->phy = einfo->phy;
-+	data->phy_type = einfo->phy_type;
- 	data->irq_num = einfo->irq_num;
- 	data->id = pdev->id;
- 	dev->open = tsi108_open;
---- linux-2.6.orig/drivers/net/tsi108_eth.h
-+++ linux-2.6/drivers/net/tsi108_eth.h
-@@ -43,15 +43,6 @@
- 	in_be32((data->phyregs + (offset)))
+ static struct pci_ops tsi108_direct_pci_ops = {
+@@ -194,7 +195,7 @@ static struct pci_ops tsi108_direct_pci_
+ 	tsi108_direct_write_config
+ };
  
- /*
-- * PHY Configuration Options
-- *
-- * NOTE: Enable set of definitions corresponding to your board type
-- */
--#define PHY_MV88E	1	/* Marvel 88Exxxx PHY */
--#define PHY_BCM54XX	2	/* Broardcom BCM54xx PHY */
--#define TSI108_PHY_TYPE	PHY_MV88E
--
--/*
-  * TSI108 GIGE port registers
-  */
+-int __init tsi108_setup_pci(struct device_node *dev)
++int __init tsi108_setup_pci(struct device_node *dev, u32 cfg_phys)
+ {
+ 	int len;
+ 	struct pci_controller *hose;
+@@ -203,8 +204,8 @@ int __init tsi108_setup_pci(struct devic
+ 	int primary = 0, has_address = 0;
  
---- linux-2.6.orig/include/asm-powerpc/tsi108.h
-+++ linux-2.6/include/asm-powerpc/tsi108.h
-@@ -70,6 +70,16 @@
+ 	/* PCI Config mapping */
+-	tsi108_pci_cfg_base = (u32)ioremap(TSI108_PCI_CFG_BASE_PHYS,
+-			TSI108_PCI_CFG_SIZE);
++	tsi108_pci_cfg_base = (u32)ioremap(cfg_phys, TSI108_PCI_CFG_SIZE);
++	tsi108_pci_cfg_phys = cfg_phys;
+ 	DBG("TSI_PCI: %s tsi108_pci_cfg_base=0x%x\n", __FUNCTION__,
+ 	    tsi108_pci_cfg_base);
  
- #define TSI108_PCI_CFG_BASE_PHYS	(0xfb000000)
- #define TSI108_PCI_CFG_SIZE		(0x01000000)
-+
-+/*
-+ * PHY Configuration Options
-+ *
-+ * Specify "bcm54xx" in the compatible property of your device tree phy
-+ * nodes if your board uses the Broadcom PHYs
-+ */
-+#define TSI108_PHY_MV88E	0	/* Marvel 88Exxxx PHY */
-+#define TSI108_PHY_BCM54XX	1	/* Broardcom BCM54xx PHY */
-+
- /* Global variables */
+--- linux-2.6.orig/include/asm-powerpc/tsi108_pci.h
++++ linux-2.6/include/asm-powerpc/tsi108_pci.h
+@@ -37,7 +37,7 @@
+ #define TSI108_PCI_PFAB_PFM3 (TSI108_PCI_OFFSET + 0x220)
+ #define TSI108_PCI_PFAB_PFM4 (TSI108_PCI_OFFSET + 0x230)
  
- extern u32 tsi108_pci_cfg_base;
-@@ -93,6 +103,7 @@ typedef struct {
- 	u16 phy;		/* phy address */
- 	u16 irq_num;		/* irq number */
- 	u8 mac_addr[6];		/* phy mac address */
-+	u16 phy_type;	/* type of phy on board */
- } hw_info;
- 
- extern u32 get_vir_csrbase(void);
+-extern int tsi108_setup_pci(struct device_node *dev);
++extern int tsi108_setup_pci(struct device_node *dev, u32 cfg_phys);
+ extern void tsi108_pci_int_init(struct device_node *node);
+ extern void tsi108_irq_cascade(unsigned int irq, struct irq_desc *desc);
+ extern void tsi108_clear_pci_cfg_error(void);
