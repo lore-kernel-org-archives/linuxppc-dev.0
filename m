@@ -1,23 +1,23 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-09.arcor-online.net (mail-in-09.arcor-online.net
-	[151.189.21.49])
+Received: from mail-in-06.arcor-online.net (mail-in-06.arcor-online.net
+	[151.189.21.46])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 18177DDEE3
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 May 2007 06:44:20 +1000 (EST)
-In-Reply-To: <1178388746.3393.47.camel@zod.rchland.ibm.com>
+	by ozlabs.org (Postfix) with ESMTP id E586ADDECD
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 May 2007 06:49:57 +1000 (EST)
+In-Reply-To: <20070505191306.GB23524@lixom.net>
 References: <1178381611.3393.25.camel@zod.rchland.ibm.com>
 	<1178382006.3393.37.camel@zod.rchland.ibm.com>
 	<e1d22829fe3f12509018791541073706@kernel.crashing.org>
-	<1178388746.3393.47.camel@zod.rchland.ibm.com>
+	<20070505191306.GB23524@lixom.net>
 Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <76e38f13b63a2cf4c793299e73671db5@kernel.crashing.org>
+Content-Type: text/plain; charset=WINDOWS-1252; format=flowed
+Message-Id: <cbcd7823ea9b0f17f998670915719a05@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH v2 6/7] Holly DTS
-Date: Sat, 5 May 2007 22:44:12 +0200
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Date: Sat, 5 May 2007 22:49:50 +0200
+To: olof@lixom.net (Olof Johansson)
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,31 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> +/ {
->>> +	model = "ppc750-tsi109";
+>>> +		PowerPC,750@0 {
 >>
->> "model" should be something really specific; typically
->> a (unique!) model number.  This means you can't use the
->> same device tree for Holly and Hickory (but there are
->> more reasons for that; see below).
->>
->>> +	compatible = "ppc750-tsi";
->>
->> The needs to be more specific as well; "ibm,holly"
->> or something.
+>> Needs to be PowerPC,750CL etc.
 >
-> Why?  Holly and Hickory share the same memory map and devices.  The 
-> only
-> thing that differs from what I can tell is the actual CPU itself.
+> Why _needs_?
 
-And the model number I suspect.
+Because that's what the PowerPC binding says:
 
-"ppc750-tsi" really isn't good enough as a "compatible"
-property, there are many many more boards with some 750
-and some TSI bridge.
+	Open Firmware standard property. The value of the
+	is property shall be of the form: =93PowerPC,<name>=94,
+	where <name> is the name of the processor chip which
+	may be displayed to the user.
+
+
+> Apple never used anything else than PowerPC,G5, no matter
+> what generation chip.
+
+I don't care what Apple did in their device trees,
+they made many mistakes.
 
 >>> +  	tsi109@c0000000 {
->>> +		device_type = "tsi-bridge";
+>>> +		device_type =3D "tsi-bridge";
 >>
 >> Don't put a "device_type" here, it is useless
 >> (and undefined).  There are more like this, but
@@ -60,26 +57,30 @@ and some TSI bridge.
 >> for those, so the kernel would need updating
 >> first.
 >
-> It's not useless.  The TSI code probes by device_type all over the
-> place.  Do you have an example of how to probe for something like this
-> without using device_type?
+> Josh is just using the precedence that the other platform gives, the
+> driver is keying off of device_type. While that should be fixed, =
+that's
+> a separate issue.
 
-Sure: use "compatible" instead.
+Yes I know, I tried to explain that already, but
+seems I failed :-)
 
-This problem is all over the place, don't worry
-about it too much.  It would be good if new ports
-could stop adding to the madness though ;-)
+> I'm sure they'd welcome a driver patch from you.
 
->>> +	  	MPIC: pic@7400 {
->>> +			built-in;
+It's on my todo list.
+
+>>> +		bus-frequency =3D <0>;
 >>
->> Why say this for MPIC only, not for most other nodes?
->> What binding defines "built-in", anyway?
+>> 0?
 >
-> http://playground.sun.com/1275/bindings/chrp/chrp1_8a.ps
+> Filled in by bootloader/wrapper?
 
-But this isn't a CHRP compatible board, that binding
-doesn't apply.
+I don't think it is?
+
+> Other dts'es are similar. Could be nice
+> to have a comment next to it if that's the case.
+
+Yeah.  There's also this ?? syntax now I believe.
 
 
 Segher
