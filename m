@@ -1,20 +1,19 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 82149DDEDE
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 May 2007 05:01:14 +1000 (EST)
-Date: Sat, 5 May 2007 14:02:44 -0500
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 5/6] Support for the Ebony 440GP reference board in
-	arch/powerpc
-Message-ID: <20070505190244.GA23524@lixom.net>
-References: <20070504143645.GA10645@lixom.net>
-	<00bf8e702554e7903d92f618ee236528@bga.com>
+	by ozlabs.org (Postfix) with ESMTP id 60112DDEDE
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 May 2007 05:11:26 +1000 (EST)
+Date: Sat, 5 May 2007 14:13:06 -0500
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v2 6/7] Holly DTS
+Message-ID: <20070505191306.GB23524@lixom.net>
+References: <1178381611.3393.25.camel@zod.rchland.ibm.com>
+	<1178382006.3393.37.camel@zod.rchland.ibm.com>
+	<e1d22829fe3f12509018791541073706@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <00bf8e702554e7903d92f618ee236528@bga.com>
+In-Reply-To: <e1d22829fe3f12509018791541073706@kernel.crashing.org>
 From: olof@lixom.net (Olof Johansson)
-Cc: ppcdev <linuxppc-dev@ozlabs.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, May 05, 2007 at 01:43:01PM -0500, Milton Miller wrote:
-> Olof wrote:
-> 
-> > > +static void ebony_exit(void)
-> > > +{
-> > > +     unsigned long tmp;
-> > > +
-> > > +     asm volatile (
-> > > +             "mfspr  %0,%1\n"
-> > > +             "oris   %0,%0,%2@h\n"
-> > > +             "mtspr  %1,%0"
-> > > +             : "=&r"(tmp) : "i"(SPRN_DBCR0), "i"(DBCR0_RST_SYSTEM)
-> >
-> > You don't have to pass in the constants here, you can specify them in
-> > the asm. Makes it a little more readable.
-> 
-> How?   CPP doesn't apply inside the strings.
-> 
-> Did you mean because these defines were immediately above:
-> 
-> > > +> +#define SPRN_DBCR0           0x134
-> > > +#define   DBCR0_RST_SYSTEM   0x30000000
-> 
-> could just be comments in the asm?
-> 
-> That works until someone moves them to an include file.
+On Sat, May 05, 2007 at 07:21:33PM +0200, Segher Boessenkool wrote:
 
-Hm, I thought i had done that in the past myself. I guess not. Nevermind
-then.
+> > +		PowerPC,750@0 {
+> 
+> Needs to be PowerPC,750CL etc.
+
+Why _needs_? Apple never used anything else than PowerPC,G5, no matter
+what generation chip.
+
+> > +  	tsi109@c0000000 {
+> > +		device_type = "tsi-bridge";
+> 
+> Don't put a "device_type" here, it is useless
+> (and undefined).  There are more like this, but
+> perhaps Linux (wrongly) probes on "device_type"
+> for those, so the kernel would need updating
+> first.
+
+Josh is just using the precedence that the other platform gives, the
+driver is keying off of device_type. While that should be fixed, that's
+a separate issue. I'm sure they'd welcome a driver patch from you.
+
+(Does anyone know if there's an actual firmware out there with the
+tsi-bridge device_type set, and thus just changing DTS's won't help? We'd
+still need to be able to boot/probe the device on those firmwares.)
+
+> > +		bus-frequency = <0>;
+> 
+> 0?
+
+Filled in by bootloader/wrapper? Other dts'es are similar. Could be nice
+to have a comment next to it if that's the case.
 
 
 -Olof
