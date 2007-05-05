@@ -1,34 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-09.arcor-online.net (mail-in-09.arcor-online.net
+	[151.189.21.49])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B2602DDEDB
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 May 2007 02:26:04 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l45GQ2Xr018180
-	for <linuxppc-dev@ozlabs.org>; Sat, 5 May 2007 12:26:02 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l45GQ1k2191840
-	for <linuxppc-dev@ozlabs.org>; Sat, 5 May 2007 10:26:01 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l45GQ1Os005249
-	for <linuxppc-dev@ozlabs.org>; Sat, 5 May 2007 10:26:01 -0600
-Received: from [9.67.207.4] (wecm-9-67-207-4.wecm.ibm.com [9.67.207.4])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	l45GQ02A005238
-	for <linuxppc-dev@ozlabs.org>; Sat, 5 May 2007 10:26:01 -0600
-Subject: [PATCH v2 7/7] Holly bootwrapper
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <1178381611.3393.25.camel@zod.rchland.ibm.com>
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2FA41DDE42
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 May 2007 03:21:50 +1000 (EST)
+In-Reply-To: <1178382006.3393.37.camel@zod.rchland.ibm.com>
 References: <1178381611.3393.25.camel@zod.rchland.ibm.com>
-Content-Type: text/plain
-Date: Sat, 05 May 2007 11:20:54 -0500
-Message-Id: <1178382054.3393.39.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0
+	<1178382006.3393.37.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <e1d22829fe3f12509018791541073706@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v2 6/7] Holly DTS
+Date: Sat, 5 May 2007 19:21:33 +0200
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,85 +26,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add Holly/Hickory bootwrapper
+> +/ {
+> +	model = "ppc750-tsi109";
 
-Signed-off-by: Stephen Winiecki <stevewin@us.ibm.com>
-Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
----
- arch/powerpc/boot/Makefile |    9 ++++++++-
- arch/powerpc/boot/holly.c  |   38 ++++++++++++++++++++++++++++++++++++++
- 2 files changed, 46 insertions(+), 1 deletion(-)
+"model" should be something really specific; typically
+a (unique!) model number.  This means you can't use the
+same device tree for Holly and Hickory (but there are
+more reasons for that; see below).
 
---- linux-2.6.orig/arch/powerpc/boot/Makefile
-+++ linux-2.6/arch/powerpc/boot/Makefile
-@@ -43,7 +43,7 @@ $(addprefix $(obj)/,$(zlib) main.o): $(a
- src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
- 		ns16550.c serial.c simple_alloc.c div64.S util.S \
- 		gunzip_util.c elf_util.c $(zlib) devtree.c
--src-plat := of.c cuboot-83xx.c cuboot-85xx.c
-+src-plat := of.c cuboot-83xx.c cuboot-85xx.c holly.c
- src-boot := $(src-wlib) $(src-plat) empty.c
- 
- src-boot := $(addprefix $(obj)/, $(src-boot))
-@@ -131,6 +131,7 @@ image-$(CONFIG_PPC_EFIKA)		+= zImage.chr
- image-$(CONFIG_PPC_PMAC)		+= zImage.pmac
- image-$(CONFIG_PPC_83xx)		+= cuImage.83xx
- image-$(CONFIG_PPC_85xx)		+= cuImage.85xx
-+image-$(CONFIG_HOLLY)			+= zImage.holly-elf
- image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
- 
- # For 32-bit powermacs, build the COFF and miboot images
-@@ -161,6 +162,12 @@ $(obj)/zImage.ps3: vmlinux
- $(obj)/zImage.initrd.ps3: vmlinux
- 	@echo "  WARNING zImage.initrd.ps3 not supported (yet)"
- 
-+$(obj)/zImage.holly-elf: vmlinux $(wrapperbits)
-+	$(call if_changed,wrap,holly,$(obj)/dts/holly.dts,,)
-+
-+$(obj)/zImage.initrd.holly-elf: vmlinux $(wrapperbits) $(obj)/ramdisk.image.gz
-+	$(call if_changed,wrap,holly,$(obj)/dts/holly.dts,,$(obj)/ramdisk.image.gz)
-+
- $(obj)/uImage: vmlinux $(wrapperbits)
- 	$(call if_changed,wrap,uboot)
- 
---- /dev/null
-+++ linux-2.6/arch/powerpc/boot/holly.c
-@@ -0,0 +1,38 @@
-+/*
-+ * Copyright 2007 IBM Corporation
-+ *
-+ * Stephen Winiecki <stevewin@us.ibm.com>
-+ * Josh Boyer <jwboyer@linux.vnet.ibm.com>
-+ *
-+ * Based on earlier code:
-+ * Copyright (C) Paul Mackerras 1997.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * version 2 as published by the Free Software Foundation.
-+ */
-+#include <stdarg.h>
-+#include <stddef.h>
-+#include "types.h"
-+#include "elf.h"
-+#include "string.h"
-+#include "stdio.h"
-+#include "page.h"
-+#include "ops.h"
-+#include "io.h"
-+
-+extern char _start[];
-+extern char _end[];
-+extern char _dtb_start[];
-+extern char _dtb_end[];
-+
-+BSS_STACK(4096);
-+
-+void platform_init(unsigned long r3, unsigned long r4, unsigned long r5)
-+{
-+	u32 heapsize = 0x8000000 - (u32)_end; /* 128M */
-+
-+	simple_alloc_init(_end, heapsize, 32, 64);
-+	ft_init(_dtb_start, 0, 4);
-+	serial_console_init();
-+}
+> +	compatible = "ppc750-tsi";
+
+The needs to be more specific as well; "ibm,holly"
+or something.
+
+> +		PowerPC,750@0 {
+
+Needs to be PowerPC,750CL etc.
+
+> +			name = "PowerPC,750";
+
+You don't need to specify "name" in modern DTS.
+
+> +  	tsi109@c0000000 {
+> +		device_type = "tsi-bridge";
+
+Don't put a "device_type" here, it is useless
+(and undefined).  There are more like this, but
+perhaps Linux (wrongly) probes on "device_type"
+for those, so the kernel would need updating
+first.
+
+> +		bus-frequency = <0>;
+
+0?
+
+> +		ethernet@6200 {
+> +			model = "TSI-ETH";
+
+"model" should be an exact model name.  If you don't
+have one, just leave out the "model" property.
+
+> +			address = [ 00 0d 60 f4 3f 04 ];
+
+"local-mac-address" instead.  And you don't want to
+hardcode one specific address like this; just keep
+it open so if the bootloader fails to fill it in you
+notice.  If the bootloader cannot do that, just leave
+out this property completely (not compliant, but neither
+is filling in the wrong value).
+
+> +		serial@7808 {
+> +			reg-shift = <0>;
+
+This is the default value so you can leave it out.
+
+> +	  	MPIC: pic@7400 {
+> +			built-in;
+
+Why say this for MPIC only, not for most other nodes?
+What binding defines "built-in", anyway?
+
+> +				/*--------------------------------------------+
+> +				| AD19.
+> +				+--------------------------------------------*/
+> +				1800 0 0 1 &RT0 26 0
+> +				1800 0 0 2 &RT0 27 0
+> +				1800 0 0 3 &RT0 24 0
+> +				1800 0 0 4 &RT0 25 0
+> +
+> +				2000 0 0 1 &RT0 27 0
+> +				2000 0 0 2 &RT0 24 0
+> +				2000 0 0 3 &RT0 25 0
+> +				2000 0 0 4 &RT0 26 0
+> +				>;
+
+You forgot to say "AD20" ;-)
+
+> +	chosen {
+> +		linux,platform = <0>;
+> +		linux,initrd-start = <0>;
+> +		linux,initrd-end = <0>;
+
+Do you need to set those zero properties?
+
+
+Segher
