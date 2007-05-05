@@ -1,32 +1,19 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 30B2CDDED4
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 May 2007 13:23:14 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l453NCKU012949
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 May 2007 23:23:12 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l453NBFa174036
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 May 2007 21:23:11 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l453NB1o022393
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 May 2007 21:23:11 -0600
-Subject: Re: [PATCH 3/4] Holly DTS
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: David Gibson <dwg@au1.ibm.com>
-In-Reply-To: <20070504235111.GA19615@localhost.localdomain>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id DADCDDDED5
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 May 2007 21:08:14 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/4] Add support for 750CL Holly board
+Date: Sat, 5 May 2007 13:08:11 +0200
 References: <1178302414.3026.202.camel@zod.rchland.ibm.com>
-	<1178302560.3026.210.camel@zod.rchland.ibm.com>
-	<20070504235111.GA19615@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 04 May 2007 22:18:10 -0500
-Message-Id: <1178335090.3393.2.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0
+	<200705042144.31194.arnd@arndb.de>
+	<1178308913.3026.238.camel@zod.rchland.ibm.com>
+In-Reply-To: <1178308913.3026.238.camel@zod.rchland.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200705051308.11457.arnd@arndb.de>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -37,24 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2007-05-05 at 09:51 +1000, David Gibson wrote:
-> On Fri, May 04, 2007 at 01:16:00PM -0500, Josh Boyer wrote:
-> > Add Holly/Hickory DTS file
-> 
-> [...]
-> > +		mdio@6000 {
-> > +			name = "mdio";
-> > +			device_type = "mdio";
-> > +			compatible = "tsi-ethernet";
-> > +			ethernet-phy@6000 {
-> > +				name = "ethernet-phy";
-> > +				device_type = "ethernet-phy";
-> > +				reg = <6000 50>;
-> > +				phy-id = <1>;
-> > +				linux,phandle = <421>;
-> 
-> Kill the explicit phandles, please.
+On Friday 04 May 2007, Josh Boyer wrote:
+>=20
+> > If it's an IBM product, it should come with a product code like 123-456=
+7,
+> > which fits in here, instead of just listing the CPU.
+>=20
+> Erm... why? =A0There are other boards that don't do this as well...
 
-Will do.  Forgot there were still there actually.
+We did it on the Cell blade because we were asked to do it by
+the people responsible for the hardware, who were following
+their rules. I assumed that the same rules apply here as well,
+but maybe they are specific to the server line.
 
-josh
+> > > --- linux-2.6.orig/drivers/net/tsi108_eth.h
+> > > +++ linux-2.6/drivers/net/tsi108_eth.h
+> > > @@ -49,7 +49,11 @@
+> > > =A0 */
+> > > =A0#define PHY_MV88E=A0=A01=A0=A0=A0=A0=A0=A0=A0/* Marvel 88Exxxx PHY=
+ */
+> > > =A0#define PHY_BCM54XX=A0=A0=A0=A0=A0=A0=A0=A02=A0=A0=A0=A0=A0=A0=A0/=
+* Broardcom BCM54xx PHY */
+> > > +#if defined(CONFIG_HOLLY)
+> > > +#define TSI108_PHY_TYPE PHY_BCM54XX
+> > > +#else
+> > > =A0#define TSI108_PHY_TYPE=A0=A0=A0=A0PHY_MV88E
+> > > +#endif
+> > > =A0
+> >=20
+> > this breaks multiplatform setups.
+>=20
+> I know. =A0Looking for a better suggestions. =A0Kumar suggested a Kconfig
+> option at least, which is what I'm going to go with unless someone has a
+> better idea...
+
+A Kconfig option won't help at all. The phy should come as a device node
+below the ethernet device. When probing the device, look at the
+"compatible" and "reg" properties in there.
+
+	Arnd <><
