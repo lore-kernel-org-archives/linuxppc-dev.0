@@ -1,20 +1,21 @@
-Return-Path: <alfred.yo@Math.net>
-Received: from omta08.mta.everyone.net (sitemail3.everyone.net
-	[216.200.145.37]) by ozlabs.org (Postfix) with ESMTP id 1519CDDECB
+Return-Path: <adaplas@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.182])
+	by ozlabs.org (Postfix) with ESMTP id BA728DDED3
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  5 May 2007 20:26:00 +1000 (EST)
-Received: from dm25.mta.everyone.net (bigiplb-dsnat [172.16.0.19])
-	by omta08.mta.everyone.net (Postfix) with ESMTP id 75B6D447B7
+	Sat,  5 May 2007 20:44:41 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id p76so931547pyb
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  5 May 2007 03:24:54 -0700 (PDT)
-MIME-Version: 1.0
-Content-Type: text/html; charset="UTF-8"
-Message-Id: <20070505032454.92BC33D@resin10.mta.everyone.net>
-Date: Sat, 5 May 2007 03:24:54 -0700
-From: "alfred ss" <alfred.yo@Math.net>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: RS485 support over UART for MPC852t/MPC8xx
-Reply-To: alfred.yo@Math.net
+	Sat, 05 May 2007 03:44:39 -0700 (PDT)
+Subject: Re: [PATCH] Xilinx framebuffer device driver - 4th version
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Andrei Konovalov <akonovalov@ru.mvista.com>
+In-Reply-To: <1178309961.4729.7.camel@daplas>
+References: <463B504C.5050500@ru.mvista.com> <1178309961.4729.7.camel@daplas>
+Content-Type: text/plain
+Date: Sat, 05 May 2007 18:44:29 +0800
+Message-Id: <1178361869.4706.0.camel@daplas>
+Mime-Version: 1.0
+Cc: linux-fbdev-devel@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,28 +26,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-<DIV style="font-family:Arial, sans-serif; font-size:10pt;">
+On Sat, 2007-05-05 at 04:19 +0800, Antonino A. Daplas wrote:
+> On Fri, 2007-05-04 at 19:25 +0400, Andrei Konovalov wrote:
+> > Add support for the video controller IP block included into Xilinx ML300
+> > and ML403 reference designs.
+> > 
+> 
+> My tree does not have arch/ppc/syslib/virtex_devices.h. Either I wait
+> for that to be merged to the -mm or mainline tree, or you can submit
+> this driver yourself with the platform-specific changes. Either way:
 
-<P><SPAN style="font-size: 10pt; font-family: &quot;Trebuchet MS&quot;;">Hi, ppl:</SPAN></P>
+Okay, the platform-specific parts are in 2.6.21-mm1 already. I'll push
+this patch upstairs.
 
-
-
-<BR><P><SPAN style="font-size: 10pt; font-family: &quot;Trebuchet MS&quot;;">I tried posting my queries on all mailing lists
-including PPC, but could not get any response. </SPAN></P>
-
-
-
-<P><SPAN style="font-size: 10pt; font-family: &quot;Trebuchet MS&quot;;">&nbsp;</SPAN></P>
-
-<P><SPAN style="font-size: 10pt; font-family: &quot;Trebuchet MS&quot;;">Please let me know how do I go about adding RS485
-support for MPC852T in cpm_uart_cpmx.c ??</SPAN></P>
-
-<P><SPAN style="font-size: 10pt; font-family: &quot;Trebuchet MS&quot;;"><BR></SPAN></P><P><SPAN style="font-size: 10pt; font-family: &quot;Trebuchet MS&quot;;">Is there any support available whatsoever&nbsp;</SPAN></P>
-
-<P><SPAN style="font-size: 10pt; font-family: &quot;Trebuchet MS&quot;;">&nbsp;</SPAN></P>
-
-<P><SPAN style="font-size: 10pt; font-family: &quot;Trebuchet MS&quot;;">Thanks and Regards,</SPAN></P>
-
-<P><SPAN style="font-size: 10pt; font-family: &quot;Trebuchet MS&quot;;">Alfred.</SPAN></P>
-
-<BR>&nbsp;<BR><HR>Get your free web-based e-mail account from http://www.Math.net<BR>Your online tourguide of Mathematics, with books, links, news,<BR>message boards, and much more!</DIV>
+Tony
