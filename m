@@ -3,27 +3,26 @@ Received: from outmx033.isp.belgacom.be (outmx033.isp.belgacom.be
 	[195.238.6.170])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E02E8DDE42
+	by ozlabs.org (Postfix) with ESMTP id 7F062DDE46
 	for <linuxppc-dev@ozlabs.org>; Mon,  7 May 2007 01:39:12 +1000 (EST)
 Received: from outmx033.isp.belgacom.be (localhost.localdomain [127.0.0.1])
 	by outmx033.isp.belgacom.be (8.13.4/8.13.4/Debian-3sarge3) with ESMTP
-	id l46Fd8tV027624
-	for <linuxppc-dev@ozlabs.org>; Sun, 6 May 2007 17:39:08 +0200
+	id l46Fd7r4027613
+	for <linuxppc-dev@ozlabs.org>; Sun, 6 May 2007 17:39:07 +0200
 From: Sylvain Munaut <tnt@246tNt.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 7/8] serial/powerpc: Don't shutdown TX on mpc5200 serial port
-	if it is a console
-Date: Sun,  6 May 2007 17:38:51 +0200
-Message-Id: <11784659381238-git-send-email-tnt@246tNt.com>
-In-Reply-To: <11784659372712-git-send-email-tnt@246tNt.com>
+Subject: [PATCH 6/8] powerpc: Set efika's device_type to "soc"
+Date: Sun,  6 May 2007 17:38:50 +0200
+Message-Id: <11784659372712-git-send-email-tnt@246tNt.com>
+In-Reply-To: <11784659371139-git-send-email-tnt@246tNt.com>
 References: <11784659324066-git-send-email-tnt@246tNt.com>
 	<11784659351487-git-send-email-tnt@246tNt.com>
 	<1178465935138-git-send-email-tnt@246tNt.com>
 	<11784659368-git-send-email-tnt@246tNt.com>
 	<1178465936695-git-send-email-tnt@246tNt.com>
 	<11784659371139-git-send-email-tnt@246tNt.com>
-	<11784659372712-git-send-email-tnt@246tNt.com>
-Cc: PPC dev ML <linuxppc-dev@ozlabs.org>, Sylvain Munaut <tnt@246tNt.com>
+Cc: PPC dev ML <linuxppc-dev@ozlabs.org>, Sylvain Munaut <tnt@246tNt.com>,
+	Domen Puncer <domen.puncer@telargo.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,33 +32,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+From: Domen Puncer <domen.puncer@telargo.com>
 
-If the serial port gets shut down, then console output stalls.  9 out
-of 10 kernel hackers agree, this is a bad thing.
+Device type should be "soc" (as in lite5200.dts), compatible is
+already set to "mpc5200".
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
 Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
 ---
- drivers/serial/mpc52xx_uart.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/prom_init.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
-index f8c1761..35f8b86 100644
---- a/drivers/serial/mpc52xx_uart.c
-+++ b/drivers/serial/mpc52xx_uart.c
-@@ -257,9 +257,10 @@ mpc52xx_uart_shutdown(struct uart_port *port)
- {
- 	struct mpc52xx_psc __iomem *psc = PSC(port);
- 
--	/* Shut down the port, interrupt and all */
-+	/* Shut down the port.  Leave TX active if on a console port */
- 	out_8(&psc->command,MPC52xx_PSC_RST_RX);
--	out_8(&psc->command,MPC52xx_PSC_RST_TX);
-+	if (!uart_console(port))
-+		out_8(&psc->command,MPC52xx_PSC_RST_TX);
- 
- 	port->read_status_mask = 0;
- 	out_be16(&psc->mpc52xx_psc_imr,port->read_status_mask);
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index e27d9d1..87efb42 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -2153,7 +2153,7 @@ static void __init fixup_device_tree_efika(void)
+ 	                             3,12,0, 3,13,0, 3,14,0, 3,15,0 };
+ 	struct subst_entry efika_subst_table[] = {
+ 		{ "/",			"device_type",	prop_cstr("efika") },
+-		{ "/builtin",		"compatible",	prop_cstr("soc") },
++		{ "/builtin",		"device_type",	prop_cstr("soc") },
+ 		{ "/builtin/ata",	"compatible",	prop_cstr("mpc5200b-ata\0mpc5200-ata"), },
+ 		{ "/builtin/bestcomm",	"compatible",	prop_cstr("mpc5200b-bestcomm\0mpc5200-bestcomm") },
+ 		{ "/builtin/bestcomm",	"interrupts",	prop_bcomm_irq, sizeof(prop_bcomm_irq) },
 -- 
 1.5.1.2
