@@ -1,21 +1,24 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from mx.dlasys.net (24.152.213.223.res-cmts.eph.ptd.net
-	[24.152.213.223]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <repvik@kynisk.com>
+Received: from mail.kynisk.com (mail.kynisk.com [89.149.220.217])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E71A2DDE2D
+	by ozlabs.org (Postfix) with ESMTP id 820FCDDECF
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  7 May 2007 07:41:13 +1000 (EST)
-Message-ID: <463E4B13.2030600@dlasys.net>
-Date: Sun, 06 May 2007 17:39:31 -0400
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
+	Sun,  6 May 2007 23:03:34 +1000 (EST)
+Received: from ximinez-laptop (44.84-48-58.nextgentel.com [84.48.58.44])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by mail.kynisk.com (Postfix) with ESMTP id 9AD271BF2C1
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun,  6 May 2007 14:45:29 +0200 (CEST)
+From: =?iso-8859-1?q?=D8yvind_Repvik?= <repvik@kynisk.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: [PATCH] TurboStation support
+Date: Sun, 6 May 2007 14:46:05 +0200
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: virtex_devices.c
-References: <463C379D.7020804@dlasys.net>
-	<528646bc0705051516h2b0259cfgbe3be784acf4086a@mail.gmail.com>
-In-Reply-To: <528646bc0705051516h2b0259cfgbe3be784acf4086a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200705061446.05491.repvik@kynisk.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,206 +29,390 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
->
-> I think I understand what you're describing, but I'd need to see your
-> code snippits to be sure.  Can you send me the relevant patches?
->
-    As soon as I have something working I will post it.
+Hi,
 
->>     At some point if I get inspired I may take a wack at crafting
->> generic approach using an early serial mini driver.
->>
->>     But for the moment my choices are:
->>             add a few more 8250 specific #ifdefs to kill off most of
->> the 
->> conflicting code in virtex_devices.c 
->>     and adapt my own code that is already in my BSP. This is the
->> simplest and does the least damage to your code.
- 
-> Considering the fact that the whole purpose of virtex_devices.c is to
-> massage the mess of #defines that is xparameters.h in to something
-> more parsable, then extra #if defined() test may not be a big deal.
-    This is not just about virtex_devices. Supporting early Output on
-something other than an 8250
-    requires #ifdef's all over creation.
-    This is just screaming for a more generic solution. But that needs
-to happen without
-    much increase in complexity
+	This patch adds support for the QNAP TurboStation TS-101 and TS-201 device=
+s.=20
 
+Signed-off-by: =D8yvind Repvik <nail@nslu2-linux.org>
+Signed-off-by: Alessandro Zummo <a.zummo@towertech.it>
 
-
->
-> However, I need clarification.  Are you talking about early serial
-> port support, console support or regular serial devices?
-    While I am specifically dealing with one area. More broadly I am
-talking about
-    all Output prior to the real serial driver coming up.
-    This seems to  be the pre-linux stuff in
-    arch/ppc/boot/simple. You just added a uartlite_tty.c there. I have
-had one for a long time.
-    but that is pretty trivial.
-    and the slightly more complex
-    arch/ppc/syslib/uartlite_dbg that is used by the progress stuff and
-for a bit prior to the early serial
-    driver code.
-    I do not think you have code for this - but I do.
-
-    These bits are only critical when something early goes completely to
-crap.
-    But then they are important.
-  
-> For example;
-> on one of my boards here I've got both 16550 and uartlite devices on
-> the same board and it works fine for serial port access.  I've also
-> got another design with only uartlite and another with only 16550.
-> Each of these scenarios should work with the code that is now in
-> mainline (but there are some issues still).
-    This is also relevant to me because I have another pseudo serial
-device that I support
-    in exactly the same way as UartLite. It is unique enough to our
-hardware that
-    it is likely of little interest to anyone else. But it means
-everytime I look at a UartLite
-    issue, I am looking at a "keyhole" issue too.
-    It means that everywhere there is an 8250 specific solution to a
-problem,
-    I end up with a 3 way fork.
-    While support for early non-8250's is lite - there are others
-besides the uartlite and my keyhole.
-
-    I rarely use JTAG and other hardware debugging tools. It is critical
-for me to be able to
-    output information at most every part of the kernel load process.
-   
->
-> plat_serial8250_port is used because it is the structure used by the
-> platform bus to connect the 8250 driver to 8250 devices.  This is of
-> course specific to the 8250 driver.  The Uartlite ports are simple
-> enough that they don't need a *_platform_data structure; instead the
-> resources table in a virtex_platform_devices[] entry is sufficient to
-> describe the device to the platform bus.  You should be able to do the
-> same thing with your keyhole device registration.
-    By substituting uart_port for plat_serial8250 I end up with
-something generic.
-    I do not understand the rational behind the plat_serialxxxx structs.
-    It is not like u-boot or something else passes them, they seem to be
-entirely a kernel
-    creation, they contain no information that is not in uart_port which
-is generic for
-    anything that pretends to be a serial device, and using the
-plat_serial8250 means
-    individually copying values from that struct to a uart_port.
-    By just substitution uart_port for plat_serial8250 I end up with
-code that is
-    exactly the same for anything that looks like a serial device.
-
-   
-
->
-> Now, early serial is still a problem.  When using zImages, you must
-> make sure that only one of CONFIG_SERIAL_UARTLITE_CONSOLE and
-> CONFIG_SERIAL_8250_CONSOLE is set.  If they are both set, then it will
-> not compile.  (But this is just a zImage boot wrapper issue.  The
-> kernel proper should work fine).  Also, early serial in the kernel
-> proper is not implemented in driver which is in mainline, but console
-> and regular serial access is supported.
->
-> To add early serial support, I think virtex_early_serial_map() should
-> be reworked to scan the whole virtex_platform_devices table looking
-> for either "uartlite", "serial8250" or "keyhole" devices.
-    That is basically what I am doing.
-       The UART macro(s) in xparameters, are changed to use uart_port
-element names.
-       All serial/pseudo serial devices are setup uniformly the same.
-       Serial devices are distinguishable in the uart_port struct by
-their .type field,
-       In the rare instances I need to distinguish there are if's or
-switches on the .type field.
-
-
->
-> Go ahead, stomp away.  Worst that can happen is that I disagree.  :)
-> I certainly won't be offended.
->
->>
->>              Is there some compelling reason to use plat_serial8250 as
->> the structure in which the port data is stored  as opposed to
->>     something more generic ?
->
-> plat_serial8250 isn't supposed to be generic.  The generic bit is
-> supposed to be the virtex_platform_devices table.  BTW, my personal
-> opinion is that plat_serial8250 is poorly implemented because it maps
-> multiple 8250 devices to a single platform_device.  Instead, it should
-> be a 1-1 mapping (like all the other devices in the
-> virtex_platform_devices table).  ie. Don't try to describe all serial
-> devices, regardless of type, in a single platform_device record.
->
->>              Do you have an objection to my making the changes needed to
->> switch to the uart_port struct as the initialization data ?
->
-> It doesn't smell right; but I'm not sure I fully understand what
-> you're suggesting.  Show me patches.
-    The basic fundimental question is why is there an 8250 specific
-structure,
-    when there is a perfectly good generic structure that already exists ?
-    Actually it seems to be even more complex than that because I think
-there is actually an
-    old_serial structure that is also used in places.
-
-    This is not really a virtex or ppc question and probably belongs on
-linux-serial,
-    but the gist is uart_port is what the majority if not all serial
-devices end up using.
-    instead of starting with something else and then having incongruent
-field names
-   lots fo device specific code and/or #ifdef's,
-    if we just use uart_port instead of plat_serialxxx's for every device,
-    then all code gets simpler as does adding additional devices.
-   
-
-    Shortly I hope. I have code, it is just not working at this minute.
-    Actually I suspect it is working, but my overall migration from my
-    implimentation of your earlier code to my implimentation of your newer
-    code is not yet working.
-
->
->>
->>              Do you have any objection to my adding additional choices
->> such as UartLite to the virtex_devices serial initialization ?
->
-> Absolutely not.  This is a good thing.
->
->>     Do you have a different direction you would prefer to see things go
->> - aside from moving to device trees and/or implimenting
->>     a more generic early serial driver,  both of which I don't think I
->> want to try at this instant ?
->
-> As I described above.
->
-> Now, all this being said; we do need to migrate to arch/powerpc
-> relatively soon.  If the changes are not too complex or if they ease
-> our migration to arch/powerpc, then I'm all for it.  If you're
-> undertaking a major development effort of stuff that's arch/ppc only;
-> then I recommend against it.  :-)
->
-> Oh, and I'd *really* like to see pico support hit mainline.  Easiest
-> way to do this is to break of chunks and tackle them one at a time
-> which is easier than trying to get the whole patchset in at once.
-> Keyhole driver sounds like a good place to start.
->
-> Cheers,
-> g.
->
->
-
-
--- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
-
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
+=2D-- linux-2.6.21.1/arch/powerpc/boot/dts/qnap-ts101.dts	1970-01-01=20
+01:00:00.000000000 +0100
++++ linux-2.6.21.1.ts/arch/powerpc/boot/dts/qnap-ts101.dts	2007-05-03=20
+22:44:59.000000000 +0200
+@@ -0,0 +1,166 @@
++/*
++ * Device Tree Souce for QNAP Turbostation 101/201
++ *
++ * Choose CONFIG_TURBOSTATION to build a kernel for turbostation
++ *=20
++ *
++ * Based on sandpoint.dts
++ *
++ * 2006 (c) G. Liakhovetski <g.liakhovetski@gmx.de>
++ *
++ * This file is licensed under
++ * the terms of the GNU General Public License version 2.  This program
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
++ *
++ * build with: "dtc -f -I dts -O dtb -o qnap-ts101.dtb -V 16 qnap-ts101.dt=
+s"
++ *
++ *
++ */
++
++/ {
++	linux,phandle =3D <1000>;
++	model =3D "TurboStation TSx01";
++	compatible =3D "turbostation";
++	#address-cells =3D <1>;
++	#size-cells =3D <1>;
++
++	cpus {
++		linux,phandle =3D <2000>;
++		#cpus =3D <1>;
++		#address-cells =3D <1>;
++		#size-cells =3D <0>;
++
++		PowerPC,603e { /* Really 8241 */
++			linux,phandle =3D <2100>;
++			device_type =3D "cpu";
++			reg =3D <0>;
++			clock-frequency =3D <fdad680>;	/* 266 MHz */
++			timebase-frequency =3D <1fca055>;	/* 33.3333333 MHz */
++			bus-frequency =3D <0>;
++			/* Following required by dtc but not used */
++			i-cache-line-size =3D <0>;
++			d-cache-line-size =3D <0>;
++			i-cache-size =3D <4000>;
++			d-cache-size =3D <4000>;
++		};
++	};
++
++	/* 64MB @ 0x0 */
++	memory {
++		linux,phandle =3D <3000>;
++		device_type =3D "memory";
++		reg =3D <00000000 04000000>;
++	};
++
++	flash@ff000000 {
++		linux,phandle =3D <3100>;
++		device_type =3D "rom";
++		compatible =3D "direct-mapped";
++		probe-type =3D "CFI";
++		reg =3D <ff000000 01000000>;
++		bank-width =3D <1>;
++		partitions =3D <
++				00000000 00200000
++				00200000 00d00000
++				00f00000 00040001
++				00f40000 00020000
++				00f60000 00040000
++				00fa0000 00020000
++				00fc0000 00040000
++		>;
++		partition-names=20
+=3D "kernel\0rootfs\0uboot1\0uboot1-env\0uboot2\0uboot2-env\0SysConf";
++	};
++
++
++	soc10x { /* AFAICT need to make soc for 8245's uarts to be defined */
++		linux,phandle =3D <4000>;
++		#address-cells =3D <1>;
++		#size-cells =3D <1>;
++		#interrupt-cells =3D <2>;
++		device_type =3D "soc";
++		compatible =3D "mpc10x";
++		store-gathering =3D <0>; /* 0 =3D=3D off, !0 =3D=3D on */
++		reg =3D <80000000 00100000>;
++		ranges =3D <80000000 80000000 70000000	/* pci mem space */
++			  fc000000 fc000000 00100000	/* EUMB */
++			  fe000000 fe000000 00c00000	/* pci i/o space */
++			  fec00000 fec00000 00300000	/* pci cfg regs */
++			  fef00000 fef00000 00100000>;	/* pci iack */
++
++		i2c@fc003000 {
++			linux,phandle =3D <4300>;
++			device_type =3D "i2c";
++			compatible =3D "fsl-i2c";
++			reg =3D <fc003000 1000>;
++			interrupts =3D <5 2>;
++			interrupt-parent =3D <4400>;
++		};
++
++		serial@fc004500 {
++			linux,phandle =3D <4511>;
++			device_type =3D "serial";
++			compatible =3D "ns16550";
++			reg =3D <fc004500 8>;
++			clock-frequency =3D <7ed6b40>;	/* 133 MHz */
++			current-speed =3D <1c200>;	/* 115200 */
++			interrupts =3D <9 2>;
++			interrupt-parent =3D <4400>;
++		};
++
++		serial@fc004600 {
++			linux,phandle =3D <4512>;
++			device_type =3D "serial";
++			compatible =3D "ns16550";
++			reg =3D <fc004600 8>;
++			clock-frequency =3D <7ed6b40>;
++			current-speed =3D <4b00>;		/* 19200 */
++			interrupts =3D <a 2>;
++			interrupt-parent =3D <4400>;
++		};
++
++		pic@fc040000 {
++			linux,phandle =3D <4400>;
++			#interrupt-cells =3D <2>;
++			#address-cells =3D <0>;
++			device_type =3D "open-pic";
++			compatible =3D "chrp,open-pic";
++			interrupt-controller;
++			reg =3D <fc040000 40000>;
++			built-in;
++		};
++
++		pci@fe800000 {
++			linux,phandle =3D <4500>;
++			#address-cells =3D <3>;
++			#size-cells =3D <2>;
++			#interrupt-cells =3D <1>;
++			device_type =3D "pci";
++			compatible =3D "mpc10x-pci";
++			reg =3D <fc000000 400000>;
++			ranges =3D <01000000 0        0 fe000000 0 00c00000
++				  02000000 0 80000000 80000000 0 70000000>;
++			bus-range =3D <0 ff>;
++			clock-frequency =3D <7ed6b40>;	/* 133 MHz */
++			interrupt-parent =3D <4400>;
++			interrupt-map-mask =3D <f800 0 0 7>;
++			interrupt-map =3D <
++				/* IDSEL 0x13 - SATA*/
++				6800 0 0 1 4400 0 1
++				6800 0 0 2 4400 0 1
++				6800 0 0 3 4400 0 1
++				6800 0 0 4 4400 0 1
++				/* IDSEL 0x14 - USB */
++				7000 0 0 1 4400 1 1
++				7000 0 0 2 4400 1 1
++				7000 0 0 3 4400 1 1
++				7000 0 0 4 4400 1 1
++				/* IDSEL 0x15 - ETH */
++				7800 0 0 1 4400 2 1
++				7800 0 0 2 4400 2 1
++				7800 0 0 3 4400 2 1
++				7800 0 0 4 4400 2 1
++			>;
++		};
++	};
++};
+Binary files linux-2.6.21.1/arch/powerpc/boot/dts/storcenter.dtb and=20
+linux-2.6.21.1.ts/arch/powerpc/boot/dts/storcenter.dtb differ
+=2D-- linux-2.6.21.1/arch/powerpc/platforms/embedded6xx/Kconfig	2007-04-27=
+=20
+23:49:26.000000000 +0200
++++ linux-2.6.21.1.ts/arch/powerpc/platforms/embedded6xx/Kconfig	2007-05-06=
+=20
+14:31:55.000000000 +0200
+@@ -87,6 +87,13 @@
+ 	  Linkstation-I HD-HLAN and HD-HGLAN versions, and PPC-based
+ 	  Terastation systems should be supported too.
+=20
++config TURBOSTATION
++	bool "QNap TS-101/TS-102 TurboStation"
++	select MPIC
++	select FSL_SOC
++	select PPC_UDBG_16550 if SERIAL_8250
++	select DEFAULT_UIMAGE
++
+ config MPC7448HPC2
+ 	bool "Freescale MPC7448HPC2(Taiga)"
+ 	select TSI108_BRIDGE
+@@ -200,7 +207,7 @@
+ 	depends on SANDPOINT || SPRUCE || PPLUS || \
+ 		PRPMC750 || PRPMC800 || LOPEC || \
+ 		(EV64260 && !SERIAL_MPSC) || CHESTNUT || RADSTONE_PPC7D || \
+=2D		83xx || LINKSTATION
++		83xx || LINKSTATION || TURBOSTATION=20
+ 	default y
+=20
+ config FORCE
+@@ -274,13 +281,15 @@
+=20
+ config MPC10X_BRIDGE
+ 	bool
+=2D	depends on POWERPMC250 || LOPEC || SANDPOINT || LINKSTATION
++	depends on POWERPMC250 || LOPEC || SANDPOINT || LINKSTATION || \
++	TURBOSTATION=20
+ 	select PPC_INDIRECT_PCI
+ 	default y
+=20
+ config MPC10X_OPENPIC
+ 	bool
+=2D	depends on POWERPMC250 || LOPEC || SANDPOINT || LINKSTATION
++	depends on POWERPMC250 || LOPEC || SANDPOINT || LINKSTATION || \
++	TURBOSTATION=20
+ 	default y
+=20
+ config MPC10X_STORE_GATHERING
+=2D-- linux-2.6.21.1/arch/powerpc/platforms/embedded6xx/Makefile	2007-04-27=
+=20
+23:49:26.000000000 +0200
++++ linux-2.6.21.1.ts/arch/powerpc/platforms/embedded6xx/Makefile	2007-05-0=
+6=20
+14:30:58.000000000 +0200
+@@ -3,3 +3,4 @@
+ #
+ obj-$(CONFIG_MPC7448HPC2)	+=3D mpc7448_hpc2.o
+ obj-$(CONFIG_LINKSTATION)	+=3D linkstation.o ls_uart.o
++obj-$(CONFIG_TURBOSTATION)	+=3D turbostation.o
+=2D-- linux-2.6.21.1/arch/powerpc/platforms/embedded6xx/turbostation.c=09
+1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.21.1.ts/arch/powerpc/platforms/embedded6xx/turbostation.c=09
+2007-05-03 22:45:03.000000000 +0200
+@@ -0,0 +1,141 @@
++/*
++ * Board setup routines for the QNAP Turbostation platform (TS-101/TS-201)
++ *
++ * Copyright (C) 2007 Oyvind Repvik (nail@nslu2-linux.org)
++ *
++ * Based on linkstation.c by G. Liakhovetski
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2.  This program is licensed "as is" without any warranty of
++ * any kind, whether express or implied.
++ */
++
++#include <linux/kernel.h>
++#include <linux/pci.h>
++#include <linux/initrd.h>
++#include <linux/mtd/physmap.h>
++
++#include <asm/time.h>
++#include <asm/prom.h>
++#include <asm/mpic.h>
++#include <asm/mpc10x.h>
++#include <asm/pci-bridge.h>
++
++static int __init add_bridge(struct device_node *dev)
++{
++	int len;
++	struct pci_controller *hose;
++	int *bus_range;
++
++	printk("Adding PCI host bridge %s\n", dev->full_name);
++
++	bus_range =3D (int *) get_property(dev, "bus-range", &len);
++	if (bus_range =3D=3D NULL || len < 2 * sizeof(int))
++		printk(KERN_WARNING "Can't get bus-range for %s, assume"
++				" bus 0\n", dev->full_name);
++
++	hose =3D pcibios_alloc_controller();
++	if (hose =3D=3D NULL)
++		return -ENOMEM;
++	hose->first_busno =3D bus_range ? bus_range[0] : 0;
++	hose->last_busno =3D bus_range ? bus_range[1] : 0xff;
++	hose->arch_data =3D dev;
++	setup_indirect_pci(hose, 0xfec00000, 0xfee00000);
++
++	/* Interpret the "ranges" property */
++	/* This also maps the I/O region and sets isa_io/mem_base */
++	pci_process_bridge_OF_ranges(hose, dev, 1);
++
++	return 0;
++}
++
++static void __init turbostation_setup_arch(void)
++{
++	struct device_node *np;
++
++	/* Lookup PCI host bridges */
++	for (np =3D NULL; (np =3D of_find_node_by_type(np, "pci")) !=3D NULL;)
++		add_bridge(np);
++
++	printk(KERN_INFO "QNAP Turbostation series\n");
++}
++
++/*
++ * Interrupt setup and service.  Interrrupts on the turbostation come
++ * from the four PCI slots plus onboard 8241 devices: I2C, DUART.
++ */
++static void __init turbostation_init_IRQ(void)
++{
++	struct mpic *mpic;
++	struct device_node *dnp;
++	void *prop;
++	int size;
++	phys_addr_t paddr;
++
++	dnp =3D of_find_node_by_type(NULL, "open-pic");
++	if (dnp =3D=3D NULL)
++		return;
++
++	prop =3D (struct device_node *)get_property(dnp, "reg", &size);
++	paddr =3D (phys_addr_t)of_translate_address(dnp, prop);
++
++	mpic =3D mpic_alloc(dnp, paddr, MPIC_PRIMARY | MPIC_WANTS_RESET,
++			4, 32, " EPIC     ");
++	BUG_ON(mpic =3D=3D NULL);
++
++	/* PCI IRQs */
++	mpic_assign_isu(mpic, 0, paddr + 0x10200);
++
++	/* I2C */
++	mpic_assign_isu(mpic, 1, paddr + 0x11000);
++
++	/* ttyS0, ttyS1 */
++	mpic_assign_isu(mpic, 2, paddr + 0x11100);
++
++	mpic_init(mpic);
++}
++
++static void turbostation_restart(char *cmd)
++{
++	/* Insert restart-stuff */
++}
++
++static void turbostation_power_off(void)
++{
++	/* Insert powerdown-stuff */
++}
++
++static void turbostation_halt(void)
++{
++	turbostation_power_off();
++}
++
++static void turbostation_show_cpuinfo(struct seq_file *m)
++{
++	seq_printf(m, "vendor\t\t: QNAP Systems Inc.\n");
++	seq_printf(m, "machine\t\t: Turbostation TS-101/TS-201\n");
++}
++
++static int __init turbostation_probe(void)
++{
++	unsigned long root;
++
++	root =3D of_get_flat_dt_root();
++
++	if (!of_flat_dt_is_compatible(root, "turbostation"))
++		return 0;
++	return 1;
++}
++
++define_machine(turbostation){
++	.name 			=3D "QNAP Turbostation",
++	.probe 			=3D turbostation_probe,
++	.setup_arch 		=3D turbostation_setup_arch,
++	.init_IRQ 		=3D turbostation_init_IRQ,
++	.show_cpuinfo 		=3D turbostation_show_cpuinfo,
++	.get_irq 		=3D mpic_get_irq,
++	.restart 		=3D turbostation_restart,
++	.power_off 		=3D turbostation_power_off,
++	.halt	 		=3D turbostation_halt,
++	.calibrate_decr 	=3D generic_calibrate_decr,
++};
