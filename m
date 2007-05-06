@@ -1,24 +1,23 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
-	[151.189.21.50])
+Return-Path: <tnt@246tNt.com>
+Received: from outmx033.isp.belgacom.be (outmx033.isp.belgacom.be
+	[195.238.6.170])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 07E62DDEEB
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 May 2007 23:27:53 +1000 (EST)
-In-Reply-To: <20070506114429.5c631864@localhost.localdomain>
-References: <20070506004737.31233.52611.stgit@localhost.localdomain>
-	<67c6bf6b7d37f5e133398ea83edeac78@kernel.crashing.org>
-	<20070506114429.5c631864@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <84e2e0ca1796d87adb58c90c1b7dbc94@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] 8xx: mpc885ads pcmcia support
-Date: Sun, 6 May 2007 15:26:48 +0200
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, linux-pcmcia@lists.infradead.org,
-	linux-kernel@vger.kernel.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C794EDDE44
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 May 2007 01:39:11 +1000 (EST)
+Received: from outmx033.isp.belgacom.be (localhost.localdomain [127.0.0.1])
+	by outmx033.isp.belgacom.be (8.13.4/8.13.4/Debian-3sarge3) with ESMTP
+	id l46Fd5JS027559
+	for <linuxppc-dev@ozlabs.org>; Sun, 6 May 2007 17:39:06 +0200
+From: Sylvain Munaut <tnt@246tNt.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 2/8] powerpc: export of_device_get_modalias
+Date: Sun,  6 May 2007 17:38:46 +0200
+Message-Id: <1178465935138-git-send-email-tnt@246tNt.com>
+In-Reply-To: <11784659351487-git-send-email-tnt@246tNt.com>
+References: <11784659324066-git-send-email-tnt@246tNt.com>
+	<11784659351487-git-send-email-tnt@246tNt.com>
+Cc: PPC dev ML <linuxppc-dev@ozlabs.org>, Sylvain Munaut <tnt@246tNt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,31 +27,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Since this node's children's interrupt representation
->> is different from the node's parent's, you need an
->> interrupt-map in here.  You also forgot "#address-cells"
->> and I think you need "ranges" too?
->>
-> Well, in fact it does not introduce SoC device different from any 
-> others
-> represented inside soc885 node. mk_int_int_mask() is just special
-> way of enabling irq for PCMCIA stuff, in addition to normal pic stuff.
+Apparently other parts of the kernel need to know the
+modalias internally (like the sysfs code in macintosh driver).
 
-I have no idea what you mean here.  Care to try again?
+To avoid consistency issues, we export this code and use it
+everywhere it's needed rather than repeat it ...
 
-> Emm. Why would I need #address-cells and ranges here? it uses parent 
-> bus address space...
+Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
+---
+ arch/powerpc/kernel/of_device.c |    5 +++--
+ include/asm-powerpc/of_device.h |    2 ++
+ 2 files changed, 5 insertions(+), 2 deletions(-)
 
-"#address-cells" is 3 for pcmcia, so not the default
-value (which is 2), so you need to put it in.  The
-value of this property is not inherited from the
-parent node.
-
-Absence of a "ranges" property means the child bus is
-*not* direct mapped into the parent bus space.  If the
-mapping you need is 1-1, put in an empty "ranges"
-property; if not, you have to put the correct mapping
-in.
-
-
-Segher
+diff --git a/arch/powerpc/kernel/of_device.c b/arch/powerpc/kernel/of_device.c
+index 0c8ea76..38a0ef2 100644
+--- a/arch/powerpc/kernel/of_device.c
++++ b/arch/powerpc/kernel/of_device.c
+@@ -120,8 +120,8 @@ void of_device_unregister(struct of_device *ofdev)
+ }
+ 
+ 
+-static ssize_t of_device_get_modalias(struct of_device *ofdev,
+-					char *str, ssize_t len)
++ssize_t of_device_get_modalias(struct of_device *ofdev,
++				char *str, ssize_t len)
+ {
+ 	const char *compat;
+ 	int cplen, i;
+@@ -239,3 +239,4 @@ EXPORT_SYMBOL(of_dev_get);
+ EXPORT_SYMBOL(of_dev_put);
+ EXPORT_SYMBOL(of_release_dev);
+ EXPORT_SYMBOL(of_device_uevent);
++EXPORT_SYMBOL(of_device_get_modalias);
+diff --git a/include/asm-powerpc/of_device.h b/include/asm-powerpc/of_device.h
+index 4f1aabe..e9af49e 100644
+--- a/include/asm-powerpc/of_device.h
++++ b/include/asm-powerpc/of_device.h
+@@ -32,6 +32,8 @@ extern int of_device_register(struct of_device *ofdev);
+ extern void of_device_unregister(struct of_device *ofdev);
+ extern void of_release_dev(struct device *dev);
+ 
++extern ssize_t of_device_get_modalias(struct of_device *ofdev,
++					char *str, ssize_t len);
+ extern int of_device_uevent(struct device *dev,
+ 	char **envp, int num_envp, char *buffer, int buffer_size);
+ 
+-- 
+1.5.1.2
