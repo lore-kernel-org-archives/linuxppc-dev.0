@@ -1,20 +1,24 @@
-Return-Path: <SRS0=1Dnv=KH=gmx.de=7eggert@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 97BE4DDEEC
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 May 2007 22:20:53 +1000 (EST)
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Correct location for ADC/DAC drivers
-To: Robin Getz <rgetz@blackfin.uclinux.org>,
-	Robert Schwebel <r.schwebel@pengutronix.de>,
-	Stefan Roese <ml@stefan-roese.de>, linuxppc-dev@ozlabs.org,
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
+	[151.189.21.50])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 07E62DDEEB
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 May 2007 23:27:53 +1000 (EST)
+In-Reply-To: <20070506114429.5c631864@localhost.localdomain>
+References: <20070506004737.31233.52611.stgit@localhost.localdomain>
+	<67c6bf6b7d37f5e133398ea83edeac78@kernel.crashing.org>
+	<20070506114429.5c631864@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <84e2e0ca1796d87adb58c90c1b7dbc94@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] 8xx: mpc885ads pcmcia support
+Date: Sun, 6 May 2007 15:26:48 +0200
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linux-pcmcia@lists.infradead.org,
 	linux-kernel@vger.kernel.org
-Date: Sun, 06 May 2007 14:19:59 +0200
-References: <8fZXU-3EI-11@gated-at.bofh.it> <8haHG-6zd-19@gated-at.bofh.it>
-	<8hd2U-1Ca-39@gated-at.bofh.it> <8heii-3GM-37@gated-at.bofh.it>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Message-Id: <E1Hkfia-0000cJ-18@be1.lrz>
-Reply-To: 7eggert@gmx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,34 +28,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Robin Getz <rgetz@blackfin.uclinux.org> wrote:
-> On Fri 4 May 2007 16:52, Robert Schwebel pondered:
->> On Fri, May 04, 2007 at 02:21:50PM -0400, Robin Getz wrote:
-
->> > We also have DAC and ADC drivers (up to 16 bits @ 64MS/s, via DMA),
->> > that would be nice to put in the "right" place  - I don't think that
->> > drivers/char is the right place, nor drivers/misc - I also don't think
->> > that /adc is a descriptive place for DAC or mixed signal front ends
->> > (MxFE).
+>> Since this node's children's interrupt representation
+>> is different from the node's parent's, you need an
+>> interrupt-map in here.  You also forgot "#address-cells"
+>> and I think you need "ranges" too?
 >>
->> What userspace interface do your drivers have?
-> 
-> Right now, it is a little rudimentary char interface, it needs a little care
-> to be a bit more general purpose, but it suited needs of what the people who
-> were using it.
+> Well, in fact it does not introduce SoC device different from any 
+> others
+> represented inside soc885 node. mk_int_int_mask() is just special
+> way of enabling irq for PCMCIA stuff, in addition to normal pic stuff.
 
-[...]
+I have no idea what you mean here.  Care to try again?
 
-> I would be interested in having a detailed discussion/random thoughts on
-> this - what is the best way to expose these types of devices?
+> Emm. Why would I need #address-cells and ranges here? it uses parent 
+> bus address space...
 
-Since you ask for random thoughts:
+"#address-cells" is 3 for pcmcia, so not the default
+value (which is 2), so you need to put it in.  The
+value of this property is not inherited from the
+parent node.
 
-IO of data streams from or to a DAC/ADC is essentially what soundcards do.
-I'm wondering if these cards are similar enough to use alsa, and if using
-that interface would ease or hinder programming the driver.
--- 
-Top 100 things you don't want the sysadmin to say:
-76. I have never seen it do *that* before...
+Absence of a "ranges" property means the child bus is
+*not* direct mapped into the parent bus space.  If the
+mapping you need is 1-1, put in an empty "ranges"
+property; if not, you have to put the correct mapping
+in.
 
-Friﬂ, Spammer: BZmk0Kx63V@ld7M4m.7eggert.dyndns.org
+
+Segher
