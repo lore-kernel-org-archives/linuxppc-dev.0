@@ -1,20 +1,20 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 38285DDEF7
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 May 2007 06:20:33 +1000 (EST)
-Date: Sun, 6 May 2007 22:20:36 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Correct location for ADC/DAC drivers
-In-Reply-To: <E1Hkfia-0000cJ-18@be1.lrz>
-Message-ID: <Pine.LNX.4.60.0705062219310.6650@poirot.grange>
-References: <8fZXU-3EI-11@gated-at.bofh.it> <8haHG-6zd-19@gated-at.bofh.it>
-	<8hd2U-1Ca-39@gated-at.bofh.it> <8heii-3GM-37@gated-at.bofh.it>
-	<E1Hkfia-0000cJ-18@be1.lrz>
+Return-Path: <matt@genesi-usa.com>
+Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
+	[66.98.186.96])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E83BDDDE2E
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 May 2007 08:24:49 +1000 (EST)
+Message-ID: <463E55CA.3040204@genesi-usa.com>
+Date: Sun, 06 May 2007 23:25:14 +0100
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Robin Getz <rgetz@blackfin.uclinux.org>,
-	linux-kernel@vger.kernel.org
+To: spitzauer_77@gmx.de
+Subject: Re: Writing an AC97 device driver for MPC52xx
+References: <20070503142259.222640@gmx.net>
+In-Reply-To: <20070503142259.222640@gmx.net>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,28 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 6 May 2007, Bodo Eggert wrote:
+There's a driver available for the Efika and Lite5200B boards.
 
-> Robin Getz <rgetz@blackfin.uclinux.org> wrote:
-> > On Fri 4 May 2007 16:52, Robert Schwebel pondered:
-> >> On Fri, May 04, 2007 at 02:21:50PM -0400, Robin Getz wrote:
+It needs a lot of improvement but it's there. I can send you a copy of the
+patch for the AC97 if you like, seperate to the list. No point duplicating
+work. I'm sure others can do the same if they have anything else (although
+the driver will no doubt be Sylvain's :)
+
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
+
+spitzauer_77@gmx.de wrote:
+> Hi all,
 > 
-> >> > We also have DAC and ADC drivers (up to 16 bits @ 64MS/s, via DMA),
-> >> > that would be nice to put in the "right" place  - I don't think that
-> >> > drivers/char is the right place, nor drivers/misc - I also don't think
-> >> > that /adc is a descriptive place for DAC or mixed signal front ends
-> >> > (MxFE).
-> >>
-> >> What userspace interface do your drivers have?
-> > 
-> > Right now, it is a little rudimentary char interface, it needs a little care
-> > to be a bit more general purpose, but it suited needs of what the people who
-> > were using it.
-
-If I were thinking about a DAC / ADC API I would have a look at Comedi - 
-somehow I think it should be pretty well designed...
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+> i try to write device driver for an AC97 external codec on MPC5200 controller. The PSC1 and 2 on MPC5200 can be configured as AC97.
+> 
+> I'm a little bit new in this topic of writing linux drivers and read a lot in the internet about this. (e.g. http://www.alsa-project.org/~iwai/writing-an-alsa-driver/x1052.htm )
+> 
+> But i have some questions:
+> 
+> - Is there a simple driver maybe on other platforms available, which have the same problem solved?? Most of the sound drivers are coupled with pci.
+> 
+> - I only have to write the pure hardware (PSC) stuff, or?? I'm little confused on how i should handle this with AC97 (ac97_codec.c) and ALSA.
+> 
+> - Is this for my driver the correct layer:
+>   User App -> ALSA -> AC97 -> "My driver" -> Hardware MPC52xx
+> 
+> 
+> I'm glad for any hint!
+> 
+> Spitzauer
