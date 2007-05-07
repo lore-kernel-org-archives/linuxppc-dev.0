@@ -1,11 +1,12 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 7 May 2007 15:35:27 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: powerpc: Remove use of 4level-fixup.h for ppc32
+Message-ID: <20070507053527.GB24464@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17982.46631.484516.344679@cargo.ozlabs.ibm.com>
-Date: Mon, 7 May 2007 15:16:23 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Cope with PCI host bridge I/O window not starting at 0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,64 +16,216 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently our code to set up the data structures for a PCI host bridge
-and create the mapping for its I/O window assumes that the window
-starts at I/O port 0 on the PCI side.  If this is not true, we can end
-up with I/O port numbers in the resources for PCI devices which will
-cause an oops if a driver tries to access them via inb/outb etc.,
-because there is no mapping for the corresponding addresses.
+For 32-bit systems, powerpc still relies on the 4level-fixup.h hack,
+to pretend that the generic pagetable handling stuff is 3-levels
+rather than 4.  This patch removes this, instead using the newer
+pgtable-nopmd.h to handle the elision of both the pud and pmd
+pagetable levels (ppc32 pagetables are actually 2 levels).
 
-Normally the I/O window starts at 0, but there are some situations on
-partitioned machines with a hypervisor where the window may not start
-at 0.
+This removes a little extraneous code, and makes it more easily
+compared to the 64-bit pagetable code.
 
-This fixes the problem by allocating space for the range from 0 to the
-end of the I/O window.  That is, hose->io_base_virt contains the
-virtual address for I/O port 0 on the PCI bus, and thus the assumption
-that hose->io_base_virt - pci_io_base is the offset between the
-"global" I/O port numbers (those in the PCI device resources) and the
-I/O port numbers on the PCI bus is maintained.
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-For PCI host bridges that are present at boot, we only map the portion
-of that range that correspond to the bridge's I/O window.  For bridges
-added after boot we ioremap the range from 0 to the end of the I/O
-window, for now; in fact hot-added bridges should be using
-reserve_phb_iospace() and __ioremap_explicit (so they get sensible
-global port numbers), but we don't have the infrastructure yet to do
-that (basically a free_phb_iospace() routine plus appropriate
-locking).
-
-Interestingly, this makes the two arms of the if statement in
-get_bus_io_range do almost exactly the same thing; that function could
-now be simplified in a further patch.
-
-Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
+ arch/powerpc/lib/dma-noncoherent.c  |    4 +++-
+ arch/powerpc/mm/pgtable_32.c        |   28 ++++++++++++++++------------
+ include/asm-powerpc/page.h          |    4 ++++
+ include/asm-powerpc/pgalloc-32.h    |    4 ++--
+ include/asm-powerpc/pgtable-ppc32.h |   30 ++----------------------------
+ 5 files changed, 27 insertions(+), 43 deletions(-)
 
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index 60d7d4b..706b7f3 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -1006,8 +1006,9 @@ void __devinit pci_process_bridge_OF_ranges(struct pci_controller *hose,
+Index: working-2.6/include/asm-powerpc/pgtable-ppc32.h
+===================================================================
+--- working-2.6.orig/include/asm-powerpc/pgtable-ppc32.h	2007-05-07 15:30:04.000000000 +1000
++++ working-2.6/include/asm-powerpc/pgtable-ppc32.h	2007-05-07 15:30:04.000000000 +1000
+@@ -1,7 +1,7 @@
+ #ifndef _ASM_POWERPC_PGTABLE_PPC32_H
+ #define _ASM_POWERPC_PGTABLE_PPC32_H
  
- 		switch ((pci_space >> 24) & 0x3) {
- 		case 1:		/* I/O space */
--			hose->io_base_phys = cpu_phys_addr;
--			hose->pci_io_size = size;
-+			hose->io_base_phys = cpu_phys_addr - pci_addr;
-+			/* handle from 0 to top of I/O window */
-+			hose->pci_io_size = pci_addr + size;
+-#include <asm-generic/4level-fixup.h>
++#include <asm-generic/pgtable-nopmd.h>
  
- 			res = &hose->io_resource;
- 			res->flags = IORESOURCE_IO;
-@@ -1117,8 +1118,8 @@ static int get_bus_io_range(struct pci_bus *bus, unsigned long *start_phys,
- 	} else {
- 		/* Root Bus */
- 		res = &hose->io_resource;
--		*start_phys = hose->io_base_phys;
--		*start_virt = (unsigned long) hose->io_base_virt;
-+		*start_phys = hose->io_base_phys + res->start;
-+		*start_virt = (unsigned long) hose->io_base_virt + res->start;
- 		if (res->end > res->start)
- 			*size = res->end - res->start + 1;
- 		else {
+ #ifndef __ASSEMBLY__
+ #include <linux/sched.h>
+@@ -76,13 +76,8 @@ extern unsigned long ioremap_bot, iorema
+  * level has 2048 entries and the second level has 512 64-bit PTE entries.
+  * -Matt
+  */
+-/* PMD_SHIFT determines the size of the area mapped by the PTE pages */
+-#define PMD_SHIFT	(PAGE_SHIFT + PTE_SHIFT)
+-#define PMD_SIZE	(1UL << PMD_SHIFT)
+-#define PMD_MASK	(~(PMD_SIZE-1))
+-
+ /* PGDIR_SHIFT determines what a top-level page table entry can map */
+-#define PGDIR_SHIFT	PMD_SHIFT
++#define PGDIR_SHIFT	(PAGE_SHIFT + PTE_SHIFT)
+ #define PGDIR_SIZE	(1UL << PGDIR_SHIFT)
+ #define PGDIR_MASK	(~(PGDIR_SIZE-1))
+ 
+@@ -103,8 +98,6 @@ extern unsigned long ioremap_bot, iorema
+ #define pte_ERROR(e) \
+ 	printk("%s:%d: bad pte %llx.\n", __FILE__, __LINE__, \
+ 		(unsigned long long)pte_val(e))
+-#define pmd_ERROR(e) \
+-	printk("%s:%d: bad pmd %08lx.\n", __FILE__, __LINE__, pmd_val(e))
+ #define pgd_ERROR(e) \
+ 	printk("%s:%d: bad pgd %08lx.\n", __FILE__, __LINE__, pgd_val(e))
+ 
+@@ -516,19 +509,6 @@ extern unsigned long empty_zero_page[102
+ 
+ #ifndef __ASSEMBLY__
+ /*
+- * The "pgd_xxx()" functions here are trivial for a folded two-level
+- * setup: the pgd is never bad, and a pmd always exists (as it's folded
+- * into the pgd entry)
+- */
+-static inline int pgd_none(pgd_t pgd)		{ return 0; }
+-static inline int pgd_bad(pgd_t pgd)		{ return 0; }
+-static inline int pgd_present(pgd_t pgd)	{ return 1; }
+-#define pgd_clear(xp)				do { } while (0)
+-
+-#define pgd_page_vaddr(pgd) \
+-	((unsigned long) __va(pgd_val(pgd) & PAGE_MASK))
+-
+-/*
+  * The following only work if pte_present() is true.
+  * Undefined behaviour if not..
+  */
+@@ -737,12 +717,6 @@ extern pgprot_t phys_mem_access_prot(str
+ #define pgd_index(address)	 ((address) >> PGDIR_SHIFT)
+ #define pgd_offset(mm, address)	 ((mm)->pgd + pgd_index(address))
+ 
+-/* Find an entry in the second-level page table.. */
+-static inline pmd_t * pmd_offset(pgd_t * dir, unsigned long address)
+-{
+-	return (pmd_t *) dir;
+-}
+-
+ /* Find an entry in the third-level page table.. */
+ #define pte_index(address)		\
+ 	(((address) >> PAGE_SHIFT) & (PTRS_PER_PTE - 1))
+Index: working-2.6/include/asm-powerpc/page.h
+===================================================================
+--- working-2.6.orig/include/asm-powerpc/page.h	2007-05-07 14:24:21.000000000 +1000
++++ working-2.6/include/asm-powerpc/page.h	2007-05-07 15:30:04.000000000 +1000
+@@ -121,9 +121,11 @@ typedef struct { pte_t pte; } real_pte_t
+ #endif
+ 
+ /* PMD level */
++#ifdef CONFIG_PPC64
+ typedef struct { unsigned long pmd; } pmd_t;
+ #define pmd_val(x)	((x).pmd)
+ #define __pmd(x)	((pmd_t) { (x) })
++#endif
+ 
+ /* PUD level exusts only on 4k pages */
+ #if defined(CONFIG_PPC64) && !defined(CONFIG_PPC_64K_PAGES)
+@@ -159,9 +161,11 @@ typedef unsigned long real_pte_t;
+ #endif
+ 
+ 
++#if defined (CONFIG_PPC64)
+ typedef unsigned long pmd_t;
+ #define pmd_val(x)	(x)
+ #define __pmd(x)	(x)
++#endif
+ 
+ #if defined(CONFIG_PPC64) && !defined(CONFIG_PPC_64K_PAGES)
+ typedef unsigned long pud_t;
+Index: working-2.6/arch/powerpc/mm/pgtable_32.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/mm/pgtable_32.c	2007-04-26 13:57:24.000000000 +1000
++++ working-2.6/arch/powerpc/mm/pgtable_32.c	2007-05-07 15:30:04.000000000 +1000
+@@ -261,7 +261,7 @@ int map_page(unsigned long va, phys_addr
+ 	int err = -ENOMEM;
+ 
+ 	/* Use upper 10 bits of VA to index the first level map */
+-	pd = pmd_offset(pgd_offset_k(va), va);
++	pd = pmd_offset(pud_offset(pgd_offset_k(va), va), va);
+ 	/* Use middle 10 bits of VA to index the second-level map */
+ 	pg = pte_alloc_kernel(pd, va);
+ 	if (pg != 0) {
+@@ -354,23 +354,27 @@ int
+ get_pteptr(struct mm_struct *mm, unsigned long addr, pte_t **ptep, pmd_t **pmdp)
+ {
+         pgd_t	*pgd;
++	pud_t	*pud;
+         pmd_t	*pmd;
+         pte_t	*pte;
+         int     retval = 0;
+ 
+         pgd = pgd_offset(mm, addr & PAGE_MASK);
+         if (pgd) {
+-                pmd = pmd_offset(pgd, addr & PAGE_MASK);
+-                if (pmd_present(*pmd)) {
+-                        pte = pte_offset_map(pmd, addr & PAGE_MASK);
+-                        if (pte) {
+-				retval = 1;
+-				*ptep = pte;
+-				if (pmdp)
+-					*pmdp = pmd;
+-				/* XXX caller needs to do pte_unmap, yuck */
+-                        }
+-                }
++		pud = pud_offset(pgd, addr & PAGE_MASK);
++		if (pud && pud_present(*pud)) {
++			pmd = pmd_offset(pud, addr & PAGE_MASK);
++			if (pmd_present(*pmd)) {
++				pte = pte_offset_map(pmd, addr & PAGE_MASK);
++				if (pte) {
++					retval = 1;
++					*ptep = pte;
++					if (pmdp)
++						*pmdp = pmd;
++					/* XXX caller needs to do pte_unmap, yuck */
++				}
++			}
++		}
+         }
+         return(retval);
+ }
+Index: working-2.6/include/asm-powerpc/pgalloc-32.h
+===================================================================
+--- working-2.6.orig/include/asm-powerpc/pgalloc-32.h	2007-05-07 12:57:07.000000000 +1000
++++ working-2.6/include/asm-powerpc/pgalloc-32.h	2007-05-07 15:30:04.000000000 +1000
+@@ -12,10 +12,10 @@ extern void pgd_free(pgd_t *pgd);
+  * We don't have any real pmd's, and this code never triggers because
+  * the pgd will always be present..
+  */
+-#define pmd_alloc_one(mm,address)       ({ BUG(); ((pmd_t *)2); })
++/* #define pmd_alloc_one(mm,address)       ({ BUG(); ((pmd_t *)2); }) */
+ #define pmd_free(x)                     do { } while (0)
+ #define __pmd_free_tlb(tlb,x)		do { } while (0)
+-#define pgd_populate(mm, pmd, pte)      BUG()
++/* #define pgd_populate(mm, pmd, pte)      BUG() */
+ 
+ #ifndef CONFIG_BOOKE
+ #define pmd_populate_kernel(mm, pmd, pte)	\
+Index: working-2.6/arch/powerpc/lib/dma-noncoherent.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/lib/dma-noncoherent.c	2007-02-09 09:57:55.000000000 +1100
++++ working-2.6/arch/powerpc/lib/dma-noncoherent.c	2007-05-07 15:30:04.000000000 +1000
+@@ -306,13 +306,15 @@ EXPORT_SYMBOL(__dma_free_coherent);
+ static int __init dma_alloc_init(void)
+ {
+ 	pgd_t *pgd;
++	pud_t *pud;
+ 	pmd_t *pmd;
+ 	pte_t *pte;
+ 	int ret = 0;
+ 
+ 	do {
+ 		pgd = pgd_offset(&init_mm, CONSISTENT_BASE);
+-		pmd = pmd_alloc(&init_mm, pgd, CONSISTENT_BASE);
++		pud = pud_alloc(&init_mm, pgd, CONSISTENT_BASE);
++		pmd = pmd_alloc(&init_mm, pud, CONSISTENT_BASE);
+ 		if (!pmd) {
+ 			printk(KERN_ERR "%s: no pmd tables\n", __func__);
+ 			ret = -ENOMEM;
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
