@@ -1,38 +1,34 @@
-Return-Path: <b07421@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D193ADE0E0
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 04:30:10 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l47IU3aG029828
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 11:30:04 -0700 (MST)
-Received: from mailserv2.am.freescale.net (mailserv2.am.freescale.net
-	[10.82.65.62])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l47IU38K016630
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 13:30:03 -0500 (CDT)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32 [10.82.19.112])
-	by mailserv2.am.freescale.net (8.13.3/8.13.3) with ESMTP id
-	l47I8GEj022273
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 13:08:17 -0500 (CDT)
-Received: from ld0162-tx32.am.freescale.net (localhost [127.0.0.1])
-	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id A4BA1AEFC9
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 May 2007 13:30:02 -0500 (CDT)
-Received: (from b07421@localhost)
-	by ld0162-tx32.am.freescale.net (8.12.11/8.12.11/Submit) id
-	l47IU2EG026979
-	for linuxppc-dev@ozlabs.org; Mon, 7 May 2007 13:30:02 -0500
-Date: Mon, 7 May 2007 13:30:02 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 13/13] gianfar: Magic Packet and suspend/resume support.
-Message-ID: <20070507183002.GL26920@ld0162-tx32.am.freescale.net>
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 62979DDEEB
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 05:33:21 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
+	l47JTvaH021014
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 15:29:57 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l47JXG9V171974
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 13:33:16 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l47JXGjR001438
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 13:33:16 -0600
+Subject: Re: [PATCH v3 4/7] Add support for 750CL Holly board
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: paulus@samba.org
+In-Reply-To: <1178562159.2990.119.camel@zod.rchland.ibm.com>
+References: <1178549324.2990.52.camel@zod.rchland.ibm.com>
+	<1178549604.2990.62.camel@zod.rchland.ibm.com>
+	<1178562159.2990.119.camel@zod.rchland.ibm.com>
+Content-Type: text/plain
+Date: Mon, 07 May 2007 14:27:41 -0500
+Message-Id: <1178566061.2990.144.camel@zod.rchland.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070507182907.GA26897@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,335 +38,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
- drivers/net/gianfar.c         |  137 ++++++++++++++++++++++++++++++++++++++++-
- drivers/net/gianfar.h         |   13 +++-
- drivers/net/gianfar_ethtool.c |   41 ++++++++++++-
- 3 files changed, 185 insertions(+), 6 deletions(-)
+On Mon, 2007-05-07 at 13:22 -0500, Josh Boyer wrote:
+> On Mon, 2007-05-07 at 09:53 -0500, Josh Boyer wrote:
+> > Add PowerPC 750 Holly/Hickory platform support
+> > 
+> 
+> > +
+> > +#define HOLLY_PCI_CFG_PHYS 0x7e000000
+> 
+> FYI this is the wrong address.  Should be 0x7e000000.  It's part of the
 
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index b666a0c..4924e8d 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -141,6 +141,7 @@ static int gfar_process_frame(struct net_device *dev, struct sk_buff *skb, int l
- static void gfar_vlan_rx_register(struct net_device *netdev,
- 		                struct vlan_group *grp);
- static void gfar_vlan_rx_kill_vid(struct net_device *netdev, uint16_t vid);
-+static void gfar_halt_nodisable(struct net_device *dev);
- void gfar_halt(struct net_device *dev);
- void gfar_start(struct net_device *dev);
- static void gfar_clear_exact_match(struct net_device *dev);
-@@ -214,6 +215,7 @@ static int gfar_probe(struct platform_device *pdev)
- 
- 	spin_lock_init(&priv->txlock);
- 	spin_lock_init(&priv->rxlock);
-+	spin_lock_init(&priv->bflock);
- 
- 	platform_set_drvdata(pdev, dev);
- 
-@@ -397,6 +399,122 @@ static int gfar_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+#ifdef CONFIG_PM
-+static int gfar_suspend(struct platform_device *pdev, pm_message_t state)
-+{
-+	struct net_device *dev = platform_get_drvdata(pdev);
-+	struct gfar_private *priv = netdev_priv(dev);
-+	unsigned long flags;
-+	u32 tempval;
-+
-+	int magic_packet = priv->wol_en &&
-+		(priv->einfo->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET);
-+
-+	netif_device_detach(dev);
-+
-+	if (netif_running(dev)) {
-+		spin_lock_irqsave(&priv->txlock, flags);
-+		spin_lock(&priv->rxlock);
-+
-+		gfar_halt_nodisable(dev);
-+
-+		/* Disable Tx, and Rx if wake-on-LAN is disabled. */
-+		tempval = gfar_read(&priv->regs->maccfg1);
-+
-+		tempval &= ~MACCFG1_TX_EN;
-+
-+		if (!magic_packet)
-+			tempval &= ~MACCFG1_RX_EN;
-+
-+		gfar_write(&priv->regs->maccfg1, tempval);
-+
-+		spin_unlock(&priv->rxlock);
-+		spin_unlock_irqrestore(&priv->txlock, flags);
-+
-+#ifdef CONFIG_GFAR_NAPI
-+		netif_poll_disable(dev);
-+#endif
-+
-+		if (magic_packet) {
-+			/* Enable interrupt on Magic Packet */
-+			gfar_write(&priv->regs->imask, IMASK_MAG);
-+
-+			/* Enable Magic Packet mode */
-+			tempval = gfar_read(&priv->regs->maccfg2);
-+			tempval |= MACCFG2_MPEN;
-+			gfar_write(&priv->regs->maccfg2, tempval);
-+		} else {
-+			phy_stop(priv->phydev);
-+		}
-+	}
-+
-+	if (!magic_packet || !netif_running(dev)) {
-+		/* The device with the MDIO in its register block must
-+		 * not be put to sleep if any other network devices
-+		 * using the same MDIO are active.  Ideally, some sort
-+		 * of reference counting could be done, but for now
-+		 * just don't put the MDIO-containing dev to sleep
-+		 * at all.
-+		 */
-+		if (!(priv->einfo->device_flags & FSL_GIANFAR_DEV_HAS_MDIO)) {
-+			fsl_sleep_device(&priv->einfo->sleep);
-+			priv->suspended = 1;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int gfar_resume(struct platform_device *pdev)
-+{
-+	struct net_device *dev = platform_get_drvdata(pdev);
-+	struct gfar_private *priv = netdev_priv(dev);
-+	unsigned long flags;
-+	u32 tempval;
-+	int magic_packet = priv->wol_en &&
-+		(priv->einfo->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET);
-+
-+	if (priv->suspended) {
-+		fsl_wake_device(&priv->einfo->sleep);
-+		priv->suspended = 0;
-+	}
-+
-+	if (!netif_running(dev)) {
-+		netif_device_attach(dev);
-+		return 0;
-+	}
-+
-+	if (!magic_packet && priv->phydev)
-+		phy_start(priv->phydev);
-+
-+	/* Disable Magic Packet mode, in case something
-+	 * else woke us up.
-+	 */
-+
-+	spin_lock_irqsave(&priv->txlock, flags);
-+	spin_lock(&priv->rxlock);
-+
-+	tempval = gfar_read(&priv->regs->maccfg2);
-+	tempval &= ~MACCFG2_MPEN;
-+	gfar_write(&priv->regs->maccfg2, tempval);
-+
-+	gfar_start(dev);
-+
-+	spin_unlock(&priv->rxlock);
-+	spin_unlock_irqrestore(&priv->txlock, flags);
-+
-+	netif_device_attach(dev);
-+
-+#ifdef CONFIG_GFAR_NAPI
-+	netif_poll_enable(dev);
-+#endif
-+
-+	return 0;
-+}
-+#else
-+#define gfar_suspend NULL
-+#define gfar_resume NULL
-+#endif
- 
- /* Reads the controller's registers to determine what interface
-  * connects it to the PHY.
-@@ -517,7 +635,7 @@ static void init_registers(struct net_device *dev)
- 
- 
- /* Halt the receive and transmit queues */
--void gfar_halt(struct net_device *dev)
-+static void gfar_halt_nodisable(struct net_device *dev)
- {
- 	struct gfar_private *priv = netdev_priv(dev);
- 	struct gfar __iomem *regs = priv->regs;
-@@ -540,6 +658,14 @@ void gfar_halt(struct net_device *dev)
- 			 (IEVENT_GRSC | IEVENT_GTSC)))
- 			cpu_relax();
- 	}
-+}
-+
-+/* Halt the receive and transmit queues */
-+void gfar_halt(struct net_device *dev)
-+{
-+	struct gfar_private *priv = netdev_priv(dev);
-+	struct gfar __iomem *regs = priv->regs;
-+	u32 tempval;
- 
- 	/* Disable Rx and Tx */
- 	tempval = gfar_read(&regs->maccfg1);
-@@ -1877,7 +2003,12 @@ static irqreturn_t gfar_error(int irq, void *dev_id)
- 	u32 events = gfar_read(&priv->regs->ievent);
- 
- 	/* Clear IEVENT */
--	gfar_write(&priv->regs->ievent, IEVENT_ERR_MASK);
-+	gfar_write(&priv->regs->ievent, events & IEVENT_ERR_MASK);
-+
-+	/* Magic Packet is not an error. */
-+	if ((priv->einfo->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET) &&
-+	    (events & IEVENT_MAG))
-+		events &= ~IEVENT_MAG;
- 
- 	/* Hmm... */
- 	if (netif_msg_rx_err(priv) || netif_msg_tx_err(priv))
-@@ -1947,6 +2078,8 @@ static irqreturn_t gfar_error(int irq, void *dev_id)
- static struct platform_driver gfar_driver = {
- 	.probe = gfar_probe,
- 	.remove = gfar_remove,
-+	.suspend = gfar_suspend,
-+	.resume = gfar_resume,
- 	.driver	= {
- 		.name = "fsl-gianfar",
- 	},
-diff --git a/drivers/net/gianfar.h b/drivers/net/gianfar.h
-index 39e9e32..62abb57 100644
---- a/drivers/net/gianfar.h
-+++ b/drivers/net/gianfar.h
-@@ -157,6 +157,7 @@ extern const char gfar_driver_version[];
- #define MACCFG2_GMII            0x00000200
- #define MACCFG2_HUGEFRAME	0x00000020
- #define MACCFG2_LENGTHCHECK	0x00000010
-+#define MACCFG2_MPEN		0x00000008
- 
- #define ECNTRL_INIT_SETTINGS	0x00001000
- #define ECNTRL_TBI_MODE         0x00000020
-@@ -229,6 +230,7 @@ extern const char gfar_driver_version[];
- #define IEVENT_CRL		0x00020000
- #define IEVENT_XFUN		0x00010000
- #define IEVENT_RXB0		0x00008000
-+#define IEVENT_MAG		0x00000800
- #define IEVENT_GRSC		0x00000100
- #define IEVENT_RXF0		0x00000080
- #define IEVENT_FIR		0x00000008
-@@ -240,7 +242,8 @@ extern const char gfar_driver_version[];
- #define IEVENT_ERR_MASK         \
- (IEVENT_RXC | IEVENT_BSY | IEVENT_EBERR | IEVENT_MSRO | \
-  IEVENT_BABT | IEVENT_TXC | IEVENT_TXE | IEVENT_LC \
-- | IEVENT_CRL | IEVENT_XFUN | IEVENT_DPE | IEVENT_PERR)
-+ | IEVENT_CRL | IEVENT_XFUN | IEVENT_DPE | IEVENT_PERR \
-+ | IEVENT_MAG)
- 
- #define IMASK_INIT_CLEAR	0x00000000
- #define IMASK_BABR              0x80000000
-@@ -258,6 +261,7 @@ extern const char gfar_driver_version[];
- #define IMASK_CRL		0x00020000
- #define IMASK_XFUN		0x00010000
- #define IMASK_RXB0              0x00008000
-+#define IMASK_MAG		0x00000800
- #define IMASK_GTSC              0x00000100
- #define IMASK_RXFEN0		0x00000080
- #define IMASK_FIR		0x00000008
-@@ -718,10 +722,15 @@ struct gfar_private {
- 	unsigned int fifo_starve;
- 	unsigned int fifo_starve_off;
- 
-+	/* Bitfield update lock */
-+	spinlock_t bflock;
-+
- 	unsigned char vlan_enable:1,
- 		rx_csum_enable:1,
- 		extended_hash:1,
--		bd_stash_en:1;
-+		bd_stash_en:1,
-+		wol_en:1, /* Wake-on-LAN enabled */
-+		suspended:1;
- 	unsigned short padding;
- 
- 	unsigned int interruptTransmit;
-diff --git a/drivers/net/gianfar_ethtool.c b/drivers/net/gianfar_ethtool.c
-index 7b411c1..c7fa24f 100644
---- a/drivers/net/gianfar_ethtool.c
-+++ b/drivers/net/gianfar_ethtool.c
-@@ -478,14 +478,13 @@ static int gfar_sringparam(struct net_device *dev, struct ethtool_ringparam *rva
- static int gfar_set_rx_csum(struct net_device *dev, uint32_t data)
- {
- 	struct gfar_private *priv = netdev_priv(dev);
-+	unsigned long flags;
- 	int err = 0;
- 
- 	if (!(priv->einfo->device_flags & FSL_GIANFAR_DEV_HAS_CSUM))
- 		return -EOPNOTSUPP;
- 
- 	if (dev->flags & IFF_UP) {
--		unsigned long flags;
--
- 		/* Halt TX and RX, and process the frames which
- 		 * have already been received */
- 		spin_lock_irqsave(&priv->txlock, flags);
-@@ -501,7 +500,9 @@ static int gfar_set_rx_csum(struct net_device *dev, uint32_t data)
- 		stop_gfar(dev);
- 	}
- 
-+	spin_lock_irqsave(&priv->bflock, flags);
- 	priv->rx_csum_enable = data;
-+	spin_unlock_irqrestore(&priv->bflock, flags);
- 
- 	if (dev->flags & IFF_UP)
- 		err = startup_gfar(dev);
-@@ -563,6 +564,38 @@ static void gfar_set_msglevel(struct net_device *dev, uint32_t data)
- 	priv->msg_enable = data;
- }
- 
-+#ifdef CONFIG_PM
-+static void gfar_get_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
-+{
-+	struct gfar_private *priv = netdev_priv(dev);
-+
-+	if (priv->einfo->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET) {
-+		wol->supported = WAKE_MAGIC;
-+		wol->wolopts = priv->wol_en ? WAKE_MAGIC : 0;
-+	} else {
-+		wol->supported = wol->wolopts = 0;
-+	}
-+}
-+
-+static int gfar_set_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
-+{
-+	struct gfar_private *priv = netdev_priv(dev);
-+	unsigned long flags;
-+
-+	if (!(priv->einfo->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET) &&
-+	    wol->wolopts != 0)
-+		return -EINVAL;
-+
-+	if (wol->wolopts & ~WAKE_MAGIC)
-+		return -EINVAL;
-+
-+	spin_lock_irqsave(&priv->bflock, flags);
-+	priv->wol_en = wol->wolopts & WAKE_MAGIC ? 1 : 0;
-+	spin_unlock_irqrestore(&priv->bflock, flags);
-+
-+	return 0;
-+}
-+#endif
- 
- const struct ethtool_ops gfar_ethtool_ops = {
- 	.get_settings = gfar_gsettings,
-@@ -584,4 +617,8 @@ const struct ethtool_ops gfar_ethtool_ops = {
- 	.set_tx_csum = gfar_set_tx_csum,
- 	.get_msglevel = gfar_get_msglevel,
- 	.set_msglevel = gfar_set_msglevel,
-+#ifdef CONFIG_PM
-+	.get_wol = gfar_get_wol,
-+	.set_wol = gfar_set_wol,
-+#endif
- };
--- 
-1.5.0.3
+ARGH.  0x7c000000
+
+josh
