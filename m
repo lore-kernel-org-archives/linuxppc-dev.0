@@ -1,25 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <afleming@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 75D07DDE39
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 07:53:11 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l47Lr6m9005581
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 14:53:06 -0700 (MST)
-Message-ID: <463F9FC0.6030000@freescale.com>
-Date: Mon, 07 May 2007 16:53:04 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH 12/13] gianfar: Add flags for magic packet and MDIO.
+	by ozlabs.org (Postfix) with ESMTP id 19152DDEF0
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 07:56:27 +1000 (EST)
+In-Reply-To: <463F9AC9.8080304@freescale.com>
 References: <20070507182957.GK26920@ld0162-tx32.am.freescale.net>
-	<183F76F8-BC1B-4EB6-9C3A-4F0FFA7B3BB8@freescale.com>
-In-Reply-To: <183F76F8-BC1B-4EB6-9C3A-4F0FFA7B3BB8@freescale.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	<20F58AAE-A35D-4BEC-9597-A882567BA5B4@kernel.crashing.org>
+	<463F83FC.6080807@freescale.com>
+	<1C79B879-58E1-4274-BB90-A6D39FC852C8@freescale.com>
+	<463F9AC9.8080304@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <7A5205EF-0963-4198-A5DE-4B2FBCEFB206@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Subject: Re: [PATCH 12/13] gianfar: Add flags for magic packet and MDIO.
+Date: Mon, 7 May 2007 16:56:24 -0500
+To: Scott Wood <scottwood@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -30,20 +29,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andy Fleming wrote:
-> Hrm.  I don't think this is a good way to go.  The DEV* flags are all  
-> features right now, rather than configuration settings.  It seems  like 
-> this is a stop-gap solution for until more robust detection of  the 
-> ability to power down the interface.  I can understand that a  full 
-> solution might be beyond the ambitions of this first set of  patches, 
-> but I'd prefer if we didn't pollute gianfar's device flags  space with a 
-> flag that we should aim at removing eventually.
 
-I'd rather "pollute" an existing flags with something that can be 
-removed (and the bit reused, if you're concerned about that) later, than 
-add a completely new field to accomplish the same thing.
+On May 7, 2007, at 16:31, Scott Wood wrote:
 
-And like the other DEV flags, it's an attribute of the device as it 
-exists in the system.
+> Andy Fleming wrote:
+>> On May 7, 2007, at 14:54, Scott Wood wrote:
+>>> TSEC1 contains the MDIO registers for both TSEC1 and TSEC2.   
+>>> Thus,  TSEC1
+>>> cannot be put to sleep if TSEC2 is active (plus, the phy timer would
+>>> have to be deactivated).  For now, the simple approach of never   
+>>> sleeping
+>>> TSEC1 is used.
+>> The PHY timer is part of the PHY Lib.  The PHY Lib has  
+>> infrastructure  to support suspend/resume.  Any thoughts on using  
+>> that?  More in an  another email.
+>
+> If the MDIO registers had their own clock disable bit, then sure.   
+> They don't.
 
--Scott
+Well, I'm getting into that in my gianfar.c review.  Obviously that  
+would be ideal, but we code with the hardware we have.  :)
+
+Mostly this was referring to the comment about phy_timer needing to  
+be deactivated.
+
+>
+> As for the phy timer issue, it seems that phy_stop() doesn't stop  
+> the timer, which is probably a bug.
+
+
+Nope.  phy_timer is used to manage the state_machine of the PHY.   
+phy_stop sets the state to HALTED, which means the PHY doesn't  
+register any changes.  But it keeps running so that phy_start can  
+bring it back online.  If you want to bring down an interface, you  
+want phy_disconnect.  That stops the timer.
+
+Andy
