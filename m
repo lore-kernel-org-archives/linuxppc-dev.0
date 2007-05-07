@@ -4,18 +4,21 @@ Received: from az33egw01.freescale.net (az33egw01.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 663E5DDF04
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 07:25:44 +1000 (EST)
-In-Reply-To: <463F83FC.6080807@freescale.com>
-References: <20070507182957.GK26920@ld0162-tx32.am.freescale.net>
-	<20F58AAE-A35D-4BEC-9597-A882567BA5B4@kernel.crashing.org>
-	<463F83FC.6080807@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id 6F53EDDF10
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 07:27:01 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l47LQumK007645
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 14:26:57 -0700 (MST)
+In-Reply-To: <20070507182947.GD26920@ld0162-tx32.am.freescale.net>
+References: <20070507182947.GD26920@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <1C79B879-58E1-4274-BB90-A6D39FC852C8@freescale.com>
+Message-Id: <B7081C3F-C551-42D8-BB5D-6FE5DC311C99@freescale.com>
 From: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH 12/13] gianfar: Add flags for magic packet and MDIO.
-Date: Mon, 7 May 2007 16:25:43 -0500
+Subject: Re: [PATCH 05/13] Document the fsl,
+	magic-packet property in gianfar nodes.
+Date: Mon, 7 May 2007 16:27:05 -0500
 To: Scott Wood <scottwood@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -28,31 +31,29 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On May 7, 2007, at 14:54, Scott Wood wrote:
+On May 7, 2007, at 13:29, Scott Wood wrote:
 
-> Kumar Gala wrote:
->>
->> On May 7, 2007, at 1:29 PM, Scott Wood wrote:
->>
->>> The magic packet flag indicates that the hardware has this
->>> capability.  The MDIO flag indicates that this device's
->>> registers contain active MDIO registers, and thus this
->>> device should not be put to sleep.
->>
->>
->> Can you explain the MDIO part further, do you mean its the tsec that
->> has the MDIO registers in its address space or that its actively   
->> using
->> MDIO for something?
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> ---
+>  Documentation/powerpc/booting-without-of.txt |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
 >
-> TSEC1 contains the MDIO registers for both TSEC1 and TSEC2.  Thus,  
-> TSEC1
-> cannot be put to sleep if TSEC2 is active (plus, the phy timer would
-> have to be deactivated).  For now, the simple approach of never  
-> sleeping
-> TSEC1 is used.
+> diff --git a/Documentation/powerpc/booting-without-of.txt b/ 
+> Documentation/powerpc/booting-without-of.txt
+> index 0efd8a0..1cd29e1 100644
+> --- a/Documentation/powerpc/booting-without-of.txt
+> +++ b/Documentation/powerpc/booting-without-of.txt
+> @@ -1187,6 +1187,10 @@ platforms are moved over to use the  
+> flattened-device-tree model.
+>        MAC addresses passed by the firmware when no information other
+>        than indices is available to associate an address with a  
+> device.
+>
+> +   Optional properties:
+> +    - fsl,magic-packet : Indicates that this device supports wake
+> +      on Magic Packet.
+> +
 
+Isn't this a fairly generic option?  Does it need the "fsl" qualifier?
 
-The PHY timer is part of the PHY Lib.  The PHY Lib has infrastructure  
-to support suspend/resume.  Any thoughts on using that?  More in an  
-another email.
+Andy
