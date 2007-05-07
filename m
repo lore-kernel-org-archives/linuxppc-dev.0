@@ -1,18 +1,15 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 7 May 2007 14:10:34 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH 4/6] Device tree aware EMAC driver
-Message-ID: <20070507041034.GE21287@localhost.localdomain>
-References: <20070504055455.GA25922@localhost.localdomain>
-	<20070507003019.GB16165@localhost.localdomain>
-	<20070507005723.GA4453@lixom.net>
-	<20070507014051.GF16165@localhost.localdomain>
-	<20070507035639.GA5567@lixom.net>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070507035639.GA5567@lixom.net>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Message-ID: <17982.43385.49199.628627@cargo.ozlabs.ibm.com>
+Date: Mon, 7 May 2007 14:22:17 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 4/7] Add support for 750CL Holly board
+In-Reply-To: <1178381871.3393.32.camel@zod.rchland.ibm.com>
+References: <1178381611.3393.25.camel@zod.rchland.ibm.com>
+	<1178381871.3393.32.camel@zod.rchland.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,62 +19,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, May 06, 2007 at 10:56:39PM -0500, Olof Johansson wrote:
-> Hi,
-> 
-> On Mon, May 07, 2007 at 11:40:51AM +1000, David Gibson wrote:
-> > On Sun, May 06, 2007 at 07:57:23PM -0500, Olof Johansson wrote:
-> > > On Mon, May 07, 2007 at 10:30:19AM +1000, David Gibson wrote:
-> > > > This is BenH's rewritten, device tree aware driver for the IBM/AMCC
-> > > > EMAC, ethernet MAC controller ASIC found on various 4xx CPUs and also
-> > > > the Axon bridge.  Tweaked to build on current kernels.
-> > > 
-> > > Shouldn't benh have a signoff line on it as well in that case?
-> > 
-> > Well, his patch which I tweaked didn't have his signoff, so I didn't
-> > think I ought to add it.
-> 
-> Heh, ok.
-> 
-> > > Is it ibm_emac or ibm_newemac? All file headers say ibm_emac, and there's
-> > > still Kconfig references to ibm_emac.
-> > 
-> > It's ibm_newemac, the file headers just haven't been updated.  The
-> > Kconfig changes referring to ibm_emac are just because the patch moves
-> > the suboptions for the old emac driver into their own subdirectory,
-> > and it inhibits selecting the old emac driver in arch/powerpc.
-> 
-> Hm, so it both modifies the old driver and adds the new one? 
+Josh Boyer writes:
 
-Well, barely.  It moves the Kconfig around a little for the old
-driver, but doesn't change the actual code at all.
+> +config HOLLY
 
-> Is the plan
-> to have both of them in parallel? Sounds wasteful, but I guess it'll be
-> hard to avoid until 4xx is dead in arch/ppc.
+That's a bit too non-specific, I think; please make it PPC_HOLLY.
 
-Exactly.
-
-> > > (Is this just posted FYI? If not, it should really go to netdev/jgarzik
-> > > instead, right?)
-> > 
-> > This is just FYI at the moment, or rather, it's not really an Ebony
-> > related patch but it's in this series because the Ebony support is
-> > much more interesting if the ethernet works.
-> 
-> Ok. It really sucks trying to review patches of this size, but I'll try
-> to make a few passes over it.
-> 
-> It'd be useful to just see the incremental steps of how it was morphed
-> from the current driver, but that's a pain to recreate once you have
-> this kind of blob. Especially if you inherited the bulk of it. :-)
-
-Heh.  Talk to Ben, but I think he'll be too busy to reply, let alone
-reconstruct the patch sequence.  My contribution is a one-liner to fix
-a recent build failure.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Paul.
