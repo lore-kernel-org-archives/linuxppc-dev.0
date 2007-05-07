@@ -1,18 +1,17 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 7 May 2007 14:02:24 +1000
+Date: Mon, 7 May 2007 14:10:34 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH 5/6] Support for the Ebony 440GP reference board in
-	arch/powerpc
-Message-ID: <20070507040224.GD21287@localhost.localdomain>
+Subject: Re: [PATCH 4/6] Device tree aware EMAC driver
+Message-ID: <20070507041034.GE21287@localhost.localdomain>
 References: <20070504055455.GA25922@localhost.localdomain>
-	<20070504055733.8FB7EDDFFD@ozlabs.org>
-	<20070504143645.GA10645@lixom.net>
-	<20070507032206.GB21287@localhost.localdomain>
-	<20070507034526.GA5352@lixom.net>
+	<20070507003019.GB16165@localhost.localdomain>
+	<20070507005723.GA4453@lixom.net>
+	<20070507014051.GF16165@localhost.localdomain>
+	<20070507035639.GA5567@lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070507034526.GA5352@lixom.net>
+In-Reply-To: <20070507035639.GA5567@lixom.net>
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,80 +22,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, May 06, 2007 at 10:45:26PM -0500, Olof Johansson wrote:
+On Sun, May 06, 2007 at 10:56:39PM -0500, Olof Johansson wrote:
 > Hi,
 > 
-> On Mon, May 07, 2007 at 01:22:06PM +1000, David Gibson wrote:
-> > On Fri, May 04, 2007 at 09:36:45AM -0500, Olof Johansson wrote:
-> > > Hi,
+> On Mon, May 07, 2007 at 11:40:51AM +1000, David Gibson wrote:
+> > On Sun, May 06, 2007 at 07:57:23PM -0500, Olof Johansson wrote:
+> > > On Mon, May 07, 2007 at 10:30:19AM +1000, David Gibson wrote:
+> > > > This is BenH's rewritten, device tree aware driver for the IBM/AMCC
+> > > > EMAC, ethernet MAC controller ASIC found on various 4xx CPUs and also
+> > > > the Axon bridge.  Tweaked to build on current kernels.
 > > > 
-> > > Not much actual board support code in here, nice and clean. :-) Seems
-> > > like most of this was boot wrapper enhancements.
+> > > Shouldn't benh have a signoff line on it as well in that case?
 > > 
-> > Mostly, yes.  There will be more in-kernel support code coming
-> > eventually, when we get PCI, the RTC and various other peripherals
-> > going.
+> > Well, his patch which I tweaked didn't have his signoff, so I didn't
+> > think I ought to add it.
 > 
-> Makes sense.
+> Heh, ok.
 > 
-> > > > Index: working-2.6/arch/powerpc/kernel/head_44x.S
-> > > > ===================================================================
-> > > > --- working-2.6.orig/arch/powerpc/kernel/head_44x.S	2007-05-03 10:19:32.000000000 +1000
-> > > > +++ working-2.6/arch/powerpc/kernel/head_44x.S	2007-05-04 13:46:51.000000000 +1000
-> > > > @@ -709,16 +709,6 @@ _GLOBAL(giveup_fpu)
-> > > >  	blr
-> > > >  #endif
-> > > >  
-> > > > -/*
-> > > > - * extern void abort(void)
-> > > > - *
-> > > > - * At present, this routine just applies a system reset.
-> > > > - */
-> > > > -_GLOBAL(abort)
-> > > > -        mfspr   r13,SPRN_DBCR0
-> > > > -        oris    r13,r13,DBCR0_RST_SYSTEM@h
-> > > > -        mtspr   SPRN_DBCR0,r13
-> > > > -
-> > > 
-> > > Looks like this rename is really separate from the platform support. Maybe
-> > > post it as such in a patch before this one?
+> > > Is it ibm_emac or ibm_newemac? All file headers say ibm_emac, and there's
+> > > still Kconfig references to ibm_emac.
 > > 
-> > Hrm, I suppose I could.  Is it really worth it?
+> > It's ibm_newemac, the file headers just haven't been updated.  The
+> > Kconfig changes referring to ibm_emac are just because the patch moves
+> > the suboptions for the old emac driver into their own subdirectory,
+> > and it inhibits selecting the old emac driver in arch/powerpc.
 > 
-> Personally I prefer to see new code separate from just
-> renames/moves/cleanups, it makes the new code easier to spot during
-> review. My first reaction when reading this patch was "why does he remove
-> this?" since it wasn't added until X chunks later down in the file.
+> Hm, so it both modifies the old driver and adds the new one? 
 
-Oh, ok, I'll split it out again.
+Well, barely.  It moves the Kconfig around a little for the old
+driver, but doesn't change the actual code at all.
 
-> > > > Index: working-2.6/arch/powerpc/platforms/Makefile
-> > > > ===================================================================
-> > > > --- working-2.6.orig/arch/powerpc/platforms/Makefile	2007-02-14 10:58:22.000000000 +1100
-> > > > +++ working-2.6/arch/powerpc/platforms/Makefile	2007-05-04 13:46:51.000000000 +1000
-> > > > @@ -6,7 +6,8 @@ obj-$(CONFIG_PPC_PMAC)		+= powermac/
-> > > >  endif
-> > > >  endif
-> > > >  obj-$(CONFIG_PPC_CHRP)		+= chrp/
-> > > > -obj-$(CONFIG_4xx)		+= 4xx/
-> > > > +#obj-$(CONFIG_4xx)		+= 4xx/
-> > > 
-> > > Hmm?
+> Is the plan
+> to have both of them in parallel? Sounds wasteful, but I guess it'll be
+> hard to avoid until 4xx is dead in arch/ppc.
+
+Exactly.
+
+> > > (Is this just posted FYI? If not, it should really go to netdev/jgarzik
+> > > instead, right?)
 > > 
-> > Contrary to the comment in arch/powerpc/platforms/4xx/Makefile, an
-> > empty Makefile does *not* compile correctly within Kbuild.  It's
-> > commented out so we build again, obviously it will need to go back in
-> > once there's any code that actually works in
-> > arch/powerpc/platforms/4xx.
+> > This is just FYI at the moment, or rather, it's not really an Ebony
+> > related patch but it's in this series because the Ebony support is
+> > much more interesting if the ethernet works.
 > 
-> I'm not sure I follow you here. This patch also adds the makefile, and
-> it's not empty (if you-ve got CONFIG_4xx enabled, it will build at least
-> one file in there)?
+> Ok. It really sucks trying to review patches of this size, but I'll try
+> to make a few passes over it.
+> 
+> It'd be useful to just see the incremental steps of how it was morphed
+> from the current driver, but that's a pain to recreate once you have
+> this kind of blob. Especially if you inherited the bulk of it. :-)
 
-Not quite.  The patch adds the platforms/44x/Makefile, it comments out
-4xx so that the (empty) platforms/4xx/Makefile is not invoked.
-Possibly we should rename 44x to ibm_booke everywhere to avoid this
-kind of confusion.
+Heh.  Talk to Ben, but I think he'll be too busy to reply, let alone
+reconstruct the patch sequence.  My contribution is a one-liner to fix
+a recent build failure.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
