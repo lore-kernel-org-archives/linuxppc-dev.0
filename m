@@ -1,28 +1,24 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 773E3DDEF6
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 08:04:10 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l47M472s029944
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 18:04:07 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l47M47RJ123172
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 16:04:07 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l47M46vn030747
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 16:04:07 -0600
-Subject: [PATCH 1/1] powerpc: Add powerpc PCI-E reset API implementation
-To: paulus@samba.org
-From: Brian King <brking@linux.vnet.ibm.com>
-Date: Mon, 07 May 2007 17:04:05 -0500
-Message-Id: <11785754441145-patch-mail.ibm.com>
-Cc: brking@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
-	thlin@linux.vnet.ibm.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7D30DDDEEC
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 09:07:40 +1000 (EST)
+In-Reply-To: <AC7B08C0-E41A-458F-8E9F-59901443600A@freescale.com>
+References: <20070507182947.GD26920@ld0162-tx32.am.freescale.net>
+	<B7081C3F-C551-42D8-BB5D-6FE5DC311C99@freescale.com>
+	<463F9A38.6080408@freescale.com>
+	<AC7B08C0-E41A-458F-8E9F-59901443600A@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3FE06AFA-BEE6-46CF-B12C-29D979AE50D7@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 05/13] Document the fsl,
+	magic-packet property in gianfar nodes.
+Date: Mon, 7 May 2007 18:06:39 -0500
+To: Andy Fleming <afleming@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,70 +29,38 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Adds the pSeries platform implementation for a new PCI API
-which can be used to issue various types of PCI-E reset,
-including PCI-E warm reset and PCI-E hot reset. This is needed
-for an ipr PCI-E adapter which does not properly implement BIST.
-Running BIST on this adapter results in PCI-E errors. The only
-reliable reset mechanism that exists on this hardware is PCI
-Fundamental reset (warm reset). 
+On May 7, 2007, at 4:51 PM, Andy Fleming wrote:
 
-Acked-by: Linas Vepstas <linas@austin.ibm.com>
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
----
+>
+> On May 7, 2007, at 16:29, Scott Wood wrote:
+>
+>> Andy Fleming wrote:
+>>> On May 7, 2007, at 13:29, Scott Wood wrote:
+>>>> +   Optional properties:
+>>>> +    - fsl,magic-packet : Indicates that this device supports wake
+>>>> +      on Magic Packet.
+>>>> +
+>>> Isn't this a fairly generic option?  Does it need the "fsl"
+>>> qualifier?
+>>
+>> As I previously wrote internally, it's only needed because some
+>> versions of the device have it and some don't; what it really means
+>> is that certain bits in certain registers are valid.  Making it
+>> generic would imply that all hardware that can do magic packet
+>> should have it, which isn't true.
+>
+>
+> Yeah, I just read that.  You should either make that more explicit in
+> the documentation, or make it generic.  It's fine if there are
+> drivers/devices that don't need to be told or tell anyone that they
+> recognize magic packets for them to work.  The lack of the property
+> in other controllers won't break anything.
+>
+> But I'm fine if you just document that the bit indicates,
+> specifically, the presence of magic-packet bits in certain registers
+> on the eTSEC.
 
-Paul,
+I'd ask is it really freescale specific?  In that I'd assume its  
+support for the standard wake-on-lan packet.
 
-The generic PCI layer patch that this patch depends on is now
-in. This patch can now be merged. Hopefully it can still make
-2.6.22.
-
-Thanks,
-
-Brian
----
-
- linux-2.6-bjking1/arch/powerpc/platforms/pseries/eeh.c |   30 +++++++++++++++++
- 1 file changed, 30 insertions(+)
-
-diff -puN arch/powerpc/platforms/pseries/eeh.c~powerpc_slot_reset_api3 arch/powerpc/platforms/pseries/eeh.c
---- linux-2.6/arch/powerpc/platforms/pseries/eeh.c~powerpc_slot_reset_api3	2007-05-07 16:52:33.000000000 -0500
-+++ linux-2.6-bjking1/arch/powerpc/platforms/pseries/eeh.c	2007-05-07 16:52:33.000000000 -0500
-@@ -580,6 +580,36 @@ rtas_pci_slot_reset(struct pci_dn *pdn, 
- }
- 
- /**
-+ * pcibios_set_pcie_slot_reset - Set PCI-E reset state
-+ * @dev:	pci device struct
-+ * @state:	reset state to enter
-+ *
-+ * Return value:
-+ * 	0 if success
-+ **/
-+int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state)
-+{
-+	struct device_node *dn = pci_device_to_OF_node(dev);
-+	struct pci_dn *pdn = PCI_DN(dn);
-+
-+	switch (state) {
-+	case pcie_deassert_reset:
-+		rtas_pci_slot_reset(pdn, 0);
-+		break;
-+	case pcie_hot_reset:
-+		rtas_pci_slot_reset(pdn, 1);
-+		break;
-+	case pcie_warm_reset:
-+		rtas_pci_slot_reset(pdn, 3);
-+		break;
-+	default:
-+		return -EINVAL;
-+	};
-+
-+	return 0;
-+}
-+
-+/**
-  * rtas_set_slot_reset -- assert the pci #RST line for 1/4 second
-  * @pdn: pci device node to be reset.
-  *
-_
+- k
