@@ -1,22 +1,22 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-05.arcor-online.net (mail-in-05.arcor-online.net
-	[151.189.21.45])
+Received: from mail-in-11.arcor-online.net (mail-in-11.arcor-online.net
+	[151.189.21.51])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 38CCEDDEF5
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 02:10:03 +1000 (EST)
-In-Reply-To: <17982.41898.515331.184888@cargo.ozlabs.ibm.com>
-References: <200703201917.l2KJHO51015104@ld0164-tx32.am.freescale.net>
-	<17982.41898.515331.184888@cargo.ozlabs.ibm.com>
+	by ozlabs.org (Postfix) with ESMTP id 0DE40DDFAF
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 02:10:11 +1000 (EST)
+In-Reply-To: <1178549765.2990.67.camel@zod.rchland.ibm.com>
+References: <1178549324.2990.52.camel@zod.rchland.ibm.com>
+	<1178549765.2990.67.camel@zod.rchland.ibm.com>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <b413dc2538d85382b0fa0b4b49ffb50f@kernel.crashing.org>
+Message-Id: <4d59b4ee7d3eef466bd3c25d0a71b1dc@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Support new property called interrupt-parents
-Date: Mon, 7 May 2007 14:28:32 +0200
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, Stuart Yoder <b08248@freescale.com>
+Subject: Re: [PATCH v3 6/7] Holly DTS
+Date: Mon, 7 May 2007 18:08:52 +0200
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,19 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Support new property called interrupt-parents.  This enables the
->> description of devices that have multiple interrupts that are routed 
->> to
->> different interrupt controllers.
+> Add Holly DTS file
 >
-> I think we can get the same effect by using an interrupt-map property
-> in the node, with the node's interrupt-parent pointing to itself.
-> That way we can just use the existing interrupt-map parsing code.
+> Signed-off-by: Stephen Winiecki <stevewin@us.ibm.com>
+> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-Sure, or have a separate interrupt nexus node that
-represents just this wiring.
+Acked-by: Segher Boessenkool <segher@kernel.crashing.org>
 
-We had a very long thread about this before...
+Looks good.  Two more non-essential things:
+
+- Did you forget the L2 cache node or do you really
+   just not care about it?
+- You can put an "interrupt-parent" property in the
+   host bridge node instead of in all its (indirect)
+   children.
 
 
 Segher
