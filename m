@@ -4,20 +4,23 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6FB76DDF23
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 07:45:51 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 9E821DDE39
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 07:51:32 +1000 (EST)
 Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
 	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l47Ljkrs011923
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 14:45:47 -0700 (MST)
-In-Reply-To: <20070507182957.GK26920@ld0162-tx32.am.freescale.net>
-References: <20070507182957.GK26920@ld0162-tx32.am.freescale.net>
+	l47LpSB5012992
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 14:51:28 -0700 (MST)
+In-Reply-To: <463F9A38.6080408@freescale.com>
+References: <20070507182947.GD26920@ld0162-tx32.am.freescale.net>
+	<B7081C3F-C551-42D8-BB5D-6FE5DC311C99@freescale.com>
+	<463F9A38.6080408@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <183F76F8-BC1B-4EB6-9C3A-4F0FFA7B3BB8@freescale.com>
+Message-Id: <AC7B08C0-E41A-458F-8E9F-59901443600A@freescale.com>
 From: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH 12/13] gianfar: Add flags for magic packet and MDIO.
-Date: Mon, 7 May 2007 16:45:55 -0500
+Subject: Re: [PATCH 05/13] Document the fsl,
+	magic-packet property in gianfar nodes.
+Date: Mon, 7 May 2007 16:51:36 -0500
 To: Scott Wood <scottwood@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -30,22 +33,32 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> @@ -323,6 +326,10 @@ static int __init gfar_of_init(void)
->  		gfar_data.phy_id = *id;
->  		gfar_data.bus_id = res.start;
+On May 7, 2007, at 16:29, Scott Wood wrote:
+
+> Andy Fleming wrote:
+>> On May 7, 2007, at 13:29, Scott Wood wrote:
+>>> +   Optional properties:
+>>> +    - fsl,magic-packet : Indicates that this device supports wake
+>>> +      on Magic Packet.
+>>> +
+>> Isn't this a fairly generic option?  Does it need the "fsl"  
+>> qualifier?
 >
-> +		if (res.start >= gfar_dev->resource[0].start &&
-> +		    res.start < gfar_dev->resource[0].end)
-> +			gfar_data.device_flags |= FSL_GIANFAR_DEV_HAS_MDIO;
-> +
+> As I previously wrote internally, it's only needed because some  
+> versions of the device have it and some don't; what it really means  
+> is that certain bits in certain registers are valid.  Making it  
+> generic would imply that all hardware that can do magic packet  
+> should have it, which isn't true.
 
 
-Hrm.  I don't think this is a good way to go.  The DEV* flags are all  
-features right now, rather than configuration settings.  It seems  
-like this is a stop-gap solution for until more robust detection of  
-the ability to power down the interface.  I can understand that a  
-full solution might be beyond the ambitions of this first set of  
-patches, but I'd prefer if we didn't pollute gianfar's device flags  
-space with a flag that we should aim at removing eventually.
+Yeah, I just read that.  You should either make that more explicit in  
+the documentation, or make it generic.  It's fine if there are  
+drivers/devices that don't need to be told or tell anyone that they  
+recognize magic packets for them to work.  The lack of the property  
+in other controllers won't break anything.
+
+But I'm fine if you just document that the bit indicates,  
+specifically, the presence of magic-packet bits in certain registers  
+on the eTSEC.
 
 Andy
