@@ -1,35 +1,35 @@
 Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CFA3FDDF5F
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 04:29:57 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l47ITqCN018441
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 11:29:52 -0700 (MST)
+	by ozlabs.org (Postfix) with ESMTP id 4537BDE0D2
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 04:29:59 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l47ITsrx003484
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 11:29:54 -0700 (MST)
 Received: from mailserv2.am.freescale.net (mailserv2.am.freescale.net
 	[10.82.65.62])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l47ITpV0023777
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 13:29:51 -0500 (CDT)
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l47ITrNQ019066
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 13:29:53 -0500 (CDT)
 Received: from ld0162-tx32.am.freescale.net (ld0162-tx32 [10.82.19.112])
 	by mailserv2.am.freescale.net (8.13.3/8.13.3) with ESMTP id
-	l47I84we022247
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 13:08:05 -0500 (CDT)
+	l47I86pH022251
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 13:08:06 -0500 (CDT)
 Received: from ld0162-tx32.am.freescale.net (localhost [127.0.0.1])
-	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id CE6CEAEFC9
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 May 2007 13:29:50 -0500 (CDT)
+	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id 7F771AEFC9
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 May 2007 13:29:52 -0500 (CDT)
 Received: (from b07421@localhost)
 	by ld0162-tx32.am.freescale.net (8.12.11/8.12.11/Submit) id
-	l47ITo4o026950
-	for linuxppc-dev@ozlabs.org; Mon, 7 May 2007 13:29:50 -0500
-Date: Mon, 7 May 2007 13:29:50 -0500
+	l47ITqpq026954
+	for linuxppc-dev@ozlabs.org; Mon, 7 May 2007 13:29:52 -0500
+Date: Mon, 7 May 2007 13:29:52 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 07/13] Implement arch disable/enable irq hooks.
-Message-ID: <20070507182950.GF26920@ld0162-tx32.am.freescale.net>
+Subject: [PATCH 08/13] pm: Handle HID0_SLEEP in the TLF_NAPPING hack.
+Message-ID: <20070507182952.GG26920@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20070507182907.GA26897@ld0162-tx32.am.freescale.net>
@@ -42,51 +42,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These hooks ensure that a decrementer interrupt is not pending when
-suspending; otherwise, problems may occur.  For example, with deep sleep
-on the 831x, a pending decrementer will cause a system freeze because the
-SoC thinks the decrementer interrupt would have woken the system, but the
-core must have interrupts disabled due to the setup required for deep
-sleep.
+The e300 core (and probably most other 6xx chips) can only come out of
+sleep mode with an interrupt.  However, interrupts are logically disabled
+by the power management layer.
+
+This hack extends the existing doze/nap hack to also suppress the running
+of the interrupt handler when in sleep mode.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/kernel/time.c |   23 +++++++++++++++++++++++
- 1 files changed, 23 insertions(+), 0 deletions(-)
+ arch/powerpc/kernel/idle_6xx.S |   34 +++++++++++++++++++++++++++++++++-
+ 1 files changed, 33 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 7cedef8..46546a3 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -707,6 +707,29 @@ void wakeup_decrementer(void)
- 	set_dec(ticks);
- }
+diff --git a/arch/powerpc/kernel/idle_6xx.S b/arch/powerpc/kernel/idle_6xx.S
+index 01bcd52..f45d634 100644
+--- a/arch/powerpc/kernel/idle_6xx.S
++++ b/arch/powerpc/kernel/idle_6xx.S
+@@ -147,6 +147,12 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ 	isync
+ 	b	1b
  
-+/* Overrides the weak version in kernel/power/main.c */
-+void arch_suspend_disable_irqs(void)
-+{
-+	preempt_disable();
++#ifdef CONFIG_PM
++ret_from_sleep:
++	.long	ret_from_except
++	.long	ret_from_except
++#endif
 +
-+	/* Disable the decrementer, so that it doesn't interfere
-+	 * with suspending.
+ /*
+  * Return from NAP/DOZE mode, restore some CPU specific registers,
+  * we are called with DR/IR still off and r2 containing physical
+@@ -154,7 +160,33 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+  * address).  We have to preserve r10.
+  */
+ _GLOBAL(power_save_6xx_restore)
+-	lwz	r9,_LINK(r11)		/* interrupted in ppc6xx_idle: */
++#ifdef CONFIG_PM
++	mfspr	r9, SPRN_HID0
++	andis.	r9, r9, HID0_SLEEP@h
++	beq+	1f
++
++	/*
++	 * SLEEP mode is invoked through the PM subsystem, which means
++	 * that interrupts should be disabled.  However, the hardware
++	 * requires them to be enabled to wake up.  To prevent the
++	 * interrupt from being visible to Linux, return immediately
++	 * rather than run the interrupt handler.
 +	 */
++	lis	r9, ret_from_sleep@h
++	ori	r9, r9, ret_from_sleep@l
++	tophys(r9, r9)
++	mtlr	r9
 +
-+	set_dec(0x7fffffff);
-+	local_irq_disable();
-+	set_dec(0x7fffffff);
-+}
++	/*
++	 * Disable interrupts, so that the interrupt doesn't happen
++	 * again until the PM code sets MSR[EE].
++	 */
++	lwz	r9, _MSR(r11)
++	rlwinm	r9, r9, 0, ~MSR_EE
++	stw	r9, _MSR(r11)
++#endif
 +
-+/* Overrides the weak version in kernel/power/main.c */
-+void arch_suspend_enable_irqs(void)
-+{
-+	wakeup_decrementer();
-+
-+	local_irq_enable();
-+	preempt_enable();
-+}
-+
++1:	lwz	r9,_LINK(r11)		/* interrupted in ppc6xx_idle: */
+ 	stw	r9,_NIP(r11)		/* make it do a blr */
+ 
  #ifdef CONFIG_SMP
- void __init smp_space_timers(unsigned int max_cpus)
- {
 -- 
 1.5.0.3
