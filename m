@@ -1,35 +1,35 @@
 Return-Path: <b07421@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4537BDE0D2
+	by ozlabs.org (Postfix) with ESMTP id 1C12DDE0EE
 	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 04:29:59 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l47ITsrx003484
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 11:29:54 -0700 (MST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l47ITtjB024254
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 11:29:55 -0700 (MST)
 Received: from mailserv2.am.freescale.net (mailserv2.am.freescale.net
 	[10.82.65.62])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l47ITrNQ019066
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 13:29:53 -0500 (CDT)
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l47ITspr017506
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 13:29:54 -0500 (CDT)
 Received: from ld0162-tx32.am.freescale.net (ld0162-tx32 [10.82.19.112])
 	by mailserv2.am.freescale.net (8.13.3/8.13.3) with ESMTP id
-	l47I86pH022251
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 13:08:06 -0500 (CDT)
+	l47I88BK022254
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 13:08:08 -0500 (CDT)
 Received: from ld0162-tx32.am.freescale.net (localhost [127.0.0.1])
-	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id 7F771AEFC9
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 May 2007 13:29:52 -0500 (CDT)
+	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id DF8A7AEFC9
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 May 2007 13:29:53 -0500 (CDT)
 Received: (from b07421@localhost)
 	by ld0162-tx32.am.freescale.net (8.12.11/8.12.11/Submit) id
-	l47ITqpq026954
-	for linuxppc-dev@ozlabs.org; Mon, 7 May 2007 13:29:52 -0500
-Date: Mon, 7 May 2007 13:29:52 -0500
+	l47ITrcu026958
+	for linuxppc-dev@ozlabs.org; Mon, 7 May 2007 13:29:53 -0500
+Date: Mon, 7 May 2007 13:29:53 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 08/13] pm: Handle HID0_SLEEP in the TLF_NAPPING hack.
-Message-ID: <20070507182952.GG26920@ld0162-tx32.am.freescale.net>
+Subject: [PATCH 09/13] fsl_soc: Factor fsl_get_bus_freq() out of the wdt init.
+Message-ID: <20070507182953.GH26920@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20070507182907.GA26897@ld0162-tx32.am.freescale.net>
@@ -42,69 +42,109 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The e300 core (and probably most other 6xx chips) can only come out of
-sleep mode with an interrupt.  However, interrupts are logically disabled
-by the power management layer.
-
-This hack extends the existing doze/nap hack to also suppress the running
-of the interrupt handler when in sleep mode.
-
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/kernel/idle_6xx.S |   34 +++++++++++++++++++++++++++++++++-
- 1 files changed, 33 insertions(+), 1 deletions(-)
+ arch/powerpc/sysdev/fsl_soc.c |   44 ++++++++++++++++++++++------------------
+ arch/powerpc/sysdev/fsl_soc.h |    1 +
+ 2 files changed, 25 insertions(+), 20 deletions(-)
 
-diff --git a/arch/powerpc/kernel/idle_6xx.S b/arch/powerpc/kernel/idle_6xx.S
-index 01bcd52..f45d634 100644
---- a/arch/powerpc/kernel/idle_6xx.S
-+++ b/arch/powerpc/kernel/idle_6xx.S
-@@ -147,6 +147,12 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- 	isync
- 	b	1b
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index 8a123c7..3b99433 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -64,6 +64,27 @@ phys_addr_t get_immrbase(void)
  
-+#ifdef CONFIG_PM
-+ret_from_sleep:
-+	.long	ret_from_except
-+	.long	ret_from_except
-+#endif
-+
- /*
-  * Return from NAP/DOZE mode, restore some CPU specific registers,
-  * we are called with DR/IR still off and r2 containing physical
-@@ -154,7 +160,33 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
-  * address).  We have to preserve r10.
-  */
- _GLOBAL(power_save_6xx_restore)
--	lwz	r9,_LINK(r11)		/* interrupted in ppc6xx_idle: */
-+#ifdef CONFIG_PM
-+	mfspr	r9, SPRN_HID0
-+	andis.	r9, r9, HID0_SLEEP@h
-+	beq+	1f
-+
-+	/*
-+	 * SLEEP mode is invoked through the PM subsystem, which means
-+	 * that interrupts should be disabled.  However, the hardware
-+	 * requires them to be enabled to wake up.  To prevent the
-+	 * interrupt from being visible to Linux, return immediately
-+	 * rather than run the interrupt handler.
-+	 */
-+	lis	r9, ret_from_sleep@h
-+	ori	r9, r9, ret_from_sleep@l
-+	tophys(r9, r9)
-+	mtlr	r9
-+
-+	/*
-+	 * Disable interrupts, so that the interrupt doesn't happen
-+	 * again until the PM code sets MSR[EE].
-+	 */
-+	lwz	r9, _MSR(r11)
-+	rlwinm	r9, r9, 0, ~MSR_EE
-+	stw	r9, _MSR(r11)
-+#endif
-+
-+1:	lwz	r9,_LINK(r11)		/* interrupted in ppc6xx_idle: */
- 	stw	r9,_NIP(r11)		/* make it do a blr */
+ EXPORT_SYMBOL(get_immrbase);
  
- #ifdef CONFIG_SMP
++u32 fsl_get_bus_freq(void)
++{
++	struct device_node *soc = of_find_node_by_type(NULL, "soc");
++	const u32 *freq;
++	u32 ret = 0;
++
++	if (!soc)
++		goto err;
++
++	freq = of_get_property(soc, "bus-frequency", NULL);
++	if (!freq)
++		goto err;
++
++	ret = *freq;
++
++err:
++	of_node_put(soc);
++	return ret;
++}
++EXPORT_SYMBOL(fsl_get_bus_freq);
++
+ #if defined(CONFIG_CPM2) || defined(CONFIG_8xx)
+ 
+ static u32 brgfreq = -1;
+@@ -356,9 +377,9 @@ arch_initcall(fsl_i2c_of_init);
+ static int __init mpc83xx_wdt_init(void)
+ {
+ 	struct resource r;
+-	struct device_node *soc, *np;
++	struct device_node *np;
+ 	struct platform_device *dev;
+-	const unsigned int *freq;
++	u32 freq = fsl_get_bus_freq();
+ 	int ret;
+ 
+ 	np = of_find_compatible_node(NULL, "watchdog", "mpc83xx_wdt");
+@@ -368,19 +389,6 @@ static int __init mpc83xx_wdt_init(void)
+ 		goto nodev;
+ 	}
+ 
+-	soc = of_find_node_by_type(NULL, "soc");
+-
+-	if (!soc) {
+-		ret = -ENODEV;
+-		goto nosoc;
+-	}
+-
+-	freq = of_get_property(soc, "bus-frequency", NULL);
+-	if (!freq) {
+-		ret = -ENODEV;
+-		goto err;
+-	}
+-
+ 	memset(&r, 0, sizeof(r));
+ 
+ 	ret = of_address_to_resource(np, 0, &r);
+@@ -393,20 +401,16 @@ static int __init mpc83xx_wdt_init(void)
+ 		goto err;
+ 	}
+ 
+-	ret = platform_device_add_data(dev, freq, sizeof(int));
++	ret = platform_device_add_data(dev, &freq, sizeof(int));
+ 	if (ret)
+ 		goto unreg;
+ 
+-	of_node_put(soc);
+ 	of_node_put(np);
+-
+ 	return 0;
+ 
+ unreg:
+ 	platform_device_unregister(dev);
+ err:
+-	of_node_put(soc);
+-nosoc:
+ 	of_node_put(np);
+ nodev:
+ 	return ret;
+diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
+index 04e145b..7a9502d 100644
+--- a/arch/powerpc/sysdev/fsl_soc.h
++++ b/arch/powerpc/sysdev/fsl_soc.h
+@@ -7,6 +7,7 @@
+ extern phys_addr_t get_immrbase(void);
+ extern u32 get_brgfreq(void);
+ extern u32 get_baudrate(void);
++extern u32 fsl_get_bus_freq(void);
+ 
+ #endif
+ #endif
 -- 
 1.5.0.3
