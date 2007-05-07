@@ -1,25 +1,27 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.171])
-	by ozlabs.org (Postfix) with ESMTP id 6121EDDE48
+Return-Path: <dhlii@dlasys.net>
+Received: from mx.dlasys.net (24.152.213.223.res-cmts.eph.ptd.net
+	[24.152.213.223]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 71819DDE38
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  7 May 2007 11:17:39 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so770734ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 06 May 2007 18:17:37 -0700 (PDT)
-Message-ID: <528646bc0705061817h7a8fd767v73195e9d4572b8e1@mail.gmail.com>
-Date: Sun, 6 May 2007 19:17:37 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "David H. Lynch Jr." <dhlii@dlasys.net>
-Subject: Re: virtex_devices.c
-In-Reply-To: <528646bc0705061746s28ebb15et428c7afda2f477ba@mail.gmail.com>
+	Mon,  7 May 2007 16:39:24 +1000 (EST)
+Received: from [206.223.20.140]
+	by mx.dlasys.net with esmtp (Exim 4.63 #1 (Debian))
+	id 1Hkwpf-0005Sw-8O
+	for <linuxppc-embedded@ozlabs.org>; Mon, 07 May 2007 02:36:27 -0400
+Message-ID: <463EC955.4060808@dlasys.net>
+Date: Mon, 07 May 2007 02:38:13 -0400
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: virtex_devices.c
 References: <463C379D.7020804@dlasys.net>
 	<528646bc0705051516h2b0259cfgbe3be784acf4086a@mail.gmail.com>
 	<463E4B13.2030600@dlasys.net>
 	<528646bc0705061746s28ebb15et428c7afda2f477ba@mail.gmail.com>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+	<528646bc0705061817h7a8fd767v73195e9d4572b8e1@mail.gmail.com>
+In-Reply-To: <528646bc0705061817h7a8fd767v73195e9d4572b8e1@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,30 +32,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 5/6/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On 5/6/07, David H. Lynch Jr. <dhlii@dlasys.net> wrote:
-> >     The basic fundimental question is why is there an 8250 specific
-> > structure,
-> >     when there is a perfectly good generic structure that already exists ?
-> >     Actually it seems to be even more complex than that because I think
-> > there is actually an
-> >     old_serial structure that is also used in places.
+Grant Likely wrote:
 >
-> I ask the opposite question; why try to make the 8250 structure
-> generic when there is already a generic structure that does exactly
-> what you want one level up?
+> Although this point is actually moot because platform_bus pretty much
+> goes away when we move to arch/powerpc.  We'll be using
+> of_platform_devices instead (which map onto nodes in the device tree).
+    That I got and as I pound away at all of this I keep thinking my
+time would be better spent figuring out device trees.
+   
+
 >
-> I *do* think that 8250 should be changed; but not in the way you're describing.
 
-Although this point is actually moot because platform_bus pretty much
-goes away when we move to arch/powerpc.  We'll be using
-of_platform_devices instead (which map onto nodes in the device tree).
-
-Cheers,
-g.
 
 -- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
