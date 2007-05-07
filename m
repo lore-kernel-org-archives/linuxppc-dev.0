@@ -1,23 +1,30 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0CC50DDF56
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 07:32:01 +1000 (EST)
-Message-ID: <463F9AC9.8080304@freescale.com>
-Date: Mon, 07 May 2007 16:31:53 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH 12/13] gianfar: Add flags for magic packet and MDIO.
-References: <20070507182957.GK26920@ld0162-tx32.am.freescale.net>
-	<20F58AAE-A35D-4BEC-9597-A882567BA5B4@kernel.crashing.org>
-	<463F83FC.6080807@freescale.com>
-	<1C79B879-58E1-4274-BB90-A6D39FC852C8@freescale.com>
-In-Reply-To: <1C79B879-58E1-4274-BB90-A6D39FC852C8@freescale.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 52409DDF27
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 07:32:54 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l47LWp5m031728
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 17:32:51 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l47LWpts039854
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 15:32:51 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l47LWpJs028479
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 15:32:51 -0600
+Subject: [PATCH v4 3/7] Generalize tsi108 PCI setup
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: paulus@samba.org
+In-Reply-To: <1178572962.2990.197.camel@zod.rchland.ibm.com>
+References: <1178572962.2990.197.camel@zod.rchland.ibm.com>
+Content-Type: text/plain
+Date: Mon, 07 May 2007 16:27:15 -0500
+Message-Id: <1178573235.2990.203.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,21 +35,97 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andy Fleming wrote:
-> On May 7, 2007, at 14:54, Scott Wood wrote:
->> TSEC1 contains the MDIO registers for both TSEC1 and TSEC2.  Thus,  TSEC1
->> cannot be put to sleep if TSEC2 is active (plus, the phy timer would
->> have to be deactivated).  For now, the simple approach of never  sleeping
->> TSEC1 is used.
-> 
-> The PHY timer is part of the PHY Lib.  The PHY Lib has infrastructure  
-> to support suspend/resume.  Any thoughts on using that?  More in an  
-> another email.
+Generalize tsi108_setup_pci to take the config space physical address and
+primary bus designator as a parameter.
 
-If the MDIO registers had their own clock disable bit, then sure.  They 
-don't.
+Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-As for the phy timer issue, it seems that phy_stop() doesn't stop the 
-timer, which is probably a bug.
+---
+ arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c |    4 +++-
+ arch/powerpc/sysdev/tsi108_pci.c                  |   11 ++++++-----
+ include/asm-powerpc/tsi108.h                      |    1 -
+ include/asm-powerpc/tsi108_pci.h                  |    2 +-
+ 4 files changed, 10 insertions(+), 8 deletions(-)
 
--Scott
+--- linux-2.6.orig/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
++++ linux-2.6/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
+@@ -52,6 +52,8 @@
+ #define DBG(fmt...) do { } while(0)
+ #endif
+ 
++#define MPC7448HPC2_PCI_CFG_PHYS 0xfb000000
++
+ #ifndef CONFIG_PCI
+ isa_io_base = MPC7448_HPC2_ISA_IO_BASE;
+ isa_mem_base = MPC7448_HPC2_ISA_MEM_BASE;
+@@ -79,7 +81,7 @@ static void __init mpc7448_hpc2_setup_ar
+ 	/* setup PCI host bridge */
+ #ifdef CONFIG_PCI
+ 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
+-		tsi108_setup_pci(np);
++		tsi108_setup_pci(np, MPC7448HPC2_PCI_CFG_PHYS, 0);
+ 
+ 	ppc_md.pci_exclude_device = mpc7448_hpc2_exclude_device;
+ 	if (ppc_md.progress)
+--- linux-2.6.orig/arch/powerpc/sysdev/tsi108_pci.c
++++ linux-2.6/arch/powerpc/sysdev/tsi108_pci.c
+@@ -50,6 +50,7 @@
+ 	((((bus)<<16) | ((devfunc)<<8) | (offset & 0xfc)) + tsi108_pci_cfg_base)
+ 
+ u32 tsi108_pci_cfg_base;
++static u32 tsi108_pci_cfg_phys;
+ u32 tsi108_csr_vir_base;
+ static struct device_node *pci_irq_node;
+ static struct irq_host *pci_irq_host;
+@@ -186,7 +187,7 @@ tsi108_direct_read_config(struct pci_bus
+ 
+ void tsi108_clear_pci_cfg_error(void)
+ {
+-	tsi108_clear_pci_error(TSI108_PCI_CFG_BASE_PHYS);
++	tsi108_clear_pci_error(tsi108_pci_cfg_phys);
+ }
+ 
+ static struct pci_ops tsi108_direct_pci_ops = {
+@@ -194,17 +195,17 @@ static struct pci_ops tsi108_direct_pci_
+ 	tsi108_direct_write_config
+ };
+ 
+-int __init tsi108_setup_pci(struct device_node *dev)
++int __init tsi108_setup_pci(struct device_node *dev, u32 cfg_phys, int primary)
+ {
+ 	int len;
+ 	struct pci_controller *hose;
+ 	struct resource rsrc;
+ 	const int *bus_range;
+-	int primary = 0, has_address = 0;
++	int has_address = 0;
+ 
+ 	/* PCI Config mapping */
+-	tsi108_pci_cfg_base = (u32)ioremap(TSI108_PCI_CFG_BASE_PHYS,
+-			TSI108_PCI_CFG_SIZE);
++	tsi108_pci_cfg_base = (u32)ioremap(cfg_phys, TSI108_PCI_CFG_SIZE);
++	tsi108_pci_cfg_phys = cfg_phys;
+ 	DBG("TSI_PCI: %s tsi108_pci_cfg_base=0x%x\n", __FUNCTION__,
+ 	    tsi108_pci_cfg_base);
+ 
+--- linux-2.6.orig/include/asm-powerpc/tsi108_pci.h
++++ linux-2.6/include/asm-powerpc/tsi108_pci.h
+@@ -37,7 +37,7 @@
+ #define TSI108_PCI_PFAB_PFM3 (TSI108_PCI_OFFSET + 0x220)
+ #define TSI108_PCI_PFAB_PFM4 (TSI108_PCI_OFFSET + 0x230)
+ 
+-extern int tsi108_setup_pci(struct device_node *dev);
++extern int tsi108_setup_pci(struct device_node *dev, u32 cfg_phys, int primary);
+ extern void tsi108_pci_int_init(struct device_node *node);
+ extern void tsi108_irq_cascade(unsigned int irq, struct irq_desc *desc);
+ extern void tsi108_clear_pci_cfg_error(void);
+--- linux-2.6.orig/include/asm-powerpc/tsi108.h
++++ linux-2.6/include/asm-powerpc/tsi108.h
+@@ -68,7 +68,6 @@
+ #define TSI108_PB_ERRCS_ES		(1 << 1)
+ #define TSI108_PB_ISR_PBS_RD_ERR	(1 << 8)
+ 
+-#define TSI108_PCI_CFG_BASE_PHYS	(0xfb000000)
+ #define TSI108_PCI_CFG_SIZE		(0x01000000)
+ 
+ /*
