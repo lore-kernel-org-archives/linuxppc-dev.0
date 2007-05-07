@@ -1,32 +1,27 @@
 Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C67E6DDECF
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 May 2007 23:17:26 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l47DHNM3020242
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 09:17:23 -0400
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 63C08DDE46
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 00:54:21 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l47EsG7E024356
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 10:54:16 -0400
 Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l47DHN2V148592
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 07:17:23 -0600
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l47EsGjA175798
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 08:54:16 -0600
 Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
 	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l47DHNjX030151
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 07:17:23 -0600
-Subject: Re: [PATCH v2 6/7] Holly DTS
+	l47EsFQg009576
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 08:54:15 -0600
+Subject: [PATCH v3 0/7] Add support for 750CL Holly board
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: David Gibson <dwg@au1.ibm.com>
-In-Reply-To: <20070506004044.GG11303@localhost.localdomain>
-References: <1178381611.3393.25.camel@zod.rchland.ibm.com>
-	<1178382006.3393.37.camel@zod.rchland.ibm.com>
-	<e1d22829fe3f12509018791541073706@kernel.crashing.org>
-	<20070506004044.GG11303@localhost.localdomain>
+To: paulus@samba.org
 Content-Type: text/plain
-Date: Mon, 07 May 2007 08:11:52 -0500
-Message-Id: <1178543512.2990.31.camel@zod.rchland.ibm.com>
+Date: Mon, 07 May 2007 09:48:44 -0500
+Message-Id: <1178549324.2990.52.camel@zod.rchland.ibm.com>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -38,33 +33,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2007-05-06 at 10:40 +1000, David Gibson wrote:
-> On Sat, May 05, 2007 at 07:21:33PM +0200, Segher Boessenkool wrote:
-> [snip]
-> > > +	compatible = "ppc750-tsi";
-> > 
-> > The needs to be more specific as well; "ibm,holly"
-> > or something.
-> 
-> Or perhaps just include something more specific, compatible can have
-> the general version as well.
-> 
-> [snip]
-> > > +	chosen {
-> > > +		linux,platform = <0>;
-> > > +		linux,initrd-start = <0>;
-> > > +		linux,initrd-end = <0>;
-> > 
-> > Do you need to set those zero properties?
-> 
-> linux,platform is obsolete and should definitely go.  With the recent
-> bootloader updates the initrd properties can also go (the bootloader
-> will add them correctly).  I had them in the Ebony device tree until
-> very recently because until some of the recent flatdevtree.c fixes,
-> the bootloader could replace the value of the properties, but it
-> couldn't add new properties (or at least not properties with new
-> names).
+Hi All,
 
-s/bootloader/bootwrapper?
+This is round 3 of the patches to support the 750CL Holly board.  I
+think I've gotten all the comments from rounds 1 and 2 fixed up now.
 
+Included are a few TSI108 ethernet and PCI cleanups that should allow
+for multiplatform builds for boards that contain a TSI chipset.
+
+Paul, I think patches 1, 2, and 3 are ready to be merged.  And unless
+there are lots of comments on the rest, I'd like to get them merged for
+2.6.22 as well if possible.
+
+thx,
 josh
