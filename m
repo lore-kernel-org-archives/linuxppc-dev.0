@@ -1,27 +1,25 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9E821DDE39
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 07:51:32 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l47LpSB5012992
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 14:51:28 -0700 (MST)
-In-Reply-To: <463F9A38.6080408@freescale.com>
-References: <20070507182947.GD26920@ld0162-tx32.am.freescale.net>
-	<B7081C3F-C551-42D8-BB5D-6FE5DC311C99@freescale.com>
-	<463F9A38.6080408@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <AC7B08C0-E41A-458F-8E9F-59901443600A@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH 05/13] Document the fsl,
-	magic-packet property in gianfar nodes.
-Date: Mon, 7 May 2007 16:51:36 -0500
-To: Scott Wood <scottwood@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id 75D07DDE39
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 07:53:11 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l47Lr6m9005581
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 14:53:06 -0700 (MST)
+Message-ID: <463F9FC0.6030000@freescale.com>
+Date: Mon, 07 May 2007 16:53:04 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Andy Fleming <afleming@freescale.com>
+Subject: Re: [PATCH 12/13] gianfar: Add flags for magic packet and MDIO.
+References: <20070507182957.GK26920@ld0162-tx32.am.freescale.net>
+	<183F76F8-BC1B-4EB6-9C3A-4F0FFA7B3BB8@freescale.com>
+In-Reply-To: <183F76F8-BC1B-4EB6-9C3A-4F0FFA7B3BB8@freescale.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -32,33 +30,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Andy Fleming wrote:
+> Hrm.  I don't think this is a good way to go.  The DEV* flags are all  
+> features right now, rather than configuration settings.  It seems  like 
+> this is a stop-gap solution for until more robust detection of  the 
+> ability to power down the interface.  I can understand that a  full 
+> solution might be beyond the ambitions of this first set of  patches, 
+> but I'd prefer if we didn't pollute gianfar's device flags  space with a 
+> flag that we should aim at removing eventually.
 
-On May 7, 2007, at 16:29, Scott Wood wrote:
+I'd rather "pollute" an existing flags with something that can be 
+removed (and the bit reused, if you're concerned about that) later, than 
+add a completely new field to accomplish the same thing.
 
-> Andy Fleming wrote:
->> On May 7, 2007, at 13:29, Scott Wood wrote:
->>> +   Optional properties:
->>> +    - fsl,magic-packet : Indicates that this device supports wake
->>> +      on Magic Packet.
->>> +
->> Isn't this a fairly generic option?  Does it need the "fsl"  
->> qualifier?
->
-> As I previously wrote internally, it's only needed because some  
-> versions of the device have it and some don't; what it really means  
-> is that certain bits in certain registers are valid.  Making it  
-> generic would imply that all hardware that can do magic packet  
-> should have it, which isn't true.
+And like the other DEV flags, it's an attribute of the device as it 
+exists in the system.
 
-
-Yeah, I just read that.  You should either make that more explicit in  
-the documentation, or make it generic.  It's fine if there are  
-drivers/devices that don't need to be told or tell anyone that they  
-recognize magic packets for them to work.  The lack of the property  
-in other controllers won't break anything.
-
-But I'm fine if you just document that the bit indicates,  
-specifically, the presence of magic-packet bits in certain registers  
-on the eTSEC.
-
-Andy
+-Scott
