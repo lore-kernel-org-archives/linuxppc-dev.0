@@ -1,20 +1,11 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 17/19] PCI: rpaphp: Use pcibios_remove_pci_devices()
-	symmetrically
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20070403173154.77B623A65C@topology.austin.ibm.com>
-References: <20070403173154.77B623A65C@topology.austin.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-rViW2jpdP66u2hdH77CW"
-Date: Mon, 07 May 2007 15:09:14 +1000
-Message-Id: <1178514554.14398.26.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-	pcihpd-discuss@lists.sourceforge.net
-Reply-To: michael@ellerman.id.au
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17982.46631.484516.344679@cargo.ozlabs.ibm.com>
+Date: Mon, 7 May 2007 15:16:23 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Cope with PCI host bridge I/O window not starting at 0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,77 +15,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Currently our code to set up the data structures for a PCI host bridge
+and create the mapping for its I/O window assumes that the window
+starts at I/O port 0 on the PCI side.  If this is not true, we can end
+up with I/O port numbers in the resources for PCI devices which will
+cause an oops if a driver tries to access them via inb/outb etc.,
+because there is no mapping for the corresponding addresses.
 
---=-rViW2jpdP66u2hdH77CW
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Normally the I/O window starts at 0, but there are some situations on
+partitioned machines with a hypervisor where the window may not start
+at 0.
 
-On Tue, 2007-04-03 at 12:31 -0500, Linas Vepstas wrote:
-> At first blush, the disable_slot() routine does not look
-> at all like its symmetric with the enable_slot() routine;
-> as it seems to call a very different set of routines.
-> However, this is easily fixed: pcibios_remove_pci_devices()
-> does the right thing.
->=20
-> Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-> Cc: John Rose <johnrose@austin.ibm.com>
->=20
-> ----
->=20
->  drivers/pci/hotplug/rpaphp_core.c |   10 ++--------
->  1 file changed, 2 insertions(+), 8 deletions(-)
->=20
-> Index: linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_core.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-2.6.21-rc4-git4.orig/drivers/pci/hotplug/rpaphp_core.c	2007-04-=
-03 11:04:41.000000000 -0500
-> +++ linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_core.c	2007-04-03 11=
-:04:47.000000000 -0500
-> @@ -424,18 +424,12 @@ static int enable_slot(struct hotplug_sl
->  	return retval;
->  }
-> =20
-> -static int __disable_slot(struct slot *slot)
-> +static inline int __disable_slot(struct slot *slot)
->  {
-> -	struct pci_dev *dev, *tmp;
-> -
->  	if (slot->state =3D=3D NOT_CONFIGURED)
->  		return -EINVAL;
-> =20
-> -	list_for_each_entry_safe(dev, tmp, &slot->bus->devices, bus_list) {
-> -		eeh_remove_bus_device(dev);
-> -		pci_remove_bus_device(dev);
-> -	}
-> -
-> +	pcibios_remove_pci_devices(slot->bus);
+This fixes the problem by allocating space for the range from 0 to the
+end of the I/O window.  That is, hose->io_base_virt contains the
+virtual address for I/O port 0 on the PCI bus, and thus the assumption
+that hose->io_base_virt - pci_io_base is the offset between the
+"global" I/O port numbers (those in the PCI device resources) and the
+I/O port numbers on the PCI bus is maintained.
 
-You need to add an EXPORT_SYMBOL() for this.
+For PCI host bridges that are present at boot, we only map the portion
+of that range that correspond to the bridge's I/O window.  For bridges
+added after boot we ioremap the range from 0 to the end of the I/O
+window, for now; in fact hot-added bridges should be using
+reserve_phb_iospace() and __ioremap_explicit (so they get sensible
+global port numbers), but we don't have the infrastructure yet to do
+that (basically a free_phb_iospace() routine plus appropriate
+locking).
 
-cheers
+Interestingly, this makes the two arms of the if statement in
+get_bus_io_range do almost exactly the same thing; that function could
+now be simplified in a further patch.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-rViW2jpdP66u2hdH77CW
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGPrR6dSjSd0sB4dIRApTAAJ4jW9xc85GKmXxRWIzdR/kBuDdTwACeKHCy
-aT7bffxFfULDtdxB4BVGUDc=
-=v2bz
------END PGP SIGNATURE-----
-
---=-rViW2jpdP66u2hdH77CW--
+diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+index 60d7d4b..706b7f3 100644
+--- a/arch/powerpc/kernel/pci_64.c
++++ b/arch/powerpc/kernel/pci_64.c
+@@ -1006,8 +1006,9 @@ void __devinit pci_process_bridge_OF_ranges(struct pci_controller *hose,
+ 
+ 		switch ((pci_space >> 24) & 0x3) {
+ 		case 1:		/* I/O space */
+-			hose->io_base_phys = cpu_phys_addr;
+-			hose->pci_io_size = size;
++			hose->io_base_phys = cpu_phys_addr - pci_addr;
++			/* handle from 0 to top of I/O window */
++			hose->pci_io_size = pci_addr + size;
+ 
+ 			res = &hose->io_resource;
+ 			res->flags = IORESOURCE_IO;
+@@ -1117,8 +1118,8 @@ static int get_bus_io_range(struct pci_bus *bus, unsigned long *start_phys,
+ 	} else {
+ 		/* Root Bus */
+ 		res = &hose->io_resource;
+-		*start_phys = hose->io_base_phys;
+-		*start_virt = (unsigned long) hose->io_base_virt;
++		*start_phys = hose->io_base_phys + res->start;
++		*start_virt = (unsigned long) hose->io_base_virt + res->start;
+ 		if (res->end > res->start)
+ 			*size = res->end - res->start + 1;
+ 		else {
