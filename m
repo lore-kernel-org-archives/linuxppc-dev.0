@@ -1,14 +1,16 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 8 May 2007 15:54:31 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 95129DDE40
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 15:56:21 +1000 (EST)
+Date: Tue, 8 May 2007 00:58:20 -0500
 To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [PATCH 3/3] [POWERPC] dts: kill hardcoded phandles
-Message-ID: <20070508055431.GA21009@localhost.localdomain>
-References: <20070508053049.18428.50622.stgit@localhost.localdomain>
-	<20070508054855.18428.29080.stgit@localhost.localdomain>
+Subject: Re: [PATCH 1/3] [POWERPC] 8xx: mpc885ads pcmcia support
+Message-ID: <20070508055820.GA14619@lixom.net>
+References: <20070508003642.5964.37001.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070508054855.18428.29080.stgit@localhost.localdomain>
+In-Reply-To: <20070508003642.5964.37001.stgit@localhost.localdomain>
+From: olof@lixom.net (Olof Johansson)
 Cc: linuxppc-dev@ozlabs.org, linux-pcmcia@lists.infradead.org,
 	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -20,55 +22,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 08, 2007 at 09:48:56AM +0400, Vitaly Bordug wrote:
+On Tue, May 08, 2007 at 04:36:51AM +0400, Vitaly Bordug wrote:
 > 
-> Removed explicit linux,phandle usage. Using references and labels now in
-> PQ and PQ2 boards currently supported in arch/powerpc.
+> Adds support for PowerQuicc on-chip PCMCIA. The driver is implemented as
+> of_device, so only arch/powerpc stuff is capable to use it, which now
+> implies only mpc885ads reference board.
+> 
+> To cope with the code that should be hooked inside driver, but is really
+> board specific (like set_voltage), global structure mpc8xx_pcmcia_ops
+> holds necessary function pointers that are filled in the BSP code.
+> 
 > Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
-> 
-> ---
-> 
->  arch/powerpc/boot/dts/mpc8272ads.dts |   42 ++++++++++++----------------------
->  arch/powerpc/boot/dts/mpc866ads.dts  |   31 +++++++++----------------
->  arch/powerpc/boot/dts/mpc885ads.dts  |    2 +-
->  3 files changed, 27 insertions(+), 48 deletions(-)
-> 
-> diff --git a/arch/powerpc/boot/dts/mpc8272ads.dts b/arch/powerpc/boot/dts/mpc8272ads.dts
-> index 423eedc..83461fe 100644
-> --- a/arch/powerpc/boot/dts/mpc8272ads.dts
-> +++ b/arch/powerpc/boot/dts/mpc8272ads.dts
-> @@ -14,12 +14,10 @@
->         compatible = "MPC8260ADS";
->         #address-cells = <1>;
->         #size-cells = <1>;
-> -       linux,phandle = <100>;
->  
->         cpus {
->                 #address-cells = <1>;
->                 #size-cells = <0>;
-> -               linux,phandle = <200>;
->  
->                 PowerPC,8272@0 {
->                         device_type = "cpu";
-> @@ -32,12 +30,10 @@
->                         bus-frequency = <0>;
->                         clock-frequency = <0>;
->                         32-bit;
-> -                       linux,phandle = <201>;
->                 };
->         };
->  
-> -       interrupt-controller@f8200000 {
-> -               linux,phandle = <f8200000>;
-> +		pci_pic:interrupt-controller@f8200000 {
+> Acked-by: Arnd Bergmann <arnd@arndb.de>
 
-I'd like to establish a convention of putting a space after the : and
-using capitals for labels unless there's a strong reason not to in a
-particular case.  It makes them easier to visually distinguish next to
-the node name.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Acked-by: Olof Johansson <olof@lixom.net>
