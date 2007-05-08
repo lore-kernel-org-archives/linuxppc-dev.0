@@ -1,20 +1,19 @@
-Return-Path: <hugh_dickins@symantec.com>
-Received: from extu-mxob-1.symantec.com (extu-mxob-1.symantec.com
-	[216.10.194.28])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "extu-mxob-1.symantec.com",
-	Issuer "VeriSign Trust Network" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id DDFBDDDE09
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2007 06:41:28 +1000 (EST)
-Date: Tue, 8 May 2007 20:50:37 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5D094DDDE4
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2007 07:17:40 +1000 (EST)
 Subject: Re: [PATCH 5/5] powerpc: Don't use SLAB/SLUB for PTE pages
-In-Reply-To: <20070508062750.A5CBBDDE42@ozlabs.org>
-Message-ID: <Pine.LNX.4.64.0705082035430.17227@blonde.wat.veritas.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Hugh Dickins <hugh@veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0705082035430.17227@blonde.wat.veritas.com>
 References: <20070508062750.A5CBBDDE42@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	<Pine.LNX.4.64.0705082035430.17227@blonde.wat.veritas.com>
+Content-Type: text/plain
+Date: Wed, 09 May 2007 07:17:30 +1000
+Message-Id: <1178659050.14928.78.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,170 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 8 May 2007, Benjamin Herrenschmidt wrote:
-> From: Hugh Dickins <hugh@veritas.com>
+On Tue, 2007-05-08 at 20:50 +0100, Hugh Dickins wrote:
+> On Tue, 8 May 2007, Benjamin Herrenschmidt wrote:
+> > From: Hugh Dickins <hugh@veritas.com>
+> > 
+> > The SLUB allocator relies on struct page fields first_page and slab,
+> > overwritten by ptl when SPLIT_PTLOCK: so the SLUB allocator cannot then
+> > be used for the lowest level of pagetable pages.  This was obstructing
+> > SLUB on PowerPC, which uses kmem_caches for its pagetables.  So convert
+> > its pte level to use normal gfp pages (whereas pmd, pud and 64k-page pgd
+> > want partpages, so continue to use kmem_caches for pmd, pud and pgd).
+> > 
+> > Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > ---
 > 
-> The SLUB allocator relies on struct page fields first_page and slab,
-> overwritten by ptl when SPLIT_PTLOCK: so the SLUB allocator cannot then
-> be used for the lowest level of pagetable pages.  This was obstructing
-> SLUB on PowerPC, which uses kmem_caches for its pagetables.  So convert
-> its pte level to use normal gfp pages (whereas pmd, pud and 64k-page pgd
-> want partpages, so continue to use kmem_caches for pmd, pud and pgd).
-> 
-> Signed-off-by: Hugh Dickins <hugh@veritas.com>
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
+> Looks and runs fine for me (though would have seemed nicer to use
+> __GFP_ZERO than clear_page - or does that subvert your fast zeroing?).
 
-Looks and runs fine for me (though would have seemed nicer to use
-__GFP_ZERO than clear_page - or does that subvert your fast zeroing?).
+Nah, you are right, I'll respin. Forgot about __GFP_ZERO. It just called
+clear_highpage on the returned pages right ? This is the same as calling
+clear_page from my code.
 
-But you also need to undo the ARCH_USES_SLAB_PAGE_STRUCT from
-arch/powerpc/Kconfig now that's gone into Linus' tree: patch
-I added in testing below (either append to this one or add a 6/5).
+> But you also need to undo the ARCH_USES_SLAB_PAGE_STRUCT from
+> arch/powerpc/Kconfig now that's gone into Linus' tree: patch
+> I added in testing below (either append to this one or add a 6/5).
 
-For some people that interim disablement was working, for other
-people it wasn't: mysterious, and the sooner it's got rid of the
-better.  I'm sorry to find that oldconfig doesn't actually offer
-the SLAB or SLUB menu (to me anyway) when moving from SLUB disabled
-to SLUB enabled: so again, the sooner we get rid of that interim
-disablement the better for SLUB exposure.
+I was thinking about adding a new patch.
 
-Thanks,
-Hugh
+> For some people that interim disablement was working, for other
+> people it wasn't: mysterious, and the sooner it's got rid of the
+> better.  I'm sorry to find that oldconfig doesn't actually offer
+> the SLAB or SLUB menu (to me anyway) when moving from SLUB disabled
+> to SLUB enabled: so again, the sooner we get rid of that interim
+> disablement the better for SLUB exposure.
 
-> 
->  arch/powerpc/mm/init_64.c     |   17 ++++++-----------
->  include/asm-powerpc/pgalloc.h |   34 ++++++++++++++++------------------
->  2 files changed, 22 insertions(+), 29 deletions(-)
-> 
-> Index: linux-cell/arch/powerpc/mm/init_64.c
-> ===================================================================
-> --- linux-cell.orig/arch/powerpc/mm/init_64.c	2007-05-08 11:46:50.000000000 +1000
-> +++ linux-cell/arch/powerpc/mm/init_64.c	2007-05-08 15:45:46.000000000 +1000
-> @@ -146,21 +146,16 @@ static void zero_ctor(void *addr, struct
->  	memset(addr, 0, kmem_cache_size(cache));
->  }
->  
-> -#ifdef CONFIG_PPC_64K_PAGES
-> -static const unsigned int pgtable_cache_size[3] = {
-> -	PTE_TABLE_SIZE, PMD_TABLE_SIZE, PGD_TABLE_SIZE
-> -};
-> -static const char *pgtable_cache_name[ARRAY_SIZE(pgtable_cache_size)] = {
-> -	"pte_pmd_cache", "pmd_cache", "pgd_cache",
-> -};
-> -#else
->  static const unsigned int pgtable_cache_size[2] = {
-> -	PTE_TABLE_SIZE, PMD_TABLE_SIZE
-> +	PGD_TABLE_SIZE, PMD_TABLE_SIZE
->  };
->  static const char *pgtable_cache_name[ARRAY_SIZE(pgtable_cache_size)] = {
-> -	"pgd_pte_cache", "pud_pmd_cache",
-> -};
-> +#ifdef CONFIG_PPC_64K_PAGES
-> +	"pgd_cache", "pmd_cache",
-> +#else
-> +	"pgd_cache", "pud_pmd_cache",
->  #endif /* CONFIG_PPC_64K_PAGES */
-> +};
->  
->  #ifdef CONFIG_HUGETLB_PAGE
->  /* Hugepages need one extra cache, initialized in hugetlbpage.c.  We
-> Index: linux-cell/include/asm-powerpc/pgalloc.h
-> ===================================================================
-> --- linux-cell.orig/include/asm-powerpc/pgalloc.h	2007-04-27 14:13:24.000000000 +1000
-> +++ linux-cell/include/asm-powerpc/pgalloc.h	2007-05-08 16:01:00.000000000 +1000
-> @@ -13,18 +13,11 @@
->  
->  extern struct kmem_cache *pgtable_cache[];
->  
-> -#ifdef CONFIG_PPC_64K_PAGES
-> -#define PTE_CACHE_NUM	0
-> -#define PMD_CACHE_NUM	1
-> -#define PGD_CACHE_NUM	2
-> -#define HUGEPTE_CACHE_NUM 3
-> -#else
-> -#define PTE_CACHE_NUM	0
-> -#define PMD_CACHE_NUM	1
-> -#define PUD_CACHE_NUM	1
-> -#define PGD_CACHE_NUM	0
-> -#define HUGEPTE_CACHE_NUM 2
-> -#endif
-> +#define PGD_CACHE_NUM		0
-> +#define PUD_CACHE_NUM		1
-> +#define PMD_CACHE_NUM		1
-> +#define HUGEPTE_CACHE_NUM	2
-> +#define PTE_NONCACHE_NUM	3  /* from GFP rather than kmem_cache */
->  
->  /*
->   * This program is free software; you can redistribute it and/or
-> @@ -97,8 +90,10 @@ static inline void pmd_free(pmd_t *pmd)
->  static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
->  					  unsigned long address)
->  {
-> -	return kmem_cache_alloc(pgtable_cache[PTE_CACHE_NUM],
-> -				GFP_KERNEL|__GFP_REPEAT);
-> +	pte_t *ptepage = (pte_t *)__get_free_page(GFP_KERNEL | __GFP_REPEAT);
-> +	if (ptepage)
-> +		clear_page(ptepage);
-> +	return ptepage;
->  }
->  
->  static inline struct page *pte_alloc_one(struct mm_struct *mm,
-> @@ -109,12 +104,12 @@ static inline struct page *pte_alloc_one
->  		
->  static inline void pte_free_kernel(pte_t *pte)
->  {
-> -	kmem_cache_free(pgtable_cache[PTE_CACHE_NUM], pte);
-> +	free_page((unsigned long)pte);
->  }
->  
->  static inline void pte_free(struct page *ptepage)
->  {
-> -	pte_free_kernel(page_address(ptepage));
-> +	__free_page(ptepage);
->  }
->  
->  #define PGF_CACHENUM_MASK	0x3
-> @@ -136,14 +131,17 @@ static inline void pgtable_free(pgtable_
->  	void *p = (void *)(pgf.val & ~PGF_CACHENUM_MASK);
->  	int cachenum = pgf.val & PGF_CACHENUM_MASK;
->  
-> -	kmem_cache_free(pgtable_cache[cachenum], p);
-> +	if (cachenum == PTE_NONCACHE_NUM)
-> +		free_page((unsigned long)p);
-> +	else
-> +		kmem_cache_free(pgtable_cache[cachenum], p);
->  }
->  
->  extern void pgtable_free_tlb(struct mmu_gather *tlb, pgtable_free_t pgf);
->  
->  #define __pte_free_tlb(tlb, ptepage)	\
->  	pgtable_free_tlb(tlb, pgtable_free_cache(page_address(ptepage), \
-> -		PTE_CACHE_NUM, PTE_TABLE_SIZE-1))
-> +		PTE_NONCACHE_NUM, PTE_TABLE_SIZE-1))
->  #define __pmd_free_tlb(tlb, pmd) 	\
->  	pgtable_free_tlb(tlb, pgtable_free_cache(pmd, \
->  		PMD_CACHE_NUM, PMD_TABLE_SIZE-1))
+Ok. I'll post a new patch along with the final serie after I've done some
+testing later today.
 
---- 2.6.21-git9/arch/powerpc/Kconfig	2007-05-08 12:32:33.000000000 +0100
-+++ linux/arch/powerpc/Kconfig	2007-05-08 13:30:51.000000000 +0100
-@@ -117,19 +117,6 @@ config GENERIC_BUG
- 	default y
- 	depends on BUG
- 
--#
--# Powerpc uses the slab allocator to manage its ptes and the
--# page structs of ptes are used for splitting the page table
--# lock for configurations supporting more than SPLIT_PTLOCK_CPUS.
--#
--# In that special configuration the page structs of slabs are modified.
--# This setting disables the selection of SLUB as a slab allocator.
--#
--config ARCH_USES_SLAB_PAGE_STRUCT
--	bool
--	default y
--	depends on SPLIT_PTLOCK_CPUS <= NR_CPUS
--
- config DEFAULT_UIMAGE
- 	bool
- 	help
+Cheers,
+Ben.
