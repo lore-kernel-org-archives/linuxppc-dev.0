@@ -1,15 +1,16 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 95129DDE40
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 15:56:21 +1000 (EST)
-Date: Tue, 8 May 2007 00:58:20 -0500
+	by ozlabs.org (Postfix) with ESMTP id B4711DDE4A
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 16:00:24 +1000 (EST)
+Date: Tue, 8 May 2007 01:02:26 -0500
 To: Vitaly Bordug <vitb@kernel.crashing.org>
 Subject: Re: [PATCH 1/3] [POWERPC] 8xx: mpc885ads pcmcia support
-Message-ID: <20070508055820.GA14619@lixom.net>
-References: <20070508003642.5964.37001.stgit@localhost.localdomain>
+Message-ID: <20070508060226.GB14619@lixom.net>
+References: <20070508053049.18428.50622.stgit@localhost.localdomain>
+	<20070508054840.18428.28313.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070508003642.5964.37001.stgit@localhost.localdomain>
+In-Reply-To: <20070508054840.18428.28313.stgit@localhost.localdomain>
 From: olof@lixom.net (Olof Johansson)
 Cc: linuxppc-dev@ozlabs.org, linux-pcmcia@lists.infradead.org,
 	linux-kernel@vger.kernel.org
@@ -22,7 +23,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 08, 2007 at 04:36:51AM +0400, Vitaly Bordug wrote:
+On Tue, May 08, 2007 at 09:48:44AM +0400, Vitaly Bordug wrote:
 > 
 > Adds support for PowerQuicc on-chip PCMCIA. The driver is implemented as
 > of_device, so only arch/powerpc stuff is capable to use it, which now
@@ -36,3 +37,5 @@ On Tue, May 08, 2007 at 04:36:51AM +0400, Vitaly Bordug wrote:
 > Acked-by: Arnd Bergmann <arnd@arndb.de>
 
 Acked-by: Olof Johansson <olof@lixom.net>
+
+(Hm, just acked the previous post it seems. :)
