@@ -1,10 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Tue, 08 May 2007 12:58:34 +1000
-Subject: [PATCH 2/7] Powerpc MSI infrastructure
+Date: Tue, 08 May 2007 12:58:35 +1000
+Subject: [PATCH 3/7] RTAS MSI implementation
 In-Reply-To: <1178593113.675058.404575641543.qpush@cradle>
-Message-Id: <20070508025839.B974DDDEDB@ozlabs.org>
+Message-Id: <20070508025840.522FDDDF37@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,106 +15,314 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch provides the architecture specific hooks to support MSI on
-powerpc. We implement the newly added arch_setup_msi_irqs() and
-arch_teardown_msi_irqs(), and then delegate to ppc_md routines.
+Implement MSI support via RTAS. For now we assumes that if the required
+RTAS tokens for MSI are present, then we want to use the RTAS MSI
+routines.
 
-Platforms that don't implement MSI will leave the ppc_md calls blank,
-arch_msi_check_device() will detect this and return ENOSYS. Drivers
-should detect this error and continue to use LSI.
+When RTAS is managing MSIs for us, it will/may enable MSI on devices that
+support it by default. This is contrary to the Linux model where a device
+is in LSI mode until the driver requests MSIs.
+
+To remedy this we add a pci_irq_fixup call, which disables MSI if they've
+been assigned by firmware and the device also supports LSI. Devices that
+don't support LSI at all will be left as is, drivers are still expected
+to call pci_enable_msi() before using the device.
+
+At the moment there is no pci_irq_fixup on pSeries, so we can just set it
+unconditionally. If other platforms use the RTAS MSI backend they'll need
+to check that still holds.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
 
- arch/powerpc/Kconfig          |    1 +
- arch/powerpc/kernel/Makefile  |    1 +
- arch/powerpc/kernel/msi.c     |   38 ++++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/machdep.h |    8 ++++++++
- 4 files changed, 48 insertions(+)
+ arch/powerpc/platforms/pseries/Makefile |    1 
+ arch/powerpc/platforms/pseries/msi.c    |  270 ++++++++++++++++++++++++++++++++
+ 2 files changed, 271 insertions(+)
 
-Index: msi-new/arch/powerpc/Kconfig
+Index: msi-new/arch/powerpc/platforms/pseries/Makefile
 ===================================================================
---- msi-new.orig/arch/powerpc/Kconfig
-+++ msi-new/arch/powerpc/Kconfig
-@@ -659,6 +659,7 @@ config PCI
- 		&& !PPC_85xx && !PPC_86xx
- 	default PCI_PERMEDIA if !4xx && !CPM2 && !8xx && APUS
- 	default PCI_QSPAN if !4xx && !CPM2 && 8xx
-+	select ARCH_SUPPORTS_MSI
- 	help
- 	  Find out whether your system includes a PCI bus. PCI is the name of
- 	  a bus system, i.e. the way the CPU talks to the other stuff inside
-Index: msi-new/arch/powerpc/kernel/Makefile
-===================================================================
---- msi-new.orig/arch/powerpc/kernel/Makefile
-+++ msi-new/arch/powerpc/kernel/Makefile
-@@ -68,6 +68,7 @@ obj-$(CONFIG_MODULES)		+= $(module-y)
- pci64-$(CONFIG_PPC64)		+= pci_64.o pci_dn.o
- pci32-$(CONFIG_PPC32)		:= pci_32.o
- obj-$(CONFIG_PCI)		+= $(pci64-y) $(pci32-y)
-+obj-$(CONFIG_PCI_MSI)		+= msi.o
- kexec-$(CONFIG_PPC64)		:= machine_kexec_64.o
- kexec-$(CONFIG_PPC32)		:= machine_kexec_32.o
- obj-$(CONFIG_KEXEC)		+= machine_kexec.o crash.o $(kexec-y)
-Index: msi-new/arch/powerpc/kernel/msi.c
+--- msi-new.orig/arch/powerpc/platforms/pseries/Makefile
++++ msi-new/arch/powerpc/platforms/pseries/Makefile
+@@ -11,6 +11,7 @@ obj-$(CONFIG_SCANLOG)	+= scanlog.o
+ obj-$(CONFIG_EEH)	+= eeh.o eeh_cache.o eeh_driver.o eeh_event.o
+ obj-$(CONFIG_KEXEC)	+= kexec.o
+ obj-$(CONFIG_PCI)	+= pci.o pci_dlpar.o
++obj-$(CONFIG_PCI_MSI)	+= msi.o
+ 
+ obj-$(CONFIG_HOTPLUG_CPU)	+= hotplug-cpu.o
+ 
+Index: msi-new/arch/powerpc/platforms/pseries/msi.c
 ===================================================================
 --- /dev/null
-+++ msi-new/arch/powerpc/kernel/msi.c
-@@ -0,0 +1,38 @@
++++ msi-new/arch/powerpc/platforms/pseries/msi.c
+@@ -0,0 +1,270 @@
 +/*
-+ * Copyright 2006-2007, Michael Ellerman, IBM Corporation.
++ * Copyright 2006 Jake Moilanen <moilanen@austin.ibm.com>, IBM Corp.
++ * Copyright 2006-2007 Michael Ellerman, IBM Corp.
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
++ * as published by the Free Software Foundation; version 2 of the
++ * License.
++ *
 + */
 +
-+#include <linux/kernel.h>
++#include <linux/device.h>
++#include <linux/irq.h>
 +#include <linux/msi.h>
 +
-+#include <asm/machdep.h>
++#include <asm/rtas.h>
++#include <asm/hw_irq.h>
++#include <asm/ppc-pci.h>
 +
-+int arch_msi_check_device(struct pci_dev* dev, int nvec, int type)
++static int query_token, change_token;
++
++#define RTAS_QUERY_FN		0
++#define RTAS_CHANGE_FN		1
++#define RTAS_RESET_FN		2
++#define RTAS_CHANGE_MSI_FN	3
++#define RTAS_CHANGE_MSIX_FN	4
++
++static struct pci_dn *get_pdn(struct pci_dev *pdev)
 +{
-+	if (!ppc_md.setup_msi_irqs || !ppc_md.teardown_msi_irqs) {
-+		pr_debug("msi: Platform doesn't provide MSI callbacks.\n");
-+		return -ENOSYS;
++	struct device_node *dn;
++	struct pci_dn *pdn;
++
++	dn = pci_device_to_OF_node(pdev);
++	if (!dn) {
++		dev_dbg(&pdev->dev, "rtas_msi: No OF device node\n");
++		return NULL;
 +	}
 +
-+	if (ppc_md.msi_check_device) {
-+		pr_debug("msi: Using platform check routine.\n");
-+		return ppc_md.msi_check_device(dev, nvec, type);
++	pdn = PCI_DN(dn);
++	if (!pdn) {
++		dev_dbg(&pdev->dev, "rtas_msi: No PCI DN\n");
++		return NULL;
 +	}
 +
-+        return 0;
++	return pdn;
 +}
 +
-+int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
++/* RTAS Helpers */
++
++static int rtas_change_msi(struct pci_dn *pdn, u32 func, u32 num_irqs)
 +{
-+	return ppc_md.setup_msi_irqs(dev, nvec, type);
++	u32 addr, seq_num, rtas_ret[3];
++	unsigned long buid;
++	int rc;
++
++	addr = rtas_config_addr(pdn->busno, pdn->devfn, 0);
++	buid = pdn->phb->buid;
++
++	seq_num = 1;
++	do {
++		if (func == RTAS_CHANGE_MSI_FN || func == RTAS_CHANGE_MSIX_FN)
++			rc = rtas_call(change_token, 6, 4, rtas_ret, addr,
++					BUID_HI(buid), BUID_LO(buid),
++					func, num_irqs, seq_num);
++		else
++			rc = rtas_call(change_token, 6, 3, rtas_ret, addr,
++					BUID_HI(buid), BUID_LO(buid),
++					func, num_irqs, seq_num);
++
++		seq_num = rtas_ret[1];
++	} while (rtas_busy_delay(rc));
++
++	if (rc == 0) /* Success */
++		rc = rtas_ret[0];
++
++	pr_debug("rtas_msi: ibm,change_msi(func=%d,num=%d) = (%d)\n",
++		 func, num_irqs, rc);
++
++	return rc;
 +}
 +
-+void arch_teardown_msi_irqs(struct pci_dev *dev)
++static void rtas_disable_msi(struct pci_dev *pdev)
 +{
-+	return ppc_md.teardown_msi_irqs(dev);
-+}
-Index: msi-new/include/asm-powerpc/machdep.h
-===================================================================
---- msi-new.orig/include/asm-powerpc/machdep.h
-+++ msi-new/include/asm-powerpc/machdep.h
-@@ -115,6 +115,14 @@ struct machdep_calls {
- 	/* To setup PHBs when using automatic OF platform driver for PCI */
- 	int		(*pci_setup_phb)(struct pci_controller *host);
- 
-+#ifdef CONFIG_PCI_MSI
-+	int		(*msi_check_device)(struct pci_dev* dev,
-+					    int nvec, int type);
-+	int		(*setup_msi_irqs)(struct pci_dev *dev,
-+					  int nvec, int type);
-+	void		(*teardown_msi_irqs)(struct pci_dev *dev);
-+#endif
++	struct pci_dn *pdn;
 +
- 	void		(*restart)(char *cmd);
- 	void		(*power_off)(void);
- 	void		(*halt)(void);
++	pdn = get_pdn(pdev);
++	if (!pdn)
++		return;
++
++	if (rtas_change_msi(pdn, RTAS_CHANGE_FN, 0) != 0)
++		pr_debug("rtas_msi: Setting MSIs to 0 failed!\n");
++}
++
++static int rtas_query_irq_number(struct pci_dn *pdn, int offset)
++{
++	u32 addr, rtas_ret[2];
++	unsigned long buid;
++	int rc;
++
++	addr = rtas_config_addr(pdn->busno, pdn->devfn, 0);
++	buid = pdn->phb->buid;
++
++	do {
++		rc = rtas_call(query_token, 4, 3, rtas_ret, addr,
++			       BUID_HI(buid), BUID_LO(buid), offset);
++	} while (rtas_busy_delay(rc));
++
++	if (rc) {
++		pr_debug("rtas_msi: error (%d) querying source number\n", rc);
++		return rc;
++	}
++
++	return rtas_ret[0];
++}
++
++static void rtas_teardown_msi_irqs(struct pci_dev *pdev)
++{
++	struct msi_desc *entry;
++
++	list_for_each_entry(entry, &pdev->msi_list, list) {
++		if (entry->irq == NO_IRQ)
++			continue;
++
++		set_irq_msi(entry->irq, NULL);
++		irq_dispose_mapping(entry->irq);
++	}
++
++	rtas_disable_msi(pdev);
++}
++
++static int check_req_msi(struct pci_dev *pdev, int nvec)
++{
++	struct device_node *dn;
++	struct pci_dn *pdn;
++	const u32 *req_msi;
++
++	pdn = get_pdn(pdev);
++	if (!pdn)
++		return -ENODEV;
++
++	dn = pdn->node;
++
++	req_msi = of_get_property(dn, "ibm,req#msi", NULL);
++	if (!req_msi) {
++		pr_debug("rtas_msi: No ibm,req#msi on %s\n", dn->full_name);
++		return -ENOENT;
++	}
++
++	if (*req_msi < nvec) {
++		pr_debug("rtas_msi: ibm,req#msi requests < %d MSIs\n", nvec);
++		return -ENOSPC;
++	}
++
++	return 0;
++}
++
++static int rtas_msi_check_device(struct pci_dev *pdev, int nvec, int type)
++{
++	if (type == PCI_CAP_ID_MSIX)
++		pr_debug("rtas_msi: MSI-X untested, trying anyway.\n");
++
++	return check_req_msi(pdev, nvec);
++}
++
++static int rtas_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
++{
++	struct pci_dn *pdn;
++	int hwirq, virq, i, rc;
++	struct msi_desc *entry;
++
++	pdn = get_pdn(pdev);
++	if (!pdn)
++		return -ENODEV;
++
++	/*
++	 * Try the new more explicit firmware interface, if that fails fall
++	 * back to the old interface. The old interface is known to never
++	 * return MSI-Xs.
++	 */
++	if (type == PCI_CAP_ID_MSI) {
++		rc = rtas_change_msi(pdn, RTAS_CHANGE_MSI_FN, nvec);
++
++		if (rc != nvec) {
++			pr_debug("rtas_msi: trying the old firmware call.\n");
++			rc = rtas_change_msi(pdn, RTAS_CHANGE_FN, nvec);
++		}
++	} else
++		rc = rtas_change_msi(pdn, RTAS_CHANGE_MSIX_FN, nvec);
++
++	if (rc != nvec) {
++		pr_debug("rtas_msi: rtas_change_msi() failed\n");
++
++		/*
++		 * In case of an error it's not clear whether the device is
++		 * left with MSI enabled or not, so we explicitly disable.
++		 */
++		goto out_free;
++	}
++
++	i = 0;
++	list_for_each_entry(entry, &pdev->msi_list, list) {
++		hwirq = rtas_query_irq_number(pdn, i);
++		if (hwirq < 0) {
++			rc = hwirq;
++			pr_debug("rtas_msi: error (%d) getting hwirq\n", rc);
++			goto out_free;
++		}
++
++		virq = irq_create_mapping(NULL, hwirq);
++
++		if (virq == NO_IRQ) {
++			pr_debug("rtas_msi: Failed mapping hwirq %d\n", hwirq);
++			rc = -ENOSPC;
++			goto out_free;
++		}
++
++		dev_dbg(&pdev->dev, "rtas_msi: allocated virq %d\n", virq);
++		set_irq_msi(virq, entry);
++		unmask_msi_irq(virq);
++	}
++
++	return 0;
++
++ out_free:
++	rtas_teardown_msi_irqs(pdev);
++	return rc;
++}
++
++static void rtas_msi_pci_irq_fixup(struct pci_dev *pdev)
++{
++	/* No LSI -> leave MSIs (if any) configured */
++	if (pdev->irq == NO_IRQ) {
++		dev_dbg(&pdev->dev, "rtas_msi: no LSI, nothing to do.\n");
++		return;
++	}
++
++	/* No MSI -> MSIs can't have been assigned by fw, leave LSI */
++	if (check_req_msi(pdev, 1)) {
++		dev_dbg(&pdev->dev, "rtas_msi: no req#msi, nothing to do.\n");
++		return;
++	}
++
++	dev_dbg(&pdev->dev, "rtas_msi: disabling existing MSI.\n");
++	rtas_disable_msi(pdev);
++}
++
++static int rtas_msi_init(void)
++{
++	query_token  = rtas_token("ibm,query-interrupt-source-number");
++	change_token = rtas_token("ibm,change-msi");
++
++	if ((query_token == RTAS_UNKNOWN_SERVICE) ||
++			(change_token == RTAS_UNKNOWN_SERVICE)) {
++		pr_debug("rtas_msi: no RTAS tokens, no MSI support.\n");
++		return -1;
++	}
++
++	pr_debug("rtas_msi: Registering RTAS MSI callbacks.\n");
++
++	WARN_ON(ppc_md.setup_msi_irqs);
++	ppc_md.setup_msi_irqs = rtas_setup_msi_irqs;
++	ppc_md.teardown_msi_irqs = rtas_teardown_msi_irqs;
++	ppc_md.msi_check_device = rtas_msi_check_device;
++
++	WARN_ON(ppc_md.pci_irq_fixup);
++	ppc_md.pci_irq_fixup = rtas_msi_pci_irq_fixup;
++
++	return 0;
++}
++arch_initcall(rtas_msi_init);
