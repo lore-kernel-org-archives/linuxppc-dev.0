@@ -1,29 +1,22 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0F968DDE06
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2007 09:09:57 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l48M8H8s026086
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 May 2007 18:08:17 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l48N9rVt507130
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 May 2007 19:09:53 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l48N9rKH005100
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 May 2007 19:09:53 -0400
-Date: Tue, 8 May 2007 18:09:52 -0500
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 0/4] powerpc: EEH: extend PCI error logging to dump register
-	state
-Message-ID: <20070508230952.GN4452@austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 409C3DDE36
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2007 09:18:04 +1000 (EST)
+Subject: Re: [PATCH 1/4] Add support for 750CL Holly board
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <1178306304.3026.231.camel@zod.rchland.ibm.com>
+References: <1178302414.3026.202.camel@zod.rchland.ibm.com>
+	<1178302469.3026.204.camel@zod.rchland.ibm.com>
+	<20070504190140.GA13067@lixom.net>
+	<1178306304.3026.231.camel@zod.rchland.ibm.com>
+Content-Type: text/plain
+Date: Wed, 09 May 2007 09:17:54 +1000
+Message-Id: <1178666275.14928.116.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,13 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> > This won't work well if you ever want to build a multiplatform kernel.
+> 
+> I know.  What do you suggest?  TSI doesn't use phylib, and adding a
+> property to specify PHY type in the DT seems like a hack too...
 
-Paul, 
+Fix the TSI network driver. PHYs can be probed.
 
-Please apply and forward these patches for inclusion in 2.6.22
+> As a "reg" property perhaps?  I'm not a DT guru, so I was a bit lost as
+> to how to fix that up.
 
-The following four sets of patches extend the amount of error logging
-that is done when a PCI error is detected. This should help in debugging
-when the fault is due to a real bug, rather than bad hardware.
+Yes, it's common to get the config space address of the "reg" property
+of the bridge.
 
---linas
+Ben.
