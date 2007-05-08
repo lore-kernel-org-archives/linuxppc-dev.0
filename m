@@ -1,10 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Tue, 08 May 2007 12:58:36 +1000
-Subject: [PATCH 6/7] MPIC MSI allocator
+Date: Tue, 08 May 2007 12:58:37 +1000
+Subject: [PATCH 7/7] MPIC U3/U4 MSI backend
 In-Reply-To: <1178593113.675058.404575641543.qpush@cradle>
-Message-Id: <20070508025842.52107DDF01@ozlabs.org>
+Message-Id: <20070508025843.0D93ADDEFD@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,97 +15,127 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-To support MSI on MPIC we need a way to reserve and allocate hardware irq
-numbers, this patch implements an allocator for that purpose.
+MPIC U3/U4 MSI backend. Based on code from Segher, heavily hacked by me.
+This only deals with MSI on U3/U4 MPICs, aka. CPC 9x5.
 
-New firmware platforms must define a "msi-available-ranges" property on their
-MPIC node for MSI to work. For U3/U4 we do a best-guess setup.
+If we find a U3/U4 then we enable this backend, ie. take over the ppc_md
+MSI hooks. We might need more elaborate logic in future to decide which
+backend is enabled.
+
+We need our own irq_chip so that we can do MSI masking/unmasking on
+the device itself. We also need to mask explicitly on shutdown to make
+sure we don't get bitten by lazy-disable semantics.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
 
- arch/powerpc/sysdev/Makefile   |    4 
- arch/powerpc/sysdev/mpic.c     |    4 
- arch/powerpc/sysdev/mpic.h     |   27 ++++++
- arch/powerpc/sysdev/mpic_msi.c |  183 +++++++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/mpic.h     |    5 +
- 5 files changed, 222 insertions(+), 1 deletion(-)
+ arch/powerpc/sysdev/Makefile     |    2 
+ arch/powerpc/sysdev/mpic.c       |   14 +-
+ arch/powerpc/sysdev/mpic.h       |   11 ++
+ arch/powerpc/sysdev/mpic_u3msi.c |  186 +++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 206 insertions(+), 7 deletions(-)
 
 Index: msi-new/arch/powerpc/sysdev/Makefile
 ===================================================================
 --- msi-new.orig/arch/powerpc/sysdev/Makefile
 +++ msi-new/arch/powerpc/sysdev/Makefile
-@@ -2,7 +2,9 @@ ifeq ($(CONFIG_PPC64),y)
+@@ -2,7 +2,7 @@ ifeq ($(CONFIG_PPC64),y)
  EXTRA_CFLAGS			+= -mno-minimal-toc
  endif
  
--obj-$(CONFIG_MPIC)		+= mpic.o
-+mpic-msi-obj-$(CONFIG_PCI_MSI)	+= mpic_msi.o
-+obj-$(CONFIG_MPIC)		+= mpic.o $(mpic-msi-obj-y)
-+
+-mpic-msi-obj-$(CONFIG_PCI_MSI)	+= mpic_msi.o
++mpic-msi-obj-$(CONFIG_PCI_MSI)	+= mpic_msi.o mpic_u3msi.o
+ obj-$(CONFIG_MPIC)		+= mpic.o $(mpic-msi-obj-y)
+ 
  obj-$(CONFIG_PPC_INDIRECT_PCI)	+= indirect_pci.o
- obj-$(CONFIG_PPC_MPC106)	+= grackle.o
- obj-$(CONFIG_PPC_DCR)		+= dcr.o
 Index: msi-new/arch/powerpc/sysdev/mpic.c
 ===================================================================
 --- msi-new.orig/arch/powerpc/sysdev/mpic.c
 +++ msi-new/arch/powerpc/sysdev/mpic.c
-@@ -36,6 +36,8 @@
- #include <asm/mpic.h>
- #include <asm/smp.h>
+@@ -606,7 +606,7 @@ static irqreturn_t mpic_ipi_action(int i
+  */
  
-+#include "mpic.h"
-+
- #ifdef DEBUG
- #define DBG(fmt...) printk(fmt)
- #else
-@@ -879,6 +881,8 @@ static int mpic_host_map(struct irq_host
- 	if (hw >= mpic->irq_count)
- 		return -EINVAL;
  
-+	mpic_msi_reserve_hwirq(mpic, hw);
-+
- 	/* Default chip */
- 	chip = &mpic->hc_irq;
+-static void mpic_unmask_irq(unsigned int irq)
++void mpic_unmask_irq(unsigned int irq)
+ {
+ 	unsigned int loops = 100000;
+ 	struct mpic *mpic = mpic_from_irq(irq);
+@@ -626,7 +626,7 @@ static void mpic_unmask_irq(unsigned int
+ 	} while(mpic_irq_read(src, MPIC_INFO(IRQ_VECTOR_PRI)) & MPIC_VECPRI_MASK);
+ }
  
+-static void mpic_mask_irq(unsigned int irq)
++void mpic_mask_irq(unsigned int irq)
+ {
+ 	unsigned int loops = 100000;
+ 	struct mpic *mpic = mpic_from_irq(irq);
+@@ -647,7 +647,7 @@ static void mpic_mask_irq(unsigned int i
+ 	} while(!(mpic_irq_read(src, MPIC_INFO(IRQ_VECTOR_PRI)) & MPIC_VECPRI_MASK));
+ }
+ 
+-static void mpic_end_irq(unsigned int irq)
++void mpic_end_irq(unsigned int irq)
+ {
+ 	struct mpic *mpic = mpic_from_irq(irq);
+ 
+@@ -780,7 +780,7 @@ static unsigned int mpic_type_to_vecpri(
+ 	}
+ }
+ 
+-static int mpic_set_irq_type(unsigned int virq, unsigned int flow_type)
++int mpic_set_irq_type(unsigned int virq, unsigned int flow_type)
+ {
+ 	struct mpic *mpic = mpic_from_irq(virq);
+ 	unsigned int src = mpic_irq_to_hw(virq);
+@@ -1191,8 +1191,10 @@ void __init mpic_init(struct mpic *mpic)
+ 
+ 	/* Do the HT PIC fixups on U3 broken mpic */
+ 	DBG("MPIC flags: %x\n", mpic->flags);
+-	if ((mpic->flags & MPIC_U3_HT_IRQS) && (mpic->flags & MPIC_PRIMARY))
+- 		mpic_scan_ht_pics(mpic);
++	if ((mpic->flags & MPIC_U3_HT_IRQS) && (mpic->flags & MPIC_PRIMARY)) {
++		mpic_scan_ht_pics(mpic);
++		mpic_u3msi_init(mpic);
++	}
+ 
+ 	for (i = 0; i < mpic->num_sources; i++) {
+ 		/* start with vector = source number, and masked */
 Index: msi-new/arch/powerpc/sysdev/mpic.h
 ===================================================================
---- /dev/null
+--- msi-new.orig/arch/powerpc/sysdev/mpic.h
 +++ msi-new/arch/powerpc/sysdev/mpic.h
-@@ -0,0 +1,27 @@
-+#ifndef _POWERPC_SYSDEV_MPIC_H
-+#define _POWERPC_SYSDEV_MPIC_H
+@@ -16,12 +16,23 @@ extern void mpic_msi_reserve_hwirq(struc
+ extern int mpic_msi_init_allocator(struct mpic *mpic);
+ extern irq_hw_number_t mpic_msi_alloc_hwirqs(struct mpic *mpic, int num);
+ extern void mpic_msi_free_hwirqs(struct mpic *mpic, int offset, int num);
++extern int mpic_u3msi_init(struct mpic *mpic);
+ #else
+ static inline void mpic_msi_reserve_hwirq(struct mpic *mpic,
+ 					  irq_hw_number_t hwirq)
+ {
+ 	return;
+ }
 +
-+/*
-+ * Copyright 2006-2007, Michael Ellerman, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; version 2 of the
-+ * License.
-+ *
-+ */
-+
-+#ifdef CONFIG_PCI_MSI
-+extern void mpic_msi_reserve_hwirq(struct mpic *mpic, irq_hw_number_t hwirq);
-+extern int mpic_msi_init_allocator(struct mpic *mpic);
-+extern irq_hw_number_t mpic_msi_alloc_hwirqs(struct mpic *mpic, int num);
-+extern void mpic_msi_free_hwirqs(struct mpic *mpic, int offset, int num);
-+#else
-+static inline void mpic_msi_reserve_hwirq(struct mpic *mpic,
-+					  irq_hw_number_t hwirq)
++static inline int mpic_u3msi_init(struct mpic *mpic)
 +{
-+	return;
++	return -1;
 +}
-+#endif
+ #endif
+ 
++extern int mpic_set_irq_type(unsigned int virq, unsigned int flow_type);
++extern void mpic_end_irq(unsigned int irq);
++extern void mpic_mask_irq(unsigned int irq);
++extern void mpic_unmask_irq(unsigned int irq);
 +
-+#endif /* _POWERPC_SYSDEV_MPIC_H */
-Index: msi-new/arch/powerpc/sysdev/mpic_msi.c
+ #endif /* _POWERPC_SYSDEV_MPIC_H */
+Index: msi-new/arch/powerpc/sysdev/mpic_u3msi.c
 ===================================================================
 --- /dev/null
-+++ msi-new/arch/powerpc/sysdev/mpic_msi.c
-@@ -0,0 +1,183 @@
++++ msi-new/arch/powerpc/sysdev/mpic_u3msi.c
+@@ -0,0 +1,186 @@
 +/*
++ * Copyright 2006, Segher Boessenkool, IBM Corporation.
 + * Copyright 2006-2007, Michael Ellerman, IBM Corporation.
 + *
 + * This program is free software; you can redistribute it and/or
@@ -117,190 +147,176 @@ Index: msi-new/arch/powerpc/sysdev/mpic_msi.c
 +
 +#include <linux/irq.h>
 +#include <linux/bootmem.h>
-+#include <linux/bitmap.h>
 +#include <linux/msi.h>
 +#include <asm/mpic.h>
 +#include <asm/prom.h>
 +#include <asm/hw_irq.h>
 +#include <asm/ppc-pci.h>
 +
++#include "mpic.h"
 +
-+static void __mpic_msi_reserve_hwirq(struct mpic *mpic, irq_hw_number_t hwirq)
++/* A bit ugly, can we get this from the pci_dev somehow? */
++static struct mpic *msi_mpic;
++
++static void mpic_u3msi_mask_irq(unsigned int irq)
 +{
-+	pr_debug("mpic: reserving hwirq 0x%lx\n", hwirq);
-+	bitmap_allocate_region(mpic->hwirq_bitmap, hwirq, 0);
++	mask_msi_irq(irq);
++	mpic_mask_irq(irq);
 +}
 +
-+void mpic_msi_reserve_hwirq(struct mpic *mpic, irq_hw_number_t hwirq)
++static void mpic_u3msi_unmask_irq(unsigned int irq)
 +{
-+	unsigned long flags;
-+
-+	/* The mpic calls this even when there is no allocator setup */
-+	if (!mpic->hwirq_bitmap)
-+		return;
-+
-+	spin_lock_irqsave(&mpic->bitmap_lock, flags);
-+	__mpic_msi_reserve_hwirq(mpic, hwirq);
-+	spin_unlock_irqrestore(&mpic->bitmap_lock, flags);
++	mpic_unmask_irq(irq);
++	unmask_msi_irq(irq);
 +}
 +
-+irq_hw_number_t mpic_msi_alloc_hwirqs(struct mpic *mpic, int num)
++static struct irq_chip mpic_u3msi_chip = {
++	.shutdown	= mpic_u3msi_mask_irq,
++	.mask		= mpic_u3msi_mask_irq,
++	.unmask		= mpic_u3msi_unmask_irq,
++	.eoi		= mpic_end_irq,
++	.set_type	= mpic_set_irq_type,
++	.typename	= "MPIC-U3MSI",
++};
++
++static u64 read_ht_magic_addr(struct pci_dev *pdev, unsigned int pos)
 +{
-+	unsigned long flags;
-+	int offset, order = get_count_order(num);
++	u8 flags;
++	u32 tmp;
++	u64 addr;
 +
-+	spin_lock_irqsave(&mpic->bitmap_lock, flags);
-+	/*
-+	 * This is fast, but stricter than we need. We might want to add
-+	 * a fallback routine which does a linear search with no alignment.
-+	 */
-+	offset = bitmap_find_free_region(mpic->hwirq_bitmap, mpic->irq_count,
-+					 order);
-+	spin_unlock_irqrestore(&mpic->bitmap_lock, flags);
++	pci_read_config_byte(pdev, pos + HT_MSI_FLAGS, &flags);
 +
-+	pr_debug("mpic: allocated 0x%x (2^%d) at offset 0x%x\n",
-+		 num, order, offset);
++	if (flags & HT_MSI_FLAGS_FIXED)
++		return HT_MSI_FIXED_ADDR;
 +
-+	return offset;
++	pci_read_config_dword(pdev, pos + HT_MSI_ADDR_LO, &tmp);
++	addr = tmp & HT_MSI_ADDR_LO_MASK;
++	pci_read_config_dword(pdev, pos + HT_MSI_ADDR_HI, &tmp);
++	addr = addr | ((u64)tmp << 32);
++
++	return addr;
 +}
 +
-+void mpic_msi_free_hwirqs(struct mpic *mpic, int offset, int num)
++static u64 find_ht_magic_addr(struct pci_dev *pdev)
 +{
-+	unsigned long flags;
-+	int order = get_count_order(num);
++	struct pci_bus *bus;
++	unsigned int pos;
 +
-+	pr_debug("mpic: freeing 0x%x (2^%d) at offset 0x%x\n",
-+		 num, order, offset);
++	for (bus = pdev->bus; bus; bus = bus->parent) {
++		pos = pci_find_ht_capability(bus->self, HT_CAPTYPE_MSI_MAPPING);
++		if (pos)
++			return read_ht_magic_addr(bus->self, pos);
++	}
 +
-+	spin_lock_irqsave(&mpic->bitmap_lock, flags);
-+	bitmap_release_region(mpic->hwirq_bitmap, offset, order);
-+	spin_unlock_irqrestore(&mpic->bitmap_lock, flags);
++	return 0;
 +}
 +
-+#ifdef CONFIG_MPIC_U3_HT_IRQS
-+static int mpic_msi_reserve_u3_hwirqs(struct mpic *mpic)
++static int u3msi_msi_check_device(struct pci_dev *pdev, int nvec, int type)
++{
++	if (type == PCI_CAP_ID_MSIX)
++		pr_debug("u3msi: MSI-X untested, trying anyway.\n");
++
++	/* If we can't find a magic address then MSI ain't gonna work */
++	if (find_ht_magic_addr(pdev) == 0) {
++		pr_debug("u3msi: no magic address found for %s\n",
++			 pci_name(pdev));
++		return -ENXIO;
++	}
++
++	return 0;
++}
++
++static void u3msi_teardown_msi_irqs(struct pci_dev *pdev)
++{
++	struct msi_desc *entry;
++
++        list_for_each_entry(entry, &pdev->msi_list, list) {
++		if (entry->irq == NO_IRQ)
++			continue;
++
++		set_irq_msi(entry->irq, NULL);
++		mpic_msi_free_hwirqs(msi_mpic, virq_to_hw(entry->irq), 1);
++		irq_dispose_mapping(entry->irq);
++	}
++
++	return;
++}
++
++static void u3msi_compose_msi_msg(struct pci_dev *pdev, int virq,
++				  struct msi_msg *msg)
++{
++	u64 addr;
++
++	addr = find_ht_magic_addr(pdev);
++	msg->address_lo = addr & 0xFFFFFFFF;
++	msg->address_hi = addr >> 32;
++	msg->data = virq_to_hw(virq);
++
++	pr_debug("u3msi: allocated virq 0x%x (hw 0x%lx) at address 0x%lx\n",
++		 virq, virq_to_hw(virq), addr);
++}
++
++static int u3msi_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
 +{
 +	irq_hw_number_t hwirq;
-+	struct irq_host_ops *ops = mpic->irqhost->ops;
-+	struct device_node *np;
-+	int flags, index, i;
-+	struct of_irq oirq;
++	int rc;
++	unsigned int virq;
++	struct msi_desc *entry;
++	struct msi_msg msg;
 +
-+	pr_debug("mpic: found U3, guessing msi allocator setup\n");
-+
-+	/* Reserve source numbers we know are reserved in the HW */
-+	for (i = 0;   i < 8;   i++)
-+		__mpic_msi_reserve_hwirq(mpic, i);
-+
-+	for (i = 42;  i < 46;  i++)
-+		__mpic_msi_reserve_hwirq(mpic, i);
-+
-+	for (i = 100; i < 105; i++)
-+		__mpic_msi_reserve_hwirq(mpic, i);
-+
-+	np = NULL;
-+	while ((np = of_find_all_nodes(np))) {
-+		pr_debug("mpic: mapping hwirqs for %s\n", np->full_name);
-+
-+		index = 0;
-+		while (of_irq_map_one(np, index++, &oirq) == 0) {
-+			ops->xlate(mpic->irqhost, NULL, oirq.specifier,
-+						oirq.size, &hwirq, &flags);
-+			__mpic_msi_reserve_hwirq(mpic, hwirq);
-+		}
-+	}
-+
-+	return 0;
-+}
-+#else
-+static int mpic_msi_reserve_u3_hwirqs(struct mpic *mpic)
-+{
-+	return -1;
-+}
-+#endif
-+
-+static int mpic_msi_reserve_dt_hwirqs(struct mpic *mpic)
-+{
-+	int i, len;
-+	const u32 *p;
-+
-+	p = of_get_property(mpic->of_node, "msi-available-ranges", &len);
-+	if (!p) {
-+		pr_debug("mpic: no msi-available-ranges property found on %s\n",
-+			  mpic->of_node->full_name);
-+		return -ENODEV;
-+	}
-+
-+	if (len % 8 != 0) {
-+		printk(KERN_WARNING "mpic: Malformed msi-available-ranges "
-+		       "property on %s\n", mpic->of_node->full_name);
-+		return -EINVAL;
-+	}
-+
-+	bitmap_allocate_region(mpic->hwirq_bitmap, 0,
-+			       get_count_order(mpic->irq_count));
-+
-+	/* Format is: (<u32 start> <u32 count>)+ */
-+	len /= sizeof(u32);
-+	for (i = 0; i < len / 2; i++, p += 2)
-+		mpic_msi_free_hwirqs(mpic, *p, *(p + 1));
-+
-+	return 0;
-+}
-+
-+int mpic_msi_init_allocator(struct mpic *mpic)
-+{
-+	int rc, size;
-+
-+	BUG_ON(mpic->hwirq_bitmap);
-+	spin_lock_init(&mpic->bitmap_lock);
-+
-+	size = BITS_TO_LONGS(mpic->irq_count) * sizeof(long);
-+	pr_debug("mpic: allocator bitmap size is 0x%x bytes\n", size);
-+
-+	if (mem_init_done)
-+		mpic->hwirq_bitmap = kmalloc(size, GFP_KERNEL);
-+	else
-+		mpic->hwirq_bitmap = alloc_bootmem(size);
-+
-+	if (!mpic->hwirq_bitmap) {
-+		pr_debug("mpic: ENOMEM allocating allocator bitmap!\n");
-+		return -ENOMEM;
-+	}
-+
-+	memset(mpic->hwirq_bitmap, 0, size);
-+
-+	rc = mpic_msi_reserve_dt_hwirqs(mpic);
-+	if (rc) {
-+		if (mpic->flags & MPIC_U3_HT_IRQS)
-+			rc = mpic_msi_reserve_u3_hwirqs(mpic);
-+
-+		if (rc)
++	list_for_each_entry(entry, &pdev->msi_list, list) {
++		hwirq = mpic_msi_alloc_hwirqs(msi_mpic, 1);
++		if (hwirq < 0) {
++			rc = hwirq;
++			pr_debug("u3msi: failed allocating hwirq\n");
 +			goto out_free;
++		}
++
++		virq = irq_create_mapping(msi_mpic->irqhost, hwirq);
++		if (virq == NO_IRQ) {
++			pr_debug("u3msi: failed mapping hwirq 0x%lx\n", hwirq);
++			mpic_msi_free_hwirqs(msi_mpic, hwirq, 1);
++			rc = -ENOSPC;
++			goto out_free;
++		}
++
++		set_irq_msi(virq, entry);
++		set_irq_chip(virq, &mpic_u3msi_chip);
++		set_irq_type(virq, IRQ_TYPE_EDGE_RISING);
++
++		u3msi_compose_msi_msg(pdev, virq, &msg);
++		write_msi_msg(virq, &msg);
++
++		hwirq++;
 +	}
 +
 +	return 0;
 +
 + out_free:
-+	if (mem_init_done)
-+		kfree(mpic->hwirq_bitmap);
-+
-+	mpic->hwirq_bitmap = NULL;
++	u3msi_teardown_msi_irqs(pdev);
 +	return rc;
 +}
-Index: msi-new/include/asm-powerpc/mpic.h
-===================================================================
---- msi-new.orig/include/asm-powerpc/mpic.h
-+++ msi-new/include/asm-powerpc/mpic.h
-@@ -292,6 +292,11 @@ struct mpic
- 	u32			*hw_set;
- #endif
- 
-+#ifdef CONFIG_PCI_MSI
-+	spinlock_t		bitmap_lock;
-+	unsigned long		*hwirq_bitmap;
-+#endif
 +
- 	/* link */
- 	struct mpic		*next;
- };
++int mpic_u3msi_init(struct mpic *mpic)
++{
++	int rc;
++
++	rc = mpic_msi_init_allocator(mpic);
++	if (rc) {
++		pr_debug("u3msi: Error allocating bitmap!\n");
++		return rc;
++	}
++
++	pr_debug("u3msi: Registering MPIC U3 MSI callbacks.\n");
++
++	BUG_ON(msi_mpic);
++	msi_mpic = mpic;
++
++	WARN_ON(ppc_md.setup_msi_irqs);
++	ppc_md.setup_msi_irqs = u3msi_setup_msi_irqs;
++	ppc_md.teardown_msi_irqs = u3msi_teardown_msi_irqs;
++	ppc_md.msi_check_device = u3msi_msi_check_device;
++
++	return 0;
++}
