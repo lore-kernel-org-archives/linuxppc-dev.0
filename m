@@ -1,22 +1,33 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <dwg@au1.ibm.com>
+Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 66605DDEE3
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 09:36:14 +1000 (EST)
-In-Reply-To: <86B7A813-A7EC-4A26-A528-7741284D0371@kernel.crashing.org>
-References: <20070507182957.GK26920@ld0162-tx32.am.freescale.net>
-	<183F76F8-BC1B-4EB6-9C3A-4F0FFA7B3BB8@freescale.com>
-	<86B7A813-A7EC-4A26-A528-7741284D0371@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <EE37D614-CA47-4A81-8CDC-6E823F66AB9D@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH 12/13] gianfar: Add flags for magic packet and MDIO.
-Date: Mon, 7 May 2007 18:36:13 -0500
-To: Kumar Gala <galak@kernel.crashing.org>
+	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5B29DDDE31
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 10:06:28 +1000 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by ausmtp04.au.ibm.com (8.13.8/8.13.8) with ESMTP id l480Q2vF181984
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 May 2007 10:26:02 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.250.242])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l4809uVu167910
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 May 2007 10:09:56 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4806Oob010785
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 May 2007 10:06:24 +1000
+Date: Tue, 8 May 2007 10:06:15 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 6/7] Holly DTS
+Message-ID: <20070508000615.GA7449@localhost.localdomain>
+References: <1178381611.3393.25.camel@zod.rchland.ibm.com>
+	<1178382006.3393.37.camel@zod.rchland.ibm.com>
+	<e1d22829fe3f12509018791541073706@kernel.crashing.org>
+	<20070506004044.GG11303@localhost.localdomain>
+	<1178543512.2990.31.camel@zod.rchland.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1178543512.2990.31.camel@zod.rchland.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,41 +38,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, May 07, 2007 at 08:11:52AM -0500, Josh Boyer wrote:
+> On Sun, 2007-05-06 at 10:40 +1000, David Gibson wrote:
+> > On Sat, May 05, 2007 at 07:21:33PM +0200, Segher Boessenkool wrote:
+> > [snip]
+> > > > +	compatible = "ppc750-tsi";
+> > > 
+> > > The needs to be more specific as well; "ibm,holly"
+> > > or something.
+> > 
+> > Or perhaps just include something more specific, compatible can have
+> > the general version as well.
+> > 
+> > [snip]
+> > > > +	chosen {
+> > > > +		linux,platform = <0>;
+> > > > +		linux,initrd-start = <0>;
+> > > > +		linux,initrd-end = <0>;
+> > > 
+> > > Do you need to set those zero properties?
+> > 
+> > linux,platform is obsolete and should definitely go.  With the recent
+> > bootloader updates the initrd properties can also go (the bootloader
+> > will add them correctly).  I had them in the Ebony device tree until
+> > very recently because until some of the recent flatdevtree.c fixes,
+> > the bootloader could replace the value of the properties, but it
+> > couldn't add new properties (or at least not properties with new
+> > names).
+> 
+> s/bootloader/bootwrapper?
 
-On May 7, 2007, at 18:11, Kumar Gala wrote:
+Yes.
 
->
-> On May 7, 2007, at 4:45 PM, Andy Fleming wrote:
->
->>
->>> @@ -323,6 +326,10 @@ static int __init gfar_of_init(void)
->>>  		gfar_data.phy_id = *id;
->>>  		gfar_data.bus_id = res.start;
->>>
->>> +		if (res.start >= gfar_dev->resource[0].start &&
->>> +		    res.start < gfar_dev->resource[0].end)
->>> +			gfar_data.device_flags |= FSL_GIANFAR_DEV_HAS_MDIO;
->>> +
->>
->>
->> Hrm.  I don't think this is a good way to go.  The DEV* flags are all
->> features right now, rather than configuration settings.  It seems
->> like this is a stop-gap solution for until more robust detection of
->> the ability to power down the interface.  I can understand that a
->> full solution might be beyond the ambitions of this first set of
->> patches, but I'd prefer if we didn't pollute gianfar's device flags
->> space with a flag that we should aim at removing eventually.
->
-> I don't follow why this isn't a feature of TSEC1 on the parts and  
-> why we don't put this into the device tree as a property.
-
-
-Yeah, I guess.  The dev flags are going away as soon as we yank out  
-arch/ppc support for 85xx, but I've been convinced that this is the  
-simplest, most straightforward way.
-
-Maybe if it were a device-tree property I would be more comfortable  
-with it.  I think I'm just all the work I went through to separate  
-them.  :)
-
-Andy
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
