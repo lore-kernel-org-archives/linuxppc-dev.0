@@ -1,16 +1,17 @@
 Return-Path: <b07421@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 476D1DDE2B
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2007 03:15:42 +1000 (EST)
-Date: Tue, 8 May 2007 12:15:34 -0500
+	by ozlabs.org (Postfix) with ESMTP id BA7A6DDE11
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2007 03:19:32 +1000 (EST)
+Date: Tue, 8 May 2007 12:19:21 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: paulus@samba.org
-Subject: [PATCH] fsl_soc: Make mac_addr const in fs_enet_of_init().
-Message-ID: <20070508171534.GA8920@ld0162-tx32.am.freescale.net>
+To: galak@kernel.crashing.org
+Subject: [PATCH] cpm_uart: cpm_uart_set_termios should take ktermios,
+	not termios
+Message-ID: <20070508171921.GA8941@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
@@ -23,26 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-of_get_mac_address() returns a const pointer, so the result
-should be stored in a const pointer.
+This eliminates some warnings.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/sysdev/fsl_soc.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/serial/cpm_uart/cpm_uart_core.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index 8a123c7..cad1757 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -907,7 +907,7 @@ static int __init fs_enet_of_init(void)
- 		struct fs_platform_info fs_enet_data;
- 		const unsigned int *id;
- 		const unsigned int *phy_addr;
--		void *mac_addr;
-+		const void *mac_addr;
- 		const phandle *ph;
- 		const char *model;
+diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
+index 7a3b97f..6823b8b 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_core.c
++++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+@@ -482,7 +482,8 @@ static void cpm_uart_shutdown(struct uart_port *port)
+ }
  
+ static void cpm_uart_set_termios(struct uart_port *port,
+-				 struct termios *termios, struct termios *old)
++                                 struct ktermios *termios,
++                                 struct ktermios *old)
+ {
+ 	int baud;
+ 	unsigned long flags;
 -- 
 1.5.0.3
