@@ -2,10 +2,9 @@ Return-Path: <dgibson@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>,
 	<linuxppc-dev@ozlabs.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 3/7] powerpc: Add powerpc/platforms/44x,
-	disable platforms/4xx for now
+Subject: [PATCH 4/7] Add device tree for Ebony
 In-Reply-To: <20070508025832.GD11340@localhost.localdomain>
-Message-Id: <20070508025930.8CA75DE0FF@ozlabs.org>
+Message-Id: <20070508025930.E1C1EDE0F5@ozlabs.org>
 Date: Tue,  8 May 2007 12:59:30 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,110 +15,325 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch prepares for Ebony/440 support by creating an
-arch/powerpc/platforms/44x directory.  It is populated with a single
-misc_44x.S file, into which is moved the 44x specific reset code from
-head_44x.S (on the grounds that we should really stop clogging up the
-head_* files with random asm helper routines).
+Add a device tree for the Ebony evaluation board (440GP based).  This
+tree is not complete or finalized.  This tree needs a version of dtc
+recent enough to include reference-to-labels to process.
 
-At the same time, we disable the (empty save Kconfig and Makefile)
-arch/powerpc/platforms/4xx directory from the arch/powerpc/platforms
-Makefile.  Contrary to the comment in
-arch/powerpc/platforms/4xx/Makefile, attempting to build such an empty
-Makefile will fail, thus breaking compile for the 44x platforms we're
-about to add.  It can go back in once we start porting some of the 40x
-platforms (and thus it becomes non-empty).
-
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: David Gibson <dwg@au1.ibm.com>
 ---
 
- arch/powerpc/kernel/head_44x.S        |   10 ----------
- arch/powerpc/platforms/44x/44x.h      |    6 ++++++
- arch/powerpc/platforms/44x/Makefile   |    1 +
- arch/powerpc/platforms/44x/misc_44x.S |   26 ++++++++++++++++++++++++++
- arch/powerpc/platforms/Makefile       |    3 ++-
- 5 files changed, 35 insertions(+), 11 deletions(-)
+ arch/powerpc/boot/dts/ebony.dts |  307 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 307 insertions(+)
 
-Index: working-2.6/arch/powerpc/platforms/44x/misc_44x.S
+Index: working-2.6/arch/powerpc/boot/dts/ebony.dts
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/platforms/44x/misc_44x.S	2007-05-07 14:19:02.000000000 +1000
-@@ -0,0 +1,26 @@
++++ working-2.6/arch/powerpc/boot/dts/ebony.dts	2007-05-01 15:37:24.000000000 +1000
+@@ -0,0 +1,307 @@
 +/*
-+ * This file contains miscellaneous low-level functions for PPC 44x.
-+ *    Copyright 2007 David Gibson <dwg@au1.ibm.com>, IBM Corporation.
++ * Device Tree Source for IBM Ebony
 + *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
++ * Copyright (c) 2006, 2007 IBM Corp.
++ * Josh Boyer <jwboyer@linux.vnet.ibm.com>, David Gibson <dwg@au1.ibm.com>
 + *
++ * FIXME: Draft only!
++ *
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2.  This program is licensed "as is" without
++ * any warranty of any kind, whether express or implied.
++ *
++ * To build:
++ *   dtc -I dts -O asm -o ebony.S -b 0 ebony.dts
++ *   dtc -I dts -O dtb -o ebony.dtb -b 0 ebony.dts
 + */
 +
-+#include <asm/reg.h>
-+#include <asm/ppc_asm.h>
++/ {
++	#address-cells = <2>;
++	#size-cells = <1>;
++	model = "Ebony";
++	compatible = "Ebony";
++	dcr-parent = <&/cpus/PowerPC,440GP@0>;
 +
-+	.text
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+/*
-+ * void ppc44x_reset_system(char *cmd)
-+ *
-+ * At present, this routine just applies a system reset.
-+ */
-+_GLOBAL(ppc44x_reset_system)
-+	mfspr	r13,SPRN_DBCR0
-+	oris	r13,r13,DBCR0_RST_SYSTEM@h
-+	mtspr	SPRN_DBCR0,r13
-+	b	.			/* Just in case the reset doesn't work */
-Index: working-2.6/arch/powerpc/platforms/44x/44x.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/platforms/44x/44x.h	2007-05-07 14:12:22.000000000 +1000
-@@ -0,0 +1,6 @@
-+#ifndef __POWERPC_PLATFORMS_44X_44X_H
-+#define __POWERPC_PLATFORMS_44X_44X_H
++		PowerPC,440GP@0 {
++			device_type = "cpu";
++			reg = <0>;
++			clock-frequency = <0>; // Filled in by zImage
++			timebase-frequency = <0>; // Filled in by zImage
++			i-cache-line-size = <32>;
++			d-cache-line-size = <32>;
++			i-cache-size = <0>;
++			d-cache-size = <0>;
++			dcr-controller;
++			dcr-access-method = "native";
++		};
++	};
 +
-+extern void ppc44x_reset_system(char *cmd);
++	memory {
++		device_type = "memory";
++		reg = <0 0 0>; // Filled in by zImage
++	};
 +
-+#endif /* __POWERPC_PLATFORMS_44X_44X_H */
-Index: working-2.6/arch/powerpc/kernel/head_44x.S
-===================================================================
---- working-2.6.orig/arch/powerpc/kernel/head_44x.S	2007-05-07 14:11:33.000000000 +1000
-+++ working-2.6/arch/powerpc/kernel/head_44x.S	2007-05-07 14:12:22.000000000 +1000
-@@ -709,16 +709,6 @@ _GLOBAL(giveup_fpu)
- 	blr
- #endif
- 
--/*
-- * extern void abort(void)
-- *
-- * At present, this routine just applies a system reset.
-- */
--_GLOBAL(abort)
--        mfspr   r13,SPRN_DBCR0
--        oris    r13,r13,DBCR0_RST_SYSTEM@h
--        mtspr   SPRN_DBCR0,r13
--
- _GLOBAL(set_context)
- 
- #ifdef CONFIG_BDI_SWITCH
-Index: working-2.6/arch/powerpc/platforms/44x/Makefile
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/platforms/44x/Makefile	2007-05-07 14:12:22.000000000 +1000
-@@ -0,0 +1 @@
-+obj-$(CONFIG_44x)	:= misc_44x.o
-Index: working-2.6/arch/powerpc/platforms/Makefile
-===================================================================
---- working-2.6.orig/arch/powerpc/platforms/Makefile	2007-05-07 14:11:33.000000000 +1000
-+++ working-2.6/arch/powerpc/platforms/Makefile	2007-05-07 14:12:22.000000000 +1000
-@@ -6,7 +6,8 @@ obj-$(CONFIG_PPC_PMAC)		+= powermac/
- endif
- endif
- obj-$(CONFIG_PPC_CHRP)		+= chrp/
--obj-$(CONFIG_4xx)		+= 4xx/
-+#obj-$(CONFIG_4xx)		+= 4xx/
-+obj-$(CONFIG_44x)		+= 44x/
- obj-$(CONFIG_PPC_MPC52xx)	+= 52xx/
- obj-$(CONFIG_PPC_8xx)		+= 8xx/
- obj-$(CONFIG_PPC_82xx)		+= 82xx/
++	UIC0: interrupt-controller0 {
++		device_type = "ibm,uic";
++		compatible = "ibm,uic-440gp", "ibm,uic";
++		interrupt-controller;
++		cell-index = <0>;
++		dcr-reg = <0c0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++
++	};
++
++	UIC1: interrupt-controller1 {
++		device_type = "ibm,uic";
++		compatible = "ibm,uic-440gp", "ibm,uic";
++		interrupt-controller;
++		cell-index = <1>;
++		dcr-reg = <0d0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++		interrupts = <1e 4 1f 4>; /* cascade */
++		interrupt-parent = <&UIC0>;
++	};
++
++	CPC0: cpc {
++		device_type = "ibm,cpc";
++		compatible = "ibm,cpc-440gp";
++		dcr-reg = <0b0 003 0e0 010>;
++		// FIXME: anything else?
++	};
++
++	plb {
++		device_type = "ibm,plb";
++		compatible = "ibm,plb-440gp", "ibm,plb4";
++		#address-cells = <2>;
++		#size-cells = <1>;
++		ranges;
++		clock-frequency = <0>; // Filled in by zImage
++
++		SDRAM0: sdram {
++			device_type = "memory-controller";
++			compatible = "ibm,sdram-440gp", "ibm,sdram";
++			dcr-reg = <010 2>;
++			// FIXME: anything else?
++		};
++
++		DMA0: dma {
++			// FIXME: ???
++			device_type = "ibm,dma-4xx";
++			compatible = "ibm,dma-440gp", "ibm,dma-4xx";
++			dcr-reg = <100 027>;
++		};
++
++		MAL0: mcmal {
++			device_type = "mcmal-dma";
++			compatible = "ibm,mcmal-440gp", "ibm,mcmal";
++			dcr-reg = <180 62>;
++			num-tx-chans = <4>;
++			num-rx-chans = <4>;
++			interrupt-parent = <&MAL0>;
++			interrupts = <0 1 2 3 4>;
++			#interrupt-cells = <1>;
++			#address-cells = <0>;
++			#size-cells = <0>;
++			interrupt-map = </*TXEOB*/ 0 &UIC0 a 4
++					 /*RXEOB*/ 1 &UIC0 b 4
++					 /*SERR*/  2 &UIC1 0 4
++					 /*TXDE*/  3 &UIC1 1 4
++					 /*RXDE*/  4 &UIC1 2 4>;
++			interrupt-map-mask = <ffffffff>;
++		};
++
++		POB0: opb {
++			device_type = "ibm,opb";
++			compatible = "ibm,opb-440gp", "ibm,opb";
++			#address-cells = <1>;
++			#size-cells = <1>;
++			/* Wish there was a nicer way of specifying a full 32-bit
++			   range */
++			ranges = <00000000 1 00000000 80000000
++				  80000000 1 80000000 80000000>;
++			dcr-reg = <090 00b>;
++			interrupt-parent = <&UIC1>;
++			interrupts = <7 4>;
++			clock-frequency = <0>; // Filled in by zImage
++
++			EBC0: ebc {
++				device_type = "ibm,ebc";
++				compatible = "ibm,ebc-440gp";
++				dcr-reg = <012 2>;
++				#address-cells = <2>;
++				#size-cells = <1>;
++				clock-frequency = <0>; // Filled in by zImage
++				ranges = <0 00000000 fff00000 100000
++					  1 00000000 48000000 100000
++					  2 00000000 ff800000 400000
++					  3 00000000 48200000 100000
++					  7 00000000 48300000 100000>;
++				interrupts = <5 4>;
++				interrupt-parent = <&UIC1>;
++
++				small-flash@0,0 {
++					device_type = "rom";
++					compatible = "direct-mapped";
++					probe-type = "JEDEC";
++					bank-width = <1>;
++					partitions = <0 80000>;
++					partition-names = "OpenBIOS";
++					reg = <0 80000 80000>;
++				};
++
++				ds1743@1,0 {
++					/* NVRAM & RTC */
++					device_type = "nvram";
++					compatible = "ds1743";
++					reg = <1 0 2000>;
++				};
++
++				large-flash@2,0 {
++					device_type = "rom";
++					compatible = "direct-mapped";
++					probe-type = "JEDEC";
++					bank-width = <1>;
++					partitions = <0 380000
++						      280000 80000>;
++					partition-names = "fs", "firmware";
++					reg = <2 0 400000>;
++				};
++
++				ir@3,0 {
++					reg = <3 0 10>;
++				};
++
++				fpga@7,0 {
++					compatible = "Ebony-FPGA";
++					reg = <7 0 10>;
++				};
++			};
++
++			UART0: serial@40000200 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <40000200 8>;
++				virtual-reg = <e0000200>;
++				clock-frequency = <A8C000>;
++				current-speed = <2580>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <0 4>;
++			};
++
++			UART1: serial@40000300 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <40000300 8>;
++				virtual-reg = <e0000300>;
++				clock-frequency = <A8C000>;
++				current-speed = <2580>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <1 4>;
++			};
++
++			IIC0: i2c@40000400 {
++				/* FIXME */
++				device_type = "i2c";
++				compatible = "ibm,iic-440gp", "ibm,iic";
++				reg = <40000400 14>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <2 4>;
++			};
++			IIC1: i2c@40000500 {
++				/* FIXME */
++				device_type = "i2c";
++				compatible = "ibm,iic-440gp", "ibm,iic";
++				reg = <40000500 14>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <3 4>;
++			};
++
++			GPIO0: gpio@40000700 {
++				/* FIXME */
++				device_type = "gpio";
++				compatible = "ibm,gpio-440gp";
++				reg = <40000700 20>;
++			};
++
++			ZMII0: emac-zmii@40000780 {
++				device_type = "emac-zmii";
++				compatible = "ibm,zmii-440gp", "ibm,zmii";
++				reg = <40000780 c>;
++			};
++
++			EMAC0: ethernet@40000800 {
++				linux,network-index = <0>;
++				device_type = "network";
++				compatible = "ibm,emac-440gp", "ibm,emac";
++				interrupt-parent = <&UIC1>;
++				interrupts = <1c 4 1d 4>;
++				reg = <40000800 70>;
++				local-mac-address = [000000000000]; // Filled in by zImage
++				mal-device = <&MAL0>;
++				mal-tx-channel = <0 1>;
++				mal-rx-channel = <0>;
++				cell-index = <0>;
++				max-frame-size = <5dc>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rmii";
++				phy-map = <00000001>;
++				zmii-device = <&ZMII0>;
++				zmii-channel = <0>;
++			};
++			EMAC1: ethernet@40000900 {
++				linux,network-index = <1>;
++				device_type = "network";
++				compatible = "ibm,emac-440gp", "ibm,emac";
++				interrupt-parent = <&UIC1>;
++				interrupts = <1e 4 1f 4>;
++				reg = <40000900 70>;
++				local-mac-address = [000000000000]; // Filled in by zImage
++				mal-device = <&MAL0>;
++				mal-tx-channel = <2 3>;
++				mal-rx-channel = <1>;
++				cell-index = <1>;
++				max-frame-size = <5dc>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rmii";
++				phy-map = <00000001>;
++				zmii-device = <&ZMII0>;
++				zmii-channel = <1>;
++			};
++
++
++			GPT0: gpt@40000a00 {
++				/* FIXME */
++				reg = <40000a00 d4>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <12 4 13 4 14 4 15 4 16 4>;
++			};
++
++		};
++
++		PCIX0: pci@1234 {
++			device_type = "pci";
++			/* FIXME */
++			reg = <2 0ec00000 8
++			       2 0ec80000 f0
++			       2 0ec80100 fc>;
++		};
++	};
++
++	chosen {
++		linux,stdout-path = "/plb/opb/serial@40000200";
++//		linux,initrd-start = <0>; /* FIXME */
++//		linux,initrd-end = <0>;
++//		bootargs = "";
++	};
++};
++
