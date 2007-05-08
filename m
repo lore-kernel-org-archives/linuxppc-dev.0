@@ -1,20 +1,23 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BA7A6DDE11
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2007 03:19:32 +1000 (EST)
-Date: Tue, 8 May 2007 12:19:21 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: galak@kernel.crashing.org
-Subject: [PATCH] cpm_uart: cpm_uart_set_termios should take ktermios,
-	not termios
-Message-ID: <20070508171921.GA8941@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <djiang@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id DA618DDEED
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2007 03:31:17 +1000 (EST)
+Message-ID: <4640B4AD.9020303@mvista.com>
+Date: Tue, 08 May 2007 10:34:37 -0700
+From: Dave Jiang <djiang@mvista.com>
+MIME-Version: 1.0
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] powerpc: add dts entries to 85xx for EDAC
+References: <20070425213700.GA8814@blade.az.mvista.com>
+	<20070426000852.GA2193@localhost.localdomain>
+	<20070426003748.GA30730@blade.az.mvista.com>
+	<9903F55A-5E4E-42CE-8C27-6B7143B9FE25@kernel.crashing.org>
+	<20070501183220.GA6426@blade.az.mvista.com>
+	<20070507232634.GA11166@blade.az.mvista.com>
+	<20070508034247.GA13409@lixom.net>
+In-Reply-To: <20070508034247.GA13409@lixom.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,26 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This eliminates some warnings.
+Olof Johansson wrote:
+> Hi,
+> 
+>> diff --git a/arch/powerpc/boot/dts/mpc8540ads.dts b/arch/powerpc/boot/dts/mpc8540ads.dts
+>> index f261d64..f411bc1 100644
+>> --- a/arch/powerpc/boot/dts/mpc8540ads.dts
+>> +++ b/arch/powerpc/boot/dts/mpc8540ads.dts
+>> @@ -48,6 +48,22 @@
+>>  		reg = <e0000000 00100000>;	// CCSRBAR 1M
+>>  		bus-frequency = <0>;
+>>  
+>> +		memory-controller@2000 {
+>> +			compatible = "fsl,85xx-memory-controller";
+>> +			reg = <2000 1000>;
+>> +			interrupt-parent = <&mpic>;
+>> +			interrupts = <2 2>;
+>> +		};
+>> +
+>> +		l2-cache-controller@20000 {
+>> +			compatible = "fsl,85xx-memory-controller";
+> 
+> Interesting. Is the programming model really the same for the memory and cache controller?
+> 
+> 
+> -Olof
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
+That's an oops on my part. Thanks for pointing it out.
+
+
 ---
- drivers/serial/cpm_uart/cpm_uart_core.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
-index 7a3b97f..6823b8b 100644
---- a/drivers/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-@@ -482,7 +482,8 @@ static void cpm_uart_shutdown(struct uart_port *port)
- }
- 
- static void cpm_uart_set_termios(struct uart_port *port,
--				 struct termios *termios, struct termios *old)
-+                                 struct ktermios *termios,
-+                                 struct ktermios *old)
- {
- 	int baud;
- 	unsigned long flags;
--- 
-1.5.0.3
+-= Dave =-
