@@ -1,31 +1,15 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1E099DDE3D
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2007 05:02:50 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l48J2mad027969
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 May 2007 15:02:48 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l48J2koj160428
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 May 2007 13:02:46 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l48J2jT9013776
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 May 2007 13:02:46 -0600
-Subject: Re: PowerPC 440EPx Sequoia port
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Valentine Barshak <vbarshak@ru.mvista.com>
-In-Reply-To: <4640A5CB.1050006@ru.mvista.com>
-References: <4640A5CB.1050006@ru.mvista.com>
-Content-Type: text/plain
-Date: Tue, 08 May 2007 13:57:04 -0500
-Message-Id: <1178650624.3453.43.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 8E8AFDDE3D
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2007 05:15:52 +1000 (EST)
+Date: Tue, 8 May 2007 14:17:58 -0500
+To: linuxppc-dev@ozlabs.org
+Subject: Current powerpc.git build failures
+Message-ID: <20070508191758.GA26879@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: olof@lixom.net (Olof Johansson)
+Cc: paulus@samba.org, jdl@jdl.com, arnd@ardnb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,13 +19,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-05-08 at 20:31 +0400, Valentine Barshak wrote:
-> Hi All!
-> I'm working on the PowerPC 440EPx Sequoia port. There've been patches by 
-> David Gibson for Ebony support.
-> Does anyone know if anybody is working on the Sequoia 440EPx support?
+Hi,
 
-Not that I'm aware of.  I have some patches for Bamboo that will
-eventually make their way to the list.
+Just for fun I tried building all powerpc defconfigs. Fallout as below.
 
-josh
+
+powerpc.cell_defconfig:
+ERROR: ".cpufreq_set_policy" [arch/powerpc/platforms/cell/cbe_cpufreq.ko] undefined!
+(Should cell move to similar Kconfig options as the other platforms for cpufreq?)
+
+powerpc.mpc8641_hpcn_defconfig:
+In file included from include/asm-generic/pgtable-nopmd.h:6,
+                 from include/asm/pgtable-ppc32.h:4,
+                 from include/asm/pgtable.h:8,
+                 from arch/powerpc/platforms/86xx/mpc86xx_smp.c:18:
+include/asm-generic/pgtable-nopud.h:13: error: expected specifier-qualifier-list before 'pgd_t'
+include/asm-generic/pgtable-nopud.h:25: error: expected ')' before 'pgd'
+include/asm-generic/pgtable-nopud.h:26: error: expected ')' before 'pgd'
+include/asm-generic/pgtable-nopud.h:27: error: expected ')' before 'pgd'
+include/asm-generic/pgtable-nopud.h:28: error: expected ')' before '*' token
+include/asm-generic/pgtable-nopud.h:38: error: expected ')' before '*' token
+  CC      init/calibrate.o
+In file included from include/asm/pgtable.h:12,
+                 from arch/powerpc/platforms/86xx/mpc86xx_smp.c:18:
+include/asm-generic/pgtable.h: In function 'pgd_none_or_clear_bad':
+include/asm-generic/pgtable.h:243: warning: implicit declaration of function 'pgd_none'
+include/asm-generic/pgtable.h:245: warning: implicit declaration of function 'pgd_bad'
+include/asm-generic/pgtable.h: In function 'pmd_none_or_clear_bad':
+include/asm-generic/pgtable.h:265: error: 'pud_t' has no member named 'pgd'
+include/asm-generic/pgtable.h:267: error: 'pud_t' has no member named 'pgd'
+In file included from include/asm/dma-mapping.h:14,
+                 from include/linux/dma-mapping.h:34,
+                 from include/asm/pci.h:15,
+                 from include/linux/pci.h:755,
+                 from include/asm-ppc/pci-bridge.h:6,
+                 from include/asm/pci-bridge.h:6,
+                 from arch/powerpc/platforms/86xx/mpc86xx_smp.c:20:
+include/linux/mm.h: In function 'pud_alloc':
+include/linux/mm.h:906: warning: implicit declaration of function 'pud_offset'
+include/linux/mm.h:906: warning: pointer/integer type mismatch in conditional expression
+arch/powerpc/mm/ppc_mmu_32.c: In function 'hash_preload':
+arch/powerpc/mm/ppc_mmu_32.c:188: warning: passing argument 1 of 'pmd_offset' from incompatible pointer type
+(Maybe this is already fixed by some of the 32-bit mmu patches posted the last few days)
+
+powerpc.mpc866_ads_defconfig:
+arch/powerpc/sysdev/mpc8xx_pic.c:98: error: static declaration of 'mpc8xx_pic' follows non-static declaration
+arch/powerpc/sysdev/mpc8xx_pic.h:7: error: previous declaration of 'mpc8xx_pic' was here
+
+powerpc.mpc885_ads_defconfig:
+arch/powerpc/sysdev/mpc8xx_pic.c:98: error: static declaration of 'mpc8xx_pic' follows non-static declaration
+arch/powerpc/sysdev/mpc8xx_pic.h:7: error: previous declaration of 'mpc8xx_pic' was here
+
+powerpc.ppc64_defconfig:
+drivers/pci/hotplug/rpadlpar_sysfs.c:132: error: unknown field 'subsys' specified in initializer
+drivers/pci/hotplug/rpadlpar_sysfs.c:132: warning: initialization from incompatible pointer type
+
+powerpc.pseries_defconfig:
+drivers/net/ehea/ehea_main.c: In function 'ehea_hash_skb':
+drivers/net/ehea/ehea_main.c:1806: error: 'struct sk_buff' has no member named 'nh'
+drivers/net/ehea/ehea_main.c:1807: error: 'struct sk_buff' has no member named 'nh'
+drivers/net/ehea/ehea_main.c:1807: error: 'struct sk_buff' has no member named 'nh'
+drivers/net/ehea/ehea_main.c:1809: error: 'struct sk_buff' has no member named 'nh'
+(I believe a fix for this is already on it's way in through jgarzik)
