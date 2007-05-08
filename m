@@ -1,34 +1,23 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <vitb@kernel.crashing.org>
+Received: from vitb.dev.rtsoft.ru (unknown [85.21.88.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3DF5DDDD07
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2007 02:23:54 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l48GNpuN001785
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 May 2007 12:23:51 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l48GNpW0177538
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 May 2007 10:23:51 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l48GNoKV007100
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 May 2007 10:23:51 -0600
-Date: Tue, 8 May 2007 11:23:50 -0500
-To: Srinivasa Ds <srinivasa@in.ibm.com>
-Subject: Re: kernel expection generated with 2.6.21-mm1 kernel boot up
-Message-ID: <20070508162350.GM4452@austin.ibm.com>
-References: <463F06E2.5060308@linux.vnet.ibm.com>
-	<1178538912.24522.12.camel@concordia.ozlabs.ibm.com>
-	<463F1CA9.40501@linux.vnet.ibm.com> <4640675C.6090104@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4640675C.6090104@in.ibm.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 711CFDDEEB
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2007 02:26:57 +1000 (EST)
+Date: Tue, 8 May 2007 20:26:08 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: "Loeliger Jon-LOELIGER" <jdl@freescale.com>
+Subject: Re: [PATCH 3/3] [POWERPC] dts: kill hardcoded phandles
+Message-ID: <20070508202608.16c128a0@vitb.ru.mvista.com>
+In-Reply-To: <AF0367BA48C55940A43CCF08DF35553C012AA472@az33exm24.fsl.freescale.net>
+References: <20070508053049.18428.50622.stgit@localhost.localdomain>
+	<20070508054855.18428.29080.stgit@localhost.localdomain>
+	<20070508055431.GA21009@localhost.localdomain>
+	<AF0367BA48C55940A43CCF08DF35553C012AA472@az33exm24.fsl.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-pcmcia@lists.infradead.org,
+	linux-kernel@vger.kernel.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,14 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 08, 2007 at 05:34:44PM +0530, Srinivasa Ds wrote:
+On Tue, 8 May 2007 07:29:20 -0700
+"Loeliger Jon-LOELIGER" <jdl@freescale.com> wrote:
+
 > 
-> Looks like problem is in SLUB layer, I unmarked SLUB(CONFIG_SLUB)
-> option and now system is booting.
+> > > -       interrupt-controller@f8200000 {
+> > > -               linux,phandle = <f8200000>;
+> > > +		pci_pic:interrupt-controller@f8200000 {
+> > 
+> > I'd like to establish a convention of putting a space after the : and
+> > using capitals for labels unless there's a strong reason not to in a
+> > particular case.  It makes them easier to visually distinguish next to
+> > the node name.
+> 
+> Colon-space is easy and I'll buy it.
+> I'm not big on uppercase shouting, though.
+> 
+> Perhaps something more like case or goto labels:?
+> 
+>     pci_pic:
+>         interrupt-contoller@f8200000 {
+> 
+> if needed?
+> 
+I used middle solution 
+	Pci_pic: interrupt-contoller@f8200000 {
+so first letter of the label should be uppercase.
+It makes them easily distinguishable and at the same time, not "shouting" manner.
 
-Its been repored by others (and I can reproduce it),
-its a problem with a bad interaction with SLUB and pg_tables
-A patch flew by recetnly that would not use slub for pg_tables, 
-but I don't know if that's the permanent fix.
 
---linas
+-- 
+Sincerely, 
+Vitaly
