@@ -2,21 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 409C3DDE36
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2007 09:18:04 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id DC8BCDDE36
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2007 09:19:53 +1000 (EST)
 Subject: Re: [PATCH 1/4] Add support for 750CL Holly board
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <1178306304.3026.231.camel@zod.rchland.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200705042144.31194.arnd@arndb.de>
 References: <1178302414.3026.202.camel@zod.rchland.ibm.com>
 	<1178302469.3026.204.camel@zod.rchland.ibm.com>
-	<20070504190140.GA13067@lixom.net>
-	<1178306304.3026.231.camel@zod.rchland.ibm.com>
+	<200705042144.31194.arnd@arndb.de>
 Content-Type: text/plain
-Date: Wed, 09 May 2007 09:17:54 +1000
-Message-Id: <1178666275.14928.116.camel@localhost.localdomain>
+Date: Wed, 09 May 2007 09:19:45 +1000
+Message-Id: <1178666385.14928.119.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > This won't work well if you ever want to build a multiplatform kernel.
+On Fri, 2007-05-04 at 21:44 +0200, Arnd Bergmann wrote:
+
+> > +void holly_show_cpuinfo(struct seq_file *m)
+> > +{
+> > +	seq_printf(m, "vendor\t\t: IBM\n");
+> > +	seq_printf(m, "machine\t\t: PPC750 GX/CL\n");
+> > +}
 > 
-> I know.  What do you suggest?  TSI doesn't use phylib, and adding a
-> property to specify PHY type in the DT seems like a hack too...
+> If it's an IBM product, it should come with a product code like 123-4567,
+> which fits in here, instead of just listing the CPU.
 
-Fix the TSI network driver. PHYs can be probed.
+Should probably come from the device tree anyway.
 
-> As a "reg" property perhaps?  I'm not a DT guru, so I was a bit lost as
-> to how to fix that up.
+> > +static int ppc750_machine_check_exception(struct pt_regs *regs)
+> > +{
+> > +	extern void tsi108_clear_pci_cfg_error(void);
+> 
+> move declaration to header file.
+> 
+> > +	const struct exception_table_entry *entry;
+> > +
+> > +	/* Are we prepared to handle this fault */
+> > +	if ((entry = search_exception_tables(regs->nip)) != NULL) {
+> > +		tsi108_clear_pci_cfg_error();
+> > +		regs->msr |= MSR_RI;
+> > +		regs->nip = entry->fixup;
+> > +		return 1;
+> > +	}
+> > +	return 0;
+> > +}
+> 
+> Are you sure that you can use the generic exception table mechanism
+> like this? I can't see why it doesn't work, but it's something I haven't
+> seen anyone do like this.
 
-Yes, it's common to get the config space address of the "reg" property
-of the bridge.
-
-Ben.
+Also, can't the TSI be configured to not generate MCE in that case ?
