@@ -1,25 +1,24 @@
-Return-Path: <SRS0+d63ffb15e5103ff6c39b+1353+infradead.org+hch@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A67C7DDE36
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 22:16:08 +1000 (EST)
-Date: Tue, 8 May 2007 13:15:27 +0100
-From: Christoph Hellwig <hch@infradead.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 85C3EDDE20
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 22:45:02 +1000 (EST)
+Date: Tue, 8 May 2007 22:44:59 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Thomas Klein <osstklei@de.ibm.com>
 Subject: Re: [PATCH] ehea: Receive SKB Aggregation
-Message-ID: <20070508121527.GA16763@infradead.org>
+Message-Id: <20070508224459.7a46e1e4.sfr@canb.auug.org.au>
+In-Reply-To: <200705081405.33742.osstklei@de.ibm.com>
 References: <200705081405.33742.osstklei@de.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200705081405.33742.osstklei@de.ibm.com>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__8_May_2007_22_44_59_+1000_2D.TR.V1=VgSWO2="
 Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
 	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
 	linux-kernel <linux-kernel@vger.kernel.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
 	Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,19 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 08, 2007 at 02:05:33PM +0200, Thomas Klein wrote:
-> This patch enables the receive side processing to aggregate TCP packets within
-> the HEA device driver. It analyses the packets already received after a
-> interrupt arrived and forwards these as a chains of SKBs for the same TCP
-> connection with modified header field. We have seen a lower CPU load and
-> improved throughput for small numbers of parallel TCP connections.
-> 
-> We added a disabled module parameter to prevent disruption of normal driver
-> operation.
-> We currently consider this as "experimental" until further review and tests
-> have been passed.
-> 
-> Are there any concerns about including this in the mainline driver?
+--Signature=_Tue__8_May_2007_22_44_59_+1000_2D.TR.V1=VgSWO2=
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-So we grow yet another LRO copy in drivers?  I think someone needs to
-bite the bullet and make it generic.
+On Tue, 8 May 2007 14:05:33 +0200 Thomas Klein <osstklei@de.ibm.com> wrote:
+>
+> +struct ehea_lro {
+> +	struct sk_buff *parent;
+> +	struct sk_buff *last_skb;
+> +        struct iphdr *iph;
+> +        struct tcphdr *tcph;
+   ^^^^^^^^
+Spaces instead of tabs.
+
+Also in at least one other place in this patch.
+
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__8_May_2007_22_44_59_+1000_2D.TR.V1=VgSWO2=
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGQHDRFdBgD/zoJvwRAjwxAJ9UTT3P1RuptBk7k8kJXiwDQ9g4/QCgjyrM
+NRwkVc8qbfnHZoI31ZxMCo4=
+=gY89
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__8_May_2007_22_44_59_+1000_2D.TR.V1=VgSWO2=--
