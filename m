@@ -1,11 +1,9 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 8 May 2007 12:58:32 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <michael@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 0/7] Ebony, ready for merge
-Message-ID: <20070508025832.GD11340@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Tue, 08 May 2007 12:58:33 +1000
+Subject: [PATCH 1/7] Rip out the existing powerpc msi stubs
+Message-Id: <1178593113.675058.404575641543.qpush@cradle>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,15 +14,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here's my latest Ebony series.  I believe we're now ready to merge:
-	- Patch 1-2 I'm working with akpm and rmk about
-	- Patch 3-6 I think can go into powerpc.git, then mainline as
-of now
-	- Patch 7, BenH's device-tree aware rewrite of the emac driver
-I'm less sure about.  Up to you, Paul.
+Rip out the existing powerpc msi stubs. These were the start of an
+implementation based on ppc_md calls, but were never used in mainline.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+
+ arch/powerpc/kernel/irq.c     |   27 ---------------------------
+ include/asm-powerpc/machdep.h |    5 -----
+ 2 files changed, 32 deletions(-)
+
+Index: msi-new/arch/powerpc/kernel/irq.c
+===================================================================
+--- msi-new.orig/arch/powerpc/kernel/irq.c
++++ msi-new/arch/powerpc/kernel/irq.c
+@@ -958,33 +958,6 @@ arch_initcall(irq_late_init);
+ 
+ #endif /* CONFIG_PPC_MERGE */
+ 
+-#ifdef CONFIG_PCI_MSI
+-int pci_enable_msi(struct pci_dev * pdev)
+-{
+-	if (ppc_md.enable_msi)
+-		return ppc_md.enable_msi(pdev);
+-	else
+-		return -1;
+-}
+-EXPORT_SYMBOL(pci_enable_msi);
+-
+-void pci_disable_msi(struct pci_dev * pdev)
+-{
+-	if (ppc_md.disable_msi)
+-		ppc_md.disable_msi(pdev);
+-}
+-EXPORT_SYMBOL(pci_disable_msi);
+-
+-void pci_scan_msi_device(struct pci_dev *dev) {}
+-int pci_enable_msix(struct pci_dev* dev, struct msix_entry *entries, int nvec) {return -1;}
+-void pci_disable_msix(struct pci_dev *dev) {}
+-void msi_remove_pci_irq_vectors(struct pci_dev *dev) {}
+-void pci_no_msi(void) {}
+-EXPORT_SYMBOL(pci_enable_msix);
+-EXPORT_SYMBOL(pci_disable_msix);
+-
+-#endif
+-
+ #ifdef CONFIG_PPC64
+ static int __init setup_noirqdistrib(char *str)
+ {
+Index: msi-new/include/asm-powerpc/machdep.h
+===================================================================
+--- msi-new.orig/include/asm-powerpc/machdep.h
++++ msi-new/include/asm-powerpc/machdep.h
+@@ -240,11 +240,6 @@ struct machdep_calls {
+ 	 */
+ 	void (*machine_kexec)(struct kimage *image);
+ #endif /* CONFIG_KEXEC */
+-
+-#ifdef CONFIG_PCI_MSI
+-	int (*enable_msi)(struct pci_dev *pdev);
+-	void (*disable_msi)(struct pci_dev *pdev);
+-#endif /* CONFIG_PCI_MSI */
+ };
+ 
+ extern void power4_idle(void);
