@@ -2,17 +2,16 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 72171DDE26
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 19:21:45 +1000 (EST)
-Subject: [PATCH] swsusp: introduce register_nosave_region_late
+	by ozlabs.org (Postfix) with ESMTP id CF7D8DDE20
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 19:23:03 +1000 (EST)
+Subject: [PATCH] powerpc: mark pages that don't exist as nosave
 From: Johannes Berg <johannes@sipsolutions.net>
 To: Paul Mackerras <paulus@samba.org>
 Content-Type: text/plain
-Date: Tue, 08 May 2007 11:23:49 +0200
-Message-Id: <1178616229.18162.40.camel@johannes.berg>
+Date: Tue, 08 May 2007 11:25:00 +0200
+Message-Id: <1178616300.18162.43.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,75 +21,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch introduces a new register_nosave_region_late function that
-can be called from initcalls when register_nosave_region can no longer
-be used because it uses bootmem.
+On some powerpc architectures (notably 64-bit powermac) there is a memory
+hole, for example on powermacs between 2G and 4G. Since we use the flat
+memory model regardless, these pages must be marked as nosave (for suspend
+to disk.)
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 ---
-Paul, I see you merged the suspend to disk for G5 patches, but this one
-is required for it to build. Rafael said that we should merge it with
-the user, since our code is the only user right now I take it that means
-it should go through the powerpc tree.
+Tested on powerbook and G5 powermac, this patch is required for suspend
+to disk on G5 as well due to the memory hole.
 
- include/linux/suspend.h |   11 ++++++++++-
- kernel/power/snapshot.c |   12 +++++++++---
- 2 files changed, 19 insertions(+), 4 deletions(-)
+---
+ arch/powerpc/mm/mem.c |   25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
---- linux-2.6-git.orig/include/linux/suspend.h	2007-05-03 15:20:29.081123904 +0200
-+++ linux-2.6-git/include/linux/suspend.h	2007-05-03 15:23:03.819123904 +0200
-@@ -52,7 +52,15 @@ struct hibernation_ops {
+--- powerpc.orig/arch/powerpc/mm/mem.c	2007-05-08 11:18:12.279080051 +0200
++++ powerpc/arch/powerpc/mm/mem.c	2007-05-08 11:22:02.559080051 +0200
+@@ -31,6 +31,7 @@
+ #include <linux/highmem.h>
+ #include <linux/initrd.h>
+ #include <linux/pagemap.h>
++#include <linux/suspend.h>
  
- #if defined(CONFIG_PM) && defined(CONFIG_SOFTWARE_SUSPEND)
- /* kernel/power/snapshot.c */
--extern void __init register_nosave_region(unsigned long, unsigned long);
-+extern void __register_nosave_region(unsigned long b, unsigned long e, int km);
-+static inline void register_nosave_region(unsigned long b, unsigned long e)
+ #include <asm/pgalloc.h>
+ #include <asm/prom.h>
+@@ -276,6 +277,28 @@ void __init do_init_bootmem(void)
+ 	init_bootmem_done = 1;
+ }
+ 
++/* mark pages that don't exist as nosave */
++static int __init mark_nonram_nosave(void)
 +{
-+	__register_nosave_region(b, e, 0);
++	unsigned long lmb_next_region_start_pfn,
++		      lmb_region_max_pfn;
++	int i;
++
++	for (i = 0; i < lmb.memory.cnt - 1; i++) {
++		lmb_region_max_pfn =
++			(lmb.memory.region[i].base >> PAGE_SHIFT) +
++			(lmb.memory.region[i].size >> PAGE_SHIFT);
++		lmb_next_region_start_pfn =
++			lmb.memory.region[i+1].base >> PAGE_SHIFT;
++
++		if (lmb_region_max_pfn < lmb_next_region_start_pfn)
++			register_nosave_region(lmb_region_max_pfn,
++					       lmb_next_region_start_pfn);
++	}
++
++	return 0;
 +}
-+static inline void register_nosave_region_late(unsigned long b, unsigned long e)
-+{
-+	__register_nosave_region(b, e, 1);
-+}
- extern int swsusp_page_is_forbidden(struct page *);
- extern void swsusp_set_page_free(struct page *);
- extern void swsusp_unset_page_free(struct page *);
-@@ -70,6 +78,7 @@ void hibernation_set_ops(struct hibernat
- extern int hibernate(void);
- #else
- static inline void register_nosave_region(unsigned long b, unsigned long e) {}
-+static inline void register_nosave_region_late(unsigned long b, unsigned long e) {}
- static inline int swsusp_page_is_forbidden(struct page *p) { return 0; }
- static inline void swsusp_set_page_free(struct page *p) {}
- static inline void swsusp_unset_page_free(struct page *p) {}
---- linux-2.6-git.orig/kernel/power/snapshot.c	2007-05-03 15:20:01.842123904 +0200
-+++ linux-2.6-git/kernel/power/snapshot.c	2007-05-03 15:22:19.138123904 +0200
-@@ -608,7 +608,8 @@ static LIST_HEAD(nosave_regions);
++
+ /*
+  * paging_init() sets up the page tables - in fact we've already done this.
   */
+@@ -307,6 +330,8 @@ void __init paging_init(void)
+ 	max_zone_pfns[ZONE_DMA] = top_of_ram >> PAGE_SHIFT;
+ #endif
+ 	free_area_init_nodes(max_zone_pfns);
++
++	mark_nonram_nosave();
+ }
+ #endif /* ! CONFIG_NEED_MULTIPLE_NODES */
  
- void __init
--register_nosave_region(unsigned long start_pfn, unsigned long end_pfn)
-+__register_nosave_region(unsigned long start_pfn, unsigned long end_pfn,
-+			 int use_kmalloc)
- {
- 	struct nosave_region *region;
- 
-@@ -624,8 +625,13 @@ register_nosave_region(unsigned long sta
- 			goto Report;
- 		}
- 	}
--	/* This allocation cannot fail */
--	region = alloc_bootmem_low(sizeof(struct nosave_region));
-+	if (use_kmalloc) {
-+		/* during init, this shouldn't fail */
-+		region = kmalloc(sizeof(struct nosave_region), GFP_KERNEL);
-+		BUG_ON(!region);
-+	} else
-+		/* This allocation cannot fail */
-+		region = alloc_bootmem_low(sizeof(struct nosave_region));
- 	region->start_pfn = start_pfn;
- 	region->end_pfn = end_pfn;
- 	list_add_tail(&region->list, &nosave_regions);
