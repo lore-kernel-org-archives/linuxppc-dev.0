@@ -1,30 +1,16 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 055D2DDE00
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 13:45:13 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l483j8cB027707
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 20:45:08 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l483j6w1025465
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 22:45:07 -0500 (CDT)
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 8 May 2007 14:09:18 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH 4/7] Add device tree for Ebony
+Message-ID: <20070508040918.GA16556@localhost.localdomain>
+References: <20070508025832.GD11340@localhost.localdomain>
+	<20070508025930.E1C1EDE0F5@ozlabs.org>
+	<20070508033118.GF12613@lixom.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH v4 0/7] Add support for 750CL Holly board
-Date: Tue, 8 May 2007 11:45:05 +0800
-Message-ID: <7EA18FDD2DC2154AA3BD6D2F22A62A0E753A11@zch01exm23.fsl.freescale.net>
-In-Reply-To: <1178572962.2990.197.camel@zod.rchland.ibm.com>
-References: <1178572962.2990.197.camel@zod.rchland.ibm.com>
-From: "Zang Roy-r61911" <tie-fei.zang@freescale.com>
-To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>, <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070508033118.GF12613@lixom.net>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,11 +20,358 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->=20
-> Hi All,
->=20
-> This is round 4 of the patches to support the 750CL Holly board, and
-> hopefully the last.  They also fix one of the PCI issues I was seeing.
-Sorry, Maybe I missed your previous comment.
-What is the PCI issue? Associated with your board or tsi108/9 ?
-Roy
+On Mon, May 07, 2007 at 10:31:18PM -0500, Olof Johansson wrote:
+> On Tue, May 08, 2007 at 12:59:30PM +1000, David Gibson wrote:
+> > Add a device tree for the Ebony evaluation board (440GP based).  This
+> > tree is not complete or finalized.  This tree needs a version of dtc
+> > recent enough to include reference-to-labels to process.
+> > 
+> > Signed-off-by: David Gibson <dwg@au1.ibm.com>
+> > ---
+> > 
+> >  arch/powerpc/boot/dts/ebony.dts |  307 ++++++++++++++++++++++++++++++++++++++++
+> >  1 file changed, 307 insertions(+)
+> > 
+> > Index: working-2.6/arch/powerpc/boot/dts/ebony.dts
+> > ===================================================================
+> > --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> > +++ working-2.6/arch/powerpc/boot/dts/ebony.dts	2007-05-01 15:37:24.000000000 +1000
+> > @@ -0,0 +1,307 @@
+> > +/ {
+> > +	#address-cells = <2>;
+> > +	#size-cells = <1>;
+> > +	model = "Ebony";
+> > +	compatible = "Ebony";
+> 
+> ibm,ebony? See the discussion on the Holly port.
+
+Yeah, fair enough.  Revised patch below.  Revised patch for the
+support code to recognize the changed string coming.
+
+Add device tree for Ebony
+
+Add a device tree for the Ebony evaluation board (440GP based).  This
+tree is not complete or finalized.  This tree needs a version of dtc
+recent enough to include reference-to-labels to process.
+
+Signed-off-by: David Gibson <dwg@au1.ibm.com>
+
+Index: working-2.6/arch/powerpc/boot/dts/ebony.dts
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ working-2.6/arch/powerpc/boot/dts/ebony.dts	2007-05-08 13:53:25.000000000 +1000
+@@ -0,0 +1,307 @@
++/*
++ * Device Tree Source for IBM Ebony
++ *
++ * Copyright (c) 2006, 2007 IBM Corp.
++ * Josh Boyer <jwboyer@linux.vnet.ibm.com>, David Gibson <dwg@au1.ibm.com>
++ *
++ * FIXME: Draft only!
++ *
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2.  This program is licensed "as is" without
++ * any warranty of any kind, whether express or implied.
++ *
++ * To build:
++ *   dtc -I dts -O asm -o ebony.S -b 0 ebony.dts
++ *   dtc -I dts -O dtb -o ebony.dtb -b 0 ebony.dts
++ */
++
++/ {
++	#address-cells = <2>;
++	#size-cells = <1>;
++	model = "ibm,ebony";
++	compatible = "ibm,ebony";
++	dcr-parent = <&/cpus/PowerPC,440GP@0>;
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,440GP@0 {
++			device_type = "cpu";
++			reg = <0>;
++			clock-frequency = <0>; // Filled in by zImage
++			timebase-frequency = <0>; // Filled in by zImage
++			i-cache-line-size = <32>;
++			d-cache-line-size = <32>;
++			i-cache-size = <0>;
++			d-cache-size = <0>;
++			dcr-controller;
++			dcr-access-method = "native";
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0 0 0>; // Filled in by zImage
++	};
++
++	UIC0: interrupt-controller0 {
++		device_type = "ibm,uic";
++		compatible = "ibm,uic-440gp", "ibm,uic";
++		interrupt-controller;
++		cell-index = <0>;
++		dcr-reg = <0c0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++
++	};
++
++	UIC1: interrupt-controller1 {
++		device_type = "ibm,uic";
++		compatible = "ibm,uic-440gp", "ibm,uic";
++		interrupt-controller;
++		cell-index = <1>;
++		dcr-reg = <0d0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++		interrupts = <1e 4 1f 4>; /* cascade */
++		interrupt-parent = <&UIC0>;
++	};
++
++	CPC0: cpc {
++		device_type = "ibm,cpc";
++		compatible = "ibm,cpc-440gp";
++		dcr-reg = <0b0 003 0e0 010>;
++		// FIXME: anything else?
++	};
++
++	plb {
++		device_type = "ibm,plb";
++		compatible = "ibm,plb-440gp", "ibm,plb4";
++		#address-cells = <2>;
++		#size-cells = <1>;
++		ranges;
++		clock-frequency = <0>; // Filled in by zImage
++
++		SDRAM0: sdram {
++			device_type = "memory-controller";
++			compatible = "ibm,sdram-440gp", "ibm,sdram";
++			dcr-reg = <010 2>;
++			// FIXME: anything else?
++		};
++
++		DMA0: dma {
++			// FIXME: ???
++			device_type = "ibm,dma-4xx";
++			compatible = "ibm,dma-440gp", "ibm,dma-4xx";
++			dcr-reg = <100 027>;
++		};
++
++		MAL0: mcmal {
++			device_type = "mcmal-dma";
++			compatible = "ibm,mcmal-440gp", "ibm,mcmal";
++			dcr-reg = <180 62>;
++			num-tx-chans = <4>;
++			num-rx-chans = <4>;
++			interrupt-parent = <&MAL0>;
++			interrupts = <0 1 2 3 4>;
++			#interrupt-cells = <1>;
++			#address-cells = <0>;
++			#size-cells = <0>;
++			interrupt-map = </*TXEOB*/ 0 &UIC0 a 4
++					 /*RXEOB*/ 1 &UIC0 b 4
++					 /*SERR*/  2 &UIC1 0 4
++					 /*TXDE*/  3 &UIC1 1 4
++					 /*RXDE*/  4 &UIC1 2 4>;
++			interrupt-map-mask = <ffffffff>;
++		};
++
++		POB0: opb {
++			device_type = "ibm,opb";
++			compatible = "ibm,opb-440gp", "ibm,opb";
++			#address-cells = <1>;
++			#size-cells = <1>;
++			/* Wish there was a nicer way of specifying a full 32-bit
++			   range */
++			ranges = <00000000 1 00000000 80000000
++				  80000000 1 80000000 80000000>;
++			dcr-reg = <090 00b>;
++			interrupt-parent = <&UIC1>;
++			interrupts = <7 4>;
++			clock-frequency = <0>; // Filled in by zImage
++
++			EBC0: ebc {
++				device_type = "ibm,ebc";
++				compatible = "ibm,ebc-440gp";
++				dcr-reg = <012 2>;
++				#address-cells = <2>;
++				#size-cells = <1>;
++				clock-frequency = <0>; // Filled in by zImage
++				ranges = <0 00000000 fff00000 100000
++					  1 00000000 48000000 100000
++					  2 00000000 ff800000 400000
++					  3 00000000 48200000 100000
++					  7 00000000 48300000 100000>;
++				interrupts = <5 4>;
++				interrupt-parent = <&UIC1>;
++
++				small-flash@0,0 {
++					device_type = "rom";
++					compatible = "direct-mapped";
++					probe-type = "JEDEC";
++					bank-width = <1>;
++					partitions = <0 80000>;
++					partition-names = "OpenBIOS";
++					reg = <0 80000 80000>;
++				};
++
++				ds1743@1,0 {
++					/* NVRAM & RTC */
++					device_type = "nvram";
++					compatible = "ds1743";
++					reg = <1 0 2000>;
++				};
++
++				large-flash@2,0 {
++					device_type = "rom";
++					compatible = "direct-mapped";
++					probe-type = "JEDEC";
++					bank-width = <1>;
++					partitions = <0 380000
++						      280000 80000>;
++					partition-names = "fs", "firmware";
++					reg = <2 0 400000>;
++				};
++
++				ir@3,0 {
++					reg = <3 0 10>;
++				};
++
++				fpga@7,0 {
++					compatible = "Ebony-FPGA";
++					reg = <7 0 10>;
++				};
++			};
++
++			UART0: serial@40000200 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <40000200 8>;
++				virtual-reg = <e0000200>;
++				clock-frequency = <A8C000>;
++				current-speed = <2580>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <0 4>;
++			};
++
++			UART1: serial@40000300 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <40000300 8>;
++				virtual-reg = <e0000300>;
++				clock-frequency = <A8C000>;
++				current-speed = <2580>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <1 4>;
++			};
++
++			IIC0: i2c@40000400 {
++				/* FIXME */
++				device_type = "i2c";
++				compatible = "ibm,iic-440gp", "ibm,iic";
++				reg = <40000400 14>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <2 4>;
++			};
++			IIC1: i2c@40000500 {
++				/* FIXME */
++				device_type = "i2c";
++				compatible = "ibm,iic-440gp", "ibm,iic";
++				reg = <40000500 14>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <3 4>;
++			};
++
++			GPIO0: gpio@40000700 {
++				/* FIXME */
++				device_type = "gpio";
++				compatible = "ibm,gpio-440gp";
++				reg = <40000700 20>;
++			};
++
++			ZMII0: emac-zmii@40000780 {
++				device_type = "emac-zmii";
++				compatible = "ibm,zmii-440gp", "ibm,zmii";
++				reg = <40000780 c>;
++			};
++
++			EMAC0: ethernet@40000800 {
++				linux,network-index = <0>;
++				device_type = "network";
++				compatible = "ibm,emac-440gp", "ibm,emac";
++				interrupt-parent = <&UIC1>;
++				interrupts = <1c 4 1d 4>;
++				reg = <40000800 70>;
++				local-mac-address = [000000000000]; // Filled in by zImage
++				mal-device = <&MAL0>;
++				mal-tx-channel = <0 1>;
++				mal-rx-channel = <0>;
++				cell-index = <0>;
++				max-frame-size = <5dc>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rmii";
++				phy-map = <00000001>;
++				zmii-device = <&ZMII0>;
++				zmii-channel = <0>;
++			};
++			EMAC1: ethernet@40000900 {
++				linux,network-index = <1>;
++				device_type = "network";
++				compatible = "ibm,emac-440gp", "ibm,emac";
++				interrupt-parent = <&UIC1>;
++				interrupts = <1e 4 1f 4>;
++				reg = <40000900 70>;
++				local-mac-address = [000000000000]; // Filled in by zImage
++				mal-device = <&MAL0>;
++				mal-tx-channel = <2 3>;
++				mal-rx-channel = <1>;
++				cell-index = <1>;
++				max-frame-size = <5dc>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rmii";
++				phy-map = <00000001>;
++				zmii-device = <&ZMII0>;
++				zmii-channel = <1>;
++			};
++
++
++			GPT0: gpt@40000a00 {
++				/* FIXME */
++				reg = <40000a00 d4>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <12 4 13 4 14 4 15 4 16 4>;
++			};
++
++		};
++
++		PCIX0: pci@1234 {
++			device_type = "pci";
++			/* FIXME */
++			reg = <2 0ec00000 8
++			       2 0ec80000 f0
++			       2 0ec80100 fc>;
++		};
++	};
++
++	chosen {
++		linux,stdout-path = "/plb/opb/serial@40000200";
++//		linux,initrd-start = <0>; /* FIXME */
++//		linux,initrd-end = <0>;
++//		bootargs = "";
++	};
++};
++
+
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
