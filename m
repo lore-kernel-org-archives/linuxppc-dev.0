@@ -1,22 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DD82CDDE40
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2007 09:47:44 +1000 (EST)
-Subject: Re: [PATCH v4 4/7] Add support for 750CL Holly board
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <1178643686.3453.37.camel@zod.rchland.ibm.com>
-References: <1178572962.2990.197.camel@zod.rchland.ibm.com>
-	<1178573318.2990.206.camel@zod.rchland.ibm.com>
-	<20070508164513.GD19780@localdomain>
-	<1178643686.3453.37.camel@zod.rchland.ibm.com>
-Content-Type: text/plain
-Date: Wed, 09 May 2007 09:47:36 +1000
-Message-Id: <1178668056.14928.132.camel@localhost.localdomain>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] Mark prop unused in early_init_dt_scan_chosen().
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20070508171451.GA8893@ld0162-tx32.am.freescale.net>
+References: <20070508171451.GA8893@ld0162-tx32.am.freescale.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-k8i5j+aoJg83FJ0Sozg6"
+Date: Wed, 09 May 2007 09:56:34 +1000
+Message-Id: <1178668594.3696.5.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>, paulus@samba.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +21,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > +
-> > > +	tsi_pic = of_find_node_by_type(NULL, "open-pic");
-> > > +	if (tsi_pic) {
-> > > +		unsigned int size;
-> > > +		const void *prop = of_get_property(tsi_pic, "reg", &size);
-> > > +		mpic_paddr = of_translate_address(tsi_pic, prop);
-> > > +	}
-> > 
-> > You don't actually need 'size' there; it's legal to pass NULL to
-> > of_get_property.
 
-Probably easier to use of_address_to_resource
+--=-k8i5j+aoJg83FJ0Sozg6
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Ben.
+On Tue, 2007-05-08 at 12:14 -0500, Scott Wood wrote:
+> The prop variable is only referenced when initrd support is
+> turned on.
+>=20
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> ---
+>  arch/powerpc/kernel/prom.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index caef555..6705459 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -720,7 +720,7 @@ static int __init early_init_dt_scan_chosen(unsigned =
+long node,
+>  					    const char *uname, int depth, void *data)
+>  {
+>  	unsigned long *lprop;
+> -	u32 *prop;
+> +	u32 __attribute__((unused)) *prop;
+>  	unsigned long l;
+>  	char *p;
+
+Hi Scott,
+
+Let's be honest, this is a hack. I think it'd be cleaner to pull the
+initrd logic out into a separate function.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-k8i5j+aoJg83FJ0Sozg6
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGQQ4ydSjSd0sB4dIRAhbeAJ0Vr56AnH68bBjy5uE2p1dYp+n84gCgnkC2
+a4VFpJu6/08acBLknyXfVKo=
+=kl9w
+-----END PGP SIGNATURE-----
+
+--=-k8i5j+aoJg83FJ0Sozg6--
