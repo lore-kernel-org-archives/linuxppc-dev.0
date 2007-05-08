@@ -1,13 +1,18 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 8 May 2007 13:09:03 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH 7/7] Device tree aware EMAC driver
-Message-ID: <20070508030903.GE11340@localhost.localdomain>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id EBDE6DDE00
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 13:29:20 +1000 (EST)
+Date: Mon, 7 May 2007 22:31:18 -0500
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 4/7] Add device tree for Ebony
+Message-ID: <20070508033118.GF12613@lixom.net>
 References: <20070508025832.GD11340@localhost.localdomain>
+	<20070508025930.E1C1EDE0F5@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070508025832.GD11340@localhost.localdomain>
+In-Reply-To: <20070508025930.E1C1EDE0F5@ozlabs.org>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,42 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is BenH's rewritten, device tree aware driver for the IBM/AMCC
-EMAC, ethernet MAC controller ASIC found on various 4xx CPUs and also
-the Axon bridge.  Tweaked to build on current kernels.
+On Tue, May 08, 2007 at 12:59:30PM +1000, David Gibson wrote:
+> Add a device tree for the Ebony evaluation board (440GP based).  This
+> tree is not complete or finalized.  This tree needs a version of dtc
+> recent enough to include reference-to-labels to process.
+> 
+> Signed-off-by: David Gibson <dwg@au1.ibm.com>
+> ---
+> 
+>  arch/powerpc/boot/dts/ebony.dts |  307 ++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 307 insertions(+)
+> 
+> Index: working-2.6/arch/powerpc/boot/dts/ebony.dts
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ working-2.6/arch/powerpc/boot/dts/ebony.dts	2007-05-01 15:37:24.000000000 +1000
+> @@ -0,0 +1,307 @@
+> +/ {
+> +	#address-cells = <2>;
+> +	#size-cells = <1>;
+> +	model = "Ebony";
+> +	compatible = "Ebony";
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-
----
-
-Too big for the list, download from :
-	http://ozlabs.org/~dgibson/home/tmp/powerpc-emac-new
-
- arch/powerpc/platforms/cell/Kconfig |    4 
- drivers/net/Kconfig                 |   71 
- drivers/net/Makefile                |    1 
- drivers/net/ibm_emac/Kconfig        |   63 
- drivers/net/ibm_newemac/Kconfig     |   55 
- drivers/net/ibm_newemac/Makefile    |   11 
- drivers/net/ibm_newemac/core.c      | 2912 ++++++++++++++++++++++++++++++++++++
- drivers/net/ibm_newemac/core.h      |  354 ++++
- drivers/net/ibm_newemac/debug.c     |  238 ++
- drivers/net/ibm_newemac/debug.h     |   78 
- drivers/net/ibm_newemac/emac.h      |  268 +++
- drivers/net/ibm_newemac/mal.c       |  730 +++++++++
- drivers/net/ibm_newemac/mal.h       |  276 +++
- drivers/net/ibm_newemac/phy.c       |  373 ++++
- drivers/net/ibm_newemac/phy.h       |   80 
- drivers/net/ibm_newemac/rgmii.c     |  324 ++++
- drivers/net/ibm_newemac/rgmii.h     |   76 
- drivers/net/ibm_newemac/tah.c       |  174 ++
- drivers/net/ibm_newemac/tah.h       |   90 +
- drivers/net/ibm_newemac/zmii.c      |  324 ++++
- drivers/net/ibm_newemac/zmii.h      |   73 
- 21 files changed, 6514 insertions(+), 61 deletions(-)
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+ibm,ebony? See the discussion on the Holly port.
