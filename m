@@ -1,22 +1,31 @@
-Return-Path: <djiang@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 18472DDE2B
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2007 03:05:00 +1000 (EST)
-Message-ID: <4640AE88.9040806@mvista.com>
-Date: Tue, 08 May 2007 10:08:24 -0700
-From: Dave Jiang <djiang@mvista.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: add dts entries to 85xx for EDAC
-References: <20070425213700.GA8814@blade.az.mvista.com>
-	<20070426000852.GA2193@localhost.localdomain>
-	<20070426003748.GA30730@blade.az.mvista.com>
-	<9903F55A-5E4E-42CE-8C27-6B7143B9FE25@kernel.crashing.org>
-	<20070501183220.GA6426@blade.az.mvista.com>
-	<20070507232634.GA11166@blade.az.mvista.com>
-	<3EF891D2-F973-43D6-B43B-B8BBC4269C60@kernel.crashing.org>
-In-Reply-To: <3EF891D2-F973-43D6-B43B-B8BBC4269C60@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 70B8CDDE34
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2007 03:07:12 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l48H79T2018266
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 May 2007 13:07:09 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l48H78Hh501806
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 May 2007 13:07:08 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l48H78KR005640
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 May 2007 13:07:08 -0400
+Subject: Re: [PATCH v4 4/7] Add support for 750CL Holly board
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Nathan Lynch <ntl@pobox.com>
+In-Reply-To: <20070508164513.GD19780@localdomain>
+References: <1178572962.2990.197.camel@zod.rchland.ibm.com>
+	<1178573318.2990.206.camel@zod.rchland.ibm.com>
+	<20070508164513.GD19780@localdomain>
+Content-Type: text/plain
+Date: Tue, 08 May 2007 12:01:26 -0500
+Message-Id: <1178643686.3453.37.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,23 +36,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> On May 7, 2007, at 6:26 PM, Dave Jiang wrote:
+On Tue, 2007-05-08 at 11:45 -0500, Nathan Lynch wrote:
+> Hi Josh-
 > 
->> Adding memory-controller and l2-cache-controller entries to be used  
->> by EDAC as
->> of_devices.
+> I see this has been picked up by Paul already, but there are a couple
+> minor things I noticed as I was reading the patch.
+
+That's fine.  Comments are still welcome since I do plan on adding a bit
+more a bit down the road.  I'll make sure to note them and fix them up.
+
+> > +int holly_exclude_device(u_char bus, u_char devfn)
+> > +{
+> > +	if (bus == 0 && PCI_SLOT(devfn) == 0)
+> > +		return PCIBIOS_DEVICE_NOT_FOUND;
+> > +	else
+> > +		return PCIBIOS_SUCCESSFUL;
+> > +}
 > 
-> we should distinguish the memory controllers on 8540/8560 (DDR1) from  
-> the one on 8548 (DDR1 & DDR2).
+> This function could be static, I think?  Looks like it's assigned to
+> ppc_md.pci_exclude_device and called through that.
 
-Do you mean something like:
+Yes, could be I think.
 
-8540/8560
-compatible = "fsl,85xx-ddr-controller"
+> > +static void __init holly_init_IRQ(void)
+> > +{
+> > +	struct mpic *mpic;
+> > +	phys_addr_t mpic_paddr = 0;
+> > +	struct device_node *tsi_pic;
+> > +#ifdef CONFIG_PCI
+> > +	unsigned int cascade_pci_irq;
+> > +	struct device_node *tsi_pci;
+> > +	struct device_node *cascade_node = NULL;
+> > +#endif
+> > +
+> > +	tsi_pic = of_find_node_by_type(NULL, "open-pic");
+> > +	if (tsi_pic) {
+> > +		unsigned int size;
+> > +		const void *prop = of_get_property(tsi_pic, "reg", &size);
+> > +		mpic_paddr = of_translate_address(tsi_pic, prop);
+> > +	}
+> 
+> You don't actually need 'size' there; it's legal to pass NULL to
+> of_get_property.
 
-8548
-compatible = "fsl,85xx-ddr2-controller"
+Yep.
 
---
--= Dave =-
+josh
