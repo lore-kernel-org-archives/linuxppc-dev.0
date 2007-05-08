@@ -1,19 +1,33 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 9A118DDE37
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 10:35:25 +1000 (EST)
-Date: Mon, 7 May 2007 08:56:09 -0500
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] [POWERPC] 8xx: mpc885ads pcmcia support
-Message-ID: <20070507135609.GA8513@lixom.net>
-References: <20070506011004.12695.41514.stgit@localhost.localdomain>
-	<20070506012619.12695.37601.stgit@localhost.localdomain>
-MIME-Version: 1.0
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 12AAEDDE02
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 May 2007 10:58:51 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l480wlQD017974
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 20:58:47 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l480wlDe179830
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 18:58:47 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l480wkD8010210
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 May 2007 18:58:47 -0600
+Date: Mon, 7 May 2007 20:07:04 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: dwg@au1.ibm.com
+Subject: Re: [PATCH v4 7/7] Holly bootwrapper
+Message-ID: <20070508010704.GL23995@crusty.rchland.ibm.com>
+References: <1178572962.2990.197.camel@zod.rchland.ibm.com>
+	<1178573530.2990.214.camel@zod.rchland.ibm.com>
+	<20070508001604.GC7449@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070506012619.12695.37601.stgit@localhost.localdomain>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, linux-pcmcia@lists.infradead.org,
-	linux-kernel@vger.kernel.org
+In-Reply-To: <20070508001604.GC7449@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,145 +37,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Tue, May 08, 2007 at 10:16:04AM +1000, David Gibson wrote:
+> On Mon, May 07, 2007 at 04:32:10PM -0500, Josh Boyer wrote:
+> > @@ -129,6 +129,7 @@ image-$(CONFIG_PPC_CELLEB)		+= zImage.ps
+> >  image-$(CONFIG_PPC_CHRP)		+= zImage.chrp
+> >  image-$(CONFIG_PPC_EFIKA)		+= zImage.chrp
+> >  image-$(CONFIG_PPC_PMAC)		+= zImage.pmac
+> > +image-$(CONFIG_PPC_HOLLY)		+= zImage.holly-elf
+> 
+> Since ELF appears to be the standard image type, I'd suggest just
+> calling it zImage.holly.
 
-Some minor nitpicks below. Overall it looks good.
+Fine by me.  Though PIBS can take either elf or treeboot images.  Was just
+being explicit.
 
+> 
+> >  image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
+> >  
+> >  ifneq ($(CONFIG_DEVICE_TREE),"")
+> > @@ -164,6 +165,12 @@ $(obj)/zImage.ps3: vmlinux
+> >  $(obj)/zImage.initrd.ps3: vmlinux
+> >  	@echo "  WARNING zImage.initrd.ps3 not supported (yet)"
+> >  
+> > +$(obj)/zImage.holly-elf: vmlinux $(wrapperbits)
+> > +	$(call if_changed,wrap,holly,$(obj)/dts/holly.dts,,)
+> > +
+> > +$(obj)/zImage.initrd.holly-elf: vmlinux $(wrapperbits) $(obj)/ramdisk.image.gz
+> > +	$(call if_changed,wrap,holly,$(obj)/dts/holly.dts,,$(obj)/ramdisk.image.gz)
+> 
+> Um.. won't this need corresponding changes to the wrapper script.  I
+> don't see them..
 
--Olof
+No...  -i to the wrapper script handles an initrd.  And quiet_cmd_wrap
+optionally takes a 5th argument for it.  What other changes are you thinking?
 
-On Sun, May 06, 2007 at 05:26:33AM +0400, Vitaly Bordug wrote:
-> @@ -322,6 +334,70 @@ void init_smc_ioports(struct fs_uart_platform_info *data)
->  	}
->  }
->  
-> +#ifdef CONFIG_PCMCIA_M8XX
-> +static void pcmcia_hw_setup(int slot, int enable)
-> +{
-> +	unsigned *bcsr_io;
-> +
-> +	bcsr_io = ioremap(BCSR1, sizeof(unsigned long));
-> +	if (enable)
-> +		clrbits32(bcsr_io, BCSR1_PCCEN);
-> +	else
-> +		setbits32(bcsr_io, BCSR1_PCCEN);
-> +
-> +	iounmap(bcsr_io);
-> +}
+> > +void platform_init(unsigned long r3, unsigned long r4, unsigned long r5)
+> > +{
+> > +	u32 heapsize = 0x8000000 - (u32)_end; /* 128M */
+> 
+> Urg... careful here.  Can you guarantee that 128M are present at this
+> point?  I know I do this in Ebony; I need to fix that..
 
-If you move this (and next) function up, you don't have to do the
-prototypes in the beginning of the file. One less #ifdef that way.
+I believe so.  I can make it smaller in a future patch that will add some
+other things to the bootwrapper.
 
-> +
-> +static int pcmcia_set_voltage(int slot, int vcc, int vpp)
-> +{
-> +	u32 reg = 0;
-> +	unsigned *bcsr_io;
-> +
-> +	bcsr_io = ioremap(BCSR1, sizeof(unsigned long));
-> +
-> +	switch(vcc) {
-> +	case 0:
-> +		break;
-> +	case 33:
-> +		reg |= BCSR1_PCCVCC0;
-> +		break;
-> +	case 50:
-> +		reg |= BCSR1_PCCVCC1;
-> +		break;
-> +	default:
-> +		return 1;
-> +	}
-> +
-> +	switch(vpp) {
-> +	case 0:
-> +       	break;
-> +	case 33:
-> +	case 50:
-> +       	if(vcc == vpp)
-> +			reg |= BCSR1_PCCVPP1;
-> +		else
-> +			return 1;
-> +		break;
-> +	case 120:
-> +	if ((vcc == 33) || (vcc == 50))
-> +		reg |= BCSR1_PCCVPP0;
-> +	else
-> +		return 1;
-> +	default:
-> +		return 1;
-> +	}
-> +
-> +	/* first, turn off all power */
-> +	clrbits32(bcsr_io, 0x00610000);
-> +
-> +	/* enable new powersettings */
-> +	setbits32(bcsr_io, reg);
-> +
-> +	iounmap(bcsr_io);
-> +	return 0;
-> +}
-> +#endif
-> +
->  int platform_device_skip(const char *model, int id)
->  {
->  #ifdef CONFIG_MPC8xx_SECOND_ETH_SCC3
-> diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-> index 8a123c7..880e45f 100644
-> --- a/arch/powerpc/sysdev/fsl_soc.c
-> +++ b/arch/powerpc/sysdev/fsl_soc.c
-> @@ -1028,6 +1028,19 @@ err:
->  
->  arch_initcall(fs_enet_of_init);
->  
-> +static int __init fsl_pcmcia_of_init(void)
-> +{
-> +	struct device_node *np = NULL;
-> +	/*
-> +	 * Register all the devices which type is "pcmcia"
-> +	 */
-> +	while ((np = of_find_compatible_node(np, 
-> +			"pcmcia", "fsl,pq-pcmcia")) != NULL)
-> +			    of_platform_device_create(np, "m8xx-pcmcia", NULL);
-
-Do you really need this now that you have the device table in the driver?
-
-> +	return 0;
-> +}
-> +
-> +arch_initcall(fsl_pcmcia_of_init);
->  
->  static const char *smc_regs = "regs";
->  static const char *smc_pram = "pram";
-> diff --git a/arch/powerpc/sysdev/mpc8xx_pic.h b/arch/powerpc/sysdev/mpc8xx_pic.h
-> index afa2ee6..07be061 100644
-> --- a/arch/powerpc/sysdev/mpc8xx_pic.h
-> +++ b/arch/powerpc/sysdev/mpc8xx_pic.h
-> @@ -4,7 +4,7 @@
->  #include <linux/irq.h>
->  #include <linux/interrupt.h>
->  
-> -extern struct hw_interrupt_type mpc8xx_pic;
-> +/*extern struct hw_interrupt_type mpc8xx_pic;*/
-
-Take it out or leave it in, but don't comment it out, please
-
->  
->  int mpc8xx_pic_init(void);
->  unsigned int mpc8xx_get_irq(void);
-> diff --git a/drivers/pcmcia/Kconfig b/drivers/pcmcia/Kconfig
-> index 35f8864..c3fd55d 100644
-> --- a/drivers/pcmcia/Kconfig
-> +++ b/drivers/pcmcia/Kconfig
-> @@ -183,6 +183,7 @@ config PCMCIA_M8XX
->          tristate "MPC8xx PCMCIA support"
->          depends on PCMCIA && PPC && 8xx 
->          select PCCARD_IODYN
-> +	select PCCARD_NONSTATIC
-
-I was going to say "whitespace!", but seems like this added line is the only one
-that's actually using tabs. :-) (Yes, I saw 2/2 that fixes this).
-
->          help
->          Say Y here to include support for PowerPC 8xx series PCMCIA
->          controller.
+josh
