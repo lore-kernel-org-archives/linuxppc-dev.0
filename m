@@ -1,22 +1,16 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from localhost.localdomain (unknown [85.21.88.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A3118DDF09
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2007 03:32:08 +1000 (EST)
-Date: Tue, 8 May 2007 21:31:45 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] [POWERPC] 8xx: mpc885ads pcmcia support
-Message-ID: <20070508213145.328cf5f4@localhost.localdomain>
-In-Reply-To: <774F0168-051E-4C6B-9292-8EE731E6D889@kernel.crashing.org>
-References: <20070508095001.20018.85403.stgit@localhost.localdomain>
-	<20070508095038.20018.60060.stgit@localhost.localdomain>
-	<774F0168-051E-4C6B-9292-8EE731E6D889@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-pcmcia@lists.infradead.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <muvarov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 9564BDDE2B
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2007 02:47:26 +1000 (EST)
+To: Andrew Morton <akpm@linux-foundation.org>
+From: Maxim Uvarov <muvarov@ru.mvista.com>
+Subject: [PATCH] Performance Stats: Kernel patch
+Date: Tue, 08 May 2007 16:26:51 +0000
+Message-ID: <20070508162650.704.83752.stgit@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: linuxppc-dev@ozlabs.org, wli@holomorphy.com, pavel@ucw.cz,
+	dada1@cosmosbay.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,241 +20,353 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 8 May 2007 09:04:22 -0500
-Kumar Gala wrote:
 
-> 
-> On May 8, 2007, at 4:50 AM, Vitaly Bordug wrote:
-> 
-> >
-> > Adds support for PowerQuicc on-chip PCMCIA. The driver is  
-> > implemented as
-> > of_device, so only arch/powerpc stuff is capable to use it, which
-> > now implies only mpc885ads reference board.
-> >
-> > To cope with the code that should be hooked inside driver, but is  
-> > really
-> > board specific (like set_voltage), global structure
-> > mpc8xx_pcmcia_ops holds necessary function pointers that are filled
-> > in the BSP code.
-> >
-> > Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
-> > Acked-by: Arnd Bergmann <arnd@arndb.de>
-> > Acked-by: Olof Johansson <olof@lixom.net>
-> >
-> > ---
-> >
-> >  arch/powerpc/boot/dts/mpc885ads.dts          |   12 +
-> >  arch/powerpc/platforms/8xx/m8xx_setup.c      |    5
-> >  arch/powerpc/platforms/8xx/mpc885ads.h       |    8 +
-> >  arch/powerpc/platforms/8xx/mpc885ads_setup.c |   72 +++++
-> >  arch/powerpc/sysdev/fsl_soc.c                |   13 +
-> >  arch/powerpc/sysdev/mpc8xx_pic.h             |    2
-> >  drivers/pcmcia/Kconfig                       |    1
-> >  drivers/pcmcia/m8xx_pcmcia.c                 |  351 +++++++++++ 
-> > +--------------
-> >  include/asm-powerpc/mpc8xx.h                 |    4
-> >  include/linux/fsl_devices.h                  |    5
-> >  10 files changed, 287 insertions(+), 186 deletions(-)
-> >
-> > diff --git a/arch/powerpc/boot/dts/mpc885ads.dts b/arch/powerpc/ 
-> > boot/dts/mpc885ads.dts
-> > index 110bf61..0786ac1 100644
-> > --- a/arch/powerpc/boot/dts/mpc885ads.dts
-> > +++ b/arch/powerpc/boot/dts/mpc885ads.dts
-> > @@ -112,6 +112,18 @@
-> >  			compatible = "CPM";
-> >  		};
-> >
-> > +		pcmcia@0080 {
-> > +			#address-cells = <3>;
-> > +			#interrupt-cells = <1>;
-> > +			#size-cells = <2>;
-> > +			compatible = "fsl,pq-pcmcia";
-> 
-> should this be fsl,pq1-pcmcia or fsl,8xx-pcmcia?
->
+Patch makes available to the user the following
+task and process performance statistics:
+	* Involuntary Context Switches (task_struct->nivcsw)
+	* Voluntary Context Switches (task_struct->nvcsw)
+	* Number of system calls (added new counter
+	  thread_info->sysall_count)
+	           
+Statistics information is available from:
+        1. taskstats interface (Documentation/accounting/)
+	2. /proc/PID/status (task only).
 
-there were a note that eventually fsl may create some 8xx that is not cpm...
-I really think pq and pq1 is the same, for pq2, 3 etc number passed explicitly. 
-> > +			device_type = "pcmcia";
-> > +			reg = <80 80>;
-> > +			clock-frequency = <2faf080>;
-> 
-> is the clock-freq fixed?
-> 
-gotta check, will follow-up.
+This data is useful for detecting hyperactivity
+patterns between processes.
 
-> > +			interrupt-parent = <&mpc8xx-pic>;
-> > +			interrupts = <d 1>;
-> > +		};
-> > +
-> >  		cpm@ff000000 {
-> >  			linux,phandle = <ff000000>;
-> >  			#address-cells = <1>;
-> > diff --git a/arch/powerpc/platforms/8xx/m8xx_setup.c
-> > b/arch/powerpc/ platforms/8xx/m8xx_setup.c
-> > index 0901dba..f169355 100644
-> > --- a/arch/powerpc/platforms/8xx/m8xx_setup.c
-> > +++ b/arch/powerpc/platforms/8xx/m8xx_setup.c
-> > @@ -32,6 +32,7 @@
-> >  #include <linux/root_dev.h>
-> >  #include <linux/time.h>
-> >  #include <linux/rtc.h>
-> > +#include <linux/fsl_devices.h>
-> >
-> >  #include <asm/mmu.h>
-> >  #include <asm/reg.h>
-> > @@ -49,6 +50,10 @@
-> >
-> >  #include "sysdev/mpc8xx_pic.h"
-> >
-> > +#ifdef CONFIG_PCMCIA_M8XX
-> > +struct mpc8xx_pcmcia_ops m8xx_pcmcia_ops;
-> > +#endif
-> > +
-> >  void m8xx_calibrate_decr(void);
-> >  extern void m8xx_wdt_handler_install(bd_t *bp);
-> >  extern int cpm_pic_init(void);
-> > diff --git a/arch/powerpc/platforms/8xx/mpc885ads.h b/arch/powerpc/ 
-> > platforms/8xx/mpc885ads.h
-> > index 7c31aec..932b59a 100644
-> > --- a/arch/powerpc/platforms/8xx/mpc885ads.h
-> > +++ b/arch/powerpc/platforms/8xx/mpc885ads.h
-> > @@ -91,5 +91,13 @@
-> >  #define SICR_ENET_MASK	((uint)0x00ff0000)
-> >  #define SICR_ENET_CLKRT	((uint)0x002c0000)
-> >
-> > +/*
-> > + * Some internal interrupt registers use an 8-bit mask for the  
-> > interrupt
-> > + * level instead of a number.
-> > + */
-> > +static inline uint mk_int_int_mask(uint mask) {
-> > +	return (1 << (7 - (mask/2)));
-> > +}
-> 
-> would this be better off in sysdev/mpc8xx_pic.h?
-> 
-hmm, maybe.
-> > +
-> >  #endif /* __ASM_MPC885ADS_H__ */
-> >  #endif /* __KERNEL__ */
-> > diff --git a/arch/powerpc/platforms/8xx/mpc885ads_setup.c b/arch/ 
-> > powerpc/platforms/8xx/mpc885ads_setup.c
-> > index a57b577..80e7214 100644
-> > --- a/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-> > +++ b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-> > @@ -22,6 +22,7 @@
-> >
-> >  #include <linux/fs_enet_pd.h>
-> >  #include <linux/fs_uart_pd.h>
-> > +#include <linux/fsl_devices.h>
-> >  #include <linux/mii.h>
-> >
-> >  #include <asm/delay.h>
-> > @@ -51,6 +52,70 @@ static void init_smc1_uart_ioports(struct  
-> > fs_uart_platform_info* fpi);
-> >  static void init_smc2_uart_ioports(struct fs_uart_platform_info*  
-> > fpi);
-> >  static void init_scc3_ioports(struct fs_platform_info* ptr);
-> >
-> > +#ifdef CONFIG_PCMCIA_M8XX
-> > +static void pcmcia_hw_setup(int slot, int enable)
-> > +{
-> > +	unsigned *bcsr_io;
-> > +
-> > +	bcsr_io = ioremap(BCSR1, sizeof(unsigned long));
-> > +	if (enable)
-> > +		clrbits32(bcsr_io, BCSR1_PCCEN);
-> > +	else
-> > +		setbits32(bcsr_io, BCSR1_PCCEN);
-> > +
-> > +	iounmap(bcsr_io);
-> > +}
-> > +
-> > +static int pcmcia_set_voltage(int slot, int vcc, int vpp)
-> > +{
-> > +	u32 reg = 0;
-> > +	unsigned *bcsr_io;
-> > +
-> > +	bcsr_io = ioremap(BCSR1, sizeof(unsigned long));
-> > +
-> > +	switch(vcc) {
-> > +	case 0:
-> > +		break;
-> > +	case 33:
-> > +		reg |= BCSR1_PCCVCC0;
-> > +		break;
-> > +	case 50:
-> > +		reg |= BCSR1_PCCVCC1;
-> > +		break;
-> > +	default:
-> > +		return 1;
-> > +	}
-> > +
-> > +	switch(vpp) {
-> > +	case 0:
-> > +		break;
-> > +	case 33:
-> > +	case 50:
-> > +	if(vcc == vpp)
-> > +			reg |= BCSR1_PCCVPP1;
-> > +		else
-> > +			return 1;
-> > +		break;
-> > +	case 120:
-> > +	if ((vcc == 33) || (vcc == 50))
-> > +		reg |= BCSR1_PCCVPP0;
-> > +	else
-> > +		return 1;
-> > +	default:
-> > +		return 1;
-> > +	}
-> > +
-> 
-> seems like formatting is of (but that could just me my email reader)
-> 
+Signed-off-by: Maxim Uvarov <muvarov@ru.mvista.com>
 
-darn it, I'll better Lindent this whole file too in 2-nd patch. plenty of whitespace, spacetabs, formatting issues...
+Signed-off-by: Maxim Uvarov <muvarov@ru.mvista.com>                                                                                  
+---
 
-> > +	/* first, turn off all power */
-> > +	clrbits32(bcsr_io, 0x00610000);
-> > +
-> > +	/* enable new powersettings */
-> > +	setbits32(bcsr_io, reg);
-> > +
-> > +	iounmap(bcsr_io);
-> > +	return 0;
-> > +}
-> > +#endif
-> > +
-> >  void __init mpc885ads_board_setup(void)
-> >  {
-> >  	cpm8xx_t *cp;
-> > @@ -115,6 +180,12 @@ void __init mpc885ads_board_setup(void)
-> >  	immr_unmap(io_port);
-> >
-> >  #endif
-> > +
-> > +#ifdef CONFIG_PCMCIA_M8XX
-> > +	/*Set up board specific hook-ups*/
-> > +	m8xx_pcmcia_ops.hw_ctrl = pcmcia_hw_setup;
-> > +	m8xx_pcmcia_ops.voltage_set = pcmcia_set_voltage;
-> > +#endif
-> >  }
-> >
-> >
-> > @@ -322,6 +393,7 @@ void init_smc_ioports(struct  
-> > fs_uart_platform_info *data)
-> >  	}
-> >  }
-> >
-> > +
-> 
-> extra whitespace?
-yes, ok.
+ Documentation/accounting/getdelays.c          |   20 ++++++++++++++++++--
+ Documentation/accounting/taskstats-struct.txt |    7 +++++++
+ arch/i386/kernel/asm-offsets.c                |    1 +
+ arch/i386/kernel/entry.S                      |    1 +
+ arch/powerpc/kernel/asm-offsets.c             |    2 ++
+ arch/powerpc/kernel/entry_32.S                |    5 +++++
+ arch/powerpc/kernel/entry_64.S                |    5 +++++
+ arch/x86_64/kernel/asm-offsets.c              |    1 +
+ arch/x86_64/kernel/entry.S                    |    1 +
+ fs/proc/array.c                               |   14 ++++++++++++++
+ include/asm-i386/thread_info.h                |    1 +
+ include/asm-powerpc/thread_info.h             |    1 +
+ include/asm-x86_64/thread_info.h              |    1 +
+ include/linux/taskstats.h                     |    6 +++++-
+ kernel/fork.c                                 |    3 +++
+ kernel/taskstats.c                            |    6 ++++++
+ 16 files changed, 72 insertions(+), 3 deletions(-)
 
-[snip]
--- 
-Sincerely, Vitaly
+diff --git a/Documentation/accounting/getdelays.c b/Documentation/accounting/getdelays.c
+index e9126e7..1be7d65 100644
+--- a/Documentation/accounting/getdelays.c
++++ b/Documentation/accounting/getdelays.c
+@@ -49,6 +49,7 @@ char name[100];
+ int dbg;
+ int print_delays;
+ int print_io_accounting;
++int print_task_stats;
+ __u64 stime, utime;
+ 
+ #define PRINTF(fmt, arg...) {			\
+@@ -187,7 +188,7 @@ void print_delayacct(struct taskstats *t)
+ 	       "IO    %15s%15s\n"
+ 	       "      %15llu%15llu\n"
+ 	       "MEM   %15s%15s\n"
+-	       "      %15llu%15llu\n\n",
++	       "      %15llu%15llu\n"
+ 	       "count", "real total", "virtual total", "delay total",
+ 	       t->cpu_count, t->cpu_run_real_total, t->cpu_run_virtual_total,
+ 	       t->cpu_delay_total,
+@@ -196,6 +197,15 @@ void print_delayacct(struct taskstats *t)
+ 	       "count", "delay total", t->swapin_count, t->swapin_delay_total);
+ }
+ 
++void print_taskstats(struct taskstats *t)
++{
++	printf("\n\nTask  %15s%15s%15s\n"
++	       "      %15lu%15lu%15lu\n",
++	       "syscalls", "voluntary", "nonvoluntary",
++	       t->syscall_counter, t->nvcsw, t->nivcsw);
++
++}
++
+ void print_ioacct(struct taskstats *t)
+ {
+ 	printf("%s: read=%llu, write=%llu, cancelled_write=%llu\n",
+@@ -227,7 +237,7 @@ int main(int argc, char *argv[])
+ 	struct msgtemplate msg;
+ 
+ 	while (1) {
+-		c = getopt(argc, argv, "diw:r:m:t:p:v:l");
++		c = getopt(argc, argv, "qdiw:r:m:t:p:v:l");
+ 		if (c < 0)
+ 			break;
+ 
+@@ -240,6 +250,10 @@ int main(int argc, char *argv[])
+ 			printf("printing IO accounting\n");
+ 			print_io_accounting = 1;
+ 			break;
++		case 'q':
++			printf("printing task/process stasistics:\n");
++			print_task_stats = 1;
++			break;
+ 		case 'w':
+ 			strncpy(logfile, optarg, MAX_FILENAME);
+ 			printf("write to file %s\n", logfile);
+@@ -381,6 +395,8 @@ int main(int argc, char *argv[])
+ 							print_delayacct((struct taskstats *) NLA_DATA(na));
+ 						if (print_io_accounting)
+ 							print_ioacct((struct taskstats *) NLA_DATA(na));
++						if (print_task_stats)
++							print_taskstats((struct taskstats *) NLA_DATA(na));
+ 						if (fd) {
+ 							if (write(fd, NLA_DATA(na), na->nla_len) < 0) {
+ 								err(1,"write error\n");
+diff --git a/Documentation/accounting/taskstats-struct.txt b/Documentation/accounting/taskstats-struct.txt
+index 661c797..5dac173 100644
+--- a/Documentation/accounting/taskstats-struct.txt
++++ b/Documentation/accounting/taskstats-struct.txt
+@@ -22,6 +22,8 @@ There are three different groups of fields in the struct taskstats:
+     /* Extended accounting fields end */
+     Their values are collected if CONFIG_TASK_XACCT is set.
+ 
++4) Per-task and per-thread statistics
++
+ Future extension should add fields to the end of the taskstats struct, and
+ should not change the relative position of each field within the struct.
+ 
+@@ -158,4 +160,9 @@ struct taskstats {
+ 
+ 	/* Extended accounting fields end */
+ 
++4) Per-task and per-thread statiscits
++	__u32	syscall_counter;	/* Syscall counter */
++	__u32	nvcsw;			/* Context voluntary switch counter */
++	__u32	nivcsw;			/* Context involuntary switch counter */
++
+ }
+diff --git a/arch/i386/kernel/asm-offsets.c b/arch/i386/kernel/asm-offsets.c
+index 1b2f3cd..4ad49d2 100644
+--- a/arch/i386/kernel/asm-offsets.c
++++ b/arch/i386/kernel/asm-offsets.c
+@@ -56,6 +56,7 @@ void foo(void)
+ 	OFFSET(TI_addr_limit, thread_info, addr_limit);
+ 	OFFSET(TI_restart_block, thread_info, restart_block);
+ 	OFFSET(TI_sysenter_return, thread_info, sysenter_return);
++	OFFSET(TI_syscall_count, thread_info, syscall_count);
+ 	BLANK();
+ 
+ 	OFFSET(GDS_size, Xgt_desc_struct, size);
+diff --git a/arch/i386/kernel/entry.S b/arch/i386/kernel/entry.S
+index 5e47683..26f0cc0 100644
+--- a/arch/i386/kernel/entry.S
++++ b/arch/i386/kernel/entry.S
+@@ -331,6 +331,7 @@ sysenter_past_esp:
+ 	CFI_ADJUST_CFA_OFFSET 4
+ 	SAVE_ALL
+ 	GET_THREAD_INFO(%ebp)
++	incl	TI_syscall_count(%ebp)	# Increment syscalls counter
+ 
+ 	/* Note, _TIF_SECCOMP is bit number 8, and so it needs testw and not testb */
+ 	testw $(_TIF_SYSCALL_EMU|_TIF_SYSCALL_TRACE|_TIF_SECCOMP|_TIF_SYSCALL_AUDIT),TI_flags(%ebp)
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 030d300..b640039 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -94,6 +94,8 @@ int main(void)
+ 	DEFINE(TI_LOCAL_FLAGS, offsetof(struct thread_info, local_flags));
+ 	DEFINE(TI_PREEMPT, offsetof(struct thread_info, preempt_count));
+ 	DEFINE(TI_TASK, offsetof(struct thread_info, task));
++	DEFINE(TI_SYSCALL_COUNT, offsetof(struct thread_info, syscall_count));
++
+ #ifdef CONFIG_PPC32
+ 	DEFINE(TI_EXECDOMAIN, offsetof(struct thread_info, exec_domain));
+ 	DEFINE(TI_CPU, offsetof(struct thread_info, cpu));
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index c03e829..329c2f8 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -202,6 +202,11 @@ _GLOBAL(DoSyscall)
+ 	bl	do_show_syscall
+ #endif /* SHOW_SYSCALLS */
+ 	rlwinm	r10,r1,0,0,(31-THREAD_SHIFT)	/* current_thread_info() */
++#ifdef CONFIG_THREAD_PERF_STAT_SYSC
++	lwz r11,TI_SYSC_CNT(r10)
++	addi r11,r11,1
++	stw r11,TI_SYSC_CNT(r10)
++#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
+ 	lwz	r11,TI_FLAGS(r10)
+ 	andi.	r11,r11,_TIF_SYSCALL_T_OR_A
+ 	bne-	syscall_dotrace
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 2551c08..5907f76 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -115,6 +115,11 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISERIES)
+ 	addi	r9,r1,STACK_FRAME_OVERHEAD
+ #endif
+ 	clrrdi	r11,r1,THREAD_SHIFT
++#ifdef CONFIG_TASKSTATS
++	ld r10,TI_SYSCALL_COUNT(r11)
++	addi r10,r10,1
++	std r10,TI_SYSCALL_COUNT(r11)
++#endif
+ 	ld	r10,TI_FLAGS(r11)
+ 	andi.	r11,r10,_TIF_SYSCALL_T_OR_A
+ 	bne-	syscall_dotrace
+diff --git a/arch/x86_64/kernel/asm-offsets.c b/arch/x86_64/kernel/asm-offsets.c
+index 96687e2..da57356 100644
+--- a/arch/x86_64/kernel/asm-offsets.c
++++ b/arch/x86_64/kernel/asm-offsets.c
+@@ -35,6 +35,7 @@ int main(void)
+ 	ENTRY(addr_limit);
+ 	ENTRY(preempt_count);
+ 	ENTRY(status);
++	ENTRY(syscall_count);
+ 	BLANK();
+ #undef ENTRY
+ #define ENTRY(entry) DEFINE(pda_ ## entry, offsetof(struct x8664_pda, entry))
+diff --git a/arch/x86_64/kernel/entry.S b/arch/x86_64/kernel/entry.S
+index 9f5dac6..9fd97df 100644
+--- a/arch/x86_64/kernel/entry.S
++++ b/arch/x86_64/kernel/entry.S
+@@ -229,6 +229,7 @@ ENTRY(system_call)
+ 	movq  %rcx,RIP-ARGOFFSET(%rsp)
+ 	CFI_REL_OFFSET rip,RIP-ARGOFFSET
+ 	GET_THREAD_INFO(%rcx)
++	addq $1, threadinfo_syscall_count(%rcx)   # Increment syscalls counter
+ 	testl $(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP),threadinfo_flags(%rcx)
+ 	jnz tracesys
+ 	cmpq $__NR_syscall_max,%rax
+diff --git a/fs/proc/array.c b/fs/proc/array.c
+index 70e4fab..30f6fd5 100644
+--- a/fs/proc/array.c
++++ b/fs/proc/array.c
+@@ -290,6 +290,19 @@ static inline char *task_cap(struct task_struct *p, char *buffer)
+ 			    cap_t(p->cap_permitted),
+ 			    cap_t(p->cap_effective));
+ }
++static inline char *task_perf(struct task_struct *p, char *buffer)
++{
++	/* Syscall counter adds 1 line overhead on each syscall execution
++	 * in entry.S, so probably it is the leave this stuff under ifdefs.
++	 */
++#ifdef CONFIG_TASKSTATS
++	buffer += sprintf(buffer, "Syscalls:\t%lu\n", p->thread_info->syscall_count);
++#endif
++	return buffer + sprintf(buffer, "Nvcsw:\t%lu\n"
++                           "Nivcsw:\t%lu\n",
++                           p->nvcsw,
++                           p->nivcsw);
++}
+ 
+ int proc_pid_status(struct task_struct *task, char * buffer)
+ {
+@@ -309,6 +322,7 @@ int proc_pid_status(struct task_struct *task, char * buffer)
+ #if defined(CONFIG_S390)
+ 	buffer = task_show_regs(task, buffer);
+ #endif
++	buffer = task_perf(task, buffer);
+ 	return buffer - orig;
+ }
+ 
+diff --git a/include/asm-i386/thread_info.h b/include/asm-i386/thread_info.h
+index 4b187bb..bccfd6a 100644
+--- a/include/asm-i386/thread_info.h
++++ b/include/asm-i386/thread_info.h
+@@ -33,6 +33,7 @@ struct thread_info {
+ 	int			preempt_count;	/* 0 => preemptable, <0 => BUG */
+ 
+ 
++	unsigned long		syscall_count;	/* Syscall counter */
+ 	mm_segment_t		addr_limit;	/* thread address space:
+ 					 	   0-0xBFFFFFFF for user-thead
+ 						   0-0xFFFFFFFF for kernel-thread
+diff --git a/include/asm-powerpc/thread_info.h b/include/asm-powerpc/thread_info.h
+index 3f32ca8..5306ac2 100644
+--- a/include/asm-powerpc/thread_info.h
++++ b/include/asm-powerpc/thread_info.h
+@@ -35,6 +35,7 @@ struct thread_info {
+ 	int		cpu;			/* cpu we're on */
+ 	int		preempt_count;		/* 0 => preemptable,
+ 						   <0 => BUG */
++	unsigned long	syscall_count;		/* Syscall counter */
+ 	struct restart_block restart_block;
+ 	unsigned long	local_flags;		/* private flags for thread */
+ 
+diff --git a/include/asm-x86_64/thread_info.h b/include/asm-x86_64/thread_info.h
+index 74a6c74..e53022d 100644
+--- a/include/asm-x86_64/thread_info.h
++++ b/include/asm-x86_64/thread_info.h
+@@ -31,6 +31,7 @@ struct thread_info {
+ 	__u32			cpu;		/* current CPU */
+ 	int 			preempt_count;	/* 0 => preemptable, <0 => BUG */
+ 
++	unsigned long		syscall_count;	/* Syscall counter */
+ 	mm_segment_t		addr_limit;	
+ 	struct restart_block    restart_block;
+ };
+diff --git a/include/linux/taskstats.h b/include/linux/taskstats.h
+index 3fced47..e3341b6 100644
+--- a/include/linux/taskstats.h
++++ b/include/linux/taskstats.h
+@@ -31,7 +31,7 @@
+  */
+ 
+ 
+-#define TASKSTATS_VERSION	3
++#define TASKSTATS_VERSION	4
+ #define TS_COMM_LEN		32	/* should be >= TASK_COMM_LEN
+ 					 * in linux/sched.h */
+ 
+@@ -141,6 +141,10 @@ struct taskstats {
+ 	__u64	write_syscalls;		/* write syscalls */
+ 	/* Extended accounting fields end */
+ 
++	__u32  syscall_counter;   /* Syscall counter */
++	__u32  nvcsw;
++	__u32  nivcsw;
++
+ #define TASKSTATS_HAS_IO_ACCOUNTING
+ 	/* Per-task storage I/O accounting starts */
+ 	__u64	read_bytes;		/* bytes of read I/O */
+diff --git a/kernel/fork.c b/kernel/fork.c
+index fc723e5..5213738 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -1042,6 +1042,9 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+ 	p->wchar = 0;		/* I/O counter: bytes written */
+ 	p->syscr = 0;		/* I/O counter: read syscalls */
+ 	p->syscw = 0;		/* I/O counter: write syscalls */
++#ifdef CONFIG_TASKSTATS
++	p->thread_info->syscall_count = 0; /* Syscall counter: total numbers of syscalls */
++#endif
+ 	task_io_accounting_init(p);
+ 	acct_clear_integrals(p);
+ 
+diff --git a/kernel/taskstats.c b/kernel/taskstats.c
+index 4c3476f..d7bf33f 100644
+--- a/kernel/taskstats.c
++++ b/kernel/taskstats.c
+@@ -196,6 +196,9 @@ static int fill_pid(pid_t pid, struct task_struct *tsk,
+ 
+ 	/* fill in basic acct fields */
+ 	stats->version = TASKSTATS_VERSION;
++	stats->syscall_counter = tsk->thread_info->syscall_count;
++	stats->nvcsw = tsk->nvcsw;
++	stats->nivcsw = tsk->nivcsw;
+ 	bacct_add_tsk(stats, tsk);
+ 
+ 	/* fill in extended acct fields */
+@@ -242,6 +245,9 @@ static int fill_tgid(pid_t tgid, struct task_struct *first,
+ 		 */
+ 		delayacct_add_tsk(stats, tsk);
+ 
++		stats->syscall_counter += tsk->thread_info->syscall_count;
++		stats->nvcsw += tsk->nvcsw;
++		stats->nivcsw += tsk->nivcsw;
+ 	} while_each_thread(first, tsk);
+ 
+ 	unlock_task_sighand(first, &flags);
