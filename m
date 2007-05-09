@@ -1,15 +1,16 @@
-Return-Path: <mamsadegh@hotmail.com>
-Received: from bay0-omc2-s27.bay0.hotmail.com (bay0-omc2-s27.bay0.hotmail.com
-	[65.54.246.163]) by ozlabs.org (Postfix) with ESMTP id 06934DDE06
+Return-Path: <Antonio.DiBacco@technolabs.it>
+Received: from smtp.technolabs.it (unknown [213.82.155.20])
+	by ozlabs.org (Postfix) with ESMTP id 7C414DDE43
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  9 May 2007 19:15:36 +1000 (EST)
-Message-ID: <BAY115-W4C8C341511C29C64FA72AB23B0@phx.gbl>
-From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
-To: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
-Subject: Xilinx OPB EMC Linux 2.6 Driver 
-Date: Wed, 9 May 2007 09:15:34 +0000
-Content-Type: text/plain; charset="iso-8859-1"
+	Wed,  9 May 2007 21:08:47 +1000 (EST)
 MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Doing something synchronized with kernel time (HELP!!!)
+Date: Wed, 9 May 2007 13:08:45 +0200
+Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E7B8765@aquib01a>
+From: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,28 +21,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+I need to do something every time the number of seconds in the kernel
+timer increases. =20
+I would like to have something like:
+=20
+time_t currSecs, currSecs;
+=20
+while (1)
+{   =20
+    read(fd, ....);  /* Sleep for 1 second */
+=20
+    time(&currSecs);  /* I want to be sure that currSecs is=20
+                         everytime one unit greater than prevSecs */
+    prevSecs =3D currSecs;
+}
 
-Hi All,
+I tried doing a read on /dev/rtc after having enabled one second
+interrupt on RTC (RTC_UIE_ON) but RTC is unreliable (too fast).
 
-I'm going to use intel strata flash chip on ml403 for bringing up my 2.6 ke=
-rnel. ( I do not want to use Sys ACE any more )
-
-At the first step I have some simple questions
-
-2.6 Kernel provides a wide range of support for flash devices, from CFI to =
-many other types, I can enable any of them I want.=20
-
-But I think that some thing is missing here, There should be a driver to en=
-able Extended Memory Controller (OPB EMC) module which is mainly connected =
-to the strata flash chip. Is this true? Or the current drivers in the kerne=
-l are enough?=20
-
-May be I should enable support for CFI and then I choose CFI in physical me=
-mory option?
-
-Thanks.
-
-_________________________________________________________________
-Explore the seven wonders of the world
-http://search.msn.com/results.aspx?q=3D7+wonders+world&mkt=3Den-US&form=3DQ=
-BRE=
+Bye,
+Antonio.
