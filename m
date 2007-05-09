@@ -1,20 +1,31 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from localhost.localdomain (unknown [85.94.3.83])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 99F94DDDFB
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 08:36:26 +1000 (EST)
-Date: Thu, 10 May 2007 02:36:11 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: "Samuel Ortiz" <samuel@sortiz.org>
-Subject: Re: [PATCH] [POWERPC] 8xx: PQ SoC IRDA support
-Message-ID: <20070510023611.3a1be1d9@localhost.localdomain>
-In-Reply-To: <irUYA8PN.1178718371.1966580.samuel@sortiz.org>
-References: <20070509145353.483896a1@localhost.localdomain>
-	<irUYA8PN.1178718371.1966580.samuel@sortiz.org>
+	by ozlabs.org (Postfix) with ESMTP id BC982DDE2F
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 08:48:22 +1000 (EST)
+Subject: Re: vm changes from linux-2.6.14 to linux-2.6.15
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+In-Reply-To: <Pine.LNX.4.61.0705092005060.29444@mtfhpc.demon.co.uk>
+References: <20070430145414.88fda272.akpm@linux-foundation.org>
+	<20070430.150407.07642146.davem@davemloft.net>
+	<1177977619.24962.6.camel@localhost.localdomain>
+	<20070430.173806.112621225.davem@davemloft.net>
+	<Pine.LNX.4.61.0705010223040.3556@mtfhpc.demon.co.uk>
+	<1177985136.24962.8.camel@localhost.localdomain>
+	<Pine.LNX.4.61.0705011453380.4771@mtfhpc.demon.co.uk>
+	<1178055110.13263.2.camel@localhost.localdomain>
+	<Pine.LNX.4.61.0705012354290.12808@mtfhpc.demon.co.uk>
+	<Pine.LNX.4.61.0705092005060.29444@mtfhpc.demon.co.uk>
+Content-Type: text/plain
+Date: Thu, 10 May 2007 08:48:02 +1000
+Message-Id: <1178750882.14928.199.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Cc: linux-mm@kvack.org, wli@holomorphy.com, linuxppc-dev@ozlabs.org,
+	andrea@suse.de, sparclinux@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,25 +35,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 9 May 2007 13:46:11 -0000
-Samuel Ortiz wrote:
-
-> >So to recap, similar handling path for similar SoC device existing
-> >in current kernel for a while now, and working good.  
+On Wed, 2007-05-09 at 20:44 +0100, Mark Fortescue wrote:
+> Hi Ben,
 > 
-> I'm sure it works good, but doing the whole RX path from an interrupt
-> handler doesn't sound like the best thing to do, at least to me. And
-> with a SIR IrDA device, you can afford to offload your interrupt
-> processing to a BH, nobody will notice the difference in terms of
-> performance.
-> I'm not against your proposed implementation, but I just think there's
-> a nicer way to achieve the same result.
-May I ask to point to the code you're keeping in mind here?
+> Is it worth formally sending in either of my patches or does more work 
+> need to be done first?
 
-I'm not going to touch this path or else the code will miss this merge window as well, 
-but I'm going to keep improving it, and this rework might be useful not only for this particular driver,
-but for similar kernel pieces too.
+Sorry, I've been busy with other things...
 
+What do other thing about it ? Having update_mmu_cache() call buried
+inside the ptep_set_access_flags() sounds good ? Somebody has a better
+idea ?
 
--- 
-Sincerely, Vitaly
+One thing I was thinking was that we could replace the whole logic with
+having ptep_set_access_flags() compare the new PTE bits with what was
+already there and return wether an update_mmu_cache() is required....
+
+Ben.
