@@ -1,32 +1,22 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B0455DDEEF
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 02:29:51 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l49GTkiN019781
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 May 2007 12:29:46 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l49GTjlj540868
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 May 2007 12:29:45 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l49GTjjw027381
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 May 2007 12:29:45 -0400
-Date: Wed, 9 May 2007 11:29:45 -0500
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH 3/4] powerpc: EEH: capture and log pci state on error
-Message-ID: <20070509162945.GU4452@austin.ibm.com>
-References: <20070508230952.GN4452@austin.ibm.com>
-	<20070508233532.GR4452@austin.ibm.com>
-	<20070509045439.GB1771@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070509045439.GB1771@lixom.net>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 9AD6ADDEF6
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 02:32:21 +1000 (EST)
+Date: Thu, 10 May 2007 02:32:21 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 1/2] Declare {compat_}sys_utimensat
+Message-Id: <20070510023221.92cefc44.sfr@canb.auug.org.au>
+In-Reply-To: <200705091821.59412.arnd@arndb.de>
+References: <20070509162357.65ab8868.sfr@canb.auug.org.au>
+	<200705091821.59412.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__10_May_2007_02_32_21_+1000_r2daT+IAQC2kIIF8"
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Linus <torvalds@linux-foundation.org>, paulus@samba.org,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,18 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 08, 2007 at 11:54:39PM -0500, Olof Johansson wrote:
-> Hi,
-> 
-> > +#define EEH_PCI_REGS_LOG_LEN 4096
-> > +static unsigned char pci_regs_buf[EEH_PCI_REGS_LOG_LEN];
-> 
-> I'm guessing this has to be in BSS because of the requrements of being
-> addressable in realmode for RTAS? Could be nice to document in a comment
-> so noone tries to make it a local variable later on.
+--Signature=_Thu__10_May_2007_02_32_21_+1000_r2daT+IAQC2kIIF8
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-Yep, exactly. Funny, I thought exactly that: "Someone is going to want
-me to change this to a kmalloc. What should I do to avoid this
-question?" It never occured to me that all I needed was a mere comment.
+On Wed, 9 May 2007 18:21:58 +0200 Arnd Bergmann <arnd@arndb.de> wrote:
+>
+> It seems bogus to declare compat_sys_futimesat in syscalls.h and
+> compat_sys_utimensat in compat.h. Your patch is fine, since there
+> are precedents for both, but maybe we should agree on one place and
+> then move all of the compat_sys_ declarations there.
 
---linas
+My preference is to split them like this so that the architectures that
+don't need the compat infrastructure are not cluttered with it (if we
+declare the compat routines in syscalls.h, then it should include
+compat.h).
+
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__10_May_2007_02_32_21_+1000_r2daT+IAQC2kIIF8
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGQfebFdBgD/zoJvwRAvWgAJ45hx0WnJX4UVNLjwayDfsw/OYJtwCeId95
+T9bIdwQlcO7cONtY73QikE8=
+=yBfc
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__10_May_2007_02_32_21_+1000_r2daT+IAQC2kIIF8--
