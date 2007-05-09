@@ -1,21 +1,16 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 0E734DDEFB
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 02:22:25 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/2] Declare {compat_}sys_utimensat
-Date: Wed, 9 May 2007 18:21:58 +0200
-References: <20070509162357.65ab8868.sfr@canb.auug.org.au>
-In-Reply-To: <20070509162357.65ab8868.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200705091821.59412.arnd@arndb.de>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus <torvalds@linux-foundation.org>, paulus@samba.org,
-	LKML <linux-kernel@vger.kernel.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 35615DDEDE
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 02:25:47 +1000 (EST)
+Date: Thu, 10 May 2007 02:25:52 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] early_pfn_to_nid needs to be __meminit
+Message-Id: <20070510022552.4bb1a407.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,51 +20,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 09 May 2007, Stephen Rothwell wrote:
-> diff --git a/include/linux/compat.h b/include/linux/compat.h
-> index ccd863d..70a157a 100644
-> --- a/include/linux/compat.h
-> +++ b/include/linux/compat.h
-> @@ -253,5 +253,8 @@ asmlinkage long compat_sys_epoll_pwait(int epfd,
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0c=
-onst compat_sigset_t __user *sigmask,
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0c=
-ompat_size_t sigsetsize);
-> =A0
-> +asmlinkage long compat_sys_utimensat(unsigned int dfd, char __user *file=
-name,
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0struct compat_timespec __user *t, int flags);
-> +
-> =A0#endif /* CONFIG_COMPAT */
-> =A0#endif /* _LINUX_COMPAT_H */
-> diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-> index 1912c6c..3139f44 100644
-> --- a/include/linux/syscalls.h
-> +++ b/include/linux/syscalls.h
-> @@ -576,6 +576,8 @@ asmlinkage long sys_fstatat64(int dfd, char __user *f=
-ilename,
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 =
-=A0 =A0 =A0 struct stat64 __user *statbuf, int flag);
-> =A0asmlinkage long sys_readlinkat(int dfd, const char __user *path, char =
-__user *buf,
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 =
-=A0 =A0 =A0 int bufsiz);
-> +asmlinkage long sys_utimensat(int dfd, char __user *filename,
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0struct timespec __user *utimes, int flags);
-> =A0asmlinkage long compat_sys_futimesat(unsigned int dfd, char __user *fi=
-lename,
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0 =A0 =A0 struct compat_timeval __user *t);
-> =A0asmlinkage long compat_sys_newfstatat(unsigned int dfd, char __user * =
-filename,
+since it is referenced by memmap_init_zone (which is __meminit) via the
+early_pfn_in_nid macro when CONFIG_NODES_SPAN_OTHER_NODES is set (which
+basically means PowerPC 64).
 
-It seems bogus to declare compat_sys_futimesat in syscalls.h and compat_sys=
-_utimensat
-in compat.h. Your patch is fine, since there are precedents for both, but m=
-aybe
-we should agree on one place and then move all of the compat_sys_ declarati=
-ons there.
+This removes a section mismatch warning in those circumstances.
 
-	Arnd <><
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ mm/page_alloc.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 6fd0b74..3297fa9 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -2298,7 +2298,7 @@ static int __meminit next_active_region_index_in_nid(int index, int nid)
+  * was used and there are no special requirements, this is a convenient
+  * alternative
+  */
+-int __init early_pfn_to_nid(unsigned long pfn)
++int __meminit early_pfn_to_nid(unsigned long pfn)
+ {
+ 	int i;
+ 
+-- 
+1.5.1.3
