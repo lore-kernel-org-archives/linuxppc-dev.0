@@ -1,15 +1,17 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 9 May 2007 10:49:48 +1000
+Date: Wed, 9 May 2007 11:09:41 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Loeliger Jon-LOELIGER <jdl@Freescale.com>
-Subject: Re: [PATCH v2 6/7] Holly DTS
-Message-ID: <20070509004948.GB4198@localhost.localdomain>
-References: <cbcd7823ea9b0f17f998670915719a05@kernel.crashing.org>
-	<AF0367BA48C55940A43CCF08DF35553C012AA296@az33exm24.fsl.freescale.net>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Current powerpc.git build failures
+Message-ID: <20070509010941.GC4198@localhost.localdomain>
+References: <20070508191758.GA26879@lixom.net> <4640DDD8.4040001@freescale.com>
+	<5E47D5F4-DD15-46D1-A947-3031D069486F@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <AF0367BA48C55940A43CCF08DF35553C012AA296@az33exm24.fsl.freescale.net>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
+In-Reply-To: <5E47D5F4-DD15-46D1-A947-3031D069486F@kernel.crashing.org>
+Cc: jdl@jdl.com, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Olof Johansson <olof@lixom.net>, arnd@ardnb.de,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,22 +21,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 07, 2007 at 10:50:50AM -0700, Jon Loeliger wrote:
-> > > Other dts'es are similar. Could be nice
-> > > to have a comment next to it if that's the case.
-> > 
-> > Yeah.  There's also this ?? syntax now I believe.
+On Tue, May 08, 2007 at 03:38:35PM -0500, Kumar Gala wrote:
 > 
-> Not quite yet.  
+> On May 8, 2007, at 3:30 PM, Timur Tabi wrote:
+> 
+> > Olof Johansson wrote:
+> >
+> >> powerpc.mpc8641_hpcn_defconfig:
+> >> In file included from include/asm-generic/pgtable-nopmd.h:6,
+> >>                  from include/asm/pgtable-ppc32.h:4,
+> >>                  from include/asm/pgtable.h:8,
+> >>                  from arch/powerpc/platforms/86xx/mpc86xx_smp.c:18:
+> >> include/asm-generic/pgtable-nopud.h:13: error: expected specifier- 
+> >> qualifier-list before 'pgd_t'
+> >
+> > This must have occurred in the past 24 hours because I built the  
+> > latest 8641 yesterday
+> > morning and it worked fine.  mpc86xx_smp.c has not changed since  
+> > February, so I'm guessing
+> > that some header file that mpc86xx_smp.c includes no longer  
+> > includes some other header.
+> 
+> I'm guessing this is from david gibson's  4level-fixup.h for ppc32  
+> patch.
 
-Yes, the idea was raised, but discussion kind of petered out and
-nobody (read: me) got around to implementing it.
+Looks like.  AFAICT, the generic nopud.h and nopmd.h headers expect
+page.h to be included before pgtable.h.  I think this patch should fix
+the problem, but I don't have a suitable board to test with.
 
-> We didn't really get a 2/3 majority
-> Ratification from The Syndicate yet.  The debate
-> Is ongoing, I suspect.
+Index: working-2.6/arch/powerpc/platforms/86xx/mpc86xx_smp.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/platforms/86xx/mpc86xx_smp.c	2007-05-09 11:08:15.000000000 +1000
++++ working-2.6/arch/powerpc/platforms/86xx/mpc86xx_smp.c	2007-05-09 11:08:33.000000000 +1000
+@@ -15,8 +15,8 @@
+ #include <linux/init.h>
+ #include <linux/delay.h>
+ 
+-#include <asm/pgtable.h>
+ #include <asm/page.h>
++#include <asm/pgtable.h>
+ #include <asm/pci-bridge.h>
+ #include <asm-powerpc/mpic.h>
+ #include <asm/mpc86xx.h>
 
-/me wonders who jdl is thinking of as The Syndicate.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
