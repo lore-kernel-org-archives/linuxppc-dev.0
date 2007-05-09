@@ -3,14 +3,13 @@ Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
 	[217.204.121.83])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0A426DDE10
+	by ozlabs.org (Postfix) with ESMTP id 4248CDDEFD
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 May 2007 02:03:24 +1000 (EST)
-Message-ID: <4641EFFF.4070909@cambridgebroadband.com>
-Date: Wed, 09 May 2007 16:59:59 +0100
+	Thu, 10 May 2007 02:33:02 +1000 (EST)
+Message-ID: <4641F773.9040606@cambridgebroadband.com>
+Date: Wed, 09 May 2007 17:31:47 +0100
 From: Alex Zeffertt <ajz@cambridgebroadband.com>
 MIME-Version: 1.0
-To: Alex Zeffertt <ajz@cambridgebroadband.com>
 Subject: Re: MPC832xEMDS: ttyS0 output stops mid boot
 References: <8c4dd9590705030939i5df99f3fw83a59698fe3d30cc@mail.gmail.com>
 In-Reply-To: <8c4dd9590705030939i5df99f3fw83a59698fe3d30cc@mail.gmail.com>
