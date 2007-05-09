@@ -1,28 +1,11 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 56BB2DDE48
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2007 21:42:03 +1000 (EST)
-Date: Wed, 9 May 2007 13:42:09 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Raquel Velasco and Bill Buck <bbrv@genesi-usa.com>
-Subject: Re: [PATCH] Probe Efika platform before CHRP.
-Message-ID: <20070509114209.GA17285@aepfle.de>
-References: <1167773388.22068.443.camel@pmac.infradead.org>
-	<1167773863.6165.82.camel@localhost.localdomain>
-	<1167775493.3660.23.camel@shinybook.infradead.org>
-	<528646bc0701021504k88682bl765fad4c100bd40e@mail.gmail.com>
-	<45A01416.6080401@genesi-usa.com>
-	<528646bc0701061423o270df3dfj9d27d5572840ec79@mail.gmail.com>
-	<45A0610E.60307@246tNt.com>
-	<44901FD6-0F07-453A-934A-FF95EA1B8906@genesi-usa.com>
-	<1175346945.3122.245.camel@pmac.infradead.org>
-	<BD8A1731-47B2-46CC-AB60-DF97448CF351@genesi-usa.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <BD8A1731-47B2-46CC-AB60-DF97448CF351@genesi-usa.com>
-Cc: Paul Mackerras <paulus@samba.org>, Sylvain Munaut <tnt@246tNt.com>,
-	David Woodhouse <dwmw2@infradead.org>,
-	Linux PPC DEV <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17985.46275.841370.382482@cargo.ozlabs.ibm.com>
+Date: Wed, 9 May 2007 21:47:15 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Fix incorrect calculation of I/O window addresses
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,17 +15,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Mar 31, Raquel Velasco and Bill Buck wrote:
+My patch "Cope with PCI host bridge I/O window not starting at 0"
+introduced a bug in the calculation of the virtual addresses for the
+I/O windows of PCI host bridges other than the first, because it
+didn't account for the fact that hose->io_resource gets offset so that
+it reflects the range of global I/O port numbers assigned to the
+bridge.  This fixes it and simplifies get_bus_io_range() in the
+process.
 
-> Absolutely everything will happen in April...
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
 
-Which year? 2007 or 2010?
-
-
-> On Mar 31, 2007, at 8:15 AM, David Woodhouse wrote:
-> 
-> > On Sun, 2007-01-07 at 03:11 -0600, Raquel Velasco and Bill Buck wrote:
-> >> In the next 45-60 days we will offer new firmware for the EFIKA (and
-> >> the Pegasos/ODW).
-> >
-> > Was hoping to see this before the Fedora 7 release... ?
+diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+index 6d05a1f..bb3c0cb 100644
+--- a/arch/powerpc/kernel/pci_64.c
++++ b/arch/powerpc/kernel/pci_64.c
+@@ -1098,35 +1098,24 @@ static int get_bus_io_range(struct pci_bus *bus, unsigned long *start_phys,
+ 				unsigned long *start_virt, unsigned long *size)
+ {
+ 	struct pci_controller *hose = pci_bus_to_host(bus);
+-	struct pci_bus_region region;
+ 	struct resource *res;
+ 
+-	if (bus->self) {
++	if (bus->self)
+ 		res = bus->resource[0];
+-		pcibios_resource_to_bus(bus->self, &region, res);
+-		*start_phys = hose->io_base_phys + region.start;
+-		*start_virt = (unsigned long) hose->io_base_virt + 
+-				region.start;
+-		if (region.end > region.start) 
+-			*size = region.end - region.start + 1;
+-		else {
+-			printk("%s(): unexpected region 0x%lx->0x%lx\n", 
+-					__FUNCTION__, region.start, region.end);
+-			return 1;
+-		}
+-		
+-	} else {
++	else
+ 		/* Root Bus */
+ 		res = &hose->io_resource;
+-		*start_phys = hose->io_base_phys + res->start;
+-		*start_virt = (unsigned long) hose->io_base_virt + res->start;
+-		if (res->end > res->start)
+-			*size = res->end - res->start + 1;
+-		else {
+-			printk("%s(): unexpected region 0x%lx->0x%lx\n", 
+-					__FUNCTION__, res->start, res->end);
+-			return 1;
+-		}
++
++	*start_virt = pci_io_base + res->start;
++	*start_phys = *start_virt + hose->io_base_phys
++		- (unsigned long) hose->io_base_virt;
++
++	if (res->end > res->start)
++		*size = res->end - res->start + 1;
++	else {
++		printk("%s(): unexpected region 0x%lx->0x%lx\n", 
++		       __FUNCTION__, res->start, res->end);
++		return 1;
+ 	}
+ 
+ 	return 0;
