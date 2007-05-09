@@ -1,20 +1,28 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id 9BF2FDDE3D
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 02:51:22 +1000 (EST)
-From: Gabriel Paubert <paubert@iram.es>
-Date: Wed, 9 May 2007 18:51:15 +0200
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Section mismatch warnings (was Re: [PATCH] early_pfn_to_nid needs to
-	be __meminit)
-Message-ID: <20070509165115.GA23576@iram.es>
-References: <20070510022552.4bb1a407.sfr@canb.auug.org.au>
-MIME-Version: 1.0
+Return-Path: <b07421@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 188A6DDEC6
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 04:26:45 +1000 (EST)
+Date: Wed, 9 May 2007 13:26:30 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 05/13] Document the fsl,
+	magic-packet property in gianfar nodes.
+Message-ID: <20070509182630.GA19495@ld0162-tx32.am.freescale.net>
+References: <20070507182947.GD26920@ld0162-tx32.am.freescale.net>
+	<B7081C3F-C551-42D8-BB5D-6FE5DC311C99@freescale.com>
+	<463F9A38.6080408@freescale.com>
+	<AC7B08C0-E41A-458F-8E9F-59901443600A@freescale.com>
+	<3FE06AFA-BEE6-46CF-B12C-29D979AE50D7@kernel.crashing.org>
+	<20070508001808.GD7449@localhost.localdomain>
+	<baf8c79aa13de543816d62162d4f9928@kernel.crashing.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070510022552.4bb1a407.sfr@canb.auug.org.au>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>, paulus@samba.org,
-	LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <baf8c79aa13de543816d62162d4f9928@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,41 +32,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 10, 2007 at 02:25:52AM +1000, Stephen Rothwell wrote:
-> since it is referenced by memmap_init_zone (which is __meminit) via the
-> early_pfn_in_nid macro when CONFIG_NODES_SPAN_OTHER_NODES is set (which
-> basically means PowerPC 64).
+On Wed, May 09, 2007 at 04:33:12PM +0200, Segher Boessenkool wrote:
+> >>>> As I previously wrote internally, it's only needed because some
+> >>>> versions of the device have it and some don't; what it really means
+> >>>> is that certain bits in certain registers are valid.
 > 
-> This removes a section mismatch warning in those circumstances.
+> So have the driver detect this based on "compatible"
+> or "model".
 
-Speaking of this, I just tried to compile an official (Linus' git tree) 
-kernel for my old PMac G4 and I get a lot of section mismatch warnings at 
-the end of the compilation:
+Thus requiring the driver to maintain a list of models/compatibles for
+every possible combination of features, rather than letting the device
+tree specify them individually.  What would be the advantage in that?
 
-  LD      vmlinux
-  SYSMAP  System.map
-  SYSMAP  .tmp_System.map
-  MODPOST vmlinux
-WARNING: "fee_restarts" [arch/powerpc/kernel/built-in] is COMMON symbol
-WARNING: "ee_restarts" [arch/powerpc/kernel/built-in] is COMMON symbol
-WARNING: arch/powerpc/kernel/built-in.o - Section mismatch: reference to .init.data:.got2 from dt_string_start (offset 0x8)
-WARNING: arch/powerpc/kernel/built-in.o - Section mismatch: reference to .init.data:.got2 from dt_string_end (offset 0xc)
-...
-WARNING: arch/powerpc/kernel/built-in.o - Section mismatch: reference to .init.data:.got2 from dt_struct_end (offset 0x20c)
-WARNING: arch/powerpc/kernel/built-in.o - Section mismatch: reference to .init.data:.got2 from disp_BAT (offset 0x234)
-WARNING: "primary_pteg_full" [arch/powerpc/mm/built-in] is COMMON symbol
-WARNING: "next_slot" [arch/powerpc/mm/built-in] is COMMON symbol
-WARNING: "htab_hash_searches" [arch/powerpc/mm/built-in] is COMMON symbol
-WARNING: arch/powerpc/mm/built-in.o - Section mismatch: reference to .init.text:early_get_page from .text between 'pte_alloc_one_kernel' (at offset 0xf50) and 'v_mapped_by_bats'
-WARNING: arch/powerpc/platforms/built-in.o - Section mismatch: reference to .init.data:.got2 from  (offset 0x0)
-...
-WARNING: arch/powerpc/platforms/built-in.o - Section mismatch: reference to .init.text:pmac_pcibios_after_init from .machine.desc after 'mach_powermac' (at offset 0xc4)
-WARNING: mm/built-in.o - Section mismatch: reference to .init.text:set_up_list3s from .text between 'kmem_cache_create' (at
-offset 0x1de88) and 'kmem_cache_shrink'
-WARNING: mm/built-in.o - Section mismatch: reference to .init.text:set_up_list3s from .text between 'kmem_cache_create' (at
-offset 0x1dec0) and 'kmem_cache_shrink'
-
-I find these 50 or so warnings so scary that I've not yet tried 
-to boot the kernel. Note that this is a non-modular kernel.
-
-	Gabriel
+-Scott
