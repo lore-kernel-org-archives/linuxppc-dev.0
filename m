@@ -1,27 +1,28 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-11.arcor-online.net (mail-in-11.arcor-online.net
-	[151.189.21.51])
+Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
+	[151.189.21.50])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EDDBFDDE40
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 00:33:23 +1000 (EST)
-In-Reply-To: <20070508001808.GD7449@localhost.localdomain>
-References: <20070507182947.GD26920@ld0162-tx32.am.freescale.net>
-	<B7081C3F-C551-42D8-BB5D-6FE5DC311C99@freescale.com>
-	<463F9A38.6080408@freescale.com>
-	<AC7B08C0-E41A-458F-8E9F-59901443600A@freescale.com>
-	<3FE06AFA-BEE6-46CF-B12C-29D979AE50D7@kernel.crashing.org>
-	<20070508001808.GD7449@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 485BEDDE1F
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 00:40:15 +1000 (EST)
+In-Reply-To: <4640AE88.9040806@mvista.com>
+References: <20070425213700.GA8814@blade.az.mvista.com>
+	<20070426000852.GA2193@localhost.localdomain>
+	<20070426003748.GA30730@blade.az.mvista.com>
+	<9903F55A-5E4E-42CE-8C27-6B7143B9FE25@kernel.crashing.org>
+	<20070501183220.GA6426@blade.az.mvista.com>
+	<20070507232634.GA11166@blade.az.mvista.com>
+	<3EF891D2-F973-43D6-B43B-B8BBC4269C60@kernel.crashing.org>
+	<4640AE88.9040806@mvista.com>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <baf8c79aa13de543816d62162d4f9928@kernel.crashing.org>
+Message-Id: <6fb05a0954f19c5744369c18670d81ff@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 05/13] Document the fsl,
-	magic-packet property in gianfar nodes.
-Date: Wed, 9 May 2007 16:33:12 +0200
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: add dts entries to 85xx for EDAC
+Date: Wed, 9 May 2007 16:40:01 +0200
+To: Dave Jiang <djiang@mvista.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,23 +32,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>> As I previously wrote internally, it's only needed because some
->>>> versions of the device have it and some don't; what it really means
->>>> is that certain bits in certain registers are valid.
+>> we should distinguish the memory controllers on 8540/8560 (DDR1) from
+>> the one on 8548 (DDR1 & DDR2).
+>
+> Do you mean something like:
+>
+> 8540/8560
+> compatible = "fsl,85xx-ddr-controller"
 
-So have the driver detect this based on "compatible"
-or "model".
+fsl,8540-memory-controller
 
-> Further, is there already a standard description for WoL capability
-> described in one of the OF binding documents.  Segher?
+> 8548
+> compatible = "fsl,85xx-ddr2-controller"
 
-[Cc: me if you want me to answer, I was reading this
-thread with the "d" key, you got lucky].
+fsl,8548-memory-controller
 
-There is no standard wake-on-lan thing in any binding
-as far as I know.  I don't see how it would be useful
-anyway, it's all just the device driver's job as far
-as I can see.
+This shows once again why "Nxx" is not such a great
+plan; it states that all Nxx devices are compatible,
+while some might not even exist yet.
 
 
 Segher
