@@ -1,22 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 9AD6ADDEF6
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 02:32:21 +1000 (EST)
-Date: Thu, 10 May 2007 02:32:21 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 1/2] Declare {compat_}sys_utimensat
-Message-Id: <20070510023221.92cefc44.sfr@canb.auug.org.au>
-In-Reply-To: <200705091821.59412.arnd@arndb.de>
-References: <20070509162357.65ab8868.sfr@canb.auug.org.au>
-	<200705091821.59412.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__10_May_2007_02_32_21_+1000_r2daT+IAQC2kIIF8"
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Linus <torvalds@linux-foundation.org>, paulus@samba.org,
-	LKML <linux-kernel@vger.kernel.org>
+Return-Path: <zarniwhoop@ntlworld.com>
+Received: from queue03-winn.ispmail.ntl.com (queue03-winn.ispmail.ntl.com
+	[81.103.221.57]) by ozlabs.org (Postfix) with ESMTP id EA0C9DDEDA
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 02:36:28 +1000 (EST)
+Received: from aamtaout04-winn.ispmail.ntl.com ([81.103.221.35])
+	by mtaout03-winn.ispmail.ntl.com with ESMTP id
+	<20070509161729.SQMM16175.mtaout03-winn.ispmail.ntl.com@aamtaout04-winn.ispmail.ntl.com>
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 May 2007 17:17:29 +0100
+Received: from localhost.localdomain ([81.102.242.16])
+	by aamtaout04-winn.ispmail.ntl.com with ESMTP id
+	<20070509161729.ZKEY29112.aamtaout04-winn.ispmail.ntl.com@localhost.localdomain>
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 May 2007 17:17:29 +0100
+Date: Wed, 9 May 2007 17:17:23 +0100
+From: Ken Moffat <zarniwhoop@ntlworld.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Build failure with Linus' tree
+Message-ID: <20070509161723.GA20759@deepthought>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,37 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__10_May_2007_02_32_21_+1000_r2daT+IAQC2kIIF8
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+ On my G5 I'm getting this on a copy of Linus' tree I pulled a bit
+over two hours ago:
 
-On Wed, 9 May 2007 18:21:58 +0200 Arnd Bergmann <arnd@arndb.de> wrote:
->
-> It seems bogus to declare compat_sys_futimesat in syscalls.h and
-> compat_sys_utimensat in compat.h. Your patch is fine, since there
-> are precedents for both, but maybe we should agree on one place and
-> then move all of the compat_sys_ declarations there.
+  LD      .tmp_vmlinux1
+arch/powerpc/sysdev/built-in.o: In function `.iommu_init_late_dart':
+dart_iommu.c:(.init.text+0xf10): undefined reference to
+`.register_nosave_region_late'
+make: *** [.tmp_vmlinux1] Error 1
 
-My preference is to split them like this so that the architectures that
-don't need the compat infrastructure are not cluttered with it (if we
-declare the compat routines in syscalls.h, then it should include
-compat.h).
+ I suppose that something is wrong in sysdev/dart_iommu.c, probably
+related to suspend changes - if I need to bisect, it will take some
+time (this is an SMU powermac, dead slow) so I'll mention it here
+now.
 
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__10_May_2007_02_32_21_+1000_r2daT+IAQC2kIIF8
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGQfebFdBgD/zoJvwRAvWgAJ45hx0WnJX4UVNLjwayDfsw/OYJtwCeId95
-T9bIdwQlcO7cONtY73QikE8=
-=yBfc
------END PGP SIGNATURE-----
-
---Signature=_Thu__10_May_2007_02_32_21_+1000_r2daT+IAQC2kIIF8--
+Ken
+--=20
+das eine Mal als Trag=F6die, das andere Mal als Farce
