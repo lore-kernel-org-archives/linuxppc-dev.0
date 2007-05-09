@@ -1,33 +1,33 @@
 Return-Path: <fenkes@de.ibm.com>
-Received: from mtagate8.de.ibm.com (mtagate8.de.ibm.com [195.212.29.157])
+Received: from mtagate3.de.ibm.com (mtagate3.de.ibm.com [195.212.29.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate8.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 96769DDFEA
+	(Client CN "mtagate3.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4A788DDF2E
 	for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2007 21:48:37 +1000 (EST)
 Received: from d12nrmr1607.megacenter.de.ibm.com
 	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate8.de.ibm.com (8.13.8/8.13.8) with ESMTP id l49BmX9W164532
+	by mtagate3.de.ibm.com (8.13.8/8.13.8) with ESMTP id l49BmX60082996
 	for <linuxppc-dev@ozlabs.org>; Wed, 9 May 2007 11:48:33 GMT
 Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
 	[9.149.165.212])
 	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.3) with
-	ESMTP id l49BmXts2625682
+	ESMTP id l49BmXb71921258
 	for <linuxppc-dev@ozlabs.org>; Wed, 9 May 2007 13:48:33 +0200
 Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
 	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l49BmMH7001141
+	id l49BmMVa001138
 	for <linuxppc-dev@ozlabs.org>; Wed, 9 May 2007 13:48:23 +0200
 From: Joachim Fenkes <fenkes@de.ibm.com>
 To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
 	LKML <linux-kernel@vger.kernel.org>,
 	"OF-General" <general@lists.openfabrics.org>,
 	Roland Dreier <rolandd@cisco.com>
-Subject: [PATCH 4/6] IB/ehca: remove _irqsave, move #ifdef
+Subject: [PATCH 3/6] IB/ehca: Fix AQP0/1 QP number
 MIME-Version: 1.0
-Date: Wed, 9 May 2007 13:48:20 +0200
+Date: Wed, 9 May 2007 13:48:11 +0200
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200705091348.20808.fenkes@de.ibm.com>
+Message-Id: <200705091348.12551.fenkes@de.ibm.com>
 Cc: Stefan Roscher <stefan.roscher@de.ibm.com>,
 	Christoph Raisch <raisch@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -39,51 +39,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-- In ehca_process_eq(), we're IRQ safe throughout the whole function, so we
-  don't need another _irqsave in the middle of flight.
+From: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
 
-- take_over_work() is only called by comp_pool_callback(), so it can move
-  into the same #ifdef block.
+AQP0/1 should report qp_num={0|1} and the actual QP# should be stored in
+struct ehca_qp, not the other way round.
 
 Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
 ---
- drivers/infiniband/hw/ehca/ehca_irq.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+ drivers/infiniband/hw/ehca/ehca_qp.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_irq.c b/drivers/infiniband/hw/ehca/ehca_irq.c
-index f284be1..f172013 100644
---- a/drivers/infiniband/hw/ehca/ehca_irq.c
-+++ b/drivers/infiniband/hw/ehca/ehca_irq.c
-@@ -517,12 +517,11 @@ void ehca_process_eq(struct ehca_shca *s
- 			else {
- 				struct ehca_cq *cq = eq->eqe_cache[i].cq;
- 				comp_event_callback(cq);
--				spin_lock_irqsave(&ehca_cq_idr_lock, flags);
-+				spin_lock(&ehca_cq_idr_lock);
- 				cq->nr_events--;
- 				if (!cq->nr_events)
- 					wake_up(&cq->wait_completion);
--				spin_unlock_irqrestore(&ehca_cq_idr_lock,
--						       flags);
-+				spin_unlock(&ehca_cq_idr_lock);
- 			}
- 		} else {
- 			ehca_dbg(&shca->ib_device, "Got non completion event");
-@@ -711,6 +710,7 @@ static void destroy_comp_task(struct ehc
- 		kthread_stop(task);
- }
+diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
+index e21d796..b5bc787 100644
+--- a/drivers/infiniband/hw/ehca/ehca_qp.c
++++ b/drivers/infiniband/hw/ehca/ehca_qp.c
+@@ -523,6 +523,8 @@ struct ib_qp *ehca_create_qp(struct ib_p
+ 		goto create_qp_exit1;
+ 	}
  
-+#ifdef CONFIG_HOTPLUG_CPU
- static void take_over_work(struct ehca_comp_pool *pool,
- 			   int cpu)
- {
-@@ -735,7 +735,6 @@ static void take_over_work(struct ehca_c
++	my_qp->ib_qp.qp_num = my_qp->real_qp_num;
++
+ 	switch (init_attr->qp_type) {
+ 	case IB_QPT_RC:
+ 	        if (isdaqp == 0) {
+@@ -568,7 +570,7 @@ struct ib_qp *ehca_create_qp(struct ib_p
+ 			parms.act_nr_recv_wqes = init_attr->cap.max_recv_wr;
+ 			parms.act_nr_send_sges = init_attr->cap.max_send_sge;
+ 			parms.act_nr_recv_sges = init_attr->cap.max_recv_sge;
+-			my_qp->real_qp_num =
++			my_qp->ib_qp.qp_num =
+ 				(init_attr->qp_type == IB_QPT_SMI) ? 0 : 1;
+ 		}
  
- }
+@@ -595,7 +597,6 @@ struct ib_qp *ehca_create_qp(struct ib_p
+ 	my_qp->ib_qp.recv_cq = init_attr->recv_cq;
+ 	my_qp->ib_qp.send_cq = init_attr->send_cq;
  
--#ifdef CONFIG_HOTPLUG_CPU
- static int comp_pool_callback(struct notifier_block *nfb,
- 			      unsigned long action,
- 			      void *hcpu)
+-	my_qp->ib_qp.qp_num = my_qp->real_qp_num;
+ 	my_qp->ib_qp.qp_type = init_attr->qp_type;
+ 
+ 	my_qp->qp_type = init_attr->qp_type;
 -- 
 1.4.2.1
