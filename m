@@ -1,25 +1,20 @@
-Return-Path: <djiang@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 4D8C0DDEBA
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 02:50:36 +1000 (EST)
-Date: Wed, 9 May 2007 09:53:33 -0700
-From: Dave Jiang <djiang@mvista.com>
-To: galak@kernel.crashing.org
-Subject: [PATCH] powerpc: add dts entries to 85xx for EDAC
-Message-ID: <20070509165333.GA3118@blade.az.mvista.com>
-References: <20070425213700.GA8814@blade.az.mvista.com>
-	<20070426000852.GA2193@localhost.localdomain>
-	<20070426003748.GA30730@blade.az.mvista.com>
-	<9903F55A-5E4E-42CE-8C27-6B7143B9FE25@kernel.crashing.org>
-	<20070501183220.GA6426@blade.az.mvista.com>
-	<20070507232634.GA11166@blade.az.mvista.com>
-	<3EF891D2-F973-43D6-B43B-B8BBC4269C60@kernel.crashing.org>
-	<4640AE88.9040806@mvista.com>
-	<6fb05a0954f19c5744369c18670d81ff@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <6fb05a0954f19c5744369c18670d81ff@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 9BF2FDDE3D
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 02:51:22 +1000 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Wed, 9 May 2007 18:51:15 +0200
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Section mismatch warnings (was Re: [PATCH] early_pfn_to_nid needs to
+	be __meminit)
+Message-ID: <20070509165115.GA23576@iram.es>
+References: <20070510022552.4bb1a407.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070510022552.4bb1a407.sfr@canb.auug.org.au>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>, paulus@samba.org,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,105 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, May 10, 2007 at 02:25:52AM +1000, Stephen Rothwell wrote:
+> since it is referenced by memmap_init_zone (which is __meminit) via the
+> early_pfn_in_nid macro when CONFIG_NODES_SPAN_OTHER_NODES is set (which
+> basically means PowerPC 64).
+> 
+> This removes a section mismatch warning in those circumstances.
 
-Adding memory-controller and l2-cache-controller entries to be used by EDAC as
-of_devices.
+Speaking of this, I just tried to compile an official (Linus' git tree) 
+kernel for my old PMac G4 and I get a lot of section mismatch warnings at 
+the end of the compilation:
 
-Signed-off-by: Dave Jiang <djiang@mvista.com>
+  LD      vmlinux
+  SYSMAP  System.map
+  SYSMAP  .tmp_System.map
+  MODPOST vmlinux
+WARNING: "fee_restarts" [arch/powerpc/kernel/built-in] is COMMON symbol
+WARNING: "ee_restarts" [arch/powerpc/kernel/built-in] is COMMON symbol
+WARNING: arch/powerpc/kernel/built-in.o - Section mismatch: reference to .init.data:.got2 from dt_string_start (offset 0x8)
+WARNING: arch/powerpc/kernel/built-in.o - Section mismatch: reference to .init.data:.got2 from dt_string_end (offset 0xc)
+...
+WARNING: arch/powerpc/kernel/built-in.o - Section mismatch: reference to .init.data:.got2 from dt_struct_end (offset 0x20c)
+WARNING: arch/powerpc/kernel/built-in.o - Section mismatch: reference to .init.data:.got2 from disp_BAT (offset 0x234)
+WARNING: "primary_pteg_full" [arch/powerpc/mm/built-in] is COMMON symbol
+WARNING: "next_slot" [arch/powerpc/mm/built-in] is COMMON symbol
+WARNING: "htab_hash_searches" [arch/powerpc/mm/built-in] is COMMON symbol
+WARNING: arch/powerpc/mm/built-in.o - Section mismatch: reference to .init.text:early_get_page from .text between 'pte_alloc_one_kernel' (at offset 0xf50) and 'v_mapped_by_bats'
+WARNING: arch/powerpc/platforms/built-in.o - Section mismatch: reference to .init.data:.got2 from  (offset 0x0)
+...
+WARNING: arch/powerpc/platforms/built-in.o - Section mismatch: reference to .init.text:pmac_pcibios_after_init from .machine.desc after 'mach_powermac' (at offset 0xc4)
+WARNING: mm/built-in.o - Section mismatch: reference to .init.text:set_up_list3s from .text between 'kmem_cache_create' (at
+offset 0x1de88) and 'kmem_cache_shrink'
+WARNING: mm/built-in.o - Section mismatch: reference to .init.text:set_up_list3s from .text between 'kmem_cache_create' (at
+offset 0x1dec0) and 'kmem_cache_shrink'
 
----
- arch/powerpc/boot/dts/mpc8540ads.dts |   16 ++++++++++++++++
- arch/powerpc/boot/dts/mpc8548cds.dts |   16 ++++++++++++++++
- arch/powerpc/boot/dts/mpc8560ads.dts |   18 +++++++++++++++++-
- 3 files changed, 49 insertions(+), 1 deletions(-)
+I find these 50 or so warnings so scary that I've not yet tried 
+to boot the kernel. Note that this is a non-modular kernel.
 
-diff --git a/arch/powerpc/boot/dts/mpc8540ads.dts b/arch/powerpc/boot/dts/mpc8540ads.dts
-index f261d64..5471227 100644
---- a/arch/powerpc/boot/dts/mpc8540ads.dts
-+++ b/arch/powerpc/boot/dts/mpc8540ads.dts
-@@ -48,6 +48,22 @@
- 		reg = <e0000000 00100000>;	// CCSRBAR 1M
- 		bus-frequency = <0>;
- 
-+		memory-controller@2000 {
-+			compatible = "fsl,8540-memory-controller";
-+			reg = <2000 1000>;
-+			interrupt-parent = <&mpic>;
-+			interrupts = <2 2>;
-+		};
-+
-+		l2-cache-controller@20000 {
-+			compatible = "fsl,85xx-l2-cache-controller";
-+			reg = <20000 1000>;
-+			cache-line-size = <20>;	// 32 bytes
-+			cache-size = <40000>;	// L2, 256K
-+			interrupt-parent = <&mpic>;
-+			interrupts = <0 2>;
-+		};
-+
- 		i2c@3000 {
- 			device_type = "i2c";
- 			compatible = "fsl-i2c";
-diff --git a/arch/powerpc/boot/dts/mpc8548cds.dts b/arch/powerpc/boot/dts/mpc8548cds.dts
-index b2b2200..f0c5256 100644
---- a/arch/powerpc/boot/dts/mpc8548cds.dts
-+++ b/arch/powerpc/boot/dts/mpc8548cds.dts
-@@ -48,6 +48,22 @@
- 		reg = <e0000000 00100000>;	// CCSRBAR 1M
- 		bus-frequency = <0>;
- 
-+		memory-controller@2000 {
-+			compatible = "fsl,8548-memory-controller";
-+			reg = <2000 1000>;
-+			interrupt-parent = <&mpic>;
-+			interrupts = <2 2>;
-+		};
-+
-+		l2-cache-controller@20000 {
-+			compatible = "fsl,85xx-l2-cache-controller";
-+			reg = <20000 1000>;
-+			cache-line-size = <20>;	// 32 bytes
-+			cache-size = <40000>;	// L2, 256K
-+			interrupt-parent = <&mpic>;
-+			interrupts = <0 2>;
-+		};
-+
- 		i2c@3000 {
- 			device_type = "i2c";
- 			compatible = "fsl-i2c";
-diff --git a/arch/powerpc/boot/dts/mpc8560ads.dts b/arch/powerpc/boot/dts/mpc8560ads.dts
-index 1f2afe9..144fc65 100644
---- a/arch/powerpc/boot/dts/mpc8560ads.dts
-+++ b/arch/powerpc/boot/dts/mpc8560ads.dts
-@@ -48,6 +48,22 @@
- 		reg = <e0000000 00000200>;
- 		bus-frequency = <13ab6680>;
- 
-+		memory-controller@2000 {
-+			compatible = "fsl,8540-memory-controller";
-+			reg = <2000 1000>;
-+			interrupt-parent = <&mpic>;
-+			interrupts = <2 2>;
-+		};
-+
-+		l2-cache-controller@20000 {
-+			compatible = "fsl,85xx-l2-cache-controller";
-+			reg = <20000 1000>;
-+			cache-line-size = <20>;	// 32 bytes
-+			cache-size = <40000>;	// L2, 256K
-+			interrupt-parent = <&mpic>;
-+			interrupts = <0 2>;
-+		};
-+
- 		mdio@24520 {
- 			device_type = "mdio";
- 			compatible = "gianfar";
-@@ -110,7 +126,7 @@
- 			#address-cells = <3>;
- 			compatible = "85xx";
- 			device_type = "pci";
--			reg = <8000 400>;
-+			reg = <8000 1000>;
- 			clock-frequency = <3f940aa>;
- 			interrupt-map-mask = <f800 0 0 7>;
- 			interrupt-map = <
+	Gabriel
