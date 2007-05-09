@@ -1,26 +1,15 @@
-Return-Path: <jdl@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8E198DDDFF
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 02:14:19 +1000 (EST)
-Subject: Re: [PATCH] 86xx: Enable the AC97 interface on 8641D board.
-From: Jon Loeliger <jdl@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <3C4D879A-E756-45EA-AB67-70902797ED35@kernel.crashing.org>
-References: <1178142818.32136.51.camel@ld0161-tx32>
-	<08D3A1CE-12E0-4759-B055-DE227EA4135E@kernel.crashing.org>
-	<1178207725.17201.33.camel@ld0161-tx32>
-	<20070503161000.GA31881@lixom.net>
-	<1178209046.17201.55.camel@ld0161-tx32>
-	<3C4D879A-E756-45EA-AB67-70902797ED35@kernel.crashing.org>
-Content-Type: text/plain
-Message-Id: <1178727252.6734.19.camel@ld0161-tx32>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 85856DDEE7
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 02:18:30 +1000 (EST)
+Date: Thu, 10 May 2007 02:18:35 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] fix warning in hash_native_64.c
+Message-Id: <20070510021835.97209267.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Date: Wed, 09 May 2007 11:14:12 -0500
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, dgibson@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,16 +19,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-05-03 at 11:19, Kumar Gala wrote:
 
-> I agree with Jon here.  This is in board specific code so I don't see  
-> any issue with it.
+arch/powerpc/mm/hash_native_64.c: In function 'native_hpte_clear':
+arch/powerpc/mm/hash_native_64.c:353: warning: 'avpn' may be used uninitialized in this function
 
+The change is really to BUG_ON the invers of the if condition and
+outdent all the following code.  The comment above this imples that
+changing this so it does the BUG_ON() is a reasonable fix.
 
-Hi Kumar,
+David Gibson suggested using BUG_ON here.
 
-So, bottom line, will you pick this patch up and
-pass it along to Paul?
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/mm/hash_native_64.c |   22 ++++++++++++----------
+ 1 files changed, 12 insertions(+), 10 deletions(-)
 
-Thanks,
-jdl
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index 7b7fe2d..531a5ab 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -16,6 +16,7 @@
+ #include <linux/bitops.h>
+ #include <linux/threads.h>
+ #include <linux/smp.h>
++#include <linux/bug.h>
+ 
+ #include <asm/abs_addr.h>
+ #include <asm/machdep.h>
+@@ -389,18 +390,19 @@ static void hpte_decode(hpte_t *hpte, unsigned long slot,
+ 		avpnm_bits = __ilog2_u64(mmu_psize_defs[size].avpnm) + 1;
+ 	else
+ 		avpnm_bits = 0;
+-	if (shift - avpnm_bits <= 23) {
+-		avpn = HPTE_V_AVPN_VAL(hpte_v) << 23;
+ 
+-		if (shift < 23) {
+-			unsigned long vpi, pteg;
++	BUG_ON(!(shift - avpnm_bits <= 23));
+ 
+-			pteg = slot / HPTES_PER_GROUP;
+-			if (hpte_v & HPTE_V_SECONDARY)
+-				pteg = ~pteg;
+-			vpi = ((avpn >> 28) ^ pteg) & htab_hash_mask;
+-			avpn |= (vpi << mmu_psize_defs[size].shift);
+-		}
++	avpn = HPTE_V_AVPN_VAL(hpte_v) << 23;
++
++	if (shift < 23) {
++		unsigned long vpi, pteg;
++
++		pteg = slot / HPTES_PER_GROUP;
++		if (hpte_v & HPTE_V_SECONDARY)
++			pteg = ~pteg;
++		vpi = ((avpn >> 28) ^ pteg) & htab_hash_mask;
++		avpn |= (vpi << mmu_psize_defs[size].shift);
+ 	}
+ 
+ 	*va = avpn;
+-- 
+1.5.1.3
