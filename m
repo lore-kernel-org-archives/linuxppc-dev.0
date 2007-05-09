@@ -1,15 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17985.26509.807018.401277@cargo.ozlabs.ibm.com>
-Date: Wed, 9 May 2007 16:17:49 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] swsusp: introduce register_nosave_region_late
-In-Reply-To: <1178616229.18162.40.camel@johannes.berg>
-References: <1178616229.18162.40.camel@johannes.berg>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 41572DDE41
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2007 16:24:59 +1000 (EST)
+Date: Wed, 9 May 2007 16:24:42 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH 2/2] [POWERPC] Wire up sys_utimensat
+Message-Id: <20070509162442.11760e79.sfr@canb.auug.org.au>
+In-Reply-To: <20070509162151.6a54507a.sfr@canb.auug.org.au>
+References: <20070509162151.6a54507a.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,23 +21,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Johannes Berg writes:
 
-> This patch introduces a new register_nosave_region_late function that
-> can be called from initcalls when register_nosave_region can no longer
-> be used because it uses bootmem.
-> 
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> ---
-> Paul, I see you merged the suspend to disk for G5 patches, but this one
-> is required for it to build. Rafael said that we should merge it with
-> the user, since our code is the only user right now I take it that means
-> it should go through the powerpc tree.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ include/asm-powerpc/systbl.h |    1 +
+ include/asm-powerpc/unistd.h |    3 ++-
+ 2 files changed, 3 insertions(+), 1 deletions(-)
 
-OK, but the patch doesn't apply against Linus' tree.  It has no
-mention of register_nosave_region in include/linux/suspend.h, for
-instance.  Which tree is this patch against?
+This depends on the patch to declare {compat_}sys_utimensat
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Paul.
+diff --git a/include/asm-powerpc/systbl.h b/include/asm-powerpc/systbl.h
+index 0b00068..3d44446 100644
+--- a/include/asm-powerpc/systbl.h
++++ b/include/asm-powerpc/systbl.h
+@@ -307,3 +307,4 @@ COMPAT_SYS_SPU(set_robust_list)
+ COMPAT_SYS_SPU(move_pages)
+ SYSCALL_SPU(getcpu)
+ COMPAT_SYS(epoll_pwait)
++COMPAT_SYS_SPU(utimensat)
+diff --git a/include/asm-powerpc/unistd.h b/include/asm-powerpc/unistd.h
+index 2baedbe..2b11631 100644
+--- a/include/asm-powerpc/unistd.h
++++ b/include/asm-powerpc/unistd.h
+@@ -326,10 +326,11 @@
+ #define __NR_move_pages		301
+ #define __NR_getcpu		302
+ #define __NR_epoll_pwait	303
++#define __NR_utimensat		303
+ 
+ #ifdef __KERNEL__
+ 
+-#define __NR_syscalls		304
++#define __NR_syscalls		305
+ 
+ #define __NR__exit __NR_exit
+ #define NR_syscalls	__NR_syscalls
+-- 
+1.5.1.3
