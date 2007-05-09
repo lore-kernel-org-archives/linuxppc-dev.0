@@ -1,26 +1,33 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
-	[151.189.21.47])
+Return-Path: <linas@austin.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B971EDDDFA
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 01:28:28 +1000 (EST)
-In-Reply-To: <1178706570.3453.63.camel@zod.rchland.ibm.com>
-References: <cbcd7823ea9b0f17f998670915719a05@kernel.crashing.org>
-	<AF0367BA48C55940A43CCF08DF35553C012AA296@az33exm24.fsl.freescale.net>
-	<20070509004948.GB4198@localhost.localdomain>
-	<1178706570.3453.63.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <0f60e44e6c7848e5eee8c82c0f2bfaec@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v2 6/7] Holly DTS
-Date: Wed, 9 May 2007 17:28:18 +0200
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	Loeliger Jon-LOELIGER <jdl@Freescale.com>,
-	David Gibson <david@gibson.dropbear.id.au>
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 15987DDE33
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 02:11:44 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l49FA2WL007650
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 May 2007 11:10:02 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l49GBdQQ512208
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 May 2007 12:11:39 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l49GBdGY009972
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 May 2007 12:11:39 -0400
+Date: Wed, 9 May 2007 11:11:38 -0500
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH 1/4] powerpc: EEH: log error only after driver
+	notification.
+Message-ID: <20070509161138.GT4452@austin.ibm.com>
+References: <20070508230952.GN4452@austin.ibm.com>
+	<20070508233329.GP4452@austin.ibm.com>
+	<20070509045115.GA1771@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070509045115.GA1771@lixom.net>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,29 +37,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> Other dts'es are similar. Could be nice
->>>>> to have a comment next to it if that's the case.
->>>>
->>>> Yeah.  There's also this ?? syntax now I believe.
->>>
->>> Not quite yet.
->>
->> Yes, the idea was raised, but discussion kind of petered out and
->> nobody (read: me) got around to implementing it.
->
-> What exactly did this ?? syntax imply?  I must have missed that thread.
+On Tue, May 08, 2007 at 11:51:15PM -0500, Olof Johansson wrote:
+> > +	eeh_slot_error_detail(frozen_pdn, 1 /* Temporary Error */);
+> 
+> I know you only moved it, but if you have to document what '1' means,
+> you really should add a symbolic define/enum instead. 
 
-A property in a DTS file can use that to say
-the property should have a value, but it will
-be filled in by the bootwrapper instead (memory
-address/size, or network MAC address, for
-instance).  Presumably the kernel parser would
-complain when it sees the this-is-still-undefined
-marker.
+Of course. Coming up.
 
-The original proposal specified the length of
-the property value IIRC, but that isn't necessary
-anymore.
-
-
-Segher
+--linas
