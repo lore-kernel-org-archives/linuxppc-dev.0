@@ -1,31 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BC982DDE2F
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 08:48:22 +1000 (EST)
-Subject: Re: vm changes from linux-2.6.14 to linux-2.6.15
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mark Fortescue <mark@mtfhpc.demon.co.uk>
-In-Reply-To: <Pine.LNX.4.61.0705092005060.29444@mtfhpc.demon.co.uk>
-References: <20070430145414.88fda272.akpm@linux-foundation.org>
-	<20070430.150407.07642146.davem@davemloft.net>
-	<1177977619.24962.6.camel@localhost.localdomain>
-	<20070430.173806.112621225.davem@davemloft.net>
-	<Pine.LNX.4.61.0705010223040.3556@mtfhpc.demon.co.uk>
-	<1177985136.24962.8.camel@localhost.localdomain>
-	<Pine.LNX.4.61.0705011453380.4771@mtfhpc.demon.co.uk>
-	<1178055110.13263.2.camel@localhost.localdomain>
-	<Pine.LNX.4.61.0705012354290.12808@mtfhpc.demon.co.uk>
-	<Pine.LNX.4.61.0705092005060.29444@mtfhpc.demon.co.uk>
-Content-Type: text/plain
-Date: Thu, 10 May 2007 08:48:02 +1000
-Message-Id: <1178750882.14928.199.camel@localhost.localdomain>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 72683DDE05
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 09:11:39 +1000 (EST)
+Date: Thu, 10 May 2007 09:11:38 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Becky Bruce <becky.bruce@freescale.com>
+Subject: Re: [PATCH] Move reg_booke.h to include/asm-powerpc
+Message-Id: <20070510091138.6e4fe0e6.sfr@canb.auug.org.au>
+In-Reply-To: <11787390792190-git-send-email-becky.bruce@freescale.com>
+References: <11787390792190-git-send-email-becky.bruce@freescale.com>
 Mime-Version: 1.0
-Cc: linux-mm@kvack.org, wli@holomorphy.com, linuxppc-dev@ozlabs.org,
-	andrea@suse.de, sparclinux@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Miller <davem@davemloft.net>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__10_May_2007_09_11_38_+1000_4bNA+XVXpJFmxfuh"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,20 +23,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-05-09 at 20:44 +0100, Mark Fortescue wrote:
-> Hi Ben,
-> 
-> Is it worth formally sending in either of my patches or does more work 
-> need to be done first?
+--Signature=_Thu__10_May_2007_09_11_38_+1000_4bNA+XVXpJFmxfuh
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-Sorry, I've been busy with other things...
+On Wed,  9 May 2007 14:31:19 -0500 Becky Bruce <becky.bruce@freescale.com> wrote:
+>
+> This patch moves reg_booke.h from include/asm-ppc to include/asm-powerpc.  This is
+> just a git-mv of the file; no changes were made.  Tested builds of 8540 ADS and
+> Ebony platforms with ARCH=ppc and ARCH=powerpc.
+>
+> Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
+> ---
+>  include/{asm-ppc => asm-powerpc}/reg_booke.h |    0
+>  1 files changed, 0 insertions(+), 0 deletions(-)
+>  rename include/{asm-ppc => asm-powerpc}/reg_booke.h (100%)
+>
+> diff --git a/include/asm-ppc/reg_booke.h b/include/asm-powerpc/reg_booke.h
+> similarity index 100%
+> rename from include/asm-ppc/reg_booke.h
+> rename to include/asm-powerpc/reg_booke.h
 
-What do other thing about it ? Having update_mmu_cache() call buried
-inside the ptep_set_access_flags() sounds good ? Somebody has a better
-idea ?
+Could you please change the self inclusion protection defines?
 
-One thing I was thinking was that we could replace the whole logic with
-having ptep_set_access_flags() compare the new PTE bits with what was
-already there and return wether an update_mmu_cache() is required....
+Thanks.
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Ben.
+--Signature=_Thu__10_May_2007_09_11_38_+1000_4bNA+XVXpJFmxfuh
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGQlUxFdBgD/zoJvwRApr2AJ4ipfaz6KA1OzhIKBskePVIOUsdsACcCyO3
+DveLTm3W7vOEvIHPLDK3MG4=
+=htE3
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__10_May_2007_09_11_38_+1000_4bNA+XVXpJFmxfuh--
