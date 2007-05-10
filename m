@@ -3,18 +3,27 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B165BDEBA3
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 15:21:06 +1000 (EST)
-Date: Thu, 10 May 2007 00:16:37 -0500 (CDT)
+	by ozlabs.org (Postfix) with ESMTP id 8618CDDEFA
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 15:26:13 +1000 (EST)
+In-Reply-To: <20070509165333.GA3118@blade.az.mvista.com>
+References: <20070425213700.GA8814@blade.az.mvista.com>
+	<20070426000852.GA2193@localhost.localdomain>
+	<20070426003748.GA30730@blade.az.mvista.com>
+	<9903F55A-5E4E-42CE-8C27-6B7143B9FE25@kernel.crashing.org>
+	<20070501183220.GA6426@blade.az.mvista.com>
+	<20070507232634.GA11166@blade.az.mvista.com>
+	<3EF891D2-F973-43D6-B43B-B8BBC4269C60@kernel.crashing.org>
+	<4640AE88.9040806@mvista.com>
+	<6fb05a0954f19c5744369c18670d81ff@kernel.crashing.org>
+	<20070509165333.GA3118@blade.az.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3E2DA6EA-8952-47B3-A395-C416D7AC9D62@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH 1/2] Suppress warning when CONFIG_PCI is not defined
-In-Reply-To: <46428E31.3090007@freescale.com>
-Message-ID: <Pine.LNX.4.64.0705100016240.27791@localhost.localdomain>
-References: <46428E31.3090007@freescale.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Paul <paulus@samba.org>
+Subject: Re: [PATCH] powerpc: add dts entries to 85xx for EDAC
+Date: Thu, 10 May 2007 00:25:19 -0500
+To: Dave Jiang <djiang@mvista.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,18 +33,119 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 10 May 2007, Li Yang wrote:
 
-> Suppress warning when CONFIG_PCI is not defined.
+On May 9, 2007, at 11:53 AM, Dave Jiang wrote:
+
 >
-> Signed-off-by: Li Yang <leoli@freescale.com>
+> Adding memory-controller and l2-cache-controller entries to be used  
+> by EDAC as
+> of_devices.
+>
+> Signed-off-by: Dave Jiang <djiang@mvista.com>
+>
 > ---
-> arch/powerpc/platforms/83xx/mpc8313_rdb.c |    2 ++
-> arch/powerpc/platforms/83xx/mpc834x_itx.c |    2 ++
-> arch/powerpc/platforms/83xx/mpc834x_mds.c |    2 ++
-> 3 files changed, 6 insertions(+), 0 deletions(-)
+>  arch/powerpc/boot/dts/mpc8540ads.dts |   16 ++++++++++++++++
+>  arch/powerpc/boot/dts/mpc8548cds.dts |   16 ++++++++++++++++
+>  arch/powerpc/boot/dts/mpc8560ads.dts |   18 +++++++++++++++++-
+>  3 files changed, 49 insertions(+), 1 deletions(-)
 >
+> diff --git a/arch/powerpc/boot/dts/mpc8540ads.dts b/arch/powerpc/ 
+> boot/dts/mpc8540ads.dts
+> index f261d64..5471227 100644
+> --- a/arch/powerpc/boot/dts/mpc8540ads.dts
+> +++ b/arch/powerpc/boot/dts/mpc8540ads.dts
+> @@ -48,6 +48,22 @@
+>  		reg = <e0000000 00100000>;	// CCSRBAR 1M
+>  		bus-frequency = <0>;
+>
+> +		memory-controller@2000 {
+> +			compatible = "fsl,8540-memory-controller";
+> +			reg = <2000 1000>;
+> +			interrupt-parent = <&mpic>;
+> +			interrupts = <2 2>;
+> +		};
+> +
+> +		l2-cache-controller@20000 {
+> +			compatible = "fsl,85xx-l2-cache-controller";
 
-applied.
+we should probably do the same fsl,8540-l2-cache-controller, fsl,8548- 
+l2-cache-controller, ...
 
-- k
+> +			reg = <20000 1000>;
+> +			cache-line-size = <20>;	// 32 bytes
+> +			cache-size = <40000>;	// L2, 256K
+> +			interrupt-parent = <&mpic>;
+> +			interrupts = <0 2>;
+> +		};
+> +
+>  		i2c@3000 {
+>  			device_type = "i2c";
+>  			compatible = "fsl-i2c";
+> diff --git a/arch/powerpc/boot/dts/mpc8548cds.dts b/arch/powerpc/ 
+> boot/dts/mpc8548cds.dts
+> index b2b2200..f0c5256 100644
+> --- a/arch/powerpc/boot/dts/mpc8548cds.dts
+> +++ b/arch/powerpc/boot/dts/mpc8548cds.dts
+> @@ -48,6 +48,22 @@
+>  		reg = <e0000000 00100000>;	// CCSRBAR 1M
+>  		bus-frequency = <0>;
+>
+> +		memory-controller@2000 {
+> +			compatible = "fsl,8548-memory-controller";
+> +			reg = <2000 1000>;
+> +			interrupt-parent = <&mpic>;
+> +			interrupts = <2 2>;
+> +		};
+> +
+> +		l2-cache-controller@20000 {
+> +			compatible = "fsl,85xx-l2-cache-controller";
+> +			reg = <20000 1000>;
+> +			cache-line-size = <20>;	// 32 bytes
+> +			cache-size = <40000>;	// L2, 256K
+
+Cache size 512k on 8548.
+
+> +			interrupt-parent = <&mpic>;
+> +			interrupts = <0 2>;
+> +		};
+> +
+>  		i2c@3000 {
+>  			device_type = "i2c";
+>  			compatible = "fsl-i2c";
+> diff --git a/arch/powerpc/boot/dts/mpc8560ads.dts b/arch/powerpc/ 
+> boot/dts/mpc8560ads.dts
+> index 1f2afe9..144fc65 100644
+> --- a/arch/powerpc/boot/dts/mpc8560ads.dts
+> +++ b/arch/powerpc/boot/dts/mpc8560ads.dts
+> @@ -48,6 +48,22 @@
+>  		reg = <e0000000 00000200>;
+>  		bus-frequency = <13ab6680>;
+>
+> +		memory-controller@2000 {
+> +			compatible = "fsl,8540-memory-controller";
+> +			reg = <2000 1000>;
+> +			interrupt-parent = <&mpic>;
+> +			interrupts = <2 2>;
+> +		};
+> +
+> +		l2-cache-controller@20000 {
+> +			compatible = "fsl,85xx-l2-cache-controller";
+> +			reg = <20000 1000>;
+> +			cache-line-size = <20>;	// 32 bytes
+> +			cache-size = <40000>;	// L2, 256K
+> +			interrupt-parent = <&mpic>;
+> +			interrupts = <0 2>;
+> +		};
+> +
+>  		mdio@24520 {
+>  			device_type = "mdio";
+>  			compatible = "gianfar";
+> @@ -110,7 +126,7 @@
+>  			#address-cells = <3>;
+>  			compatible = "85xx";
+>  			device_type = "pci";
+> -			reg = <8000 400>;
+> +			reg = <8000 1000>;
+>  			clock-frequency = <3f940aa>;
+>  			interrupt-map-mask = <f800 0 0 7>;
+>  			interrupt-map = <
