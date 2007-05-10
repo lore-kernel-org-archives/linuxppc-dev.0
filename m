@@ -1,23 +1,22 @@
-Return-Path: <gregkh@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 930A6DDEFF
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 00:11:35 +1000 (EST)
-Date: Thu, 10 May 2007 07:12:21 -0700
-From: Greg KH <gregkh@suse.de>
-To: Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH] update sysfs kset initialisation in PPC64 DLPAR IO driver
-Message-ID: <20070510141221.GA26709@suse.de>
-References: <464322F3.3010808@shadowen.org>
-	<2c705c055fcd12202673ee8a3056153b@pinky>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <2c705c055fcd12202673ee8a3056153b@pinky>
-Cc: Andrew Morton <akpm@osdl.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>, paulus@samba.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id F140BDDEF6
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 00:21:40 +1000 (EST)
+In-Reply-To: <E00865DA-6E7E-4D9E-8F7A-2B35A8103163@freescale.com>
+References: <11787390792190-git-send-email-becky.bruce@freescale.com>
+	<20070510091138.6e4fe0e6.sfr@canb.auug.org.au>
+	<E00865DA-6E7E-4D9E-8F7A-2B35A8103163@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <1AD7FFC7-8BEE-44C0-A28F-A36462C9B3EE@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Move reg_booke.h to include/asm-powerpc
+Date: Thu, 10 May 2007 09:20:43 -0500
+To: Becky Bruce <becky.bruce@freescale.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,23 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 10, 2007 at 03:00:50PM +0100, Andy Whitcroft wrote:
-> 
-> Move the rpadlpar device from "struct subsystem" to "struct kset"
-> following the changes in sysfs.
-> 
-> Signed-off-by: Andy Whitcroft <apw@shadowen.org>
-> ---
-> 
-> 	Ok, this patch seems to sort out the compile problem
-> 	here and indeed boots and runs kernbench.  Perhaps
-> 	you could confirm this is sufficient.
 
-As per the discussion on the pci hotplug list, no, this doesn't seem to
-fix the problem.  The developers there are looking into it.  If you can
-test out patches for this, I'm sure the people there would appreciate
-the help.
+On May 10, 2007, at 8:44 AM, Becky Bruce wrote:
 
-thanks,
+>
+> On May 9, 2007, at 6:11 PM, Stephen Rothwell wrote:
+>
+>> On Wed,  9 May 2007 14:31:19 -0500 Becky Bruce
+>> <becky.bruce@freescale.com> wrote:
+>>>
+>>> This patch moves reg_booke.h from include/asm-ppc to include/asm-
+>>> powerpc.  This is
+>>> just a git-mv of the file; no changes were made.  Tested builds of
+>>> 8540 ADS and
+>>> Ebony platforms with ARCH=ppc and ARCH=powerpc.
+>>>
+>>> Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
+>>> ---
+>>>  include/{asm-ppc => asm-powerpc}/reg_booke.h |    0
+>>>  1 files changed, 0 insertions(+), 0 deletions(-)
+>>>  rename include/{asm-ppc => asm-powerpc}/reg_booke.h (100%)
+>>>
+>>> diff --git a/include/asm-ppc/reg_booke.h b/include/asm-powerpc/
+>>> reg_booke.h
+>>> similarity index 100%
+>>> rename from include/asm-ppc/reg_booke.h
+>>> rename to include/asm-powerpc/reg_booke.h
+>>
+>> Could you please change the self inclusion protection defines?
+>
+> Certainement.  I meant to send a second patch to do that, so the
+> first one was *just* a move (who can resist the urge to put out a 0-
+> line patch :).  Will follow up.
 
-greg k-h
+I already handled this and duplicated the file in my tree.
+
+- k
