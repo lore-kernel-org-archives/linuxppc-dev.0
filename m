@@ -1,20 +1,11 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6FB61DDE1D
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 13:44:03 +1000 (EST)
-Date: Wed, 9 May 2007 22:39:36 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] Mark prop unused in early_init_dt_scan_chosen().
-In-Reply-To: <20070508171451.GA8893@ld0162-tx32.am.freescale.net>
-Message-ID: <Pine.LNX.4.64.0705092238390.29512@localhost.localdomain>
-References: <20070508171451.GA8893@ld0162-tx32.am.freescale.net>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: paulus@samba.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Subject: [PATCH] minor pSeries IOMMU debug cleanup
+Date: Thu, 10 May 2007 15:16:27 +1000
+Message-ID: <20106.1178774187@neuling.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +15,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 8 May 2007, Scott Wood wrote:
+pci is not initialized before being used here, so this debug print is
+bogus at the current location.
 
-> The prop variable is only referenced when initrd support is
-> turned on.
->
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
->  arch/powerpc/kernel/prom.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> index caef555..6705459 100644
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -720,7 +720,7 @@ static int __init early_init_dt_scan_chosen(unsigned long node,
->  					    const char *uname, int depth, void *data)
->  {
->  	unsigned long *lprop;
-> -	u32 *prop;
-> +	u32 __attribute__((unused)) *prop;
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+ arch/powerpc/platforms/pseries/iommu.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-is this the desired way to remove warnings related to CONFIG_ options?  I
-know in the past we'd wrap it with a #ifdef CONFIG_FOO
-
->  	unsigned long l;
->  	char *p;
->
->
-
-- k
+Index: linux-2.6-ozlabs/arch/powerpc/platforms/pseries/iommu.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/platforms/pseries/iommu.c
++++ linux-2.6-ozlabs/arch/powerpc/platforms/pseries/iommu.c
+@@ -520,7 +520,6 @@ static void pci_dma_dev_setup_pSeriesLP(
+ 		dev->dev.archdata.dma_data = PCI_DN(pdn)->iommu_table;
+ 		return;
+ 	}
+-	DBG("  found DMA window, table: %p\n", pci->iommu_table);
+ 
+ 	pci = PCI_DN(pdn);
+ 	if (!pci->iommu_table) {
+@@ -534,6 +533,8 @@ static void pci_dma_dev_setup_pSeriesLP(
+ 
+ 		pci->iommu_table = iommu_init_table(tbl, pci->phb->node);
+ 		DBG("  created table: %p\n", pci->iommu_table);
++	} else {
++		DBG("  found DMA window, table: %p\n", pci->iommu_table);
+ 	}
+ 
+ 	dev->dev.archdata.dma_data = pci->iommu_table;
