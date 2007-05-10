@@ -1,21 +1,15 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
-	[66.98.186.96])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2A6F6DDEF5
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 08:07:28 +1000 (EST)
-Message-ID: <464397B8.408@genesi-usa.com>
-Date: Thu, 10 May 2007 23:07:52 +0100
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
-To: Linas Vepstas <linas@austin.ibm.com>
-Subject: Re: Building ppc/powerpc kernel to run under QEMU.
-References: <200705092203.26042.rob@landley.net>
-	<20070510172806.GE4452@austin.ibm.com>
-In-Reply-To: <20070510172806.GE4452@austin.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Rob Landley <rob@landley.net>
+Return-Path: <galak@kernel.crashing.org>
+In-Reply-To: <20070510215730.GA25075@lixom.net>
+References: <20070510200237.GA19756@mag.az.mvista.com>
+	<20070510215730.GA25075@lixom.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A903CF97-CD70-4F26-9AB3-E3194F391448@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: arch/powerpc/sysdev: dumping ground or only for shared drivers?
+Date: Thu, 10 May 2007 17:06:48 -0500
+To: Olof Johansson <olof@lixom.net>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,52 +19,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-QEMU really really wants a PREP kernel, and that stuff's just not in the new
-arch/powerpc tree anymore is it?
 
-I'd love to see the device tree once QEMU's kernel has booted :D
+On May 10, 2007, at 4:57 PM, Olof Johansson wrote:
 
-I wonder.. would it be useful to have a qemu platform in arch/powerpc and
-for someone to start hacking in devices from a non-emulated point of view?
-It seems a bit of a waste in my mind to emulate a network card, serial port
-IDE interface, ADB (yick!) and a VESA graphics adapter in such 'detail' when
-it can be passed back to the emulation somehow through some kind of clever
-call interface (maybe just have the zero page of the emulation contain a
-bunch of 'ports' which are really function calls pointers..?)
+> On Thu, May 10, 2007 at 01:02:37PM -0700, Mark A. Greer wrote:
+>> This is the latest and hopefully last round of patches for adding  
+>> mv64x60
+>> and prpmc2800 support to arch/powerpc.  It would be great if this  
+>> could
+>> still get into 2.6.22.
+>
+> I know Mark wants this merged, and I'm not looking to hold that off,
+> however the following came up on IRC and I wanted to move it over here
+> for clarification/list archiving of the answers:
+>
+>
+> This adds yet another set of chipset drivers under sysdev, that are
+> only used by one platform (several board ports under that platform,
+> but only one platforms/* directory).
+>
+> In my opinion, they really should go under the platform directory  
+> instead,
+> and not clutter the shared directory.
+>
+> Same with tsi*, it should probably be moved, as well as the 8xx*
+> drivers. fsl_* seems to be shared, so does cpm2*.
+>
+> embedded6xx has a handful of different chipsets, so it could make  
+> sense
+> to create a subdir under platforms/embedded6xx for chipset support,
+> but there's no need to keep them in sysdev.
+>
+>
+> Or is sysdev really supposed to be a dumping ground for all chipset
+> drivers, even those who are not shared between platforms?
+>
+> If not, I'll be happy to bake up a patch that moves things out (unless
+> the platform maintainers want to do it themselves) for 2.6.23.
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+Here's a breakdown of what's in sysdev today (or about to be) and my  
+take on its categorization:
 
-Linas Vepstas wrote:
-> Hi Rob,
-> 
-> On Wed, May 09, 2007 at 10:03:25PM -0400, Rob Landley wrote:
->> I've been puttering around with my Firmware Linux project trying to add
->> powerpc as a supported platform.  I can build kernels that qemu can boot (such
->> as a "prep" kernel) using ARCH=ppc, but that one doesn't support make
->> headers_install.
->>
->> Using ARCH=powerpc makes headers_install work, but there's no kernel .config 
->> I've been able to come up with that generates a kernel I can boot under qemu.
-> 
-> Hmm. I'm not a boot expert, (although many people on this list are). 
-> Any hint of where the boot is failing?  Maybe qemu is not setting up
-> a device tree? 
-> 
->> what's the status of the 
->> ppc->powerpc migration, 
-> 
-> pretty far along; bits f ppc are getting nuked regularly.
-> 
->> and is there any known way to get ARCH=powerpc to 
->> build a kernel qemu can boot?
-> 
-> Dunno...
-> 
-> --linas
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+8xx:
+commproc.c
+micropatch.c
+mpc8xx_pic.c
+mpc8xx_pic.h
+
+embedded6xx:
+grackle.c
+tsi108_dev.c
+tsi108_pci.c
+(soon to be added mv64x60)
+
+83xx:
+ipic.c
+ipic.h
+
+shared:
+cpm2_common.c
+cpm2_pic.c
+cpm2_pic.h
+dart.h
+dart_iommu.c
+dcr.c
+dcr-low.S
+fsl_pcie.c
+fsl_pcie.h
+fsl_soc.c
+fsl_soc.h
+i8259.c
+indirect_pci.c
+mmio_nvram.c
+mpic.c
+mpic.h
+mpic_msi.c
+mpic_u3msi.c
+qe_lib/
+timer.c
+uic.c
+
+unknown:
+pmi.c	(should this be in drivers somewhere?)
+
+- k
