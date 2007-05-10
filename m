@@ -1,22 +1,19 @@
-Return-Path: <becky.bruce@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 51159DDDFF
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 23:40:33 +1000 (EST)
-In-Reply-To: <20070510091138.6e4fe0e6.sfr@canb.auug.org.au>
-References: <11787390792190-git-send-email-becky.bruce@freescale.com>
-	<20070510091138.6e4fe0e6.sfr@canb.auug.org.au>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E00865DA-6E7E-4D9E-8F7A-2B35A8103163@freescale.com>
-From: Becky Bruce <becky.bruce@freescale.com>
-Subject: Re: [PATCH] Move reg_booke.h to include/asm-powerpc
-Date: Thu, 10 May 2007 08:44:23 -0500
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <apw@shadowen.org>
+Received: from hellhawk.shadowen.org (hellhawk.shadowen.org [80.68.90.175])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6B750DDED9
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 23:49:35 +1000 (EST)
+Message-ID: <464322F3.3010808@shadowen.org>
+Date: Thu, 10 May 2007 14:49:39 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+MIME-Version: 1.0
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Subject: 2.6.21-git5 -- powerpc link failure
+Content-Type: text/plain; charset=windows-1252
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,35 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Since 2.6.21-git5 we've been getting the following link failure on powerpc:
 
-On May 9, 2007, at 6:11 PM, Stephen Rothwell wrote:
+  CC      drivers/pci/hotplug/rpadlpar_core.o
+  CC      drivers/pci/hotplug/rpadlpar_sysfs.o
+drivers/pci/hotplug/rpadlpar_sysfs.c:132: error: unknown field
+‘subsys’ specified in initializer
+drivers/pci/hotplug/rpadlpar_sysfs.c:132: warning: initialization from
+incompatible pointer type
+make[3]: *** [drivers/pci/hotplug/rpadlpar_sysfs.o] Error 1
+make[2]: *** [drivers/pci/hotplug] Error 2
+make[1]: *** [drivers/pci] Error 2
+make: *** [drivers] Error 2
 
-> On Wed,  9 May 2007 14:31:19 -0500 Becky Bruce  
-> <becky.bruce@freescale.com> wrote:
->>
->> This patch moves reg_booke.h from include/asm-ppc to include/asm- 
->> powerpc.  This is
->> just a git-mv of the file; no changes were made.  Tested builds of  
->> 8540 ADS and
->> Ebony platforms with ARCH=ppc and ARCH=powerpc.
->>
->> Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
->> ---
->>  include/{asm-ppc => asm-powerpc}/reg_booke.h |    0
->>  1 files changed, 0 insertions(+), 0 deletions(-)
->>  rename include/{asm-ppc => asm-powerpc}/reg_booke.h (100%)
->>
->> diff --git a/include/asm-ppc/reg_booke.h b/include/asm-powerpc/ 
->> reg_booke.h
->> similarity index 100%
->> rename from include/asm-ppc/reg_booke.h
->> rename to include/asm-powerpc/reg_booke.h
->
-> Could you please change the self inclusion protection defines?
 
-Certainement.  I meant to send a second patch to do that, so the  
-first one was *just* a move (who can resist the urge to put out a 0- 
-line patch :).  Will follow up.
+I would think this is caused by the changes in the commit below:
 
-Thanks!
--B
+commit 823bccfc4002296ba88c3ad0f049e1abd8108d30
+Author: Greg Kroah-Hartman <gregkh@suse.de>
+Date:   Fri Apr 13 13:15:19 2007 -0700
+
+    remove "struct subsystem" as it is no longer needed
+
+-apw
