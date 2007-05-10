@@ -1,19 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[65.172.181.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9B112DDDF5
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 15:40:59 +1000 (EST)
-Subject: Re: [PATCH] Generalize hpte_decode()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17986.44428.934539.499645@cargo.ozlabs.ibm.com>
-References: <17986.44428.934539.499645@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Thu, 10 May 2007 15:40:53 +1000
-Message-Id: <1178775653.14928.208.camel@localhost.localdomain>
+	(Client CN "smtp.osdl.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id EC169DDE37
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 15:41:28 +1000 (EST)
+Date: Wed, 9 May 2007 22:41:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/3] Add hard_irq_disable()
+Message-Id: <20070509224113.cca81a24.akpm@linux-foundation.org>
+In-Reply-To: <20070510052622.3E8D5DDF4B@ozlabs.org>
+References: <20070510052622.3E8D5DDF4B@ozlabs.org>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Rusty Russell <rusty@rustcorp.com.au>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,17 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-05-10 at 15:28 +1000, Paul Mackerras wrote:
-> This adds the necessary support to hpte_decode() to handle 1TB
-> segments and 16GB pages, and also removes an uninitialized value
-> warning on avpn.
-> 
-> We don't have any code to generate HPTEs for 1TB segments or 16GB
-> pages yet, so this is mostly for completeness, and also to fix the
-> warning.
-> 
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
+On Thu, 10 May 2007 15:25:58 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-Not that you really need it but ...
+> --- linux-cell.orig/include/linux/interrupt.h	2007-05-10 14:51:22.000000000 +1000
+> +++ linux-cell/include/linux/interrupt.h	2007-05-10 15:18:04.000000000 +1000
+> @@ -241,6 +241,16 @@ static inline void __deprecated save_and
+>  #define save_and_cli(x)	save_and_cli(&x)
+>  #endif /* CONFIG_SMP */
+>  
+> +/* Some architectures might implement lazy enabling/disabling of
+> + * interrupts. In some cases, such as stop_machine, we might want
+> + * to ensure that after a local_irq_disable(), interrupts have
+> + * really been disabled in hardware. Such architectures need to
+> + * implement the following hook.
+> + */
+> +#ifndef hard_irq_disable
+> +#define hard_irq_disable()	do { } while(0)
+> +#endif
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+We absolutely require that the architecture's hard_irq_disable() be defined
+when we do this.  If it happens that the definition of hard_irq_disable()
+is implemented three levels deep in nested includes then we risk getting
+into a situation where different .c files see different implementations of
+hard_irq_disable(), which could lead to confusing results, to say the least.
+
+Your implementation comes via the inclusion of system.h which then includes
+hw_irq.h.  That's perhaps a little fragile and it would be better to
+
+a) include in the comment the name of the arch file which must implement
+   hard_irq_disable() and
+
+b) include that file directly from this one.
+
+Oh, and your comment layout style is wrong ;)
