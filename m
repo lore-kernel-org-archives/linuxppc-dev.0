@@ -1,21 +1,18 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id A425CDDDCA
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 17:12:34 +1000 (EST)
-Date: Thu, 10 May 2007 00:12:34 -0700 (PDT)
-Message-Id: <20070510.001234.126579706.davem@davemloft.net>
+Return-Path: <kou.ishizaki@toshiba.co.jp>
+Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 01518DDE09
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 17:14:27 +1000 (EST)
+Date: Thu, 10 May 2007 16:14:18 +0900 (JST)
+Message-Id: <20070510.161418.-1300530995.kouish@swc.toshiba.co.jp>
 To: benh@kernel.crashing.org
-Subject: Re: vm changes from linux-2.6.14 to linux-2.6.15
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1178778583.14928.210.camel@localhost.localdomain>
-References: <Pine.LNX.4.61.0705012354290.12808@mtfhpc.demon.co.uk>
-	<20070509231937.ea254c26.akpm@linux-foundation.org>
-	<1178778583.14928.210.camel@localhost.localdomain>
+Subject: Re: [PATCH 1/4] celleb: fix supporting for multiple pci domains
+In-Reply-To: <1178697002.14928.157.camel@localhost.localdomain>
+From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
-Cc: mark@mtfhpc.demon.co.uk, linuxppc-dev@ozlabs.org, wli@holomorphy.com,
-	linux-mm@kvack.org, andrea@suse.de, sparclinux@vger.kernel.org,
-	akpm@linux-foundation.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,22 +22,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 10 May 2007 16:29:43 +1000
+Ben-san,
 
+> > Celleb has multiple PCI host bridges (phbs). Previous boot logic
+gives
+> > non-overlapped bus IDs between PCI host bridges so you can identify
+> > PHB by bus ID. But newer boot logic gives same bus ID between PHBs
+(it
+> > gives bus ID 0 as root bus.) So we have to set 'phb->buid' as
+> > non-zero.
 > 
-> > We never seemed to reach completion here?
-> 
-> Well, I'm waiting for other people comments too... as I said earlier,
-> I'm not too fan of burrying the update_mmu_cache() inside
-> ptep_set_access_flags(), but perhaps we could remove the whole logic of
-> reading the old PTE & comparing it, and instead have
-> ptep_set_access_flags() do that locally and return to the caller wether
-> a change occured that requires update_mmu_cache() to be called.
-> 
-> That way, archs who don't actually need update_mmu_cache() under some
-> circumstances will be able to return 0 there.
-> 
-> What do you guys thing ?
+> Shouldn't you obtain it from the device-tree ?
 
-I think that's a good idea.
+With 'Celleb', we don't have 'buid' in the device-tree, because neither
+hypervisor calls nor RTAS subsystem uses 'buid.' So we didn't choose
+to obtain 'buid' from the device-tree.
+
+Best regards,
+Kou Ishizaki
