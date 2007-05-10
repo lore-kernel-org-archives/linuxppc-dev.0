@@ -1,29 +1,12 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8618CDDEFA
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 15:26:13 +1000 (EST)
-In-Reply-To: <20070509165333.GA3118@blade.az.mvista.com>
-References: <20070425213700.GA8814@blade.az.mvista.com>
-	<20070426000852.GA2193@localhost.localdomain>
-	<20070426003748.GA30730@blade.az.mvista.com>
-	<9903F55A-5E4E-42CE-8C27-6B7143B9FE25@kernel.crashing.org>
-	<20070501183220.GA6426@blade.az.mvista.com>
-	<20070507232634.GA11166@blade.az.mvista.com>
-	<3EF891D2-F973-43D6-B43B-B8BBC4269C60@kernel.crashing.org>
-	<4640AE88.9040806@mvista.com>
-	<6fb05a0954f19c5744369c18670d81ff@kernel.crashing.org>
-	<20070509165333.GA3118@blade.az.mvista.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3E2DA6EA-8952-47B3-A395-C416D7AC9D62@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: add dts entries to 85xx for EDAC
-Date: Thu, 10 May 2007 00:25:19 -0500
-To: Dave Jiang <djiang@mvista.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <benh@ozlabs.org>
+To: <linux-kernel@vger.kernel.org>,
+	<linuxppc-dev@ozlabs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Thu, 10 May 2007 15:25:57 +1000
+Subject: [PATCH 1/3] powerpc: Fixup hard_irq_disable semantics
+Message-Id: <20070510052620.EC36DDDF92@ozlabs.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Rusty Russell <rusty@rustcorp.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,119 +16,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This patch renames the raw hard_irq_{enable,disable} into
+__hard_irq_{enable,disable} and introduces a higher level
+hard_irq_disable() function that can be used by any code
+to enforce that IRQs are fully disabled, not only lazy
+disabled.
 
-On May 9, 2007, at 11:53 AM, Dave Jiang wrote:
+The difference with the __ versions is that it will update
+some per-processor fields so that the kernel keeps track and
+properly re-enables them in the next local_irq_disable();
 
->
-> Adding memory-controller and l2-cache-controller entries to be used  
-> by EDAC as
-> of_devices.
->
-> Signed-off-by: Dave Jiang <djiang@mvista.com>
->
-> ---
->  arch/powerpc/boot/dts/mpc8540ads.dts |   16 ++++++++++++++++
->  arch/powerpc/boot/dts/mpc8548cds.dts |   16 ++++++++++++++++
->  arch/powerpc/boot/dts/mpc8560ads.dts |   18 +++++++++++++++++-
->  3 files changed, 49 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/powerpc/boot/dts/mpc8540ads.dts b/arch/powerpc/ 
-> boot/dts/mpc8540ads.dts
-> index f261d64..5471227 100644
-> --- a/arch/powerpc/boot/dts/mpc8540ads.dts
-> +++ b/arch/powerpc/boot/dts/mpc8540ads.dts
-> @@ -48,6 +48,22 @@
->  		reg = <e0000000 00100000>;	// CCSRBAR 1M
->  		bus-frequency = <0>;
->
-> +		memory-controller@2000 {
-> +			compatible = "fsl,8540-memory-controller";
-> +			reg = <2000 1000>;
-> +			interrupt-parent = <&mpic>;
-> +			interrupts = <2 2>;
-> +		};
-> +
-> +		l2-cache-controller@20000 {
-> +			compatible = "fsl,85xx-l2-cache-controller";
+This prepares powerpc for my next patch that introduces
+hard_irq_disable() generically.
 
-we should probably do the same fsl,8540-l2-cache-controller, fsl,8548- 
-l2-cache-controller, ...
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-> +			reg = <20000 1000>;
-> +			cache-line-size = <20>;	// 32 bytes
-> +			cache-size = <40000>;	// L2, 256K
-> +			interrupt-parent = <&mpic>;
-> +			interrupts = <0 2>;
-> +		};
-> +
->  		i2c@3000 {
->  			device_type = "i2c";
->  			compatible = "fsl-i2c";
-> diff --git a/arch/powerpc/boot/dts/mpc8548cds.dts b/arch/powerpc/ 
-> boot/dts/mpc8548cds.dts
-> index b2b2200..f0c5256 100644
-> --- a/arch/powerpc/boot/dts/mpc8548cds.dts
-> +++ b/arch/powerpc/boot/dts/mpc8548cds.dts
-> @@ -48,6 +48,22 @@
->  		reg = <e0000000 00100000>;	// CCSRBAR 1M
->  		bus-frequency = <0>;
->
-> +		memory-controller@2000 {
-> +			compatible = "fsl,8548-memory-controller";
-> +			reg = <2000 1000>;
-> +			interrupt-parent = <&mpic>;
-> +			interrupts = <2 2>;
-> +		};
-> +
-> +		l2-cache-controller@20000 {
-> +			compatible = "fsl,85xx-l2-cache-controller";
-> +			reg = <20000 1000>;
-> +			cache-line-size = <20>;	// 32 bytes
-> +			cache-size = <40000>;	// L2, 256K
+ arch/powerpc/kernel/irq.c               |    2 +-
+ arch/powerpc/kernel/swsusp.c            |    4 ----
+ arch/powerpc/platforms/cell/pervasive.c |    6 ++----
+ include/asm-powerpc/hw_irq.h            |   11 +++++++++--
+ 4 files changed, 12 insertions(+), 11 deletions(-)
 
-Cache size 512k on 8548.
-
-> +			interrupt-parent = <&mpic>;
-> +			interrupts = <0 2>;
-> +		};
-> +
->  		i2c@3000 {
->  			device_type = "i2c";
->  			compatible = "fsl-i2c";
-> diff --git a/arch/powerpc/boot/dts/mpc8560ads.dts b/arch/powerpc/ 
-> boot/dts/mpc8560ads.dts
-> index 1f2afe9..144fc65 100644
-> --- a/arch/powerpc/boot/dts/mpc8560ads.dts
-> +++ b/arch/powerpc/boot/dts/mpc8560ads.dts
-> @@ -48,6 +48,22 @@
->  		reg = <e0000000 00000200>;
->  		bus-frequency = <13ab6680>;
->
-> +		memory-controller@2000 {
-> +			compatible = "fsl,8540-memory-controller";
-> +			reg = <2000 1000>;
-> +			interrupt-parent = <&mpic>;
-> +			interrupts = <2 2>;
-> +		};
-> +
-> +		l2-cache-controller@20000 {
-> +			compatible = "fsl,85xx-l2-cache-controller";
-> +			reg = <20000 1000>;
-> +			cache-line-size = <20>;	// 32 bytes
-> +			cache-size = <40000>;	// L2, 256K
-> +			interrupt-parent = <&mpic>;
-> +			interrupts = <0 2>;
-> +		};
-> +
->  		mdio@24520 {
->  			device_type = "mdio";
->  			compatible = "gianfar";
-> @@ -110,7 +126,7 @@
->  			#address-cells = <3>;
->  			compatible = "85xx";
->  			device_type = "pci";
-> -			reg = <8000 400>;
-> +			reg = <8000 1000>;
->  			clock-frequency = <3f940aa>;
->  			interrupt-map-mask = <f800 0 0 7>;
->  			interrupt-map = <
+Index: linux-cell/arch/powerpc/kernel/irq.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/kernel/irq.c	2007-05-10 14:58:56.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/irq.c	2007-05-10 14:58:59.000000000 +1000
+@@ -173,7 +173,7 @@ void local_irq_restore(unsigned long en)
+ 		lv1_get_version_info(&tmp);
+ 	}
+ 
+-	hard_irq_enable();
++	__hard_irq_enable();
+ }
+ #endif /* CONFIG_PPC64 */
+ 
+Index: linux-cell/arch/powerpc/kernel/swsusp.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/kernel/swsusp.c	2007-05-10 14:57:03.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/swsusp.c	2007-05-10 14:57:07.000000000 +1000
+@@ -36,8 +36,4 @@ void restore_processor_state(void)
+ #ifdef CONFIG_PPC32
+ 	set_context(current->active_mm->context.id, current->active_mm->pgd);
+ #endif
+-
+-#ifdef CONFIG_PPC64
+-	hard_irq_enable();
+-#endif
+ }
+Index: linux-cell/arch/powerpc/platforms/cell/pervasive.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/platforms/cell/pervasive.c	2007-05-10 14:57:34.000000000 +1000
++++ linux-cell/arch/powerpc/platforms/cell/pervasive.c	2007-05-10 14:57:54.000000000 +1000
+@@ -43,12 +43,10 @@ static void cbe_power_save(void)
+ 	unsigned long ctrl, thread_switch_control;
+ 
+ 	/*
+-	 * We need to hard disable interrupts, but we also need to mark them
+-	 * hard disabled in the PACA so that the local_irq_enable() done by
+-	 * our caller upon return propertly hard enables.
++	 * We need to hard disable interrupts, the local_irq_enable() done by
++	 * our caller upon return will hard re-enable.
+ 	 */
+ 	hard_irq_disable();
+-	get_paca()->hard_enabled = 0;
+ 
+ 	ctrl = mfspr(SPRN_CTRLF);
+ 
+Index: linux-cell/include/asm-powerpc/hw_irq.h
+===================================================================
+--- linux-cell.orig/include/asm-powerpc/hw_irq.h	2007-05-10 14:51:43.000000000 +1000
++++ linux-cell/include/asm-powerpc/hw_irq.h	2007-05-10 14:59:32.000000000 +1000
+@@ -48,8 +48,15 @@ extern void iseries_handle_interrupts(vo
+ 
+ #define irqs_disabled()		(local_get_flags() == 0)
+ 
+-#define hard_irq_enable()	__mtmsrd(mfmsr() | MSR_EE, 1)
+-#define hard_irq_disable()	__mtmsrd(mfmsr() & ~MSR_EE, 1)
++#define __hard_irq_enable()	__mtmsrd(mfmsr() | MSR_EE, 1)
++#define __hard_irq_disable()	__mtmsrd(mfmsr() & ~MSR_EE, 1)
++
++#define  hard_irq_disable()			\
++	do {					\
++		__hard_irq_disable();		\
++		get_paca()->soft_enabled = 0;	\
++		get_paca()->hard_enabled = 0;	\
++	} while(0)
+ 
+ #else
+ 
