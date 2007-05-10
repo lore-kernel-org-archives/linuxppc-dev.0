@@ -1,27 +1,14 @@
-Return-Path: <akira2.iguchi@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 51F7ADDE4A
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 10:31:23 +1000 (EST)
-Received: from tsb-wall.toshiba.co.jp ([133.199.160.134])
-	by inet-tsb5.toshiba.co.jp  with ESMTP id l4A0VJ48015655
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 09:31:19 +0900 (JST)
-Received: (from root@localhost) by tsb-wall.toshiba.co.jp  id l4A0VJEi012844
-	for linuxppc-dev@ozlabs.org; Thu, 10 May 2007 09:31:19 +0900 (JST)
-Received: from mx2.toshiba.co.jp (localhost [127.0.0.1])
-	by ovp1.toshiba.co.jp  with ESMTP id l4A0VJYh000665
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 09:31:19 +0900 (JST)
-Message-Id: <200705100031.l4A0VG1q001296@toshiba.co.jp>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 10 May 2007 10:34:52 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Becky Bruce <becky.bruce@freescale.com>
+Subject: Re: [PATCH] Move reg_booke.h to include/asm-powerpc
+Message-ID: <20070510003452.GA483@localhost.localdomain>
+References: <11787390792190-git-send-email-becky.bruce@freescale.com>
 MIME-Version: 1.0
-Date: Thu, 10 May 2007 09:33:01 +0900
-From: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
-To: jeff@garzik.org
-In-Reply-To: (Your message of "Wed, 09 May 2007 15:14:00 +0900")
-	<200705090612.l496CGpU010558@toshiba.co.jp>
-References: <200705090612.l496CGpU010558@toshiba.co.jp>
-Subject: Re: [PATCH] drivers/ata/pata_scc.c: compile error fix
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <11787390792190-git-send-email-becky.bruce@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,8 +18,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm sorry I missed Alexey's patch.
-Please ignore my patch.
+On Wed, May 09, 2007 at 02:31:19PM -0500, Becky Bruce wrote:
+> This patch moves reg_booke.h from include/asm-ppc to
+> include/asm-powerpc.  This is just a git-mv of the file; no changes
+> were made.  Tested builds of 8540 ADS and Ebony platforms with
+> ARCH=ppc and ARCH=powerpc.
 
-Best regards,
-Akira Iguchi
+I'd much prefer if we copied rather than moved it to asm-powerpc.  I'm
+hoping we can get rid of the remaining sharing of include files shared
+between ppc and powerpc.  That way we can do cleanups in powerpc
+without worrying about breaking ppc.  In turn that should expedite
+progress towards ditching arch/ppc entirely.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
