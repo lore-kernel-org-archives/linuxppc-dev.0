@@ -2,9 +2,9 @@ Return-Path: <benh@ozlabs.org>
 To: <linux-kernel@vger.kernel.org>,
 	<linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 10 May 2007 15:25:58 +1000
-Subject: [PATCH 2/3] Add hard_irq_disable()
-Message-Id: <20070510052622.3E8D5DDF4B@ozlabs.org>
+Date: Thu, 10 May 2007 15:25:59 +1000
+Subject: [PATCH 3/3] stop_machine() now uses hard_irq_disable
+Message-Id: <20070510052624.06AD7DDF2E@ozlabs.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
 	Rusty Russell <rusty@rustcorp.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -16,48 +16,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Some architectures, like powerpc, implement lazy disabling of
-interrupts. That means that on those, local_irq_disable() doesn't
-actually disable interrupts on the CPU, but only sets some per
-CPU flag which cause them to be disabled only if an interrupt actually
-occurs.
-
-However, in some cases, such as stop_machine, we really want
-interrupts to be fully disabled. For example, I have code using
-stop machine to do ECC error injection, used to verify operations
-of the ECC hardware, that sort of thing. It really needs to make
-sure that nothing is actually writing to memory while the injection
-happens. Similar examples can be found in other low level bits and
-pieces.
-
-This patch implements a generic hard_irq_disable() function which
-is meant to be called -after- local_irq_disable() and ensures that
-interrupts are fully disabled on that CPU. The default implementation
-is a nop, though powerpc does already provide an appropriate one.
+Add a call to hard_irq_disable() to stop_machine so that we make sure
+IRQs are really disabled and not only lazy-disabled on archs like
+powerpc as some users of stop_machine() may rely on that.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
- include/linux/interrupt.h |   10 ++++++++++
- 1 file changed, 10 insertions(+)
+ kernel/stop_machine.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Index: linux-cell/include/linux/interrupt.h
+Index: linux-cell/kernel/stop_machine.c
 ===================================================================
---- linux-cell.orig/include/linux/interrupt.h	2007-05-10 14:51:22.000000000 +1000
-+++ linux-cell/include/linux/interrupt.h	2007-05-10 15:18:04.000000000 +1000
-@@ -241,6 +241,16 @@ static inline void __deprecated save_and
- #define save_and_cli(x)	save_and_cli(&x)
- #endif /* CONFIG_SMP */
+--- linux-cell.orig/kernel/stop_machine.c	2007-05-10 14:46:08.000000000 +1000
++++ linux-cell/kernel/stop_machine.c	2007-05-10 14:47:12.000000000 +1000
+@@ -45,6 +45,7 @@ static int stopmachine(void *cpu)
+ 		if (stopmachine_state == STOPMACHINE_DISABLE_IRQ 
+ 		    && !irqs_disabled) {
+ 			local_irq_disable();
++			hard_irq_disable();
+ 			irqs_disabled = 1;
+ 			/* Ack: irqs disabled. */
+ 			smp_mb(); /* Must read state first. */
+@@ -124,6 +125,7 @@ static int stop_machine(void)
  
-+/* Some architectures might implement lazy enabling/disabling of
-+ * interrupts. In some cases, such as stop_machine, we might want
-+ * to ensure that after a local_irq_disable(), interrupts have
-+ * really been disabled in hardware. Such architectures need to
-+ * implement the following hook.
-+ */
-+#ifndef hard_irq_disable
-+#define hard_irq_disable()	do { } while(0)
-+#endif
-+
- /* PLEASE, avoid to allocate new softirqs, if you need not _really_ high
-    frequency threaded job scheduling. For almost all the purposes
-    tasklets are more than enough. F.e. all serial device BHs et
+ 	/* Make them disable irqs. */
+ 	local_irq_disable();
++	hard_irq_disable();
+ 	stopmachine_set_state(STOPMACHINE_DISABLE_IRQ);
+ 
+ 	return 0;
