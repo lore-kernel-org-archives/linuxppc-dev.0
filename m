@@ -1,20 +1,29 @@
-Return-Path: <ajz@cambridgebroadband.com>
-Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
-	[217.204.121.83])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4248CDDEFD
+	by ozlabs.org (Postfix) with ESMTP id C1D26DDED5
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 May 2007 02:33:02 +1000 (EST)
-Message-ID: <4641F773.9040606@cambridgebroadband.com>
-Date: Wed, 09 May 2007 17:31:47 +0100
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
+	Thu, 10 May 2007 18:45:15 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1Hm4Gr-0003Pl-DF
+	for linuxppc-embedded@ozlabs.org; Thu, 10 May 2007 01:45:09 -0700
+Message-ID: <10409434.post@talk.nabble.com>
+Date: Thu, 10 May 2007 01:45:09 -0700 (PDT)
+From: Mirek23 <miroslaw.dach@psi.ch>
+To: linuxppc-embedded@ozlabs.org
+Subject: RE: zImage.elf loads but does not start
+In-Reply-To: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A207@MERCURY.inside.istor.com>
 MIME-Version: 1.0
-Subject: Re: MPC832xEMDS: ttyS0 output stops mid boot
-References: <8c4dd9590705030939i5df99f3fw83a59698fe3d30cc@mail.gmail.com>
-In-Reply-To: <8c4dd9590705030939i5df99f3fw83a59698fe3d30cc@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: u-boot-users@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+References: <10079346.post@talk.nabble.com> <10142161.post@talk.nabble.com>
+	<406A31B117F2734987636D6CCC93EE3C0159BAAE@ehost011-3.exch011.intermedia.net>
+	<10165159.post@talk.nabble.com> <10323147.post@talk.nabble.com>
+	<463B5422.6030105@ru.mvista.com> <10372619.post@talk.nabble.com>
+	<406A31B117F2734987636D6CCC93EE3C017019FD@ehost011-3.exch011.intermedia.net>
+	<4640F08E.5040608@nec.com.au>
+	<9F3F0A752CAEBE4FA7E906CC2FBFF57C06A207@MERCURY.inside.istor.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,145 +34,120 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
 
-For the record, I've just merged powerpc.git from kernel.org and it has started
-working now!  Clearly this means it was a kernel issue rather than a bootloader
-issue.
+Thank you for all of the advices.
+I did more study on that problem but still without the success.
 
-Regards,
+1. I did redd the ELDK manual and I have invoked :
+ELDK_FIXOWNER
+ELDK_MAKEDEV
 
-Alex
+in the "dev" directory there were created many nodes like that:
 
-Alex Zeffertt wrote:
-> Hi,
+crw-rw-rw-    1 root     root       5,   1 May  8 15:42 console
+crw-rw-rw-    1 root     root       4,  64 May  8 15:42 ttyS0
+
+In the kernel command line configuration I have the entry :
+CONFIG_CMDLINE="console=ttyUL0,9600 root=/dev/nfs rw nfsroo ...
+
+so I have created by hand the node:
+crw-rw-rw-    1 root     root     204, 187 May  8 15:44 ttyUL0
+
+Unfortunately the kernel boots to the point:
+
+[    9.130834] Looking up port of RPC 100003/2 on 129.129.130.106
+[    9.207363] Looking up port of RPC 100005/1 on 129.129.130.106
+[    9.303794] VFS: Mounted root (nfs filesystem).
+[    9.359316] Freeing unused kernel memory: 96k init
+
+and after that it hangs.
+
+I have made some modifications to the kernel init/main.c file. In that file
+I have inserted the printk statements to
+see how far the kernel goes. It seems to be that the last thing it does it
+executes the sbin/init command and it hangs.
+
+Instead of the sbin/init I have tried to execute other commands like
+bin/echo this_is_text_string
+and bin/echo this_is_test >> /var/log/messages
+
+the modification looks like (init/main.c):
+before modification:
+        printk("test 3\n");
+        run_init_process("/sbin/init");
+        printk("test 4\n");
+after modification
+        printk("test 3\n");
+        run_init_process("/bin/echo ala");
+        run_init_process("/bin/echo buba >> /var/log/messages");
+        printk("test 4\n");
+
+
+
+In both cases the last thing which was printed is "test 3"
+The /var/log/messages remains empty.
+
+I thought that it might be the uart_lite driver is the source of the
+problem. I rebuild the kernel configuring it for the
+standard UART driver instead of the uart_lite.
+This time my command line looks like:
+CONFIG_CMDLINE="console=ttyS0,9600 root=/dev/nfs rw nfsroo ...
+
+When booting the kernel configured with the UART  I see anything printed  
+on the screen so it is even worse than before.
+
+Do you have any suggestions.
+
+Best Regards
+
+Mirek
+
+
+
+Charles Krinke wrote:
 > 
-> Sorry about the cross posting, but I'm not sure which list I should send 
-> to....
+> I find this usually happens when /dev/tty, /dev/console or /dev/ttyS0
+> are not setup properly. That is, they are files instead of nodes. This
+> menas you have mounted the root filesystem and init is running on that
+> root filesystem.
 > 
-> I'm trying to boot an up-to-date kernel on my MPC8323E-MDS-PB board, but 
-> I the
-> console output stops early on during the kernel boot.
+> Charles
 > 
-> I'm running the latest u-boot (git://www.denx.de/git/u-boot-mpc83xx.git) 
-> with
-> its default environment.  The kernel is built from Paulus' powerpc.git, 
-> after
-> checking out tag 2.6.21-rc5.  The dtb is build from
-> arch/powerpc/boot/dts/mpc832x_mds.dts
-> with the latest compiler (git://www.jdl.com/software/dtc.git).
 > 
-> Has anyone else been here before...?  If so I'd appreciate any help you can
-> offer.
+> -----Original Message-----
+> From: linuxppc-embedded-bounces+ckrinke=istor.com@ozlabs.org
+> [mailto:linuxppc-embedded-bounces+ckrinke=istor.com@ozlabs.org] On
+> Behalf Of Adrian Craine
+> Sent: Tuesday, May 08, 2007 2:50 PM
+> To: Leonid
+> Cc: linuxppc-embedded@ozlabs.org; Mirek23
+> Subject: Re: zImage.elf loads but does not start
 > 
-> TIA,
+> Leonid wrote:
+>> rootpath=
+>> [    9.130834] Looking up port of RPC 100003/2 on 129.129.130.106
+>> [    9.207363] Looking up port of RPC 100005/1 on 129.129.130.106
+>> [    9.303794] VFS: Mounted root (nfs filesystem).
+>> [    9.359316] Freeing unused kernel memory: 96k init
+>> [    9.422162] Warning: unable to open an initial console.
+>>
+>>   
+> The exact device node this requires is /dev/console c 5 1
+> That should solve your issue.
 > 
-> Alex
+> Cheers,
+>              Adrian.
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 > 
-> -------------------my ttyS0 output------------------
-> =>
-> => printenv
-> bootcmd=setenv bootargs root=/dev/nfs rw nfsroot=$serverip:$rootpath
-> ip=$ipaddr:$serverip:$gatewayip:$netmask:$hostname:$netdev:off
-> console=$consoledev,$baudrate $othbootargs;tftp $loadaddr
-> $bootfile;tftp $fdtaddr $fdtfile;bootm $loadaddr - $fdtaddr
-> ramboot=setenv bootargs root=/dev/ram rw console=$consoledev,$baudrate
-> $othbootargs;tftp $ramdiskaddr $ramdiskfile;tftp $loadaddr
-> $bootfile;tftp $fdtaddr $fdtfile;bootm $loadaddr $ramdiskaddr $fdtaddr
-> nfsboot=setenv bootargs root=/dev/nfs rw nfsroot=$serverip:$rootpath
-> ip=$ipaddr:$serverip:$gatewayip:$netmask:$hostname:$netdev:off
-> console=$consoledev,$baudrate $othbootargs;tftp $loadaddr
-> $bootfile;tftp $fdtaddr $fdtfile;bootm $loadaddr - $fdtaddr
-> bootdelay=6
-> baudrate=115200
-> loads_echo=1
-> ethaddr=00:04:9f:ef:03:01
-> eth1addr=00:04:9f:ef:03:02
-> loadaddr=200000
-> netdev=eth0
-> consoledev=ttyS0
-> ramdiskaddr=1000000
-> ramdiskfile=ramfs.83xx
-> fdtaddr=400000
-> fdtfile=mpc832xemds.dtb
-> stdin=serial
-> stdout=serial
-> stderr=serial
-> ethact=FSL UEC0
 > 
-> Environment size: 979/8188 bytes
-> => setenv ramdiskfile uRamdisk
-> => setenv fdtfile mpc832x_mds.dtb
-> => setenv bootfile uImage
-> => setenv serverip 10.0.0.107
-> => setenv ipaddr 10.0.6.65
-> => run ramboot
-> Using FSL UEC0 device
-> TFTP from server 10.0.0.107; our IP address is 10.0.6.65
-> Filename 'uRamdisk'.
-> Load address: 0x1000000
-> Loading: #################################################################
->         #################################################################
->         #################################################################
->         #################################################################
->         #################################################################
->         #################################################################
->         #################################################################
->         #################################################################
->         #################################################################
->         ###########################################################
-> done
-> Bytes transferred = 3296770 (324e02 hex)
-> Using FSL UEC0 device
-> TFTP from server 10.0.0.107; our IP address is 10.0.6.65
-> Filename 'uImage'.
-> Load address: 0x200000
-> Loading: #################################################################
->         #################################################################
->         #################################################################
->         ##########################################
-> done
-> Bytes transferred = 1212615 (1280c7 hex)
-> Using FSL UEC0 device
-> TFTP from server 10.0.0.107; our IP address is 10.0.6.65
-> Filename 'mpc832x_mds.dtb'.
-> Load address: 0x400000
-> Loading: ###
-> done
-> Bytes transferred = 12288 (3000 hex)
-> ## Booting image at 00200000 ...
->   Image Name:   Linux-2.6.21-rc5
->   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
->   Data Size:    1212551 Bytes =  1.2 MB
->   Load Address: 00000000
->   Entry Point:  00000000
->   Verifying Checksum ... OK
->   Uncompressing Kernel Image ... OK
-> ## Loading RAMDisk Image at 01000000 ...
->   Image Name:   uboot ext2 ramdisk rootfs
->   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
->   Data Size:    3296706 Bytes =  3.1 MB
->   Load Address: 00000000
->   Entry Point:  00000000
->   Verifying Checksum ... OK
->   Booting using flat device tree at 0x400000
->   Loading Ramdisk to 07c87000, end 07fabdc2 ... OK
-> Using MPC832x MDS machine description
-> Linux version 2.6.21-rc5 (ajz@zambia) (gcc version 3.4.3) #2 Thu May 3
-> 16:42:54 BST 2007
-> Found initrd at 0xc7c87000:0xc7fabdc2
-> setup_arch: bootmem
-> mpc832x_sys_setup_arch()
-> Found MPC83xx PCI host bridge at 0x00000000e0008500. Firmware bus 
-> number: 0->0
-> arch: exit
-> Zone PFN ranges:
->  DMA             0 ->    32768
->  Normal      32768 ->    32768
-> early_node_map[1] active PFN ranges
->    0:        0 ->    32768
-> Built 1 zonelists.  Total pages: 32512
-> Kernel command line: root=/dev/ram rw console=ttyS0,115200
-> IPIC (128 IRQ sources) at fddf3700
-> QEIC (64 IRQ sources) at fddf2080
-> PID hash table entries: 512 (order: 9, 2048 bytes)
+
+-- 
+View this message in context: http://www.nabble.com/zImage.elf-loads-but-not-starts-tf3607582.html#a10409434
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
