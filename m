@@ -1,24 +1,19 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[65.172.181.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.osdl.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2D3D6DDE41
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 17:35:37 +1000 (EST)
-Date: Thu, 10 May 2007 00:35:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/3] Add hard_irq_disable()
-Message-Id: <20070510003528.395b122b.akpm@linux-foundation.org>
-In-Reply-To: <1178778951.14928.215.camel@localhost.localdomain>
-References: <20070510052622.3E8D5DDF4B@ozlabs.org>
-	<20070509224113.cca81a24.akpm@linux-foundation.org>
-	<1178778951.14928.215.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel@vger.kernel.org
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 56369DDEBA
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 17:39:52 +1000 (EST)
+Date: Thu, 10 May 2007 09:39:46 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Mark prop unused in early_init_dt_scan_chosen().
+In-Reply-To: <Pine.LNX.4.64.0705092238390.29512@localhost.localdomain>
+Message-ID: <Pine.LNX.4.62.0705100938110.32241@pademelon.sonytel.be>
+References: <20070508171451.GA8893@ld0162-tx32.am.freescale.net>
+	<Pine.LNX.4.64.0705092238390.29512@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,74 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 10 May 2007 16:35:51 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-
-> On Wed, 2007-05-09 at 22:41 -0700, Andrew Morton wrote:
-> > On Thu, 10 May 2007 15:25:58 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> > 
-> > > --- linux-cell.orig/include/linux/interrupt.h	2007-05-10 14:51:22.000000000 +1000
-> > > +++ linux-cell/include/linux/interrupt.h	2007-05-10 15:18:04.000000000 +1000
-> > > @@ -241,6 +241,16 @@ static inline void __deprecated save_and
-> > >  #define save_and_cli(x)	save_and_cli(&x)
-> > >  #endif /* CONFIG_SMP */
-> > >  
-> > > +/* Some architectures might implement lazy enabling/disabling of
-> > > + * interrupts. In some cases, such as stop_machine, we might want
-> > > + * to ensure that after a local_irq_disable(), interrupts have
-> > > + * really been disabled in hardware. Such architectures need to
-> > > + * implement the following hook.
-> > > + */
-> > > +#ifndef hard_irq_disable
-> > > +#define hard_irq_disable()	do { } while(0)
-> > > +#endif
-> > 
-> > We absolutely require that the architecture's hard_irq_disable() be defined
-> > when we do this.  If it happens that the definition of hard_irq_disable()
-> > is implemented three levels deep in nested includes then we risk getting
-> > into a situation where different .c files see different implementations of
-> > hard_irq_disable(), which could lead to confusing results, to say the least.
+On Wed, 9 May 2007, Kumar Gala wrote:
+> On Tue, 8 May 2007, Scott Wood wrote:
+> > The prop variable is only referenced when initrd support is
+> > turned on.
+> >
+> > Signed-off-by: Scott Wood <scottwood@freescale.com>
+> > ---
+> >  arch/powerpc/kernel/prom.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> >
+> > diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> > index caef555..6705459 100644
+> > --- a/arch/powerpc/kernel/prom.c
+> > +++ b/arch/powerpc/kernel/prom.c
+> > @@ -720,7 +720,7 @@ static int __init early_init_dt_scan_chosen(unsigned long node,
+> >  					    const char *uname, int depth, void *data)
+> >  {
+> >  	unsigned long *lprop;
+> > -	u32 *prop;
+> > +	u32 __attribute__((unused)) *prop;
 > 
-> Yes, I'm indeed a bit worried about that... I've been wondering what's
-> the best include path here... I tried to follow who gets to hw_irq.h and
-> didn't come to any conclusive results.
-> 
-> powerpc gets it from asm/system.h but I haven't verified other arch
-> (though it only matters on arch that have their own here).
-> 
-> I've verified that a #error on ppc up there will not trigger thus it's
-> fine on powerpc, but I agree it's a bit fragile.
+> is this the desired way to remove warnings related to CONFIG_ options?  I
+> know in the past we'd wrap it with a #ifdef CONFIG_FOO
 
-I think saying "system.h must provide this" is reasonable.  The fact that
-powerpc does that via another inclusion is a powerpc detail - just don't
-break it ;)
+Exactly my thought.
 
+Another advantage of #ifdef CONFIG_FOO is that if the actual code that uses it
+goes away, we'll get a warning again. Else in the end we'll be stuck with
+zillions of unused variables that don't cause warnings...
 
-> > Your implementation comes via the inclusion of system.h which then includes
-> > hw_irq.h.  That's perhaps a little fragile and it would be better to
-> > 
-> > a) include in the comment the name of the arch file which must implement
-> >    hard_irq_disable() and
-> > 
-> > b) include that file directly from this one.
-> 
-> Fair enough. I was just worried that including hw_irq.h here might cause
-> trouble for some archs though (as I said, we get it indirectly on
-> powerpc via some other asm thingy, not via some linux/*.h). I've looked
-> around and seen all sort of horrors in arch include dependencies
-> (including some circular stuff that must work by mere luck).
-> 
-> > Oh, and your comment layout style is wrong ;)
-> 
-> What about my comment layout style ? I've been using that forever ... Or
-> do you mean I should use a function documentation style layout there ?
+Gr{oetje,eeting}s,
 
-/* This
- * is
- * wrong
- */
+						Geert
 
-/*
- * This
- * is
- * right
- */
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
