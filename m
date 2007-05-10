@@ -1,32 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <becky.bruce@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D4524DDEE9
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 22:44:52 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4ACikWr008209
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 08:44:46 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4ACik7N172704
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 06:44:46 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4ACijPg008519
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 06:44:46 -0600
-Subject: Re: [PATCH] Performance Stats: Kernel patch
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Maxim Uvarov <muvarov@ru.mvista.com>
-In-Reply-To: <20070510123950.7984.24745.stgit@localhost.localdomain>
-References: <20070510123950.7984.24745.stgit@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 10 May 2007 07:38:42 -0500
-Message-Id: <1178800722.22802.12.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	wli@holomorphy.com, pavel@ucw.cz, dada1@cosmosbay.com
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 51159DDDFF
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 23:40:33 +1000 (EST)
+In-Reply-To: <20070510091138.6e4fe0e6.sfr@canb.auug.org.au>
+References: <11787390792190-git-send-email-becky.bruce@freescale.com>
+	<20070510091138.6e4fe0e6.sfr@canb.auug.org.au>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <E00865DA-6E7E-4D9E-8F7A-2B35A8103163@freescale.com>
+From: Becky Bruce <becky.bruce@freescale.com>
+Subject: Re: [PATCH] Move reg_booke.h to include/asm-powerpc
+Date: Thu, 10 May 2007 08:44:23 -0500
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,22 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-05-10 at 12:39 +0000, Maxim Uvarov wrote:
-> Patch makes available to the user the following
-> task and process performance statistics:
-> 	* Involuntary Context Switches (task_struct->nivcsw)
-> 	* Voluntary Context Switches (task_struct->nvcsw)
-> 	* Number of system calls (added new counter
-> 	  thread_info->sysall_count)
-> 	           
-> Statistics information is available from:
->         1. taskstats interface (Documentation/accounting/)
-> 	2. /proc/PID/status (task only).
-> 
-> This data is useful for detecting hyperactivity
-> patterns between processes.
 
-This should be sent to the linux-kernel list I think...  Or at least
-CCd.
+On May 9, 2007, at 6:11 PM, Stephen Rothwell wrote:
 
-josh
+> On Wed,  9 May 2007 14:31:19 -0500 Becky Bruce  
+> <becky.bruce@freescale.com> wrote:
+>>
+>> This patch moves reg_booke.h from include/asm-ppc to include/asm- 
+>> powerpc.  This is
+>> just a git-mv of the file; no changes were made.  Tested builds of  
+>> 8540 ADS and
+>> Ebony platforms with ARCH=ppc and ARCH=powerpc.
+>>
+>> Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
+>> ---
+>>  include/{asm-ppc => asm-powerpc}/reg_booke.h |    0
+>>  1 files changed, 0 insertions(+), 0 deletions(-)
+>>  rename include/{asm-ppc => asm-powerpc}/reg_booke.h (100%)
+>>
+>> diff --git a/include/asm-ppc/reg_booke.h b/include/asm-powerpc/ 
+>> reg_booke.h
+>> similarity index 100%
+>> rename from include/asm-ppc/reg_booke.h
+>> rename to include/asm-powerpc/reg_booke.h
+>
+> Could you please change the self inclusion protection defines?
+
+Certainement.  I meant to send a second patch to do that, so the  
+first one was *just* a move (who can resist the urge to put out a 0- 
+line patch :).  Will follow up.
+
+Thanks!
+-B
