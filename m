@@ -1,30 +1,15 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9CE6BDDD04
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 03:28:11 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4AHT5Bv021826
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 13:29:05 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4AHS7ux496538
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 13:28:07 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4AHS7Nl007101
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 13:28:07 -0400
-Date: Thu, 10 May 2007 12:28:06 -0500
-To: Rob Landley <rob@landley.net>
-Subject: Re: Building ppc/powerpc kernel to run under QEMU.
-Message-ID: <20070510172806.GE4452@austin.ibm.com>
-References: <200705092203.26042.rob@landley.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <200705092203.26042.rob@landley.net>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
+	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id 06485DDF0F
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 03:41:55 +1000 (EST)
+Subject: Fixed PHY problems
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Thu, 10 May 2007 19:41:53 +0200
+Message-Id: <1178818913.20638.5.camel@gentoo-jocke.transmode.se>
+Mime-Version: 1.0
+Reply-To: joakim.tjernlund@transmode.se
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,29 +19,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Rob,
+Trying to boot todays linus tree with fixed PHY support enabled gets me this:
+Fixed PHY: Registered new driver
+Device 'fixed@100:1' does not have a release() function, it is broken and must be fixed.
+------------[ cut here ]------------
+Badness at drivers/base/core.c:107
+Call Trace:
+[cffc1dc0] [c0008324] show_stack+0x48/0x194 (unreliable)
+[cffc1df0] [c00f4a4c] report_bug+0x84/0xec
+[cffc1e00] [c000dde8] program_check_exception+0x274/0x55c
+[cffc1e20] [c000f770] ret_from_except_full+0x0/0x4c
+--- Exception: 700 at device_release+0x54/0x90
+    LR = device_release+0x54/0x90
+[cffc1ef0] [c00f5e1c] kobject_cleanup+0xb4/0xb8
+[cffc1f10] [c00f6ca0] kref_put+0x68/0x80
+[cffc1f20] [c00f5d58] kobject_put+0x24/0x34
+[cffc1f30] [c01150bc] put_device+0x1c/0x2c
+[cffc1f40] [c0243a9c] fixed_init+0x1cc/0x210
+[cffc1f60] [c022e828] kernel_init+0x8c/0x2b4
+[cffc1ff0] [c000ff4c] kernel_thread+0x44/0x60
 
-On Wed, May 09, 2007 at 10:03:25PM -0400, Rob Landley wrote:
-> I've been puttering around with my Firmware Linux project trying to add
-> powerpc as a supported platform.  I can build kernels that qemu can boot (such
-> as a "prep" kernel) using ARCH=ppc, but that one doesn't support make
-> headers_install.
-> 
-> Using ARCH=powerpc makes headers_install work, but there's no kernel .config 
-> I've been able to come up with that generates a kernel I can boot under qemu.
+The other thing is, how do I specify a fixed PHY
+in OF?
 
-Hmm. I'm not a boot expert, (although many people on this list are). 
-Any hint of where the boot is failing?  Maybe qemu is not setting up
-a device tree? 
-
-> what's the status of the 
-> ppc->powerpc migration, 
-
-pretty far along; bits f ppc are getting nuked regularly.
-
-> and is there any known way to get ARCH=powerpc to 
-> build a kernel qemu can boot?
-
-Dunno...
-
---linas
+ Jocke
