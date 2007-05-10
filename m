@@ -1,26 +1,30 @@
-Return-Path: <djiang@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id AF7A9DDEEE
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 02:59:34 +1000 (EST)
-Date: Thu, 10 May 2007 10:03:05 -0700
-From: Dave Jiang <djiang@mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc: add dts entries to 85xx for EDAC
-Message-ID: <20070510170305.GA16203@blade.az.mvista.com>
-References: <20070426000852.GA2193@localhost.localdomain>
-	<20070426003748.GA30730@blade.az.mvista.com>
-	<9903F55A-5E4E-42CE-8C27-6B7143B9FE25@kernel.crashing.org>
-	<20070501183220.GA6426@blade.az.mvista.com>
-	<20070507232634.GA11166@blade.az.mvista.com>
-	<3EF891D2-F973-43D6-B43B-B8BBC4269C60@kernel.crashing.org>
-	<4640AE88.9040806@mvista.com>
-	<6fb05a0954f19c5744369c18670d81ff@kernel.crashing.org>
-	<20070509165333.GA3118@blade.az.mvista.com>
-	<3E2DA6EA-8952-47B3-A395-C416D7AC9D62@kernel.crashing.org>
-Mime-Version: 1.0
+Return-Path: <linas@austin.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9CE6BDDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 03:28:11 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4AHT5Bv021826
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 13:29:05 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l4AHS7ux496538
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 13:28:07 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4AHS7Nl007101
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 13:28:07 -0400
+Date: Thu, 10 May 2007 12:28:06 -0500
+To: Rob Landley <rob@landley.net>
+Subject: Re: Building ppc/powerpc kernel to run under QEMU.
+Message-ID: <20070510172806.GE4452@austin.ibm.com>
+References: <200705092203.26042.rob@landley.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <3E2DA6EA-8952-47B3-A395-C416D7AC9D62@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+In-Reply-To: <200705092203.26042.rob@landley.net>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,107 +34,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Adding memory-controller and l2-cache-controller entries to be used by EDAC 
-as of_devices.
+Hi Rob,
 
-Signed-off-by: Dave Jiang <djiang@mvista.com>
+On Wed, May 09, 2007 at 10:03:25PM -0400, Rob Landley wrote:
+> I've been puttering around with my Firmware Linux project trying to add
+> powerpc as a supported platform.  I can build kernels that qemu can boot (such
+> as a "prep" kernel) using ARCH=ppc, but that one doesn't support make
+> headers_install.
+> 
+> Using ARCH=powerpc makes headers_install work, but there's no kernel .config 
+> I've been able to come up with that generates a kernel I can boot under qemu.
 
----
+Hmm. I'm not a boot expert, (although many people on this list are). 
+Any hint of where the boot is failing?  Maybe qemu is not setting up
+a device tree? 
 
-Fixed up additional changes per Kumar.
+> what's the status of the 
+> ppc->powerpc migration, 
 
- arch/powerpc/boot/dts/mpc8540ads.dts |   16 ++++++++++++++++
- arch/powerpc/boot/dts/mpc8548cds.dts |   16 ++++++++++++++++
- arch/powerpc/boot/dts/mpc8560ads.dts |   18 +++++++++++++++++-
- 3 files changed, 49 insertions(+), 1 deletions(-)
+pretty far along; bits f ppc are getting nuked regularly.
 
-diff --git a/arch/powerpc/boot/dts/mpc8540ads.dts b/arch/powerpc/boot/dts/mpc8540ads.dts
-index f261d64..d91e81c 100644
---- a/arch/powerpc/boot/dts/mpc8540ads.dts
-+++ b/arch/powerpc/boot/dts/mpc8540ads.dts
-@@ -48,6 +48,22 @@
- 		reg = <e0000000 00100000>;	// CCSRBAR 1M
- 		bus-frequency = <0>;
- 
-+		memory-controller@2000 {
-+			compatible = "fsl,8540-memory-controller";
-+			reg = <2000 1000>;
-+			interrupt-parent = <&mpic>;
-+			interrupts = <2 2>;
-+		};
-+
-+		l2-cache-controller@20000 {
-+			compatible = "fsl,8540-l2-cache-controller";
-+			reg = <20000 1000>;
-+			cache-line-size = <20>;	// 32 bytes
-+			cache-size = <40000>;	// L2, 256K
-+			interrupt-parent = <&mpic>;
-+			interrupts = <0 2>;
-+		};
-+
- 		i2c@3000 {
- 			device_type = "i2c";
- 			compatible = "fsl-i2c";
-diff --git a/arch/powerpc/boot/dts/mpc8548cds.dts b/arch/powerpc/boot/dts/mpc8548cds.dts
-index b2b2200..ad96381 100644
---- a/arch/powerpc/boot/dts/mpc8548cds.dts
-+++ b/arch/powerpc/boot/dts/mpc8548cds.dts
-@@ -48,6 +48,22 @@
- 		reg = <e0000000 00100000>;	// CCSRBAR 1M
- 		bus-frequency = <0>;
- 
-+		memory-controller@2000 {
-+			compatible = "fsl,8548-memory-controller";
-+			reg = <2000 1000>;
-+			interrupt-parent = <&mpic>;
-+			interrupts = <2 2>;
-+		};
-+
-+		l2-cache-controller@20000 {
-+			compatible = "fsl,8548-l2-cache-controller";
-+			reg = <20000 1000>;
-+			cache-line-size = <20>;	// 32 bytes
-+			cache-size = <80000>;	// L2, 512K
-+			interrupt-parent = <&mpic>;
-+			interrupts = <0 2>;
-+		};
-+
- 		i2c@3000 {
- 			device_type = "i2c";
- 			compatible = "fsl-i2c";
-diff --git a/arch/powerpc/boot/dts/mpc8560ads.dts b/arch/powerpc/boot/dts/mpc8560ads.dts
-index 1f2afe9..8068215 100644
---- a/arch/powerpc/boot/dts/mpc8560ads.dts
-+++ b/arch/powerpc/boot/dts/mpc8560ads.dts
-@@ -48,6 +48,22 @@
- 		reg = <e0000000 00000200>;
- 		bus-frequency = <13ab6680>;
- 
-+		memory-controller@2000 {
-+			compatible = "fsl,8540-memory-controller";
-+			reg = <2000 1000>;
-+			interrupt-parent = <&mpic>;
-+			interrupts = <2 2>;
-+		};
-+
-+		l2-cache-controller@20000 {
-+			compatible = "fsl,8540-l2-cache-controller";
-+			reg = <20000 1000>;
-+			cache-line-size = <20>;	// 32 bytes
-+			cache-size = <40000>;	// L2, 256K
-+			interrupt-parent = <&mpic>;
-+			interrupts = <0 2>;
-+		};
-+
- 		mdio@24520 {
- 			device_type = "mdio";
- 			compatible = "gianfar";
-@@ -110,7 +126,7 @@
- 			#address-cells = <3>;
- 			compatible = "85xx";
- 			device_type = "pci";
--			reg = <8000 400>;
-+			reg = <8000 1000>;
- 			clock-frequency = <3f940aa>;
- 			interrupt-map-mask = <f800 0 0 7>;
- 			interrupt-map = <
+> and is there any known way to get ARCH=powerpc to 
+> build a kernel qemu can boot?
+
+Dunno...
+
+--linas
