@@ -1,29 +1,11 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-02.arcor-online.net (mail-in-02.arcor-online.net
-	[151.189.21.42])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A7311DDEE9
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 16:58:04 +1000 (EST)
-In-Reply-To: <20070509182630.GA19495@ld0162-tx32.am.freescale.net>
-References: <20070507182947.GD26920@ld0162-tx32.am.freescale.net>
-	<B7081C3F-C551-42D8-BB5D-6FE5DC311C99@freescale.com>
-	<463F9A38.6080408@freescale.com>
-	<AC7B08C0-E41A-458F-8E9F-59901443600A@freescale.com>
-	<3FE06AFA-BEE6-46CF-B12C-29D979AE50D7@kernel.crashing.org>
-	<20070508001808.GD7449@localhost.localdomain>
-	<baf8c79aa13de543816d62162d4f9928@kernel.crashing.org>
-	<20070509182630.GA19495@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <385038798e00654a5cbd38165b06734b@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 05/13] Document the fsl,
-	magic-packet property in gianfar nodes.
-Date: Thu, 10 May 2007 08:57:52 +0200
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <michael@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Thu, 10 May 2007 17:06:30 +1000
+Subject: [PATCH] Split initrd logic out of early_init_dt_scan_chosen() to fix
+	warning
+Message-Id: <20070510070645.15973DDEFE@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,27 +15,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>>> As I previously wrote internally, it's only needed because some
->>>>>> versions of the device have it and some don't; what it really 
->>>>>> means
->>>>>> is that certain bits in certain registers are valid.
->>
->> So have the driver detect this based on "compatible"
->> or "model".
->
-> Thus requiring the driver to maintain a list of models/compatibles for
-> every possible combination of features,
+If CONFIG_BLK_DEV_INITRD is not defined the prop variable in
+early_init_dt_scan_chosen() is unused, causing a compiler warning.
 
-Most likely a very short list.  But you know best
-of course.
+So split the initrd logic into a separate function, allowing us to
+declare prop only when we need it.
 
-> rather than letting the device
-> tree specify them individually.  What would be the advantage in that?
+Built for both cases and booted with an initrd.
 
-It's a tradeoff -- describing every single bit of
-the hardware in the device tree is a way bigger
-maintenance burden, be careful not to go overboard
-with it.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
 
+ arch/powerpc/kernel/prom.c |   48 ++++++++++++++++++++++++++++++---------------
+ 1 file changed, 32 insertions(+), 16 deletions(-)
 
-Segher
+Index: powerpc/arch/powerpc/kernel/prom.c
+===================================================================
+--- powerpc.orig/arch/powerpc/kernel/prom.c
++++ powerpc/arch/powerpc/kernel/prom.c
+@@ -716,11 +716,41 @@ static int __init early_init_dt_scan_cpu
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_BLK_DEV_INITRD
++static void __init early_init_dt_check_for_initrd(unsigned long node)
++{
++	unsigned long l;
++	u32 *prop;
++
++	DBG("Looking for initrd properties... ");
++
++	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &l);
++	if (prop) {
++		initrd_start = (unsigned long)__va(of_read_ulong(prop, l/4));
++
++		prop = of_get_flat_dt_prop(node, "linux,initrd-end", &l);
++		if (prop) {
++			initrd_end = (unsigned long)
++					__va(of_read_ulong(prop, l/4));
++			initrd_below_start_ok = 1;
++		} else {
++			initrd_start = 0;
++		}
++	}
++
++	DBG("initrd_start=0x%lx  initrd_end=0x%lx\n", initrd_start, initrd_end);
++}
++#else
++static inline void early_init_dt_check_for_initrd(unsigned long node)
++{
++	return;
++}
++#endif /* CONFIG_BLK_DEV_INITRD */
++
+ static int __init early_init_dt_scan_chosen(unsigned long node,
+ 					    const char *uname, int depth, void *data)
+ {
+ 	unsigned long *lprop;
+-	u32 *prop;
+ 	unsigned long l;
+ 	char *p;
+ 
+@@ -762,21 +792,7 @@ static int __init early_init_dt_scan_cho
+                crashk_res.end = crashk_res.start + *lprop - 1;
+ #endif
+ 
+-#ifdef CONFIG_BLK_DEV_INITRD
+-	DBG("Looking for initrd properties... ");
+-	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &l);
+-	if (prop) {
+-		initrd_start = (unsigned long)__va(of_read_ulong(prop, l/4));
+-		prop = of_get_flat_dt_prop(node, "linux,initrd-end", &l);
+-		if (prop) {
+-			initrd_end = (unsigned long)__va(of_read_ulong(prop, l/4));
+-			initrd_below_start_ok = 1;
+-		} else {
+-			initrd_start = 0;
+-		}
+-	}
+-	DBG("initrd_start=0x%lx  initrd_end=0x%lx\n", initrd_start, initrd_end);
+-#endif /* CONFIG_BLK_DEV_INITRD */
++	early_init_dt_check_for_initrd(node);
+ 
+ 	/* Retreive command line */
+  	p = of_get_flat_dt_prop(node, "bootargs", &l);
