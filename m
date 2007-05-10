@@ -1,15 +1,15 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 11 May 2007 09:29:45 +1000
+Date: Fri, 11 May 2007 09:37:47 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [PATCH 1/13] powerpc: Add Makefile rules to wrap dts file in
-	zImage
-Message-ID: <20070510232945.GB27188@localhost.localdomain>
+Subject: Re: [PATCH 11/13] powerpc: Add DTS file for the Motorola PrPMC2800
+	platform
+Message-ID: <20070510233747.GC27188@localhost.localdomain>
 References: <20070510200237.GA19756@mag.az.mvista.com>
-	<20070510200445.GB19756@mag.az.mvista.com>
+	<20070510200859.GL19756@mag.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070510200445.GB19756@mag.az.mvista.com>
+In-Reply-To: <20070510200859.GL19756@mag.az.mvista.com>
 Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,72 +20,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 10, 2007 at 01:04:45PM -0700, Mark A. Greer wrote:
+On Thu, May 10, 2007 at 01:08:59PM -0700, Mark A. Greer wrote:
 > 
-> Add 'zImage.dts' and 'zImage.dts_initrd' build rules that automatically
-> compile and wrap a dts file from arch/powerpc/boot/dts into the zImage file.
-> The resulting zImage will be arch/powerpc/boot/zImage.dts.<platform> and
-> arch/powerpc/boot/zImage.dts_initrd.<platform>, respectively.
-> 
-> Having separate rules allows the user to choose whether to include a device
-> tree--and which device tree--at build time.  This is useful when one Makefile
-> target builds a zImage that runs on several platforms except for differing
-> device trees.  By just setting CONFIG_DEVICE_TREE and running "make zImage.dts"
-> the exact zImage you want is built without Makefile bloat or manually running
-> the wrapper script.
-> 
-> The dts file is expected to be arch/powerpc/boot/dts/$(CONFIG_DEVICE_TREE)
+> Add the device tree source file for the prpmc2800 line of processor PMCs.
+> Several of the property values are updated by the bootwrapper but sane
+> defaults have been chosen in case the bootwrapper can't determine the
+> exact processor board variant.  The defaults should allow the kernel
+> to boot despite having non-optimal device tree property values.
 > 
 > Signed-off-by: Mark A. Greer <mgreer@mvista.com>
 > ---
->  arch/powerpc/Makefile      |    2 +-
->  arch/powerpc/boot/Makefile |   24 +++++++++++++++++++++++-
->  2 files changed, 24 insertions(+), 2 deletions(-)
+>  arch/powerpc/boot/dts/prpmc2800.dts |  316 ++++++++++++++++++++++++++
+>  1 file changed, 316 insertions(+)
 > 
-> Index: powerpc/arch/powerpc/boot/Makefile
+> Index: powerpc/arch/powerpc/boot/dts/prpmc2800.dts
 > ===================================================================
-> --- powerpc.orig/arch/powerpc/boot/Makefile
-> +++ powerpc/arch/powerpc/boot/Makefile
-> @@ -154,9 +154,27 @@ targets	+= $(image-y) $(initrd-y)
->  
->  $(addprefix $(obj)/, $(initrd-y)): $(obj)/ramdisk.image.gz
->  
-> +dts-  := $(patsubst zImage%, zImage.dts%, $(image-n) $(image-))
-> +dts-y := $(patsubst zImage%, zImage.dts%, $(image-y))
-> +dts-y := $(filter-out $(image-y), $(dts-y))
-> +targets	+= $(image-y) $(dts-y)
-> +
-> +dts_initrd-  := $(patsubst zImage%, zImage.dts_initrd%, $(image-n) $(image-))
-> +dts_initrd-y := $(patsubst zImage%, zImage.dts_initrd%, $(image-y))
-> +dts_initrd-y := $(filter-out $(image-y), $(dts_initrd-y))
-> +targets	+= $(image-y) $(dts_initrd-y)
-> +
-> +$(addprefix $(obj)/, $(dts_initrd-y)): $(obj)/ramdisk.image.gz
-> +
->  # Don't put the ramdisk on the pattern rule; when its missing make will try
->  # the pattern rule with less dependencies that also matches (even with the
->  # hard dependency listed).
-> +$(obj)/zImage.dts_initrd.%: vmlinux $(wrapperbits)
-> +	$(call if_changed,wrap,$*,$(dts),,$(obj)/ramdisk.image.gz)
-> +
-> +$(obj)/zImage.dts.%: vmlinux $(wrapperbits)
-> +	$(call if_changed,wrap,$*,$(dts))
-> +
->  $(obj)/zImage.initrd.%: vmlinux $(wrapperbits)
->  	$(call if_changed,wrap,$*,,,$(obj)/ramdisk.image.gz)
->  
-> @@ -195,13 +213,17 @@ $(obj)/zImage:		$(addprefix $(obj)/, $(i
->  	@rm -f $@; ln $< $@
->  $(obj)/zImage.initrd:	$(addprefix $(obj)/, $(initrd-y))
->  	@rm -f $@; ln $< $@
-> +$(obj)/zImage.dts:	$(addprefix $(obj)/, $(dts-y))
-> +	@rm -f $@; ln $< $@
-> +$(obj)/zImage.dts_initrd:	$(addprefix $(obj)/, $(dts_initrd-y))
-> +	@rm -f $@; ln $< $@
+> --- /dev/null
+> +++ powerpc/arch/powerpc/boot/dts/prpmc2800.dts
+> @@ -0,0 +1,316 @@
+[snip]
+> +		PowerPC,7447 {
+> +			device_type = "cpu";
+> +			reg = <0>;
+> +			clock-frequency = <2bb0b140>;	/* Default (733 MHz) */
+> +			bus-frequency = <7f28155>;	/* 133.333333 MHz */
+> +			timebase-frequency = <1fca055>;	/* 33.333333 MHz */
+> +			/* Following required by dtc but not used */
+> +			i-cache-line-size = <0>;
+> +			d-cache-line-size = <0>;
+> +			i-cache-size = <0>;
+> +			d-cache-size = <0>;
 
-I don't think there a lot of point to this part of the patch.  Just
-have image-y directly specify the appropriate zImage.dts.% form (or
-forms).
+As Kumar also says, these should not be zero just to shut up dtc's
+warning.
+
+[snip]
+> +		flash@a0000000 {
+> +			device_type = "rom";
+> +			compatible = "direct-mapped";
+> +			reg = <a0000000 4000000>; /* Default (64MB) */
+> +			probe-type = "CFI";
+> +			bank-width = <4>;
+> +			partitions = <00000000 00100000 /* RO */
+> +				      00100000 00040001 /* RW */
+> +				      00140000 00400000 /* RO */
+> +				      00540000 039c0000 /* RO */
+> +				      03f00000 00100000>; /* RO */
+> +			partition-names = "FW Image A\0FW Config Data\0Kernel Image\0Filesystem\0FW Image B";
+
+dtc now supports the syntax:
+	partition-names = "FW Image A", "FW Config Data", ...
+for multi-string properties to make this sort of thing less ugly.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
