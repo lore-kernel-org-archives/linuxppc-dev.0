@@ -1,21 +1,26 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id D96DCDDF0A
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 02:06:47 +1000 (EST)
-Date: Thu, 10 May 2007 18:06:46 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] Mark prop unused in early_init_dt_scan_chosen().
-In-Reply-To: <4643404E.30608@freescale.com>
-Message-ID: <Pine.LNX.4.62.0705101806130.7750@pademelon.sonytel.be>
-References: <20070508171451.GA8893@ld0162-tx32.am.freescale.net>
-	<Pine.LNX.4.64.0705092238390.29512@localhost.localdomain>
-	<Pine.LNX.4.62.0705100938110.32241@pademelon.sonytel.be>
-	<4643404E.30608@freescale.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7B648DDEEB
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 02:17:21 +1000 (EST)
+Subject: Re: [PATCH] snd-aoa-i2sbus: use MODULE_DEVICE_TABLE instead
+	of	plain	MODULE_ALIAS
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Takashi Iwai <tiwai@suse.de>
+In-Reply-To: <s5hwszgis7u.wl%tiwai@suse.de>
+References: <1175080700.5151.56.camel@johannes.berg>
+	<s5hr6r9shrq.wl%tiwai@suse.de> <1178812276.3806.25.camel@johannes.berg>
+	<s5hwszgis7u.wl%tiwai@suse.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-pPVKmmDCvG15zJDs1gP+"
+Date: Thu, 10 May 2007 18:18:33 +0200
+Message-Id: <1178813914.3806.28.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	ALSA development <alsa-devel@alsa-project.org>,
+	Sylvain Munaut <tnt@246tNt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,40 +30,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 10 May 2007, Scott Wood wrote:
-> Geert Uytterhoeven wrote:
-> > On Wed, 9 May 2007, Kumar Gala wrote:
-> > > On Tue, 8 May 2007, Scott Wood wrote:
-> > > > -	u32 *prop;
-> > > > +	u32 __attribute__((unused)) *prop;
-> > > 
-> > > is this the desired way to remove warnings related to CONFIG_ options?  I
-> > > know in the past we'd wrap it with a #ifdef CONFIG_FOO
-> 
-> Granted...  in this case, it looked as if there could be potential for using
-> it for other things in the future as well.  That, and the extra ifdefs are
-> ugly. :-)
-> 
-> > Exactly my thought.
-> > 
-> > Another advantage of #ifdef CONFIG_FOO is that if the actual code that uses
-> > it
-> > goes away, we'll get a warning again. Else in the end we'll be stuck with
-> > zillions of unused variables that don't cause warnings...
-> 
-> Again, granted -- though I'd say the primary problem in that case is functions
-> that are too long to determine that by visual inspection alone.
-> 
-> I agree with Michael Ellerman that it'd be best to just factor the initrd
-> stuff out into its own function.
 
-Yes, Michael Ellerman's patch is an even better solution.
+--=-pPVKmmDCvG15zJDs1gP+
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Gr{oetje,eeting}s,
+On Thu, 2007-05-10 at 18:00 +0200, Takashi Iwai wrote:
 
-						Geert
+> Well, the alsa.git push request was already posted twice, but it
+> wasn't merged yet...  Hopefully Linus will catch up soon.
 
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+This patch doesn't seem to be in perex/alsa.git either though, or are
+you pushing through some other tree now?
+
+johannes
+
+--=-pPVKmmDCvG15zJDs1gP+
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGQ0XY/ETPhpq3jKURAr8JAKCsZfL14cLJZqofGE/R/Hy/jQRQZACfaXNE
+dlHmtKcD64jGV2HDctbjanM=
+=SYID
+-----END PGP SIGNATURE-----
+
+--=-pPVKmmDCvG15zJDs1gP+--
