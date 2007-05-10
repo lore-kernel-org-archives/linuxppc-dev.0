@@ -1,26 +1,20 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7B648DDEEB
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 02:17:21 +1000 (EST)
-Subject: Re: [PATCH] snd-aoa-i2sbus: use MODULE_DEVICE_TABLE instead
-	of	plain	MODULE_ALIAS
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Takashi Iwai <tiwai@suse.de>
-In-Reply-To: <s5hwszgis7u.wl%tiwai@suse.de>
-References: <1175080700.5151.56.camel@johannes.berg>
-	<s5hr6r9shrq.wl%tiwai@suse.de> <1178812276.3806.25.camel@johannes.berg>
-	<s5hwszgis7u.wl%tiwai@suse.de>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-pPVKmmDCvG15zJDs1gP+"
-Date: Thu, 10 May 2007 18:18:33 +0200
-Message-Id: <1178813914.3806.28.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	ALSA development <alsa-devel@alsa-project.org>,
-	Sylvain Munaut <tnt@246tNt.com>
+	by ozlabs.org (Postfix) with ESMTP id 25BBCDDE09
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 02:21:35 +1000 (EST)
+Date: Thu, 10 May 2007 11:17:09 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Becky Bruce <becky.bruce@freescale.com>
+Subject: Re: [PATCH] Change include protections to ASM_POWERPC
+In-Reply-To: <11788099841311-git-send-email-becky.bruce@freescale.com>
+Message-ID: <Pine.LNX.4.64.0705101116540.6072@localhost.localdomain>
+References: <11788099841311-git-send-email-becky.bruce@freescale.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,31 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 10 May 2007, Becky Bruce wrote:
 
---=-pPVKmmDCvG15zJDs1gP+
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> Change several headers in include/asm-powerpc that currently use some variation
+> of ASM_PPC to use ASM_POWERPC instead.
+>
+> Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
+> ---
+>  include/asm-powerpc/mpc8260.h      |    6 +++---
+>  include/asm-powerpc/pmac_feature.h |    6 +++---
+>  include/asm-powerpc/tsi108_irq.h   |    6 +++---
+>  include/asm-powerpc/tsi108_pci.h   |    6 +++---
+>  include/asm-powerpc/unistd.h       |    6 +++---
+>  5 files changed, 15 insertions(+), 15 deletions(-)
+>
 
-On Thu, 2007-05-10 at 18:00 +0200, Takashi Iwai wrote:
+applied.
 
-> Well, the alsa.git push request was already posted twice, but it
-> wasn't merged yet...  Hopefully Linus will catch up soon.
-
-This patch doesn't seem to be in perex/alsa.git either though, or are
-you pushing through some other tree now?
-
-johannes
-
---=-pPVKmmDCvG15zJDs1gP+
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGQ0XY/ETPhpq3jKURAr8JAKCsZfL14cLJZqofGE/R/Hy/jQRQZACfaXNE
-dlHmtKcD64jGV2HDctbjanM=
-=SYID
------END PGP SIGNATURE-----
-
---=-pPVKmmDCvG15zJDs1gP+--
+- k
