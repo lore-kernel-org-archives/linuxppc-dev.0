@@ -1,22 +1,22 @@
-Return-Path: <randy.dunlap@oracle.com>
-Received: from rgminet01.oracle.com (rgminet01.oracle.com [148.87.113.118])
+Return-Path: <jdl@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 269E0DDEC9
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 01:45:04 +1000 (EST)
-Date: Thu, 10 May 2007 08:48:02 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: 2.6.21-mm2 -- powerpc missing kset
-Message-Id: <20070510084802.04476f66.randy.dunlap@oracle.com>
-In-Reply-To: <20070510221631.5eb38bdd.sfr@canb.auug.org.au>
-References: <20070509012322.199f292b.akpm@linux-foundation.org>
-	<4643068C.8010302@shadowen.org>
-	<20070510221631.5eb38bdd.sfr@canb.auug.org.au>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5F7B6DDECD
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 01:46:03 +1000 (EST)
+Subject: Re: [PATCH] 86xx: Enable the AC97 interface on 8641D board.
+From: Jon Loeliger <jdl@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <Pine.LNX.4.64.0705100015570.27791@localhost.localdomain>
+References: <1178142818.32136.51.camel@ld0161-tx32>
+	<Pine.LNX.4.64.0705100015570.27791@localhost.localdomain>
+Content-Type: text/plain
+Message-Id: <1178811953.6578.3.camel@ld0161-tx32>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	paulus@samba.org, linux-kernel@vger.kernel.org
+Date: Thu, 10 May 2007 10:45:53 -0500
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,20 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 10 May 2007 22:16:31 +1000 Stephen Rothwell wrote:
-
-> On Thu, 10 May 2007 12:48:28 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
-> >
-> > arch/powerpc/platforms/pseries/power.c:31: warning: `struct subsystem'
-> > declared inside parameter list
+On Thu, 2007-05-10 at 00:16, Kumar Gala wrote:
+> On Wed, 2 May 2007, Jon Loeliger wrote:
 > 
-> There is no explicit reference to struct subsystem in the current version
-> of that file.
+> > From: Jason Jin <jason.jin@freescale.com>
+> >
+> > HD interface and AC97 interface share some pins and they are enabled at
+> > the same time, In order to use AC97 interface, we need to disable the HD
+> > interface first.
+> >
+> 
+> applied.
+> 
+> - k
 
-There is in 2.6.21-mm2.  Are you saying that it's been fixed
-somewhere else?  (where?)
+Thank you!
 
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+jdl
