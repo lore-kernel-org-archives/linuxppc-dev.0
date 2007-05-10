@@ -1,21 +1,11 @@
-Return-Path: <rob@landley.net>
-Received: from grelber.thyrsus.com
-	(static-71-162-243-5.phlapa.fios.verizon.net [71.162.243.5])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A532CDDDF5
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 13:05:56 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1] (may be forged))
-	by grelber.thyrsus.com (8.13.4/8.13.4) with ESMTP id l4A1GMi8013789
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 May 2007 21:16:22 -0400
-From: Rob Landley <rob@landley.net>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 10 May 2007 16:04:49 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: Building ppc/powerpc kernel to run under QEMU.
-Date: Wed, 9 May 2007 22:03:25 -0400
+Subject: [0/7] RFC: Assorted arch/powerpc mm related cleanups
+Message-ID: <20070510060449.GA3118@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200705092203.26042.rob@landley.net>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +15,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I've been puttering around with my Firmware Linux project trying to add
-powerpc as a supported platform.  I can build kernels that qemu can boot (such
-as a "prep" kernel) using ARCH=ppc, but that one doesn't support make
-headers_install.
+Here is a series of patches I'm working on which follow on from my
+recent patches splitting up mmu.h and pgtable.h.  These are a bunch of
+cleanups to the arch/powerpc mm headers and (in some cases) code.
 
-Using ARCH=powerpc makes headers_install work, but there's no kernel .config 
-I've been able to come up with that generates a kernel I can boot under qemu.
+They haven't been tested beyond compiling for a small number of
+configs yet, and I wouldn't be expecting to merge them into mainline
+until 2.6.23, but for anyone who's interested, here they are.
 
-I could add a special case to my build script, but so far I've got it building 
-eight targets (x86, x86-64, mips, mipsel, armv4l, armv5l, and sparc) with the 
-same ARCH= for headers_install and the actual kernel compile.  It seems there 
-_should_ be a way to do this for as prominent an architecture as PowerPC.
-
-I was told this was the right place to ask: what's the status of the 
-ppc->powerpc migration, and is there any known way to get ARCH=powerpc to 
-build a kernel qemu can boot?
-
-Rob
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
