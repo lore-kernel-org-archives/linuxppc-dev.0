@@ -4,20 +4,18 @@ Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.osdl.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B76D9DDE4A
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 04:13:16 +1000 (EST)
-Date: Thu, 10 May 2007 11:12:42 -0700
+	by ozlabs.org (Postfix) with ESMTP id 31326DDDF5
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 04:25:44 +1000 (EST)
+Date: Thu, 10 May 2007 11:25:08 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Maxim Uvarov <muvarov@ru.mvista.com>
 Subject: Re: [PATCH] Performance Stats: Kernel patch
-Message-Id: <20070510111242.dd42adae.akpm@linux-foundation.org>
-In-Reply-To: <4642FDD6.5090609@ru.mvista.com>
-References: <20070508162650.704.83752.stgit@localhost.localdomain>
-	<20070508123214.11b4f25c.akpm@linux-foundation.org>
-	<4642FDD6.5090609@ru.mvista.com>
+Message-Id: <20070510112508.cad2fd0c.akpm@linux-foundation.org>
+In-Reply-To: <20070510114221.7576.67522.stgit@localhost.localdomain>
+References: <20070510114221.7576.67522.stgit@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, wli@holomorphy.com, pavel@ucw.cz,
+Cc: linuxppc-dev@ozlabs.org, pavel@ucw.cz, wli@holomorphy.com,
 	dada1@cosmosbay.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,34 +26,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 10 May 2007 11:11:18 +0000 Maxim Uvarov <muvarov@ru.mvista.com> wrote:
+On Thu, 10 May 2007 11:42:22 +0000 Maxim Uvarov <muvarov@ru.mvista.com> wrote:
 
-> >syscall entry is a super-hotpath and there will be a developer revolt
-> >if we go adding an incl to that path, sorry.
-> >
-> >  
-> >
-> Yes, I know that it is very critical part of code. May be protection with
-> ifdef CONFIG_TASKSTATS  in all entry.S can be solution?
-> In that case we can be sure that nothing wrong can not happen,
-> and if this functionality is needed we can turn on this.
+> From: Maxim Uvarov <muvarov@ru.mvista.com>
+> To: Andrew Morton <akpm@linux-foundation.org>
+> Cc: <wli@holomorphy.com>, <dada1@cosmosbay.com>, <pavel@ucw.cz>, <linas@austin.ibm.com>
+> Cc: linuxppc-dev@ozlabs.org
+> Cc: <wli@holomorphy.com>, <dada1@cosmosbay.com>, <pavel@ucw.cz>, <linas@austin.ibm.com>
 
-I very much hope that all distributors will enable taskstats, so that won't
-help.
+The addressees are still odd.
 
-I don't think the syscall-counting feature has a future, sorry.  Perhaps
-you could do something like hooking it up on-demand by insertion of a kprobe,
-dunno.
-
-> >(Did that incl also cover the int 80 entry?)
-> >  
-> >
-> Actually not. But counter increments each time when syscall  calls.
-> But it is in very save place, just after
->         SAVE_ALL
->         GET_THREAD_INFO(%ebp)
-> So it is very hard to break something.
+> Subject: [PATCH] Performance Stats: Kernel patch
+> Date: Thu, 10 May 2007 11:42:22 +0000
+> User-Agent: StGIT/0.12.1
 > 
+> 
+> Patch makes available to the user the following
+> task and process performance statistics:
+> 	* Involuntary Context Switches (task_struct->nivcsw)
+> 	* Voluntary Context Switches (task_struct->nvcsw)
+> 	* Number of system calls (added new counter
+> 	  thread_info->sysall_count)
 
-What I meant was: the code appears to be counting sysenter-invoked syscalls,
-but it isn't counting not int 80-invoked syscalls.
+The patch looks good, thanks.  Except, as I said, I don't think we can
+justify the syscall counter.  Yes, it's useful information and yes the
+overhead is low.
+
+But it adds overhead to every syscall on every machine in the world, which
+is a lot of overhead.  And the number of machines which actually _use_ that
+information will be small.
+
+But hey, I might be wrong - perhaps lots of people have a burning need for
+this information.  But we're not in a position to find that out because you
+keep on mucking up the email recipient list :(
+
+
+The patch is confused about the type of the syscall counter.  In some
+places it is "unsigned long" but it gets sent to userspace as __u32.
+
+Considering that this counter can be overflowed in a matter of seconds, you
+definitely want it to be 64-bit on 64-bit machines.  And you probably want
+it to be 64-bit on 32-bit machines as well.  More overhead there though.
+
+Anyway, I suggest you fix that up and rereresend the patch, getting the
+headers correct and we'll ask a wider audience about the
+value-versus-overhead issue.
+
+I suspect we'll end up only supporting the context-switch counters.  Given
+that this requires an uprev to the taskstats interface, we should look at
+whether there are other things which we should be exporting but which were
+forgotten.  I'll have a think about that sometime.
