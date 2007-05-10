@@ -2,18 +2,18 @@ Return-Path: <apw@shadowen.org>
 Received: from hellhawk.shadowen.org (hellhawk.shadowen.org [80.68.90.175])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6B750DDED9
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 23:49:35 +1000 (EST)
-Message-ID: <464322F3.3010808@shadowen.org>
-Date: Thu, 10 May 2007 14:49:39 +0100
+	by ozlabs.org (Postfix) with ESMTP id 1DE90DDEDB
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 23:53:55 +1000 (EST)
 From: Andy Whitcroft <apw@shadowen.org>
-MIME-Version: 1.0
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: 2.6.21-git5 -- powerpc link failure
-Content-Type: text/plain; charset=windows-1252
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Paul Mackerras <paulus@samba.org>
+Sender: Andy Whitcroft <apw@shadowen.org>
+To: gregkh@suse.de
+Subject: [PATCH] update sysfs kset initialisation in PPC64 DLPAR IO driver
+References: <464322F3.3010808@shadowen.org>
+Message-ID: <2c705c055fcd12202673ee8a3056153b@pinky>
+Date: Thu, 10 May 2007 15:00:50 +0100
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,26 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Since 2.6.21-git5 we've been getting the following link failure on powerpc:
 
-  CC      drivers/pci/hotplug/rpadlpar_core.o
-  CC      drivers/pci/hotplug/rpadlpar_sysfs.o
-drivers/pci/hotplug/rpadlpar_sysfs.c:132: error: unknown field
-‘subsys’ specified in initializer
-drivers/pci/hotplug/rpadlpar_sysfs.c:132: warning: initialization from
-incompatible pointer type
-make[3]: *** [drivers/pci/hotplug/rpadlpar_sysfs.o] Error 1
-make[2]: *** [drivers/pci/hotplug] Error 2
-make[1]: *** [drivers/pci] Error 2
-make: *** [drivers] Error 2
+Move the rpadlpar device from "struct subsystem" to "struct kset"
+following the changes in sysfs.
+
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+---
+
+	Ok, this patch seems to sort out the compile problem
+	here and indeed boots and runs kernbench.  Perhaps
+	you could confirm this is sufficient.
 
 
-I would think this is caused by the changes in the commit below:
-
-commit 823bccfc4002296ba88c3ad0f049e1abd8108d30
-Author: Greg Kroah-Hartman <gregkh@suse.de>
-Date:   Fri Apr 13 13:15:19 2007 -0700
-
-    remove "struct subsystem" as it is no longer needed
-
--apw
+diff --git a/drivers/pci/hotplug/rpadlpar_sysfs.c b/drivers/pci/hotplug/rpadlpar_sysfs.c
+index 6c5be3f..ed4de59 100644
+--- a/drivers/pci/hotplug/rpadlpar_sysfs.c
++++ b/drivers/pci/hotplug/rpadlpar_sysfs.c
+@@ -129,13 +129,13 @@ struct kobj_type ktype_dlpar_io = {
+ };
+ 
+ struct kset dlpar_io_kset = {
+-	.subsys = &pci_hotplug_slots_subsys,
+ 	.kobj = {.name = DLPAR_KOBJ_NAME, .ktype=&ktype_dlpar_io,},
+ 	.ktype = &ktype_dlpar_io,
+ };
+ 
+ int dlpar_sysfs_init(void)
+ {
++	kobj_set_kset_s(&dlpar_io_kset, pci_hotplug_slots_subsys);
+ 	if (kset_register(&dlpar_io_kset)) {
+ 		printk(KERN_ERR "rpadlpar_io: cannot register kset for %s\n",
+ 				dlpar_io_kset.kobj.name);
