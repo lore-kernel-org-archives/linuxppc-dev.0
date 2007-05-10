@@ -2,17 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4ADDBDDEFE
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 18:44:34 +1000 (EST)
-Subject: Re: [PATCH 1/3] powerpc: Fixup hard_irq_disable semantics
+	by ozlabs.org (Postfix) with ESMTP id 49705DDEFF
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 18:46:13 +1000 (EST)
+Subject: Re: [PATCH 2/3] Add hard_irq_disable()
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <Pine.LNX.4.62.0705100942590.32241@pademelon.sonytel.be>
-References: <20070510052620.EC36DDDF92@ozlabs.org>
-	<Pine.LNX.4.62.0705100942590.32241@pademelon.sonytel.be>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+In-Reply-To: <a781481a0705100054r45c373a0lfd35b8b31b0e6032@mail.gmail.com>
+References: <20070510052622.3E8D5DDF4B@ozlabs.org>
+	<20070509224113.cca81a24.akpm@linux-foundation.org>
+	<a781481a0705092345rf9fdc9cs8495516299a28fae@mail.gmail.com>
+	<1178781677.14928.221.camel@localhost.localdomain>
+	<a781481a0705100054r45c373a0lfd35b8b31b0e6032@mail.gmail.com>
 Content-Type: text/plain
-Date: Thu, 10 May 2007 18:44:22 +1000
-Message-Id: <1178786662.14928.229.camel@localhost.localdomain>
+Date: Thu, 10 May 2007 18:46:01 +1000
+Message-Id: <1178786761.14928.232.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
 	Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
@@ -25,36 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-05-10 at 09:44 +0200, Geert Uytterhoeven wrote:
-> On Thu, 10 May 2007, Benjamin Herrenschmidt wrote:
-> > This patch renames the raw hard_irq_{enable,disable} into
-> > __hard_irq_{enable,disable} and introduces a higher level
-> > hard_irq_disable() function that can be used by any code
-> > to enforce that IRQs are fully disabled, not only lazy
-> > disabled.
-> 
-> Why did you rename hard_irq_enable() too?
-> 
-> Isn't it more logical to have high-level hard_irq_disable() and
-> hard_irq_enable(), and a special low-level __hard_irq_disable()?
+On Thu, 2007-05-10 at 13:24 +0530, Satyam Sharma wrote:
+> But then, what _is_ the problem with your approach above? An arch that
+> wants (and implements) hard_irq_disable will also #define that dummy
+> macro, so we just need to pull in the appropriate header (directly,
+> indirectly, anyhow -- we don't really care) into
+> include/linux/interrupt.h and then just do the exact same "#ifndef
+> hard_irq_disable" check that you're doing right now. I must be missing
+> something trivial (either that or I need to go and have a coffee :-)
+> because I don't see the possibility of hitting multiple _different_
+> definitions with the approach you mentioned just now.
 
-Not really. If you see my subsequent patch, the idea is to introduce a
-single generic hard_irq_disable() which is meant to be called with
-irqs already disabled (that is within a local_irq_disable section) to
-enforce that if the arch does lazy disabling, it gets hard disabled
-at this point.
+Sure, the only problem is that I don't want to pull asm/hw_irq.h
+directly from linux/interrupts.h unless all arch maintainers around
+verify it's ok, because those headers are a bit of a can of worm at the
+moment ...
 
-If we start adding hard_irq_enable() we end up in a can of worms:
+So I'd rather say that if your arch has a custom version of
+hard_irq_disable(), make sure that asm/system.h pulls it in a way or
+another. And that's already included.
 
- - Do we want all the full set of save/restore etc... ?
- - What if somebody does hard_enable while we are soft-disabled
-   -and- have been hard disabled because of a pending interrupt ?
- - What's the point ? :-)
-
-So overall, I want to keep the semantics as simple as they can be. Maybe
-I can even add some WARN_ON() to make sure we are in a
-local_irq_disable'd section even in the generic one instead of just a
-NOP to enfore that.
-
-Cheers,
 Ben.
