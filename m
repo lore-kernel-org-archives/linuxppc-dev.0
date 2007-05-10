@@ -1,22 +1,15 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[65.172.181.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.osdl.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 136FFDDE1D
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 09:53:48 +1000 (EST)
-Date: Wed, 9 May 2007 16:53:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] 8xx: PQ SoC IRDA support
-Message-Id: <20070509165317.fcf7dbf5.akpm@linux-foundation.org>
-In-Reply-To: <20070508224206.4039.87074.stgit@localhost.localdomain>
-References: <20070508224206.4039.87074.stgit@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Samuel Ortiz <samuel@sortiz.org>,
-	linux-kernel@vger.kernel.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 345F7DDD0A
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 10:30:12 +1000 (EST)
+Date: Wed, 9 May 2007 19:32:29 -0500
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-pcmcia@lists.infradead.org
+Subject: PCMCIA on ppc64, and the joys of io port ranges on mmio-only platforms
+Message-ID: <20070510003229.GA15682@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: olof@lixom.net (Olof Johansson)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,24 +19,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 09 May 2007 02:42:07 +0400
-Vitaly Bordug <vitb@kernel.crashing.org> wrote:
+Hi,
 
-> +		model = (char *)get_property(np, "model", NULL);
-> +		if (model == NULL)
-> +			return -ENODEV;
-> +
-> +		id = (u32 *) get_property(np, "device-id", NULL);
+We've got a very simple CF interface on our eval board, sitting on
+localbus with a couple of gpios for control. mem and i/o port ranges
+are mapped to two mmio ranges, i.e. 0xf0000000 and 0xf1000000 in our case.
 
-get_property() got renamed to of_get_property().
+I've got a pcmcia driver for the slot to handle all the probing, etc. It ioremaps both
+the mem and io ranges, and provides that with the registered device:
 
-You have two coding-styles in the typecasting here.  The former (no space)
-is more common and makes more sense, IMO.
+        cf->mem_base = ioremap(mem->start, mem->end - mem->start);
+        cf->io_base = ioremap(io->start, io->end - io->start);
+[...]
+        /* pcmcia layer only remaps "real" memory not iospace */
+        cf->socket.io_offset = (unsigned long)cf->io_base;
 
-However of_get_property() returns const void* so really you shouldn't be
-doing any casting at all.  `model' should have type `const char *' and then
-you can do
+        /* reserve chip-select regions */
+        if (!request_mem_region(mem->start, mem->end + 1 - mem->start,
+[...]
+        if (!request_mem_region(io->start, io->end + 1 - io->start, driver_name))
+[...]
+        cf->socket.dev.parent = &ofdev->dev;
+        cf->socket.ops = &electra_cf_ops;
+        cf->socket.resource_ops = &pccard_static_ops;
+        cf->socket.features = SS_CAP_PCCARD | SS_CAP_STATIC_MAP | SS_CAP_MEM_ALIGN;
+[...]
 
-	model = get_property(np, "model", NULL);
+(I'll post the full driver separately, but wanted to bring this up first).
 
-which has nice type-safety and const-correctness.
+Bottom line is that io_offset points to the ioremap()ed memory, i.e a
+64-bit kernel address.
+
+The problems show up further up the stack, in this case in the
+pata_pcmcia driver, where pcmcia_request_io() is used to handle the
+address allocation. That in turn calls alloc_io_space(), which takes an
+ioaddr_t * as argument and does math on it.
+
+ioaddr_t is 32-bit, causing obvious problems since io_offset is
+64-bit. There's a compatible kio_addr_t available, but I'm guessing it's
+already not used because of ABI requiremenets given the big warning at
+the definition of ioaddr_t.
+
+Since ppc64 never has had pcmcia before (We're the first platform with
+it), changing the type under ifdef like mips/arm shouldn't be a problem,
+at least it won't lead to regressions -- there's no previous user apps
+to regress.
+
+
+However, that's not enough in this case: Next thing that will fail is
+ioport_map() in ppc-specific code, called from devm_ioport_map(). It
+currently assumes to be passed the bus-local port number and adding
+it to the ioremap base of the (normally only) bus with I/O ports,
+i.e. ISA/LPC. Since we already use that for other devices (UARTS, etc),
+we now have more than one base register.
+
+I see two ways to solve this:
+
+1. Create infrastructure to track the various io-port ranges, register
+them and let the infrastructure take care of the ioremap, pick the right
+ioport_map(), etc. I.e. create virtual io port ranges.
+
+2. Make ioport_map() detect already mapped arguments (i.e.:
++       if (port >= IMALLOC_BASE && (port+len) < IMALLOC_END)
++               return (void __iomem *)port;
+
+(1) would be appealing if it was the only change needed, and if that
+meant that I didn't have to change ioaddr_t. It doesn't though, since
+the pcmcia code still stores the ioport_map():ed value in an ioaddr_t,
+so it really just adds complexity without that much benefit.
+
+I'm tempted to go with (2) + type change but if someone has a third
+option I'm all ears.
+
+
+-Olof
