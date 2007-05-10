@@ -1,27 +1,21 @@
-Return-Path: <y-goto@jp.fujitsu.com>
-Received: from fgwmail8.fujitsu.co.jp (fgwmail8.fujitsu.co.jp [192.51.44.38])
-	by ozlabs.org (Postfix) with ESMTP id 9C856DDDFD
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 16:01:06 +1000 (EST)
-Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
-	by fgwmail8.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
-	l4A5fxeM023532
-	for <linuxppc-dev@ozlabs.org> (envelope-from y-goto@jp.fujitsu.com);
-	Thu, 10 May 2007 14:42:00 +0900
-Date: Thu, 10 May 2007 14:41:07 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: Section mismatch warnings (was Re: [PATCH] early_pfn_to_nid needs
-	to be __meminit)
-In-Reply-To: <1178740693.3086.81.camel@zod.rchland.ibm.com>
-References: <20070509194503.GZ4452@austin.ibm.com>
-	<1178740693.3086.81.camel@zod.rchland.ibm.com>
-Message-Id: <20070510141827.A967.Y-GOTO@jp.fujitsu.com>
+Return-Path: <rob@landley.net>
+Received: from grelber.thyrsus.com
+	(static-71-162-243-5.phlapa.fios.verizon.net [71.162.243.5])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A532CDDDF5
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 13:05:56 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1] (may be forged))
+	by grelber.thyrsus.com (8.13.4/8.13.4) with ESMTP id l4A1GMi8013789
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 May 2007 21:16:22 -0400
+From: Rob Landley <rob@landley.net>
+To: linuxppc-dev@ozlabs.org
+Subject: Building ppc/powerpc kernel to run under QEMU.
+Date: Wed, 9 May 2007 22:03:25 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Sam Ravnborg <sam@ravnborg.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org,
-	Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200705092203.26042.rob@landley.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,45 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add to CC: Sam-san. :-)
+I've been puttering around with my Firmware Linux project trying to add
+powerpc as a supported platform.  I can build kernels that qemu can boot (such
+as a "prep" kernel) using ARCH=ppc, but that one doesn't support make
+headers_install.
 
-> On Wed, 2007-05-09 at 14:45 -0500, Linas Vepstas wrote:
-> > On Wed, May 09, 2007 at 06:51:15PM +0200, Gabriel Paubert wrote:
-> > > On Thu, May 10, 2007 at 02:25:52AM +1000, Stephen Rothwell wrote:
-> > > > This removes a section mismatch warning in those circumstances.
-> > > 
-> > > Speaking of this, I just tried to compile an official (Linus' git tree) 
-> > > kernel for my old PMac G4 and I get a lot of section mismatch warnings at 
-> > > the end of the compilation:
-> > > 
-> > > WARNING: arch/powerpc/mm/built-in.o - Section mismatch: reference to .init.text:early_get_page from .text between 'pte_alloc_one_kernel' (at offset 0xf50) and 'v_mapped_by_bats'
-> > > 
-> > > I find these 50 or so warnings so scary that I've not yet tried 
-> > > to boot the kernel. Note that this is a non-modular kernel.
-> > 
-> > I'm getting oodles of these on an older -mm2 tree. The kernels seem to
-> > work fine. Yes, they should be fixed but I'm up to my proverbial eyballs
-> > in alligators.
-> 
-> Yeah, I see all kinds of this too.  Does anyone have an idea why they're
-> being spit out?  Or if it's related to a particular binutils version,
-> etc?
+Using ARCH=powerpc makes headers_install work, but there's no kernel .config 
+I've been able to come up with that generates a kernel I can boot under qemu.
 
-These warnings are showed by scripts/mod/modposts.c. 
-It checks section mismatch stricter than before.
+I could add a special case to my build script, but so far I've got it building 
+eight targets (x86, x86-64, mips, mipsel, armv4l, armv5l, and sparc) with the 
+same ARCH= for headers_install and the actual kernel compile.  It seems there 
+_should_ be a way to do this for as prominent an architecture as PowerPC.
 
-Some of them are not defined as __init even if it's called at just
-boottime. This is simple to fix.
+I was told this was the right place to ask: what's the status of the 
+ppc->powerpc migration, and is there any known way to get ARCH=powerpc to 
+build a kernel qemu can boot?
 
-Second case is that the functions judge which functions
-should call (boottime or normal) by themselves.
-pte_alloc_one_kernel() looks its case.
-In this case, they must be registered in whitelist of modpost.c
-
-Other possibility is they are just rare called functions.
-It should be investigated....
-
-Bye.
-
--- 
-Yasunori Goto 
+Rob
