@@ -1,29 +1,19 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C1D26DDED5
+Return-Path: <matvejchikov@gmail.com>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.230])
+	by ozlabs.org (Postfix) with ESMTP id 9F5DCDDF16
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 May 2007 18:45:15 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1Hm4Gr-0003Pl-DF
-	for linuxppc-embedded@ozlabs.org; Thu, 10 May 2007 01:45:09 -0700
-Message-ID: <10409434.post@talk.nabble.com>
-Date: Thu, 10 May 2007 01:45:09 -0700 (PDT)
-From: Mirek23 <miroslaw.dach@psi.ch>
+	Thu, 10 May 2007 18:57:05 +1000 (EST)
+Received: by nz-out-0506.google.com with SMTP id l1so599860nzf
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 10 May 2007 01:57:03 -0700 (PDT)
+Message-ID: <8496f91a0705100157j6760e667w11e011b544bb7bf9@mail.gmail.com>
+Date: Thu, 10 May 2007 12:57:03 +0400
+From: "Matvejchikov Ilya" <matvejchikov@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: RE: zImage.elf loads but does not start
-In-Reply-To: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A207@MERCURY.inside.istor.com>
+Subject: [PATCH] phy_ethtool_{sset,gset} -- check phydev for NULL
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <10079346.post@talk.nabble.com> <10142161.post@talk.nabble.com>
-	<406A31B117F2734987636D6CCC93EE3C0159BAAE@ehost011-3.exch011.intermedia.net>
-	<10165159.post@talk.nabble.com> <10323147.post@talk.nabble.com>
-	<463B5422.6030105@ru.mvista.com> <10372619.post@talk.nabble.com>
-	<406A31B117F2734987636D6CCC93EE3C017019FD@ehost011-3.exch011.intermedia.net>
-	<4640F08E.5040608@nec.com.au>
-	<9F3F0A752CAEBE4FA7E906CC2FBFF57C06A207@MERCURY.inside.istor.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Reply-To: matvejchikov@gmail.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,120 +24,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Good Day!
 
-Thank you for all of the advices.
-I did more study on that problem but still without the success.
+The command 'brctl addbr br0 eth0' brings the kernel oops if the eth0
+has PHY, but the phydev is NULL (for ex., ifconfig eth0 0.0.0.0 was
+not issued firstly)
 
-1. I did redd the ELDK manual and I have invoked :
-ELDK_FIXOWNER
-ELDK_MAKEDEV
+Call Trace:
+[C02CFBD0] [7FFFFFFF] 0x7fffffff (unreliable)
+[C02CFBE0] [C0109634] dev_ethtool+0x1b0/0xfac
+[C02CFCD0] [C0155EF0] port_cost+0x5c/0x130
+[C02CFD40] [C01561FC] br_add_if+0x17c/0x308
+[C02CFD70] [C01569E0] add_del_if+0x70/0xa0
+[C02CFD90] [C0156A58] br_dev_ioctl+0x48/0x9fc
+[C02CFE10] [C0106FCC] dev_ifsioc+0x144/0x3ac
+[C02CFE30] [C01080D8] dev_ioctl+0x3b8/0x4c8
+[C02CFEB0] [C00F9BC0] sock_ioctl+0x78/0x260
+[C02CFED0] [C006889C] do_ioctl+0x38/0x84
+[C02CFEE0] [C006896C] vfs_ioctl+0x84/0x3d8
+[C02CFF10] [C0068D00] sys_ioctl+0x40/0x74
+[C02CFF40] [C000EF48] ret_from_syscall+0x0/0x38
 
-in the "dev" directory there were created many nodes like that:
+The following patch fixes the problem.
 
-crw-rw-rw-    1 root     root       5,   1 May  8 15:42 console
-crw-rw-rw-    1 root     root       4,  64 May  8 15:42 ttyS0
+Signed-off-by: Matvejchikov Ilya <matvejchikov <at> gmail.com>
 
-In the kernel command line configuration I have the entry :
-CONFIG_CMDLINE="console=ttyUL0,9600 root=/dev/nfs rw nfsroo ...
+===================================================================
+diff -purN linux-2.6.21-clean/drivers/net/phy/phy.c
+linux-2.6.21/drivers/net/phy/phy.c
+--- linux-2.6.21-clean/drivers/net/phy/phy.c	2007-04-26 07:08:32.000000000 +0400
++++ linux-2.6.21/drivers/net/phy/phy.c	2007-05-04 08:22:01.000000000 +0400
+@@ -245,6 +245,9 @@ EXPORT_SYMBOL(phy_sanitize_settings);
+  */
+  int phy_ethtool_sset(struct phy_device *phydev, struct ethtool_cmd *cmd)
+ {
++	if (unlikely(NULL == phydev))
++		return -EINVAL;
++
+  	if (cmd->phy_address != phydev->addr)
+  		return -EINVAL;
 
-so I have created by hand the node:
-crw-rw-rw-    1 root     root     204, 187 May  8 15:44 ttyUL0
+@@ -289,6 +292,9 @@ EXPORT_SYMBOL(phy_ethtool_sset);
 
-Unfortunately the kernel boots to the point:
+  int phy_ethtool_gset(struct phy_device *phydev, struct ethtool_cmd *cmd)
+ {
++	if (unlikely(NULL == phydev))
++		return -EINVAL;
++
+  	cmd->supported = phydev->supported;
 
-[    9.130834] Looking up port of RPC 100003/2 on 129.129.130.106
-[    9.207363] Looking up port of RPC 100005/1 on 129.129.130.106
-[    9.303794] VFS: Mounted root (nfs filesystem).
-[    9.359316] Freeing unused kernel memory: 96k init
-
-and after that it hangs.
-
-I have made some modifications to the kernel init/main.c file. In that file
-I have inserted the printk statements to
-see how far the kernel goes. It seems to be that the last thing it does it
-executes the sbin/init command and it hangs.
-
-Instead of the sbin/init I have tried to execute other commands like
-bin/echo this_is_text_string
-and bin/echo this_is_test >> /var/log/messages
-
-the modification looks like (init/main.c):
-before modification:
-        printk("test 3\n");
-        run_init_process("/sbin/init");
-        printk("test 4\n");
-after modification
-        printk("test 3\n");
-        run_init_process("/bin/echo ala");
-        run_init_process("/bin/echo buba >> /var/log/messages");
-        printk("test 4\n");
-
-
-
-In both cases the last thing which was printed is "test 3"
-The /var/log/messages remains empty.
-
-I thought that it might be the uart_lite driver is the source of the
-problem. I rebuild the kernel configuring it for the
-standard UART driver instead of the uart_lite.
-This time my command line looks like:
-CONFIG_CMDLINE="console=ttyS0,9600 root=/dev/nfs rw nfsroo ...
-
-When booting the kernel configured with the UART  I see anything printed  
-on the screen so it is even worse than before.
-
-Do you have any suggestions.
-
-Best Regards
-
-Mirek
-
-
-
-Charles Krinke wrote:
-> 
-> I find this usually happens when /dev/tty, /dev/console or /dev/ttyS0
-> are not setup properly. That is, they are files instead of nodes. This
-> menas you have mounted the root filesystem and init is running on that
-> root filesystem.
-> 
-> Charles
-> 
-> 
-> -----Original Message-----
-> From: linuxppc-embedded-bounces+ckrinke=istor.com@ozlabs.org
-> [mailto:linuxppc-embedded-bounces+ckrinke=istor.com@ozlabs.org] On
-> Behalf Of Adrian Craine
-> Sent: Tuesday, May 08, 2007 2:50 PM
-> To: Leonid
-> Cc: linuxppc-embedded@ozlabs.org; Mirek23
-> Subject: Re: zImage.elf loads but does not start
-> 
-> Leonid wrote:
->> rootpath=
->> [    9.130834] Looking up port of RPC 100003/2 on 129.129.130.106
->> [    9.207363] Looking up port of RPC 100005/1 on 129.129.130.106
->> [    9.303794] VFS: Mounted root (nfs filesystem).
->> [    9.359316] Freeing unused kernel memory: 96k init
->> [    9.422162] Warning: unable to open an initial console.
->>
->>   
-> The exact device node this requires is /dev/console c 5 1
-> That should solve your issue.
-> 
-> Cheers,
->              Adrian.
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
-
--- 
-View this message in context: http://www.nabble.com/zImage.elf-loads-but-not-starts-tf3607582.html#a10409434
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+  	cmd->advertising = phydev->advertising;
