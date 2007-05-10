@@ -1,21 +1,29 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-02.arcor-online.net (mail-in-02.arcor-online.net
+	[151.189.21.42])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 17D80DDDFD
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 16:36:01 +1000 (EST)
-Subject: Re: [PATCH 2/3] Add hard_irq_disable()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070509224113.cca81a24.akpm@linux-foundation.org>
-References: <20070510052622.3E8D5DDF4B@ozlabs.org>
-	<20070509224113.cca81a24.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 10 May 2007 16:35:51 +1000
-Message-Id: <1178778951.14928.215.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel@vger.kernel.org
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A7311DDEE9
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2007 16:58:04 +1000 (EST)
+In-Reply-To: <20070509182630.GA19495@ld0162-tx32.am.freescale.net>
+References: <20070507182947.GD26920@ld0162-tx32.am.freescale.net>
+	<B7081C3F-C551-42D8-BB5D-6FE5DC311C99@freescale.com>
+	<463F9A38.6080408@freescale.com>
+	<AC7B08C0-E41A-458F-8E9F-59901443600A@freescale.com>
+	<3FE06AFA-BEE6-46CF-B12C-29D979AE50D7@kernel.crashing.org>
+	<20070508001808.GD7449@localhost.localdomain>
+	<baf8c79aa13de543816d62162d4f9928@kernel.crashing.org>
+	<20070509182630.GA19495@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <385038798e00654a5cbd38165b06734b@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 05/13] Document the fsl,
+	magic-packet property in gianfar nodes.
+Date: Thu, 10 May 2007 08:57:52 +0200
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,59 +33,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-05-09 at 22:41 -0700, Andrew Morton wrote:
-> On Thu, 10 May 2007 15:25:58 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> 
-> > --- linux-cell.orig/include/linux/interrupt.h	2007-05-10 14:51:22.000000000 +1000
-> > +++ linux-cell/include/linux/interrupt.h	2007-05-10 15:18:04.000000000 +1000
-> > @@ -241,6 +241,16 @@ static inline void __deprecated save_and
-> >  #define save_and_cli(x)	save_and_cli(&x)
-> >  #endif /* CONFIG_SMP */
-> >  
-> > +/* Some architectures might implement lazy enabling/disabling of
-> > + * interrupts. In some cases, such as stop_machine, we might want
-> > + * to ensure that after a local_irq_disable(), interrupts have
-> > + * really been disabled in hardware. Such architectures need to
-> > + * implement the following hook.
-> > + */
-> > +#ifndef hard_irq_disable
-> > +#define hard_irq_disable()	do { } while(0)
-> > +#endif
-> 
-> We absolutely require that the architecture's hard_irq_disable() be defined
-> when we do this.  If it happens that the definition of hard_irq_disable()
-> is implemented three levels deep in nested includes then we risk getting
-> into a situation where different .c files see different implementations of
-> hard_irq_disable(), which could lead to confusing results, to say the least.
+>>>>>> As I previously wrote internally, it's only needed because some
+>>>>>> versions of the device have it and some don't; what it really 
+>>>>>> means
+>>>>>> is that certain bits in certain registers are valid.
+>>
+>> So have the driver detect this based on "compatible"
+>> or "model".
+>
+> Thus requiring the driver to maintain a list of models/compatibles for
+> every possible combination of features,
 
-Yes, I'm indeed a bit worried about that... I've been wondering what's
-the best include path here... I tried to follow who gets to hw_irq.h and
-didn't come to any conclusive results.
+Most likely a very short list.  But you know best
+of course.
 
-powerpc gets it from asm/system.h but I haven't verified other arch
-(though it only matters on arch that have their own here).
+> rather than letting the device
+> tree specify them individually.  What would be the advantage in that?
 
-I've verified that a #error on ppc up there will not trigger thus it's
-fine on powerpc, but I agree it's a bit fragile.
+It's a tradeoff -- describing every single bit of
+the hardware in the device tree is a way bigger
+maintenance burden, be careful not to go overboard
+with it.
 
-> Your implementation comes via the inclusion of system.h which then includes
-> hw_irq.h.  That's perhaps a little fragile and it would be better to
-> 
-> a) include in the comment the name of the arch file which must implement
->    hard_irq_disable() and
-> 
-> b) include that file directly from this one.
 
-Fair enough. I was just worried that including hw_irq.h here might cause
-trouble for some archs though (as I said, we get it indirectly on
-powerpc via some other asm thingy, not via some linux/*.h). I've looked
-around and seen all sort of horrors in arch include dependencies
-(including some circular stuff that must work by mere luck).
-
-> Oh, and your comment layout style is wrong ;)
-
-What about my comment layout style ? I've been using that forever ... Or
-do you mean I should use a function documentation style layout there ?
-
-Cheers,
-Ben.
+Segher
