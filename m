@@ -1,25 +1,35 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <linas@austin.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A5280DDEBA
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 May 2007 03:19:49 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l4BHJdFT018281
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 10:19:40 -0700 (MST)
-Received: from ld2052 (ld2052.am.freescale.net [10.82.18.5])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with SMTP id l4BHJdO7005799
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 12:19:39 -0500 (CDT)
-Date: Fri, 11 May 2007 12:19:38 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: don't complain if size-cells == 0
-Message-Id: <20070511121938.7d79f733.kim.phillips@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8A141DDEDF
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 May 2007 03:23:13 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4BHN6Xr023359
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 13:23:06 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l4BHN5Lh149402
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 11:23:05 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4BHN52g030578
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 11:23:05 -0600
+Date: Fri, 11 May 2007 12:23:04 -0500
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Using kprobes [was Re: [PATCH] Performance Stats: Kernel patch
+Message-ID: <20070511172304.GI4452@austin.ibm.com>
+References: <20070508162650.704.83752.stgit@localhost.localdomain>
+	<20070508123214.11b4f25c.akpm@linux-foundation.org>
+	<4642FDD6.5090609@ru.mvista.com>
+	<20070510111242.dd42adae.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070510111242.dd42adae.akpm@linux-foundation.org>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: Maxim Uvarov <muvarov@ru.mvista.com>, dada1@cosmosbay.com, pavel@ucw.cz,
+	wli@holomorphy.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,31 +39,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-An mdio bus scan was added with ucc_geth phylib
-migration patches, now machines complain on boot, saying:
+On Thu, May 10, 2007 at 11:12:42AM -0700, Andrew Morton wrote:
+> 
+> I don't think the syscall-counting feature has a future, sorry.  Perhaps
+> you could do something like hooking it up on-demand by insertion of a kprobe,
+> dunno.
 
-prom_parse: Bad cell count for /qe@e0100000/mdio@2120/ethernet-phy@00
-prom_parse: Bad cell count for /qe@e0100000/mdio@2120/ethernet-phy@01
+This is an interesting point. I've started fiddling with (a wrapper
+around) kprobes that allows me to pick any subroutine symbol in System.map,
+and then get an event whenever that subroutine gets called. Its pretty
+slick, and allows me to gather data on certain unusual events in the
+kernel.  (I'm not using this for performance monitoring, I'm trying to 
+do RAS).
 
-since size-cells can indeed be 0, this patch fixes the check.
+It makes a lot of sense to me to have a generic kprobe extension, where 
+you could give it a list of subroutine names, and it'll collect stats
+on the number of times that the routine was called. Some user-space thingy
+could poll for those stats, or you could put them in /sys or wherever.
 
-Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
----
- arch/powerpc/kernel/prom_parse.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Its more complicted than just instriumenting syscalls, but a lot more
+useful, I would think ... 
 
-diff --git a/arch/powerpc/kernel/prom_parse.c b/arch/powerpc/kernel/prom_parse.c
-index b5c96af..3786dcc 100644
---- a/arch/powerpc/kernel/prom_parse.c
-+++ b/arch/powerpc/kernel/prom_parse.c
-@@ -24,7 +24,7 @@
- /* Max address size we deal with */
- #define OF_MAX_ADDR_CELLS	4
- #define OF_CHECK_COUNTS(na, ns)	((na) > 0 && (na) <= OF_MAX_ADDR_CELLS && \
--			(ns) > 0)
-+			(ns) >= 0)
- 
- static struct of_bus *of_match_bus(struct device_node *np);
- static int __of_address_to_resource(struct device_node *dev,
--- 
-1.5.0.3
+--linas
