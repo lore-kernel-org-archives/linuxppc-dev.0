@@ -1,24 +1,14 @@
-Return-Path: <gregkh@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DE57DDDEF1
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 17:22:09 +1000 (EST)
-Date: Fri, 11 May 2007 00:16:06 -0700
-From: Greg KH <gregkh@suse.de>
-To: Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH] update sysfs kset initialisation in PPC64 DLPAR IO driver
-Message-ID: <20070511071606.GB1211@suse.de>
-References: <464322F3.3010808@shadowen.org>
-	<2c705c055fcd12202673ee8a3056153b@pinky>
-	<20070510141221.GA26709@suse.de> <46434041.7020903@shadowen.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <46434041.7020903@shadowen.org>
-Cc: Andrew Morton <akpm@osdl.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>, paulus@samba.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: Fix Kconfig undefined symbol 'IBM_NEW_EMAC_ZMII'
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Tony Breeds <tony@bakeyournoodle.com>
+In-Reply-To: <20070511070006.GF15955@bakeyournoodle.com>
+References: <20070511070006.GF15955@bakeyournoodle.com>
+Content-Type: text/plain
+Date: Fri, 11 May 2007 17:56:42 +1000
+Message-Id: <1178870202.32247.15.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,31 +18,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 10, 2007 at 04:54:41PM +0100, Andy Whitcroft wrote:
-> Greg KH wrote:
-> > On Thu, May 10, 2007 at 03:00:50PM +0100, Andy Whitcroft wrote:
-> >> Move the rpadlpar device from "struct subsystem" to "struct kset"
-> >> following the changes in sysfs.
-> >>
-> >> Signed-off-by: Andy Whitcroft <apw@shadowen.org>
-> >> ---
-> >>
-> >> 	Ok, this patch seems to sort out the compile problem
-> >> 	here and indeed boots and runs kernbench.  Perhaps
-> >> 	you could confirm this is sufficient.
-> > 
-> > As per the discussion on the pci hotplug list, no, this doesn't seem to
-> > fix the problem.  The developers there are looking into it.  If you can
-> > test out patches for this, I'm sure the people there would appreciate
-> > the help.
+On Fri, 2007-05-11 at 17:00 +1000, Tony Breeds wrote:
+> Fix Kconfig undefined symbol 'IBM_NEW_EMAC_ZMII'
 > 
-> Sure anything they have for testing, send them to me ...
+> An allmodconfig on the current powerpc tree yields:
+> arch/powerpc/platforms/44x/Kconfig:41:warning: 'select' used by config symbol '440GP' refers to undefined symbol 'IBM_NEW_EMAC_ZMII'
+> 
+> Remove the select until the driver exists.
 
-They have the same patch that you made (I made it), yet they reported
-that it didn't work properly for them.
+Can you comment it out instead ?
 
-Can you test your patch out on "real" hardware?
-
-thanks,
-
-greg k-h
+Ben.
