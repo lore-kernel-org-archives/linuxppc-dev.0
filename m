@@ -1,17 +1,19 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [RFC] cell: saving spus information for kexec crash
-Date: Fri, 11 May 2007 19:48:12 +0200
-References: <200705111353.22781.adetsch@br.ibm.com>
-	<20070511172233.GA14587@kryten>
-In-Reply-To: <20070511172233.GA14587@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200705111948.12664.arnd@arndb.de>
-Cc: Andre Detsch <adetsch@br.ibm.com>, Anton Blanchard <anton@samba.org>,
-	cbe-oss-dev@ozlabs.org
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A90EBDDF1B
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 May 2007 03:52:16 +1000 (EST)
+Date: Fri, 11 May 2007 12:52:03 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: paulus@samba.org
+Subject: [PATCH] U-boot passes the initrd as start/end, not start/size.
+Message-ID: <20070511175202.GA14644@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,30 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 11 May 2007, Anton Blanchard wrote:
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/boot/cuboot-83xx.c |    2 +-
+ arch/powerpc/boot/cuboot-85xx.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-> > This patch adds support for investigating spus information after a
-> > kernel crash event, through kdump vmcore file.
-> > Implementation is based on xmon code, but the new functionality was
-> > kept independent.
-> 
-> This brings up a point: it looks like kdump doesnt capture the FP and
-> altivec regs. Could be important for some bugs.
-
-Yes, and there are more things that might be worth adding:
-
-- SLB contents (as noticed by Luke Browning)
-- some SPRs
-- state of some device drivers
-
-We have briefly discussed the idea of having generic notifiers into
-which arbitrary subsystems can register, but unless we have more than
-one or two users, it's probably not worth it.
-
-> This brings up yet another point, it looks like our userspace core dumps
-> dont capture altivec or SPU state.
-
-Actually, the userspace core dumps do capture the SPU state as of 2.6.21,
-thanks to the work of Dwayne McConnell :-)
-
-	Arnd <><
+diff --git a/arch/powerpc/boot/cuboot-83xx.c b/arch/powerpc/boot/cuboot-83xx.c
+index 6cbc20a..9af554e 100644
+--- a/arch/powerpc/boot/cuboot-83xx.c
++++ b/arch/powerpc/boot/cuboot-83xx.c
+@@ -57,7 +57,7 @@ void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+ 
+ 	memcpy(&bd, (bd_t *)r3, sizeof(bd));
+ 	loader_info.initrd_addr = r4;
+-	loader_info.initrd_size = r4 ? r5 : 0;
++	loader_info.initrd_size = r4 ? r5 - r4 : 0;
+ 	loader_info.cmdline = (char *)r6;
+ 	loader_info.cmdline_len = r7 - r6;
+ 
+diff --git a/arch/powerpc/boot/cuboot-85xx.c b/arch/powerpc/boot/cuboot-85xx.c
+index f88ba00..e256031 100644
+--- a/arch/powerpc/boot/cuboot-85xx.c
++++ b/arch/powerpc/boot/cuboot-85xx.c
+@@ -58,7 +58,7 @@ void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+ 
+ 	memcpy(&bd, (bd_t *)r3, sizeof(bd));
+ 	loader_info.initrd_addr = r4;
+-	loader_info.initrd_size = r4 ? r5 : 0;
++	loader_info.initrd_size = r4 ? r5 - r4 : 0;
+ 	loader_info.cmdline = (char *)r6;
+ 	loader_info.cmdline_len = r7 - r6;
+ 
+-- 
+1.5.0.3
