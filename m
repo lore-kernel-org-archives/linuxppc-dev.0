@@ -1,22 +1,25 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
-	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id 1C4D8DDEE6
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 May 2007 00:20:03 +1000 (EST)
-Subject: Re: Fixed PHY problems
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-05.arcor-online.net (mail-in-05.arcor-online.net
+	[151.189.21.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 256C3DDE38
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 May 2007 01:40:06 +1000 (EST)
 In-Reply-To: <20070511180412.025aa1ca@vitb.ru.mvista.com>
 References: <1178818913.20638.5.camel@gentoo-jocke.transmode.se>
 	<20070511120704.3e0377b7@localhost.localdomain>
 	<1178874287.20638.8.camel@gentoo-jocke.transmode.se>
 	<1178890872.20638.21.camel@gentoo-jocke.transmode.se>
 	<20070511180412.025aa1ca@vitb.ru.mvista.com>
-Content-Type: text/plain
-Date: Fri, 11 May 2007 16:20:02 +0200
-Message-Id: <1178893202.20638.28.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <7a21345ce9b0de392cbb9cfd675c6491@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Fixed PHY problems
+Date: Fri, 11 May 2007 17:37:50 +0200
+To: Vitaly Bordug <vitb@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: joakim.tjernlund@transmode.se
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,54 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-05-11 at 18:04 +0400, Vitaly Bordug wrote:
-> > hmm, been trying to figure out all day how to make ucc_geth find my
-> > fixed PHY without success. OF experts, please give me some hints.
-> > My board is derived from the in tree mpc832x_mds bord and I am trying to
-> > convert this part:
-> > 	mdio@2320 {
-> > 			#address-cells = <1>;
-> > 			#size-cells = <0>;
-> > 			reg = <2320 18>;
-> > 			device_type = "mdio";
-> > 			compatible = "ucc_geth_phy";
-> > 
-> > 			phy3: ethernet-phy@03 {
-> > 				interrupt-parent = < &ipic >;
-> > 				interrupts = <11 8>;
-> > 				reg = <3>;
-> > 				device_type = "ethernet-phy";
-> > 			};
-> > 			phy4: ethernet-phy@04 {
-> > 				interrupt-parent = < &ipic >;
-> > 				interrupts = <12 8>;
-> > 				reg = <4>;
-> > 				device_type = "ethernet-phy";
-> > 			};
-> > 		};
-> > into fixed PHYs, how do I do that?
-> 
-> Well, fixed phy didn't made it to have any representation in dts as of now, at least
-> what I am aware of, and it is just a platform device so far.
-> 
-> Speaking about it, I am recalling long-pending enhancement to unify fixed interface with
-> bus_id representation in gianfar (that is having numeric bus:device way).
-> 
-> About dts, the only options fixed phy can have, are speed and duplex, it does not trigger irq and
-> so on, and I see something like 
-> 
+>> 			phy3: ethernet-phy@03 {
+
+>> 			phy4: ethernet-phy@04 {
+
+@3 resp. @4 is more in line with existing practice.
+
 > phy1: fixed-phy@01 {
 > 	reg = <100 1>; /*100Mps, full duplex*/
-> 	device_type = "ethernet-phy";
-> };
 
-Looks resonable to me, although I think reg needs to be <d#100 1>
+The first entry in "reg" has to correspond to the
+unit address (@01 in this case -- again, should be
+@1 instead).
 
-How do make ucc_geth find it?
+Never overload the meaning of well-known properties,
+esp. not if it conflicts with the existing semantics,
+like here.
 
-PS.
-   Could you send me the patch that fixes:
-Device 'fixed@100:1' does not have a release() function, it is broken
-and must be fixed.
 
-Is this warning harmless?
+Segher
