@@ -1,19 +1,22 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from localhost.localdomain (unknown [85.94.3.83])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 49C83DDEF0
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 18:07:15 +1000 (EST)
-Date: Fri, 11 May 2007 12:07:04 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: joakim.tjernlund@transmode.se
-Subject: Re: Fixed PHY problems
-Message-ID: <20070511120704.3e0377b7@localhost.localdomain>
-In-Reply-To: <1178818913.20638.5.camel@gentoo-jocke.transmode.se>
-References: <1178818913.20638.5.camel@gentoo-jocke.transmode.se>
+Return-Path: <khali@linux-fr.org>
+Received: from kellthuzad.dmz.nerim.net (smtp-dmz-235-friday.dmz.nerim.net
+	[195.5.254.235]) by ozlabs.org (Postfix) with ESMTP id 19E2DDDEF0
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 18:12:16 +1000 (EST)
+Received: from kraid.nerim.net (smtp-105-friday.nerim.net [62.4.16.105])
+	by kellthuzad.dmz.nerim.net (Postfix) with ESMTP id 184EE24841
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 10:12:10 +0200 (CEST)
+Date: Fri, 11 May 2007 10:12:31 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: Re: [PATCH] i2c: adds support for i2c bus on 8xx
+Message-ID: <20070511101231.241e3a30@hyperion.delvare>
+In-Reply-To: <20070510143554.16c5df6a@localhost.localdomain>
+References: <20070508063131.19179.47548.stgit@localhost.localdomain>
+	<20070510112835.60fb1c2a@hyperion.delvare>
+	<20070510143554.16c5df6a@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,41 +26,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 10 May 2007 19:41:53 +0200
-Joakim Tjernlund wrote:
+Hi Vitaly,
 
-> Trying to boot todays linus tree with fixed PHY support enabled gets
-> me this: Fixed PHY: Registered new driver
-> Device 'fixed@100:1' does not have a release() function, it is broken
-> and must be fixed. ------------[ cut here ]------------
-> Badness at drivers/base/core.c:107
-> Call Trace:
-> [cffc1dc0] [c0008324] show_stack+0x48/0x194 (unreliable)
-> [cffc1df0] [c00f4a4c] report_bug+0x84/0xec
-> [cffc1e00] [c000dde8] program_check_exception+0x274/0x55c
-> [cffc1e20] [c000f770] ret_from_except_full+0x0/0x4c
-> --- Exception: 700 at device_release+0x54/0x90
->     LR = device_release+0x54/0x90
-> [cffc1ef0] [c00f5e1c] kobject_cleanup+0xb4/0xb8
-> [cffc1f10] [c00f6ca0] kref_put+0x68/0x80
-> [cffc1f20] [c00f5d58] kobject_put+0x24/0x34
-> [cffc1f30] [c01150bc] put_device+0x1c/0x2c
-> [cffc1f40] [c0243a9c] fixed_init+0x1cc/0x210
-> [cffc1f60] [c022e828] kernel_init+0x8c/0x2b4
-> [cffc1ff0] [c000ff4c] kernel_thread+0x44/0x60
-> 
-> The other thing is, how do I specify a fixed PHY
-> in OF?
-> 
-I have a patch that  fixes it but was busy with other stuff because of merge window.
-Can send it to you meanwhile, going to deal with it after next rc released...
+On Thu, 10 May 2007 14:35:54 +0400, Vitaly Bordug wrote:
+> On Thu, 10 May 2007 11:28:35 +0200 Jean Delvare wrote:
+> > On Tue, 08 May 2007 10:31:31 +0400, Vitaly Bordug wrote:
+> > > Interface has been reworked to of_device as well as other feedback
+> > > addressed. Repeated start ability is missing from the
+> > > implementation.
+> > 
+> > Did you check the hardware documentation? Is it a hardware limitation?
+> > It is likely to cause problems, so it should be investigated, and if
+> > it really cannot be fixed, then this must be clearly documented (in
+> > Kconfig and in the driver) and the advertised functionalities  of the
+> > driver should be reduced accordingly (most SMBus transactions include
+> > a repeated start.)
+>
+> Yes, I've checked RM about I2C controller, and cannot find anything about repeated
+> start. There are a few words about multi-master considerations, that SoC features bus arbitration,
+> but to avoid collisions, "higher-level handshake protocol must be used" (MPC885 RM, p. 32-6).
 
->  Jocke
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+After reading the MPC885 RM datasheet, I think the device supports
+repeated start. I guess that you simply need to _only_ set the
+BD_SC_LAST flag for the last message of the transaction, not all of
+them as the driver does. If I am correct, this should be fairly easy to
+fix. Please try, test and report.
 
+> > > +static int cpm_iic_init(struct i2c_adapter *adap)
+> > > +{
+> > > (...)
+> > > +	/* Initialize Tx/Rx parameters.
+> > > +	 */
+> > > +	if (cpm->reloc == 0) {
+> > > +		cpm8xx_t *cp = cpm->cp;
+> > > +		int res;
+> > > +
+> > > +		u16 v = mk_cr_cmd(CPM_CR_CH_I2C, CPM_CR_INIT_TRX) | CPM_CR_FLG;
+> > > +
+> > > +		out_be16(&cp->cp_cpcr, v);
+> > > +		res = wait_event_timeout(iic_wait,
+> > > +					 !(in_be16(&cp->cp_cpcr) & CPM_CR_FLG),
+> > > +					 HZ * 10);
+> > 
+> > This is a pretty long timeout. Can it realistically take that long?
+>
+> In fact, it can. Especially when CPM is loaded with Ethernet/UART/Etc
+> transactions. If you feel it is overkill and I2C shouldn't do that,
+> I'll trim it down though.
+
+No, if you think it's reasonable, fine with me.
 
 -- 
-Sincerely, Vitaly
+Jean Delvare
