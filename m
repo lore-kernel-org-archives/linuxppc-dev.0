@@ -1,15 +1,15 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 993C6DDEEB
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 15:38:35 +1000 (EST)
-Date: Fri, 11 May 2007 15:38:34 +1000
+	by ozlabs.org (Postfix) with ESMTP id 5285ADDF0B
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 15:40:40 +1000 (EST)
+Date: Fri, 11 May 2007 15:40:36 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Remove unused variable
-Message-Id: <20070511153834.2afc3ce7.sfr@canb.auug.org.au>
+Subject: [PATCH] [POWERPC] missed include
+Message-Id: <20070511154036.226c2d28.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Cc: Olof Johansson <olof@lixom.net>, ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,28 +19,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+fixes:
+arch/powerpc/platforms/pasemi/idle.c: In function 'pasemi_system_reset_exception':
+arch/powerpc/platforms/pasemi/idle.c:55: warning: implicit declaration of function 'do_IRQ'
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/mm/hash_native_64.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/powerpc/platforms/pasemi/idle.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-index 59502c3..4a20d89 100644
---- a/arch/powerpc/mm/hash_native_64.c
-+++ b/arch/powerpc/mm/hash_native_64.c
-@@ -351,7 +351,7 @@ static void hpte_decode(hpte_t *hpte, unsigned long slot,
- 	unsigned long hpte_r = hpte->r;
- 	unsigned long hpte_v = hpte->v;
- 	unsigned long avpn;
--	int i, size, shift, penc, avpnm_bits;
-+	int i, size, shift, penc;
+diff --git a/arch/powerpc/platforms/pasemi/idle.c b/arch/powerpc/platforms/pasemi/idle.c
+index 5985ce0..03cd45d 100644
+--- a/arch/powerpc/platforms/pasemi/idle.c
++++ b/arch/powerpc/platforms/pasemi/idle.c
+@@ -22,6 +22,7 @@
  
- 	if (!(hpte_v & HPTE_V_LARGE))
- 		size = MMU_PAGE_4K;
+ #include <linux/kernel.h>
+ #include <linux/string.h>
++#include <linux/irq.h>
+ 
+ #include <asm/machdep.h>
+ #include <asm/reg.h>
 -- 
 1.5.1.4
