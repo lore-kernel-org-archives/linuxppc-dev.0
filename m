@@ -1,14 +1,20 @@
-Return-Path: <anton@ozlabs.org>
-Date: Fri, 11 May 2007 12:22:33 -0500
-From: Anton Blanchard <anton@samba.org>
-To: Andre Detsch <adetsch@br.ibm.com>
-Subject: Re: [RFC] cell: saving spus information for kexec crash
-Message-ID: <20070511172233.GA14587@kryten>
-References: <200705111353.22781.adetsch@br.ibm.com>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound6-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id BF4A3DDEE3
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 May 2007 03:38:17 +1000 (EST)
+Message-ID: <4644A9FA.4050108@am.sony.com>
+Date: Fri, 11 May 2007 10:38:02 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200705111353.22781.adetsch@br.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+To: paulus@samba.org
+Subject: Re: [PATCH] [POWERPC] trivial ps3 fixups
+References: <20070511154244.34ad81e6.sfr@canb.auug.org.au>
+In-Reply-To: <20070511154244.34ad81e6.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=UTF-8
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,18 +24,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- 
-Hi,
+Stephen Rothwell wrote:
+> Fixes warnings:
+> 
+> arch/powerpc/platforms/ps3/system-bus.c: In function 'ps3_map_sg':
+> arch/powerpc/platforms/ps3/system-bus.c:278: warning: unused variable 'i'
+> arch/powerpc/platforms/ps3/system-bus.c:277: warning: unused variable 'dev'
+> arch/powerpc/platforms/ps3/setup.c:103: warning: 'prealloc' defined but not used
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-> This patch adds support for investigating spus information after a
-> kernel crash event, through kdump vmcore file.
-> Implementation is based on xmon code, but the new functionality was
-> kept independent.
-
-This brings up a point: it looks like kdump doesnt capture the FP and
-altivec regs. Could be important for some bugs.
-
-This brings up yet another point, it looks like our userspace core dumps
-dont capture altivec or SPU state.
-
-Anton
+Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
