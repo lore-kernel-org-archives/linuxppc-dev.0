@@ -1,22 +1,19 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] update sysfs kset initialisation in PPC64 DLPAR IO driver
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Greg KH <gregkh@suse.de>
-In-Reply-To: <20070511071606.GB1211@suse.de>
-References: <464322F3.3010808@shadowen.org>
-	<2c705c055fcd12202673ee8a3056153b@pinky>
-	<20070510141221.GA26709@suse.de>
-	<46434041.7020903@shadowen.org>  <20070511071606.GB1211@suse.de>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-9fM6HOSO93kqWbFKOdcv"
-Date: Fri, 11 May 2007 17:58:09 +1000
-Message-Id: <1178870289.3923.6.camel@concordia.ozlabs.ibm.com>
+Return-Path: <vitb@kernel.crashing.org>
+Received: from localhost.localdomain (unknown [85.94.3.83])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 49C83DDEF0
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2007 18:07:15 +1000 (EST)
+Date: Fri, 11 May 2007 12:07:04 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: joakim.tjernlund@transmode.se
+Subject: Re: Fixed PHY problems
+Message-ID: <20070511120704.3e0377b7@localhost.localdomain>
+In-Reply-To: <1178818913.20638.5.camel@gentoo-jocke.transmode.se>
+References: <1178818913.20638.5.camel@gentoo-jocke.transmode.se>
 Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Linus Torvalds <torvalds@linux-foundation.org>
-Reply-To: michael@ellerman.id.au
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,64 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 10 May 2007 19:41:53 +0200
+Joakim Tjernlund wrote:
 
---=-9fM6HOSO93kqWbFKOdcv
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> Trying to boot todays linus tree with fixed PHY support enabled gets
+> me this: Fixed PHY: Registered new driver
+> Device 'fixed@100:1' does not have a release() function, it is broken
+> and must be fixed. ------------[ cut here ]------------
+> Badness at drivers/base/core.c:107
+> Call Trace:
+> [cffc1dc0] [c0008324] show_stack+0x48/0x194 (unreliable)
+> [cffc1df0] [c00f4a4c] report_bug+0x84/0xec
+> [cffc1e00] [c000dde8] program_check_exception+0x274/0x55c
+> [cffc1e20] [c000f770] ret_from_except_full+0x0/0x4c
+> --- Exception: 700 at device_release+0x54/0x90
+>     LR = device_release+0x54/0x90
+> [cffc1ef0] [c00f5e1c] kobject_cleanup+0xb4/0xb8
+> [cffc1f10] [c00f6ca0] kref_put+0x68/0x80
+> [cffc1f20] [c00f5d58] kobject_put+0x24/0x34
+> [cffc1f30] [c01150bc] put_device+0x1c/0x2c
+> [cffc1f40] [c0243a9c] fixed_init+0x1cc/0x210
+> [cffc1f60] [c022e828] kernel_init+0x8c/0x2b4
+> [cffc1ff0] [c000ff4c] kernel_thread+0x44/0x60
+> 
+> The other thing is, how do I specify a fixed PHY
+> in OF?
+> 
+I have a patch that  fixes it but was busy with other stuff because of merge window.
+Can send it to you meanwhile, going to deal with it after next rc released...
 
-On Fri, 2007-05-11 at 00:16 -0700, Greg KH wrote:
-> On Thu, May 10, 2007 at 04:54:41PM +0100, Andy Whitcroft wrote:
-> > Greg KH wrote:
-> > > On Thu, May 10, 2007 at 03:00:50PM +0100, Andy Whitcroft wrote:
-> > >> Move the rpadlpar device from "struct subsystem" to "struct kset"
-> > >> following the changes in sysfs.
-> > >>
-> > >> Signed-off-by: Andy Whitcroft <apw@shadowen.org>
-> > >> ---
-> > >>
-> > >> 	Ok, this patch seems to sort out the compile problem
-> > >> 	here and indeed boots and runs kernbench.  Perhaps
-> > >> 	you could confirm this is sufficient.
-> > >=20
-> > > As per the discussion on the pci hotplug list, no, this doesn't seem =
-to
-> > > fix the problem.  The developers there are looking into it.  If you c=
-an
-> > > test out patches for this, I'm sure the people there would appreciate
-> > > the help.
-> >=20
-> > Sure anything they have for testing, send them to me ...
->=20
-> They have the same patch that you made (I made it), yet they reported
-> that it didn't work properly for them.
->=20
-> Can you test your patch out on "real" hardware?
+>  Jocke
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
-I tested it on real hardware, but it can't hurt for Andy to try it too I
-guess.
 
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-9fM6HOSO93kqWbFKOdcv
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGRCIRdSjSd0sB4dIRAhwWAKCW3P81yq8niHMm4c1WlXH9SQNilwCgyCy+
-GEAmYifw9pFkVV7fw1MkA0Y=
-=mESi
------END PGP SIGNATURE-----
-
---=-9fM6HOSO93kqWbFKOdcv--
+-- 
+Sincerely, Vitaly
