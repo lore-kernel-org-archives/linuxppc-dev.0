@@ -1,26 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E5650DDE4A
+Return-Path: <edjubenville@adelphia.net>
+Received: from mta14.adelphia.net (mta14.mail.adelphia.net [68.168.78.137])
+	by ozlabs.org (Postfix) with ESMTP id 9E32CDDEC1
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 12 May 2007 06:38:19 +1000 (EST)
-In-Reply-To: <1178915365.9018.44.camel@saruman.qstreams.net>
-References: <46434C1E.3020004@cambridgebroadband.com>
-	<1178816847.9018.2.camel@saruman.qstreams.net>
-	<46443784.3060600@cambridgebroadband.com>
-	<1178892748.9018.13.camel@saruman.qstreams.net>
-	<C873B42C-ABE7-4265-9EF5-15EBA9525324@kernel.crashing.org>
-	<1178915365.9018.44.camel@saruman.qstreams.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <D0F806D6-F3C0-4D47-999F-6EAA97C7673C@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: 83xx: requesting external interrupts
-Date: Fri, 11 May 2007 15:37:16 -0500
-To: bwarren@qstreams.com
-Cc: linuxppc-embedded@ozlabs.org
+	Sun, 13 May 2007 00:13:24 +1000 (EST)
+Received: from EJ1 ([75.85.34.145]) by mta11.adelphia.net
+	(InterMail vM.6.01.05.02 201-2131-123-102-20050715) with SMTP
+	id <20070512134108.BWVM16517.mta11.adelphia.net@EJ1>
+	for <linuxppc-embedded@ozlabs.org>; Sat, 12 May 2007 09:41:08 -0400
+From: "Edward Jubenville" <edjubenville@adelphia.net>
+To: "Linuxppc-Embedded" <linuxppc-embedded@ozlabs.org>
+Subject: DHCP lease renewal after boot
+Date: Sat, 12 May 2007 06:41:00 -0700
+Message-ID: <GPECLCIGPLHEOMGPMCPAEEPCEKAA.edjubenville@adelphia.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,30 +25,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+I posted a similar question in the u-boot list, but this list seems more
+appropriate...
 
-On May 11, 2007, at 3:29 PM, Ben Warren wrote:
+When I configure u-boot to get an IP address using DHCP, and pass that IP
+through the kernel command line, doesn't the kernel need to know that it was
+obtained from DHCP, so that it can maintain the lease on the IP address?  Is
+it allowable for the kernel to treat the command line IP address as a static
+IP, and ignore the obligations of DHCP lease renewal?
 
-> On Fri, 2007-05-11 at 15:15 -0500, Kumar Gala wrote:
->
->>
->> I assume you're code doesn't look exactly like this.  You'll need to
->> use the virq in the request_irq()... its most likely just random luck
->> if things are working and you aren't using the virq returned from
->> irq_create_mapping()
->>
->> (Well its more than random luck, its because most 83xx systems only
->> have one PIC and this hw_irq # == virq)
->>
->> - k
->
-> In the code that registers the ISR I do this:
->
-> virq = irq_find_mapping(NULL, MY_IRQ);
-> request_irq(virq ...)
->
-> Since I only have one interrupt controller, host is NULL, right?
+I found the following in Documentation/kernel-parameters.txt.  The last
+sentence suggests that it is OK for the kernel to abandon responsibility of
+DHCP lease renewal.  This seems to violate the DHCP protocol, RFC 2131
+"4.4.5 Reacquisition and expiration".
 
-Should be ok.  I've been doing the irq_create_mapping() in _init_IRQ 
-() and saving off the return.
+ "DHCP support
+  CONFIG_IP_PNP_DHCP
+    If you want your Linux box to mount its whole root file system (the
+    one containing the directory /) from some other computer over the
+    net via NFS and you want the IP address of your computer to be
+    discovered automatically at boot time using the DHCP protocol (a
+    special protocol designed for doing this job), say Y here. In case
+    the boot ROM of your network card was designed for booting Linux and
+    does DHCP itself, providing all necessary information on the kernel
+    command line, you can say N here."
 
-- k
+RFC 2131 describes a DHCPINFORM message that clients can use to announce
+their static IP addresses to a DHCP server.  Therefore, it matters whether
+the IP address u-boot passes to the kernel is dynamic or static, because it
+implies different behaviors in the kernel after boot.
+
+How do I tell the kernel whether its command line IP address is static or
+dynamic?
+
+I'm using u-boot 1.1.4 with kernel 2.4.25 from ELDK 3.1.1
+
+Ed Jubenville
