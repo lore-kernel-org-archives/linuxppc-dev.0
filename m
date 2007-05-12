@@ -1,9 +1,10 @@
 Return-Path: <mgreer@mvista.com>
-Date: Fri, 11 May 2007 17:55:24 -0700
+Date: Fri, 11 May 2007 17:55:53 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 5/13] powerpc: Add interrupt support for Marvell mv64x60 chips
-Message-ID: <20070512005524.GE3365@mag.az.mvista.com>
+Subject: [PATCH 6/13] powerpc: Create Marvell mv64x60 MPSC (serial)
+	platform_data
+Message-ID: <20070512005553.GF3365@mag.az.mvista.com>
 References: <20070512004605.GA2808@mag.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -21,27 +22,31 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Dale Farnsworth <dale@farnsworth.org>
 
-There are 3 interrupt groups each with its own status/mask registers.
-We use a separate struct irq_chip for each interrupt group and handle
-interrupts in two stages or levels: level 1 selects the appropriate
-struct irq_chip, and level 2 selects individual interrupts within
-that irq_chip.
+This patch creates platform_device entries for the Marvell mv64x60
+MPSC (multi-protocol serial controller) ports, based on information
+contained in the device tree.
+
+This driver (like the other mv64x60 drivers) are unusual in that it
+works on both the MIPS and PowerPC architectures.  Because of that,
+the drivers do not support the normal PowerPC of_platform_bus_type.
+They support platform_bus_type instead.
 
 Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 ---
 
- arch/powerpc/sysdev/Makefile      |    1 
- arch/powerpc/sysdev/mv64x60.h     |    9 
- arch/powerpc/sysdev/mv64x60_pic.c |  305 ++++++++++++++++++++++++++++
- 3 files changed, 315 insertions(+)
+ arch/powerpc/platforms/embedded6xx/Kconfig |    3 
+ arch/powerpc/sysdev/Makefile               |    2 
+ arch/powerpc/sysdev/mv64x60_dev.c          |  221 +++++++++++++++++++
+ 3 files changed, 225 insertions(+), 1 deletion(-)
 
-Index: linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60_pic.c
+Index: linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60_dev.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60_pic.c
-@@ -0,0 +1,305 @@
++++ linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60_dev.c
+@@ -0,0 +1,221 @@
 +/*
-+ * Interrupt handling for Marvell mv64360/mv64460 host bridges (Discovery)
++ * Platform device setup for Marvell mv64360/mv64460 host bridges (Discovery)
 + *
 + * Author: Dale Farnsworth <dale@farnsworth.org>
 + *
@@ -54,320 +59,237 @@ Index: linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60_pic.c
 +#include <linux/stddef.h>
 +#include <linux/kernel.h>
 +#include <linux/init.h>
-+#include <linux/irq.h>
-+#include <linux/interrupt.h>
-+#include <linux/spinlock.h>
++#include <linux/mv643xx.h>
++#include <linux/platform_device.h>
 +
-+#include <asm/byteorder.h>
-+#include <asm/io.h>
 +#include <asm/prom.h>
-+#include <asm/irq.h>
-+
-+#include "mv64x60.h"
-+
-+/* Interrupt Controller Interface Registers */
-+#define MV64X60_IC_MAIN_CAUSE_LO	0x0004
-+#define MV64X60_IC_MAIN_CAUSE_HI	0x000c
-+#define MV64X60_IC_CPU0_INTR_MASK_LO	0x0014
-+#define MV64X60_IC_CPU0_INTR_MASK_HI	0x001c
-+#define MV64X60_IC_CPU0_SELECT_CAUSE	0x0024
-+
-+#define MV64X60_HIGH_GPP_GROUPS		0x0f000000
-+#define MV64X60_SELECT_CAUSE_HIGH	0x40000000
-+
-+/* General Purpose Pins Controller Interface Registers */
-+#define MV64x60_GPP_INTR_CAUSE		0x0008
-+#define MV64x60_GPP_INTR_MASK		0x000c
-+
-+#define MV64x60_LEVEL1_LOW		0
-+#define MV64x60_LEVEL1_HIGH		1
-+#define MV64x60_LEVEL1_GPP		2
-+
-+#define MV64x60_LEVEL1_MASK		0x00000060
-+#define MV64x60_LEVEL1_OFFSET		5
-+
-+#define MV64x60_LEVEL2_MASK		0x0000001f
-+
-+#define MV64x60_NUM_IRQS		96
-+
-+static DEFINE_SPINLOCK(mv64x60_lock);
-+
-+static void __iomem *mv64x60_irq_reg_base;
-+static void __iomem *mv64x60_gpp_reg_base;
 +
 +/*
-+ * Interrupt Controller Handling
-+ *
-+ * The interrupt controller handles three groups of interrupts:
-+ *   main low:	IRQ0-IRQ31
-+ *   main high:	IRQ32-IRQ63
-+ *   gpp:	IRQ64-IRQ95
-+ *
-+ * This code handles interrupts in two levels.  Level 1 selects the
-+ * interrupt group, and level 2 selects an IRQ within that group.
-+ * Each group has its own irq_chip structure.
++ * These functions provide the necessary setup for the mv64x60 drivers.
++ * These drivers are unusual in that they work on both the MIPS and PowerPC
++ * architectures.  Because of that, the drivers do not support the normal
++ * PowerPC of_platform_bus_type.  They support platform_bus_type instead.
 + */
-+
-+static u32 mv64x60_cached_low_mask;
-+static u32 mv64x60_cached_high_mask = MV64X60_HIGH_GPP_GROUPS;
-+static u32 mv64x60_cached_gpp_mask;
-+
-+static struct irq_host *mv64x60_irq_host;
 +
 +/*
-+ * mv64x60_chip_low functions
++ * Create MPSC platform devices
 + */
-+
-+static void mv64x60_mask_low(unsigned int virq)
++static int __init mv64x60_mpsc_register_shared_pdev(struct device_node *np)
 +{
-+	int level2 = irq_map[virq].hwirq & MV64x60_LEVEL2_MASK;
-+	unsigned long flags;
++	struct platform_device *pdev;
++	struct resource r[2];
++	struct mpsc_shared_pdata pdata;
++	const phandle *ph;
++	struct device_node *mpscrouting, *mpscintr;
++	int err;
 +
-+	spin_lock_irqsave(&mv64x60_lock, flags);
-+	mv64x60_cached_low_mask &= ~(1 << level2);
-+	out_le32(mv64x60_irq_reg_base + MV64X60_IC_CPU0_INTR_MASK_LO,
-+		 mv64x60_cached_low_mask);
-+	spin_unlock_irqrestore(&mv64x60_lock, flags);
-+	(void)in_le32(mv64x60_irq_reg_base + MV64X60_IC_CPU0_INTR_MASK_LO);
-+}
++	ph = of_get_property(np, "mpscrouting", NULL);
++	mpscrouting = of_find_node_by_phandle(*ph);
++	if (!mpscrouting)
++		return -ENODEV;
 +
-+static void mv64x60_unmask_low(unsigned int virq)
-+{
-+	int level2 = irq_map[virq].hwirq & MV64x60_LEVEL2_MASK;
-+	unsigned long flags;
++	err = of_address_to_resource(mpscrouting, 0, &r[0]);
++	of_node_put(mpscrouting);
++	if (err)
++		return err;
 +
-+	spin_lock_irqsave(&mv64x60_lock, flags);
-+	mv64x60_cached_low_mask |= 1 << level2;
-+	out_le32(mv64x60_irq_reg_base + MV64X60_IC_CPU0_INTR_MASK_LO,
-+		 mv64x60_cached_low_mask);
-+	spin_unlock_irqrestore(&mv64x60_lock, flags);
-+	(void)in_le32(mv64x60_irq_reg_base + MV64X60_IC_CPU0_INTR_MASK_LO);
-+}
++	ph = of_get_property(np, "mpscintr", NULL);
++	mpscintr = of_find_node_by_phandle(*ph);
++	if (!mpscintr)
++		return -ENODEV;
 +
-+static struct irq_chip mv64x60_chip_low = {
-+	.name		= "mv64x60_low",
-+	.mask		= mv64x60_mask_low,
-+	.mask_ack	= mv64x60_mask_low,
-+	.unmask		= mv64x60_unmask_low,
-+};
++	err = of_address_to_resource(mpscintr, 0, &r[1]);
++	of_node_put(mpscintr);
++	if (err)
++		return err;
 +
-+/*
-+ * mv64x60_chip_high functions
-+ */
++	memset(&pdata, 0, sizeof(pdata));
 +
-+static void mv64x60_mask_high(unsigned int virq)
-+{
-+	int level2 = irq_map[virq].hwirq & MV64x60_LEVEL2_MASK;
-+	unsigned long flags;
++	pdev = platform_device_alloc(MPSC_SHARED_NAME, 0);
++	if (!pdev)
++		return -ENOMEM;
 +
-+	spin_lock_irqsave(&mv64x60_lock, flags);
-+	mv64x60_cached_high_mask &= ~(1 << level2);
-+	out_le32(mv64x60_irq_reg_base + MV64X60_IC_CPU0_INTR_MASK_HI,
-+		 mv64x60_cached_high_mask);
-+	spin_unlock_irqrestore(&mv64x60_lock, flags);
-+	(void)in_le32(mv64x60_irq_reg_base + MV64X60_IC_CPU0_INTR_MASK_HI);
-+}
++	err = platform_device_add_resources(pdev, r, 2);
++	if (err)
++		goto error;
 +
-+static void mv64x60_unmask_high(unsigned int virq)
-+{
-+	int level2 = irq_map[virq].hwirq & MV64x60_LEVEL2_MASK;
-+	unsigned long flags;
++	err = platform_device_add_data(pdev, &pdata, sizeof(pdata));
++	if (err)
++		goto error;
 +
-+	spin_lock_irqsave(&mv64x60_lock, flags);
-+	mv64x60_cached_high_mask |= 1 << level2;
-+	out_le32(mv64x60_irq_reg_base + MV64X60_IC_CPU0_INTR_MASK_HI,
-+		 mv64x60_cached_high_mask);
-+	spin_unlock_irqrestore(&mv64x60_lock, flags);
-+	(void)in_le32(mv64x60_irq_reg_base + MV64X60_IC_CPU0_INTR_MASK_HI);
-+}
-+
-+static struct irq_chip mv64x60_chip_high = {
-+	.name		= "mv64x60_high",
-+	.mask		= mv64x60_mask_high,
-+	.mask_ack	= mv64x60_mask_high,
-+	.unmask		= mv64x60_unmask_high,
-+};
-+
-+/*
-+ * mv64x60_chip_gpp functions
-+ */
-+
-+static void mv64x60_mask_gpp(unsigned int virq)
-+{
-+	int level2 = irq_map[virq].hwirq & MV64x60_LEVEL2_MASK;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&mv64x60_lock, flags);
-+	mv64x60_cached_gpp_mask &= ~(1 << level2);
-+	out_le32(mv64x60_gpp_reg_base + MV64x60_GPP_INTR_MASK,
-+		 mv64x60_cached_gpp_mask);
-+	spin_unlock_irqrestore(&mv64x60_lock, flags);
-+	(void)in_le32(mv64x60_gpp_reg_base + MV64x60_GPP_INTR_MASK);
-+}
-+
-+static void mv64x60_mask_ack_gpp(unsigned int virq)
-+{
-+	int level2 = irq_map[virq].hwirq & MV64x60_LEVEL2_MASK;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&mv64x60_lock, flags);
-+	mv64x60_cached_gpp_mask &= ~(1 << level2);
-+	out_le32(mv64x60_gpp_reg_base + MV64x60_GPP_INTR_MASK,
-+		 mv64x60_cached_gpp_mask);
-+	out_le32(mv64x60_gpp_reg_base + MV64x60_GPP_INTR_CAUSE,
-+		 ~(1 << level2));
-+	spin_unlock_irqrestore(&mv64x60_lock, flags);
-+	(void)in_le32(mv64x60_gpp_reg_base + MV64x60_GPP_INTR_CAUSE);
-+}
-+
-+static void mv64x60_unmask_gpp(unsigned int virq)
-+{
-+	int level2 = irq_map[virq].hwirq & MV64x60_LEVEL2_MASK;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&mv64x60_lock, flags);
-+	mv64x60_cached_gpp_mask |= 1 << level2;
-+	out_le32(mv64x60_gpp_reg_base + MV64x60_GPP_INTR_MASK,
-+		 mv64x60_cached_gpp_mask);
-+	spin_unlock_irqrestore(&mv64x60_lock, flags);
-+	(void)in_le32(mv64x60_gpp_reg_base + MV64x60_GPP_INTR_MASK);
-+}
-+
-+static struct irq_chip mv64x60_chip_gpp = {
-+	.name		= "mv64x60_gpp",
-+	.mask		= mv64x60_mask_gpp,
-+	.mask_ack	= mv64x60_mask_ack_gpp,
-+	.unmask		= mv64x60_unmask_gpp,
-+};
-+
-+/*
-+ * mv64x60_host_ops functions
-+ */
-+
-+static int mv64x60_host_match(struct irq_host *h, struct device_node *np)
-+{
-+	return mv64x60_irq_host->host_data == np;
-+}
-+
-+static struct irq_chip *mv64x60_chips[] = {
-+	[MV64x60_LEVEL1_LOW]  = &mv64x60_chip_low,
-+	[MV64x60_LEVEL1_HIGH] = &mv64x60_chip_high,
-+	[MV64x60_LEVEL1_GPP]  = &mv64x60_chip_gpp,
-+};
-+
-+static int mv64x60_host_map(struct irq_host *h, unsigned int virq,
-+			  irq_hw_number_t hwirq)
-+{
-+	int level1;
-+
-+	get_irq_desc(virq)->status |= IRQ_LEVEL;
-+
-+	level1 = (hwirq & MV64x60_LEVEL1_MASK) >> MV64x60_LEVEL1_OFFSET;
-+	BUG_ON(level1 > MV64x60_LEVEL1_GPP);
-+	set_irq_chip_and_handler(virq, mv64x60_chips[level1], handle_level_irq);
++	err = platform_device_add(pdev);
++	if (err)
++		goto error;
 +
 +	return 0;
++
++error:
++	platform_device_put(pdev);
++	return err;
 +}
 +
-+static struct irq_host_ops mv64x60_host_ops = {
-+	.match = mv64x60_host_match,
-+	.map   = mv64x60_host_map,
-+};
 +
-+/*
-+ * Global functions
-+ */
-+
-+void __init mv64x60_init_irq(void)
++static int __init mv64x60_mpsc_device_setup(struct device_node *np, int id)
 +{
-+	struct device_node *np;
-+	phys_addr_t paddr;
-+	unsigned int size;
-+	const unsigned int *reg;
-+	unsigned long flags;
++	struct resource r[5];
++	struct mpsc_pdata pdata;
++	struct platform_device *pdev;
++	const unsigned int *prop;
++	const phandle *ph;
++	struct device_node *sdma, *brg;
++	int err;
++	int port_number;
 +
-+	np = of_find_compatible_node(NULL, NULL, "marvell,mv64x60-gpp");
-+	reg = of_get_property(np, "reg", &size);
-+	paddr = of_translate_address(np, reg);
-+	mv64x60_gpp_reg_base = ioremap(paddr, reg[1]);
-+	of_node_put(np);
++	/* only register the shared platform device the first time through */
++	if (id == 0 && (err = mv64x60_mpsc_register_shared_pdev(np)))
++		return err;
 +
-+	np = of_find_compatible_node(NULL, NULL, "marvell,mv64x60-pic");
-+	reg = of_get_property(np, "reg", &size);
-+	paddr = of_translate_address(np, reg);
-+	of_node_put(np);
-+	mv64x60_irq_reg_base = ioremap(paddr, reg[1]);
++	memset(r, 0, sizeof(r));
 +
-+	mv64x60_irq_host = irq_alloc_host(IRQ_HOST_MAP_LINEAR, MV64x60_NUM_IRQS,
-+					  &mv64x60_host_ops, MV64x60_NUM_IRQS);
++	err = of_address_to_resource(np, 0, &r[0]);
++	if (err)
++		return err;
 +
-+	mv64x60_irq_host->host_data = np;
++	of_irq_to_resource(np, 0, &r[4]);
 +
-+	spin_lock_irqsave(&mv64x60_lock, flags);
-+	out_le32(mv64x60_gpp_reg_base + MV64x60_GPP_INTR_MASK,
-+		 mv64x60_cached_gpp_mask);
-+	out_le32(mv64x60_irq_reg_base + MV64X60_IC_CPU0_INTR_MASK_LO,
-+		 mv64x60_cached_low_mask);
-+	out_le32(mv64x60_irq_reg_base + MV64X60_IC_CPU0_INTR_MASK_HI,
-+		 mv64x60_cached_high_mask);
++	ph = of_get_property(np, "sdma", NULL);
++	sdma = of_find_node_by_phandle(*ph);
++	if (!sdma)
++		return -ENODEV;
 +
-+	out_le32(mv64x60_gpp_reg_base + MV64x60_GPP_INTR_CAUSE, 0);
-+	out_le32(mv64x60_irq_reg_base + MV64X60_IC_MAIN_CAUSE_LO, 0);
-+	out_le32(mv64x60_irq_reg_base + MV64X60_IC_MAIN_CAUSE_HI, 0);
-+	spin_unlock_irqrestore(&mv64x60_lock, flags);
++	of_irq_to_resource(sdma, 0, &r[3]);
++	err = of_address_to_resource(sdma, 0, &r[1]);
++	of_node_put(sdma);
++	if (err)
++		return err;
++
++	ph = of_get_property(np, "brg", NULL);
++	brg = of_find_node_by_phandle(*ph);
++	if (!brg)
++		return -ENODEV;
++
++	err = of_address_to_resource(brg, 0, &r[2]);
++	of_node_put(brg);
++	if (err)
++		return err;
++
++	prop = of_get_property(np, "block-index", NULL);
++	if (!prop)
++		return -ENODEV;
++	port_number = *(int *)prop;
++
++	memset(&pdata, 0, sizeof(pdata));
++
++	pdata.cache_mgmt = 1; /* All current revs need this set */
++
++	prop = of_get_property(np, "max_idle", NULL);
++	if (prop)
++		pdata.max_idle = *prop;
++
++	prop = of_get_property(brg, "current-speed", NULL);
++	if (prop)
++		pdata.default_baud = *prop;
++
++	/* Default is 8 bits, no parity, no flow control */
++	pdata.default_bits = 8;
++	pdata.default_parity = 'n';
++	pdata.default_flow = 'n';
++
++	prop = of_get_property(np, "chr_1", NULL);
++	if (prop)
++		pdata.chr_1_val = *prop;
++
++	prop = of_get_property(np, "chr_2", NULL);
++	if (prop)
++		pdata.chr_2_val = *prop;
++
++	prop = of_get_property(np, "chr_10", NULL);
++	if (prop)
++		pdata.chr_10_val = *prop;
++
++	prop = of_get_property(np, "mpcr", NULL);
++	if (prop)
++		pdata.mpcr_val = *prop;
++
++	prop = of_get_property(brg, "bcr", NULL);
++	if (prop)
++		pdata.bcr_val = *prop;
++
++	pdata.brg_can_tune = 1; /* All current revs need this set */
++
++	prop = of_get_property(brg, "clock-src", NULL);
++	if (prop)
++		pdata.brg_clk_src = *prop;
++
++	prop = of_get_property(brg, "clock-frequency", NULL);
++	if (prop)
++		pdata.brg_clk_freq = *prop;
++
++	pdev = platform_device_alloc(MPSC_CTLR_NAME, port_number);
++	if (!pdev)
++		return -ENOMEM;
++
++	err = platform_device_add_resources(pdev, r, 5);
++	if (err)
++		goto error;
++
++	err = platform_device_add_data(pdev, &pdata, sizeof(pdata));
++	if (err)
++		goto error;
++
++	err = platform_device_add(pdev);
++	if (err)
++		goto error;
++
++	return 0;
++
++error:
++	platform_device_put(pdev);
++	return err;
 +}
 +
-+unsigned int mv64x60_get_irq(void)
++static int __init mv64x60_device_setup(void)
 +{
-+	u32 cause;
-+	int level1;
-+	irq_hw_number_t hwirq;
-+	int virq = NO_IRQ;
++	struct device_node *np = NULL;
++	int id;
++	int err;
 +
-+	cause = in_le32(mv64x60_irq_reg_base + MV64X60_IC_CPU0_SELECT_CAUSE);
-+	if (cause & MV64X60_SELECT_CAUSE_HIGH) {
-+		cause &= mv64x60_cached_high_mask;
-+		level1 = MV64x60_LEVEL1_HIGH;
-+		if (cause & MV64X60_HIGH_GPP_GROUPS) {
-+			cause = in_le32(mv64x60_gpp_reg_base +
-+					MV64x60_GPP_INTR_CAUSE);
-+			cause &= mv64x60_cached_gpp_mask;
-+			level1 = MV64x60_LEVEL1_GPP;
-+		}
-+	} else {
-+		cause &= mv64x60_cached_low_mask;
-+		level1 = MV64x60_LEVEL1_LOW;
-+	}
-+	if (cause) {
-+		hwirq = (level1 << MV64x60_LEVEL1_OFFSET) | __ilog2(cause);
-+		virq = irq_linear_revmap(mv64x60_irq_host, hwirq);
-+	}
++	for (id = 0;
++	     (np = of_find_compatible_node(np, "serial", "marvell,mpsc")); id++)
++		if ((err = mv64x60_mpsc_device_setup(np, id)))
++			goto error;
 +
-+	return virq;
++	return 0;
++
++error:
++	of_node_put(np);
++	return err;
 +}
-Index: linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60.h
-===================================================================
---- /dev/null
-+++ linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60.h
-@@ -0,0 +1,9 @@
-+#ifndef __MV64X60_H__
-+#define __MV64X60_H__
-+
-+#include <linux/init.h>
-+
-+extern void __init mv64x60_init_irq(void);
-+extern unsigned int mv64x60_get_irq(void);
-+
-+#endif /* __MV64X60_H__ */
++arch_initcall(mv64x60_device_setup);
 Index: linux-2.6-powerpc-df/arch/powerpc/sysdev/Makefile
 ===================================================================
 --- linux-2.6-powerpc-df.orig/arch/powerpc/sysdev/Makefile
 +++ linux-2.6-powerpc-df/arch/powerpc/sysdev/Makefile
-@@ -16,6 +16,7 @@ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
+@@ -14,7 +14,7 @@ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
  obj-$(CONFIG_FSL_PCIE)		+= fsl_pcie.o
  obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
  obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
-+obj-$(CONFIG_MV64X60)		+= mv64x60_pic.o
+-obj-$(CONFIG_MV64X60)		+= mv64x60_pic.o
++obj-$(CONFIG_MV64X60)		+= mv64x60_pic.o mv64x60_dev.o
  
  # contains only the suspend handler for time
  obj-$(CONFIG_PM)		+= timer.o
+Index: linux-2.6-powerpc-df/arch/powerpc/platforms/embedded6xx/Kconfig
+===================================================================
+--- linux-2.6-powerpc-df.orig/arch/powerpc/platforms/embedded6xx/Kconfig
++++ linux-2.6-powerpc-df/arch/powerpc/platforms/embedded6xx/Kconfig
+@@ -38,6 +38,9 @@ config MPC10X_BRIDGE
+ 	select PPC_INDIRECT_PCI
+ 	default y
+ 
++config MV64X60
++	bool
++
+ config MPC10X_OPENPIC
+ 	bool
+ 	depends on LINKSTATION
