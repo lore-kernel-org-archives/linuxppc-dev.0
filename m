@@ -1,13 +1,13 @@
 Return-Path: <tnt@246tNt.com>
 Received: from mailgate103.isp.belgacom.be (mailgate103.isp.belgacom.be
-	[195.238.6.84]) by ozlabs.org (Postfix) with ESMTP id DFC97DDEBF
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 May 2007 06:32:28 +1000 (EST)
+	[195.238.6.84]) by ozlabs.org (Postfix) with ESMTP id 4BE39DDEC4
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 May 2007 06:32:29 +1000 (EST)
 From: Sylvain Munaut <tnt@246tNt.com>
 To: Linux PPC dev ML <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 7/9] powerpc: BestcComm GenBD task support
-Date: Sat, 12 May 2007 22:31:55 +0200
-Message-Id: <1179001924586-git-send-email-tnt@246tNt.com>
-In-Reply-To: <11790019242174-git-send-email-tnt@246tNt.com>
+Subject: [PATCH 9/9] sound: Add support for Freescale MPC5200 AC97 interface.
+Date: Sat, 12 May 2007 22:31:57 +0200
+Message-Id: <11790019263049-git-send-email-tnt@246tNt.com>
+In-Reply-To: <11790019251639-git-send-email-tnt@246tNt.com>
 References: <11790019171838-git-send-email-tnt@246tNt.com>
 	<11790019223299-git-send-email-tnt@246tNt.com>
 	<11790019223880-git-send-email-tnt@246tNt.com>
@@ -15,6 +15,8 @@ References: <11790019171838-git-send-email-tnt@246tNt.com>
 	<11790019234031-git-send-email-tnt@246tNt.com>
 	<11790019233958-git-send-email-tnt@246tNt.com>
 	<11790019242174-git-send-email-tnt@246tNt.com>
+	<1179001924586-git-send-email-tnt@246tNt.com>
+	<11790019251639-git-send-email-tnt@246tNt.com>
 Cc: Sylvain Munaut <tnt@246tNt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,520 +27,932 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is the microcode for the GenBD task and the associated
-support code. This is a generic task that copy data to/from
-a hardware FIFO. This is currently locked to 32bits wide
-access but could be extended as needed.
-
-The microcode itself comes directly from the offical
-API (v2.2)
+Not quite a clean driver, but it get things done (well,
+mostly).
+Only included to be able to test functionalityi/usage of
+the BestComm driver.
 
 Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
 ---
- arch/powerpc/sysdev/bestcomm/Kconfig               |    7 +
- arch/powerpc/sysdev/bestcomm/Makefile              |    2 +
- arch/powerpc/sysdev/bestcomm/bcom_gen_bd_rx_task.c |   62 +++++
- arch/powerpc/sysdev/bestcomm/bcom_gen_bd_tx_task.c |   68 +++++
- arch/powerpc/sysdev/bestcomm/gen_bd.c              |  261 ++++++++++++++++++++
- arch/powerpc/sysdev/bestcomm/gen_bd.h              |   48 ++++
- 6 files changed, 448 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/sysdev/bestcomm/bcom_gen_bd_rx_task.c
- create mode 100644 arch/powerpc/sysdev/bestcomm/bcom_gen_bd_tx_task.c
- create mode 100644 arch/powerpc/sysdev/bestcomm/gen_bd.c
- create mode 100644 arch/powerpc/sysdev/bestcomm/gen_bd.h
+ sound/ppc/Kconfig        |   16 +
+ sound/ppc/Makefile       |    3 +
+ sound/ppc/mpc52xx_ac97.c |  870 ++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 889 insertions(+), 0 deletions(-)
+ create mode 100644 sound/ppc/mpc52xx_ac97.c
 
-diff --git a/arch/powerpc/sysdev/bestcomm/Kconfig b/arch/powerpc/sysdev/bestcomm/Kconfig
-index 831763b..57cc565 100644
---- a/arch/powerpc/sysdev/bestcomm/Kconfig
-+++ b/arch/powerpc/sysdev/bestcomm/Kconfig
-@@ -30,3 +30,10 @@ config PPC_BESTCOMM_FEC
- 	help
- 	  This option enables the support for the FEC tasks.
+diff --git a/sound/ppc/Kconfig b/sound/ppc/Kconfig
+index a3fb149..afd58f7 100644
+--- a/sound/ppc/Kconfig
++++ b/sound/ppc/Kconfig
+@@ -33,3 +33,19 @@ config SND_POWERMAC_AUTO_DRC
+ 	  option.
  
-+config PPC_BESTCOMM_GEN_BD
-+	tristate "Bestcomm GenBD tasks support"
-+	depends on PPC_BESTCOMM
-+	default n
+ endmenu
++
++
++# ALSA ppc drivers
++
++menu "ALSA PPC devices"
++	depends on SND!=n && PPC
++
++config SND_PPC_MPC52xx_AC97
++	tristate "Freescale MPC52xx AC97 interface support"
++	depends on SND && PPC_MPC52xx
++	select SND_AC97_CODEC
 +	help
-+	  This option enables the support for the GenBD tasks.
++	  Say Y or M if you want to support any AC97 codec attached to
++	  the Freescqle MPC52xx AC97 interface.
 +
-diff --git a/arch/powerpc/sysdev/bestcomm/Makefile b/arch/powerpc/sysdev/bestcomm/Makefile
-index 537d174..aed2df2 100644
---- a/arch/powerpc/sysdev/bestcomm/Makefile
-+++ b/arch/powerpc/sysdev/bestcomm/Makefile
-@@ -5,8 +5,10 @@
- bestcomm-core-objs	:= bestcomm.o sram.o
- bestcomm-ata-objs	:= ata.o bcom_ata_task.o
- bestcomm-fec-objs	:= fec.o bcom_fec_rx_task.o bcom_fec_tx_task.o
-+bestcomm-gen-bd-objs	:= gen_bd.o bcom_gen_bd_rx_task.o bcom_gen_bd_tx_task.o
++endmenu
+diff --git a/sound/ppc/Makefile b/sound/ppc/Makefile
+index 4d95c65..c29cb9b 100644
+--- a/sound/ppc/Makefile
++++ b/sound/ppc/Makefile
+@@ -4,6 +4,9 @@
+ #
  
- obj-$(CONFIG_PPC_BESTCOMM)		+= bestcomm-core.o
- obj-$(CONFIG_PPC_BESTCOMM_ATA)		+= bestcomm-ata.o
- obj-$(CONFIG_PPC_BESTCOMM_FEC)		+= bestcomm-fec.o
-+obj-$(CONFIG_PPC_BESTCOMM_GEN_BD)	+= bestcomm-gen-bd.o
-  
-diff --git a/arch/powerpc/sysdev/bestcomm/bcom_gen_bd_rx_task.c b/arch/powerpc/sysdev/bestcomm/bcom_gen_bd_rx_task.c
+ snd-powermac-objs := powermac.o pmac.o awacs.o burgundy.o daca.o tumbler.o keywest.o beep.o
++snd-mpc52xx-ac97-objs := mpc52xx_ac97.o
+ 
+ # Toplevel Module Dependency
+ obj-$(CONFIG_SND_POWERMAC) += snd-powermac.o
++
++obj-$(CONFIG_SND_PPC_MPC52xx_AC97)	+= snd-mpc52xx-ac97.o
+diff --git a/sound/ppc/mpc52xx_ac97.c b/sound/ppc/mpc52xx_ac97.c
 new file mode 100644
-index 0000000..f356886
+index 0000000..20e2bf8
 --- /dev/null
-+++ b/arch/powerpc/sysdev/bestcomm/bcom_gen_bd_rx_task.c
-@@ -0,0 +1,62 @@
++++ b/sound/ppc/mpc52xx_ac97.c
+@@ -0,0 +1,870 @@
 +/*
-+ * Bestcomm GenBD RX task microcode
++ * Driver for the PSC of the Freescale MPC52xx configured as AC97 interface
 + *
-+ * Copyright (C) 2006 AppSpec Computer Technologies Corp.
-+ *                    Jeff Gibbons <jeff.gibbons@appspec.com>
 + *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
++ * Copyright (C) 2006 Sylvain Munaut <tnt@246tNt.com>
 + *
-+ * Based on BestCommAPI-2.2/code_dma/image_rtos1/dma_image.hex
-+ * on Tue Mar 4 10:14:12 2006 GMT
-+ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
 + */
 +
-+#include <asm/types.h>
++#define DEBUG
 +
-+/*
-+ * The header consists of the following fields:
-+ *	u32	magic;
-+ *	u8	desc_size;
-+ *	u8	var_size;
-+ *	u8	inc_size;
-+ *	u8	first_var;
-+ *	u8	reserved[8];
-+ *
-+ * The size fields contain the number of 32-bit words.
-+ */
-+
-+u32 bcom_gen_bd_rx_task[] = {
-+	/* header */
-+	0x4243544b,
-+	0x0d020409,
-+	0x00000000,
-+	0x00000000,
-+
-+	/* Task descriptors */
-+	0x808220da, /* LCD: idx0 = var1, idx1 = var4; idx1 <= var3; idx0 += inc3, idx1 += inc2 */
-+	0x13e01010, /*   DRD1A: var4 = var2; FN=0 MORE init=31 WS=0 RS=0 */
-+	0xb880025b, /*   LCD: idx2 = *idx1, idx3 = var0; idx2 < var9; idx2 += inc3, idx3 += inc3 */
-+	0x10001308, /*     DRD1A: var4 = idx1; FN=0 MORE init=0 WS=0 RS=0 */
-+	0x60140002, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=2 EXT init=0 WS=2 RS=2 */
-+	0x0cccfcca, /*     DRD2B1: *idx3 = EU3(); EU3(*idx3,var10)  */
-+	0xd9190240, /*   LCDEXT: idx2 = idx2; idx2 > var9; idx2 += inc0 */
-+	0xb8c5e009, /*   LCD: idx3 = *(idx1 + var00000015); ; idx3 += inc1 */
-+	0x07fecf80, /*     DRD1A: *idx3 = *idx0; FN=0 INT init=31 WS=3 RS=3 */
-+	0x99190024, /*   LCD: idx2 = idx2; idx2 once var0; idx2 += inc4 */
-+	0x60000005, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=5 EXT init=0 WS=0 RS=0 */
-+	0x0c4cf889, /*     DRD2B1: *idx1 = EU3(); EU3(idx2,var9)  */
-+	0x000001f8, /*   NOP */
-+
-+	/* VAR[9]-VAR[10] */
-+	0x40000000,
-+	0x7fff7fff,
-+
-+	/* INC[0]-INC[3] */
-+	0x40000000,
-+	0xe0000000,
-+	0xa0000008,
-+	0x20000000,
-+};
-+
-diff --git a/arch/powerpc/sysdev/bestcomm/bcom_gen_bd_tx_task.c b/arch/powerpc/sysdev/bestcomm/bcom_gen_bd_tx_task.c
-new file mode 100644
-index 0000000..7460c39
---- /dev/null
-+++ b/arch/powerpc/sysdev/bestcomm/bcom_gen_bd_tx_task.c
-@@ -0,0 +1,68 @@
-+/*
-+ * Bestcomm GenBD TX task microcode
-+ *
-+ * Copyright (C) 2006 AppSpec Computer Technologies Corp.
-+ *                    Jeff Gibbons <jeff.gibbons@appspec.com>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
-+ *
-+ * Based on BestCommAPI-2.2/code_dma/image_rtos1/dma_image.hex
-+ * on Tue Mar 4 10:14:12 2006 GMT
-+ *
-+ */
-+
-+#include <asm/types.h>
-+
-+/*
-+ * The header consists of the following fields:
-+ *	u32	magic;
-+ *	u8	desc_size;
-+ *	u8	var_size;
-+ *	u8	inc_size;
-+ *	u8	first_var;
-+ *	u8	reserved[8];
-+ *
-+ * The size fields contain the number of 32-bit words.
-+ */
-+
-+u32 bcom_gen_bd_tx_task[] = {
-+	/* header */
-+	0x4243544b,
-+	0x0f040609,
-+	0x00000000,
-+	0x00000000,
-+
-+	/* Task descriptors */
-+	0x800220e3, /* LCD: idx0 = var0, idx1 = var4; idx1 <= var3; idx0 += inc4, idx1 += inc3 */
-+	0x13e01010, /*   DRD1A: var4 = var2; FN=0 MORE init=31 WS=0 RS=0 */
-+	0xb8808264, /*   LCD: idx2 = *idx1, idx3 = var1; idx2 < var9; idx2 += inc4, idx3 += inc4 */
-+	0x10001308, /*     DRD1A: var4 = idx1; FN=0 MORE init=0 WS=0 RS=0 */
-+	0x60140002, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=2 EXT init=0 WS=2 RS=2 */
-+	0x0cccfcca, /*     DRD2B1: *idx3 = EU3(); EU3(*idx3,var10)  */
-+	0xd9190300, /*   LCDEXT: idx2 = idx2; idx2 > var12; idx2 += inc0 */
-+	0xb8c5e009, /*   LCD: idx3 = *(idx1 + var00000015); ; idx3 += inc1 */
-+	0x03fec398, /*     DRD1A: *idx0 = *idx3; FN=0 init=31 WS=3 RS=3 */
-+	0x9919826a, /*   LCD: idx2 = idx2, idx3 = idx3; idx2 > var9; idx2 += inc5, idx3 += inc2 */
-+	0x0feac398, /*     DRD1A: *idx0 = *idx3; FN=0 TFD INT init=31 WS=1 RS=1 */
-+	0x99190036, /*   LCD: idx2 = idx2; idx2 once var0; idx2 += inc6 */
-+	0x60000005, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=5 EXT init=0 WS=0 RS=0 */
-+	0x0c4cf889, /*     DRD2B1: *idx1 = EU3(); EU3(idx2,var9)  */
-+	0x000001f8, /*   NOP */
-+
-+	/* VAR[9]-VAR[12] */
-+	0x40000000,
-+	0x7fff7fff,
-+	0x00000000,
-+	0x40000004,
-+
-+	/* INC[0]-INC[5] */
-+	0x40000000,
-+	0xe0000000,
-+	0xe0000000,
-+	0xa0000008,
-+	0x20000000,
-+	0x4000ffff,
-+};
-+
-diff --git a/arch/powerpc/sysdev/bestcomm/gen_bd.c b/arch/powerpc/sysdev/bestcomm/gen_bd.c
-new file mode 100644
-index 0000000..b221bbc
---- /dev/null
-+++ b/arch/powerpc/sysdev/bestcomm/gen_bd.c
-@@ -0,0 +1,261 @@
-+/*
-+ * Driver for MPC52xx processor BestComm General Buffer Descriptor
-+ *
-+ * Copyright (C) 2007 Sylvain Munaut <tnt@246tNt.com>
-+ * Copyright (C) 2006 AppSpec Computer Technologies Corp.
-+ *                    Jeff Gibbons <jeff.gibbons@appspec.com>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
-+ *
-+ */
-+
-+#include <linux/version.h>
-+#include <linux/module.h>
 +#include <linux/kernel.h>
-+#include <linux/string.h>
-+#include <linux/types.h>
-+#include <asm/errno.h>
-+#include <asm/io.h>
++#include <linux/module.h>
++#include <linux/interrupt.h>
++#include <linux/spinlock.h>
 +
-+#include <asm/mpc52xx.h>
++#include <sound/driver.h>
++#include <sound/core.h>
++#include <sound/initval.h>
++#include <sound/pcm.h>
++#include <sound/pcm_params.h>
++#include <sound/ac97_codec.h>
 +
-+#include "bestcomm.h"
-+#include "bestcomm_priv.h"
-+#include "gen_bd.h"
++#include <asm/of_platform.h>
++#include <linux/dma-mapping.h>
++#include <asm/mpc52xx_psc.h>
++
++#include <sysdev/bestcomm/bestcomm.h>
++#include <sysdev/bestcomm/gen_bd.h>
 +
 +
-+/* ======================================================================== */
-+/* Task image/var/inc                                                       */
-+/* ======================================================================== */
-+
-+/* gen_bd tasks images */
-+extern u32 bcom_gen_bd_rx_task[];
-+extern u32 bcom_gen_bd_tx_task[];
-+
-+/* rx task vars that need to be set before enabling the task */
-+struct bcom_gen_bd_rx_var {
-+	u32 enable;		/* (u16*) address of task's control register */
-+	u32 fifo;		/* (u32*) address of gen_bd's fifo */
-+	u32 bd_base;		/* (struct bcom_bd*) beginning of ring buffer */
-+	u32 bd_last;		/* (struct bcom_bd*) end of ring buffer */
-+	u32 bd_start;		/* (struct bcom_bd*) current bd */
-+	u32 buffer_size;	/* size of receive buffer */
-+};
-+
-+/* rx task incs that need to be set before enabling the task */
-+struct bcom_gen_bd_rx_inc {
-+	u16 pad0;
-+	s16 incr_bytes;
-+	u16 pad1;
-+	s16 incr_dst;
-+};
-+
-+/* tx task vars that need to be set before enabling the task */
-+struct bcom_gen_bd_tx_var {
-+	u32 fifo;		/* (u32*) address of gen_bd's fifo */
-+	u32 enable;		/* (u16*) address of task's control register */
-+	u32 bd_base;		/* (struct bcom_bd*) beginning of ring buffer */
-+	u32 bd_last;		/* (struct bcom_bd*) end of ring buffer */
-+	u32 bd_start;		/* (struct bcom_bd*) current bd */
-+	u32 buffer_size;	/* set by uCode for each packet */
-+};
-+
-+/* tx task incs that need to be set before enabling the task */
-+struct bcom_gen_bd_tx_inc {
-+	u16 pad0;
-+	s16 incr_bytes;
-+	u16 pad1;
-+	s16 incr_src;
-+	u16 pad2;
-+	s16 incr_src_ma;
-+};
-+
-+/* private structure */
-+struct bcom_gen_bd_priv {
-+	phys_addr_t	fifo;
-+	int		initiator;
-+	int		ipr;
-+	int		maxbufsize;
-+};
++#define DRV_NAME "mpc52xx-psc-ac97"
 +
 +
 +/* ======================================================================== */
-+/* Task support code                                                        */
++/* Structs / Defines                                                        */
 +/* ======================================================================== */
 +
-+struct bcom_task *
-+bcom_gen_bd_rx_init(int queue_len, phys_addr_t fifo,
-+			int initiator, int ipr, int maxbufsize)
++/* Private structure */
++struct mpc52xx_ac97_priv {
++	struct device *dev;
++	resource_size_t	mem_start;
++	resource_size_t mem_len;
++	int irq;
++	struct mpc52xx_psc __iomem *psc;
++
++	struct bcom_task *tsk_tx;
++	spinlock_t dma_lock;
++
++	struct snd_card *card;
++	struct snd_pcm *pcm;
++	struct snd_ac97 *ac97;
++
++	struct snd_pcm_substream *substream_playback;
++
++	int period_byte_size;
++	u32 period_start, period_end, period_next_p;
++};
++
++/* Register bit definition (AC97 mode specific) */
++#define PSC_AC97_SLOT_BIT(n)		(1<<(12-n))
++#define PSC_AC97_SLOTS_XMIT_SHIFT	16
++#define PSC_AC97_SLOTS_RECV_SHIFT	 0
++
++/* Bestcomm options */
++#define AC97_TX_NUM_BD	32
++#define AC97_RX_NUM_BD	32
++
++#if 0
++static u32* buffers_va[AC97_TX_NUM_BD];
++static u32  buffers_pa[AC97_TX_NUM_BD];
++#endif
++
++
++/* ======================================================================== */
++/* Buffer handling                                                          */
++/* ======================================================================== */
++
++#if 0
++static void
++mpc52xx_ac97_tx_bufalloc(struct mpc52xx_ac97_priv *priv)
 +{
-+	struct bcom_task *tsk;
-+	struct bcom_gen_bd_priv *priv;
++	int i;
 +
-+	tsk = bcom_task_alloc(queue_len, sizeof(struct bcom_gen_bd),
-+			sizeof(struct bcom_gen_bd_priv));
-+	if (!tsk)
-+		return NULL;
++	if (buffers_va[0])
++		return;
 +
-+	tsk->flags = BCOM_FLAGS_NONE;
++	buffers_va[0] = dma_alloc_coherent(priv->dev, AC97_TX_NUM_BD * 1024, &buffers_pa[0], GFP_KERNEL);
 +
-+	priv = tsk->priv;
-+	priv->fifo	= fifo;
-+	priv->initiator	= initiator;
-+	priv->ipr	= ipr;
-+	priv->maxbufsize = maxbufsize;
-+
-+	if (bcom_gen_bd_rx_reset(tsk)) {
-+		bcom_task_release(tsk);
-+		return NULL;
++	for (i=1; i<AC97_TX_NUM_BD; i++) {
++		buffers_va[i] = buffers_va[i-1] + 1024;
++		buffers_pa[i] = buffers_pa[i-1] + 1024;
 +	}
 +
-+	return tsk;
++	printk(KERN_INFO "Buffer alloc %08x %08x\n", buffers_va[0], buffers_pa[0]);
 +}
 +
-+int
-+bcom_gen_bd_rx_reset(struct bcom_task *tsk)
++static void
++mpc52xx_ac97_tx_bufrelease(struct mpc52xx_ac97_priv *priv)
 +{
-+	struct bcom_gen_bd_priv *priv = tsk->priv;
-+	struct bcom_gen_bd_rx_var *var;
-+	struct bcom_gen_bd_rx_inc *inc;
++	if (buffers_va[0]) {
++		dma_free_coherent(priv->dev, AC97_TX_NUM_BD * 1024, buffers_va[0], buffers_pa[0]);
++		buffers_va[0] = NULL;
++	}
++}
++#endif
 +
-+	/* Shutdown the task */
-+	bcom_disable_task(tsk->tasknum);
++static int
++mpc52xx_ac97_tx_fill(struct mpc52xx_ac97_priv *priv)
++{
++	struct snd_pcm_runtime *rt;
 +
-+	/* Reset the microcode */
-+	var = (struct bcom_gen_bd_rx_var *) bcom_task_var(tsk->tasknum);
-+	inc = (struct bcom_gen_bd_rx_inc *) bcom_task_inc(tsk->tasknum);
++	u32 dma_data_ptr;
 +
-+	if (bcom_load_image(tsk->tasknum, bcom_gen_bd_rx_task))
-+		return -1;
++	rt = priv->substream_playback->runtime;
 +
-+	var->enable	= bcom->regs_base +
-+				offsetof(struct mpc52xx_sdma, tcr[tsk->tasknum]);
-+	var->fifo	= (u32) priv->fifo;
-+	var->bd_base	= tsk->bd_pa;
-+	var->bd_last	= tsk->bd_pa + ((tsk->num_bd-1) * tsk->bd_size);
-+	var->bd_start	= tsk->bd_pa;
-+	var->buffer_size = priv->maxbufsize;
++	dma_data_ptr = virt_to_phys(rt->dma_area);
 +
-+	inc->incr_bytes	= -(s16)sizeof(u32);
-+	inc->incr_dst	= sizeof(u32);
++	priv->period_byte_size	= frames_to_bytes(rt, rt->period_size);
++	priv->period_start	= dma_data_ptr;
++	priv->period_end	= dma_data_ptr + priv->period_byte_size * rt->periods;
++	priv->period_next_p	= dma_data_ptr;
 +
-+	/* Reset the BDs */
-+	tsk->index = 0;
-+	tsk->outdex = 0;
++	spin_lock(&priv->dma_lock);
++	while (!bcom_queue_full(priv->tsk_tx)) {
++		struct bcom_gen_bd *bd;
 +
-+	memset(tsk->bd, 0x00, tsk->num_bd * tsk->bd_size);
++		/* Submit a new one */
++		bd = (struct bcom_gen_bd *) bcom_prepare_next_buffer(priv->tsk_tx);
++		bd->status = priv->period_byte_size;
++		bd->buf_pa = priv->period_next_p;
++		bcom_submit_next_buffer(priv->tsk_tx, NULL);
 +
-+	/* Configure some stuff */
-+	bcom_set_task_pragma(tsk->tasknum, BCOM_GEN_RX_BD_PRAGMA);
-+	bcom_set_task_auto_start(tsk->tasknum, tsk->tasknum);
-+
-+	out_8(&bcom->regs->ipr[priv->initiator], priv->ipr);
-+	bcom_set_initiator(tsk->tasknum, priv->initiator);
-+
-+	out_be32(&bcom->regs->IntPend, 1<<tsk->tasknum);	/* Clear ints */
++		/* Next pointer */
++		priv->period_next_p += priv->period_byte_size;
++		if (priv->period_next_p >= priv->period_end)
++			priv->period_next_p = priv->period_start;
++	}
++	spin_unlock(&priv->dma_lock);
 +
 +	return 0;
 +}
 +
-+void
-+bcom_gen_bd_rx_release(struct bcom_task *tsk)
++
++/* ======================================================================== */
++/* ISR routine                                                              */
++/* ======================================================================== */
++
++static irqreturn_t
++mpc52xx_ac97_tx_irq(int irq, void *dev_id)
 +{
-+	/* Nothing special for the GenBD tasks */
-+	bcom_task_release(tsk);
-+}
++	struct mpc52xx_ac97_priv *priv = dev_id;
++	struct snd_pcm_runtime *rt;
++	struct bcom_gen_bd *bd;
 +
++	rt = priv->substream_playback->runtime;
 +
-+extern struct bcom_task *
-+bcom_gen_bd_tx_init(int queue_len, phys_addr_t fifo,
-+			int initiator, int ipr)
-+{
-+	struct bcom_task *tsk;
-+	struct bcom_gen_bd_priv *priv;
-+
-+	tsk = bcom_task_alloc(queue_len, sizeof(struct bcom_gen_bd),
-+			sizeof(struct bcom_gen_bd_priv));
-+	if (!tsk)
-+		return NULL;
-+
-+	tsk->flags = BCOM_FLAGS_NONE;
-+
-+	priv = tsk->priv;
-+	priv->fifo	= fifo;
-+	priv->initiator	= initiator;
-+	priv->ipr	= ipr;
-+
-+	if (bcom_gen_bd_tx_reset(tsk)) {
-+		bcom_task_release(tsk);
-+		return NULL;
++	if (!bcom_buffer_done(priv->tsk_tx)) {
++		bcom_dump_status();
++		bcom_dump_task(priv->tsk_tx->tasknum);
++		bcom_dump_bdring(priv->tsk_tx);
++		bcom_disable(priv->tsk_tx);
 +	}
 +
-+	return tsk;
++	spin_lock(&priv->dma_lock);
++	while (bcom_buffer_done(priv->tsk_tx)) {
++		/* Get the buffer back */
++		bcom_retrieve_buffer(priv->tsk_tx, NULL, NULL);
++
++		/* Submit a new one */
++		bd = (struct bcom_gen_bd *) bcom_prepare_next_buffer(priv->tsk_tx);
++		bd->status = priv->period_byte_size;
++		bd->buf_pa = priv->period_next_p;
++		bcom_submit_next_buffer(priv->tsk_tx, NULL);
++		bcom_enable(priv->tsk_tx);
++
++		/* Next pointer */
++		priv->period_next_p += priv->period_byte_size;
++		if (priv->period_next_p >= priv->period_end)
++			priv->period_next_p = priv->period_start;
++	}
++	spin_unlock(&priv->dma_lock);
++
++	snd_pcm_period_elapsed(priv->substream_playback);
++
++	return IRQ_HANDLED;
 +}
 +
-+int
-+bcom_gen_bd_tx_reset(struct bcom_task *tsk)
++
++static irqreturn_t
++mpc52xx_ac97_irq(int irq, void *dev_id)
 +{
-+	struct bcom_gen_bd_priv *priv = tsk->priv;
-+	struct bcom_gen_bd_tx_var *var;
-+	struct bcom_gen_bd_tx_inc *inc;
++	struct mpc52xx_ac97_priv *priv = dev_id;
 +
-+	/* Shutdown the task */
-+	bcom_disable_task(tsk->tasknum);
++	static int icnt = 0;
++	#if 0
++	{
++	unsigned int val;
++//	val = in_be32(&priv->psc->ac97_data);
++	printk(KERN_INFO "mpc52xx_ac97_irq fired (isr=%04x, status=%04x) %08x\n", in_be16(&priv->psc->mpc52xx_psc_imr), in_be16(&priv->psc->mpc52xx_psc_status), val);
++	out_8(&priv->psc->command,MPC52xx_PSC_RST_ERR_STAT);
++	}
++	#endif
 +
-+	/* Reset the microcode */
-+	var = (struct bcom_gen_bd_tx_var *) bcom_task_var(tsk->tasknum);
-+	inc = (struct bcom_gen_bd_tx_inc *) bcom_task_inc(tsk->tasknum);
++	/* Anti Crash during dev ;) */
++	#if 1
++	if ((icnt++) > 5000)
++		out_be16(&priv->psc->mpc52xx_psc_imr, 0);
++	#endif
 +
-+	if (bcom_load_image(tsk->tasknum, bcom_gen_bd_tx_task))
-+		return -1;
++	/* Print statuts */
++	printk(KERN_DEBUG "isr: %04x", in_be16(&priv->psc->mpc52xx_psc_imr));
++	out_8(&priv->psc->command,MPC52xx_PSC_RST_ERR_STAT);
 +
-+	var->enable	= bcom->regs_base +
-+				offsetof(struct mpc52xx_sdma, tcr[tsk->tasknum]);
-+	var->fifo	= (u32) priv->fifo;
-+	var->bd_base	= tsk->bd_pa;
-+	var->bd_last	= tsk->bd_pa + ((tsk->num_bd-1) * tsk->bd_size);
-+	var->bd_start	= tsk->bd_pa;
++	return IRQ_HANDLED;
++}
 +
-+	inc->incr_bytes	= -(s16)sizeof(u32);
-+	inc->incr_src	= sizeof(u32);
-+	inc->incr_src_ma = sizeof(u8);
++/* ======================================================================== */
++/* PCM interface                                                            */
++/* ======================================================================== */
 +
-+	/* Reset the BDs */
-+	tsk->index = 0;
-+	tsk->outdex = 0;
++/* HW desc */
 +
-+	memset(tsk->bd, 0x00, tsk->num_bd * tsk->bd_size);
++static struct snd_pcm_hardware mpc52xx_ac97_hw = {
++	.info			= SNDRV_PCM_INFO_INTERLEAVED		|
++					SNDRV_PCM_INFO_MMAP		|
++					SNDRV_PCM_INFO_MMAP_VALID,
++	.formats		= SNDRV_PCM_FMTBIT_S32_BE,
++	.rates			= SNDRV_PCM_RATE_8000_48000,
++	.rate_min		= 8000,
++	.rate_max		= 48000,
++	.channels_min		= 1,
++	.channels_max		= 2,	/* Support for more ? */
++	.buffer_bytes_max	= 1024*1024,
++	.period_bytes_min	= 512,
++	.period_bytes_max	= 16*1024,
++	.periods_min		= 8,
++	.periods_max		= 1024,
++	.fifo_size		= 512,
++};
 +
-+	/* Configure some stuff */
-+	bcom_set_task_pragma(tsk->tasknum, BCOM_GEN_TX_BD_PRAGMA);
-+	bcom_set_task_auto_start(tsk->tasknum, tsk->tasknum);
 +
-+	out_8(&bcom->regs->ipr[priv->initiator], priv->ipr);
-+	bcom_set_initiator(tsk->tasknum, priv->initiator);
++/* Playback */
 +
-+	out_be32(&bcom->regs->IntPend, 1<<tsk->tasknum);	/* Clear ints */
++static int
++mpc52xx_ac97_playback_open(struct snd_pcm_substream *substream)
++{
++	struct mpc52xx_ac97_priv *priv = substream->pcm->private_data;
++
++	dev_dbg(priv->dev, "mpc52xx_ac97_playback_open(%p)\n", substream);
++
++	substream->runtime->hw = mpc52xx_ac97_hw;
++
++	priv->substream_playback = substream;
++
++	return 0;	/* FIXME */
++}
++
++static int
++mpc52xx_ac97_playback_close(struct snd_pcm_substream *substream)
++{
++	struct mpc52xx_ac97_priv *priv = substream->pcm->private_data;
++	dev_dbg(priv->dev, "mpc52xx_ac97_playback_close(%p)\n", substream);
++	priv->substream_playback = NULL;
++	return 0;	/* FIXME */
++}
++
++static int
++mpc52xx_ac97_playback_prepare(struct snd_pcm_substream *substream)
++{
++	struct mpc52xx_ac97_priv *priv = substream->pcm->private_data;
++
++	dev_dbg(priv->dev, "mpc52xx_ac97_playback_prepare(%p)\n", substream);
++
++	/* FIXME, need a spinlock to protect access */
++	if (substream->runtime->channels == 1)
++		out_be32(&priv->psc->ac97_slots, 0x01000000);
++	else
++		out_be32(&priv->psc->ac97_slots, 0x03000000);
++
++	snd_ac97_set_rate(priv->ac97, AC97_PCM_FRONT_DAC_RATE, substream->runtime->rate);
++
++	return 0;	/* FIXME */
++}
++
++
++/* Capture */
++
++static int
++mpc52xx_ac97_capture_open(struct snd_pcm_substream *substream)
++{
++	struct mpc52xx_ac97_priv *priv = substream->pcm->private_data;
++	return 0;	/* FIXME */
++}
++
++static int
++mpc52xx_ac97_capture_close(struct snd_pcm_substream *substream)
++{
++	struct mpc52xx_ac97_priv *priv = substream->pcm->private_data;
++	return 0;	/* FIXME */
++}
++
++static int
++mpc52xx_ac97_capture_prepare(struct snd_pcm_substream *substream)
++{
++	struct mpc52xx_ac97_priv *priv = substream->pcm->private_data;
++	return 0;	/* FIXME */
++}
++
++
++/* Common */
++
++static int
++mpc52xx_ac97_hw_params(struct snd_pcm_substream *substream,
++			struct snd_pcm_hw_params *params)
++{
++	struct mpc52xx_ac97_priv *priv = substream->pcm->private_data;
++	int rv;
++
++	dev_dbg(priv->dev, "mpc52xx_ac97_hw_params(%p)\n", substream);
++
++	rv = snd_pcm_lib_malloc_pages(substream,
++					params_buffer_bytes(params));
++	if (rv < 0) {
++		printk(KERN_ERR "hw params failes\n");	/* FIXME */
++		return rv;
++	}
++
++	// mpc52xx_ac97_tx_bufalloc(priv);
++
++	printk(KERN_DEBUG "%d %d %d\n", params_buffer_bytes(params), params_period_bytes(params), params_periods(params));
 +
 +	return 0;
 +}
 +
-+void
-+bcom_gen_bd_tx_release(struct bcom_task *tsk)
++static int
++mpc52xx_ac97_hw_free(struct snd_pcm_substream *substream)
 +{
-+	/* Nothing special for the GenBD tasks */
-+	bcom_task_release(tsk);
++	struct mpc52xx_ac97_priv *priv = substream->pcm->private_data;
++
++	dev_dbg(priv->dev, "mpc52xx_ac97_hw_free(%p)\n", substream);
++	// mpc52xx_ac97_tx_bufrelease(priv);
++
++	return snd_pcm_lib_free_pages(substream);
++}
++
++static int
++mpc52xx_ac97_trigger(struct snd_pcm_substream *substream, int cmd)
++{
++	struct mpc52xx_ac97_priv *priv = substream->pcm->private_data;
++	int rv = 0;
++
++	dev_dbg(priv->dev, "mpc52xx_ac97_trigger(%p,%d)\n", substream, cmd);
++
++	switch (cmd) {
++		case SNDRV_PCM_TRIGGER_START:
++			/* Enable TX taks */
++			bcom_gen_bd_tx_reset(priv->tsk_tx);
++			mpc52xx_ac97_tx_fill(priv);
++			bcom_enable(priv->tsk_tx);
++//			out_be16(&priv->psc->mpc52xx_psc_imr, 0x0800); // 0x0100
++//			out_be16(&priv->psc->mpc52xx_psc_imr, 0x0100); // 0x0100
++				/* FIXME: Shouldn't we check for overrun too ? */
++				/* also, shouldn't we just activate TX here ? */
++
++			break;
++
++		case SNDRV_PCM_TRIGGER_STOP:
++			/* Disable TX task */
++			bcom_disable(priv->tsk_tx);
++			out_be16(&priv->psc->mpc52xx_psc_imr, 0x0000); // 0x0100
++
++			break;
++
++		default:
++			rv = -EINVAL;
++	}
++
++	/* FIXME */
++	return rv;
++}
++
++static snd_pcm_uframes_t
++mpc52xx_ac97_pointer(struct snd_pcm_substream *substream)
++{
++	struct snd_pcm_runtime *runtime = substream->runtime;
++	struct mpc52xx_ac97_priv *priv = substream->pcm->private_data;
++	u32 count;
++
++//	dev_dbg(priv->dev, "mpc52xx_ac97_pointer(%p)\n", substream);
++
++	count = priv->tsk_tx->bd[priv->tsk_tx->outdex].data[0] - priv->period_start;
++
++	return bytes_to_frames(runtime, count);
 +}
 +
 +
-+EXPORT_SYMBOL(bcom_gen_bd_rx_init);
-+EXPORT_SYMBOL(bcom_gen_bd_rx_reset);
-+EXPORT_SYMBOL(bcom_gen_bd_rx_release);
-+EXPORT_SYMBOL(bcom_gen_bd_tx_init);
-+EXPORT_SYMBOL(bcom_gen_bd_tx_reset);
-+EXPORT_SYMBOL(bcom_gen_bd_tx_release);
++/* Ops */
 +
-+MODULE_DESCRIPTION("BestComm General Buffer Descriptor tasks driver");
-+MODULE_AUTHOR("Jeff Gibbons <jeff.gibbons@appspec.com>");
-+MODULE_LICENSE("GPL v2");
++static struct snd_pcm_ops mpc52xx_ac97_playback_ops = {
++	.open		= mpc52xx_ac97_playback_open,
++	.close		= mpc52xx_ac97_playback_close,
++	.ioctl		= snd_pcm_lib_ioctl,
++	.hw_params	= mpc52xx_ac97_hw_params,
++	.hw_free	= mpc52xx_ac97_hw_free,
++	.prepare	= mpc52xx_ac97_playback_prepare,
++	.trigger	= mpc52xx_ac97_trigger,
++	.pointer	= mpc52xx_ac97_pointer,
++};
 +
-diff --git a/arch/powerpc/sysdev/bestcomm/gen_bd.h b/arch/powerpc/sysdev/bestcomm/gen_bd.h
-new file mode 100644
-index 0000000..5b6fa80
---- /dev/null
-+++ b/arch/powerpc/sysdev/bestcomm/gen_bd.h
-@@ -0,0 +1,48 @@
-+/*
-+ * Header for Bestcomm General Buffer Descriptor tasks driver
-+ *
-+ *
-+ * Copyright (C) 2007 Sylvain Munaut <tnt@246tNt.com>
-+ * Copyright (C) 2006 AppSpec Computer Technologies Corp.
-+ *                    Jeff Gibbons <jeff.gibbons@appspec.com>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
-+ *
-+ *
-+ */
-+
-+#ifndef __BESTCOMM_GEN_BD_H__
-+#define __BESTCOMM_GEN_BD_H__
-+
-+struct bcom_gen_bd {
-+	u32	status;
-+	u32	buf_pa;
++static struct snd_pcm_ops mpc52xx_ac97_capture_ops = {
++	.open		= mpc52xx_ac97_capture_open,
++	.close		= mpc52xx_ac97_capture_close,
++	.ioctl		= snd_pcm_lib_ioctl,
++	.hw_params	= mpc52xx_ac97_hw_params,
++	.hw_free	= mpc52xx_ac97_hw_free,
++	.prepare	= mpc52xx_ac97_capture_prepare,
++	.trigger	= mpc52xx_ac97_trigger,
++	.pointer	= mpc52xx_ac97_pointer,
 +};
 +
 +
-+extern struct bcom_task *
-+bcom_gen_bd_rx_init(int queue_len, phys_addr_t fifo,
-+			int initiator, int ipr, int maxbufsize);
++/* ======================================================================== */
++/* AC97 Bus interface                                                       */
++/* ======================================================================== */
 +
-+extern int
-+bcom_gen_bd_rx_reset(struct bcom_task *tsk);
++static unsigned short
++mpc52xx_ac97_bus_read(struct snd_ac97 *ac97, unsigned short reg)
++{
++	struct mpc52xx_ac97_priv *priv = ac97->private_data;
++	int timeout;
++	unsigned int val;
 +
-+extern void
-+bcom_gen_bd_rx_release(struct bcom_task *tsk);
++//	dev_dbg(priv->dev, "ac97 read: reg %04x\n", reg);
++
++	/* Wait for it to be ready */
++	timeout = 1000;
++	while ((--timeout) && (in_be16(&priv->psc->mpc52xx_psc_status) &
++						MPC52xx_PSC_SR_CMDSEND) )
++		udelay(10);
++
++	if (!timeout) {
++		printk(KERN_ERR DRV_NAME ": timeout on ac97 bus (rdy)\n");
++		return 0xffff;
++	}
++
++	/* Do the read */
++	out_be32(&priv->psc->ac97_cmd, (1<<31) | ((reg & 0x7f) << 24));
++
++	/* Wait for the answer */
++	timeout = 1000;
++	while ((--timeout) && !(in_be16(&priv->psc->mpc52xx_psc_status) &
++						MPC52xx_PSC_SR_DATA_VAL) )
++		udelay(10);
++
++	if (!timeout) {
++		printk(KERN_ERR DRV_NAME ": timeout on ac97 read (val)\n");
++		return 0xffff;
++	}
++
++	/* Get the data */
++	val = in_be32(&priv->psc->ac97_data);
++	if ( ((val>>24) & 0x7f) != reg ) {
++		printk(KERN_ERR DRV_NAME ": reg echo error on ac97 read\n");
++		return 0xffff;
++	}
++	val = (val >> 8) & 0xffff;
++
++//	dev_dbg(priv->dev, "ac97 read ok: reg %04x  val %04x\n",
++//				reg, val);
++
++	return (unsigned short) val;
++}
++
++static void
++mpc52xx_ac97_bus_write(struct snd_ac97 *ac97,
++			unsigned short reg, unsigned short val)
++{
++	struct mpc52xx_ac97_priv *priv = ac97->private_data;
++	int timeout;
++
++//	dev_dbg(priv->dev, "ac97 write: reg %04x  val %04x\n",
++//				reg, val);
++
++	/* Wait for it to be ready */
++	timeout = 1000;
++	while ((--timeout) && (in_be16(&priv->psc->mpc52xx_psc_status) &
++						MPC52xx_PSC_SR_CMDSEND) )
++		udelay(10);
++
++	if (!timeout) {
++		printk(KERN_ERR DRV_NAME ": timeout on ac97 write\n");
++		return;
++	}
++
++	/* Write data */
++	out_be32(&priv->psc->ac97_cmd, ((reg & 0x7f) << 24) | (val << 8));
++}
++
++static void
++mpc52xx_ac97_bus_reset(struct snd_ac97 *ac97)
++{
++	struct mpc52xx_ac97_priv *priv = ac97->private_data;
++
++	dev_dbg(priv->dev, "ac97 codec reset\n");
++
++	/* Do a cold reset */
++	out_8(&priv->psc->op1, 0x03);
++	udelay(10);
++	out_8(&priv->psc->op0, 0x02);
++	udelay(50);
++
++	/* PSC recover from cold reset (cfr user manual, not sure if useful) */
++	out_be32(&priv->psc->sicr, in_be32(&priv->psc->sicr));
++}
 +
 +
-+extern struct bcom_task *
-+bcom_gen_bd_tx_init(int queue_len, phys_addr_t fifo,
-+			int initiator, int ipr);
-+
-+extern int
-+bcom_gen_bd_tx_reset(struct bcom_task *tsk);
-+
-+extern void
-+bcom_gen_bd_tx_release(struct bcom_task *tsk);
++static struct snd_ac97_bus_ops mpc52xx_ac97_bus_ops = {
++	.read	= mpc52xx_ac97_bus_read,
++	.write	= mpc52xx_ac97_bus_write,
++	.reset	= mpc52xx_ac97_bus_reset,
++};
 +
 +
-+#endif  /* __BESTCOMM_GEN_BD_H__ */
++/* ======================================================================== */
++/* Sound driver setup                                                       */
++/* ======================================================================== */
++
++static int
++mpc52xx_ac97_setup_pcm(struct mpc52xx_ac97_priv *priv)
++{
++	int rv;
++
++	rv = snd_pcm_new(priv->card, DRV_NAME "-pcm", 0, 1, 1, &priv->pcm);
++	if (rv) {
++		printk(KERN_ERR DRV_NAME ": snd_pcm_new failed\n");
++		return rv;
++	}
++
++	rv = snd_pcm_lib_preallocate_pages_for_all(priv->pcm,
++		SNDRV_DMA_TYPE_CONTINUOUS, snd_dma_continuous_data(GFP_KERNEL),
++		128*1024, 128*1024);
++	if (rv) {
++		printk(KERN_ERR DRV_NAME
++			": snd_pcm_lib_preallocate_pages_for_all  failed\n");
++		return rv;
++	}
++
++	snd_pcm_set_ops(priv->pcm, SNDRV_PCM_STREAM_PLAYBACK,
++			&mpc52xx_ac97_playback_ops);
++	snd_pcm_set_ops(priv->pcm, SNDRV_PCM_STREAM_CAPTURE,
++			&mpc52xx_ac97_capture_ops);
++
++	priv->pcm->private_data = priv;
++	priv->pcm->info_flags = 0;
++
++	strcpy(priv->pcm->name, "Freescale MPC52xx PSC-AC97 PCM");
++
++	return 0;
++}
++
++static int
++mpc52xx_ac97_setup_mixer(struct mpc52xx_ac97_priv *priv)
++{
++	struct snd_ac97_bus *ac97_bus;
++	struct snd_ac97_template ac97_template;
++	int rv;
++
++	rv = snd_ac97_bus(priv->card, 0, &mpc52xx_ac97_bus_ops, NULL, &ac97_bus);
++	if (rv) {
++		printk(KERN_ERR DRV_NAME ": snd_ac97_bus failed\n");
++		return rv;
++	}
++
++	memset(&ac97_template, 0, sizeof(struct snd_ac97_template));
++	ac97_template.private_data = priv;
++
++	rv = snd_ac97_mixer(ac97_bus, &ac97_template, &priv->ac97);
++	if (rv) {
++		printk(KERN_ERR DRV_NAME ": snd_ac97_mixer failed\n");
++		return rv;
++	}
++
++	return 0;
++}
++
++
++static int
++mpc52xx_ac97_hwinit(struct mpc52xx_ac97_priv *priv)
++{
++	/* Reset everything first by safety */
++	out_8(&priv->psc->command,MPC52xx_PSC_RST_RX);
++	out_8(&priv->psc->command,MPC52xx_PSC_RST_TX);
++	out_8(&priv->psc->command,MPC52xx_PSC_RST_ERR_STAT);
++
++	/* Do a cold reset of codec */
++	out_8(&priv->psc->op1, 0x03);
++	udelay(10);
++	out_8(&priv->psc->op0, 0x02);
++	udelay(50);
++
++	/* Configure AC97 enhanced mode */
++	out_be32(&priv->psc->sicr, 0x03010000);
++
++	/* No slots active */
++	out_be32(&priv->psc->ac97_slots, 0x00000000);
++
++	/* No IRQ */
++	out_be16(&priv->psc->mpc52xx_psc_imr, 0x0000);
++
++	/* FIFO levels */
++	out_8(&priv->psc->rfcntl, 0x07);
++	out_8(&priv->psc->tfcntl, 0x07);
++	out_be16(&priv->psc->rfalarm, 0x80);
++	out_be16(&priv->psc->tfalarm, 0x80);
++
++	/* Go */
++	out_8(&priv->psc->command,MPC52xx_PSC_TX_ENABLE);
++	out_8(&priv->psc->command,MPC52xx_PSC_RX_ENABLE);
++
++	return 0;
++}
++
++static int
++mpc52xx_ac97_hwshutdown(struct mpc52xx_ac97_priv *priv)
++{
++	/* No IRQ */
++	out_be16(&priv->psc->mpc52xx_psc_imr, 0x0000);
++
++	/* Disable TB & RX */
++	out_8(&priv->psc->command,MPC52xx_PSC_RST_RX);
++	out_8(&priv->psc->command,MPC52xx_PSC_RST_TX);
++
++	/* FIXME : Reset or put codec in low power ? */
++
++	return 0;
++}
++
++
++/* ======================================================================== */
++/* OF Platform Driver                                                       */
++/* ======================================================================== */
++
++static int __devinit
++mpc52xx_ac97_probe(struct of_device *op, const struct of_device_id *match)
++{
++	struct device_node *dn = op->node;
++	struct mpc52xx_ac97_priv *priv;
++	struct snd_card *card;
++	struct resource res;
++	int rv;
++
++	dev_dbg(&op->dev, "probing MPC52xx PSC AC97 driver\n");
++
++	/* Get card structure */
++	rv = -ENOMEM;
++	card = snd_card_new(SNDRV_DEFAULT_IDX1, SNDRV_DEFAULT_STR1,
++				THIS_MODULE, sizeof(struct mpc52xx_ac97_priv));
++	if (!card)
++		goto err_early;
++
++	priv = card->private_data;
++
++	/* Init our private structure */
++	priv->card = card;
++	priv->dev = &op->dev;
++
++	/* Get resources (mem,irq,...) */
++	rv = of_address_to_resource(dn, 0, &res);
++	if (rv)
++		goto err_early;
++
++	priv->mem_start = res.start;
++	priv->mem_len = res.end - res.start + 1;
++
++	if (!request_mem_region(priv->mem_start, priv->mem_len, DRV_NAME)) {
++		printk(KERN_ERR DRV_NAME ": request_mem_region failed\n");
++		rv = -EBUSY;
++		goto err_early;
++	}
++
++	priv->psc = ioremap(priv->mem_start, priv->mem_len);
++	if (!priv->psc) {
++		printk(KERN_ERR DRV_NAME ": ioremap failed\n");
++		rv = -ENOMEM;
++		goto err_iomap;
++	}
++
++	priv->irq = irq_of_parse_and_map(dn, 0);
++	if (priv->irq == NO_IRQ) {
++		printk(KERN_ERR DRV_NAME ": irq_of_parse_and_map failed\n");
++		rv = -EBUSY;
++		goto err_irqmap;
++	}
++
++	/* Setup Bestcomm tasks */
++	spin_lock_init(&priv->dma_lock);
++
++	priv->tsk_tx = bcom_gen_bd_tx_init(AC97_TX_NUM_BD,
++				priv->mem_start + offsetof(struct mpc52xx_psc,
++							tfdata),
++				12,	/* initiator : FIXME */
++				2);	/* ipr : FIXME */
++	if (!priv->tsk_tx) {
++		printk(KERN_ERR DRV_NAME ": bcom_gen_bd_tx_init failed\n");
++		rv = -ENOMEM;
++		goto err_bcomm;
++	}		
++
++	/* Low level HW Init */
++	mpc52xx_ac97_hwinit(priv);
++
++	/* Request IRQ now that we're 'stable' */
++	rv = request_irq(priv->irq, mpc52xx_ac97_irq, 0, DRV_NAME, priv);
++	if (rv < 0) {
++		printk(KERN_ERR DRV_NAME ": request_irq failed\n");
++		goto err_irqreq;
++	}
++
++	rv = request_irq(bcom_get_task_irq(priv->tsk_tx),
++				mpc52xx_ac97_tx_irq, 0, DRV_NAME "_tx", priv);
++	if (rv < 0) {
++		printk(KERN_ERR DRV_NAME ": request_irq failed\n");
++		goto err_txirqreq;
++	}
++
++	/* Prepare sound stuff */
++	rv = mpc52xx_ac97_setup_mixer(priv);
++	if (rv)
++		goto err_late;
++
++	rv = mpc52xx_ac97_setup_pcm(priv);
++	if (rv)
++		goto err_late;
++
++	/* Finally register the card */
++	snprintf(card->shortname, sizeof(card->shortname), DRV_NAME);
++	snprintf(card->longname, sizeof(card->longname),
++		"Freescale MPC52xx PSC-AC97 (%s)", card->mixername);
++
++	rv = snd_card_register(card);
++	if (rv) {
++		printk(KERN_ERR DRV_NAME ": snd_card_register failed\n");
++		goto err_late;
++	}
++
++	dev_set_drvdata(&op->dev, priv);
++
++	return 0;
++
++err_late:
++	free_irq(bcom_get_task_irq(priv->tsk_tx), priv);
++err_txirqreq:
++	free_irq(priv->irq, priv);
++err_irqreq:
++	bcom_gen_bd_tx_release(priv->tsk_tx);
++err_bcomm:
++	mpc52xx_ac97_hwshutdown(priv);
++	irq_dispose_mapping(priv->irq);
++err_irqmap:
++	iounmap(priv->psc);
++err_iomap:
++	release_mem_region(priv->mem_start, priv->mem_len);
++err_early:
++	if (card)
++		snd_card_free(card);
++	return rv;
++}
++
++static int
++mpc52xx_ac97_remove(struct of_device *op)
++{
++	struct mpc52xx_ac97_priv *priv;
++
++	dev_dbg(&op->dev, "removing MPC52xx PSC AC97 driver\n");
++
++	priv = dev_get_drvdata(&op->dev);
++	if (priv) {
++		/* Sound subsys shutdown */
++		snd_card_free(priv->card);
++
++		/* Low level HW shutdown */
++		mpc52xx_ac97_hwshutdown(priv);
++
++		/* Release bestcomm tasks */
++		free_irq(bcom_get_task_irq(priv->tsk_tx), priv);
++		bcom_gen_bd_tx_release(priv->tsk_tx);
++
++		/* Release resources */
++		iounmap(priv->psc);
++		free_irq(priv->irq, priv);
++		irq_dispose_mapping(priv->irq);
++		release_mem_region(priv->mem_start, priv->mem_len);
++	}
++
++	dev_set_drvdata(&op->dev, NULL);
++
++	return 0;
++}
++
++
++static struct of_device_id mpc52xx_ac97_of_match[] = {
++	{
++		.type		= "sound",
++		.compatible	= "mpc5200b-psc-ac97",	/* B only for now */
++	},
++};
++/* Prevent autoload during developpment phase ... */
++/* MODULE_DEVICE_TABLE(of, mpc52xx_ac97_of_match); */
++
++
++static struct of_platform_driver mpc52xx_ac97_of_driver = {
++	.owner		= THIS_MODULE,
++	.name		= DRV_NAME,
++	.match_table	= mpc52xx_ac97_of_match,
++	.probe		= mpc52xx_ac97_probe,
++	.remove		= mpc52xx_ac97_remove,
++	.driver		= {
++		.name	= DRV_NAME,
++	},
++};
++
++
++/* ======================================================================== */
++/* Module                                                                   */
++/* ======================================================================== */
++
++static int __init
++mpc52xx_ac97_init(void)
++{
++	int rv;
++
++	/* FIXME BIG FAT EFIKA HACK */
++	{
++		void *mbar;
++		mbar = ioremap(0xf0000000, 0x100000);
++		printk(KERN_INFO "EFIKA HACK: port_config %08x\n", in_be32(mbar + 0xb00));
++		out_be32(mbar + 0xb00, 0x01051124);
++		printk(KERN_INFO "EFIKA HACK: port_config %08x\n", in_be32(mbar + 0xb00));
++		iounmap(mbar);
++	}
++	/* ------------------------ */
++
++	printk(KERN_INFO "Sound: MPC52xx PSC AC97 driver\n");
++
++	rv = of_register_platform_driver(&mpc52xx_ac97_of_driver);
++	if (rv) {
++		printk(KERN_ERR DRV_NAME ": "
++			"of_register_platform_driver failed (%i)\n", rv);
++		return rv;
++	}
++
++	return 0;
++}
++
++static void __exit
++mpc52xx_ac97_exit(void)
++{
++	of_unregister_platform_driver(&mpc52xx_ac97_of_driver);
++}
++
++module_init(mpc52xx_ac97_init);
++module_exit(mpc52xx_ac97_exit);
++
++MODULE_AUTHOR("Sylvain Munaut <tnt@246tNt.com>");
++MODULE_DESCRIPTION(DRV_NAME ": Freescale MPC52xx PSC AC97 driver");
++MODULE_LICENSE("GPL");
 +
 -- 
 1.5.1.2
