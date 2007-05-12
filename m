@@ -1,13 +1,14 @@
 Return-Path: <tnt@246tNt.com>
 Received: from mailgate103.isp.belgacom.be (mailgate103.isp.belgacom.be
-	[195.238.6.84]) by ozlabs.org (Postfix) with ESMTP id 4BE39DDEC4
+	[195.238.6.84]) by ozlabs.org (Postfix) with ESMTP id CE0FEDDEC1
 	for <linuxppc-dev@ozlabs.org>; Sun, 13 May 2007 06:32:29 +1000 (EST)
 From: Sylvain Munaut <tnt@246tNt.com>
 To: Linux PPC dev ML <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 9/9] sound: Add support for Freescale MPC5200 AC97 interface.
-Date: Sat, 12 May 2007 22:31:57 +0200
-Message-Id: <11790019263049-git-send-email-tnt@246tNt.com>
-In-Reply-To: <11790019251639-git-send-email-tnt@246tNt.com>
+Subject: [PATCH 8/9] drivers/net: Add support for Freescale MPC5200 SoC
+	internal FEC.
+Date: Sat, 12 May 2007 22:31:56 +0200
+Message-Id: <11790019251639-git-send-email-tnt@246tNt.com>
+In-Reply-To: <1179001924586-git-send-email-tnt@246tNt.com>
 References: <11790019171838-git-send-email-tnt@246tNt.com>
 	<11790019223299-git-send-email-tnt@246tNt.com>
 	<11790019223880-git-send-email-tnt@246tNt.com>
@@ -16,7 +17,6 @@ References: <11790019171838-git-send-email-tnt@246tNt.com>
 	<11790019233958-git-send-email-tnt@246tNt.com>
 	<11790019242174-git-send-email-tnt@246tNt.com>
 	<1179001924586-git-send-email-tnt@246tNt.com>
-	<11790019251639-git-send-email-tnt@246tNt.com>
 Cc: Sylvain Munaut <tnt@246tNt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,884 +27,886 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Not quite a clean driver, but it get things done (well,
-mostly).
+Not quite a clean driver, but it get things done.
 Only included to be able to test functionalityi/usage of
 the BestComm driver.
 
 Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
 ---
- sound/ppc/Kconfig        |   16 +
- sound/ppc/Makefile       |    3 +
- sound/ppc/mpc52xx_ac97.c |  870 ++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 889 insertions(+), 0 deletions(-)
- create mode 100644 sound/ppc/mpc52xx_ac97.c
+ drivers/net/Kconfig               |    1 +
+ drivers/net/Makefile              |    1 +
+ drivers/net/fec_mpc52xx/Kconfig   |   24 ++
+ drivers/net/fec_mpc52xx/Makefile  |    7 +
+ drivers/net/fec_mpc52xx/fec.c     |  813 +++++++++++++++++++++++++++++++++++++
+ drivers/net/fec_mpc52xx/fec.h     |  306 ++++++++++++++
+ drivers/net/fec_mpc52xx/fec_phy.c |  526 ++++++++++++++++++++++++
+ drivers/net/fec_mpc52xx/fec_phy.h |   73 ++++
+ 8 files changed, 1751 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/net/fec_mpc52xx/Kconfig
+ create mode 100644 drivers/net/fec_mpc52xx/Makefile
+ create mode 100644 drivers/net/fec_mpc52xx/fec.c
+ create mode 100644 drivers/net/fec_mpc52xx/fec.h
+ create mode 100644 drivers/net/fec_mpc52xx/fec_phy.c
+ create mode 100644 drivers/net/fec_mpc52xx/fec_phy.h
 
-diff --git a/sound/ppc/Kconfig b/sound/ppc/Kconfig
-index a3fb149..afd58f7 100644
---- a/sound/ppc/Kconfig
-+++ b/sound/ppc/Kconfig
-@@ -33,3 +33,19 @@ config SND_POWERMAC_AUTO_DRC
- 	  option.
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index fb99cd4..df8df41 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -1890,6 +1890,7 @@ config NE_H8300
+ 	  controller on the Renesas H8/300 processor.
+ 
+ source "drivers/net/fec_8xx/Kconfig"
++source "drivers/net/fec_mpc52xx/Kconfig"
+ source "drivers/net/fs_enet/Kconfig"
  
  endmenu
+diff --git a/drivers/net/Makefile b/drivers/net/Makefile
+index a77affa..72e092c 100644
+--- a/drivers/net/Makefile
++++ b/drivers/net/Makefile
+@@ -196,6 +196,7 @@ obj-$(CONFIG_SMC91X) += smc91x.o
+ obj-$(CONFIG_SMC911X) += smc911x.o
+ obj-$(CONFIG_DM9000) += dm9000.o
+ obj-$(CONFIG_FEC_8XX) += fec_8xx/
++obj-$(CONFIG_FEC_MPC52xx) += fec_mpc52xx/
+ obj-$(CONFIG_PASEMI_MAC) += pasemi_mac.o
+ obj-$(CONFIG_MLX4_CORE) += mlx4/
+ 
+diff --git a/drivers/net/fec_mpc52xx/Kconfig b/drivers/net/fec_mpc52xx/Kconfig
+new file mode 100644
+index 0000000..1043a1a
+--- /dev/null
++++ b/drivers/net/fec_mpc52xx/Kconfig
+@@ -0,0 +1,24 @@
++menu "MPC5200 Networking Options"
++	depends PPC_MPC52xx && NET_ETHERNET
 +
++config FEC_MPC52xx
++	tristate "FEC Ethernet"
++	depends on NET_ETHERNET
++	select PPC_BESTCOMM
++	select PPC_BESTCOMM_FEC
++	select CRC32
++	---help---
++	  This option enables support for the MPC5200's on-chip
++	  Fast Ethernet Controller
 +
-+# ALSA ppc drivers
-+
-+menu "ALSA PPC devices"
-+	depends on SND!=n && PPC
-+
-+config SND_PPC_MPC52xx_AC97
-+	tristate "Freescale MPC52xx AC97 interface support"
-+	depends on SND && PPC_MPC52xx
-+	select SND_AC97_CODEC
-+	help
-+	  Say Y or M if you want to support any AC97 codec attached to
-+	  the Freescqle MPC52xx AC97 interface.
++config USE_MDIO
++	bool "Use external Ethernet MII PHY"
++	select MII
++	depends FEC_MPC52xx
++	---help---
++	  The MPC5200's FEC can connect to the Ethernet either with
++	  an external MII PHY chip or 10 Mbps 7-wire interface 
++	  (Motorola? industry standard).
++	  If your board uses an external PHY, say y, else n.
 +
 +endmenu
-diff --git a/sound/ppc/Makefile b/sound/ppc/Makefile
-index 4d95c65..c29cb9b 100644
---- a/sound/ppc/Makefile
-+++ b/sound/ppc/Makefile
-@@ -4,6 +4,9 @@
- #
- 
- snd-powermac-objs := powermac.o pmac.o awacs.o burgundy.o daca.o tumbler.o keywest.o beep.o
-+snd-mpc52xx-ac97-objs := mpc52xx_ac97.o
- 
- # Toplevel Module Dependency
- obj-$(CONFIG_SND_POWERMAC) += snd-powermac.o
-+
-+obj-$(CONFIG_SND_PPC_MPC52xx_AC97)	+= snd-mpc52xx-ac97.o
-diff --git a/sound/ppc/mpc52xx_ac97.c b/sound/ppc/mpc52xx_ac97.c
+diff --git a/drivers/net/fec_mpc52xx/Makefile b/drivers/net/fec_mpc52xx/Makefile
 new file mode 100644
-index 0000000..20e2bf8
+index 0000000..900c2c1
 --- /dev/null
-+++ b/sound/ppc/mpc52xx_ac97.c
-@@ -0,0 +1,870 @@
++++ b/drivers/net/fec_mpc52xx/Makefile
+@@ -0,0 +1,7 @@
++obj-$(CONFIG_FEC_MPC52xx) += fec_mpc52xx.o
++
++fec_mpc52xx-objs := fec.o
++
++ifeq ($(CONFIG_USE_MDIO),y)
++fec_mpc52xx-objs += fec_phy.o
++endif
+diff --git a/drivers/net/fec_mpc52xx/fec.c b/drivers/net/fec_mpc52xx/fec.c
+new file mode 100644
+index 0000000..416bac7
+--- /dev/null
++++ b/drivers/net/fec_mpc52xx/fec.c
+@@ -0,0 +1,813 @@
 +/*
-+ * Driver for the PSC of the Freescale MPC52xx configured as AC97 interface
++ * drivers/net/fec_mpc52xx/fec.c
 + *
++ * Driver for the MPC5200 Fast Ethernet Controller
 + *
-+ * Copyright (C) 2006 Sylvain Munaut <tnt@246tNt.com>
++ * Originally written by Dale Farnsworth <dfarnsworth@mvista.com> and
++ * now maintained by Sylvain Munaut <tnt@246tNt.com>
++ *
++ * Copyright (C) 2007  Sylvain Munaut <tnt@246tNt.com>
++ * Copyrigth (C) 2003-2004  MontaVista, Software, Inc.
 + *
 + * This file is licensed under the terms of the GNU General Public License
 + * version 2. This program is licensed "as is" without any warranty of any
 + * kind, whether express or implied.
++ *
 + */
 +
-+#define DEBUG
++#include <linux/module.h>
 +
 +#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/interrupt.h>
++#include <linux/types.h>
 +#include <linux/spinlock.h>
++#include <linux/errno.h>
++#include <linux/init.h>
++#include <linux/crc32.h>
 +
-+#include <sound/driver.h>
-+#include <sound/core.h>
-+#include <sound/initval.h>
-+#include <sound/pcm.h>
-+#include <sound/pcm_params.h>
-+#include <sound/ac97_codec.h>
++#include <linux/netdevice.h>
++#include <linux/etherdevice.h>
++#include <linux/ethtool.h>
++#include <linux/skbuff.h>
 +
++#include <asm/of_device.h>
 +#include <asm/of_platform.h>
-+#include <linux/dma-mapping.h>
-+#include <asm/mpc52xx_psc.h>
++#include <asm/io.h>
++#include <asm/delay.h>
++#include <asm/mpc52xx.h>
 +
 +#include <sysdev/bestcomm/bestcomm.h>
-+#include <sysdev/bestcomm/gen_bd.h>
++#include <sysdev/bestcomm/fec.h>
 +
++#include "fec_phy.h"
++#include "fec.h"
 +
-+#define DRV_NAME "mpc52xx-psc-ac97"
++#define DRIVER_NAME "mpc52xx-fec"
 +
++static irqreturn_t fec_interrupt(int, void *);
++static irqreturn_t fec_rx_interrupt(int, void *);
++static irqreturn_t fec_tx_interrupt(int, void *);
++static struct net_device_stats *fec_get_stats(struct net_device *);
++static void fec_set_multicast_list(struct net_device *dev);
++static void fec_reinit(struct net_device *dev);
 +
-+/* ======================================================================== */
-+/* Structs / Defines                                                        */
-+/* ======================================================================== */
++static u8 mpc52xx_fec_mac_addr[6];
++static u8 null_mac[6];
 +
-+/* Private structure */
-+struct mpc52xx_ac97_priv {
-+	struct device *dev;
-+	resource_size_t	mem_start;
-+	resource_size_t mem_len;
-+	int irq;
-+	struct mpc52xx_psc __iomem *psc;
-+
-+	struct bcom_task *tsk_tx;
-+	spinlock_t dma_lock;
-+
-+	struct snd_card *card;
-+	struct snd_pcm *pcm;
-+	struct snd_ac97 *ac97;
-+
-+	struct snd_pcm_substream *substream_playback;
-+
-+	int period_byte_size;
-+	u32 period_start, period_end, period_next_p;
-+};
-+
-+/* Register bit definition (AC97 mode specific) */
-+#define PSC_AC97_SLOT_BIT(n)		(1<<(12-n))
-+#define PSC_AC97_SLOTS_XMIT_SHIFT	16
-+#define PSC_AC97_SLOTS_RECV_SHIFT	 0
-+
-+/* Bestcomm options */
-+#define AC97_TX_NUM_BD	32
-+#define AC97_RX_NUM_BD	32
-+
-+#if 0
-+static u32* buffers_va[AC97_TX_NUM_BD];
-+static u32  buffers_pa[AC97_TX_NUM_BD];
-+#endif
-+
-+
-+/* ======================================================================== */
-+/* Buffer handling                                                          */
-+/* ======================================================================== */
-+
-+#if 0
-+static void
-+mpc52xx_ac97_tx_bufalloc(struct mpc52xx_ac97_priv *priv)
++static void fec_tx_timeout(struct net_device *dev)
 +{
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++
++	priv->stats.tx_errors++;
++
++	if (!priv->tx_full)
++		netif_wake_queue(dev);
++}
++
++static void fec_set_paddr(struct net_device *dev, u8 *mac)
++{
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++	struct mpc52xx_fec *fec = priv->fec;
++
++	out_be32(&fec->paddr1, *(u32*)(&mac[0]));
++	out_be32(&fec->paddr2, (*(u16*)(&mac[4]) << 16) | 0x8808);
++}
++
++static void fec_get_paddr(struct net_device *dev, u8 *mac)
++{
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++	struct mpc52xx_fec *fec = priv->fec;
++
++	*(u32*)(&mac[0]) = in_be32(&fec->paddr1);
++	*(u16*)(&mac[4]) = in_be32(&fec->paddr2) >> 16;
++}
++
++static int fec_set_mac_address(struct net_device *dev, void *addr)
++{
++	struct sockaddr *sock = (struct sockaddr *)addr;
++
++	memcpy(dev->dev_addr, sock->sa_data, dev->addr_len);
++
++	fec_set_paddr(dev, sock->sa_data);
++	return 0;
++}
++
++/* This function is called to start or restart the FEC during a link
++ * change.  This happens on fifo errors or when switching between half
++ * and full duplex.
++ */
++static void fec_restart(struct net_device *dev, int duplex)
++{
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++	struct mpc52xx_fec *fec = priv->fec;
++	u32 rcntrl;
++	u32 tcntrl;
 +	int i;
 +
-+	if (buffers_va[0])
-+		return;
++	out_be32(&fec->rfifo_status, in_be32(&fec->rfifo_status) & 0x700000);
++	out_be32(&fec->tfifo_status, in_be32(&fec->tfifo_status) & 0x700000);
++	out_be32(&fec->reset_cntrl, 0x1000000);
 +
-+	buffers_va[0] = dma_alloc_coherent(priv->dev, AC97_TX_NUM_BD * 1024, &buffers_pa[0], GFP_KERNEL);
-+
-+	for (i=1; i<AC97_TX_NUM_BD; i++) {
-+		buffers_va[i] = buffers_va[i-1] + 1024;
-+		buffers_pa[i] = buffers_pa[i-1] + 1024;
++	/* Whack a reset.  We should wait for this. */
++	out_be32(&fec->ecntrl, FEC_ECNTRL_RESET);
++	for (i = 0; i < FEC_RESET_DELAY; ++i) {
++		if ((in_be32(&fec->ecntrl) & FEC_ECNTRL_RESET) == 0)
++			break;
++		udelay(1);
 +	}
++	if (i == FEC_RESET_DELAY)
++		printk (KERN_ERR DRIVER_NAME ": FEC Reset timeout!\n");
 +
-+	printk(KERN_INFO "Buffer alloc %08x %08x\n", buffers_va[0], buffers_pa[0]);
-+}
++	/* Set station address. */
++	fec_set_paddr(dev, dev->dev_addr);
 +
-+static void
-+mpc52xx_ac97_tx_bufrelease(struct mpc52xx_ac97_priv *priv)
-+{
-+	if (buffers_va[0]) {
-+		dma_free_coherent(priv->dev, AC97_TX_NUM_BD * 1024, buffers_va[0], buffers_pa[0]);
-+		buffers_va[0] = NULL;
++	fec_set_multicast_list(dev);
++
++	rcntrl = FEC_RX_BUFFER_SIZE << 16;	/* max frame length */
++	rcntrl |= FEC_RCNTRL_FCE;
++	rcntrl |= MII_RCNTL_MODE;
++	if (duplex)
++		tcntrl = FEC_TCNTRL_FDEN;		/* FD enable */
++	else {
++		rcntrl |= FEC_RCNTRL_DRT;
++		tcntrl = 0;
 +	}
-+}
-+#endif
++	out_be32(&fec->r_cntrl, rcntrl);
++	out_be32(&fec->x_cntrl, tcntrl);
 +
-+static int
-+mpc52xx_ac97_tx_fill(struct mpc52xx_ac97_priv *priv)
-+{
-+	struct snd_pcm_runtime *rt;
++	set_phy_speed(fec, priv->phy_speed);
 +
-+	u32 dma_data_ptr;
++	priv->full_duplex = duplex;
 +
-+	rt = priv->substream_playback->runtime;
++	/* Clear any outstanding interrupt. */
++	out_be32(&fec->ievent, 0xffffffff);	/* clear intr events */
 +
-+	dma_data_ptr = virt_to_phys(rt->dma_area);
++	/* Enable interrupts we wish to service.
++	*/
++	out_be32(&fec->imask, FEC_IMASK_ENABLE);
 +
-+	priv->period_byte_size	= frames_to_bytes(rt, rt->period_size);
-+	priv->period_start	= dma_data_ptr;
-+	priv->period_end	= dma_data_ptr + priv->period_byte_size * rt->periods;
-+	priv->period_next_p	= dma_data_ptr;
++	/* And last, enable the transmit and receive processing.
++	*/
++	out_be32(&fec->ecntrl, FEC_ECNTRL_ETHER_EN);
++	out_be32(&fec->r_des_active, 0x01000000);
 +
-+	spin_lock(&priv->dma_lock);
-+	while (!bcom_queue_full(priv->tsk_tx)) {
-+		struct bcom_gen_bd *bd;
-+
-+		/* Submit a new one */
-+		bd = (struct bcom_gen_bd *) bcom_prepare_next_buffer(priv->tsk_tx);
-+		bd->status = priv->period_byte_size;
-+		bd->buf_pa = priv->period_next_p;
-+		bcom_submit_next_buffer(priv->tsk_tx, NULL);
-+
-+		/* Next pointer */
-+		priv->period_next_p += priv->period_byte_size;
-+		if (priv->period_next_p >= priv->period_end)
-+			priv->period_next_p = priv->period_start;
-+	}
-+	spin_unlock(&priv->dma_lock);
-+
-+	return 0;
-+}
-+
-+
-+/* ======================================================================== */
-+/* ISR routine                                                              */
-+/* ======================================================================== */
-+
-+static irqreturn_t
-+mpc52xx_ac97_tx_irq(int irq, void *dev_id)
-+{
-+	struct mpc52xx_ac97_priv *priv = dev_id;
-+	struct snd_pcm_runtime *rt;
-+	struct bcom_gen_bd *bd;
-+
-+	rt = priv->substream_playback->runtime;
-+
-+	if (!bcom_buffer_done(priv->tsk_tx)) {
-+		bcom_dump_status();
-+		bcom_dump_task(priv->tsk_tx->tasknum);
-+		bcom_dump_bdring(priv->tsk_tx);
-+		bcom_disable(priv->tsk_tx);
-+	}
-+
-+	spin_lock(&priv->dma_lock);
-+	while (bcom_buffer_done(priv->tsk_tx)) {
-+		/* Get the buffer back */
-+		bcom_retrieve_buffer(priv->tsk_tx, NULL, NULL);
-+
-+		/* Submit a new one */
-+		bd = (struct bcom_gen_bd *) bcom_prepare_next_buffer(priv->tsk_tx);
-+		bd->status = priv->period_byte_size;
-+		bd->buf_pa = priv->period_next_p;
-+		bcom_submit_next_buffer(priv->tsk_tx, NULL);
-+		bcom_enable(priv->tsk_tx);
-+
-+		/* Next pointer */
-+		priv->period_next_p += priv->period_byte_size;
-+		if (priv->period_next_p >= priv->period_end)
-+			priv->period_next_p = priv->period_start;
-+	}
-+	spin_unlock(&priv->dma_lock);
-+
-+	snd_pcm_period_elapsed(priv->substream_playback);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+
-+static irqreturn_t
-+mpc52xx_ac97_irq(int irq, void *dev_id)
-+{
-+	struct mpc52xx_ac97_priv *priv = dev_id;
-+
-+	static int icnt = 0;
-+	#if 0
++	/* The tx ring is no longer full. */
++	if (priv->tx_full)
 +	{
-+	unsigned int val;
-+//	val = in_be32(&priv->psc->ac97_data);
-+	printk(KERN_INFO "mpc52xx_ac97_irq fired (isr=%04x, status=%04x) %08x\n", in_be16(&priv->psc->mpc52xx_psc_imr), in_be16(&priv->psc->mpc52xx_psc_status), val);
-+	out_8(&priv->psc->command,MPC52xx_PSC_RST_ERR_STAT);
++		priv->tx_full = 0;
++		netif_wake_queue(dev);
 +	}
-+	#endif
++}
 +
-+	/* Anti Crash during dev ;) */
-+	#if 1
-+	if ((icnt++) > 5000)
-+		out_be16(&priv->psc->mpc52xx_psc_imr, 0);
-+	#endif
++static void fec_free_rx_buffers(struct bcom_task *s)
++{
++	struct sk_buff *skb;
 +
-+	/* Print statuts */
-+	printk(KERN_DEBUG "isr: %04x", in_be16(&priv->psc->mpc52xx_psc_imr));
-+	out_8(&priv->psc->command,MPC52xx_PSC_RST_ERR_STAT);
++	while (!bcom_queue_empty(s)) {
++		skb = bcom_retrieve_buffer(s, NULL, NULL);
++		kfree_skb(skb);
++	}
++}
++
++static int fec_open(struct net_device *dev)
++{
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++
++	bcom_fec_rx_reset(priv->rx_dmatsk);
++	bcom_fec_tx_reset(priv->tx_dmatsk);
++
++	while (!bcom_queue_full(priv->rx_dmatsk)) {
++		struct sk_buff *skb;
++		struct bcom_fec_bd *bd;
++
++		skb = dev_alloc_skb(FEC_RX_BUFFER_SIZE);
++		if (skb == 0)
++			goto eagain;
++
++		/* zero out the initial receive buffers to aid debugging */
++		memset(skb->data, 0, FEC_RX_BUFFER_SIZE);
++
++		bd = (struct bcom_fec_bd *)
++			bcom_prepare_next_buffer(priv->rx_dmatsk);
++
++		bd->status = FEC_RX_BUFFER_SIZE;
++		bd->skb_pa = virt_to_phys(skb->data);
++
++		bcom_submit_next_buffer(priv->rx_dmatsk, skb);
++	}
++
++	fec_set_paddr(dev, dev->dev_addr);
++
++	if (fec_mii_wait(dev) != 0)
++		return -ENODEV;
++
++	bcom_enable(priv->rx_dmatsk);
++	bcom_enable(priv->tx_dmatsk);
++
++	netif_start_queue(dev);
++
++	return 0;
++
++eagain:
++	printk(KERN_ERR "fec_open: failed\n");
++
++	fec_free_rx_buffers(priv->rx_dmatsk);
++
++	return -EAGAIN;
++}
++
++/* This will only be invoked if your driver is _not_ in XOFF state.
++ * What this means is that you need not check it, and that this
++ * invariant will hold if you make sure that the netif_*_queue()
++ * calls are done at the proper times.
++ */
++static int fec_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
++{
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++	struct bcom_fec_bd *bd;
++
++	if (bcom_queue_full(priv->tx_dmatsk))
++		panic("MPC52xx transmit queue overrun\n");
++
++	spin_lock_irq(&priv->lock);
++	dev->trans_start = jiffies;
++
++	bd = (struct bcom_fec_bd *)
++		bcom_prepare_next_buffer(priv->tx_dmatsk);
++
++	bd->status = skb->len | BCOM_FEC_TX_BD_TFD | BCOM_FEC_TX_BD_INT;
++	bd->skb_pa = virt_to_phys(skb->data);
++
++	bcom_submit_next_buffer(priv->tx_dmatsk, skb);
++
++	if (bcom_queue_full(priv->tx_dmatsk)) {
++		priv->tx_full = 1;
++		netif_stop_queue(dev);
++	}
++
++	spin_unlock_irq(&priv->lock);
++
++	return 0;
++}
++
++/* This handles BestComm transmit task interrupts
++ */
++static irqreturn_t fec_tx_interrupt(int irq, void *dev_id)
++{
++	struct net_device *dev = dev_id;
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++
++	for (;;) {
++		struct sk_buff *skb;
++
++		spin_lock(&priv->lock);
++		if (!bcom_buffer_done(priv->tx_dmatsk)) {
++			spin_unlock(&priv->lock);
++			break;
++		}
++		skb = bcom_retrieve_buffer(priv->tx_dmatsk, NULL, NULL);
++
++		if (priv->tx_full) {
++			priv->tx_full = 0;
++			netif_wake_queue(dev);
++		}
++		spin_unlock(&priv->lock);
++		dev_kfree_skb_irq(skb);
++	}
 +
 +	return IRQ_HANDLED;
 +}
 +
-+/* ======================================================================== */
-+/* PCM interface                                                            */
-+/* ======================================================================== */
-+
-+/* HW desc */
-+
-+static struct snd_pcm_hardware mpc52xx_ac97_hw = {
-+	.info			= SNDRV_PCM_INFO_INTERLEAVED		|
-+					SNDRV_PCM_INFO_MMAP		|
-+					SNDRV_PCM_INFO_MMAP_VALID,
-+	.formats		= SNDRV_PCM_FMTBIT_S32_BE,
-+	.rates			= SNDRV_PCM_RATE_8000_48000,
-+	.rate_min		= 8000,
-+	.rate_max		= 48000,
-+	.channels_min		= 1,
-+	.channels_max		= 2,	/* Support for more ? */
-+	.buffer_bytes_max	= 1024*1024,
-+	.period_bytes_min	= 512,
-+	.period_bytes_max	= 16*1024,
-+	.periods_min		= 8,
-+	.periods_max		= 1024,
-+	.fifo_size		= 512,
-+};
-+
-+
-+/* Playback */
-+
-+static int
-+mpc52xx_ac97_playback_open(struct snd_pcm_substream *substream)
++static irqreturn_t fec_rx_interrupt(int irq, void *dev_id)
 +{
-+	struct mpc52xx_ac97_priv *priv = substream->pcm->private_data;
++	struct net_device *dev = dev_id;
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
 +
-+	dev_dbg(priv->dev, "mpc52xx_ac97_playback_open(%p)\n", substream);
++	for (;;) {
++		struct sk_buff *skb;
++		struct sk_buff *rskb;
++		struct bcom_fec_bd *bd;
++		u32 status;
 +
-+	substream->runtime->hw = mpc52xx_ac97_hw;
-+
-+	priv->substream_playback = substream;
-+
-+	return 0;	/* FIXME */
-+}
-+
-+static int
-+mpc52xx_ac97_playback_close(struct snd_pcm_substream *substream)
-+{
-+	struct mpc52xx_ac97_priv *priv = substream->pcm->private_data;
-+	dev_dbg(priv->dev, "mpc52xx_ac97_playback_close(%p)\n", substream);
-+	priv->substream_playback = NULL;
-+	return 0;	/* FIXME */
-+}
-+
-+static int
-+mpc52xx_ac97_playback_prepare(struct snd_pcm_substream *substream)
-+{
-+	struct mpc52xx_ac97_priv *priv = substream->pcm->private_data;
-+
-+	dev_dbg(priv->dev, "mpc52xx_ac97_playback_prepare(%p)\n", substream);
-+
-+	/* FIXME, need a spinlock to protect access */
-+	if (substream->runtime->channels == 1)
-+		out_be32(&priv->psc->ac97_slots, 0x01000000);
-+	else
-+		out_be32(&priv->psc->ac97_slots, 0x03000000);
-+
-+	snd_ac97_set_rate(priv->ac97, AC97_PCM_FRONT_DAC_RATE, substream->runtime->rate);
-+
-+	return 0;	/* FIXME */
-+}
-+
-+
-+/* Capture */
-+
-+static int
-+mpc52xx_ac97_capture_open(struct snd_pcm_substream *substream)
-+{
-+	struct mpc52xx_ac97_priv *priv = substream->pcm->private_data;
-+	return 0;	/* FIXME */
-+}
-+
-+static int
-+mpc52xx_ac97_capture_close(struct snd_pcm_substream *substream)
-+{
-+	struct mpc52xx_ac97_priv *priv = substream->pcm->private_data;
-+	return 0;	/* FIXME */
-+}
-+
-+static int
-+mpc52xx_ac97_capture_prepare(struct snd_pcm_substream *substream)
-+{
-+	struct mpc52xx_ac97_priv *priv = substream->pcm->private_data;
-+	return 0;	/* FIXME */
-+}
-+
-+
-+/* Common */
-+
-+static int
-+mpc52xx_ac97_hw_params(struct snd_pcm_substream *substream,
-+			struct snd_pcm_hw_params *params)
-+{
-+	struct mpc52xx_ac97_priv *priv = substream->pcm->private_data;
-+	int rv;
-+
-+	dev_dbg(priv->dev, "mpc52xx_ac97_hw_params(%p)\n", substream);
-+
-+	rv = snd_pcm_lib_malloc_pages(substream,
-+					params_buffer_bytes(params));
-+	if (rv < 0) {
-+		printk(KERN_ERR "hw params failes\n");	/* FIXME */
-+		return rv;
-+	}
-+
-+	// mpc52xx_ac97_tx_bufalloc(priv);
-+
-+	printk(KERN_DEBUG "%d %d %d\n", params_buffer_bytes(params), params_period_bytes(params), params_periods(params));
-+
-+	return 0;
-+}
-+
-+static int
-+mpc52xx_ac97_hw_free(struct snd_pcm_substream *substream)
-+{
-+	struct mpc52xx_ac97_priv *priv = substream->pcm->private_data;
-+
-+	dev_dbg(priv->dev, "mpc52xx_ac97_hw_free(%p)\n", substream);
-+	// mpc52xx_ac97_tx_bufrelease(priv);
-+
-+	return snd_pcm_lib_free_pages(substream);
-+}
-+
-+static int
-+mpc52xx_ac97_trigger(struct snd_pcm_substream *substream, int cmd)
-+{
-+	struct mpc52xx_ac97_priv *priv = substream->pcm->private_data;
-+	int rv = 0;
-+
-+	dev_dbg(priv->dev, "mpc52xx_ac97_trigger(%p,%d)\n", substream, cmd);
-+
-+	switch (cmd) {
-+		case SNDRV_PCM_TRIGGER_START:
-+			/* Enable TX taks */
-+			bcom_gen_bd_tx_reset(priv->tsk_tx);
-+			mpc52xx_ac97_tx_fill(priv);
-+			bcom_enable(priv->tsk_tx);
-+//			out_be16(&priv->psc->mpc52xx_psc_imr, 0x0800); // 0x0100
-+//			out_be16(&priv->psc->mpc52xx_psc_imr, 0x0100); // 0x0100
-+				/* FIXME: Shouldn't we check for overrun too ? */
-+				/* also, shouldn't we just activate TX here ? */
-+
++		if (!bcom_buffer_done(priv->rx_dmatsk))
 +			break;
 +
-+		case SNDRV_PCM_TRIGGER_STOP:
-+			/* Disable TX task */
-+			bcom_disable(priv->tsk_tx);
-+			out_be16(&priv->psc->mpc52xx_psc_imr, 0x0000); // 0x0100
++		rskb = bcom_retrieve_buffer(priv->rx_dmatsk, &status, NULL);
 +
-+			break;
++		/* Test for errors in received frame */
++		if (status & 0x370000) { 
++			/* Drop packet and reuse the buffer */
++			bd = (struct bcom_fec_bd *)
++				bcom_prepare_next_buffer(priv->rx_dmatsk);
 +
-+		default:
-+			rv = -EINVAL;
++			bd->status = FEC_RX_BUFFER_SIZE;
++			bd->skb_pa = virt_to_phys(rskb->data);
++
++			bcom_submit_next_buffer(priv->rx_dmatsk, rskb);
++
++			priv->stats.rx_dropped++;
++
++			continue;
++		}
++
++		/* allocate replacement skb */
++		skb = dev_alloc_skb(FEC_RX_BUFFER_SIZE);
++		if (skb) {
++			/* Process the received skb */
++			int length = (status & ((1<<11) - 1)) - sizeof(u32);
++			skb_put(rskb, length);	/* length included CRC32 */
++
++			rskb->dev = dev;
++			rskb->protocol = eth_type_trans(rskb, dev);
++			netif_rx(rskb);
++			dev->last_rx = jiffies;
++		} else {
++			/* Can't get a new one : reuse the same & drop pkt */
++			printk(KERN_NOTICE
++				"%s: Memory squeeze, dropping packet.\n",
++				dev->name);
++			priv->stats.rx_dropped++;
++
++			skb = rskb;
++		}
++
++		bd = (struct bcom_fec_bd *)
++			bcom_prepare_next_buffer(priv->rx_dmatsk);
++
++		bd->status = FEC_RX_BUFFER_SIZE;
++		bd->skb_pa = virt_to_phys(skb->data);
++
++		bcom_submit_next_buffer(priv->rx_dmatsk, skb);
 +	}
 +
-+	/* FIXME */
-+	return rv;
++	return IRQ_HANDLED;
 +}
 +
-+static snd_pcm_uframes_t
-+mpc52xx_ac97_pointer(struct snd_pcm_substream *substream)
++static irqreturn_t fec_interrupt(int irq, void *dev_id)
 +{
-+	struct snd_pcm_runtime *runtime = substream->runtime;
-+	struct mpc52xx_ac97_priv *priv = substream->pcm->private_data;
-+	u32 count;
++	struct net_device *dev = (struct net_device *)dev_id;
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++	struct mpc52xx_fec *fec = priv->fec;
++	int ievent;
 +
-+//	dev_dbg(priv->dev, "mpc52xx_ac97_pointer(%p)\n", substream);
++	ievent = in_be32(&fec->ievent);
++	if (!ievent)
++		return IRQ_NONE;
 +
-+	count = priv->tsk_tx->bd[priv->tsk_tx->outdex].data[0] - priv->period_start;
++	out_be32(&fec->ievent, ievent);		/* clear pending events */
 +
-+	return bytes_to_frames(runtime, count);
++	if (ievent & (FEC_IEVENT_RFIFO_ERROR | FEC_IEVENT_XFIFO_ERROR)) {
++		if (net_ratelimit() && (ievent & FEC_IEVENT_RFIFO_ERROR))
++			printk(KERN_WARNING "FEC_IEVENT_RFIFO_ERROR\n");
++		if (net_ratelimit() && (ievent & FEC_IEVENT_XFIFO_ERROR))
++			printk(KERN_WARNING "FEC_IEVENT_XFIFO_ERROR\n");
++		fec_reinit(dev);
++	}
++	else if (ievent & FEC_IEVENT_MII)
++		fec_mii(dev);
++	return IRQ_HANDLED;
 +}
 +
-+
-+/* Ops */
-+
-+static struct snd_pcm_ops mpc52xx_ac97_playback_ops = {
-+	.open		= mpc52xx_ac97_playback_open,
-+	.close		= mpc52xx_ac97_playback_close,
-+	.ioctl		= snd_pcm_lib_ioctl,
-+	.hw_params	= mpc52xx_ac97_hw_params,
-+	.hw_free	= mpc52xx_ac97_hw_free,
-+	.prepare	= mpc52xx_ac97_playback_prepare,
-+	.trigger	= mpc52xx_ac97_trigger,
-+	.pointer	= mpc52xx_ac97_pointer,
-+};
-+
-+static struct snd_pcm_ops mpc52xx_ac97_capture_ops = {
-+	.open		= mpc52xx_ac97_capture_open,
-+	.close		= mpc52xx_ac97_capture_close,
-+	.ioctl		= snd_pcm_lib_ioctl,
-+	.hw_params	= mpc52xx_ac97_hw_params,
-+	.hw_free	= mpc52xx_ac97_hw_free,
-+	.prepare	= mpc52xx_ac97_capture_prepare,
-+	.trigger	= mpc52xx_ac97_trigger,
-+	.pointer	= mpc52xx_ac97_pointer,
-+};
-+
-+
-+/* ======================================================================== */
-+/* AC97 Bus interface                                                       */
-+/* ======================================================================== */
-+
-+static unsigned short
-+mpc52xx_ac97_bus_read(struct snd_ac97 *ac97, unsigned short reg)
++static int fec_close(struct net_device *dev)
 +{
-+	struct mpc52xx_ac97_priv *priv = ac97->private_data;
-+	int timeout;
-+	unsigned int val;
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++	unsigned long timeout;
 +
-+//	dev_dbg(priv->dev, "ac97 read: reg %04x\n", reg);
++	priv->open_time = 0;
++	priv->sequence_done = 0;
 +
-+	/* Wait for it to be ready */
-+	timeout = 1000;
-+	while ((--timeout) && (in_be16(&priv->psc->mpc52xx_psc_status) &
-+						MPC52xx_PSC_SR_CMDSEND) )
-+		udelay(10);
++	netif_stop_queue(dev);
 +
-+	if (!timeout) {
-+		printk(KERN_ERR DRV_NAME ": timeout on ac97 bus (rdy)\n");
-+		return 0xffff;
++	bcom_disable(priv->rx_dmatsk);		/* disable receive task */
++
++	/* Wait for queues to drain */
++	timeout = jiffies + 2*HZ;
++	while (time_before(jiffies, timeout) &&
++			(!bcom_queue_empty(priv->tx_dmatsk) ||
++			!bcom_queue_empty(priv->rx_dmatsk))) {
++		set_current_state(TASK_INTERRUPTIBLE);
++		schedule_timeout(HZ/10);
 +	}
++	if (time_after_eq(jiffies, timeout))
++		printk(KERN_ERR "fec_close: queues didn't drain\n");
 +
-+	/* Do the read */
-+	out_be32(&priv->psc->ac97_cmd, (1<<31) | ((reg & 0x7f) << 24));
++	bcom_disable(priv->tx_dmatsk);
 +
-+	/* Wait for the answer */
-+	timeout = 1000;
-+	while ((--timeout) && !(in_be16(&priv->psc->mpc52xx_psc_status) &
-+						MPC52xx_PSC_SR_DATA_VAL) )
-+		udelay(10);
++	fec_free_rx_buffers(priv->rx_dmatsk);
 +
-+	if (!timeout) {
-+		printk(KERN_ERR DRV_NAME ": timeout on ac97 read (val)\n");
-+		return 0xffff;
-+	}
-+
-+	/* Get the data */
-+	val = in_be32(&priv->psc->ac97_data);
-+	if ( ((val>>24) & 0x7f) != reg ) {
-+		printk(KERN_ERR DRV_NAME ": reg echo error on ac97 read\n");
-+		return 0xffff;
-+	}
-+	val = (val >> 8) & 0xffff;
-+
-+//	dev_dbg(priv->dev, "ac97 read ok: reg %04x  val %04x\n",
-+//				reg, val);
-+
-+	return (unsigned short) val;
-+}
-+
-+static void
-+mpc52xx_ac97_bus_write(struct snd_ac97 *ac97,
-+			unsigned short reg, unsigned short val)
-+{
-+	struct mpc52xx_ac97_priv *priv = ac97->private_data;
-+	int timeout;
-+
-+//	dev_dbg(priv->dev, "ac97 write: reg %04x  val %04x\n",
-+//				reg, val);
-+
-+	/* Wait for it to be ready */
-+	timeout = 1000;
-+	while ((--timeout) && (in_be16(&priv->psc->mpc52xx_psc_status) &
-+						MPC52xx_PSC_SR_CMDSEND) )
-+		udelay(10);
-+
-+	if (!timeout) {
-+		printk(KERN_ERR DRV_NAME ": timeout on ac97 write\n");
-+		return;
-+	}
-+
-+	/* Write data */
-+	out_be32(&priv->psc->ac97_cmd, ((reg & 0x7f) << 24) | (val << 8));
-+}
-+
-+static void
-+mpc52xx_ac97_bus_reset(struct snd_ac97 *ac97)
-+{
-+	struct mpc52xx_ac97_priv *priv = ac97->private_data;
-+
-+	dev_dbg(priv->dev, "ac97 codec reset\n");
-+
-+	/* Do a cold reset */
-+	out_8(&priv->psc->op1, 0x03);
-+	udelay(10);
-+	out_8(&priv->psc->op0, 0x02);
-+	udelay(50);
-+
-+	/* PSC recover from cold reset (cfr user manual, not sure if useful) */
-+	out_be32(&priv->psc->sicr, in_be32(&priv->psc->sicr));
-+}
-+
-+
-+static struct snd_ac97_bus_ops mpc52xx_ac97_bus_ops = {
-+	.read	= mpc52xx_ac97_bus_read,
-+	.write	= mpc52xx_ac97_bus_write,
-+	.reset	= mpc52xx_ac97_bus_reset,
-+};
-+
-+
-+/* ======================================================================== */
-+/* Sound driver setup                                                       */
-+/* ======================================================================== */
-+
-+static int
-+mpc52xx_ac97_setup_pcm(struct mpc52xx_ac97_priv *priv)
-+{
-+	int rv;
-+
-+	rv = snd_pcm_new(priv->card, DRV_NAME "-pcm", 0, 1, 1, &priv->pcm);
-+	if (rv) {
-+		printk(KERN_ERR DRV_NAME ": snd_pcm_new failed\n");
-+		return rv;
-+	}
-+
-+	rv = snd_pcm_lib_preallocate_pages_for_all(priv->pcm,
-+		SNDRV_DMA_TYPE_CONTINUOUS, snd_dma_continuous_data(GFP_KERNEL),
-+		128*1024, 128*1024);
-+	if (rv) {
-+		printk(KERN_ERR DRV_NAME
-+			": snd_pcm_lib_preallocate_pages_for_all  failed\n");
-+		return rv;
-+	}
-+
-+	snd_pcm_set_ops(priv->pcm, SNDRV_PCM_STREAM_PLAYBACK,
-+			&mpc52xx_ac97_playback_ops);
-+	snd_pcm_set_ops(priv->pcm, SNDRV_PCM_STREAM_CAPTURE,
-+			&mpc52xx_ac97_capture_ops);
-+
-+	priv->pcm->private_data = priv;
-+	priv->pcm->info_flags = 0;
-+
-+	strcpy(priv->pcm->name, "Freescale MPC52xx PSC-AC97 PCM");
++	fec_get_stats(dev);
 +
 +	return 0;
 +}
 +
-+static int
-+mpc52xx_ac97_setup_mixer(struct mpc52xx_ac97_priv *priv)
++/*
++ * Get the current statistics.
++ * This may be called with the card open or closed.
++ */
++static struct net_device_stats *fec_get_stats(struct net_device *dev)
 +{
-+	struct snd_ac97_bus *ac97_bus;
-+	struct snd_ac97_template ac97_template;
-+	int rv;
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++	struct net_device_stats *stats = &priv->stats;
++	struct mpc52xx_fec *fec = priv->fec;
 +
-+	rv = snd_ac97_bus(priv->card, 0, &mpc52xx_ac97_bus_ops, NULL, &ac97_bus);
-+	if (rv) {
-+		printk(KERN_ERR DRV_NAME ": snd_ac97_bus failed\n");
-+		return rv;
++	stats->rx_bytes = in_be32(&fec->rmon_r_octets);
++	stats->rx_packets = in_be32(&fec->rmon_r_packets);
++	stats->rx_errors = stats->rx_packets - in_be32(&fec->ieee_r_frame_ok);
++	stats->tx_bytes = in_be32(&fec->rmon_t_octets);
++	stats->tx_packets = in_be32(&fec->rmon_t_packets);
++	stats->tx_errors = stats->tx_packets - (
++					in_be32(&fec->ieee_t_frame_ok) +
++					in_be32(&fec->rmon_t_col) +
++					in_be32(&fec->ieee_t_1col) +
++					in_be32(&fec->ieee_t_mcol) +
++					in_be32(&fec->ieee_t_def));
++	stats->multicast = in_be32(&fec->rmon_r_mc_pkt);
++	stats->collisions = in_be32(&fec->rmon_t_col);
++
++	/* detailed rx_errors: */
++	stats->rx_length_errors = in_be32(&fec->rmon_r_undersize)
++					+ in_be32(&fec->rmon_r_oversize)
++					+ in_be32(&fec->rmon_r_frag)
++					+ in_be32(&fec->rmon_r_jab);
++	stats->rx_over_errors = in_be32(&fec->r_macerr);
++	stats->rx_crc_errors = in_be32(&fec->ieee_r_crc);
++	stats->rx_frame_errors = in_be32(&fec->ieee_r_align);
++	stats->rx_fifo_errors = in_be32(&fec->rmon_r_drop);
++	stats->rx_missed_errors = in_be32(&fec->rmon_r_drop);
++
++	/* detailed tx_errors: */
++	stats->tx_aborted_errors = 0;
++	stats->tx_carrier_errors = in_be32(&fec->ieee_t_cserr);
++	stats->tx_fifo_errors = in_be32(&fec->rmon_t_drop);
++	stats->tx_heartbeat_errors = in_be32(&fec->ieee_t_sqe);
++	stats->tx_window_errors = in_be32(&fec->ieee_t_lcol);
++
++	return stats;
++}
++
++static void fec_update_stat(struct net_device *dev)
++{
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++	struct net_device_stats *stats = &priv->stats;
++	struct mpc52xx_fec *fec = priv->fec;
++
++	out_be32(&fec->mib_control, FEC_MIB_DISABLE);
++	memset_io(&fec->rmon_t_drop, 0,
++			(u32)&fec->reserved10 - (u32)&fec->rmon_t_drop);
++	out_be32(&fec->mib_control, 0);
++	memset(stats, 0, sizeof *stats);
++	fec_get_stats(dev);
++}
++
++/*
++ * Set or clear the multicast filter for this adaptor.
++ */
++static void fec_set_multicast_list(struct net_device *dev)
++{
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++	struct mpc52xx_fec *fec = priv->fec;
++	u32 rx_control;
++
++	rx_control = in_be32(&fec->r_cntrl);
++
++	if (dev->flags & IFF_PROMISC) {
++		rx_control |= FEC_RCNTRL_PROM;
++		out_be32(&fec->r_cntrl, rx_control);
++	} else {
++		rx_control &= ~FEC_RCNTRL_PROM;
++		out_be32(&fec->r_cntrl, rx_control);
++
++		if (dev->flags & IFF_ALLMULTI) {
++			out_be32(&fec->gaddr1, 0xffffffff);
++			out_be32(&fec->gaddr2, 0xffffffff);
++		} else {
++			u32 crc;
++			int i;
++			struct dev_mc_list *dmi;
++			u32 gaddr1 = 0x00000000;
++			u32 gaddr2 = 0x00000000;
++
++			dmi = dev->mc_list;
++			for (i=0; i<dev->mc_count; i++) {
++				crc = ether_crc_le(6, dmi->dmi_addr) >> 26;
++				if (crc >= 32)
++					gaddr1 |= 1 << (crc-32);
++				else
++					gaddr2 |= 1 << crc;
++				dmi = dmi->next;
++			}
++			out_be32(&fec->gaddr1, gaddr1);
++			out_be32(&fec->gaddr2, gaddr2);
++		}
 +	}
++}
 +
-+	memset(&ac97_template, 0, sizeof(struct snd_ac97_template));
-+	ac97_template.private_data = priv;
++static void __init fec_str2mac(char *str, unsigned char *mac)
++{
++	int i;
++	u64 val64;
 +
-+	rv = snd_ac97_mixer(ac97_bus, &ac97_template, &priv->ac97);
-+	if (rv) {
-+		printk(KERN_ERR DRV_NAME ": snd_ac97_mixer failed\n");
-+		return rv;
-+	}
++	val64 = simple_strtoull(str, NULL, 16);
 +
++	for (i = 0; i < 6; i++)
++		mac[5-i] = val64 >> (i*8);
++}
++
++int __init mpc52xx_fec_mac_setup(char *mac_address)
++{
++	fec_str2mac(mac_address, mpc52xx_fec_mac_addr);
 +	return 0;
 +}
 +
++__setup("mpc52xx-mac=", mpc52xx_fec_mac_setup);
 +
-+static int
-+mpc52xx_ac97_hwinit(struct mpc52xx_ac97_priv *priv)
++static void fec_hw_init(struct net_device *dev)
 +{
-+	/* Reset everything first by safety */
-+	out_8(&priv->psc->command,MPC52xx_PSC_RST_RX);
-+	out_8(&priv->psc->command,MPC52xx_PSC_RST_TX);
-+	out_8(&priv->psc->command,MPC52xx_PSC_RST_ERR_STAT);
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++	struct mpc52xx_fec *fec = priv->fec;
 +
-+	/* Do a cold reset of codec */
-+	out_8(&priv->psc->op1, 0x03);
-+	udelay(10);
-+	out_8(&priv->psc->op0, 0x02);
-+	udelay(50);
++	out_be32(&fec->op_pause, 0x00010020);
++	out_be32(&fec->rfifo_cntrl, 0x0f000000);
++	out_be32(&fec->rfifo_alarm, 0x0000030c);
++	out_be32(&fec->tfifo_cntrl, 0x0f000000);
++	out_be32(&fec->tfifo_alarm, 0x00000100);
++	out_be32(&fec->x_wmrk, 0x3);		/* xmit fifo watermark = 256 */
++	out_be32(&fec->xmit_fsm, 0x03000000);	/* enable crc generation */
++	out_be32(&fec->iaddr1, 0x00000000);	/* No individual filter */
++	out_be32(&fec->iaddr2, 0x00000000);	/* No individual filter */
 +
-+	/* Configure AC97 enhanced mode */
-+	out_be32(&priv->psc->sicr, 0x03010000);
-+
-+	/* No slots active */
-+	out_be32(&priv->psc->ac97_slots, 0x00000000);
-+
-+	/* No IRQ */
-+	out_be16(&priv->psc->mpc52xx_psc_imr, 0x0000);
-+
-+	/* FIFO levels */
-+	out_8(&priv->psc->rfcntl, 0x07);
-+	out_8(&priv->psc->tfcntl, 0x07);
-+	out_be16(&priv->psc->rfalarm, 0x80);
-+	out_be16(&priv->psc->tfalarm, 0x80);
-+
-+	/* Go */
-+	out_8(&priv->psc->command,MPC52xx_PSC_TX_ENABLE);
-+	out_8(&priv->psc->command,MPC52xx_PSC_RX_ENABLE);
-+
-+	return 0;
++	fec_restart(dev, 0);	/* always use half duplex mode only */
++	/*
++	 * Read MIB counters in order to reset them,
++	 * then zero all the stats fields in memory
++	 */
++	fec_update_stat(dev);
 +}
 +
-+static int
-+mpc52xx_ac97_hwshutdown(struct mpc52xx_ac97_priv *priv)
++
++static void fec_reinit(struct net_device *dev)
 +{
-+	/* No IRQ */
-+	out_be16(&priv->psc->mpc52xx_psc_imr, 0x0000);
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++	struct mpc52xx_fec *fec = priv->fec;
 +
-+	/* Disable TB & RX */
-+	out_8(&priv->psc->command,MPC52xx_PSC_RST_RX);
-+	out_8(&priv->psc->command,MPC52xx_PSC_RST_TX);
++	netif_stop_queue(dev);
++	out_be32(&fec->imask, 0x0);
 +
-+	/* FIXME : Reset or put codec in low power ? */
++	/* Disable the rx and tx tasks. */
++	bcom_disable(priv->rx_dmatsk);
++	bcom_disable(priv->tx_dmatsk);
 +
-+	return 0;
++	/* Stop FEC */
++	out_be32(&fec->ecntrl, in_be32(&fec->ecntrl) & ~0x2);
++
++	/* Restart the DMA tasks */
++	bcom_fec_rx_reset(priv->rx_dmatsk);
++	bcom_fec_tx_reset(priv->tx_dmatsk);
++	fec_hw_init(dev);
++
++	if (priv->sequence_done) {		 /* redo the fec_open() */
++		fec_free_rx_buffers(priv->rx_dmatsk);
++		fec_open(dev);
++	}
++	return;
 +}
 +
 +
 +/* ======================================================================== */
-+/* OF Platform Driver                                                       */
++/* OF Driver                                                                */
 +/* ======================================================================== */
 +
 +static int __devinit
-+mpc52xx_ac97_probe(struct of_device *op, const struct of_device_id *match)
++mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
 +{
-+	struct device_node *dn = op->node;
-+	struct mpc52xx_ac97_priv *priv;
-+	struct snd_card *card;
-+	struct resource res;
 +	int rv;
++	struct net_device *ndev;
++	struct fec_priv *priv = NULL;
++	struct resource mem;
 +
-+	dev_dbg(&op->dev, "probing MPC52xx PSC AC97 driver\n");
++	phys_addr_t rx_fifo;
++	phys_addr_t tx_fifo;
 +
-+	/* Get card structure */
-+	rv = -ENOMEM;
-+	card = snd_card_new(SNDRV_DEFAULT_IDX1, SNDRV_DEFAULT_STR1,
-+				THIS_MODULE, sizeof(struct mpc52xx_ac97_priv));
-+	if (!card)
-+		goto err_early;
-+
-+	priv = card->private_data;
-+
-+	/* Init our private structure */
-+	priv->card = card;
-+	priv->dev = &op->dev;
-+
-+	/* Get resources (mem,irq,...) */
-+	rv = of_address_to_resource(dn, 0, &res);
-+	if (rv)
-+		goto err_early;
-+
-+	priv->mem_start = res.start;
-+	priv->mem_len = res.end - res.start + 1;
-+
-+	if (!request_mem_region(priv->mem_start, priv->mem_len, DRV_NAME)) {
-+		printk(KERN_ERR DRV_NAME ": request_mem_region failed\n");
-+		rv = -EBUSY;
-+		goto err_early;
-+	}
-+
-+	priv->psc = ioremap(priv->mem_start, priv->mem_len);
-+	if (!priv->psc) {
-+		printk(KERN_ERR DRV_NAME ": ioremap failed\n");
-+		rv = -ENOMEM;
-+		goto err_iomap;
-+	}
-+
-+	priv->irq = irq_of_parse_and_map(dn, 0);
-+	if (priv->irq == NO_IRQ) {
-+		printk(KERN_ERR DRV_NAME ": irq_of_parse_and_map failed\n");
-+		rv = -EBUSY;
-+		goto err_irqmap;
-+	}
-+
-+	/* Setup Bestcomm tasks */
-+	spin_lock_init(&priv->dma_lock);
-+
-+	priv->tsk_tx = bcom_gen_bd_tx_init(AC97_TX_NUM_BD,
-+				priv->mem_start + offsetof(struct mpc52xx_psc,
-+							tfdata),
-+				12,	/* initiator : FIXME */
-+				2);	/* ipr : FIXME */
-+	if (!priv->tsk_tx) {
-+		printk(KERN_ERR DRV_NAME ": bcom_gen_bd_tx_init failed\n");
-+		rv = -ENOMEM;
-+		goto err_bcomm;
-+	}		
-+
-+	/* Low level HW Init */
-+	mpc52xx_ac97_hwinit(priv);
-+
-+	/* Request IRQ now that we're 'stable' */
-+	rv = request_irq(priv->irq, mpc52xx_ac97_irq, 0, DRV_NAME, priv);
-+	if (rv < 0) {
-+		printk(KERN_ERR DRV_NAME ": request_irq failed\n");
-+		goto err_irqreq;
-+	}
-+
-+	rv = request_irq(bcom_get_task_irq(priv->tsk_tx),
-+				mpc52xx_ac97_tx_irq, 0, DRV_NAME "_tx", priv);
-+	if (rv < 0) {
-+		printk(KERN_ERR DRV_NAME ": request_irq failed\n");
-+		goto err_txirqreq;
-+	}
-+
-+	/* Prepare sound stuff */
-+	rv = mpc52xx_ac97_setup_mixer(priv);
-+	if (rv)
-+		goto err_late;
-+
-+	rv = mpc52xx_ac97_setup_pcm(priv);
-+	if (rv)
-+		goto err_late;
-+
-+	/* Finally register the card */
-+	snprintf(card->shortname, sizeof(card->shortname), DRV_NAME);
-+	snprintf(card->longname, sizeof(card->longname),
-+		"Freescale MPC52xx PSC-AC97 (%s)", card->mixername);
-+
-+	rv = snd_card_register(card);
++	/* Reserve FEC control zone */
++	rv = of_address_to_resource(op->node, 0, &mem);
 +	if (rv) {
-+		printk(KERN_ERR DRV_NAME ": snd_card_register failed\n");
-+		goto err_late;
++		printk(KERN_ERR DRIVER_NAME ": "
++				"Error while parsing device node resource\n" );
++		return rv;
++	}
++	if ((mem.end - mem.start + 1) != sizeof(struct mpc52xx_fec)) {
++		printk(KERN_ERR DRIVER_NAME 
++			" - invalid resource size (%lx != %x), check mpc52xx_devices.c\n",
++			(unsigned long)(mem.end - mem.start + 1), sizeof(struct mpc52xx_fec));
++		return -EINVAL;
 +	}
 +
-+	dev_set_drvdata(&op->dev, priv);
++	if (!request_mem_region(mem.start, sizeof(struct mpc52xx_fec),
++	                        DRIVER_NAME))
++		return -EBUSY;
++
++	/* Get the ether ndev & it's private zone */
++	ndev = alloc_etherdev(sizeof(struct fec_priv));
++	if (!ndev) {
++		rv = -ENOMEM;
++		goto probe_error;
++	}
++	
++	priv = (struct fec_priv *)ndev->priv;
++	
++	/* Init ether ndev with what we have */
++	ndev->open		= fec_open;
++	ndev->stop		= fec_close;
++	ndev->hard_start_xmit	= fec_hard_start_xmit;
++	ndev->do_ioctl		= fec_ioctl;
++	ndev->get_stats		= fec_get_stats;
++	ndev->set_mac_address	= fec_set_mac_address;
++	ndev->set_multicast_list = fec_set_multicast_list;
++	ndev->tx_timeout	= fec_tx_timeout;
++	ndev->watchdog_timeo	= FEC_WATCHDOG_TIMEOUT;
++	ndev->flags &= ~IFF_RUNNING;
++	ndev->base_addr		= mem.start;
++
++	priv->t_irq = priv->r_irq = ndev->irq = NO_IRQ; /* IRQ are free for now */
++	
++	spin_lock_init(&priv->lock);
++
++	/* ioremap the zones */
++	priv->fec = (struct mpc52xx_fec *)
++		ioremap(mem.start, sizeof(struct mpc52xx_fec));
++	
++	if (!priv->fec) {
++		rv = -ENOMEM;
++		goto probe_error;
++	}
++
++	/* Bestcomm init */
++	rx_fifo = ndev->base_addr + offsetof(struct mpc52xx_fec, rfifo_data);
++	tx_fifo = ndev->base_addr + offsetof(struct mpc52xx_fec, tfifo_data);
++
++	priv->rx_dmatsk = bcom_fec_rx_init(FEC_RX_NUM_BD, rx_fifo, FEC_RX_BUFFER_SIZE);
++	priv->tx_dmatsk = bcom_fec_tx_init(FEC_TX_NUM_BD, tx_fifo);
++
++	if (!priv->rx_dmatsk || !priv->tx_dmatsk) {
++		printk(KERN_ERR DRIVER_NAME ": "
++				"Can not init SDMA tasks\n" );
++		rv = -ENOMEM;
++		goto probe_error;
++	}
++
++	/* Get the IRQ we need one by one */
++		/* Control */
++	ndev->irq = irq_of_parse_and_map(op->node, 0);
++	if (request_irq(ndev->irq, &fec_interrupt, SA_INTERRUPT,
++	                DRIVER_NAME "_ctrl", ndev)) {
++		printk(KERN_ERR DRIVER_NAME ": ctrl interrupt request failed\n");
++		rv = -EBUSY;
++		ndev->irq = NO_IRQ;	/* Don't try to free it */
++		goto probe_error;
++	}
++
++		/* RX */
++	priv->r_irq = bcom_get_task_irq(priv->rx_dmatsk);
++	if (request_irq(priv->r_irq, &fec_rx_interrupt, SA_INTERRUPT,
++	                DRIVER_NAME "_rx", ndev)) {
++		printk(KERN_ERR DRIVER_NAME ": rx interrupt request failed\n");
++		rv = -EBUSY;
++		priv->r_irq = NO_IRQ;	/* Don't try to free it */
++		goto probe_error;
++	}
++
++		/* TX */
++	priv->t_irq = bcom_get_task_irq(priv->tx_dmatsk);
++	if (request_irq(priv->t_irq, &fec_tx_interrupt, SA_INTERRUPT,
++	                DRIVER_NAME "_tx", ndev)) {
++		printk(KERN_ERR DRIVER_NAME ": tx interrupt request failed\n");
++		rv = -EBUSY;
++		priv->t_irq = NO_IRQ;	/* Don't try to free it */
++		goto probe_error;
++	}
++
++	/* MAC address init */
++	if (memcmp(mpc52xx_fec_mac_addr, null_mac, 6) != 0)
++		memcpy(ndev->dev_addr, mpc52xx_fec_mac_addr, 6);
++	else
++		fec_get_paddr(ndev, ndev->dev_addr);
++
++	/* Phy speed */
++	priv->phy_speed = ((mpc52xx_find_ipb_freq(op->node) >> 20) / 5) << 1;
++
++	/* Hardware init */
++	fec_hw_init(ndev);
++
++	/* Register the new network device */
++	rv = register_netdev(ndev);
++	if(rv < 0)
++		goto probe_error;
++
++	/* MII init : After register ???? */
++	fec_mii_init(ndev);
++	
++	/* We're done ! */
++	dev_set_drvdata(&op->dev, ndev);
 +
 +	return 0;
 +
-+err_late:
-+	free_irq(bcom_get_task_irq(priv->tsk_tx), priv);
-+err_txirqreq:
-+	free_irq(priv->irq, priv);
-+err_irqreq:
-+	bcom_gen_bd_tx_release(priv->tsk_tx);
-+err_bcomm:
-+	mpc52xx_ac97_hwshutdown(priv);
-+	irq_dispose_mapping(priv->irq);
-+err_irqmap:
-+	iounmap(priv->psc);
-+err_iomap:
-+	release_mem_region(priv->mem_start, priv->mem_len);
-+err_early:
-+	if (card)
-+		snd_card_free(card);
++
++	/* Error handling - free everything that might be allocated */
++probe_error:
++
++	if (ndev) {
++		if (priv->rx_dmatsk)	bcom_fec_rx_release(priv->rx_dmatsk);
++		if (priv->tx_dmatsk)	bcom_fec_tx_release(priv->tx_dmatsk);
++
++		if (ndev->irq	!= NO_IRQ)	free_irq(ndev->irq, ndev);
++		if (priv->r_irq != NO_IRQ)	free_irq(priv->r_irq, ndev);
++		if (priv->t_irq != NO_IRQ)	free_irq(priv->t_irq, ndev);
++
++		if (priv->fec)		iounmap(priv->fec);
++
++		free_netdev(ndev);
++	}
++
++	release_mem_region(mem.start, sizeof(struct mpc52xx_fec));
++
 +	return rv;
 +}
 +
 +static int
-+mpc52xx_ac97_remove(struct of_device *op)
++mpc52xx_fec_remove(struct of_device *op)
 +{
-+	struct mpc52xx_ac97_priv *priv;
++	struct net_device *ndev;
++	struct fec_priv *priv;
++	
++	ndev = (struct net_device *) dev_get_drvdata(&op->dev);
++	if (!ndev)
++		return 0;
++	priv = (struct fec_priv *) ndev->priv;
 +
-+	dev_dbg(&op->dev, "removing MPC52xx PSC AC97 driver\n");
++	unregister_netdev(ndev);
++	
++	free_irq(ndev->irq, ndev);	/* FIXME : unmap irq ??? */
++	free_irq(priv->r_irq, ndev);
++	free_irq(priv->t_irq, ndev);
 +
-+	priv = dev_get_drvdata(&op->dev);
-+	if (priv) {
-+		/* Sound subsys shutdown */
-+		snd_card_free(priv->card);
++	/* FIXME release dma tasks ??? */
 +
-+		/* Low level HW shutdown */
-+		mpc52xx_ac97_hwshutdown(priv);
++	iounmap(priv->fec);
++	
++	release_mem_region(ndev->base_addr, sizeof(struct mpc52xx_fec));
 +
-+		/* Release bestcomm tasks */
-+		free_irq(bcom_get_task_irq(priv->tsk_tx), priv);
-+		bcom_gen_bd_tx_release(priv->tsk_tx);
-+
-+		/* Release resources */
-+		iounmap(priv->psc);
-+		free_irq(priv->irq, priv);
-+		irq_dispose_mapping(priv->irq);
-+		release_mem_region(priv->mem_start, priv->mem_len);
-+	}
-+
++	free_netdev(ndev);
++	
 +	dev_set_drvdata(&op->dev, NULL);
-+
 +	return 0;
 +}
 +
-+
-+static struct of_device_id mpc52xx_ac97_of_match[] = {
++static struct of_device_id mpc52xx_fec_match[] = {
 +	{
-+		.type		= "sound",
-+		.compatible	= "mpc5200b-psc-ac97",	/* B only for now */
++		.type		= "network",
++		.compatible	= "mpc5200-fec",
 +	},
++	{ }
 +};
-+/* Prevent autoload during developpment phase ... */
-+/* MODULE_DEVICE_TABLE(of, mpc52xx_ac97_of_match); */
 +
++MODULE_DEVICE_TABLE(of, mpc52xx_fec_match);
 +
-+static struct of_platform_driver mpc52xx_ac97_of_driver = {
++static struct of_platform_driver mpc52xx_fec_driver = {
 +	.owner		= THIS_MODULE,
-+	.name		= DRV_NAME,
-+	.match_table	= mpc52xx_ac97_of_match,
-+	.probe		= mpc52xx_ac97_probe,
-+	.remove		= mpc52xx_ac97_remove,
++	.name		= DRIVER_NAME,
++	.match_table	= mpc52xx_fec_match,
++	.probe		= mpc52xx_fec_probe,
++	.remove		= mpc52xx_fec_remove,
++#ifdef CONFIG_PM
++/*	.suspend	= mpc52xx_fec_of_suspend,	TODO */
++/*	.resume		= mpc52xx_fec_of_resume,	TODO */
++#endif
 +	.driver		= {
-+		.name	= DRV_NAME,
++		.name		= DRIVER_NAME,
 +	},
 +};
 +
@@ -914,45 +916,947 @@ index 0000000..20e2bf8
 +/* ======================================================================== */
 +
 +static int __init
-+mpc52xx_ac97_init(void)
++mpc52xx_fec_init(void)
 +{
-+	int rv;
-+
-+	/* FIXME BIG FAT EFIKA HACK */
-+	{
-+		void *mbar;
-+		mbar = ioremap(0xf0000000, 0x100000);
-+		printk(KERN_INFO "EFIKA HACK: port_config %08x\n", in_be32(mbar + 0xb00));
-+		out_be32(mbar + 0xb00, 0x01051124);
-+		printk(KERN_INFO "EFIKA HACK: port_config %08x\n", in_be32(mbar + 0xb00));
-+		iounmap(mbar);
-+	}
-+	/* ------------------------ */
-+
-+	printk(KERN_INFO "Sound: MPC52xx PSC AC97 driver\n");
-+
-+	rv = of_register_platform_driver(&mpc52xx_ac97_of_driver);
-+	if (rv) {
-+		printk(KERN_ERR DRV_NAME ": "
-+			"of_register_platform_driver failed (%i)\n", rv);
-+		return rv;
-+	}
-+
-+	return 0;
++	return of_register_platform_driver(&mpc52xx_fec_driver);
 +}
 +
 +static void __exit
-+mpc52xx_ac97_exit(void)
++mpc52xx_fec_exit(void)
 +{
-+	of_unregister_platform_driver(&mpc52xx_ac97_of_driver);
++	of_unregister_platform_driver(&mpc52xx_fec_driver);
 +}
 +
-+module_init(mpc52xx_ac97_init);
-+module_exit(mpc52xx_ac97_exit);
 +
-+MODULE_AUTHOR("Sylvain Munaut <tnt@246tNt.com>");
-+MODULE_DESCRIPTION(DRV_NAME ": Freescale MPC52xx PSC AC97 driver");
++module_init(mpc52xx_fec_init);
++module_exit(mpc52xx_fec_exit);
++
 +MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Dale Farnsworth");
++MODULE_DESCRIPTION("Ethernet driver for the Freescale MPC52xx FEC");
 +
+diff --git a/drivers/net/fec_mpc52xx/fec.h b/drivers/net/fec_mpc52xx/fec.h
+new file mode 100644
+index 0000000..ef80b0b
+--- /dev/null
++++ b/drivers/net/fec_mpc52xx/fec.h
+@@ -0,0 +1,306 @@
++/*
++ * drivers/net/fec_mpc52xx/fec.h
++ *
++ * Driver for the MPC5200 Fast Ethernet Controller
++ *
++ * Author: Dale Farnsworth <dfarnsworth@mvista.com>
++ *
++ * 2003-2004 (c) MontaVista, Software, Inc.  This file is licensed under
++ * the terms of the GNU General Public License version 2.  This program
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
++ */
++
++#ifndef __DRIVERS_NET_MPC52XX_FEC_H__
++#define __DRIVERS_NET_MPC52XX_FEC_H__
++
++/* Tunable constant */
++/* FEC_RX_BUFFER_SIZE includes 4 bytes for CRC32 */
++#define FEC_RX_BUFFER_SIZE	1522	/* max receive packet size */
++#define FEC_RX_NUM_BD		64
++#define FEC_TX_NUM_BD		64
++
++#define FEC_RESET_DELAY		50 	/* uS */
++
++#define FEC_WATCHDOG_TIMEOUT	((400*HZ)/1000)
++
++struct fec_priv {
++	int full_duplex;
++	int tx_full;
++	int r_irq;
++	int t_irq;
++	u32 last_transmit_time;
++	struct mpc52xx_fec *fec;
++	struct bcom_task *rx_dmatsk;
++	struct bcom_task *tx_dmatsk;
++	spinlock_t lock;
++	unsigned long open_time;
++	struct net_device_stats stats;
++#ifdef CONFIG_USE_MDIO
++	uint phy_id;
++	uint phy_id_done;
++	uint phy_status;
++	uint phy_speed;
++	phy_info_t *phy;
++	struct tasklet_struct phy_task;
++	uint sequence_done;
++	uint phy_addr;
++	struct timer_list phy_timer_list;
++	u16 old_status;
++#endif	/* CONFIG_USE_MDIO */
++};
++
++
++/* ======================================================================== */
++/* Hardware register sets & bits                                            */
++/* ======================================================================== */
++
++struct mpc52xx_fec {
++	u32 fec_id;			/* FEC + 0x000 */
++	u32 ievent;			/* FEC + 0x004 */
++	u32 imask;			/* FEC + 0x008 */
++
++	u32 reserved0[1];		/* FEC + 0x00C */
++	u32 r_des_active;		/* FEC + 0x010 */
++	u32 x_des_active;		/* FEC + 0x014 */
++	u32 r_des_active_cl;		/* FEC + 0x018 */
++	u32 x_des_active_cl;		/* FEC + 0x01C */
++	u32 ivent_set;			/* FEC + 0x020 */
++	u32 ecntrl;			/* FEC + 0x024 */
++
++	u32 reserved1[6];		/* FEC + 0x028-03C */
++	u32 mii_data;			/* FEC + 0x040 */
++	u32 mii_speed;			/* FEC + 0x044 */
++	u32 mii_status;			/* FEC + 0x048 */
++
++	u32 reserved2[5];		/* FEC + 0x04C-05C */
++	u32 mib_data;			/* FEC + 0x060 */
++	u32 mib_control;		/* FEC + 0x064 */
++
++	u32 reserved3[6];		/* FEC + 0x068-7C */
++	u32 r_activate;			/* FEC + 0x080 */
++	u32 r_cntrl;			/* FEC + 0x084 */
++	u32 r_hash;			/* FEC + 0x088 */
++	u32 r_data;			/* FEC + 0x08C */
++	u32 ar_done;			/* FEC + 0x090 */
++	u32 r_test;			/* FEC + 0x094 */
++	u32 r_mib;			/* FEC + 0x098 */
++	u32 r_da_low;			/* FEC + 0x09C */
++	u32 r_da_high;			/* FEC + 0x0A0 */
++
++	u32 reserved4[7];		/* FEC + 0x0A4-0BC */
++	u32 x_activate;			/* FEC + 0x0C0 */
++	u32 x_cntrl;			/* FEC + 0x0C4 */
++	u32 backoff;			/* FEC + 0x0C8 */
++	u32 x_data;			/* FEC + 0x0CC */
++	u32 x_status;			/* FEC + 0x0D0 */
++	u32 x_mib;			/* FEC + 0x0D4 */
++	u32 x_test;			/* FEC + 0x0D8 */
++	u32 fdxfc_da1;			/* FEC + 0x0DC */
++	u32 fdxfc_da2;			/* FEC + 0x0E0 */
++	u32 paddr1;			/* FEC + 0x0E4 */
++	u32 paddr2;			/* FEC + 0x0E8 */
++	u32 op_pause;			/* FEC + 0x0EC */
++
++	u32 reserved5[4];		/* FEC + 0x0F0-0FC */
++	u32 instr_reg;			/* FEC + 0x100 */
++	u32 context_reg;		/* FEC + 0x104 */
++	u32 test_cntrl;			/* FEC + 0x108 */
++	u32 acc_reg;			/* FEC + 0x10C */
++	u32 ones;			/* FEC + 0x110 */
++	u32 zeros;			/* FEC + 0x114 */
++	u32 iaddr1;			/* FEC + 0x118 */
++	u32 iaddr2;			/* FEC + 0x11C */
++	u32 gaddr1;			/* FEC + 0x120 */
++	u32 gaddr2;			/* FEC + 0x124 */
++	u32 random;			/* FEC + 0x128 */
++	u32 rand1;			/* FEC + 0x12C */
++	u32 tmp;			/* FEC + 0x130 */
++
++	u32 reserved6[3];		/* FEC + 0x134-13C */
++	u32 fifo_id;			/* FEC + 0x140 */
++	u32 x_wmrk;			/* FEC + 0x144 */
++	u32 fcntrl;			/* FEC + 0x148 */
++	u32 r_bound;			/* FEC + 0x14C */
++	u32 r_fstart;			/* FEC + 0x150 */
++	u32 r_count;			/* FEC + 0x154 */
++	u32 r_lag;			/* FEC + 0x158 */
++	u32 r_read;			/* FEC + 0x15C */
++	u32 r_write;			/* FEC + 0x160 */
++	u32 x_count;			/* FEC + 0x164 */
++	u32 x_lag;			/* FEC + 0x168 */
++	u32 x_retry;			/* FEC + 0x16C */
++	u32 x_write;			/* FEC + 0x170 */
++	u32 x_read;			/* FEC + 0x174 */
++
++	u32 reserved7[2];		/* FEC + 0x178-17C */
++	u32 fm_cntrl;			/* FEC + 0x180 */
++	u32 rfifo_data;			/* FEC + 0x184 */
++	u32 rfifo_status;		/* FEC + 0x188 */
++	u32 rfifo_cntrl;		/* FEC + 0x18C */
++	u32 rfifo_lrf_ptr;		/* FEC + 0x190 */
++	u32 rfifo_lwf_ptr;		/* FEC + 0x194 */
++	u32 rfifo_alarm;		/* FEC + 0x198 */
++	u32 rfifo_rdptr;		/* FEC + 0x19C */
++	u32 rfifo_wrptr;		/* FEC + 0x1A0 */
++	u32 tfifo_data;			/* FEC + 0x1A4 */
++	u32 tfifo_status;		/* FEC + 0x1A8 */
++	u32 tfifo_cntrl;		/* FEC + 0x1AC */
++	u32 tfifo_lrf_ptr;		/* FEC + 0x1B0 */
++	u32 tfifo_lwf_ptr;		/* FEC + 0x1B4 */
++	u32 tfifo_alarm;		/* FEC + 0x1B8 */
++	u32 tfifo_rdptr;		/* FEC + 0x1BC */
++	u32 tfifo_wrptr;		/* FEC + 0x1C0 */
++
++	u32 reset_cntrl;		/* FEC + 0x1C4 */
++	u32 xmit_fsm;			/* FEC + 0x1C8 */
++
++	u32 reserved8[3];		/* FEC + 0x1CC-1D4 */
++	u32 rdes_data0;			/* FEC + 0x1D8 */
++	u32 rdes_data1;			/* FEC + 0x1DC */
++	u32 r_length;			/* FEC + 0x1E0 */
++	u32 x_length;			/* FEC + 0x1E4 */
++	u32 x_addr;			/* FEC + 0x1E8 */
++	u32 cdes_data;			/* FEC + 0x1EC */
++	u32 status;			/* FEC + 0x1F0 */
++	u32 dma_control;		/* FEC + 0x1F4 */
++	u32 des_cmnd;			/* FEC + 0x1F8 */
++	u32 data;			/* FEC + 0x1FC */
++
++	u32 rmon_t_drop;		/* FEC + 0x200 */
++	u32 rmon_t_packets;		/* FEC + 0x204 */
++	u32 rmon_t_bc_pkt;		/* FEC + 0x208 */
++	u32 rmon_t_mc_pkt;		/* FEC + 0x20C */
++	u32 rmon_t_crc_align;		/* FEC + 0x210 */
++	u32 rmon_t_undersize;		/* FEC + 0x214 */
++	u32 rmon_t_oversize;		/* FEC + 0x218 */
++	u32 rmon_t_frag;		/* FEC + 0x21C */
++	u32 rmon_t_jab;			/* FEC + 0x220 */
++	u32 rmon_t_col;			/* FEC + 0x224 */
++	u32 rmon_t_p64;			/* FEC + 0x228 */
++	u32 rmon_t_p65to127;		/* FEC + 0x22C */
++	u32 rmon_t_p128to255;		/* FEC + 0x230 */
++	u32 rmon_t_p256to511;		/* FEC + 0x234 */
++	u32 rmon_t_p512to1023;		/* FEC + 0x238 */
++	u32 rmon_t_p1024to2047;		/* FEC + 0x23C */
++	u32 rmon_t_p_gte2048;		/* FEC + 0x240 */
++	u32 rmon_t_octets;		/* FEC + 0x244 */
++	u32 ieee_t_drop;		/* FEC + 0x248 */
++	u32 ieee_t_frame_ok;		/* FEC + 0x24C */
++	u32 ieee_t_1col;		/* FEC + 0x250 */
++	u32 ieee_t_mcol;		/* FEC + 0x254 */
++	u32 ieee_t_def;			/* FEC + 0x258 */
++	u32 ieee_t_lcol;		/* FEC + 0x25C */
++	u32 ieee_t_excol;		/* FEC + 0x260 */
++	u32 ieee_t_macerr;		/* FEC + 0x264 */
++	u32 ieee_t_cserr;		/* FEC + 0x268 */
++	u32 ieee_t_sqe;			/* FEC + 0x26C */
++	u32 t_fdxfc;			/* FEC + 0x270 */
++	u32 ieee_t_octets_ok;		/* FEC + 0x274 */
++
++	u32 reserved9[2];		/* FEC + 0x278-27C */
++	u32 rmon_r_drop;		/* FEC + 0x280 */
++	u32 rmon_r_packets;		/* FEC + 0x284 */
++	u32 rmon_r_bc_pkt;		/* FEC + 0x288 */
++	u32 rmon_r_mc_pkt;		/* FEC + 0x28C */
++	u32 rmon_r_crc_align;		/* FEC + 0x290 */
++	u32 rmon_r_undersize;		/* FEC + 0x294 */
++	u32 rmon_r_oversize;		/* FEC + 0x298 */
++	u32 rmon_r_frag;		/* FEC + 0x29C */
++	u32 rmon_r_jab;			/* FEC + 0x2A0 */
++
++	u32 rmon_r_resvd_0;		/* FEC + 0x2A4 */
++
++	u32 rmon_r_p64;			/* FEC + 0x2A8 */
++	u32 rmon_r_p65to127;		/* FEC + 0x2AC */
++	u32 rmon_r_p128to255;		/* FEC + 0x2B0 */
++	u32 rmon_r_p256to511;		/* FEC + 0x2B4 */
++	u32 rmon_r_p512to1023;		/* FEC + 0x2B8 */
++	u32 rmon_r_p1024to2047;		/* FEC + 0x2BC */
++	u32 rmon_r_p_gte2048;		/* FEC + 0x2C0 */
++	u32 rmon_r_octets;		/* FEC + 0x2C4 */
++	u32 ieee_r_drop;		/* FEC + 0x2C8 */
++	u32 ieee_r_frame_ok;		/* FEC + 0x2CC */
++	u32 ieee_r_crc;			/* FEC + 0x2D0 */
++	u32 ieee_r_align;		/* FEC + 0x2D4 */
++	u32 r_macerr;			/* FEC + 0x2D8 */
++	u32 r_fdxfc;			/* FEC + 0x2DC */
++	u32 ieee_r_octets_ok;		/* FEC + 0x2E0 */
++
++	u32 reserved10[7];		/* FEC + 0x2E4-2FC */
++
++	u32 reserved11[64];		/* FEC + 0x300-3FF */
++};
++
++#define	FEC_MIB_DISABLE			0x80000000
++
++#define	FEC_IEVENT_HBERR		0x80000000
++#define	FEC_IEVENT_BABR			0x40000000
++#define	FEC_IEVENT_BABT			0x20000000
++#define	FEC_IEVENT_GRA			0x10000000
++#define	FEC_IEVENT_TFINT		0x08000000
++#define	FEC_IEVENT_MII			0x00800000
++#define	FEC_IEVENT_LATE_COL		0x00200000
++#define	FEC_IEVENT_COL_RETRY_LIM	0x00100000
++#define	FEC_IEVENT_XFIFO_UN		0x00080000
++#define	FEC_IEVENT_XFIFO_ERROR		0x00040000
++#define	FEC_IEVENT_RFIFO_ERROR		0x00020000
++
++#define	FEC_IMASK_HBERR			0x80000000
++#define	FEC_IMASK_BABR			0x40000000
++#define	FEC_IMASK_BABT			0x20000000
++#define	FEC_IMASK_GRA			0x10000000
++#define	FEC_IMASK_MII			0x00800000
++#define	FEC_IMASK_LATE_COL		0x00200000
++#define	FEC_IMASK_COL_RETRY_LIM		0x00100000
++#define	FEC_IMASK_XFIFO_UN		0x00080000
++#define	FEC_IMASK_XFIFO_ERROR		0x00040000
++#define	FEC_IMASK_RFIFO_ERROR		0x00020000
++
++#define	FEC_RCNTRL_MAX_FL_SHIFT		16
++#define	FEC_RCNTRL_LOOP			0x01
++#define	FEC_RCNTRL_DRT			0x02
++#define	FEC_RCNTRL_MII_MODE		0x04
++#define	FEC_RCNTRL_PROM			0x08
++#define	FEC_RCNTRL_BC_REJ		0x10
++#define	FEC_RCNTRL_FCE			0x20
++
++#define	FEC_TCNTRL_GTS			0x00000001
++#define	FEC_TCNTRL_HBC			0x00000002
++#define	FEC_TCNTRL_FDEN			0x00000004
++#define	FEC_TCNTRL_TFC_PAUSE		0x00000008
++#define	FEC_TCNTRL_RFC_PAUSE		0x00000010
++
++#define	FEC_ECNTRL_RESET		0x00000001
++#define	FEC_ECNTRL_ETHER_EN		0x00000002
++
++struct mibCounters {
++	unsigned int byteReceived;
++	unsigned int byteSent;
++	unsigned int framesReceived;
++	unsigned int framesSent;
++	unsigned int totalByteReceived;
++	unsigned int totalFramesReceived;
++	unsigned int broadcastFramesReceived;
++	unsigned int multicastFramesReceived;
++	unsigned int cRCError;
++	unsigned int oversizeFrames;
++	unsigned int fragments;
++	unsigned int jabber;
++	unsigned int collision;
++	unsigned int lateCollision;
++	unsigned int frames64;
++	unsigned int frames65_127;
++	unsigned int frames128_255;
++	unsigned int frames256_511;
++	unsigned int frames512_1023;
++	unsigned int frames1024_MaxSize;
++	unsigned int macRxError;
++	unsigned int droppedFrames;
++	unsigned int outMulticastFrames;
++	unsigned int outBroadcastFrames;
++	unsigned int undersizeFrames;
++};
++
++
++#endif	/* __DRIVERS_NET_MPC52XX_FEC_H__ */
+diff --git a/drivers/net/fec_mpc52xx/fec_phy.c b/drivers/net/fec_mpc52xx/fec_phy.c
+new file mode 100644
+index 0000000..a032a81
+--- /dev/null
++++ b/drivers/net/fec_mpc52xx/fec_phy.c
+@@ -0,0 +1,526 @@
++/*
++ * arch/ppc/52xx_io/fec_phy.c
++ *
++ * Driver for the MPC5200 Fast Ethernet Controller
++ * Based heavily on the MII support for the MPC8xx by Dan Malek
++ *
++ * Author: Dale Farnsworth <dfarnsworth@mvista.com>
++ *
++ * 2003-2004 (c) MontaVista, Software, Inc.  This file is licensed under
++ * the terms of the GNU General Public License version 2.  This program
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
++ */
++
++#include <linux/kernel.h>
++#include <linux/types.h>
++#include <linux/netdevice.h>
++#include <linux/mii.h>
++#include <linux/ethtool.h>
++#include <linux/mii.h>
++#include <asm/io.h>
++#include <asm/mpc52xx.h>
++#include <sysdev/bestcomm/bestcomm.h>
++#include <sysdev/bestcomm/fec.h>
++#include "fec_phy.h"
++#include "fec.h"
++
++static int mpc52xx_netdev_ethtool_ioctl(struct net_device *dev, void *useraddr);
++
++/* MII processing.  We keep this as simple as possible.  Requests are
++ * placed on the list (if there is room).  When the request is finished
++ * by the MII, an optional function may be called.
++ */
++typedef struct mii_list {
++	uint	mii_regval;
++	void	(*mii_func)(uint val, struct net_device *dev, uint data);
++	struct	mii_list *mii_next;
++	uint	mii_data;
++} mii_list_t;
++
++#define		NMII	20
++mii_list_t	mii_cmds[NMII];
++mii_list_t	*mii_free;
++mii_list_t	*mii_head;
++mii_list_t	*mii_tail;
++
++typedef struct mdio_read_data {
++	__u16 regval;
++	struct task_struct *sleeping_task;
++} mdio_read_data_t;
++
++static int mii_queue(struct net_device *dev, int request,
++		void (*func)(uint, struct net_device *, uint), uint data);
++
++/* Make MII read/write commands for the FEC.
++ * */
++#define mk_mii_read(REG)	(0x60020000 | ((REG & 0x1f) << 18))
++#define mk_mii_write(REG, VAL)	(0x50020000 | ((REG & 0x1f) << 18) | \
++							(VAL & 0xffff))
++#define mk_mii_end	0
++
++/* Register definitions for the PHY.
++*/
++
++#define MII_REG_CR	 0	/* Control Register */
++#define MII_REG_SR	 1	/* Status Register */
++#define MII_REG_PHYIR1	 2	/* PHY Identification Register 1 */
++#define MII_REG_PHYIR2	 3	/* PHY Identification Register 2 */
++#define MII_REG_ANAR	 4	/* A-N Advertisement Register */
++#define MII_REG_ANLPAR	 5	/* A-N Link Partner Ability Register */
++#define MII_REG_ANER	 6	/* A-N Expansion Register */
++#define MII_REG_ANNPTR	 7	/* A-N Next Page Transmit Register */
++#define MII_REG_ANLPRNPR 8	/* A-N Link Partner Received Next Page Reg. */
++
++/* values for phy_status */
++
++#define PHY_CONF_ANE	0x0001	/* 1 auto-negotiation enabled */
++#define PHY_CONF_LOOP	0x0002	/* 1 loopback mode enabled */
++#define PHY_CONF_SPMASK	0x00f0	/* mask for speed */
++#define PHY_CONF_10HDX	0x0010	/* 10 Mbit half duplex supported */
++#define PHY_CONF_10FDX	0x0020	/* 10 Mbit full duplex supported */
++#define PHY_CONF_100HDX	0x0040	/* 100 Mbit half duplex supported */
++#define PHY_CONF_100FDX	0x0080	/* 100 Mbit full duplex supported */
++
++#define PHY_STAT_LINK	0x0100	/* 1 up - 0 down */
++#define PHY_STAT_FAULT	0x0200	/* 1 remote fault */
++#define PHY_STAT_ANC	0x0400	/* 1 auto-negotiation complete	*/
++#define PHY_STAT_SPMASK	0xf000	/* mask for speed */
++#define PHY_STAT_10HDX	0x1000	/* 10 Mbit half duplex selected	*/
++#define PHY_STAT_10FDX	0x2000	/* 10 Mbit full duplex selected	*/
++#define PHY_STAT_100HDX	0x4000	/* 100 Mbit half duplex selected */
++#define PHY_STAT_100FDX	0x8000	/* 100 Mbit full duplex selected */
++
++void fec_mii(struct net_device *dev)
++{
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++	struct mpc52xx_fec *fec = priv->fec;
++	mii_list_t	*mip;
++	uint		mii_reg;
++
++	mii_reg = in_be32(&fec->mii_data);
++
++	if ((mip = mii_head) == NULL) {
++		printk(KERN_ERR "MII and no head!\n");
++		return;
++	}
++
++	if (mip->mii_func != NULL)
++		(*(mip->mii_func))(mii_reg, dev, mip->mii_data);
++
++	mii_head = mip->mii_next;
++	mip->mii_next = mii_free;
++	mii_free = mip;
++
++	if ((mip = mii_head) != NULL)
++		out_be32(&fec->mii_data, mip->mii_regval);
++}
++
++static int mii_queue(struct net_device *dev, int regval,
++				void (*func)(uint, struct net_device *, uint),
++				uint data)
++{
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++	struct mpc52xx_fec *fec = priv->fec;
++	mii_list_t	*mip;
++	int		retval;
++
++	/* Add PHY address to register command.
++	*/
++	regval |= priv->phy_addr << 23;
++
++	retval = 0;
++
++	if ((mip = mii_free) != NULL) {
++		mii_free = mip->mii_next;
++		mip->mii_regval = regval;
++		mip->mii_func = func;
++		mip->mii_next = NULL;
++		mip->mii_data = data;
++		if (mii_head) {
++			mii_tail->mii_next = mip;
++			mii_tail = mip;
++		} else {
++			mii_head = mii_tail = mip;
++			out_be32(&fec->mii_data, regval);
++		}
++	} else
++		retval = 1;
++
++	return retval;
++}
++
++static void mii_do_cmd(struct net_device *dev, const phy_cmd_t *c)
++{
++	int k;
++
++	if (!c)
++		return;
++
++	for (k = 0; (c+k)->mii_data != mk_mii_end; k++)
++		mii_queue(dev, (c+k)->mii_data, (c+k)->funct, 0);
++}
++
++static void mii_parse_sr(uint mii_reg, struct net_device *dev, uint data)
++{
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++	uint s = priv->phy_status;
++
++	s &= ~(PHY_STAT_LINK | PHY_STAT_FAULT | PHY_STAT_ANC);
++
++	if (mii_reg & 0x0004)
++		s |= PHY_STAT_LINK;
++	if (mii_reg & 0x0010)
++		s |= PHY_STAT_FAULT;
++	if (mii_reg & 0x0020)
++		s |= PHY_STAT_ANC;
++
++	priv->phy_status = s;
++}
++
++static void mii_parse_cr(uint mii_reg, struct net_device *dev, uint data)
++{
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++	uint s = priv->phy_status;
++
++	s &= ~(PHY_CONF_ANE | PHY_CONF_LOOP);
++
++	if (mii_reg & 0x1000)
++		s |= PHY_CONF_ANE;
++	if (mii_reg & 0x4000)
++		s |= PHY_CONF_LOOP;
++
++	priv->phy_status = s;
++}
++
++static void mii_parse_anar(uint mii_reg, struct net_device *dev, uint data)
++{
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++	uint s = priv->phy_status;
++
++	s &= ~(PHY_CONF_SPMASK);
++
++	if (mii_reg & 0x0020)
++		s |= PHY_CONF_10HDX;
++	if (mii_reg & 0x0040)
++		s |= PHY_CONF_10FDX;
++	if (mii_reg & 0x0080)
++		s |= PHY_CONF_100HDX;
++	if (mii_reg & 0x0100)
++		s |= PHY_CONF_100FDX;
++
++	priv->phy_status = s;
++}
++
++/* ------------------------------------------------------------------------- */
++/* Generic PHY support.  Should work for all PHYs, but does not support link
++ * change interrupts.
++ */
++static phy_info_t phy_info_generic = {
++	0x00000000, /* 0-->match any PHY */
++	"GENERIC",
++
++	(const phy_cmd_t []) {	/* config */
++		/* advertise only half-duplex capabilities */
++		{ mk_mii_write(MII_ADVERTISE, MII_ADVERTISE_HALF),
++			mii_parse_anar },
++
++		/* enable auto-negotiation */
++		{ mk_mii_write(MII_BMCR, BMCR_ANENABLE), mii_parse_cr },
++		{ mk_mii_end, }
++	},
++	(const phy_cmd_t []) {	/* startup */
++		/* restart auto-negotiation */
++		{ mk_mii_write(MII_BMCR, (BMCR_ANENABLE | BMCR_ANRESTART)),
++			NULL },
++		{ mk_mii_end, }
++	},
++	(const phy_cmd_t []) { /* ack_int */
++		/* We don't actually use the ack_int table with a generic
++		 * PHY, but putting a reference to mii_parse_sr here keeps
++		 * us from getting a compiler warning about unused static
++		 * functions in the case where we only compile in generic
++		 * PHY support.
++		 */
++		{ mk_mii_read(MII_BMSR), mii_parse_sr },
++		{ mk_mii_end, }
++	},
++	(const phy_cmd_t []) {	/* shutdown */
++		{ mk_mii_end, }
++	},
++};
++/* -------------------------------------------------------------------- */
++
++/* register definitions for the 971 */
++
++#define MII_LXT971_PCR	16	/* Port Control Register	*/
++#define MII_LXT971_SR2	17	/* Status Register 2		*/
++#define MII_LXT971_IER	18	/* Interrupt Enable Register	*/
++#define MII_LXT971_ISR	19	/* Interrupt Status Register	*/
++#define MII_LXT971_LCR	20	/* LED Control Register		*/
++#define MII_LXT971_TCR	30	/* Transmit Control Register	*/
++
++static void mii_parse_lxt971_sr2(uint mii_reg, struct net_device *dev, uint data)
++{
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++	uint s = priv->phy_status;
++
++	s &= ~(PHY_STAT_SPMASK);
++
++	if (mii_reg & 0x4000) {
++		if (mii_reg & 0x0200)
++			s |= PHY_STAT_100FDX;
++		else
++			s |= PHY_STAT_100HDX;
++	} else {
++		if (mii_reg & 0x0200)
++			s |= PHY_STAT_10FDX;
++		else
++			s |= PHY_STAT_10HDX;
++	}
++	if (mii_reg & 0x0008)
++		s |= PHY_STAT_FAULT;
++
++	priv->phy_status = s;
++}
++
++static phy_info_t phy_info_lxt971 = {
++	0x0001378e,
++	"LXT971",
++
++	(const phy_cmd_t []) {	/* config */
++		{ mk_mii_write(MII_REG_ANAR, 0x0A1), NULL }, /* 10/100, HD */
++		{ mk_mii_read(MII_REG_CR), mii_parse_cr },
++		{ mk_mii_read(MII_REG_ANAR), mii_parse_anar },
++		{ mk_mii_end, }
++	},
++	(const phy_cmd_t []) {	/* startup - enable interrupts */
++		{ mk_mii_write(MII_LXT971_IER, 0x00f2), NULL },
++		{ mk_mii_write(MII_REG_CR, 0x1200), NULL }, /* autonegotiate */
++
++		/* Somehow does the 971 tell me that the link is down
++		 * the first read after power-up.
++		 * read here to get a valid value in ack_int */
++
++		{ mk_mii_read(MII_REG_SR), mii_parse_sr },
++		{ mk_mii_end, }
++	},
++	(const phy_cmd_t []) { /* ack_int */
++		/* find out the current status */
++
++		{ mk_mii_read(MII_REG_SR), mii_parse_sr },
++		{ mk_mii_read(MII_LXT971_SR2), mii_parse_lxt971_sr2 },
++
++		/* we only need to read ISR to acknowledge */
++
++		{ mk_mii_read(MII_LXT971_ISR), NULL },
++		{ mk_mii_end, }
++	},
++	(const phy_cmd_t []) {	/* shutdown - disable interrupts */
++		{ mk_mii_write(MII_LXT971_IER, 0x0000), NULL },
++		{ mk_mii_end, }
++	},
++};
++
++static phy_info_t *phy_info[] = {
++	&phy_info_lxt971,
++	/* Generic PHY support.  This must be the last PHY in the table.
++	 * It will be used to support any PHY that doesn't match a previous
++	 * entry in the table.
++	 */
++	&phy_info_generic,
++	NULL
++};
++
++static void mii_display_config(struct net_device *dev)
++{
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++	uint s = priv->phy_status;
++
++	printk(KERN_INFO "%s: config: auto-negotiation ", dev->name);
++
++	if (s & PHY_CONF_ANE)
++		printk("on");
++	else
++		printk("off");
++
++	if (s & PHY_CONF_100FDX)
++		printk(", 100FDX");
++	if (s & PHY_CONF_100HDX)
++		printk(", 100HDX");
++	if (s & PHY_CONF_10FDX)
++		printk(", 10FDX");
++	if (s & PHY_CONF_10HDX)
++		printk(", 10HDX");
++	if (!(s & PHY_CONF_SPMASK))
++		printk(", No speed/duplex selected?");
++
++	if (s & PHY_CONF_LOOP)
++		printk(", loopback enabled");
++
++	printk(".\n");
++
++	priv->sequence_done = 1;
++}
++
++static void mii_queue_config(uint mii_reg, struct net_device *dev, uint data)
++{
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++
++	priv->phy_task.func = (void *)mii_display_config;
++	priv->phy_task.data = (unsigned long)dev;
++	tasklet_schedule(&priv->phy_task);
++}
++
++
++phy_cmd_t phy_cmd_config[] =  { { mk_mii_read(MII_REG_CR), mii_queue_config },
++				{ mk_mii_end, } };
++
++
++/* Read remainder of PHY ID.
++*/
++static void mii_discover_phy3(uint mii_reg, struct net_device *dev, uint data)
++{
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++	int	i;
++
++	priv->phy_id |= (mii_reg & 0xffff);
++
++	for (i = 0; phy_info[i]; i++) {
++		if (phy_info[i]->id == (priv->phy_id >> 4) || !phy_info[i]->id)
++			break;
++		if (phy_info[i]->id == 0)	/* check generic entry */
++			break;
++	}
++
++	if (!phy_info[i])
++		panic("%s: PHY id 0x%08x is not supported!\n",
++			dev->name, priv->phy_id);
++
++	priv->phy = phy_info[i];
++	priv->phy_id_done = 1;
++
++	printk(KERN_INFO "%s: Phy @ 0x%x, type %s (0x%08x)\n",
++		dev->name, priv->phy_addr, priv->phy->name, priv->phy_id);
++}
++
++/* Scan all of the MII PHY addresses looking for someone to respond
++ * with a valid ID.  This usually happens quickly.
++ */
++static void mii_discover_phy(uint mii_reg, struct net_device *dev, uint data)
++{
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++	uint	phytype;
++
++	if ((phytype = (mii_reg & 0xffff)) != 0xffff) {
++		/* Got first part of ID, now get remainder.
++		*/
++		priv->phy_id = phytype << 16;
++		mii_queue(dev, mk_mii_read(MII_REG_PHYIR2), mii_discover_phy3,
++									0);
++	} else {
++		priv->phy_addr++;
++		if (priv->phy_addr < 32)
++			mii_queue(dev, mk_mii_read(MII_REG_PHYIR1),
++							mii_discover_phy, 0);
++		else
++			printk(KERN_ERR "fec: No PHY device found.\n");
++	}
++}
++
++static int mpc52xx_netdev_ethtool_ioctl(struct net_device *dev, void *useraddr)
++{
++	__u32 ethcmd;
++
++	if (copy_from_user(&ethcmd, useraddr, sizeof ethcmd))
++		return -EFAULT;
++
++	switch (ethcmd) {
++
++		/* Get driver info */
++	case ETHTOOL_GDRVINFO:{
++			struct ethtool_drvinfo info = { ETHTOOL_GDRVINFO };
++			strncpy(info.driver, "MPC5200 FEC",
++				sizeof info.driver - 1);
++			if (copy_to_user(useraddr, &info, sizeof info))
++				return -EFAULT;
++			return 0;
++		}
++		/* get message-level */
++	case ETHTOOL_GMSGLVL:{
++			struct ethtool_value edata = { ETHTOOL_GMSGLVL };
++			edata.data = 0;	/* XXX */
++			if (copy_to_user(useraddr, &edata, sizeof edata))
++				return -EFAULT;
++			return 0;
++		}
++		/* set message-level */
++	case ETHTOOL_SMSGLVL:{
++			struct ethtool_value edata;
++			if (copy_from_user(&edata, useraddr, sizeof edata))
++				return -EFAULT;
++			return 0;
++		}
++	}
++	return -EOPNOTSUPP;
++}
++
++int fec_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
++{
++	int retval;
++
++	switch (cmd) {
++	case SIOCETHTOOL:
++		retval = mpc52xx_netdev_ethtool_ioctl(
++					dev, (void *) rq->ifr_data);
++		break;
++
++	default:
++		retval = -EOPNOTSUPP;
++		break;
++	}
++	return retval;
++}
++
++void fec_mii_init(struct net_device *dev)
++{
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++	int i;
++
++	for (i=0; i<NMII-1; i++)
++		mii_cmds[i].mii_next = &mii_cmds[i+1];
++	mii_free = mii_cmds;
++
++	/* Queue up command to detect the PHY and initialize the
++	 * remainder of the interface.
++	 */
++	priv->phy_id_done = 0;
++	priv->phy_addr = 0;
++	mii_queue(dev, mk_mii_read(MII_REG_PHYIR1), mii_discover_phy, 0);
++
++	priv->old_status = 0;
++}
++
++int fec_mii_wait(struct net_device *dev)
++{
++	struct fec_priv *priv = (struct fec_priv *)dev->priv;
++
++	if (!priv->sequence_done) {
++		if (!priv->phy) {
++			printk("KERN_ERR fec_open: PHY not configured\n");
++			return -ENODEV;		/* No PHY we understand */
++		}
++
++		mii_do_cmd(dev, priv->phy->config);
++		mii_do_cmd(dev, phy_cmd_config); /* display configuration */
++		while(!priv->sequence_done)
++			schedule();
++
++		mii_do_cmd(dev, priv->phy->startup);
++	}
++	return 0;
++}
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Dale Farnsworth");
++MODULE_DESCRIPTION("PHY driver for Motorola MPC52xx FEC");
+diff --git a/drivers/net/fec_mpc52xx/fec_phy.h b/drivers/net/fec_mpc52xx/fec_phy.h
+new file mode 100644
+index 0000000..5c23bff
+--- /dev/null
++++ b/drivers/net/fec_mpc52xx/fec_phy.h
+@@ -0,0 +1,73 @@
++/*
++ * arch/ppc/52xx_io/fec_phy.h
++ *
++ * Driver for the MPC5200 Fast Ethernet Controller
++ * Based heavily on the MII support for the MPC8xx by Dan Malek
++ *
++ * Author: Dale Farnsworth <dfarnsworth@mvista.com>
++ *
++ * 2003-2004 (c) MontaVista, Software, Inc.  This file is licensed under
++ * the terms of the GNU General Public License version 2.  This program
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
++ */
++
++#ifdef CONFIG_USE_MDIO
++#define MII_ADVERTISE_HALF	(ADVERTISE_100HALF | ADVERTISE_10HALF | \
++				 ADVERTISE_CSMA)
++
++#define MII_ADVERTISE_ALL	(ADVERTISE_100FULL | ADVERTISE_10FULL | \
++				 MII_ADVERTISE_HALF)
++#ifdef PHY_INTERRUPT
++#define MII_ADVERTISE_DEFAULT	MII_ADVERTISE_ALL
++#else
++#define MII_ADVERTISE_DEFAULT	MII_ADVERTISE_HALF
++#endif
++
++#define MII_RCNTL_MODE		FEC_RCNTRL_MII_MODE
++#define set_phy_speed(fec, s)	out_be32(&fec->mii_speed, s)
++#define FEC_IMASK_ENABLE	0xf0fe0000
++
++typedef struct {
++	uint mii_data;
++	void (*funct)(uint mii_reg, struct net_device *dev, uint data);
++} phy_cmd_t;
++
++typedef struct {
++	uint id;
++	char *name;
++
++	const phy_cmd_t *config;
++	const phy_cmd_t *startup;
++	const phy_cmd_t *ack_int;
++	const phy_cmd_t *shutdown;
++} phy_info_t;
++
++#else
++#define MII_RCNTL_MODE		0
++#define set_phy_speed(fec, s)
++#define FEC_IMASK_ENABLE	0xf07e0000
++#define fec_mii_wait(dev)	0
++#define fec_mii(dev)	printk(KERN_WARNING "unexpected FEC_IEVENT_MII\n")
++#define fec_mii_init(dev)
++#endif	/* CONFIG_USE_MDIO */
++
++/* MII-related definitions */
++#define FEC_MII_DATA_ST		0x40000000	/* Start frame */
++#define FEC_MII_DATA_OP_RD	0x20000000	/* Perform read */
++#define FEC_MII_DATA_OP_WR	0x10000000	/* Perform write */
++#define FEC_MII_DATA_PA_MSK	0x0f800000	/* PHY Address mask */
++#define FEC_MII_DATA_RA_MSK	0x007c0000	/* PHY Register mask */
++#define FEC_MII_DATA_TA		0x00020000	/* Turnaround */
++#define FEC_MII_DATA_DATAMSK	0x00000fff	/* PHY data mask */
++
++#define FEC_MII_DATA_RA_SHIFT	0x12		/* MII reg addr bits */
++#define FEC_MII_DATA_PA_SHIFT	0x17		/* MII PHY addr bits */
++
++#define FEC_MII_SPEED		(5 * 2)
++
++extern void fec_mii_init(struct net_device *dev);
++extern int fec_mii_wait(struct net_device *dev);
++extern void fec_mii(struct net_device *dev);
++
++extern int fec_ioctl(struct net_device *, struct ifreq *rq, int cmd);
 -- 
 1.5.1.2
