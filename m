@@ -1,17 +1,19 @@
 Return-Path: <tnt@246tNt.com>
 Received: from mailgate103.isp.belgacom.be (mailgate103.isp.belgacom.be
-	[195.238.6.84]) by ozlabs.org (Postfix) with ESMTP id F3F70DDEC6
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 May 2007 06:32:25 +1000 (EST)
+	[195.238.6.84]) by ozlabs.org (Postfix) with ESMTP id 8F496DDEC8
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 May 2007 06:32:27 +1000 (EST)
 From: Sylvain Munaut <tnt@246tNt.com>
 To: Linux PPC dev ML <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 4/9] powerpc: BestComm core support for Freescale MPC5200
-Date: Sat, 12 May 2007 22:31:52 +0200
-Message-Id: <11790019234031-git-send-email-tnt@246tNt.com>
-In-Reply-To: <11790019223925-git-send-email-tnt@246tNt.com>
+Subject: [PATCH 6/9] powerpc: BestcComm FEC task support
+Date: Sat, 12 May 2007 22:31:54 +0200
+Message-Id: <11790019242174-git-send-email-tnt@246tNt.com>
+In-Reply-To: <11790019233958-git-send-email-tnt@246tNt.com>
 References: <11790019171838-git-send-email-tnt@246tNt.com>
 	<11790019223299-git-send-email-tnt@246tNt.com>
 	<11790019223880-git-send-email-tnt@246tNt.com>
 	<11790019223925-git-send-email-tnt@246tNt.com>
+	<11790019234031-git-send-email-tnt@246tNt.com>
+	<11790019233958-git-send-email-tnt@246tNt.com>
 Cc: Sylvain Munaut <tnt@246tNt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,112 +24,235 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds support for the core of the BestComm API
-for the Freescale MPC5200(b). The BestComm engine is a
-microcode-controlled / tasks-based DMA used by several
-of the onchip devices.
+This is the microcode for the FEC task and the associated
+support code.
 
-Setting up the tasks / memory allocation and all common
-low level functions are handled by this patch.
-The specifics details of each tasks and their microcode
-are split-out in separate patches.
-
-This is not the official API, but a much cleaner one.
+The microcode itself comes directly from the offical
+API (v2.2)
 
 Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
 ---
- arch/powerpc/platforms/Kconfig               |    2 +
- arch/powerpc/sysdev/Makefile                 |    1 +
- arch/powerpc/sysdev/bestcomm/Kconfig         |   18 +
- arch/powerpc/sysdev/bestcomm/Makefile        |    8 +
- arch/powerpc/sysdev/bestcomm/bestcomm.c      |  600 ++++++++++++++++++++++++++
- arch/powerpc/sysdev/bestcomm/bestcomm.h      |  136 ++++++
- arch/powerpc/sysdev/bestcomm/bestcomm_priv.h |  325 ++++++++++++++
- arch/powerpc/sysdev/bestcomm/sram.c          |  180 ++++++++
- arch/powerpc/sysdev/bestcomm/sram.h          |   54 +++
- 9 files changed, 1324 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/sysdev/bestcomm/Kconfig
- create mode 100644 arch/powerpc/sysdev/bestcomm/Makefile
- create mode 100644 arch/powerpc/sysdev/bestcomm/bestcomm.c
- create mode 100644 arch/powerpc/sysdev/bestcomm/bestcomm.h
- create mode 100644 arch/powerpc/sysdev/bestcomm/bestcomm_priv.h
- create mode 100644 arch/powerpc/sysdev/bestcomm/sram.c
- create mode 100644 arch/powerpc/sysdev/bestcomm/sram.h
+ arch/powerpc/sysdev/bestcomm/Kconfig            |    7 +
+ arch/powerpc/sysdev/bestcomm/Makefile           |    2 +
+ arch/powerpc/sysdev/bestcomm/bcom_fec_rx_task.c |   72 ++++++
+ arch/powerpc/sysdev/bestcomm/bcom_fec_tx_task.c |   85 +++++++
+ arch/powerpc/sysdev/bestcomm/fec.c              |  271 +++++++++++++++++++++++
+ arch/powerpc/sysdev/bestcomm/fec.h              |   48 ++++
+ 6 files changed, 485 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/sysdev/bestcomm/bcom_fec_rx_task.c
+ create mode 100644 arch/powerpc/sysdev/bestcomm/bcom_fec_tx_task.c
+ create mode 100644 arch/powerpc/sysdev/bestcomm/fec.c
+ create mode 100644 arch/powerpc/sysdev/bestcomm/fec.h
 
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index 8432f56..fc170a3 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -259,4 +259,6 @@ config CPM2
- 	  you wish to build a kernel for a machine with a CPM2 coprocessor
- 	  on it (826x, 827x, 8560).
- 
-+source "arch/powerpc/sysdev/bestcomm/Kconfig"
-+
- endmenu
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index c3ce0bd..89074f8 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -16,6 +16,7 @@ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
- obj-$(CONFIG_FSL_PCIE)		+= fsl_pcie.o
- obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
- obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
-+obj-$(CONFIG_PPC_BESTCOMM)	+= bestcomm/
- mv64x60-$(CONFIG_PCI)		+= mv64x60_pci.o
- obj-$(CONFIG_MV64X60)		+= $(mv64x60-y) mv64x60_pic.o mv64x60_dev.o
- 
 diff --git a/arch/powerpc/sysdev/bestcomm/Kconfig b/arch/powerpc/sysdev/bestcomm/Kconfig
-new file mode 100644
-index 0000000..3366e24
---- /dev/null
+index 9d087ce..831763b 100644
+--- a/arch/powerpc/sysdev/bestcomm/Kconfig
 +++ b/arch/powerpc/sysdev/bestcomm/Kconfig
-@@ -0,0 +1,18 @@
-+#
-+# Kconfig options for Bestcomm
-+#
-+
-+config PPC_BESTCOMM
-+	tristate "Bestcomm DMA engine support"
-+	depends on PPC_MPC52xx
+@@ -23,3 +23,10 @@ config PPC_BESTCOMM_ATA
+ 	help
+ 	  This option enables the support for the ATA task.
+ 
++config PPC_BESTCOMM_FEC
++	tristate "Bestcomm FEC tasks support"
++	depends on PPC_BESTCOMM
 +	default n
-+	select PPC_LIB_RHEAP
 +	help
-+	  BestComm is the name of the communication coprocessor found
-+	  on the Freescale MPC5200 family of processor. It's usage is
-+	  optionnal for some drivers (like ATA), but required for
-+	  others (like FEC).
-+
-+	  If you want to use drivers that require DMA operations,
-+	  answer Y or M. Otherwise say N.
++	  This option enables the support for the FEC tasks.
 +
 diff --git a/arch/powerpc/sysdev/bestcomm/Makefile b/arch/powerpc/sysdev/bestcomm/Makefile
-new file mode 100644
-index 0000000..a24aa06
---- /dev/null
+index b7a6a40..537d174 100644
+--- a/arch/powerpc/sysdev/bestcomm/Makefile
 +++ b/arch/powerpc/sysdev/bestcomm/Makefile
-@@ -0,0 +1,8 @@
-+#
-+# Makefile for BestComm & co
-+#
-+
-+bestcomm-core-objs	:= bestcomm.o sram.o
-+
-+obj-$(CONFIG_PPC_BESTCOMM)		+= bestcomm-core.o
-+ 
-diff --git a/arch/powerpc/sysdev/bestcomm/bestcomm.c b/arch/powerpc/sysdev/bestcomm/bestcomm.c
+@@ -4,7 +4,9 @@
+ 
+ bestcomm-core-objs	:= bestcomm.o sram.o
+ bestcomm-ata-objs	:= ata.o bcom_ata_task.o
++bestcomm-fec-objs	:= fec.o bcom_fec_rx_task.o bcom_fec_tx_task.o
+ 
+ obj-$(CONFIG_PPC_BESTCOMM)		+= bestcomm-core.o
+ obj-$(CONFIG_PPC_BESTCOMM_ATA)		+= bestcomm-ata.o
++obj-$(CONFIG_PPC_BESTCOMM_FEC)		+= bestcomm-fec.o
+  
+diff --git a/arch/powerpc/sysdev/bestcomm/bcom_fec_rx_task.c b/arch/powerpc/sysdev/bestcomm/bcom_fec_rx_task.c
 new file mode 100644
-index 0000000..0063a1e
+index 0000000..48bae92
 --- /dev/null
-+++ b/arch/powerpc/sysdev/bestcomm/bestcomm.c
-@@ -0,0 +1,600 @@
++++ b/arch/powerpc/sysdev/bestcomm/bcom_fec_rx_task.c
+@@ -0,0 +1,72 @@
 +/*
-+ * Driver for MPC52xx processor BestComm peripheral controller
++ * Bestcomm FEC RX task microcode
++ *
++ * Automatically created based on BestCommAPI-2.2/code_dma/image_rtos1/dma_image.hex
++ * on Tue Mar 22 11:19:38 2005 GMT
++ */
++
++#include <asm/types.h>
++
++/*
++ * The header consists of the following fields:
++ *	u32	magic;
++ *	u8	desc_size;
++ *	u8	var_size;
++ *	u8	inc_size;
++ *	u8	first_var;
++ *	u8	reserved[8];
++ *
++ * The size fields contain the number of 32-bit words.
++ */
++
++u32 bcom_fec_rx_task[] = {
++	/* header */
++	0x4243544b,
++	0x18060709,
++	0x00000000,
++	0x00000000,
++
++	/* Task descriptors */
++	0x808220e3, /* LCD: idx0 = var1, idx1 = var4; idx1 <= var3; idx0 += inc4, idx1 += inc3 */
++	0x10601010, /*   DRD1A: var4 = var2; FN=0 MORE init=3 WS=0 RS=0 */
++	0xb8800264, /*   LCD: idx2 = *idx1, idx3 = var0; idx2 < var9; idx2 += inc4, idx3 += inc4 */
++	0x10001308, /*     DRD1A: var4 = idx1; FN=0 MORE init=0 WS=0 RS=0 */
++	0x60140002, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=2 EXT init=0 WS=2 RS=2 */
++	0x0cccfcca, /*     DRD2B1: *idx3 = EU3(); EU3(*idx3,var10)  */
++	0x80004000, /*   LCDEXT: idx2 = 0x00000000; ; */
++	0xb8c58029, /*   LCD: idx3 = *(idx1 + var00000015); idx3 once var0; idx3 += inc5 */
++	0x60000002, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=2 EXT init=0 WS=0 RS=0 */
++	0x088cf8cc, /*     DRD2B1: idx2 = EU3(); EU3(idx3,var12)  */
++	0x991982f2, /*   LCD: idx2 = idx2, idx3 = idx3; idx2 > var11; idx2 += inc6, idx3 += inc2 */
++	0x006acf80, /*     DRD1A: *idx3 = *idx0; FN=0 init=3 WS=1 RS=1 */
++	0x80004000, /*   LCDEXT: idx2 = 0x00000000; ; */
++	0x9999802d, /*   LCD: idx3 = idx3; idx3 once var0; idx3 += inc5 */
++	0x70000002, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=2 EXT MORE init=0 WS=0 RS=0 */
++	0x034cfc4e, /*     DRD2B1: var13 = EU3(); EU3(*idx1,var14)  */
++	0x00008868, /*     DRD1A: idx2 = var13; FN=0 init=0 WS=0 RS=0 */
++	0x99198341, /*   LCD: idx2 = idx2, idx3 = idx3; idx2 > var13; idx2 += inc0, idx3 += inc1 */
++	0x007ecf80, /*     DRD1A: *idx3 = *idx0; FN=0 init=3 WS=3 RS=3 */
++	0x99198272, /*   LCD: idx2 = idx2, idx3 = idx3; idx2 > var9; idx2 += inc6, idx3 += inc2 */
++	0x046acf80, /*     DRD1A: *idx3 = *idx0; FN=0 INT init=3 WS=1 RS=1 */
++	0x9819002d, /*   LCD: idx2 = idx0; idx2 once var0; idx2 += inc5 */
++	0x0060c790, /*     DRD1A: *idx1 = *idx2; FN=0 init=3 WS=0 RS=0 */
++	0x000001f8, /*   NOP */
++
++	/* VAR[9]-VAR[14] */
++	0x40000000,
++	0x7fff7fff,
++	0x00000000,
++	0x00000003,
++	0x40000008,
++	0x43ffffff,
++
++	/* INC[0]-INC[6] */
++	0x40000000,
++	0xe0000000,
++	0xe0000000,
++	0xa0000008,
++	0x20000000,
++	0x00000000,
++	0x4000ffff,
++};
++
+diff --git a/arch/powerpc/sysdev/bestcomm/bcom_fec_tx_task.c b/arch/powerpc/sysdev/bestcomm/bcom_fec_tx_task.c
+new file mode 100644
+index 0000000..8c5aa83
+--- /dev/null
++++ b/arch/powerpc/sysdev/bestcomm/bcom_fec_tx_task.c
+@@ -0,0 +1,85 @@
++/*
++ * Bestcomm FEC TX task microcode
++ *
++ * Automatically created based on BestCommAPI-2.2/code_dma/image_rtos1/dma_image.hex
++ * on Tue Mar 22 11:19:29 2005 GMT
++ */
++
++#include <asm/types.h>
++
++/*
++ * The header consists of the following fields:
++ *	u32	magic;
++ *	u8	desc_size;
++ *	u8	var_size;
++ *	u8	inc_size;
++ *	u8	first_var;
++ *	u8	reserved[8];
++ *
++ * The size fields contain the number of 32-bit words.
++ */
++
++u32 bcom_fec_tx_task[] = {
++	/* header */
++	0x4243544b,
++	0x2407070d,
++	0x00000000,
++	0x00000000,
++
++	/* Task descriptors */
++	0x8018001b, /* LCD: idx0 = var0; idx0 <= var0; idx0 += inc3 */
++	0x60000005, /*   DRD2A: EU0=0 EU1=0 EU2=0 EU3=5 EXT init=0 WS=0 RS=0 */
++	0x01ccfc0d, /*   DRD2B1: var7 = EU3(); EU3(*idx0,var13)  */
++	0x8082a123, /* LCD: idx0 = var1, idx1 = var5; idx1 <= var4; idx0 += inc4, idx1 += inc3 */
++	0x10801418, /*   DRD1A: var5 = var3; FN=0 MORE init=4 WS=0 RS=0 */
++	0xf88103a4, /*   LCDEXT: idx2 = *idx1, idx3 = var2; idx2 < var14; idx2 += inc4, idx3 += inc4 */
++	0x801a6024, /*   LCD: idx4 = var0; ; idx4 += inc4 */
++	0x10001708, /*     DRD1A: var5 = idx1; FN=0 MORE init=0 WS=0 RS=0 */
++	0x60140002, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=2 EXT init=0 WS=2 RS=2 */
++	0x0cccfccf, /*     DRD2B1: *idx3 = EU3(); EU3(*idx3,var15)  */
++	0x991a002c, /*   LCD: idx2 = idx2, idx3 = idx4; idx2 once var0; idx2 += inc5, idx3 += inc4 */
++	0x70000002, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=2 EXT MORE init=0 WS=0 RS=0 */
++	0x024cfc4d, /*     DRD2B1: var9 = EU3(); EU3(*idx1,var13)  */
++	0x60000003, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=3 EXT init=0 WS=0 RS=0 */
++	0x0cccf247, /*     DRD2B1: *idx3 = EU3(); EU3(var9,var7)  */
++	0x80004000, /*   LCDEXT: idx2 = 0x00000000; ; */
++	0xb8c80029, /*   LCD: idx3 = *(idx1 + var0000001a); idx3 once var0; idx3 += inc5 */
++	0x70000002, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=2 EXT MORE init=0 WS=0 RS=0 */
++	0x088cf8d1, /*     DRD2B1: idx2 = EU3(); EU3(idx3,var17)  */
++	0x00002f10, /*     DRD1A: var11 = idx2; FN=0 init=0 WS=0 RS=0 */
++	0x99198432, /*   LCD: idx2 = idx2, idx3 = idx3; idx2 > var16; idx2 += inc6, idx3 += inc2 */
++	0x008ac398, /*     DRD1A: *idx0 = *idx3; FN=0 init=4 WS=1 RS=1 */
++	0x80004000, /*   LCDEXT: idx2 = 0x00000000; ; */
++	0x9999802d, /*   LCD: idx3 = idx3; idx3 once var0; idx3 += inc5 */
++	0x70000002, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=2 EXT MORE init=0 WS=0 RS=0 */
++	0x048cfc53, /*     DRD2B1: var18 = EU3(); EU3(*idx1,var19)  */
++	0x60000008, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=8 EXT init=0 WS=0 RS=0 */
++	0x088cf48b, /*     DRD2B1: idx2 = EU3(); EU3(var18,var11)  */
++	0x99198481, /*   LCD: idx2 = idx2, idx3 = idx3; idx2 > var18; idx2 += inc0, idx3 += inc1 */
++	0x009ec398, /*     DRD1A: *idx0 = *idx3; FN=0 init=4 WS=3 RS=3 */
++	0x991983b2, /*   LCD: idx2 = idx2, idx3 = idx3; idx2 > var14; idx2 += inc6, idx3 += inc2 */
++	0x088ac398, /*     DRD1A: *idx0 = *idx3; FN=0 TFD init=4 WS=1 RS=1 */
++	0x9919002d, /*   LCD: idx2 = idx2; idx2 once var0; idx2 += inc5 */
++	0x60000005, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=5 EXT init=0 WS=0 RS=0 */
++	0x0c4cf88e, /*     DRD2B1: *idx1 = EU3(); EU3(idx2,var14)  */
++	0x000001f8, /*   NOP */
++
++	/* VAR[13]-VAR[19] */
++	0x0c000000,
++	0x40000000,
++	0x7fff7fff,
++	0x00000000,
++	0x00000003,
++	0x40000004,
++	0x43ffffff,
++
++	/* INC[0]-INC[6] */
++	0x40000000,
++	0xe0000000,
++	0xe0000000,
++	0xa0000008,
++	0x20000000,
++	0x00000000,
++	0x4000ffff,
++};
++
+diff --git a/arch/powerpc/sysdev/bestcomm/fec.c b/arch/powerpc/sysdev/bestcomm/fec.c
+new file mode 100644
+index 0000000..56ff560
+--- /dev/null
++++ b/arch/powerpc/sysdev/bestcomm/fec.c
+@@ -0,0 +1,271 @@
++/*
++ * Bestcomm FEC tasks driver
 + *
 + *
 + * Copyright (C) 2006-2007 Sylvain Munaut <tnt@246tNt.com>
-+ * Copyright (C) 2005      Varma Electronics Oy,
-+ *                         ( by Andrey Volkov <avolkov@varma-el.com> )
 + * Copyright (C) 2003-2004 MontaVista, Software, Inc.
 + *                         ( by Dale Farnsworth <dfarnsworth@mvista.com> )
 + *
@@ -136,604 +261,275 @@ index 0000000..0063a1e
 + * kind, whether express or implied.
 + */
 +
-+#include <linux/module.h>
 +#include <linux/kernel.h>
-+#include <linux/slab.h>
-+
++#include <linux/module.h>
++#include <linux/types.h>
 +#include <asm/io.h>
-+#include <asm/irq.h>
-+#include <asm/prom.h>
-+#include <asm/mpc52xx.h>
 +
-+#include "sram.h"
-+#include "bestcomm_priv.h"
 +#include "bestcomm.h"
-+
-+#define DRIVER_NAME "bestcomm-core"
-+
-+
-+struct bcom_engine *bcom = NULL;
++#include "bestcomm_priv.h"
++#include "fec.h"
 +
 +
 +/* ======================================================================== */
-+/* Public and private API                                                   */
++/* Task image/var/inc                                                       */
 +/* ======================================================================== */
 +
-+/* Debug Dump */
++/* fec tasks images */
++extern u32 bcom_fec_rx_task[];
++extern u32 bcom_fec_tx_task[];
 +
-+#define BCOM_DPRINTK(a,b...) printk(KERN_DEBUG DRIVER_NAME ": " a, ## b)
++/* rx task vars that need to be set before enabling the task */
++struct bcom_fec_rx_var {
++	u32 enable;		/* (u16*) address of task's control register */
++	u32 fifo;		/* (u32*) address of fec's fifo */
++	u32 bd_base;		/* (struct bcom_bd*) beginning of ring buffer */
++	u32 bd_last;		/* (struct bcom_bd*) end of ring buffer */
++	u32 bd_start;		/* (struct bcom_bd*) current bd */
++	u32 buffer_size;	/* size of receive buffer */
++};
 +
-+void
-+bcom_dump_status(void)
-+{
-+	int i;
-+	struct mpc52xx_sdma __iomem *r = bcom->regs;
++/* rx task incs that need to be set before enabling the task */
++struct bcom_fec_rx_inc {
++	u16 pad0;
++	s16 incr_bytes;
++	u16 pad1;
++	s16 incr_dst;
++	u16 pad2;
++	s16 incr_dst_ma;
++};
 +
-+	BCOM_DPRINTK("BestComm status dump (pa=%08lx, va=%p)\n",
-+			bcom->regs_base, bcom->regs);
-+	BCOM_DPRINTK(" taskBar         = %08x\n", in_be32(&r->taskBar));
-+	BCOM_DPRINTK(" currentPointer  = %08x\n", in_be32(&r->currentPointer));
-+	BCOM_DPRINTK(" endPointer      = %08x\n", in_be32(&r->endPointer));
-+	BCOM_DPRINTK(" variablePointer = %08x\n", in_be32(&r->variablePointer));
-+	BCOM_DPRINTK(" IntVect1        = %08x\n", (u32)in_8(&r->IntVect1));
-+	BCOM_DPRINTK(" IntVect2        = %08x\n", (u32)in_8(&r->IntVect2));
-+	BCOM_DPRINTK(" PtdCntrl        = %08hx\n", in_be16(&r->PtdCntrl));
-+	BCOM_DPRINTK(" IntPend         = %08x\n", in_be32(&r->IntPend));
-+	BCOM_DPRINTK(" IntMask         = %08x\n", in_be32(&r->IntMask));
++/* tx task vars that need to be set before enabling the task */
++struct bcom_fec_tx_var {
++	u32 DRD;		/* (u32*) address of self-modified DRD */
++	u32 fifo;		/* (u32*) address of fec's fifo */
++	u32 enable;		/* (u16*) address of task's control register */
++	u32 bd_base;		/* (struct bcom_bd*) beginning of ring buffer */
++	u32 bd_last;		/* (struct bcom_bd*) end of ring buffer */
++	u32 bd_start;		/* (struct bcom_bd*) current bd */
++	u32 buffer_size;	/* set by uCode for each packet */
++};
 +
-+	BCOM_DPRINTK(" TCR dump :\n");
++/* tx task incs that need to be set before enabling the task */
++struct bcom_fec_tx_inc {
++	u16 pad0;
++	s16 incr_bytes;
++	u16 pad1;
++	s16 incr_src;
++	u16 pad2;
++	s16 incr_src_ma;
++};
 +
-+	for (i=0; i<16; i++) {
-+		printk("%s%04hx%s",
-+			(i&0x7) == 0x0 ? KERN_DEBUG "\t" : "",
-+			in_be16(&r->tcr[i]),
-+			(i&0x7) == 0x7 ? "\n" : " ");
-+	}
-+
-+	BCOM_DPRINTK(" IPR dump :\n");
-+
-+	for (i=0; i<32; i++) {
-+		printk("%s%02x%s",
-+			(i&0x7) == 0x0 ? KERN_DEBUG "\t" : "",
-+			(u32)in_8(&r->ipr[i]),
-+			(i&0x7) == 0x7 ? "\n" : " ");
-+	}
-+
-+	BCOM_DPRINTK(" cReqSelect      = %08x\n", in_be32(&r->cReqSelect));
-+	BCOM_DPRINTK(" task_size0      = %08x\n", in_be32(&r->task_size0));
-+	BCOM_DPRINTK(" task_size1      = %08x\n", in_be32(&r->task_size1));
-+	BCOM_DPRINTK(" MDEDebug        = %08x\n", in_be32(&r->MDEDebug));
-+	BCOM_DPRINTK(" ADSDebug        = %08x\n", in_be32(&r->ADSDebug));
-+	BCOM_DPRINTK(" Value1          = %08x\n", in_be32(&r->Value1));
-+	BCOM_DPRINTK(" Value2          = %08x\n", in_be32(&r->Value2));
-+	BCOM_DPRINTK(" Control         = %08x\n", in_be32(&r->Control));
-+	BCOM_DPRINTK(" Status          = %08x\n", in_be32(&r->Status));
-+	BCOM_DPRINTK(" PTDDebug        = %08x\n", in_be32(&r->PTDDebug));
-+}
-+
-+void
-+bcom_dump_task(int task)
-+{
-+	int i;
-+	u32 *p;
-+	struct bcom_tdt *tdt = &bcom->tdt[task];
-+
-+	BCOM_DPRINTK("Task dump %d\n", task);
-+	BCOM_DPRINTK(" tcr          = %04hx\n", bcom->regs->tcr[task]);
-+	BCOM_DPRINTK(" tdt          = %p\n", &bcom->tdt[task]);
-+	BCOM_DPRINTK(" tdt->start   = %08x\n", tdt->start);
-+	BCOM_DPRINTK(" tdt->stop    = %08x\n", tdt->stop);
-+	BCOM_DPRINTK(" tdt->var     = %08x\n", tdt->var);
-+	BCOM_DPRINTK(" tdt->fdt     = %08x\n", tdt->fdt);
-+	BCOM_DPRINTK(" tdt->status  = %08x\n", tdt->exec_status);
-+	BCOM_DPRINTK(" tdt->mvtp    = %08x\n", tdt->mvtp);
-+	BCOM_DPRINTK(" tdt->context = %08x\n", tdt->context);
-+	BCOM_DPRINTK(" tdt->litbase = %08x\n", tdt->litbase);
-+
-+	BCOM_DPRINTK(" code    :\n");
-+
-+	p = bcom_task_desc(task);
-+	for (i=0; i<bcom_task_num_descs(task); i++)
-+		printk(KERN_DEBUG "\t%p %08x\n", &p[i], p[i]);
-+
-+	BCOM_DPRINTK(" var/inc :\n");
-+
-+	p = bcom_task_var(task);
-+	for (i=0; i<BCOM_MAX_VAR+BCOM_MAX_INC; i++)
-+		printk(KERN_DEBUG "\t%p %08x\n", &p[i], p[i]);
-+}
-+
-+void
-+bcom_dump_bdring(struct bcom_task *tsk)
-+{
-+	int i, j;
-+
-+	BCOM_DPRINTK("BD ring dump %d\n", tsk->tasknum);
-+
-+	for (i=0; i<tsk->num_bd; i++) {
-+		BCOM_DPRINTK(" BD[%02d] :\n", i);
-+		BCOM_DPRINTK("  cookie   : %p\n", tsk->cookie[i]);
-+		BCOM_DPRINTK("  status   : %08x\n", tsk->bd[i].status);
-+		for (j=0; j<(tsk->bd_size/sizeof(u32))-1; j++)
-+			BCOM_DPRINTK("  data[%02d] : %08x\n",
-+				j, tsk->bd[i].data[j]);
-+	}
-+}
++/* private structure in the task */
++struct bcom_fec_priv {
++	phys_addr_t	fifo;
++	int		maxbufsize;
++};
 +
 +
-+/* Private API */
++/* ======================================================================== */
++/* Task support code                                                        */
++/* ======================================================================== */
 +
 +struct bcom_task *
-+bcom_task_alloc(int bd_count, int bd_size, int priv_size)
++bcom_fec_rx_init(int queue_len, phys_addr_t fifo, int maxbufsize)
 +{
-+	int i, tasknum = -1;
 +	struct bcom_task *tsk;
++	struct bcom_fec_priv *priv;
 +
-+	/* Get and reserve a task num */
-+	spin_lock(&bcom->lock);
-+
-+	for (i=0; i<BCOM_MAX_TASKS; i++)
-+		if (!bcom->tdt[i].stop) {	/* we use stop as a marker */
-+			bcom->tdt[i].stop = 0xfffffffful; /* dummy addr */
-+			tasknum = i;
-+			break;
-+		}
-+
-+	spin_unlock(&bcom->lock);
-+
-+	if (tasknum < 0)
++	tsk = bcom_task_alloc(queue_len, sizeof(struct bcom_fec_bd),
++				sizeof(struct bcom_fec_priv));
++	if (!tsk)
 +		return NULL;
 +
-+	/* Allocate our structure */
-+	tsk = kzalloc(sizeof(struct bcom_task) + priv_size, GFP_KERNEL);
-+	if (!tsk)
-+		goto error;
++	tsk->flags = BCOM_FLAGS_NONE;
 +
-+	tsk->tasknum = tasknum;
-+	if (priv_size)
-+		tsk->priv = (void*)tsk + sizeof(struct bcom_task);
++	priv = tsk->priv;
++	priv->fifo = fifo;
++	priv->maxbufsize = maxbufsize;
 +
-+	/* Get IRQ of that task */
-+	tsk->irq = irq_of_parse_and_map(bcom->ofnode, tsk->tasknum);
-+	if (tsk->irq == NO_IRQ)
-+		goto error;
-+
-+	/* Init the BDs, if needed */
-+	if (bd_count) {
-+		tsk->cookie = kmalloc(sizeof(void*) * bd_count, GFP_KERNEL);
-+		if (!tsk->cookie)
-+			goto error;
-+
-+		tsk->bd = bcom_sram_alloc(bd_count * bd_size, 4, &tsk->bd_pa);
-+		if (!tsk->bd)
-+			goto error;
-+		memset(tsk->bd, 0x00, bd_count * bd_size);
-+
-+		tsk->num_bd = bd_count;
-+		tsk->bd_size = bd_size;
++	if (bcom_fec_rx_reset(tsk)) {
++		bcom_task_release(tsk);
++		return NULL;
 +	}
 +
 +	return tsk;
-+
-+error:
-+	if (tsk) {
-+		if (tsk->irq != NO_IRQ)
-+			irq_dispose_mapping(tsk->irq);
-+		bcom_sram_free(tsk->bd);
-+		kfree(tsk->cookie);
-+		kfree(tsk);
-+	}
-+
-+	bcom->tdt[tasknum].stop = 0;
-+
-+	return NULL;
-+}
-+
-+void
-+bcom_task_release(struct bcom_task *tsk)
-+{
-+	/* Stop the task */
-+	bcom_disable_task(tsk->tasknum);
-+
-+	/* Clear TDT */
-+	bcom->tdt[tsk->tasknum].start = 0;
-+	bcom->tdt[tsk->tasknum].stop  = 0;
-+
-+	/* Free everything */
-+	irq_dispose_mapping(tsk->irq);
-+	bcom_sram_free(tsk->bd);
-+	kfree(tsk->cookie);
-+	kfree(tsk);
 +}
 +
 +int
-+bcom_load_image(int task, u32 *task_image)
++bcom_fec_rx_reset(struct bcom_task *tsk)
 +{
-+	struct bcom_task_header *hdr = (struct bcom_task_header *)task_image;
-+	struct bcom_tdt *tdt;
-+	u32 *desc, *var, *inc;
-+	u32 *desc_src, *var_src, *inc_src;
++	struct bcom_fec_priv *priv = tsk->priv;
++	struct bcom_fec_rx_var *var;
++	struct bcom_fec_rx_inc *inc;
 +
-+	/* Safety checks */
-+	if (hdr->magic != BCOM_TASK_MAGIC) {
-+		printk(KERN_ERR DRIVER_NAME
-+			": Trying to load invalid microcode\n");
-+		return -EINVAL;
-+	}
-+
-+	if ((task < 0) || (task >= BCOM_MAX_TASKS)) {
-+		printk(KERN_ERR DRIVER_NAME
-+			": Trying to load invalid task %d\n", task);
-+		return -EINVAL;
-+	}
-+
-+	/* Initial load or reload */
-+	tdt = &bcom->tdt[task];
-+
-+	if (tdt->start) {
-+		desc = bcom_task_desc(task);
-+		if (hdr->desc_size != bcom_task_num_descs(task)) {
-+			printk(KERN_ERR DRIVER_NAME
-+				": Trying to reload wrong task image "
-+				"(%d size %d/%d)!\n",
-+				task,
-+				hdr->desc_size,
-+				bcom_task_num_descs(task));
-+			return -EINVAL;
-+		}
-+	} else {
-+		phys_addr_t start_pa;
-+
-+		desc = bcom_sram_alloc(hdr->desc_size * sizeof(u32), 4, &start_pa);
-+		if (!desc)
-+			return -ENOMEM;
-+
-+		tdt->start = start_pa;
-+		tdt->stop = start_pa + ((hdr->desc_size-1) * sizeof(u32));
-+	}
-+
-+	var = bcom_task_var(task);
-+	inc = bcom_task_inc(task);
-+
-+	/* Clear & copy */
-+	memset(var, 0x00, BCOM_VAR_SIZE);
-+	memset(inc, 0x00, BCOM_INC_SIZE);
-+
-+	desc_src = (u32 *)(hdr + 1);
-+	var_src = desc_src + hdr->desc_size;
-+	inc_src = var_src + hdr->var_size;
-+
-+	memcpy(desc, desc_src, hdr->desc_size * sizeof(u32));
-+	memcpy(var + hdr->first_var, var_src, hdr->var_size * sizeof(u32));
-+	memcpy(inc, inc_src, hdr->inc_size * sizeof(u32));
-+
-+	return 0;
-+}
-+
-+void
-+bcom_set_initiator(int task, int initiator)
-+{
-+	int i;
-+	int num_descs;
-+	u32 *desc;
-+	int next_drd_has_initiator;
-+
-+	bcom_set_tcr_initiator(task, initiator);
-+
-+	/* Just setting tcr is apparently not enough due to some problem */
-+	/* with it. So we just go thru all the microcode and replace in  */
-+	/* the DRD directly */
-+
-+	desc = bcom_task_desc(task);
-+	next_drd_has_initiator = 1;
-+	num_descs = bcom_task_num_descs(task);
-+
-+	for (i=0; i<num_descs; i++, desc++) {
-+		if (!bcom_desc_is_drd(*desc))
-+			continue;
-+		if (next_drd_has_initiator)
-+			if (bcom_desc_initiator(*desc) != BCOM_INITIATOR_ALWAYS)
-+				bcom_set_desc_initiator(desc, initiator);
-+		next_drd_has_initiator = !bcom_drd_is_extended(*desc);
-+	}
-+}
-+
-+
-+/* Public API */
-+
-+void
-+bcom_enable(struct bcom_task *tsk)
-+{
-+	bcom_enable_task(tsk->tasknum);
-+}
-+
-+void
-+bcom_disable(struct bcom_task *tsk)
-+{
++	/* Shutdown the task */
 +	bcom_disable_task(tsk->tasknum);
-+}
 +
++	/* Reset the microcode */
++	var = (struct bcom_fec_rx_var *) bcom_task_var(tsk->tasknum);
++	inc = (struct bcom_fec_rx_inc *) bcom_task_inc(tsk->tasknum);
 +
-+/* ======================================================================== */
-+/* Engine init/cleanup                                                      */
-+/* ======================================================================== */
++	if (bcom_load_image(tsk->tasknum, bcom_fec_rx_task))
++		return -1;
 +
-+/* Function Descriptor table */
-+/* this will need to be updated if Freescale changes their task code FDT */
-+static u32 fdt_ops[] = {
-+	0xa0045670,	/* FDT[48] - load_acc()	  */
-+	0x80045670,	/* FDT[49] - unload_acc() */
-+	0x21800000,	/* FDT[50] - and()        */
-+	0x21e00000,	/* FDT[51] - or()         */
-+	0x21500000,	/* FDT[52] - xor()        */
-+	0x21400000,	/* FDT[53] - andn()       */
-+	0x21500000,	/* FDT[54] - not()        */
-+	0x20400000,	/* FDT[55] - add()        */
-+	0x20500000,	/* FDT[56] - sub()        */
-+	0x20800000,	/* FDT[57] - lsh()        */
-+	0x20a00000,	/* FDT[58] - rsh()        */
-+	0xc0170000,	/* FDT[59] - crc8()       */
-+	0xc0145670,	/* FDT[60] - crc16()      */
-+	0xc0345670,	/* FDT[61] - crc32()      */
-+	0xa0076540,	/* FDT[62] - endian32()   */
-+	0xa0000760,	/* FDT[63] - endian16()   */
-+};
++	var->enable	= bcom->regs_base +
++				offsetof(struct mpc52xx_sdma, tcr[tsk->tasknum]);
++	var->fifo	= (u32) priv->fifo;
++	var->bd_base	= tsk->bd_pa;
++	var->bd_last	= tsk->bd_pa + ((tsk->num_bd-1) * tsk->bd_size);
++	var->bd_start	= tsk->bd_pa;
++	var->buffer_size = priv->maxbufsize;
 +
++	inc->incr_bytes	= -(s16)sizeof(u32);	/* These should be in the   */
++	inc->incr_dst	= sizeof(u32);		/* task image, but we stick */
++	inc->incr_dst_ma= sizeof(u8);		/* to the official ones     */
 +
-+static int __devinit
-+bcom_engine_init(void)
-+{
-+	int task;
-+	phys_addr_t tdt_pa, ctx_pa, var_pa, fdt_pa;
-+	unsigned int tdt_size, ctx_size, var_size, fdt_size;
++	/* Reset the BDs */
++	tsk->index = 0;
++	tsk->outdex = 0;
 +
-+	/* Allocate & clear SRAM zones for FDT, TDTs, contexts and vars/incs */
-+	tdt_size = BCOM_MAX_TASKS * sizeof(struct bcom_tdt);
-+	ctx_size = BCOM_MAX_TASKS * BCOM_CTX_SIZE;
-+	var_size = BCOM_MAX_TASKS * (BCOM_VAR_SIZE + BCOM_INC_SIZE);
-+	fdt_size = BCOM_FDT_SIZE;
++	memset(tsk->bd, 0x00, tsk->num_bd * tsk->bd_size);
 +
-+	bcom->tdt = bcom_sram_alloc(tdt_size, sizeof(u32), &tdt_pa);
-+	bcom->ctx = bcom_sram_alloc(ctx_size, BCOM_CTX_ALIGN, &ctx_pa);
-+	bcom->var = bcom_sram_alloc(var_size, BCOM_VAR_ALIGN, &var_pa);
-+	bcom->fdt = bcom_sram_alloc(fdt_size, BCOM_FDT_ALIGN, &fdt_pa);
++	/* Configure some stuff */
++	bcom_set_task_pragma(tsk->tasknum, BCOM_FEC_RX_BD_PRAGMA);
++	bcom_set_task_auto_start(tsk->tasknum, tsk->tasknum);
 +
-+	if (!bcom->tdt || !bcom->ctx || !bcom->var || !bcom->fdt) {
-+		printk(KERN_ERR "DMA: SRAM alloc failed in engine init !\n");
++	out_8(&bcom->regs->ipr[BCOM_INITIATOR_FEC_RX], BCOM_IPR_FEC_RX);
 +
-+		bcom_sram_free(bcom->tdt);
-+		bcom_sram_free(bcom->ctx);
-+		bcom_sram_free(bcom->var);
-+		bcom_sram_free(bcom->fdt);
-+
-+		return -ENOMEM;
-+	}
-+
-+	memset(bcom->tdt, 0x00, tdt_size);
-+	memset(bcom->ctx, 0x00, ctx_size);
-+	memset(bcom->var, 0x00, var_size);
-+	memset(bcom->fdt, 0x00, fdt_size);
-+
-+	/* Copy the FDT for the EU#3 */
-+	memcpy(&bcom->fdt[48], fdt_ops, sizeof(fdt_ops));
-+
-+	/* Initialize Task base structure */
-+	for (task=0; task<BCOM_MAX_TASKS; task++)
-+	{
-+		out_be16(&bcom->regs->tcr[task], 0);
-+		out_8(&bcom->regs->ipr[task], 0);
-+
-+		bcom->tdt[task].context	= ctx_pa;
-+		bcom->tdt[task].var	= var_pa;
-+		bcom->tdt[task].fdt	= fdt_pa;
-+
-+		var_pa += BCOM_VAR_SIZE + BCOM_INC_SIZE;
-+		ctx_pa += BCOM_CTX_SIZE;
-+	}
-+
-+	out_be32(&bcom->regs->taskBar, tdt_pa);
-+
-+	/* Init 'always' initiator */
-+	out_8(&bcom->regs->ipr[BCOM_INITIATOR_ALWAYS], BCOM_IPR_ALWAYS);
-+
-+	/* Disable COMM Bus Prefetch, apparently it's not reliable yet */
-+	/* FIXME: This should be done on 5200 and not 5200B ... */
-+	out_be16(&bcom->regs->PtdCntrl, in_be16(&bcom->regs->PtdCntrl) | 1);
-+
-+	/* Init lock */
-+	spin_lock_init(&bcom->lock);
++	out_be32(&bcom->regs->IntPend, 1<<tsk->tasknum);	/* Clear ints */
 +
 +	return 0;
 +}
 +
-+static void
-+bcom_engine_cleanup(void)
++void
++bcom_fec_rx_release(struct bcom_task *tsk)
 +{
-+	int task;
-+
-+	/* Stop all tasks */
-+	for (task=0; task<BCOM_MAX_TASKS; task++)
-+	{
-+		out_be16(&bcom->regs->tcr[task], 0);
-+		out_8(&bcom->regs->ipr[task], 0);
-+	}
-+
-+	out_be32(&bcom->regs->taskBar, 0ul);
-+
-+	/* Release the SRAM zones */
-+	bcom_sram_free(bcom->tdt);
-+	bcom_sram_free(bcom->ctx);
-+	bcom_sram_free(bcom->var);
-+	bcom_sram_free(bcom->fdt);
++	/* Nothing special for the FEC tasks */
++	bcom_task_release(tsk);
 +}
 +
 +
-+/* ======================================================================== */
-+/* System/Module init & cleanup                                             */
-+/* ======================================================================== */
 +
-+static int __init
-+mpc52xx_bcom_init(void)
++	/* Return 2nd to last DRD */
++	/* This is an ugly hack, but at least it's only done
++	   once at initialization */
++static u32 *self_modified_drd(int tasknum)
 +{
-+	struct device_node *ofn_bcom, *ofn_sram;
-+	struct resource res_bcom;
++	u32 *desc;
++	int num_descs;
++	int drd_count;
++	int i;
 +
-+	int rv;
++	num_descs = bcom_task_num_descs(tasknum);
++	desc = bcom_task_desc(tasknum) + num_descs - 1;
++	drd_count = 0;
++	for (i=0; i<num_descs; i++, desc--)
++		if (bcom_desc_is_drd(*desc) && ++drd_count == 3)
++			break;
++	return desc;
++}
 +
-+	/* Find the bestcomm node. If none, fails 'silently' since
-+	 * we may just be on another platform */
-+	ofn_bcom = of_find_compatible_node(
-+			NULL, "dma-controller", "mpc5200-bestcomm");
-+	if (!ofn_bcom)
-+		return -ENODEV;
++struct bcom_task *
++bcom_fec_tx_init(int queue_len, phys_addr_t fifo)
++{
++	struct bcom_task *tsk;
++	struct bcom_fec_priv *priv;
 +
-+	/* Inform user we're ok so far */
-+	printk(KERN_INFO "DMA: MPC52xx BestComm driver\n");
++	tsk = bcom_task_alloc(queue_len, sizeof(struct bcom_fec_bd),
++				sizeof(struct bcom_fec_priv));
++	if (!tsk)
++		return NULL;
 +
-+	/* Prepare SRAM */
-+	ofn_sram = of_find_compatible_node(NULL, "sram", "mpc5200-sram");
-+	if (!ofn_sram) {
-+		printk(KERN_ERR DRIVER_NAME ": "
-+			"No SRAM found in device tree\n");
-+		rv = -ENODEV;
-+		goto error_ofput;
++	tsk->flags = BCOM_FLAGS_ENABLE_TASK;
++
++	priv = tsk->priv;
++	priv->fifo = fifo;
++
++	if (bcom_fec_tx_reset(tsk)) {
++		bcom_task_release(tsk);
++		return NULL;
 +	}
 +
-+	rv = bcom_sram_init(ofn_sram, DRIVER_NAME);
++	return tsk;
++}
 +
-+	of_node_put(ofn_sram);
++int
++bcom_fec_tx_reset(struct bcom_task *tsk)
++{
++	struct bcom_fec_priv *priv = tsk->priv;
++	struct bcom_fec_tx_var *var;
++	struct bcom_fec_tx_inc *inc;
 +
-+	if (rv) {
-+		printk(KERN_ERR DRIVER_NAME ": "
-+			"Error in SRAM init\n");
-+		goto error_ofput;
-+	}
++	/* Shutdown the task */
++	bcom_disable_task(tsk->tasknum);
 +
-+	/* Get a clean struct */
-+	bcom = kzalloc(sizeof(struct bcom_engine), GFP_KERNEL);
-+	if (!bcom) {
-+		printk(KERN_ERR DRIVER_NAME ": "
-+			"Can't allocate state structure\n");
-+		rv = -ENOMEM;
-+		goto error_sramclean;
-+	}
++	/* Reset the microcode */
++	var = (struct bcom_fec_tx_var *) bcom_task_var(tsk->tasknum);
++	inc = (struct bcom_fec_tx_inc *) bcom_task_inc(tsk->tasknum);
 +
-+	/* Save the node */
-+	bcom->ofnode = ofn_bcom;
++	if (bcom_load_image(tsk->tasknum, bcom_fec_tx_task))
++		return -1;
 +
-+	/* Get, reserve & map io */
-+	if (of_address_to_resource(bcom->ofnode, 0, &res_bcom)) {
-+		printk(KERN_ERR DRIVER_NAME ": "
-+			"Can't get resource\n");
-+		rv = -EINVAL;
-+		goto error_sramclean;
-+	}
++	var->enable	= bcom->regs_base +
++				offsetof(struct mpc52xx_sdma, tcr[tsk->tasknum]);
++	var->fifo	= (u32) priv->fifo;
++	var->DRD	= bcom_sram_va2pa(self_modified_drd(tsk->tasknum));
++	var->bd_base	= tsk->bd_pa;
++	var->bd_last	= tsk->bd_pa + ((tsk->num_bd-1) * tsk->bd_size);
++	var->bd_start	= tsk->bd_pa;
 +
-+	if (!request_mem_region(res_bcom.start, sizeof(struct mpc52xx_sdma),
-+				DRIVER_NAME)) {
-+		printk(KERN_ERR DRIVER_NAME ": "
-+			"Can't request registers region\n");
-+		rv = -EBUSY;
-+		goto error_sramclean;
-+	}
++	inc->incr_bytes	= -(s16)sizeof(u32);	/* These should be in the   */
++	inc->incr_src	= sizeof(u32);		/* task image, but we stick */
++	inc->incr_src_ma= sizeof(u8);		/* to the official ones     */
 +
-+	bcom->regs_base = res_bcom.start;
-+	bcom->regs = ioremap(res_bcom.start, sizeof(struct mpc52xx_sdma));
-+	if (!bcom->regs) {
-+		printk(KERN_ERR DRIVER_NAME ": "
-+			"Can't map registers\n");
-+		rv = -ENOMEM;
-+		goto error_release;
-+	}
++	/* Reset the BDs */
++	tsk->index = 0;
++	tsk->outdex = 0;
 +
-+	/* Now, do the real init */
-+	rv = bcom_engine_init();
-+	if (rv)
-+		goto error_unmap;
++	memset(tsk->bd, 0x00, tsk->num_bd * tsk->bd_size);
 +
-+	/* Done ! */
-+	printk(KERN_INFO "DMA: MPC52xx BestComm engine @%08lx ok !\n",
-+		bcom->regs_base);
++	/* Configure some stuff */
++	bcom_set_task_pragma(tsk->tasknum, BCOM_FEC_TX_BD_PRAGMA);
++	bcom_set_task_auto_start(tsk->tasknum, tsk->tasknum);
++
++	out_8(&bcom->regs->ipr[BCOM_INITIATOR_FEC_TX], BCOM_IPR_FEC_TX);
++
++	out_be32(&bcom->regs->IntPend, 1<<tsk->tasknum);	/* Clear ints */
 +
 +	return 0;
-+
-+	/* Error path */
-+error_unmap:
-+	iounmap(bcom->regs);
-+error_release:
-+	release_mem_region(res_bcom.start, sizeof(struct mpc52xx_sdma));
-+error_sramclean:
-+	bcom_sram_cleanup();
-+error_ofput:
-+	of_node_put(bcom->ofnode);
-+
-+	printk(KERN_ERR "DMA: MPC52xx BestComm init failed !\n");
-+
-+	return rv;
 +}
 +
-+static void __exit
-+mpc52xx_bcom_exit(void)
++void
++bcom_fec_tx_release(struct bcom_task *tsk)
 +{
-+	/* Clean up the engine */
-+	bcom_engine_cleanup();
-+
-+	/* Cleanup SRAM */
-+	bcom_sram_cleanup();
-+
-+	/* Release regs */
-+	iounmap(bcom->regs);
-+	release_mem_region(bcom->regs_base, sizeof(struct mpc52xx_sdma));
-+
-+	/* Release the node */
-+	of_node_put(bcom->ofnode);
-+
-+	/* Release memory */
-+	kfree(bcom);
++	/* Nothing special for the FEC tasks */
++	bcom_task_release(tsk);
 +}
 +
-+#ifdef MODULE
-+module_init(mpc52xx_bcom_init);
-+module_exit(mpc52xx_bcom_exit);
-+#endif
 +
-+/* If we're not a module, we must make sure everything is setup before anyone */
-+/* tries to use us ... */
-+#ifndef MODULE
-+subsys_initcall(mpc52xx_bcom_init);
-+#endif
++EXPORT_SYMBOL(bcom_fec_rx_init);
++EXPORT_SYMBOL(bcom_fec_rx_reset);
++EXPORT_SYMBOL(bcom_fec_rx_release);
++EXPORT_SYMBOL(bcom_fec_tx_init);
++EXPORT_SYMBOL(bcom_fec_tx_reset);
++EXPORT_SYMBOL(bcom_fec_tx_release);
 +
-+MODULE_DESCRIPTION("Freescale MPC52xx BestComm DMA");
-+MODULE_AUTHOR("Sylvain Munaut <tnt@246tNt.com>");
-+MODULE_AUTHOR("Andrey Volkov <avolkov@varma-el.com>");
++MODULE_DESCRIPTION("BestComm FEC tasks driver");
 +MODULE_AUTHOR("Dale Farnsworth <dfarnsworth@mvista.com>");
 +MODULE_LICENSE("GPL v2");
 +
-+
-+EXPORT_SYMBOL(bcom);
-+EXPORT_SYMBOL(bcom_dump_status);
-+EXPORT_SYMBOL(bcom_dump_task);
-+EXPORT_SYMBOL(bcom_dump_bdring);
-+EXPORT_SYMBOL(bcom_task_alloc);
-+EXPORT_SYMBOL(bcom_task_release);
-+EXPORT_SYMBOL(bcom_load_image);
-+EXPORT_SYMBOL(bcom_set_initiator);
-+EXPORT_SYMBOL(bcom_enable);
-+EXPORT_SYMBOL(bcom_disable);
-+
-diff --git a/arch/powerpc/sysdev/bestcomm/bestcomm.h b/arch/powerpc/sysdev/bestcomm/bestcomm.h
+diff --git a/arch/powerpc/sysdev/bestcomm/fec.h b/arch/powerpc/sysdev/bestcomm/fec.h
 new file mode 100644
-index 0000000..eac3eec
+index 0000000..fa880ca
 --- /dev/null
-+++ b/arch/powerpc/sysdev/bestcomm/bestcomm.h
-@@ -0,0 +1,136 @@
++++ b/arch/powerpc/sysdev/bestcomm/fec.h
+@@ -0,0 +1,48 @@
 +/*
-+ * Public header for the MPC52xx processor BestComm driver
++ * Header for Bestcomm FEC tasks driver
 + *
 + *
-+ * Copyright (C) 2006      Sylvain Munaut <tnt@246tNt.com>
-+ * Copyright (C) 2005      Varma Electronics Oy,
-+ *                         ( by Andrey Volkov <avolkov@varma-el.com> )
++ * Copyright (C) 2006-2007 Sylvain Munaut <tnt@246tNt.com>
 + * Copyright (C) 2003-2004 MontaVista, Software, Inc.
 + *                         ( by Dale Farnsworth <dfarnsworth@mvista.com> )
 + *
@@ -742,703 +538,40 @@ index 0000000..eac3eec
 + * kind, whether express or implied.
 + */
 +
-+#ifndef __BESTCOMM_H__
-+#define __BESTCOMM_H__
-+
-+struct bcom_bd; /* defined later on ... */
++#ifndef __BESTCOMM_FEC_H__
++#define __BESTCOMM_FEC_H__
 +
 +
-+/* ======================================================================== */
-+/* Generic task managment                                                   */
-+/* ======================================================================== */
-+
-+struct bcom_task {
-+	unsigned int	tasknum;
-+	unsigned int	flags;
-+	int		irq;
-+
-+	struct bcom_bd	*bd;
-+	phys_addr_t	bd_pa;
-+	void		**cookie;
-+	unsigned short	index;
-+	unsigned short	outdex;
-+	unsigned int	num_bd;
-+	unsigned int	bd_size;
-+
-+	void*		priv;
-+};
-+
-+#define BCOM_FLAGS_NONE         0x00000000ul
-+#define BCOM_FLAGS_ENABLE_TASK  (1ul <<  0)
-+
-+
-+extern void bcom_enable(struct bcom_task *tsk);
-+extern void bcom_disable(struct bcom_task *tsk);
-+
-+static inline int
-+bcom_get_task_irq(struct bcom_task *tsk) {
-+	return tsk->irq;
-+}
-+
-+
-+/* Debug dumps */
-+extern void bcom_dump_status(void);
-+extern void bcom_dump_task(int task);
-+extern void bcom_dump_bdring(struct bcom_task *tsk);
-+
-+
-+/* ======================================================================== */
-+/* BD based tasks helpers                                                   */
-+/* ======================================================================== */
-+
-+struct bcom_bd {
++struct bcom_fec_bd {
 +	u32	status;
-+	u32	data[1];	/* variable, but at least 1 */
++	u32	skb_pa;
 +};
 +
-+#define BCOM_BD_READY	0x40000000ul
++#define BCOM_FEC_TX_BD_TFD	0x08000000ul	/* transmit frame done */
++#define BCOM_FEC_TX_BD_INT	0x04000000ul	/* interrupt */
 +
-+static inline int	/* user shouldn't use this ! */
-+_bcom_next_index(struct bcom_task *tsk)
-+{
-+	return ((tsk->index + 1) == tsk->num_bd) ? 0 : tsk->index + 1;
-+}
 +
-+static inline int	/* user shouldn't use this ! */
-+_bcom_next_outdex(struct bcom_task *tsk)
-+{
-+	return ((tsk->outdex + 1) == tsk->num_bd) ? 0 : tsk->outdex + 1;
-+}
++extern struct bcom_task *
++bcom_fec_rx_init(int queue_len, phys_addr_t fifo, int maxbufsize);
 +
-+static inline int
-+bcom_queue_empty(struct bcom_task *tsk)
-+{
-+	return tsk->index == tsk->outdex;
-+}
++extern int
++bcom_fec_rx_reset(struct bcom_task *tsk);
 +
-+static inline int
-+bcom_queue_full(struct bcom_task *tsk)
-+{
-+	return tsk->outdex == _bcom_next_index(tsk);
-+}
++extern void
++bcom_fec_rx_release(struct bcom_task *tsk);
 +
-+static inline int
-+bcom_buffer_done(struct bcom_task *tsk)
-+{
-+	if (bcom_queue_empty(tsk))
-+		return 0;
-+	return !(tsk->bd[tsk->outdex].status & BCOM_BD_READY);
-+}
 +
-+static inline struct bcom_bd *
-+bcom_prepare_next_buffer(struct bcom_task *tsk)
-+{
-+	tsk->bd[tsk->index].status = 0;	/* cleanup last status */
-+	return &tsk->bd[tsk->index];
-+}
++extern struct bcom_task *
++bcom_fec_tx_init(int queue_len, phys_addr_t fifo);
 +
-+static inline void
-+bcom_submit_next_buffer(struct bcom_task *tsk, void *cookie)
-+{
-+	tsk->cookie[tsk->index] = cookie;
-+	mb();	/* ensure the bd is really up-to-date */
-+	tsk->bd[tsk->index].status |= BCOM_BD_READY;
-+	tsk->index = _bcom_next_index(tsk);
-+	if (tsk->flags & BCOM_FLAGS_ENABLE_TASK)
-+		bcom_enable(tsk);
-+}
++extern int
++bcom_fec_tx_reset(struct bcom_task *tsk);
 +
-+static inline void *
-+bcom_retrieve_buffer(struct bcom_task *tsk, u32 *p_status, struct bcom_bd **p_bd)
-+{
-+	void *cookie = tsk->cookie[tsk->outdex];
-+	if (p_status)
-+		*p_status = tsk->bd[tsk->outdex].status;
-+	if (p_bd)
-+		*p_bd = &tsk->bd[tsk->outdex];
-+	tsk->outdex = _bcom_next_outdex(tsk);
-+	return cookie;
-+}
++extern void
++bcom_fec_tx_release(struct bcom_task *tsk);
 +
 +
-+#endif /* __BESTCOMM_H__ */
-+
-diff --git a/arch/powerpc/sysdev/bestcomm/bestcomm_priv.h b/arch/powerpc/sysdev/bestcomm/bestcomm_priv.h
-new file mode 100644
-index 0000000..d43b00a
---- /dev/null
-+++ b/arch/powerpc/sysdev/bestcomm/bestcomm_priv.h
-@@ -0,0 +1,325 @@
-+/*
-+ * Private header for the MPC52xx processor BestComm driver
-+ *
-+ *
-+ * Copyright (C) 2006      Sylvain Munaut <tnt@246tNt.com>
-+ * Copyright (C) 2005      Varma Electronics Oy,
-+ *                         ( by Andrey Volkov <avolkov@varma-el.com> )
-+ * Copyright (C) 2003-2004 MontaVista, Software, Inc.
-+ *                         ( by Dale Farnsworth <dfarnsworth@mvista.com> )
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2. This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
-+ */
-+
-+#ifndef __BESTCOMM_PRIV_H__
-+#define __BESTCOMM_PRIV_H__
-+
-+#include <linux/spinlock.h>
-+#include <asm/io.h>
-+#include <asm/prom.h>
-+#include <asm/mpc52xx.h>
-+
-+#include "sram.h"
-+
-+
-+/* ======================================================================== */
-+/* Engine related stuff                                                     */
-+/* ======================================================================== */
-+
-+/* Zones sizes and needed alignments */
-+#define BCOM_MAX_TASKS		16
-+#define BCOM_MAX_VAR		24
-+#define BCOM_MAX_INC		8
-+#define BCOM_MAX_FDT		64
-+#define BCOM_MAX_CTX		20
-+#define BCOM_CTX_SIZE		(BCOM_MAX_CTX * sizeof(u32))
-+#define BCOM_CTX_ALIGN		0x100
-+#define BCOM_VAR_SIZE		(BCOM_MAX_VAR * sizeof(u32))
-+#define BCOM_INC_SIZE		(BCOM_MAX_INC * sizeof(u32))
-+#define BCOM_VAR_ALIGN		0x80
-+#define BCOM_FDT_SIZE		(BCOM_MAX_FDT * sizeof(u32))
-+#define BCOM_FDT_ALIGN		0x100
-+
-+/* Task Descriptor Table Entry */
-+struct bcom_tdt {
-+	u32 start;
-+	u32 stop;
-+	u32 var;
-+	u32 fdt;
-+	u32 exec_status;	/* used internally by BestComm engine */
-+	u32 mvtp;		/* used internally by BestComm engine */
-+	u32 context;
-+	u32 litbase;
-+};
-+
-+/* This holds all info needed globaly to handle the engine */
-+struct bcom_engine {
-+	struct device_node		*ofnode;
-+	struct mpc52xx_sdma __iomem     *regs;
-+	phys_addr_t                      regs_base;
-+
-+	struct bcom_tdt			*tdt;
-+	u32				*ctx;
-+	u32				*var;
-+	u32				*fdt;
-+
-+	spinlock_t			lock;
-+};
-+
-+extern struct bcom_engine *bcom;
-+
-+
-+/* ======================================================================== */
-+/* Tasks related stuff                                                      */
-+/* ======================================================================== */
-+
-+/* Tasks image header */
-+#define BCOM_TASK_MAGIC		0x4243544B	/* 'BCTK' */
-+
-+struct bcom_task_header {
-+	u32	magic;
-+	u8	desc_size;	/* the size fields     */
-+	u8	var_size;	/* are given in number */
-+	u8	inc_size;	/* of 32-bits words    */
-+	u8	first_var;
-+	u8	reserved[8];
-+};
-+
-+/* Descriptors stucture & co */
-+#define BCOM_DESC_NOP		0x000001f8
-+#define BCOM_LCD_MASK		0x80000000
-+#define BCOM_DRD_EXTENDED	0x40000000
-+#define BCOM_DRD_INITIATOR_SHIFT	21
-+
-+/* Tasks pragma */
-+#define BCOM_PRAGMA_BIT_RSV		7	/* reserved pragma bit */
-+#define BCOM_PRAGMA_BIT_PRECISE_INC	6	/* increment 0=when possible, */
-+						/*           1=iter end */
-+#define BCOM_PRAGMA_BIT_RST_ERROR_NO	5	/* don't reset errors on */
-+						/* task enable */
-+#define BCOM_PRAGMA_BIT_PACK		4	/* pack data enable */
-+#define BCOM_PRAGMA_BIT_INTEGER		3	/* data alignment */
-+						/* 0=frac(msb), 1=int(lsb) */
-+#define BCOM_PRAGMA_BIT_SPECREAD	2	/* XLB speculative read */
-+#define BCOM_PRAGMA_BIT_CW		1	/* write line buffer enable */
-+#define BCOM_PRAGMA_BIT_RL		0	/* read line buffer enable */
-+
-+	/* Looks like XLB speculative read generates XLB errors when a buffer
-+	 * is at the end of the physical memory. i.e. when accessing the
-+	 * lasts words, the engine tries to prefetch the next but there is no
-+	 * next ...
-+	 */
-+#define BCOM_STD_PRAGMA		((0 << BCOM_PRAGMA_BIT_RSV)		| \
-+				 (0 << BCOM_PRAGMA_BIT_PRECISE_INC)	| \
-+				 (0 << BCOM_PRAGMA_BIT_RST_ERROR_NO)	| \
-+				 (0 << BCOM_PRAGMA_BIT_PACK)		| \
-+				 (0 << BCOM_PRAGMA_BIT_INTEGER)		| \
-+				 (0 << BCOM_PRAGMA_BIT_SPECREAD)	| \
-+				 (1 << BCOM_PRAGMA_BIT_CW)		| \
-+				 (1 << BCOM_PRAGMA_BIT_RL))
-+
-+#define BCOM_PCI_PRAGMA		((0 << BCOM_PRAGMA_BIT_RSV)		| \
-+				 (0 << BCOM_PRAGMA_BIT_PRECISE_INC)	| \
-+				 (0 << BCOM_PRAGMA_BIT_RST_ERROR_NO)	| \
-+				 (0 << BCOM_PRAGMA_BIT_PACK)		| \
-+				 (1 << BCOM_PRAGMA_BIT_INTEGER)		| \
-+				 (0 << BCOM_PRAGMA_BIT_SPECREAD)	| \
-+				 (1 << BCOM_PRAGMA_BIT_CW)		| \
-+				 (1 << BCOM_PRAGMA_BIT_RL))
-+
-+#define BCOM_ATA_PRAGMA		BCOM_STD_PRAGMA
-+#define BCOM_CRC16_DP_0_PRAGMA	BCOM_STD_PRAGMA
-+#define BCOM_CRC16_DP_1_PRAGMA	BCOM_STD_PRAGMA
-+#define BCOM_FEC_RX_BD_PRAGMA	BCOM_STD_PRAGMA
-+#define BCOM_FEC_TX_BD_PRAGMA	BCOM_STD_PRAGMA
-+#define BCOM_GEN_DP_0_PRAGMA	BCOM_STD_PRAGMA
-+#define BCOM_GEN_DP_1_PRAGMA	BCOM_STD_PRAGMA
-+#define BCOM_GEN_DP_2_PRAGMA	BCOM_STD_PRAGMA
-+#define BCOM_GEN_DP_3_PRAGMA	BCOM_STD_PRAGMA
-+#define BCOM_GEN_DP_BD_0_PRAGMA	BCOM_STD_PRAGMA
-+#define BCOM_GEN_DP_BD_1_PRAGMA	BCOM_STD_PRAGMA
-+#define BCOM_GEN_RX_BD_PRAGMA	BCOM_STD_PRAGMA
-+#define BCOM_GEN_TX_BD_PRAGMA	BCOM_STD_PRAGMA
-+#define BCOM_GEN_LPC_PRAGMA	BCOM_STD_PRAGMA
-+#define BCOM_PCI_RX_PRAGMA	BCOM_PCI_PRAGMA
-+#define BCOM_PCI_TX_PRAGMA	BCOM_PCI_PRAGMA
-+
-+/* Initiators number */
-+#define BCOM_INITIATOR_ALWAYS	 0
-+#define BCOM_INITIATOR_SCTMR_0	 1
-+#define BCOM_INITIATOR_SCTMR_1	 2
-+#define BCOM_INITIATOR_FEC_RX	 3
-+#define BCOM_INITIATOR_FEC_TX	 4
-+#define BCOM_INITIATOR_ATA_RX	 5
-+#define BCOM_INITIATOR_ATA_TX	 6
-+#define BCOM_INITIATOR_SCPCI_RX	 7
-+#define BCOM_INITIATOR_SCPCI_TX	 8
-+#define BCOM_INITIATOR_PSC3_RX	 9
-+#define BCOM_INITIATOR_PSC3_TX	10
-+#define BCOM_INITIATOR_PSC2_RX	11
-+#define BCOM_INITIATOR_PSC2_TX	12
-+#define BCOM_INITIATOR_PSC1_RX	13
-+#define BCOM_INITIATOR_PSC1_TX	14
-+#define BCOM_INITIATOR_SCTMR_2	15
-+#define BCOM_INITIATOR_SCLPC	16
-+#define BCOM_INITIATOR_PSC5_RX	17
-+#define BCOM_INITIATOR_PSC5_TX	18
-+#define BCOM_INITIATOR_PSC4_RX	19
-+#define BCOM_INITIATOR_PSC4_TX	20
-+#define BCOM_INITIATOR_I2C2_RX	21
-+#define BCOM_INITIATOR_I2C2_TX	22
-+#define BCOM_INITIATOR_I2C1_RX	23
-+#define BCOM_INITIATOR_I2C1_TX	24
-+#define BCOM_INITIATOR_PSC6_RX	25
-+#define BCOM_INITIATOR_PSC6_TX	26
-+#define BCOM_INITIATOR_IRDA_RX	25
-+#define BCOM_INITIATOR_IRDA_TX	26
-+#define BCOM_INITIATOR_SCTMR_3	27
-+#define BCOM_INITIATOR_SCTMR_4	28
-+#define BCOM_INITIATOR_SCTMR_5	29
-+#define BCOM_INITIATOR_SCTMR_6	30
-+#define BCOM_INITIATOR_SCTMR_7	31
-+
-+/* Initiators priorities */
-+#define BCOM_IPR_ALWAYS		7
-+#define BCOM_IPR_SCTMR_0	2
-+#define BCOM_IPR_SCTMR_1	2
-+#define BCOM_IPR_FEC_RX		6
-+#define BCOM_IPR_FEC_TX		5
-+#define BCOM_IPR_ATA_RX		4
-+#define BCOM_IPR_ATA_TX		3
-+#define BCOM_IPR_SCPCI_RX	2
-+#define BCOM_IPR_SCPCI_TX	2
-+#define BCOM_IPR_PSC3_RX	2
-+#define BCOM_IPR_PSC3_TX	2
-+#define BCOM_IPR_PSC2_RX	2
-+#define BCOM_IPR_PSC2_TX	2
-+#define BCOM_IPR_PSC1_RX	2
-+#define BCOM_IPR_PSC1_TX	2
-+#define BCOM_IPR_SCTMR_2	2
-+#define BCOM_IPR_SCLPC		2
-+#define BCOM_IPR_PSC5_RX	2
-+#define BCOM_IPR_PSC5_TX	2
-+#define BCOM_IPR_PSC4_RX	2
-+#define BCOM_IPR_PSC4_TX	2
-+#define BCOM_IPR_I2C2_RX	2
-+#define BCOM_IPR_I2C2_TX	2
-+#define BCOM_IPR_I2C1_RX	2
-+#define BCOM_IPR_I2C1_TX	2
-+#define BCOM_IPR_PSC6_RX	2
-+#define BCOM_IPR_PSC6_TX	2
-+#define BCOM_IPR_IRDA_RX	2
-+#define BCOM_IPR_IRDA_TX	2
-+#define BCOM_IPR_SCTMR_3	2
-+#define BCOM_IPR_SCTMR_4	2
-+#define BCOM_IPR_SCTMR_5	2
-+#define BCOM_IPR_SCTMR_6	2
-+#define BCOM_IPR_SCTMR_7	2
-+
-+
-+/* ======================================================================== */
-+/* API                                                                      */
-+/* ======================================================================== */
-+
-+extern struct bcom_task *bcom_task_alloc(int bd_count, int bd_size, int priv_size);
-+extern void bcom_task_release(struct bcom_task *tsk);
-+
-+extern int bcom_load_image(int task, u32 *task_image);
-+extern void bcom_set_initiator(int task, int initiator);
-+
-+
-+#define TASK_ENABLE             0x8000
-+
-+static inline void
-+bcom_enable_task(int task)
-+{
-+        u16 reg;
-+        reg = in_be16(&bcom->regs->tcr[task]);
-+        out_be16(&bcom->regs->tcr[task],  reg | TASK_ENABLE);
-+}
-+
-+static inline void
-+bcom_disable_task(int task)
-+{
-+        u16 reg = in_be16(&bcom->regs->tcr[task]);
-+        out_be16(&bcom->regs->tcr[task], reg & ~TASK_ENABLE);
-+}
-+
-+
-+static inline u32 *
-+bcom_task_desc(int task)
-+{
-+	return bcom_sram_pa2va(bcom->tdt[task].start);
-+}
-+
-+static inline int
-+bcom_task_num_descs(int task)
-+{
-+	return (bcom->tdt[task].stop - bcom->tdt[task].start)/sizeof(u32) + 1;
-+}
-+
-+static inline u32 *
-+bcom_task_var(int task)
-+{
-+	return bcom_sram_pa2va(bcom->tdt[task].var);
-+}
-+
-+static inline u32 *
-+bcom_task_inc(int task)
-+{
-+	return &bcom_task_var(task)[BCOM_MAX_VAR];
-+}
-+
-+
-+static inline int
-+bcom_drd_is_extended(u32 desc)
-+{
-+	return (desc) & BCOM_DRD_EXTENDED;
-+}
-+
-+static inline int
-+bcom_desc_is_drd(u32 desc)
-+{
-+	return !(desc & BCOM_LCD_MASK) && desc != BCOM_DESC_NOP;
-+}
-+
-+static inline int
-+bcom_desc_initiator(u32 desc)
-+{
-+	return (desc >> BCOM_DRD_INITIATOR_SHIFT) & 0x1f;
-+}
-+
-+static inline void
-+bcom_set_desc_initiator(u32 *desc, int initiator)
-+{
-+	*desc = (*desc & ~(0x1f << BCOM_DRD_INITIATOR_SHIFT)) |
-+			((initiator & 0x1f) << BCOM_DRD_INITIATOR_SHIFT);
-+}
-+
-+
-+static inline void
-+bcom_set_task_pragma(int task, int pragma)
-+{
-+	u32 *fdt = &bcom->tdt[task].fdt;
-+	*fdt = (*fdt & ~0xff) | pragma;
-+}
-+
-+static inline void
-+bcom_set_task_auto_start(int task, int next_task)
-+{
-+	u16 __iomem *tcr = &bcom->regs->tcr[task];
-+	out_be16(tcr, (in_be16(tcr) & ~0xff) | 0x00c0 | next_task);
-+}
-+
-+static inline void
-+bcom_set_tcr_initiator(int task, int initiator)
-+{
-+	u16 __iomem *tcr = &bcom->regs->tcr[task];
-+	out_be16(tcr, (in_be16(tcr) & ~0x1f00) | ((initiator & 0x1f) << 8));
-+}
-+
-+
-+#endif /* __BESTCOMM_PRIV_H__ */
-+
-diff --git a/arch/powerpc/sysdev/bestcomm/sram.c b/arch/powerpc/sysdev/bestcomm/sram.c
-new file mode 100644
-index 0000000..4f69127
---- /dev/null
-+++ b/arch/powerpc/sysdev/bestcomm/sram.c
-@@ -0,0 +1,180 @@
-+/*
-+ * Simple memory allocator for on-board SRAM
-+ *
-+ *
-+ * Maintainer : Sylvain Munaut <tnt@246tNt.com>
-+ *
-+ * Copyright (C) 2005 Sylvain Munaut <tnt@246tNt.com>
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2. This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/slab.h>
-+#include <linux/spinlock.h>
-+#include <linux/string.h>
-+#include <linux/ioport.h>
-+
-+#include <asm/io.h>
-+#include <asm/mmu.h>
-+#include <asm/prom.h>
-+
-+#include "sram.h"
-+
-+
-+/* Struct keeping our 'state' */
-+struct bcom_sram *bcom_sram = NULL;
-+
-+
-+/* ======================================================================== */
-+/* Public API                                                               */
-+/* ======================================================================== */
-+/* DO NOT USE in interrupts, if needed in irq handler, we should use the
-+   _irqsave version of the spin_locks */
-+
-+int bcom_sram_init(struct device_node *sram_node, char *owner)
-+{
-+	int rv;
-+	const u32 *regaddr_p;
-+	u64 regaddr64, size64;
-+	unsigned int psize;
-+
-+	/* Create our state struct */
-+	if (bcom_sram) {
-+		printk(KERN_ERR "%s: bcom_sram_init: "
-+			"Already initialiwed !\n", owner);
-+		return -EBUSY;
-+	}
-+
-+	bcom_sram = kmalloc(sizeof(struct bcom_sram), GFP_KERNEL);
-+	if (!bcom_sram) {
-+		printk(KERN_ERR "%s: bcom_sram_init: "
-+			"Couldn't allocate internal state !\n", owner);
-+		return -ENOMEM;
-+	}
-+
-+	/* Get address and size of the sram */
-+	regaddr_p = of_get_address(sram_node, 0, &size64, NULL);
-+	if (!regaddr_p) {
-+		printk(KERN_ERR "%s: bcom_sram_init: "
-+			"Invalid device node !\n", owner);
-+		rv = -EINVAL;
-+		goto error_free;
-+	}
-+
-+	regaddr64 = of_translate_address(sram_node, regaddr_p);
-+
-+	bcom_sram->base_phys = (phys_addr_t) regaddr64;
-+	bcom_sram->size = (unsigned int) size64;
-+
-+	/* Request region */
-+	if (!request_mem_region(bcom_sram->base_phys, bcom_sram->size, owner)) {
-+		printk(KERN_ERR "%s: bcom_sram_init: "
-+			"Couln't request region !\n", owner);
-+		rv = -EBUSY;
-+		goto error_free;
-+	}
-+
-+	/* Map SRAM */
-+		/* sram is not really __iomem */
-+	bcom_sram->base_virt = (void*) ioremap(bcom_sram->base_phys, bcom_sram->size);
-+
-+	if (!bcom_sram->base_virt) {
-+		printk(KERN_ERR "%s: bcom_sram_init: "
-+			"Map error SRAM zone 0x%08lx (0x%0x)!\n",
-+			owner, bcom_sram->base_phys, bcom_sram->size );
-+		rv = -ENOMEM;
-+		goto error_release;
-+	}
-+
-+	/* Create an rheap (defaults to 32 bits word alignment) */
-+	bcom_sram->rh = rh_create(4);
-+
-+	/* Attach the free zones */
-+#if 0
-+	/* Currently disabled ... for future use only */
-+	reg_addr_p = of_get_property(sram_node, "available", &psize);
-+#else
-+	regaddr_p = NULL;
-+	psize = 0;
-+#endif
-+
-+	if (!regaddr_p || !psize) {
-+		/* Attach the whole zone */
-+		rh_attach_region(bcom_sram->rh, 0, bcom_sram->size);
-+	} else {
-+		/* Attach each zone independently */
-+		while (psize >= 2 * sizeof(u32)) {
-+			phys_addr_t zbase = of_translate_address(sram_node, regaddr_p);
-+			rh_attach_region(bcom_sram->rh, zbase - bcom_sram->base_phys, regaddr_p[1]);
-+			regaddr_p += 2;
-+			psize -= 2 * sizeof(u32);
-+		}
-+	}
-+
-+	/* Init our spinlock */
-+	spin_lock_init(&bcom_sram->lock);
-+
-+	return 0;
-+
-+error_release:
-+	release_mem_region(bcom_sram->base_phys, bcom_sram->size);
-+error_free:
-+	kfree(bcom_sram);
-+	bcom_sram = NULL;
-+
-+	return rv;
-+}
-+
-+void bcom_sram_cleanup(void)
-+{
-+	/* Free resources */
-+	if (bcom_sram) {
-+		rh_destroy(bcom_sram->rh);
-+		iounmap((void __iomem *)bcom_sram->base_virt);
-+		release_mem_region(bcom_sram->base_phys, bcom_sram->size);
-+		kfree(bcom_sram);
-+		bcom_sram = NULL;
-+	}
-+}
-+
-+void* bcom_sram_alloc(int size, int align, phys_addr_t *phys)
-+{
-+	unsigned long offset;
-+
-+	spin_lock(&bcom_sram->lock);
-+	offset = rh_alloc_align(bcom_sram->rh, size, align, NULL);
-+	spin_unlock(&bcom_sram->lock);
-+
-+	if (IS_ERR_VALUE(offset))
-+		return NULL;
-+
-+	*phys = bcom_sram->base_phys + offset;
-+	return bcom_sram->base_virt + offset;
-+}
-+
-+void bcom_sram_free(void *ptr)
-+{
-+	unsigned long offset;
-+
-+	if (!ptr)
-+		return;
-+
-+	offset = ptr - bcom_sram->base_virt;
-+
-+	spin_lock(&bcom_sram->lock);
-+	rh_free(bcom_sram->rh, offset);
-+	spin_unlock(&bcom_sram->lock);
-+}
-+
-+
-+EXPORT_SYMBOL(bcom_sram);
-+
-+EXPORT_SYMBOL(bcom_sram_init);
-+EXPORT_SYMBOL(bcom_sram_cleanup);
-+EXPORT_SYMBOL(bcom_sram_alloc);
-+EXPORT_SYMBOL(bcom_sram_free);
-+
-diff --git a/arch/powerpc/sysdev/bestcomm/sram.h b/arch/powerpc/sysdev/bestcomm/sram.h
-new file mode 100644
-index 0000000..b6d6689
---- /dev/null
-+++ b/arch/powerpc/sysdev/bestcomm/sram.h
-@@ -0,0 +1,54 @@
-+/*
-+ * Handling of a sram zone for bestcomm
-+ *
-+ *
-+ * Copyright (C) 2007 Sylvain Munaut <tnt@246tNt.com>
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2. This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
-+ */
-+
-+#ifndef __BESTCOMM_SRAM_H__
-+#define __BESTCOMM_SRAM_H__
-+
-+#include <asm/rheap.h>
-+#include <asm/mmu.h>
-+#include <linux/spinlock.h>
-+
-+
-+/* Structure used internally */
-+	/* The internals are here for the inline functions
-+	 * sake, certainly not for the user to mess with !
-+	 */
-+struct bcom_sram {
-+	phys_addr_t		 base_phys;
-+	void 			*base_virt;
-+	unsigned int		 size;
-+	rh_info_t		*rh;
-+	spinlock_t		 lock;
-+};
-+
-+extern struct bcom_sram *bcom_sram;
-+
-+
-+/* Public API */
-+extern int  bcom_sram_init(struct device_node *sram_node, char *owner);
-+extern void bcom_sram_cleanup(void);
-+
-+extern void* bcom_sram_alloc(int size, int align, phys_addr_t *phys);
-+extern void  bcom_sram_free(void *ptr);
-+
-+static inline phys_addr_t bcom_sram_va2pa(void *va) {
-+	return bcom_sram->base_phys +
-+		(unsigned long)(va - bcom_sram->base_virt);
-+}
-+
-+static inline void *bcom_sram_pa2va(phys_addr_t pa) {
-+	return bcom_sram->base_virt +
-+		(unsigned long)(pa - bcom_sram->base_phys);
-+}
-+
-+
-+#endif  /* __BESTCOMM_SRAM_H__ */
++#endif /* __BESTCOMM_FEC_H__ */
 +
 -- 
 1.5.1.2
