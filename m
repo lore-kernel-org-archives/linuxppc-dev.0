@@ -1,18 +1,18 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id C27C5DDEC6
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 May 2007 08:18:49 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id DFE3CDDE0F
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 May 2007 08:33:40 +1000 (EST)
+Date: Sat, 12 May 2007 17:36:23 -0500
+To: Arnd Bergmann <arnd@arndb.de>
 Subject: Re: [PATCH] powerpc: make ioport_map() handle already mapped ranges
-Date: Sun, 13 May 2007 00:18:42 +0200
+Message-ID: <20070512223623.GA16045@lixom.net>
 References: <20070512143221.GB12890@lixom.net>
-In-Reply-To: <20070512143221.GB12890@lixom.net>
+	<200705130018.42612.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200705130018.42612.arnd@arndb.de>
-Cc: Olof Johansson <olof@lixom.net>, paulus@samba.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200705130018.42612.arnd@arndb.de>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,42 +22,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 12 May 2007, Olof Johansson wrote:
-> Make ioport_map() handle already mapped port range without trying
-> to add _IO_BASE to them.
->=20
->=20
-> Signed-off-by: Olof Johansson <olof@lixom.net>
->=20
-> Index: 2.6.21/arch/powerpc/kernel/iomap.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- 2.6.21.orig/arch/powerpc/kernel/iomap.c
-> +++ 2.6.21/arch/powerpc/kernel/iomap.c
-> @@ -106,7 +106,13 @@ EXPORT_SYMBOL(iowrite32_rep);
-> =A0
-> =A0void __iomem *ioport_map(unsigned long port, unsigned int len)
-> =A0{
-> -=A0=A0=A0=A0=A0=A0=A0return (void __iomem *) (port + _IO_BASE);
-> +=A0=A0=A0=A0=A0=A0=A0/* Do nothing if we're being asked to map an already
-> +=A0=A0=A0=A0=A0=A0=A0 * ioremapped() address
-> +=A0=A0=A0=A0=A0=A0=A0 */
-> +=A0=A0=A0=A0=A0=A0=A0if (port >=3D IMALLOC_BASE && (port+len) < IMALLOC_=
-END)
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0return (void __iomem *) por=
-t;
-> +=A0=A0=A0=A0=A0=A0=A0else
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0return (void __iomem *) (po=
-rt + _IO_BASE);
-> =A0}
+On Sun, May 13, 2007 at 12:18:42AM +0200, Arnd Bergmann wrote:
+> On Saturday 12 May 2007, Olof Johansson wrote:
+> > Make ioport_map() handle already mapped port range without trying
+> > to add _IO_BASE to them.
+> > 
+> > 
+> > Signed-off-by: Olof Johansson <olof@lixom.net>
+> > 
+> > Index: 2.6.21/arch/powerpc/kernel/iomap.c
+> > ===================================================================
+> > --- 2.6.21.orig/arch/powerpc/kernel/iomap.c
+> > +++ 2.6.21/arch/powerpc/kernel/iomap.c
+> > @@ -106,7 +106,13 @@ EXPORT_SYMBOL(iowrite32_rep);
+> > ?
+> > ?void __iomem *ioport_map(unsigned long port, unsigned int len)
+> > ?{
+> > -???????return (void __iomem *) (port + _IO_BASE);
+> > +???????/* Do nothing if we're being asked to map an already
+> > +??????? * ioremapped() address
+> > +??????? */
+> > +???????if (port >= IMALLOC_BASE && (port+len) < IMALLOC_END)
+> > +???????????????return (void __iomem *) port;
+> > +???????else
+> > +???????????????return (void __iomem *) (port + _IO_BASE);
+> > ?}
+> 
+> This patch looks wrong to me, it's an indication that either a driver
+> is confusing ioport and __iomem addresses, or that something went
+> wrong during the initialization of the primary PCI bus.
 
-This patch looks wrong to me, it's an indication that either a driver
-is confusing ioport and __iomem addresses, or that something went
-wrong during the initialization of the primary PCI bus.
+It's not for PCI. See discussion in:
 
-We have a bug on cell that would be fixed with this patch, so it
-might be the same problem, see the patch that I suggested for
-this at http://patchwork.ozlabs.org/linuxppc/patch?id=3D10840 .
+http://ozlabs.org/pipermail/linuxppc-dev/2007-May/035744.html
 
-	Arnd <><
+> We have a bug on cell that would be fixed with this patch, so it
+> might be the same problem, see the patch that I suggested for
+> this at http://patchwork.ozlabs.org/linuxppc/patch?id=10840 .
+
+Not in this case, but thanks for the pointer. Your case is still based
+on the fact that you only have one io space range, you're just making
+sure you're allocating out of that range. In my case, I have two distinct
+ranges, they're even on different busses...
+
+
+-Olof
