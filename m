@@ -1,19 +1,19 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 4528ADDEC8
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 May 2007 09:27:12 +1000 (EST)
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id D0CD5DDEC9
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 May 2007 09:30:58 +1000 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 4/9] powerpc: BestComm core support for Freescale MPC5200
-Date: Sun, 13 May 2007 01:27:08 +0200
+Subject: Re: [PATCH 5/9] powerpc: BestcComm ATA task support
+Date: Sun, 13 May 2007 01:30:56 +0200
 References: <11790019171838-git-send-email-tnt@246tNt.com>
-	<11790019223925-git-send-email-tnt@246tNt.com>
 	<11790019234031-git-send-email-tnt@246tNt.com>
-In-Reply-To: <11790019234031-git-send-email-tnt@246tNt.com>
+	<11790019233958-git-send-email-tnt@246tNt.com>
+In-Reply-To: <11790019233958-git-send-email-tnt@246tNt.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200705130127.08761.arnd@arndb.de>
+Message-Id: <200705130130.56854.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,102 +24,59 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Saturday 12 May 2007, Sylvain Munaut wrote:
-
-> This patch adds support for the core of the BestComm API
-> for the Freescale MPC5200(b). The BestComm engine is a
-> microcode-controlled / tasks-based DMA used by several
-> of the onchip devices.
-
-Have you tried if the DMA engine API that is now in drivers/dma
-fits the hardware interfaces? Could they perhaps be extended to
-do so?
-
-> +struct bcom_engine *bcom = NULL;
-
-Doe this need to be a global? In most cases, you get a cleaner driver by
-passing around pointers through function calls and your own device specific
-data structures.
-
-If you can't make that work, at least give it a longer name to make sure
-it doesn't conflict with other global variables.
-
-> +/* ======================================================================== */
-> +/* Public and private API                                                   */
-> +/* ======================================================================== */
 > +
-> +/* Debug Dump */
+> +EXPORT_SYMBOL(bcom_ata_init);
+> +EXPORT_SYMBOL(bcom_ata_rx_prepare);
+> +EXPORT_SYMBOL(bcom_ata_tx_prepare);
+> +EXPORT_SYMBOL(bcom_ata_reset);
+> +EXPORT_SYMBOL(bcom_ata_release);
+
+See my comment in 4/9: why not EXPORT_SYMBOL_GPL?
+
+> +u32 bcom_ata_task[] = {
+> +	/* header */
+> +	0x4243544b,
+> +	0x0e060709,
+> +	0x00000000,
+> +	0x00000000,
 > +
-> +#define BCOM_DPRINTK(a,b...) printk(KERN_DEBUG DRIVER_NAME ": " a, ## b)
-
-just use pr_debug in new code instead of defining your own
-
-> +static int __init
-> +mpc52xx_bcom_init(void)
-> +{
-> +	struct device_node *ofn_bcom, *ofn_sram;
-> +	struct resource res_bcom;
+> +	/* Task descriptors */
+> +	0x8198009b, /* LCD: idx0 = var3; idx0 <= var2; idx0 += inc3 */
+> +	0x13e00c08, /*   DRD1A: var3 = var1; FN=0 MORE init=31 WS=0 RS=0 */
+> +	0xb8000264, /*   LCD: idx1 = *idx0, idx2 = var0; idx1 < var9; idx1 += inc4, idx2 += inc4 */
+> +	0x10000f00, /*     DRD1A: var3 = idx0; FN=0 MORE init=0 WS=0 RS=0 */
+> +	0x60140002, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=2 EXT init=0 WS=2 RS=2 */
+> +	0x0c8cfc8a, /*     DRD2B1: *idx2 = EU3(); EU3(*idx2,var10)  */
+> +	0xd8988240, /*   LCDEXT: idx1 = idx1; idx1 > var9; idx1 += inc0 */
+> +	0xf845e011, /*   LCDEXT: idx2 = *(idx0 + var00000015); ; idx2 += inc2 */
+> +	0xb845e00a, /*   LCD: idx3 = *(idx0 + var00000019); ; idx3 += inc1 */
+> +	0x0bfecf90, /*     DRD1A: *idx3 = *idx2; FN=0 TFD init=31 WS=3 RS=3 */
+> +	0x9898802d, /*   LCD: idx1 = idx1; idx1 once var0; idx1 += inc5 */
+> +	0x64000005, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=5 INT EXT init=0 WS=0 RS=0 */
+> +	0x0c0cf849, /*     DRD2B1: *idx0 = EU3(); EU3(idx1,var9)  */
+> +	0x000001f8, /* NOP */
 > +
-> +	int rv;
+> +	/* VAR[9]-VAR[14] */
+> +	0x40000000,
+> +	0x7fff7fff,
+> +	0x00000000,
+> +	0x00000000,
+> +	0x00000000,
+> +	0x00000000,
 > +
-> +	/* Find the bestcomm node. If none, fails 'silently' since
-> +	 * we may just be on another platform */
-> +	ofn_bcom = of_find_compatible_node(
-> +			NULL, "dma-controller", "mpc5200-bestcomm");
-> +	if (!ofn_bcom)
-> +		return -ENODEV;
-
-I know, my usual rant is getting old, but why is this one not an
-of_platform_driver? It's not shared with arch/ppc or with arch/mips,
-and it's not needed before module_init() time.
-
+> +	/* INC[0]-INC[6] */
+> +	0x40000000,
+> +	0xe0000000,
+> +	0xe0000000,
+> +	0xa000000c,
+> +	0x20000000,
+> +	0x00000000,
+> +	0x00000000,
+> +};
 > +
-> +#ifdef MODULE
-> +module_init(mpc52xx_bcom_init);
-> +module_exit(mpc52xx_bcom_exit);
-> +#endif
-> +
-> +/* If we're not a module, we must make sure everything is setup before anyone */
-> +/* tries to use us ... */
-> +#ifndef MODULE
-> +subsys_initcall(mpc52xx_bcom_init);
-> +#endif
 
-You can make it subsys_initcall() unconditionally. If the driver gets built
-as a module, it will turn into module_init() by itself.
-
-> +MODULE_DESCRIPTION("Freescale MPC52xx BestComm DMA");
-> +MODULE_AUTHOR("Sylvain Munaut <tnt@246tNt.com>");
-> +MODULE_AUTHOR("Andrey Volkov <avolkov@varma-el.com>");
-> +MODULE_AUTHOR("Dale Farnsworth <dfarnsworth@mvista.com>");
-> +MODULE_LICENSE("GPL v2");
-
-I didn't know that you could have multiple MODULE_AUTHOR statements.
-Does this do the right thing with /bin/modinfo?
-
-> +EXPORT_SYMBOL(bcom);
-> +EXPORT_SYMBOL(bcom_dump_status);
-> +EXPORT_SYMBOL(bcom_dump_task);
-> +EXPORT_SYMBOL(bcom_dump_bdring);
-> +EXPORT_SYMBOL(bcom_task_alloc);
-> +EXPORT_SYMBOL(bcom_task_release);
-> +EXPORT_SYMBOL(bcom_load_image);
-> +EXPORT_SYMBOL(bcom_set_initiator);
-> +EXPORT_SYMBOL(bcom_enable);
-> +EXPORT_SYMBOL(bcom_disable);
-
-Please put every EXPORT_SYMBOL right after the definition of the symbol
-you are exporting.
-
-Why don't you use EXPORT_SYMBOL_GPL?
-
-> +
-> +EXPORT_SYMBOL(bcom_sram);
-> +
-> +EXPORT_SYMBOL(bcom_sram_init);
-> +EXPORT_SYMBOL(bcom_sram_cleanup);
-> +EXPORT_SYMBOL(bcom_sram_alloc);
-> +EXPORT_SYMBOL(bcom_sram_free);
-> +
-Same comment as above.
+Does it make any sense to define these symbolically? It's entirely nonobvious
+what all these magic numbers do. Maybe at least give the URL of the document
+that this comes from.
 
 	Arnd <><
