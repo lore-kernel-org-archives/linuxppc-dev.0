@@ -1,20 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8F2C1DDEAB
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 May 2007 19:06:47 +1000 (EST)
-Subject: Re: [PATCH 7/7] MPIC U3/U4 MSI backend
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <1178958505.2647.5.camel@johannes.berg>
-References: <20070508025843.0D93ADDEFD@ozlabs.org>
-	<1178958505.2647.5.camel@johannes.berg>
-Content-Type: text/plain; charset=utf-8
-Date: Sat, 12 May 2007 19:06:35 +1000
-Message-Id: <1178960796.32247.38.camel@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 24893DDE9F
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 May 2007 19:17:51 +1000 (EST)
+Date: Sat, 12 May 2007 11:15:59 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Linas Vepstas <linas@austin.ibm.com>
+Subject: Re: Using kprobes [was Re: [PATCH] Performance Stats: Kernel patch
+Message-ID: <20070512091559.GA23204@lst.de>
+References: <20070508162650.704.83752.stgit@localhost.localdomain>
+	<20070508123214.11b4f25c.akpm@linux-foundation.org>
+	<4642FDD6.5090609@ru.mvista.com>
+	<20070510111242.dd42adae.akpm@linux-foundation.org>
+	<20070511172304.GI4452@austin.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070511172304.GI4452@austin.ibm.com>
+Cc: wli@holomorphy.com, dada1@cosmosbay.com, linuxppc-dev@ozlabs.org,
+	pavel@ucw.cz, Maxim Uvarov <muvarov@ru.mvista.com>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,19 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2007-05-12 at 10:28 +0200, Johannes Berg wrote:
-> > +	pr_debug("u3msi: allocated virq 0x%x (hw 0x%lx) at address 0x%lx\n",
-> > +		 virq, virq_to_hw(virq), addr);
+On Fri, May 11, 2007 at 12:23:04PM -0500, Linas Vepstas wrote:
+> On Thu, May 10, 2007 at 11:12:42AM -0700, Andrew Morton wrote:
+> > 
+> > I don't think the syscall-counting feature has a future, sorry.  Perhaps
+> > you could do something like hooking it up on-demand by insertion of a kprobe,
+> > dunno.
 > 
-> I get
-> arch/powerpc/sysdev/mpic_u3msi.c: In function ‘u3msi_compose_msi_msg’:
-> arch/powerpc/sysdev/mpic_u3msi.c:121: warning: format ‘%lx’ expects type
-> ‘long unsigned int’, but argument 4 has type ‘u64’
+> This is an interesting point. I've started fiddling with (a wrapper
+> around) kprobes that allows me to pick any subroutine symbol in System.map,
+> and then get an event whenever that subroutine gets called. Its pretty
+> slick, and allows me to gather data on certain unusual events in the
+> kernel.  (I'm not using this for performance monitoring, I'm trying to 
+> do RAS).
 > 
-> when building this on ppc32 (I wonder if that even makes sense anyway
-> but Kconfig allowed me to select MSI)
+> It makes a lot of sense to me to have a generic kprobe extension, where 
+> you could give it a list of subroutine names, and it'll collect stats
+> on the number of times that the routine was called. Some user-space thingy
+> could poll for those stats, or you could put them in /sys or wherever.
+> 
+> Its more complicted than just instriumenting syscalls, but a lot more
+> useful, I would think ... 
 
-Hrm... we should definitely make the U3 MSI bits 64 bits only for now at
-least.
+Yes, this is exactly the useful kind of kprobes useage we should have in
+the tree.  
 
-Ben.
+> 
+> --linas
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+---end quoted text---
