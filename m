@@ -1,16 +1,20 @@
-Return-Path: <gvb.linuxppc.dev@gmail.com>
-Message-ID: <46465511.3090000@gmail.com>
-Date: Sat, 12 May 2007 20:00:17 -0400
-From: Jerry Van Baren <gvb.linuxppc.dev@gmail.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 1D4AFDDEC4
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 May 2007 10:03:46 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] powerpc: make ioport_map() handle already mapped ranges
+Date: Sun, 13 May 2007 01:55:41 +0200
+References: <20070512143221.GB12890@lixom.net>
+	<200705130018.42612.arnd@arndb.de>
+	<20070512223623.GA16045@lixom.net>
+In-Reply-To: <20070512223623.GA16045@lixom.net>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 11/13] powerpc: Add DTS file for the Motorola PrPMC2800
-	platform
-References: <20070510200237.GA19756@mag.az.mvista.com>	<20070510200859.GL19756@mag.az.mvista.com>	<20070510233747.GC27188@localhost.localdomain>
-	<c3bcf08004bf1d35292b8a5661e6a6e6@kernel.crashing.org>
-In-Reply-To: <c3bcf08004bf1d35292b8a5661e6a6e6@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200705130155.42414.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,35 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
->>> +			partition-names = "FW Image A\0FW Config Data\0Kernel 
->>> Image\0Filesystem\0FW Image B";
->> dtc now supports the syntax:
->> 	partition-names = "FW Image A", "FW Config Data", ...
->> for multi-string properties to make this sort of thing less ugly.
+On Sunday 13 May 2007, Olof Johansson wrote:
+> > We have a bug on cell that would be fixed with this patch, so it
+> > might be the same problem, see the patch that I suggested for
+> > this at http://patchwork.ozlabs.org/linuxppc/patch?id=10840 .
 > 
-> Nice!  Can you also concatenate different property
-> encodings that way?  Like,
-> 
-> 	slot-names = <5>, "Slot A", "Slot C";
-> 
-> or something like that?
-> 
-> Segher
+> Not in this case, but thanks for the pointer. Your case is still based
+> on the fact that you only have one io space range, you're just making
+> sure you're allocating out of that range. In my case, I have two distinct
+> ranges, they're even on different busses...
 
-Hi Segher,
+There is a global io space range for all buses, which is maintained
+by the reserve_phb_iospace() call. You should get your I/O ports in there
+if you want them to just work. Note that while the reserve_phb_iospace() 
+logic works in practice, it does have a few shortcomings that should
+eventually be resolved:
 
-That doesn't make sense to me.  It would be a bugger to understand the 
-value of "slot-names" since <5> is a number and the rest are strings. 
-How do you know it is a number?  How do you know how big it is?
+* There is no way to free these ranges, so you can't use this mechanism
+to allocate space for hotpluggable buses, or you might run out of
+space eventually
 
-If <5> is a single byte, it will look like "\05Slot A\0Slot C" (ASCII 
-<ENQ> as the first character of two concatenated strings).  If it is a 4 
-or 8 byte integer, it will have preceding "nulls" (big endian) which 
-would be even worse.
+* there is no locking around the use of reserve_phb_iospace().
 
-It seems to me that it would be much better as
-   slot-names = "5", "Slot A", "Slot C";
-and do an atoi() conversion if you detect it is or expect it to be numeric.
+* Buses that are already hotplugged get an io port range above the
+range maintained by reserve_phb_iospace(), but that may be larger
+than 4GB, so that I/O port numbers allocated on thoses buses require
+64 bit integers to store them.
 
-gvb
+* If you have registered primary PCI bus, the whole logic breaks down
+and you always need 64 bit integers to store I/O port numbers, at best.
+
+* Worse things happen if you try to use pci_iomap, which checks
+PIO_MASK. This mask is currently defined for 30 bit addresses, while
+the range managed by reserve_phb_iospace() is already 31 bits, not
+to mention ports outside of that range.
+
+* If you call reserve_phb_iospace() for a secondary bus before
+ setting pci_io_base to the primary bus, you actually get negative
+I/O port numbers, and you crash when using a 32  bit number to store
+it.
+	Arnd <><
