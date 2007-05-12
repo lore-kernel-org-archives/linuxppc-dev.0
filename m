@@ -1,24 +1,12 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] update sysfs kset initialisation in PPC64 DLPAR IO	driver
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Andy Whitcroft <apw@shadowen.org>
-In-Reply-To: <46444820.2020506@shadowen.org>
-References: <464322F3.3010808@shadowen.org>
-	<2c705c055fcd12202673ee8a3056153b@pinky>
-	<20070510141221.GA26709@suse.de>
-	<46434041.7020903@shadowen.org>  <20070511071606.GB1211@suse.de>
-	<1178870289.3923.6.camel@concordia.ozlabs.ibm.com>
-	<46444820.2020506@shadowen.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-26c7D453DuUsQEZRVb3+"
-Date: Sat, 12 May 2007 12:17:18 +1000
-Message-Id: <1178936238.10759.8.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>, Greg KH <gregkh@suse.de>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, Linus Torvalds <torvalds@linux-foundation.org>
-Reply-To: michael@ellerman.id.au
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17989.11576.260025.36853@cargo.ozlabs.ibm.com>
+Date: Sat, 12 May 2007 12:58:00 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@linux-foundation.org
+Subject: Please pull powerpc.git master branch
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,79 +16,142 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Linus,
 
---=-26c7D453DuUsQEZRVb3+
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Please do:
 
-On Fri, 2007-05-11 at 11:40 +0100, Andy Whitcroft wrote:
-> Michael Ellerman wrote:
-> > On Fri, 2007-05-11 at 00:16 -0700, Greg KH wrote:
-> >> On Thu, May 10, 2007 at 04:54:41PM +0100, Andy Whitcroft wrote:
-> >>> Greg KH wrote:
-> >>>> On Thu, May 10, 2007 at 03:00:50PM +0100, Andy Whitcroft wrote:
-> >>>>> Move the rpadlpar device from "struct subsystem" to "struct kset"
-> >>>>> following the changes in sysfs.
-> >>>>>
-> >>>>> Signed-off-by: Andy Whitcroft <apw@shadowen.org>
-> >>>>> ---
-> >>>>>
-> >>>>> 	Ok, this patch seems to sort out the compile problem
-> >>>>> 	here and indeed boots and runs kernbench.  Perhaps
-> >>>>> 	you could confirm this is sufficient.
-> >>>> As per the discussion on the pci hotplug list, no, this doesn't seem=
- to
-> >>>> fix the problem.  The developers there are looking into it.  If you =
-can
-> >>>> test out patches for this, I'm sure the people there would appreciat=
-e
-> >>>> the help.
-> >>> Sure anything they have for testing, send them to me ...
-> >> They have the same patch that you made (I made it), yet they reported
-> >> that it didn't work properly for them.
-> >>
-> >> Can you test your patch out on "real" hardware?
-> >=20
-> > I tested it on real hardware, but it can't hurt for Andy to try it too =
-I
-> > guess.
->=20
-> To be fair I am not sure I have a clue how to test it.  Got a recipe?
-> My patch was based on how other drivers seemed to be converted which is
-> a concern for those drivers.
->=20
-> What sort of failure do you see?
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git master
 
-Prior to the removal of struct subysystem I get two files called
-'add_slot' and 'remove_slot' under /sys/bus/pci/slots/control.
+to get a powerpc update.  This includes a set of patches from Mark
+Greer and Dale Farnsworth to port the PrPMC2800 support over to
+arch/powerpc plus a few other small fixes for various bugs and
+warnings.
 
-With Greg's patch I get the directory /sys/bus/pci/slots/control, but
-nothing under it.=20
+Thanks,
+Paul.
 
-Apparently John Rose is looking into it.
+ arch/powerpc/Kconfig                           |    5 
+ arch/powerpc/Makefile                          |    2 
+ arch/powerpc/boot/Makefile                     |   30 
+ arch/powerpc/boot/cuboot-83xx.c                |    2 
+ arch/powerpc/boot/cuboot-85xx.c                |    2 
+ arch/powerpc/boot/dts/prpmc2800.dts            |  315 +++++
+ arch/powerpc/boot/mpsc.c                       |  170 +++
+ arch/powerpc/boot/mv64x60.c                    |  581 ++++++++++
+ arch/powerpc/boot/mv64x60.h                    |   70 +
+ arch/powerpc/boot/mv64x60_i2c.c                |  206 +++
+ arch/powerpc/boot/ops.h                        |    1 
+ arch/powerpc/boot/prpmc2800.c                  |  577 ++++++++++
+ arch/powerpc/boot/serial.c                     |    2 
+ arch/powerpc/configs/prpmc2800_defconfig       | 1442 ++++++++++++++++++++++++
+ arch/powerpc/configs/ps3_defconfig             |  167 +--
+ arch/powerpc/kernel/prom_parse.c               |    2 
+ arch/powerpc/kernel/setup-common.c             |   41 +
+ arch/powerpc/kernel/time.c                     |   19 
+ arch/powerpc/mm/hash_native_64.c               |    4 
+ arch/powerpc/platforms/embedded6xx/Kconfig     |   13 
+ arch/powerpc/platforms/embedded6xx/Makefile    |    1 
+ arch/powerpc/platforms/embedded6xx/prpmc2800.c |  171 +++
+ arch/powerpc/platforms/pasemi/idle.c           |    1 
+ arch/powerpc/platforms/ps3/setup.c             |    2 
+ arch/powerpc/platforms/ps3/smp.c               |    6 
+ arch/powerpc/platforms/ps3/system-bus.c        |    6 
+ arch/powerpc/sysdev/Makefile                   |    2 
+ arch/powerpc/sysdev/mv64x60.h                  |   11 
+ arch/powerpc/sysdev/mv64x60_dev.c              |  422 +++++++
+ arch/powerpc/sysdev/mv64x60_pci.c              |  172 +++
+ arch/powerpc/sysdev/mv64x60_pic.c              |  305 +++++
+ arch/ppc/4xx_io/serial_sicc.c                  |   10 
+ arch/ppc/8xx_io/commproc.c                     |    2 
+ arch/ppc/8xx_io/fec.c                          |    2 
+ arch/ppc/boot/lib/vreset.c                     |    2 
+ arch/ppc/boot/simple/m8xx_tty.c                |    2 
+ arch/ppc/boot/simple/misc-embedded.c           |    2 
+ arch/ppc/boot/simple/mpc52xx_tty.c             |    2 
+ arch/ppc/boot/simple/mv64x60_tty.c             |    2 
+ arch/ppc/boot/simple/rw4/stb.h                 |    2 
+ arch/ppc/kernel/traps.c                        |    4 
+ arch/ppc/mm/init.c                             |    2 
+ arch/ppc/platforms/4xx/bubinga.c               |    2 
+ arch/ppc/platforms/4xx/ep405.c                 |    2 
+ arch/ppc/platforms/4xx/ibmnp405h.h             |    2 
+ arch/ppc/platforms/4xx/sycamore.c              |    2 
+ arch/ppc/platforms/4xx/walnut.c                |    2 
+ arch/ppc/platforms/ev64360.c                   |    2 
+ arch/ppc/platforms/hdpu.c                      |    2 
+ arch/ppc/platforms/katana.c                    |    2 
+ arch/ppc/platforms/mbx.h                       |    2 
+ arch/ppc/platforms/mvme5100.h                  |    2 
+ arch/ppc/platforms/pplus.h                     |    2 
+ arch/ppc/platforms/prep_pci.c                  |   22 
+ arch/ppc/platforms/prep_setup.c                |    6 
+ arch/ppc/platforms/prpmc750.h                  |    2 
+ arch/ppc/platforms/radstone_ppc7d.c            |    2 
+ arch/ppc/platforms/sandpoint.c                 |    8 
+ arch/ppc/syslib/harrier.c                      |    2 
+ arch/ppc/syslib/hawk_common.c                  |    4 
+ arch/ppc/syslib/m82xx_pci.c                    |    2 
+ arch/ppc/syslib/mpc10x_common.c                |    4 
+ arch/ppc/syslib/mpc52xx_setup.c                |    2 
+ arch/ppc/syslib/mpc8xx_devices.c               |    2 
+ arch/ppc/syslib/mv64x60.c                      |   10 
+ arch/ppc/syslib/ocp.c                          |    2 
+ arch/ppc/syslib/ppc403_pic.c                   |    2 
+ arch/ppc/syslib/ppc405_pci.c                   |    2 
+ arch/ppc/syslib/ppc4xx_dma.c                   |    2 
+ arch/ppc/syslib/ppc85xx_rio.c                  |    4 
+ arch/ppc/syslib/xilinx_pic.c                   |    2 
+ drivers/net/Kconfig                            |    2 
+ 72 files changed, 4682 insertions(+), 204 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/prpmc2800.dts
+ create mode 100644 arch/powerpc/boot/mpsc.c
+ create mode 100644 arch/powerpc/boot/mv64x60.c
+ create mode 100644 arch/powerpc/boot/mv64x60.h
+ create mode 100644 arch/powerpc/boot/mv64x60_i2c.c
+ create mode 100644 arch/powerpc/boot/prpmc2800.c
+ create mode 100644 arch/powerpc/configs/prpmc2800_defconfig
+ create mode 100644 arch/powerpc/platforms/embedded6xx/prpmc2800.c
+ create mode 100644 arch/powerpc/sysdev/mv64x60.h
+ create mode 100644 arch/powerpc/sysdev/mv64x60_dev.c
+ create mode 100644 arch/powerpc/sysdev/mv64x60_pci.c
+ create mode 100644 arch/powerpc/sysdev/mv64x60_pic.c
 
-cheers
+Dale Farnsworth (7):
+      [POWERPC] Add interrupt support for Marvell mv64x60 chips
+      [POWERPC] Create Marvell mv64x60 MPSC (serial) platform_data
+      [POWERPC] Create Marvell mv64x60 ethernet platform_data
+      [POWERPC] Create Marvell mv64x60 I2C platform_data
+      [POWERPC] Add Marvell mv64x60 PCI bridge support
+      [POWERPC] Check cache coherency of kernel vs firmware
+      [POWERPC] Add arch/powerpc support for the Motorola PrPMC2800
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+Geoff Levand (2):
+      [POWERPC] PS3: Fix request_irq warning
+      [POWERPC] PS3: Update ps3_defconfig
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+Kim Phillips (1):
+      [POWERPC] Don't complain if size-cells == 0 in prom_parse()
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+Mark A. Greer (6):
+      [POWERPC] Add Makefile rules to wrap dts file in zImage
+      [POWERPC] Add bootwrapper support for Marvell/mv64x60 hostbridge
+      [POWERPC] Add bootwrapper support for Marvell MPSC
+      [POWERPC] Add bootwrapper support for Marvell/mv64x60 I2C
+      [POWERPC] Add DTS file for the Motorola PrPMC2800 platform
+      [POWERPC] Add bootwrapper support for Motorola PrPMC2800 platform
 
---=-26c7D453DuUsQEZRVb3+
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Scott Wood (1):
+      [POWERPC] U-boot passes the initrd as start/end, not start/size.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Simon Arlott (1):
+      [POWERPC] Spelling fixes: arch/ppc/
 
-iD8DBQBGRSOudSjSd0sB4dIRAif0AJ45jsoALr5aPHK9T+9D4FFrIDQfrQCdHl1z
-11KoCIVArGZQuLdn0rzYSig=
-=pphh
------END PGP SIGNATURE-----
+Stephen Rothwell (4):
+      [POWERPC] Assign correct variable in hpte_decode()
+      [POWERPC] Remove unused variable in hpte_decode()
+      [POWERPC] Add missed include
+      [POWERPC] Trivial ps3 warning fixes
 
---=-26c7D453DuUsQEZRVb3+--
+will schmidt (1):
+      [POWERPC] Simplify smp_space_timers
