@@ -1,17 +1,21 @@
-Return-Path: <rientjes@google.com>
-Received: from smtp-out.google.com (smtp-out.google.com [216.239.45.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C4887DDE08
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 May 2007 09:31:13 +1000 (EST)
-Date: Fri, 11 May 2007 16:29:29 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [patch] powerpc: use __used attribute
-Message-ID: <alpine.DEB.0.99.0705111628430.16028@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
-Cc: Tom Rini <trini@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id E3158DDE4A
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 May 2007 18:28:38 +1000 (EST)
+Subject: Re: [PATCH 7/7] MPIC U3/U4 MSI backend
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Michael Ellerman <michael@ellerman.id.au>
+In-Reply-To: <20070508025843.0D93ADDEFD@ozlabs.org>
+References: <20070508025843.0D93ADDEFD@ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-+SzEI+OpYQRpiab8GY7v"
+Date: Sat, 12 May 2007 10:28:24 +0200
+Message-Id: <1178958505.2647.5.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,60 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Use the newly introduced __used attribute instead of the deprecated
-__attribute_used__.  Functionally the same.
 
-Cc: Tom Rini <trini@kernel.crashing.org>
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- arch/powerpc/boot/Makefile              |    2 +-
- arch/powerpc/kernel/sysfs.c             |    2 +-
- arch/powerpc/oprofile/op_model_power4.c |    6 +++---
- 3 files changed, 5 insertions(+), 5 deletions(-)
+--=-+SzEI+OpYQRpiab8GY7v
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -54,7 +54,7 @@ obj-wlib := $(addsuffix .o, $(basename $(addprefix $(obj)/, $(src-wlib))))
- obj-plat := $(addsuffix .o, $(basename $(addprefix $(obj)/, $(src-plat))))
- 
- quiet_cmd_copy_zlib = COPY    $@
--      cmd_copy_zlib = sed "s@__attribute_used__@@;s@<linux/\([^>]\+\).*@\"\1\"@" $< > $@
-+      cmd_copy_zlib = sed "s@__used@@;s@<linux/\([^>]\+\).*@\"\1\"@" $< > $@
- 
- quiet_cmd_copy_zlibheader = COPY    $@
-       cmd_copy_zlibheader = sed "s@<linux/\([^>]\+\).*@\"\1\"@" $< > $@
-diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
---- a/arch/powerpc/kernel/sysfs.c
-+++ b/arch/powerpc/kernel/sysfs.c
-@@ -158,7 +158,7 @@ static ssize_t show_##NAME(struct sys_device *dev, char *buf) \
- 	unsigned long val = run_on_cpu(cpu->sysdev.id, read_##NAME, 0); \
- 	return sprintf(buf, "%lx\n", val); \
- } \
--static ssize_t __attribute_used__ \
-+static ssize_t __used \
- 	store_##NAME(struct sys_device *dev, const char *buf, size_t count) \
- { \
- 	struct cpu *cpu = container_of(dev, struct cpu, sysdev); \
-diff --git a/arch/powerpc/oprofile/op_model_power4.c b/arch/powerpc/oprofile/op_model_power4.c
---- a/arch/powerpc/oprofile/op_model_power4.c
-+++ b/arch/powerpc/oprofile/op_model_power4.c
-@@ -165,15 +165,15 @@ static void power4_stop(void)
- }
- 
- /* Fake functions used by canonicalize_pc */
--static void __attribute_used__ hypervisor_bucket(void)
-+static void __used hypervisor_bucket(void)
- {
- }
- 
--static void __attribute_used__ rtas_bucket(void)
-+static void __used rtas_bucket(void)
- {
- }
- 
--static void __attribute_used__ kernel_unknown_bucket(void)
-+static void __used kernel_unknown_bucket(void)
- {
- }
- 
+
+> +	pr_debug("u3msi: allocated virq 0x%x (hw 0x%lx) at address 0x%lx\n",
+> +		 virq, virq_to_hw(virq), addr);
+
+I get
+arch/powerpc/sysdev/mpic_u3msi.c: In function =E2=80=98u3msi_compose_msi_ms=
+g=E2=80=99:
+arch/powerpc/sysdev/mpic_u3msi.c:121: warning: format =E2=80=98%lx=E2=80=99=
+ expects type
+=E2=80=98long unsigned int=E2=80=99, but argument 4 has type =E2=80=98u64=
+=E2=80=99
+
+when building this on ppc32 (I wonder if that even makes sense anyway
+but Kconfig allowed me to select MSI)
+
+johannes
+
+--=-+SzEI+OpYQRpiab8GY7v
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGRXqo/ETPhpq3jKURAggEAJ0WX8eMefXi+L8vgCHzA/42QImxzACfQ85x
+qz11hU5TMAnIMzjVN5ycE1g=
+=gpb9
+-----END PGP SIGNATURE-----
+
+--=-+SzEI+OpYQRpiab8GY7v--
