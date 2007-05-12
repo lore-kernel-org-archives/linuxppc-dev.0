@@ -1,23 +1,24 @@
-Return-Path: <rob@landley.net>
-Received: from grelber.thyrsus.com
-	(static-71-162-243-5.phlapa.fios.verizon.net [71.162.243.5])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 33D64DDF25
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 May 2007 11:47:05 +1000 (EST)
-From: Rob Landley <rob@landley.net>
-To: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: Building ppc/powerpc kernel to run under QEMU.
-Date: Fri, 11 May 2007 21:46:35 -0400
-References: <200705092203.26042.rob@landley.net>
-	<20070510172806.GE4452@austin.ibm.com>
-	<464397B8.408@genesi-usa.com>
-In-Reply-To: <464397B8.408@genesi-usa.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200705112146.35495.rob@landley.net>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] update sysfs kset initialisation in PPC64 DLPAR IO	driver
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Andy Whitcroft <apw@shadowen.org>
+In-Reply-To: <46444820.2020506@shadowen.org>
+References: <464322F3.3010808@shadowen.org>
+	<2c705c055fcd12202673ee8a3056153b@pinky>
+	<20070510141221.GA26709@suse.de>
+	<46434041.7020903@shadowen.org>  <20070511071606.GB1211@suse.de>
+	<1178870289.3923.6.camel@concordia.ozlabs.ibm.com>
+	<46444820.2020506@shadowen.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-26c7D453DuUsQEZRVb3+"
+Date: Sat, 12 May 2007 12:17:18 +1000
+Message-Id: <1178936238.10759.8.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: Andrew Morton <akpm@osdl.org>, Greg KH <gregkh@suse.de>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, Linus Torvalds <torvalds@linux-foundation.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,42 +28,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 10 May 2007 6:07 pm, Matt Sealey wrote:
-> QEMU really really wants a PREP kernel, and that stuff's just not in the new
-> arch/powerpc tree anymore is it?
 
-In theory I could feed it a power mac kernel, but I'd have to create a 
-partitioned hard drive image to satisfy open hackware.  A prep kernel fakes 
-being a partitioned image sufficiently that I can use -kernel to boot.
+--=-26c7D453DuUsQEZRVb3+
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> I'd love to see the device tree once QEMU's kernel has booted :D
+On Fri, 2007-05-11 at 11:40 +0100, Andy Whitcroft wrote:
+> Michael Ellerman wrote:
+> > On Fri, 2007-05-11 at 00:16 -0700, Greg KH wrote:
+> >> On Thu, May 10, 2007 at 04:54:41PM +0100, Andy Whitcroft wrote:
+> >>> Greg KH wrote:
+> >>>> On Thu, May 10, 2007 at 03:00:50PM +0100, Andy Whitcroft wrote:
+> >>>>> Move the rpadlpar device from "struct subsystem" to "struct kset"
+> >>>>> following the changes in sysfs.
+> >>>>>
+> >>>>> Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+> >>>>> ---
+> >>>>>
+> >>>>> 	Ok, this patch seems to sort out the compile problem
+> >>>>> 	here and indeed boots and runs kernbench.  Perhaps
+> >>>>> 	you could confirm this is sufficient.
+> >>>> As per the discussion on the pci hotplug list, no, this doesn't seem=
+ to
+> >>>> fix the problem.  The developers there are looking into it.  If you =
+can
+> >>>> test out patches for this, I'm sure the people there would appreciat=
+e
+> >>>> the help.
+> >>> Sure anything they have for testing, send them to me ...
+> >> They have the same patch that you made (I made it), yet they reported
+> >> that it didn't work properly for them.
+> >>
+> >> Can you test your patch out on "real" hardware?
+> >=20
+> > I tested it on real hardware, but it can't hurt for Andy to try it too =
+I
+> > guess.
+>=20
+> To be fair I am not sure I have a clue how to test it.  Got a recipe?
+> My patch was based on how other drivers seemed to be converted which is
+> a concern for those drivers.
+>=20
+> What sort of failure do you see?
 
-So would I. :)
+Prior to the removal of struct subysystem I get two files called
+'add_slot' and 'remove_slot' under /sys/bus/pci/slots/control.
 
-I'm told they've got that part working.  I once managed to get a powerpc 
-Ubuntu ISO image to boot under qemu, I just can't _build_ a kernel that does.  
-(I have no idea how to create the specially partitioned hard drive image it 
-wants, and since I got 5 other architectures working without needing to do 
-that, I'm looking for a way to make a prep kernel work so I won't have to.)
+With Greg's patch I get the directory /sys/bus/pci/slots/control, but
+nothing under it.=20
 
-> I wonder.. would it be useful to have a qemu platform in arch/powerpc and
-> for someone to start hacking in devices from a non-emulated point of view?
-> It seems a bit of a waste in my mind to emulate a network card, serial port
-> IDE interface, ADB (yick!) and a VESA graphics adapter in such 'detail' when
-> it can be passed back to the emulation somehow through some kind of clever
-> call interface (maybe just have the zero page of the emulation contain a
-> bunch of 'ports' which are really function calls pointers..?)
+Apparently John Rose is looking into it.
 
-Yeah, but qemu already _has_ an IDE interface, graphics card (an old western 
-digital something or other), and network card working.  Once they got 'em 
-working on one platform, they can plug them into a virtual PCI bus for other 
-platforms.
+cheers
 
-What I wind up fighting with most when trying to get multiple platforms to 
-work is firmware and bootloaders.  (All of which are insane, without 
-exception so far.)  This is why I like the qemu -kernel thing, which lets me 
-bypass the whole issue...
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-Usually.
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
-Rob
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-26c7D453DuUsQEZRVb3+
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGRSOudSjSd0sB4dIRAif0AJ45jsoALr5aPHK9T+9D4FFrIDQfrQCdHl1z
+11KoCIVArGZQuLdn0rzYSig=
+=pphh
+-----END PGP SIGNATURE-----
+
+--=-26c7D453DuUsQEZRVb3+--
