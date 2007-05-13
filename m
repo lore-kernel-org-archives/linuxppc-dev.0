@@ -1,23 +1,16 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Received: from the-village.bc.nu (unknown [81.2.110.250])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D6580DDEA2
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 May 2007 23:35:10 +1000 (EST)
-Date: Sun, 13 May 2007 14:39:27 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] pasemi: electra IDE/pata_platform glue
-Message-ID: <20070513143927.59ca253e@the-village.bc.nu>
-In-Reply-To: <200705130248.22844.arnd@arndb.de>
-References: <20070512145041.GA13025@lixom.net>
-	<200705130111.03153.arnd@arndb.de>
-	<20070513005830.38ba8e3b@the-village.bc.nu>
-	<200705130248.22844.arnd@arndb.de>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
+	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id F3A0BDDE44
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 00:39:34 +1000 (EST)
+Subject: Fixed  PHY and MPC832x based boards don't work
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: Kim Phillips <kim.phillips@freescale.com>, linuxppc-dev@ozlabs.org,
+	Vitaly Wool <vwool@ru.mvista.com>
+Content-Type: text/plain
+Date: Sun, 13 May 2007 16:39:30 +0200
+Message-Id: <1179067171.20638.48.camel@gentoo-jocke.transmode.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	linux-ide@vger.kernel.org
+Reply-To: joakim.tjernlund@transmode.se
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,23 +20,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > Easier to use pata_platform I would think ? Just create the OF device and
-> > bind it to pata_platform.
-> 
-> Not sure I understand what you mean. pata_platform expects a platform_device,
-> which cannot be cast from an of_device.
+Trying to make the Fixed PHY work under my 832x based board on current
+linus tree without success. Earlier kernels with custom PHY code for
+ucc_geth work without any special tricks.
 
-Other than the binding and wanting to use the standard ->set_mode they
-appear to be identical so a copy of pata_platform ought to turn into a
-pata_of very nicely.
+If I enable the FIXED_MII_100_FDX option I get:
+ls bus/mdio_bus/devices/
+fixed@100:1@ 
 
-> Olof, have you looked at which of the two ->set_mode functions is more
-> appropriate for electra? I would guess that you actually want to use
-> the ata_generic one.
+but ucc_geth wants its PHYs under 
+ls -l bus/of_platform/devices/*phy*
+lrwxrwxrwx    1 root     root            0 May 12 17:32 bus/of_platform/devices/ethernet-p
+hy.1 -> ../../../devices/e0100000.qe/e0102320.mdio/ethernet-phy.1/
+lrwxrwxrwx    1 root     root            0 May 12 17:32 bus/of_platform/devices/ethernet-p
+hy.3 -> ../../../devices/e0100000.qe/e0102320.mdio/ethernet-phy.3/
+lrwxrwxrwx    1 root     root            0 May 12 17:32 bus/of_platform/devices/fixed-phy.
+2 -> ../../../devices/e0100000.qe/e0102320.mdio/fixed-phy.2/
+These are 3 PHYs I just added in the DTS tree:
 
-You almost certainly simply don't want to provide one. I'm not sure the
-pata_platform default one is right at all as it will assume the firmware
-tuned everything. ata_generic does this purely because it is a "last
-resort" driver for chips we can't tune/program at all.
+		mdio@2320 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <2320 18>;
+			device_type = "mdio";
+			compatible = "ucc_geth_phy";
 
-Alan
+			phy1: ethernet-phy@18 {
+				linux,phandle = <212000>;
+				reg = <18>; // 24
+				device_type = "ethernet-phy";
+				interface = <3>; //ENET_100_MII
+			};
+			phy2: fixed-phy@64 {
+				linux,phandle = <212001>;
+				reg = <d#100>;
+				device_type = "ethernet-phy";
+			};
+			phy3: ethernet-phy@19 {
+				linux,phandle = <212002>;
+				interrupt-parent = <700>;
+				interrupts = <12 2>;
+				reg = <19>; // 25
+				device_type = "ethernet-phy";
+				interface = <3>; //ENET_100_MII
+			};
+		};
+
+How do I add a fixed PHY so that ucc_geth finds it?
+
+ Jocke
