@@ -1,20 +1,18 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 1D4AFDDEC4
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 May 2007 10:03:46 +1000 (EST)
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 5B8A8DDEBE
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 May 2007 10:24:51 +1000 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH] powerpc: make ioport_map() handle already mapped ranges
-Date: Sun, 13 May 2007 01:55:41 +0200
-References: <20070512143221.GB12890@lixom.net>
-	<200705130018.42612.arnd@arndb.de>
-	<20070512223623.GA16045@lixom.net>
-In-Reply-To: <20070512223623.GA16045@lixom.net>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 4/9] powerpc: BestComm core support for Freescale MPC5200
+Date: Sun, 13 May 2007 02:24:45 +0200
+References: <11790019171838-git-send-email-tnt@246tNt.com>
+	<200705130127.08761.arnd@arndb.de> <46465295.90309@246tNt.com>
+In-Reply-To: <46465295.90309@246tNt.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200705130155.42414.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Message-Id: <200705130224.46114.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,43 +22,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sunday 13 May 2007, Olof Johansson wrote:
-> > We have a bug on cell that would be fixed with this patch, so it
-> > might be the same problem, see the patch that I suggested for
-> > this at http://patchwork.ozlabs.org/linuxppc/patch?id=10840 .
-> 
-> Not in this case, but thanks for the pointer. Your case is still based
-> on the fact that you only have one io space range, you're just making
-> sure you're allocating out of that range. In my case, I have two distinct
-> ranges, they're even on different busses...
+On Sunday 13 May 2007, Sylvain Munaut wrote:
 
-There is a global io space range for all buses, which is maintained
-by the reserve_phb_iospace() call. You should get your I/O ports in there
-if you want them to just work. Note that while the reserve_phb_iospace() 
-logic works in practice, it does have a few shortcomings that should
-eventually be resolved:
+> BestComm has some pretty specific needs and I think trying to
+> somehow extends a generic interface to fit those needs would just
+> pollute it.
 
-* There is no way to free these ranges, so you can't use this mechanism
-to allocate space for hotpluggable buses, or you might run out of
-space eventually
+ok.
 
-* there is no locking around the use of reserve_phb_iospace().
+> However, you could totally implement a "DMA devices" that would just
+> use a simple "copy from there to there" task using this BestComm driver.
+> So other part of the kernel (like network) could use that interface to
+> use the dma engine ...
 
-* Buses that are already hotplugged get an io port range above the
-range maintained by reserve_phb_iospace(), but that may be larger
-than 4GB, so that I/O port numbers allocated on thoses buses require
-64 bit integers to store them.
+Can it also do the advanced operations like XOR on DMA that the
+Intel ioat has? That would be even more interesting, I guess.
 
-* If you have registered primary PCI bus, the whole logic breaks down
-and you always need 64 bit integers to store I/O port numbers, at best.
+> >> +static int __init
+> >> +mpc52xx_bcom_init(void)
+> >> +{
+> >> +	struct device_node *ofn_bcom, *ofn_sram;
+> >> +	struct resource res_bcom;
+> >> +
+> >> +	int rv;
+> >> +
+> >> +	/* Find the bestcomm node. If none, fails 'silently' since
+> >> +	 * we may just be on another platform */
+> >> +	ofn_bcom = of_find_compatible_node(
+> >> +			NULL, "dma-controller", "mpc5200-bestcomm");
+> >> +	if (!ofn_bcom)
+> >> +		return -ENODEV;
+> >
+> > I know, my usual rant is getting old, but why is this one not an
+> > of_platform_driver? It's not shared with arch/ppc or with arch/mips,
+> > and it's not needed before module_init() time.
+> It needs to be initialized before _any_ other driver that uses bestcomm.
+> When compiled as module that could be an of_platform_driver but when
+> built-in there is apparently no way to ensure it's going to be probed
+> first. (At least no clean way ... )
 
-* Worse things happen if you try to use pci_iomap, which checks
-PIO_MASK. This mask is currently defined for 30 bit addresses, while
-the range managed by reserve_phb_iospace() is already 31 bits, not
-to mention ports outside of that range.
+Initialization order is always a little tricky, but if you use a 
+subsys_initcall, it should at least come before any regular driver
+like network or disk, and arch/ drivers come before any code in drivers/,
+so I don't see much of a problem here.
 
-* If you call reserve_phb_iospace() for a secondary bus before
- setting pci_io_base to the primary bus, you actually get negative
-I/O port numbers, and you crash when using a 32  bit number to store
-it.
+> >> +
+> >> +#ifdef MODULE
+> >> +module_init(mpc52xx_bcom_init);
+> >> +module_exit(mpc52xx_bcom_exit);
+> >> +#endif
+> >> +
+> >> +/* If we're not a module, we must make sure everything is setup before anyone */
+> >> +/* tries to use us ... */
+> >> +#ifndef MODULE
+> >> +subsys_initcall(mpc52xx_bcom_init);
+> >> +#endif
+> >
+> > You can make it subsys_initcall() unconditionally. If the driver gets built
+> > as a module, it will turn into module_init() by itself.
+> Oh, great, I didn't know that. I guess the module_exit still has to be
+> conditionnal.
+
+No, it's designed so that you don't need any #ifdef. The module_exit
+function can simply be left out entirely when doing a builtin driver.
+
+> > Why don't you use EXPORT_SYMBOL_GPL?
+> Why would I ? Is it mandatory now ?
+> I don't really have an objection to non-gpl modules to use the exported
+> functions ...
+
+It's your choice, but there is a strong recommendation to use _GPL for
+all new interfaces nowadays. If you don't, people might suspect that
+you have a hidden agenda and actually plan to do non-gpl modules
+yourself.
+
+However, this is a legal minefield and I'm not trying to force you
+to change it, it is always the decision of the copyright holder.
+
 	Arnd <><
