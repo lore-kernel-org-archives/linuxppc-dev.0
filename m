@@ -1,17 +1,28 @@
 Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <46465511.3090000@gmail.com>
-References: <20070510200237.GA19756@mag.az.mvista.com>	<20070510200859.GL19756@mag.az.mvista.com>	<20070510233747.GC27188@localhost.localdomain>
-	<c3bcf08004bf1d35292b8a5661e6a6e6@kernel.crashing.org>
-	<46465511.3090000@gmail.com>
+Received: from mail-in-05.arcor-online.net (mail-in-05.arcor-online.net
+	[151.189.21.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 84663DDED0
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 May 2007 21:18:55 +1000 (EST)
+In-Reply-To: <20070513061954.GA16623@lixom.net>
+References: <20070512145041.GA13025@lixom.net>
+	<200705130111.03153.arnd@arndb.de>
+	<20070513005830.38ba8e3b@the-village.bc.nu>
+	<200705130248.22844.arnd@arndb.de>
+	<1179022810.32247.54.camel@localhost.localdomain>
+	<20070513061954.GA16623@lixom.net>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <70c9e7f82599a85ba1ae974e11db1d8f@kernel.crashing.org>
+Message-Id: <82c4101a83362d2ce78713a70df535d4@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 11/13] powerpc: Add DTS file for the Motorola PrPMC2800
-	platform
-Date: Sun, 13 May 2007 02:21:31 +0200
-To: Jerry Van Baren <gvb.linuxppc.dev@gmail.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] pasemi: electra IDE/pata_platform glue
+Date: Sun, 13 May 2007 13:17:57 +0200
+To: olof@lixom.net (Olof Johansson)
+Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
+	linux-ide@vger.kernel.org, paulus@samba.org,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,53 +32,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>> +			partition-names = "FW Image A\0FW Config Data\0Kernel 
->>>> Image\0Filesystem\0FW Image B";
->>> dtc now supports the syntax:
->>> 	partition-names = "FW Image A", "FW Config Data", ...
->>> for multi-string properties to make this sort of thing less ugly.
->> Nice!  Can you also concatenate different property
->> encodings that way?  Like,
->> 	slot-names = <5>, "Slot A", "Slot C";
->> or something like that?
->> Segher
->
-> Hi Segher,
->
-> That doesn't make sense to me.  It would be a bugger to understand the 
-> value of "slot-names" since <5> is a number and the rest are strings. 
-> How do you know it is a number?  How do you know how big it is?
+> Also, in this particular case, the bindings are not standardized, and
+> there's a good chance that whatever new platform uses a similar device
+> will need to do something slightly different.
 
-You know that since it is how that particular property is
-defined: it is one integer (i.e., 32-bit big-endian),
-followed by a string (zero-terminated) for each set bit
-in the integer.
+Yeah, everyone else will do the sane thing, and describe
+the two register ranges the IDE uses, not a much bigger
+range full of register shadows like you have.  It is one
+thing for the hardware to do partial address decoding;
+the device tree shouldn't normally expose this though.
 
-A property is always just an array of bytes; its meaning
-is determined by what property in what node this is.
-Nowhere in a property is is encoded that some parts are
-integers, some parts are strings, some parts are just
-blobs.
-
-> If <5> is a single byte, it will look like "\05Slot A\0Slot C" (ASCII 
-> <ENQ> as the first character of two concatenated strings).  If it is a 
-> 4 or 8 byte integer, it will have preceding "nulls" (big endian) which 
-> would be even worse.
-
-Not bad at all -- it is trivial to decode _if_ you know
-how it is encoded.  You cannot tell by looking at the
-property data only.  What is [44 54 53 00] -- just some
-bytes, or the integer 0x44545300, or the string "DTS"?
-You cannot tell.
-
-> It seems to me that it would be much better as
->   slot-names = "5", "Slot A", "Slot C";
-> and do an atoi() conversion if you detect it is or expect it to be 
-> numeric.
-
-Hey, I know!  We could redefine OF to use XML instead!
-
-;-)
+But that's what you've got now, so you have your own
+special OF device matching code, which is exactly as it
+should be.  No need to have "generic" ide OF matching
+code until device trees containing such devices show
+up :-)
 
 
 Segher
