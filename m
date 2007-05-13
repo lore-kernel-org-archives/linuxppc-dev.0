@@ -1,20 +1,15 @@
-Return-Path: <edjubenville@adelphia.net>
-Received: from mta14.adelphia.net (mta14.mail.adelphia.net [68.168.78.137])
-	by ozlabs.org (Postfix) with ESMTP id 9E32CDDEC1
+Return-Path: <mls.JOFT@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 75897DDEBF
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 13 May 2007 00:13:24 +1000 (EST)
-Received: from EJ1 ([75.85.34.145]) by mta11.adelphia.net
-	(InterMail vM.6.01.05.02 201-2131-123-102-20050715) with SMTP
-	id <20070512134108.BWVM16517.mta11.adelphia.net@EJ1>
-	for <linuxppc-embedded@ozlabs.org>; Sat, 12 May 2007 09:41:08 -0400
-From: "Edward Jubenville" <edjubenville@adelphia.net>
-To: "Linuxppc-Embedded" <linuxppc-embedded@ozlabs.org>
-Subject: DHCP lease renewal after boot
-Date: Sat, 12 May 2007 06:41:00 -0700
-Message-ID: <GPECLCIGPLHEOMGPMCPAEEPCEKAA.edjubenville@adelphia.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+	Mon, 14 May 2007 01:15:15 +1000 (EST)
+Subject: [Fwd: [alsa-devel] embedded sound architecture question]
+From: Joachim =?ISO-8859-1?Q?F=F6rster?= <mls.JOFT@gmx.de>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-15
+Date: Sun, 13 May 2007 17:15:10 +0200
+Message-Id: <1179069310.15907.11.camel@localhost>
+Mime-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,39 +20,59 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I posted a similar question in the u-boot list, but this list seems more
-appropriate...
+Hi,
 
-When I configure u-boot to get an IP address using DHCP, and pass that IP
-through the kernel command line, doesn't the kernel need to know that it was
-obtained from DHCP, so that it can maintain the lease on the IP address?  Is
-it allowable for the kernel to treat the command line IP address as a static
-IP, and ignore the obligations of DHCP lease renewal?
+I posted the following question/mail to the ALSA development mailing
+list and somebody suggested posting it to the LKML, but I thought,
+perhaps it is better to ask you, the Linux PPC embedded experts first,
+since it is right about that topic.
 
-I found the following in Documentation/kernel-parameters.txt.  The last
-sentence suggests that it is OK for the kernel to abandon responsibility of
-DHCP lease renewal.  This seems to violate the DHCP protocol, RFC 2131
-"4.4.5 Reacquisition and expiration".
+It would be nice if somebody can say, if the described architecture
+makes sense and will work or if it is a complete no-go.
 
- "DHCP support
-  CONFIG_IP_PNP_DHCP
-    If you want your Linux box to mount its whole root file system (the
-    one containing the directory /) from some other computer over the
-    net via NFS and you want the IP address of your computer to be
-    discovered automatically at boot time using the DHCP protocol (a
-    special protocol designed for doing this job), say Y here. In case
-    the boot ROM of your network card was designed for booting Linux and
-    does DHCP itself, providing all necessary information on the kernel
-    command line, you can say N here."
+-------- Forwarded Message --------
+From: Joachim Förster <mls.JOFT@gmx.de>
+To: alsa-devel@alsa-project.org
+Subject: [alsa-devel] embedded sound architecture question
+Date: Wed, 09 May 2007 22:47:34 +0200
 
-RFC 2131 describes a DHCPINFORM message that clients can use to announce
-their static IP addresses to a DHCP server.  Therefore, it matters whether
-the IP address u-boot passes to the kernel is dynamic or static, because it
-implies different behaviors in the kernel after boot.
+Hi ALSA devs,
 
-How do I tell the kernel whether its command line IP address is static or
-dynamic?
+I'm going to write an ALSA driver for a not yet existing AC97
+controller, which is going to be "written" (VHDL), too (at the same
+time). Platform/Board is a Xilinx ML403 with Virtex-4 FPGA, PowerPC 405
+architecture, OPB/OCP bus, AC97 Codec LM4550.
 
-I'm using u-boot 1.1.4 with kernel 2.4.25 from ELDK 3.1.1
+Before presenting my question, I have to say, that I'm a beginner with
+ALSA/Linux driver development.
 
-Ed Jubenville
+My question is: Does the architecture described below make sense/is
+reasonable with ALSA and Linux?
+
+The problem is, that there is no DMA controller and implementing an OPB
+master device which would be able to do DMA itself is not an option at
+this time.
+So our thoughts were: Integrate the "DMA ring buffer" (which is usually
+somewhere in main memory/RAM) into the AC97 controller. Make ALSA access
+this HW buffer as if it was in main memory. This way, the device (AC97
+controller) has "direct access" to its buffer "memory" - this could be
+called "fake DMA".
+The AC97 controller would have tell us where it is while playing and
+firing interrupts after one period, so that we don't write to values
+which are in the current period, instead update the area where of the
+past played periods etc. ... The buffer should be a "ring buffer",
+right?
+
+Mapping this "IO memory" into kernel space should be possible with
+io_remap_page_range(), right?
+I would have to implement the mmap() callback in my driver, to setup the
+given VMA (with the above function), right?
+So, ALSA library/applications will be able to use MMAP mode, which is
+what we want to achieve?
+[We don't want copy()/silence(). An intermediate buffer with
+ack()/tasklet/workqueue + FIFO in HW would be an alternative.]
+
+[snip]
+
+Thanks for reading & your time,
+ Joachim
