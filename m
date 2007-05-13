@@ -1,18 +1,18 @@
-Return-Path: <dale@farnsworth.org>
-Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	by ozlabs.org (Postfix) with SMTP id A31AFDDEC4
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 May 2007 13:37:02 +1000 (EST)
-Date: 12 May 2007 20:36:59 -0700
-Message-ID: <20070513033659.25632.qmail@farnsworth.org>
-From: "Dale Farnsworth" <dale@farnsworth.org>
-To: tnt@246tNt.com
-Subject: Re: [PATCH 4/9] powerpc: BestComm core support for Freescale MPC5200
-In-Reply-To: <46465295.90309@246tNt.com>
-References: <11790019171838-git-send-email-tnt@246tNt.com>
-	<11790019223925-git-send-email-tnt@246tNt.com>
-	<11790019234031-git-send-email-tnt@246tNt.com>
-	<200705130127.08761.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 27BE8DDEC7
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 May 2007 13:40:54 +1000 (EST)
+Date: Sun, 13 May 2007 13:40:53 +1000
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Fix Kconfig undefined symbol 'IBM_NEW_EMAC_ZMII'
+Message-ID: <20070513034053.GG15955@bakeyournoodle.com>
+References: <20070511070006.GF15955@bakeyournoodle.com>
+	<1178870202.32247.15.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1178870202.32247.15.camel@localhost.localdomain>
+From: tony@bakeyournoodle.com (Tony Breeds)
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,20 +22,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sylvain Munaut wrote:
-> Arnd Bergmann wrote:
-> > Why don't you use EXPORT_SYMBOL_GPL?
-> Why would I ? Is it mandatory now ?
-> I don't really have an objection to non-gpl modules to use the exported
-> functions ...
-> If Dale or Andrey have, they're free to post a patch to change to _GPL.
+On Fri, May 11, 2007 at 05:56:42PM +1000, Benjamin Herrenschmidt wrote:
+ 
+> Can you comment it out instead ?
 
-Hi Sylvain,
+Sure.
 
-The general recommendation is to use EXPORT_SYMBOL_GPL unless there
-is some overriding reason not to.  I agree with that recommendation.
-That's my preference for this code, but I'll defer to you Sylvain.
+Fix Kconfig undefined symbol 'IBM_NEW_EMAC_ZMII'
 
-BTW, it's great to see this code being submitted.
+An allmodconfig on the current powerpc tree yields:
+arch/powerpc/platforms/44x/Kconfig:41:warning: 'select' used by config symbol '440GP' refers to undefined symbol 'IBM_NEW_EMAC_ZMII'
 
--Dale Farnsworth
+Hide the select until the driver exists.
+
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+CC: David Gibson <david@gibson.dropbear.id.au>
+---
+
+ arch/powerpc/platforms/44x/Kconfig |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+Index: working/arch/powerpc/platforms/44x/Kconfig
+===================================================================
+--- working.orig/arch/powerpc/platforms/44x/Kconfig
++++ working/arch/powerpc/platforms/44x/Kconfig
+@@ -38,7 +38,8 @@ config 440EP
+ 
+ config 440GP
+ 	bool
+-	select IBM_NEW_EMAC_ZMII
++# Disabled until the new EMAC Driver is merged.
++#	select IBM_NEW_EMAC_ZMII
+ 
+ config 440GX
+ 	bool
+
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
