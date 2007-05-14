@@ -1,37 +1,16 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 76660DDD07
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 10:25:01 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by ausmtp04.au.ibm.com (8.13.8/8.13.8) with ESMTP id l4E0itQM202008
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 10:44:55 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.250.243])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4E0SVCL172724
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 10:28:31 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4E0Ox9u005158
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 10:24:59 +1000
-Date: Mon, 14 May 2007 10:24:57 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v2 6/7] Holly DTS
-Message-ID: <20070514002457.GD6517@localhost.localdomain>
-References: <cbcd7823ea9b0f17f998670915719a05@kernel.crashing.org>
-	<AF0367BA48C55940A43CCF08DF35553C012AA296@az33exm24.fsl.freescale.net>
-	<20070509004948.GB4198@localhost.localdomain>
-	<1178706570.3453.63.camel@zod.rchland.ibm.com>
-	<0f60e44e6c7848e5eee8c82c0f2bfaec@kernel.crashing.org>
-	<20070510235453.GD27188@localhost.localdomain>
-	<b5cd56b7081eaba062cf056545777989@kernel.crashing.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 14 May 2007 10:33:32 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [PATCH 1/13] powerpc: Add Makefile rules to wrap dts file in
+	zImage
+Message-ID: <20070514003332.GE6517@localhost.localdomain>
+References: <20070512004605.GA2808@mag.az.mvista.com>
+	<20070512005336.GA3365@mag.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <b5cd56b7081eaba062cf056545777989@kernel.crashing.org>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	Loeliger Jon-LOELIGER <jdl@Freescale.com>
+In-Reply-To: <20070512005336.GA3365@mag.az.mvista.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,51 +20,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, May 12, 2007 at 02:02:42PM +0200, Segher Boessenkool wrote:
-> >>> What exactly did this ?? syntax imply?  I must have missed that 
-> >>> thread.
-> >>
-> >> A property in a DTS file can use that to say
-> >> the property should have a value, but it will
-> >> be filled in by the bootwrapper instead (memory
-> >> address/size, or network MAC address, for
-> >> instance).  Presumably the kernel parser would
-> >> complain when it sees the this-is-still-undefined
-> >> marker.
-> >>
-> >> The original proposal specified the length of
-> >> the property value IIRC, but that isn't necessary
-> >> anymore.
-> >
-> > Well.. sort of.  The first cut at the idea is that ? would be
-> > equivalent to zeroes in terms of dtc output, but would act as internal
-> > documentation that that property is supposed to be filled in by the
-> > bootloader.
+On Fri, May 11, 2007 at 05:53:36PM -0700, Mark A. Greer wrote:
 > 
-> Yes.
+> Add 'zImage.dts' and 'zImage.dts_initrd' build rules that automatically
+> compile and wrap a dts file from arch/powerpc/boot/dts into the zImage file.
+> The resulting zImage will be arch/powerpc/boot/zImage.dts.<platform> and
+> arch/powerpc/boot/zImage.dts_initrd.<platform>, respectively.
 > 
-> > Refinements to try to enforce that would be nice:
+> Having separate rules allows the user to choose whether to include a device
+> tree--and which device tree--at build time.  This is useful when one Makefile
+> target builds a zImage that runs on several platforms except for differing
+> device trees.  By just setting CONFIG_DEVICE_TREE and running "make zImage.dts"
+> the exact zImage you want is built without Makefile bloat or manually running
+> the wrapper script.
 > 
-> Exactly my point.
+> The dts file is expected to be arch/powerpc/boot/dts/$(CONFIG_DEVICE_TREE)
 > 
-> > easiest is to
-> > replace it with a configurable poison value.  When using asm output,
-> > or with a map file, it might be possible to generate out-of-band
-> > information which we can use to check that the right things are filled
-> > in.
-> >
-> > It's not a simply a matter of making the kernel parser recognize the
-> > uninitialized info, because there's no way to encode that in the dtb
-> > itself.
+> Signed-off-by: Mark A. Greer <mgreer@mvista.com>
+> ---
 > 
-> There can be, with a new DTB version -- perhaps simply
-> define proplen == -1 to mean "undefined" or similar.
+>  arch/powerpc/Makefile      |    2 +-
+>  arch/powerpc/boot/Makefile |   25 ++++++++++++++++++++++++-
+>  2 files changed, 25 insertions(+), 2 deletions(-)
+> 
+> Index: powerpc/arch/powerpc/boot/Makefile
+> ===================================================================
+> --- powerpc.orig/arch/powerpc/boot/Makefile
+> +++ powerpc/arch/powerpc/boot/Makefile
+> @@ -154,9 +154,27 @@ targets	+= $(image-y) $(initrd-y)
+>  
+>  $(addprefix $(obj)/, $(initrd-y)): $(obj)/ramdisk.image.gz
+>  
+> +dts-  := $(patsubst zImage%, zImage.dts%, $(image-n) $(image-))
+> +dts-y := $(patsubst zImage%, zImage.dts%, $(image-y))
+> +dts-y := $(filter-out $(image-y), $(dts-y))
+> +targets	+= $(image-y) $(dts-y)
+> +
+> +dts_initrd-  := $(patsubst zImage%, zImage.dts_initrd%, $(image-n) $(image-))
+> +dts_initrd-y := $(patsubst zImage%, zImage.dts_initrd%, $(image-y))
+> +dts_initrd-y := $(filter-out $(image-y), $(dts_initrd-y))
+> +targets	+= $(image-y) $(dts_initrd-y)
+> +
+> +$(addprefix $(obj)/, $(dts_initrd-y)): $(obj)/ramdisk.image.gz
+> +
+>  # Don't put the ramdisk on the pattern rule; when its missing make will try
+>  # the pattern rule with less dependencies that also matches (even with the
+>  # hard dependency listed).
+> +$(obj)/zImage.dts_initrd.%: vmlinux $(wrapperbits) $(dts) $(obj)/ramdisk.image.gz
+> +	$(call if_changed,wrap,$*,$(dts),,$(obj)/ramdisk.image.gz)
+> +
+> +$(obj)/zImage.dts.%: vmlinux $(wrapperbits) $(dts)
+> +	$(call if_changed,wrap,$*,$(dts))
+> +
+>  $(obj)/zImage.initrd.%: vmlinux $(wrapperbits)
+>  	$(call if_changed,wrap,$*,,,$(obj)/ramdisk.image.gz)
+>  
+> @@ -195,13 +213,18 @@ $(obj)/zImage:		$(addprefix $(obj)/, $(i
+>  	@rm -f $@; ln $< $@
+>  $(obj)/zImage.initrd:	$(addprefix $(obj)/, $(initrd-y))
+>  	@rm -f $@; ln $< $@
+> +$(obj)/zImage.dts:	$(addprefix $(obj)/, $(dts-y))
+> +	@rm -f $@; ln $< $@
+> +$(obj)/zImage.dts_initrd:	$(addprefix $(obj)/, $(dts_initrd-y))
+> +	@rm -f $@; ln $< $@
+> +
 
-That doesn't quite do it, because I'd prefer ? to cover cases where
-the property's length is known, just not its value.  In particular
-that could be useful for device trees where *only* non-moving edits
-are required by the bootloader, letting us use the asm output mode as
-intended.
+I thought you said you were going to drop this bit?
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
