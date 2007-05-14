@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 14 May 2007 11:43:20 +1000
+Date: Mon, 14 May 2007 13:13:57 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Remove fixup_bigphys_addr() for arch/powerpc
-Message-ID: <20070514014320.GI6517@localhost.localdomain>
+To: Paul Mackerras <paulus@samba.org>, "Mark A. Greer" <mgreer@mvista.com>
+Subject: Fix bug adding properties with flatdevtree.c's ft_set_prop()
+Message-ID: <20070514031357.GM6517@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
@@ -16,60 +16,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There are no actual implementations of fixup_bigphys_addr() in
-arch/powerpc, and with a 64-bit aware ioremap() and so forth, it
-should no longer be necessary.  This patch removes the last dregs of
-fixup_bigphys_addr() from arch/powerpc.
+ft_set_prop() from flatdevtree.c in the zImage wrapper will either
+replace an existing property in the flat device tree, or add a new
+property definiion if the given property isn't present.
 
-In fact, the only reason this hasn't caused link errors already is
-that nobody must have tried using one of the small number of drivers
-using io_remap_pfn_range() on one of the small number of platforms
-which are 32-bit but define CONFIG_PHYS_64BIT.  Nonetheless this fixes
-a bug, and should go into 2.6.22.
+However, when adding properties, it adds the property definition
+immediately before the node's END_NODE tag, potentially after any
+subnode definitions for the node.  This confuses the kernel flat tree
+parser in prom.c which assumes that all property definitions for a
+node come before all subnode definitions.
+
+This patch corrects ft_set_prop() so that it adds new properties
+before the first subnode, instead of before the END_NODE tag.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Index: working-2.6/include/asm-powerpc/mmu-44x.h
+Index: working-2.6/arch/powerpc/boot/flatdevtree.c
 ===================================================================
---- working-2.6.orig/include/asm-powerpc/mmu-44x.h	2007-05-09 13:14:53.000000000 +1000
-+++ working-2.6/include/asm-powerpc/mmu-44x.h	2007-05-09 13:15:10.000000000 +1000
-@@ -55,8 +55,6 @@
+--- working-2.6.orig/arch/powerpc/boot/flatdevtree.c	2007-05-14 12:00:23.000000000 +1000
++++ working-2.6/arch/powerpc/boot/flatdevtree.c	2007-05-14 13:00:10.000000000 +1000
+@@ -891,28 +891,27 @@ int ft_set_prop(struct ft_cxt *cxt, cons
+ 	struct ft_atom atom;
+ 	void *node;
+ 	char *p, *next;
+-	int nextra, depth;
++	int nextra;
  
- typedef unsigned long long phys_addr_t;
+ 	node = ft_node_ph2node(cxt, phandle);
+ 	if (node == NULL)
+ 		return -1;
  
--extern phys_addr_t fixup_bigphys_addr(phys_addr_t, phys_addr_t);
--
- typedef struct {
- 	unsigned long id;
- 	unsigned long vdso_base;
-Index: working-2.6/include/asm-powerpc/pgtable-ppc32.h
-===================================================================
---- working-2.6.orig/include/asm-powerpc/pgtable-ppc32.h	2007-05-09 13:14:25.000000000 +1000
-+++ working-2.6/include/asm-powerpc/pgtable-ppc32.h	2007-05-09 13:14:42.000000000 +1000
-@@ -782,23 +782,8 @@ extern void kernel_set_cachemode (unsign
- /* Needs to be defined here and not in linux/mm.h, as it is arch dependent */
- #define kern_addr_valid(addr)	(1)
+-	depth = 0;
+-	p = node;
++	next = ft_next(cxt, node, &atom);
++	if (atom.tag != OF_DT_BEGIN_NODE)
++		/* phandle didn't point to a node */
++		return -1;
++	p = next;
  
--#ifdef CONFIG_PHYS_64BIT
--extern int remap_pfn_range(struct vm_area_struct *vma, unsigned long from,
--			unsigned long paddr, unsigned long size, pgprot_t prot);
--
--static inline int io_remap_pfn_range(struct vm_area_struct *vma,
--					unsigned long vaddr,
--					unsigned long pfn,
--					unsigned long size,
--					pgprot_t prot)
--{
--	phys_addr_t paddr64 = fixup_bigphys_addr(pfn << PAGE_SHIFT, size);
--	return remap_pfn_range(vma, vaddr, paddr64 >> PAGE_SHIFT, size, prot);
--}
--#else
- #define io_remap_pfn_range(vma, vaddr, pfn, size, prot)		\
- 		remap_pfn_range(vma, vaddr, pfn, size, prot)
--#endif
- 
- /*
-  * No page table caches to initialise
+ 	while ((next = ft_next(cxt, p, &atom)) != NULL) {
+ 		switch (atom.tag) {
+-		case OF_DT_BEGIN_NODE:
+-			++depth;
+-			break;
++		case OF_DT_BEGIN_NODE: /* properties must go before subnodes */
+ 		case OF_DT_END_NODE:
+-			if (--depth > 0)
+-				break;
+ 			/* haven't found the property, insert here */
+ 			cxt->p = p;
+ 			return ft_prop(cxt, propname, buf, buflen);
+ 		case OF_DT_PROP:
+-			if ((depth != 1) || strcmp(atom.name, propname))
++			if (strcmp(atom.name, propname))
+ 				break;
+ 			/* found an existing property, overwrite it */
+ 			nextra = _ALIGN(buflen, 4) - _ALIGN(atom.size, 4);
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
