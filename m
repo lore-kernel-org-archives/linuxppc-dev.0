@@ -1,33 +1,20 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A497CDDED4
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 01:09:35 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4EF9W3T015540
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 11:09:32 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4EF9Wbc267040
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 09:09:32 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4EF9V6N024688
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 09:09:32 -0600
-Subject: Re: Small fixes for the Ebony device tree
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <3af16d1a6c09901f10dca3b6a3f8c698@kernel.crashing.org>
-References: <20070514045404.GP6517@localhost.localdomain>
-	<3af16d1a6c09901f10dca3b6a3f8c698@kernel.crashing.org>
-Content-Type: text/plain
-Date: Mon, 14 May 2007 10:09:28 -0500
-Message-Id: <1179155368.3420.30.camel@zod.rchland.ibm.com>
+Return-Path: <sam@ravnborg.org>
+Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
+	by ozlabs.org (Postfix) with ESMTP id 6151CDDF37
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 01:09:41 +1000 (EST)
+Date: Mon, 14 May 2007 13:06:36 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH 1/2] kbuild: Add "Section mismatch" warning whitelist for
+	powerpc
+Message-ID: <20070514110636.GB10143@uranus.ravnborg.org>
+References: <46483FAC.60503@freescale.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <46483FAC.60503@freescale.com>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	Linus <torvalds@linux-foundation.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,39 +24,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-05-14 at 14:59 +0200, Segher Boessenkool wrote:
-> > -			i-cache-size = <0>;
-> > -			d-cache-size = <0>;
-> > +			i-cache-size = <2000000>; /* 32 kB */
-> > +			d-cache-size = <2000000>; /* 32 kB */
+On Mon, May 14, 2007 at 06:53:32PM +0800, Li Yang wrote:
+> This patch fixes the following "Section mismatch" warnings when
+> build powerpc platforms.
 > 
-> That's 32MB, not 32kB.  Better fix this :-)
-
-Argh.  What's even sadder is I just did the exact same thing for Bamboo.
-
-> > +		SRAM0: sram {
-> > +			compatible = "ibm,sram440gp";
-> > +			dcr-reg = <020 8 00a 1>;
-> > +		};
+> -------------
+> WARNING: arch/powerpc/mm/built-in.o - Section mismatch: reference to 
+> .init.text:early_get_page from .text between 'pte_alloc_one_kernel' (at 
+> offset 0xc68) and 'pte_alloc_one'
+> WARNING: mm/built-in.o - Section mismatch: reference to 
+> .init.text:set_up_list3s from .text between 'kmem_cache_create' (at offset 
+> 0x20300) and 'cache_reap'
+> -------------
 > 
-> Is this thing _only_ addressable over DCRs?  Weird.
-
-Yes.
-
+> Massive warnings represented by:
+> -------------
+> WARNING: arch/powerpc/kernel/built-in.o - Section mismatch: reference to 
+> .init.data:.got2 from prom_entry (offset 0x0)
+> WARNING: arch/powerpc/platforms/built-in.o - Section mismatch: reference to 
+> .init.text:mpc8313_rdb_probe from .machine.desc after 'mach_mpc8313_rdb' 
+> (at offset 0x4)
+> -------------
 > 
-> >  		MAL0: mcmal {
-> > -			device_type = "mcmal-dma";
-> > +			device_type = "dma-controller";
-> >  			compatible = "ibm,mcmal-440gp", "ibm,mcmal";
+> Signed-off-by: Li Yang <leoli@freescale.com>
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
+> ---
+> scripts/mod/modpost.c |   16 ++++++++++++----
+> 1 files changed, 12 insertions(+), 4 deletions(-)
 > 
-> Remove "device_type", change name to "dma-controller"?
+> diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+> index c89cb71..aa3a881 100644
+> --- a/scripts/mod/modpost.c
+> +++ b/scripts/mod/modpost.c
+> @@ -649,9 +649,10 @@ static int strrcmp(const char *s, const char *sub)
+>  *  tosec    = .init.text
+>  *
+>  * Pattern 10:
+> - *  ia64 has machvec table for each platform. It is mixture of function
+> - *  pointer of .init.text and .text.
+> - *  fromsec  = .machvec
+> + *  ia64 has machvec table and powerpc has machine desc table for each
+> + *  platform. It is mixture of function pointer of .init.text and .text.
+> + *  fromsec  = .machvec | .machine.desc
+> + *
+>  **/
+> static int secref_whitelist(const char *modname, const char *tosec,
+> 			    const char *fromsec, const char *atsym,
+> @@ -681,6 +682,8 @@ static int secref_whitelist(const char *modname, const 
+> char *tosec,
+> 	const char *pat4sym[] = {
+> 		"sparse_index_alloc",
+> 		"zone_wait_table_init",
+> +		"pte_alloc_one_kernel",
+> +		"kmem_cache_create",
+> 		NULL
+> 	};
 > 
-> >  			EBC0: ebc {
-> > -				device_type = "ibm,ebc";
-> >  				compatible = "ibm,ebc-440gp";
+> @@ -750,7 +753,8 @@ static int secref_whitelist(const char *modname, const 
+> char *tosec,
+> 				return 1;
 > 
-> You forgot "ibm,ebc" here.
-
-/me notes that for Bamboo
-
-josh
+> 	/* Check for pattern 10 */
+> -	if (strcmp(fromsec, ".machvec") == 0)
+> +	if ((strcmp(fromsec, ".machvec") == 0) ||
+> +	    (strcmp(fromsec, ".machine.desc") == 0))
+> 		return 1;
+> 
+> 	return 0;
+> @@ -883,6 +887,10 @@ static void warn_sec_mismatch(const char *modname, 
+> const char *fromsec,
+> 	    secref_whitelist(modname, secname, fromsec,
+> 			     elf->strtab + before->st_name, refsymname))
+> 		return;
+> +	/* fromsec whitelist - without a valid 'before' */
+> +	/* powerpc has a GOT table in .got2 section */
+> +	if (strcmp(fromsec, ".got2") == 0)
+> +		return;
+> 
+> 	if (before && after) {
+> 		warn("%s - Section mismatch: reference to %s:%s from %s "
+> 
