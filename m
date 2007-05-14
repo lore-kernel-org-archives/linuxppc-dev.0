@@ -1,15 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 14 May 2007 10:40:14 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [PATCH 10/13] powerpc: check cache coherency of kernel vs firmware
-Message-ID: <20070514004014.GF6517@localhost.localdomain>
-References: <20070512004605.GA2808@mag.az.mvista.com>
-	<20070512005735.GJ3365@mag.az.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070512005735.GJ3365@mag.az.mvista.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 1AD9FDDE42
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 10:44:54 +1000 (EST)
+Date: Mon, 14 May 2007 10:44:44 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH] viopath: use completion
+Message-Id: <20070514104444.b8064b1e.sfr@canb.auug.org.au>
+In-Reply-To: <20070513155027.GB9218@lst.de>
+References: <20070513155027.GB9218@lst.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Mon__14_May_2007_10_44_44_+1000_M3lwMJ6rEqj3tLI5"
+Cc: boutcher@us.ibm.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,21 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 11, 2007 at 05:57:35PM -0700, Mark A. Greer wrote:
-> 
-> From: Dale Farnsworth <dale@farnsworth.org>
-> 
-> check_cache_coherency() verifies that the cache coherency setting of
-> the kernel (CONFIG_NOT_COHERENT_CACHE) matches that left by the firmware,
-> as indicated by coherency-off device tree property.
+--Signature=_Mon__14_May_2007_10_44_44_+1000_M3lwMJ6rEqj3tLI5
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-This looks really bogus.  If the firmware reports a coherency state,
-then presumably there's some hardware switch to turn coherency on or
-off.  In which case, can't the kernel just toggle that switch to
-whatever's appropriate for it?
+On Sun, 13 May 2007 17:50:27 +0200 Christoph Hellwig <hch@lst.de> wrote:
+>
+> Use a completion instead of abusing a semaphore for hypervisor event
+> completion in viopath.
+>
+>
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__14_May_2007_10_44_44_+1000_M3lwMJ6rEqj3tLI5
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGR7EAFdBgD/zoJvwRAtBUAJ4j6b57vIP2zs6zQIfAXQ2nCGE/+QCfeCBb
+Rtw001ffVrbaDTRZsirmElk=
+=UTn7
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__14_May_2007_10_44_44_+1000_M3lwMJ6rEqj3tLI5--
