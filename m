@@ -1,25 +1,16 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
-	by ozlabs.org (Postfix) with ESMTP id 150BCDDECF
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 05:02:29 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so1023463ugf
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 12:02:27 -0700 (PDT)
-Message-ID: <528646bc0705141202h1cf1a309y2e1ed1289974b3c7@mail.gmail.com>
-Date: Mon, 14 May 2007 13:02:18 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "David Brownell" <david-b@pacbell.net>
-Subject: Re: [patch/rft 4/4] rtc-ds1307 platform update,
-	powerpc mpc834x_itx and mpc8313_rdb
-In-Reply-To: <200705141149.27858.david-b@pacbell.net>
+Return-Path: <grant.likely@secretlab.ca>
+Received: from sandbox.secretlab.ca (S01060016b61d1226.cg.shawcable.net
+	[68.147.67.118]) by ozlabs.org (Postfix) with ESMTP id 63F91DDED1
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 05:11:33 +1000 (EST)
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] Make i2c-mpc driver use i2c_add_numbered_adapter
+To: David Brownell <david-b@pacbell.net>, rtc-linux@googlegroups.com,
+	linuxppc-dev@ozlabs.org, i2c@lm-sensors.org,
+	James Chapman <jchapman@katalix.com>, Sylvain Munaut <tnt@246tnt.com>
+Date: Mon, 14 May 2007 13:11:23 -0600
+Message-ID: <20070514190545.32739.72083.stgit@trillian.secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <200705140946.41993.david-b@pacbell.net>
-	<528646bc0705141044s244ce3ecyad5096c441134203@mail.gmail.com>
-	<200705141125.59266.david-b@pacbell.net>
-	<200705141149.27858.david-b@pacbell.net>
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org, rtc-linux@googlegroups.com,
-	James Chapman <jchapman@katalix.com>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,48 +20,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 5/14/07, David Brownell <david-b@pacbell.net> wrote:
->
-> > > > @@ -329,7 +330,7 @@ static int fsl_i2c_probe(struct platform
-> > > >         i2c->adap = mpc_ops;
-> > > >         i2c_set_adapdata(&i2c->adap, i2c);
-> > > >         i2c->adap.dev.parent = &pdev->dev;
-> > > > -       if ((result = i2c_add_adapter(&i2c->adap)) < 0) {
-> > > > +       if ((result = i2c_add_numbered_adapter(&i2c->adap)) < 0) {
-> > > >                 printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
-> > > >                 goto fail_add;
-> > > >         }
-> > >
-> > > ...
-> > >
-> > > I think you need to add this line before the call to i2c_add_numbered_adapter:
-> > >
-> > > i2c->adap.nr = pdev->id;
-> >
-> > If these chips do have multiple instances of that adapter logic,
-> > that would be an appropriate change.  The only "gotcha" might be
-> > that some platforms use the "pdev->id = -1" trick when there's
-> > only a single instance ... that would probably map to zero.
-> >
-> > I'll hope that whoever makes all this work will resolve those
-> > particular questions ...
->
-> Oh, and by the way:  patches updating I2C adapter drivers to work
-> with new-style drivers look to be OK to get into 2.6.22 with just
-> an Ack from Jean, via the MM tree.  (Right, Jean?)
->
-> In this case I'll hope someone else does the real submission, after
-> testing.  I just wanted to nudge the process along
+Move the i2c-mpc driver over to using the new i2c infrastructure.
+Specifically, it now uses i2c_add_numberd_adapter so that the bus number
+can be determined ahead of time and used to register i2c clients before
+the bus is instantiated.
 
-I'll submit this one (at least the i2c-mpc.c bits).  It's already
-working on my mpc5200 board.  I don't have any of the other boards, so
-those fixups should come from others.
+Tested on an MPC5200 based board
 
-Cheers,
-g.
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
+This patch will need to be tested to make sure it does not break any 8xxx
+board ports.
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Work still to be done (in another patch): support for pulling i2c client
+registrations out of the device tree.
+
+ drivers/i2c/busses/i2c-mpc.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+index c6b6898..a769efc 100644
+--- a/drivers/i2c/busses/i2c-mpc.c
++++ b/drivers/i2c/busses/i2c-mpc.c
+@@ -327,9 +327,10 @@ static int fsl_i2c_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, i2c);
+ 
+ 	i2c->adap = mpc_ops;
++	i2c->adap.nr = pdev->id;
+ 	i2c_set_adapdata(&i2c->adap, i2c);
+ 	i2c->adap.dev.parent = &pdev->dev;
+-	if ((result = i2c_add_adapter(&i2c->adap)) < 0) {
++	if ((result = i2c_add_numbered_adapter(&i2c->adap)) < 0) {
+ 		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
+ 		goto fail_add;
+ 	}
