@@ -1,18 +1,16 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 14 May 2007 13:49:02 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [PATCH 1/13] powerpc: Add Makefile rules to wrap dts file in
-	zImage
-Message-ID: <20070514034902.GN6517@localhost.localdomain>
-References: <20070512004605.GA2808@mag.az.mvista.com>
-	<20070512005336.GA3365@mag.az.mvista.com>
-	<20070514003332.GE6517@localhost.localdomain>
-	<20070514034646.GA28278@mag.az.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070514034646.GA28278@mag.az.mvista.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id C86CADDE2F
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 13:50:35 +1000 (EST)
+Date: Mon, 14 May 2007 13:50:33 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] Wire up some more syscalls
+Message-Id: <20070514135033.07c1b840.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,28 +20,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, May 13, 2007 at 08:46:46PM -0700, Mark A. Greer wrote:
-> On Mon, May 14, 2007 at 10:33:32AM +1000, David Gibson wrote:
-> > On Fri, May 11, 2007 at 05:53:36PM -0700, Mark A. Greer wrote:
-> 
-> > > +$(obj)/zImage.dts:	$(addprefix $(obj)/, $(dts-y))
-> > > +	@rm -f $@; ln $< $@
-> > > +$(obj)/zImage.dts_initrd:	$(addprefix $(obj)/, $(dts_initrd-y))
-> > > +	@rm -f $@; ln $< $@
-> > > +
-> > 
-> > I thought you said you were going to drop this bit?
-> 
-> >From 0/13:
-> 
-> "Latest respin of these patches.  Should address all comments except David's
-> comment about the '$(obj)/zImage.dts:' rules.  I will address those next
-> week but if I get this out now, it may get in to 2.6.22. :)"
+signalfd, timerfd and eventfd
 
-Ah, sorry.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ include/asm-powerpc/systbl.h |    3 +++
+ include/asm-powerpc/unistd.h |    5 ++++-
+ 2 files changed, 7 insertions(+), 1 deletions(-)
+
+This depends on the patch I just sent to declare compat_sys_signalfd and
+compat_sys_timerfd.  And I am assuming that the SPU's want these.
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/include/asm-powerpc/systbl.h b/include/asm-powerpc/systbl.h
+index 3d44446..700ca59 100644
+--- a/include/asm-powerpc/systbl.h
++++ b/include/asm-powerpc/systbl.h
+@@ -308,3 +308,6 @@ COMPAT_SYS_SPU(move_pages)
+ SYSCALL_SPU(getcpu)
+ COMPAT_SYS(epoll_pwait)
+ COMPAT_SYS_SPU(utimensat)
++COMPAT_SYS_SPU(signalfd)
++COMPAT_SYS_SPU(timerfd)
++SYSCALL_SPU(eventfd)
+diff --git a/include/asm-powerpc/unistd.h b/include/asm-powerpc/unistd.h
+index 21f004a..912e009 100644
+--- a/include/asm-powerpc/unistd.h
++++ b/include/asm-powerpc/unistd.h
+@@ -327,10 +327,13 @@
+ #define __NR_getcpu		302
+ #define __NR_epoll_pwait	303
+ #define __NR_utimensat		304
++#define __NR_signalfd		305
++#define __NR_timerfd		306
++#define __NR_eventfd		307
+ 
+ #ifdef __KERNEL__
+ 
+-#define __NR_syscalls		305
++#define __NR_syscalls		308
+ 
+ #define __NR__exit __NR_exit
+ #define NR_syscalls	__NR_syscalls
+-- 
+1.5.1.4
