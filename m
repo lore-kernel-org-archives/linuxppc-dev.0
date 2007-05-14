@@ -1,25 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EE395DDDFC
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 07:07:46 +1000 (EST)
-Subject: Re: vm changes from linux-2.6.14 to linux-2.6.15
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hugh Dickins <hugh@veritas.com>
-In-Reply-To: <Pine.LNX.4.64.0705142018090.18453@blonde.wat.veritas.com>
-References: <Pine.LNX.4.61.0705012354290.12808@mtfhpc.demon.co.uk>
-	<20070509231937.ea254c26.akpm@linux-foundation.org>
-	<1178778583.14928.210.camel@localhost.localdomain>
-	<20070510.001234.126579706.davem@davemloft.net>
-	<Pine.LNX.4.64.0705142018090.18453@blonde.wat.veritas.com>
-Content-Type: text/plain
-Date: Tue, 15 May 2007 07:07:25 +1000
-Message-Id: <1179176845.32247.107.camel@localhost.localdomain>
+Return-Path: <sam@ravnborg.org>
+Received: from pasmtpB.tele.dk (pasmtpb.tele.dk [80.160.77.98])
+	by ozlabs.org (Postfix) with ESMTP id 73276DDDFC
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 07:12:25 +1000 (EST)
+Date: Mon, 14 May 2007 23:13:20 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/2] kbuild: Add "Section mismatch" warning whitelist for
+	powerpc
+Message-ID: <20070514211320.GA12094@uranus.ravnborg.org>
+References: <46483FAC.60503@freescale.com>
+	<20070514110636.GB10143@uranus.ravnborg.org>
+	<3DF58590-DFD9-4665-8C47-33F407AAD1E7@kernel.crashing.org>
+	<20070514123046.d75cc170.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Cc: mark@mtfhpc.demon.co.uk, linuxppc-dev@ozlabs.org, wli@holomorphy.com,
-	linux-mm@kvack.org, andrea@suse.de, sparclinux@vger.kernel.org,
-	akpm@linux-foundation.org, David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070514123046.d75cc170.akpm@linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>,
+	Linus <torvalds@linux-foundation.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,26 +27,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-05-14 at 20:19 +0100, Hugh Dickins wrote:
-> On Thu, 10 May 2007, David Miller wrote:
-> > > > We never seemed to reach completion here?
-> > > 
-> > > Well, I'm waiting for other people comments too... as I said earlier,
-> > > I'm not too fan of burrying the update_mmu_cache() inside
-> > > ptep_set_access_flags(), but perhaps we could remove the whole logic of
-> > > reading the old PTE & comparing it, and instead have
-> > > ptep_set_access_flags() do that locally and return to the caller wether
-> > > a change occured that requires update_mmu_cache() to be called.
-> > > 
-> > > That way, archs who don't actually need update_mmu_cache() under some
-> > > circumstances will be able to return 0 there.
-> > > 
-> > > What do you guys thing ?
-> > 
-> > I think that's a good idea.
+On Mon, May 14, 2007 at 12:30:46PM -0700, Andrew Morton wrote:
+> > >>
+> > >> Signed-off-by: Li Yang <leoli@freescale.com>
+> > > Acked-by: Sam Ravnborg <sam@ravnborg.org>
 > 
-> I agree.
+> I always get confused when a git-tree-owner says "acked-by" against a patch
+> which falls within his tree's area.  An acked-by would mean "I'm OK with
+> the patch, please apply it".  But I'd have expected to see a "thanks,
+> applied" instead.
 
-Ok, I'll cook a patch today.
+I have saved the patch so I can apply it if Linus does not do so.
+My "Acked-by:" was actually mostly to tell Linus that I was OK
+with the modpost changes although I did not write so in my mail.
 
-Ben.
+So if this is not picked up by Linus I will pick up this patch.
+
+	Sam
