@@ -1,21 +1,32 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp109.sbc.mail.mud.yahoo.com (smtp109.sbc.mail.mud.yahoo.com
-	[68.142.198.208]) by ozlabs.org (Postfix) with SMTP id 1BCF5DDE1A
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 04:37:43 +1000 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [patch/rft 4/4] rtc-ds1307 platform update,
-	powerpc mpc834x_itx and mpc8313_rdb
-Date: Mon, 14 May 2007 11:37:39 -0700
-References: <200705140946.41993.david-b@pacbell.net>
-	<20070514180545.GA1437@lixom.net>
-In-Reply-To: <20070514180545.GA1437@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200705141137.39961.david-b@pacbell.net>
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org, rtc-linux@googlegroups.com,
-	James Chapman <jchapman@katalix.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C8AA2DDEDA
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 04:44:44 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4EIje9r002904
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 14:45:40 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l4EIifXR522280
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 14:44:41 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4EIieRd023194
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 14:44:40 -0400
+Subject: Re: [PATCH 1/3] Bamboo DTS
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <92b3319be989145b0191cf9693ddd90c@kernel.crashing.org>
+References: <1179154608.3420.21.camel@zod.rchland.ibm.com>
+	<1179154675.3420.22.camel@zod.rchland.ibm.com>
+	<92b3319be989145b0191cf9693ddd90c@kernel.crashing.org>
+Content-Type: text/plain
+Date: Mon, 14 May 2007 13:44:35 -0500
+Message-Id: <1179168275.3420.51.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,47 +36,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 14 May 2007, Olof Johansson wrote:
-> On Mon, May 14, 2007 at 09:46:41AM -0700, David Brownell wrote:
-
-> > Didn't update the pasemi reference board; public info doesn't say
-> > which chip it uses.
+On Mon, 2007-05-14 at 17:21 +0200, Segher Boessenkool wrote:
+> > +			i-cache-size = <2000000>;
+> > +			d-cache-size = <2000000>;
 > 
-> ds1338.
+> 32MB yeah right :-)
 
-OK.  The relevant updates should be evident from this patch.
+Yeah, that's what I get for copying from David ;).
 
-Mr Grep tells me that if those powerpc platforms update along
-with csb337, all current rtc-ds1307 users will be upgraded.
-
-Then there's a separate issue of removing the old SENSORS_DS1337
-driver.  Simpler IMO for those drivers to have one transition,
-to new-style rtc-ds1307, not two (to old-style, then new-style).
-
-
-> > NOTE:  cc'd the relevant powerpc maintainers lists; patches 1-3
-> > will be archived in the rtc and i2c lists.  I'd like to see these
-> > get tested/fixed so that the rtc-ds1307 driver can switch completely
-> > to use the new-style I2c driver model.
 > 
-> Specific URLs can sometimes be useful, so we don't have to go digging
-> through the archives. But thanks for the heads up, I'll make the
-> corresponding changes to my code and test it out.
+> > +		MAL0: mcmal {
+> 
+> > +			#address-cells = <0>;
+> > +			#size-cells = <0>;
+> > +			interrupt-map-mask = <ffffffff>;
+> 
+> These three properties aren't needed (map-mask defaults
+> to all bits, #size is never used, #address defaults to 0
+> for interrupt mapping and isn't used in any other context).
 
-The URLS don't exist until after the email's gotten to the list
-servers ... sort of a chicken/egg issue.
+Ok.
 
- 
-> (I'm guessing long-term, we will want to pull the chip info out of the
-> device tree instad of have it in a table in the board code, but that's
-> extra credit at the moment.)
-
-For some definition of "long term".  ISTR seeing patches from Scott Wood
-doing exactly that ... on the I2C list last November or so.  ;)
-
-Right now my concern is how to migrate the rtc-ds1307 driver.  I'd
-prefer to avoid needing to have a period where the legacy mode must
-co-exist with the new-style driver support, or needing to entangle
-with such tree conversions.
-
-- Dave
+josh
