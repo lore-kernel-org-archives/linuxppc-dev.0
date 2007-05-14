@@ -1,23 +1,33 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-08.arcor-online.net (mail-in-08.arcor-online.net
-	[151.189.21.48])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 208C9DDF1D
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 01:04:42 +1000 (EST)
-In-Reply-To: <200705141637.19572.arnd@arndb.de>
-References: <20070514075415.7999BDDEC8@ozlabs.org>
-	<200705141637.19572.arnd@arndb.de>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <850bd1e3d0b6c5e23a2fe43154591fd9@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC/PATCH] powerpc: Rewrite IO allocation & mapping on powerpc64
-Date: Mon, 14 May 2007 17:04:02 +0200
-To: Arnd Bergmann <arnd@arndb.de>
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A497CDDED4
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 01:09:35 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4EF9W3T015540
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 11:09:32 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l4EF9Wbc267040
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 09:09:32 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4EF9V6N024688
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 09:09:32 -0600
+Subject: Re: Small fixes for the Ebony device tree
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <3af16d1a6c09901f10dca3b6a3f8c698@kernel.crashing.org>
+References: <20070514045404.GP6517@localhost.localdomain>
+	<3af16d1a6c09901f10dca3b6a3f8c698@kernel.crashing.org>
+Content-Type: text/plain
+Date: Mon, 14 May 2007 10:09:28 -0500
+Message-Id: <1179155368.3420.30.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Anton Blanchard <anton@samba.org>
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,21 +37,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Do you think it's ok to not treat the range between 64k and 1M special?
-> There might be ISA drivers that expect devices in there.
+On Mon, 2007-05-14 at 14:59 +0200, Segher Boessenkool wrote:
+> > -			i-cache-size = <0>;
+> > -			d-cache-size = <0>;
+> > +			i-cache-size = <2000000>; /* 32 kB */
+> > +			d-cache-size = <2000000>; /* 32 kB */
+> 
+> That's 32MB, not 32kB.  Better fix this :-)
 
-ISA I/O space is 16-bit addressing only.
+Argh.  What's even sadder is I just did the exact same thing for Bamboo.
 
-> Maybe we should
-> start PHB_IO_BASE after a 1M guard area where nothing is mapped.
+> > +		SRAM0: sram {
+> > +			compatible = "ibm,sram440gp";
+> > +			dcr-reg = <020 8 00a 1>;
+> > +		};
+> 
+> Is this thing _only_ addressable over DCRs?  Weird.
 
-This can cause problems, many PCI bridges and devices
-don't decode all 32 bits of the legacy I/O address space.
+Yes.
 
-> Where should Olof's PCMCIA space go? The ISA or the PHB range?
+> 
+> >  		MAL0: mcmal {
+> > -			device_type = "mcmal-dma";
+> > +			device_type = "dma-controller";
+> >  			compatible = "ibm,mcmal-440gp", "ibm,mcmal";
+> 
+> Remove "device_type", change name to "dma-controller"?
+> 
+> >  			EBC0: ebc {
+> > -				device_type = "ibm,ebc";
+> >  				compatible = "ibm,ebc-440gp";
+> 
+> You forgot "ibm,ebc" here.
 
-It uses the legacy IDE I/O addresses, so it needs to
-go to the 64kB space.  It isn't ISA though.
+/me notes that for Bamboo
 
-
-Segher
+josh
