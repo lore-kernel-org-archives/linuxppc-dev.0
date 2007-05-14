@@ -3,22 +3,22 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3DBA0DDE3E
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 23:58:01 +1000 (EST)
-In-Reply-To: <20070514110636.GB10143@uranus.ravnborg.org>
-References: <46483FAC.60503@freescale.com>
-	<20070514110636.GB10143@uranus.ravnborg.org>
+	by ozlabs.org (Postfix) with ESMTP id C0627DDDF3
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 23:59:46 +1000 (EST)
+In-Reply-To: <1179116138.18580.2.camel@shinybook.infradead.org>
+References: <20070514135033.07c1b840.sfr@canb.auug.org.au>
+	<1AF532FF-A994-47AF-9394-5DFFC6C8FDA1@kernel.crashing.org>
+	<1179116138.18580.2.camel@shinybook.infradead.org>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3DF58590-DFD9-4665-8C47-33F407AAD1E7@kernel.crashing.org>
+Message-Id: <B31879C1-6E28-45F5-8253-466785183E41@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] kbuild: Add "Section mismatch" warning whitelist for
-	powerpc
-Date: Mon, 14 May 2007 08:56:52 -0500
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Li Yang <leoli@freescale.com>, Linus <torvalds@linux-foundation.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] [POWERPC] Wire up some more syscalls
+Date: Mon, 14 May 2007 08:58:47 -0500
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	Andrew Morton <akpm@linux-foundation.org>, paulus@samba.org,
+	Arnd Bergmann <arnd@arndb.de>, ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,107 +29,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On May 14, 2007, at 6:06 AM, Sam Ravnborg wrote:
+On May 13, 2007, at 11:15 PM, David Woodhouse wrote:
 
-> On Mon, May 14, 2007 at 06:53:32PM +0800, Li Yang wrote:
->> This patch fixes the following "Section mismatch" warnings when
->> build powerpc platforms.
->>
->> -------------
->> WARNING: arch/powerpc/mm/built-in.o - Section mismatch: reference to
->> .init.text:early_get_page from .text between  
->> 'pte_alloc_one_kernel' (at
->> offset 0xc68) and 'pte_alloc_one'
->> WARNING: mm/built-in.o - Section mismatch: reference to
->> .init.text:set_up_list3s from .text between  
->> 'kmem_cache_create' (at offset
->> 0x20300) and 'cache_reap'
->> -------------
+> On Sun, 2007-05-13 at 22:55 -0500, Kumar Gala wrote:
+>> Just out of interest, what makes a syscall COMPAT_SYS_SPU vs
+>> SYSCALL_SPU?
+>
+> It's the same as the difference between COMPAT_SYS and SYSCALL.
+>
+> The _SPU suffix just means that the SPU can use the (native) syscall.
+>
+> The COMPAT_ prefix means that there's a compat function to call  
+> instead
+> of calling the native one directly for 32-bit code.
 
-This warnings should be handled by __init_refok instead.
+
+The COMPAT I get, but what does it mean to be able to use a syscall  
+on SPU natively?  When wouldn't you be able to do this?
 
 - k
-
->> Massive warnings represented by:
->> -------------
->> WARNING: arch/powerpc/kernel/built-in.o - Section mismatch:  
->> reference to
->> .init.data:.got2 from prom_entry (offset 0x0)
->> WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:  
->> reference to
->> .init.text:mpc8313_rdb_probe from .machine.desc after  
->> 'mach_mpc8313_rdb'
->> (at offset 0x4)
->> -------------
->>
->> Signed-off-by: Li Yang <leoli@freescale.com>
-> Acked-by: Sam Ravnborg <sam@ravnborg.org>
->> ---
->> scripts/mod/modpost.c |   16 ++++++++++++----
->> 1 files changed, 12 insertions(+), 4 deletions(-)
->>
->> diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
->> index c89cb71..aa3a881 100644
->> --- a/scripts/mod/modpost.c
->> +++ b/scripts/mod/modpost.c
->> @@ -649,9 +649,10 @@ static int strrcmp(const char *s, const char  
->> *sub)
->>  *  tosec    = .init.text
->>  *
->>  * Pattern 10:
->> - *  ia64 has machvec table for each platform. It is mixture of  
->> function
->> - *  pointer of .init.text and .text.
->> - *  fromsec  = .machvec
->> + *  ia64 has machvec table and powerpc has machine desc table for  
->> each
->> + *  platform. It is mixture of function pointer of .init.text  
->> and .text.
->> + *  fromsec  = .machvec | .machine.desc
->> + *
->>  **/
->> static int secref_whitelist(const char *modname, const char *tosec,
->> 			    const char *fromsec, const char *atsym,
->> @@ -681,6 +682,8 @@ static int secref_whitelist(const char  
->> *modname, const
->> char *tosec,
->> 	const char *pat4sym[] = {
->> 		"sparse_index_alloc",
->> 		"zone_wait_table_init",
->> +		"pte_alloc_one_kernel",
->> +		"kmem_cache_create",
->> 		NULL
->> 	};
->>
->> @@ -750,7 +753,8 @@ static int secref_whitelist(const char  
->> *modname, const
->> char *tosec,
->> 				return 1;
->>
->> 	/* Check for pattern 10 */
->> -	if (strcmp(fromsec, ".machvec") == 0)
->> +	if ((strcmp(fromsec, ".machvec") == 0) ||
->> +	    (strcmp(fromsec, ".machine.desc") == 0))
->> 		return 1;
->>
->> 	return 0;
->> @@ -883,6 +887,10 @@ static void warn_sec_mismatch(const char  
->> *modname,
->> const char *fromsec,
->> 	    secref_whitelist(modname, secname, fromsec,
->> 			     elf->strtab + before->st_name, refsymname))
->> 		return;
->> +	/* fromsec whitelist - without a valid 'before' */
->> +	/* powerpc has a GOT table in .got2 section */
->> +	if (strcmp(fromsec, ".got2") == 0)
->> +		return;
->>
->> 	if (before && after) {
->> 		warn("%s - Section mismatch: reference to %s:%s from %s "
->>
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux- 
-> kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
