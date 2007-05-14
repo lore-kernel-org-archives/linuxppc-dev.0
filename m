@@ -1,20 +1,11 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
-	[66.98.186.96])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2E3B4DDDE9
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 11:20:08 +1000 (EST)
-Message-ID: <4647B95D.1040404@genesi-usa.com>
-Date: Mon, 14 May 2007 02:20:29 +0100
-From: Matt Sealey <matt@genesi-usa.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 14 May 2007 11:43:20 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Remove fixup_bigphys_addr() for arch/powerpc
+Message-ID: <20070514014320.GI6517@localhost.localdomain>
 MIME-Version: 1.0
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: [PATCH 1/4 v4] powerpc: document phy-connection-type property
-References: <20070423144052.261f68ad.kim.phillips@freescale.com>	<5c96dd623e3a6737db48ab17c3550610@kernel.crashing.org>
-	<20070423160621.329d1a08.kim.phillips@freescale.com>
-In-Reply-To: <20070423160621.329d1a08.kim.phillips@freescale.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,70 +16,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi guys,
+There are no actual implementations of fixup_bigphys_addr() in
+arch/powerpc, and with a 64-bit aware ioremap() and so forth, it
+should no longer be necessary.  This patch removes the last dregs of
+fixup_bigphys_addr() from arch/powerpc.
 
-Since I'm poking around on 52xx I had a query - firstly it doesn't
-look like the 52xx fec driver uses phylib at all since it also tries
-to support the 7-wire ethernet interface, which isn't ?? supported
-by phylib.
+In fact, the only reason this hasn't caused link errors already is
+that nobody must have tried using one of the small number of drivers
+using io_remap_pfn_range() on one of the small number of platforms
+which are 32-bit but define CONFIG_PHYS_64BIT.  Nonetheless this fixes
+a bug, and should go into 2.6.22.
 
-Stumbling across this property I wondered, if the driver can check
-the device tree for the phy type to set it up properly in this
-manner, would it also be relevant to list the 7-wire style of
-connection, so that drivers can provide the alternative code?
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Side note, is phylib flexible enough to support the 7-wire
-non-MII connection? It looks sorta so, but...
+Index: working-2.6/include/asm-powerpc/mmu-44x.h
+===================================================================
+--- working-2.6.orig/include/asm-powerpc/mmu-44x.h	2007-05-09 13:14:53.000000000 +1000
++++ working-2.6/include/asm-powerpc/mmu-44x.h	2007-05-09 13:15:10.000000000 +1000
+@@ -55,8 +55,6 @@
+ 
+ typedef unsigned long long phys_addr_t;
+ 
+-extern phys_addr_t fixup_bigphys_addr(phys_addr_t, phys_addr_t);
+-
+ typedef struct {
+ 	unsigned long id;
+ 	unsigned long vdso_base;
+Index: working-2.6/include/asm-powerpc/pgtable-ppc32.h
+===================================================================
+--- working-2.6.orig/include/asm-powerpc/pgtable-ppc32.h	2007-05-09 13:14:25.000000000 +1000
++++ working-2.6/include/asm-powerpc/pgtable-ppc32.h	2007-05-09 13:14:42.000000000 +1000
+@@ -782,23 +782,8 @@ extern void kernel_set_cachemode (unsign
+ /* Needs to be defined here and not in linux/mm.h, as it is arch dependent */
+ #define kern_addr_valid(addr)	(1)
+ 
+-#ifdef CONFIG_PHYS_64BIT
+-extern int remap_pfn_range(struct vm_area_struct *vma, unsigned long from,
+-			unsigned long paddr, unsigned long size, pgprot_t prot);
+-
+-static inline int io_remap_pfn_range(struct vm_area_struct *vma,
+-					unsigned long vaddr,
+-					unsigned long pfn,
+-					unsigned long size,
+-					pgprot_t prot)
+-{
+-	phys_addr_t paddr64 = fixup_bigphys_addr(pfn << PAGE_SHIFT, size);
+-	return remap_pfn_range(vma, vaddr, paddr64 >> PAGE_SHIFT, size, prot);
+-}
+-#else
+ #define io_remap_pfn_range(vma, vaddr, pfn, size, prot)		\
+ 		remap_pfn_range(vma, vaddr, pfn, size, prot)
+-#endif
+ 
+ /*
+  * No page table caches to initialise
 
 -- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
-
-Kim Phillips wrote:
-> On Mon, 23 Apr 2007 22:59:43 +0200
-> Segher Boessenkool <segher@kernel.crashing.org> wrote:
-> 
->>> phy-connection-type is now maintained one-to-one with definitions
->>> in include/linux/phy.h, albeit in the form of a string.
->> That's sort-of accidental though :-)
->>
-> sure..
-> 
->>> --- a/Documentation/powerpc/booting-without-of.txt
->>> +++ b/Documentation/powerpc/booting-without-of.txt
->>> @@ -1562,6 +1562,9 @@ platforms are moved over to use the 
->>> flattened-device-tree model.
->>>       network device.  This is used by the bootwrapper to interpret
->>>       MAC addresses passed by the firmware when no information other
->>>       than indices is available to associate an address with a device.
->>> +   - phy-connection-type : a string naming the controller/PHY 
->>> interface type,
->>> +     i.e., "mii" (default), "rmii", "gmii", "rgmii", "rgmii-id", 
->>> "tbi",
->>> +     or "rtbi".
->> Could you put this right after the "phy-handle" definition
->> please?
-> 
-> phy-handle is a required property, whereas phy-connection-type is not
-> (it's recommended). Are you suggesting phy-connection-type be a required
-> property?
-> 
->>> @@ -1573,6 +1576,7 @@ platforms are moved over to use the 
->>> flattened-device-tree model.
->>>  		interrupts = <a0 0>;
->>>  		interrupt-parent = <700>;
->>>  		mac-address = [ 00 04 9f 00 23 23 ];
->>> +		phy-connection-type = "gmii";
->>>  		rx-clock = "none";
->>>  		tx-clock = "clk9";
->>>  		phy-handle = <212000>;
->> Same here.  It's nice to keep things grouped, it
->> improves understanding ;-)
-> 
-> That's understandable.  Lemme know about the above though.
-> 
-> Kim
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
