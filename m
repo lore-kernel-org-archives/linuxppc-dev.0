@@ -1,15 +1,22 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 6596CDDEA0
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 14:11:37 +1000 (EST)
-Date: Mon, 14 May 2007 14:11:36 +1000
+	by ozlabs.org (Postfix) with ESMTP id 8DE23DDEBF
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 14:13:06 +1000 (EST)
+Date: Mon, 14 May 2007 14:13:01 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] fix non HUGETLB_PAGE build warning
-Message-Id: <20070514141136.39a76d32.sfr@canb.auug.org.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] Wire up some more syscalls
+Message-Id: <20070514141301.14ddae91.sfr@canb.auug.org.au>
+In-Reply-To: <1AF532FF-A994-47AF-9394-5DFFC6C8FDA1@kernel.crashing.org>
+References: <20070514135033.07c1b840.sfr@canb.auug.org.au>
+	<1AF532FF-A994-47AF-9394-5DFFC6C8FDA1@kernel.crashing.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Mon__14_May_2007_14_13_01_+1000_qGZNAdZAuVcD_8QB"
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>, paulus@samba.org,
+	Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,31 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-arch/powerpc/mm/mmu_context_64.c: In function 'init_new_context':
-arch/powerpc/mm/mmu_context_64.c:31: warning: unused variable 'new_context'
+--Signature=_Mon__14_May_2007_14_13_01_+1000_qGZNAdZAuVcD_8QB
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/mm/mmu_context_64.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+On Sun, 13 May 2007 22:55:01 -0500 Kumar Gala <galak@kernel.crashing.org> wrote:
+>
+> Just out of interest, what makes a syscall COMPAT_SYS_SPU vs
+> SYSCALL_SPU?
 
--- 
+COMPAT_ syscalls need a compatibilty wrapper around the 32 bit calls on
+64 bit kernels.
+
+--
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-diff --git a/arch/powerpc/mm/mmu_context_64.c b/arch/powerpc/mm/mmu_context_64.c
-index 7a78cdc..d263f88 100644
---- a/arch/powerpc/mm/mmu_context_64.c
-+++ b/arch/powerpc/mm/mmu_context_64.c
-@@ -28,7 +28,9 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
- {
- 	int index;
- 	int err;
-+#ifdef CONFIG_PPC_MM_SLICES
- 	int new_context = (mm->context.id == 0);
-+#endif
- 
- again:
- 	if (!idr_pre_get(&mmu_context_idr, GFP_KERNEL))
--- 
-1.5.1.4
+--Signature=_Mon__14_May_2007_14_13_01_+1000_qGZNAdZAuVcD_8QB
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGR+HRFdBgD/zoJvwRAkwHAJwNLC9UGyhvcD9FPliBcE2e4ybRwQCfX8ME
+IK3zD2FoC83O8z6vm77KZWU=
+=P01S
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__14_May_2007_14_13_01_+1000_qGZNAdZAuVcD_8QB--
