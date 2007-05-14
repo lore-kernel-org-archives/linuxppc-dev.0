@@ -1,29 +1,16 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
-	[151.189.21.43])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5E8DFDDECC
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 00:43:55 +1000 (EST)
-In-Reply-To: <20070514002457.GD6517@localhost.localdomain>
-References: <cbcd7823ea9b0f17f998670915719a05@kernel.crashing.org>
-	<AF0367BA48C55940A43CCF08DF35553C012AA296@az33exm24.fsl.freescale.net>
-	<20070509004948.GB4198@localhost.localdomain>
-	<1178706570.3453.63.camel@zod.rchland.ibm.com>
-	<0f60e44e6c7848e5eee8c82c0f2bfaec@kernel.crashing.org>
-	<20070510235453.GD27188@localhost.localdomain>
-	<b5cd56b7081eaba062cf056545777989@kernel.crashing.org>
-	<20070514002457.GD6517@localhost.localdomain>
+In-Reply-To: <20070514004014.GF6517@localhost.localdomain>
+References: <20070512004605.GA2808@mag.az.mvista.com>
+	<20070512005735.GJ3365@mag.az.mvista.com>
+	<20070514004014.GF6517@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <1777f196ba995c48a00d72b94a4dbbd8@kernel.crashing.org>
+Message-Id: <13fe8e1b864142e1fdf766524eede73d@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v2 6/7] Holly DTS
-Date: Mon, 14 May 2007 14:33:13 +0200
-To: David Gibson <dwg@au1.ibm.com>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	Loeliger Jon-LOELIGER <jdl@Freescale.com>
+Subject: Re: [PATCH 10/13] powerpc: check cache coherency of kernel vs firmware
+Date: Mon, 14 May 2007 14:34:49 +0200
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,41 +20,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> easiest is to
->>> replace it with a configurable poison value.  When using asm output,
->>> or with a map file, it might be possible to generate out-of-band
->>> information which we can use to check that the right things are 
->>> filled
->>> in.
->>>
->>> It's not a simply a matter of making the kernel parser recognize the
->>> uninitialized info, because there's no way to encode that in the dtb
->>> itself.
->>
->> There can be, with a new DTB version -- perhaps simply
->> define proplen == -1 to mean "undefined" or similar.
+>> check_cache_coherency() verifies that the cache coherency setting of
+>> the kernel (CONFIG_NOT_COHERENT_CACHE) matches that left by the 
+>> firmware,
+>> as indicated by coherency-off device tree property.
 >
-> That doesn't quite do it, because I'd prefer ? to cover cases where
-> the property's length is known, just not its value.  In particular
-> that could be useful for device trees where *only* non-moving edits
-> are required by the bootloader, letting us use the asm output mode as
-> intended.
+> This looks really bogus.  If the firmware reports a coherency state,
+> then presumably there's some hardware switch to turn coherency on or
+> off.  In which case, can't the kernel just toggle that switch to
+> whatever's appropriate for it?
 
-[First things first -- it is generally wrong to
-require properties to have a certain length, newer
-(versions of) bindings can add extra fields to the
-end of a property.  It should be okay for this ??
-stuff though, if a bootwrapper/firmware fills in
-the property it better know its whole semantics,
-including the new part.]
-
-Okay, so use negative lengths to represent undefined
-properties of a certain length, and use -inf to mean
-"completely undefined yet".  Or some other encoding,
-there are many ways that would work.
-
-My point is that you need a new DTB version to properly
-represent ??.
+But can the kernel know in all cases what is the
+appropriate setting?  This kind of thing is a
+typical firmware job.
 
 
 Segher
