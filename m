@@ -1,30 +1,26 @@
-Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id ABAD4DDD09
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 05:30:11 +1000 (EST)
-Received: from root by ciao.gmane.org with local (Exim 4.43)
-	id 1HngF8-000747-4P
-	for linuxppc-dev@ozlabs.org; Mon, 14 May 2007 21:30:02 +0200
-Received: from bi01p1.co.us.ibm.com ([32.97.110.142])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 21:30:02 +0200
-Received: from hollisb by bi01p1.co.us.ibm.com with local (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 21:30:02 +0200
-To: linuxppc-dev@ozlabs.org
-From: Hollis Blanchard <hollisb@us.ibm.com>
-Subject: Re: Building ppc/powerpc kernel to run under QEMU.
-Date: Mon, 14 May 2007 14:09:59 -0500
-Message-ID: <pan.2007.05.14.19.09.58.730326@us.ibm.com>
-References: <200705092203.26042.rob@landley.net>
-	<20070510172806.GE4452@austin.ibm.com>
-	<200705112114.58053.rob@landley.net>
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[65.172.181.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.osdl.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5835EDDD09
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 05:31:40 +1000 (EST)
+Date: Mon, 14 May 2007 12:30:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/2] kbuild: Add "Section mismatch" warning whitelist
+	for powerpc
+Message-Id: <20070514123046.d75cc170.akpm@linux-foundation.org>
+In-Reply-To: <3DF58590-DFD9-4665-8C47-33F407AAD1E7@kernel.crashing.org>
+References: <46483FAC.60503@freescale.com>
+	<20070514110636.GB10143@uranus.ravnborg.org>
+	<3DF58590-DFD9-4665-8C47-33F407AAD1E7@kernel.crashing.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Sender: news <news@sea.gmane.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: Linus <torvalds@linux-foundation.org>, Li Yang <leoli@freescale.com>,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,23 +30,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 11 May 2007 21:14:57 -0400, Rob Landley wrote:
+On Mon, 14 May 2007 08:56:52 -0500
+Kumar Gala <galak@kernel.crashing.org> wrote:
+
+> On May 14, 2007, at 6:06 AM, Sam Ravnborg wrote:
 > 
-> The Open Hackware bootloader used by QEMU insists on a boot partition, even 
-> when I use "-kernel" to use the built-in bootloader.  But the prep kernel is 
-> apparently formatted to look like a boot partition, or close enough for the 
-> firmware to recognize it.  (The macintosh-style kernels require a hard drive 
-> image in order for the firmware to like them.  So I can't boot one of those 
-> with "qemu -kernel filename" even if I build it right.)
+> > On Mon, May 14, 2007 at 06:53:32PM +0800, Li Yang wrote:
+> >> This patch fixes the following "Section mismatch" warnings when
+> >> build powerpc platforms.
+> >>
+> >> -------------
+> >> WARNING: arch/powerpc/mm/built-in.o - Section mismatch: reference to
+> >> .init.text:early_get_page from .text between  
+> >> 'pte_alloc_one_kernel' (at
+> >> offset 0xc68) and 'pte_alloc_one'
+> >> WARNING: mm/built-in.o - Section mismatch: reference to
+> >> .init.text:set_up_list3s from .text between  
+> >> 'kmem_cache_create' (at offset
+> >> 0x20300) and 'cache_reap'
+> >> -------------
+> 
+> This warnings should be handled by __init_refok instead.
+> 
 
-Why don't you try dumping OpenHackware entirely? With small modifications
-to OpenBIOS's briQ build, I got pretty far under qemu's PReP emulation.
-The biggest problem was that the briQ 16550 driver was not correct (maybe
-it worked on hardware, but it didn't follow spec and failed under qemu).
+Yes, I think so.
 
-I got up to "ok, now how do I boot from the Forth prompt?" before running
-out of time.
+> 
+> >> Massive warnings represented by:
+> >> -------------
+> >> WARNING: arch/powerpc/kernel/built-in.o - Section mismatch:  
+> >> reference to
+> >> .init.data:.got2 from prom_entry (offset 0x0)
+> >> WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:  
+> >> reference to
+> >> .init.text:mpc8313_rdb_probe from .machine.desc after  
+> >> 'mach_mpc8313_rdb'
+> >> (at offset 0x4)
+> >> -------------
+> >>
+> >> Signed-off-by: Li Yang <leoli@freescale.com>
+> > Acked-by: Sam Ravnborg <sam@ravnborg.org>
 
--- 
-Hollis Blanchard
-IBM Linux Technology Center
+I always get confused when a git-tree-owner says "acked-by" against a patch
+which falls within his tree's area.  An acked-by would mean "I'm OK with
+the patch, please apply it".  But I'd have expected to see a "thanks,
+applied" instead.
+
+If it was "Andrew: please merge and send to Linus because it's urgent and I
+can't be bothered setting up a git pull for it" then fine, but please be
+explicit about that.
