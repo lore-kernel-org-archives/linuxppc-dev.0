@@ -1,23 +1,23 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pasmtpB.tele.dk (pasmtpb.tele.dk [80.160.77.98])
-	by ozlabs.org (Postfix) with ESMTP id 73276DDDFC
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 07:12:25 +1000 (EST)
-Date: Mon, 14 May 2007 23:13:20 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] kbuild: Add "Section mismatch" warning whitelist for
-	powerpc
-Message-ID: <20070514211320.GA12094@uranus.ravnborg.org>
-References: <46483FAC.60503@freescale.com>
-	<20070514110636.GB10143@uranus.ravnborg.org>
-	<3DF58590-DFD9-4665-8C47-33F407AAD1E7@kernel.crashing.org>
-	<20070514123046.d75cc170.akpm@linux-foundation.org>
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[65.172.181.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.osdl.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B3B83DDDDB
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 07:21:39 +1000 (EST)
+Date: Mon, 14 May 2007 14:21:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] [POWERPC] 8xx: mpc885ads pcmcia support
+Message-Id: <20070514142125.851f3d10.akpm@linux-foundation.org>
+In-Reply-To: <20070508223123.3633.72309.stgit@localhost.localdomain>
+References: <20070508222748.3633.37120.stgit@localhost.localdomain>
+	<20070508223123.3633.72309.stgit@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070514123046.d75cc170.akpm@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>,
-	Linus <torvalds@linux-foundation.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-pcmcia@lists.infradead.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,20 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 14, 2007 at 12:30:46PM -0700, Andrew Morton wrote:
-> > >>
-> > >> Signed-off-by: Li Yang <leoli@freescale.com>
-> > > Acked-by: Sam Ravnborg <sam@ravnborg.org>
-> 
-> I always get confused when a git-tree-owner says "acked-by" against a patch
-> which falls within his tree's area.  An acked-by would mean "I'm OK with
-> the patch, please apply it".  But I'd have expected to see a "thanks,
-> applied" instead.
+On Wed, 09 May 2007 02:31:25 +0400
+Vitaly Bordug <vitb@kernel.crashing.org> wrote:
 
-I have saved the patch so I can apply it if Linus does not do so.
-My "Acked-by:" was actually mostly to tell Linus that I was OK
-with the modpost changes although I did not write so in my mail.
+> +/* 
+> + * Some internal interrupt registers use an 8-bit mask for the interrupt
+> + * level instead of a number.
+> + */
+> +static inline uint mk_int_int_mask(uint mask) {
+> +	return (1 << (7 - (mask/2)));
+> +}
 
-So if this is not picked up by Linus I will pick up this patch.
-
-	Sam
+grumble.  "uint" isn't a favoured "type".  Please prefer to
+use "unsigned int" if that's what is meant.  Or maybe u32,
+if that's more appropriate - and it probably is, as we're
+dealing with device registers here.
