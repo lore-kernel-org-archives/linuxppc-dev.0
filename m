@@ -1,20 +1,29 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
-	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id 7F420DDED0
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 21:40:43 +1000 (EST)
-Subject: Re: Fixed  PHY and MPC832x based boards don't work
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-In-Reply-To: <1179095103.20638.56.camel@gentoo-jocke.transmode.se>
-References: <1179067171.20638.48.camel@gentoo-jocke.transmode.se>
-	<20070514003633.6710879e@localhost.localdomain>
-	<1179095103.20638.56.camel@gentoo-jocke.transmode.se>
-Content-Type: text/plain
-Date: Tue, 15 May 2007 13:40:24 +0200
-Message-Id: <1179229224.20638.122.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: joakim.tjernlund@transmode.se
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E894DDDEDE
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 22:29:30 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	l4EApnaU024658
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 03:51:49 -0700 (MST)
+Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
+	[10.192.129.204])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l4EAplDY023296
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 05:51:48 -0500 (CDT)
+Message-ID: <46483FAC.60503@freescale.com>
+Date: Mon, 14 May 2007 18:53:32 +0800
+From: Li Yang <leoli@freescale.com>
+MIME-Version: 1.0
+To: Linus <torvalds@linux-foundation.org>, Andrew Morton <akpm@osdl.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] kbuild: Add "Section mismatch" warning whitelist for
+	powerpc
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Sam Ravnborg <sam@ravnborg.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,75 +33,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-05-14 at 00:25 +0200, Joakim Tjernlund wrote:
-> On Mon, 2007-05-14 at 00:36 +0400, Vitaly Bordug wrote:
-> > On Sun, 13 May 2007 16:39:30 +0200
-> > Joakim Tjernlund wrote:
-> > 
-> > > Trying to make the Fixed PHY work under my 832x based board on current
-> > > linus tree without success. Earlier kernels with custom PHY code for
-> > > ucc_geth work without any special tricks.
-> > > 
-> > > If I enable the FIXED_MII_100_FDX option I get:
-> > > ls bus/mdio_bus/devices/
-> > > fixed@100:1@ 
-> > > 
-> > > but ucc_geth wants its PHYs under 
-> > > ls -l bus/of_platform/devices/*phy*
-> > > lrwxrwxrwx    1 root     root            0 May 12 17:32
-> > > bus/of_platform/devices/ethernet-p hy.1
-> > > -> ../../../devices/e0100000.qe/e0102320.mdio/ethernet-phy.1/
-> > > lrwxrwxrwx    1 root     root            0 May 12 17:32
-> > > bus/of_platform/devices/ethernet-p hy.3
-> > > -> ../../../devices/e0100000.qe/e0102320.mdio/ethernet-phy.3/
-> > > lrwxrwxrwx    1 root     root            0 May 12 17:32
-> > > bus/of_platform/devices/fixed-phy. 2
-> > > -> ../../../devices/e0100000.qe/e0102320.mdio/fixed-phy.2/ These are
-> > > 3 PHYs I just added in the DTS tree:
-> > > 
-> > > 		mdio@2320 {
-> > > 			#address-cells = <1>;
-> > > 			#size-cells = <0>;
-> > > 			reg = <2320 18>;
-> > > 			device_type = "mdio";
-> > > 			compatible = "ucc_geth_phy";
-> > > 
-> > > 			phy1: ethernet-phy@18 {
-> > > 				linux,phandle = <212000>;
-> > > 				reg = <18>; // 24
-> > > 				device_type = "ethernet-phy";
-> > > 				interface = <3>; //ENET_100_MII
-> > > 			};
-> > > 			phy2: fixed-phy@64 {
-> > > 				linux,phandle = <212001>;
-> > > 				reg = <d#100>;
-> > > 				device_type = "ethernet-phy";
-> > > 			};
-> > > 			phy3: ethernet-phy@19 {
-> > > 				linux,phandle = <212002>;
-> > > 				interrupt-parent = <700>;
-> > > 				interrupts = <12 2>;
-> > > 				reg = <19>; // 25
-> > > 				device_type = "ethernet-phy";
-> > > 				interface = <3>; //ENET_100_MII
-> > > 			};
-> > > 		};
-> > > 
-> > > How do I add a fixed PHY so that ucc_geth finds it?
-> > > 
-> > well I guess ucc stuff follows gianfar trend in mdio bus specification for the phy.
-> > So, it would look like %d:%d or something like that.
-> > 
-> > Can you please dump the whole dts here?
-> 
-> Sure, it look pretty much like the 832x_mds
-> phy2 is my experiment to get hold of the fixed phy, but the others should also be converted into a fixed phy. Here goes my DTS:
+This patch fixes the following "Section mismatch" warnings when
+build powerpc platforms.
 
-Ping, any ideas how to make fixed PHY work? 
-This is a regression(sort of) compared with 2.6.20. The old PHY impl.
-for ucc_geth did accept these PHYs, the Gen PHY driver would just report
-a PHY id of ffffffff and move on.
+-------------
+WARNING: arch/powerpc/mm/built-in.o - Section mismatch: reference to .init.text:early_get_page from .text between 'pte_alloc_one_kernel' (at offset 0xc68) and 'pte_alloc_one'
+WARNING: mm/built-in.o - Section mismatch: reference to .init.text:set_up_list3s from .text between 'kmem_cache_create' (at offset 0x20300) and 'cache_reap'
+-------------
 
- Jocke
+Massive warnings represented by:
+-------------
+WARNING: arch/powerpc/kernel/built-in.o - Section mismatch: reference to .init.data:.got2 from prom_entry (offset 0x0)
+WARNING: arch/powerpc/platforms/built-in.o - Section mismatch: reference to .init.text:mpc8313_rdb_probe from .machine.desc after 'mach_mpc8313_rdb' (at offset 0x4)
+-------------
 
-[SNIP DTS]
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+ scripts/mod/modpost.c |   16 ++++++++++++----
+ 1 files changed, 12 insertions(+), 4 deletions(-)
+
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index c89cb71..aa3a881 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -649,9 +649,10 @@ static int strrcmp(const char *s, const char *sub)
+  *  tosec    = .init.text
+  *
+  * Pattern 10:
+- *  ia64 has machvec table for each platform. It is mixture of function
+- *  pointer of .init.text and .text.
+- *  fromsec  = .machvec
++ *  ia64 has machvec table and powerpc has machine desc table for each
++ *  platform. It is mixture of function pointer of .init.text and .text.
++ *  fromsec  = .machvec | .machine.desc
++ *
+  **/
+ static int secref_whitelist(const char *modname, const char *tosec,
+ 			    const char *fromsec, const char *atsym,
+@@ -681,6 +682,8 @@ static int secref_whitelist(const char *modname, const char *tosec,
+ 	const char *pat4sym[] = {
+ 		"sparse_index_alloc",
+ 		"zone_wait_table_init",
++		"pte_alloc_one_kernel",
++		"kmem_cache_create",
+ 		NULL
+ 	};
+ 
+@@ -750,7 +753,8 @@ static int secref_whitelist(const char *modname, const char *tosec,
+ 				return 1;
+ 
+ 	/* Check for pattern 10 */
+-	if (strcmp(fromsec, ".machvec") == 0)
++	if ((strcmp(fromsec, ".machvec") == 0) ||
++	    (strcmp(fromsec, ".machine.desc") == 0))
+ 		return 1;
+ 
+ 	return 0;
+@@ -883,6 +887,10 @@ static void warn_sec_mismatch(const char *modname, const char *fromsec,
+ 	    secref_whitelist(modname, secname, fromsec,
+ 			     elf->strtab + before->st_name, refsymname))
+ 		return;
++	/* fromsec whitelist - without a valid 'before' */
++	/* powerpc has a GOT table in .got2 section */
++	if (strcmp(fromsec, ".got2") == 0)
++		return;
+ 
+ 	if (before && after) {
+ 		warn("%s - Section mismatch: reference to %s:%s from %s "
