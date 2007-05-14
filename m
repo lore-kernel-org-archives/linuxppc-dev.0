@@ -1,21 +1,30 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 7BC5EDDE19
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 05:27:12 +1000 (EST)
-Date: Mon, 14 May 2007 14:30:12 -0500
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [patch/rft 4/4] rtc-ds1307 platform update,
-	powerpc mpc834x_itx and mpc8313_rdb
-Message-ID: <20070514193012.GA1693@lixom.net>
-References: <200705140946.41993.david-b@pacbell.net>
-	<20070514180545.GA1437@lixom.net>
-	<200705141137.39961.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200705141137.39961.david-b@pacbell.net>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org, rtc-linux@googlegroups.com,
-	James Chapman <jchapman@katalix.com>
+Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id ABAD4DDD09
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 05:30:11 +1000 (EST)
+Received: from root by ciao.gmane.org with local (Exim 4.43)
+	id 1HngF8-000747-4P
+	for linuxppc-dev@ozlabs.org; Mon, 14 May 2007 21:30:02 +0200
+Received: from bi01p1.co.us.ibm.com ([32.97.110.142])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 21:30:02 +0200
+Received: from hollisb by bi01p1.co.us.ibm.com with local (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 21:30:02 +0200
+To: linuxppc-dev@ozlabs.org
+From: Hollis Blanchard <hollisb@us.ibm.com>
+Subject: Re: Building ppc/powerpc kernel to run under QEMU.
+Date: Mon, 14 May 2007 14:09:59 -0500
+Message-ID: <pan.2007.05.14.19.09.58.730326@us.ibm.com>
+References: <200705092203.26042.rob@landley.net>
+	<20070510172806.GE4452@austin.ibm.com>
+	<200705112114.58053.rob@landley.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Sender: news <news@sea.gmane.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,55 +34,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 14, 2007 at 11:37:39AM -0700, David Brownell wrote:
-> On Monday 14 May 2007, Olof Johansson wrote:
-> > On Mon, May 14, 2007 at 09:46:41AM -0700, David Brownell wrote:
+On Fri, 11 May 2007 21:14:57 -0400, Rob Landley wrote:
 > 
-> > > Didn't update the pasemi reference board; public info doesn't say
-> > > which chip it uses.
-> > 
-> > ds1338.
-> 
-> OK.  The relevant updates should be evident from this patch.
-> 
-> Mr Grep tells me that if those powerpc platforms update along
-> with csb337, all current rtc-ds1307 users will be upgraded.
-> 
-> Then there's a separate issue of removing the old SENSORS_DS1337
-> driver.  Simpler IMO for those drivers to have one transition,
-> to new-style rtc-ds1307, not two (to old-style, then new-style).
+> The Open Hackware bootloader used by QEMU insists on a boot partition, even 
+> when I use "-kernel" to use the built-in bootloader.  But the prep kernel is 
+> apparently formatted to look like a boot partition, or close enough for the 
+> firmware to recognize it.  (The macintosh-style kernels require a hard drive 
+> image in order for the firmware to like them.  So I can't boot one of those 
+> with "qemu -kernel filename" even if I build it right.)
 
-Sounds good.
+Why don't you try dumping OpenHackware entirely? With small modifications
+to OpenBIOS's briQ build, I got pretty far under qemu's PReP emulation.
+The biggest problem was that the briQ 16550 driver was not correct (maybe
+it worked on hardware, but it didn't follow spec and failed under qemu).
 
-> > > NOTE:  cc'd the relevant powerpc maintainers lists; patches 1-3
-> > > will be archived in the rtc and i2c lists.  I'd like to see these
-> > > get tested/fixed so that the rtc-ds1307 driver can switch completely
-> > > to use the new-style I2c driver model.
-> > 
-> > Specific URLs can sometimes be useful, so we don't have to go digging
-> > through the archives. But thanks for the heads up, I'll make the
-> > corresponding changes to my code and test it out.
-> 
-> The URLS don't exist until after the email's gotten to the list
-> servers ... sort of a chicken/egg issue.
+I got up to "ok, now how do I boot from the Forth prompt?" before running
+out of time.
 
-Ah yes, good point.
-
-> > (I'm guessing long-term, we will want to pull the chip info out of the
-> > device tree instad of have it in a table in the board code, but that's
-> > extra credit at the moment.)
-> 
-> For some definition of "long term".  ISTR seeing patches from Scott Wood
-> doing exactly that ... on the I2C list last November or so.  ;)
-
-Yep, I asked on IRC and got a similar answer. I had forgotten about them.
-
-> Right now my concern is how to migrate the rtc-ds1307 driver.  I'd
-> prefer to avoid needing to have a period where the legacy mode must
-> co-exist with the new-style driver support, or needing to entangle
-> with such tree conversions.
-
-Which is why I said "long term", as in "after this is done". :)
-
-
--Olof
+-- 
+Hollis Blanchard
+IBM Linux Technology Center
