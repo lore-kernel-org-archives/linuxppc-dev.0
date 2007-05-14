@@ -1,22 +1,29 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id ACCBCDDE2D
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 00:40:16 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [patch 4/4] powerpc 2.6.21-rt1: reduce scheduling latency by
-	changing tlb flush size
-Date: Mon, 14 May 2007 16:40:02 +0200
-References: <yyi3b1zapqa.wl@toshiba.co.jp>
-	<1179125506.22481.297.camel@localhost.localdomain>
-	<yyitzuf9857.wl@toshiba.co.jp>
-In-Reply-To: <yyitzuf9857.wl@toshiba.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200705141640.02561.arnd@arndb.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, mingo@elte.hu,
-	linux-kernel@vger.kernel.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
+	[151.189.21.43])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5E8DFDDECC
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 00:43:55 +1000 (EST)
+In-Reply-To: <20070514002457.GD6517@localhost.localdomain>
+References: <cbcd7823ea9b0f17f998670915719a05@kernel.crashing.org>
+	<AF0367BA48C55940A43CCF08DF35553C012AA296@az33exm24.fsl.freescale.net>
+	<20070509004948.GB4198@localhost.localdomain>
+	<1178706570.3453.63.camel@zod.rchland.ibm.com>
+	<0f60e44e6c7848e5eee8c82c0f2bfaec@kernel.crashing.org>
+	<20070510235453.GD27188@localhost.localdomain>
+	<b5cd56b7081eaba062cf056545777989@kernel.crashing.org>
+	<20070514002457.GD6517@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <1777f196ba995c48a00d72b94a4dbbd8@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v2 6/7] Holly DTS
+Date: Mon, 14 May 2007 14:33:13 +0200
+To: David Gibson <dwg@au1.ibm.com>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	Loeliger Jon-LOELIGER <jdl@Freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,27 +33,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 14 May 2007, Tsutomu OWA wrote:
-> --- linux-2.6.21-rt1/include/asm-powerpc/tlbflush.h=A0=A0=A0=A0=A02007-04=
-=2D26 12:08:32.000000000 +0900
-> +++ rt/include/asm-powerpc/tlbflush.h=A0=A0=A02007-05-14 16:12:47.0000000=
-00 +0900
-> @@ -25,7 +25,12 @@ struct mm_struct;
-> =A0#include <linux/percpu.h>
-> =A0#include <asm/page.h>
-> =A0
-> +#if defined(CONFIG_PPC_CELLEB) && defined(CONFIG_PREEMPT_RT)
-> +/* Since tlb flush takes long time on Celleb, reduce it to 1 when Celleb=
- && RT */
-> +#define PPC64_TLB_BATCH_NR 1
-> +#else
-> =A0#define PPC64_TLB_BATCH_NR 192
-> +#endif /* defined(CONFIG_PPC_CELLEB) && defined(CONFIG_PREEMPT_RT) */
+>>> easiest is to
+>>> replace it with a configurable poison value.  When using asm output,
+>>> or with a map file, it might be possible to generate out-of-band
+>>> information which we can use to check that the right things are 
+>>> filled
+>>> in.
+>>>
+>>> It's not a simply a matter of making the kernel parser recognize the
+>>> uninitialized info, because there's no way to encode that in the dtb
+>>> itself.
+>>
+>> There can be, with a new DTB version -- perhaps simply
+>> define proplen == -1 to mean "undefined" or similar.
+>
+> That doesn't quite do it, because I'd prefer ? to cover cases where
+> the property's length is known, just not its value.  In particular
+> that could be useful for device trees where *only* non-moving edits
+> are required by the bootloader, letting us use the asm output mode as
+> intended.
 
-With this code, you get silent side-effects of enabling PPC_CELLEB
-along with another platform.
+[First things first -- it is generally wrong to
+require properties to have a certain length, newer
+(versions of) bindings can add extra fields to the
+end of a property.  It should be okay for this ??
+stuff though, if a bootwrapper/firmware fills in
+the property it better know its whole semantics,
+including the new part.]
 
-Maybe instead you should change the hpte_need_flush() to always flush
-when running on the celleb platform and PREEMPT_RT is enabled.
+Okay, so use negative lengths to represent undefined
+properties of a certain length, and use -inf to mean
+"completely undefined yet".  Or some other encoding,
+there are many ways that would work.
 
-	Arnd <><
+My point is that you need a new DTB version to properly
+represent ??.
+
+
+Segher
