@@ -1,16 +1,23 @@
-Return-Path: <dale@farnsworth.org>
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Mon, 14 May 2007 07:44:21 -0700
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH 10/13] powerpc: check cache coherency of kernel vs firmware
-Message-ID: <20070514144420.GA8458@xyzzy.farnsworth.org>
-References: <20070512004605.GA2808@mag.az.mvista.com>
-	<20070512005735.GJ3365@mag.az.mvista.com>
-	<20070514004014.GF6517@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070514004014.GF6517@localhost.localdomain>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
+	[151.189.21.41])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2DDC4DDE09
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 00:47:03 +1000 (EST)
+In-Reply-To: <4647B95D.1040404@genesi-usa.com>
+References: <20070423144052.261f68ad.kim.phillips@freescale.com>	<5c96dd623e3a6737db48ab17c3550610@kernel.crashing.org>
+	<20070423160621.329d1a08.kim.phillips@freescale.com>
+	<4647B95D.1040404@genesi-usa.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <476ad1acff453df4cd02d7e1f8db7b03@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/4 v4] powerpc: document phy-connection-type property
+Date: Mon, 14 May 2007 14:44:17 +0200
+To: Matt Sealey <matt@genesi-usa.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,33 +27,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 14, 2007 at 12:40:14AM +0000, David Gibson wrote:
-> On Fri, May 11, 2007 at 05:57:35PM -0700, Mark A. Greer wrote:
-> > 
-> > From: Dale Farnsworth <dale@farnsworth.org>
-> > 
-> > check_cache_coherency() verifies that the cache coherency setting of
-> > the kernel (CONFIG_NOT_COHERENT_CACHE) matches that left by the firmware,
-> > as indicated by coherency-off device tree property.
-> 
-> This looks really bogus.  If the firmware reports a coherency state,
-> then presumably there's some hardware switch to turn coherency on or
-> off.  In which case, can't the kernel just toggle that switch to
-> whatever's appropriate for it?
+> Since I'm poking around on 52xx I had a query - firstly it doesn't
+> look like the 52xx fec driver uses phylib at all since it also tries
+> to support the 7-wire ethernet interface, which isn't ?? supported
+> by phylib.
+>
+> Stumbling across this property I wondered, if the driver can check
+> the device tree for the phy type to set it up properly in this
+> manner, would it also be relevant to list the 7-wire style of
+> connection, so that drivers can provide the alternative code?
 
-Oh, if it were only a single hardware switch.  This is currently done
-as part of about 500 lines of window register setting code that would
-need to be moved/copied into the kernel from the firmware/bootwrapper.
+Is that 7-wire thing just another kind of connection
+to a PHY?  If so, treat it as such (add phylib support
+perhaps); if not, have an empty property in your 5200
+ethernet node that says the 7-wire thing is in use.
 
-It looks like the coherency part involves changing the same field in
-a dozen device window registers, plus a different field in a register
-for each PCI bus.  So that is doable, and preferable to just printing
-an error and failing as the above referenced patch does.
 
-I was very glad to see all of the window initialization code taken out
-of the kernel and put into the bootwrapper, but I'm beginning to believe
-that it needs to be put back in the kernel.
-
-Mark, it's your code.  What do you think?
-
--Dale
+Segher
