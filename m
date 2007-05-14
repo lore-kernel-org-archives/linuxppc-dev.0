@@ -1,23 +1,30 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
-	[151.189.21.41])
+Return-Path: <b07421@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5402DDDE2B
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 01:52:47 +1000 (EST)
-In-Reply-To: <92b3319be989145b0191cf9693ddd90c@kernel.crashing.org>
-References: <1179154608.3420.21.camel@zod.rchland.ibm.com>
-	<1179154675.3420.22.camel@zod.rchland.ibm.com>
-	<92b3319be989145b0191cf9693ddd90c@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <345f23c36f44912708e8c42d3f432013@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] Bamboo DTS
-Date: Mon, 14 May 2007 17:52:15 +0200
+	by ozlabs.org (Postfix) with ESMTP id 849B6DDE1F
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 02:17:20 +1000 (EST)
+Date: Mon, 14 May 2007 11:16:57 -0500
+From: Scott Wood <scottwood@freescale.com>
 To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v2 6/7] Holly DTS
+Message-ID: <20070514161657.GA371@ld0162-tx32.am.freescale.net>
+References: <cbcd7823ea9b0f17f998670915719a05@kernel.crashing.org>
+	<AF0367BA48C55940A43CCF08DF35553C012AA296@az33exm24.fsl.freescale.net>
+	<20070509004948.GB4198@localhost.localdomain>
+	<1178706570.3453.63.camel@zod.rchland.ibm.com>
+	<0f60e44e6c7848e5eee8c82c0f2bfaec@kernel.crashing.org>
+	<20070510235453.GD27188@localhost.localdomain>
+	<b5cd56b7081eaba062cf056545777989@kernel.crashing.org>
+	<20070514002457.GD6517@localhost.localdomain>
+	<1777f196ba995c48a00d72b94a4dbbd8@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1777f196ba995c48a00d72b94a4dbbd8@kernel.crashing.org>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	David Gibson <dwg@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,25 +34,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> +		  	ranges = <00000000 0 00000000 80000000
->> +			          80000000 0 80000000 80000000>;
->
-> You can avoid having two ranges by using #size-cells = 2
-> in the root node.
+On Mon, May 14, 2007 at 02:33:13PM +0200, Segher Boessenkool wrote:
+> My point is that you need a new DTB version to properly
+> represent ??.
 
-Erm ignore this, size in a "ranges" property is encode
-with the "#size-cells" of the child bus, not the parent
-bus.  #size-cells = 2 does fix similar problems, just
-not this one :-)
+If we do make a new DTB version, I'd like to see a size field added to
+each tag, thus allowing unrecognized tags (or unrecognized extensions to
+known tags) to be skipped, thus minimizing the need for new, incompatible
+DTB versions in the future.
 
->   Having two ranges is a problem if any
-> mapping straddles the boundary between the two.
-
-You can get around this problem by making one range's
-top or bottom boundary identical to that same boundary
-of a bus range or reg range of a direct child of this
-bus.  Since you don't have any kids for this node yet
-it doesn't matter for now, but keep it in mind.
-
-
-Segher
+-Scott
