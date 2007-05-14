@@ -1,32 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C8AA2DDEDA
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 04:44:44 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4EIje9r002904
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 14:45:40 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4EIifXR522280
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 14:44:41 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4EIieRd023194
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 14:44:40 -0400
-Subject: Re: [PATCH 1/3] Bamboo DTS
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <92b3319be989145b0191cf9693ddd90c@kernel.crashing.org>
-References: <1179154608.3420.21.camel@zod.rchland.ibm.com>
-	<1179154675.3420.22.camel@zod.rchland.ibm.com>
-	<92b3319be989145b0191cf9693ddd90c@kernel.crashing.org>
-Content-Type: text/plain
-Date: Mon, 14 May 2007 13:44:35 -0500
-Message-Id: <1179168275.3420.51.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <david-b@pacbell.net>
+Received: from smtp113.sbc.mail.mud.yahoo.com (smtp113.sbc.mail.mud.yahoo.com
+	[68.142.198.212]) by ozlabs.org (Postfix) with SMTP id BCB2DDDEDA
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 04:49:31 +1000 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [patch/rft 4/4] rtc-ds1307 platform update,
+	powerpc mpc834x_itx and mpc8313_rdb
+Date: Mon, 14 May 2007 11:49:27 -0700
+References: <200705140946.41993.david-b@pacbell.net>
+	<528646bc0705141044s244ce3ecyad5096c441134203@mail.gmail.com>
+	<200705141125.59266.david-b@pacbell.net>
+In-Reply-To: <200705141125.59266.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200705141149.27858.david-b@pacbell.net>
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org, rtc-linux@googlegroups.com,
+	James Chapman <jchapman@katalix.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,25 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-05-14 at 17:21 +0200, Segher Boessenkool wrote:
-> > +			i-cache-size = <2000000>;
-> > +			d-cache-size = <2000000>;
-> 
-> 32MB yeah right :-)
 
-Yeah, that's what I get for copying from David ;).
-
+> > > @@ -329,7 +330,7 @@ static int fsl_i2c_probe(struct platform
+> > >         i2c->adap = mpc_ops;
+> > >         i2c_set_adapdata(&i2c->adap, i2c);
+> > >         i2c->adap.dev.parent = &pdev->dev;
+> > > -       if ((result = i2c_add_adapter(&i2c->adap)) < 0) {
+> > > +       if ((result = i2c_add_numbered_adapter(&i2c->adap)) < 0) {
+> > >                 printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
+> > >                 goto fail_add;
+> > >         }
+> > 
+> > ... 
+> > 
+> > I think you need to add this line before the call to i2c_add_numbered_adapter:
+> > 
+> > i2c->adap.nr = pdev->id;
 > 
-> > +		MAL0: mcmal {
+> If these chips do have multiple instances of that adapter logic,
+> that would be an appropriate change.  The only "gotcha" might be
+> that some platforms use the "pdev->id = -1" trick when there's
+> only a single instance ... that would probably map to zero.
 > 
-> > +			#address-cells = <0>;
-> > +			#size-cells = <0>;
-> > +			interrupt-map-mask = <ffffffff>;
-> 
-> These three properties aren't needed (map-mask defaults
-> to all bits, #size is never used, #address defaults to 0
-> for interrupt mapping and isn't used in any other context).
+> I'll hope that whoever makes all this work will resolve those
+> particular questions ...
 
-Ok.
+Oh, and by the way:  patches updating I2C adapter drivers to work
+with new-style drivers look to be OK to get into 2.6.22 with just
+an Ack from Jean, via the MM tree.  (Right, Jean?)
 
-josh
+In this case I'll hope someone else does the real submission, after
+testing.  I just wanted to nudge the process along.
+
+- Dave
