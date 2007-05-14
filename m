@@ -1,22 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 14AC3DDE45
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 08:48:41 +1000 (EST)
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 2B5D4DDE44
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 08:54:30 +1000 (EST)
+Date: Mon, 14 May 2007 17:57:31 -0500
+To: Christoph Hellwig <hch@lst.de>
 Subject: Re: [PATCH] pcmcia: ppc64 needs 64-bit ioaddr_t
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070514150802.b9120e9f.akpm@linux-foundation.org>
-References: <20070512143105.GA12890@lixom.net>
-	<20070514150802.b9120e9f.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 15 May 2007 08:47:04 +1000
-Message-Id: <1179182824.32247.131.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-	Dominik Brodowski <linux@dominikbrodowski.net>,
-	linuxppc-dev@ozlabs.org, paulus@samba.org, Olof Johansson <olof@lixom.net>
+Message-ID: <20070514225731.GA4191@lixom.net>
+References: <20070512143105.GA12890@lixom.net> <20070513214608.GA26187@lst.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070513214608.GA26187@lst.de>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org, linux-pcmcia@lists.infradead.org, paulus@samba.org,
+	linux-kernel@vger.kernel.org, Dominik Brodowski <linux@brodo.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,19 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-05-14 at 15:08 -0700, Andrew Morton wrote:
+On Sun, May 13, 2007 at 11:46:08PM +0200, Christoph Hellwig wrote:
+> On Sat, May 12, 2007 at 09:31:05AM -0500, Olof Johansson wrote:
+> > ppc64 really needs ioaddr_t to be 64-bit, since I/O addresses really
+> > are MMIO addresses, and remapped to a high range.
+> > 
+> > While the type is exported to userspace, there hasn't been any platforms
+> > with PCMCIA on 64-bit powerpc until now, so changing it won't regress
+> > any existing users.
 > 
-> Well that's some pretty sad code you've found there.  The kernel
-> surely has
-> some appropriate type to use here without us having to invent a new
-> one. 
-> But I suspect if we were to rationalise things in there it will get
-> messy.
+> In fact the only use of the type should be in the obsolete ioctl-based user
+> interface.  So instead of changing the size of the type you should
+> 
+>  a) make sure you're not using cardmgr
+>  b) fix up those places that still use ioaddr_t where they shouldn't
+>     and switch the to kio_addr_t (why not just unsigned long like all
+>     other busses?) 
 
-There is more sad stuff involved with drivers assuming IO ports fit in
-int. A proper fix for 2.6.23 will be the rework of PIO allocation I'm
-doing. A temporary fix for 2.6.22 would be for Olof to use
-reserve_phb_iospace() to make sure his PIO gets in the low 31 bits. We
-need to add a spinlock to it though.
+I just noticed that feature-removal-schedule.txt says November 2005 for
+the removal of the pcmcia ioctl's, but they're still there. I'm missing
+the history here, any reason they weren't removed yet?
 
-Ben.
+
+-Olof
