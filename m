@@ -1,20 +1,22 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
-	by ozlabs.org (Postfix) with ESMTP id 6151CDDF37
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 01:09:41 +1000 (EST)
-Date: Mon, 14 May 2007 13:06:36 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH 1/2] kbuild: Add "Section mismatch" warning whitelist for
-	powerpc
-Message-ID: <20070514110636.GB10143@uranus.ravnborg.org>
-References: <46483FAC.60503@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <46483FAC.60503@freescale.com>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Linus <torvalds@linux-foundation.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-09.arcor-online.net (mail-in-09.arcor-online.net
+	[151.189.21.49])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id CC782DDDF8
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 01:21:42 +1000 (EST)
+In-Reply-To: <1179154675.3420.22.camel@zod.rchland.ibm.com>
+References: <1179154608.3420.21.camel@zod.rchland.ibm.com>
+	<1179154675.3420.22.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <92b3319be989145b0191cf9693ddd90c@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] Bamboo DTS
+Date: Mon, 14 May 2007 17:21:26 +0200
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,83 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 14, 2007 at 06:53:32PM +0800, Li Yang wrote:
-> This patch fixes the following "Section mismatch" warnings when
-> build powerpc platforms.
-> 
-> -------------
-> WARNING: arch/powerpc/mm/built-in.o - Section mismatch: reference to 
-> .init.text:early_get_page from .text between 'pte_alloc_one_kernel' (at 
-> offset 0xc68) and 'pte_alloc_one'
-> WARNING: mm/built-in.o - Section mismatch: reference to 
-> .init.text:set_up_list3s from .text between 'kmem_cache_create' (at offset 
-> 0x20300) and 'cache_reap'
-> -------------
-> 
-> Massive warnings represented by:
-> -------------
-> WARNING: arch/powerpc/kernel/built-in.o - Section mismatch: reference to 
-> .init.data:.got2 from prom_entry (offset 0x0)
-> WARNING: arch/powerpc/platforms/built-in.o - Section mismatch: reference to 
-> .init.text:mpc8313_rdb_probe from .machine.desc after 'mach_mpc8313_rdb' 
-> (at offset 0x4)
-> -------------
-> 
-> Signed-off-by: Li Yang <leoli@freescale.com>
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
-> ---
-> scripts/mod/modpost.c |   16 ++++++++++++----
-> 1 files changed, 12 insertions(+), 4 deletions(-)
-> 
-> diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-> index c89cb71..aa3a881 100644
-> --- a/scripts/mod/modpost.c
-> +++ b/scripts/mod/modpost.c
-> @@ -649,9 +649,10 @@ static int strrcmp(const char *s, const char *sub)
->  *  tosec    = .init.text
->  *
->  * Pattern 10:
-> - *  ia64 has machvec table for each platform. It is mixture of function
-> - *  pointer of .init.text and .text.
-> - *  fromsec  = .machvec
-> + *  ia64 has machvec table and powerpc has machine desc table for each
-> + *  platform. It is mixture of function pointer of .init.text and .text.
-> + *  fromsec  = .machvec | .machine.desc
-> + *
->  **/
-> static int secref_whitelist(const char *modname, const char *tosec,
-> 			    const char *fromsec, const char *atsym,
-> @@ -681,6 +682,8 @@ static int secref_whitelist(const char *modname, const 
-> char *tosec,
-> 	const char *pat4sym[] = {
-> 		"sparse_index_alloc",
-> 		"zone_wait_table_init",
-> +		"pte_alloc_one_kernel",
-> +		"kmem_cache_create",
-> 		NULL
-> 	};
-> 
-> @@ -750,7 +753,8 @@ static int secref_whitelist(const char *modname, const 
-> char *tosec,
-> 				return 1;
-> 
-> 	/* Check for pattern 10 */
-> -	if (strcmp(fromsec, ".machvec") == 0)
-> +	if ((strcmp(fromsec, ".machvec") == 0) ||
-> +	    (strcmp(fromsec, ".machine.desc") == 0))
-> 		return 1;
-> 
-> 	return 0;
-> @@ -883,6 +887,10 @@ static void warn_sec_mismatch(const char *modname, 
-> const char *fromsec,
-> 	    secref_whitelist(modname, secname, fromsec,
-> 			     elf->strtab + before->st_name, refsymname))
-> 		return;
-> +	/* fromsec whitelist - without a valid 'before' */
-> +	/* powerpc has a GOT table in .got2 section */
-> +	if (strcmp(fromsec, ".got2") == 0)
-> +		return;
-> 
-> 	if (before && after) {
-> 		warn("%s - Section mismatch: reference to %s:%s from %s "
-> 
+> +			i-cache-size = <2000000>;
+> +			d-cache-size = <2000000>;
+
+32MB yeah right :-)
+
+> +		MAL0: mcmal {
+
+> +			#address-cells = <0>;
+> +			#size-cells = <0>;
+> +			interrupt-map-mask = <ffffffff>;
+
+These three properties aren't needed (map-mask defaults
+to all bits, #size is never used, #address defaults to 0
+for interrupt mapping and isn't used in any other context).
+
+> +		  	ranges = <00000000 0 00000000 80000000
+> +			          80000000 0 80000000 80000000>;
+
+You can avoid having two ranges by using #size-cells = 2
+in the root node.  Having two ranges is a problem if any
+mapping straddles the boundary between the two.
+
+
+Segher
