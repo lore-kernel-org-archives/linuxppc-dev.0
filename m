@@ -1,22 +1,15 @@
 Return-Path: <scottwood@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9C227DDE23
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 01:51:16 +1000 (EST)
-Message-ID: <46488562.4080502@freescale.com>
-Date: Mon, 14 May 2007 10:50:58 -0500
+Message-ID: <46488597.5060109@freescale.com>
+Date: Mon, 14 May 2007 10:51:51 -0500
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] U-boot passes the initrd as start/end, not start/size.
-References: <20070511175202.GA14644@ld0162-tx32.am.freescale.net>
-	<20070512134529.fe14f441.sfr@canb.auug.org.au>
-In-Reply-To: <20070512134529.fe14f441.sfr@canb.auug.org.au>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [DTC PATCH] Remove overreaching semantic tests.
+References: <20070511175553.GA14692@ld0162-tx32.am.freescale.net>
+	<20070514011915.GH6517@localhost.localdomain>
+In-Reply-To: <20070514011915.GH6517@localhost.localdomain>
 Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +19,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stephen Rothwell wrote:
-> On Fri, 11 May 2007 12:52:03 -0500 Scott Wood <scottwood@freescale.com> wrote:
+David Gibson wrote:
+> On Fri, May 11, 2007 at 12:55:54PM -0500, Scott Wood wrote:
+>>I wouldn't be opposed to keeping these tests around if there were a
+>>command line option that cleanly separates the errors/warnings into
+>>classes such as structural, semantic-missing, semantic-broken, etc.
 > 
->> 	loader_info.initrd_addr = r4;
->>-	loader_info.initrd_size = r4 ? r5 : 0;
->>+	loader_info.initrd_size = r4 ? r5 - r4 : 0;
+> Exactly - which is why I really don't want to simply tear out this
+> checking code.  I've never gotten around to reworking the
+> error/warning system so it can sensibly divide things into such
+> classes, and keep detecting further warnings after picking up some
+> non-fatal ones and so forth.
 > 
-> 
-> So do we need a "+ 1" here, or does r5 contain the address past the initrd?
+> I'd much prefer you just disable these tests for now, either by
+> commenting code out, or removing calls to checking functions.  That
+> will make it easier to optionally reinstate later.
 
-It includes the address past the initrd.
+Well, I figured the code would still be there in git, so getting it back 
+wouldn't be too hard.  I can submit a patch that hides it behind a 
+--warn-missing (or whatever) option, though.
 
 -Scott
