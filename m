@@ -1,25 +1,15 @@
-Return-Path: <SRS0+82eb8e4b0001a5351ca7+1359+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D9208DDE2D
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 00:07:01 +1000 (EST)
-Subject: Re: [PATCH] [POWERPC] Wire up some more syscalls
-From: David Woodhouse <dwmw2@infradead.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <B31879C1-6E28-45F5-8253-466785183E41@kernel.crashing.org>
-References: <20070514135033.07c1b840.sfr@canb.auug.org.au>
-	<1AF532FF-A994-47AF-9394-5DFFC6C8FDA1@kernel.crashing.org>
-	<1179116138.18580.2.camel@shinybook.infradead.org>
-	<B31879C1-6E28-45F5-8253-466785183E41@kernel.crashing.org>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
+	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id E4839DDDFD
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 00:20:17 +1000 (EST)
+Subject: Panic doesn't reboot
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: linuxppc-dev@ozlabs.org
 Content-Type: text/plain
-Date: Mon, 14 May 2007 22:06:51 +0800
-Message-Id: <1179151611.3482.15.camel@shinybook.infradead.org>
+Date: Mon, 14 May 2007 16:20:15 +0200
+Message-Id: <1179152415.20638.104.camel@gentoo-jocke.transmode.se>
 Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Andrew Morton <akpm@linux-foundation.org>, paulus@samba.org,
-	Arnd Bergmann <arnd@arndb.de>, ppc-dev <linuxppc-dev@ozlabs.org>
+Reply-To: joakim.tjernlund@transmode.se
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,20 +19,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-05-14 at 08:58 -0500, Kumar Gala wrote:
-> The COMPAT I get, but what does it mean to be able to use a syscall  
-> on SPU natively?  When wouldn't you be able to do this? 
+Stumbled across this testing linus tree from last week:
 
-There is no native vs. compat on the SPU. The COMPAT_ bit refers only to
-32-bit or 64-bit processes on the PPU. 
+Looking up port of RPC 100003/2 on 192.168.1.15
+rpcbind: server 192.168.1.15 not responding, timed out
+Root-NFS: Unable to get nfsd port number from server, using default
+Looking up port of RPC 100005/1 on 192.168.1.15
+rpcbind: server 192.168.1.15 not responding, timed out
+Root-NFS: Unable to get mountd port number from server, using default
+mount: server 192.168.1.15 not responding, timed out
+Root-NFS: Server returned error -5 while mounting /opt/rootfs/freescale
+VFS: Unable to mount root fs via NFS, trying floppy.
+List of all partitions:
+1f00         64 mtdblock0 (driver?)
+1f01         32 mtdblock1 (driver?)
+1f02         32 mtdblock2 (driver?)
+1f03        256 mtdblock3 (driver?)
+1f04        256 mtdblock4 (driver?)
+1f05       1920 mtdblock5 (driver?)
+1f06     128384 mtdblock6 (driver?)
+No filesystem could mount root, tried: 
+Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(2,0)
+Rebooting in 180 seconds..
 
-However, there are some system calls which the SPU may execute, and
-other system calls which it may not (usually those involving signals).
+And there it hangs forever. The board is a custom board based on
+MPC832x_MDS. Does anybody else see this?
 
-Looking back at it, I'm not entirely sure the above description is
-actually going to help your confusion... I recommend just looking at the
-places that systbl.h is included, and what the macros expand to in each
-case.
-
--- 
-dwmw2
+ Jocke
