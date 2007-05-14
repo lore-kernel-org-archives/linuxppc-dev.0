@@ -1,21 +1,25 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <SRS0+82eb8e4b0001a5351ca7+1359+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4376BDDE08
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 00:03:23 +1000 (EST)
-In-Reply-To: <46484110.5020607@freescale.com>
-References: <46484110.5020607@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <F67CA64A-2474-4239-8BC1-17EC4AAA2D92@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] powerpc: Fix Section mismatch warnings
-Date: Mon, 14 May 2007 09:02:26 -0500
-To: Li Yang <leoli@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Paul <paulus@samba.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
+	by ozlabs.org (Postfix) with ESMTP id D9208DDE2D
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 00:07:01 +1000 (EST)
+Subject: Re: [PATCH] [POWERPC] Wire up some more syscalls
+From: David Woodhouse <dwmw2@infradead.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <B31879C1-6E28-45F5-8253-466785183E41@kernel.crashing.org>
+References: <20070514135033.07c1b840.sfr@canb.auug.org.au>
+	<1AF532FF-A994-47AF-9394-5DFFC6C8FDA1@kernel.crashing.org>
+	<1179116138.18580.2.camel@shinybook.infradead.org>
+	<B31879C1-6E28-45F5-8253-466785183E41@kernel.crashing.org>
+Content-Type: text/plain
+Date: Mon, 14 May 2007 22:06:51 +0800
+Message-Id: <1179151611.3482.15.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	Andrew Morton <akpm@linux-foundation.org>, paulus@samba.org,
+	Arnd Bergmann <arnd@arndb.de>, ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,62 +29,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 2007-05-14 at 08:58 -0500, Kumar Gala wrote:
+> The COMPAT I get, but what does it mean to be able to use a syscall  
+> on SPU natively?  When wouldn't you be able to do this? 
 
-On May 14, 2007, at 5:59 AM, Li Yang wrote:
+There is no native vs. compat on the SPU. The COMPAT_ bit refers only to
+32-bit or 64-bit processes on the PPU. 
 
-> This patch fix the following Section mismatch warnings
-> in powerpc code.
->
-> WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:  
-> reference to .init.data:mv643xx_eth_pd_devs from .text between  
-> 'mv643xx_eth_add_pds' (at offset 0x9ed2) and 'gg2_read_config'
-> WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:  
-> reference to .init.data:mv643xx_eth_pd_devs from .text between  
-> 'mv643xx_eth_add_pds' (at offset 0x9ed6) and 'gg2_read_config'
-> WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:  
-> reference to .init.text:note_scsi_host from __ksymtab between  
-> '__ksymtab_note_scsi_host' (at offset 0x8) and '__ksymtab_sys_ctrler'
->
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> ---
-> arch/powerpc/platforms/chrp/pegasos_eth.c |    2 +-
-> arch/powerpc/platforms/powermac/setup.c   |    2 +-
-> 2 files changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/chrp/pegasos_eth.c b/arch/ 
-> powerpc/platforms/chrp/pegasos_eth.c
-> index 7104567..5c9f135 100644
-> --- a/arch/powerpc/platforms/chrp/pegasos_eth.c
-> +++ b/arch/powerpc/platforms/chrp/pegasos_eth.c
-> @@ -169,7 +169,7 @@ static int Enable_SRAM(void)
-> /***********/
-> /***********/
-> -int mv643xx_eth_add_pds(void)
-> +int __init mv643xx_eth_add_pds(void)
+However, there are some system calls which the SPU may execute, and
+other system calls which it may not (usually those involving signals).
 
-it should probably be static as well.
+Looking back at it, I'm not entirely sure the above description is
+actually going to help your confusion... I recommend just looking at the
+places that systbl.h is included, and what the macros expand to in each
+case.
 
-> {
-> 	int ret = 0;
-> 	static struct pci_device_id pci_marvell_mv64360[] = {
-> diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/ 
-> platforms/powermac/setup.c
-> index a410bc7..07b1c4e 100644
-> --- a/arch/powerpc/platforms/powermac/setup.c
-> +++ b/arch/powerpc/platforms/powermac/setup.c
-> @@ -384,7 +384,7 @@ int boot_part;
-> static dev_t boot_dev;
-> #ifdef CONFIG_SCSI
-> -void __init note_scsi_host(struct device_node *node, void *host)
-> +void note_scsi_host(struct device_node *node, void *host)
-> {
-> 	int l;
-> 	char *p;
->
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux- 
-> kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+-- 
+dwmw2
