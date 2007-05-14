@@ -1,14 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Message-ID: <46488597.5060109@freescale.com>
-Date: Mon, 14 May 2007 10:51:51 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [DTC PATCH] Remove overreaching semantic tests.
-References: <20070511175553.GA14692@ld0162-tx32.am.freescale.net>
-	<20070514011915.GH6517@localhost.localdomain>
-In-Reply-To: <20070514011915.GH6517@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
+	[151.189.21.41])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5402DDDE2B
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 01:52:47 +1000 (EST)
+In-Reply-To: <92b3319be989145b0191cf9693ddd90c@kernel.crashing.org>
+References: <1179154608.3420.21.camel@zod.rchland.ibm.com>
+	<1179154675.3420.22.camel@zod.rchland.ibm.com>
+	<92b3319be989145b0191cf9693ddd90c@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <345f23c36f44912708e8c42d3f432013@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] Bamboo DTS
+Date: Mon, 14 May 2007 17:52:15 +0200
+To: Segher Boessenkool <segher@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,24 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Fri, May 11, 2007 at 12:55:54PM -0500, Scott Wood wrote:
->>I wouldn't be opposed to keeping these tests around if there were a
->>command line option that cleanly separates the errors/warnings into
->>classes such as structural, semantic-missing, semantic-broken, etc.
-> 
-> Exactly - which is why I really don't want to simply tear out this
-> checking code.  I've never gotten around to reworking the
-> error/warning system so it can sensibly divide things into such
-> classes, and keep detecting further warnings after picking up some
-> non-fatal ones and so forth.
-> 
-> I'd much prefer you just disable these tests for now, either by
-> commenting code out, or removing calls to checking functions.  That
-> will make it easier to optionally reinstate later.
+>> +		  	ranges = <00000000 0 00000000 80000000
+>> +			          80000000 0 80000000 80000000>;
+>
+> You can avoid having two ranges by using #size-cells = 2
+> in the root node.
 
-Well, I figured the code would still be there in git, so getting it back 
-wouldn't be too hard.  I can submit a patch that hides it behind a 
---warn-missing (or whatever) option, though.
+Erm ignore this, size in a "ranges" property is encode
+with the "#size-cells" of the child bus, not the parent
+bus.  #size-cells = 2 does fix similar problems, just
+not this one :-)
 
--Scott
+>   Having two ranges is a problem if any
+> mapping straddles the boundary between the two.
+
+You can get around this problem by making one range's
+top or bottom boundary identical to that same boundary
+of a bus range or reg range of a direct child of this
+bus.  Since you don't have any kids for this node yet
+it doesn't matter for now, but keep it in mind.
+
+
+Segher
