@@ -1,30 +1,21 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx005.isp.belgacom.be (outmx005.isp.belgacom.be
-	[195.238.4.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 02E63DDDF8
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 08:27:21 +1000 (EST)
-Received: from outmx005.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx005.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id l4FMRAAR014346
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 00:27:10 +0200
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <464A33BB.9010208@246tNt.com>
-Date: Wed, 16 May 2007 00:27:07 +0200
-From: Sylvain Munaut <tnt@246tNt.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 4/9] powerpc: BestComm core support for Freescale MPC5200
-References: <11790019171838-git-send-email-tnt@246tNt.com>
-	<11790019223299-git-send-email-tnt@246tNt.com>
-	<11790019223880-git-send-email-tnt@246tNt.com>
-	<11790019223925-git-send-email-tnt@246tNt.com>
-	<11790019234031-git-send-email-tnt@246tNt.com>
-	<781A28BA-63E5-41C4-93F7-B5C004F526AD@kernel.crashing.org>
-In-Reply-To: <781A28BA-63E5-41C4-93F7-B5C004F526AD@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux PPC dev ML <linuxppc-dev@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+In-Reply-To: <20070515222529.GA14881@lixom.net>
+References: <20070510200237.GA19756@mag.az.mvista.com>
+	<20070510215730.GA25075@lixom.net>
+	<17987.47155.935764.878634@cargo.ozlabs.ibm.com>
+	<20070511170512.GH4452@austin.ibm.com>
+	<FF6A6402-37F5-406F-9DA2-0C0D4D6E4D8B@kernel.crashing.org>
+	<20070515220616.GB2433@mag.az.mvista.com>
+	<528646bc0705151519p5bcce91ctaaa4880cfc9e5902@mail.gmail.com>
+	<20070515222529.GA14881@lixom.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <0A0574F0-C2DC-4C23-B006-76376FC9EAAD@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: arch/powerpc/sysdev: dumping ground or only for shared drivers?
+Date: Tue, 15 May 2007 17:30:58 -0500
+To: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,165 +25,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
->
-> On May 12, 2007, at 3:31 PM, Sylvain Munaut wrote:
->
->> This patch adds support for the core of the BestComm API
->> for the Freescale MPC5200(b). The BestComm engine is a
->> microcode-controlled / tasks-based DMA used by several
->> of the onchip devices.
+
+On May 15, 2007, at 5:25 PM, Olof Johansson wrote:
+
+> On Tue, May 15, 2007 at 04:19:05PM -0600, Grant Likely wrote:
+>> On 5/15/07, Mark A. Greer <mgreer@mvista.com> wrote:
+>>> On Tue, May 15, 2007 at 04:06:40PM -0500, Kumar Gala wrote:
+>>>> If this is how we are going we should move some code from arch/
+>>>> powerpc/platforms into sysdev (for example the 5200 platform has  
+>>>> its
+>>>> pic code and some other bits that would be candidate to move into
+>>>> sysdev).
+>>>
+>>> I like Paul's take as well and I don't like the idea of moving the
+>>> 5200 pci code, etc. to sysdev.  I just can't explain why.
+>>>
+>>> But, I'll try anyway:
+>>>
+>>> The 5200 is an SoC so all the portions of that chip are tighly  
+>>> coupled
+>>> with the 5200.  It doesn't make sense to put half of the 5200  
+>>> code under
+>>> platforms and the other half under sysdev (unless the code is shared
+>>> with something that isn't a 5200).
 >>
->> Setting up the tasks / memory allocation and all common
->> low level functions are handled by this patch.
->> The specifics details of each tasks and their microcode
->> are split-out in separate patches.
+>> Actually, that's a good explaination
 >>
->> This is not the official API, but a much cleaner one.
+>> I must agree.  If there is little chance that the code will be  
+>> used by
+>> any other platform, then don't split it up for the sake of (for
+>> example) putting all the pic code in the same place.  I think there
+>> are fewer opportunities for confusion if only code that is actually
+>> shared goes in the shared directory.  (ie. "how worried do I need to
+>> be about affecting other platforms when I modify this code?").
 >
-> Can you give more detail about how the API works.
-Yes, I'll try to write something that gives a little explanation for
-Documentation/
-
-In the mean time, here's a small informative text that
-describe the API usage from a driver writer perspective :
-
-   You need to allocate yourself a task, depending on
-   what driver you're writing, that might be a generic
-   one or one dedicated to that device (depends on the
-   peripheral). For example FEC needs one TX and one RX
-   task, both specialized.
-
-   Each 'type' of task you can create has a specific
-   function to create it. For example, to create a new
-   instance of the FEC rx task, you call bcom_fec_rx_init.
-
-   It returns a (struct bcom_task*) that's gonna be your link
-   to bestcomm for all further calls.
-
-   Each task "type" needs a different init function because
-   depending on the microcode, the way to initialize it
-   is slightly different ...
-
-   Most task are buffer descriptor based (well ... currently,
-   they all are but that's not an obligation), and the
-   bestcomm API handle details of the BD ring commonly.
-   It assumes each buffer descriptor is formed by a
-   status word and a certain number of data pointers (1,2,..n).
-
-   The signification of each of theses data pointers and
-   of the status depends on the type of task. There is however
-   a convention in all tasks that the upper 4 bits of the status
-   are reserved for "Ready" flags and that the lsbs are for
-   the length (how much lsb depends of task ...)
-
-   When you need to submit a new buffer for sending, you just
-   call bcom_prepare_next_buffer(...) that returns you a pointer
-   to a (struct bcom_bd *) to fill up with the info you want
-   (most often just the lenght and data pointers ...).
-   When filled up, you just "push" the BD calling
-   bcom_submit_next_buffer(...). Each time a BD is completed,
-   bestcomm generates an interrupt and you just have to
-   call bcom_retrieve_buffer(...) to reclaim the BD that was
-   sent (along with the info needed to identify which one it is).
-
-   For receive task, it's more or less the same except you
-   submit empty buffer that bestcomm will fill up. And the
-   status word in the bd you recover by calling _retrieve is
-   gonna give you how many bytes were put into the buffer.
-
-
-
+> In other words, both of you agree with my original points, even though
+> Mark said first "I agree with Paul", and then gave the same reasons as
+> me for not putting non-shared stuff in sysdev. :-)
 >
->> diff --git a/arch/powerpc/sysdev/bestcomm/Makefile
->> b/arch/powerpc/sysdev/bestcomm/Makefile
->> new file mode 100644
->> index 0000000..a24aa06
->> --- /dev/null
->> +++ b/arch/powerpc/sysdev/bestcomm/Makefile
->> @@ -0,0 +1,8 @@
->> +#
->> +# Makefile for BestComm & co
->> +#
->> +
->> +bestcomm-core-objs    := bestcomm.o sram.o
->> +
->> +obj-$(CONFIG_PPC_BESTCOMM)        += bestcomm-core.o
->
-> Any reason why sram isn't on the ojb-$(CONFIG_PPC_BESTCOMM) line?
-Huh, I want the module to be named bestcomm-core when built as modules,
-is it possible to do it in another way ?
-I'm not an expert as kbuild so if there is a better way ...
+> Anyway, I don't care enough to try to persuade anyone to change stance
+> on the question, I mostly wanted it clarified before it gets out of  
+> hand
+> in case it is NOT to be a dumping ground.
 
->>
->> +/* Debug Dump */
->> +
->> +#define BCOM_DPRINTK(a,b...) printk(KERN_DEBUG DRIVER_NAME ": " a,
->> ## b)
->
-> We have dev_dbg and dev_printk can we not use them?
+I was just hoping for consistency but I guess that's too much to ask  
+from all of us :)
 
-I don't use dev_dbg because I want the stuff printed even if DEBUG was
-not defined when
-compiling bestcomm-core.
-Those are debug functions that a developer can call, from the driver, to
-see what state bestcomm is
-in. So when he calls them, the user expects them to print stuff,
-regardless is DEBUG was defined
-or not when compiling bestcomm-core ...
-Same thing for pr_debug.
+I just pondered moving the ipic code only used by 83xx into platforms/ 
+83xx, but decided I'm too lazy to issue to few git commands to  
+actually do this.
 
-And dev_printk forces me to repeat "dev_printk(dev, KERN_DEBUG, " on
-each line which makes
-them very long ...
-
-I could define BCOM_DPRINTK(a,b,...) as dev_printk(dev, KERN_DEBUG, ...)
-if you think it's better.
-
-
->
-> Would all bcom_dump_status(), bcom_dump_task(), bcom_dump_bdring be
-> better using debugfs?  At minimum there should be a Kconfig option to
-> enable bestcomm debug that enables this code.
-Theses are _never_ called ...
-They are just there because when you work on a driver and something goes
-wrong, it's useful to print debug info to see exactly what happened at
-that exact moment.
-So for example when working on the sound driver, some times I got an
-interrupt but no buffer was finished, printing the bestcomm status at
-that exact moment in the ISR when detecting that condition allowed me to
-figure out what was going on. On the final submitted driver the call
-will be removed ...
-
->> +/* Private API */
->> +
->
-> What's private about it?
-Driver code should not use it directly.
-Only task support code should use it.
-
-(basically anything outside sysdev/bestcomm/* should not include
-bestcomm_priv.h)
-
-> It would probably be good for the API functions to have DocBook style
-> comments.  See something like drivers/rapidio/rio.c for an example.
-Yes that would be nice ... just need to write it ;)
-
->>
->> +void
->> +bcom_task_release(struct bcom_task *tsk)
-> bcom_task_free() to match alloc/free semantics?
-Ok, I'll change that.
-
->> +
->> +
->> +/* Public API */
->> +
-> What's public about these?
-Driver can use those ;)
-
-
-Thanks for the comments.
-
-
-    Sylvain
+- k
