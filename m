@@ -1,15 +1,21 @@
-Return-Path: <wfarnsworth@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 187ACDDEFE
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 02:53:30 +1000 (EST)
-Subject: [PATCH] Fix drivers/rtc/Kconfig for powerpc
-From: Wade Farnsworth <wfarnsworth@mvista.com>
-To: rtc-linux@googlegroups.com
-Content-Type: text/plain
-Date: Tue, 15 May 2007 09:53:28 -0700
-Message-Id: <1179248008.8132.142.camel@rhino>
+Return-Path: <b07421@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 256DEDDE43
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 03:49:54 +1000 (EST)
+Date: Tue, 15 May 2007 12:49:34 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Paul Mackerras <paulus@samba.org>, "Mark A. Greer" <mgreer@mvista.com>,
+	linuxppc-dev@ozlabs.org
+Subject: Re: Fix bug adding properties with flatdevtree.c's ft_set_prop()
+Message-ID: <20070515174934.GA22623@ld0162-tx32.am.freescale.net>
+References: <20070514031357.GM6517@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070514031357.GM6517@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,26 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The powerpc arch uses CONFIG_PPC instead of CONFIG_POWERPC.  This makes
-drivers/rtc/Kconfig to use the correct config option.
+On Mon, May 14, 2007 at 01:13:57PM +1000, David Gibson wrote:
+> ft_set_prop() from flatdevtree.c in the zImage wrapper will either
+> replace an existing property in the flat device tree, or add a new
+> property definiion if the given property isn't present.
+> 
+> However, when adding properties, it adds the property definition
+> immediately before the node's END_NODE tag, potentially after any
+> subnode definitions for the node.  This confuses the kernel flat tree
+> parser in prom.c which assumes that all property definitions for a
+> node come before all subnode definitions.
+> 
+> This patch corrects ft_set_prop() so that it adds new properties
+> before the first subnode, instead of before the END_NODE tag.
+> 
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Signed-off-by: Wade Farnsworth <wfarnsworth@mvista.com>
+Acked-by: Scott Wood <scottwood@freescale.com>
 
----
-
- drivers/rtc/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6-8641/drivers/rtc/Kconfig
-===================================================================
---- linux-2.6-8641.orig/drivers/rtc/Kconfig
-+++ linux-2.6-8641/drivers/rtc/Kconfig
-@@ -246,7 +246,7 @@ comment "Platform RTC drivers"
- config RTC_DRV_CMOS
- 	tristate "PC-style 'CMOS'"
- 	depends on RTC_CLASS && (X86 || ALPHA || ARM26 || ARM \
--		|| M32R || ATARI || POWERPC || MIPS)
-+		|| M32R || ATARI || PPC || MIPS)
- 	help
- 	  Say "yes" here to get direct support for the real time clock
- 	  found in every PC or ACPI-based system, and some other boards.
+-Scott
