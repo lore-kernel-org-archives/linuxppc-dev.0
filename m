@@ -1,31 +1,18 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8F0A2DDF1E
+Return-Path: <akonovalov@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id CE7E8DDEF5
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 May 2007 02:35:13 +1000 (EST)
-Received: from root by ciao.gmane.org with local (Exim 4.43)
-	id 1HnzzK-00045a-DS
-	for linuxppc-embedded@ozlabs.org; Tue, 15 May 2007 18:35:02 +0200
-Received: from dslb-084-056-171-103.pools.arcor-ip.net ([84.56.171.103])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Tue, 15 May 2007 18:35:02 +0200
-Received: from mls.JOFT by dslb-084-056-171-103.pools.arcor-ip.net with local
-	(Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Tue, 15 May 2007 18:35:02 +0200
-To: linuxppc-embedded@ozlabs.org
-From: Joachim =?ISO-8859-1?Q?F=F6rster?= <mls.JOFT@gmx.de>
-Subject: Re: [Fwd: [alsa-devel] embedded sound architecture question]
-Date: Tue, 15 May 2007 18:28:00 +0200
-Message-ID: <1179246479.3587.2.camel@localhost>
-References: <000101c795e5$0af92ce0$9602a8c0@lorenzulm>
-	<46495CB4.8050809@246tNt.com>
-Mime-Version: 1.0
-Content-Type: text/plain
-In-Reply-To: <46495CB4.8050809@246tNt.com>
-Sender: news <news@sea.gmane.org>
+	Wed, 16 May 2007 04:02:23 +1000 (EST)
+Message-ID: <4649F6FF.7060003@ru.mvista.com>
+Date: Tue, 15 May 2007 22:07:59 +0400
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
+MIME-Version: 1.0
+To: Miroslaw Dach <miroslaw.dach@psi.ch>
+Subject: Re: zImage.elf loads but does not start
+References: <Pine.LNX.4.44.0705151430120.7758-100000@slslc02.psi.ch>
+In-Reply-To: <Pine.LNX.4.44.0705151430120.7758-100000@slslc02.psi.ch>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -36,27 +23,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Sylvain,
+Miroslaw Dach wrote:
+>>> [    9.357642] Freeing unused kernel memory: 96k init
+>> Any NFS timeouts after reaching this point? Any network activity at all?
+>> (NFS timeout is quite long, so waiting few minutes would make sense)
+> 
+> I have monitored the network activity on the NFS server with program
+> ethereal. It seems to be that the root file system is mounted. There are
+> packet sent from a to my xilinx board. The /var/log/messages contains also
+> the entry that mount was done successfully. When init is executed the
+> ethereal show only individual packets which are sent (in fixed interval of
+> time - once per 20 seconds) from the NFS server to the client but client
+> seem to be dead. Even ping does not reach my xilinx board when kernel
+> executes the init.
 
-thank you very much for your mail,
+Hmm...
+IIRC TEMAC is configured in FIFO mode.
+And I thought the problem could be due to small FIFOs. So that the default
+NFS reply of 4kbytes could not fit into the receive FIFO, and the CPU is not
+fast enough to read the reply out of the FIFO before it overflows.
+But your observations don't seem to confirm this is the case.
 
-On Tue, 2007-05-15 at 09:09 +0200, Sylvain Munaut wrote:
-> I'm not an alsa expert but I'm working on a driver right now. And alsa
-> provide you a hook so you can allocate your memory buffer your self.
-> So as long as your control maps it's memory somewhere in the
-> cpu address space you should be fine.
+Anyway, you could try adding
+   nfsroot=,rsize=1024,wsize=1024
+to your cmdline just in case...
 
-By "hook", do you mean the prepare()/hw_params() callbacks?
+Thanks,
+Andrei
 
-I noticed that there is an (undocumented?) mmap() callback, too, so I
-think, I have to implement that one and call something like
-io_remap_pfn_range() to "connect" the device's memory to the VMA
-(virtual memory area) which is provided as an argument to the mmap()
-callback, right?
-
-In our case, we are not going to allocate any memory like a typical ALSA
-driver does (with DMA) (in prepare()/hw_params() callback), because the
-device's IO memory will "be there" - we just have to "announce"/map it
-into kernel space, right? Or is this interpretation wrong?
-
- Joachim
+> I think that the best prove that the rootfile system is properly mounted
+> is the fact that my own test init function (which substitutes the real
+> init) which simply prints the string to the console does that what is
+> expected to do. The real init unfortunately does not print anything to the 
+> console.
+> 
+> Best Regards
+> 
+> Mirek
+> 
