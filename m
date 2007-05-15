@@ -1,28 +1,15 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 52095DDEAB
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 10:52:39 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4F0qZ1N018403
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 20:52:35 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4F0qZue532872
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 20:52:35 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4F0qY83015976
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2007 20:52:34 -0400
-Subject: [PATCH] Add -msoft-float to BOOTCFLAGS
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: paulus@samba.org
-Content-Type: text/plain
-Date: Mon, 14 May 2007 19:52:25 -0500
-Message-Id: <1179190345.3420.74.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 15 May 2007 10:26:48 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: Fix bug adding properties with flatdevtree.c's ft_set_prop()
+Message-ID: <20070515002648.GA31585@localhost.localdomain>
+References: <20070514031357.GM6517@localhost.localdomain>
+	<20070514162816.GB371@ld0162-tx32.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070514162816.GB371@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,22 +19,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We want to avoid any float instructions that may occur in the wrapper that
-may be generated if the compiler isn't told not to.
+On Mon, May 14, 2007 at 11:28:16AM -0500, Scott Wood wrote:
+> On Mon, May 14, 2007 at 01:13:57PM +1000, David Gibson wrote:
+> > This patch corrects ft_set_prop() so that it adds new properties
+> > before the first subnode, instead of before the END_NODE tag.
+> 
+> Is there any reason not to just insert at the beginning of the node?
 
-Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
----
- arch/powerpc/boot/Makefile |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Only that we have to search through the node first to see if the
+property already exists, so we've already reached the end by the time
+we know we need to insert.
 
---- linux-2.6.orig/arch/powerpc/boot/Makefile
-+++ linux-2.6/arch/powerpc/boot/Makefile
-@@ -24,7 +24,7 @@ all: $(obj)/zImage
- 
- HOSTCC		:= gcc
- BOOTCFLAGS	:= $(HOSTCFLAGS) -fno-builtin -nostdinc -isystem \
--		   $(shell $(CROSS32CC) -print-file-name=include) -fPIC
-+		   $(shell $(CROSS32CC) -print-file-name=include) -fPIC -msoft-float
- BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc
- 
- ifeq ($(call cc-option-yn, -fstack-protector),y)
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
