@@ -1,15 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 15 May 2007 10:26:48 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: Fix bug adding properties with flatdevtree.c's ft_set_prop()
-Message-ID: <20070515002648.GA31585@localhost.localdomain>
-References: <20070514031357.GM6517@localhost.localdomain>
-	<20070514162816.GB371@ld0162-tx32.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070514162816.GB371@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 7F562DDE9E
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 10:58:44 +1000 (EST)
+Date: Tue, 15 May 2007 10:58:37 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/3] Bamboo platform support
+Message-Id: <20070515105837.204d080f.sfr@canb.auug.org.au>
+In-Reply-To: <1179154743.3420.25.camel@zod.rchland.ibm.com>
+References: <1179154608.3420.21.camel@zod.rchland.ibm.com>
+	<1179154743.3420.25.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__15_May_2007_10_58_37_+1000_OTkjniN_6PeGz1Xk"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,19 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 14, 2007 at 11:28:16AM -0500, Scott Wood wrote:
-> On Mon, May 14, 2007 at 01:13:57PM +1000, David Gibson wrote:
-> > This patch corrects ft_set_prop() so that it adds new properties
-> > before the first subnode, instead of before the END_NODE tag.
-> 
-> Is there any reason not to just insert at the beginning of the node?
+--Signature=_Tue__15_May_2007_10_58_37_+1000_OTkjniN_6PeGz1Xk
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-Only that we have to search through the node first to see if the
-property already exists, so we've already reached the end by the time
-we know we need to insert.
+Hi Josh,
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+On Mon, 14 May 2007 09:59:03 -0500 Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+>
+> @@ -35,6 +35,7 @@ config 440EP
+>  	bool
+>  	select PPC_FPU
+>  	select IBM440EP_ERR42
+> +#	select IBM_NEW_EMAC_ZMII
+
+This bit belongs in a separate patch (I assume it slipped in by accident).
+
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__15_May_2007_10_58_37_+1000_OTkjniN_6PeGz1Xk
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGSQXCFdBgD/zoJvwRAuEmAJ4gnjwByYKHUymqJeYxc3HzmFx+VQCeM+SH
+omco2LLVzEZZlm8z7vX0siQ=
+=2Or2
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__15_May_2007_10_58_37_+1000_OTkjniN_6PeGz1Xk--
