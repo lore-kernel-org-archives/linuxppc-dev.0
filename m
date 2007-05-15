@@ -1,32 +1,20 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 77E06DDE1A
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 19:35:02 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l4F9Yu4q027241
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 02:34:56 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l4F9YsGq013128
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 04:34:55 -0500 (CDT)
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id D0F70DDE27
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 19:52:36 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] pasemi: Electra CF driver
+Date: Tue, 15 May 2007 11:52:23 +0200
+References: <20070515044515.GA6731@lixom.net>
+In-Reply-To: <20070515044515.GA6731@lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH 1/2] kbuild: Add "Section mismatch" warning whitelist for
-	powerpc
-Date: Tue, 15 May 2007 17:36:40 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890B76041@zch01exm26.fsl.freescale.net>
-In-Reply-To: <3DF58590-DFD9-4665-8C47-33F407AAD1E7@kernel.crashing.org>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>, "Sam Ravnborg" <sam@ravnborg.org>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Linus <torvalds@linux-foundation.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
+  charset="iso-8859-1"
+Message-Id: <200705151152.23940.arnd@arndb.de>
+Cc: Olof Johansson <olof@lixom.net>, Russell King <rmk+lkml@arm.linux.org.uk>,
+	linux-pcmcia@lists.infradead.org, paulus@samba.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,38 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Monday, May 14, 2007 9:57 PM
-> To: Sam Ravnborg
-> Cc: Li Yang-r58472; Linus; Andrew Morton; Linux Kernel;
-linuxppc-dev@ozlabs.org
-> Subject: Re: [PATCH 1/2] kbuild: Add "Section mismatch" warning
-whitelist for
-> powerpc
->=20
->=20
-> On May 14, 2007, at 6:06 AM, Sam Ravnborg wrote:
->=20
-> > On Mon, May 14, 2007 at 06:53:32PM +0800, Li Yang wrote:
-> >> This patch fixes the following "Section mismatch" warnings when
-> >> build powerpc platforms.
-> >>
-> >> -------------
-> >> WARNING: arch/powerpc/mm/built-in.o - Section mismatch: reference
-to
-> >> .init.text:early_get_page from .text between
-> >> 'pte_alloc_one_kernel' (at
-> >> offset 0xc68) and 'pte_alloc_one'
-> >> WARNING: mm/built-in.o - Section mismatch: reference to
-> >> .init.text:set_up_list3s from .text between
-> >> 'kmem_cache_create' (at offset
-> >> 0x20300) and 'cache_reap'
-> >> -------------
->=20
-> This warnings should be handled by __init_refok instead.
+On Tuesday 15 May 2007, Olof Johansson wrote:
+> Driver for the CompactFlash slot on the PA Semi Electra eval board. It's
+> a simple device sitting on localbus, with interrupts and detect/voltage
+> control over GPIO.
 
-Yes.  When __init_refok gets in, we can change all Pattern 9 members in
-the whitelist to use __init_refok.
+The driver looks really good, there is nothing for me to complain about.
 
-- Leo
+> The driver is implemented as an of_platform driver, and adds localbus
+> as a bus being probed by the of_platform framework.
+
+I supposed "localbus" is what the current firmware ships with in the
+device tree, right? If you still have the choice on how this is
+represented it might be better not to invent another device-type
+but rather make this "soc" or whatever existing type we know about.
+
+	Arnd <><
