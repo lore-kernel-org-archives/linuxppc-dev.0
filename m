@@ -1,20 +1,21 @@
-Return-Path: <mead@bnl.gov>
-Received: from smtpgateway.bnl.gov (smtpgw.bnl.gov [130.199.3.132])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3E89EDDED7
+Return-Path: <david.kanceruk@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
+	by ozlabs.org (Postfix) with ESMTP id 3405DDDF16
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 May 2007 23:13:00 +1000 (EST)
+	Wed, 16 May 2007 01:04:00 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id b21so559132ana
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 15 May 2007 08:03:59 -0700 (PDT)
+Message-ID: <5b525e390705150803l516a5d9x9c214e2b4b00ea0e@mail.gmail.com>
+Date: Tue, 15 May 2007 10:03:58 -0500
+From: "David Kanceruk" <david.kanceruk@gmail.com>
+To: "Hans Thielemans" <hans.thielemans@metris.com>
+Subject: Re: MPC5200 ethernet communication stops unexpected
+In-Reply-To: <1179234357.1668.10.camel@pc-hans>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: zImage.elf loads but does not start
-Date: Tue, 15 May 2007 09:12:53 -0400
-Message-ID: <D1AFFAE2CC4BD54CA4C1543CFF4A4FCC2F39A4@exchangemb3.bnl.gov>
-In-Reply-To: <10621564.post@talk.nabble.com>
-From: "Mead, Joseph" <mead@bnl.gov>
-To: "Mirek23" <miroslaw.dach@psi.ch>,
-	<linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <1179234357.1668.10.camel@pc-hans>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,84 +26,70 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Mirek,
+Hello Hans,
 
-If you think the networking might be the source of the problem maybe try
-to make a very simple root file system using initramfs to see if you can
-get the init program (or busybox) working.  =20
+     Our problem was with the FEC sending data with one or two
+incorrect bytes when we switched from the MPC5200 to the MPC5200B. The
+byte positions were always the same. The socket buffer has the correct
+data before and after the DMA engine runs but the FEC TxFIFO does not
+always match.
 
-Just create a file in that looks something like:
+One solution to our problem was to make the following call prior to
+starting the DMA:
 
-dir /dev 755 0 0
-nod /dev/console 644 0 0 c 5 1
-nod /dev/ttyS0   644 0 0 c 4 64
-dir /proc 755 0 0
-dir /sys 755 0 0
-file /init usr/busybox 755 0 0
+flush_dcache_range((unsigned long)skb->data, (unsigned long)skb->data
++ skb->len);
 
-and then tell the kernel about it General_Setup-> Initramfs source
-file(s)
+The other solution was to set the BSDIS bit in the XLB config register
+during initialization as follows:
 
-It will build the file system into the kernel image.
+  xlb = (struct mpc52xx_xlb *)MPC5xxx_XLB;
+  out_be32(&xlb->config,  in_be32(&xlb->config) | MPC52xx_XLB_CFG_BSDIS);
 
-Also, thanks for the files.=20
+Either solution works for us. The BSDIS bit is a new feature in the
+MPC5200B. The MPC5200 did not have this bit.
 
-Joe
-=20
+According to the Freescale documentation, (Application note AN3045,
+for instance) setting this bit is supposed to "disable" BestComm bus
+snooping. However, I have reason to believe the documentation is in
+error. Everything I have observed seems to indicate that in the
+MPC5200 BestComm bus snooping was always enabled or enabled via some
+other means. In the MPC5200B it appears to be "disabled" at reset (not
+"enabled" as the documentation states). This is why flushing the cache
+manually is one solution. Since setting the BSDIS bit also fixes the
+problem, it suggests that this actually "enables" BestComm bus
+snooping instead of disabling it. In my mind, it could all boil down
+to a simple documentation error.
 
------Original Message-----
-From: linuxppc-embedded-bounces+mead=3Dbnl.gov@ozlabs.org
-[mailto:linuxppc-embedded-bounces+mead=3Dbnl.gov@ozlabs.org] On Behalf =
-Of
-Mirek23
-Sent: Tuesday, May 15, 2007 8:09 AM
-To: linuxppc-embedded@ozlabs.org
-Subject: RE: zImage.elf loads but does not start
+Perhaps you are also experiencing a caching problem.
+
+Best regards,
+
+David Kanceruk
+
+On 5/15/07, Hans Thielemans <hans.thielemans@metris.com> wrote:
+> Hi David,
+>
+> I have a similar problem. I use the PSC for communication to a DSP.
+> With the MPC5200 this has always worked. Now we got boards with the
+> MCP5200B in place.
+>
+> The bestcomm dma seems to miss bits, bytes in the last word (32bit) of a
+> dma block. Mostly it is one byte which becomes 0. The blocks are 256
+> bytes and written/read by 32 bits.
+> The behavior is influenced by cpu activity, bus priorities. So far I
+> found no settings which have never errors.
+>
+> Did you have any further progress?
+>
+> Regards
+>
+> Hans Thielemans
+>
 
 
->It seems to be that the console works fine and the root file system is
-mounted properly via NFS.
->I do not however understand why eldk4.1 init does not work.
 
-I have done some more investigations. My observation is as following:
+-- 
+David Kanceruk
 
-The eldk4.1/ppc_4xx root file system has the init which is not
-statically built. When I removed the lib directory on the NFS
-server:/opt/eldk4.1/ppc_4xx/lib the kernel has booted up to the point:
-
-[    9.302101] VFS: Mounted root (nfs filesystem).
-[    9.357642] Freeing unused kernel memory: 96k init
-[    9.481509] Kernel panic - not syncing: No init found.  Try passing
-init=3D
-option to kernel.
-
-
-When the lib directory was present the last printed message was:
-[    9.357642] Freeing unused kernel memory: 96k init
-
-I have observed the same behaviour with busybox accessed via NFS.
-I have compiled busybox with crosstool-0.43 (gcc-4.0.2 glibc-2.3.2)
-because
-eldk4.1 crosscompilers failed to compile busybox. When using busybox
-mounted via NFS I copied the lib directory from crosstool.
-Unfortunately also this time the system hanged at init.
-
-My own version of init which uses printf just to print the string to the
-screen runs however fine.
-
-Would somebody have some suggestion what might cause the problem to
-properly launch the init command.
-
-Best Regards
-
-Mirek
---
-View this message in context:
-http://www.nabble.com/zImage.elf-loads-but-not-starts-tf3607582.html#a10
-621564
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
-
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+"The generation of random numbers is far too important to be left to chance."
