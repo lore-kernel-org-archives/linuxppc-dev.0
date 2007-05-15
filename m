@@ -1,26 +1,18 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx028.isp.belgacom.be (outmx028.isp.belgacom.be
-	[195.238.5.49])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 590BBDDEDA
+Return-Path: <g.jaeger@sysgo.com>
+Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
+	by ozlabs.org (Postfix) with ESMTP id 7489BDDEDB
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 May 2007 17:09:52 +1000 (EST)
-Received: from outmx028.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx028.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id l4F79hpv003044
-	for <linuxppc-embedded@ozlabs.org>; Tue, 15 May 2007 09:09:43 +0200
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <46495CB4.8050809@246tNt.com>
-Date: Tue, 15 May 2007 09:09:40 +0200
-From: Sylvain Munaut <tnt@246tNt.com>
+	Tue, 15 May 2007 17:27:33 +1000 (EST)
+From: Gerhard Jaeger <g.jaeger@sysgo.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: USB support for Bamboo/440EP (Yosemite/440EPx)
+Date: Tue, 15 May 2007 09:27:29 +0200
+References: <OFC56C5EA1.CC32B615-ON872572DB.0063BF4F-852572DB.00653577@us.ibm.com>
+In-Reply-To: <OFC56C5EA1.CC32B615-ON872572DB.0063BF4F-852572DB.00653577@us.ibm.com>
 MIME-Version: 1.0
-To: Lorenz Kolb <linuxppcemb@lkmail.de>
-Subject: Re: [Fwd: [alsa-devel] embedded sound architecture question]
-References: <000101c795e5$0af92ce0$9602a8c0@lorenzulm>
-In-Reply-To: <000101c795e5$0af92ce0$9602a8c0@lorenzulm>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_hDWSGQQ59+G9sS9"
+Message-Id: <200705150927.29798.g.jaeger@sysgo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,38 +23,101 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+--Boundary-00=_hDWSGQQ59+G9sS9
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
->> If I were you, I would chose one of sound cards which have ALSA
->> drivers implemented (the list can be found on ALSA site) and
->> mimicked their behavior in your VHDL.
->>     
->
-> Actually a bunch of theses drivers rely on PCI or ISA.
-> The few left do all require DMA, what is only an option, if it is some sort
-> of faked DMA, so the CPU writes directly into the controller's memory as we
-> intend to stay as independent as possible from Xilinx' IP Cores.
-> The question was: is that a good (and practicable) idea?
->   
+On Montag, 14. Mai 2007, Stephen Winiecki wrote:
+> Gerhard Jaeger <g.jaeger@sysgo.com> wrote on 05/14/2007 10:31:04 AM:
+> > Hi Stephen, 
+> > 
+> > I also played with Bamboo and Yosemite USB and found out, that the OHCI
+> > ISR contains an assumption that makes the 440 OHCI implementation sometimes 
+> > stop when having a timeout condition. Find the following sequence @function
+> > ohci_irq() (in file ohci-hcd.c) and disable the following code:
+> > 
+> >         if ((ohci->hcca->done_head != 0)
+> >                         && ! (hc32_to_cpup (ohci, &ohci->hcca->done_head)
+> >                                 & 0x01)) {
+> >                 ints =  OHCI_INTR_WDH;
+> >    }
+> > 
+> > This should make the USB host work reliably on the 440s.
+> > 
+> Thanks Gerhard.  This definitely makes things work better - I have had 
+> 100% success in both the kernel and X recognizing the devices and having X 
+> boot with this update.
+> 
+> However, I am occasionally still having an issue after X comes up with the 
+> keyboard not working (mouse working fine).  Just to be clear - I only want 
+> to comment out the code you indicated above - not also any/either of the 
+> else/if clauses, correct?
 
-If you can spare the BRAM, that sounds good to me.
+Yes - the lines mentioned didn't care about irq-status register
+and try to figure out from some context, how the irq-status register
+should look like - but this in fact does not work correctly for the
+440 OHCI implementation... 
 
-I'm not an alsa expert but I'm working on a driver right now. And alsa
-provide you a hook so you can allocate your memory buffer your self.
-So as long as your control maps it's memory somewhere in the
-cpu address space you should be fine.
+> So has this never been formally reported/patched?  
 
-What you need is :
- - Be able to ask the hardware where is is "read pointer".
- - Be able to ask the hardware to generate an interrupt every 'n' samples.
+Not that I'm aware of, I discovered that a few days ago.
 
-And that should do it.
+> Do you know also why  
+> the USB support has not been configured in the mainline kernel for these 
+> platforms - is it due to known existing issues? 
 
-You also need to make the controller build the AC97 frames itself
-(e.g. for the control slots, a separate set of registers), and also
-preferrably
-supporting multiple sample format so the CPU needs to do a minimum of
-conversion.
+I don't know why this is not part of the mainline kernel. On the PPC
+side there is currently a lot of restructure work going on, so I guess
+this is only a question of time, when the necessary patches will go
+into the mainline.
+
+Please find the patch for the ohc-hcd.c in the attachment.
+
+Ciao,
+Gerhard
+
+-- 
+Gerhard Jaeger <gjaeger@sysgo.com>            
+SYSGO AG                      Embedded and Real-Time Software
+www.sysgo.com | www.elinos.com | www.pikeos.com | www.osek.de 
+
+--Boundary-00=_hDWSGQQ59+G9sS9
+Content-Type: text/x-diff;
+  charset="iso-8859-1";
+  name="ppc440-ohci.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="ppc440-ohci.patch"
+
+This patch makes the OHCI code work correctly on AMCC PPC440
+cpus with internal USB-host controller. It seems that the
+optimization is not allowed for this OHCI implementation.
+
+Signed-off-by: Gerhard Jaeger <gjaeger@sysgo.com>
+---
 
 
-        Sylvain
+--- linux/drivers/usb/host/ohci-hcd.c.orig	2007-03-09 11:33:39.000000000 +0100
++++ linux/drivers/usb/host/ohci-hcd.c	2007-05-15 09:03:50.000000000 +0200
+@@ -646,13 +646,16 @@ static irqreturn_t ohci_irq (struct usb_
+ 
+ 	/* we can eliminate a (slow) ohci_readl()
+ 	   if _only_ WDH caused this irq */
++#if !(defined(CONFIG_USB_OHCI_HCD_PPC_SOC) && (defined(CONFIG_440EP) || defined(CONFIG_440EPX)))
+ 	if ((ohci->hcca->done_head != 0)
+ 			&& ! (hc32_to_cpup (ohci, &ohci->hcca->done_head)
+ 				& 0x01)) {
+ 		ints =  OHCI_INTR_WDH;
+ 
+ 	/* cardbus/... hardware gone before remove() */
+-	} else if ((ints = ohci_readl (ohci, &regs->intrstatus)) == ~(u32)0) {
++	} else 
++#endif
++	if ((ints = ohci_readl (ohci, &regs->intrstatus)) == ~(u32)0) {
+ 		disable (ohci);
+ 		ohci_dbg (ohci, "device removed!\n");
+ 		return IRQ_HANDLED;
+
+--Boundary-00=_hDWSGQQ59+G9sS9--
