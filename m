@@ -1,23 +1,21 @@
-Return-Path: <khali@linux-fr.org>
-Received: from kellthuzad.dmz.nerim.net (smtp-dmz-232-tuesday.dmz.nerim.net
-	[195.5.254.232]) by ozlabs.org (Postfix) with ESMTP id B5BA8DDEE2
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 23:25:35 +1000 (EST)
-Received: from mallaury.nerim.net (smtp-102-tuesday.noc.nerim.net
-	[62.4.17.102])
-	by kellthuzad.dmz.nerim.net (Postfix) with ESMTP id 4376B1A7B7
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 15:25:28 +0200 (CEST)
-Date: Tue, 15 May 2007 15:26:26 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [i2c] [PATCH] Make i2c-mpc driver use i2c_add_numbered_adapter
-Message-ID: <20070515152626.199f9d6b@hyperion.delvare>
-In-Reply-To: <20070514190545.32739.72083.stgit@trillian.secretlab.ca>
-References: <20070514190545.32739.72083.stgit@trillian.secretlab.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: rtc-linux@googlegroups.com, James Chapman <jchapman@katalix.com>,
-	David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
-	i2c@lm-sensors.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D747BDDF14
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 00:07:50 +1000 (EST)
+In-Reply-To: <46484110.5020607@freescale.com>
+References: <46484110.5020607@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <4575ED11-C144-49CF-9FBA-0613B61EFCE3@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] powerpc: Fix Section mismatch warnings
+Date: Tue, 15 May 2007 09:06:53 -0500
+To: Li Yang <leoli@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Paul <paulus@samba.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,47 +25,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 14 May 2007 13:11:23 -0600, Grant Likely wrote:
-> Move the i2c-mpc driver over to using the new i2c infrastructure.
-> Specifically, it now uses i2c_add_numberd_adapter so that the bus number
 
-i2c_add_numbered_adapter (missing e)
+On May 14, 2007, at 5:59 AM, Li Yang wrote:
 
-> can be determined ahead of time and used to register i2c clients before
-> the bus is instantiated.
-> 
-> Tested on an MPC5200 based board
-> 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-
-Acked-by: Jean Delvare <khali@linux-fr.org>
-
+> This patch fix the following Section mismatch warnings
+> in powerpc code.
+>
+> WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:  
+> reference to .init.data:mv643xx_eth_pd_devs from .text between  
+> 'mv643xx_eth_add_pds' (at offset 0x9ed2) and 'gg2_read_config'
+> WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:  
+> reference to .init.data:mv643xx_eth_pd_devs from .text between  
+> 'mv643xx_eth_add_pds' (at offset 0x9ed6) and 'gg2_read_config'
+> WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:  
+> reference to .init.text:note_scsi_host from __ksymtab between  
+> '__ksymtab_note_scsi_host' (at offset 0x8) and '__ksymtab_sys_ctrler'
+>
+> Signed-off-by: Li Yang <leoli@freescale.com>
 > ---
-> This patch will need to be tested to make sure it does not break any 8xxx
-> board ports.
-> 
-> Work still to be done (in another patch): support for pulling i2c client
-> registrations out of the device tree.
-> 
->  drivers/i2c/busses/i2c-mpc.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
-> index c6b6898..a769efc 100644
-> --- a/drivers/i2c/busses/i2c-mpc.c
-> +++ b/drivers/i2c/busses/i2c-mpc.c
-> @@ -327,9 +327,10 @@ static int fsl_i2c_probe(struct platform_device *pdev)
->  	platform_set_drvdata(pdev, i2c);
->  
->  	i2c->adap = mpc_ops;
-> +	i2c->adap.nr = pdev->id;
->  	i2c_set_adapdata(&i2c->adap, i2c);
->  	i2c->adap.dev.parent = &pdev->dev;
-> -	if ((result = i2c_add_adapter(&i2c->adap)) < 0) {
-> +	if ((result = i2c_add_numbered_adapter(&i2c->adap)) < 0) {
->  		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
->  		goto fail_add;
->  	}
+>  arch/powerpc/platforms/chrp/pegasos_eth.c |    2 +-
+>  arch/powerpc/platforms/powermac/setup.c   |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 
--- 
-Jean Delvare
+Did you change anything?
+
+- k
+
+> diff --git a/arch/powerpc/platforms/chrp/pegasos_eth.c b/arch/ 
+> powerpc/platforms/chrp/pegasos_eth.c
+> index 7104567..5c9f135 100644
+> --- a/arch/powerpc/platforms/chrp/pegasos_eth.c
+> +++ b/arch/powerpc/platforms/chrp/pegasos_eth.c
+> @@ -169,7 +169,7 @@ static int Enable_SRAM(void)
+>
+>  /***********/
+>  /***********/
+> -int mv643xx_eth_add_pds(void)
+> +int __init mv643xx_eth_add_pds(void)
+>  {
+>  	int ret = 0;
+>  	static struct pci_device_id pci_marvell_mv64360[] = {
+> diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/ 
+> platforms/powermac/setup.c
+> index a410bc7..07b1c4e 100644
+> --- a/arch/powerpc/platforms/powermac/setup.c
+> +++ b/arch/powerpc/platforms/powermac/setup.c
+> @@ -384,7 +384,7 @@ int boot_part;
+>  static dev_t boot_dev;
+>
+>  #ifdef CONFIG_SCSI
+> -void __init note_scsi_host(struct device_node *node, void *host)
+> +void note_scsi_host(struct device_node *node, void *host)
+>  {
+>  	int l;
+>  	char *p;
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
