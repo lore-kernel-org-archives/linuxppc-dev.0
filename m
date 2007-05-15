@@ -1,20 +1,18 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 0AB68DDED2
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 14:26:28 +1000 (EST)
-Date: Tue, 15 May 2007 14:26:15 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] powerpc: Add spinlock to request_phb_iospace()
-Message-Id: <20070515142615.bf748b7a.sfr@canb.auug.org.au>
-In-Reply-To: <20070515041655.BDD98DDEC6@ozlabs.org>
-References: <20070515041655.BDD98DDEC6@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__15_May_2007_14_26_15_+1000_1oIIj7+Kz_mcKyJn"
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Bergmann <arnd.bergmann@de.ibm.com>, Arnd
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 69329DDEC6
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 14:30:39 +1000 (EST)
+Date: Mon, 14 May 2007 23:33:43 -0500
+To: paulus@samba.org
+Subject: [PATCH v2] pcmcia: ppc64 needs 32-bit ioaddr_t
+Message-ID: <20070515043343.GA6561@lixom.net>
+References: <20070512143105.GA12890@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070512143105.GA12890@lixom.net>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org, linux-pcmcia@lists.infradead.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,34 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__15_May_2007_14_26_15_+1000_1oIIj7+Kz_mcKyJn
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+ppc64 really needs ioaddr_t to be 32-bit, since I/O beyond the
+first PCI bus might be mapped at a higher range.
 
-On Tue, 15 May 2007 14:16:26 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->
-> request_phb_iospace() can be called from different CPUs at init
-> time (at least with my next patch) and thus needs a spinlock. As
-> for the next patch, this is a temporary workaround for 2.6.22
-> issues until my rewrite of IO mappings is ready (for 2.6.23)
+While the type is exported to userspace, there hasn't been any platforms
+with PCMCIA on 64-bit powerpc until now, so changing it won't regress
+any existing users. Besides, those interfaces are overdue for removal
+already.
 
-What problem is this solving?
 
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
---Signature=_Tue__15_May_2007_14_26_15_+1000_1oIIj7+Kz_mcKyJn
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGSTZrFdBgD/zoJvwRAveiAJ0XKh1ZWm2UqHtQEsUiY6LePd6ehwCgok4L
-Hat2Uu8bha6+pogEHU0NGtc=
-=Hi+O
------END PGP SIGNATURE-----
-
---Signature=_Tue__15_May_2007_14_26_15_+1000_1oIIj7+Kz_mcKyJn--
+Index: 2.6.21/include/pcmcia/cs_types.h
+===================================================================
+--- 2.6.21.orig/include/pcmcia/cs_types.h
++++ 2.6.21/include/pcmcia/cs_types.h
+@@ -21,7 +21,7 @@
+ #include <sys/types.h>
+ #endif
+ 
+-#if defined(__arm__) || defined(__mips__)
++#if defined(__arm__) || defined(__mips__) || defined(__powerpc64__)
+ /* This (ioaddr_t) is exposed to userspace & hence cannot be changed. */
+ typedef u_int   ioaddr_t;
+ #else
