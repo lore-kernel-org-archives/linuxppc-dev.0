@@ -1,12 +1,32 @@
-Return-Path: <hch@lst.de>
-Date: Tue, 15 May 2007 15:09:40 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: kou.ishizaki@toshiba.co.jp
-Subject: [PATCH] fix celleb link failure
-Message-ID: <20070515130940.GA11544@lst.de>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2877FDDED0
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 23:10:25 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4FDAKW2008042
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 09:10:20 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l4FDAKMA211054
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 07:10:20 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4FDAK37013746
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 07:10:20 -0600
+Subject: Re: [PATCH 3/3] Fixes to allow use of Ebony's flash chips through
+	physmap_of
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20070515045415.98889DDED7@ozlabs.org>
+References: <20070515045415.98889DDED7@ozlabs.org>
+Content-Type: text/plain
+Date: Tue, 15 May 2007 08:10:06 -0500
+Message-Id: <1179234606.3084.34.camel@zod.rchland.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,36 +36,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-txx9_serial_init calls early_serial_txx9_setup which is only available
-if CONFIG_SERIAL_TXX9_CONSOLE is define.  From looking at scc_sio.c
-it seems like the whole file is only needed for
-CONFIG_SERIAL_TXX9_CONSOLE=y, so we should only build it for that case.
+On Tue, 2007-05-15 at 14:54 +1000, David Gibson wrote:
+>  void ebony_init(void *mac0, void *mac1)
+> Index: working-2.6/arch/powerpc/boot/dts/ebony.dts
+> ===================================================================
+> --- working-2.6.orig/arch/powerpc/boot/dts/ebony.dts	2007-05-14 14:45:56.000000000 +1000
+> +++ working-2.6/arch/powerpc/boot/dts/ebony.dts	2007-05-14 14:45:58.000000000 +1000
+> @@ -176,6 +176,7 @@
+>  				fpga@7,0 {
+>  					compatible = "Ebony-FPGA";
+>  					reg = <7 0 10>;
+> +					virtual-reg = <e8300000>;
 
+That's the mapping for OpenBios.  What happens if someone is using
+U-Boot?
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+If the mapping isn't the same, you might want to pass the address from
+the individual firmware wrapper parts to ebony_flashsel_fixup similar to
+how you've done it for dt_fixup_mac_addresses.
 
-Index: linux-2.6.20/arch/powerpc/platforms/celleb/Makefile
-===================================================================
---- linux-2.6.20.orig/arch/powerpc/platforms/celleb/Makefile	2007-05-15 14:42:15.000000000 +0200
-+++ linux-2.6.20/arch/powerpc/platforms/celleb/Makefile	2007-05-15 14:42:31.000000000 +0200
-@@ -4,5 +4,5 @@ obj-y				+= interrupt.o iommu.o setup.o 
- 
- obj-$(CONFIG_SMP)		+= smp.o
- obj-$(CONFIG_PPC_UDBG_BEAT)	+= udbg_beat.o
--obj-$(CONFIG_HAS_TXX9_SERIAL)	+= scc_sio.o
-+obj-$(CONFIG_SERIAL_TXX9_CONSOLE) += scc_sio.o
- obj-$(CONFIG_SPU_BASE)		+= spu_priv1.o
-Index: linux-2.6.20/arch/powerpc/platforms/celleb/scc_sio.c
-===================================================================
---- linux-2.6.20.orig/arch/powerpc/platforms/celleb/scc_sio.c	2007-05-15 14:40:49.000000000 +0200
-+++ linux-2.6.20/arch/powerpc/platforms/celleb/scc_sio.c	2007-05-15 14:42:47.000000000 +0200
-@@ -65,9 +65,7 @@ static int txx9_serial_init(void)
- 		req.line = i;
- 		req.iotype = UPIO_MEM;
- 		req.mapbase = res.start + txx9_scc_tab[i].offset;
--#ifdef CONFIG_SERIAL_TXX9_CONSOLE
- 		req.membase = ioremap(req.mapbase, 0x24);
--#endif
- 		req.irq = irq_create_of_mapping(irq.controller,
- 			irq.specifier, irq.size);
- 		req.flags |= UPF_IOREMAP | UPF_BUGGY_UART /*HAVE_CTS_LINE*/;
+josh
