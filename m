@@ -1,22 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
-	[151.189.21.43])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2FEB9DDEDB
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 16:32:17 +1000 (EST)
-In-Reply-To: <17993.20745.432703.238649@cargo.ozlabs.ibm.com>
-References: <20070514163219.9d78cde0.sfr@canb.auug.org.au>
-	<17993.20745.432703.238649@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <e1629d824068540e703ba7d661753992@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] remove build warnings in windfarm_core
-Date: Tue, 15 May 2007 08:32:08 +0200
-To: Paul Mackerras <paulus@samba.org>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 15 May 2007 16:34:08 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Small fixes for the Ebony device tree
+Message-ID: <20070515063408.GE6998@localhost.localdomain>
+References: <20070515020026.GG565@localhost.localdomain>
+	<8492e53122b6e1ba269afd53b48a4968@kernel.crashing.org>
+	<20070515054758.GC6998@localhost.localdomain>
+	<200705150811.09927.sr@denx.de>
+	<20070515061855.GD6998@localhost.localdomain>
+	<1950a79f97480ba96f1b00352ec449a5@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1950a79f97480ba96f1b00352ec449a5@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,27 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> -	device_create_file(&wf_platform_device.dev, &new_ct->attr);
->> +	ret = device_create_file(&wf_platform_device.dev, &new_ct->attr);
->> +	if (ret) {
->> +		list_del(&new_ct->link);
->> +		printk(KERN_WARNING "windfarm: device_creat_file failed"
->> +			"for %s\n", new_ct->name);
->> +		goto out_unlock;
->
-> This shows up why I hate the must_check stuff.  The sysfs files are
-> not essential for the operation of the windfarm subsystem.
+On Tue, May 15, 2007 at 08:28:09AM +0200, Segher Boessenkool wrote:
+> > Anyone have any objection to the following:  each of these controllers
+> > should have compatible properties listing 3 string, first, a specific
+> > version for the CPU in question (e.g "ibm,sdram-440gp"), then a string
+> > based on the type as listed below, finally "ibm,sdram-4xx".
+> 
+> Is that last entry ever useful?  Do all those controllers
+> have something in common?
 
-They are essential for the user expectations of the
-subsystem though; if registration fails, a warning
-should be printed.
+A quick glance over the descriptions in the 440GP and 405GP user
+manuals suggests that they have most of the registers in common,
+though I haven't checked to see if the semantics of those registers
+are actually all the same.
 
-> If the
-> sysfs registration fails for any reason, we now have a completely
-> non-functional windfarm subsystem instead of a mostly-working one. :(
-
-Yeah, but that's not must_check's fault, it doesn't
-say *what* to do with the error code :-)
-
-
-Segher
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
