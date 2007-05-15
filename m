@@ -1,21 +1,16 @@
-Return-Path: <david.kanceruk@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.246])
-	by ozlabs.org (Postfix) with ESMTP id 41088DDEFF
+Return-Path: <stephane.fillod@thomson.net>
+Received: from dmzraw3.extranet.thmulti.com (dmzraw3.extranet.thmulti.com
+	[141.11.234.71]) by ozlabs.org (Postfix) with ESMTP id 77028DDF06
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 May 2007 01:40:44 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id b21so563367ana
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 May 2007 08:40:39 -0700 (PDT)
-Message-ID: <5b525e390705150840rc9b4ccfm4203fafc6ae8b213@mail.gmail.com>
-Date: Tue, 15 May 2007 10:40:37 -0500
-From: "David Kanceruk" <david.kanceruk@gmail.com>
-To: "Hans Thielemans" <Hans.Thielemans@metris.com>
-Subject: Re: MPC5200 ethernet communication stops unexpected
-In-Reply-To: <80AD928CDD8C8C469A1357A9C7B7657FF72DE0@kryp01.krypton.be>
+	Wed, 16 May 2007 01:42:54 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <80AD928CDD8C8C469A1357A9C7B7657FF72DE0@kryp01.krypton.be>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: MPC5200B memory performance
+Date: Tue, 15 May 2007 17:14:11 +0200
+Message-ID: <0B45E93C5FF65740AEAE690BF3848B7A4AB0D0@rennsmail04.eu.thmulti.com>
+From: "Fillod Stephane" <stephane.fillod@thomson.net>
+To: "Daniel Schnell" <daniel.schnell@marel.com>, <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,137 +21,75 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Hans,
+Daniel Schnell wrote:
+>With the attached program (compile with -lrt) I am testing the memcpy()
+>throughput. In theory the memory throughput should be the double of the
+>memcpy() throughput if source and destination buffers are same size and
+>inside the DDR-RAM.
 
-     There sure seems to be strange behavior in the BestComm unit. Our
-problem was always with the first byte or the 63rd byte on a buffer of
-102 bytes.
+Theory tells that write speed is a little bit different than read speed,
+but that's when you want to be picky. RTFD(*).
+(*) Datasheets
 
-     Did you use a value of (1<<16) for the BSDIS bit? We also do a
-ioremap when setting a pointer to the xlb.
+>So one could make the simple calculation:
+>
+>132 MHz * 32 Bit (address width) * 2 (DDR) ~ 1GBytes/sec brutto memory
+throughput.
+>
+>For a memcpy this should be then ~500MB/second.
 
-Dave
+All you can say is, assuming 100% efficient
+CPU/cache/bus/DDR-controller,=20
+you can say that memcpy (hitting the DRAM) cannot be higher than that=20
+value :-)
 
-On 5/15/07, Hans Thielemans <Hans.Thielemans@metris.com> wrote:
-> Hello David,
->
-> In this case, I am flushing cache. And overall, these are empty packets
-> sent which are never changed.
-> The cpu creates this once and then this is always reused. It is received
-> maybe 100000 times correct and
-> then suddenly I see an error in the last word.
->
-> I also tried playing with the BSDIS and PLDIS bits, and with the bus
-> priorities. This influences the error rate,
-> but it is never really gone.
->
-> As a hack I have now added an extra word after the packet, and have the
-> receiver ignore it. This seems to help,
-> but I don't like it.
->
-> Regards
->
-> Hans
->
-> -----Original Message-----
-> From: David Kanceruk [mailto:david.kanceruk@gmail.com]
-> Sent: dinsdag 15 mei 2007 17:04
-> To: Hans Thielemans
-> Cc: linuxppc-embedded@ozlabs.org
-> Subject: Re: MPC5200 ethernet communication stops unexpected
->
-> Hello Hans,
->
->      Our problem was with the FEC sending data with one or two incorrect
-> bytes when we switched from the MPC5200 to the MPC5200B. The byte
-> positions were always the same. The socket buffer has the correct data
-> before and after the DMA engine runs but the FEC TxFIFO does not always
-> match.
->
-> One solution to our problem was to make the following call prior to
-> starting the DMA:
->
-> flush_dcache_range((unsigned long)skb->data, (unsigned long)skb->data
-> + skb->len);
->
-> The other solution was to set the BSDIS bit in the XLB config register
-> during initialization as follows:
->
->   xlb = (struct mpc52xx_xlb *)MPC5xxx_XLB;
->   out_be32(&xlb->config,  in_be32(&xlb->config) |
-> MPC52xx_XLB_CFG_BSDIS);
->
-> Either solution works for us. The BSDIS bit is a new feature in the
-> MPC5200B. The MPC5200 did not have this bit.
->
-> According to the Freescale documentation, (Application note AN3045, for
-> instance) setting this bit is supposed to "disable" BestComm bus
-> snooping. However, I have reason to believe the documentation is in
-> error. Everything I have observed seems to indicate that in the MPC5200
-> BestComm bus snooping was always enabled or enabled via some other
-> means. In the MPC5200B it appears to be "disabled" at reset (not
-> "enabled" as the documentation states). This is why flushing the cache
-> manually is one solution. Since setting the BSDIS bit also fixes the
-> problem, it suggests that this actually "enables" BestComm bus snooping
-> instead of disabling it. In my mind, it could all boil down to a simple
-> documentation error.
->
-> Perhaps you are also experiencing a caching problem.
->
-> Best regards,
->
-> David Kanceruk
->
-> On 5/15/07, Hans Thielemans <hans.thielemans@metris.com> wrote:
-> > Hi David,
-> >
-> > I have a similar problem. I use the PSC for communication to a DSP.
-> > With the MPC5200 this has always worked. Now we got boards with the
-> > MCP5200B in place.
-> >
-> > The bestcomm dma seems to miss bits, bytes in the last word (32bit) of
->
-> > a dma block. Mostly it is one byte which becomes 0. The blocks are 256
->
-> > bytes and written/read by 32 bits.
-> > The behavior is influenced by cpu activity, bus priorities. So far I
-> > found no settings which have never errors.
-> >
-> > Did you have any further progress?
-> >
-> > Regards
-> >
-> > Hans Thielemans
-> >
->
->
->
-> --
-> David Kanceruk
->
-> "The generation of random numbers is far too important to be left to
-> chance."
->
-> ______________________________________________________________________
-> This email has been scanned by the MessageLabs Email Security System.
-> For more information please visit http://www.messagelabs.com/email
-> ______________________________________________________________________
->
-> ______________________________________________________________________
-> This email has been scanned by the MessageLabs Email Security System.
-> For more information please visit http://www.messagelabs.com/email
-> ______________________________________________________________________
->
-> ______________________________________________________________________
-> This email has been scanned by the MessageLabs Email Security System.
-> For more information please visit http://www.messagelabs.com/email
-> ______________________________________________________________________
->
->
->
+>Of course in real world scenarios we cannot reach the theoretical
+limit,
+>but be about 30 % near I guess.
 
+IMO, real world scenarios *should* achieve at least 70%, with
+appropriate
+memcpy implementation. I've been disappointed lately by PQ3 which cannot
+do better than ~50% efficiency. I'd love anyone, esp. from Freescale,
+to prove me wrong or show my mistake. The FAE didn't give an answer,=20
+but I saw that newer parts will have a "Queue manager" helping=20
+the DDR controller. Any idea?
 
--- 
-David Kanceruk
+[...]
+>The first 4 values are because of the data cache. So here we are
+testing
 
-"The generation of random numbers is far too important to be left to chance."
+What's your data cache size BTW? Do you have a L2 cache?
+
+>cache performance. All other values will test the memory controller
+>interface.
+
+Well, you're testing also part of the cache and memory subsystem.
+On the read side, you're paying an extra for cache misses. On the write
+side,
+there's read-on-write. I don't know the mpc5200 details, but most cache=20
+subsystems think it's smart to fill-up (read) end of line you began
+to write. But in the big memcpy case, the read is useless because=20
+the cache didn't know you were about to overwrite the full line.=20
+That's why the dcbz ppc instruction comes in handy to prevent the R-O-W.
+
+In that regard, glibc is very suboptimal. For better performance,
+I recommend you to read and understand the cacheable_memcpy assembly
+function in Linux kernel (arch/ppc/lib/string.S). It's missing
+some read prefetch (dcbt) though.
+
+>All in all, I am not sure, why the memory access is so much slower than
+I expected.
+>Which factors did I miss in my calculation ? Can anybody run this
+>program on its 5200B based board as a comparision ?
+
+The values on PQ3 won't be of any help for you, esp. with disappointing
+result (50% efficiency max). If you doubt about your memcpy
+implementation,
+you may implement the same bench with DMA (to get 50MiB of contiguous
+RAM,
+do it in kernel or under U-Boot).=20
+
+Best Regards,
+--=20
+Stephane
