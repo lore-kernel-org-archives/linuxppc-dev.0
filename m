@@ -1,19 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 417D9DDEAB
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 11:09:05 +1000 (EST)
-Subject: Re: [PATCH] Add -msoft-float to BOOTCFLAGS
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <1179190345.3420.74.camel@zod.rchland.ibm.com>
-References: <1179190345.3420.74.camel@zod.rchland.ibm.com>
-Content-Type: text/plain
-Date: Tue, 15 May 2007 11:08:57 +1000
-Message-Id: <1179191338.32247.142.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 15 May 2007 10:57:28 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [DTC PATCH] Remove overreaching semantic tests.
+Message-ID: <20070515005728.GA565@localhost.localdomain>
+References: <20070511175553.GA14692@ld0162-tx32.am.freescale.net>
+	<20070514011915.GH6517@localhost.localdomain>
+	<46488597.5060109@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <46488597.5060109@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,26 +20,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-05-14 at 19:52 -0500, Josh Boyer wrote:
-> We want to avoid any float instructions that may occur in the wrapper that
-> may be generated if the compiler isn't told not to.
+On Mon, May 14, 2007 at 10:51:51AM -0500, Scott Wood wrote:
+> David Gibson wrote:
+> > On Fri, May 11, 2007 at 12:55:54PM -0500, Scott Wood wrote:
+> >>I wouldn't be opposed to keeping these tests around if there were a
+> >>command line option that cleanly separates the errors/warnings into
+> >>classes such as structural, semantic-missing, semantic-broken, etc.
+> > 
+> > Exactly - which is why I really don't want to simply tear out this
+> > checking code.  I've never gotten around to reworking the
+> > error/warning system so it can sensibly divide things into such
+> > classes, and keep detecting further warnings after picking up some
+> > non-fatal ones and so forth.
+> > 
+> > I'd much prefer you just disable these tests for now, either by
+> > commenting code out, or removing calls to checking functions.  That
+> > will make it easier to optionally reinstate later.
 > 
-> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> Well, I figured the code would still be there in git, so getting it back 
+> wouldn't be too hard.  I can submit a patch that hides it behind a 
+> --warn-missing (or whatever) option, though.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+I'd prefer that, thank you.
 
-> ---
->  arch/powerpc/boot/Makefile |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- linux-2.6.orig/arch/powerpc/boot/Makefile
-> +++ linux-2.6/arch/powerpc/boot/Makefile
-> @@ -24,7 +24,7 @@ all: $(obj)/zImage
->  
->  HOSTCC		:= gcc
->  BOOTCFLAGS	:= $(HOSTCFLAGS) -fno-builtin -nostdinc -isystem \
-> -		   $(shell $(CROSS32CC) -print-file-name=include) -fPIC
-> +		   $(shell $(CROSS32CC) -print-file-name=include) -fPIC -msoft-float
->  BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc
->  
->  ifeq ($(call cc-option-yn, -fstack-protector),y)
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
