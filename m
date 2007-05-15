@@ -1,18 +1,15 @@
-Return-Path: <g.jaeger@sysgo.com>
-Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
-	by ozlabs.org (Postfix) with ESMTP id 7489BDDEDB
+Return-Path: <daniel.schnell@marel.com>
+Received: from mail.marel.com (mail.marel.is [213.167.134.96])
+	by ozlabs.org (Postfix) with ESMTP id 45DD2DDEC9
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 May 2007 17:27:33 +1000 (EST)
-From: Gerhard Jaeger <g.jaeger@sysgo.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: USB support for Bamboo/440EP (Yosemite/440EPx)
-Date: Tue, 15 May 2007 09:27:29 +0200
-References: <OFC56C5EA1.CC32B615-ON872572DB.0063BF4F-852572DB.00653577@us.ibm.com>
-In-Reply-To: <OFC56C5EA1.CC32B615-ON872572DB.0063BF4F-852572DB.00653577@us.ibm.com>
+	Tue, 15 May 2007 21:22:27 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_hDWSGQQ59+G9sS9"
-Message-Id: <200705150927.29798.g.jaeger@sysgo.com>
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C796E3.50605D29"
+Subject: MPC5200B memory performance
+Date: Tue, 15 May 2007 11:22:24 -0000
+Message-ID: <DD39B5C3F4963040ADC9768BE7E430CB01EB1FEF@is-hdq-exchange.marel.net>
+From: "Daniel Schnell" <daniel.schnell@marel.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,101 +20,131 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---Boundary-00=_hDWSGQQ59+G9sS9
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01C796E3.50605D29
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-On Montag, 14. Mai 2007, Stephen Winiecki wrote:
-> Gerhard Jaeger <g.jaeger@sysgo.com> wrote on 05/14/2007 10:31:04 AM:
-> > Hi Stephen, 
-> > 
-> > I also played with Bamboo and Yosemite USB and found out, that the OHCI
-> > ISR contains an assumption that makes the 440 OHCI implementation sometimes 
-> > stop when having a timeout condition. Find the following sequence @function
-> > ohci_irq() (in file ohci-hcd.c) and disable the following code:
-> > 
-> >         if ((ohci->hcca->done_head != 0)
-> >                         && ! (hc32_to_cpup (ohci, &ohci->hcca->done_head)
-> >                                 & 0x01)) {
-> >                 ints =  OHCI_INTR_WDH;
-> >    }
-> > 
-> > This should make the USB host work reliably on the 440s.
-> > 
-> Thanks Gerhard.  This definitely makes things work better - I have had 
-> 100% success in both the kernel and X recognizing the devices and having X 
-> boot with this update.
-> 
-> However, I am occasionally still having an issue after X comes up with the 
-> keyboard not working (mouse working fine).  Just to be clear - I only want 
-> to comment out the code you indicated above - not also any/either of the 
-> else/if clauses, correct?
+Hi,
 
-Yes - the lines mentioned didn't care about irq-status register
-and try to figure out from some context, how the irq-status register
-should look like - but this in fact does not work correctly for the
-440 OHCI implementation... 
 
-> So has this never been formally reported/patched?  
+I am doing some memory performance measurements on our custom MPC5200B
+board which runs on 396 MHz internally and is connected to DDR RAM. The
+RAM is driven with 132 MHz.
 
-Not that I'm aware of, I discovered that a few days ago.
+With the attached program (compile with -lrt) I am testing the memcpy()
+throughput. In theory the memory throughput should be the double of the
+memcpy() throughput if source and destination buffers are same size and
+inside the DDR-RAM.
 
-> Do you know also why  
-> the USB support has not been configured in the mainline kernel for these 
-> platforms - is it due to known existing issues? 
+So one could make the simple calculation:
 
-I don't know why this is not part of the mainline kernel. On the PPC
-side there is currently a lot of restructure work going on, so I guess
-this is only a question of time, when the necessary patches will go
-into the mainline.
+132 MHz * 32 Bit (address width) * 2 (DDR) ~ 1GBytes/sec brutto memory
+throughput.
 
-Please find the patch for the ohc-hcd.c in the attachment.
+For a memcpy this should be then ~500MB/second.
 
-Ciao,
-Gerhard
+Of course in real world scenarios we cannot reach the theoretical limit,
+but be about 30 % near I guess.
 
--- 
-Gerhard Jaeger <gjaeger@sysgo.com>            
-SYSGO AG                      Embedded and Real-Time Software
-www.sysgo.com | www.elinos.com | www.pikeos.com | www.osek.de 
 
---Boundary-00=_hDWSGQQ59+G9sS9
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="ppc440-ohci.patch"
-Content-Transfer-Encoding: 7bit
+I get the following values on my board:
+
+bash-2.05b# ./memcpy_perf
+Test (10000) memcpy of sizes (1024) ....
+10000 memcpy. Time per memcpy: 1567 [nsec] (653 MB/sec)
+ finished.
+Test (10000) memcpy of sizes (2048) ....
+10000 memcpy. Time per memcpy: 2939 [nsec] (696 MB/sec)
+ finished.
+Test (10000) memcpy of sizes (4096) ....
+10000 memcpy. Time per memcpy: 5706 [nsec] (717 MB/sec)
+ finished.
+Test (10000) memcpy of sizes (8192) ....
+10000 memcpy. Time per memcpy: 17077 [nsec] (479 MB/sec)
+ finished.
+Test (10000) memcpy of sizes (16384) ....
+10000 memcpy. Time per memcpy: 133314 [nsec] (122 MB/sec)
+ finished.
+Test (1000) memcpy of sizes (32768) ....
+1000 memcpy. Time per memcpy: 243417 [nsec] (134 MB/sec)
+ finished.
+Test (1000) memcpy of sizes (51200) ....
+1000 memcpy. Time per memcpy: 403455 [nsec] (126 MB/sec)
+ finished.
+Test (1000) memcpy of sizes (102400) ....
+1000 memcpy. Time per memcpy: 713316 [nsec] (143 MB/sec)
+ finished.
+Test (100) memcpy of sizes (1048576) ....
+100 memcpy. Time per memcpy: 7210570 [nsec] (145 MB/sec)
+ finished.
+Test (10) memcpy of sizes (10485760) ....
+10 memcpy. Time per memcpy: 78162400 [nsec] (134 MB/sec)
+ finished.
+Test (5) memcpy of sizes (52428800) ....
+5 memcpy. Time per memcpy: 425281800 [nsec] (123 MB/sec)
+ finished.
+
+
+
+The first 4 values are because of the data cache. So here we are testing
+cache performance. All other values will test the memory controller
+interface.
+
+All in all, I am not sure, why the memory access is so much slower than
+I expected.
+Which factors did I miss in my calculation ? Can anybody run this
+program on its 5200B based board as a comparision ?
+
+
+Best regards,
+
+Daniel Schnell.
+
+------_=_NextPart_001_01C796E3.50605D29
+Content-Type: application/octet-stream;
+	name="memcpy_perf.c"
+Content-Transfer-Encoding: base64
+Content-Description: memcpy_perf.c
 Content-Disposition: attachment;
-	filename="ppc440-ohci.patch"
+	filename="memcpy_perf.c"
 
-This patch makes the OHCI code work correctly on AMCC PPC440
-cpus with internal USB-host controller. It seems that the
-optimization is not allowed for this OHCI implementation.
+I2luY2x1ZGUgPHN0ZGlvLmg+CiNpbmNsdWRlIDxzdGRsaWIuaD4KI2luY2x1ZGUgPHN5cy90aW1l
+Lmg+CiNpbmNsdWRlIDxwdGhyZWFkLmg+CgppbnQgb3NhX25vd190aW1lc3BlYyhzdHJ1Y3QgdGlt
+ZXNwZWMqIHQpCnsKCXJldHVybiBjbG9ja19nZXR0aW1lIChDTE9DS19SRUFMVElNRSwgdCk7Cn0K
+CgppbnQgb3NhX3RpbWVkaWZmKGNvbnN0IHN0cnVjdCB0aW1lc3BlYyogdDEsIGNvbnN0IHN0cnVj
+dCB0aW1lc3BlYyogdDIsIHN0cnVjdCB0aW1lc3BlYyogZGlmZikKewoJaWYgKHQxIT1OVUxMICYm
+IHQyIT1OVUxMICYmIGRpZmYhPU5VTEwpCgl7CgkJdW5zaWduZWQgbG9uZyBsb25nIGFfbnNlYywg
+Yl9uc2VjLCBkaWZmX25zZWM7IAoKCQkvLyBjYWxjdWxhdGUgZGlmZmVyZW5jZSB0aW1lCgkJYV9u
+c2VjID0gdDEtPnR2X3NlYyoxMDAwMDAwMDAwVUxMICsgdDEtPnR2X25zZWM7CgkJYl9uc2VjID0g
+dDItPnR2X3NlYyoxMDAwMDAwMDAwVUxMICsgdDItPnR2X25zZWM7CgkJZGlmZl9uc2VjID0gYl9u
+c2VjIC0gYV9uc2VjOwoJCWRpZmYtPnR2X3NlYyA9ICBkaWZmX25zZWMvMTAwMDAwMDAwMFVMTDsK
+CQlkaWZmLT50dl9uc2VjID0gZGlmZl9uc2VjJTEwMDAwMDAwMDBVTEw7CgkJcmV0dXJuIDA7Cgl9
+CglyZXR1cm4gLTE7Cn0KCgp1bnNpZ25lZCBsb25nIGxvbmcgb3NhX3RvX25zKGNvbnN0IHN0cnVj
+dCB0aW1lc3BlYyogdCkKewoJIHJldHVybiAodC0+dHZfc2VjKjEwMDAwMDAwMDBVTEwgKyB0LT50
+dl9uc2VjKTsKfQoKCmludCB0ZXN0TWVtY3B5KHVuc2lnbmVkIGxvbmcgbnVtLCBzaXplX3QgbXNn
+c2l6ZSkKewoJcHJpbnRmKCJUZXN0ICglbGQpIG1lbWNweSBvZiBzaXplcyAoJWxkKSAuLi4uXG4i
+LAogICAgICAgICAgICBudW0sIG1zZ3NpemUpOwogICAgdW5zaWduZWQgbG9uZyBpOwogICAgdW5z
+aWduZWQgbG9uZyBsb25nIG5zdGltZTsKICAgIHN0cnVjdCB0aW1lc3BlYyB0MSwgdDIsIHQzOwoK
+ICAgIGNoYXIgKmJ1ZjE9bWFsbG9jIChtc2dzaXplKTsKICAgIGNoYXIgKmJ1ZjI9bWFsbG9jICht
+c2dzaXplKTsKCiAgICAvLyBtZWFzdXJlCglvc2Ffbm93X3RpbWVzcGVjKCZ0MSk7CiAgICBmb3Ig
+KGk9MDsgaTxudW07IGkrKykKICAgICAgICB7CiAgICAgICAgbWVtY3B5IChidWYxLCBidWYyLCBt
+c2dzaXplKTsKICAgICAgICB9CiAgICAvLyBtZWFzdXJlCglvc2Ffbm93X3RpbWVzcGVjKCZ0Mik7
+Cglvc2FfdGltZWRpZmYoJnQxLCAmdDIsICZ0Myk7CiAgICAKICAgIGZyZWUgKGJ1ZjIpOwogICAg
+ZnJlZSAoYnVmMSk7CiAgICAKICAgIG5zdGltZSA9IG9zYV90b19ucygmdDMpLyh1bnNpZ25lZCBs
+b25nIGxvbmcpIGk7CglwcmludGYoIiVsZCBtZW1jcHkuIFRpbWUgcGVyIG1lbWNweTogJWxsdSBb
+bnNlY10gKCVsbHUgTUIvc2VjKVxuIiwKICAgICAgICAgICAgaSwgbnN0aW1lLAogICAgICAgICAg
+ICAoMTAwMFVMTCAqICh1bnNpZ25lZCBsb25nIGxvbmcpIG1zZ3NpemUpLyhuc3RpbWUpKSA7CiAg
+ICBmZmx1c2ggKHN0ZG91dCk7CgoKCXByaW50ZigiIGZpbmlzaGVkLlxuIik7CiAgICBmZmx1c2gg
+KHN0ZG91dCk7Cn0KCgppbnQgbWFpbigpCnsKICAgIHRlc3RNZW1jcHkoMTAwMDAsICAgICAgMSox
+MDI0KTsKICAgIHRlc3RNZW1jcHkoMTAwMDAsICAgICAgMioxMDI0KTsKICAgIHRlc3RNZW1jcHko
+MTAwMDAsICAgICAgNCoxMDI0KTsKICAgIHRlc3RNZW1jcHkoMTAwMDAsICAgICAgOCoxMDI0KTsK
+ICAgIHRlc3RNZW1jcHkoMTAwMDAsICAgICAxNioxMDI0KTsKICAgIHRlc3RNZW1jcHkoMTAwMCAs
+ICAgICAzMioxMDI0KTsKICAgIHRlc3RNZW1jcHkoMTAwMCAsICAgICA1MCoxMDI0KTsKICAgIHRl
+c3RNZW1jcHkoMTAwMCAsICAgIDEwMCoxMDI0KTsKICAgIHRlc3RNZW1jcHkoIDEwMCAsICAgMTAy
+NCoxMDI0KTsKICAgIHRlc3RNZW1jcHkoICAxMCAsMTAqMTAyNCoxMDI0KTsKICAgIHRlc3RNZW1j
+cHkoICAgNSAsNTAqMTAyNCoxMDI0KTsKCiAgICByZXR1cm4gMDsKfQo=
 
-Signed-off-by: Gerhard Jaeger <gjaeger@sysgo.com>
----
-
-
---- linux/drivers/usb/host/ohci-hcd.c.orig	2007-03-09 11:33:39.000000000 +0100
-+++ linux/drivers/usb/host/ohci-hcd.c	2007-05-15 09:03:50.000000000 +0200
-@@ -646,13 +646,16 @@ static irqreturn_t ohci_irq (struct usb_
- 
- 	/* we can eliminate a (slow) ohci_readl()
- 	   if _only_ WDH caused this irq */
-+#if !(defined(CONFIG_USB_OHCI_HCD_PPC_SOC) && (defined(CONFIG_440EP) || defined(CONFIG_440EPX)))
- 	if ((ohci->hcca->done_head != 0)
- 			&& ! (hc32_to_cpup (ohci, &ohci->hcca->done_head)
- 				& 0x01)) {
- 		ints =  OHCI_INTR_WDH;
- 
- 	/* cardbus/... hardware gone before remove() */
--	} else if ((ints = ohci_readl (ohci, &regs->intrstatus)) == ~(u32)0) {
-+	} else 
-+#endif
-+	if ((ints = ohci_readl (ohci, &regs->intrstatus)) == ~(u32)0) {
- 		disable (ohci);
- 		ohci_dbg (ohci, "device removed!\n");
- 		return IRQ_HANDLED;
-
---Boundary-00=_hDWSGQQ59+G9sS9--
+------_=_NextPart_001_01C796E3.50605D29--
