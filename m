@@ -1,20 +1,23 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id D0F70DDE27
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 19:52:36 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] pasemi: Electra CF driver
-Date: Tue, 15 May 2007 11:52:23 +0200
-References: <20070515044515.GA6731@lixom.net>
-In-Reply-To: <20070515044515.GA6731@lixom.net>
+Return-Path: <satyam.sharma@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.236])
+	by ozlabs.org (Postfix) with ESMTP id AB0BBDDED7
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 20:03:56 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id 50so1954552wra
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 03:03:54 -0700 (PDT)
+Message-ID: <a781481a0705150303y587ea18dt435f2fc45a671226@mail.gmail.com>
+Date: Tue, 15 May 2007 15:33:50 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Li Yang-r58472" <LeoLi@freescale.com>
+Subject: Re: [PATCH 1/2] kbuild: Add "Section mismatch" warning whitelist for
+	powerpc
+In-Reply-To: <989B956029373F45A0B8AF0297081890B76040@zch01exm26.fsl.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200705151152.23940.arnd@arndb.de>
-Cc: Olof Johansson <olof@lixom.net>, Russell King <rmk+lkml@arm.linux.org.uk>,
-	linux-pcmcia@lists.infradead.org, paulus@samba.org,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <a781481a0705141717v2669805aoa590bfd54da7856b@mail.gmail.com>
+	<989B956029373F45A0B8AF0297081890B76040@zch01exm26.fsl.freescale.net>
+Cc: Andrew Morton <akpm@osdl.org>, Sam Ravnborg <sam@ravnborg.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Linus <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,19 +27,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 15 May 2007, Olof Johansson wrote:
-> Driver for the CompactFlash slot on the PA Semi Electra eval board. It's
-> a simple device sitting on localbus, with interrupts and detect/voltage
-> control over GPIO.
+On 5/15/07, Li Yang-r58472 <LeoLi@freescale.com> wrote:
+> > [...]
+> > Actually, once __init_refok comes in, would we need any other
+> > whitelisting mechanism at all? I think the exception patterns in
+> > secref_whitelist() and those two other whitelisting functions
+> > (init_section_ref_ok and exit_section_ref_ok) could all be
+> > subsumed and made redundant if / when __init_refok is used
+> > in the actual sources.
+>
+> I don't think so.  __init_refok can be used to mark special functions
+> which are legitimate to reference .init.text/.init.data
 
-The driver looks really good, there is nothing for me to complain about.
+But I have slightly different (reversed) semantics for __init_refok
+in mind. Basically, we use __init_refok to annotate _callees_
+and not _callers_. In short, __init_refok is a _type_ of __init
+section that other sections can freely reference to, without
+modpost complaining about this. [ had suggested this in some
+previous thread earlier ]
 
-> The driver is implemented as an of_platform driver, and adds localbus
-> as a bus being probed by the of_platform framework.
+The __init_refok-for-callees mechanism could be useful to
+reduce duplication, having to mark lesser number of functions,
+and also make most of those exception patterns in modpost.c
+redundant.
 
-I supposed "localbus" is what the current firmware ships with in the
-device tree, right? If you still have the choice on how this is
-represented it might be better not to invent another device-type
-but rather make this "soc" or whatever existing type we know about.
+Ultimately, we want modpost to shut up for some known false
+positives. Currently we have 9 exception patterns, 'n' number
+of special sections hard-coded in modpost.c, 3 whitelisting
+functions and also the __init_refok thing that can be used
+directly to mark functions in the sources. But modpost
+doesn't really care _how_ a particular case got whitelisted.
 
-	Arnd <><
+Using _only_ the __init_refok (easily greppable in the sources)
+annotation for callees could help keep all such special cases
+manageable and in control, compared to several different ways
+to dodge modpost warnings.
+
+> but cannot be used to mark special sections.
+
+Yes, so mark the special _callees_ as __init_refok.
