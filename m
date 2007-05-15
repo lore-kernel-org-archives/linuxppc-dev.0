@@ -1,17 +1,15 @@
-Return-Path: <dale@farnsworth.org>
-Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	by ozlabs.org (Postfix) with SMTP id F1AFDDDF0B
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 04:59:17 +1000 (EST)
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Tue, 15 May 2007 11:59:15 -0700
-To: Dave Jiang <djiang@mvista.com>
-Subject: Re: [PATCH] powerpc: EDAC platform devices setup for Marvell/mv64x60
-Message-ID: <20070515185915.GA5245@xyzzy.farnsworth.org>
-References: <20070515165144.GA3179@blade.az.mvista.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 0F650DDF14
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 05:00:36 +1000 (EST)
+Date: Tue, 15 May 2007 14:03:44 -0500
+To: paulus@samba.org
+Subject: [PATCH] iseries: fix CONFIG_VIOCONS/CONFIG_VT dependency
+Message-ID: <20070515190343.GA13203@lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070515165144.GA3179@blade.az.mvista.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org, sfr@canb.auug.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,10 +19,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 15, 2007 at 04:51:44PM +0000, Dave Jiang wrote:
-> Creating platform devices (memory controller, sram error registers, cpu error
-> registers, pci error registers) for EDAC driver on the Marvell/mv64x60 chip.
-> 
-> Signed-off-by: Dave Jiang <djiang@mvista.com>
+VT already depends on !VIOCONS, but there's no restriction in the other
+direction. This makes an allyesconfig not build.
 
-Acked-by: Dale Farnsworth <dale@farnsworth.org>
+Switch to a Kconfig dependency instead of a compile-time error.
+
+
+Signed-off-by: Olof Johansson <olof@lixom.net>
+
+diff --git a/arch/powerpc/platforms/iseries/Kconfig b/arch/powerpc/platforms/iseries/Kconfig
+index 46c3a8e..e48f018 100644
+--- a/arch/powerpc/platforms/iseries/Kconfig
++++ b/arch/powerpc/platforms/iseries/Kconfig
+@@ -8,6 +8,7 @@ menu "iSeries device drivers"
+ 
+ config VIOCONS
+ 	tristate "iSeries Virtual Console Support (Obsolete)"
++	depends on !VT
+ 	help
+ 	  This is the old virtual console driver for legacy iSeries.
+ 	  You should use the iSeries Hypervisor Virtual Console
+diff --git a/drivers/char/viocons.c b/drivers/char/viocons.c
+index 8de6b95..c2e7a93 100644
+--- a/drivers/char/viocons.c
++++ b/drivers/char/viocons.c
+@@ -49,10 +49,6 @@
+ #include <asm/iseries/hv_lp_config.h>
+ #include <asm/iseries/hv_call.h>
+ 
+-#ifdef CONFIG_VT
+-#error You must turn off CONFIG_VT to use CONFIG_VIOCONS
+-#endif
+-
+ #define VIOTTY_MAGIC (0x0DCB)
+ #define VTTY_PORTS 10
+ 
