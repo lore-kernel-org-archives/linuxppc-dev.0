@@ -1,13 +1,21 @@
-Return-Path: <horms@verge.net.au>
-Received: from koto.vergenet.net (koto.vergenet.net [210.128.90.7])
-	by ozlabs.org (Postfix) with ESMTP id 048FDDDEF8
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 15:00:49 +1000 (EST)
-From: Simon Horman <horms@verge.net.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [Patch] [POWERPC] allow make defconfig to work on non-power machines
-Date: Tue, 15 May 2007 13:21:18 +0900
-Message-Id: <1179202878.13166@tabatha.lab.ultramonkey.org>
-Cc: Paul Mackerras <paulus@samba.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-08.arcor-online.net (mail-in-08.arcor-online.net
+	[151.189.21.48])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 016C2DDED8
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 15:11:31 +1000 (EST)
+In-Reply-To: <20070515020026.GG565@localhost.localdomain>
+References: <20070515020026.GG565@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <8492e53122b6e1ba269afd53b48a4968@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Small fixes for the Ebony device tree
+Date: Tue, 15 May 2007 07:11:07 +0200
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,26 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm wondering if there is any interest in a patch along the lines
-of this to allow make defconfig to do something sensible when
-uname isn't sensible - I noticed this when doing cross-compile builds.
+Just a few more things...
 
-Signed-off-by: Simon Horman <horms@verge.net.au>
+>  	plb {
+> -		device_type = "ibm,plb";
+>  		compatible = "ibm,plb-440gp", "ibm,plb4";
 
---- 
- arch/powerpc/Makefile |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+You match on "ibm,plb" though.  Well you got one
+in three right ;-)
 
-Index: linux-2.6/arch/powerpc/Makefile
-===================================================================
---- linux-2.6.orig/arch/powerpc/Makefile	2007-05-15 11:23:14.000000000 +0900
-+++ linux-2.6/arch/powerpc/Makefile	2007-05-15 13:28:36.000000000 +0900
-@@ -35,7 +35,7 @@ endif
- 
- export CROSS32CC CROSS32AS CROSS32LD CROSS32AR CROSS32OBJCOPY
- 
--KBUILD_DEFCONFIG := $(shell uname -m)_defconfig
-+KBUILD_DEFCONFIG := $(shell c=`uname -m`_defconfig; if [ ! -f arch/powerpc/configs/$$c ]; then c=ppc64_defconfig; fi; echo -n $$c)
- 
- ifeq ($(CONFIG_PPC64),y)
- OLDARCH	:= ppc64
+> +		SDRAM0: memory-controller {
+>  			compatible = "ibm,sdram-440gp", "ibm,sdram";
+
+"ibm,sdram" is way too generic to ever be usefully
+used for device matching.
+
+> +		SRAM0: sram {
+> +			compatible = "ibm,sram440gp";
+
+You spell this one without a dash, all others with one.
+
+
+Segher
