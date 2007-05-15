@@ -1,19 +1,34 @@
-Return-Path: <wfarnsworth@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 6704CDDF22
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 02:36:04 +1000 (EST)
-Received: from [10.50.1.88] (rhino.az.mvista.com [10.50.1.88])
-	by hermes.mvista.com (Postfix) with ESMTP id 81A121D29E
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 09:36:03 -0700 (PDT)
-Subject: [PATCH 4/5] Add RTC CMOS support for the MPC8641 HPCN
-From: Wade Farnsworth <wfarnsworth@mvista.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-In-Reply-To: <1179245829.8132.100.camel@rhino>
-References: <1179245829.8132.100.camel@rhino>
-Content-Type: text/plain
-Date: Tue, 15 May 2007 09:36:03 -0700
-Message-Id: <1179246963.8132.121.camel@rhino>
-Mime-Version: 1.0
+Return-Path: <linas@austin.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DD719DDF24
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 02:45:33 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4FGjUPF022872
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 12:45:30 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l4FGjUS8246402
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 10:45:30 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4FGjTo3017037
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 10:45:30 -0600
+Date: Tue, 15 May 2007 11:45:29 -0500
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] remove build warnings in windfarm_core
+Message-ID: <20070515164529.GA4383@austin.ibm.com>
+References: <20070514163219.9d78cde0.sfr@canb.auug.org.au>
+	<17993.20745.432703.238649@cargo.ozlabs.ibm.com>
+	<e1629d824068540e703ba7d661753992@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <e1629d824068540e703ba7d661753992@kernel.crashing.org>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,58 +38,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This enables the new RTC CMOS driver to be used on the MPC8641 HPCN.
+On Tue, May 15, 2007 at 08:32:08AM +0200, Segher Boessenkool wrote:
+> >> -	device_create_file(&wf_platform_device.dev, &new_ct->attr);
+> >> +	ret = device_create_file(&wf_platform_device.dev, &new_ct->attr);
+> >> +	if (ret) {
+> >> +		list_del(&new_ct->link);
+> >> +		printk(KERN_WARNING "windfarm: device_creat_file failed"
+> >> +			"for %s\n", new_ct->name);
+> >> +		goto out_unlock;
+> >
+> > This shows up why I hate the must_check stuff.  The sysfs files are
+> > not essential for the operation of the windfarm subsystem.
+> 
+> They are essential for the user expectations of the
+> subsystem though; if registration fails, a warning
+> should be printed.
+> 
+> > If the
+> > sysfs registration fails for any reason, we now have a completely
+> > non-functional windfarm subsystem instead of a mostly-working one. :(
+> 
+> Yeah, but that's not must_check's fault, it doesn't
+> say *what* to do with the error code :-)
 
-Signed-off-by: Wade Farnsworth <wfarnsworth@mvista.com>
+Ergo, the patch should be reworked to print the warning only, 
+but otherwise continue with the setup.
 
----
-
- arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |   27 +++++++++++++++++++
- 1 file changed, 27 insertions(+)
-
-
-Index: powerpc-8641/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-===================================================================
---- powerpc-8641.orig/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-+++ powerpc-8641/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-@@ -18,6 +18,7 @@
- #include <linux/kdev_t.h>
- #include <linux/delay.h>
- #include <linux/seq_file.h>
-+#include <linux/mc146818rtc.h>
- 
- #include <asm/system.h>
- #include <asm/time.h>
-@@ -368,6 +369,32 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_A
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AL, 0x5288, quirk_uli5288);
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AL, 0x5229, quirk_uli5229);
- DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_AL, 0x5249, early_uli5249);
-+
-+#ifdef CONFIG_RTC_DRV_CMOS
-+struct resource rtc_platform_resource = {
-+	.flags		= IORESOURCE_IO,
-+	.start		= RTC_PORT(0),
-+	.end		= RTC_PORT(1),
-+};
-+
-+static int  __init mpc8641_hpcn_add_rtc(void)
-+{
-+	struct platform_device *pd;
-+
-+	pd = platform_device_register_simple("rtc_cmos", -1,
-+					     &rtc_platform_resource, 1);
-+	if (IS_ERR(pd))
-+		return PTR_ERR(pd);
-+
-+	/* rtc-cmos only supports 24-hr mode */
-+	CMOS_WRITE(CMOS_READ(RTC_CONTROL) | RTC_24H, RTC_CONTROL);
-+
-+	return 0;
-+}
-+arch_initcall(mpc8641_hpcn_add_rtc);
-+
-+#endif /* CONFIG_RTC_DRV_CMOS */
-+
- #endif /* CONFIG_PCI */
- 
- 
+--linas
