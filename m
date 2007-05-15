@@ -1,20 +1,16 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-08.arcor-online.net (mail-in-08.arcor-online.net
-	[151.189.21.48])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 016C2DDED8
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 15:11:31 +1000 (EST)
-In-Reply-To: <20070515020026.GG565@localhost.localdomain>
-References: <20070515020026.GG565@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <8492e53122b6e1ba269afd53b48a4968@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 15 May 2007 15:46:26 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: Small fixes for the Ebony device tree
-Date: Tue, 15 May 2007 07:11:07 +0200
-To: David Gibson <david@gibson.dropbear.id.au>
+Message-ID: <20070515054626.GB6998@localhost.localdomain>
+References: <20070514045404.GP6517@localhost.localdomain>
+	<3af16d1a6c09901f10dca3b6a3f8c698@kernel.crashing.org>
+	<20070515011704.GB565@localhost.localdomain>
+	<b353b330365fd9ede35fb1cbbbf09aec@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <b353b330365fd9ede35fb1cbbbf09aec@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,25 +21,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Just a few more things...
+On Tue, May 15, 2007 at 06:59:49AM +0200, Segher Boessenkool wrote:
+> >>> +		SRAM0: sram {
+> >>> +			compatible = "ibm,sram440gp";
+> >>> +			dcr-reg = <020 8 00a 1>;
+> >>> +		};
+> >>
+> >> Is this thing _only_ addressable over DCRs?  Weird.
+> >
+> > Well... the control registers are certainly DCR only.  I guess there's
+> > the actual SRAM itself, though whether this belongs in this node, or
+> > elsewhere isn't immediately clear.  I haven't yet investigated how the
+> > SRAM is mapped (it depends on DIP switch settings) so I'm certainly
+> > not considering this node complete yet.
+> 
+> If it is supposed to have a "reg" property, and it doesn't
+> yet, it might be a good idea to comment it out in the DTS
+> for now, so later kernels can work with the older device
+> tree correctly.
 
->  	plb {
-> -		device_type = "ibm,plb";
->  		compatible = "ibm,plb-440gp", "ibm,plb4";
+Given that I'm not aware of any Ebony firmwares that actually supply a
+device tree, so in practice the kernel's tree will always come from an
+attached zImage, I don't think this is really a big consideration.
 
-You match on "ibm,plb" though.  Well you got one
-in three right ;-)
+> >>>  		MAL0: mcmal {
+> >>> -			device_type = "mcmal-dma";
+> >>> +			device_type = "dma-controller";
+> >>>  			compatible = "ibm,mcmal-440gp", "ibm,mcmal";
+> >>
+> >> Remove "device_type", change name to "dma-controller"?
+> >
+> > Don't really want to remove the device_type, because the MAL driver
+> > looks for it at present.
+> 
+> Fair enough.  But you change the "device_type" in
+> this patch, so presumably you change it in the kernel
 
-> +		SDRAM0: memory-controller {
->  			compatible = "ibm,sdram-440gp", "ibm,sdram";
+The kernel driver recognizes both variants, but the one I had
+previously is marked deprecated.
 
-"ibm,sdram" is way too generic to ever be usefully
-used for device matching.
+> driver as well -- can't you just *fix* the kernel driver,
+> instead?
 
-> +		SRAM0: sram {
-> +			compatible = "ibm,sram440gp";
+Well.. I guess, but I'd prefer to leave that to BenH, who wrote the
+driver.
 
-You spell this one without a dash, all others with one.
+> > Don't really want to change the name, since
+> > that might encourage confusion with the other (more conventional) DMA
+> > controller.
+> 
+> Nah, just look at the other properties in the node and
+> you know what is what.  It is quite common to have nodes
+> with the same name representing different devices (for
+> example, "ethernet" devices -- "dma-controller" would be
+> a bit more unusual, sure).
+> 
+> I have no strong feelings about the name, "mcmal" is
+> generic enough a name as far as I'm concerned.
+> 
+> >>>  			EBC0: ebc {
+> >>> -				device_type = "ibm,ebc";
+> >>>  				compatible = "ibm,ebc-440gp";
+> >>
+> >> You forgot "ibm,ebc" here.
+> >
+> > Hmm.. yeah, I guess.
+> 
+> Well that's what the kernel code matches on ;-)
 
+Um.. yes.  I wonder how it was working before...
 
-Segher
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
