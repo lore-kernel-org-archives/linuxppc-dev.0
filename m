@@ -1,34 +1,23 @@
-Return-Path: <arnd.bergmann@de.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 66BD2DDED9
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 23:24:56 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l4FDLCw8013307
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 09:21:12 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4FDOlmo207886
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 07:24:47 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4FDOkDJ012472
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 07:24:47 -0600
-From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/2] powerpc: Fix IO space on PCI busses created from
-	of_platform
-Date: Tue, 15 May 2007 15:24:39 +0200
-References: <20070515041656.41CE7DDECA@ozlabs.org>
-In-Reply-To: <20070515041656.41CE7DDECA@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200705151524.39805.arnd.bergmann@de.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>
+Return-Path: <khali@linux-fr.org>
+Received: from kellthuzad.dmz.nerim.net (smtp-dmz-232-tuesday.dmz.nerim.net
+	[195.5.254.232]) by ozlabs.org (Postfix) with ESMTP id B5BA8DDEE2
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 23:25:35 +1000 (EST)
+Received: from mallaury.nerim.net (smtp-102-tuesday.noc.nerim.net
+	[62.4.17.102])
+	by kellthuzad.dmz.nerim.net (Postfix) with ESMTP id 4376B1A7B7
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 15:25:28 +0200 (CEST)
+Date: Tue, 15 May 2007 15:26:26 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [i2c] [PATCH] Make i2c-mpc driver use i2c_add_numbered_adapter
+Message-ID: <20070515152626.199f9d6b@hyperion.delvare>
+In-Reply-To: <20070514190545.32739.72083.stgit@trillian.secretlab.ca>
+References: <20070514190545.32739.72083.stgit@trillian.secretlab.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: rtc-linux@googlegroups.com, James Chapman <jchapman@katalix.com>,
+	David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
+	i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,27 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 15 May 2007, Benjamin Herrenschmidt wrote:
-> +=A0=A0=A0=A0=A0=A0=A0/* Setup IO space. We use the non-dynamic version o=
-f that code here,
-> +=A0=A0=A0=A0=A0=A0=A0 * which doesn't quite support unplugging. Next ker=
-nel release will
-> +=A0=A0=A0=A0=A0=A0=A0 * have a better fix for this.
-> +=A0=A0=A0=A0=A0=A0=A0 * Note also that we don't do ISA, this will also b=
-e fixed with a
-> +=A0=A0=A0=A0=A0=A0=A0 * more massive rework.
-> =A0=A0=A0=A0=A0=A0=A0=A0 */
-> -=A0=A0=A0=A0=A0=A0=A0pci_setup_phb_io_dynamic(phb, 0);
-> +=A0=A0=A0=A0=A0=A0=A0pci_setup_phb_io(phb, 0);
-> =A0
+On Mon, 14 May 2007 13:11:23 -0600, Grant Likely wrote:
+> Move the i2c-mpc driver over to using the new i2c infrastructure.
+> Specifically, it now uses i2c_add_numberd_adapter so that the bus number
 
-I think this still needs some logic to make sure we have at least one
-primary PHB in the system. On a board that has all phbs probed by
-of_platform code, we never set the pci_io_base variable.
+i2c_add_numbered_adapter (missing e)
 
-The easiest solution might be to statically initialize pci_io_base
-to PHBS_IO_BASE. If it is different from that, we are already broken
-because we would get _negative_ I/O port numbers for PHBs below
-pci_io_base.
+> can be determined ahead of time and used to register i2c clients before
+> the bus is instantiated.
+> 
+> Tested on an MPC5200 based board
+> 
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
-	Arnd <><
+Acked-by: Jean Delvare <khali@linux-fr.org>
+
+> ---
+> This patch will need to be tested to make sure it does not break any 8xxx
+> board ports.
+> 
+> Work still to be done (in another patch): support for pulling i2c client
+> registrations out of the device tree.
+> 
+>  drivers/i2c/busses/i2c-mpc.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+> index c6b6898..a769efc 100644
+> --- a/drivers/i2c/busses/i2c-mpc.c
+> +++ b/drivers/i2c/busses/i2c-mpc.c
+> @@ -327,9 +327,10 @@ static int fsl_i2c_probe(struct platform_device *pdev)
+>  	platform_set_drvdata(pdev, i2c);
+>  
+>  	i2c->adap = mpc_ops;
+> +	i2c->adap.nr = pdev->id;
+>  	i2c_set_adapdata(&i2c->adap, i2c);
+>  	i2c->adap.dev.parent = &pdev->dev;
+> -	if ((result = i2c_add_adapter(&i2c->adap)) < 0) {
+> +	if ((result = i2c_add_numbered_adapter(&i2c->adap)) < 0) {
+>  		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
+>  		goto fail_add;
+>  	}
+
+-- 
+Jean Delvare
