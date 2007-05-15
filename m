@@ -1,21 +1,20 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
-	by ozlabs.org (Postfix) with ESMTP id 920CADDEFF
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 05:28:52 +1000 (EST)
-Date: Tue, 15 May 2007 21:29:46 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Li Yang-r58472 <LeoLi@freescale.com>
-Subject: Re: [PATCH 1/2] kbuild: Add "Section mismatch" warning whitelist for
-	powerpc
-Message-ID: <20070515192946.GA22476@uranus.ravnborg.org>
-References: <3DF58590-DFD9-4665-8C47-33F407AAD1E7@kernel.crashing.org>
-	<989B956029373F45A0B8AF0297081890B76041@zch01exm26.fsl.freescale.net>
+Return-Path: <viro@ftp.linux.org.uk>
+Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 85327DDEDC
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 05:47:35 +1000 (EST)
+Received: from viro by ZenIV.linux.org.uk with local (Exim 4.52 #1 (Red Hat
+	Linux)) id 1Ho2zZ-0003ge-RT
+	for linuxppc-dev@ozlabs.org; Tue, 15 May 2007 20:47:29 +0100
+Date: Tue, 15 May 2007 20:47:29 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: linuxppc-dev@ozlabs.org
+Subject: [viro@ftp.linux.org.uk: [PATCH] rpadlpar breakage - fallout of struct
+	subsystem removal]
+Message-ID: <20070515194729.GE4095@ftp.linux.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <989B956029373F45A0B8AF0297081890B76041@zch01exm26.fsl.freescale.net>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Linus <torvalds@linux-foundation.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,42 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 15, 2007 at 05:36:40PM +0800, Li Yang-r58472 wrote:
-> > -----Original Message-----
-> > From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> > Sent: Monday, May 14, 2007 9:57 PM
-> > To: Sam Ravnborg
-> > Cc: Li Yang-r58472; Linus; Andrew Morton; Linux Kernel;
-> linuxppc-dev@ozlabs.org
-> > Subject: Re: [PATCH 1/2] kbuild: Add "Section mismatch" warning
-> whitelist for
-> > powerpc
-> > 
-> > 
-> > On May 14, 2007, at 6:06 AM, Sam Ravnborg wrote:
-> > 
-> > > On Mon, May 14, 2007 at 06:53:32PM +0800, Li Yang wrote:
-> > >> This patch fixes the following "Section mismatch" warnings when
-> > >> build powerpc platforms.
-> > >>
-> > >> -------------
-> > >> WARNING: arch/powerpc/mm/built-in.o - Section mismatch: reference
-> to
-> > >> .init.text:early_get_page from .text between
-> > >> 'pte_alloc_one_kernel' (at
-> > >> offset 0xc68) and 'pte_alloc_one'
-> > >> WARNING: mm/built-in.o - Section mismatch: reference to
-> > >> .init.text:set_up_list3s from .text between
-> > >> 'kmem_cache_create' (at offset
-> > >> 0x20300) and 'cache_reap'
-> > >> -------------
-> > 
-> > This warnings should be handled by __init_refok instead.
-> 
-> Yes.  When __init_refok gets in, we can change all Pattern 9 members in
-> the whitelist to use __init_refok.
+[oops - typo in Cc in original posting]
 
-I have applied the patch without the fixes for the above functions.
-Will merge and push the __init_refok changes soonish.
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+ drivers/pci/hotplug/rpadlpar_sysfs.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-	Sam
+diff --git a/drivers/pci/hotplug/rpadlpar_sysfs.c b/drivers/pci/hotplug/rpadlpar_sysfs.c
+index 6c5be3f..df07606 100644
+--- a/drivers/pci/hotplug/rpadlpar_sysfs.c
++++ b/drivers/pci/hotplug/rpadlpar_sysfs.c
+@@ -129,8 +129,9 @@ struct kobj_type ktype_dlpar_io = {
+ };
+ 
+ struct kset dlpar_io_kset = {
+-	.subsys = &pci_hotplug_slots_subsys,
+-	.kobj = {.name = DLPAR_KOBJ_NAME, .ktype=&ktype_dlpar_io,},
++	.kobj = {.name = DLPAR_KOBJ_NAME,
++		 .ktype = &ktype_dlpar_io,
++		 .parent = &pci_hotplug_slots_subsys.kobj},
+ 	.ktype = &ktype_dlpar_io,
+ };
+ 
+-- 
+1.5.0-rc2.GIT
+
+
+-
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
+
+----- End forwarded message -----
