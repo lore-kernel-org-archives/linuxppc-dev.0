@@ -1,18 +1,25 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E7FE6DDFCB
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 23:10:38 +1000 (EST)
-Date: Tue, 15 May 2007 15:10:34 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: boutcher@us.ibm.com, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] viopath: use completion
-Message-ID: <20070515131034.GB11544@lst.de>
-References: <20070513155027.GB9218@lst.de>
+Return-Path: <khali@linux-fr.org>
+Received: from kellthuzad.dmz.nerim.net (smtp-dmz-232-tuesday.dmz.nerim.net
+	[195.5.254.232]) by ozlabs.org (Postfix) with ESMTP id 76FC2DDF1B
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 23:23:43 +1000 (EST)
+Received: from mallaury.nerim.net (smtp-102-tuesday.noc.nerim.net
+	[62.4.17.102])
+	by kellthuzad.dmz.nerim.net (Postfix) with ESMTP id B9CB81A58B
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 15:23:34 +0200 (CEST)
+Date: Tue, 15 May 2007 15:24:28 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: [i2c] [patch/rft 4/4] rtc-ds1307 platform update, powerpc
+	mpc834x_itx and mpc8313_rdb
+Message-ID: <20070515152428.576ca987@hyperion.delvare>
+In-Reply-To: <200705141149.27858.david-b@pacbell.net>
+References: <200705140946.41993.david-b@pacbell.net>
+	<528646bc0705141044s244ce3ecyad5096c441134203@mail.gmail.com>
+	<200705141125.59266.david-b@pacbell.net>
+	<200705141149.27858.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070513155027.GB9218@lst.de>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org, rtc-linux@googlegroups.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,65 +29,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, May 13, 2007 at 05:50:27PM +0200, Christoph Hellwig wrote:
-> Use a completion instead of abusing a semaphore for hypervisor event
-> completion in viopath.
+On Mon, 14 May 2007 11:49:27 -0700, David Brownell wrote:
+> 
+> > > > @@ -329,7 +330,7 @@ static int fsl_i2c_probe(struct platform
+> > > >         i2c->adap = mpc_ops;
+> > > >         i2c_set_adapdata(&i2c->adap, i2c);
+> > > >         i2c->adap.dev.parent = &pdev->dev;
+> > > > -       if ((result = i2c_add_adapter(&i2c->adap)) < 0) {
+> > > > +       if ((result = i2c_add_numbered_adapter(&i2c->adap)) < 0) {
+> > > >                 printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
+> > > >                 goto fail_add;
+> > > >         }
+> > > 
+> > > ... 
+> > > 
+> > > I think you need to add this line before the call to i2c_add_numbered_adapter:
+> > > 
+> > > i2c->adap.nr = pdev->id;
+> > 
+> > If these chips do have multiple instances of that adapter logic,
+> > that would be an appropriate change.  The only "gotcha" might be
+> > that some platforms use the "pdev->id = -1" trick when there's
+> > only a single instance ... that would probably map to zero.
+> > 
+> > I'll hope that whoever makes all this work will resolve those
+> > particular questions ...
+> 
+> Oh, and by the way:  patches updating I2C adapter drivers to work
+> with new-style drivers look to be OK to get into 2.6.22 with just
+> an Ack from Jean, via the MM tree.  (Right, Jean?)
 
-And some more of the same sort:
+Correct. I will happily ack such patches, but I won't be pushing them
+upstream - unless waiting until 2.6.23 is OK for you.
 
-
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-
-Index: linux-2.6.20/arch/powerpc/platforms/iseries/viopath.c
-===================================================================
---- linux-2.6.20.orig/arch/powerpc/platforms/iseries/viopath.c	2007-05-15 14:48:57.000000000 +0200
-+++ linux-2.6.20/arch/powerpc/platforms/iseries/viopath.c	2007-05-15 14:51:36.000000000 +0200
-@@ -81,7 +81,7 @@ static void handleMonitorEvent(struct Hv
-  * if system_state is not SYSTEM_RUNNING, then wait_atomic is used ...
-  */
- struct alloc_parms {
--	struct semaphore sem;
-+	struct completion done;
- 	int number;
- 	atomic_t wait_atomic;
- 	int used_wait_atomic;
-@@ -464,7 +464,7 @@ static void viopath_donealloc(void *parm
- 	if (parmsp->used_wait_atomic)
- 		atomic_set(&parmsp->wait_atomic, 0);
- 	else
--		up(&parmsp->sem);
-+		complete(&parmsp->done);
- }
- 
- static int allocateEvents(HvLpIndex remoteLp, int numEvents)
-@@ -476,7 +476,7 @@ static int allocateEvents(HvLpIndex remo
- 		atomic_set(&parms.wait_atomic, 1);
- 	} else {
- 		parms.used_wait_atomic = 0;
--		init_MUTEX_LOCKED(&parms.sem);
-+		init_completion(&parms.done);
- 	}
- 	mf_allocate_lp_events(remoteLp, HvLpEvent_Type_VirtualIo, 250,	/* It would be nice to put a real number here! */
- 			    numEvents, &viopath_donealloc, &parms);
-@@ -484,7 +484,7 @@ static int allocateEvents(HvLpIndex remo
- 		while (atomic_read(&parms.wait_atomic))
- 			mb();
- 	} else
--		down(&parms.sem);
-+		wait_for_completion(&parms.done);
- 	return parms.number;
- }
- 
-@@ -585,10 +585,10 @@ int viopath_close(HvLpIndex remoteLp, in
- 	spin_unlock_irqrestore(&statuslock, flags);
- 
- 	parms.used_wait_atomic = 0;
--	init_MUTEX_LOCKED(&parms.sem);
-+	init_completion(&parms.done);
- 	mf_deallocate_lp_events(remoteLp, HvLpEvent_Type_VirtualIo,
- 			      numReq, &viopath_donealloc, &parms);
--	down(&parms.sem);
-+	wait_for_completion(&parms.done);
- 
- 	spin_lock_irqsave(&statuslock, flags);
- 	for (i = 0, numOpen = 0; i < VIO_MAX_SUBTYPES; i++)
+-- 
+Jean Delvare
