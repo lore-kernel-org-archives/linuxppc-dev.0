@@ -1,32 +1,26 @@
-Return-Path: <stevewin@us.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Return-Path: <tnt@246tNt.com>
+Received: from outmx028.isp.belgacom.be (outmx028.isp.belgacom.be
+	[195.238.5.49])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A0214DDDDB
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 590BBDDEDA
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 May 2007 04:25:43 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l4EIM6Gv026305
-	for <linuxppc-embedded@ozlabs.org>; Mon, 14 May 2007 14:22:06 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4EIPdeX119064
-	for <linuxppc-embedded@ozlabs.org>; Mon, 14 May 2007 12:25:39 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4EIPdFl024937
-	for <linuxppc-embedded@ozlabs.org>; Mon, 14 May 2007 12:25:39 -0600
-In-Reply-To: <200705141631.04546.g.jaeger@sysgo.com>
-To: linuxppc-embedded@ozlabs.org
+	Tue, 15 May 2007 17:09:52 +1000 (EST)
+Received: from outmx028.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx028.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id l4F79hpv003044
+	for <linuxppc-embedded@ozlabs.org>; Tue, 15 May 2007 09:09:43 +0200
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <46495CB4.8050809@246tNt.com>
+Date: Tue, 15 May 2007 09:09:40 +0200
+From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-Subject: Re: USB support for Bamboo/440EP (Yosemite/440EPx)
-Message-ID: <OFC56C5EA1.CC32B615-ON872572DB.0063BF4F-852572DB.00653577@us.ibm.com>
-From: Stephen Winiecki <stevewin@us.ibm.com>
-Date: Mon, 14 May 2007 14:25:38 -0400
-Content-Type: text/plain; charset="US-ASCII"
-Cc: g.jaeger@sysgo.com
+To: Lorenz Kolb <linuxppcemb@lkmail.de>
+Subject: Re: [Fwd: [alsa-devel] embedded sound architecture question]
+References: <000101c795e5$0af92ce0$9602a8c0@lorenzulm>
+In-Reply-To: <000101c795e5$0af92ce0$9602a8c0@lorenzulm>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -37,34 +31,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Gerhard Jaeger <g.jaeger@sysgo.com> wrote on 05/14/2007 10:31:04 AM:
-> Hi Stephen, 
-> 
-> I also played with Bamboo and Yosemite USB and found out, that the OHCI
-> ISR contains an assumption that makes the 440 OHCI implementation 
-sometimes 
-> stop when having a timeout condition. Find the following sequence @ 
-function
-> ohci_irq() (in file ohci-hcd.c) and disable the following code:
-> 
->         if ((ohci->hcca->done_head != 0)
->                         && ! (hc32_to_cpup (ohci, 
-&ohci->hcca->done_head)
->                                 & 0x01)) {
->                 ints =  OHCI_INTR_WDH;
->    }
-> 
-> This should make the USB host work reliably on the 440s.
-> 
-Thanks Gerhard.  This definitely makes things work better - I have had 
-100% success in both the kernel and X recognizing the devices and having X 
-boot with this update.
+Hi,
 
-However, I am occasionally still having an issue after X comes up with the 
-keyboard not working (mouse working fine).  Just to be clear - I only want 
-to comment out the code you indicated above - not also any/either of the 
-else/if clauses, correct?
+>> If I were you, I would chose one of sound cards which have ALSA
+>> drivers implemented (the list can be found on ALSA site) and
+>> mimicked their behavior in your VHDL.
+>>     
+>
+> Actually a bunch of theses drivers rely on PCI or ISA.
+> The few left do all require DMA, what is only an option, if it is some sort
+> of faked DMA, so the CPU writes directly into the controller's memory as we
+> intend to stay as independent as possible from Xilinx' IP Cores.
+> The question was: is that a good (and practicable) idea?
+>   
 
-So has this never been formally reported/patched?  Do you know also why 
-the USB support has not been configured in the mainline kernel for these 
-platforms - is it due to known existing issues? 
+If you can spare the BRAM, that sounds good to me.
+
+I'm not an alsa expert but I'm working on a driver right now. And alsa
+provide you a hook so you can allocate your memory buffer your self.
+So as long as your control maps it's memory somewhere in the
+cpu address space you should be fine.
+
+What you need is :
+ - Be able to ask the hardware where is is "read pointer".
+ - Be able to ask the hardware to generate an interrupt every 'n' samples.
+
+And that should do it.
+
+You also need to make the controller build the AC97 frames itself
+(e.g. for the control slots, a separate set of registers), and also
+preferrably
+supporting multiple sample format so the CPU needs to do a minimum of
+conversion.
+
+
+        Sylvain
