@@ -1,19 +1,15 @@
-Return-Path: <b07421@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 256DEDDE43
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 03:49:54 +1000 (EST)
-Date: Tue, 15 May 2007 12:49:34 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <mgreer@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id E1B89DDF08
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 04:07:53 +1000 (EST)
+Date: Tue, 15 May 2007 11:08:05 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 To: Paul Mackerras <paulus@samba.org>, "Mark A. Greer" <mgreer@mvista.com>,
 	linuxppc-dev@ozlabs.org
 Subject: Re: Fix bug adding properties with flatdevtree.c's ft_set_prop()
-Message-ID: <20070515174934.GA22623@ld0162-tx32.am.freescale.net>
+Message-ID: <20070515180805.GC17643@mag.az.mvista.com>
 References: <20070514031357.GM6517@localhost.localdomain>
-Mime-Version: 1.0
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20070514031357.GM6517@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -35,12 +31,12 @@ On Mon, May 14, 2007 at 01:13:57PM +1000, David Gibson wrote:
 > subnode definitions for the node.  This confuses the kernel flat tree
 > parser in prom.c which assumes that all property definitions for a
 > node come before all subnode definitions.
-> 
+
+Oops. :)
+
 > This patch corrects ft_set_prop() so that it adds new properties
 > before the first subnode, instead of before the END_NODE tag.
 > 
 > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Acked-by: Scott Wood <scottwood@freescale.com>
-
--Scott
+Acked-by: Mark A. Greer <mgreer@mvista.com>
