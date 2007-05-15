@@ -1,32 +1,18 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2877FDDED0
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 23:10:25 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4FDAKW2008042
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 09:10:20 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4FDAKMA211054
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 07:10:20 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4FDAK37013746
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 07:10:20 -0600
-Subject: Re: [PATCH 3/3] Fixes to allow use of Ebony's flash chips through
-	physmap_of
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20070515045415.98889DDED7@ozlabs.org>
-References: <20070515045415.98889DDED7@ozlabs.org>
-Content-Type: text/plain
-Date: Tue, 15 May 2007 08:10:06 -0500
-Message-Id: <1179234606.3084.34.camel@zod.rchland.ibm.com>
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E7FE6DDFCB
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 23:10:38 +1000 (EST)
+Date: Tue, 15 May 2007 15:10:34 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: boutcher@us.ibm.com, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] viopath: use completion
+Message-ID: <20070515131034.GB11544@lst.de>
+References: <20070513155027.GB9218@lst.de>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070513155027.GB9218@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,23 +22,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-05-15 at 14:54 +1000, David Gibson wrote:
->  void ebony_init(void *mac0, void *mac1)
-> Index: working-2.6/arch/powerpc/boot/dts/ebony.dts
-> ===================================================================
-> --- working-2.6.orig/arch/powerpc/boot/dts/ebony.dts	2007-05-14 14:45:56.000000000 +1000
-> +++ working-2.6/arch/powerpc/boot/dts/ebony.dts	2007-05-14 14:45:58.000000000 +1000
-> @@ -176,6 +176,7 @@
->  				fpga@7,0 {
->  					compatible = "Ebony-FPGA";
->  					reg = <7 0 10>;
-> +					virtual-reg = <e8300000>;
+On Sun, May 13, 2007 at 05:50:27PM +0200, Christoph Hellwig wrote:
+> Use a completion instead of abusing a semaphore for hypervisor event
+> completion in viopath.
 
-That's the mapping for OpenBios.  What happens if someone is using
-U-Boot?
+And some more of the same sort:
 
-If the mapping isn't the same, you might want to pass the address from
-the individual firmware wrapper parts to ebony_flashsel_fixup similar to
-how you've done it for dt_fixup_mac_addresses.
 
-josh
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+
+Index: linux-2.6.20/arch/powerpc/platforms/iseries/viopath.c
+===================================================================
+--- linux-2.6.20.orig/arch/powerpc/platforms/iseries/viopath.c	2007-05-15 14:48:57.000000000 +0200
++++ linux-2.6.20/arch/powerpc/platforms/iseries/viopath.c	2007-05-15 14:51:36.000000000 +0200
+@@ -81,7 +81,7 @@ static void handleMonitorEvent(struct Hv
+  * if system_state is not SYSTEM_RUNNING, then wait_atomic is used ...
+  */
+ struct alloc_parms {
+-	struct semaphore sem;
++	struct completion done;
+ 	int number;
+ 	atomic_t wait_atomic;
+ 	int used_wait_atomic;
+@@ -464,7 +464,7 @@ static void viopath_donealloc(void *parm
+ 	if (parmsp->used_wait_atomic)
+ 		atomic_set(&parmsp->wait_atomic, 0);
+ 	else
+-		up(&parmsp->sem);
++		complete(&parmsp->done);
+ }
+ 
+ static int allocateEvents(HvLpIndex remoteLp, int numEvents)
+@@ -476,7 +476,7 @@ static int allocateEvents(HvLpIndex remo
+ 		atomic_set(&parms.wait_atomic, 1);
+ 	} else {
+ 		parms.used_wait_atomic = 0;
+-		init_MUTEX_LOCKED(&parms.sem);
++		init_completion(&parms.done);
+ 	}
+ 	mf_allocate_lp_events(remoteLp, HvLpEvent_Type_VirtualIo, 250,	/* It would be nice to put a real number here! */
+ 			    numEvents, &viopath_donealloc, &parms);
+@@ -484,7 +484,7 @@ static int allocateEvents(HvLpIndex remo
+ 		while (atomic_read(&parms.wait_atomic))
+ 			mb();
+ 	} else
+-		down(&parms.sem);
++		wait_for_completion(&parms.done);
+ 	return parms.number;
+ }
+ 
+@@ -585,10 +585,10 @@ int viopath_close(HvLpIndex remoteLp, in
+ 	spin_unlock_irqrestore(&statuslock, flags);
+ 
+ 	parms.used_wait_atomic = 0;
+-	init_MUTEX_LOCKED(&parms.sem);
++	init_completion(&parms.done);
+ 	mf_deallocate_lp_events(remoteLp, HvLpEvent_Type_VirtualIo,
+ 			      numReq, &viopath_donealloc, &parms);
+-	down(&parms.sem);
++	wait_for_completion(&parms.done);
+ 
+ 	spin_lock_irqsave(&statuslock, flags);
+ 	for (i = 0, numOpen = 0; i < VIO_MAX_SUBTYPES; i++)
