@@ -1,22 +1,21 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6C578DDED0
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 15:53:09 +1000 (EST)
-Date: Tue, 15 May 2007 07:52:56 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH] pcmcia: ppc64 needs 64-bit ioaddr_t
-Message-ID: <20070515055256.GA18672@lst.de>
-References: <20070512143105.GA12890@lixom.net> <20070513214608.GA26187@lst.de>
-	<20070514225731.GA4191@lixom.net>
+	by ozlabs.org (Postfix) with ESMTP id C3622DDED5
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 16:03:07 +1000 (EST)
+Subject: Re: [PATCH 1/2] powerpc: Add spinlock to request_phb_iospace()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20070515142615.bf748b7a.sfr@canb.auug.org.au>
+References: <20070515041655.BDD98DDEC6@ozlabs.org>
+	<20070515142615.bf748b7a.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Tue, 15 May 2007 16:02:50 +1000
+Message-Id: <1179208970.32247.145.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070514225731.GA4191@lixom.net>
-Cc: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, paulus@samba.org, Christoph Hellwig <hch@lst.de>,
-	Dominik Brodowski <linux@brodo.de>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,29 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 14, 2007 at 05:57:31PM -0500, Olof Johansson wrote:
-> On Sun, May 13, 2007 at 11:46:08PM +0200, Christoph Hellwig wrote:
-> > On Sat, May 12, 2007 at 09:31:05AM -0500, Olof Johansson wrote:
-> > > ppc64 really needs ioaddr_t to be 64-bit, since I/O addresses really
-> > > are MMIO addresses, and remapped to a high range.
-> > > 
-> > > While the type is exported to userspace, there hasn't been any platforms
-> > > with PCMCIA on 64-bit powerpc until now, so changing it won't regress
-> > > any existing users.
-> > 
-> > In fact the only use of the type should be in the obsolete ioctl-based user
-> > interface.  So instead of changing the size of the type you should
-> > 
-> >  a) make sure you're not using cardmgr
-> >  b) fix up those places that still use ioaddr_t where they shouldn't
-> >     and switch the to kio_addr_t (why not just unsigned long like all
-> >     other busses?) 
+On Tue, 2007-05-15 at 14:26 +1000, Stephen Rothwell wrote:
+> On Tue, 15 May 2007 14:16:26 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> >
+> > request_phb_iospace() can be called from different CPUs at init
+> > time (at least with my next patch) and thus needs a spinlock. As
+> > for the next patch, this is a temporary workaround for 2.6.22
+> > issues until my rewrite of IO mappings is ready (for 2.6.23)
 > 
-> I just noticed that feature-removal-schedule.txt says November 2005 for
-> the removal of the pcmcia ioctl's, but they're still there. I'm missing
-> the history here, any reason they weren't removed yet?
+> What problem is this solving?
 
-See the discussions on lkml.  It seems like people haven't really
-noticed the deprecation messages and are still using it.  Still not
-a good reason to use them on a new port (at least new in terms of
-pcmcia support)
+See the description of the next patch.
+
+Ben.
