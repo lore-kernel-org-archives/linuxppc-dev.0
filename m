@@ -1,21 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E0380DDE3B
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 06:46:20 +1000 (EST)
-Subject: Re: [PATCH 2/2] powerpc: Fix IO space on PCI busses created from
-	of_platform
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-In-Reply-To: <200705151524.39805.arnd.bergmann@de.ibm.com>
-References: <20070515041656.41CE7DDECA@ozlabs.org>
-	<200705151524.39805.arnd.bergmann@de.ibm.com>
-Content-Type: text/plain
-Date: Wed, 16 May 2007 06:46:09 +1000
-Message-Id: <1179261969.32247.195.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <galak@kernel.crashing.org>
+In-Reply-To: <20070511170512.GH4452@austin.ibm.com>
+References: <20070510200237.GA19756@mag.az.mvista.com>
+	<20070510215730.GA25075@lixom.net>
+	<17987.47155.935764.878634@cargo.ozlabs.ibm.com>
+	<20070511170512.GH4452@austin.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <FF6A6402-37F5-406F-9DA2-0C0D4D6E4D8B@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: arch/powerpc/sysdev: dumping ground or only for shared drivers?
+Date: Tue, 15 May 2007 16:06:40 -0500
+To: Linas Vepstas <linas@austin.ibm.com>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,19 +22,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-05-15 at 15:24 +0200, Arnd Bergmann wrote:
-> 
-> I think this still needs some logic to make sure we have at least one
-> primary PHB in the system. On a board that has all phbs probed by
-> of_platform code, we never set the pci_io_base variable.
 
-Point, I need to fix that too.
+On May 11, 2007, at 12:05 PM, Linas Vepstas wrote:
 
-> The easiest solution might be to statically initialize pci_io_base
-> to PHBS_IO_BASE. If it is different from that, we are already broken
-> because we would get _negative_ I/O port numbers for PHBs below
-> pci_io_base. 
+> On Fri, May 11, 2007 at 10:26:27AM +1000, Paul Mackerras wrote:
+>> Olof Johansson writes:
+>>
+>>> This adds yet another set of chipset drivers under sysdev, that are
+>>> only used by one platform (several board ports under that platform,
+>>> but only one platforms/* directory).
+>>>
+>>> In my opinion, they really should go under the platform directory  
+>>> instead,
+>>> and not clutter the shared directory.
+>>
+>> I disagree, actually.  Having these things in a shared directory  
+>> makes
+>> it more likely that people will look at the code.  That means that
+>> it's more likely that bugs will be found, and more likely that parts
+>> of the code can get reused when people are doing the port to a new
+>> chip or board.
+>>
+>> If there were hundreds of files in arch/powerpc/sysdev then I  
+>> would be
+>> more likely to agree with you, but there aren't.
+>
+> I like Paul's take, it matches my gut instincts.
 
-If we do that we need to clear it in iSeries code though.
+If this is how we are going we should move some code from arch/ 
+powerpc/platforms into sysdev (for example the 5200 platform has its  
+pic code and some other bits that would be candidate to move into  
+sysdev).
 
-Ben.
+- k
