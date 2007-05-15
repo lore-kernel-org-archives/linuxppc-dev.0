@@ -1,18 +1,19 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 69329DDEC6
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 14:30:39 +1000 (EST)
-Date: Mon, 14 May 2007 23:33:43 -0500
-To: paulus@samba.org
-Subject: [PATCH v2] pcmcia: ppc64 needs 32-bit ioaddr_t
-Message-ID: <20070515043343.GA6561@lixom.net>
-References: <20070512143105.GA12890@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070512143105.GA12890@lixom.net>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, linux-pcmcia@lists.infradead.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 31ACCDDF6F
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 14:30:53 +1000 (EST)
+Date: Tue, 15 May 2007 14:30:42 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Fix warning in pci_64.c
+Message-Id: <20070515143042.987cba34.sfr@canb.auug.org.au>
+In-Reply-To: <20070515041705.CCC00DDFC9@ozlabs.org>
+References: <20070515041705.CCC00DDFC9@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__15_May_2007_14_30_42_+1000_=zUaYwBATS6dM+Jh"
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,27 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-ppc64 really needs ioaddr_t to be 32-bit, since I/O beyond the
-first PCI bus might be mapped at a higher range.
+--Signature=_Tue__15_May_2007_14_30_42_+1000_=zUaYwBATS6dM+Jh
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-While the type is exported to userspace, there hasn't been any platforms
-with PCMCIA on 64-bit powerpc until now, so changing it won't regress
-any existing users. Besides, those interfaces are overdue for removal
-already.
+On Tue, 15 May 2007 14:16:35 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+>
+>  void pcibios_add_platform_entries(struct pci_dev *pdev)
+>  {
+> -	device_create_file(&pdev->dev, &dev_attr_devspec);
+> +	int rc = device_create_file(&pdev->dev, &dev_attr_devspec);
+> +	WARN_ON(rc != 0);
 
+If we really don't care if the file is not created, then it is probably
+worth a comment as to why ...
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Index: 2.6.21/include/pcmcia/cs_types.h
-===================================================================
---- 2.6.21.orig/include/pcmcia/cs_types.h
-+++ 2.6.21/include/pcmcia/cs_types.h
-@@ -21,7 +21,7 @@
- #include <sys/types.h>
- #endif
- 
--#if defined(__arm__) || defined(__mips__)
-+#if defined(__arm__) || defined(__mips__) || defined(__powerpc64__)
- /* This (ioaddr_t) is exposed to userspace & hence cannot be changed. */
- typedef u_int   ioaddr_t;
- #else
+--Signature=_Tue__15_May_2007_14_30_42_+1000_=zUaYwBATS6dM+Jh
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGSTd3FdBgD/zoJvwRAv8QAJwKZ1XhJ7XqRhRpzLvbuZhp6yWb4wCglWZE
+RsCmyDW1ydKPlpPJNeIw/Yg=
+=NSzn
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__15_May_2007_14_30_42_+1000_=zUaYwBATS6dM+Jh--
