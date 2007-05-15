@@ -1,19 +1,14 @@
 Return-Path: <mgreer@mvista.com>
-Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id DADD6DDF08
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 04:11:35 +1000 (EST)
-Date: Tue, 15 May 2007 11:11:40 -0700
+Date: Tue, 15 May 2007 11:15:54 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
-To: Scott Wood <scottwood@freescale.com>, Paul Mackerras <paulus@samba.org>,
-	"Mark A. Greer" <mgreer@mvista.com>, linuxppc-dev@ozlabs.org
-Subject: Re: Fix bug adding properties with flatdevtree.c's ft_set_prop()
-Message-ID: <20070515181140.GD17643@mag.az.mvista.com>
-References: <20070514031357.GM6517@localhost.localdomain>
-	<20070514162816.GB371@ld0162-tx32.am.freescale.net>
-	<20070515002648.GA31585@localhost.localdomain>
+To: david@gibson.dropbear.id.au
+Subject: Re: Small fixes for the Ebony device tree
+Message-ID: <20070515181554.GE17643@mag.az.mvista.com>
+References: <20070514045404.GP6517@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070515002648.GA31585@localhost.localdomain>
+In-Reply-To: <20070514045404.GP6517@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,20 +18,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 15, 2007 at 10:26:48AM +1000, David Gibson wrote:
-> On Mon, May 14, 2007 at 11:28:16AM -0500, Scott Wood wrote:
-> > On Mon, May 14, 2007 at 01:13:57PM +1000, David Gibson wrote:
-> > > This patch corrects ft_set_prop() so that it adds new properties
-> > > before the first subnode, instead of before the END_NODE tag.
-> > 
-> > Is there any reason not to just insert at the beginning of the node?
-> 
-> Only that we have to search through the node first to see if the
-> property already exists, so we've already reached the end by the time
-> we know we need to insert.
+On Mon, May 14, 2007 at 02:54:04PM +1000, David Gibson wrote:
 
-David, Jon,
+> Index: working-2.6/arch/powerpc/boot/dts/ebony.dts
+> ===================================================================
+> --- working-2.6.orig/arch/powerpc/boot/dts/ebony.dts	2007-05-08 15:07:45.000000000 +1000
+> +++ working-2.6/arch/powerpc/boot/dts/ebony.dts	2007-05-14 14:38:39.000000000 +1000
+> @@ -33,8 +33,8 @@
+>  			timebase-frequency = <0>; // Filled in by zImage
+>  			i-cache-line-size = <32>;
+>  			d-cache-line-size = <32>;
+> -			i-cache-size = <0>;
+> -			d-cache-size = <0>;
+> +			i-cache-size = <2000000>; /* 32 kB */
+> +			d-cache-size = <2000000>; /* 32 kB */
+>  			dcr-controller;
+>  			dcr-access-method = "native";
+>  		};
 
-Does dtc guarantee that there aren't any properties after a subnode?
-
-Mark
+Ahh HA!  You did it too! :)
