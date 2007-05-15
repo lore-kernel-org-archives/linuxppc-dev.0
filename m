@@ -1,24 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id D8515DDF62
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 20:56:47 +1000 (EST)
-Date: Tue, 15 May 2007 20:56:41 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Satyam Sharma" <satyam.sharma@gmail.com>
-Subject: Re: [PATCH 1/2] kbuild: Add "Section mismatch" warning whitelist
-	for powerpc
-Message-Id: <20070515205641.babf2ce9.sfr@canb.auug.org.au>
-In-Reply-To: <a781481a0705150303y587ea18dt435f2fc45a671226@mail.gmail.com>
-References: <a781481a0705141717v2669805aoa590bfd54da7856b@mail.gmail.com>
-	<989B956029373F45A0B8AF0297081890B76040@zch01exm26.fsl.freescale.net>
-	<a781481a0705150303y587ea18dt435f2fc45a671226@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__15_May_2007_20_56_41_+1000_KCCcNGEX+NT1qPDQ"
-Cc: Andrew Morton <akpm@osdl.org>, Linus <torvalds@linux-foundation.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Sam Ravnborg <sam@ravnborg.org>
+Return-Path: <bbrv@genesi-usa.com>
+Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
+	[66.98.186.96])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E07ADDDEE4
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 20:59:40 +1000 (EST)
+In-Reply-To: <4647F359.1060403@246tNt.com>
+References: <11790019171838-git-send-email-tnt@246tNt.com>	<11790019223299-git-send-email-tnt@246tNt.com>	<11790019223880-git-send-email-tnt@246tNt.com>
+	<11790019223925-git-send-email-tnt@246tNt.com>
+	<4647A35B.40407@genesi-usa.com> <4647F359.1060403@246tNt.com>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3447EEBF-88F7-4304-A0C1-F208F874AAC6@genesi-usa.com>
+From: Raquel Velasco and Bill Buck <bbrv@genesi-usa.com>
+Subject: Re: [PATCH 3/9] powerpc/ppc32: Update mpc52xx_psc structure with
+	B	revision changes
+Date: Tue, 15 May 2007 05:59:32 -0500
+To: Sylvain Munaut <tnt@246tNt.com>
+Cc: Linux PPC dev ML <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,38 +27,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__15_May_2007_20_56_41_+1000_KCCcNGEX+NT1qPDQ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Sylvain, thanks.
 
-On Tue, 15 May 2007 15:33:50 +0530 "Satyam Sharma" <satyam.sharma@gmail.com> wrote:
+http://bbrv.blogspot.com/2007/05/not-waiting-for-world-to-change-ii.html
+
+Read through the post.  Your effort is being applied to good use.
+
+R&B
+
+On May 14, 2007, at 12:27 AM, Sylvain Munaut wrote:
+
+> Matt Sealey wrote:
+>> Would a note next to these new fields be worth it? "5200B only" or
+>> "reserved on 5200" or even create a new PSC structure for the old
+>> processor and recast it in drivers that really want to support both
+>> revisions of the CPU?
+>>
+> A comment next to them yes, that looks a good idea.
+> A new structure certainly not.
+>> Real nitpick:
+>>
+>> Setting the CCR on the MPC5200 (not B) now means you need to left
+>> shift your required CCR values by 16 bits before applying them into
+>> the field for the desired effect.
+>>
+>> If you were being lazy and just wanted to set some low-order bits
+>> in the CCR on the 5200, with the old structure that's fine. With
+>> the new structure, it will be writing into previously reserved
+>> space on the 5200. The 5200B might work fine, unless it's a driver
+>> someone missed, and is programming a value that should be in the
+>> upper 16 bits of the new CCR, in which case now you have to left
+>> shift by 16 bits.. :)
+> I know about the ccr that's annoying.
+> I guess I could make ccr a union and have it contains ccr16 and ccr32.
 >
-> But I have slightly different (reversed) semantics for __init_refok
-> in mind. Basically, we use __init_refok to annotate _callees_
-> and not _callers_. In short, __init_refok is a _type_ of __init
-> section that other sections can freely reference to, without
-> modpost complaining about this. [ had suggested this in some
-> previous thread earlier ]
+> Note that old driver will still work ... then most likely do
+> out_be16(&psc->ccr, ...) and the &psc->ccr address didn't change. They
+> will just have a warning because ccr is a u32 so &psc->ccr is a  
+> u32* and
+> they give it to out_be16 ...
+>
+>
+>     Sylvain
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
-But lots of __init routines cannot be called from just anywhere, it is
-the special circumstances of some of the callers that makes the call from
-non-init to init ok.  So you need to mark the callers specially.
-
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__15_May_2007_20_56_41_+1000_KCCcNGEX+NT1qPDQ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGSZHuFdBgD/zoJvwRAm9ZAKCPs5nTNQB3wo4HpG1Xisex3MC5CQCfY06J
-GyEQQOxNlO+iFBprPj0mwAM=
-=qOd2
------END PGP SIGNATURE-----
-
---Signature=_Tue__15_May_2007_20_56_41_+1000_KCCcNGEX+NT1qPDQ--
+Raquel and Bill
+http://bbrv.blogspot.com
