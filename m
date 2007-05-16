@@ -1,19 +1,20 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [208.106.21.240])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B40B5DDF23
+Return-Path: <Leonid@a-k-a.net>
+Received: from mis011-1.exch011.intermedia.net
+	(mis011-1.exch011.intermedia.net [64.78.21.128])
+	by ozlabs.org (Postfix) with ESMTP id 411D7DDE3A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 May 2007 05:07:48 +1000 (EST)
-Date: Wed, 16 May 2007 12:01:05 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: netdev@vger.kernel.org
-Subject: [PATCH 3/3] ibm_emac: fix link speed detection change
-Message-ID: <20070516190105.GC14704@gate.ebshome.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Stefan Roese <sr@denx.de>, Jeff Garzik <jeff@garzik.org>,
-	linuxppc-embedded@ozlabs.org
+	Thu, 17 May 2007 06:37:16 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: BDI2000 configuration file for MPC8313E-RDB
+Date: Wed, 16 May 2007 13:37:13 -0700
+Message-ID: <406A31B117F2734987636D6CCC93EE3C017BA257@ehost011-3.exch011.intermedia.net>
+In-Reply-To: <29DC34A6B43468409F5A371CFE34E8491767CF@ex01.ads.ubidyne.de>
+References: <29DC34A6B43468409F5A371CFE34E8491767CF@ex01.ads.ubidyne.de>
+From: "Leonid" <Leonid@a-k-a.net>
+To: "Frank Prepelica" <Frank.Prepelica@ubidyne.com>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,26 +25,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Fix link speed detection change.
-Thanks to Stefan Roese <sr@denx.de> for finding this bug.
+AFAIK, BDI2000 doesn't support NAND... of course you can load some code
+which has NAND support into RAM (even u-boot if compiled properly) and
+thus program NAND flash. But BDI firmware cannot program NAND directly.
 
-CC: Stefan Roese <sr@denx.de>
-Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
+Leonid.
 
----
- drivers/net/ibm_emac/ibm_emac_core.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+________________________________________
+From: linuxppc-embedded-bounces+leonid=3Da-k-a.net@ozlabs.org
+[mailto:linuxppc-embedded-bounces+leonid=3Da-k-a.net@ozlabs.org] On =
+Behalf
+Of Frank Prepelica
+Sent: Wednesday, May 16, 2007 7:25 AM
+To: linuxppc-embedded@ozlabs.org
+Subject: BDI2000 configuration file for MPC8313E-RDB
 
-diff --git a/drivers/net/ibm_emac/ibm_emac_core.c b/drivers/net/ibm_emac/ibm_emac_core.c
-index 50035eb..f752e5f 100644
---- a/drivers/net/ibm_emac/ibm_emac_core.c
-+++ b/drivers/net/ibm_emac/ibm_emac_core.c
-@@ -926,7 +926,7 @@ static int emac_link_differs(struct ocp_enet_private *dev)
- 	int duplex = r & EMAC_MR1_FDE ? DUPLEX_FULL : DUPLEX_HALF;
- 	int speed, pause, asym_pause;
- 
--	if (r & (EMAC_MR1_MF_1000 | EMAC_MR1_MF_1000GPCS))
-+	if (r & EMAC_MR1_MF_1000)
- 		speed = SPEED_1000;
- 	else if (r & EMAC_MR1_MF_100)
- 		speed = SPEED_100;
+Hi all,
+
+maybe this is not the appropriate mailing list, sorry for that!
+
+but, does anyone got a working BDI2000 configuration file + reg.
+definitions for MPC8313E-RDB
+to get access to NAND memory? I got one but there's only access to NOR
+memory.
+
+Many thanks in advance!
+
+Best regards
+Frank
