@@ -1,19 +1,33 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.188])
-	by ozlabs.org (Postfix) with ESMTP id 9A981DDF2E
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 04:44:00 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: Eugene Surovegin <ebs@ebshome.net>
-Subject: Re: [PATCH] ibm_emac: Correctly detect old link speed
-Date: Wed, 16 May 2007 20:44:47 +0200
-References: <200705161300.08521.sr@denx.de>
-	<20070516173002.GA22331@gate.ebshome.net>
-In-Reply-To: <20070516173002.GA22331@gate.ebshome.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200705162044.47776.sr@denx.de>
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 49B8CDDF26
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 04:52:17 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
+	l4GImVgP016767
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 14:48:31 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l4GIq7Lp212962
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 12:52:07 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4GIq7jl025509
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 12:52:07 -0600
+Received: from [9.10.86.50] (9-10-86-50.rchland.ibm.com [9.10.86.50])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	l4GIq7AM025490
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 12:52:07 -0600
+Subject: [PATCH] Pass per-file CFLAGs for platform specific op codes
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Wed, 16 May 2007 13:51:37 -0500
+Message-Id: <1179341497.13214.117.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,26 +37,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 16 May 2007, Eugene Surovegin wrote:
-> On Wed, May 16, 2007 at 01:00:08PM +0200, Stefan Roese wrote:
-> > This patch fixes a bug where the link speed change was not
-> > detected correctly. This occured on a 440SPe (EMAC4) system
-> > where the old link speed was 100Mbps and the new link speed
-> > is 1000Mbps.
->
-> Good catch, Stefan. Unfortunately, I have to NACK your patch - you
-> broke non EMAC4 builds.
+As a result of compiling all of the wrapper files for every platform
+now, the kernel build can fail for toolchains that don't support various
+op codes by default.  An example of this building a 7xx platform with
+the ELD4.0 toolchain, is below:
 
-Yes, you're right of course.
+/tmp/ccYjhJoL.s: Assembler messages:
+/tmp/ccYjhJoL.s:42: Error: Unrecognized opcode: `mtdcr'
+/tmp/ccYjhJoL.s:43: Error: Unrecognized opcode: `mfdcr'
+make[1]: *** [arch/powerpc/boot/44x.o] Error 1
 
-> Correct fix is just to remove EMAC_MR1_MF_1000GPCS from the first
-> if condition.
+The following patch introduces additional CFLAGS for the 4xx specific
+files and fixes the kernel compile.
 
-Yep.
+Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-> I'll send correct fix shortly along with other queued patches.
+---
+ arch/powerpc/boot/Makefile |    3 +++
+ 1 file changed, 3 insertions(+)
 
-Thanks.
-
-Best regards,
-Stefan
+--- linux-2.6.orig/arch/powerpc/boot/Makefile
++++ linux-2.6/arch/powerpc/boot/Makefile
+@@ -33,6 +33,9 @@ endif
+ 
+ BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj)
+ 
++$(obj)/44x.o: BOOTCFLAGS += -Wa,-mbooke
++$(obj)/ebony.o: BOOTCFLAGS += -Wa,-mbooke
++
+ zlib       := inffast.c inflate.c inftrees.c
+ zlibheader := inffast.h inffixed.h inflate.h inftrees.h infutil.h
+ zliblinuxheader := zlib.h zconf.h zutil.h
