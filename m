@@ -1,32 +1,22 @@
-Return-Path: <johnrose@austin.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7B15EDDEDB
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 07:23:21 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4GLNIDO001675
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 17:23:18 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4GLNIm3530532
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 17:23:18 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4GLNI3e001313
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 17:23:18 -0400
-Subject: Re: [viro@ftp.linux.org.uk: [PATCH] rpadlpar breakage - fallout of
-	struct subsystem removal]
-From: John Rose <johnrose@austin.ibm.com>
-To: Al Viro <viro@ftp.linux.org.uk>, Greg KH <greg@kroah.com>,
-	michael@ellerman.id.au, Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20070515194729.GE4095@ftp.linux.org.uk>
-References: <20070515194729.GE4095@ftp.linux.org.uk>
-Content-Type: text/plain
-Date: Wed, 16 May 2007 16:22:37 -0500
-Message-Id: <1179350557.14199.10.camel@sinatra.austin.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 07105DDED0
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 07:42:16 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Slab allocators: Define common size limitations
+Date: Wed, 16 May 2007 23:42:07 +0200
+References: <Pine.LNX.4.64.0705152313490.5832@schroedinger.engr.sgi.com>
+	<Pine.LNX.4.62.0705160855470.24080@pademelon.sonytel.be>
+In-Reply-To: <Pine.LNX.4.62.0705160855470.24080@pademelon.sonytel.be>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200705162342.08601.arnd@arndb.de>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linux-mm@kvack.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Christoph Lameter <clameter@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,9 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+On Wednesday 16 May 2007, Geert Uytterhoeven wrote:
+> What are the changes a large allocation will actually succeed?
+> Is there an alignment rule for large allocations?
+> 
+> E.g. for one of the PS3 drivers I need a physically contiguous 256 KiB-aligned
+> block of 256 KiB. Currently I'm using __alloc_bootmem() for that, but maybe
+> kmalloc() becomes a suitable alternative now?
 
-Verified boot, hotplug, and dynamic add/remove of buses.  Perfect,
-thanks Al!
+kmalloc is limited to 128KiB on most architectures. Normally there is no
+need to use it anyway, just use __get_free_pages(). It will generally
+succeed at early boot time, but not after the system has been running
+for some time.
 
-Acked-by: John Rose <johnrose@austin.ibm.com>
+	Arnd <><
