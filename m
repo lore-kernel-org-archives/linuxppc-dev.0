@@ -1,17 +1,18 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] iseries: fix CONFIG_VIOCONS/CONFIG_VT dependency
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20070515190343.GA13203@lixom.net>
-References: <20070515190343.GA13203@lixom.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-BGHrBgvLVpc43ItY4MEs"
-Date: Wed, 16 May 2007 13:41:59 +1000
-Message-Id: <1179286919.4120.39.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, sfr@canb.auug.org.au
-Reply-To: michael@ellerman.id.au
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 16 May 2007 13:47:01 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Segher Boessenkool <segher@kernel.crashing.org>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Subject: Re: Small fixes for the Ebony device tree
+Message-ID: <20070516034701.GD19127@localhost.localdomain>
+References: <20070514045404.GP6517@localhost.localdomain>
+	<3af16d1a6c09901f10dca3b6a3f8c698@kernel.crashing.org>
+	<20070515011704.GB565@localhost.localdomain>
+	<b353b330365fd9ede35fb1cbbbf09aec@kernel.crashing.org>
+	<20070515054626.GB6998@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070515054626.GB6998@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,63 +22,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, May 15, 2007 at 03:46:26PM +1000, David Gibson wrote:
+> On Tue, May 15, 2007 at 06:59:49AM +0200, Segher Boessenkool wrote:
+[snip]
+> > driver as well -- can't you just *fix* the kernel driver,
+> > instead?
+> 
+> Well.. I guess, but I'd prefer to leave that to BenH, who wrote the
+> driver.
 
---=-BGHrBgvLVpc43ItY4MEs
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On second thoughts I will alter the driver, the new version I sent out
+today has the fix to only look at 'compatible'.
 
-On Tue, 2007-05-15 at 14:03 -0500, Olof Johansson wrote:
-> VT already depends on !VIOCONS, but there's no restriction in the other
-> direction. This makes an allyesconfig not build.
->=20
-> Switch to a Kconfig dependency instead of a compile-time error.
->=20
->=20
-> Signed-off-by: Olof Johansson <olof@lixom.net>
->=20
-> diff --git a/arch/powerpc/platforms/iseries/Kconfig b/arch/powerpc/platfo=
-rms/iseries/Kconfig
-> index 46c3a8e..e48f018 100644
-> --- a/arch/powerpc/platforms/iseries/Kconfig
-> +++ b/arch/powerpc/platforms/iseries/Kconfig
-> @@ -8,6 +8,7 @@ menu "iSeries device drivers"
-> =20
->  config VIOCONS
->  	tristate "iSeries Virtual Console Support (Obsolete)"
-> +	depends on !VT
->  	help
+> > > Don't really want to change the name, since
+> > > that might encourage confusion with the other (more conventional) DMA
+> > > controller.
+> > 
+> > Nah, just look at the other properties in the node and
+> > you know what is what.  It is quite common to have nodes
+> > with the same name representing different devices (for
+> > example, "ethernet" devices -- "dma-controller" would be
+> > a bit more unusual, sure).
+> > 
+> > I have no strong feelings about the name, "mcmal" is
+> > generic enough a name as far as I'm concerned.
 
-This context doesn't match linus' or the powerpc tree, I see:
+I'll leave it then.
 
-config VIOCONS
-        bool "iSeries Virtual Console Support (Obsolete)"
-        depends on !HVC_ISERIES
-        default n
-        help
-
-cheers
-
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-BGHrBgvLVpc43ItY4MEs
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGSn2HdSjSd0sB4dIRAoMpAJwJES+RA0xgEo+7P1j4aMhuaOSqkwCgoyjY
-vkBKWg2mFub9HVhVSkMpsdE=
-=dZsm
------END PGP SIGNATURE-----
-
---=-BGHrBgvLVpc43ItY4MEs--
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
