@@ -1,20 +1,33 @@
-Return-Path: <edo@onkeh.net>
-Received: from pulsar.hytekhosting.com (pulsar.hytekhosting.com
-	[208.101.48.101])
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8B8DDDDEFF
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 00:02:39 +1000 (EST)
-Received: from onkehf2 by pulsar.hytekhosting.com with local (Exim 4.63)
-	(envelope-from <edo@onkeh.net>) id 1HoIzP-0007Om-LH
-	for linuxppc-dev@ozlabs.org; Wed, 16 May 2007 08:52:23 -0400
-Message-ID: <29744.81.170.114.242.1179319943.squirrel@onkeh.net>
-Date: Wed, 16 May 2007 08:52:23 -0400 (EDT)
-Subject: PS3 restart crash, SCSI cache sync
-From: "Edward Strong" <edo@onkeh.net>
-To: linuxppc-dev@ozlabs.org
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C4CBFDDEC0
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 00:11:04 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4GD97hb020526
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 09:09:07 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l4GEAwH3471926
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 10:10:58 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4GEAwN4018587
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 10:10:58 -0400
+Subject: Re: [PATCH] [POWERPC] remove build warnings in windfarm_core
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20070516112449.9f0ae1a2.sfr@canb.auug.org.au>
+References: <20070514163219.9d78cde0.sfr@canb.auug.org.au>
+	<17993.20745.432703.238649@cargo.ozlabs.ibm.com>
+	<20070516112449.9f0ae1a2.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Wed, 16 May 2007 09:10:06 -0500
+Message-Id: <1179324607.16032.70.camel@farscape.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,19 +37,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I've had this problem for a while but I waited until the 1.3 release kit
-emerged before raising this, unfortunately it has not resolved my problem.
+On Wed, 2007-16-05 at 11:24 +1000, Stephen Rothwell wrote:
 
-When I reboot the PS3, the last thing to be displayed is:
+> -	device_create_file(&wf_platform_device.dev, &new_ct->attr);
+> +	if (device_create_file(&wf_platform_device.dev, &new_ct->attr))
+> +		printk(KERN_WARNING "windfarm: device_creat_file failed"
 
-Synchronizing SCSI cache for disk sda
-Synchronizing SCSI cache for disk sda
+Hi Stephen, 
 
-Then I get a full hardware crash and have to hit the power switch at the
-back.  If I just do a shutdown, this works fine.  This error is
-reproducible running both Gentoo and FC6.  I am using a 120gb Fujitsu
-drive.  Does anyone know why this might be happening?
+s/creat_/create_/
 
-Thanks in advance,
 
-Edward
+-Will
