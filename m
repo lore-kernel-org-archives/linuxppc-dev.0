@@ -1,22 +1,24 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 07105DDED0
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 07:42:16 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Slab allocators: Define common size limitations
-Date: Wed, 16 May 2007 23:42:07 +0200
-References: <Pine.LNX.4.64.0705152313490.5832@schroedinger.engr.sgi.com>
-	<Pine.LNX.4.62.0705160855470.24080@pademelon.sonytel.be>
-In-Reply-To: <Pine.LNX.4.62.0705160855470.24080@pademelon.sonytel.be>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200705162342.08601.arnd@arndb.de>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linux-mm@kvack.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Christoph Lameter <clameter@sgi.com>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-09.arcor-online.net (mail-in-09.arcor-online.net
+	[151.189.21.49])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id F3FA1DDECC
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 09:40:35 +1000 (EST)
+In-Reply-To: <1179346653.8132.223.camel@rhino>
+References: <1179245829.8132.100.camel@rhino> <1179246470.8132.112.camel@rhino>
+	<1179333421.7018.17.camel@ld0161-tx32>
+	<b77c4b3dd22795a73cd32a0623722e51@kernel.crashing.org>
+	<1179346653.8132.223.camel@rhino>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <0c3907573f12a0731d03335fe3334363@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/5] Add legacy devices to mpc8641_hpcn.dts
+Date: Thu, 17 May 2007 01:40:27 +0200
+To: Wade Farnsworth <wfarnsworth@mvista.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +28,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 16 May 2007, Geert Uytterhoeven wrote:
-> What are the changes a large allocation will actually succeed?
-> Is there an alignment rule for large allocations?
-> 
-> E.g. for one of the PS3 drivers I need a physically contiguous 256 KiB-aligned
-> block of 256 KiB. Currently I'm using __alloc_bootmem() for that, but maybe
-> kmalloc() becomes a suitable alternative now?
+>>>> +			isa@f0 {
+>>
+>> isa@1e
 
-kmalloc is limited to 128KiB on most architectures. Normally there is no
-need to use it anyway, just use __get_free_pages(). It will generally
-succeed at early boot time, but not after the system has been running
-for some time.
+You didn't reply to this one, but you *really* need
+to fix it.
 
-	Arnd <><
+>>>> +				8042@60 {
+>>>> +					device_type = "8042";
+>>
+>> Drop the device_type.  A number as a name isn't
+>> all that great, either.
+>
+> Currently in order for the i8042 devices to be initialized,
+> check_legacy_ioport() must find a node with device_type "8042".
+
+So fix that :-)
+
+> Is there a recommended "compatible" property for a standard PC-like 
+> CMOS
+> RTC?
+
+None in the bindings that I know of.  It typically would
+be the model name/number of the oldest chip used, or one
+that is very commonly used.
+
+
+Segher
