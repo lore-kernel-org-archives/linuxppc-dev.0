@@ -1,15 +1,11 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 7728BDDED4
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 13:21:11 +1000 (EST)
-Date: Wed, 16 May 2007 13:21:09 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] fix non SMP warning
-Message-Id: <20070516132109.a9b3b0bb.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 16 May 2007 13:26:30 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: New version of the device tree aware EMAC driver
+Message-ID: <20070516032630.GC19127@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,34 +15,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-arch/powerpc/platforms/pseries/pseries.h:24: warning: return type defaults to 'int'
-arch/powerpc/platforms/pseries/pseries.h:25: warning: return type defaults to 'int'
-arch/powerpc/platforms/pseries/pseries.h:24: warning: control reaches end of non-void function
-arch/powerpc/platforms/pseries/pseries.h:25: warning: control reaches end of non-void function
+I've made a few more tiny tweaks to BenH's rewritten device-tree based
+4xx EMAC driver.  The main change is that it now no longer requires
+'device_type', just 'compatible' to be set in the ZMII and MAL device
+nodes when probing.  This works better with current thinking on
+flattened device trees which discourages creating new device_type
+values unless there is a clear use for a new device class binding.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/platforms/pseries/pseries.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+The patch can be obtained from:
+
+http://ozlabs.org/~dgibson/home/emac/powerpc-emac-new-20070516.patch
 
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-index 22bc019..2729d55 100644
---- a/arch/powerpc/platforms/pseries/pseries.h
-+++ b/arch/powerpc/platforms/pseries/pseries.h
-@@ -21,8 +21,8 @@ extern int pSeries_machine_check_exception(struct pt_regs *regs);
- extern void smp_init_pseries_mpic(void);
- extern void smp_init_pseries_xics(void);
- #else
--static inline smp_init_pseries_mpic(void) { };
--static inline smp_init_pseries_xics(void) { };
-+static inline void smp_init_pseries_mpic(void) { };
-+static inline void smp_init_pseries_xics(void) { };
- #endif
- 
- #ifdef CONFIG_KEXEC
--- 
-1.5.1.4
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
