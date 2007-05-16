@@ -1,22 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
-	[151.189.21.41])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 87F53DDEF4
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 05:59:08 +1000 (EST)
-In-Reply-To: <1179338347.8132.200.camel@rhino>
-References: <1179245829.8132.100.camel@rhino> <1179246470.8132.112.camel@rhino>
-	<1179333421.7018.17.camel@ld0161-tx32>
-	<1179338347.8132.200.camel@rhino>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <fcd8f2b3d13e3ff675886f06843d2038@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 6C333DDEFE
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 06:01:58 +1000 (EST)
+Message-ID: <464B638E.4070204@ru.mvista.com>
+Date: Thu, 17 May 2007 00:03:26 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH 2/5] Add legacy devices to mpc8641_hpcn.dts
-Date: Wed, 16 May 2007 21:59:02 +0200
-To: Wade Farnsworth <wfarnsworth@mvista.com>
+References: <1179245829.8132.100.camel@rhino>
+	<1179246470.8132.112.camel@rhino>	<1179333421.7018.17.camel@ld0161-tx32>
+	<b77c4b3dd22795a73cd32a0623722e51@kernel.crashing.org>
+In-Reply-To: <b77c4b3dd22795a73cd32a0623722e51@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,27 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Is "rtc" a standard OF device, or are we making up a
->> new thing that should be documented in booting-with-OF.txt ?
->> And is the plan to somehow use this entry in the future?
->
-> It is my understanding that "rtc" is a standard OF device.  Can anybody
-> confirm this?
+Hello.
 
-It is.
+Segher Boessenkool wrote:
 
-> This could be used in the platform-specific RTC code to get the ports
-> from the device tree.  Currently, however, I simply use RTC_PORT(x) 
-> from
-> asm/mc146818rtc.h.  Is it preferable to use the device tree here?
+>>>+				8042@60 {
+>>>+					device_type = "8042";
 
-If you instantiate the RTC device from platform code,
-and the device sits at the same address on all boards
-you support, the only good thing you get from using
-the device tree is that you don't have to hardcode a
-number in the Linux code.  Using the device tree however
-the RTC device could be detected and instantiated from
-more generic code, a much better situation.
+> Drop the device_type.  A number as a name isn't
+> all that great, either.
 
+    Perhaps it should be called "keyboard" (and device_type should also be set 
+to it) since 8042 is in fact (mostly) a keyboard controller... although it 
+also "drives" PS/2 mouse...
 
-Segher
+>>>+				rtc@70 {
+>>>+					device_type = "rtc";
+>>>+					reg = <1 70 2>;
+>>>+				};
+
+>>Is "rtc" a standard OF device,
+
+> Yes, it is defined in the "Device Support Extensions"
+> recommended practice.
+
+    And it also defines "keyboard".
+
+WBR, Sergei
