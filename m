@@ -1,24 +1,12 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 16 May 2007 13:47:38 +1000
+Date: Wed, 16 May 2007 13:48:50 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: Small fixes for the Ebony device tree
-Message-ID: <20070516034738.GE19127@localhost.localdomain>
-References: <20070515020026.GG565@localhost.localdomain>
-	<8492e53122b6e1ba269afd53b48a4968@kernel.crashing.org>
-	<20070515054758.GC6998@localhost.localdomain>
-	<200705150811.09927.sr@denx.de>
-	<20070515061855.GD6998@localhost.localdomain>
-	<1950a79f97480ba96f1b00352ec449a5@kernel.crashing.org>
-	<20070515063408.GE6998@localhost.localdomain>
-	<5c785f662c13fdd938d48e40d3107050@kernel.crashing.org>
-	<20070515065826.GF6998@localhost.localdomain>
-	<e909c6361f679071300958431723d8be@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Small fixes for the Ebony device tree
+Message-ID: <20070516034850.GF19127@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <e909c6361f679071300958431723d8be@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
-	Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,17 +16,189 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 15, 2007 at 09:07:52AM +0200, Segher Boessenkool wrote:
-> > Sod it, I think I'll just drop everything except "ibm,sdram-440gp" for
-> > now.
-> 
-> Perfect plan :-)  And then 440GX, GR, etc. can claim
-> compatibility to 440GP, which is the nestor of the
-> family.
+This patch corrects a number of minor errors in the Ebony device tree:
+	- Missing (given as 0) cache sizes are added to the CPU node
+	- device_type properties are removed from nodes which don't
+have a reasonably well defined device_type binding.  This does require
+a very small code change to locate the busses to be probed for
+of_platform devices by 'compatible' instead of 'device_type'.
+	- A node is added for the SRAM controller
+	- The unit address of the small-flash node is adjusted to
+correctly reflect the reg property.
+	- device_type values for the MAL and ZMII are updated to
+reflected more up-to-date versions of the binding.
+	- An incorrect offset in the partition map for the large-flash
+node is corrected.
+	- Some redundant values, already commented out are removed
+entirely.
 
-Right, done.  Same for the SRAM and DMA controller nodes.
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+---
+	Further revisions based on feedback.
+	Note that for EMAC to work with this device tree, you need the
+EMAC driver patch which I posted today (20070516).
 
-New patch coming shortly.
+Index: working-2.6/arch/powerpc/boot/dts/ebony.dts
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/dts/ebony.dts	2007-05-08 15:07:45.000000000 +1000
++++ working-2.6/arch/powerpc/boot/dts/ebony.dts	2007-05-16 13:44:10.000000000 +1000
+@@ -33,8 +33,8 @@
+ 			timebase-frequency = <0>; // Filled in by zImage
+ 			i-cache-line-size = <32>;
+ 			d-cache-line-size = <32>;
+-			i-cache-size = <0>;
+-			d-cache-size = <0>;
++			i-cache-size = <8000>; /* 32 kB */
++			d-cache-size = <8000>; /* 32 kB */
+ 			dcr-controller;
+ 			dcr-access-method = "native";
+ 		};
+@@ -46,7 +46,6 @@
+ 	};
+ 
+ 	UIC0: interrupt-controller0 {
+-		device_type = "ibm,uic";
+ 		compatible = "ibm,uic-440gp", "ibm,uic";
+ 		interrupt-controller;
+ 		cell-index = <0>;
+@@ -58,7 +57,6 @@
+ 	};
+ 
+ 	UIC1: interrupt-controller1 {
+-		device_type = "ibm,uic";
+ 		compatible = "ibm,uic-440gp", "ibm,uic";
+ 		interrupt-controller;
+ 		cell-index = <1>;
+@@ -71,36 +69,36 @@
+ 	};
+ 
+ 	CPC0: cpc {
+-		device_type = "ibm,cpc";
+ 		compatible = "ibm,cpc-440gp";
+ 		dcr-reg = <0b0 003 0e0 010>;
+ 		// FIXME: anything else?
+ 	};
+ 
+ 	plb {
+-		device_type = "ibm,plb";
+ 		compatible = "ibm,plb-440gp", "ibm,plb4";
+ 		#address-cells = <2>;
+ 		#size-cells = <1>;
+ 		ranges;
+ 		clock-frequency = <0>; // Filled in by zImage
+ 
+-		SDRAM0: sdram {
+-			device_type = "memory-controller";
+-			compatible = "ibm,sdram-440gp", "ibm,sdram";
++		SDRAM0: memory-controller {
++			compatible = "ibm,sdram-440gp";
+ 			dcr-reg = <010 2>;
+ 			// FIXME: anything else?
+ 		};
+ 
++		SRAM0: sram {
++			compatible = "ibm,sram-440gp";
++			dcr-reg = <020 8 00a 1>;
++		};
++
+ 		DMA0: dma {
+ 			// FIXME: ???
+-			device_type = "ibm,dma-4xx";
+-			compatible = "ibm,dma-440gp", "ibm,dma-4xx";
++			compatible = "ibm,dma-440gp";
+ 			dcr-reg = <100 027>;
+ 		};
+ 
+ 		MAL0: mcmal {
+-			device_type = "mcmal-dma";
+ 			compatible = "ibm,mcmal-440gp", "ibm,mcmal";
+ 			dcr-reg = <180 62>;
+ 			num-tx-chans = <4>;
+@@ -119,7 +117,6 @@
+ 		};
+ 
+ 		POB0: opb {
+-			device_type = "ibm,opb";
+ 			compatible = "ibm,opb-440gp", "ibm,opb";
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
+@@ -133,8 +130,7 @@
+ 			clock-frequency = <0>; // Filled in by zImage
+ 
+ 			EBC0: ebc {
+-				device_type = "ibm,ebc";
+-				compatible = "ibm,ebc-440gp";
++				compatible = "ibm,ebc-440gp", "ibm,ebc";
+ 				dcr-reg = <012 2>;
+ 				#address-cells = <2>;
+ 				#size-cells = <1>;
+@@ -147,7 +143,7 @@
+ 				interrupts = <5 4>;
+ 				interrupt-parent = <&UIC1>;
+ 
+-				small-flash@0,0 {
++				small-flash@0,80000 {
+ 					device_type = "rom";
+ 					compatible = "direct-mapped";
+ 					probe-type = "JEDEC";
+@@ -159,7 +155,6 @@
+ 
+ 				ds1743@1,0 {
+ 					/* NVRAM & RTC */
+-					device_type = "nvram";
+ 					compatible = "ds1743";
+ 					reg = <1 0 2000>;
+ 				};
+@@ -170,7 +165,7 @@
+ 					probe-type = "JEDEC";
+ 					bank-width = <1>;
+ 					partitions = <0 380000
+-						      280000 80000>;
++						      380000 80000>;
+ 					partition-names = "fs", "firmware";
+ 					reg = <2 0 400000>;
+ 				};
+@@ -226,13 +221,11 @@
+ 
+ 			GPIO0: gpio@40000700 {
+ 				/* FIXME */
+-				device_type = "gpio";
+ 				compatible = "ibm,gpio-440gp";
+ 				reg = <40000700 20>;
+ 			};
+ 
+ 			ZMII0: emac-zmii@40000780 {
+-				device_type = "emac-zmii";
+ 				compatible = "ibm,zmii-440gp", "ibm,zmii";
+ 				reg = <40000780 c>;
+ 			};
+@@ -299,9 +292,5 @@
+ 
+ 	chosen {
+ 		linux,stdout-path = "/plb/opb/serial@40000200";
+-//		linux,initrd-start = <0>; /* FIXME */
+-//		linux,initrd-end = <0>;
+-//		bootargs = "";
+ 	};
+ };
+-
+Index: working-2.6/arch/powerpc/platforms/44x/ebony.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/platforms/44x/ebony.c	2007-05-08 15:07:45.000000000 +1000
++++ working-2.6/arch/powerpc/platforms/44x/ebony.c	2007-05-16 13:27:11.000000000 +1000
+@@ -27,9 +27,9 @@
+ #include "44x.h"
+ 
+ static struct of_device_id ebony_of_bus[] = {
+-	{ .type = "ibm,plb", },
+-	{ .type = "ibm,opb", },
+-	{ .type = "ibm,ebc", },
++	{ .compatible = "ibm,plb4", },
++	{ .compatible = "ibm,opb", },
++	{ .compatible = "ibm,ebc", },
+ 	{},
+ };
+ 
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
