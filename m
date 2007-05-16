@@ -1,18 +1,20 @@
-Return-Path: <wfarnsworth@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id B87E4DDE9E
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 03:59:09 +1000 (EST)
-Subject: Re: [PATCH 2/5] Add legacy devices to mpc8641_hpcn.dts
-From: Wade Farnsworth <wfarnsworth@mvista.com>
-To: Jon Loeliger <jdl@freescale.com>
-In-Reply-To: <1179333421.7018.17.camel@ld0161-tx32>
-References: <1179245829.8132.100.camel@rhino> <1179246470.8132.112.camel@rhino>
-	<1179333421.7018.17.camel@ld0161-tx32>
-Content-Type: text/plain
-Date: Wed, 16 May 2007 10:59:06 -0700
-Message-Id: <1179338347.8132.200.camel@rhino>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 8DF17DDE9E
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 04:03:58 +1000 (EST)
+Received: from [192.168.12.21] (unknown [10.149.0.1])
+	by buildserver.ru.mvista.com (Postfix) with ESMTP id B0C628810
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 23:03:56 +0500 (SAMST)
+Message-ID: <464B475A.4090808@ru.mvista.com>
+Date: Wed, 16 May 2007 22:03:06 +0400
+From: Valentine Barshak <vbarshak@ru.mvista.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: Re: New version of the device tree aware EMAC driver
+References: <20070516032630.GC19127@localhost.localdomain>
+	<464B38A9.9000402@ru.mvista.com>
+In-Reply-To: <464B38A9.9000402@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,63 +24,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-05-16 at 11:37 -0500, Jon Loeliger wrote:
-> On Tue, 2007-05-15 at 11:27, Wade Farnsworth wrote:
-
-<snip>
-
-> > +			isa@f0 {
-> > +				device_type = "isa";
-> >  				#interrupt-cells = <2>;
-> 
-> Yea, thanks.  BTW, will this be sufficient to now identify the
-> primary controller and not doink with the legacy IO ports now?
-> Or is that being handled differently somehow?
-
-I'm not sure what you're referring to here.  Can you clarify this a
-little?
-
-> 
-> > +				#size-cells = <1>;
-> > +				#address-cells = <2>;
-> > +				reg = <f000 0 0 0 0>;
-> > +				ranges = <1 0 01000000 0 0 00001000>;
-> > +				interrupt-parent = <4d0>;
-> 
-> That 4d0 should likely be &i8259.
-> 
-> > +				8042@60 {
-> > +					device_type = "8042";
-> > +					reg = <1 60 1 1 64 1>;
-> > +					interrupts = <1 3 c 3>;
-> > +					interrupt-parent = <4d0>;
-> > +				};
-> 
-> Ditto.
-
-Yes, of course.  Thanks.
-
-> 
-> > +				rtc@70 {
-> > +					device_type = "rtc";
-> > +					reg = <1 70 2>;
-> > +				};
-> 
-> Is "rtc" a standard OF device, or are we making up a
-> new thing that should be documented in booting-with-OF.txt ?
-> And is the plan to somehow use this entry in the future?
-
-It is my understanding that "rtc" is a standard OF device.  Can anybody
-confirm this?
-
-This could be used in the platform-specific RTC code to get the ports
-from the device tree.  Currently, however, I simply use RTC_PORT(x) from
-asm/mc146818rtc.h.  Is it preferable to use the device tree here?
-
---Wade
-
-> 
-> Thanks,
-> jdl
-> 
-> 
+Valentine Barshak wrote:
+> David Gibson wrote:
+>   
+>> I've made a few more tiny tweaks to BenH's rewritten device-tree based
+>> 4xx EMAC driver.  The main change is that it now no longer requires
+>> 'device_type', just 'compatible' to be set in the ZMII and MAL device
+>> nodes when probing.  This works better with current thinking on
+>> flattened device trees which discourages creating new device_type
+>> values unless there is a clear use for a new device class binding.
+>>
+>> The patch can be obtained from:
+>>
+>> http://ozlabs.org/~dgibson/home/emac/powerpc-emac-new-20070516.patch
+>>
+>>   
+>>     
+> In __emac_mdio_read and __emac_mdio_write functions:
+>
+> +    if (!emac_has_feature(dev, EMAC_FTR_STACR_OC_INVERT))
+> +        r |= EMAC_STACR_OC;
+>
+> should be
+>
+> +    if (emac_has_feature(dev, EMAC_FTR_STACR_OC_INVERT))
+> +        r |= EMAC_STACR_OC;
+>
+> Thanks.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>   
+With the above 2 fixes (and Marvell 88E1111 Ethernet PHY support added) 
+seems to work fine on Sequoia PPC440EPx,
+thanks.
