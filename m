@@ -1,30 +1,33 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BA62FDDED2
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 12:08:06 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l4G280sg016166
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 19:08:01 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l4G27xRq003604
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 21:08:00 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH 2/2] powerpc: Fix Section mismatch warnings
-Date: Wed, 16 May 2007 10:09:41 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890B760A2@zch01exm26.fsl.freescale.net>
-In-Reply-To: <4575ED11-C144-49CF-9FBA-0613B61EFCE3@kernel.crashing.org>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Paul <paulus@samba.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 51A33DDED8
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 12:21:16 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4G2LD3e009660
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 22:21:13 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l4G2LAMT231136
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 20:21:12 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4G2LAAi027132
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 20:21:10 -0600
+Date: Tue, 15 May 2007 21:29:59 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: dwg@au1.ibm.com
+Subject: Re: [PATCH 2/3] Derive ebc ranges property from EBC registers
+Message-ID: <20070516022958.GB25075@crusty.rchland.ibm.com>
+References: <20070515045415.5B05ADDECE@ozlabs.org>
+	<1179233998.3084.28.camel@zod.rchland.ibm.com>
+	<20070515230930.GB20290@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070515230930.GB20290@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,38 +37,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Tuesday, May 15, 2007 10:07 PM
-> To: Li Yang-r58472
-> Cc: Paul; linuxppc-dev@ozlabs.org; Linux Kernel
-> Subject: Re: [PATCH 2/2] powerpc: Fix Section mismatch warnings
->=20
->=20
-> On May 14, 2007, at 5:59 AM, Li Yang wrote:
->=20
-> > This patch fix the following Section mismatch warnings
-> > in powerpc code.
-> >
-> > WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:
-> > reference to .init.data:mv643xx_eth_pd_devs from .text between
-> > 'mv643xx_eth_add_pds' (at offset 0x9ed2) and 'gg2_read_config'
-> > WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:
-> > reference to .init.data:mv643xx_eth_pd_devs from .text between
-> > 'mv643xx_eth_add_pds' (at offset 0x9ed6) and 'gg2_read_config'
-> > WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:
-> > reference to .init.text:note_scsi_host from __ksymtab between
-> > '__ksymtab_note_scsi_host' (at offset 0x8) and
-'__ksymtab_sys_ctrler'
-> >
-> > Signed-off-by: Li Yang <leoli@freescale.com>
-> > ---
-> >  arch/powerpc/platforms/chrp/pegasos_eth.c |    2 +-
-> >  arch/powerpc/platforms/powermac/setup.c   |    2 +-
-> >  2 files changed, 2 insertions(+), 2 deletions(-)
->=20
-> Did you change anything?
+On Wed, May 16, 2007 at 09:09:30AM +1000, David Gibson wrote:
+> > Do we want a "ranges;" here as a placeholder?  I don't see where it's
+> > absolutely required, but it makes me feel better for some reason...
+> 
+> Absolutely not.  An empty ranges property indicates that the child bus
+> address space is the same as the parent bus address space.  If we're
+> using the chip-select/offset addressing form for the EBC peripherals,
+> that's manifestly not the case.
 
-Nothing yet. I think it's a delay of mail system.
+Ah ok.  My lack of device tree experience showing through again.
 
-- Leo
+> > So this sets the ranges for the EBC bus, but not the "regs" properties
+> > of the child nodes.  Without that, the child nodes will not be mapped to
+> > the correct addresses...
+> 
+> Well, no, the child reg properties can't be deduced from the EBC
+> registers.
+
+Right, I didn't mean to imply the could be.
+
+> > Did you have a plan on how to fixup the child "regs" properties so that
+> > when the DIP switches are flipped around, the children show up
+> > correctly?
+> 
+> Well, on Ebony (AFAICT), the only child reg property that might need
+> adjustment is the small flash.  My MTD enabling patch includes some
+> code in the boot wrapper to toggle the appropriate bit in it's reg
+> property.
+
+Hm, ok.  On Bamboo, it's more complicated.  I'll have to think of something
+there I suppose.
+
+josh
