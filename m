@@ -1,20 +1,13 @@
-Return-Path: <mgreer@mvista.com>
-Date: Tue, 15 May 2007 17:32:16 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: arch/powerpc/sysdev: dumping ground or only for shared drivers?
-Message-ID: <20070516003216.GA13296@mag.az.mvista.com>
-References: <20070510200237.GA19756@mag.az.mvista.com>
-	<20070510215730.GA25075@lixom.net>
-	<17987.47155.935764.878634@cargo.ozlabs.ibm.com>
-	<20070511170512.GH4452@austin.ibm.com>
-	<FF6A6402-37F5-406F-9DA2-0C0D4D6E4D8B@kernel.crashing.org>
-	<20070515220616.GB2433@mag.az.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070515220616.GB2433@mag.az.mvista.com>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <krafft@de.ibm.com>
+Date: Wed, 16 May 2007 02:33:21 +0200
+From: Christian Krafft <krafft@de.ibm.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: cell_defconfig: disable cpufreq and pmi
+Message-ID: <20070516023321.78f009f2@localhost>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_w37PHrMSx7kdHlfLK80=89Q";
+	protocol="application/pgp-signature"; micalg=PGP-SHA1
+Cc: krafft@de.ibm.com, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,26 +17,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 15, 2007 at 03:06:16PM -0700, Mark A. Greer wrote:
+--Sig_w37PHrMSx7kdHlfLK80=89Q
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-> I like Paul's take as well and I don't like the idea of moving the
-> 5200 pci code, etc. to sysdev.  I just can't explain why.
+From: Christian Krafft <krafft@de.ibm.com>
 
-Actually..."I have a doubt."
+Cpufreq using pmi is broken by a dependency issue, that
+will be fixed in a seperate patch.
+Bare-metal cpufreq is broken by hardware limitations.
+As it was the only user, pmi is disabled as well.
 
-The more I think about it the more it makes sense to put the pic code,
-etc. into sysdev (because of what Paul said).   It also makes it
-easier when making wholesale changes (i.e., something changes in the
-irq infrastructure and all the pic files need to be changed).
-Its also easier to compare all the pic files, say, to see which ones
-need cleaning up.
+Signed-off-by: Christian Krafft <krafft@de.ibm.com>
 
-When all of the factoring, etc. that we're doing is complete, we may
-find that our platform files are very small and we'll no longer need
-all the directories under platforms.
+Index: linux/arch/powerpc/configs/cell_defconfig
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux.orig/arch/powerpc/configs/cell_defconfig
++++ linux/arch/powerpc/configs/cell_defconfig
+@@ -163,7 +163,6 @@ CONFIG_SPU_FS=3Dm
+ CONFIG_SPU_BASE=3Dy
+ CONFIG_CBE_RAS=3Dy
+ CONFIG_CBE_THERM=3Dm
+-CONFIG_CBE_CPUFREQ=3Dm
+ CONFIG_PPC_NATIVE=3Dy
+ CONFIG_UDBG_RTAS_CONSOLE=3Dy
+ CONFIG_PPC_UDBG_BEAT=3Dy
+@@ -172,24 +171,12 @@ CONFIG_PPC_RTAS=3Dy
+ # CONFIG_RTAS_ERROR_LOGGING is not set
+ CONFIG_RTAS_PROC=3Dy
+ CONFIG_RTAS_FLASH=3Dy
+-CONFIG_PPC_PMI=3Dm
++# CONFIG_PPC_PMI is not set
+ CONFIG_MMIO_NVRAM=3Dy
+ # CONFIG_PPC_MPC106 is not set
+ # CONFIG_PPC_970_NAP is not set
+ CONFIG_PPC_INDIRECT_IO=3Dy
+ CONFIG_GENERIC_IOMAP=3Dy
+-CONFIG_CPU_FREQ=3Dy
+-CONFIG_CPU_FREQ_TABLE=3Dy
+-CONFIG_CPU_FREQ_DEBUG=3Dy
+-CONFIG_CPU_FREQ_STAT=3Dy
+-# CONFIG_CPU_FREQ_STAT_DETAILS is not set
+-CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=3Dy
+-# CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
+-CONFIG_CPU_FREQ_GOV_PERFORMANCE=3Dy
+-CONFIG_CPU_FREQ_GOV_POWERSAVE=3Dy
+-CONFIG_CPU_FREQ_GOV_USERSPACE=3Dy
+-CONFIG_CPU_FREQ_GOV_ONDEMAND=3Dy
+-CONFIG_CPU_FREQ_GOV_CONSERVATIVE=3Dy
+ # CONFIG_CPU_FREQ_PMAC64 is not set
+ # CONFIG_WANT_EARLY_SERIAL is not set
+ CONFIG_MPIC=3Dy
 
-[See, if I change my mind, Olof can't say I'm using his argument anymore ;)]
 
-Time for me to stfu.
+--=20
+Mit freundlichen Gruessen,
+kind regards,
 
-Mark
+Christian Krafft
+IBM Systems & Technology Group,
+Linux Kernel Development
+IT Specialist
+
+
+Vorsitzender des Aufsichtsrats:	Martin Jetter
+Geschaeftsfuehrung:		Herbert Kircher
+Sitz der Gesellschaft:		Boeblingen
+Registriergericht:		Amtsgericht Stuttgart, HRB 243294
+
+
+--Sig_w37PHrMSx7kdHlfLK80=89Q
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGSlFf6rqK4qDx+dcRAlt2AKCX9tpJtfCRW1uK3D0nbUTBD6DE0QCgj2ca
+QDxxgaB/1yyDhTRzSpohfyM=
+=grMr
+-----END PGP SIGNATURE-----
+
+--Sig_w37PHrMSx7kdHlfLK80=89Q--
