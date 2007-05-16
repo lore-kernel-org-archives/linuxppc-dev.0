@@ -1,20 +1,21 @@
-Return-Path: <Leonid@a-k-a.net>
-Received: from mis011-1.exch011.intermedia.net
-	(mis011-1.exch011.intermedia.net [64.78.21.128])
-	by ozlabs.org (Postfix) with ESMTP id 411D7DDE3A
+Return-Path: <ckrinke@istor.com>
+Received: from stork.inside.istor.com (stork.istor.com [12.170.66.34])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B1216DDEDB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 May 2007 06:37:16 +1000 (EST)
+	Thu, 17 May 2007 08:08:25 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: BDI2000 configuration file for MPC8313E-RDB
-Date: Wed, 16 May 2007 13:37:13 -0700
-Message-ID: <406A31B117F2734987636D6CCC93EE3C017BA257@ehost011-3.exch011.intermedia.net>
-In-Reply-To: <29DC34A6B43468409F5A371CFE34E8491767CF@ex01.ads.ubidyne.de>
-References: <29DC34A6B43468409F5A371CFE34E8491767CF@ex01.ads.ubidyne.de>
-From: "Leonid" <Leonid@a-k-a.net>
-To: "Frank Prepelica" <Frank.Prepelica@ubidyne.com>,
-	<linuxppc-embedded@ozlabs.org>
+	charset="us-ascii"
+Subject: Accessing 8541 registers from user space
+Date: Wed, 16 May 2007 14:59:22 -0700
+Message-ID: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A210@MERCURY.inside.istor.com>
+In-Reply-To: <406A31B117F2734987636D6CCC93EE3C017BA257@ehost011-3.exch011.intermedia.net>
+From: "Charles Krinke" <ckrinke@istor.com>
+To: <linuxppc-embedded@ozlabs.org>
+Cc: Randy Brown <rbrown@istor.com>, Vahid Fereydounkolahi <vahidf@istor.com>,
+	Chris Carlson <ccarlson@istor.com>, Kevin Smith <ksmith@istor.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,31 +26,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-AFAIK, BDI2000 doesn't support NAND... of course you can load some code
-which has NAND support into RAM (even u-boot if compiled properly) and
-thus program NAND flash. But BDI firmware cannot program NAND directly.
+I have a need to be able to read and write the gpio data registers PDATC
+and PDATD from a user space program.=20
 
-Leonid.
+We have a userspace program that succesfully mmaps an offset in /dev/mem
+and reads/writes registers in a CPLD at 0xFF00_0000.
 
-________________________________________
-From: linuxppc-embedded-bounces+leonid=3Da-k-a.net@ozlabs.org
-[mailto:linuxppc-embedded-bounces+leonid=3Da-k-a.net@ozlabs.org] On =
-Behalf
-Of Frank Prepelica
-Sent: Wednesday, May 16, 2007 7:25 AM
-To: linuxppc-embedded@ozlabs.org
-Subject: BDI2000 configuration file for MPC8313E-RDB
+The issue seems to be that when I mmap /dev/mem to 0xE000_0D50 to read
+the PDATC register, Linux-2.6.17.11 just locks up.
 
-Hi all,
+Can anyone shed a little light on why this could be happening?
 
-maybe this is not the appropriate mailing list, sorry for that!
-
-but, does anyone got a working BDI2000 configuration file + reg.
-definitions for MPC8313E-RDB
-to get access to NAND memory? I got one but there's only access to NOR
-memory.
-
-Many thanks in advance!
-
-Best regards
-Frank
+Charles Krinke
