@@ -1,19 +1,20 @@
-Return-Path: <wfarnsworth@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 741BDDDF16
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 04:06:35 +1000 (EST)
-Subject: Re: [PATCH 5/5] PCI fixes for the MPC8641 Rev 2.0 silicon and Rev
-	1.02 hardware
-From: Wade Farnsworth <wfarnsworth@mvista.com>
-To: Jon Loeliger <jdl@freescale.com>
-In-Reply-To: <1179333883.7018.20.camel@ld0161-tx32>
-References: <1179245829.8132.100.camel@rhino> <1179247809.8132.138.camel@rhino>
-	<1179333883.7018.20.camel@ld0161-tx32>
-Content-Type: text/plain
-Date: Wed, 16 May 2007 11:06:34 -0700
-Message-Id: <1179338794.8132.209.camel@rhino>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound3-dub-R.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 797D9DDF31
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 04:07:58 +1000 (EST)
+Message-ID: <464B4876.7040902@am.sony.com>
+Date: Wed, 16 May 2007 11:07:50 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: Edward Strong <edo@onkeh.net>
+Subject: Re: PS3 restart crash, SCSI cache sync
+References: <29744.81.170.114.242.1179319943.squirrel@onkeh.net>
+In-Reply-To: <29744.81.170.114.242.1179319943.squirrel@onkeh.net>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,25 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-05-16 at 11:44 -0500, Jon Loeliger wrote:
-> On Tue, 2007-05-15 at 11:50, Wade Farnsworth wrote:
-> > +static void __devinit early_mpc86xx_pcie(struct pci_dev *dev)
-> > +{
-> > +	   dev->class = PCI_CLASS_BRIDGE_PCI << 8 | 0x1;
-> > +}
-> 
-> What'd we decide on that 0x1 in there?
-> 
-> Thanks,
-> jdl
-> 
-> 
+Hi.
 
-I originally thought that it the 0x1 was necessary, but it was pointed
-out to me that it should not be.
+Edward Strong wrote:
+> I've had this problem for a while but I waited until the 1.3 release kit
+> emerged before raising this, unfortunately it has not resolved my problem.
+> 
+> When I reboot the PS3, the last thing to be displayed is:
 
-If I remove the 0x1 I get some I/O resource allocation failures on the
-P2P bridge and its child devices.  I'm currently investigating what the
-cause of this is.
+Please send this kind of PS3 specific post to the cbe-oss-dev mailing
+list next time:
 
---Wade
+  cbe-oss-dev@ozlabs.org
+  https://ozlabs.org/mailman/listinfo/cbe-oss-dev
+
+
+> Synchronizing SCSI cache for disk sda
+> Synchronizing SCSI cache for disk sda
+> 
+> Then I get a full hardware crash and have to hit the power switch at the
+> back.  
+
+I guess that is not true.  The polling code for the vuart wasn't working
+properly so it was just spinning.  Please press the power button for about 10 sec.
+The HV will gain control and shutdown the lpar.
+
+If I just do a shutdown, this works fine.  This error is
+> reproducible running both Gentoo and FC6.  I am using a 120gb Fujitsu
+> drive.  Does anyone know why this might be happening?
+
+I just added power button support to ps3-linux.git the other day.  Either update
+to that, or backport the fix to your kernel.
+
+-Geoff
