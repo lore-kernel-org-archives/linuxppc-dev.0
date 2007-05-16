@@ -1,15 +1,16 @@
-Return-Path: <hch@lst.de>
-Date: Wed, 16 May 2007 12:37:52 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Subject: Re: [PATCH] fix celleb link failure
-Message-ID: <20070516103752.GA22383@lst.de>
-References: <20070515130940.GA11544@lst.de>
-	<200705160714.l4G7EW9b014697@toshiba.co.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200705160714.l4G7EW9b014697@toshiba.co.jp>
-Cc: linuxppc-dev@ozlabs.org, hch@lst.de, cbe-oss-dev@ozlabs.org
+Return-Path: <sr@denx.de>
+Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.190])
+	by ozlabs.org (Postfix) with ESMTP id 10ED9DDEE4
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 20:59:51 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: netdev@vger.kernel.org,
+ linuxppc-dev@ozlabs.org
+Subject: [PATCH] ibm_emac: Correctly detect old link speed
+Date: Wed, 16 May 2007 13:00:08 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200705161300.08521.sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,38 +20,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 16, 2007 at 04:14:31PM +0900, Ishizaki Kou wrote:
-> NACK.
-> 
-> Thanks for pointing it out. But this fix is still wrong.
-> early_serial_txx9_setup is availble if CONFIG_SERIAL_TXX9=y.
+This patch fixes a bug where the link speed change was not
+detected correctly. This occured on a 440SPe (EMAC4) system
+where the old link speed was 100Mbps and the new link speed
+is 1000Mbps.
 
-You're right.  I've updated the patch to only build scc_sio.o
-only if CONFIG_SERIAL_TXX9 is set.  This works because
-CONFIG_SERIAL_TXX9 can't be modular currently.
+Signed-off-by: Stefan Roese <sr@denx.de>
 
-> > -#ifdef CONFIG_SERIAL_TXX9_CONSOLE
-> >  		req.membase = ioremap(req.mapbase, 0x24);
-> > -#endif
-> >  		req.irq = irq_create_of_mapping(irq.controller,
-> >  			irq.specifier, irq.size);
-> >  		req.flags |= UPF_IOREMAP | UPF_BUGGY_UART
-> /*HAVE_CTS_LINE*/;
-> 
-> And we need these #ifdef and #endif.
+---
+commit 1e2a6085bbb6bd384e0812b6e9c62d18d14e1c0f
+tree f441a914c9d66fb00fcde1e4bd7e02effba20dc7
+parent 7b104bcb8e460e45a1aebe3da9b86aacdb4cab12
+author Stefan Roese <sr@denx.de> Wed, 16 May 2007 12:54:40 +0200
+committer Stefan Roese <sr@denx.de> Wed, 16 May 2007 12:54:40 +0200
 
-Ok, dropped.
+ drivers/net/ibm_emac/ibm_emac_core.c |   18 ++++++++++++------
+ 1 files changed, 12 insertions(+), 6 deletions(-)
 
-
-
-Index: linux-2.6.20/arch/powerpc/platforms/celleb/Makefile
-===================================================================
---- linux-2.6.20.orig/arch/powerpc/platforms/celleb/Makefile	2007-05-16 11:36:28.000000000 +0200
-+++ linux-2.6.20/arch/powerpc/platforms/celleb/Makefile	2007-05-16 11:36:41.000000000 +0200
-@@ -4,5 +4,5 @@ obj-y				+= interrupt.o iommu.o setup.o 
+diff --git a/drivers/net/ibm_emac/ibm_emac_core.c b/drivers/net/ibm_emac/ibm_emac_core.c
+index 50035eb..ab38727 100644
+--- a/drivers/net/ibm_emac/ibm_emac_core.c
++++ b/drivers/net/ibm_emac/ibm_emac_core.c
+@@ -926,12 +926,18 @@ static int emac_link_differs(struct ocp_enet_private *dev)
+ 	int duplex = r & EMAC_MR1_FDE ? DUPLEX_FULL : DUPLEX_HALF;
+ 	int speed, pause, asym_pause;
  
- obj-$(CONFIG_SMP)		+= smp.o
- obj-$(CONFIG_PPC_UDBG_BEAT)	+= udbg_beat.o
--obj-$(CONFIG_HAS_TXX9_SERIAL)	+= scc_sio.o
-+obj-$(CONFIG_SERIAL_TXX9)	+= scc_sio.o
- obj-$(CONFIG_SPU_BASE)		+= spu_priv1.o
+-	if (r & (EMAC_MR1_MF_1000 | EMAC_MR1_MF_1000GPCS))
+-		speed = SPEED_1000;
+-	else if (r & EMAC_MR1_MF_100)
+-		speed = SPEED_100;
+-	else
+-		speed = SPEED_10;
++	switch (r & EMAC_MR1_MF_MASK) {
++	case EMAC_MR1_MF_1000:
++	case EMAC_MR1_MF_1000GPCS:
++		speed = 1000;
++		break;
++	case EMAC_MR1_MF_10:
++		speed = 10;
++		break;
++	case EMAC_MR1_MF_100:
++	default:
++		speed = 100;
++	}
+ 
+ 	switch (r & (EMAC_MR1_EIFC | EMAC_MR1_APP)) {
+ 	case (EMAC_MR1_EIFC | EMAC_MR1_APP):
