@@ -1,22 +1,15 @@
-Return-Path: <greg@kroah.com>
-Received: from canuck.infradead.org (canuck.infradead.org [209.217.80.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3824EDDF07
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 17:20:32 +1000 (EST)
-Date: Wed, 16 May 2007 00:15:48 -0700
-From: Greg KH <greg@kroah.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [viro@ftp.linux.org.uk: [PATCH] rpadlpar breakage - fallout of
-	struct subsystem removal]
-Message-ID: <20070516071548.GA19294@kroah.com>
-References: <20070515194729.GE4095@ftp.linux.org.uk>
-	<1179276588.4120.22.camel@concordia.ozlabs.ibm.com>
-	<1179298629.32247.214.camel@localhost.localdomain>
-MIME-Version: 1.0
+Return-Path: <hch@lst.de>
+Date: Wed, 16 May 2007 12:37:52 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+Subject: Re: [PATCH] fix celleb link failure
+Message-ID: <20070516103752.GA22383@lst.de>
+References: <20070515130940.GA11544@lst.de>
+	<200705160714.l4G7EW9b014697@toshiba.co.jp>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1179298629.32247.214.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, Al Viro <viro@ftp.linux.org.uk>
+In-Reply-To: <200705160714.l4G7EW9b014697@toshiba.co.jp>
+Cc: linuxppc-dev@ozlabs.org, hch@lst.de, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +19,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 16, 2007 at 04:57:09PM +1000, Benjamin Herrenschmidt wrote:
+On Wed, May 16, 2007 at 04:14:31PM +0900, Ishizaki Kou wrote:
+> NACK.
 > 
-> > That seems to work, I get 'add_slot' and 'remove_slot'
-> > under /sys/bus/pci/slots/control again.
+> Thanks for pointing it out. But this fix is still wrong.
+> early_serial_txx9_setup is availble if CONFIG_SERIAL_TXX9=y.
+
+You're right.  I've updated the patch to only build scc_sio.o
+only if CONFIG_SERIAL_TXX9 is set.  This works because
+CONFIG_SERIAL_TXX9 can't be modular currently.
+
+> > -#ifdef CONFIG_SERIAL_TXX9_CONSOLE
+> >  		req.membase = ioremap(req.mapbase, 0x24);
+> > -#endif
+> >  		req.irq = irq_create_of_mapping(irq.controller,
+> >  			irq.specifier, irq.size);
+> >  		req.flags |= UPF_IOREMAP | UPF_BUGGY_UART
+> /*HAVE_CTS_LINE*/;
 > 
-> I verified that PCI hotplug actually works with that patch.
+> And we need these #ifdef and #endif.
 
-Thanks for testing, and Al, thanks for the patch, the rpadlpar code was
-doing something different from what I expected...
+Ok, dropped.
 
-thanks,
 
-greg k-h
+
+Index: linux-2.6.20/arch/powerpc/platforms/celleb/Makefile
+===================================================================
+--- linux-2.6.20.orig/arch/powerpc/platforms/celleb/Makefile	2007-05-16 11:36:28.000000000 +0200
++++ linux-2.6.20/arch/powerpc/platforms/celleb/Makefile	2007-05-16 11:36:41.000000000 +0200
+@@ -4,5 +4,5 @@ obj-y				+= interrupt.o iommu.o setup.o 
+ 
+ obj-$(CONFIG_SMP)		+= smp.o
+ obj-$(CONFIG_PPC_UDBG_BEAT)	+= udbg_beat.o
+-obj-$(CONFIG_HAS_TXX9_SERIAL)	+= scc_sio.o
++obj-$(CONFIG_SERIAL_TXX9)	+= scc_sio.o
+ obj-$(CONFIG_SPU_BASE)		+= spu_priv1.o
