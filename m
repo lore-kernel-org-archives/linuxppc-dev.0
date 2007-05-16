@@ -1,22 +1,10 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 997EEDDEEE
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 16:57:45 +1000 (EST)
-Subject: Re: [viro@ftp.linux.org.uk: [PATCH] rpadlpar breakage - fallout of
-	struct subsystem removal]
+Return-Path: <benh@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: michael@ellerman.id.au
-In-Reply-To: <1179276588.4120.22.camel@concordia.ozlabs.ibm.com>
-References: <20070515194729.GE4095@ftp.linux.org.uk>
-	<1179276588.4120.22.camel@concordia.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Wed, 16 May 2007 16:57:09 +1000
-Message-Id: <1179298629.32247.214.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Greg KH <greg@kroah.com>,
-	Al Viro <viro@ftp.linux.org.uk>
+Date: Wed, 16 May 2007 16:57:24 +1000
+Subject: [PATCH] powerpc: Make sure device node type/name is not NULL
+Message-Id: <20070516065755.5FE9EDDF97@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,10 +14,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Our device-tree unflattening code makes sure the name and type
+fields of a device-node are not NULL. However, the code for dynamically
+adding devices nodes which is used for pSeries hotplug for example didn't
+do it, potentially causing crashes in some code that assume it can
+always do things like strcmp on those.
 
-> That seems to work, I get 'add_slot' and 'remove_slot'
-> under /sys/bus/pci/slots/control again.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-I verified that PCI hotplug actually works with that patch.
+---
 
-Ben.
+ arch/powerpc/kernel/prom.c |    5 +++++
+ 1 file changed, 5 insertions(+)
+
+Index: linux-cell/arch/powerpc/kernel/prom.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/kernel/prom.c	2007-05-14 16:32:34.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/prom.c	2007-05-16 16:52:08.000000000 +1000
+@@ -1472,6 +1472,11 @@ static int of_finish_dynamic_node(struct
+ 	node->name = of_get_property(node, "name", NULL);
+ 	node->type = of_get_property(node, "device_type", NULL);
+ 
++	if (!node->name)
++		node->name = "<NULL>";
++	if (!node->type)
++		node->type = "<NULL>";
++
+ 	if (!parent) {
+ 		err = -ENODEV;
+ 		goto out;
