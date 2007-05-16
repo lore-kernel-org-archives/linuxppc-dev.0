@@ -1,22 +1,19 @@
-Return-Path: <jdl@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8D082DDEE4
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 02:44:54 +1000 (EST)
-Subject: Re: [PATCH 5/5] PCI fixes for the MPC8641 Rev 2.0 silicon and Rev
-	1.02 hardware
-From: Jon Loeliger <jdl@freescale.com>
-To: Wade Farnsworth <wfarnsworth@mvista.com>
-In-Reply-To: <1179247809.8132.138.camel@rhino>
-References: <1179245829.8132.100.camel@rhino> <1179247809.8132.138.camel@rhino>
-Content-Type: text/plain
-Message-Id: <1179333883.7018.20.camel@ld0161-tx32>
-Mime-Version: 1.0
-Date: Wed, 16 May 2007 11:44:43 -0500
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 2DBCEDDEDE
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 03:01:18 +1000 (EST)
+Received: from [192.168.12.21] (unknown [10.149.0.1])
+	by buildserver.ru.mvista.com (Postfix) with ESMTP id 7DCA08815
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 22:01:15 +0500 (SAMST)
+Message-ID: <464B38A9.9000402@ru.mvista.com>
+Date: Wed, 16 May 2007 21:00:25 +0400
+From: Valentine Barshak <vbarshak@ru.mvista.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: Re: New version of the device tree aware EMAC driver
+References: <20070516032630.GC19127@localhost.localdomain>
+In-Reply-To: <20070516032630.GC19127@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,13 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-05-15 at 11:50, Wade Farnsworth wrote:
-> +static void __devinit early_mpc86xx_pcie(struct pci_dev *dev)
-> +{
-> +	   dev->class = PCI_CLASS_BRIDGE_PCI << 8 | 0x1;
-> +}
+David Gibson wrote:
+> I've made a few more tiny tweaks to BenH's rewritten device-tree based
+> 4xx EMAC driver.  The main change is that it now no longer requires
+> 'device_type', just 'compatible' to be set in the ZMII and MAL device
+> nodes when probing.  This works better with current thinking on
+> flattened device trees which discourages creating new device_type
+> values unless there is a clear use for a new device class binding.
+>
+> The patch can be obtained from:
+>
+> http://ozlabs.org/~dgibson/home/emac/powerpc-emac-new-20070516.patch
+>
+>   
+In __emac_mdio_read and __emac_mdio_write functions:
 
-What'd we decide on that 0x1 in there?
++    if (!emac_has_feature(dev, EMAC_FTR_STACR_OC_INVERT))
++        r |= EMAC_STACR_OC;
 
-Thanks,
-jdl
+should be
+
++    if (emac_has_feature(dev, EMAC_FTR_STACR_OC_INVERT))
++        r |= EMAC_STACR_OC;
+
+Thanks.
