@@ -1,19 +1,20 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [208.106.21.240])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 77AFADDEF5
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 03:36:45 +1000 (EST)
-Date: Wed, 16 May 2007 10:30:02 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH] ibm_emac: Correctly detect old link speed
-Message-ID: <20070516173002.GA22331@gate.ebshome.net>
-References: <200705161300.08521.sr@denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200705161300.08521.sr@denx.de>
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <clameter@sgi.com>
+Received: from relay.sgi.com (netops-testserver-4-out.sgi.com [192.48.171.29])
+	by ozlabs.org (Postfix) with ESMTP id 99C18DDE2C
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 03:41:51 +1000 (EST)
+Date: Wed, 16 May 2007 10:41:49 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: Slab allocators: Define common size limitations
+In-Reply-To: <Pine.LNX.4.62.0705160855470.24080@pademelon.sonytel.be>
+Message-ID: <Pine.LNX.4.64.0705161039260.9142@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0705152313490.5832@schroedinger.engr.sgi.com>
+	<Pine.LNX.4.62.0705160855470.24080@pademelon.sonytel.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,19 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 16, 2007 at 01:00:08PM +0200, Stefan Roese wrote:
-> This patch fixes a bug where the link speed change was not
-> detected correctly. This occured on a 440SPe (EMAC4) system
-> where the old link speed was 100Mbps and the new link speed
-> is 1000Mbps.
+On Wed, 16 May 2007, Geert Uytterhoeven wrote:
 
-Good catch, Stefan. Unfortunately, I have to NACK your patch - you 
-broke non EMAC4 builds.
+> On Tue, 15 May 2007, Christoph Lameter wrote:
+> > So define a common maximum size for kmalloc. For conveniences sake
+> > we use the maximum size ever supported which is 32 MB. We limit the maximum
+> > size to a lower limit if MAX_ORDER does not allow such large allocations.
+> 
+> What are the changes a large allocation will actually succeed?
+> Is there an alignment rule for large allocations?
+> 
+> E.g. for one of the PS3 drivers I need a physically contiguous 256 KiB-aligned
+> block of 256 KiB. Currently I'm using __alloc_bootmem() for that, but maybe
+> kmalloc() becomes a suitable alternative now?
 
-Correct fix is just to remove EMAC_MR1_MF_1000GPCS from the first 
-if condition.
-
-I'll send correct fix shortly along with other queued patches.
-
--- 
-Eugene
+The chance of succeeding drops with the time that the system has been 
+running. Typically these large allocs are used when the system is brought 
+up. Maybe we will be able to successfully allocate these even after 
+memory has gotten significant use when Mel's antifrag/defrag work has 
+progressed more.
