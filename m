@@ -1,19 +1,32 @@
-Return-Path: <wfarnsworth@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id AD06BDDE3A
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 06:29:51 +1000 (EST)
-Subject: Re: [PATCH 2/5] Add legacy devices to mpc8641_hpcn.dts
-From: Wade Farnsworth <wfarnsworth@mvista.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <b77c4b3dd22795a73cd32a0623722e51@kernel.crashing.org>
-References: <1179245829.8132.100.camel@rhino> <1179246470.8132.112.camel@rhino>
-	<1179333421.7018.17.camel@ld0161-tx32>
-	<b77c4b3dd22795a73cd32a0623722e51@kernel.crashing.org>
+Return-Path: <johnrose@austin.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7B15EDDEDB
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 07:23:21 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4GLNIDO001675
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 17:23:18 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l4GLNIm3530532
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 17:23:18 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4GLNI3e001313
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 17:23:18 -0400
+Subject: Re: [viro@ftp.linux.org.uk: [PATCH] rpadlpar breakage - fallout of
+	struct subsystem removal]
+From: John Rose <johnrose@austin.ibm.com>
+To: Al Viro <viro@ftp.linux.org.uk>, Greg KH <greg@kroah.com>,
+	michael@ellerman.id.au, Linas Vepstas <linas@austin.ibm.com>
+In-Reply-To: <20070515194729.GE4095@ftp.linux.org.uk>
+References: <20070515194729.GE4095@ftp.linux.org.uk>
 Content-Type: text/plain
-Date: Wed, 16 May 2007 13:29:50 -0700
-Message-Id: <1179347390.8132.225.camel@rhino>
+Date: Wed, 16 May 2007 16:22:37 -0500
+Message-Id: <1179350557.14199.10.camel@sinatra.austin.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,12 +36,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-05-16 at 21:55 +0200, Segher Boessenkool wrote:
-> >> +			isa@f0 {
-> 
-> isa@1e
-> 
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 
-Oh by the way, thanks for pointing this out.  Will fix.
+Verified boot, hotplug, and dynamic add/remove of buses.  Perfect,
+thanks Al!
 
---Wade
+Acked-by: John Rose <johnrose@austin.ibm.com>
