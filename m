@@ -1,19 +1,20 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 2DBCEDDEDE
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 03:01:18 +1000 (EST)
-Received: from [192.168.12.21] (unknown [10.149.0.1])
-	by buildserver.ru.mvista.com (Postfix) with ESMTP id 7DCA08815
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 22:01:15 +0500 (SAMST)
-Message-ID: <464B38A9.9000402@ru.mvista.com>
-Date: Wed, 16 May 2007 21:00:25 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id ACC6ADDEE6
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 03:07:43 +1000 (EST)
+Date: Wed, 16 May 2007 12:11:00 -0500
+To: Linas Vepstas <linas@austin.ibm.com>
+Subject: Re: your mail
+Message-ID: <20070516171100.GA25056@lixom.net>
+References: <20070516133046.GB25792@localhost>
+	<20070516164341.GA7008@austin.ibm.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Re: New version of the device tree aware EMAC driver
-References: <20070516032630.GC19127@localhost.localdomain>
-In-Reply-To: <20070516032630.GC19127@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070516164341.GA7008@austin.ibm.com>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	johnrose@us.ibm.com, linux-kernel@vger.kernel.org,
+	Bob Picco <bob.picco@hp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,27 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> I've made a few more tiny tweaks to BenH's rewritten device-tree based
-> 4xx EMAC driver.  The main change is that it now no longer requires
-> 'device_type', just 'compatible' to be set in the ZMII and MAL device
-> nodes when probing.  This works better with current thinking on
-> flattened device trees which discourages creating new device_type
-> values unless there is a clear use for a new device class binding.
->
-> The patch can be obtained from:
->
-> http://ozlabs.org/~dgibson/home/emac/powerpc-emac-new-20070516.patch
->
->   
-In __emac_mdio_read and __emac_mdio_write functions:
+On Wed, May 16, 2007 at 11:43:41AM -0500, Linas Vepstas wrote:
+> On Wed, May 16, 2007 at 09:30:46AM -0400, Bob Picco wrote:
+> > Subject: Re: 2.6.22-rc1-mm1 powerpc build breakage
+> > 
+> > /usr/src/linux-2.6.22-rc1-mm1/drivers/pci/hotplug/rpadlpar_sysfs.c:132: error: unknown field `subsys' specified in initializer
+> > /usr/src/linux-2.6.22-rc1-mm1/drivers/pci/hotplug/rpadlpar_sysfs.c:132: warning: initialization from incompatible pointer type
+> > make[4]: *** [drivers/pci/hotplug/rpadlpar_sysfs.o] Error 1
+> > make[3]: *** [drivers/pci/hotplug] Error 2
+> > make[2]: *** [drivers/pci] Error 2
+> > make[1]: *** [drivers] Error 2
+> > make: *** [_all] Error 2
+> 
+> John Rose is working to fix this "real soon now".
 
-+    if (!emac_has_feature(dev, EMAC_FTR_STACR_OC_INVERT))
-+        r |= EMAC_STACR_OC;
+Do you mean the fix Al Viro posted yesterday?
 
-should be
+http://patchwork.ozlabs.org/linuxppc/patch?id=11177
 
-+    if (emac_has_feature(dev, EMAC_FTR_STACR_OC_INVERT))
-+        r |= EMAC_STACR_OC;
 
-Thanks.
+-Olof
