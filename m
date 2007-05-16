@@ -1,26 +1,32 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
-	by ozlabs.org (Postfix) with ESMTP id 3FC34DDF09
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 04:38:12 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so142377ugf
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 11:38:10 -0700 (PDT)
-Message-ID: <528646bc0705161138q3ed921dag81f0f86216d10a20@mail.gmail.com>
-Date: Wed, 16 May 2007 12:38:10 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: [i2c] [PATCH] Make i2c-mpc driver use i2c_add_numbered_adapter
-In-Reply-To: <20070516202520.3c6c5280@hyperion.delvare>
+Return-Path: <kniht@us.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E2A34DDEDE
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 04:42:54 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4GIgp0j028528
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 14:42:51 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l4GIgpcC554194
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 14:42:51 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4GIgpgj031320
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 14:42:51 -0400
+Received: from [9.67.216.160] (wecm-9-67-216-160.wecm.ibm.com [9.67.216.160])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	l4GIgpQm031305
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 14:42:51 -0400
+Message-ID: <464B50AA.9060807@us.ibm.com>
+Date: Wed, 16 May 2007 13:42:50 -0500
+From: Jon Tollefson <kniht@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <20070514190545.32739.72083.stgit@trillian.secretlab.ca>
-	<200705150828.37529.david-b@pacbell.net>
-	<528646bc0705150851pa578a56nc0dc171677748e5a@mail.gmail.com>
-	<200705150905.21559.david-b@pacbell.net>
-	<20070516202520.3c6c5280@hyperion.delvare>
-Cc: rtc-linux@googlegroups.com, James Chapman <jchapman@katalix.com>,
-	David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
-	i2c@lm-sensors.org
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: move common code out of if/else
+Content-Type: text/plain; charset=ISO-8859-1
+Reply-To: kniht@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,35 +36,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 5/16/07, Jean Delvare <khali@linux-fr.org> wrote:
-> On Tue, 15 May 2007 09:05:20 -0700, David Brownell wrote:
-> > On Tuesday 15 May 2007, Grant Likely wrote:
-> > >
-> > > Take another look; this is a funny quirk of the driver.  The
-> > > assignment is 'i2c->adap = mpc_ops'; not 'i2c->adap = &mpc_ops'.  And
-> > > in struct mpc_i2c, the field is declared as 'struct i2c_adapter adap',
-> > > not 'struct i2c_adapter *adap'.  The driver instance gets a copy of
-> > > the mpc_ops structure to initialize it, not a pointer to the staticly
-> > > defined structure.  I got bitten by the same thing when I was looking
-> > > at the code.
-> >
-> > I see -- you're right.  That "template" idiom is a good one to get
-> > rid of, FWIW ... not only is it confusing, but it also wastes space.
->
-> Well, maybe you can submit a patch fixing this one?
+Move common code out of if/else.
 
-Heh, oops.
+Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
+----
 
-I had replied to David saying that I would do this bit; but I forgot
-to cc the list.
+ hash_native_64.c |    3 +--
+ 1 files changed, 1 insertion(+), 2 deletions(-)
 
-I'll take care of this.
 
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index 4a20d89..bb76814 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -233,15 +233,14 @@ static long native_hpte_updatepp(unsigned long slot, unsigned long newpp,
+        /* Even if we miss, we need to invalidate the TLB */
+        if (!HPTE_V_COMPARE(hpte_v, want_v) || !(hpte_v & HPTE_V_VALID)) {
+                DBG_LOW(" -> miss\n");
+-               native_unlock_hpte(hptep);
+                ret = -1;
+        } else {
+                DBG_LOW(" -> hit\n");
+                /* Update the HPTE */
+                hptep->r = (hptep->r & ~(HPTE_R_PP | HPTE_R_N)) |
+                        (newpp & (HPTE_R_PP | HPTE_R_N | HPTE_R_C));
+-               native_unlock_hpte(hptep);
+        }
++       native_unlock_hpte(hptep);
+ 
+        /* Ensure it is out of the tlb too. */
+        tlbie(va, psize, local);
