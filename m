@@ -1,33 +1,23 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 49B8CDDF26
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 04:52:17 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l4GImVgP016767
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 14:48:31 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4GIq7Lp212962
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 12:52:07 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4GIq7jl025509
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 12:52:07 -0600
-Received: from [9.10.86.50] (9-10-86-50.rchland.ibm.com [9.10.86.50])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	l4GIq7AM025490
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 12:52:07 -0600
-Subject: [PATCH] Pass per-file CFLAGs for platform specific op codes
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain
-Date: Wed, 16 May 2007 13:51:37 -0500
-Message-Id: <1179341497.13214.117.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id CF6EDDDF1D
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 05:23:42 +1000 (EST)
+Message-ID: <464B585B.10301@freescale.com>
+Date: Wed, 16 May 2007 14:15:39 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: [i2c] [PATCH] Make i2c-mpc driver use i2c_add_numbered_adapter
+References: <20070514190545.32739.72083.stgit@trillian.secretlab.ca>	<20070515152626.199f9d6b@hyperion.delvare>
+	<200705150828.37529.david-b@pacbell.net>
+In-Reply-To: <200705150828.37529.david-b@pacbell.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: rtc-linux@googlegroups.com, linuxppc-dev@ozlabs.org, i2c@lm-sensors.org,
+	Jean Delvare <khali@linux-fr.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,34 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-As a result of compiling all of the wrapper files for every platform
-now, the kernel build can fail for toolchains that don't support various
-op codes by default.  An example of this building a 7xx platform with
-the ELD4.0 toolchain, is below:
+David Brownell wrote:
+> On Tuesday 15 May 2007, Jean Delvare wrote:
+> 
+>>On Mon, 14 May 2007 13:11:23 -0600, Grant Likely wrote:
+> 
+> 
+>>>--- a/drivers/i2c/busses/i2c-mpc.c
+>>>+++ b/drivers/i2c/busses/i2c-mpc.c
+>>>@@ -327,9 +327,10 @@ static int fsl_i2c_probe(struct platform_device *pdev)
+>>> 	platform_set_drvdata(pdev, i2c);
+>>> 
+>>> 	i2c->adap = mpc_ops;
+>>>+	i2c->adap.nr = pdev->id;
+> 
+> 
+> By the way:  mpc_ops is a static i2c_adapter, so given that
+> the reason for using pdev->id that way was that there might
+> be more than one such platform device ... shouldn't allocation
+> of the adapter be moved into allocation of the "i2c->" object?
+> 
+> Or at least, add a check to ensure that the static mpc_ops
+> structure isn't in use before progressing this probe().
 
-/tmp/ccYjhJoL.s: Assembler messages:
-/tmp/ccYjhJoL.s:42: Error: Unrecognized opcode: `mtdcr'
-/tmp/ccYjhJoL.s:43: Error: Unrecognized opcode: `mfdcr'
-make[1]: *** [arch/powerpc/boot/44x.o] Error 1
+The mpc_ops struct is only used as a template; it gets copied into 
+i2c->adap for each adapter instance.
 
-The following patch introduces additional CFLAGS for the 4xx specific
-files and fixes the kernel compile.
-
-Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-
----
- arch/powerpc/boot/Makefile |    3 +++
- 1 file changed, 3 insertions(+)
-
---- linux-2.6.orig/arch/powerpc/boot/Makefile
-+++ linux-2.6/arch/powerpc/boot/Makefile
-@@ -33,6 +33,9 @@ endif
- 
- BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj)
- 
-+$(obj)/44x.o: BOOTCFLAGS += -Wa,-mbooke
-+$(obj)/ebony.o: BOOTCFLAGS += -Wa,-mbooke
-+
- zlib       := inffast.c inflate.c inftrees.c
- zlibheader := inffast.h inffixed.h inflate.h inftrees.h infutil.h
- zliblinuxheader := zlib.h zconf.h zutil.h
+-Scott
