@@ -1,19 +1,20 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 6C333DDEFE
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 06:01:58 +1000 (EST)
-Message-ID: <464B638E.4070204@ru.mvista.com>
-Date: Thu, 17 May 2007 00:03:26 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2/5] Add legacy devices to mpc8641_hpcn.dts
-References: <1179245829.8132.100.camel@rhino>
-	<1179246470.8132.112.camel@rhino>	<1179333421.7018.17.camel@ld0161-tx32>
-	<b77c4b3dd22795a73cd32a0623722e51@kernel.crashing.org>
-In-Reply-To: <b77c4b3dd22795a73cd32a0623722e51@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 11C39DDEEC
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 06:07:07 +1000 (EST)
+Date: Wed, 16 May 2007 15:06:59 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: jgarzik@pobox.com
+Subject: [PATCH] gianfar: Add I/O barriers when touching buffer descriptor
+	ownership.
+Message-ID: <20070516200659.GA23548@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,30 +24,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+The hardware must not see that is given ownership of a buffer until it is
+completely written, and when the driver receives ownership of a buffer,
+it must ensure that any other reads to the buffer reflect its final
+state.  Thus, I/O barriers are added where required.
 
-Segher Boessenkool wrote:
+Without this patch, I have observed GCC reordering the setting of
+bdp->length and bdp->status in gfar_new_skb.  Hardware reordering
+was also theoretically possible.
 
->>>+				8042@60 {
->>>+					device_type = "8042";
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+I've added the requested comments to the source code about
+the use of eieio().  Jeff, please consider for 2.6.22, as it
+fixes a bug that has been observed.
 
-> Drop the device_type.  A number as a name isn't
-> all that great, either.
+ drivers/net/gianfar.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
 
-    Perhaps it should be called "keyboard" (and device_type should also be set 
-to it) since 8042 is in fact (mostly) a keyboard controller... although it 
-also "drives" PS/2 mouse...
-
->>>+				rtc@70 {
->>>+					device_type = "rtc";
->>>+					reg = <1 70 2>;
->>>+				};
-
->>Is "rtc" a standard OF device,
-
-> Yes, it is defined in the "Device Support Extensions"
-> recommended practice.
-
-    And it also defines "keyboard".
-
-WBR, Sergei
+diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+index b666a0c..f5b3cba 100644
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -1025,6 +1025,15 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 
+ 	dev->trans_start = jiffies;
+ 
++	/* The powerpc-specific eieio() is used, as wmb() has too strong
++	 * semantics (it requires synchronization between cacheable and
++	 * uncacheable mappings, which eieio doesn't provide and which we
++	 * don't need), thus requiring a more expensive sync instruction.  At
++	 * some point, the set of architecture-independent barrier functions
++	 * should be expanded to include weaker barriers.
++	 */
++
++	eieio();
+ 	txbdp->status = status;
+ 
+ 	/* If this was the last BD in the ring, the next one */
+@@ -1301,6 +1310,7 @@ struct sk_buff * gfar_new_skb(struct net_device *dev, struct rxbd8 *bdp)
+ 	bdp->length = 0;
+ 
+ 	/* Mark the buffer empty */
++	eieio();
+ 	bdp->status |= (RXBD_EMPTY | RXBD_INTERRUPT);
+ 
+ 	return skb;
+@@ -1484,6 +1494,7 @@ int gfar_clean_rx_ring(struct net_device *dev, int rx_work_limit)
+ 	bdp = priv->cur_rx;
+ 
+ 	while (!((bdp->status & RXBD_EMPTY) || (--rx_work_limit < 0))) {
++		rmb();
+ 		skb = priv->rx_skbuff[priv->skb_currx];
+ 
+ 		if (!(bdp->status &
+-- 
+1.5.0.3
