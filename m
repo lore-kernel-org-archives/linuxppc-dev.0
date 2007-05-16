@@ -1,30 +1,33 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx024.isp.belgacom.be (outmx024.isp.belgacom.be
-	[195.238.4.128])
+Return-Path: <idefix@fechner.net>
+Received: from michelle.lostinspace.de (michelle.lostinspace.de
+	[62.146.248.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4EA4DDDEE2
+	(Client CN "michelle.lostinspace.de",
+	Issuer "michelle.lostinspace.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 621CCDDE9E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 May 2007 02:34:53 +1000 (EST)
-Received: from outmx024.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx024.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id l4GGYew5010026
-	for <linuxppc-embedded@ozlabs.org>; Wed, 16 May 2007 18:34:41 +0200
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <464B329E.8030600@246tNt.com>
-Date: Wed, 16 May 2007 18:34:38 +0200
-From: Sylvain Munaut <tnt@246tNt.com>
+	Thu, 17 May 2007 04:03:17 +1000 (EST)
+Received: from server.idefix.lan (cl-70.muc-02.de.sixxs.net
+	[IPv6:2001:a60:f000:45::2]) (authenticated bits=0)
+	by michelle.lostinspace.de (8.13.8/8.13.8) with ESMTP id l4GI30ml015421
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 16 May 2007 20:03:06 +0200 (CEST)
+	(envelope-from idefix@fechner.net)
+Received: from idefix by server.idefix.lan with local (Exim 4.67 (FreeBSD))
+	(envelope-from <idefix@fechner.net>) id 1HoNq0-00067C-L7
+	for linuxppc-embedded@ozlabs.org; Wed, 16 May 2007 20:03:00 +0200
+Date: Wed, 16 May 2007 20:03:00 +0200
+From: Matthias Fechner <idefix@fechner.net>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: MPC5200B memory performance
+Message-ID: <20070516180259.GA23085@server.idefix.lan>
+References: <DD39B5C3F4963040ADC9768BE7E430CB01EB1FEF@is-hdq-exchange.marel.net>
 MIME-Version: 1.0
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH] mpc52xx_psc_spi: fix it for CONFIG_PPC_MERGE
-References: <20070516073707.GD9667@nd47.coderock.org>
-	<464ABE97.7090603@246tNt.com>
-	<200705160911.55867.david-b@pacbell.net>
-In-Reply-To: <200705160911.55867.david-b@pacbell.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: spi-devel-general@lists.sourceforge.net,
-	Dragos Carp <dragos.carp@toptica.com>,
-	Domen Puncer <domen@coderock.org>, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <DD39B5C3F4963040ADC9768BE7E430CB01EB1FEF@is-hdq-exchange.marel.net>
+Sender: Matthias Fechner <idefix@fechner.net>
+Reply-To: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,50 +38,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-David Brownell wrote:
-> On Wednesday 16 May 2007, Sylvain Munaut wrote:
->   
->> Well, this comment is not about the patch but about the driver it self,
->> I didn't see it before today.
->>     
->
-> It merged earlier in the 2.6.22 cycle.  If you don't have criticisms
-> about the patch itself, I'll forward it for merging after I get at
-> least an ack from Dragos.
->   
-Yes, I saw when looking at the spi-devl archive. Would have been nice if the
-author though of cc-ing the ppc-embedded list ;)
+Hello Daniel,
 
-The patch looks ok to me (and needed actually since as Domen pointed
-out, 52xx
-has been replaced by 5200 in the device tree).
-And cell-index has been added to know the psc id without dirty tricks.
+* Daniel Schnell <daniel.schnell@marel.com> [15-05-07 11:22]:
+> I get the following values on my board:
 
->>  - MPC52xx_PA(MPC52xx_PSCx_OFFSET(...)) ??? You should get that from the
->> resource of the platform_device. This macro is just there for early
->> console stuff.
->>     
->
-> That PPC_MERGE stuff does look messy.
->   
-Yes, trying to support both in a driver is really not pretty.
-Once we can finally get rid of it I'll submit a patch to clear that out.
-
->>  - You do read/write/modify operation on CDM shared register
->> (clk_enables) from a driver, you should have added something in common
->> 52xx code to do theses with proper locking.
->>  - You can get f_system from the device tree instead of just assuming
->> it's 512 MHz. It probably need to be done the same way it's done to find
->> ipb_freq.
->>  - Would have been nice to be able to somehow configure MCLK rather than
->> #define it
->>     
->
-> Best to use <linux/clk.h> for all of those, but it seems powerpc/ppc
-> don't support those interfaces yet ... is there maybe a plan for
-> resolving that issue?
->   
-Mmm, I wasn't aware of that interface, I'll look into that. Thanks.
+my result is:
+Test (10000) memcpy of sizes (1024) ....
+10000 memcpy. Time per memcpy: 1814 [nsec] (564 MB/sec)
+ finished.
+Test (10000) memcpy of sizes (2048) ....
+10000 memcpy. Time per memcpy: 3433 [nsec] (596 MB/sec)
+ finished.
+Test (10000) memcpy of sizes (4096) ....
+10000 memcpy. Time per memcpy: 6687 [nsec] (612 MB/sec)
+ finished.
+Test (10000) memcpy of sizes (8192) ....
+10000 memcpy. Time per memcpy: 21454 [nsec] (381 MB/sec)
+ finished.
+Test (10000) memcpy of sizes (16384) ....
+10000 memcpy. Time per memcpy: 205551 [nsec] (79 MB/sec)
+ finished.
+Test (1000) memcpy of sizes (32768) ....
+1000 memcpy. Time per memcpy: 379875 [nsec] (86 MB/sec)
+ finished.
+Test (1000) memcpy of sizes (51200) ....
+1000 memcpy. Time per memcpy: 588792 [nsec] (86 MB/sec)
+ finished.
+Test (1000) memcpy of sizes (102400) ....
+1000 memcpy. Time per memcpy: 1126511 [nsec] (90 MB/sec)
+ finished.
+Test (100) memcpy of sizes (1048576) ....
+100 memcpy. Time per memcpy: 11307890 [nsec] (92 MB/sec)
+ finished.
+Test (10) memcpy of sizes (10485760) ....
+10 memcpy. Time per memcpy: 120783600 [nsec] (86 MB/sec)
+ finished.
+Test (5) memcpy of sizes (52428800) ....
+5 memcpy. Time per memcpy: 673867800 [nsec] (77 MB/sec)
+ finished.
+	   
 
 
-    Sylvain
+Best regards,
+Matthias
+
+-- 
+
+"Programming today is a race between software engineers striving to
+build bigger and better idiot-proof programs, and the universe trying to
+produce bigger and better idiots. So far, the universe is winning." --
+Rich Cook
