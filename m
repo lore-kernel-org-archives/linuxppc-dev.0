@@ -1,23 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
+	[151.189.21.41])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CF6EDDDF1D
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 05:23:42 +1000 (EST)
-Message-ID: <464B585B.10301@freescale.com>
-Date: Wed, 16 May 2007 14:15:39 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [i2c] [PATCH] Make i2c-mpc driver use i2c_add_numbered_adapter
-References: <20070514190545.32739.72083.stgit@trillian.secretlab.ca>	<20070515152626.199f9d6b@hyperion.delvare>
-	<200705150828.37529.david-b@pacbell.net>
-In-Reply-To: <200705150828.37529.david-b@pacbell.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: rtc-linux@googlegroups.com, linuxppc-dev@ozlabs.org, i2c@lm-sensors.org,
-	Jean Delvare <khali@linux-fr.org>
+	by ozlabs.org (Postfix) with ESMTP id 8AF48DDEEE
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 05:55:43 +1000 (EST)
+In-Reply-To: <1179333421.7018.17.camel@ld0161-tx32>
+References: <1179245829.8132.100.camel@rhino> <1179246470.8132.112.camel@rhino>
+	<1179333421.7018.17.camel@ld0161-tx32>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <b77c4b3dd22795a73cd32a0623722e51@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/5] Add legacy devices to mpc8641_hpcn.dts
+Date: Wed, 16 May 2007 21:55:33 +0200
+To: Jon Loeliger <jdl@freescale.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,30 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Brownell wrote:
-> On Tuesday 15 May 2007, Jean Delvare wrote:
-> 
->>On Mon, 14 May 2007 13:11:23 -0600, Grant Likely wrote:
-> 
-> 
->>>--- a/drivers/i2c/busses/i2c-mpc.c
->>>+++ b/drivers/i2c/busses/i2c-mpc.c
->>>@@ -327,9 +327,10 @@ static int fsl_i2c_probe(struct platform_device *pdev)
->>> 	platform_set_drvdata(pdev, i2c);
->>> 
->>> 	i2c->adap = mpc_ops;
->>>+	i2c->adap.nr = pdev->id;
-> 
-> 
-> By the way:  mpc_ops is a static i2c_adapter, so given that
-> the reason for using pdev->id that way was that there might
-> be more than one such platform device ... shouldn't allocation
-> of the adapter be moved into allocation of the "i2c->" object?
-> 
-> Or at least, add a check to ensure that the static mpc_ops
-> structure isn't in use before progressing this probe().
+>> +			isa@f0 {
 
-The mpc_ops struct is only used as a template; it gets copied into 
-i2c->adap for each adapter instance.
+isa@1e
 
--Scott
+>> +				8042@60 {
+>> +					device_type = "8042";
+
+Drop the device_type.  A number as a name isn't
+all that great, either.
+
+>> +				rtc@70 {
+>> +					device_type = "rtc";
+>> +					reg = <1 70 2>;
+>> +				};
+>
+> Is "rtc" a standard OF device,
+
+Yes, it is defined in the "Device Support Extensions"
+recommended practice.
+
+> And is the plan to somehow use this entry in the future?
+
+The platform code can use it to find the device.  If it
+would have a proper "compatible" property, the generic
+code could do that work, instead.
+
+
+Segher
