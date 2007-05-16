@@ -1,29 +1,16 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx013.isp.belgacom.be (outmx013.isp.belgacom.be
-	[195.238.5.64])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9EA84DDF1B
+Return-Path: <Frank.Prepelica@ubidyne.com>
+Received: from ex01.ads.ubidyne.de (mail.ubidyne.com [212.211.133.238])
+	by ozlabs.org (Postfix) with ESMTP id 0918CDDEC9
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 May 2007 18:19:04 +1000 (EST)
-Received: from outmx013.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx013.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id l4G8IeEb003968
-	for <linuxppc-embedded@ozlabs.org>; Wed, 16 May 2007 10:18:41 +0200
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <464ABE97.7090603@246tNt.com>
-Date: Wed, 16 May 2007 10:19:35 +0200
-From: Sylvain Munaut <tnt@246tNt.com>
+	Thu, 17 May 2007 00:37:38 +1000 (EST)
+Subject: BDI2000 configuration file for MPC8313E-RDB
 MIME-Version: 1.0
-To: Domen Puncer <domen@coderock.org>
-Subject: Re: [PATCH] mpc52xx_psc_spi: fix it for CONFIG_PPC_MERGE
-References: <20070516073707.GD9667@nd47.coderock.org>
-In-Reply-To: <20070516073707.GD9667@nd47.coderock.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: spi-devel-general@lists.sourceforge.net,
-	Dragos Carp <dragos.carp@toptica.com>,
-	David Brownell <dbrownell@users.sourceforge.net>,
-	linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C797C6.0CA9B0DA"
+Date: Wed, 16 May 2007 16:25:14 +0200
+Message-ID: <29DC34A6B43468409F5A371CFE34E8491767CF@ex01.ads.ubidyne.de>
+From: "Frank Prepelica" <Frank.Prepelica@ubidyne.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,28 +21,150 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-Well, this comment is not about the patch but about the driver it self,
-I didn't see it before today.
-So here's a few things I see from a quick glance at the code :
+------_=_NextPart_001_01C797C6.0CA9B0DA
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
 
- - Chaning port_config in the driver is just wrong ... you should _not_
-do that. That should have been setup by the bootloader or at worse in
-the platform setup code.
- - You do read/write/modify operation on CDM shared register
-(clk_enables) from a driver, you should have added something in common
-52xx code to do theses with proper locking.
- - MPC52xx_PA(MPC52xx_PSCx_OFFSET(...)) ??? You should get that from the
-resource of the platform_device. This macro is just there for early
-console stuff.
- - You can get f_system from the device tree instead of just assuming
-it's 512 MHz. It probably need to be done the same way it's done to find
-ipb_freq.
- - Would have been nice to be able to somehow configure MCLK rather than
-#define it
- - I hope to remove all arch/ppc stuff by 2.6.23 if I can make the
-cuimage stuff work in arch/powerpc so just including the platform code
-stuff for 1 kernel version ...
+Hi all,
+
+=20
+
+maybe this is not the appropriate mailing list, sorry for that!
+
+=20
+
+but, does anyone got a working BDI2000 configuration file + reg.
+definitions for MPC8313E-RDB
+
+to get access to NAND memory? I got one but there's only access to NOR
+memory.
+
+=20
+
+Many thanks in advance!
+
+=20
+
+Best regards
+
+Frank
+
+=20
 
 
-    Sylvain
+------_=_NextPart_001_01C797C6.0CA9B0DA
+Content-Type: text/html;
+	charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
+xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.E-MailFormatvorlage17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:595.3pt 841.9pt;
+	margin:70.85pt 70.85pt 2.0cm 70.85pt;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+<!--[if gte mso 9]><xml>
+ <o:shapedefaults v:ext=3D"edit" spidmax=3D"1027" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <o:shapelayout v:ext=3D"edit">
+  <o:idmap v:ext=3D"edit" data=3D"1" />
+ </o:shapelayout></xml><![endif]-->
+</head>
+
+<body lang=3DDE link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Hi all,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'>maybe this is not the appropriate mailing =
+list, sorry
+for that!<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'>but, does anyone got a working BDI2000 =
+configuration
+file + reg. definitions for MPC8313E-RDB<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'>to get access to NAND memory? I got one but =
+there&#8217;s
+only access to NOR memory.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'>Many thanks in =
+advance!<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'>Best regards<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'>Frank<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01C797C6.0CA9B0DA--
