@@ -1,16 +1,17 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.190])
-	by ozlabs.org (Postfix) with ESMTP id 10ED9DDEE4
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 20:59:51 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: netdev@vger.kernel.org,
- linuxppc-dev@ozlabs.org
-Subject: [PATCH] ibm_emac: Correctly detect old link speed
-Date: Wed, 16 May 2007 13:00:08 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200705161300.08521.sr@denx.de>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
+	[151.189.21.43])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B9CCFDDEEF
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 22:30:35 +1000 (EST)
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Specify GNUTARGET on $(AR) invocations
+Date: Wed, 16 May 2007 14:34:38 +0200
+Message-Id: <11793188781691-git-send-email-segher@kernel.crashing.org>
+Message-Id: <82e1fe849c00c7110db923fb914ab1359b7a4dba.1179318242.git.segher@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,49 +21,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch fixes a bug where the link speed change was not
-detected correctly. This occured on a 440SPe (EMAC4) system
-where the old link speed was 100Mbps and the new link speed
-is 1000Mbps.
+Without this, some versions of GNU ar fail to create
+an archive index if the object files it is packing
+together are of a different object format than ar's
+default format (for example, binutils compiled to
+default to 64-bit, with 32-bit objects).
 
-Signed-off-by: Stefan Roese <sr@denx.de>
-
+Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
 ---
-commit 1e2a6085bbb6bd384e0812b6e9c62d18d14e1c0f
-tree f441a914c9d66fb00fcde1e4bd7e02effba20dc7
-parent 7b104bcb8e460e45a1aebe3da9b86aacdb4cab12
-author Stefan Roese <sr@denx.de> Wed, 16 May 2007 12:54:40 +0200
-committer Stefan Roese <sr@denx.de> Wed, 16 May 2007 12:54:40 +0200
+ arch/powerpc/Makefile |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
- drivers/net/ibm_emac/ibm_emac_core.c |   18 ++++++++++++------
- 1 files changed, 12 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/ibm_emac/ibm_emac_core.c b/drivers/net/ibm_emac/ibm_emac_core.c
-index 50035eb..ab38727 100644
---- a/drivers/net/ibm_emac/ibm_emac_core.c
-+++ b/drivers/net/ibm_emac/ibm_emac_core.c
-@@ -926,12 +926,18 @@ static int emac_link_differs(struct ocp_enet_private *dev)
- 	int duplex = r & EMAC_MR1_FDE ? DUPLEX_FULL : DUPLEX_HALF;
- 	int speed, pause, asym_pause;
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index d6014a6..6238b58 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -29,7 +29,7 @@ CROSS32CC	:= $(CC) -m32
+ CROSS32AS	:= $(AS) -a32
+ CROSS32LD	:= $(LD) -m elf32ppc
+ CROSS32OBJCOPY	:= $(OBJCOPY)
+-CROSS32AR	:= $(AR)
++CROSS32AR	:= GNUTARGET=elf32-powerpc $(AR)
+ endif
+ endif
  
--	if (r & (EMAC_MR1_MF_1000 | EMAC_MR1_MF_1000GPCS))
--		speed = SPEED_1000;
--	else if (r & EMAC_MR1_MF_100)
--		speed = SPEED_100;
--	else
--		speed = SPEED_10;
-+	switch (r & EMAC_MR1_MF_MASK) {
-+	case EMAC_MR1_MF_1000:
-+	case EMAC_MR1_MF_1000GPCS:
-+		speed = 1000;
-+		break;
-+	case EMAC_MR1_MF_10:
-+		speed = 10;
-+		break;
-+	case EMAC_MR1_MF_100:
-+	default:
-+		speed = 100;
-+	}
+@@ -58,6 +58,7 @@ ifeq ($(HAS_BIARCH),y)
+ override AS	+= -a$(SZ)
+ override LD	+= -m elf$(SZ)ppc
+ override CC	+= -m$(SZ)
++override AR	:= GNUTARGET=elf$(SZ)-powerpc $(AR)
+ endif
  
- 	switch (r & (EMAC_MR1_EIFC | EMAC_MR1_APP)) {
- 	case (EMAC_MR1_EIFC | EMAC_MR1_APP):
+ LDFLAGS_vmlinux	:= -Bstatic
+-- 
+1.5.2.rc0.g4342-dirty
