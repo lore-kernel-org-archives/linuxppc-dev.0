@@ -1,20 +1,21 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound3-dub-R.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 797D9DDF31
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 04:07:58 +1000 (EST)
-Message-ID: <464B4876.7040902@am.sony.com>
-Date: Wed, 16 May 2007 11:07:50 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Edward Strong <edo@onkeh.net>
-Subject: Re: PS3 restart crash, SCSI cache sync
-References: <29744.81.170.114.242.1179319943.squirrel@onkeh.net>
-In-Reply-To: <29744.81.170.114.242.1179319943.squirrel@onkeh.net>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <khali@linux-fr.org>
+Received: from mallaury.nerim.net (smtp-103-wednesday.noc.nerim.net
+	[62.4.17.103]) by ozlabs.org (Postfix) with ESMTP id A36CCDDF05
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 04:25:17 +1000 (EST)
+Date: Wed, 16 May 2007 20:25:20 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: [i2c] [PATCH] Make i2c-mpc driver use i2c_add_numbered_adapter
+Message-ID: <20070516202520.3c6c5280@hyperion.delvare>
+In-Reply-To: <200705150905.21559.david-b@pacbell.net>
+References: <20070514190545.32739.72083.stgit@trillian.secretlab.ca>
+	<200705150828.37529.david-b@pacbell.net>
+	<528646bc0705150851pa578a56nc0dc171677748e5a@mail.gmail.com>
+	<200705150905.21559.david-b@pacbell.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: rtc-linux@googlegroups.com, James Chapman <jchapman@katalix.com>,
+	linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,36 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi.
-
-Edward Strong wrote:
-> I've had this problem for a while but I waited until the 1.3 release kit
-> emerged before raising this, unfortunately it has not resolved my problem.
+On Tue, 15 May 2007 09:05:20 -0700, David Brownell wrote:
+> On Tuesday 15 May 2007, Grant Likely wrote:
+> > 
+> > Take another look; this is a funny quirk of the driver.  The
+> > assignment is 'i2c->adap = mpc_ops'; not 'i2c->adap = &mpc_ops'.  And
+> > in struct mpc_i2c, the field is declared as 'struct i2c_adapter adap',
+> > not 'struct i2c_adapter *adap'.  The driver instance gets a copy of
+> > the mpc_ops structure to initialize it, not a pointer to the staticly
+> > defined structure.  I got bitten by the same thing when I was looking
+> > at the code.
 > 
-> When I reboot the PS3, the last thing to be displayed is:
+> I see -- you're right.  That "template" idiom is a good one to get
+> rid of, FWIW ... not only is it confusing, but it also wastes space.
 
-Please send this kind of PS3 specific post to the cbe-oss-dev mailing
-list next time:
+Well, maybe you can submit a patch fixing this one?
 
-  cbe-oss-dev@ozlabs.org
-  https://ozlabs.org/mailman/listinfo/cbe-oss-dev
-
-
-> Synchronizing SCSI cache for disk sda
-> Synchronizing SCSI cache for disk sda
-> 
-> Then I get a full hardware crash and have to hit the power switch at the
-> back.  
-
-I guess that is not true.  The polling code for the vuart wasn't working
-properly so it was just spinning.  Please press the power button for about 10 sec.
-The HV will gain control and shutdown the lpar.
-
-If I just do a shutdown, this works fine.  This error is
-> reproducible running both Gentoo and FC6.  I am using a 120gb Fujitsu
-> drive.  Does anyone know why this might be happening?
-
-I just added power button support to ps3-linux.git the other day.  Either update
-to that, or backport the fix to your kernel.
-
--Geoff
+-- 
+Jean Delvare
