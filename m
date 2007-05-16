@@ -1,18 +1,18 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [viro@ftp.linux.org.uk: [PATCH] rpadlpar breakage - fallout of
-	struct subsystem removal]
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Al Viro <viro@ftp.linux.org.uk>
-In-Reply-To: <20070515194729.GE4095@ftp.linux.org.uk>
-References: <20070515194729.GE4095@ftp.linux.org.uk>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-x4yqFRAmQEj5MnOBT7Eh"
-Date: Wed, 16 May 2007 10:49:48 +1000
-Message-Id: <1179276588.4120.22.camel@concordia.ozlabs.ibm.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id B96AFDDEC0
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 11:24:51 +1000 (EST)
+Date: Wed, 16 May 2007 11:24:49 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] [POWERPC] remove build warnings in windfarm_core
+Message-Id: <20070516112449.9f0ae1a2.sfr@canb.auug.org.au>
+In-Reply-To: <17993.20745.432703.238649@cargo.ozlabs.ibm.com>
+References: <20070514163219.9d78cde0.sfr@canb.auug.org.au>
+	<17993.20745.432703.238649@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Greg KH <greg@kroah.com>
-Reply-To: michael@ellerman.id.au
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,61 +22,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+drivers/macintosh/windfarm_core.c: In function 'wf_register_control':
+drivers/macintosh/windfarm_core.c:219: warning: ignoring return value of 'device_create_file', declared with attribute warn_unused_result
+drivers/macintosh/windfarm_core.c: In function 'wf_register_sensor':
+drivers/macintosh/windfarm_core.c:329: warning: ignoring return value of 'device_create_file', declared with attribute warn_unused_result
 
---=-x4yqFRAmQEj5MnOBT7Eh
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/macintosh/windfarm_core.c |   10 ++++++++--
+ 1 files changed, 8 insertions(+), 2 deletions(-)
 
-On Tue, 2007-05-15 at 20:47 +0100, Al Viro wrote:
-> [oops - typo in Cc in original posting]
->=20
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> ---
->  drivers/pci/hotplug/rpadlpar_sysfs.c |    5 +++--
->  1 files changed, 3 insertions(+), 2 deletions(-)
->=20
-> diff --git a/drivers/pci/hotplug/rpadlpar_sysfs.c b/drivers/pci/hotplug/r=
-padlpar_sysfs.c
-> index 6c5be3f..df07606 100644
-> --- a/drivers/pci/hotplug/rpadlpar_sysfs.c
-> +++ b/drivers/pci/hotplug/rpadlpar_sysfs.c
-> @@ -129,8 +129,9 @@ struct kobj_type ktype_dlpar_io =3D {
->  };
-> =20
->  struct kset dlpar_io_kset =3D {
-> -	.subsys =3D &pci_hotplug_slots_subsys,
-> -	.kobj =3D {.name =3D DLPAR_KOBJ_NAME, .ktype=3D&ktype_dlpar_io,},
-> +	.kobj =3D {.name =3D DLPAR_KOBJ_NAME,
-> +		 .ktype =3D &ktype_dlpar_io,
-> +		 .parent =3D &pci_hotplug_slots_subsys.kobj},
->  	.ktype =3D &ktype_dlpar_io,
->  };
+On Tue, 15 May 2007 16:19:53 +1000 Paul Mackerras <paulus@samba.org> wrote:
+>
+> This shows up why I hate the must_check stuff.  The sysfs files are
+> not essential for the operation of the windfarm subsystem.  If the
+> sysfs registration fails for any reason, we now have a completely
+> non-functional windfarm subsystem instead of a mostly-working one. :(
 
-That seems to work, I get 'add_slot' and 'remove_slot'
-under /sys/bus/pci/slots/control again.
+This version just warns.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-x4yqFRAmQEj5MnOBT7Eh
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGSlUsdSjSd0sB4dIRArH9AKCwvBkVvL9WEY+6UyRTxpYw7wMIeACgiKum
-//ghXB0pLMX/6vamlGlZuNU=
-=DGRD
------END PGP SIGNATURE-----
-
---=-x4yqFRAmQEj5MnOBT7Eh--
+diff --git a/drivers/macintosh/windfarm_core.c b/drivers/macintosh/windfarm_core.c
+index 192b26e..52a95b4 100644
+--- a/drivers/macintosh/windfarm_core.c
++++ b/drivers/macintosh/windfarm_core.c
+@@ -216,7 +216,10 @@ int wf_register_control(struct wf_control *new_ct)
+ 	new_ct->attr.attr.mode = 0644;
+ 	new_ct->attr.show = wf_show_control;
+ 	new_ct->attr.store = wf_store_control;
+-	device_create_file(&wf_platform_device.dev, &new_ct->attr);
++	if (device_create_file(&wf_platform_device.dev, &new_ct->attr))
++		printk(KERN_WARNING "windfarm: device_creat_file failed"
++			"for %s\n", new_ct->name);
++		/* the subsystem still does useful work without the file */
+ 
+ 	DBG("wf: Registered control %s\n", new_ct->name);
+ 
+@@ -326,7 +329,10 @@ int wf_register_sensor(struct wf_sensor *new_sr)
+ 	new_sr->attr.attr.mode = 0444;
+ 	new_sr->attr.show = wf_show_sensor;
+ 	new_sr->attr.store = NULL;
+-	device_create_file(&wf_platform_device.dev, &new_sr->attr);
++	if (device_create_file(&wf_platform_device.dev, &new_sr->attr))
++		printk(KERN_WARNING "windfarm: device_create_file failed"
++		       " for %s\n", new_sr->name);
++		/* the subsystem still does useful work without the file */
+ 
+ 	DBG("wf: Registered sensor %s\n", new_sr->name);
+ 
+-- 
+1.5.1.4
