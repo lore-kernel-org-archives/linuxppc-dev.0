@@ -1,20 +1,18 @@
-Return-Path: <clameter@sgi.com>
-Received: from relay.sgi.com (netops-testserver-4-out.sgi.com [192.48.171.29])
-	by ozlabs.org (Postfix) with ESMTP id 99C18DDE2C
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 03:41:51 +1000 (EST)
-Date: Wed, 16 May 2007 10:41:49 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: Slab allocators: Define common size limitations
-In-Reply-To: <Pine.LNX.4.62.0705160855470.24080@pademelon.sonytel.be>
-Message-ID: <Pine.LNX.4.64.0705161039260.9142@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0705152313490.5832@schroedinger.engr.sgi.com>
-	<Pine.LNX.4.62.0705160855470.24080@pademelon.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Return-Path: <wfarnsworth@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id B87E4DDE9E
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 03:59:09 +1000 (EST)
+Subject: Re: [PATCH 2/5] Add legacy devices to mpc8641_hpcn.dts
+From: Wade Farnsworth <wfarnsworth@mvista.com>
+To: Jon Loeliger <jdl@freescale.com>
+In-Reply-To: <1179333421.7018.17.camel@ld0161-tx32>
+References: <1179245829.8132.100.camel@rhino> <1179246470.8132.112.camel@rhino>
+	<1179333421.7018.17.camel@ld0161-tx32>
+Content-Type: text/plain
+Date: Wed, 16 May 2007 10:59:06 -0700
+Message-Id: <1179338347.8132.200.camel@rhino>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,22 +22,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 16 May 2007, Geert Uytterhoeven wrote:
+On Wed, 2007-05-16 at 11:37 -0500, Jon Loeliger wrote:
+> On Tue, 2007-05-15 at 11:27, Wade Farnsworth wrote:
 
-> On Tue, 15 May 2007, Christoph Lameter wrote:
-> > So define a common maximum size for kmalloc. For conveniences sake
-> > we use the maximum size ever supported which is 32 MB. We limit the maximum
-> > size to a lower limit if MAX_ORDER does not allow such large allocations.
-> 
-> What are the changes a large allocation will actually succeed?
-> Is there an alignment rule for large allocations?
-> 
-> E.g. for one of the PS3 drivers I need a physically contiguous 256 KiB-aligned
-> block of 256 KiB. Currently I'm using __alloc_bootmem() for that, but maybe
-> kmalloc() becomes a suitable alternative now?
+<snip>
 
-The chance of succeeding drops with the time that the system has been 
-running. Typically these large allocs are used when the system is brought 
-up. Maybe we will be able to successfully allocate these even after 
-memory has gotten significant use when Mel's antifrag/defrag work has 
-progressed more.
+> > +			isa@f0 {
+> > +				device_type = "isa";
+> >  				#interrupt-cells = <2>;
+> 
+> Yea, thanks.  BTW, will this be sufficient to now identify the
+> primary controller and not doink with the legacy IO ports now?
+> Or is that being handled differently somehow?
+
+I'm not sure what you're referring to here.  Can you clarify this a
+little?
+
+> 
+> > +				#size-cells = <1>;
+> > +				#address-cells = <2>;
+> > +				reg = <f000 0 0 0 0>;
+> > +				ranges = <1 0 01000000 0 0 00001000>;
+> > +				interrupt-parent = <4d0>;
+> 
+> That 4d0 should likely be &i8259.
+> 
+> > +				8042@60 {
+> > +					device_type = "8042";
+> > +					reg = <1 60 1 1 64 1>;
+> > +					interrupts = <1 3 c 3>;
+> > +					interrupt-parent = <4d0>;
+> > +				};
+> 
+> Ditto.
+
+Yes, of course.  Thanks.
+
+> 
+> > +				rtc@70 {
+> > +					device_type = "rtc";
+> > +					reg = <1 70 2>;
+> > +				};
+> 
+> Is "rtc" a standard OF device, or are we making up a
+> new thing that should be documented in booting-with-OF.txt ?
+> And is the plan to somehow use this entry in the future?
+
+It is my understanding that "rtc" is a standard OF device.  Can anybody
+confirm this?
+
+This could be used in the platform-specific RTC code to get the ports
+from the device tree.  Currently, however, I simply use RTC_PORT(x) from
+asm/mc146818rtc.h.  Is it preferable to use the device tree here?
+
+--Wade
+
+> 
+> Thanks,
+> jdl
+> 
+> 
