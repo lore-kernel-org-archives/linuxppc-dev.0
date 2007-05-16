@@ -1,18 +1,30 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id B96AFDDEC0
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 11:24:51 +1000 (EST)
-Date: Wed, 16 May 2007 11:24:49 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] [POWERPC] remove build warnings in windfarm_core
-Message-Id: <20070516112449.9f0ae1a2.sfr@canb.auug.org.au>
-In-Reply-To: <17993.20745.432703.238649@cargo.ozlabs.ibm.com>
-References: <20070514163219.9d78cde0.sfr@canb.auug.org.au>
-	<17993.20745.432703.238649@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BA62FDDED2
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 12:08:06 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l4G280sg016166
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 19:08:01 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l4G27xRq003604
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2007 21:08:00 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH 2/2] powerpc: Fix Section mismatch warnings
+Date: Wed, 16 May 2007 10:09:41 +0800
+Message-ID: <989B956029373F45A0B8AF0297081890B760A2@zch01exm26.fsl.freescale.net>
+In-Reply-To: <4575ED11-C144-49CF-9FBA-0613B61EFCE3@kernel.crashing.org>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Paul <paulus@samba.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,55 +34,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-drivers/macintosh/windfarm_core.c: In function 'wf_register_control':
-drivers/macintosh/windfarm_core.c:219: warning: ignoring return value of 'device_create_file', declared with attribute warn_unused_result
-drivers/macintosh/windfarm_core.c: In function 'wf_register_sensor':
-drivers/macintosh/windfarm_core.c:329: warning: ignoring return value of 'device_create_file', declared with attribute warn_unused_result
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Tuesday, May 15, 2007 10:07 PM
+> To: Li Yang-r58472
+> Cc: Paul; linuxppc-dev@ozlabs.org; Linux Kernel
+> Subject: Re: [PATCH 2/2] powerpc: Fix Section mismatch warnings
+>=20
+>=20
+> On May 14, 2007, at 5:59 AM, Li Yang wrote:
+>=20
+> > This patch fix the following Section mismatch warnings
+> > in powerpc code.
+> >
+> > WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:
+> > reference to .init.data:mv643xx_eth_pd_devs from .text between
+> > 'mv643xx_eth_add_pds' (at offset 0x9ed2) and 'gg2_read_config'
+> > WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:
+> > reference to .init.data:mv643xx_eth_pd_devs from .text between
+> > 'mv643xx_eth_add_pds' (at offset 0x9ed6) and 'gg2_read_config'
+> > WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:
+> > reference to .init.text:note_scsi_host from __ksymtab between
+> > '__ksymtab_note_scsi_host' (at offset 0x8) and
+'__ksymtab_sys_ctrler'
+> >
+> > Signed-off-by: Li Yang <leoli@freescale.com>
+> > ---
+> >  arch/powerpc/platforms/chrp/pegasos_eth.c |    2 +-
+> >  arch/powerpc/platforms/powermac/setup.c   |    2 +-
+> >  2 files changed, 2 insertions(+), 2 deletions(-)
+>=20
+> Did you change anything?
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/macintosh/windfarm_core.c |   10 ++++++++--
- 1 files changed, 8 insertions(+), 2 deletions(-)
+Nothing yet. I think it's a delay of mail system.
 
-On Tue, 15 May 2007 16:19:53 +1000 Paul Mackerras <paulus@samba.org> wrote:
->
-> This shows up why I hate the must_check stuff.  The sysfs files are
-> not essential for the operation of the windfarm subsystem.  If the
-> sysfs registration fails for any reason, we now have a completely
-> non-functional windfarm subsystem instead of a mostly-working one. :(
-
-This version just warns.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --git a/drivers/macintosh/windfarm_core.c b/drivers/macintosh/windfarm_core.c
-index 192b26e..52a95b4 100644
---- a/drivers/macintosh/windfarm_core.c
-+++ b/drivers/macintosh/windfarm_core.c
-@@ -216,7 +216,10 @@ int wf_register_control(struct wf_control *new_ct)
- 	new_ct->attr.attr.mode = 0644;
- 	new_ct->attr.show = wf_show_control;
- 	new_ct->attr.store = wf_store_control;
--	device_create_file(&wf_platform_device.dev, &new_ct->attr);
-+	if (device_create_file(&wf_platform_device.dev, &new_ct->attr))
-+		printk(KERN_WARNING "windfarm: device_creat_file failed"
-+			"for %s\n", new_ct->name);
-+		/* the subsystem still does useful work without the file */
- 
- 	DBG("wf: Registered control %s\n", new_ct->name);
- 
-@@ -326,7 +329,10 @@ int wf_register_sensor(struct wf_sensor *new_sr)
- 	new_sr->attr.attr.mode = 0444;
- 	new_sr->attr.show = wf_show_sensor;
- 	new_sr->attr.store = NULL;
--	device_create_file(&wf_platform_device.dev, &new_sr->attr);
-+	if (device_create_file(&wf_platform_device.dev, &new_sr->attr))
-+		printk(KERN_WARNING "windfarm: device_create_file failed"
-+		       " for %s\n", new_sr->name);
-+		/* the subsystem still does useful work without the file */
- 
- 	DBG("wf: Registered sensor %s\n", new_sr->name);
- 
--- 
-1.5.1.4
+- Leo
