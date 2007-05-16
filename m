@@ -1,33 +1,22 @@
-Return-Path: <idefix@fechner.net>
-Received: from michelle.lostinspace.de (michelle.lostinspace.de
-	[62.146.248.226])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "michelle.lostinspace.de",
-	Issuer "michelle.lostinspace.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 621CCDDE9E
+Return-Path: <david-b@pacbell.net>
+Received: from smtp113.sbc.mail.mud.yahoo.com (smtp113.sbc.mail.mud.yahoo.com
+	[68.142.198.212]) by ozlabs.org (Postfix) with SMTP id 02782DDEBB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 May 2007 04:03:17 +1000 (EST)
-Received: from server.idefix.lan (cl-70.muc-02.de.sixxs.net
-	[IPv6:2001:a60:f000:45::2]) (authenticated bits=0)
-	by michelle.lostinspace.de (8.13.8/8.13.8) with ESMTP id l4GI30ml015421
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 May 2007 20:03:06 +0200 (CEST)
-	(envelope-from idefix@fechner.net)
-Received: from idefix by server.idefix.lan with local (Exim 4.67 (FreeBSD))
-	(envelope-from <idefix@fechner.net>) id 1HoNq0-00067C-L7
-	for linuxppc-embedded@ozlabs.org; Wed, 16 May 2007 20:03:00 +0200
-Date: Wed, 16 May 2007 20:03:00 +0200
-From: Matthias Fechner <idefix@fechner.net>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC5200B memory performance
-Message-ID: <20070516180259.GA23085@server.idefix.lan>
-References: <DD39B5C3F4963040ADC9768BE7E430CB01EB1FEF@is-hdq-exchange.marel.net>
+	Thu, 17 May 2007 02:19:19 +1000 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: Sylvain Munaut <tnt@246tnt.com>
+Subject: Re: [PATCH] mpc52xx_psc_spi: fix it for CONFIG_PPC_MERGE
+Date: Wed, 16 May 2007 09:11:55 -0700
+References: <20070516073707.GD9667@nd47.coderock.org>
+	<464ABE97.7090603@246tNt.com>
+In-Reply-To: <464ABE97.7090603@246tNt.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <DD39B5C3F4963040ADC9768BE7E430CB01EB1FEF@is-hdq-exchange.marel.net>
-Sender: Matthias Fechner <idefix@fechner.net>
-Reply-To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200705160911.55867.david-b@pacbell.net>
+Cc: spi-devel-general@lists.sourceforge.net,
+	Dragos Carp <dragos.carp@toptica.com>,
+	Domen Puncer <domen@coderock.org>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -38,54 +27,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Daniel,
+On Wednesday 16 May 2007, Sylvain Munaut wrote:
+> 
+> Well, this comment is not about the patch but about the driver it self,
+> I didn't see it before today.
 
-* Daniel Schnell <daniel.schnell@marel.com> [15-05-07 11:22]:
-> I get the following values on my board:
-
-my result is:
-Test (10000) memcpy of sizes (1024) ....
-10000 memcpy. Time per memcpy: 1814 [nsec] (564 MB/sec)
- finished.
-Test (10000) memcpy of sizes (2048) ....
-10000 memcpy. Time per memcpy: 3433 [nsec] (596 MB/sec)
- finished.
-Test (10000) memcpy of sizes (4096) ....
-10000 memcpy. Time per memcpy: 6687 [nsec] (612 MB/sec)
- finished.
-Test (10000) memcpy of sizes (8192) ....
-10000 memcpy. Time per memcpy: 21454 [nsec] (381 MB/sec)
- finished.
-Test (10000) memcpy of sizes (16384) ....
-10000 memcpy. Time per memcpy: 205551 [nsec] (79 MB/sec)
- finished.
-Test (1000) memcpy of sizes (32768) ....
-1000 memcpy. Time per memcpy: 379875 [nsec] (86 MB/sec)
- finished.
-Test (1000) memcpy of sizes (51200) ....
-1000 memcpy. Time per memcpy: 588792 [nsec] (86 MB/sec)
- finished.
-Test (1000) memcpy of sizes (102400) ....
-1000 memcpy. Time per memcpy: 1126511 [nsec] (90 MB/sec)
- finished.
-Test (100) memcpy of sizes (1048576) ....
-100 memcpy. Time per memcpy: 11307890 [nsec] (92 MB/sec)
- finished.
-Test (10) memcpy of sizes (10485760) ....
-10 memcpy. Time per memcpy: 120783600 [nsec] (86 MB/sec)
- finished.
-Test (5) memcpy of sizes (52428800) ....
-5 memcpy. Time per memcpy: 673867800 [nsec] (77 MB/sec)
- finished.
-	   
+It merged earlier in the 2.6.22 cycle.  If you don't have criticisms
+about the patch itself, I'll forward it for merging after I get at
+least an ack from Dragos.
 
 
-Best regards,
-Matthias
+> So here's a few things I see from a quick glance at the code :
+> 
+>  - Chaning port_config in the driver is just wrong ... you should _not_
+> do that. That should have been setup by the bootloader or at worse in
+> the platform setup code.
 
--- 
+And that's where the worst of the magic numerology lives too.
+If that's pinmux style setup, agreed -- it doesn't belong there.
 
-"Programming today is a race between software engineers striving to
-build bigger and better idiot-proof programs, and the universe trying to
-produce bigger and better idiots. So far, the universe is winning." --
-Rich Cook
+As a rule, I tell folk that Linux shouldn't rely on the boot
+loader to have done much more than get Linux loaded.  The way
+board development works, bootloaders usually freeze well before
+all the setup nuances Linux cares about have been resolved.
+
+
+>  - MPC52xx_PA(MPC52xx_PSCx_OFFSET(...)) ??? You should get that from the
+> resource of the platform_device. This macro is just there for early
+> console stuff.
+
+That PPC_MERGE stuff does look messy.
+
+
+>  - You do read/write/modify operation on CDM shared register
+> (clk_enables) from a driver, you should have added something in common
+> 52xx code to do theses with proper locking.
+>  - You can get f_system from the device tree instead of just assuming
+> it's 512 MHz. It probably need to be done the same way it's done to find
+> ipb_freq.
+>  - Would have been nice to be able to somehow configure MCLK rather than
+> #define it
+
+Best to use <linux/clk.h> for all of those, but it seems powerpc/ppc
+don't support those interfaces yet ... is there maybe a plan for
+resolving that issue?
+
+
+>  - I hope to remove all arch/ppc stuff by 2.6.23 if I can make the
+> cuimage stuff work in arch/powerpc so just including the platform code
+> stuff for 1 kernel version ...
+
+This originally started out as ppc then moved to powerpc ... agreed,
+it would be nicer to need only one kind of bus glue.
+
+- Dave
