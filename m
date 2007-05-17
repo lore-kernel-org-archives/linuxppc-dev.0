@@ -1,23 +1,25 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id D19B9DDEC4
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 04:41:14 +1000 (EST)
-Message-ID: <464CA222.8000407@ru.mvista.com>
-Date: Thu, 17 May 2007 22:42:42 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5C0F2DDEBB
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 04:46:46 +1000 (EST)
+Message-ID: <464CA302.9060707@freescale.com>
+Date: Thu, 17 May 2007 13:46:26 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-References: <200705172142.26739.sshtylyov@ru.mvista.com>
-	<8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>
-	<464C99FF.8080404@ru.mvista.com>
-	<135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
-	<464C9E67.2020909@ru.mvista.com>
-	<6E0D5E13-C939-4FCE-81A3-F29DFA6436A2@kernel.crashing.org>
-In-Reply-To: <6E0D5E13-C939-4FCE-81A3-F29DFA6436A2@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, mingo@elte.hu,
-	linux-kernel@vger.kernel.org
+To: Wade Farnsworth <wfarnsworth@mvista.com>
+Subject: Re: [PATCH 5/5] PCI fixes for the MPC8641 Rev 2.0 silicon and Rev
+	1.02hardware
+References: <1179245829.8132.100.camel@rhino>
+	<1179247809.8132.138.camel@rhino>	<46B96294322F7D458F9648B60E15112C23441B@zch01exm26.fsl.freescale.net>	<1179417813.8132.250.camel@rhino>	<744CD970-5421-47D6-A30A-C7C79BE21BE8@kernel.crashing.org>
+	<1179421139.8132.256.camel@rhino>
+In-Reply-To: <1179421139.8132.256.camel@rhino>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Zhang Wei-r63237 <Wei.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,24 +29,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+Wade Farnsworth wrote:
 
-Kumar Gala wrote:
+> Yes.  On rev 1.0 boards, all of the devices on the south bridge are on
+> bus 0, while on rev 1.02, the devices on the southbridge are on bus 2.
+> 
+> I'd like to use the same dts for both rev's if possible.  But if there
+> is a reason why they shouldn't, I suppose I could create a separate dts.
 
->> Kumar Gala wrote:
+I think two DTS files is the best approach for now.  A few of us had an idea to introduce 
+conditional statements in to the DTS, and U-Boot would examine the board and/or 
+environment variables and then apply the conditions to the device tree before booting the 
+kernel.  This would allow you to merge the two DTS files into one, but we're quite a ways 
+off from implementing this feature.  In the meantime, two DTS files is okay.
 
->>> I haven't looked at all the new clock/timer code, is there any   
->>> utility in having support for more than one clock source?
-
->>    Of course, you may register as many as you like.
-
-> Sure, but is there any utility in registering more than the  decrementer 
-> on PPC?
-
-    Not yet. I'm not sure I know any other PPC CPU facility fitting for 
-clockevents. In theory, FIT could be used -- but its period is measured in 
-powers of 2, IIRC.
-
-> - k
-
-WBR, Sergei
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
