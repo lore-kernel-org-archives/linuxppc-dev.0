@@ -1,33 +1,15 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E78B3DDE1D
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 10:18:06 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4H0I3eK024686
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 20:18:03 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4H0I3CA533714
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 20:18:03 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4H0I2YU023945
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2007 20:18:03 -0400
-Date: Wed, 16 May 2007 19:18:02 -0500
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: RT patches expose netdev race [was Re: [RFC] [patch 2/2] powerpc
-	2.6.21-rt1: fix kernel hang and/or panic
-Message-ID: <20070517001801.GB4325@austin.ibm.com>
-References: <yyilkfq5vsj.wl@toshiba.co.jp> <yyiirau5v8g.wl@toshiba.co.jp>
-	<1179223742.32247.184.camel@localhost.localdomain>
+Date: Wed, 16 May 2007 19:27:51 -0500
+To: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>
+Subject: Resending: RT patches expose netdev race [was Re: [RFC] [patch 2/2]
+	powerpc 2.6.21-rt1: fix kernel hang and/or panic
+Message-ID: <20070517002751.GC4325@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1179223742.32247.184.camel@localhost.localdomain>
 From: linas@austin.ibm.com (Linas Vepstas)
-Cc: mingo@elte.hu, netdev@vger.kernel.org, tglx@linutronix.de,
-	linuxppc-dev@ozlabs.org
+Cc: linux-kernel@vger.kernel.org, cbe-oss-dev@ozlabs.org,
+	linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, mingo@elte.hu,
+	tglx@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,6 +18,8 @@ List-Post: <mailto:linuxppc-dev@ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+
+(resending , Owa-san was cut from cc list!??)
 
 Hi,
 
@@ -490,3 +474,9 @@ wmb()
     3590:	eb e1 ff f8 	ld      r31,-8(r1)
     3594:	7c 08 03 a6 	mtlr    r0
     3598:	4e 80 00 20 	blr
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+----- End forwarded message -----
