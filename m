@@ -1,17 +1,23 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id BEBD6DDE2C
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 04:11:31 +1000 (EST)
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>(by way of Sergei Shtylyov
-	<sshtylyov@dev.rtsoft.ru>)
-Subject: [PATCH 2.6.21-rt2] PowerPC: implement read_persistent_clock()
-Date: Thu, 17 May 2007 22:13:01 +0400
-To: tglx@linutronix.de, mingo@elte.hu
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200705172213.01877.sshtylyov@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, johnstul@us.ibm.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0B80BDDE9E
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 04:18:58 +1000 (EST)
+In-Reply-To: <464C99FF.8080404@ru.mvista.com>
+References: <200705172142.26739.sshtylyov@ru.mvista.com>
+	<8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>
+	<464C99FF.8080404@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+Date: Thu, 17 May 2007 13:17:07 -0500
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, mingo@elte.hu,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,110 +27,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here's the read_persistent_clock() implementation for PowerPC.
 
-I'm deliberately renaming get_boot_time() despite it's not static as it
-doesn't get called from anywhere else.
+On May 17, 2007, at 1:07 PM, Sergei Shtylyov wrote:
 
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+> Hello.
+>
+> Kumar Gala wrote:
+>
+>>> Index: linux-2.6/arch/powerpc/kernel/time.c
+>>> ===================================================================
+>>> --- linux-2.6.orig/arch/powerpc/kernel/time.c
+>>> +++ linux-2.6/arch/powerpc/kernel/time.c
+> [...]
+>>> @@ -128,6 +129,83 @@ unsigned long ppc_tb_freq;
+>>>  static u64 tb_last_jiffy __cacheline_aligned_in_smp;
+>>>  static DEFINE_PER_CPU(u64, last_jiffy);
+>>>
+>>> +#ifdef CONFIG_GENERIC_CLOCKEVENTS
+>>> +
+>>> +#if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
+>>> +#define DECREMENTER_MAX 0xffffffff
+>>> +#else
+>>> +#define DECREMENTER_MAX 0x7fffffff /* setting MSB triggers an   
+>>> interrupt */
+>>> +#endif
+>>> +
+>>> +static int decrementer_set_next_event(unsigned long evt,
+>>> +                      struct clock_event_device *dev)
+>>> +{
+>>> +#if defined(CONFIG_40x)
+>>> +    mtspr(SPRN_PIT, evt);    /* 40x has a hidden PIT auto- 
+>>> reload  register */
+>>> +#elif defined(CONFIG_BOOKE)
+>>> +    mtspr(SPRN_DECAR, evt); /* Book E has  separate auto-reload   
+>>> register */
+>>> +    set_dec(evt);
+>
+>> what's the point of setting decar if you're just going to set_dec  
+>> as  well?
+>
+>    Bothered to read the Book E specs? ;-)
 
----
-Have almost forgotten about this one... :-)
-This patch hasn't received a good testing though -- at least it doesn't break
-without RTC... ;-)
+I have :)
 
- arch/powerpc/kernel/time.c |   62 ++++++++++++++++++++-------------------------
- 1 files changed, 28 insertions(+), 34 deletions(-)
+>    Loading DECAR doesn't auto-reload DEC. What I want is both set  
+> the auto-reload value and start counting down from it at the same  
+> time (if the decrementer is in auto-reload mode).
 
-Index: linux-2.6/arch/powerpc/kernel/time.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/time.c
-+++ linux-2.6/arch/powerpc/kernel/time.c
-@@ -762,31 +762,46 @@ void __init generic_calibrate_decr(void)
- #endif
- }
- 
--unsigned long get_boot_time(void)
-+unsigned long read_persistent_clock(void)
- {
--	struct rtc_time tm;
-+	unsigned long time = 0;
-+	static int first = 1;
-+
-+	if (first && ppc_md.time_init) {
-+		timezone_offset = ppc_md.time_init();
-+
-+		/* If platform provided a timezone (pmac), we correct the time */
-+		if (timezone_offset) {
-+			sys_tz.tz_minuteswest = -timezone_offset / 60;
-+			sys_tz.tz_dsttime = 0;
-+		}
-+	}
- 
- 	if (ppc_md.get_boot_time)
--		return ppc_md.get_boot_time();
--	if (!ppc_md.get_rtc_time)
--		return 0;
--	ppc_md.get_rtc_time(&tm);
--	return mktime(tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday,
--		      tm.tm_hour, tm.tm_min, tm.tm_sec);
-+		time = ppc_md.get_boot_time();
-+	else if (ppc_md.get_rtc_time) {
-+		struct rtc_time tm;
-+
-+		ppc_md.get_rtc_time(&tm);
-+		time = mktime(tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday,
-+			      tm.tm_hour, tm.tm_min, tm.tm_sec);
-+	}
-+	time -= timezone_offset;
-+
-+	if (first) {
-+		last_rtc_update = time;
-+		first = 0;
-+	}
-+	return time;
- }
- 
- /* This function is only called on the boot processor */
- void __init time_init(void)
- {
--	unsigned long flags;
--	unsigned long tm = 0;
- 	struct div_result res;
- 	u64 scale, x;
- 	unsigned shift;
- 
--        if (ppc_md.time_init != NULL)
--                timezone_offset = ppc_md.time_init();
--
- 	if (__USE_RTC()) {
- 		/* 601 processor: dec counts down by 128 every 128ns */
- 		ppc_tb_freq = 1000000000;
-@@ -860,27 +875,6 @@ void __init time_init(void)
- 	tb_to_ns_scale = scale;
- 	tb_to_ns_shift = shift;
- 
--	tm = get_boot_time();
--
--	write_seqlock_irqsave(&xtime_lock, flags);
--
--	/* If platform provided a timezone (pmac), we correct the time */
--        if (timezone_offset) {
--		sys_tz.tz_minuteswest = -timezone_offset / 60;
--		sys_tz.tz_dsttime = 0;
--		tm -= timezone_offset;
--        }
--
--	xtime.tv_sec = tm;
--	xtime.tv_nsec = 0;
--
--	time_freq = 0;
--
--	last_rtc_update = xtime.tv_sec;
--	set_normalized_timespec(&wall_to_monotonic,
--	                        -xtime.tv_sec, -xtime.tv_nsec);
--	write_sequnlock_irqrestore(&xtime_lock, flags);
--
- #ifdef CONFIG_GENERIC_CLOCKEVENTS
- 	decrementer_clockevent.mult = div_sc(ppc_tb_freq, NSEC_PER_SEC,
- 					     decrementer_clockevent.shift);
+I see you're using DECAR to make it periodic.
+
+> [big cut-off]
+>
+> WBR, Sergei
+
+I haven't looked at all the new clock/timer code, is there any  
+utility in having support for more than one clock source?
+
+- k
