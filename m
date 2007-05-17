@@ -1,19 +1,25 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-4.cisco.com (sj-iport-4.cisco.com [171.68.10.86])
-	by ozlabs.org (Postfix) with ESMTP id 69138DDDE7
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 04:32:55 +1000 (EST)
-To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2.6.22] ehca: return proper error code if register_mr fails
-References: <200705161450.55848.hnguyen@linux.vnet.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 17 May 2007 11:32:52 -0700
-In-Reply-To: <200705161450.55848.hnguyen@linux.vnet.ibm.com> (Hoang-Nam
-	Nguyen's message of "Wed, 16 May 2007 14:50:55 +0200")
-Message-ID: <adar6pfjo6j.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, raisch@de.ibm.com, linux-kernel@vger.kernel.org,
-	openib-general@openib.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2ABF9DDE3C
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 04:33:14 +1000 (EST)
+In-Reply-To: <464C9E67.2020909@ru.mvista.com>
+References: <200705172142.26739.sshtylyov@ru.mvista.com>
+	<8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>
+	<464C99FF.8080404@ru.mvista.com>
+	<135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
+	<464C9E67.2020909@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <6E0D5E13-C939-4FCE-81A3-F29DFA6436A2@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+Date: Thu, 17 May 2007 13:31:24 -0500
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, mingo@elte.hu,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,4 +29,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-thanks, applied
+
+On May 17, 2007, at 1:26 PM, Sergei Shtylyov wrote:
+
+> Hello.
+>
+> Kumar Gala wrote:
+>
+>> I haven't looked at all the new clock/timer code, is there any   
+>> utility in having support for more than one clock source?
+>
+>    Of course, you may register as many as you like.
+
+Sure, but is there any utility in registering more than the  
+decrementer on PPC?
+
+- k
