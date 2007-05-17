@@ -1,23 +1,34 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CBD10DDEC2
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 23:24:59 +1000 (EST)
-Received: from verein.lst.de (localhost [127.0.0.1])
-	by mail.lst.de (8.12.3/8.12.3/Debian-7.1) with ESMTP id l4HDOZpX026300
-	(version=TLSv1/SSLv3 cipher=EDH-RSA-DES-CBC3-SHA bits=168 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 15:24:35 +0200
-Received: (from hch@localhost)
-	by verein.lst.de (8.12.3/8.12.3/Debian-6.6) id l4HDOYGY026298
-	for linuxppc-dev@ozlabs.org; Thu, 17 May 2007 15:24:34 +0200
-Date: Thu, 17 May 2007 15:24:34 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] fix 440-related Kconfig warnings
-Message-ID: <20070517132434.GA26230@lst.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C73B6DDECA
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 23:37:56 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
+	l4HDY5Yo023635
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 09:34:05 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l4HDbhEC254028
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 07:37:43 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4HDbh0N002437
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 07:37:43 -0600
+Message-ID: <464C5AA5.3090002@linux.vnet.ibm.com>
+Date: Thu, 17 May 2007 08:37:41 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Mel Gorman <mel@skynet.ie>
+Subject: Re: PPC64 build breakage drivers/pci/hotplug/rpadlpar_sysfs.c
+References: <20070516133046.GB25792@localhost> <20070517104008.GA667@skynet.ie>
+In-Reply-To: <20070517104008.GA667@skynet.ie>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, Bob Picco <bob.picco@hp.com>
+Reply-To: brking@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,35 +38,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently there is no IBM_NEW_EMAC_ZMII in the tree, so we shouldn't 
-selected it.
+Mel Gorman wrote:
+> On (16/05/07 09:30), Bob Picco didst pronounce:
+>> bob.picco@hp.com
+>> /usr/src/linux-2.6.22-rc1-mm1/drivers/pci/hotplug/rpadlpar_sysfs.c:132: error: unknown field `subsys' specified in initializer
+>> /usr/src/linux-2.6.22-rc1-mm1/drivers/pci/hotplug/rpadlpar_sysfs.c:132: warning: initialization from incompatible pointer type
+>> make[4]: *** [drivers/pci/hotplug/rpadlpar_sysfs.o] Error 1
+>> make[3]: *** [drivers/pci/hotplug] Error 2
+>> make[2]: *** [drivers/pci] Error 2
+>> make[1]: *** [drivers] Error 2
+>> make: *** [_all] Error 2
+>>
+> 
+> This is showing up on TKO as well and Andy Whitcroft has kicked it
+> around a bit as far as I know. He makes it build with this patch
+> http://test.kernel.org/abat/88951/build/patches/update-sysfs-kset-initialisation-in-PPC64-DLPAR-IO-driver
+> 
+> However, my understand is that the driver is broken even though it builds
+> but I don't recall why. I've added Andy to the CC
 
+Al Viro posted a patch yesterday that fixes this:
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+http://ozlabs.org/pipermail/linuxppc-dev/2007-May/036222.html
 
-Index: linux-2.6/arch/powerpc/platforms/44x/Kconfig
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/44x/Kconfig	2007-05-17 14:06:45.000000000 +0200
-+++ linux-2.6/arch/powerpc/platforms/44x/Kconfig	2007-05-17 14:06:56.000000000 +0200
-@@ -38,7 +38,7 @@ config 440EP
- 
- config 440GP
- 	bool
--	select IBM_NEW_EMAC_ZMII
-+#	select IBM_NEW_EMAC_ZMII
- 
- config 440GX
- 	bool
-Index: linux-2.6/arch/powerpc/platforms/4xx/Kconfig
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/4xx/Kconfig	2007-05-17 14:16:46.000000000 +0200
-+++ linux-2.6/arch/powerpc/platforms/4xx/Kconfig	2007-05-17 14:16:52.000000000 +0200
-@@ -171,7 +171,7 @@ config 440EP
- 
- config 440GP
- 	bool
--	select IBM_NEW_EMAC_ZMII
-+#	select IBM_NEW_EMAC_ZMII
- 
- config 440GX
- 	bool
+It's in mainline now.
+
+-Brian
