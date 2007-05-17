@@ -1,21 +1,19 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 0B6BEDDE46
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 04:25:15 +1000 (EST)
-Message-ID: <464C9E67.2020909@ru.mvista.com>
-Date: Thu, 17 May 2007 22:26:47 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-4.cisco.com (sj-iport-4.cisco.com [171.68.10.86])
+	by ozlabs.org (Postfix) with ESMTP id 69138DDDE7
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 04:32:55 +1000 (EST)
+To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2.6.22] ehca: return proper error code if register_mr fails
+References: <200705161450.55848.hnguyen@linux.vnet.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 17 May 2007 11:32:52 -0700
+In-Reply-To: <200705161450.55848.hnguyen@linux.vnet.ibm.com> (Hoang-Nam
+	Nguyen's message of "Wed, 16 May 2007 14:50:55 +0200")
+Message-ID: <adar6pfjo6j.fsf@cisco.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-References: <200705172142.26739.sshtylyov@ru.mvista.com>
-	<8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>
-	<464C99FF.8080404@ru.mvista.com>
-	<135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
-In-Reply-To: <135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, mingo@elte.hu,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, raisch@de.ibm.com, linux-kernel@vger.kernel.org,
+	openib-general@openib.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,15 +23,4 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
-
-Kumar Gala wrote:
-
-> I haven't looked at all the new clock/timer code, is there any  utility 
-> in having support for more than one clock source?
-
-    Of course, you may register as many as you like.
-
-> - k
-
-WBR, Sergei
+thanks, applied
