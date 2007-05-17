@@ -3,18 +3,22 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E743ADDEB6
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 02:14:32 +1000 (EST)
-In-Reply-To: <20070517143846.GC29795@ld0162-tx32.am.freescale.net>
-References: <20070517143846.GC29795@ld0162-tx32.am.freescale.net>
+	by ozlabs.org (Postfix) with ESMTP id 2DD2DDDEB9
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 02:14:34 +1000 (EST)
+In-Reply-To: <1179417813.8132.250.camel@rhino>
+References: <1179245829.8132.100.camel@rhino> <1179247809.8132.138.camel@rhino>
+	<46B96294322F7D458F9648B60E15112C23441B@zch01exm26.fsl.freescale.net>
+	<1179417813.8132.250.camel@rhino>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <FB8DD3C1-A095-4ABB-9E74-7EC66A43D983@kernel.crashing.org>
+Message-Id: <744CD970-5421-47D6-A30A-C7C79BE21BE8@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 3/5] powerpc: Document device nodes for I2C devices.
-Date: Thu, 17 May 2007 11:12:47 -0500
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+Subject: Re: [PATCH 5/5] PCI fixes for the MPC8641 Rev 2.0 silicon and Rev
+	1.02hardware
+Date: Thu, 17 May 2007 11:14:07 -0500
+To: Wade Farnsworth <wfarnsworth@mvista.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Zhang Wei-r63237 <Wei.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,46 +29,21 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On May 17, 2007, at 9:38 AM, Scott Wood wrote:
+On May 17, 2007, at 11:03 AM, Wade Farnsworth wrote:
 
-> Document the use of device trees to describe devices on an I2C bus,  
-> which
-> will be used with David Brownell's "new style" I2C binding patches.
+> On Thu, 2007-05-17 at 10:50 +0800, Zhang Wei-r63237 wrote:
+>> Hi,
+>>
+>> If you add below sector to pci@8000, please remove the interrupt-map
+>> sector from pci@8000.
 >
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
->  Documentation/powerpc/booting-without-of.txt |   34 +++++++++++++++ 
-> +++++++++++
->  1 files changed, 34 insertions(+), 0 deletions(-)
->
-> diff --git a/Documentation/powerpc/booting-without-of.txt b/ 
-> Documentation/powerpc/booting-without-of.txt
-> index b49ce16..67026ad 100644
-> --- a/Documentation/powerpc/booting-without-of.txt
-> +++ b/Documentation/powerpc/booting-without-of.txt
-> @@ -1257,6 +1257,8 @@ platforms are moved over to use the flattened- 
-> device-tree model.
->
->     e) I2C
->
-> +   e1) I2C Controller
-> +
->     Required properties :
->
->      - device_type : Should be "i2c"
-> @@ -1277,6 +1279,10 @@ platforms are moved over to use the  
-> flattened-device-tree model.
->        a digital filter sampling rate register
->      - fsl5200-clocking : boolean; if defined, indicated that this  
-> device
->        uses the FSL 5200 clocking mechanism.
-> +    - #address-cells : should exist and be 1 if I2C devices are  
-> declared
-> +      in the device tree.
-> +    - #size-cells : should exist and be 0 if I2C devices are declared
-> +      in the device tree.
+> Correct me if I'm wrong, but I think if the interrupt-map for pci@8000
+> is removed then the pci devices on the revision 1.0 board will not get
+> the correct interrupts.  I don't currently have a rev 1.0 to test
+> though.  Can someone with a rev 1.0 HPCN board confirm this?
 
-As I've stated before, we need a bus number as well so we can handle  
-things like I2C switches and muxes.
+If I'm understanding things this might best be handled by two  
+different dts.  Is this because of board changes or chip/silicon  
+changes?
 
 - k
