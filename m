@@ -1,31 +1,24 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 82C98DDE0E
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 02:44:44 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4HGifdq012570
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 12:44:41 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4HGifj7487902
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 12:44:41 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4HGifwI028301
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 12:44:41 -0400
-Date: Thu, 17 May 2007 11:44:38 -0500
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: eeh bug
-Message-ID: <20070517164438.GD4325@austin.ibm.com>
-References: <1179377184.32247.274.camel@localhost.localdomain>
-	<1179377946.32247.281.camel@localhost.localdomain>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3F045DDE1F
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 02:55:10 +1000 (EST)
+Message-ID: <464C871C.4090300@freescale.com>
+Date: Thu, 17 May 2007 11:47:24 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1179377946.32247.281.camel@localhost.localdomain>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 3/5] powerpc: Document device nodes for I2C devices.
+References: <20070517143846.GC29795@ld0162-tx32.am.freescale.net>
+	<FB8DD3C1-A095-4ABB-9E74-7EC66A43D983@kernel.crashing.org>
+	<464C800C.20400@freescale.com>
+	<FFBD3A3A-ADBE-4DC8-A1A1-4163367244D5@kernel.crashing.org>
+In-Reply-To: <FFBD3A3A-ADBE-4DC8-A1A1-4163367244D5@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,56 +28,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 17, 2007 at 02:59:06PM +1000, Benjamin Herrenschmidt wrote:
-> On Thu, 2007-05-17 at 14:46 +1000, Benjamin Herrenschmidt wrote:
-> > 
-> > When an RTAS PCI config space call returns all f's, we do an eeh error
-> > check by calling eeh_dn_check_failure(pdn->node, NULL);
-> > 
-> > The problem is that second argument... NULL for the pci_dev *. It looks
-> > like the EEH code will try to printk pci_name of that and later on
-> > dereference it within eehd, thus causing an oops.
+Kumar Gala wrote:
+> On May 17, 2007, at 11:17 AM, Scott Wood wrote:
+>> Kumar Gala wrote:
+>>> As I've stated before, we need a bus number as well so we can  
+>>> handle  things like I2C switches and muxes.
+>>
+>> Is this something we handle now?  If not, then it's really not  within 
+>> the scope of this patchset.  If so, how am I breaking it?
 > 
-> Ok, so I just added a
-> 
-> 	if (dev == NULL)
-> 		dev = pdn->pcidev;
-> 
-> To eeh_dn_check_failure(), and that fixes one of the NULL (name
-> printing), but I get another one a bit later, in pci_find_capability
-> called from eeh_slot_error_detail called from handle_eeh_events.
-> (Probably in gather_pci_data).
+> We don't handle i2c devices in the dev tree today.  If you are going  to 
+> propose a solution it should work for all cases that people are  aware 
+> of even if linux doesn't support the functionality.
 
-OK, clearly I have been sloppy. The initial eeh design used pci_dev
-for everything; and as time went on, I realized that the device node
-made a better fit for what needed to be manipulated. So the code
-migrated in that direction, but not unambiguously; it tried to
-keep allegience to both ways of identifying a slot.
+But we do handle i2c *controllers* in the device tree, and that's where 
+a bus number property would go.  Given that we don't have a binding for 
+non-toplevel i2c buses, and I'm not adding one, I don't see the 
+relevance.  Note that adding a bus number property makes zero sense for 
+toplevel buses, as at that level the bus number is just a fiction 
+maintained by Linux for user API and device preregistration purposes.
 
-> One thing that looks suspicions is that just before that I see:
-> 
-> EEH: of node=/pci/@8000000200000d3/pci@2,4
-> 
-> Which is not a device but the bridge above it... 
+It's not a matter of the binding only covering some cases; it's a matter 
+of the binding being for one thing (i2c devices) and not another 
+(multiplexed i2c buses).
 
-That's the "partition endpoint", which is what the firmware wants. 
-There's some ambiguity, as older systems with EADS and newer
-direct-attached P5IOC slots have different relationships between
-the "partition endpoint", the device, the slot, the bridge and 
-PHB; which of these are equivalent and which are subordinate
-can be confusing.
+> If only some subset of cases are handled what good is the device tree  
+> to a user?  They will just have to figure out if their usage is  
+> supported or not and if not find some other solution that works for  them.
 
-> we should probably not sure
-> pci_find_capability in that code anyway and implent our own version
-> using RTAS in case we don't have a pci_dev around, don't you think ?
+...just as they'll have to figure out if a binding exists for device 
+type $FOO.
 
-I'll take a look. Usually, there's no pci_dev only when its a slot
-with no device plugged into it; these can still receive EEH errors
-during config space i/o to the bridge (I presume that the justification
-is when aluminum scrap shorts out a pci connector or something like
-that). In all other cases, there's a pci_dev, which is why the 
-bug slipped by.
-
---linas
-
-> 
+-Scott
