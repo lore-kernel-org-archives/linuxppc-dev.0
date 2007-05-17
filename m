@@ -1,25 +1,34 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <kniht@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 422F6DDEEE
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 04:48:51 +1000 (EST)
-Message-ID: <464CA380.2020705@freescale.com>
-Date: Thu, 17 May 2007 13:48:32 -0500
-From: Timur Tabi <timur@freescale.com>
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 36516DDEF6
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 04:49:28 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4HInNcC009132
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 14:49:23 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l4HInN6j215398
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 12:49:23 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4HInNYI031483
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 12:49:23 -0600
+Received: from [9.10.86.203] (skynet.rchland.ibm.com [9.10.86.203])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	l4HInM23031476
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 12:49:23 -0600
+Message-ID: <464CA3B2.2010202@linux.vnet.ibm.com>
+Date: Thu, 17 May 2007 13:49:22 -0500
+From: Jon Tollefson <kniht@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH 5/5] PCI fixes for the MPC8641 Rev 2.0 silicon and Rev
-	1.02hardware
-References: <1179245829.8132.100.camel@rhino>
-	<1179247809.8132.138.camel@rhino>	<46B96294322F7D458F9648B60E15112C23441B@zch01exm26.fsl.freescale.net>	<1179417813.8132.250.camel@rhino>	<744CD970-5421-47D6-A30A-C7C79BE21BE8@kernel.crashing.org>
-	<1179421139.8132.256.camel@rhino> <464CA302.9060707@freescale.com>
-In-Reply-To: <464CA302.9060707@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: move common code out of if/else
+References: <464B50AA.9060807@us.ibm.com>
+In-Reply-To: <464B50AA.9060807@us.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Zhang Wei-r63237 <Wei.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,21 +38,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi wrote:
+Resubmitting with white space damage repaired.
 
-> I think two DTS files is the best approach for now.  A few of us had an 
-> idea to introduce conditional statements in to the DTS, and U-Boot would 
-> examine the board and/or environment variables and then apply the 
-> conditions to the device tree before booting the kernel.  This would 
-> allow you to merge the two DTS files into one, but we're quite a ways 
-> off from implementing this feature.  In the meantime, two DTS files is 
-> okay.
+Move common code out of if/else.
 
-One more thing - I think each DTS file should specify which revision of the board it 
-supports, and there should be code in U-Boot and/or Linux to check that revision and 
-reject the device tree if there's a mismatch.  We don't want people accidentally using the 
-wrong device tree and wondering why it doesn't work.
+Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
+----
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+hash_native_64.c |    3 +--
+ 1 files changed, 1 insertion(+), 2 deletions(-)
+
+
+
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index 4a20d89..bb76814 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -233,15 +233,14 @@ static long native_hpte_updatepp(unsigned long slot, unsigned long newpp,
+ 	/* Even if we miss, we need to invalidate the TLB */
+ 	if (!HPTE_V_COMPARE(hpte_v, want_v) || !(hpte_v & HPTE_V_VALID)) {
+ 		DBG_LOW(" -> miss\n");
+-		native_unlock_hpte(hptep);
+ 		ret = -1;
+ 	} else {
+ 		DBG_LOW(" -> hit\n");
+ 		/* Update the HPTE */
+ 		hptep->r = (hptep->r & ~(HPTE_R_PP | HPTE_R_N)) |
+ 			(newpp & (HPTE_R_PP | HPTE_R_N | HPTE_R_C));
+-		native_unlock_hpte(hptep);
+ 	}
++	native_unlock_hpte(hptep);
+ 
+ 	/* Ensure it is out of the tlb too. */
+ 	tlbie(va, psize, local);
