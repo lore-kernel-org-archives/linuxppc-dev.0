@@ -1,19 +1,19 @@
 Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7EDFCDDE2C
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 00:46:18 +1000 (EST)
-Date: Thu, 17 May 2007 09:38:29 -0500
+	by ozlabs.org (Postfix) with ESMTP id D5957DDFA2
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 00:46:31 +1000 (EST)
+Date: Thu, 17 May 2007 09:38:46 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: i2c@lm-sensors.org
-Subject: [PATCH 2/5] i2c: Allow preallocation of I2C bus numbers.
-Message-ID: <20070517143829.GB29795@ld0162-tx32.am.freescale.net>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 3/5] powerpc: Document device nodes for I2C devices.
+Message-ID: <20070517143846.GC29795@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Cc: i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,128 +23,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The new-style i2c device model requires the bus number to be known before
-adapter registration; this provides a mechanism by which such numbers can
-be allocated globally before calling i2c_register_board_info().
+Document the use of device trees to describe devices on an I2C bus, which
+will be used with David Brownell's "new style" I2C binding patches.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- drivers/i2c/i2c-core.c |   67 ++++++++++++++++++++++++++++++++++++++---------
- include/linux/i2c.h    |    2 +
- 2 files changed, 56 insertions(+), 13 deletions(-)
+ Documentation/powerpc/booting-without-of.txt |   34 ++++++++++++++++++++++++++
+ 1 files changed, 34 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-index 64f8e56..37e9002 100644
---- a/drivers/i2c/i2c-core.c
-+++ b/drivers/i2c/i2c-core.c
-@@ -377,20 +377,15 @@ out_list:
- }
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index b49ce16..67026ad 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -1257,6 +1257,8 @@ platforms are moved over to use the flattened-device-tree model.
  
- /**
-- * i2c_add_adapter - declare i2c adapter, use dynamic bus number
-- * @adapter: the adapter to add
-- *
-- * This routine is used to declare an I2C adapter when its bus number
-- * doesn't matter.  Examples: for I2C adapters dynamically added by
-- * USB links or PCI plugin cards.
-+ * i2c_alloc_bus_number - Request a number for an i2c adapter
-  *
-- * When this returns zero, a new bus number was allocated and stored
-- * in adap->nr, and the specified adapter became available for clients.
-- * Otherwise, a negative errno value is returned.
-+ * Allocates an i2c bus number to be used later with
-+ * i2c_add_prenumbered_adapter(), allowing i2c_register_board_info()
-+ * to be called in the meantime.
-  */
--int i2c_add_adapter(struct i2c_adapter *adapter)
-+int i2c_alloc_bus_number(void)
- {
--	int	id, res = 0;
-+	int id, res;
+    e) I2C
  
- retry:
- 	if (idr_pre_get(&i2c_adapter_idr, GFP_KERNEL) == 0)
-@@ -398,8 +393,8 @@ retry:
- 
- 	mutex_lock(&core_lists);
- 	/* "above" here means "above or equal to", sigh */
--	res = idr_get_new_above(&i2c_adapter_idr, adapter,
--				__i2c_first_dynamic_bus_num, &id);
-+	res = idr_get_new_above(&i2c_adapter_idr, NULL,
-+	                        __i2c_first_dynamic_bus_num, &id);
- 	mutex_unlock(&core_lists);
- 
- 	if (res < 0) {
-@@ -408,9 +403,55 @@ retry:
- 		return res;
- 	}
- 
-+	return id;
-+}
-+EXPORT_SYMBOL(i2c_alloc_bus_number);
++   e1) I2C Controller
 +
-+/**
-+ * i2c_add_prenumbered_adapter - declare i2c adapter using preallocated number
-+ * @adapter: the adapter to add
-+ * @id: the result of a previous call to i2c_alloc_bus_number()
-+ *
-+ * This routine is used to declare an I2C adapter when its bus number
-+ * doesn't matter.  Examples: for I2C adapters dynamically added by
-+ * USB links or PCI plugin cards.
-+ *
-+ * When this returns zero, a new bus number was allocated and stored
-+ * in adap->nr, and the specified adapter became available for clients.
-+ * Otherwise, a negative errno value is returned.
-+ */
-+int i2c_add_prenumbered_adapter(struct i2c_adapter *adapter, int id)
-+{
- 	adapter->nr = id;
-+
-+	mutex_lock(&core_lists);
-+	idr_replace(&i2c_adapter_idr, adapter, id);
-+	mutex_unlock(&core_lists);
-+
- 	return i2c_register_adapter(adapter);
- }
-+EXPORT_SYMBOL(i2c_add_prenumbered_adapter);
-+
-+/**
-+ * i2c_add_adapter - declare i2c adapter, use dynamic bus number
-+ * @adapter: the adapter to add
-+ *
-+ * This routine is used to declare an I2C adapter when its bus number
-+ * doesn't matter.  Examples: for I2C adapters dynamically added by
-+ * USB links or PCI plugin cards.
-+ *
-+ * When this returns zero, a new bus number was allocated and stored
-+ * in adap->nr, and the specified adapter became available for clients.
-+ * Otherwise, a negative errno value is returned.
-+ */
-+int i2c_add_adapter(struct i2c_adapter *adapter)
-+{
-+	int id = i2c_alloc_bus_number();
-+	if (id < 0)
-+		return id;
-+
-+	return i2c_add_prenumbered_adapter(adapter, id);
-+}
- EXPORT_SYMBOL(i2c_add_adapter);
+    Required properties :
  
- /**
-diff --git a/include/linux/i2c.h b/include/linux/i2c.h
-index cae7d61..da2b4f5 100644
---- a/include/linux/i2c.h
-+++ b/include/linux/i2c.h
-@@ -369,8 +369,10 @@ struct i2c_client_address_data {
+     - device_type : Should be "i2c"
+@@ -1277,6 +1279,10 @@ platforms are moved over to use the flattened-device-tree model.
+       a digital filter sampling rate register
+     - fsl5200-clocking : boolean; if defined, indicated that this device
+       uses the FSL 5200 clocking mechanism.
++    - #address-cells : should exist and be 1 if I2C devices are declared
++      in the device tree.
++    - #size-cells : should exist and be 0 if I2C devices are declared
++      in the device tree.
  
- /* administration...
-  */
-+extern int i2c_alloc_bus_number(void);
- extern int i2c_add_adapter(struct i2c_adapter *);
- extern int i2c_del_adapter(struct i2c_adapter *);
-+extern int i2c_add_prenumbered_adapter(struct i2c_adapter *, int id);
- extern int i2c_add_numbered_adapter(struct i2c_adapter *);
+    Example :
  
- extern int i2c_register_driver(struct module *, struct i2c_driver *);
+@@ -1289,6 +1295,34 @@ platforms are moved over to use the flattened-device-tree model.
+ 		dfsrr;
+ 	};
+ 
++   e2) I2C Devices
++
++   Required properties :
++
++    - reg : Unshifted 7-bit I2C address for the device
++
++   Recommended properties :
++
++    - compatible : The name of the Linux device driver that
++      handles this device.  If unspecified, the name of the
++      node will be used.
++    - interrupts : <a b> where a is the interrupt number and b is a
++      field that represents an encoding of the sense and level
++      information for the interrupt.  This should be encoded based on
++      the information in section 2) depending on the type of interrupt
++      controller you have.
++    - interrupt-parent : the phandle for the interrupt controller that
++      services interrupts for this device.
++
++   Example :
++
++	rtc@68 {
++		device_type = "rtc";
++		compatible = "ds1374";
++		reg = <68>;
++		interrupts = <13 8>;
++		interrupt-parent = <700>;
++	};
+ 
+    f) Freescale SOC USB controllers
+ 
 -- 
 1.5.0.3
