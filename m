@@ -1,19 +1,22 @@
-Return-Path: <b07421@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B665EDDEE6
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 01:07:45 +1000 (EST)
-Date: Thu, 17 May 2007 09:59:58 -0500
+	by ozlabs.org (Postfix) with ESMTP id 98BC5DDE08
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 01:11:08 +1000 (EST)
+Message-ID: <464C6EBA.4000508@freescale.com>
+Date: Thu, 17 May 2007 10:03:22 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: i2c@lm-sensors.org
-Subject: [PATCH] i2c: Convert i2c-mpc.c to use i2c_add_prenumbered_adapter().
-Message-ID: <20070517145958.GB30423@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [i2c] [PATCH 5/5] powerpc: Call of_register_i2c_devices() for
+	fsl-i2c.
+References: <20070517143911.GE29795@ld0162-tx32.am.freescale.net>
+In-Reply-To: <20070517143911.GE29795@ld0162-tx32.am.freescale.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,23 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This allows platform code to preregister devices on the i2c bus.
----
- drivers/i2c/busses/i2c-mpc.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Scott Wood wrote:
+> Call of_register_i2c_devices() to register I2C devices on
+> the device tree under an fsl-i2c node.
+> 
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> ---
+>  arch/powerpc/sysdev/fsl_soc.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+> index cad1757..0ab9603 100644
+> --- a/arch/powerpc/sysdev/fsl_soc.c
+> +++ b/arch/powerpc/sysdev/fsl_soc.c
+> @@ -340,6 +340,8 @@ static int __init fsl_i2c_of_init(void)
+>  						    fsl_i2c_platform_data));
+>  		if (ret)
+>  			goto unreg;
+> +
+> +		of_register_i2c_devices(np, i);
+>  	}
+>  
+>  	return 0;
 
-diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
-index c6b6898..b7870de 100644
---- a/drivers/i2c/busses/i2c-mpc.c
-+++ b/drivers/i2c/busses/i2c-mpc.c
-@@ -329,7 +329,7 @@ static int fsl_i2c_probe(struct platform_device *pdev)
- 	i2c->adap = mpc_ops;
- 	i2c_set_adapdata(&i2c->adap, i2c);
- 	i2c->adap.dev.parent = &pdev->dev;
--	if ((result = i2c_add_adapter(&i2c->adap)) < 0) {
-+	if ((result = i2c_add_prenumbered_adapter(&i2c->adap, pdev->id)) < 0) {
- 		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
- 		goto fail_add;
- 	}
--- 
-1.5.0.3
+Gah, that isn't the right patch -- I need to stop posting patches before 
+noon. :-P
+
+I have one somewhere that calls i2c_alloc_bus_number(), I'll post it 
+when I find it.
+
+-Scott
