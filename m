@@ -1,21 +1,31 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 29AB1DDE3F
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 05:59:02 +1000 (EST)
-Message-ID: <464CB460.40905@ru.mvista.com>
-Date: Fri, 18 May 2007 00:00:32 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-References: <200705172142.26739.sshtylyov@ru.mvista.com>
-	<f9afbdb49bc1f935153305315770bccd@kernel.crashing.org>
-	<464CB071.5050504@ru.mvista.com>
-	<9095839480a9686d9c40aa6143edb804@kernel.crashing.org>
-In-Reply-To: <9095839480a9686d9c40aa6143edb804@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, mingo@elte.hu,
-	linux-kernel@vger.kernel.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8A973DDEE3
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 06:01:48 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4HK1hWh032380
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 16:01:43 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l4HK1hEe250088
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 14:01:43 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4HK1gkt020403
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 14:01:43 -0600
+Subject: Re: [PATCH] fix 440-related Kconfig warnings
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Christoph Hellwig <hch@lst.de>
+In-Reply-To: <20070517132434.GA26230@lst.de>
+References: <20070517132434.GA26230@lst.de>
+Content-Type: text/plain
+Date: Thu, 17 May 2007 15:00:41 -0500
+Message-Id: <1179432041.9870.6.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,56 +35,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
->>>> +     * We must write a positive value to the decrementer to clear
->>>> +     * the interrupt on the IBM 970 CPU series.  In periodic mode,
->>>> +     * this happens when the decrementer gets reloaded later, but
->>>> +     * in one-shot mode, we have to do it here since an event handler
->>>> +     * may skip loading the new value...
->>
->>
->>> Nothing special about 970 here -- on *every* PowerPC,
->>> a decrementer exception exists as long as the high
->>> bit of the decrementer equals 1.  BookE is different
->>> of course.  Some other CPUs might deviate from the
->>> architecture as well.
->>
->>
->>    Quoting "PowerPC Operating Environment Architecture":
+On Thu, 2007-05-17 at 15:24 +0200, Christoph Hellwig wrote:
+> Currently there is no IBM_NEW_EMAC_ZMII in the tree, so we shouldn't 
+> selected it.
+> 
 
-> <snip>
+Someone else already submitted a patch for this last week, but yours is
+more complete.
 
->> Otherwise, when the contents of DEC0 change, the exception effects of 
->> the Decrementer become consistent with the new contents of the 
->> Decrementer reasonably soon after the change.
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-> And that is guaranteed on all PowerPC as far as I can see.
-> The main thing is that a decrementer exception won't go
-> away until the high bit becomes 0.
-
-On both POWER4 and POWER4+, the Decrementer must be implemented such that 
-requirements 1 to 3 below are satisfied. On POWER4, requirements 4 and 5 must 
-also be satisfied.
-
-1. The operation of the Time Base and the Decrementer is coherent, i.e., the 
-counters are driven by the same fundamental time base.
-2. Loading a GPR from the Decrementer shall have no effect on the accuracy of 
-the Decrementer.
-
-3. Storing a GPR to the Decrementer shall replace the value in the Decrementer 
-with the value in the GPR.
-
-4. Whenever bit 0 of the Decrementer changes from 0 to 1, an interrupt request 
-is signaled. If multiple Decrementer interrupt requests are received before 
-the first can be reported, only one interrupt is reported. The occurrence of a 
-Decrementer interrupt cancels the request.
-
-5. If the Decrementer is altered by software and the contents of bit 0 are 
-changed from 0 to 1, an interrupt request is signaled.
-
-    (4) clearly contradicts your point. I don't mind changing #ifdef though 
-(so it'll cover all non Book E cases)
-
-> Segher
-
-WBR, Sergei
+Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
