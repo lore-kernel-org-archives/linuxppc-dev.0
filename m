@@ -1,22 +1,18 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 8E42DDDE08
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 18:45:07 +1000 (EST)
-Date: Thu, 17 May 2007 10:45:00 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: Slab allocators: Define common size limitations
-In-Reply-To: <200705162342.08601.arnd@arndb.de>
-Message-ID: <Pine.LNX.4.62.0705171044030.1803@pademelon.sonytel.be>
-References: <Pine.LNX.4.64.0705152313490.5832@schroedinger.engr.sgi.com>
-	<Pine.LNX.4.62.0705160855470.24080@pademelon.sonytel.be>
-	<200705162342.08601.arnd@arndb.de>
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 22881DDE34
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 18:56:29 +1000 (EST)
+Received: from lyakh (helo=localhost)
+	by poirot.grange with local-esmtp (Exim 3.36 #1 (Debian))
+	id 1Hobmi-0002Ah-00
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 10:56:32 +0200
+Date: Thu, 17 May 2007 10:56:32 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] don't link timer.o for powerpc systems using generic rtc
+Message-ID: <Pine.LNX.4.60.0705171021550.5029@poirot.grange>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Christoph Lameter <clameter@sgi.com>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,28 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 16 May 2007, Arnd Bergmann wrote:
-> On Wednesday 16 May 2007, Geert Uytterhoeven wrote:
-> > What are the changes a large allocation will actually succeed?
-> > Is there an alignment rule for large allocations?
-> > 
-> > E.g. for one of the PS3 drivers I need a physically contiguous 256 KiB-aligned
-> > block of 256 KiB. Currently I'm using __alloc_bootmem() for that, but maybe
-> > kmalloc() becomes a suitable alternative now?
-> 
-> kmalloc is limited to 128KiB on most architectures. Normally there is no
-> need to use it anyway, just use __get_free_pages(). It will generally
-> succeed at early boot time, but not after the system has been running
-> for some time.
+With both generic rtc and powerpc timer suspend / resume code now in the 
+(powerpc.git) tree, powerpc platforms using the generic timer and enabling 
+power management will have timer.o linked in the kernel, which they don't 
+need. Moreover, it will likely WARN_ON(!ppc_md.get_rtc_time), save 
+zero-time and return no error on suspend...
 
-Exactly my understanding. And __get_free_pages() returns PAGE_SIZE-aligned
-memory. So I'll keep the current code.
+As a possible solution we can choose not to build timer.o when RTC_CLASS 
+is enabled. However, I can imagine systems with 2 rtc's, one served by the 
+ppc-rtc, another one generic built as a module, in which case using the 
+ppc-rtc for suspend / resume will be impossible. Not to say, that such a 
+configuration would be ugly...
 
-Gr{oetje,eeting}s,
+Signed-off-by: G. Liakhovetski <g.liakhovetski@gmx.de>
 
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index c3ce0bd..31da3b3 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -20,7 +20,9 @@ mv64x60-$(CONFIG_PCI)		+= mv64x60_pci.o
+ obj-$(CONFIG_MV64X60)		+= $(mv64x60-y) mv64x60_pic.o mv64x60_dev.o
+ 
+ # contains only the suspend handler for time
++ifeq ($(CONFIG_RTC_CLASS),)
+ obj-$(CONFIG_PM)		+= timer.o
++endif
+ 
+ ifeq ($(CONFIG_PPC_MERGE),y)
+ obj-$(CONFIG_PPC_I8259)		+= i8259.o
