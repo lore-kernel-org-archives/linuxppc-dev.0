@@ -1,16 +1,22 @@
-Return-Path: <lichl@hotmail.com>
-Received: from bay0-omc2-s9.bay0.hotmail.com (bay0-omc2-s9.bay0.hotmail.com
-	[65.54.246.145]) by ozlabs.org (Postfix) with ESMTP id 31570DDEDB
+Return-Path: <bhupi.saharan@gmail.com>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.239])
+	by ozlabs.org (Postfix) with ESMTP id E48FCDDDF7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 May 2007 17:28:43 +1000 (EST)
-Message-ID: <BAY124-W4059668EE4BB8933289F97AD330@phx.gbl>
-Content-Type: multipart/alternative;
-	boundary="_e975f141-23bb-4235-9f88-c1060d6a7cbc_"
-From: liChunlin <lichl@hotmail.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Down when i get date from rtc by "hwclock --hctosys" 
-Date: Thu, 17 May 2007 15:28:39 +0800
+	Fri, 18 May 2007 02:05:49 +1000 (EST)
+Received: by nz-out-0506.google.com with SMTP id l1so1220570nzf
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 17 May 2007 09:05:48 -0700 (PDT)
+Message-ID: <720399a30705170905s55531a50hb980bc09bfc0a69d@mail.gmail.com>
+Date: Thu, 17 May 2007 09:05:47 -0700
+From: "Bhupender Saharan" <bhupi.saharan@gmail.com>
+To: liChunlin <lichl@hotmail.com>
+Subject: Re: Down when i get date from rtc by "hwclock --hctosys"
+In-Reply-To: <BAY124-W4059668EE4BB8933289F97AD330@phx.gbl>
 MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_45630_25213566.1179417947961"
+References: <BAY124-W4059668EE4BB8933289F97AD330@phx.gbl>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,39 +27,72 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---_e975f141-23bb-4235-9f88-c1060d6a7cbc_
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: 8bit
+------=_Part_45630_25213566.1179417947961
+Content-Type: text/plain; charset=GB2312; format=flowed
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
-The system is Embeded Linux with kernel 2.6.14. And the CPU is MPC8270 of freescale. The rtc module is "Generic /dev/rtc emulation" and "Extended RTC operation". And the chip of rtc is ds1338 with the interface of i2c. The module of i2c has been included.
-When i enable the dcache of mpc8270 and use "hwclock --hctosys" or "hwclock --show", the system will down. But if i disable dcache, it is ok. I found that when it call schedule_work(&genrtc_task) in the function "static inline int gen_set_rtc_irq_bit(unsigned char bit)" in file genrtc.c it will down.
-Can you help me? 
-Thanks.Leo
-_________________________________________________________________
-中国十大热门旅游景点
-http://search.msn.com/results.aspx?q=%E4%B8%AD%E5%9B%BD%E5%8D%81%E5%A4%A7%E9%A3%8E%E6%99%AF&mkt=zh-CN&form=QBRE
---_e975f141-23bb-4235-9f88-c1060d6a7cbc_
-Content-Type: text/html; charset="gb2312"
-Content-Transfer-Encoding: 8bit
+SGkgTGVvLAoKTG9va3MgbGlrZSB5b3VyIHN5c3RlbSBpcyB1bnN0YWJsZSB3aGVuIHRoZSBjYWNo
+ZSBpcyBlbmFiZWQuIEl0IG1pZ2h0IGhhdmUKbm90aGluZyB0byBkbyB3aXRoIGdlbmVyaWMgUlRD
+IGRyaXZlci4KCkNhbiB5b3UgcnVuIGNhY2hlYmVuY2ggb3IgYW5vdGhlciBtZW1vcnkgYmVuY2ht
+YXJrcyB0b29scyBvbiB0aGUgc3lzdGVtIGFuZApzZWUgaWYgbWVtb3J5IHN1YiBzeXN0ZW0gaXMg
+T0suCgpSZWdhcmRzCkJodXBpCgoKT24gNS8xNy8wNywgbGlDaHVubGluIDxsaWNobEBob3RtYWls
+LmNvbT4gd3JvdGU6Cj4KPiBUaGUgc3lzdGVtIGlzIEVtYmVkZWQgTGludXggd2l0aCBrZXJuZWwg
+Mi42LjE0LiBBbmQgdGhlIENQVSBpcyBNUEM4MjcwIG9mCj4gZnJlZXNjYWxlLiBUaGUgcnRjIG1v
+ZHVsZSBpcyAiR2VuZXJpYyAvZGV2L3J0YyBlbXVsYXRpb24iIGFuZCAiRXh0ZW5kZWQgUlRDCj4g
+b3BlcmF0aW9uIi4gQW5kIHRoZSBjaGlwIG9mIHJ0YyBpcyBkczEzMzggd2l0aCB0aGUgaW50ZXJm
+YWNlIG9mIGkyYy4gVGhlCj4gbW9kdWxlIG9mIGkyYyBoYXMgYmVlbiBpbmNsdWRlZC4KPiBXaGVu
+IGkgZW5hYmxlIHRoZSBkY2FjaGUgb2YgbXBjODI3MCBhbmQgdXNlICJod2Nsb2NrIC0taGN0b3N5
+cyIgb3IKPiAiaHdjbG9jayAtLXNob3ciLCB0aGUgc3lzdGVtIHdpbGwgZG93bi4gQnV0IGlmIGkg
+ZGlzYWJsZSBkY2FjaGUsIGl0IGlzIG9rLgo+IEkgZm91bmQgdGhhdCB3aGVuIGl0IGNhbGwgc2No
+ZWR1bGVfd29yaygmZ2VucnRjX3Rhc2spIGluIHRoZSBmdW5jdGlvbgo+ICJzdGF0aWMgaW5saW5l
+IGludCBnZW5fc2V0X3J0Y19pcnFfYml0KHVuc2lnbmVkIGNoYXIgYml0KSIgaW4gZmlsZQo+IGdl
+bnJ0Yy5jIGl0IHdpbGwgZG93bi4KPiBDYW4geW91IGhlbHAgbWU/Cj4gVGhhbmtzLgo+IExlbwo+
+Cj4KPiAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KPiDW0Ln6yq6088jIw8XCw9POvrC1
+4yDBy73iuPy24NDFz6KjoTxodHRwOi8vc2VhcmNoLm1zbi5jb20vcmVzdWx0cy5hc3B4P3E9JUU0
+JUI4JUFEJUU1JTlCJUJEJUU1JThEJTgxJUU1JUE0JUE3JUU5JUEzJThFJUU2JTk5JUFGJm1rdD16
+aC1DTiZmb3JtPVFCUkU+Cj4KPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fXwo+IExpbnV4cHBjLWVtYmVkZGVkIG1haWxpbmcgbGlzdAo+IExpbnV4cHBjLWVt
+YmVkZGVkQG96bGFicy5vcmcKPiBodHRwczovL296bGFicy5vcmcvbWFpbG1hbi9saXN0aW5mby9s
+aW51eHBwYy1lbWJlZGRlZAo+Cg==
+------=_Part_45630_25213566.1179417947961
+Content-Type: text/html; charset=GB2312
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
-<html>
-<head>
-<style>
-P
-{
-margin:0px;
-padding:0px
-}
-body
-{
-FONT-SIZE: 9pt;
-FONT-FAMILY:Tahoma
-}
-</style>
-</head>
-<body>The system is Embeded Linux with kernel 2.6.14. And the CPU is MPC8270 of freescale. The rtc module is "Generic /dev/rtc emulation" and "Extended RTC operation". And the chip of rtc is ds1338 with the interface of i2c. The module of i2c has been included.<BR>
-When i enable the dcache of mpc8270 and use "hwclock --hctosys" or "hwclock --show", the system will down. But if i disable dcache, it is ok. <BR>I found that when it call schedule_work(&amp;genrtc_task) in the function "static inline int gen_set_rtc_irq_bit(unsigned char bit)" in file genrtc.c it will down.<BR>
-Can you help me? <BR>
-Thanks.<BR>Leo<BR><BR><br /><hr />中国十大热门旅游景点 <a href='http://search.msn.com/results.aspx?q=%E4%B8%AD%E5%9B%BD%E5%8D%81%E5%A4%A7%E9%A3%8E%E6%99%AF&mkt=zh-CN&form=QBRE' target='_new'>了解更多信息！</a></body>
-</html>
---_e975f141-23bb-4235-9f88-c1060d6a7cbc_--
+SGkgTGVvLDxicj48YnI+TG9va3MgbGlrZSB5b3VyIHN5c3RlbSBpcyB1bnN0YWJsZSB3aGVuIHRo
+ZSBjYWNoZSBpcyBlbmFiZWQuIEl0IG1pZ2h0IGhhdmUgbm90aGluZyB0byBkbyB3aXRoIGdlbmVy
+aWMgUlRDIGRyaXZlci48YnI+PGJyPkNhbiB5b3UgcnVuIGNhY2hlYmVuY2ggb3IgYW5vdGhlciBt
+ZW1vcnkgYmVuY2htYXJrcyB0b29scyBvbiB0aGUgc3lzdGVtIGFuZCBzZWUgaWYgbWVtb3J5IHN1
+YiBzeXN0ZW0gaXMgT0suCjxicj48YnI+UmVnYXJkczxicj5CaHVwaTxicj48YnI+PGJyPjxkaXY+
+PHNwYW4gY2xhc3M9ImdtYWlsX3F1b3RlIj5PbiA1LzE3LzA3LCA8YiBjbGFzcz0iZ21haWxfc2Vu
+ZGVybmFtZSI+bGlDaHVubGluPC9iPiAmbHQ7PGEgaHJlZj0ibWFpbHRvOmxpY2hsQGhvdG1haWwu
+Y29tIj5saWNobEBob3RtYWlsLmNvbTwvYT4mZ3Q7IHdyb3RlOjwvc3Bhbj48YmxvY2txdW90ZSBj
+bGFzcz0iZ21haWxfcXVvdGUiIHN0eWxlPSJib3JkZXItbGVmdDogMXB4IHNvbGlkIHJnYigyMDQs
+IDIwNCwgMjA0KTsgbWFyZ2luOiAwcHQgMHB0IDBwdCAwLjhleDsgcGFkZGluZy1sZWZ0OiAxZXg7
+Ij4KCgoKCjxkaXY+VGhlIHN5c3RlbSBpcyBFbWJlZGVkIExpbnV4IHdpdGgga2VybmVsIDIuNi4x
+NC4gQW5kIHRoZSBDUFUgaXMgTVBDODI3MCBvZiBmcmVlc2NhbGUuIFRoZSBydGMgbW9kdWxlIGlz
+ICZxdW90O0dlbmVyaWMgL2Rldi9ydGMgZW11bGF0aW9uJnF1b3Q7IGFuZCAmcXVvdDtFeHRlbmRl
+ZCBSVEMgb3BlcmF0aW9uJnF1b3Q7LiBBbmQgdGhlIGNoaXAgb2YgcnRjIGlzIGRzMTMzOCB3aXRo
+IHRoZSBpbnRlcmZhY2Ugb2YgaTJjLiBUaGUgbW9kdWxlIG9mIGkyYyBoYXMgYmVlbiBpbmNsdWRl
+ZC4KPGJyPgpXaGVuIGkgZW5hYmxlIHRoZSBkY2FjaGUgb2YgbXBjODI3MCBhbmQgdXNlICZxdW90
+O2h3Y2xvY2sgLS1oY3Rvc3lzJnF1b3Q7IG9yICZxdW90O2h3Y2xvY2sgLS1zaG93JnF1b3Q7LCB0
+aGUgc3lzdGVtIHdpbGwgZG93bi4gQnV0IGlmIGkgZGlzYWJsZSBkY2FjaGUsIGl0IGlzIG9rLiA8
+YnI+SSBmb3VuZCB0aGF0IHdoZW4gaXQgY2FsbCBzY2hlZHVsZV93b3JrKCZhbXA7Z2VucnRjX3Rh
+c2spIGluIHRoZSBmdW5jdGlvbiAmcXVvdDtzdGF0aWMgaW5saW5lIGludCBnZW5fc2V0X3J0Y19p
+cnFfYml0KHVuc2lnbmVkIGNoYXIgYml0KSZxdW90OyBpbiBmaWxlIApnZW5ydGMuYyBpdCB3aWxs
+IGRvd24uPGJyPgpDYW4geW91IGhlbHAgbWU/IDxicj4KVGhhbmtzLjxicj5MZW88YnI+PGJyPjxi
+cj48aHI+1tC5+squtPPIyMPFwsPTzr6wteMgPGEgaHJlZj0iaHR0cDovL3NlYXJjaC5tc24uY29t
+L3Jlc3VsdHMuYXNweD9xPSVFNCVCOCVBRCVFNSU5QiVCRCVFNSU4RCU4MSVFNSVBNCVBNyVFOSVB
+MyU4RSVFNiU5OSVBRiZhbXA7bWt0PXpoLUNOJmFtcDtmb3JtPVFCUkUiIHRhcmdldD0iX2JsYW5r
+IiBvbmNsaWNrPSJyZXR1cm4gdG9wLmpzLk9wZW5FeHRMaW5rKHdpbmRvdyxldmVudCx0aGlzKSI+
+CsHLveK4/Lbg0MXPoqOhPC9hPjwvZGl2Pgo8YnI+X19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX188YnI+TGludXhwcGMtZW1iZWRkZWQgbWFpbGluZyBsaXN0PGJy
+PjxhIG9uY2xpY2s9InJldHVybiB0b3AuanMuT3BlbkV4dExpbmsod2luZG93LGV2ZW50LHRoaXMp
+IiBocmVmPSJtYWlsdG86TGludXhwcGMtZW1iZWRkZWRAb3psYWJzLm9yZyI+TGludXhwcGMtZW1i
+ZWRkZWRAb3psYWJzLm9yZzwvYT4KPGJyPjxhIG9uY2xpY2s9InJldHVybiB0b3AuanMuT3BlbkV4
+dExpbmsod2luZG93LGV2ZW50LHRoaXMpIiBocmVmPSJodHRwczovL296bGFicy5vcmcvbWFpbG1h
+bi9saXN0aW5mby9saW51eHBwYy1lbWJlZGRlZCIgdGFyZ2V0PSJfYmxhbmsiPmh0dHBzOi8vb3ps
+YWJzLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4cHBjLWVtYmVkZGVkPC9hPjxicj48L2Jsb2Nr
+cXVvdGU+PC9kaXY+PGJyPgo=
+------=_Part_45630_25213566.1179417947961--
