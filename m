@@ -1,18 +1,14 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 22881DDE34
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 18:56:29 +1000 (EST)
-Received: from lyakh (helo=localhost)
-	by poirot.grange with local-esmtp (Exim 3.36 #1 (Debian))
-	id 1Hobmi-0002Ah-00
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 10:56:32 +0200
-Date: Thu, 17 May 2007 10:56:32 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] don't link timer.o for powerpc systems using generic rtc
-Message-ID: <Pine.LNX.4.60.0705171021550.5029@poirot.grange>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17996.13115.456275.413478@cargo.ozlabs.ibm.com>
+Date: Thu, 17 May 2007 20:49:31 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Please pull from 'for_paulus' branch
+In-Reply-To: <Pine.LNX.4.64.0705151715200.17092@localhost.localdomain>
+References: <Pine.LNX.4.64.0705151715200.17092@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,31 +18,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-With both generic rtc and powerpc timer suspend / resume code now in the 
-(powerpc.git) tree, powerpc platforms using the generic timer and enabling 
-power management will have timer.o linked in the kernel, which they don't 
-need. Moreover, it will likely WARN_ON(!ppc_md.get_rtc_time), save 
-zero-time and return no error on suspend...
+Kumar Gala writes:
 
-As a possible solution we can choose not to build timer.o when RTC_CLASS 
-is enabled. However, I can imagine systems with 2 rtc's, one served by the 
-ppc-rtc, another one generic built as a module, in which case using the 
-ppc-rtc for suspend / resume will be impossible. Not to say, that such a 
-configuration would be ugly...
+> diff --git a/arch/ppc/mm/hashtable.S b/arch/ppc/mm/htashtable.S
+> index e756942..fc30b6f 100644
+> --- a/arch/ppc/mm/hashtable.S
+> +++ b/arch/ppc/mm/hashtable.S
 
-Signed-off-by: G. Liakhovetski <g.liakhovetski@gmx.de>
+> @@ -461,9 +465,15 @@ found_slot:
+>  	sync		/* make sure pte updates get to memory */
+>  	blr
+> 
+> -	.comm	next_slot,4
+> -	.comm	primary_pteg_full,4
+> -	.comm	htab_hash_searches,4
+> +	.section .bss
+> +	.align	2
+> +next_slot:
+> +	.space	4
+> +primary_pteg_full:
+> +	.space	4
+> +htab_hash_searches:
+> +	.space	4
+> +	.previous
 
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index c3ce0bd..31da3b3 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -20,7 +20,9 @@ mv64x60-$(CONFIG_PCI)		+= mv64x60_pci.o
- obj-$(CONFIG_MV64X60)		+= $(mv64x60-y) mv64x60_pic.o mv64x60_dev.o
- 
- # contains only the suspend handler for time
-+ifeq ($(CONFIG_RTC_CLASS),)
- obj-$(CONFIG_PM)		+= timer.o
-+endif
- 
- ifeq ($(CONFIG_PPC_MERGE),y)
- obj-$(CONFIG_PPC_I8259)		+= i8259.o
+I get this on an ARCH=ppc prep build:
+
+arch/ppc/kernel/built-in.o: In function `__main':
+arch/ppc/kernel/entry.S:(.text+0x2eda): undefined reference to `htab_hash_searches'
+arch/ppc/kernel/entry.S:(.text+0x2ede): undefined reference to `htab_hash_searches'
+arch/ppc/kernel/entry.S:(.text+0x2ee2): undefined reference to `primary_pteg_full'
+arch/ppc/kernel/entry.S:(.text+0x2ee6): undefined reference to
+`primary_pteg_full'
+
+(The references are actually in arch/ppc/kernel/ppc_htab.c.)
+
+I guess I'll cherry-pick the other commits from your tree, since I'm
+making a string for Linus, unless you have a better suggestion.
+
+Paul.
