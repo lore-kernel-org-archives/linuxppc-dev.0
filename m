@@ -4,13 +4,13 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D5957DDFA2
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 00:46:31 +1000 (EST)
-Date: Thu, 17 May 2007 09:38:46 -0500
+	by ozlabs.org (Postfix) with ESMTP id 0562FDDFF4
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 00:46:37 +1000 (EST)
+Date: Thu, 17 May 2007 09:38:56 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/5] powerpc: Document device nodes for I2C devices.
-Message-ID: <20070517143846.GC29795@ld0162-tx32.am.freescale.net>
+Subject: [PATCH 4/5] powerpc: Add of_register_i2c_devices().
+Message-ID: <20070517143856.GD29795@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: i2c@lm-sensors.org
@@ -23,72 +23,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Document the use of device trees to describe devices on an I2C bus, which
-will be used with David Brownell's "new style" I2C binding patches.
+Add of_register_i2c_devices(), which scans the children of the specified
+I2C adapter node, and registers them with the I2C code.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- Documentation/powerpc/booting-without-of.txt |   34 ++++++++++++++++++++++++++
- 1 files changed, 34 insertions(+), 0 deletions(-)
+ arch/powerpc/kernel/prom_parse.c |   42 ++++++++++++++++++++++++++++++++++++++
+ drivers/i2c/busses/i2c-mpc.c     |    2 +-
+ include/asm-powerpc/prom.h       |    1 +
+ 3 files changed, 44 insertions(+), 1 deletions(-)
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index b49ce16..67026ad 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -1257,6 +1257,8 @@ platforms are moved over to use the flattened-device-tree model.
- 
-    e) I2C
- 
-+   e1) I2C Controller
+diff --git a/arch/powerpc/kernel/prom_parse.c b/arch/powerpc/kernel/prom_parse.c
+index 3786dcc..5e80062 100644
+--- a/arch/powerpc/kernel/prom_parse.c
++++ b/arch/powerpc/kernel/prom_parse.c
+@@ -1067,3 +1067,45 @@ void __iomem *of_iomap(struct device_node *np, int index)
+ 	return ioremap(res.start, 1 + res.end - res.start);
+ }
+ EXPORT_SYMBOL(of_iomap);
 +
-    Required properties :
- 
-     - device_type : Should be "i2c"
-@@ -1277,6 +1279,10 @@ platforms are moved over to use the flattened-device-tree model.
-       a digital filter sampling rate register
-     - fsl5200-clocking : boolean; if defined, indicated that this device
-       uses the FSL 5200 clocking mechanism.
-+    - #address-cells : should exist and be 1 if I2C devices are declared
-+      in the device tree.
-+    - #size-cells : should exist and be 0 if I2C devices are declared
-+      in the device tree.
- 
-    Example :
- 
-@@ -1289,6 +1295,34 @@ platforms are moved over to use the flattened-device-tree model.
- 		dfsrr;
- 	};
- 
-+   e2) I2C Devices
++#ifdef CONFIG_I2C
++#include <linux/i2c.h>
 +
-+   Required properties :
++void of_register_i2c_devices(struct device_node *adap_node, int bus_num)
++{
++	struct device_node *node = NULL;
 +
-+    - reg : Unshifted 7-bit I2C address for the device
++	while ((node = of_get_next_child(adap_node, node))) {
++		struct i2c_board_info info;
++		const u32 *addr;
++		const char *name;
++		int len;
 +
-+   Recommended properties :
++		addr = get_property(node, "reg", &len);
++		if (!addr || len < sizeof(int) || *addr > 0xffff)
++			continue;
 +
-+    - compatible : The name of the Linux device driver that
-+      handles this device.  If unspecified, the name of the
-+      node will be used.
-+    - interrupts : <a b> where a is the interrupt number and b is a
-+      field that represents an encoding of the sense and level
-+      information for the interrupt.  This should be encoded based on
-+      the information in section 2) depending on the type of interrupt
-+      controller you have.
-+    - interrupt-parent : the phandle for the interrupt controller that
-+      services interrupts for this device.
++		info.irq = irq_of_parse_and_map(node, 0);
++		if (info.irq == NO_IRQ)
++			info.irq = -1;
 +
-+   Example :
++		name = get_property(node, "compatible", NULL);
++		if (!name)
++			name = node->name;
++		if (!name)
++			continue;
 +
-+	rtc@68 {
-+		device_type = "rtc";
-+		compatible = "ds1374";
-+		reg = <68>;
-+		interrupts = <13 8>;
-+		interrupt-parent = <700>;
-+	};
++		/* FIXME: the i2c code should allow drivers to specify
++		 * multiple match names; board code shouldn't need to
++		 * know what driver will handle a given type.
++		 */
++
++		snprintf(info.driver_name, KOBJ_NAME_LEN, name);
++		snprintf(info.type, KOBJ_NAME_LEN, name);
++		info.platform_data = NULL;
++		info.addr = *addr;
++
++		i2c_register_board_info(bus_num, &info, 1);
++	}
++}
++#endif /* CONFIG_I2C */
+diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+index c6b6898..b7870de 100644
+--- a/drivers/i2c/busses/i2c-mpc.c
++++ b/drivers/i2c/busses/i2c-mpc.c
+@@ -329,7 +329,7 @@ static int fsl_i2c_probe(struct platform_device *pdev)
+ 	i2c->adap = mpc_ops;
+ 	i2c_set_adapdata(&i2c->adap, i2c);
+ 	i2c->adap.dev.parent = &pdev->dev;
+-	if ((result = i2c_add_adapter(&i2c->adap)) < 0) {
++	if ((result = i2c_add_prenumbered_adapter(&i2c->adap, pdev->id)) < 0) {
+ 		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
+ 		goto fail_add;
+ 	}
+diff --git a/include/asm-powerpc/prom.h b/include/asm-powerpc/prom.h
+index 6845af9..ed085e1 100644
+--- a/include/asm-powerpc/prom.h
++++ b/include/asm-powerpc/prom.h
+@@ -305,6 +305,7 @@ extern int of_irq_map_raw(struct device_node *parent, const u32 *intspec,
+ 			  u32 ointsize, const u32 *addr,
+ 			  struct of_irq *out_irq);
  
-    f) Freescale SOC USB controllers
++void of_register_i2c_devices(struct device_node *adap_node, int bus_num);
  
+ /**
+  * of_irq_map_one - Resolve an interrupt for a device
 -- 
 1.5.0.3
