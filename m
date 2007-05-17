@@ -1,18 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 42665DDE2A
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 16:03:40 +1000 (EST)
-Date: Thu, 17 May 2007 16:03:38 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] [POWERPC] fix non HUGETLB_PAGE build warning
-Message-Id: <20070517160338.c8170865.sfr@canb.auug.org.au>
-In-Reply-To: <17995.58640.165251.501487@cargo.ozlabs.ibm.com>
-References: <20070514141136.39a76d32.sfr@canb.auug.org.au>
-	<17995.58640.165251.501487@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 8E42DDDE08
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 18:45:07 +1000 (EST)
+Date: Thu, 17 May 2007 10:45:00 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: Slab allocators: Define common size limitations
+In-Reply-To: <200705162342.08601.arnd@arndb.de>
+Message-ID: <Pine.LNX.4.62.0705171044030.1803@pademelon.sonytel.be>
+References: <Pine.LNX.4.64.0705152313490.5832@schroedinger.engr.sgi.com>
+	<Pine.LNX.4.62.0705160855470.24080@pademelon.sonytel.be>
+	<200705162342.08601.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Christoph Lameter <clameter@sgi.com>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,70 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-arch/powerpc/mm/mmu_context_64.c: In function 'init_new_context':
-arch/powerpc/mm/mmu_context_64.c:31: warning: unused variable 'new_context'
+On Wed, 16 May 2007, Arnd Bergmann wrote:
+> On Wednesday 16 May 2007, Geert Uytterhoeven wrote:
+> > What are the changes a large allocation will actually succeed?
+> > Is there an alignment rule for large allocations?
+> > 
+> > E.g. for one of the PS3 drivers I need a physically contiguous 256 KiB-aligned
+> > block of 256 KiB. Currently I'm using __alloc_bootmem() for that, but maybe
+> > kmalloc() becomes a suitable alternative now?
+> 
+> kmalloc is limited to 128KiB on most architectures. Normally there is no
+> need to use it anyway, just use __get_free_pages(). It will generally
+> succeed at early boot time, but not after the system has been running
+> for some time.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/mm/mmu_context_64.c |    5 ++---
- arch/powerpc/mm/slice.c          |    1 +
- 2 files changed, 3 insertions(+), 3 deletions(-)
+Exactly my understanding. And __get_free_pages() returns PAGE_SIZE-aligned
+memory. So I'll keep the current code.
 
-On Thu, 17 May 2007 15:16:00 +1000 Paul Mackerras <paulus@samba.org> wrote:
->
-> Could we use __unused to suppress the warning instead?
+Gr{oetje,eeting}s,
 
-New version gets rid of the variabled completely.  Benh says this is ok.
+						Geert
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --git a/arch/powerpc/mm/mmu_context_64.c b/arch/powerpc/mm/mmu_context_64.c
-index 7a78cdc..901ea76 100644
---- a/arch/powerpc/mm/mmu_context_64.c
-+++ b/arch/powerpc/mm/mmu_context_64.c
-@@ -28,7 +28,6 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
- {
- 	int index;
- 	int err;
--	int new_context = (mm->context.id == 0);
- 
- again:
- 	if (!idr_pre_get(&mmu_context_idr, GFP_KERNEL))
-@@ -50,19 +49,19 @@ again:
- 		return -ENOMEM;
- 	}
- 
--	mm->context.id = index;
- #ifdef CONFIG_PPC_MM_SLICES
- 	/* The old code would re-promote on fork, we don't do that
- 	 * when using slices as it could cause problem promoting slices
- 	 * that have been forced down to 4K
- 	 */
--	if (new_context)
-+	if (mm->context.id == 0)
- 		slice_set_user_psize(mm, mmu_virtual_psize);
- #else
- 	mm->context.user_psize = mmu_virtual_psize;
- 	mm->context.sllp = SLB_VSID_USER |
- 		mmu_psize_defs[mmu_virtual_psize].sllp;
- #endif
-+	mm->context.id = index;
- 
- 	return 0;
- }
-diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index f833dba..cde1439 100644
---- a/arch/powerpc/mm/slice.c
-+++ b/arch/powerpc/mm/slice.c
-@@ -549,6 +549,7 @@ EXPORT_SYMBOL_GPL(get_slice_psize);
-  *
-  * This is also called in init_new_context() to change back the user
-  * psize from whatever the parent context had it set to
-+ * N.B. This may be called before mm->context.id has been set.
-  *
-  * This function will only change the content of the {low,high)_slice_psize
-  * masks, it will not flush SLBs as this shall be handled lazily by the
--- 
-1.5.1.4
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
