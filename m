@@ -1,22 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B989BDDE16
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 05:40:00 +1000 (EST)
-Message-ID: <464CADBB.9050500@freescale.com>
-Date: Thu, 17 May 2007 14:32:11 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 87500DDE1A
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 05:42:14 +1000 (EST)
+Message-ID: <464CB071.5050504@ru.mvista.com>
+Date: Thu, 17 May 2007 23:43:45 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
 To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 3/5] powerpc: Document device nodes for I2C devices.
-References: <20070517143846.GC29795@ld0162-tx32.am.freescale.net>
-	<8183195dad79296e3986f561bf929067@kernel.crashing.org>
-In-Reply-To: <8183195dad79296e3986f561bf929067@kernel.crashing.org>
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+References: <200705172142.26739.sshtylyov@ru.mvista.com>
+	<f9afbdb49bc1f935153305315770bccd@kernel.crashing.org>
+In-Reply-To: <f9afbdb49bc1f935153305315770bccd@kernel.crashing.org>
 Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+Cc: linuxppc-dev@ozlabs.org, mingo@elte.hu, tglx@linutronix.de,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,44 +24,36 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 Segher Boessenkool wrote:
->> +   Required properties :
->> +
->> +    - reg : Unshifted 7-bit I2C address for the device
-> 
-> What about 10-bit addressing, etc.?
+>> +     * We must write a positive value to the decrementer to clear
+>> +     * the interrupt on the IBM 970 CPU series.  In periodic mode,
+>> +     * this happens when the decrementer gets reloaded later, but
+>> +     * in one-shot mode, we have to do it here since an event handler
+>> +     * may skip loading the new value...
 
-I specified 7-bit to address someone's question back when this first 
-came up of whether it was 7-bit unshifted or 8-bit shifted.  Perhaps it 
-should just say "Unshifted I2C address for the device"?
+> Nothing special about 970 here -- on *every* PowerPC,
+> a decrementer exception exists as long as the high
+> bit of the decrementer equals 1.  BookE is different
+> of course.  Some other CPUs might deviate from the
+> architecture as well.
 
->> +   Recommended properties :
->> +
->> +    - compatible : The name of the Linux device driver that
->> +      handles this device.  If unspecified, the name of the
->> +      node will be used.
-> 
-> NO WAY
+    Quoting "PowerPC Operating Environment Architecture":
 
-Sorry, that was left in there from a while ago and I missed it.  It 
-should be defined the same way as any other compatible property (and the 
-i2c code in Linux should be fixed to allow drivers to specify multiple 
-match names).  No need for shouting. :-)
+The Decrementer counts down. On POWER4, a Decrementer exception occurs when 
+DEC0 changes from 0 to 1. On POWER4+, operation is as follows.
 
->> +    - interrupts : <a b> where a is the interrupt number and b is a
-> 
-> I2C doesn't do interrupts,
+The exception effects of the Decrementer are said to be consistent with the 
+contents of the Decrementer if one of the following statements is true.
 
-...but some I2C devices do.
+* DEC0=0 and a Decrementer exception does not exist.
 
-> this doesn't belong in an I2C binding; it's redundant anyway
+* DEC0=1 and a Decrementer exception exists.
 
-I guess it's implicit that any device that generates interrupts will 
-have an interrupts property, though there are many other examples of 
-this sort of redundancy in booting-without-of.txt.  Its inclusion was 
-mainly an example.
+If DEC0=0, a context synchronizing instruction or event ensures that the 
+exception effects of the Decrementer are consistent with the contents of the 
+Decrementer. Otherwise, when the contents of DEC0 change, the exception 
+effects of the Decrementer become consistent with the new contents of the 
+Decrementer reasonably soon after the change.
 
- > (and incorrect as well).
+> Segher
 
-How is it incorrect?
-
--Scott
+WBR, Sergei
