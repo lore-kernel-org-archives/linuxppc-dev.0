@@ -1,19 +1,23 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id E1278DDE9F
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 23:18:38 +1000 (EST)
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-To: mingo@elte.hu, tglx@linutronix.de
-Subject: [PATCH 2.6.21-rt2] PowerPC: revert fix for threaded fasteoi IRQ
-	handlers
-Date: Thu, 17 May 2007 17:20:08 +0400
-References: <200611192243.34850.sshtylyov@ru.mvista.com>
-In-Reply-To: <200611192243.34850.sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-Message-Id: <200705171719.34968.sshtylyov@ru.mvista.com>
-Content-Type: text/plain;
-  charset="us-ascii"
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, dwalker@mvista.com
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CBD10DDEC2
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 23:24:59 +1000 (EST)
+Received: from verein.lst.de (localhost [127.0.0.1])
+	by mail.lst.de (8.12.3/8.12.3/Debian-7.1) with ESMTP id l4HDOZpX026300
+	(version=TLSv1/SSLv3 cipher=EDH-RSA-DES-CBC3-SHA bits=168 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 15:24:35 +0200
+Received: (from hch@localhost)
+	by verein.lst.de (8.12.3/8.12.3/Debian-6.6) id l4HDOYGY026298
+	for linuxppc-dev@ozlabs.org; Thu, 17 May 2007 15:24:34 +0200
+Date: Thu, 17 May 2007 15:24:34 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] fix 440-related Kconfig warnings
+Message-ID: <20070517132434.GA26230@lst.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,63 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Revert the change to the "fasteoi" type chips as after handle_fasteoi_irq() had
-been fixed, they've become meaningless (and even dangerous -- as was the case
-with Celleb that has been fixed earlier)...
+Currently there is no IBM_NEW_EMAC_ZMII in the tree, so we shouldn't 
+selected it.
 
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
----
-The patch in question wasn't even initially accepted but then was erroneously
-restored along with the TOD patch.  I've asked to revert it but to no avail,
-so here's the formal patch to revert it at last...
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 
- arch/powerpc/platforms/iseries/irq.c  |    1 -
- arch/powerpc/platforms/pseries/xics.c |    2 --
- arch/powerpc/sysdev/mpic.c            |    1 -
- 3 files changed, 4 deletions(-)
-
-Index: linux-2.6/arch/powerpc/platforms/iseries/irq.c
+Index: linux-2.6/arch/powerpc/platforms/44x/Kconfig
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/iseries/irq.c
-+++ linux-2.6/arch/powerpc/platforms/iseries/irq.c
-@@ -279,7 +279,6 @@ static struct irq_chip iseries_pic = {
- 	.shutdown	= iseries_shutdown_IRQ,
- 	.unmask		= iseries_enable_IRQ,
- 	.mask		= iseries_disable_IRQ,
--	.ack		= iseries_end_IRQ,
- 	.eoi		= iseries_end_IRQ
- };
+--- linux-2.6.orig/arch/powerpc/platforms/44x/Kconfig	2007-05-17 14:06:45.000000000 +0200
++++ linux-2.6/arch/powerpc/platforms/44x/Kconfig	2007-05-17 14:06:56.000000000 +0200
+@@ -38,7 +38,7 @@ config 440EP
  
-Index: linux-2.6/arch/powerpc/platforms/pseries/xics.c
+ config 440GP
+ 	bool
+-	select IBM_NEW_EMAC_ZMII
++#	select IBM_NEW_EMAC_ZMII
+ 
+ config 440GX
+ 	bool
+Index: linux-2.6/arch/powerpc/platforms/4xx/Kconfig
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/pseries/xics.c
-+++ linux-2.6/arch/powerpc/platforms/pseries/xics.c
-@@ -456,7 +456,6 @@ static struct irq_chip xics_pic_direct =
- 	.startup = xics_startup,
- 	.mask = xics_mask_irq,
- 	.unmask = xics_unmask_irq,
--	.ack = xics_eoi_direct,
- 	.eoi = xics_eoi_direct,
- 	.set_affinity = xics_set_affinity
- };
-@@ -467,7 +466,6 @@ static struct irq_chip xics_pic_lpar = {
- 	.startup = xics_startup,
- 	.mask = xics_mask_irq,
- 	.unmask = xics_unmask_irq,
--	.ack = xics_eoi_lpar,
- 	.eoi = xics_eoi_lpar,
- 	.set_affinity = xics_set_affinity
- };
-Index: linux-2.6/arch/powerpc/sysdev/mpic.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/sysdev/mpic.c
-+++ linux-2.6/arch/powerpc/sysdev/mpic.c
-@@ -776,7 +776,6 @@ static int mpic_set_irq_type(unsigned in
- static struct irq_chip mpic_irq_chip = {
- 	.mask		= mpic_mask_irq,
- 	.unmask		= mpic_unmask_irq,
--	.ack		= mpic_end_irq,
- 	.eoi		= mpic_end_irq,
- 	.set_type	= mpic_set_irq_type,
- };
+--- linux-2.6.orig/arch/powerpc/platforms/4xx/Kconfig	2007-05-17 14:16:46.000000000 +0200
++++ linux-2.6/arch/powerpc/platforms/4xx/Kconfig	2007-05-17 14:16:52.000000000 +0200
+@@ -171,7 +171,7 @@ config 440EP
+ 
+ config 440GP
+ 	bool
+-	select IBM_NEW_EMAC_ZMII
++#	select IBM_NEW_EMAC_ZMII
+ 
+ config 440GX
+ 	bool
