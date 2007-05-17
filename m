@@ -1,22 +1,22 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-02.arcor-online.net (mail-in-02.arcor-online.net
-	[151.189.21.42])
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0553BDDDF7
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 05:27:24 +1000 (EST)
-In-Reply-To: <200705172142.26739.sshtylyov@ru.mvista.com>
-References: <200705172142.26739.sshtylyov@ru.mvista.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <f9afbdb49bc1f935153305315770bccd@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-Date: Thu, 17 May 2007 21:27:17 +0200
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org, mingo@elte.hu, tglx@linutronix.de,
-	linux-kernel@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTP id B989BDDE16
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 05:40:00 +1000 (EST)
+Message-ID: <464CADBB.9050500@freescale.com>
+Date: Thu, 17 May 2007 14:32:11 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 3/5] powerpc: Document device nodes for I2C devices.
+References: <20070517143846.GC29795@ld0162-tx32.am.freescale.net>
+	<8183195dad79296e3986f561bf929067@kernel.crashing.org>
+In-Reply-To: <8183195dad79296e3986f561bf929067@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +26,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> +	 * We must write a positive value to the decrementer to clear
-> +	 * the interrupt on the IBM 970 CPU series.  In periodic mode,
-> +	 * this happens when the decrementer gets reloaded later, but
-> +	 * in one-shot mode, we have to do it here since an event handler
-> +	 * may skip loading the new value...
+Segher Boessenkool wrote:
+>> +   Required properties :
+>> +
+>> +    - reg : Unshifted 7-bit I2C address for the device
+> 
+> What about 10-bit addressing, etc.?
 
-Nothing special about 970 here -- on *every* PowerPC,
-a decrementer exception exists as long as the high
-bit of the decrementer equals 1.  BookE is different
-of course.  Some other CPUs might deviate from the
-architecture as well.
+I specified 7-bit to address someone's question back when this first 
+came up of whether it was 7-bit unshifted or 8-bit shifted.  Perhaps it 
+should just say "Unshifted I2C address for the device"?
 
+>> +   Recommended properties :
+>> +
+>> +    - compatible : The name of the Linux device driver that
+>> +      handles this device.  If unspecified, the name of the
+>> +      node will be used.
+> 
+> NO WAY
 
-Segher
+Sorry, that was left in there from a while ago and I missed it.  It 
+should be defined the same way as any other compatible property (and the 
+i2c code in Linux should be fixed to allow drivers to specify multiple 
+match names).  No need for shouting. :-)
+
+>> +    - interrupts : <a b> where a is the interrupt number and b is a
+> 
+> I2C doesn't do interrupts,
+
+...but some I2C devices do.
+
+> this doesn't belong in an I2C binding; it's redundant anyway
+
+I guess it's implicit that any device that generates interrupts will 
+have an interrupts property, though there are many other examples of 
+this sort of redundancy in booting-without-of.txt.  Its inclusion was 
+mainly an example.
+
+ > (and incorrect as well).
+
+How is it incorrect?
+
+-Scott
