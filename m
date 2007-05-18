@@ -1,19 +1,30 @@
-Return-Path: <hugh_dickins@symantec.com>
-Received: from extu-mxob-2.symantec.com (extu-mxob-2.symantec.com
-	[216.10.194.135])
+Return-Path: <matt@genesi-usa.com>
+Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
+	[66.98.186.96])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "extu-mxob-2.symantec.com",
-	Issuer "VeriSign Trust Network" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 10AC4DE02B
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 02:47:27 +1000 (EST)
-Date: Fri, 18 May 2007 17:47:01 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc: smp_call_function might switch cpu
-Message-ID: <Pine.LNX.4.64.0705181741380.30417@blonde.wat.veritas.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 484EEDDEEE
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 02:52:26 +1000 (EST)
+Message-ID: <464DD9DD.8030603@genesi-usa.com>
+Date: Fri, 18 May 2007 17:52:45 +0100
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+References: <200705172142.26739.sshtylyov@ru.mvista.com>
+	<8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>
+	<464C99FF.8080404@ru.mvista.com>
+	<135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
+	<464C9E67.2020909@ru.mvista.com>
+	<6E0D5E13-C939-4FCE-81A3-F29DFA6436A2@kernel.crashing.org>
+	<464CA222.8000407@ru.mvista.com> <464D9E7E.3090605@genesi-usa.com>
+	<464DADFC.3080802@ru.mvista.com> <464DB800.40702@genesi-usa.com>
+	<1179499713.12981.75.camel@chaos>
+	<32E780BE-58B7-4303-AA49-1852C4C7EB50@kernel.crashing.org>
+In-Reply-To: <32E780BE-58B7-4303-AA49-1852C4C7EB50@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Thomas Gleixner <tglx@linutronix.de>, mingo@elte.hu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,89 +34,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-smp_call_function_map() was not safe against preemption to another
-cpu: its test for removing self from map was outside the spinlock.
-Rearrange it a little to fix that.
+Kumar Gala wrote:
+> 
+> On May 18, 2007, at 9:48 AM, Thomas Gleixner wrote:
+> 
+>> On Fri, 2007-05-18 at 15:28 +0100, Matt Sealey wrote:
+>>>
+>>> I think both the MPC52xx GPT0-7 and the SLT0-1 fulfil this fairly
+>>> easily.
+>>
+>> There is some basic work for MPC5200 available:
+>>
+>> http://www.pengutronix.de/oselas/bsp/phytec/index_en.html#phyCORE-MPC5200B-tiny
+>>
+> 
+> I asked this earlier, but figured you might have a better insight.  Is
+> their value in having 'drivers' for more than one clock source?  I'd say
+> most (of not all) the PPC SoCs have timers on the system side that we
+> could provide drivers for, I'm just not sure if that does anything for
+> anyone.
 
-smp_call_function_single() was also wrong: now get_cpu() before
-excluding self, as other architectures do.
+As I asked after, I'm also very intrigued as to what is going to end
+up using these timers, but likewise, not much use writing a driver if
+everyone can use the extremely high resolution decrementer all at
+once..
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
----
-I guess most callers actually have preemption disabled already: I only
-noticed this for the first time in 2.6.22-rc1-mm1, where mm/page_alloc.c
-has a drain_all_local_pages(), which triggered a warning with my PowerPC
-DEBUG_PREEMPT patch.
+As I said before too, at least Intel has decided there is a great need
+for up to 256 high resolution timer sources on a system, but since this
+is a fairly new concept to Linux (and hrtimers and dynticks too) it
+only seems to be used in the case of i8254/RTC emulation, mostly on
+x86-64.
 
- arch/powerpc/kernel/smp.c |   34 ++++++++++++++++++----------------
- 1 file changed, 18 insertions(+), 16 deletions(-)
+I'm looking at it now and finding "users" of hrtimers is looking very
+thin on the ground. Maybe it's justified on the basis that more is
+better, and having support is preferable to not having it (even if
+nobody really uses it) but it seems the entire gamut of timing
+possibility in Linux can be handled through a simple, and single,
+high resolution timer and a queue of events..
 
---- 2.6.22-rc1-git7/arch/powerpc/kernel/smp.c	2007-05-13 05:40:52.000000000 +0100
-+++ linux/arch/powerpc/kernel/smp.c	2007-05-18 17:07:51.000000000 +0100
-@@ -201,13 +201,6 @@ int smp_call_function_map(void (*func) (
- 	/* Can deadlock when called with interrupts disabled */
- 	WARN_ON(irqs_disabled());
- 
--	/* remove 'self' from the map */
--	if (cpu_isset(smp_processor_id(), map))
--		cpu_clear(smp_processor_id(), map);
--
--	/* sanity check the map, remove any non-online processors. */
--	cpus_and(map, map, cpu_online_map);
--
- 	if (unlikely(smp_ops == NULL))
- 		return ret;
- 
-@@ -222,10 +215,17 @@ int smp_call_function_map(void (*func) (
- 	/* Must grab online cpu count with preempt disabled, otherwise
- 	 * it can change. */
- 	num_cpus = num_online_cpus() - 1;
--	if (!num_cpus || cpus_empty(map)) {
--		ret = 0;
--		goto out;
--	}
-+	if (!num_cpus)
-+		goto done;
-+
-+	/* remove 'self' from the map */
-+	if (cpu_isset(smp_processor_id(), map))
-+		cpu_clear(smp_processor_id(), map);
-+
-+	/* sanity check the map, remove any non-online processors. */
-+	cpus_and(map, map, cpu_online_map);
-+	if (cpus_empty(map))
-+		goto done;
- 
- 	call_data = &data;
- 	smp_wmb();
-@@ -263,6 +263,7 @@ int smp_call_function_map(void (*func) (
- 		}
- 	}
- 
-+ done:
- 	ret = 0;
- 
-  out:
-@@ -282,16 +283,17 @@ EXPORT_SYMBOL(smp_call_function);
- int smp_call_function_single(int cpu, void (*func) (void *info), void *info, int nonatomic,
- 			int wait)
- {
--	cpumask_t map=CPU_MASK_NONE;
-+	cpumask_t map = CPU_MASK_NONE;
-+	int ret = -EBUSY;
- 
- 	if (!cpu_online(cpu))
- 		return -EINVAL;
- 
--	if (cpu == smp_processor_id())
--		return -EBUSY;
--
- 	cpu_set(cpu, map);
--	return smp_call_function_map(func,info,nonatomic,wait,map);
-+	if (cpu != get_cpu())
-+		ret = smp_call_function_map(func,info,nonatomic,wait,map);
-+	put_cpu();
-+	return ret;
- }
- EXPORT_SYMBOL(smp_call_function_single);
- 
+So do we need some more? :D
+
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
