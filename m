@@ -1,16 +1,16 @@
-Return-Path: <scottwood@freescale.com>
+Return-Path: <timur@freescale.com>
 Received: from de01egw01.freescale.net (de01egw01.freescale.net
 	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 22D63DDF19
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 03:53:02 +1000 (EST)
-Message-ID: <464DE7F7.3030302@freescale.com>
-Date: Fri, 18 May 2007 12:52:55 -0500
-From: Scott Wood <scottwood@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id 436A4DDED0
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 03:56:18 +1000 (EST)
+Message-ID: <464DE8BB.5040601@freescale.com>
+Date: Fri, 18 May 2007 12:56:11 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
 Subject: Re: [PATCH 5/5] PCI fixes for the MPC8641 Rev 2.0 silicon and Rev
 	1.02hardware
 References: <1179245829.8132.100.camel@rhino>
@@ -19,9 +19,9 @@ References: <1179245829.8132.100.camel@rhino>
 	<20070518164628.GA16825@ld0162-tx32.am.freescale.net>
 	<464DE2D3.3090805@smiths-aerospace.com>
 	<464DE4C7.7030906@freescale.com> <464DE5D2.5000301@freescale.com>
-	<464DE6C1.2010108@freescale.com>
-In-Reply-To: <464DE6C1.2010108@freescale.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	<464DE6C1.2010108@freescale.com> <464DE7F7.3030302@freescale.com>
+In-Reply-To: <464DE7F7.3030302@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
 	Zhang Wei-r63237 <Wei.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -33,38 +33,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi wrote:
-> Scott Wood wrote:
-> 
->> Timur Tabi wrote:
->>
->>> Just being able to delete a given node/property would be enough. 
->>
->>
->> I'd rather have an additive model than a subtractive one.  And it 
->> would not be enough, as you would not be able to have two different 
->> versions of a property with the same name.
-> 
-> 
-> The model would be additive, but the DTB would be subtractive.
+Scott Wood wrote:
 
-I meant additive at the DTB level.
+> That's your model.  Mine involves merging a fragment that corresponds to 
+> an active hwoption, with no complex conditional evaluation or deletion 
+> of anything from the main tree.
 
- > After
-> all, the nodes have to *exist* in the DTB that's given to U-Boot.
+I think my model (which is also Jon's, I think) is easier to read and implement.
 
-Yes, they exist under the /hwoptions node.
+> How would you express the alternate setting of phy_type in a subtractive 
+> model?  You can't have two nodes with the same name and different 
+> phy_types, and you can't have two phy_type properties in one node.
 
- > After
-> U-Boot scans the device tree and evaluates the conditions, it has to 
-> remove the nodes that fail.
+The conditionals would have to be correct:
 
-That's your model.  Mine involves merging a fragment that corresponds to 
-an active hwoption, with no complex conditional evaluation or deletion 
-of anything from the main tree.
 
-How would you express the alternate setting of phy_type in a subtractive 
-model?  You can't have two nodes with the same name and different 
-phy_types, and you can't have two phy_type properties in one node.
+phy-node [ if j22 = on ]
+{
+	phy-type = 1
+}
 
--Scott
+phy-node [ if j22 = off ]
+{
+	phy-type = 2
+}
+
+Obviously, j22 can be either on or off, but never both.  If the DTS is coded incorrectly, 
+then it will have problems, but I think that's a fair trade-off for the easier implementation.
+
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
