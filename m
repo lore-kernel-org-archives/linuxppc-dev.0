@@ -1,25 +1,26 @@
-Return-Path: <jdl@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8773EDDF2C
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 02:45:06 +1000 (EST)
-Subject: Re: [PATCH 2/5] Add legacy devices to mpc8641_hpcn.dts
-From: Jon Loeliger <jdl@freescale.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <0c3907573f12a0731d03335fe3334363@kernel.crashing.org>
-References: <1179245829.8132.100.camel@rhino> <1179246470.8132.112.camel@rhino>
-	<1179333421.7018.17.camel@ld0161-tx32>
-	<b77c4b3dd22795a73cd32a0623722e51@kernel.crashing.org>
-	<1179346653.8132.223.camel@rhino>
-	<0c3907573f12a0731d03335fe3334363@kernel.crashing.org>
+Return-Path: <tglx@linutronix.de>
+Received: from mail.tglx.de (www.osadl.org [213.239.205.134])
+	by ozlabs.org (Postfix) with ESMTP id 3A58ADDF2C
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 02:45:41 +1000 (EST)
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <32E780BE-58B7-4303-AA49-1852C4C7EB50@kernel.crashing.org>
+References: <200705172142.26739.sshtylyov@ru.mvista.com>
+	<8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>
+	<464C99FF.8080404@ru.mvista.com>
+	<135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
+	<464C9E67.2020909@ru.mvista.com>
+	<6E0D5E13-C939-4FCE-81A3-F29DFA6436A2@kernel.crashing.org>
+	<464CA222.8000407@ru.mvista.com> <464D9E7E.3090605@genesi-usa.com>
+	<464DADFC.3080802@ru.mvista.com>  <464DB800.40702@genesi-usa.com>
+	<1179499713.12981.75.camel@chaos>
+	<32E780BE-58B7-4303-AA49-1852C4C7EB50@kernel.crashing.org>
 Content-Type: text/plain
-Message-Id: <1179506692.19188.2.camel@ld0161-tx32>
+Date: Fri, 18 May 2007 18:50:59 +0200
+Message-Id: <1179507059.12981.81.camel@chaos>
 Mime-Version: 1.0
-Date: Fri, 18 May 2007 11:44:52 -0500
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, mingo@elte.hu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,19 +30,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-05-16 at 18:40, Segher Boessenkool wrote:
+On Fri, 2007-05-18 at 11:31 -0500, Kumar Gala wrote:
+> I asked this earlier, but figured you might have a better insight.   
+> Is their value in having 'drivers' for more than one clock source?   
+> I'd say most (of not all) the PPC SoCs have timers on the system side  
+> that we could provide drivers for, I'm just not sure if that does  
+> anything for anyone.
 
-> > Is there a recommended "compatible" property for a standard PC-like 
-> > CMOS
-> > RTC?
-> 
-> None in the bindings that I know of.  It typically would
-> be the model name/number of the oldest chip used, or one
-> that is very commonly used.
+Not necessarily for the tick/highres stuff, but clock events allows
+other users as well to utilize such facilities. We have no users yet,
+but there are drivers, which utilize special timer hardware with nice
+#ifdeffery to allow the driver to be shared. This might be a useful
+thing for such stuff.
 
-And I haven't actually gotten it to work yet either...
-Am I missing something?  Like a CONFIG_ option beyond
-the RTC and CMOS variant that is necessary?
-
-Dumbly,
-jdl
+	tglx
