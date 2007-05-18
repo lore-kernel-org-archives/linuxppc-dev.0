@@ -1,24 +1,20 @@
-Return-Path: <tglx@linutronix.de>
-Received: from mail.tglx.de (www.osadl.org [213.239.205.134])
-	by ozlabs.org (Postfix) with ESMTP id B1780DDF01
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 00:43:19 +1000 (EST)
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Matt Sealey <matt@genesi-usa.com>
-In-Reply-To: <464DB800.40702@genesi-usa.com>
-References: <200705172142.26739.sshtylyov@ru.mvista.com>
-	<8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>
-	<464C99FF.8080404@ru.mvista.com>
-	<135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
-	<464C9E67.2020909@ru.mvista.com>
-	<6E0D5E13-C939-4FCE-81A3-F29DFA6436A2@kernel.crashing.org>
-	<464CA222.8000407@ru.mvista.com> <464D9E7E.3090605@genesi-usa.com>
-	<464DADFC.3080802@ru.mvista.com>  <464DB800.40702@genesi-usa.com>
-Content-Type: text/plain
-Date: Fri, 18 May 2007 16:48:33 +0200
-Message-Id: <1179499713.12981.75.camel@chaos>
+Return-Path: <khali@linux-fr.org>
+Received: from kellthuzad.dmz.nerim.net (smtp-dmz-235-friday.dmz.nerim.net
+	[195.5.254.235]) by ozlabs.org (Postfix) with ESMTP id D19C3DDEFE
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 00:47:45 +1000 (EST)
+Received: from kraid.nerim.net (smtp-105-friday.nerim.net [62.4.16.105])
+	by kellthuzad.dmz.nerim.net (Postfix) with ESMTP id 7B4811C66E
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 16:47:36 +0200 (CEST)
+Date: Fri, 18 May 2007 16:47:55 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: David Brownell <david-b@pacbell.net>, Scott Wood <scottwood@freescale.com>
+Subject: Re: [i2c] [PATCH 2/5] i2c: Allow preallocation of I2C bus numbers.
+Message-ID: <20070518164755.0f823254@hyperion.delvare>
+In-Reply-To: <200705171955.38899.david-b@pacbell.net>
+References: <200705171955.38899.david-b@pacbell.net>
 Mime-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, mingo@elte.hu
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,17 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-05-18 at 15:28 +0100, Matt Sealey wrote:
-> >> I guess the real question is, how high resolution does a high resolution
-> >> timer need to be,
-> > 
-> >    In the order of microseconds.
+On Thu, 17 May 2007 19:55:38 -0700, David Brownell wrote:
+> I confess I don't quite follow the intent of this patch.
 > 
-> I think both the MPC52xx GPT0-7 and the SLT0-1 fulfil this fairly
-> easily.
+>  - i2c_alloc_bus_number() ... why not just have the platform
+>    maintainer define the numbers?  (Or in the OF case, just
+>    have the OF glue assign them.)   And it's pointless to
+>    export this, given it supports calling a non-exported routine.
+> 
+>  - i2c_add_prenumbered_adapter() ... caller should just set
+>    adapter->number itself and call i2c_add_numbered_adapter();
+>    no need for a new routine.
+> 
+> Both calls seem useless to me.
 
-There is some basic work for MPC5200 available:
+I can only second David's scepticism here. I fail to see the purpose of
+this patch. It looks to me like we already have everything in place to
+cover all use cases:
 
-http://www.pengutronix.de/oselas/bsp/phytec/index_en.html#phyCORE-MPC5200B-tiny
+* If you need to declare the I2C devices before the I2C adapters are
+created, you have i2c_register_board_info() and
+i2c_add_numbered_adapter().
 
-	tglx
+* If you declare the I2C adapters first, you have i2c_add_adapter() and
+i2c_new_device/i2c_new_probed_device().
+
+Scott, what problem were you trying to solve?
+
+-- 
+Jean Delvare
