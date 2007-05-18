@@ -1,24 +1,22 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 5EE00DDEE2
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 01:47:02 +1000 (EST)
-Message-ID: <464DCACF.9070704@ru.mvista.com>
-Date: Fri, 18 May 2007 19:48:31 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 00DCEDDE1E
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 02:06:09 +1000 (EST)
+Message-ID: <464DCD0E.9000706@freescale.com>
+Date: Fri, 18 May 2007 10:58:06 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Daniel Walker <dwalker@mvista.com>
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-References: <200705172142.26739.sshtylyov@ru.mvista.com>	
-	<8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>	
-	<464C99FF.8080404@ru.mvista.com>	
-	<135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>	
-	<1179500217.20519.53.camel@imap.mvista.com>	
-	<464DC0DC.7050809@ru.mvista.com>
-	<1179502773.20519.56.camel@imap.mvista.com>
-In-Reply-To: <1179502773.20519.56.camel@imap.mvista.com>
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [i2c] [PATCH 3/5] powerpc: Document device nodes for I2C devices.
+References: <20070517143846.GC29795@ld0162-tx32.am.freescale.net>	<8183195dad79296e3986f561bf929067@kernel.crashing.org>	<464CADBB.9050500@freescale.com>
+	<20070518172711.2db7fc92@hyperion.delvare>
+In-Reply-To: <20070518172711.2db7fc92@hyperion.delvare>
 Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, mingo@elte.hu,
-	linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,17 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+Jean Delvare wrote:
+> Hi Scott,
+> 
+> On Thu, 17 May 2007 14:32:11 -0500, Scott Wood wrote:
+> 
+>>(and the 
+>>i2c code in Linux should be fixed to allow drivers to specify multiple 
+>>match names).
+> 
+> 
+> Back when David proposed his new-style i2c code, I had the same
+> objection. But we addressed the need differently. If you look at struct
+> i2c_board_info, you'll see two string fields, driver_name and type. The
+> former specifies the driver name, the second specifies the exact device
+> variant. For drivers which support several device variants, the
+> platform code should fill both fields.
 
-Daniel Walker wrote:
+But that still requires the platform to know the driver name, rather 
+than matching any driver which knows about the type.  This prevents the 
+use of OS-independent device trees (such as in Open Firmware), which 
+cannot know specific Linux driver names, without something hacky like a 
+type-to-driver table in the device tree code.
 
->>    Well, the decrementer frequency may change, at least in theory (if the bus 
->>clock changes).
-
-> Does that happen very often?
-
-    Never, I hope. :-)
-
-> Daniel
-
-WBR, Sergei
+-Scott
