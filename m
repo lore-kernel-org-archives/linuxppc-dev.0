@@ -1,28 +1,23 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
-	[66.98.186.96])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9248EDDEEC
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 01:37:22 +1000 (EST)
-Message-ID: <464DC844.4040101@genesi-usa.com>
-Date: Fri, 18 May 2007 16:37:40 +0100
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
+Return-Path: <dwalker@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 04CC2DDED2
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 01:41:55 +1000 (EST)
 Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-References: <200705172142.26739.sshtylyov@ru.mvista.com>	
-	<8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>	
-	<464C99FF.8080404@ru.mvista.com>	
-	<135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>	
-	<464C9E67.2020909@ru.mvista.com>	
-	<6E0D5E13-C939-4FCE-81A3-F29DFA6436A2@kernel.crashing.org>	
-	<464CA222.8000407@ru.mvista.com> <464D9E7E.3090605@genesi-usa.com>	
-	<464DADFC.3080802@ru.mvista.com> <464DB800.40702@genesi-usa.com>
-	<1179499713.12981.75.camel@chaos>
-In-Reply-To: <1179499713.12981.75.camel@chaos>
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, mingo@elte.hu
+From: Daniel Walker <dwalker@mvista.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+In-Reply-To: <464DC0DC.7050809@ru.mvista.com>
+References: <200705172142.26739.sshtylyov@ru.mvista.com>
+	<8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>
+	<464C99FF.8080404@ru.mvista.com>
+	<135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
+	<1179500217.20519.53.camel@imap.mvista.com>
+	<464DC0DC.7050809@ru.mvista.com>
+Content-Type: text/plain
+Date: Fri, 18 May 2007 08:39:33 -0700
+Message-Id: <1179502773.20519.56.camel@imap.mvista.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, mingo@elte.hu,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,27 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I already have that stuff, but it only implements the decrementer (in fact
-it's the patch submitted at the beginning of this thread).
+On Fri, 2007-05-18 at 19:06 +0400, Sergei Shtylyov wrote:
+> Daniel Walker wrote:
+> 
+> >>I haven't looked at all the new clock/timer code, is there any  
+> >>utility in having support for more than one clock source?
+> 
+> > There is if the main clocksource has some issues where it can't be used.
+> 
+>     You mean, having more than one clocksource is *useful* in this case?
 
-I got it because I was far more interested in the GPIO handling..
+Yes.
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+>     Well, the decrementer frequency may change, at least in theory (if the bus 
+> clock changes).
 
-Thomas Gleixner wrote:
-> On Fri, 2007-05-18 at 15:28 +0100, Matt Sealey wrote:
->>>> I guess the real question is, how high resolution does a high resolution
->>>> timer need to be,
->>>    In the order of microseconds.
->> I think both the MPC52xx GPT0-7 and the SLT0-1 fulfil this fairly
->> easily.
-> 
-> There is some basic work for MPC5200 available:
-> 
-> http://www.pengutronix.de/oselas/bsp/phytec/index_en.html#phyCORE-MPC5200B-tiny
-> 
-> 	tglx
-> 
-> 
+Does that happen very often?
+
+Daniel
