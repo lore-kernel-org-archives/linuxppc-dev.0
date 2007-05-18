@@ -1,22 +1,22 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id DEFE8DDEF4
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 01:04:34 +1000 (EST)
-Message-ID: <464DC0DC.7050809@ru.mvista.com>
-Date: Fri, 18 May 2007 19:06:04 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Daniel Walker <dwalker@mvista.com>
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-References: <200705172142.26739.sshtylyov@ru.mvista.com>	
-	<8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>	
-	<464C99FF.8080404@ru.mvista.com>	
-	<135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
-	<1179500217.20519.53.camel@imap.mvista.com>
-In-Reply-To: <1179500217.20519.53.camel@imap.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, mingo@elte.hu,
-	linux-kernel@vger.kernel.org
+Return-Path: <khali@linux-fr.org>
+Received: from mallaury.nerim.net (smtp-105-friday.noc.nerim.net [62.4.17.105])
+	by ozlabs.org (Postfix) with ESMTP id 95399DDF10
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 01:15:39 +1000 (EST)
+Date: Fri, 18 May 2007 17:15:55 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [i2c] [PATCH 3/5] powerpc: Document device nodes for I2C devices.
+Message-ID: <20070518171555.543f9bdc@hyperion.delvare>
+In-Reply-To: <5B363A90-5528-4441-BBF9-9C6D8833D938@kernel.crashing.org>
+References: <20070517143846.GC29795@ld0162-tx32.am.freescale.net>
+	<FB8DD3C1-A095-4ABB-9E74-7EC66A43D983@kernel.crashing.org>
+	<464C800C.20400@freescale.com>
+	<FFBD3A3A-ADBE-4DC8-A1A1-4163367244D5@kernel.crashing.org>
+	<464C871C.4090300@freescale.com>
+	<5B363A90-5528-4441-BBF9-9C6D8833D938@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,27 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Daniel Walker wrote:
+Hi Kumar,
 
->>I haven't looked at all the new clock/timer code, is there any  
->>utility in having support for more than one clock source?
+On Thu, 17 May 2007 12:21:02 -0500, Kumar Gala wrote:
+> The only support we have for i2c controllers is to support one  
+> specific i2c controller from Freescale.
+> 
+> If you aren't going to provide a complete solution why are you  
+> prosing one?  I'm tired of this put stuff in the device tree but only  
+> as much as I need to do my particular thing.
 
-> There is if the main clocksource has some issues where it can't be used.
+This is exactly how free software development works. If people were
+only proposing complete solutions, Linux would not even exist. Things
+happen exactly because people write what they need and contribute what
+they wrote. If you think it's not enough for your own needs (present or
+future), then _you_ get to do the extra work.
 
-    You mean, having more than one clocksource is *useful* in this case?
-
-> On x86 there are lots of different issues with the clocks, so they have
-> to get switches once in a while. For instance, if the TSC changes
-> frequencies then it can't be used, or if the TSC stops in different
-> power states , it can't be used.. 
-
-    Yeah, and there's the rating systems for both clock sources/events.
-
-> Anything like that on PowerPC?
-
-    Well, the decrementer frequency may change, at least in theory (if the bus 
-clock changes).
-
-> Daniel
-
-WBR, Sergei
+Thanks,
+-- 
+Jean Delvare
