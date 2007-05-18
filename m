@@ -1,29 +1,19 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <hugh_dickins@symantec.com>
+Received: from extu-mxob-2.symantec.com (extu-mxob-2.symantec.com
+	[216.10.194.135])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 16B7ADDEC7
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 02:47:19 +1000 (EST)
-Date: Fri, 18 May 2007 11:46:28 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH 5/5] PCI fixes for the MPC8641 Rev 2.0 silicon and Rev
-	1.02hardware
-Message-ID: <20070518164628.GA16825@ld0162-tx32.am.freescale.net>
-References: <1179245829.8132.100.camel@rhino> <1179247809.8132.138.camel@rhino>
-	<46B96294322F7D458F9648B60E15112C23441B@zch01exm26.fsl.freescale.net>
-	<1179417813.8132.250.camel@rhino>
-	<744CD970-5421-47D6-A30A-C7C79BE21BE8@kernel.crashing.org>
-	<1179421139.8132.256.camel@rhino> <464CA302.9060707@freescale.com>
-	<20070518005641.GA27350@localhost.localdomain>
-	<464DB986.20205@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <464DB986.20205@freescale.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Zhang Wei-r63237 <Wei.Zhang@freescale.com>
+	(Client CN "extu-mxob-2.symantec.com",
+	Issuer "VeriSign Trust Network" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 10AC4DE02B
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 02:47:27 +1000 (EST)
+Date: Fri, 18 May 2007 17:47:01 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc: smp_call_function might switch cpu
+Message-ID: <Pine.LNX.4.64.0705181741380.30417@blonde.wat.veritas.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,63 +23,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 18, 2007 at 09:34:46AM -0500, Timur Tabi wrote:
-> We'll propose a spec once we have everything figured out.  Our current
-> idea is to allow any node or property to have a conditional attached to
-> it.  U-Boot will then scan the device tree, evaluate the conditional,
-> and if it's false, delete the particular node/property.
-> 
-> U-Boot will be also be expanded to include the concept of "hardware
-> options", whether the user and/or board-specific code can tell U-Boot
-> that hardware option X is set to value Y. The conditions in the device
->   tree will be of the form "X == Y" (or X != Y, X > Y, etc).
-> 
-> For instance, on some board, if jumper 22 is on, then it means that the
-> USB port is enabled.  If it's possible for software to scan the status
-> of J22, then the board-specific code will do that, and it will create
-> an environment variable "J22=ON".  The USB node in the device tree will
-> have the conditional "J22 = ON".
+smp_call_function_map() was not safe against preemption to another
+cpu: its test for removing self from map was outside the spinlock.
+Rearrange it a little to fix that.
 
-I'd like to point out that what I originally proposed was much simpler
-than this; it simply allowed a special section of the device tree to list
-jumpers and other hw options, and associate a device tree fragment with
-each possibility.  Something like this:
+smp_call_function_single() was also wrong: now get_cpu() before
+excluding self, as other architectures do.
 
-u-boot,hwoptions {
-	J1 {
-		description = "USB PHY selector";
-		
-		off {
-			description = "USB internal PHY";
-			
-			tree {
-				&usb {
-					phy_type = "utmi_wide";
-				};
-			};
-		};
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
+I guess most callers actually have preemption disabled already: I only
+noticed this for the first time in 2.6.22-rc1-mm1, where mm/page_alloc.c
+has a drain_all_local_pages(), which triggered a warning with my PowerPC
+DEBUG_PREEMPT patch.
 
-		on {
-			description = "USB external PHY";
-			
-			tree {
-				&usb {
-					phy_type = "ulpi";
-				};
-			};
-		};
-	};
-};
+ arch/powerpc/kernel/smp.c |   34 ++++++++++++++++++----------------
+ 1 file changed, 18 insertions(+), 16 deletions(-)
 
-The fragment that corresponds to the option that is either detected
-automatically or specified by the user on the command line gets merged
-into the main dts.  The u-boot,hwoptions tree gets removed before passing
-to the kernel, to avoid confusion.  The descriptions can be used to
-provide interactive help text, as an alternative to having to fetch the
-manual to find jumper information.
-
-I agreed with using conditionals at the dtc level, and having dtc
-transform it into the above at the dtb level.  I'm not quite comfortable
-with having general conditional expressions at the binary level.
-
--Scott
+--- 2.6.22-rc1-git7/arch/powerpc/kernel/smp.c	2007-05-13 05:40:52.000000000 +0100
++++ linux/arch/powerpc/kernel/smp.c	2007-05-18 17:07:51.000000000 +0100
+@@ -201,13 +201,6 @@ int smp_call_function_map(void (*func) (
+ 	/* Can deadlock when called with interrupts disabled */
+ 	WARN_ON(irqs_disabled());
+ 
+-	/* remove 'self' from the map */
+-	if (cpu_isset(smp_processor_id(), map))
+-		cpu_clear(smp_processor_id(), map);
+-
+-	/* sanity check the map, remove any non-online processors. */
+-	cpus_and(map, map, cpu_online_map);
+-
+ 	if (unlikely(smp_ops == NULL))
+ 		return ret;
+ 
+@@ -222,10 +215,17 @@ int smp_call_function_map(void (*func) (
+ 	/* Must grab online cpu count with preempt disabled, otherwise
+ 	 * it can change. */
+ 	num_cpus = num_online_cpus() - 1;
+-	if (!num_cpus || cpus_empty(map)) {
+-		ret = 0;
+-		goto out;
+-	}
++	if (!num_cpus)
++		goto done;
++
++	/* remove 'self' from the map */
++	if (cpu_isset(smp_processor_id(), map))
++		cpu_clear(smp_processor_id(), map);
++
++	/* sanity check the map, remove any non-online processors. */
++	cpus_and(map, map, cpu_online_map);
++	if (cpus_empty(map))
++		goto done;
+ 
+ 	call_data = &data;
+ 	smp_wmb();
+@@ -263,6 +263,7 @@ int smp_call_function_map(void (*func) (
+ 		}
+ 	}
+ 
++ done:
+ 	ret = 0;
+ 
+  out:
+@@ -282,16 +283,17 @@ EXPORT_SYMBOL(smp_call_function);
+ int smp_call_function_single(int cpu, void (*func) (void *info), void *info, int nonatomic,
+ 			int wait)
+ {
+-	cpumask_t map=CPU_MASK_NONE;
++	cpumask_t map = CPU_MASK_NONE;
++	int ret = -EBUSY;
+ 
+ 	if (!cpu_online(cpu))
+ 		return -EINVAL;
+ 
+-	if (cpu == smp_processor_id())
+-		return -EBUSY;
+-
+ 	cpu_set(cpu, map);
+-	return smp_call_function_map(func,info,nonatomic,wait,map);
++	if (cpu != get_cpu())
++		ret = smp_call_function_map(func,info,nonatomic,wait,map);
++	put_cpu();
++	return ret;
+ }
+ EXPORT_SYMBOL(smp_call_function_single);
+ 
