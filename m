@@ -1,22 +1,22 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id B962ADDEB7
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 21:20:33 +1000 (EST)
-Date: Fri, 18 May 2007 13:20:29 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] [POWERPC] remove build warnings in windfarm_core
-In-Reply-To: <20070517112215.6261992d.sfr@canb.auug.org.au>
-Message-ID: <Pine.LNX.4.62.0705181319310.1803@pademelon.sonytel.be>
-References: <20070514163219.9d78cde0.sfr@canb.auug.org.au>
-	<17993.20745.432703.238649@cargo.ozlabs.ibm.com>
-	<20070516112449.9f0ae1a2.sfr@canb.auug.org.au>
-	<20070517112215.6261992d.sfr@canb.auug.org.au>
+Return-Path: <matt@genesi-usa.com>
+Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
+	[66.98.186.96])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 65962DDEA2
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 22:39:04 +1000 (EST)
+Message-ID: <464D9E7E.3090605@genesi-usa.com>
+Date: Fri, 18 May 2007 13:39:26 +0100
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Segher@ozlabs.org
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+References: <200705172142.26739.sshtylyov@ru.mvista.com>	<8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>	<464C99FF.8080404@ru.mvista.com>	<135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>	<464C9E67.2020909@ru.mvista.com>	<6E0D5E13-C939-4FCE-81A3-F29DFA6436A2@kernel.crashing.org>
+	<464CA222.8000407@ru.mvista.com>
+In-Reply-To: <464CA222.8000407@ru.mvista.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, mingo@elte.hu,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,40 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 17 May 2007, Stephen Rothwell wrote:
-> diff --git a/drivers/macintosh/windfarm_core.c b/drivers/macintosh/windfarm_core.c
-> index 192b26e..11ced17 100644
-> --- a/drivers/macintosh/windfarm_core.c
-> +++ b/drivers/macintosh/windfarm_core.c
-> @@ -216,7 +216,10 @@ int wf_register_control(struct wf_control *new_ct)
->  	new_ct->attr.attr.mode = 0644;
->  	new_ct->attr.show = wf_show_control;
->  	new_ct->attr.store = wf_store_control;
-> -	device_create_file(&wf_platform_device.dev, &new_ct->attr);
-> +	if (device_create_file(&wf_platform_device.dev, &new_ct->attr))
-> +		printk(KERN_WARNING "windfarm: device_create_file failed"
-> +			" for %s\n", new_ct->name);
-> +		/* the subsystem still does useful work without the file */
+Sergei Shtylyov wrote:
+> Hello.
+> 
+> Kumar Gala wrote:
+> 
+>>> Kumar Gala wrote:
+> 
+>>>> I haven't looked at all the new clock/timer code, is there any   
+>>>> utility in having support for more than one clock source?
+> 
+>>>    Of course, you may register as many as you like.
+> 
+>> Sure, but is there any utility in registering more than the  decrementer 
+>> on PPC?
+> 
+>     Not yet. I'm not sure I know any other PPC CPU facility fitting for 
+> clockevents. In theory, FIT could be used -- but its period is measured in 
+> powers of 2, IIRC.
 
-Confusing indentation: the comment is not part of the branch
+Wouldn't it be possible to use SoC timer functionality, too, and not limit
+this to what is only present on the CPU die?
 
-> @@ -326,7 +329,10 @@ int wf_register_sensor(struct wf_sensor *new_sr)
->  	new_sr->attr.attr.mode = 0444;
->  	new_sr->attr.show = wf_show_sensor;
->  	new_sr->attr.store = NULL;
-> -	device_create_file(&wf_platform_device.dev, &new_sr->attr);
-> +	if (device_create_file(&wf_platform_device.dev, &new_sr->attr))
-> +		printk(KERN_WARNING "windfarm: device_create_file failed"
-> +			" for %s\n", new_sr->name);
-> +		/* the subsystem still does useful work without the file */
+I guess the real question is, how high resolution does a high resolution
+timer need to be, and how often do you want to be handling interrupts?
 
-Ditto.
+The 52XX has 8 general purpose timers and 2 slice timers. Both will
+generate an interrupt once the clock hits a preset value, the timing
+of which is determined by prescalers and the IPB clock..
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
