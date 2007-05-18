@@ -1,18 +1,23 @@
-Return-Path: <acahalan@gmail.com>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.230])
-	by ozlabs.org (Postfix) with ESMTP id 739D6DDE11
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 13:24:17 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id l1so1420746nzf
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 20:24:16 -0700 (PDT)
-Message-ID: <787b0d920705172024g723412b4n8f82d3cd78e0f702@mail.gmail.com>
-Date: Thu, 17 May 2007 23:24:15 -0400
-From: "Albert Cahalan" <acahalan@gmail.com>
-To: galak@kernel.crashing.org, tglx@linutronix.de, mingo@elte.hu,
-	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	sshtylyov@ru.mvista.com
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+Return-Path: <gvb.linuxppc.dev@gmail.com>
+Received: from rwcrmhc12.comcast.net (rwcrmhc12.comcast.net [216.148.227.152])
+	by ozlabs.org (Postfix) with ESMTP id 93651DDE2B
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 13:49:44 +1000 (EST)
+Message-ID: <464D2255.2090002@gmail.com>
+Date: Thu, 17 May 2007 23:49:41 -0400
+From: Jerry Van Baren <gvb.linuxppc.dev@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Timur Tabi <timur@freescale.com>,
+	Wade Farnsworth <wfarnsworth@mvista.com>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Zhang Wei-r63237 <Wei.Zhang@freescale.com>
+Subject: Re: [PATCH 5/5] PCI fixes for the MPC8641 Rev 2.0 silicon and Rev
+	1.02hardware
+References: <1179245829.8132.100.camel@rhino>
+	<1179247809.8132.138.camel@rhino>	<46B96294322F7D458F9648B60E15112C23441B@zch01exm26.fsl.freescale.net>	<1179417813.8132.250.camel@rhino>	<744CD970-5421-47D6-A30A-C7C79BE21BE8@kernel.crashing.org>	<1179421139.8132.256.camel@rhino>
+	<464CA302.9060707@freescale.com>
+	<20070518005641.GA27350@localhost.localdomain>
+In-Reply-To: <20070518005641.GA27350@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,31 +27,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sergei Shtylyov writes:
-> Kumar Gala wrote:
->> [Sergei Shtylyov]
->>> Kumar Gala wrote:
-
->>>> I haven't looked at all the new clock/timer code, is there any
->>>> utility in having support for more than one clock source?
->>>
->>> Of course, you may register as many as you like.
+David Gibson wrote:
+> On Thu, May 17, 2007 at 01:46:26PM -0500, Timur Tabi wrote:
+>> Wade Farnsworth wrote:
 >>
->> Sure, but is there any utility in registering more than the
->> decrementer on PPC?
->
-> Not yet. I'm not sure I know any other PPC CPU facility fitting
-> for clockevents. In theory, FIT could be used -- but its period
-> is measured in powers of 2, IIRC.
+>>> Yes.  On rev 1.0 boards, all of the devices on the south bridge are on
+>>> bus 0, while on rev 1.02, the devices on the southbridge are on bus 2.
+>>>
+>>> I'd like to use the same dts for both rev's if possible.  But if there
+>>> is a reason why they shouldn't, I suppose I could create a separate dts.
+>> I think two DTS files is the best approach for now.  A few of us had
+>> an idea to introduce conditional statements in to the DTS, and
+> 
+> Erm... how would you encode such conditionals in the dtb?  I really
+> don't like the idea of having a generalized conditional
+> parser/evaluator built into the bootwrapper.
 
-I'd really like to have that as an option. It would allow oprofile
-to safely use hardware events on the MPC74xx "G4" processors.
-Alternately it would allow thermal events. It is safe to use at
-most one of the three (decrementer,profiling,thermal) interrupts.
-If two were to hit at the same time, badness happens.
+I hear forth is a really neat language, and can do conditionals. ;-)
 
-It's possible to wrapper the interrupt in something that divides
-down, calling the normal code only some of the time. I think one
-of the FIT choices is about 4 kHz on my system, which would be OK.
+> What I'd been thinking for situations like this is to fold two dtbs
+> into the bootwrapper and have it select between them based on on board
+> revision (assuming that can be deduced from registers somehow).
+> 
+>> U-Boot would examine the board and/or environment variables and then
+>> apply the conditions to the device tree before booting the kernel.
+>> This would allow you to merge the two DTS files into one, but we're
+>> quite a ways off from implementing this feature.  In the meantime,
+>> two DTS files is okay.
 
-Full oprofile functionality would be wonderful.
+WRT u-boot:
+
+a) With the libfdt changes, we're making good progress on updating the 
+fdt based on the board-specific information.  This gives us the 
+capability of creating a semi-generic DTS and have u-boot augment the 
+fdt with the necessary board-specific property settings.
+
+b) I also have a dream of allowing the hush parser to test fdt 
+properties, which would allow us to write u-boot/hush scripts that 
+validate that a given fdt is a proper one for the board and/or select 
+the proper one out of several in memory.  So many fun ideas, so little 
+time...
+
+Best regards,
+gvb
