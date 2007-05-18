@@ -1,14 +1,10 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 59034DDEBD
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 04:03:02 +1000 (EST)
-Message-ID: <464DEA4F.4030609@freescale.com>
-Date: Fri, 18 May 2007 13:02:55 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <gerald.vanbaren@smiths-aerospace.com>
+Received: from AGRXSUSMAILB.smiths.aero (host241-chi.smiths-group.com
+	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id 83C22DDED0
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 04:03:45 +1000 (EST)
+Message-ID: <464DEA7B.1000403@smiths-aerospace.com>
+Date: Fri, 18 May 2007 14:03:39 -0400
+From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
 MIME-Version: 1.0
 To: Timur Tabi <timur@freescale.com>
 Subject: Re: [PATCH 5/5] PCI fixes for the MPC8641 Rev 2.0 silicon and Rev
@@ -22,7 +18,7 @@ References: <1179245829.8132.100.camel@rhino>
 	<464DE6C1.2010108@freescale.com> <464DE7F7.3030302@freescale.com>
 	<464DE8BB.5040601@freescale.com>
 In-Reply-To: <464DE8BB.5040601@freescale.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
 	Zhang Wei-r63237 <Wei.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -37,27 +33,21 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 Timur Tabi wrote:
 > Scott Wood wrote:
 > 
->> That's your model.  
-
-Yes.  That was the whole point of my post, to point out my alternative. 
-    You were the one that said, "Actually, we're talking about the same 
-thing."
-
->> Mine involves merging a fragment that corresponds 
+>> That's your model.  Mine involves merging a fragment that corresponds 
 >> to an active hwoption, with no complex conditional evaluation or 
 >> deletion of anything from the main tree.
 > 
+> I think my model (which is also Jon's, I think) is easier to read and 
+> implement.
 > 
-> I think my model (which is also Jon's, I think) is easier to read 
-
-What does the dtb-level implementation have to do with ease of reading? 
-  I said that I didn't mind conditionals at the source level that get 
-turned to hwoptions at the dtb level.
-
-> and implement.
-
-I disagree.
-
+>> How would you express the alternate setting of phy_type in a 
+>> subtractive model?  You can't have two nodes with the same name and 
+>> different phy_types, and you can't have two phy_type properties in one 
+>> node.
+> 
+> The conditionals would have to be correct:
+> 
+> 
 > phy-node [ if j22 = on ]
 > {
 >     phy-type = 1
@@ -67,10 +57,17 @@ I disagree.
 > {
 >     phy-type = 2
 > }
+> 
+> Obviously, j22 can be either on or off, but never both.  If the DTS is 
+> coded incorrectly, then it will have problems, but I think that's a fair 
+> trade-off for the easier implementation.
 
-Ah.
+OK, your syntax implies fairly significant changes to the dtc/dtb/u-boot 
+(and possibly linux, depending on what detritus is left after u-boot 
+does the selections).  Scott's syntax fits into the current fdt 
+definition, tools, and blob-users with the exception that u-boot would 
+have board specific selection code added, but that needs to be added 
+regardless.
 
-So I take it you'll need a new dtb version to implement this?  No such 
-revision would be needed for my model.
-
--Scott
+Best regards,
+gvb
