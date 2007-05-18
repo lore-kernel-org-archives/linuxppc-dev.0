@@ -1,39 +1,20 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A68EEDDEDE
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 04:30:39 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l4IIUYxs023113
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 11:30:34 -0700 (MST)
-Message-ID: <464DF0A9.1020706@freescale.com>
-Date: Fri, 18 May 2007 13:30:01 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <david-b@pacbell.net>
+Received: from smtp110.sbc.mail.re2.yahoo.com (smtp110.sbc.mail.re2.yahoo.com
+	[68.142.229.95]) by ozlabs.org (Postfix) with SMTP id 7AE52DDEBD
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 05:00:36 +1000 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [i2c] [PATCH 3/5] powerpc: Document device nodes for I2C devices.
+Date: Fri, 18 May 2007 12:00:31 -0700
+References: <20070517143846.GC29795@ld0162-tx32.am.freescale.net>
+	<464DCD0E.9000706@freescale.com>
+	<20070518183140.4644ffc6@hyperion.delvare>
+In-Reply-To: <20070518183140.4644ffc6@hyperion.delvare>
 MIME-Version: 1.0
-To: Jon Loeliger <jdl@freescale.com>
-Subject: Re: [PATCH 5/5] PCI fixes for the MPC8641 Rev 2.0 silicon and Rev
-	1.02hardware
-References: <1179245829.8132.100.camel@rhino>	
-	<1179247809.8132.138.camel@rhino>	
-	<46B96294322F7D458F9648B60E15112C23441B@zch01exm26.fsl.freescale.net>	
-	<1179417813.8132.250.camel@rhino>	
-	<744CD970-5421-47D6-A30A-C7C79BE21BE8@kernel.crashing.org>	
-	<1179421139.8132.256.camel@rhino> <464CA302.9060707@freescale.com>	
-	<20070518005641.GA27350@localhost.localdomain>	
-	<464DB986.20205@freescale.com>	
-	<20070518164628.GA16825@ld0162-tx32.am.freescale.net>	
-	<464DE2D3.3090805@smiths-aerospace.com>
-	<464DE4C7.7030906@freescale.com>	 <464DE5D2.5000301@freescale.com>
-	<464DE6C1.2010108@freescale.com>	 <464DE7F7.3030302@freescale.com>
-	<464DE8BB.5040601@freescale.com>
-	<1179512385.19664.8.camel@ld0161-tx32>
-In-Reply-To: <1179512385.19664.8.camel@ld0161-tx32>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Wei Zhang <Wei.Zhang@freescale.com>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200705181200.31445.david-b@pacbell.net>
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,49 +24,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon Loeliger wrote:
+On Friday 18 May 2007, Jean Delvare wrote:
+> On Fri, 18 May 2007 10:58:06 -0500, Scott Wood wrote:
+> > Jean Delvare wrote:
+> > > On Thu, 17 May 2007 14:32:11 -0500, Scott Wood wrote:
+> > > 
+> > >>(and the 
+> > >>i2c code in Linux should be fixed to allow drivers to specify multiple 
+> > >>match names).
+> > > 
+> > > 
+> > > Back when David proposed his new-style i2c code, I had the same
+> > > objection. But we addressed the need differently. If you look at struct
+> > > i2c_board_info, you'll see two string fields, driver_name and type. The
+> > > former specifies the driver name, the second specifies the exact device
+> > > variant. For drivers which support several device variants, the
+> > > platform code should fill both fields.
+> > 
+> > But that still requires the platform to know the driver name, rather 
+> > than matching any driver which knows about the type.
 
->> I think my model (which is also Jon's, I think) is easier to read and implement.
+Given that the platform (== board/system) may care about the upper layer
+of the driver (APIs exposed) not just the lower one (talking-to-hardware),
+that seems like a reasonable tradeoff.  It wouldn't want to use the driver
+which provides the wrong programming interface!
+
+Plus, to repeat, there is no notion of "type" in I2C.   So in order to
+talk about a "type based matching" algorithm you'd have to define one...
+
+
+> > This prevents the  
+> > use of OS-independent device trees (such as in Open Firmware), which 
+> > cannot know specific Linux driver names, without something hacky like a 
+> > type-to-driver table in the device tree code.
 > 
-> Harumph.
+> Oh well, this was also the reason why I objected to David's approach in
+> the first place. If you dig back in the i2c list archive, you'll find
+> that I was asking for exactly the same thing you do now: that each i2c
+> driver would export a list of supported devices, and the i2c-core would
+> match a device name against that list (independent of the driver name.)
+> It felt more flexible, but I wondered how useful it would be in
+> practice, and finally gave up and David had the last word. If you had
+> shown up back then rather than now...
 
-Hey, I got the idea from you!
+With concrete suggestions and patches.  I'd have to dig back in the
+list archives to see the details of what was said at that time, but
+I don't recall any suggestions being rejected unless they dropped
+essential functionality.  (There was one notion to key driver binding
+purely on device address, for example...)
 
-> First of all, I wanted to get away from the notion of calling
-> anything a "jumper".  What I said to you was to predicate the
-> clause based on some arbitrary conditional, not just some "jumper
-> setting."
-
-True, but the arbitrary condition would, in practice, be the value of some 
-jum^H^H^Hhardware setting.
-
-> Second, I never came anywhere near the syntax above.
-
-That's just a rough version because I don't have the DTS layout memorized.
-
-> Third, I am pretty sure we've always really been talking
-> about a DTC enhancement to selectively add regions to the
-> DTB in much the same way as if one had said:
-
-The problem is that the conditions that I'm talking about are not known until U-Boot runs. 
-  If your idea was only compile-time conditional, then I'm just extending it to a runtime 
-conditional.
-
-> So embedding a full runtime evaluation of conditionals
-> expressions wasn't really in my suggestion at this time
-> at all.  I had essentially proposed (to you, Timur) that
-> we have a predicate clause in the DTS that guarded a the
-> presence/absence of a node.
-
-predicate clause == conditional.
-
-> And finally, I wasn't sure I was happy with it all yet
-> in any event, so I hadn't acted on it yet.  I was still
-> pondering "the right approach here".
-
-I was trying to avoid a premature discussion on this idea, but apparently everyone else 
-wants to talk about it!
-
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+- Dave
