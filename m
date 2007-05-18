@@ -3,21 +3,26 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D55CCDDE30
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 02:30:59 +1000 (EST)
-In-Reply-To: <464DCD0E.9000706@freescale.com>
-References: <20070517143846.GC29795@ld0162-tx32.am.freescale.net>	<8183195dad79296e3986f561bf929067@kernel.crashing.org>	<464CADBB.9050500@freescale.com>
-	<20070518172711.2db7fc92@hyperion.delvare>
-	<464DCD0E.9000706@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id A3340DDF33
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 02:31:17 +1000 (EST)
+In-Reply-To: <1179499713.12981.75.camel@chaos>
+References: <200705172142.26739.sshtylyov@ru.mvista.com>
+	<8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>
+	<464C99FF.8080404@ru.mvista.com>
+	<135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
+	<464C9E67.2020909@ru.mvista.com>
+	<6E0D5E13-C939-4FCE-81A3-F29DFA6436A2@kernel.crashing.org>
+	<464CA222.8000407@ru.mvista.com> <464D9E7E.3090605@genesi-usa.com>
+	<464DADFC.3080802@ru.mvista.com> <464DB800.40702@genesi-usa.com>
+	<1179499713.12981.75.camel@chaos>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A0D2D068-D990-4FBB-B28C-620DDC71CD32@kernel.crashing.org>
+Message-Id: <32E780BE-58B7-4303-AA49-1852C4C7EB50@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [i2c] [PATCH 3/5] powerpc: Document device nodes for I2C devices.
-Date: Fri, 18 May 2007 11:29:19 -0500
-To: Scott Wood <scottwood@freescale.com>
-Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
-	i2c@lm-sensors.org
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+Date: Fri, 18 May 2007 11:31:19 -0500
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, mingo@elte.hu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,45 +33,27 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On May 18, 2007, at 10:58 AM, Scott Wood wrote:
+On May 18, 2007, at 9:48 AM, Thomas Gleixner wrote:
 
-> Jean Delvare wrote:
->> Hi Scott,
+> On Fri, 2007-05-18 at 15:28 +0100, Matt Sealey wrote:
+>>>> I guess the real question is, how high resolution does a high  
+>>>> resolution
+>>>> timer need to be,
+>>>
+>>>    In the order of microseconds.
 >>
->> On Thu, 17 May 2007 14:32:11 -0500, Scott Wood wrote:
->>
->>> (and the
->>> i2c code in Linux should be fixed to allow drivers to specify  
->>> multiple
->>> match names).
->>
->>
->> Back when David proposed his new-style i2c code, I had the same
->> objection. But we addressed the need differently. If you look at  
->> struct
->> i2c_board_info, you'll see two string fields, driver_name and  
->> type. The
->> former specifies the driver name, the second specifies the exact  
->> device
->> variant. For drivers which support several device variants, the
->> platform code should fill both fields.
+>> I think both the MPC52xx GPT0-7 and the SLT0-1 fulfil this fairly
+>> easily.
 >
-> But that still requires the platform to know the driver name, rather
-> than matching any driver which knows about the type.  This prevents  
-> the
-> use of OS-independent device trees (such as in Open Firmware), which
-> cannot know specific Linux driver names, without something hacky  
-> like a
-> type-to-driver table in the device tree code.
+> There is some basic work for MPC5200 available:
+>
+> http://www.pengutronix.de/oselas/bsp/phytec/index_en.html#phyCORE- 
+> MPC5200B-tiny
 
-And this is why I don't think there is any value in trying to put I2C  
-devices in the device tree.  The linux mechanism is specific to  
-Linux, and is based on Linux created names.  To provide something  
-more generic someone would have to take on the task of providing a  
-more global registry of names for devices and I just don't see anyone  
-doing that.
-
-Can someone explain to me why setting up i2c_board_info in the board  
-specific code isn't sufficient?
+I asked this earlier, but figured you might have a better insight.   
+Is their value in having 'drivers' for more than one clock source?   
+I'd say most (of not all) the PPC SoCs have timers on the system side  
+that we could provide drivers for, I'm just not sure if that does  
+anything for anyone.
 
 - k
