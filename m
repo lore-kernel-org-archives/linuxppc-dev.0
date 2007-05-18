@@ -1,23 +1,30 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <matt@genesi-usa.com>
+Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
+	[66.98.186.96])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4FDB2DDEEE
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 02:53:06 +1000 (EST)
-In-Reply-To: <17997.17543.725526.907770@cargo.ozlabs.ibm.com>
-References: <Pine.LNX.4.64.0705151715200.17092@localhost.localdomain>
-	<17996.13115.456275.413478@cargo.ozlabs.ibm.com>
-	<5F8D37B3-5A2B-49D8-A7C2-615436EA66D3@kernel.crashing.org>
-	<17997.17543.725526.907770@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <20D98180-1BA9-4831-99BB-D2572976226E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Please pull from 'for_paulus' branch
-Date: Fri, 18 May 2007 11:51:25 -0500
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 382DEDDF50
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 02:54:46 +1000 (EST)
+Message-ID: <464DDA6D.2010206@genesi-usa.com>
+Date: Fri, 18 May 2007 17:55:09 +0100
+From: Matt Sealey <matt@genesi-usa.com>
+MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+References: <200705172142.26739.sshtylyov@ru.mvista.com>	
+	<8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>	
+	<464C99FF.8080404@ru.mvista.com>	
+	<135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>	
+	<464C9E67.2020909@ru.mvista.com>	
+	<6E0D5E13-C939-4FCE-81A3-F29DFA6436A2@kernel.crashing.org>	
+	<464CA222.8000407@ru.mvista.com> <464D9E7E.3090605@genesi-usa.com>	
+	<464DADFC.3080802@ru.mvista.com> <464DB800.40702@genesi-usa.com>	
+	<1179499713.12981.75.camel@chaos>	
+	<32E780BE-58B7-4303-AA49-1852C4C7EB50@kernel.crashing.org>
+	<1179507059.12981.81.camel@chaos>
+In-Reply-To: <1179507059.12981.81.camel@chaos>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, mingo@elte.hu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,24 +35,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On May 18, 2007, at 1:15 AM, Paul Mackerras wrote:
+Thomas Gleixner wrote:
+> On Fri, 2007-05-18 at 11:31 -0500, Kumar Gala wrote:
+>> I asked this earlier, but figured you might have a better insight.   
+>> Is their value in having 'drivers' for more than one clock source?   
+>> I'd say most (of not all) the PPC SoCs have timers on the system side  
+>> that we could provide drivers for, I'm just not sure if that does  
+>> anything for anyone.
+> 
+> Not necessarily for the tick/highres stuff, but clock events allows
+> other users as well to utilize such facilities. We have no users yet,
+> but there are drivers, which utilize special timer hardware with nice
+> #ifdeffery to allow the driver to be shared. This might be a useful
+> thing for such stuff.
 
-> Kumar Gala writes:
->
->> Sorry for the headache, I thought I had built an ARCH=ppc kernel.
->> This is now fixed in my tree so if you haven't pulled it you'll get
->> the fix.
->>
->> Also, added a ppc_ksysm.c fix to remove a duplicate export symbol.
->
-> Hmmm.  I had pulled your tree, and I ended up rebasing your commits on
-> top of Linus' current master and adding some more commits on top of
-> that.  I'm about to send a pull request to Linus for that lot.  The
-> arch/ppc changes can go in the next lot.
+*ahem*
 
-No problem, I'll merge the two patches and rebase on your latest  
-tree.  We'll pull in the fixes for the MODPOST warnings as well in  
-the next go around since I think Sam's __initref_ok fixes will be in  
-by then.
+Please indulge my laziness and recommend me one or two to look at? I'm
+no good at guessing what to grep for to find an example (I wonder if
+we have any candidates in the ppc tree mostly..)
 
-- k
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
