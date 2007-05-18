@@ -1,20 +1,39 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp110.sbc.mail.re2.yahoo.com (smtp110.sbc.mail.re2.yahoo.com
-	[68.142.229.95]) by ozlabs.org (Postfix) with SMTP id 7AE52DDEBD
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 05:00:36 +1000 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [i2c] [PATCH 3/5] powerpc: Document device nodes for I2C devices.
-Date: Fri, 18 May 2007 12:00:31 -0700
-References: <20070517143846.GC29795@ld0162-tx32.am.freescale.net>
-	<464DCD0E.9000706@freescale.com>
-	<20070518183140.4644ffc6@hyperion.delvare>
-In-Reply-To: <20070518183140.4644ffc6@hyperion.delvare>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200705181200.31445.david-b@pacbell.net>
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+Return-Path: <jdl@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9138ADDE45
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 05:05:45 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l4IJ5dlP001214
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 12:05:40 -0700 (MST)
+Subject: Re: [PATCH 5/5] PCI fixes for the MPC8641 Rev 2.0 silicon and Rev
+	1.02hardware
+From: Jon Loeliger <jdl@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <464DEF3C.7070202@freescale.com>
+References: <1179245829.8132.100.camel@rhino> <1179247809.8132.138.camel@rhino>
+	<46B96294322F7D458F9648B60E15112C23441B@zch01exm26.fsl.freescale.net>
+	<1179417813.8132.250.camel@rhino>
+	<744CD970-5421-47D6-A30A-C7C79BE21BE8@kernel.crashing.org>
+	<1179421139.8132.256.camel@rhino> <464CA302.9060707@freescale.com>
+	<20070518005641.GA27350@localhost.localdomain>
+	<464DB986.20205@freescale.com>
+	<20070518164628.GA16825@ld0162-tx32.am.freescale.net>
+	<464DE2D3.3090805@smiths-aerospace.com>
+	<464DE4C7.7030906@freescale.com>
+	<464DE5D2.5000301@freescale.com> <464DE6C1.2010108@freescale.com>
+	<464DE7F7.3030302@freescale.com>  <464DE8BB.5040601@freescale.com>
+	<1179512385.19664.8.camel@ld0161-tx32> <464DEF3C.7070202@freescale.com>
+Content-Type: text/plain
+Message-Id: <1179515137.19664.19.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Fri, 18 May 2007 14:05:38 -0500
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Timur Tabi <timur@freescale.com>,
+	Wei Zhang <Wei.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,53 +43,112 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 18 May 2007, Jean Delvare wrote:
-> On Fri, 18 May 2007 10:58:06 -0500, Scott Wood wrote:
-> > Jean Delvare wrote:
-> > > On Thu, 17 May 2007 14:32:11 -0500, Scott Wood wrote:
-> > > 
-> > >>(and the 
-> > >>i2c code in Linux should be fixed to allow drivers to specify multiple 
-> > >>match names).
-> > > 
-> > > 
-> > > Back when David proposed his new-style i2c code, I had the same
-> > > objection. But we addressed the need differently. If you look at struct
-> > > i2c_board_info, you'll see two string fields, driver_name and type. The
-> > > former specifies the driver name, the second specifies the exact device
-> > > variant. For drivers which support several device variants, the
-> > > platform code should fill both fields.
-> > 
-> > But that still requires the platform to know the driver name, rather 
-> > than matching any driver which knows about the type.
-
-Given that the platform (== board/system) may care about the upper layer
-of the driver (APIs exposed) not just the lower one (talking-to-hardware),
-that seems like a reasonable tradeoff.  It wouldn't want to use the driver
-which provides the wrong programming interface!
-
-Plus, to repeat, there is no notion of "type" in I2C.   So in order to
-talk about a "type based matching" algorithm you'd have to define one...
-
-
-> > This prevents the  
-> > use of OS-independent device trees (such as in Open Firmware), which 
-> > cannot know specific Linux driver names, without something hacky like a 
-> > type-to-driver table in the device tree code.
+On Fri, 2007-05-18 at 13:23, Scott Wood wrote:
+> Jon Loeliger wrote:
+> > First of all, I wanted to get away from the notion of calling
+> > anything a "jumper".  What I said to you was to predicate the
+> > clause based on some arbitrary conditional, not just some "jumper
+> > setting."
 > 
-> Oh well, this was also the reason why I objected to David's approach in
-> the first place. If you dig back in the i2c list archive, you'll find
-> that I was asking for exactly the same thing you do now: that each i2c
-> driver would export a list of supported devices, and the i2c-core would
-> match a device name against that list (independent of the driver name.)
-> It felt more flexible, but I wondered how useful it would be in
-> practice, and finally gave up and David had the last word. If you had
-> shown up back then rather than now...
+> Yes, I like the "hwoption" name better.
 
-With concrete suggestions and patches.  I'd have to dig back in the
-list archives to see the details of what was said at that time, but
-I don't recall any suggestions being rejected unless they dropped
-essential functionality.  (There was one notion to key driver binding
-purely on device address, for example...)
+I think my point was missed.  It could be more general
+than "a hardware thing".  Sure, HW contributes.
 
-- Dave
+
+> No, we were pretty much always talking about a run-time thing.
+
+On he contrary, here are copies of two pieces of mail from
+roughly May 2006 and Feb 2007 in which CPP and M4 as _compiled_time_
+processing are being discussed.  In the latter, you discuss it more:.
+
+	From: 	Kumar Gala <galak@kernel.crashing.org>
+	To: 	Jon Loeliger <jdl@freescale.com>
+	Cc:	Jon Loeliger <jdl@jdl.com>, Benjamin Herrenschmidt
+		<benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org list
+		<linuxppc-dev@ozlabs.org>
+	Subject: 	Re: DTC/dts modifications
+	Date: 	Mon, 1 May 2006 14:52:23 -0500	
+
+	[snip]
+
+
+	>> If these used some other symbol instead of '#' cpp 
+	>> will be happy and we can use it to create macros for us.
+	>
+	> Yeah, we're not going to be able to change those; they
+	> are "By The Book".
+
+	By what book?  It would seem to me that BNF for dtc is
+	completely under our control and if we want to change it we can.
+	I understand that there is some correspondence to Open Firmware,
+	but it seems that if its people are ok with the dts format
+	changing that's a lot easier than implementing tons of support
+	in dtc for features that cpp gives us.
+
+	[I'm also guessing no one's really got time to go and implement
+	these features in dtc]
+
+	> Instead, we'll have to make the lexical analysis conscious
+	> of something like a <newline> context sensitive token or so.
+	> Or throw some flag to cpp to not emit location markers.
+
+	- kumar
+
+
+
+
+
+	From: 	Jon Loeliger <jdl@jdl.com>
+	To: 	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	Cc: 	linuxppc-dev@ozlabs.org,
+		Roland Dreier <rdreier@cisco.com>,
+	          Stefan Roese <sr@denx.de>, linuxppc-embedded@ozlabs.org
+	Subject:Re: [PATCH] ppc: Add support for AMCC Taishan 440GX eval board
+	Date: 	Mon, 12 Feb 2007 14:16:21 -0600	
+
+	So, like, the other day Benjamin Herrenschmidt mumbled:
+	> Note that there are still things that we might want to
+	> change. For example, I think we really should look into adding
+	> a macro mecanism and/or an include mecanism to dtc so that we
+	> can do things like #include <ibm440gp.dtc> to get the base
+	> processor/SoC definition and then "overlay" some properties on
+	> top of it (like emac phy mode etc...)
+
+	What do people prefer here?  Straight CPP pre-run?
+	Direct support built into dtc to do file-inclusion, macros?
+
+	Thoughts, opinions, suggestions, pre-NACKs, Cabernet Franc bribes?
+
+	jdl
+
+
+And you reply:
+
+
+	Simple textual macros would make it difficult to define 123A and
+	123B SoCs whose device tree nodes are mostly a generic 123, but
+	require a few changes in various parts.  I'd rather see dtc
+	support overlaying trees, with the "newer" tree able to add,
+	modify, and remove nodes and properties from the "older", more
+	generic tree.
+
+	Parametric macros (or "template" nodes) might be nice for a few
+	things on top of that, though (preferably with better syntax
+	than CPP).
+
+Clearly, we have in fact historically discussed compile-time
+conditional DTC behavior.
+
+> Compile-time would just give you a more convenient way of generating 
+> multiple dtbs; it wouldn't address the root problem of combinatorial 
+> explosion with several independent options.  Even when the number of 
+> alternatives isn't high, it's much nicer to the user to be able to just 
+> type a command into u-boot (or better yet, have it be autodetected) when 
+> an option changes than to have to rebuild and install a new dtb.
+
+Yes, I understand.  But I think, say, the Linux build handles
+the compile time combinatorial explosion of compile time options
+reasonably well so far... :-)
+
+jdl
