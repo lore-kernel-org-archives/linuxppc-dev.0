@@ -1,19 +1,28 @@
-Return-Path: <khali@linux-fr.org>
-Received: from mallaury.nerim.net (smtp-105-friday.noc.nerim.net [62.4.17.105])
-	by ozlabs.org (Postfix) with ESMTP id 3DCD1DDEE4
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 01:26:54 +1000 (EST)
-Date: Fri, 18 May 2007 17:27:11 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [i2c] [PATCH 3/5] powerpc: Document device nodes for I2C devices.
-Message-ID: <20070518172711.2db7fc92@hyperion.delvare>
-In-Reply-To: <464CADBB.9050500@freescale.com>
-References: <20070517143846.GC29795@ld0162-tx32.am.freescale.net>
-	<8183195dad79296e3986f561bf929067@kernel.crashing.org>
-	<464CADBB.9050500@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+Return-Path: <matt@genesi-usa.com>
+Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
+	[66.98.186.96])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9248EDDEEC
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 01:37:22 +1000 (EST)
+Message-ID: <464DC844.4040101@genesi-usa.com>
+Date: Fri, 18 May 2007 16:37:40 +0100
+From: Matt Sealey <matt@genesi-usa.com>
+MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+References: <200705172142.26739.sshtylyov@ru.mvista.com>	
+	<8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>	
+	<464C99FF.8080404@ru.mvista.com>	
+	<135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>	
+	<464C9E67.2020909@ru.mvista.com>	
+	<6E0D5E13-C939-4FCE-81A3-F29DFA6436A2@kernel.crashing.org>	
+	<464CA222.8000407@ru.mvista.com> <464D9E7E.3090605@genesi-usa.com>	
+	<464DADFC.3080802@ru.mvista.com> <464DB800.40702@genesi-usa.com>
+	<1179499713.12981.75.camel@chaos>
+In-Reply-To: <1179499713.12981.75.camel@chaos>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, mingo@elte.hu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,19 +32,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Scott,
+I already have that stuff, but it only implements the decrementer (in fact
+it's the patch submitted at the beginning of this thread).
 
-On Thu, 17 May 2007 14:32:11 -0500, Scott Wood wrote:
-> (and the 
-> i2c code in Linux should be fixed to allow drivers to specify multiple 
-> match names).
-
-Back when David proposed his new-style i2c code, I had the same
-objection. But we addressed the need differently. If you look at struct
-i2c_board_info, you'll see two string fields, driver_name and type. The
-former specifies the driver name, the second specifies the exact device
-variant. For drivers which support several device variants, the
-platform code should fill both fields.
+I got it because I was far more interested in the GPIO handling..
 
 -- 
-Jean Delvare
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
+
+Thomas Gleixner wrote:
+> On Fri, 2007-05-18 at 15:28 +0100, Matt Sealey wrote:
+>>>> I guess the real question is, how high resolution does a high resolution
+>>>> timer need to be,
+>>>    In the order of microseconds.
+>> I think both the MPC52xx GPT0-7 and the SLT0-1 fulfil this fairly
+>> easily.
+> 
+> There is some basic work for MPC5200 available:
+> 
+> http://www.pengutronix.de/oselas/bsp/phytec/index_en.html#phyCORE-MPC5200B-tiny
+> 
+> 	tglx
+> 
+> 
