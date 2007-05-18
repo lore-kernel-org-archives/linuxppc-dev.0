@@ -1,19 +1,36 @@
-Return-Path: <daniel.schnell@marel.com>
-Received: from mail.marel.com (mail.marel.is [213.167.134.96])
-	by ozlabs.org (Postfix) with ESMTP id E8D3CDDE02
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 53EC2DDEB8
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 May 2007 20:27:46 +1000 (EST)
+	Fri, 18 May 2007 22:43:43 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1Hp1o3-0008N2-5V
+	for linuxppc-embedded@ozlabs.org; Fri, 18 May 2007 05:43:39 -0700
+Message-ID: <10681348.post@talk.nabble.com>
+Date: Fri, 18 May 2007 05:43:39 -0700 (PDT)
+From: Mirek23 <miroslaw.dach@psi.ch>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: zImage.elf loads but does not start
+In-Reply-To: <Pine.LNX.4.44.0705152027280.16487-100000@slslc02.psi.ch>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: MPC5200B memory performance
-Date: Fri, 18 May 2007 10:27:43 -0000
-Message-ID: <DD39B5C3F4963040ADC9768BE7E430CB01F09586@is-hdq-exchange.marel.net>
-In-Reply-To: <20070516180259.GA23085@server.idefix.lan>
-References: <DD39B5C3F4963040ADC9768BE7E430CB01EB1FEF@is-hdq-exchange.marel.net>
-	<20070516180259.GA23085@server.idefix.lan>
-From: "Daniel Schnell" <daniel.schnell@marel.com>
-To: <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+References: <10079346.post@talk.nabble.com> <10142161.post@talk.nabble.com>
+	<406A31B117F2734987636D6CCC93EE3C0159BAAE@ehost011-3.exch011.intermedia.net>
+	<10165159.post@talk.nabble.com> <10323147.post@talk.nabble.com>
+	<463B5422.6030105@ru.mvista.com> <10372619.post@talk.nabble.com>
+	<406A31B117F2734987636D6CCC93EE3C017019FD@ehost011-3.exch011.intermedia.net>
+	<4640F08E.5040608@nec.com.au>
+	<9F3F0A752CAEBE4FA7E906CC2FBFF57C06A207@MERCURY.inside.istor.com>
+	<10409434.post@talk.nabble.com>
+	<D1AFFAE2CC4BD54CA4C1543CFF4A4FCC2F391B@exchangemb3.bnl.gov>
+	<10429898.post@talk.nabble.com> <10621564.post@talk.nabble.com>
+	<4649A7AC.1050503@ru.mvista.com>
+	<Pine.LNX.4.44.0705151430120.7758-100000@slslc02.psi.ch>
+	<4649F6FF.7060003@ru.mvista.com>
+	<Pine.LNX.4.44.0705152027280.16487-100000@slslc02.psi.ch>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,83 +41,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
 
-I found the following link to get more insights about the memcpy =
-performance of my board:
+> Anyway, you could try adding
+>    nfsroot=,rsize=1024,wsize=1024
+> to your cmdline just in case...
 
-http://www.greyhound-data.com/gunnar/glibc/index.htm
-=20
-One can download a testsuite for memory performance and let it run. Not =
-only memcpy, but also memcmp and memset is tested.
+I have tried that but it did not help :(
 
-This gave quite interesting results. Most of the time I get better =
-values from optimized functions than from the glibc functions. As a rule =
-of thumb: depending on the buffer size used, 15-20 % speedup, sometimes =
-> 100% !
+Best Regards
 
-I will definetly integrate some of these functions in our software and =
-then use=20
--Wl,--wrap,memcpy on the linker line to replace all occurences of =
-memcpy, memcmp, etc. also for external libraries.
-
-
-Best regards,
-
-Daniel Schnell
-
---=20
-Daniel Schnell                   | daniel.schnell@marel.com
-Hugb=FAna=F0arger=F0                   | www.marel.com
-
------Original Message-----
-From: linuxppc-embedded-bounces+daniel.schnell=3Dmarel.com@ozlabs.org =
-[mailto:linuxppc-embedded-bounces+daniel.schnell=3Dmarel.com@ozlabs.org] =
-On Behalf Of Matthias Fechner
-Sent: 16. ma=ED 2007 18:03
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC5200B memory performance
-
-Hello Daniel,
-
-* Daniel Schnell <daniel.schnell@marel.com> [15-05-07 11:22]:
-> I get the following values on my board:
-
-my result is:
-Test (10000) memcpy of sizes (1024) ....
-10000 memcpy. Time per memcpy: 1814 [nsec] (564 MB/sec)  finished.
-Test (10000) memcpy of sizes (2048) ....
-10000 memcpy. Time per memcpy: 3433 [nsec] (596 MB/sec)  finished.
-Test (10000) memcpy of sizes (4096) ....
-10000 memcpy. Time per memcpy: 6687 [nsec] (612 MB/sec)  finished.
-Test (10000) memcpy of sizes (8192) ....
-10000 memcpy. Time per memcpy: 21454 [nsec] (381 MB/sec)  finished.
-Test (10000) memcpy of sizes (16384) ....
-10000 memcpy. Time per memcpy: 205551 [nsec] (79 MB/sec)  finished.
-Test (1000) memcpy of sizes (32768) ....
-1000 memcpy. Time per memcpy: 379875 [nsec] (86 MB/sec)  finished.
-Test (1000) memcpy of sizes (51200) ....
-1000 memcpy. Time per memcpy: 588792 [nsec] (86 MB/sec)  finished.
-Test (1000) memcpy of sizes (102400) ....
-1000 memcpy. Time per memcpy: 1126511 [nsec] (90 MB/sec)  finished.
-Test (100) memcpy of sizes (1048576) ....
-100 memcpy. Time per memcpy: 11307890 [nsec] (92 MB/sec)  finished.
-Test (10) memcpy of sizes (10485760) ....
-10 memcpy. Time per memcpy: 120783600 [nsec] (86 MB/sec)  finished.
-Test (5) memcpy of sizes (52428800) ....
-5 memcpy. Time per memcpy: 673867800 [nsec] (77 MB/sec)  finished.
-	  =20
-
-
-Best regards,
-Matthias
-
---=20
-
-"Programming today is a race between software engineers striving to =
-build bigger and better idiot-proof programs, and the universe trying to =
-produce bigger and better idiots. So far, the universe is winning." -- =
-Rich Cook _______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Mirek
+-- 
+View this message in context: http://www.nabble.com/zImage.elf-loads-but-not-starts-tf3607582.html#a10681348
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
