@@ -1,28 +1,24 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 17418DDEF4
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 00:34:58 +1000 (EST)
-Message-ID: <464DB986.20205@freescale.com>
-Date: Fri, 18 May 2007 09:34:46 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Wade Farnsworth <wfarnsworth@mvista.com>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Zhang Wei-r63237 <Wei.Zhang@freescale.com>
-Subject: Re: [PATCH 5/5] PCI fixes for the MPC8641 Rev 2.0 silicon and Rev
-	1.02hardware
-References: <1179245829.8132.100.camel@rhino> <1179247809.8132.138.camel@rhino>
-	<46B96294322F7D458F9648B60E15112C23441B@zch01exm26.fsl.freescale.net>
-	<1179417813.8132.250.camel@rhino>
-	<744CD970-5421-47D6-A30A-C7C79BE21BE8@kernel.crashing.org>
-	<1179421139.8132.256.camel@rhino> <464CA302.9060707@freescale.com>
-	<20070518005641.GA27350@localhost.localdomain>
-In-Reply-To: <20070518005641.GA27350@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <tglx@linutronix.de>
+Received: from mail.tglx.de (www.osadl.org [213.239.205.134])
+	by ozlabs.org (Postfix) with ESMTP id B1780DDF01
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 00:43:19 +1000 (EST)
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Matt Sealey <matt@genesi-usa.com>
+In-Reply-To: <464DB800.40702@genesi-usa.com>
+References: <200705172142.26739.sshtylyov@ru.mvista.com>
+	<8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>
+	<464C99FF.8080404@ru.mvista.com>
+	<135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
+	<464C9E67.2020909@ru.mvista.com>
+	<6E0D5E13-C939-4FCE-81A3-F29DFA6436A2@kernel.crashing.org>
+	<464CA222.8000407@ru.mvista.com> <464D9E7E.3090605@genesi-usa.com>
+	<464DADFC.3080802@ru.mvista.com>  <464DB800.40702@genesi-usa.com>
+Content-Type: text/plain
+Date: Fri, 18 May 2007 16:48:33 +0200
+Message-Id: <1179499713.12981.75.camel@chaos>
+Mime-Version: 1.0
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, mingo@elte.hu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,46 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Thu, May 17, 2007 at 01:46:26PM -0500, Timur Tabi wrote:
->> Wade Farnsworth wrote:
->>
->>> Yes.  On rev 1.0 boards, all of the devices on the south bridge are on
->>> bus 0, while on rev 1.02, the devices on the southbridge are on bus 2.
->>>
->>> I'd like to use the same dts for both rev's if possible.  But if there
->>> is a reason why they shouldn't, I suppose I could create a separate dts.
->> I think two DTS files is the best approach for now.  A few of us had
->> an idea to introduce conditional statements in to the DTS, and
+On Fri, 2007-05-18 at 15:28 +0100, Matt Sealey wrote:
+> >> I guess the real question is, how high resolution does a high resolution
+> >> timer need to be,
+> > 
+> >    In the order of microseconds.
 > 
-> Erm... how would you encode such conditionals in the dtb?  
+> I think both the MPC52xx GPT0-7 and the SLT0-1 fulfil this fairly
+> easily.
 
-We'll propose a spec once we have everything figured out.  Our current idea is to allow 
-any node or property to have a conditional attached to it.  U-Boot will then scan the 
-device tree, evaluate the conditional, and if it's false, delete the particular node/property.
+There is some basic work for MPC5200 available:
 
-U-Boot will be also be expanded to include the concept of "hardware options", whether the 
-user and/or board-specific code can tell U-Boot that hardware option X is set to value Y. 
-  The conditions in the device tree will be of the form "X == Y" (or X != Y, X > Y, etc).
+http://www.pengutronix.de/oselas/bsp/phytec/index_en.html#phyCORE-MPC5200B-tiny
 
-For instance, on some board, if jumper 22 is on, then it means that the USB port is 
-enabled.  If it's possible for software to scan the status of J22, then the board-specific 
-code will do that, and it will create an environment variable "J22=ON".  The USB node in 
-the device tree will have the conditional "J22 = ON".
-
-> I really
-> don't like the idea of having a generalized conditional
-> parser/evaluator built into the bootwrapper.
-
-Well, let us present the full proposal with our reasonings when we're ready.  I don't want 
-to engage in speculative debate.
-
-> What I'd been thinking for situations like this is to fold two dtbs
-> into the bootwrapper and have it select between them based on on board
-> revision (assuming that can be deduced from registers somehow).
-
-Our idea is very similar, but just more standardized and more granular.
-
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+	tglx
