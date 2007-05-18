@@ -1,23 +1,25 @@
-Return-Path: <gvb.linuxppc.dev@gmail.com>
-Received: from rwcrmhc12.comcast.net (rwcrmhc12.comcast.net [216.148.227.152])
-	by ozlabs.org (Postfix) with ESMTP id 93651DDE2B
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 13:49:44 +1000 (EST)
-Message-ID: <464D2255.2090002@gmail.com>
-Date: Thu, 17 May 2007 23:49:41 -0400
-From: Jerry Van Baren <gvb.linuxppc.dev@gmail.com>
-MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>,
-	Wade Farnsworth <wfarnsworth@mvista.com>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Zhang Wei-r63237 <Wei.Zhang@freescale.com>
-Subject: Re: [PATCH 5/5] PCI fixes for the MPC8641 Rev 2.0 silicon and Rev
-	1.02hardware
-References: <1179245829.8132.100.camel@rhino>
-	<1179247809.8132.138.camel@rhino>	<46B96294322F7D458F9648B60E15112C23441B@zch01exm26.fsl.freescale.net>	<1179417813.8132.250.camel@rhino>	<744CD970-5421-47D6-A30A-C7C79BE21BE8@kernel.crashing.org>	<1179421139.8132.256.camel@rhino>
-	<464CA302.9060707@freescale.com>
-	<20070518005641.GA27350@localhost.localdomain>
-In-Reply-To: <20070518005641.GA27350@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D62F7DDE3C
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 15:05:40 +1000 (EST)
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <97d47c2261fe9cd3f1a6c864278a6ab6@kernel.crashing.org>
+References: <200705172142.26739.sshtylyov@ru.mvista.com>
+	<f9afbdb49bc1f935153305315770bccd@kernel.crashing.org>
+	<464CB071.5050504@ru.mvista.com>
+	<9095839480a9686d9c40aa6143edb804@kernel.crashing.org>
+	<464CB460.40905@ru.mvista.com>
+	<97d47c2261fe9cd3f1a6c864278a6ab6@kernel.crashing.org>
+Content-Type: text/plain
+Date: Fri, 18 May 2007 15:04:49 +1000
+Message-Id: <1179464690.32247.370.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, mingo@elte.hu,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,46 +29,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Thu, May 17, 2007 at 01:46:26PM -0500, Timur Tabi wrote:
->> Wade Farnsworth wrote:
->>
->>> Yes.  On rev 1.0 boards, all of the devices on the south bridge are on
->>> bus 0, while on rev 1.02, the devices on the southbridge are on bus 2.
->>>
->>> I'd like to use the same dts for both rev's if possible.  But if there
->>> is a reason why they shouldn't, I suppose I could create a separate dts.
->> I think two DTS files is the best approach for now.  A few of us had
->> an idea to introduce conditional statements in to the DTS, and
+
 > 
-> Erm... how would you encode such conditionals in the dtb?  I really
-> don't like the idea of having a generalized conditional
-> parser/evaluator built into the bootwrapper.
+> Yes, on some implementations there can be other conditions that
+> make a decrementer exception go away; there is no contradiction
+> here (thankfully).  My wording was sloppy.
 
-I hear forth is a really neat language, and can do conditionals. ;-)
+Some CPUs have the DEC exceptions basically edge triggered (yeah I know
+it sucks). That's why, among others, the IRQ soft-disable code has code
+to re-trigger DEC exceptions ASAP (by setting it to 1.. note that we
+could probably use 0 here, we've been a bit conservative).
 
-> What I'd been thinking for situations like this is to fold two dtbs
-> into the bootwrapper and have it select between them based on on board
-> revision (assuming that can be deduced from registers somehow).
-> 
->> U-Boot would examine the board and/or environment variables and then
->> apply the conditions to the device tree before booting the kernel.
->> This would allow you to merge the two DTS files into one, but we're
->> quite a ways off from implementing this feature.  In the meantime,
->> two DTS files is okay.
-
-WRT u-boot:
-
-a) With the libfdt changes, we're making good progress on updating the 
-fdt based on the board-specific information.  This gives us the 
-capability of creating a semi-generic DTS and have u-boot augment the 
-fdt with the necessary board-specific property settings.
-
-b) I also have a dream of allowing the hush parser to test fdt 
-properties, which would allow us to write u-boot/hush scripts that 
-validate that a given fdt is a proper one for the board and/or select 
-the proper one out of several in memory.  So many fun ideas, so little 
-time...
-
-Best regards,
-gvb
+Ben.
