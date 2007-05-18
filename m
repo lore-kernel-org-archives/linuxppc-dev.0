@@ -1,21 +1,28 @@
-Return-Path: <khali@linux-fr.org>
-Received: from kraid.nerim.net (smtp-105-friday.nerim.net [62.4.16.105])
-	by ozlabs.org (Postfix) with ESMTP id 85756DE12B
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 02:31:23 +1000 (EST)
-Date: Fri, 18 May 2007 18:31:40 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Scott Wood <scottwood@freescale.com>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B3819DDF26
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 02:43:51 +1000 (EST)
+Message-ID: <464DD5E3.1060301@freescale.com>
+Date: Fri, 18 May 2007 11:35:47 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: [i2c] [PATCH 3/5] powerpc: Document device nodes for I2C devices.
-Message-ID: <20070518183140.4644ffc6@hyperion.delvare>
-In-Reply-To: <464DCD0E.9000706@freescale.com>
 References: <20070517143846.GC29795@ld0162-tx32.am.freescale.net>
-	<8183195dad79296e3986f561bf929067@kernel.crashing.org>
-	<464CADBB.9050500@freescale.com>
-	<20070518172711.2db7fc92@hyperion.delvare>
-	<464DCD0E.9000706@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
+	<FB8DD3C1-A095-4ABB-9E74-7EC66A43D983@kernel.crashing.org>
+	<464C800C.20400@freescale.com>
+	<FFBD3A3A-ADBE-4DC8-A1A1-4163367244D5@kernel.crashing.org>
+	<464C871C.4090300@freescale.com>
+	<5B363A90-5528-4441-BBF9-9C6D8833D938@kernel.crashing.org>
+	<20070518171555.543f9bdc@hyperion.delvare>
+	<D50C4D36-CEA5-4F7F-8A4C-CC747DF85865@kernel.crashing.org>
+In-Reply-To: <D50C4D36-CEA5-4F7F-8A4C-CC747DF85865@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
 	i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,44 +33,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 18 May 2007 10:58:06 -0500, Scott Wood wrote:
-> Jean Delvare wrote:
-> > On Thu, 17 May 2007 14:32:11 -0500, Scott Wood wrote:
-> > 
-> >>(and the 
-> >>i2c code in Linux should be fixed to allow drivers to specify multiple 
-> >>match names).
-> > 
-> > 
-> > Back when David proposed his new-style i2c code, I had the same
-> > objection. But we addressed the need differently. If you look at struct
-> > i2c_board_info, you'll see two string fields, driver_name and type. The
-> > former specifies the driver name, the second specifies the exact device
-> > variant. For drivers which support several device variants, the
-> > platform code should fill both fields.
-> 
-> But that still requires the platform to know the driver name, rather 
-> than matching any driver which knows about the type.  This prevents the 
-> use of OS-independent device trees (such as in Open Firmware), which 
-> cannot know specific Linux driver names, without something hacky like a 
-> type-to-driver table in the device tree code.
+Kumar Gala wrote:
+> I guess my gripe is about proposing a solution and not willing to  
+> extend it in light of people providing issues with it. 
 
-Oh well, this was also the reason why I objected to David's approach in
-the first place. If you dig back in the i2c list archive, you'll find
-that I was asking for exactly the same thing you do now: that each i2c
-driver would export a list of supported devices, and the i2c-core would
-match a device name against that list (independent of the driver name.)
-It felt more flexible, but I wondered how useful it would be in
-practice, and finally gave up and David had the last word. If you had
-shown up back then rather than now...
+I'm perfectly willing to extend it if you let me know what you think is 
+needed, rather than just saying "switches and muxes".  What 
+*specifically* would they need beyond what I proposed?
 
-I am not familiar with Open Firmware. How standard is it? How realistic
-would it be to use their device naming in the Linux kernel? Are there
-other subsystem doing this? Are there other OSes using it, in
-particular for I2C?
+> Last time I  
+> check we don't put things into the kernel w/o any review and if  people 
+> have issues that are reasonable they get hashed out.  It seems  that the 
+> onus is on the initial submitter to either show that what  they are 
+> providing is sufficient and w/o issue or incorporate the  feedback.
 
-We have something which works now, even if that's not what you and I
-had in mind, so I don't really want to change it without solid reasons.
+Give me something I can incorporate, then.  My gripe is when the 
+feedback is "don't bother" based on unspecified problems with a 
+configuration more complex than what it was intended to address (but 
+still, AFAICT, not outside its ability to address).
 
--- 
-Jean Delvare
+> More specifically, we have a way to specify what devices are connect  on 
+> I2C today.  I'm not convinced there is any value in creating yet  
+> another mechanism, especially in an interface that in theory should  be 
+> linux agnostic.
+
+We had a way to specify platform devices before, too.  If the device 
+tree isn't worthwhile for i2c devices, why is it worthwhile for soc 
+devices?  It seems to me that non-probable chips like i2c devices are 
+precisely the kind of thing that the device tree is useful for.
+
+-Scott
