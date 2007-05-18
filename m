@@ -1,42 +1,27 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-06.arcor-online.net (mail-in-06.arcor-online.net
+	[151.189.21.46])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 86C76DDEE3
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 05:09:32 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l4IJ9ReB001968
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 12:09:27 -0700 (MST)
-Message-ID: <464DF9E5.2040501@freescale.com>
-Date: Fri, 18 May 2007 14:09:25 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Jon Loeliger <jdl@freescale.com>
-Subject: Re: [PATCH 5/5] PCI fixes for the MPC8641 Rev 2.0 silicon and Rev
-	1.02hardware
-References: <1179245829.8132.100.camel@rhino>	
-	<1179247809.8132.138.camel@rhino>	
-	<46B96294322F7D458F9648B60E15112C23441B@zch01exm26.fsl.freescale.net>	
-	<1179417813.8132.250.camel@rhino>	
-	<744CD970-5421-47D6-A30A-C7C79BE21BE8@kernel.crashing.org>	
-	<1179421139.8132.256.camel@rhino> <464CA302.9060707@freescale.com>	
-	<20070518005641.GA27350@localhost.localdomain>	
-	<464DB986.20205@freescale.com>	
-	<20070518164628.GA16825@ld0162-tx32.am.freescale.net>	
-	<464DE2D3.3090805@smiths-aerospace.com>
-	<464DE4C7.7030906@freescale.com>	 <464DE5D2.5000301@freescale.com>
-	<464DE6C1.2010108@freescale.com>	 <464DE7F7.3030302@freescale.com>
-	<464DE8BB.5040601@freescale.com>	
-	<1179512385.19664.8.camel@ld0161-tx32>
-	<464DEF3C.7070202@freescale.com>
-	<1179515137.19664.19.camel@ld0161-tx32>
-In-Reply-To: <1179515137.19664.19.camel@ld0161-tx32>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Timur Tabi <timur@freescale.com>,
-	Wei Zhang <Wei.Zhang@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id 7234DDDE24
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 06:07:50 +1000 (EST)
+In-Reply-To: <20070518171555.543f9bdc@hyperion.delvare>
+References: <20070517143846.GC29795@ld0162-tx32.am.freescale.net>
+	<FB8DD3C1-A095-4ABB-9E74-7EC66A43D983@kernel.crashing.org>
+	<464C800C.20400@freescale.com>
+	<FFBD3A3A-ADBE-4DC8-A1A1-4163367244D5@kernel.crashing.org>
+	<464C871C.4090300@freescale.com>
+	<5B363A90-5528-4441-BBF9-9C6D8833D938@kernel.crashing.org>
+	<20070518171555.543f9bdc@hyperion.delvare>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <a52c1269957b64d6958bb0fd29305552@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [i2c] [PATCH 3/5] powerpc: Document device nodes for I2C devices.
+Date: Fri, 18 May 2007 22:07:38 +0200
+To: Jean Delvare <khali@linux-fr.org>
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -46,34 +31,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon Loeliger wrote:
-> On Fri, 2007-05-18 at 13:23, Scott Wood wrote:
-> 
->>Jon Loeliger wrote:
+>> The only support we have for i2c controllers is to support one
+>> specific i2c controller from Freescale.
 >>
->>>First of all, I wanted to get away from the notion of calling
->>>anything a "jumper".  What I said to you was to predicate the
->>>clause based on some arbitrary conditional, not just some "jumper
->>>setting."
->>
->>Yes, I like the "hwoption" name better.
-> 
-> 
-> I think my point was missed.  It could be more general
-> than "a hardware thing".  Sure, HW contributes.
+>> If you aren't going to provide a complete solution why are you
+>> prosing one?  I'm tired of this put stuff in the device tree but only
+>> as much as I need to do my particular thing.
+>
+> This is exactly how free software development works. If people were
+> only proposing complete solutions, Linux would not even exist. Things
+> happen exactly because people write what they need and contribute what
+> they wrote. If you think it's not enough for your own needs (present or
+> future), then _you_ get to do the extra work.
 
-What, other than hardware differences, would one conditionalize on?
+You propose a generic device tree binding.  This is
+a public API/ABI so it is important that it is future-
+proofed as far as possible/sane/whatever.  If you're
+asked how a not at all uncommon situation should be
+expressed using that binding, and you cannot / will
+not give an answer, that is basically equivalent to
+withdrawing your proposed binding.
 
->>No, we were pretty much always talking about a run-time thing.
-> 
-> 
-> On he contrary, here are copies of two pieces of mail from
-> roughly May 2006 and Feb 2007 in which CPP and M4 as _compiled_time_
-> processing are being discussed.  In the latter, you discuss it more:.
+If you cannot get yourself to think about the general
+situation, please don't try to draft generic bindings,
+but restrict yourself to something board specific or
+with that scope at least.  And hope no one else takes
+interest in that board or they'll happily NAK your
+patches.
 
-That was a separate discussion for a separate purpose (reducing 
-redundancy and duplication among dts files).  I was talking about the 
-discussions I had with Timur about a month ago, to which you responded 
-with the conditional suggestion.
 
--Scott
+Segher
