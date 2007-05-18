@@ -1,10 +1,14 @@
-Return-Path: <gerald.vanbaren@smiths-aerospace.com>
-Received: from AGRXSUSMAILB.smiths.aero (host241-chi.smiths-group.com
-	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id 5EC4FDDED0
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 04:00:02 +1000 (EST)
-Message-ID: <464DE99D.1040904@smiths-aerospace.com>
-Date: Fri, 18 May 2007 13:59:57 -0400
-From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 59034DDEBD
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 04:03:02 +1000 (EST)
+Message-ID: <464DEA4F.4030609@freescale.com>
+Date: Fri, 18 May 2007 13:02:55 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
 To: Timur Tabi <timur@freescale.com>
 Subject: Re: [PATCH 5/5] PCI fixes for the MPC8641 Rev 2.0 silicon and Rev
@@ -14,9 +18,11 @@ References: <1179245829.8132.100.camel@rhino>
 	<464CA302.9060707@freescale.com>	<20070518005641.GA27350@localhost.localdomain>	<464DB986.20205@freescale.com>
 	<20070518164628.GA16825@ld0162-tx32.am.freescale.net>
 	<464DE2D3.3090805@smiths-aerospace.com>
-	<464DE4C7.7030906@freescale.com>
-In-Reply-To: <464DE4C7.7030906@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	<464DE4C7.7030906@freescale.com> <464DE5D2.5000301@freescale.com>
+	<464DE6C1.2010108@freescale.com> <464DE7F7.3030302@freescale.com>
+	<464DE8BB.5040601@freescale.com>
+In-Reply-To: <464DE8BB.5040601@freescale.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
 	Zhang Wei-r63237 <Wei.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -29,53 +35,42 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 Timur Tabi wrote:
-> Jerry Van Baren wrote:
-
-[snip]
-
->> * The above should result in reasonable board-specific code.
->>   * We may want to invent a libfdt move/copy subtree function (I don't
->>       recall one being in there).  Board specific code would want to
->>       move selected subtrees out of /u-boot,hwoptions into the
->>       appropriate final node.  All the pieces are in libfdt, just would
->>       need to be hooked together in a utility subroutine.
+> Scott Wood wrote:
 > 
-> Just being able to delete a given node/property would be enough.  By 
-> default, the nodes with conditionals would be present in the device 
-> tree.  The boot loader would then also strip out all conditionals from 
-> the device tree before passing it to the kernel.  The kernel would then 
-> receive a standard device tree like it does today.
+>> That's your model.  
 
-Deleting isn't really enough because you would want to copy/move the 
-configuration from a subnode of the hwoptions node to the final resting 
-place in the standard tree (assuming there is a final resting place in 
-the standard tree - I'm picturing SOC configuration choices here). 
-Simple deletion isn't adequate in general because
-* It would be silly to change linux to look in a new location for things
-     that already exist in standard locations (e.g. SOC stuff)
-* Deleting a node inherently deletes all of the subnodes.  In order to
-     do only delete operations, you would end up with an ugly path like:
-/u-boot,hwoptions/J1/on/tree/&usb/phy_type (set to  "ulpi")
-     where I suspect the &usb/phy_type portion should be glued into a SOC
-     (or other) pre-existing subnode.
-* It is possible some choices can be used multiple times - the above
-     example specifies a PHY.  There are very often multiple instances of
-     only type of PHY and copying one "prototype" selection into multiple
-     final destination nodes could save space and effort.
+Yes.  That was the whole point of my post, to point out my alternative. 
+    You were the one that said, "Actually, we're talking about the same 
+thing."
 
->> * With the above, nothing in the infrastructure (dtc, libfdt) needs to
->>     change.
->>
->> On a related note, would it be better to name the node 
->> "/u-boot/hwoptions" (two levels deep)?  It seems very desirable to me to 
+>> Mine involves merging a fragment that corresponds 
+>> to an active hwoption, with no complex conditional evaluation or 
+>> deletion of anything from the main tree.
 > 
-> It's not a u-boot-specific concept.  The idea of representing jumpers 
-> (and other hardware options) in the device tree is not something that's 
-> unique to u-boot or any boot loader. The conditionals, however, are a 
-> bootloader-specific concept.  We don't want Linux to see them.
+> 
+> I think my model (which is also Jon's, I think) is easier to read 
 
-Well, then we shouldn't name it u-boot,hwoptions.  Ahh, nevermind, Scott 
-beat me to that point.
+What does the dtb-level implementation have to do with ease of reading? 
+  I said that I didn't mind conditionals at the source level that get 
+turned to hwoptions at the dtb level.
 
-Best regards,
-gvb
+> and implement.
+
+I disagree.
+
+> phy-node [ if j22 = on ]
+> {
+>     phy-type = 1
+> }
+> 
+> phy-node [ if j22 = off ]
+> {
+>     phy-type = 2
+> }
+
+Ah.
+
+So I take it you'll need a new dtb version to implement this?  No such 
+revision would be needed for my model.
+
+-Scott
