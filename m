@@ -1,33 +1,37 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <jdl@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D6378DDF9B
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 04:03:49 +1000 (EST)
-Message-ID: <464DE8A1.6050908@freescale.com>
-Date: Fri, 18 May 2007 12:55:45 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [i2c] [PATCH 3/5] powerpc: Document device nodes for I2C devices.
-References: <20070517143846.GC29795@ld0162-tx32.am.freescale.net>
-	<FB8DD3C1-A095-4ABB-9E74-7EC66A43D983@kernel.crashing.org>
-	<464C800C.20400@freescale.com>
-	<FFBD3A3A-ADBE-4DC8-A1A1-4163367244D5@kernel.crashing.org>
-	<464C871C.4090300@freescale.com>
-	<5B363A90-5528-4441-BBF9-9C6D8833D938@kernel.crashing.org>
-	<20070518171555.543f9bdc@hyperion.delvare>
-	<D50C4D36-CEA5-4F7F-8A4C-CC747DF85865@kernel.crashing.org>
-	<464DD5E3.1060301@freescale.com>
-	<6F8D3143-423D-45FA-9F40-00BF770831F2@kernel.crashing.org>
-	<464DDFA5.6050106@freescale.com>
-	<79CACFC8-DD5B-4284-AC2E-C92FE2A85330@kernel.crashing.org>
-In-Reply-To: <79CACFC8-DD5B-4284-AC2E-C92FE2A85330@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
-	i2c@lm-sensors.org
+	by ozlabs.org (Postfix) with ESMTP id 2918FDDED5
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 04:19:53 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l4IIJloK022149
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 11:19:48 -0700 (MST)
+Subject: Re: [PATCH 5/5] PCI fixes for the MPC8641 Rev 2.0 silicon and Rev
+	1.02hardware
+From: Jon Loeliger <jdl@freescale.com>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <464DE8BB.5040601@freescale.com>
+References: <1179245829.8132.100.camel@rhino> <1179247809.8132.138.camel@rhino>
+	<46B96294322F7D458F9648B60E15112C23441B@zch01exm26.fsl.freescale.net>
+	<1179417813.8132.250.camel@rhino>
+	<744CD970-5421-47D6-A30A-C7C79BE21BE8@kernel.crashing.org>
+	<1179421139.8132.256.camel@rhino> <464CA302.9060707@freescale.com>
+	<20070518005641.GA27350@localhost.localdomain>
+	<464DB986.20205@freescale.com>
+	<20070518164628.GA16825@ld0162-tx32.am.freescale.net>
+	<464DE2D3.3090805@smiths-aerospace.com>
+	<464DE4C7.7030906@freescale.com>
+	<464DE5D2.5000301@freescale.com> <464DE6C1.2010108@freescale.com>
+	<464DE7F7.3030302@freescale.com>  <464DE8BB.5040601@freescale.com>
+Content-Type: text/plain
+Message-Id: <1179512385.19664.8.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Fri, 18 May 2007 13:19:45 -0500
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Wei Zhang <Wei.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,51 +41,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> Once you expand the beyond just a root node for the controller I'd  like 
-> to see how you suggest we handle the case where a particular  child ends 
-> up having children as well.  You example, is sufficient  the majority of 
-> devices, but I'd like to know that we'll be able to  handle the case 
-> where a node is both a device and controller.
-
-The example I gave *was* a controller and an i2c device at the same time 
-(note the i2c-style reg = <70>).  Just take the fragment and stick it in 
-an existing i2c controller node; I omitted the latter for brevity, as a 
-result of making the mistake of typing it in Mozilla rather than mutt, 
-and thus having no autoindent.
-
->> Given that power.org is attempting to do further standardization of  
->> the device tree for embedded applications, I'd be surprised if  there 
->> weren't a way we could have them act as a registry.
+On Fri, 2007-05-18 at 12:56, Timur Tabi wrote:
+> Scott Wood wrote:
 > 
-> If/when they sign up for this I'd be more inclined to have kernel  
-> support for it.
-
-Fair enough.  I'm still interested in what you think would need to be 
-done to support switches and muxes, from the context of standardizing it 
-in ePAPR.  The bus numbering shouldn't be an issue as long as you keep 
-the bus numbers local to the switch/mux, and don't pretend that they 
-have anything to do with any global i2c bus number that the OS may or 
-may not have.
-
->>> For I2C specifically we already have both a dynamic way (kernel  cmd  
->>> line) and static (i2c_board_info) to specify the i2c devices,  why 
->>> do  we need yet another?
->>
->>
->> This uses i2c_board_info; it doesn't replace it.
+> > That's your model.  Mine involves merging a fragment that corresponds to 
+> > an active hwoption, with no complex conditional evaluation or deletion 
+> > of anything from the main tree.
 > 
+> I think my model (which is also Jon's, I think) is easier to read and implement.
+
+Harumph.
+
 > 
-> Ok, but what functionality does it give us that we dont already have  
-> today?
+> phy-node [ if j22 = on ]
+> {
+> 	phy-type = 1
+> }
+> 
+> phy-node [ if j22 = off ]
+> {
+> 	phy-type = 2
+> }
+> 
+> Obviously, j22 can be either on or off, but never both.  If the DTS is coded incorrectly, 
+> then it will have problems, but I think that's a fair trade-off for the easier implementation.
 
-The convenience of putting the data in a dts rather than in 
-board-specific code/structs.  It's not a huge deal, but I find the 
-former to be a more pleasant way of doing things, and others have 
-similarly expressed interest in it.
+First of all, I wanted to get away from the notion of calling
+anything a "jumper".  What I said to you was to predicate the
+clause based on some arbitrary conditional, not just some "jumper
+setting."
 
-It would be significantly more useful as an ePAPR standard that can be 
-used by multiple OSes, but they seem to be in 
-standardize-what-Linux-does mode, hence why I proposed it here first.
+Second, I never came anywhere near the syntax above.
 
--Scott
+Third, I am pretty sure we've always really been talking
+about a DTC enhancement to selectively add regions to the
+DTB in much the same way as if one had said:
+
+    #if <compile-time-conditional>
+        {
+            <use this node or property snippet>
+        }
+    #else
+        {
+            <use this other snippet>
+
+        }
+    #endif
+
+So embedding a full runtime evaluation of conditionals
+expressions wasn't really in my suggestion at this time
+at all.  I had essentially proposed (to you, Timur) that
+we have a predicate clause in the DTS that guarded a the
+presence/absence of a node.
+
+And finally, I wasn't sure I was happy with it all yet
+in any event, so I hadn't acted on it yet.  I was still
+pondering "the right approach here".
+
+Ah well,
+jdl
