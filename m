@@ -1,20 +1,24 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 6F9C6DDF11
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 23:47:04 +1000 (EST)
-Message-ID: <464DAEB2.8080703@ru.mvista.com>
-Date: Fri, 18 May 2007 17:48:34 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <matt@genesi-usa.com>
+Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
+	[66.98.186.96])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A4D67DDF19
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 23:48:36 +1000 (EST)
+Message-ID: <464DAEC9.2040508@genesi-usa.com>
+Date: Fri, 18 May 2007 14:48:57 +0100
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-References: <200705172142.26739.sshtylyov@ru.mvista.com>	<f9afbdb49bc1f935153305315770bccd@kernel.crashing.org>	<464CB071.5050504@ru.mvista.com>	<9095839480a9686d9c40aa6143edb804@kernel.crashing.org>	<464CB460.40905@ru.mvista.com>	<97d47c2261fe9cd3f1a6c864278a6ab6@kernel.crashing.org>	<1179464690.32247.370.camel@localhost.localdomain>	<1179466769.3658.0.camel@localhost.localdomain>	<1179472096.32247.394.camel@localhost.localdomain>
-	<464DAD06.2060504@ru.mvista.com>
-In-Reply-To: <464DAD06.2060504@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de,
-	Dave Liu <r63238@freescale.com>, mingo@elte.hu,
-	linux-kernel@vger.kernel.org
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH 5/5] PCI fixes for the MPC8641 Rev 2.0 silicon and Rev
+	1.02hardware
+References: <1179245829.8132.100.camel@rhino>	<1179247809.8132.138.camel@rhino>	<46B96294322F7D458F9648B60E15112C23441B@zch01exm26.fsl.freescale.net>	<1179417813.8132.250.camel@rhino>	<744CD970-5421-47D6-A30A-C7C79BE21BE8@kernel.crashing.org>	<1179421139.8132.256.camel@rhino>	<464CA302.9060707@freescale.com>
+	<464CA380.2020705@freescale.com>	<464CA4B4.7070202@freescale.com>
+	<464CA610.1050504@freescale.com>
+In-Reply-To: <464CA610.1050504@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Zhang Wei-r63237 <Wei.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,34 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello, I wrote:
 
->>>>>Yes, on some implementations there can be other conditions that
->>>>>make a decrementer exception go away; there is no contradiction
->>>>>here (thankfully).  My wording was sloppy.
+Timur Tabi wrote:
+> Scott Wood wrote:
+> 
+>> We also don't want people using a perfectly good device tree on a newer 
+>> revision of the board that just fixes things and doesn't make any 
+>> device-tree-relevant changes,
+> 
+> Well, either one device tree is okay, or we need two.  If we do need two, then it would be 
+> bad to load the wrong one on a particular board and have only 90% functionality.  If he 
+> have the ability to prevent customers from getting confused, then we should do that.  I 
+> wish this was standard behavior for all device trees.  I've frequently loaded the wrong 
+> device tree and wondered why nothing worked.
 
->>>>Some CPUs have the DEC exceptions basically edge triggered (yeah I know
+Another design win for dynamically generated firmware device trees and
+a knock on the head for writing text files and hoping they match the
+hardware description? :D
 
->>>for example?
-
->>>>it sucks). That's why, among others, the IRQ soft-disable code has code
->>>>to re-trigger DEC exceptions ASAP (by setting it to 1.. note that we
->>>>could probably use 0 here, we've been a bit conservative).
-
->     Yeah, the classic decrementer is programmed off-by-one.
-
->>I'm not 100% certain... Paulus thinks all the old 6xx are like that, and
->>maybe POWER4. If I look at the oldest BookIV I can find (the 601), it
-
->     From the "PowerPC Operating Environment Architecture" that I've already 
-> quoated t follows that POWER4-compatible decremented exception *must* be edge 
-> triggered.
-
-    ... and cleared when delivered.
-
->>says that an exception is generated when the MSB transitions from 0 to
->>1. It's not clear wether the exception sticks while that bit is 1 or is
->>indeed considered as an "edge" event that gets cleared as soon as
->>delivered.
-
-WBR, Sergei
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
