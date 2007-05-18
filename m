@@ -1,27 +1,31 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <Jason.Jin@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 31B65DDE2E
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 17:09:07 +1000 (EST)
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Dave Liu <r63238@freescale.com>
-In-Reply-To: <1179466769.3658.0.camel@localhost.localdomain>
-References: <200705172142.26739.sshtylyov@ru.mvista.com>
-	<f9afbdb49bc1f935153305315770bccd@kernel.crashing.org>
-	<464CB071.5050504@ru.mvista.com>
-	<9095839480a9686d9c40aa6143edb804@kernel.crashing.org>
-	<464CB460.40905@ru.mvista.com>
-	<97d47c2261fe9cd3f1a6c864278a6ab6@kernel.crashing.org>
-	<1179464690.32247.370.camel@localhost.localdomain>
-	<1179466769.3658.0.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 18 May 2007 17:08:15 +1000
-Message-Id: <1179472096.32247.394.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, mingo@elte.hu,
-	linux-kernel@vger.kernel.org
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 89734DDE2D
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 16:52:23 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	l4I6qHKs019971
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2007 23:52:18 -0700 (MST)
+Received: from zch01exm27.fsl.freescale.net (zch01exm27.ap.freescale.net
+	[10.192.129.223])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l4I6qGRx020911
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 01:52:17 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH 5/5] PCI fixes for the MPC8641 Rev 2.0 silicon and Rev1.02
+	hardware
+Date: Fri, 18 May 2007 14:52:14 +0800
+Message-ID: <CC27DED0F8F39E48A7E75FD768688B7A2FD493@zch01exm27.fsl.freescale.net>
+In-Reply-To: <1179338794.8132.209.camel@rhino>
+From: "Jin Zhengxiong-R64188" <Jason.Jin@freescale.com>
+To: "Wade Farnsworth" <wfarnsworth@mvista.com>,
+	"Loeliger Jon-LOELIGER" <jdl@freescale.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,24 +35,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-05-18 at 13:39 +0800, Dave Liu wrote:
-> > > Yes, on some implementations there can be other conditions that
-> > > make a decrementer exception go away; there is no contradiction
-> > > here (thankfully).  My wording was sloppy.
-> > 
-> > Some CPUs have the DEC exceptions basically edge triggered (yeah I know
-> 
-> for example?
-> 
-> > it sucks). That's why, among others, the IRQ soft-disable code has code
-> > to re-trigger DEC exceptions ASAP (by setting it to 1.. note that we
-> > could probably use 0 here, we've been a bit conservative).
+> -----Original Message-----
+> From: linuxppc-dev-bounces+jinzhengxiong=3Dgmail.com@ozlabs.org=20
+> [mailto:linuxppc-dev-bounces+jinzhengxiong=3Dgmail.com@ozlabs.or
+> g] On Behalf Of Wade Farnsworth
+> Sent: Thursday, May 17, 2007 2:07 AM
+> To: Loeliger Jon-LOELIGER
+> Cc: linuxppc-dev
+> Subject: Re: [PATCH 5/5] PCI fixes for the MPC8641 Rev 2.0=20
+> silicon and Rev1.02 hardware
+>=20
+> On Wed, 2007-05-16 at 11:44 -0500, Jon Loeliger wrote:
+> > On Tue, 2007-05-15 at 11:50, Wade Farnsworth wrote:
+> > > +static void __devinit early_mpc86xx_pcie(struct pci_dev *dev) {
+> > > +	   dev->class =3D PCI_CLASS_BRIDGE_PCI << 8 | 0x1; }
+> >=20
+> > What'd we decide on that 0x1 in there?
+> >=20
+> > Thanks,
+> > jdl
+> >=20
+> >=20
+>=20
+> I originally thought that it the 0x1 was necessary, but it=20
+> was pointed out to me that it should not be.
+>=20
+> If I remove the 0x1 I get some I/O resource allocation=20
+> failures on the P2P bridge and its child devices.  I'm=20
+> currently investigating what the cause of this is.
 
-I'm not 100% certain... Paulus thinks all the old 6xx are like that, and
-maybe POWER4. If I look at the oldest BookIV I can find (the 601), it
-says that an exception is generated when the MSB transitions from 0 to
-1. It's not clear wether the exception sticks while that bit is 1 or is
-indeed considered as an "edge" event that gets cleared as soon as
-delivered.
+> --Wade
+>=20
 
-Ben.
+As you changed the class of the bridge, dev->transparent will be set
+again in the later  code, if you remove the 0x01 here, the
+dev->transparent will be set to 0 later. So if you changed the class
+like this, you do not need to set  dev->transparent =3D 1 in your patch.
+
+Jason=20
+
+
+
+
+>=20
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>=20
