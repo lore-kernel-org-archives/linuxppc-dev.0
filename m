@@ -1,24 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-13.arcor-online.net (mail-in-13.arcor-online.net
-	[151.189.21.53])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 92989DDEBD
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 10:18:25 +1000 (EST)
-In-Reply-To: <464E3F18.5010700@genesi-usa.com>
-References: <20070517143846.GC29795@ld0162-tx32.am.freescale.net>	<FB8DD3C1-A095-4ABB-9E74-7EC66A43D983@kernel.crashing.org>	<464C800C.20400@freescale.com>	<FFBD3A3A-ADBE-4DC8-A1A1-4163367244D5@kernel.crashing.org>	<464C871C.4090300@freescale.com>	<5B363A90-5528-4441-BBF9-9C6D8833D938@kernel.crashing.org>	<20070518171555.543f9bdc@hyperion.delvare>	<D50C4D36-CEA5-4F7F-8A4C-CC747DF85865@kernel.crashing.org>	<464DD5E3.1060301@freescale.com>
-	<6F8D3143-423D-45FA-9F40-00BF770831F2@kernel.crashing.org>
-	<464E3F18.5010700@genesi-usa.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <2087d135c4139e94e0b2c8826d808292@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [i2c] [PATCH 3/5] powerpc: Document device nodes for I2C devices.
-Date: Sat, 19 May 2007 02:17:25 +0200
-To: Matt Sealey <matt@genesi-usa.com>
-Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
-	i2c@lm-sensors.org
+Return-Path: <acahalan@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.237])
+	by ozlabs.org (Postfix) with ESMTP id CCF81DDEC5
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 11:45:39 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id 50so1116371wra
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 18:45:38 -0700 (PDT)
+Message-ID: <787b0d920705181845h355eed4fk2bf93323332a9d90@mail.gmail.com>
+Date: Fri, 18 May 2007 21:45:37 -0400
+From: "Albert Cahalan" <acahalan@gmail.com>
+To: "Sergei Shtylyov" <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+In-Reply-To: <464DBDBA.3060801@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <787b0d920705172024g723412b4n8f82d3cd78e0f702@mail.gmail.com>
+	<464DBDBA.3060801@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,40 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Linux doesn't but it might be nice to specify this kind of thing in a
-> way that other operating systems might or may support.
+On 5/18/07, Sergei Shtylyov <sshtylyov@ru.mvista.com> wrote:
+> Albert Cahalan wrote:
+
+> >>> Sure, but is there any utility in registering more than the
+> >>> decrementer on PPC?
 >
-> Essentially I think since there are a lot of ways to support I2C
-> (including bitbanging a GPIO pair), the only real way to support it
-> is to do something like;
+> >> Not yet. I'm not sure I know any other PPC CPU facility fitting
+> >> for clockevents. In theory, FIT could be used -- but its period
+> >> is measured in powers of 2, IIRC.
 >
-> i2c@blah {
-> 	name = "i2c"
-> 	compatible = "mpc52xx-i2c,someother-i2c"
-> 	regs = "address:range"
-> }
+> > I'd really like to have that as an option. It would allow oprofile
+> > to safely use hardware events on the MPC74xx "G4" processors.
+> > Alternately it would allow thermal events. It is safe to use at
+> > most one of the three (decrementer,profiling,thermal) interrupts.
+> > If two were to hit at the same time, badness happens.
+>
+> Unfortunately, FIT exists only on Book E CPUs and MPC74xx aren't Book E, IIUC.
 
-Yes, all devices should be in the device tree.  That's
-what it's for.
+By the name "FIT" perhaps, but MPC74xx has essentially
+the same thing.
 
-> You're not ever going to be able to specify in the device tree
-> exactly how to handle a driver, encompassing both implementation,
-> bugs in revisions, quirks of board design, but you can specify
-> for a driver a very accurate, very educated guess on it (any
-> quirks, bugs or implementation differences would be board/chip
-> specific, and are easily derived from the other device nodes
-> like the cpu node, soc node, and so on)
+> > It's possible to wrapper the interrupt in something that divides
+> > down, calling the normal code only some of the time. I think one
+> > of the FIT choices is about 4 kHz on my system, which would be OK.
+>
+>     Erm, are you sure you have FIT (or is your system not MPC74xx based)?
 
-Actually, you can, and should.  All this information is
-contained in the "compatible" and "model" properties.
-"Quirks of board design" can be described too, on a case-
-by-case basis.
+Set MMCR0[TBEE], set MMCR0[PMXE], and choose a TBL bit via MMCR0[TBSEL].
+TBSEL is a 2-bit field which selects a timebase bit to use. The timebase
+bits that can be chosen are numbered 15, 19, 23, and 31. In the notation
+used by every other CPU vendor those would be bits 0, 8, 12, and 16.
 
-All the knowledge about how to drive the device resides
-in the kernel, but the device tree describes exactly what
-device this is, so the kernel can match a driver to it
-uniquely, and the driver can know exactly what revision
-chip this is and what quirks to apply.
+Example: My system uses a TBL frequency of 24907667. This gives choices
+of 12453833, 48648, 3040, and 190 Hz. The lowest three of those could
+be useful, with 48648 only for profiling and extreme real-time.
 
-
-Segher
+It's also possible to trigger on the CPU cycle counter, but this would
+cost one of the performance counters. MPC7400 has 4, later CPUs have 6
+or more, and I think xPC7x0 had only 2. This method is a bit nicer,
+since then one could trigger interrupts on arbitrary clock cycles
+without needing to write the timebase register.
