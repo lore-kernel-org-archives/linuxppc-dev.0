@@ -1,21 +1,12 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <anton@ozlabs.org>
+Date: Sat, 19 May 2007 00:22:41 -0500
+From: Anton Blanchard <anton@samba.org>
+To: paulus@samba.org
+Subject: [PATCH] Add missing pmc_type fields in cpu_table
+Message-ID: <20070519052241.GA510@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17998.28659.702653.237011@cargo.ozlabs.ibm.com>
-Date: Sat, 19 May 2007 13:33:07 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Daniel Walker <dwalker@mvista.com>
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-In-Reply-To: <1179502773.20519.56.camel@imap.mvista.com>
-References: <200705172142.26739.sshtylyov@ru.mvista.com>
-	<8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>
-	<464C99FF.8080404@ru.mvista.com>
-	<135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
-	<1179500217.20519.53.camel@imap.mvista.com>
-	<464DC0DC.7050809@ru.mvista.com>
-	<1179502773.20519.56.camel@imap.mvista.com>
-Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, mingo@elte.hu,
-	linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,18 +16,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Daniel Walker writes:
 
-> On Fri, 2007-05-18 at 19:06 +0400, Sergei Shtylyov wrote:
-> >     Well, the decrementer frequency may change, at least in theory (if the bus 
-> > clock changes).
-> 
-> Does that happen very often?
+A number of cpu_table entries were missing the pmc_type field. Add them.
 
-If it did, gettimeofday would start reporting seriously wrong values,
-since the timebase and the decrementer count at the same rate, and we
-don't have any provision for fixing things up if that rate changed.
-Fortunately there are no powerpc platforms where the rate is
-variable.
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-Paul.
+Candidate for stable.
+
+Considering the number of places missed, I wonder if it makes sense for
+the fallback case to be PPC_PMC_IBM. 
+
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 9cb24d2..e054409 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -235,6 +235,7 @@ static struct cpu_spec cpu_specs[] = {
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 8,
++		.pmc_type		= PPC_PMC_IBM,
+ 		.cpu_setup		= __setup_cpu_ppc970,
+ 		.cpu_restore		= __restore_cpu_ppc970,
+ 		.oprofile_cpu_type	= "ppc64/970MP",
+@@ -251,6 +252,7 @@ static struct cpu_spec cpu_specs[] = {
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 8,
++		.pmc_type		= PPC_PMC_IBM,
+ 		.cpu_setup		= __setup_cpu_ppc970MP,
+ 		.cpu_restore		= __restore_cpu_ppc970,
+ 		.oprofile_cpu_type	= "ppc64/970MP",
+@@ -317,6 +320,7 @@ static struct cpu_spec cpu_specs[] = {
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 6,
++		.pmc_type		= PPC_PMC_IBM,
+ 		.oprofile_cpu_type	= "ppc64/power6",
+ 		.oprofile_type		= PPC_OPROFILE_POWER4,
+ 		.oprofile_mmcra_sihv	= POWER6_MMCRA_SIHV,
+@@ -335,6 +339,7 @@ static struct cpu_spec cpu_specs[] = {
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 6,
++		.pmc_type		= PPC_PMC_IBM,
+ 		.oprofile_cpu_type	= "ppc64/power6",
+ 		.oprofile_type		= PPC_OPROFILE_POWER4,
+ 		.oprofile_mmcra_sihv	= POWER6_MMCRA_SIHV,
