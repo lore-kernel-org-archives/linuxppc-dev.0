@@ -1,12 +1,15 @@
-Return-Path: <anton@ozlabs.org>
-Date: Sat, 19 May 2007 12:13:43 -0500
-From: Anton Blanchard <anton@samba.org>
-To: paulus@samba.org
-Subject: [PATCH] MMCR0_PMA0 != MMCR0_PMAO
-Message-ID: <20070519171343.GA25520@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mikpe@user.it.uu.se>
+Received: from aun.it.uu.se (aun.it.uu.se [130.238.12.36])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D085BDDE3A
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 May 2007 03:47:59 +1000 (EST)
+Date: Sat, 19 May 2007 19:28:05 +0200 (MEST)
+Message-Id: <200705191728.l4JHS5A9026303@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: segher@kernel.crashing.org
+Subject: Re: gcc-4.2.0 breakage on powerpc?
+Cc: linuxppc-dev@ozlabs.org, mikpe@it.uu.se, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,45 +19,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sat, 19 May 2007 18:11:20 +0200, Segher Boessenkool wrote:
+> >>>> and we'll end up
+> >>>> having major kernel releases which don't build on i386 with major 
+> >>>> gcc
+> >>>> releases, which isn't altogether desirable.
+> >>>
+> >>> Yeah, like 4.2.0 with powerpc.  Seems like no one tested it :-(
+> >>
+> >> Details please. What exactly are the gcc-4.2.0 problems on powerpc?
+> >
+> > http://gcc.gnu.org/PR31490 .  Most stuff using named
+> > sections won't build; that includes CONFIG_MODULES.
+> > There is no viable workaround.  The problem is being
+> > handled.  I'll post a patch for the kernel refusing
+> > to build with this combination soon.
+> 
+> [Cc:ing the PowerPC list]
+> 
+> Oh btw, most likely this is a problem on 64-bit only.
 
-pmc.c has:
+I believe so too. PR31490 mostly talks about ppc64,
+and I've built both ppc32 kernels and complex ppc32
+user-space programs with gcc-4.2.0 without noticing
+any regressions.
 
-#ifndef MMCR0_PMA0
-#define MMCR0_PMA0     0
-
-This one took a while to find. Unfortunately its the wrong define
-(number 0 vs letter O). Its probably worth removing this override, since
-if our includes get screwed up we will have the same (hard to debug)
-failure.
-
-Fix it simply for now, so that we can backport to stable.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
-
-Candidate for stable.
-
-Index: kernel/arch/powerpc/kernel/pmc.c
-===================================================================
---- kernel.orig/arch/powerpc/kernel/pmc.c	2007-05-19 11:57:57.000000000 -0500
-+++ kernel/arch/powerpc/kernel/pmc.c	2007-05-19 11:58:32.000000000 -0500
-@@ -20,8 +20,8 @@
- #include <asm/cputable.h>
- #include <asm/pmc.h>
- 
--#ifndef MMCR0_PMA0
--#define MMCR0_PMA0	0
-+#ifndef MMCR0_PMAO
-+#define MMCR0_PMAO	0
- #endif
- 
- static void dummy_perf(struct pt_regs *regs)
-@@ -30,7 +30,7 @@ static void dummy_perf(struct pt_regs *r
- 	mtpmr(PMRN_PMGC0, mfpmr(PMRN_PMGC0) & ~PMGC0_PMIE);
- #elif defined(CONFIG_PPC64) || defined(CONFIG_6xx)
- 	if (cur_cpu_spec->pmc_type == PPC_PMC_IBM)
--		mtspr(SPRN_MMCR0, mfspr(SPRN_MMCR0) & ~(MMCR0_PMXE|MMCR0_PMA0));
-+		mtspr(SPRN_MMCR0, mfspr(SPRN_MMCR0) & ~(MMCR0_PMXE|MMCR0_PMAO));
- #else
- 	mtspr(SPRN_MMCR0, mfspr(SPRN_MMCR0) & ~MMCR0_PMXE);
- #endif
+/Mikael
