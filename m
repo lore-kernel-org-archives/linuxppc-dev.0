@@ -1,20 +1,24 @@
-Return-Path: <acahalan@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.237])
-	by ozlabs.org (Postfix) with ESMTP id CCF81DDEC5
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 11:45:39 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id 50so1116371wra
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2007 18:45:38 -0700 (PDT)
-Message-ID: <787b0d920705181845h355eed4fk2bf93323332a9d90@mail.gmail.com>
-Date: Fri, 18 May 2007 21:45:37 -0400
-From: "Albert Cahalan" <acahalan@gmail.com>
-To: "Sergei Shtylyov" <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-In-Reply-To: <464DBDBA.3060801@ru.mvista.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <787b0d920705172024g723412b4n8f82d3cd78e0f702@mail.gmail.com>
-	<464DBDBA.3060801@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17998.28739.378409.440833@cargo.ozlabs.ibm.com>
+Date: Sat, 19 May 2007 13:34:27 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+In-Reply-To: <464DAD06.2060504@ru.mvista.com>
+References: <200705172142.26739.sshtylyov@ru.mvista.com>
+	<f9afbdb49bc1f935153305315770bccd@kernel.crashing.org>
+	<464CB071.5050504@ru.mvista.com>
+	<9095839480a9686d9c40aa6143edb804@kernel.crashing.org>
+	<464CB460.40905@ru.mvista.com>
+	<97d47c2261fe9cd3f1a6c864278a6ab6@kernel.crashing.org>
+	<1179464690.32247.370.camel@localhost.localdomain>
+	<1179466769.3658.0.camel@localhost.localdomain>
+	<1179472096.32247.394.camel@localhost.localdomain>
+	<464DAD06.2060504@ru.mvista.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Dave Liu <r63238@freescale.com>, tglx@linutronix.de, mingo@elte.hu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,44 +28,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 5/18/07, Sergei Shtylyov <sshtylyov@ru.mvista.com> wrote:
-> Albert Cahalan wrote:
+Sergei Shtylyov writes:
 
-> >>> Sure, but is there any utility in registering more than the
-> >>> decrementer on PPC?
->
-> >> Not yet. I'm not sure I know any other PPC CPU facility fitting
-> >> for clockevents. In theory, FIT could be used -- but its period
-> >> is measured in powers of 2, IIRC.
->
-> > I'd really like to have that as an option. It would allow oprofile
-> > to safely use hardware events on the MPC74xx "G4" processors.
-> > Alternately it would allow thermal events. It is safe to use at
-> > most one of the three (decrementer,profiling,thermal) interrupts.
-> > If two were to hit at the same time, badness happens.
->
-> Unfortunately, FIT exists only on Book E CPUs and MPC74xx aren't Book E, IIUC.
+>     Yeah, the classic decrementer is programmed off-by-one.
 
-By the name "FIT" perhaps, but MPC74xx has essentially
-the same thing.
+Actually it's programmed off by slightly less than one half on
+average, but it doesn't matter since the error doesn't accumulate.
 
-> > It's possible to wrapper the interrupt in something that divides
-> > down, calling the normal code only some of the time. I think one
-> > of the FIT choices is about 4 kHz on my system, which would be OK.
->
->     Erm, are you sure you have FIT (or is your system not MPC74xx based)?
-
-Set MMCR0[TBEE], set MMCR0[PMXE], and choose a TBL bit via MMCR0[TBSEL].
-TBSEL is a 2-bit field which selects a timebase bit to use. The timebase
-bits that can be chosen are numbered 15, 19, 23, and 31. In the notation
-used by every other CPU vendor those would be bits 0, 8, 12, and 16.
-
-Example: My system uses a TBL frequency of 24907667. This gives choices
-of 12453833, 48648, 3040, and 190 Hz. The lowest three of those could
-be useful, with 48648 only for profiling and extreme real-time.
-
-It's also possible to trigger on the CPU cycle counter, but this would
-cost one of the performance counters. MPC7400 has 4, later CPUs have 6
-or more, and I think xPC7x0 had only 2. This method is a bit nicer,
-since then one could trigger interrupts on arbitrary clock cycles
-without needing to write the timebase register.
+Paul.
