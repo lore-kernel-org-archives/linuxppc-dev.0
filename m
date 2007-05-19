@@ -1,15 +1,22 @@
-Return-Path: <mikpe@user.it.uu.se>
-Received: from aun.it.uu.se (aun.it.uu.se [130.238.12.36])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D085BDDE3A
-	for <linuxppc-dev@ozlabs.org>; Sun, 20 May 2007 03:47:59 +1000 (EST)
-Date: Sat, 19 May 2007 19:28:05 +0200 (MEST)
-Message-Id: <200705191728.l4JHS5A9026303@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: segher@kernel.crashing.org
-Subject: Re: gcc-4.2.0 breakage on powerpc?
-Cc: linuxppc-dev@ozlabs.org, mikpe@it.uu.se, linux-kernel@vger.kernel.org
+Return-Path: <acahalan@gmail.com>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.235])
+	by ozlabs.org (Postfix) with ESMTP id 21F57DDED2
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 May 2007 04:22:17 +1000 (EST)
+Received: by nz-out-0506.google.com with SMTP id l1so2012938nzf
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 11:22:16 -0700 (PDT)
+Message-ID: <787b0d920705191122m5f481d54k363f5f473880a664@mail.gmail.com>
+Date: Sat, 19 May 2007 14:22:15 -0400
+From: "Albert Cahalan" <acahalan@gmail.com>
+To: "Segher Boessenkool" <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+In-Reply-To: <fa84736ae121902d4bee24eb23ca1d0b@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <787b0d920705172024g723412b4n8f82d3cd78e0f702@mail.gmail.com>
+	<464DBDBA.3060801@ru.mvista.com>
+	<787b0d920705181845h355eed4fk2bf93323332a9d90@mail.gmail.com>
+	<fa84736ae121902d4bee24eb23ca1d0b@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,29 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 19 May 2007 18:11:20 +0200, Segher Boessenkool wrote:
-> >>>> and we'll end up
-> >>>> having major kernel releases which don't build on i386 with major 
-> >>>> gcc
-> >>>> releases, which isn't altogether desirable.
-> >>>
-> >>> Yeah, like 4.2.0 with powerpc.  Seems like no one tested it :-(
-> >>
-> >> Details please. What exactly are the gcc-4.2.0 problems on powerpc?
-> >
-> > http://gcc.gnu.org/PR31490 .  Most stuff using named
-> > sections won't build; that includes CONFIG_MODULES.
-> > There is no viable workaround.  The problem is being
-> > handled.  I'll post a patch for the kernel refusing
-> > to build with this combination soon.
-> 
-> [Cc:ing the PowerPC list]
-> 
-> Oh btw, most likely this is a problem on 64-bit only.
+On 5/19/07, Segher Boessenkool <segher@kernel.crashing.org> wrote:
+> [Albert Cahalan]
 
-I believe so too. PR31490 mostly talks about ppc64,
-and I've built both ppc32 kernels and complex ppc32
-user-space programs with gcc-4.2.0 without noticing
-any regressions.
+> > Set MMCR0[TBEE], set MMCR0[PMXE], and choose a TBL bit via
+> > MMCR0[TBSEL].
+>
+> That's the performance monitor, which could very well be
+> in use already (for performance monitoring stuff, who
+> would have guessed).
 
-/Mikael
+It is the performance monitor, which sadly can not be used
+very well unless the decrementer is disabled. The hardware
+is buggy. As long as we use the decrementer for timekeeping,
+we can not safely generate performance monitor interrupts.
+
+I'd like to have the performance monitor available. It's NOT
+available unless we use part of it for timekeeping. That's the
+choice the hardware gives us.
+
+We can get TBL bit flip interrupts for free. We don't even need
+to give up one of the event counters. If we do give up one of the
+event counters (a rather reasonable idea), then we can count
+one of those TBL bit flips or the cycle counter.
