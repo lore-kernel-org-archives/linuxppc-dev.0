@@ -1,20 +1,15 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.188])
-	by ozlabs.org (Postfix) with ESMTP id 0731ADDEE0
+Return-Path: <mamsadegh@hotmail.com>
+Received: from bay0-omc2-s25.bay0.hotmail.com (bay0-omc2-s25.bay0.hotmail.com
+	[65.54.246.161]) by ozlabs.org (Postfix) with ESMTP id F2671DDEBD
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 19 May 2007 05:04:22 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: BDI2000 configuration file for MPC8313E-RDB
-Date: Fri, 18 May 2007 21:04:09 +0200
-References: <29DC34A6B43468409F5A371CFE34E84917683B@ex01.ads.ubidyne.de>
-	<406A31B117F2734987636D6CCC93EE3C017BA668@ehost011-3.exch011.intermedia.net>
-In-Reply-To: <406A31B117F2734987636D6CCC93EE3C017BA668@ehost011-3.exch011.intermedia.net>
+	Sat, 19 May 2007 18:48:14 +1000 (EST)
+Message-ID: <BAY115-W21F59EB26847913D2C56FB2310@phx.gbl>
+From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
+To: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
+Subject: Simple Question about ML403 VGA (TFT) Controller
+Date: Sat, 19 May 2007 08:48:13 +0000
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200705182104.09993.sr@denx.de>
-Cc: Leonid <Leonid@a-k-a.net>, Frank Prepelica <Frank.Prepelica@ubidyne.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,22 +20,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Friday 18 May 2007, Leonid wrote:
-> See, it's not a question that BDI2000 can be used with board which has
-> NAND flash on it, just it's not capable of NAND direct programming as it
-> does in the case of NOR flash.
 
-Yes, "direct" NAND programming via BDI2000 is not possible. At least not at 
-the moment with the current firmware versions.
+Hi all
 
-> I also have AMCC Sequoia board with both NOR and NAND flash. On this
-> board you can boot u-boot from NOR first and use it to program NAND.
+I have seen many linux 2.6 drivers for VGA controller for ML403 but I do no=
+t know the answer to a very simple question about it,
 
-Correct.
+How should I add the VGA controller module to my system in XPS?=20
 
-Just a side note: You can also boot the Sequoia from NAND directly if you have 
-programmed the NAND U-Boot version for the Sequoia, as the 440EP(x) supports 
-direct NAND booting.
+The base system builder wizard ( EDK 9.1 SP! ) does not provide any option =
+for this, and when I look at the IP repository I do not find any suitable m=
+odules to be added to the design.
 
-Best regards,
-Stefan
+Thanks
+
+_________________________________________________________________
+News, entertainment and everything you care about at Live.com. Get it now!
+http://www.live.com/getstarted.aspx=
