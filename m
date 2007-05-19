@@ -1,24 +1,21 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17998.28739.378409.440833@cargo.ozlabs.ibm.com>
-Date: Sat, 19 May 2007 13:34:27 +1000
+Message-ID: <17998.28659.702653.237011@cargo.ozlabs.ibm.com>
+Date: Sat, 19 May 2007 13:33:07 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+To: Daniel Walker <dwalker@mvista.com>
 Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-In-Reply-To: <464DAD06.2060504@ru.mvista.com>
+In-Reply-To: <1179502773.20519.56.camel@imap.mvista.com>
 References: <200705172142.26739.sshtylyov@ru.mvista.com>
-	<f9afbdb49bc1f935153305315770bccd@kernel.crashing.org>
-	<464CB071.5050504@ru.mvista.com>
-	<9095839480a9686d9c40aa6143edb804@kernel.crashing.org>
-	<464CB460.40905@ru.mvista.com>
-	<97d47c2261fe9cd3f1a6c864278a6ab6@kernel.crashing.org>
-	<1179464690.32247.370.camel@localhost.localdomain>
-	<1179466769.3658.0.camel@localhost.localdomain>
-	<1179472096.32247.394.camel@localhost.localdomain>
-	<464DAD06.2060504@ru.mvista.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Dave Liu <r63238@freescale.com>, tglx@linutronix.de, mingo@elte.hu
+	<8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>
+	<464C99FF.8080404@ru.mvista.com>
+	<135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
+	<1179500217.20519.53.camel@imap.mvista.com>
+	<464DC0DC.7050809@ru.mvista.com>
+	<1179502773.20519.56.camel@imap.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, mingo@elte.hu,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,11 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sergei Shtylyov writes:
+Daniel Walker writes:
 
->     Yeah, the classic decrementer is programmed off-by-one.
+> On Fri, 2007-05-18 at 19:06 +0400, Sergei Shtylyov wrote:
+> >     Well, the decrementer frequency may change, at least in theory (if the bus 
+> > clock changes).
+> 
+> Does that happen very often?
 
-Actually it's programmed off by slightly less than one half on
-average, but it doesn't matter since the error doesn't accumulate.
+If it did, gettimeofday would start reporting seriously wrong values,
+since the timebase and the decrementer count at the same rate, and we
+don't have any provision for fixing things up if that rate changed.
+Fortunately there are no powerpc platforms where the rate is
+variable.
 
 Paul.
