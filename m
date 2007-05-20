@@ -1,18 +1,19 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
-	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id 0A638DDDE4
-	for <linuxppc-dev@ozlabs.org>; Sun, 20 May 2007 20:17:05 +1000 (EST)
-Subject: Re: Fixed PHY problems
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: Hammond Christian-r55079 <christian.hammond@freescale.com>
-In-Reply-To: <14B28267C4526A42BA5AC7DAA07B783866B655@zuk35exm20.fsl.freescale.net>
-References: <14B28267C4526A42BA5AC7DAA07B783866B655@zuk35exm20.fsl.freescale.net>
-Content-Type: multipart/mixed; boundary="=-QSwWgqZTNQp4P98p8jL6"
-Date: Sun, 20 May 2007 12:17:01 +0200
-Message-Id: <1179656221.2714.19.camel@gentoo-jocke.transmode.se>
+Return-Path: <sam@ravnborg.org>
+Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
+	by ozlabs.org (Postfix) with ESMTP id 0C8EEDDE22
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 May 2007 20:20:36 +1000 (EST)
+Date: Sun, 20 May 2007 12:21:32 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Subject: Re: 2.6.22-rc1-mm1
+Message-ID: <20070520102132.GB22091@uranus.ravnborg.org>
+References: <20070515201914.16944e04.akpm@linux-foundation.org>
+	<200705201212.50810.m.kozlowski@tuxland.pl>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: joakim.tjernlund@transmode.se
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200705201212.50810.m.kozlowski@tuxland.pl>
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,111 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sun, May 20, 2007 at 12:12:50PM +0200, Mariusz Kozlowski wrote:
+> Hello,
+> 
+> 	I tried it on iMac G3. I got a bunch of warnings
+> and finally it failed to build.
+> 
+> WARNING: "fee_restarts" [arch/powerpc/kernel/built-in] is COMMON symbol
+> WARNING: "ee_restarts" [arch/powerpc/kernel/built-in] is COMMON symbol
+> WARNING: arch/powerpc/kernel/built-in.o - Section mismatch: reference to .init.data:.got2 from dt_string_start (offset 0x8)
+....
 
---=-QSwWgqZTNQp4P98p8jL6
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Most - but not all of these warnings should be gone when
+Linus pulls kbuild-fix.git.
+When -rc3 is ready can you then please post the result of a build.
+Then I can take a look at the remaining section mismatch warnings.
 
-On Sat, 2007-05-19 at 15:42 +0100, Hammond Christian-r55079 wrote:
-> Hi Vitaly,
->  
-> I was pointed in the direction of message chain "Fixed PHY problems"
-> for interfacing a fixed PHY to a 83xx UEC. Could you please forward on
-> the patch you mentioned in the trail?
-
-Vitaly sent me the patch, had to do some minor tweaking to make it
-compile. Attaching the patch.
-
->  
-> Any ideas if the implementation  succeeded in the end?
-
-No, the fixed PHY is on another bus than what ucc_geth expects.
-See msg from me titled "Fixed  PHY and MPC832x based boards don't work"
-from about a week ago.
-
- Jocke
-
->  
-> Christian Hammond
->  
-> NCSG Applications Engineer
->  
-> Tel: +44 1355 355962
-> Fax: +44 1355 261790
->  
-> Freescale Semiconductor
-> Kelvin Industrial Estate
-> East Kilbride
-> Glasgow G75 0TG
-> United Kingdom
-
-
---=-QSwWgqZTNQp4P98p8jL6
-Content-Disposition: attachment; filename=fixed_driver.patch
-Content-Transfer-Encoding: base64
-Content-Type: text/x-patch; name=fixed_driver.patch; charset=UTF-8
-
-UEhZIGZpeGVkIGRyaXZlcjogcmV3b3JrZWQgZXJyb3IgaGFuZGxpbmcgYW5kIHJlbGVhc2UgcGF0
-aA0KDQpkZXZpY2VfYmluZF9kcml2ZXIoKSBlcnJvciBjb2RlIHJldHVybmluZyBoYXMgYmVlbiBm
-aXhlZC4gDQpyZWxlYXNlKCkgZnVuY3Rpb24gaGFzIGJlZW4gd3JpdHRlbiwgc28gdGhhdCB0byBm
-cmVlIHJlc291cmNlcw0KaW4gY29ycmVjdCB3YXkuDQoNClNpZ25lZC1vZmYtYnk6IFZpdGFseSBC
-b3JkdWcgPHZpdGJAa2VybmVsLmNyYXNoaW5nLm9yZz4NCg0KLS0tDQoNCiBkcml2ZXJzL25ldC9w
-aHkvZml4ZWQuYyB8ICAgNzIgKysrKysrKysrKysrKysrKysrKysrKysrKysrLS0tLS0tLS0tLS0t
-LS0tLS0tLS0NCiAxIGZpbGVzIGNoYW5nZWQsIDQxIGluc2VydGlvbnMoKyksIDMxIGRlbGV0aW9u
-cygtKQ0KDQpkaWZmIC0tZ2l0IGEvZHJpdmVycy9uZXQvcGh5L2ZpeGVkLmMgYi9kcml2ZXJzL25l
-dC9waHkvZml4ZWQuYw0KaW5kZXggNjhjOTliNC4uMGQ3NzgwNSAxMDA2NDQNCi0tLSBhL2RyaXZl
-cnMvbmV0L3BoeS9maXhlZC5jDQorKysgYi9kcml2ZXJzL25ldC9waHkvZml4ZWQuYw0KQEAgLTE4
-Nyw2ICsxODcsMTkgQEAgc3RhdGljIHN0cnVjdCBwaHlfZHJpdmVyIGZpeGVkX21kaW9fZHJpdmVy
-ID0gew0KIAkuZHJpdmVyIAk9IHsgLm93bmVyID0gVEhJU19NT0RVTEUsfSwNCiB9Ow0KIA0KK3N0
-YXRpYyB2b2lkIGZpeGVkX21kaW9fcmVsZWFzZSAoc3RydWN0IGRldmljZSAqIGRldikNCit7DQor
-CXN0cnVjdCBwaHlfZGV2aWNlICpwaHlkZXYgPSBjb250YWluZXJfb2YoZGV2LCBzdHJ1Y3QgcGh5
-X2RldmljZSwgZGV2KTsNCisJc3RydWN0IG1paV9idXMgKmJ1cyA9IHBoeWRldi0+YnVzOw0KKwlz
-dHJ1Y3QgZml4ZWRfaW5mbyAqZml4ZWQgPSBidXMtPnByaXY7DQorDQorCWtmcmVlKHBoeWRldik7
-DQorCWtmcmVlKGJ1cy0+ZGV2KTsNCisJa2ZyZWUoYnVzKTsNCisJa2ZyZWUoZml4ZWQtPnJlZ3Mp
-Ow0KKwlrZnJlZShmaXhlZCk7DQorfQ0KKw0KIC8qLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCiAgKiAg
-VGhpcyBmdW5jIGlzIHVzZWQgdG8gY3JlYXRlIGFsbCB0aGUgbmVjZXNzYXJ5IHN0dWZmLCBiaW5k
-DQogICogdGhlIGZpeGVkIHBoeSBkcml2ZXIgYW5kIHJlZ2lzdGVyIGFsbCBpdCBvbiB0aGUgbWRp
-b19idXNfdHlwZS4NCkBAIC0yMjEsNiArMjM0LDEyIEBAIHN0YXRpYyBpbnQgZml4ZWRfbWRpb19y
-ZWdpc3Rlcl9kZXZpY2UoaW50IG51bWJlciwgaW50IHNwZWVkLCBpbnQgZHVwbGV4KQ0KIAl9DQog
-DQogCWZpeGVkLT5yZWdzID0ga3phbGxvYyhNSUlfUkVHU19OVU0qc2l6ZW9mKGludCksIEdGUF9L
-RVJORUwpOw0KKwlpZiAoTlVMTCA9PSBmaXhlZC0+cmVncykgew0KKwkJa2ZyZWUoZGV2KTsNCisJ
-CWtmcmVlKG5ld19idXMpOw0KKwkJa2ZyZWUoZml4ZWQpOw0KKwkJcmV0dXJuIC1FTk9NRU07DQor
-CX0NCiAJZml4ZWQtPnJlZ3NfbnVtID0gTUlJX1JFR1NfTlVNOw0KIAlmaXhlZC0+cGh5X3N0YXR1
-cy5zcGVlZCA9IHNwZWVkOw0KIAlmaXhlZC0+cGh5X3N0YXR1cy5kdXBsZXggPSBkdXBsZXg7DQpA
-QCAtMjQ5LDggKzI2OCwxMSBAQCBzdGF0aWMgaW50IGZpeGVkX21kaW9fcmVnaXN0ZXJfZGV2aWNl
-KGludCBudW1iZXIsIGludCBzcGVlZCwgaW50IGR1cGxleCkNCiAJZml4ZWQtPnBoeWRldiA9IHBo
-eWRldjsNCiANCiAJaWYoTlVMTCA9PSBwaHlkZXYpIHsNCi0JCWVyciA9IC1FTk9NRU07DQotCQln
-b3RvIGRldmljZV9jcmVhdGVfZmFpbDsNCisJCWtmcmVlKGRldik7DQorCQlrZnJlZShuZXdfYnVz
-KTsNCisJCWtmcmVlKGZpeGVkLT5yZWdzKTsNCisJCWtmcmVlKGZpeGVkKTsNCisJCXJldHVybiAt
-RU5PTUVNOw0KIAl9DQogDQogCXBoeWRldi0+aXJxID0gUEhZX0lHTk9SRV9JTlRFUlJVUFQ7DQpA
-QCAtMjYyLDQ0ICsyODQsMzIgQEAgc3RhdGljIGludCBmaXhlZF9tZGlvX3JlZ2lzdGVyX2Rldmlj
-ZShpbnQgbnVtYmVyLCBpbnQgc3BlZWQsIGludCBkdXBsZXgpDQogCWVsc2UNCiAJCXNucHJpbnRm
-KHBoeWRldi0+ZGV2LmJ1c19pZCwgQlVTX0lEX1NJWkUsDQogCQkJCSJmaXhlZEAlZDolZCIsIHNw
-ZWVkLCBkdXBsZXgpOw0KKw0KIAlwaHlkZXYtPmJ1cyA9IG5ld19idXM7DQogDQorCXBoeWRldi0+
-ZGV2LmRyaXZlciA9ICZmaXhlZF9tZGlvX2RyaXZlci5kcml2ZXI7DQorIAlwaHlkZXYtPmRldi5y
-ZWxlYXNlID0gZml4ZWRfbWRpb19yZWxlYXNlOw0KKyANCisgCWVyciA9IHBoeWRldi0+ZGV2LmRy
-aXZlci0+cHJvYmUoJnBoeWRldi0+ZGV2KTsNCisgCWlmKGVyciA8IDApIHsNCisgCQlwcmludGso
-S0VSTl9FUlIgIlBoeSAlczogcHJvYmxlbXMgd2l0aCBmaXhlZCBkcml2ZXJcbiIsDQorCQkJCXBo
-eWRldi0+ZGV2LmJ1c19pZCk7DQorIAkJa2ZyZWUocGh5ZGV2KTsNCisgCQlrZnJlZShkZXYpOw0K
-KyAJCWtmcmVlKG5ld19idXMpOw0KKyAJCWtmcmVlKGZpeGVkLT5yZWdzKTsNCisgCQlrZnJlZShm
-aXhlZCk7DQorIAkJcmV0dXJuIGVycjsNCisgCX0NCisgDQorCWRvd25fd3JpdGUoJnBoeWRldi0+
-ZGV2LmJ1cy0+c3Vic3lzLnJ3c2VtKTsNCiAJZXJyID0gZGV2aWNlX3JlZ2lzdGVyKCZwaHlkZXYt
-PmRldik7DQogCWlmKGVycikgew0KIAkJcHJpbnRrKEtFUk5fRVJSICJQaHkgJXMgZmFpbGVkIHRv
-IHJlZ2lzdGVyXG4iLA0KIAkJCQlwaHlkZXYtPmRldi5idXNfaWQpOw0KLQkJZ290byBidXNfcmVn
-aXN0ZXJfZmFpbDsNCi0JfQ0KLQ0KLQkvKg0KLQkgICB0aGUgbWRpbyBidXMgaGFzIHBoeV9pZCBt
-YXRjaC4uLiBJbiBvcmRlciBub3QgdG8gZG8gaXQNCi0JICAgYXJ0aWZpY2lhbGx5LCB3ZSBhcmUg
-YmluZGluZyB0aGUgZHJpdmVyIGhlcmUgYnkgaGFuZDsNCi0JICAgaXQgd2lsbCBiZSB0aGUgc2Ft
-ZSBmb3IgYWxsIHRoZSBmaXhlZCBwaHlzIGFueXdheS4NCi0JICovDQotCXBoeWRldi0+ZGV2LmRy
-aXZlciA9ICZmaXhlZF9tZGlvX2RyaXZlci5kcml2ZXI7DQotDQotCWVyciA9IHBoeWRldi0+ZGV2
-LmRyaXZlci0+cHJvYmUoJnBoeWRldi0+ZGV2KTsNCi0JaWYoZXJyIDwgMCkgew0KLQkJcHJpbnRr
-KEtFUk5fRVJSICJQaHkgJXM6IHByb2JsZW1zIHdpdGggZml4ZWQgZHJpdmVyXG4iLHBoeWRldi0+
-ZGV2LmJ1c19pZCk7DQotCQlnb3RvIHByb2JlX2ZhaWw7DQogCX0NCiANCi0JZXJyID0gZGV2aWNl
-X2JpbmRfZHJpdmVyKCZwaHlkZXYtPmRldik7DQotCWlmIChlcnIpDQotCQlnb3RvIHByb2JlX2Zh
-aWw7DQotDQogCXJldHVybiAwOw0KLQ0KLXByb2JlX2ZhaWw6DQotCWRldmljZV91bnJlZ2lzdGVy
-KCZwaHlkZXYtPmRldik7DQotYnVzX3JlZ2lzdGVyX2ZhaWw6DQotCWtmcmVlKHBoeWRldik7DQot
-ZGV2aWNlX2NyZWF0ZV9mYWlsOg0KLQlrZnJlZShkZXYpOw0KLQlrZnJlZShuZXdfYnVzKTsNCi0J
-a2ZyZWUoZml4ZWQpOw0KLQ0KLQlyZXR1cm4gZXJyOw0KIH0NCiANCiANCg==
-
-
---=-QSwWgqZTNQp4P98p8jL6--
+	Sam
