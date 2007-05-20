@@ -1,15 +1,22 @@
-Return-Path: <mamsadegh@hotmail.com>
-Received: from bay0-omc2-s10.bay0.hotmail.com (bay0-omc2-s10.bay0.hotmail.com
-	[65.54.246.146]) by ozlabs.org (Postfix) with ESMTP id 12E15DDE3F
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
+	by ozlabs.org (Postfix) with ESMTP id 7F3C3DDEC7
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 21 May 2007 01:54:27 +1000 (EST)
-Message-ID: <BAY115-W2577CEA536CA93F444C60B2300@phx.gbl>
-From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
-To: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
-Subject: ML403 How to change the version of Hard TEMAC from 3.00b to 3.00a?
-Date: Sun, 20 May 2007 15:54:26 +0000
-Content-Type: text/plain; charset="iso-8859-1"
+	Mon, 21 May 2007 07:36:25 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so745827ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 20 May 2007 14:36:23 -0700 (PDT)
+Message-ID: <528646bc0705201436m66c61fcj408ddca199cc00da@mail.gmail.com>
+Date: Sun, 20 May 2007 15:36:20 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Mohammad Sadegh Sadri" <mamsadegh@hotmail.com>
+Subject: Re: ML403 How to change the version of Hard TEMAC from 3.00b to 3.00a?
+In-Reply-To: <BAY115-W2577CEA536CA93F444C60B2300@phx.gbl>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <BAY115-W2577CEA536CA93F444C60B2300@phx.gbl>
+Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,26 +27,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On 5/20/07, Mohammad Sadegh Sadri <mamsadegh@hotmail.com> wrote:
+> 2- How can I change the version of the used core from 3.00b to 3.00a?
 
-Hi all
+Just change the HW_VER parameter in your system.mhs file.
 
-Again with another funny question !
-Of course the experts here know the answers to this very simple question we=
-ll but I have problems with them.
+g.
 
-well , for using ML403 gigabit ethernet MAC I need to switch back to Hard T=
-EMACE 3.00a module, because due to a problem with Virtex-4 Pre CES4 sillico=
-n, 3.00b does not work.=20
+>
+> thanks.
+> _________________________________________________________________
+> Connect to the next generation of MSN Messenger
+> http://imagine-msn.com/messenger/launch80/default.aspx?locale=en-us&source=wlmailtagline
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
 
-now
 
-1- Although xilinx knows this I can not understand why EDK 9.1.1 still gene=
-rates it's base system using 3.00b core
-
-2- How can I change the version of the used core from 3.00b to 3.00a?
-
-thanks.
-_________________________________________________________________
-Connect to the next generation of MSN Messenger=A0
-http://imagine-msn.com/messenger/launch80/default.aspx?locale=3Den-us&sourc=
-e=3Dwlmailtagline=
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
