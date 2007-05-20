@@ -1,23 +1,31 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 0C7A7DDE40
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 May 2007 06:39:10 +1000 (EST)
-Date: Sun, 20 May 2007 22:39:07 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: 2.6.22-rc2 built on ppc
-In-Reply-To: <4650960E.9010707@s5r6.in-berlin.de>
-Message-ID: <Pine.LNX.4.62.0705202237320.1803@pademelon.sonytel.be>
-References: <20070520112904.GM3253@aragorn.home.lxtec.de>
-	<46506EE0.9000405@s5r6.in-berlin.de> <200705201849.29805.arnd@arndb.de>
-	<8c9e6fe68260187606a8ad7f402a4fd8@kernel.crashing.org>
-	<4650960E.9010707@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Arnd Bergmann <arnd@arndb.de>, ben.collins@ubuntu.com,
-	linuxppc-dev@ozlabs.org, linux1394-devel@lists.sourceforge.net,
-	Elimar Riesebieter <riesebie@lxtec.de>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4C887DDE3A
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 May 2007 07:26:33 +1000 (EST)
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Matt Sealey <matt@genesi-usa.com>
+In-Reply-To: <4650632B.1010702@genesi-usa.com>
+References: <200705172142.26739.sshtylyov@ru.mvista.com>
+	<8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>
+	<464C99FF.8080404@ru.mvista.com>
+	<135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
+	<1179500217.20519.53.camel@imap.mvista.com>
+	<464DC0DC.7050809@ru.mvista.com>
+	<1179502773.20519.56.camel@imap.mvista.com>
+	<17998.28659.702653.237011@cargo.ozlabs.ibm.com>
+	<1179628991.20925.2.camel@imap.mvista.com>
+	<1179630190.32247.534.camel@localhost.localdomain>
+	<4650632B.1010702@genesi-usa.com>
+Content-Type: text/plain
+Date: Mon, 21 May 2007 07:25:38 +1000
+Message-Id: <1179696339.32247.568.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Daniel Walker <dwalker@mvista.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	tglx@linutronix.de, mingo@elte.hu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,35 +35,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 20 May 2007, Stefan Richter wrote:
-> Segher Boessenkool wrote:
-> >>> I don't know what's to blame for the warnings --- new gcc versions or
-> >>> the change from do { } while (0) to ((void)0)?  Either way, the compiler
-> >>> should comprehend that the arguments stuffed into the dma_unmap_single
-> >>> macro are _not_ unused by accident; it should stay quiet and optimize
-> >>> the unused variables away if run with -Osomething.
-> >>
-> >> There is not much that the compiler can do by itself, since the macro
-> >> expansion happens in the preprocessor.
-> > 
-> > Even if the compiler could see that the variables are
-> > used as macro arguments, this doesn't automatically
-> > equate to it being able to infer the variables are
-> > unused on purpose.
+> So.. if we get enough clocksources into the tree, can any of those
+> parts of the code be reworked to use clocksources/clockevents and
+> hrtimers quickly and easily? I noticed the patch just posted does
+> some of it.. but not as much as Ben just mentioned.
+
+Well, some of these are expected to be small & fast and work in all sort
+of crazy circumstances, like udelay etc... I'd rather keep that on top
+of the TB. Do we have actual examples where the TB freq is changing ?
+Beside, on powerpc, we don't have another clock source that is as fast
+to access and we have userland using the TB for gettimeofday via the
+vdso, so I'd say bad idea ... Just keep the damn thing fixed frequency.
+
+> Or is it a development nightmare?
 > 
-> Strange.  I believe we had code before with variables that were only
-> used in macros that expanded to <nil>, notably debug logging macros
-> which were usually configured out.  Perhaps I'm mistaken.
+> I'm fairly sure on a PPC970 box even though the decrementer is
+> monotonic and never changes frequency, one day it just might, and
+> it would be better to anticipate this (and allow people to
+> distribute their timing requirements across an entire system
+> and not just the CPU core anyway, which I think is probably a
+> good thing from a system integration and possibly the point of
+> view of redundancy..)
 
-No, they were unused by the macro when DEBUG was not set.
-Only when dev_dbg() was converted from a macro to a static inline function
-did they start to be used (according to the compiler) all the time.
+On a -sane- 970 box (which seems to be the case of all of them that
+matter so far), the TB is sourced externally specifically for that
+reason : to avoid it changing, The DEC is always derived the TB, so it's
+not changing.
 
-Gr{oetje,eeting}s,
+I don't have any plan to support somebody coming up with a HW design
+broken enough to have a variable TB/DEC speed. If they do it, they
+support it and they come up with patches that are acceptable (hint: that
+will be hard !). Beside, it means the vDSO will not be useable for
+gettimeofday on such a platform, which means it will have to fallback to
+the syscall which is much slower.
 
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+Ben.
