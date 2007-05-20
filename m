@@ -1,27 +1,18 @@
-Return-Path: <christian.hammond@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D9963DDD06
-	for <linuxppc-dev@ozlabs.org>; Sun, 20 May 2007 00:42:51 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l4JEgkho010550
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 07:42:46 -0700 (MST)
-Received: from zuk35exm20.fsl.freescale.net (zuk35exm20.ea.freescale.net
-	[10.210.1.54])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l4JEgjQB006093
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 May 2007 09:42:45 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C79A23.F5F826B8"
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
+	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id 0A638DDDE4
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 May 2007 20:17:05 +1000 (EST)
 Subject: Re: Fixed PHY problems
-Date: Sat, 19 May 2007 15:42:42 +0100
-Message-ID: <14B28267C4526A42BA5AC7DAA07B783866B655@zuk35exm20.fsl.freescale.net>
-From: "Hammond Christian-r55079" <christian.hammond@freescale.com>
-To: <linuxppc-dev@ozlabs.org>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: Hammond Christian-r55079 <christian.hammond@freescale.com>
+In-Reply-To: <14B28267C4526A42BA5AC7DAA07B783866B655@zuk35exm20.fsl.freescale.net>
+References: <14B28267C4526A42BA5AC7DAA07B783866B655@zuk35exm20.fsl.freescale.net>
+Content-Type: multipart/mixed; boundary="=-QSwWgqZTNQp4P98p8jL6"
+Date: Sun, 20 May 2007 12:17:01 +0200
+Message-Id: <1179656221.2714.19.camel@gentoo-jocke.transmode.se>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: joakim.tjernlund@transmode.se
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,87 +22,111 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C79A23.F5F826B8
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+--=-QSwWgqZTNQp4P98p8jL6
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Hi Vitaly,
-=20
-I was pointed in the direction of message chain "Fixed PHY problems" for
-interfacing a fixed PHY to a 83xx UEC. Could you please forward on the
-patch you mentioned in the trail?
-=20
-Any ideas if the implementation  succeeded in the end?
-=20
-Christian Hammond
-=20
-NCSG Applications Engineer
-=20
-Tel: +44 1355 355962
-Fax: +44 1355 261790
-=20
-Freescale Semiconductor
-Kelvin Industrial Estate
-East Kilbride
-Glasgow G75 0TG
-United Kingdom
-=20
-=20
+On Sat, 2007-05-19 at 15:42 +0100, Hammond Christian-r55079 wrote:
+> Hi Vitaly,
+>  
+> I was pointed in the direction of message chain "Fixed PHY problems"
+> for interfacing a fixed PHY to a 83xx UEC. Could you please forward on
+> the patch you mentioned in the trail?
 
-------_=_NextPart_001_01C79A23.F5F826B8
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Vitaly sent me the patch, had to do some minor tweaking to make it
+compile. Attaching the patch.
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2800.1561" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D410493714-19052007>Hi=20
-Vitaly,</SPAN></FONT></DIV>
-<DIV><FONT size=3D2><SPAN =
-class=3D410493714-19052007></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D410493714-19052007>I was =
-pointed in the=20
-direction of message chain "Fixed PHY problems" for interfacing a fixed =
-PHY to a=20
-83xx UEC. Could you please forward on the patch you mentioned in the=20
-trail?</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D410493714-19052007></SPAN></FONT>&nbsp;</DIV>
-<DIV><SPAN class=3D410493714-19052007><FONT size=3D2><FONT =
-face=3DArial>Any ideas if=20
-the implementation&nbsp;&nbsp;<SPAN class=3D143244114-19052007>succeeded =
-in the=20
-end?</SPAN></FONT></FONT></SPAN></DIV></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>Christian =
-Hammond</FONT></DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>NCSG Applications =
-Engineer</FONT></DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>Tel: +44 1355 =
-355962</FONT></DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>Fax: +44 1355 =
-261790</FONT></DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>Freescale =
-Semiconductor</FONT></DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>Kelvin Industrial =
-Estate</FONT></DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>East Kilbride</FONT></DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>Glasgow G75 =
-0TG</FONT></DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>United =
-Kingdom</FONT></DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV>&nbsp;</DIV></BODY></HTML>
+>  
+> Any ideas if the implementation  succeeded in the end?
 
-------_=_NextPart_001_01C79A23.F5F826B8--
+No, the fixed PHY is on another bus than what ucc_geth expects.
+See msg from me titled "Fixed  PHY and MPC832x based boards don't work"
+from about a week ago.
+
+ Jocke
+
+>  
+> Christian Hammond
+>  
+> NCSG Applications Engineer
+>  
+> Tel: +44 1355 355962
+> Fax: +44 1355 261790
+>  
+> Freescale Semiconductor
+> Kelvin Industrial Estate
+> East Kilbride
+> Glasgow G75 0TG
+> United Kingdom
+
+
+--=-QSwWgqZTNQp4P98p8jL6
+Content-Disposition: attachment; filename=fixed_driver.patch
+Content-Transfer-Encoding: base64
+Content-Type: text/x-patch; name=fixed_driver.patch; charset=UTF-8
+
+UEhZIGZpeGVkIGRyaXZlcjogcmV3b3JrZWQgZXJyb3IgaGFuZGxpbmcgYW5kIHJlbGVhc2UgcGF0
+aA0KDQpkZXZpY2VfYmluZF9kcml2ZXIoKSBlcnJvciBjb2RlIHJldHVybmluZyBoYXMgYmVlbiBm
+aXhlZC4gDQpyZWxlYXNlKCkgZnVuY3Rpb24gaGFzIGJlZW4gd3JpdHRlbiwgc28gdGhhdCB0byBm
+cmVlIHJlc291cmNlcw0KaW4gY29ycmVjdCB3YXkuDQoNClNpZ25lZC1vZmYtYnk6IFZpdGFseSBC
+b3JkdWcgPHZpdGJAa2VybmVsLmNyYXNoaW5nLm9yZz4NCg0KLS0tDQoNCiBkcml2ZXJzL25ldC9w
+aHkvZml4ZWQuYyB8ICAgNzIgKysrKysrKysrKysrKysrKysrKysrKysrKysrLS0tLS0tLS0tLS0t
+LS0tLS0tLS0NCiAxIGZpbGVzIGNoYW5nZWQsIDQxIGluc2VydGlvbnMoKyksIDMxIGRlbGV0aW9u
+cygtKQ0KDQpkaWZmIC0tZ2l0IGEvZHJpdmVycy9uZXQvcGh5L2ZpeGVkLmMgYi9kcml2ZXJzL25l
+dC9waHkvZml4ZWQuYw0KaW5kZXggNjhjOTliNC4uMGQ3NzgwNSAxMDA2NDQNCi0tLSBhL2RyaXZl
+cnMvbmV0L3BoeS9maXhlZC5jDQorKysgYi9kcml2ZXJzL25ldC9waHkvZml4ZWQuYw0KQEAgLTE4
+Nyw2ICsxODcsMTkgQEAgc3RhdGljIHN0cnVjdCBwaHlfZHJpdmVyIGZpeGVkX21kaW9fZHJpdmVy
+ID0gew0KIAkuZHJpdmVyIAk9IHsgLm93bmVyID0gVEhJU19NT0RVTEUsfSwNCiB9Ow0KIA0KK3N0
+YXRpYyB2b2lkIGZpeGVkX21kaW9fcmVsZWFzZSAoc3RydWN0IGRldmljZSAqIGRldikNCit7DQor
+CXN0cnVjdCBwaHlfZGV2aWNlICpwaHlkZXYgPSBjb250YWluZXJfb2YoZGV2LCBzdHJ1Y3QgcGh5
+X2RldmljZSwgZGV2KTsNCisJc3RydWN0IG1paV9idXMgKmJ1cyA9IHBoeWRldi0+YnVzOw0KKwlz
+dHJ1Y3QgZml4ZWRfaW5mbyAqZml4ZWQgPSBidXMtPnByaXY7DQorDQorCWtmcmVlKHBoeWRldik7
+DQorCWtmcmVlKGJ1cy0+ZGV2KTsNCisJa2ZyZWUoYnVzKTsNCisJa2ZyZWUoZml4ZWQtPnJlZ3Mp
+Ow0KKwlrZnJlZShmaXhlZCk7DQorfQ0KKw0KIC8qLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCiAgKiAg
+VGhpcyBmdW5jIGlzIHVzZWQgdG8gY3JlYXRlIGFsbCB0aGUgbmVjZXNzYXJ5IHN0dWZmLCBiaW5k
+DQogICogdGhlIGZpeGVkIHBoeSBkcml2ZXIgYW5kIHJlZ2lzdGVyIGFsbCBpdCBvbiB0aGUgbWRp
+b19idXNfdHlwZS4NCkBAIC0yMjEsNiArMjM0LDEyIEBAIHN0YXRpYyBpbnQgZml4ZWRfbWRpb19y
+ZWdpc3Rlcl9kZXZpY2UoaW50IG51bWJlciwgaW50IHNwZWVkLCBpbnQgZHVwbGV4KQ0KIAl9DQog
+DQogCWZpeGVkLT5yZWdzID0ga3phbGxvYyhNSUlfUkVHU19OVU0qc2l6ZW9mKGludCksIEdGUF9L
+RVJORUwpOw0KKwlpZiAoTlVMTCA9PSBmaXhlZC0+cmVncykgew0KKwkJa2ZyZWUoZGV2KTsNCisJ
+CWtmcmVlKG5ld19idXMpOw0KKwkJa2ZyZWUoZml4ZWQpOw0KKwkJcmV0dXJuIC1FTk9NRU07DQor
+CX0NCiAJZml4ZWQtPnJlZ3NfbnVtID0gTUlJX1JFR1NfTlVNOw0KIAlmaXhlZC0+cGh5X3N0YXR1
+cy5zcGVlZCA9IHNwZWVkOw0KIAlmaXhlZC0+cGh5X3N0YXR1cy5kdXBsZXggPSBkdXBsZXg7DQpA
+QCAtMjQ5LDggKzI2OCwxMSBAQCBzdGF0aWMgaW50IGZpeGVkX21kaW9fcmVnaXN0ZXJfZGV2aWNl
+KGludCBudW1iZXIsIGludCBzcGVlZCwgaW50IGR1cGxleCkNCiAJZml4ZWQtPnBoeWRldiA9IHBo
+eWRldjsNCiANCiAJaWYoTlVMTCA9PSBwaHlkZXYpIHsNCi0JCWVyciA9IC1FTk9NRU07DQotCQln
+b3RvIGRldmljZV9jcmVhdGVfZmFpbDsNCisJCWtmcmVlKGRldik7DQorCQlrZnJlZShuZXdfYnVz
+KTsNCisJCWtmcmVlKGZpeGVkLT5yZWdzKTsNCisJCWtmcmVlKGZpeGVkKTsNCisJCXJldHVybiAt
+RU5PTUVNOw0KIAl9DQogDQogCXBoeWRldi0+aXJxID0gUEhZX0lHTk9SRV9JTlRFUlJVUFQ7DQpA
+QCAtMjYyLDQ0ICsyODQsMzIgQEAgc3RhdGljIGludCBmaXhlZF9tZGlvX3JlZ2lzdGVyX2Rldmlj
+ZShpbnQgbnVtYmVyLCBpbnQgc3BlZWQsIGludCBkdXBsZXgpDQogCWVsc2UNCiAJCXNucHJpbnRm
+KHBoeWRldi0+ZGV2LmJ1c19pZCwgQlVTX0lEX1NJWkUsDQogCQkJCSJmaXhlZEAlZDolZCIsIHNw
+ZWVkLCBkdXBsZXgpOw0KKw0KIAlwaHlkZXYtPmJ1cyA9IG5ld19idXM7DQogDQorCXBoeWRldi0+
+ZGV2LmRyaXZlciA9ICZmaXhlZF9tZGlvX2RyaXZlci5kcml2ZXI7DQorIAlwaHlkZXYtPmRldi5y
+ZWxlYXNlID0gZml4ZWRfbWRpb19yZWxlYXNlOw0KKyANCisgCWVyciA9IHBoeWRldi0+ZGV2LmRy
+aXZlci0+cHJvYmUoJnBoeWRldi0+ZGV2KTsNCisgCWlmKGVyciA8IDApIHsNCisgCQlwcmludGso
+S0VSTl9FUlIgIlBoeSAlczogcHJvYmxlbXMgd2l0aCBmaXhlZCBkcml2ZXJcbiIsDQorCQkJCXBo
+eWRldi0+ZGV2LmJ1c19pZCk7DQorIAkJa2ZyZWUocGh5ZGV2KTsNCisgCQlrZnJlZShkZXYpOw0K
+KyAJCWtmcmVlKG5ld19idXMpOw0KKyAJCWtmcmVlKGZpeGVkLT5yZWdzKTsNCisgCQlrZnJlZShm
+aXhlZCk7DQorIAkJcmV0dXJuIGVycjsNCisgCX0NCisgDQorCWRvd25fd3JpdGUoJnBoeWRldi0+
+ZGV2LmJ1cy0+c3Vic3lzLnJ3c2VtKTsNCiAJZXJyID0gZGV2aWNlX3JlZ2lzdGVyKCZwaHlkZXYt
+PmRldik7DQogCWlmKGVycikgew0KIAkJcHJpbnRrKEtFUk5fRVJSICJQaHkgJXMgZmFpbGVkIHRv
+IHJlZ2lzdGVyXG4iLA0KIAkJCQlwaHlkZXYtPmRldi5idXNfaWQpOw0KLQkJZ290byBidXNfcmVn
+aXN0ZXJfZmFpbDsNCi0JfQ0KLQ0KLQkvKg0KLQkgICB0aGUgbWRpbyBidXMgaGFzIHBoeV9pZCBt
+YXRjaC4uLiBJbiBvcmRlciBub3QgdG8gZG8gaXQNCi0JICAgYXJ0aWZpY2lhbGx5LCB3ZSBhcmUg
+YmluZGluZyB0aGUgZHJpdmVyIGhlcmUgYnkgaGFuZDsNCi0JICAgaXQgd2lsbCBiZSB0aGUgc2Ft
+ZSBmb3IgYWxsIHRoZSBmaXhlZCBwaHlzIGFueXdheS4NCi0JICovDQotCXBoeWRldi0+ZGV2LmRy
+aXZlciA9ICZmaXhlZF9tZGlvX2RyaXZlci5kcml2ZXI7DQotDQotCWVyciA9IHBoeWRldi0+ZGV2
+LmRyaXZlci0+cHJvYmUoJnBoeWRldi0+ZGV2KTsNCi0JaWYoZXJyIDwgMCkgew0KLQkJcHJpbnRr
+KEtFUk5fRVJSICJQaHkgJXM6IHByb2JsZW1zIHdpdGggZml4ZWQgZHJpdmVyXG4iLHBoeWRldi0+
+ZGV2LmJ1c19pZCk7DQotCQlnb3RvIHByb2JlX2ZhaWw7DQogCX0NCiANCi0JZXJyID0gZGV2aWNl
+X2JpbmRfZHJpdmVyKCZwaHlkZXYtPmRldik7DQotCWlmIChlcnIpDQotCQlnb3RvIHByb2JlX2Zh
+aWw7DQotDQogCXJldHVybiAwOw0KLQ0KLXByb2JlX2ZhaWw6DQotCWRldmljZV91bnJlZ2lzdGVy
+KCZwaHlkZXYtPmRldik7DQotYnVzX3JlZ2lzdGVyX2ZhaWw6DQotCWtmcmVlKHBoeWRldik7DQot
+ZGV2aWNlX2NyZWF0ZV9mYWlsOg0KLQlrZnJlZShkZXYpOw0KLQlrZnJlZShuZXdfYnVzKTsNCi0J
+a2ZyZWUoZml4ZWQpOw0KLQ0KLQlyZXR1cm4gZXJyOw0KIH0NCiANCiANCg==
+
+
+--=-QSwWgqZTNQp4P98p8jL6--
