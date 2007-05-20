@@ -1,31 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <lists@nerdbynature.de>
+Received: from mail.g-house.de (ns2.g-housing.de [81.169.133.75])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 077BFDDEA2
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 May 2007 07:27:44 +1000 (EST)
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <995a4a7a4cada5604be7b30dcce8eb81@kernel.crashing.org>
-References: <200705172142.26739.sshtylyov@ru.mvista.com>
-	<8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>
-	<464C99FF.8080404@ru.mvista.com>
-	<135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
-	<1179500217.20519.53.camel@imap.mvista.com>
-	<464DC0DC.7050809@ru.mvista.com>
-	<1179502773.20519.56.camel@imap.mvista.com>
-	<17998.28659.702653.237011@cargo.ozlabs.ibm.com>
-	<1179628991.20925.2.camel@imap.mvista.com>
-	<1179630190.32247.534.camel@localhost.localdomain>
-	<995a4a7a4cada5604be7b30dcce8eb81@kernel.crashing.org>
-Content-Type: text/plain
-Date: Mon, 21 May 2007 07:26:54 +1000
-Message-Id: <1179696414.32247.570.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Daniel Walker <dwalker@mvista.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	mingo@elte.hu, tglx@linutronix.de
+	by ozlabs.org (Postfix) with ESMTP id DDFEDDDDDB
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 May 2007 08:11:03 +1000 (EST)
+Date: Sun, 20 May 2007 23:10:54 +0100 (BST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: linux-kernel@vger.kernel.org
+Subject: Badness at include/linux/slub_def.h
+Message-ID: <Pine.LNX.4.64.0705202304530.14522@sheep.housecafe.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Sender: "evil@g-house.de"@mail.g-house.de
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,32 +22,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2007-05-20 at 18:02 +0200, Segher Boessenkool wrote:
-> > In fact, while it's never worded explicitely in the spec, it's always
-> > been strongly in the "spirit" of the architecture that the timebase and
-> > decrementer have a constant frequency.
-> 
-> The architecture mentions varying time base frequencies,
-> and how to deal with this, actually.  It makes no
-> recommendations one way or the other.
+hi there,
 
-I might be mixing up with PAPR... anyway, it's very stupid to vary it
-imho. And as I just said, I have about 0 plan to imlement support for
-such a contraption.
+yet another[0] badness, again from this very iBook running vanilla 
+2.6.22-rc1-git8:
 
-> Fixed frequencies are easier for almost everything of
-> course :-)
+[41653.487050] Badness at include/linux/slub_def.h:77
+[41653.487060] Call Trace:
+[41653.487068] [ecafbcb0] [c0008d00] show_stack+0x3c/0x194 (unreliable)
+[41653.487097] [ecafbce0] [c01426d4] report_bug+0x84/0xf4
+[41653.487116] [ecafbcf0] [c0010280] program_check_exception+0xbc/0x530
+[41653.487137] [ecafbd20] [c0011f8c] ret_from_except_full+0x0/0x4c
+[41653.487154] --- Exception: 700 at get_slab+0x248/0x260
+[41653.487168]     LR = __kmalloc+0x1c/0x9c
+[41653.487176] [ecafbde0] [101dfbc8] 0x101dfbc8 (unreliable)
+[41653.487213] [ecafbe10] [c0080398] __kmalloc+0x1c/0x9c
+[41653.487227] [ecafbe30] [c01c2150] drm_rmdraw+0x26c/0x29c
+[41653.487243] [ecafbe80] [c01c2b74] drm_ioctl+0xe0/0x250
+[41653.487257] [ecafbeb0] [c00924a0] do_ioctl+0x9c/0xa8
+[41653.487273] [ecafbed0] [c0092530] vfs_ioctl+0x84/0x490
+[41653.487287] [ecafbf10] [c009297c] sys_ioctl+0x40/0x74
+[41653.487301] [ecafbf40] [c0011930] ret_from_syscall+0x0/0x38
+[41653.487315] --- Exception: c01 at 0xfd132a8
+[41653.487327]     LR = 0xfd13240
 
-Yup.
 
-> > This is why processors like the
-> > 970 allow for an external sourcing for when they are used in setups
-> > where the various clocks are slewed for power management.
-> 
-> Clock spreading on the core clock is the bigger problem,
-> lack of accuracy on the order of 1% is unacceptable for
-> certain applications.
+This happens when I execute glxinfo(1) - but it happens only once. The 
+second time the message is not printed. As with the other reports, the 
+command actually works, DRI is working too and the system remains 
+stable. Please see http://nerdbynature.de/bits/2.6.22-rc1-git8/ for more 
+details.
 
-That too.
+Thanks,
+Christian.
 
-Ben.
+[0] http://ozlabs.org/pipermail/linuxppc-dev/2007-May/036466.html
+     http://ozlabs.org/pipermail/linuxppc-dev/2007-May/036468.html
+-- 
+BOFH excuse #334:
+
+50% of the manual is in .pdf readme files
