@@ -1,29 +1,19 @@
-Return-Path: <khali@linux-fr.org>
-Received: from mallaury.nerim.net (smtp-100-sunday.noc.nerim.net [62.4.17.100])
-	by ozlabs.org (Postfix) with ESMTP id D97A6DDE2A
-	for <linuxppc-dev@ozlabs.org>; Sun, 20 May 2007 21:53:25 +1000 (EST)
-Date: Sun, 20 May 2007 13:53:53 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [i2c] [PATCH 3/5] powerpc: Document device nodes for I2C devices.
-Message-ID: <20070520135353.6b4dba0b@hyperion.delvare>
-In-Reply-To: <464DE8A1.6050908@freescale.com>
-References: <20070517143846.GC29795@ld0162-tx32.am.freescale.net>
-	<FB8DD3C1-A095-4ABB-9E74-7EC66A43D983@kernel.crashing.org>
-	<464C800C.20400@freescale.com>
-	<FFBD3A3A-ADBE-4DC8-A1A1-4163367244D5@kernel.crashing.org>
-	<464C871C.4090300@freescale.com>
-	<5B363A90-5528-4441-BBF9-9C6D8833D938@kernel.crashing.org>
-	<20070518171555.543f9bdc@hyperion.delvare>
-	<D50C4D36-CEA5-4F7F-8A4C-CC747DF85865@kernel.crashing.org>
-	<464DD5E3.1060301@freescale.com>
-	<6F8D3143-423D-45FA-9F40-00BF770831F2@kernel.crashing.org>
-	<464DDFA5.6050106@freescale.com>
-	<79CACFC8-DD5B-4284-AC2E-C92FE2A85330@kernel.crashing.org>
-	<464DE8A1.6050908@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+Return-Path: <riesebie@lxtec.de>
+Received: from smtpout.hostsharing.net (smtpout.hostsharing.net [83.223.95.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtpout.hostsharing.net",
+	Issuer "Hostsharing eG Root CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 089BEDDE2E
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 May 2007 21:50:15 +1000 (EST)
+Date: Sun, 20 May 2007 13:30:14 +0200
+From: Elimar Riesebieter <riesebie@lxtec.de>
+To: benh@kernel.crashing.org
+Subject: 2.6.22-rc2 built on ppc
+Message-ID: <20070520113014.GN3253@aragorn.home.lxtec.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="ztcJpsdPpsnnlAp8"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,23 +23,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Scott,
 
-On Fri, 18 May 2007 12:55:45 -0500, Scott Wood wrote:
-> Fair enough.  I'm still interested in what you think would need to be 
-> done to support switches and muxes, from the context of standardizing it 
-> in ePAPR.  The bus numbering shouldn't be an issue as long as you keep 
-> the bus numbers local to the switch/mux, and don't pretend that they 
-> have anything to do with any global i2c bus number that the OS may or 
-> may not have.
+--ztcJpsdPpsnnlAp8
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-But then you cannot declare devices on these segments and expect Linux
-to instantiate them. You'll have to wait for the segments to be created
-and only then you'll be able to create the devices on them (using
-i2c_new_device()).
+Hi,
 
-Also, what's the point of giving numbers to the segments in the first
-place, if they don't correspond to anything?
+FYI, building the kernel modules with
+gcc (GCC) 4.1.3 20070514 (prerelease) (Debian 4.1.2-7)
+on my powerbook (PPC) gives:
 
--- 
-Jean Delvare
+=2E..
+drivers/macintosh/therm_adt746x.c: In function 'thermostat_init':
+drivers//therm_adt746x.c:617: warning: ignoring return value of 'device_cre=
+ate_file', declared with attribute warn_unused_result
+drivers/macintosh/therm_adt746x.c:618: warning: ignoring return value of 'd=
+evice_create_file', declared with attribute warn_unused_result
+drivers/macintosh/therm_adt746x.c:619: warning: ignoring return value of 'd=
+evice_create_file', declared with attribute warn_unused_result
+drivers/macintosh/therm_adt746x.c:620: warning: ignoring return value of 'd=
+evice_create_file', declared with attribute warn_unused_result
+drivers/macintosh/therm_adt746x.c:621: warning: ignoring return value of 'd=
+evice_create_file', declared with attribute warn_unused_result
+drivers/macintosh/therm_adt746x.c:622: warning: ignoring return value of 'd=
+evice_create_file', declared with attribute warn_unused_result
+drivers/macintosh/therm_adt746x.c:623: warning: ignoring return value of 'd=
+evice_create_file', declared with attribute warn_unused_result
+drivers/macintosh/therm_adt746x.c:624: warning: ignoring return value of 'd=
+evice_create_file', declared with attribute warn_unused_result
+drivers/macintosh/therm_adt746x.c:625: warning: ignoring return value of 'd=
+evice_create_file', declared with attribute warn_unused_result
+drivers/macintosh/therm_adt746x.c:627: warning: ignoring return value of 'd=
+evice_create_file', declared with attribute warn_unused_result
+=2E..
+
+If more info is needed, please contact me via PM, as I am not
+subscribed.
+
+Thanks for your patience
+Elimar
+
+--=20
+  Never make anything simple and efficient when a way=20
+  can be found to make it complex and wonderful ;-)
+
+--ztcJpsdPpsnnlAp8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGUDFG3Ig8bsVPf7ARAo4nAJ9tluYCQ93/7ltSNrUs1CG9alCXPwCglsYW
+Frub8ufWaToFf6rsGWyiN0g=
+=n+7E
+-----END PGP SIGNATURE-----
+
+--ztcJpsdPpsnnlAp8--
