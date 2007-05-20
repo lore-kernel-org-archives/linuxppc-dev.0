@@ -2,12 +2,12 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4C887DDE3A
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 May 2007 07:26:33 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 077BFDDEA2
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 May 2007 07:27:44 +1000 (EST)
 Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Matt Sealey <matt@genesi-usa.com>
-In-Reply-To: <4650632B.1010702@genesi-usa.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <995a4a7a4cada5604be7b30dcce8eb81@kernel.crashing.org>
 References: <200705172142.26739.sshtylyov@ru.mvista.com>
 	<8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>
 	<464C99FF.8080404@ru.mvista.com>
@@ -18,14 +18,14 @@ References: <200705172142.26739.sshtylyov@ru.mvista.com>
 	<17998.28659.702653.237011@cargo.ozlabs.ibm.com>
 	<1179628991.20925.2.camel@imap.mvista.com>
 	<1179630190.32247.534.camel@localhost.localdomain>
-	<4650632B.1010702@genesi-usa.com>
+	<995a4a7a4cada5604be7b30dcce8eb81@kernel.crashing.org>
 Content-Type: text/plain
-Date: Mon, 21 May 2007 07:25:38 +1000
-Message-Id: <1179696339.32247.568.camel@localhost.localdomain>
+Date: Mon, 21 May 2007 07:26:54 +1000
+Message-Id: <1179696414.32247.570.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: Daniel Walker <dwalker@mvista.com>, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	tglx@linutronix.de, mingo@elte.hu
+	mingo@elte.hu, tglx@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,38 +35,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> So.. if we get enough clocksources into the tree, can any of those
-> parts of the code be reworked to use clocksources/clockevents and
-> hrtimers quickly and easily? I noticed the patch just posted does
-> some of it.. but not as much as Ben just mentioned.
-
-Well, some of these are expected to be small & fast and work in all sort
-of crazy circumstances, like udelay etc... I'd rather keep that on top
-of the TB. Do we have actual examples where the TB freq is changing ?
-Beside, on powerpc, we don't have another clock source that is as fast
-to access and we have userland using the TB for gettimeofday via the
-vdso, so I'd say bad idea ... Just keep the damn thing fixed frequency.
-
-> Or is it a development nightmare?
+On Sun, 2007-05-20 at 18:02 +0200, Segher Boessenkool wrote:
+> > In fact, while it's never worded explicitely in the spec, it's always
+> > been strongly in the "spirit" of the architecture that the timebase and
+> > decrementer have a constant frequency.
 > 
-> I'm fairly sure on a PPC970 box even though the decrementer is
-> monotonic and never changes frequency, one day it just might, and
-> it would be better to anticipate this (and allow people to
-> distribute their timing requirements across an entire system
-> and not just the CPU core anyway, which I think is probably a
-> good thing from a system integration and possibly the point of
-> view of redundancy..)
+> The architecture mentions varying time base frequencies,
+> and how to deal with this, actually.  It makes no
+> recommendations one way or the other.
 
-On a -sane- 970 box (which seems to be the case of all of them that
-matter so far), the TB is sourced externally specifically for that
-reason : to avoid it changing, The DEC is always derived the TB, so it's
-not changing.
+I might be mixing up with PAPR... anyway, it's very stupid to vary it
+imho. And as I just said, I have about 0 plan to imlement support for
+such a contraption.
 
-I don't have any plan to support somebody coming up with a HW design
-broken enough to have a variable TB/DEC speed. If they do it, they
-support it and they come up with patches that are acceptable (hint: that
-will be hard !). Beside, it means the vDSO will not be useable for
-gettimeofday on such a platform, which means it will have to fallback to
-the syscall which is much slower.
+> Fixed frequencies are easier for almost everything of
+> course :-)
+
+Yup.
+
+> > This is why processors like the
+> > 970 allow for an external sourcing for when they are used in setups
+> > where the various clocks are slewed for power management.
+> 
+> Clock spreading on the core clock is the bigger problem,
+> lack of accuracy on the order of 1% is unacceptable for
+> certain applications.
+
+That too.
 
 Ben.
