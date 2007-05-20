@@ -1,19 +1,19 @@
-Return-Path: <jwboyer@jdub.homelinux.org>
-Received: from jdub.homelinux.org (unknown [209.180.55.243])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8DF2DDDE27
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 May 2007 08:12:03 +1000 (EST)
-Subject: Re: powerpc 750cl availability
-From: Josh Boyer <jwboyer@jdub.homelinux.org>
-To: Rogelio Serrano <rogelio.serrano@gmail.com>
-In-Reply-To: <a9951d2a0705201044v38a4c41cy8e83c72481d0113e@mail.gmail.com>
-References: <a9951d2a0705201044v38a4c41cy8e83c72481d0113e@mail.gmail.com>
+	by ozlabs.org (Postfix) with ESMTP id 5FD35DDDF4
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 May 2007 08:25:45 +1000 (EST)
+Subject: Re: Badness at include/linux/slub_def.h
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christian Kujau <lists@nerdbynature.de>
+In-Reply-To: <Pine.LNX.4.64.0705202304530.14522@sheep.housecafe.de>
+References: <Pine.LNX.4.64.0705202304530.14522@sheep.housecafe.de>
 Content-Type: text/plain
-Date: Sun, 20 May 2007 17:09:21 -0500
-Message-Id: <1179698961.3046.35.camel@vader.jdub.homelinux.org>
+Date: Mon, 21 May 2007 08:25:36 +1000
+Message-Id: <1179699936.32247.572.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,11 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-05-21 at 01:44 +0800, Rogelio Serrano wrote:
-> does anybody know any suppliers for the powerpc 750cl and the tsi110?
-> i cant seem to find it on the web anywhere.
+On Sun, 2007-05-20 at 23:10 +0100, Christian Kujau wrote:
+> hi there,
+> 
+> yet another[0] badness, again from this very iBook running vanilla 
+> 2.6.22-rc1-git8:
 
-That would be the hackberry board.  It exists, though I'm not sure where
-to buy them from.
+Just another kmalloc(0)... report this one to the DRI folks, it's not
+powerpc specific.
 
-josh
+Cheers,
+Ben.
