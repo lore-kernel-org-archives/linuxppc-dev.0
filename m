@@ -1,11 +1,13 @@
-Return-Path: <dwalker@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id DD167DDE33
-	for <linuxppc-dev@ozlabs.org>; Sun, 20 May 2007 12:45:37 +1000 (EST)
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D7437DDE33
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 May 2007 13:04:03 +1000 (EST)
 Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-From: Daniel Walker <dwalker@mvista.com>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17998.28659.702653.237011@cargo.ozlabs.ibm.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Daniel Walker <dwalker@mvista.com>
+In-Reply-To: <1179628991.20925.2.camel@imap.mvista.com>
 References: <200705172142.26739.sshtylyov@ru.mvista.com>
 	<8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>
 	<464C99FF.8080404@ru.mvista.com>
@@ -14,11 +16,13 @@ References: <200705172142.26739.sshtylyov@ru.mvista.com>
 	<464DC0DC.7050809@ru.mvista.com>
 	<1179502773.20519.56.camel@imap.mvista.com>
 	<17998.28659.702653.237011@cargo.ozlabs.ibm.com>
+	<1179628991.20925.2.camel@imap.mvista.com>
 Content-Type: text/plain
-Date: Sat, 19 May 2007 19:43:11 -0700
-Message-Id: <1179628991.20925.2.camel@imap.mvista.com>
+Date: Sun, 20 May 2007 13:03:10 +1000
+Message-Id: <1179630190.32247.534.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, mingo@elte.hu,
+Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de,
+	Paul Mackerras <paulus@samba.org>, mingo@elte.hu,
 	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -29,24 +33,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2007-05-19 at 13:33 +1000, Paul Mackerras wrote: 
-> Daniel Walker writes:
-> 
-> > On Fri, 2007-05-18 at 19:06 +0400, Sergei Shtylyov wrote:
-> > >     Well, the decrementer frequency may change, at least in theory (if the bus 
-> > > clock changes).
-> > 
-> > Does that happen very often?
-> 
-> If it did, gettimeofday would start reporting seriously wrong values,
-> since the timebase and the decrementer count at the same rate, and we
-> don't have any provision for fixing things up if that rate changed.
-> Fortunately there are no powerpc platforms where the rate is
-> variable.
+On Sat, 2007-05-19 at 19:43 -0700, Daniel Walker wrote:
 
-In terms of clocksources, gettimeofday() would have to switch to another
-clocksource if the decrementer started to act that way .. That's why it
-is possible to register more than one clocksource, to allow for the
-switching. The decrementer frequency doesn't change even with cpufreq?
+> In terms of clocksources, gettimeofday() would have to switch to another
+> clocksource if the decrementer started to act that way .. That's why it
+> is possible to register more than one clocksource, to allow for the
+> switching. The decrementer frequency doesn't change even with cpufreq? 
 
-Daniel
+It's more than just gettimeofday. The linux ppc kernel port has strong
+assumptions all over the place that the timbase and decrementer (which
+always tick at the same rate) have a constant frequency. It might be
+possible to "fix" those assumptions but right now, that is the case.
+
+For example, nowadays, udelay() also uses the timebase. Not only
+gettimeofday() & friends. The scheduler ticking too. The precise process
+accounting as well, etc...
+
+In fact, while it's never worded explicitely in the spec, it's always
+been strongly in the "spirit" of the architecture that the timebase and
+decrementer have a constant frequency. This is why processors like the
+970 allow for an external sourcing for when they are used in setups
+where the various clocks are slewed for power management.
+
+Ben.
