@@ -1,22 +1,15 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
-	by ozlabs.org (Postfix) with ESMTP id 21555DDE39
+Return-Path: <mamsadegh@hotmail.com>
+Received: from bay0-omc2-s10.bay0.hotmail.com (bay0-omc2-s10.bay0.hotmail.com
+	[65.54.246.146]) by ozlabs.org (Postfix) with ESMTP id 12E15DDE3F
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 20 May 2007 08:56:37 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so620635ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 19 May 2007 15:56:36 -0700 (PDT)
-Message-ID: <528646bc0705191556v23b91e38h542eddb3d46d0717@mail.gmail.com>
-Date: Sat, 19 May 2007 16:56:35 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Mohammad Sadegh Sadri" <mamsadegh@hotmail.com>
-Subject: Re: Simple Question about ML403 VGA (TFT) Controller
-In-Reply-To: <BAY115-W21F59EB26847913D2C56FB2310@phx.gbl>
+	Mon, 21 May 2007 01:54:27 +1000 (EST)
+Message-ID: <BAY115-W2577CEA536CA93F444C60B2300@phx.gbl>
+From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
+To: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
+Subject: ML403 How to change the version of Hard TEMAC from 3.00b to 3.00a?
+Date: Sun, 20 May 2007 15:54:26 +0000
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <BAY115-W21F59EB26847913D2C56FB2310@phx.gbl>
-Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,21 +20,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 5/19/07, Mohammad Sadegh Sadri <mamsadegh@hotmail.com> wrote:
-> How should I add the VGA controller module to my system in XPS?
->
-> The base system builder wizard ( EDK 9.1 SP! ) does not provide any option for this, and when I look at the IP repository I do not find any suitable modules to be added to the design.
 
-The VGA controller is not supported by Base system builder.  If you
-want to add it to your own design, you need to extract the files from
-the ml403 reference design and add them manually to your project.
+Hi all
 
-Cheers,
-g.
+Again with another funny question !
+Of course the experts here know the answers to this very simple question we=
+ll but I have problems with them.
 
+well , for using ML403 gigabit ethernet MAC I need to switch back to Hard T=
+EMACE 3.00a module, because due to a problem with Virtex-4 Pre CES4 sillico=
+n, 3.00b does not work.=20
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+now
+
+1- Although xilinx knows this I can not understand why EDK 9.1.1 still gene=
+rates it's base system using 3.00b core
+
+2- How can I change the version of the used core from 3.00b to 3.00a?
+
+thanks.
+_________________________________________________________________
+Connect to the next generation of MSN Messenger=A0
+http://imagine-msn.com/messenger/launch80/default.aspx?locale=3Den-us&sourc=
+e=3Dwlmailtagline=
