@@ -1,17 +1,20 @@
-Return-Path: <Frank.Prepelica@ubidyne.com>
-Received: from ex01.ads.ubidyne.de (mail.ubidyne.com [212.211.133.238])
-	by ozlabs.org (Postfix) with ESMTP id B25D0DDE2D
+Return-Path: <dragos.carp@toptica.com>
+Received: from hypercube.tuioptics.com (gateway.tuioptics.com [213.183.22.85])
+	by ozlabs.org (Postfix) with ESMTP id 45320DDE24
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 21 May 2007 17:25:28 +1000 (EST)
-Subject: RE: BDI2000 configuration file for MPC8313E-RDB
+	Mon, 21 May 2007 17:31:32 +1000 (EST)
+Message-ID: <46514AC6.8080704@toptica.com>
+Date: Mon, 21 May 2007 09:31:18 +0200
+From: Dragos Carp <dragos.carp@toptica.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Date: Mon, 21 May 2007 09:25:05 +0200
-Message-ID: <29DC34A6B43468409F5A371CFE34E8491768E6@ex01.ads.ubidyne.de>
-From: "Frank Prepelica" <Frank.Prepelica@ubidyne.com>
-To: "Leonid" <Leonid@a-k-a.net>
-Cc: linuxppc-embedded@ozlabs.org
+To: Domen Puncer <domen@coderock.org>
+Subject: Re: [PATCH] mpc52xx_psc_spi: fix it for CONFIG_PPC_MERGE
+References: <20070516073707.GD9667@nd47.coderock.org>
+In-Reply-To: <20070516073707.GD9667@nd47.coderock.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: spi-devel-general@lists.sourceforge.net,
+	David Brownell <dbrownell@users.sourceforge.net>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,36 +25,96 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> > Leonid asked:
-> > And here most important question comes: for our actual HW we are
-going=20
-> > to use ST-Micro NAND flash, one of NAND512-B, NAND01G-B, NAND02G-B,=20
-> > NAND04G-B and NAND08G-B. Is BDI2000 capable of programming these=20
-> > flashes? What changes in .cfg file are required?
+Acked-by: Dragos Carp <dragos.carp@toptica.com>
 
-> Sorry, but the BDI does not support programming any NAND flash.
-> You can write your own driver. Then load the data and the driver into=20
-> SDRAM via the BDI and execute it.
+Domen Puncer wrote:
+> Fix mpc5200 PSC SPI driver to actually work for CONFIG_PPC_MERGE
+> - s/mpc52xx/mpc5200/, as this was changed in device tree some time ago
+> - fix spi id detection
+>
+>
+> Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
+>
+> ---
+>  drivers/spi/mpc52xx_psc_spi.c |   25 +++++++++++--------------
+>  1 file changed, 11 insertions(+), 14 deletions(-)
+>
+> Index: work-powerpc.git/drivers/spi/mpc52xx_psc_spi.c
+> ===================================================================
+> --- work-powerpc.git.orig/drivers/spi/mpc52xx_psc_spi.c
+> +++ work-powerpc.git/drivers/spi/mpc52xx_psc_spi.c
+> @@ -329,8 +329,8 @@ static int mpc52xx_psc_spi_port_config(i
+>  	int ret = 0;
+>  
+>  #if defined(CONFIG_PPC_MERGE)
+> -	cdm = mpc52xx_find_and_map("mpc52xx-cdm");
+> -	gpio = mpc52xx_find_and_map("mpc52xx-gpio");
+> +	cdm = mpc52xx_find_and_map("mpc5200-cdm");
+> +	gpio = mpc52xx_find_and_map("mpc5200-gpio");
+>  #else
+>  	cdm = ioremap(MPC52xx_PA(MPC52xx_CDM_OFFSET), MPC52xx_CDM_SIZE);
+>  	gpio = ioremap(MPC52xx_PA(MPC52xx_GPIO_OFFSET), MPC52xx_GPIO_SIZE);
+> @@ -445,9 +445,6 @@ static int __init mpc52xx_psc_spi_do_pro
+>  	struct spi_master *master;
+>  	int ret;
+>  
+> -	if (pdata == NULL)
+> -		return -ENODEV;
+> -
+>  	master = spi_alloc_master(dev, sizeof *mps);
+>  	if (master == NULL)
+>  		return -ENOMEM;
+> @@ -594,17 +591,17 @@ static int __init mpc52xx_psc_spi_of_pro
+>  	}
+>  	regaddr64 = of_translate_address(op->node, regaddr_p);
+>  
+> +	/* get PSC id (1..6, used by port_config) */
+>  	if (op->dev.platform_data == NULL) {
+> -		struct device_node *np;
+> -		int i = 0;
+> +		const u32 *psc_nump;
+>  
+> -		for_each_node_by_type(np, "spi") {
+> -			if (of_find_device_by_node(np) == op) {
+> -				id = i;
+> -				break;
+> -			}
+> -			i++;
+> +		psc_nump = of_get_property(op->node, "cell-index", NULL);
+> +		if (!psc_nump || *psc_nump > 5) {
+> +			printk(KERN_ERR "mpc52xx_psc_spi: Device node %s has invalid "
+> +					"cell-index property\n", op->node->full_name);
+> +			return -EINVAL;
+>  		}
+> +		id = *psc_nump + 1;
+>  	}
+>  
+>  	return mpc52xx_psc_spi_do_probe(&op->dev, (u32)regaddr64, (u32)size64,
+> @@ -617,7 +614,7 @@ static int __exit mpc52xx_psc_spi_of_rem
+>  }
+>  
+>  static struct of_device_id mpc52xx_psc_spi_of_match[] = {
+> -	{ .type = "spi", .compatible = "mpc52xx-psc-spi", },
+> +	{ .type = "spi", .compatible = "mpc5200-psc-spi", },
+>  	{},
+>  };
+>  
+>
+>
+>   
 
-Well, I think I have to try this, if there's really no other way.=20
-I'm not quite sure, maybe you know the PowerTAB Pro JTAG Debugger,
-(it's recommended in the manuals) could this one get directly access
-to NAND memory?
 
-> I'm afraid I didn't understand you. Are you saying that you actually
-> were able to program NAND using BDI2000? I would like to know how you
-> achieved that. I suspect that was some kind of "indirect" procedure,
-> Ruedi wrote about, but please provide details.
+-- 
 
-Uhm, it's possible that achieved that in an "indirect" way that I was
-not aware of. But as I said, the complete flash and ram was empty, just
-loaded=20
-the corresponding BDI config file to BDI2000 JTAG and I got access to
-flash memory where I placed the bootloader image. Hmm, anyway ;)
+Dragos Carp
+Research & Development
 
-The BDI config: http://www.ultsol.com/config/Emb%20Planet/83xx.cfg
+Phone: +49 89 85837-159, Fax: +49 89 85837-200
+Address: TOPTICA Photonics AG, Lochhamer Schlag 19, D-82166 Graefelfing, Germany
 
-
-Best regards
-
-Frank
+TOPTICA – A Passion for Precision
+TOPTICA Photonics AG, Registered Office: 82166 Graefelfing, Germany
+Companies' Register: Amtsgericht München, HRB 137368
+Executive Directors: Dr. Wilhelm Kaenders, Dr. Thomas Weber
+Chairman of the Supervisory Board: Dr. Kristian Hohla
+www.toptica.com
