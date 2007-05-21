@@ -1,18 +1,19 @@
-Return-Path: <monodhs@gmx.de>
+Return-Path: <g.liakhovetski@gmx.de>
 Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 55391DDE33
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 06:08:23 +1000 (EST)
-Message-ID: <4651FC48.8000002@gmx.de>
-Date: Mon, 21 May 2007 22:08:40 +0200
-From: =?ISO-8859-1?Q?Christian_B=F6hme?= <monodhs@gmx.de>
+	by ozlabs.org (Postfix) with SMTP id F0A75DDE29
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 06:50:22 +1000 (EST)
+Date: Mon, 21 May 2007 22:50:20 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] power-management elements for 603e/fsl (version 2)
+In-Reply-To: <20070521155712.GA16235@ld0162-tx32.am.freescale.net>
+Message-ID: <Pine.LNX.4.60.0705212225470.7562@poirot.grange>
+References: <Pine.LNX.4.60.0705192013010.10162@poirot.grange>
+	<20070521155712.GA16235@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Interrupt routing broken on TiBook IV with 2.6.21.x ?
-References: <4650E27B.3020401@gmx.de>
-	<1179712614.32247.597.camel@localhost.localdomain>
-In-Reply-To: <1179712614.32247.597.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,33 +23,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
+On Mon, 21 May 2007, Scott Wood wrote:
 
-> Nope... it can't be a routing problem since interrupt -is- routed (you
-> are getting it !)
+> On Sat, May 19, 2007 at 09:22:10PM +0200, Guennadi Liakhovetski wrote:
+> > +	local_irq_disable();
+> 
+> IRQs are already disabled when this function is called.
 
-Actually, these were the exact words from the ALSA developer.  For some
-reason, however, the interrupt count does not increase after some (variable)
-time.  It looks as if the ALSA code waits for but not receiving them.  After
-a restart, an audio signal does leave the jack and the interrupt count
-increases but only for about a second (sometimes more, often less).  No idea 
-whether interrupts must be routed/are routable on this very machine I have at 
-all ...
+ok
 
-> Which exact tipb model is this ? (cat /proc/device-tree/model)
+> > +	/* go zzzzz... (re-enabling interrupts) */
+> > +	fsl_low_sleep();
+> 
+> IRQs really shouldn't be enabled here without something like the "Handle
+> HID0_SLEEP in the TLF_NAPPING hack" patch I posted recently.
 
-PowerBook3,5 of the 2002-11 release variety.
+Ok, I'd be happy to rely on those your patches... as long as they make it 
+into the kernel. Paulus, what's the plan? I'll try to apply them locally 
+for now and adjust my code accordingly. A recent powerpc.git should be 
+fine, I guess - the arch_suspend_{disable,enable}_irqs hooks are already 
+there, or are there any further dependencies?
 
-I stuck to OSS up to the 2.6.19.x kernels where everything (surprisingly)
-``just worked''.  Then came the 2.6.20.x series and <root>/sound/oss/\
-dmasound/dmasound_awacs.c started spitting out loads of ``tx-irq: xfer died -
-patching it up...'' messages with stuttering audio output but nothing
-different in their respective implementations from 2.6.19.x to 2.6.20.x.
+> > +	/* Re-enable local CPU interrupts */
+> > +	local_irq_enable();
+> 
+> Just leave them off.
 
-Is there anything particular I can dive into myself to expedite finding the
-cause of the problem without learning the full details of the PPC implemen-
-tation ?
+ok
 
+> > @@ -112,10 +155,15 @@ static int __init ls_uarts_init(void)
+> >  
+> >  	avr_clock = *(u32*)of_get_property(avr, "clock-frequency", &len);
+> >  	phys_addr = ((u32*)of_get_property(avr, "reg", &len))[0];
+> > + 	irq = ((u32*)get_property(avr, "interrupts", &len))[0];
+> 
+> Oopsing if a property is missing isn't nice.
 
-Cheers,
-Christian
+Hm, it is in .dts in the kernel tree, do I still have to care a possible 
+non-compliant version? Probably, you're right, will fix.
+
+> > +	local_irq_save(flags);
+> > +	/* Apparently, MacOS uses NAP mode for Grackle ??? */
+> > +	pmcr1 &= ~(MPC10X_DOZE | MPC10X_NAP);
+> > +	pmcr1 |= MPC10X_PM | MPC10X_SLEEP | MPC10X_LP_REF_EN;
+> > +	pci_write_config_word(bridge, 0x70, pmcr1);
+> > +	local_irq_restore(flags);
+> 
+> This should probably be something like mpc10x_suspend.  Also, IRQs should
+> already be disabled when this is called.
+
+well, I'd also prefer a more specific namespace than "fsl." Would it be ok 
+to call them with mpc10x (has been discussed on irc, I remember there have 
+been objections against this as mpc10x are just some host-pci bridges from 
+older Apple (not only?) machines)? And if we use mpc10x, is it ok to leave 
+them in fsl_soc.c?
+
+> > +	/* Make sure the decrementer won't interrupt us */
+> > +	asm volatile("mtdec %0" : : "r" (0x7fffffff));
+> > +	/* Make sure any pending DEC interrupt occurring while we did
+> > +	 * the above didn't re-enable the DEC */
+> > +	mb();
+> > +	asm volatile("mtdec %0" : : "r" (0x7fffffff)); /* 8 seconds */
+> 
+> IRQs are already disabled here, so if it was pending it still will be (at
+> least with some cores).  It needs to be done with the arch suspend hook.
+
+as above, will test with your patches.
+
+Thanks for comments!
+Guennadi
+---
+Guennadi Liakhovetski
