@@ -1,15 +1,15 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 18A75DDE1D
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 May 2007 15:05:37 +1000 (EST)
-Date: Mon, 21 May 2007 15:05:31 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Some extra via-pmu exports
-Message-Id: <20070521150531.e498340a.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 21 May 2007 15:06:32 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: New version of the device tree aware EMAC driver
+Message-ID: <20070521050632.GA7778@localhost.localdomain>
+References: <20070516032630.GC19127@localhost.localdomain>
+	<464B38A9.9000402@ru.mvista.com> <464B475A.4090808@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <464B475A.4090808@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,34 +19,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-pmu_battery_count, pmu_batteries, pmu_power_flags were only exported
-for 32 bit builds but are now needed for 64 bit as well.
+On Wed, May 16, 2007 at 10:03:06PM +0400, Valentine Barshak wrote:
+> Valentine Barshak wrote:
+> > David Gibson wrote:
+> >   
+> >> I've made a few more tiny tweaks to BenH's rewritten device-tree based
+> >> 4xx EMAC driver.  The main change is that it now no longer requires
+> >> 'device_type', just 'compatible' to be set in the ZMII and MAL device
+> >> nodes when probing.  This works better with current thinking on
+> >> flattened device trees which discourages creating new device_type
+> >> values unless there is a clear use for a new device class binding.
+> >>
+> >> The patch can be obtained from:
+> >>
+> >> http://ozlabs.org/~dgibson/home/emac/powerpc-emac-new-20070516.patch
+> >>
+> >>   
+> >>     
+> > In __emac_mdio_read and __emac_mdio_write functions:
+> >
+> > +    if (!emac_has_feature(dev, EMAC_FTR_STACR_OC_INVERT))
+> > +        r |= EMAC_STACR_OC;
+> >
+> > should be
+> >
+> > +    if (emac_has_feature(dev, EMAC_FTR_STACR_OC_INVERT))
+> > +        r |= EMAC_STACR_OC;
+> >
+> > Thanks.
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@ozlabs.org
+> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> >   
+> With the above 2 fixes (and Marvell 88E1111 Ethernet PHY support added) 
+> seems to work fine on Sequoia PPC440EPx,
+> thanks.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/macintosh/via-pmu.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Ok, I've merged those fixes.  New version of the driver coming soon.
 
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
-index 157080b..07c189c 100644
---- a/drivers/macintosh/via-pmu.c
-+++ b/drivers/macintosh/via-pmu.c
-@@ -2841,10 +2841,10 @@ EXPORT_SYMBOL(pmu_wait_complete);
- EXPORT_SYMBOL(pmu_suspend);
- EXPORT_SYMBOL(pmu_resume);
- EXPORT_SYMBOL(pmu_unlock);
--#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
--EXPORT_SYMBOL(pmu_enable_irled);
- EXPORT_SYMBOL(pmu_battery_count);
- EXPORT_SYMBOL(pmu_batteries);
- EXPORT_SYMBOL(pmu_power_flags);
-+#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
-+EXPORT_SYMBOL(pmu_enable_irled);
- #endif /* CONFIG_PM && CONFIG_PPC32 */
- 
--- 
-1.5.1.4
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
