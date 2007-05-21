@@ -1,20 +1,15 @@
-Return-Path: <rogelio.serrano@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.179])
-	by ozlabs.org (Postfix) with ESMTP id 37A95DDDFF
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 May 2007 12:54:47 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so171472pyi
-	for <linuxppc-dev@ozlabs.org>; Sun, 20 May 2007 19:54:46 -0700 (PDT)
-Message-ID: <a9951d2a0705201954k33c06fc8n6912587a45d66c1d@mail.gmail.com>
-Date: Mon, 21 May 2007 10:54:45 +0800
-From: "Rogelio Serrano" <rogelio.serrano@gmail.com>
-To: "Matt Sealey" <matt@genesi-usa.com>
-Subject: Re: powerpc 750cl availability
-In-Reply-To: <4650CFEE.8020007@genesi-usa.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-References: <a9951d2a0705201044v38a4c41cy8e83c72481d0113e@mail.gmail.com>
-	<4650CFEE.8020007@genesi-usa.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 18A75DDE1D
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 May 2007 15:05:37 +1000 (EST)
+Date: Mon, 21 May 2007 15:05:31 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] Some extra via-pmu exports
+Message-Id: <20070521150531.e498340a.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +19,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 5/21/07, Matt Sealey <matt@genesi-usa.com> wrote:
-> Here's a long shot - have you tried IBM and Tundra? :D
->
-> Both should be highly available right now. You could try one of the
-> larger electronic suppliers (Arrow, AVnet, EDV) on the phone, sometimes
-> they just don't put it on the website as they're more special orders,
-> but they can all get anything you like.
->
+pmu_battery_count, pmu_batteries, pmu_power_flags were only exported
+for 32 bit builds but are now needed for 64 bit as well.
 
-i found them in avnet.  i found out that you actually have to try
-different combinations of letters and punctuation. the 750cl is
-actually less then 60 usd for one piece.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/macintosh/via-pmu.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-the tsi-110 is nowhere to be found though. i think i have to call
-tundra in hong kong. otherwise i will settle for the tsi-109.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-i will be publishing the schematic and pcb layout. i dont have enough
-resources to actually test it. i guess i just have to take the risk of
-simulating the entire board, send the pcb to the fab, populate, reflow
-and cross my fingers and then flip the switch...
-
-if magic smoke escapes, order another set...
-
-i think i will not be going on a vacation for the next five years ;-)
+diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
+index 157080b..07c189c 100644
+--- a/drivers/macintosh/via-pmu.c
++++ b/drivers/macintosh/via-pmu.c
+@@ -2841,10 +2841,10 @@ EXPORT_SYMBOL(pmu_wait_complete);
+ EXPORT_SYMBOL(pmu_suspend);
+ EXPORT_SYMBOL(pmu_resume);
+ EXPORT_SYMBOL(pmu_unlock);
+-#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
+-EXPORT_SYMBOL(pmu_enable_irled);
+ EXPORT_SYMBOL(pmu_battery_count);
+ EXPORT_SYMBOL(pmu_batteries);
+ EXPORT_SYMBOL(pmu_power_flags);
++#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
++EXPORT_SYMBOL(pmu_enable_irled);
+ #endif /* CONFIG_PM && CONFIG_PPC32 */
+ 
+-- 
+1.5.1.4
