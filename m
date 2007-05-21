@@ -1,15 +1,16 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 21 May 2007 15:06:32 +1000
+Date: Mon, 21 May 2007 15:13:11 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Valentine Barshak <vbarshak@ru.mvista.com>
-Subject: Re: New version of the device tree aware EMAC driver
-Message-ID: <20070521050632.GA7778@localhost.localdomain>
-References: <20070516032630.GC19127@localhost.localdomain>
-	<464B38A9.9000402@ru.mvista.com> <464B475A.4090808@ru.mvista.com>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH] ibm_emac: Correctly detect old link speed
+Message-ID: <20070521051311.GB7778@localhost.localdomain>
+References: <200705161300.08521.sr@denx.de>
+	<20070516173002.GA22331@gate.ebshome.net>
+	<200705162044.47776.sr@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <464B475A.4090808@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <200705162044.47776.sr@denx.de>
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,44 +20,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 16, 2007 at 10:03:06PM +0400, Valentine Barshak wrote:
-> Valentine Barshak wrote:
-> > David Gibson wrote:
-> >   
-> >> I've made a few more tiny tweaks to BenH's rewritten device-tree based
-> >> 4xx EMAC driver.  The main change is that it now no longer requires
-> >> 'device_type', just 'compatible' to be set in the ZMII and MAL device
-> >> nodes when probing.  This works better with current thinking on
-> >> flattened device trees which discourages creating new device_type
-> >> values unless there is a clear use for a new device class binding.
-> >>
-> >> The patch can be obtained from:
-> >>
-> >> http://ozlabs.org/~dgibson/home/emac/powerpc-emac-new-20070516.patch
-> >>
-> >>   
-> >>     
-> > In __emac_mdio_read and __emac_mdio_write functions:
+On Wed, May 16, 2007 at 08:44:47PM +0200, Stefan Roese wrote:
+> On Wednesday 16 May 2007, Eugene Surovegin wrote:
+> > On Wed, May 16, 2007 at 01:00:08PM +0200, Stefan Roese wrote:
+> > > This patch fixes a bug where the link speed change was not
+> > > detected correctly. This occured on a 440SPe (EMAC4) system
+> > > where the old link speed was 100Mbps and the new link speed
+> > > is 1000Mbps.
 > >
-> > +    if (!emac_has_feature(dev, EMAC_FTR_STACR_OC_INVERT))
-> > +        r |= EMAC_STACR_OC;
-> >
-> > should be
-> >
-> > +    if (emac_has_feature(dev, EMAC_FTR_STACR_OC_INVERT))
-> > +        r |= EMAC_STACR_OC;
-> >
-> > Thanks.
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> >   
-> With the above 2 fixes (and Marvell 88E1111 Ethernet PHY support added) 
-> seems to work fine on Sequoia PPC440EPx,
-> thanks.
+> > Good catch, Stefan. Unfortunately, I have to NACK your patch - you
+> > broke non EMAC4 builds.
+> 
+> Yes, you're right of course.
+> 
+> > Correct fix is just to remove EMAC_MR1_MF_1000GPCS from the first
+> > if condition.
+> 
+> Yep.
+> 
+> > I'll send correct fix shortly along with other queued patches.
+> 
+> Thanks.
 
-Ok, I've merged those fixes.  New version of the driver coming soon.
+I've merged essentially the same fix into the device tree aware
+"new_emac" driver.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
