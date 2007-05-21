@@ -2,28 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 00A27DDE39
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 08:10:37 +1000 (EST)
-Subject: Re: vm changes from linux-2.6.14 to linux-2.6.15
+	by ozlabs.org (Postfix) with ESMTP id 1E733DDE4A
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 08:11:49 +1000 (EST)
+Subject: Re: Interrupt routing broken on TiBook IV with 2.6.21.x ?
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Tom \"spot\" Callaway" <tcallawa@redhat.com>
-In-Reply-To: <1179757647.6254.235.camel@localhost.localdomain>
-References: <Pine.LNX.4.61.0705012354290.12808@mtfhpc.demon.co.uk>
-	<20070509231937.ea254c26.akpm@linux-foundation.org>
-	<1178778583.14928.210.camel@localhost.localdomain>
-	<20070510.001234.126579706.davem@davemloft.net>
-	<Pine.LNX.4.64.0705142018090.18453@blonde.wat.veritas.com>
-	<1179176845.32247.107.camel@localhost.localdomain>
-	<1179212184.32247.163.camel@localhost.localdomain>
-	<1179757647.6254.235.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 22 May 2007 08:09:39 +1000
-Message-Id: <1179785379.32247.745.camel@localhost.localdomain>
+To: Christian =?ISO-8859-1?Q?B=F6hme?= <monodhs@gmx.de>
+In-Reply-To: <4651FC48.8000002@gmx.de>
+References: <4650E27B.3020401@gmx.de>
+	<1179712614.32247.597.camel@localhost.localdomain>
+	<4651FC48.8000002@gmx.de>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 22 May 2007 08:11:41 +1000
+Message-Id: <1179785502.32247.748.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: mark@mtfhpc.demon.co.uk, linux-mm@kvack.org, wli@holomorphy.com,
-	linuxppc-dev@ozlabs.org, andrea@suse.de,
-	sparclinux@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
-	akpm@linux-foundation.org, David Miller <davem@davemloft.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,19 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-05-21 at 09:27 -0500, Tom "spot" Callaway wrote:
-> On Tue, 2007-05-15 at 16:56 +1000, Benjamin Herrenschmidt wrote:
-> > > Ok, I'll cook a patch today.
-> > 
-> > Let's make it tomorrow :-( Got delayed by other urgent things
+On Mon, 2007-05-21 at 22:08 +0200, Christian Böhme wrote:
+> Benjamin Herrenschmidt wrote:
 > 
-> Not to be annoying, but I'm patiently waiting on this patch. Would like
-> to test sun4c before shipping Aurora 3.0. Any status?
+> > Nope... it can't be a routing problem since interrupt -is- routed (you
+> > are getting it !)
+> 
+> Actually, these were the exact words from the ALSA developer.  For some
+> reason, however, the interrupt count does not increase after some (variable)
+> time.  It looks as if the ALSA code waits for but not receiving them.  After
+> a restart, an audio signal does leave the jack and the interrupt count
+> increases but only for about a second (sometimes more, often less).  No idea 
+> whether interrupts must be routed/are routable on this very machine I have at 
+> all ...
 
-Damn, kick me harder ! I totally forgot... probably what happens when
-one is deep into bringing up some new HW toys !
+Or it could be the DMA channel going dead though I fail to see why it
+would just start doing that now.
 
-Sorry about that, I'll do it asap.
+> > Which exact tipb model is this ? (cat /proc/device-tree/model)
+> 
+> PowerBook3,5 of the 2002-11 release variety.
 
-Cheers
+Ok, I think I have access to one of these, I'll try to reproduce myself.
+
+> I stuck to OSS up to the 2.6.19.x kernels where everything (surprisingly)
+> ``just worked''.  Then came the 2.6.20.x series and <root>/sound/oss/\
+> dmasound/dmasound_awacs.c started spitting out loads of ``tx-irq: xfer died -
+> patching it up...'' messages with stuttering audio output but nothing
+> different in their respective implementations from 2.6.19.x to 2.6.20.x.
+> 
+> Is there anything particular I can dive into myself to expedite finding the
+> cause of the problem without learning the full details of the PPC implemen-
+> tation ?
+
+Not sure where to start :-) I'll first see if I can reproduce.
+
+Cheers,
 Ben.
