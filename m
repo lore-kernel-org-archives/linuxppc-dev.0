@@ -1,22 +1,15 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
-	by ozlabs.org (Postfix) with ESMTP id 7F3C3DDEC7
+Return-Path: <domen.puncer@telargo.com>
+Received: from out002.atlarge.net (out002.atlarge.net [129.41.63.60])
+	by ozlabs.org (Postfix) with ESMTP id 25F0EDDE1D
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 21 May 2007 07:36:25 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so745827ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 20 May 2007 14:36:23 -0700 (PDT)
-Message-ID: <528646bc0705201436m66c61fcj408ddca199cc00da@mail.gmail.com>
-Date: Sun, 20 May 2007 15:36:20 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Mohammad Sadegh Sadri" <mamsadegh@hotmail.com>
-Subject: Re: ML403 How to change the version of Hard TEMAC from 3.00b to 3.00a?
-In-Reply-To: <BAY115-W2577CEA536CA93F444C60B2300@phx.gbl>
+	Mon, 21 May 2007 16:56:05 +1000 (EST)
+Date: Mon, 21 May 2007 08:56:00 +0200
+From: Domen Puncer <domen.puncer@telargo.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: [PATCH] unbreak lite5200 dts (_pic vs. -pic)
+Message-ID: <20070521065600.GD20713@moe.telargo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <BAY115-W2577CEA536CA93F444C60B2300@phx.gbl>
-Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,27 +20,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 5/20/07, Mohammad Sadegh Sadri <mamsadegh@hotmail.com> wrote:
-> 2- How can I change the version of the used core from 3.00b to 3.00a?
-
-Just change the HW_VER parameter in your system.mhs file.
-
-g.
-
->
-> thanks.
-> _________________________________________________________________
-> Connect to the next generation of MSN Messenger
-> http://imagine-msn.com/messenger/launch80/default.aspx?locale=en-us&source=wlmailtagline
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
+Unbreak lite5200 dts, which were broken by
+5c1992f83304cf2d56934dd6c06709b96e1b0c81
 
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
+
+---
+ arch/powerpc/boot/dts/lite5200.dts  |    2 +-
+ arch/powerpc/boot/dts/lite5200b.dts |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+Index: work-powerpc.git/arch/powerpc/boot/dts/lite5200.dts
+===================================================================
+--- work-powerpc.git.orig/arch/powerpc/boot/dts/lite5200.dts
++++ work-powerpc.git/arch/powerpc/boot/dts/lite5200.dts
+@@ -67,7 +67,7 @@
+ 			interrupt-controller;
+ 			#interrupt-cells = <3>;
+ 			device_type = "interrupt-controller";
+-			compatible = "mpc5200_pic";
++			compatible = "mpc5200-pic";
+ 			reg = <500 80>;
+ 			built-in;
+ 		};
+Index: work-powerpc.git/arch/powerpc/boot/dts/lite5200b.dts
+===================================================================
+--- work-powerpc.git.orig/arch/powerpc/boot/dts/lite5200b.dts
++++ work-powerpc.git/arch/powerpc/boot/dts/lite5200b.dts
+@@ -67,7 +67,7 @@
+ 			interrupt-controller;
+ 			#interrupt-cells = <3>;
+ 			device_type = "interrupt-controller";
+-			compatible = "mpc5200b-pic\0mpc5200_pic";
++			compatible = "mpc5200b-pic\0mpc5200-pic";
+ 			reg = <500 80>;
+ 			built-in;
+ 		};
