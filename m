@@ -1,19 +1,23 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id F0A75DDE29
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 06:50:22 +1000 (EST)
-Date: Mon, 21 May 2007 22:50:20 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] power-management elements for 603e/fsl (version 2)
-In-Reply-To: <20070521155712.GA16235@ld0162-tx32.am.freescale.net>
-Message-ID: <Pine.LNX.4.60.0705212225470.7562@poirot.grange>
-References: <Pine.LNX.4.60.0705192013010.10162@poirot.grange>
-	<20070521155712.GA16235@ld0162-tx32.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4C1B0DDE2B
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 08:08:09 +1000 (EST)
+Subject: Re: fsl booke MM vs. SMP questions
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dave Liu <r63238@freescale.com>
+In-Reply-To: <1179747448.3660.22.camel@localhost.localdomain>
+References: <1179731215.32247.659.camel@localhost.localdomain>
+	<1179741447.3660.7.camel@localhost.localdomain>
+	<1179742083.32247.689.camel@localhost.localdomain>
+	<1179747448.3660.22.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 22 May 2007 08:07:52 +1000
+Message-Id: <1179785273.32247.742.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	Kumar Gala <galak@gate.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,74 +27,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 21 May 2007, Scott Wood wrote:
 
-> On Sat, May 19, 2007 at 09:22:10PM +0200, Guennadi Liakhovetski wrote:
-> > +	local_irq_disable();
+> > The tlb miss handler does:
+> > 
+> >  - tlbbusy = 1
+> >  - barrier (make sure the following read is in order vs. the previous
+> > store to tlbbusy)
+> >  - read linux PTE value
+> >  - write it to the HW TLB
 > 
-> IRQs are already disabled when this function is called.
+> and write the linux PTE with referenced bit?
 
-ok
+I've kept the reference bit rewrite out of that pseudo-code because I
+was approaching a different issue but yes. The idea i have there is to
+do break down the linux PTE operation that way:
 
-> > +	/* go zzzzz... (re-enabling interrupts) */
-> > +	fsl_low_sleep();
+	 1 - rX = read PTE value (normal load)
+	 2 - if (!_PAGE_PRESENT)) -> out
+ 	 3 - rY = rX | _PAGE_ACCESSED
+	 4 - if (rX != rY)
+	 5 -   rZ = lwarx PTE value
+	 6 -   if (rZ != rX)
+	 7 -	stdcx. PTE, rZ (rewrite just read value to clear reserv)
+	 8 - 	goto 1 (try again)
+	 9 -   stdcx. PTE, rY
+	10 -   if failed -> goto 1 (try again)
+	11 - that's it ! 
+
+In addition, I suppose performance can be improved by also dealing with
+dirty bit right in the TLB refill if the access is a write and the page
+is writeable rather than taking a double fault.
+
+> >  - appropriate sync
+> >  - tlbbusy = 0
+> > 
+> > Now, the tlb invalidation code (which can use a batch to be even more
+> > efficient, see how 64 bits or x86 use batching for TLB invalidations)
+> > can then use the fact that the mm carries a cpu bitmask of all CPUs that
+> > ever touched that mm and thus can do, after a PTE has changed and before
+> > broadcasting an invalidation:
 > 
-> IRQs really shouldn't be enabled here without something like the "Handle
-> HID0_SLEEP in the TLF_NAPPING hack" patch I posted recently.
+> How to interlock this PTE change with the PTE change of tlb miss?
 
-Ok, I'd be happy to rely on those your patches... as long as they make it 
-into the kernel. Paulus, what's the plan? I'll try to apply them locally 
-for now and adjust my code accordingly. A recent powerpc.git should be 
-fine, I guess - the arch_suspend_{disable,enable}_irqs hooks are already 
-there, or are there any further dependencies?
+Look at pgtables-ppc32.h. PTE changes done by linux are atomic. If you
+use the procedure I outlined above, you will also have PTE modifications
+done by the TLB miss handler be atomic, though you also skip the atomic
+bit when not necessary (when _PAGE_ACCESSED is already set for example).
 
-> > +	/* Re-enable local CPU interrupts */
-> > +	local_irq_enable();
+Thus, the situation is basically that linux PTE changes need to
+
+ - update the PTE
+ - barrier
+ - make sure that change is visible to all other CPUs and that
+   they all have been out of a TLB miss handler at least once
+   which is what my proposed algorithm does
+ - broadcast invalidation
+
+> >  - make a local copy "mask" of the mm->cpu_vm_mask
+> >  - clear bit for the current cpu from the mask
+> >  - while there is still a bit in the mask
+> >  - for each bit in the mask, check if tlbbusy for that cpu is 0
+> >    -> if 0, clear the bit in the mask
+> >  - loop until there's nop more bit in the mask
+> >  - perform the tlbivax
 > 
-> Just leave them off.
+> It looks like good idea, but what is the bad things with the batch
+> invalidation?
 
-ok
+Why bad ?
 
-> > @@ -112,10 +155,15 @@ static int __init ls_uarts_init(void)
-> >  
-> >  	avr_clock = *(u32*)of_get_property(avr, "clock-frequency", &len);
-> >  	phys_addr = ((u32*)of_get_property(avr, "reg", &len))[0];
-> > + 	irq = ((u32*)get_property(avr, "interrupts", &len))[0];
+Batch invalidations allow you to do the whole operation of sync'ing with
+other CPUs only once for a whole lot of invalidations:
+
+	- clear lots of PTEs
+	- sync once
+	- send lots of tlbivax
+
+You don't have to implement batch invalidates but it will improve
+performances.
+
+> > In addition, if you have a "local" version of tlbivax (no broadcast),
+> > you can do a nice optimisation if after step 2 (clear bit for the
+> > current cpu) the mask is already 0 (that means the mm only ever existed
+> > on the local cpu), in which case you can do a local tlbivax and return.
 > 
-> Oopsing if a property is missing isn't nice.
+> The BookE has the "local" version of tlbivax with the tlbwe inst. Yes,
+> It actually can reduce the bus traffic. 
 
-Hm, it is in .dts in the kernel tree, do I still have to care a possible 
-non-compliant version? Probably, you're right, will fix.
+And is probably faster too :-)
 
-> > +	local_irq_save(flags);
-> > +	/* Apparently, MacOS uses NAP mode for Grackle ??? */
-> > +	pmcr1 &= ~(MPC10X_DOZE | MPC10X_NAP);
-> > +	pmcr1 |= MPC10X_PM | MPC10X_SLEEP | MPC10X_LP_REF_EN;
-> > +	pci_write_config_word(bridge, 0x70, pmcr1);
-> > +	local_irq_restore(flags);
-> 
-> This should probably be something like mpc10x_suspend.  Also, IRQs should
-> already be disabled when this is called.
+The above method need to also be looked at carefully for the TLB storage
+interrupt (that is TLB present but with wrong permission).
 
-well, I'd also prefer a more specific namespace than "fsl." Would it be ok 
-to call them with mpc10x (has been discussed on irc, I remember there have 
-been objections against this as mpc10x are just some host-pci bridges from 
-older Apple (not only?) machines)? And if we use mpc10x, is it ok to leave 
-them in fsl_soc.c?
-
-> > +	/* Make sure the decrementer won't interrupt us */
-> > +	asm volatile("mtdec %0" : : "r" (0x7fffffff));
-> > +	/* Make sure any pending DEC interrupt occurring while we did
-> > +	 * the above didn't re-enable the DEC */
-> > +	mb();
-> > +	asm volatile("mtdec %0" : : "r" (0x7fffffff)); /* 8 seconds */
-> 
-> IRQs are already disabled here, so if it was pending it still will be (at
-> least with some cores).  It needs to be done with the arch suspend hook.
-
-as above, will test with your patches.
-
-Thanks for comments!
-Guennadi
----
-Guennadi Liakhovetski
+Ben.
