@@ -1,20 +1,14 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
-	[66.98.186.96])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AF397DDE3F
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 May 2007 08:46:42 +1000 (EST)
-Message-ID: <4650CFEE.8020007@genesi-usa.com>
-Date: Sun, 20 May 2007 23:47:10 +0100
-From: Matt Sealey <matt@genesi-usa.com>
+Return-Path: <monodhs@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id E2D5CDDE07
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 May 2007 10:05:45 +1000 (EST)
+Message-ID: <4650E27B.3020401@gmx.de>
+Date: Mon, 21 May 2007 02:06:19 +0200
+From: =?UTF-8?B?Q2hyaXN0aWFuIELDtmhtZQ==?= <monodhs@gmx.de>
 MIME-Version: 1.0
-To: Rogelio Serrano <rogelio.serrano@gmail.com>
-Subject: Re: powerpc 750cl availability
-References: <a9951d2a0705201044v38a4c41cy8e83c72481d0113e@mail.gmail.com>
-In-Reply-To: <a9951d2a0705201044v38a4c41cy8e83c72481d0113e@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+To: linuxppc-dev@ozlabs.org
+Subject: Interrupt routing broken on TiBook IV with 2.6.21.x ?
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,26 +18,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here's a long shot - have you tried IBM and Tundra? :D
+Hi all,
 
-Both should be highly available right now. You could try one of the
-larger electronic suppliers (Arrow, AVnet, EDV) on the phone, sometimes
-they just don't put it on the website as they're more special orders,
-but they can all get anything you like.
+With the availability of the stable 2.6.21.x kernels I recently started to
+move over from OSS to ALSA for audio I/O.  Along with that move came the
+surprise that not the simplest audio output works anymore (actually, this
+was the case with the stable 2.6.20.x kernels and OSS already which I
+therefore opted to avoid).
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+The problem I ran into is that no matter which application (speaker-test,
+aplay, xmms, gxine) using either the native ALSA API or via the OSS
+compatibility layer, none of these is able to sustain audio output for
+more than 7 seconds.  In fact, most attempts max out at statistically one
+second (with many even shorter than that).  After the signal at the output
+jack died, the application appears to be blocking forever (it does not spin)
+with no signs of ending its output.
 
-Rogelio Serrano wrote:
-> does anybody know any suppliers for the powerpc 750cl and the tsi110?
-> i cant seem to find it on the web anywhere.
-> 
-> is there an end user board available anywhere?
-> 
-> i have loaded the schematics in gschem and i am planning to start pcb
-> layouting but im not sure if the parts are available.
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+I initially presented this problem on alsa-user@lists.sourceforge.net where
+someone suggested that it might actually be caused by (broken) interrupt
+routing for the built-in audio device.  This assumption may be supported
+by the observation that once the sound previously produced by the application
+(speaker-test in the simplest case) stopped being sent through the output
+jack, no increase in the interrupt counter occurs.
+
+An example output of /proc/interrupts on my machine looks like this (why
+eth0 does not show up in this listing is beyond me):
+
+            CPU0
+  19:      39005   MPIC 1    Level     ide0
+  20:         34   MPIC 1    Level     ide1
+  25:     151785   MPIC 1    Level     VIA-PMU
+  26:        131   MPIC 1    Level     keywest i2c
+  27:          1   MPIC 1    Level     ohci_hcd:usb1
+  28:          1   MPIC 1    Level     ohci_hcd:usb2
+  30:        197   MPIC 1    Edge      PMac Output
+  31:          1   MPIC 1    Edge      PMac Input
+  40:          2   MPIC 1    Level     ohci1394
+  42:          0   MPIC 1    Level     keywest i2c
+  47:       7682   MPIC 1    Level     GPIO1 ADB
+  48:      39571   MPIC 1    Level     radeon@pci:0000:00:10.0
+  57:          0   MPIC 1    Level     eth1
+  58:          1   MPIC 1    Level     yenta
+  61:          1   MPIC 1    Edge      Sound Headphone Detection
+BAD:          0
+
+
+Has anyone any idea what causes the audio output to die prematurely ?
+
+
+Cheers,
+Christian
