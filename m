@@ -1,32 +1,29 @@
-Return-Path: <DaveLiu@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <christian.hammond@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B6FC0DDE26
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 May 2007 21:37:38 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l4LBbWDm023251
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 May 2007 04:37:33 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l4LBbVq8026224
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 May 2007 06:37:32 -0500 (CDT)
-Subject: Re: fsl booke MM vs. SMP questions
-From: Dave Liu <r63238@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1179742083.32247.689.camel@localhost.localdomain>
-References: <1179731215.32247.659.camel@localhost.localdomain>
-	<1179741447.3660.7.camel@localhost.localdomain>
-	<1179742083.32247.689.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 21 May 2007 19:37:28 +0800
-Message-Id: <1179747448.3660.22.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Kumar Gala <galak@gate.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id DBFC5DDE1E
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 May 2007 22:46:29 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l4LCkNPn023131
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 May 2007 05:46:23 -0700 (MST)
+Received: from zuk35exm20.fsl.freescale.net (zuk35exm20.ea.freescale.net
+	[10.210.1.54])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l4LCkMaR005773
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 May 2007 07:46:22 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Fixed PHY problems
+Date: Mon, 21 May 2007 13:46:20 +0100
+Message-ID: <14B28267C4526A42BA5AC7DAA07B783866B7E7@zuk35exm20.fsl.freescale.net>
+In-Reply-To: <1179656221.2714.19.camel@gentoo-jocke.transmode.se>
+From: "Hammond Christian-r55079" <christian.hammond@freescale.com>
+To: <joakim.tjernlund@transmode.se>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,70 +33,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-05-21 at 20:08 +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2007-05-21 at 17:57 +0800, Dave Liu wrote:
-> 
-> > > If not, you might have to use a _PAGE_BUSY bit similar to what 64 bits
-> > > uses as a per-PTE lock, or use mmu_hash_lock... Unless you come up with
-> > > a great idea or some HW black magic that makes the problem go away...
-> > 
-> > I would like the _PAGE_BUSY bit for a per-PTE lock, it will have better
-> > performance benifit than global lock. The BookE architecutre doesn't use
-> > the hardware hash table, so can not use the mmu_hash_lock, which is
-> > global lock for hashtable.
-> 
-> (BTW. Did you remove the list CC on purpose ? If not, then please add it
-> back on your reply and make sure my reply is fully visible :-)
+Thanks,
 
-Sorry for that, It is wrong to click the mouse.
+Regarding the PHY set-up in the dts once the patch has been applied, how
+should it be implemented?
 
-> Still.. having to use a lwarx/stwcx. loop in the TLB refill handler is a
-> sad story don't you think ? I don't know for you guys but on the cpus I
-> know, those take hundres of cycles....
+I had edited from...
 
-It is true, I know that.
+phy1:	ethernet-phy@01 {
+		reg =3D <0>;
+		device_type =3D "ethernet-phy";
+		interface =3D <6>;
+	};=20
 
-> I've come up with an idea (thanks wli for tipping me off) that's
-> inspired from RCU instead:
-> 
-> We have a per-cpu flag called tlbbusy
-> 
-> The tlb miss handler does:
-> 
->  - tlbbusy = 1
->  - barrier (make sure the following read is in order vs. the previous
-> store to tlbbusy)
->  - read linux PTE value
->  - write it to the HW TLB
+To...
 
-and write the linux PTE with referenced bit?
+phy1:	fixed-phy@64 {
+		reg =3D <d#100>;
+		device_type =3D "ethernet-phy";
+		interface =3D <6>;
+	};
 
->  - appropriate sync
->  - tlbbusy = 0
-> 
-> Now, the tlb invalidation code (which can use a batch to be even more
-> efficient, see how 64 bits or x86 use batching for TLB invalidations)
-> can then use the fact that the mm carries a cpu bitmask of all CPUs that
-> ever touched that mm and thus can do, after a PTE has changed and before
-> broadcasting an invalidation:
+When bringing up the fixed phy in ifconfig I get the following recurring
+dump and prompt access is lost. Should this implementation not just
+ignore the phy set-up?
 
-How to interlock this PTE change with the PTE change of tlb miss?
+~ # ifconfig eth1 10.137.32.175 netmask 255.255.255.0 up
+read wrong value : mii_id 100,mii_reg 2, base d100c120
+read wrong value : mii_id 100,mii_reg 3, base d100c120
+eth1: PHY is Generic MII (ffffffff)
+~ # read wrong value : mii_id 100,mii_reg 4, base d100c120
+read wrong value : mii_id 100,mii_reg 0, base d100c120
+read wrong value : mii_id 100,mii_reg 1, base d100c120
+read wrong value : mii_id 100,mii_reg 1, base d100c120
+read wrong value : mii_id 100,mii_reg 5, base d100c120
+eth1: Full Duplex
+eth1: Speed 100BT
+eth1: Link is up
+read wrong value : mii_id 100,mii_reg 1, base d100c120
+read wrong value : mii_id 100,mii_reg 1, base d100c120
+read wrong value : mii_id 100,mii_reg 5, base d100c120
+=20
 
->  - make a local copy "mask" of the mm->cpu_vm_mask
->  - clear bit for the current cpu from the mask
->  - while there is still a bit in the mask
->  - for each bit in the mask, check if tlbbusy for that cpu is 0
->    -> if 0, clear the bit in the mask
->  - loop until there's nop more bit in the mask
->  - perform the tlbivax
+-----Original Message-----
+From: Joakim Tjernlund [mailto:joakim.tjernlund@transmode.se]=20
+Sent: 20 May 2007 11:17
+To: Hammond Christian-r55079
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: Fixed PHY problems
 
-It looks like good idea, but what is the bad things with the batch
-invalidation?
+On Sat, 2007-05-19 at 15:42 +0100, Hammond Christian-r55079 wrote:
+> Hi Vitaly,
+> =20
+> I was pointed in the direction of message chain "Fixed PHY problems"
+> for interfacing a fixed PHY to a 83xx UEC. Could you please forward on
 
-> In addition, if you have a "local" version of tlbivax (no broadcast),
-> you can do a nice optimisation if after step 2 (clear bit for the
-> current cpu) the mask is already 0 (that means the mm only ever existed
-> on the local cpu), in which case you can do a local tlbivax and return.
+> the patch you mentioned in the trail?
 
-The BookE has the "local" version of tlbivax with the tlbwe inst. Yes,
-It actually can reduce the bus traffic. 
+Vitaly sent me the patch, had to do some minor tweaking to make it
+compile. Attaching the patch.
+
+> =20
+> Any ideas if the implementation  succeeded in the end?
+
+No, the fixed PHY is on another bus than what ucc_geth expects.
+See msg from me titled "Fixed  PHY and MPC832x based boards don't work"
+from about a week ago.
+
+ Jocke
+
+> =20
+> Christian Hammond
+> =20
+> NCSG Applications Engineer
+> =20
+> Tel: +44 1355 355962
+> Fax: +44 1355 261790
+> =20
+> Freescale Semiconductor
+> Kelvin Industrial Estate
+> East Kilbride
+> Glasgow G75 0TG
+> United Kingdom
