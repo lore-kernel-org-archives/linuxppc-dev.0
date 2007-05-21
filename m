@@ -1,18 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6E496DDE41
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 May 2007 11:57:02 +1000 (EST)
-Subject: Re: Interrupt routing broken on TiBook IV with 2.6.21.x ?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christian =?ISO-8859-1?Q?B=F6hme?= <monodhs@gmx.de>
-In-Reply-To: <4650E27B.3020401@gmx.de>
-References: <4650E27B.3020401@gmx.de>
-Content-Type: text/plain
-Date: Mon, 21 May 2007 11:56:54 +1000
-Message-Id: <1179712614.32247.597.camel@localhost.localdomain>
-Mime-Version: 1.0
+Return-Path: <rogelio.serrano@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.179])
+	by ozlabs.org (Postfix) with ESMTP id 37A95DDDFF
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 May 2007 12:54:47 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so171472pyi
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 May 2007 19:54:46 -0700 (PDT)
+Message-ID: <a9951d2a0705201954k33c06fc8n6912587a45d66c1d@mail.gmail.com>
+Date: Mon, 21 May 2007 10:54:45 +0800
+From: "Rogelio Serrano" <rogelio.serrano@gmail.com>
+To: "Matt Sealey" <matt@genesi-usa.com>
+Subject: Re: powerpc 750cl availability
+In-Reply-To: <4650CFEE.8020007@genesi-usa.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+References: <a9951d2a0705201044v38a4c41cy8e83c72481d0113e@mail.gmail.com>
+	<4650CFEE.8020007@genesi-usa.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,14 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On 5/21/07, Matt Sealey <matt@genesi-usa.com> wrote:
+> Here's a long shot - have you tried IBM and Tundra? :D
+>
+> Both should be highly available right now. You could try one of the
+> larger electronic suppliers (Arrow, AVnet, EDV) on the phone, sometimes
+> they just don't put it on the website as they're more special orders,
+> but they can all get anything you like.
+>
 
-> Has anyone any idea what causes the audio output to die prematurely ?
+i found them in avnet.  i found out that you actually have to try
+different combinations of letters and punctuation. the 750cl is
+actually less then 60 usd for one piece.
 
-Nope... it can't be a routing problem since interrupt -is- routed (you
-are getting it !) unless I missed some subtle breakage in the
-device-tree.
+the tsi-110 is nowhere to be found though. i think i have to call
+tundra in hong kong. otherwise i will settle for the tsi-109.
 
-Which exact tipb model is this ? (cat /proc/device-tree/model)
+i will be publishing the schematic and pcb layout. i dont have enough
+resources to actually test it. i guess i just have to take the risk of
+simulating the entire board, send the pcb to the fab, populate, reflow
+and cross my fingers and then flip the switch...
 
-Cheers,
-Ben.
+if magic smoke escapes, order another set...
+
+i think i will not be going on a vacation for the next five years ;-)
