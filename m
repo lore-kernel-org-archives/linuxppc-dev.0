@@ -1,21 +1,20 @@
 Return-Path: <wfarnsworth@mvista.com>
 Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 6BC84DDE29
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 02:01:13 +1000 (EST)
-Subject: RE: [PATCH 5/5] PCI fixes for the MPC8641 Rev 2.0 silicon and
-	Rev1.02hardware
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 09B4BDDE2B
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 02:04:45 +1000 (EST)
+Subject: Re: [PATCH 2/5] Add legacy devices to mpc8641_hpcn.dts
 From: Wade Farnsworth <wfarnsworth@mvista.com>
-To: Zhang Wei-r63237 <Wei.Zhang@freescale.com>
-In-Reply-To: <46B96294322F7D458F9648B60E15112C23466B@zch01exm26.fsl.freescale.net>
-References: <1179245829.8132.100.camel@rhino> <1179247809.8132.138.camel@rhino>
-	<46B96294322F7D458F9648B60E15112C23441B@zch01exm26.fsl.freescale.net>
-	<1179417813.8132.250.camel@rhino>
-	<744CD970-5421-47D6-A30A-C7C79BE21BE8@kernel.crashing.org>
-	<1179421139.8132.256.camel@rhino>
-	<46B96294322F7D458F9648B60E15112C23466B@zch01exm26.fsl.freescale.net>
+To: Jon Loeliger <jdl@freescale.com>
+In-Reply-To: <1179506692.19188.2.camel@ld0161-tx32>
+References: <1179245829.8132.100.camel@rhino> <1179246470.8132.112.camel@rhino>
+	<1179333421.7018.17.camel@ld0161-tx32>
+	<b77c4b3dd22795a73cd32a0623722e51@kernel.crashing.org>
+	<1179346653.8132.223.camel@rhino>
+	<0c3907573f12a0731d03335fe3334363@kernel.crashing.org>
+	<1179506692.19188.2.camel@ld0161-tx32>
 Content-Type: text/plain
-Date: Mon, 21 May 2007 09:01:11 -0700
-Message-Id: <1179763271.8132.288.camel@rhino>
+Date: Mon, 21 May 2007 09:04:44 -0700
+Message-Id: <1179763484.8132.293.camel@rhino>
 Mime-Version: 1.0
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,38 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-05-18 at 18:20 +0800, Zhang Wei-r63237 wrote:
-> For support rev 1.0 boards, you can only remove the
-> pci@00:pci@00:interrupt-map sector. The pci driver can use
-> pci@8000:interrupt-map for irq mapping.
+On Fri, 2007-05-18 at 11:44 -0500, Jon Loeliger wrote:
 > 
-> Such as below:
+> And I haven't actually gotten it to work yet either...
+> Am I missing something?  Like a CONFIG_ option beyond
+> the RTC and CMOS variant that is necessary?
 > 
-> diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-> b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-> index 260b264..04626b1 100644
-> --- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-> +++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-> @@ -297,6 +297,12 @@
->  				interrupts = <49 2>;
->  				interrupt-parent = <&mpic>;
->  			};
-> +			uli1575: uli1575@100 {
-> +				reg = <0 0 0 0 0>;
-> +				pci_bridge@200 {
-> +					reg = <0 0 0 0 0>;
-> +				};
-> +			};
->  
->  		};
+> Dumbly,
+> jdl
 > 
-> Cheers,
-> Wei
+> 
 
-Hmm.  For some reason I thought that wouldn't work, but after some
-testing it appears I was wrong.  I'll incorporate that into the next
-version of the patchset.
+I wonder if you're running into the locked RTC problem on the m1575.
+The version of u-boot that I'm using (recent pull from
+opensource.freescale.com) has a workaround for that.  Can you verify if
+this is the problem?
 
-Thanks.
+For the benefit of those who aren't aware of the problem, the RTC on the
+m1575 is locked on boot until PCI memory space is read.
 
---Wade
+Maybe we should put the workaround in the kernel instead.  Any opinions?
