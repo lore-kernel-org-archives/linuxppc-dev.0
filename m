@@ -2,20 +2,21 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EE6CFDDE24
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 17:37:37 +1000 (EST)
-Subject: Re: [PATCH] power-management elements for 603e/fsl (version 2)
+	by ozlabs.org (Postfix) with ESMTP id B2B75DDF3B
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 17:37:43 +1000 (EST)
+Subject: Re: [PATCH 07/13] Implement arch disable/enable irq hooks.
 From: Johannes Berg <johannes@sipsolutions.net>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-In-Reply-To: <Pine.LNX.4.60.0705192013010.10162@poirot.grange>
-References: <Pine.LNX.4.60.0705192013010.10162@poirot.grange>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20070507182950.GF26920@ld0162-tx32.am.freescale.net>
+References: <20070507182950.GF26920@ld0162-tx32.am.freescale.net>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-m7ZGA84LCbS347jECL8M"
-Date: Mon, 21 May 2007 17:54:56 +0200
-Message-Id: <1179762897.9122.17.camel@johannes.berg>
+	boundary="=-LiBGPofjUAPvQMoMxXj8"
+Date: Mon, 21 May 2007 17:55:02 +0200
+Message-Id: <1179762902.9122.19.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,63 +27,43 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-m7ZGA84LCbS347jECL8M
+--=-LiBGPofjUAPvQMoMxXj8
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, 2007-05-19 at 21:22 +0200, Guennadi Liakhovetski wrote:
+On Mon, 2007-05-07 at 13:29 -0500, Scott Wood wrote:
+> These hooks ensure that a decrementer interrupt is not pending when
+> suspending; otherwise, problems may occur.  For example, with deep sleep
+> on the 831x, a pending decrementer will cause a system freeze because the
+> SoC thinks the decrementer interrupt would have woken the system, but the
+> core must have interrupts disabled due to the setup required for deep
+> sleep.
 
-> +int fsl_suspend(suspend_state_t state)
-> +{
-> +	struct pci_dev *bridge;
-> +	unsigned long flags;
-> +	u16 pmcr1;
-> +
-> +	bridge =3D pci_find_slot(0, 0);
-> +	if (!bridge)
-> +		return -ENODEV;
-> +
-> +	pci_read_config_word(bridge, 0x70, &pmcr1);
-> +	local_irq_save(flags);
-> +	/* Apparently, MacOS uses NAP mode for Grackle ??? */
+Interesting to see this first use of these hooks we had to fight for for
+so long... Can you put the arch_suspend_{enable,disable}_irqs along with
+the actual power management code for 831x?
 
-That comment seems out of place :)
+On the one hand I agree with this patch, this is exactly what we wanted
+the hooks for, but on the other hand I would like to have these hooks
+free for some more stuff for PMU-based sleep so that I don't need to do
+ugly things with platform devices or something for the powermac platform
+function stuff.
 
-> +	pmcr1 &=3D ~(MPC10X_DOZE | MPC10X_NAP);
-> +	pmcr1 |=3D MPC10X_PM | MPC10X_SLEEP | MPC10X_LP_REF_EN;
-> +	pci_write_config_word(bridge, 0x70, pmcr1);
-> +	local_irq_restore(flags);
-> +
-> +	/* Make sure the decrementer won't interrupt us */
-> +	asm volatile("mtdec %0" : : "r" (0x7fffffff));
-> +	/* Make sure any pending DEC interrupt occurring while we did
-> +	 * the above didn't re-enable the DEC */
-> +	mb();
-> +	asm volatile("mtdec %0" : : "r" (0x7fffffff)); /* 8 seconds */
-
-Are you sure that's 8 seconds? Seems too fast.
-
-Also, the whole irq handling thing in resume/suspend seems bogus. Both
-resume and suspend are called with interrupts off, so the
-local_irq_{save,restore} calls do nothing. You probably need to use
-arch_suspend_{enable,disable}_irqs and do the decrementer magic there
-(after all that's why we introduced these.)
-
-Then again, see the other mail I'm about to send in response to a patch
-from Scott Wood using these hooks.
+Then again, if we don't implement these in common code, might we get
+link problems when we try building some multiplatform kernel?
 
 johannes
 
---=-m7ZGA84LCbS347jECL8M
+--=-LiBGPofjUAPvQMoMxXj8
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iD8DBQBGUcDQ/ETPhpq3jKURAt41AKCF60grmtvA6SiTm0C7A6rpKwp4TACfdHHj
-7MuI+UgIr1yaQAmBYCc+CiE=
-=Ks2Q
+iD8DBQBGUcDW/ETPhpq3jKURApkVAKC5BMl0K+pl5R3LH1OSL1wlmqIhmQCgt/0P
+2/1UorkVPbSIep9c690jUYQ=
+=Obri
 -----END PGP SIGNATURE-----
 
---=-m7ZGA84LCbS347jECL8M--
+--=-LiBGPofjUAPvQMoMxXj8--
