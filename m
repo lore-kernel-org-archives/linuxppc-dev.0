@@ -1,15 +1,17 @@
-Return-Path: <domen.puncer@telargo.com>
-Received: from out002.atlarge.net (out002.atlarge.net [129.41.63.60])
-	by ozlabs.org (Postfix) with ESMTP id 25F0EDDE1D
+Return-Path: <Frank.Prepelica@ubidyne.com>
+Received: from ex01.ads.ubidyne.de (mail.ubidyne.com [212.211.133.238])
+	by ozlabs.org (Postfix) with ESMTP id B25D0DDE2D
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 21 May 2007 16:56:05 +1000 (EST)
-Date: Mon, 21 May 2007 08:56:00 +0200
-From: Domen Puncer <domen.puncer@telargo.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH] unbreak lite5200 dts (_pic vs. -pic)
-Message-ID: <20070521065600.GD20713@moe.telargo.com>
+	Mon, 21 May 2007 17:25:28 +1000 (EST)
+Subject: RE: BDI2000 configuration file for MPC8313E-RDB
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="US-ASCII"
+Date: Mon, 21 May 2007 09:25:05 +0200
+Message-ID: <29DC34A6B43468409F5A371CFE34E8491768E6@ex01.ads.ubidyne.de>
+From: "Frank Prepelica" <Frank.Prepelica@ubidyne.com>
+To: "Leonid" <Leonid@a-k-a.net>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,40 +22,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Unbreak lite5200 dts, which were broken by
-5c1992f83304cf2d56934dd6c06709b96e1b0c81
+> > Leonid asked:
+> > And here most important question comes: for our actual HW we are
+going=20
+> > to use ST-Micro NAND flash, one of NAND512-B, NAND01G-B, NAND02G-B,=20
+> > NAND04G-B and NAND08G-B. Is BDI2000 capable of programming these=20
+> > flashes? What changes in .cfg file are required?
+
+> Sorry, but the BDI does not support programming any NAND flash.
+> You can write your own driver. Then load the data and the driver into=20
+> SDRAM via the BDI and execute it.
+
+Well, I think I have to try this, if there's really no other way.=20
+I'm not quite sure, maybe you know the PowerTAB Pro JTAG Debugger,
+(it's recommended in the manuals) could this one get directly access
+to NAND memory?
+
+> I'm afraid I didn't understand you. Are you saying that you actually
+> were able to program NAND using BDI2000? I would like to know how you
+> achieved that. I suspect that was some kind of "indirect" procedure,
+> Ruedi wrote about, but please provide details.
+
+Uhm, it's possible that achieved that in an "indirect" way that I was
+not aware of. But as I said, the complete flash and ram was empty, just
+loaded=20
+the corresponding BDI config file to BDI2000 JTAG and I got access to
+flash memory where I placed the bootloader image. Hmm, anyway ;)
+
+The BDI config: http://www.ultsol.com/config/Emb%20Planet/83xx.cfg
 
 
-Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
+Best regards
 
----
- arch/powerpc/boot/dts/lite5200.dts  |    2 +-
- arch/powerpc/boot/dts/lite5200b.dts |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-Index: work-powerpc.git/arch/powerpc/boot/dts/lite5200.dts
-===================================================================
---- work-powerpc.git.orig/arch/powerpc/boot/dts/lite5200.dts
-+++ work-powerpc.git/arch/powerpc/boot/dts/lite5200.dts
-@@ -67,7 +67,7 @@
- 			interrupt-controller;
- 			#interrupt-cells = <3>;
- 			device_type = "interrupt-controller";
--			compatible = "mpc5200_pic";
-+			compatible = "mpc5200-pic";
- 			reg = <500 80>;
- 			built-in;
- 		};
-Index: work-powerpc.git/arch/powerpc/boot/dts/lite5200b.dts
-===================================================================
---- work-powerpc.git.orig/arch/powerpc/boot/dts/lite5200b.dts
-+++ work-powerpc.git/arch/powerpc/boot/dts/lite5200b.dts
-@@ -67,7 +67,7 @@
- 			interrupt-controller;
- 			#interrupt-cells = <3>;
- 			device_type = "interrupt-controller";
--			compatible = "mpc5200b-pic\0mpc5200_pic";
-+			compatible = "mpc5200b-pic\0mpc5200-pic";
- 			reg = <500 80>;
- 			built-in;
- 		};
+Frank
