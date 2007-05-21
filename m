@@ -1,19 +1,22 @@
-Return-Path: <monodhs@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 52183DDE0F
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 08:47:23 +1000 (EST)
-Message-ID: <4652219D.6050308@gmx.de>
-Date: Tue, 22 May 2007 00:47:57 +0200
-From: =?UTF-8?B?Q2hyaXN0aWFuIELDtmhtZQ==?= <monodhs@gmx.de>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AE0C5DDE21
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 09:15:12 +1000 (EST)
 Subject: Re: Interrupt routing broken on TiBook IV with 2.6.21.x ?
-References: <4650E27B.3020401@gmx.de>	
-	<1179712614.32247.597.camel@localhost.localdomain>	
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christian =?ISO-8859-1?Q?B=F6hme?= <monodhs@gmx.de>
+In-Reply-To: <4652219D.6050308@gmx.de>
+References: <4650E27B.3020401@gmx.de>
+	<1179712614.32247.597.camel@localhost.localdomain>
 	<4651FC48.8000002@gmx.de>
 	<1179785502.32247.748.camel@localhost.localdomain>
-In-Reply-To: <1179785502.32247.748.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	<4652219D.6050308@gmx.de>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 22 May 2007 09:15:04 +1000
+Message-Id: <1179789304.32247.760.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,21 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
+On Tue, 2007-05-22 at 00:47 +0200, Christian Böhme wrote:
+> It's not that I am not interested nor completely new to this, it's just that
+> I am currently a little short on time for things like these.  The last time
+> I checked, the Linux people have just started to make use of DMA maps, a
+> concept that other OS/architecture combos employed for years already.  Is
+> that what is used in the TiBooks to allocate DMA channels ?
 
-> Or it could be the DMA channel going dead though I fail to see why it
-> would just start doing that now.
+I'm not sure what you are talking about here. DMA mapping has existed in
+linux for years.
 
-...
-
-> Not sure where to start :-) I'll first see if I can reproduce.
-
-It's not that I am not interested nor completely new to this, it's just that
-I am currently a little short on time for things like these.  The last time
-I checked, the Linux people have just started to make use of DMA maps, a
-concept that other OS/architecture combos employed for years already.  Is
-that what is used in the TiBooks to allocate DMA channels ?
-
-
-Cheers,
-Christian
+Ben.
