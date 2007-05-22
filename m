@@ -1,22 +1,24 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id 4C4A4DDE28
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 18:46:55 +1000 (EST)
-From: Gabriel Paubert <paubert@iram.es>
-Date: Tue, 22 May 2007 10:46:46 +0200
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 47E3FDDE09
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 19:02:11 +1000 (EST)
+Subject: Re: [PATCH 07/13] Implement arch disable/enable irq hooks.
+From: Johannes Berg <johannes@sipsolutions.net>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: fsl booke MM vs. SMP questions
-Message-ID: <20070522084645.GA12009@iram.es>
-References: <1179731215.32247.659.camel@localhost.localdomain>
-	<1179741447.3660.7.camel@localhost.localdomain>
-	<1179742083.32247.689.camel@localhost.localdomain>
-	<1179747448.3660.22.camel@localhost.localdomain>
-	<1179785273.32247.742.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1179785273.32247.742.camel@localhost.localdomain>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Dave Liu <r63238@freescale.com>,
-	Paul Mackerras <paulus@samba.org>, Kumar Gala <galak@gate.crashing.org>
+In-Reply-To: <1179818066.32247.812.camel@localhost.localdomain>
+References: <20070507182950.GF26920@ld0162-tx32.am.freescale.net>
+	<1179762902.9122.19.camel@johannes.berg>
+	<1179818066.32247.812.camel@localhost.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-IeNmZnchNYC8V/K/B2nq"
+Date: Tue, 22 May 2007 11:03:09 +0200
+Message-Id: <1179824589.3673.1.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,44 +28,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 22, 2007 at 08:07:52AM +1000, Benjamin Herrenschmidt wrote:
-> 
-> > > The tlb miss handler does:
-> > > 
-> > >  - tlbbusy = 1
-> > >  - barrier (make sure the following read is in order vs. the previous
-> > > store to tlbbusy)
-> > >  - read linux PTE value
-> > >  - write it to the HW TLB
-> > 
-> > and write the linux PTE with referenced bit?
-> 
-> I've kept the reference bit rewrite out of that pseudo-code because I
-> was approaching a different issue but yes. The idea i have there is to
-> do break down the linux PTE operation that way:
-> 
-> 	 1 - rX = read PTE value (normal load)
-> 	 2 - if (!_PAGE_PRESENT)) -> out
->  	 3 - rY = rX | _PAGE_ACCESSED
-> 	 4 - if (rX != rY)
-> 	 5 -   rZ = lwarx PTE value
-> 	 6 -   if (rZ != rX)
-> 	 7 -	stdcx. PTE, rZ (rewrite just read value to clear reserv)
 
-Why do you want to clear the reservation here? 
+--=-IeNmZnchNYC8V/K/B2nq
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Coming out of some code path with the reservation still held 
-can only affect buggy code (someone doing st[dw]cx. before 
-l[dw]arx) AFAIK.
+On Tue, 2007-05-22 at 17:14 +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2007-05-21 at 17:55 +0200, Johannes Berg wrote:
+> >=20
+> > Then again, if we don't implement these in common code, might we get
+> > link problems when we try building some multiplatform kernel?
+>=20
+> That's what ppc_md is for :-)
 
-> 	 8 - 	goto 1 (try again)
-> 	 9 -   stdcx. PTE, rY
-> 	10 -   if failed -> goto 1 (try again)
-> 	11 - that's it ! 
-> 
-> In addition, I suppose performance can be improved by also dealing with
-> dirty bit right in the TLB refill if the access is a write and the page
-> is writeable rather than taking a double fault.
+So you're saying we should globally implement
+arch_suspend_irq_{enable,disable} and then call some ppc_md hook? Sounds
+good to me as well, I'd like to ask for a revision of this patch
+including that, then I'll update my patches for that.
 
-	Regards,
-	Gabriel
+johannes
+
+--=-IeNmZnchNYC8V/K/B2nq
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGUrHN/ETPhpq3jKURAq1WAKC1zVbBtIdl+UMkpwFpuJqIq1K71wCffYoV
+YMkuHcdLEnGg3U88ygCA16E=
+=UsD6
+-----END PGP SIGNATURE-----
+
+--=-IeNmZnchNYC8V/K/B2nq--
