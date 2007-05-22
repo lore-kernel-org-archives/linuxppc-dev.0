@@ -1,16 +1,21 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 36391DDE17
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 07:08:28 +1000 (EST)
-Date: Tue, 22 May 2007 23:08:25 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 10/13] mpc83xx: Power Management support
-In-Reply-To: <20070507182955.GI26920@ld0162-tx32.am.freescale.net>
-Message-ID: <Pine.LNX.4.60.0705222301070.4243@poirot.grange>
-References: <20070507182955.GI26920@ld0162-tx32.am.freescale.net>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D0988DDE0F
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 07:19:50 +1000 (EST)
+Message-ID: <46535DC7.6080807@freescale.com>
+Date: Tue, 22 May 2007 16:16:55 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH 10/13] mpc83xx: Power Management support
+References: <20070507182955.GI26920@ld0162-tx32.am.freescale.net>
+	<Pine.LNX.4.60.0705222301070.4243@poirot.grange>
+In-Reply-To: <Pine.LNX.4.60.0705222301070.4243@poirot.grange>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,48 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 7 May 2007, Scott Wood wrote:
+Guennadi Liakhovetski wrote:
+>>+	/* There can only be one fsl,mpc83xx-pmc device in the system;
+>>+	 * it is assumed that it is the one that the pmc driver matches.
+>>+	 */
+>>+	if (of_device_is_compatible(sleep_controller, "fsl,mpc83xx-pmc")) {
+>>+		sleep->sccr_mask = sleepdata[1];
+>>+		ret = 0;
+>>+	}
+> 
+> 
+> Just wondering - do we really want to special-case 83xx-pmc here? What 
+> when / if further "sleep controllers" get implemented? Shouldn't this be 
+> some callback?
 
-> diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-> index 3b99433..1fd9f51 100644
-> --- a/arch/powerpc/sysdev/fsl_soc.c
-> +++ b/arch/powerpc/sysdev/fsl_soc.c
-> @@ -138,6 +138,33 @@ u32 get_baudrate(void)
->  EXPORT_SYMBOL(get_baudrate);
->  #endif /* CONFIG_CPM2 */
->  
-> +int fsl_sleep_init(struct fsl_sleep_platform_data *sleep,
-> +                   struct device_node *node)
-> +{
-> +	int proplen, ret = -ENODEV;
-> +	const u32 *sleepdata = of_get_property(node, "sleep", &proplen);
-> +	struct device_node *sleep_controller;
-> +
-> +	if (!sleepdata || proplen != 8)
-> +		return -ENODEV;
-> +
-> +	sleep_controller = of_find_node_by_phandle(sleepdata[0]);
-> +	if (!sleep_controller)
-> +		return -ENODEV;
-> +
-> +	/* There can only be one fsl,mpc83xx-pmc device in the system;
-> +	 * it is assumed that it is the one that the pmc driver matches.
-> +	 */
-> +	if (of_device_is_compatible(sleep_controller, "fsl,mpc83xx-pmc")) {
-> +		sleep->sccr_mask = sleepdata[1];
-> +		ret = 0;
-> +	}
+The quick and ugly thing would be more if checks.  The ideal solution 
+would be a mechanism to look up a device by phandle, returning an ops 
+struct corresponding to the requested class (if the device supports it).
 
-Just wondering - do we really want to special-case 83xx-pmc here? What 
-when / if further "sleep controllers" get implemented? Shouldn't this be 
-some callback?
+> BTW, do we have an interface similar to platform-driver/device for of? 
+> Like of_driver/device. This would be a use case for it. Just register a 
+> of_driver, which would trigger a dt-scan (just a find_compatible), calling 
+> driver's probe()... Would it make sense?
 
-BTW, do we have an interface similar to platform-driver/device for of? 
-Like of_driver/device. This would be a use case for it. Just register a 
-of_driver, which would trigger a dt-scan (just a find_compatible), calling 
-driver's probe()... Would it make sense?
+See asm-powerpc/of_platform.h.  However, that won't help find the driver 
+  you need to talk to if all you have is a phandle.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+-Scott
