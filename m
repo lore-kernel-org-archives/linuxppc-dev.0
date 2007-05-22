@@ -1,31 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 89F3CDDE3F
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 09:28:37 +1000 (EST)
-Subject: Re: [PATCH/RFC] Rework ptep_set_access_flags and fix sun4c
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mark Fortescue <mark@mtfhpc.demon.co.uk>
-In-Reply-To: <Pine.LNX.4.61.0705222247010.5890@mtfhpc.demon.co.uk>
-References: <Pine.LNX.4.61.0705012354290.12808@mtfhpc.demon.co.uk>
-	<20070509231937.ea254c26.akpm@linux-foundation.org>
-	<1178778583.14928.210.camel@localhost.localdomain>
-	<20070510.001234.126579706.davem@davemloft.net>
-	<Pine.LNX.4.64.0705142018090.18453@blonde.wat.veritas.com>
-	<1179176845.32247.107.camel@localhost.localdomain>
-	<1179212184.32247.163.camel@localhost.localdomain>
-	<1179757647.6254.235.camel@localhost.localdomain>
-	<1179815339.32247.799.camel@localhost.localdomain>
-	<Pine.LNX.4.61.0705222247010.5890@mtfhpc.demon.co.uk>
-Content-Type: text/plain
-Date: Wed, 23 May 2007 09:28:14 +1000
-Message-Id: <1179876494.32247.887.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linux-mm@kvack.org, wli@holomorphy.com, linuxppc-dev@ozlabs.org,
-	andrea@suse.de, "Tom \"spot\" Callaway" <tcallawa@redhat.com>,
-	sparclinux@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
-	akpm@linux-foundation.org, David Miller <davem@davemloft.net>
+Return-Path: <djiang@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 5A620DDF2C
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 09:28:43 +1000 (EST)
+Date: Tue, 22 May 2007 16:28:49 -0700
+From: Dave Jiang <djiang@mvista.com>
+To: paulus@samba.org, galak@kernel.crashing.org
+Subject: [PATCH] powerpc: publish 85xx soc dts entries as of_device on cds
+	and ads platforms
+Message-ID: <20070522232849.GA26092@blade.az.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org, bluesmoke-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,15 +20,97 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-05-22 at 22:52 +0100, Mark Fortescue wrote:
-> Hi Benjamin,
-> 
-> I have just tested this patch on my Sun4c Sparcstation 1 using my 2.6.20.9 
-> test kernel without any problems.
-> 
-> Thank you for the work.
+Publish the devices listed in dts under SOC as of_device just like what
+mpc85xx_mds platforms do. The 85xx cds and ads platforms currently do not
+export the devices in dts as of_device.
 
-Wow, there is more than one user of these still ! :-)
+I need the memory controller, L2 cache-controller, and the PCI controller
+published as of_device so the mpc85xx EDAC driver can claim them for usage.
 
-Cheers,
-Ben.
+The mpc85xx EDAC driver can be found at:
+http://bluesmoke.sourceforge.net/
+
+It's in development to be pushed into the kernel.
+
+Signed-off-by: Dave Jiang <djiang@mvista.com>
+
+---
+
+ arch/powerpc/platforms/85xx/mpc85xx_ads.c |   19 +++++++++++++++++++
+ arch/powerpc/platforms/85xx/mpc85xx_cds.c |   19 +++++++++++++++++++
+ 2 files changed, 38 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+index 5d27621..217cc13 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+@@ -18,6 +18,8 @@
+ #include <linux/delay.h>
+ #include <linux/seq_file.h>
+ 
++#include <asm/of_device.h>
++#include <asm/of_platform.h>
+ #include <asm/system.h>
+ #include <asm/time.h>
+ #include <asm/machdep.h>
+@@ -277,6 +279,23 @@ static int __init mpc85xx_ads_probe(void)
+         return of_flat_dt_is_compatible(root, "MPC85xxADS");
+ }
+ 
++static struct of_device_id mpc85xx_ids[] = {
++	{ .type = "soc", },
++	{ .compatible = "soc", },
++	{},
++};
++
++static int __init mpc85xx_publish_devices(void)
++{
++	if (!machine_is(mpc85xx_ads))
++		return 0;
++
++	of_platform_bus_probe(NULL, mpc85xx_ids, NULL);
++
++	return 0;
++}
++device_initcall(mpc85xx_publish_devices);
++
+ define_machine(mpc85xx_ads) {
+ 	.name			= "MPC85xx ADS",
+ 	.probe			= mpc85xx_ads_probe,
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+index 1490eb3..77ef0cf 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+@@ -26,6 +26,8 @@
+ #include <linux/module.h>
+ #include <linux/fsl_devices.h>
+ 
++#include <asm/of_device.h>
++#include <asm/of_platform.h>
+ #include <asm/system.h>
+ #include <asm/pgtable.h>
+ #include <asm/page.h>
+@@ -296,6 +298,23 @@ static int __init mpc85xx_cds_probe(void)
+         return of_flat_dt_is_compatible(root, "MPC85xxCDS");
+ }
+ 
++static struct of_device_id mpc85xx_ids[] = {
++	{ .type = "soc", },
++	{ .compatible = "soc", },
++	{},
++};
++
++static int __init mpc85xx_publish_devices(void)
++{
++	if (!machine_is(mpc85xx_cds))
++		return 0;
++
++	of_platform_bus_probe(NULL, mpc85xx_ids, NULL);
++
++	return 0;
++}
++device_initcall(mpc85xx_publish_devices);
++
+ define_machine(mpc85xx_cds) {
+ 	.name		= "MPC85xx CDS",
+ 	.probe		= mpc85xx_cds_probe,
