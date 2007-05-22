@@ -1,24 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8EEBCDDE44
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 09:29:32 +1000 (EST)
-Subject: Re: [PATCH/RFC] Rework ptep_set_access_flags and fix sun4c
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20070522.145340.59657045.davem@davemloft.net>
-References: <1179757647.6254.235.camel@localhost.localdomain>
-	<1179815339.32247.799.camel@localhost.localdomain>
-	<Pine.LNX.4.61.0705222247010.5890@mtfhpc.demon.co.uk>
-	<20070522.145340.59657045.davem@davemloft.net>
-Content-Type: text/plain
-Date: Wed, 23 May 2007 09:29:14 +1000
-Message-Id: <1179876554.32247.889.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: mark@mtfhpc.demon.co.uk, linux-mm@kvack.org, wli@holomorphy.com,
-	linuxppc-dev@ozlabs.org, andrea@suse.de, tcallawa@redhat.com,
-	sparclinux@vger.kernel.org, hugh@veritas.com, akpm@linux-foundation.org
+Return-Path: <linas@austin.ibm.com>
+Date: Tue, 22 May 2007 18:36:24 -0500
+To: Jeff Garzik <jgarzik@pobox.com>, Andrew Morton <akpm@osdl.org>
+Subject: [PATCH 4/10] spidernet: zero out a pointer.
+Message-ID: <20070522233624.GC2147@austin.ibm.com>
+References: <20070522230942.GT5921@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070522230942.GT5921@austin.ibm.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: netdev@vger.kernel.org, Florin Malita <fmalita@gmail.com>,
+	cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,25 +19,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-05-22 at 14:53 -0700, David Miller wrote:
-> From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
-> Date: Tue, 22 May 2007 22:52:13 +0100 (BST)
-> 
-> > Hi Benjamin,
-> > 
-> > I have just tested this patch on my Sun4c Sparcstation 1 using my 2.6.20.9 
-> > test kernel without any problems.
-> > 
-> > Thank you for the work.
-> 
-> Thanks for your testing.
-> 
-> Someone please merge this in once any remaining issues have
-> been resolved :-)
 
-I'll send a patch fixing the couple of x86/ia64 nits & my bad english
-spelling (no, I don't happen to raise castrated rams) as soon as I reach
-the office later today.
+Invalidate a pointer as its pci_unmap'ed; this is a bit of 
+paranoia to make sure hardware doesn't continue trying to 
+DMA to it.
 
-Cheers,
-Ben.
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+
+----
+ drivers/net/spider_net.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+Index: netdev-2.6/drivers/net/spider_net.c
+===================================================================
+--- netdev-2.6.orig/drivers/net/spider_net.c	2007-05-22 18:03:30.000000000 -0500
++++ netdev-2.6/drivers/net/spider_net.c	2007-05-22 18:03:32.000000000 -0500
+@@ -1069,6 +1069,7 @@ spider_net_decode_one_descr(struct spide
+ 	struct spider_net_descr_chain *chain = &card->rx_chain;
+ 	struct spider_net_descr *descr = chain->tail;
+ 	struct spider_net_hw_descr *hwdescr = descr->hwdescr;
++	u32 hw_buf_addr;
+ 	int status;
+ 
+ 	status = spider_net_get_descr_status(hwdescr);
+@@ -1082,7 +1083,9 @@ spider_net_decode_one_descr(struct spide
+ 	chain->tail = descr->next;
+ 
+ 	/* unmap descriptor */
+-	pci_unmap_single(card->pdev, hwdescr->buf_addr,
++	hw_buf_addr = hwdescr->buf_addr;
++	hwdescr->buf_addr = 0x0;
++	pci_unmap_single(card->pdev, hw_buf_addr,
+ 			SPIDER_NET_MAX_FRAME, PCI_DMA_FROMDEVICE);
+ 
+ 	if ( (status == SPIDER_NET_DESCR_RESPONSE_ERROR) ||
+@@ -1118,7 +1121,7 @@ spider_net_decode_one_descr(struct spide
+ 		pr_err("%s: bad status, cmd_status=x%08x\n",
+ 			       card->netdev->name,
+ 			       hwdescr->dmac_cmd_status);
+-		pr_err("buf_addr=x%08x\n", hwdescr->buf_addr);
++		pr_err("buf_addr=x%08x\n", hw_buf_addr);
+ 		pr_err("buf_size=x%08x\n", hwdescr->buf_size);
+ 		pr_err("next_descr_addr=x%08x\n", hwdescr->next_descr_addr);
+ 		pr_err("result_size=x%08x\n", hwdescr->result_size);
