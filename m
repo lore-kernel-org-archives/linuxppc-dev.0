@@ -1,33 +1,22 @@
-Return-Path: <hugh@veritas.com>
-Received: from extu-mxob-2.symantec.com (extu-mxob-2.symantec.com
-	[216.10.194.135])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-08.arcor-online.net (mail-in-08.arcor-online.net
+	[151.189.21.48])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "extu-mxob-2.symantec.com",
-	Issuer "VeriSign Trust Network" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 2F1CEDDE28
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 05:52:00 +1000 (EST)
-Date: Tue, 22 May 2007 18:04:54 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH/RFC] Rework ptep_set_access_flags and fix sun4c
-In-Reply-To: <1179815339.32247.799.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0705221738020.22822@blonde.wat.veritas.com>
-References: <Pine.LNX.4.61.0705012354290.12808@mtfhpc.demon.co.uk>
-	<20070509231937.ea254c26.akpm@linux-foundation.org>
-	<1178778583.14928.210.camel@localhost.localdomain>
-	<20070510.001234.126579706.davem@davemloft.net>
-	<Pine.LNX.4.64.0705142018090.18453@blonde.wat.veritas.com>
-	<1179176845.32247.107.camel@localhost.localdomain>
-	<1179212184.32247.163.camel@localhost.localdomain>
-	<1179757647.6254.235.camel@localhost.localdomain>
-	<1179815339.32247.799.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: mark@mtfhpc.demon.co.uk, linux-mm@kvack.org, wli@holomorphy.com,
-	linuxppc-dev@ozlabs.org, andrea@suse.de,
-	"Tom \"spot\" Callaway" <tcallawa@redhat.com>,
-	sparclinux@vger.kernel.org, akpm@linux-foundation.org,
-	David Miller <davem@davemloft.net>
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2A0A0DDE22
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 06:08:25 +1000 (EST)
+In-Reply-To: <1179862732.25914.40.camel@pterry-fc6.micromemory.com>
+References: <1179862732.25914.40.camel@pterry-fc6.micromemory.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <c893fd7a08d9f2a8250a44045ce469bf@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Porting RapidIO from ppc arch to powerpc arch in support of
+	MPC8641D
+Date: Tue, 22 May 2007 22:08:17 +0200
+To: pterry@micromemory.com
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,119 +26,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 22 May 2007, Benjamin Herrenschmidt wrote:
+> srio@c0000 {
 
-> This patch reworks ptep_set_access_flags() and the callers so that the
-> comparison to the old PTE is done inside that function, which then
-> returns wether an update_mmu_cache() is needed. That allows fixing
-> the sun4c situation where update_mmu_cache() needs to be forced,
-> always.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> 
-> Ok, so that's only compile tested on sparc32 and powerpc 32 bits, boot
-> tested on powerpc64 and not tested on others (I could use some help
-> testing x86, x86_64 and s390 who also have their own implementations).
+Isn't there a nicer name, like "rapidio"?
 
-Looks pretty good to me.
+>                 device_type = "srio";
 
-There was a minor build error in x86 (see below), and ia64 is missing
-(again see below).  I've now built and am running this on x86, x86_64
-and powerpc64; but I'm very unlikely to be doing anything which
-actually tickles these changes, or Andrea's original handle_pte_fault
-optimization.
+No device_type please.
 
-Would the "__changed && __dirty" architectures (x86, x86_64, ia64)
-be better off saying __changed = __dirty && pte_same?  I doubt it's
-worth bothering about.
+>                 compatible = "86xx,85xx";
 
-You've updated do_wp_page to do "if (ptep_set_access_flags(...",
-but not updated set_huge_ptep_writable in the same way: I'd have
-thought you'd either leave both alone, or update them both: any
-reason for one not the other?  But again, not really an issue.
+compatible = "fsl,8641d-rapidio", "fsl,8540-rapidio";
+and the latter only if the 8641d can actually be driven
+as-if it were a 8540.
 
-These changes came about because the sun4c needs to update_mmu_cache
-even in the pte_same case: might it also need to flush_tlb_page then?
+> 		reg = <c0000 20000>;
+> 		law = <400000000 e00000000>;
+
+What does "law" mean?  Please use a better name.  And
+you write this as <4 0 e 0>.
+
+> 		dbells = <0 ffff>;
+
+"doorbells"
+
+> 		mboxs = <0 4>;
+
+"mailboxes"
+
+> I'm
+> assuming we are supposed to do away with all the CONFIG_RAPIDIO,
+
+You still need config options to enable support for
+rapidio etc.  The DTB is used at runtime to detect
+what devices are actually there.
+
+> btw how to I get the dtc to accept 36-bit numbers as above for laws?
+
+The numbers inside < > are 32-bit integers.  64-bit
+numbers are encoded as a pair of these.
+
+> and am I allowed to invent properties like this or is there some keeper
+> of the property names who I should genuflect before?
+
+It would be nice to have a proper device binding for
+rapidio, just like for PCI etc.  Since there isn't one
+yet, try to invent one that would work for _all_ rapidio
+hosts, so there won't be too many changes needed if
+later a more generic device binding evolves.
+
+Don't worry about it too much, just use common sense,
+and you'll end up with an ad-hoc binding for this device
+only that will work just fine; do the generic thing
+later, when you have at least a chance to get it right ;-)
 
 
-> --- linux-work.orig/include/asm-generic/pgtable.h	2007-05-22 15:04:45.000000000 +1000
-> +++ linux-work/include/asm-generic/pgtable.h	2007-05-22 15:32:21.000000000 +1000
-> @@ -27,13 +27,20 @@ do {				  					\
->   * Largely same as above, but only sets the access flags (dirty,
->   * accessed, and writable). Furthermore, we know it always gets set
->   * to a "more permissive" setting, which allows most architectures
-> - * to optimize this.
-> + * to optimize this. We return wether the PTE actually changed, which
-
-                                  whether
-
-> + * in turn instructs the caller to do things like update__mmu_cache.
-
-                                                     update_mmu_cache.
-
-> + * This used to be done in the caller, but sparc needs minor faults to
-> + * force that call on sun4c so we changed this macro slightly
->   */
-
-> --- linux-work.orig/include/asm-i386/pgtable.h	2007-05-22 15:06:17.000000000 +1000
-> +++ linux-work/include/asm-i386/pgtable.h	2007-05-22 15:16:11.000000000 +1000
-> @@ -285,13 +285,15 @@ static inline pte_t native_local_ptep_ge
->   */
->  #define  __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
->  #define ptep_set_access_flags(vma, address, ptep, entry, dirty)		\
-> -do {									\
-> -	if (dirty) {							\
-> +({									\
-> +	int __changed = !pte_same(*(__ptep), __entry);			\
-
-That just needs to be:
-
-  +	int __changed = !pte_same(*(ptep), entry);			\
-
-> +	if (__changed && dirty) {					\
->  		(ptep)->pte_low = (entry).pte_low;			\
->  		pte_update_defer((vma)->vm_mm, (address), (ptep));	\
->  		flush_tlb_page(vma, address);				\
->  	}								\
-> -} while (0)
-> +	__changed;							\
-> +})
-
-Here's what I think the ia64 hunk would be, unbuilt and untested.
-
---- linux-work.orig/include/asm-ia64/pgtable.h	2007-05-13 05:41:00.000000000 +0100
-+++ linux-work/include/asm-ia64/pgtable.h	2007-05-22 17:33:58.000000000 +0100
-@@ -533,16 +533,23 @@ extern void lazy_mmu_prot_update (pte_t 
-  * daccess_bit in ivt.S).
-  */
- #ifdef CONFIG_SMP
--# define ptep_set_access_flags(__vma, __addr, __ptep, __entry, __safely_writable)	\
--do {											\
--	if (__safely_writable) {							\
--		set_pte(__ptep, __entry);						\
--		flush_tlb_page(__vma, __addr);						\
--	}										\
--} while (0)
-+# define ptep_set_access_flags(__vma, __addr, __ptep, __entry, __safely_writable) \
-+({									\
-+	int __changed = !pte_same(*(__ptep), __entry);			\
-+	if (__changed && __safely_writable) {				\
-+		set_pte(__ptep, __entry);				\
-+		flush_tlb_page(__vma, __addr);				\
-+	}								\
-+	__changed;							\
-+})
- #else
--# define ptep_set_access_flags(__vma, __addr, __ptep, __entry, __safely_writable)	\
--	ptep_establish(__vma, __addr, __ptep, __entry)
-+# define ptep_set_access_flags(__vma, __addr, __ptep, __entry, __safely_writable) \
-+({									\
-+	int __changed = !pte_same(*(__ptep), __entry);			\
-+	if (__changed)							\
-+		ptep_establish(__vma, __addr, __ptep, __entry);		\
-+	__changed;							\
-+})
- #endif
- 
- #  ifdef CONFIG_VIRTUAL_MEM_MAP
+Segher
