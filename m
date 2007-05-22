@@ -1,15 +1,17 @@
-Return-Path: <linas@austin.ibm.com>
-Date: Tue, 22 May 2007 18:52:37 -0500
-To: Jeff Garzik <jgarzik@pobox.com>, Andrew Morton <akpm@osdl.org>
-Subject: [PATCH 10/10] spidernet: increase the NAPI weight
-Message-ID: <20070522235237.GI2147@austin.ibm.com>
-References: <20070522230942.GT5921@austin.ibm.com>
+Return-Path: <djiang@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id BC136DE1FF
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 09:53:01 +1000 (EST)
+Received: from [10.50.1.77] (blade.az.mvista.com [10.50.1.77])
+	by hermes.mvista.com (Postfix) with ESMTP id A6CAC1D480
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 16:53:00 -0700 (PDT)
+Message-ID: <46538264.2050000@mvista.com>
+Date: Tue, 22 May 2007 16:53:08 -0700
+From: Dave Jiang <djiang@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070522230942.GT5921@austin.ibm.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: netdev@vger.kernel.org, Florin Malita <fmalita@gmail.com>,
-	cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC] BOOKE watchdog and kexec
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,35 +21,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+What would be the appropriate way to deal with the BOOKE watchdog in order to
+properly kexec? The BOOKE watchdog cannot be disabled. With the current
+implementation, a watchdog daemon in userland is required to poke the
+/dev/watchdog continously in order to keep it from going off. In the kexec
+situation, the watchdog daemon in userland goes away when the new kernel is
+executed. It is very possible that the new kernel can potentially timeout on a
+certain hardware device initialization (i.e. SCSI discovery/timeout) and causes
+the watchdog to go off and reset the hardware. The reset is of course not
+wanted in this situation.
 
-Another way of minimizing the likelyhood of RX ram from overflowing
-is to empty out the entire rx ring every chance we get. Change
-the crazy watchdog timeout from 50 seconds to 3 seconds, while
-we're here.
+Several solutions comes into mind:
+1. Have the kernel timer poke the watchdog. This would ensure situation
+described above would never happen. I think x86 does this with NMI watchdog.
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+2. Have the watchdog driver spawn a kernel thread to poke the watchdog at a
+periodic time. Or perhaps use the delayed-work mechanism to do that.
 
-----
- drivers/net/spider_net.h |    9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+3. Set the highest bit of the watchdog register so that it does not expire for
+2^32 ticks.
 
-Index: netdev-2.6/drivers/net/spider_net.h
-===================================================================
---- netdev-2.6.orig/drivers/net/spider_net.h	2007-05-22 18:03:24.000000000 -0500
-+++ netdev-2.6/drivers/net/spider_net.h	2007-05-22 18:03:43.000000000 -0500
-@@ -56,8 +56,13 @@ extern char spider_net_driver_name[];
- 
- #define SPIDER_NET_RX_CSUM_DEFAULT		1
- 
--#define SPIDER_NET_WATCHDOG_TIMEOUT		50*HZ
--#define SPIDER_NET_NAPI_WEIGHT			64
-+#define SPIDER_NET_WATCHDOG_TIMEOUT		3*HZ
-+
-+/* We really really want to empty the ring buffer every time,
-+ * so as to avoid the RX ram full bug. So set the napi weight
-+ * to the ring size.
-+ */
-+#define SPIDER_NET_NAPI_WEIGHT			SPIDER_NET_RX_DESCRIPTORS_DEFAULT
- 
- #define SPIDER_NET_FIRMWARE_SEQS	6
- #define SPIDER_NET_FIRMWARE_SEQWORDS	1024
+IMHO, #2 seems to be a reasonable approach. Comments please?
+
+-- 
+
+------------------------------------------------------
+Dave Jiang
+Software Engineer
+MontaVista Software, Inc.
+http://www.mvista.com
+------------------------------------------------------
