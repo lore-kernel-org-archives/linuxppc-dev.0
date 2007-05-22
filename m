@@ -1,31 +1,18 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EA3C1DDE26
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 03:01:05 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4MFwvGF010574
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 11:58:57 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4MH10kT533412
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 13:01:00 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4MH10Cs031221
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 13:01:00 -0400
-Date: Tue, 22 May 2007 12:00:58 -0500
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] pseries: asm/pci-bridge.h CONFIG_ minor cleanup
-Message-ID: <20070522170058.GJ5921@austin.ibm.com>
-References: <20070521231816.GH5921@austin.ibm.com>
-	<1179794459.7189.2.camel@concordia.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1179794459.7189.2.camel@concordia.ozlabs.ibm.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <wfarnsworth@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id D997BDDE11
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 03:47:22 +1000 (EST)
+Subject: Re: [PATCH 0/5] Add the support for MPC8641 silicon rev 2.0 and
+	MPC8641HPCN board 2.0
+From: Wade Farnsworth <wfarnsworth@mvista.com>
+To: Zhang Wei <wei.zhang@freescale.com>
+In-Reply-To: <11798051102658-git-send-email-wei.zhang@freescale.com>
+References: <11798051102658-git-send-email-wei.zhang@freescale.com>
+Content-Type: text/plain
+Date: Tue, 22 May 2007 10:47:19 -0700
+Message-Id: <1179856039.27985.17.camel@rhino>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,25 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 22, 2007 at 10:40:59AM +1000, Michael Ellerman wrote:
-> On Mon, 2007-05-21 at 18:18 -0500, Linas Vepstas wrote:
-> > Use the correct CONFIG_ option to mark off the EEH bits.
+On Tue, 2007-05-22 at 11:38 +0800, Zhang Wei wrote:
+> Hi, Paul,
 > 
-> You're making the struct 4 bytes larger by creating a hole here :(
-
-Hmm. Perhaps I could shuffle one of the ints down ...  
-
-I figured there might be some vague cache-line benefits to
-getting the eeh stuff out of the way. 
-
-> >  	u32	config_space[16];	/* saved PCI config space */
-> > +#endif
+> The below 5 patches add the support for MPC8641 rev 2.0 silicon and MPC8641HPCN board 2.0.
 > 
-> It looks correct, but I think it's worth mentioning in the changelog
-> that config_space was previously unconditionally defined, but is now
-> within CONFIG_EEH.
+>   [PATCH 1/5] Remove the errata fix codes for MPC8641 silicon ver 1.0 which is end of life.
+>   [PATCH 2/5] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
+>   [PATCH 3/5] Float the pci bus number on MPC8641HPCN board.
+>   [PATCH 4/5] Set RC of mpc8641 to transparent bridge for transfer legacy I/O access.
+>   [PATCH 5/5] Set IDE in ULI1575 to not native mode.
+> 
+> The MPC8641 rev 2.0 silicon fix the PCI/PCI-Express errata in rev 1.0. And the rev 1.0 silicon is end of life. So the dts tree and codes should be changes. Codes which are not compatible with PCI/PCI-Express specifications are removed. Some minor issues are fixed.
+> 
+> Thanks!
+> 
+> Best Regards,
+> Zhang Wei
+> 
 
-I could just tell that someone would remark on this; why I didn't
-mention it, I don't know.
+I can't get your patches to apply to Paulus' tree.  Which tree are these
+against?
 
---linas 
+--Wade
