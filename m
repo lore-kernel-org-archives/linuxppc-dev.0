@@ -1,19 +1,17 @@
 Return-Path: <wei.zhang@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id F00D9DDE21
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 13:31:47 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 0678EDDE3A
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 13:31:49 +1000 (EST)
 From: Zhang Wei <wei.zhang@freescale.com>
 To: paulus@samba.org
-Subject: [PATCH 1/5] Remove the errata fix codes for MPC8641 silicon ver 1.0
-	which is end of life.
-Date: Tue, 22 May 2007 11:38:26 +0800
-Message-Id: <11798051101543-git-send-email-wei.zhang@freescale.com>
-In-Reply-To: <11798051102658-git-send-email-wei.zhang@freescale.com>
-References: <11798051102658-git-send-email-wei.zhang@freescale.com>
+Subject: [PATCH 0/5] Add the support for MPC8641 silicon rev 2.0 and
+	MPC8641HPCN board 2.0
+Date: Tue, 22 May 2007 11:38:25 +0800
+Message-Id: <11798051102658-git-send-email-wei.zhang@freescale.com>
 Sender: Zhang Wei <wei.zhang@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,93 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Remove the errata fix codes for MPC8641 silicon ver 1.0 which
-is end of life.
+Hi, Paul,
 
-The MPC8641 silicon ver 1.0 is not fully support PCI/PCI Express
-specifications. The revision 2.0 fixes all of these errata
-and the rev 1.0 silicon is end of life. So errata codes are removed.
+The below 5 patches add the support for MPC8641 rev 2.0 silicon and MPC8641HPCN board 2.0.
 
-Now, The chip is full compatible with PCI/PCI Express
-specifications. The generic PCI code is used.
+  [PATCH 1/5] Remove the errata fix codes for MPC8641 silicon ver 1.0 which is end of life.
+  [PATCH 2/5] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
+  [PATCH 3/5] Float the pci bus number on MPC8641HPCN board.
+  [PATCH 4/5] Set RC of mpc8641 to transparent bridge for transfer legacy I/O access.
+  [PATCH 5/5] Set IDE in ULI1575 to not native mode.
 
-Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
-Acked-by: Roy Zang <tie-fei.zang@freescale.com>
----
- arch/powerpc/Kconfig                  |    3 +--
- arch/powerpc/platforms/86xx/mpc86xx.h |    6 ------
- arch/powerpc/platforms/86xx/pci.c     |   10 +---------
- 3 files changed, 2 insertions(+), 17 deletions(-)
+The MPC8641 rev 2.0 silicon fix the PCI/PCI-Express errata in rev 1.0. And the rev 1.0 silicon is end of life. So the dts tree and codes should be changes. Codes which are not compatible with PCI/PCI-Express specifications are removed. Some minor issues are fixed.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index f768de3..42c2c57 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -175,7 +175,6 @@ config PPC_86xx
- 	bool "Freescale 86xx"
- 	select 6xx
- 	select FSL_SOC
--	select FSL_PCIE
- 	select PPC_FPU
- 	select ALTIVEC
- 	help
-@@ -647,7 +646,7 @@ config FSL_SOC
- 
- config FSL_PCIE
- 	bool
--	depends on PPC_86xx
-+	depends on PPC_85xx
- 
- # Yes MCA RS/6000s exist but Linux-PPC does not currently support any
- config MCA
-diff --git a/arch/powerpc/platforms/86xx/mpc86xx.h b/arch/powerpc/platforms/86xx/mpc86xx.h
-index 2834462..740b300 100644
---- a/arch/powerpc/platforms/86xx/mpc86xx.h
-+++ b/arch/powerpc/platforms/86xx/mpc86xx.h
-@@ -19,12 +19,6 @@ extern int add_bridge(struct device_node *dev);
- 
- extern int mpc86xx_exclude_device(u_char bus, u_char devfn);
- 
--extern void setup_indirect_pcie(struct pci_controller *hose,
--				       u32 cfg_addr, u32 cfg_data);
--extern void setup_indirect_pcie_nomap(struct pci_controller *hose,
--					     void __iomem *cfg_addr,
--					     void __iomem *cfg_data);
--
- extern void __init mpc86xx_smp_init(void);
- 
- #endif	/* __MPC86XX_H__ */
-diff --git a/arch/powerpc/platforms/86xx/pci.c b/arch/powerpc/platforms/86xx/pci.c
-index 8235c56..7efae7c 100644
---- a/arch/powerpc/platforms/86xx/pci.c
-+++ b/arch/powerpc/platforms/86xx/pci.c
-@@ -133,18 +133,10 @@ mpc86xx_setup_pcie(struct pci_controller *hose, u32 pcie_offset, u32 pcie_size)
- 	early_write_config_word(hose, 0, 0, PCI_COMMAND, cmd);
- 
- 	early_write_config_byte(hose, 0, 0, PCI_LATENCY_TIMER, 0x80);
--
--	/* PCIE Bus, Fix the MPC8641D host bridge's location to bus 0xFF. */
--	early_read_config_dword(hose, 0, 0, PCI_PRIMARY_BUS, &temps);
--	temps = (temps & 0xff000000) | (0xff) | (0x0 << 8) | (0xfe << 16);
--	early_write_config_dword(hose, 0, 0, PCI_PRIMARY_BUS, temps);
- }
- 
- int mpc86xx_exclude_device(u_char bus, u_char devfn)
- {
--	if (bus == 0 && PCI_SLOT(devfn) == 0)
--		return PCIBIOS_DEVICE_NOT_FOUND;
--
- 	return PCIBIOS_SUCCESSFUL;
- }
- 
-@@ -178,7 +170,7 @@ int __init add_bridge(struct device_node *dev)
- 	hose->first_busno = bus_range ? bus_range[0] : 0x0;
- 	hose->last_busno = bus_range ? bus_range[1] : 0xfe;
- 
--	setup_indirect_pcie(hose, rsrc.start, rsrc.start + 0x4);
-+	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4);
- 
- 	/* Setup the PCIE host controller. */
- 	mpc86xx_setup_pcie(hose, rsrc.start, rsrc.end - rsrc.start + 1);
--- 
-1.5.1
+Thanks!
+
+Best Regards,
+Zhang Wei
