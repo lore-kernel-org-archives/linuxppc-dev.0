@@ -1,30 +1,13 @@
-Return-Path: <tcallawa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
-	by ozlabs.org (Postfix) with ESMTP id 21C81DDE23
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 09:08:09 +1000 (EST)
-Subject: Re: [PATCH/RFC] Rework ptep_set_access_flags and fix sun4c
-From: "Tom \"spot\" Callaway" <tcallawa@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1179874748.32247.868.camel@localhost.localdomain>
-References: <Pine.LNX.4.61.0705012354290.12808@mtfhpc.demon.co.uk>
-	<20070509231937.ea254c26.akpm@linux-foundation.org>
-	<1178778583.14928.210.camel@localhost.localdomain>
-	<20070510.001234.126579706.davem@davemloft.net>
-	<Pine.LNX.4.64.0705142018090.18453@blonde.wat.veritas.com>
-	<1179176845.32247.107.camel@localhost.localdomain>
-	<1179212184.32247.163.camel@localhost.localdomain>
-	<1179757647.6254.235.camel@localhost.localdomain>
-	<1179815339.32247.799.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0705221738020.22822@blonde.wat.veritas.com>
-	<1179874748.32247.868.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 22 May 2007 18:04:54 -0500
-Message-Id: <1179875094.6254.310.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: mark@mtfhpc.demon.co.uk, linux-mm@kvack.org, wli@holomorphy.com,
-	linuxppc-dev@ozlabs.org, andrea@suse.de,
-	sparclinux@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
-	akpm@linux-foundation.org, David Miller <davem@davemloft.net>
+Return-Path: <linas@austin.ibm.com>
+Date: Tue, 22 May 2007 18:09:42 -0500
+To: Jeff Garzik <jgarzik@pobox.com>, Andrew Morton <akpm@osdl.org>
+Subject: [PATCH 1/10] spidernet: skb used after netif_receive_skb
+Message-ID: <20070522230942.GT5921@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: netdev@vger.kernel.org, Florin Malita <fmalita@gmail.com>,
+	cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,14 +17,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-05-23 at 08:59 +1000, Benjamin Herrenschmidt wrote:
+From: Florin Malita <fmalita@gmail.com>
 
-> Well, I don't know which is why I'm waiting for Tom Callaway to test.
-> Davem mentioned update_mmu_cache only though when we discussed the
-> problem initially.
+The stats update code in spider_net_pass_skb_up() is touching the skb 
+after it's been passed up to the stack. To avoid that, just update the 
+stats first.
 
-Mark already tested it and said it worked for him. This is sufficient
-for me, as I'm not sure how many Aurora sun4c users there actually are.
-If the extra bit turns out to be needed, I can push an update.
+Signed-off-by: Florin Malita <fmalita@gmail.com>
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+----
 
-~spot
+ drivers/net/spider_net.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/spider_net.c b/drivers/net/spider_net.c
+index 108adbf..1df2f0b 100644
+Index: netdev-2.6/drivers/net/spider_net.c
+===================================================================
+--- netdev-2.6.orig/drivers/net/spider_net.c	2007-05-21 17:40:49.000000000 -0500
++++ netdev-2.6/drivers/net/spider_net.c	2007-05-22 18:03:16.000000000 -0500
+@@ -1014,12 +1014,12 @@ spider_net_pass_skb_up(struct spider_net
+ 		 */
+ 	}
+ 
+-	/* pass skb up to stack */
+-	netif_receive_skb(skb);
+-
+ 	/* update netdevice statistics */
+ 	card->netdev_stats.rx_packets++;
+ 	card->netdev_stats.rx_bytes += skb->len;
++
++	/* pass skb up to stack */
++	netif_receive_skb(skb);
+ }
+ 
+ #ifdef DEBUG
