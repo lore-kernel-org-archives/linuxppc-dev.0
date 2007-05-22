@@ -1,21 +1,22 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
+Return-Path: <kim.phillips@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.osdl.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B0C7BDDDFF
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 06:21:41 +1000 (EST)
-Date: Tue, 22 May 2007 13:08:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Maxim Uvarov <muvarov@ru.mvista.com>
-Subject: Re: [PATCH] Performance Stats: Kernel patch
-Message-Id: <20070522130824.a78976aa.akpm@linux-foundation.org>
-In-Reply-To: <20070522171950.23728.95735.stgit@localhost.localdomain>
-References: <20070522171950.23728.95735.stgit@localhost.localdomain>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3171DDDE22
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 06:24:41 +1000 (EST)
+Date: Tue, 22 May 2007 15:24:27 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: will_schmidt@vnet.ibm.com
+Subject: Re: [PATCH] powerpc: Fix powerpc vmlinux.lds.S
+Message-Id: <20070522152427.24055847.kim.phillips@freescale.com>
+In-Reply-To: <1179846105.16032.75.camel@farscape.rchland.ibm.com>
+References: <1179808385.32247.791.camel@localhost.localdomain>
+	<1179846105.16032.75.camel@farscape.rchland.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 22 May 2007 17:19:52 +0000
-Maxim Uvarov <muvarov@ru.mvista.com> wrote:
+On Tue, 22 May 2007 10:01:44 -0500
+Will Schmidt <will_schmidt@vnet.ibm.com> wrote:
 
-> Sorry for bothering you. I know you are very busy but could 
-> you please tell me what is situation of this patch?
+> On Tue, 2007-22-05 at 14:33 +1000, Benjamin Herrenschmidt wrote:
+> > Sam's recent changes broke things for us, some stuff sneaked in before
+> > the entry point. In fact, we don't need that *(.text.*) thing anymore
+> > and it incorrectly matched .text.init.refok, thus putting it
+> > before .text. .. ouch !
+> 
+> ..  Which manifests itself on some systems as a hang after 
+> "returning from prom_init".  
+> 
+> 
+> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
+> Applying this makes my systems happy again... :-)
+> 
+same here.
 
-I'd like to add the context-switch accounting to the taskstats payload.
+> Acked-by:  Will Schmidt <will_schmidt@vnet.ibm.com>
+> 
+Acked-by:  Kim Phillips <kim.phillips@freescale.com>
 
-As we'd then need to uprev the taskstats payload and version it makes sense
-to have a look around, see if there's anything else which should be in
-there but got missed.
-
-
-
-I don't think we can accept the number-of-syscalls accounting feature.  It
-adds a memory increment into the kernel's number-one hotpath.  Something
-which people like to obsessively microbenchmark.
-
-And as I said earlier, a 32-bit counter can be overflowed in mere seconds,
-so that needs to become 64-bit, in which case we add a memory increment and
-a test-n-branch to that hottest path.
-
-
-There _is_ some cumulative overhead here, and I don't see how the value of
-the syscall counter can justify it.
+Kim
