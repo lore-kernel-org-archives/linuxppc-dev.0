@@ -1,22 +1,17 @@
-Return-Path: <x.xiao@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A0FBDDDDEA
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 06:42:00 +1000 (EST)
-Message-ID: <465354A0.5020502@freescale.com>
-Date: Tue, 22 May 2007 15:37:52 -0500
-From: xianghua xiao <x.xiao@freescale.com>
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 36391DDE17
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 07:08:28 +1000 (EST)
+Date: Tue, 22 May 2007 23:08:25 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 10/13] mpc83xx: Power Management support
+In-Reply-To: <20070507182955.GI26920@ld0162-tx32.am.freescale.net>
+Message-ID: <Pine.LNX.4.60.0705222301070.4243@poirot.grange>
+References: <20070507182955.GI26920@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
-To: Zhang Wei <wei.zhang@freescale.com>
-Subject: Re: [PATCH 2/5] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
-References: <11798051102658-git-send-email-wei.zhang@freescale.com>	<11798051101543-git-send-email-wei.zhang@freescale.com>
-	<1179805110272-git-send-email-wei.zhang@freescale.com>
-In-Reply-To: <1179805110272-git-send-email-wei.zhang@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,36 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-where is the new uli1575 node referred except for this added snippet?
-thanks,
-xianghua
+On Mon, 7 May 2007, Scott Wood wrote:
 
-Zhang Wei wrote:
-
->Add uli1575 pci-bridge sector. It fixes the issue of ULI1575 not found on rev.2 board.
->
->Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
->---
-> arch/powerpc/boot/dts/mpc8641_hpcn.dts      |    6 ++++++
-> arch/powerpc/boot/dts/mpc8641_hpcn_srio.dts |    6 ++++++
-> 2 files changed, 12 insertions(+), 0 deletions(-)
->
->diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
->index 260b264..04626b1 100644
->--- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
->+++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
->@@ -297,6 +297,12 @@
-> 				interrupts = <49 2>;
-> 				interrupt-parent = <&mpic>;
-> 			};
->+			uli1575: uli1575@100 {
->+				reg = <0 0 0 0 0>;
->+				pci_bridge@200 {
->+					reg = <0 0 0 0 0>;
->+				};
->+			};
-> 
-> 		};
-> 
+> diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+> index 3b99433..1fd9f51 100644
+> --- a/arch/powerpc/sysdev/fsl_soc.c
+> +++ b/arch/powerpc/sysdev/fsl_soc.c
+> @@ -138,6 +138,33 @@ u32 get_baudrate(void)
+>  EXPORT_SYMBOL(get_baudrate);
+>  #endif /* CONFIG_CPM2 */
 >  
->
+> +int fsl_sleep_init(struct fsl_sleep_platform_data *sleep,
+> +                   struct device_node *node)
+> +{
+> +	int proplen, ret = -ENODEV;
+> +	const u32 *sleepdata = of_get_property(node, "sleep", &proplen);
+> +	struct device_node *sleep_controller;
+> +
+> +	if (!sleepdata || proplen != 8)
+> +		return -ENODEV;
+> +
+> +	sleep_controller = of_find_node_by_phandle(sleepdata[0]);
+> +	if (!sleep_controller)
+> +		return -ENODEV;
+> +
+> +	/* There can only be one fsl,mpc83xx-pmc device in the system;
+> +	 * it is assumed that it is the one that the pmc driver matches.
+> +	 */
+> +	if (of_device_is_compatible(sleep_controller, "fsl,mpc83xx-pmc")) {
+> +		sleep->sccr_mask = sleepdata[1];
+> +		ret = 0;
+> +	}
+
+Just wondering - do we really want to special-case 83xx-pmc here? What 
+when / if further "sleep controllers" get implemented? Shouldn't this be 
+some callback?
+
+BTW, do we have an interface similar to platform-driver/device for of? 
+Like of_driver/device. This would be a use case for it. Just register a 
+of_driver, which would trigger a dt-scan (just a find_compatible), calling 
+driver's probe()... Would it make sense?
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
