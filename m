@@ -1,37 +1,21 @@
-Return-Path: <Wei.Zhang@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CA104DDE03
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 12:53:47 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l4M2rf5p014168
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 May 2007 19:53:41 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l4M2rdKg006815
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 May 2007 21:53:40 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH 5/5] PCI fixes for the MPC8641 Rev 2.0 silicon
-	andRev1.02hardware
-Date: Tue, 22 May 2007 10:53:38 +0800
-Message-ID: <46B96294322F7D458F9648B60E15112C2348A0@zch01exm26.fsl.freescale.net>
-In-Reply-To: <1179763271.8132.288.camel@rhino>
-References: <1179245829.8132.100.camel@rhino> <1179247809.8132.138.camel@rhino>
-	<46B96294322F7D458F9648B60E15112C23441B@zch01exm26.fsl.freescale.net>
-	<1179417813.8132.250.camel@rhino>
-	<744CD970-5421-47D6-A30A-C7C79BE21BE8@kernel.crashing.org>
-	<1179421139.8132.256.camel@rhino>
-	<46B96294322F7D458F9648B60E15112C23466B@zch01exm26.fsl.freescale.net>
-	<1179763271.8132.288.camel@rhino>
-From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-To: "Wade Farnsworth" <wfarnsworth@mvista.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2AEC8DDE27
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 13:05:28 +1000 (EST)
+In-Reply-To: <1179731215.32247.659.camel@localhost.localdomain>
+References: <1179731215.32247.659.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <6C00068B-AB80-44B3-A251-D40E693F085C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: fsl booke MM vs. SMP questions
+Date: Mon, 21 May 2007 22:03:41 -0500
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	Kumar Gala <galak@gate.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,22 +25,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi, Wade,
 
-That's a good news. These codes is one of our patches. I'll commit them
-myself.
+On May 21, 2007, at 2:06 AM, Benjamin Herrenschmidt wrote:
 
-Thanks!=20
+> Hi Folks !
+>
+> I see that the fsl booke code has some #ifdef CONFIG_SMP bits here or
+> there, thus I suppose there are some SMP implementations of these
+> right ?
 
--Wei
+There will be, the SMP code that exists was just some stuff I put in  
+w/o going through each case.  The TLB mgmt code does need some fixup  
+for SMP.
 
->=20
-> Hmm.  For some reason I thought that wouldn't work, but after some
-> testing it appears I was wrong.  I'll incorporate that into the next
-> version of the patchset.
->=20
-> Thanks.
->=20
-> --Wade
->=20
->=20
+- k
+
+>
+> I'm having some serious issues trying to figure out how the TLB
+> management is made SMP safe however.
+>
+> There are at least two main issues I've spotted at this point (there's
+> at least one more if there are HW threading, that is the TLB is shared
+> between logical processors, but I'll ignore that for now since I don't
+> think there is such a thing ... yet).
+>
+>  - How do you guys shield PTE flushing vs. TLB misses on another CPU ?
+> That is, how do you prevent (if you do) the following scenario:
+>
+> 	cpu 0				cpu 1
+> 	tlb miss			pte_clear (or similar)
+> 	load PTE value
+> 					write 0 to PTE (or replace)
+> 					tlbviax (tlbie)
+> 	tlbwe
+>
+> That scenario, as you can see, will leave you with stale entries in  
+> the
+> TLB which will ultimately lead to all sort of unpleasant/random
+> behaviours.
+>
+> If the answer is "oops ... we don't", then let's try to find out ways
+> out of that since I may have a similar issue in a not too distant
+> future :-) And I'm trying to find out a -fast- way to deal with that
+> without bloating the fast path. My main problem is that I want to  
+> avoid
+> taking a spin lock or equivalent atomic operation in the fast TLB  
+> reload
+> path (which would solve the problem) since lwarx/stwcx. are generally
+> real slow (hundreds of cycles on some processors).
+>
+>  - I see that your TLB miss handle is using a non-atomic store to  
+> write
+> the _PAGE_ACCESSED bit back to the PTE. Don't you have a similar race
+> where something would do:
+>
+> 	cpu 0				cpu 1
+> 	tlb miss			pte_clear (or similar)
+> 	load PTE value
+> 					write 0 to PTE (or replace)
+> 	write back PTE with _PAGE_ACCESSED
+> 	tlbwe
+>
+> This is an extension of the previous race but it's a different problem
+> so I listed it separately. In that case, the problem is worse,  
+> since not
+> only you have a stale TLB entry, but you -also- have corrupted the  
+> linux
+> PTE by writing back the old value in it.
+>
+> At this point, I'm afraid you may have no choice but going atomic,  
+> which
+> means paying the cost of lwarx/stwcx. on TLB misses, though if you  
+> have
+> a solution for the first problem, then you can avoid the atomic
+> operation in the second problem if _PAGE_ACCESSED is already set.
+>
+> If not, you might have to use a _PAGE_BUSY bit similar to what 64 bits
+> uses as a per-PTE lock, or use mmu_hash_lock... Unless you come up  
+> with
+> a great idea or some HW black magic that makes the problem go away...
+>
+> In any case, I'm curious about how you have or intend to solve that
+> since as I said above, I might be in a similar situation soon and am
+> trying to keep the TLB miss handler as fast as humanly possible.
+>
+> Cheers,
+> Ben.
+>
