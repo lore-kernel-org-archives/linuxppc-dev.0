@@ -1,23 +1,30 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.232])
-	by ozlabs.org (Postfix) with ESMTP id 5367ADDDE4
+Return-Path: <Martin.Leisner@xerox.com>
+Received: from wbmler1.mail.xerox.com (wbmler1.mail.xerox.com [13.13.138.216])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "wbmler1.mail.xerox.com",
+	Issuer "wbmler1.mail.xerox.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 6E9F5DDF01
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 May 2007 23:30:44 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id l1so2916959nzf
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 May 2007 06:30:43 -0700 (PDT)
-Message-ID: <fa686aa40705220630m43e15e58gcf7613a130a261a9@mail.gmail.com>
-Date: Tue, 22 May 2007 07:30:42 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Peter Luan" <peterluan@truebroad.com>
-Subject: Re: Using Cypress EZ-Host on ML403/5
-In-Reply-To: <-2527994964044273640@unknownmsgid>
+	Wed, 23 May 2007 04:54:04 +1000 (EST)
+Received: from wbmlir3.mail.xerox.com (wbmlir3.mail.xerox.com [13.131.8.223])
+	by wbmler1.mail.xerox.com (8.13.8/8.13.6) with ESMTP id
+	l4MIfqII005754
+	for <linuxppc-embedded@ozlabs.org>; Tue, 22 May 2007 14:41:52 -0400
+Received: from wbmlir3.mail.xerox.com (localhost [127.0.0.1])
+	by wbmlir3.mail.xerox.com (8.13.8/8.13.6) with ESMTP id l4MIfnBb001430
+	for <linuxppc-embedded@ozlabs.org>; Tue, 22 May 2007 14:41:49 -0400
+Received: from usa7061gw02.na.xerox.net (usa7061gw02.na.xerox.net
+	[13.151.32.4])
+	by wbmlir3.mail.xerox.com (8.13.8/8.13.6) with ESMTP id l4MIfYL7001248
+	for <linuxppc-embedded@ozlabs.org>; Tue, 22 May 2007 14:41:49 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <-2527994964044273640@unknownmsgid>
-Cc: linux-usb-devel@lists.sourceforge.net,
-	Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: anyone have a good config file for a taiga/hpc2 with a 7448?
+Date: Tue, 22 May 2007 14:41:40 -0400
+Message-ID: <556445368AFA1C438794ABDA8901891C034458D9@usa0300ms03.na.xerox.net>
+From: "Leisner, Martin" <Martin.Leisner@xerox.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,39 +35,8 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 5/22/07, Peter Luan <peterluan@truebroad.com> wrote:
->
->
->
->
-> Hey Grant, >>I've got it running on my board now after figuring out how to
-> wire up external interrupts in EDK.  :-)
->
->
-> (http://ozlabs.org/pipermail/linuxppc-embedded/2007-May/026965.html)
->
-> What do you mean? I've patched my linux kernel-2.6.22-rc1 according to the
-> followings:
->
-> http://thread.gmane.org/gmane.linux.usb.devel/53285
->
-> and I compiled the kernel successfully, but my usb can't work very well.
-> Could you tell me what I should do to make it work very well on my ml403
-> board.
+Before I tried to do one myself, I figured I'd bounce it off to see if
+anyone has a working
+.config (the newer kernel, the better).
 
-I'm sorry, I really don't understand what you're having a problem
-with.  You need to provide a lot more detail about what you've done
-and what does not work.
-
-Also, please cc the mailing list when asking for help.  It's the
-polite thing to do and there are more people than me who can help you.
-
-Cheers,
-g.
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+marty
