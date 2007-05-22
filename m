@@ -1,22 +1,18 @@
-Return-Path: <monodhs@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id D39DBDDE0D
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 09:44:14 +1000 (EST)
-Message-ID: <46522EF1.6030804@gmx.de>
-Date: Tue, 22 May 2007 01:44:49 +0200
-From: =?UTF-8?B?Q2hyaXN0aWFuIELDtmhtZQ==?= <monodhs@gmx.de>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 22 May 2007 10:23:49 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [PATCH 1/13] powerpc: Add Makefile rules to wrap dts file in
+	zImage
+Message-ID: <20070522002349.GA25426@localhost.localdomain>
+References: <20070512004605.GA2808@mag.az.mvista.com>
+	<20070512005336.GA3365@mag.az.mvista.com>
+	<20070514003332.GE6517@localhost.localdomain>
+	<20070521181043.GB7120@mag.az.mvista.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Interrupt routing broken on TiBook IV with 2.6.21.x ?
-References: <4650E27B.3020401@gmx.de>	
-	<1179712614.32247.597.camel@localhost.localdomain>	
-	<4651FC48.8000002@gmx.de>	
-	<1179785502.32247.748.camel@localhost.localdomain>	
-	<4652219D.6050308@gmx.de>
-	<1179789304.32247.760.camel@localhost.localdomain>
-In-Reply-To: <1179789304.32247.760.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070521181043.GB7120@mag.az.mvista.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,18 +22,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
+On Mon, May 21, 2007 at 11:10:43AM -0700, Mark A. Greer wrote:
+> On Mon, May 14, 2007 at 10:33:32AM +1000, David Gibson wrote:
+> > On Fri, May 11, 2007 at 05:53:36PM -0700, Mark A. Greer wrote:
+> > > +$(obj)/zImage.dts:	$(addprefix $(obj)/, $(dts-y))
+> > > +	@rm -f $@; ln $< $@
+> > > +$(obj)/zImage.dts_initrd:	$(addprefix $(obj)/, $(dts_initrd-y))
+> > > +	@rm -f $@; ln $< $@
+> > > +
+> > 
+> > I thought you said you were going to drop this bit?
+> 
+> Hi David.
+> 
+> Would you elaborate on what your alternative is?  A lot of the Makefile
+> stuff is still black magic to me.
 
-> I'm not sure what you are talking about here. DMA mapping has existed in
-> linux for years.
+Just leave them out.  As long as you add the correct specific
+zImage.dts.% and zImage.dts_initrd.% targets to image-y and initrd-y,
+then a "make zImage" from the top-level Makefile will get them built.
+You'd want to remove the .dts versions from BOOT_TARGETS, too.
 
-I do admit that it's been a while since that last look ;)  The topic came up
-when discussing PCI and bus systems in general with micro/real-time kernel
-people whom I assumed to be experts in this since they had Linux kernels
-running on top of their scheduling scheme.  As it turned out, using an
-abstraction such as a DMA map was a totally new concept to them.  They
-even questioned the usefulness of such an approach.
-
-
-Cheers,
-Christian
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
