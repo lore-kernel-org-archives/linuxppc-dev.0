@@ -1,22 +1,22 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B2B75DDF3B
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 17:37:43 +1000 (EST)
-Subject: Re: [PATCH 07/13] Implement arch disable/enable irq hooks.
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20070507182950.GF26920@ld0162-tx32.am.freescale.net>
-References: <20070507182950.GF26920@ld0162-tx32.am.freescale.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-LiBGPofjUAPvQMoMxXj8"
-Date: Mon, 21 May 2007 17:55:02 +0200
-Message-Id: <1179762902.9122.19.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 4C4A4DDE28
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 18:46:55 +1000 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Tue, 22 May 2007 10:46:46 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: fsl booke MM vs. SMP questions
+Message-ID: <20070522084645.GA12009@iram.es>
+References: <1179731215.32247.659.camel@localhost.localdomain>
+	<1179741447.3660.7.camel@localhost.localdomain>
+	<1179742083.32247.689.camel@localhost.localdomain>
+	<1179747448.3660.22.camel@localhost.localdomain>
+	<1179785273.32247.742.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1179785273.32247.742.camel@localhost.localdomain>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Dave Liu <r63238@freescale.com>,
+	Paul Mackerras <paulus@samba.org>, Kumar Gala <galak@gate.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,44 +26,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, May 22, 2007 at 08:07:52AM +1000, Benjamin Herrenschmidt wrote:
+> 
+> > > The tlb miss handler does:
+> > > 
+> > >  - tlbbusy = 1
+> > >  - barrier (make sure the following read is in order vs. the previous
+> > > store to tlbbusy)
+> > >  - read linux PTE value
+> > >  - write it to the HW TLB
+> > 
+> > and write the linux PTE with referenced bit?
+> 
+> I've kept the reference bit rewrite out of that pseudo-code because I
+> was approaching a different issue but yes. The idea i have there is to
+> do break down the linux PTE operation that way:
+> 
+> 	 1 - rX = read PTE value (normal load)
+> 	 2 - if (!_PAGE_PRESENT)) -> out
+>  	 3 - rY = rX | _PAGE_ACCESSED
+> 	 4 - if (rX != rY)
+> 	 5 -   rZ = lwarx PTE value
+> 	 6 -   if (rZ != rX)
+> 	 7 -	stdcx. PTE, rZ (rewrite just read value to clear reserv)
 
---=-LiBGPofjUAPvQMoMxXj8
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Why do you want to clear the reservation here? 
 
-On Mon, 2007-05-07 at 13:29 -0500, Scott Wood wrote:
-> These hooks ensure that a decrementer interrupt is not pending when
-> suspending; otherwise, problems may occur.  For example, with deep sleep
-> on the 831x, a pending decrementer will cause a system freeze because the
-> SoC thinks the decrementer interrupt would have woken the system, but the
-> core must have interrupts disabled due to the setup required for deep
-> sleep.
+Coming out of some code path with the reservation still held 
+can only affect buggy code (someone doing st[dw]cx. before 
+l[dw]arx) AFAIK.
 
-Interesting to see this first use of these hooks we had to fight for for
-so long... Can you put the arch_suspend_{enable,disable}_irqs along with
-the actual power management code for 831x?
+> 	 8 - 	goto 1 (try again)
+> 	 9 -   stdcx. PTE, rY
+> 	10 -   if failed -> goto 1 (try again)
+> 	11 - that's it ! 
+> 
+> In addition, I suppose performance can be improved by also dealing with
+> dirty bit right in the TLB refill if the access is a write and the page
+> is writeable rather than taking a double fault.
 
-On the one hand I agree with this patch, this is exactly what we wanted
-the hooks for, but on the other hand I would like to have these hooks
-free for some more stuff for PMU-based sleep so that I don't need to do
-ugly things with platform devices or something for the powermac platform
-function stuff.
-
-Then again, if we don't implement these in common code, might we get
-link problems when we try building some multiplatform kernel?
-
-johannes
-
---=-LiBGPofjUAPvQMoMxXj8
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGUcDW/ETPhpq3jKURApkVAKC5BMl0K+pl5R3LH1OSL1wlmqIhmQCgt/0P
-2/1UorkVPbSIep9c690jUYQ=
-=Obri
------END PGP SIGNATURE-----
-
---=-LiBGPofjUAPvQMoMxXj8--
+	Regards,
+	Gabriel
