@@ -1,8 +1,8 @@
 Return-Path: <linas@austin.ibm.com>
-Date: Tue, 22 May 2007 18:39:01 -0500
+Date: Tue, 22 May 2007 18:40:59 -0500
 To: Jeff Garzik <jgarzik@pobox.com>, Andrew Morton <akpm@osdl.org>
-Subject: [PATCH 5/10] spidernet: null out skb pointer after its been used.
-Message-ID: <20070522233901.GD2147@austin.ibm.com>
+Subject: [PATCH 6/10] spidernet: Don't terminate the RX ring
+Message-ID: <20070522234059.GE2147@austin.ibm.com>
 References: <20070522230942.GT5921@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -20,26 +20,61 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-If the ethernet interface is brought down while there is still
-RX traffic in flight, the device shutdown routine can end up
-trying to double-free an skb, leading to a crash in mm/slab.c
-Avoid the double-free by nulling out the skb pointer.
+There is no real reason to terminate the RX ring; it
+doesn't make the operation any smooother, and it does
+require an extra sync. So don't do it.
 
 Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 
 ----
- drivers/net/spider_net.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/spider_net.c |   18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
 Index: netdev-2.6/drivers/net/spider_net.c
 ===================================================================
---- netdev-2.6.orig/drivers/net/spider_net.c	2007-05-22 18:03:32.000000000 -0500
-+++ netdev-2.6/drivers/net/spider_net.c	2007-05-22 18:03:34.000000000 -0500
-@@ -1136,6 +1136,7 @@ spider_net_decode_one_descr(struct spide
+--- netdev-2.6.orig/drivers/net/spider_net.c	2007-05-22 18:03:34.000000000 -0500
++++ netdev-2.6/drivers/net/spider_net.c	2007-05-22 18:03:35.000000000 -0500
+@@ -462,13 +462,9 @@ spider_net_prepare_rx_descr(struct spide
+ 		hwdescr->dmac_cmd_status = SPIDER_NET_DESCR_NOT_IN_USE;
+ 	} else {
+ 		hwdescr->buf_addr = buf;
+-		hwdescr->next_descr_addr = 0;
+ 		wmb();
+ 		hwdescr->dmac_cmd_status = SPIDER_NET_DESCR_CARDOWNED |
+ 					 SPIDER_NET_DMAC_NOINTR_COMPLETE;
+-
+-		wmb();
+-		descr->prev->hwdescr->next_descr_addr = descr->bus_addr;
+ 	}
  
- 	/* Ok, we've got a packet in descr */
- 	spider_net_pass_skb_up(descr, card);
-+	descr->skb = NULL;
- 	hwdescr->dmac_cmd_status = SPIDER_NET_DESCR_NOT_IN_USE;
- 	return 1;
+ 	return 0;
+@@ -557,12 +553,16 @@ spider_net_refill_rx_chain(struct spider
+ static int
+ spider_net_alloc_rx_skbs(struct spider_net_card *card)
+ {
+-	int result;
+-	struct spider_net_descr_chain *chain;
++	struct spider_net_descr_chain *chain = &card->rx_chain;
++	struct spider_net_descr *start= chain->tail;
++	struct spider_net_descr *descr = start;
  
+-	result = -ENOMEM;
++	/* Link up the hardware chain pointers */
++	do {
++		descr->prev->hwdescr->next_descr_addr = descr->bus_addr;
++		descr = descr->next;
++	} while (descr != start);
+ 
+-	chain = &card->rx_chain;
+ 	/* Put at least one buffer into the chain. if this fails,
+ 	 * we've got a problem. If not, spider_net_refill_rx_chain
+ 	 * will do the rest at the end of this function. */
+@@ -579,7 +579,7 @@ spider_net_alloc_rx_skbs(struct spider_n
+ 
+ error:
+ 	spider_net_free_rx_chain_contents(card);
+-	return result;
++	return -ENOMEM;
+ }
+ 
+ /**
