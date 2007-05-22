@@ -2,25 +2,31 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BF1CCDDE0E
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 08:42:40 +1000 (EST)
-Subject: Re: fsl booke MM vs. SMP questions
+	by ozlabs.org (Postfix) with ESMTP id 592D5DDE1D
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 09:00:10 +1000 (EST)
+Subject: Re: [PATCH/RFC] Rework ptep_set_access_flags and fix sun4c
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Dave Liu <r63238@freescale.com>
-In-Reply-To: <1179831375.3827.4.camel@localhost.localdomain>
-References: <1179731215.32247.659.camel@localhost.localdomain>
-	<1179741447.3660.7.camel@localhost.localdomain>
-	<1179742083.32247.689.camel@localhost.localdomain>
-	<1179747448.3660.22.camel@localhost.localdomain>
-	<1179785273.32247.742.camel@localhost.localdomain>
-	<1179803367.32247.785.camel@localhost.localdomain>
-	<1179831375.3827.4.camel@localhost.localdomain>
+To: Hugh Dickins <hugh@veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0705221738020.22822@blonde.wat.veritas.com>
+References: <Pine.LNX.4.61.0705012354290.12808@mtfhpc.demon.co.uk>
+	<20070509231937.ea254c26.akpm@linux-foundation.org>
+	<1178778583.14928.210.camel@localhost.localdomain>
+	<20070510.001234.126579706.davem@davemloft.net>
+	<Pine.LNX.4.64.0705142018090.18453@blonde.wat.veritas.com>
+	<1179176845.32247.107.camel@localhost.localdomain>
+	<1179212184.32247.163.camel@localhost.localdomain>
+	<1179757647.6254.235.camel@localhost.localdomain>
+	<1179815339.32247.799.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0705221738020.22822@blonde.wat.veritas.com>
 Content-Type: text/plain
-Date: Wed, 23 May 2007 08:42:22 +1000
-Message-Id: <1179873742.32247.864.camel@localhost.localdomain>
+Date: Wed, 23 May 2007 08:59:08 +1000
+Message-Id: <1179874748.32247.868.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Kumar Gala <galak@gate.crashing.org>
+Cc: mark@mtfhpc.demon.co.uk, linux-mm@kvack.org, wli@holomorphy.com,
+	linuxppc-dev@ozlabs.org, andrea@suse.de,
+	"Tom \"spot\" Callaway" <tcallawa@redhat.com>,
+	sparclinux@vger.kernel.org, akpm@linux-foundation.org,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,27 +36,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-05-22 at 18:56 +0800, Dave Liu wrote:
-> On Tue, 2007-05-22 at 13:09 +1000, Benjamin Herrenschmidt wrote:
-> > In the end, the best solution might still be to simply not do any of
-> > this and instead send an IPI on invalidations. That's the method used by
-> > most architectures in linux (if not all) that do software TLB load on
-> > SMP. Basically, the invalidate code path then does:
-> > 
-> > 	- Update the linux PTE
-> > 	- write barrier
-> > 	- send IPI interrupt to all CPUs in mm->cpu_vm_mask
-> > 	- local TLB flush
-> > 
-> > And the IPI does a local TLB flush on all affected CPUs.
-> 
-> How to avoid IPI interrupt missing if the IPI interrupt is edge-
-> triggered?
-> 
-> or How to make sure TLB flushed on the else all affected CPUs?
 
-The IPIs should be buffered by the PIC ... delivered only once but
-still. Also, IPI handling in linux is synchronous, there is an ack to
-wait for the remote function to complete.
+> Looks pretty good to me.
+> 
+> There was a minor build error in x86 (see below), and ia64 is missing
+> (again see below).  I've now built and am running this on x86, x86_64
+> and powerpc64; but I'm very unlikely to be doing anything which
+> actually tickles these changes, or Andrea's original handle_pte_fault
+> optimization.
 
+Ok.
+
+> Would the "__changed && __dirty" architectures (x86, x86_64, ia64)
+> be better off saying __changed = __dirty && pte_same?  I doubt it's
+> worth bothering about.
+
+I'd say let gcc figure it out :-)
+
+> You've updated do_wp_page to do "if (ptep_set_access_flags(...",
+> but not updated set_huge_ptep_writable in the same way: I'd have
+> thought you'd either leave both alone, or update them both: any
+> reason for one not the other?  But again, not really an issue.
+
+Nah, I must have missed set_huge_ptep_writable(). I don't think the wp
+code path matters much anyway, it's likely to always be different.
+
+> These changes came about because the sun4c needs to update_mmu_cache
+> even in the pte_same case: might it also need to flush_tlb_page then?
+
+Well, I don't know which is why I'm waiting for Tom Callaway to test.
+Davem mentioned update_mmu_cache only though when we discussed the
+problem initially.
+
+> >  #define  __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
+> >  #define ptep_set_access_flags(vma, address, ptep, entry, dirty)		\
+> > -do {									\
+> > -	if (dirty) {							\
+> > +({									\
+> > +	int __changed = !pte_same(*(__ptep), __entry);			\
+> 
+> That just needs to be:
+> 
+>   +	int __changed = !pte_same(*(ptep), entry);			\
+
+Ah yes, sorry about that. I need to setup an x86 toolchain somewhere :-)
+
+> Here's what I think the ia64 hunk would be, unbuilt and untested.
+
+Ok.
+
+I'll respin a patch later today.
+
+Cheers,
 Ben.
