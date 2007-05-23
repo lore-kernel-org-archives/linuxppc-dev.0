@@ -1,16 +1,11 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id ECAEDDDE06
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 06:00:34 +1000 (EST)
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-To: mingo@elte.hu, tglx@linutronix.de
-Subject: [PATCH 2.6.21-rt7] PowerPC: kill cpu_khz reference
-Date: Wed, 23 May 2007 23:02:00 +0300
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200705240002.00698.sshtylyov@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <dale@farnsworth.org>
+Date: 23 May 2007 13:23:11 -0700
+Message-ID: <20070523202311.29000.qmail@farnsworth.org>
+From: "Dale Farnsworth" <dale@farnsworth.org>
+To: djiang@mvista.com, Linuxppc-dev@ozlabs.org, paulus@samba.org,
+	bluesmoke-devel@lists.sourceforge.net
+Subject: Re: [PATCH] powerpc: setup Marvell mv64x60 platform devices for EDAC
+In-Reply-To: <20070522232432.GA26046@blade.az.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,23 +15,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Remove forgotten reference to 'cpu_khz' which have been removed for PowerPC in
-2.6.21-rt7...
+Dave Jiang wrote:
+> Creating platform devices (memory controller, sram error registers, cpu error
+> registers, PCI error registers) for Error Detection and Correction (EDAC)
+> driver on the Marvell mv64x60 based platforms.
+> 
+> The platform devices allow the mv64x60 EDAC driver to detect errors from the
+> memory controller (ECC erorrs), SRAM controller, CPU data path error registers,
+> and PCI error registers. The errors are reported to syslog. Software ECC
+> scrubbing is provided. These replace the mv64x60 error handlers in the
+> ppc branch
+> They are being moved to EDAC subsystem in order to centralize error reporting. 
+> 
+> The error reporting can be triggered via interrupts from the mv64x60 bridge chip
+> or via polling mechanism provided by the EDAC core code.
+> 
+> The mv64x60 EDAC driver can be found at:
+> http://bluesmoke.sourceforge.net/
+> 
+> It's in development to be pushed into the kernel.
+> 
+> Signed-off-by: Dave Jiang <djiang@mvista.com>
 
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-
----
-The irony here is that it was me who sent a patch to add that line. :-)
-
-Index: linux-2.6/arch/powerpc/kernel/time.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/time.c
-+++ linux-2.6/arch/powerpc/kernel/time.c
-@@ -816,7 +816,6 @@ void __init time_init(void)
- 	tb_ticks_per_jiffy = ppc_tb_freq / HZ;
- 	tb_ticks_per_sec = ppc_tb_freq;
- 	tb_ticks_per_usec = ppc_tb_freq / 1000000;
--	cpu_khz  = ppc_tb_freq / 1000;
- 	tb_to_us = mulhwu_scale_factor(ppc_tb_freq, 1000000);
- 	calc_cputime_factors();
- 
+Acked-by: Dale Farnsworth <dale@farnsworth.org>
