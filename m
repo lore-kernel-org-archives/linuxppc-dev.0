@@ -1,34 +1,33 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <sachinp@in.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A40E8DDE1A
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 14:22:03 +1000 (EST)
-Subject: Re: [PATCH/RFC] Rework ptep_set_access_flags and fix sun4c
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hugh Dickins <hugh@veritas.com>
-In-Reply-To: <Pine.LNX.4.64.0705230438490.14106@blonde.wat.veritas.com>
-References: <Pine.LNX.4.61.0705012354290.12808@mtfhpc.demon.co.uk>
-	<20070509231937.ea254c26.akpm@linux-foundation.org>
-	<1178778583.14928.210.camel@localhost.localdomain>
-	<20070510.001234.126579706.davem@davemloft.net>
-	<Pine.LNX.4.64.0705142018090.18453@blonde.wat.veritas.com>
-	<1179176845.32247.107.camel@localhost.localdomain>
-	<1179212184.32247.163.camel@localhost.localdomain>
-	<1179757647.6254.235.camel@localhost.localdomain>
-	<1179815339.32247.799.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0705221738020.22822@blonde.wat.veritas.com>
-	<1179874748.32247.868.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0705230438490.14106@blonde.wat.veritas.com>
-Content-Type: text/plain
-Date: Wed, 23 May 2007 14:21:45 +1000
-Message-Id: <1179894105.32247.904.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: mark@mtfhpc.demon.co.uk, linux-mm@kvack.org, wli@holomorphy.com,
-	linuxppc-dev@ozlabs.org, andrea@suse.de,
-	"Tom \"spot\" Callaway" <tcallawa@redhat.com>,
-	sparclinux@vger.kernel.org, akpm@linux-foundation.org,
-	David Miller <davem@davemloft.net>
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 64CC8DDDDB
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 15:12:52 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4N5Ck41018304
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 01:12:46 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l4N5Ck2x530258
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 01:12:46 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4N5CkJ7025029
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 01:12:46 -0400
+Message-ID: <4653CD64.6090305@in.ibm.com>
+Date: Wed, 23 May 2007 10:43:08 +0530
+From: "Sachin P. Sant" <sachinp@in.ibm.com>
+MIME-Version: 1.0
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [Patch 2/2] Kexec/Kdump support POWER6
+References: <4652E088.9080207@in.ibm.com> <4652E109.4020204@in.ibm.com>
+	<4652E17C.7080607@in.ibm.com> <20070522153419.GA22047@lixom.net>
+In-Reply-To: <20070522153419.GA22047@lixom.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, ellerman@au1.ibm.com,
+	Milton Miller II <miltonm@us.ibm.com>
+Reply-To: sachinp@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,24 +37,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-05-23 at 05:03 +0100, Hugh Dickins wrote:
-> 
-> No, I wasn't meaning the optimization, but the significance of the
-> boolean __changed that's returned.  If ptep_set_access_flags does
-> not change the pte (because !dirty or !safely_writable or whatever
-> that arch calls it), then ideally it ought to return false.
+Hi Olaf, thanks for the review. 
 
-Hrm... I prefer keeping the existing semantics. The old code used to
-always update_mmu_cache() on those archs and I'd rather let it continue
-do so unless the arch maintainer who knows better changes it :-)
- 
-> But it doesn't affect correctness if it sometimes says true not
-> false, and these arches happen to have an empty update_mmu_cache
-> (with lazy_mmu_prot_update currently under separate review), and
-> what you have follows what was already being done, and sun4c
-> already has to "lie": so it's rather theoretical. 
+>> +	if (have_vrma)
+>> +		pSeries_find_hpte_vrma();
+>> +
+>>     
+>
+> This will break kexec builds on non-pseries. It's referring to platform
+> code that might not be built.
+>
+>   
+Ok. Will call this function from lpar.c instead of
+default_machine_kexec().
 
-Ok.
+> Does this function find the vrma, or save it away? Seems like the name
+> is misleading.
+>
+>   
+Well it finds a vrma entry and saves it. I thought of
+pSeries_find_save_hpte_vrma(), but decided against it. I could
+change it to pSeries_save_hpte_vrma().
 
-Cheers,
-Ben.
+> Is ppc64_vrma_page_size really the size, or the shift? Above would
+> indicate that it's really a shift value.
+>
+>   
+It is a shift. I will change it to ppc64_vrma_page_shift.
+
+> Why is 16M hardcoded here, when you're taking such great care to read
+> out the pagesize earlier?
+>
+>   
+Hrmm. Ok will use the vrma_page_shift value.
+
+>> +			((dword0 & HPTE_V_MASK) == MAGIC_SKIP_HPTE)) {
+>>     
+> Indentation
+>   
+Done.
+
+>> +				/* store the hpte */
+>> +				hpte_vrma_slots[num_hpte_vrma_slots++] = slot;
+>>     
+>
+> Here you rely on global exported state (num_hpte_vrma_slots), increasing it without
+> checking for limits. What happens if this function is ever called twice? Should you
+> set it to 0 in the beginning of the function and check it against the size of the
+> hpte_vrma_slots array instead?
+>   
+Will add proper checks for num_hpte_vrma_slots variable value.
+
+>> +extern void pSeries_find_hpte_vrma(void);
+>>
+>>     
+> Same comment as above: This isn't a kexec function as much as a pseries function, so
+> it should be defined in some other header instead.
+>   
+>>  
+>> +#define HPTE_V_RMA_VPN         ASM_CONST(0x001FFFFFF0000000)
+>> +#define HPTE_V_MASK            ASM_CONST(0xc000000000000000)
+>> +#define MAGIC_SKIP_HPTE        ASM_CONST(0x4000000000000000)
+>> +#define HPTE_V_RMA_NUM         16
+>>     
+>
+> "MAGIC_SKIP_HPTE"? I'm sure there's a proper name for this field in the
+> PAPR, isn't there? Also, HPTE_V_RMA_NUM isn't a HPTE_V field, it shouldn't
+> have that prefix. It's not a property of the mmu in the first place.
+>
+> These should maybe be local defines in the pseries lpar code instead, since it's
+> more of a lpar<->phyp interface than mmu programming interface.
+>   
+Will move them to pseries lpar code.
+Updated patch on its way.
+
+Thanks
+-Sachin
