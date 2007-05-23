@@ -1,29 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-06.arcor-online.net (mail-in-06.arcor-online.net
-	[151.189.21.46])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BF00BDDDDB
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 09:17:29 +1000 (EST)
-In-Reply-To: <1179938586.11247.62.camel@pterry-fc6.micromemory.com>
-References: <1179862732.25914.40.camel@pterry-fc6.micromemory.com>
-	<46B96294322F7D458F9648B60E15112C234AE6@zch01exm26.fsl.freescale.net>
-	<Pine.LNX.4.64.0705230916170.535@localhost.localdomain>
-	<1179934657.11247.14.camel@pterry-fc6.micromemory.com>
-	<836bca7802dca173490f4d38e0c48b7a@kernel.crashing.org>
-	<1179937253.11247.44.camel@pterry-fc6.micromemory.com>
-	<Pine.LNX.4.64.0705231119271.1028@localhost.localdomain>
-	<1179938586.11247.62.camel@pterry-fc6.micromemory.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <19cfc88d1980974176dd8d315c49e597@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: Porting RapidIO from ppc arch to powerpc arch in support of
-	MPC8641D
-Date: Thu, 24 May 2007 01:17:20 +0200
-To: pterry@micromemory.com
-Cc: linuxppc-dev@ozlabs.org, Zhang Wei-r63237 <Wei.Zhang@freescale.com>
+Return-Path: <ntl@pobox.com>
+Received: from sceptre.pobox.com (sceptre.pobox.com [207.106.133.20])
+	by ozlabs.org (Postfix) with ESMTP id BC54BDDDFC
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 09:23:03 +1000 (EST)
+Date: Wed, 23 May 2007 18:22:56 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Linas Vepstas <linas@austin.ibm.com>
+Subject: Re: [PATCH 1/4] powerpc: Add EEH sysfs blinkenlights
+Message-ID: <20070523232256.GJ29914@localdomain>
+References: <20070523171328.GY5921@austin.ibm.com>
+	<20070523171646.GA32380@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070523171646.GA32380@austin.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,50 +22,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> OK, but if the device tree is not allowed to dictate policy, to use
-> Segher's term, just hardware characteristics, how does that help us get
-> the embedded soc kernels away from being designed and built to specific
-> demo/eval board setups and make them more configurable?
+Hi Linas-
 
-I don't see the problem really.  Could you point out one
-specific problem, and then we solve it?  Repeat as necessary.
+Linas Vepstas wrote:
+> 
+> Add sysfs blinkenlights for EEH statistics. Shuffle the
+> eeh_add_device_tree() call so that it appears in the correct
+> sequence.
 
-> I got the impression that to some extent thats how you/we/?? were 
-> trying
-> to use the dts stuff. If my board is exactly like freescales xyz demo
-> board except I move my rio map to here, my pci map to here, change a 
-> few
-> sizes etc., why do I have to go and patchup the arch setup code, modify
-> ppc_md routines, etc.
+( blinkenlights? :)
 
-That shouldn't be necessary.
-
-> Isn't the plan that I just edit the dts, compile
-> with dtc and have u-boot pass in the dtb to the stock kernel and its
-> boots on my board?
-
-Mostly, yes.
-
-> If dts can't do this because its not allowed policy statements then 
-> what
-> will do this?
-
-You pass policy decisions to the kernel some other way.  Like,
-on the kernel command line, for example.
-
-> Segher is right,
-
-Yes, I always am.
-
-> Please I'm not trying to start up any previous turf wars here,
-
-Much appreciated!
-
---
-
-Okay, if I am to help at all here, please someone explain what
-"law"s and mboxes and doorbells are (in the context of rapidio).
-Also how they are used, etc.
+To me this seems a somewhat terse changelog considering that the patch
+introduces a user-visible interface.  The changelog does not really
+say what the code is doing or why, or who will use it.
 
 
-Segher
+> Index: linux-2.6.22-rc1/arch/powerpc/platforms/pseries/eeh_sysfs.c
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6.22-rc1/arch/powerpc/platforms/pseries/eeh_sysfs.c	2007-05-23 11:57:23.000000000 -0500
+> @@ -0,0 +1,84 @@
+> +/*
+> + * Sysfs entries for PCI Error Recovery for PAPR-compliant platform.
+
+platforms?
+
+> +#include <linux/pci.h>
+> +#include <asm/ppc-pci.h>
+> +#include <asm/pci-bridge.h>
+> +#include <linux/kobject.h>
+
+Include linux/ before asm/ please.
+
+> +/**
+> + * EEH_SHOW_ATTR -- create sysfs entry for eeh statistic
+> + * @_name: name of file in sysfs directory
+> + * @_memb: name of member in struct pci_dn to access
+> + * @_format: printf format for display
+> + *
+> + * All of the attributes look very similar, so just
+> + * auto-gen a cut-n-paste routine to display them.
+> + */
+> +#define EEH_SHOW_ATTR(_name,_memb,_format)               \
+> +static ssize_t eeh_show_##_name(struct device *dev,      \
+> +		struct device_attribute *attr, char *buf)          \
+
+I have been frustrated by similar constructions more than once in the
+midst of debugging.  I know this has become a common practice with
+sysfs-related code, but using cpp to generate function names
+completely defeats grep etc. when you're trying to track down a
+problem, and I'd not like to see this sort of thing propagated.
+
+
+> --- linux-2.6.22-rc1.orig/include/asm-powerpc/ppc-pci.h	2007-05-23 11:43:42.000000000 -0500
+> +++ linux-2.6.22-rc1/include/asm-powerpc/ppc-pci.h	2007-05-23 11:44:43.000000000 -0500
+> @@ -139,6 +139,9 @@ void eeh_clear_slot (struct device_node 
+>   */
+>  struct device_node * find_device_pe(struct device_node *dn);
+>  
+> +void eeh_sysfs_add_device(struct pci_dev *pdev);
+> +void eeh_sysfs_remove_device(struct pci_dev *pdev);
+
+Don't you need dummy static inline placeholders for CONFIG_EEH=n?
