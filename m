@@ -1,26 +1,27 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <pterry@micromemory.com>
+Received: from mail.micromemory.com
+	(ip67-95-226-82.z226-95-67.customer.algx.net [67.95.226.82])
+	(using TLSv1 with cipher RC4-MD5 (128/128 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 71991DDE42
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 01:26:29 +1000 (EST)
-Subject: Re: [PATCH] powerpc timer sysdev: use mktime
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <1178115942.13233.61.camel@johannes.berg>
-References: <20061213123819.403286000@sipsolutions.net>
-	<20061213123945.386891000@sipsolutions.net>
-	<1169620444.18754.66.camel@localhost.localdomain>
-	<1170357390.4036.9.camel@johannes.berg>
-	<17976.5964.593278.752595@cargo.ozlabs.ibm.com>
-	<1178115942.13233.61.camel@johannes.berg>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-rsTNwzTv+6E48vnoI+wc"
-Date: Wed, 23 May 2007 17:28:01 +0200
-Message-Id: <1179934081.14317.29.camel@johannes.berg>
+	by ozlabs.org (Postfix) with ESMTP id CD4DCDDED3
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 01:37:42 +1000 (EST)
+Received: from [192.168.0.90] by micromemory.com (MDaemon PRO v9.5.6)
+	with ESMTP id md50000412550.msg
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 08:37:39 -0700
+Subject: RE: Porting RapidIO from ppc arch to powerpc arch in support of
+	MPC8641D
+From: Phil Terry <pterry@micromemory.com>
+To: galak@kernel.crashing.org
+In-Reply-To: <Pine.LNX.4.64.0705230916170.535@localhost.localdomain>
+References: <1179862732.25914.40.camel@pterry-fc6.micromemory.com>
+	<46B96294322F7D458F9648B60E15112C234AE6@zch01exm26.fsl.freescale.net>
+	<Pine.LNX.4.64.0705230916170.535@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 23 May 2007 08:37:37 -0700
+Message-Id: <1179934657.11247.14.camel@pterry-fc6.micromemory.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Zhang Wei-r63237 <Wei.Zhang@freescale.com>
+Reply-To: pterry@micromemory.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,85 +31,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 2007-05-23 at 09:21 -0500, Kumar Gala wrote:
+> On Wed, 23 May 2007, Zhang Wei-r63237 wrote:
+> 
+> > > So I'm taking the boot/dts/mpc8641_hpcn.dts and producing a new
+> > > mpc8641D_umem.dts with the following addition to the soc.
+> > >
+> > > srio@c0000 {
+> > >                 device_type = "srio";
+> > >                 compatible = "86xx,85xx";
+> 
+> We really need to think about this, is their really any difference between
+> srio and prio from a software view point?
+I didn't mean to imply that, the above was just my strawman for
+discussion purposes in my overview question. As per a suggestion I was
+now calling it rapidio@c0000.
 
---=-rsTNwzTv+6E48vnoI+wc
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+But maybe this is moot, the patches are on their way (yippee) Thanks
+Zhang.
 
-On Wed, 2007-05-02 at 16:25 +0200, Johannes Berg wrote:
-> This patch makes the timer sysdev use mktime instead of rtc_tm_to_time
-> by simply copying the function to avoid using rtc-lib.
+> 
+> > > 		reg = <c0000 20000>;
+> > > 		law = <400000000 e00000000>;
+> >
+> > Please use range = <0 address_start size>
+> 
+> The law should really be removed.
+In my application I'm may be using a huge part of the 36-bit address
+space to address multiple remote RIO boards in a peer DMA multicomputer
+application. The default law just for maintenance messages isn't going
+to cut it. Now I suppose we could say that my DMA oriented driver should
+be responsible for another law for that purpose but that seemed wasteful
+to me, there aren't that many laws to go around. So I wanted to hijack
+and make this one configurable. But this was just my first idea so I'm
+open to suggestions.
 
-I think you asked for this, any reason you then didn't take it? Just
-missed? Or is something wrong with it?
+> 
+> >
+> > > 		dbells = <0 ffff>;
+> > > 		mboxs = <0 4>;
+> >
+> > The dbells and mboxs can be removed. The default setting in rio is okay.
+> 
+> this could possibly be useful.
 
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
->=20
-> --- wireless-dev.orig/arch/powerpc/sysdev/timer.c	2007-05-02 16:16:52.639=
-177080 +0200
-> +++ wireless-dev/arch/powerpc/sysdev/timer.c	2007-05-02 16:21:56.42917708=
-0 +0200
-> @@ -24,7 +24,12 @@ static int timer_resume(struct sys_devic
-> =20
->  	/* get current RTC time and convert to seconds */
->  	get_rtc_time(&cur_rtc_tm);
-> -	rtc_tm_to_time(&cur_rtc_tm, &cur_rtc_time);
-> +	cur_rtc_time =3D mktime(cur_rtc_tm.tm_year + 1900,
-> +			      cur_rtc_tm.tm_mon + 1,
-> +			      cur_rtc_tm.tm_mday,
-> +			      cur_rtc_tm.tm_hour,
-> +			      cur_rtc_tm.tm_min,
-> +			      cur_rtc_tm.tm_sec);
-> =20
->  	diff =3D cur_rtc_time - suspend_rtc_time;
-> =20
-> @@ -44,7 +49,12 @@ static int timer_suspend(struct sys_devi
->  	WARN_ON(!ppc_md.get_rtc_time);
-> =20
->  	get_rtc_time(&suspend_rtc_tm);
-> -	rtc_tm_to_time(&suspend_rtc_tm, &suspend_rtc_time);
-> +	suspend_rtc_time =3D mktime(suspend_rtc_tm.tm_year + 1900,
-> +				  suspend_rtc_tm.tm_mon + 1,
-> +				  suspend_rtc_tm.tm_mday,
-> +				  suspend_rtc_tm.tm_hour,
-> +				  suspend_rtc_tm.tm_min,
-> +				  suspend_rtc_tm.tm_sec);
-> =20
->  	return 0;
->  }
-> --- wireless-dev.orig/arch/powerpc/Kconfig	2007-05-02 16:22:07.619177080 =
-+0200
-> +++ wireless-dev/arch/powerpc/Kconfig	2007-05-02 16:22:12.759177080 +0200
-> @@ -11,11 +11,6 @@ config PPC64
->  	  This option selects whether a 32-bit or a 64-bit kernel
->  	  will be built.
-> =20
-> -config PPC_PM_NEEDS_RTC_LIB
-> -	bool
-> -	select RTC_LIB
-> -	default y if PM
-> -
->  config PPC32
->  	bool
->  	default y if !PPC64
->=20
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->=20
+Again, the current setup seems to be the minimum required to support
+rionet. The hardware can support multiple mailboxes as is not just mbox
+0 used by rionet. As I understand it one message unit is dedicated to
+mbox 0 and mboxes 1 to 63 are used by the second message unit. I want in
+my application to use the "clean" mbox 0 for my apps messaging and
+relegate rionet to mbox 1. So in the interests of generality I wanted to
+make the number of mboxes supported configurable. Is this something I
+should not do in dts but relegate somewhere else?
 
---=-rsTNwzTv+6E48vnoI+wc
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGVF2B/ETPhpq3jKURAku5AJ4zAs+kdZlQ7G6Fq6jYdf3dNiKiugCdEH0L
-wXr1K8nbeSHPpwB2x1UZDIk=
-=joDr
------END PGP SIGNATURE-----
-
---=-rsTNwzTv+6E48vnoI+wc--
+The doorbells is debatable. There is only a single unit supporting all
+doorbells in extant hardware (AFAIK) so this was again for generality in
+case a dual doorbell hw unit arrives.
+> 
+> >
+> > >                 interrupt-parent = <&mpic>;
+> > >                 interrupts = <30 1 31 1 32 1 35 1 36 1 37 1 38 1>;
+> > >               };
+> > >
+> > Do you really use all of this interrupts? In my test, three <32 2 35 2
+> > 36 2> are okay, and the sense is 2.
+> 
+> I think we need to list all the interrupts possible from RIO, not just the
+> ones the driver happens to use.
+Sorry about the senses, again I just threw that in the email as a
+strawman to kick off discussion (which now seems moot as Wei has the
+patches (yippee)). The second set of interrupts 37 and 38 are for the
+second message unit which I want to use (see above). 30 is for
+port-write/error which I will be using to get interrupts from my
+switches for topology changes. 31 is the out doorbell done which the
+driver doesn't use cos of the synchronous nature of the out doorbell I
+suppose.
+> 
+> - k
+> 
+> 
