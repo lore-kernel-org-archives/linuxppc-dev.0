@@ -1,30 +1,19 @@
-Return-Path: <Martin.Leisner@xerox.com>
-Received: from wbmler1.mail.xerox.com (wbmler1.mail.xerox.com [13.13.138.216])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "wbmler1.mail.xerox.com",
-	Issuer "wbmler1.mail.xerox.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 6E9F5DDF01
+Return-Path: <j.borkhuis@dutchspace.nl>
+Received: from kirk.dutchspace.nl (kirk.dutchspace.nl [82.161.242.14])
+	by ozlabs.org (Postfix) with ESMTP id DB51BDDDFA
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 May 2007 04:54:04 +1000 (EST)
-Received: from wbmlir3.mail.xerox.com (wbmlir3.mail.xerox.com [13.131.8.223])
-	by wbmler1.mail.xerox.com (8.13.8/8.13.6) with ESMTP id
-	l4MIfqII005754
-	for <linuxppc-embedded@ozlabs.org>; Tue, 22 May 2007 14:41:52 -0400
-Received: from wbmlir3.mail.xerox.com (localhost [127.0.0.1])
-	by wbmlir3.mail.xerox.com (8.13.8/8.13.6) with ESMTP id l4MIfnBb001430
-	for <linuxppc-embedded@ozlabs.org>; Tue, 22 May 2007 14:41:49 -0400
-Received: from usa7061gw02.na.xerox.net (usa7061gw02.na.xerox.net
-	[13.151.32.4])
-	by wbmlir3.mail.xerox.com (8.13.8/8.13.6) with ESMTP id l4MIfYL7001248
-	for <linuxppc-embedded@ozlabs.org>; Tue, 22 May 2007 14:41:49 -0400
+	Wed, 23 May 2007 16:48:07 +1000 (EST)
+Received: from [10.21.30.78] (snitkin.dutchspace.nl [10.21.30.78])
+	by kirk.dutchspace.nl (8.11.7p1+Sun/8.10.2) with ESMTP id l4N6kbN02234
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 23 May 2007 08:46:37 +0200 (MEST)
+Message-ID: <4653E3A3.8020600@dutchspace.nl>
+Date: Wed, 23 May 2007 08:48:03 +0200
+From: Johan Borkhuis <j.borkhuis@dutchspace.nl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: anyone have a good config file for a taiga/hpc2 with a 7448?
-Date: Tue, 22 May 2007 14:41:40 -0400
-Message-ID: <556445368AFA1C438794ABDA8901891C034458D9@usa0300ms03.na.xerox.net>
-From: "Leisner, Martin" <Martin.Leisner@xerox.com>
-To: <linuxppc-embedded@ozlabs.org>
+To: linuxppc-embedded@ozlabs.org
+Subject: Problems with access to PCI on MVME3100
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,8 +24,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Before I tried to do one myself, I figured I'd bounce it off to see if
-anyone has a working
-.config (the newer kernel, the better).
+Hello,
 
-marty
+I am working on porting a PCI driver from I386-Linux to PPC (MVME-3100). 
+The device is a Reflective Memory card (VMIC 5565), and we use a driver 
+based on the standard Linux driver, provided by the supplier.
+
+I try to start a DMA transfer (using the DMA engine on the PCI card) 
+from user space, but then I get a PCI Error. The following data is 
+displayed:
+PCI Error!
+PCI ERROR DETECT REG 0x00000042
+PCI ERROR ADDRESS REG 0x00fffa00
+PCI ERROR EXT ADDRESS REG 0x00000000
+PCI ERROR ATTRIBUTES REG 0x0000c001
+PCI ERROR DATA HIGH REG 0x60010004
+PCI ERROR DATA LOW REG 0x10060020
+PCI STATUS REG 0x0000
+PCI GASKET TIMER REG 0x00003fff
+PCI PCIX TIMER REG 0x01ffffff
+
+Access to the registers from kernel mode is no problem. I did an mmap to 
+map the registers into user space, and then access the registers as an 
+array of chars or ints. Is there a limitation in access to PCI registers 
+from user space on PPC?
+
+When I try to do this in kernel mode I don't get any errors, but the 
+transfer is not started. I am not sure if this is a SW problem, or that 
+it might be caused by the PCI-PCI bridge.
+
+The code runs perfectly on a I386 platform, and I use read[bwl] and 
+write[bwl] to access the registers, so this should fix the endianess 
+problems that exist.
+
+Below is the PCI information from the card:
+01:00.0 Network controller: VMIC: Unknown device 5565 (rev 01)
+       Subsystem: PLX Technology, Inc.: Unknown device 9656
+       Flags: 66Mhz, medium devsel, IRQ 52
+       Memory at 00000000dfeffe00 (32-bit, non-prefetchable) [size=512]
+       I/O ports at e0ffff00 [size=256]
+       Memory at 00000000dfeffdc0 (32-bit, non-prefetchable) [size=64]
+       Memory at 00000000d8000000 (32-bit, non-prefetchable) [size=64M]
+       Capabilities: [40] Power Management version 2
+       Capabilities: [48] #00 [0080]
+
+Kind regards,
+    Johan Borkhuis
