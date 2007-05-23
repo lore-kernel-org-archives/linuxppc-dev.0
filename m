@@ -1,33 +1,36 @@
-Return-Path: <Wei.Zhang@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AA80BDDEE6
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 00:03:38 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l4NE3WQT002791
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 07:03:33 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l4NE3VGK003008
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 09:03:32 -0500 (CDT)
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3D853DDECF
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 00:19:00 +1000 (EST)
+Date: Wed, 23 May 2007 09:14:07 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: Kconfig warnings on latest GIT
+In-Reply-To: <1179928646.14317.6.camel@johannes.berg>
+Message-ID: <Pine.LNX.4.64.0705230913420.535@localhost.localdomain>
+References: <200705080004.14570.ismail@pardus.org.tr>
+	<20070508143127.38fafa3c.kim.phillips@freescale.com>
+	<4640D988.1040504@freescale.com>
+	<20070510051042.GA16812@verge.net.au>
+	<1178811570.3806.18.camel@johannes.berg>
+	<20070511012216.GB10715@verge.net.au>
+	<1178883937.8896.11.camel@johannes.berg>
+	<20070514013230.GJ3588@verge.net.au>
+	<1179147311.2647.47.camel@johannes.berg>
+	<Pine.LNX.4.64.0705140923470.24559@gate.crashing.org>
+	<1179159951.2647.49.camel@johannes.berg>
+	<943F0161-121D-4697-AE69-78BD605A8033@kernel.crashing.org>
+	<1179928646.14317.6.camel@johannes.berg>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Porting RapidIO from ppc arch to powerpc arch in support of
-	MPC8641D
-Date: Wed, 23 May 2007 22:03:30 +0800
-Message-ID: <46B96294322F7D458F9648B60E15112C234AEC@zch01exm26.fsl.freescale.net>
-In-Reply-To: <20070523133238.GB942@mag.az.mvista.com>
-References: <1179862732.25914.40.camel@pterry-fc6.micromemory.com>
-	<46B96294322F7D458F9648B60E15112C234AE6@zch01exm26.fsl.freescale.net>
-	<20070523133238.GB942@mag.az.mvista.com>
-From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	ppc-dev dev ML <linuxppc-dev@ozlabs.org>,
+	Simon Horman <horms@verge.net.au>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,30 +40,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi, Mark
+On Wed, 23 May 2007, Johannes Berg wrote:
 
-Yes, I'm glad to share it. I have added the memory mapping codes into
-it.
+> On Wed, 2007-05-23 at 07:37 -0500, Kumar Gala wrote:
+>
+> > Was my patch ok, if so I'll push it up through my git tree to paul?
+>
+> Yeah, looks fine to me, or will the ARCH=ppc folks then scream and want
+> that added to the Kconfig there as well?
 
-These codes are reviewing and testing with our engineers. Could you
-waiting for a little while? It will be soon.
+I can't imagine they will since pmac is only supported in ARCH=powerpc.
 
-Best Regards,
-Zhang Wei
-
-> -----Original Message-----
-> From: Mark A. Greer [mailto:mgreer@mvista.com]=20
-> Sent: Wednesday, May 23, 2007 9:33 PM
-> To: Zhang Wei-r63237
-> Cc: pterry@micromemory.com; linuxppc-dev@ozlabs.org
-> Subject: Re: Porting RapidIO from ppc arch to powerpc arch in=20
-> support of MPC8641D
->=20
-> On Wed, May 23, 2007 at 09:26:59PM +0800, Zhang Wei-r63237 wrote:
-> > I've finished the porting RIO from ppc to powerpc, do you need some
-> > helps?
->=20
-> Care to share the patches?
->=20
-> Mark
->=20
+- k
