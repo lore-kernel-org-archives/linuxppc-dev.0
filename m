@@ -3,19 +3,19 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B723FDDE2B
+	by ozlabs.org (Postfix) with ESMTP id 70A57DDEB8
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 May 2007 22:07:57 +1000 (EST)
-In-Reply-To: <556445368AFA1C438794ABDA8901891C034458D9@usa0300ms03.na.xerox.net>
-References: <556445368AFA1C438794ABDA8901891C034458D9@usa0300ms03.na.xerox.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <8386E52C-335E-46E9-9608-8FEAC3A57BC9@kernel.crashing.org>
+	Wed, 23 May 2007 22:49:11 +1000 (EST)
+Date: Wed, 23 May 2007 07:44:32 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: anyone have a good config file for a taiga/hpc2 with a 7448?
-Date: Wed, 23 May 2007 07:06:14 -0500
-To: "Leisner, Martin" <Martin.Leisner@xerox.com>
-Cc: linuxppc-embedded@ozlabs.org
+To: Domen Puncer <domen.puncer@telargo.com>
+Subject: Re: [PATCH] unbreak lite5200 dts (_pic vs. -pic)
+In-Reply-To: <20070521065600.GD20713@moe.telargo.com>
+Message-ID: <Pine.LNX.4.64.0705230743030.11550@localhost.localdomain>
+References: <20070521065600.GD20713@moe.telargo.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Sylvain Munaut <tnt@246tNt.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,13 +26,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Mon, 21 May 2007, Domen Puncer wrote:
 
-On May 22, 2007, at 1:41 PM, Leisner, Martin wrote:
+> Unbreak lite5200 dts, which were broken by
+> 5c1992f83304cf2d56934dd6c06709b96e1b0c81
+>
+>
+> Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
 
-> Before I tried to do one myself, I figured I'd bounce it off to see if
-> anyone has a working
-> .config (the newer kernel, the better).
-
-Does arch/powerpc/configs/mpc7448_hpc2_defconfig not work for you?
+applied.
 
 - k
