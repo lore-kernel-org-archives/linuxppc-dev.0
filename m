@@ -1,22 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.227])
-	by ozlabs.org (Postfix) with ESMTP id 6D4D0DDE06
+Return-Path: <Martin.Leisner@xerox.com>
+Received: from wvmler2.mail.xerox.com (wvmler2.mail.xerox.com [13.8.138.217])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "wvmler2.mail.xerox.com",
+	Issuer "wvmler2.mail.xerox.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 94781DDE02
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 May 2007 04:41:44 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id v1so281034nzb
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 May 2007 11:41:43 -0700 (PDT)
-Message-ID: <fa686aa40705231141w15120170ke5e624d592abbd76@mail.gmail.com>
-Date: Wed, 23 May 2007 12:41:42 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "John Rigby" <jrigby@freescale.com>
-Subject: Re: [PATCH] Fix mpc52xx_uart_of_assign to use correct index
-In-Reply-To: <1179941455907-git-send-email-jrigby@freescale.com>
+	Thu, 24 May 2007 04:54:04 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <1179941455907-git-send-email-jrigby@freescale.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: anyone have a good config file for a taiga/hpc2 with a 7448?
+Date: Wed, 23 May 2007 14:43:08 -0400
+Message-ID: <556445368AFA1C438794ABDA8901891C034458E3@usa0300ms03.na.xerox.net>
+In-Reply-To: <8386E52C-335E-46E9-9608-8FEAC3A57BC9@kernel.crashing.org>
+References: <556445368AFA1C438794ABDA8901891C034458D9@usa0300ms03.na.xerox.net>
+	<8386E52C-335E-46E9-9608-8FEAC3A57BC9@kernel.crashing.org>
+From: "Leisner, Martin" <Martin.Leisner@xerox.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: "Lund, Nathan" <Nathan.Lund@xerox.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,19 +28,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 5/23/07, John Rigby <jrigby@freescale.com> wrote:
-> Use idx as index into mpc52xx_uart_nodes instead of i
->
-> Signed-off-by: John Rigby <jrigby@freescale.com>
+ah, yes, but the tundra ethernet support only started to appear in the=20
+2.6.20 tree!!
 
-Good catch
+We have a 2.6.10 where the ethernet worked and 2.6.19 with
+non-functional
+ethernet and I was wondering why...
 
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+thanks much,
 
-g.
+marty
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+> -----Original Message-----
+> From:=20
+> linuxppc-embedded-bounces+martin.leisner=3Dxerox.com@ozlabs.org=20
+> [mailto:linuxppc-embedded-bounces+martin.leisner=3Dxerox.com@ozl
+> abs.org] On Behalf Of Kumar Gala
+> Sent: Wednesday, May 23, 2007 8:06 AM
+> To: Leisner, Martin
+> Cc: linuxppc-embedded@ozlabs.org
+> Subject: Re: anyone have a good config file for a taiga/hpc2=20
+> with a 7448?
+>=20
+>=20
+> On May 22, 2007, at 1:41 PM, Leisner, Martin wrote:
+>=20
+> > Before I tried to do one myself, I figured I'd bounce it=20
+> off to see if
+> > anyone has a working
+> > .config (the newer kernel, the better).
+>=20
+> Does arch/powerpc/configs/mpc7448_hpc2_defconfig not work for you?
+>=20
+> - k
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>=20
