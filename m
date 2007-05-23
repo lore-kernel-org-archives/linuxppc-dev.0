@@ -2,23 +2,23 @@ Return-Path: <linas@austin.ibm.com>
 Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CA536DDF7B
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 03:23:42 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 195EDDDF4E
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 03:28:05 +1000 (EST)
 Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4NHNdB5021851
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 13:23:39 -0400
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4NHS1M6027236
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 13:28:01 -0400
 Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
 	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4NHNdEY367428
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 13:23:39 -0400
+	l4NHS15T530258
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 13:28:01 -0400
 Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
 	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4NHNdA5007093
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 13:23:39 -0400
-Date: Wed, 23 May 2007 12:23:38 -0500
+	l4NHS1P3031204
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 13:28:01 -0400
+Date: Wed, 23 May 2007 12:28:01 -0500
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 3/4] powerpc: remove dead EEH code.
-Message-ID: <20070523172338.GC32380@austin.ibm.com>
+Subject: [PATCH 4/4] powerpc: tweak EEH copyright info
+Message-ID: <20070523172801.GD32380@austin.ibm.com>
 References: <20070523171328.GY5921@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -35,36 +35,74 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Remove some dead code.
+Twiddle the copyright notices. Per current guidelines, the use
+of the (C) or (c) in source code is deprecated. 
 
 Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 
 ----
- arch/powerpc/platforms/pseries/eeh.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ arch/powerpc/platforms/pseries/eeh.c        |    6 +++++-
+ arch/powerpc/platforms/pseries/eeh_cache.c  |    3 ++-
+ arch/powerpc/platforms/pseries/eeh_driver.c |    6 +++---
+ 3 files changed, 10 insertions(+), 5 deletions(-)
 
 Index: linux-2.6.22-rc1/arch/powerpc/platforms/pseries/eeh.c
 ===================================================================
---- linux-2.6.22-rc1.orig/arch/powerpc/platforms/pseries/eeh.c	2007-05-23 11:57:28.000000000 -0500
-+++ linux-2.6.22-rc1/arch/powerpc/platforms/pseries/eeh.c	2007-05-23 11:57:34.000000000 -0500
-@@ -117,7 +117,6 @@ static unsigned long no_cfg_addr;
- static unsigned long ignored_check;
- static unsigned long total_mmio_ffs;
- static unsigned long false_positives;
--static unsigned long ignored_failures;
- static unsigned long slot_resets;
+--- linux-2.6.22-rc1.orig/arch/powerpc/platforms/pseries/eeh.c	2007-05-23 11:44:52.000000000 -0500
++++ linux-2.6.22-rc1/arch/powerpc/platforms/pseries/eeh.c	2007-05-23 11:54:06.000000000 -0500
+@@ -1,6 +1,8 @@
+ /*
+  * eeh.c
+- * Copyright (C) 2001 Dave Engebretsen & Todd Inglett IBM Corporation
++ * Copyright IBM Corporation 2001, 2005, 2006
++ * Copyright Dave Engebretsen & Todd Inglett 2001
++ * Copyright Linas Vepstas 2005, 2006
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+@@ -15,6 +17,8 @@
+  * You should have received a copy of the GNU General Public License
+  * along with this program; if not, write to the Free Software
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
++ *
++ * Please address comments and feedback to Linas Vepstas <linas@austin.ibm.com>
+  */
  
- #define IS_BRIDGE(class_code) (((class_code)<<16) == PCI_BASE_CLASS_BRIDGE)
-@@ -1221,11 +1220,10 @@ static int proc_eeh_show(struct seq_file
- 				"check not wanted=%ld\n"
- 				"eeh_total_mmio_ffs=%ld\n"
- 				"eeh_false_positives=%ld\n"
--				"eeh_ignored_failures=%ld\n"
- 				"eeh_slot_resets=%ld\n",
- 				no_device, no_dn, no_cfg_addr, 
- 				ignored_check, total_mmio_ffs, 
--				false_positives, ignored_failures, 
-+				false_positives,
- 				slot_resets);
- 	}
- 
+ #include <linux/delay.h>
+Index: linux-2.6.22-rc1/arch/powerpc/platforms/pseries/eeh_cache.c
+===================================================================
+--- linux-2.6.22-rc1.orig/arch/powerpc/platforms/pseries/eeh_cache.c	2007-05-23 11:44:43.000000000 -0500
++++ linux-2.6.22-rc1/arch/powerpc/platforms/pseries/eeh_cache.c	2007-05-23 11:54:31.000000000 -0500
+@@ -2,7 +2,8 @@
+  * eeh_cache.c
+  * PCI address cache; allows the lookup of PCI devices based on I/O address
+  *
+- * Copyright (C) 2004 Linas Vepstas <linas@austin.ibm.com> IBM Corporation
++ * Copyright IBM Corporation 2004
++ * Copyright Linas Vepstas <linas@austin.ibm.com> 2004
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+Index: linux-2.6.22-rc1/arch/powerpc/platforms/pseries/eeh_driver.c
+===================================================================
+--- linux-2.6.22-rc1.orig/arch/powerpc/platforms/pseries/eeh_driver.c	2007-05-23 11:43:44.000000000 -0500
++++ linux-2.6.22-rc1/arch/powerpc/platforms/pseries/eeh_driver.c	2007-05-23 11:52:51.000000000 -0500
+@@ -1,6 +1,7 @@
+ /*
+  * PCI Error Recovery Driver for RPA-compliant PPC64 platform.
+- * Copyright (C) 2004, 2005 Linas Vepstas <linas@linas.org>
++ * Copyright IBM Corp. 2004 2005
++ * Copyright Linas Vepstas <linas@linas.org> 2004, 2005
+  *
+  * All rights reserved.
+  *
+@@ -19,8 +20,7 @@
+  * along with this program; if not, write to the Free Software
+  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+  *
+- * Send feedback to <linas@us.ibm.com>
+- *
++ * Send comments and feedback to Linas Vepstas <linas@austin.ibm.com>
+  */
+ #include <linux/delay.h>
+ #include <linux/interrupt.h>
