@@ -1,28 +1,22 @@
-Return-Path: <pterry@micromemory.com>
-Received: from mail.micromemory.com
-	(ip67-95-226-82.z226-95-67.customer.algx.net [67.95.226.82])
-	(using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E8E36DDF32
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 01:54:17 +1000 (EST)
-Received: from [192.168.0.90] by micromemory.com (MDaemon PRO v9.5.6)
-	with ESMTP id md50000412570.msg
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 08:54:15 -0700
-Subject: RE: Porting RapidIO from ppc arch to powerpc arch in support of
-	MPC8641D
-From: Phil Terry <pterry@micromemory.com>
-To: Wei.Zhang@freescale.com
-In-Reply-To: <46B96294322F7D458F9648B60E15112C234AEC@zch01exm26.fsl.freescale.net>
-References: <1179862732.25914.40.camel@pterry-fc6.micromemory.com>
-	<46B96294322F7D458F9648B60E15112C234AE6@zch01exm26.fsl.freescale.net>
-	<20070523133238.GB942@mag.az.mvista.com>
-	<46B96294322F7D458F9648B60E15112C234AEC@zch01exm26.fsl.freescale.net>
-Content-Type: text/plain
-Date: Wed, 23 May 2007 08:54:13 -0700
-Message-Id: <1179935653.11247.27.camel@pterry-fc6.micromemory.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: pterry@micromemory.com
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
+	[151.189.21.47])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B8E70DDE18
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 01:56:02 +1000 (EST)
+In-Reply-To: <1B5F013528140F45B5C671039279CA5701BBBDE3@NANUK.pc.tundra.com>
+References: <1B5F013528140F45B5C671039279CA5701BBBDE3@NANUK.pc.tundra.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <30282286f39c1489db7ad5b05acbc1bd@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: TSI ethernet PHY question
+Date: Wed, 23 May 2007 17:55:45 +0200
+To: "Alexandre Bounine" <Alexandre.Bounine@tundra.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,49 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-05-23 at 22:03 +0800, Zhang Wei-r63237 wrote:
-> Hi, Mark
-> 
-> Yes, I'm glad to share it. I have added the memory mapping codes into
-> it.
-> 
-> These codes are reviewing and testing with our engineers. 
+> On power up, because this pin is pulled high by the LED, the
+> TXC_RXC_DELAY mode is enabled, causing a 1.9ns delay between the clock
+> and data on the GMII interface. Tsi109 could not operate properly with
+> this delay. The TXC_RXC_DELAY mode has to be disabled by software.
+>
+> If the Quality/TXC_RXC_DELAY pin is left not connected PHY will work in
+> normal mode without delay and therefore the workaround is not required.
 
-Can you tell me what your testing it on cos we need to get a good
-interim base for our own development. The 8641_hpcn doesn't have support
-for serial rapidio so I was looking at the 8548 eval system. The ltib
-support is way back at 2.6.10 for that board but I was going to try and
-make my powerpc/rapidio support both the 8641 and 8548 so I could test
-in this way. Is your patch generic or 8641 specific?
+So it is a board-specific workaround.
 
-Also either on this list or privately can you tell me what the plans are
-for migrating the other freescale processors to powerpc and updating to
-the latest kernel?
+> I think that for situations like one on the Holly board we may need
+> board-specific hooks which modify normal initialization. As in our 
+> case:
+> no LED - no trouble.
 
-Cheers
-Phil
+Should be initiated from the platform code yes; it could
+be as simple as passing a flag to the init function.
 
-> Could you
-> waiting for a little while? It will be soon.
-> 
-> Best Regards,
-> Zhang Wei
-> 
-> > -----Original Message-----
-> > From: Mark A. Greer [mailto:mgreer@mvista.com] 
-> > Sent: Wednesday, May 23, 2007 9:33 PM
-> > To: Zhang Wei-r63237
-> > Cc: pterry@micromemory.com; linuxppc-dev@ozlabs.org
-> > Subject: Re: Porting RapidIO from ppc arch to powerpc arch in 
-> > support of MPC8641D
-> > 
-> > On Wed, May 23, 2007 at 09:26:59PM +0800, Zhang Wei-r63237 wrote:
-> > > I've finished the porting RIO from ppc to powerpc, do you need some
-> > > helps?
-> > 
-> > Care to share the patches?
-> > 
-> > Mark
-> > 
-> 
-> 
+> -----Original Message-----
+
+Don't top-post :-)
+
+
+Segher
