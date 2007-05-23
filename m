@@ -1,26 +1,32 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id 34074DDE11
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 19:12:32 +1000 (EST)
-From: Gabriel Paubert <paubert@iram.es>
-Date: Wed, 23 May 2007 11:12:22 +0200
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: fsl booke MM vs. SMP questions
-Message-ID: <20070523091222.GB4481@iram.es>
-References: <1179731215.32247.659.camel@localhost.localdomain>
-	<1179741447.3660.7.camel@localhost.localdomain>
-	<1179742083.32247.689.camel@localhost.localdomain>
-	<1179747448.3660.22.camel@localhost.localdomain>
-	<1179785273.32247.742.camel@localhost.localdomain>
-	<20070522084645.GA12009@iram.es>
-	<1179825278.32247.827.camel@localhost.localdomain>
-	<20070522100212.GA13225@iram.es>
-	<1179828342.32247.832.camel@localhost.localdomain>
+Return-Path: <sachinp@in.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2FAA9DDE11
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 19:31:59 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
+	l4N9S2TC013694
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 05:28:02 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l4N9VqUM252204
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 03:31:52 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4N9Vp7l032536
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 03:31:52 -0600
+Message-ID: <46540A18.8090506@in.ibm.com>
+Date: Wed, 23 May 2007 15:02:08 +0530
+From: "Sachin P. Sant" <sachinp@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1179828342.32247.832.camel@localhost.localdomain>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Dave Liu <r63238@freescale.com>,
-	Paul Mackerras <paulus@samba.org>, Kumar Gala <galak@gate.crashing.org>
+To: linuxppc-dev@ozlabs.org, paulus@samba.org
+Subject: [Patch 0/2] Kexec/Kdump support POWER6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Olof Johansson <olof@lixom.net>, Milton Miller II <miltonm@us.ibm.com>,
+	ellerman@au1.ibm.com
+Reply-To: sachinp@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,62 +36,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 22, 2007 at 08:05:42PM +1000, Benjamin Herrenschmidt wrote:
-> On Tue, 2007-05-22 at 12:02 +0200, Gabriel Paubert wrote:
-> > 
-> > Well, there should always be an stwcx. to clear reservation before
-> > any interrupt return. Otherwise you'll be able to cause hard to
-> > reproduce bugs in the interrupted code.
-> 
-> Well, that's the point. The BookE TLB refill exception is a very fast
-> path that doesn't use the normal interrupt return code path. It thus
-> needs to be careful about not leaving dangling reservations.
+Here is updated set of patches which adds kdump support for Power6.
 
-Ok, thanks. I missed that critical piece of information from
-the context. In this case it makes sense, although I wonder
-if a different order of instructions could shave some latency 
-from the critical path:
+The first patch reads VRMA page size from device tree.
 
-	 1 - rX = read PTE value (normal load)
-	 2 - if (!_PAGE_PRESENT)) -> out
- 	 3 - rY = rX | _PAGE_ACCESSED
-	 4 - if (rX != rY)
-	
-Specifically here, I wonder whether instead of the sequence:
-	ori	ry, rx, PAGE_ACCESSED
-	cmpw	rx, ry
-	beq	11f	; Needs non-default static prediction?
+Second patch adds Kexec/Kdump support for Power6 processor. 
+On Power machines supporting VRMA, Kexec/Kdump does not work.
+Hypervisor stores VRMA mapping used by the OS, in the hpte 
+hash tables. This patch makes sure these hpte entries are 
+left untouched.
 
+Thanks
+-Sachin
 
-it might be better to write it as:
-	andi.	rz, rx, PAGE_ACCESSED
-	ori	ry, rx, PAGE_ACCESSED
-	bne	11f
-
-since on some processors the branch might be resolved one cycle
-earlier. But I don't know very well the processors with these MMU.
-
-	 5 -   rZ = lwarx PTE value
-	 6 -   if (rZ != rX)
-	 7 -	stdcx. PTE, rZ (rewrite just read value to clear reserv)
-
-Hmm, lWarx paired with stDcx., looks like a typo ?
-
-	 8 - 	goto 1 (try again)
-	 9 -   stdcx. PTE, rY 
-Ditto.
-	10 -   if failed -> goto 1 (try again)
-	11 - that's it ! 
-
-I suspect that in the TLB handler, you've got something
-like 4 registers and one CR field to play with. So more
-clever solutions may be impossible to implement.
-
-> On some CPUs, there are also performance issues with leaving dangling
-> lwarx iirc but I don't have the details off the top of my mind.
-> 
-
-I don't know of any, but I almost exclusively use 603e and 750.
-
-
-	Gabriel
+Signed-off-by : Sachin Sant <sachinp@in.ibm.com>
+Signed-off-by : Mohan Kumar M <mohan@in.ibm.com>
+---
