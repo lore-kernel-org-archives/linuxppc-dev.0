@@ -1,23 +1,24 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-09.arcor-online.net (mail-in-09.arcor-online.net
-	[151.189.21.49])
+Received: from mail-in-05.arcor-online.net (mail-in-05.arcor-online.net
+	[151.189.21.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0C7E4DDD0A
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 02:00:44 +1000 (EST)
-In-Reply-To: <Pine.LNX.4.64.0705230916170.535@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 2C623DDE42
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 02:05:50 +1000 (EST)
+In-Reply-To: <1179934657.11247.14.camel@pterry-fc6.micromemory.com>
 References: <1179862732.25914.40.camel@pterry-fc6.micromemory.com>
 	<46B96294322F7D458F9648B60E15112C234AE6@zch01exm26.fsl.freescale.net>
 	<Pine.LNX.4.64.0705230916170.535@localhost.localdomain>
+	<1179934657.11247.14.camel@pterry-fc6.micromemory.com>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <0389b4398a09293e6b6e0e4304a81ebe@kernel.crashing.org>
+Message-Id: <836bca7802dca173490f4d38e0c48b7a@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: Porting RapidIO from ppc arch to powerpc arch in support of
 	MPC8641D
-Date: Wed, 23 May 2007 18:00:38 +0200
-To: Kumar Gala <galak@kernel.crashing.org>
+Date: Wed, 23 May 2007 18:05:43 +0200
+To: pterry@micromemory.com
 Cc: linuxppc-dev@ozlabs.org, Zhang Wei-r63237 <Wei.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,21 +29,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>                 interrupts = <30 1 31 1 32 1 35 1 36 1 37 1 38 1>;
->>>
->> Do you really use all of this interrupts? In my test, three <32 2 35 2
->> 36 2> are okay, and the sense is 2.
->
-> I think we need to list all the interrupts possible from RIO, not just 
-> the
-> ones the driver happens to use.
+>> The law should really be removed.
+> In my application I'm may be using a huge part of the 36-bit address
+> space to address multiple remote RIO boards in a peer DMA multicomputer
+> application. The default law just for maintenance messages isn't going
+> to cut it.
 
-Yes exactly; the device tree describes the hardware, not
-the way that Linux (or any other OS) happens to use it.
+If the firmware sets up the "law", it should put a property
+in the node describing the setting.  If Linux sets up the
+laws, there shouldn't be a property (since it is a policy
+decision).
 
-The same holds for the "law", "doorbells", and "mailboxes"
-properties -- I have no clue whether those are hardware
-properties or what else, you guys figure it out :-)
+>>> The dbells and mboxs can be removed. The default setting in rio is 
+>>> okay.
+>>
+>> this could possibly be useful.
+
+Same issue.  Even if the firmware uses a default setting,
+it should still put it in the device tree _iff_ it is the
+firmware's decision (and not the kernel's).
 
 
 Segher
