@@ -1,17 +1,20 @@
-Return-Path: <djiang@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id BC136DE1FF
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 09:53:01 +1000 (EST)
-Received: from [10.50.1.77] (blade.az.mvista.com [10.50.1.77])
-	by hermes.mvista.com (Postfix) with ESMTP id A6CAC1D480
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 16:53:00 -0700 (PDT)
-Message-ID: <46538264.2050000@mvista.com>
-Date: Tue, 22 May 2007 16:53:08 -0700
-From: Dave Jiang <djiang@mvista.com>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound2-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id BDF26DDE24
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 10:18:59 +1000 (EST)
+Message-ID: <4653886A.30800@am.sony.com>
+Date: Tue, 22 May 2007 17:18:50 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [RFC] BOOKE watchdog and kexec
-Content-Type: text/plain; charset=ISO-8859-1
+To: Dave Jiang <djiang@mvista.com>
+Subject: Re: [RFC] BOOKE watchdog and kexec
+References: <46538264.2050000@mvista.com>
+In-Reply-To: <46538264.2050000@mvista.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,33 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-What would be the appropriate way to deal with the BOOKE watchdog in order to
-properly kexec? The BOOKE watchdog cannot be disabled. With the current
-implementation, a watchdog daemon in userland is required to poke the
-/dev/watchdog continously in order to keep it from going off. In the kexec
-situation, the watchdog daemon in userland goes away when the new kernel is
-executed. It is very possible that the new kernel can potentially timeout on a
-certain hardware device initialization (i.e. SCSI discovery/timeout) and causes
-the watchdog to go off and reset the hardware. The reset is of course not
-wanted in this situation.
+Dave Jiang wrote:
+> What would be the appropriate way to deal with the BOOKE watchdog in order to
+> properly kexec? The BOOKE watchdog cannot be disabled. With the current
+> implementation, a watchdog daemon in userland is required to poke the
+> /dev/watchdog continously in order to keep it from going off. In the kexec
+> situation, the watchdog daemon in userland goes away when the new kernel is
+> executed. It is very possible that the new kernel can potentially timeout on a
+> certain hardware device initialization (i.e. SCSI discovery/timeout) and causes
+> the watchdog to go off and reset the hardware. The reset is of course not
+> wanted in this situation.
 
-Several solutions comes into mind:
-1. Have the kernel timer poke the watchdog. This would ensure situation
-described above would never happen. I think x86 does this with NMI watchdog.
+I would think the same situation exists when the bootloader loads the first
+kernel.  If that works, then you should be able to use the same mechanism to
+get the second kernel up.
 
-2. Have the watchdog driver spawn a kernel thread to poke the watchdog at a
-periodic time. Or perhaps use the delayed-work mechanism to do that.
-
-3. Set the highest bit of the watchdog register so that it does not expire for
-2^32 ticks.
-
-IMHO, #2 seems to be a reasonable approach. Comments please?
-
--- 
-
-------------------------------------------------------
-Dave Jiang
-Software Engineer
-MontaVista Software, Inc.
-http://www.mvista.com
-------------------------------------------------------
+-Geoff
