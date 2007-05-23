@@ -1,37 +1,22 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5369BDDE2D
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 00:24:36 +1000 (EST)
-Subject: Re: Kconfig warnings on latest GIT
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <Pine.LNX.4.64.0705230913420.535@localhost.localdomain>
-References: <200705080004.14570.ismail@pardus.org.tr>
-	<20070508143127.38fafa3c.kim.phillips@freescale.com>
-	<4640D988.1040504@freescale.com> <20070510051042.GA16812@verge.net.au>
-	<1178811570.3806.18.camel@johannes.berg>
-	<20070511012216.GB10715@verge.net.au>
-	<1178883937.8896.11.camel@johannes.berg>
-	<20070514013230.GJ3588@verge.net.au>
-	<1179147311.2647.47.camel@johannes.berg>
-	<Pine.LNX.4.64.0705140923470.24559@gate.crashing.org>
-	<1179159951.2647.49.camel@johannes.berg>
-	<943F0161-121D-4697-AE69-78BD605A8033@kernel.crashing.org>
-	<1179928646.14317.6.camel@johannes.berg>
-	<Pine.LNX.4.64.0705230913420.535@localhost.localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-S7zF+zkaPY6pUIFCHChx"
-Date: Wed, 23 May 2007 16:26:05 +0200
-Message-Id: <1179930365.14317.14.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	ppc-dev dev ML <linuxppc-dev@ozlabs.org>,
-	Simon Horman <horms@verge.net.au>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Paul Mackerras <paulus@samba.org>
+	by ozlabs.org (Postfix) with ESMTP id 79781DDEC1
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 00:26:29 +1000 (EST)
+Date: Wed, 23 May 2007 09:21:48 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Zhang Wei-r63237 <Wei.Zhang@freescale.com>
+Subject: RE: Porting RapidIO from ppc arch to powerpc arch in support of
+	MPC8641D
+In-Reply-To: <46B96294322F7D458F9648B60E15112C234AE6@zch01exm26.fsl.freescale.net>
+Message-ID: <Pine.LNX.4.64.0705230916170.535@localhost.localdomain>
+References: <1179862732.25914.40.camel@pterry-fc6.micromemory.com>
+	<46B96294322F7D458F9648B60E15112C234AE6@zch01exm26.fsl.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,39 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 23 May 2007, Zhang Wei-r63237 wrote:
 
---=-S7zF+zkaPY6pUIFCHChx
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, 2007-05-23 at 09:14 -0500, Kumar Gala wrote:
-> On Wed, 23 May 2007, Johannes Berg wrote:
->=20
-> > On Wed, 2007-05-23 at 07:37 -0500, Kumar Gala wrote:
+> > So I'm taking the boot/dts/mpc8641_hpcn.dts and producing a new
+> > mpc8641D_umem.dts with the following addition to the soc.
 > >
-> > > Was my patch ok, if so I'll push it up through my git tree to paul?
+> > srio@c0000 {
+> >                 device_type = "srio";
+> >                 compatible = "86xx,85xx";
+
+We really need to think about this, is their really any difference between
+srio and prio from a software view point?
+
+> > 		reg = <c0000 20000>;
+> > 		law = <400000000 e00000000>;
+>
+> Please use range = <0 address_start size>
+
+The law should really be removed.
+
+>
+> > 		dbells = <0 ffff>;
+> > 		mboxs = <0 4>;
+>
+> The dbells and mboxs can be removed. The default setting in rio is okay.
+
+this could possibly be useful.
+
+>
+> >                 interrupt-parent = <&mpic>;
+> >                 interrupts = <30 1 31 1 32 1 35 1 36 1 37 1 38 1>;
+> >               };
 > >
-> > Yeah, looks fine to me, or will the ARCH=3Dppc folks then scream and wa=
-nt
-> > that added to the Kconfig there as well?
->=20
-> I can't imagine they will since pmac is only supported in ARCH=3Dpowerpc.
+> Do you really use all of this interrupts? In my test, three <32 2 35 2
+> 36 2> are okay, and the sense is 2.
 
-Oh right, that was the point of not mentioning
-SYS_SUPPORTS_APM_EMULATION any more in the drivers/macintosh/Kconfig
+I think we need to list all the interrupts possible from RIO, not just the
+ones the driver happens to use.
 
-johannes
-
---=-S7zF+zkaPY6pUIFCHChx
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGVE79/ETPhpq3jKURAsoLAKCNDt2BvRicYLq+ZjM9YrU4hReDggCfcwwS
-qDd9/PWsdM2kp9MLcElVhaA=
-=k3Py
------END PGP SIGNATURE-----
-
---=-S7zF+zkaPY6pUIFCHChx--
+- k
