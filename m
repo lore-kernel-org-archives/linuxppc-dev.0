@@ -1,17 +1,32 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [RFC] BOOKE watchdog and kexec
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Dave Jiang <djiang@mvista.com>
-In-Reply-To: <46538264.2050000@mvista.com>
-References: <46538264.2050000@mvista.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-asBNgrPAPVcRtC0qrCPy"
-Date: Wed, 23 May 2007 13:36:59 +1000
-Message-Id: <1179891419.6145.19.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <Wei.Zhang@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E3A94DDE1E
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 13:38:12 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l4N3c7rh011379
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 20:38:08 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l4N3c6lb011088
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 May 2007 22:38:07 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: [PATCH 2/5] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
+Date: Wed, 23 May 2007 11:38:05 +0800
+Message-ID: <46B96294322F7D458F9648B60E15112C234A2F@zch01exm26.fsl.freescale.net>
+In-Reply-To: <465354A0.5020502@freescale.com>
+References: <11798051102658-git-send-email-wei.zhang@freescale.com>	<11798051101543-git-send-email-wei.zhang@freescale.com>
+	<1179805110272-git-send-email-wei.zhang@freescale.com>
+	<465354A0.5020502@freescale.com>
+From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+To: "Xiao Xianghua-R6AADS" <x.xiao@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,66 +36,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi, Xianghua,=20
 
---=-asBNgrPAPVcRtC0qrCPy
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 2007-05-22 at 16:53 -0700, Dave Jiang wrote:
-> What would be the appropriate way to deal with the BOOKE watchdog in orde=
-r to
-> properly kexec? The BOOKE watchdog cannot be disabled. With the current
-> implementation, a watchdog daemon in userland is required to poke the
-> /dev/watchdog continously in order to keep it from going off. In the kexe=
-c
-> situation, the watchdog daemon in userland goes away when the new kernel =
-is
-> executed. It is very possible that the new kernel can potentially timeout=
- on a
-> certain hardware device initialization (i.e. SCSI discovery/timeout) and =
-causes
-> the watchdog to go off and reset the hardware. The reset is of course not
-> wanted in this situation.
+> -----Original Message-----
+> From: xianghua xiao [mailto:x.xiao@freescale.com]=20
+> Subject: Re: [PATCH 2/5] Add uli1575 pci-bridge sector to=20
+> MPC8641HPCN dts file.
 >=20
-> Several solutions comes into mind:
-> 1. Have the kernel timer poke the watchdog. This would ensure situation
-> described above would never happen. I think x86 does this with NMI watchd=
-og.
+> where is the new uli1575 node referred except for this added snippet?
+> thanks,
+> xianghua
+
+There're no other places now. You means the 'uli1757:' must be removed?
+
+Thanks!
+Wei
+
 >=20
-> 2. Have the watchdog driver spawn a kernel thread to poke the watchdog at=
- a
-> periodic time. Or perhaps use the delayed-work mechanism to do that.
+> Zhang Wei wrote:
 >=20
-> 3. Set the highest bit of the watchdog register so that it does not expir=
-e for
-> 2^32 ticks.
-
-#3 sounds the easiest. You'd set it in machine_kexec_prepare() and then
-have the second kernel restore a sane value. I assume 2^32 ticks is long
-enough to boot?
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-asBNgrPAPVcRtC0qrCPy
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGU7bbdSjSd0sB4dIRAmzaAJ9kKI8D7YbrfXL1p0XwPHXm+08X6ACgqrjy
-xhxb4Rer4zQb/Qkl+cwN8/Q=
-=8WQ3
------END PGP SIGNATURE-----
-
---=-asBNgrPAPVcRtC0qrCPy--
+> >Add uli1575 pci-bridge sector. It fixes the issue of ULI1575=20
+> not found on rev.2 board.
+> >
+> >Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+> >---
+> > arch/powerpc/boot/dts/mpc8641_hpcn.dts      |    6 ++++++
+> > arch/powerpc/boot/dts/mpc8641_hpcn_srio.dts |    6 ++++++
+> > 2 files changed, 12 insertions(+), 0 deletions(-)
+> >
+> >diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts=20
+> b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+> >index 260b264..04626b1 100644
+> >--- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+> >+++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+> >@@ -297,6 +297,12 @@
+> > 				interrupts =3D <49 2>;
+> > 				interrupt-parent =3D <&mpic>;
+> > 			};
+> >+			uli1575: uli1575@100 {
+> >+				reg =3D <0 0 0 0 0>;
+> >+				pci_bridge@200 {
+> >+					reg =3D <0 0 0 0 0>;
+> >+				};
+> >+			};
+> >=20
+> > 		};
+> >=20
+> > =20
+> >
+>=20
+>=20
