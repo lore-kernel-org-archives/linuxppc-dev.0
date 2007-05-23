@@ -1,22 +1,22 @@
 Return-Path: <sachinp@in.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 64CC8DDDDB
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 15:12:52 +1000 (EST)
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8D920DDED1
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 15:14:03 +1000 (EST)
 Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4N5Ck41018304
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 01:12:46 -0400
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4N5Ev2W000699
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 01:14:57 -0400
 Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
 	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4N5Ck2x530258
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 01:12:46 -0400
+	l4N5DuOX475790
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 01:13:56 -0400
 Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
 	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4N5CkJ7025029
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 01:12:46 -0400
-Message-ID: <4653CD64.6090305@in.ibm.com>
-Date: Wed, 23 May 2007 10:43:08 +0530
+	l4N5DuV1027688
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 01:13:56 -0400
+Message-ID: <4653CDAB.2060407@in.ibm.com>
+Date: Wed, 23 May 2007 10:44:19 +0530
 From: "Sachin P. Sant" <sachinp@in.ibm.com>
 MIME-Version: 1.0
 To: Olof Johansson <olof@lixom.net>
@@ -37,7 +37,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Olaf, thanks for the review. 
+Hi Olof, thanks for the review. 
 
 >> +	if (have_vrma)
 >> +		pSeries_find_hpte_vrma();
