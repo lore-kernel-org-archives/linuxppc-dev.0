@@ -1,15 +1,19 @@
-Return-Path: <ntl@pobox.com>
-Received: from sceptre.pobox.com (sceptre.pobox.com [207.106.133.20])
-	by ozlabs.org (Postfix) with ESMTP id A7DCFDDE02
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 10:51:33 +1000 (EST)
-Date: Tue, 22 May 2007 19:51:25 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] remove spinlock from struct cpu_purr_data
-Message-ID: <20070523005125.GE29914@localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] pseries: asm/pci-bridge.h CONFIG_ minor cleanup
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Linas Vepstas <linas@austin.ibm.com>
+In-Reply-To: <20070522170058.GJ5921@austin.ibm.com>
+References: <20070521231816.GH5921@austin.ibm.com>
+	<1179794459.7189.2.camel@concordia.ozlabs.ibm.com>
+	<20070522170058.GJ5921@austin.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-N/nSVSFEEgsFfdDaq0UG"
+Date: Wed, 23 May 2007 11:11:32 +1000
+Message-Id: <1179882692.6145.8.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,104 +23,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-cpu_purr_data is a per-cpu array used to account for stolen time on
-partitioned systems.  It used to be the case that cpus accessed each
-others' cpu_purr_data, so each entry was protected by a spinlock.
 
-However, the code was reworked ("Simplify stolen time calculation")
-with the result that each cpu accesses its own cpu_purr_data and not
-those of other cpus.  This means we can get rid of the spinlock as
-long as we're careful to disable interrupts when accessing
-cpu_purr_data in process context.
+--=-N/nSVSFEEgsFfdDaq0UG
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
----
- arch/powerpc/kernel/time.c |   24 +++++++++++++++---------
- 1 files changed, 15 insertions(+), 9 deletions(-)
+On Tue, 2007-05-22 at 12:00 -0500, Linas Vepstas wrote:
+> On Tue, May 22, 2007 at 10:40:59AM +1000, Michael Ellerman wrote:
+> > On Mon, 2007-05-21 at 18:18 -0500, Linas Vepstas wrote:
+> > > Use the correct CONFIG_ option to mark off the EEH bits.
+> >=20
+> > You're making the struct 4 bytes larger by creating a hole here :(
+>=20
+> Hmm. Perhaps I could shuffle one of the ints down ... =20
+>=20
+> I figured there might be some vague cache-line benefits to
+> getting the eeh stuff out of the way.=20
 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 2c8564d..0a8a820 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -222,19 +222,28 @@ struct cpu_purr_data {
- 	int	initialized;			/* thread is running */
- 	u64	tb;			/* last TB value read */
- 	u64	purr;			/* last PURR value read */
--	spinlock_t lock;
- };
- 
-+/*
-+ * Each entry in the cpu_purr_data array is manipulated only by its
-+ * "owner" cpu -- usually in the timer interrupt but also occasionally
-+ * in process context for cpu online.  As long as cpus do not touch
-+ * each others' cpu_purr_data, disabling local interrupts is
-+ * sufficient to serialize accesses.
-+ */
- static DEFINE_PER_CPU(struct cpu_purr_data, cpu_purr_data);
- 
- static void snapshot_tb_and_purr(void *data)
- {
-+	unsigned long flags;
- 	struct cpu_purr_data *p = &__get_cpu_var(cpu_purr_data);
- 
-+	local_irq_save(flags);
- 	p->tb = mftb();
- 	p->purr = mfspr(SPRN_PURR);
- 	wmb();
- 	p->initialized = 1;
-+	local_irq_restore(flags);
- }
- 
- /*
-@@ -242,15 +251,14 @@ static void snapshot_tb_and_purr(void *data)
-  */
- void snapshot_timebases(void)
- {
--	int cpu;
--
- 	if (!cpu_has_feature(CPU_FTR_PURR))
- 		return;
--	for_each_possible_cpu(cpu)
--		spin_lock_init(&per_cpu(cpu_purr_data, cpu).lock);
- 	on_each_cpu(snapshot_tb_and_purr, NULL, 0, 1);
- }
- 
-+/*
-+ * Must be called with interrupts disabled.
-+ */
- void calculate_steal_time(void)
- {
- 	u64 tb, purr;
-@@ -262,7 +270,6 @@ void calculate_steal_time(void)
- 	pme = &per_cpu(cpu_purr_data, smp_processor_id());
- 	if (!pme->initialized)
- 		return;		/* this can happen in early boot */
--	spin_lock(&pme->lock);
- 	tb = mftb();
- 	purr = mfspr(SPRN_PURR);
- 	stolen = (tb - pme->tb) - (purr - pme->purr);
-@@ -270,7 +277,6 @@ void calculate_steal_time(void)
- 		account_steal_time(current, stolen);
- 	pme->tb = tb;
- 	pme->purr = purr;
--	spin_unlock(&pme->lock);
- }
- 
- /*
-@@ -284,12 +290,12 @@ static void snapshot_purr(void)
- 
- 	if (!cpu_has_feature(CPU_FTR_PURR))
- 		return;
-+	local_irq_save(flags);
- 	pme = &per_cpu(cpu_purr_data, smp_processor_id());
--	spin_lock_irqsave(&pme->lock, flags);
- 	pme->tb = mftb();
- 	pme->purr = mfspr(SPRN_PURR);
- 	pme->initialized = 1;
--	spin_unlock_irqrestore(&pme->lock, flags);
-+	local_irq_restore(flags);
- }
- 
- #endif /* CONFIG_PPC_SPLPAR */
--- 
-1.5.2
+Yeah who knows. The hole doesn't really matter unless the struct gets
+bigger, having the EEH stuff at the bottom makes it read better which is
+probably more important.
+
+
+> > >  	u32	config_space[16];	/* saved PCI config space */
+> > > +#endif
+> >=20
+> > It looks correct, but I think it's worth mentioning in the changelog
+> > that config_space was previously unconditionally defined, but is now
+> > within CONFIG_EEH.
+>=20
+> I could just tell that someone would remark on this; why I didn't
+> mention it, I don't know.
+
+Me neither :)
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-N/nSVSFEEgsFfdDaq0UG
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGU5TEdSjSd0sB4dIRAiNuAJ95tv0ndrhznZ7BTyuVu6uzzVinKgCeI/Mt
+l/Ykel/jQSPjUs65QBYaz8A=
+=4loX
+-----END PGP SIGNATURE-----
+
+--=-N/nSVSFEEgsFfdDaq0UG--
