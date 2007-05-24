@@ -1,24 +1,21 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-13.arcor-online.net (mail-in-13.arcor-online.net
-	[151.189.21.53])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8A907DDDEB
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 19:13:54 +1000 (EST)
-In-Reply-To: <20070524055909.GG20078@localhost.localdomain>
-References: <20070524041625.GD20078@localhost.localdomain>
-	<BB9A8C3A-0BC5-4DF0-9201-2742124A4AF5@kernel.crashing.org>
-	<20070524055909.GG20078@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <7e14fb6736fbd0b77774ce10417d627d@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: Fix problems with Holly's DT representation of ethernet PHYs
-Date: Thu, 24 May 2007 11:13:46 +0200
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: Alexandre Bounine <Alexandre.Bounine@tundra.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 7FF83DDE08
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 19:19:49 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+Subject: Re: Porting RapidIO from ppc arch to powerpc arch in support
+	ofMPC8641D
+Date: Thu, 24 May 2007 11:19:23 +0200
+References: <1179862732.25914.40.camel@pterry-fc6.micromemory.com>
+	<200705230105.53013.arnd@arndb.de>
+	<46B96294322F7D458F9648B60E15112C307037@zch01exm26.fsl.freescale.net>
+In-Reply-To: <46B96294322F7D458F9648B60E15112C307037@zch01exm26.fsl.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200705241119.23793.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,23 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Is the compatible really need here?  We are able to provide and bind
->> drivers based on MII_PHYSID1/2.  I don't see what putting the
->> compatible proper gets us.
->
-> That's a good point (except that having a node without compatible is
-> kind of odd).
+On Thursday 24 May 2007, Zhang Wei-r63237 wrote:
+> Of_platform_driver is a good framework. But this RapidIO driver is not a
+> device driver. It's a _bus_ driver very similar to PCI bus. So,
+> of_platform_driver is not fit here.
 
-Not really; "compatible" is for the cases where "name"
-alone isn't enough.
+But there is not a fundamental difference between the two. In the Linux
+driver model, a bus driver is a simply device driver whose devices have
+other devices as child nodes.
 
-> At the moment the code which instantiates the platform
-> device looks at compatible to enable a workaround.  But actually that
-> workaround is holly specific, rather than related to the PHY model,
-> and so should be encoded differently.
+Your example of PCI buses fits well here. Traditionally, each platform
+had its own PCI scanning code that went looking for pci host bridges.
+Now we have the of_pci_phb_driver in arch/powerpc/kernel/of_platform.c
+that automatically sets up the bridges, and the platform only
+needs to provide a ppc_md.pci_setup_phb() callback.
 
-There is no real value in encoding it in the device
-tree, even.
-
-
-Segher
+	Arnd <><
