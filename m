@@ -1,14 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 24 May 2007 10:56:18 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: powerpc_flash_init(), wtf!?
-Message-ID: <20070524005618.GB14320@localhost.localdomain>
-References: <20070523215735.GA16140@mag.az.mvista.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id CE862DDE0A
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 11:48:43 +1000 (EST)
+Date: Wed, 23 May 2007 20:53:05 -0500
+To: Dale Farnsworth <dale@farnsworth.org>
+Subject: Re: [PATCH] powerpc: Add Marvell mv64x60 udbg putc/getc functions
+Message-ID: <20070524015305.GA5755@lixom.net>
+References: <20070523220518.GA2312@xyzzy.farnsworth.org>
+	<20070523232745.GA4611@lixom.net>
+	<20070524000237.GB11608@xyzzy.farnsworth.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070523215735.GA16140@mag.az.mvista.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+In-Reply-To: <20070524000237.GB11608@xyzzy.farnsworth.org>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,16 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 23, 2007 at 02:57:35PM -0700, Mark A. Greer wrote:
-> Sorry, I've lost the thread in my inbox so I can't reply to it directly.
+On Wed, May 23, 2007 at 05:02:37PM -0700, Dale Farnsworth wrote:
+> On Wed, May 23, 2007 at 06:27:45PM -0500, Olof Johansson wrote:
+> > On Wed, May 23, 2007 at 03:05:18PM -0700, Dale Farnsworth wrote:
+> > 
+> > >  arch/powerpc/platforms/embedded6xx/prpmc2800.c |    1 
+> > >  arch/powerpc/sysdev/Makefile                   |    3 
+> > >  arch/powerpc/sysdev/mv64x60.h                  |    1 
+> > >  arch/powerpc/sysdev/mv64x60_udbg.c             |  152 +++++++++++++++
+> > >  4 files changed, 156 insertions(+), 1 deletion(-)
+> > 
+> > Is there a reason you're not putting it with the other udbg code, and
+> > not naming it with the same scheme (kernel/udbg_<xxx>)?
 > 
-> Is something like this what everyone agreed upon?
+> Not really.  I just put it with some other mv64x60 code.
+> 
+> > Or maybe we should just move the udbg_16550 code to sysdev instead, it's
+> > roots are from ppc64 where we didn't have sysdev.
+> 
+> Shrug.
 
-That's the right approach if your flash device isn't on a bus that's
-already being scanned with of_platform_bus_probe().
+Yeah, shrug. :)  This shouldn't stop this from going in, it just made
+me realize that we should probably move the 16550 stuff.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+
+-Olof
