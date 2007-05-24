@@ -1,17 +1,14 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 24 May 2007 10:52:15 +1000
+Date: Thu, 24 May 2007 10:56:18 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Porting RapidIO from ppc arch to powerpc arch in support of
-	MPC8641D
-Message-ID: <20070524005215.GA14320@localhost.localdomain>
-References: <1179862732.25914.40.camel@pterry-fc6.micromemory.com>
-	<46B96294322F7D458F9648B60E15112C234AE6@zch01exm26.fsl.freescale.net>
-	<Pine.LNX.4.64.0705230916170.535@localhost.localdomain>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: powerpc_flash_init(), wtf!?
+Message-ID: <20070524005618.GB14320@localhost.localdomain>
+References: <20070523215735.GA16140@mag.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.0705230916170.535@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, Zhang Wei-r63237 <Wei.Zhang@freescale.com>
+In-Reply-To: <20070523215735.GA16140@mag.az.mvista.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,24 +18,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 23, 2007 at 09:21:48AM -0500, Kumar Gala wrote:
-> On Wed, 23 May 2007, Zhang Wei-r63237 wrote:
+On Wed, May 23, 2007 at 02:57:35PM -0700, Mark A. Greer wrote:
+> Sorry, I've lost the thread in my inbox so I can't reply to it directly.
 > 
-> > > So I'm taking the boot/dts/mpc8641_hpcn.dts and producing a new
-> > > mpc8641D_umem.dts with the following addition to the soc.
-> > >
-> > > srio@c0000 {
-> > >                 device_type = "srio";
-> > >                 compatible = "86xx,85xx";
+> Is something like this what everyone agreed upon?
 
-This is quite tangential to the rest of this discussion, but "xx"s in
-compatible properties always alarm me if they're the only thing
-listed.  It's generally best to give a precise model, then a more
-general one: the trade-off is that if you're too precise, it's fairly
-easy for the driver to workaround by recognizing and binding to
-multiple compatible strings, whereas if you're too general you risk
-the driver not being able to determine whether it needs a
-model-specific workaround or not.
+That's the right approach if your flash device isn't on a bus that's
+already being scanned with of_platform_bus_probe().
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
