@@ -1,15 +1,22 @@
-Return-Path: <akonovalov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 9E2E8DDDFA
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 18:47:50 +1000 (EST)
-Message-ID: <46555294.6040104@ru.mvista.com>
-Date: Thu, 24 May 2007 12:53:40 +0400
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Xilinx git tree at source.mvista.com
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-13.arcor-online.net (mail-in-13.arcor-online.net
+	[151.189.21.53])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D30E0DDDFC
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 19:11:19 +1000 (EST)
+In-Reply-To: <20070524041625.GD20078@localhost.localdomain>
+References: <20070524041625.GD20078@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <7d4172dfa48e91ac1d3e006bd3de52e0@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Fix problems with Holly's DT representation of ethernet PHYs
+Date: Thu, 24 May 2007 11:11:12 +0200
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: Alexandre Bounine <Alexandre.Bounine@tundra.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,25 +26,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+Looks okay but...
 
-My Xilinx Virtex Development tree is now alive again.
+> +				compatible = "bcm5461A", "bcm54xx";
 
-Please use the dev branch (master is just the ko copy):
-http://source.mvista.com/git/gitweb.cgi?p=linux-xilinx-26.git;a=shortlog;h=dev
-Currently it has a patch to enable the framebuffer
-on ML403 and ML300 plus TEMAC driver that uses
-the PHY lib (FIFO mode support only).
-The TEMAC driver is work in progress.
-In the queue are SGDMA TEMAC support, and SPI driver
-(master only).
+... lowercase please.
 
-My concern is that the TEMAC driver uses the "level 1 drivers" from EDK 9.1.
-The comments / opinions on how to get this driver (not the current incomplete
-version of course) accepted into the ko tree are very welcomed.
 
-I am not quite satisfied with how the current git repository
-is structured, and may rework it completely later.
-
-Thanks,
-Andrei
+Segher
