@@ -1,32 +1,17 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D44E8DDD06
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 04:00:45 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4OI0fDS015539
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 14:00:41 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4OI0fVT531758
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 14:00:41 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4OI0fKd001285
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 14:00:41 -0400
-Date: Thu, 24 May 2007 13:00:40 -0500
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 3/4] powerpc: remove dead EEH code.
-Message-ID: <20070524180039.GL5921@austin.ibm.com>
-References: <20070523171328.GY5921@austin.ibm.com>
-	<20070523172338.GC32380@austin.ibm.com>
-	<20070524095327.75e239b2.sfr@canb.auug.org.au>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 05D06DDDF7
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 04:01:29 +1000 (EST)
+Message-ID: <4655D353.6000304@ru.mvista.com>
+Date: Thu, 24 May 2007 22:02:59 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070524095327.75e239b2.sfr@canb.auug.org.au>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+To: Dave Jiang <djiang@mvista.com>
+Subject: Re: 440 ebony patch seems to have broken 85xx build on powerpc.git
+References: <4655C7A6.2050606@mvista.com>
+In-Reply-To: <4655C7A6.2050606@mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,26 +21,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 24, 2007 at 09:53:27AM +1000, Stephen Rothwell wrote:
-> On Wed, 23 May 2007 12:23:38 -0500 linas@austin.ibm.com (Linas Vepstas) wrote:
-> >
-> > @@ -1221,11 +1220,10 @@ static int proc_eeh_show(struct seq_file
-> >  				"check not wanted=%ld\n"
-> >  				"eeh_total_mmio_ffs=%ld\n"
-> >  				"eeh_false_positives=%ld\n"
-> > -				"eeh_ignored_failures=%ld\n"
-> >  				"eeh_slot_resets=%ld\n",
-> >  				no_device, no_dn, no_cfg_addr,
-> >  				ignored_check, total_mmio_ffs,
-> > -				false_positives, ignored_failures,
-> > +				false_positives,
-> >  				slot_resets);
-> 
-> This changes a user visible interface - are we sure noone uses it?
-> (I suspect it is fine because of the format, but just asking anyway.)
+Dave Jiang wrote:
 
-The only user I know of is a "how to test eeh" document that has
-a snapshot of this.  For the most part, EEH has been very
-out-of-the-limelight.
+> Has anyone been able to build mpc85xx_* from the latest powerpc.git? I have
+> tried mpc85xx_cds and mpc8560_ads. I pulled a new git tree and attempted to
+> build and hit the error message below.
 
---linas
+> Also, if I comment out the two lines in arch/powerpc/boot/Makefile that was
+> introduced by the 440 Ebony support patch everything is fine.
+
+> $(obj)/44x.o: BOOTCFLAGS += -Wa,-mbooke
+> $(obj)/ebony.o: BOOTCFLAGS += -Wa,-mbooke
+
+> make -f
+> /home/djiang/community/git-repos/tmp/ppc-master/scripts/Makefile.modpost vmlinux
+>   scripts/mod/modpost   -o
+> /home/djiang/community/git-repos/tmp/ppc-master/Module.symvers
+> arch/powerpc/kernel/head_fsl_booke.o  init/built-in.o  usr/built-in.o
+> arch/powerpc/kernel/built-in.o  arch/powerpc/mm/built-in.o
+> arch/powerpc/lib/built-in.o  arch/powerpc/sysdev/built-in.o
+> arch/powerpc/platforms/built-in.o  arch/powerpc/math-emu/built-in.o
+> kernel/built-in.o  mm/built-in.o  fs/built-in.o  ipc/built-in.o
+> security/built-in.o  crypto/built-in.o  block/built-in.o  lib/lib.a
+> lib/built-in.o  drivers/built-in.o  sound/built-in.o  net/built-in.o
+> WARNING: arch/powerpc/mm/built-in.o(.text+0x10bc): Section mismatch: reference
+> to .init.text:early_get_page (between 'pte_alloc_one_kernel' and 'steal_context')
+> rm -f .old_version
+> make ARCH=ppc64 -f scripts/Makefile.build obj=arch/powerpc/boot
+> arch/powerpc/boot/uImage
+>   /opt/montavista/cge/devkit/ppc/85xx/bin/ppc_85xx-gcc -m32
+> -Wp,-MD,arch/powerpc/boot/.ebony.o.d -Wall -Wstrict-prototypes -O2
+> -fomit-frame-pointer -fno-builtin -nostdinc -isystem
+> /opt/montavista/cge/devkit/ppc/85xx/bin/../lib/gcc/powerpc-montavista-linux-gnuspe/4.2.0/include
+> -fPIC -fno-stack-protector -Iarch/powerpc/boot
+> -I/home/djiang/community/git-repos/tmp/ppc-master/arch/powerpc/boot -Wa,-mbooke
+> -c -o arch/powerpc/boot/ebony.o arch/powerpc/boot/ebony.c
+> /home/djiang/tmp/cc2UVyci.s: Assembler messages:
+> /home/djiang/tmp/cc2UVyci.s:142: Error: Unrecognized opcode: `isel'
+> make[1]: *** [arch/powerpc/boot/ebony.o] Error 1
+
+    I wonder WTF ebony.c gets built for MPC85xx targets? :-O
+
+WBR, Sergei
