@@ -1,17 +1,11 @@
-Return-Path: <akonovalov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 868BDDDD0C
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 23:02:42 +1000 (EST)
-Message-ID: <46558E54.80909@ru.mvista.com>
-Date: Thu, 24 May 2007 17:08:36 +0400
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: paulus@samba.org
 MIME-Version: 1.0
-To: "David H. Lynch Jr." <dhlii@dlasys.net>
-Subject: Re: Xilinx git tree at source.mvista.com
-References: <46555294.6040104@ru.mvista.com> <465561A4.9020403@dlasys.net>
-In-Reply-To: <465561A4.9020403@dlasys.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Subject: [PATCH] fix stolen time for SMT without LPAR
+Date: Thu, 24 May 2007 23:33:22 +1000
+Message-ID: <12635.1180013602@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,48 +15,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi David,
+For POWERPC, stolen time accounts for cycles lost to the hypervisor or
+PURR cycles attributed to the other SMT thread.  Hence, when a PURR is
+available, we should still calculate stolen time, irrespective of being
+virtualised.
 
-David H. Lynch Jr. wrote:
-> Andrei Konovalov wrote:
->> Hello,
->>
->> My Xilinx Virtex Development tree is now alive again.
->>
->> Please use the dev branch (master is just the ko copy):
->> http://source.mvista.com/git/gitweb.cgi?p=linux-xilinx-26.git;a=shortlog;h=dev
->> Currently it has a patch to enable the framebuffer
->> on ML403 and ML300 plus TEMAC driver that uses
->> the PHY lib (FIFO mode support only).
->> The TEMAC driver is work in progress.
->> In the queue are SGDMA TEMAC support, and SPI driver
->> (master only).
->>
->> My concern is that the TEMAC driver uses the "level 1 drivers" from EDK 9.1.
->> The comments / opinions on how to get this driver (not the current incomplete
->> version of course) accepted into the ko tree are very welcomed.
->>   
-> I have an almost working FIFO TEMAC driver. It is similarly based.
-> it started out based on the Trek webserver sample
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+Kudos to sfr for realizing the problem here.
 
-Is this a reference design by Xilinx? Linux based or standalone?
+ arch/powerpc/kernel/time.c |    6 ++++--
+ include/asm-powerpc/time.h |    2 +-
+ 2 files changed, 5 insertions(+), 3 deletions(-)
 
-> I spent probably 3-4 days de-EDKing it into something that fit into a
-> single source and was closer to ko norms.
-> It is based on approximately the EDK 8.1 stuff. You are welcome to it,
-> if it could be helpful in anyway.
-> I am all for getting an acceptable driver into the ko tree.
-
-You could post your driver to the list when you think it is in good enough shape.
-If your driver is based on the linux TEMAC driver from EDK, it shouldn't
-be very different from my version (my added value is mostly replacing the
-custom PHY code with the PHY lib stuff). Then we could merge our drivers (or
-whatever would make sense).
-
-I would be interested to have a look at your current code just to see
-how much has it cost to "de-EDK" the FIFO part. You could email me
-your (even not quite working) driver privately if you want.
-
-
-Thanks,
-Andrei
+Index: linux-2.6-ozlabs/arch/powerpc/kernel/time.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/kernel/time.c
++++ linux-2.6-ozlabs/arch/powerpc/kernel/time.c
+@@ -244,7 +244,8 @@ void snapshot_timebases(void)
+ {
+ 	int cpu;
+ 
+-	if (!cpu_has_feature(CPU_FTR_PURR))
++	if (!cpu_has_feature(CPU_FTR_PURR) &&
++	    !firmware_has_feature(FW_FEATURE_SPLPAR))
+ 		return;
+ 	for_each_possible_cpu(cpu)
+ 		spin_lock_init(&per_cpu(cpu_purr_data, cpu).lock);
+@@ -257,7 +258,8 @@ void calculate_steal_time(void)
+ 	s64 stolen;
+ 	struct cpu_purr_data *pme;
+ 
+-	if (!cpu_has_feature(CPU_FTR_PURR))
++	if (!cpu_has_feature(CPU_FTR_PURR) &&
++	    !firmware_has_feature(FW_FEATURE_SPLPAR))
+ 		return;
+ 	pme = &per_cpu(cpu_purr_data, smp_processor_id());
+ 	if (!pme->initialized)
+Index: linux-2.6-ozlabs/include/asm-powerpc/time.h
+===================================================================
+--- linux-2.6-ozlabs.orig/include/asm-powerpc/time.h
++++ linux-2.6-ozlabs/include/asm-powerpc/time.h
+@@ -232,7 +232,7 @@ extern void account_process_vtime(struct
+ #define account_process_vtime(tsk)		do { } while (0)
+ #endif
+ 
+-#if defined(CONFIG_VIRT_CPU_ACCOUNTING) && defined(CONFIG_PPC_SPLPAR)
++#if defined(CONFIG_VIRT_CPU_ACCOUNTING)
+ extern void calculate_steal_time(void);
+ extern void snapshot_timebases(void);
+ #else
