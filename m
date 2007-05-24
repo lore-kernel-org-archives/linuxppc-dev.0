@@ -1,13 +1,18 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 24 May 2007 14:02:10 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Don't store a command line in the Holly device tree
-Message-ID: <20070524040210.GC20078@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Hugh Blemings <hab@au1.ibm.com>, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 48863DDE06
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 14:16:19 +1000 (EST)
+Date: Thu, 24 May 2007 14:16:13 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH] [POWERPC] suppress modpost warnings for references from the
+	.toc
+Message-Id: <20070524141613.4ba38e2f.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>, paulus@samba.org,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,45 +22,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently, the Holly device tree includes a bootargs property in
-/chosen, which gives a commandline.  This is somewhat inconvenient,
-because it means an alternative default command line can't be given in
-the kernel config - the value obtained from the dts via the
-bootwrapper will always override CONFIG_CMDLINE.
+We should do better here by effetively "dereferencing" references to
+the .toc (or the .got2) section, but that is much harder.
 
-This patch removes the command line from the dts, and instead puts the
-same command line as a default in holly_defconfig.
-
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-
-Index: working-2.6/arch/powerpc/boot/dts/holly.dts
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/dts/holly.dts	2007-05-08 14:58:06.000000000 +1000
-+++ working-2.6/arch/powerpc/boot/dts/holly.dts	2007-05-24 13:55:38.000000000 +1000
-@@ -193,6 +193,5 @@
- 
- 	chosen {
- 		linux,stdout-path = "/tsi109@c0000000/serial@7808";
--		bootargs = "console=ttyS0,115200";
- 	};
- };
-Index: working-2.6/arch/powerpc/configs/holly_defconfig
-===================================================================
---- working-2.6.orig/arch/powerpc/configs/holly_defconfig	2007-05-24 13:55:53.000000000 +1000
-+++ working-2.6/arch/powerpc/configs/holly_defconfig	2007-05-24 13:56:16.000000000 +1000
-@@ -182,7 +182,8 @@ CONFIG_SPLIT_PTLOCK_CPUS=4
- # CONFIG_RESOURCES_64BIT is not set
- CONFIG_ZONE_DMA_FLAG=1
- CONFIG_PROC_DEVICETREE=y
--# CONFIG_CMDLINE_BOOL is not set
-+CONFIG_CMDLINE_BOOL=y
-+CONFIG_CMDLINE="console=ttyS0,115200"
- # CONFIG_PM is not set
- # CONFIG_SECCOMP is not set
- # CONFIG_WANT_DEVICE_TREE is not set
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ scripts/mod/modpost.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index 8e5610d..fe5f89b 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -865,9 +865,12 @@ static void warn_sec_mismatch(const char *modname, const char *fromsec,
+ 		return;
+ 
+ 	/* fromsec whitelist - without a valid 'before'
+-	 * powerpc has a GOT table in .got2 section */
++	 * powerpc has a GOT table in .got2 section
++	 * and also a .toc section */
+ 	if (strcmp(fromsec, ".got2") == 0)
+ 		return;
++	if (strcmp(fromsec, ".toc") == 0)
++		return;
+ 
+ 	if (before && after) {
+ 		warn("%s(%s+0x%llx): Section mismatch: reference to %s:%s "
+-- 
+1.5.1.4
