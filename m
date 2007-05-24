@@ -1,19 +1,13 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id CE862DDE0A
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 11:48:43 +1000 (EST)
-Date: Wed, 23 May 2007 20:53:05 -0500
-To: Dale Farnsworth <dale@farnsworth.org>
-Subject: Re: [PATCH] powerpc: Add Marvell mv64x60 udbg putc/getc functions
-Message-ID: <20070524015305.GA5755@lixom.net>
-References: <20070523220518.GA2312@xyzzy.farnsworth.org>
-	<20070523232745.GA4611@lixom.net>
-	<20070524000237.GB11608@xyzzy.farnsworth.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 24 May 2007 14:02:10 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Don't store a command line in the Holly device tree
+Message-ID: <20070524040210.GC20078@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070524000237.GB11608@xyzzy.farnsworth.org>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: Hugh Blemings <hab@au1.ibm.com>, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,28 +17,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 23, 2007 at 05:02:37PM -0700, Dale Farnsworth wrote:
-> On Wed, May 23, 2007 at 06:27:45PM -0500, Olof Johansson wrote:
-> > On Wed, May 23, 2007 at 03:05:18PM -0700, Dale Farnsworth wrote:
-> > 
-> > >  arch/powerpc/platforms/embedded6xx/prpmc2800.c |    1 
-> > >  arch/powerpc/sysdev/Makefile                   |    3 
-> > >  arch/powerpc/sysdev/mv64x60.h                  |    1 
-> > >  arch/powerpc/sysdev/mv64x60_udbg.c             |  152 +++++++++++++++
-> > >  4 files changed, 156 insertions(+), 1 deletion(-)
-> > 
-> > Is there a reason you're not putting it with the other udbg code, and
-> > not naming it with the same scheme (kernel/udbg_<xxx>)?
-> 
-> Not really.  I just put it with some other mv64x60 code.
-> 
-> > Or maybe we should just move the udbg_16550 code to sysdev instead, it's
-> > roots are from ppc64 where we didn't have sysdev.
-> 
-> Shrug.
+Currently, the Holly device tree includes a bootargs property in
+/chosen, which gives a commandline.  This is somewhat inconvenient,
+because it means an alternative default command line can't be given in
+the kernel config - the value obtained from the dts via the
+bootwrapper will always override CONFIG_CMDLINE.
 
-Yeah, shrug. :)  This shouldn't stop this from going in, it just made
-me realize that we should probably move the 16550 stuff.
+This patch removes the command line from the dts, and instead puts the
+same command line as a default in holly_defconfig.
 
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
--Olof
+Index: working-2.6/arch/powerpc/boot/dts/holly.dts
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/dts/holly.dts	2007-05-08 14:58:06.000000000 +1000
++++ working-2.6/arch/powerpc/boot/dts/holly.dts	2007-05-24 13:55:38.000000000 +1000
+@@ -193,6 +193,5 @@
+ 
+ 	chosen {
+ 		linux,stdout-path = "/tsi109@c0000000/serial@7808";
+-		bootargs = "console=ttyS0,115200";
+ 	};
+ };
+Index: working-2.6/arch/powerpc/configs/holly_defconfig
+===================================================================
+--- working-2.6.orig/arch/powerpc/configs/holly_defconfig	2007-05-24 13:55:53.000000000 +1000
++++ working-2.6/arch/powerpc/configs/holly_defconfig	2007-05-24 13:56:16.000000000 +1000
+@@ -182,7 +182,8 @@ CONFIG_SPLIT_PTLOCK_CPUS=4
+ # CONFIG_RESOURCES_64BIT is not set
+ CONFIG_ZONE_DMA_FLAG=1
+ CONFIG_PROC_DEVICETREE=y
+-# CONFIG_CMDLINE_BOOL is not set
++CONFIG_CMDLINE_BOOL=y
++CONFIG_CMDLINE="console=ttyS0,115200"
+ # CONFIG_PM is not set
+ # CONFIG_SECCOMP is not set
+ # CONFIG_WANT_DEVICE_TREE is not set
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
