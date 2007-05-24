@@ -1,16 +1,32 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 24 May 2007 15:59:09 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Fix problems with Holly's DT representation of ethernet PHYs
-Message-ID: <20070524055909.GG20078@localhost.localdomain>
-References: <20070524041625.GD20078@localhost.localdomain>
-	<BB9A8C3A-0BC5-4DF0-9201-2742124A4AF5@kernel.crashing.org>
+Return-Path: <Wei.Zhang@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BB821DDDF4
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 16:48:26 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l4O6mJCc000768
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 23:48:19 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l4O6mIT7006454
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 01:48:18 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <BB9A8C3A-0BC5-4DF0-9201-2742124A4AF5@kernel.crashing.org>
-Cc: Alexandre Bounine <Alexandre.Bounine@tundra.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Porting RapidIO from ppc arch to powerpc arch in support
+	ofMPC8641D
+Date: Thu, 24 May 2007 14:48:16 +0800
+Message-ID: <46B96294322F7D458F9648B60E15112C307037@zch01exm26.fsl.freescale.net>
+In-Reply-To: <200705230105.53013.arnd@arndb.de>
+References: <1179862732.25914.40.camel@pterry-fc6.micromemory.com>
+	<200705230105.53013.arnd@arndb.de>
+From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+To: "Arnd Bergmann" <arnd@arndb.de>, <linuxppc-dev@ozlabs.org>,
+	<pterry@micromemory.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,40 +36,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 23, 2007 at 11:22:34PM -0500, Kumar Gala wrote:
-> 
-> On May 23, 2007, at 11:16 PM, David Gibson wrote:
-> 
-> > This patch fixes some problems with the way the Ethernet PHYs are
-> > represented in the device tree for the Holly board.  This means
-> > changes to the dts itself, and to the code with instantiates the
-> > tsi108 ethernet platform devices based on the device tree.
-> >
-> > 	- First, and most importantly, the PHYs are given with an
-> > identical 'reg' property.  This reg currently encodes the accessible
-> > register used to initiate mdio interaction with the PHYs, rather than
-> > a meaningful address on the parent bus (mdio in this case), which is
-> > incorrect.  Instead we give the address of these registers as 'reg' in
-> > the mdio node itself, and encode the ID of each phy in their 'reg'
-> > propertys.  The PHY's unit name addresses are updated to match.
-> > 	- Second, the PHYs give only "bcm54xx" as a compatible
-> > property.  This is unfortunate, because there are many bcm54xx PHY
-> > models, and they have differences which can matter.  We add a more
-> > precise compatible string, giving the precise PHY model (bcm5461A in
-> > this case).
-> 
-> Is the compatible really need here?  We are able to provide and bind  
-> drivers based on MII_PHYSID1/2.  I don't see what putting the  
-> compatible proper gets us.
+Hi, Arnd,
 
-That's a good point (except that having a node without compatible is
-kind of odd).  At the moment the code which instantiates the platform
-device looks at compatible to enable a workaround.  But actually that
-workaround is holly specific, rather than related to the PHY model,
-and so should be encoded differently.
+> >=20
+> > Then I should pass np into the various setup routines as=20
+> above so that
+> > they can find the interrupts, etc.
+> >=20
+> > Is this the right kind of flavor or have I misunderstood how the dtb
+> > stuff is supposed to integrate with the susbsys_initcall stuff.
+>=20
+> the thing you are missing is probably the of_platform_driver. Your
+> driver should have something like
+>=20
+> static struct of_device_id mpc85xx_rio_ids[] =3D {
+> 	{ .compatible =3D "fsl,8641d-rapidio", .data =3D RIO_8641 },
+> 	{ .compatible =3D "fsl,8540-rapidio", .data =3D RIO_8540 },
+> 	{ },
+> };
+> static struct of_platform_driver mpc85xx_rio_driver =3D {
+> 	.name =3D "mpc85xx_rio",
+> 	.match_table =3D &mpc85xx_rio_ids,
+> 	.probe =3D mpc85xx_rio_probe,
+> };
+> static int __init mpc85xx_rio_init(void)
+> {
+> 	return of_register_platform_driver(&mpc85xx_rio_driver);
+> }
+> subsys_initcall(mpc85xx_rio_init);
+>=20
+> > I'm assuming we are supposed to do away with all the CONFIG_RAPIDIO,
+> > CONFIG_MPCxyz etc so that the kernel is driven by the dtb?
+>=20
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+
+I'm not agree with you.
+
+Of_platform_driver is a good framework. But this RapidIO driver is not a
+device driver. It's a _bus_ driver very similar to PCI bus. So,
+of_platform_driver is not fit here.
+
+Thanks!
+Wei.
