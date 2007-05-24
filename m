@@ -1,18 +1,16 @@
 Return-Path: <andrew.james.barr@gmail.com>
-Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.249])
-	by ozlabs.org (Postfix) with ESMTP id 37CDCDDDFA
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 21:36:08 +1000 (EST)
-Received: by ag-out-0708.google.com with SMTP id 9so77925agd
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 04:36:04 -0700 (PDT)
-Date: Wed, 23 May 2007 16:25:26 -0400
-From: "Andrew J. Barr" <andrew.james.barr@gmail.com> (by way of Andrew J. Barr
-	<andrew.james.barr@gmail.com>)
-To: linux-kernel@vger.kernel.org
-Message-ID: <20070523162526.3d1fd656@powerbook.oakcourt.dyndns.org>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="MP_JfxxghJiDnjPTpRwN=hmOYe"
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.243])
+	by ozlabs.org (Postfix) with ESMTP id 3755CDDDF8
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 21:37:53 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so19450anc
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 04:37:52 -0700 (PDT)
+Date: Thu, 24 May 2007 07:37:45 -0400
+From: "Andrew J. Barr" <andrew.james.barr@gmail.com>
+To: linuxppc-dev@ozlabs.org
 Subject: [PPC] 2.6.22-rc2: badness at mm/slab.c:777
-Resent-Message-ID: <20070524073559.5f41b6bb@powerbook.oakcourt.dyndns.org>
+Message-ID: <20070524073745.29cffa4b@powerbook.oakcourt.dyndns.org>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="MP_nomQhIxIUJJ0872CmEp34M/"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,35 +20,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---MP_JfxxghJiDnjPTpRwN=hmOYe
+--MP_nomQhIxIUJJ0872CmEp34M/
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-LS0tLS1CRUdJTiBQR1AgU0lHTkVEIE1FU1NBR0UtLS0tLQ0KSGFzaDogU0hBMQ0KDQotIC0tLS0t
-LS0tLS0tLVsgY3V0IGhlcmUgXS0tLS0tLS0tLS0tLQ0KQmFkbmVzcyBhdCBtbS9zbGFiLmM6Nzc3
-DQpDYWxsIFRyYWNlOg0KW2VmZmQ3ZDYwXSBbYzAwMDg0NzhdIHNob3dfc3RhY2srMHg1MC8weDE4
-NCAodW5yZWxpYWJsZSkNCltlZmZkN2Q4MF0gW2MwMGZjOTQ4XSByZXBvcnRfYnVnKzB4ODQvMHhj
-OA0KW2VmZmQ3ZDkwXSBbYzAyMjhhZjRdIF9fa3Byb2Jlc190ZXh0X3N0YXJ0KzB4MTFjLzB4NGYw
-DQpbZWZmZDdkYTBdIFtjMDAxMGJjOF0gcmV0X2Zyb21fZXhjZXB0X2Z1bGwrMHgwLzB4NGMNCi0g
-LS0tIEV4Y2VwdGlvbjogNzAwIGF0IF9fa21hbGxvYysweDI4LzB4ZTgNCiAgICBMUiA9IF9fa3ph
-bGxvYysweDE4LzB4NDQNCltlZmZkN2U2MF0gW2MwMTk4Y2MwXSB1c2JfZ2V0X2Rlc2NyaXB0b3Ir
-MHg3Yy8weGM0ICh1bnJlbGlhYmxlKQ0KW2VmZmQ3ZTcwXSBbYzAwNmFiMTRdIF9fa3phbGxvYysw
-eDE4LzB4NDQNCltlZmZkN2U5MF0gW2MwMTliODRjXSB1c2JfZ2V0X2NvbmZpZ3VyYXRpb24rMHg3
-ZTAvMHhiMjgNCltlZmZkN2Y0MF0gW2MwMTkzNjhjXSB1c2JfbmV3X2RldmljZSsweDI0LzB4MTAw
-DQpbZWZmZDdmNjBdIFtjMDE5NDYzMF0gaHViX3RocmVhZCsweDg0NC8weGM1NA0KW2VmZmQ3ZmQw
-XSBbYzAwNDJiNjBdIGt0aHJlYWQrMHg0Yy8weDg4DQpbZWZmZDdmZjBdIFtjMDAxMTQ2OF0ga2Vy
-bmVsX3RocmVhZCsweDQ0LzB4NjANCg0KT2NjdXJzIGR1cmluZyBib290dXAgb24gYSBQb3dlcmJv
-b2s1LDcgKFBvd2VyQm9vayBHNCAxNyIgcG9zdC1GZWIwNSkNCg0KZG1lc2cgYW5kIC5jb25maWcg
-YXR0YWNoZWQuDQoNCi0gLS0gDQpBbmRyZXcgSi4gQmFycg0KWC1NYWlsZXI6IENsYXdzIE1haWwg
-Mi45LjEgKEdUSysgMi4xMC4xMjsgcG93ZXJwYy11bmtub3duLWxpbnV4LWdudSkNCg0KUm9uYWxk
-IFJlYWdhbjogQW1lcmljYSdzIGFuc3dlciB0byBJbnNwZWN0b3IgQ2xvdXNlYXUNCi0tLS0tQkVH
-SU4gUEdQIFNJR05BVFVSRS0tLS0tDQpWZXJzaW9uOiBHbnVQRyB2MS40LjYgKEdOVS9MaW51eCkN
-Cg0KaUQ4REJRRkdWS05FaHVNK1o2MmE1Mm9SQW8yVUFKOWx3TWhBeXVvYkFuN0MxZm1naDRSOGlN
-YVRVZ0NncnlrcA0KL3lHQjVjdkQwcWo4NjJlVlRzaU9jQ0k9DQo9N2t1Qw0KLS0tLS1FTkQgUEdQ
-IFNJR05BVFVSRS0tLS0tDQo=
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
---MP_JfxxghJiDnjPTpRwN=hmOYe
+- ------------[ cut here ]------------
+Badness at mm/slab.c:777
+Call Trace:
+[effd7d60] [c0008478] show_stack+0x50/0x184 (unreliable)
+[effd7d80] [c00fc948] report_bug+0x84/0xc8
+[effd7d90] [c0228af4] __kprobes_text_start+0x11c/0x4f0
+[effd7da0] [c0010bc8] ret_from_except_full+0x0/0x4c
+- --- Exception: 700 at __kmalloc+0x28/0xe8
+    LR = __kzalloc+0x18/0x44
+[effd7e60] [c0198cc0] usb_get_descriptor+0x7c/0xc4 (unreliable)
+[effd7e70] [c006ab14] __kzalloc+0x18/0x44
+[effd7e90] [c019b84c] usb_get_configuration+0x7e0/0xb28
+[effd7f40] [c019368c] usb_new_device+0x24/0x100
+[effd7f60] [c0194630] hub_thread+0x844/0xc54
+[effd7fd0] [c0042b60] kthread+0x4c/0x88
+[effd7ff0] [c0011468] kernel_thread+0x44/0x60
+
+Occurs during bootup on a Powerbook5,7 (PowerBook G4 17" post-Feb05)
+
+dmesg and .config attached.
+
+- -- 
+Andrew J. Barr
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.12; powerpc-unknown-linux-gnu)
+
+Ronald Reagan: America's answer to Inspector Clouseau
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGVKNEhuM+Z62a52oRAo2UAJ9lwMhAyuobAn7C1fmgh4R8iMaTUgCgrykp
+/yGB5cvD0qj862eVTsiOcCI=
+=7kuC
+-----END PGP SIGNATURE-----
+
+--MP_nomQhIxIUJJ0872CmEp34M/
 Content-Type: application/x-gzip; name=config-2.6.22-rc2.gz
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename=config-2.6.22-rc2.gz
@@ -283,7 +295,7 @@ Bli7YQkFzh7nFPyYzAJ4W1OoXjfJMoTXWTJbgM/jlCB4GmBUa2sKVPhpqiEz/KwCGFz5p1g2ect3
 /JLwch7xzcwIvYUPpztB/4mmFmVYDyNY4kYjC78WoOF30YKFZTY8HAD5hv1gYZewsktlyEKgXw3D
 SPINEwp+iU731beR70IoJUM2scHFGPv2xc5UZKXwPzZv7YyYxgAA
 
---MP_JfxxghJiDnjPTpRwN=hmOYe
+--MP_nomQhIxIUJJ0872CmEp34M/
 Content-Type: application/x-gzip; name=dmesg.log.gz
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename=dmesg.log.gz
@@ -395,4 +407,4 @@ rmpb70LRp9u4sVSrJqWTSVMhAHTAn03A7B28EdvltbL6Ipuv3eENwL+yu1ROlmZdzU5ygR8qCrI8
 ffgIxDNsUUqm30Wu8QmTqyV0KYAx3YHXSkHXayqqxG4HRFPLYO1ckRP4wchTNncBx/9mwf6zl1wv
 itWg20ttcm23Brii7GK7XoC/NKNgNEAf691iqcxTxdNIpVEc/AK2qSmCyzsAAA==
 
---MP_JfxxghJiDnjPTpRwN=hmOYe--
+--MP_nomQhIxIUJJ0872CmEp34M/--
