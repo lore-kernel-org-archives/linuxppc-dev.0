@@ -1,21 +1,36 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <mohan@in.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AC33DDDE11
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 21:45:42 +1000 (EST)
-In-Reply-To: <4655577F.3020801@freescale.com>
-References: <4655577F.3020801@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <5E953418-3B5B-4051-9ABB-4C3B1CE1567F@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] qe_lib: export symbols to fix compile error when QE
-	drivers compile as modules
-Date: Thu, 24 May 2007 06:44:01 -0500
-To: Li Yang <leoli@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Paul <paulus@samba.org>
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 63467DDE05
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 22:18:05 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4OCJ0DB025059
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 08:19:00 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l4OCHwbX513224
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 08:17:58 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4OCHvGS009452
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 08:17:58 -0400
+Date: Thu, 24 May 2007 17:47:51 +0530
+From: Mohan Kumar M <mohan@in.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [Patch 2/2] Kexec/Kdump support - POWER6
+Message-ID: <20070524121751.GB4547@in.ibm.com>
+References: <4652E088.9080207@in.ibm.com> <4652E109.4020204@in.ibm.com>
+	<4652E17C.7080607@in.ibm.com> <20070522153419.GA22047@lixom.net>
+	<46540B6F.6030300@in.ibm.com>
+	<18004.7556.311264.415721@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <18004.7556.311264.415721@cargo.ozlabs.ibm.com>
+Cc: Milton Miller II <miltonm@us.ibm.com>, kexec@lists.infradead.org,
+	linuxppc-dev@ozlabs.org, Olof Johansson <olof@lixom.net>,
+	ellerman@au1.ibm.com
+Reply-To: mohan@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,255 +40,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On May 24, 2007, at 4:14 AM, Li Yang wrote:
-
-> Export symbols of qe_lib to be used by QE drivers.
+On Wed, May 23, 2007 at 08:55:00PM +1000, Paul Mackerras wrote:
+> Sachin P. Sant writes:
+> 
+> > On Power machines supporting VRMA, Kexec/Kdump does not work.
+> > Hypervisor stores VRMA mapping used by the OS, in the hpte hash
+> > tables. Make sure these hpte entries are left untouched.
+> 
+> Surely all we need to do is to avoid clearing the VRMA entries.  We
+> can do this by not clearing any HPTE where the top 40 bits of the
+> first dword are 0x4001ffffff (B=1 for a 1TB segment and the
+> 0x0001ffffff special VSID).  In fact we can avoid having to read each
+> entry by doing the H_REMOVEs with H_ANDCOND and the bolted bit when we
+> clear the hash table, and only reading the HPTEs for which the
+> H_REMOVE returns an error.
 >
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> ---
-> arch/powerpc/sysdev/qe_lib/ucc.c      |    7 +++++++
-> arch/powerpc/sysdev/qe_lib/ucc_fast.c |    8 ++++++++
-> arch/powerpc/sysdev/qe_lib/ucc_slow.c |   12 ++++++++++--
-> 3 files changed, 25 insertions(+), 2 deletions(-)
 
-A number of the EXPORT_SYMBOL() are not used by any in kernel drivers  
-and thus should not be added.  See comments below.  Also, should  
-these be EXPORT_SYMBOL_GPL().
+Paul,
 
-> diff --git a/arch/powerpc/sysdev/qe_lib/ucc.c b/arch/powerpc/sysdev/ 
-> qe_lib/ucc.c
-> index ac12a44..e8635aa 100644
-> --- a/arch/powerpc/sysdev/qe_lib/ucc.c
-> +++ b/arch/powerpc/sysdev/qe_lib/ucc.c
-> @@ -18,6 +18,7 @@
-> #include <linux/errno.h>
-> #include <linux/slab.h>
-> #include <linux/stddef.h>
-> +#include <linux/module.h>
-> #include <asm/irq.h>
-> #include <asm/io.h>
-> @@ -40,6 +41,7 @@ int ucc_set_qe_mux_mii_mng(int ucc_num)
-> 	return 0;
-> }
-> +EXPORT_SYMBOL(ucc_set_qe_mux_mii_mng);
-> int ucc_set_type(int ucc_num, struct ucc_common *regs,
-> 		 enum ucc_speed_type speed)
-> @@ -66,6 +68,7 @@ int ucc_set_type(int ucc_num, struct ucc_common  
-> *regs,
-> 	return 0;
-> }
-> +EXPORT_SYMBOL(ucc_set_type);
+Thanks for your suggestion.
 
-remove.
+But we can not use 0x4001fffff for H_ANDCOND flag since AND'ing
+0x4001ffff value with most of the HPTEs results in non-zero and most of
+the HPTE entries are not removed.
 
-> int ucc_init_guemr(struct ucc_common *regs)
-> {
-> @@ -81,6 +84,7 @@ int ucc_init_guemr(struct ucc_common *regs)
-> 	return 0;
-> }
-> +EXPORT_SYMBOL(ucc_init_guemr);
+>From POWER ISA 2.04 document page 425,
+"Programming Note:
+Software should specify PTE(B) = 0b01 for all Page
+Table Entries that map the VRMA in order to be
+consistent with the values in Figure 14."
 
-remove.
+So I tried 0x4000000000000000 as AVPN parameter and using that it
+removes all hpte entries other than VRMA(ie non 1TB segment size PTE
+entries).
 
-> static void get_cmxucr_reg(int ucc_num, volatile u32 ** p_cmxucr,  
-> u8 * reg_num,
-> 			   u8 * shift)
-> @@ -122,6 +126,7 @@ static void get_cmxucr_reg(int ucc_num,  
-> volatile u32 ** p_cmxucr, u8 * reg_num,
-> 		break;
-> 	}
-> }
-> +EXPORT_SYMBOL(get_cmxucr_reg);
+Tested on POWER6/POWER5 machines.
 
-remove, you shouldn't be exporting something marked static.
+========================
+Starting from POWER5+, hypervisor stores VRMA entries in the HPTE tables
+and these entries are need by OS and they should not be cleared. These
+VRMA entries will be of segment size 1TB. Using H_ANDCOND flag for
+H_REMOVE hypervisor call it is made sure that we will not remove any PTE
+whose size is 1TB(ie VRMA entries)
 
-> int ucc_mux_set_grant_tsa_bkpt(int ucc_num, int set, u32 mask)
-> {
-> @@ -142,6 +147,7 @@ int ucc_mux_set_grant_tsa_bkpt(int ucc_num, int  
-> set, u32 mask)
-> 	return 0;
-> }
-> +EXPORT_SYMBOL(ucc_mux_set_grant_tsa_bkpt);
+Signed-off-by: Sachin Sant <sachinp@in.ibm.com>
+Signed-off-by: Mohan Kumar M <mohan@in.ibm.com>
+---
+ arch/powerpc/platforms/pseries/lpar.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-remove
-
-> int ucc_set_qe_mux_rxtx(int ucc_num, enum qe_clock clock, enum  
-> comm_dir mode)
-> {
-> @@ -251,3 +257,4 @@ int ucc_set_qe_mux_rxtx(int ucc_num, enum  
-> qe_clock clock, enum comm_dir mode)
-> 	return 0;
-> }
-> +EXPORT_SYMBOL(ucc_set_qe_mux_rxtx);
-
-remove.
-
-> diff --git a/arch/powerpc/sysdev/qe_lib/ucc_fast.c b/arch/powerpc/ 
-> sysdev/qe_lib/ucc_fast.c
-> index 9143236..3df202e 100644
-> --- a/arch/powerpc/sysdev/qe_lib/ucc_fast.c
-> +++ b/arch/powerpc/sysdev/qe_lib/ucc_fast.c
-> @@ -19,6 +19,7 @@
-> #include <linux/stddef.h>
-> #include <linux/interrupt.h>
-> #include <linux/err.h>
-> +#include <linux/module.h>
-> #include <asm/io.h>
-> #include <asm/immap_qe.h>
-> @@ -70,6 +71,7 @@ void ucc_fast_dump_regs(struct ucc_fast_private *  
-> uccf)
-> 	printk(KERN_INFO "guemr : addr - 0x%08x, val - 0x%02x",
-> 		  (u32) & uccf->uf_regs->guemr, uccf->uf_regs->guemr);
-> }
-> +EXPORT_SYMBOL(ucc_fast_dump_regs);
-> u32 ucc_fast_get_qe_cr_subblock(int uccf_num)
-> {
-> @@ -85,11 +87,13 @@ u32 ucc_fast_get_qe_cr_subblock(int uccf_num)
-> 	default: return QE_CR_SUBBLOCK_INVALID;
-> 	}
-> }
-> +EXPORT_SYMBOL(ucc_fast_get_qe_cr_subblock);
-> void ucc_fast_transmit_on_demand(struct ucc_fast_private * uccf)
-> {
-> 	out_be16(&uccf->uf_regs->utodr, UCC_FAST_TOD);
-> }
-> +EXPORT_SYMBOL(ucc_fast_transmit_on_demand);
-> void ucc_fast_enable(struct ucc_fast_private * uccf, enum comm_dir  
-> mode)
-> {
-> @@ -110,6 +114,7 @@ void ucc_fast_enable(struct ucc_fast_private *  
-> uccf, enum comm_dir mode)
-> 	}
-> 	out_be32(&uf_regs->gumr, gumr);
-> }
-> +EXPORT_SYMBOL(ucc_fast_enable);
-> void ucc_fast_disable(struct ucc_fast_private * uccf, enum comm_dir  
-> mode)
-> {
-> @@ -130,6 +135,7 @@ void ucc_fast_disable(struct ucc_fast_private *  
-> uccf, enum comm_dir mode)
-> 	}
-> 	out_be32(&uf_regs->gumr, gumr);
-> }
-> +EXPORT_SYMBOL(ucc_fast_disable);
-> int ucc_fast_init(struct ucc_fast_info * uf_info, struct  
-> ucc_fast_private ** uccf_ret)
-> {
-> @@ -341,6 +347,7 @@ int ucc_fast_init(struct ucc_fast_info *  
-> uf_info, struct ucc_fast_private ** ucc
-> 	*uccf_ret = uccf;
-> 	return 0;
-> }
-> +EXPORT_SYMBOL(ucc_fast_init);
-> void ucc_fast_free(struct ucc_fast_private * uccf)
-> {
-> @@ -355,3 +362,4 @@ void ucc_fast_free(struct ucc_fast_private * uccf)
-> 	kfree(uccf);
-> }
-> +EXPORT_SYMBOL(ucc_fast_free);
-> diff --git a/arch/powerpc/sysdev/qe_lib/ucc_slow.c b/arch/powerpc/ 
-> sysdev/qe_lib/ucc_slow.c
-> index 1f65c26..5618275 100644
-> --- a/arch/powerpc/sysdev/qe_lib/ucc_slow.c
-> +++ b/arch/powerpc/sysdev/qe_lib/ucc_slow.c
-> @@ -19,6 +19,7 @@
-> #include <linux/stddef.h>
-> #include <linux/interrupt.h>
-> #include <linux/err.h>
-> +#include <linux/module.h>
-> #include <asm/io.h>
-> #include <asm/immap_qe.h>
-> @@ -41,11 +42,13 @@ u32 ucc_slow_get_qe_cr_subblock(int uccs_num)
-> 	default: return QE_CR_SUBBLOCK_INVALID;
-> 	}
-> }
-> +EXPORT_SYMBOL(ucc_slow_get_qe_cr_subblock);
-
-remove.
-
-> void ucc_slow_poll_transmitter_now(struct ucc_slow_private * uccs)
-> {
-> 	out_be16(&uccs->us_regs->utodr, UCC_SLOW_TOD);
-> }
-> +EXPORT_SYMBOL(ucc_slow_poll_transmitter_now);
-
-remove.
-
-> void ucc_slow_graceful_stop_tx(struct ucc_slow_private * uccs)
-> {
-> @@ -56,6 +59,7 @@ void ucc_slow_graceful_stop_tx(struct  
-> ucc_slow_private * uccs)
-> 	qe_issue_cmd(QE_GRACEFUL_STOP_TX, id,
-> 			 QE_CR_PROTOCOL_UNSPECIFIED, 0);
-> }
-> +EXPORT_SYMBOL(ucc_slow_graceful_stop_tx);
-
-remove.
-
-> void ucc_slow_stop_tx(struct ucc_slow_private * uccs)
-> {
-> @@ -65,6 +69,7 @@ void ucc_slow_stop_tx(struct ucc_slow_private *  
-> uccs)
-> 	id = ucc_slow_get_qe_cr_subblock(us_info->ucc_num);
-> 	qe_issue_cmd(QE_STOP_TX, id, QE_CR_PROTOCOL_UNSPECIFIED, 0);
-> }
-> +EXPORT_SYMBOL(ucc_slow_stop_tx);
-
-remove.
-
-> void ucc_slow_restart_tx(struct ucc_slow_private * uccs)
-> {
-> @@ -74,6 +79,7 @@ void ucc_slow_restart_tx(struct ucc_slow_private  
-> * uccs)
-> 	id = ucc_slow_get_qe_cr_subblock(us_info->ucc_num);
-> 	qe_issue_cmd(QE_RESTART_TX, id, QE_CR_PROTOCOL_UNSPECIFIED, 0);
-> }
-> +EXPORT_SYMBOL(ucc_slow_restart_tx);
-
-remove.
-
-> void ucc_slow_enable(struct ucc_slow_private * uccs, enum comm_dir  
-> mode)
-> {
-> @@ -94,6 +100,7 @@ void ucc_slow_enable(struct ucc_slow_private *  
-> uccs, enum comm_dir mode)
-> 	}
-> 	out_be32(&us_regs->gumr_l, gumr_l);
-> }
-> +EXPORT_SYMBOL(ucc_slow_enable);
-
-remove.
-
-> void ucc_slow_disable(struct ucc_slow_private * uccs, enum comm_dir  
-> mode)
-> {
-> @@ -114,6 +121,7 @@ void ucc_slow_disable(struct ucc_slow_private *  
-> uccs, enum comm_dir mode)
-> 	}
-> 	out_be32(&us_regs->gumr_l, gumr_l);
-> }
-> +EXPORT_SYMBOL(ucc_slow_disable);
-
-remove.
-
-> int ucc_slow_init(struct ucc_slow_info * us_info, struct  
-> ucc_slow_private ** uccs_ret)
-> {
-> @@ -349,6 +357,7 @@ int ucc_slow_init(struct ucc_slow_info *  
-> us_info, struct ucc_slow_private ** ucc
-> 	*uccs_ret = uccs;
-> 	return 0;
-> }
-> +EXPORT_SYMBOL(ucc_slow_init);
-
-remove.
-
-> void ucc_slow_free(struct ucc_slow_private * uccs)
-> {
-> @@ -368,5 +377,4 @@ void ucc_slow_free(struct ucc_slow_private * uccs)
-> 	kfree(uccs);
-> }
-> -
-> -
-> +EXPORT_SYMBOL(ucc_slow_free);
+Index: linux-2.6.21.1/arch/powerpc/platforms/pseries/lpar.c
+===================================================================
+--- linux-2.6.21.1.orig/arch/powerpc/platforms/pseries/lpar.c
++++ linux-2.6.21.1/arch/powerpc/platforms/pseries/lpar.c
+@@ -369,6 +369,8 @@ static long pSeries_lpar_hpte_remove(uns
+ 	return -1;
+ }
+ 
++#define VRMA_HPTE_B_1TB ASM_CONST(0x4000000000000000)
++
+ static void pSeries_lpar_hptab_clear(void)
+ {
+ 	unsigned long size_bytes = 1UL << ppc64_pft_size;
+@@ -378,7 +380,9 @@ static void pSeries_lpar_hptab_clear(voi
+ 
+ 	/* TODO: Use bulk call */
+ 	for (i = 0; i < hpte_count; i++)
+-		plpar_pte_remove_raw(0, i, 0, &dummy1, &dummy2);
++		/* dont remove HPTEs of segments size 1TB (VRMA entries) */
++		plpar_pte_remove_raw(H_ANDCOND, i, VRMA_HPTE_B_1TB,
++						&dummy1, &dummy2);
+ }
+ 
+ /*
