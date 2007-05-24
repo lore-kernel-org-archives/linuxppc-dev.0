@@ -1,20 +1,18 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 92B49DDE07
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 09:55:50 +1000 (EST)
-Date: Thu, 24 May 2007 09:55:46 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linas@austin.ibm.com (Linas Vepstas)
-Subject: Re: [PATCH 4/4] powerpc: tweak EEH copyright info
-Message-Id: <20070524095546.b603de73.sfr@canb.auug.org.au>
-In-Reply-To: <20070523172801.GD32380@austin.ibm.com>
-References: <20070523171328.GY5921@austin.ibm.com>
-	<20070523172801.GD32380@austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__24_May_2007_09_55_46_+1000_VenL/sHhjuVUOiBe"
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <dale@farnsworth.org>
+Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
+	by ozlabs.org (Postfix) with SMTP id F0960DDE0D
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 10:02:38 +1000 (EST)
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Wed, 23 May 2007 17:02:37 -0700
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] powerpc: Add Marvell mv64x60 udbg putc/getc functions
+Message-ID: <20070524000237.GB11608@xyzzy.farnsworth.org>
+References: <20070523220518.GA2312@xyzzy.farnsworth.org>
+	<20070523232745.GA4611@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070523232745.GA4611@lixom.net>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__24_May_2007_09_55_46_+1000_VenL/sHhjuVUOiBe
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
+On Wed, May 23, 2007 at 06:27:45PM -0500, Olof Johansson wrote:
+> On Wed, May 23, 2007 at 03:05:18PM -0700, Dale Farnsworth wrote:
+> 
+> >  arch/powerpc/platforms/embedded6xx/prpmc2800.c |    1 
+> >  arch/powerpc/sysdev/Makefile                   |    3 
+> >  arch/powerpc/sysdev/mv64x60.h                  |    1 
+> >  arch/powerpc/sysdev/mv64x60_udbg.c             |  152 +++++++++++++++
+> >  4 files changed, 156 insertions(+), 1 deletion(-)
+> 
+> Is there a reason you're not putting it with the other udbg code, and
+> not naming it with the same scheme (kernel/udbg_<xxx>)?
 
-On Wed, 23 May 2007 12:28:01 -0500 linas@austin.ibm.com (Linas Vepstas) wrote:
->
->
-> Twiddle the copyright notices. Per current guidelines, the use
-> of the (C) or (c) in source code is deprecated.
+Not really.  I just put it with some other mv64x60 code.
 
-What no UTF-8 '©' symbol?   :-)
+> Or maybe we should just move the udbg_16550 code to sysdev instead, it's
+> roots are from ppc64 where we didn't have sysdev.
 
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Shrug.
 
---Signature=_Thu__24_May_2007_09_55_46_+1000_VenL/sHhjuVUOiBe
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGVNSHFdBgD/zoJvwRAlFNAKCXS6psswztiobry9Q+a8kPpQwV+wCfe29Y
-ZIcXcKY2+VGE90nlvqkOj+g=
-=8w9Q
------END PGP SIGNATURE-----
-
---Signature=_Thu__24_May_2007_09_55_46_+1000_VenL/sHhjuVUOiBe--
+-Dale
