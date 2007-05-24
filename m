@@ -1,32 +1,34 @@
 Return-Path: <Wei.Zhang@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
+	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BB821DDDF4
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 16:48:26 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 2BC02DDDF8
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 17:31:46 +1000 (EST)
 Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	l4O6mJCc000768
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2007 23:48:19 -0700 (MST)
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	l4O7Vfgp020171
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 00:31:42 -0700 (MST)
 Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
 	[10.192.129.221])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l4O6mIT7006454
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 01:48:18 -0500 (CDT)
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l4O7VexW019255
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 02:31:41 -0500 (CDT)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
 Subject: RE: Porting RapidIO from ppc arch to powerpc arch in support
 	ofMPC8641D
-Date: Thu, 24 May 2007 14:48:16 +0800
-Message-ID: <46B96294322F7D458F9648B60E15112C307037@zch01exm26.fsl.freescale.net>
-In-Reply-To: <200705230105.53013.arnd@arndb.de>
+Date: Thu, 24 May 2007 15:31:39 +0800
+Message-ID: <46B96294322F7D458F9648B60E15112C307048@zch01exm26.fsl.freescale.net>
+In-Reply-To: <1179934657.11247.14.camel@pterry-fc6.micromemory.com>
 References: <1179862732.25914.40.camel@pterry-fc6.micromemory.com>
-	<200705230105.53013.arnd@arndb.de>
+	<46B96294322F7D458F9648B60E15112C234AE6@zch01exm26.fsl.freescale.net>
+	<Pine.LNX.4.64.0705230916170.535@localhost.localdomain>
+	<1179934657.11247.14.camel@pterry-fc6.micromemory.com>
 From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-To: "Arnd Bergmann" <arnd@arndb.de>, <linuxppc-dev@ozlabs.org>,
-	<pterry@micromemory.com>
+To: <pterry@micromemory.com>, <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,45 +38,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi, Arnd,
 
+> > >                 interrupts =3D <30 1 31 1 32 1 35 1 36 1=20
+> 37 1 38 1>;
+> > > >               };
+> > > >
+> > > Do you really use all of this interrupts? In my test,=20
+> three <32 2 35 2
+> > > 36 2> are okay, and the sense is 2.
 > >=20
-> > Then I should pass np into the various setup routines as=20
-> above so that
-> > they can find the interrupts, etc.
-> >=20
-> > Is this the right kind of flavor or have I misunderstood how the dtb
-> > stuff is supposed to integrate with the susbsys_initcall stuff.
->=20
-> the thing you are missing is probably the of_platform_driver. Your
-> driver should have something like
->=20
-> static struct of_device_id mpc85xx_rio_ids[] =3D {
-> 	{ .compatible =3D "fsl,8641d-rapidio", .data =3D RIO_8641 },
-> 	{ .compatible =3D "fsl,8540-rapidio", .data =3D RIO_8540 },
-> 	{ },
-> };
-> static struct of_platform_driver mpc85xx_rio_driver =3D {
-> 	.name =3D "mpc85xx_rio",
-> 	.match_table =3D &mpc85xx_rio_ids,
-> 	.probe =3D mpc85xx_rio_probe,
-> };
-> static int __init mpc85xx_rio_init(void)
-> {
-> 	return of_register_platform_driver(&mpc85xx_rio_driver);
-> }
-> subsys_initcall(mpc85xx_rio_init);
->=20
-> > I'm assuming we are supposed to do away with all the CONFIG_RAPIDIO,
-> > CONFIG_MPCxyz etc so that the kernel is driven by the dtb?
->=20
+> > I think we need to list all the interrupts possible from=20
+> RIO, not just the
+> > ones the driver happens to use.
+> Sorry about the senses, again I just threw that in the email as a
+> strawman to kick off discussion (which now seems moot as Wei has the
+> patches (yippee)). The second set of interrupts 37 and 38 are for the
+> second message unit which I want to use (see above). 30 is for
+> port-write/error which I will be using to get interrupts from my
+> switches for topology changes. 31 is the out doorbell done which the
+> driver doesn't use cos of the synchronous nature of the out doorbell I
+> suppose.
 
-
-I'm not agree with you.
-
-Of_platform_driver is a good framework. But this RapidIO driver is not a
-device driver. It's a _bus_ driver very similar to PCI bus. So,
-of_platform_driver is not fit here.
+About this interrupts, I suggest to put the BELL, Tx, Rx to the front of
+others. These three is already be used in ppc rio codes.
+For example:
+	/* bell_irq tx_irq rx_irq */
+	interrupts =3D <32 2 35 2 36 2>;
 
 Thanks!
 Wei.
