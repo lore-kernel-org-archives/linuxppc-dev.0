@@ -1,32 +1,23 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5A4F3DDE0A
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 23:46:46 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4ODkh6t000525
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 09:46:43 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4ODkhwu209068
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 07:46:43 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4ODkgIB026383
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 07:46:42 -0600
-Subject: Re: Fix problems with Holly's DT representation of ethernet PHYs
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20070524041625.GD20078@localhost.localdomain>
-References: <20070524041625.GD20078@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 24 May 2007 08:45:48 -0500
-Message-Id: <1180014348.3360.17.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Alexandre Bounine <Alexandre.Bounine@tundra.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 454B9DDD0B
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 00:17:05 +1000 (EST)
+Date: Thu, 24 May 2007 09:21:33 -0500
+To: Mohan Kumar M <mohan@in.ibm.com>
+Subject: Re: [Patch 2/2] Kexec/Kdump support - POWER6
+Message-ID: <20070524142133.GA13191@lixom.net>
+References: <4652E088.9080207@in.ibm.com> <4652E109.4020204@in.ibm.com>
+	<4652E17C.7080607@in.ibm.com> <20070522153419.GA22047@lixom.net>
+	<46540B6F.6030300@in.ibm.com>
+	<18004.7556.311264.415721@cargo.ozlabs.ibm.com>
+	<20070524121751.GB4547@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070524121751.GB4547@in.ibm.com>
+From: olof@lixom.net (Olof Johansson)
+Cc: Milton Miller II <miltonm@us.ibm.com>, kexec@lists.infradead.org,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	ellerman@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,29 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-05-24 at 14:16 +1000, David Gibson wrote:
-> This patch fixes some problems with the way the Ethernet PHYs are
-> represented in the device tree for the Holly board.  This means
-> changes to the dts itself, and to the code with instantiates the
-> tsi108 ethernet platform devices based on the device tree.
+On Thu, May 24, 2007 at 05:47:51PM +0530, Mohan Kumar M wrote:
+> On Wed, May 23, 2007 at 08:55:00PM +1000, Paul Mackerras wrote:
+> > Sachin P. Sant writes:
+> > 
+> > > On Power machines supporting VRMA, Kexec/Kdump does not work.
+> > > Hypervisor stores VRMA mapping used by the OS, in the hpte hash
+> > > tables. Make sure these hpte entries are left untouched.
+> > 
+> > Surely all we need to do is to avoid clearing the VRMA entries.  We
+> > can do this by not clearing any HPTE where the top 40 bits of the
+> > first dword are 0x4001ffffff (B=1 for a 1TB segment and the
+> > 0x0001ffffff special VSID).  In fact we can avoid having to read each
+> > entry by doing the H_REMOVEs with H_ANDCOND and the bolted bit when we
+> > clear the hash table, and only reading the HPTEs for which the
+> > H_REMOVE returns an error.
 > 
-> 	- First, and most importantly, the PHYs are given with an
-> identical 'reg' property.  This reg currently encodes the accessible
-> register used to initiate mdio interaction with the PHYs, rather than
-> a meaningful address on the parent bus (mdio in this case), which is
-> incorrect.  Instead we give the address of these registers as 'reg' in
-> the mdio node itself, and encode the ID of each phy in their 'reg'
-> propertys.  The PHY's unit name addresses are updated to match.
+> So I tried 0x4000000000000000 as AVPN parameter and using that it
+> removes all hpte entries other than VRMA(ie non 1TB segment size PTE
+> entries).
+> 
+> Tested on POWER6/POWER5 machines.
 
-You'll need to fixup the mpc7448hpc2 board's DTS with the same change
-then, as it shares the same bridge and ethernet code.
+Hi,
 
-> 	- Second, the PHYs give only "bcm54xx" as a compatible
-> property.  This is unfortunate, because there are many bcm54xx PHY
-> models, and they have differences which can matter.  We add a more
-> precise compatible string, giving the precise PHY model (bcm5461A in
-> this case).
+As Paul says above, you need to check for failures and compare the VSID
+and possibly unhash it anyway in case of non-match. Otherwise if the
+kernel ever starts using 1TB segments for regular use, those pages will
+never be unhashed. I don't see your code doing that now.
 
-This part is fine with me.
 
-josh
+-Olof
