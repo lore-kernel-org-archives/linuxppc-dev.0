@@ -1,18 +1,17 @@
-Return-Path: <dale@farnsworth.org>
-Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	by ozlabs.org (Postfix) with SMTP id F0960DDE0D
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 10:02:38 +1000 (EST)
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Wed, 23 May 2007 17:02:37 -0700
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH] powerpc: Add Marvell mv64x60 udbg putc/getc functions
-Message-ID: <20070524000237.GB11608@xyzzy.farnsworth.org>
-References: <20070523220518.GA2312@xyzzy.farnsworth.org>
-	<20070523232745.GA4611@lixom.net>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 24 May 2007 10:52:15 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Porting RapidIO from ppc arch to powerpc arch in support of
+	MPC8641D
+Message-ID: <20070524005215.GA14320@localhost.localdomain>
+References: <1179862732.25914.40.camel@pterry-fc6.micromemory.com>
+	<46B96294322F7D458F9648B60E15112C234AE6@zch01exm26.fsl.freescale.net>
+	<Pine.LNX.4.64.0705230916170.535@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070523232745.GA4611@lixom.net>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+In-Reply-To: <Pine.LNX.4.64.0705230916170.535@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, Zhang Wei-r63237 <Wei.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,23 +21,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 23, 2007 at 06:27:45PM -0500, Olof Johansson wrote:
-> On Wed, May 23, 2007 at 03:05:18PM -0700, Dale Farnsworth wrote:
+On Wed, May 23, 2007 at 09:21:48AM -0500, Kumar Gala wrote:
+> On Wed, 23 May 2007, Zhang Wei-r63237 wrote:
 > 
-> >  arch/powerpc/platforms/embedded6xx/prpmc2800.c |    1 
-> >  arch/powerpc/sysdev/Makefile                   |    3 
-> >  arch/powerpc/sysdev/mv64x60.h                  |    1 
-> >  arch/powerpc/sysdev/mv64x60_udbg.c             |  152 +++++++++++++++
-> >  4 files changed, 156 insertions(+), 1 deletion(-)
-> 
-> Is there a reason you're not putting it with the other udbg code, and
-> not naming it with the same scheme (kernel/udbg_<xxx>)?
+> > > So I'm taking the boot/dts/mpc8641_hpcn.dts and producing a new
+> > > mpc8641D_umem.dts with the following addition to the soc.
+> > >
+> > > srio@c0000 {
+> > >                 device_type = "srio";
+> > >                 compatible = "86xx,85xx";
 
-Not really.  I just put it with some other mv64x60 code.
+This is quite tangential to the rest of this discussion, but "xx"s in
+compatible properties always alarm me if they're the only thing
+listed.  It's generally best to give a precise model, then a more
+general one: the trade-off is that if you're too precise, it's fairly
+easy for the driver to workaround by recognizing and binding to
+multiple compatible strings, whereas if you're too general you risk
+the driver not being able to determine whether it needs a
+model-specific workaround or not.
 
-> Or maybe we should just move the udbg_16550 code to sysdev instead, it's
-> roots are from ppc64 where we didn't have sysdev.
-
-Shrug.
-
--Dale
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
