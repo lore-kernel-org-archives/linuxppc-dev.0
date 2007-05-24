@@ -1,17 +1,17 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id 17E25DDE10
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 03:10:25 +1000 (EST)
-From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-To: "'Detlev Zundel'" <dzu@denx.de>
-Subject: RE: Problems in 2.6 memory management on 8xx
-Date: Thu, 24 May 2007 19:10:11 +0200
-Message-ID: <007601c79e26$639bf6e0$0e67a8c0@Jocke>
+Return-Path: <djiang@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id CCFACDDE16
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 03:13:01 +1000 (EST)
+Received: from [10.50.1.77] (blade.az.mvista.com [10.50.1.77])
+	by hermes.mvista.com (Postfix) with ESMTP id 3BFD41D528
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 10:13:00 -0700 (PDT)
+Message-ID: <4655C7A6.2050606@mvista.com>
+Date: Thu, 24 May 2007 10:13:10 -0700
+From: Dave Jiang <djiang@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <m2hcq2b26n.fsf@sowhat.denx.de>
-Cc: linuxppc-dev@ozlabs.org
+To: linuxppc-dev@ozlabs.org
+Subject: 440 ebony patch seems to have broken 85xx build on powerpc.git
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,59 +21,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Detlev Zundel [mailto:dzu@denx.de] 
-> Sent: den 24 maj 2007 18:46
-> To: joakim.tjernlund@transmode.se
-> Cc: linuxppc-dev@ozlabs.org
-> Subject: Re: Problems in 2.6 memory management on 8xx
-> 
-> Hi Joakim,
-> 
-> > On Thu, 2007-05-24 at 17:23 +0200, Joakim Tjernlund wrote:
-> >> On Thu, 2007-05-24 at 15:07 +0200, Detlev Zundel wrote:
-> >> > Hi,
-> >> > 
-> >> > working on a 2.6.16 kernel on a 870 CPU, I ran into this strange
-> >> > behaviour exemplified by the simple attached demo 
-> program.  An icbi
-> >> > from userspace on an address that is mapped only lazily 
-> gets into an -
-> >> > though interruptible - loop. Locking the icbi target in 
-> question with
-> >> > mlock circumvents this problem.
-> >> 
-> >> 8xx is buggy w.r.t cache instructions. They do not update the
-> >> DAR register in the TLB miss/TLB error handlers.
-> >> The TLB miss handler does not use the DAR reg but the TLB error
-> >> handler do. Thats why it works when you mlock the memory.
-> >> 
-> >> This bug isn't documented but Freescale has confirmed it.
-> >> You can search the archives some years back for more info.
-> >> 
-> >>  Jocke
-> >
-> > BTW, it is possible to workaround this problem in the kernel by
-> > tagging DAR with an impossible value and compare DAR against it
-> > in the DTLB Error handler. If a match, then do a instruction decode
-> > to get the regs involved and calculate the faulting address.
-> >
-> > I did this several years ago for 2.4 in assembler and posted
-> > it, but it was rejected.
-> > One should bail out to handle_page_fault and do the
-> > calculations there instead(less likely to break that way)
-> >
-> > Found one version of the patch here:
-> > http://patchwork.ozlabs.org/linuxppc/patch?id=1307
-> 
-> Thanks for shedding some light on this problem.  I already found the
-> patch you refer to and also wondered why it was never accepted.  Was
-> there a technical reason or did it simply slip everybodys attention?
+Has anyone been able to build mpc85xx_* from the latest powerpc.git? I have
+tried mpc85xx_cds and mpc8560_ads. I pulled a new git tree and attempted to
+build and hit the error message below.
 
-Can't really rember the details, but I think Dan Malek didn't
-like it because it was hard to maintain and usally one can avoid
-the problem.
-I have been using that patch on our 860/862 boards for years now
-and it works fine.
+Also, if I comment out the two lines in arch/powerpc/boot/Makefile that was
+introduced by the 440 Ebony support patch everything is fine.
 
- Jocke
+$(obj)/44x.o: BOOTCFLAGS += -Wa,-mbooke
+$(obj)/ebony.o: BOOTCFLAGS += -Wa,-mbooke
+
+
+make -f
+/home/djiang/community/git-repos/tmp/ppc-master/scripts/Makefile.modpost vmlinux
+  scripts/mod/modpost   -o
+/home/djiang/community/git-repos/tmp/ppc-master/Module.symvers
+arch/powerpc/kernel/head_fsl_booke.o  init/built-in.o  usr/built-in.o
+arch/powerpc/kernel/built-in.o  arch/powerpc/mm/built-in.o
+arch/powerpc/lib/built-in.o  arch/powerpc/sysdev/built-in.o
+arch/powerpc/platforms/built-in.o  arch/powerpc/math-emu/built-in.o
+kernel/built-in.o  mm/built-in.o  fs/built-in.o  ipc/built-in.o
+security/built-in.o  crypto/built-in.o  block/built-in.o  lib/lib.a
+lib/built-in.o  drivers/built-in.o  sound/built-in.o  net/built-in.o
+WARNING: arch/powerpc/mm/built-in.o(.text+0x10bc): Section mismatch: reference
+to .init.text:early_get_page (between 'pte_alloc_one_kernel' and 'steal_context')
+rm -f .old_version
+make ARCH=ppc64 -f scripts/Makefile.build obj=arch/powerpc/boot
+arch/powerpc/boot/uImage
+  /opt/montavista/cge/devkit/ppc/85xx/bin/ppc_85xx-gcc -m32
+-Wp,-MD,arch/powerpc/boot/.ebony.o.d -Wall -Wstrict-prototypes -O2
+-fomit-frame-pointer -fno-builtin -nostdinc -isystem
+/opt/montavista/cge/devkit/ppc/85xx/bin/../lib/gcc/powerpc-montavista-linux-gnuspe/4.2.0/include
+-fPIC -fno-stack-protector -Iarch/powerpc/boot
+-I/home/djiang/community/git-repos/tmp/ppc-master/arch/powerpc/boot -Wa,-mbooke
+-c -o arch/powerpc/boot/ebony.o arch/powerpc/boot/ebony.c
+/home/djiang/tmp/cc2UVyci.s: Assembler messages:
+/home/djiang/tmp/cc2UVyci.s:142: Error: Unrecognized opcode: `isel'
+make[1]: *** [arch/powerpc/boot/ebony.o] Error 1
+
+-- 
+
+------------------------------------------------------
+Dave Jiang
+Software Engineer
+MontaVista Software, Inc.
+http://www.mvista.com
+------------------------------------------------------
