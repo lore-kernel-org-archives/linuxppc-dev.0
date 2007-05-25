@@ -1,23 +1,19 @@
-Return-Path: <gjb@semihalf.com>
-Received: from mail.semihalf.com (mail.semihalf.com [83.12.36.68])
-	by ozlabs.org (Postfix) with ESMTP id C7710DDE07
+Return-Path: <sasvata.chatterjee@gmail.com>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.225])
+	by ozlabs.org (Postfix) with ESMTP id 93907DDE11
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 May 2007 08:26:59 +1000 (EST)
-Received: from localhost (unknown [127.0.0.1])
-	by mail.semihalf.com (Postfix) with ESMTP id 58EBC142CC
+	Fri, 25 May 2007 10:28:08 +1000 (EST)
+Received: by nz-out-0506.google.com with SMTP id v1so653631nzb
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 May 2007 00:01:05 +0200 (CEST)
-Received: from mail.semihalf.com ([127.0.0.1])
-	by localhost (mail.semihalf.com [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 31905-09 for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 May 2007 00:01:04 +0200 (CEST)
-Message-ID: <46560B34.2070800@semihalf.com>
-Date: Fri, 25 May 2007 00:01:24 +0200
-From: Grzegorz Bernacki <gjb@semihalf.com>
-MIME-Version: 1.0
+	Thu, 24 May 2007 17:28:06 -0700 (PDT)
+Message-ID: <a9fc2a630705241728q4d203569n6eb008cc65a7eba9@mail.gmail.com>
+Date: Thu, 24 May 2007 19:28:06 -0500
+From: "Sasvata Chatterjee" <sasvata.chatterjee@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH] mpc52xx: Correct calculation of FEC RX errors.
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Latest GCC/GLIBC working combo for a Linux 2.4.x kernel?
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_142061_14556549.1180052886018"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,33 +24,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-'ifconfig eth0' command for mpc5200B-based cards shows error for RX.
-However none of RX MIB counters is set to value greater than zero.
-Number of errors is equal to number of multicast packet. In linux 2.4
-calculation of RX errors is slightly different and takes into account
-number of multicast packet. This change is a port of calculation method
-of RX errors for FEC controller from linux 2.4 to 2.6.
+------=_Part_142061_14556549.1180052886018
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Signed-off-by: Grzegorz Bernacki <gjb@semihalf.com>
----
+Hi!
 
- drivers/net/fec_mpc52xx/fec.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+We are using a RHEL/386 machine to cross-compile for Debian/PowerPC (8260)
+target, a few year old embedded system that we inherited.  The kernel is
+2.4.9. Using crosstools, and following Dan Kegel's notes, the combo we have
+is gcc-2.95-3/glibc-2.2.5.
 
-diff --git a/drivers/net/fec_mpc52xx/fec.c b/drivers/net/fec_mpc52xx/fec.c
-index f0ce87e..d2087f6 100644
---- a/drivers/net/fec_mpc52xx/fec.c
-+++ b/drivers/net/fec_mpc52xx/fec.c
-@@ -395,7 +395,9 @@ static struct net_device_stats *fec_get_stats(struct
-net_device *dev)
+Does anybody have any working version using newer versions of the 2.4 kernel
+and newer GCC versions for a powerpc-603e target?  One motivation is to use
+BusyBox-1.5.1, but I am told on that list that GCC 2/x is too old (I tried
+before I asked, it doesn't compile).
 
-        stats->rx_bytes = in_be32(&fec->rmon_r_octets);
-        stats->rx_packets = in_be32(&fec->rmon_r_packets);
--       stats->rx_errors = stats->rx_packets -
-in_be32(&fec->ieee_r_frame_ok);
-+       stats->rx_errors = stats->rx_packets - (
-+                       in_be32(&fec->ieee_r_frame_ok) +
-+                       in_be32(&fec->rmon_r_mc_pkt));
-        stats->tx_bytes = in_be32(&fec->rmon_t_octets);
-        stats->tx_packets = in_be32(&fec->rmon_t_packets);
-        stats->tx_errors = stats->tx_packets - (
+Any help, pointers, example config files for crosstools, etc. would be
+really appreciated!
+
+Thanks in advance,
+Shash
+
+------=_Part_142061_14556549.1180052886018
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi!<br><br>We are using a RHEL/386 machine to cross-compile for Debian/PowerPC (8260) target, a few year old embedded system that we inherited.&nbsp; The kernel is 2.4.9. Using crosstools, and following Dan Kegel&#39;s notes, the combo we have is 
+gcc-2.95-3/glibc-2.2.5.<br><br>Does anybody have any working version using newer versions of the 2.4 kernel and newer GCC versions for a powerpc-603e target?&nbsp; One motivation is to use BusyBox-1.5.1, but I am told on that list that GCC 2/x is too old (I tried before I asked, it doesn&#39;t compile).
+<br><br>Any help, pointers, example config files for crosstools, etc. would be really appreciated!<br><br>Thanks in advance,<br>Shash<br><br><br>
+
+------=_Part_142061_14556549.1180052886018--
