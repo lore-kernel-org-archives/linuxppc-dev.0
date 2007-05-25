@@ -1,19 +1,22 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 6945ADDE48
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 May 2007 02:50:55 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [patch 6/7] ps3: ROM Storage Driver
-Date: Fri, 25 May 2007 18:50:29 +0200
-References: <20070525083607.784351000@sonycom.com>
-	<20070525083632.677742000@sonycom.com>
-In-Reply-To: <20070525083632.677742000@sonycom.com>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound3-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 53104DDED5
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 May 2007 03:09:12 +1000 (EST)
+Message-ID: <4657182E.4060404@am.sony.com>
+Date: Fri, 25 May 2007 10:09:02 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200705251850.30342.arnd@arndb.de>
-Cc: Geert.Uytterhoeven@sonycom.com, linux-kernel@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [patch 4/7] ps3: Storage Driver Probing
+References: <20070525083607.784351000@sonycom.com>	<20070525083632.474400000@sonycom.com>
+	<200705251818.03964.arnd@arndb.de>
+In-Reply-To: <200705251818.03964.arnd@arndb.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: Geert.Uytterhoeven@sonycom.com, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,14 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 25 May 2007, Geert.Uytterhoeven@sonycom.com wrote:
-> Add a CD/DVD/BD Storage Driver for the PS3:
->   - Implemented as a SCSI device driver
+Hi.
 
-I assume you tried implementing it as a block device driver,
-like you PS3 disk driver does, and failed for some reason.
+Arnd Bergmann wrote:
+>> +	switch (dev_type) {
+>> +	case PS3_DEV_TYPE_STOR_DISK:
+>> +		match_id = PS3_MATCH_ID_STOR_DISK;
+>> +		break;
+>> +
+>> +	case PS3_DEV_TYPE_STOR_ROM:
+>> +		match_id = PS3_MATCH_ID_STOR_ROM;
+>> +		break;
+>> +
+>> +	case PS3_DEV_TYPE_STOR_FLASH:
+>> +		match_id = PS3_MATCH_ID_STOR_FLASH;
+>> +		break;
+>> +
+>> +	default:
+>> +		return 0;
+>> +	}
+> 
+> Why do you have separate constants for PS3_DEV_TYPE_* and
+> PS3_MATCH_ID_*? If you don't do any conversion, this driver
+> will immediately work for additional types as well, if more
+> get added later.
 
-What is the problem? Is there infrastructure missing in the
-CD-ROM layer?
+I noticed we have some redundancy in the constants and such
+now that we have unified the device support.  I planned to go
+through and try to clean up what I can.
 
-	Arnd <><
+-Geoff
