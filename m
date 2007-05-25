@@ -1,21 +1,17 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 25 May 2007 11:33:59 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: "Mark A. Greer" <mgreer@mvista.com>, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH 1/13] powerpc: Add Makefile rules to wrap dts file in
-	zImage
-Message-ID: <20070525013359.GD11789@localhost.localdomain>
-References: <20070512004605.GA2808@mag.az.mvista.com>
-	<20070512005336.GA3365@mag.az.mvista.com>
-	<20070514003332.GE6517@localhost.localdomain>
-	<20070521181043.GB7120@mag.az.mvista.com>
-	<20070522002349.GA25426@localhost.localdomain>
-	<20070524212832.GB32012@mag.az.mvista.com>
-	<20070525013242.GC11789@localhost.localdomain>
+Return-Path: <dhlii@dlasys.net>
+Message-ID: <465640C1.1060206@dlasys.net>
+Date: Thu, 24 May 2007 21:49:53 -0400
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
+To: Wolfgang Reissnegger <wolfgang.reissnegger@xilinx.com>
+Subject: Re: Xilinx git tree at source.mvista.com
+References: <46555294.6040104@ru.mvista.com> <465561A4.9020403@dlasys.net>
+	<46558E54.80909@ru.mvista.com>
+	<20070524154211.169C7AE8051@mail10-fra.bigfish.com>
+In-Reply-To: <20070524154211.169C7AE8051@mail10-fra.bigfish.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070525013242.GC11789@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, Andrei Konovalov <akonovalov@ru.mvista.com>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,40 +21,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 25, 2007 at 11:32:42AM +1000, David Gibson wrote:
-> On Thu, May 24, 2007 at 02:28:32PM -0700, Mark A. Greer wrote:
-> > On Tue, May 22, 2007 at 10:23:49AM +1000, David Gibson wrote:
-> > > On Mon, May 21, 2007 at 11:10:43AM -0700, Mark A. Greer wrote:
-> > > > On Mon, May 14, 2007 at 10:33:32AM +1000, David Gibson wrote:
-> > > > > On Fri, May 11, 2007 at 05:53:36PM -0700, Mark A. Greer wrote:
-> > > > > > +$(obj)/zImage.dts:	$(addprefix $(obj)/, $(dts-y))
-> > > > > > +	@rm -f $@; ln $< $@
-> > > > > > +$(obj)/zImage.dts_initrd:	$(addprefix $(obj)/, $(dts_initrd-y))
-> > > > > > +	@rm -f $@; ln $< $@
-> > > > > > +
-> > > > > 
-> > > > > I thought you said you were going to drop this bit?
-> > > > 
-> > > > Hi David.
-> > > > 
-> > > > Would you elaborate on what your alternative is?  A lot of the Makefile
-> > > > stuff is still black magic to me.
-> > > 
-> > > Just leave them out.  As long as you add the correct specific
-> > > zImage.dts.% and zImage.dts_initrd.% targets to image-y and initrd-y,
-> > > then a "make zImage" from the top-level Makefile will get them built.
-> > 
-> > That defeats the whole purpose of the patch--to allow the selection of
-> > wrapping a dtb or not at build time.  Its just like initrd, you choose
-> > whether to "do it" at build time.
-> 
-> Ah, right.  Remind me why that's useful again?
+Wolfgang Reissnegger wrote:
+> Hi Andrei, David,
+>
+> It's great to hear that Andrei's git tree is active again.
+>
+> As you might have heard, Xilinx is in the process of setting up a git
+> tree as well. Right now we are waiting for the new hosting machines to
+> be installed. We should get those machines up and running shortly
+> (within a couple weeks).
+>   
+Absolutely fantastic - however I think kernel.org would be happy to host
+your git tree for you
+as well as a few other places. Those are locations people would look for
+public git trees.
+I beleive you can still excecise some control. I beleive they are free -
+though I suspect kernel.org would not
+mind contributions from xilinx.
+>  
+> Currently the tree is based on mainline and adds support for MicroBlaze.
+> I also intent to merge Grant Likely's virtex-dev branch, the framebuffer
+> patch and the various other contributions that are out there. 
+>   
+You might want to look at the Microbalze-uClinux mailing list as well as
+petalogix.
+They are not using git yet, but they are puching the microblaze towards
+kernel org
+inclusion.
 
-Sorry, to be more precise, why is that more useful than having "make
-zImage" at the top level build both the dts and non-dts versions.
 
+> We are also in the process of changing our internal coding guidelines to
+> match the common Linux style (e.g. u32, u16 types, 8 char wide (tab)
+> indentation, curly brace location etc) to make it easier to integrate
+> code into the kernel and push it upstream.
+>   
+
+For me the most significant issue is the bazillion layers of nested
+macro's and includes.
+
+The kernel style guides atleast to me are primarily about the
+readability and understandability of the code.
+not where the curly brackets are.
+
+> I'll send an update once we have the server up and running.
+>
+> Thanks,
+>    Wolfgang
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
