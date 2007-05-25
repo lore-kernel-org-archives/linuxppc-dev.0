@@ -1,16 +1,29 @@
-Return-Path: <BillF@optiscan.com>
-Received: from mail.optiscan.com (mail.optiscan.com [203.26.112.1])
-	by ozlabs.org (Postfix) with ESMTP id BBAE7DDE28
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8E31FDDDE7
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 May 2007 13:15:23 +1000 (EST)
+	Fri, 25 May 2007 15:52:22 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l4P5qGWp013047 for <linuxppc-embedded@ozlabs.org>;
+	Thu, 24 May 2007 22:52:17 -0700 (MST)
+Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
+	[10.192.129.204])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l4P5qFUM025403
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 25 May 2007 00:52:16 -0500 (CDT)
+Message-ID: <465679FA.8010702@freescale.com>
+Date: Fri, 25 May 2007 13:54:02 +0800
+From: Li Yang <leoli@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: MPC8560 Gianfar driver hangs after soft reboot
-Date: Fri, 25 May 2007 12:58:18 +1000
-Message-ID: <34E73CC1202BF246B7DE3463BEBC068998EE82@postie.optiscan.com>
-From: "Bill Farrow" <BillF@optiscan.com>
-To: <linuxppc-embedded@ozlabs.org>
+To: jeff@garzik.org
+Subject: [PATCH] NET: add MAINTAINERS entry for ucc_geth driver
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: netdev@vger.kernel.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,69 +34,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-The Gianfar driver is hanging during boot-up after a soft reboot.  It
-works fine when the board is power cycled.
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+ MAINTAINERS |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-Any hints on where to look further on this issue?
-
-
-
-Here are the details (cut and pasted from my colleague's email):
-
-1. Load the kernel from the Flash and the rootfs from a NFS server.
-2. Issue the "reboot" command.  This runs the Busybox reboot producing
-the following output:
-
-  The system is going down NOW!
-  Sending SIGTERM to all processes
-  Sending SIGKILL to all processes
-  Requesting system reboot
-
-3. After rebooting, the system starts up Linux and it hangs after:
-
-  eth0: Gianfar Ethernet Controller Version 1.2, 00:40:42:01:00:00
-  eth0: Running with NAPI enabled
-  eth0: 256/256 RX/TX BD ring size
-
-
-When stepped through, the kernel endlessly loops in the function:
-  gfar_probe(struct platform_device *pdev)
-
-  File: gianfar.c
-  Line 233: while (!(gfar_read(&priv->regs->ievent) & (IEVENT_GRSC |
-IEVENT_GTSC)))
-		cpu_relax();
-
-The soft reset procedure in the MPC8560RM.pdf was followed by separating
-out the GTS and GRS completion polling with a delay between these.  The
-kernel seems to get stuck at waiting for the GTS to complete.
-
-Tried not doing this "Graceful" stop procedure by commenting out the
-relevant driver code.  In this case the Kernel seems to continue on and
-gets stuck at mounting the rootfs from NFS, indicating that the network
-cannot be accessed.
-
-Also tried soft rebooting without the network cable and the kernel boots
-without hanging, but the network does not work when the re-connected.
-The PHY seems to be working because when we plug the cable back in it
-detects the link and writes this console message:
-
-  [ 1557.465085] PHY: 0:01 - Link is Up - 100/Full
-
-Note that there are two Ethernet controllers on the board (eth0 and
-eth1).  Only eth1 is connected to the network.
-
-Background info:
-Kernel version 2.6.20.4 PPC
-Uboot version 1.2.0
-Busybox version 1.5.0
-ELDK: 4.1
-JTAG: BDI-2000
-Board : Microsys PM856 - with MPC8560 processor.
-
-
-Bill
---
-Bill Farrow
-Phone : +61 3 9538-3386 <http://www.optiscan.com>
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 4c3277c..3faed72 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1463,6 +1463,13 @@ L:	linux-usb-devel@lists.sourceforge.net
+ L:	linuxppc-embedded@ozlabs.org
+ S:	Maintained
+ 
++FREESCALE QUICC ENGINE UCC ETHERNET DRIVER
++P:	Li Yang
++M:	leoli@freescale.com
++L:	netdev@vger.kernel.org
++L:	linuxppc-embedded@ozlabs.org
++S:	Maintained
++
+ FILE LOCKING (flock() and fcntl()/lockf())
+ P:	Matthew Wilcox
+ M:	matthew@wil.cx
