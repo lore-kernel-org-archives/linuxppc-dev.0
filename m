@@ -1,29 +1,16 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8E31FDDDE7
+Return-Path: <Mike.Shelley@viasat.com>
+Received: from VCAEXCH02.hq.corp.viasat.com (kestrel.viasat.com
+	[199.106.52.139]) by ozlabs.org (Postfix) with ESMTP id 2C282DDDF3
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 May 2007 15:52:22 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	l4P5qGWp013047 for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 May 2007 22:52:17 -0700 (MST)
-Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
-	[10.192.129.204])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l4P5qFUM025403
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 May 2007 00:52:16 -0500 (CDT)
-Message-ID: <465679FA.8010702@freescale.com>
-Date: Fri, 25 May 2007 13:54:02 +0800
-From: Li Yang <leoli@freescale.com>
+	Fri, 25 May 2007 11:32:37 +1000 (EST)
 MIME-Version: 1.0
-To: jeff@garzik.org
-Subject: [PATCH] NET: add MAINTAINERS entry for ucc_geth driver
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: netdev@vger.kernel.org, linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C79E6B.3E988065"
+Subject: initramfs on ppc 405: crc error
+Date: Thu, 24 May 2007 18:23:31 -0700
+Message-ID: <821B2170E9E7F04FA38DF7EC21DE487109470913@VCAEXCH01.hq.corp.viasat.com>
+From: "Shelley, Mike" <Mike.Shelley@viasat.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,26 +21,166 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Li Yang <leoli@freescale.com>
----
- MAINTAINERS |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+This is a multi-part message in MIME format.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 4c3277c..3faed72 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1463,6 +1463,13 @@ L:	linux-usb-devel@lists.sourceforge.net
- L:	linuxppc-embedded@ozlabs.org
- S:	Maintained
- 
-+FREESCALE QUICC ENGINE UCC ETHERNET DRIVER
-+P:	Li Yang
-+M:	leoli@freescale.com
-+L:	netdev@vger.kernel.org
-+L:	linuxppc-embedded@ozlabs.org
-+S:	Maintained
-+
- FILE LOCKING (flock() and fcntl()/lockf())
- P:	Matthew Wilcox
- M:	matthew@wil.cx
+------_=_NextPart_001_01C79E6B.3E988065
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+I'm having a similar problem to a question posted earlier with
+initramfs. =20
+
+=20
+
+I'm using the 2.6.20 kernel, on a Xilinx Virtex 4, ppc405, no boot
+loader.  I use a BDI2000 to load the kernel image directly into RAM
+(32MB). =20
+
+=20
+
+When I use a larger (4mb compressed, 13mb uncompressed) cpio archive for
+initramfs, I get a crc error when it tries to decompress it.  When I use
+a small simple archive (30k), it works correctly and does not have the
+crc problem.  I've tried a cpio.gz archive of about 2mb and still get
+the crc error.  Are there any size limitations for the kernel and/or for
+initramfs?  What else could the problem be? =20
+
+=20
+
+The kernel image is being loaded to an address of 0x800000 instead of
+0x400000 since it has problems decompressing the kernel at the lower
+address, I'm told due to the size of the kernel image (5mb compressed).
+Could this positioning be interfering with the initramfs decompression?
+Where is the initramfs decompressed to?
+
+=20
+
+Any help would be appreciated.
+
+Thanks,
+
+Mike
+
+
+------_=_NextPart_001_01C79E6B.3E988065
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I&#8217;m having a similar problem to a question =
+posted
+earlier with initramfs.&nbsp; <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I&#8217;m using the 2.6.20 kernel, on a Xilinx Virtex =
+4,
+ppc405, no boot loader.&nbsp; I use a BDI2000 to load the kernel image =
+directly
+into RAM (32MB).&nbsp; <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>When I use a larger (4mb compressed, 13mb =
+uncompressed) cpio
+archive for initramfs, I get a crc error when it tries to decompress =
+it.&nbsp; When
+I use a small simple archive (30k), it works correctly and does not have =
+the
+crc problem.&nbsp; I&#8217;ve tried a cpio.gz archive of about 2mb and =
+still
+get the crc error.&nbsp; Are there any size limitations for the kernel =
+and/or
+for initramfs?&nbsp; What else could the problem be?&nbsp; =
+<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>The kernel image is being loaded to an address of =
+0x800000
+instead of 0x400000 since it has problems decompressing the kernel at =
+the lower
+address, I&#8217;m told due to the size of the kernel image (5mb
+compressed).&nbsp; Could this positioning be interfering with the =
+initramfs decompression?&nbsp;
+Where is the initramfs decompressed to?<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Any help would be =
+appreciated.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Thanks,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Mike<o:p></o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01C79E6B.3E988065--
