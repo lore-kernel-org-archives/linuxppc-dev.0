@@ -1,19 +1,19 @@
-Return-Path: <djiang@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id C1934DDDE7
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 May 2007 01:01:06 +1000 (EST)
-Message-ID: <4656FA60.7080600@mvista.com>
-Date: Fri, 25 May 2007 08:01:52 -0700
-From: Dave Jiang <djiang@mvista.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id E3C6ADDE45
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 May 2007 02:18:47 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [patch 4/7] ps3: Storage Driver Probing
+Date: Fri, 25 May 2007 18:18:03 +0200
+References: <20070525083607.784351000@sonycom.com>
+	<20070525083632.474400000@sonycom.com>
+In-Reply-To: <20070525083632.474400000@sonycom.com>
 MIME-Version: 1.0
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: Fix compiler/assembler flags for Ebony platform boot files
-References: <20070525031917.GC13575@localhost.localdomain>
-	<1180101877.3360.39.camel@zod.rchland.ibm.com>
-In-Reply-To: <1180101877.3360.39.camel@zod.rchland.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200705251818.03964.arnd@arndb.de>
+Cc: Geert.Uytterhoeven@sonycom.com, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,19 +23,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Josh Boyer wrote:
-> On Fri, 2007-05-25 at 13:19 +1000, David Gibson wrote:
->> The recent addition of assembler flags for 44x.c and ebony.c in the
->> bootwrapper to make them compile on certain toolchains was not correct
->> and could break other platforms.  This patch switches to using a
->> compiler flag instead, which implies the appropriate assembler flag,
->> and also stops the compiler itself generating instructions which are
->> invalid for the platform in question.
-> 
-> This looks good to me, but I don't have one of the failing toolchains.
-> Dave, can you test this patch out?
-> 
-> josh
-> 
+On Friday 25 May 2007, Geert.Uytterhoeven@sonycom.com wrote:
+> Add storage driver probing.
+> New storage devices are detected and added by a kthread.
 
-Built ok for me after the patch.
+Hi Geert,
+
+the driver looks pretty good, just a few details I noticed:
+
+> +static u64 ps3stor_wait_for_completion(u64 devid, u64 tag,
+> +				       unsigned int timeout)
+> +{
+> +	unsigned int retries = 0;
+> +	u64 res = -1, status;
+> +
+> +	for (retries = 0; retries < timeout; retries++) {
+> +		res = lv1_storage_check_async_status(NOTIFICATION_DEVID, tag,
+> +						     &status);
+> +		if (!res)
+> +			break;
+> +		set_current_state(TASK_INTERRUPTIBLE);
+> +		schedule_timeout(1);
+> +	}
+
+Any reason not to use msleep(1) instead of the schedule_timeout?
+
+> +	switch (dev_type) {
+> +	case PS3_DEV_TYPE_STOR_DISK:
+> +		match_id = PS3_MATCH_ID_STOR_DISK;
+> +		break;
+> +
+> +	case PS3_DEV_TYPE_STOR_ROM:
+> +		match_id = PS3_MATCH_ID_STOR_ROM;
+> +		break;
+> +
+> +	case PS3_DEV_TYPE_STOR_FLASH:
+> +		match_id = PS3_MATCH_ID_STOR_FLASH;
+> +		break;
+> +
+> +	default:
+> +		return 0;
+> +	}
+
+Why do you have separate constants for PS3_DEV_TYPE_* and
+PS3_MATCH_ID_*? If you don't do any conversion, this driver
+will immediately work for additional types as well, if more
+get added later.
+
+> +
+> +//		pr_debug("%s:%u: Checking for new storage devices...\n",
+> +//			 __func__, __LINE__);
+
+Should be removed, or not in comments, either way is fine, as pr_debug
+normally does not get compiled in anyway.
+
+> +
+> +		msleep_interruptible(ms);
+> +		if (ms < 60000)
+> +			ms <<= 1;
+
+Is this timeout only for the disk spinup, or also for detecting media
+added at run time, like inserting a DVD? One minute timeout for
+detecting a DVD would sound very long to me.
+
+	Arnd <><
