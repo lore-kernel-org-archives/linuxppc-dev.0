@@ -1,35 +1,36 @@
 Return-Path: <dwg@au1.ibm.com>
-Received: from ausmtp05.au.ibm.com (ausmtp05.au.ibm.com [202.81.18.154])
+Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ausmtp05.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 87C60DDE1A
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 14:37:40 +1000 (EST)
+	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 60091DDE28
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 14:47:49 +1000 (EST)
 Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by ausmtp05.au.ibm.com (8.13.8/8.13.8) with ESMTP id l4P4dAFo3834006
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 14:39:11 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.250.243])
+	by ausmtp04.au.ibm.com (8.13.8/8.13.8) with ESMTP id l4P57GxR249088
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 15:07:18 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.250.244])
 	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4P4f2BH064690
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 14:41:03 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4P4bUKG024714
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 14:37:30 +1000
-Date: Fri, 25 May 2007 14:37:28 +1000
+	l4P4o6dX105936
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 14:50:16 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4P4kWFj020601
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 14:46:32 +1000
+Date: Fri, 25 May 2007 14:38:52 +1000
 From: David Gibson <dwg@au1.ibm.com>
 To: Josh Boyer <jwboyer@linux.vnet.ibm.com>,
 	Kumar Gala <galak@kernel.crashing.org>,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Alexandre Bounine <Alexandre.Bounine@tundra.com>
 Subject: Re: Fix problems with Holly's DT representation of ethernet PHYs
-Message-ID: <20070525043728.GG13575@localhost.localdomain>
+Message-ID: <20070525043852.GH13575@localhost.localdomain>
 References: <20070524041625.GD20078@localhost.localdomain>
 	<BB9A8C3A-0BC5-4DF0-9201-2742124A4AF5@kernel.crashing.org>
 	<1180014260.3360.14.camel@zod.rchland.ibm.com>
 	<20070525042359.GE13575@localhost.localdomain>
+	<20070525043728.GG13575@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070525042359.GE13575@localhost.localdomain>
+In-Reply-To: <20070525043728.GG13575@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,45 +40,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 25, 2007 at 02:23:59PM +1000, David Gibson wrote:
-> On Thu, May 24, 2007 at 08:44:20AM -0500, Josh Boyer wrote:
-> > On Wed, 2007-05-23 at 23:22 -0500, Kumar Gala wrote:
-> > > On May 23, 2007, at 11:16 PM, David Gibson wrote:
+On Fri, May 25, 2007 at 02:37:28PM +1000, David Gibson wrote:
+> On Fri, May 25, 2007 at 02:23:59PM +1000, David Gibson wrote:
+> > On Thu, May 24, 2007 at 08:44:20AM -0500, Josh Boyer wrote:
+> > > On Wed, 2007-05-23 at 23:22 -0500, Kumar Gala wrote:
+> > > > On May 23, 2007, at 11:16 PM, David Gibson wrote:
+> > > > 
+> > > > > This patch fixes some problems with the way the Ethernet PHYs are
+> > > > > represented in the device tree for the Holly board.  This means
+> > > > > changes to the dts itself, and to the code with instantiates the
+> > > > > tsi108 ethernet platform devices based on the device tree.
+> > > > >
+> > > > > 	- First, and most importantly, the PHYs are given with an
+> > > > > identical 'reg' property.  This reg currently encodes the accessible
+> > > > > register used to initiate mdio interaction with the PHYs, rather than
+> > > > > a meaningful address on the parent bus (mdio in this case), which is
+> > > > > incorrect.  Instead we give the address of these registers as 'reg' in
+> > > > > the mdio node itself, and encode the ID of each phy in their 'reg'
+> > > > > propertys.  The PHY's unit name addresses are updated to match.
+> > > > > 	- Second, the PHYs give only "bcm54xx" as a compatible
+> > > > > property.  This is unfortunate, because there are many bcm54xx PHY
+> > > > > models, and they have differences which can matter.  We add a more
+> > > > > precise compatible string, giving the precise PHY model (bcm5461A in
+> > > > > this case).
+> > > > 
+> > > > Is the compatible really need here?  We are able to provide and bind  
+> > > > drivers based on MII_PHYSID1/2.  I don't see what putting the  
+> > > > compatible proper gets us.
 > > > 
-> > > > This patch fixes some problems with the way the Ethernet PHYs are
-> > > > represented in the device tree for the Holly board.  This means
-> > > > changes to the dts itself, and to the code with instantiates the
-> > > > tsi108 ethernet platform devices based on the device tree.
-> > > >
-> > > > 	- First, and most importantly, the PHYs are given with an
-> > > > identical 'reg' property.  This reg currently encodes the accessible
-> > > > register used to initiate mdio interaction with the PHYs, rather than
-> > > > a meaningful address on the parent bus (mdio in this case), which is
-> > > > incorrect.  Instead we give the address of these registers as 'reg' in
-> > > > the mdio node itself, and encode the ID of each phy in their 'reg'
-> > > > propertys.  The PHY's unit name addresses are updated to match.
-> > > > 	- Second, the PHYs give only "bcm54xx" as a compatible
-> > > > property.  This is unfortunate, because there are many bcm54xx PHY
-> > > > models, and they have differences which can matter.  We add a more
-> > > > precise compatible string, giving the precise PHY model (bcm5461A in
-> > > > this case).
-> > > 
-> > > Is the compatible really need here?  We are able to provide and bind  
-> > > drivers based on MII_PHYSID1/2.  I don't see what putting the  
-> > > compatible proper gets us.
+> > > I think it's needed until the TSI driver switches to phylib.  Right now,
+> > > it assumes that a Marvell phy is used, which is what is present on the
+> > > Taiga MPC7448HPC2 board.  The Holly board uses the Broadcom phy and we
+> > > added the compatible code for that.
 > > 
-> > I think it's needed until the TSI driver switches to phylib.  Right now,
-> > it assumes that a Marvell phy is used, which is what is present on the
-> > Taiga MPC7448HPC2 board.  The Holly board uses the Broadcom phy and we
-> > added the compatible code for that.
+> > I think Ben's suggested approach of using a special property in the
+> > phy node to indicate that this workaround is necessary is better.
+> > After all, the workaround isn't actually related to the type of PHY,
+> > which is what compatible encodes, but to how it's wired up.  Revised
+> > patch below addressing this and other matters.
 > 
-> I think Ben's suggested approach of using a special property in the
-> phy node to indicate that this workaround is necessary is better.
-> After all, the workaround isn't actually related to the type of PHY,
-> which is what compatible encodes, but to how it's wired up.  Revised
-> patch below addressing this and other matters.
+> Grah! Forgot quilt ref.  Now a copy that might actually work.
 
-Grah! Forgot quilt ref.  Now a copy that might actually work.
+Waah!  Third time lucky?
 
 Fix problems with Holly's DT representation of ethernet PHYs
 
@@ -157,7 +161,7 @@ Index: working-2.6/arch/powerpc/boot/dts/holly.dts
 Index: working-2.6/arch/powerpc/sysdev/tsi108_dev.c
 ===================================================================
 --- working-2.6.orig/arch/powerpc/sysdev/tsi108_dev.c	2007-05-25 14:34:00.000000000 +1000
-+++ working-2.6/arch/powerpc/sysdev/tsi108_dev.c	2007-05-25 14:36:48.000000000 +1000
++++ working-2.6/arch/powerpc/sysdev/tsi108_dev.c	2007-05-25 14:38:32.000000000 +1000
 @@ -75,9 +75,8 @@ static int __init tsi108_eth_of_init(voi
  	     (np = of_find_compatible_node(np, "network", "tsi-ethernet")) != NULL;
  	     i++) {
@@ -202,7 +206,7 @@ Index: working-2.6/arch/powerpc/sysdev/tsi108_dev.c
  		tsi_eth_data.irq_num = irq_of_parse_and_map(np, 0);
 -		if (of_device_is_compatible(phy, "bcm54xx"))
 +
-+		if (of_get_property(phy, "txc-rxc-delay-disable"), NULL)
++		if (of_get_property(phy, "txc-rxc-delay-disable", NULL))
  			tsi_eth_data.phy_type = TSI108_PHY_BCM54XX;
  		of_node_put(phy);
 +
