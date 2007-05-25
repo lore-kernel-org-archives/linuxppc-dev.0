@@ -1,21 +1,31 @@
-Return-Path: <domen@coderock.org>
-Received: from kukmak.uni-mb.si (kukmak.uni-mb.si [164.8.100.3])
-	by ozlabs.org (Postfix) with ESMTP id BB94BDDDF8
+Return-Path: <Martin.Leisner@xerox.com>
+Received: from wvmler3.mail.xerox.com (wvmler3.mail.xerox.com [13.8.138.218])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "wvmler3.mail.xerox.com",
+	Issuer "wvmler3.mail.xerox.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 45ED7DDEF3
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 26 May 2007 04:00:34 +1000 (EST)
-Date: Fri, 25 May 2007 20:00:32 +0200
-From: Domen Puncer <domen@coderock.org>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [RFC 3/3] Re: [PATCH] mpc52xx_psc_spi: fix it for CONFIG_PPC_MERGE
-Message-ID: <20070525180032.GA27425@nd47.coderock.org>
-References: <20070516073707.GD9667@nd47.coderock.org>
-	<464ABE97.7090603@246tNt.com>
-	<20070525084750.GC23149@nd47.coderock.org>
-	<200705250934.47045.david-b@pacbell.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200705250934.47045.david-b@pacbell.net>
-Cc: Dragos Carp <dragos.carp@toptica.com>, linuxppc-embedded@ozlabs.org
+	Sat, 26 May 2007 05:42:15 +1000 (EST)
+Received: from wvmlir1.mail.xerox.com (wvmlir1.mail.xerox.com [13.147.8.221])
+	by wvmler3.mail.xerox.com (8.13.8/8.13.6) with ESMTP id
+	l4PJgCbd028546
+	for <linuxppc-embedded@ozlabs.org>; Fri, 25 May 2007 12:42:13 -0700
+Received: from wvmlir1.mail.xerox.com (localhost [127.0.0.1])
+	by wvmlir1.mail.xerox.com (8.13.8/8.13.6) with ESMTP id l4PJfxCH016374
+	for <linuxppc-embedded@ozlabs.org>; Fri, 25 May 2007 12:41:59 -0700
+Received: from USA7061GW002.na.xerox.net (usa7061gw002.na.xerox.net
+	[13.151.210.15])
+	by wvmlir1.mail.xerox.com (8.13.8/8.13.6) with ESMTP id l4PJfxXM016359
+	for <linuxppc-embedded@ozlabs.org>; Fri, 25 May 2007 12:41:59 -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: taiga/7448 questions
+Date: Fri, 25 May 2007 15:40:51 -0400
+Message-ID: <556445368AFA1C438794ABDA8901891C066B5A8E@usa0300ms03.na.xerox.net>
+From: "Leisner, Martin" <Martin.Leisner@xerox.com>
+To: <linuxppc-embedded@ozlabs.org>
+Cc: "Lund, Nathan" <Nathan.Lund@xerox.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,101 +36,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 25/05/07 09:34 -0700, David Brownell wrote:
-> On Friday 25 May 2007, Domen Puncer wrote:
-> 
-> > For clk.h, it does seem quite some code, compared what's there currently.
-> 
-> You're using it wrong then ...
+OK, I built 2.6.20.11 and 2.6.21.1 for taiga...with the supplied config=20
+(and I didn't know about the dtc for powerpc until I booted and nothing
+happened).
+I changed a few things (like /proc/config.gz)
 
-I meant this + the clock.c part.
+A few issues I've seen:
 
-> 
-> 
-> > --- work-powerpc.git.orig/drivers/spi/mpc52xx_psc_spi.c
-> > +++ work-powerpc.git/drivers/spi/mpc52xx_psc_spi.c
-> > @@ -18,6 +18,7 @@
-> >  
-> >  #if defined(CONFIG_PPC_MERGE)
-> >  #include <asm/of_platform.h>
-> > +#include <linux/clk.h>
-> >  #else
-> >  #include <linux/platform_device.h>
-> >  #endif
-> > @@ -106,13 +107,52 @@ static void mpc52xx_psc_spi_activate_cs(
-> >  	/* Set clock frequency and bits per word
-> >  	 * Because psc->ccr is defined as 16bit register instead of 32bit
-> >  	 * just set the lower byte of BitClkDiv
-> > +	 * Because BitClkDiv is 8-bit on mpc5200. Lets stay compatible.
-> >  	 */
-> > +#if defined(CONFIG_PPC_MERGE)
-> >  	ccr = in_be16(&psc->ccr);
-> >  	ccr &= 0xFF00;
-> > +	{
-> > +		u8 bitclkdiv = 2;	/* minimum bitclkdiv */
-> > +		int speed = cs->speed_hz ? cs->speed_hz : 1000000;
-> > +		char clk_name[10];
-> > +		struct clk *clk;	// TODO into mps, clk_get, clk_put
-> > +		int mclk;
-> > +		int system;
-> > +		/*
-> > +		 * pscclk = mclk/(bitclkdiv+1))		bitclkdiv is 8-bit, >= 2
-> > +		 * mclk = fsys/(mclkdiv+1)		mclkdiv is 9-bit, >= 1
-> > +		 * as mclkdiv has higher precision, we want is as big as possible
-> > +		 * => we get < 0.002*clock error
-> > +		 */
-> > +
-> > +		snprintf(clk_name, 10, "psc%i_mclk", spi->master->bus_num);
-> > +
-> > +		clk = clk_get(&spi->dev, clk_name);
-> 
-> Don't expect spi->dev to have a clock.  Instead, the host controller
-> has a clock, which would be looked up the probe() routine, then released
-> in remove():  clock = clk_get(dev, "clockname"), with the clock framework
-> using "dev" to identify which clock it returns.  (That is, the function
-> clock for all SPI controllers would have the same name ... not for
-> example "spi1_fclk", "spi2_fclk", etc. but instead "spi_fclk".)
+1) after we start booting, the console turns off until the login message
+appears:
+
+taiga login: [    0.000000] Zone PFN ranges:
+000000]   Normal     131072 ->   131072
+[    0.000000] early_node_map[1] active PFN ranges
+[    0.000000]     0:        0 ->   131072
+[    0.000000] Built 1 zonelists.  Total pages: 130048
+[    0.000000] Kernel command line: root=3D/dev/sda2 =
+console=3DttyS0,11520
+[    0.000000] mpic: Setting up MPIC "Tsi108_PIC" version 1.2 at
+c0007400, max 4 CPUs
+[    0.000000] mpic: ISU size: 24, shift: 5, mask: 1f
+[    0.000000] mpic: Initializing for 24 sources
+[    0.000000] PID hash table entries: 2048 (order: 11, 8192 bytes)
 
 
-Aha, so that's what struct dev* is for. :-)
-Now I see two options:
-- create something like at91_clock_associate(), and call it from
-  _probe (of_devices are created automatically from device tree,
-  so we can't call it the way at91_clock_associate is).
-- in clk_get() call dev_get_drvdata(dev), cast it to spi_master *,
-  _hope_ it really is that, use bus_id.
 
-Sure there must be a third, right one?
+Linux System
+Kernel 2.6.21.1 on an ppc
+Version: #2 Thu May 24 14:37:53 EDT 2007
+
+This is consistent on 2.6.20.11 and 2.6.21.1...
+
+2) Does "reboot" work?  Even when I do a <sysrq-magic-b> it doesn't want
+to boot
+until I do a hardware reset....
+
+3) It seems 2.6.21.1 consistently works, 2.6.20.11 sometimes hangs (and
+since I can't see the
+console, I don't know what's hanging and why)
 
 
-	Domen
-> 
-> 
-> > +		if (!clk)
-> > +			dev_err(&spi->dev, "couldn't get %s clock\n", clk_name);
-> > +
-> > +		system = clk_get_rate(clk_get_parent(clk));	// TODO, checking, refcounting
-> > +		mclk = speed * (bitclkdiv+1);
-> > +		if (system/mclk > 512) { /* bigger than mclkdiv */
-> > +			bitclkdiv = system/512/speed;
-> > +			mclk = speed * (bitclkdiv+1);
-> > +		}
-> > +
-> > +		if (clk_set_rate(clk, mclk))
-> > +			dev_err(&spi->dev, "couldn't set %s's rate\n", clk_name);
-> > +
-> > +		dev_info(&spi->dev, "clock: wanted: %i, got: %li\n", speed,
-> > +				clk_round_rate(clk, mclk) / (bitclkdiv+1));
-> > +
-> > +		ccr |= bitclkdiv;
-> > +	}
-> > +#else
-> >  	if (cs->speed_hz)
-> >  		ccr |= (MCLK / cs->speed_hz - 1) & 0xFF;
-> >  	else /* by default SPI Clk 1MHz */
-> >  		ccr |= (MCLK / 1000000 - 1) & 0xFF;
-> > +#endif
-> >  	out_be16(&psc->ccr, ccr);
-> >  	mps->bits_per_word = cs->bits_per_word;
-> >  
-> \
+4) The dtb strategy seems to a little clumsy...is there a way to embed a
+default dtc into a kernel
+(so if you just tftp one file, something happens?)  I like the ability
+to do fewer operations (i.e.
+initramfs embedded in the image) -- I like reducing steps into of
+increasing them...
+Is there a way to tell the kernel "use a default dtb if you don't have
+one better?"
+
+marty
