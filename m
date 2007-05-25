@@ -1,18 +1,18 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 2FC7ADDECB
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 May 2007 02:27:06 +1000 (EST)
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 6945ADDE48
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 May 2007 02:50:55 +1000 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [patch 5/7] ps3: Disk Storage Driver
-Date: Fri, 25 May 2007 18:26:25 +0200
+Subject: Re: [patch 6/7] ps3: ROM Storage Driver
+Date: Fri, 25 May 2007 18:50:29 +0200
 References: <20070525083607.784351000@sonycom.com>
-	<20070525083632.575306000@sonycom.com>
-In-Reply-To: <20070525083632.575306000@sonycom.com>
+	<20070525083632.677742000@sonycom.com>
+In-Reply-To: <20070525083632.677742000@sonycom.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200705251826.25572.arnd@arndb.de>
+Message-Id: <200705251850.30342.arnd@arndb.de>
 Cc: Geert.Uytterhoeven@sonycom.com, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,78 +24,13 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Friday 25 May 2007, Geert.Uytterhoeven@sonycom.com wrote:
-> +static void ps3disk_scatter_gather(struct ps3_storage_device *dev,
-> +				   struct request *req, int gather)
-> +{
-> +	unsigned int sectors = 0, offset = 0;
-> +	struct bio *bio;
-> +	sector_t sector;
-> +	struct bio_vec *bvec;
-> +	unsigned int i = 0, j;
-> +	size_t size;
-> +	void *buf;
-> +
-> +	rq_for_each_bio(bio, req) {
-> +		sector = bio->bi_sector;
-> +		dev_dbg(&dev->sbd.core,
-> +			"%s:%u: bio %u: %u segs %u sectors from %lu\n",
-> +			__func__, __LINE__, i, bio_segments(bio),
-> +			bio_sectors(bio), sector);
-> +		bio_for_each_segment(bvec, bio, j) {
-> +			size = bio_cur_sectors(bio)*KERNEL_SECTOR_SIZE;
-> +			buf = __bio_kmap_atomic(bio, j, KM_USER0);
-> +			if (gather)
-> +				memcpy(dev->bounce_buf+offset, buf, size);
-> +			else
-> +				memcpy(buf, dev->bounce_buf+offset, size);
-> +			offset += size;
-> +			__bio_kunmap_atomic(bio, KM_USER0);
-> +		}
-> +		sectors += bio_sectors(bio);
-> +		i++;
-> +	}
-> +}
+> Add a CD/DVD/BD Storage Driver for the PS3:
+>   - Implemented as a SCSI device driver
 
-So the hypervison uses guest-real addresses here? I would have expected
-it to use the kernel page tables, which lets you use vmap() to do
-scatter-gather.
+I assume you tried implementing it as a block device driver,
+like you PS3 disk driver does, and failed for some reason.
 
-> +static int ps3disk_thread(void *data)
-> +{
-> +	struct ps3_storage_device *dev = data;
-> +	struct ps3disk_private *priv = ps3disk_priv(dev);
-> +	request_queue_t *q = priv->queue;
-> +	struct request *req;
-> +
-> +	dev_dbg(&dev->sbd.core, "%s thread init\n", __func__);
-> +
-> +	current->flags |= PF_NOFREEZE;
-> +
-> +	while (!kthread_should_stop()) {
-> +		spin_lock_irq(&priv->lock);
-> +		set_current_state(TASK_INTERRUPTIBLE);
-> +		req = elv_next_request(q);
-> +		if (!req) {
-> +			spin_unlock_irq(&priv->lock);
-> +			schedule();
-> +			continue;
-> +		}
-> +		if (!blk_fs_request(req)) {
-> +			blk_dump_rq_flags(req, DEVICE_NAME " bad request");
-> +			end_request(req, 0);
-> +			spin_unlock_irq(&priv->lock);
-> +			continue;
-> +		}
-> +		spin_unlock_irq(&priv->lock);
-> +		ps3disk_handle_request_sg(dev, req);
-> +	}
-> +
-> +	dev_dbg(&dev->sbd.core, "%s thread exit\n", __func__);
-> +	return 0;
-> +}
-
-I don't really understand what the kthread is needed for. You probably
-thought about multiple options and ended up with this, but having
-a comment in front of it might be helpful.
+What is the problem? Is there infrastructure missing in the
+CD-ROM layer?
 
 	Arnd <><
