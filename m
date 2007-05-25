@@ -1,19 +1,30 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 25 May 2007 12:00:59 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: TSI ethernet PHY question
-Message-ID: <20070525020059.GA13575@localhost.localdomain>
-References: <1B5F013528140F45B5C671039279CA5701BBBDE3@NANUK.pc.tundra.com>
-	<1179960728.32247.953.camel@localhost.localdomain>
-	<396FEEDC-99AB-4E25-9C80-A901923429B0@freescale.com>
-	<1180047084.32247.1070.camel@localhost.localdomain>
-	<2994f78d2591e45517247003d613bb98@kernel.crashing.org>
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D9B36DDE11
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 12:43:26 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l4P2hK0K028452
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 19:43:21 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l4P2hJma029762
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2007 21:43:20 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <2994f78d2591e45517247003d613bb98@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Alexandre Bounine <Alexandre.Bounine@tundra.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] qe_lib: export symbols to fix compile error when QE
+	drivers compile as modules
+Date: Fri, 25 May 2007 10:45:07 +0800
+Message-ID: <989B956029373F45A0B8AF0297081890B768A2@zch01exm26.fsl.freescale.net>
+In-Reply-To: <5E953418-3B5B-4051-9ABB-4C3B1CE1567F@kernel.crashing.org>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Paul <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,38 +34,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 25, 2007 at 01:54:35AM +0200, Segher Boessenkool wrote:
-> > For powerpc, I have a solution at hand, it's the device-tree :-)
-> >
-> > Any struct device in the system can have a device node pointer via the
-> > dev_sysdata thingy I added recently. So we can have some code for
-> > powerpc that properly hooks up the PHY to an (optional) device-node
-> > which can then contains properties describing what kind of workarounds
-> > need to be applied.
-> >
-> > For example, we can have a txc-rxc-delay-disable property on Holly.
-> 
-> This is equivalent to the ethernet driver passing this information
-> to phylib via the init arguments.
-> 
-> You still have the same problems as Andy described where the
-> necessary workaround is not something local to phylib, but
-> needs cooperation of the ethernet code or the soc code or
-> some other platform code.
-> 
-> Since the specific bug we're talking about here is not a
-> problem with the PHY, but a miswiring on the board, I wouldn't
-> put a flag for the workaround in the phy node in the device
-> tree.  It certainly is an option though.
 
-Uh.. something to bear in mind is that although it is a board
-miswiring, it's of a type that it will plausibly occur in other
-boards.  IIRC, if a LED is attached to this PHY the workaround is
-necessary, or something similar.  So there is value in having a
-particular flag for this rather than just looking at the board model.
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Thursday, May 24, 2007 7:44 PM
+> To: Li Yang-r58472
+> Cc: Paul; linuxppc-dev@ozlabs.org
+> Subject: Re: [PATCH] qe_lib: export symbols to fix compile error when
+QE drivers
+> compile as modules
+>=20
+>=20
+> On May 24, 2007, at 4:14 AM, Li Yang wrote:
+>=20
+> > Export symbols of qe_lib to be used by QE drivers.
+> >
+> > Signed-off-by: Li Yang <leoli@freescale.com>
+> > ---
+> > arch/powerpc/sysdev/qe_lib/ucc.c      |    7 +++++++
+> > arch/powerpc/sysdev/qe_lib/ucc_fast.c |    8 ++++++++
+> > arch/powerpc/sysdev/qe_lib/ucc_slow.c |   12 ++++++++++--
+> > 3 files changed, 25 insertions(+), 2 deletions(-)
+>=20
+> A number of the EXPORT_SYMBOL() are not used by any in kernel drivers
+> and thus should not be added.  See comments below.  Also, should
+> these be EXPORT_SYMBOL_GPL().
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Some of them are not used by in kernel driver, but they are used by some
+off kernel drivers and driver in development.  Shouldn't we export them?
+
+I know Linux is again non-GPL modules, but Freescale won't be forcing
+customers to use GPL as long as Linux doesn't ban non-GPL module
+completely.
+
+> > static void get_cmxucr_reg(int ucc_num, volatile u32 ** p_cmxucr,
+> > u8 * reg_num,
+> > 			   u8 * shift)
+> > @@ -122,6 +126,7 @@ static void get_cmxucr_reg(int ucc_num,
+> > volatile u32 ** p_cmxucr, u8 * reg_num,
+> > 		break;
+> > 	}
+> > }
+> > +EXPORT_SYMBOL(get_cmxucr_reg);
+>=20
+> remove, you shouldn't be exporting something marked static.
+
+Good catch.
+
+Thanks,
+Leo
