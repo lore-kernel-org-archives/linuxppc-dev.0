@@ -1,14 +1,14 @@
 Return-Path: <geert@sonycom.com>
 Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 031CFDDE3E
+	by ozlabs.org (Postfix) with ESMTP id 19107DDE40
 	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 18:37:31 +1000 (EST)
-Message-Id: <20070525083632.474400000@sonycom.com>
+Message-Id: <20070525083632.380701000@sonycom.com>
 References: <20070525083607.784351000@sonycom.com>
-Date: Fri, 25 May 2007 10:36:11 +0200
+Date: Fri, 25 May 2007 10:36:10 +0200
 From: Geert.Uytterhoeven@sonycom.com
 To: linuxppc-dev@ozlabs.org,
  linux-kernel@vger.kernel.org
-Subject: [patch 4/7] ps3: Storage Driver Probing
+Subject: [patch 3/7] ps3: Storage Driver Core
 Sender: Geert Uytterhoeven <geert@sonycom.com>
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -20,381 +20,457 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add storage driver probing.
-New storage devices are detected and added by a kthread.
+Add storage driver core support for the PS3.
+PS3 storage devices are a special kind of PS3 system bus devices.
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- arch/powerpc/platforms/ps3/device-init.c |  344 +++++++++++++++++++++++++++++++
- 1 files changed, 344 insertions(+)
+ arch/powerpc/platforms/ps3/Kconfig    |    4 
+ arch/powerpc/platforms/ps3/platform.h |    1 
+ drivers/ps3/Makefile                  |    1 
+ drivers/ps3/ps3stor_lib.c             |  333 ++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/ps3stor.h         |   72 +++++++
+ 5 files changed, 411 insertions(+)
 
---- a/arch/powerpc/platforms/ps3/device-init.c
-+++ b/arch/powerpc/platforms/ps3/device-init.c
-@@ -28,6 +28,7 @@
+--- a/arch/powerpc/platforms/ps3/Kconfig
++++ b/arch/powerpc/platforms/ps3/Kconfig
+@@ -97,4 +97,8 @@ config PS3_SYS_MANAGER
+ 	  This support is required for system control.  In
+ 	  general, all users will say Y or M.
  
- #include <asm/firmware.h>
- #include <asm/lv1call.h>
++config PS3_STORAGE
++	depends on PPC_PS3
++	tristate
++
+ endmenu
+--- a/arch/powerpc/platforms/ps3/platform.h
++++ b/arch/powerpc/platforms/ps3/platform.h
+@@ -82,6 +82,7 @@ enum ps3_dev_type {
+ 	PS3_DEV_TYPE_STOR_ROM = TYPE_ROM,	/* 5 */
+ 	PS3_DEV_TYPE_SB_GPIO = 6,
+ 	PS3_DEV_TYPE_STOR_FLASH = TYPE_RBC,	/* 14 */
++	PS3_DEV_TYPE_NONE = 255,
+ };
+ 
+ int ps3_repository_read_bus_str(unsigned int bus_index, const char *bus_str,
+--- a/drivers/ps3/Makefile
++++ b/drivers/ps3/Makefile
+@@ -3,3 +3,4 @@ obj-$(CONFIG_PS3_PS3AV) += ps3av_mod.o
+ ps3av_mod-objs		+= ps3av.o ps3av_cmd.o
+ obj-$(CONFIG_PPC_PS3) += sys-manager-core.o
+ obj-$(CONFIG_PS3_SYS_MANAGER) += sys-manager.o
++obj-$(CONFIG_PS3_STORAGE) += ps3stor_lib.o
+--- /dev/null
++++ b/drivers/ps3/ps3stor_lib.c
+@@ -0,0 +1,333 @@
++/*
++ * PS3 Storage Library
++ *
++ * Copyright (C) 2007 Sony Computer Entertainment Inc.
++ * Copyright 2007 Sony Corp.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published
++ * by the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ */
++
++#include <linux/dma-mapping.h>
++#include <linux/interrupt.h>
++
++#include <asm/lv1call.h>
 +#include <asm/ps3stor.h>
- 
- #include "platform.h"
- 
-@@ -508,6 +509,348 @@ static int __devinit ps3_register_av(voi
- 	return result;
- }
- 
-+#ifdef DEBUG
-+static const char *ps3stor_dev_type(enum ps3_dev_type dev_type)
++
++
++static irqreturn_t ps3stor_interrupt(int irq, void *data)
 +{
-+	switch (dev_type) {
-+	case PS3_DEV_TYPE_STOR_DISK:
-+		return "disk";
++	struct ps3_storage_device *dev = data;
 +
-+	case PS3_DEV_TYPE_STOR_ROM:
-+		return "rom";
++	dev->lv1_res = lv1_storage_get_async_status(dev->sbd.did.dev_id,
++						    &dev->lv1_tag,
++						    &dev->lv1_status);
++	/*
++	 * lv1_status = -1 may mean that ATAPI transport completed OK, but
++	 * ATAPI command itself resulted CHECK CONDITION
++	 * so, upper layer should issue REQUEST_SENSE to check the sense data
++	 */
 +
-+	case PS3_DEV_TYPE_STOR_FLASH:
-+		return "flash";
-+
-+	case PS3_DEV_TYPE_NONE:
-+		return "not present";
-+
-+	default:
-+		return "unknown";
-+	}
-+}
-+#else
-+static inline const char *ps3stor_dev_type(enum ps3_dev_type dev_type)
-+{
-+    return NULL;
-+}
-+#endif /* DEBUG */
-+
-+#define NOTIFICATION_DEVID	((u64)(-1L))
-+#define NOTIFICATION_TIMEOUT	HZ
-+
-+static u64 ps3stor_wait_for_completion(u64 devid, u64 tag,
-+				       unsigned int timeout)
-+{
-+	unsigned int retries = 0;
-+	u64 res = -1, status;
-+
-+	for (retries = 0; retries < timeout; retries++) {
-+		res = lv1_storage_check_async_status(NOTIFICATION_DEVID, tag,
-+						     &status);
-+		if (!res)
-+			break;
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		schedule_timeout(1);
-+	}
-+	if (res)
-+		pr_debug("%s:%u: check_async_status returns %ld status %lx\n",
-+			 __func__, __LINE__, res, status);
-+
-+	return res;
++	if (dev->lv1_tag != dev->tag)
++		dev_err(&dev->sbd.core,
++			"%s:%u: tag mismatch, got %lx, expected %lx\n",
++			__func__, __LINE__, dev->lv1_tag, dev->tag);
++	if (dev->lv1_res)
++		dev_err(&dev->sbd.core, "%s:%u: res=%d status=0x%lx\n",
++			__func__, __LINE__, dev->lv1_res, dev->lv1_status);
++	else
++		complete(&dev->irq_done);
++	return IRQ_HANDLED;
 +}
 +
-+static int ps3stor_probe_notification(struct ps3_storage_device *dev,
-+				      enum ps3_dev_type dev_type)
++
++static int ps3stor_probe_access(struct ps3_storage_device *dev)
 +{
-+	int error = -ENODEV, res;
-+	u64 *buf;
-+	u64 lpar;
++	int res, error;
++	unsigned int i;
++	unsigned long n;
 +
-+	pr_info("%s:%u: Requesting notification\n", __func__, __LINE__);
-+
-+	buf = kzalloc(512, GFP_KERNEL);
-+	if (!buf)
-+		return -ENOMEM;
-+
-+	lpar = ps3_mm_phys_to_lpar(__pa(buf));
-+
-+	/* 2-1) open special event device */
-+	res = lv1_open_device(dev->sbd.did.bus_id, NOTIFICATION_DEVID, 0);
-+	if (res) {
-+		printk(KERN_ERR "%s:%u: open notification device failed %d\n",
-+		       __func__, __LINE__, res);
-+		goto fail_free;
-+	}
-+
-+	/* 2-2) write info to request notify */
-+	buf[0] = 0;
-+	buf[1] = (1 << 1); /* region update info only */
-+	res = lv1_storage_write(NOTIFICATION_DEVID, 0, 0, 1, 0, lpar,
-+				&dev->tag);
-+	if (res) {
-+		printk(KERN_ERR "%s:%u: notify request write failed %d\n",
-+		       __func__, __LINE__, res);
-+		goto fail_close;
-+	}
-+
-+	/* wait for completion in one second */
-+	res = ps3stor_wait_for_completion(NOTIFICATION_DEVID, dev->tag,
-+					  NOTIFICATION_TIMEOUT);
-+	if (res) {
-+		/* write not completed */
-+		printk(KERN_ERR "%s:%u: write not completed %d\n", __func__,
-+		       __LINE__, res);
-+		goto fail_close;
-+	}
-+
-+	/* 2-3) read to wait region notification for each device */
-+	while (1) {
-+		memset(buf, 0, 512);
-+		lv1_storage_read(NOTIFICATION_DEVID, 0, 0, 1, 0, lpar,
-+				 &dev->tag);
-+		res = ps3stor_wait_for_completion(NOTIFICATION_DEVID, dev->tag,
-+						  NOTIFICATION_TIMEOUT);
-+		if (res) {
-+			/* read not completed */
-+			printk(KERN_ERR "%s:%u: read not completed %d\n",
-+			       __func__, __LINE__, res);
-+			break;
-+		}
-+
-+		/* 2-4) verify the notification */
-+		if (buf[0] != 1 || buf[1] != dev->sbd.did.bus_id) {
-+			/* other info notified */
-+			pr_debug("%s:%u: notification info %ld dev=%lx type=%lx\n",
-+				 __func__, __LINE__, buf[0], buf[2], buf[3]);
-+			break;
-+		}
-+
-+		if (buf[2] == dev->sbd.did.dev_id && buf[3] == dev_type) {
-+			pr_debug("%s:%u: device ready\n", __func__, __LINE__);
-+			error = 0;
-+			break;
-+		}
-+	}
-+
-+fail_close:
-+	lv1_close_device(dev->sbd.did.bus_id, NOTIFICATION_DEVID);
-+
-+fail_free:
-+	kfree(buf);
-+	return error;
-+}
-+
-+static int ps3stor_probe_dev(struct ps3_repository_device *repo)
-+{
-+	int error;
-+	u64 port, blk_size, num_blocks;
-+	unsigned int num_regions, i;
-+	struct ps3_storage_device *dev;
-+	enum ps3_dev_type dev_type;
-+	unsigned int match_id;
-+
-+	pr_info("%s:%u: Probing new storage device %u\n", __func__, __LINE__,
-+		 repo->dev_index);
-+
-+	error = ps3_repository_read_dev_id(repo->bus_index, repo->dev_index,
-+					   &repo->did.dev_id);
-+	if (error) {
-+		printk(KERN_ERR "%s:%u: read_dev_id failed %d\n", __func__,
-+		       __LINE__, error);
-+		return -ENODEV;
-+	}
-+
-+	error = ps3_repository_read_dev_type(repo->bus_index, repo->dev_index,
-+					     &dev_type);
-+	if (error) {
-+		printk(KERN_ERR "%s:%u: read_dev_type failed %d\n", __func__,
-+		       __LINE__, error);
-+		return -ENODEV;
-+	}
-+
-+	pr_debug("%s:%u: index %u:%u: id %u:%u dev_type %u (%s)\n", __func__,
-+		 __LINE__, repo->bus_index, repo->dev_index, repo->did.bus_id,
-+		 repo->did.dev_id, dev_type, ps3stor_dev_type(dev_type));
-+
-+	switch (dev_type) {
-+	case PS3_DEV_TYPE_STOR_DISK:
-+		match_id = PS3_MATCH_ID_STOR_DISK;
-+		break;
-+
-+	case PS3_DEV_TYPE_STOR_ROM:
-+		match_id = PS3_MATCH_ID_STOR_ROM;
-+		break;
-+
-+	case PS3_DEV_TYPE_STOR_FLASH:
-+		match_id = PS3_MATCH_ID_STOR_FLASH;
-+		break;
-+
-+	default:
++	if (dev->sbd.match_id == PS3_MATCH_ID_STOR_ROM) {
++		/* special case: CD-ROM is assumed always accessible */
++		dev->accessible_regions = 1;
 +		return 0;
 +	}
 +
-+	error = ps3_repository_read_stor_dev_info(repo->bus_index,
-+						  repo->dev_index, &port,
-+						  &blk_size, &num_blocks,
-+						  &num_regions);
-+	if (error) {
-+		printk(KERN_ERR "%s:%u: _read_stor_dev_info failed %d\n",
-+		       __func__, __LINE__, error);
-+		return -ENODEV;
-+	}
-+	pr_debug("%s:%u: index %u:%u: port %lu blk_size %lu num_blocks %lu "
-+		 "num_regions %u\n",
-+		 __func__, __LINE__, repo->bus_index, repo->dev_index, port,
-+		 blk_size, num_blocks, num_regions);
++	error = -EPERM;
++	for (i = 0; i < dev->num_regions; i++) {
++		dev_dbg(&dev->sbd.core,
++			"%s:%u: checking accessibility of region %u\n",
++			__func__, __LINE__, i);
 +
-+	dev = kzalloc(sizeof(struct ps3_storage_device)+
-+		      num_regions*sizeof(struct ps3_storage_region),
-+		      GFP_KERNEL);
-+	if (!dev)
-+		return -ENOMEM;
-+
-+	dev->sbd.did = repo->did;
-+	ps3_system_bus_device_init(&dev->sbd, match_id, &dev->dma_region,
-+				   NULL);
-+	dev->blk_size = blk_size;
-+	dev->num_regions = num_regions;
-+
-+	error = ps3_repository_find_interrupt(repo,
-+					      PS3_INTERRUPT_TYPE_EVENT_PORT,
-+					      &dev->sbd.interrupt_id);
-+	if (error) {
-+		printk(KERN_ERR "%s:%u: find_interrupt failed %d\n", __func__,
-+			__LINE__, error);
-+		goto cleanup;
-+	}
-+
-+	/* FIXME Do we really need this? I guess for kboot only? */
-+	error = ps3stor_probe_notification(dev, dev_type);
-+	if (error) {
-+		printk(KERN_ERR "%s:%u: probe_notification failed %d\n",
-+		       __func__, __LINE__, error);
-+		goto cleanup;
-+	}
-+
-+	for (i = 0; i < num_regions; i++) {
-+		unsigned int id;
-+		u64 start, size;
-+
-+		error = ps3_repository_read_stor_dev_region(repo->bus_index,
-+							    repo->dev_index, i,
-+							    &id, &start,
-+							    &size);
-+		if (error) {
-+			printk(KERN_ERR
-+			       "%s:%u: read_stor_dev_region failed %d\n",
-+			       __func__, __LINE__, error);
-+			goto cleanup;
-+		}
-+		pr_debug("%s:%u: region %u: id %u start %lu size %lu\n",
-+			 __func__, __LINE__, i, id, start, size);
-+
-+		dev->regions[i].id = id;
-+		dev->regions[i].start = start;
-+		dev->regions[i].size = size;
-+	}
-+
-+	error = ps3_system_bus_device_register(&dev->sbd, PS3_IOBUS_SB);
-+	if (error) {
-+		printk(KERN_ERR
-+		       "%s:%u: ps3_system_bus_device_register failed %d\n",
-+		       __func__, __LINE__, error);
-+		goto cleanup;
-+	}
-+	return 0;
-+
-+cleanup:
-+	kfree(dev);
-+	return -ENODEV;
-+}
-+
-+static int ps3stor_thread(void *data)
-+{
-+	struct ps3_repository_device *repo = data;
-+	int error;
-+	unsigned int n, ms = 250;
-+
-+	pr_debug("%s:%u: kthread started\n", __func__, __LINE__);
-+
-+	do {
-+		try_to_freeze();
-+
-+//		pr_debug("%s:%u: Checking for new storage devices...\n",
-+//			 __func__, __LINE__);
-+		error = ps3_repository_read_bus_num_dev(repo->bus_index, &n);
-+		if (error) {
-+			printk(KERN_ERR "%s:%u: read_bus_num_dev failed %d\n",
-+			       __func__, __LINE__, error);
-+			break;
++		dev->region_idx = i;
++		res = ps3stor_read_write_sectors(dev, dev->bounce_lpar, 0, 1,
++						 0);
++		if (res) {
++			dev_dbg(&dev->sbd.core,
++				"%s:%u: read failed, region %u is not accessible\n",
++				__func__, __LINE__, i);
++			continue;
 +		}
 +
-+		if (n > repo->dev_index) {
-+			pr_debug("%s:%u: Found %u storage devices (%u new)\n",
-+				 __func__, __LINE__, n, n - repo->dev_index);
++		dev_dbg(&dev->sbd.core, "%s:%u: region %u is accessible\n",
++			__func__, __LINE__, i);
++		set_bit(i, &dev->accessible_regions);
 +
-+			while (repo->dev_index < n && !error) {
-+				error = ps3stor_probe_dev(repo);
-+				repo->dev_index++;
-+			}
-+
-+			ms = 250;
-+		}
-+
-+		msleep_interruptible(ms);
-+		if (ms < 60000)
-+			ms <<= 1;
-+	} while (!kthread_should_stop());
-+
-+	pr_debug("%s:%u: kthread finished\n", __func__, __LINE__);
-+
-+	return 0;
-+}
-+
-+static int __devinit ps3_register_storage_devices(void)
-+{
-+	int error;
-+	static struct ps3_repository_device repo;
-+	struct task_struct *task;
-+
-+	if (!firmware_has_feature(FW_FEATURE_PS3_LV1))
-+		return -ENODEV;
-+
-+	error = ps3_repository_find_bus(PS3_BUS_TYPE_STORAGE, 0,
-+					&repo.bus_index);
-+	if (error) {
-+		printk(KERN_ERR "%s: Cannot find storage bus (%d)\n", __func__,
-+		       error);
-+		return -ENODEV;
++		/* We can access at least one region */
++		error = 0;
 +	}
-+	pr_debug("%s:%u: Storage bus has index %u\n", __func__, __LINE__,
-+		 repo.bus_index);
-+
-+	error = ps3_repository_read_bus_id(repo.bus_index, &repo.did.bus_id);
-+	if (error) {
-+		printk(KERN_ERR "%s: read_bus_id failed %d\n", __func__,
-+		       error);
-+		return -ENODEV;
-+	}
-+
-+	pr_debug("%s:%u: Storage bus has id %u\n", __func__, __LINE__,
-+		 repo.did.bus_id);
-+
-+	task = kthread_run(ps3stor_thread, &repo, "ps3stor-probe");
-+	if (IS_ERR(task)) {
-+		error = PTR_ERR(task);
-+		printk(KERN_ERR "%s: kthread_run failed %d\n", __func__,
-+		       error);
++	if (error)
 +		return error;
-+	}
++
++	n = hweight_long(dev->accessible_regions);
++	if (n > 1)
++		dev_info(&dev->sbd.core,
++			 "%s:%u: %lu accessible regions found. Only the first "
++			 "one will be used",
++			 __func__, __LINE__, n);
++	dev->region_idx = __ffs(dev->accessible_regions);
++	dev_dbg(&dev->sbd.core,
++		"First accessible region has index %u start %lu size %lu\n",
++		dev->region_idx, dev->regions[dev->region_idx].start,
++		dev->regions[dev->region_idx].size);
 +
 +	return 0;
 +}
 +
- static int __devinit ps3_register_fb(void)
- {
- 	int error;
-@@ -556,6 +899,7 @@ static int __init ps3_register_known_dev
- 	result = ps3_register_sys_manager();
- 	result = ps3_register_sound();
- 	result = ps3_register_gelic();
-+	result = ps3_register_storage_devices();
- 
- 	pr_debug(" <- %s:%d\n", __func__, __LINE__);
- 	return result;
++
++/**
++ *	ps3stor_setup - Setup a storage device before use
++ *	@dev: Pointer to a struct ps3_storage_device
++ *	@name: Name of the storage driver
++ *
++ *	Returns 0 for success, or an error code
++ */
++int ps3stor_setup(struct ps3_storage_device *dev, const char *name)
++{
++	int error, res, alignment;
++	enum ps3_dma_page_size page_size;
++
++	error = ps3_open_hv_device(&dev->sbd);
++	if (error) {
++		dev_err(&dev->sbd.core,
++			"%s:%u: ps3_open_hv_device failed %d\n", __func__,
++			__LINE__, error);
++		goto fail;
++	}
++
++	error = ps3_sb_event_receive_port_setup(PS3_BINDING_CPU_ANY,
++						&dev->sbd.did,
++						dev->sbd.interrupt_id,
++						&dev->irq);
++	if (error) {
++		dev_err(&dev->sbd.core,
++			"%s:%u: ps3_sb_event_receive_port_setup failed %d\n",
++		       __func__, __LINE__, error);
++		goto fail_close_device;
++	}
++
++	error = request_irq(dev->irq, ps3stor_interrupt, IRQF_DISABLED, name,
++			    dev);
++	if (error) {
++		dev_err(&dev->sbd.core, "%s:%u: request_irq failed %d\n",
++			__func__, __LINE__, error);
++		goto fail_sb_event_receive_port_destroy;
++	}
++
++	alignment = min(__ffs(dev->bounce_size),
++			__ffs((unsigned long)dev->bounce_buf));
++	if (alignment < 12) {
++		dev_err(&dev->sbd.core,
++			"%s:%u: bounce buffer not aligned (%lx at 0x%p)\n",
++			__func__, __LINE__, dev->bounce_size, dev->bounce_buf);
++		error = -EINVAL;
++		goto fail_free_irq;
++	} else if (alignment < 16)
++		page_size = PS3_DMA_4K;
++	else
++		page_size = PS3_DMA_64K;
++	dev->sbd.d_region = &dev->dma_region;
++	ps3_dma_region_init(&dev->dma_region, &dev->sbd.did, page_size,
++			    PS3_DMA_OTHER, dev->bounce_buf, dev->bounce_size,
++			    PS3_IOBUS_SB);
++	res = ps3_dma_region_create(&dev->dma_region);
++	if (res) {
++		dev_err(&dev->sbd.core, "%s:%u: cannot create DMA region\n",
++			__func__, __LINE__);
++		error = -ENOMEM;
++		goto fail_free_irq;
++	}
++
++	dev->bounce_lpar = ps3_mm_phys_to_lpar(__pa(dev->bounce_buf));
++	dev->bounce_dma = dma_map_single(&dev->sbd.core, dev->bounce_buf,
++					 dev->bounce_size, DMA_BIDIRECTIONAL);
++	if (!dev->bounce_dma) {
++		dev_err(&dev->sbd.core, "%s:%u: map DMA region failed\n",
++			__func__, __LINE__);
++		error = -ENODEV;
++		goto fail_free_dma;
++	}
++
++	error = ps3stor_probe_access(dev);
++	if (error) {
++		dev_err(&dev->sbd.core, "%s:%u: No accessible regions found\n",
++			__func__, __LINE__);
++		goto fail_unmap_dma;
++	}
++	return 0;
++
++fail_unmap_dma:
++	dma_unmap_single(&dev->sbd.core, dev->bounce_dma, dev->bounce_size,
++			 DMA_BIDIRECTIONAL);
++fail_free_dma:
++	ps3_dma_region_free(&dev->dma_region);
++fail_free_irq:
++	free_irq(dev->irq, dev);
++fail_sb_event_receive_port_destroy:
++	ps3_sb_event_receive_port_destroy(&dev->sbd.did, dev->sbd.interrupt_id,
++					  dev->irq);
++fail_close_device:
++	ps3_close_hv_device(&dev->sbd);
++fail:
++	return error;
++}
++EXPORT_SYMBOL_GPL(ps3stor_setup);
++
++
++/**
++ *	ps3stor_teardown - Tear down a storage device after use
++ *	@dev: Pointer to a struct ps3_storage_device
++ */
++void ps3stor_teardown(struct ps3_storage_device *dev)
++{
++	int error;
++
++	dma_unmap_single(&dev->sbd.core, dev->bounce_dma, dev->bounce_size,
++			 DMA_BIDIRECTIONAL);
++	ps3_dma_region_free(&dev->dma_region);
++
++	free_irq(dev->irq, dev);
++
++	error = ps3_sb_event_receive_port_destroy(&dev->sbd.did,
++						  dev->sbd.interrupt_id,
++						  dev->irq);
++	if (error)
++		dev_err(&dev->sbd.core,
++			"%s:%u: destroy event receive port failed %d\n",
++			__func__, __LINE__, error);
++
++	error = ps3_close_hv_device(&dev->sbd);
++	if (error)
++		dev_err(&dev->sbd.core,
++			"%s:%u: ps3_close_hv_device failed %d\n", __func__,
++			__LINE__, error);
++}
++EXPORT_SYMBOL_GPL(ps3stor_teardown);
++
++
++/**
++ *	ps3stor_read_write_sectors - read/write from/to a storage device
++ *	@dev: Pointer to a struct ps3_storage_device
++ *	@lpar: HV logical partition address
++ *	@start_sector: First sector to read/write
++ *	@sectors: Number of sectors to read/write
++ *	@write: Flag indicating write (non-zero) or read (zero)
++ *
++ *	Returns 0 for success, -1 in case of failure to submit the command, or
++ *	an LV1 status value in case of other errors
++ */
++u64 ps3stor_read_write_sectors(struct ps3_storage_device *dev, u64 lpar,
++			       u64 start_sector, u64 sectors, int write)
++{
++	unsigned int region_id = dev->regions[dev->region_idx].id;
++	const char *op = write ? "write" : "read";
++	int res;
++
++	dev_dbg(&dev->sbd.core, "%s:%u: %s %lu sectors starting at %lu\n",
++		__func__, __LINE__, op, sectors, start_sector);
++
++	init_completion(&dev->irq_done);
++	res = write ? lv1_storage_write(dev->sbd.did.dev_id, region_id,
++					start_sector, sectors, 0, lpar,
++					&dev->tag)
++		    : lv1_storage_read(dev->sbd.did.dev_id, region_id,
++				       start_sector, sectors, 0, lpar,
++				       &dev->tag);
++	if (res) {
++		dev_dbg(&dev->sbd.core, "%s:%u: %s failed %d\n", __func__,
++			__LINE__, op, res);
++		return -1;
++	}
++
++	wait_for_completion(&dev->irq_done);
++	if (dev->lv1_status) {
++		dev_dbg(&dev->sbd.core, "%s:%u: %s failed 0x%lx\n", __func__,
++			__LINE__, op, dev->lv1_status);
++		return dev->lv1_status;
++	}
++
++	dev_dbg(&dev->sbd.core, "%s:%u: %s completed\n", __func__, __LINE__,
++		op);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(ps3stor_read_write_sectors);
++
++
++/**
++ *	ps3stor_send_command - send a device command to a storage device
++ *	@dev: Pointer to a struct ps3_storage_device
++ *	@cmd: Command number
++ *	@arg1: First command argument
++ *	@arg2: Second command argument
++ *	@arg3: Third command argument
++ *	@arg4: Fourth command argument
++ *
++ *	Returns 0 for success, -1 in case of failure to submit the command, or
++ *	an LV1 status value in case of other errors
++ */
++u64 ps3stor_send_command(struct ps3_storage_device *dev, u64 cmd, u64 arg1,
++			 u64 arg2, u64 arg3, u64 arg4)
++{
++	int res;
++
++	dev_dbg(&dev->sbd.core, "%s:%u: send device command 0x%lx\n", __func__,
++		__LINE__, cmd);
++
++	init_completion(&dev->irq_done);
++
++	res = lv1_storage_send_device_command(dev->sbd.did.dev_id, cmd, arg1,
++					      arg2, arg3, arg4, &dev->tag);
++	if (res) {
++		dev_err(&dev->sbd.core,
++			"%s:%u: send_device_command 0x%lx failed %d\n",
++			__func__, __LINE__, cmd, res);
++		return -1;
++	}
++
++	wait_for_completion(&dev->irq_done);
++	if (dev->lv1_status)
++		dev_dbg(&dev->sbd.core, "%s:%u: command 0x%lx failed 0x%lx\n",
++			__func__, __LINE__, cmd, dev->lv1_status);
++	else
++		dev_dbg(&dev->sbd.core, "%s:%u: command 0x%lx completed\n",
++			__func__, __LINE__, cmd);
++
++	return dev->lv1_status;
++}
++EXPORT_SYMBOL_GPL(ps3stor_send_command);
++
++
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("PS3 Storage Bus Library");
++MODULE_AUTHOR("Sony Corporation");
+--- /dev/null
++++ b/include/asm-powerpc/ps3stor.h
+@@ -0,0 +1,72 @@
++/*
++ * PS3 Storage Devices
++ *
++ * Copyright (C) 2007 Sony Computer Entertainment Inc.
++ * Copyright 2007 Sony Corp.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published
++ * by the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ */
++
++#ifndef _ASM_POWERPC_PS3STOR_H_
++#define _ASM_POWERPC_PS3STOR_H_
++
++#include <linux/irqreturn.h>
++
++#include <asm/ps3.h>
++
++
++struct ps3_storage_region {
++	unsigned int id;
++	u64 start;
++	u64 size;
++};
++
++struct ps3_storage_device {
++	struct ps3_system_bus_device sbd;
++
++	struct ps3_dma_region dma_region;
++	unsigned int irq;
++	u64 blk_size;
++
++	u64 tag;
++	int lv1_res;
++	u64 lv1_tag;
++	u64 lv1_status;
++	struct completion irq_done;
++
++	unsigned long bounce_size;
++	void *bounce_buf;
++	u64 bounce_lpar;
++	dma_addr_t bounce_dma;
++
++	unsigned int num_regions;
++	unsigned long accessible_regions;
++	unsigned int region_idx;		/* first accessible region */
++	struct ps3_storage_region regions[0];	/* Must be last */
++};
++
++static inline struct ps3_storage_device *to_ps3_storage_device(struct device *dev)
++{
++	return container_of(dev, struct ps3_storage_device, sbd.core);
++}
++
++extern int ps3stor_setup(struct ps3_storage_device *dev, const char *name);
++extern void ps3stor_teardown(struct ps3_storage_device *dev);
++extern u64 ps3stor_read_write_sectors(struct ps3_storage_device *dev, u64 lpar,
++				      u64 start_sector, u64 sectors,
++				      int write);
++extern u64 ps3stor_send_command(struct ps3_storage_device *dev, u64 cmd,
++				u64 arg1, u64 arg2, u64 arg3, u64 arg4);
++
++#endif /* _ASM_POWERPC_PS3STOR_H_ */
 
 -- 
 Gr{oetje,eeting}s,
