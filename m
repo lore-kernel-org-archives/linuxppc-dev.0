@@ -1,30 +1,27 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-13.arcor-online.net (mail-in-13.arcor-online.net
+	[151.189.21.53])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6FB0FDDEFF
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 May 2007 00:05:48 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4PE5i1p020451
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 10:05:44 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4PE5ibq512936
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 10:05:44 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4PE5ira011053
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 10:05:44 -0400
-Subject: Re: Fix compiler/assembler flags for Ebony platform boot files
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20070525031917.GC13575@localhost.localdomain>
-References: <20070525031917.GC13575@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 25 May 2007 09:04:37 -0500
-Message-Id: <1180101877.3360.39.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 56E6EDDEDB
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 May 2007 00:12:06 +1000 (EST)
+In-Reply-To: <20070525043852.GH13575@localhost.localdomain>
+References: <20070524041625.GD20078@localhost.localdomain>
+	<BB9A8C3A-0BC5-4DF0-9201-2742124A4AF5@kernel.crashing.org>
+	<1180014260.3360.14.camel@zod.rchland.ibm.com>
+	<20070525042359.GE13575@localhost.localdomain>
+	<20070525043728.GG13575@localhost.localdomain>
+	<20070525043852.GH13575@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <25433b8fc06678e73ee055ed4f44f7a3@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Fix problems with Holly's DT representation of ethernet PHYs
+Date: Fri, 25 May 2007 16:11:59 +0200
+To: David Gibson <dwg@au1.ibm.com>
+Cc: Alexandre Bounine <Alexandre.Bounine@tundra.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,15 +31,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-05-25 at 13:19 +1000, David Gibson wrote:
-> The recent addition of assembler flags for 44x.c and ebony.c in the
-> bootwrapper to make them compile on certain toolchains was not correct
-> and could break other platforms.  This patch switches to using a
-> compiler flag instead, which implies the appropriate assembler flag,
-> and also stops the compiler itself generating instructions which are
-> invalid for the platform in question.
+> Waah!  Third time lucky?
 
-This looks good to me, but I don't have one of the failing toolchains.
-Dave, can you test this patch out?
+You wish :-)
 
-josh
+> 	- Second, the PHYs give only "bcm54xx" as a compatible
+> property.  This is unfortunate, because there are many bcm54xx PHY
+> models, and they have differences which can matter.  We add a more
+> precise compatible string, giving the precise PHY model (bcm5461A in
+> this case).
+
+You completely removed the "compatible" properties instead.
+Bad idea.
+
+
+Segher
