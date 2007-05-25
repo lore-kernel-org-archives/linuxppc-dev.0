@@ -1,17 +1,17 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 268ADDDEC1
+Return-Path: <akonovalov@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id 43644DDD07
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 May 2007 22:54:07 +1000 (EST)
-Message-ID: <4656DC7C.8020503@anagramm.de>
-Date: Fri, 25 May 2007 14:54:20 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
+	Fri, 25 May 2007 23:10:45 +1000 (EST)
+Message-ID: <4656E1B9.9090308@ru.mvista.com>
+Date: Fri, 25 May 2007 17:16:41 +0400
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
 MIME-Version: 1.0
-To: Sasvata Chatterjee <sasvata.chatterjee@gmail.com>
-Subject: Re: Latest GCC/GLIBC working combo for a Linux 2.4.x kernel?
-References: <a9fc2a630705241728q4d203569n6eb008cc65a7eba9@mail.gmail.com>
-In-Reply-To: <a9fc2a630705241728q4d203569n6eb008cc65a7eba9@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Miroslaw Dach <miroslaw.dach@psi.ch>
+Subject: Re: zImage.elf loads but does not start
+References: <Pine.LNX.4.44.0705152027280.16487-100000@slslc02.psi.ch>
+In-Reply-To: <Pine.LNX.4.44.0705152027280.16487-100000@slslc02.psi.ch>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,39 +23,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi, Sasvata!
+Mirek,
 
-> We are using a RHEL/386 machine to cross-compile for Debian/PowerPC 
-> (8260) target, a few year old embedded system that we inherited.  The 
-> kernel is 2.4.9. Using crosstools, and following Dan Kegel's notes, the 
-> combo we have is gcc-2.95-3/glibc-2.2.5.
+Miroslaw Dach wrote:
+> I do not know however if the stack is properly configured since I did not 
+> see any parameter in kernel which refers to the stack or heap. 
 > 
-> Does anybody have any working version using newer versions of the 2.4 
-> kernel and newer GCC versions for a powerpc-603e target?  One motivation 
-> is to use BusyBox-1.5.1, but I am told on that list that GCC 2/x is too 
-> old (I tried before I asked, it doesn't compile).
+> My bsp i.e xparameteres_ml403.h contains two macros:
+> #define XPAR_DDR_SDRAM_1_MEM0_BASEADDR 0x00000000
+> #define XPAR_DDR_SDRAM_1_MEM0_HIGHADDR 0x01FFFFFF
+> 
+> I have the feeling that they are ignored because I did not find anywhere 
+> in the kernel source those names. 
+> 
+> When kernel boots it prints at the beginning:
+> loaded at:     00400000 004F9138 
+> board data at: 004F7120 004F7138 
+> relocated to:  00404064 0040407C 
+> zimage at:     00404DF1 004F6BBB 
+> avail ram:     004FA000 04000000 
 
-It's propably painful to work your way through crosstools with such an
-old toolchain. I would have a look if one of the ELDK's from
-http://www.denx.de can be used for your board - at least for a good start.
-If you run into problems with older linux-2.4 kernel version with the newer ELDK's,
-you can also go back to some older version?
+Have you fixed this?
 
-> Any help, pointers, example config files for crosstools, etc. would be 
-> really appreciated!
+For 32 MBytes of DRAM you should have
+   #define XPAR_DDR_0_SIZE                 0x2000000
+in your xparameters_ml403.h file.
+I can't recall the whole story, but EDK 8.2 doesn't
+add this #define when generating the xparameters file,
+so I had to add this line by hand for EDK 8.2 generated
+files. Probably earlier EDK versions did that automatically.
 
-You are always welcome at their mailing list. See:
-http://kegel.com/crosstool
+But your kernel (the bootwrapper to be precise) wouldn't compile
+if XPAR_DDR_0_SIZE were not defined...
+Do you use uboot?
 
-Best greets,
--- 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+Thanks,
+Andrei
