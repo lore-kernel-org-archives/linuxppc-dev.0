@@ -1,25 +1,25 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-13.arcor-online.net (mail-in-13.arcor-online.net
-	[151.189.21.53])
+Received: from mail-in-05.arcor-online.net (mail-in-05.arcor-online.net
+	[151.189.21.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 56E6EDDEDB
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 May 2007 00:12:06 +1000 (EST)
-In-Reply-To: <20070525043852.GH13575@localhost.localdomain>
-References: <20070524041625.GD20078@localhost.localdomain>
-	<BB9A8C3A-0BC5-4DF0-9201-2742124A4AF5@kernel.crashing.org>
-	<1180014260.3360.14.camel@zod.rchland.ibm.com>
-	<20070525042359.GE13575@localhost.localdomain>
-	<20070525043728.GG13575@localhost.localdomain>
-	<20070525043852.GH13575@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 91F8BDDF18
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 May 2007 00:17:43 +1000 (EST)
+In-Reply-To: <20070525020059.GA13575@localhost.localdomain>
+References: <1B5F013528140F45B5C671039279CA5701BBBDE3@NANUK.pc.tundra.com>
+	<1179960728.32247.953.camel@localhost.localdomain>
+	<396FEEDC-99AB-4E25-9C80-A901923429B0@freescale.com>
+	<1180047084.32247.1070.camel@localhost.localdomain>
+	<2994f78d2591e45517247003d613bb98@kernel.crashing.org>
+	<20070525020059.GA13575@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <25433b8fc06678e73ee055ed4f44f7a3@kernel.crashing.org>
+Message-Id: <e97f5fb5861fe4177dc6b37bdc0e0244@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: Fix problems with Holly's DT representation of ethernet PHYs
-Date: Fri, 25 May 2007 16:11:59 +0200
-To: David Gibson <dwg@au1.ibm.com>
+Subject: Re: TSI ethernet PHY question
+Date: Fri, 25 May 2007 16:17:32 +0200
+To: David Gibson <david@gibson.dropbear.id.au>
 Cc: Alexandre Bounine <Alexandre.Bounine@tundra.com>,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -31,18 +31,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Waah!  Third time lucky?
+>> Since the specific bug we're talking about here is not a
+>> problem with the PHY, but a miswiring on the board, I wouldn't
+>> put a flag for the workaround in the phy node in the device
+>> tree.  It certainly is an option though.
+>
+> Uh.. something to bear in mind is that although it is a board
+> miswiring, it's of a type that it will plausibly occur in other
+> boards.
 
-You wish :-)
+It is possible yes.
 
-> 	- Second, the PHYs give only "bcm54xx" as a compatible
-> property.  This is unfortunate, because there are many bcm54xx PHY
-> models, and they have differences which can matter.  We add a more
-> precise compatible string, giving the precise PHY model (bcm5461A in
-> this case).
+> IIRC, if a LED is attached to this PHY the workaround is
+> necessary, or something similar.
 
-You completely removed the "compatible" properties instead.
-Bad idea.
+Only if it is attached the wrong way, so it acts as a
+pull-up (or was it pull-down) during chip reset.
+
+>   So there is value in having a
+> particular flag for this rather than just looking at the board model.
+
+A bit, maybe.
 
 
 Segher
