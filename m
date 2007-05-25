@@ -1,16 +1,11 @@
-Return-Path: <Mike.Shelley@viasat.com>
-Received: from VCAEXCH02.hq.corp.viasat.com (kestrel.viasat.com
-	[199.106.52.139]) by ozlabs.org (Postfix) with ESMTP id 2C282DDDF3
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 May 2007 11:32:37 +1000 (EST)
+Return-Path: <bounces@nabble.com>
+Message-ID: <4633901.89021180076707118.JavaMail.nabble@isper.nabble.com>
+From: angelalinyao@163.com
+To: Linuxppc-embedded@ozlabs.org
+Subject: console problem while initializing form ramdisk
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C79E6B.3E988065"
-Subject: initramfs on ppc 405: crc error
-Date: Thu, 24 May 2007 18:23:31 -0700
-Message-ID: <821B2170E9E7F04FA38DF7EC21DE487109470913@VCAEXCH01.hq.corp.viasat.com>
-From: "Shelley, Mike" <Mike.Shelley@viasat.com>
-To: <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Date: Fri, 25 May 2007 00:05:07 -0700
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,166 +16,63 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hi,all
+    I am trying to run linux2.6 on Xilinx ML403.I have builded and loaded zImage.initrd.elf successfully into the board and when the kernel was booting to the point initializing form ramdisk,I got the problem as follow.
 
-------_=_NextPart_001_01C79E6B.3E988065
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+loaded at:     00400000 0063213C                                
+board data at: 00630124 0063013C                                
+relocated to:  004050E8 00405100                                
+zimage at:     004058B9 004C645D                                
+initrd at:     004C7000 0062FE44                                
+avail ram:     00633000 04000000                                
 
-I'm having a similar problem to a question posted earlier with
-initramfs. =20
+Linux/PPC load: console=ttyS0,9600 root=/dev/ram rw                                                   
+Uncompressing Linux...done.                           
+Now booting the kernel                      
+Linux version 2.6.17-rc4-smp (linyao@linux-177) (gcc version 3.3.1 (MontaVista 3                                                                                
+.3.1-3.0.10.0300532 2003-12-24)) #4 Fri May 25 11:29:41 CST 2007                                                                
+Xilinx ML403 Reference System (Virtex-4 FX)                                           
+Built 1 zonelists                 
+Kernel command line: console=ttyS0,9600 root=/dev/ram rw                                                        
+Xilinx INTC #0 at 0x41200000 mapped to 0xFDFFE000                                                 
+PID hash table entries: 512 (order: 9, 2048 bytes)                                                  
+Console: colour dummy device 80x25                                  
+Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)                                                             
+Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)                                                            
+Memory: 61420k available (1240k kernel code, 716k data, 84k init, 0k highmem)                                                                             
+Security Framework v1.0.0 initialized                                     
+Mount-cache hash table entries: 512                                   
+checking if image is initramfs...it isn't (no cpio magic); looks like an initrd                                                                               
+Freeing initrd memory: 1443k freed                                  
+VFS: Disk quotas dquot_6.5.1                            
+Dquot-cache hash table entries: 1024 (order 0, 4096 bytes)
+Initializing Cryptographic API
+io scheduler noop registered
+io scheduler anticipatory registered (default)
+io scheduler deadline registered
+io scheduler cfq registered
+Macintosh non-volatile memory driver v1.1
+Linux agpgart interface v0.101 (c) Dave Jones
+Serial: 8250/16550 driver $Revision: 1.90 $ 1 ports, IRQ sharing disabled
+serial8250.0: ttyS0 at MMIO 0x40401003 (irq = 1) is a 16450
+RAMDISK driver initialized: 1 RAM disks of 8192K size 1024 blocksize
+loop: loaded (max 8 devices)
+i8042.c: No controller found.
+mice: PS/2 mouse device common for all mice
+md: md driver 0.90.3 MAX_MD_DEVS=256, MD_SB_DISKS=27
+md: bitmap version 4.39
+md: Autodetecting RAID arrays.
+md: autorun ...
+md: ... autorun DONE.
+RAMDISK: Compressed image found at block 0
+VFS: Mounted root (ext2 filesystem).
+Freeing unused kernel memory: 84k init
+Warning: unable to open an initial console.
 
-=20
+      I configured bootloader like this:
+[*]Default bootloader kernel arguments
+(console=ttyS0,9600 root=dev/ram rw)Initial kernel command string
 
-I'm using the 2.6.20 kernel, on a Xilinx Virtex 4, ppc405, no boot
-loader.  I use a BDI2000 to load the kernel image directly into RAM
-(32MB). =20
-
-=20
-
-When I use a larger (4mb compressed, 13mb uncompressed) cpio archive for
-initramfs, I get a crc error when it tries to decompress it.  When I use
-a small simple archive (30k), it works correctly and does not have the
-crc problem.  I've tried a cpio.gz archive of about 2mb and still get
-the crc error.  Are there any size limitations for the kernel and/or for
-initramfs?  What else could the problem be? =20
-
-=20
-
-The kernel image is being loaded to an address of 0x800000 instead of
-0x400000 since it has problems decompressing the kernel at the lower
-address, I'm told due to the size of the kernel image (5mb compressed).
-Could this positioning be interfering with the initramfs decompression?
-Where is the initramfs decompressed to?
-
-=20
-
-Any help would be appreciated.
-
-Thanks,
-
-Mike
-
-
-------_=_NextPart_001_01C79E6B.3E988065
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I&#8217;m having a similar problem to a question =
-posted
-earlier with initramfs.&nbsp; <o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I&#8217;m using the 2.6.20 kernel, on a Xilinx Virtex =
-4,
-ppc405, no boot loader.&nbsp; I use a BDI2000 to load the kernel image =
-directly
-into RAM (32MB).&nbsp; <o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>When I use a larger (4mb compressed, 13mb =
-uncompressed) cpio
-archive for initramfs, I get a crc error when it tries to decompress =
-it.&nbsp; When
-I use a small simple archive (30k), it works correctly and does not have =
-the
-crc problem.&nbsp; I&#8217;ve tried a cpio.gz archive of about 2mb and =
-still
-get the crc error.&nbsp; Are there any size limitations for the kernel =
-and/or
-for initramfs?&nbsp; What else could the problem be?&nbsp; =
-<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>The kernel image is being loaded to an address of =
-0x800000
-instead of 0x400000 since it has problems decompressing the kernel at =
-the lower
-address, I&#8217;m told due to the size of the kernel image (5mb
-compressed).&nbsp; Could this positioning be interfering with the =
-initramfs decompression?&nbsp;
-Where is the initramfs decompressed to?<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Any help would be =
-appreciated.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Thanks,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Mike<o:p></o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01C79E6B.3E988065--
+      I don't know where the problem comes from and how to solve it.
+      Any help from you is appreciated.Thank you!
+                                                                                                                         linyao
