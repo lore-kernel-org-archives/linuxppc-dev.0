@@ -1,17 +1,17 @@
 Return-Path: <olaf@aepfle.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 1F99DDDE05
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 21:23:54 +1000 (EST)
-Date: Fri, 25 May 2007 13:24:14 +0200
+	by ozlabs.org (Postfix) with ESMTP id 49A33DDE31
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 21:45:33 +1000 (EST)
+Date: Fri, 25 May 2007 13:45:50 +0200
 From: Olaf Hering <olaf@aepfle.de>
 To: Geert.Uytterhoeven@sonycom.com
-Subject: Re: [patch 6/7] ps3: ROM Storage Driver
-Message-ID: <20070525112414.GA32336@aepfle.de>
+Subject: Re: [patch 5/7] ps3: Disk Storage Driver
+Message-ID: <20070525114550.GA32552@aepfle.de>
 References: <20070525083607.784351000@sonycom.com>
-	<20070525083632.677742000@sonycom.com>
+	<20070525083632.575306000@sonycom.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20070525083632.677742000@sonycom.com>
+In-Reply-To: <20070525083632.575306000@sonycom.com>
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,8 +24,6 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On Fri, May 25, Geert.Uytterhoeven@sonycom.com wrote:
 
-> +++ b/drivers/scsi/ps3rom.c
+> Add a Disk Storage Driver for the PS3:
 
-> +			kaddr = kmap_atomic(sgpnt->page, KM_USER0);
-
-linux/highmem.h is not included to get the kmap_* prototypes.
+There is no device symlink in /sys/block/ps3da/
