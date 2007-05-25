@@ -1,37 +1,20 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 54520DDF60
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 18:55:19 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4P8tG09014966
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 04:55:16 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4P8tF2T545698
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 04:55:15 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4P8tFu1032355
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 04:55:15 -0400
-Message-ID: <4656A488.2020507@in.ibm.com>
-Date: Fri, 25 May 2007 14:25:36 +0530
-From: "Sachin P. Sant" <sachinp@in.ibm.com>
-MIME-Version: 1.0
-To: Olof Johansson <olof@lixom.net>, Paul Mackerras <paulus@samba.org>
-Subject: [Patch ] Kexec/Kdump support - POWER6
-References: <4652E088.9080207@in.ibm.com> <4652E109.4020204@in.ibm.com>
-	<4652E17C.7080607@in.ibm.com> <20070522153419.GA22047@lixom.net>
-	<46540B6F.6030300@in.ibm.com>
-	<18004.7556.311264.415721@cargo.ozlabs.ibm.com>
-	<20070524121751.GB4547@in.ibm.com>
-	<20070524142133.GA13191@lixom.net>
-In-Reply-To: <20070524142133.GA13191@lixom.net>
-Content-Type: multipart/mixed; boundary="------------040701020908050800070706"
-Cc: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org,
-	Milton Miller II <miltonm@us.ibm.com>
-Reply-To: sachinp@in.ibm.com
+Return-Path: <michel@tungstengraphics.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
+	by ozlabs.org (Postfix) with ESMTP id 1A978DDE45
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 19:06:10 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id c2so628145ugf
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 02:06:03 -0700 (PDT)
+Subject: Re: Badness at include/linux/slub_def.h
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
+To: Christian Kujau <lists@nerdbynature.de>
+In-Reply-To: <Pine.LNX.4.64.0705202304530.14522@sheep.housecafe.de>
+References: <Pine.LNX.4.64.0705202304530.14522@sheep.housecafe.de>
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 25 May 2007 11:05:34 +0200
+Message-Id: <1180083934.19648.442.camel@thor.sulgenrain.local>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	dri-devel@lists.sf.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,108 +24,117 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------040701020908050800070706
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Sun, 2007-05-20 at 23:10 +0100, Christian Kujau wrote:
+> 
+> [41653.487050] Badness at include/linux/slub_def.h:77
+> [41653.487060] Call Trace:
+> [41653.487068] [ecafbcb0] [c0008d00] show_stack+0x3c/0x194 (unreliable)
+> [41653.487097] [ecafbce0] [c01426d4] report_bug+0x84/0xf4
+> [41653.487116] [ecafbcf0] [c0010280] program_check_exception+0xbc/0x530
+> [41653.487137] [ecafbd20] [c0011f8c] ret_from_except_full+0x0/0x4c
+> [41653.487154] --- Exception: 700 at get_slab+0x248/0x260
+> [41653.487168]     LR = __kmalloc+0x1c/0x9c
+> [41653.487176] [ecafbde0] [101dfbc8] 0x101dfbc8 (unreliable)
+> [41653.487213] [ecafbe10] [c0080398] __kmalloc+0x1c/0x9c
+> [41653.487227] [ecafbe30] [c01c2150] drm_rmdraw+0x26c/0x29c
+> [41653.487243] [ecafbe80] [c01c2b74] drm_ioctl+0xe0/0x250
+> [41653.487257] [ecafbeb0] [c00924a0] do_ioctl+0x9c/0xa8
+> [41653.487273] [ecafbed0] [c0092530] vfs_ioctl+0x84/0x490
+> [41653.487287] [ecafbf10] [c009297c] sys_ioctl+0x40/0x74
+> [41653.487301] [ecafbf40] [c0011930] ret_from_syscall+0x0/0x38
+> [41653.487315] --- Exception: c01 at 0xfd132a8
+> [41653.487327]     LR = 0xfd13240
 
-Olof Johansson wrote:
-> As Paul says above, you need to check for failures and compare the VSID
-> and possibly unhash it anyway in case of non-match. Otherwise if the
-> kernel ever starts using 1TB segments for regular use, those pages will
-> never be unhashed. I don't see your code doing that now.
->
->   
-How about the following patch ?
+Does the patch below against the drm tree fix it? Only build tested.
 
-Thanks
--Sachin
-
-Signed-off-by : Sachin Sant <sachinp@in.ibm.com>
-Signed-off-by : Mohan Kumar M <mohan@in.ibm.com>
 ---
+>From f0e6bdc165cb484b8992b14172a7280f301bf513 Mon Sep 17 00:00:00 2001
+From: =?utf-8?q?Michel_D=C3=A4nzer?= <michel@tungstengraphics.com>
+Date: Fri, 25 May 2007 11:02:05 +0200
+Subject: Make sure the drawable code doesn't call malloc(0).
 
 
-
---------------040701020908050800070706
-Content-Type: text/plain;
- name="kexec-kdump-support-on-POWER6"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="kexec-kdump-support-on-POWER6"
-
-* On Power machines supporting VRMA, Kexec/Kdump does not work.
-* Hypervisor stores VRMA mapping used by the OS, in the hpte hash tables. 
-* Make sure these hpte entries are left untouched.
-*
-* This patch also adds plpar_pte_read_raw() on the lines of 
-* plpar_pte_remove_raw(). 
-
-Signed-off-by : Sachin Sant <sachinp@in.ibm.com>
-Signed-off-by : Mohan Kumar M <mohan@in.ibm.com>
+Signed-off-by: Michel Dänzer <michel@tungstengraphics.com>
 ---
+ linux-core/drm_drawable.c |   41 ++++++++++++++++++++++++++---------------
+ 1 files changed, 26 insertions(+), 15 deletions(-)
 
-diff -Naurp a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
---- a/arch/powerpc/platforms/pseries/lpar.c	2007-05-19 09:36:17.000000000 +0530
-+++ b/arch/powerpc/platforms/pseries/lpar.c	2007-05-25 14:09:59.000000000 +0530
-@@ -369,16 +369,30 @@ static long pSeries_lpar_hpte_remove(uns
- 	return -1;
- }
+diff --git a/linux-core/drm_drawable.c b/linux-core/drm_drawable.c
+index 0817e32..b540a0e 100644
+--- a/linux-core/drm_drawable.c
++++ b/linux-core/drm_drawable.c
+@@ -172,38 +172,49 @@ int drm_rmdraw(DRM_IOCTL_ARGS)
  
-+#define VRMA_HPTE_B_1TB ASM_CONST(0x4000000000000000)
-+#define VRMA_MASK	ASM_CONST(0x4001ffffff)
-+
- static void pSeries_lpar_hptab_clear(void)
- {
- 	unsigned long size_bytes = 1UL << ppc64_pft_size;
- 	unsigned long hpte_count = size_bytes >> 4;
--	unsigned long dummy1, dummy2;
-+	unsigned long dummy1, dummy2, dword0;
-+	long lpar_rc;
- 	int i;
+ 		bitfield_length = idx + 1;
  
- 	/* TODO: Use bulk call */
--	for (i = 0; i < hpte_count; i++)
--		plpar_pte_remove_raw(0, i, 0, &dummy1, &dummy2);
-+	for (i = 0; i < hpte_count; i++) {
-+		/* dont remove HPTEs with VRMA mappings */
-+		lpar_rc = plpar_pte_remove_raw(H_ANDCOND, i, VRMA_HPTE_B_1TB,
-+						&dummy1, &dummy2);
-+		if (lpar_rc == H_NOT_FOUND) {
-+			lpar_rc = plpar_pte_read_raw(0, i, &dword0, &dummy1);
-+			if (!lpar_rc && 
-+				(((dword0 >> 24) & VRMA_MASK) != VRMA_MASK))
-+				/* Can be hpte for 1TB Seg. So remove it */
-+				plpar_pte_remove_raw(0, i, 0, &dummy1, &dummy2);
-+		}
-+	}
- }
+-		if (idx != id / (8 * sizeof(*bitfield)))
+-			bitfield = drm_alloc(bitfield_length *
+-					     sizeof(*bitfield), DRM_MEM_BUFS);
++		bitfield = NULL;
  
- /*
-diff -Naurp a/arch/powerpc/platforms/pseries/plpar_wrappers.h b/arch/powerpc/platforms/pseries/plpar_wrappers.h
---- a/arch/powerpc/platforms/pseries/plpar_wrappers.h	2007-05-19 09:36:17.000000000 +0530
-+++ b/arch/powerpc/platforms/pseries/plpar_wrappers.h	2007-05-25 12:20:38.000000000 +0530
-@@ -108,6 +108,21 @@ static inline long plpar_pte_read(unsign
- 	return rc;
- }
+-		if (!bitfield && bitfield_length) {
+-			bitfield = dev->drw_bitfield;
+-			bitfield_length = dev->drw_bitfield_length;
++		if (bitfield_length) {
++			if (bitfield_length != dev->drw_bitfield_length)
++				bitfield = drm_alloc(bitfield_length *
++						     sizeof(*bitfield),
++						     DRM_MEM_BUFS);
++
++			if (!bitfield) {
++				bitfield = dev->drw_bitfield;
++				bitfield_length = dev->drw_bitfield_length;
++			}
+ 		}
+ 	}
  
-+/* plpar_pte_read_raw can be called in real mode. It calls plpar_hcall_raw */
-+static inline long plpar_pte_read_raw(unsigned long flags, unsigned long ptex,
-+		unsigned long *old_pteh_ret, unsigned long *old_ptel_ret)
-+{
-+	long rc;
-+	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-+
-+	rc = plpar_hcall_raw(H_READ, retbuf, flags, ptex);
-+
-+	*old_pteh_ret = retbuf[0];
-+	*old_ptel_ret = retbuf[1];
-+
-+	return rc;
-+}
-+
- static inline long plpar_pte_protect(unsigned long flags, unsigned long ptex,
- 		unsigned long avpn)
- {
+ 	if (bitfield != dev->drw_bitfield) {
+ 		info_length = 8 * sizeof(*bitfield) * bitfield_length;
+ 
+-		info = drm_alloc(info_length * sizeof(*info), DRM_MEM_BUFS);
++		if (info_length) {
++			info = drm_alloc(info_length * sizeof(*info),
++					 DRM_MEM_BUFS);
+ 
+-		if (!info && info_length) {
+-			info = dev->drw_info;
+-			info_length = dev->drw_info_length;
+-		}
++			if (!info) {
++				info = dev->drw_info;
++				info_length = dev->drw_info_length;
++			}
++		} else
++			info = NULL;
+ 
+ 		spin_lock_irqsave(&dev->drw_lock, irqflags);
+ 
+-		memcpy(bitfield, dev->drw_bitfield, bitfield_length *
+-		       sizeof(*bitfield));
++		if (bitfield)
++			memcpy(bitfield, dev->drw_bitfield, bitfield_length *
++			       sizeof(*bitfield));
+ 		drm_free(dev->drw_bitfield, sizeof(*bitfield) *
+ 			 dev->drw_bitfield_length, DRM_MEM_BUFS);
+ 		dev->drw_bitfield = bitfield;
+ 		dev->drw_bitfield_length = bitfield_length;
+ 
+ 		if (info != dev->drw_info) {
+-			memcpy(info, dev->drw_info, info_length *
+-			       sizeof(*info));
++			if (info)
++				memcpy(info, dev->drw_info, info_length *
++				       sizeof(*info));
+ 			drm_free(dev->drw_info, sizeof(*info) *
+ 				 dev->drw_info_length, DRM_MEM_BUFS);
+ 			dev->drw_info = info;
+-- 
+1.5.2-rc3.GIT
 
---------------040701020908050800070706--
+
+
+
+
+-- 
+Earthling Michel Dänzer           |          http://tungstengraphics.com
+Libre software enthusiast         |          Debian, X and DRI developer
