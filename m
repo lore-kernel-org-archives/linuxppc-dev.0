@@ -1,18 +1,35 @@
-Return-Path: <wolfgang.reissnegger@xilinx.com>
-Date: Thu, 24 May 2007 21:26:14 -0700
-From: Wolfgang Reissnegger <wolfgang.reissnegger@xilinx.com>
+Return-Path: <dwg@au1.ibm.com>
+Received: from ausmtp05.au.ibm.com (ausmtp05.au.ibm.com [202.81.18.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "ausmtp05.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 87C60DDE1A
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 14:37:40 +1000 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by ausmtp05.au.ibm.com (8.13.8/8.13.8) with ESMTP id l4P4dAFo3834006
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 14:39:11 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.250.243])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l4P4f2BH064690
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 14:41:03 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4P4bUKG024714
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 14:37:30 +1000
+Date: Fri, 25 May 2007 14:37:28 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+	Kumar Gala <galak@kernel.crashing.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Alexandre Bounine <Alexandre.Bounine@tundra.com>
+Subject: Re: Fix problems with Holly's DT representation of ethernet PHYs
+Message-ID: <20070525043728.GG13575@localhost.localdomain>
+References: <20070524041625.GD20078@localhost.localdomain>
+	<BB9A8C3A-0BC5-4DF0-9201-2742124A4AF5@kernel.crashing.org>
+	<1180014260.3360.14.camel@zod.rchland.ibm.com>
+	<20070525042359.GE13575@localhost.localdomain>
 MIME-Version: 1.0
-To: "David H. Lynch Jr." <dhlii@dlasys.net>
-Subject: Re: Xilinx git tree at source.mvista.com
-References: <46555294.6040104@ru.mvista.com> <465561A4.9020403@dlasys.net>
-	<46558E54.80909@ru.mvista.com>
-	<20070524154211.169C7AE8051@mail10-fra.bigfish.com>
-	<465640C1.1060206@dlasys.net>
-In-Reply-To: <465640C1.1060206@dlasys.net>
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20070525042616.35988808054@mail150-dub.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org, Andrei Konovalov <akonovalov@ru.mvista.com>,
-	linuxppc-embedded@ozlabs.org
+In-Reply-To: <20070525042359.GE13575@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,43 +39,233 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David H. Lynch Jr. wrote:
-> Wolfgang Reissnegger wrote:
->> Hi Andrei, David,
->>
->> It's great to hear that Andrei's git tree is active again.
->>
->> As you might have heard, Xilinx is in the process of setting up a git
->> tree as well. Right now we are waiting for the new hosting machines to
->> be installed. We should get those machines up and running shortly
->> (within a couple weeks).
->>   
-> Absolutely fantastic - however I think kernel.org would be happy to host
-> your git tree for you
-> as well as a few other places. Those are locations people would look for
-> public git trees.
-> I beleive you can still excecise some control. I beleive they are free -
-> though I suspect kernel.org would not
-> mind contributions from xilinx.
-
-I agree, and I already requested kernel.org site hosting a while back,
-but I did not get a response yet.
-
-[snip]
-
-> For me the most significant issue is the bazillion layers of nested
-> macro's and includes.
-
-I don't see the macros as an issue, just look at the implementation of,
-for example, spin_lock_irq() and Xilinx's macros seem like child's play :-)
-As for includes, yes, there are a few too many header files. But, as
-time progresses and the need arises they can be merged into fewer files.
-
-> The kernel style guides atleast to me are primarily about the
-> readability and understandability of the code.
-> not where the curly brackets are.
+On Fri, May 25, 2007 at 02:23:59PM +1000, David Gibson wrote:
+> On Thu, May 24, 2007 at 08:44:20AM -0500, Josh Boyer wrote:
+> > On Wed, 2007-05-23 at 23:22 -0500, Kumar Gala wrote:
+> > > On May 23, 2007, at 11:16 PM, David Gibson wrote:
+> > > 
+> > > > This patch fixes some problems with the way the Ethernet PHYs are
+> > > > represented in the device tree for the Holly board.  This means
+> > > > changes to the dts itself, and to the code with instantiates the
+> > > > tsi108 ethernet platform devices based on the device tree.
+> > > >
+> > > > 	- First, and most importantly, the PHYs are given with an
+> > > > identical 'reg' property.  This reg currently encodes the accessible
+> > > > register used to initiate mdio interaction with the PHYs, rather than
+> > > > a meaningful address on the parent bus (mdio in this case), which is
+> > > > incorrect.  Instead we give the address of these registers as 'reg' in
+> > > > the mdio node itself, and encode the ID of each phy in their 'reg'
+> > > > propertys.  The PHY's unit name addresses are updated to match.
+> > > > 	- Second, the PHYs give only "bcm54xx" as a compatible
+> > > > property.  This is unfortunate, because there are many bcm54xx PHY
+> > > > models, and they have differences which can matter.  We add a more
+> > > > precise compatible string, giving the precise PHY model (bcm5461A in
+> > > > this case).
+> > > 
+> > > Is the compatible really need here?  We are able to provide and bind  
+> > > drivers based on MII_PHYSID1/2.  I don't see what putting the  
+> > > compatible proper gets us.
+> > 
+> > I think it's needed until the TSI driver switches to phylib.  Right now,
+> > it assumes that a Marvell phy is used, which is what is present on the
+> > Taiga MPC7448HPC2 board.  The Holly board uses the Broadcom phy and we
+> > added the compatible code for that.
 > 
->> I'll send an update once we have the server up and running.
->>
->> Thanks,
->>    Wolfgang
+> I think Ben's suggested approach of using a special property in the
+> phy node to indicate that this workaround is necessary is better.
+> After all, the workaround isn't actually related to the type of PHY,
+> which is what compatible encodes, but to how it's wired up.  Revised
+> patch below addressing this and other matters.
+
+Grah! Forgot quilt ref.  Now a copy that might actually work.
+
+Fix problems with Holly's DT representation of ethernet PHYs
+
+This patch fixes some problems with the way the Ethernet PHYs are
+represented in the device tree for the Holly board.  This means
+changes to the dts itself, and to the code with instantiates the
+tsi108 ethernet platform devices based on the device tree.
+
+	- First, and most importantly, the PHYs are given with an
+identical 'reg' property.  This reg currently encodes the accessible
+register used to initiate mdio interaction with the PHYs, rather than
+a meaningful address on the parent bus (mdio in this case), which is
+incorrect.  Instead we give the address of these registers as 'reg' in
+the mdio node itself, and encode the ID of each phy in their 'reg'
+propertys.  The PHY's unit name addresses are updated to match.
+	- Second, the PHYs give only "bcm54xx" as a compatible
+property.  This is unfortunate, because there are many bcm54xx PHY
+models, and they have differences which can matter.  We add a more
+precise compatible string, giving the precise PHY model (bcm5461A in
+this case).
+
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+
+Index: working-2.6/arch/powerpc/boot/dts/holly.dts
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/dts/holly.dts	2007-05-25 14:34:00.000000000 +1000
++++ working-2.6/arch/powerpc/boot/dts/holly.dts	2007-05-25 14:34:01.000000000 +1000
+@@ -60,22 +60,21 @@
+ 			reg = <7000 400>;
+ 		};
+ 
+-		mdio@6000 {
++		MDIO: mdio@6000 {
+ 			device_type = "mdio";
+ 			compatible = "tsi-ethernet";
++			reg = <6000 50>;
++			#address-cells = <1>;
++			#size-cells = <0>;
+ 
+-			PHY1: ethernet-phy@6000 {
+-				device_type = "ethernet-phy";
+-				compatible = "bcm54xx";
+-				reg = <6000 50>;
+-				phy-id = <1>;
++			PHY1: ethernet-phy@1 {
++				reg = <1>;
++				txc-rxc-delay-disable;
+ 			};
+ 
+-			PHY2: ethernet-phy@6400 {
+-				device_type = "ethernet-phy";
+-				compatible = "bcm54xx";
+-				reg = <6000 50>;
+-				phy-id = <2>;
++			PHY2: ethernet-phy@2 {
++				reg = <2>;
++				txc-rxc-delay-disable;
+ 			};
+ 		};
+ 
+@@ -88,6 +87,7 @@
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupt-parent = < &/tsi109@c0000000/pic@7400 >;
+ 			interrupts = <10 2>;
++			mdio-handle = <&MDIO>;
+ 			phy-handle = <&PHY1>;
+ 		};
+ 
+@@ -100,6 +100,7 @@
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupt-parent = < &/tsi109@c0000000/pic@7400 >;
+ 			interrupts = <11 2>;
++			mdio-handle = <&MDIO>;
+ 			phy-handle = <&PHY2>;
+ 		};
+ 
+Index: working-2.6/arch/powerpc/sysdev/tsi108_dev.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/sysdev/tsi108_dev.c	2007-05-25 14:34:00.000000000 +1000
++++ working-2.6/arch/powerpc/sysdev/tsi108_dev.c	2007-05-25 14:36:48.000000000 +1000
+@@ -75,9 +75,8 @@ static int __init tsi108_eth_of_init(voi
+ 	     (np = of_find_compatible_node(np, "network", "tsi-ethernet")) != NULL;
+ 	     i++) {
+ 		struct resource r[2];
+-		struct device_node *phy;
++		struct device_node *phy, *mdio;
+ 		hw_info tsi_eth_data;
+-		const unsigned int *id;
+ 		const unsigned int *phy_id;
+ 		const void *mac_addr;
+ 		const phandle *ph;
+@@ -111,6 +110,13 @@ static int __init tsi108_eth_of_init(voi
+ 		if (mac_addr)
+ 			memcpy(tsi_eth_data.mac_addr, mac_addr, 6);
+ 
++		ph = of_get_property(np, "mdio-handle", NULL);
++		mdio = of_find_node_by_phandle(*ph);
++		ret = of_address_to_resource(mdio, 0, &res);
++		of_node_put(mdio);
++		if (ret)
++			goto unreg;
++
+ 		ph = of_get_property(np, "phy-handle", NULL);
+ 		phy = of_find_node_by_phandle(*ph);
+ 
+@@ -119,20 +125,17 @@ static int __init tsi108_eth_of_init(voi
+ 			goto unreg;
+ 		}
+ 
+-		id = of_get_property(phy, "reg", NULL);
+-		phy_id = of_get_property(phy, "phy-id", NULL);
+-		ret = of_address_to_resource(phy, 0, &res);
+-		if (ret) {
+-			of_node_put(phy);
+-			goto unreg;
+-		}
++		phy_id = of_get_property(phy, "reg", NULL);
++
+ 		tsi_eth_data.regs = r[0].start;
+ 		tsi_eth_data.phyregs = res.start;
+ 		tsi_eth_data.phy = *phy_id;
+ 		tsi_eth_data.irq_num = irq_of_parse_and_map(np, 0);
+-		if (of_device_is_compatible(phy, "bcm54xx"))
++
++		if (of_get_property(phy, "txc-rxc-delay-disable"), NULL)
+ 			tsi_eth_data.phy_type = TSI108_PHY_BCM54XX;
+ 		of_node_put(phy);
++
+ 		ret =
+ 		    platform_device_add_data(tsi_eth_dev, &tsi_eth_data,
+ 					     sizeof(hw_info));
+Index: working-2.6/arch/powerpc/boot/dts/mpc7448hpc2.dts
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/dts/mpc7448hpc2.dts	2007-05-25 14:34:00.000000000 +1000
++++ working-2.6/arch/powerpc/boot/dts/mpc7448hpc2.dts	2007-05-25 14:34:01.000000000 +1000
+@@ -58,24 +58,23 @@
+ 			compatible  = "tsi-i2c";
+ 		};
+ 
+-		mdio@6000 {
++		MDIO: mdio@6000 {
+ 			device_type = "mdio";
+ 			compatible = "tsi-ethernet";
++			reg = <6000 50>;
++			#address-cells = <1>;
++			#size-cells = <0>;
+ 
+-			phy8: ethernet-phy@6000 {
++			phy8: ethernet-phy@8 {
+ 				interrupt-parent = <&mpic>;
+ 				interrupts = <2 1>;
+-				reg = <6000 50>;
+-				phy-id = <8>;
+-				device_type = "ethernet-phy";
++				reg = <8>;
+ 			};
+ 
+-			phy9: ethernet-phy@6400 {
++			phy9: ethernet-phy@9 {
+ 				interrupt-parent = <&mpic>;
+ 				interrupts = <2 1>;
+-				reg = <6000 50>;
+-				phy-id = <9>;
+-				device_type = "ethernet-phy";
++				reg = <9>;
+ 			};
+ 
+ 		};
+@@ -89,6 +88,7 @@
+ 			address = [ 00 06 D2 00 00 01 ];
+ 			interrupts = <10 2>;
+ 			interrupt-parent = <&mpic>;
++			mdio-handle = <&MDIO>;
+ 			phy-handle = <&phy8>;
+ 		};
+ 
+@@ -102,6 +102,7 @@
+ 			address = [ 00 06 D2 00 00 02 ];
+ 			interrupts = <11 2>;
+ 			interrupt-parent = <&mpic>;
++			mdio-handle = <&MDIO>;
+ 			phy-handle = <&phy9>;
+ 		};
+ 
+
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
