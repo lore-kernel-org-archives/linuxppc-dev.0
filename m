@@ -1,15 +1,14 @@
 Return-Path: <geert@sonycom.com>
 Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 5AEF8DDE40
+	by ozlabs.org (Postfix) with ESMTP id AB2D8DDE10
 	for <linuxppc-dev@ozlabs.org>; Fri, 25 May 2007 18:37:30 +1000 (EST)
-Message-Id: <20070525083632.177254000@sonycom.com>
+Message-Id: <20070525083632.276306000@sonycom.com>
 References: <20070525083607.784351000@sonycom.com>
-Date: Fri, 25 May 2007 10:36:08 +0200
+Date: Fri, 25 May 2007 10:36:09 +0200
 From: Geert.Uytterhoeven@sonycom.com
 To: linuxppc-dev@ozlabs.org,
  linux-kernel@vger.kernel.org
-Subject: [patch 1/7] ps3: Preallocate bootmem memory for the PS3 FLASH ROM
-	storage driver
+Subject: [patch 2/7] ps3: Extract ps3_repository_find_bus()
 Sender: Geert Uytterhoeven <geert@sonycom.com>
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -21,75 +20,105 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Preallocate 256 KiB of bootmem memory for the PS3 FLASH ROM storage driver.
+Repository updates:
+  - Extract ps3_repository_find_bus() from ps3_repository_find_device(), as the
+    storage driver needs it
+  - Make ps3_repository_find_device() return -ENODEV if a device is not found,
+    just like if a bus is not found
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/platforms/ps3/setup.c |   19 ++++++++++++++++++-
- include/asm-powerpc/ps3.h          |    1 +
- 2 files changed, 19 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/ps3/platform.h   |    2 +
+ arch/powerpc/platforms/ps3/repository.c |   50 ++++++++++++++++++++------------
+ 2 files changed, 34 insertions(+), 18 deletions(-)
 
---- a/arch/powerpc/platforms/ps3/setup.c
-+++ b/arch/powerpc/platforms/ps3/setup.c
-@@ -99,7 +99,8 @@ static void ps3_panic(char *str)
- 	while(1);
- }
- 
--#if defined(CONFIG_FB_PS3) || defined(CONFIG_FB_PS3_MODULE)
-+#if defined(CONFIG_FB_PS3) || defined(CONFIG_FB_PS3_MODULE) || \
-+    defined(CONFIG_PS3_FLASH_MODULE) || defined(CONFIG_PS3_FLASH_MODULE)
- static void prealloc(struct ps3_prealloc *p)
- {
- 	if (!p->size)
-@@ -115,7 +116,9 @@ static void prealloc(struct ps3_prealloc
- 	printk(KERN_INFO "%s: %lu bytes at %p\n", p->name, p->size,
- 	       p->address);
- }
-+#endif
- 
-+#if defined(CONFIG_FB_PS3) || defined(CONFIG_FB_PS3_MODULE)
- struct ps3_prealloc ps3fb_videomemory = {
- 	.name = "ps3fb videomemory",
- 	.size = CONFIG_FB_PS3_DEFAULT_SIZE_M*1024*1024,
-@@ -138,6 +141,18 @@ early_param("ps3fb", early_parse_ps3fb);
- #define prealloc_ps3fb_videomemory()	do { } while (0)
- #endif
- 
-+#if defined(CONFIG_PS3_FLASH) || defined(CONFIG_PS3_FLASH_MODULE)
-+struct ps3_prealloc ps3flash_bounce_buffer = {
-+	.name = "ps3flash bounce buffer",
-+	.size = 256*1024,
-+	.align = 256*1024
-+};
-+EXPORT_SYMBOL_GPL(ps3flash_bounce_buffer);
-+#define prealloc_ps3flash_bounce_buffer()	prealloc(&ps3flash_bounce_buffer)
-+#else
-+#define prealloc_ps3flash_bounce_buffer()	do { } while (0)
-+#endif
-+
- static int ps3_set_dabr(u64 dabr)
- {
- 	enum {DABR_USER = 1, DABR_KERNEL = 2,};
-@@ -167,6 +182,8 @@ static void __init ps3_setup_arch(void)
- #endif
- 
- 	prealloc_ps3fb_videomemory();
-+	prealloc_ps3flash_bounce_buffer();
-+
- 	ppc_md.power_save = ps3_power_save;
- 
- 	DBG(" <- %s:%d\n", __func__, __LINE__);
---- a/include/asm-powerpc/ps3.h
-+++ b/include/asm-powerpc/ps3.h
-@@ -442,6 +442,7 @@ struct ps3_prealloc {
+--- a/arch/powerpc/platforms/ps3/platform.h
++++ b/arch/powerpc/platforms/ps3/platform.h
+@@ -134,6 +134,8 @@ struct ps3_repository_device {
+ 	struct ps3_device_id did;
  };
  
- extern struct ps3_prealloc ps3fb_videomemory;
-+extern struct ps3_prealloc ps3flash_bounce_buffer;
++int ps3_repository_find_bus(enum ps3_bus_type bus_type, unsigned int from,
++	unsigned int *bus_index);
+ int ps3_repository_find_device(enum ps3_bus_type bus_type,
+ 	enum ps3_dev_type dev_type,
+ 	const struct ps3_repository_device *start_dev,
+--- a/arch/powerpc/platforms/ps3/repository.c
++++ b/arch/powerpc/platforms/ps3/repository.c
+@@ -513,6 +513,31 @@ int ps3_repository_dump_bus_info(void)
+ }
+ #endif /* defined(DEBUG) */
  
++int ps3_repository_find_bus(enum ps3_bus_type bus_type, unsigned int from,
++	unsigned int *bus_index)
++{
++	unsigned int i;
++	enum ps3_bus_type type;
++	int error;
++
++	for (i = from; i < 10; i++) {
++		error = ps3_repository_read_bus_type(i, &type);
++		if (error) {
++			pr_debug("%s:%d read_bus_type failed\n",
++				__func__, __LINE__);
++			*bus_index = UINT_MAX;
++			return error;
++		}
++		if (type == bus_type) {
++			*bus_index = i;
++			return 0;
++		}
++	}
++	*bus_index = UINT_MAX;
++	return -ENODEV;
++}
++EXPORT_SYMBOL_GPL(ps3_repository_find_bus);
++
+ static int find_device(unsigned int bus_index, unsigned int num_dev,
+ 	unsigned int start_dev_index, enum ps3_dev_type dev_type,
+ 	struct ps3_repository_device *dev)
+@@ -541,7 +566,7 @@ static int find_device(unsigned int bus_
+ 	}
  
- #endif
+ 	if (dev_index == num_dev)
+-		return -1;
++		return -ENODEV;
+ 
+ 	pr_debug("%s:%d: found dev_type %u at dev_index %u\n",
+ 		__func__, __LINE__, dev_type, dev_index);
+@@ -577,25 +602,14 @@ int ps3_repository_find_device (enum ps3
+ 
+ 	BUG_ON(start_dev && start_dev->bus_index > 10);
+ 
+-	for (bus_index = start_dev ? start_dev->bus_index : 0; bus_index < 10;
+-		bus_index++) {
+-		enum ps3_bus_type x;
+-
+-		result = ps3_repository_read_bus_type(bus_index, &x);
+-
+-		if (result) {
+-			pr_debug("%s:%d read_bus_type failed\n",
+-				__func__, __LINE__);
+-			dev->bus_index = UINT_MAX;
+-			return result;
+-		}
+-		if (x == bus_type)
+-			break;
++	result = ps3_repository_find_bus(bus_type,
++					 start_dev ? start_dev->bus_index : 0,
++					 &bus_index);
++	if (result) {
++		dev->bus_index = UINT_MAX;
++		return result;
+ 	}
+ 
+-	if (bus_index >= 10)
+-		return -ENODEV;
+-
+ 	pr_debug("%s:%d: found bus_type %u at bus_index %u\n",
+ 		__func__, __LINE__, bus_type, bus_index);
+ 
 
 -- 
 Gr{oetje,eeting}s,
