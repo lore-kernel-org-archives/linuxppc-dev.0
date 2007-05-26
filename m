@@ -1,15 +1,14 @@
 Return-Path: <mamsadegh@hotmail.com>
-Received: from bay0-omc3-s33.bay0.hotmail.com (bay0-omc3-s33.bay0.hotmail.com
-	[65.54.246.233]) by ozlabs.org (Postfix) with ESMTP id 5DC00DDED4
+Received: from bay0-omc3-s37.bay0.hotmail.com (bay0-omc3-s37.bay0.hotmail.com
+	[65.54.246.237]) by ozlabs.org (Postfix) with ESMTP id EA92FDDE0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 26 May 2007 20:05:56 +1000 (EST)
-Message-ID: <BAY115-W7237FE8CEE9FBD0306B52B22A0@phx.gbl>
+	Sat, 26 May 2007 23:46:57 +1000 (EST)
+Message-ID: <BAY115-W15A8C3F50BF6AA5251BAB9B22A0@phx.gbl>
 From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
-To: <grant.likely@secretlab.ca>, <akonovalov@ru.mvista.com>,
-	<miroslaw.dach@psi.ch>
+To: <grant.likely@secretlab.ca>
 Subject: RE: ML403 2.6 kernel, root file system on NFS, stops after freeing
 	unused kernel memory
-Date: Sat, 26 May 2007 10:05:53 +0000
+Date: Sat, 26 May 2007 13:46:56 +0000
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
@@ -24,48 +23,32 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-dear grant
+hi
 
-As i said i'm using ELDK 4.0 root file system via NFS
+ok! problem solved
 
-ML403 gets IP address from DHCP , mounts the root file system via NFS and t=
-hen simply stops printing messages on the screen. The board is alive becaus=
-e it answers ping requests.
+problem was kernel command line
 
--- VFS: Mounted root file system (nfs filesystem)
--- Freeing unused kernel memory :108k init
-( No more messages after here , hyperterminal does not show anything more )
+mine was:
 
-I have chosen my root file system to be /home/sadri/hld/eldk/ppc_4xx=20
-(/home/sadri/hdl/eldk is eldk installation folder )
+CONFIG_CMDLINE=3D"console=3DttyS0,9600 console=3Dtty0 root=3D/dev/nfs rw nf=
+sroot=3D10.10.10.10:/home/sadri/hdl/eldk_rootfs/ppc_4xx ip=3Ddhcp"
 
-/eldk/ppc_4xx/dev contains the following node:
+by default 2.6.21 CMDLINE contains two console parameters,=20
+the correct one should be=20
 
-crw-rw-rw- 1 root root 5, 1 May 16 09:08 console
+CONFIG_CMDLINE=3D"console=3DttyS0,9600 root=3D/dev/nfs rw nfsroot=3D10.10.1=
+0.10:/home/sadri/hdl/eldk_rootfs/ppc_4xx ip=3Ddhcp"
 
-and the last line for /etc/inittab is :
+well , rootfs comes up until login prompt,
+I enter root as the password but it gives "incorrect login" message/
 
-# Run gettys in standard runlevels
-3:2345:respawn:/sbin/mingetty --noclear console
-
-in addition I passed the init=3D/bin/sh parameter to the kernel with no suc=
-cess.=20
-
-the link is auto negotiated at 100MBPS
-
-I'm using OPB UART 16550.=20
-
-I studied the ports by Mirek23 carefully and I know that his problem has be=
-en the definition of SDRAM size in xparameters.h , but this is not my probl=
-em. I checked that for EDK 9 it is correct.
-
-what is your idea?
+another note:
+I changed the memory size to 32Mbytes from 64, I feel the system is more st=
+able in this case. some times the system does not come up probperly. ( gene=
+rates segmentation fault and similar messages )
 
 thanks
-mohammad sadegh.
-
-
-
 
 
 ----------------------------------------
