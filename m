@@ -1,26 +1,15 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9A2D4DDEF1
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 May 2007 15:17:39 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by ausmtp04.au.ibm.com (8.13.8/8.13.8) with ESMTP id l4R5cBFv251252
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 May 2007 15:38:11 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.250.243])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4R5L94n109840
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 May 2007 15:21:09 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4R5HbYb016186
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 May 2007 15:17:37 +1000
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 378E7DDEF4
+	for <linuxppc-dev@ozlabs.org>; Sun, 27 May 2007 15:18:28 +1000 (EST)
 Subject: powerpc: Fix possible access to free pages
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Paul Mackerras <paulus@samba.org>
 Content-Type: text/plain
-Date: Sun, 27 May 2007 15:17:34 +1000
-Message-Id: <1180243054.19517.46.camel@localhost.localdomain>
+Date: Sun, 27 May 2007 15:18:22 +1000
+Message-Id: <1180243103.19517.47.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
