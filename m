@@ -1,27 +1,17 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
-	[66.98.186.96])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 228ACDDEED
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 May 2007 19:47:45 +1000 (EST)
-Message-ID: <465953D9.4030902@genesi-usa.com>
-Date: Sun, 27 May 2007 10:48:09 +0100
-From: Matt Sealey <matt@genesi-usa.com>
+	by ozlabs.org (Postfix) with ESMTP id 493A5DDF00
+	for <linuxppc-dev@ozlabs.org>; Sun, 27 May 2007 23:58:30 +1000 (EST)
+Date: Sun, 27 May 2007 08:58:20 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Linus Torvalds <torvalds@osdl.org>
+Subject: Please pull powerpc.git for_paulus branch (fwd)
+Message-ID: <Pine.LNX.4.64.0705270856560.4113@gate.crashing.org>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [i2c] [PATCH 3/5] powerpc: Document device nodes for I2C devices.
-References: <20070517143846.GC29795@ld0162-tx32.am.freescale.net>	<FB8DD3C1-A095-4ABB-9E74-7EC66A43D983@kernel.crashing.org>	<464C800C.20400@freescale.com>	<FFBD3A3A-ADBE-4DC8-A1A1-4163367244D5@kernel.crashing.org>	<464C871C.4090300@freescale.com>	<5B363A90-5528-4441-BBF9-9C6D8833D938@kernel.crashing.org>	<20070518171555.543f9bdc@hyperion.delvare>	<D50C4D36-CEA5-4F7F-8A4C-CC747DF85865@kernel.crashing.org>	<464DD5E3.1060301@freescale.com>
-	<6F8D3143-423D-45FA-9F40-00BF770831F2@kernel.crashing.org>
-	<464E3F18.5010700@genesi-usa.com>
-	<2087d135c4139e94e0b2c8826d808292@kernel.crashing.org>
-	<464EFE96.3000801@genesi-usa.com>
-	<94e1abed8781f279d2d4c7cddbc25ba2@kernel.crashing.org>
-	<465060D8.9090304@genesi-usa.com>
-	<c829bacbfbea66b31629372cf6cc2c1b@kernel.crashing.org>
-In-Reply-To: <c829bacbfbea66b31629372cf6cc2c1b@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,122 +21,293 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Linus,
 
-Segher Boessenkool wrote:
->> Like you said, that's just my opinion on it, but I have
->> seen too many people nag at Genesi/bplan for the quirks
->> in our device tree, and a lot of effort went into making
->> our device trees fit the expectations of Linux where it
->> was absolutely forced upon us by Linux driver writers.
-> 
-> You could have avoided most of those problems by working
-> with us from the start.  Developing in a hidden corner
-> for months and then dropping all your code on us seldom
-> gives the results you hope for.  Anyway, let's not rehash
-> *that* discussion.
+If you don't mind pulling this branch that would be great.  Paul seems to
+have disappeared for a few days and I want to make sure we get these fixes
+in before 2.6.22.
 
-*Rubbish/Rehash*. When we started firmware development for
-the Efika (ahem, mid-2005) there was NO mpc52xx device tree
-specification.
+If you'd like a re-base on your tree let me know.
 
-Even if you do have a device tree specification I think it
-has been somewhat tainted by it being written by the driver
-developers, who are not so much hell-bent on writing a great
-spec as hell-bent on making their code easier on the eyes
-of the people who ACK it.
+- k
 
-And lastly, the real crime here is that absolutely NO input
-was attempted to be gained from the developers of the ONLY
-open-firmware 5200B board on the planet, at the time. It
-was just written, and pushed out there, and then it was
-asked "why aren't bplan following our specification?!?!"
+---------- Forwarded message ----------
+Date: Wed, 23 May 2007 09:53:20 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Please pull powerpc.git for_paulus branch
 
-~
+Please pull from 'for_paulus' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for_paulus
 
-I really do not think it is a problem for a device to be
-called "usb-ohci" in the device tree, with a property for
-"big-endian". Or perhaps, "irda" with a compatible for
-"psc-irda". Without the chip specifier. I also do not think
-it is a problem for the device driver to look at the parent
-bus node or soc node or platform node or builtin node or
-whatever else, to find out more information about the driver.
-Naming these nodes with long-winded device-inclusive names
-in the first place is a difficult to understand shortcut
-which provides no reasonable benefits.
+to receive the following updates:
 
-Ostensibly, with an OCHI USB controller, they are all the
-same anyway (it's a register definition, the only variable
-points being where it starts and whether you use big endian
-or little endian values), so why give it a special name?
+ arch/powerpc/Kconfig                      |    1 +
+ arch/powerpc/boot/dts/lite5200.dts        |    2 +-
+ arch/powerpc/boot/dts/lite5200b.dts       |    2 +-
+ arch/powerpc/mm/pgtable_32.c              |    2 +-
+ arch/powerpc/platforms/chrp/pegasos_eth.c |    2 +-
+ arch/powerpc/platforms/powermac/setup.c   |    2 +-
+ arch/powerpc/sysdev/qe_lib/Kconfig        |    4 +---
+ arch/ppc/kernel/entry.S                   |   18 +++++++++++++++---
+ arch/ppc/kernel/ppc_ksyms.c               |    2 --
+ arch/ppc/mm/hashtable.S                   |   20 ++++++++++++++++----
+ arch/ppc/mm/pgtable.c                     |    2 +-
+ drivers/macintosh/Kconfig                 |    1 -
+ drivers/net/Kconfig                       |    1 -
+ 13 files changed, 39 insertions(+), 20 deletions(-)
 
-If you have 6 chips which implement the same Freescale OHCI
-controller but with varying levels of compliance, they are
-still all OHCI controllers. And you can tell which OHCI
-quirks you need to fix up in the driver, by.. looking at
-the chip it's running on. The controller itself would never,
-ever tell you how broken it is in real life. I don't
-think encapsulation problems exist here. You want to support
-a device but quirk out some specific chip revisions it's
-built into, well, you need to find the device, then find out
-the chip it's in, if in fact it's in a chip at all (if it's
-not, then it could be a PCI device, in which case the
-details of that are in the PCI config space, without a doubt.
-Since most x86 chipset drivers do not look at device trees
-they are implementing blacklists, id checks and tweaking
-values to see the effects - isn't it code sharing to let
-the ppc-compiled version of the same driver do the same
-tests, rather than compile it out, add all new code to
-determine it's capabilities from a device tree, which may
-not have been written to fully determine the device quirks
-of 10,000,000 PCI devices in the world possible of being
-plugged into a PCI slot?). This is why I artificially limit
-it to SoC's.
+Domen Puncer (1):
+      [POWERPC] 52xx: unbreak lite5200 dts (_pic vs. -pic)
 
-What is the effect if the device never changes over the
-lifetime of the chip and you started calling it "mpc5200-usb"
-to start with? Well, every device has to list "compatible"
-for at least one chip which may well be very far removed,
-I think that is an ugly solution in terms of the namespace.
+Kumar Gala (5):
+      [PPC] Fix COMMON symbol warnings
+      [PPC] Remove duplicate export of __div64_32.
+      [POWERPC] Fix modpost warning
+      [PPC] Fix modpost warning
+      [POWERPC] Fix Kconfig warning
 
-If a device driver knows about certain chip revisions and
-needs only to make small quirks and changes happen in the
-device driver, naming it "mpc5200-usb" and "mpc5200b-usb"
-and "mpc5121e-usb" and "mpc5900-usb" over and over makes
-no benefit to the small modifications required.
+Li Yang (1):
+      [POWERPC] Fix Section mismatch warnings
 
-As compared to, for instance, calling it "usb-ohci", giving
-it a "big-endian" property, then looking at the parent
-node, seeing if it's an "soc" node, looking at the model
-property to check the chip revision or board revision, and
-implementing the quirks, I don't see why this is any different
-to the way you wanted to have it done in the first place. In
-fact I think it's a more portable, more true-to-OF-specs
-way of doing it.
+Timur Tabi (1):
+      [POWERPC] QE: fix Kconfig 'select' warning with UCC_FAST
 
-And in fact, if there is no point whatsoever to implementing
-the soc model property since all the child nodes need to be
-encapsulated, why bother having it there? it's an optional
-property in the specs.
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 56d3c0d..5eaeafd 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -118,6 +118,7 @@ config GENERIC_BUG
+ 	depends on BUG
 
-If I had my way I'd be rewriting your device tree specs for
-the MPC52xx now, but that would only burden the guys at
-bplan writing the firmware to model new revisions against a
-new device tree spec, which is a waste of time. We're stuck
-with what you all jotted down one day, and expected all
-device vendors to follow without nary a consultation, and
-you yourself have admitted there, that some parts of it are
-written and the authors seem to have gone a little overboard
-on it. Now it is written, it is practically fixed, so what
-do we do about it?
+ config SYS_SUPPORTS_APM_EMULATION
++	default y if PMAC_APM_EMU
+ 	bool
 
-Is there some future process that can be determined which
-stops brand new devices being released, reverse engineered
-by Linux developers and then have the device vendors
-hammered with a "linuxised" device tree they must then
-certainly match for fear of derision, a device tree which
-on a real and unbiased review, would probably be picked to
-fault itself?
+ config DEFAULT_UIMAGE
+diff --git a/arch/powerpc/boot/dts/lite5200.dts b/arch/powerpc/boot/dts/lite5200.dts
+index eae68ab..d29308f 100644
+--- a/arch/powerpc/boot/dts/lite5200.dts
++++ b/arch/powerpc/boot/dts/lite5200.dts
+@@ -67,7 +67,7 @@
+ 			interrupt-controller;
+ 			#interrupt-cells = <3>;
+ 			device_type = "interrupt-controller";
+-			compatible = "mpc5200_pic";
++			compatible = "mpc5200-pic";
+ 			reg = <500 80>;
+ 			built-in;
+ 		};
+diff --git a/arch/powerpc/boot/dts/lite5200b.dts b/arch/powerpc/boot/dts/lite5200b.dts
+index 5185625..f242531 100644
+--- a/arch/powerpc/boot/dts/lite5200b.dts
++++ b/arch/powerpc/boot/dts/lite5200b.dts
+@@ -67,7 +67,7 @@
+ 			interrupt-controller;
+ 			#interrupt-cells = <3>;
+ 			device_type = "interrupt-controller";
+-			compatible = "mpc5200b-pic\0mpc5200_pic";
++			compatible = "mpc5200b-pic\0mpc5200-pic";
+ 			reg = <500 80>;
+ 			built-in;
+ 		};
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index d8232b7..f6ae1a5 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -93,7 +93,7 @@ void pgd_free(pgd_t *pgd)
+ 	free_pages((unsigned long)pgd, PGDIR_ORDER);
+ }
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+-pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
++__init_refok pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
+ {
+ 	pte_t *pte;
+ 	extern int mem_init_done;
+diff --git a/arch/powerpc/platforms/chrp/pegasos_eth.c b/arch/powerpc/platforms/chrp/pegasos_eth.c
+index 7104567..5bcc58d 100644
+--- a/arch/powerpc/platforms/chrp/pegasos_eth.c
++++ b/arch/powerpc/platforms/chrp/pegasos_eth.c
+@@ -169,7 +169,7 @@ static int Enable_SRAM(void)
+
+ /***********/
+ /***********/
+-int mv643xx_eth_add_pds(void)
++static int __init mv643xx_eth_add_pds(void)
+ {
+ 	int ret = 0;
+ 	static struct pci_device_id pci_marvell_mv64360[] = {
+diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
+index a410bc7..07b1c4e 100644
+--- a/arch/powerpc/platforms/powermac/setup.c
++++ b/arch/powerpc/platforms/powermac/setup.c
+@@ -384,7 +384,7 @@ int boot_part;
+ static dev_t boot_dev;
+
+ #ifdef CONFIG_SCSI
+-void __init note_scsi_host(struct device_node *node, void *host)
++void note_scsi_host(struct device_node *node, void *host)
+ {
+ 	int l;
+ 	char *p;
+diff --git a/arch/powerpc/sysdev/qe_lib/Kconfig b/arch/powerpc/sysdev/qe_lib/Kconfig
+index 887739f..f611d34 100644
+--- a/arch/powerpc/sysdev/qe_lib/Kconfig
++++ b/arch/powerpc/sysdev/qe_lib/Kconfig
+@@ -5,15 +5,13 @@
+ config UCC_SLOW
+ 	bool
+ 	default n
+-	select UCC
+ 	help
+ 	  This option provides qe_lib support to UCC slow
+ 	  protocols: UART, BISYNC, QMC
+
+ config UCC_FAST
+ 	bool
+-	default n
+-	select UCC
++	default y if UCC_GETH
+ 	help
+ 	  This option provides qe_lib support to UCC fast
+ 	  protocols: HDLC, Ethernet, ATM, transparent
+diff --git a/arch/ppc/kernel/entry.S b/arch/ppc/kernel/entry.S
+index ab64256..fba7ca1 100644
+--- a/arch/ppc/kernel/entry.S
++++ b/arch/ppc/kernel/entry.S
+@@ -596,7 +596,11 @@ fast_exception_return:
+ 	mr	r12,r4		/* restart at exc_exit_restart */
+ 	b	2b
+
+-	.comm	fee_restarts,4
++	.section .bss
++	.align	2
++fee_restarts:
++	.space	4
++	.previous
+
+ /* aargh, a nonrecoverable interrupt, panic */
+ /* aargh, we don't know which trap this is */
+@@ -851,7 +855,11 @@ load_dbcr0:
+ 	mtspr	SPRN_DBSR,r11	/* clear all pending debug events */
+ 	blr
+
+-	.comm	global_dbcr0,8
++	.section .bss
++	.align	4
++global_dbcr0:
++	.space	8
++	.previous
+ #endif /* !(CONFIG_4xx || CONFIG_BOOKE) */
+
+ do_work:			/* r10 contains MSR_KERNEL here */
+@@ -926,4 +934,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_601)
+ 	/* shouldn't return */
+ 	b	4b
+
+-	.comm	ee_restarts,4
++	.section .bss
++	.align	2
++ee_restarts:
++	.space	4
++	.previous
+diff --git a/arch/ppc/kernel/ppc_ksyms.c b/arch/ppc/kernel/ppc_ksyms.c
+index 4ad4996..a416520 100644
+--- a/arch/ppc/kernel/ppc_ksyms.c
++++ b/arch/ppc/kernel/ppc_ksyms.c
+@@ -40,7 +40,6 @@
+ #include <asm/time.h>
+ #include <asm/cputable.h>
+ #include <asm/btext.h>
+-#include <asm/div64.h>
+ #include <asm/xmon.h>
+ #include <asm/signal.h>
+ #include <asm/dcr.h>
+@@ -93,7 +92,6 @@ EXPORT_SYMBOL(strncpy);
+ EXPORT_SYMBOL(strcat);
+ EXPORT_SYMBOL(strlen);
+ EXPORT_SYMBOL(strcmp);
+-EXPORT_SYMBOL(__div64_32);
+
+ EXPORT_SYMBOL(csum_partial);
+ EXPORT_SYMBOL(csum_partial_copy_generic);
+diff --git a/arch/ppc/mm/hashtable.S b/arch/ppc/mm/hashtable.S
+index e756942..5f364dc 100644
+--- a/arch/ppc/mm/hashtable.S
++++ b/arch/ppc/mm/hashtable.S
+@@ -30,7 +30,11 @@
+ #include <asm/asm-offsets.h>
+
+ #ifdef CONFIG_SMP
+-	.comm	mmu_hash_lock,4
++	.section .bss
++	.align	2
++	.globl mmu_hash_lock
++mmu_hash_lock:
++	.space	4
+ #endif /* CONFIG_SMP */
+
+ /*
+@@ -461,9 +465,17 @@ found_slot:
+ 	sync		/* make sure pte updates get to memory */
+ 	blr
+
+-	.comm	next_slot,4
+-	.comm	primary_pteg_full,4
+-	.comm	htab_hash_searches,4
++	.section .bss
++	.align	2
++next_slot:
++	.space	4
++	.globl primary_pteg_full
++primary_pteg_full:
++	.space	4
++	.globl htab_hash_searches
++htab_hash_searches:
++	.space	4
++	.previous
+
+ /*
+  * Flush the entry for a particular page from the hash table.
+diff --git a/arch/ppc/mm/pgtable.c b/arch/ppc/mm/pgtable.c
+index c023b72..35ebb63 100644
+--- a/arch/ppc/mm/pgtable.c
++++ b/arch/ppc/mm/pgtable.c
+@@ -92,7 +92,7 @@ void pgd_free(pgd_t *pgd)
+ 	free_pages((unsigned long)pgd, PGDIR_ORDER);
+ }
+
+-pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
++__init_refok pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
+ {
+ 	pte_t *pte;
+ 	extern int mem_init_done;
+diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
+index 58926da..f44c94a 100644
+--- a/drivers/macintosh/Kconfig
++++ b/drivers/macintosh/Kconfig
+@@ -113,7 +113,6 @@ config PMAC_SMU
+
+ config PMAC_APM_EMU
+ 	tristate "APM emulation"
+-	select SYS_SUPPORTS_APM_EMULATION
+ 	select APM_EMULATION
+ 	depends on ADB_PMU && PM
+
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index c5baa19..3b204ba 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -2280,7 +2280,6 @@ config GFAR_NAPI
+ config UCC_GETH
+ 	tristate "Freescale QE Gigabit Ethernet"
+ 	depends on QUICC_ENGINE
+-	select UCC_FAST
+ 	help
+ 	  This driver supports the Gigabit Ethernet mode of the QUICC Engine,
+ 	  which is available on some Freescale SOCs.
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
