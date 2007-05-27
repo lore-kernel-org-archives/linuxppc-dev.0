@@ -2,36 +2,36 @@ Return-Path: <dwg@au1.ibm.com>
 Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 275CCDDE2A
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 May 2007 09:30:37 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id CA1F9DDF3C
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 May 2007 09:36:43 +1000 (EST)
 Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by ausmtp04.au.ibm.com (8.13.8/8.13.8) with ESMTP id l4RNpCEq340488
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 May 2007 09:51:12 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.250.242])
+	by ausmtp04.au.ibm.com (8.13.8/8.13.8) with ESMTP id l4RNvI8m161876
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 May 2007 09:57:18 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.250.243])
 	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4RNY7LF157082
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 May 2007 09:34:08 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4RNUZhU025139
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 May 2007 09:30:36 +1000
-Date: Mon, 28 May 2007 09:30:31 +1000
+	l4RNeEZC163458
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 May 2007 09:40:14 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4RNagOL023060
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 May 2007 09:36:42 +1000
+Date: Mon, 28 May 2007 09:36:37 +1000
 From: David Gibson <dwg@au1.ibm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 Subject: Re: Fix problems with Holly's DT representation of ethernet PHYs
-Message-ID: <20070527233031.GB23768@localhost.localdomain>
+Message-ID: <20070527233637.GC23768@localhost.localdomain>
 References: <20070524041625.GD20078@localhost.localdomain>
 	<BB9A8C3A-0BC5-4DF0-9201-2742124A4AF5@kernel.crashing.org>
 	<1180014260.3360.14.camel@zod.rchland.ibm.com>
 	<20070525042359.GE13575@localhost.localdomain>
 	<20070525043728.GG13575@localhost.localdomain>
 	<20070525043852.GH13575@localhost.localdomain>
-	<25433b8fc06678e73ee055ed4f44f7a3@kernel.crashing.org>
+	<1180101831.3360.38.camel@zod.rchland.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <25433b8fc06678e73ee055ed4f44f7a3@kernel.crashing.org>
-Cc: Alexandre Bounine <Alexandre.Bounine@tundra.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1180101831.3360.38.camel@zod.rchland.ibm.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Alexandre Bounine <Alexandre.Bounine@tundra.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,10 +41,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 25, 2007 at 04:11:59PM +0200, Segher Boessenkool wrote:
+On Fri, May 25, 2007 at 09:03:51AM -0500, Josh Boyer wrote:
+> On Fri, 2007-05-25 at 14:38 +1000, David Gibson wrote:
+> > 
 > > Waah!  Third time lucky?
 > 
-> You wish :-)
+> Not quite. :)
 > 
 > > 	- Second, the PHYs give only "bcm54xx" as a compatible
 > > property.  This is unfortunate, because there are many bcm54xx PHY
@@ -52,11 +54,54 @@ On Fri, May 25, 2007 at 04:11:59PM +0200, Segher Boessenkool wrote:
 > > precise compatible string, giving the precise PHY model (bcm5461A in
 > > this case).
 > 
-> You completely removed the "compatible" properties instead.
-> Bad idea.
+> You don't actually do this.  Instead, you specify a
+> txc-rxc-delay-disable property.
 
-Um... weren't you the one that was just saying compatible properties
-aren't necessary if you can distinguish the hardware in other ways?
+Oops, forgot to update the patch description.
+
+> > -			PHY1: ethernet-phy@6000 {
+> > -				device_type = "ethernet-phy";
+> > -				compatible = "bcm54xx";
+> > -				reg = <6000 50>;
+> > -				phy-id = <1>;
+> > +			PHY1: ethernet-phy@1 {
+> > +				reg = <1>;
+> > +				txc-rxc-delay-disable;
+> >  			};
+> 
+> I would have rather we left the compatible = "bmc5461A" as well.  Though
+> perhaps a comment would suffice instead.
+
+Hrm, I was tending to go with Kumar's point that it's kind of simpler
+and safer to probe the PHY type directly.
+
+> > Index: working-2.6/arch/powerpc/sysdev/tsi108_dev.c
+> > ===================================================================
+> > --- working-2.6.orig/arch/powerpc/sysdev/tsi108_dev.c	2007-05-25 14:34:00.000000000 +1000
+> > +++ working-2.6/arch/powerpc/sysdev/tsi108_dev.c	2007-05-25 14:38:32.000000000 +1000
+> 
+> > +
+> >  		tsi_eth_data.regs = r[0].start;
+> >  		tsi_eth_data.phyregs = res.start;
+> >  		tsi_eth_data.phy = *phy_id;
+> >  		tsi_eth_data.irq_num = irq_of_parse_and_map(np, 0);
+> > -		if (of_device_is_compatible(phy, "bcm54xx"))
+> > +
+> > +		if (of_get_property(phy, "txc-rxc-delay-disable", NULL))
+> >  			tsi_eth_data.phy_type = TSI108_PHY_BCM54XX;
+> >  		of_node_put(phy);
+> 
+> At the very least this needs a comment explaining what exactly is being
+> done here.  Right now, it's looking for some magical property and
+> setting the PHY type to a Broadcom PHY...  very confusing to someone
+> that hasn't followed the email thread.
+
+Yeah, good point.  And more specifically I should put a FIXME comment
+in, saying that the ethernet driver itself should be changed to
+implement this workaround in a different way, rather than based on
+this phy_type field, since the workaround isn't really related to the
+PHY type.  I was assuming that cleanup would happen as part of the
+port to phylib.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
