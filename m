@@ -1,19 +1,20 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 743C2DDEC8
+Return-Path: <ales.gorkic@email.si>
+Received: from www1.email.si (www1.email.si [81.24.97.10])
+	by ozlabs.org (Postfix) with ESMTP id 22A13DDF50
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 28 May 2007 03:34:40 +1000 (EST)
-Message-ID: <4659C10D.7070107@anagramm.de>
-Date: Sun, 27 May 2007 19:34:05 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
+	Mon, 28 May 2007 19:23:28 +1000 (EST)
+Received: from koltag (stargate.fs.uni-lj.si [193.2.79.250])
+	by www1.email.si (Postfix) with ESMTP id F30BA8B8C0
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 28 May 2007 11:23:21 +0200 (CEST)
+From: "Ales Gorkic" <ales.gorkic@email.si>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Re: Virtex-4 FX12 Mini-Module support
+Date: Mon, 28 May 2007 11:26:26 +0200
+Message-ID: <000601c7a10a$4425eeb0$f84d02c1@koltag>
 MIME-Version: 1.0
-To: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
-Subject: Re: ML403 2.6 kernel, root file system on NFS, stops after freeing
-	unused kernel memory
-References: <BAY115-W15A8C3F50BF6AA5251BAB9B22A0@phx.gbl>
-In-Reply-To: <BAY115-W15A8C3F50BF6AA5251BAB9B22A0@phx.gbl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0007_01C7A11B.07AEBEB0"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,57 +25,188 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi, Mohammed!
+This is a multi-part message in MIME format.
 
-Mohammad Sadegh Sadri schrieb:
-> ok! problem solved
-> problem was kernel command line
-> mine was:
-> 
-> CONFIG_CMDLINE="console=ttyS0,9600 console=tty0 root=/dev/nfs rw nfsroot=10.10.10.10:/home/sadri/hdl/eldk_rootfs/ppc_4xx ip=dhcp"
-> 
-> by default 2.6.21 CMDLINE contains two console parameters, 
-> the correct one should be 
-> 
-> CONFIG_CMDLINE="console=ttyS0,9600 root=/dev/nfs rw nfsroot=10.10.10.10:/home/sadri/hdl/eldk_rootfs/ppc_4xx ip=dhcp"
-> 
-> well , rootfs comes up until login prompt,
-> I enter root as the password but it gives "incorrect login" message/
+------=_NextPart_000_0007_01C7A11B.07AEBEB0
+Content-Type: text/plain;
+	charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 
-I have had the same symptoms.
-Some device node was missing. I guess it was something like:
+Hi Aidan,
 
-crw--w--w- 1 root tty      5,   1 May  1 09:30 console
-crw-rw-rw- 1 root tty      5,   0 May 27 10:14 tty
+ 
 
-Also check
------8<-----
-#
-# /etc/securetty: defines which devices root can log in on
-#
+After I searched the web I found out that you have sucesfully run the
+uClinux 2.4 on Virtex-4 MiniModule. I have developed a GSRD2 design on which
+I would like to run uClinux. There are two problems:
 
-console
-ttyS0
-tty1
-tty2
-tty3
-tty4
-tty5
-tty6
+I am new to linux
 
-# End of file
------8<-----
+I don't know where to start
 
-Greets,
+I would appreciate if you could share your design with me and give me help
+with running it on my design.
 
-Clemens Koller
-_______________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Str. 45/1
-81379 Muenchen
-Germany
+ 
 
-http://www.anagramm-technology.com
-Phone: +49-89-741518-50
-Fax: +49-89-741518-19
+Cheers,
+
+ 
+
+Ales Gorkic
+
+ 
+
+University of Ljubljana
+
+Faculty of Mechanical Engineering
+
+COLA - Chair of Optodynamics and Laser Applications Askerceva cesta 6
+SI-1000 Ljubljana Slovenija
+
+ 
+
+www: http://www.fs.uni-lj.si/kolt/ 
+
+ 
+
+
+------=_NextPart_000_0007_01C7A11B.07AEBEB0
+Content-Type: text/html;
+	charset="iso-8859-2"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-2">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0mm;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:595.3pt 841.9pt;
+	margin:70.85pt 70.85pt 70.85pt 70.85pt;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DSL link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Hi Aidan,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>After I searched the web I found out that you have
+sucesfully run the uClinux 2.4 on Virtex-4 MiniModule. I have developed =
+a GSRD2
+design on which I would like to run uClinux. There are two =
+problems:<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'margin-left:35.4pt'><font size=3D2 =
+face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial'>I am new to =
+linux<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'margin-left:35.4pt'><font size=3D2 =
+face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial'>I don't know where to =
+start<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I would appreciate if you could share your design =
+with me and
+give me help with running it on my design.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Cheers,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier New"'>Ales =
+Gorkic<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier =
+New"'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier New"'>University of =
+Ljubljana<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier New"'>Faculty of =
+Mechanical
+Engineering<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier New"'>COLA - Chair of =
+Optodynamics
+and Laser Applications Askerceva cesta 6 SI-1000 Ljubljana =
+Slovenija<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier =
+New"'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier New"'>www: <a
+href=3D"http://www.fs.uni-lj.si/kolt/">http://www.fs.uni-lj.si/kolt/</a> =
+<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_0007_01C7A11B.07AEBEB0--
