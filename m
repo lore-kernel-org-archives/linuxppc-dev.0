@@ -1,23 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 28 May 2007 14:43:31 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [PATCH 1/13] powerpc: Add Makefile rules to wrap dts file in
-	zImage
-Message-ID: <20070528044331.GB5997@localhost.localdomain>
-References: <20070512004605.GA2808@mag.az.mvista.com>
-	<20070512005336.GA3365@mag.az.mvista.com>
-	<20070514003332.GE6517@localhost.localdomain>
-	<20070521181043.GB7120@mag.az.mvista.com>
-	<20070522002349.GA25426@localhost.localdomain>
-	<20070524212832.GB32012@mag.az.mvista.com>
-	<20070525013242.GC11789@localhost.localdomain>
-	<20070525013359.GD11789@localhost.localdomain>
-	<20070525205014.GC20831@mag.az.mvista.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070525205014.GC20831@mag.az.mvista.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Message-ID: <18010.23457.228822.205196@cargo.ozlabs.ibm.com>
+Date: Mon, 28 May 2007 14:33:37 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH] powerpc timer sysdev: use mktime
+In-Reply-To: <1179934081.14317.29.camel@johannes.berg>
+References: <20061213123819.403286000@sipsolutions.net>
+	<20061213123945.386891000@sipsolutions.net>
+	<1169620444.18754.66.camel@localhost.localdomain>
+	<1170357390.4036.9.camel@johannes.berg>
+	<17976.5964.593278.752595@cargo.ozlabs.ibm.com>
+	<1178115942.13233.61.camel@johannes.berg>
+	<1179934081.14317.29.camel@johannes.berg>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,48 +24,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 25, 2007 at 01:50:14PM -0700, Mark A. Greer wrote:
-> On Fri, May 25, 2007 at 11:33:59AM +1000, David Gibson wrote:
-> > On Fri, May 25, 2007 at 11:32:42AM +1000, David Gibson wrote:
-> > > On Thu, May 24, 2007 at 02:28:32PM -0700, Mark A. Greer wrote:
-> > > > On Tue, May 22, 2007 at 10:23:49AM +1000, David Gibson wrote:
-> 
-> > > > > Just leave them out.  As long as you add the correct specific
-> > > > > zImage.dts.% and zImage.dts_initrd.% targets to image-y and initrd-y,
-> > > > > then a "make zImage" from the top-level Makefile will get them built.
-> > > > 
-> > > > That defeats the whole purpose of the patch--to allow the selection of
-> > > > wrapping a dtb or not at build time.  Its just like initrd, you choose
-> > > > whether to "do it" at build time.
-> > > 
-> > > Ah, right.  Remind me why that's useful again?
-> > 
-> > Sorry, to be more precise, why is that more useful than having "make
-> > zImage" at the top level build both the dts and non-dts versions.
-> 
-> Well, that is a good question.  This is my reasoning which I put in the
-> patch description:
-> 
-> 	"Having separate rules allows the user to choose whether to include
-> 	a device tree--and which device tree--at build time.  This is
-> 	useful when one Makefile target builds a zImage that runs on several
-> 	platforms except for differing device trees.  By just setting
-> 	CONFIG_DEVICE_TREE and running "make zImage.dts" the exact zImage
-> 	you want is built without Makefile bloat or manually running the
-> 	wrapper script."
-> 
-> Making both seems like a waste but its such a small waste that it
-> doesn't really matter.  If you still object to this feature, I'll
-> take it out since I (read: prpmc2800) doesn't really need this
-> feature anyway.
+Johannes Berg writes:
 
-Go with building both; that's consistent with the various other
-platforms that build multiple images for different boot variants
-(e.g. ppc64 builds powermac and pseries compatible images, Ebony
-builds both cuImage and treeboot image).
+> I think you asked for this, any reason you then didn't take it? Just
+> missed? Or is something wrong with it?
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Sorry, just missed.  It doesn't look essential for 2.6.22, so I'll
+queue it for 2.6.23.
+
+Paul.
