@@ -1,15 +1,17 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 488A8DDE3C
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 May 2007 16:13:03 +1000 (EST)
-Date: Mon, 28 May 2007 16:12:59 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] create a zImage for legacy iSeries
-Message-Id: <20070528161259.713c21b0.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id D4AB1DDE1C
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 May 2007 17:55:15 +1000 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Mon, 28 May 2007 09:55:07 +0200
+To: Rob Landley <rob@landley.net>
+Subject: Re: Porting "prep" from ppc to powerpc.
+Message-ID: <20070528075507.GA6633@iram.es>
+References: <200705252238.39819.rob@landley.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200705252238.39819.rob@landley.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,55 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This zImage is really just the stripped vmlinux, but it means that there
-is one less special case for iSeries and also that the zImages will be
-built for a combined kernel build that happens to include iSeries.
+On Fri, May 25, 2007 at 10:38:39PM -0400, Rob Landley wrote:
+> Is anyone already doing this?  
 
-This zImage boots fine on legacy iSeries.
+I'm interested but I don't have the time right now.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/Makefile      |    1 -
- arch/powerpc/boot/Makefile |    4 ++++
- 2 files changed, 4 insertions(+), 1 deletions(-)
+> I asked around here a few weeks ago and got the 
+> advice:
+> 
+> > In theory.. copy the files from ppc/platforms/prep.* to
+> > powerpc/platforms/prep/ 
+> > and make some Kconfigs and see what breaks :)
+> 
+> Unfortunately, there isn't a ppc/platforms/prep.  Under arch/ppc there's:
+> 
+> ./boot/simple/misc-prep.c
+> ./boot/simple/prepmap.c
+> ./boot/utils/mkprep.c
+> ./configs/prep_defconfig
+> ./platforms/prep_pci.c
+> ./platforms/prep_setup.c
+> ./syslib/prep_nvram.c
+> 
+> And I'm not sure which are relevant.  Any hints?
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+I was thinking of writing a bootwrapper that would
+convert residual data to flat device tree. There
+is a lot of valuable information in the residual data,
+like the interrupt routing (which is correct if you 
+can read the spec, which is not what the code in
+arch/ppc did).
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 6238b58..fbafd96 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -142,7 +142,6 @@ drivers-$(CONFIG_OPROFILE)	+= arch/powerpc/oprofile/
- 
- # Default to zImage, override when needed
- defaultimage-y			:= zImage
--defaultimage-$(CONFIG_PPC_ISERIES) := vmlinux
- defaultimage-$(CONFIG_DEFAULT_UIMAGE) := uImage
- KBUILD_IMAGE := $(defaultimage-y)
- all: $(KBUILD_IMAGE)
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 8378898..da58d1f 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -136,6 +136,7 @@ image-$(CONFIG_PPC_EFIKA)		+= zImage.chrp
- image-$(CONFIG_PPC_PMAC)		+= zImage.pmac
- image-$(CONFIG_PPC_HOLLY)		+= zImage.holly-elf
- image-$(CONFIG_PPC_PRPMC2800)		+= zImage.prpmc2800
-+image-$(CONFIG_PPC_ISERIES)		+= zImage.iseries
- image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
- 
- ifneq ($(CONFIG_DEVICE_TREE),"")
-@@ -185,6 +186,9 @@ $(obj)/zImage.initrd.%: vmlinux $(wrapperbits)
- $(obj)/zImage.%: vmlinux $(wrapperbits)
- 	$(call if_changed,wrap,$*)
- 
-+$(obj)/zImage.iseries: vmlinux
-+	$(STRIP) -s -R .comment $< -o $@
-+
- $(obj)/zImage.ps3: vmlinux
- 	$(STRIP) -s -R .comment $< -o $@
- 
--- 
-1.5.1.4
+
+	Gabriel
