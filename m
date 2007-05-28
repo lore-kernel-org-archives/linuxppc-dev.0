@@ -1,30 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C4E76DDF44
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 May 2007 20:28:37 +1000 (EST)
-Subject: Re: fsl booke MM vs. SMP questions
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gabriel Paubert <paubert@iram.es>
-In-Reply-To: <20070528102327.GA9675@iram.es>
-References: <1179785273.32247.742.camel@localhost.localdomain>
-	<1179803367.32247.785.camel@localhost.localdomain>
-	<1179831375.3827.4.camel@localhost.localdomain>
-	<1179873742.32247.864.camel@localhost.localdomain>
-	<1179887929.3656.2.camel@localhost.localdomain>
-	<1179889736.32247.893.camel@localhost.localdomain>
-	<995B09A8299C2C44B59866F6391D263595EF5F@zch01exm21.fsl.freescale.net>
-	<1180344249.19517.74.camel@localhost.localdomain>
-	<995B09A8299C2C44B59866F6391D263595EF6C@zch01exm21.fsl.freescale.net>
-	<1180346421.19517.79.camel@localhost.localdomain>
-	<20070528102327.GA9675@iram.es>
-Content-Type: text/plain
-Date: Mon, 28 May 2007 20:28:19 +1000
-Message-Id: <1180348099.19517.81.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Liu Dave-r63238 <DaveLiu@freescale.com>,
-	Paul Mackerras <paulus@samba.org>, Kumar Gala <galak@gate.crashing.org>
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 76AE7DDEE3
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 May 2007 20:46:42 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l4SAkQxQ023528
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 May 2007 03:46:27 -0700 (MST)
+Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
+	[10.192.129.204])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l4SAkKVN012992
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 May 2007 05:46:21 -0500 (CDT)
+Message-ID: <465AB366.6030504@freescale.com>
+Date: Mon, 28 May 2007 18:48:06 +0800
+From: Li Yang <leoli@freescale.com>
+MIME-Version: 1.0
+To: Paul <paulus@samba.org>
+Subject: [PATCH] qe_lib: export symbols for QE driver to compile as module
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,15 +31,97 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-05-28 at 12:23 +0200, Gabriel Paubert wrote:
-> On SMP with single die and integrated memory controllers (PASemi), 
-> I'd bet that tlb invalidation broadcast is typically much cheaper 
-> since no external signals are involved (from a hardware point of view
-> it's not very different from a store to a shared cache line that has 
-> to be invalidated in the cache of the other processors). 
+Export symbols of qe_lib to be used by QE driver.
 
-Except that is often has strong locking requirements along with a race
-or two to deal with when not having a HW reload on the TLB. So in the
-case of Freescale BookE, it is really something that should be measured.
+Signed-off-by: Li Yang <leoli@freescale.com>
+Signed-off-by: Selvamuthukumar V <vsmkumar.84@gmail.com> 
+---
+Remove symbols for off-tree drivers
 
-Ben.
+ arch/powerpc/sysdev/qe_lib/ucc.c      |    2 ++
+ arch/powerpc/sysdev/qe_lib/ucc_fast.c |    8 ++++++++
+ 2 files changed, 10 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/qe_lib/ucc.c b/arch/powerpc/sysdev/qe_lib/ucc.c
+index ac12a44..f970e54 100644
+--- a/arch/powerpc/sysdev/qe_lib/ucc.c
++++ b/arch/powerpc/sysdev/qe_lib/ucc.c
+@@ -18,6 +18,7 @@
+ #include <linux/errno.h>
+ #include <linux/slab.h>
+ #include <linux/stddef.h>
++#include <linux/module.h>
+ 
+ #include <asm/irq.h>
+ #include <asm/io.h>
+@@ -40,6 +41,7 @@ int ucc_set_qe_mux_mii_mng(int ucc_num)
+ 
+ 	return 0;
+ }
++EXPORT_SYMBOL(ucc_set_qe_mux_mii_mng);
+ 
+ int ucc_set_type(int ucc_num, struct ucc_common *regs,
+ 		 enum ucc_speed_type speed)
+diff --git a/arch/powerpc/sysdev/qe_lib/ucc_fast.c b/arch/powerpc/sysdev/qe_lib/ucc_fast.c
+index 9143236..3df202e 100644
+--- a/arch/powerpc/sysdev/qe_lib/ucc_fast.c
++++ b/arch/powerpc/sysdev/qe_lib/ucc_fast.c
+@@ -19,6 +19,7 @@
+ #include <linux/stddef.h>
+ #include <linux/interrupt.h>
+ #include <linux/err.h>
++#include <linux/module.h>
+ 
+ #include <asm/io.h>
+ #include <asm/immap_qe.h>
+@@ -70,6 +71,7 @@ void ucc_fast_dump_regs(struct ucc_fast_private * uccf)
+ 	printk(KERN_INFO "guemr : addr - 0x%08x, val - 0x%02x",
+ 		  (u32) & uccf->uf_regs->guemr, uccf->uf_regs->guemr);
+ }
++EXPORT_SYMBOL(ucc_fast_dump_regs);
+ 
+ u32 ucc_fast_get_qe_cr_subblock(int uccf_num)
+ {
+@@ -85,11 +87,13 @@ u32 ucc_fast_get_qe_cr_subblock(int uccf_num)
+ 	default: return QE_CR_SUBBLOCK_INVALID;
+ 	}
+ }
++EXPORT_SYMBOL(ucc_fast_get_qe_cr_subblock);
+ 
+ void ucc_fast_transmit_on_demand(struct ucc_fast_private * uccf)
+ {
+ 	out_be16(&uccf->uf_regs->utodr, UCC_FAST_TOD);
+ }
++EXPORT_SYMBOL(ucc_fast_transmit_on_demand);
+ 
+ void ucc_fast_enable(struct ucc_fast_private * uccf, enum comm_dir mode)
+ {
+@@ -110,6 +114,7 @@ void ucc_fast_enable(struct ucc_fast_private * uccf, enum comm_dir mode)
+ 	}
+ 	out_be32(&uf_regs->gumr, gumr);
+ }
++EXPORT_SYMBOL(ucc_fast_enable);
+ 
+ void ucc_fast_disable(struct ucc_fast_private * uccf, enum comm_dir mode)
+ {
+@@ -130,6 +135,7 @@ void ucc_fast_disable(struct ucc_fast_private * uccf, enum comm_dir mode)
+ 	}
+ 	out_be32(&uf_regs->gumr, gumr);
+ }
++EXPORT_SYMBOL(ucc_fast_disable);
+ 
+ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** uccf_ret)
+ {
+@@ -341,6 +347,7 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
+ 	*uccf_ret = uccf;
+ 	return 0;
+ }
++EXPORT_SYMBOL(ucc_fast_init);
+ 
+ void ucc_fast_free(struct ucc_fast_private * uccf)
+ {
+@@ -355,3 +362,4 @@ void ucc_fast_free(struct ucc_fast_private * uccf)
+ 
+ 	kfree(uccf);
+ }
++EXPORT_SYMBOL(ucc_fast_free);
