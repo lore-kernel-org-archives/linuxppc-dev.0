@@ -1,12 +1,15 @@
 Return-Path: <sfr@canb.auug.org.au>
-Date: Mon, 28 May 2007 10:19:08 +1000
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 09D81DDF07
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 May 2007 10:20:44 +1000 (EST)
+Date: Mon, 28 May 2007 10:20:45 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH] [POWERPC] ps3/interrupt.c uses get_hard_smp_processor_id
-Message-Id: <20070528101908.2a5deab8.sfr@canb.auug.org.au>
+Subject: [PATCH] [POWERPC] pasemi idle uses hard_smp_processor_id
+Message-Id: <20070528102045.5fb60480.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, cbe-oss-dev@ozlabs.org
+Cc: Olof Johansson <olof@lixom.net>, ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,28 +19,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-and so needs to include asm/smp.h for a UP build to work.
+and so needs to include asm/smp.h so a UP build works.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/platforms/ps3/interrupt.c |    1 +
+ arch/powerpc/platforms/pasemi/idle.c |    1 +
  1 files changed, 1 insertions(+), 0 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-diff --git a/arch/powerpc/platforms/ps3/interrupt.c b/arch/powerpc/platforms/ps3/interrupt.c
-index 9da82c2..ec9030d 100644
---- a/arch/powerpc/platforms/ps3/interrupt.c
-+++ b/arch/powerpc/platforms/ps3/interrupt.c
-@@ -25,6 +25,7 @@
+diff --git a/arch/powerpc/platforms/pasemi/idle.c b/arch/powerpc/platforms/pasemi/idle.c
+index 03cd45d..3c962d5 100644
+--- a/arch/powerpc/platforms/pasemi/idle.c
++++ b/arch/powerpc/platforms/pasemi/idle.c
+@@ -26,6 +26,7 @@
+ 
  #include <asm/machdep.h>
- #include <asm/udbg.h>
- #include <asm/lv1call.h>
+ #include <asm/reg.h>
 +#include <asm/smp.h>
  
- #include "platform.h"
+ #include "pasemi.h"
  
 -- 
 1.5.1.4
