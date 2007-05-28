@@ -1,20 +1,26 @@
-Return-Path: <ales.gorkic@email.si>
-Received: from www1.email.si (www1.email.si [81.24.97.10])
-	by ozlabs.org (Postfix) with ESMTP id 22A13DDF50
+Return-Path: <tnt@246tNt.com>
+Received: from outmx015.isp.belgacom.be (outmx015.isp.belgacom.be
+	[195.238.4.87])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B5660DDE10
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 28 May 2007 19:23:28 +1000 (EST)
-Received: from koltag (stargate.fs.uni-lj.si [193.2.79.250])
-	by www1.email.si (Postfix) with ESMTP id F30BA8B8C0
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 28 May 2007 11:23:21 +0200 (CEST)
-From: "Ales Gorkic" <ales.gorkic@email.si>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Re: Virtex-4 FX12 Mini-Module support
-Date: Mon, 28 May 2007 11:26:26 +0200
-Message-ID: <000601c7a10a$4425eeb0$f84d02c1@koltag>
+	Tue, 29 May 2007 05:04:51 +1000 (EST)
+Received: from outmx015.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx015.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id l4SJ4kxp015495
+	for <linuxppc-embedded@ozlabs.org>; Mon, 28 May 2007 21:04:47 +0200
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <465B27BE.10000@246tNt.com>
+Date: Mon, 28 May 2007 21:04:30 +0200
+From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0007_01C7A11B.07AEBEB0"
+To: Grzegorz Bernacki <gjb@semihalf.com>
+Subject: Re: [PATCH] mpc52xx: Correct calculation of FEC RX errors.
+References: <46560B34.2070800@semihalf.com>
+In-Reply-To: <46560B34.2070800@semihalf.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,188 +31,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Nice catch,
+I knew something was wrong ( 4 billion errors ;) but I never bothered to
+look
+it up.
 
-------=_NextPart_000_0007_01C7A11B.07AEBEB0
-Content-Type: text/plain;
-	charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+Sylvain
 
-Hi Aidan,
-
- 
-
-After I searched the web I found out that you have sucesfully run the
-uClinux 2.4 on Virtex-4 MiniModule. I have developed a GSRD2 design on which
-I would like to run uClinux. There are two problems:
-
-I am new to linux
-
-I don't know where to start
-
-I would appreciate if you could share your design with me and give me help
-with running it on my design.
-
- 
-
-Cheers,
-
- 
-
-Ales Gorkic
-
- 
-
-University of Ljubljana
-
-Faculty of Mechanical Engineering
-
-COLA - Chair of Optodynamics and Laser Applications Askerceva cesta 6
-SI-1000 Ljubljana Slovenija
-
- 
-
-www: http://www.fs.uni-lj.si/kolt/ 
-
- 
-
-
-------=_NextPart_000_0007_01C7A11B.07AEBEB0
-Content-Type: text/html;
-	charset="iso-8859-2"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Diso-8859-2">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0mm;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:595.3pt 841.9pt;
-	margin:70.85pt 70.85pt 70.85pt 70.85pt;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DSL link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Hi Aidan,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>After I searched the web I found out that you have
-sucesfully run the uClinux 2.4 on Virtex-4 MiniModule. I have developed =
-a GSRD2
-design on which I would like to run uClinux. There are two =
-problems:<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'margin-left:35.4pt'><font size=3D2 =
-face=3DArial><span
-style=3D'font-size:10.0pt;font-family:Arial'>I am new to =
-linux<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'margin-left:35.4pt'><font size=3D2 =
-face=3DArial><span
-style=3D'font-size:10.0pt;font-family:Arial'>I don't know where to =
-start<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I would appreciate if you could share your design =
-with me and
-give me help with running it on my design.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Cheers,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt;font-family:"Courier New"'>Ales =
-Gorkic<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt;font-family:"Courier =
-New"'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt;font-family:"Courier New"'>University of =
-Ljubljana<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt;font-family:"Courier New"'>Faculty of =
-Mechanical
-Engineering<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt;font-family:"Courier New"'>COLA - Chair of =
-Optodynamics
-and Laser Applications Askerceva cesta 6 SI-1000 Ljubljana =
-Slovenija<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt;font-family:"Courier =
-New"'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt;font-family:"Courier New"'>www: <a
-href=3D"http://www.fs.uni-lj.si/kolt/">http://www.fs.uni-lj.si/kolt/</a> =
-<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_0007_01C7A11B.07AEBEB0--
+Grzegorz Bernacki wrote:
+> 'ifconfig eth0' command for mpc5200B-based cards shows error for RX.
+> However none of RX MIB counters is set to value greater than zero.
+> Number of errors is equal to number of multicast packet. In linux 2.4
+> calculation of RX errors is slightly different and takes into account
+> number of multicast packet. This change is a port of calculation method
+> of RX errors for FEC controller from linux 2.4 to 2.6.
+>
+> Signed-off-by: Grzegorz Bernacki <gjb@semihalf.com>
+> ---
+>
+>  drivers/net/fec_mpc52xx/fec.c |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/net/fec_mpc52xx/fec.c b/drivers/net/fec_mpc52xx/fec.c
+> index f0ce87e..d2087f6 100644
+> --- a/drivers/net/fec_mpc52xx/fec.c
+> +++ b/drivers/net/fec_mpc52xx/fec.c
+> @@ -395,7 +395,9 @@ static struct net_device_stats *fec_get_stats(struct
+> net_device *dev)
+>
+>         stats->rx_bytes = in_be32(&fec->rmon_r_octets);
+>         stats->rx_packets = in_be32(&fec->rmon_r_packets);
+> -       stats->rx_errors = stats->rx_packets -
+> in_be32(&fec->ieee_r_frame_ok);
+> +       stats->rx_errors = stats->rx_packets - (
+> +                       in_be32(&fec->ieee_r_frame_ok) +
+> +                       in_be32(&fec->rmon_r_mc_pkt));
+>         stats->tx_bytes = in_be32(&fec->rmon_t_octets);
+>         stats->tx_packets = in_be32(&fec->rmon_t_packets);
+>         stats->tx_errors = stats->tx_packets - (
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>   
