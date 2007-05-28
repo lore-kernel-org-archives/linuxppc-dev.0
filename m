@@ -1,15 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 09D81DDF07
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 May 2007 10:20:44 +1000 (EST)
-Date: Mon, 28 May 2007 10:20:45 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] pasemi idle uses hard_smp_processor_id
-Message-Id: <20070528102045.5fb60480.sfr@canb.auug.org.au>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6862EDDEBD
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 May 2007 11:32:48 +1000 (EST)
+Subject: Re: Please pull powerpc.git for_paulus branch (fwd)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <Pine.LNX.4.64.0705270856560.4113@gate.crashing.org>
+References: <Pine.LNX.4.64.0705270856560.4113@gate.crashing.org>
+Content-Type: text/plain
+Date: Mon, 28 May 2007 11:32:34 +1000
+Message-Id: <1180315954.19517.49.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Olof Johansson <olof@lixom.net>, ppc-dev <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@osdl.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,29 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-and so needs to include asm/smp.h so a UP build works.
+On Sun, 2007-05-27 at 08:58 -0500, Kumar Gala wrote:
+> Linus,
+> 
+> If you don't mind pulling this branch that would be great.  Paul seems to
+> have disappeared for a few days and I want to make sure we get these fixes
+> in before 2.6.22.
+> 
+> If you'd like a re-base on your tree let me know.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/platforms/pasemi/idle.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+I do mind however... this touches the hash table MMU code which is
+something that needs to be acked by paulus or me at the very least.
 
--- 
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
-diff --git a/arch/powerpc/platforms/pasemi/idle.c b/arch/powerpc/platforms/pasemi/idle.c
-index 03cd45d..3c962d5 100644
---- a/arch/powerpc/platforms/pasemi/idle.c
-+++ b/arch/powerpc/platforms/pasemi/idle.c
-@@ -26,6 +26,7 @@
- 
- #include <asm/machdep.h>
- #include <asm/reg.h>
-+#include <asm/smp.h>
- 
- #include "pasemi.h"
- 
--- 
-1.5.1.4
+Ben.
