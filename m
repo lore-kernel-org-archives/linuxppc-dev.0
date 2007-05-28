@@ -1,15 +1,23 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18010.48350.669221.255859@cargo.ozlabs.ibm.com>
-Date: Mon, 28 May 2007 21:28:30 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Wang, Baojun" <wangbj@lzu.edu.cn>
-Subject: Re: Is it possible to call a C function in
-	transfer_to_handler(arch/ppc/kernel/entry.S)?
-In-Reply-To: <380406375.32007@eyou.net>
-References: <380406375.32007@eyou.net> <200705281730.39257.wangbj@lzu.edu.cn>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Nicholas McGuire <der.herr@hofr.at>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-02.arcor-online.net (mail-in-02.arcor-online.net
+	[151.189.21.42])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3F3EDDDF90
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 May 2007 21:34:33 +1000 (EST)
+In-Reply-To: <jesl9hgql9.fsf@sykes.suse.de>
+References: <Pine.LNX.4.64.0705270856560.4113@gate.crashing.org>
+	<jesl9hgql9.fsf@sykes.suse.de>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <e460825e91e0abfc55f8dd777dcc248b@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Please pull powerpc.git for_paulus branch (fwd)
+Date: Mon, 28 May 2007 13:34:20 +0200
+To: Andreas Schwab <schwab@suse.de>
+Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@osdl.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,13 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Wang, Baojun writes:
+>> -	.comm	fee_restarts,4
+>> +	.section .bss
+>> +	.align	2
+>> +fee_restarts:
+>> +	.space	4
+>> +	.previous
+>
+> This is equivalent to .lcomm.
 
->   I'm sorry to ask this topic in this mailling list. I've spend more than 2 
-> days try to add a C function call in transfer_to_handler(in 
-> arch/ppc/kernel/entry.S) like this:
+Oh nice!  So this should become
 
-It's not going to work, because the MMU is off at this point.  It will
-explode as soon as the C code tries to touch any external variable.
+	.lcomm fee_restarts,4,4
 
-Paul.
+for the local symbols, and
+
+	.globl fee_restarts
+	.lcomm fee_restarts,4,4
+
+for the global ones.  Kumar: the parameters here are size,align;
+and it takes an alignment in bytes, not in power-of-two like
+.align does on powerpc.  Which is a good thing, considering that
+you messed up the log-alignment for global_dcbr0 in the original
+patch ;-)
+
+
+Segher
