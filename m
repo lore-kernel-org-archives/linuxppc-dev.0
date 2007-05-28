@@ -1,20 +1,15 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18010.23457.228822.205196@cargo.ozlabs.ibm.com>
-Date: Mon, 28 May 2007 14:33:37 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] powerpc timer sysdev: use mktime
-In-Reply-To: <1179934081.14317.29.camel@johannes.berg>
-References: <20061213123819.403286000@sipsolutions.net>
-	<20061213123945.386891000@sipsolutions.net>
-	<1169620444.18754.66.camel@localhost.localdomain>
-	<1170357390.4036.9.camel@johannes.berg>
-	<17976.5964.593278.752595@cargo.ozlabs.ibm.com>
-	<1178115942.13233.61.camel@johannes.berg>
-	<1179934081.14317.29.camel@johannes.berg>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 488A8DDE3C
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 May 2007 16:13:03 +1000 (EST)
+Date: Mon, 28 May 2007 16:12:59 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] create a zImage for legacy iSeries
+Message-Id: <20070528161259.713c21b0.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,12 +19,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Johannes Berg writes:
+This zImage is really just the stripped vmlinux, but it means that there
+is one less special case for iSeries and also that the zImages will be
+built for a combined kernel build that happens to include iSeries.
 
-> I think you asked for this, any reason you then didn't take it? Just
-> missed? Or is something wrong with it?
+This zImage boots fine on legacy iSeries.
 
-Sorry, just missed.  It doesn't look essential for 2.6.22, so I'll
-queue it for 2.6.23.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/Makefile      |    1 -
+ arch/powerpc/boot/Makefile |    4 ++++
+ 2 files changed, 4 insertions(+), 1 deletions(-)
 
-Paul.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 6238b58..fbafd96 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -142,7 +142,6 @@ drivers-$(CONFIG_OPROFILE)	+= arch/powerpc/oprofile/
+ 
+ # Default to zImage, override when needed
+ defaultimage-y			:= zImage
+-defaultimage-$(CONFIG_PPC_ISERIES) := vmlinux
+ defaultimage-$(CONFIG_DEFAULT_UIMAGE) := uImage
+ KBUILD_IMAGE := $(defaultimage-y)
+ all: $(KBUILD_IMAGE)
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 8378898..da58d1f 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -136,6 +136,7 @@ image-$(CONFIG_PPC_EFIKA)		+= zImage.chrp
+ image-$(CONFIG_PPC_PMAC)		+= zImage.pmac
+ image-$(CONFIG_PPC_HOLLY)		+= zImage.holly-elf
+ image-$(CONFIG_PPC_PRPMC2800)		+= zImage.prpmc2800
++image-$(CONFIG_PPC_ISERIES)		+= zImage.iseries
+ image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
+ 
+ ifneq ($(CONFIG_DEVICE_TREE),"")
+@@ -185,6 +186,9 @@ $(obj)/zImage.initrd.%: vmlinux $(wrapperbits)
+ $(obj)/zImage.%: vmlinux $(wrapperbits)
+ 	$(call if_changed,wrap,$*)
+ 
++$(obj)/zImage.iseries: vmlinux
++	$(STRIP) -s -R .comment $< -o $@
++
+ $(obj)/zImage.ps3: vmlinux
+ 	$(STRIP) -s -R .comment $< -o $@
+ 
+-- 
+1.5.1.4
