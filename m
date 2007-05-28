@@ -1,18 +1,32 @@
-Return-Path: <wangbj@lzu.edu.cn>
-Received: from eyou.net (gwmail.lzu.edu.cn [202.201.0.146])
-	by ozlabs.org (Postfix) with SMTP id D94DDDDEE6
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 May 2007 19:37:56 +1000 (EST)
-Message-ID: <380406375.32007@eyou.net>
-From: "Wang, Baojun" <wangbj@lzu.edu.cn>
-To: ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Is it possible to call a C function in
-	transfer_to_handler(arch/ppc/kernel/entry.S)?
-Date: Mon, 28 May 2007 17:30:35 +0800
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart8255300.fhl4F3DXJS";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200705281730.39257.wangbj@lzu.edu.cn>
-Cc: Nicholas McGuire <der.herr@hofr.at>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C21C0DDF3E
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 May 2007 20:00:33 +1000 (EST)
+Subject: RE: fsl booke MM vs. SMP questions
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Liu Dave-r63238 <DaveLiu@freescale.com>
+In-Reply-To: <995B09A8299C2C44B59866F6391D263595EF6C@zch01exm21.fsl.freescale.net>
+References: <1179731215.32247.659.camel@localhost.localdomain>
+	<1179741447.3660.7.camel@localhost.localdomain>
+	<1179742083.32247.689.camel@localhost.localdomain>
+	<1179747448.3660.22.camel@localhost.localdomain>
+	<1179785273.32247.742.camel@localhost.localdomain>
+	<1179803367.32247.785.camel@localhost.localdomain>
+	<1179831375.3827.4.camel@localhost.localdomain>
+	<1179873742.32247.864.camel@localhost.localdomain>
+	<1179887929.3656.2.camel@localhost.localdomain>
+	<1179889736.32247.893.camel@localhost.localdomain>
+	<995B09A8299C2C44B59866F6391D263595EF5F@zch01exm21.fsl.freescale.net>
+	<1180344249.19517.74.camel@localhost.localdomain>
+	<995B09A8299C2C44B59866F6391D263595EF6C@zch01exm21.fsl.freescale.net>
+Content-Type: text/plain
+Date: Mon, 28 May 2007 20:00:21 +1000
+Message-Id: <1180346421.19517.79.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	Kumar Gala <galak@gate.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,80 +36,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart8255300.fhl4F3DXJS
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Mon, 2007-05-28 at 17:37 +0800, Liu Dave-r63238 wrote:
+> 
+> BTW, if the x86 processor support the broadcast tlb operation to
+> system?
+> If it can,  why we adopt the IPI mechanism for x86? what is the
+> concern?
 
-hi, list
+I don't think it supports them but then, I don't know for sure.
 
-  I'm sorry to ask this topic in this mailling list. I've spend more than 2=
-=20
-days try to add a C function call in transfer_to_handler(in=20
-arch/ppc/kernel/entry.S) like this:
+Part of the problem is what your workload is. if you have a lot of small
+and short lived processes, such as CGI's on a web server, they are
+fairly unlikely to exist on more than one processor, maybe two, during
+their lifetime (there is a strong optimisation to only do a local
+invalidate when the process only ever existed on one processor).
 
-/* cut from arch/ppc/kernel/entry.S */
-transfer_to_handler:
-        stw     r2,GPR2(r11)
-        stw     r12,_NIP(r11)
-        stw     r9,_MSR(r11)
-        andi.   r2,r9,MSR_PR
-        mfctr   r12
-        mfspr   r2,SPRN_XER
-        stw     r12,_CTR(r11)
-        stw     r2,_XER(r11)
-        mfspr   r12,SPRN_SPRG3
-        addi    r2,r12,-THREAD
-        tovirt(r2,r2)                   /* set r2 to current */
-        beq     2f                      /* if from user, fix up THREAD.regs=
- */
-#if 1	/* this is add by me */
-        stwu    r1, -16(r1)
-        mflr    r0
-        stw     r0, 20(r1)
-        bl      emulate_iret
-        lwz     r0, 20(r1)
-        mtlr    r0
-        addi    r1, r1, 16
-#endif
-        addi    r11,r1,STACK_FRAME_OVERHEAD
-        stw     r11,PT_REGS(r12)
+If you have a massively threaded workload, that is, a given process is
+likely to exist on all processors, then it's also fairly unlikely that
+you start doing a lot of fork()'s or to have that processes be short
+lived... so it's less of an issue unless you start abusing mmap/munmap
+or mprotect.
 
+Also, when you have a large number of processors, having broadcast tlb
+invalidations on the bus might become a bottleneck if, at the end of the
+day, you really only want to invalidate one or two siblings. In that
+case, targetted IPIs are probably a better option.
 
-The function prolog is taken from a userspace program. this code freeze the=
-=20
-system after prints out `emulate_iret' (The only thing function emulate_ire=
-t=20
-do is print that message).=20
+In the end, it's very difficult to "guess" what is better. If you add
+all the above, plus the race between tlb invalidations and SW TLB
+reload, it makes sense to start with IPIs and try to optimize that code
+path as much as you can to avoid hitting more CPUs than necessary for
+example).
 
-I read the source code from head_44x.S to entry.S, sounds like all register=
-s=20
-(r0-r32, and even more such as _LINK, _CTR, etc..) are being saved, does th=
-at=20
-mean I shouldn't call any C function in transfer_to_handler()? Is there=20
-something tricky (or is it possible) to add a C function call?=20
-
-Thanks in advance!
-
-regards
-
-=2D-=20
-Wang, Baojun                                        Lanzhou University
-Distributed & Embedded System Lab              http://dslab.lzu.edu.cn
-School of Information Science and Engeneering        wangbj@lzu.edu.cn
-Tianshui South Road 222. Lanzhou 730000                     .P.R.China
-Tel:+86-931-8912025                                Fax:+86-931-8912022
-
---nextPart8255300.fhl4F3DXJS
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBGWqE8IuIOr7tpgg0RArKRAJ9IU7kdQvzxENuARQk6NkfmPTOpyACePm3w
-olS9dD3ceCU9ymIFE2K0Wps=
-=Qoed
------END PGP SIGNATURE-----
-
---nextPart8255300.fhl4F3DXJS--
+Ben.
