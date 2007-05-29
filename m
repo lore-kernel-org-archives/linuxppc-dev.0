@@ -1,11 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 29 May 2007 13:29:24 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Don't use HOSTCFLAGS in BOOTCFLAGS
-Message-ID: <20070529032924.GA30266@localhost.localdomain>
-MIME-Version: 1.0
+Return-Path: <sam@ravnborg.org>
+Received: from pasmtpB.tele.dk (pasmtpb.tele.dk [80.160.77.98])
+	by ozlabs.org (Postfix) with ESMTP id 0D5BADDECA
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 14:31:22 +1000 (EST)
+Date: Tue, 29 May 2007 06:32:20 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] powerpc: Refuse to build 64-bit with GCC-4.2.0 and
+	CONFIG_MODULES
+Message-ID: <20070529043220.GA2172@uranus.ravnborg.org>
+References: <f7ff5aadda1b2962d6c45123ff944e9af6879306.1179593209.git.segher@kernel.crashing.org>
+	<bd3cddd2f3192e3aba4d7c886e38d8d0037c3510.1179593209.git.segher@kernel.crashing.org>
+	<20070528202822.GA31605@uranus.ravnborg.org>
+	<91f430e6615a8895ec0d5293c21f618e@kernel.crashing.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <91f430e6615a8895ec0d5293c21f618e@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,52 +25,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In the bootwrapper code for powerpc, we include HOSTCFLAGS into the
-BOOTCFLAGS used for buildinf the zImage wrapper code.  Since the
-wrapper code is not host code, this makes no sense.  This patch
-removes the use of HOSTCFLAGS here, instead including directly into
-BOOTCFLAGS those flags from the normal kernel CFLAGS which also make
-sense in the bootwrapper code.
+On Tue, May 29, 2007 at 12:13:50AM +0200, Segher Boessenkool wrote:
+> >>...since this won't work (compiler bug, see 
+> >><http://gcc.gnu.org/PR31490>).
+> >
+> >Applied both and documented cc-fullversion too.
+> 
+> Thanks!  For reference, where should I have documented this?
+Documentation/kbuild/makefiles.txt
 
-In particular, this makes the bootwrapper use -msoft-float, preventing
-the compiler from generating floating point instructions.  Previously,
-under some circumstances the compiler could generate floating point
-instructions in the bootwrapper which would cause exceptions on
-embedded CPUS which don't have floating point support.
-
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-
-Index: working-2.6/arch/powerpc/boot/Makefile
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/Makefile	2007-05-28 16:29:34.000000000 +1000
-+++ working-2.6/arch/powerpc/boot/Makefile	2007-05-28 16:29:56.000000000 +1000
-@@ -11,7 +11,7 @@
- #	bootloader and increase compatibility with OpenFirmware.
- #
- #	To this end we need to define BOOTCC, etc, as the tools
--#	needed to build the 32 bit image.  These are normally HOSTCC,
-+#	needed to build the 32 bit image.
- #	but may be a third compiler if, for example, you are cross
- #	compiling from an intel box.  Once the 64bit ppc gcc is
- #	stable it will probably simply be a compiler switch to
-@@ -22,9 +22,11 @@
- 
- all: $(obj)/zImage
- 
--HOSTCC		:= gcc
--BOOTCFLAGS	:= $(HOSTCFLAGS) -fno-builtin -fno-unit-at-a-time -nostdinc -isystem \
--		   $(shell $(CROSS32CC) -print-file-name=include) -fPIC
-+BOOTCFLAGS	:= -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
-+		   -fno-strict-aliasing -O2 -msoft-float -pipe \
-+		   -fomit-frame-pointer -fno-builtin -fno-unit-at-a-time \
-+		   -fPIC -nostdinc \
-+		   -isystem $(shell $(CROSS32CC) -print-file-name=include)
- BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc
- 
- ifeq ($(call cc-option-yn, -fstack-protector),y)
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+	Sam
