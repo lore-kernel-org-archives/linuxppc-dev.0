@@ -1,11 +1,10 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 29 May 2007 15:37:12 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Don't use HOSTCFLAGS in BOOTCFLAGS
-Message-ID: <20070529053712.GE30266@localhost.localdomain>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: paulus@samba.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH] fix compile warning in pseries xics
+Date: Tue, 29 May 2007 15:50:29 +1000
+Message-ID: <27973.1180417829@neuling.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,55 +15,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In the bootwrapper code for powerpc, we include HOSTCFLAGS into the
-BOOTCFLAGS used for buildinf the zImage wrapper code.  Since the
-wrapper code is not host code, this makes no sense.  This patch
-removes the use of HOSTCFLAGS here, instead including directly into
-BOOTCFLAGS those flags from the normal kernel CFLAGS which also make
-sense in the bootwrapper code.
+In 616883df78bd4b3fcdb6ddc39bd3d4cb902bfa32 request_irq was marked as
+__must_check so we must... er... check it.
 
-In particular, this makes the bootwrapper use -msoft-float, preventing
-the compiler from generating floating point instructions.  Previously,
-under some circumstances the compiler could generate floating point
-instructions in the bootwrapper which would cause exceptions on
-embedded CPUS which don't have floating point support.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+This is the only request_irq which is not checked in arch/powerpc
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+ arch/powerpc/platforms/pseries/xics.c |   13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
 
-Index: working-2.6/arch/powerpc/boot/Makefile
+Index: linux-2.6-ozlabs/arch/powerpc/platforms/pseries/xics.c
 ===================================================================
---- working-2.6.orig/arch/powerpc/boot/Makefile	2007-05-29 15:22:07.000000000 +1000
-+++ working-2.6/arch/powerpc/boot/Makefile	2007-05-29 15:31:30.000000000 +1000
-@@ -11,20 +11,18 @@
- #	bootloader and increase compatibility with OpenFirmware.
- #
- #	To this end we need to define BOOTCC, etc, as the tools
--#	needed to build the 32 bit image.  These are normally HOSTCC,
--#	but may be a third compiler if, for example, you are cross
--#	compiling from an intel box.  Once the 64bit ppc gcc is
--#	stable it will probably simply be a compiler switch to
--#	compile for 32bit mode.
-+#	needed to build the 32 bit image.  That's normally the same
-+#	compiler for the rest of the kernel, with the -m32 flag added.
- #	To make it easier to setup a cross compiler,
- #	CROSS32_COMPILE is setup as a prefix just like CROSS_COMPILE
- #	in the toplevel makefile.
+--- linux-2.6-ozlabs.orig/arch/powerpc/platforms/pseries/xics.c
++++ linux-2.6-ozlabs/arch/powerpc/platforms/pseries/xics.c
+@@ -752,6 +752,7 @@ skip_gserver_check:
+ void xics_request_IPIs(void)
+ {
+ 	unsigned int ipi;
++	int t;
  
- all: $(obj)/zImage
+ 	ipi = irq_create_mapping(xics_host, XICS_IPI);
+ 	BUG_ON(ipi == NO_IRQ);
+@@ -762,11 +763,15 @@ void xics_request_IPIs(void)
+ 	 */
+ 	set_irq_handler(ipi, handle_percpu_irq);
+ 	if (firmware_has_feature(FW_FEATURE_LPAR))
+-		request_irq(ipi, xics_ipi_action_lpar, IRQF_DISABLED,
+-			    "IPI", NULL);
++		t = request_irq(ipi, xics_ipi_action_lpar, IRQF_DISABLED,
++				"IPI", NULL);
+ 	else
+-		request_irq(ipi, xics_ipi_action_direct, IRQF_DISABLED,
+-			    "IPI", NULL);
++		t = request_irq(ipi, xics_ipi_action_direct, IRQF_DISABLED,
++				"IPI", NULL);
++	if (t)
++		printk(KERN_ERR "Unable to request interrupt %d for IPI\n",
++		       ipi);
++
+ }
+ #endif /* CONFIG_SMP */
  
--HOSTCC		:= gcc
--BOOTCFLAGS	:= $(HOSTCFLAGS) -fno-builtin -nostdinc -isystem \
--		   $(shell $(CROSS32CC) -print-file-name=include) -fPIC
-+BOOTCFLAGS    := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
-+		 -fno-strict-aliasing -Os -msoft-float -pipe \
-+		 -fomit-frame-pointer -fno-builtin -fPIC -nostdinc \
-+		 -isystem $(shell $(CROSS32CC) -print-file-name=include)
- BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc
- 
- ifeq ($(call cc-option-yn, -fstack-protector),y)
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
