@@ -1,24 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <rob@landley.net>
+Received: from grelber.thyrsus.com
+	(static-71-162-243-5.phlapa.fios.verizon.net [71.162.243.5])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EF5B3DE056
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 06:51:08 +1000 (EST)
-In-Reply-To: <1179805110284-git-send-email-wei.zhang@freescale.com>
-References: <11798051102658-git-send-email-wei.zhang@freescale.com>
-	<11798051101543-git-send-email-wei.zhang@freescale.com>
-	<1179805110272-git-send-email-wei.zhang@freescale.com>
-	<1179805110278-git-send-email-wei.zhang@freescale.com>
-	<11798051102051-git-send-email-wei.zhang@freescale.com>
-	<1179805110284-git-send-email-wei.zhang@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A5691757-8218-489B-B809-DE44F81EA5C8@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 5/5] Set IDE in ULI1575 to not native mode.
-Date: Tue, 29 May 2007 15:50:55 -0500
-To: Zhang Wei <wei.zhang@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	by ozlabs.org (Postfix) with ESMTP id 9832EDE065
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 07:03:06 +1000 (EST)
+From: Rob Landley <rob@landley.net>
+To: Gabriel Paubert <paubert@iram.es>
+Subject: Re: Porting "prep" from ppc to powerpc.
+Date: Tue, 29 May 2007 17:02:54 -0400
+References: <200705252238.39819.rob@landley.net>
+	<20070528075507.GA6633@iram.es>
+In-Reply-To: <20070528075507.GA6633@iram.es>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200705291702.55060.rob@landley.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,40 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Monday 28 May 2007 3:55 am, Gabriel Paubert wrote:
+> On Fri, May 25, 2007 at 10:38:39PM -0400, Rob Landley wrote:
+> > Is anyone already doing this?  
+> 
+> I'm interested but I don't have the time right now.
 
-On May 21, 2007, at 10:38 PM, Zhang Wei wrote:
+I'm interested but don't have the expertise.
 
-> Set IDE in ULI1575 to not 100% native mode, which forces
-> the IDE driver to probe the irq itself.
->
-> Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+I don't have prep documentation, I'm not familiar with the internals of the 
+powerpc architecture (beyond the endianness/word size/alignment checklist for 
+porting userspace programs from arch to arch), I know just enough about Open 
+Firmware to really dislike it, and I don't actually have prep hardware.  I do 
+have qemu, but it doesn't actually work even with the old ARCH=ppc prep 
+kernels.  It segfaults trying to decompress them.
 
-What causes this to be needed?
+I was hoping to use a prep kernel to debug qemu, but my build system (which 
+already builds several other architecutres from the same script) can't do 
+ARCH=ppc because that doesn't understand "make headers_install", so I have to 
+build them by hand supplying different architectures at different steps of 
+the process.  Which puts it waaaaay down on my todo list.
 
-- k
+Fixing the Linux build system to actually work for prep would be nice, but it 
+sounds like teaching ARCH=ppc to do "make headers install" would be a couple 
+orders of magnitude easier...
 
-> ---
->  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/ 
-> powerpc/platforms/86xx/mpc86xx_hpcn.c
-> index eb2bc99..2a2dea7 100644
-> --- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-> +++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-> @@ -314,6 +314,7 @@ static void __devinit quirk_uli5229(struct  
-> pci_dev *dev)
->  {
->  	unsigned short temp;
->  	pci_write_config_word(dev, 0x04, 0x0405);
-> +	dev->class &= ~0x5;
->  	pci_read_config_word(dev, 0x4a, &temp);
->  	temp |= 0x1000;
->  	pci_write_config_word(dev, 0x4a, temp);
-> -- 
-> 1.5.1
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Rob
