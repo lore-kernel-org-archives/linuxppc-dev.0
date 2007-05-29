@@ -1,26 +1,20 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 70BF9DDFB5
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 19:55:15 +1000 (EST)
-Date: Tue, 29 May 2007 11:55:08 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [patch 6/7] ps3: ROM Storage Driver
-Message-ID: <20070529095508.GB29351@lst.de>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id D0A8DDDEB7
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 19:58:00 +1000 (EST)
+Date: Tue, 29 May 2007 11:57:52 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [patch 7/7] ps3: FLASH ROM Storage Driver
+In-Reply-To: <20070529095355.GA29351@lst.de>
+Message-ID: <Pine.LNX.4.62.0705291157260.7698@pademelon.sonytel.be>
 References: <20070525083607.784351000@sonycom.com>
-	<20070525083632.677742000@sonycom.com>
-	<20070525112414.GA32336@aepfle.de>
-	<1180133119.19517.11.camel@localhost.localdomain>
-	<Pine.LNX.4.62.0705261052110.2657@pademelon.sonytel.be>
-	<1180217923.19517.42.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1180217923.19517.42.camel@localhost.localdomain>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>,
-	linux-kernel@vger.kernel.org
+	<20070525083632.815300000@sonycom.com>
+	<20070529095355.GA29351@lst.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,17 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, May 27, 2007 at 08:18:43AM +1000, Benjamin Herrenschmidt wrote:
-> > > > linux/highmem.h is not included to get the kmap_* prototypes.
-> > > 
-> > > Beside, I don't see the point of using kmap on ppc64...
-> > 
-> > So what should I use instead?
+On Tue, 29 May 2007, Christoph Hellwig wrote:
+> On Fri, May 25, 2007 at 10:36:14AM +0200, Geert.Uytterhoeven@sonycom.com wrote:
+> > Add a FLASH ROM Storage Driver for the PS3:
+> >   - Implemented as a misc character device driver
+> >   - Uses a fixed 256 KiB buffer allocated from boot memory as the hypervisor
+> >     requires the writing of aligned 256 KiB blocks
 > 
-> you don't need to map ... the linear mapping is there.... page_address()
-> should just work. But then, kmap will resolve to just that anyway so I
-> suppose it doesn't matter.
+> Looks good, but please either make the driver aware of multiple devices
+> even if they can't happen currently, or alternatively error out in
+> ->probe if of some reason it's called for a second device.
 
-Generally I'd prefer to use kmap everywhere, to keep code future-proof.
-Similar to how I advocate using spinlocks even in drivers for UP-only
-architectures.
+ps3flash_probe() does return -EBUSY when called for a second device.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
