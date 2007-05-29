@@ -1,15 +1,12 @@
-Return-Path: <Wei.Zhang@freescale.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 29 May 2007 13:29:24 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Don't use HOSTCFLAGS in BOOTCFLAGS
+Message-ID: <20070529032924.GA30266@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: 36bit addressing - adding more memory
-Date: Tue, 29 May 2007 10:39:19 +0800
-Message-ID: <46B96294322F7D458F9648B60E15112C307418@zch01exm26.fsl.freescale.net>
-In-Reply-To: <D83235F0F3C86D4D889D8B9A0DA8C6D7769272@corpexc01.corp.networkrobots.com>
-References: <D83235F0F3C86D4D889D8B9A0DA8C6D7769272@corpexc01.corp.networkrobots.com>
-From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-To: "Siva Prasad" <sprasad@bivio.net>, <linuxppc-dev@ozlabs.org>,
-	<linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,11 +16,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi, Siva,
+In the bootwrapper code for powerpc, we include HOSTCFLAGS into the
+BOOTCFLAGS used for buildinf the zImage wrapper code.  Since the
+wrapper code is not host code, this makes no sense.  This patch
+removes the use of HOSTCFLAGS here, instead including directly into
+BOOTCFLAGS those flags from the normal kernel CFLAGS which also make
+sense in the bootwrapper code.
 
-Please use plain text to send email.
+In particular, this makes the bootwrapper use -msoft-float, preventing
+the compiler from generating floating point instructions.  Previously,
+under some circumstances the compiler could generate floating point
+instructions in the bootwrapper which would cause exceptions on
+embedded CPUS which don't have floating point support.
 
-36bit addressing is supported by 8641D, but not in kernel now.
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Best Regards,
-Wei.
+Index: working-2.6/arch/powerpc/boot/Makefile
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/Makefile	2007-05-28 16:29:34.000000000 +1000
++++ working-2.6/arch/powerpc/boot/Makefile	2007-05-28 16:29:56.000000000 +1000
+@@ -11,7 +11,7 @@
+ #	bootloader and increase compatibility with OpenFirmware.
+ #
+ #	To this end we need to define BOOTCC, etc, as the tools
+-#	needed to build the 32 bit image.  These are normally HOSTCC,
++#	needed to build the 32 bit image.
+ #	but may be a third compiler if, for example, you are cross
+ #	compiling from an intel box.  Once the 64bit ppc gcc is
+ #	stable it will probably simply be a compiler switch to
+@@ -22,9 +22,11 @@
+ 
+ all: $(obj)/zImage
+ 
+-HOSTCC		:= gcc
+-BOOTCFLAGS	:= $(HOSTCFLAGS) -fno-builtin -fno-unit-at-a-time -nostdinc -isystem \
+-		   $(shell $(CROSS32CC) -print-file-name=include) -fPIC
++BOOTCFLAGS	:= -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
++		   -fno-strict-aliasing -O2 -msoft-float -pipe \
++		   -fomit-frame-pointer -fno-builtin -fno-unit-at-a-time \
++		   -fPIC -nostdinc \
++		   -isystem $(shell $(CROSS32CC) -print-file-name=include)
+ BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc
+ 
+ ifeq ($(call cc-option-yn, -fstack-protector),y)
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
