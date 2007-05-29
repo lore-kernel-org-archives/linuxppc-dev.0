@@ -1,12 +1,13 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 29 May 2007 16:45:47 +1000
+Date: Tue, 29 May 2007 16:53:38 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Split low-level OF-related bootloader code into separate files
-Message-ID: <20070529064547.GB8404@localhost.localdomain>
+To: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: Merge CPU features pertaining to icache coherency
+Message-ID: <20070529065338.GD8404@localhost.localdomain>
+References: <20070529043827.GB30266@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: Rob Landley <rob@landley.net>, linuxppc-dev@ozlabs.org
+In-Reply-To: <20070529043827.GB30266@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,528 +17,405 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently, all OF-related code in the bootloader is contained in of.c.
-of.c also provides the platform specific things necessary to boot on
-an OF platform.
+Currently the powerpc kernel has a 64-bit only feature,
+COHERENT_ICACHE used for those CPUS which maintain icache/dcache
+coherency in hardware (POWER5, essentially).  It also has a feature,
+SPLIT_ID_CACHE, which is used on CPUs which have separate i and
+d-caches, which is to say everything except 601 and Freescale E200.
 
-However, there are platforms (such as PReP) which can include an OF
-implementation, but are not bootable as pure OF systems.  For use by
-such platforms, this patch splits out the low-level parts of the OF
-code (call_prom() and various wrappers thereof) into a new oflib.c
-file.  In addition, the code related to bootwrapper console output via
-OF are moved to a new ofconsole.c file.  Both these files are included
-in the wrapper.a library where they can be used by both full-OF and
-partial OF platforms.
+In nearly all the places we check the SPLIT_ID_CACHE, what we actually
+care about is whether the i and d-caches are coherent (which they will
+be, trivially, if they're the same cache).
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+This patch tries to clarify the situation a little.  The
+COHERENT_ICACHE feature becomes availble on 32-bit and is set for all
+CPUs where i and d-cache are effectively coherent, whether this is due
+to special logic (POWER5) or because they're unified.  We check this,
+instead of SPLIT_ID_CACHE nearly everywhere.
 
-Index: working-2.6/arch/powerpc/boot/of.h
+The SPLIT_ID_CACHE feature itself is replaced by a UNIFIED_ID_CACHE
+feature with reversed sense, set only on 601 and Freescale E200.  In
+the two places (one Freescale BookE specific) where we really care
+whether it's a unified cache, not whether they're coherent, we check
+this feature.  The CPUs with unified cache are so few, we could
+consider replacing this feature bit with explicit checks against the
+PVR.
+
+This patch will make unifying the 32-bit and 64-bit cache flush code a
+little more straightforward.
+
+Signed-off-by: David Gibson <dwg@au1.ibm.com>
+
+ arch/powerpc/kernel/cputable.c |    3 -
+ arch/powerpc/kernel/misc_32.S  |   12 ++---
+ arch/powerpc/kernel/misc_64.S  |    4 -
+ arch/powerpc/kernel/setup_32.c |   12 ++---
+ arch/ppc/kernel/misc.S         |   12 ++---
+ arch/ppc/kernel/setup.c        |    2 
+ include/asm-powerpc/cputable.h |   88 ++++++++++++++++++++---------------------
+ 7 files changed, 66 insertions(+), 67 deletions(-)
+---
+
+Revised.  BenH pointed out that 601 and E200 need to have both
+UNIFIED_ID_CACHE and COHERENT_ICACHE set in their cputable flags.
+
+Index: working-2.6/include/asm-powerpc/cputable.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/boot/of.h	2007-05-29 16:40:25.000000000 +1000
-@@ -0,0 +1,15 @@
-+#ifndef _PPC_BOOT_OF_H_
-+#define _PPC_BOOT_OF_H_
-+
-+typedef void *phandle;
-+typedef void *ihandle;
-+
-+void of_init(void *promptr);
-+int of_call_prom(const char *service, int nargs, int nret, ...);
-+void *of_claim(unsigned long virt, unsigned long size, unsigned long align);
-+void of_exit(void);
-+
-+/* Console functions */
-+void of_console_init(void);
-+
-+#endif /* _PPC_BOOT_OF_H_ */
-Index: working-2.6/arch/powerpc/boot/oflib.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/boot/oflib.c	2007-05-29 16:32:05.000000000 +1000
-@@ -0,0 +1,172 @@
-+/*
-+ * Copyright (C) Paul Mackerras 1997.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+#include <stddef.h>
-+#include "types.h"
-+#include "elf.h"
-+#include "string.h"
-+#include "stdio.h"
-+#include "page.h"
-+#include "ops.h"
-+
-+#include "of.h"
-+
-+static int (*prom) (void *);
-+
-+void of_init(void *promptr)
-+{
-+	prom = (int (*)(void *))promptr;
-+}
-+
-+int of_call_prom(const char *service, int nargs, int nret, ...)
-+{
-+	int i;
-+	struct prom_args {
-+		const char *service;
-+		int nargs;
-+		int nret;
-+		unsigned int args[12];
-+	} args;
-+	va_list list;
-+
-+	args.service = service;
-+	args.nargs = nargs;
-+	args.nret = nret;
-+
-+	va_start(list, nret);
-+	for (i = 0; i < nargs; i++)
-+		args.args[i] = va_arg(list, unsigned int);
-+	va_end(list);
-+
-+	for (i = 0; i < nret; i++)
-+		args.args[nargs+i] = 0;
-+
-+	if (prom(&args) < 0)
-+		return -1;
-+
-+	return (nret > 0)? args.args[nargs]: 0;
-+}
-+
-+static int of_call_prom_ret(const char *service, int nargs, int nret,
-+			    unsigned int *rets, ...)
-+{
-+	int i;
-+	struct prom_args {
-+		const char *service;
-+		int nargs;
-+		int nret;
-+		unsigned int args[12];
-+	} args;
-+	va_list list;
-+
-+	args.service = service;
-+	args.nargs = nargs;
-+	args.nret = nret;
-+
-+	va_start(list, rets);
-+	for (i = 0; i < nargs; i++)
-+		args.args[i] = va_arg(list, unsigned int);
-+	va_end(list);
-+
-+	for (i = 0; i < nret; i++)
-+		args.args[nargs+i] = 0;
-+
-+	if (prom(&args) < 0)
-+		return -1;
-+
-+	if (rets != (void *) 0)
-+		for (i = 1; i < nret; ++i)
-+			rets[i-1] = args.args[nargs+i];
-+
-+	return (nret > 0)? args.args[nargs]: 0;
-+}
-+
-+/* returns true if s2 is a prefix of s1 */
-+static int string_match(const char *s1, const char *s2)
-+{
-+	for (; *s2; ++s2)
-+		if (*s1++ != *s2)
-+			return 0;
-+	return 1;
-+}
-+
-+/*
-+ * Older OF's require that when claiming a specific range of addresses,
-+ * we claim the physical space in the /memory node and the virtual
-+ * space in the chosen mmu node, and then do a map operation to
-+ * map virtual to physical.
-+ */
-+static int need_map = -1;
-+static ihandle chosen_mmu;
-+static phandle memory;
-+
-+static int check_of_version(void)
-+{
-+	phandle oprom, chosen;
-+	char version[64];
-+
-+	oprom = finddevice("/openprom");
-+	if (oprom == (phandle) -1)
-+		return 0;
-+	if (getprop(oprom, "model", version, sizeof(version)) <= 0)
-+		return 0;
-+	version[sizeof(version)-1] = 0;
-+	printf("OF version = '%s'\r\n", version);
-+	if (!string_match(version, "Open Firmware, 1.")
-+	    && !string_match(version, "FirmWorks,3."))
-+		return 0;
-+	chosen = finddevice("/chosen");
-+	if (chosen == (phandle) -1) {
-+		chosen = finddevice("/chosen@0");
-+		if (chosen == (phandle) -1) {
-+			printf("no chosen\n");
-+			return 0;
-+		}
-+	}
-+	if (getprop(chosen, "mmu", &chosen_mmu, sizeof(chosen_mmu)) <= 0) {
-+		printf("no mmu\n");
-+		return 0;
-+	}
-+	memory = (ihandle) of_call_prom("open", 1, 1, "/memory");
-+	if (memory == (ihandle) -1) {
-+		memory = (ihandle) of_call_prom("open", 1, 1, "/memory@0");
-+		if (memory == (ihandle) -1) {
-+			printf("no memory node\n");
-+			return 0;
-+		}
-+	}
-+	printf("old OF detected\r\n");
-+	return 1;
-+}
-+
-+void *of_claim(unsigned long virt, unsigned long size, unsigned long align)
-+{
-+	int ret;
-+	unsigned int result;
-+
-+	if (need_map < 0)
-+		need_map = check_of_version();
-+	if (align || !need_map)
-+		return (void *) of_call_prom("claim", 3, 1, virt, size, align);
-+
-+	ret = of_call_prom_ret("call-method", 5, 2, &result, "claim", memory,
-+			       align, size, virt);
-+	if (ret != 0 || result == -1)
-+		return (void *) -1;
-+	ret = of_call_prom_ret("call-method", 5, 2, &result, "claim", chosen_mmu,
-+			       align, size, virt);
-+	/* 0x12 == coherent + read/write */
-+	ret = of_call_prom("call-method", 6, 1, "map", chosen_mmu,
-+			   0x12, size, virt, virt);
-+	return (void *) virt;
-+}
-+
-+void of_exit(void)
-+{
-+	of_call_prom("exit", 0, 0);
-+}
-Index: working-2.6/arch/powerpc/boot/Makefile
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/Makefile	2007-05-29 16:32:01.000000000 +1000
-+++ working-2.6/arch/powerpc/boot/Makefile	2007-05-29 16:40:25.000000000 +1000
-@@ -43,7 +43,7 @@ $(addprefix $(obj)/,$(zlib) gunzip_util.
+--- working-2.6.orig/include/asm-powerpc/cputable.h	2007-05-21 12:47:17.000000000 +1000
++++ working-2.6/include/asm-powerpc/cputable.h	2007-05-29 16:51:28.000000000 +1000
+@@ -111,7 +111,7 @@ extern void do_feature_fixups(unsigned l
+ /* CPU kernel features */
  
- src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
- 		ns16550.c serial.c simple_alloc.c div64.S util.S \
--		gunzip_util.c elf_util.c $(zlib) devtree.c \
-+		gunzip_util.c elf_util.c $(zlib) devtree.c oflib.c ofconsole.c \
- 		44x.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c
- src-plat := of.c cuboot-83xx.c cuboot-85xx.c holly.c \
- 		cuboot-ebony.c treeboot-ebony.c prpmc2800.c
-Index: working-2.6/arch/powerpc/boot/of.c
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/of.c	2007-05-29 16:31:58.000000000 +1000
-+++ working-2.6/arch/powerpc/boot/of.c	2007-05-29 16:40:25.000000000 +1000
-@@ -15,8 +15,7 @@
- #include "page.h"
- #include "ops.h"
+ /* Retain the 32b definitions all use bottom half of word */
+-#define CPU_FTR_SPLIT_ID_CACHE		ASM_CONST(0x0000000000000001)
++#define CPU_FTR_COHERENT_ICACHE		ASM_CONST(0x0000000000000001)
+ #define CPU_FTR_L2CR			ASM_CONST(0x0000000000000002)
+ #define CPU_FTR_SPEC7450		ASM_CONST(0x0000000000000004)
+ #define CPU_FTR_ALTIVEC			ASM_CONST(0x0000000000000008)
+@@ -135,6 +135,7 @@ extern void do_feature_fixups(unsigned l
+ #define CPU_FTR_PPC_LE			ASM_CONST(0x0000000000200000)
+ #define CPU_FTR_REAL_LE			ASM_CONST(0x0000000000400000)
+ #define CPU_FTR_FPU_UNAVAILABLE		ASM_CONST(0x0000000000800000)
++#define CPU_FTR_UNIFIED_ID_CACHE	ASM_CONST(0x0000000001000000)
  
--typedef void *ihandle;
--typedef void *phandle;
-+#include "of.h"
- 
- extern char _end[];
- 
-@@ -25,154 +24,10 @@ extern char _end[];
- #define RAM_END		(512<<20)	/* Fixme: use OF */
- #define	ONE_MB		0x100000
- 
--int (*prom) (void *);
- 
- 
- static unsigned long claim_base;
- 
--static int call_prom(const char *service, int nargs, int nret, ...)
--{
--	int i;
--	struct prom_args {
--		const char *service;
--		int nargs;
--		int nret;
--		unsigned int args[12];
--	} args;
--	va_list list;
--
--	args.service = service;
--	args.nargs = nargs;
--	args.nret = nret;
--
--	va_start(list, nret);
--	for (i = 0; i < nargs; i++)
--		args.args[i] = va_arg(list, unsigned int);
--	va_end(list);
--
--	for (i = 0; i < nret; i++)
--		args.args[nargs+i] = 0;
--
--	if (prom(&args) < 0)
--		return -1;
--
--	return (nret > 0)? args.args[nargs]: 0;
--}
--
--static int call_prom_ret(const char *service, int nargs, int nret,
--		  unsigned int *rets, ...)
--{
--	int i;
--	struct prom_args {
--		const char *service;
--		int nargs;
--		int nret;
--		unsigned int args[12];
--	} args;
--	va_list list;
--
--	args.service = service;
--	args.nargs = nargs;
--	args.nret = nret;
--
--	va_start(list, rets);
--	for (i = 0; i < nargs; i++)
--		args.args[i] = va_arg(list, unsigned int);
--	va_end(list);
--
--	for (i = 0; i < nret; i++)
--		args.args[nargs+i] = 0;
--
--	if (prom(&args) < 0)
--		return -1;
--
--	if (rets != (void *) 0)
--		for (i = 1; i < nret; ++i)
--			rets[i-1] = args.args[nargs+i];
--
--	return (nret > 0)? args.args[nargs]: 0;
--}
--
--/*
-- * Older OF's require that when claiming a specific range of addresses,
-- * we claim the physical space in the /memory node and the virtual
-- * space in the chosen mmu node, and then do a map operation to
-- * map virtual to physical.
-- */
--static int need_map = -1;
--static ihandle chosen_mmu;
--static phandle memory;
--
--/* returns true if s2 is a prefix of s1 */
--static int string_match(const char *s1, const char *s2)
--{
--	for (; *s2; ++s2)
--		if (*s1++ != *s2)
--			return 0;
--	return 1;
--}
--
--static int check_of_version(void)
--{
--	phandle oprom, chosen;
--	char version[64];
--
--	oprom = finddevice("/openprom");
--	if (oprom == (phandle) -1)
--		return 0;
--	if (getprop(oprom, "model", version, sizeof(version)) <= 0)
--		return 0;
--	version[sizeof(version)-1] = 0;
--	printf("OF version = '%s'\r\n", version);
--	if (!string_match(version, "Open Firmware, 1.")
--	    && !string_match(version, "FirmWorks,3."))
--		return 0;
--	chosen = finddevice("/chosen");
--	if (chosen == (phandle) -1) {
--		chosen = finddevice("/chosen@0");
--		if (chosen == (phandle) -1) {
--			printf("no chosen\n");
--			return 0;
--		}
--	}
--	if (getprop(chosen, "mmu", &chosen_mmu, sizeof(chosen_mmu)) <= 0) {
--		printf("no mmu\n");
--		return 0;
--	}
--	memory = (ihandle) call_prom("open", 1, 1, "/memory");
--	if (memory == (ihandle) -1) {
--		memory = (ihandle) call_prom("open", 1, 1, "/memory@0");
--		if (memory == (ihandle) -1) {
--			printf("no memory node\n");
--			return 0;
--		}
--	}
--	printf("old OF detected\r\n");
--	return 1;
--}
--
--static void *claim(unsigned long virt, unsigned long size, unsigned long align)
--{
--	int ret;
--	unsigned int result;
--
--	if (need_map < 0)
--		need_map = check_of_version();
--	if (align || !need_map)
--		return (void *) call_prom("claim", 3, 1, virt, size, align);
--
--	ret = call_prom_ret("call-method", 5, 2, &result, "claim", memory,
--			    align, size, virt);
--	if (ret != 0 || result == -1)
--		return (void *) -1;
--	ret = call_prom_ret("call-method", 5, 2, &result, "claim", chosen_mmu,
--			    align, size, virt);
--	/* 0x12 == coherent + read/write */
--	ret = call_prom("call-method", 6, 1, "map", chosen_mmu,
--			0x12, size, virt, virt);
--	return (void *) virt;
--}
--
- static void *of_try_claim(unsigned long size)
- {
- 	unsigned long addr = 0;
-@@ -184,7 +39,7 @@ static void *of_try_claim(unsigned long 
- #ifdef DEBUG
- 		printf("    trying: 0x%08lx\n\r", claim_base);
- #endif
--		addr = (unsigned long)claim(claim_base, size, 0);
-+		addr = (unsigned long)of_claim(claim_base, size, 0);
- 		if ((void *)addr != (void *)-1)
- 			break;
- 	}
-@@ -218,52 +73,24 @@ static void *of_vmlinux_alloc(unsigned l
- 	return p;
- }
- 
--static void of_exit(void)
--{
--	call_prom("exit", 0, 0);
--}
--
  /*
-  * OF device tree routines
-  */
- static void *of_finddevice(const char *name)
- {
--	return (phandle) call_prom("finddevice", 1, 1, name);
-+	return (phandle) of_call_prom("finddevice", 1, 1, name);
- }
+  * Add the 64-bit processor unique features in the top half of the word;
+@@ -154,7 +155,6 @@ extern void do_feature_fixups(unsigned l
+ #define CPU_FTR_MMCRA			LONG_ASM_CONST(0x0000004000000000)
+ #define CPU_FTR_CTRL			LONG_ASM_CONST(0x0000008000000000)
+ #define CPU_FTR_SMT			LONG_ASM_CONST(0x0000010000000000)
+-#define CPU_FTR_COHERENT_ICACHE		LONG_ASM_CONST(0x0000020000000000)
+ #define CPU_FTR_LOCKLESS_TLBIE		LONG_ASM_CONST(0x0000040000000000)
+ #define CPU_FTR_CI_LARGE_PAGE		LONG_ASM_CONST(0x0000100000000000)
+ #define CPU_FTR_PAUSE_ZERO		LONG_ASM_CONST(0x0000200000000000)
+@@ -206,164 +206,163 @@ extern void do_feature_fixups(unsigned l
+ 		     !defined(CONFIG_POWER3) && !defined(CONFIG_POWER4) && \
+ 		     !defined(CONFIG_BOOKE))
  
- static int of_getprop(const void *phandle, const char *name, void *buf,
- 		const int buflen)
- {
--	return call_prom("getprop", 4, 1, phandle, name, buf, buflen);
-+	return of_call_prom("getprop", 4, 1, phandle, name, buf, buflen);
- }
+-#define CPU_FTRS_PPC601	(CPU_FTR_COMMON | CPU_FTR_601 | CPU_FTR_HPTE_TABLE)
+-#define CPU_FTRS_603	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++#define CPU_FTRS_PPC601	(CPU_FTR_COMMON | CPU_FTR_601 | CPU_FTR_HPTE_TABLE | \
++	CPU_FTR_COHERENT_ICACHE | CPU_FTR_UNIFIED_ID_CACHE)
++#define CPU_FTRS_603	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | \
+ 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_PPC_LE)
+-#define CPU_FTRS_604	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++#define CPU_FTRS_604	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_USE_TB | CPU_FTR_604_PERF_MON | CPU_FTR_HPTE_TABLE | \
+ 	    CPU_FTR_PPC_LE)
+-#define CPU_FTRS_740_NOTAU	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++#define CPU_FTRS_740_NOTAU	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_PPC_LE)
+-#define CPU_FTRS_740	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++#define CPU_FTRS_740	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
+ 	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
+ 	    CPU_FTR_PPC_LE)
+-#define CPU_FTRS_750	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++#define CPU_FTRS_750	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
+ 	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
+ 	    CPU_FTR_PPC_LE)
+-#define CPU_FTRS_750CL	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++#define CPU_FTRS_750CL	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
+ 	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
+ 	    CPU_FTR_HAS_HIGH_BATS | CPU_FTR_PPC_LE)
+-#define CPU_FTRS_750FX1	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++#define CPU_FTRS_750FX1	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
+ 	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
+ 	    CPU_FTR_DUAL_PLL_750FX | CPU_FTR_NO_DPM | CPU_FTR_PPC_LE)
+-#define CPU_FTRS_750FX2	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++#define CPU_FTRS_750FX2	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
+ 	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
+ 	    CPU_FTR_NO_DPM | CPU_FTR_PPC_LE)
+-#define CPU_FTRS_750FX	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++#define CPU_FTRS_750FX	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
+ 	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
+ 	    CPU_FTR_DUAL_PLL_750FX | CPU_FTR_HAS_HIGH_BATS | CPU_FTR_PPC_LE)
+-#define CPU_FTRS_750GX	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++#define CPU_FTRS_750GX	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
+ 	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
+ 	    CPU_FTR_DUAL_PLL_750FX | CPU_FTR_HAS_HIGH_BATS | CPU_FTR_PPC_LE)
+-#define CPU_FTRS_7400_NOTAU	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++#define CPU_FTRS_7400_NOTAU	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_HPTE_TABLE | \
+ 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_PPC_LE)
+-#define CPU_FTRS_7400	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++#define CPU_FTRS_7400	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
+ 	    CPU_FTR_TAU | CPU_FTR_ALTIVEC_COMP | CPU_FTR_HPTE_TABLE | \
+ 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_PPC_LE)
+-#define CPU_FTRS_7450_20	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++#define CPU_FTRS_7450_20	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
+ 	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
+ 	    CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE)
+-#define CPU_FTRS_7450_21	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++#define CPU_FTRS_7450_21	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_USE_TB | \
+ 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
+ 	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
+ 	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_L3_DISABLE_NAP | \
+ 	    CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE)
+-#define CPU_FTRS_7450_23	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++#define CPU_FTRS_7450_23	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_USE_TB | \
+ 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
+ 	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
+ 	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE)
+-#define CPU_FTRS_7455_1	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++#define CPU_FTRS_7455_1	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_USE_TB | \
+ 	    CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_HAS_HIGH_BATS | \
+ 	    CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE)
+-#define CPU_FTRS_7455_20	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++#define CPU_FTRS_7455_20	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_USE_TB | \
+ 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
+ 	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
+ 	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_L3_DISABLE_NAP | \
+ 	    CPU_FTR_NEED_COHERENT | CPU_FTR_HAS_HIGH_BATS | CPU_FTR_PPC_LE)
+-#define CPU_FTRS_7455	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++#define CPU_FTRS_7455	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_USE_TB | \
+ 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
+ 	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
+ 	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS | \
+ 	    CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE)
+-#define CPU_FTRS_7447_10	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++#define CPU_FTRS_7447_10	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_USE_TB | \
+ 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
+ 	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
+ 	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS | \
+ 	    CPU_FTR_NEED_COHERENT | CPU_FTR_NO_BTIC | CPU_FTR_PPC_LE)
+-#define CPU_FTRS_7447	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++#define CPU_FTRS_7447	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_USE_TB | \
+ 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
+ 	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
+ 	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS | \
+ 	    CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE)
+-#define CPU_FTRS_7447A	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++#define CPU_FTRS_7447A	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_USE_TB | \
+ 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
+ 	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS | \
+ 	    CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE)
+-#define CPU_FTRS_7448	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++#define CPU_FTRS_7448	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_USE_TB | \
+ 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
+ 	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS | \
+ 	    CPU_FTR_PPC_LE)
+-#define CPU_FTRS_82XX	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++#define CPU_FTRS_82XX	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB)
+-#define CPU_FTRS_G2_LE	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE | \
++#define CPU_FTRS_G2_LE	(CPU_FTR_MAYBE_CAN_DOZE | \
+ 	    CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_HAS_HIGH_BATS)
+-#define CPU_FTRS_E300	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE | \
++#define CPU_FTRS_E300	(CPU_FTR_MAYBE_CAN_DOZE | \
+ 	    CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_HAS_HIGH_BATS | \
+ 	    CPU_FTR_COMMON)
+-#define CPU_FTRS_E300C2	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE | \
++#define CPU_FTRS_E300C2	(CPU_FTR_MAYBE_CAN_DOZE | \
+ 	    CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_HAS_HIGH_BATS | \
+ 	    CPU_FTR_COMMON | CPU_FTR_FPU_UNAVAILABLE)
+-#define CPU_FTRS_CLASSIC32	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++#define CPU_FTRS_CLASSIC32	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE)
+-#define CPU_FTRS_8XX	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB)
+-#define CPU_FTRS_40X	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
+-	    CPU_FTR_NODSISRALIGN)
+-#define CPU_FTRS_44X	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
+-	    CPU_FTR_NODSISRALIGN)
+-#define CPU_FTRS_E200	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN)
+-#define CPU_FTRS_E500	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
+-	    CPU_FTR_NODSISRALIGN)
+-#define CPU_FTRS_E500_2	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
++#define CPU_FTRS_8XX	(CPU_FTR_USE_TB)
++#define CPU_FTRS_40X	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN)
++#define CPU_FTRS_44X	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN)
++#define CPU_FTRS_E200	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN \
++	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_UNIFIED_ID_CACHE)
++#define CPU_FTRS_E500	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN)
++#define CPU_FTRS_E500_2	(CPU_FTR_USE_TB | \
+ 	    CPU_FTR_BIG_PHYS | CPU_FTR_NODSISRALIGN)
+ #define CPU_FTRS_GENERIC_32	(CPU_FTR_COMMON | CPU_FTR_NODSISRALIGN)
  
- static int of_setprop(const void *phandle, const char *name, const void *buf,
- 		const int buflen)
- {
--	return call_prom("setprop", 4, 1, phandle, name, buf, buflen);
--}
--
--/*
-- * OF console routines
-- */
--static void *of_stdout_handle;
--
--static int of_console_open(void)
--{
--	void *devp;
--
--	if (((devp = finddevice("/chosen")) != NULL)
--			&& (getprop(devp, "stdout", &of_stdout_handle,
--				sizeof(of_stdout_handle))
--				== sizeof(of_stdout_handle)))
--		return 0;
--
--	return -1;
--}
--
--static void of_console_write(char *buf, int len)
--{
--	call_prom("write", 3, 1, of_stdout_handle, buf, len);
-+	return of_call_prom("setprop", 4, 1, phandle, name, buf, buflen);
- }
+ /* 64-bit CPUs */
+-#define CPU_FTRS_POWER3	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
++#define CPU_FTRS_POWER3	(CPU_FTR_USE_TB | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_IABR | CPU_FTR_PPC_LE)
+-#define CPU_FTRS_RS64	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
++#define CPU_FTRS_RS64	(CPU_FTR_USE_TB | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_IABR | \
+ 	    CPU_FTR_MMCRA | CPU_FTR_CTRL)
+-#define CPU_FTRS_POWER4	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
++#define CPU_FTRS_POWER4	(CPU_FTR_USE_TB | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_MMCRA)
+-#define CPU_FTRS_PPC970	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
++#define CPU_FTRS_PPC970	(CPU_FTR_USE_TB | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CAN_NAP | CPU_FTR_MMCRA)
+-#define CPU_FTRS_POWER5	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
++#define CPU_FTRS_POWER5	(CPU_FTR_USE_TB | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
+ 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
+ 	    CPU_FTR_PURR)
+-#define CPU_FTRS_POWER6 (CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
++#define CPU_FTRS_POWER6 (CPU_FTR_USE_TB | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
+ 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
+ 	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
+ 	    CPU_FTR_DSCR)
+-#define CPU_FTRS_CELL	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
++#define CPU_FTRS_CELL	(CPU_FTR_USE_TB | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+ 	    CPU_FTR_PAUSE_ZERO | CPU_FTR_CI_LARGE_PAGE | CPU_FTR_CELL_TB_BUG)
+-#define CPU_FTRS_PA6T (CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
++#define CPU_FTRS_PA6T (CPU_FTR_USE_TB | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CI_LARGE_PAGE | \
+ 	    CPU_FTR_PURR | CPU_FTR_REAL_LE)
+-#define CPU_FTRS_COMPATIBLE	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
++#define CPU_FTRS_COMPATIBLE	(CPU_FTR_USE_TB | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2)
  
- void platform_init(unsigned long a1, unsigned long a2, void *promptr)
-@@ -277,10 +104,9 @@ void platform_init(unsigned long a1, uns
- 	dt_ops.getprop = of_getprop;
- 	dt_ops.setprop = of_setprop;
- 
--	console_ops.open = of_console_open;
--	console_ops.write = of_console_write;
-+	of_console_init();
- 
--	prom = (int (*)(void *))promptr;
-+	of_init(promptr);
- 	loader_info.promptr = promptr;
- 	if (a1 && a2 && a2 != 0xdeadbeef) {
- 		loader_info.initrd_addr = a1;
-Index: working-2.6/arch/powerpc/boot/ofconsole.c
+ #ifdef __powerpc64__
+Index: working-2.6/arch/powerpc/kernel/misc_32.S
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/boot/ofconsole.c	2007-05-29 16:40:25.000000000 +1000
-@@ -0,0 +1,45 @@
-+/*
-+ * OF console routines
-+ *
-+ * Copyright (C) Paul Mackerras 1997.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+#include <stddef.h>
-+#include "types.h"
-+#include "elf.h"
-+#include "string.h"
-+#include "stdio.h"
-+#include "page.h"
-+#include "ops.h"
-+
-+#include "of.h"
-+
-+static void *of_stdout_handle;
-+
-+static int of_console_open(void)
-+{
-+	void *devp;
-+
-+	if (((devp = finddevice("/chosen")) != NULL)
-+			&& (getprop(devp, "stdout", &of_stdout_handle,
-+				sizeof(of_stdout_handle))
-+				== sizeof(of_stdout_handle)))
-+		return 0;
-+
-+	return -1;
-+}
-+
-+static void of_console_write(char *buf, int len)
-+{
-+	of_call_prom("write", 3, 1, of_stdout_handle, buf, len);
-+}
-+
-+void of_console_init(void)
-+{
-+	console_ops.open = of_console_open;
-+	console_ops.write = of_console_write;
-+}
+--- working-2.6.orig/arch/powerpc/kernel/misc_32.S	2007-05-29 16:50:29.000000000 +1000
++++ working-2.6/arch/powerpc/kernel/misc_32.S	2007-05-29 16:50:31.000000000 +1000
+@@ -392,7 +392,7 @@ BEGIN_FTR_SECTION
+ 	mtspr   SPRN_L1CSR0,r3
+ 	isync
+ 	blr
+-END_FTR_SECTION_IFCLR(CPU_FTR_SPLIT_ID_CACHE)
++END_FTR_SECTION_IFSET(CPU_FTR_UNIFIED_ID_CACHE)
+ 	mfspr	r3,SPRN_L1CSR1
+ 	ori	r3,r3,L1CSR1_ICFI|L1CSR1_ICLFR
+ 	mtspr	SPRN_L1CSR1,r3
+@@ -419,7 +419,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_SPLIT_ID_C
+ _GLOBAL(__flush_icache_range)
+ BEGIN_FTR_SECTION
+ 	blr				/* for 601, do nothing */
+-END_FTR_SECTION_IFCLR(CPU_FTR_SPLIT_ID_CACHE)
++END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
+ 	li	r5,L1_CACHE_BYTES-1
+ 	andc	r3,r3,r5
+ 	subf	r4,r3,r4
+@@ -514,8 +514,8 @@ _GLOBAL(invalidate_dcache_range)
+  */
+ _GLOBAL(__flush_dcache_icache)
+ BEGIN_FTR_SECTION
+-	blr					/* for 601, do nothing */
+-END_FTR_SECTION_IFCLR(CPU_FTR_SPLIT_ID_CACHE)
++	blr
++END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
+ 	rlwinm	r3,r3,0,0,19			/* Get page base address */
+ 	li	r4,4096/L1_CACHE_BYTES	/* Number of lines in a page */
+ 	mtctr	r4
+@@ -543,7 +543,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_SPLIT_ID_C
+ _GLOBAL(__flush_dcache_icache_phys)
+ BEGIN_FTR_SECTION
+ 	blr					/* for 601, do nothing */
+-END_FTR_SECTION_IFCLR(CPU_FTR_SPLIT_ID_CACHE)
++END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
+ 	mfmsr	r10
+ 	rlwinm	r0,r10,0,28,26			/* clear DR */
+ 	mtmsr	r0
+Index: working-2.6/arch/powerpc/kernel/setup_32.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/kernel/setup_32.c	2007-05-29 16:50:29.000000000 +1000
++++ working-2.6/arch/powerpc/kernel/setup_32.c	2007-05-29 16:50:31.000000000 +1000
+@@ -262,13 +262,11 @@ void __init setup_arch(char **cmdline_p)
+ 	 * Systems with OF can look in the properties on the cpu node(s)
+ 	 * for a possibly more accurate value.
+ 	 */
+-	if (cpu_has_feature(CPU_FTR_SPLIT_ID_CACHE)) {
+-		dcache_bsize = cur_cpu_spec->dcache_bsize;
+-		icache_bsize = cur_cpu_spec->icache_bsize;
+-		ucache_bsize = 0;
+-	} else
+-		ucache_bsize = dcache_bsize = icache_bsize
+-			= cur_cpu_spec->dcache_bsize;
++	dcache_bsize = cur_cpu_spec->dcache_bsize;
++	icache_bsize = cur_cpu_spec->icache_bsize;
++	ucache_bsize = 0;
++	if (cpu_has_feature(CPU_FTR_UNIFIED_ID_CACHE))
++		ucache_bsize = icache_bsize = dcache_bsize;
+ 
+ 	/* reboot on panic */
+ 	panic_timeout = 180;
+Index: working-2.6/arch/ppc/kernel/misc.S
+===================================================================
+--- working-2.6.orig/arch/ppc/kernel/misc.S	2007-01-24 12:01:17.000000000 +1100
++++ working-2.6/arch/ppc/kernel/misc.S	2007-05-29 16:50:31.000000000 +1000
+@@ -328,7 +328,7 @@ BEGIN_FTR_SECTION
+ 	mtspr   SPRN_L1CSR0,r3
+ 	isync
+ 	blr
+-END_FTR_SECTION_IFCLR(CPU_FTR_SPLIT_ID_CACHE)
++END_FTR_SECTION_IFSET(CPU_FTR_UNIFIED_ID_CACHE)
+ 	mfspr	r3,SPRN_L1CSR1
+ 	ori	r3,r3,L1CSR1_ICFI|L1CSR1_ICLFR
+ 	mtspr	SPRN_L1CSR1,r3
+@@ -355,7 +355,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_SPLIT_ID_C
+ _GLOBAL(__flush_icache_range)
+ BEGIN_FTR_SECTION
+ 	blr				/* for 601, do nothing */
+-END_FTR_SECTION_IFCLR(CPU_FTR_SPLIT_ID_CACHE)
++END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
+ 	li	r5,L1_CACHE_BYTES-1
+ 	andc	r3,r3,r5
+ 	subf	r4,r3,r4
+@@ -472,7 +472,7 @@ _GLOBAL(flush_dcache_all)
+ _GLOBAL(__flush_dcache_icache)
+ BEGIN_FTR_SECTION
+ 	blr					/* for 601, do nothing */
+-END_FTR_SECTION_IFCLR(CPU_FTR_SPLIT_ID_CACHE)
++END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
+ 	rlwinm	r3,r3,0,0,19			/* Get page base address */
+ 	li	r4,4096/L1_CACHE_BYTES	/* Number of lines in a page */
+ 	mtctr	r4
+@@ -500,7 +500,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_SPLIT_ID_C
+ _GLOBAL(__flush_dcache_icache_phys)
+ BEGIN_FTR_SECTION
+ 	blr					/* for 601, do nothing */
+-END_FTR_SECTION_IFCLR(CPU_FTR_SPLIT_ID_CACHE)
++END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
+ 	mfmsr	r10
+ 	rlwinm	r0,r10,0,28,26			/* clear DR */
+ 	mtmsr	r0
+Index: working-2.6/arch/ppc/kernel/setup.c
+===================================================================
+--- working-2.6.orig/arch/ppc/kernel/setup.c	2007-02-14 10:58:22.000000000 +1100
++++ working-2.6/arch/ppc/kernel/setup.c	2007-05-29 16:50:31.000000000 +1000
+@@ -526,7 +526,7 @@ void __init setup_arch(char **cmdline_p)
+ 	 * Systems with OF can look in the properties on the cpu node(s)
+ 	 * for a possibly more accurate value.
+ 	 */
+-	if (cpu_has_feature(CPU_FTR_SPLIT_ID_CACHE)) {
++	if (! cpu_has_feature(CPU_FTR_UNIFIED_ID_CACHE)) {
+ 		dcache_bsize = cur_cpu_spec->dcache_bsize;
+ 		icache_bsize = cur_cpu_spec->icache_bsize;
+ 		ucache_bsize = 0;
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
