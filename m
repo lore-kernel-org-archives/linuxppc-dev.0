@@ -1,20 +1,20 @@
-Return-Path: <ganesh.narayanan@netapp.com>
-Received: from mx2.netapp.com (mx2.netapp.com [216.240.18.37])
-	by ozlabs.org (Postfix) with ESMTP id BD743DDF2C
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 02:45:17 +1000 (EST)
-Received: from svlexrs01.hq.netapp.com (svlexrs01.corp.netapp.com
-	[10.57.156.158])
-	by smtp2.corp.netapp.com (8.13.1/8.13.1/NTAP-1.6) with ESMTP id
-	l4TGZBce011943
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 09:35:20 -0700 (PDT)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C7A20F.54AE9EE9"
-Subject: AMD to ST migration issues
-Date: Tue, 29 May 2007 09:35:12 -0700
-Message-ID: <7619F3097FAB384287CF636FF92D0CA109943577@exsvl01.hq.netapp.com>
-From: "Narayanan, Ganesh" <ganesh.narayanan@netapp.com>
-To: <linuxppc-dev@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B7BC0DE00E
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 05:29:12 +1000 (EST)
+In-Reply-To: <1180406209.8139.13.camel@localhost.localdomain>
+References: <1180406209.8139.13.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <BA0C2035-FCAD-4B34-A622-F79432079F10@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v2]: Fix e500 v2 core reboot bug
+Date: Tue, 29 May 2007 14:29:00 -0500
+To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,90 +24,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C7A20F.54AE9EE9
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+On May 28, 2007, at 9:36 PM, Zang Roy-r61911 wrote:
 
-Hi,
-=20
-We have been using PPC with a AMD flash (Spansion S29GL128M) on it for
-our applications.  We are running Montavista linux on it.  Recently we
-replaced the AMD flash with ST flash (M29W128FH).  The u-boot boots up
-and during the kernel boot, I am getting the following error messages
-and the system doesn't boot after this:
-=20
+> Fix the e500 v2 core reset bug.
+> For e500 v2 core, a new reset control register is added to
+> reset the core.
+> On 85xx CDS board with e500 v2 core, normal reboot code will
+> induce DDR block in u-boot. This patch fixes this bug. It is
+> also tested on legacy e500 v1 core.
 
-jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x00000000:
-0x0020 instead
-jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x0000001c:
-0x2212 instead
-jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x00000020:
-0x0020 instead
-jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x0000003c:
-0x2212 instead
-jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x00000040:
-0x0020 instead
-jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x0000005c:
-0x2212 instead
-jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x00000060:
-0x0020 instead
-=20
-It would be really great if someone could let me know what is going
-wrong in this.
-=20
-Thanks,
-Ganesh
-=20
-=20
+what happens on an e500 based 85xx system?
 
-------_=_NextPart_001_01C7A20F.54AE9EE9
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+I'm not terrible happy with blindly writing to rstcr.
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.6000.16441" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=3DArial size=3D2>Hi,</FONT></DIV>
-<DIV>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>We have been using PPC with a AMD flash =
-(Spansion=20
-S29GL128M) on it for our applications.&nbsp; We are running Montavista =
-linux on=20
-it.&nbsp; Recently we replaced the AMD flash with ST flash =
-(M29W128FH).&nbsp;=20
-The u-boot boots up and during the kernel boot, I am getting the =
-following error=20
-messages and the system doesn't boot after this:</FONT></DIV>
-<DIV>&nbsp;</DIV><FONT face=3DArial size=3D2>
-<DIV><BR>jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at =
-0x00000000:=20
-0x0020 instead<BR>jffs2_scan_eraseblock(): Magic bitmask 0x1985 not =
-found at=20
-0x0000001c: 0x2212 instead<BR>jffs2_scan_eraseblock(): Magic bitmask =
-0x1985 not=20
-found at 0x00000020: 0x0020 instead<BR>jffs2_scan_eraseblock(): Magic =
-bitmask=20
-0x1985 not found at 0x0000003c: 0x2212 =
-instead<BR>jffs2_scan_eraseblock(): Magic=20
-bitmask 0x1985 not found at 0x00000040: 0x0020=20
-instead<BR>jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at=20
-0x0000005c: 0x2212 instead<BR>jffs2_scan_eraseblock(): Magic bitmask =
-0x1985 not=20
-found at 0x00000060: 0x0020 instead</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>It would be really great if someone could let me know what is going =
-wrong=20
-in this.</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>Thanks,<BR>Ganesh</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV></BODY></HTML>
+- k
 
-------_=_NextPart_001_01C7A20F.54AE9EE9--
+>
+>
+> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+> ---
+>
+>  arch/powerpc/platforms/85xx/misc.c |   18 ++++++++++++++++++
+>  1 files changed, 18 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/85xx/misc.c b/arch/powerpc/ 
+> platforms/85xx/misc.c
+> index 3e62fcb..886a13f 100644
+> --- a/arch/powerpc/platforms/85xx/misc.c
+> +++ b/arch/powerpc/platforms/85xx/misc.c
+> @@ -13,11 +13,29 @@
+>  #include <linux/irq.h>
+>  #include <linux/module.h>
+>  #include <asm/irq.h>
+> +#include <asm/io.h>
+> +#include <sysdev/fsl_soc.h>
+> +
+> +static __be32 __iomem *rstcr;
+>
+>  extern void abort(void);
+>
+> +static int __init mpc85xx_rstcr(void)
+> +{
+> +	/* map reset control register */
+> +	rstcr = ioremap(get_immrbase() + 0xE00B0, 0xff);
+> +	return 0;
+> +}
+> +
+> +arch_initcall(mpc85xx_rstcr);
+> +
+>  void mpc85xx_restart(char *cmd)
+>  {
+>  	local_irq_disable();
+> +	if (rstcr)
+> +		/* set reset control register */
+> +		out_be32(rstcr, 0x2);	/* HRESET_REQ */
+> +	else
+> +		printk (KERN_EMERG "Error: reset control register not mapped,  
+> spinning!\n");
+>  	abort();
+>  }
+> -- 
+> 1.5.1
+>
