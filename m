@@ -1,24 +1,21 @@
 Return-Path: <Geert.Uytterhoeven@sonycom.com>
 Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id C50CADE140
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 01:54:07 +1000 (EST)
-Date: Tue, 29 May 2007 17:54:05 +0200 (CEST)
+	by ozlabs.org (Postfix) with ESMTP id CFC60DE013
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 02:21:38 +1000 (EST)
+Date: Tue, 29 May 2007 18:21:36 +0200 (CEST)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Sender: geert@sonytel.be
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: Saving to 32 bits of GPRs in signal context
-In-Reply-To: <624dd5293b5fde0ffdf01ea692c32e9c@kernel.crashing.org>
-Message-ID: <Pine.LNX.4.62.0705291753370.7698@pademelon.sonytel.be>
-References: <1180423456.19517.124.camel@localhost.localdomain>
-	<20070529092658.GA32228@iram.es>
-	<08b3997ab86a819c63b5cb0afcdc0c9e@kernel.crashing.org>
-	<200705291628.35852.arnd@arndb.de>
-	<624dd5293b5fde0ffdf01ea692c32e9c@kernel.crashing.org>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [patch 6/7] ps3: ROM Storage Driver
+In-Reply-To: <20070529104948.GC29351@lst.de>
+Message-ID: <Pine.LNX.4.62.0705291818560.7698@pademelon.sonytel.be>
+References: <20070525083607.784351000@sonycom.com>
+	<20070525083632.677742000@sonycom.com>
+	<20070529104948.GC29351@lst.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Arnd Bergmann <arnd@arndb.de>, Ulrich Weigand <Ulrich.Weigand@de.ibm.com>,
-	Steve Munroe <sjmunroe@us.ibm.com>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-scsi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,14 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 29 May 2007, Segher Boessenkool wrote:
-> > right, as mentioned before, IP32L64 would imply introducing a new
-> > ABI, which we don't want.
+On Tue, 29 May 2007, Christoph Hellwig wrote:
+> > +/*
+> > + * copy data from device into scatter/gather buffer
+> > + */
+> > +static int fill_from_dev_buffer(struct scsi_cmnd *cmd, const void *buf,
+> > +				int buflen)
+> > +{
+> > +	int k, req_len, act_len, len, active;
+> > +	void *kaddr;
+> > +	struct scatterlist *sgpnt;
+> > +
+> > +	if (!cmd->request_bufflen)
+> > +		return 0;
+> > +
+> > +	if (!cmd->request_buffer)
+> > +		return DID_ERROR << 16;
+> > +
+> > +	if (cmd->sc_data_direction != DMA_BIDIRECTIONAL &&
+> > +	    cmd->sc_data_direction != DMA_FROM_DEVICE)
+> > +		return DID_ERROR << 16;
+> > +
+> > +	if (!cmd->use_sg) {
+> > +		req_len = cmd->request_bufflen;
+> > +		act_len = min(req_len, buflen);
+> > +		memcpy(cmd->request_buffer, buf, act_len);
+> > +		cmd->resid = req_len - act_len;
+> > +		return 0;
+> > +	}
 > 
-> Hey, you could hijack the mswindows ABI, no need to
-> define your own ;-)
+> This is never true anymore.
 
-Isn't that (IL32)P64?
+Just to be sure: all four if-cases or only the last one?
 
 Gr{oetje,eeting}s,
 
