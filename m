@@ -4,24 +4,22 @@ Received: from de01egw02.freescale.net (de01egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9ED22DDE1E
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 04:15:49 +1000 (EST)
-Subject: Re: [PATCH 5/5] Set IDE in ULI1575 to not native mode.
+	by ozlabs.org (Postfix) with ESMTP id 3953FDE08A
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 04:22:30 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l4TIMQiX005432
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 11:22:26 -0700 (MST)
+Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l4TIMPjn022935
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 13:22:25 -0500 (CDT)
+Subject: [PATCH 0/3] Fix PCI-E Resource allocation problems on 8641.
 From: Jon Loeliger <jdl@freescale.com>
-To: Wei Zhang <Wei.Zhang@freescale.com>
-In-Reply-To: <1179805110284-git-send-email-wei.zhang@freescale.com>
-References: <11798051102658-git-send-email-wei.zhang@freescale.com>
-	<11798051101543-git-send-email-wei.zhang@freescale.com>
-	<1179805110272-git-send-email-wei.zhang@freescale.com>
-	<1179805110278-git-send-email-wei.zhang@freescale.com>
-	<11798051102051-git-send-email-wei.zhang@freescale.com>
-	<1179805110284-git-send-email-wei.zhang@freescale.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Message-Id: <1180462543.13106.40.camel@ld0161-tx32>
+Message-Id: <1180462945.13106.56.camel@ld0161-tx32>
 Mime-Version: 1.0
-Date: Tue, 29 May 2007 13:15:43 -0500
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Date: Tue, 29 May 2007 13:22:25 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,11 +29,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-05-21 at 22:38, Zhang Wei wrote:
-> Set IDE in ULI1575 to not 100% native mode, which forces
-> the IDE driver to probe the irq itself.
-> 
-> Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+Paul,
 
-Acked-by: Andy Fleming <afleming@freescale.com>
-Acked-by: Jon Loeliger <jdl@freescale.com>
+These three patches fix some PCI resource allocation problems
+that we saw on 8641 boards.  These patches are on top of
+Zhang Wei's earlier 5 patches, and should apply to your
+current master branch.
+
+Thanks,
+jdl
