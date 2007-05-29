@@ -1,19 +1,20 @@
-Return-Path: <akonovalov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 1CED4DE1AB
+Return-Path: <bwarren@qstreams.com>
+Received: from smtp107.biz.mail.re2.yahoo.com (smtp107.biz.mail.re2.yahoo.com
+	[206.190.52.176]) by ozlabs.org (Postfix) with SMTP id A3FABDE0F3
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 May 2007 00:51:27 +1000 (EST)
-Message-ID: <465C3F5E.6000504@ru.mvista.com>
-Date: Tue, 29 May 2007 18:57:34 +0400
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
-MIME-Version: 1.0
-To: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
+	Wed, 30 May 2007 00:52:24 +1000 (EST)
 Subject: Re: Kernel 2.6, ML403, rootfs on nfs, gigabit ethernet link, nfs
-	mount	problems
-References: <BAY115-W173A643AF082D78122CB6DB22F0@phx.gbl>
+	mount problems
+From: Ben Warren <bwarren@qstreams.com>
+To: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
 In-Reply-To: <BAY115-W173A643AF082D78122CB6DB22F0@phx.gbl>
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
+References: <BAY115-W173A643AF082D78122CB6DB22F0@phx.gbl>
+Content-Type: text/plain
+Date: Tue, 29 May 2007 10:52:21 -0400
+Message-Id: <1180450341.29755.48.camel@saruman.qstreams.net>
+Mime-Version: 1.0
 Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
+Reply-To: bwarren@qstreams.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,7 +25,9 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Mohammad Sadegh Sadri wrote:
+Hi Mohammad,
+
+On Tue, 2007-05-29 at 14:41 +0000, Mohammad Sadegh Sadri wrote:
 > Hi all,
 > 
 > well I could bring up the grant's kernel on ml403 completely. the root file system was over nfs. 
@@ -37,8 +40,16 @@ Mohammad Sadegh Sadri wrote:
 > 
 > any ideas?
 
-TEMAC is in FIFO mode?
-Try adding "nfsroot=,rsize=1024,wsize=1024" to cmdline?
+NFS is notorious for sending lots of big packets one right after
+another.  This can easily overwhelm an Ethernet receiver.  Until you're
+able to figure out why the 1000M link can't keep up, limit the NFS
+receive packet sizes by passing the following NFS option in your kernel
+command line:
 
-Thanks,
-Andrei
+rsize=1024
+
+You can experiment with the value.  I believe the NFS default size is
+typically 8kB or greater.
+
+regards,
+Ben
