@@ -1,16 +1,13 @@
-Return-Path: <mamsadegh@hotmail.com>
-Received: from bay0-omc2-s18.bay0.hotmail.com (bay0-omc2-s18.bay0.hotmail.com
-	[65.54.246.154]) by ozlabs.org (Postfix) with ESMTP id DDB65DE083
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 May 2007 00:41:59 +1000 (EST)
-Message-ID: <BAY115-W173A643AF082D78122CB6DB22F0@phx.gbl>
-From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
-To: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
-Subject: Kernel 2.6, ML403, rootfs on nfs, gigabit ethernet link, nfs mount
-	problems
-Date: Tue, 29 May 2007 14:41:58 +0000
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <GRuescher@dspace.de>
 MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: How can I get a ramdisk.image for linux2.6 running on ML403?
+Date: Tue, 29 May 2007 16:20:38 +0100
+Message-ID: <18A49CF3586FC14290887ECC63C9141F0104D0CF@exchange2003.dspace.de>
+In-Reply-To: <fa686aa40705290701h590998bfjc36385fa08a821d0@mail.gmail.com>
+From: "Gerald Ruescher" <GRuescher@dspace.de>
+To: <Linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,28 +18,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Grant Likely <grant.likely@secretlab.ca> wrote:
 
-Hi all,
+> On 5/29/07, angelalinyao@163.com <angelalinyao@163.com> wrote:
+>
+> > Is there any ramdisk.image provided for linux 2.6?
+> > Or maybe I have to make a ramdisk by myself?
+> > [...]
+> > Any help from you is appreciated.Thank you!
+>
+> If you just want an out-of-the-box ramdisk, you can use the one in =
+ELDK
+>=20
+> http://www.denx.de/wiki/DULG/ELDK
+>=20
+> Or, you can mount your existing ramdisk image on another Linux box and
+> copy the needed files over.  The /dev entries are the same across all
+> architectures.
 
-well I could bring up the grant's kernel on ml403 completely. the root file=
- system was over nfs.=20
+Additionally I'd like to point out that there is a nice and
+well-written O'Reilly book called "Building Embedded Linux System"
+by Karim Yaghmour.  It contains a number of useful hints and techniques
+for newbies, including a chapter about how to set up a root file
+system for an embedded system using tools like BusyBox etc.
+Some chapters may not be 100% up-to-date but still recommended=20
+reading.
 
-when I use a 100mbits link for connection to ml403 , every thing is working=
- suitably.
-but when I use a 1000mbits link, I see that ml403 gets ip address from dhcp=
- and mounts the root file system but can not go further , it stops with a m=
-essage: "nfs server not responding ...." some thing like this.
+Kind regards,
+Gerald
 
-when pinging to ml403 with 64 bytes packets, ping works fine for both of 10=
-0 and 1000mbits links
-but when I try to ping the board with 4000 bytes packets I notice that ml40=
-3 on gigabit link can not answer to ping packets, however on 100mbit link e=
-very thing works just fine.
+______________________________________________
 
-any ideas?
+Gerald R=FCscher
+Software Development Engineer
+Core Real-Time Implementation
 
-
-_________________________________________________________________
-Connect to the next generation of MSN Messenger=A0
-http://imagine-msn.com/messenger/launch80/default.aspx?locale=3Den-us&sourc=
-e=3Dwlmailtagline=
+dSPACE GmbH          Tel.:  +49 5251 1638-1826
+Technologiepark 25   Fax:   +49 5251 16198-1826
+33100 Paderborn      http://www.dspace.de
+Germany              mailto:GRuescher@dspace.de
+_______________________________________________
