@@ -1,20 +1,11 @@
-Return-Path: <adrian@humboldt.co.uk>
-Received: from mail.humboldt.co.uk (mail.humboldt.co.uk [80.68.93.146])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C1256DDEB6
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 May 2007 17:45:56 +1000 (EST)
-Subject: Re: pcimsg patch from eons ago
-From: Adrian Cox <adrian@humboldt.co.uk>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa40705282240p936fda6wdd838b8e33977ab3@mail.gmail.com>
-References: <fa686aa40705282240p936fda6wdd838b8e33977ab3@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 29 May 2007 08:09:09 +0100
-Message-Id: <1180422549.4829.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Linux PPC <linuxppc-embedded@ozlabs.org>
+Return-Path: <bounces@nabble.com>
+Message-ID: <2547937.196031180424819306.JavaMail.nabble@isper.nabble.com>
+From: angelalinyao@163.com
+To: Linuxppc-embedded@ozlabs.org
+Subject: How can I get a ramdisk.image for linux2.6 running on ML403?
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Tue, 29 May 2007 00:46:59 -0700
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,21 +16,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-05-28 at 23:40 -0600, Grant Likely wrote:
-> Way back in the 2.2 timeframe, you had modified the ARM pcimsg patch
-> to port it to PPC and add features.
-> 
-> http://www.cs.helsinki.fi/linux/linux-kernel/2001-07/0572.html
-> 
-> I'd really like to take a look at it.  I've been unable to find the
-> patch archived anywhere online in my searching.  Do you still have a
-> copy of it tucked away anywhere?
+Hi,all
+    I used to run linux 2.4 successfully with my ramdisk.image on ML403.Now I'm trying to run linux 2.6 on ML403,however,my ramdisk didn't work. The error was as follow.
 
-I can't find that version, but I have found a later version:
-http://www.humboldt.co.uk/files/pcimsg_20020307.tar.gz
+RAMDISK: Compressed image found at block 0 
+VFS: Mounted root (ext2 filesystem). 
+Freeing unused kernel memory: 84k init 
+Warning: unable to open an initial console. 
 
-Hopefully you'll find something to use in that - it contains a 2.2 and a
-2.4 port of the code.
-
--- 
-Adrian Cox <adrian@humboldt.co.uk>
+    My ramdisk was provided by MontaVista and suppotted kernel 2.4.Its dev/ is empty because it uses devfs and devfs is selectable in kernel 2.4 while making menuconfig.But in kernel 2.6 devfs is unselectable,so the error occurs with the dev/ empty.
+    Is there any ramdisk.image provided for linux 2.6?Or maybe I have to make a ramdisk by myself?If I make a ramdisk by myself,where can I get all the files under dev/?Will the dev/ simply copied from a server or PC which runs linux 2.6 work for ppc405?
+    Any help from you is appreciated.Thank you! 
+                                                                                                                       linyao
