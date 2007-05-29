@@ -1,25 +1,28 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
+	[151.189.21.44])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B7792DDFFE
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 23:11:33 +1000 (EST)
-In-Reply-To: <1180425900.19517.136.camel@localhost.localdomain>
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D7755DE006
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 23:12:30 +1000 (EST)
+In-Reply-To: <1180431850.19517.146.camel@localhost.localdomain>
 References: <1180423456.19517.124.camel@localhost.localdomain>
 	<B1348C8C-09B1-4906-BF89-CC4206F0CA0A@embeddedalley.com>
 	<1180425900.19517.136.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <9C7D27C7-674E-44B7-A975-69B2E85AB8F2@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
+	<20070529092658.GA32228@iram.es>
+	<1180431850.19517.146.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <710cb04ed3b82b11192cf54aa08c0230@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: Saving to 32 bits of GPRs in signal context
-Date: Tue, 29 May 2007 08:10:30 -0500
+Date: Tue, 29 May 2007 15:12:24 +0200
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Ulrich Weigand <Ulrich.Weigand@de.ibm.com>,
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Steve Munroe <sjmunroe@us.ibm.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Anton Blanchard <anton@samba.org>, Paul Mackerras <paulus@samba.org>
+	Ulrich Weigand <Ulrich.Weigand@de.ibm.com>,
+	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,48 +32,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On May 29, 2007, at 3:05 AM, Benjamin Herrenschmidt wrote:
-
-> On Tue, 2007-05-29 at 03:52 -0400, Dan Malek wrote:
->>> I've been looking at saving & restoring the top 32 bits of 64 bits
->>> registers when delivering signals to 32 bits processes on a 64 bits
->>> kernel. The principle is easy, but I wonder where to stick them.
->>
->> I'm wondering why you need to do this at all?
->> Why would a 32-bit application care about or
->> know what to do with these?
+>> - how can an application know that it can use 64 bit registers and 
+>> call
+>>   the optimized routines?
 >
-> There are regular demands for the ability to use the full 64 bits
-> registers in 32 bits applications when running on a 64 bits processor.
-> That ranges from, iirc, the java folks, to people wanting to optimize
-> some libs to use 64 bits registers internally when called from 32 bits
-> apps etc...
->
-> You can use the full 64 bits easily on powerpc, ld/std just work, it's
-> only the flags calculations and branches, mostly, that are truncated
-> when running in 32 bits mode. Also, the kernel syscall & interrupt
-> entry/exit path will save & restore the full 64 bits.
->
-> The problem is when you use signals. The compat signal code for 32  
-> bits
-> apps will only save and restore the bottom 32 bits, thus an  
-> application
-> using signals will potentially corrupt the top 32 bits, which can be a
-> problem if, for example, it uses a library that has optimisations  
-> based
-> on using the full 64 bits.
->
-> We don't intend to update jmpbuf, getcontext/setcontext etc... for
-> those... they are purely call clobbered etc..., but it would be  
-> nice if
-> at least the signal frame save/restore could properly deal with  
-> them so
-> they don't get randomly clobbered.
+> I'd say use the 32 bits ABI, AT_HWCAP will tell you if you are running
+> on a 64 bits capable machine. You can then either use hand tuned code 
+> at
+> runtime, or I think ld.so can load alternate libs based on the bits in
+> there.
 
-This is all problematic since some 64-bit implementations may not  
-guarantee the upper bits are valid when in 32-bit mode.  Look at the  
-'Computation Modes' section in the architecture specs 2.03 or greater  
-for embedded processors.
+Or you can simply only install 64-bit binaries on 64-bit
+machines.
 
-- k
+>> Finally, I've not seen a compiler (well, GCC, but I don't have 4.2 or
+>> 4.3 installed yet) that allows you to tell the compiler to use 32 bit
+>> addresses but assume that integer registers are 64 bit wide. As long
+>> as such an option does not exist, the usefulness of this feature is
+>> somewhat limited. In other words, GCC for now has support for ILP32 
+>> and
+>> LP64 modes, but it would be better to also have support for IP32L64.
+>
+> Depends... If such binaries are actual 64 bits binaries from a kernel
+> POV, then no change is necessary.
+
+The kernel (and some libraries that do explicit mmap()s)
+will have to make sure that all pointers stay within the
+32-bit address space.  This is most easily done by only
+allowing mappings in the low 32-bit, and some initial
+memory layout work is needed I guess.  Seems quite easy
+actually, certainly from the kernel perspective.  And the
+gain is higher than that of -m32 -mpowerpc64 over -m32.
+
+If you want to do the 32-bit ABI in 64-bit ELF binaries,
+more work is involved.  Might very well be even better
+though.
+
+
+Segher
