@@ -2,19 +2,23 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9CA21DE009
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 06:49:09 +1000 (EST)
-In-Reply-To: <1180463004.13106.65.camel@ld0161-tx32>
-References: <1180463004.13106.65.camel@ld0161-tx32>
+	by ozlabs.org (Postfix) with ESMTP id EF5B3DE056
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 06:51:08 +1000 (EST)
+In-Reply-To: <1179805110284-git-send-email-wei.zhang@freescale.com>
+References: <11798051102658-git-send-email-wei.zhang@freescale.com>
+	<11798051101543-git-send-email-wei.zhang@freescale.com>
+	<1179805110272-git-send-email-wei.zhang@freescale.com>
+	<1179805110278-git-send-email-wei.zhang@freescale.com>
+	<11798051102051-git-send-email-wei.zhang@freescale.com>
+	<1179805110284-git-send-email-wei.zhang@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <F962B8B4-32C0-46A6-B808-C18211353FCC@kernel.crashing.org>
+Message-Id: <A5691757-8218-489B-B809-DE44F81EA5C8@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 3/3] Modified quirk_mpc8641_transparent() to initialize
-	bridge resources.
-Date: Tue, 29 May 2007 15:49:00 -0500
-To: Jon Loeliger <jdl@freescale.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH 5/5] Set IDE in ULI1575 to not native mode.
+Date: Tue, 29 May 2007 15:50:55 -0500
+To: Zhang Wei <wei.zhang@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,22 +29,39 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On May 29, 2007, at 1:23 PM, Jon Loeliger wrote:
+On May 21, 2007, at 10:38 PM, Zhang Wei wrote:
 
-> From: Jon Loeliger <jdl@freescale.com>
+> Set IDE in ULI1575 to not 100% native mode, which forces
+> the IDE driver to probe the irq itself.
 >
-> The 8641 RC poses as a transparent bridge, but does not implement the
-> IO_BASE or IO_LIMIT registers in the config space.  This means that
-> the code which initializes the bridge resources ends up setting the
-> IO resources erroneously.
->
-> This change initializes the RC bridge resources from the device tree.
->
-> Signed-off-by: Andy Fleming <afleming@freescale.com>
-> Signed-off-by: Jon Loeliger <jdl@freescale.com>
+> Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
 
-Can this be merged with Zhang's "Set RC of mpc8641 to transparent  
-bridge for transfer legacy I/O access." patch since it pretty much  
-supersedes it.
+What causes this to be needed?
 
 - k
+
+> ---
+>  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/ 
+> powerpc/platforms/86xx/mpc86xx_hpcn.c
+> index eb2bc99..2a2dea7 100644
+> --- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+> +++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+> @@ -314,6 +314,7 @@ static void __devinit quirk_uli5229(struct  
+> pci_dev *dev)
+>  {
+>  	unsigned short temp;
+>  	pci_write_config_word(dev, 0x04, 0x0405);
+> +	dev->class &= ~0x5;
+>  	pci_read_config_word(dev, 0x4a, &temp);
+>  	temp |= 0x1000;
+>  	pci_write_config_word(dev, 0x4a, temp);
+> -- 
+> 1.5.1
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
