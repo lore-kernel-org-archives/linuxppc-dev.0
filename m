@@ -1,22 +1,26 @@
-Return-Path: <rob@landley.net>
-Received: from grelber.thyrsus.com
-	(static-71-162-243-5.phlapa.fios.verizon.net [71.162.243.5])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0DD19DE056
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 07:16:56 +1000 (EST)
-From: Rob Landley <rob@landley.net>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: Porting "prep" from ppc to powerpc.
-Date: Tue, 29 May 2007 17:16:52 -0400
-References: <200705252238.39819.rob@landley.net>
-	<20070527232055.GA23768@localhost.localdomain>
-In-Reply-To: <20070527232055.GA23768@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200705291716.53090.rob@landley.net>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id E23D7DDF6E
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 07:28:18 +1000 (EST)
+Subject: Re: Saving to 32 bits of GPRs in signal context
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <08b3997ab86a819c63b5cb0afcdc0c9e@kernel.crashing.org>
+References: <1180423456.19517.124.camel@localhost.localdomain>
+	<B1348C8C-09B1-4906-BF89-CC4206F0CA0A@embeddedalley.com>
+	<1180425900.19517.136.camel@localhost.localdomain>
+	<20070529092658.GA32228@iram.es>
+	<08b3997ab86a819c63b5cb0afcdc0c9e@kernel.crashing.org>
+Content-Type: text/plain
+Date: Wed, 30 May 2007 07:27:59 +1000
+Message-Id: <1180474079.19517.188.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Steve Munroe <sjmunroe@us.ibm.com>,
+	Ulrich Weigand <Ulrich.Weigand@de.ibm.com>,
+	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,29 +30,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sunday 27 May 2007 7:20 pm, David Gibson wrote:
-> On Fri, May 25, 2007 at 10:38:39PM -0400, Rob Landley wrote:
-> > Is anyone already doing this?  I asked around here a few weeks ago and got 
-the 
-> > advice:
-> > 
-> > > In theory.. copy the files from ppc/platforms/prep.* to
-> > > powerpc/platforms/prep/ 
-> > > and make some Kconfigs and see what breaks :)
+On Tue, 2007-05-29 at 15:04 +0200, Segher Boessenkool wrote:
 > 
-> Actually, I don't really recommend that method in any case.
-> 
-> Instead I suggest making a Kconfig under arch/powerpc, then adding
-> things until it builds, then adding things until it boots.  When you
-> need to know what has to be done at a particular point, consult
-> arch/ppc.
+> Just call them and trap the SEGV ;-)  You can check the
+> aux vector of course, or ask glibc -- but the SEGV way
+> is the only really portable way.  Strange world :-)
 
-So study the old code until I figure out what should be in the Kconfig, 
-what "things" to add for it to build, and what "things" to add until it 
-boots.  And the hint as to where to start is...  study the old code.
+SIGILL you mean ? :-)
 
-Right.  Copying the old implementation to the new directory and debugging it 
-sounded like something I might be able to do.  Starting from scratch?  Not so 
-much.
-
-Rob
+Ben.
