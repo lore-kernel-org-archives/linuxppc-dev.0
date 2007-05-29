@@ -2,21 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4A666DDFFE
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 06:44:49 +1000 (EST)
-In-Reply-To: <1179805110272-git-send-email-wei.zhang@freescale.com>
-References: <11798051102658-git-send-email-wei.zhang@freescale.com>
-	<11798051101543-git-send-email-wei.zhang@freescale.com>
-	<1179805110272-git-send-email-wei.zhang@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id 9CA21DE009
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 06:49:09 +1000 (EST)
+In-Reply-To: <1180463004.13106.65.camel@ld0161-tx32>
+References: <1180463004.13106.65.camel@ld0161-tx32>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <17B6534B-3C1C-433D-8875-1C2255E79D98@kernel.crashing.org>
+Message-Id: <F962B8B4-32C0-46A6-B808-C18211353FCC@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/5] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
-Date: Tue, 29 May 2007 15:39:48 -0500
-To: Zhang Wei <wei.zhang@freescale.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 3/3] Modified quirk_mpc8641_transparent() to initialize
+	bridge resources.
+Date: Tue, 29 May 2007 15:49:00 -0500
+To: Jon Loeliger <jdl@freescale.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,39 +25,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On May 21, 2007, at 10:38 PM, Zhang Wei wrote:
+On May 29, 2007, at 1:23 PM, Jon Loeliger wrote:
 
-> Add uli1575 pci-bridge sector. It fixes the issue of ULI1575 not  
-> found on rev.2 board.
+> From: Jon Loeliger <jdl@freescale.com>
 >
-> Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
-> ---
->  arch/powerpc/boot/dts/mpc8641_hpcn.dts      |    6 ++++++
->  arch/powerpc/boot/dts/mpc8641_hpcn_srio.dts |    6 ++++++
->  2 files changed, 12 insertions(+), 0 deletions(-)
+> The 8641 RC poses as a transparent bridge, but does not implement the
+> IO_BASE or IO_LIMIT registers in the config space.  This means that
+> the code which initializes the bridge resources ends up setting the
+> IO resources erroneously.
 >
-> diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/ 
-> boot/dts/mpc8641_hpcn.dts
-> index 260b264..04626b1 100644
-> --- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-> +++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-> @@ -297,6 +297,12 @@
->  				interrupts = <49 2>;
->  				interrupt-parent = <&mpic>;
->  			};
-> +			uli1575: uli1575@100 {
-
-is this the right address?
-
-> +				reg = <0 0 0 0 0>;
-> +				pci_bridge@200 {
-> +					reg = <0 0 0 0 0>;
-> +				};
-> +			};
+> This change initializes the RC bridge resources from the device tree.
 >
->  		};
+> Signed-off-by: Andy Fleming <afleming@freescale.com>
+> Signed-off-by: Jon Loeliger <jdl@freescale.com>
 
-Can someone look at merging this with Wade's patch to add the ISA  
-devices
+Can this be merged with Zhang's "Set RC of mpc8641 to transparent  
+bridge for transfer legacy I/O access." patch since it pretty much  
+supersedes it.
 
 - k
