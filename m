@@ -1,20 +1,35 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B7BC0DE00E
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 05:29:12 +1000 (EST)
-In-Reply-To: <1180406209.8139.13.camel@localhost.localdomain>
-References: <1180406209.8139.13.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <BA0C2035-FCAD-4B34-A622-F79432079F10@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2]: Fix e500 v2 core reboot bug
-Date: Tue, 29 May 2007 14:29:00 -0500
-To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8A1E3DE026
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 05:31:46 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4TJVhBQ028659
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 15:31:43 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l4TJVhhH473072
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 15:31:43 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4TJVgfq024613
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 15:31:43 -0400
+Subject: Re: Fix problems with Holly's DT representation of ethernet PHYs
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <a5c459df2eefeb9261e65c551870f7f5@kernel.crashing.org>
+References: <20070529060541.GG30266@localhost.localdomain>
+	<c7c131c3a7fdf7727d9ea1e40775017a@kernel.crashing.org>
+	<1180448346.3360.49.camel@zod.rchland.ibm.com>
+	<a5c459df2eefeb9261e65c551870f7f5@kernel.crashing.org>
+Content-Type: text/plain
+Date: Tue, 29 May 2007 14:29:39 -0500
+Message-Id: <1180466979.3360.69.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: Alexandre Bounine <Alexandre.Bounine@tundra.com>,
+	David Gibson <dwg@au1.ibm.com>, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,66 +39,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, 2007-05-29 at 16:49 +0200, Segher Boessenkool wrote:
+> >>> +			compatible = "tsi-mdio";
+> >>
+> >> Hrm, did I miss this before?  A more exact "compatible"
+> >> property would be better ("tsi109-mdio" "tsi108-mdio" or
+> >> something like that).
+> >
+> > If we must, then tsi108-mdio is what I would recommend.  They are the
+> > same between 108, 109, and 110 as far as I know, so it's the lowest
+> > common denominator.
+> 
+> [Assuming what is really on the board is a tsi109...]
 
-On May 28, 2007, at 9:36 PM, Zang Roy-r61911 wrote:
+For Holly, yes.  For Taiga, it's 108.  For Hackberry, it's 110.
 
-> Fix the e500 v2 core reset bug.
-> For e500 v2 core, a new reset control register is added to
-> reset the core.
-> On 85xx CDS board with e500 v2 core, normal reboot code will
-> induce DDR block in u-boot. This patch fixes this bug. It is
-> also tested on legacy e500 v1 core.
+> I recommend putting both 109 and 108 in the property, in
+> that order; that way, if you need to do something special
+> on the tsi109 implementation (something you might not yet
+> know about perhaps, maybe a bug; or some extra feature on
+> the tsi109 device that the driver doesn't handle yet), the
+> driver has a chance to do that.  If the driver doesn't care
+> and only uses tsi108 features, it obviously can probe for
+> tsi108 only and all will be fine as well.
 
-what happens on an e500 based 85xx system?
+*shrug*  Either way works for me.
 
-I'm not terrible happy with blindly writing to rstcr.
+We're adding these compatible properties to DTS files and the drivers at
+the same time.  Unless (until?) there are firmwares for these boards
+that start specifying something else in a real device tree, it really
+doesn't matter much.  Not that there's anything wrong with your
+reasoning.  Just seems like we're trying really hard to define something
+"correctly" when we control what's on both sides :).
 
-- k
-
->
->
-> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
-> ---
->
->  arch/powerpc/platforms/85xx/misc.c |   18 ++++++++++++++++++
->  1 files changed, 18 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/85xx/misc.c b/arch/powerpc/ 
-> platforms/85xx/misc.c
-> index 3e62fcb..886a13f 100644
-> --- a/arch/powerpc/platforms/85xx/misc.c
-> +++ b/arch/powerpc/platforms/85xx/misc.c
-> @@ -13,11 +13,29 @@
->  #include <linux/irq.h>
->  #include <linux/module.h>
->  #include <asm/irq.h>
-> +#include <asm/io.h>
-> +#include <sysdev/fsl_soc.h>
-> +
-> +static __be32 __iomem *rstcr;
->
->  extern void abort(void);
->
-> +static int __init mpc85xx_rstcr(void)
-> +{
-> +	/* map reset control register */
-> +	rstcr = ioremap(get_immrbase() + 0xE00B0, 0xff);
-> +	return 0;
-> +}
-> +
-> +arch_initcall(mpc85xx_rstcr);
-> +
->  void mpc85xx_restart(char *cmd)
->  {
->  	local_irq_disable();
-> +	if (rstcr)
-> +		/* set reset control register */
-> +		out_be32(rstcr, 0x2);	/* HRESET_REQ */
-> +	else
-> +		printk (KERN_EMERG "Error: reset control register not mapped,  
-> spinning!\n");
->  	abort();
->  }
-> -- 
-> 1.5.1
->
+josh
