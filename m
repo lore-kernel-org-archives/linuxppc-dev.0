@@ -1,26 +1,20 @@
-Return-Path: <becky.bruce@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9B881DE07F
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 04:59:36 +1000 (EST)
-In-Reply-To: <eaf1132805a9531b5131ca51d3e8d9c8@kernel.crashing.org>
-References: <OF462E078D.FFB634FD-ON422572EA.004D1E28-422572EA.004DB265@de.ibm.com>
-	<40815D64-3AD7-49C6-9A58-C7848691D940@kernel.crashing.org>
-	<eaf1132805a9531b5131ca51d3e8d9c8@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <77D9DB04-FAD3-48EF-9159-5EA92BB366E5@freescale.com>
-From: Becky Bruce <becky.bruce@freescale.com>
-Subject: Re: Saving to 32 bits of GPRs in signal context
-Date: Tue, 29 May 2007 14:04:02 -0500
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Ulrich Weigand <Ulrich.Weigand@de.ibm.com>,
-	Steve Munroe <sjmunroe@us.ibm.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
+Return-Path: <ganesh.narayanan@netapp.com>
+Received: from mx2.netapp.com (mx2.netapp.com [216.240.18.37])
+	by ozlabs.org (Postfix) with ESMTP id BD743DDF2C
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 02:45:17 +1000 (EST)
+Received: from svlexrs01.hq.netapp.com (svlexrs01.corp.netapp.com
+	[10.57.156.158])
+	by smtp2.corp.netapp.com (8.13.1/8.13.1/NTAP-1.6) with ESMTP id
+	l4TGZBce011943
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 09:35:20 -0700 (PDT)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C7A20F.54AE9EE9"
+Subject: AMD to ST migration issues
+Date: Tue, 29 May 2007 09:35:12 -0700
+Message-ID: <7619F3097FAB384287CF636FF92D0CA109943577@exsvl01.hq.netapp.com>
+From: "Narayanan, Ganesh" <ganesh.narayanan@netapp.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,40 +24,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-On May 29, 2007, at 9:38 AM, Segher Boessenkool wrote:
+------_=_NextPart_001_01C7A20F.54AE9EE9
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
->> But we can't do that any more since the architecture specifically
->> allows for the 'upper bits' not to have valid data in them.
->
-> That's not PowerPC, that's BookE ;-P
+Hi,
+=20
+We have been using PPC with a AMD flash (Spansion S29GL128M) on it for
+our applications.  We are running Montavista linux on it.  Recently we
+replaced the AMD flash with ST flash (M29W128FH).  The u-boot boots up
+and during the kernel boot, I am getting the following error messages
+and the system doesn't boot after this:
+=20
 
-Is anybody within kicking distance of Segher? ;-P
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x00000000:
+0x0020 instead
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x0000001c:
+0x2212 instead
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x00000020:
+0x0020 instead
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x0000003c:
+0x2212 instead
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x00000040:
+0x0020 instead
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x0000005c:
+0x2212 instead
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x00000060:
+0x0020 instead
+=20
+It would be really great if someone could let me know what is going
+wrong in this.
+=20
+Thanks,
+Ganesh
+=20
+=20
 
-> If what you're
-> saying is true in the 2.03 POWER ISA, even for server
-> class implementations, that would be very unfortunate.
+------_=_NextPart_001_01C7A20F.54AE9EE9
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-I believe Category:Server implementations are required to behave as  
-you expect.  Category:Embedded implementations may have different  
-behavior.  Like it or not, BookE *is* part of the Power architecture,  
-and there are going to be 64-bit implementations of BookE that we  
-need to take into account.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.6000.16441" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2>Hi,</FONT></DIV>
+<DIV>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>We have been using PPC with a AMD flash =
+(Spansion=20
+S29GL128M) on it for our applications.&nbsp; We are running Montavista =
+linux on=20
+it.&nbsp; Recently we replaced the AMD flash with ST flash =
+(M29W128FH).&nbsp;=20
+The u-boot boots up and during the kernel boot, I am getting the =
+following error=20
+messages and the system doesn't boot after this:</FONT></DIV>
+<DIV>&nbsp;</DIV><FONT face=3DArial size=3D2>
+<DIV><BR>jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at =
+0x00000000:=20
+0x0020 instead<BR>jffs2_scan_eraseblock(): Magic bitmask 0x1985 not =
+found at=20
+0x0000001c: 0x2212 instead<BR>jffs2_scan_eraseblock(): Magic bitmask =
+0x1985 not=20
+found at 0x00000020: 0x0020 instead<BR>jffs2_scan_eraseblock(): Magic =
+bitmask=20
+0x1985 not found at 0x0000003c: 0x2212 =
+instead<BR>jffs2_scan_eraseblock(): Magic=20
+bitmask 0x1985 not found at 0x00000040: 0x0020=20
+instead<BR>jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at=20
+0x0000005c: 0x2212 instead<BR>jffs2_scan_eraseblock(): Magic bitmask =
+0x1985 not=20
+found at 0x00000060: 0x0020 instead</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>It would be really great if someone could let me know what is going =
+wrong=20
+in this.</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>Thanks,<BR>Ganesh</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV></BODY></HTML>
 
->
-> Or perhaps you misread, there are a few insns that
-> have undefined results in the high half word.  Could
-> you give a reference please?
->
-> If you mean Book I 1.5.2, that is for embedded class
-> (i.e., BookE) CPUs only.
-
-I think that's exactly what Kumar's talking about. The assumption  
-that all 64-bit Power processors will use those upper bits in some  
-meaningful way is not valid.  Also, ld and std do not architecturally  
-"just work" on BookE implementations running in 32b mode.  Those  
-instructions are part of the 64-bit category in 2.03, and may illop  
-on BookE processors running in 32b mode.
-
-Cheers,
--Becky
+------_=_NextPart_001_01C7A20F.54AE9EE9--
