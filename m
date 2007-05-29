@@ -1,18 +1,16 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 0A927DE062
+Return-Path: <mamsadegh@hotmail.com>
+Received: from bay0-omc2-s18.bay0.hotmail.com (bay0-omc2-s18.bay0.hotmail.com
+	[65.54.246.154]) by ozlabs.org (Postfix) with ESMTP id DDB65DE083
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 May 2007 00:39:30 +1000 (EST)
-Message-ID: <465C3B7E.1000209@ru.mvista.com>
-Date: Tue, 29 May 2007 18:41:02 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+	Wed, 30 May 2007 00:41:59 +1000 (EST)
+Message-ID: <BAY115-W173A643AF082D78122CB6DB22F0@phx.gbl>
+From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
+To: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
+Subject: Kernel 2.6, ML403, rootfs on nfs, gigabit ethernet link, nfs mount
+	problems
+Date: Tue, 29 May 2007 14:41:58 +0000
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-To: Pradyumna Sampath <pradyumna.sampath@gmail.com>
-Subject: Re: [PATCH] Powerpc compiler error fix for 2.6.21-rt8
-References: <f87351060705282124q6d6b1562ic1dd4da4b8a62886@mail.gmail.com>
-In-Reply-To: <f87351060705282124q6d6b1562ic1dd4da4b8a62886@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linux-rt-users@vger.kernel.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,33 +21,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello.
 
-Pradyumna Sampath wrote:
+Hi all,
 
-> Attached is a small patch to fix compile time errors which is broken
-> in 2.6.21-rt8 for powerpc.
+well I could bring up the grant's kernel on ml403 completely. the root file=
+ system was over nfs.=20
 
-    NAK. It's been deleted on purpose (not used anymore), and I've already 
-sent a patch to kill the leftover reference.
+when I use a 100mbits link for connection to ml403 , every thing is working=
+ suitably.
+but when I use a 1000mbits link, I see that ml403 gets ip address from dhcp=
+ and mounts the root file system but can not go further , it stops with a m=
+essage: "nfs server not responding ...." some thing like this.
 
-> ------------------------------------------------------------------------
-> 
-> diff -ur latest/linux-2.6.21/arch/powerpc/kernel/time.c linux-2.6.21/arch/powerpc/kernel/time.c
-> --- latest/linux-2.6.21/arch/powerpc/kernel/time.c	2007-05-29 09:58:12.000000000 +0530
-> +++ linux-2.6.21/arch/powerpc/kernel/time.c	2007-05-29 08:58:56.000000000 +0530
-> @@ -95,6 +95,8 @@
->  #define SCALE_XSEC(xsec, max)	mulhwu((xsec) << 12, max)
->  #endif
->  
-> +unsigned long cpu_khz;  /* Detected as we calibrate the TSC */
-> +EXPORT_SYMBOL(cpu_khz);
->  unsigned long tb_ticks_per_jiffy;
->  unsigned long tb_ticks_per_usec = 100; /* sane default */
->  EXPORT_SYMBOL(tb_ticks_per_usec);
-> Only in linux-2.6.21/arch/powerpc/kernel: vmlinux.lds
-> Only in linux-2.6.21/scripts/kconfig: mconf
+when pinging to ml403 with 64 bytes packets, ping works fine for both of 10=
+0 and 1000mbits links
+but when I try to ping the board with 4000 bytes packets I notice that ml40=
+3 on gigabit link can not answer to ping packets, however on 100mbit link e=
+very thing works just fine.
 
-    Please cut off such garbage from yoour patches...
+any ideas?
 
-WBR, Sergei
+
+_________________________________________________________________
+Connect to the next generation of MSN Messenger=A0
+http://imagine-msn.com/messenger/launch80/default.aspx?locale=3Den-us&sourc=
+e=3Dwlmailtagline=
