@@ -1,23 +1,28 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 84941DE033
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 20:51:39 +1000 (EST)
-Date: Tue, 29 May 2007 12:51:35 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [patch 7/7] ps3: FLASH ROM Storage Driver
-Message-ID: <20070529105135.GE29351@lst.de>
-References: <20070525083607.784351000@sonycom.com>
-	<20070525083632.815300000@sonycom.com>
-	<20070529095355.GA29351@lst.de>
-	<Pine.LNX.4.62.0705291157260.7698@pademelon.sonytel.be>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 121ECDDFF4
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 21:06:42 +1000 (EST)
+Date: Tue, 29 May 2007 21:06:35 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: michael@ellerman.id.au
+Subject: Re: [Patch ] Kexec/Kdump support - POWER6
+Message-Id: <20070529210635.0e840545.sfr@canb.auug.org.au>
+In-Reply-To: <1180433684.5953.1.camel@concordia.ozlabs.ibm.com>
+References: <4652E088.9080207@in.ibm.com> <4652E109.4020204@in.ibm.com>
+	<4652E17C.7080607@in.ibm.com> <20070522153419.GA22047@lixom.net>
+	<46540B6F.6030300@in.ibm.com>
+	<18004.7556.311264.415721@cargo.ozlabs.ibm.com>
+	<20070524121751.GB4547@in.ibm.com>
+	<20070524142133.GA13191@lixom.net> <4656A488.2020507@in.ibm.com>
+	<1180132987.19517.9.camel@localhost.localdomain>
+	<465ABFC9.9020502@in.ibm.com>
+	<1180433684.5953.1.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.62.0705291157260.7698@pademelon.sonytel.be>
-Cc: linuxppc-dev@ozlabs.org, Christoph Hellwig <hch@lst.de>,
-	linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__29_May_2007_21_06_35_+1000_8nvZxI_5FrzzFq+e"
+Cc: Milton Miller II <miltonm@us.ibm.com>, kexec@lists.infradead.org,
+	linuxppc-dev@ozlabs.org, Mackerras <paulus@samba.org>, Paul
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,18 +32,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 29, 2007 at 11:57:52AM +0200, Geert Uytterhoeven wrote:
-> On Tue, 29 May 2007, Christoph Hellwig wrote:
-> > On Fri, May 25, 2007 at 10:36:14AM +0200, Geert.Uytterhoeven@sonycom.com wrote:
-> > > Add a FLASH ROM Storage Driver for the PS3:
-> > >   - Implemented as a misc character device driver
-> > >   - Uses a fixed 256 KiB buffer allocated from boot memory as the hypervisor
-> > >     requires the writing of aligned 256 KiB blocks
-> > 
-> > Looks good, but please either make the driver aware of multiple devices
-> > even if they can't happen currently, or alternatively error out in
-> > ->probe if of some reason it's called for a second device.
-> 
-> ps3flash_probe() does return -EBUSY when called for a second device.
+--Signature=_Tue__29_May_2007_21_06_35_+1000_8nvZxI_5FrzzFq+e
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-You're right, I missed that bit.
+On Tue, 29 May 2007 20:14:44 +1000 Michael Ellerman <michael@ellerman.id.au> wrote:
+>
+> Add this to your ~/.vimrc, you do use vim right :)
+>
+> highlight RedundantWhitespace ctermbg=red guibg=red
+
+You need this as well:
+
+match RedundantWhitespace /\s\+$\| \+\ze\t/
+
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__29_May_2007_21_06_35_+1000_8nvZxI_5FrzzFq+e
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGXAlAFdBgD/zoJvwRAh8wAJ4wbDJTYS7ZFPZT3rSLQm2aJ4EvCgCePnwx
+So+USiSjRuxqVbtcaaUQABk=
+=iSeS
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__29_May_2007_21_06_35_+1000_8nvZxI_5FrzzFq+e--
