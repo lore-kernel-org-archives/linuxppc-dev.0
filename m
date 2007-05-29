@@ -1,23 +1,21 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
-	[151.189.21.47])
+Return-Path: <timur@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A6145DDE10
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 08:13:57 +1000 (EST)
-In-Reply-To: <20070528202822.GA31605@uranus.ravnborg.org>
-References: <f7ff5aadda1b2962d6c45123ff944e9af6879306.1179593209.git.segher@kernel.crashing.org>
-	<bd3cddd2f3192e3aba4d7c886e38d8d0037c3510.1179593209.git.segher@kernel.crashing.org>
-	<20070528202822.GA31605@uranus.ravnborg.org>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <91f430e6615a8895ec0d5293c21f618e@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] powerpc: Refuse to build 64-bit with GCC-4.2.0 and
-	CONFIG_MODULES
-Date: Tue, 29 May 2007 00:13:50 +0200
-To: Sam Ravnborg <sam@ravnborg.org>
+	by ozlabs.org (Postfix) with ESMTP id 3C862DDF30
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 10:19:36 +1000 (EST)
+Message-ID: <465B71E3.5080009@freescale.com>
+Date: Mon, 28 May 2007 19:20:51 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH] powerpc: automatically select QE options
+References: <1173732027723-git-send-email-timur@freescale.com>
+	<465B14B2.2020804@ru.mvista.com>
+In-Reply-To: <465B14B2.2020804@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,12 +26,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> ...since this won't work (compiler bug, see 
->> <http://gcc.gnu.org/PR31490>).
->
-> Applied both and documented cc-fullversion too.
+Sergei Shtylyov wrote:
 
-Thanks!  For reference, where should I have documented this?
+>    Grr... this causes menuconfig to complain on non-PPC archs:
+> 
+> drivers/net/Kconfig:2278:warning: 'select' used by config symbol 
+> 'UCC_GETH' refer to undefined symbol 'UCC_FAST'
 
-
-Segher
+I submitted a fix for this a LONG time ago.  It was applied to the -mm tree and to Kumar's tree, so I don't know why you don't have it.
