@@ -1,23 +1,12 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-08.arcor-online.net (mail-in-08.arcor-online.net
-	[151.189.21.48])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id ED4ABDDEDF
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 16:44:17 +1000 (EST)
-In-Reply-To: <20070529060541.GG30266@localhost.localdomain>
-References: <20070529060541.GG30266@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <c7c131c3a7fdf7727d9ea1e40775017a@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: Fix problems with Holly's DT representation of ethernet PHYs
-Date: Tue, 29 May 2007 08:43:38 +0200
-To: David Gibson <dwg@au1.ibm.com>
-Cc: Alexandre Bounine <Alexandre.Bounine@tundra.com>,
-	Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 29 May 2007 16:45:21 +1000
+Subject: [RFC/PATCH 1/5] powerpc: Disable broken PPC_PTRACE_GETFPREGS on 32
+	bits
+Message-Id: <20070529064531.095FCDDF6E@ozlabs.org>
+Cc: ulrich.weigand@de.ibm.com, Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +16,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> +		MDIO: mdio@6000 {
->  			device_type = "mdio";
-> -			compatible = "tsi-ethernet";
-> +			compatible = "tsi-mdio";
+The handling of PPC_PTRACE_GETFPREGS is broken on 32 bits kernel,
+it will only return half of the registers. Since that call didn't
+initially exist for 32 bits kernel (added recently), rather than
+fixing it, let's just remove it.
 
-Hrm, did I miss this before?  A more exact "compatible"
-property would be better ("tsi109-mdio" "tsi108-mdio" or
-something like that).
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Rest looks good,
+ arch/powerpc/kernel/ptrace.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-
-Segher
+Index: linux-cell/arch/powerpc/kernel/ptrace.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/kernel/ptrace.c	2007-05-29 11:34:20.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/ptrace.c	2007-05-29 11:34:35.000000000 +1000
+@@ -434,6 +434,7 @@ long arch_ptrace(struct task_struct *chi
+ 		break;
+ 	}
+ 
++#ifdef CONFIG_PPC64
+ 	case PPC_PTRACE_GETFPREGS: { /* Get FPRs 0 - 31. */
+ 		int i;
+ 		unsigned long *reg = &((unsigned long *)child->thread.fpr)[0];
+@@ -467,6 +468,7 @@ long arch_ptrace(struct task_struct *chi
+ 		}
+ 		break;
+ 	}
++#endif /* CONFIG_PPC64 */
+ 
+ #ifdef CONFIG_ALTIVEC
+ 	case PTRACE_GETVRREGS:
