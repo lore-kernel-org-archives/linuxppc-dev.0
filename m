@@ -1,28 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 121ECDDFF4
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 21:06:42 +1000 (EST)
-Date: Tue, 29 May 2007 21:06:35 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: michael@ellerman.id.au
-Subject: Re: [Patch ] Kexec/Kdump support - POWER6
-Message-Id: <20070529210635.0e840545.sfr@canb.auug.org.au>
-In-Reply-To: <1180433684.5953.1.camel@concordia.ozlabs.ibm.com>
-References: <4652E088.9080207@in.ibm.com> <4652E109.4020204@in.ibm.com>
-	<4652E17C.7080607@in.ibm.com> <20070522153419.GA22047@lixom.net>
-	<46540B6F.6030300@in.ibm.com>
-	<18004.7556.311264.415721@cargo.ozlabs.ibm.com>
-	<20070524121751.GB4547@in.ibm.com>
-	<20070524142133.GA13191@lixom.net> <4656A488.2020507@in.ibm.com>
-	<1180132987.19517.9.camel@localhost.localdomain>
-	<465ABFC9.9020502@in.ibm.com>
-	<1180433684.5953.1.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__29_May_2007_21_06_35_+1000_8nvZxI_5FrzzFq+e"
-Cc: Milton Miller II <miltonm@us.ibm.com>, kexec@lists.infradead.org,
-	linuxppc-dev@ozlabs.org, Mackerras <paulus@samba.org>, Paul
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id CDFF1DDFD6
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 21:11:42 +1000 (EST)
+Date: Tue, 29 May 2007 13:11:41 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [patch 6/7] ps3: ROM Storage Driver
+In-Reply-To: <20070529104948.GC29351@lst.de>
+Message-ID: <Pine.LNX.4.62.0705291308280.7698@pademelon.sonytel.be>
+References: <20070525083607.784351000@sonycom.com>
+	<20070525083632.677742000@sonycom.com>
+	<20070529104948.GC29351@lst.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-scsi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,35 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__29_May_2007_21_06_35_+1000_8nvZxI_5FrzzFq+e
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+On Tue, 29 May 2007, Christoph Hellwig wrote:
+> [Note that all scsi lldds should go to linux-scsi]
 
-On Tue, 29 May 2007 20:14:44 +1000 Michael Ellerman <michael@ellerman.id.au> wrote:
->
-> Add this to your ~/.vimrc, you do use vim right :)
->
-> highlight RedundantWhitespace ctermbg=red guibg=red
+I'll Cc linux-scsi next time.
 
-You need this as well:
+> > +	sgpnt = cmd->request_buffer;
+> > +	active = 1;
+> > +	for (k = 0, req_len = 0, act_len = 0; k < cmd->use_sg; ++k, ++sgpnt) {
+> > +		if (active) {
+> > +			kaddr = kmap_atomic(sgpnt->page, KM_USER0);
+> > +			if (!kaddr)
+> > +				return DID_ERROR << 16;
+> > +			len = sgpnt->length;
+> > +			if ((req_len + len) > buflen) {
+> > +				active = 0;
+> > +				len = buflen - req_len;
+> > +			}
+> > +			memcpy(kaddr + sgpnt->offset, buf + req_len, len);
+> > +			kunmap_atomic(kaddr, KM_USER0);
+> > +			act_len += len;
+> > +		}
+> > +		req_len += sgpnt->length;
+> > +	}
+> > +	cmd->resid = req_len - act_len;
+> 
+> This looks very inefficient.  Just set sg_tablesize of your driver
+> to 1 to avoid getting mutiple segments.
 
-match RedundantWhitespace /\s\+$\| \+\ze\t/
+The disadvantage of setting sg_tablesize = 1 is that the driver will get small
+requests (PAGE_SIZE) most of the time, which is very bad for performance.
+
+Gr{oetje,eeting}s,
+
+						Geert
 
 --
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__29_May_2007_21_06_35_+1000_8nvZxI_5FrzzFq+e
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGXAlAFdBgD/zoJvwRAh8wAJ4wbDJTYS7ZFPZT3rSLQm2aJ4EvCgCePnwx
-So+USiSjRuxqVbtcaaUQABk=
-=iSeS
------END PGP SIGNATURE-----
-
---Signature=_Tue__29_May_2007_21_06_35_+1000_8nvZxI_5FrzzFq+e--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
