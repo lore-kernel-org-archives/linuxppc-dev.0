@@ -1,15 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Message-ID: <fa686aa40705290701h590998bfjc36385fa08a821d0@mail.gmail.com>
-Date: Tue, 29 May 2007 08:01:08 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "angelalinyao@163.com" <angelalinyao@163.com>
-Subject: Re: How can I get a ramdisk.image for linux2.6 running on ML403?
-In-Reply-To: <2547937.196031180424819306.JavaMail.nabble@isper.nabble.com>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 0A927DE062
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 30 May 2007 00:39:30 +1000 (EST)
+Message-ID: <465C3B7E.1000209@ru.mvista.com>
+Date: Tue, 29 May 2007 18:41:02 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <2547937.196031180424819306.JavaMail.nabble@isper.nabble.com>
-Cc: Linuxppc-embedded@ozlabs.org
+To: Pradyumna Sampath <pradyumna.sampath@gmail.com>
+Subject: Re: [PATCH] Powerpc compiler error fix for 2.6.21-rt8
+References: <f87351060705282124q6d6b1562ic1dd4da4b8a62886@mail.gmail.com>
+In-Reply-To: <f87351060705282124q6d6b1562ic1dd4da4b8a62886@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linux-rt-users@vger.kernel.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,22 +23,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 5/29/07, angelalinyao@163.com <angelalinyao@163.com> wrote:
->     Is there any ramdisk.image provided for linux 2.6?Or maybe I have to make a ramdisk by myself?If I make a ramdisk by myself,where can I get all the files under dev/?Will the dev/ simply copied from a server or PC which runs linux 2.6 work for ppc405?
->     Any help from you is appreciated.Thank you!
+Hello.
 
-If you just want an out-of-the-box ramdisk, you can use the one in ELDK
+Pradyumna Sampath wrote:
 
-http://www.denx.de/wiki/DULG/ELDK
+> Attached is a small patch to fix compile time errors which is broken
+> in 2.6.21-rt8 for powerpc.
 
-Or, you can mount your existing ramdisk image on another Linux box and
-copy the needed files over.  The /dev entries are the same across all
-architectures.
+    NAK. It's been deleted on purpose (not used anymore), and I've already 
+sent a patch to kill the leftover reference.
 
-g.
+> ------------------------------------------------------------------------
+> 
+> diff -ur latest/linux-2.6.21/arch/powerpc/kernel/time.c linux-2.6.21/arch/powerpc/kernel/time.c
+> --- latest/linux-2.6.21/arch/powerpc/kernel/time.c	2007-05-29 09:58:12.000000000 +0530
+> +++ linux-2.6.21/arch/powerpc/kernel/time.c	2007-05-29 08:58:56.000000000 +0530
+> @@ -95,6 +95,8 @@
+>  #define SCALE_XSEC(xsec, max)	mulhwu((xsec) << 12, max)
+>  #endif
+>  
+> +unsigned long cpu_khz;  /* Detected as we calibrate the TSC */
+> +EXPORT_SYMBOL(cpu_khz);
+>  unsigned long tb_ticks_per_jiffy;
+>  unsigned long tb_ticks_per_usec = 100; /* sane default */
+>  EXPORT_SYMBOL(tb_ticks_per_usec);
+> Only in linux-2.6.21/arch/powerpc/kernel: vmlinux.lds
+> Only in linux-2.6.21/scripts/kconfig: mconf
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+    Please cut off such garbage from yoour patches...
+
+WBR, Sergei
