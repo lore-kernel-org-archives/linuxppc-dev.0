@@ -1,29 +1,13 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4B19ADDFD4
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 16:59:16 +1000 (EST)
-Subject: Re: [Patch ] Kexec/Kdump support - POWER6
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: sachinp@in.ibm.com
-In-Reply-To: <465BC5A1.5040505@in.ibm.com>
-References: <4652E088.9080207@in.ibm.com> <4652E109.4020204@in.ibm.com>
-	<4652E17C.7080607@in.ibm.com> <20070522153419.GA22047@lixom.net>
-	<46540B6F.6030300@in.ibm.com>
-	<18004.7556.311264.415721@cargo.ozlabs.ibm.com>
-	<20070524121751.GB4547@in.ibm.com> <20070524142133.GA13191@lixom.net>
-	<4656A488.2020507@in.ibm.com>
-	<1180132987.19517.9.camel@localhost.localdomain>
-	<465ABFC9.9020502@in.ibm.com>
-	<1180387894.19517.99.camel@localhost.localdomain>
-	<465BC5A1.5040505@in.ibm.com>
-Content-Type: text/plain
-Date: Tue, 29 May 2007 16:58:05 +1000
-Message-Id: <1180421885.19517.109.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	kexec@lists.infradead.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: paulus@samba.org
+Subject: [PATCH] fix compile warning in pseries xics 
+In-reply-to: <1180417937.5313.6.camel@concordia.ozlabs.ibm.com> 
+References: <27973.1180417829@neuling.org>
+	<1180417937.5313.6.camel@concordia.ozlabs.ibm.com>
+Date: Tue, 29 May 2007 17:01:52 +1000
+Message-ID: <4564.1180422112@neuling.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,18 +17,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-05-29 at 11:48 +0530, Sachin P. Sant wrote:
-> 
-> In previous patches i had these #defines in mmu-hash64.h. But got
-> review comments to move them to lpar.c :-)
+In 616883df78bd4b3fcdb6ddc39bd3d4cb902bfa32 request_irq was marked as
+__must_check so we must... er... check it.
 
-Hrm... weird. Oh well, _I_ personally prefer them in mmu-hash64.h and
-since I'm writing most of the MMU code lately I'd say my opinion makes
-rule :-)
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+Updated based on comments from mpe and benh.
 
-> Oh well i will move them back to mmu-hash64.h.
+ arch/powerpc/platforms/pseries/xics.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-Thanks.
-
-Cheers,
-Ben.
+Index: linux-2.6-ozlabs/arch/powerpc/platforms/pseries/xics.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/platforms/pseries/xics.c
++++ linux-2.6-ozlabs/arch/powerpc/platforms/pseries/xics.c
+@@ -752,6 +752,7 @@ skip_gserver_check:
+ void xics_request_IPIs(void)
+ {
+ 	unsigned int ipi;
++	int rc;
+ 
+ 	ipi = irq_create_mapping(xics_host, XICS_IPI);
+ 	BUG_ON(ipi == NO_IRQ);
+@@ -762,11 +763,12 @@ void xics_request_IPIs(void)
+ 	 */
+ 	set_irq_handler(ipi, handle_percpu_irq);
+ 	if (firmware_has_feature(FW_FEATURE_LPAR))
+-		request_irq(ipi, xics_ipi_action_lpar, IRQF_DISABLED,
+-			    "IPI", NULL);
++		rc = request_irq(ipi, xics_ipi_action_lpar, IRQF_DISABLED,
++				"IPI", NULL);
+ 	else
+-		request_irq(ipi, xics_ipi_action_direct, IRQF_DISABLED,
+-			    "IPI", NULL);
++		rc = request_irq(ipi, xics_ipi_action_direct, IRQF_DISABLED,
++				"IPI", NULL);
++	BUG_ON(rc);
+ }
+ #endif /* CONFIG_SMP */
+ 
