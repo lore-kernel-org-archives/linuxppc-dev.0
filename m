@@ -1,9 +1,9 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 29 May 2007 16:45:22 +1000
-Subject: [RFC/PATCH 3/5] powerpc: ptrace updates & new better requests
-Message-Id: <20070529064532.F1127DDFAF@ozlabs.org>
+Date: Tue, 29 May 2007 16:45:23 +1000
+Subject: [RFC/PATCH 4/5] powerpc: Make syscall restart code more common
+Message-Id: <20070529064533.CA8C4DDFF8@ozlabs.org>
 Cc: ulrich.weigand@de.ibm.com, Paul Mackerras <paulus@samba.org>,
 	Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -15,585 +15,238 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The powerpc ptrace interface is dodgy at best. We have defined our
-"own" versions of GETREGS/SETREGS/GETFPREGS/SETFPREGS that strangely
-take arguments in reverse order from other archs (in addition to having
-different request numbers) and have subtle issue, like not accessing
-all of the registers in their respective categories.
+This patch moves the code in signal_32.c and signal_64.c for handling
+syscall restart into a common signal-common.h file and converge around
+a single implementation that is based on the 32 bits one, using trap, ccr
+and r3 rather than the special "result" field for deciding what to do.
 
-This patch moves the implementation of those to a separate function
-in order to facilitate their deprecation in the future, and provides
-new ptrace requests that mirror the x86 and sparc ones and use the
-same numbers:
-
-   PTRACE_GETREGS    : returns an entire pt_regs (the whole thing,
-                       not only the 32 GPRs, though that doesn't
-                       include the FPRs etc... There's a compat version
-                       for 32 bits that returns a 32 bits compatible
-                       pt_regs (44 uints)
-
-   PTRACE_SETREGS    : sets an entire pt_regs (the whole thing,
-                       not only the 32 GPRs, though that doesn't
-                       include the FPRs etc... Some registers cannot be
-                       written to and will just be dropped, this is the
-                       same as with POKEUSR, that is anything above MQ
-                       on 32 bits and CCR on 64 bits. There is a compat
-                       version as well.
-
-   PTRACE_GETFPREGS  : returns all the FP registers -including- the FPSCR
-                       that is 33 doubles (regardless of 32/64 bits)
-
-   PTRACE_SETFPREGS  : sets all the FP registers -including- the FPSCR
-                       that is 33 doubles (regardless of 32/64 bits)
-
-And two that only exist on 64 bits kernels:
-
-   PTRACE_GETREGS64  : Same as PTRACE_GETREGS, except there is no compat
-                       function, a 32 bits process will obtain the full 64
-                       bits registers
-
-   PTRACE_SETREGS64  : Same as PTRACE_SETREGS, except there is no compat
-                       function, a 32 bits process will set the full 64
-                       bits registers
-
-The two later ones makes things easier to have a 32 bits debugger on a
-64 bits program (or on a 32 bits program that uses the full 64 bits of
-the GPRs, which is possible though has issues that will be fixed in a
-later patch).
-
-Finally, while at it, the patch removes a whole bunch of code duplication
-between ptrace32.c and ptrace.c, in large part by having the former call
-into the later for all requests that don't need any special "compat"
-treatment.
+The "result" field is now pretty much deprecated. We still set it for
+the sake of whatever might rely on it in userland but we no longer use
+it's content.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
 
- arch/powerpc/kernel/ptrace-common.h |   23 ++++
- arch/powerpc/kernel/ptrace.c        |  148 +++++++++++++++++---------
- arch/powerpc/kernel/ptrace32.c      |  204 +++++++++++++++---------------------
- include/asm-powerpc/ptrace.h        |   17 ++-
- 4 files changed, 222 insertions(+), 170 deletions(-)
 
-Index: linux-cell/arch/powerpc/kernel/ptrace.c
+ arch/powerpc/kernel/signal-common.h |   66 ++++++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/signal_32.c     |   28 ++-------------
+ arch/powerpc/kernel/signal_64.c     |   59 +++-----------------------------
+ 3 files changed, 77 insertions(+), 76 deletions(-)
+
+Index: linux-cell/arch/powerpc/kernel/signal-common.h
 ===================================================================
---- linux-cell.orig/arch/powerpc/kernel/ptrace.c	2007-05-29 16:21:50.000000000 +1000
-+++ linux-cell/arch/powerpc/kernel/ptrace.c	2007-05-29 16:22:07.000000000 +1000
-@@ -59,6 +59,62 @@ void ptrace_disable(struct task_struct *
- 	clear_single_step(child);
- }
- 
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/arch/powerpc/kernel/signal-common.h	2007-05-29 16:22:10.000000000 +1000
+@@ -0,0 +1,66 @@
 +/*
-+ * Here are the old "legacy" powerpc specific getregs/setregs ptrace calls,
-+ * we mark them as obsolete now, they will be removed in a future version
++ *    Copyright (c) 2007 Benjamin Herrenschmidt, IBM Coproration
++ *    Extracted from signal_32.c and signal_64.c
++ *
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License.  See the file README.legal in the main directory of
++ * this archive for more details.
 + */
-+static long arch_ptrace_old(struct task_struct *child, long request, long addr,
-+			    long data)
++
++#ifndef _POWERPC_SIGNAL_COMMON_H
++#define _POWERPC_SIGNAL_COMMON_H
++
++static inline void check_syscall_restart(struct pt_regs *regs,
++					 struct k_sigaction *ka,
++					 int has_handler)
 +{
-+	int ret = -EPERM;
++	unsigned long ret = regs->gpr[3];
++	int restart = 1;
 +
-+	switch(request) {
-+	case PPC_PTRACE_GETREGS: { /* Get GPRs 0 - 31. */
-+		int i;
-+		unsigned long *reg = &((unsigned long *)child->thread.regs)[0];
-+		unsigned long __user *tmp = (unsigned long __user *)addr;
++	/* syscall ? */
++	if (TRAP(regs) != 0x0C00)
++		return;
 +
-+		for (i = 0; i < 32; i++) {
-+			ret = put_user(*reg, tmp);
-+			if (ret)
-+				break;
-+			reg++;
-+			tmp++;
-+		}
++	/* error signalled ? */
++	if (!(regs->ccr & 0x10000000))
++		return;
++
++	switch (ret) {
++	case ERESTART_RESTARTBLOCK:
++	case ERESTARTNOHAND:
++		/* ERESTARTNOHAND means that the syscall should only be
++		 * restarted if there was no handler for the signal, and since
++		 * we only get here if there is a handler, we dont restart.
++		 */
++		restart = !has_handler;
 +		break;
-+	}
-+
-+	case PPC_PTRACE_SETREGS: { /* Set GPRs 0 - 31. */
-+		int i;
-+		unsigned long *reg = &((unsigned long *)child->thread.regs)[0];
-+		unsigned long __user *tmp = (unsigned long __user *)addr;
-+
-+		for (i = 0; i < 32; i++) {
-+			ret = get_user(*reg, tmp);
-+			if (ret)
-+				break;
-+			reg++;
-+			tmp++;
-+		}
++	case ERESTARTSYS:
++		/* ERESTARTSYS means to restart the syscall if there is no
++		 * handler or the handler was registered with SA_RESTART
++		 */
++		restart = !has_handler || (ka->sa.sa_flags & SA_RESTART) != 0;
 +		break;
-+	}
-+
-+	case PPC_PTRACE_GETFPREGS: { /* Get FPRs 0 - 31. */
-+		flush_fp_to_thread(child);
-+		ret = get_fpregs((void __user *)addr, child, 0);
++	case ERESTARTNOINTR:
++		/* ERESTARTNOINTR means that the syscall should be
++		 * called again after the signal handler returns.
++		 */
 +		break;
++	default:
++		return;
 +	}
-+
-+	case PPC_PTRACE_SETFPREGS: { /* Get FPRs 0 - 31. */
-+		flush_fp_to_thread(child);
-+		ret = set_fpregs((void __user *)addr, child, 0);
-+		break;
++	if (restart) {
++		if (ret == ERESTART_RESTARTBLOCK)
++			regs->gpr[0] = __NR_restart_syscall;
++		else
++			regs->gpr[3] = regs->orig_gpr3;
++		regs->nip -= 4;
++		regs->result = 0;
++	} else {
++		regs->result = -EINTR;
++		regs->gpr[3] = EINTR;
++		regs->ccr |= 0x10000000;
 +	}
-+
-+	}
-+	return ret;
 +}
 +
- long arch_ptrace(struct task_struct *child, long request, long addr, long data)
- {
- 	int ret = -EPERM;
-@@ -214,71 +270,58 @@ long arch_ptrace(struct task_struct *chi
- 		ret = ptrace_detach(child, data);
- 		break;
- 
--	case PPC_PTRACE_GETREGS: { /* Get GPRs 0 - 31. */
--		int i;
--		unsigned long *reg = &((unsigned long *)child->thread.regs)[0];
--		unsigned long __user *tmp = (unsigned long __user *)addr;
--
--		for (i = 0; i < 32; i++) {
--			ret = put_user(*reg, tmp);
--			if (ret)
--				break;
--			reg++;
--			tmp++;
-+#ifdef CONFIG_PPC64
-+	case PTRACE_GETREGS64:
-+#endif
-+	case PTRACE_GETREGS: { /* Get all pt_regs from the child. */
-+		int ui;
-+	  	if (!access_ok(VERIFY_WRITE, (void __user *)data,
-+			       sizeof(struct pt_regs))) {
-+			ret = -EIO;
-+			break;
-+		}
-+		ret = 0;
-+		for (ui = 0; ui < PT_REGS_COUNT; ui ++) {
-+			ret |= __put_user(get_reg(child, ui),
-+					  (unsigned long __user *) data);
-+			data += sizeof(long);
- 		}
- 		break;
- 	}
- 
--	case PPC_PTRACE_SETREGS: { /* Set GPRs 0 - 31. */
--		int i;
--		unsigned long *reg = &((unsigned long *)child->thread.regs)[0];
--		unsigned long __user *tmp = (unsigned long __user *)addr;
--
--		for (i = 0; i < 32; i++) {
--			ret = get_user(*reg, tmp);
-+#ifdef CONFIG_PPC64
-+	case PTRACE_SETREGS64:
-+#endif
-+	case PTRACE_SETREGS: { /* Set all gp regs in the child. */
-+		unsigned long tmp;
-+		int ui;
-+	  	if (!access_ok(VERIFY_READ, (void __user *)data,
-+			       sizeof(struct pt_regs))) {
-+			ret = -EIO;
-+			break;
-+		}
-+		ret = 0;
-+		for (ui = 0; ui < PT_REGS_COUNT; ui ++) {
-+			ret = __get_user(tmp, (unsigned long __user *) data);
- 			if (ret)
- 				break;
--			reg++;
--			tmp++;
-+			put_reg(child, ui, tmp);
-+			data += sizeof(long);
- 		}
- 		break;
- 	}
- 
--#ifdef CONFIG_PPC64
--	case PPC_PTRACE_GETFPREGS: { /* Get FPRs 0 - 31. */
--		int i;
--		unsigned long *reg = &((unsigned long *)child->thread.fpr)[0];
--		unsigned long __user *tmp = (unsigned long __user *)addr;
--
-+	case PTRACE_GETFPREGS: { /* Get the child FPU state (FPR0...31 + FPSCR) */
- 		flush_fp_to_thread(child);
--
--		for (i = 0; i < 32; i++) {
--			ret = put_user(*reg, tmp);
--			if (ret)
--				break;
--			reg++;
--			tmp++;
--		}
-+		ret = get_fpregs((void __user *)data, child, 1);
- 		break;
- 	}
- 
--	case PPC_PTRACE_SETFPREGS: { /* Get FPRs 0 - 31. */
--		int i;
--		unsigned long *reg = &((unsigned long *)child->thread.fpr)[0];
--		unsigned long __user *tmp = (unsigned long __user *)addr;
--
-+	case PTRACE_SETFPREGS: { /* Set the child FPU state (FPR0...31 + FPSCR) */
- 		flush_fp_to_thread(child);
--
--		for (i = 0; i < 32; i++) {
--			ret = get_user(*reg, tmp);
--			if (ret)
--				break;
--			reg++;
--			tmp++;
--		}
-+		ret = set_fpregs((void __user *)data, child, 1);
- 		break;
- 	}
--#endif /* CONFIG_PPC64 */
- 
- #ifdef CONFIG_ALTIVEC
- 	case PTRACE_GETVRREGS:
-@@ -311,11 +354,18 @@ long arch_ptrace(struct task_struct *chi
- 		break;
++
++#endif /* _POWERPC_SIGNAL_COMMON_H */
+Index: linux-cell/arch/powerpc/kernel/signal_32.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/kernel/signal_32.c	2007-05-29 16:21:37.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/signal_32.c	2007-05-29 16:22:10.000000000 +1000
+@@ -51,6 +51,8 @@
+ #include <asm/pgtable.h>
  #endif
  
-+	/* Old reverse args ptrace callss */
-+	case PPC_PTRACE_GETREGS: /* Get GPRs 0 - 31. */
-+	case PPC_PTRACE_SETREGS: /* Set GPRs 0 - 31. */
-+	case PPC_PTRACE_GETFPREGS: /* Get FPRs 0 - 31. */
-+	case PPC_PTRACE_SETFPREGS: /* Get FPRs 0 - 31. */
-+		ret = arch_ptrace_old(child, request, addr, data);
-+		break;
++#include "signal-common.h"
 +
- 	default:
- 		ret = ptrace_request(child, request, addr, data);
- 		break;
- 	}
+ #undef DEBUG_SIG
+ 
+ #define _BLOCKABLE (~(sigmask(SIGKILL) | sigmask(SIGSTOP)))
+@@ -1156,30 +1158,8 @@ int do_signal(sigset_t *oldset, struct p
+ #ifdef CONFIG_PPC32
+ no_signal:
+ #endif
+-	if (TRAP(regs) == 0x0C00		/* System Call! */
+-	    && regs->ccr & 0x10000000		/* error signalled */
+-	    && ((ret = regs->gpr[3]) == ERESTARTSYS
+-		|| ret == ERESTARTNOHAND || ret == ERESTARTNOINTR
+-		|| ret == ERESTART_RESTARTBLOCK)) {
 -
+-		if (signr > 0
+-		    && (ret == ERESTARTNOHAND || ret == ERESTART_RESTARTBLOCK
+-			|| (ret == ERESTARTSYS
+-			    && !(ka.sa.sa_flags & SA_RESTART)))) {
+-			/* make the system call return an EINTR error */
+-			regs->result = -EINTR;
+-			regs->gpr[3] = EINTR;
+-			/* note that the cr0.SO bit is already set */
+-		} else {
+-			regs->nip -= 4;	/* Back up & retry system call */
+-			regs->result = 0;
+-			regs->trap = 0;
+-			if (ret == ERESTART_RESTARTBLOCK)
+-				regs->gpr[0] = __NR_restart_syscall;
+-			else
+-				regs->gpr[3] = regs->orig_gpr3;
+-		}
+-	}
++	/* Is there any syscall restart business here ? */
++	check_syscall_restart(regs, &ka, signr > 0);
+ 
+ 	if (signr == 0) {
+ 		/* No signal to deliver -- put the saved sigmask back */
+Index: linux-cell/arch/powerpc/kernel/signal_64.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/kernel/signal_64.c	2007-05-29 16:21:37.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/signal_64.c	2007-05-29 16:22:10.000000000 +1000
+@@ -34,6 +34,8 @@
+ #include <asm/syscalls.h>
+ #include <asm/vdso.h>
+ 
++#include "signal-common.h"
++
+ #define DEBUG_SIG 0
+ 
+ #define _BLOCKABLE (~(sigmask(SIGKILL) | sigmask(SIGSTOP)))
+@@ -463,41 +465,6 @@ static int handle_signal(unsigned long s
  	return ret;
  }
  
-Index: linux-cell/include/asm-powerpc/ptrace.h
-===================================================================
---- linux-cell.orig/include/asm-powerpc/ptrace.h	2007-05-29 16:21:50.000000000 +1000
-+++ linux-cell/include/asm-powerpc/ptrace.h	2007-05-29 16:22:07.000000000 +1000
-@@ -158,9 +158,7 @@ do {									      \
- 
- #define PT_NIP	32
- #define PT_MSR	33
--#ifdef __KERNEL__
- #define PT_ORIG_R3 34
--#endif
- #define PT_CTR	35
- #define PT_LNK	36
- #define PT_XER	37
-@@ -169,11 +167,12 @@ do {									      \
- #define PT_MQ	39
- #else
- #define PT_SOFTE 39
-+#endif
- #define PT_TRAP	40
- #define PT_DAR	41
- #define PT_DSISR 42
- #define PT_RESULT 43
--#endif
-+#define PT_REGS_COUNT 44
- 
- #define PT_FPR0	48	/* each FP reg occupies 2 slots in this space */
- 
-@@ -229,7 +228,17 @@ do {									      \
- #define PTRACE_GET_DEBUGREG	25
- #define PTRACE_SET_DEBUGREG	26
- 
--/* Additional PTRACE requests implemented on PowerPC. */
-+/* (new) PTRACE requests using the same numbers as x86 and the same
-+ * argument ordering. Additionally, they support more registers too
-+ */
-+#define PTRACE_GETREGS            12
-+#define PTRACE_SETREGS            13
-+#define PTRACE_GETFPREGS          14
-+#define PTRACE_SETFPREGS          15
-+#define PTRACE_GETREGS64	  22
-+#define PTRACE_SETREGS64	  23
-+
-+/* (old) PTRACE requests with inverted arguments */
- #define PPC_PTRACE_GETREGS	0x99	/* Get GPRs 0 - 31 */
- #define PPC_PTRACE_SETREGS	0x98	/* Set GPRs 0 - 31 */
- #define PPC_PTRACE_GETFPREGS	0x97	/* Get FPRs 0 - 31 */
-Index: linux-cell/arch/powerpc/kernel/ptrace-common.h
-===================================================================
---- linux-cell.orig/arch/powerpc/kernel/ptrace-common.h	2007-05-29 16:22:00.000000000 +1000
-+++ linux-cell/arch/powerpc/kernel/ptrace-common.h	2007-05-29 16:22:07.000000000 +1000
-@@ -52,6 +52,29 @@ static inline int put_reg(struct task_st
- }
- 
- 
-+static inline int get_fpregs(void __user *data,
-+			     struct task_struct *task,
-+			     int has_fpscr)
-+{
-+	unsigned int count = has_fpscr ? 33 : 32;
-+
-+	if (copy_to_user(data, task->thread.fpr, count * sizeof(double)))
-+		return -EFAULT;
-+	return 0;
-+}
-+
-+static inline int set_fpregs(void __user *data,
-+			     struct task_struct *task,
-+			     int has_fpscr)
-+{
-+	unsigned int count = has_fpscr ? 33 : 32;
-+
-+	if (copy_from_user(task->thread.fpr, data, count * sizeof(double)))
-+		return -EFAULT;
-+	return 0;
-+}
-+
-+
- #ifdef CONFIG_ALTIVEC
+-static inline void syscall_restart(struct pt_regs *regs, struct k_sigaction *ka)
+-{
+-	switch ((int)regs->result) {
+-	case -ERESTART_RESTARTBLOCK:
+-	case -ERESTARTNOHAND:
+-		/* ERESTARTNOHAND means that the syscall should only be
+-		 * restarted if there was no handler for the signal, and since
+-		 * we only get here if there is a handler, we dont restart.
+-		 */
+-		regs->result = -EINTR;
+-		regs->gpr[3] = EINTR;
+-		regs->ccr |= 0x10000000;
+-		break;
+-	case -ERESTARTSYS:
+-		/* ERESTARTSYS means to restart the syscall if there is no
+-		 * handler or the handler was registered with SA_RESTART
+-		 */
+-		if (!(ka->sa.sa_flags & SA_RESTART)) {
+-			regs->result = -EINTR;
+-			regs->gpr[3] = EINTR;
+-			regs->ccr |= 0x10000000;
+-			break;
+-		}
+-		/* fallthrough */
+-	case -ERESTARTNOINTR:
+-		/* ERESTARTNOINTR means that the syscall should be
+-		 * called again after the signal handler returns.
+-		 */
+-		regs->gpr[3] = regs->orig_gpr3;
+-		regs->nip -= 4;
+-		regs->result = 0;
+-		break;
+-	}
+-}
+-
  /*
-  * Get/set all the altivec registers vr0..vr31, vscr, vrsave, in one go.
-Index: linux-cell/arch/powerpc/kernel/ptrace32.c
-===================================================================
---- linux-cell.orig/arch/powerpc/kernel/ptrace32.c	2007-05-29 16:21:50.000000000 +1000
-+++ linux-cell/arch/powerpc/kernel/ptrace32.c	2007-05-29 16:22:07.000000000 +1000
-@@ -41,6 +41,50 @@
-  * in exit.c or in signal.c.
-  */
+  * Note that 'init' is a special process: it doesn't get signals it doesn't
+  * want to handle. Thus you cannot kill init even with a SIGKILL even by
+@@ -522,13 +489,13 @@ int do_signal(sigset_t *oldset, struct p
+ 		oldset = &current->blocked;
  
-+/*
-+ * Here are the old "legacy" powerpc specific getregs/setregs ptrace calls,
-+ * we mark them as obsolete now, they will be removed in a future version
-+ */
-+static long compat_ptrace_old(struct task_struct *child, long request,
-+			      long addr, long data)
-+{
-+	int ret = -EPERM;
+ 	signr = get_signal_to_deliver(&info, &ka, regs, NULL);
 +
-+	switch(request) {
-+	case PPC_PTRACE_GETREGS: { /* Get GPRs 0 - 31. */
-+		int i;
-+		unsigned long *reg = &((unsigned long *)child->thread.regs)[0];
-+		unsigned int __user *tmp = (unsigned int __user *)addr;
++	/* Is there any syscall restart business here ? */
++	check_syscall_restart(regs, &ka, signr > 0);
 +
-+		for (i = 0; i < 32; i++) {
-+			ret = put_user(*reg, tmp);
-+			if (ret)
-+				break;
-+			reg++;
-+			tmp++;
-+		}
-+		break;
-+	}
-+
-+	case PPC_PTRACE_SETREGS: { /* Set GPRs 0 - 31. */
-+		int i;
-+		unsigned long *reg = &((unsigned long *)child->thread.regs)[0];
-+		unsigned int __user *tmp = (unsigned int __user *)addr;
-+
-+		for (i = 0; i < 32; i++) {
-+			ret = get_user(*reg, tmp);
-+			if (ret)
-+				break;
-+			reg++;
-+			tmp++;
-+		}
-+		break;
-+	}
-+
-+	}
-+	return ret;
-+}
-+
- long compat_sys_ptrace(int request, int pid, unsigned long addr,
- 		       unsigned long data)
- {
-@@ -280,52 +324,6 @@ long compat_sys_ptrace(int request, int 
- 		break;
+ 	if (signr > 0) {
+ 		int ret;
+ 
+-		/* Whee!  Actually deliver the signal.  */
+-		if (TRAP(regs) == 0x0C00)
+-			syscall_restart(regs, &ka);
+-
+ 		/*
+ 		 * Reenable the DABR before delivering the signal to
+ 		 * user space. The DABR will have been cleared if it
+@@ -537,6 +504,7 @@ int do_signal(sigset_t *oldset, struct p
+ 		if (current->thread.dabr)
+ 			set_dabr(current->thread.dabr);
+ 
++		/* Whee!  Actually deliver the signal.  */
+ 		ret = handle_signal(signr, &ka, &info, oldset, regs);
+ 
+ 		/* If a signal was successfully delivered, the saved sigmask is in
+@@ -547,19 +515,6 @@ int do_signal(sigset_t *oldset, struct p
+ 		return ret;
  	}
  
--	case PTRACE_SYSCALL: /* continue and stop at next (return from) syscall */
--	case PTRACE_CONT: { /* restart after signal. */
--		ret = -EIO;
--		if (!valid_signal(data))
--			break;
--		if (request == PTRACE_SYSCALL)
--			set_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
--		else
--			clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
--		child->exit_code = data;
--		/* make sure the single step bit is not set. */
--		clear_single_step(child);
--		wake_up_process(child);
--		ret = 0;
--		break;
+-	if (TRAP(regs) == 0x0C00) {	/* System Call! */
+-		if ((int)regs->result == -ERESTARTNOHAND ||
+-		    (int)regs->result == -ERESTARTSYS ||
+-		    (int)regs->result == -ERESTARTNOINTR) {
+-			regs->gpr[3] = regs->orig_gpr3;
+-			regs->nip -= 4; /* Back up & retry system call */
+-			regs->result = 0;
+-		} else if ((int)regs->result == -ERESTART_RESTARTBLOCK) {
+-			regs->gpr[0] = __NR_restart_syscall;
+-			regs->nip -= 4;
+-			regs->result = 0;
+-		}
 -	}
--
--	/*
--	 * make the child exit.  Best I can do is send it a sigkill.
--	 * perhaps it should be put in the status that it wants to
--	 * exit.
--	 */
--	case PTRACE_KILL: {
--		ret = 0;
--		if (child->exit_state == EXIT_ZOMBIE)	/* already dead */
--			break;
--		child->exit_code = SIGKILL;
--		/* make sure the single step bit is not set. */
--		clear_single_step(child);
--		wake_up_process(child);
--		break;
--	}
--
--	case PTRACE_SINGLESTEP: {  /* set the trap flag. */
--		ret = -EIO;
--		if (!valid_signal(data))
--			break;
--		clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
--		set_single_step(child);
--		child->exit_code = data;
--		/* give it a chance to run. */
--		wake_up_process(child);
--		ret = 0;
--		break;
--	}
--
- 	case PTRACE_GET_DEBUGREG: {
- 		ret = -EINVAL;
- 		/* We only support one DABR and no IABRS at the moment */
-@@ -335,95 +333,67 @@ long compat_sys_ptrace(int request, int 
- 		break;
- 	}
- 
--	case PTRACE_SET_DEBUGREG:
--		ret = ptrace_set_debugreg(child, addr, data);
--		break;
--
--	case PTRACE_DETACH:
--		ret = ptrace_detach(child, data);
-+	case PTRACE_GETEVENTMSG:
-+		ret = put_user(child->ptrace_message, (unsigned int __user *) data);
- 		break;
- 
--	case PPC_PTRACE_GETREGS: { /* Get GPRs 0 - 31. */
--		int i;
--		unsigned long *reg = &((unsigned long *)child->thread.regs)[0];
--		unsigned int __user *tmp = (unsigned int __user *)addr;
--
--		for (i = 0; i < 32; i++) {
--			ret = put_user(*reg, tmp);
--			if (ret)
--				break;
--			reg++;
--			tmp++;
-+	case PTRACE_GETREGS: { /* Get all pt_regs from the child. */
-+		int ui;
-+	  	if (!access_ok(VERIFY_WRITE, (void __user *)data,
-+			       PT_REGS_COUNT * sizeof(int))) {
-+			ret = -EIO;
-+			break;
- 		}
--		break;
--	}
--
--	case PPC_PTRACE_SETREGS: { /* Set GPRs 0 - 31. */
--		int i;
--		unsigned long *reg = &((unsigned long *)child->thread.regs)[0];
--		unsigned int __user *tmp = (unsigned int __user *)addr;
--
--		for (i = 0; i < 32; i++) {
--			ret = get_user(*reg, tmp);
--			if (ret)
--				break;
--			reg++;
--			tmp++;
-+		ret = 0;
-+		for (ui = 0; ui < PT_REGS_COUNT; ui ++) {
-+			ret |= __put_user(get_reg(child, ui),
-+					  (unsigned int __user *) data);
-+			data += sizeof(int);
- 		}
- 		break;
- 	}
- 
--	case PPC_PTRACE_GETFPREGS: { /* Get FPRs 0 - 31. */
--		int i;
--		unsigned long *reg = &((unsigned long *)child->thread.fpr)[0];
--		unsigned int __user *tmp = (unsigned int __user *)addr;
--
--		flush_fp_to_thread(child);
--
--		for (i = 0; i < 32; i++) {
--			ret = put_user(*reg, tmp);
--			if (ret)
--				break;
--			reg++;
--			tmp++;
-+	case PTRACE_SETREGS: { /* Set all gp regs in the child. */
-+		unsigned long tmp;
-+		int ui;
-+	  	if (!access_ok(VERIFY_READ, (void __user *)data,
-+			       PT_REGS_COUNT * sizeof(int))) {
-+			ret = -EIO;
-+			break;
- 		}
--		break;
--	}
--
--	case PPC_PTRACE_SETFPREGS: { /* Get FPRs 0 - 31. */
--		int i;
--		unsigned long *reg = &((unsigned long *)child->thread.fpr)[0];
--		unsigned int __user *tmp = (unsigned int __user *)addr;
--
--		flush_fp_to_thread(child);
--
--		for (i = 0; i < 32; i++) {
--			ret = get_user(*reg, tmp);
-+		ret = 0;
-+		for (ui = 0; ui < PT_REGS_COUNT; ui ++) {
-+			ret = __get_user(tmp, (unsigned int __user *) data);
- 			if (ret)
- 				break;
--			reg++;
--			tmp++;
-+			put_reg(child, ui, tmp);
-+			data += sizeof(int);
- 		}
- 		break;
- 	}
- 
--	case PTRACE_GETEVENTMSG:
--		ret = put_user(child->ptrace_message, (unsigned int __user *) data);
--		break;
--
--#ifdef CONFIG_ALTIVEC
-+	case PTRACE_GETFPREGS:
-+	case PTRACE_SETFPREGS:
- 	case PTRACE_GETVRREGS:
--		/* Get the child altivec register state. */
--		flush_altivec_to_thread(child);
--		ret = get_vrregs((unsigned long __user *)data, child);
-+	case PTRACE_SETVRREGS:
-+	case PTRACE_GETREGS64:
-+	case PTRACE_SETREGS64:
-+	case PPC_PTRACE_GETFPREGS:
-+	case PPC_PTRACE_SETFPREGS:
-+	case PTRACE_KILL:
-+	case PTRACE_SINGLESTEP:
-+	case PTRACE_DETACH:
-+	case PTRACE_SET_DEBUGREG:
-+	case PTRACE_SYSCALL:
-+	case PTRACE_CONT:
-+		ret = arch_ptrace(child, request, addr, data);
- 		break;
- 
--	case PTRACE_SETVRREGS:
--		/* Set the child altivec register state. */
--		flush_altivec_to_thread(child);
--		ret = set_vrregs(child, (unsigned long __user *)data);
-+	/* Old reverse args ptrace callss */
-+	case PPC_PTRACE_GETREGS: /* Get GPRs 0 - 31. */
-+	case PPC_PTRACE_SETREGS: /* Set GPRs 0 - 31. */
-+		ret = compat_ptrace_old(child, request, addr, data);
- 		break;
--#endif
- 
- 	default:
- 		ret = ptrace_request(child, request, addr, data);
+ 	/* No signal to deliver -- put the saved sigmask back */
+ 	if (test_thread_flag(TIF_RESTORE_SIGMASK)) {
+ 		clear_thread_flag(TIF_RESTORE_SIGMASK);
