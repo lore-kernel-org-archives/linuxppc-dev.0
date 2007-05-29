@@ -1,13 +1,19 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: paulus@samba.org
-Subject: [PATCH] fix compile warning in pseries xics 
-In-reply-to: <1180417937.5313.6.camel@concordia.ozlabs.ibm.com> 
-References: <27973.1180417829@neuling.org>
-	<1180417937.5313.6.camel@concordia.ozlabs.ibm.com>
-Date: Tue, 29 May 2007 17:01:52 +1000
-Message-ID: <4564.1180422112@neuling.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9987ADDED0
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 17:24:30 +1000 (EST)
+Subject: Saving to 32 bits of GPRs in signal context
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Tue, 29 May 2007 17:24:15 +1000
+Message-Id: <1180423456.19517.124.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Steve Munroe <sjmunroe@us.ibm.com>, Anton Blanchard <anton@samba.org>,
+	Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,42 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In 616883df78bd4b3fcdb6ddc39bd3d4cb902bfa32 request_irq was marked as
-__must_check so we must... er... check it.
+Hi Folks !
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
-Updated based on comments from mpe and benh.
+I've been looking at saving & restoring the top 32 bits of 64 bits
+registers when delivering signals to 32 bits processes on a 64 bits
+kernel. The principle is easy, but I wonder where to stick them.
 
- arch/powerpc/platforms/pseries/xics.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+I was initially tempted to add them to the end of struct mcontext32 but
+decided against it.
 
-Index: linux-2.6-ozlabs/arch/powerpc/platforms/pseries/xics.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/platforms/pseries/xics.c
-+++ linux-2.6-ozlabs/arch/powerpc/platforms/pseries/xics.c
-@@ -752,6 +752,7 @@ skip_gserver_check:
- void xics_request_IPIs(void)
- {
- 	unsigned int ipi;
-+	int rc;
- 
- 	ipi = irq_create_mapping(xics_host, XICS_IPI);
- 	BUG_ON(ipi == NO_IRQ);
-@@ -762,11 +763,12 @@ void xics_request_IPIs(void)
- 	 */
- 	set_irq_handler(ipi, handle_percpu_irq);
- 	if (firmware_has_feature(FW_FEATURE_LPAR))
--		request_irq(ipi, xics_ipi_action_lpar, IRQF_DISABLED,
--			    "IPI", NULL);
-+		rc = request_irq(ipi, xics_ipi_action_lpar, IRQF_DISABLED,
-+				"IPI", NULL);
- 	else
--		request_irq(ipi, xics_ipi_action_direct, IRQF_DISABLED,
--			    "IPI", NULL);
-+		rc = request_irq(ipi, xics_ipi_action_direct, IRQF_DISABLED,
-+				"IPI", NULL);
-+	BUG_ON(rc);
- }
- #endif /* CONFIG_SMP */
- 
+Then, knowing that we have this uc_regs pointer that points to the
+mcontext, I was thinking about adding next to it a uc_highregs pointer
+that points to them (and I can then add them anywhere in the signal
+frame, the user don't have to know, just follow the pointer).
+
+But that means changing slightly the layout of ucontext32...
+
+Thus my question is which fields in there have their location
+ABIficated ? (not necessarily written ABI, but more like gdb "knows"
+about them for example, or the infamous old style signal frame unmangler
+in gcc C++ exception runtime).
+
+Specifically, are everybody using the uc_regs pointer to get to the
+mcontext or are some people likely to expect the mcontext to always be
+at the same offset from the beginning of the signal frame ?
+
+I'd like to add my highregs pointer just before the mcontext (after all
+the other fields) but I see a uc_pad2 in there which makes me wonder...
+I suppose I could also hijack one of the pad fields... they are only
+here to make sure the mcontext is 16 bytes aligned right ?
+
+There are a few other issues... one is, the pad fields aren't cleared.
+Thus how can userland or rt_sigreturn differenciate between a valid
+highregs pointers and ramdom junk ? Is there a trick one of you can come
+up with that I could do to let userland/gdb/rt_sigreturn know that
+there's something there ?
+
+rt_sigreturn isn't much of a problem since I will initialize the
+contexts I create to 0 in that field, and will check the pointer
+validity so the worst that can happen is crap in the top 32 bits if some
+app mucks around too much, which isn't not a problem.
+
+I'm a bit more worried about how will gdb know that there's something
+useful to peek/poke at in there.
+
+Cheers,
+Ben
