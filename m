@@ -1,14 +1,15 @@
-Return-Path: <LeoLi@freescale.com>
+Return-Path: <oliver@neukum.org>
+From: Oliver Neukum <oliver@neukum.org>
+To: linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] USB Host at full speed
+Date: Tue, 29 May 2007 13:07:00 +0200
+References: <989B956029373F45A0B8AF0297081890D2A07A@zch01exm26.fsl.freescale.net>
+In-Reply-To: <989B956029373F45A0B8AF0297081890D2A07A@zch01exm26.fsl.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: USB Host at full speed
-Date: Tue, 29 May 2007 19:01:32 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890D2A07A@zch01exm26.fsl.freescale.net>
-In-Reply-To: <662798.70353.qm@web26515.mail.ukl.yahoo.com>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: <axelnico@yahoo.fr>, <Linuxppc-embedded@ozlabs.org>
-Cc: linux-usb-devel@lists.sourceforge.net
+  charset="iso-8859-1"
+Message-Id: <200705291307.01037.oliver@neukum.org>
+Cc: axelnico@yahoo.fr, Linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,32 +20,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: linuxppc-embedded-bounces+leoli=3Dfreescale.com@ozlabs.org
-> [mailto:linuxppc-embedded-bounces+leoli=3Dfreescale.com@ozlabs.org] On
-Behalf Of
-> axelnico@yahoo.fr
-> Sent: Tuesday, May 29, 2007 5:11 PM
-> To: Linuxppc-embedded@ozlabs.org
-> Subject: USB Host at full speed
->=20
-> Hello ALL,
->=20
-> I m currently trying to force the USB host controller from MPC8349 to
-only work
-> at full speed i.e. whatever is the connected device, the bandwidth
-should be 12MB.
-> I thought i could perform it just by setting some registers to right
-value but it
-> aren't working.
-> I fear i have to force software to always use TT and split transfer
-but i dont
-> know exactly where to start..
->=20
-> If anybody could help, would be so great!!
+Am Dienstag, 29. Mai 2007 13:01 schrieb Li Yang-r58472:
+> Your question can be interpreted as how to force EHCI host driver to
+> work in full speed. =A0Usb-devel list cc'ed should be a better place for
+> such a question.
 
-Your question can be interpreted as how to force EHCI host driver to
-work in full speed.  Usb-devel list cc'ed should be a better place for
-such a question.
+It can't, which is the reason you pair EHCI with OHCI/UHCI.
 
-- Leo
+	Regards
+		Oliver
