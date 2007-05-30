@@ -1,33 +1,25 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BC586DE021
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 23:46:21 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4UDkIqR003047
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 09:46:18 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4UDkGSi220262
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 07:46:17 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4UDkFsU014309
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 07:46:15 -0600
-Subject: Re: Fix problems with device tree representation of TSI-1xx bridges
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: David Gibson <dwg@au1.ibm.com>
-In-Reply-To: <20070530013718.GB21955@localhost.localdomain>
-References: <20070530013718.GB21955@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 30 May 2007 08:44:00 -0500
-Message-Id: <1180532640.3360.74.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: Alexandre Bounine <Alexandre.Bounine@tundra.com>,
-	Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2E15BDE042
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 23:49:24 +1000 (EST)
+In-Reply-To: <19325B38-202C-4837-9BE8-0ACA482F2605@kernel.crashing.org>
+References: <1180406209.8139.13.camel@localhost.localdomain>
+	<BA0C2035-FCAD-4B34-A622-F79432079F10@kernel.crashing.org>
+	<1180492466.12577.6.camel@localhost.localdomain>
+	<A78C881D-26C3-4545-85CA-80C05085C039@kernel.crashing.org>
+	<1180503967.12577.20.camel@localhost.localdomain>
+	<19325B38-202C-4837-9BE8-0ACA482F2605@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <976AFF56-7590-46B9-ADCA-4FA6673D4C9B@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v2]: Fix e500 v2 core reboot bug
+Date: Wed, 30 May 2007 08:49:12 -0500
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,18 +29,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-05-30 at 11:37 +1000, David Gibson wrote:
-> This patch fixes some problems with the way the some things
-> represented in the device tree for the Holly and Taiga boards.  This
-> means changes both to the dts files, and to the code which
-> instantiates the tsi108 ethernet platform devices based on the device
-> tree.
+>>>>> I'm not terrible happy with blindly writing to rstcr.
+>>>>>
+>>>> I can understand you.
+>>>> But I jut want to make things simple and workable.
+>>>> Any idea?
+>>>
+>>> one idea would be for us to add a property on the soc node.
+>>> Something like has-rstcr or something similar in a guts node?
+>> I have seen your suggestion before to add a property in device tree.
+>> But I still think the current implementation is simple.
+>
+> While it simple you are depending on the fact that a given
+> implementation may or may not have something at the particular
+> offset.  Who knows if 8599 or some future part could put the 'cause
+> my part to smoke and self-destruct' at the same offset in the  
+> future :)
+>
+>> Anyway, I can try your suggestion.
+>
+> I'm thinking have a guts block and putting a property in it makes the
+> most sense.
 
-Looks great.  Thanks for the cleanups David.  I had some of these on my
-list as well.
+After some discussion on IRC I think the following is the suggested  
+node we should add in.
 
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+guts@e00000 {
+	compatible = "fsl,mpc8548-guts";
+	reg = <e00000 1000>;
+	fsl,has-rstcr;
+};
 
-Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-
-josh
+- k
