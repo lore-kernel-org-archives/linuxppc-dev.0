@@ -1,12 +1,19 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: "Narayanan, Ganesh" <ganesh.narayanan@netapp.com>
-Subject: Re: AMD to ST migration issues 
-In-reply-to: <7619F3097FAB384287CF636FF92D0CA109943577@exsvl01.hq.netapp.com> 
-References: <7619F3097FAB384287CF636FF92D0CA109943577@exsvl01.hq.netapp.com>
-Date: Wed, 30 May 2007 10:57:01 +1000
-Message-ID: <22246.1180486621@neuling.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 00E28DDF78
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 11:29:08 +1000 (EST)
+Date: Wed, 30 May 2007 11:29:06 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] VIOTAPE:  Use designated initializers for fops member
+	structures.
+Message-Id: <20070530112906.9d5b6fb3.sfr@canb.auug.org.au>
+In-Reply-To: <Pine.LNX.4.64.0705281702300.16015@localhost.localdomain>
+References: <Pine.LNX.4.64.0705281702300.16015@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Andrew Morton <akpm@osdl.org>, ppc-dev <linuxppc-dev@ozlabs.org>,
+	"Robert P. J. Day" <rpjday@mindspring.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,32 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> We have been using PPC with a AMD flash (Spansion S29GL128M) on it for
-> our applications.  We are running Montavista linux on it.  Recently we
-> replaced the AMD flash with ST flash (M29W128FH).  The u-boot boots up
-> and during the kernel boot, I am getting the following error messages
-> and the system doesn't boot after this:
-> =20
-> 
-> jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x00000000:
-> 0x0020 instead
-> jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x0000001c:
-> 0x2212 instead
-> jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x00000020:
-> 0x0020 instead
-> jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x0000003c:
-> 0x2212 instead
-> jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x00000040:
-> 0x0020 instead
-> jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x0000005c:
-> 0x2212 instead
-> jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x00000060:
-> 0x0020 instead
-> =20
-> It would be really great if someone could let me know what is going
-> wrong in this.
+From: Robert P. J. Day <rpjday@mindspring.com>
 
-This might be better answered at the jffs2 list which is linked off
-here:  http://sourceware.org/jffs2/ 
+Replace the old-style member initializers with the newer designated
+initializers.
 
-Mikey
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/char/viotape.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
+
+Paul, one for 2.6.23.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/drivers/char/viotape.c b/drivers/char/viotape.c
+index 13faf8d..db57277 100644
+--- a/drivers/char/viotape.c
++++ b/drivers/char/viotape.c
+@@ -873,12 +873,12 @@ free_op:
+ }
+ 
+ const struct file_operations viotap_fops = {
+-	owner: THIS_MODULE,
+-	read: viotap_read,
+-	write: viotap_write,
+-	ioctl: viotap_ioctl,
+-	open: viotap_open,
+-	release: viotap_release,
++	.owner =	THIS_MODULE,
++	.read =		viotap_read,
++	.write =	viotap_write,
++	.ioctl =	viotap_ioctl,
++	.open =		viotap_open,
++	.release =	viotap_release,
+ };
+ 
+ /* Handle interrupt events for tape */
+-- 
+1.5.1.4
