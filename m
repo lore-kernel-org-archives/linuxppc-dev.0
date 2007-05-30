@@ -1,23 +1,26 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 80CB1DDFEF
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 20:13:58 +1000 (EST)
-Date: Wed, 30 May 2007 12:13:49 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [patch 6/7] ps3: ROM Storage Driver
-Message-ID: <20070530101348.GD24586@lst.de>
-References: <20070525083607.784351000@sonycom.com>
-	<20070525083632.677742000@sonycom.com>
-	<20070529104948.GC29351@lst.de>
-	<Pine.LNX.4.62.0705291308280.7698@pademelon.sonytel.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.62.0705291308280.7698@pademelon.sonytel.be>
-Cc: linuxppc-dev@ozlabs.org, Christoph Hellwig <hch@lst.de>,
-	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
+	[151.189.21.47])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 24799DDFB3
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 20:18:21 +1000 (EST)
+In-Reply-To: <46B96294322F7D458F9648B60E15112C3075B9@zch01exm26.fsl.freescale.net>
+References: <11798051102658-git-send-email-wei.zhang@freescale.com>
+	<11798051101543-git-send-email-wei.zhang@freescale.com>
+	<1179805110272-git-send-email-wei.zhang@freescale.com>
+	<17B6534B-3C1C-433D-8875-1C2255E79D98@kernel.crashing.org>
+	<46B96294322F7D458F9648B60E15112C3075B9@zch01exm26.fsl.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <dcf090010e24c9b93b7ed460010f2835@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/5] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
+Date: Wed, 30 May 2007 12:18:02 +0200
+To: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +30,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 29, 2007 at 01:11:41PM +0200, Geert Uytterhoeven wrote:
-> > This looks very inefficient.  Just set sg_tablesize of your driver
-> > to 1 to avoid getting mutiple segments.
-> 
-> The disadvantage of setting sg_tablesize = 1 is that the driver will get small
-> requests (PAGE_SIZE) most of the time, which is very bad for performance.
+>>> +			uli1575: uli1575@100 {
+>>
+>> is this the right address?
+>
+> '@100' of here, I make up  the address by get from bus 1, device 0,
+> function 0.
+> Such as below '@200' means bus 2, device 0, function0.
 
-If you set .clustering = 1 in your host template you will frequently
-get larger requests.
+That is not how PCI unit addresses are encoded.  There are
+two forms: bla@D and bla@D,F where D and F are device# and
+function# respectively.  The bus# is implicit from the
+parent node.
 
-For any sane hypervisor or hardware the copy should be worth
-than that.  Then again a sane hardware or hypervisor would support
-SG requests..
+You have the "reg" property wrong, too (but differently).
+
+
+Segher
