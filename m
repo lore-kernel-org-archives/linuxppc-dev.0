@@ -1,26 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
-	[151.189.21.47])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 24799DDFB3
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 20:18:21 +1000 (EST)
-In-Reply-To: <46B96294322F7D458F9648B60E15112C3075B9@zch01exm26.fsl.freescale.net>
-References: <11798051102658-git-send-email-wei.zhang@freescale.com>
-	<11798051101543-git-send-email-wei.zhang@freescale.com>
-	<1179805110272-git-send-email-wei.zhang@freescale.com>
-	<17B6534B-3C1C-433D-8875-1C2255E79D98@kernel.crashing.org>
-	<46B96294322F7D458F9648B60E15112C3075B9@zch01exm26.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <dcf090010e24c9b93b7ed460010f2835@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2/5] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
-Date: Wed, 30 May 2007 12:18:02 +0200
-To: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8DF77DDFD8
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 20:21:46 +1000 (EST)
+Date: Wed, 30 May 2007 12:21:14 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] [POWERPC] Fix viodasd geometry calculations.
+Message-ID: <20070530102114.GA25568@lst.de>
+References: <20070529160654.8e12e507.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070529160654.8e12e507.sfr@canb.auug.org.au>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org,
+	Christoph Hellwig <hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,20 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> +			uli1575: uli1575@100 {
->>
->> is this the right address?
->
-> '@100' of here, I make up  the address by get from bus 1, device 0,
-> function 0.
-> Such as below '@200' means bus 2, device 0, function0.
+On Tue, May 29, 2007 at 04:06:54PM +1000, Stephen Rothwell wrote:
+> Commit a885c8c4316e1c1d2d2c8755da3f3d14f852528d that introduced the
+> getgeo block device method changed the fallback number of sectors and
+> introduced a bug into the fallback cylinder number calculation.
 
-That is not how PCI unit addresses are encoded.  There are
-two forms: bla@D and bla@D,F where D and F are device# and
-function# respectively.  The bus# is implicit from the
-parent node.
+Looking at the patch I can confirm that it introduced this abitrary
+changes and your patch reverts it to the original.
 
-You have the "reg" property wrong, too (but differently).
+ACK.
 
-
-Segher
+> 
+> Thanks to Rusty Russell for noticing this.
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  drivers/block/viodasd.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> Paul, this is not too urgent as in most (all) cases the fallbacks will
+> not be taken.
+> 
+> -- 
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> 
+> diff --git a/drivers/block/viodasd.c b/drivers/block/viodasd.c
+> index 68592c3..dae3991 100644
+> --- a/drivers/block/viodasd.c
+> +++ b/drivers/block/viodasd.c
+> @@ -252,10 +252,10 @@ static int viodasd_getgeo(struct block_device *bdev, struct hd_geometry *geo)
+>  	struct gendisk *disk = bdev->bd_disk;
+>  	struct viodasd_device *d = disk->private_data;
+>  
+> -	geo->sectors = d->sectors ? d->sectors : 0;
+> +	geo->sectors = d->sectors ? d->sectors : 32;
+>  	geo->heads = d->tracks ? d->tracks  : 64;
+>  	geo->cylinders = d->cylinders ? d->cylinders :
+> -		get_capacity(disk) / (geo->cylinders * geo->heads);
+> +		get_capacity(disk) / (geo->sectors * geo->heads);
+>  
+>  	return 0;
+>  }
+> -- 
+> 1.5.1.4
+---end quoted text---
