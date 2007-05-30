@@ -1,33 +1,12 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 97715DE04B
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 11:37:45 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by ausmtp04.au.ibm.com (8.13.8/8.13.8) with ESMTP id l4U1wJjt275544
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 11:58:21 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.250.244])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l4U1f3dx168994
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 11:41:05 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l4U1bVjZ001956
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 11:37:31 +1000
-Date: Wed, 30 May 2007 11:26:09 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: Fix problems with Holly's DT representation of ethernet PHYs
-Message-ID: <20070530012609.GA21955@localhost.localdomain>
-References: <20070529060541.GG30266@localhost.localdomain>
-	<c7c131c3a7fdf7727d9ea1e40775017a@kernel.crashing.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 30 May 2007 12:01:10 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Consolidate cuboot initialization code
+Message-ID: <20070530020110.GC21955@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <c7c131c3a7fdf7727d9ea1e40775017a@kernel.crashing.org>
-Cc: Alexandre Bounine <Alexandre.Bounine@tundra.com>,
-	Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,22 +16,198 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 29, 2007 at 08:43:38AM +0200, Segher Boessenkool wrote:
-> > +		MDIO: mdio@6000 {
-> >  			device_type = "mdio";
-> > -			compatible = "tsi-ethernet";
-> > +			compatible = "tsi-mdio";
-> 
-> Hrm, did I miss this before?  A more exact "compatible"
-> property would be better ("tsi109-mdio" "tsi108-mdio" or
-> something like that).
+The various cuboot platforms (i.e. pre-device tree aware u-boot for
+83xx, 85xx and Ebony) share a certain amount of code for parsing the
+boot parameters.  To a certain extent that's inevitable, since they
+platforms have different definitions of the bd_t structure.  However,
+with some macro work and a helper function, this patch improves the
+situation a bit.
 
-Hrm, yeah.  I thought about that, but left it as tsi-mdio to match the
-other rather non-specific compatible properties ("tsi-ethernet",
-"tsi-brige", "tsi-i2c" and so forth).
+In the process, this fixes a bug on Ebony, which was incorrectly
+handling the parameters passed form u-boot for the command line (the
+bug was copied from 83xx and 85xx which have subsequently been fixed).
 
-But I guess I'd better fix that too.  Next version of the patch fixes
-a whole bunch of places to use tsi108/tsi109 compatible properties.
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+
+Index: working-2.6/arch/powerpc/boot/cuboot.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ working-2.6/arch/powerpc/boot/cuboot.c	2007-05-29 17:23:39.000000000 +1000
+@@ -0,0 +1,35 @@
++/*
++ * Compatibility for old (not device tree aware) U-Boot versions
++ *
++ * Author: Scott Wood <scottwood@freescale.com>
++ * Consolidated using macros by David Gibson <david@gibson.dropbear.id.au>
++ *
++ * Copyright 2007 David Gibson, IBM Corporation.
++ * Copyright (c) 2007 Freescale Semiconductor, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
++
++#include "ops.h"
++#include "stdio.h"
++
++#include "ppcboot.h"
++
++extern char _end[];
++extern char _dtb_start[], _dtb_end[];
++
++void cuboot_init(unsigned long r4, unsigned long r5,
++		 unsigned long r6, unsigned long r7,
++		 unsigned long end_of_ram)
++{
++	unsigned long avail_ram = end_of_ram - (unsigned long)_end;
++
++	loader_info.initrd_addr = r4;
++	loader_info.initrd_size = r4 ? r5 - r4 : 0;
++	loader_info.cmdline = (char *)r6;
++	loader_info.cmdline_len = r7 - r6;
++
++	simple_alloc_init(_end, avail_ram - 1024*1024, 32, 64);
++}
+Index: working-2.6/arch/powerpc/boot/cuboot-83xx.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/cuboot-83xx.c	2007-05-29 17:23:36.000000000 +1000
++++ working-2.6/arch/powerpc/boot/cuboot-83xx.c	2007-05-29 17:23:39.000000000 +1000
+@@ -12,12 +12,12 @@
+ 
+ #include "ops.h"
+ #include "stdio.h"
++#include "cuboot.h"
+ 
+ #define TARGET_83xx
+ #include "ppcboot.h"
+ 
+ static bd_t bd;
+-extern char _end[];
+ extern char _dtb_start[], _dtb_end[];
+ 
+ static void platform_fixups(void)
+@@ -52,16 +52,7 @@ static void platform_fixups(void)
+ void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+                    unsigned long r6, unsigned long r7)
+ {
+-	unsigned long end_of_ram = bd.bi_memstart + bd.bi_memsize;
+-	unsigned long avail_ram = end_of_ram - (unsigned long)_end;
+-
+-	memcpy(&bd, (bd_t *)r3, sizeof(bd));
+-	loader_info.initrd_addr = r4;
+-	loader_info.initrd_size = r4 ? r5 - r4 : 0;
+-	loader_info.cmdline = (char *)r6;
+-	loader_info.cmdline_len = r7 - r6;
+-
+-	simple_alloc_init(_end, avail_ram - 1024*1024, 32, 64);
++	CUBOOT_INIT();
+ 	ft_init(_dtb_start, _dtb_end - _dtb_start, 32);
+ 	serial_console_init();
+ 	platform_ops.fixups = platform_fixups;
+Index: working-2.6/arch/powerpc/boot/cuboot-85xx.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/cuboot-85xx.c	2007-05-29 17:23:36.000000000 +1000
++++ working-2.6/arch/powerpc/boot/cuboot-85xx.c	2007-05-29 17:23:39.000000000 +1000
+@@ -12,12 +12,12 @@
+ 
+ #include "ops.h"
+ #include "stdio.h"
++#include "cuboot.h"
+ 
+ #define TARGET_85xx
+ #include "ppcboot.h"
+ 
+ static bd_t bd;
+-extern char _end[];
+ extern char _dtb_start[], _dtb_end[];
+ 
+ static void platform_fixups(void)
+@@ -53,16 +53,7 @@ static void platform_fixups(void)
+ void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+                    unsigned long r6, unsigned long r7)
+ {
+-	unsigned long end_of_ram = bd.bi_memstart + bd.bi_memsize;
+-	unsigned long avail_ram = end_of_ram - (unsigned long)_end;
+-
+-	memcpy(&bd, (bd_t *)r3, sizeof(bd));
+-	loader_info.initrd_addr = r4;
+-	loader_info.initrd_size = r4 ? r5 - r4 : 0;
+-	loader_info.cmdline = (char *)r6;
+-	loader_info.cmdline_len = r7 - r6;
+-
+-	simple_alloc_init(_end, avail_ram - 1024*1024, 32, 64);
++	CUBOOT_INIT();
+ 	ft_init(_dtb_start, _dtb_end - _dtb_start, 32);
+ 	serial_console_init();
+ 	platform_ops.fixups = platform_fixups;
+Index: working-2.6/arch/powerpc/boot/cuboot.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ working-2.6/arch/powerpc/boot/cuboot.h	2007-05-29 17:23:39.000000000 +1000
+@@ -0,0 +1,14 @@
++#ifndef _PPC_BOOT_CUBOOT_H_
++#define _PPC_BOOT_CUBOOT_H_
++
++void cuboot_init(unsigned long r4, unsigned long r5,
++		 unsigned long r6, unsigned long r7,
++		 unsigned long end_of_ram);
++
++#define CUBOOT_INIT() \
++	do { \
++		memcpy(&bd, (bd_t *)r3, sizeof(bd)); \
++		cuboot_init(r4, r5, r6, r7, bd.bi_memstart + bd.bi_memsize); \
++	} while (0)
++
++#endif /* _PPC_BOOT_CUBOOT_H_ */
+Index: working-2.6/arch/powerpc/boot/cuboot-ebony.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/cuboot-ebony.c	2007-05-29 17:23:36.000000000 +1000
++++ working-2.6/arch/powerpc/boot/cuboot-ebony.c	2007-05-29 17:23:39.000000000 +1000
+@@ -15,28 +15,16 @@
+ #include "ops.h"
+ #include "stdio.h"
+ #include "44x.h"
++#include "cuboot.h"
+ 
+ #define TARGET_44x
+ #include "ppcboot.h"
+ 
+ static bd_t bd;
+-extern char _end[];
+-
+-BSS_STACK(4096);
+ 
+ void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+                    unsigned long r6, unsigned long r7)
+ {
+-	unsigned long end_of_ram = bd.bi_memstart + bd.bi_memsize;
+-	unsigned long avail_ram = end_of_ram - (unsigned long)_end;
+-
+-	memcpy(&bd, (bd_t *)r3, sizeof(bd));
+-	loader_info.initrd_addr = r4;
+-	loader_info.initrd_size = r4 ? r5 : 0;
+-	loader_info.cmdline = (char *)r6;
+-	loader_info.cmdline_len = r7 - r6;
+-
+-	simple_alloc_init(_end, avail_ram, 32, 64);
+-
++	CUBOOT_INIT();
+ 	ebony_init(&bd.bi_enetaddr, &bd.bi_enet1addr);
+ }
+Index: working-2.6/arch/powerpc/boot/Makefile
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/Makefile	2007-05-29 17:23:53.000000000 +1000
++++ working-2.6/arch/powerpc/boot/Makefile	2007-05-29 17:24:16.000000000 +1000
+@@ -44,7 +44,7 @@ $(addprefix $(obj)/,$(zlib) gunzip_util.
+ src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
+ 		ns16550.c serial.c simple_alloc.c div64.S util.S \
+ 		gunzip_util.c elf_util.c $(zlib) devtree.c oflib.c ofconsole.c \
+-		44x.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c
++		44x.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c
+ src-plat := of.c cuboot-83xx.c cuboot-85xx.c holly.c \
+ 		cuboot-ebony.c treeboot-ebony.c prpmc2800.c
+ src-boot := $(src-wlib) $(src-plat) empty.c
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
