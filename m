@@ -1,16 +1,24 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 9BC5ADE062
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2007 01:57:00 +1000 (EST)
-Mime-Version: 1.0 (Apple Message framework v624)
-In-Reply-To: <1179530872.32247.423.camel@localhost.localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <d9319311aa8767ba9d50b3f31a52f6e1@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-Date: Wed, 30 May 2007 10:56:45 -0500
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound6-dub-R.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 134A6DDF9D
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2007 03:37:45 +1000 (EST)
+Message-ID: <465DB1EB.5010603@am.sony.com>
+Date: Wed, 30 May 2007 10:18:35 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Subject: Re: [patch 6/7] ps3: ROM Storage Driver
+References: <20070525083607.784351000@sonycom.com>	<20070525083632.677742000@sonycom.com>
+	<20070529104948.GC29351@lst.de>	<Pine.LNX.4.62.0705291308280.7698@pademelon.sonytel.be>	<20070530101348.GD24586@lst.de>
+	<1180525555.19517.268.camel@localhost.localdomain>
+In-Reply-To: <1180525555.19517.268.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	linuxppc-dev@ozlabs.org, Christoph Hellwig <hch@lst.de>,
+	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,34 +28,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> On Fri, 2007-05-18 at 17:41 +0400, Sergei Shtylyov wrote:
->>     From the "PowerPC Operating Environment Architecture"
->> that I've already quoated it follows that POWER4-compatible
->> decremented exception *must* be edge triggered.
->>
->> says that an exception is generated when the MSB transitions
->> from 0 to 1. It's not clear wether the exception sticks while
->> that bit is 1 or is
->>
->>     Freescale MPC 7450 manual says the same, for example.
->
-> I find it extremely silly to implement it as edge anyway. The
-> EE line is level triggered, and having a mix of edge and level
-> on the same exception without a clean way to retrigger the DEC
-> one other than waiting one tick is just causing trouble.
+Benjamin Herrenschmidt wrote:
+> On Wed, 2007-05-30 at 12:13 +0200, Christoph Hellwig wrote:
+>> 
+>> For any sane hypervisor or hardware the copy should be worth
+>> than that.  Then again a sane hardware or hypervisor would support
+>> SG requests..
+> 
+> Agreed... Sony should fix that, it's a bit ridiculous.
 
-Making it edge triggered means that the operating system gets to
-set the max value to 2^32-1 instead of 2^31-1, increasing the
-range of the timeouts.
+Yes, if only to put an end to seeing this kind of comment over 
+and over again.
 
-The architecture changed to level sensitive when support for
-shared processor lpars was being added so that the hypervisor
-didn't have to do dances to avoid pending decrementer
-interrupts when changing partitions.
-
-Besides, they aren't the same vector, just the same enable.
-
-Oh, and loading the decrementer with 1 instead of 0 is the
-workaround for an errata on at least one supported cpu.
-
-milton
+-Geoff
