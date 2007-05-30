@@ -1,12 +1,22 @@
-Return-Path: <benh@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 30 May 2007 17:17:18 +1000
-Subject: [RFC/PATCH 6/6] powerpc: Allow ptrace write to pt_regs trap and
-	orig_r3
-Message-Id: <20070530071729.7E636DE05B@ozlabs.org>
-Cc: ulrich.weigand@de.ibm.com, Paul Mackerras <paulus@samba.org>,
-	Anton Blanchard <anton@samba.org>
+Return-Path: <zseries9@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
+	by ozlabs.org (Postfix) with ESMTP id 0E2A2DDECD
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 17:41:12 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id c2so138357ugf
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 00:41:10 -0700 (PDT)
+Message-ID: <feaf5ed90705300034o7256f7e5o8e48d19502fa5c45@mail.gmail.com>
+Date: Wed, 30 May 2007 16:34:31 +0900
+From: "Hiroyuki Machida" <Hiroyuki.Mach@gmail.com>
+Sender: zseries9@gmail.com
+To: "Steve Munroe" <sjmunroe@us.ibm.com>
+Subject: Re: Saving to 32 bits of GPRs in signal context
+In-Reply-To: <OFB4FD81AE.95147932-ON862572EA.007EAB56-862572EA.007FDB77@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <1180475055.19517.206.camel@localhost.localdomain>
+	<OFB4FD81AE.95147932-ON862572EA.007EAB56-862572EA.007FDB77@us.ibm.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Reply-To: Hiroyuki.Mach@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,117 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch allows a ptracer to write to the "trap" and "orig_r3" words
-of the pt_regs.
+Hi Steve,
 
-This, along with a subsequent patch to the signal restart code, should
-enable gdb to properly handle syscall restarting after executing a separate
-function (at least when there's no restart block).
+2007/5/30, Steve Munroe <sjmunroe@us.ibm.com>:
+>
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 05/29/2007
+> 04:44:15 PM:
+  :
+  :
+> > >
+> > > Also if you want to debug this code (see long long variables correctly
+> from
+> > > GDB or even see the upper 32-bits of GPRs) you will need an ABI change
+> so
+> > > that GDB/DWARF knows what to do.
 
-This patch also removes ptrace32.c code toying directly with the registers
-and makes it use the ptrace_get/put_reg() accessors for everything so that
-the logic for checking what is permitted is in only one place.
+As already mentioned, ABI (calling convetion and relocations) wont't change,
+so there's no exteion to DWARF required,  I think. Do you have any concern ?
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> >
+> > I personally don't care about gdb seeing those or anything like that,
+> > those would be strictly local asm optimisations, at least that's my
+> > point of view on the matter.
+> >
+> Well others do. If gcc supports code gen for this they will expect GDB
+> support.
+
+Even now,  gcc -m32 -mpowerpc64  produces 64 bit insns.
+I've cheked with gcc version 4.1.1 20070105 (Red Hat 4.1.1-51).
+But in most case, developers would use these options to some
+specific files which are critical to performance.
+
+I think GDB support is not critical, but would be expected.
+
 ---
-
- arch/powerpc/kernel/ptrace.c   |    9 ++++++---
- arch/powerpc/kernel/ptrace32.c |   28 +++++++++++++++-------------
- 2 files changed, 21 insertions(+), 16 deletions(-)
-
-Index: linux-cell/arch/powerpc/kernel/ptrace.c
-===================================================================
---- linux-cell.orig/arch/powerpc/kernel/ptrace.c	2007-05-30 16:02:55.000000000 +1000
-+++ linux-cell/arch/powerpc/kernel/ptrace.c	2007-05-30 16:03:01.000000000 +1000
-@@ -75,10 +75,15 @@ int ptrace_put_reg(struct task_struct *t
- 	if (task->thread.regs == NULL)
- 		return -EIO;
- 
--	if (regno <= PT_MAX_PUT_REG) {
-+	if (regno <= PT_MAX_PUT_REG || regno == PT_TRAP) {
- 		if (regno == PT_MSR)
- 			data = (data & MSR_DEBUGCHANGE)
- 				| (task->thread.regs->msr & ~MSR_DEBUGCHANGE);
-+		/* We prevent mucking around with the reserved area of trap
-+		 * which are used internally by the kernel
-+		 */
-+		if (regno == PT_TRAP)
-+			data &= 0xfff0;
- 		((unsigned long *)task->thread.regs)[regno] = data;
- 		return 0;
- 	}
-@@ -409,8 +414,6 @@ long arch_ptrace(struct task_struct *chi
- 			break;
- 
- 		CHECK_FULL_REGS(child->thread.regs);
--		if (index == PT_ORIG_R3)
--			break;
- 		if (index < PT_FPR0) {
- 			ret = ptrace_put_reg(child, index, data);
- 		} else {
-Index: linux-cell/arch/powerpc/kernel/ptrace32.c
-===================================================================
---- linux-cell.orig/arch/powerpc/kernel/ptrace32.c	2007-05-30 16:02:55.000000000 +1000
-+++ linux-cell/arch/powerpc/kernel/ptrace32.c	2007-05-30 16:03:01.000000000 +1000
-@@ -206,7 +206,9 @@ long compat_sys_ptrace(int request, int 
- 		else
- 			part = 0;  /* want the 1st half of the register (left-most). */
- 
--		/* Validate the input - check to see if address is on the wrong boundary or beyond the end of the user area */
-+		/* Validate the input - check to see if address is on the wrong boundary
-+		 * or beyond the end of the user area
-+		 */
- 		if ((addr & 3) || numReg > PT_FPSCR)
- 			break;
- 
-@@ -270,8 +272,6 @@ long compat_sys_ptrace(int request, int 
- 		if ((addr & 3) || (index > PT_FPSCR32))
- 			break;
- 
--		if (index == PT_ORIG_R3)
--			break;
- 		if (index < PT_FPR0) {
- 			ret = ptrace_put_reg(child, index, data);
- 		} else {
-@@ -297,29 +297,31 @@ long compat_sys_ptrace(int request, int 
- 	case PPC_PTRACE_POKEUSR_3264: {
- 		u32 index;
- 		u32 numReg;
-+		u32 orig;
- 
- 		ret = -EIO;
- 		/* Determine which register the user wants */
- 		index = (u64)addr >> 2;
- 		numReg = index / 2;
-+
- 		/*
- 		 * Validate the input - check to see if address is on the
- 		 * wrong boundary or beyond the end of the user area
- 		 */
- 		if ((addr & 3) || (numReg > PT_FPSCR))
- 			break;
--		/* Insure it is a register we let them change */
--		if ((numReg == PT_ORIG_R3)
--				|| ((numReg > PT_CCR) && (numReg < PT_FPR0)))
--			break;
--		if (numReg >= PT_FPR0) {
-+		if (numReg < PT_FPR0) {
-+			unsigned long freg = ptrace_get_reg(child, numReg);
-+			if (index % 2)
-+				freg = (freg & ~0xfffffffful) | data & 0xfffffffful;
-+			else
-+				freg = (freg & 0xfffffffful) | (data << 32);
-+			ret = ptrace_put_reg(child, numReg, freg);
-+		} else {
- 			flush_fp_to_thread(child);
-+			((unsigned int *)child->thread.regs)[index] = data;
-+			ret = 0;
- 		}
--		if (numReg == PT_MSR)
--			data = (data & MSR_DEBUGCHANGE)
--				| (child->thread.regs->msr & ~MSR_DEBUGCHANGE);
--		((u32*)child->thread.regs)[index] = data;
--		ret = 0;
- 		break;
- 	}
- 
+Hiroyuki Machida
