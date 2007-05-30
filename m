@@ -1,22 +1,32 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <sjmunroe@us.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 91EEFDDFF9
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 12:40:46 +1000 (EST)
-In-Reply-To: <1180492466.12577.6.camel@localhost.localdomain>
-References: <1180406209.8139.13.camel@localhost.localdomain>
-	<BA0C2035-FCAD-4B34-A622-F79432079F10@kernel.crashing.org>
-	<1180492466.12577.6.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A78C881D-26C3-4545-85CA-80C05085C039@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2]: Fix e500 v2 core reboot bug
-Date: Tue, 29 May 2007 21:40:38 -0500
-To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4502EDE06F
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 12:54:30 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4U2sRQS004990
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 22:54:27 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l4U2sRb9490946
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 22:54:27 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4U2sQnd015881
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 22:54:26 -0400
+In-Reply-To: <16FB57DB-8E02-4F7D-A7B5-BF9719A61BC6@kernel.crashing.org>
+Subject: Re: Saving to 32 bits of GPRs in signal context
+To: Kumar Gala <galak@kernel.crashing.org>
+Message-ID: <OFD102D897.20376982-ON862572EB.000F677F-862572EB.000FF942@us.ibm.com>
+From: Steve Munroe <sjmunroe@us.ibm.com>
+Date: Tue, 29 May 2007 21:54:22 -0500
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+	Ulrich Weigand <Ulrich.Weigand@de.ibm.com>,
+	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+	Olof Johansson <olof@lixom.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,77 +37,35 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On May 29, 2007, at 9:34 PM, Zang Roy-r61911 wrote:
-
-> On Wed, 2007-05-30 at 03:29, Kumar Gala wrote:
->> On May 28, 2007, at 9:36 PM, Zang Roy-r61911 wrote:
->>
->>> Fix the e500 v2 core reset bug.
->>> For e500 v2 core, a new reset control register is added to
->>> reset the core.
->>> On 85xx CDS board with e500 v2 core, normal reboot code will
->>> induce DDR block in u-boot. This patch fixes this bug. It is
->>> also tested on legacy e500 v1 core.
->>
->> what happens on an e500 based 85xx system?
->
-> Without this patch on MPC8548CDS board, after key in "reboot" command,
-> the u-boot will hang at DDR init. See the following log without this
-> patch:
-
-Sorry I meant what happens on a e500 v1 based 85xx system w/this patch.
-
-- k
+Kumar Gala <galak@kernel.crashing.org> wrote on 05/29/2007 07:43:05 PM:
 
 >
-> --- log start ---
-> ~ # uname -a
-> Linux mpc8548cds 2.6.22-rc2-g843b8c89-dirty #5 Tue May 29 16:37:21 CST
-> 2007 ppc
-> unknown
-> ~ # reboot
-> ~ # Stopping the boa webserver:
-> Stopping the port mapper:
-> Stopping inetd:
-> Syncing hardware clock to system time
-> hwclock: Could not set the RTC time: Invalid argument
-> Unmounting filesystems
-> umount: Cannot open /proc/mounts
-> The system is going down NOW !!
-> Sending SIGTERM to all processes.
-> Please stand by while rebooting the system.
-> Restarting system.
+> On May 29, 2007, at 6:46 PM, Olof Johansson wrote:
 >
+> > On Wed, May 30, 2007 at 07:32:33AM +1000, Benjamin Herrenschmidt
+> > wrote:
+> >> On Tue, 2007-05-29 at 08:10 -0500, Kumar Gala wrote:
+> >>> This is all problematic since some 64-bit implementations may not
+> >>> guarantee the upper bits are valid when in 32-bit mode.  Look at the
+> >>> 'Computation Modes' section in the architecture specs 2.03 or
+> >>> greater
+> >>> for embedded processors.
+> >>
+> >> Yuck. Well, we might need to export a spearate CPU feature bit to
+> >> indicate that it's the case then.
+> >
+> > No need for a new bit, you should be able to key off of PPC_FEATURE_64
+> > && !PPC_FEATURE_BOOKE.
 >
-> U-Boot 1.1.6-gcd32691c-dirty (Apr  2 2007 - 17:42:01)
+> Nope, the architecture allows embedded to behave like server parts
+> and support the full 64-bit registers.  We really should have a new
+> feature bit so that if someone has an implementation of an embedded
+> part that supports the functionality, they get the benefit.
 >
-> CPU:   8548_E, Version: 2.0, (0x80390020)
-> Core:  E500, Version: 2.0, (0x80210020)
-> Clock Configuration:
->        CPU: 990 MHz, CCB: 396 MHz,
->        DDR: 198 MHz, LBC:  49 MHz
-> L1:    D-cache 32 kB enabled
->        I-cache 32 kB enabled
-> Board: CDS Version 0x13, PCI Slot 1
-> CPU Board Revision 114.121 (0x7279)
->     PCI1: 32 bit, 33 MHz, async
->     PCI2: disabled
-> I2C:   ready
-> DRAM:  Initializing
->     SDRAM: 64 MB
->     DDR: 256 MB
->
-> --- log end --
->
-> This patch has been tested on 8548/55 CDS board and 8540/60 ADS board.
->
->> I'm not terrible happy with blindly writing to rstcr.
->>
-> I can understand you.
-> But I jut want to make things simple and workable.
-> Any idea?
+When such exists we can add a bit, until then we can wait. The current
+32-bit AT_HWCAP is almost full. so we should not allocate bits on
+speculation.
 
-one idea would be for us to add a property on the soc node.   
-Something like has-rstcr or something similar in a guts node?
-
-- k
+Steven J. Munroe
+Linux on Power Toolchain Architect
+IBM Corporation, Linux Technology Center
