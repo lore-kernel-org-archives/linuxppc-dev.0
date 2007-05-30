@@ -2,23 +2,23 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3B5F0DDF64
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 21:46:05 +1000 (EST)
-Subject: Re: [patch 6/7] ps3: ROM Storage Driver
+	by ozlabs.org (Postfix) with ESMTP id 1B396DDF71
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 21:49:14 +1000 (EST)
+Subject: Re: Saving to 32 bits of GPRs in signal context
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20070530101348.GD24586@lst.de>
-References: <20070525083607.784351000@sonycom.com>
-	<20070525083632.677742000@sonycom.com> <20070529104948.GC29351@lst.de>
-	<Pine.LNX.4.62.0705291308280.7698@pademelon.sonytel.be>
-	<20070530101348.GD24586@lst.de>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <3cbbec8c34b1beabb091c343132730d5@kernel.crashing.org>
+References: <OF611013C9.F9C3C2DB-ON862572EA.0050F570-862572EA.005197A3@us.ibm.com>
+	<1180475055.19517.206.camel@localhost.localdomain>
+	<3cbbec8c34b1beabb091c343132730d5@kernel.crashing.org>
 Content-Type: text/plain
-Date: Wed, 30 May 2007 21:45:55 +1000
-Message-Id: <1180525555.19517.268.camel@localhost.localdomain>
+Date: Wed, 30 May 2007 21:48:53 +1000
+Message-Id: <1180525733.19517.271.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-scsi@vger.kernel.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Steve Munroe <sjmunroe@us.ibm.com>,
+	Ulrich Weigand <Ulrich.Weigand@de.ibm.com>,
+	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,12 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-05-30 at 12:13 +0200, Christoph Hellwig wrote:
+On Wed, 2007-05-30 at 13:40 +0200, Segher Boessenkool wrote:
 > 
-> For any sane hypervisor or hardware the copy should be worth
-> than that.  Then again a sane hardware or hypervisor would support
-> SG requests..
+> > I personally don't care about gdb seeing those or anything like
+> that,
+> > those would be strictly local asm optimisations, at least that's my
+> > point of view on the matter.
+> 
+> GDB can step into asm though, it will have to know
+> about it for full functionality.
 
-Agreed... Sony should fix that, it's a bit ridiculous.
+It can already... there are ptrace hooks to get both halves if you are a
+32 bits gdb and the 64 bits ptrace will return the full 64 bits. There
+is no way to know wether an app or a lib is using both halves or not
+though.
+
+> Perhaps something in a test suite somewhere; other
+> than that, nothing important I suspect.  Well some
+> version of some JVM will abuse it I'm sure ;-)
+
+That's what I was worried about :-)
 
 Ben.
