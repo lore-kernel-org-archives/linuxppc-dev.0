@@ -1,19 +1,22 @@
-Return-Path: <tmbinc@elitedvb.net>
-Received: from mfe2.prod2.dngr.net (unknown [216.220.221.222])
-	by ozlabs.org (Postfix) with ESMTP id 084D3DDF19
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 22:52:34 +1000 (EST)
-Date: Wed, 30 May 2007 13:52:29 +0200
-Subject: Re: Saving to 32 bits of GPRs in signal context
-In-Reply-To: <1180524227.19517.256.camel@localhost.localdomain>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E3786DDFC6
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 22:56:32 +1000 (EST)
+Subject: Re: [RFC/PATCH 2/4] powerpc: ptrace can set DABR on both 32 and 64
+	bits
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <AB7DD12D-76D5-43D8-90BF-904C7C85205E@kernel.crashing.org>
+References: <20070530080526.36115DDFC8@ozlabs.org>
+	<AB7DD12D-76D5-43D8-90BF-904C7C85205E@kernel.crashing.org>
+Content-Type: text/plain
+Date: Wed, 30 May 2007 22:56:22 +1000
+Message-Id: <1180529782.19517.279.camel@localhost.localdomain>
 Mime-Version: 1.0
-References: <1180423456.19517.124.camel@localhost.localdomain>
-	<1180524227.19517.256.camel@localhost.localdomain>
-From: Felix Domke <tmbinc@elitedvb.net>
-Message-Id: <1180525953.1F02B585@fk13.dngr.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Reply-To: Felix Domke <tmbinc@elitedvb.net>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>, ulrich.weigand@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,22 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>  Anyway, please don't. It is *not* portable.
-> What are you talking about ? Really, I mean, I'm not sure I understand
-> what you mean :-)
-Segher stated that there is no portable way of detecting whether 64bit 
-instructions are available, and said that just trying a 64bit insn (and 
-catching the SIGILL if thre cpu is 32bit) is probably the most portable 
-way to do so. (Or did i got *that* wrong? If so, please ignore.)
+On Wed, 2007-05-30 at 07:44 -0500, Kumar Gala wrote:
+> On May 30, 2007, at 3:05 AM, Benjamin Herrenschmidt wrote:
+> 
+> > Allow ptrace to set dabr in the thread structure for both 32 and 64  
+> > bits,
+> > though only 64 bits actually uses that field, it's actually defined  
+> > in both.
+> >
+> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
+> Can you make these -EIO for CONFIG_BOOKE for now.
 
-Now my objection is that the "SIGILL"-way is not only ugly, but can be 
-easily *wrong*, as there are certain possibilities (Book-E 64bit, 
-non-64bit-aware OS, ...) when the CPU might not throw an exception.  (My 
-"ffmpeg with vmx"-experience shows this is a real world issue, although 
-the situation is a bit different there, i agree, since vmx opcodes are 
-not exclusively reserved for vmx)
+I suppose best is to define set_dabr to have a result code...
 
-Yes, those hwcap-bits should care for this. Are they portable/usable, 
-even on older systems?
+The std DABR format is good enough to carry a generic setting whatever
+the HW implementation is I think.
 
-Felix
+Ben.
