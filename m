@@ -1,16 +1,15 @@
 Return-Path: <miltonm@bga.com>
 Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 3AE5DDE084
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2007 01:29:24 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 9BC5ADE062
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2007 01:57:00 +1000 (EST)
 Mime-Version: 1.0 (Apple Message framework v624)
-In-Reply-To: <20070525081459.GA30239@aepfle.de>
+In-Reply-To: <1179530872.32247.423.camel@localhost.localdomain>
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <7cd1bd62cf3304f0ab57cadac1d26f8e@bga.com>
+Message-Id: <d9319311aa8767ba9d50b3f31a52f6e1@bga.com>
 From: Milton Miller <miltonm@bga.com>
-Subject: [PATCH] fix zImage.coff generation for pmac
-Date: Wed, 30 May 2007 10:29:01 -0500
-To: Paul Mackerras <paulus@samba.org>,
- Olaf Hering <olaf@aepfle.de>
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+Date: Wed, 30 May 2007 10:56:45 -0500
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,59 +20,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Commit 9da82a6dee9db4cd5ae7a74ab4f51afb52b6efb9 inadvertently
-removed the platform override for zImage.coff to be generated
-with pmaccoff.   Rather than add a special makefile rule,
-change the platform for which the wrapper platform uses
-the special rules.
-
-Signed-off-by: Milton Miller <miltonm@bga.com>
-
----
-Untested, and hopefully not too whitespace damaged.
-Against upstream after 2.6.22-rc3.
-
-We could look for both coff and pmaccoff if someone
-has an external script calling wrapper with platform
-pmaccoff (change to coff|pmaccoff).
-
-Olof Hering wrote:
-> Does anyone happen to know where the arch/powerpc/boot/coff.o is
-> supposed to come from? Current Linus tree fails since a while with the
-> following commands.
+> On Fri, 2007-05-18 at 17:41 +0400, Sergei Shtylyov wrote:
+>>     From the "PowerPC Operating Environment Architecture"
+>> that I've already quoated it follows that POWER4-compatible
+>> decremented exception *must* be edge triggered.
+>>
+>> says that an exception is generated when the MSB transitions
+>> from 0 to 1. It's not clear wether the exception sticks while
+>> that bit is 1 or is
+>>
+>>     Freescale MPC 7450 manual says the same, for example.
 >
-> tar xfz /mounts/mirror/kernel/v2.6/testing/linux-2.6.22-rc2.tar.gz
-> cd linux-2.6.22-rc2/
-> mkdir ../O
-> cp arch/powerpc/configs/pmac32_defconfig ../O/.config
-> make -kj42 O=../O menuconfig
-> make -kj42 O=../O
->
->   WRAP    arch/powerpc/boot/zImage.coff
-> ld: arch/powerpc/boot/coff.o: No such file: No such file or directory
-> nm: 'arch/powerpc/boot/zImage.coff': No such file
-> objdump: 'arch/powerpc/boot/zImage.coff': No such file
+> I find it extremely silly to implement it as edge anyway. The
+> EE line is level triggered, and having a mix of edge and level
+> on the same exception without a clean way to retrigger the DEC
+> one other than waiting one tick is just causing trouble.
 
+Making it edge triggered means that the operating system gets to
+set the max value to 2^32-1 instead of 2^31-1, increasing the
+range of the timeouts.
 
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index 5cedd90..b28161c 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -129,7 +129,7 @@ case "$platform" in
-  pmac|pseries|chrp)
-      platformo=$object/of.o
-      ;;
--pmaccoff)
-+coff)
-      platformo=$object/of.o
-      lds=$object/zImage.coff.lds
-      ;;
-@@ -217,7 +217,7 @@ case "$platform" in
-  pseries|chrp)
-      $object/addnote "$ofile"
-      ;;
--pmaccoff)
-+coff)
-      entry=`objdump -f "$ofile" | grep '^start address ' | \
-  	cut -d' ' -f3`
-      ${CROSS}objcopy -O aixcoff-rs6000 --set-start "$entry" "$ofile"
+The architecture changed to level sensitive when support for
+shared processor lpars was being added so that the hypervisor
+didn't have to do dances to avoid pending decrementer
+interrupts when changing partitions.
+
+Besides, they aren't the same vector, just the same enable.
+
+Oh, and loading the decrementer with 1 instead of 0 is the
+workaround for an errata on at least one supported cpu.
+
+milton
