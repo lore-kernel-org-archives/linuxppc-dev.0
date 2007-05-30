@@ -1,23 +1,33 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A0244DE006
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 15:32:43 +1000 (EST)
-In-Reply-To: <18012.61822.197988.279764@cargo.ozlabs.ibm.com>
-References: <OF462E078D.FFB634FD-ON422572EA.004D1E28-422572EA.004DB265@de.ibm.com>
-	<OF611013C9.F9C3C2DB-ON862572EA.0050F570-862572EA.005197A3@us.ibm.com>
-	<18012.61822.197988.279764@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <ADB2DAF4-B25F-462D-B552-531D706F57BE@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Saving to 32 bits of GPRs in signal context
-Date: Wed, 30 May 2007 00:32:31 -0500
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ulrich Weigand <Ulrich.Weigand@de.ibm.com>,
-	Steve Munroe <sjmunroe@us.ibm.com>, Anton Blanchard <anton@samba.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0D95CDDF14
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 15:46:46 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l4U5kfX6010650
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 May 2007 22:46:41 -0700 (MST)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l4U5kdRl014285
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 00:46:40 -0500 (CDT)
+Subject: Re: [PATCH v2]: Fix e500 v2 core reboot bug
+From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <A78C881D-26C3-4545-85CA-80C05085C039@kernel.crashing.org>
+References: <1180406209.8139.13.camel@localhost.localdomain>
+	<BA0C2035-FCAD-4B34-A622-F79432079F10@kernel.crashing.org>
+	<1180492466.12577.6.camel@localhost.localdomain>
+	<A78C881D-26C3-4545-85CA-80C05085C039@kernel.crashing.org>
+Content-Type: text/plain
+Message-Id: <1180503967.12577.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+Date: 30 May 2007 13:46:08 +0800
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,29 +37,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 2007-05-30 at 10:40, Kumar Gala wrote:
+> On May 29, 2007, at 9:34 PM, Zang Roy-r61911 wrote:
+> 
+> > On Wed, 2007-05-30 at 03:29, Kumar Gala wrote:
+> >> On May 28, 2007, at 9:36 PM, Zang Roy-r61911 wrote:
+> >>
+> >>> Fix the e500 v2 core reset bug.
+> >>> For e500 v2 core, a new reset control register is added to
+> >>> reset the core.
+> >>> On 85xx CDS board with e500 v2 core, normal reboot code will
+> >>> induce DDR block in u-boot. This patch fixes this bug. It is
+> >>> also tested on legacy e500 v1 core.
+> >>
+> >> what happens on an e500 based 85xx system?
+> >
+> > Without this patch on MPC8548CDS board, after key in "reboot"
+> command,
+> > the u-boot will hang at DDR init. See the following log without this
+> > patch:
+> 
+> Sorry I meant what happens on a e500 v1 based 85xx system w/this
+> patch.
 
-On May 29, 2007, at 10:37 PM, Paul Mackerras wrote:
+E500 V1 core can boot up normally with/without this patch. Such as
+8555CDS system.
 
-> Steve Munroe writes:
->
->> But unless you take the time to write it up like a full ABI change  
->> you are
->> never sure that it IS compatible. And any change to the size/shape of
->> ucontext_t is an ABI change.
->
-> There is no change to the size or shape of the ucontext_t.  There is
-> no change to the ABI at all, in the sense that everything that is
-> currently guaranteed by the ABI is still guaranteed.  An extra
-> guarantee is added: the top 32 bits of the GPRs will not change
-> unpredictably as long as you don't call a function and don't use
-> setcontext or swapcontext to return from a signal handler.
->
-> I think actually it would be useful to have the saving/restoring of
-> the high 32 bits controlled by a prctl, so that programs have to ask
-> explicitly for the new behaviour (and programs that don't want to use
-> the high 32 bits don't incur the extra overhead).
-
-I like this, it means we can error if HW doesn't support it and  
-requires applications to do something specific to enable the feature.
-
-- k
+> 
+> - k
+> 
+> >
+> > --- log start ---
+> > ~ # uname -a
+> > Linux mpc8548cds 2.6.22-rc2-g843b8c89-dirty #5 Tue May 29 16:37:21
+> CST
+> > 2007 ppc
+> > unknown
+> > ~ # reboot
+> > ~ # Stopping the boa webserver:
+> > Stopping the port mapper:
+> > Stopping inetd:
+> > Syncing hardware clock to system time
+> > hwclock: Could not set the RTC time: Invalid argument
+> > Unmounting filesystems
+> > umount: Cannot open /proc/mounts
+> > The system is going down NOW !!
+> > Sending SIGTERM to all processes.
+> > Please stand by while rebooting the system.
+> > Restarting system.
+> >
+> >
+> > U-Boot 1.1.6-gcd32691c-dirty (Apr  2 2007 - 17:42:01)
+> >
+> > CPU:   8548_E, Version: 2.0, (0x80390020)
+> > Core:  E500, Version: 2.0, (0x80210020)
+> > Clock Configuration:
+> >        CPU: 990 MHz, CCB: 396 MHz,
+> >        DDR: 198 MHz, LBC:  49 MHz
+> > L1:    D-cache 32 kB enabled
+> >        I-cache 32 kB enabled
+> > Board: CDS Version 0x13, PCI Slot 1
+> > CPU Board Revision 114.121 (0x7279)
+> >     PCI1: 32 bit, 33 MHz, async
+> >     PCI2: disabled
+> > I2C:   ready
+> > DRAM:  Initializing
+> >     SDRAM: 64 MB
+> >     DDR: 256 MB
+> >
+> > --- log end --
+> >
+> > This patch has been tested on 8548/55 CDS board and 8540/60 ADS
+> board.
+> >
+> >> I'm not terrible happy with blindly writing to rstcr.
+> >>
+> > I can understand you.
+> > But I jut want to make things simple and workable.
+> > Any idea?
+> 
+> one idea would be for us to add a property on the soc node.   
+> Something like has-rstcr or something similar in a guts node?
+I have seen your suggestion before to add a property in device tree.
+But I still think the current implementation is simple.
+Anyway, I can try your suggestion.
+Thanks.
+Roy 
