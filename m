@@ -1,24 +1,27 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-01.arcor-online.net (mail-in-15.arcor-online.net
+	[151.189.21.55])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A53CBDDEC6
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 22:25:52 +1000 (EST)
-In-Reply-To: <1180503967.12577.20.camel@localhost.localdomain>
-References: <1180406209.8139.13.camel@localhost.localdomain>
-	<BA0C2035-FCAD-4B34-A622-F79432079F10@kernel.crashing.org>
-	<1180492466.12577.6.camel@localhost.localdomain>
-	<A78C881D-26C3-4545-85CA-80C05085C039@kernel.crashing.org>
-	<1180503967.12577.20.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <19325B38-202C-4837-9BE8-0ACA482F2605@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2]: Fix e500 v2 core reboot bug
-Date: Wed, 30 May 2007 07:25:44 -0500
-To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 60D90DDF40
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 22:30:41 +1000 (EST)
+In-Reply-To: <77D9DB04-FAD3-48EF-9159-5EA92BB366E5@freescale.com>
+References: <OF462E078D.FFB634FD-ON422572EA.004D1E28-422572EA.004DB265@de.ibm.com>
+	<40815D64-3AD7-49C6-9A58-C7848691D940@kernel.crashing.org>
+	<eaf1132805a9531b5131ca51d3e8d9c8@kernel.crashing.org>
+	<77D9DB04-FAD3-48EF-9159-5EA92BB366E5@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <e828d1001d889137bdb8bdab956f39f2@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Saving to 32 bits of GPRs in signal context
+Date: Wed, 30 May 2007 14:30:34 +0200
+To: Becky Bruce <becky.bruce@freescale.com>
+Cc: Ulrich Weigand <Ulrich.Weigand@de.ibm.com>,
+	Steve Munroe <sjmunroe@us.ibm.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,58 +31,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On May 30, 2007, at 12:46 AM, Zang Roy-r61911 wrote:
-
-> On Wed, 2007-05-30 at 10:40, Kumar Gala wrote:
->> On May 29, 2007, at 9:34 PM, Zang Roy-r61911 wrote:
->>
->>> On Wed, 2007-05-30 at 03:29, Kumar Gala wrote:
->>>> On May 28, 2007, at 9:36 PM, Zang Roy-r61911 wrote:
->>>>
->>>>> Fix the e500 v2 core reset bug.
->>>>> For e500 v2 core, a new reset control register is added to
->>>>> reset the core.
->>>>> On 85xx CDS board with e500 v2 core, normal reboot code will
->>>>> induce DDR block in u-boot. This patch fixes this bug. It is
->>>>> also tested on legacy e500 v1 core.
->>>>
->>>> what happens on an e500 based 85xx system?
->>>
->>> Without this patch on MPC8548CDS board, after key in "reboot"
->> command,
->>> the u-boot will hang at DDR init. See the following log without this
->>> patch:
->>
->> Sorry I meant what happens on a e500 v1 based 85xx system w/this
->> patch.
+>> If what you're
+>> saying is true in the 2.03 POWER ISA, even for server
+>> class implementations, that would be very unfortunate.
 >
-> E500 V1 core can boot up normally with/without this patch. Such as
-> 8555CDS system.
+> I believe Category:Server implementations are required to behave as 
+> you expect.  Category:Embedded implementations may have different 
+> behavior.  Like it or not, BookE *is* part of the Power architecture, 
+> and there are going to be 64-bit implementations of BookE that we need 
+> to take into account.
 
-Sure, but what happens when you reboot on e500v1 based part?
+Sure.  How about we worry about this when support for
+such CPUs is added _at all_ to Linux; for this issue,
+the only required change would be to refuse the prctl()
+call, right?
 
-[snip]
+>> If you mean Book I 1.5.2, that is for embedded class
+>> (i.e., BookE) CPUs only.
+>
+> I think that's exactly what Kumar's talking about. The assumption that 
+> all 64-bit Power processors will use those upper bits in some 
+> meaningful way is not valid.  Also, ld and std do not architecturally 
+> "just work" on BookE implementations running in 32b mode.  Those 
+> instructions are part of the 64-bit category in 2.03, and may illop on 
+> BookE processors running in 32b mode.
 
->>>> I'm not terrible happy with blindly writing to rstcr.
->>>>
->>> I can understand you.
->>> But I jut want to make things simple and workable.
->>> Any idea?
->>
->> one idea would be for us to add a property on the soc node.
->> Something like has-rstcr or something similar in a guts node?
-> I have seen your suggestion before to add a property in device tree.
-> But I still think the current implementation is simple.
+Sounds like it will be a lovely effort to add support for
+such CPUs to Linux.
 
-While it simple you are depending on the fact that a given  
-implementation may or may not have something at the particular  
-offset.  Who knows if 8599 or some future part could put the 'cause  
-my part to smoke and self-destruct' at the same offset in the future :)
 
-> Anyway, I can try your suggestion.
-
-I'm thinking have a guts block and putting a property in it makes the  
-most sense.
-
-- k
+Segher
