@@ -1,20 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E834FDE042
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 18:06:31 +1000 (EST)
-Subject: [RFC/PATCH x/x]  ... bad numbering
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <20070530071729.7E636DE05B@ozlabs.org>
-References: <20070530071729.7E636DE05B@ozlabs.org>
-Content-Type: text/plain
-Date: Wed, 30 May 2007 18:06:09 +1000
-Message-Id: <1180512369.19517.232.camel@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id BD63ADDF96
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 20:01:57 +1000 (EST)
+Date: Wed, 30 May 2007 12:01:45 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [patch 6/7] ps3: ROM Storage Driver
+Message-ID: <20070530100145.GA24586@lst.de>
+References: <20070525083607.784351000@sonycom.com>
+	<20070525083632.677742000@sonycom.com>
+	<20070529104948.GC29351@lst.de>
+	<Pine.LNX.4.62.0705291818560.7698@pademelon.sonytel.be>
 Mime-Version: 1.0
-Cc: ulrich.weigand@de.ibm.com, Paul Mackerras <paulus@samba.org>,
-	Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.62.0705291818560.7698@pademelon.sonytel.be>
+Cc: linuxppc-dev@ozlabs.org, Christoph Hellwig <hch@lst.de>,
+	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,7 +27,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sorry for the split in 2 series, mistake on my side, it's actually one
-serie of 10 patches.
+On Tue, May 29, 2007 at 06:21:36PM +0200, Geert Uytterhoeven wrote:
+> On Tue, 29 May 2007, Christoph Hellwig wrote:
+> > > +/*
+> > > + * copy data from device into scatter/gather buffer
+> > > + */
+> > > +static int fill_from_dev_buffer(struct scsi_cmnd *cmd, const void *buf,
+> > > +				int buflen)
+> > > +{
+> > > +	int k, req_len, act_len, len, active;
+> > > +	void *kaddr;
+> > > +	struct scatterlist *sgpnt;
+> > > +
+> > > +	if (!cmd->request_bufflen)
+> > > +		return 0;
+> > > +
+> > > +	if (!cmd->request_buffer)
+> > > +		return DID_ERROR << 16;
+> > > +
+> > > +	if (cmd->sc_data_direction != DMA_BIDIRECTIONAL &&
+> > > +	    cmd->sc_data_direction != DMA_FROM_DEVICE)
+> > > +		return DID_ERROR << 16;
+> > > +
+> > > +	if (!cmd->use_sg) {
+> > > +		req_len = cmd->request_bufflen;
+> > > +		act_len = min(req_len, buflen);
+> > > +		memcpy(cmd->request_buffer, buf, act_len);
+> > > +		cmd->resid = req_len - act_len;
+> > > +		return 0;
+> > > +	}
+> > 
+> > This is never true anymore.
+> 
+> Just to be sure: all four if-cases or only the last one?
 
-Ben.
+That's just in reference to the last one.  The checks above could
+be condensed a little more aswell, but I'll comment on further in
+the second round of review, in the hope that the command submission
+path is a lot more streamline by then already.
