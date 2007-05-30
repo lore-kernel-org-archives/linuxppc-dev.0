@@ -1,20 +1,27 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] fix compile warning in pseries xics
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20070529142715.GA29108@lixom.net>
-References: <27973.1180417829@neuling.org>
-	<1180417937.5313.6.camel@concordia.ozlabs.ibm.com>
-	<4564.1180422112@neuling.org>  <20070529142715.GA29108@lixom.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-6BhY03cteTgJ3SXdARbC"
-Date: Wed, 30 May 2007 10:28:12 +1000
-Message-Id: <1180484892.5355.6.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>,
-	paulus@samba.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BE90FDE009
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 10:43:24 +1000 (EST)
+In-Reply-To: <20070529234655.GA32367@lixom.net>
+References: <1180423456.19517.124.camel@localhost.localdomain>
+	<B1348C8C-09B1-4906-BF89-CC4206F0CA0A@embeddedalley.com>
+	<1180425900.19517.136.camel@localhost.localdomain>
+	<9C7D27C7-674E-44B7-A975-69B2E85AB8F2@kernel.crashing.org>
+	<1180474353.19517.190.camel@localhost.localdomain>
+	<20070529234655.GA32367@lixom.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <16FB57DB-8E02-4F7D-A7B5-BF9719A61BC6@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Saving to 32 bits of GPRs in signal context
+Date: Tue, 29 May 2007 19:43:05 -0500
+To: olof@lixom.net (Olof Johansson)
+Cc: Ulrich Weigand <Ulrich.Weigand@de.ibm.com>,
+	Steve Munroe <sjmunroe@us.ibm.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,64 +32,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-6BhY03cteTgJ3SXdARbC
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On May 29, 2007, at 6:46 PM, Olof Johansson wrote:
 
-On Tue, 2007-05-29 at 09:27 -0500, Olof Johansson wrote:
-> On Tue, May 29, 2007 at 05:01:52PM +1000, Michael Neuling wrote:
-> > @@ -762,11 +763,12 @@ void xics_request_IPIs(void)
-> >  	 */
-> >  	set_irq_handler(ipi, handle_percpu_irq);
-> >  	if (firmware_has_feature(FW_FEATURE_LPAR))
-> > -		request_irq(ipi, xics_ipi_action_lpar, IRQF_DISABLED,
-> > -			    "IPI", NULL);
-> > +		rc =3D request_irq(ipi, xics_ipi_action_lpar, IRQF_DISABLED,
-> > +				"IPI", NULL);
-> >  	else
-> > -		request_irq(ipi, xics_ipi_action_direct, IRQF_DISABLED,
-> > -			    "IPI", NULL);
-> > +		rc =3D request_irq(ipi, xics_ipi_action_direct, IRQF_DISABLED,
-> > +				"IPI", NULL);
-> > +	BUG_ON(rc);
->=20
-> Is this late enough during boot that you actually get useful information
-> out of a BUG()?  It might be better to spit out an error and keep on
-> going if that's the case (I'm afraid I don't have hardware at hand to
-> test with right now).
+> On Wed, May 30, 2007 at 07:32:33AM +1000, Benjamin Herrenschmidt  
+> wrote:
+>> On Tue, 2007-05-29 at 08:10 -0500, Kumar Gala wrote:
+>>> This is all problematic since some 64-bit implementations may not
+>>> guarantee the upper bits are valid when in 32-bit mode.  Look at the
+>>> 'Computation Modes' section in the architecture specs 2.03 or
+>>> greater
+>>> for embedded processors.
+>>
+>> Yuck. Well, we might need to export a spearate CPU feature bit to
+>> indicate that it's the case then.
+>
+> No need for a new bit, you should be able to key off of PPC_FEATURE_64
+> && !PPC_FEATURE_BOOKE.
 
-It's way late:
+Nope, the architecture allows embedded to behave like server parts  
+and support the full 64-bit registers.  We really should have a new  
+feature bit so that if someone has an implementation of an embedded  
+part that supports the functionality, they get the benefit.
 
-start_kernel()
-  rest_init()
-    kernel_init()
-      smp_prepare_cpus()
-        smp_ops->probe()
-          smp_xics_probe()
-            xics_request_IPIs()
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-6BhY03cteTgJ3SXdARbC
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGXMUbdSjSd0sB4dIRAkE8AKDBk3LEWhxePX/yeyaF17vqWS8L8ACgg3Y8
-mwcimAQSA3VaSBxObeuC5nU=
-=GonN
------END PGP SIGNATURE-----
-
---=-6BhY03cteTgJ3SXdARbC--
+- k
