@@ -1,29 +1,17 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-01.arcor-online.net (mail-in-15.arcor-online.net
-	[151.189.21.55])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 99CBADE059
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2007 01:28:47 +1000 (EST)
-In-Reply-To: <1180532899.3360.79.camel@zod.rchland.ibm.com>
-References: <20070529060541.GG30266@localhost.localdomain>
-	<c7c131c3a7fdf7727d9ea1e40775017a@kernel.crashing.org>
-	<1180448346.3360.49.camel@zod.rchland.ibm.com>
-	<a5c459df2eefeb9261e65c551870f7f5@kernel.crashing.org>
-	<1180466979.3360.69.camel@zod.rchland.ibm.com>
-	<8b93622a41f822c7b8444d42deb9e5ac@kernel.crashing.org>
-	<1180532899.3360.79.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v623)
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 3AE5DDE084
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2007 01:29:24 +1000 (EST)
+Mime-Version: 1.0 (Apple Message framework v624)
+In-Reply-To: <20070525081459.GA30239@aepfle.de>
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <7de7540fb1ee0aedd1b4f600607b677e@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: Fix problems with Holly's DT representation of ethernet PHYs
-Date: Wed, 30 May 2007 17:28:38 +0200
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: Alexandre Bounine <Alexandre.Bounine@tundra.com>,
-	David Gibson <dwg@au1.ibm.com>, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Message-Id: <7cd1bd62cf3304f0ab57cadac1d26f8e@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: [PATCH] fix zImage.coff generation for pmac
+Date: Wed, 30 May 2007 10:29:01 -0500
+To: Paul Mackerras <paulus@samba.org>,
+ Olaf Hering <olaf@aepfle.de>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,49 +21,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> Not that there's anything wrong with your
->>> reasoning.  Just seems like we're trying really hard to define
->>> something
->>> "correctly" when we control what's on both sides :).
->>
->> Right now, and in your case, you do.  OTOH, the
->> goal is to have the DTS be a well-established
->> stable interface between the firmware/bootloader/
->> bootwrapper and the kernel; there is no room for
->> either side of that interface playing dirty tricks,
->> not on any board ;-)
->>
->> Also, the DTS files in the kernel source tree should
->> server as a best-of-breed example for people doing
->> custom device trees for their own boards.  We better
->> whip them into good shape or we'll all look foolish...
+Commit 9da82a6dee9db4cd5ae7a74ab4f51afb52b6efb9 inadvertently
+removed the platform override for zImage.coff to be generated
+with pmaccoff.   Rather than add a special makefile rule,
+change the platform for which the wrapper platform uses
+the special rules.
+
+Signed-off-by: Milton Miller <miltonm@bga.com>
+
+---
+Untested, and hopefully not too whitespace damaged.
+Against upstream after 2.6.22-rc3.
+
+We could look for both coff and pmaccoff if someone
+has an external script calling wrapper with platform
+pmaccoff (change to coff|pmaccoff).
+
+Olof Hering wrote:
+> Does anyone happen to know where the arch/powerpc/boot/coff.o is
+> supposed to come from? Current Linus tree fails since a while with the
+> following commands.
 >
-> Yeah, I know.  Ignore my earlier email.  I blame it on lack of sleep.
+> tar xfz /mounts/mirror/kernel/v2.6/testing/linux-2.6.22-rc2.tar.gz
+> cd linux-2.6.22-rc2/
+> mkdir ../O
+> cp arch/powerpc/configs/pmac32_defconfig ../O/.config
+> make -kj42 O=../O menuconfig
+> make -kj42 O=../O
 >
-> The only issue we might have in the future is if DT capable firmware 
-> for
-> these boards shows up and does something completely different.
-
-Yeah, that's exactly the same problem as we would have
-if we would code our device trees without trying to at
-least create an informal binding for the nodes in question:
-total chaos.
-
-> Hopefully that won't happen.
-
-Hopefully, indeed.
-
-If a third party constructs a board with some weird
-device tree, then they probably have a big set of Linux
-patches to go with that.  Now either they work with the
-kernel community to get that integrated into mainline
-(which means they need to do a lot of changes to the DTS
-as well if it indeed is weird / wrong, so they better
-start doing that *before* selling the boards); or they
-can happily maintain their own kernel fork, like so many
-companies already do.
-
-I don't see a problem here :-)
+>   WRAP    arch/powerpc/boot/zImage.coff
+> ld: arch/powerpc/boot/coff.o: No such file: No such file or directory
+> nm: 'arch/powerpc/boot/zImage.coff': No such file
+> objdump: 'arch/powerpc/boot/zImage.coff': No such file
 
 
-Segher
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index 5cedd90..b28161c 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -129,7 +129,7 @@ case "$platform" in
+  pmac|pseries|chrp)
+      platformo=$object/of.o
+      ;;
+-pmaccoff)
++coff)
+      platformo=$object/of.o
+      lds=$object/zImage.coff.lds
+      ;;
+@@ -217,7 +217,7 @@ case "$platform" in
+  pseries|chrp)
+      $object/addnote "$ofile"
+      ;;
+-pmaccoff)
++coff)
+      entry=`objdump -f "$ofile" | grep '^start address ' | \
+  	cut -d' ' -f3`
+      ${CROSS}objcopy -O aixcoff-rs6000 --set-start "$entry" "$ofile"
