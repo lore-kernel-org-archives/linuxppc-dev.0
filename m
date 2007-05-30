@@ -1,24 +1,17 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9E79CDDF46
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2007 00:00:36 +1000 (EST)
-Message-ID: <465D8379.3090109@garzik.org>
-Date: Wed, 30 May 2007 10:00:25 -0400
-From: Jeff Garzik <jeff@garzik.org>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 2A361DDF28
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2007 00:28:04 +1000 (EST)
+Date: Wed, 30 May 2007 09:33:26 -0500
+To: "Sachin P. Sant" <sachinp@in.ibm.com>
+Subject: Re: [Patch ] Kexec Kdump support for POWER6
+Message-ID: <20070530143326.GA7549@lixom.net>
+References: <465D099B.3020207@in.ibm.com>
 MIME-Version: 1.0
-To: Thomas Klein <osstklei@de.ibm.com>
-Subject: Re: [PATCH 2.6.22-rc3] ehea: Fixed multi queue RX bug
-References: <200705301239.23934.osstklei@de.ibm.com>
-In-Reply-To: <200705301239.23934.osstklei@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <465D099B.3020207@in.ibm.com>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,9 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thomas Klein wrote:
-> Must access the respective queue's dummy netdev instead of the port's netdev.
+On Wed, May 30, 2007 at 10:50:27AM +0530, Sachin P. Sant wrote:
+> Paul, here is the final version of the patch with all review
+> comments incorporated. 
 > 
-> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
+> Thanks
+> -Sachin
+> 
+> 
 
-applied
+> * On Power machines supporting VRMA, Kexec/Kdump does not work.
+> * Hypervisor stores VRMA mapping used by the OS, in the hpte hash tables.
+> * Make sure these hpte entries are left untouched.
+> *
+> * This patch also adds plpar_pte_read_raw() on the lines of
+> * plpar_pte_remove_raw().
+> 
+> Signed-off-by : Sachin Sant <sachinp@in.ibm.com>
+> Signed-off-by : Mohan Kumar M <mohan@in.ibm.com>
+
+Acked-by: Olof Johansson <olof@lixom.net>
+
+
+-Olof
