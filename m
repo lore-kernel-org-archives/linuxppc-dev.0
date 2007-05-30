@@ -1,15 +1,23 @@
-Return-Path: <djiang@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 49394DDEBF
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 10:53:14 +1000 (EST)
-Date: Tue, 29 May 2007 17:53:36 -0700
-From: Dave Jiang <djiang@mvista.com>
-To: galak@kernel.crashing.org
-Subject: [PATCH/RFC 1/2] powerpc: BOOKE watchdog handler dump additional info
-Message-ID: <20070530005336.GA8239@blade.az.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 55133DE05B
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 10:53:22 +1000 (EST)
+Date: Wed, 30 May 2007 10:53:09 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC/PATCH 4/5] powerpc: Make syscall restart code more common
+Message-Id: <20070530105309.7869fdd6.sfr@canb.auug.org.au>
+In-Reply-To: <1180438885.19517.157.camel@localhost.localdomain>
+References: <20070529064533.CA8C4DDFF8@ozlabs.org>
+	<20070529113232.GA6071@lst.de>
+	<1180438885.19517.157.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__30_May_2007_10_53_09_+1000_PmI7.hp_PVtirH2+"
+Cc: linuxppc-dev@ozlabs.org, ulrich.weigand@de.ibm.com,
+	Paul Mackerras <paulus@samba.org>, Christoph Hellwig <hch@lst.de>,
+	Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,37 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Have the watchdog handler to call die(). This allows some system information
-such as registers, stack dump, and etc to be displayed. The die() handler
-should handle the situation appropriately (i.e. kill process, call panic, 
-or call crash_kexec)
+--Signature=_Wed__30_May_2007_10_53_09_+1000_PmI7.hp_PVtirH2+
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-The follow on patch will address any issues in regards to watchdog following the
-call of panic. 
+On Tue, 29 May 2007 21:41:25 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+>
+> I've been thinking about doing that too. In fact, some of the
+> ptrace-common.h stuff should probably be turned back into ptrace.c too
+> for the same reason. I'm still toying with that part of the designm but
+> yeah, I think that's something to do.
 
-We have to keep the watchdog interrupt enabled because die() can just kill a
-process and return the system to a running state instead of panic(). 
-This will allow us to catch any new watchdog timeout exceptions if the system 
-hangs again.
+Yeah, I think having ptrace{,_32,_64}.c makes more sense as well.
 
-Signed-off-by: Dave Jiang <djiang@mvista.com>
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
----
+--Signature=_Wed__30_May_2007_10_53_09_+1000_PmI7.hp_PVtirH2+
+Content-Type: application/pgp-signature
 
- traps.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index bf6445a..837f742 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1095,8 +1095,7 @@ void unrecoverable_exception(struct pt_regs *regs)
- void __attribute__ ((weak)) WatchdogHandler(struct pt_regs *regs)
- {
- 	/* Generic WatchdogHandler, implement your own */
--	mtspr(SPRN_TCR, mfspr(SPRN_TCR)&(~TCR_WIE));
--	return;
-+	die("PowerPC Book-E Watchdog Exception", regs, SIGSEGV);
- }
- 
- void WatchdogException(struct pt_regs *regs)
+iD8DBQFGXMsAFdBgD/zoJvwRAnLgAJ4/Ia0JgvGNgBYeUqS7xn6tVS5MigCgoFOR
+lfgraSunWsiXIk/ZiwID2FY=
+=yWR1
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__30_May_2007_10_53_09_+1000_PmI7.hp_PVtirH2+--
