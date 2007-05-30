@@ -2,21 +2,22 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BC708DDFE5
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 15:31:45 +1000 (EST)
-In-Reply-To: <OFD102D897.20376982-ON862572EB.000F677F-862572EB.000FF942@us.ibm.com>
-References: <OFD102D897.20376982-ON862572EB.000F677F-862572EB.000FF942@us.ibm.com>
+	by ozlabs.org (Postfix) with ESMTP id A0244DE006
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 15:32:43 +1000 (EST)
+In-Reply-To: <18012.61822.197988.279764@cargo.ozlabs.ibm.com>
+References: <OF462E078D.FFB634FD-ON422572EA.004D1E28-422572EA.004DB265@de.ibm.com>
+	<OF611013C9.F9C3C2DB-ON862572EA.0050F570-862572EA.005197A3@us.ibm.com>
+	<18012.61822.197988.279764@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <BE207C16-E909-43B1-AA2B-BBC9E026F300@kernel.crashing.org>
+Message-Id: <ADB2DAF4-B25F-462D-B552-531D706F57BE@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: Saving to 32 bits of GPRs in signal context
-Date: Wed, 30 May 2007 00:31:32 -0500
-To: Steve Munroe <sjmunroe@us.ibm.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Ulrich Weigand <Ulrich.Weigand@de.ibm.com>,
-	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
-	Olof Johansson <olof@lixom.net>
+Date: Wed, 30 May 2007 00:32:31 -0500
+To: Paul Mackerras <paulus@samba.org>
+Cc: Ulrich Weigand <Ulrich.Weigand@de.ibm.com>,
+	Steve Munroe <sjmunroe@us.ibm.com>, Anton Blanchard <anton@samba.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,52 +28,28 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On May 29, 2007, at 9:54 PM, Steve Munroe wrote:
+On May 29, 2007, at 10:37 PM, Paul Mackerras wrote:
 
+> Steve Munroe writes:
 >
-> Kumar Gala <galak@kernel.crashing.org> wrote on 05/29/2007 07:43:05  
-> PM:
+>> But unless you take the time to write it up like a full ABI change  
+>> you are
+>> never sure that it IS compatible. And any change to the size/shape of
+>> ucontext_t is an ABI change.
 >
->>
->> On May 29, 2007, at 6:46 PM, Olof Johansson wrote:
->>
->>> On Wed, May 30, 2007 at 07:32:33AM +1000, Benjamin Herrenschmidt
->>> wrote:
->>>> On Tue, 2007-05-29 at 08:10 -0500, Kumar Gala wrote:
->>>>> This is all problematic since some 64-bit implementations may not
->>>>> guarantee the upper bits are valid when in 32-bit mode.  Look  
->>>>> at the
->>>>> 'Computation Modes' section in the architecture specs 2.03 or
->>>>> greater
->>>>> for embedded processors.
->>>>
->>>> Yuck. Well, we might need to export a spearate CPU feature bit to
->>>> indicate that it's the case then.
->>>
->>> No need for a new bit, you should be able to key off of  
->>> PPC_FEATURE_64
->>> && !PPC_FEATURE_BOOKE.
->>
->> Nope, the architecture allows embedded to behave like server parts
->> and support the full 64-bit registers.  We really should have a new
->> feature bit so that if someone has an implementation of an embedded
->> part that supports the functionality, they get the benefit.
->>
-> When such exists we can add a bit, until then we can wait. The current
-> 32-bit AT_HWCAP is almost full. so we should not allocate bits on
-> speculation.
+> There is no change to the size or shape of the ucontext_t.  There is
+> no change to the ABI at all, in the sense that everything that is
+> currently guaranteed by the ABI is still guaranteed.  An extra
+> guarantee is added: the top 32 bits of the GPRs will not change
+> unpredictably as long as you don't call a function and don't use
+> setcontext or swapcontext to return from a signal handler.
+>
+> I think actually it would be useful to have the saving/restoring of
+> the high 32 bits controlled by a prctl, so that programs have to ask
+> explicitly for the new behaviour (and programs that don't want to use
+> the high 32 bits don't incur the extra overhead).
 
-Understandable.. dare I ask about a few of the current AT_HWCAPs we  
-do have:
-
-#define PPC_FEATURE_POWER4              0x00080000
-#define PPC_FEATURE_POWER5              0x00040000
-#define PPC_FEATURE_POWER5_PLUS         0x00020000
-#define PPC_FEATURE_ARCH_2_05           0x00001000
-#define PPC_FEATURE_PA6T                0x00000800
-#define PPC_FEATURE_POWER6_EXT          0x00000200
-
-What exactly are we using these for?  Can we not use platform for  
-some of these?
+I like this, it means we can error if HW doesn't support it and  
+requires applications to do something specific to enable the feature.
 
 - k
