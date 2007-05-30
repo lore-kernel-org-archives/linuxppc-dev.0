@@ -2,23 +2,24 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E88B7DDFD2
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 21:07:20 +1000 (EST)
-Subject: RE: [PATCH 2/5] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
+	by ozlabs.org (Postfix) with ESMTP id 218CDDDF10
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 21:18:08 +1000 (EST)
+Subject: Re: Fix problems with Holly's DT representation of ethernet PHYs
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Zhang Wei-r63237 <Wei.Zhang@freescale.com>
-In-Reply-To: <46B96294322F7D458F9648B60E15112C3075B9@zch01exm26.fsl.freescale.net>
-References: <11798051102658-git-send-email-wei.zhang@freescale.com>
-	<11798051101543-git-send-email-wei.zhang@freescale.com>
-	<1179805110272-git-send-email-wei.zhang@freescale.com>
-	<17B6534B-3C1C-433D-8875-1C2255E79D98@kernel.crashing.org>
-	<46B96294322F7D458F9648B60E15112C3075B9@zch01exm26.fsl.freescale.net>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <1180466979.3360.69.camel@zod.rchland.ibm.com>
+References: <20070529060541.GG30266@localhost.localdomain>
+	<c7c131c3a7fdf7727d9ea1e40775017a@kernel.crashing.org>
+	<1180448346.3360.49.camel@zod.rchland.ibm.com>
+	<a5c459df2eefeb9261e65c551870f7f5@kernel.crashing.org>
+	<1180466979.3360.69.camel@zod.rchland.ibm.com>
 Content-Type: text/plain
-Date: Wed, 30 May 2007 21:07:05 +1000
-Message-Id: <1180523226.19517.241.camel@localhost.localdomain>
+Date: Wed, 30 May 2007 21:17:15 +1000
+Message-Id: <1180523835.19517.245.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+	Alexandre Bounine <Alexandre.Bounine@tundra.com>,
+	Paul Mackerras <paulus@samba.org>, David Gibson <dwg@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,18 +29,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-05-30 at 18:02 +0800, Zhang Wei-r63237 wrote:
-> Hi, 
+On Tue, 2007-05-29 at 14:29 -0500, Josh Boyer wrote:
 > 
-> > > +			uli1575: uli1575@100 {
-> > 
-> > is this the right address?
+> *shrug*  Either way works for me.
 > 
-> '@100' of here, I make up  the address by get from bus 1, device 0,
-> function 0.
-> Such as below '@200' means bus 2, device 0, function0.
+> We're adding these compatible properties to DTS files and the drivers
+> at
+> the same time.  Unless (until?) there are firmwares for these boards
+> that start specifying something else in a real device tree, it really
+> doesn't matter much.  Not that there's anything wrong with your
+> reasoning.  Just seems like we're trying really hard to define
+> something
+> "correctly" when we control what's on both sides :).
+> 
 
-It's PCI ? The unit address is well defined then, check the PCI bindings
-to OF
+I do think Segher is right there... compatible 109 and then 108
 
 Ben.
