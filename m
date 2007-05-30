@@ -1,23 +1,34 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BD63ADDF96
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 20:01:57 +1000 (EST)
-Date: Wed, 30 May 2007 12:01:45 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [patch 6/7] ps3: ROM Storage Driver
-Message-ID: <20070530100145.GA24586@lst.de>
-References: <20070525083607.784351000@sonycom.com>
-	<20070525083632.677742000@sonycom.com>
-	<20070529104948.GC29351@lst.de>
-	<Pine.LNX.4.62.0705291818560.7698@pademelon.sonytel.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.62.0705291818560.7698@pademelon.sonytel.be>
-Cc: linuxppc-dev@ozlabs.org, Christoph Hellwig <hch@lst.de>,
-	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-Path: <Wei.Zhang@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 74F43DDFD0
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 20:02:30 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	l4UA2EXi000967
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 03:02:14 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l4UA2CLW021251
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 05:02:13 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH 2/5] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
+Date: Wed, 30 May 2007 18:02:10 +0800
+Message-ID: <46B96294322F7D458F9648B60E15112C3075B9@zch01exm26.fsl.freescale.net>
+In-Reply-To: <17B6534B-3C1C-433D-8875-1C2255E79D98@kernel.crashing.org>
+References: <11798051102658-git-send-email-wei.zhang@freescale.com>
+	<11798051101543-git-send-email-wei.zhang@freescale.com>
+	<1179805110272-git-send-email-wei.zhang@freescale.com>
+	<17B6534B-3C1C-433D-8875-1C2255E79D98@kernel.crashing.org>
+From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,41 +38,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 29, 2007 at 06:21:36PM +0200, Geert Uytterhoeven wrote:
-> On Tue, 29 May 2007, Christoph Hellwig wrote:
-> > > +/*
-> > > + * copy data from device into scatter/gather buffer
-> > > + */
-> > > +static int fill_from_dev_buffer(struct scsi_cmnd *cmd, const void *buf,
-> > > +				int buflen)
-> > > +{
-> > > +	int k, req_len, act_len, len, active;
-> > > +	void *kaddr;
-> > > +	struct scatterlist *sgpnt;
-> > > +
-> > > +	if (!cmd->request_bufflen)
-> > > +		return 0;
-> > > +
-> > > +	if (!cmd->request_buffer)
-> > > +		return DID_ERROR << 16;
-> > > +
-> > > +	if (cmd->sc_data_direction != DMA_BIDIRECTIONAL &&
-> > > +	    cmd->sc_data_direction != DMA_FROM_DEVICE)
-> > > +		return DID_ERROR << 16;
-> > > +
-> > > +	if (!cmd->use_sg) {
-> > > +		req_len = cmd->request_bufflen;
-> > > +		act_len = min(req_len, buflen);
-> > > +		memcpy(cmd->request_buffer, buf, act_len);
-> > > +		cmd->resid = req_len - act_len;
-> > > +		return 0;
-> > > +	}
-> > 
-> > This is never true anymore.
-> 
-> Just to be sure: all four if-cases or only the last one?
+Hi,=20
 
-That's just in reference to the last one.  The checks above could
-be condensed a little more aswell, but I'll comment on further in
-the second round of review, in the hope that the command submission
-path is a lot more streamline by then already.
+> > +			uli1575: uli1575@100 {
+>=20
+> is this the right address?
+
+'@100' of here, I make up  the address by get from bus 1, device 0,
+function 0.
+Such as below '@200' means bus 2, device 0, function0.
