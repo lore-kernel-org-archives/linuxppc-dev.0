@@ -1,21 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
+	[151.189.21.43])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D2701DDECF
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 21:26:00 +1000 (EST)
-Subject: Re: [RFC/PATCH 2/5] powerpc: Cleanup ptrace bits
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
-In-Reply-To: <1180475149.19517.209.camel@localhost.localdomain>
-References: <OF248D3BF7.F4CFDB25-ON422572EA.004A7C17-422572EA.004ACFAE@de.ibm.com>
-	<1180475149.19517.209.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 30 May 2007 21:24:41 +1000
-Message-Id: <1180524281.19517.259.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Anton Blanchard <anton@samba.org>
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 709ECDDF21
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 21:36:57 +1000 (EST)
+In-Reply-To: <1180466979.3360.69.camel@zod.rchland.ibm.com>
+References: <20070529060541.GG30266@localhost.localdomain>
+	<c7c131c3a7fdf7727d9ea1e40775017a@kernel.crashing.org>
+	<1180448346.3360.49.camel@zod.rchland.ibm.com>
+	<a5c459df2eefeb9261e65c551870f7f5@kernel.crashing.org>
+	<1180466979.3360.69.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <8b93622a41f822c7b8444d42deb9e5ac@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Fix problems with Holly's DT representation of ethernet PHYs
+Date: Wed, 30 May 2007 13:36:49 +0200
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: Alexandre Bounine <Alexandre.Bounine@tundra.com>,
+	David Gibson <dwg@au1.ibm.com>, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +31,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-05-30 at 07:45 +1000, Benjamin Herrenschmidt wrote:
-> > It looks like GDB will expect VRSAVE at offset 33*16 (length 4
-> bytes) 
-> > in the area returned by PTRACE_GETVRREGS, for both 32-bit and
-> 64-bit 
-> > applications: 
-> 
-> I have to check exactly what's going on there, it might be correct in
-> both cases, I just remember that the code did something subtely
-> different but it might result in the same thing. I'll double check
-> today.
+> We're adding these compatible properties to DTS files and the drivers 
+> at
+> the same time.  Unless (until?) there are firmwares for these boards
+> that start specifying something else in a real device tree, it really
+> doesn't matter much.
 
-It was indeed correct in both cases, it just stupidly did direct ulong
-refs on 32 bits and cast to u32 on 64 bits, which I consolidated into a
-single implementation that uses u32 for vrsave so it should work fine.
+Sure.  So you have time to work out things now, I
+suggest you take advantage of that :-)
 
-Ben.
+> Not that there's anything wrong with your
+> reasoning.  Just seems like we're trying really hard to define 
+> something
+> "correctly" when we control what's on both sides :).
+
+Right now, and in your case, you do.  OTOH, the
+goal is to have the DTS be a well-established
+stable interface between the firmware/bootloader/
+bootwrapper and the kernel; there is no room for
+either side of that interface playing dirty tricks,
+not on any board ;-)
+
+Also, the DTS files in the kernel source tree should
+server as a best-of-breed example for people doing
+custom device trees for their own boards.  We better
+whip them into good shape or we'll all look foolish...
+
+
+Segher
