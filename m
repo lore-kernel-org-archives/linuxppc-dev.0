@@ -2,25 +2,25 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B2971DDFB2
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 22:13:45 +1000 (EST)
-In-Reply-To: <20070530100438.GB24586@lst.de>
+	by ozlabs.org (Postfix) with ESMTP id 028D7DDEC5
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 22:15:55 +1000 (EST)
+In-Reply-To: <1180525484.19517.266.camel@localhost.localdomain>
 References: <OF462E078D.FFB634FD-ON422572EA.004D1E28-422572EA.004DB265@de.ibm.com>
-	<40815D64-3AD7-49C6-9A58-C7848691D940@kernel.crashing.org>
-	<eaf1132805a9531b5131ca51d3e8d9c8@kernel.crashing.org>
-	<77D9DB04-FAD3-48EF-9159-5EA92BB366E5@freescale.com>
-	<20070530100438.GB24586@lst.de>
+	<OF611013C9.F9C3C2DB-ON862572EA.0050F570-862572EA.005197A3@us.ibm.com>
+	<18012.61822.197988.279764@cargo.ozlabs.ibm.com>
+	<ADB2DAF4-B25F-462D-B552-531D706F57BE@kernel.crashing.org>
+	<1180525484.19517.266.camel@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <B61C358F-A8D8-4A72-92CC-C770F854F6D5@kernel.crashing.org>
+Message-Id: <91D21C34-3D3C-4A1F-9B2E-08F336B7EFC4@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: Saving to 32 bits of GPRs in signal context
-Date: Wed, 30 May 2007 07:13:26 -0500
-To: Christoph Hellwig <hch@lst.de>
+Date: Wed, 30 May 2007 07:15:46 -0500
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Steve Munroe <sjmunroe@us.ibm.com>,
 	Ulrich Weigand <Ulrich.Weigand@de.ibm.com>,
-	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
+	Paul Mackerras <paulus@samba.org>, Steve Munroe <sjmunroe@us.ibm.com>,
+	Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,23 +31,30 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On May 30, 2007, at 5:04 AM, Christoph Hellwig wrote:
+On May 30, 2007, at 6:44 AM, Benjamin Herrenschmidt wrote:
 
-> On Tue, May 29, 2007 at 02:04:02PM -0500, Becky Bruce wrote:
->> I think that's exactly what Kumar's talking about. The assumption
->> that all 64-bit Power processors will use those upper bits in some
->> meaningful way is not valid.  Also, ld and std do not architecturally
->> "just work" on BookE implementations running in 32b mode.  Those
->> instructions are part of the 64-bit category in 2.03, and may illop
->> on BookE processors running in 32b mode.
+> On Wed, 2007-05-30 at 00:32 -0500, Kumar Gala wrote:
+>>> I think actually it would be useful to have the saving/restoring of
+>>> the high 32 bits controlled by a prctl, so that programs have to ask
+>>> explicitly for the new behaviour (and programs that don't want to
+>> use
+>>> the high 32 bits don't incur the extra overhead).
+>>
+>> I like this, it means we can error if HW doesn't support it and
+>> requires applications to do something specific to enable the feature.
 >
-> Then Bens suggest mode will only work on the sane IBM processors and
-> not the braindead freescale ones.  Wouldn't be the first time.
+> Yeah well.... I liked the prctl at first.. but then, I though  
+> twice :-)
+>
+> Thing is, a typical usage pattern would be some library having a hand
+> optimized tigh loop or something like that using 64 bits registers. An
+> example, would be some memcpy-type thing in glibc.
+>
+> You don't want those things to do prctl's all over the place on behalf
+> of the host application.
 
-This isn't sane vs braindead.  Its one thing if this was some quirk  
-of an implementation, but we are talking about what the architecture  
-does and doesn't allow.  There a reasonable reason that a processor  
-for the embedded processor would be able to save power in 32-bit mode  
-by not powering the upper bits of the register file.
+Yeah, I can see that being a pain.  However, how would the AT_HWCAP  
+make this any easier on the library to detect?  (I might have missed  
+that discussion of that magic in the thread).
 
 - k
