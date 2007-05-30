@@ -1,23 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C2ED5DDFCB
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 22:10:08 +1000 (EST)
-Subject: Re: Saving to 32 bits of GPRs in signal context
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <fa74d8c78910a77c011f9e72dd750d19@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id B2971DDFB2
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 22:13:45 +1000 (EST)
+In-Reply-To: <20070530100438.GB24586@lst.de>
 References: <OF462E078D.FFB634FD-ON422572EA.004D1E28-422572EA.004DB265@de.ibm.com>
-	<OF611013C9.F9C3C2DB-ON862572EA.0050F570-862572EA.005197A3@us.ibm.com>
-	<18012.61822.197988.279764@cargo.ozlabs.ibm.com>
-	<ce91696e7837282dd93df408461a64fb@kernel.crashing.org>
-	<1180526470.19517.274.camel@localhost.localdomain>
-	<fa74d8c78910a77c011f9e72dd750d19@kernel.crashing.org>
-Content-Type: text/plain
-Date: Wed, 30 May 2007 22:09:51 +1000
-Message-Id: <1180526992.19517.277.camel@localhost.localdomain>
-Mime-Version: 1.0
+	<40815D64-3AD7-49C6-9A58-C7848691D940@kernel.crashing.org>
+	<eaf1132805a9531b5131ca51d3e8d9c8@kernel.crashing.org>
+	<77D9DB04-FAD3-48EF-9159-5EA92BB366E5@freescale.com>
+	<20070530100438.GB24586@lst.de>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <B61C358F-A8D8-4A72-92CC-C770F854F6D5@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Saving to 32 bits of GPRs in signal context
+Date: Wed, 30 May 2007 07:13:26 -0500
+To: Christoph Hellwig <hch@lst.de>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Steve Munroe <sjmunroe@us.ibm.com>,
 	Ulrich Weigand <Ulrich.Weigand@de.ibm.com>,
@@ -31,26 +30,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-05-30 at 14:07 +0200, Segher Boessenkool wrote:
-> > Actually, it's the opposite... the prctl becomes a problem if you
-> have
-> > libs wanting to use 64 bits for optims
-> 
-> The host application, or the dynamic loader, can call
-> the prctl() when it loads the DSO that needs it.
 
-Provided you know it does... and with static binaries it gets harder...
+On May 30, 2007, at 5:04 AM, Christoph Hellwig wrote:
 
-> In almost all cases this should all be transparent
-> for the user IMHO, based on some ELF flag.
+> On Tue, May 29, 2007 at 02:04:02PM -0500, Becky Bruce wrote:
+>> I think that's exactly what Kumar's talking about. The assumption
+>> that all 64-bit Power processors will use those upper bits in some
+>> meaningful way is not valid.  Also, ld and std do not architecturally
+>> "just work" on BookE implementations running in 32b mode.  Those
+>> instructions are part of the 64-bit category in 2.03, and may illop
+>> on BookE processors running in 32b mode.
+>
+> Then Bens suggest mode will only work on the sane IBM processors and
+> not the braindead freescale ones.  Wouldn't be the first time.
 
-You reckon ? I was wondering about that ... maybe we should define some
-ELF personality for that ...
+This isn't sane vs braindead.  Its one thing if this was some quirk  
+of an implementation, but we are talking about what the architecture  
+does and doesn't allow.  There a reasonable reason that a processor  
+for the embedded processor would be able to save power in 32-bit mode  
+by not powering the upper bits of the register file.
 
-But that means that existing programs wouldn't get it even while some
-libs they depend on might have such optims without the program knowing
-about it ...
-
-Also, if I can avoid changing glibc ... (you know how hard it is !)
-
-Ben.
+- k
