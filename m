@@ -1,19 +1,21 @@
-Return-Path: <akonovalov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 8A9B8DDFC7
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7BA60DDFD8
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 31 May 2007 17:39:07 +1000 (EST)
-Message-ID: <465E7D08.4050909@ru.mvista.com>
-Date: Thu, 31 May 2007 11:45:12 +0400
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
+	Thu, 31 May 2007 20:06:55 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1HthYR-0004lH-7p
+	for linuxppc-embedded@ozlabs.org; Thu, 31 May 2007 03:06:51 -0700
+Message-ID: <10890962.post@talk.nabble.com>
+Date: Thu, 31 May 2007 03:06:51 -0700 (PDT)
+From: Guillaume Berthelom <guillaume.berthelom@cleode.fr>
+To: linuxppc-embedded@ozlabs.org
+Subject: Xilinx ethernet EMAC and bad checksum?
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: Audio Dirver for the 403/405?
-References: <10883262.post@talk.nabble.com>
-	<fa686aa40705301610q6ba8f2abq482f43a89f44d1bc@mail.gmail.com>
-In-Reply-To: <fa686aa40705301610q6ba8f2abq482f43a89f44d1bc@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: bert_maxel <bonlutin@hotmail.com>, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,22 +26,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On 5/30/07, bert_maxel <bonlutin@hotmail.com> wrote:
->> Hi all,
->>
->> Has anybody got some working audio driver (linux) for the  ML403/405 ?
->> I know it's an ac97 codec, but I can't find anything related to the xilinx
->> boards?
->> If nobody has worked on this yet, I'm in trouble. I don't know where to
->> start, or from what ac97 driver should I base my initial development?
-> 
-> IIRC, the old mvista 2.4 tree has an audio driver.
-> 
-> g.
-> 
 
-I am afraid it doesn't...
+Hi,
 
+I am trying to use the Xilinx ethernet EMAC drivers on my board with a
+2.6.20 linux kernel.
+I have used the adapter.c file from the EDK 8.2 and changed some functions
+to adapte it for the 2.6 kernel, on the same way like Grant Likely did in
+his TEMAC patch.
+
+The ping and DHCP client work fine as same as the TCP handshake, so the
+connexion is established fine. But when the frame (TCP or UDP) send by my
+board need a checksum, this checksum failed and the server don't respond me.
+
+I'm using the plb_ethernet IP in FIFO mode.
+
+So if you could give me some way where might be the issue, I'll really
+appreciate...
 Thanks,
-Andrei
+Guillaume Berthelom
+-- 
+View this message in context: http://www.nabble.com/Xilinx-ethernet-EMAC-and-bad-checksum--tf3845670.html#a10890962
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
