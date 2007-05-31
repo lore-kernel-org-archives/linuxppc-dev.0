@@ -1,17 +1,21 @@
-Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C0251DDFCD
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2007 19:33:23 +1000 (EST)
-Date: Thu, 31 May 2007 18:33:04 +0900 (JST)
-Message-Id: <200705310933.l4V9X4Pl009909@toshiba.co.jp>
-Subject: [PATCH] of_serial: add port type checking
-To: paulus@samba.org
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, arnd@arndb.de
+Return-Path: <mroos@ut.ee>
+Received: from smtp2.it.da.ut.ee (smtp2.it.da.ut.ee [193.40.5.67])
+	by ozlabs.org (Postfix) with ESMTP id 661A4DDF8C
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2007 20:32:47 +1000 (EST)
+Received: from math.ut.ee (math.ut.ee [193.40.36.2])
+	by smtp2.it.da.ut.ee (Postfix) with ESMTP id 028374C0396A
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2007 13:09:33 +0300 (EEST)
+Received: from localhost (localhost [127.0.0.1])
+	by math.ut.ee (Postfix) with ESMTP id EA6AB6ADEB
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2007 13:09:32 +0300 (EEST)
+Date: Thu, 31 May 2007 13:09:32 +0300 (EEST)
+From: Meelis Roos <mroos@ut.ee>
+Sender: mroos@math.ut.ee
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [ppc] fix mot_info section
+Message-ID: <Pine.SOC.4.64.0705311308530.12340@math>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,80 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently, of_serial driver supports only 8250 compatible ports, but
-prepares that others can easily be added. Yet unregister routine
-assumes port is 8250. This patch corrects unregister routine to check
-port type.
+(resend to linuxppc-dev)
 
-Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
-Cc: Arnd Bergmann <arnd@arndb.de>
----
+The following patch makes mot_info __initdata since it is used only in
+__init functions. prep_pci.c change has been tested in real life on
+Motorola Powerstack II (compiles without modpost warnings and boots
+fine), pplus.c has not been tested but seems similar.
 
-Index: linux-powerpc-git/drivers/serial/of_serial.c
-===================================================================
---- linux-powerpc-git.orig/drivers/serial/of_serial.c
-+++ linux-powerpc-git/drivers/serial/of_serial.c
-@@ -17,6 +17,11 @@
- #include <asm/of_platform.h>
- #include <asm/prom.h>
- 
-+struct of_serial_info {
-+	int type;
-+	int line;
-+};
-+
- /*
-  * Fill a struct uart_port for a given device node
-  */
-@@ -62,6 +67,7 @@ static int __devinit of_platform_serial_
- static int __devinit of_platform_serial_probe(struct of_device *ofdev,
- 						const struct of_device_id *id)
- {
-+	struct of_serial_info *info;
- 	struct uart_port port;
- 	int port_type;
- 	int ret;
-@@ -69,6 +75,10 @@ static int __devinit of_platform_serial_
- 	if (of_find_property(ofdev->node, "used-by-rtas", NULL))
- 		return -EBUSY;
- 
-+	info = kmalloc(sizeof(*info), GFP_KERNEL);
-+	if (info == NULL)
-+		return -ENOMEM;
-+
- 	port_type = (unsigned long)id->data;
- 	ret = of_platform_serial_setup(ofdev, port_type, &port);
- 	if (ret)
-@@ -88,9 +98,12 @@ static int __devinit of_platform_serial_
- 	if (ret < 0)
- 		goto out;
- 
--	ofdev->dev.driver_data = (void *)(unsigned long)ret;
-+	info->type = port_type;
-+	info->line = ret;
-+	ofdev->dev.driver_data = info;
- 	return 0;
- out:
-+	kfree(info);
- 	irq_dispose_mapping(port.irq);
- 	return ret;
- }
-@@ -100,8 +113,16 @@ out:
-  */
- static int of_platform_serial_remove(struct of_device *ofdev)
- {
--	int line = (unsigned long)ofdev->dev.driver_data;
--	serial8250_unregister_port(line);
-+	struct of_serial_info *info = ofdev->dev.driver_data;
-+	switch (info->type) {
-+	case PORT_8250 ... PORT_MAX_8250:
-+		serial8250_unregister_port(info->line);
-+		break;
-+	default:
-+		/* need to add code for these */
-+		break;
-+	}
-+	kfree(info);
- 	return 0;
- }
- 
+Signed-off-by: Meelis Roos <mroos@linux.ee>
+
+diff --git a/arch/ppc/platforms/pplus.c b/arch/ppc/platforms/pplus.c
+index 8a1788c..c569962 100644
+--- a/arch/ppc/platforms/pplus.c
++++ b/arch/ppc/platforms/pplus.c
+@@ -256,7 +256,7 @@ struct brd_info {
+ 	const char *name;
+ 	int (*map_irq) (struct pci_dev *, unsigned char, unsigned char);
+ };
+-struct brd_info mot_info[] = {
++struct brd_info mot_info[] __initdata = {
+ 	{0x300, 0x00, 0x00, "MVME 2400", Genesis2_map_irq},
+ 	{0x1E0, 0xE0, 0x00, "Mesquite cPCI (MCP750)", mesquite_map_irq},
+ 	{0x1E0, 0xE1, 0x00, "Sitka cPCI (MCPN750)", sitka_map_irq},
+diff --git a/arch/ppc/platforms/prep_pci.c b/arch/ppc/platforms/prep_pci.c
+index 1df3150..d8c4e28 100644
+--- a/arch/ppc/platforms/prep_pci.c
++++ b/arch/ppc/platforms/prep_pci.c
+@@ -803,7 +803,7 @@ struct mot_info {
+ 	void            (*map_non0_bus)(struct pci_dev *);      /* For boards with more than bus 0 devices. */
+ 	struct powerplus_irq_list *pci_irq_list; /* List of PCI MPIC inputs */
+ 	unsigned char   secondary_bridge_devfn; /* devfn of secondary bus transparent bridge */
+-} mot_info[] = {
++} mot_info[] __initdata = {
+ 	{0x300, 0x00, 0x00, "MVME 2400",			Genesis2_pci_IRQ_map,	Raven_pci_IRQ_routes, Powerplus_Map_Non0, &Powerplus_pci_IRQ_list, 0xFF},
+ 	{0x010, 0x00, 0x00, "Genesis",				Genesis_pci_IRQ_map,	Genesis_pci_IRQ_routes, Powerplus_Map_Non0, &Powerplus_pci_IRQ_list, 0x00},
+ 	{0x020, 0x00, 0x00, "Powerstack (Series E)",		Comet_pci_IRQ_map,	Comet_pci_IRQ_routes, NULL, NULL, 0x00},
+
+-- 
+Meelis Roos (mroos@linux.ee)
