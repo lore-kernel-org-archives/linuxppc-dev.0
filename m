@@ -1,17 +1,19 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 05A0BDE07F
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Jun 2007 06:09:15 +1000 (EST)
-Date: Thu, 31 May 2007 15:14:48 -0500
-To: Jake Moilanen <moilanen@austin.ibm.com>
-Subject: Re: [PATCH] Donate dedicated CPU cycles
-Message-ID: <20070531201447.GA30760@lixom.net>
-References: <1180638885.5756.11.camel@goblue>
+Return-Path: <m.kozlowski@tuxland.pl>
+Received: from tuxland.pl (xdsl-664.zgora.dialog.net.pl [81.168.226.152])
+	by ozlabs.org (Postfix) with ESMTP id 52DFEDDF3E
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Jun 2007 06:43:22 +1000 (EST)
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, Arnd Bergmann <arndb@de.ibm.com>
+Subject: Re: 2.6.22-rc3-mm1
+Date: Thu, 31 May 2007 22:43:18 +0200
+References: <20070530235823.793f00d9.akpm@linux-foundation.org>
+In-Reply-To: <20070530235823.793f00d9.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1180638885.5756.11.camel@goblue>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Message-Id: <200705312243.18724.m.kozlowski@tuxland.pl>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,45 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Hello
 
-On Thu, May 31, 2007 at 02:14:45PM -0500, Jake Moilanen wrote:
-> A Power6 can give up CPU cycles on a dedicated CPU (as opposed to a
-> shared CPU) to other shared processors if the administrator asks for it
-> (via the HMC).
-> 
-> This patch enables that to work properly on P6.
-> 
-> This just involves setting a bit in the CAS structure as well as the
-> VPA.  To donate cycles, a CPU has to have all SMT threads idle and w/
-> donate bit set in the VPA.  Then call H_CEDE.
+	This is from iMac G3. The spufs_mem_mmap_fault() code looks bad
+in arch/powerpc/platforms/cell/spufs/file.c but somehow I'm unable to find
+the patch to blame hmm.
 
-[...]
+arch/powerpc/platforms/cell/spufs/file.c: In function 'spufs_mem_mmap_fault':
+arch/powerpc/platforms/cell/spufs/file.c:122: error: 'address' undeclared (first use in this function)
+arch/powerpc/platforms/cell/spufs/file.c:122: error: (Each undeclared identifier is reported only once
+arch/powerpc/platforms/cell/spufs/file.c:122: error: for each function it appears in.)
+arch/powerpc/platforms/cell/spufs/file.c:141: error: expected ';' before 'if'
+arch/powerpc/platforms/cell/spufs/file.c:122: warning: unused variable 'addr0'
+make[3]: *** [arch/powerpc/platforms/cell/spufs/file.o] Blad 1
+make[2]: *** [arch/powerpc/platforms/cell/spufs] Blad 2
+make[1]: *** [arch/powerpc/platforms/cell] Blad 2
 
-> Index: powerpc/arch/powerpc/platforms/pseries/setup.c
-> ===================================================================
-> --- powerpc.orig/arch/powerpc/platforms/pseries/setup.c
-> +++ powerpc/arch/powerpc/platforms/pseries/setup.c
-> @@ -399,6 +399,7 @@ static void pseries_dedicated_idle_sleep
->  	 * a good time to find other work to dispatch.
->  	 */
->  	get_lppaca()->idle = 1;
-> +	get_lppaca()->cpuctls_task_attrs = 1;
->  
->  	/*
->  	 * We come in with interrupts disabled, and need_resched()
-> @@ -431,6 +432,7 @@ static void pseries_dedicated_idle_sleep
->  
->  out:
->  	HMT_medium();
-> +	get_lppaca()->cpuctls_task_attrs = 0;
->  	get_lppaca()->idle = 0;
->  }
+Regards,
 
-Is this really the cpu controls task attribute field any more?  If this
-is not just a flag (stored in a byte), the variable should be renamed
-accordingly. If it is truly an attribute bitfield, then the attributes
-should be named and constants used instead.
-
-
--Olof
+	Mariusz
