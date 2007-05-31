@@ -1,29 +1,17 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <kou.ishizaki@toshiba.co.jp>
+Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B0420DDFE5
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2007 16:55:14 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l4V6t970010281
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2007 23:55:09 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l4V6t8Wv019542
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2007 01:55:08 -0500 (CDT)
-Subject: Re: [PATCH 2/3] Export of_bus_pci_get_flags().
-From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-To: Jon Loeliger <jdl@freescale.com>
-In-Reply-To: <1180462985.13106.63.camel@ld0161-tx32>
-References: <1180462985.13106.63.camel@ld0161-tx32>
-Content-Type: text/plain
-Message-Id: <1180594477.16792.4.camel@localhost.localdomain>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 17B7DDDE3C
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2007 19:31:03 +1000 (EST)
+Date: Thu, 31 May 2007 18:30:33 +0900 (JST)
+Message-Id: <20070531.183033.-1300520557.kouish@swc.toshiba.co.jp>
+Subject: [PATCH] of_serial: ignore unknown serial port
+To: paulus@samba.org
+From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
-Date: 31 May 2007 14:54:37 +0800
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,15 +21,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Current of_serial driver assumes unknown serial port to be 8250. But
+this behavior may cause fatal problems when the serial port is not
+8250. This patch corrects probe routine to ignore unknown serial port.
 
-On Wed, 2007-05-30 at 02:23, Jon Loeliger wrote:
-> From: Jon Loeliger <jdl@freescale.com>
-> 
-> Signed-off-by: Andy Fleming <afleming@freescale.com>
-> Signed-off-by: Jon Loeliger <jdl@freescale.com>
-> ---
->  arch/powerpc/kernel/prom_parse.c |    2 +-
->  include/asm-powerpc/prom.h       |    1 +
->  2 files changed, 2 insertions(+), 1 deletions(-)
+Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+Cc: Arnd Bergmann <arnd@arndb.de>
+---
 
-Acked-by: Roy Zang <tie-fei.zang@freescale.com>
+Index: linux-powerpc-git/drivers/serial/of_serial.c
+===================================================================
+--- linux-powerpc-git.orig/drivers/serial/of_serial.c
++++ linux-powerpc-git/drivers/serial/of_serial.c
+@@ -75,15 +75,13 @@ static int __devinit of_platform_serial_
+ 		goto out;
+ 
+ 	switch (port_type) {
+-	case PORT_UNKNOWN:
+-		dev_info(&ofdev->dev, "Unknown serial port found, "
+-			"attempting to use 8250 driver\n");
+-		/* fallthrough */
+ 	case PORT_8250 ... PORT_MAX_8250:
+ 		ret = serial8250_register_port(&port);
+ 		break;
+ 	default:
+ 		/* need to add code for these */
++	case PORT_UNKNOWN:
++		dev_info(&ofdev->dev, "Unknown serial port found, ignored\n");
+ 		ret = -ENODEV;
+ 		break;
+ 	}
