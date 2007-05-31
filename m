@@ -1,21 +1,17 @@
-Return-Path: <wfarnsworth@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 21D91DDFBB
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2007 08:26:29 +1000 (EST)
-Subject: Re: [PATCH 2/5] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
-From: Wade Farnsworth <wfarnsworth@mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <17B6534B-3C1C-433D-8875-1C2255E79D98@kernel.crashing.org>
-References: <11798051102658-git-send-email-wei.zhang@freescale.com>
-	<11798051101543-git-send-email-wei.zhang@freescale.com>
-	<1179805110272-git-send-email-wei.zhang@freescale.com>
-	<17B6534B-3C1C-433D-8875-1C2255E79D98@kernel.crashing.org>
-Content-Type: text/plain
-Date: Wed, 30 May 2007 15:26:15 -0700
-Message-Id: <1180563975.5715.15.camel@rhino>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 31 May 2007 11:33:37 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: Consolidate cuboot initialization code
+Message-ID: <20070531013337.GC14432@localhost.localdomain>
+References: <20070530020110.GC21955@localhost.localdomain>
+	<465D9397.7000008@freescale.com>
+	<20070530151236.GA14432@localhost.localdomain>
+	<465D9672.9060100@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <465D9672.9060100@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,128 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds device nodes for the PCI bridges as well as the ISA devices on
-the newer revision MPC8641HPCN.  It also adds the PCI ranges to the soc
-node so that address translation for the ISA devices works properly.
+On Wed, May 30, 2007 at 10:21:22AM -0500, Scott Wood wrote:
+> David Gibson wrote:
+> > On Wed, May 30, 2007 at 10:09:11AM -0500, Scott Wood wrote:
+> >>Is there any particular reason to not just do a direct call to 
+> >>cuboot_init, and move the memcpy and end-of-ram calculation there?  I'd 
+> >>rather avoid macros if possible.
+> > 
+> > Uh.. yeah.. because cuboot_init() doesn't know the size to memcpy(),
+> > because it doesn't have the right bd_t definition.
+> 
+> Ah, yes.  Don't mind me, it's still morning here... :-P
+> 
+> We could probably do away with the copy altogether, though, as u-boot 
+> puts the bd_t near the stack, which is exempted from the bootwrapper's 
+> heap with the 1MiB exclusion.
 
-Signed-off-by: Wade Farnsworth <wfarnsworth@mvista.com>
+Possibly, though the copy is safer.  I'm hoping to be able to merge
+libfdt in a few weeks, which with luck will let me get rid of malloc()
+entirely.  I'll think about revisiting this then.
 
----
-Here's the merged patch.
-
-I've updated the ISA nodes somewhat according to the comments the
-original patch received.
-
-I also took the liberty of fixing the addresses of the pci bridges and
-removing the unused "uli1575:" label.
-
- arch/powerpc/boot/dts/mpc8641_hpcn.dts |   89 +++++++++++++++++++----
- 1 file changed, 77 insertions(+), 12 deletions(-)
-
-Index: linux-2.6-powerpc-8641/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-===================================================================
---- linux-2.6-powerpc-8641.orig/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-+++ linux-2.6-powerpc-8641/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-@@ -56,7 +56,11 @@
- 		#size-cells = <1>;
- 		#interrupt-cells = <2>;
- 		device_type = "soc";
--		ranges = <0 f8000000 00100000>;
-+		ranges = <00000000 f8000000 00100000
-+			  80000000 80000000 20000000
-+			  e2000000 e2000000 00100000
-+			  a0000000 a0000000 20000000
-+			  e3000000 e3000000 00100000>;
- 		reg = <f8000000 00100000>;	// CCSRBAR 1M
- 		bus-frequency = <0>;
- 
-@@ -285,17 +289,78 @@
- 				f800 0 0 3 &i8259 0 0
- 				f800 0 0 4 &i8259 0 0
- 				>;
--			i8259: i8259@4d0 {
--				clock-frequency = <0>;
--				interrupt-controller;
--				device_type = "interrupt-controller";
--				#address-cells = <0>;
--				#interrupt-cells = <2>;
--				built-in;
--				compatible = "chrp,iic";
--                	        big-endian;
--				interrupts = <49 2>;
--				interrupt-parent = <&mpic>;
-+			uli1575@0 {
-+				reg = <0 0 0 0 0>;
-+ 				#size-cells = <2>;
-+ 				#address-cells = <3>;
-+ 				ranges = <02000000 0 80000000
-+ 					  02000000 0 80000000
-+ 					  0 20000000
-+ 					  01000000 0 00000000
-+ 					  01000000 0 00000000
-+ 					  0 00100000>;
-+
-+				pci_bridge@0 {
-+					reg = <0 0 0 0 0>;
-+ 					#size-cells = <2>;
-+ 					#address-cells = <3>;
-+ 					ranges = <02000000 0 80000000
-+ 						  02000000 0 80000000
-+ 						  0 20000000
-+ 						  01000000 0 00000000
-+ 						  01000000 0 00000000
-+ 						  0 00100000>;
-+
-+ 					isa@1e {
-+ 						device_type = "isa";
-+ 						#interrupt-cells = <2>;
-+ 						#size-cells = <1>;
-+ 						#address-cells = <2>;
-+ 						reg = <f000 0 0 0 0>;
-+ 						ranges = <1 0 01000000 0 0
-+ 							  00001000>;
-+ 						interrupt-parent = <&i8259>;
-+
-+ 						i8042@60 {
-+ 							reg = <1 60 1 1 64 1>;
-+ 							interrupts = <1 3 c 3>;
-+ 							interrupt-parent =
-+ 								<&i8259>;
-+
-+ 							keyboard@0 {
-+ 								compatible = "pnpPNP,303";
-+ 	 						};
-+
-+ 							mouse@1 {
-+ 								compatible = "pnpPNP,f03";
-+ 							};
-+ 						};
-+
-+ 						rtc@70 {
-+ 							compatible =
-+ 								"pnpPNP,b00";
-+ 							reg = <1 70 2>;
-+ 						};
-+
-+ 						gpio@400 {
-+ 							reg = <1 400 80>;
-+ 						};
-+
-+ 						i8259: i8259@4d0 {
-+ 							clock-frequency = <0>;
-+ 							interrupt-controller;
-+ 							device_type = "interrupt-controller";
-+ 							#address-cells = <0>;
-+ 							#interrupt-cells = <2>;
-+ 							built-in;
-+ 							compatible = "chrp,iic";
-+ 							big-endian;
-+ 							interrupts = <49 2>;
-+ 							interrupt-parent =
-+ 								<&mpic>;
-+ 						};
-+					};
-+				};
- 			};
- 
- 		};
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
