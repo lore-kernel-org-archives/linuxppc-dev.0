@@ -1,22 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.181])
-	by ozlabs.org (Postfix) with ESMTP id 91B15DDE09
+Return-Path: <akonovalov@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id 8A9B8DDFC7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 31 May 2007 09:10:45 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m34so1238678wag
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 May 2007 16:10:43 -0700 (PDT)
-Message-ID: <fa686aa40705301610q6ba8f2abq482f43a89f44d1bc@mail.gmail.com>
-Date: Wed, 30 May 2007 17:10:41 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: bert_maxel <bonlutin@hotmail.com>
-Subject: Re: Audio Dirver for the 403/405?
-In-Reply-To: <10883262.post@talk.nabble.com>
+	Thu, 31 May 2007 17:39:07 +1000 (EST)
+Message-ID: <465E7D08.4050909@ru.mvista.com>
+Date: Thu, 31 May 2007 11:45:12 +0400
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Audio Dirver for the 403/405?
 References: <10883262.post@talk.nabble.com>
-Cc: linuxppc-embedded@ozlabs.org
+	<fa686aa40705301610q6ba8f2abq482f43a89f44d1bc@mail.gmail.com>
+In-Reply-To: <fa686aa40705301610q6ba8f2abq482f43a89f44d1bc@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: bert_maxel <bonlutin@hotmail.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,22 +24,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 5/30/07, bert_maxel <bonlutin@hotmail.com> wrote:
->
-> Hi all,
->
-> Has anybody got some working audio driver (linux) for the  ML403/405 ?
-> I know it's an ac97 codec, but I can't find anything related to the xilinx
-> boards?
-> If nobody has worked on this yet, I'm in trouble. I don't know where to
-> start, or from what ac97 driver should I base my initial development?
+Grant Likely wrote:
+> On 5/30/07, bert_maxel <bonlutin@hotmail.com> wrote:
+>> Hi all,
+>>
+>> Has anybody got some working audio driver (linux) for the  ML403/405 ?
+>> I know it's an ac97 codec, but I can't find anything related to the xilinx
+>> boards?
+>> If nobody has worked on this yet, I'm in trouble. I don't know where to
+>> start, or from what ac97 driver should I base my initial development?
+> 
+> IIRC, the old mvista 2.4 tree has an audio driver.
+> 
+> g.
+> 
 
-IIRC, the old mvista 2.4 tree has an audio driver.
+I am afraid it doesn't...
 
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Thanks,
+Andrei
