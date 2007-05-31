@@ -1,26 +1,28 @@
-Return-Path: <shemminger@linux-foundation.org>
-Received: from smtp.osdl.org (smtp.osdl.org [207.189.120.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1B410DE016
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Jun 2007 02:48:38 +1000 (EST)
-Date: Thu, 31 May 2007 09:37:03 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Thomas Klein <osstklei@de.ibm.com>
-Subject: Re: [PATCH 2/2] ehea: Receive SKB Aggregation
-Message-ID: <20070531093703.373995b2@freepuppy>
-In-Reply-To: <200705311354.56979.osstklei@de.ibm.com>
-References: <200705311354.56979.osstklei@de.ibm.com>
+Return-Path: <moilanen@austin.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1642DDDF15
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Jun 2007 05:15:13 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l4VJF7pS006831
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2007 15:15:07 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l4VJF7nk489184
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2007 15:15:07 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4VJF7ma031449
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2007 15:15:07 -0400
+Subject: [PATCH] Donate dedicated CPU cycles
+From: Jake Moilanen <moilanen@austin.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Thu, 31 May 2007 14:14:45 -0500
+Message-Id: <1180638885.5756.11.camel@goblue>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
-	Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>, Stefan,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	Roscher <ossrosch@linux.vnet.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Marcus Eder <meder@de.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,40 +32,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+A Power6 can give up CPU cycles on a dedicated CPU (as opposed to a
+shared CPU) to other shared processors if the administrator asks for it
+(via the HMC).
 
-> 
->  
-> +static int try_get_ip_tcp_hdr(struct ehea_cqe *cqe, struct sk_buff *skb,
-> +			      struct iphdr **iph, struct tcphdr **tcph)
-> +{
-> +	int ip_len;
-> +
-> +	/* non tcp/udp packets */
-> +	if (!cqe->header_length)
-> +		return -1;
-> +
-> +	/* non tcp packet */
-> +	*iph = (struct iphdr *)(skb->data);
+This patch enables that to work properly on P6.
 
-Why the indirection, copying of headers..
+This just involves setting a bit in the CAS structure as well as the
+VPA.  To donate cycles, a CPU has to have all SMT threads idle and w/
+donate bit set in the VPA.  Then call H_CEDE.
 
-> +	if ((*iph)->protocol != IPPROTO_TCP)
-> +		return -1;
-> +
-> +	ip_len = (u8)((*iph)->ihl);
-> +	ip_len <<= 2;
-> +	*tcph = (struct tcphdr *)(((u64)*iph) + ip_len);
-> +
-> +	return 0;
-> +}
-> +
-> 
+Signed-off-by: Jake Moilanen <moilanen@austin.ibm.com>
 
-This code seems to be duplicating a lot  (but not all) of the TCP/IP
-input path validation checks. This is a security problem if nothing else...
+--
+ arch/powerpc/kernel/prom_init.c        |    4 +++-
+ arch/powerpc/platforms/pseries/setup.c |    2 ++
+ 2 files changed, 5 insertions(+), 1 deletion(-)
 
-Also, how do you prevent DoS attacks from hostile TCP senders that send
-huge number of back to back frames?
-
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+Index: powerpc/arch/powerpc/kernel/prom_init.c
+===================================================================
+--- powerpc.orig/arch/powerpc/kernel/prom_init.c
++++ powerpc/arch/powerpc/kernel/prom_init.c
+@@ -635,6 +635,7 @@ static void __init early_cmdline_parse(v
+ /* ibm,dynamic-reconfiguration-memory property supported */
+ #define OV5_DRCONF_MEMORY	0x20
+ #define OV5_LARGE_PAGES		0x10	/* large pages supported */
++#define OV5_DONATE_DEDICATE_CPU 0x02	/* donate dedicated CPU support */
+ /* PCIe/MSI support.  Without MSI full PCIe is not supported */
+ #ifdef CONFIG_PCI_MSI
+ #define OV5_MSI			0x01	/* PCIe/MSI support */
+@@ -685,7 +686,8 @@ static unsigned char ibm_architecture_ve
+ 	/* option vector 5: PAPR/OF options */
+ 	3 - 2,				/* length */
+ 	0,				/* don't ignore, don't halt */
+-	OV5_LPAR | OV5_SPLPAR | OV5_LARGE_PAGES | OV5_DRCONF_MEMORY | OV5_MSI,
++	OV5_LPAR | OV5_SPLPAR | OV5_LARGE_PAGES | OV5_DRCONF_MEMORY |
++	OV5_DONATE_DEDICATE_CPU | OV5_MSI,
+ };
+ 
+ /* Old method - ELF header with PT_NOTE sections */
+Index: powerpc/arch/powerpc/platforms/pseries/setup.c
+===================================================================
+--- powerpc.orig/arch/powerpc/platforms/pseries/setup.c
++++ powerpc/arch/powerpc/platforms/pseries/setup.c
+@@ -399,6 +399,7 @@ static void pseries_dedicated_idle_sleep
+ 	 * a good time to find other work to dispatch.
+ 	 */
+ 	get_lppaca()->idle = 1;
++	get_lppaca()->cpuctls_task_attrs = 1;
+ 
+ 	/*
+ 	 * We come in with interrupts disabled, and need_resched()
+@@ -431,6 +432,7 @@ static void pseries_dedicated_idle_sleep
+ 
+ out:
+ 	HMT_medium();
++	get_lppaca()->cpuctls_task_attrs = 0;
+ 	get_lppaca()->idle = 0;
+ }
+ 
