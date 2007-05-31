@@ -1,22 +1,25 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <SRS0+b6be5a7e4fb03e41cd25+1376+infradead.org+hch@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 04CB5DDFB0
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2007 22:33:24 +1000 (EST)
-In-Reply-To: <7EA18FDD2DC2154AA3BD6D2F22A62A0E7EDA24@zch01exm23.fsl.freescale.net>
-References: <1180463004.13106.65.camel@ld0161-tx32>
-	<F962B8B4-32C0-46A6-B808-C18211353FCC@kernel.crashing.org>
-	<7EA18FDD2DC2154AA3BD6D2F22A62A0E7EDA24@zch01exm23.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <1734C12F-4DE9-42A7-8C8F-B2800051DF7E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 3/3] Modified quirk_mpc8641_transparent() to
-	initializebridge resources.
-Date: Thu, 31 May 2007 07:33:01 -0500
-To: "Zang Roy-r61911" <tie-fei.zang@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 6F238DDF9B
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2007 23:41:41 +1000 (EST)
+Date: Thu, 31 May 2007 14:41:18 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Thomas Klein <osstklei@de.ibm.com>
+Subject: Re: [PATCH 2/2] ehea: Receive SKB Aggregation
+Message-ID: <20070531134118.GA30501@infradead.org>
+References: <200705311354.56979.osstklei@de.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200705311354.56979.osstklei@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
+	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Christoph Raisch <raisch@de.ibm.com>,
+	Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,37 +29,6 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On May 31, 2007, at 1:48 AM, Zang Roy-r61911 wrote:
-
->>
->> On May 29, 2007, at 1:23 PM, Jon Loeliger wrote:
->>
->>> From: Jon Loeliger <jdl@freescale.com>
->>>
->>> The 8641 RC poses as a transparent bridge, but does not
->> implement the
->>> IO_BASE or IO_LIMIT registers in the config space.  This means that
->>> the code which initializes the bridge resources ends up setting the
->>> IO resources erroneously.
->>>
->>> This change initializes the RC bridge resources from the
->> device tree.
->>>
->>> Signed-off-by: Andy Fleming <afleming@freescale.com>
->>> Signed-off-by: Jon Loeliger <jdl@freescale.com>
->>
->> Can this be merged with Zhang's "Set RC of mpc8641 to transparent
->> bridge for transfer legacy I/O access." patch since it pretty much
->> supersedes it.
->
-> I should be!
-> But why apply them sperately?
-> They refect differnet content and stage. For end user, they will only
-> see the unified code :-).
-
-The reason is that in the future someone may be doing a git-bisect to  
-track down a bug and we like to have patches not break things if  
-possible.
-
-- k
+I'm still very unhappy with having all this in various drivers.  There's
+a lot of code that can be turned into generic library functions, and even
+more code that could be made generic with some amount of refactoring.
