@@ -1,19 +1,17 @@
-Return-Path: <zelco@xtra.co.nz>
-Received: from fep04.xtra.co.nz (fep04.xtra.co.nz [210.54.141.242])
-	by ozlabs.org (Postfix) with ESMTP id 0C03ADE120
+Return-Path: <mamsadegh@hotmail.com>
+Received: from bay0-omc3-s31.bay0.hotmail.com (bay0-omc3-s31.bay0.hotmail.com
+	[65.54.246.231]) by ozlabs.org (Postfix) with ESMTP id 2D721DDF1A
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Jun 2007 01:22:41 +1000 (EST)
-Received: from polar9a5b50dcd ([222.153.40.165]) by fep03.xtra.co.nz with SMTP
-	id <20070531151452.FAZG23336.fep03.xtra.co.nz@polar9a5b50dcd>
-	for <linuxppc-embedded@ozlabs.org>; Fri, 1 Jun 2007 03:14:52 +1200
-Message-ID: <006501c7a396$713c5630$7900a8c0@polar9a5b50dcd>
-From: "zeAtShuttle" <zelco@xtra.co.nz>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Miniature OpenGL development Linux
-Date: Fri, 1 Jun 2007 03:14:26 +1200
+	Fri,  1 Jun 2007 04:54:37 +1000 (EST)
+Message-ID: <BAY115-W17F1AB35DDD5B358CAC89B22D0@phx.gbl>
+From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
+To: <bwarren@qstreams.com>
+Subject: RE: Kernel 2.6, ML403, rootfs on nfs, gigabit ethernet link, nfs
+	mount problems
+Date: Thu, 31 May 2007 18:54:36 +0000
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0051_01C7A3FA.F5976640"
+Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,204 +22,75 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------=_NextPart_000_0051_01C7A3FA.F5976640
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Hi all,
 
-hello,
+thanks for suggestions
+I added rsize=3D1024,wsize=3D1024 to CMD LINE. INIT can now be executed fro=
+m nfs, but I think that the problem still exists,
+during the start up process ( from when the rootfs is mounted until user ge=
+t a command prompt ) some times ML403 stops working completely, and generat=
+es "Segmentation Fault" and similar messages. some other times the system c=
+omes up with no problem.=20
 
+I had the same problem when mounting rootfs using nfs via 100mbits link , b=
+ut for gigabit link the probability of reaching this unstable state is much=
+ higher.
 
-is anyone interested in this "kind of distro" running on PowerPC?
+any ideas?
 
-------------------------------------------------------------
-http://one.xthost.info/zelko/opengl.html
-
-Minimalistic GNU/Linux system, stripped down of everything, but core =
-necessary files to compile and run OpenGL/C code. It has simplified =
-directory structure and cleaned up internal cross referencing. Programs =
-compiled in myOS will run on any Linux with or without X.=20
-------------------------------------------------------------
-
-
-
-as you can see there, im trying to find the place where to upload it, =
-but, meanwhile, to SEE what im talking about you can try myOS x86 =
-version...
-
-OR,=20
-better yet - try these PowerPC binaries=20
-http://www.scitechsoft.com/ftp/devel/demos/ppclinux/
-
-there is 6.7Mb zip with LOTS of COOL OpenGL and other demos... game DOOM =
-!
-(drivers and everything included, just unpack & run)
+thanks
 
 
 
 
+----------------------------------------
+> Subject: Re: Kernel 2.6, ML403, rootfs on nfs, gigabit ethernet link, nfs=
+	mount problems
+> From: bwarren@qstreams.com
+> To: mamsadegh@hotmail.com
+> CC: linuxppc-embedded@ozlabs.org
+> Date: Tue, 29 May 2007 10:52:21 -0400
+>=20
+> Hi Mohammad,
+>=20
+> On Tue, 2007-05-29 at 14:41 +0000, Mohammad Sadegh Sadri wrote:
+> > Hi all,
+> >=20
+> > well I could bring up the grant's kernel on ml403 completely. the root =
+file system was over nfs.=20
+> >=20
+> > when I use a 100mbits link for connection to ml403 , every thing is wor=
+king suitably.
+> > but when I use a 1000mbits link, I see that ml403 gets ip address from =
+dhcp and mounts the root file system but can not go further , it stops with=
+ a message: "nfs server not responding ...." some thing like this.
+> >=20
+> > when pinging to ml403 with 64 bytes packets, ping works fine for both o=
+f 100 and 1000mbits links
+> > but when I try to ping the board with 4000 bytes packets I notice that =
+ml403 on gigabit link can not answer to ping packets, however on 100mbit li=
+nk every thing works just fine.
+> >=20
+> > any ideas?
+>=20
+> NFS is notorious for sending lots of big packets one right after
+> another.  This can easily overwhelm an Ethernet receiver.  Until you're
+> able to figure out why the 1000M link can't keep up, limit the NFS
+> receive packet sizes by passing the following NFS option in your kernel
+> command line:
+>=20
+> rsize=3D1024
+>=20
+> You can experiment with the value.  I believe the NFS default size is
+> typically 8kB or greater.
+>=20
+> regards,
+> Ben
+>=20
 
---- about "myOS-ppc" =
--------------------------------------------------------------
-
-in new version we use *initramfs* so the whole distro can load in ONLY =
-64MB of RAM,
-that means some very old G3 Macs, however i still can NOT make the demos =
-run on my test platform G3/64MB/333Mhz ...maybe because there is not =
-enough *free* memory, and is hard to find that kind of RAM today and =
-upgrade that Mac...=20
-
-so, we would very much appreciate if you can let us know if the above =
-OpenGL demos work on your  ppc-Linux, what is your PowerPC machine, what =
-graphic card and how much RAM/VRAM it has?
-
-
-...we're basically trying to work out minimum possible PowerPC platform, =
-
-so, if you have some embedded hardware we wonder if some of the demos =
-would work...
-
-but also,
-some "game-station" ...well whatever is running PowerPC and Linux we =
-would like to know if those Scitech drivers and OpenGL demos work on =
-that platform...
-
-
-list of video cards supported:
-http://www.scitechsoft.com/ftp/snap/linux/readme-x86.txt
-
-
-
-even, if your hardware can not "play" OpenGL or
-if you are not interested in 3D, there is still the whole
-miniature development platform that can be used for... whatever
-
-main point to make it really teensy was just so it can run from =
-"RAMDISK"=20
-and be quick & responsive... it turned out that embedded devices of=20
-today are more powerful than desktop computers of yesterday, so this=20
-"kind of distro" fits easily on embedded platform...
-
-
-
-cheers,
-zelko
-
-
- 
-------=_NextPart_000_0051_01C7A3FA.F5976640
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Diso-8859-1">
-<META content=3D"MSHTML 6.00.2900.2180" name=3DGENERATOR>
-<STYLE></STYLE>
-</HEAD>
-<BODY bgColor=3D#ffffff>
-<DIV><FONT face=3DVerdana size=3D2>
-<DIV><FONT face=3DVerdana size=3D2>hello,</FONT></DIV>
-<DIV>&nbsp;</DIV><FONT face=3DVerdana size=3D2>
-<DIV><BR>is anyone interested in this "kind of distro" running on =
-PowerPC?</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>------------------------------------------------------------<BR><A=20
-href=3D"http://one.xthost.info/zelko/opengl.html">http://one.xthost.info/=
-zelko/opengl.html</A></DIV>
-<DIV>&nbsp;</DIV>
-<DIV>Minimalistic GNU/Linux system, stripped down of everything, but =
-core=20
-necessary files to compile and run OpenGL/C code. It has simplified =
-directory=20
-structure and cleaned up internal cross referencing. Programs compiled =
-in myOS=20
-will run on any Linux with or without X.=20
-<BR>------------------------------------------------------------</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>as you can see there, im trying to find the place where to upload =
-it, but,=20
-meanwhile, to SEE what im talking about you can try myOS x86 =
-version...</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>OR, </DIV>
-<DIV>better yet -&nbsp;try these PowerPC binaries <BR><A=20
-href=3D"http://www.scitechsoft.com/ftp/devel/demos/ppclinux/">http://www.=
-scitechsoft.com/ftp/devel/demos/ppclinux/</A></DIV>
-<DIV>&nbsp;</DIV>
-<DIV>there is 6.7Mb&nbsp;zip with LOTS of COOL OpenGL and other demos... =
-game=20
-DOOM !</DIV>
-<DIV>(drivers and everything included, just unpack&nbsp;&amp; run)</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>--- about "myOS-ppc"=20
--------------------------------------------------------------</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>in new version we use *initramfs* so the whole distro can load in =
-ONLY 64MB=20
-of RAM,<BR>that means some very old G3 Macs, however i still can NOT =
-make the=20
-demos run on my test platform G3/64MB/333Mhz ...maybe because there is =
-not=20
-enough *free* memory, and is hard to find that kind of RAM today and =
-upgrade=20
-that Mac... </DIV>
-<DIV>&nbsp;</DIV>
-<DIV>so,&nbsp;we would&nbsp;very much appreciate if you can let us know =
-if the=20
-above OpenGL demos work on your&nbsp; ppc-Linux, what is your PowerPC =
-machine,=20
-what graphic card and how much RAM/VRAM it has?</DIV>
-<DIV>&nbsp;</DIV>
-<DIV><BR>...we're basically trying to work out minimum possible PowerPC=20
-platform, <BR>so, if you have some embedded hardware we wonder if some =
-of the=20
-demos would work...</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>but also,<BR>some "game-station" ...well whatever is running =
-PowerPC and=20
-Linux we would like to know if those Scitech drivers and OpenGL demos =
-work on=20
-that platform...</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>list of video cards supported:</DIV>
-<DIV><A=20
-href=3D"http://www.scitechsoft.com/ftp/snap/linux/readme-x86.txt">http://=
-www.scitechsoft.com/ftp/snap/linux/readme-x86.txt</A></DIV>
-<DIV>&nbsp;</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>even, if your hardware can not "play" OpenGL or</DIV>
-<DIV>if you are not interested in 3D, there is still the whole</DIV>
-<DIV>miniature development platform that can be used for... =
-whatever</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>main point to make it really teensy was just so it can run from=20
-"RAMDISK"&nbsp;</DIV>
-<DIV>and be&nbsp;quick &amp;&nbsp;responsive... it turned out that =
-embedded=20
-devices of </DIV>
-<DIV>today are more powerful than desktop computers of&nbsp;yesterday, =
-so this=20
-</DIV>
-<DIV>"kind of distro" fits easily on embedded platform...</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>cheers,<BR>zelko</DIV>
-<DIV>&nbsp;</DIV>
-<DIV><BR></FONT><FONT face=3D"Times New Roman"=20
-size=3D3>&nbsp;</FONT></DIV></FONT></DIV></BODY></HTML>
-
-------=_NextPart_000_0051_01C7A3FA.F5976640--
+_________________________________________________________________
+Invite your mail contacts to join your friends list with Windows Live Space=
+s. It's easy!
+http://spaces.live.com/spacesapi.aspx?wx_action=3Dcreate&wx_url=3D/friends.=
+aspx&mkt=3Den-us=
