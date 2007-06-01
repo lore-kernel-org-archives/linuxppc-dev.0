@@ -1,28 +1,33 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <linas@austin.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 53183DE016
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Jun 2007 18:06:22 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l5186B97024728
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Jun 2007 01:06:11 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l518697g010919
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Jun 2007 03:06:10 -0500 (CDT)
-Subject: [patch] powerpc: Remove redundant pci_read_irq_line() function for
-	85xx platform
-From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-To: Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain
-Message-Id: <1180685138.17196.55.camel@localhost.localdomain>
-Mime-Version: 1.0
-Date: 01 Jun 2007 16:05:38 +0800
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7D407DE032
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2007 02:18:30 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
+	l51GEA2h002686
+	for <linuxppc-dev@ozlabs.org>; Fri, 1 Jun 2007 12:14:10 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l51GIIal240164
+	for <linuxppc-dev@ozlabs.org>; Fri, 1 Jun 2007 10:18:18 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l51GIHBM001057
+	for <linuxppc-dev@ozlabs.org>; Fri, 1 Jun 2007 10:18:18 -0600
+Date: Fri, 1 Jun 2007 11:18:17 -0500
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/1] Use NO_IRQ not IRQ_NONE
+Message-ID: <20070601161817.GJ7298@austin.ibm.com>
+References: <526423a25b0e40c03678f4bb1d56e4b5719ab74d.1180682602.git.michael@ellerman.id.au>
+	<1180684052.19517.422.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1180684052.19517.422.camel@localhost.localdomain>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,115 +37,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Roy Zang <tie-fei.zang@freescale.com>
+On Fri, Jun 01, 2007 at 05:47:32PM +1000, Benjamin Herrenschmidt wrote:
+> My fault actually :-) Mostly a typo, it's right elsewhere in the code
+> except in those 3 occurences. Brown paper bag time for me.
 
-Remove redundant pci_read_irq_line() function for 
-85xx CDS board.
-This function has been realized in common pci_32.c.
+Trying to make the rest of us look bad?  By those standards, 
+I'd be wearing 23 brown paper bags at the same time, all the time.
 
-Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
----
- arch/powerpc/platforms/85xx/mpc85xx_cds.c |   76 +++++++++++++----------------
- 1 files changed, 34 insertions(+), 42 deletions(-)
-
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-index 1490eb3..27b81ff 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-@@ -78,52 +78,44 @@ static int mpc85xx_exclude_device(u_char bus, u_char devfn)
- 		return PCIBIOS_SUCCESSFUL;
- }
- 
--static void __init mpc85xx_cds_pcibios_fixup(void)
-+static void __init mpc85xx_cds_pci_irq_fixup(struct pci_dev *dev)
- {
--	struct pci_dev *dev;
--	u_char		c;
--
--	if ((dev = pci_get_device(PCI_VENDOR_ID_VIA,
--					PCI_DEVICE_ID_VIA_82C586_1, NULL))) {
-+	u_char c;
-+	if (dev->vendor == PCI_VENDOR_ID_VIA) {
-+		switch (dev->device) {
-+		case PCI_DEVICE_ID_VIA_82C586_1:
-+			/*
-+			 * U-Boot does not set the enable bits
-+			 * for the IDE device. Force them on here.
-+			 */
-+			pci_read_config_byte(dev, 0x40, &c);
-+			c |= 0x03; /* IDE: Chip Enable Bits */
-+			pci_write_config_byte(dev, 0x40, c);
-+
-+			/*
-+			 * Since only primary interface works, force the
-+			 * IDE function to standard primary IDE interrupt
-+			 * w/ 8259 offset
-+			 */
-+			dev->irq = 14;
-+			pci_write_config_byte(dev, PCI_INTERRUPT_LINE, dev->irq);
-+			break;
- 		/*
--		 * U-Boot does not set the enable bits
--		 * for the IDE device. Force them on here.
-+		 * Force legacy USB interrupt routing
- 		 */
--		pci_read_config_byte(dev, 0x40, &c);
--		c |= 0x03; /* IDE: Chip Enable Bits */
--		pci_write_config_byte(dev, 0x40, c);
--
--		/*
--		 * Since only primary interface works, force the
--		 * IDE function to standard primary IDE interrupt
--		 * w/ 8259 offset
-+		case PCI_DEVICE_ID_VIA_82C586_2:
-+		/* There are two USB controllers.
-+		 * Identify them by functon number
- 		 */
--		dev->irq = 14;
--		pci_write_config_byte(dev, PCI_INTERRUPT_LINE, dev->irq);
--		pci_dev_put(dev);
--	}
--
--	/*
--	 * Force legacy USB interrupt routing
--	 */
--	if ((dev = pci_get_device(PCI_VENDOR_ID_VIA,
--					PCI_DEVICE_ID_VIA_82C586_2, NULL))) {
--		dev->irq = 10;
--		pci_write_config_byte(dev, PCI_INTERRUPT_LINE, 10);
--		pci_dev_put(dev);
--	}
--
--	if ((dev = pci_get_device(PCI_VENDOR_ID_VIA,
--					PCI_DEVICE_ID_VIA_82C586_2, dev))) {
--		dev->irq = 11;
--		pci_write_config_byte(dev, PCI_INTERRUPT_LINE, 11);
--		pci_dev_put(dev);
-+			if (PCI_FUNC(dev->devfn))
-+				dev->irq = 11;
-+			else
-+				dev->irq = 10;
-+			pci_write_config_byte(dev, PCI_INTERRUPT_LINE, dev->irq);
-+		default:
-+			break;
-+		}
- 	}
--
--	/* Now map all the PCI irqs */
--	dev = NULL;
--	for_each_pci_dev(dev)
--		pci_read_irq_line(dev);
- }
- 
- #ifdef CONFIG_PPC_I8259
-@@ -259,7 +251,7 @@ static void __init mpc85xx_cds_setup_arch(void)
- 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
- 		add_bridge(np);
- 
--	ppc_md.pcibios_fixup = mpc85xx_cds_pcibios_fixup;
-+	ppc_md.pci_irq_fixup = mpc85xx_cds_pci_irq_fixup;
- 	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
- #endif
- }
--- 
-1.5.1
+--linas
