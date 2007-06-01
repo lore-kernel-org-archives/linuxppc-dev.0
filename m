@@ -1,20 +1,22 @@
-Return-Path: <daniel.schnell@marel.com>
-Received: from mail.marel.com (mail.marel.com [213.167.134.96])
-	by ozlabs.org (Postfix) with ESMTP id 336B8DDF6E
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D8E21DDF43
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  2 Jun 2007 01:13:42 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: Where is initial console initialized ?
-Date: Fri, 1 Jun 2007 15:13:38 -0000
-Message-ID: <DD39B5C3F4963040ADC9768BE7E430CB01FAEC9B@is-hdq-exchange.marel.net>
-In-Reply-To: <20070601063507.GA23294@moe.telargo.com>
-References: <DD39B5C3F4963040ADC9768BE7E430CB01F550A7@is-hdq-exchange.marel.net>
-	<20070601063507.GA23294@moe.telargo.com>
-From: "Daniel Schnell" <daniel.schnell@marel.com>
-To: "Domen Puncer" <domen.puncer@telargo.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Sat,  2 Jun 2007 02:30:21 +1000 (EST)
+Date: Fri, 1 Jun 2007 11:27:10 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH] NET: add MAINTAINERS entry for ucc_geth driver
+Message-Id: <20070601112710.064f526e.kim.phillips@freescale.com>
+In-Reply-To: <465679FA.8010702@freescale.com>
+References: <465679FA.8010702@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: netdev@vger.kernel.org, jeff@garzik.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,59 +27,11 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Fri, 25 May 2007 13:54:02 +0800
+Li Yang <leoli@freescale.com> wrote:
 
-Well if one does it right, then things work as expected.
+> Signed-off-by: Li Yang <leoli@freescale.com>
 
-I simply chose the wrong Kernel configuration, the correct console =
-driver has not been compiled in.
+Acked-by: Kim Phillips <kim.phillips@freescale.com>
 
-Now it works as expected.
-
-
-
-Sorry for the noise.
-
-Daniel Schnell.
-
-
-
------Original Message-----
-From: Domen Puncer [mailto:domen.puncer@telargo.com]=20
-Sent: 1. j=FAn=ED 2007 06:35
-To: Daniel Schnell
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Where is initial console initialized ?
-
-On 31/05/07 13:42 -0000, Daniel Schnell wrote:
-> Hi,
-> =20
-> I am trying to bring up 2.6.20.3 on a MPC5200B based custom board.=20
-> This Kernel is based on the Phytec phyCore MPC5200B Mini BSP kernel=20
-> and adapted to my board.
-> So far I have troubles to get console output working when booting =
-Linux.
-> Uboot console output is fine. Linux begins to run (I can set=20
-> breakpoints with the BDI2000 in the early initialization code) so I=20
-> probably have a misconfiguration of the console output inside the fdt.
->=20
-> The major difference between the Phytec phyCore 5200B mini fdt and=20
-> mine is that we use PSC1 instead of PSC3/6 for serial. Accordingly I=20
-> changed the fdt (or dts) values.
->=20
-> To get some more insights, I would like to know, in which Linux=20
-> function the console output is initialised ?
->=20
->=20
-...
-> If I dump the flat device tree inside uboot, I get the following
-> entries:=20
-...
-the dump with:
-
-         reg =3D <8>;
-
-in most of nodes, which looks just wrong.
-
-
-	Domen
+Kim
