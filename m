@@ -1,31 +1,9 @@
-Return-Path: <Wei.Zhang@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 468F3DDF22
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Jun 2007 16:45:17 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l516jBoH010158
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2007 23:45:12 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l516jAGG019271
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Jun 2007 01:45:11 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH 3/5] Float the pci bus number on MPC8641HPCN board.
-Date: Fri, 1 Jun 2007 14:45:03 +0800
-Message-ID: <46B96294322F7D458F9648B60E15112C30780F@zch01exm26.fsl.freescale.net>
-In-Reply-To: <18015.48278.312517.781244@cargo.ozlabs.ibm.com>
-References: <11798051102658-git-send-email-wei.zhang@freescale.com><11798051101543-git-send-email-wei.zhang@freescale.com><1179805110272-git-send-email-wei.zhang@freescale.com><1179805110278-git-send-email-wei.zhang@freescale.com><1179856792.27985.22.camel@rhino><46B96294322F7D458F9648B60E15112C234A2D@zch01exm26.fsl.freescale.net><F1C4E37E-FF0F-4A5F-AC49-860B4AAC4E28@kernel.crashing.org><46B96294322F7D458F9648B60E15112C30777C@zch01exm26.fsl.freescale.net><A7C2B8A9-AE89-4E00-9771-F3C21A610121@kernel.crashing.org>
-	<18015.48278.312517.781244@cargo.ozlabs.ibm.com>
-From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-To: "Paul Mackerras" <paulus@samba.org>,
-	"Kumar Gala" <galak@kernel.crashing.org>
+Return-Path: <michael@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+Message-Id: <526423a25b0e40c03678f4bb1d56e4b5719ab74d.1180682602.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH 1/1] Use NO_IRQ not IRQ_NONE
+Date: Fri,  1 Jun 2007 17:23:26 +1000 (EST)
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -36,28 +14,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi, Paul,=20
+There is a thinko in the irq code, it uses IRQ_NONE to indicate no irq,
+whereas it should be using NO_IRQ. IRQ_NONE is returned from irq handlers
+to say "not handled".
 
-> -----Original Message-----
-> From: Paul Mackerras [mailto:paulus@samba.org]=20
->=20
-> Kumar Gala writes:
->=20
-> > > That's my original doing. If there a PCI bridge card be=20
-> pluged into =20
-> > > PCI
-> > > slot of hose0, I can not ensue the bus_offset number of hose1.
-> >=20
-> > Ok, but can't we use hose0's last_busno and use that set hose1-=20
-> >  >first_busno & hose1->bus_offset?
->=20
-> Why do the bus numbers for hose0 and hose1 have to have any relation
-> to each other at all?  Aren't they separate PCI domains?
+As it happens they currently have the same value (0), so this is just for
+future proof-ness.
 
-There are lots of lagacy PCI codes in kernel, such as
-pci_bus_to_hose(busnr). If two hose's bus number have overlaps,
-pci_bus_to_hose() can not return the correct hose. And there will effect
-/proc/pci and lspci tools.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/kernel/irq.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-Thanks!
-Wei.
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 068377a..42c8ed6 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -489,7 +489,7 @@ struct irq_host *irq_alloc_host(unsigned int revmap_type,
+ 	case IRQ_HOST_MAP_LINEAR:
+ 		rmap = (unsigned int *)(host + 1);
+ 		for (i = 0; i < revmap_arg; i++)
+-			rmap[i] = IRQ_NONE;
++			rmap[i] = NO_IRQ;
+ 		host->revmap_data.linear.size = revmap_arg;
+ 		smp_wmb();
+ 		host->revmap_data.linear.revmap = rmap;
+@@ -614,7 +614,7 @@ unsigned int irq_create_mapping(struct irq_host *host,
+ 	 * host->ops->map() to update the flags
+ 	 */
+ 	virq = irq_find_mapping(host, hwirq);
+-	if (virq != IRQ_NONE) {
++	if (virq != NO_IRQ) {
+ 		if (host->ops->remap)
+ 			host->ops->remap(host, virq, hwirq);
+ 		pr_debug("irq: -> existing mapping on virq %d\n", virq);
+@@ -741,7 +741,7 @@ void irq_dispose_mapping(unsigned int virq)
+ 	switch(host->revmap_type) {
+ 	case IRQ_HOST_MAP_LINEAR:
+ 		if (hwirq < host->revmap_data.linear.size)
+-			host->revmap_data.linear.revmap[hwirq] = IRQ_NONE;
++			host->revmap_data.linear.revmap[hwirq] = NO_IRQ;
+ 		break;
+ 	case IRQ_HOST_MAP_TREE:
+ 		/* Check if radix tree allocated yet */
+-- 
+1.5.1.3.g7a33b
