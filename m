@@ -1,21 +1,11 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AC9B8DDE42
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2007 08:54:15 +1000 (EST)
-Subject: Re: [RFC/PATCH 2/5] powerpc: Cleanup ptrace bits
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20070601212247.GA27149@lst.de>
-References: <20070529064531.D874CDDF70@ozlabs.org>
-	<20070601212247.GA27149@lst.de>
-Content-Type: text/plain
-Date: Sat, 02 Jun 2007 08:54:02 +1000
-Message-Id: <1180738442.19517.461.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Anton Blanchard <anton@samba.org>, ulrich.weigand@de.ibm.com
+Return-Path: <mgreer@mvista.com>
+Date: Fri, 1 Jun 2007 16:20:22 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
+Message-ID: <20070601232022.GA21237@mag.az.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,10 +15,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-06-01 at 23:22 +0200, Christoph Hellwig wrote:
-> This one doesn't seem to apply against current mainline plus the first
-> patch.  The hung in ptrace.c rejects.
 
-It needs the 32 bits single step fixup that I posted a few days ago...
+Find the "rom" device for the prpmc2800 and create a device for it.
+The device will be picked up by the code in drivers/mtd/maps/physmap_of.c
+and will setup MTD on that FLASH device.
 
-Ben.
+Signed-off-by: Mark A. Greer <mgreer@mvista.com>
+
+---
+ arch/powerpc/platforms/embedded6xx/prpmc2800.c |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/arch/powerpc/platforms/embedded6xx/prpmc2800.c b/arch/powerpc/platforms/embedded6xx/prpmc2800.c
+index d9db135..44c3144 100644
+--- a/arch/powerpc/platforms/embedded6xx/prpmc2800.c
++++ b/arch/powerpc/platforms/embedded6xx/prpmc2800.c
+@@ -20,6 +20,7 @@
+ #include <asm/system.h>
+ #include <asm/time.h>
+ #include <asm/kexec.h>
++#include <asm/of_platform.h>
+ 
+ #include <mm/mmu_decl.h>
+ 
+@@ -134,6 +135,18 @@ void prpmc2800_show_cpuinfo(struct seq_file *m)
+ }
+ 
+ /*
++ * Register a platform device for MTD.
++ */
++static int __init prpmc2800_register_mtd(void)
++{
++	struct device_node *np;
++
++	np = of_find_compatible_node(NULL, "rom", "direct-mapped");
++	of_platform_device_create(np, np->name, NULL);
++}
++arch_initcall(prpmc2800_register_mtd);
++
++/*
+  * Called very early, device-tree isn't unflattened
+  */
+ static int __init prpmc2800_probe(void)
