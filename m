@@ -1,20 +1,18 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from mail177-sin-R.bigfish.com (mail-sin.bigfish.com [207.46.51.74])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 1148ADE06E
+Return-Path: <domen.puncer@telargo.com>
+Received: from out002.atlarge.net (out002.atlarge.net [129.41.63.60])
+	by ozlabs.org (Postfix) with ESMTP id EA5E2DE032
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Jun 2007 05:52:54 +1000 (EST)
+	Fri,  1 Jun 2007 16:35:15 +1000 (EST)
+Date: Fri, 1 Jun 2007 08:35:07 +0200
+From: Domen Puncer <domen.puncer@telargo.com>
+To: Daniel Schnell <daniel.schnell@marel.com>
+Subject: Re: Where is initial console initialized ?
+Message-ID: <20070601063507.GA23294@moe.telargo.com>
+References: <DD39B5C3F4963040ADC9768BE7E430CB01F550A7@is-hdq-exchange.marel.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Audio Dirver for the 403/405?
-Date: Thu, 31 May 2007 12:37:15 -0700
-In-Reply-To: <10900170.post@talk.nabble.com>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "bert_maxel" <bonlutin@hotmail.com>,
-	<linuxppc-embedded@ozlabs.org>
-Message-Id: <20070531193717.5743A1A48046@mail177-sin.bigfish.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <DD39B5C3F4963040ADC9768BE7E430CB01F550A7@is-hdq-exchange.marel.net>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,81 +23,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On 31/05/07 13:42 -0000, Daniel Schnell wrote:
+> Hi,
+>  
+> I am trying to bring up 2.6.20.3 on a MPC5200B based custom board. This
+> Kernel is based on the Phytec phyCore MPC5200B Mini BSP kernel and
+> adapted to my board.
+> So far I have troubles to get console output working when booting Linux.
+> Uboot console output is fine. Linux begins to run (I can set breakpoints
+> with the BDI2000 in the early initialization code) so I probably have a
+> misconfiguration of the console output inside the fdt.
+> 
+> The major difference between the Phytec phyCore 5200B mini fdt and mine
+> is that we use PSC1 instead of PSC3/6 for serial. Accordingly I changed
+> the fdt (or dts) values.
+> 
+> To get some more insights, I would like to know, in which Linux function
+> the console output is initialised ?
+> 
+> 
+...
+> If I dump the flat device tree inside uboot, I get the following
+> entries: 
+...
+the dump with:
 
-There is an opb core developed for the Xilinx University Program board,
-which
-has a similar hardware interface to the ML403 (i.e. no PCI bridge)
-The XUPV2P web page with the opb_ac97 core is here:
-http://www.xilinx.com/univ/xupv2p.html=20
+         reg = <8>;
 
-I have a /dev/dsp driver (which I'll send to Bert directly) which limps
-along in 2.6.
-This core has a relatively small buffer and no master access to memory,
-which
-results in relatively poor performance, but it is a starting point.
+in most of nodes, which looks just wrong.
 
-Steve
 
-> -----Original Message-----
-> From:=20
-> linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org
-> =20
-> [mailto:linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@oz
-labs.org] On Behalf Of bert_maxel
-> Sent: Thursday, May 31, 2007 12:10 PM
-> To: linuxppc-embedded@ozlabs.org
-> Subject: Re: Audio Dirver for the 403/405?
->=20
->=20
->=20
->=20
-> Grant Likely-2 wrote:
-> >=20
-> > On 5/30/07, bert_maxel <bonlutin@hotmail.com> wrote:
-> >>
-> >> Hi all,
-> >>
-> >> Has anybody got some working audio driver (linux) for the =20
-> ML403/405 ?
-> >> I know it's an ac97 codec, but I can't find anything=20
-> related to the=20
-> >> xilinx boards?
-> >> If nobody has worked on this yet, I'm in trouble. I don't=20
-> know where=20
-> >> to start, or from what ac97 driver should I base my=20
-> initial development?
-> >=20
-> > IIRC, the old mvista 2.4 tree has an audio driver.
-> >=20
-> > g.
-> >=20
-> > --
-> > Grant Likely, B.Sc., P.Eng.
-> > Secret Lab Technologies Ltd.
-> > grant.likely@secretlab.ca
-> > (403) 399-0195
-> > _______________________________________________
-> > Linuxppc-embedded mailing list
-> > Linuxppc-embedded@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> >=20
-> >=20
->=20
-> There are plenty of boards with an ac97 codec, but what's=20
-> missing is the glue for the ML403 board, there's no pci bus=20
-> in this case,  opb cores instead.
-> I hope somebody can point me to a link of interest.
->=20
-> thanks
-> --
-> View this message in context:=20
-> http://www.nabble.com/Audio-Dirver-for-the-403-405--tf3843165.
-html#a10900170
-> Sent from the linuxppc-embedded mailing list archive at Nabble.com.
->=20
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->=20
->=20
+	Domen
