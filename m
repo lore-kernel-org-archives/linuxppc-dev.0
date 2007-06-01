@@ -1,26 +1,13 @@
-Return-Path: <Wei.Zhang@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 123A6DE004
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Jun 2007 17:53:26 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l517rLe0022225
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Jun 2007 00:53:21 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l517rJxh015371
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Jun 2007 02:53:20 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 53EBBDE007
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Jun 2007 18:00:11 +1000 (EST)
 Subject: RE: [PATCH 3/5] Float the pci bus number on MPC8641HPCN board.
-Date: Fri, 1 Jun 2007 15:53:10 +0800
-Message-ID: <46B96294322F7D458F9648B60E15112C307837@zch01exm26.fsl.freescale.net>
-In-Reply-To: <1180683854.19517.419.camel@localhost.localdomain>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Zhang Wei-r63237 <Wei.Zhang@freescale.com>
+In-Reply-To: <46B96294322F7D458F9648B60E15112C307837@zch01exm26.fsl.freescale.net>
 References: <11798051102658-git-send-email-wei.zhang@freescale.com>
 	<11798051101543-git-send-email-wei.zhang@freescale.com>
 	<1179805110272-git-send-email-wei.zhang@freescale.com>
@@ -33,8 +20,11 @@ References: <11798051102658-git-send-email-wei.zhang@freescale.com>
 	<18015.48278.312517.781244@cargo.ozlabs.ibm.com>
 	<46B96294322F7D458F9648B60E15112C30780F@zch01exm26.fsl.freescale.net>
 	<1180683854.19517.419.camel@localhost.localdomain>
-From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+	<46B96294322F7D458F9648B60E15112C307837@zch01exm26.fsl.freescale.net>
+Content-Type: text/plain
+Date: Fri, 01 Jun 2007 18:00:00 +1000
+Message-Id: <1180684800.19517.429.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -45,18 +35,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi, Ben,
+On Fri, 2007-06-01 at 15:53 +0800, Zhang Wei-r63237 wrote:
+> 
+> Do you want to implement vbus such as virq? :) 
 
-> One of these days, one of us will finally tackle merging 32=20
-> and 64 bits
-> PCI code (and fix both of them while at it to better use the generic
-> code, which involves fixing issues in the said generic code too :-) at
-> which point I'll enable full domain support for 32 bits as=20
-> well, with an
-> option to degrade it to bus number remapping.
->=20
+Not really :-)
 
-Do you want to implement vbus such as virq? :)
+We do remap on powermac today, or rather, re-assign, though, to ensure
+numbers don't overlap (powermacs have up to 3 domains that the firmware
+set to overlapping bus numbers)
 
-Cheers!
-Wei.
+Ben
