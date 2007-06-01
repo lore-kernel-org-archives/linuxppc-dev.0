@@ -1,10 +1,29 @@
-Return-Path: <michael@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
-Message-Id: <526423a25b0e40c03678f4bb1d56e4b5719ab74d.1180682602.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 1/1] Use NO_IRQ not IRQ_NONE
-Date: Fri,  1 Jun 2007 17:23:26 +1000 (EST)
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2553EDDFEA
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Jun 2007 17:44:26 +1000 (EST)
+Subject: RE: [PATCH 3/5] Float the pci bus number on MPC8641HPCN board.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Zhang Wei-r63237 <Wei.Zhang@freescale.com>
+In-Reply-To: <46B96294322F7D458F9648B60E15112C30780F@zch01exm26.fsl.freescale.net>
+References: <11798051102658-git-send-email-wei.zhang@freescale.com>
+	<11798051101543-git-send-email-wei.zhang@freescale.com>
+	<1179805110272-git-send-email-wei.zhang@freescale.com>
+	<1179805110278-git-send-email-wei.zhang@freescale.com>
+	<1179856792.27985.22.camel@rhino>
+	<46B96294322F7D458F9648B60E15112C234A2D@zch01exm26.fsl.freescale.net>
+	<F1C4E37E-FF0F-4A5F-AC49-860B4AAC4E28@kernel.crashing.org>
+	<46B96294322F7D458F9648B60E15112C30777C@zch01exm26.fsl.freescale.net>
+	<A7C2B8A9-AE89-4E00-9771-F3C21A610121@kernel.crashing.org>
+	<18015.48278.312517.781244@cargo.ozlabs.ibm.com>
+	<46B96294322F7D458F9648B60E15112C30780F@zch01exm26.fsl.freescale.net>
+Content-Type: text/plain
+Date: Fri, 01 Jun 2007 17:44:14 +1000
+Message-Id: <1180683854.19517.419.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,48 +33,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There is a thinko in the irq code, it uses IRQ_NONE to indicate no irq,
-whereas it should be using NO_IRQ. IRQ_NONE is returned from irq handlers
-to say "not handled".
+On Fri, 2007-06-01 at 14:45 +0800, Zhang Wei-r63237 wrote:
+> There are lots of lagacy PCI codes in kernel, such as
+> pci_bus_to_hose(busnr). If two hose's bus number have overlaps,
+> pci_bus_to_hose() can not return the correct hose. And there will
+> effect
+> /proc/pci and lspci tools.
 
-As it happens they currently have the same value (0), so this is just for
-future proof-ness.
+More specifically...
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/kernel/irq.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+Overlapping bus numbers on separate domains work... on 64 bits :-) The
+32 bits PCI code assumes non-overlapping numbers. The main reason for
+that historically was that back then, domains didn't work well.
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 068377a..42c8ed6 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -489,7 +489,7 @@ struct irq_host *irq_alloc_host(unsigned int revmap_type,
- 	case IRQ_HOST_MAP_LINEAR:
- 		rmap = (unsigned int *)(host + 1);
- 		for (i = 0; i < revmap_arg; i++)
--			rmap[i] = IRQ_NONE;
-+			rmap[i] = NO_IRQ;
- 		host->revmap_data.linear.size = revmap_arg;
- 		smp_wmb();
- 		host->revmap_data.linear.revmap = rmap;
-@@ -614,7 +614,7 @@ unsigned int irq_create_mapping(struct irq_host *host,
- 	 * host->ops->map() to update the flags
- 	 */
- 	virq = irq_find_mapping(host, hwirq);
--	if (virq != IRQ_NONE) {
-+	if (virq != NO_IRQ) {
- 		if (host->ops->remap)
- 			host->ops->remap(host, virq, hwirq);
- 		pr_debug("irq: -> existing mapping on virq %d\n", virq);
-@@ -741,7 +741,7 @@ void irq_dispose_mapping(unsigned int virq)
- 	switch(host->revmap_type) {
- 	case IRQ_HOST_MAP_LINEAR:
- 		if (hwirq < host->revmap_data.linear.size)
--			host->revmap_data.linear.revmap[hwirq] = IRQ_NONE;
-+			host->revmap_data.linear.revmap[hwirq] = NO_IRQ;
- 		break;
- 	case IRQ_HOST_MAP_TREE:
- 		/* Check if radix tree allocated yet */
--- 
-1.5.1.3.g7a33b
+The second reasons why I didn't actually fix it is that turning on full
+domain support had (and probably still has) the nasty habit of breaking
+the X server :-( X is full of most horrible hacks for PCI and it will be
+terminally broken until they finally merge the pci-rework branch that
+Ian Romanick's been working on for some time now.
+
+One of these days, one of us will finally tackle merging 32 and 64 bits
+PCI code (and fix both of them while at it to better use the generic
+code, which involves fixing issues in the said generic code too :-) at
+which point I'll enable full domain support for 32 bits as well, with an
+option to degrade it to bus number remapping.
+
+Ben.
