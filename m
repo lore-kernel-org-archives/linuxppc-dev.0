@@ -1,24 +1,26 @@
-Return-Path: <sivakumarkk@cornetindia.com>
-Received: from smtpserver.rdsindia.com (smtpserver.rdsindia.com
-	[64.62.254.191])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EF077DE026
+	by ozlabs.org (Postfix) with ESMTP id 2DB90DDE17
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  2 Jun 2007 02:25:12 +1000 (EST)
-Received: from SIVA (ABTS-TN-dynamic-069.174.164.122.airtelbroadband.in
-	[122.164.174.69] (may be forged)) (authenticated bits=0)
-	by smtpserver.rdsindia.com (8.12.10/8.12.11) with ESMTP id
-	l51ET3hG032724
-	for <linuxppc-embedded@ozlabs.org>; Fri, 1 Jun 2007 07:29:05 -0700
-Message-ID: <000601c7a45f$5b3d9780$9000a8c0@SIVA>
-From: "Sivakumar K K" <sivakumarkk@cornetindia.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: linux 2.6 driver for tsi148
-Date: Fri, 1 Jun 2007 20:43:01 +0530
+	Sat,  2 Jun 2007 06:38:42 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1HuDtJ-0005ZI-R0
+	for linuxppc-embedded@ozlabs.org; Fri, 01 Jun 2007 13:38:33 -0700
+Message-ID: <10920136.post@talk.nabble.com>
+Date: Fri, 1 Jun 2007 13:38:33 -0700 (PDT)
+From: bert_maxel <bonlutin@hotmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: RE: Audio Dirver for the 403/405?
+In-Reply-To: <20070531193717.5743A1A48046@mail177-sin.bigfish.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0003_01C7A48D.71D27370"
+Content-Type: text/plain; charset=us-ascii
+References: <10883262.post@talk.nabble.com>
+	<fa686aa40705301610q6ba8f2abq482f43a89f44d1bc@mail.gmail.com>
+	<10900170.post@talk.nabble.com>
+	<20070531193717.5743A1A48046@mail177-sin.bigfish.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,70 +31,103 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------=_NextPart_000_0003_01C7A48D.71D27370
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Thanks for your input. 
+Can you send me the dsp driver that goes with opb_ac97?
+That'll be a good start for me, I appreciate your help.
 
-Hi guys,
-   i am cirrently working on vme driver integration with linux 2.6 =
-kernel for powerpc based SBC. Tundra giving driver to tsi148 for =
-2.4kernel  , but i required it for 2.6 kernel.
-If anybody have the driver in 2.6 kernel, please reply to me.
+thank you  Steve
 
-    I tried to convert 2.4 driver to support 2.6 finally i got struc at =
-"kiobuf" structure all other changes i made. kiobuf structure is in =
-iobuf.h, i have searched it in 2.6 kernel but i didn,t get the result. I =
-need a help how to resolve this issue, is there any equivqlent functions =
-and structures are available in 2.6 kerenel? If anybody knows how to =
-resole it please reply to me.
+bert
 
-Thanks and Regards
-Siva
-Firmware Engineer
-------=_NextPart_000_0003_01C7A48D.71D27370
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Stephen Neuendorffer wrote:
+> 
+> 
+> There is an opb core developed for the Xilinx University Program board,
+> which
+> has a similar hardware interface to the ML403 (i.e. no PCI bridge)
+> The XUPV2P web page with the opb_ac97 core is here:
+> http://www.xilinx.com/univ/xupv2p.html 
+> 
+> I have a /dev/dsp driver (which I'll send to Bert directly) which limps
+> along in 2.6.
+> This core has a relatively small buffer and no master access to memory,
+> which
+> results in relatively poor performance, but it is a starting point.
+> 
+> Steve
+> 
+>> -----Original Message-----
+>> From: 
+>> linuxppc-embedded-bounces+stephen=neuendorffer.name@ozlabs.org
+>>  
+>> [mailto:linuxppc-embedded-bounces+stephen=neuendorffer.name@oz
+> labs.org] On Behalf Of bert_maxel
+>> Sent: Thursday, May 31, 2007 12:10 PM
+>> To: linuxppc-embedded@ozlabs.org
+>> Subject: Re: Audio Dirver for the 403/405?
+>> 
+>> 
+>> 
+>> 
+>> Grant Likely-2 wrote:
+>> > 
+>> > On 5/30/07, bert_maxel <bonlutin@hotmail.com> wrote:
+>> >>
+>> >> Hi all,
+>> >>
+>> >> Has anybody got some working audio driver (linux) for the  
+>> ML403/405 ?
+>> >> I know it's an ac97 codec, but I can't find anything 
+>> related to the 
+>> >> xilinx boards?
+>> >> If nobody has worked on this yet, I'm in trouble. I don't 
+>> know where 
+>> >> to start, or from what ac97 driver should I base my 
+>> initial development?
+>> > 
+>> > IIRC, the old mvista 2.4 tree has an audio driver.
+>> > 
+>> > g.
+>> > 
+>> > --
+>> > Grant Likely, B.Sc., P.Eng.
+>> > Secret Lab Technologies Ltd.
+>> > grant.likely@secretlab.ca
+>> > (403) 399-0195
+>> > _______________________________________________
+>> > Linuxppc-embedded mailing list
+>> > Linuxppc-embedded@ozlabs.org
+>> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>> > 
+>> > 
+>> 
+>> There are plenty of boards with an ac97 codec, but what's 
+>> missing is the glue for the ML403 board, there's no pci bus 
+>> in this case,  opb cores instead.
+>> I hope somebody can point me to a link of interest.
+>> 
+>> thanks
+>> --
+>> View this message in context: 
+>> http://www.nabble.com/Audio-Dirver-for-the-403-405--tf3843165.
+> html#a10900170
+>> Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+>> 
+>> _______________________________________________
+>> Linuxppc-embedded mailing list
+>> Linuxppc-embedded@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>> 
+>> 
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+> 
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Diso-8859-1">
-<META content=3D"MSHTML 6.00.2900.2180" name=3DGENERATOR>
-<STYLE></STYLE>
-</HEAD>
-<BODY bgColor=3D#ffffff>
-<DIV><FONT face=3DArial size=3D2>Hi guys,</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>&nbsp;&nbsp; i am cirrently working =
-on&nbsp;vme=20
-driver&nbsp;integration with linux 2.6 kernel for powerpc =
-based&nbsp;SBC. Tundra=20
-giving driver to tsi148 for&nbsp;2.4kernel&nbsp;&nbsp;, but i required =
-it for=20
-2.6 kernel.</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>If anybody have the driver in 2.6 =
-kernel, please=20
-reply to me.</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>&nbsp;&nbsp;&nbsp; I tried to convert =
-2.4 driver to=20
-support 2.6 finally i got struc at "<STRONG>kiobuf"</STRONG> structure =
-all other=20
-changes i made. kiobuf structure is in <STRONG>iobuf.h,</STRONG> i have =
-searched=20
-it in 2.6 kernel but i didn,t get the result. I need a help how to =
-resolve this=20
-issue, is there any equivqlent functions and structures are available in =
-2.6=20
-kerenel? If anybody knows how to resole it please reply to =
-me.</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>Thanks and Regards</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>Siva</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>Firmware =
-Engineer</FONT></DIV></BODY></HTML>
-
-------=_NextPart_000_0003_01C7A48D.71D27370--
+-- 
+View this message in context: http://www.nabble.com/Audio-Dirver-for-the-403-405--tf3843165.html#a10920136
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
