@@ -1,18 +1,32 @@
-Return-Path: <wfarnsworth@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 70D8EDDD0B
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2007 07:45:17 +1000 (EST)
-Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
-From: Wade Farnsworth <wfarnsworth@mvista.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <dfc15991e31bfc09389461dc443acd7c@kernel.crashing.org>
-References: <1180720112.14219.62.camel@ld0161-tx32>
-	<dfc15991e31bfc09389461dc443acd7c@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C119CDDDFE
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2007 08:41:43 +1000 (EST)
+Subject: Re: [PATCH 3/5] Float the pci bus number on MPC8641HPCN board.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Matt Sealey <matt@genesi-usa.com>
+In-Reply-To: <46604AE0.5040700@genesi-usa.com>
+References: <11798051102658-git-send-email-wei.zhang@freescale.com>
+	<11798051101543-git-send-email-wei.zhang@freescale.com>
+	<1179805110272-git-send-email-wei.zhang@freescale.com>
+	<1179805110278-git-send-email-wei.zhang@freescale.com>
+	<1179856792.27985.22.camel@rhino>
+	<46B96294322F7D458F9648B60E15112C234A2D@zch01exm26.fsl.freescale.net>
+	<F1C4E37E-FF0F-4A5F-AC49-860B4AAC4E28@kernel.crashing.org>
+	<46B96294322F7D458F9648B60E15112C30777C@zch01exm26.fsl.freescale.net>
+	<A7C2B8A9-AE89-4E00-9771-F3C21A610121@kernel.crashing.org>
+	<18015.48278.312517.781244@cargo.ozlabs.ibm.com>
+	<46B96294322F7D458F9648B60E15112C30780F@zch01exm26.fsl.freescale.net>
+	<1180683854.19517.419.camel@localhost.localdomain>
+	<46604AE0.5040700@genesi-usa.com>
 Content-Type: text/plain
-Date: Fri, 01 Jun 2007 14:45:14 -0700
-Message-Id: <1180734314.5674.49.camel@rhino>
+Date: Sat, 02 Jun 2007 08:41:21 +1000
+Message-Id: <1180737682.19517.455.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Zhang Wei-r63237 <Wei.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,90 +36,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-06-01 at 20:58 +0200, Segher Boessenkool wrote:
-> > +		ranges = <00000000 f8000000 00100000
-> > +			  80000000 80000000 20000000
-> > +			  e2000000 e2000000 00100000
-> > +			  a0000000 a0000000 20000000
-> > +			  e3000000 e3000000 00100000>;
-> >  		reg = <f8000000 00100000>;	// CCSRBAR 1M
+On Fri, 2007-06-01 at 17:35 +0100, Matt Sealey wrote:
+> Re enabling proper domain support on 32-bit... now, now, now please!
 > 
-> 
-> "reg" included in "ranges"?  Something is wrong here.
+> X guys won't merge in code, we've been punished by both sides on Pegasos
+> for nearly 12 months now after there's been a bunch of misguided attempts
+> to 'fix' domain support in X. 
 
-I think it's correct for soc nodes.  At least, it appears that all of
-the dts files with soc nodes do similar things (including this one even
-without this patch).
+Well, I have commit rights on X git :-) But the current X code is too
+hopeless to warrant anything but a quick hack which I don't want to do.
 
-> 
-> > +				pci_bridge@0 {
-> 
-> > +					#size-cells = <2>;
-> > +					#address-cells = <3>;
-> > +					ranges = <02000000 0 80000000
-> > +						  02000000 0 80000000
-> > +						  0 20000000
-> > +						  01000000 0 00000000
-> > +						  01000000 0 00000000
-> > +						  0 00100000>;
-> > +
-> > +					isa@1e {
-> > +						#size-cells = <1>;
-> > +						#address-cells = <2>;
-> >
-> > +						ranges = <1 0 01000000 0 0
-> > +							  00001000>;
-> 
-> You map the same range (4kB legacy I/O @ 0) for both
-> bridges here.
+> The real fix is in the kernel to make it
+> very clear that domains and proper, per-domain bus numbering (not
+> global bus numbering) and suchlike is the standard like it is on SPARC
+> and PPC64 and IA64.
 
-There is a one-to-one mapping between the I/O spaces of "isa" and
-"pci_bridge", so wouldn't it be reasonable that a similar range be used?
+Well... if the real fix means suddenly nobody can use X ...  I'm sorry
+but I won't inflict that one the remaining lots of 32 bits PowerMac (and
+Pegasos) users. Not until there is a fixed X available. Once Ian's work
+on pci-rework X.org branch is finally merged with the trunk then life
+will be better for everybody.
 
-> 
-> > +						i8042@60 {
-> > +							reg = <1 60 1 1 64 1>;
-> 
-> And this address space is included in both of those.
+> If ppc32 suddenly goes the way of these, X guys will fix it, there will
+> be patches to work against this kernel, even if they have to detect the
+> kernel version to do it or look at a procfs or sysfs entry to fix up
+> their dumb pci scanning code.
 
-Again, shouldn't the child's address space be in its parent's range?
+X guys would probably expect me to fix it yeah :-)
 
-> 
-> > +							keyboard@0 {
-> > +								compatible = "pnpPNP,303";
-> > +							};
-> > +
-> > +							mouse@1 {
-> > +								compatible = "pnpPNP,f03";
-> > +							};
-> 
-> These need a "reg" property.
+> I don't think stalling on it "because of X" is right. Fix Linux, X will
+> follow, because it really has to.
 
-I'll add them.
+Ugh ... I don't think so.
 
-> 
-> > +						rtc@70 {
-> > +							compatible =
-> > +								"pnpPNP,b00";
-> > +							reg = <1 70 2>;
-> > +						};
-> > +
-> > +						gpio@400 {
-> > +							reg = <1 400 80>;
-> > +						};
-> 
-> Inclusive again.
-
-See above.
-
-> 
-> > +						i8259: i8259@4d0 {
-> 
-> Needs "reg".  And 4d0 isn't the primary address
-> I think?
-
-Yes, this is a standard i8259 with additional registers at 0x20 and
-0xa0.  I'll fix the address and add the registers.
-
-
---Wade
+Cheers,
+Ben.
