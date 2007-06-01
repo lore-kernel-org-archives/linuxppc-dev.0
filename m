@@ -2,31 +2,25 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3F7FDDDEDA
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2007 09:29:00 +1000 (EST)
-Subject: Re: [PATCH 3/5] Float the pci bus number on MPC8641HPCN board.
+	by ozlabs.org (Postfix) with ESMTP id 7C5BBDDEFA
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2007 09:30:25 +1000 (EST)
+Subject: Re: 2.6.22-rc3-mm1
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <CD8461E1-1881-407C-BE62-3679AECAE5AA@kernel.crashing.org>
-References: <11798051102658-git-send-email-wei.zhang@freescale.com>
-	<11798051101543-git-send-email-wei.zhang@freescale.com>
-	<1179805110272-git-send-email-wei.zhang@freescale.com>
-	<1179805110278-git-send-email-wei.zhang@freescale.com>
-	<1179856792.27985.22.camel@rhino>
-	<46B96294322F7D458F9648B60E15112C234A2D@zch01exm26.fsl.freescale.net>
-	<F1C4E37E-FF0F-4A5F-AC49-860B4AAC4E28@kernel.crashing.org>
-	<46B96294322F7D458F9648B60E15112C30777C@zch01exm26.fsl.freescale.net>
-	<A7C2B8A9-AE89-4E00-9771-F3C21A610121@kernel.crashing.org>
-	<18015.48278.312517.781244@cargo.ozlabs.ibm.com>
-	<46B96294322F7D458F9648B60E15112C30780F@zch01exm26.fsl.freescale.net>
-	<CD8461E1-1881-407C-BE62-3679AECAE5AA@kernel.crashing.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070601140211.81e5c301.akpm@linux-foundation.org>
+References: <20070530235823.793f00d9.akpm@linux-foundation.org>
+	<200705312243.18724.m.kozlowski@tuxland.pl>
+	<20070531141943.5c4d587c.akpm@linux-foundation.org>
+	<200706012250.58962.m.kozlowski@tuxland.pl>
+	<20070601140211.81e5c301.akpm@linux-foundation.org>
 Content-Type: text/plain
-Date: Sat, 02 Jun 2007 09:28:50 +1000
-Message-Id: <1180740531.19517.480.camel@localhost.localdomain>
+Date: Sat, 02 Jun 2007 09:30:12 +1000
+Message-Id: <1180740612.19517.483.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Zhang Wei-r63237 <Wei.Zhang@freescale.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org,
+	Mariusz Kozlowski <m.kozlowski@tuxland.pl>, paulus@samba.org,
+	Arnd Bergmann <arndb@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,12 +30,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-06-01 at 14:58 -0500, Kumar Gala wrote:
+On Fri, 2007-06-01 at 14:02 -0700, Andrew Morton wrote:
 > 
-> So looking at the code it looks like pci_assign_all_buses should  
-> handle numbering the busses properly when we scan the busses, so  
-> what's the issue that causes that not to be correct? 
+> 
+> Yeah, allmodconfig tends to fall over in a heap on a lot of the
+> less-lavishly-maintained architectures.  If any of these are specific
+> to
+> -mm then I guess we should fix them up, prevent the kernel from
+> actually
+> going backwards.
 
-Yeah, that's what powermac uses... Any reason it wouldn't work ?
+Some of the later seems to be related to the lack of CONFIG_PM .. it's
+not much a lavish maintainership issue than the fact that nobody every
+builds the powermac drivers without CONFIG_PM :-) I'll look into fixing
+some of these.
 
+As for the ps3 bits, it's a known problem, the ps3 support is still very
+much a work in progress.
+
+Cheers,
 Ben.
