@@ -4,22 +4,22 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 79746DE30F
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2007 03:48:53 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 9FFE5DE3AA
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2007 03:48:59 +1000 (EST)
 Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
 	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l51HmnAi003548
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Jun 2007 10:48:49 -0700 (MST)
+	l51HmtYx003570
+	for <linuxppc-dev@ozlabs.org>; Fri, 1 Jun 2007 10:48:55 -0700 (MST)
 Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l51HmmMD021475
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Jun 2007 12:48:49 -0500 (CDT)
-Subject: [PATCH 5/8] Set IDE in ULI1575 to not native mode.
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l51Hmth6021522
+	for <linuxppc-dev@ozlabs.org>; Fri, 1 Jun 2007 12:48:55 -0500 (CDT)
+Subject: [PATCH 6/8] Let subordinate transparent bridges be transparent.
 From: Jon Loeliger <jdl@freescale.com>
 To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Message-Id: <1180720128.14219.65.camel@ld0161-tx32>
+Message-Id: <1180720134.14219.66.camel@ld0161-tx32>
 Mime-Version: 1.0
-Date: Fri, 01 Jun 2007 12:48:48 -0500
+Date: Fri, 01 Jun 2007 12:48:55 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,29 +29,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Zhang Wei <wei.zhang@freescale.com>
+In pcibios_fixup_bus(), bridges that are subordinate
+to transparent bridges were still relocating their
+IORESOURCE_IO start and end values.
 
-Set IDE in ULI1575 to not 100% native mode, which forces
-the IDE driver to probe the irq itself.
+Fix this by preventing the transparent bridge from
+relocating the start and end values, thus allowing the
+subordinate non-transparent bridge full molestation rights.
 
-Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
-Acked-by: Roy Zang <tie-fei.zang@freescale.com>
+Signed-off-by: York Sun <yorksun@freescale.com>
+Signed-off-by: Andy Fleming <afleming@freescale.com>
 Signed-off-by: Jon Loeliger <jdl@freescale.com>
 ---
- arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ arch/powerpc/kernel/pci_32.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-index 9259788..a82da4b 100644
---- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-+++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-@@ -319,6 +319,7 @@ static void __devinit quirk_uli5229(struct pci_dev *dev)
- {
- 	unsigned short temp;
- 	pci_write_config_word(dev, 0x04, 0x0405);
-+	dev->class &= ~0x5;
- 	pci_read_config_word(dev, 0x4a, &temp);
- 	temp |= 0x1000;
- 	pci_write_config_word(dev, 0x4a, temp);
+diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
+index e66064b..102264c 100644
+--- a/arch/powerpc/kernel/pci_32.c
++++ b/arch/powerpc/kernel/pci_32.c
+@@ -1372,7 +1372,9 @@ void __init pcibios_fixup_bus(struct pci_bus *bus)
+ 				continue;
+ 			if (!res->flags)
+ 				continue;
+-			if (io_offset && (res->flags & IORESOURCE_IO)) {
++			if (!bus->self->transparent
++			    && io_offset
++			    && (res->flags & IORESOURCE_IO)) {
+ 				res->start += io_offset;
+ 				res->end += io_offset;
+ 			} else if (hose->pci_mem_offset
 -- 
 1.5.0.3
