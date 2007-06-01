@@ -1,25 +1,26 @@
 Return-Path: <jdl@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 01A7BDDF76
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2007 03:48:14 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id D7414DE177
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2007 03:48:27 +1000 (EST)
 Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l51Hm82A003412
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Jun 2007 10:48:09 -0700 (MST)
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l51HmM90019603
+	for <linuxppc-dev@ozlabs.org>; Fri, 1 Jun 2007 10:48:23 -0700 (MST)
 Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l51Hm8aX021225
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Jun 2007 12:48:08 -0500 (CDT)
-Subject: [PATCH 0/8] Add Generic PCI-E support to 8641HPCN
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l51HmMip021295
+	for <linuxppc-dev@ozlabs.org>; Fri, 1 Jun 2007 12:48:22 -0500 (CDT)
+Subject: [PATCH 1/8] Remove the errata fix codes for MPC8641 silicon ver
+	1.0 which is end of life.
 From: Jon Loeliger <jdl@freescale.com>
 To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Message-Id: <1180720088.14219.60.camel@ld0161-tx32>
+Message-Id: <1180720102.14219.61.camel@ld0161-tx32>
 Mime-Version: 1.0
-Date: Fri, 01 Jun 2007 12:48:08 -0500
+Date: Fri, 01 Jun 2007 12:48:22 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,22 +30,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul,
+From: Zhang Wei <wei.zhang@freescale.com>
 
-This 8-part patch set combines the two previous patch
-sets, 5 from Zheng Wei, and 3 from me, along with one
-from Wade Farnsworth into one nice-n-happy set, all
-designed to re-enable PCI-Express on the MPC8641HPCN board.
+Remove the errata fix codes for MPC8641 silicon ver 1.0 which
+is end of life.
 
-Yes, there is one hacky bus number adjusting being done
-in  _exclude_device(), but I think I read that it will
-take some fairly serious effort to rewrite the PPC-32
-version of PCI bus numbering to make it "right".
+The MPC8641 silicon ver 1.0 is not fully support PCI/PCI Express
+specifications. The revision 2.0 fixes all of these errata
+and the rev 1.0 silicon is end of life. So errata codes are removed.
 
-In the meantime, these patches work, and will enable us
-to add on the 8548 and 8544 PCI-Express code as well.
+Now, The chip is full compatible with PCI/PCI Express
+specifications. The generic PCI code is used.
 
-These are rebased to your current top-of-master branch.
+Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+Acked-by: Roy Zang <tie-fei.zang@freescale.com>
+Signed-off-by: Jon Loeliger <jdl@freescale.com>
+---
+ arch/powerpc/Kconfig                  |    3 +--
+ arch/powerpc/platforms/86xx/mpc86xx.h |    6 ------
+ arch/powerpc/platforms/86xx/pci.c     |   10 +---------
+ 3 files changed, 2 insertions(+), 17 deletions(-)
 
-Thanks,
-jdl
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 56d3c0d..e683668 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -183,7 +183,6 @@ config PPC_86xx
+ 	bool "Freescale 86xx"
+ 	select 6xx
+ 	select FSL_SOC
+-	select FSL_PCIE
+ 	select PPC_FPU
+ 	select ALTIVEC
+ 	help
+@@ -675,7 +674,7 @@ config FSL_SOC
+ 
+ config FSL_PCIE
+ 	bool
+-	depends on PPC_86xx
++	depends on PPC_85xx
+ 
+ # Yes MCA RS/6000s exist but Linux-PPC does not currently support any
+ config MCA
+diff --git a/arch/powerpc/platforms/86xx/mpc86xx.h b/arch/powerpc/platforms/86xx/mpc86xx.h
+index 2834462..740b300 100644
+--- a/arch/powerpc/platforms/86xx/mpc86xx.h
++++ b/arch/powerpc/platforms/86xx/mpc86xx.h
+@@ -19,12 +19,6 @@ extern int add_bridge(struct device_node *dev);
+ 
+ extern int mpc86xx_exclude_device(u_char bus, u_char devfn);
+ 
+-extern void setup_indirect_pcie(struct pci_controller *hose,
+-				       u32 cfg_addr, u32 cfg_data);
+-extern void setup_indirect_pcie_nomap(struct pci_controller *hose,
+-					     void __iomem *cfg_addr,
+-					     void __iomem *cfg_data);
+-
+ extern void __init mpc86xx_smp_init(void);
+ 
+ #endif	/* __MPC86XX_H__ */
+diff --git a/arch/powerpc/platforms/86xx/pci.c b/arch/powerpc/platforms/86xx/pci.c
+index 8235c56..7efae7c 100644
+--- a/arch/powerpc/platforms/86xx/pci.c
++++ b/arch/powerpc/platforms/86xx/pci.c
+@@ -133,18 +133,10 @@ mpc86xx_setup_pcie(struct pci_controller *hose, u32 pcie_offset, u32 pcie_size)
+ 	early_write_config_word(hose, 0, 0, PCI_COMMAND, cmd);
+ 
+ 	early_write_config_byte(hose, 0, 0, PCI_LATENCY_TIMER, 0x80);
+-
+-	/* PCIE Bus, Fix the MPC8641D host bridge's location to bus 0xFF. */
+-	early_read_config_dword(hose, 0, 0, PCI_PRIMARY_BUS, &temps);
+-	temps = (temps & 0xff000000) | (0xff) | (0x0 << 8) | (0xfe << 16);
+-	early_write_config_dword(hose, 0, 0, PCI_PRIMARY_BUS, temps);
+ }
+ 
+ int mpc86xx_exclude_device(u_char bus, u_char devfn)
+ {
+-	if (bus == 0 && PCI_SLOT(devfn) == 0)
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-
+ 	return PCIBIOS_SUCCESSFUL;
+ }
+ 
+@@ -178,7 +170,7 @@ int __init add_bridge(struct device_node *dev)
+ 	hose->first_busno = bus_range ? bus_range[0] : 0x0;
+ 	hose->last_busno = bus_range ? bus_range[1] : 0xfe;
+ 
+-	setup_indirect_pcie(hose, rsrc.start, rsrc.start + 0x4);
++	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4);
+ 
+ 	/* Setup the PCIE host controller. */
+ 	mpc86xx_setup_pcie(hose, rsrc.start, rsrc.end - rsrc.start + 1);
+-- 
+1.5.0.3
