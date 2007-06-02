@@ -1,20 +1,19 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
-	[66.98.186.96])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E4433DDEBD
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2007 16:02:55 +1000 (EST)
-Message-ID: <4661082C.70607@genesi-usa.com>
-Date: Sat, 02 Jun 2007 07:03:24 +0100
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
-To: Marian Balakowicz <m8@semihalf.com>
-Subject: Re: BestComm ATA task on MPC52xx
-References: <4660A611.9020909@semihalf.com>
-In-Reply-To: <4660A611.9020909@semihalf.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id C628EDDE02
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2007 17:40:14 +1000 (EST)
+Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Milton Miller <miltonm@bga.com>
+In-Reply-To: <7fc919fce0761f861be3069a853d3169@bga.com>
+References: <7fc919fce0761f861be3069a853d3169@bga.com>
+Content-Type: text/plain
+Date: Sat, 02 Jun 2007 17:39:52 +1000
+Message-Id: <1180769992.14025.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,40 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Which chip revision are you using?
+On Fri, 2007-06-01 at 23:30 -0500, Milton Miller wrote:
+> 
+> Actually, looking back at your device tree {1], your list several
+> properties for flash, including bank-width and partition names.
+> Perhaps first compatible should be direct-mapped-partitioned-flash,
+> direct-mapped-partitioned-rom, direct-mapped-rom  (to me a
+> direct-mapped-rom driver would expose one section of address space
+> read-only). I'm assuming that your driver for this "direct-mapped"
+> device will look at these properties from the of device node and
+> call the mtd layer somewhat directly with their contents. 
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+If it's a flash, compatible should be the chip type, and maybe as a
+second entry, what type of flash protocol (amd, intel, cfi, ...) it's
+compatible.
 
-Marian Balakowicz wrote:
-> Hi,
-> 
-> I am working on bringing up a DMA support for ATA controller on MPC52xx
-> and I am facing problems for which I am not pretty sure what the actual
-> root cause is.
-> 
-> There was a John Rigby's patch last year, which was based on arch/ppc
-> and drivers/ide (mpc52xx_ide.c). I use arch/powerpc and adopted to
-> libata version of mpc52xx_ide.c which is now merged to vanilla and is
-> called pata_mpc52xx.c. On top of this I have John Rigby's modifications
-> converted from ide to libata. Problems appear with the first DMA
-> transfer attempt, which happens during a driver probe when partition
-> table is read. There shall be a interrupt signaling a transfer end and
-> the handler (not present in John Rigby's code) should do the transfer
-> closing. But the interrupt is not received and after the cmd timeouts it
-> looks like ATA controller registers, BestComm registers, buffer
-> descriptors and BestComm ATA task variables are unchanged. So, it seems
-> that for some reason ATA BestComm task did not run/do it's job.
-> 
-> Did anyone had any success with ATA DMA on 52xx? Or maybe hear about
-> newer version of the ATA BestComm task, or some useful ways of debugging
-> BestComm stuff? I am planning to post my working code but need a day or
-> two to clean it up a little.
-> 
-> Thanks,
-> Marian
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Ben.
