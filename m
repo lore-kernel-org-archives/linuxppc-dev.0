@@ -1,27 +1,26 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
-	[151.189.21.50])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3D33DDDEE9
-	for <linuxppc-dev@ozlabs.org>; Sun,  3 Jun 2007 06:23:56 +1000 (EST)
-In-Reply-To: <20070602195308.GA21618@iram.es>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 491B2DDE25
+	for <linuxppc-dev@ozlabs.org>; Sun,  3 Jun 2007 09:17:17 +1000 (EST)
+Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <27807251665003e059b2c39d2b700415@kernel.crashing.org>
 References: <1180720112.14219.62.camel@ld0161-tx32>
 	<dfc15991e31bfc09389461dc443acd7c@kernel.crashing.org>
-	<1180734314.5674.49.camel@rhino>
-	<4fb92a9dfccf515bdc1522d08f10f823@kernel.crashing.org>
-	<20070602085359.GA10333@iram.es>
-	<3ebd6ca6877ea74925f066ff96ac81db@kernel.crashing.org>
-	<20070602195308.GA21618@iram.es>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <12ad593bd17f769e44f05bc24eac4d0a@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
-Date: Sat, 2 Jun 2007 22:23:32 +0200
-To: Gabriel Paubert <paubert@iram.es>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+	<E1HuGfE-0007zw-EH@jdl.com>
+	<1180743742.19517.485.camel@localhost.localdomain>
+	<e2020ffad171013c07f8809e1e1aef97@kernel.crashing.org>
+	<E1HuW61-00049R-FI@jdl.com>
+	<27807251665003e059b2c39d2b700415@kernel.crashing.org>
+Content-Type: text/plain
+Date: Sun, 03 Jun 2007 09:16:42 +1000
+Message-Id: <1180826202.14025.12.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,49 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Yes, I think we all agree -- it should be interrupt-controller@20,
->> with 20, a0, 4d0 in the "reg" property.
->
-> In the current tree it is called "i8259" in mpc8641_hpcn.dts.
+On Sat, 2007-06-02 at 22:00 +0200, Segher Boessenkool wrote:
+> 
+> Feel free to ask for advice on IRC, on the list, or
+> elsewhere _before_ sending a patch.
 
-"interrupt-controller" is the preferred name for all
-interrupt controller nodes.  The "compatible" property
-can easily distinguish between different types.  Not
-that it matters all that much -- just remember that
-the "name" is used for device matching before "compatible"
-is (_should_ be, Linux ignores this part of the standard
-right now in most cases), so don't put junk in there!
+Bah, sending a patch is good too, don't be too hard there. I for one
+prefer the approach of sending a patch first.
 
-> The other
-> ones which have a 8259 are not usable (mpc8555 for example). I don't
-> even understand their reg property (19000 0 0 0 1),
+> > Second, perhaps there is lingering legacy
+> > crap in some of the early DTS files that should be systematically
+> > cleaned up.
+> 
+> Yes there is.  Maybe one day I'll get to it, I'm hoping
+> someone else will fix this though ;-)
 
-Very weird indeed.  What bustype is this?  (I looked it up,
-it's PCI, and I can't make heads or tails of it either --
-it says it sits on bus #1, although its parent isn't bus #1;
-and the final "1" should be "0".  Many more weird things
-in that node, too).
+We probably need to improve the documentation in fact. Maybe with a step
+by step HOWTO create your device-tree with examples for typical things
+like PCI etc.. and the rational of why for each of these, we chose to do
+XXX instead of YYY...
 
-> and the driver
-> has hardcoded addresses at 0x20 and 0xa0, which is reasonable
-> since I've never seen an ISA bridge put the 8259 at another address.
+> The official (and unofficial) Open Firmware docs are quite
+> good.  Perhaps we need a big huge fat sign in the DTS docs
+> pointing to them.
 
-As long as the driver (platform code I hope?) at least checks
-for the existence of the node, that's fair enough I guess.
-Actually using the "reg" would be better of course.
+They aren't -that- good when you come out of the blue and don't know
+where to start. I think a tutorial based on building a tree for an
+example board step by step would be best.
 
->> I'm not sure what "compatible" should be for this node, someone
->> else can dig that up :-)
-
-Oh what the hell, I'm too curious...  "pnpPNP,0" it is.
-
-> I believe that "8259" should appear somewhere because of the
-> "8259-interrupt-acknowledge" property (defined in CHRP bindings)
-> which you can have on the parent bridge to speed up interrupt
-> vector acquisition.
-
-You're not CHRP so you have nothing to do with the CHRP
-bindings...
-
-
-Segher
+Ben.
