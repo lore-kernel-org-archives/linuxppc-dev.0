@@ -1,34 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-08.arcor-online.net (mail-in-08.arcor-online.net
+	[151.189.21.48])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DF0DDDDE20
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2007 18:55:55 +1000 (EST)
-Subject: Re: [PATCH 3/5] Float the pci bus number on MPC8641HPCN board.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <b972e02fc13915c5eb888621c771abb9@kernel.crashing.org>
-References: <11798051102658-git-send-email-wei.zhang@freescale.com>
-	<11798051101543-git-send-email-wei.zhang@freescale.com>
-	<1179805110272-git-send-email-wei.zhang@freescale.com>
-	<1179805110278-git-send-email-wei.zhang@freescale.com>
-	<1179856792.27985.22.camel@rhino>
-	<46B96294322F7D458F9648B60E15112C234A2D@zch01exm26.fsl.freescale.net>
-	<F1C4E37E-FF0F-4A5F-AC49-860B4AAC4E28@kernel.crashing.org>
-	<46B96294322F7D458F9648B60E15112C30777C@zch01exm26.fsl.freescale.net>
-	<A7C2B8A9-AE89-4E00-9771-F3C21A610121@kernel.crashing.org>
-	<18015.48278.312517.781244@cargo.ozlabs.ibm.com>
-	<46B96294322F7D458F9648B60E15112C30780F@zch01exm26.fsl.freescale.net>
-	<1180683854.19517.419.camel@localhost.localdomain>
-	<46604AE0.5040700@genesi-usa.com>
-	<1180737682.19517.455.camel@localhost.localdomain>
-	<b972e02fc13915c5eb888621c771abb9@kernel.crashing.org>
-Content-Type: text/plain
-Date: Sat, 02 Jun 2007 18:55:41 +1000
-Message-Id: <1180774541.14025.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Zhang Wei-r63237 <Wei.Zhang@freescale.com>,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 26D64DDED0
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2007 19:01:37 +1000 (EST)
+In-Reply-To: <20070602085359.GA10333@iram.es>
+References: <1180720112.14219.62.camel@ld0161-tx32>
+	<dfc15991e31bfc09389461dc443acd7c@kernel.crashing.org>
+	<1180734314.5674.49.camel@rhino>
+	<4fb92a9dfccf515bdc1522d08f10f823@kernel.crashing.org>
+	<20070602085359.GA10333@iram.es>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <3ebd6ca6877ea74925f066ff96ac81db@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
+Date: Sat, 2 Jun 2007 11:01:29 +0200
+To: Gabriel Paubert <paubert@iram.es>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,17 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+>>>>> +						i8259: i8259@4d0 {
+>>>>
+>>>> Needs "reg".  And 4d0 isn't the primary address
+>>>> I think?
+>>>
+>>> Yes, this is a standard i8259 with additional registers at 0x20 and
+>>> 0xa0.  I'll fix the address and add the registers.
+>>
+>> That sounds good, thanks!
+>
+> I'd beg to differ. There are three registers area:
+>
+> - 0x20 which is the master interrupt controller
+>   (since the original 1981 IBM-PC)
+> - 0xa0 which is the slave interrupt controller, connected to
+>   IRQ2 of the master (introduced with the XT or the AT, I don't
+>   remember)
+> - 0x4d0 which was added later to allow per interrupt line setting
+>   of edge or level triggering (instead of per controller).
+>
+> By far the most important registers are the ones at 0x20 since
+> you access them at every interrupt. The registers at 0x4d0
+> are typically set by firmware and never touched later, there
+> is not a single access to them in sysdev/i8259.c.
 
-On Sat, 2007-06-02 at 10:36 +0200, Segher Boessenkool wrote:
-> In the meantime, you could have a kernel config option
-> selecting between "good new" and "bad old" ppc32 PCI
-> stack.  At the very least it will make it easier for both
-> kernel and X people to test their stuff.  Also it will
-> allow users to switch to the bad old but working stack
-> if things don't go too smoothly during the transition.
+Yes, I think we all agree -- it should be interrupt-controller@20,
+with 20, a0, 4d0 in the "reg" property.
 
-Could be a boot or platform option.. basically enabling unconditional
-outputing of domains ... plus a few other things like removing iobase
-syscall etc..
+I'm not sure what "compatible" should be for this node, someone
+else can dig that up :-)
 
-Ben.
+
+Segher
