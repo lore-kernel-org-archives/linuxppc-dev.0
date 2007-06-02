@@ -1,21 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-02.arcor-online.net (mail-in-02.arcor-online.net
-	[151.189.21.42])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 025C1DDEBE
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2007 18:53:06 +1000 (EST)
-In-Reply-To: <7fc919fce0761f861be3069a853d3169@bga.com>
-References: <7fc919fce0761f861be3069a853d3169@bga.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <bd6ef296692e8cfb81118f2dc85189a5@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
-Date: Sat, 2 Jun 2007 10:53:00 +0200
-To: Milton Miller <miltonm@bga.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id DB76FDDE0D
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2007 18:54:06 +1000 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Sat, 2 Jun 2007 10:53:59 +0200
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
+Message-ID: <20070602085359.GA10333@iram.es>
+References: <1180720112.14219.62.camel@ld0161-tx32>
+	<dfc15991e31bfc09389461dc443acd7c@kernel.crashing.org>
+	<1180734314.5674.49.camel@rhino>
+	<4fb92a9dfccf515bdc1522d08f10f823@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4fb92a9dfccf515bdc1522d08f10f823@kernel.crashing.org>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,33 +24,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I think "direct-mapped" as compatible is a bit too broad or vague.
->
-> The compatible is supposed to be useable to find and match a driver
-> without regard to the name of the node.  Perhaps direct-mapped-rom?
-> (as opossed to a direct-mapped-ram, sram, or some width flash bank).
+On Sat, Jun 02, 2007 at 10:22:59AM +0200, Segher Boessenkool wrote:
+> >> "reg" included in "ranges"?  Something is wrong here.
+> >
+> > I think it's correct for soc nodes.
+> 
+> It is not.  "ranges" is the address space translation
+> between the parent and child busses; "reg" is the stuff
+> that's on the bridge device itself.
+> 
+> > At least, it appears that all of
+> > the dts files with soc nodes do similar things (including this one even
+> > without this patch).
+> 
+> Yes, but that doesn't make it right.
+> 
+> >>> +				pci_bridge@0 {
+> >>
+> >>> +					#size-cells = <2>;
+> >>> +					#address-cells = <3>;
+> >>> +					ranges = <02000000 0 80000000
+> >>> +						  02000000 0 80000000
+> >>> +						  0 20000000
+> >>> +						  01000000 0 00000000
+> >>> +						  01000000 0 00000000
+> >>> +						  0 00100000>;
+> >>> +
+> >>> +					isa@1e {
+> >>> +						#size-cells = <1>;
+> >>> +						#address-cells = <2>;
+> >>>
+> >>> +						ranges = <1 0 01000000 0 0
+> >>> +							  00001000>;
+> >>
+> >> You map the same range (4kB legacy I/O @ 0) for both
+> >> bridges here.
+> >
+> > There is a one-to-one mapping between the I/O spaces of "isa" and
+> > "pci_bridge", so wouldn't it be reasonable that a similar range be 
+> > used?
+> 
+> Oh wait, the ISA bridge is a child of the PCI bridge here.
+> It is obviously fine then.
+> 
+> >>> +						i8042@60 {
+> >>> +							reg = <1 60 1 1 64 1>;
+> >>
+> >> And this address space is included in both of those.
+> >
+> > Again, shouldn't the child's address space be in its parent's range?
+> 
+> Yes of course, I'm simply losing track of the nesting
+> here.  Sigh.
+> 
+> >>> +						i8259: i8259@4d0 {
+> >>
+> >> Needs "reg".  And 4d0 isn't the primary address
+> >> I think?
+> >
+> > Yes, this is a standard i8259 with additional registers at 0x20 and
+> > 0xa0.  I'll fix the address and add the registers.
+> 
+> That sounds good, thanks!
+> 
 
-"actual-name-of-the-chip", "cfi-command-set-#", "cfi" seems
-like a good start.
+I'd beg to differ. There are three registers area:
 
-> Actually, looking back at your device tree {1], your list several
-> properties for flash, including bank-width and partition names.
-> Perhaps first compatible should be direct-mapped-partitioned-flash,
-> direct-mapped-partitioned-rom, direct-mapped-rom  (to me a
-> direct-mapped-rom driver would expose one section of address space
-> read-only). I'm assuming that your driver for this "direct-mapped"
-> device will look at these properties from the of device node and
-> call the mtd layer somewhat directly with their contents.
+- 0x20 which is the master interrupt controller
+  (since the original 1981 IBM-PC)
+- 0xa0 which is the slave interrupt controller, connected to
+  IRQ2 of the master (introduced with the XT or the AT, I don't
+  remember)
+- 0x4d0 which was added later to allow per interrupt line setting
+  of edge or level triggering (instead of per controller).
 
-People here tried to create a generic "flash" device binding.
-It didn't work out (part of the problem is its scope was way
-too big; another problem is it was too Linux-mtd specific).
+By far the most important registers are the ones at 0x20 since
+you access them at every interrupt. The registers at 0x4d0
+are typically set by firmware and never touched later, there
+is not a single access to them in sysdev/i8259.c.
 
-Now since the probing is done in platform-specific code here,
-you don't *need* an "official" binding -- just get your
-"compatible" prop right so you can correctly probe the device
-node, and then maybe add some node-specific properties if you
-need them.
+I have vague memories of a node named i8259@20 one a board 
+who had OF in 1997 (a Motorola MVME but they switched to 
+PPCBUG just after :-().
+
+	Gabriel
 
 
-Segher
+> 
+> Segher
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
