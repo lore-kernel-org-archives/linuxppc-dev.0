@@ -1,18 +1,19 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2ED18DDEDB
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2007 19:13:35 +1000 (EST)
-Subject: [PATCH] don't allow PMAC_APM_EMU for 64-bit
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain
-Date: Sat, 02 Jun 2007 11:13:44 +0200
-Message-Id: <1180775624.11026.43.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	David Woodhouse <dwmw2@infradead.org>
+Return-Path: <sr@denx.de>
+Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.188])
+	by ozlabs.org (Postfix) with ESMTP id 32C23DDE10
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2007 19:30:23 +1000 (EST)
+Received: from ubuntu (achn-4db49b11.pool.einsundeins.de [77.180.155.17])
+	by post.webmailer.de (mrclete mo33) (RZmta 7.1)
+	with ESMTP id C06f5aj526s5zc for <linuxppc-dev@ozlabs.org>;
+	Sat, 2 Jun 2007 11:30:20 +0200 (MEST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] ppc: Fix compile breakage for IBM/AMCC 4xx arch/ppc platforms
+Date: Sat, 2 Jun 2007 11:30:20 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200706021130.20215.sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,24 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In b302887854d6f0c6f9fc3f1080535e7c1bd53134 I switched the apm emulation
-code to use the generic code but accidentally dropped the PPC32
-dependency from the configuration symbol. This adds it back.
+The IBM/AMCC 405 platforms don't compile anymore in the current
+kernel version. This small patch fixes the small compile breakage.
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Signed-off-by: Stefan Roese <sr@denx.de>
 
 ---
-Of course, selecting it on 64 bit doesn't make sense (no portables with
-64-bit and PMU) and doesn't build either.
+commit 90ea0ac115801170097f0628a2851fc78006de3c
+tree d59c13cdfcd3aa4a241a1c5b598d76fa3f18b540
+parent f285e3d329ce68cc355fadf4ab2c8f34d7f264cb
+author Stefan Roese <sr@denx.de> Sat, 02 Jun 2007 11:26:15 +0200
+committer Stefan Roese <sr@denx.de> Sat, 02 Jun 2007 11:26:15 +0200
 
---- linux-2.6.orig/drivers/macintosh/Kconfig	2007-06-02 11:11:17.465515541 +0200
-+++ linux-2.6/drivers/macintosh/Kconfig	2007-06-02 11:11:24.305515541 +0200
-@@ -114,7 +114,7 @@ config PMAC_SMU
- config PMAC_APM_EMU
- 	tristate "APM emulation"
- 	select APM_EMULATION
--	depends on ADB_PMU && PM
-+	depends on ADB_PMU && PM && PPC32
+ arch/ppc/syslib/ibm_ocp.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/arch/ppc/syslib/ibm_ocp.c b/arch/ppc/syslib/ibm_ocp.c
+index 3f6e55c..2ee1766 100644
+--- a/arch/ppc/syslib/ibm_ocp.c
++++ b/arch/ppc/syslib/ibm_ocp.c
+@@ -1,4 +1,5 @@
+ #include <linux/module.h>
++#include <asm/ibm4xx.h>
+ #include <asm/ocp.h>
  
- config PMAC_MEDIABAY
- 	bool "Support PowerBook hotswap media bay"
+ struct ocp_sys_info_data ocp_sys_info = {
