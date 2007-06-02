@@ -1,25 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-08.arcor-online.net (mail-in-08.arcor-online.net
-	[151.189.21.48])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 26D64DDED0
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2007 19:01:37 +1000 (EST)
-In-Reply-To: <20070602085359.GA10333@iram.es>
-References: <1180720112.14219.62.camel@ld0161-tx32>
-	<dfc15991e31bfc09389461dc443acd7c@kernel.crashing.org>
-	<1180734314.5674.49.camel@rhino>
-	<4fb92a9dfccf515bdc1522d08f10f823@kernel.crashing.org>
-	<20070602085359.GA10333@iram.es>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <3ebd6ca6877ea74925f066ff96ac81db@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
-Date: Sat, 2 Jun 2007 11:01:29 +0200
-To: Gabriel Paubert <paubert@iram.es>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2ED18DDEDB
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2007 19:13:35 +1000 (EST)
+Subject: [PATCH] don't allow PMAC_APM_EMU for 64-bit
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Sat, 02 Jun 2007 11:13:44 +0200
+Message-Id: <1180775624.11026.43.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,36 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> +						i8259: i8259@4d0 {
->>>>
->>>> Needs "reg".  And 4d0 isn't the primary address
->>>> I think?
->>>
->>> Yes, this is a standard i8259 with additional registers at 0x20 and
->>> 0xa0.  I'll fix the address and add the registers.
->>
->> That sounds good, thanks!
->
-> I'd beg to differ. There are three registers area:
->
-> - 0x20 which is the master interrupt controller
->   (since the original 1981 IBM-PC)
-> - 0xa0 which is the slave interrupt controller, connected to
->   IRQ2 of the master (introduced with the XT or the AT, I don't
->   remember)
-> - 0x4d0 which was added later to allow per interrupt line setting
->   of edge or level triggering (instead of per controller).
->
-> By far the most important registers are the ones at 0x20 since
-> you access them at every interrupt. The registers at 0x4d0
-> are typically set by firmware and never touched later, there
-> is not a single access to them in sysdev/i8259.c.
+In b302887854d6f0c6f9fc3f1080535e7c1bd53134 I switched the apm emulation
+code to use the generic code but accidentally dropped the PPC32
+dependency from the configuration symbol. This adds it back.
 
-Yes, I think we all agree -- it should be interrupt-controller@20,
-with 20, a0, 4d0 in the "reg" property.
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 
-I'm not sure what "compatible" should be for this node, someone
-else can dig that up :-)
+---
+Of course, selecting it on 64 bit doesn't make sense (no portables with
+64-bit and PMU) and doesn't build either.
 
-
-Segher
+--- linux-2.6.orig/drivers/macintosh/Kconfig	2007-06-02 11:11:17.465515541 +0200
++++ linux-2.6/drivers/macintosh/Kconfig	2007-06-02 11:11:24.305515541 +0200
+@@ -114,7 +114,7 @@ config PMAC_SMU
+ config PMAC_APM_EMU
+ 	tristate "APM emulation"
+ 	select APM_EMULATION
+-	depends on ADB_PMU && PM
++	depends on ADB_PMU && PM && PPC32
+ 
+ config PMAC_MEDIABAY
+ 	bool "Support PowerBook hotswap media bay"
