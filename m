@@ -1,21 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3D8CBDDE0D
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2007 10:22:57 +1000 (EST)
-Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jon Loeliger <jdl@jdl.com>
-In-Reply-To: <E1HuGfE-0007zw-EH@jdl.com>
-References: <1180720112.14219.62.camel@ld0161-tx32>
-	<dfc15991e31bfc09389461dc443acd7c@kernel.crashing.org>
-	<E1HuGfE-0007zw-EH@jdl.com>
-Content-Type: text/plain
-Date: Sat, 02 Jun 2007 10:22:22 +1000
-Message-Id: <1180743742.19517.485.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id BD056DDEAB
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2007 14:30:51 +1000 (EST)
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <7fc919fce0761f861be3069a853d3169@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
+Date: Fri, 1 Jun 2007 23:30:32 -0500
+To: Mark A. Greer <mgreer@mvista.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,14 +19,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-06-01 at 18:36 -0500, Jon Loeliger wrote:
-> 
-> And none of this could have been said earlier when
-> Wade first posted the patch? 
+On Sat Jun 2 09:20:22 EST 2007,  Mark A. Greer wrote:
 
-That's unfair... the traffic on the list is such that he may well have
-missed it. I can't review everything myself neither, though I try to
-spot things here or there.
+> Find the "rom" device for the prpmc2800 and create a device for it.
+> The device will be picked up by the code in 
+> drivers/mtd/maps/physmap_of.c
+> and will setup MTD on that FLASH device.
+...
+>  /*
+> + * Register a platform device for MTD.
+> + */
+> +static int __init prpmc2800_register_mtd(void)
+> +{
+> +       struct device_node *np;
+> +
+> +       np = of_find_compatible_node(NULL, "rom", "direct-mapped");
+> +       of_platform_device_create(np, np->name, NULL);
+> +}
+> +arch_initcall(prpmc2800_register_mtd);
+>
 
-Cheers,
-Ben.
+I think "direct-mapped" as compatible is a bit too broad or vague.
+
+The compatible is supposed to be useable to find and match a driver
+without regard to the name of the node.  Perhaps direct-mapped-rom?
+(as opossed to a direct-mapped-ram, sram, or some width flash bank).
+
+Actually, looking back at your device tree {1], your list several
+properties for flash, including bank-width and partition names.
+Perhaps first compatible should be direct-mapped-partitioned-flash,
+direct-mapped-partitioned-rom, direct-mapped-rom  (to me a
+direct-mapped-rom driver would expose one section of address space
+read-only). I'm assuming that your driver for this "direct-mapped"
+device will look at these properties from the of device node and
+call the mtd layer somewhat directly with their contents.
+
+[1] http://ozlabs.org/pipermail/linuxppc-dev/2007-May/035858.html
+
+milton
+
+PS: I know you've posted this a few times.  I'm just behind in
+my reading and  replying :-).
