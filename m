@@ -1,26 +1,26 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-01.arcor-online.net (mail-in-15.arcor-online.net
-	[151.189.21.55])
+Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
+	[151.189.21.50])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0EB2FDDEBF
-	for <linuxppc-dev@ozlabs.org>; Sun,  3 Jun 2007 06:00:56 +1000 (EST)
-In-Reply-To: <E1HuW61-00049R-FI@jdl.com>
+	by ozlabs.org (Postfix) with ESMTP id 3D33DDDEE9
+	for <linuxppc-dev@ozlabs.org>; Sun,  3 Jun 2007 06:23:56 +1000 (EST)
+In-Reply-To: <20070602195308.GA21618@iram.es>
 References: <1180720112.14219.62.camel@ld0161-tx32>
 	<dfc15991e31bfc09389461dc443acd7c@kernel.crashing.org>
-	<E1HuGfE-0007zw-EH@jdl.com>
-	<1180743742.19517.485.camel@localhost.localdomain>
-	<e2020ffad171013c07f8809e1e1aef97@kernel.crashing.org>
-	<E1HuW61-00049R-FI@jdl.com>
+	<1180734314.5674.49.camel@rhino>
+	<4fb92a9dfccf515bdc1522d08f10f823@kernel.crashing.org>
+	<20070602085359.GA10333@iram.es>
+	<3ebd6ca6877ea74925f066ff96ac81db@kernel.crashing.org>
+	<20070602195308.GA21618@iram.es>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <27807251665003e059b2c39d2b700415@kernel.crashing.org>
+Message-Id: <12ad593bd17f769e44f05bc24eac4d0a@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts
-	file.
-Date: Sat, 2 Jun 2007 22:00:47 +0200
-To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
+Date: Sat, 2 Jun 2007 22:23:32 +0200
+To: Gabriel Paubert <paubert@iram.es>
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -31,61 +31,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> That, and I often get tired of seeing the same mistakes
->> over and over again.  When I see a proposed tree that's
->> just too awful I don't really know where to start.
+>> Yes, I think we all agree -- it should be interrupt-controller@20,
+>> with 20, a0, 4d0 in the "reg" property.
 >
-> That is a good point.
->
-> I think there are several factors at work here.  First and
-> foremost, I am not an expert in this area; it is new to me.
-> I am not afraid to say that I really need the guidance of
-> an expert here.
+> In the current tree it is called "i8259" in mpc8641_hpcn.dts.
 
-Feel free to ask for advice on IRC, on the list, or
-elsewhere _before_ sending a patch.
+"interrupt-controller" is the preferred name for all
+interrupt controller nodes.  The "compatible" property
+can easily distinguish between different types.  Not
+that it matters all that much -- just remember that
+the "name" is used for device matching before "compatible"
+is (_should_ be, Linux ignores this part of the standard
+right now in most cases), so don't put junk in there!
 
-> Second, perhaps there is lingering legacy
-> crap in some of the early DTS files that should be systematically
-> cleaned up.
+> The other
+> ones which have a 8259 are not usable (mpc8555 for example). I don't
+> even understand their reg property (19000 0 0 0 1),
 
-Yes there is.  Maybe one day I'll get to it, I'm hoping
-someone else will fix this though ;-)
+Very weird indeed.  What bustype is this?  (I looked it up,
+it's PCI, and I can't make heads or tails of it either --
+it says it sits on bus #1, although its parent isn't bus #1;
+and the final "1" should be "0".  Many more weird things
+in that node, too).
 
-> Many of them were written during a time when we
-> were really first learning about the whole Device Tree.  While
-> they may have been there on some, say, Apple boards, it's all
-> new for the FSL embedded parts.
+> and the driver
+> has hardcoded addresses at 0x20 and 0xa0, which is reasonable
+> since I've never seen an ISA bridge put the 8259 at another address.
 
-Many apple trees (pun intended) aren't all that great
-either.
+As long as the driver (platform code I hope?) at least checks
+for the existence of the node, that's fair enough I guess.
+Actually using the "reg" would be better of course.
 
-> Cloned mistakes then likely
-> contributed to the problems and should be fixed.  Finally,
-> perhaps our documentation on how some of the important fields
-> should work or be derived is lacking and could be improved.
+>> I'm not sure what "compatible" should be for this node, someone
+>> else can dig that up :-)
 
-The official (and unofficial) Open Firmware docs are quite
-good.  Perhaps we need a big huge fat sign in the DTS docs
-pointing to them.
+Oh what the hell, I'm too curious...  "pnpPNP,0" it is.
 
-> Suggestions or patches down this line would likely be welcomed.
->
->> I also find the DTS source format a bit hard to read,
->> but maybe that's just me.
->
-> I, at least, am open to suggestions that might improve it.
+> I believe that "8259" should appear somewhere because of the
+> "8259-interrupt-acknowledge" property (defined in CHRP bindings)
+> which you can have on the parent bridge to speed up interrupt
+> vector acquisition.
 
-My biggest problem when reviewing patches (or whole trees)
-in mail is the indenting.  Part of that I could fix myself
-by setting my mail reader to eight spaces indent.  The bigger
-problem is that trees are just not very readable in flat
-text format (you really need to see the parent node together
-with every of its child nodes).  There's no real way to fix
-this I'm afraid.  In "real" OF, most properties are filled
-in programmatibly, and you typically have one node per source
-file.  This won't help for DTS files.  Maybe putting more
-(good!) comments in DTS files would help though?
+You're not CHRP so you have nothing to do with the CHRP
+bindings...
 
 
 Segher
