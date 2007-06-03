@@ -1,15 +1,18 @@
-Return-Path: <root@hofr.at>
-Received: from mail.hofr.at (unknown [194.112.174.227])
-	by ozlabs.org (Postfix) with ESMTP id D0585DDDE7
+Return-Path: <skoroneos@digital-opsis.com>
+Received: from memova2.tellas.gr (memova2.tellas.gr [62.169.194.61])
+	by ozlabs.org (Postfix) with ESMTP id 0C360DDE2F
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  4 Jun 2007 02:00:58 +1000 (EST)
-Date: Sun, 3 Jun 2007 15:53:54 +0200 (CEST)
-From: Nicholas Mc Guire <der.herr@hofr.at>
-To: linuxppc-embedded@ozlabs.org
-Subject: ppc assembler problem with calling C funciton in entry.S
-Message-ID: <Pine.LNX.4.60.0706031527370.1056@rtl14.hofr.at>
+	Mon,  4 Jun 2007 09:49:34 +1000 (EST)
+From: "Stelios Koroneos" <skoroneos@digital-opsis.com>
+To: "Frank Prepelica" <Frank.Prepelica@ubidyne.com>,
+	<linuxppc-embedded@ozlabs.org>
+Subject: RE: Kernel and rootfs in ONE image?
+Date: Mon, 4 Jun 2007 02:42:00 +0300
+Message-ID: <HOECLKEKOHLAMMGDLLBHAEMOLDAA.skoroneos@digital-opsis.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_01C8_01C7A651.ED1DBF60"
+In-Reply-To: <29DC34A6B43468409F5A371CFE34E8491B5A4A@ex01.ads.ubidyne.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,83 +23,212 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-Hi !
+------=_NextPart_000_01C8_01C7A651.ED1DBF60
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-  Im trying to intercept rfi in entry.S - the intercept function called
-  emulate_iret is called (get the printk) but then the box hangs - so I
-  guess Im messing up the stack some how - but I don't understand how
-  - could someone point me to the error or to documentation that could
-  help ?
+Yes it is.
+There are basically two ways in doing it
+One is to create a binary "blob" where each part (kernel and  fs)  is placed
+at a certain location and the space between them is padded
+These location should match exactly the kernel mtd partition settings in
+terms of size.
 
-  kernel is 2.6.19.2 (ELDK)
-  Toolchain ELDK
-  HW is AMCC 440GR
+The other method i have used, uses some "magic bytes" at the end of a jffs2
+filesystem to mark it
+Then kernel and the fs are joint and a kernel patch is used to find where
+the filesystem starts/ends
+This is the method used by Openwrt (in the kamikaze version)
+
+Stelios S. Koroneos
+
+Digital OPSiS - Embedded Intelligence
+http://www.digital-opsis.com
 
 
-The dummy intercept function basically does a printk and messes around
-on the stack a bit - sould have no sideffects.
+  -----Original Message-----
+  From: linuxppc-embedded-bounces+stelios=stelioscellar.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+stelios=stelioscellar.com@ozlabs.org]On
+Behalf Of Frank Prepelica
+  Sent: Friday, June 01, 2007 2:15 PM
+  To: linuxppc-embedded@ozlabs.org
+  Subject: Kernel and rootfs in ONE image?
 
-static int g_test_int;
-void emulate_iret(void)
-{
-         static int g[2];
-         ++g_test_int;
-         printk("emulate_iret!\n");
 
-         g[0] = g_test_int;
-         g[1] = g_test_int + 10;
+  Hi all,
+
+
+
+  in normal case you have got a kernel image and a rootfs image. Place
+
+  that images into flash memory, set correct bootargs and it should work.
+
+
+
+  But, is it possible to generate one image which includes the linux kernel
+
+  and a rootfs, place that single image into flash memory and it should also
+work?
+
+
+
+  Thanks in advance!
+
+
+
+  Beste regrads
+
+  Frank
+
+------=_NextPart_000_01C8_01C7A651.ED1DBF60
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML xmlns=3D"http://www.w3.org/TR/REC-html40" xmlns:v =3D=20
+"urn:schemas-microsoft-com:vml" xmlns:o =3D=20
+"urn:schemas-microsoft-com:office:office" xmlns:w =3D=20
+"urn:schemas-microsoft-com:office:word"><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.6000.16441" name=3DGENERATOR>
+<STYLE>@page Section1 {size: 595.3pt 841.9pt; margin: 70.85pt 70.85pt =
+2.0cm 70.85pt; }
+P.MsoNormal {
+	FONT-SIZE: 12pt; MARGIN: 0cm 0cm 0pt; FONT-FAMILY: "Times New Roman"
 }
+LI.MsoNormal {
+	FONT-SIZE: 12pt; MARGIN: 0cm 0cm 0pt; FONT-FAMILY: "Times New Roman"
+}
+DIV.MsoNormal {
+	FONT-SIZE: 12pt; MARGIN: 0cm 0cm 0pt; FONT-FAMILY: "Times New Roman"
+}
+A:link {
+	COLOR: blue; TEXT-DECORATION: underline
+}
+SPAN.MsoHyperlink {
+	COLOR: blue; TEXT-DECORATION: underline
+}
+A:visited {
+	COLOR: purple; TEXT-DECORATION: underline
+}
+SPAN.MsoHyperlinkFollowed {
+	COLOR: purple; TEXT-DECORATION: underline
+}
+SPAN.E-MailFormatvorlage17 {
+	COLOR: windowtext; FONT-FAMILY: Arial; mso-style-type: personal-compose
+}
+DIV.Section1 {
+	page: Section1
+}
+</STYLE>
+<!--[if gte mso 9]><xml>
+ <o:shapedefaults v:ext=3D"edit" spidmax=3D"1027" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <o:shapelayout v:ext=3D"edit">
+  <o:idmap v:ext=3D"edit" data=3D"1" />
+ </o:shapelayout></xml><![endif]--></HEAD>
+<BODY lang=3DDE vLink=3Dpurple link=3Dblue>
+<DIV>
+<DIV><SPAN class=3D671155022-03062007><FONT face=3DArial color=3D#0000ff =
+size=3D2>Yes it=20
+is.</FONT></SPAN></DIV>
+<DIV><SPAN class=3D671155022-03062007><FONT face=3DArial color=3D#0000ff =
+size=3D2>There=20
+are basically two ways in doing it</FONT></SPAN></DIV>
+<DIV><SPAN class=3D671155022-03062007><FONT face=3DArial color=3D#0000ff =
+size=3D2>One is=20
+to create a binary "blob" where each part (kernel and &nbsp;fs) &nbsp;is =
+placed=20
+at a certain location and the space between them is =
+padded</FONT></SPAN></DIV>
+<DIV><SPAN class=3D671155022-03062007><FONT face=3DArial color=3D#0000ff =
+size=3D2>These=20
+location should match exactly the kernel mtd partition settings in terms =
+of=20
+size.</FONT></SPAN></DIV>
+<DIV><SPAN class=3D671155022-03062007><FONT face=3DArial color=3D#0000ff =
 
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D671155022-03062007><FONT face=3DArial color=3D#0000ff =
+size=3D2>The=20
+other method i have used, uses some "magic bytes" at the end of a jffs2=20
+filesystem to mark it</FONT></SPAN></DIV>
+<DIV><SPAN class=3D671155022-03062007><FONT face=3DArial color=3D#0000ff =
+size=3D2>Then=20
+kernel and the fs are joint and a kernel patch is used to find where the =
 
-The modified transfer_to_handler_cont - just calls emulate_iret and 
-restors (code between #if 1 and #endif was added):
+filesystem starts/ends</FONT></SPAN></DIV>
+<DIV><SPAN class=3D671155022-03062007><FONT face=3DArial color=3D#0000ff =
+size=3D2>This=20
+is the method used by Openwrt (in the kamikaze=20
+version)</FONT></SPAN></DIV></DIV>
+<DIV>&nbsp;</DIV>
+<P><FONT size=3D2>Stelios S. Koroneos<BR><BR>Digital OPSiS - Embedded=20
+Intelligence<BR><A href=3D"http://www.digital-opsis.com/"=20
+target=3D_blank>http://www.digital-opsis.com</A><BR></FONT></P>
+<BLOCKQUOTE dir=3Dltr=20
+style=3D"PADDING-LEFT: 5px; MARGIN-LEFT: 5px; BORDER-LEFT: #0000ff 2px =
+solid; MARGIN-RIGHT: 0px">
+  <DIV class=3DOutlookMessageHeader dir=3Dltr align=3Dleft><FONT =
+face=3DTahoma=20
+  size=3D2>-----Original Message-----<BR><B>From:</B>=20
+  linuxppc-embedded-bounces+stelios=3Dstelioscellar.com@ozlabs.org=20
+  =
+[mailto:linuxppc-embedded-bounces+stelios=3Dstelioscellar.com@ozlabs.org]=
+<B>On=20
+  Behalf Of </B>Frank Prepelica<BR><B>Sent:</B> Friday, June 01, 2007 =
+2:15=20
+  PM<BR><B>To:</B> linuxppc-embedded@ozlabs.org<BR><B>Subject:</B> =
+Kernel and=20
+  rootfs in ONE image?<BR><BR></FONT></DIV>
+  <DIV class=3DSection1>
+  <P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
+  style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">Hi=20
+  all,<o:p></o:p></SPAN></FONT></P>
+  <P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
+  style=3D"FONT-SIZE: 10pt; FONT-FAMILY: =
+Arial"><o:p>&nbsp;</o:p></SPAN></FONT></P>
+  <P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN lang=3DEN-GB=20
+  style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">in normal case you have =
+got a=20
+  kernel image and a rootfs image. Place<o:p></o:p></SPAN></FONT></P>
+  <P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN lang=3DEN-GB=20
+  style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">that images into flash =
+memory, set=20
+  correct bootargs and it should work.<o:p></o:p></SPAN></FONT></P>
+  <P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN lang=3DEN-GB=20
+  style=3D"FONT-SIZE: 10pt; FONT-FAMILY: =
+Arial"><o:p>&nbsp;</o:p></SPAN></FONT></P>
+  <P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN lang=3DEN-GB=20
+  style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">But, is it possible to =
+generate=20
+  one image which includes the linux kernel =
+<o:p></o:p></SPAN></FONT></P>
+  <P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN lang=3DEN-GB=20
+  style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">and a rootfs, place that =
+single=20
+  image into flash memory and it should also =
+work?<o:p></o:p></SPAN></FONT></P>
+  <P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN lang=3DEN-GB=20
+  style=3D"FONT-SIZE: 10pt; FONT-FAMILY: =
+Arial"><o:p>&nbsp;</o:p></SPAN></FONT></P>
+  <P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN lang=3DEN-GB=20
+  style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">Thanks in=20
+  advance!<o:p></o:p></SPAN></FONT></P>
+  <P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN lang=3DEN-GB=20
+  style=3D"FONT-SIZE: 10pt; FONT-FAMILY: =
+Arial"><o:p>&nbsp;</o:p></SPAN></FONT></P>
+  <P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN lang=3DEN-GB=20
+  style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">Beste=20
+  regrads<o:p></o:p></SPAN></FONT></P>
+  <P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN lang=3DEN-GB=20
+  style=3D"FONT-SIZE: 10pt; FONT-FAMILY: =
+Arial">Frank<o:p></o:p></SPAN></FONT></P></DIV></BLOCKQUOTE></BODY></HTML=
+>
 
-in arch/ppc/kernel/entry.S
-transfer_to_handler_cont:
-3:
-#if 1					/* this code block was added */
-         bl      emulate_iret
-         lwz     r9,_LINK(r1)		/* restore the link register */
-         mtlr    r9
-
-         lwz     r10,_MSR(r1)		/* may be changed during call */
-         FIX_SRR1(r10, r0)		/* this macro is empty for (440 GR) */
-#endif
-         mflr    r9
-         lwz     r11,0(r9)               /* virtual address of handler */
-         lwz     r9,4(r9)                /* where to go when done */
-         mtspr   SPRN_SRR0,r11
-         mtspr   SPRN_SRR1,r10
-         mtlr    r9
-         SYNC
-         RFI                             /* jump to handler, enable MMU */
-
-dissassembly of emulate_iret:
-
-c000688c <emulate_iret>:
-c000688c:       94 21 ff e0     stwu    r1,-32(r1)
-c0006890:       bf a1 00 14     stmw    r29,20(r1)
-c0006894:       3f a0 c0 2c     lis     r29,-16340
-c0006898:       81 3d 41 34     lwz     r9,16692(r29)
-c000689c:       7c 08 02 a6     mflr    r0
-c00068a0:       3c 60 c0 20     lis     r3,-16352
-c00068a4:       39 29 00 01     addi    r9,r9,1
-c00068a8:       38 63 97 f8     addi    r3,r3,-26632
-c00068ac:       90 01 00 24     stw     r0,36(r1)
-c00068b0:       91 3d 41 34     stw     r9,16692(r29)
-c00068b4:       48 01 9f cd     bl      c0020880 <printk>
-c00068b8:       81 5d 41 34     lwz     r10,16692(r29)
-c00068bc:       3d 60 c0 2c     lis     r11,-16340
-c00068c0:       38 0a 00 0a     addi    r0,r10,10
-c00068c4:       39 2b 41 24     addi    r9,r11,16676
-c00068c8:       90 09 00 04     stw     r0,4(r9)
-c00068cc:       80 01 00 24     lwz     r0,36(r1)
-c00068d0:       bb a1 00 14     lmw     r29,20(r1)
-c00068d4:       7c 08 03 a6     mtlr    r0
-c00068d8:       38 21 00 20     addi    r1,r1,32
-c00068dc:       91 4b 41 24     stw     r10,16676(r11)
-c00068e0:       4e 80 00 20     blr
-
-thx !
-hofrat
+------=_NextPart_000_01C8_01C7A651.ED1DBF60--
