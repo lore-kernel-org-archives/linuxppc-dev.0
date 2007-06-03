@@ -1,15 +1,13 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
-	[151.189.21.43])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1BD26DDE43
-	for <linuxppc-dev@ozlabs.org>; Sun,  3 Jun 2007 20:03:01 +1000 (EST)
-In-Reply-To: <1180861939.31677.15.camel@localhost.localdomain>
-References: <1180720112.14219.62.camel@ld0161-tx32>
-	<dfc15991e31bfc09389461dc443acd7c@kernel.crashing.org>
-	<1180734314.5674.49.camel@rhino>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 6B76DDDE20
+	for <linuxppc-dev@ozlabs.org>; Sun,  3 Jun 2007 20:10:59 +1000 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Sun, 3 Jun 2007 12:10:52 +0200
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
+Message-ID: <20070603101052.GA3313@iram.es>
+References: <1180734314.5674.49.camel@rhino>
 	<4fb92a9dfccf515bdc1522d08f10f823@kernel.crashing.org>
 	<20070602085359.GA10333@iram.es>
 	<3ebd6ca6877ea74925f066ff96ac81db@kernel.crashing.org>
@@ -19,14 +17,9 @@ References: <1180720112.14219.62.camel@ld0161-tx32>
 	<28e0600256815f93db45b2f4eb2d9df5@kernel.crashing.org>
 	<20070603083339.GB2157@iram.es>
 	<34eddd7ce58e7983017077454d592332@kernel.crashing.org>
-	<1180861939.31677.15.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <5b895c2df8d84d33ba229aeb965f5aa3@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
-Date: Sun, 3 Jun 2007 12:02:48 +0200
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <34eddd7ce58e7983017077454d592332@kernel.crashing.org>
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -37,43 +30,163 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> I have no idea what this whole 8259-ack thing is
->> so I cannot comment further.
->
+On Sun, Jun 03, 2007 at 10:57:59AM +0200, Segher Boessenkool wrote:
+> >>>>Oh what the hell, I'm too curious...  "pnpPNP,0" it is.
+> >>>>
+> >>>>>I believe that "8259" should appear somewhere because of the
+> >>>>>"8259-interrupt-acknowledge" property (defined in CHRP bindings)
+> >>>>>which you can have on the parent bridge to speed up interrupt
+> >>>>>vector acquisition.
+> >>>>
+> >>>>You're not CHRP so you have nothing to do with the CHRP
+> >>>>bindings...
+> >>>
+> >>>Still, you are close to CHRP
+> >>
+> >>Not at all, the rest of the device interrupt subsystem
+> >>is very different, too.
+> >
+> >Given how well you agree, I understand how other people
+> >might get a bit confused ;-)
+> 
+> Heh.  Let's look at it some other way: if you use
+> "chrp,iic", this node needs to be handled by either
+> CHRP platform code (which will not work, you aren't
+> CHRP), or by platform-specific code.  If you use the
+> generic "pnpPNP,0" name, it can (in theory) be handled
+> by architecture-neutral code, even.
+> 
 
-> When you get an IRQ on your main PIC (MPIC for example) which happens 
-> to
-> be the cascade to the 8259, you have two ways of retreiving the actual
-> 8259 interrupt source.
->
-> One is the "poll" method which goes read IOs on the 8259. The other one
-> is to generate a PCI interrupt acknowledge cycle on the bus that leads
-> to the 8259. If your bridges properly forward it all the way to the ISA
-> bridge, it should "mimminc" the x86 interrupt acknowledge and return 
-> the
-> interrupt number (an INTACK cycle on PCI is pretty much a read from a
-> broadcast address).
+Thanks for this explanation.
 
-Ah, that stuff.
+> For the foreseeable future (or perhaps forever) the
+> interrupt stuff will be set up from the platform
+> code, so there is no direct impact on Linux.  You
+> might want to support other OSes, or be more future-
+> proof, or generically want a cleaner device tree.
+> 
+> >This said, I'm looking at device trees right now, and I can understand
+> >that interrupt-parent of the 8259 is &mpic in mpc8641_hpcn.dts, but
+> >I don't understand at all why it is &pci1 on the mpc85??cds.dts.
+> 
+> Perhaps the 8259 IRQ output is routed to a PCI
+> interrupt.  If not, this is just plain wrong.
 
-> So on CHRP, that property in a PHB indicates, when possible, and 
-> address
-> you can ioremap and readb from to generate an INTACK cycle on that bus
-> and retreive the pending IRQ of any legacy PIC on that segment.
+Maybe, but it ultimately has to go the mpic, no?
+I can see how the cascade of interrupt parents and 
+other specifications could lead there.
 
-Right, so it is just misnamed (and belongs in the "reg"
-property for that specific PHB anyway).  It has nothing
-to do with 8259, it is part of the PCI spec.
+> 
+> >But the definition of the ISA bridge in these files is very strange to
+> >start with: I've never seen an ISA bridge with only an interrupt 
+> >controller
+> >on it, no interrupts are connected to it
+> 
+> Maybe that's why it works ;-)
 
-> In theory, in fact, MPIC itself, at least the PCI variant of it, is 
-> also
-> supposed to be able to respond to these rather than reading an MMIO
-> register (remember, MPIC was supposed to be useable on x86 too, though 
-> I
-> don't know if that was never actually implemented).
+That maybe the best explanation.
 
-OpenPIC was I think.  No idea if it ever actually got
-used anywhere though.
+> 
+> >and its reg property is
+> >almost certainly wrong.
+> 
+> <19000 0 0 0 0> could be right, that means device d#18
+> on PCI bus 1.  There is a missing bus #1 node in between
+> though.  And the unit address is @12 in that case,
+> not @19000 .
+> 
+> >Maybe it is an example of things that should
+> >not be done.
+> 
+> Maybe :-)
+> 
+> >>>and the CHRP bindings do apply :-)
+> >>
+> >>Nope.
+> >
+> >At least the 8259-interrupt-acknowledge property of the bus
+> >on which the ISA bridge is found should keep its name. It's what
+> >the kernel uses.
+> 
+> Only the CHRP Linux platform code should use that.
+> It's not necessarily a bad idea to define your
+> platform's binding to do the same, of course --
+> other platform's bindings do not apply to yours,
+> but there is no harm in creating a certain similarity.
+> 
+> I have no idea what this whole 8259-ack thing is
+> so I cannot comment further.
+
+It is a way to fetch the vector from the interrupt controller.
+Among all the types of cycles defined by PCI (configuration,
+I/O and memory spaces read and write), there is one which 
+is generated by the host bridge when an x86 processor 
+acknowledges an interrupt (it has changed with the APIC
+and IO-APIC where "A" stands for awkward IMO[1]).
+
+The sequence of events is the following:
+- an interrupt is raised
+- when switching to the interrupt handler, the
+  processor generates a special bus cycle
+- this is translated by the host bridge into
+  a PCI interrupt acknowledge cycle
+- one and only one agent on the bus behind the host bridge
+  (this cycle is not propagated by P2P bridges) answers
+  by placing a byte sized interrupt vector on the bus.
+- this vector is used by the processor to index into the 
+  interrupt descriptor table and starts execution wherever
+  it is told to go.
+
+Generating a pci interrupt acknowledge cycle is a faster 
+way to get at the vector than doing this explicitly in
+the controller: a simple byte fetch instead of 2 or
+4 I/O accesses guardered by a lock acquisition and
+release.
+
+If you need more details, ask me.
+
+Now a question: how would you describe the nvram and RTC
+on the PreP boards that I have?
+
+In the residual data I have:
+
+ISA Device, Slot 0, LogicalDev 0: IBM0008, SystemPeripheral, NVRAM, #-1, IndirectNVRAM
+  Device flags 2800: Integrated, Static
+  Packets describing allocated resources:
+    Variable (16 decoded bits) I/O port
+      from 0x0074 to 0x0074, alignment 1, 2 ports
+    Variable (16 decoded bits) I/O port
+      from 0x0077 to 0x0077, alignment 1, 1 ports
+  No packets describing possible resources.
+  No packets describing compatible resources.
+ISA Device, Slot 0, LogicalDev 0: PNP0B00, SystemPeripheral, RealTimeClock, #-1, interface 129
+  Device flags 2800: Integrated, Static
+  Packets describing allocated resources:
+    Variable (16 decoded bits) I/O port
+      from 0x0074 to 0x0074, alignment 1, 2 ports
+    Variable (16 decoded bits) I/O port
+      from 0x0077 to 0x0077, alignment 1, 1 ports
+    Chip identification: MOT3040
+    Small vendor item type 0x00, data (hex): 01 f8 1f 00 00 
+  No packets describing possible resources.
+  No packets describing compatible resources.
+
+It is the same chip that has the NVRAM and the RTC, only that 
+the last 8 bytes of the NVRAM change with time. I've not found
+the last "Small vendor item" described in any doc, but it looks
+like a byte of 1, followed by the offset of the RTC inside the 
+NVRAM in little-endian byte order.
+
+But essentially the problem is that I have two logically 
+different devices in the same chip. Of course the size of
+the nvram should be somewhere (8k-8, starting at 0).
 
 
-Segher
+	Gabriel
+
+
+[1] Read the last paragraph of http://lkml.org/lkml/2006/11/1/294, 
+and I believe that it is an understatement. There are also Linus'
+rants about handling of edge triggered interrupts in APIC: it's
+fairly easy to lose them, that's what cutting-edge (pun intended)
+innovation is :-)
