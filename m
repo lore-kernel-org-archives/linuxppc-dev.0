@@ -1,26 +1,26 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id 616D2DDE2B
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 04:20:27 +1000 (EST)
-From: Gabriel Paubert <paubert@iram.es>
-Date: Sun, 3 Jun 2007 20:20:21 +0200
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
-Message-ID: <20070603182020.GA10355@iram.es>
-References: <20070602195308.GA21618@iram.es>
-	<12ad593bd17f769e44f05bc24eac4d0a@kernel.crashing.org>
-	<1180828907.14025.37.camel@localhost.localdomain>
-	<28e0600256815f93db45b2f4eb2d9df5@kernel.crashing.org>
-	<20070603083339.GB2157@iram.es>
-	<34eddd7ce58e7983017077454d592332@kernel.crashing.org>
-	<20070603101052.GA3313@iram.es>
-	<ee4d3e25c4b6ede84483399249929632@kernel.crashing.org>
-	<20070603124357.GA6419@iram.es>
-	<3ffee021f3b721bde0253b1310d4958a@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3ffee021f3b721bde0253b1310d4958a@kernel.crashing.org>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-12.arcor-online.net (mail-in-12.arcor-online.net
+	[151.189.21.52])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 10AFFDDEC0
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 04:26:17 +1000 (EST)
+In-Reply-To: <46630256.8050909@ru.mvista.com>
+References: <7fc919fce0761f861be3069a853d3169@bga.com>
+	<1180769992.14025.1.camel@localhost.localdomain>
+	<4662E7EA.70506@ru.mvista.com>
+	<d067769912d2ed5c9e1b4770b77303dd@kernel.crashing.org>
+	<46630256.8050909@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <daa1b6f2e18f06f053d538d28d3c046a@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
+Date: Sun, 3 Jun 2007 20:25:50 +0200
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, linux-mtd@lists.infradead.org,
+	Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,95 +30,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Jun 03, 2007 at 04:42:38PM +0200, Segher Boessenkool wrote:
-> >>This is an IBM NVRAM thing -- write address to ISA I/O
-> >>0x74/0x75, read/write a byte from 0x76.
-> >
-> >Data is 0x77 actually. Port 0x76 systematically returns 0xff
-> >on this board (I have one at hand right now and am doing
-> >accesses with the firmware).
-> 
-> Oh okay, I don't know exactly what chip this is so
-> obviously my information isn't 100% ;-)
-> 
-> >>>ISA Device, Slot 0, LogicalDev 0: PNP0B00, SystemPeripheral,
-> >>>RealTimeClock, #-1, interface 129
-> >>> Device flags 2800: Integrated, Static
-> >>> Packets describing allocated resources:
-> >>>   Variable (16 decoded bits) I/O port
-> >>>     from 0x0074 to 0x0074, alignment 1, 2 ports
-> >>>   Variable (16 decoded bits) I/O port
-> >>>     from 0x0077 to 0x0077, alignment 1, 1 ports
-> >>>   Chip identification: MOT3040
-> >>>   Small vendor item type 0x00, data (hex): 01 f8 1f 00 00
-> >>
-> >>The I/O port numbers here are wrong.
-> >
-> >No they aren't. It uses exactly the same port as for the NVRAM.
-> 
-> Then its claim to be PNP 0b00 is incorrect.
-> 
-> >Otherwise the "feature" of this RTC is that its interrupt
-> >is not connected.
-> 
-> Dunno what you mean here?
+>> Which Linux driver to use is not something that should
+>> be (directly) communicated in a device tree -- even if
+>
+>    Bah... what's "name" and "compatible" properties are for then.
 
-On a standard PC, the RTC is connected to interrupt
-8 of the 8259 pair. On these boards the interrupt output
-of the RTC is not connected (there is no interrupt
-in the list of properties). Interrupt 8 is connected
-to a front panel button labeled "ABT".
+They communicate to the kernel what exactly a certain device
+is.  Nothing more, nothing less.  The kernel is supposed to
+use this information to select what device driver to use for
+it.  Any extra information the kernel might need/want to drive
+the device is described in other properties (or, in some cases,
+in different device nodes, even).
 
-> 
-> >>rtc@i70 {
-> >>	device_type = "rtc";
-> >>	reg = <1 70 2>;
-> >>	compatible = "pnpPNP,b00";
-> >>}
-> >>
-> >
-> >Nope, there is nothing at 0x70-0x71 (read returns 0xff). The chip
-> >is a 48T59.
-> 
-> [Not so easy to find a datasheet for that -- STM M48T59Y
-> is what I found in the end]
+> Nobody's talking about the direct match but making the task of 
+> selecting a proper driver more complex by specifying the details that 
+> don't help (if not hinder) the correct selection is certainly not a 
+> way to go.
 
-It is the correct one.
+Nonsense.  If the kernel doesn't care about certain details,
+it can just ignore them.
 
-> 
-> This chip doesn't sit on any I/O port range, it is 8kB
-> of direct-mapped standard SRAM stuff.  There must be
-> some latches or such on your board, or perhaps this is
-> driven via some superio chip or something like that.
+>> -- the device tree on your board doesn't necessarily
+>> change when your kernel version does.
+>
+>    Well, I'm not anticipating any changes either in this case...
 
-Indeed, the latches are a bit hard to find (they are inside a 
-Lattice chip), and the data byte is directly connected to the 
-ISA bus of the PIB (W83C553 / W53C554).
+That's a problem then.
 
-On some variants of the board, there is not even a superIO chip
-(only a discrete UART, TL16C550 or similar).
+>>> the CFI/JEDEC interface then can be deduced by probing
+>
+>> Most of the time, sure.  Not always.
+>
+>    That's the way the cookie crumbles in Linux MTD for now. It's 
+> *always* detecting this by probing -- you only can say what [not] to 
+> probe.
 
-> 
-> >Actually I wonder
-> >whether using PNP0B00 is correct in the residual data here.
-> 
-> It's not correct at all, no.
+So go fix that :-)
 
-Ok. I don't know well the PNP spec. I don't really remember
-also what the chip identification means in the residual data,
-but it is always MOT3040. OTOH, there is a but in more
-recent versions, that claims that the NVRAM data size is
-32768 and not 8192...
+>> Who is talking about "probe-type"?  We are talking about "compatible".
+>
+>    See my other mail where I've told why I don't consider your example 
+> of this prop valid...
 
-> 
-> Not sure how best to describe this thing -- one master
-> node with a kid for both nvram and rtc; one node; or
-> perhaps one node for rtc, with a child node for nvram.
-> 
+I haven't read that yet, but I can tell you now that I'm already
+very sceptical about the arguments.
 
-Hey, at least you now understand why I was asking the question :-)
-This is the only device on these boards that really causes
-me trouble, for all the others I think I can get a reasonable
-description in the device tree. 
 
-	Gabriel
+Segher
