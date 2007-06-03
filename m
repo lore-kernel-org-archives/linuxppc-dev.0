@@ -1,17 +1,32 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 24A9BDDE49
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 03:27:40 +1000 (EST)
-Message-ID: <4662FA67.3020107@ru.mvista.com>
-Date: Sun, 03 Jun 2007 21:29:11 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
-References: <7fc919fce0761f861be3069a853d3169@bga.com>
-In-Reply-To: <7fc919fce0761f861be3069a853d3169@bga.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-11.arcor-online.net (mail-in-11.arcor-online.net
+	[151.189.21.51])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C5A62DDEC5
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 03:27:46 +1000 (EST)
+In-Reply-To: <E1HurPt-0002EP-It@jdl.com>
+References: <1180720112.14219.62.camel@ld0161-tx32>
+	<dfc15991e31bfc09389461dc443acd7c@kernel.crashing.org>
+	<1180734314.5674.49.camel@rhino>
+	<4fb92a9dfccf515bdc1522d08f10f823@kernel.crashing.org>
+	<20070602085359.GA10333@iram.es>
+	<3ebd6ca6877ea74925f066ff96ac81db@kernel.crashing.org>
+	<20070602195308.GA21618@iram.es>
+	<12ad593bd17f769e44f05bc24eac4d0a@kernel.crashing.org>
+	<1180828907.14025.37.camel@localhost.localdomain>
+	<28e0600256815f93db45b2f4eb2d9df5@kernel.crashing.org>
+	<20070603083339.GB2157@iram.es> <E1HurPt-0002EP-It@jdl.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <e72c7789d673e340d4a7feed22e535de@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts
+	file.
+Date: Sun, 3 Jun 2007 19:27:12 +0200
+To: Jon Loeliger <jdl@jdl.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,61 +36,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+> I think this is an example of Early Days Misunderstanding Creep.
 
-Milton Miller wrote:
+Is that the official name?  :-)
 
->>Find the "rom" device for the prpmc2800 and create a device for it.
->>The device will be picked up by the code in 
->>drivers/mtd/maps/physmap_of.c
->>and will setup MTD on that FLASH device.
+> It was likely one of the very first attempts to write the file for
+> any FSL embedded part, and as such, it was probably not so good.
 
-> ...
+But it also probably worked just fine, given all the
+big fat workarounds in the Linux tree parsing code,
+which are applied on *all* boards -- this will have
+to change sooner or later, just like you don't run
+all PCI quirks on all boards: it simply doesn't scale
+and the side effects make everything impossible to
+understand.  In almost all cases, simply fixing the
+device tree (Linux' runtime copy, anyway) in some
+pre-processing pass is conceptually a much simpler
+solution as well.
 
->> /*
->>+ * Register a platform device for MTD.
->>+ */
->>+static int __init prpmc2800_register_mtd(void)
->>+{
->>+       struct device_node *np;
->>+
->>+       np = of_find_compatible_node(NULL, "rom", "direct-mapped");
->>+       of_platform_device_create(np, np->name, NULL);
->>+}
->>+arch_initcall(prpmc2800_register_mtd);
+> Likely, it could use some cleanup.  Patches and suggestions welcome.
 
-> I think "direct-mapped" as compatible is a bit too broad or vague.
+I rather just wait until things break and then
+deprecate (and later remove) support for those
+boards.  Unless the respective maintainers for
+those boards fix things up, all is fine then
+of course ;-)
 
-    It's actually not -- it means simple 1:1 address mapping (w/o explicit 
-byte-swapping and such).
+Slightly more seriously -- since there are so
+many DTS files, and their number grows real fast;
+and since they are non-modular, and mostly copy-
+and-paste; most fixes have to be made to lots
+of separate DTS files.  And that is something
+no one can do, since no one can *test* those fixes,
+since you need the hardware to do that.
 
-> The compatible is supposed to be useable to find and match a driver
-> without regard to the name of the node.  Perhaps direct-mapped-rom?
-> (as opossed to a direct-mapped-ram, sram, or some width flash bank).
 
-    Note that we're matching by both "device_type" and "compatible".
-
-> Actually, looking back at your device tree {1], your list several
-> properties for flash, including bank-width and partition names.
-> Perhaps first compatible should be direct-mapped-partitioned-flash,
-> direct-mapped-partitioned-rom, direct-mapped-rom  (to me a
-> direct-mapped-rom driver would expose one section of address space
-> read-only).
-
-    This would serve no purpose, as the driver that would catches all these is 
-signle one, drivers/mtd/maps/physmap_of.c...
-
-> I'm assuming that your driver for this "direct-mapped"
-> device will look at these properties from the of device node and
-> call the mtd layer somewhat directly with their contents.
-
-    Yeah, it does.
-
-> [1] http://ozlabs.org/pipermail/linuxppc-dev/2007-May/035858.html
-
-> milton
-
-> PS: I know you've posted this a few times.  I'm just behind in
-> my reading and  replying :-).
-
-WBR, Sergei
+Segher
