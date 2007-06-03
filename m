@@ -1,18 +1,21 @@
-Return-Path: <rpjday@mindspring.com>
-Received: from rubicon.netdirect.ca (nic.NetDirect.CA [216.16.235.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B9847DDE29
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 03:58:39 +1000 (EST)
-Date: Sun, 3 Jun 2007 13:52:02 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: bzolnier@gmail.com
-Subject: [PATCH] IDE: Remove remnants related to dead BLK_DEV_MAC_MEDIABAY
-	CONFIG variable.
-Message-ID: <Pine.LNX.4.64.0706031348550.24843@localhost.localdomain>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 5E9BFDDE27
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 04:01:31 +1000 (EST)
+Message-ID: <46630256.8050909@ru.mvista.com>
+Date: Sun, 03 Jun 2007 22:03:02 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux PPC Mailing List <linuxppc-dev@ozlabs.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
+References: <7fc919fce0761f861be3069a853d3169@bga.com>
+	<1180769992.14025.1.camel@localhost.localdomain>
+	<4662E7EA.70506@ru.mvista.com>
+	<d067769912d2ed5c9e1b4770b77303dd@kernel.crashing.org>
+In-Reply-To: <d067769912d2ed5c9e1b4770b77303dd@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, linux-mtd@lists.infradead.org,
+	Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,51 +25,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hello.
 
-Remove the two snippets of code conditional on the non-existent CONFIG
-variable CONFIG_BLK_DEV_MAC_MEDIABAY.
+Segher Boessenkool wrote:
+>>> If it's a flash, compatible should be the chip type, and maybe as a
+>>> second entry, what type of flash protocol (amd, intel, cfi, ...) it's
+>>> compatible.
+>>     As I've already (and repatedly) stated before,
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> And you repeatedly got answers too, yet you choose
+> to rehash this whole discussion again.
 
----
+    Not I have started it. And I have my reasons, too. :-)
 
-diff --git a/drivers/ide/legacy/macide.c b/drivers/ide/legacy/macide.c
-index c211fc7..b557c45 100644
---- a/drivers/ide/legacy/macide.c
-+++ b/drivers/ide/legacy/macide.c
-@@ -77,15 +77,6 @@ int macide_ack_intr(ide_hwif_t* hwif)
- 	return 0;
- }
+>> this gets you *nothing* WRT
+>> selecting the proper driver in the current Linux MTD subsystem.
 
--#ifdef CONFIG_BLK_DEV_MAC_MEDIABAY
--static void macide_mediabay_interrupt(int irq, void *dev_id)
--{
--	int state = baboon->mb_status & 0x04;
--
--	printk(KERN_INFO "macide: media bay %s detected\n", state? "removal":"insertion");
--}
--#endif
--
- /*
-  * Probe for a Macintosh IDE interface
-  */
-@@ -128,11 +119,6 @@ void macide_init(void)
- 			ide_drive_t *drive = &ide_hwifs[index].drives[0];
- 			drive->capacity64 = drive->cyl*drive->head*drive->sect;
+> Which Linux driver to use is not something that should
+> be (directly) communicated in a device tree -- even if
 
--#ifdef CONFIG_BLK_DEV_MAC_MEDIABAY
--			request_irq(IRQ_BABOON_2, macide_mediabay_interrupt,
--					IRQ_FLG_FAST, "mediabay",
--					macide_mediabay_interrupt);
--#endif
- 		}
- 		break;
+    Bah... what's "name" and "compatible" properties are for then. Nobody's 
+talking about the direct match but making the task of selecting a proper 
+driver more complex by specifying the details that don't help (if not hinder) 
+the correct selection is certainly not a way to go.
 
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+> you take the position the device tree is a nice big
+> configuration file for Linux, what if a new Linux flash
+> subsystem shows up (or even simply a driver got renamed,
+> etc.)
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+    There is no direct match in *this* case (for an example of such, refer to 
+FSL "gianfar" nodes ;-).
+
+> -- the device tree on your board doesn't necessarily
+> change when your kernel version does.
+
+    Well, I'm not anticipating any changes either in this case...
+
+>> What it
+>> actually *needs* to know is flash mapping information,
+
+> It needs to know what kind of flash it is, and how it
+> is connected -- i.e., it needs to describe the hardware.
+> How Linux then decides to use it is its own game, but
+> at least the device tree puts all the information it
+> could possibly need out there.
+
+>> the CFI/JEDEC interface then can be deduced by probing
+
+> Most of the time, sure.  Not always.
+
+    That's the way the cookie crumbles in Linux MTD for now. It's *always* 
+detecting this by probing -- you only can say what [not] to probe.
+
+>> -- so, this property ("ptobe-type"), although specified in 
+>> Documentation/powerpc/booting-without-of.txt, is optional.
+
+> Who is talking about "probe-type"?  We are talking about "compatible". 
+
+    See my other mail where I've told why I don't consider your example of 
+this prop valid...
+
+> Segher
+
+WBR, Sergei
