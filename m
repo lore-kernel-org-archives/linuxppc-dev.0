@@ -1,18 +1,17 @@
 Return-Path: <sshtylyov@ru.mvista.com>
 Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 5E9BFDDE27
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 04:01:31 +1000 (EST)
-Message-ID: <46630256.8050909@ru.mvista.com>
-Date: Sun, 03 Jun 2007 22:03:02 +0400
+	by ozlabs.org (Postfix) with ESMTP id 448C3DDE2B
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 04:17:23 +1000 (EST)
+Message-ID: <4663060C.2020906@ru.mvista.com>
+Date: Sun, 03 Jun 2007 22:18:52 +0400
 From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
 To: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
 References: <7fc919fce0761f861be3069a853d3169@bga.com>
-	<1180769992.14025.1.camel@localhost.localdomain>
-	<4662E7EA.70506@ru.mvista.com>
-	<d067769912d2ed5c9e1b4770b77303dd@kernel.crashing.org>
-In-Reply-To: <d067769912d2ed5c9e1b4770b77303dd@kernel.crashing.org>
+	<4662FA67.3020107@ru.mvista.com>
+	<a5dde31321a50ed198cf4fc199e4af9c@kernel.crashing.org>
+In-Reply-To: <a5dde31321a50ed198cf4fc199e4af9c@kernel.crashing.org>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: ppcdev <linuxppc-dev@ozlabs.org>, linux-mtd@lists.infradead.org,
 	Milton Miller <miltonm@bga.com>
@@ -25,66 +24,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
-
 Segher Boessenkool wrote:
->>> If it's a flash, compatible should be the chip type, and maybe as a
->>> second entry, what type of flash protocol (amd, intel, cfi, ...) it's
->>> compatible.
->>     As I've already (and repatedly) stated before,
 
-> And you repeatedly got answers too, yet you choose
-> to rehash this whole discussion again.
+>>> I think "direct-mapped" as compatible is a bit too broad or vague.
 
-    Not I have started it. And I have my reasons, too. :-)
+>>     It's actually not -- it means simple 1:1 address mapping (w/o 
+>> explicit
+>> byte-swapping and such).
 
->> this gets you *nothing* WRT
->> selecting the proper driver in the current Linux MTD subsystem.
+> Which has nothing to do with "compatible"; instead,
+> it is implied by the parent node have a "ranges"
 
-> Which Linux driver to use is not something that should
-> be (directly) communicated in a device tree -- even if
+    No! It doesn't have anything to do with "ranges" of parent (don't even 
+know why it would). :-O
 
-    Bah... what's "name" and "compatible" properties are for then. Nobody's 
-talking about the direct match but making the task of selecting a proper 
-driver more complex by specifying the details that don't help (if not hinder) 
-the correct selection is certainly not a way to go.
+> property.  Or you can put some other property in
+> the flash node for all I care, if that seems
+> necessary for certain cases.
 
-> you take the position the device tree is a nice big
-> configuration file for Linux, what if a new Linux flash
-> subsystem shows up (or even simply a driver got renamed,
-> etc.)
+    Erm... it's *certainly* necessary to mark this somewhere.
 
-    There is no direct match in *this* case (for an example of such, refer to 
-FSL "gianfar" nodes ;-).
+>>> The compatible is supposed to be useable to find and match a driver
+>>> without regard to the name of the node.  Perhaps direct-mapped-rom?
 
-> -- the device tree on your board doesn't necessarily
-> change when your kernel version does.
+    That really depends on whether we choose to follow the Generic Names spec.
+Even if we do, it does *not* preclude OS from using both props for the driver 
+selection.
 
-    Well, I'm not anticipating any changes either in this case...
+>>> (as opossed to a direct-mapped-ram, sram, or some width flash bank).
 
->> What it
->> actually *needs* to know is flash mapping information,
+>>     Note that we're matching by both "device_type" and "compatible".
 
-> It needs to know what kind of flash it is, and how it
-> is connected -- i.e., it needs to describe the hardware.
-> How Linux then decides to use it is its own game, but
-> at least the device tree puts all the information it
-> could possibly need out there.
+> Which is wrong.
 
->> the CFI/JEDEC interface then can be deduced by probing
+    Why? And why then it's allowed to match by "device_type"? And why you 
+haven't complained at MPC5200 IDE driver which does the same (well, maybe you 
+have :-) or at PowerMac IDE driver which matches wither by "name" or 
+"device_type"? Well, quite a lot of drivers are doing this...
 
-> Most of the time, sure.  Not always.
+>>     This would serve no purpose, as the driver that would catches all 
+>> these is signle one, drivers/mtd/maps/physmap_of.c...
 
-    That's the way the cookie crumbles in Linux MTD for now. It's *always* 
-detecting this by probing -- you only can say what [not] to probe.
+> With the current kernel version, perhaps.  Did you check
+> out 2.6.28?  Does it work with that?
 
->> -- so, this property ("ptobe-type"), although specified in 
->> Documentation/powerpc/booting-without-of.txt, is optional.
-
-> Who is talking about "probe-type"?  We are talking about "compatible". 
-
-    See my other mail where I've told why I don't consider your example of 
-this prop valid...
+    For the simply mapped flashes, physmap_of will suffice, for more complex 
+cases, other driver will be needed. If you're hinting at the possibility that 
+MTD subsys will be substantially reworked -- I don't find that likely. If it 
+will -- well, bad luck. :-)
+    Anyway, reasonable suggestions on how to make MTD nodes more viable are 
+always welcome. I just haven't seen reasonable enough yet. ;-)
 
 > Segher
 
