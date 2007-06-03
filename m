@@ -1,25 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-12.arcor-online.net (mail-in-12.arcor-online.net
-	[151.189.21.52])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 10AFFDDEC0
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 04:26:17 +1000 (EST)
-In-Reply-To: <46630256.8050909@ru.mvista.com>
-References: <7fc919fce0761f861be3069a853d3169@bga.com>
-	<1180769992.14025.1.camel@localhost.localdomain>
-	<4662E7EA.70506@ru.mvista.com>
-	<d067769912d2ed5c9e1b4770b77303dd@kernel.crashing.org>
-	<46630256.8050909@ru.mvista.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <daa1b6f2e18f06f053d538d28d3c046a@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 73F58DDEDF
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 04:29:46 +1000 (EST)
+Message-ID: <466308F4.8050004@ru.mvista.com>
+Date: Sun, 03 Jun 2007 22:31:16 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
-Date: Sun, 3 Jun 2007 20:25:50 +0200
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, linux-mtd@lists.infradead.org,
+References: <7fc919fce0761f861be3069a853d3169@bga.com>
+	<bd6ef296692e8cfb81118f2dc85189a5@kernel.crashing.org>
+	<4662EAA9.70104@ru.mvista.com>
+	<e4197fd2753f2b4d548d5dde9e3fd1d3@kernel.crashing.org>
+In-Reply-To: <e4197fd2753f2b4d548d5dde9e3fd1d3@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
 	Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -30,50 +25,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Which Linux driver to use is not something that should
->> be (directly) communicated in a device tree -- even if
->
->    Bah... what's "name" and "compatible" properties are for then.
+Segher Boessenkool wrote:
+>>>> I think "direct-mapped" as compatible is a bit too broad or vague.
 
-They communicate to the kernel what exactly a certain device
-is.  Nothing more, nothing less.  The kernel is supposed to
-use this information to select what device driver to use for
-it.  Any extra information the kernel might need/want to drive
-the device is described in other properties (or, in some cases,
-in different device nodes, even).
+>>>> The compatible is supposed to be useable to find and match a driver
+>>>> without regard to the name of the node.  Perhaps direct-mapped-rom?
+>>>> (as opossed to a direct-mapped-ram, sram, or some width flash bank).
 
-> Nobody's talking about the direct match but making the task of 
-> selecting a proper driver more complex by specifying the details that 
-> don't help (if not hinder) the correct selection is certainly not a 
-> way to go.
+>>> "actual-name-of-the-chip", "cfi-command-set-#", "cfi" seems
+>>> like a good start.
 
-Nonsense.  If the kernel doesn't care about certain details,
-it can just ignore them.
+>>    No, it doesn't -- since that info is almost *absolutely* useless 
+>> (the only exception is "cfi") in the context of Linux MTD subsys.
+>>    Please, try to understand that knowing that chip is CFI compatible 
+>> in itself doesn't yet guarantee that you can access the chip -- it all 
+>> depends on its mapping to the real physical address range, therefore 
+>> this group IMO cannot even constitute a valid "compatible" property.
 
->> -- the device tree on your board doesn't necessarily
->> change when your kernel version does.
->
->    Well, I'm not anticipating any changes either in this case...
+> You obviously completely misunderstand the semantics
+> of the "compatible" property.
 
-That's a problem then.
+    Oh well, on the chip level, your "compatible" prop would be correct. But 
+that only means we need another level representating the flash mapping for 
+which the chip node would be a child... That seems a viable representation but 
+it would certainly complicate things Linux-wise.
 
->>> the CFI/JEDEC interface then can be deduced by probing
->
->> Most of the time, sure.  Not always.
->
->    That's the way the cookie crumbles in Linux MTD for now. It's 
-> *always* detecting this by probing -- you only can say what [not] to 
-> probe.
+>>> People here tried to create a generic "flash" device binding.
+>>> It didn't work out (part of the problem is its scope was way
+>>> too big; another problem is it was too Linux-mtd specific).
 
-So go fix that :-)
+>>    And that's why its worked, and the abstaractly "correct" scheme 
+>> wouldn't have.
 
->> Who is talking about "probe-type"?  We are talking about "compatible".
->
->    See my other mail where I've told why I don't consider your example 
-> of this prop valid...
+> Ha.  Ha.  Ha.  Great joke :-)
 
-I haven't read that yet, but I can tell you now that I'm already
-very sceptical about the arguments.
+/me bows
 
+>>> Now since the probing is done in platform-specific code here,
+>>> you don't *need* an "official" binding -- just get your
+>>> "compatible" prop right so you can correctly probe the device
+>>> node, and then maybe add some node-specific properties if you
+>>> need them.
 
-Segher
+>>    I wonder what are you trying to get us to do: directly call stuff 
+>> from drivers/mtd/ or what (that's especially starnge because we now 
+>> have an OF driver for simply mapped NOR flashes)?
+
+> I am pointing out how to do a flash node in a platform-
+> specific way, in platform-specific code, since there is
+
+    I don't thing that confining the "bloody" MTD details into platform code 
+would be an acceptable solution.
+
+> no working "generic" way yet (and very likely there will
+> never be).
+
+    There is something working, at least Linux-generic.
+    However, the MTD device node was certainly misplaced my me, and probably 
+oversimplified too -- that's the cost one usually pays when he has to think 
+something up and to fit it into existing scheme in a limited time. :-<
+
+> Segher
+
+WBR, Sergei
