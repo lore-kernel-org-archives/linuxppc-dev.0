@@ -1,21 +1,26 @@
-Return-Path: <rpjday@mindspring.com>
-Received: from rubicon.netdirect.ca (nic.NetDirect.CA [216.16.235.2])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-01.arcor-online.net (mail-in-15.arcor-online.net
+	[151.189.21.55])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 527EDDDF19
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 04:43:42 +1000 (EST)
-Date: Sun, 3 Jun 2007 14:41:58 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Brad Boyer <flar@allandria.com>
-Subject: Re: [PATCH] IDE: Remove remnants related to dead BLK_DEV_MAC_MEDIABAY
-	CONFIG variable.
-In-Reply-To: <20070603172829.GA25404@cynthia.pants.nu>
-Message-ID: <Pine.LNX.4.64.0706031441360.25535@localhost.localdomain>
-References: <Pine.LNX.4.64.0706031348550.24843@localhost.localdomain>
-	<20070603172829.GA25404@cynthia.pants.nu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux PPC Mailing List <linuxppc-dev@ozlabs.org>, bzolnier@gmail.com
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5BD5FDDF55
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 04:45:01 +1000 (EST)
+In-Reply-To: <466308F4.8050004@ru.mvista.com>
+References: <7fc919fce0761f861be3069a853d3169@bga.com>
+	<bd6ef296692e8cfb81118f2dc85189a5@kernel.crashing.org>
+	<4662EAA9.70104@ru.mvista.com>
+	<e4197fd2753f2b4d548d5dde9e3fd1d3@kernel.crashing.org>
+	<466308F4.8050004@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <8ac5664208e0f59329b62ac2138bbc8c@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
+Date: Sun, 3 Jun 2007 20:44:49 +0200
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +30,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 3 Jun 2007, Brad Boyer wrote:
-
-> On Sun, Jun 03, 2007 at 01:52:02PM -0400, Robert P. J. Day wrote:
-> > Remove the two snippets of code conditional on the non-existent CONFIG
-> > variable CONFIG_BLK_DEV_MAC_MEDIABAY.
+>> You obviously completely misunderstand the semantics
+>> of the "compatible" property.
 >
-> This is the wrong list. The macide driver is for m68k Macintoshes,
-> so you really need to send this to the linux-m68k list. It looks
-> like this was originally a copy of the IDE driver for ppc based
-> Macintoshes and this particular feature was never finished.
->
-> Just in case you don't know where to find the linux-m68k mailing
-> list, it is hosted on vger.kernel.org.
+>    Oh well, on the chip level, your "compatible" prop would be correct.
 
-ok, i'll do that, thanks.
+This has nothing to do with a "chip level", it is plain and
+simply the most basic device tree stuff.
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+[rest snipped]
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+
+Segher
