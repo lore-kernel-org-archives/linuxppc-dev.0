@@ -1,20 +1,26 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 448C3DDE2B
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 04:17:23 +1000 (EST)
-Message-ID: <4663060C.2020906@ru.mvista.com>
-Date: Sun, 03 Jun 2007 22:18:52 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 616D2DDE2B
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 04:20:27 +1000 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Sun, 3 Jun 2007 20:20:21 +0200
 To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
-References: <7fc919fce0761f861be3069a853d3169@bga.com>
-	<4662FA67.3020107@ru.mvista.com>
-	<a5dde31321a50ed198cf4fc199e4af9c@kernel.crashing.org>
-In-Reply-To: <a5dde31321a50ed198cf4fc199e4af9c@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, linux-mtd@lists.infradead.org,
-	Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
+Message-ID: <20070603182020.GA10355@iram.es>
+References: <20070602195308.GA21618@iram.es>
+	<12ad593bd17f769e44f05bc24eac4d0a@kernel.crashing.org>
+	<1180828907.14025.37.camel@localhost.localdomain>
+	<28e0600256815f93db45b2f4eb2d9df5@kernel.crashing.org>
+	<20070603083339.GB2157@iram.es>
+	<34eddd7ce58e7983017077454d592332@kernel.crashing.org>
+	<20070603101052.GA3313@iram.es>
+	<ee4d3e25c4b6ede84483399249929632@kernel.crashing.org>
+	<20070603124357.GA6419@iram.es>
+	<3ffee021f3b721bde0253b1310d4958a@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3ffee021f3b721bde0253b1310d4958a@kernel.crashing.org>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,57 +30,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
+On Sun, Jun 03, 2007 at 04:42:38PM +0200, Segher Boessenkool wrote:
+> >>This is an IBM NVRAM thing -- write address to ISA I/O
+> >>0x74/0x75, read/write a byte from 0x76.
+> >
+> >Data is 0x77 actually. Port 0x76 systematically returns 0xff
+> >on this board (I have one at hand right now and am doing
+> >accesses with the firmware).
+> 
+> Oh okay, I don't know exactly what chip this is so
+> obviously my information isn't 100% ;-)
+> 
+> >>>ISA Device, Slot 0, LogicalDev 0: PNP0B00, SystemPeripheral,
+> >>>RealTimeClock, #-1, interface 129
+> >>> Device flags 2800: Integrated, Static
+> >>> Packets describing allocated resources:
+> >>>   Variable (16 decoded bits) I/O port
+> >>>     from 0x0074 to 0x0074, alignment 1, 2 ports
+> >>>   Variable (16 decoded bits) I/O port
+> >>>     from 0x0077 to 0x0077, alignment 1, 1 ports
+> >>>   Chip identification: MOT3040
+> >>>   Small vendor item type 0x00, data (hex): 01 f8 1f 00 00
+> >>
+> >>The I/O port numbers here are wrong.
+> >
+> >No they aren't. It uses exactly the same port as for the NVRAM.
+> 
+> Then its claim to be PNP 0b00 is incorrect.
+> 
+> >Otherwise the "feature" of this RTC is that its interrupt
+> >is not connected.
+> 
+> Dunno what you mean here?
 
->>> I think "direct-mapped" as compatible is a bit too broad or vague.
+On a standard PC, the RTC is connected to interrupt
+8 of the 8259 pair. On these boards the interrupt output
+of the RTC is not connected (there is no interrupt
+in the list of properties). Interrupt 8 is connected
+to a front panel button labeled "ABT".
 
->>     It's actually not -- it means simple 1:1 address mapping (w/o 
->> explicit
->> byte-swapping and such).
+> 
+> >>rtc@i70 {
+> >>	device_type = "rtc";
+> >>	reg = <1 70 2>;
+> >>	compatible = "pnpPNP,b00";
+> >>}
+> >>
+> >
+> >Nope, there is nothing at 0x70-0x71 (read returns 0xff). The chip
+> >is a 48T59.
+> 
+> [Not so easy to find a datasheet for that -- STM M48T59Y
+> is what I found in the end]
 
-> Which has nothing to do with "compatible"; instead,
-> it is implied by the parent node have a "ranges"
+It is the correct one.
 
-    No! It doesn't have anything to do with "ranges" of parent (don't even 
-know why it would). :-O
+> 
+> This chip doesn't sit on any I/O port range, it is 8kB
+> of direct-mapped standard SRAM stuff.  There must be
+> some latches or such on your board, or perhaps this is
+> driven via some superio chip or something like that.
 
-> property.  Or you can put some other property in
-> the flash node for all I care, if that seems
-> necessary for certain cases.
+Indeed, the latches are a bit hard to find (they are inside a 
+Lattice chip), and the data byte is directly connected to the 
+ISA bus of the PIB (W83C553 / W53C554).
 
-    Erm... it's *certainly* necessary to mark this somewhere.
+On some variants of the board, there is not even a superIO chip
+(only a discrete UART, TL16C550 or similar).
 
->>> The compatible is supposed to be useable to find and match a driver
->>> without regard to the name of the node.  Perhaps direct-mapped-rom?
+> 
+> >Actually I wonder
+> >whether using PNP0B00 is correct in the residual data here.
+> 
+> It's not correct at all, no.
 
-    That really depends on whether we choose to follow the Generic Names spec.
-Even if we do, it does *not* preclude OS from using both props for the driver 
-selection.
+Ok. I don't know well the PNP spec. I don't really remember
+also what the chip identification means in the residual data,
+but it is always MOT3040. OTOH, there is a but in more
+recent versions, that claims that the NVRAM data size is
+32768 and not 8192...
 
->>> (as opossed to a direct-mapped-ram, sram, or some width flash bank).
+> 
+> Not sure how best to describe this thing -- one master
+> node with a kid for both nvram and rtc; one node; or
+> perhaps one node for rtc, with a child node for nvram.
+> 
 
->>     Note that we're matching by both "device_type" and "compatible".
+Hey, at least you now understand why I was asking the question :-)
+This is the only device on these boards that really causes
+me trouble, for all the others I think I can get a reasonable
+description in the device tree. 
 
-> Which is wrong.
-
-    Why? And why then it's allowed to match by "device_type"? And why you 
-haven't complained at MPC5200 IDE driver which does the same (well, maybe you 
-have :-) or at PowerMac IDE driver which matches wither by "name" or 
-"device_type"? Well, quite a lot of drivers are doing this...
-
->>     This would serve no purpose, as the driver that would catches all 
->> these is signle one, drivers/mtd/maps/physmap_of.c...
-
-> With the current kernel version, perhaps.  Did you check
-> out 2.6.28?  Does it work with that?
-
-    For the simply mapped flashes, physmap_of will suffice, for more complex 
-cases, other driver will be needed. If you're hinting at the possibility that 
-MTD subsys will be substantially reworked -- I don't find that likely. If it 
-will -- well, bad luck. :-)
-    Anyway, reasonable suggestions on how to make MTD nodes more viable are 
-always welcome. I just haven't seen reasonable enough yet. ;-)
-
-> Segher
-
-WBR, Sergei
+	Gabriel
