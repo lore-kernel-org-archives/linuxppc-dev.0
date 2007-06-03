@@ -1,25 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B8A72DDECD
-	for <linuxppc-dev@ozlabs.org>; Sun,  3 Jun 2007 10:01:55 +1000 (EST)
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 14616DDE39
+	for <linuxppc-dev@ozlabs.org>; Sun,  3 Jun 2007 10:13:29 +1000 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Sun, 3 Jun 2007 02:13:23 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <12ad593bd17f769e44f05bc24eac4d0a@kernel.crashing.org>
+Message-ID: <20070603001323.GA25653@iram.es>
 References: <1180720112.14219.62.camel@ld0161-tx32>
-	<dfc15991e31bfc09389461dc443acd7c@kernel.crashing.org>
-	<1180734314.5674.49.camel@rhino>
-	<4fb92a9dfccf515bdc1522d08f10f823@kernel.crashing.org>
-	<20070602085359.GA10333@iram.es>
-	<3ebd6ca6877ea74925f066ff96ac81db@kernel.crashing.org>
-	<20070602195308.GA21618@iram.es>
-	<12ad593bd17f769e44f05bc24eac4d0a@kernel.crashing.org>
-Content-Type: text/plain
-Date: Sun, 03 Jun 2007 10:01:47 +1000
-Message-Id: <1180828907.14025.37.camel@localhost.localdomain>
-Mime-Version: 1.0
+	<1180828253.14025.22.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1180828253.14025.22.camel@localhost.localdomain>
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -30,21 +22,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2007-06-02 at 22:23 +0200, Segher Boessenkool wrote:
+On Sun, Jun 03, 2007 at 09:50:53AM +1000, Benjamin Herrenschmidt wrote:
+> Minor nits (in addition to needing a "reg" property)
 > 
+> > +
+> > +						i8259: i8259@4d0 {
 > 
-> Oh what the hell, I'm too curious...  "pnpPNP,0" it is.
+> Name should probably be "interrupt-controller" as well to follow the
+> recommended naming practice.
 > 
-> > I believe that "8259" should appear somewhere because of the
-> > "8259-interrupt-acknowledge" property (defined in CHRP bindings)
-> > which you can have on the parent bridge to speed up interrupt
-> > vector acquisition.
+> > +							clock-frequency = <0>;
+> > +							interrupt-controller;
+> > +							device_type = "interrupt-controller";
+> > +							#address-cells = <0>;
+> > +							#interrupt-cells = <2>;
+> > +							built-in;
+> > +							compatible = "chrp,iic";
+> > +							big-endian;
 > 
-> You're not CHRP so you have nothing to do with the CHRP
-> bindings...
+> big-endian ? On a 8259 ? 
 
-Still, you are close to CHRP and the CHRP bindings do apply :-) the 8259
-should thus be chrp,iic :-) It's even documented that way in
-booting-without-of.txt iirc.
+Yes, I spotted that too. Funny on a device which is only ever 
+accessed through inb/outb! 
 
-Ben.
+Maybe the 0x4d0/4d1 ports can be accessed with 16 bit 
+instructions, I don't know. What I know for sure is that
+accessing port 0x20 with an inl/outl on some boards
+locks immediately the system up (perhaps through infinite
+retries).
+
+	Gabriel
