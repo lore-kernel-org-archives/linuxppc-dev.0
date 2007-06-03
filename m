@@ -1,26 +1,27 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
-	[151.189.21.47])
+Received: from mail-in-09.arcor-online.net (mail-in-09.arcor-online.net
+	[151.189.21.49])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 11A24DDE48
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 05:48:27 +1000 (EST)
-In-Reply-To: <46630F8F.6080708@ru.mvista.com>
+	by ozlabs.org (Postfix) with ESMTP id 6C52BDDEC5
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 05:56:39 +1000 (EST)
+In-Reply-To: <466312C2.4090200@ru.mvista.com>
 References: <7fc919fce0761f861be3069a853d3169@bga.com>
-	<4662FA67.3020107@ru.mvista.com>
-	<a5dde31321a50ed198cf4fc199e4af9c@kernel.crashing.org>
-	<4663060C.2020906@ru.mvista.com>
-	<c077dedaa90bf4fb3af1c5c8c4b39c85@kernel.crashing.org>
-	<46630F8F.6080708@ru.mvista.com>
+	<bd6ef296692e8cfb81118f2dc85189a5@kernel.crashing.org>
+	<4662EAA9.70104@ru.mvista.com>
+	<e4197fd2753f2b4d548d5dde9e3fd1d3@kernel.crashing.org>
+	<466308F4.8050004@ru.mvista.com>
+	<8ac5664208e0f59329b62ac2138bbc8c@kernel.crashing.org>
+	<466312C2.4090200@ru.mvista.com>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <bd28eac8eb60db8aaff74f91c76d4196@kernel.crashing.org>
+Message-Id: <548a7e11ffb577f6395b8f5a9c2fba2d@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
-Date: Sun, 3 Jun 2007 21:48:15 +0200
+Date: Sun, 3 Jun 2007 21:56:31 +0200
 To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, linux-mtd@lists.infradead.org,
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
 	Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -31,66 +32,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>    No! It doesn't have anything to do with "ranges" of parent (don't 
->>> even know why it would). :-O
+>>>> You obviously completely misunderstand the semantics
+>>>> of the "compatible" property.
 >
->> So learn about it please?  "ranges" means exactly that:
->> child nodes' address space is direct mapped.
+>>>    Oh well, on the chip level, your "compatible" prop would be 
+>>> correct.
 >
->    Well, now we certainly need a parent node -- which would be static 
-> bus controller?
-
-I have no clue what a "static bus controller" is.  Your
-flash node obviously needs _some_ parent node though --
-this is a tree after all.
-
-> But those have multiple chips selects, so we should know which range 
-> to use. Ugh...
-
-That is described in the "reg" property of the flash
-node, just like for any other node.
-
->> Because that is a) not what you are supposed to do according
->> to the standard (so it might very well not work with a
->> "third-party" device tree that equally conforms to the standard);
->> b) "device_type" describes some other information (namely, the
->> OF programming model for the device node) that is completely
->> unrelated to the process of driver matching; and c) it is wholly
->> redundant to the information in "compatible" *ANYWAY*.
+>> This has nothing to do with a "chip level", it is plain and
+>> simply the most basic device tree stuff.
 >
->    Hm, well. Than changing "compatible" prop would make sense.
+>    If it was as "plain and simple" as you say, there would be nothing 
+> to argue about.
 
-Yes.
+There isn't as far as I am concerned; the purpose and
+meaning of the "compatible" property, as well as of any
+other standard OF properties, is clear.
 
->>> And why you haven't complained at MPC5200 IDE driver
->
->> Since no one paid me to review the code?  Please don't try
->
->    Sigh, nobody pays me for that too. :-)
+> What we ended up with is 2 or 3 level hierarchy of nodes which doesn't 
+> at all seem to be such simple (considering the fact that what's 
+> covered by a the simple "bank-width" property could be represented by 
+> several combinations of interleaved flash chips).
 
-Yeah it's a shame isn't it?
+Yes, the more complex (and sometimes insane) ways that
+flash chips are connected to systems can be really hard
+to describe properly.  Which is why I don't even want
+to make a "binding" for it (yet).  It seems easy enough
+to do this for single flash chips (possibly direct-mapped)
+though.
 
->>> which does the same (well, maybe you have :-) or at PowerMac IDE 
->>> driver which matches wither by "name" or "device_type"? Well, quite 
->>> a lot of drivers are doing this...
->
->> See before why that may be.  Short answer is "history".
->
->    Well, at least that's cleared.
+> So, what you wanted us to do was either substantially redesign Linux 
+> MTD subsys to fit it into that model
 
-Okido, good to hear.
+Nah.  The current MTD model has some issues of course,
+but that is a separate problem.
 
->>>    Anyway, reasonable suggestions on how to make MTD nodes more 
->>> viable are always welcome. I just haven't seen reasonable enough 
->>> yet. ;-)
->
->> I suggest you read, and try to understand, some of the base
->> device tree specifications first.
->
->    Read them some months ago -- do you think I would have plunged into 
-> that not reading anything first? :-/
+>  (either that or over-engineer the physmap_of driver to gather that 
+> kind of information from the multiple "chip" subnodes).
 
-It seems we really need more howto-style docs...
+I would say it is overengineered already.  It shouldn't
+try to be a general solution for all possible cases since
+it has no hope of achieving that.  Get the simple cases
+(that actually are used in real life) right, first.
 
 
 Segher
