@@ -1,28 +1,23 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-09.arcor-online.net (mail-in-09.arcor-online.net
-	[151.189.21.49])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7BA14DDEDF
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 04:47:11 +1000 (EST)
-In-Reply-To: <46630A32.7000403@ru.mvista.com>
-References: <7fc919fce0761f861be3069a853d3169@bga.com>
-	<1180769992.14025.1.camel@localhost.localdomain>
-	<4662E7EA.70506@ru.mvista.com>
-	<d067769912d2ed5c9e1b4770b77303dd@kernel.crashing.org>
-	<46630256.8050909@ru.mvista.com>
-	<daa1b6f2e18f06f053d538d28d3c046a@kernel.crashing.org>
-	<46630A32.7000403@ru.mvista.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <e85b2d39481e426dcd4c19a3eaaf8238@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
-Date: Sun, 3 Jun 2007 20:46:57 +0200
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, linux-mtd@lists.infradead.org,
-	Milton Miller <miltonm@bga.com>
+Return-Path: <bzolnier@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
+	by ozlabs.org (Postfix) with ESMTP id 7F95BDDEFF
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 04:54:57 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id c2so605264ugf
+	for <linuxppc-dev@ozlabs.org>; Sun, 03 Jun 2007 11:54:55 -0700 (PDT)
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Brad Boyer <flar@allandria.com>
+Subject: Re: [PATCH] IDE: Remove remnants related to dead BLK_DEV_MAC_MEDIABAY
+	CONFIG variable.
+Date: Sun, 3 Jun 2007 21:07:52 +0200
+References: <Pine.LNX.4.64.0706031348550.24843@localhost.localdomain>
+	<20070603172829.GA25404@cynthia.pants.nu>
+In-Reply-To: <20070603172829.GA25404@cynthia.pants.nu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200706032107.52152.bzolnier@gmail.com>
+Cc: Linux PPC Mailing List <linuxppc-dev@ozlabs.org>,
+	"Robert P. J. Day" <rpjday@mindspring.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,32 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> Nobody's talking about the direct match but making the task of 
->>> selecting a proper driver more complex by specifying the details 
->>> that don't help (if not hinder) the correct selection is certainly 
->>> not a way to go.
->
->> Nonsense.  If the kernel doesn't care about certain details,
->> it can just ignore them.
->
->    That's OK, as long as it has the details it needs. Your suggestions 
-> on the "compatible" devoided it of such.
 
-Sigh.
+Hi,
 
-[snip]
+Ehm, I'm guilty for this mistake since I've advised Robert
+to cc: wrong list (thinko caused by mediabay == ppc assumption).
 
->>>    That's the way the cookie crumbles in Linux MTD for now. It's 
->>> *always* detecting this by probing -- you only can say what [not] to 
->>> probe.
->
->> So go fix that :-)
->
->    Wanna pay me for that? ;-)
+Sorry for this. :)
 
-You're the one complaining, you go pay yourself.
+Robert: I'll apply both patches in a few days if there are no
+complains from m68k/scsi people.
 
-[snip, plunk]
+Thanks,
+Bart
 
-
-Segher
+On Sunday 03 June 2007, Brad Boyer wrote:
+> On Sun, Jun 03, 2007 at 01:52:02PM -0400, Robert P. J. Day wrote:
+> > Remove the two snippets of code conditional on the non-existent CONFIG
+> > variable CONFIG_BLK_DEV_MAC_MEDIABAY.
+> 
+> This is the wrong list. The macide driver is for m68k Macintoshes, so
+> you really need to send this to the linux-m68k list. It looks like this
+> was originally a copy of the IDE driver for ppc based Macintoshes and
+> this particular feature was never finished.
+> 
+> Just in case you don't know where to find the linux-m68k mailing list,
+> it is hosted on vger.kernel.org.
+> 
+> 	Brad Boyer
+> 	flar@allandria.com
