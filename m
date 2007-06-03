@@ -1,23 +1,20 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 5C976DDE32
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 05:11:36 +1000 (EST)
-Message-ID: <466312C2.4090200@ru.mvista.com>
-Date: Sun, 03 Jun 2007 23:13:06 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
-References: <7fc919fce0761f861be3069a853d3169@bga.com>
-	<bd6ef296692e8cfb81118f2dc85189a5@kernel.crashing.org>
-	<4662EAA9.70104@ru.mvista.com>
-	<e4197fd2753f2b4d548d5dde9e3fd1d3@kernel.crashing.org>
-	<466308F4.8050004@ru.mvista.com>
-	<8ac5664208e0f59329b62ac2138bbc8c@kernel.crashing.org>
-In-Reply-To: <8ac5664208e0f59329b62ac2138bbc8c@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	Milton Miller <miltonm@bga.com>
+Return-Path: <flar@cynthia.pants.nu>
+Received: from cynthia.pants.nu (adsl-216-102-214-42.dsl.snfc21.pacbell.net
+	[216.102.214.42]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 910F7DDEEC
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 05:14:44 +1000 (EST)
+Date: Sun, 3 Jun 2007 10:28:29 -0700
+From: Brad Boyer <flar@allandria.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: [PATCH] IDE: Remove remnants related to dead BLK_DEV_MAC_MEDIABAY
+	CONFIG variable.
+Message-ID: <20070603172829.GA25404@cynthia.pants.nu>
+References: <Pine.LNX.4.64.0706031348550.24843@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.64.0706031348550.24843@localhost.localdomain>
+Cc: Linux PPC Mailing List <linuxppc-dev@ozlabs.org>, bzolnier@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,26 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
+On Sun, Jun 03, 2007 at 01:52:02PM -0400, Robert P. J. Day wrote:
+> Remove the two snippets of code conditional on the non-existent CONFIG
+> variable CONFIG_BLK_DEV_MAC_MEDIABAY.
 
->>> You obviously completely misunderstand the semantics
->>> of the "compatible" property.
+This is the wrong list. The macide driver is for m68k Macintoshes, so
+you really need to send this to the linux-m68k list. It looks like this
+was originally a copy of the IDE driver for ppc based Macintoshes and
+this particular feature was never finished.
 
->>    Oh well, on the chip level, your "compatible" prop would be correct.
+Just in case you don't know where to find the linux-m68k mailing list,
+it is hosted on vger.kernel.org.
 
-> This has nothing to do with a "chip level", it is plain and
-> simply the most basic device tree stuff.
-
-    If it was as "plain and simple" as you say, there would be nothing to 
-argue about.  What we ended up with is 2 or 3 level hierarchy of nodes which 
-doesn't at all seem to be such simple (considering the fact that what's 
-covered by a the simple "bank-width" property could be represented by several 
-combinations of interleaved flash chips). So, what you wanted us to do was 
-either substantially redesign Linux MTD subsys to fit it into that model 
-(either that or over-engineer the physmap_of driver to gather that kind of 
-information from the multiple "chip" subnodes).  Guess how well would that 
-have been accepted even if we had time to do that...
-
-> Segher
-
-WBR, Sergei
+	Brad Boyer
+	flar@allandria.com
