@@ -1,12 +1,12 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20070604181739.375615838@arndb.de>
+Message-Id: <20070604181739.631548216@arndb.de>
 References: <20070604181438.569356702@arndb.de>
-Date: Mon, 04 Jun 2007 20:14:39 +0200
+Date: Mon, 04 Jun 2007 20:14:41 +0200
 From: Arnd Bergmann <arnd@arndb.de>
 To: paulus@samba.org
-Subject: [patch 1/3] powerpc: fix pci_setup_phb_io_dynamic for pci_iomap
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-	Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Subject: [patch 3/3] scc_sio: fix link failure
+Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linuxppc-dev@ozlabs.org,
+	cbe-oss-dev@ozlabs.org, Christoph Hellwig <hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,29 +16,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-We had a problem on a system with only dynamically allocated
-PCI buses (using of_pci_phb_driver) in combination with libata.
-This setup ended up having no "primary" phb, which means
-that pci_io_base never got initialized and all IO port
-numbers are 64 bit numbers, which is larger than the
-PIO_MASK limit.
+From: Christoph Hellwig <hch@lst.de>
+scc_sio.o should only be built if the txx9 serial driver is actually built
+into the kernel.
 
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
-Index: linux-2.6/arch/powerpc/kernel/of_platform.c
+
+Index: linux-2.6/arch/powerpc/platforms/celleb/Makefile
 ===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/of_platform.c
-+++ linux-2.6/arch/powerpc/kernel/of_platform.c
-@@ -433,7 +433,7 @@ static int __devinit of_pci_phb_probe(st
- 	 * Note also that we don't do ISA, this will also be fixed with a
- 	 * more massive rework.
- 	 */
--	pci_setup_phb_io(phb, 0);
-+	pci_setup_phb_io(phb, pci_io_base == 0);
+--- linux-2.6.orig/arch/powerpc/platforms/celleb/Makefile
++++ linux-2.6/arch/powerpc/platforms/celleb/Makefile
+@@ -4,5 +4,5 @@ obj-y				+= interrupt.o iommu.o setup.o 
  
- 	/* Init pci_dn data structures */
- 	pci_devs_phb_init_dynamic(phb);
+ obj-$(CONFIG_SMP)		+= smp.o
+ obj-$(CONFIG_PPC_UDBG_BEAT)	+= udbg_beat.o
+-obj-$(CONFIG_HAS_TXX9_SERIAL)	+= scc_sio.o
++obj-$(CONFIG_SERIAL_TXX9)	+= scc_sio.o
+ obj-$(CONFIG_SPU_BASE)		+= spu_priv1.o
 
 --
