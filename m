@@ -4,20 +4,18 @@ Received: from de01egw02.freescale.net (de01egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AB95EDDEE1
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jun 2007 04:50:40 +1000 (EST)
-Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
+	by ozlabs.org (Postfix) with ESMTP id 73412DDE09
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jun 2007 04:51:11 +1000 (EST)
+Subject: Re: [PATCH 6/8] Let subordinate transparent bridges be transparent.
 From: Jon Loeliger <jdl@freescale.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <4fb92a9dfccf515bdc1522d08f10f823@kernel.crashing.org>
-References: <1180720112.14219.62.camel@ld0161-tx32>
-	<dfc15991e31bfc09389461dc443acd7c@kernel.crashing.org>
-	<1180734314.5674.49.camel@rhino>
-	<4fb92a9dfccf515bdc1522d08f10f823@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1180740416.19517.476.camel@localhost.localdomain>
+References: <1180720134.14219.66.camel@ld0161-tx32>
+	<1180740416.19517.476.camel@localhost.localdomain>
 Content-Type: text/plain
-Message-Id: <1180983026.9632.22.camel@ld0161-tx32>
+Message-Id: <1180983061.9632.24.camel@ld0161-tx32>
 Mime-Version: 1.0
-Date: Mon, 04 Jun 2007 13:50:26 -0500
+Date: Mon, 04 Jun 2007 13:51:01 -0500
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,24 +26,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2007-06-02 at 03:22, Segher Boessenkool wrote:
-> >> "reg" included in "ranges"?  Something is wrong here.
-> >
-> > I think it's correct for soc nodes.
-> 
-> It is not.  "ranges" is the address space translation
-> between the parent and child busses; "reg" is the stuff
-> that's on the bridge device itself.
-> 
-> > At least, it appears that all of
-> > the dts files with soc nodes do similar things (including this one even
-> > without this patch).
-> 
-> Yes, but that doesn't make it right.
+On Fri, 2007-06-01 at 18:26, Benjamin Herrenschmidt wrote:
 
-But removing it does break things.  I'm going to leave 
-it as-is for now, and we can wrestle over "fixing" it
-in a follow up patch.
+> NAK. The mem case needs a similar fix. I think we should instead do
+> 
+> - 			if (!res->flags)
+> - 				continue;
+> + 			if (!res->flags || bus->self->transparent)
+> + 				continue;
+
+Right.  Fixed as indicated.
 
 Thanks,
 jdl
