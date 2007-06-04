@@ -1,12 +1,22 @@
-Return-Path: <arnd@arndb.de>
-Message-Id: <20070604181739.631548216@arndb.de>
-References: <20070604181438.569356702@arndb.de>
-Date: Mon, 04 Jun 2007 20:14:41 +0200
-From: Arnd Bergmann <arnd@arndb.de>
-To: paulus@samba.org
-Subject: [patch 3/3] scc_sio: fix link failure
-Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linuxppc-dev@ozlabs.org,
-	cbe-oss-dev@ozlabs.org, Christoph Hellwig <hch@lst.de>
+Return-Path: <jdl@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6B412DDDF4
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jun 2007 04:49:35 +1000 (EST)
+Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
+From: Jon Loeliger <jdl@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1180828253.14025.22.camel@localhost.localdomain>
+References: <1180720112.14219.62.camel@ld0161-tx32>
+	<1180828253.14025.22.camel@localhost.localdomain>
+Content-Type: text/plain
+Message-Id: <1180982967.9632.20.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Mon, 04 Jun 2007 13:49:27 -0500
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,23 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Christoph Hellwig <hch@lst.de>
-scc_sio.o should only be built if the txx9 serial driver is actually built
-into the kernel.
+On Sat, 2007-06-02 at 18:50, Benjamin Herrenschmidt wrote:
+> Minor nits (in addition to needing a "reg" property)
+> 
+> > +
+> > +						i8259: i8259@4d0 {
+> 
+> Name should probably be "interrupt-controller" as well to follow the
+> recommended naming practice.
+> 
+> > +							clock-frequency = <0>;
+> > +							interrupt-controller;
+> > +							device_type = "interrupt-controller";
+> > +							#address-cells = <0>;
+> > +							#interrupt-cells = <2>;
+> > +							built-in;
+> > +							compatible = "chrp,iic";
+> > +							big-endian;
+> 
+> big-endian ? On a 8259 ? 
+> 
+> > +							interrupts = <49 2>;
+> > +							interrupt-parent =
+> > +								<&mpic>;
+> > +						};
+> > +					};
+> > +				};
+> >  			};
+> >  
+> >  		};
+> 
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Since the interrupt controller issues are a bit unrelated
+to the PCI-Express enablement patches here, I'll submit a
+follow-up patch set to clean them up.
 
-Index: linux-2.6/arch/powerpc/platforms/celleb/Makefile
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/celleb/Makefile
-+++ linux-2.6/arch/powerpc/platforms/celleb/Makefile
-@@ -4,5 +4,5 @@ obj-y				+= interrupt.o iommu.o setup.o 
- 
- obj-$(CONFIG_SMP)		+= smp.o
- obj-$(CONFIG_PPC_UDBG_BEAT)	+= udbg_beat.o
--obj-$(CONFIG_HAS_TXX9_SERIAL)	+= scc_sio.o
-+obj-$(CONFIG_SERIAL_TXX9)	+= scc_sio.o
- obj-$(CONFIG_SPU_BASE)		+= spu_priv1.o
-
---
+Thanks,
+jdl
