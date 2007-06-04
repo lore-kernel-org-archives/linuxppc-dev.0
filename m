@@ -1,24 +1,25 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 3145CDDEC4
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jun 2007 00:48:23 +1000 (EST)
-Message-ID: <46642691.7070400@ru.mvista.com>
-Date: Mon, 04 Jun 2007 18:49:53 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
+	[151.189.21.50])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C4076DDECE
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jun 2007 00:49:40 +1000 (EST)
+In-Reply-To: <46640892.2030408@ru.mvista.com>
 References: <7fc919fce0761f861be3069a853d3169@bga.com>	
-	<1180769992.14025.1.camel@localhost.localdomain>	
-	<4662E7EA.70506@ru.mvista.com>	
-	<d067769912d2ed5c9e1b4770b77303dd@kernel.crashing.org>	
-	<46630256.8050909@ru.mvista.com>
-	<1180904670.31677.18.camel@localhost.localdomain>
-	<466406BB.3070607@ru.mvista.com>
-	<879d8eb0b405619a9e457d137c27baa2@kernel.crashing.org>
-In-Reply-To: <879d8eb0b405619a9e457d137c27baa2@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, linux-mtd@lists.infradead.org,
+	<bd6ef296692e8cfb81118f2dc85189a5@kernel.crashing.org>	
+	<4662EAA9.70104@ru.mvista.com>
+	<1180905120.31677.22.camel@localhost.localdomain>
+	<46640892.2030408@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <f24cbe6245fb2a52d153edb9be678f5a@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
+Date: Mon, 4 Jun 2007 16:49:32 +0200
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
 	Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -29,41 +30,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
+>> You make no sense to me. It's like saying that knowing that a 8250 
+>> chip
+>> on ISA cannot be accessed if you don't know it's IO ports so it
+>> shouldn't say "8250" in compatible property ?!?!?!?
+>
+>    No, it's a completely different case.  Base address and even flash 
+> size are not the only things that matter.  There's bus width
 
->>> So you are saying that because the current linux MTD stuff can only
->>> probe (which doesn't always work), we should not put the proper chip
->>> interface type in the device-tree ?
+Bus width is an (inherent) property of the _parent_
+node.  Device width is normally equal to that, and
+if not, it is obvious from the device model.
 
->>    No. But if/when we put it, it'll only be able to influence 
->> interface probing, but not "force" the interface.
+Also, you need to know if the devices are byte-addressable
+or only per natural unit; and even more importantly,
+the same question for the flash bus.
 
-> Of course it can; that just means you have to fix MTD
+> and interleave factors
 
-    I wouldn't call this a fix, more like an additional feature. Probing has 
-worked well enough.
+Not a property of the flash chips really.
 
-> and/or the way your platform calls MTD.
+> that influence the access (and possibly, byte-swapping too, although 
+> this is unlikely to happen in PPC world).
 
-    The platform code is not supposed to call MTD *at all*. The only expeption
-so far are physmap_configure() and physmap_set_partitions() which are both 
-considered obsolete (in favor of platform device). Maybe linux-mtd people will 
-correct me though...
+Byte swapping?  1) This should _never_ be necessary,
+just swap the data on the device itself, duh; 2) more
+likely this would be determined by the flash bus, not
+per flash device.
 
->>    The money was not the only factor, you know, I was under the 
->> pressure of schedules, and had a lot more things to do.
+And, 3) why would you want to include this in the flash
+binding while we don't yet have a reasonable overview
+of in what circumstances byte swap is needed/used?
 
-> The bigger Linux community does not (and should not)
-> care about your corporate schedules.  Your patches
-> won't be merged upstream until they are deemed to be
-> of acceptable quality.  If that doesn't fit your
-> employer's schedule, well tough luck, they can maintain
-> their own kernel fork I'm sure?
+>> Also, whatever shortcomings of the linux MTD drivers are totally
+>> irrelevant to what is correct to have in a device-tree. While we do
+>> tailor our device-tree specification around linux needs in most cases,
+>> there are cases like this one where common sense should be enough to
+>> understand that it's not because the linux MTD subsystem, as of today,
+>> cannot be told what programming interface to use, that we shouldn't
+>> provide that information in the tree.
+>
+>    We did provide it, in the form of probing hints ("probe-type" prop).
 
-    But the driver have been nevertheless merged. Moreover, the it was one of 
-the MTD maintainers who expressed desire for partition info to be kept with 
-device node in the first place.
+Which is 103% redundant.  That same information (and
+more!) is required in the "compatible" property, already.
 
-> Segher
 
-WBR, Sergei
+Segher
