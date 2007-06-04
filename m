@@ -1,10 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 04 Jun 2007 15:15:55 +1000
-Subject: [PATCH 20/21] powerpc: remove #ifdef around set_dabr in signal code
+Date: Mon, 04 Jun 2007 15:15:56 +1000
+Subject: [PATCH 21/21] powerpc: Less ifdef's in signal.c/signal.h
 In-Reply-To: <1180934134.603289.870346178920.qpush@grosgo>
-Message-Id: <20070604051600.2501BDDF23@ozlabs.org>
+Message-Id: <20070604051603.508F6DDE30@ozlabs.org>
 Cc: Paul Mackerras <paulus@samba.org>, Christoph Hellwig <hch@lst.de>,
 	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -16,34 +16,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-set_dabr() and thread.dabr exist on 32 bits as well nowadays (they
-actually may do something even, depending on what CPU you have).
-
-So remove the ifdef
+This patch moves things around a little bit in the new common signal.c
+and signal.h files to remove the last #ifdef in the middle of the
+common do_signal()
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- arch/powerpc/kernel/signal.c |    2 --
- 1 file changed, 2 deletions(-)
+ arch/powerpc/kernel/signal.c |   15 ---------------
+ arch/powerpc/kernel/signal.h |   24 ++++++++++++++++++++++++
+ 2 files changed, 24 insertions(+), 15 deletions(-)
 
 Index: linux-cell/arch/powerpc/kernel/signal.c
 ===================================================================
---- linux-cell.orig/arch/powerpc/kernel/signal.c	2007-06-04 13:08:24.000000000 +1000
-+++ linux-cell/arch/powerpc/kernel/signal.c	2007-06-04 13:08:30.000000000 +1000
-@@ -145,7 +145,6 @@ int do_signal(sigset_t *oldset, struct p
- 		return 0;               /* no signals delivered */
+--- linux-cell.orig/arch/powerpc/kernel/signal.c	2007-06-04 13:09:27.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/signal.c	2007-06-04 13:17:50.000000000 +1000
+@@ -15,19 +15,6 @@
+ 
+ #include "signal.h"
+ 
+-
+-#ifdef CONFIG_PPC64
+-static inline int is_32bit_task(void)
+-{
+-	return test_thread_flag(TIF_32BIT);
+-}
+-#else
+-static inline int is_32bit_task(void)
+-{
+-	return 1;
+-}
+-#endif
+-
+ /*
+  * Allocate space for the signal frame
+  */
+@@ -160,10 +147,8 @@ int do_signal(sigset_t *oldset, struct p
+ 		else
+ 			ret = handle_signal32(signr, &ka, &info, oldset,
+ 					regs);
+-#ifdef CONFIG_PPC64
+ 	} else {
+ 		ret = handle_rt_signal64(signr, &ka, &info, oldset, regs);
+-#endif
  	}
  
--#ifdef CONFIG_PPC64
-         /*
- 	 * Reenable the DABR before delivering the signal to
- 	 * user space. The DABR will have been cleared if it
-@@ -153,7 +152,6 @@ int do_signal(sigset_t *oldset, struct p
- 	 */
- 	if (current->thread.dabr)
- 		set_dabr(current->thread.dabr);
--#endif
+ 	if (ret) {
+Index: linux-cell/arch/powerpc/kernel/signal.h
+===================================================================
+--- linux-cell.orig/arch/powerpc/kernel/signal.h	2007-06-04 13:10:10.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/signal.h	2007-06-04 13:11:03.000000000 +1000
+@@ -24,8 +24,32 @@ extern int handle_rt_signal32(unsigned l
+ 			      siginfo_t *info, sigset_t *oldset,
+ 			      struct pt_regs *regs);
  
- 	if (is32) {
-         	if (ka.sa.sa_flags & SA_SIGINFO)
++
++#ifdef CONFIG_PPC64
++
++static inline int is_32bit_task(void)
++{
++	return test_thread_flag(TIF_32BIT);
++}
++
+ extern int handle_rt_signal64(int signr, struct k_sigaction *ka,
+ 			      siginfo_t *info, sigset_t *set,
+ 			      struct pt_regs *regs);
+ 
++#else /* CONFIG_PPC64 */
++
++static inline int is_32bit_task(void)
++{
++	return 1;
++}
++
++static inline int handle_rt_signal64(int signr, struct k_sigaction *ka,
++				     siginfo_t *info, sigset_t *set,
++				     struct pt_regs *regs)
++{
++	return -EFAULT;
++}
++
++#endif /* !defined(CONFIG_PPC64) */
++
+ #endif  /* _POWERPC_ARCH_SIGNAL_H */
