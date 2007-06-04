@@ -1,13 +1,17 @@
-Return-Path: <mgreer@mvista.com>
-Date: Mon, 4 Jun 2007 13:56:46 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
-Message-ID: <20070604205646.GD10612@mag.az.mvista.com>
-References: <20070601232022.GA21237@mag.az.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070601232022.GA21237@mag.az.mvista.com>
+Return-Path: <b08248@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C1F16DDEC0
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jun 2007 07:16:21 +1000 (EST)
+Date: Mon, 4 Jun 2007 16:16:15 -0500
+From: Stuart Yoder <b08248@freescale.com>
+Message-Id: <200706042116.l54LGFuZ022877@ld0164-tx32.am.freescale.net>
+To: paulus@samba.org
+Subject: [PATCH] powerpc: fix typo in booting-without-of-txt section numbering
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,68 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Okay, >25 msgs from a ~10 line patch.  I think that's a new personal
-record for me. ;)
+>From 799bc4dbad6b4e8c2d88c7c2c4746072b9175222 Mon Sep 17 00:00:00 2001
+From: Stuart Yoder <stuart.yoder@freescale.com>
+Date: Mon, 4 Jun 2007 16:08:35 -0500
+Subject: [PATCH] test
 
-More seriously, I've simply been trying to provide a DT node that works
-with the current code in drivers/mtd/maps/physmap_of.c.  Obviously,
-there are issues with that code and my DT node.
+Fix typo in section numbering.
 
-So to try a different approach, here is the hardware info and a copy of
-the relevant DT that I currently have.  Segher, et. al., if you can
-find the time, please give me your best guidance as to what the DT
-node(s) should really look like (and how physmap.c should really work).
-I'll be happy to hack physmap_of.c once I have a clear understanding of
-how it should work (and there is clear agreement on that :).
 
-Mark
+Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
 ---
+ Documentation/powerpc/booting-without-of.txt |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Hardware:
----------
-[As I read this, I realize I have the DT node messed up anyway.]
-- Not that this matters but this is a Marvell mv64360/mv64362 based board
-  with a MPC7447A processor.
-- There are two 32MB banks of two Intel Stata Flash (NOR) chips (CFI).
-  Each 32MB bank is 32-bits wide built with two 8Mx16 28F128K3 devices
-  (http://download.intel.com/design/flcomp/datashts/29073709.pdf).
-  Bits 0-15 from the first device, bits 16-31 from the second one.
-  The two banks are contiguous in the processor's physical memory space.
-- The MTD partitions are described in the DT.
-
-For your reference, the exiting DT:
------------------------------------
-
-	mv64x60@f1000000 { /* Marvell Discovery */
-		#address-cells = <1>;
-		#size-cells = <1>;
-		#interrupt-cells = <1>;
-		model = "mv64360";			/* Default */
-		compatible = "marvell,mv64x60";
-		clock-frequency = <7f28155>;		/* 133.333333 MHz */
-		reg = <f1000000 00010000>;
-		virtual-reg = <f1000000>;
-		ranges = <88000000 88000000 01000000	/* PCI 0 I/O Space */
-			  80000000 80000000 08000000	/* PCI 0 MEM Space */
-			  a0000000 a0000000 04000000	/* User FLASH */
-			  00000000 f1000000 00010000	/* Bridge's regs */
-			  f2000000 f2000000 00040000>;	/* Integrated SRAM */
-
-		flash@a0000000 {
-			device_type = "rom";
-			compatible = "direct-mapped";
-			reg = <a0000000 4000000>; /* Default (64MB) */
-			probe-type = "CFI";
-			bank-width = <4>;
-			partitions = <00000000 00100000 /* RO */
-				      00100000 00040001 /* RW */
-				      00140000 00400000 /* RO */
-				      00540000 039c0000 /* RO */
-				      03f00000 00100000>; /* RO */
-			partition-names = "FW Image A", "FW Config Data", "Kernel Image", "Filesystem", "FW Image B";
-		};
-
-So, what should the DT look like for this thing?  And, what should
-phymap_of.c be doing?
-
-Mark
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index b49ce16..258a279 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -1687,7 +1687,7 @@ platforms are moved over to use the flattened-device-tree model.
+ 		};
+ 	};
+ 
+-    g) Flash chip nodes
++    j) Flash chip nodes
+ 
+     Flash chips (Memory Technology Devices) are often used for solid state
+     file systems on embedded devices.
+-- 
+1.5.0.3
