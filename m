@@ -1,17 +1,31 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: PATCH 19/21] powerpc: Merge creation of signal frame (#2)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20070604080126.GA19961@lst.de>
-References: <20070604051559.3E8C1DDF43@ozlabs.org>
-	<1180941768.31677.50.camel@localhost.localdomain>
-	<20070604080126.GA19961@lst.de>
-Content-Type: text/plain
-Date: Mon, 04 Jun 2007 20:04:53 +1000
-Message-Id: <1180951493.31677.53.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	cbe-oss-dev@ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-12.arcor-online.net (mail-in-12.arcor-online.net
+	[151.189.21.52])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 28176DDE3A
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 20:37:18 +1000 (EST)
+In-Reply-To: <1180947682.10048.23.camel@localhost.localdomain>
+References: <1180406209.8139.13.camel@localhost.localdomain>
+	<BA0C2035-FCAD-4B34-A622-F79432079F10@kernel.crashing.org>
+	<1180492466.12577.6.camel@localhost.localdomain>
+	<A78C881D-26C3-4545-85CA-80C05085C039@kernel.crashing.org>
+	<1180503967.12577.20.camel@localhost.localdomain>
+	<19325B38-202C-4837-9BE8-0ACA482F2605@kernel.crashing.org>
+	<976AFF56-7590-46B9-ADCA-4FA6673D4C9B@kernel.crashing.org>
+	<1180945726.10048.0.camel@localhost.localdomain>
+	<dc4e7ef8f03da79b9322f21b8b82c6d9@kernel.crashing.org>
+	<1180947682.10048.23.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <c6f611e5eaff31a78979752ecd49e5f2@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v2]: Fix e500 v2 core reboot bug
+Date: Mon, 4 Jun 2007 12:37:05 +0200
+To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,45 +35,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-06-04 at 10:01 +0200, Christoph Hellwig wrote:
-> On Mon, Jun 04, 2007 at 05:22:48PM +1000, Benjamin Herrenschmidt wrote:
-> > +/*
-> > + * Allocate space for the signal frame
-> > + */
-> > +void __user * get_sigframe(struct k_sigaction *ka, struct pt_regs *regs,
-> > +			   size_t frame_size)
-> 
-> little style nitpick: no whitespace after the *, please.
+>>>> guts@e00000 {
 
-Heh... just copy pasted what was there :-) I'll rip it out for the next
-round :-)
+>> If "guts" is some kind of official name (i.e., the
+>> block is called that in the user manual), it looks
+>> okay to me.
+> No! It is not official name. It is provided by Kumar. It should be a
+> abbr. standing for "Global Utilities" as far as my understand.
 
-> > +{
-> > +        unsigned long oldsp, newsp;
-> > +
-> > +        /* Default to using normal stack */
-> > +        oldsp = regs->gpr[1];
-> > +
-> > +	/* Check for alt stack */
-> > +	if ((ka->sa.sa_flags & SA_ONSTACK) &&
-> > +	    current->sas_ss_size && !on_sig_stack(oldsp))
-> > +		oldsp = (current->sas_ss_sp + current->sas_ss_size);
-> > +
-> > +	/* Get aligned frame */
-> > +	newsp = (oldsp - frame_size) & ~0xFUL;
-> > +
-> > +	/* Check access */
-> > +	if (!access_ok(VERIFY_WRITE, (void __user *)newsp, oldsp - newsp))
-> > +		return NULL;
-> > +
-> > +        return (void __user *)newsp;
-> > +}
-> 
-> The body also has some odd whitespace problems.  I'd also make
-> newsp a void __user variable to only do the cast once.  In the end the
-> function should looks something like:
+So the official name is "global utilities block"?
 
-Makes sense.
+>> Otherwise, please change; in fact, just
+>> change the name anyway (not the compatible), to
+>> "shared-soc-regs" or something like that;
+> I can not agree with you. "shared-soc-regs" can not describe the
+> property of this kind of register.
+> The official description for this set of registers:
+>
+> "The global utilities block controls power management, I/O device
+> enabling, power-on-reset (POR) configuration monitoring, 
+> general-purpose
+> I/O signal configuration, alternate function selection for multiplexed
+> signals, and clock control.
+>
+> gub (Kumar's style?): global utilities block
+> or
+> global-uti-regs or global-uti (Segher's style?)
+> may be better.
 
-Thanks,
-Ben.
+"global-utilities" sounds fine to me, although the
+name doesn't actually say anything.  Let's avoid
+abbr.s unless they are very widely known.
+
+>>  "name"
+>> should be descriptive (but terse).
+>>
+> Agree!
+> But we should reach a agreement!
+
+Nah, you guys just need to come up with a good name :-)
+I would just call it "control" perhaps ;-)
+
+It doesn't matter much, but "name" should be human-
+readable, human-understandable, and short.  A made-up
+acronym doesn't work (although I like "guts", sure --
+put it in your "compatible" property ;-) )
+
+
+Segher
