@@ -2,16 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CBB2ADE002
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jun 2007 08:43:43 +1000 (EST)
-Subject: Re: [PATCH 1/4] Split virq setup logic out into irq_setup_virq()
+	by ozlabs.org (Postfix) with ESMTP id 7F1E9DE05D
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jun 2007 08:44:14 +1000 (EST)
+Subject: Re: [PATCH 2/4] Add irq_create_direct_mapping()
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Michael Ellerman <michael@ellerman.id.au>
-In-Reply-To: <f0cd638495b96585dec513f41335154e60675813.1180961962.git.michael@ellerman.id.au>
+In-Reply-To: <1e7f2ee0ff2e863d04e1f98f381f217359110163.1180961962.git.michael@ellerman.id.au>
 References: <f0cd638495b96585dec513f41335154e60675813.1180961962.git.michael@ellerman.id.au>
+	<1e7f2ee0ff2e863d04e1f98f381f217359110163.1180961962.git.michael@ellerman.id.au>
 Content-Type: text/plain
-Date: Tue, 05 Jun 2007 08:43:32 +1000
-Message-Id: <1180997012.31677.79.camel@localhost.localdomain>
+Date: Tue, 05 Jun 2007 08:44:04 +1000
+Message-Id: <1180997044.31677.81.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,67 +24,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-06-04 at 22:59 +1000, Michael Ellerman wrote:
-> A future patch will need the logic at the end of irq_create_mapping()
-> which setups a virq and installs it in the irq_map. So split it out
-> into a new function irq_setup_virq().
+On Mon, 2007-06-04 at 23:00 +1000, Michael Ellerman wrote:
+> This patch adds irq_create_direct_mapping(). This routine is
+> an alternative to irq_create_mapping(), for irq controllers that
+> can use linux virq numbers directly as hardware numbers.
 > 
 > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
 Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 > ---
->  arch/powerpc/kernel/irq.c |   32 +++++++++++++++++++++-----------
->  1 files changed, 21 insertions(+), 11 deletions(-)
+>  arch/powerpc/kernel/irq.c |   24 ++++++++++++++++++++++++
+>  include/asm-powerpc/irq.h |    9 +++++++++
+>  2 files changed, 33 insertions(+), 0 deletions(-)
 > 
 > diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-> index 42c8ed6..9bafc88 100644
+> index 9bafc88..fdb3b00 100644
 > --- a/arch/powerpc/kernel/irq.c
 > +++ b/arch/powerpc/kernel/irq.c
-> @@ -591,6 +591,25 @@ static void irq_radix_rdunlock(unsigned long flags)
->  	local_irq_restore(flags);
+> @@ -611,6 +611,30 @@ static int irq_setup_virq(struct irq_host *host, unsigned int virq,
+>  	return 0;
 >  }
 >  
-> +static int irq_setup_virq(struct irq_host *host, unsigned int virq,
-> +			    irq_hw_number_t hwirq)
+> +unsigned int irq_create_direct_mapping(struct irq_host *host)
 > +{
-> +	/* Clear IRQ_NOREQUEST flag */
-> +	get_irq_desc(virq)->status &= ~IRQ_NOREQUEST;
+> +	unsigned int virq;
 > +
-> +	/* map it */
-> +	smp_wmb();
-> +	irq_map[virq].hwirq = hwirq;
-> +	smp_mb();
+> +	if (host == NULL)
+> +		host = irq_default_host;
 > +
-> +	if (host->ops->map(host, virq, hwirq)) {
-> +		pr_debug("irq: -> mapping failed, freeing\n");
-> +		irq_free_virt(virq, 1);
-> +		return -1;
+> +	BUG_ON(host == NULL);
+> +	WARN_ON(host->revmap_type != IRQ_HOST_MAP_NOMAP);
+> +
+> +	virq = irq_alloc_virt(host, 1, 0);
+> +	if (virq == NO_IRQ) {
+> +		pr_debug("irq: create_direct virq allocation failed\n");
+> +		return NO_IRQ;
 > +	}
 > +
-> +	return 0;
+> +	pr_debug("irq: create_direct obtained virq %d\n", virq);
+> +
+> +	if (irq_setup_virq(host, virq, virq))
+> +		return NO_IRQ;
+> +
+> +	return virq;
 > +}
->  
+> +
 >  unsigned int irq_create_mapping(struct irq_host *host,
 >  				irq_hw_number_t hwirq)
-> @@ -639,18 +658,9 @@ unsigned int irq_create_mapping(struct irq_host *host,
->  	}
->  	pr_debug("irq: -> obtained virq %d\n", virq);
+>  {
+> diff --git a/include/asm-powerpc/irq.h b/include/asm-powerpc/irq.h
+> index 4734cc1..8384e3f 100644
+> --- a/include/asm-powerpc/irq.h
+> +++ b/include/asm-powerpc/irq.h
+> @@ -226,6 +226,15 @@ extern void irq_dispose_mapping(unsigned int virq);
+>  extern unsigned int irq_find_mapping(struct irq_host *host,
+>  				     irq_hw_number_t hwirq);
 >  
-> -	/* Clear IRQ_NOREQUEST flag */
-> -	get_irq_desc(virq)->status &= ~IRQ_NOREQUEST;
-> -
-> -	/* map it */
-> -	smp_wmb();
-> -	irq_map[virq].hwirq = hwirq;
-> -	smp_mb();
-> -	if (host->ops->map(host, virq, hwirq)) {
-> -		pr_debug("irq: -> mapping failed, freeing\n");
-> -		irq_free_virt(virq, 1);
-> +	if (irq_setup_virq(host, virq, hwirq))
->  		return NO_IRQ;
-> -	}
-> +
->  	return virq;
->  }
->  EXPORT_SYMBOL_GPL(irq_create_mapping);
+> +/**
+> + * irq_create_direct_mapping - Allocate a virq for direct mapping
+> + * @host: host to allocate the virq for or NULL for default host
+> + *
+> + * This routine is used for irq controllers which can choose the hardware
+> + * interrupt numbers they generate. In such a case it's simplest to use
+> + * the linux virq as the hardware interrupt number.
+> + */
+> +extern unsigned int irq_create_direct_mapping(struct irq_host *host);
+>  
+>  /**
+>   * irq_radix_revmap - Find a linux virq from a hw irq number.
