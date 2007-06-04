@@ -1,25 +1,25 @@
 Return-Path: <jdl@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 41154DDF49
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jun 2007 08:30:05 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 8485BDDF9E
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jun 2007 08:30:11 +1000 (EST)
 Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l54MU09X009109
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Jun 2007 15:30:00 -0700 (MST)
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l54MU5aC009426
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 Jun 2007 15:30:06 -0700 (MST)
 Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l54MTxCe021853
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Jun 2007 17:30:00 -0500 (CDT)
-Subject: [PATCH v2 2/9] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l54MU3Eh021865
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 Jun 2007 17:30:05 -0500 (CDT)
+Subject: [PATCH v2 3/9] 8641HPCN: Add PCI-Express link training status check
 From: Jon Loeliger <jdl@freescale.com>
 To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Message-Id: <1180996199.9632.70.camel@ld0161-tx32>
+Message-Id: <1180996203.9632.71.camel@ld0161-tx32>
 Mime-Version: 1.0
-Date: Mon, 04 Jun 2007 17:29:59 -0500
+Date: Mon, 04 Jun 2007 17:30:03 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,132 +29,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Wade Farnsworth <wfarnsworth@mvista.com>
+From: Zhang Wei <wei.zhang@freescale.com>
 
-This adds device nodes for the PCI bridges as well as the ISA devices on
-the newer revision MPC8641HPCN.  It also adds the PCI ranges to the soc
-node so that address translation for the ISA devices works properly.
+Avoid system halt while the link training is fault.
 
-Signed-off-by: Wade Farnsworth <wfarnsworth@mvista.com>
+Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+Acked-by: Roy Zang <tie-fei.zang@freescale.com>
 Signed-off-by: Jon Loeliger <jdl@freescale.com>
 ---
- arch/powerpc/boot/dts/mpc8641_hpcn.dts |   97 +++++++++++++++++++++++++++----
- 1 files changed, 84 insertions(+), 13 deletions(-)
+ arch/powerpc/platforms/86xx/pci.c |   12 +++++++++++-
+ 1 files changed, 11 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-index 260b264..e96c4a0 100644
---- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-+++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-@@ -56,8 +56,12 @@
- 		#size-cells = <1>;
- 		#interrupt-cells = <2>;
- 		device_type = "soc";
--		ranges = <0 f8000000 00100000>;
--		reg = <f8000000 00100000>;	// CCSRBAR 1M
-+		ranges = <00001000 f8001000 000ff000
-+			  80000000 80000000 20000000
-+			  e2000000 e2000000 00100000
-+			  a0000000 a0000000 20000000
-+			  e3000000 e3000000 00100000>;
-+		reg = <f8000000 00001000>;	// CCSRBAR
- 		bus-frequency = <0>;
+diff --git a/arch/powerpc/platforms/86xx/pci.c b/arch/powerpc/platforms/86xx/pci.c
+index 7efae7c..07ff52c 100644
+--- a/arch/powerpc/platforms/86xx/pci.c
++++ b/arch/powerpc/platforms/86xx/pci.c
+@@ -122,7 +122,6 @@ static void __init
+ mpc86xx_setup_pcie(struct pci_controller *hose, u32 pcie_offset, u32 pcie_size)
+ {
+ 	u16 cmd;
+-	unsigned int temps;
  
- 		i2c@3000 {
-@@ -285,17 +289,84 @@
- 				f800 0 0 3 &i8259 0 0
- 				f800 0 0 4 &i8259 0 0
- 				>;
--			i8259: i8259@4d0 {
--				clock-frequency = <0>;
--				interrupt-controller;
--				device_type = "interrupt-controller";
--				#address-cells = <0>;
--				#interrupt-cells = <2>;
--				built-in;
--				compatible = "chrp,iic";
--                	        big-endian;
--				interrupts = <49 2>;
--				interrupt-parent = <&mpic>;
-+			uli1575@0 {
-+				reg = <0 0 0 0 0>;
-+				#size-cells = <2>;
-+				#address-cells = <3>;
-+				ranges = <02000000 0 80000000
-+					  02000000 0 80000000
-+					  0 20000000
-+					  01000000 0 00000000
-+					  01000000 0 00000000
-+					  0 00100000>;
-+
-+				pci_bridge@0 {
-+					reg = <0 0 0 0 0>;
-+					#size-cells = <2>;
-+					#address-cells = <3>;
-+					ranges = <02000000 0 80000000
-+						  02000000 0 80000000
-+						  0 20000000
-+						  01000000 0 00000000
-+						  01000000 0 00000000
-+						  0 00100000>;
-+
-+					isa@1e {
-+						device_type = "isa";
-+						#interrupt-cells = <2>;
-+						#size-cells = <1>;
-+						#address-cells = <2>;
-+						reg = <f000 0 0 0 0>;
-+						ranges = <1 0 01000000 0 0
-+							  00001000>;
-+						interrupt-parent = <&i8259>;
-+
-+						i8259: interrupt-controller@20 {
-+							reg = <1 20 2
-+							       1 a0 2
-+							       1 4d0 2>;
-+							clock-frequency = <0>;
-+							interrupt-controller;
-+							device_type = "interrupt-controller";
-+							#address-cells = <0>;
-+							#interrupt-cells = <2>;
-+							built-in;
-+							compatible = "chrp,iic";
-+							interrupts = <49 2>;
-+							interrupt-parent =
-+								<&mpic>;
-+						};
-+
-+						i8042@60 {
-+							#size-cells = <0>;
-+							#address-cells = <1>;
-+							reg = <1 60 1 1 64 1>;
-+							interrupts = <1 3 c 3>;
-+							interrupt-parent =
-+								<&i8259>;
-+
-+							keyboard@0 {
-+								reg = <0>;
-+								compatible = "pnpPNP,303";
-+							};
-+
-+							mouse@1 {
-+								reg = <1>;
-+								compatible = "pnpPNP,f03";
-+							};
-+						};
-+
-+						rtc@70 {
-+							compatible =
-+								"pnpPNP,b00";
-+							reg = <1 70 2>;
-+						};
-+
-+						gpio@400 {
-+							reg = <1 400 80>;
-+						};
-+					};
-+				};
- 			};
+ 	DBG("PCIE host controller register offset 0x%08x, size 0x%08x.\n",
+ 			pcie_offset, pcie_size);
+@@ -140,6 +139,9 @@ int mpc86xx_exclude_device(u_char bus, u_char devfn)
+ 	return PCIBIOS_SUCCESSFUL;
+ }
  
- 		};
++#define PCIE_LTSSM	0x04000004	/* PCIe Link Training and Status */
++#define PCIE_LTSSM_L0	0x16		/* L0 state */
++
+ int __init add_bridge(struct device_node *dev)
+ {
+ 	int len;
+@@ -148,12 +150,20 @@ int __init add_bridge(struct device_node *dev)
+ 	const int *bus_range;
+ 	int has_address = 0;
+ 	int primary = 0;
++	void *pcicfg_addr;
+ 
+ 	DBG("Adding PCIE host bridge %s\n", dev->full_name);
+ 
+ 	/* Fetch host bridge registers address */
+ 	has_address = (of_address_to_resource(dev, 0, &rsrc) == 0);
+ 
++	/* Probe the hose link training status */
++	pcicfg_addr = ioremap(rsrc.start, 0x1000);
++	out_be32(pcicfg_addr, 0x80000000 | PCIE_LTSSM);
++	if (in_le16(pcicfg_addr + 4) < PCIE_LTSSM_L0)
++		return -ENXIO;
++	iounmap(pcicfg_addr);
++
+ 	/* Get bus range if any */
+ 	bus_range = of_get_property(dev, "bus-range", &len);
+ 	if (bus_range == NULL || len < 2 * sizeof(int))
 -- 
 1.5.0.3
