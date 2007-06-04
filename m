@@ -1,10 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 04 Jun 2007 15:15:50 +1000
-Subject: [PATCH 15/21] powerpc: consolidate sys_sigaltstack
+Date: Mon, 04 Jun 2007 15:15:51 +1000
+Subject: [PATCH 16/21] powerpc: consolidate restore_sigmask
 In-Reply-To: <1180934134.603289.870346178920.qpush@grosgo>
-Message-Id: <20070604051555.8D50ADDF68@ozlabs.org>
+Message-Id: <20070604051556.3F278DDF75@ozlabs.org>
 Cc: Paul Mackerras <paulus@samba.org>, Christoph Hellwig <hch@lst.de>,
 	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -18,94 +18,127 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Christoph Hellwig <hch@lst.de>
 
-sys_sigaltstack is the same on 32bit and 64 and we can consolidate it
-to signal.c.  The only difference is that the 32bit code uses ints
-for the unused register paramaters and 64bit unsigned long.  I've
-changed it to unsigned long because it's the same width on 32bit.
-
-(I also wonder who came up with this awkward calling convention.. :))
+restore_sigmask is exactly the same on 32 and 64bit, so move it to
+common code. Also move _BLOCKABLE to signal.h to avoid defining it
+multiple times.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- arch/powerpc/kernel/signal.c    |    7 +++++++
- arch/powerpc/kernel/signal_32.c |    8 --------
- arch/powerpc/kernel/signal_64.c |    8 --------
- include/asm-powerpc/syscalls.h  |    7 -------
- 4 files changed, 7 insertions(+), 23 deletions(-)
+ arch/powerpc/kernel/signal.c    |   15 +++++++++++++++
+ arch/powerpc/kernel/signal.h    |    3 +++
+ arch/powerpc/kernel/signal_32.c |   19 -------------------
+ arch/powerpc/kernel/signal_64.c |   15 ---------------
+ 4 files changed, 18 insertions(+), 34 deletions(-)
 
+Index: linux-cell/arch/powerpc/kernel/signal.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/kernel/signal.c	2007-06-04 11:45:55.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/signal.c	2007-06-04 11:45:58.000000000 +1000
+@@ -12,6 +12,21 @@
+ #include <linux/ptrace.h>
+ #include <linux/signal.h>
+ 
++#include "signal.h"
++
++
++/*
++ * Restore the user process's signal mask
++ */
++void restore_sigmask(sigset_t *set)
++{
++	sigdelsetmask(set, ~_BLOCKABLE);
++	spin_lock_irq(&current->sighand->siglock);
++	current->blocked = *set;
++	recalc_sigpending();
++	spin_unlock_irq(&current->sighand->siglock);
++}
++
+ void check_syscall_restart(struct pt_regs *regs, struct k_sigaction *ka,
+ 			   int has_handler)
+ {
+Index: linux-cell/arch/powerpc/kernel/signal.h
+===================================================================
+--- linux-cell.orig/arch/powerpc/kernel/signal.h	2007-06-04 11:45:41.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/signal.h	2007-06-04 11:45:58.000000000 +1000
+@@ -10,6 +10,9 @@
+ #ifndef _POWERPC_ARCH_SIGNAL_H
+ #define _POWERPC_ARCH_SIGNAL_H
+ 
++#define _BLOCKABLE (~(sigmask(SIGKILL) | sigmask(SIGSTOP)))
++
++extern void restore_sigmask(sigset_t *set);
+ extern void check_syscall_restart(struct pt_regs *regs, struct k_sigaction *ka,
+ 				  int has_handler);
+ 
 Index: linux-cell/arch/powerpc/kernel/signal_32.c
 ===================================================================
---- linux-cell.orig/arch/powerpc/kernel/signal_32.c	2007-06-04 11:45:43.000000000 +1000
-+++ linux-cell/arch/powerpc/kernel/signal_32.c	2007-06-04 11:45:55.000000000 +1000
-@@ -253,14 +253,6 @@ long sys_sigsuspend(old_sigset_t mask)
-  	return -ERESTARTNOHAND;
- }
+--- linux-cell.orig/arch/powerpc/kernel/signal_32.c	2007-06-04 11:45:55.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/signal_32.c	2007-06-04 11:45:58.000000000 +1000
+@@ -55,8 +55,6 @@
  
--#ifdef CONFIG_PPC32
--long sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss, int r5,
--		int r6, int r7, int r8, struct pt_regs *regs)
+ #undef DEBUG_SIG
+ 
+-#define _BLOCKABLE (~(sigmask(SIGKILL) | sigmask(SIGSTOP)))
+-
+ #ifdef CONFIG_PPC64
+ #define do_signal	do_signal32
+ #define sys_sigsuspend	compat_sys_sigsuspend
+@@ -697,23 +695,6 @@ int compat_sys_sigaltstack(u32 __new, u3
+ }
+ #endif /* CONFIG_PPC64 */
+ 
+-
+-/*
+- * Restore the user process's signal mask
+- */
+-#ifdef CONFIG_PPC64
+-extern void restore_sigmask(sigset_t *set);
+-#else /* CONFIG_PPC64 */
+-static void restore_sigmask(sigset_t *set)
 -{
--	return do_sigaltstack(uss, uoss, regs->gpr[1]);
+-	sigdelsetmask(set, ~_BLOCKABLE);
+-	spin_lock_irq(&current->sighand->siglock);
+-	current->blocked = *set;
+-	recalc_sigpending();
+-	spin_unlock_irq(&current->sighand->siglock);
 -}
 -#endif
 -
- long sys_sigaction(int sig, struct old_sigaction __user *act,
- 		struct old_sigaction __user *oact)
- {
+ /*
+  * Set up a signal frame for a "real-time" signal handler
+  * (one which gets siginfo).
 Index: linux-cell/arch/powerpc/kernel/signal_64.c
 ===================================================================
---- linux-cell.orig/arch/powerpc/kernel/signal_64.c	2007-06-04 11:45:43.000000000 +1000
-+++ linux-cell/arch/powerpc/kernel/signal_64.c	2007-06-04 11:45:55.000000000 +1000
-@@ -66,14 +66,6 @@ struct rt_sigframe {
- 	char abigap[288];
- } __attribute__ ((aligned (16)));
+--- linux-cell.orig/arch/powerpc/kernel/signal_64.c	2007-06-04 11:45:55.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/signal_64.c	2007-06-04 11:45:58.000000000 +1000
+@@ -38,8 +38,6 @@
  
--long sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss, unsigned long r5,
--		     unsigned long r6, unsigned long r7, unsigned long r8,
--		     struct pt_regs *regs)
+ #define DEBUG_SIG 0
+ 
+-#define _BLOCKABLE (~(sigmask(SIGKILL) | sigmask(SIGSTOP)))
+-
+ #define GP_REGS_SIZE	min(sizeof(elf_gregset_t), sizeof(struct pt_regs))
+ #define FP_REGS_SIZE	sizeof(elf_fpregset_t)
+ 
+@@ -243,19 +241,6 @@ static long setup_trampoline(unsigned in
+ }
+ 
+ /*
+- * Restore the user process's signal mask (also used by signal32.c)
+- */
+-void restore_sigmask(sigset_t *set)
 -{
--	return do_sigaltstack(uss, uoss, regs->gpr[1]);
+-	sigdelsetmask(set, ~_BLOCKABLE);
+-	spin_lock_irq(&current->sighand->siglock);
+-	current->blocked = *set;
+-	recalc_sigpending();
+-	spin_unlock_irq(&current->sighand->siglock);
 -}
 -
 -
- /*
-  * Set up the sigcontext for the signal frame.
+-/*
+  * Handle {get,set,swap}_context operations
   */
-Index: linux-cell/include/asm-powerpc/syscalls.h
-===================================================================
---- linux-cell.orig/include/asm-powerpc/syscalls.h	2007-06-04 11:45:43.000000000 +1000
-+++ linux-cell/include/asm-powerpc/syscalls.h	2007-06-04 11:45:55.000000000 +1000
-@@ -43,16 +43,9 @@ asmlinkage long ppc_newuname(struct new_
- 
- asmlinkage long sys_rt_sigsuspend(sigset_t __user *unewset,
- 		size_t sigsetsize);
--
--#ifndef __powerpc64__
--asmlinkage long sys_sigaltstack(const stack_t __user *uss,
--		stack_t __user *uoss, int r5, int r6, int r7, int r8,
--		struct pt_regs *regs);
--#else /* __powerpc64__ */
- asmlinkage long sys_sigaltstack(const stack_t __user *uss,
- 		stack_t __user *uoss, unsigned long r5, unsigned long r6,
- 		unsigned long r7, unsigned long r8, struct pt_regs *regs);
--#endif /* __powerpc64__ */
- 
- #endif /* __KERNEL__ */
- #endif /* __ASM_POWERPC_SYSCALLS_H */
-Index: linux-cell/arch/powerpc/kernel/signal.c
-===================================================================
---- linux-cell.orig/arch/powerpc/kernel/signal.c	2007-06-04 11:45:50.000000000 +1000
-+++ linux-cell/arch/powerpc/kernel/signal.c	2007-06-04 11:45:55.000000000 +1000
-@@ -62,3 +62,10 @@ void check_syscall_restart(struct pt_reg
- 		regs->ccr |= 0x10000000;
- 	}
- }
-+
-+long sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss,
-+		unsigned long r5, unsigned long r6, unsigned long r7,
-+		unsigned long r8, struct pt_regs *regs)
-+{
-+	return do_sigaltstack(uss, uoss, regs->gpr[1]);
-+}
+ int sys_swapcontext(struct ucontext __user *old_ctx,
