@@ -1,26 +1,25 @@
 Return-Path: <jdl@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E51ECDDF75
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jun 2007 08:29:58 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 41154DDF49
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jun 2007 08:30:05 +1000 (EST)
 Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l54MTr1r009369
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Jun 2007 15:29:53 -0700 (MST)
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l54MU09X009109
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 Jun 2007 15:30:00 -0700 (MST)
 Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l54MTqIF021832
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Jun 2007 17:29:53 -0500 (CDT)
-Subject: [PATCH v2 1/9] Remove the errata fix codes for MPC8641 silicon ver
-	1.0 which is end of life.
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l54MTxCe021853
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 Jun 2007 17:30:00 -0500 (CDT)
+Subject: [PATCH v2 2/9] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
 From: Jon Loeliger <jdl@freescale.com>
 To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Message-Id: <1180996192.9632.69.camel@ld0161-tx32>
+Message-Id: <1180996199.9632.70.camel@ld0161-tx32>
 Mime-Version: 1.0
-Date: Mon, 04 Jun 2007 17:29:52 -0500
+Date: Mon, 04 Jun 2007 17:29:59 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,96 +29,132 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Zhang Wei <wei.zhang@freescale.com>
+From: Wade Farnsworth <wfarnsworth@mvista.com>
 
-Remove the errata fix codes for MPC8641 silicon ver 1.0 which
-is end of life.
+This adds device nodes for the PCI bridges as well as the ISA devices on
+the newer revision MPC8641HPCN.  It also adds the PCI ranges to the soc
+node so that address translation for the ISA devices works properly.
 
-The MPC8641 silicon ver 1.0 is not fully support PCI/PCI Express
-specifications. The revision 2.0 fixes all of these errata
-and the rev 1.0 silicon is end of life. So errata codes are removed.
-
-Now, The chip is full compatible with PCI/PCI Express
-specifications. The generic PCI code is used.
-
-Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
-Acked-by: Roy Zang <tie-fei.zang@freescale.com>
+Signed-off-by: Wade Farnsworth <wfarnsworth@mvista.com>
 Signed-off-by: Jon Loeliger <jdl@freescale.com>
 ---
- arch/powerpc/Kconfig                  |    3 +--
- arch/powerpc/platforms/86xx/mpc86xx.h |    6 ------
- arch/powerpc/platforms/86xx/pci.c     |   10 +---------
- 3 files changed, 2 insertions(+), 17 deletions(-)
+ arch/powerpc/boot/dts/mpc8641_hpcn.dts |   97 +++++++++++++++++++++++++++----
+ 1 files changed, 84 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 56d3c0d..e683668 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -183,7 +183,6 @@ config PPC_86xx
- 	bool "Freescale 86xx"
- 	select 6xx
- 	select FSL_SOC
--	select FSL_PCIE
- 	select PPC_FPU
- 	select ALTIVEC
- 	help
-@@ -675,7 +674,7 @@ config FSL_SOC
+diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+index 260b264..e96c4a0 100644
+--- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
++++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+@@ -56,8 +56,12 @@
+ 		#size-cells = <1>;
+ 		#interrupt-cells = <2>;
+ 		device_type = "soc";
+-		ranges = <0 f8000000 00100000>;
+-		reg = <f8000000 00100000>;	// CCSRBAR 1M
++		ranges = <00001000 f8001000 000ff000
++			  80000000 80000000 20000000
++			  e2000000 e2000000 00100000
++			  a0000000 a0000000 20000000
++			  e3000000 e3000000 00100000>;
++		reg = <f8000000 00001000>;	// CCSRBAR
+ 		bus-frequency = <0>;
  
- config FSL_PCIE
- 	bool
--	depends on PPC_86xx
-+	depends on PPC_85xx
+ 		i2c@3000 {
+@@ -285,17 +289,84 @@
+ 				f800 0 0 3 &i8259 0 0
+ 				f800 0 0 4 &i8259 0 0
+ 				>;
+-			i8259: i8259@4d0 {
+-				clock-frequency = <0>;
+-				interrupt-controller;
+-				device_type = "interrupt-controller";
+-				#address-cells = <0>;
+-				#interrupt-cells = <2>;
+-				built-in;
+-				compatible = "chrp,iic";
+-                	        big-endian;
+-				interrupts = <49 2>;
+-				interrupt-parent = <&mpic>;
++			uli1575@0 {
++				reg = <0 0 0 0 0>;
++				#size-cells = <2>;
++				#address-cells = <3>;
++				ranges = <02000000 0 80000000
++					  02000000 0 80000000
++					  0 20000000
++					  01000000 0 00000000
++					  01000000 0 00000000
++					  0 00100000>;
++
++				pci_bridge@0 {
++					reg = <0 0 0 0 0>;
++					#size-cells = <2>;
++					#address-cells = <3>;
++					ranges = <02000000 0 80000000
++						  02000000 0 80000000
++						  0 20000000
++						  01000000 0 00000000
++						  01000000 0 00000000
++						  0 00100000>;
++
++					isa@1e {
++						device_type = "isa";
++						#interrupt-cells = <2>;
++						#size-cells = <1>;
++						#address-cells = <2>;
++						reg = <f000 0 0 0 0>;
++						ranges = <1 0 01000000 0 0
++							  00001000>;
++						interrupt-parent = <&i8259>;
++
++						i8259: interrupt-controller@20 {
++							reg = <1 20 2
++							       1 a0 2
++							       1 4d0 2>;
++							clock-frequency = <0>;
++							interrupt-controller;
++							device_type = "interrupt-controller";
++							#address-cells = <0>;
++							#interrupt-cells = <2>;
++							built-in;
++							compatible = "chrp,iic";
++							interrupts = <49 2>;
++							interrupt-parent =
++								<&mpic>;
++						};
++
++						i8042@60 {
++							#size-cells = <0>;
++							#address-cells = <1>;
++							reg = <1 60 1 1 64 1>;
++							interrupts = <1 3 c 3>;
++							interrupt-parent =
++								<&i8259>;
++
++							keyboard@0 {
++								reg = <0>;
++								compatible = "pnpPNP,303";
++							};
++
++							mouse@1 {
++								reg = <1>;
++								compatible = "pnpPNP,f03";
++							};
++						};
++
++						rtc@70 {
++							compatible =
++								"pnpPNP,b00";
++							reg = <1 70 2>;
++						};
++
++						gpio@400 {
++							reg = <1 400 80>;
++						};
++					};
++				};
+ 			};
  
- # Yes MCA RS/6000s exist but Linux-PPC does not currently support any
- config MCA
-diff --git a/arch/powerpc/platforms/86xx/mpc86xx.h b/arch/powerpc/platforms/86xx/mpc86xx.h
-index 2834462..740b300 100644
---- a/arch/powerpc/platforms/86xx/mpc86xx.h
-+++ b/arch/powerpc/platforms/86xx/mpc86xx.h
-@@ -19,12 +19,6 @@ extern int add_bridge(struct device_node *dev);
- 
- extern int mpc86xx_exclude_device(u_char bus, u_char devfn);
- 
--extern void setup_indirect_pcie(struct pci_controller *hose,
--				       u32 cfg_addr, u32 cfg_data);
--extern void setup_indirect_pcie_nomap(struct pci_controller *hose,
--					     void __iomem *cfg_addr,
--					     void __iomem *cfg_data);
--
- extern void __init mpc86xx_smp_init(void);
- 
- #endif	/* __MPC86XX_H__ */
-diff --git a/arch/powerpc/platforms/86xx/pci.c b/arch/powerpc/platforms/86xx/pci.c
-index 8235c56..7efae7c 100644
---- a/arch/powerpc/platforms/86xx/pci.c
-+++ b/arch/powerpc/platforms/86xx/pci.c
-@@ -133,18 +133,10 @@ mpc86xx_setup_pcie(struct pci_controller *hose, u32 pcie_offset, u32 pcie_size)
- 	early_write_config_word(hose, 0, 0, PCI_COMMAND, cmd);
- 
- 	early_write_config_byte(hose, 0, 0, PCI_LATENCY_TIMER, 0x80);
--
--	/* PCIE Bus, Fix the MPC8641D host bridge's location to bus 0xFF. */
--	early_read_config_dword(hose, 0, 0, PCI_PRIMARY_BUS, &temps);
--	temps = (temps & 0xff000000) | (0xff) | (0x0 << 8) | (0xfe << 16);
--	early_write_config_dword(hose, 0, 0, PCI_PRIMARY_BUS, temps);
- }
- 
- int mpc86xx_exclude_device(u_char bus, u_char devfn)
- {
--	if (bus == 0 && PCI_SLOT(devfn) == 0)
--		return PCIBIOS_DEVICE_NOT_FOUND;
--
- 	return PCIBIOS_SUCCESSFUL;
- }
- 
-@@ -178,7 +170,7 @@ int __init add_bridge(struct device_node *dev)
- 	hose->first_busno = bus_range ? bus_range[0] : 0x0;
- 	hose->last_busno = bus_range ? bus_range[1] : 0xfe;
- 
--	setup_indirect_pcie(hose, rsrc.start, rsrc.start + 0x4);
-+	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4);
- 
- 	/* Setup the PCIE host controller. */
- 	mpc86xx_setup_pcie(hose, rsrc.start, rsrc.end - rsrc.start + 1);
+ 		};
 -- 
 1.5.0.3
