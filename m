@@ -1,18 +1,25 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 34629DDDE4
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jun 2007 06:17:47 +1000 (EST)
-Received: from lyakh (helo=localhost)
-	by poirot.grange with local-esmtp (Exim 3.36 #1 (Debian))
-	id 1HvIzl-0002x5-00
-	for <linuxppc-dev@ozlabs.org>; Mon, 04 Jun 2007 22:17:41 +0200
-Date: Mon, 4 Jun 2007 22:17:41 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] add rtc-on-i2c node to two linkstation device-trees
-Message-ID: <Pine.LNX.4.60.0706042159090.3653@poirot.grange>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-Path: <jdl@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6521ADDEFC
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jun 2007 06:24:24 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l54KOJ0u008134
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 Jun 2007 13:24:19 -0700 (MST)
+Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l54KOIaT003504
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 Jun 2007 15:24:18 -0500 (CDT)
+Subject: [PATCH] Replace use of GET_64BIT(prop, i) with of_read_number().
+From: Jon Loeliger <jdl@freescale.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Message-Id: <1180988658.9632.38.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Mon, 04 Jun 2007 15:24:18 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,59 +29,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If approved here, this patch will follow the previous one for i2c-of 
-definitions to the -mm tree, to fix linkstation breakage caused by 
-converting rtc-rs5c372 driver to the new i2c api.
+Remove uses of hack GET_64BIT() property macro and use
+the more general of_read_number() function from prom.h
+as suggested by Milton.
 
-Signed-off-by: G. Liakhovetski <g.liakhovetski@gmx.de>
+Signed-off-by: Jon Loeliger <jdl@freescale.com>
+---
 
-diff --git a/arch/powerpc/boot/dts/kuroboxHG.dts b/arch/powerpc/boot/dts/kuroboxHG.dts
-index 919eb29..4a904b1 100644
---- a/arch/powerpc/boot/dts/kuroboxHG.dts
-+++ b/arch/powerpc/boot/dts/kuroboxHG.dts
-@@ -70,11 +70,20 @@ build with: "dtc -f -I dts -O dtb -o kuroboxHG.dtb -V 16 kuroboxHG.dts"
+Someone in 64-bit land please check this!
+I have no board on which to test this.  Sorry.
+
+jdl
+
+
+ arch/powerpc/kernel/pci_64.c |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+index 249cca2..b7cd53f 100644
+--- a/arch/powerpc/kernel/pci_64.c
++++ b/arch/powerpc/kernel/pci_64.c
+@@ -291,7 +291,6 @@ static unsigned int pci_parse_of_flags(u32 addr0)
+ 	return flags;
+ }
  
- 		i2c@80003000 {
- 			linux,phandle = <4300>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
- 			device_type = "i2c";
- 			compatible = "fsl-i2c";
- 			reg = <80003000 1000>;
- 			interrupts = <5 2>;
- 			interrupt-parent = <4400>;
-+
-+			rtc@32 {
-+				device_type = "rtc";
-+				compatible = "rtc-rs5c372";
-+				model = "rs5c372b";
-+				reg = <32>;
-+			};
- 		};
+-#define GET_64BIT(prop, i)	((((u64) (prop)[(i)]) << 32) | (prop)[(i)+1])
  
- 		serial@80004500 {
-diff --git a/arch/powerpc/boot/dts/kuroboxHD.dts b/arch/powerpc/boot/dts/kuroboxHD.dts
-index 157dc98..b5c0e78 100644
---- a/arch/powerpc/boot/dts/kuroboxHD.dts
-+++ b/arch/powerpc/boot/dts/kuroboxHD.dts
-@@ -70,11 +70,20 @@ build with: "dtc -f -I dts -O dtb -o kuroboxHD.dtb -V 16 kuroboxHD.dts"
- 
- 		i2c@80003000 {
- 			linux,phandle = <4300>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
- 			device_type = "i2c";
- 			compatible = "fsl-i2c";
- 			reg = <80003000 1000>;
- 			interrupts = <5 2>;
- 			interrupt-parent = <4400>;
-+
-+			rtc@32 {
-+				device_type = "rtc";
-+				compatible = "rtc-rs5c372";
-+				model = "rs5c372b";
-+				reg = <32>;
-+			};
- 		};
- 
- 		serial@80004500 {
+ static void pci_parse_of_addrs(struct device_node *node, struct pci_dev *dev)
+ {
+@@ -310,8 +309,8 @@ static void pci_parse_of_addrs(struct device_node *node, struct pci_dev *dev)
+ 		flags = pci_parse_of_flags(addrs[0]);
+ 		if (!flags)
+ 			continue;
+-		base = GET_64BIT(addrs, 1);
+-		size = GET_64BIT(addrs, 3);
++		base = of_read_number(&addrs[1], 2);
++		size = of_read_number(&addrs[3], 2);
+ 		if (!size)
+ 			continue;
+ 		i = addrs[0] & 0xff;
+@@ -477,7 +476,7 @@ void __devinit of_scan_pci_bridge(struct device_node *node,
+ 	i = 1;
+ 	for (; len >= 32; len -= 32, ranges += 8) {
+ 		flags = pci_parse_of_flags(ranges[0]);
+-		size = GET_64BIT(ranges, 6);
++		size = of_read_number(&ranges[6], 2);
+ 		if (flags == 0 || size == 0)
+ 			continue;
+ 		if (flags & IORESOURCE_IO) {
+@@ -496,7 +495,7 @@ void __devinit of_scan_pci_bridge(struct device_node *node,
+ 			res = bus->resource[i];
+ 			++i;
+ 		}
+-		res->start = GET_64BIT(ranges, 1);
++		res->start = of_read_number(&ranges[1], 2);
+ 		res->end = res->start + size - 1;
+ 		res->flags = flags;
+ 		fixup_resource(res, dev);
+-- 
+1.5.0.3
