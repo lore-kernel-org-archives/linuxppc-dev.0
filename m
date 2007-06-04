@@ -4,23 +4,22 @@ Received: from de01egw01.freescale.net (de01egw01.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 85A15DDFC1
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jun 2007 08:30:12 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 1BD2CDDFBA
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jun 2007 08:30:15 +1000 (EST)
 Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
 	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l54MU7KD009151
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Jun 2007 15:30:07 -0700 (MST)
+	l54MUBZC009169
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 Jun 2007 15:30:11 -0700 (MST)
 Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l54MU6M1021876
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Jun 2007 17:30:07 -0500 (CDT)
-Subject: [PATCH v2 4/9] Float the PCi bus number assignments on MPC8641HPCN
-	board.
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l54MUAVE021901
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 Jun 2007 17:30:11 -0500 (CDT)
+Subject: [PATCH v2 5/9] Set IDE in ULI1575 to not native mode.
 From: Jon Loeliger <jdl@freescale.com>
 To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Message-Id: <1180996206.9632.72.camel@ld0161-tx32>
+Message-Id: <1180996210.9632.73.camel@ld0161-tx32>
 Mime-Version: 1.0
-Date: Mon, 04 Jun 2007 17:30:06 -0500
+Date: Mon, 04 Jun 2007 17:30:10 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,48 +31,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Zhang Wei <wei.zhang@freescale.com>
 
+Set IDE in ULI1575 to not 100% native mode, which forces
+the IDE driver to probe the irq itself.
+
 Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
-Acked-by: Roy Zang <tie-fei.zang@freescale.com>
 Signed-off-by: Jon Loeliger <jdl@freescale.com>
 ---
  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    1 +
- arch/powerpc/platforms/86xx/pci.c          |   12 ++++++++++++
- 2 files changed, 13 insertions(+), 0 deletions(-)
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
 diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-index 1051702..9259788 100644
+index 9259788..a82da4b 100644
 --- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
 +++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-@@ -363,6 +363,7 @@ mpc86xx_hpcn_setup_arch(void)
- 	}
- 
- #ifdef CONFIG_PCI
-+	pci_assign_all_buses = 1;
- 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
- 		add_bridge(np);
- 
-diff --git a/arch/powerpc/platforms/86xx/pci.c b/arch/powerpc/platforms/86xx/pci.c
-index 07ff52c..c80d8f1 100644
---- a/arch/powerpc/platforms/86xx/pci.c
-+++ b/arch/powerpc/platforms/86xx/pci.c
-@@ -136,6 +136,18 @@ mpc86xx_setup_pcie(struct pci_controller *hose, u32 pcie_offset, u32 pcie_size)
- 
- int mpc86xx_exclude_device(u_char bus, u_char devfn)
+@@ -319,6 +319,7 @@ static void __devinit quirk_uli5229(struct pci_dev *dev)
  {
-+	struct pci_controller *hose;
-+
-+	hose = pci_bus_to_hose(bus);
-+	if (unlikely(!hose))
-+		return PCIBIOS_DEVICE_NOT_FOUND;
-+
-+	/* Correcting the hose->bus_offset value. */
-+	out_be32(hose->cfg_addr, 0x80000000 | ((hose->first_busno
-+					- hose->bus_offset) << 16));
-+	if (unlikely(in_le32(hose->cfg_data) == 0xffffffff))
-+		hose->bus_offset = hose->bus_offset ? 0 : hose->first_busno;
-+
- 	return PCIBIOS_SUCCESSFUL;
- }
- 
+ 	unsigned short temp;
+ 	pci_write_config_word(dev, 0x04, 0x0405);
++	dev->class &= ~0x5;
+ 	pci_read_config_word(dev, 0x4a, &temp);
+ 	temp |= 0x1000;
+ 	pci_write_config_word(dev, 0x4a, temp);
 -- 
 1.5.0.3
