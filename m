@@ -1,31 +1,13 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7D12BDDE18
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jun 2007 06:28:02 +1000 (EST)
-In-Reply-To: <20070603083339.GB2157@iram.es>
-References: <1180720112.14219.62.camel@ld0161-tx32>
-	<dfc15991e31bfc09389461dc443acd7c@kernel.crashing.org>
-	<1180734314.5674.49.camel@rhino>
-	<4fb92a9dfccf515bdc1522d08f10f823@kernel.crashing.org>
-	<20070602085359.GA10333@iram.es>
-	<3ebd6ca6877ea74925f066ff96ac81db@kernel.crashing.org>
-	<20070602195308.GA21618@iram.es>
-	<12ad593bd17f769e44f05bc24eac4d0a@kernel.crashing.org>
-	<1180828907.14025.37.camel@localhost.localdomain>
-	<28e0600256815f93db45b2f4eb2d9df5@kernel.crashing.org>
-	<20070603083339.GB2157@iram.es>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <02DC2E36-86B1-4458-BB0C-13CF79AC1D11@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
-Date: Mon, 4 Jun 2007 15:27:59 -0500
-To: Gabriel Paubert <paubert@iram.es>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <mgreer@mvista.com>
+Date: Mon, 4 Jun 2007 13:56:46 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
+Message-ID: <20070604205646.GD10612@mag.az.mvista.com>
+References: <20070601232022.GA21237@mag.az.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070601232022.GA21237@mag.az.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,57 +17,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Okay, >25 msgs from a ~10 line patch.  I think that's a new personal
+record for me. ;)
 
-On Jun 3, 2007, at 03:33, Gabriel Paubert wrote:
+More seriously, I've simply been trying to provide a DT node that works
+with the current code in drivers/mtd/maps/physmap_of.c.  Obviously,
+there are issues with that code and my DT node.
 
-> On Sun, Jun 03, 2007 at 09:41:33AM +0200, Segher Boessenkool wrote:
->>>> Oh what the hell, I'm too curious...  "pnpPNP,0" it is.
->>>>
->>>>> I believe that "8259" should appear somewhere because of the
->>>>> "8259-interrupt-acknowledge" property (defined in CHRP bindings)
->>>>> which you can have on the parent bridge to speed up interrupt
->>>>> vector acquisition.
->>>>
->>>> You're not CHRP so you have nothing to do with the CHRP
->>>> bindings...
->>>
->>> Still, you are close to CHRP
->>
->> Not at all, the rest of the device interrupt subsystem
->> is very different, too.
->
-> Given how well you agree, I understand how other people
-> might get a bit confused ;-)
->
-> This said, I'm looking at device trees right now, and I can understand
-> that interrupt-parent of the 8259 is &mpic in mpc8641_hpcn.dts, but
-> I don't understand at all why it is &pci1 on the mpc85??cds.dts.
->
-> But the definition of the ISA bridge in these files is very strange to
-> start with: I've never seen an ISA bridge with only an interrupt  
-> controller
-> on it, no interrupts are connected to it and its reg property is
-> almost certainly wrong. Maybe it is an example of things that should
-> not be done.
+So to try a different approach, here is the hardware info and a copy of
+the relevant DT that I currently have.  Segher, et. al., if you can
+find the time, please give me your best guidance as to what the DT
+node(s) should really look like (and how physmap.c should really work).
+I'll be happy to hack physmap_of.c once I have a clear understanding of
+how it should work (and there is clear agreement on that :).
 
+Mark
+---
 
-I take full responsibility for that.  The CDS is a strange beast, so  
-I did some strange things in the DTS.
+Hardware:
+---------
+[As I read this, I realize I have the DT node messed up anyway.]
+- Not that this matters but this is a Marvell mv64360/mv64362 based board
+  with a MPC7447A processor.
+- There are two 32MB banks of two Intel Stata Flash (NOR) chips (CFI).
+  Each 32MB bank is 32-bits wide built with two 8Mx16 28F128K3 devices
+  (http://download.intel.com/design/flcomp/datashts/29073709.pdf).
+  Bits 0-15 from the first device, bits 16-31 from the second one.
+  The two banks are contiguous in the processor's physical memory space.
+- The MTD partitions are described in the DT.
 
-The i8259 is on a subsidiary bus, and so it's one bus #1.  I chose  
-not to create a proper node around it.  Not for any good reason.  The  
-reason its interrupt parent is pci1 is because the i8259 emits its  
-irq though PCI.  This is because the 8555 (and other CDS chips) are  
-actually on a PCI card which is connected through PCI 1, while the  
-i8259 is behind a bridge on the motherboard into which the CDS  
-Carrier Card is plugged.
+For your reference, the exiting DT:
+-----------------------------------
 
-I always find my grammar stretched to the breaking point when  
-describing the PCI topology of the CDS!
+	mv64x60@f1000000 { /* Marvell Discovery */
+		#address-cells = <1>;
+		#size-cells = <1>;
+		#interrupt-cells = <1>;
+		model = "mv64360";			/* Default */
+		compatible = "marvell,mv64x60";
+		clock-frequency = <7f28155>;		/* 133.333333 MHz */
+		reg = <f1000000 00010000>;
+		virtual-reg = <f1000000>;
+		ranges = <88000000 88000000 01000000	/* PCI 0 I/O Space */
+			  80000000 80000000 08000000	/* PCI 0 MEM Space */
+			  a0000000 a0000000 04000000	/* User FLASH */
+			  00000000 f1000000 00010000	/* Bridge's regs */
+			  f2000000 f2000000 00040000>;	/* Integrated SRAM */
 
-The 8641's topology is much simpler, and the i8259 sends its  
-interrupts over an external interrupt pin which goes through the mpic/ 
-openpic.
+		flash@a0000000 {
+			device_type = "rom";
+			compatible = "direct-mapped";
+			reg = <a0000000 4000000>; /* Default (64MB) */
+			probe-type = "CFI";
+			bank-width = <4>;
+			partitions = <00000000 00100000 /* RO */
+				      00100000 00040001 /* RW */
+				      00140000 00400000 /* RO */
+				      00540000 039c0000 /* RO */
+				      03f00000 00100000>; /* RO */
+			partition-names = "FW Image A", "FW Config Data", "Kernel Image", "Filesystem", "FW Image B";
+		};
 
+So, what should the DT look like for this thing?  And, what should
+phymap_of.c be doing?
 
-Andy
+Mark
