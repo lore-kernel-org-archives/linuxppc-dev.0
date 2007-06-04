@@ -1,38 +1,17 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 81AACDDDE7
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 19:01:59 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l5491rRX018437
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Jun 2007 02:01:53 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l5491qeY018369
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Jun 2007 04:01:52 -0500 (CDT)
-Subject: Re: [PATCH v2]: Fix e500 v2 core reboot bug
-From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <dc4e7ef8f03da79b9322f21b8b82c6d9@kernel.crashing.org>
-References: <1180406209.8139.13.camel@localhost.localdomain>
-	<BA0C2035-FCAD-4B34-A622-F79432079F10@kernel.crashing.org>
-	<1180492466.12577.6.camel@localhost.localdomain>
-	<A78C881D-26C3-4545-85CA-80C05085C039@kernel.crashing.org>
-	<1180503967.12577.20.camel@localhost.localdomain>
-	<19325B38-202C-4837-9BE8-0ACA482F2605@kernel.crashing.org>
-	<976AFF56-7590-46B9-ADCA-4FA6673D4C9B@kernel.crashing.org>
-	<1180945726.10048.0.camel@localhost.localdomain>
-	<dc4e7ef8f03da79b9322f21b8b82c6d9@kernel.crashing.org>
-Content-Type: text/plain
-Message-Id: <1180947682.10048.23.camel@localhost.localdomain>
-Mime-Version: 1.0
-Date: 04 Jun 2007 17:01:23 +0800
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <miltonm@bga.com>
+Received: from kcout02.prserv.net (kcout02.prserv.net [12.154.55.32])
+	by ozlabs.org (Postfix) with ESMTP id DD8C0DDE27
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 19:22:50 +1000 (EST)
+In-Reply-To: <25445.1180941825@neuling.org>
+References: <25445.1180941825@neuling.org>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <8f5d8a214e9042b0c556ac7256928a52@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH] kexec ppc64: fix misaligned cmdline
+Date: Mon, 4 Jun 2007 04:22:33 -0500
+To: Michael Neuling <mikey@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, horms@verge.net.au, kexec@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,46 +21,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-06-04 at 16:41, Segher Boessenkool wrote:
-> >> After some discussion on IRC I think the following is the suggested
-> >> node we should add in.
-> >>
-> >> guts@e00000 {
-> >>         compatible = "fsl,mpc8548-guts";
-> >>         reg = <e00000 1000>;
-> > one more zero!
-> 
-> Yeah.
-> 
-> >>         fsl,has-rstcr;
-> >> };
-> 
-> If "guts" is some kind of official name (i.e., the
-> block is called that in the user manual), it looks
-> okay to me.  
-No! It is not official name. It is provided by Kumar. It should be a
-abbr. standing for "Global Utilities" as far as my understand.
-> Otherwise, please change; in fact, just
-> change the name anyway (not the compatible), to
-> "shared-soc-regs" or something like that;
-I can not agree with you. "shared-soc-regs" can not describe the
-property of this kind of register.
-The official description for this set of registers:
 
-"The global utilities block controls power management, I/O device
-enabling, power-on-reset (POR) configuration monitoring, general-purpose
-I/O signal configuration, alternate function selection for multiplexed
-signals, and clock control.
+On Jun 4, 2007, at 2:23 AM, Michael Neuling wrote:
 
-gub (Kumar's style?): global utilities block
-or 
-global-uti-regs or global-uti (Segher's style?)
-may be better.
- 
->  "name"
-> should be descriptive (but terse).
-> 
-Agree!
-But we should reach a agreement!
-Thanks.
-Roy
+> If the cmdline changes between boots, we can get misalignment of the
+> bootargs entry, which in turn corrupts our device tree blob and hence
+> kills our kexec boot.
+...
+> -		if ((len >= 8) && ((unsigned long)dt & 0x4))
+> +		if ((len >= 8) && ((unsigned long)dt & 0x4)){
+>  			dt++;
+> +			dt_realigned = 1;
+> +		}
+>
+>  		fd = open(pathname, O_RDONLY);
+>  		if (fd == -1)
+> @@ -283,6 +286,8 @@ static void putprops(char *fn, struct di
+>  			strcat(local_cmdline, " ");
+>  			cmd_len = strlen(local_cmdline);
+>  			cmd_len = cmd_len + 1;
+> +			if (dt_realigned && cmd_len < 8)
+> +				dt--;
+>  	
+
+While this appears to fix the stated problem, did you explore my
+suggestion of deleting and creating the property like we do for
+the initrd base and size?
+
+Deleting and recreating should also handle the case of no
+boot-args in the original /chosen sub-tree (when the bootloader
+didn't (need to) supply a command line).
+
+milton
