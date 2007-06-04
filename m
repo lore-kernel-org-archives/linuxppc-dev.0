@@ -1,12 +1,19 @@
-Return-Path: <benh@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7F1A6E04A1
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 15:20:22 +1000 (EST)
+Subject: Re: [PATCH] [2.6.22] powerpc: uninline and export virq_to_hw()
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 04 Jun 2007 15:15:56 +1000
-Subject: [PATCH 21/21] powerpc: Less ifdef's in signal.c/signal.h
-In-Reply-To: <1180934134.603289.870346178920.qpush@grosgo>
-Message-Id: <20070604051603.508F6DDE30@ozlabs.org>
-Cc: Paul Mackerras <paulus@samba.org>, Christoph Hellwig <hch@lst.de>,
-	cbe-oss-dev@ozlabs.org
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20070604044704.GA27581@lixom.net>
+References: <20070604044704.GA27581@lixom.net>
+Content-Type: text/plain
+Date: Mon, 04 Jun 2007 15:20:10 +1000
+Message-Id: <1180934410.31677.40.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,86 +23,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch moves things around a little bit in the new common signal.c
-and signal.h files to remove the last #ifdef in the middle of the
-common do_signal()
+On Sun, 2007-06-03 at 23:47 -0500, Olof Johansson wrote:
+> Uninline virq_to_hw and export it so modules can use it. The
+> alternative
+> would be to export the irq_map array instead, but it's an infrequently
+> called function, and keeping the array unexported seems considerably
+> cleaner.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+It's called in fairly hot IRQ code path (the PIC themselves use it) no ?
 
- arch/powerpc/kernel/signal.c |   15 ---------------
- arch/powerpc/kernel/signal.h |   24 ++++++++++++++++++++++++
- 2 files changed, 24 insertions(+), 15 deletions(-)
-
-Index: linux-cell/arch/powerpc/kernel/signal.c
-===================================================================
---- linux-cell.orig/arch/powerpc/kernel/signal.c	2007-06-04 13:09:27.000000000 +1000
-+++ linux-cell/arch/powerpc/kernel/signal.c	2007-06-04 13:17:50.000000000 +1000
-@@ -15,19 +15,6 @@
- 
- #include "signal.h"
- 
--
--#ifdef CONFIG_PPC64
--static inline int is_32bit_task(void)
--{
--	return test_thread_flag(TIF_32BIT);
--}
--#else
--static inline int is_32bit_task(void)
--{
--	return 1;
--}
--#endif
--
- /*
-  * Allocate space for the signal frame
-  */
-@@ -160,10 +147,8 @@ int do_signal(sigset_t *oldset, struct p
- 		else
- 			ret = handle_signal32(signr, &ka, &info, oldset,
- 					regs);
--#ifdef CONFIG_PPC64
- 	} else {
- 		ret = handle_rt_signal64(signr, &ka, &info, oldset, regs);
--#endif
- 	}
- 
- 	if (ret) {
-Index: linux-cell/arch/powerpc/kernel/signal.h
-===================================================================
---- linux-cell.orig/arch/powerpc/kernel/signal.h	2007-06-04 13:10:10.000000000 +1000
-+++ linux-cell/arch/powerpc/kernel/signal.h	2007-06-04 13:11:03.000000000 +1000
-@@ -24,8 +24,32 @@ extern int handle_rt_signal32(unsigned l
- 			      siginfo_t *info, sigset_t *oldset,
- 			      struct pt_regs *regs);
- 
-+
-+#ifdef CONFIG_PPC64
-+
-+static inline int is_32bit_task(void)
-+{
-+	return test_thread_flag(TIF_32BIT);
-+}
-+
- extern int handle_rt_signal64(int signr, struct k_sigaction *ka,
- 			      siginfo_t *info, sigset_t *set,
- 			      struct pt_regs *regs);
- 
-+#else /* CONFIG_PPC64 */
-+
-+static inline int is_32bit_task(void)
-+{
-+	return 1;
-+}
-+
-+static inline int handle_rt_signal64(int signr, struct k_sigaction *ka,
-+				     siginfo_t *info, sigset_t *set,
-+				     struct pt_regs *regs)
-+{
-+	return -EFAULT;
-+}
-+
-+#endif /* !defined(CONFIG_PPC64) */
-+
- #endif  /* _POWERPC_ARCH_SIGNAL_H */
+Ben.
