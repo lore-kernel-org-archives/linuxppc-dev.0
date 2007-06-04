@@ -2,8 +2,8 @@ Return-Path: <jk@ozlabs.org>
 To: <paulus@samba.org>
 From: Jeremy Kerr <jk@ozlabs.org>
 Date: Mon, 04 Jun 2007 21:26:51 +0800
-Subject: [PATCH 1/6] spufs: refuse loading the module when not running on cell
-Message-Id: <1180963611.745771.662168275092.qpush@pokey>
+Subject: [PATCH 2/6] spufs: hook up spufs_release_mem
+Message-Id: <1180963611.793578.736691614466.qpush@pokey>
 Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,35 +14,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+From: Christoph Hellwig <hch@lst.de>
 
-As noticed by David Woodhouse, it's currently possible to mount
-spufs on any machine, which means that it actually will get
-mounted by fedora.
-This refuses to load the module on platforms that have no
-support for SPUs.
+Currently spufs_mem_release and the mem file doesn't have any release
+method hooked up leading to leaks everytime is used.
 
-Cc: David Woodhouse <dwmw2@infradead.org>
-Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 
----
-
- arch/powerpc/platforms/cell/spufs/inode.c |    4 ++++
- 1 file changed, 4 insertions(+)
-
-Index: linux-2.6-spufs/arch/powerpc/platforms/cell/spufs/inode.c
-===================================================================
---- linux-2.6-spufs.orig/arch/powerpc/platforms/cell/spufs/inode.c
-+++ linux-2.6-spufs/arch/powerpc/platforms/cell/spufs/inode.c
-@@ -600,6 +600,10 @@ spufs_create_root(struct super_block *sb
- 	struct inode *inode;
- 	int ret;
+diff --git a/arch/powerpc/platforms/cell/spufs/file.c b/arch/powerpc/platforms/cell/spufs/file.c
+index 45614c7..89a5011 100644
+--- a/arch/powerpc/platforms/cell/spufs/file.c
++++ b/arch/powerpc/platforms/cell/spufs/file.c
+@@ -217,6 +217,7 @@ unsigned long spufs_get_unmapped_area(struct file *file, unsigned long addr,
  
-+	ret = -ENODEV;
-+	if (!spu_management_ops)
-+		goto out;
-+
- 	ret = -ENOMEM;
- 	inode = spufs_new_inode(sb, S_IFDIR | 0775);
- 	if (!inode)
+ static const struct file_operations spufs_mem_fops = {
+ 	.open	 		= spufs_mem_open,
++	.release 		= spufs_mem_release,
+ 	.read   		= spufs_mem_read,
+ 	.write   		= spufs_mem_write,
+ 	.llseek  		= generic_file_llseek,
+-- 
+1.5.0.rc4.g85b1
