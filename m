@@ -1,17 +1,18 @@
-Return-Path: <mgreer@mvista.com>
-Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id 56FB8DDF0F
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jun 2007 05:40:02 +1000 (EST)
-Date: Mon, 4 Jun 2007 12:40:16 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
-Message-ID: <20070604194016.GC10612@mag.az.mvista.com>
-References: <7fc919fce0761f861be3069a853d3169@bga.com>
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 294CFDDEFA
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jun 2007 05:58:04 +1000 (EST)
+Date: Mon, 4 Jun 2007 21:57:59 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 4/5] powerpc: Add of_register_i2c_devices().
+In-Reply-To: <20070518100908.aa803cc6.sfr@canb.auug.org.au>
+Message-ID: <Pine.LNX.4.60.0706042119290.3653@poirot.grange>
+References: <20070517143856.GD29795@ld0162-tx32.am.freescale.net>
+	<20070518100908.aa803cc6.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <7fc919fce0761f861be3069a853d3169@bga.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,53 +22,126 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jun 01, 2007 at 11:30:32PM -0500, Milton Miller wrote:
-> On Sat Jun 2 09:20:22 EST 2007,  Mark A. Greer wrote:
-> 
-> >Find the "rom" device for the prpmc2800 and create a device for it.
-> >The device will be picked up by the code in 
-> >drivers/mtd/maps/physmap_of.c
-> >and will setup MTD on that FLASH device.
-> ...
-> > /*
-> >+ * Register a platform device for MTD.
-> >+ */
-> >+static int __init prpmc2800_register_mtd(void)
-> >+{
-> >+       struct device_node *np;
-> >+
-> >+       np = of_find_compatible_node(NULL, "rom", "direct-mapped");
-> >+       of_platform_device_create(np, np->name, NULL);
-> >+}
-> >+arch_initcall(prpmc2800_register_mtd);
+Hi,
+
+I need this patch, as well as "Scott Wood: [PATCH 5/5] powerpc: Call 
+of_register_i2c_devices() for fsl-i2c." 
+(http://ozlabs.org/pipermail/linuxppc-dev/2007-May/036333.html) to keep 
+linkstation working after the migration of the rtc-rs5c372 driver to the 
+new i2c api.
+
+On Fri, 18 May 2007, Stephen Rothwell wrote:
+
+> On Thu, 17 May 2007 09:38:56 -0500 Scott Wood <scottwood@freescale.com> wrote:
 > >
+> > +		addr = get_property(node, "reg", &len);
 > 
-> I think "direct-mapped" as compatible is a bit too broad or vague.
-
-It is.  Basically, all I was trying to do was fit with the code that was
-already in drivers/mtd/maps/physmap_of.c.  I wasn't expecting to (re)trigger
-the debate that it did.  Its a good thing, though.  FLASH/MTD
-representation in the DT needs to get sorted out.
-
-> The compatible is supposed to be useable to find and match a driver
-> without regard to the name of the node.  Perhaps direct-mapped-rom?
-> (as opossed to a direct-mapped-ram, sram, or some width flash bank).
+> get_property has been replaced by of_get_property.
 > 
-> Actually, looking back at your device tree {1], your list several
-> properties for flash, including bank-width and partition names.
-> Perhaps first compatible should be direct-mapped-partitioned-flash,
-> direct-mapped-partitioned-rom, direct-mapped-rom  (to me a
-> direct-mapped-rom driver would expose one section of address space
-> read-only). I'm assuming that your driver for this "direct-mapped"
-> device will look at these properties from the of device node and
-> call the mtd layer somewhat directly with their contents.
+> > +		name = get_property(node, "compatible", NULL);
+> 
+> ditto.
 
-The "driver" is already there, drivers/mtd/maps/physmap_of.c.  I
-conjured up the DT node so it would work with that existing driver.
+Taking care of these corrections, and also using platform device id for 
+i2c adapter number, as suggested by Grant Likely (added to cc:) in 
+"[PATCH] Make i2c-mpc driver use i2c_add_numbered_adapter" 
+(http://ozlabs.org/pipermail/linuxppc-dev/2007-May/036079.html), and using 
+"model" of-property, if available, to specify the exact model of the i2c 
+device, below is the updated version of the original patch of the hijacked 
+thread. Not sure what I shall do with sign-offs... I think, I'll post it 
+with none first, wait for Scott Woods comment and his sign-off, and then 
+add mine.
 
-> PS: I know you've posted this a few times.  I'm just behind in
-> my reading and  replying :-).
+Please notice, these two patches suffice to be able to use i2c device 
+definitions from of. the "[PATCH 3/5] powerpc: Document device nodes for 
+I2C devices." is just documentation, that nobody needs anyway (/me hides), 
+and "[PATCH 2/5] i2c: Allow preallocation of I2C bus numbers." was pretty 
+controversal too, so, they can be addressed later again...
 
-No problem.  I just missed an entire thread the was directed at me :-P
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
 
-Mark
+diff --git a/arch/powerpc/kernel/prom_parse.c b/arch/powerpc/kernel/prom_parse.c
+index 3786dcc..9caf96d 100644
+--- a/arch/powerpc/kernel/prom_parse.c
++++ b/arch/powerpc/kernel/prom_parse.c
+@@ -1067,3 +1067,49 @@ void __iomem *of_iomap(struct device_node *np, int index)
+ 	return ioremap(res.start, 1 + res.end - res.start);
+ }
+ EXPORT_SYMBOL(of_iomap);
++
++#ifdef CONFIG_I2C
++#include <linux/i2c.h>
++
++void of_register_i2c_devices(struct device_node *adap_node, int bus_num)
++{
++	struct device_node *node = NULL;
++
++	while ((node = of_get_next_child(adap_node, node))) {
++		struct i2c_board_info info;
++		const u32 *addr;
++		const char *name, *model;
++		int len;
++
++		addr = of_get_property(node, "reg", &len);
++		if (!addr || len < sizeof(int) || *addr > 0xffff)
++			continue;
++
++		info.irq = irq_of_parse_and_map(node, 0);
++		if (info.irq == NO_IRQ)
++			info.irq = -1;
++
++		name = of_get_property(node, "compatible", NULL);
++		if (!name)
++			name = node->name;
++		if (!name)
++			continue;
++
++		model = of_get_property(node, "model", NULL);
++		if (!model)
++			model = name;
++
++		/* FIXME: the i2c code should allow drivers to specify
++		 * multiple match names; board code shouldn't need to
++		 * know what driver will handle a given type.
++		 */
++
++		snprintf(info.driver_name, KOBJ_NAME_LEN, name);
++		snprintf(info.type, KOBJ_NAME_LEN, model);
++		info.platform_data = NULL;
++		info.addr = *addr;
++
++		i2c_register_board_info(bus_num, &info, 1);
++	}
++}
++#endif /* CONFIG_I2C */
+diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+index c6b6898..a769efc 100644
+--- a/drivers/i2c/busses/i2c-mpc.c
++++ b/drivers/i2c/busses/i2c-mpc.c
+@@ -327,9 +327,10 @@ static int fsl_i2c_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, i2c);
+ 
+ 	i2c->adap = mpc_ops;
++	i2c->adap.nr = pdev->id;
+ 	i2c_set_adapdata(&i2c->adap, i2c);
+ 	i2c->adap.dev.parent = &pdev->dev;
+-	if ((result = i2c_add_adapter(&i2c->adap)) < 0) {
++	if ((result = i2c_add_numbered_adapter(&i2c->adap)) < 0) {
+ 		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
+ 		goto fail_add;
+ 	}
+diff --git a/include/asm-powerpc/prom.h b/include/asm-powerpc/prom.h
+index 6845af9..ed085e1 100644
+--- a/include/asm-powerpc/prom.h
++++ b/include/asm-powerpc/prom.h
+@@ -305,6 +305,7 @@ extern int of_irq_map_raw(struct device_node *parent, const u32 *intspec,
+ 			  u32 ointsize, const u32 *addr,
+ 			  struct of_irq *out_irq);
+ 
++void of_register_i2c_devices(struct device_node *adap_node, int bus_num);
+ 
+ /**
+  * of_irq_map_one - Resolve an interrupt for a device
