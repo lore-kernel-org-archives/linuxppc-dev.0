@@ -1,26 +1,27 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id E4BD1DDF1B
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 23:32:37 +1000 (EST)
-Message-ID: <466414D0.4090403@ru.mvista.com>
-Date: Mon, 04 Jun 2007 17:34:08 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-12.arcor-online.net (mail-in-12.arcor-online.net
+	[151.189.21.52])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BF9CADDE37
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jun 2007 00:37:30 +1000 (EST)
+In-Reply-To: <466406BB.3070607@ru.mvista.com>
+References: <7fc919fce0761f861be3069a853d3169@bga.com>	
+	<1180769992.14025.1.camel@localhost.localdomain>	
+	<4662E7EA.70506@ru.mvista.com>	
+	<d067769912d2ed5c9e1b4770b77303dd@kernel.crashing.org>	
+	<46630256.8050909@ru.mvista.com>
+	<1180904670.31677.18.camel@localhost.localdomain>
+	<466406BB.3070607@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <879d8eb0b405619a9e457d137c27baa2@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
-References: <7fc919fce0761f861be3069a853d3169@bga.com>
-	<bd6ef296692e8cfb81118f2dc85189a5@kernel.crashing.org>
-	<4662EAA9.70104@ru.mvista.com>
-	<e4197fd2753f2b4d548d5dde9e3fd1d3@kernel.crashing.org>
-	<466308F4.8050004@ru.mvista.com>
-	<8ac5664208e0f59329b62ac2138bbc8c@kernel.crashing.org>
-	<466312C2.4090200@ru.mvista.com>
-	<548a7e11ffb577f6395b8f5a9c2fba2d@kernel.crashing.org>
-	<466323EF.5040807@ru.mvista.com>
-	<193459b778ff98aa95ee7ac38a842c16@kernel.crashing.org>
-In-Reply-To: <193459b778ff98aa95ee7ac38a842c16@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+Date: Mon, 4 Jun 2007 16:37:21 +0200
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, linux-mtd@lists.infradead.org,
 	Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -31,71 +32,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+>> So you are saying that because the current linux MTD stuff can only
+>> probe (which doesn't always work), we should not put the proper chip
+>> interface type in the device-tree ?
+>
+>    No. But if/when we put it, it'll only be able to influence 
+> interface probing, but not "force" the interface.
 
-Segher Boessenkool wrote:
+Of course it can; that just means you have to fix MTD
+and/or the way your platform calls MTD.
 
->>>>> This has nothing to do with a "chip level", it is plain and
->>>>> simply the most basic device tree stuff.
+>    The money was not the only factor, you know, I was under the 
+> pressure of schedules, and had a lot more things to do.
 
->>>>    If it was as "plain and simple" as you say, there would be 
->>>> nothing to argue about.
+The bigger Linux community does not (and should not)
+care about your corporate schedules.  Your patches
+won't be merged upstream until they are deemed to be
+of acceptable quality.  If that doesn't fit your
+employer's schedule, well tough luck, they can maintain
+their own kernel fork I'm sure?
 
->>> There isn't as far as I am concerned; the purpose and
->>> meaning of the "compatible" property, as well as of any
->>> other standard OF properties, is clear.
 
->>    Erm, concerning matching those with drivers it wasn't as clear that 
->> those props aren't the same as driver names b/c of the follwing 
->> passage in Generic Names:
-
-> [huge snip]
-
-> Please point out the exact passage you don't understand, and
-> what you don't understand about it, if you want any help.
-
-    Ah, nevermind... It was too late in the Sunday evening. :-)
-
->>> Yes, the more complex (and sometimes insane) ways that
->>> flash chips are connected to systems can be really hard
->>> to describe properly.  Which is why I don't even want
->>> to make a "binding" for it (yet).  It seems easy enough
-
->>    Neither do we. :-)
-
->>> to do this for single flash chips (possibly direct-mapped)
->>> though.
-
->>    Erm, FSL boards seem to generally have dual 16-bit NOR flash chips 
->> interleaved -- and that's seems quite a common case, not only in PPC 
->> world.
-
-> It's not all that common; I can see why it would be used on
-> flash controllers that handle a 32-bit bus only.
-
-    OK, maybe it's just we, embedded guys, that comes to see only such cheapo 
-boards. :-)
-
->>    Perhaps... those interleaved chips could really be merged 
->> (abstracted) into a single one, with the bus width being a sum of two?
-
-> Perhaps.  It is a nasty situation, it'll take long hard
-> thinking to come up with a reasonably good solution.
-
-    I hoped to get some hints from the linux-mtd list as well...
-
->>>  Get the simple cases
->>> (that actually are used in real life) right, first.
-
->>    We pursued this task exactly. Get it working, quick. :-)
-
-> That is something *TOTALLY DIFFERENT* and quite a bad plan
-> IMNSHO.
-
-    I haven't considered 2 inteleaved 16-bit CFI NOR flashes a complex case so 
-far, sorry. :-) And that's what I had on my board. Prior to my acquaintance 
-with the device trees, this was indeed a no-brainer. :-)
-
-> Segher
-
-WBR, Sergei
+Segher
