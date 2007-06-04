@@ -1,21 +1,25 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
+	[151.189.21.41])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
+	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7F542DDDFB
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jun 2007 05:25:53 +1000 (EST)
-In-Reply-To: <20070604095625.GF17456@chiana.homelinux.org>
-References: <20070604095625.GF17456@chiana.homelinux.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <4E25DA41-741E-40AC-9186-936FEEFE6B29@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: 83xx GPIO/EXT int in arch/powerpc/
-Date: Mon, 4 Jun 2007 14:25:59 -0500
-To: Marc Leeman <marc.leeman@gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id BFB4BDDEDA
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jun 2007 05:27:25 +1000 (EST)
+In-Reply-To: <1180983026.9632.22.camel@ld0161-tx32>
+References: <1180720112.14219.62.camel@ld0161-tx32>
+	<dfc15991e31bfc09389461dc443acd7c@kernel.crashing.org>
+	<1180734314.5674.49.camel@rhino>
+	<4fb92a9dfccf515bdc1522d08f10f823@kernel.crashing.org>
+	<1180983026.9632.22.camel@ld0161-tx32>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <5edf9ad94147c257a7d88671646187fc@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
+Date: Mon, 4 Jun 2007 21:27:19 +0200
+To: Jon Loeliger <jdl@freescale.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,38 +29,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Jun 4, 2007, at 04:56, Marc Leeman wrote:
-
+>>>> "reg" included in "ranges"?  Something is wrong here.
+>>>
+>>> I think it's correct for soc nodes.
+>>
+>> It is not.  "ranges" is the address space translation
+>> between the parent and child busses; "reg" is the stuff
+>> that's on the bridge device itself.
+>>
+>>> At least, it appears that all of
+>>> the dts files with soc nodes do similar things (including this one 
+>>> even
+>>> without this patch).
+>>
+>> Yes, but that doesn't make it right.
 >
-> I am moving my boards from arch/ppc/ to arch/powerpc/ and am trying to
-> use the MPC83xx_IRQ_EXT? pins.
->
-> The device (hardcoded to use 23 as with the arch/ppc/ config, EXT7)
-> does not signal the ints to the CPU.
->
-> The only reference I find to this usage in arch/powerpc/ is in
-> arch/powerpc/platforms/83xx/mpc834x_itx.h, which is most likely
-> something left over while moving from arch/ppc/
->
-> Probably, I need to enable them in the dts tree (?) but since it's  
-> a PCI
-> device that uses a GPIO pin for signalling interrupts, I'm trying to
-> find out where and how to configure this.
+> But removing it does break things.
+
+What breaks?  This sounds like a Linux bug, in
+your port perhaps, or in some OF parsing code.
+
+> I'm going to leave
+> it as-is for now, and we can wrestle over "fixing" it
+> in a follow up patch.
+
+Fine with me -- please figure out what exactly it
+is that is breaking though.
+
+Thanks,
 
 
-Wow.  Hardware designers sure like to make things easy, don't they?
-
-I'm assuming it's a PCI device on the board (and not in a slot).
-
-I believe you're ok if you explicitly define the node, and point it  
-at the IPIC for its interrupt.  Something like this:
-
-pci1: pci@8000 {
-	...
-	my_pci_device@0 {
-		...
-		interrupts = <irq#, sense>;
-		interrupt-parent = <&ipic>;
-	}
-}
+Segher
