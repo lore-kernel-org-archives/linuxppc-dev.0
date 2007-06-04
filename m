@@ -1,11 +1,16 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: horms@verge.net.au
-MIME-Version: 1.0
-Subject: [PATCH] kexec ppc64: fix misaligned cmdline
-Date: Mon, 04 Jun 2007 17:23:45 +1000
-Message-ID: <25445.1180941825@neuling.org>
-Cc: kexec@lists.infradead.org, miltonm@bga.com, linuxppc-dev@ozlabs.org
+Return-Path: <hch@lst.de>
+Date: Mon, 4 Jun 2007 10:01:26 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: PATCH 19/21] powerpc: Merge creation of signal frame (#2)
+Message-ID: <20070604080126.GA19961@lst.de>
+References: <20070604051559.3E8C1DDF43@ozlabs.org>
+	<1180941768.31677.50.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1180941768.31677.50.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Christoph Hellwig <hch@lst.de>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,48 +20,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If the cmdline changes between boots, we can get misalignment of the
-bootargs entry, which in turn corrupts our device tree blob and hence
-kills our kexec boot.  
+On Mon, Jun 04, 2007 at 05:22:48PM +1000, Benjamin Herrenschmidt wrote:
+> +/*
+> + * Allocate space for the signal frame
+> + */
+> +void __user * get_sigframe(struct k_sigaction *ka, struct pt_regs *regs,
+> +			   size_t frame_size)
 
-Specifically, if the cmdline length was >= 8 before and the new cmdline
-length is < 8, we can get corruption.
+little style nitpick: no whitespace after the *, please.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- kexec/arch/ppc64/fs2dt.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+> +{
+> +        unsigned long oldsp, newsp;
+> +
+> +        /* Default to using normal stack */
+> +        oldsp = regs->gpr[1];
+> +
+> +	/* Check for alt stack */
+> +	if ((ka->sa.sa_flags & SA_ONSTACK) &&
+> +	    current->sas_ss_size && !on_sig_stack(oldsp))
+> +		oldsp = (current->sas_ss_sp + current->sas_ss_size);
+> +
+> +	/* Get aligned frame */
+> +	newsp = (oldsp - frame_size) & ~0xFUL;
+> +
+> +	/* Check access */
+> +	if (!access_ok(VERIFY_WRITE, (void __user *)newsp, oldsp - newsp))
+> +		return NULL;
+> +
+> +        return (void __user *)newsp;
+> +}
 
-Index: kexec-tools-testing/kexec/arch/ppc64/fs2dt.c
-===================================================================
---- kexec-tools-testing.orig/kexec/arch/ppc64/fs2dt.c
-+++ kexec-tools-testing/kexec/arch/ppc64/fs2dt.c
-@@ -197,6 +197,7 @@ static void putprops(char *fn, struct di
- 	struct dirent *dp;
- 	int i = 0, fd, len;
- 	struct stat statbuf;
-+	int dt_realigned = 0;
- 
- 	for (i = 0; i < numlist; i++) {
- 		dp = nlist[i];
-@@ -243,8 +244,10 @@ static void putprops(char *fn, struct di
- 		*dt++ = len;
- 		*dt++ = propnum(fn);
- 
--		if ((len >= 8) && ((unsigned long)dt & 0x4))
-+		if ((len >= 8) && ((unsigned long)dt & 0x4)){
- 			dt++;
-+			dt_realigned = 1;
-+		}
- 
- 		fd = open(pathname, O_RDONLY);
- 		if (fd == -1)
-@@ -283,6 +286,8 @@ static void putprops(char *fn, struct di
- 			strcat(local_cmdline, " ");
- 			cmd_len = strlen(local_cmdline);
- 			cmd_len = cmd_len + 1;
-+			if (dt_realigned && cmd_len < 8)
-+				dt--;
- 			memcpy(dt, local_cmdline,cmd_len);
- 			len = cmd_len;
- 			*dt_len = cmd_len;
+The body also has some odd whitespace problems.  I'd also make
+newsp a void __user variable to only do the cast once.  In the end the
+function should looks something like:
+
+void __user *get_sigframe(struct k_sigaction *ka, struct pt_regs *regs,
+		size_t frame_size)
+{
+	unsigned long oldsp;
+	void __user *newsp;
+
+	/* Check for alt stack */
+	if ((ka->sa.sa_flags & SA_ONSTACK) &&
+	    current->sas_ss_size && !on_sig_stack(oldsp))
+		oldsp = (current->sas_ss_sp + current->sas_ss_size);
+	else
+		oldsp = regs->gpr[1];
+
+	/* Get aligned frame */
+	newsp = (void __user *)((oldsp - frame_size) & ~0xFUL);
+
+	/* Check access */
+	if (!access_ok(VERIFY_WRITE, newsp, oldsp - newsp))
+		return NULL;
+
+	return newsp;
+}
