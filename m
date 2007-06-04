@@ -1,14 +1,19 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 70689DDDFB
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 10:43:03 +1000 (EST)
-Date: Sun, 3 Jun 2007 19:49:05 -0500
-To: paulus@samba.org
-Subject: [PATCH] pasemi: fix iommu + 64K PAGE_SIZE bug
-Message-ID: <20070604004905.GA26238@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: olof@lixom.net (Olof Johansson)
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B4E91DDDF8
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 11:11:04 +1000 (EST)
+Subject: Re: [PATCH 3/3] consolidate do_signal
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christoph Hellwig <hch@lst.de>
+In-Reply-To: <1180828765.14025.34.camel@localhost.localdomain>
+References: <20070602102143.GA21707@lst.de>
+	<1180828765.14025.34.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 04 Jun 2007 11:10:53 +1000
+Message-Id: <1180919453.31677.29.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,43 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The powerpc iommu code was refactored by Linas back in the 2.6.20 time
-frame to map 4K pages from the generic code, but I had forgotten to go
-back and fix my platform driver before submitting it.
+On Sun, 2007-06-03 at 09:59 +1000, Benjamin Herrenschmidt wrote:
+> > +             if ((ka.sa.sa_flags & SA_ONSTACK) &&
+> > +                 current->sas_ss_size && !
+> on_sig_stack(regs->gpr[1]))
+> > +                     newsp = current->sas_ss_sp +
+> current->sas_ss_size;
+> > +             else
+> > +                     newsp = regs->gpr[1];
+> 
+> Hrm... some gratuituous differences in the signal stack handling.. I
+> wonder if that hides a bug in one of the implementations...
 
+Ok, so, that bit is actually a bit nicer on 64 bits, where there's a
+get_sigframe() that handles this and is called by setup_rt_frame (which
+you renamed to handle_rt_signal64).
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+(Though the actual implementation of get_sigframe() could use some
+cleanup).
 
-diff --git a/arch/powerpc/platforms/pasemi/iommu.c b/arch/powerpc/platforms/pasemi/iommu.c
-index 95fa6a7..f33b21b 100644
---- a/arch/powerpc/platforms/pasemi/iommu.c
-+++ b/arch/powerpc/platforms/pasemi/iommu.c
-@@ -31,8 +31,6 @@
- #define IOBMAP_PAGE_SIZE	(1 << IOBMAP_PAGE_SHIFT)
- #define IOBMAP_PAGE_MASK	(IOBMAP_PAGE_SIZE - 1)
- 
--#define IOBMAP_PAGE_FACTOR	(PAGE_SHIFT - IOBMAP_PAGE_SHIFT)
--
- #define IOB_BASE		0xe0000000
- #define IOB_SIZE		0x3000
- /* Configuration registers */
-@@ -97,9 +95,6 @@ static void iobmap_build(struct iommu_table *tbl, long index,
- 
- 	bus_addr = (tbl->it_offset + index) << PAGE_SHIFT;
- 
--	npages <<= IOBMAP_PAGE_FACTOR;
--	index <<= IOBMAP_PAGE_FACTOR;
--
- 	ip = ((u32 *)tbl->it_base) + index;
- 
- 	while (npages--) {
-@@ -125,9 +120,6 @@ static void iobmap_free(struct iommu_table *tbl, long index,
- 
- 	bus_addr = (tbl->it_offset + index) << PAGE_SHIFT;
- 
--	npages <<= IOBMAP_PAGE_FACTOR;
--	index <<= IOBMAP_PAGE_FACTOR;
--
- 	ip = ((u32 *)tbl->it_base) + index;
- 
- 	while (npages--) {
+I'll do a patch on top of yours making that bit common.
+
+Cheers,
+Ben.
