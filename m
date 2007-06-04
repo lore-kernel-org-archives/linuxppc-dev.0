@@ -1,10 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 04 Jun 2007 15:15:48 +1000
-Subject: [PATCH 13/21] powerpc: Always apply DABR changes on context switches
+Date: Mon, 04 Jun 2007 15:15:49 +1000
+Subject: [PATCH 14/21] powerpc: Make syscall restart code more common
 In-Reply-To: <1180934134.603289.870346178920.qpush@grosgo>
-Message-Id: <20070604051553.3C69CDDF4A@ozlabs.org>
+Message-Id: <20070604051554.2508FDDF58@ozlabs.org>
 Cc: Paul Mackerras <paulus@samba.org>, Christoph Hellwig <hch@lst.de>,
 	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -16,76 +16,281 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch removes the #ifdef CONFIG_PPC64 around setting the DABR.
+This patch moves the code in signal_32.c and signal_64.c for handling
+syscall restart into a common signal.c file and converge around a single
+implementation that is based on the 32 bits one, using trap, ccr
+and r3 rather than the special "result" field for deciding what to do.
 
-The actual setting of the SPR inside of the set_dabr() function is dependant
-on CONFIG_PPC64 || CONFIG_6xx but you can always provide a ppc_md hook to
-override that. We should improve support for different HW breakpoints
-facilities but this is a first step.
+The "result" field is now pretty much deprecated. We still set it for
+the sake of whatever might rely on it in userland but we no longer use
+it's content.
+
+This, along with a previous patch that enables ptracers to write to
+"trap" and "orig_r3" should allow gdb to properly handle syscall
+restarting.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- arch/powerpc/kernel/process.c |   14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+This is basically my initial patch as modified by Christoph Hellwig
+(hch, care to send a SOB ? :-)
 
-Index: linux-cell/arch/powerpc/kernel/process.c
+
+ arch/powerpc/kernel/Makefile    |    3 +
+ arch/powerpc/kernel/signal.c    |   64 ++++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/signal.h    |   16 ++++++++++
+ arch/powerpc/kernel/signal_32.c |   28 ++---------------
+ arch/powerpc/kernel/signal_64.c |   59 ++++--------------------------------
+ 5 files changed, 93 insertions(+), 77 deletions(-)
+
+Index: linux-cell/arch/powerpc/kernel/signal_32.c
 ===================================================================
---- linux-cell.orig/arch/powerpc/kernel/process.c	2007-05-30 16:22:10.000000000 +1000
-+++ linux-cell/arch/powerpc/kernel/process.c	2007-05-30 16:28:08.000000000 +1000
-@@ -219,22 +219,26 @@ void discard_lazy_cpu_state(void)
- }
- #endif /* CONFIG_SMP */
- 
--#ifdef CONFIG_PPC_MERGE		/* XXX for now */
- int set_dabr(unsigned long dabr)
- {
-+#ifdef CONFIG_PPC_MERGE		/* XXX for now */
- 	if (ppc_md.set_dabr)
- 		return ppc_md.set_dabr(dabr);
-+#endif
- 
-+	/* XXX should we have a CPU_FTR_HAS_DABR ? */
-+#if defined(CONFIG_PPC64) || defined(CONFIG_6xx)
- 	mtspr(SPRN_DABR, dabr);
-+#endif
- 	return 0;
- }
--#endif
- 
- #ifdef CONFIG_PPC64
- DEFINE_PER_CPU(struct cpu_usage, cpu_usage_array);
--static DEFINE_PER_CPU(unsigned long, current_dabr);
+--- linux-cell.orig/arch/powerpc/kernel/signal_32.c	2007-05-30 16:45:57.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/signal_32.c	2007-06-04 11:45:43.000000000 +1000
+@@ -51,6 +51,8 @@
+ #include <asm/pgtable.h>
  #endif
  
-+static DEFINE_PER_CPU(unsigned long, current_dabr);
++#include "signal.h"
 +
- struct task_struct *__switch_to(struct task_struct *prev,
- 	struct task_struct *new)
- {
-@@ -299,12 +303,10 @@ struct task_struct *__switch_to(struct t
+ #undef DEBUG_SIG
  
- #endif /* CONFIG_SMP */
+ #define _BLOCKABLE (~(sigmask(SIGKILL) | sigmask(SIGSTOP)))
+@@ -1156,30 +1158,8 @@ int do_signal(sigset_t *oldset, struct p
+ #ifdef CONFIG_PPC32
+ no_signal:
+ #endif
+-	if (TRAP(regs) == 0x0C00		/* System Call! */
+-	    && regs->ccr & 0x10000000		/* error signalled */
+-	    && ((ret = regs->gpr[3]) == ERESTARTSYS
+-		|| ret == ERESTARTNOHAND || ret == ERESTARTNOINTR
+-		|| ret == ERESTART_RESTARTBLOCK)) {
+-
+-		if (signr > 0
+-		    && (ret == ERESTARTNOHAND || ret == ERESTART_RESTARTBLOCK
+-			|| (ret == ERESTARTSYS
+-			    && !(ka.sa.sa_flags & SA_RESTART)))) {
+-			/* make the system call return an EINTR error */
+-			regs->result = -EINTR;
+-			regs->gpr[3] = EINTR;
+-			/* note that the cr0.SO bit is already set */
+-		} else {
+-			regs->nip -= 4;	/* Back up & retry system call */
+-			regs->result = 0;
+-			regs->trap = 0;
+-			if (ret == ERESTART_RESTARTBLOCK)
+-				regs->gpr[0] = __NR_restart_syscall;
+-			else
+-				regs->gpr[3] = regs->orig_gpr3;
+-		}
+-	}
++	/* Is there any syscall restart business here ? */
++	check_syscall_restart(regs, &ka, signr > 0);
  
--#ifdef CONFIG_PPC64	/* for now */
- 	if (unlikely(__get_cpu_var(current_dabr) != new->thread.dabr)) {
- 		set_dabr(new->thread.dabr);
- 		__get_cpu_var(current_dabr) = new->thread.dabr;
- 	}
--#endif /* CONFIG_PPC64 */
+ 	if (signr == 0) {
+ 		/* No signal to deliver -- put the saved sigmask back */
+Index: linux-cell/arch/powerpc/kernel/signal_64.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/kernel/signal_64.c	2007-05-30 16:45:57.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/signal_64.c	2007-06-04 11:45:43.000000000 +1000
+@@ -34,6 +34,8 @@
+ #include <asm/syscalls.h>
+ #include <asm/vdso.h>
  
- 	new_thread = &new->thread;
- 	old_thread = &current->thread;
-@@ -473,12 +475,10 @@ void flush_thread(void)
++#include "signal.h"
++
+ #define DEBUG_SIG 0
  
- 	discard_lazy_cpu_state();
- 
--#ifdef CONFIG_PPC64	/* for now */
- 	if (current->thread.dabr) {
- 		current->thread.dabr = 0;
- 		set_dabr(0);
- 	}
--#endif
+ #define _BLOCKABLE (~(sigmask(SIGKILL) | sigmask(SIGSTOP)))
+@@ -463,41 +465,6 @@ static int handle_signal(unsigned long s
+ 	return ret;
  }
  
- void
+-static inline void syscall_restart(struct pt_regs *regs, struct k_sigaction *ka)
+-{
+-	switch ((int)regs->result) {
+-	case -ERESTART_RESTARTBLOCK:
+-	case -ERESTARTNOHAND:
+-		/* ERESTARTNOHAND means that the syscall should only be
+-		 * restarted if there was no handler for the signal, and since
+-		 * we only get here if there is a handler, we dont restart.
+-		 */
+-		regs->result = -EINTR;
+-		regs->gpr[3] = EINTR;
+-		regs->ccr |= 0x10000000;
+-		break;
+-	case -ERESTARTSYS:
+-		/* ERESTARTSYS means to restart the syscall if there is no
+-		 * handler or the handler was registered with SA_RESTART
+-		 */
+-		if (!(ka->sa.sa_flags & SA_RESTART)) {
+-			regs->result = -EINTR;
+-			regs->gpr[3] = EINTR;
+-			regs->ccr |= 0x10000000;
+-			break;
+-		}
+-		/* fallthrough */
+-	case -ERESTARTNOINTR:
+-		/* ERESTARTNOINTR means that the syscall should be
+-		 * called again after the signal handler returns.
+-		 */
+-		regs->gpr[3] = regs->orig_gpr3;
+-		regs->nip -= 4;
+-		regs->result = 0;
+-		break;
+-	}
+-}
+-
+ /*
+  * Note that 'init' is a special process: it doesn't get signals it doesn't
+  * want to handle. Thus you cannot kill init even with a SIGKILL even by
+@@ -522,13 +489,13 @@ int do_signal(sigset_t *oldset, struct p
+ 		oldset = &current->blocked;
+ 
+ 	signr = get_signal_to_deliver(&info, &ka, regs, NULL);
++
++	/* Is there any syscall restart business here ? */
++	check_syscall_restart(regs, &ka, signr > 0);
++
+ 	if (signr > 0) {
+ 		int ret;
+ 
+-		/* Whee!  Actually deliver the signal.  */
+-		if (TRAP(regs) == 0x0C00)
+-			syscall_restart(regs, &ka);
+-
+ 		/*
+ 		 * Reenable the DABR before delivering the signal to
+ 		 * user space. The DABR will have been cleared if it
+@@ -537,6 +504,7 @@ int do_signal(sigset_t *oldset, struct p
+ 		if (current->thread.dabr)
+ 			set_dabr(current->thread.dabr);
+ 
++		/* Whee!  Actually deliver the signal.  */
+ 		ret = handle_signal(signr, &ka, &info, oldset, regs);
+ 
+ 		/* If a signal was successfully delivered, the saved sigmask is in
+@@ -547,19 +515,6 @@ int do_signal(sigset_t *oldset, struct p
+ 		return ret;
+ 	}
+ 
+-	if (TRAP(regs) == 0x0C00) {	/* System Call! */
+-		if ((int)regs->result == -ERESTARTNOHAND ||
+-		    (int)regs->result == -ERESTARTSYS ||
+-		    (int)regs->result == -ERESTARTNOINTR) {
+-			regs->gpr[3] = regs->orig_gpr3;
+-			regs->nip -= 4; /* Back up & retry system call */
+-			regs->result = 0;
+-		} else if ((int)regs->result == -ERESTART_RESTARTBLOCK) {
+-			regs->gpr[0] = __NR_restart_syscall;
+-			regs->nip -= 4;
+-			regs->result = 0;
+-		}
+-	}
+ 	/* No signal to deliver -- put the saved sigmask back */
+ 	if (test_thread_flag(TIF_RESTORE_SIGMASK)) {
+ 		clear_thread_flag(TIF_RESTORE_SIGMASK);
+Index: linux-cell/arch/powerpc/kernel/Makefile
+===================================================================
+--- linux-cell.orig/arch/powerpc/kernel/Makefile	2007-06-04 11:16:01.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/Makefile	2007-06-04 11:16:16.000000000 +1000
+@@ -12,7 +12,8 @@ endif
+ 
+ obj-y				:= semaphore.o cputable.o ptrace.o syscalls.o \
+ 				   irq.o align.o signal_32.o pmc.o vdso.o \
+-				   init_task.o process.o systbl.o idle.o
++				   init_task.o process.o systbl.o idle.o \
++				   signal.o
+ obj-y				+= vdso32/
+ obj-$(CONFIG_PPC64)		+= setup_64.o binfmt_elf32.o sys_ppc32.o \
+ 				   signal_64.o ptrace32.o \
+Index: linux-cell/arch/powerpc/kernel/signal.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/arch/powerpc/kernel/signal.c	2007-06-04 11:45:50.000000000 +1000
+@@ -0,0 +1,64 @@
++/*
++ * Common signal handling code for both 32 and 64 bits
++ *
++ *    Copyright (c) 2007 Benjamin Herrenschmidt, IBM Coproration
++ *    Extracted from signal_32.c and signal_64.c
++ *
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License.  See the file README.legal in the main directory of
++ * this archive for more details.
++ */
++
++#include <linux/ptrace.h>
++#include <linux/signal.h>
++
++void check_syscall_restart(struct pt_regs *regs, struct k_sigaction *ka,
++			   int has_handler)
++{
++	unsigned long ret = regs->gpr[3];
++	int restart = 1;
++
++	/* syscall ? */
++	if (TRAP(regs) != 0x0C00)
++		return;
++
++	/* error signalled ? */
++	if (!(regs->ccr & 0x10000000))
++		return;
++
++	switch (ret) {
++	case ERESTART_RESTARTBLOCK:
++	case ERESTARTNOHAND:
++		/* ERESTARTNOHAND means that the syscall should only be
++		 * restarted if there was no handler for the signal, and since
++		 * we only get here if there is a handler, we dont restart.
++		 */
++		restart = !has_handler;
++		break;
++	case ERESTARTSYS:
++		/* ERESTARTSYS means to restart the syscall if there is no
++		 * handler or the handler was registered with SA_RESTART
++		 */
++		restart = !has_handler || (ka->sa.sa_flags & SA_RESTART) != 0;
++		break;
++	case ERESTARTNOINTR:
++		/* ERESTARTNOINTR means that the syscall should be
++		 * called again after the signal handler returns.
++		 */
++		break;
++	default:
++		return;
++	}
++	if (restart) {
++		if (ret == ERESTART_RESTARTBLOCK)
++			regs->gpr[0] = __NR_restart_syscall;
++		else
++			regs->gpr[3] = regs->orig_gpr3;
++		regs->nip -= 4;
++		regs->result = 0;
++	} else {
++		regs->result = -EINTR;
++		regs->gpr[3] = EINTR;
++		regs->ccr |= 0x10000000;
++	}
++}
+Index: linux-cell/arch/powerpc/kernel/signal.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/arch/powerpc/kernel/signal.h	2007-06-04 11:45:41.000000000 +1000
+@@ -0,0 +1,16 @@
++/*
++ *    Copyright (c) 2007 Benjamin Herrenschmidt, IBM Coproration
++ *    Extracted from signal_32.c and signal_64.c
++ *
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License.  See the file README.legal in the main directory of
++ * this archive for more details.
++ */
++
++#ifndef _POWERPC_ARCH_SIGNAL_H
++#define _POWERPC_ARCH_SIGNAL_H
++
++extern void check_syscall_restart(struct pt_regs *regs, struct k_sigaction *ka,
++				  int has_handler);
++
++#endif  /* _POWERPC_ARCH_SIGNAL_H */
