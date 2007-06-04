@@ -1,21 +1,13 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-09.arcor-online.net (mail-in-09.arcor-online.net
-	[151.189.21.49])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5930CDDE18
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 20:42:37 +1000 (EST)
-In-Reply-To: <11809516982524-git-send-email-segher@kernel.crashing.org>
-References: <11809516982524-git-send-email-segher@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <ae65e475fdcb003bacaa8dac7b96d30c@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Fix build on !CONFIG_IRQSTACKS
-Date: Mon, 4 Jun 2007 12:42:30 +0200
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Bernhard Walle <bwalle@suse.de>
+Subject: Re: kexec on PS3 
+In-reply-to: <20070604095433.GB29457@suse.de> 
+References: <20070604095433.GB29457@suse.de>
+Date: Mon, 04 Jun 2007 20:50:14 +1000
+Message-ID: <7629.1180954214@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, Stefan Assmann <sassmann@suse.de>,
+	kexec@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,10 +17,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->  arch/powerpc/kernel/irq.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> At http://www.powerdeveloper.org/platforms/cell/playstation there are
+> some patches that are required for kexec-tools to use kdump on the
+> Play Station 3. Wouldn't it make sense to merge them in kexec-tools
+> testing?
 
-Ignore, local screw-up.  Whoops.
+Yes.
 
+> kexec-tools-1.101-bootargs-align.patch is already discussed here in
+> the thread "kexec ppc64: fix misaligned cmdline". But what about
+> kexec-tools-1.101-ps3-rmo_top-max.patch and
+> kexec-tools-1.101-align-dtstruct.patch?
 
-Segher
+This doesn't fix the problem mentioned by Milton.  
+
+> I'm not the author, and I don't know how to contact the author of that
+> patches, but I'd like to see them in mainline kexec-tools.
+
+Bugger.  It would make sense to merge them, especially since they are
+fixing generic powerpc problems.
+
+If you can get a signed off by the author, that would be awesome!
+
+Mikey
