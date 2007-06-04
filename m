@@ -1,25 +1,31 @@
-Return-Path: <jdl@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <afleming@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
+	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6521ADDEFC
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jun 2007 06:24:24 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l54KOJ0u008134
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Jun 2007 13:24:19 -0700 (MST)
-Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l54KOIaT003504
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Jun 2007 15:24:18 -0500 (CDT)
-Subject: [PATCH] Replace use of GET_64BIT(prop, i) with of_read_number().
-From: Jon Loeliger <jdl@freescale.com>
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Message-Id: <1180988658.9632.38.camel@ld0161-tx32>
-Mime-Version: 1.0
-Date: Mon, 04 Jun 2007 15:24:18 -0500
+	by ozlabs.org (Postfix) with ESMTP id 7D12BDDE18
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jun 2007 06:28:02 +1000 (EST)
+In-Reply-To: <20070603083339.GB2157@iram.es>
+References: <1180720112.14219.62.camel@ld0161-tx32>
+	<dfc15991e31bfc09389461dc443acd7c@kernel.crashing.org>
+	<1180734314.5674.49.camel@rhino>
+	<4fb92a9dfccf515bdc1522d08f10f823@kernel.crashing.org>
+	<20070602085359.GA10333@iram.es>
+	<3ebd6ca6877ea74925f066ff96ac81db@kernel.crashing.org>
+	<20070602195308.GA21618@iram.es>
+	<12ad593bd17f769e44f05bc24eac4d0a@kernel.crashing.org>
+	<1180828907.14025.37.camel@localhost.localdomain>
+	<28e0600256815f93db45b2f4eb2d9df5@kernel.crashing.org>
+	<20070603083339.GB2157@iram.es>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <02DC2E36-86B1-4458-BB0C-13CF79AC1D11@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
+Date: Mon, 4 Jun 2007 15:27:59 -0500
+To: Gabriel Paubert <paubert@iram.es>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,62 +35,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Remove uses of hack GET_64BIT() property macro and use
-the more general of_read_number() function from prom.h
-as suggested by Milton.
 
-Signed-off-by: Jon Loeliger <jdl@freescale.com>
----
+On Jun 3, 2007, at 03:33, Gabriel Paubert wrote:
 
-Someone in 64-bit land please check this!
-I have no board on which to test this.  Sorry.
+> On Sun, Jun 03, 2007 at 09:41:33AM +0200, Segher Boessenkool wrote:
+>>>> Oh what the hell, I'm too curious...  "pnpPNP,0" it is.
+>>>>
+>>>>> I believe that "8259" should appear somewhere because of the
+>>>>> "8259-interrupt-acknowledge" property (defined in CHRP bindings)
+>>>>> which you can have on the parent bridge to speed up interrupt
+>>>>> vector acquisition.
+>>>>
+>>>> You're not CHRP so you have nothing to do with the CHRP
+>>>> bindings...
+>>>
+>>> Still, you are close to CHRP
+>>
+>> Not at all, the rest of the device interrupt subsystem
+>> is very different, too.
+>
+> Given how well you agree, I understand how other people
+> might get a bit confused ;-)
+>
+> This said, I'm looking at device trees right now, and I can understand
+> that interrupt-parent of the 8259 is &mpic in mpc8641_hpcn.dts, but
+> I don't understand at all why it is &pci1 on the mpc85??cds.dts.
+>
+> But the definition of the ISA bridge in these files is very strange to
+> start with: I've never seen an ISA bridge with only an interrupt  
+> controller
+> on it, no interrupts are connected to it and its reg property is
+> almost certainly wrong. Maybe it is an example of things that should
+> not be done.
 
-jdl
+
+I take full responsibility for that.  The CDS is a strange beast, so  
+I did some strange things in the DTS.
+
+The i8259 is on a subsidiary bus, and so it's one bus #1.  I chose  
+not to create a proper node around it.  Not for any good reason.  The  
+reason its interrupt parent is pci1 is because the i8259 emits its  
+irq though PCI.  This is because the 8555 (and other CDS chips) are  
+actually on a PCI card which is connected through PCI 1, while the  
+i8259 is behind a bridge on the motherboard into which the CDS  
+Carrier Card is plugged.
+
+I always find my grammar stretched to the breaking point when  
+describing the PCI topology of the CDS!
+
+The 8641's topology is much simpler, and the i8259 sends its  
+interrupts over an external interrupt pin which goes through the mpic/ 
+openpic.
 
 
- arch/powerpc/kernel/pci_64.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index 249cca2..b7cd53f 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -291,7 +291,6 @@ static unsigned int pci_parse_of_flags(u32 addr0)
- 	return flags;
- }
- 
--#define GET_64BIT(prop, i)	((((u64) (prop)[(i)]) << 32) | (prop)[(i)+1])
- 
- static void pci_parse_of_addrs(struct device_node *node, struct pci_dev *dev)
- {
-@@ -310,8 +309,8 @@ static void pci_parse_of_addrs(struct device_node *node, struct pci_dev *dev)
- 		flags = pci_parse_of_flags(addrs[0]);
- 		if (!flags)
- 			continue;
--		base = GET_64BIT(addrs, 1);
--		size = GET_64BIT(addrs, 3);
-+		base = of_read_number(&addrs[1], 2);
-+		size = of_read_number(&addrs[3], 2);
- 		if (!size)
- 			continue;
- 		i = addrs[0] & 0xff;
-@@ -477,7 +476,7 @@ void __devinit of_scan_pci_bridge(struct device_node *node,
- 	i = 1;
- 	for (; len >= 32; len -= 32, ranges += 8) {
- 		flags = pci_parse_of_flags(ranges[0]);
--		size = GET_64BIT(ranges, 6);
-+		size = of_read_number(&ranges[6], 2);
- 		if (flags == 0 || size == 0)
- 			continue;
- 		if (flags & IORESOURCE_IO) {
-@@ -496,7 +495,7 @@ void __devinit of_scan_pci_bridge(struct device_node *node,
- 			res = bus->resource[i];
- 			++i;
- 		}
--		res->start = GET_64BIT(ranges, 1);
-+		res->start = of_read_number(&ranges[1], 2);
- 		res->end = res->start + size - 1;
- 		res->flags = flags;
- 		fixup_resource(res, dev);
--- 
-1.5.0.3
+Andy
