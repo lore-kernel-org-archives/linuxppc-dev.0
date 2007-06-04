@@ -1,17 +1,15 @@
-Return-Path: <miltonm@bga.com>
-Received: from kcout01.prserv.net (kcout01.prserv.net [12.154.55.31])
-	by ozlabs.org (Postfix) with ESMTP id 13D61DDE2E
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jun 2007 15:55:55 +1000 (EST)
-In-Reply-To: <1180720142.14219.68.camel@ld0161-tx32>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <bfe9571d7d435aa6f52ae8d9ec61a1d5@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 8/8] Wrote quirk_mpc8641_transparent() to initialize
-	bridge resources.
-Date: Mon, 4 Jun 2007 00:55:47 -0500
-To: Jon Loeliger <jdl@freescale.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH 0/21] This is my pending series for 2.6.23
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+In-Reply-To: <1180934134.603289.870346178920.qpush@grosgo>
+References: <1180934134.603289.870346178920.qpush@grosgo>
+Content-Type: text/plain
+Date: Mon, 04 Jun 2007 17:00:05 +1000
+Message-Id: <1180940405.31677.45.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>, Christoph Hellwig <hch@lst.de>,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,46 +19,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> The 8641 RC poses as a transparent bridge, but does not implement the
-> IO_BASE or IO_LIMIT registers in the config space.  This means that
-> the code which initializes the bridge resources ends up setting the
-> IO resources erroneously.
->
-> This change sets RC of mpc8641 to be a transparent bridge
-> for legacy I/O access and initializes the RC bridge resources
-> from the device tree.
->
-> Note: The 0x7010 is the device ID of host bridge for MPC8641
->       and 0x7011 is the device ID of host bridge fro MPC8641D.
->
-...
->
-> @@ -339,6 +403,8 @@ static void __devinit early_uli5249(struct pci_dev 
-> *dev)
->  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AL, 0x1575, quirk_uli1575);
->  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AL, 0x5288, quirk_uli5288);
->  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AL, 0x5229, quirk_uli5229);
-> +DECLARE_PCI_FIXUP_EARLY(0x1957, 0x7010, quirk_mpc8641_transparent);
-> +DECLARE_PCI_FIXUP_EARLY(0x1957, 0x7011, quirk_mpc8641_transparent);
->  DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_AL, 0x5249, early_uli5249);
->  #endif /* CONFIG_PCI */
+On Mon, 2007-06-04 at 14:49 +1000, Benjamin Herrenschmidt wrote: 
+> It contains 
+> 
+>  - My PCI IO allocation rework (the first patch changes generic code
+>    and is in -mm already)
+> 
+>  - spufs single step & capabilities support
+> 
+>  - my cleanup/merge of the ptrace code
+> 
+>  - patches from Christoph Hellwig and myself that fix and merge things
+>    in the signal handling code
+> 
+> I'm still working on saving the top 32 bits of registers on 64 bits
+> for signals, so that's not included here.
 
-This is totally unreadable.  include/linux/pci_ids.h exists for a 
-reason,
-please use it.   At least the vendor should be in there.
+And one of the signal changes is causing init to segv on my laptop,
+which I'm quite happy to blame on my signal frame allocation change.
+(Well, at least with the serie applied up to Christoph 3rd patch, it
+still boots). I'll debug that and post an updated patch.
 
-If you want to define the device id with the same naming convention
-but in the local source file, I won't object.
-
-
-Looking back at the rest of the patch:
->
-> +#define GET_64BIT(prop, i)     ((((u64) (prop)[(i)]) << 32) | 
-> (prop)[(i)+1])
-
-Please use the (new) helper of_read_number in prom.h.
-
-
-milton
-
-PS: how about create instead of wrote in the subject?
+Ben.
