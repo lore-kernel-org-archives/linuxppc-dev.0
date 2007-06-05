@@ -1,16 +1,10 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH] kexec ppc64: fix misaligned cmdline 
-In-reply-to: <20070605001632.GA26483@localhost.localdomain> 
-References: <25445.1180941825@neuling.org>
-	<20070604234917.GB10877@localhost.localdomain>
-	<2554.1181001397@neuling.org>
-	<20070605001632.GA26483@localhost.localdomain>
-Date: Tue, 05 Jun 2007 10:58:07 +1000
-Message-ID: <12946.1181005087@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, horms@verge.net.au, kexec@lists.infradead.org,
-	miltonm@bga.com
+Return-Path: <jk@ozlabs.org>
+To: <paulus@samba.org>
+From: Jeremy Kerr <jk@ozlabs.org>
+Date: Tue, 05 Jun 2007 09:25:59 +0800
+Subject: [PATCH] spufs: don't yield nosched context
+Message-Id: <1181006759.895317.924309156325.qpush@pokey>
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org, hch@lst.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,28 +14,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> On Tue, Jun 05, 2007 at 09:56:37AM +1000, Miichael Neuling wrote:
-> > > > If the cmdline changes between boots, we can get misalignment of the
-> > > > bootargs entry, which in turn corrupts our device tree blob and hence
-> > > > kills our kexec boot.  
-> > > > 
-> > > > Specifically, if the cmdline length was >= 8 before and the new cmdline
-> > > > length is < 8, we can get corruption.
-> > > 
-> > > Hrm.  Have you considered using dtc for this conversion, rather than
-> > > this somewhat dubious looking fs2dt?
-> > 
-> > Numerous times.  
-> > 
-> > fs2dt needs to be converted to use the device tree library, but that
-> > will take a lot more work than a 5 minute patch.
-> 
-> 
-> Well, sure.. but do you need fs2dt at all.  dtc has an "fs" input
-> mode..
+From: Christoph Hellwig <hch@lst.de>
 
-As discussed offline, you can do this with the --devicetreeblob kexec
-option.  The issue is the special cases like having to modify the kernel
-cmdline options or initrd locations.
+Nosched context sould never be scheduled out, thus we must not
+deactivate them in spu_yield ever.
 
-Mikey
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+
+---
+
+Paulus - this is also a contender for 2.6.22 bugfixes.
+
+---
+
+ arch/powerpc/platforms/cell/spufs/sched.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+Index: linux-2.6-spufs/arch/powerpc/platforms/cell/spufs/sched.c
+===================================================================
+--- linux-2.6-spufs.orig/arch/powerpc/platforms/cell/spufs/sched.c
++++ linux-2.6-spufs/arch/powerpc/platforms/cell/spufs/sched.c
+@@ -430,9 +430,11 @@ void spu_deactivate(struct spu_context *
+  */
+ void spu_yield(struct spu_context *ctx)
+ {
+-	mutex_lock(&ctx->state_mutex);
+-	__spu_deactivate(ctx, 0, MAX_PRIO);
+-	mutex_unlock(&ctx->state_mutex);
++	if (!(ctx->flags & SPU_CREATE_NOSCHED)) {
++		mutex_lock(&ctx->state_mutex);
++		__spu_deactivate(ctx, 0, MAX_PRIO);
++		mutex_unlock(&ctx->state_mutex);
++	}
+ }
+ 
+ void spu_sched_tick(struct work_struct *work)
