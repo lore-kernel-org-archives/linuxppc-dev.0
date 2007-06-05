@@ -1,33 +1,17 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Return-Path: <b08248@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0E942DDDF7
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 04:17:26 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l55IIRSJ032707
-	for <linuxppc-dev@ozlabs.org>; Tue, 5 Jun 2007 14:18:27 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l55IHN3q532286
-	for <linuxppc-dev@ozlabs.org>; Tue, 5 Jun 2007 14:17:23 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l55IHMgB026391
-	for <linuxppc-dev@ozlabs.org>; Tue, 5 Jun 2007 14:17:22 -0400
-Subject: Re: [PATCH 2/3] [PATCH powerpc] during VM oom condition, kill all
-	threads in process group
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-In-Reply-To: <20070605174838.21740.55720.stgit@farscape.rchland.ibm.com>
-References: <20070605174831.21740.33119.stgit@farscape.rchland.ibm.com>
-	<20070605174838.21740.55720.stgit@farscape.rchland.ibm.com>
-Content-Type: text/plain
-Date: Tue, 05 Jun 2007 13:17:14 -0500
-Message-Id: <1181067435.18837.3.camel@farscape.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, anton@samba.org
-Reply-To: will_schmidt@vnet.ibm.com
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 17C22DDE42
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 04:29:21 +1000 (EST)
+Date: Tue, 5 Jun 2007 13:29:14 -0500
+From: Stuart Yoder <b08248@freescale.com>
+Message-Id: <200706051829.l55ITEAR028492@ld0164-tx32.am.freescale.net>
+To: paulus@samba.org
+Subject: [PATCH] powerpc: add table of contents to booting-without-of-txt
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,40 +21,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Add table of contents.
 
-Whoops..  sorry about any reply bounces, I flubbed the cc to
-linuxppc-dev@ozlabs.org . 
+Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
+---
 
--Will
+ I think this should help make the doc more easily navigated and will help
+ make the structure visible so someone editing will know where to put
+ stuff.
 
-On Tue, 2007-05-06 at 12:48 -0500, Will Schmidt wrote:
-> When we get into a state where VM has ran out of memory, and it's time to
-> thwack a process, we should take out the entire process group, rather than
-> just one thread.
-> 
-> Tested on POWER5.
-> 
-> Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
-> ---
-> 
->  arch/powerpc/mm/fault.c |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-> index 03aeb3a..9afe871 100644
-> --- a/arch/powerpc/mm/fault.c
-> +++ b/arch/powerpc/mm/fault.c
-> @@ -392,8 +392,10 @@ out_of_memory:
->  		goto survive;
->  	}
->  	printk("VM: killing process %s\n", current->comm);
-> -	if (user_mode(regs))
-> +	if (user_mode(regs)) {
-> +		zap_other_threads(current);
->  		do_exit(SIGKILL);
-> +	}
->  	return SIGKILL;
->  
->  do_sigbus:
-> 
-> 
+ Documentation/powerpc/booting-without-of.txt |   57 +++++++++++++++++++++++++-
+ 1 files changed, 56 insertions(+), 1 deletions(-)
+
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 258a279..f36ad71 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -1,7 +1,6 @@
+            Booting the Linux/ppc kernel without Open Firmware
+            --------------------------------------------------
+ 
+-
+ (c) 2005 Benjamin Herrenschmidt <benh at kernel.crashing.org>,
+     IBM Corp.
+ (c) 2005 Becky Bruce <becky.bruce at freescale.com>,
+@@ -9,6 +8,62 @@
+ (c) 2006 MontaVista Software, Inc.
+     Flash chip node definition
+ 
++Table of Contents
++=================
++
++  I - Introduction
++    1) Entry point for arch/powerpc
++    2) Board support
++  
++  II - The DT block format
++    1) Header
++    2) Device tree generalities
++    3) Device tree "structure" block
++    4) Device tree "strings" block
++  
++  III - Required content of the device tree
++    1) Note about cells and address representation
++    2) Note about "compatible" properties
++    3) Note about "name" properties
++    4) Note about node and property names and character set
++    5) Required nodes and properties
++      a) The root node
++      b) The /cpus node
++      c) The /cpus/* nodes
++      d) the /memory node(s)
++      e) The /chosen node
++      f) the /soc<SOCname> node
++  
++  IV - "dtc", the device tree compiler
++  
++  V - Recommendations for a bootloader
++  
++  VI - System-on-a-chip devices and nodes
++    1) Defining child nodes of an SOC
++    2) Representing devices without a current OF specification
++      a) MDIO IO device
++      c) PHY nodes
++      b) Gianfar-compatible ethernet nodes
++      d) Interrupt controllers
++      e) I2C
++      f) Freescale SOC USB controllers
++      g) Freescale SOC SEC Security Engines
++      h) Board Control and Status (BCSR)
++      i) Freescale QUICC Engine module (QE)
++      g) Flash chip nodes
++  
++  VII - Specifying interrupt information for devices
++    1) interrupts property
++    2) interrupt-parent property
++    3) OpenPIC Interrupt Controllers
++    4) ISA Interrupt Controllers
++  
++  Appendix A - Sample SOC node for MPC8540
++
++
++Revision Information
++====================
++
+    May 18, 2005: Rev 0.1 - Initial draft, no chapter III yet.
+ 
+    May 19, 2005: Rev 0.2 - Add chapter III and bits & pieces here or
+-- 
+1.5.0.3
