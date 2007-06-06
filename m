@@ -1,20 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 57BB5DDFC3
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 13:18:05 +1000 (EST)
-Date: Wed, 6 Jun 2007 13:17:55 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [patch 11/18] PS3: System-bus modinfo attribute
-Message-Id: <20070606131755.7b815d22.sfr@canb.auug.org.au>
-In-Reply-To: <4666235C.10209@am.sony.com>
-References: <20070606024407.786638029@am.sony.com> <4666235C.10209@am.sony.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__6_Jun_2007_13_17_55_+1000_AZYTpcyweU0CRnEc"
-Cc: linuxppc-dev@ozlabs.org, Paul, David Woodhouse <dwmw2@infradead.org>,
-	Mackerras <paulus@samba.org>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from mail105-dub-R.bigfish.com (mail-dub.bigfish.com
+	[213.199.154.10])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 45244DDED8
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 13:25:14 +1000 (EST)
+Message-ID: <46662337.9060908@am.sony.com>
+Date: Tue, 05 Jun 2007 20:00:07 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: [patch 07/18] PS3: Make ps3av.h usable from user space
+References: <20070606024407.786638029@am.sony.com>>
+In-Reply-To: <20070606024407.786638029@am.sony.com>>
+Content-Type: text/plain; charset=UTF-8
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Paul Mackerras <paulus@samba.org>,
+	Masashi Kimoto <Masashi_Kimoto@hq.scei.sony.co.jp>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,42 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__6_Jun_2007_13_17_55_+1000_AZYTpcyweU0CRnEc
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The user applications to manage the PS3 AV modes can use values
+defined in this header.
 
-On Tue, 05 Jun 2007 20:00:44 -0700 Geoff Levand <geoffrey.levand@am.sony.co=
-m> wrote:
->
-> +static ssize_t modalias_show(struct device *_dev, struct device_attribut=
-e *a,
-> +			     char *buf)
-> +{
-> +	struct ps3_system_bus_device *dev =3D ps3_dev_to_system_bus_dev(_dev);
-> +        int len =3D snprintf(buf, PAGE_SIZE, "ps3:%d\n", dev->match_id);
+CC: Masashi Kimoto <Masashi_Kimoto@hq.scei.sony.co.jp>
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+---
+ include/asm-powerpc/Kbuild  |    1 +
+ include/asm-powerpc/ps3av.h |    2 ++
+ 2 files changed, 3 insertions(+)
 
-Broken whitespace ...
+--- a/include/asm-powerpc/Kbuild
++++ b/include/asm-powerpc/Kbuild
+@@ -34,6 +34,7 @@ unifdef-y += elf.h
+ unifdef-y += nvram.h
+ unifdef-y += param.h
+ unifdef-y += posix_types.h
++unifdef-y += ps3av.h
+ unifdef-y += ptrace.h
+ unifdef-y += seccomp.h
+ unifdef-y += signal.h
+--- a/include/asm-powerpc/ps3av.h
++++ b/include/asm-powerpc/ps3av.h
+@@ -321,6 +321,7 @@
+ #define PS3AV_MODE_RGB				0x0020
+ 
+ 
++#ifdef __KERNEL__
+ /** command packet structure **/
+ struct ps3av_send_hdr {
+ 	u16 version;
+@@ -723,4 +724,5 @@ extern int ps3av_audio_mute(int);
+ extern int ps3av_dev_open(void);
+ extern int ps3av_dev_close(void);
+ 
++#endif /* __KERNEL__ */
+ #endif	/* _ASM_POWERPC_PS3AV_H_ */
 
-> +
-> +        return (len >=3D PAGE_SIZE) ? (PAGE_SIZE - 1) : len;
-
-And here.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__6_Jun_2007_13_17_55_+1000_AZYTpcyweU0CRnEc
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGZidsFdBgD/zoJvwRAhXIAJ0YqM8iaiPxqHZAlH8chlHZwI2QVACfX0PX
-u5qxjJ3UAZj70WBv/xdZUTA=
-=CNiC
------END PGP SIGNATURE-----
-
---Signature=_Wed__6_Jun_2007_13_17_55_+1000_AZYTpcyweU0CRnEc--
+-- 
