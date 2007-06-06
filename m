@@ -3,14 +3,14 @@ Received: from outbound3-blu-R.bigfish.com (outbound-blu.frontbridge.com
 	[65.55.251.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 3B65CDDF5E
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 12:59:40 +1000 (EST)
-Message-ID: <46662315.30004@am.sony.com>
-Date: Tue, 05 Jun 2007 19:59:33 -0700
+	by ozlabs.org (Postfix) with ESMTP id DB447DE048
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 12:59:47 +1000 (EST)
+Message-ID: <4666231F.9090901@am.sony.com>
+Date: Tue, 05 Jun 2007 19:59:43 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 03/18] PS3: Use __maybe_unused
+Subject: [patch 04/18] PS3: Compare firmware version
 References: <20070606024407.786638029@am.sony.com>>
 In-Reply-To: <20070606024407.786638029@am.sony.com>>
 Content-Type: text/plain; charset=UTF-8
@@ -24,67 +24,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Change the PS3 debug routines from using the GCC specific
-'__attribute__ ((unused))' to the preprocessor macro
-__maybe_unused.
+Add a utiltiy routine ps3_compare_firmware_version() to compare system
+firmware versions.  Uses the existing ps3_get_firmware_version() routine.
 
+Signed-off-by: Masakazu Mokuno <mokuno@sm.sony.co.jp>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/platforms/ps3/interrupt.c |    4 ++--
- arch/powerpc/platforms/ps3/time.c      |    2 +-
- drivers/ps3/vuart.c                    |    4 ++--
- 3 files changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/ps3/setup.c |   32 ++++++++++++++++++++------------
+ include/asm-powerpc/ps3.h          |    3 ++-
+ 2 files changed, 22 insertions(+), 13 deletions(-)
 
---- a/arch/powerpc/platforms/ps3/interrupt.c
-+++ b/arch/powerpc/platforms/ps3/interrupt.c
-@@ -533,7 +533,7 @@ static void _dump_64_bmp(const char *hea
- 		*p & 0xffff);
+--- a/arch/powerpc/platforms/ps3/setup.c
++++ b/arch/powerpc/platforms/ps3/setup.c
+@@ -46,18 +46,26 @@
+ static void smp_send_stop(void) {}
+ #endif
+ 
+-int ps3_get_firmware_version(union ps3_firmware_version *v)
++static union ps3_firmware_version ps3_firmware_version;
++
++void ps3_get_firmware_version(union ps3_firmware_version *v)
+ {
+-	int result = lv1_get_version_info(&v->raw);
++	*v = ps3_firmware_version;
++}
++EXPORT_SYMBOL_GPL(ps3_get_firmware_version);
+ 
+-	if (result) {
+-		v->raw = 0;
+-		return -1;
+-	}
++int ps3_compare_firmware_version(u16 major, u16 minor, u16 rev)
++{
++	union ps3_firmware_version x;
++
++	x.pad = 0;
++	x.major = major;
++	x.minor = minor;
++	x.rev = rev;
+ 
+-	return result;
++	return (ps3_firmware_version.raw - x.raw);
  }
+-EXPORT_SYMBOL_GPL(ps3_get_firmware_version);
++EXPORT_SYMBOL_GPL(ps3_compare_firmware_version);
  
--static void __attribute__ ((unused)) _dump_256_bmp(const char *header,
-+static void __maybe_unused _dump_256_bmp(const char *header,
- 	const u64 *p, unsigned cpu, const char* func, int line)
+ static void ps3_power_save(void)
  {
- 	pr_debug("%s:%d: %s %u {%016lx:%016lx:%016lx:%016lx}\n",
-@@ -552,7 +552,7 @@ static void _dump_bmp(struct ps3_private
- }
+@@ -146,13 +154,13 @@ static int ps3_set_dabr(u64 dabr)
  
- #define dump_mask(_x) _dump_mask(_x, __func__, __LINE__)
--static void __attribute__ ((unused)) _dump_mask(struct ps3_private* pd,
-+static void __maybe_unused _dump_mask(struct ps3_private* pd,
- 	const char* func, int line)
+ static void __init ps3_setup_arch(void)
  {
- 	unsigned long flags;
---- a/arch/powerpc/platforms/ps3/time.c
-+++ b/arch/powerpc/platforms/ps3/time.c
-@@ -39,7 +39,7 @@ static void _dump_tm(const struct rtc_ti
- }
+-	union ps3_firmware_version v;
  
- #define dump_time(_a) _dump_time(_a, __func__, __LINE__)
--static void __attribute__ ((unused)) _dump_time(int time, const char* func,
-+static void __maybe_unused _dump_time(int time, const char* func,
- 	int line)
- {
- 	struct rtc_time tm;
---- a/drivers/ps3/vuart.c
-+++ b/drivers/ps3/vuart.c
-@@ -83,7 +83,7 @@ struct ports_bmp {
- } __attribute__ ((aligned (32)));
+ 	DBG(" -> %s:%d\n", __func__, __LINE__);
  
- #define dump_ports_bmp(_b) _dump_ports_bmp(_b, __func__, __LINE__)
--static void __attribute__ ((unused)) _dump_ports_bmp(
-+static void __maybe_unused _dump_ports_bmp(
- 	const struct ports_bmp* bmp, const char* func, int line)
- {
- 	pr_debug("%s:%d: ports_bmp: %016lxh\n", func, line, bmp->status);
-@@ -107,7 +107,7 @@ static int ps3_vuart_match_id_to_port(en
- }
+-	ps3_get_firmware_version(&v);
+-	printk(KERN_INFO "PS3 firmware version %u.%u.%u\n", v.major, v.minor,
+-		v.rev);
++	lv1_get_version_info(&ps3_firmware_version.raw);
++	printk(KERN_INFO "PS3 firmware version %u.%u.%u\n",
++	       ps3_firmware_version.major, ps3_firmware_version.minor,
++	       ps3_firmware_version.rev);
  
- #define dump_port_params(_b) _dump_port_params(_b, __func__, __LINE__)
--static void __attribute__ ((unused)) _dump_port_params(unsigned int port_number,
-+static void __maybe_unused _dump_port_params(unsigned int port_number,
- 	const char* func, int line)
- {
- #if defined(DEBUG)
+ 	ps3_spu_set_platform();
+ 	ps3_map_htab();
+--- a/include/asm-powerpc/ps3.h
++++ b/include/asm-powerpc/ps3.h
+@@ -35,7 +35,8 @@ union ps3_firmware_version {
+ 	};
+ };
+ 
+-int ps3_get_firmware_version(union ps3_firmware_version *v);
++void ps3_get_firmware_version(union ps3_firmware_version *v);
++int ps3_compare_firmware_version(u16 major, u16 minor, u16 rev);
+ 
+ /* 'Other OS' area */
+ 
 
 -- 
