@@ -1,24 +1,23 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E0328DDF0C
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 08:42:14 +1000 (EST)
-Message-ID: <4667375D.5000103@freescale.com>
-Date: Wed, 06 Jun 2007 17:38:21 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: MPC8349ea Random Device Generator driver
-References: <BAY122-F18923A7AA6D3A4D96A360085200@phx.gbl>
-	<200706070011.43347.arnd@arndb.de> <466732EE.8080306@freescale.com>
-	<200706070035.16150.arnd@arndb.de>
-In-Reply-To: <200706070035.16150.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org, sl@powerlinux.fr,
-	Philippe Lachenal <philippe.lachenal@hotmail.fr>
+Return-Path: <adaplas@gmail.com>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.239])
+	by ozlabs.org (Postfix) with ESMTP id DA841DDF59
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 08:44:36 +1000 (EST)
+Received: by nz-out-0506.google.com with SMTP id v1so312672nzb
+	for <linuxppc-dev@ozlabs.org>; Wed, 06 Jun 2007 15:44:35 -0700 (PDT)
+Subject: Re: [Linux-fbdev-devel] [patch 17/18] PS3: Frame buffer system-bus
+	rework
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: linux-fbdev-devel@lists.sourceforge.net
+In-Reply-To: <Pine.LNX.4.62.0706060849530.19499@pademelon.sonytel.be>
+References: <20070606024407.786638029@am.sony.com> >
+	<46662399.7030401@am.sony.com>
+	<Pine.LNX.4.62.0706060849530.19499@pademelon.sonytel.be>
+Content-Type: text/plain
+Date: Wed, 06 Jun 2007 23:56:58 +0800
+Message-Id: <1181145418.5023.11.camel@daplas>
+Mime-Version: 1.0
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,15 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
+On Wed, 2007-06-06 at 08:51 +0200, Geert Uytterhoeven wrote:
+> This one should go through linux-fbdev-devel (CC) for review, but Paul can
+> merge it because it depends on the PS3 system bus device rework.
+> 
 
-> There are there on my system, see in_be64/out_be64/readq/writeq. note that the code
-> for those is created by macros, so they don't show up in ctags.
+> >  
+> > -static void ps3fb_shutdown(struct platform_device *dev)
+> > +static int __devexit ps3fb_remove(struct ps3_system_bus_device *dev)
+> >  {
+> > -	ps3fb_flip_ctl(0);	/* flip off */
+> > -	ps3fb.dinfo->irq.mask = 0;
+> > -	free_irq(ps3fb.irq_no, ps3fb.dev);
+> > -	ps3_irq_plug_destroy(ps3fb.irq_no);
+> > -	iounmap((u8 __iomem *)ps3fb.dinfo);
+> > +	BUG();
 
-Ah, that explains it.  In that case, I think the code should be changed to reference 
-everything as 64-bit registers and ints.
+Why BUG()?
 
-
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+Tony
