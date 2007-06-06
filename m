@@ -1,31 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 85691DDEBF
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 17:09:44 +1000 (EST)
-Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Randy Vinson <rvinson@mvista.com>
-In-Reply-To: <466492DC.6050708@mvista.com>
-References: <1180720112.14219.62.camel@ld0161-tx32>
-	<dfc15991e31bfc09389461dc443acd7c@kernel.crashing.org>
-	<1180734314.5674.49.camel@rhino>
-	<4fb92a9dfccf515bdc1522d08f10f823@kernel.crashing.org>
-	<20070602085359.GA10333@iram.es>
-	<3ebd6ca6877ea74925f066ff96ac81db@kernel.crashing.org>
-	<20070602195308.GA21618@iram.es>
-	<12ad593bd17f769e44f05bc24eac4d0a@kernel.crashing.org>
-	<1180828907.14025.37.camel@localhost.localdomain>
-	<28e0600256815f93db45b2f4eb2d9df5@kernel.crashing.org>
-	<20070603083339.GB2157@iram.es>
-	<02DC2E36-86B1-4458-BB0C-13CF79AC1D11@freescale.com>
-	<466492DC.6050708@mvista.com>
-Content-Type: text/plain
-Date: Wed, 06 Jun 2007 17:09:23 +1000
-Message-Id: <1181113764.31677.242.camel@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id B2749DDEB6
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 17:46:40 +1000 (EST)
+Date: Wed, 6 Jun 2007 09:46:09 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [patch 07/18] PS3: Make ps3av.h usable from user space
+Message-ID: <20070606074609.GA31975@lst.de>
+References: <20070606024407.786638029@am.sony.com>>
+	<46662337.9060908@am.sony.com>
 Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <46662337.9060908@am.sony.com>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Masashi Kimoto <Masashi_Kimoto@hq.scei.sony.co.jp>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,14 +26,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-06-04 at 15:31 -0700, Randy Vinson wrote:
-> Actually, that's not strictly true. If a card containing a P2P bridge
-> is
-> installed into PCI slot 4, the i8259 will end up on a bus that is not
-> numbered bus 1. I've often wondered how something like that is handled
-> in the DTS.
+On Tue, Jun 05, 2007 at 08:00:07PM -0700, Geoff Levand wrote:
+> The user applications to manage the PS3 AV modes can use values
+> defined in this header.
 
-The bus number shouldn't matter as long as low IO cycles are properly
-forwarded to it.
-
-Ben.
+NACK.  First please don't introduce new unifdef-y headers but always
+separated them.  Second I don't see any of the values actually used
+in a user<->kerne interface.  If the application only happens to use
+the same values it should ship a copy of the header intead.
