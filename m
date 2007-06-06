@@ -1,18 +1,19 @@
-Return-Path: <gjalt007@chello.nl>
-Received: from viefep20-int.chello.at (viefep18-int.chello.at [213.46.255.22])
-	by ozlabs.org (Postfix) with ESMTP id EC6BCDDE3D
+Return-Path: <scop@digitel.com.br>
+Received: from cosmos.digitel.com.br (cosmos.digitel.com.br [200.198.105.42])
+	by ozlabs.org (Postfix) with ESMTP id 3E0D0DDDF9
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  5 Jun 2007 17:44:55 +1000 (EST)
-Message-ID: <46651027.2010906@chello.nl>
-Date: Tue, 05 Jun 2007 09:26:31 +0200
-From: Theo Gjaltema <gjalt007@chello.nl>
-MIME-Version: 1.0
+	Wed,  6 Jun 2007 14:33:29 +1000 (EST)
+From: Ricardo Scop <scop@digitel.com.br>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: RTC drift in PPC
-References: <010001c792f4$a5d3dfb0$4601a8c0@signet>
-	<46433008.5070508@BitWagon.com>
-In-Reply-To: <46433008.5070508@BitWagon.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: Linux interrupt managing on 8xx
+Date: Wed, 6 Jun 2007 01:02:07 -0300
+References: <F1F6EC0C8B75034F9E3A79FC85122E8E264992@aquib01a>
+In-Reply-To: <F1F6EC0C8B75034F9E3A79FC85122E8E264992@aquib01a>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200706060102.07410.scop@digitel.com.br>
+Cc: DI BACCO ANTONIO - technolabs <Antonio.DiBacco@technolabs.it>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,16 +24,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I 'v measured the clock on a mpc8280 board running the 2.4.25 kernel 
-obtained from ELDK3.1.1, no problem with the clock during a test period 
-of a few days.
+On Monday 04 June 2007 17:37, DI BACCO ANTONIO - technolabs wrote:
+> I have a component named pca9555 (on the i2c bus) that is an I/O expander.
+> It can generate an interrupt to the MPC8xx processor (SIU_IRQ1 pin). This
+> pin will be active till I read registers of pca9555. Because I cannot
+> access the i2c bus in the interrupt handler I queue a work on a work queue.
+> Just at the end of the interrupt handler  should I disable the interrupt on
+> the mpc8xx? I think that otherwise the interrupt will pop up again till I
+> execute the work in the work queue finally reading the pca9555 and shutting
+> off the source of the interrupt.
 
-Theo.
->> We are running RTC on mpc860 board with external crystal...
->> We are getting 4 minutes drift for 21 hours.
->>     
->
-> A slowdown in the approx. range 1:300 to 1:350 is endemic to linux ppc:
-> http://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=157581
->
->   
+Well, why don't you simply program the interrupt to be edge-triggered in the 
+SIEL register? This way it will only occur again after the pin level is 
+cleared.
+
+HTH,
+
+Ricardo.
