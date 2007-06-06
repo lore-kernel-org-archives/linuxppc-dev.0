@@ -1,23 +1,18 @@
-Return-Path: <adaplas@gmail.com>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.239])
-	by ozlabs.org (Postfix) with ESMTP id DA841DDF59
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 08:44:36 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id v1so312672nzb
-	for <linuxppc-dev@ozlabs.org>; Wed, 06 Jun 2007 15:44:35 -0700 (PDT)
-Subject: Re: [Linux-fbdev-devel] [patch 17/18] PS3: Frame buffer system-bus
-	rework
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: linux-fbdev-devel@lists.sourceforge.net
-In-Reply-To: <Pine.LNX.4.62.0706060849530.19499@pademelon.sonytel.be>
-References: <20070606024407.786638029@am.sony.com> >
-	<46662399.7030401@am.sony.com>
-	<Pine.LNX.4.62.0706060849530.19499@pademelon.sonytel.be>
-Content-Type: text/plain
-Date: Wed, 06 Jun 2007 23:56:58 +0800
-Message-Id: <1181145418.5023.11.camel@daplas>
-Mime-Version: 1.0
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id AD2C7DDF59
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 08:44:37 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Create add_rtc() function to enable the RTC CMOS driver
+Date: Thu, 7 Jun 2007 00:44:34 +0200
+References: <1181147873.5674.116.camel@rhino>
+In-Reply-To: <1181147873.5674.116.camel@rhino>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200706070044.35056.arnd@arndb.de>
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,22 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-06-06 at 08:51 +0200, Geert Uytterhoeven wrote:
-> This one should go through linux-fbdev-devel (CC) for review, but Paul can
-> merge it because it depends on the PS3 system bus device rework.
-> 
-
-> >  
-> > -static void ps3fb_shutdown(struct platform_device *dev)
-> > +static int __devexit ps3fb_remove(struct ps3_system_bus_device *dev)
-> >  {
-> > -	ps3fb_flip_ctl(0);	/* flip off */
-> > -	ps3fb.dinfo->irq.mask = 0;
-> > -	free_irq(ps3fb.irq_no, ps3fb.dev);
-> > -	ps3_irq_plug_destroy(ps3fb.irq_no);
-> > -	iounmap((u8 __iomem *)ps3fb.dinfo);
-> > +	BUG();
-
-Why BUG()?
-
-Tony
+T24gV2VkbmVzZGF5IDA2IEp1bmUgMjAwNywgV2FkZSBGYXJuc3dvcnRoIHdyb3RlOgo+ICsKPiAr
+oKCgoKCgoG5wID0gb2ZfZmluZF9jb21wYXRpYmxlX25vZGUoTlVMTCwgTlVMTCwgInBucFBOUCxi
+MDAiKTsKPiAroKCgoKCgoGlmICghbnApCj4gK6CgoKCgoKCgoKCgoKCgoHJldHVybiAtRU5PREVW
+Owo+ICsKPiAroKCgoKCgoGlmIChvZl9hZGRyZXNzX3RvX3Jlc291cmNlKG5wLCAwLCAmcmVzKSkg
+ewo+ICugoKCgoKCgoKCgoKCgoKBvZl9ub2RlX3B1dChucCk7Cj4gK6CgoKCgoKCgoKCgoKCgoHJl
+dHVybiAtRU5PREVWOwo+ICugoKCgoKCgfQo+ICsKPiAroKCgoKCgoHBkID0gcGxhdGZvcm1fZGV2
+aWNlX3JlZ2lzdGVyX3NpbXBsZSgicnRjX2Ntb3MiLCAtMSwKPiAroKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgIKAgoCAmcmVzLCAxKTsKCkRvZXNuJ3QgdGhpcyBjb25mbGlj
+dCB3aXRoIGEgcG90ZW50aWFsIGlzYXBucCBkcml2ZXIgZm9yIHRoZSBzYW1lCmRldmljZT8gSWYg
+eW91IGhhdmUgbXVsdGlwbGUgaXNhcG5wIGRldmljZXMsIGl0IG1heSBiZSBiZXR0ZXIKdG8gYWRk
+IGEgYnVzIGRyaXZlciBmb3IgdGhlIGlzYXBucCBob3N0LCBhbmQgdXNlIGRldmljZSBkcml2ZXJz
+CmZvciB0aGF0IGJ1cyBpbnN0ZWFkIG9mIHBsYXRmb3JtIGRldmljZXMuCgoJQXJuZCA8PjwK
