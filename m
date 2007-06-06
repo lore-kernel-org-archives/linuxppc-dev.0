@@ -1,17 +1,20 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Message-ID: <4666AB89.1010206@ru.mvista.com>
-Date: Wed, 06 Jun 2007 16:41:45 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id D2199DDE04
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 23:01:39 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] of_serial: ignore unknown serial port
+Date: Wed, 6 Jun 2007 15:01:15 +0200
+References: <20070531.183033.-1300520557.kouish@swc.toshiba.co.jp>
+	<18022.19709.50452.30370@cargo.ozlabs.ibm.com>
+	<fe647387a21ec103882e7cf577d0d7d5@kernel.crashing.org>
+In-Reply-To: <fe647387a21ec103882e7cf577d0d7d5@kernel.crashing.org>
 MIME-Version: 1.0
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
-References: <20070601232022.GA21237@mag.az.mvista.com>
-	<20070604205646.GD10612@mag.az.mvista.com>
-	<4665C8F4.2090502@ru.mvista.com>
-	<20070605211114.GA17131@mag.az.mvista.com>
-In-Reply-To: <20070605211114.GA17131@mag.az.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, linux-mtd@lists.infradead.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200706061501.15853.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,35 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+On Wednesday 06 June 2007, Segher Boessenkool wrote:
+> >
+> > Is this a bugfix that needs to go in 2.6.22?
+> 
+> This potentially breaks lots of other platforms, so no
+> please, put it in early in the next cycle and give those
+> others time to recover from this change.
 
-Mark A. Greer wrote:
+I would expect that the bugfix is relatively harmless, as the
+driver is rather new and there can only be a very small set
+of users. All the OF based systems should be working fine
+either way, because they already have legacy_serial, and
+the dtc sources that come with the kernel all list the 
+serial ports as compatible to either "ns16550", "cpm_uart",
+"marvell,mpsc", or "mpc5200-psc-uart". In the first case
+of those four, the change is harmless, for the other three
+it is a valid bug fix.
 
->>Mark A. Greer wrote:
+It probably only makes a difference for 52xx in the case that
+you have CONFIG_SERIAL_OF_PLATFORM=y and CONFIG_SERIAL_MPC52xx=m.
+In that configuration, you get the same bug that Kou Ishizaki
+observed on celleb without this fix.
 
->>>		flash@a0000000 {
->>>			device_type = "rom";
->>>			compatible = "direct-mapped";
->>>			reg = <a0000000 4000000>; /* Default (64MB) */
->>>			probe-type = "CFI";
->>>			bank-width = <4>;
->>>			partitions = <00000000 00100000 /* RO */
->>>				      00100000 00040001 /* RW */
->>>				      00140000 00400000 /* RO */
->>>				      00540000 039c0000 /* RO */
->>>				      03f00000 00100000>; /* RO */
-
->>   Hm, this should have been the other way around -- ones with odd size are 
->>RO, ones with even size are RW.
-
-> Yeah, that's what the comment says but the code says the opposite:
-
-> 	if (*part++ & 1) /* bit 0 set signifies read only partition */
-> 		(*parts)[i].mask_flags = MTD_WRITEABLE;
-
-> Doesn't that make it RW if bit 0 is set?
-
-    Contrarywise, though this may surprise you. ;-)
-    This is a question to MTD people...
-
-WBR, Sergei
+	Arnd <><
