@@ -1,22 +1,20 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from mail105-dub-R.bigfish.com (mail-dub.bigfish.com
+Received: from mail119-dub-R.bigfish.com (mail-dub.bigfish.com
 	[213.199.154.10])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 45244DDED8
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 13:25:14 +1000 (EST)
-Message-ID: <46662337.9060908@am.sony.com>
-Date: Tue, 05 Jun 2007 20:00:07 -0700
+	by ozlabs.org (Postfix) with ESMTP id 8E121DDE9F
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 13:27:03 +1000 (EST)
+Message-ID: <4666233F.1080103@am.sony.com>
+Date: Tue, 05 Jun 2007 20:00:15 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 07/18] PS3: Make ps3av.h usable from user space
+Subject: [patch 08/18] PS3: Kexec support
 References: <20070606024407.786638029@am.sony.com>>
 In-Reply-To: <20070606024407.786638029@am.sony.com>>
 Content-Type: text/plain; charset=UTF-8
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Paul Mackerras <paulus@samba.org>,
-	Masashi Kimoto <Masashi_Kimoto@hq.scei.sony.co.jp>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,42 +24,385 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The user applications to manage the PS3 AV modes can use values
-defined in this header.
+Fixup the core platform parts needed for kexec to work on the PS3.
+ - Setup ps3_hpte_clear correctly.
+ - Mask interrupts on irq removal.
+ - Release all hypervisor resources.
 
-CC: Masashi Kimoto <Masashi_Kimoto@hq.scei.sony.co.jp>
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- include/asm-powerpc/Kbuild  |    1 +
- include/asm-powerpc/ps3av.h |    2 ++
- 2 files changed, 3 insertions(+)
+ arch/powerpc/platforms/ps3/htab.c      |   14 +-
+ arch/powerpc/platforms/ps3/interrupt.c |  199 ++++++++++++++++++++-------------
+ arch/powerpc/platforms/ps3/setup.c     |   29 ++--
+ 3 files changed, 147 insertions(+), 95 deletions(-)
 
---- a/include/asm-powerpc/Kbuild
-+++ b/include/asm-powerpc/Kbuild
-@@ -34,6 +34,7 @@ unifdef-y += elf.h
- unifdef-y += nvram.h
- unifdef-y += param.h
- unifdef-y += posix_types.h
-+unifdef-y += ps3av.h
- unifdef-y += ptrace.h
- unifdef-y += seccomp.h
- unifdef-y += signal.h
---- a/include/asm-powerpc/ps3av.h
-+++ b/include/asm-powerpc/ps3av.h
-@@ -321,6 +321,7 @@
- #define PS3AV_MODE_RGB				0x0020
+--- a/arch/powerpc/platforms/ps3/htab.c
++++ b/arch/powerpc/platforms/ps3/htab.c
+@@ -234,10 +234,18 @@ static void ps3_hpte_invalidate(unsigned
+ 
+ static void ps3_hpte_clear(void)
+ {
+-	/* Make sure to clean up the frame buffer device first */
+-	ps3fb_cleanup();
++	int result;
+ 
+-	lv1_unmap_htab(htab_addr);
++	DBG(" -> %s:%d\n", __func__, __LINE__);
++
++	result = lv1_unmap_htab(htab_addr);
++	BUG_ON(result);
++
++	ps3_mm_shutdown();
++
++	ps3_mm_vas_destroy();
++
++	DBG(" <- %s:%d\n", __func__, __LINE__);
+ }
+ 
+ void __init ps3_hpte_init(unsigned long htab_size)
+--- a/arch/powerpc/platforms/ps3/interrupt.c
++++ b/arch/powerpc/platforms/ps3/interrupt.c
+@@ -91,6 +91,92 @@ struct ps3_private {
+ static DEFINE_PER_CPU(struct ps3_private, ps3_private);
+ 
+ /**
++ * ps3_chip_mask - Set an interrupt mask bit in ps3_bmp.
++ * @virq: The assigned Linux virq.
++ *
++ * Sets ps3_bmp.mask and calls lv1_did_update_interrupt_mask().
++ */
++
++static void ps3_chip_mask(unsigned int virq)
++{
++	struct ps3_private *pd = get_irq_chip_data(virq);
++	u64 bit = 0x8000000000000000UL >> virq;
++	u64 *p = &pd->bmp.mask;
++	u64 old;
++	unsigned long flags;
++
++	pr_debug("%s:%d: cpu %u, virq %d\n", __func__, __LINE__, pd->cpu, virq);
++
++	local_irq_save(flags);
++	asm volatile(
++		     "1:	ldarx %0,0,%3\n"
++		     "andc	%0,%0,%2\n"
++		     "stdcx.	%0,0,%3\n"
++		     "bne-	1b"
++		     : "=&r" (old), "+m" (*p)
++		     : "r" (bit), "r" (p)
++		     : "cc" );
++
++	lv1_did_update_interrupt_mask(pd->node, pd->cpu);
++	local_irq_restore(flags);
++}
++
++/**
++ * ps3_chip_unmask - Clear an interrupt mask bit in ps3_bmp.
++ * @virq: The assigned Linux virq.
++ *
++ * Clears ps3_bmp.mask and calls lv1_did_update_interrupt_mask().
++ */
++
++static void ps3_chip_unmask(unsigned int virq)
++{
++	struct ps3_private *pd = get_irq_chip_data(virq);
++	u64 bit = 0x8000000000000000UL >> virq;
++	u64 *p = &pd->bmp.mask;
++	u64 old;
++	unsigned long flags;
++
++	pr_debug("%s:%d: cpu %u, virq %d\n", __func__, __LINE__, pd->cpu, virq);
++
++	local_irq_save(flags);
++	asm volatile(
++		     "1:	ldarx %0,0,%3\n"
++		     "or	%0,%0,%2\n"
++		     "stdcx.	%0,0,%3\n"
++		     "bne-	1b"
++		     : "=&r" (old), "+m" (*p)
++		     : "r" (bit), "r" (p)
++		     : "cc" );
++
++	lv1_did_update_interrupt_mask(pd->node, pd->cpu);
++	local_irq_restore(flags);
++}
++
++/**
++ * ps3_chip_eoi - HV end-of-interrupt.
++ * @virq: The assigned Linux virq.
++ *
++ * Calls lv1_end_of_interrupt_ext().
++ */
++
++static void ps3_chip_eoi(unsigned int virq)
++{
++	const struct ps3_private *pd = get_irq_chip_data(virq);
++	lv1_end_of_interrupt_ext(pd->node, pd->cpu, virq);
++}
++
++/**
++ * ps3_irq_chip - Represents the ps3_bmp as a Linux struct irq_chip.
++ */
++
++static struct irq_chip ps3_irq_chip = {
++	.typename = "ps3",
++	.mask = ps3_chip_mask,
++	.unmask = ps3_chip_unmask,
++	.eoi = ps3_chip_eoi,
++};
++
++/**
+  * ps3_virq_setup - virq related setup.
+  * @cpu: enum ps3_cpu_binding indicating the cpu the interrupt should be
+  * serviced on.
+@@ -134,6 +220,8 @@ int ps3_virq_setup(enum ps3_cpu_binding 
+ 		goto fail_set;
+ 	}
+ 
++	ps3_chip_mask(*virq);
++
+ 	return result;
+ 
+ fail_set:
+@@ -225,6 +313,8 @@ int ps3_irq_plug_destroy(unsigned int vi
+ 	pr_debug("%s:%d: node %lu, cpu %d, virq %u\n", __func__, __LINE__,
+ 		pd->node, pd->cpu, virq);
+ 
++	ps3_chip_mask(virq);
++
+ 	result = lv1_disconnect_irq_plug_ext(pd->node, pd->cpu, virq);
+ 
+ 	if (result)
+@@ -282,7 +372,9 @@ int ps3_event_receive_port_destroy(unsig
+ {
+ 	int result;
+ 
+-	pr_debug(" -> %s:%d virq: %u\n", __func__, __LINE__, virq);
++	pr_debug(" -> %s:%d virq %u\n", __func__, __LINE__, virq);
++
++	ps3_chip_mask(virq);
+ 
+ 	result = lv1_destruct_event_receive_port(virq_to_hw(virq));
+ 
+@@ -290,17 +382,13 @@ int ps3_event_receive_port_destroy(unsig
+ 		pr_debug("%s:%d: lv1_destruct_event_receive_port failed: %s\n",
+ 			__func__, __LINE__, ps3_result(result));
+ 
+-	/* lv1_destruct_event_receive_port() destroys the IRQ plug,
+-	 * so don't call ps3_irq_plug_destroy() here.
++	/* Can't call ps3_virq_destroy() here since ps3_smp_cleanup_cpu()
++	 * calls from interrupt context (smp_call_function).
+ 	 */
+ 
+-	result = ps3_virq_destroy(virq);
+-	BUG_ON(result);
+-
+ 	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+ 	return result;
+ }
+-EXPORT_SYMBOL_GPL(ps3_event_receive_port_destroy);
+ 
+ int ps3_send_event_locally(unsigned int virq)
+ {
+@@ -372,6 +460,13 @@ int ps3_sb_event_receive_port_destroy(co
+ 	result = ps3_event_receive_port_destroy(virq);
+ 	BUG_ON(result);
+ 
++	/* ps3_event_receive_port_destroy() destroys the IRQ plug,
++	 * so don't call ps3_irq_plug_destroy() here.
++	 */
++
++	result = ps3_virq_destroy(virq);
++	BUG_ON(result);
++
+ 	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+ 	return result;
+ }
+@@ -412,16 +507,23 @@ EXPORT_SYMBOL_GPL(ps3_io_irq_setup);
+ int ps3_io_irq_destroy(unsigned int virq)
+ {
+ 	int result;
++	unsigned long outlet = virq_to_hw(virq);
+ 
+-	result = lv1_destruct_io_irq_outlet(virq_to_hw(virq));
++	ps3_chip_mask(virq);
+ 
+-	if (result)
+-		pr_debug("%s:%d: lv1_destruct_io_irq_outlet failed: %s\n",
+-			__func__, __LINE__, ps3_result(result));
++	/* lv1_destruct_io_irq_outlet() will destroy the IRQ plug,
++	 * so call ps3_irq_plug_destroy() first.
++	 */
+ 
+ 	result = ps3_irq_plug_destroy(virq);
+ 	BUG_ON(result);
+ 
++	result = lv1_destruct_io_irq_outlet(outlet);
++
++	if (result)
++		pr_debug("%s:%d: lv1_destruct_io_irq_outlet failed: %s\n",
++			__func__, __LINE__, ps3_result(result));
++
+ 	return result;
+ }
+ EXPORT_SYMBOL_GPL(ps3_io_irq_destroy);
+@@ -466,6 +568,7 @@ int ps3_vuart_irq_destroy(unsigned int v
+ {
+ 	int result;
+ 
++	ps3_chip_mask(virq);
+ 	result = lv1_deconfigure_virtual_uart_irq();
+ 
+ 	if (result) {
+@@ -514,9 +617,14 @@ int ps3_spe_irq_setup(enum ps3_cpu_bindi
+ 
+ int ps3_spe_irq_destroy(unsigned int virq)
+ {
+-	int result = ps3_irq_plug_destroy(virq);
++	int result;
++
++	ps3_chip_mask(virq);
++
++	result = ps3_irq_plug_destroy(virq);
+ 	BUG_ON(result);
+-	return 0;
++
++	return result;
+ }
  
  
-+#ifdef __KERNEL__
- /** command packet structure **/
- struct ps3av_send_hdr {
- 	u16 version;
-@@ -723,4 +724,5 @@ extern int ps3av_audio_mute(int);
- extern int ps3av_dev_open(void);
- extern int ps3av_dev_close(void);
+@@ -565,67 +673,6 @@ static void __maybe_unused _dump_mask(st
+ static void dump_bmp(struct ps3_private* pd) {};
+ #endif /* defined(DEBUG) */
  
-+#endif /* __KERNEL__ */
- #endif	/* _ASM_POWERPC_PS3AV_H_ */
+-static void ps3_chip_mask(unsigned int virq)
+-{
+-	struct ps3_private *pd = get_irq_chip_data(virq);
+-	u64 bit = 0x8000000000000000UL >> virq;
+-	u64 *p = &pd->bmp.mask;
+-	u64 old;
+-	unsigned long flags;
+-
+-	pr_debug("%s:%d: cpu %u, virq %d\n", __func__, __LINE__, pd->cpu, virq);
+-
+-	local_irq_save(flags);
+-	asm volatile(
+-		     "1:	ldarx %0,0,%3\n"
+-		     "andc	%0,%0,%2\n"
+-		     "stdcx.	%0,0,%3\n"
+-		     "bne-	1b"
+-		     : "=&r" (old), "+m" (*p)
+-		     : "r" (bit), "r" (p)
+-		     : "cc" );
+-
+-	lv1_did_update_interrupt_mask(pd->node, pd->cpu);
+-	local_irq_restore(flags);
+-}
+-
+-static void ps3_chip_unmask(unsigned int virq)
+-{
+-	struct ps3_private *pd = get_irq_chip_data(virq);
+-	u64 bit = 0x8000000000000000UL >> virq;
+-	u64 *p = &pd->bmp.mask;
+-	u64 old;
+-	unsigned long flags;
+-
+-	pr_debug("%s:%d: cpu %u, virq %d\n", __func__, __LINE__, pd->cpu, virq);
+-
+-	local_irq_save(flags);
+-	asm volatile(
+-		     "1:	ldarx %0,0,%3\n"
+-		     "or	%0,%0,%2\n"
+-		     "stdcx.	%0,0,%3\n"
+-		     "bne-	1b"
+-		     : "=&r" (old), "+m" (*p)
+-		     : "r" (bit), "r" (p)
+-		     : "cc" );
+-
+-	lv1_did_update_interrupt_mask(pd->node, pd->cpu);
+-	local_irq_restore(flags);
+-}
+-
+-static void ps3_chip_eoi(unsigned int virq)
+-{
+-	const struct ps3_private *pd = get_irq_chip_data(virq);
+-	lv1_end_of_interrupt_ext(pd->node, pd->cpu, virq);
+-}
+-
+-static struct irq_chip irq_chip = {
+-	.typename = "ps3",
+-	.mask = ps3_chip_mask,
+-	.unmask = ps3_chip_unmask,
+-	.eoi = ps3_chip_eoi,
+-};
+-
+ static void ps3_host_unmap(struct irq_host *h, unsigned int virq)
+ {
+ 	set_irq_chip_data(virq, NULL);
+@@ -637,7 +684,7 @@ static int ps3_host_map(struct irq_host 
+ 	pr_debug("%s:%d: hwirq %lu, virq %u\n", __func__, __LINE__, hwirq,
+ 		virq);
+ 
+-	set_irq_chip_and_handler(virq, &irq_chip, handle_fasteoi_irq);
++	set_irq_chip_and_handler(virq, &ps3_irq_chip, handle_fasteoi_irq);
+ 
+ 	return 0;
+ }
+@@ -657,7 +704,7 @@ void __init ps3_register_ipi_debug_brk(u
+ 		cpu, virq, pd->bmp.ipi_debug_brk_mask);
+ }
+ 
+-unsigned int ps3_get_irq(void)
++static unsigned int ps3_get_irq(void)
+ {
+ 	struct ps3_private *pd = &__get_cpu_var(ps3_private);
+ 	u64 x = (pd->bmp.status & pd->bmp.mask);
+--- a/arch/powerpc/platforms/ps3/setup.c
++++ b/arch/powerpc/platforms/ps3/setup.c
+@@ -209,31 +209,28 @@ static int __init ps3_probe(void)
+ #if defined(CONFIG_KEXEC)
+ static void ps3_kexec_cpu_down(int crash_shutdown, int secondary)
+ {
+-	DBG(" -> %s:%d\n", __func__, __LINE__);
++	int result;
++	u64 ppe_id;
++	u64 thread_id = secondary ? 1 : 0;
++
++	DBG(" -> %s:%d: (%d)\n", __func__, __LINE__, secondary);
++	ps3_smp_cleanup_cpu(thread_id);
++
++	lv1_get_logical_ppe_id(&ppe_id);
++	result = lv1_configure_irq_state_bitmap(ppe_id, secondary ? 0 : 1, 0);
+ 
+-	if (secondary) {
+-		int cpu;
+-		for_each_online_cpu(cpu)
+-			if (cpu)
+-				ps3_smp_cleanup_cpu(cpu);
+-	} else
+-		ps3_smp_cleanup_cpu(0);
++	/* seems to fail on second call */
++	DBG("%s:%d: lv1_configure_irq_state_bitmap (%d) %s\n", __func__,
++		__LINE__, secondary, ps3_result(result));
+ 
+ 	DBG(" <- %s:%d\n", __func__, __LINE__);
+ }
+ 
+ static void ps3_machine_kexec(struct kimage *image)
+ {
+-	unsigned long ppe_id;
+-
+ 	DBG(" -> %s:%d\n", __func__, __LINE__);
+ 
+-	lv1_get_logical_ppe_id(&ppe_id);
+-	lv1_configure_irq_state_bitmap(ppe_id, 0, 0);
+-	ps3_mm_shutdown();
+-	ps3_mm_vas_destroy();
+-
+-	default_machine_kexec(image);
++	default_machine_kexec(image); // needs ipi, never returns.
+ 
+ 	DBG(" <- %s:%d\n", __func__, __LINE__);
+ }
 
 -- 
