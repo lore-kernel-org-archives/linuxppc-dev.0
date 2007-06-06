@@ -1,23 +1,20 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 43209DDEE0
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 08:32:26 +1000 (EST)
-Message-ID: <466735F3.7040504@freescale.com>
-Date: Wed, 06 Jun 2007 17:32:19 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Olof Johansson <olof@lixom.net>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 05819DDEE1
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 08:35:20 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
 Subject: Re: MPC8349ea Random Device Generator driver
+Date: Thu, 7 Jun 2007 00:35:15 +0200
 References: <BAY122-F18923A7AA6D3A4D96A360085200@phx.gbl>
-	<46672DB4.80504@freescale.com> <20070606220913.GA27820@lixom.net>
-	<46673009.6000109@freescale.com> <20070606222456.GA28225@lixom.net>
-In-Reply-To: <20070606222456.GA28225@lixom.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, sl@powerlinux.fr,
+	<200706070011.43347.arnd@arndb.de> <466732EE.8080306@freescale.com>
+In-Reply-To: <466732EE.8080306@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200706070035.16150.arnd@arndb.de>
+Cc: Olof Johansson <olof@lixom.net>, sl@powerlinux.fr,
+	Timur Tabi <timur@freescale.com>,
 	Philippe Lachenal <philippe.lachenal@hotmail.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,15 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olof Johansson wrote:
+On Thursday 07 June 2007, Timur Tabi wrote:
+> Anyway, there's a more fundamental problem. =A0I can't find any 64-bit ve=
+rsions of the=20
+> in_be/out_be/read/write functions. =A0Because the registers are big-endia=
+n, then we have a=20
+> few choices:
 
->  - you can never assign a __le16 type to any other integer type or any 
->    other bitwise type. You'd get a warnign about incompatible types. Makes 
->    sense, no?
+> 1) Create 64-bit versions of these functions.  Can someone tell me why th=
+ey don't exist=20
+> already?
 
-Then why do the in_be functions return an unsigned int instead of a __be type?  Isn't that 
-effectively removing the endian-ness from the type?
+There are there on my system, see in_be64/out_be64/readq/writeq. note that =
+the code
+for those is created by macros, so they don't show up in ctags.
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+	Arnd <><
