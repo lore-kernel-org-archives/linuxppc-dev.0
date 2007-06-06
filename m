@@ -1,18 +1,24 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 193FBDDF0F
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 08:39:56 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] Fix the LPC47M192 SuperIO on the MPC8641 HPCN
-Date: Thu, 7 Jun 2007 00:39:51 +0200
-References: <1181147415.5674.108.camel@rhino>
-In-Reply-To: <1181147415.5674.108.camel@rhino>
+Return-Path: <timur@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E0328DDF0C
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 08:42:14 +1000 (EST)
+Message-ID: <4667375D.5000103@freescale.com>
+Date: Wed, 06 Jun 2007 17:38:21 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200706070039.51541.arnd@arndb.de>
-Cc: paulus@samba.org
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: MPC8349ea Random Device Generator driver
+References: <BAY122-F18923A7AA6D3A4D96A360085200@phx.gbl>
+	<200706070011.43347.arnd@arndb.de> <466732EE.8080306@freescale.com>
+	<200706070035.16150.arnd@arndb.de>
+In-Reply-To: <200706070035.16150.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org, sl@powerlinux.fr,
+	Philippe Lachenal <philippe.lachenal@hotmail.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,23 +28,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 06 June 2007, Wade Farnsworth wrote:
-> +=A0=A0=A0=A0=A0=A0=A0/* LPC47M192 Super I/O configuration */
-> +=A0=A0=A0=A0=A0=A0=A0outb(0x55, 0x4e);=A0=A0=A0=A0=A0=A0=A0/* enter supe=
-rio config mode */
-> +
-> +=A0=A0=A0=A0=A0=A0=A0/* Enable keyboard and mouse */
-> +=A0=A0=A0=A0=A0=A0=A0outb(0x07, 0x4e);=A0=A0=A0=A0=A0=A0=A0/* device sel=
-ector register */
-> +=A0=A0=A0=A0=A0=A0=A0outb(0x07, 0x4f);=A0=A0=A0=A0=A0=A0=A0/* select key=
-board registers (device 7) */
-> +=A0=A0=A0=A0=A0=A0=A0outb(0x30, 0x4e);=A0=A0=A0=A0=A0=A0=A0/* keyboard a=
-ctivation register */
-> +=A0=A0=A0=A0=A0=A0=A0outb(0x01, 0x4f);=A0=A0=A0=A0=A0=A0=A0/* activate k=
-eyboard */
+Arnd Bergmann wrote:
 
-Hardcoded I/O port numbers always worry me a little. I know that this is
-supposed to work in general, but can't you read the I/O port range from
-a device tree property?
+> There are there on my system, see in_be64/out_be64/readq/writeq. note that the code
+> for those is created by macros, so they don't show up in ctags.
 
-	Arnd <><
+Ah, that explains it.  In that case, I think the code should be changed to reference 
+everything as 64-bit registers and ints.
+
+
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
