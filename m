@@ -1,22 +1,21 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound5-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
+Return-Path: <timur@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B1B07DDEC9
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 07:55:07 +1000 (EST)
-Message-ID: <46672D34.8010808@am.sony.com>
-Date: Wed, 06 Jun 2007 14:55:00 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D6856DDED9
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 07:57:18 +1000 (EST)
+Message-ID: <46672DB4.80504@freescale.com>
+Date: Wed, 06 Jun 2007 16:57:08 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: [patch 08/18] PS3: Kexec support
-References: <20070606024407.786638029@am.sony.com> >	
-	<4666233F.1080103@am.sony.com>
-	<1181102510.5536.15.camel@concordia.ozlabs.ibm.com>
-In-Reply-To: <1181102510.5536.15.camel@concordia.ozlabs.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+To: Philippe Lachenal <philippe.lachenal@hotmail.fr>
+Subject: Re: MPC8349ea Random Device Generator driver
+References: <BAY122-F18923A7AA6D3A4D96A360085200@phx.gbl>
+In-Reply-To: <BAY122-F18923A7AA6D3A4D96A360085200@phx.gbl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, sl@powerlinux.fr
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,111 +25,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> On Tue, 2007-06-05 at 20:00 -0700, Geoff Levand wrote:
->> Fixup the core platform parts needed for kexec to work on the PS3.
->>  - Setup ps3_hpte_clear correctly.
->>  - Mask interrupts on irq removal.
->>  - Release all hypervisor resources.
+Philippe Lachenal wrote:
+> Hello !
 > 
-> The irq changes might be kexec related, but it's a mess to review. You
-> seem to moving a bunch of code around in the patch as well.
+> I've made a driver for the MPC8349ea Random Device Generator, and I 
+> therefore submit it to your impartial judgment.. ;)
+> thanks a lot !
+
+First, please don't post your patch as an attachment.  I recommend you use git-send-email.
+
+> diff --git a/arch/powerpc/platforms/83xx/mpc834x_itx.c b/arch/powerpc/platforms/83xx/mpc834x_itx.c
+> old mode 100644
+> new mode 100755
+> index 40a0194..b05980b
+> --- a/arch/powerpc/platforms/83xx/mpc834x_itx.c
+> +++ b/arch/powerpc/platforms/83xx/mpc834x_itx.c
+> @@ -48,6 +48,24 @@ unsigned long isa_mem_base = 0;
+>   * Setup the architecture
+>   *
+>   */
+> +
+> +static struct of_device_id mpc834x_itx[] = {
+> +	{ .type = "soc", },
+> +	{ .type ="crypto", },
+
+You have a lot of minor spacing problems, like this one.  There should be a blank space 
+before '"crypto"'.
 
 
-Yes, I need to move the static chip_mask routines up so they would be
-defined before the irq setup/destroy routines.
+> +
+> +#include <asm/of_platform.h>
+> +#include <asm/io.h>
+> +
+> +#define TALITOS_RNGSR		0x028	/* RNG status register */
+> +#define TALITOS_RNGSR_HI	0x02c	/* RNG status register */
+> +#define TALITOS_RNGSR_HI_RD	0x1	/* RNG Reset done */
+> +#define TALITOS_RNGSR_HI_OFL	0xff0000/* number of dwords in RNG output FIFO*/
+> +#define TALITOS_RNGDSR		0x010	/* RNG data size register */
+> +#define TALITOS_RNGDSR_HI	0x014	/* RNG data size register */
+> +#define TALITOS_RNG_FIFO	0x800	/* RNG FIFO - pool of random numbers */
+> +#define TALITOS_RNGISR		0x030	/* RNG Interrupt status register */
+> +#define TALITOS_RNGISR_HI	0x034	/* RNG Interrupt status register */
+> +#define TALITOS_RNGRCR		0x018	/* RNG Reset control register */
+> +#define TALITOS_RNGRCR_HI	0x01c	/* RNG Reset control register */
 
+Please create a structure instead of using macros like this.  Example:
 
->> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
->> ---
->>  arch/powerpc/platforms/ps3/htab.c      |   14 +-
->>  arch/powerpc/platforms/ps3/interrupt.c |  199 ++++++++++++++++++++-------------
->>  arch/powerpc/platforms/ps3/setup.c     |   29 ++--
->>  3 files changed, 147 insertions(+), 95 deletions(-)
->> 
->> --- a/arch/powerpc/platforms/ps3/htab.c
->> +++ b/arch/powerpc/platforms/ps3/htab.c
->> @@ -234,10 +234,18 @@ static void ps3_hpte_invalidate(unsigned
->>  
->>  static void ps3_hpte_clear(void)
->>  {
->> -	/* Make sure to clean up the frame buffer device first */
->> -	ps3fb_cleanup();
->> +	int result;
->>  
->> -	lv1_unmap_htab(htab_addr);
->> +	DBG(" -> %s:%d\n", __func__, __LINE__);
->> +
->> +	result = lv1_unmap_htab(htab_addr);
->> +	BUG_ON(result);
->> +
->> +	ps3_mm_shutdown();
->> +
->> +	ps3_mm_vas_destroy();
->> +
->> +	DBG(" <- %s:%d\n", __func__, __LINE__);
->>  }
-> 
-> Do you really want to be calling DBG() here? Hmm, it looks like it
-> doesn't actually do anything?
+struct sec_rng {
+	__be64	rngmr;
+	u8 res1[8];
+	__be64 rngdsr;
+	__be64 rngrcr;
+...
+};
 
+and then ...	
 
-Sure, it uses udbg_printf, and works OK.
+> +static int talitos_hwrng_data_present(struct hwrng *rng)
+> +{
+> +	void __iomem *rng_regs = (void __iomem *)rng->priv;
 
+	struct sec_rng __iomem *rng = (struct sec_rng __iomem *) rng->priv;
 
->> +static void ps3_chip_mask(unsigned int virq)
->> +{
->> +	struct ps3_private *pd = get_irq_chip_data(virq);
->> +	u64 bit = 0x8000000000000000UL >> virq;
->> +	u64 *p = &pd->bmp.mask;
->> +	u64 old;
->> +	unsigned long flags;
->> +
->> +	pr_debug("%s:%d: cpu %u, virq %d\n", __func__, __LINE__, pd->cpu, virq);
->> +
->> +	local_irq_save(flags);
->> +	asm volatile(
->> +		     "1:	ldarx %0,0,%3\n"
->> +		     "andc	%0,%0,%2\n"
->> +		     "stdcx.	%0,0,%3\n"
->> +		     "bne-	1b"
->> +		     : "=&r" (old), "+m" (*p)
->> +		     : "r" (bit), "r" (p)
->> +		     : "cc" );
->> +
->> +	lv1_did_update_interrupt_mask(pd->node, pd->cpu);
->> +	local_irq_restore(flags);
-> 
-> How is this different from set_bit() ?  (asm-powerpc/bitops.h)
-> 
-> ps. now that I see you're just moving this code around someone's
-> probably already asked that question.
+> +
+> +
+> +	/* check for things like FIFO underflow */
+> +	
+> +	u32 v;
+> +
+> +	v = in_be32(rng_regs + TALITOS_RNGISR_HI);
 
+	u64 v;
+	v = rng->rngisr;
 
-This was contributed by Ben H as the fastest way.  I think the
-reason was that we could minimize the time between local_irq_save
-and local_irq_restore?
+or something like that.  Try to use the built-in support for 64-bit data types when possible.
 
+I get this confused easily, but I don't think you should be using the in/out_be macros 
+either.  Just do regular reads and writes.
 
->>  static void ps3_machine_kexec(struct kimage *image)
->>  {
->> -	unsigned long ppe_id;
->> -
->>  	DBG(" -> %s:%d\n", __func__, __LINE__);
->>  
->> -	lv1_get_logical_ppe_id(&ppe_id);
->> -	lv1_configure_irq_state_bitmap(ppe_id, 0, 0);
->> -	ps3_mm_shutdown();
->> -	ps3_mm_vas_destroy();
->> -
->> -	default_machine_kexec(image);
->> +	default_machine_kexec(image); // needs ipi, never returns.
-> 
-> Just get rid of ps3_machine_kexec() and hook default_machine_kexec()
-> directly into your ppc_md.
-
-
-Right, just a debugging leftover...
-
-
--Geoff
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
