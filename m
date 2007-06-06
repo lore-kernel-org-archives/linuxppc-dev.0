@@ -1,19 +1,17 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 530FDDDEBD
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 22:21:12 +1000 (EST)
-Date: Wed, 6 Jun 2007 14:21:10 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [patch 18/18] PS3: Device registration routines.
-In-Reply-To: <466623A4.1080102@am.sony.com>
-Message-ID: <Pine.LNX.4.62.0706061412580.24545@pademelon.sonytel.be>
-References: <20070606024407.786638029@am.sony.com>>
-	<466623A4.1080102@am.sony.com>
+Return-Path: <sshtylyov@ru.mvista.com>
+Message-ID: <4666AB89.1010206@ru.mvista.com>
+Date: Wed, 06 Jun 2007 16:41:45 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
+References: <20070601232022.GA21237@mag.az.mvista.com>
+	<20070604205646.GD10612@mag.az.mvista.com>
+	<4665C8F4.2090502@ru.mvista.com>
+	<20070605211114.GA17131@mag.az.mvista.com>
+In-Reply-To: <20070605211114.GA17131@mag.az.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,68 +21,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 5 Jun 2007, Geoff Levand wrote:
-> +static int __init ps3_register_vuart_devices(void)
-> +{
-> +	int result;
-> +	unsigned int port_number;
-> +
-> +	pr_debug(" -> %s:%d\n", __func__, __LINE__);
-> +
-> +	result = ps3_repository_read_vuart_av_port(&port_number);
-> +
-> +	if (result)
-> +		port_number = 0; /* av default */
-> +
-> +	result = ps3_setup_vuart_device(PS3_MATCH_ID_AV_SETTINGS, port_number);
-> +	WARN_ON(result);
-> +
-> +	ps3_repository_read_vuart_sysmgr_port(&port_number);
-    ^^^^
-> +
-> +	if (result)
-> +		port_number = 2; /* sysmgr default */
+Hello.
 
-You forgot to assign the return value of
-ps3_repository_read_vuart_sysmgr_port(). As the system manager vuart port
-number is not in the repository on the firmware I'm using, port_number contains
-garbage, and ps3_vuart_probe() will BUG().
+Mark A. Greer wrote:
 
-As this problem is present in your current git tree, here's a patch:
+>>Mark A. Greer wrote:
 
-Subject: [PATCH] Check return value of ps3_repository_read_vuart_sysmgr_port()
+>>>		flash@a0000000 {
+>>>			device_type = "rom";
+>>>			compatible = "direct-mapped";
+>>>			reg = <a0000000 4000000>; /* Default (64MB) */
+>>>			probe-type = "CFI";
+>>>			bank-width = <4>;
+>>>			partitions = <00000000 00100000 /* RO */
+>>>				      00100000 00040001 /* RW */
+>>>				      00140000 00400000 /* RO */
+>>>				      00540000 039c0000 /* RO */
+>>>				      03f00000 00100000>; /* RO */
 
-Add a missing assignment of the return value of
-ps3_repository_read_vuart_sysmgr_port(). As the system manager vuart port
-number is not in the repository on the firmware I'm using, port_number contains
-garbage, and ps3_vuart_probe() will BUG().
+>>   Hm, this should have been the other way around -- ones with odd size are 
+>>RO, ones with even size are RW.
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> Yeah, that's what the comment says but the code says the opposite:
 
---- a/arch/powerpc/platforms/ps3/device-init.c	2007-06-06 13:58:43.000000000 +0200
-+++ b/arch/powerpc/platforms/ps3/device-init.c	2007-06-06 14:12:35.000000000 +0200
-@@ -505,15 +505,13 @@ static int __init ps3_register_vuart_dev
- 	pr_debug(" -> %s:%d\n", __func__, __LINE__);
- 
- 	result = ps3_repository_read_vuart_av_port(&port_number);
--
- 	if (result)
- 		port_number = 0; /* av default */
- 
- 	result = ps3_setup_vuart_device(PS3_MATCH_ID_AV_SETTINGS, port_number);
- 	WARN_ON(result);
- 
--	ps3_repository_read_vuart_sysmgr_port(&port_number);
--
-+	result = ps3_repository_read_vuart_sysmgr_port(&port_number);
- 	if (result)
- 		port_number = 2; /* sysmgr default */
- 
-Gr{oetje,eeting}s,
+> 	if (*part++ & 1) /* bit 0 set signifies read only partition */
+> 		(*parts)[i].mask_flags = MTD_WRITEABLE;
 
-						Geert
+> Doesn't that make it RW if bit 0 is set?
 
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+    Contrarywise, though this may surprise you. ;-)
+    This is a question to MTD people...
+
+WBR, Sergei
