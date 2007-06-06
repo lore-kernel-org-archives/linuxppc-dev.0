@@ -1,24 +1,25 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EFD9ADDEF1
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 08:19:35 +1000 (EST)
-Message-ID: <466732EE.8080306@freescale.com>
-Date: Wed, 06 Jun 2007 17:19:26 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: MPC8349ea Random Device Generator driver
-References: <BAY122-F18923A7AA6D3A4D96A360085200@phx.gbl>
-	<20070606220913.GA27820@lixom.net> <46673009.6000109@freescale.com>
-	<200706070011.43347.arnd@arndb.de>
-In-Reply-To: <200706070011.43347.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org, sl@powerlinux.fr,
-	Philippe Lachenal <philippe.lachenal@hotmail.fr>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id F26FFDDEDB
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 08:31:43 +1000 (EST)
+Subject: Re: 83xx GPIO/EXT int in arch/powerpc/
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <3641c2a601dbccc9757fe9443d9330ca@kernel.crashing.org>
+References: <20070604095625.GF17456@chiana.homelinux.org>
+	<4E25DA41-741E-40AC-9186-936FEEFE6B29@freescale.com>
+	<20070604211740.GN17456@chiana.homelinux.org>
+	<C1F9584D-E778-4BE7-B11A-5505BA9B6F6C@freescale.com>
+	<cbf493edec7259df199568389814dab6@kernel.crashing.org>
+	<1181113438.31677.234.camel@localhost.localdomain>
+	<3641c2a601dbccc9757fe9443d9330ca@kernel.crashing.org>
+Content-Type: text/plain
+Date: Thu, 07 Jun 2007 08:31:33 +1000
+Message-Id: <1181169093.31677.260.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,38 +29,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
+On Wed, 2007-06-06 at 11:47 +0200, Segher Boessenkool wrote:
+>   - You can do it in your interrupt-map. That's probably the cleanest 
+> > way
+> > to do it.
+> 
+> Not really.  If the device interrupt is physically connected
+> directly to a GPIO or a PIC or whatever, if it doesn't go
+> through the PCI bus; then it shouldn't be represented in
+> the device tree as if it did.  The higher-up bridge has
+> nothing whatsoever to do with this device's interrupt.
+> 
+> It's a simple hack of course, it can be useful sometimes.
+> It's not "clean" at all however.
 
-> The only code that is allowed to dereference an __iomem pointer is the
-> implementation of readl/writel and similar functions.
-> The code you gave as an example gives you a warning when building with
-> make C=1 using sparse, and missed barriers.
+I disagree :-)
 
-Well, that's why I said "or something like that".
+The "PCI bus" in that sense is just the INT lines. They are connected
+wherever you want, doesn't matter. Look at Apple for example, they are
+all connected to GPIOs too.
 
-Anyway, there's a more fundamental problem.  I can't find any 64-bit versions of the 
-in_be/out_be/read/write functions.  Because the registers are big-endian, then we have a 
-few choices:
+The interrupt-map simply provides for each slot where the interrupt
+goes. It's perfectly fine and clean to use it when those interrupts are
+hooked to GPIOs and has been a common practice. I really don't see a
+problem with that.
 
-1) Create 64-bit versions of these functions.  Can someone tell me why they don't exist 
-already?
+> Depending on the rest of the tree, this would often mean
+> you have to do a much bigger interrupt-map-mask than
+> without this hack, and the corresponding explosion in
+> interrupt-map size.
 
-2) Do something stupid like u32 v = in_be32(((void *) &rng->rngisr) + 4);
+Not really again. Besides, devices normally use only int#A, only bridges
+use more.
 
-3) Change the struct like this:
+> Almost always that's how it works yeah.  And the "GPIO"
+> stage isn't normally represented in the device tree, GPIO
+> settings are considered a part of the PCB layout ;-) (one
+> more reason why Linux shouldn't have to touch it).
+> 
+> > If that's not the case, you may need some intermediary cascaded
+> > interrupt controller or something around those lines.
+> 
+> Yeah, but that's just the more general case of the
+> general case :-)
 
-struct sec_rng {
-	__be32	rngmr_hi;
-	__be32	rngmr_lo;
-	u8 res1[8];
-	__be32 rngdsr_hi;
-	__be32 rngdsr_lo;
-	__be32 rngrcr_hi;
-	__be32 rngrcr_lo;
-...
+Segher, I feel here that your inability to resist arguing about
+everything in that case is confusing what is a fairly simple issue in
+the first place :-) Poor guy trying to figure out the right way to do
+his stuff will run away screaming and go back hard coding his number in
+his platform code before we are finished :-)
 
-Comments?
+So I would say, taking a dicator hat, that the right way to fix his
+problem is also the simplest, which is to make sure the interrupt-map
+entry for that slot points to the right GPIO interrupt :-)
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+Easy isn't it ?
+
+Cheers,
+Ben.
