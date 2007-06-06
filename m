@@ -1,24 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-09.arcor-online.net (mail-in-09.arcor-online.net
-	[151.189.21.49])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0CF6EDDE0E
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 23:44:49 +1000 (EST)
-In-Reply-To: <200706061501.15853.arnd@arndb.de>
-References: <20070531.183033.-1300520557.kouish@swc.toshiba.co.jp>
-	<18022.19709.50452.30370@cargo.ozlabs.ibm.com>
-	<fe647387a21ec103882e7cf577d0d7d5@kernel.crashing.org>
-	<200706061501.15853.arnd@arndb.de>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <f3272d0bef12738b1f45f656f6fda83c@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] of_serial: ignore unknown serial port
-Date: Wed, 6 Jun 2007 15:44:39 +0200
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 29B38DDEC8
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 00:06:04 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] [POWERPC] Some extra via-pmu exports
+Date: Wed, 6 Jun 2007 16:05:48 +0200
+References: <20070521150531.e498340a.sfr@canb.auug.org.au>
+In-Reply-To: <20070521150531.e498340a.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200706061605.48983.arnd@arndb.de>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,18 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> Is this a bugfix that needs to go in 2.6.22?
->>
->> This potentially breaks lots of other platforms, so no
->> please, put it in early in the next cycle and give those
->> others time to recover from this change.
->
-> I would expect that the bugfix is relatively harmless,
+On Monday 21 May 2007, Stephen Rothwell wrote:
+> pmu_battery_count, pmu_batteries, pmu_power_flags were only exported
+> for 32 bit builds but are now needed for 64 bit as well.
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-Sure, but you cannot prove that without checking all possibly
-affected systems' device trees, that's my whole point.  If
-you need a fix for .22 you can always put a conditional on
-celleb around the offending code.  Anyway, Paul's choice.
+I haven't seen this one show up in 2.6.22-rc or powerpc.git yet,
+but I think we should have it in there to avoid build breakage.
 
+I stumbled over the same bug and wanted to submit a fix when
+I saw it was posted already.
 
-Segher
+	Arnd <><
