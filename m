@@ -1,19 +1,32 @@
-Return-Path: <scop@digitel.com.br>
-Received: from cosmos.digitel.com.br (cosmos.digitel.com.br [200.198.105.42])
-	by ozlabs.org (Postfix) with ESMTP id 3E0D0DDDF9
+Return-Path: <sekhar.pedamallu@patni.com>
+Received: from pcsbom.patni.com (pcsbom.patni.com [203.124.139.208])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9AE69DDDF5
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Jun 2007 14:33:29 +1000 (EST)
-From: Ricardo Scop <scop@digitel.com.br>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Linux interrupt managing on 8xx
-Date: Wed, 6 Jun 2007 01:02:07 -0300
-References: <F1F6EC0C8B75034F9E3A79FC85122E8E264992@aquib01a>
-In-Reply-To: <F1F6EC0C8B75034F9E3A79FC85122E8E264992@aquib01a>
+	Wed,  6 Jun 2007 19:14:11 +1000 (EST)
+Received: from pcsakruti.patni.com (pcsakruti [192.168.8.190])
+	by pcsbom.patni.com (8.13.4/8.13.4) with ESMTP id l568Xqj3004466
+	for <linuxppc-embedded@ozlabs.org>; Wed, 6 Jun 2007 14:03:52 +0530
+Received: from aktrakshak.patni.com (aktrakshak.patni.com [192.168.8.183])
+	by pcsakruti.patni.com (8.13.1/8.13.4) with SMTP id l568cxMC009412
+	for <linuxppc-embedded@ozlabs.org>; Wed, 6 Jun 2007 14:08:59 +0530
+Received: from lords.patni.com ([192.168.8.1])
+	by aktrakshak.patni.com (SMSSMTP 4.1.11.41) with SMTP id
+	M2007060614042314327
+	for <linuxppc-embedded@ozlabs.org>; Wed, 06 Jun 2007 14:04:23 +0530
+Received: from pcp40256 ([192.168.190.84]) (authenticated bits=0)
+	by lords.patni.com (8.13.4/8.13.4) with ESMTP id l568YTvM018140
+	for <linuxppc-embedded@ozlabs.org.>; Wed, 6 Jun 2007 14:04:32 +0530
+Message-Id: <200706060834.l568YTvM018140@lords.patni.com>
+From: "Sekhar Pedamallu" <sekhar.pedamallu@patni.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: memory issue on ppc
+Date: Wed, 6 Jun 2007 14:11:10 +0530
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200706060102.07410.scop@digitel.com.br>
-Cc: DI BACCO ANTONIO - technolabs <Antonio.DiBacco@technolabs.it>
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0150_01C7A844.88B58B30"
+Reply-To: sekhar.pedamallu@patni.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,20 +37,158 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Monday 04 June 2007 17:37, DI BACCO ANTONIO - technolabs wrote:
-> I have a component named pca9555 (on the i2c bus) that is an I/O expander.
-> It can generate an interrupt to the MPC8xx processor (SIU_IRQ1 pin). This
-> pin will be active till I read registers of pca9555. Because I cannot
-> access the i2c bus in the interrupt handler I queue a work on a work queue.
-> Just at the end of the interrupt handler  should I disable the interrupt on
-> the mpc8xx? I think that otherwise the interrupt will pop up again till I
-> execute the work in the work queue finally reading the pca9555 and shutting
-> off the source of the interrupt.
+This is a multi-part message in MIME format...
 
-Well, why don't you simply program the interrupt to be edge-triggered in the 
-SIEL register? This way it will only occur again after the pin level is 
-cleared.
+------=_NextPart_000_0150_01C7A844.88B58B30
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-HTH,
+Hi Guyz!
 
-Ricardo.
+ 
+
+        I m working on  powerpc and new to linux . wrote a small program
+where I allocate memory for 100, 1000 ,10000 bytes and memset them to zero .
+when I allocate to more than 8108 bytes and memset to zero it fails . but
+when I memset to any other ASCII value it passes . can u help me out as I m
+stuck with it for a long time . is there any problem with the library ?
+
+ 
+
+ 
+
+Thanks & Regards ,
+
+Sekhar Pedamallu
+
+ 
+
+
+http://www.patni.com
+World-Wide Partnerships. World-Class Solutions.
+_____________________________________________________________________
+
+This e-mail message may contain proprietary, confidential or legally
+privileged information for the sole use of the person or entity to
+whom this message was originally addressed. Any review, e-transmission
+dissemination or other use of or taking of any action in reliance upon
+this information by persons or entities other than the intended
+recipient is prohibited. If you have received this e-mail in error
+kindly delete  this e-mail from your records. If it appears that this
+mail has been forwarded to you without proper authority, please notify
+us immediately at netadmin@patni.com and delete this mail. 
+_____________________________________________________________________
+
+------=_NextPart_000_0150_01C7A844.88B58B30
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" xmlns:w=3D"urn:sc=
+hemas-microsoft-com:office:word" xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Gautami;
+	panose-1:2 0 5 0 0 0 0 0 0 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>Hi Guyz!<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I m working o=
+n&nbsp; powerpc and new to linux . wrote a
+small program where I allocate memory for 100, 1000 ,10000 bytes and memset
+them to zero . when I allocate to more than 8108 bytes and memset to zero it
+fails . but when I memset to any other ASCII value it passes . can u help me
+out as I m stuck with it for a long time . is there any problem with the
+library ?<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>&nbsp;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><em><b><i><font size=3D3 color=3Dblue face=3DGautami><=
+span
+style=3D'font-size:12.0pt;font-family:Gautami;color:blue;font-weight:bold'>=
+Thanks
+&amp; Regards ,</span></font></i></b></em><o:p></o:p></p>
+
+<p class=3DMsoNormal><em><b><i><font size=3D5 color=3Dmaroon face=3D"Times =
+New Roman"><span
+style=3D'font-size:18.0pt;color:maroon;font-weight:bold'>Sekhar Pedamallu</=
+span></font></i></b></em><o:p></o:p></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span style=3D=
+'font-size:
+12.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+<br><a href=3Dhttp://www.patni.com>http://www.patni.com</a><br>
+World-Wide Partnerships. World-Class Solutions.
+<br>
+_____________________________________________________________________
+<br> <br>
+This e-mail message may contain proprietary, confidential or legally
+privileged information for the sole use of the person or entity to
+whom this message was originally addressed. Any review, e-transmission
+dissemination or other use of or taking of any action in reliance upon
+this information by persons or entities other than the intended
+recipient is prohibited. If you have received this e-mail in error
+kindly delete  this e-mail from your records. If it appears that this
+mail has been forwarded to you without proper authority, please notify
+us immediately at netadmin@patni.com and delete this mail. <br>
+_____________________________________________________________________
+</body>
+
+</html>
+
+------=_NextPart_000_0150_01C7A844.88B58B30--
