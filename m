@@ -1,28 +1,26 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 6CB81DDD07
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 19:44:01 +1000 (EST)
-In-Reply-To: <20070604105455.GA4916@in.ibm.com>
-References: <20070409085732.GC4281@in.ibm.com>
-	<1176188763.9836.16.camel@concordia.ozlabs.ibm.com>
-	<eeb3b19029c753682f476e97dcfaa820@bga.com>
-	<1176254201.4815.14.camel@concordia.ozlabs.ibm.com>
-	<20070419115233.GA4172@in.ibm.com>
-	<080126626f9bea228426c0c3d7bf1730@bga.com>
-	<20070426092455.GA4144@in.ibm.com>
-	<4cb567d635b4ac3333e6b4b2c27c12f2@bga.com>
-	<20070503144721.GA28460@in.ibm.com>
-	<ca045e7e6fde9345b3461214777d8102@bga.com>
-	<20070604105455.GA4916@in.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v624)
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
+	[151.189.21.50])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D31DFDDEB9
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 19:47:52 +1000 (EST)
+In-Reply-To: <1181113438.31677.234.camel@localhost.localdomain>
+References: <20070604095625.GF17456@chiana.homelinux.org>
+	<4E25DA41-741E-40AC-9186-936FEEFE6B29@freescale.com>
+	<20070604211740.GN17456@chiana.homelinux.org>
+	<C1F9584D-E778-4BE7-B11A-5505BA9B6F6C@freescale.com>
+	<cbf493edec7259df199568389814dab6@kernel.crashing.org>
+	<1181113438.31677.234.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <c1b8d82c8241fc3750c1339c34ecc799@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH] Fix interrupt distribution in ppc970
-Date: Wed, 6 Jun 2007 04:43:22 -0500
-To: mohan@in.ibm.com
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, kexec@lists.infradead.org,
-	Paul Mackerras <paulus@samba.org>
+Message-Id: <3641c2a601dbccc9757fe9443d9330ca@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: 83xx GPIO/EXT int in arch/powerpc/
+Date: Wed, 6 Jun 2007 11:47:42 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,80 +30,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> In addition, linux always reserve numbers 0...15. 0 is
+> always illegal and 1..15 can only be mapped to a 8259 type legacy ISA
+> controller. This is to avoid problem with stupid drivers from the x86
+> world.
 
-On Jun 4, 2007, at 5:54 AM, Mohan Kumar M wrote:
+Of course, it doesn't help if you have an i8259 but have
+non-legacy-PC devices on it.  Oh the horror!
 
-> Milton,
->
-> How about this patch?
+> Now, there is no automagic way of setting up GPIOs. You have to 
+> manually
+> (from your firmware that is, or maybe from your platform code),
+> configure the appropriate GPIO to the appropriate HW irq source on the
+> IPIC that matches what you put in your DTS.
 
-I'd make a few minor changes (see below), but I'll ack it.
+It *really* shouldn't be Linux platform code, if you can
+avoid it at all.  It's just more trouble than it's worth.
 
-I've checked it compiles and boots but not the server selection.
+>  - You can create a device-node for the PCI device. PCI devices
+> normally, in linux, don't need to have device-nodes in the DTS, at 
+> least
+> it's not mandatory, but you -can- do it. If your node has the correct
+> "reg" property,
 
-> =============================================================
-> In some of the PPC970 based systems, interrupt would be distributed to
-> offline cpus also even when booted with "maxcpus=1". So check whether
-> cpu online map and cpu present map are equal or not. If they are equal
-> default_distrib_server is used as interrupt server otherwise boot cpu
-> (default_server) used as interrupt server.
->
-> In addition to this, if an interrupt is assigned to a specific cpu (ie
-> smp affinity) and if that cpu is not online, the earlier code used to
-> return the default_distrib_server as interrupt server. This patch
-> introduces an additional paramter to the get_irq function ie
-> strict_check, based on this parameter, if the cpu is not online either
-> default_distrib_server or -1 is returned.
->
-> Cc: Milton Miller <miltonm@bga.com>,
->     Michael Ellerman <michael@ellerman.id.au>
-> Signed-off-by: Mohan Kumar M <mohan@in.ibm.com>
+What is "correct" in this case?  We probably should describe
+what properties are required in a (non-phb) pci node for
+platforms that don't use the device tree for probing PCI.
+In this specific case, do you only need the configuration
+address in the "reg"?
 
-Acked-By: Milton Miller <miltonm@bga.com>
+> it should be matches by the linux parser, and thus you
+> have the ability to put an interrupts property in there. It would
+> normally be a PCI interrupt specification, but you can specify
+> explicitely an interrupt parent that points to the IPIC and thus have 
+> an
+> interrupt pointing directly there. That's the example that, I think,
+> Andy gave you
 
-> @@ -166,22 +166,24 @@ static int get_irq_server(unsigned int v
->  	if (!distribute_irqs)
->  		return default_server;
->
-> -	if (cpus_equal(cpumask, CPU_MASK_ALL)) {
-> -		server = default_distrib_server;
-> -	} else {
-> +	if (!cpus_equal(cpumask, CPU_MASK_ALL)) {
->  		cpus_and(tmp, cpu_online_map, cpumask);
->
-> -		if (cpus_empty(tmp))
-> -			server = default_distrib_server;
-> -		else
-> -			server = get_hard_smp_processor_id(first_cpu(tmp));
-> -	}
-> +		server = first_cpu(tmp);
->
-> -	return server;
-> +		if (server < NR_CPUS)
-> +			return get_hard_smp_processor_id(server);
-> +		else if (strict_check)
-> +				return -1;
+Yeah.
 
-The indent on the return is 1 tab too many.
-See next comment.
+>  - You can do it in your interrupt-map. That's probably the cleanest 
+> way
+> to do it.
 
-> +	}
->
-> +	if (cpus_equal(cpu_online_map, cpu_present_map))
-> +		return default_distrib_server;
-> +	else
-> +		return default_server;
+Not really.  If the device interrupt is physically connected
+directly to a GPIO or a PIC or whatever, if it doesn't go
+through the PCI bus; then it shouldn't be represented in
+the device tree as if it did.  The higher-up bridge has
+nothing whatsoever to do with this device's interrupt.
 
-I'd actually remove both occurrences of "else" bringing this and the 
-previous return back a tabstop.  The else is unnecessary because the if 
-statement is return .  (Seperate the new if from the previous with a 
-blank line in both cases).
+It's a simple hack of course, it can be useful sometimes.
+It's not "clean" at all however.
 
->  }
->  #else
-> -static int get_irq_server(unsigned int virq)
-> +static int get_irq_server(unsigned int virq, unsigned int 
-> strict_check)
->  {
->  	return default_server;
->  }
+> Just make sure you have
+> an entry there for your device pin A dev/fn whose specification points
+> to the IPIC with the appropriate IRQ number and that should work fine.
+
+Depending on the rest of the tree, this would often mean
+you have to do a much bigger interrupt-map-mask than
+without this hack, and the corresponding explosion in
+interrupt-map size.
+
+> Now, that's assuming GPIOs, when used as external interrupts, are
+> directly routed to the IPIC. I don't know the 83xx so I just assumed
+> it :-)
+
+Almost always that's how it works yeah.  And the "GPIO"
+stage isn't normally represented in the device tree, GPIO
+settings are considered a part of the PCB layout ;-) (one
+more reason why Linux shouldn't have to touch it).
+
+> If that's not the case, you may need some intermediary cascaded
+> interrupt controller or something around those lines.
+
+Yeah, but that's just the more general case of the
+general case :-)
+
+
+Segher
