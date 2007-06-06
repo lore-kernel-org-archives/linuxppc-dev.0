@@ -1,10 +1,18 @@
-Return-Path: <jk@ozlabs.org>
-To: <paulus@samba.org>
-From: Jeremy Kerr <jk@ozlabs.org>
-Date: Wed, 06 Jun 2007 12:03:58 +0800
-Subject: [PATCH] spufs: fix error handling in spufs_fill_dir()
-Message-Id: <1181102638.489591.614145175771.qpush@pokey>
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [patch 03/18] PS3: Use __maybe_unused
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+In-Reply-To: <46662315.30004@am.sony.com>
+References: <20070606024407.786638029@am.sony.com> >
+	<46662315.30004@am.sony.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-II85jDKHvoGTOJs+pdi1"
+Date: Wed, 06 Jun 2007 14:05:45 +1000
+Message-Id: <1181102745.5536.18.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,59 +22,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Sebastian Siewior <bigeasy@linux.vnet.ibm.com>
 
-The error path in spufs_fill_dir() is broken. If d_alloc_name() or
-spufs_new_file() fails, spufs_prune_dir() is getting called. At this time
-dir->inode is not set and a NULL pointer is dereferenced by mutex_lock().
-This bugfix replaces spufs_prune_dir() with a shorter version that does
-not touch dir->inode but simply removes all children.
+--=-II85jDKHvoGTOJs+pdi1
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Sebastian Siewior <bigeasy@linux.vnet.ibm.com>
-Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
-Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+On Tue, 2007-06-05 at 19:59 -0700, Geoff Levand wrote:
+> Change the PS3 debug routines from using the GCC specific
+> '__attribute__ ((unused))' to the preprocessor macro
+> __maybe_unused.
 
----
+I'm confused. If DEBUG is defined then they're used, if it's not then
+they're not built.
 
-Paulus - another bugfix for 2.6.22.
+cheers
 
----
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
- arch/powerpc/platforms/cell/spufs/inode.c |   17 +++++++++++++++--
- 1 file changed, 15 insertions(+), 2 deletions(-)
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
-Index: linux-2.6-spufs/arch/powerpc/platforms/cell/spufs/inode.c
-===================================================================
---- linux-2.6-spufs.orig/arch/powerpc/platforms/cell/spufs/inode.c
-+++ linux-2.6-spufs/arch/powerpc/platforms/cell/spufs/inode.c
-@@ -177,7 +177,7 @@ static int spufs_rmdir(struct inode *par
- static int spufs_fill_dir(struct dentry *dir, struct tree_descr *files,
- 			  int mode, struct spu_context *ctx)
- {
--	struct dentry *dentry;
-+	struct dentry *dentry, *tmp;
- 	int ret;
- 
- 	while (files->name && files->name[0]) {
-@@ -193,7 +193,20 @@ static int spufs_fill_dir(struct dentry 
- 	}
- 	return 0;
- out:
--	spufs_prune_dir(dir);
-+	/*
-+	 * remove all children from dir. dir->inode is not set so don't
-+	 * just simply use spufs_prune_dir() and panic afterwards :)
-+	 * dput() looks like it will do the right thing:
-+	 * - dec parent's ref counter
-+	 * - remove child from parent's child list
-+	 * - free child's inode if possible
-+	 * - free child
-+	 */
-+	list_for_each_entry_safe(dentry, tmp, &dir->d_subdirs, d_u.d_child) {
-+		dput(dentry);
-+	}
-+
-+	shrink_dcache_parent(dir);
- 	return ret;
- }
- 
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-II85jDKHvoGTOJs+pdi1
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGZjKZdSjSd0sB4dIRAiGIAJ9xzDYqhMjnCvfGlKV6vt0gYJf0YACffSro
+B+LFQPhpgYPtToKXfg2yaFY=
+=OwIq
+-----END PGP SIGNATURE-----
+
+--=-II85jDKHvoGTOJs+pdi1--
