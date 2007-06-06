@@ -1,15 +1,25 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc2-s23.bay0.hotmail.com (bay0-omc2-s23.bay0.hotmail.com
-	[65.54.246.159]) by ozlabs.org (Postfix) with ESMTP id 18B21DDDF3
+Return-Path: <glikely@secretlab.ca>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.230])
+	by ozlabs.org (Postfix) with ESMTP id 68555DDE30
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Jun 2007 05:30:33 +1000 (EST)
-Message-ID: <BAY138-F6B2DA6BEF021C7026E522B2270@phx.gbl>
-From: "Ming Liu" <eemingliu@hotmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: a question on "iowrite32()"
-Date: Wed, 06 Jun 2007 19:30:28 +0000
-Mime-Version: 1.0
-Content-Type: text/plain; charset=gb2312; format=flowed
+	Thu,  7 Jun 2007 05:55:27 +1000 (EST)
+Received: by nz-out-0506.google.com with SMTP id v1so266854nzb
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 06 Jun 2007 12:55:26 -0700 (PDT)
+Message-ID: <fa686aa40706061255w2e589980tf89f3ba763bb9f54@mail.gmail.com>
+Date: Wed, 6 Jun 2007 13:55:25 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+Subject: Re: [PATCH] Simple driver for Xilinx SPI controler.
+In-Reply-To: <20070606190640.B7028900053@mail104-cpk.bigfish.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <fa686aa40706061200u1141fcc9k73b7cc80c07240d1@mail.gmail.com>
+	<20070606190640.B7028900053@mail104-cpk.bigfish.com>
+Cc: spi-devel-general@lists.sourceforge.net,
+	Andrei Konovalov <akonovalov@ru.mvista.com>,
+	Wolfgang Reissnegger <wre@xilinx.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,22 +30,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear all,
-I am writing a device driver for my customized PLB hardware module on my 
-PPC405 & Xilinx ML403 architecture. In the driver code, I use a 
-"iowrite32()" function to initiate a DMA transfer. However, I found that if 
-I program as "iowrite32(0x12345678, address);", actually I am writing 
-0x87654321 to that address. However if I write a standalone program without 
-a Linux OS, the Xilinx function "XIo_Out32()" just write the correct value 
-0x12345678 into address. Can anyone explain my why this happens? I know 
-that PPC405 is a big-endian system. But I don't think this is a endian 
-problem. After all endian is only an issue of the CPU architecture, not the 
-OS. Am I right?
+On 6/6/07, Stephen Neuendorffer <stephen.neuendorffer@xilinx.com> wrote:
+> > Why still have XILINX_EDK?  I thought you meant replace
+> > XILINX_EDK with XILINX_DRIVERS.
+>
+> Yes, that's what I was suggesting.
+> But I think that Andrei still wants to use XILINX_EDK to pull in the
+> stuff in drivers/xilinx_common.
+>
+> # The Xilinx OS common code
+> obj-$(CONFIG_XILINX_EDK) += xbasic_types.o xpacket_fifo_l_v2_00_a.o \
+>                             xpacket_fifo_v2_00_a.o xversion.o \
+>                             xdma_channel.o xdma_channel_sg.o
+>
+> Which you wouldn't want if you were able to build a kernel completely
+> from 'non-edk' drivers.
 
-Thanks for your hints.
+Fair enough, but that's only an issue for vendor trees.  None of this
+code will be going into mainline.  Any of it that does get into good
+shape should probably go under drivers/misc, and have the drivers
+select only the pieces that are needed (with finer-grain CONFIG_
+items).  A blanked CONFIG_XILINX_EDK for random stuff is not a good
+idea.
 
-BR
-Ming
+Cheers,
+g.
 
-_________________________________________________________________
-享用世界上最大的电子邮件系统— MSN Hotmail。  http://www.hotmail.com  
+>
+> Steve
+>
+>
+>
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
