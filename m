@@ -1,21 +1,20 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound7-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
+Received: from outbound1-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
+	[207.46.163.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id C4CF0DE3C6
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 13:01:48 +1000 (EST)
-Message-ID: <46662391.10700@am.sony.com>
-Date: Tue, 05 Jun 2007 20:01:37 -0700
+	by ozlabs.org (Postfix) with ESMTP id C3B1EDEB83
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 13:02:01 +1000 (EST)
+Message-ID: <466623A4.1080102@am.sony.com>
+Date: Tue, 05 Jun 2007 20:01:56 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 16/18] PS3: Rework AV settings driver
+Subject: [patch 18/18] PS3: Device registration routines.
 References: <20070606024407.786638029@am.sony.com>>
 In-Reply-To: <20070606024407.786638029@am.sony.com>>
 Content-Type: text/plain; charset=UTF-8
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Paul Mackerras <paulus@samba.org>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,882 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Make the PS3 ps3av driver a loadable module.
-  - Replace static data with malloc'ed.
-      o Allocate struct ps3av dynamically, as it contains data used as vuart
-        receive/transmit buffers
-      o Move static recv_buf from ps3av_do_pkt() to struct ps3av
-  - Move ps3av_vuart_{read,write}() from drivers/ps3/ps3av_cmd.c to
-    drivers/ps3/ps3av.c and make them static as they're used in.
-  - Make device a PS3 system-bus device.
-  - Update copyright formatting.
-  - Make two new routines ps3av_register_flip_ctl() and ps3av_flip_ctl() to
-    support late binding of the frame buffer filp control routine.
+Add routines to probe devices present on the system
+and to register those devices with the LDM.
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- drivers/ps3/Makefile        |    3 
- drivers/ps3/ps3av.c         |  368 +++++++++++++++++++++++---------------------
- drivers/ps3/ps3av_cmd.c     |   35 ----
- include/asm-powerpc/ps3av.h |   36 ++--
- 4 files changed, 216 insertions(+), 226 deletions(-)
+ arch/powerpc/platforms/ps3/Makefile      |    1 
+ arch/powerpc/platforms/ps3/device-init.c |  791 +++++++++++++++++++++++++++++++
+ 2 files changed, 792 insertions(+)
 
---- a/drivers/ps3/Makefile
-+++ b/drivers/ps3/Makefile
-@@ -1,4 +1,5 @@
- obj-$(CONFIG_PS3_VUART) += vuart.o
--obj-$(CONFIG_PS3_PS3AV) += ps3av.o ps3av_cmd.o
-+obj-$(CONFIG_PS3_PS3AV) += ps3av_mod.o
-+ps3av_mod-objs		+= ps3av.o ps3av_cmd.o
- obj-$(CONFIG_PPC_PS3) += sys-manager-core.o
- obj-$(CONFIG_PS3_SYS_MANAGER) += sys-manager.o
---- a/drivers/ps3/ps3av.c
-+++ b/drivers/ps3/ps3av.c
-@@ -1,32 +1,30 @@
- /*
-- * Copyright (C) 2006 Sony Computer Entertainment Inc.
-- * Copyright 2006, 2007 Sony Corporation
-+ *  PS3 AV backend support.
-  *
-- * AV backend support for PS3
+--- a/arch/powerpc/platforms/ps3/Makefile
++++ b/arch/powerpc/platforms/ps3/Makefile
+@@ -4,3 +4,4 @@ obj-y += system-bus.o
+ 
+ obj-$(CONFIG_SMP) += smp.o
+ obj-$(CONFIG_SPU_BASE) += spu.o
++obj-y += device-init.o
+--- /dev/null
++++ b/arch/powerpc/platforms/ps3/device-init.c
+@@ -0,0 +1,791 @@
++/*
++ *  PS3 device registration routines.
++ *
 + *  Copyright (C) 2007 Sony Computer Entertainment Inc.
 + *  Copyright 2007 Sony Corp.
-  *
-- * This program is free software; you can redistribute it and/or modify it
-- * under the terms of the GNU General Public License as published
-- * by the Free Software Foundation; version 2 of the License.
++ *
 + *  This program is free software; you can redistribute it and/or modify
 + *  it under the terms of the GNU General Public License as published by
 + *  the Free Software Foundation; version 2 of the License.
-  *
-- * This program is distributed in the hope that it will be useful, but
-- * WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-- * General Public License for more details.
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-  *
-- * You should have received a copy of the GNU General Public License along
-- * with this program; if not, write to the Free Software Foundation, Inc.,
-- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-  */
--
-+#define DEBUG
-+#include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/delay.h>
- #include <linux/notifier.h>
--#include <linux/reboot.h>
--#include <linux/kernel.h>
- #include <linux/ioctl.h>
- 
- #include <asm/firmware.h>
--#include <asm/lv1call.h>
- #include <asm/ps3av.h>
- #include <asm/ps3.h>
- 
-@@ -39,13 +37,12 @@ static int timeout = 5000;	/* in msec ( 
- module_param(timeout, int, 0644);
- 
- static struct ps3av {
--	int available;
- 	struct mutex mutex;
- 	struct work_struct work;
- 	struct completion done;
- 	struct workqueue_struct *wq;
- 	int open_count;
--	struct ps3_vuart_port_device *dev;
-+	struct ps3_system_bus_device *dev;
- 
- 	int region;
- 	struct ps3av_pkt_av_get_hw_conf av_hw_conf;
-@@ -55,11 +52,13 @@ static struct ps3av {
- 	u32 audio_port;
- 	int ps3av_mode;
- 	int ps3av_mode_old;
--} ps3av;
--
--static struct ps3_vuart_port_device ps3av_dev = {
--	.match_id = PS3_MATCH_ID_AV_SETTINGS
--};
-+	union {
-+		struct ps3av_reply_hdr reply_hdr;
-+		u8 raw[PS3AV_BUF_SIZE];
-+	} recv_buf;
-+	void (*flip_ctl)(int on, void *data);
-+	void *flip_data;
-+} *ps3av;
- 
- /* color space */
- #define YUV444 PS3AV_CMD_VIDEO_CS_YUV444_8
-@@ -169,7 +168,7 @@ static int ps3av_parse_event_packet(cons
- 	if (hdr->cid & PS3AV_EVENT_CMD_MASK) {
- 		table = ps3av_search_cmd_table(hdr->cid, PS3AV_EVENT_CMD_MASK);
- 		if (table)
--			dev_dbg(&ps3av_dev.core,
-+			dev_dbg(&ps3av->dev->core,
- 				"recv event packet cid:%08x port:0x%x size:%d\n",
- 				hdr->cid, ps3av_event_get_port_id(hdr->cid),
- 				hdr->size);
-@@ -182,6 +181,41 @@ static int ps3av_parse_event_packet(cons
- 	return 0;
- }
- 
-+
-+#define POLLING_INTERVAL  25	/* in msec */
-+
-+static int ps3av_vuart_write(struct ps3_system_bus_device *dev,
-+			     const void *buf, unsigned long size)
-+{
-+	int error;
-+	dev_dbg(&dev->core, " -> %s:%d\n", __func__, __LINE__);
-+	error = ps3_vuart_write(dev, buf, size);
-+	dev_dbg(&dev->core, " <- %s:%d\n", __func__, __LINE__);
-+	return error ? error : size;
-+}
-+
-+static int ps3av_vuart_read(struct ps3_system_bus_device *dev, void *buf,
-+			    unsigned long size, int timeout)
-+{
-+	int error;
-+	int loopcnt = 0;
-+
-+	dev_dbg(&dev->core, " -> %s:%d\n", __func__, __LINE__);
-+	timeout = (timeout + POLLING_INTERVAL - 1) / POLLING_INTERVAL;
-+	while (loopcnt++ <= timeout) {
-+		error = ps3_vuart_read(dev, buf, size);
-+		if (!error)
-+			return size;
-+		if (error != -EAGAIN) {
-+			printk(KERN_ERR "%s: ps3_vuart_read failed %d\n",
-+			       __func__, error);
-+			return error;
-+		}
-+		msleep(POLLING_INTERVAL);
-+	}
-+	return -EWOULDBLOCK;
-+}
-+
- static int ps3av_send_cmd_pkt(const struct ps3av_send_hdr *send_buf,
- 			      struct ps3av_reply_hdr *recv_buf, int write_len,
- 			      int read_len)
-@@ -190,13 +224,13 @@ static int ps3av_send_cmd_pkt(const stru
- 	u32 cmd;
- 	int event;
- 
--	if (!ps3av.available)
-+	if (!ps3av)
- 		return -ENODEV;
- 
- 	/* send pkt */
--	res = ps3av_vuart_write(ps3av.dev, send_buf, write_len);
-+	res = ps3av_vuart_write(ps3av->dev, send_buf, write_len);
- 	if (res < 0) {
--		dev_dbg(&ps3av_dev.core,
-+		dev_dbg(&ps3av->dev->core,
- 			"%s: ps3av_vuart_write() failed (result=%d)\n",
- 			__func__, res);
- 		return res;
-@@ -206,20 +240,20 @@ static int ps3av_send_cmd_pkt(const stru
- 	cmd = send_buf->cid;
- 	do {
- 		/* read header */
--		res = ps3av_vuart_read(ps3av.dev, recv_buf, PS3AV_HDR_SIZE,
-+		res = ps3av_vuart_read(ps3av->dev, recv_buf, PS3AV_HDR_SIZE,
- 				       timeout);
- 		if (res != PS3AV_HDR_SIZE) {
--			dev_dbg(&ps3av_dev.core,
-+			dev_dbg(&ps3av->dev->core,
- 				"%s: ps3av_vuart_read() failed (result=%d)\n",
- 				__func__, res);
- 			return res;
- 		}
- 
- 		/* read body */
--		res = ps3av_vuart_read(ps3av.dev, &recv_buf->cid,
-+		res = ps3av_vuart_read(ps3av->dev, &recv_buf->cid,
- 				       recv_buf->size, timeout);
- 		if (res < 0) {
--			dev_dbg(&ps3av_dev.core,
-+			dev_dbg(&ps3av->dev->core,
- 				"%s: ps3av_vuart_read() failed (result=%d)\n",
- 				__func__, res);
- 			return res;
-@@ -230,7 +264,7 @@ static int ps3av_send_cmd_pkt(const stru
- 	} while (event);
- 
- 	if ((cmd | PS3AV_REPLY_BIT) != recv_buf->cid) {
--		dev_dbg(&ps3av_dev.core, "%s: reply err (result=%x)\n",
-+		dev_dbg(&ps3av->dev->core, "%s: reply err (result=%x)\n",
- 			__func__, recv_buf->cid);
- 		return -EINVAL;
- 	}
-@@ -245,7 +279,7 @@ static int ps3av_process_reply_packet(st
- 	int return_len;
- 
- 	if (recv_buf->version != PS3AV_VERSION) {
--		dev_dbg(&ps3av_dev.core, "reply_packet invalid version:%x\n",
-+		dev_dbg(&ps3av->dev->core, "reply_packet invalid version:%x\n",
- 			recv_buf->version);
- 		return -EFAULT;
- 	}
-@@ -267,16 +301,11 @@ int ps3av_do_pkt(u32 cid, u16 send_len, 
- 		 struct ps3av_send_hdr *buf)
- {
- 	int res = 0;
--	static union {
--		struct ps3av_reply_hdr reply_hdr;
--		u8 raw[PS3AV_BUF_SIZE];
--	} recv_buf;
--
- 	u32 *table;
- 
--	BUG_ON(!ps3av.available);
-+	BUG_ON(!ps3av);
- 
--	mutex_lock(&ps3av.mutex);
-+	mutex_lock(&ps3av->mutex);
- 
- 	table = ps3av_search_cmd_table(cid, PS3AV_CID_MASK);
- 	BUG_ON(!table);
-@@ -288,7 +317,7 @@ int ps3av_do_pkt(u32 cid, u16 send_len, 
- 	ps3av_set_hdr(cid, send_len, buf);
- 
- 	/* send packet via vuart */
--	res = ps3av_send_cmd_pkt(buf, &recv_buf.reply_hdr, send_len,
-+	res = ps3av_send_cmd_pkt(buf, &ps3av->recv_buf.reply_hdr, send_len,
- 				 usr_buf_size);
- 	if (res < 0) {
- 		printk(KERN_ERR
-@@ -298,7 +327,7 @@ int ps3av_do_pkt(u32 cid, u16 send_len, 
- 	}
- 
- 	/* process reply packet */
--	res = ps3av_process_reply_packet(buf, &recv_buf.reply_hdr,
-+	res = ps3av_process_reply_packet(buf, &ps3av->recv_buf.reply_hdr,
- 					 usr_buf_size);
- 	if (res < 0) {
- 		printk(KERN_ERR "%s: put_return_status() failed (result=%d)\n",
-@@ -306,11 +335,11 @@ int ps3av_do_pkt(u32 cid, u16 send_len, 
- 		goto err;
- 	}
- 
--	mutex_unlock(&ps3av.mutex);
-+	mutex_unlock(&ps3av->mutex);
- 	return 0;
- 
-       err:
--	mutex_unlock(&ps3av.mutex);
-+	mutex_unlock(&ps3av->mutex);
- 	printk(KERN_ERR "%s: failed cid:%x res:%d\n", __func__, cid, res);
- 	return res;
- }
-@@ -319,11 +348,11 @@ static int ps3av_set_av_video_mute(u32 m
- {
- 	int i, num_of_av_port, res;
- 
--	num_of_av_port = ps3av.av_hw_conf.num_of_hdmi +
--			 ps3av.av_hw_conf.num_of_avmulti;
-+	num_of_av_port = ps3av->av_hw_conf.num_of_hdmi +
-+			 ps3av->av_hw_conf.num_of_avmulti;
- 	/* video mute on */
- 	for (i = 0; i < num_of_av_port; i++) {
--		res = ps3av_cmd_av_video_mute(1, &ps3av.av_port[i], mute);
-+		res = ps3av_cmd_av_video_mute(1, &ps3av->av_port[i], mute);
- 		if (res < 0)
- 			return -1;
- 	}
-@@ -335,13 +364,13 @@ static int ps3av_set_video_disable_sig(v
- {
- 	int i, num_of_hdmi_port, num_of_av_port, res;
- 
--	num_of_hdmi_port = ps3av.av_hw_conf.num_of_hdmi;
--	num_of_av_port = ps3av.av_hw_conf.num_of_hdmi +
--			 ps3av.av_hw_conf.num_of_avmulti;
-+	num_of_hdmi_port = ps3av->av_hw_conf.num_of_hdmi;
-+	num_of_av_port = ps3av->av_hw_conf.num_of_hdmi +
-+			 ps3av->av_hw_conf.num_of_avmulti;
- 
- 	/* tv mute */
- 	for (i = 0; i < num_of_hdmi_port; i++) {
--		res = ps3av_cmd_av_tv_mute(ps3av.av_port[i],
-+		res = ps3av_cmd_av_tv_mute(ps3av->av_port[i],
- 					   PS3AV_CMD_MUTE_ON);
- 		if (res < 0)
- 			return -1;
-@@ -350,11 +379,11 @@ static int ps3av_set_video_disable_sig(v
- 
- 	/* video mute on */
- 	for (i = 0; i < num_of_av_port; i++) {
--		res = ps3av_cmd_av_video_disable_sig(ps3av.av_port[i]);
-+		res = ps3av_cmd_av_video_disable_sig(ps3av->av_port[i]);
- 		if (res < 0)
- 			return -1;
- 		if (i < num_of_hdmi_port) {
--			res = ps3av_cmd_av_tv_mute(ps3av.av_port[i],
-+			res = ps3av_cmd_av_tv_mute(ps3av->av_port[i],
- 						   PS3AV_CMD_MUTE_OFF);
- 			if (res < 0)
- 				return -1;
-@@ -369,17 +398,17 @@ static int ps3av_set_audio_mute(u32 mute
- {
- 	int i, num_of_av_port, num_of_opt_port, res;
- 
--	num_of_av_port = ps3av.av_hw_conf.num_of_hdmi +
--			 ps3av.av_hw_conf.num_of_avmulti;
--	num_of_opt_port = ps3av.av_hw_conf.num_of_spdif;
-+	num_of_av_port = ps3av->av_hw_conf.num_of_hdmi +
-+			 ps3av->av_hw_conf.num_of_avmulti;
-+	num_of_opt_port = ps3av->av_hw_conf.num_of_spdif;
- 
- 	for (i = 0; i < num_of_av_port; i++) {
--		res = ps3av_cmd_av_audio_mute(1, &ps3av.av_port[i], mute);
-+		res = ps3av_cmd_av_audio_mute(1, &ps3av->av_port[i], mute);
- 		if (res < 0)
- 			return -1;
- 	}
- 	for (i = 0; i < num_of_opt_port; i++) {
--		res = ps3av_cmd_audio_mute(1, &ps3av.opt_port[i], mute);
-+		res = ps3av_cmd_audio_mute(1, &ps3av->opt_port[i], mute);
- 		if (res < 0)
- 			return -1;
- 	}
-@@ -394,40 +423,40 @@ int ps3av_set_audio_mode(u32 ch, u32 fs,
- 	struct ps3av_pkt_audio_mode audio_mode;
- 	u32 len = 0;
- 
--	num_of_audio = ps3av.av_hw_conf.num_of_hdmi +
--		       ps3av.av_hw_conf.num_of_avmulti +
--		       ps3av.av_hw_conf.num_of_spdif;
-+	num_of_audio = ps3av->av_hw_conf.num_of_hdmi +
-+		       ps3av->av_hw_conf.num_of_avmulti +
-+		       ps3av->av_hw_conf.num_of_spdif;
- 
- 	avb_param.num_of_video_pkt = 0;
- 	avb_param.num_of_audio_pkt = PS3AV_AVB_NUM_AUDIO;	/* always 0 */
- 	avb_param.num_of_av_video_pkt = 0;
--	avb_param.num_of_av_audio_pkt = ps3av.av_hw_conf.num_of_hdmi;
-+	avb_param.num_of_av_audio_pkt = ps3av->av_hw_conf.num_of_hdmi;
- 
--	vid = video_mode_table[ps3av.ps3av_mode].vid;
-+	vid = video_mode_table[ps3av->ps3av_mode].vid;
- 
- 	/* audio mute */
- 	ps3av_set_audio_mute(PS3AV_CMD_MUTE_ON);
- 
- 	/* audio inactive */
--	res = ps3av_cmd_audio_active(0, ps3av.audio_port);
-+	res = ps3av_cmd_audio_active(0, ps3av->audio_port);
- 	if (res < 0)
--		dev_dbg(&ps3av_dev.core,
-+		dev_dbg(&ps3av->dev->core,
- 			"ps3av_cmd_audio_active OFF failed\n");
- 
- 	/* audio_pkt */
- 	for (i = 0; i < num_of_audio; i++) {
--		ps3av_cmd_set_audio_mode(&audio_mode, ps3av.av_port[i], ch, fs,
--					 word_bits, format, source);
--		if (i < ps3av.av_hw_conf.num_of_hdmi) {
-+		ps3av_cmd_set_audio_mode(&audio_mode, ps3av->av_port[i], ch,
-+					 fs, word_bits, format, source);
-+		if (i < ps3av->av_hw_conf.num_of_hdmi) {
- 			/* hdmi only */
- 			len += ps3av_cmd_set_av_audio_param(&avb_param.buf[len],
--							    ps3av.av_port[i],
-+							    ps3av->av_port[i],
- 							    &audio_mode, vid);
- 		}
- 		/* audio_mode pkt should be sent separately */
- 		res = ps3av_cmd_audio_mode(&audio_mode);
- 		if (res < 0)
--			dev_dbg(&ps3av_dev.core,
-+			dev_dbg(&ps3av->dev->core,
- 				"ps3av_cmd_audio_mode failed, port:%x\n", i);
- 	}
- 
-@@ -435,15 +464,15 @@ int ps3av_set_audio_mode(u32 ch, u32 fs,
- 	len += offsetof(struct ps3av_pkt_avb_param, buf);
- 	res = ps3av_cmd_avb_param(&avb_param, len);
- 	if (res < 0)
--		dev_dbg(&ps3av_dev.core, "ps3av_cmd_avb_param failed\n");
-+		dev_dbg(&ps3av->dev->core, "ps3av_cmd_avb_param failed\n");
- 
- 	/* audio mute */
- 	ps3av_set_audio_mute(PS3AV_CMD_MUTE_OFF);
- 
- 	/* audio active */
--	res = ps3av_cmd_audio_active(1, ps3av.audio_port);
-+	res = ps3av_cmd_audio_active(1, ps3av->audio_port);
- 	if (res < 0)
--		dev_dbg(&ps3av_dev.core, "ps3av_cmd_audio_active ON failed\n");
-+		dev_dbg(&ps3av->dev->core, "ps3av_cmd_audio_active ON failed\n");
- 
- 	return 0;
- }
-@@ -456,7 +485,7 @@ static int ps3av_set_videomode(void)
- 	ps3av_set_av_video_mute(PS3AV_CMD_MUTE_ON);
- 
- 	/* wake up ps3avd to do the actual video mode setting */
--	queue_work(ps3av.wq, &ps3av.work);
-+	queue_work(ps3av->wq, &ps3av->work);
- 
- 	return 0;
- }
-@@ -473,8 +502,8 @@ static void ps3av_set_videomode_cont(u32
- 
- 	avb_param.num_of_video_pkt = PS3AV_AVB_NUM_VIDEO;	/* num of head */
- 	avb_param.num_of_audio_pkt = 0;
--	avb_param.num_of_av_video_pkt = ps3av.av_hw_conf.num_of_hdmi +
--					ps3av.av_hw_conf.num_of_avmulti;
-+	avb_param.num_of_av_video_pkt = ps3av->av_hw_conf.num_of_hdmi +
-+					ps3av->av_hw_conf.num_of_avmulti;
- 	avb_param.num_of_av_audio_pkt = 0;
- 
- 	/* video signal off */
-@@ -484,21 +513,21 @@ static void ps3av_set_videomode_cont(u32
- 	if (id & PS3AV_MODE_HDCP_OFF) {
- 		res = ps3av_cmd_av_hdmi_mode(PS3AV_CMD_AV_HDMI_HDCP_OFF);
- 		if (res == PS3AV_STATUS_UNSUPPORTED_HDMI_MODE)
--			dev_dbg(&ps3av_dev.core, "Not supported\n");
-+			dev_dbg(&ps3av->dev->core, "Not supported\n");
- 		else if (res)
--			dev_dbg(&ps3av_dev.core,
-+			dev_dbg(&ps3av->dev->core,
- 				"ps3av_cmd_av_hdmi_mode failed\n");
- 	} else if (old_id & PS3AV_MODE_HDCP_OFF) {
- 		res = ps3av_cmd_av_hdmi_mode(PS3AV_CMD_AV_HDMI_MODE_NORMAL);
- 		if (res < 0 && res != PS3AV_STATUS_UNSUPPORTED_HDMI_MODE)
--			dev_dbg(&ps3av_dev.core,
-+			dev_dbg(&ps3av->dev->core,
- 				"ps3av_cmd_av_hdmi_mode failed\n");
- 	}
- 
- 	/* video_pkt */
- 	for (i = 0; i < avb_param.num_of_video_pkt; i++)
- 		len += ps3av_cmd_set_video_mode(&avb_param.buf[len],
--						ps3av.head[i], video_mode->vid,
-+						ps3av->head[i], video_mode->vid,
- 						video_mode->fmt, id);
- 	/* av_video_pkt */
- 	for (i = 0; i < avb_param.num_of_av_video_pkt; i++) {
-@@ -507,12 +536,12 @@ static void ps3av_set_videomode_cont(u32
- 		else
- 			av_video_cs = video_mode->cs;
- #ifndef PS3AV_HDMI_YUV
--		if (ps3av.av_port[i] == PS3AV_CMD_AVPORT_HDMI_0 ||
--		    ps3av.av_port[i] == PS3AV_CMD_AVPORT_HDMI_1)
-+		if (ps3av->av_port[i] == PS3AV_CMD_AVPORT_HDMI_0 ||
-+		    ps3av->av_port[i] == PS3AV_CMD_AVPORT_HDMI_1)
- 			av_video_cs = RGB8;	/* use RGB for HDMI */
- #endif
- 		len += ps3av_cmd_set_av_video_cs(&avb_param.buf[len],
--						 ps3av.av_port[i],
-+						 ps3av->av_port[i],
- 						 video_mode->vid, av_video_cs,
- 						 video_mode->aspect, id);
- 	}
-@@ -524,7 +553,7 @@ static void ps3av_set_videomode_cont(u32
- 		       "%s: Command failed. Please try your request again. \n",
- 		       __func__);
- 	else if (res)
--		dev_dbg(&ps3av_dev.core, "ps3av_cmd_avb_param failed\n");
-+		dev_dbg(&ps3av->dev->core, "ps3av_cmd_avb_param failed\n");
- 
- 	msleep(1500);
- 	/* av video mute */
-@@ -533,8 +562,8 @@ static void ps3av_set_videomode_cont(u32
- 
- static void ps3avd(struct work_struct *work)
- {
--	ps3av_set_videomode_cont(ps3av.ps3av_mode, ps3av.ps3av_mode_old);
--	complete(&ps3av.done);
-+	ps3av_set_videomode_cont(ps3av->ps3av_mode, ps3av->ps3av_mode_old);
-+	complete(&ps3av->done);
- }
- 
- static int ps3av_vid2table_id(int vid)
-@@ -601,7 +630,7 @@ static int ps3av_hdmi_get_vid(struct ps3
- 		return vid;
- 	}
- 
--	if (ps3av.region & PS3AV_REGION_60)
-+	if (ps3av->region & PS3AV_REGION_60)
- 		vid = PS3AV_DEFAULT_HDMI_VID_REG_60;
- 	else
- 		vid = PS3AV_DEFAULT_HDMI_VID_REG_50;
-@@ -643,16 +672,16 @@ static int ps3av_auto_videomode(struct p
- 		vid = PS3AV_DEFAULT_DVI_VID;
- 	} else if (vid == -1) {
- 		/* no HDMI interface or HDMI is off */
--		if (ps3av.region & PS3AV_REGION_60)
-+		if (ps3av->region & PS3AV_REGION_60)
- 			vid = PS3AV_DEFAULT_AVMULTI_VID_REG_60;
- 		else
- 			vid = PS3AV_DEFAULT_AVMULTI_VID_REG_50;
--		if (ps3av.region & PS3AV_REGION_RGB)
-+		if (ps3av->region & PS3AV_REGION_RGB)
- 			rgb = PS3AV_MODE_RGB;
- 	} else if (boot) {
- 		/* HDMI: using DEFAULT HDMI_VID while booting up */
- 		info = &monitor_info.info;
--		if (ps3av.region & PS3AV_REGION_60) {
-+		if (ps3av->region & PS3AV_REGION_60) {
- 			if (info->res_60.res_bits & PS3AV_RESBIT_720x480P)
- 				vid = PS3AV_DEFAULT_HDMI_VID_REG_60;
- 			else if (info->res_50.res_bits & PS3AV_RESBIT_720x576P)
-@@ -715,14 +744,14 @@ int ps3av_set_video_mode(u32 id, int boo
- 
- 	size = ARRAY_SIZE(video_mode_table);
- 	if ((id & PS3AV_MODE_MASK) > size - 1 || id < 0) {
--		dev_dbg(&ps3av_dev.core, "%s: error id :%d\n", __func__, id);
-+		dev_dbg(&ps3av->dev->core, "%s: error id :%d\n", __func__, id);
- 		return -EINVAL;
- 	}
- 
- 	/* auto mode */
- 	option = id & ~PS3AV_MODE_MASK;
- 	if ((id & PS3AV_MODE_MASK) == 0) {
--		id = ps3av_auto_videomode(&ps3av.av_hw_conf, boot);
-+		id = ps3av_auto_videomode(&ps3av->av_hw_conf, boot);
- 		if (id < 1) {
- 			printk(KERN_ERR "%s: invalid id :%d\n", __func__, id);
- 			return -EINVAL;
-@@ -731,11 +760,11 @@ int ps3av_set_video_mode(u32 id, int boo
- 	}
- 
- 	/* set videomode */
--	wait_for_completion(&ps3av.done);
--	ps3av.ps3av_mode_old = ps3av.ps3av_mode;
--	ps3av.ps3av_mode = id;
-+	wait_for_completion(&ps3av->done);
-+	ps3av->ps3av_mode_old = ps3av->ps3av_mode;
-+	ps3av->ps3av_mode = id;
- 	if (ps3av_set_videomode())
--		ps3av.ps3av_mode = ps3av.ps3av_mode_old;
-+		ps3av->ps3av_mode = ps3av->ps3av_mode_old;
- 
- 	return 0;
- }
-@@ -744,7 +773,7 @@ EXPORT_SYMBOL_GPL(ps3av_set_video_mode);
- 
- int ps3av_get_auto_mode(int boot)
- {
--	return ps3av_auto_videomode(&ps3av.av_hw_conf, boot);
-+	return ps3av_auto_videomode(&ps3av->av_hw_conf, boot);
- }
- 
- EXPORT_SYMBOL_GPL(ps3av_get_auto_mode);
-@@ -772,7 +801,7 @@ EXPORT_SYMBOL_GPL(ps3av_set_mode);
- 
- int ps3av_get_mode(void)
- {
--	return ps3av.ps3av_mode;
-+	return ps3av ? ps3av->ps3av_mode : 0;
- }
- 
- EXPORT_SYMBOL_GPL(ps3av_get_mode);
-@@ -842,82 +871,60 @@ int ps3av_audio_mute(int mute)
- 
- EXPORT_SYMBOL_GPL(ps3av_audio_mute);
- 
--int ps3av_dev_open(void)
-+void ps3av_register_flip_ctl(void (*flip_ctl)(int on, void *data),
-+			     void *flip_data)
- {
--	int status = 0;
--
--	mutex_lock(&ps3av.mutex);
--	if (!ps3av.open_count++) {
--		status = lv1_gpu_open(0);
--		if (status) {
--			printk(KERN_ERR "%s: lv1_gpu_open failed %d\n",
--			       __func__, status);
--			ps3av.open_count--;
--		}
--	}
--	mutex_unlock(&ps3av.mutex);
--
--	return status;
-+	mutex_lock(&ps3av->mutex);
-+	ps3av->flip_ctl = flip_ctl;
-+	ps3av->flip_data = flip_data;
-+	mutex_unlock(&ps3av->mutex);
- }
-+EXPORT_SYMBOL_GPL(ps3av_register_flip_ctl);
- 
--EXPORT_SYMBOL_GPL(ps3av_dev_open);
--
--int ps3av_dev_close(void)
-+void ps3av_flip_ctl(int on)
- {
--	int status = 0;
--
--	mutex_lock(&ps3av.mutex);
--	if (ps3av.open_count <= 0) {
--		printk(KERN_ERR "%s: GPU already closed\n", __func__);
--		status = -1;
--	} else if (!--ps3av.open_count) {
--		status = lv1_gpu_close();
--		if (status)
--			printk(KERN_WARNING "%s: lv1_gpu_close failed %d\n",
--			       __func__, status);
--	}
--	mutex_unlock(&ps3av.mutex);
--
--	return status;
-+	mutex_lock(&ps3av->mutex);
-+	if (ps3av->flip_ctl)
-+		ps3av->flip_ctl(on, ps3av->flip_data);
-+	mutex_unlock(&ps3av->mutex);
- }
- 
--EXPORT_SYMBOL_GPL(ps3av_dev_close);
--
--static int ps3av_probe(struct ps3_vuart_port_device *dev)
-+static int ps3av_probe(struct ps3_system_bus_device *dev)
- {
- 	int res;
- 	u32 id;
- 
--	dev_dbg(&ps3av_dev.core, "init ...\n");
--	dev_dbg(&ps3av_dev.core, "  timeout=%d\n", timeout);
--
--	memset(&ps3av, 0, sizeof(ps3av));
-+	dev_dbg(&dev->core, " -> %s:%d\n", __func__, __LINE__);
-+	dev_dbg(&dev->core, "  timeout=%d\n", timeout);
- 
--	mutex_init(&ps3av.mutex);
--	ps3av.ps3av_mode = 0;
--	ps3av.dev = dev;
--
--	INIT_WORK(&ps3av.work, ps3avd);
--	init_completion(&ps3av.done);
--	complete(&ps3av.done);
--	ps3av.wq = create_singlethread_workqueue("ps3avd");
--	if (!ps3av.wq)
-+	ps3av = kzalloc(sizeof(*ps3av), GFP_KERNEL);
-+	if (!ps3av)
- 		return -ENOMEM;
- 
--	ps3av.available = 1;
-+	mutex_init(&ps3av->mutex);
-+	ps3av->ps3av_mode = 0;
-+	ps3av->dev = dev;
-+
-+	INIT_WORK(&ps3av->work, ps3avd);
-+	init_completion(&ps3av->done);
-+	complete(&ps3av->done);
-+	ps3av->wq = create_singlethread_workqueue("ps3avd");
-+	if (!ps3av->wq)
-+		goto fail;
-+
- 	switch (ps3_os_area_get_av_multi_out()) {
- 	case PS3_PARAM_AV_MULTI_OUT_NTSC:
--		ps3av.region = PS3AV_REGION_60;
-+		ps3av->region = PS3AV_REGION_60;
- 		break;
- 	case PS3_PARAM_AV_MULTI_OUT_PAL_YCBCR:
- 	case PS3_PARAM_AV_MULTI_OUT_SECAM:
--		ps3av.region = PS3AV_REGION_50;
-+		ps3av->region = PS3AV_REGION_50;
- 		break;
- 	case PS3_PARAM_AV_MULTI_OUT_PAL_RGB:
--		ps3av.region = PS3AV_REGION_50 | PS3AV_REGION_RGB;
-+		ps3av->region = PS3AV_REGION_50 | PS3AV_REGION_RGB;
- 		break;
- 	default:
--		ps3av.region = PS3AV_REGION_60;
-+		ps3av->region = PS3AV_REGION_60;
- 		break;
- 	}
- 
-@@ -927,38 +934,48 @@ static int ps3av_probe(struct ps3_vuart_
- 		printk(KERN_ERR "%s: ps3av_cmd_init failed %d\n", __func__,
- 		       res);
- 
--	ps3av_get_hw_conf(&ps3av);
--	id = ps3av_auto_videomode(&ps3av.av_hw_conf, 1);
--	mutex_lock(&ps3av.mutex);
--	ps3av.ps3av_mode = id;
--	mutex_unlock(&ps3av.mutex);
-+	ps3av_get_hw_conf(ps3av);
-+	id = ps3av_auto_videomode(&ps3av->av_hw_conf, 1);
-+	mutex_lock(&ps3av->mutex);
-+	ps3av->ps3av_mode = id;
-+	mutex_unlock(&ps3av->mutex);
- 
--	dev_dbg(&ps3av_dev.core, "init...done\n");
-+	dev_dbg(&dev->core, " <- %s:%d\n", __func__, __LINE__);
- 
- 	return 0;
-+
-+fail:
-+	kfree(ps3av);
-+	ps3av = NULL;
-+	return -ENOMEM;
- }
- 
--static int ps3av_remove(struct ps3_vuart_port_device *dev)
-+static int ps3av_remove(struct ps3_system_bus_device *dev)
- {
--	if (ps3av.available) {
-+	dev_dbg(&dev->core, " -> %s:%d\n", __func__, __LINE__);
-+	if (ps3av) {
- 		ps3av_cmd_fin();
--		if (ps3av.wq)
--			destroy_workqueue(ps3av.wq);
--		ps3av.available = 0;
-+		if (ps3av->wq)
-+			destroy_workqueue(ps3av->wq);
-+		kfree(ps3av);
-+		ps3av = NULL;
- 	}
- 
-+	dev_dbg(&dev->core, " <- %s:%d\n", __func__, __LINE__);
- 	return 0;
- }
- 
--static void ps3av_shutdown(struct ps3_vuart_port_device *dev)
-+static void ps3av_shutdown(struct ps3_system_bus_device *dev)
- {
-+	dev_dbg(&dev->core, " -> %s:%d\n", __func__, __LINE__);
- 	ps3av_remove(dev);
-+	dev_dbg(&dev->core, " <- %s:%d\n", __func__, __LINE__);
- }
- 
- static struct ps3_vuart_port_driver ps3av_driver = {
--	.match_id = PS3_MATCH_ID_AV_SETTINGS,
- 	.core = {
--		.name = "ps3_av",
-+		.match_id = PS3_MATCH_ID_AV_SETTINGS,
-+		.core = {.name = "ps3_av",},
- 	},
- 	.probe = ps3av_probe,
- 	.remove = ps3av_remove,
-@@ -972,6 +989,8 @@ static int ps3av_module_init(void)
- 	if (!firmware_has_feature(FW_FEATURE_PS3_LV1))
- 		return -ENODEV;
- 
-+	pr_debug(" -> %s:%d\n", __func__, __LINE__);
-+
- 	error = ps3_vuart_port_driver_register(&ps3av_driver);
- 	if (error) {
- 		printk(KERN_ERR
-@@ -980,20 +999,21 @@ static int ps3av_module_init(void)
- 		return error;
- 	}
- 
--	error = ps3_vuart_port_device_register(&ps3av_dev);
--	if (error)
--		printk(KERN_ERR
--		       "%s: ps3_vuart_port_device_register failed %d\n",
--		       __func__, error);
--
-+	pr_debug(" <- %s:%d\n", __func__, __LINE__);
- 	return error;
- }
- 
- static void __exit ps3av_module_exit(void)
- {
--	device_unregister(&ps3av_dev.core);
-+	pr_debug(" -> %s:%d\n", __func__, __LINE__);
- 	ps3_vuart_port_driver_unregister(&ps3av_driver);
-+	pr_debug(" <- %s:%d\n", __func__, __LINE__);
- }
- 
- subsys_initcall(ps3av_module_init);
- module_exit(ps3av_module_exit);
-+
-+MODULE_LICENSE("GPL v2");
-+MODULE_DESCRIPTION("PS3 AV Settings Driver");
-+MODULE_AUTHOR("Sony Computer Entertainment Inc.");
-+MODULE_ALIAS(PS3_MODULE_ALIAS_AV_SETTINGS);
---- a/drivers/ps3/ps3av_cmd.c
-+++ b/drivers/ps3/ps3av_cmd.c
-@@ -868,7 +868,7 @@ int ps3av_cmd_avb_param(struct ps3av_pkt
- {
- 	int res;
- 
--	ps3fb_flip_ctl(0);	/* flip off */
-+	ps3av_flip_ctl(0);	/* flip off */
- 
- 	/* avb packet */
- 	res = ps3av_do_pkt(PS3AV_CID_AVB_PARAM, send_len, sizeof(*avb),
-@@ -882,7 +882,7 @@ int ps3av_cmd_avb_param(struct ps3av_pkt
- 			 res);
- 
-       out:
--	ps3fb_flip_ctl(1);	/* flip on */
-+	ps3av_flip_ctl(1);	/* flip on */
- 	return res;
- }
- 
-@@ -1003,34 +1003,3 @@ void ps3av_cmd_av_monitor_info_dump(cons
- 		| PS3AV_CMD_AV_LAYOUT_176 \
- 		| PS3AV_CMD_AV_LAYOUT_192)
- 
--/************************* vuart ***************************/
--
--#define POLLING_INTERVAL  25	/* in msec */
--
--int ps3av_vuart_write(struct ps3_vuart_port_device *dev, const void *buf,
--		      unsigned long size)
--{
--	int error = ps3_vuart_write(dev, buf, size);
--	return error ? error : size;
--}
--
--int ps3av_vuart_read(struct ps3_vuart_port_device *dev, void *buf,
--		     unsigned long size, int timeout)
--{
--	int error;
--	int loopcnt = 0;
--
--	timeout = (timeout + POLLING_INTERVAL - 1) / POLLING_INTERVAL;
--	while (loopcnt++ <= timeout) {
--		error = ps3_vuart_read(dev, buf, size);
--		if (!error)
--			return size;
--		if (error != -EAGAIN) {
--			printk(KERN_ERR "%s: ps3_vuart_read failed %d\n",
--			       __func__, error);
--			return error;
--		}
--		msleep(POLLING_INTERVAL);
--	}
--	return -EWOULDBLOCK;
--}
---- a/include/asm-powerpc/ps3av.h
-+++ b/include/asm-powerpc/ps3av.h
-@@ -1,20 +1,23 @@
- /*
-- * Copyright (C) 2006 Sony Computer Entertainment Inc.
-- * Copyright 2006, 2007 Sony Corporation
-+ *  PS3 AV backend support.
-  *
-- * This program is free software; you can redistribute it and/or modify it
-- * under the terms of the GNU General Public License as published
-- * by the Free Software Foundation; version 2 of the License.
-+ *  Copyright (C) 2007 Sony Computer Entertainment Inc.
-+ *  Copyright 2007 Sony Corp.
-  *
-- * This program is distributed in the hope that it will be useful, but
-- * WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-- * General Public License for more details.
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; version 2 of the License.
-  *
-- * You should have received a copy of the GNU General Public License along
-- * with this program; if not, write to the Free Software Foundation, Inc.,
-- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
 + *  This program is distributed in the hope that it will be useful,
 + *  but WITHOUT ANY WARRANTY; without even the implied warranty of
 + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -909,33 +61,778 @@ Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 + *  You should have received a copy of the GNU General Public License
 + *  along with this program; if not, write to the Free Software
 + *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-  */
++ */
 +
- #ifndef _ASM_POWERPC_PS3AV_H_
- #define _ASM_POWERPC_PS3AV_H_
- 
-@@ -705,12 +708,6 @@ static inline void ps3av_cmd_av_monitor_
- extern int ps3av_cmd_video_get_monitor_info(struct ps3av_pkt_av_get_monitor_info *,
- 					    u32);
- 
--struct ps3_vuart_port_device;
--extern int ps3av_vuart_write(struct ps3_vuart_port_device *dev,
--			     const void *buf, unsigned long size);
--extern int ps3av_vuart_read(struct ps3_vuart_port_device *dev, void *buf,
--			    unsigned long size, int timeout);
--
- extern int ps3av_set_video_mode(u32, int);
- extern int ps3av_set_audio_mode(u32, u32, u32, u32, u32);
- extern int ps3av_get_auto_mode(int);
-@@ -723,6 +720,9 @@ extern int ps3av_video_mute(int);
- extern int ps3av_audio_mute(int);
- extern int ps3av_dev_open(void);
- extern int ps3av_dev_close(void);
-+extern void ps3av_register_flip_ctl(void (*flip_ctl)(int on, void *data),
-+				    void *flip_data);
-+extern void ps3av_flip_ctl(int on);
- 
- #endif /* __KERNEL__ */
- #endif	/* _ASM_POWERPC_PS3AV_H_ */
++#include <linux/delay.h>
++#include <linux/freezer.h>
++#include <linux/kernel.h>
++#include <linux/kthread.h>
++#include <linux/init.h>
++
++#include <asm/firmware.h>
++#include <asm/lv1call.h>
++#include <asm/ps3stor.h>
++
++#include "platform.h"
++
++/**
++ * ps3_setup_gelic_device - Setup and register a gelic device instance.
++ *
++ * Allocates memory for a struct ps3_system_bus_device instance, initialises the
++ * structure members, and registers the device instance with the system bus.
++ */
++
++static int __devinit ps3_setup_gelic_device(
++	const struct ps3_repository_device *repo)
++{
++	int result;
++	struct layout {
++		struct ps3_system_bus_device dev;
++		struct ps3_dma_region d_region;
++	} *p;
++
++	pr_debug(" -> %s:%d\n", __func__, __LINE__);
++
++	BUG_ON(repo->bus_type != PS3_BUS_TYPE_SB);
++	BUG_ON(repo->dev_type != PS3_DEV_TYPE_SB_GELIC);
++
++	p = kzalloc(sizeof(struct layout), GFP_KERNEL);
++
++	if (!p) {
++		result = -ENOMEM;
++		goto fail_malloc;
++	}
++
++	p->dev.match_id = PS3_MATCH_ID_GELIC;
++	p->dev.dev_type = PS3_DEVICE_TYPE_SB;
++	p->dev.bus_id = repo->bus_id;
++	p->dev.dev_id = repo->dev_id;
++	p->dev.d_region = &p->d_region;
++
++	result = ps3_repository_find_interrupt(repo,
++		PS3_INTERRUPT_TYPE_EVENT_PORT, &p->dev.interrupt_id);
++
++	if (result) {
++		pr_debug("%s:%d ps3_repository_find_interrupt failed\n",
++			__func__, __LINE__);
++		goto fail_find_interrupt;
++	}
++
++	BUG_ON(p->dev.interrupt_id != 0);
++
++	result = ps3_dma_region_init(&p->dev, p->dev.d_region, PS3_DMA_64K,
++		PS3_DMA_OTHER, NULL, 0);
++
++	if (result) {
++		pr_debug("%s:%d ps3_dma_region_init failed\n",
++			__func__, __LINE__);
++		goto fail_dma_init;
++	}
++
++	result = ps3_system_bus_device_register(&p->dev);
++
++	if (result) {
++		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
++			__func__, __LINE__);
++		goto fail_device_register;
++	}
++
++	pr_debug(" <- %s:%d\n", __func__, __LINE__);
++	return result;
++
++fail_device_register:
++fail_dma_init:
++fail_find_interrupt:
++	kfree(p);
++fail_malloc:
++	pr_debug(" <- %s:%d: fail.\n", __func__, __LINE__);
++	return result;
++}
++
++static int __devinit ps3_setup_uhc_device(
++	const struct ps3_repository_device *repo, enum ps3_match_id match_id,
++	enum ps3_interrupt_type interrupt_type, enum ps3_reg_type reg_type)
++{
++	int result;
++	struct layout {
++		struct ps3_system_bus_device dev;
++		struct ps3_dma_region d_region;
++		struct ps3_mmio_region m_region;
++	} *p;
++	u64 bus_addr;
++	u64 len;
++
++	pr_debug(" -> %s:%d\n", __func__, __LINE__);
++
++	BUG_ON(repo->bus_type != PS3_BUS_TYPE_SB);
++	BUG_ON(repo->dev_type != PS3_DEV_TYPE_SB_USB);
++
++	p = kzalloc(sizeof(struct layout), GFP_KERNEL);
++
++	if (!p) {
++		result = -ENOMEM;
++		goto fail_malloc;
++	}
++
++	p->dev.match_id = match_id;
++	p->dev.dev_type = PS3_DEVICE_TYPE_SB;
++	p->dev.bus_id = repo->bus_id;
++	p->dev.dev_id = repo->dev_id;
++	p->dev.d_region = &p->d_region;
++	p->dev.m_region = &p->m_region;
++
++	result = ps3_repository_find_interrupt(repo,
++		interrupt_type, &p->dev.interrupt_id);
++
++	if (result) {
++		pr_debug("%s:%d ps3_repository_find_interrupt failed\n",
++			__func__, __LINE__);
++		goto fail_find_interrupt;
++	}
++
++	result = ps3_repository_find_reg(repo, reg_type,
++		&bus_addr, &len);
++
++	if (result) {
++		pr_debug("%s:%d ps3_repository_find_reg failed\n",
++			__func__, __LINE__);
++		goto fail_find_reg;
++	}
++
++	result = ps3_dma_region_init(&p->dev, p->dev.d_region, PS3_DMA_64K,
++		PS3_DMA_INTERNAL, NULL, 0);
++
++	if (result) {
++		pr_debug("%s:%d ps3_dma_region_init failed\n",
++			__func__, __LINE__);
++		goto fail_dma_init;
++	}
++
++	result = ps3_mmio_region_init(&p->dev, p->dev.m_region, bus_addr, len,
++		PS3_MMIO_4K);
++
++	if (result) {
++		pr_debug("%s:%d ps3_mmio_region_init failed\n",
++			__func__, __LINE__);
++		goto fail_mmio_init;
++	}
++
++	result = ps3_system_bus_device_register(&p->dev);
++
++	if (result) {
++		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
++			__func__, __LINE__);
++		goto fail_device_register;
++	}
++
++	pr_debug(" <- %s:%d\n", __func__, __LINE__);
++	return result;
++
++fail_device_register:
++fail_mmio_init:
++fail_dma_init:
++fail_find_reg:
++fail_find_interrupt:
++	kfree(p);
++fail_malloc:
++	pr_debug(" <- %s:%d: fail.\n", __func__, __LINE__);
++	return result;
++}
++
++static int __devinit ps3_setup_ehci_device(
++	const struct ps3_repository_device *repo)
++{
++	return ps3_setup_uhc_device(repo, PS3_MATCH_ID_EHCI,
++		PS3_INTERRUPT_TYPE_SB_EHCI, PS3_REG_TYPE_SB_EHCI);
++}
++
++static int __devinit ps3_setup_ohci_device(
++	const struct ps3_repository_device *repo)
++{
++	return ps3_setup_uhc_device(repo, PS3_MATCH_ID_OHCI,
++		PS3_INTERRUPT_TYPE_SB_OHCI, PS3_REG_TYPE_SB_OHCI);
++}
++
++static int __devinit ps3_setup_vuart_device(enum ps3_match_id match_id,
++	unsigned int port_number)
++{
++	int result;
++	struct layout {
++		struct ps3_system_bus_device dev;
++	} *p;
++
++	pr_debug(" -> %s:%d: match_id %u, port %u\n", __func__, __LINE__,
++		match_id, port_number);
++
++	p = kzalloc(sizeof(struct layout), GFP_KERNEL);
++
++	if (!p)
++		return -ENOMEM;
++
++	p->dev.match_id = match_id;
++	p->dev.dev_type = PS3_DEVICE_TYPE_VUART;
++	p->dev.port_number = port_number;
++
++	result = ps3_system_bus_device_register(&p->dev);
++
++	if (result)
++		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
++			__func__, __LINE__);
++
++	pr_debug(" <- %s:%d\n", __func__, __LINE__);
++	return result;
++}
++
++static int ps3stor_wait_for_completion(u64 dev_id, u64 tag,
++	unsigned int timeout)
++{
++	int result = -1;
++	unsigned int retries = 0;
++	u64 status;
++
++	for (retries = 0; retries < timeout; retries++) {
++		result = lv1_storage_check_async_status(dev_id, tag, &status);
++		if (!result)
++			break;
++
++		msleep(1);
++	}
++
++	if (result)
++		pr_debug("%s:%u: check_async_status: %s, status %lx\n",
++			 __func__, __LINE__, ps3_result(result), status);
++
++	return result;
++}
++
++/**
++ * ps3_storage_wait_for_device - Wait for a storage device to become ready.
++ * @repo: The repository device to wait for.
++ *
++ * Uses the hypervisor's storage device notification mechanism to wait until
++ * a storage device is ready.  The device notification mechanism uses a
++ * psuedo device (id = -1) to asynchronously notify the guest when storage
++ * devices become ready.  The notification device has a block size of 512
++ * bytes.
++ */
++
++static int ps3_storage_wait_for_device(
++	const struct ps3_repository_device *repo)
++{
++	int result;
++	const u64 notification_dev_id = (u64)-1LL;
++	const unsigned int timeout = HZ;
++	u64 lpar;
++	u64 tag;
++	struct {
++		u64 operation_code; /* must be zero */
++		u64 event_mask; /* 1 = device ready */
++	} *notify_cmd;
++	struct {
++		u64 event_type; /* notify_device_ready */
++		u64 bus_id;
++		u64 dev_id;
++		u64 dev_type;
++		u64 dev_port;
++	} *notify_event;
++	enum {notify_device_ready = 1,};
++
++	pr_info(" -> %s:%u: bus_id %u, dev_id %u, dev_type %u\n", __func__,
++		__LINE__, repo->bus_id, repo->dev_id, repo->dev_type);
++
++	notify_cmd = kzalloc(512, GFP_KERNEL);
++	notify_event = (void*)notify_cmd;
++
++	if (!notify_cmd)
++		return -ENOMEM;
++
++	lpar = ps3_mm_phys_to_lpar(__pa(notify_cmd));
++
++	result = lv1_open_device(repo->bus_id, notification_dev_id, 0);
++
++	if (result) {
++		printk(KERN_ERR "%s:%u: lv1_open_device %s\n", __func__,
++		__LINE__, ps3_result(result));
++		result = -ENODEV;
++		goto fail_free;
++	}
++
++	/* Setup and write the request for device notification. */
++
++	notify_cmd->operation_code = 0; /* must be zero */
++	notify_cmd->event_mask = 0x01; /* device ready */
++
++	result = lv1_storage_write(notification_dev_id, 0, 0, 1, 0, lpar, &tag);
++
++	if (result) {
++		printk(KERN_ERR "%s:%u: write failed %s\n", __func__, __LINE__,
++			ps3_result(result));
++		result = -ENODEV;
++		goto fail_close;
++	}
++
++	/* Wait for the write completion */
++
++	result = ps3stor_wait_for_completion(notification_dev_id, tag, timeout);
++
++	if (result) {
++		printk(KERN_ERR "%s:%u: write not completed %s\n", __func__,
++		       __LINE__, ps3_result(result));
++		result = -ENODEV;
++		goto fail_close;
++	}
++
++	/* Loop here processing the requested notification events. */
++
++	result = -ENODEV;
++	while (1) {
++		memset(notify_event, 0, sizeof(*notify_event));
++
++		result = lv1_storage_read(notification_dev_id, 0, 0, 1, 0, lpar,
++			&tag);
++
++		if (result) {
++			printk(KERN_ERR "%s:%u: write failed %s\n", __func__,
++				__LINE__, ps3_result(result));
++			break;
++		}
++
++		result = ps3stor_wait_for_completion(notification_dev_id, tag,
++			timeout);
++
++		if (result) {
++			printk(KERN_ERR "%s:%u: read not completed %s\n",
++			       __func__, __LINE__, ps3_result(result));
++			break;
++		}
++
++		if (notify_event->event_type != notify_device_ready
++			|| notify_event->bus_id != repo->bus_id) {
++			pr_debug("%s:%u: bad notify_event: event %lu, "
++				"dev_id %lu, dev_type %lu\n", __func__,
++				__LINE__, notify_event->event_type,
++				notify_event->dev_id, notify_event->dev_type);
++			break;
++		}
++
++		if (notify_event->dev_id == repo->dev_id
++			&& notify_event->dev_type == repo->dev_type) {
++			pr_debug("%s:%u: device ready: dev_id %u\n", __func__,
++				__LINE__, repo->dev_id);
++			result = 0;
++			break;
++		}
++
++		if (notify_event->dev_id == repo->dev_id
++			&& notify_event->dev_type == PS3_DEV_TYPE_NOACCESS) {
++			pr_debug("%s:%u: no access: dev_id %u\n", __func__,
++				__LINE__, repo->dev_id);
++			break;
++		}
++	}
++
++fail_close:
++	lv1_close_device(repo->bus_id, notification_dev_id);
++fail_free:
++	kfree(notify_cmd);
++	pr_debug(" <- %s:%d\n", __func__, __LINE__);
++	return result;
++}
++
++static int __devinit ps3_setup_storage_dev(
++	const struct ps3_repository_device *repo, enum ps3_match_id match_id)
++{
++	int result;
++	struct ps3_storage_device *p;
++	u64 port, blk_size, num_blocks;
++	unsigned int num_regions, i;
++
++	pr_debug(" -> %s:%d: match_id %u\n", __func__, __LINE__, match_id);
++
++	result = ps3_repository_read_stor_dev_info(repo->bus_index,
++		repo->dev_index, &port, &blk_size, &num_blocks, &num_regions);
++
++	if (result) {
++		printk(KERN_ERR "%s:%u: _read_stor_dev_info failed %d\n",
++		       __func__, __LINE__, result);
++		return -ENODEV;
++	}
++
++	pr_debug("%s:%u: index %u:%u: port %lu blk_size %lu num_blocks %lu "
++		 "num_regions %u\n", __func__, __LINE__, repo->bus_index,
++		repo->dev_index, port, blk_size, num_blocks, num_regions);
++
++	p = kzalloc(sizeof(struct ps3_storage_device) +
++		num_regions * sizeof(struct ps3_storage_region), GFP_KERNEL);
++
++	if (!p) {
++		result = -ENOMEM;
++		goto fail_malloc;
++	}
++
++	p->sbd.match_id = match_id;
++	p->sbd.dev_type = PS3_DEVICE_TYPE_SB;
++	p->sbd.bus_id = repo->bus_id;
++	p->sbd.dev_id = repo->dev_id;
++	p->sbd.d_region = &p->dma_region;
++	p->blk_size = blk_size;
++	p->num_regions = num_regions;
++
++	result = ps3_repository_find_interrupt(repo,
++		PS3_INTERRUPT_TYPE_EVENT_PORT, &p->sbd.interrupt_id);
++
++	if (result) {
++		printk(KERN_ERR "%s:%u: find_interrupt failed %d\n", __func__,
++			__LINE__, result);
++		result = -ENODEV;
++		goto fail_find_interrupt;
++	}
++
++	/* FIXME: Arrange to only do this on a 'cold' boot */
++
++	result = ps3_storage_wait_for_device(repo);
++
++	if (result) {
++		printk(KERN_ERR "%s:%u: storage_notification failed %d\n",
++		       __func__, __LINE__, result);
++		result = -ENODEV;
++		goto fail_probe_notification;
++	}
++
++	for (i = 0; i < num_regions; i++) {
++		unsigned int id;
++		u64 start, size;
++
++		result = ps3_repository_read_stor_dev_region(repo->bus_index,
++			repo->dev_index, i, &id, &start, &size);
++
++		if (result) {
++			printk(KERN_ERR
++			       "%s:%u: read_stor_dev_region failed %d\n",
++			       __func__, __LINE__, result);
++			result = -ENODEV;
++			goto fail_read_region;
++		}
++		pr_debug("%s:%u: region %u: id %u start %lu size %lu\n",
++			 __func__, __LINE__, i, id, start, size);
++
++		p->regions[i].id = id;
++		p->regions[i].start = start;
++		p->regions[i].size = size;
++	}
++
++	result = ps3_system_bus_device_register(&p->sbd);
++
++	if (result) {
++		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
++			__func__, __LINE__);
++		goto fail_device_register;
++	}
++
++	pr_debug(" <- %s:%d\n", __func__, __LINE__);
++	return 0;
++
++fail_device_register:
++fail_read_region:
++fail_probe_notification:
++fail_find_interrupt:
++	kfree(p);
++fail_malloc:
++	pr_debug(" <- %s:%d: fail.\n", __func__, __LINE__);
++	return result;
++}
++
++static int __init ps3_register_vuart_devices(void)
++{
++	int result;
++	unsigned int port_number;
++
++	pr_debug(" -> %s:%d\n", __func__, __LINE__);
++
++	result = ps3_repository_read_vuart_av_port(&port_number);
++
++	if (result)
++		port_number = 0; /* av default */
++
++	result = ps3_setup_vuart_device(PS3_MATCH_ID_AV_SETTINGS, port_number);
++	WARN_ON(result);
++
++	ps3_repository_read_vuart_sysmgr_port(&port_number);
++
++	if (result)
++		port_number = 2; /* sysmgr default */
++
++	result = ps3_setup_vuart_device(PS3_MATCH_ID_SYSTEM_MANAGER,
++		port_number);
++	WARN_ON(result);
++
++	pr_debug(" <- %s:%d\n", __func__, __LINE__);
++	return result;
++}
++
++static int __init ps3_register_sound_devices(void)
++{
++	int result;
++	struct layout {
++		struct ps3_system_bus_device dev;
++		struct ps3_dma_region d_region;
++		struct ps3_mmio_region m_region;
++	} *p;
++
++	pr_debug(" -> %s:%d\n", __func__, __LINE__);
++
++	p = kzalloc(sizeof(*p), GFP_KERNEL);
++	if (!p)
++		return -ENOMEM;
++
++	p->dev.match_id = PS3_MATCH_ID_SOUND;
++	p->dev.dev_type = PS3_DEVICE_TYPE_IOC0;
++	p->dev.d_region = &p->d_region;
++	p->dev.m_region = &p->m_region;
++
++	result = ps3_system_bus_device_register(&p->dev);
++
++	if (result)
++		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
++			__func__, __LINE__);
++
++	pr_debug(" <- %s:%d\n", __func__, __LINE__);
++	return result;
++}
++
++static int __devinit ps3_register_graphics_devices(void)
++{
++	int result;
++	struct layout {
++		struct ps3_system_bus_device dev;
++	} *p;
++
++	pr_debug(" -> %s:%d\n", __func__, __LINE__);
++
++	p = kzalloc(sizeof(struct layout), GFP_KERNEL);
++
++	if (!p)
++		return -ENOMEM;
++
++	p->dev.match_id = PS3_MATCH_ID_GRAPHICS;
++	p->dev.dev_type = PS3_DEVICE_TYPE_IOC0;
++
++	result = ps3_system_bus_device_register(&p->dev);
++
++	if (result)
++		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
++			__func__, __LINE__);
++
++	pr_debug(" <- %s:%d\n", __func__, __LINE__);
++	return result;
++}
++
++/**
++ * ps3_register_repository_device - Register a device from the repositiory info.
++ *
++ */
++
++static int __devinit ps3_register_repository_device(
++	const struct ps3_repository_device *repo)
++{
++	int result;
++
++	switch(repo->dev_type) {
++	case PS3_DEV_TYPE_SB_GELIC:
++		result = ps3_setup_gelic_device(repo);
++		if (result) {
++			pr_debug("%s:%d ps3_setup_gelic_device failed\n",
++				__func__, __LINE__);
++		}
++		break;
++	case PS3_DEV_TYPE_SB_USB:
++
++		/* Each USB device has both an EHCI and an OHCI HC */
++
++		result = ps3_setup_ehci_device(repo);
++
++		if (result) {
++			pr_debug("%s:%d ps3_setup_ehci_device failed\n",
++				__func__, __LINE__);
++		}
++
++		result = ps3_setup_ohci_device(repo);
++
++		if (result) {
++			pr_debug("%s:%d ps3_setup_ohci_device failed\n",
++				__func__, __LINE__);
++		}
++		break;
++	case PS3_DEV_TYPE_STOR_DISK:
++		result = ps3_setup_storage_dev(repo, PS3_MATCH_ID_STOR_DISK);
++
++		/* Some devices are not accessable from the Other OS lpar. */
++
++		if (result == -ENODEV) {
++			result = 0;
++			pr_debug("%s:%d: not accessable\n",
++				__func__, __LINE__);
++		}
++
++		if (result) {
++			pr_debug("%s:%d ps3_setup_storage_dev failed\n",
++				__func__, __LINE__);
++		}
++		break;
++	case PS3_DEV_TYPE_STOR_ROM:
++		result = ps3_setup_storage_dev(repo, PS3_MATCH_ID_STOR_ROM);
++		if (result) {
++			pr_debug("%s:%d ps3_setup_storage_dev failed\n",
++				__func__, __LINE__);
++		}
++		break;
++	case PS3_DEV_TYPE_STOR_FLASH:
++		result = ps3_setup_storage_dev(repo, PS3_MATCH_ID_STOR_FLASH);
++		if (result) {
++			pr_debug("%s:%d ps3_setup_storage_dev failed\n",
++				__func__, __LINE__);
++		}
++		break;
++	default:
++		result = 0;
++		pr_debug("%s:%u: unsupported dev_type %u\n", __func__, __LINE__,
++			repo->dev_type);
++	}
++
++	return result;
++}
++
++/**
++ * ps3_probe_thread - Background repository probing at system startup.
++ *
++ * This implementation only supports background probing on a single bus.
++ */
++
++static int ps3_probe_thread(void *data)
++{
++	struct ps3_repository_device *repo = data;
++	int result;
++	unsigned int ms = 250;
++
++	pr_debug(" -> %s:%u: kthread started\n", __func__, __LINE__);
++
++	do {
++		try_to_freeze();
++
++		pr_debug("%s:%u: probing...\n", __func__, __LINE__);
++
++		do {
++			result = ps3_repository_find_device(repo);
++
++			if (result == -ENODEV)
++				pr_debug("%s:%u: nothing new\n", __func__,
++					__LINE__);
++			else if (result)
++				pr_debug("%s:%u: find device error.\n",
++					__func__, __LINE__);
++			else {
++				pr_debug("%s:%u: found device\n", __func__,
++					__LINE__);
++				ps3_register_repository_device(repo);
++				ps3_repository_bump_device(repo);
++				ms = 250;
++			}
++		} while (!result);
++
++		pr_debug("%s:%u: ms %u\n", __func__, __LINE__, ms);
++
++		if ( ms > 60000)
++			break;
++
++		msleep_interruptible(ms);
++
++		/* An exponential backoff. */
++		ms <<= 1;
++
++	} while (!kthread_should_stop());
++
++	pr_debug(" <- %s:%u: kthread finished\n", __func__, __LINE__);
++
++	return 0;
++}
++
++/**
++ * ps3_start_probe_thread - Starts the background probe thread.
++ *
++ */
++
++static int __init ps3_start_probe_thread(enum ps3_bus_type bus_type)
++{
++	int result;
++	struct task_struct *task;
++	static struct ps3_repository_device repo; /* must be static */
++
++	pr_debug(" -> %s:%d\n", __func__, __LINE__);
++
++	memset(&repo, 0, sizeof(repo));
++
++	repo.bus_type = bus_type;
++
++	result = ps3_repository_find_bus(repo.bus_type, 0, &repo.bus_index);
++
++	if (result) {
++		printk(KERN_ERR "%s: Cannot find bus (%d)\n", __func__, result);
++		return -ENODEV;
++	}
++
++	result = ps3_repository_read_bus_id(repo.bus_index, &repo.bus_id);
++
++	if (result) {
++		printk(KERN_ERR "%s: read_bus_id failed %d\n", __func__,
++			result);
++		return -ENODEV;
++	}
++
++	task = kthread_run(ps3_probe_thread, &repo, "ps3-probe");
++
++	if (IS_ERR(task)) {
++		result = PTR_ERR(task);
++		printk(KERN_ERR "%s: kthread_run failed %d\n", __func__,
++		       result);
++		return result;
++	}
++
++	pr_debug(" <- %s:%d\n", __func__, __LINE__);
++	return 0;
++}
++
++/**
++ * ps3_register_devices - Probe the system and register devices found.
++ *
++ * A device_initcall() routine.
++ */
++
++static int __init ps3_register_devices(void)
++{
++	int result;
++
++	if (!firmware_has_feature(FW_FEATURE_PS3_LV1))
++		return -ENODEV;
++
++	pr_debug(" -> %s:%d\n", __func__, __LINE__);
++
++	/* ps3_repository_dump_bus_info(); */
++
++	result = ps3_start_probe_thread(PS3_BUS_TYPE_STORAGE);
++
++	ps3_register_vuart_devices();
++
++	ps3_register_graphics_devices();
++
++	ps3_repository_find_devices(PS3_BUS_TYPE_SB,
++		ps3_register_repository_device);
++
++	ps3_register_sound_devices();
++
++	pr_debug(" <- %s:%d\n", __func__, __LINE__);
++	return 0;
++}
++
++device_initcall(ps3_register_devices);
 
 -- 
