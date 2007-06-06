@@ -1,25 +1,21 @@
-Return-Path: <adaplas@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
-	by ozlabs.org (Postfix) with ESMTP id 19B58DDDE4
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 09:37:35 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so401857wag
-	for <linuxppc-dev@ozlabs.org>; Wed, 06 Jun 2007 16:37:34 -0700 (PDT)
-Subject: Re: [Linux-fbdev-devel] [patch 17/18] PS3: Frame buffer system-bus
-	rework
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-In-Reply-To: <46673E57.3020009@am.sony.com>
-References: <20070606024407.786638029@am.sony.com> >
-	<46662399.7030401@am.sony.com>
-	<Pine.LNX.4.62.0706060849530.19499@pademelon.sonytel.be>
-	<1181145418.5023.11.camel@daplas>  <46673E57.3020009@am.sony.com>
-Content-Type: text/plain
-Date: Thu, 07 Jun 2007 07:37:27 +0800
-Message-Id: <1181173048.5023.20.camel@daplas>
-Mime-Version: 1.0
-Cc: "Geert.Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	linux-fbdev-devel@lists.sourceforge.net, Paul Mackerras <paulus@samba.org>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id A8DD8DDE2E
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 09:48:12 +1000 (EST)
+Date: Wed, 6 Jun 2007 18:54:40 -0500
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: MPC8349ea Random Device Generator driver
+Message-ID: <20070606235440.GA28400@lixom.net>
+References: <BAY122-F18923A7AA6D3A4D96A360085200@phx.gbl>
+	<46672DB4.80504@freescale.com> <20070606220913.GA27820@lixom.net>
+	<46673009.6000109@freescale.com> <20070606222456.GA28225@lixom.net>
+	<466735F3.7040504@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <466735F3.7040504@freescale.com>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org, sl@powerlinux.fr,
+	Philippe Lachenal <philippe.lachenal@hotmail.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,40 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-06-06 at 16:08 -0700, Geoff Levand wrote:
-> Hi.
+On Wed, Jun 06, 2007 at 05:32:19PM -0500, Timur Tabi wrote:
+> Olof Johansson wrote:
 > 
-> Antonino A. Daplas wrote:
-> > On Wed, 2007-06-06 at 08:51 +0200, Geert Uytterhoeven wrote:
-> >> This one should go through linux-fbdev-devel (CC) for review, but Paul can
-> >> merge it because it depends on the PS3 system bus device rework.
-> >> 
-> > 
-> >> >  
-> >> > -static void ps3fb_shutdown(struct platform_device *dev)
-> >> > +static int __devexit ps3fb_remove(struct ps3_system_bus_device *dev)
-> >> >  {
-> >> > -	ps3fb_flip_ctl(0);	/* flip off */
-> >> > -	ps3fb.dinfo->irq.mask = 0;
-> >> > -	free_irq(ps3fb.irq_no, ps3fb.dev);
-> >> > -	ps3_irq_plug_destroy(ps3fb.irq_no);
-> >> > -	iounmap((u8 __iomem *)ps3fb.dinfo);
-> >> > +	BUG();
-> > 
-> > Why BUG()?
+> >  - you can never assign a __le16 type to any other integer type or any 
+> >    other bitwise type. You'd get a warnign about incompatible types. Makes 
+> >    sense, no?
 > 
-> remove() doesn't work because lack of support from fbcon.
+> Then why do the in_be functions return an unsigned int instead of a __be type?  Isn't that 
+> effectively removing the endian-ness from the type?
 
-We already have console registration/unregistration support for the past
-few kernel versions.
+Because they read a big endian register and returns the contents in the
+native byte order for the machine.
 
->   I'll remove
-> this though, since it independent of the fbcon fix.
-
-This is part of module_exit(), correct? Then yes, module-init-tools
-will disallow rmmod to remove the module if fbcon is holding a reference
-count to it. However, if fbcon is not loaded, or fbcon is not bound to
-it (with an echo 0 > /sys/class/vtconsole/vtcon1/bind), then rmmod will
-succeed, and so should ps3fb_remove().
-
-Tony
+-Olof
