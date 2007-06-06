@@ -1,16 +1,23 @@
-Return-Path: <wfarnsworth@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id D0575DDDFB
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 02:42:26 +1000 (EST)
-Subject: [PATCH] When checking I8042 io port, use of_find_compatible_node()
-	instead of of_find_node_by_type()
-From: Wade Farnsworth <wfarnsworth@mvista.com>
-To: paulus@samba.org
-Content-Type: text/plain
-Date: Wed, 06 Jun 2007 09:42:25 -0700
-Message-Id: <1181148145.5674.121.camel@rhino>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound5-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id EDD48DDDF3
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 02:44:11 +1000 (EST)
+Message-ID: <4666E453.2000302@am.sony.com>
+Date: Wed, 06 Jun 2007 09:44:03 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [patch 07/18] PS3: Make ps3av.h usable from user space
+References: <20070606024407.786638029@am.sony.com>>
+	<46662337.9060908@am.sony.com> <20070606074609.GA31975@lst.de>
+In-Reply-To: <20070606074609.GA31975@lst.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Masashi Kimoto <Masashi_Kimoto@hq.scei.sony.co.jp>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,34 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In check_legacy_ioport(), instead of using of_find_node_by_type() to
-find the 8042 node, use of_find_compatible_node() to find either the
-keyboard or mouse node.
+Christoph Hellwig wrote:
+> On Tue, Jun 05, 2007 at 08:00:07PM -0700, Geoff Levand wrote:
+>> The user applications to manage the PS3 AV modes can use values
+>> defined in this header.
+> 
+> NACK.  First please don't introduce new unifdef-y headers but always
+> separated them.  Second I don't see any of the values actually used
+> in a user<->kerne interface.  If the application only happens to use
+> the same values it should ship a copy of the header intead.
 
-Signed-off-by: Wade Farnsworth <wfarnsworth@mvista.com>
+Yes, they are currently used with ioctl for video mode selection
+by the ps3videomode utility.
 
----
+OK, you recommend having two headers one for the kernel and one for
+the application or library, then keeping them in sync.  I think
+in some ways that is easier for the package user also, since there
+is no dependency on kernel headers.  It does mean that the package
+definitions need to be kept up to date.
 
- arch/powerpc/kernel/setup-common.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
-
-Index: linux-2.6-powerpc-8641/arch/powerpc/kernel/setup-common.c
-===================================================================
---- linux-2.6-powerpc-8641.orig/arch/powerpc/kernel/setup-common.c
-+++ linux-2.6-powerpc-8641/arch/powerpc/kernel/setup-common.c
-@@ -517,7 +517,14 @@ int check_legacy_ioport(unsigned long ba
- 
- 	switch(base_port) {
- 	case I8042_DATA_REG:
--		np = of_find_node_by_type(NULL, "8042");
-+		np = of_find_compatible_node(NULL, NULL, "pnpPNP,303");
-+		if (!np)
-+			np = of_find_compatible_node(NULL, NULL, "pnpPNP,f03");
-+		if (np) {
-+			parent = of_get_parent(np);
-+			of_node_put(np);
-+			np = parent;
-+		}
- 		break;
- 	case FDC_BASE: /* FDC1 */
- 		np = of_find_node_by_type(NULL, "fdc");
+-Geoff
