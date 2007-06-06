@@ -1,15 +1,22 @@
-Return-Path: <wfarnsworth@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 8F037DDE3B
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 02:57:45 +1000 (EST)
-Subject: [PATCH] Fix drivers/rtc/Kconfig for powerpc
-From: Wade Farnsworth <wfarnsworth@mvista.com>
-To: a.zummo@towertech.it
+Return-Path: <jdl@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6455CDDE3B
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 03:07:36 +1000 (EST)
+Subject: Re: [PATCH] Fix drivers/rtc/Kconfig for powerpc
+From: Jon Loeliger <jdl@freescale.com>
+To: Wade Farnsworth <wfarnsworth@mvista.com>
+In-Reply-To: <1181149064.5674.134.camel@rhino>
+References: <1181149064.5674.134.camel@rhino>
 Content-Type: text/plain
-Date: Wed, 06 Jun 2007 09:57:43 -0700
-Message-Id: <1181149064.5674.134.camel@rhino>
+Message-Id: <1181149622.12740.32.camel@ld0161-tx32>
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, rtc-linux@googlegroups.com
+Date: Wed, 06 Jun 2007 12:07:02 -0500
+Cc: a.zummo@towertech.it, rtc-linux@googlegroups.com,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,29 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The powerpc arch uses CONFIG_PPC instead of CONFIG_POWERPC.  This fixes
-drivers/rtc/Kconfig to use the correct config option.
+On Wed, 2007-06-06 at 11:57, Wade Farnsworth wrote:
+> The powerpc arch uses CONFIG_PPC instead of CONFIG_POWERPC.  This fixes
+> drivers/rtc/Kconfig to use the correct config option.
+> 
+> Signed-off-by: Wade Farnsworth <wfarnsworth@mvista.com>
+> 
+> ---
+> This is a resubmission of a patch I sent a few weeks ago.  I'm
+> resubmitting this as I haven't seen any activity regarding this patch
+> since I submitted it.
 
-Signed-off-by: Wade Farnsworth <wfarnsworth@mvista.com>
+Did you miss where I ACK'ed it 16-May-2007? :-)
 
----
-This is a resubmission of a patch I sent a few weeks ago.  I'm
-resubmitting this as I haven't seen any activity regarding this patch
-since I submitted it.
 
- drivers/rtc/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+        From: 	Jon Loeliger <jdl@freescale.com>
+        To: 	Wade Farnsworth <wfarnsworth@mvista.com>
+        Cc: 	linuxppc-dev <linuxppc-dev@ozlabs.org>, rtc-linux@googlegroups.com
+        Subject: Re: [PATCH] Fix drivers/rtc/Kconfig for powerpc
+        Date: 	Wed, 16 May 2007 11:31:26 -0500	
+        
+        On Tue, 2007-05-15 at 11:53, Wade Farnsworth wrote:
+        > The powerpc arch uses CONFIG_PPC instead of CONFIG_POWERPC.  This makes
+        > drivers/rtc/Kconfig to use the correct config option.
+        > 
+        > Signed-off-by: Wade Farnsworth <wfarnsworth@mvista.com>
+        
+        Acked-by: Jon Loeliger <jdl@freescale.com>
 
-Index: linux-2.6-powerpc-8641/drivers/rtc/Kconfig
-===================================================================
---- linux-2.6-powerpc-8641.orig/drivers/rtc/Kconfig
-+++ linux-2.6-powerpc-8641/drivers/rtc/Kconfig
-@@ -246,7 +246,7 @@ comment "Platform RTC drivers"
- config RTC_DRV_CMOS
- 	tristate "PC-style 'CMOS'"
- 	depends on RTC_CLASS && (X86 || ALPHA || ARM26 || ARM \
--		|| M32R || ATARI || POWERPC || MIPS)
-+		|| M32R || ATARI || PPC || MIPS)
- 	help
- 	  Say "yes" here to get direct support for the real time clock
- 	  found in every PC or ACPI-based system, and some other boards.
+jdl
