@@ -1,14 +1,23 @@
-Return-Path: <philippe.lachenal@hotmail.fr>
-Received: from bay0-omc3-s28.bay0.hotmail.com (bay0-omc3-s28.bay0.hotmail.com
-	[65.54.246.228]) by ozlabs.org (Postfix) with ESMTP id 11E1EDDDFB
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 01:54:56 +1000 (EST)
-Message-ID: <BAY122-F1118293247F7AB044B0EE385200@phx.gbl>
-From: "Philippe Lachenal" <philippe.lachenal@hotmail.fr>
-To: linuxppc-dev@ozlabs.org, sl@powerlinux.fr
-Subject: [PATCH]  - Freescale MPC8349EA Random Number Generator
-Date: Tue, 05 Jun 2007 17:54:53 +0200
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 7BEB9DE543
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 10:06:50 +1000 (EST)
+Received: from localhost (bh02i525f01.au.ibm.com [202.81.18.30])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by smtps.tip.net.au (Postfix) with ESMTP id 5B695368075
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 10:06:50 +1000 (EST)
+Date: Wed, 6 Jun 2007 10:06:38 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Freescale MPC8349ea Random Number Generator
+Message-Id: <20070606100638.eb05a92e.sfr@canb.auug.org.au>
+In-Reply-To: <BAY122-F168799CE213A1FEBF307DC85200@phx.gbl>
+References: <BAY122-F168799CE213A1FEBF307DC85200@phx.gbl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__6_Jun_2007_10_06_38_+1000_NHXyVSW0Og.XLaI8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,12 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello everybody ...  the .dts file was missing in my first message, so here 
-is the complete .diff for the Freescale MPC8349EA Random Number Generator 
-driver I've made. I apologize for my first incomplete post, and thanks for 
-the comment !
+--Signature=_Wed__6_Jun_2007_10_06_38_+1000_NHXyVSW0Og.XLaI8
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Philippe Lachenal.
+On Tue, 05 Jun 2007 17:22:39 +0200 "Philippe Lachenal" <philippe.lachenal@h=
+otmail.fr> wrote:
+>
+> hello,
+> I've made a driver for the Freescale MPC8349ea Random Number Generator. H=
+ere=20
+> is the diff, I'd be glad to receive your comments. Thanks !
+> Philippe Lachenal
 
-_________________________________________________________________
-Gagnez des écrans plats avec Live.com http://www.image-addict.fr/
+I apologise for letting this one through.  10am is obviously too early in
+the morning :-)
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__6_Jun_2007_10_06_38_+1000_NHXyVSW0Og.XLaI8
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGZfqXFdBgD/zoJvwRAg4wAJ4vMmQSxIXj9a5QPDHByW0TchVbbwCeJiFz
+UXSOLJZIGCoBh2z8huD8Sh4=
+=Y/Q0
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__6_Jun_2007_10_06_38_+1000_NHXyVSW0Og.XLaI8--
