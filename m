@@ -1,18 +1,37 @@
-Return-Path: <dale@farnsworth.org>
-Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	by ozlabs.org (Postfix) with SMTP id CAB12DDE30
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 03:29:05 +1000 (EST)
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Wed, 6 Jun 2007 10:29:01 -0700
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] powerpc: Add Marvell mv64x60 udbg putc/getc functions
-Message-ID: <20070606172900.GA29951@xyzzy.farnsworth.org>
-References: <20070523220518.GA2312@xyzzy.farnsworth.org>
-	<18022.20173.857845.49576@cargo.ozlabs.ibm.com>
+Return-Path: <osstklei@de.ibm.com>
+Received: from mtagate6.de.ibm.com (mtagate6.de.ibm.com [195.212.29.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate6.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 28CEADDD07
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 04:53:21 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate6.de.ibm.com (8.13.8/8.13.8) with ESMTP id l56IrIeX242334
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Jun 2007 18:53:18 GMT
+Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
+	[9.149.165.213])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.3) with
+	ESMTP id l56IrIDX3510426
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Jun 2007 20:53:18 +0200
+Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l56IrHTS012138
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Jun 2007 20:53:17 +0200
+From: Thomas Klein <osstklei@de.ibm.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH 2.6.22-rc4] ehea: Fixed possible kernel panic on VLAN packet
+	recv
+Date: Wed, 6 Jun 2007 20:53:16 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18022.20173.857845.49576@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200706062053.16986.osstklei@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Christoph Raisch <raisch@de.ibm.com>,
+	Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,160 +41,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jun 06, 2007 at 04:06:05PM +1000, Paul Mackerras wrote:
-> Dale Farnsworth writes:
-> 
-> > Paul, this patch is unchanged from the one I posted 10 days ago.
-> > At that time, I saw no discussion, other than Mark's ACK.  I'd 
-> > argue that this is a bugfix, and hope that it could go into 2.6.22.
-> 
-> Um, it seems rather large, and in particular adds a fair bit of
-> completely new code.  Is there a simpler way of getting to an
-> acceptable point - e.g. just not use the udbg console on these boards?
+This patch fixes a possible kernel panic due to not checking the vlan group
+when processing received VLAN packets and a malfunction in VLAN/hypervisor
+registration.
 
-Yeah, that was the first approach I took.  Unfortunately, currently the
-udbg console is included unconditionally on arch/powerpc.  I created the
-patch below to conditionalize the use of udbg console.  I thought it a
-bit risky for 2.6.22, but I think it's the right approach long term.
 
-> If we don't have udbg support for them then the udbg console would
-> seem a bit pointless, no?
-
-There is value in that with the udbg console we do see console output
-much earlier.  While there's some new code (I didn't think it was all
-that much), the impact is limited to the single platform now using the
-mv64x60 console port, the prpmc2800.
-
--Dale
-
----------------- begin patch ------------------------
-[POWERPC] Make the use of the udbg console conditional
-
-Create a new config variable: PPC_UDBG and make the inclusion
-of the udbg console dependent on it.
-
-Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+Signed-off-by: Thomas Klein <tklein@de.ibm.com>
 ---
- arch/powerpc/Kconfig                    |    4 ++++
- arch/powerpc/Kconfig.debug              |    1 +
- arch/powerpc/kernel/Makefile            |    3 ++-
- arch/powerpc/platforms/Kconfig          |    2 ++
- arch/powerpc/platforms/iseries/Kconfig  |    1 +
- arch/powerpc/platforms/powermac/Kconfig |    1 +
- include/asm-powerpc/udbg.h              |    9 +++++++++
- 7 files changed, 20 insertions(+), 1 deletion(-)
 
-Index: linux-2.6-powerpc-df/arch/powerpc/Kconfig
-===================================================================
---- linux-2.6-powerpc-df.orig/arch/powerpc/Kconfig
-+++ linux-2.6-powerpc-df/arch/powerpc/Kconfig
-@@ -99,9 +99,13 @@ config ARCH_MAY_HAVE_PC_FDC
- config PPC_OF
- 	def_bool y
+
+diff -Nurp -X dontdiff linux-2.6.22-rc4/drivers/net/ehea/ehea.h patched_kernel/drivers/net/ehea/ehea.h
+--- linux-2.6.22-rc4/drivers/net/ehea/ehea.h	2007-06-05 02:57:25.000000000 +0200
++++ patched_kernel/drivers/net/ehea/ehea.h	2007-06-06 12:53:58.000000000 +0200
+@@ -39,7 +39,7 @@
+ #include <asm/io.h>
  
-+config PPC_UDBG
-+	bool
-+
- config PPC_UDBG_16550
- 	bool
-+	select PPC_UDBG
- 	default n
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0061"
++#define DRV_VERSION	"EHEA_0064"
  
- config GENERIC_TBSYNC
- 	bool
-Index: linux-2.6-powerpc-df/arch/powerpc/Kconfig.debug
-===================================================================
---- linux-2.6-powerpc-df.orig/arch/powerpc/Kconfig.debug
-+++ linux-2.6-powerpc-df/arch/powerpc/Kconfig.debug
-@@ -135,6 +135,7 @@ config BDI_SWITCH
- config BOOTX_TEXT
- 	bool "Support for early boot text console (BootX or OpenFirmware only)"
- 	depends PPC_OF
-+	select PPC_UDBG
- 	help
- 	  Say Y here to see progress messages from the boot firmware in text
- 	  mode. Requires either BootX or Open Firmware.
-Index: linux-2.6-powerpc-df/arch/powerpc/kernel/Makefile
-===================================================================
---- linux-2.6-powerpc-df.orig/arch/powerpc/kernel/Makefile
-+++ linux-2.6-powerpc-df/arch/powerpc/kernel/Makefile
-@@ -52,7 +52,8 @@ extra-$(CONFIG_8xx)		:= head_8xx.o
- extra-y				+= vmlinux.lds
+ #define EHEA_MSG_DEFAULT (NETIF_MSG_LINK | NETIF_MSG_TIMER \
+ 	| NETIF_MSG_RX_ERR | NETIF_MSG_TX_ERR)
+diff -Nurp -X dontdiff linux-2.6.22-rc4/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
+--- linux-2.6.22-rc4/drivers/net/ehea/ehea_main.c	2007-06-05 02:57:25.000000000 +0200
++++ patched_kernel/drivers/net/ehea/ehea_main.c	2007-06-06 12:53:58.000000000 +0200
+@@ -451,7 +451,8 @@ static struct ehea_cqe *ehea_proc_rwqes(
+ 				processed_rq3++;
+ 			}
  
- obj-y				+= time.o prom.o traps.o setup-common.o \
--				   udbg.o misc.o io.o
-+				   misc.o io.o
-+obj-$(CONFIG_PPC_UDBG)		+= udbg.o
- obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o misc_32.o
- obj-$(CONFIG_PPC64)		+= misc_64.o dma_64.o iommu.o
- obj-$(CONFIG_PPC_MULTIPLATFORM)	+= prom_init.o
-Index: linux-2.6-powerpc-df/arch/powerpc/platforms/Kconfig
-===================================================================
---- linux-2.6-powerpc-df.orig/arch/powerpc/platforms/Kconfig
-+++ linux-2.6-powerpc-df/arch/powerpc/platforms/Kconfig
-@@ -61,6 +61,7 @@ config UDBG_RTAS_CONSOLE
- config PPC_UDBG_BEAT
- 	bool "BEAT based debug console"
- 	depends on PPC_CELLEB
-+	select PPC_UDBG
- 	default n
+-			if (cqe->status & EHEA_CQE_VLAN_TAG_XTRACT)
++			if ((cqe->status & EHEA_CQE_VLAN_TAG_XTRACT)
++			    && port->vgrp)
+ 				vlan_hwaccel_receive_skb(skb, port->vgrp,
+ 							 cqe->vlan_tag);
+ 			else
+@@ -1910,10 +1911,7 @@ static void ehea_vlan_rx_register(struct
+ 		goto out;
+ 	}
  
- config XICS
-@@ -87,6 +88,7 @@ config U3_DART
+-	if (grp)
+-		memset(cb1->vlan_filter, 0, sizeof(cb1->vlan_filter));
+-	else
+-		memset(cb1->vlan_filter, 0xFF, sizeof(cb1->vlan_filter));
++	memset(cb1->vlan_filter, 0, sizeof(cb1->vlan_filter));
  
- config PPC_RTAS
- 	bool
-+	select PPC_UDBG
- 	default n
+ 	hret = ehea_h_modify_ehea_port(adapter->handle, port->logical_port_id,
+ 				       H_PORT_CB1, H_PORT_CB1_ALL, cb1);
+@@ -1947,7 +1945,7 @@ static void ehea_vlan_rx_add_vid(struct 
+ 	}
  
- config RTAS_ERROR_LOGGING
-Index: linux-2.6-powerpc-df/include/asm-powerpc/udbg.h
-===================================================================
---- linux-2.6-powerpc-df.orig/include/asm-powerpc/udbg.h
-+++ linux-2.6-powerpc-df/include/asm-powerpc/udbg.h
-@@ -11,6 +11,8 @@
- #define _ASM_POWERPC_UDBG_H
- #ifdef __KERNEL__
+ 	index = (vid / 64);
+-	cb1->vlan_filter[index] |= ((u64)(1 << (vid & 0x3F)));
++	cb1->vlan_filter[index] |= ((u64)(0x8000000000000000 >> (vid & 0x3F)));
  
-+#ifdef CONFIG_PPC_UDBG
-+
- #include <linux/compiler.h>
- #include <linux/init.h>
+ 	hret = ehea_h_modify_ehea_port(adapter->handle, port->logical_port_id,
+ 				       H_PORT_CB1, H_PORT_CB1_ALL, cb1);
+@@ -1982,7 +1980,7 @@ static void ehea_vlan_rx_kill_vid(struct
+ 	}
  
-@@ -49,5 +51,12 @@ extern void __init udbg_init_debug_beat(
- extern void __init udbg_init_btext(void);
- extern void __init udbg_init_44x_as1(void);
+ 	index = (vid / 64);
+-	cb1->vlan_filter[index] &= ~((u64)(1 << (vid & 0x3F)));
++	cb1->vlan_filter[index] &= ~((u64)(0x8000000000000000 >> (vid & 0x3F)));
  
-+#else
-+
-+#define udbg_early_init()
-+#define register_early_udbg_console()
-+
-+#endif /* CONFIG_PPC_UDBG */
-+
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_UDBG_H */
-Index: linux-2.6-powerpc-df/arch/powerpc/platforms/iseries/Kconfig
-===================================================================
---- linux-2.6-powerpc-df.orig/arch/powerpc/platforms/iseries/Kconfig
-+++ linux-2.6-powerpc-df/arch/powerpc/platforms/iseries/Kconfig
-@@ -2,6 +2,7 @@ config PPC_ISERIES
- 	bool "IBM Legacy iSeries"
- 	depends on PPC_MULTIPLATFORM && PPC64
- 	select PPC_INDIRECT_IO
-+	select PPC_UDBG
- 
- menu "iSeries device drivers"
- 	depends on PPC_ISERIES
-Index: linux-2.6-powerpc-df/arch/powerpc/platforms/powermac/Kconfig
-===================================================================
---- linux-2.6-powerpc-df.orig/arch/powerpc/platforms/powermac/Kconfig
-+++ linux-2.6-powerpc-df/arch/powerpc/platforms/powermac/Kconfig
-@@ -5,6 +5,7 @@ config PPC_PMAC
- 	select PPC_INDIRECT_PCI if PPC32
- 	select PPC_MPC106 if PPC32
- 	select PPC_NATIVE
-+	select PPC_UDBG
- 	default y
- 
- config PPC_PMAC64
+ 	hret = ehea_h_modify_ehea_port(adapter->handle, port->logical_port_id,
+ 				       H_PORT_CB1, H_PORT_CB1_ALL, cb1);
