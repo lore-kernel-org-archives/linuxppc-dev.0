@@ -1,34 +1,33 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Return-Path: <adetsch@br.ibm.com>
+Received: from igw1.br.ibm.com (igw1.br.ibm.com [32.104.18.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EBCBDDDE27
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 00:48:45 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l56Emgpl025640
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Jun 2007 10:48:42 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l56EmeIj525098
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Jun 2007 10:48:40 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l56Emeab014627
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Jun 2007 10:48:40 -0400
-Subject: Re: [patch 02/18] PS3: Rename IPI symbols
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-In-Reply-To: <20070606131157.133ce9bb.sfr@canb.auug.org.au>
-References: <20070606024407.786638029@am.sony.com>
-	<4666230D.4020902@am.sony.com>
-	<20070606131157.133ce9bb.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Wed, 06 Jun 2007 09:48:32 -0500
-Message-Id: <1181141312.18837.6.camel@farscape.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@ozlabs.org
-Reply-To: will_schmidt@vnet.ibm.com
+	(Client CN "igw1.br.ibm.com", Issuer "SMTP Support" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 55246DDED1
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 00:43:48 +1000 (EST)
+Received: from mailhub1.br.ibm.com (mailhub1 [9.18.232.109])
+	by igw1.br.ibm.com (Postfix) with ESMTP id EEE7D148320
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 11:30:52 -0300 (BRT)
+Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.18.232.47])
+	by mailhub1.br.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l56Eh3ji487552
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Jun 2007 11:43:04 -0300
+Received: from d24av02.br.ibm.com (loopback [127.0.0.1])
+	by d24av02.br.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l56Eftsv016062
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Jun 2007 11:41:56 -0300
+Message-ID: <4666C7A9.1050409@br.ibm.com>
+Date: Wed, 06 Jun 2007 11:41:45 -0300
+From: =?ISO-8859-1?Q?Andr=E9_Detsch?= <adetsch@br.ibm.com>
+MIME-Version: 1.0
+To: michael@ellerman.id.au
+Subject: Re: [patch 01/18] Cell: Add spu shutdown method
+References: <20070606024407.786638029@am.sony.com> >
+	<46662303.1040606@am.sony.com>
+	<1181102914.5536.22.camel@concordia.ozlabs.ibm.com>
+In-Reply-To: <1181102914.5536.22.camel@concordia.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,28 +37,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-06-06 at 13:11 +1000, Stephen Rothwell wrote:
-> On Tue, 05 Jun 2007 19:59:25 -0700 Geoff Levand <geoffrey.levand@am.sony.com> wrote:
-> >
-> > Rename the PS3 static symbol virqs to ps3_ipi_virqs to aid in
-> > debugging.
-> > 
-> > Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-> >
-> >  	for (i = 0; i < MSG_COUNT; i++) {
-> > -		free_irq(virqs[i], (void*)(long)i);
-> > +		/* Can't call free_irq from interrupt context. */
+Michael Ellerman wrote:
+> On Tue, 2007-06-05 at 19:59 -0700, Geoff Levand wrote:
+>> Add a shutdown method to spu_sysdev_class to allow proper spu resource
+>> cleanup on system shutdown.  This is needed to support kexec on the PS3
+>> platform.
+>>
+>> Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+>> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+>> ---
+>>  arch/powerpc/platforms/cell/spu_base.c |   12 +++++++++++-
+>>  1 file changed, 11 insertions(+), 1 deletion(-)
 > 
-> This change is probably worth a mention in the change log - it looks like
-> a bug fix.
+> André, does this interact with your kexec work at all?
 
+No. My cell kexec patch is actually crash-specific, activated under 
+default_machine_crash_shutdown. Geoff's ps3 kexec patches do not seem to 
+affect this code path.
 
-Does the free_irq call (being removed here) need to be added back in
-somewhere else? 
-
--Will
-
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+--
+Andre Detsch
