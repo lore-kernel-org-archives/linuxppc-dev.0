@@ -1,20 +1,21 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound5-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
+Received: from outbound7-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 9175CDE89C
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 13:01:33 +1000 (EST)
-Message-ID: <46662385.60904@am.sony.com>
-Date: Tue, 05 Jun 2007 20:01:25 -0700
+	by ozlabs.org (Postfix) with ESMTP id C4CF0DE3C6
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 13:01:48 +1000 (EST)
+Message-ID: <46662391.10700@am.sony.com>
+Date: Tue, 05 Jun 2007 20:01:37 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 15/18] PS3: System manager re-work
+Subject: [patch 16/18] PS3: Rework AV settings driver
 References: <20070606024407.786638029@am.sony.com>>
 In-Reply-To: <20070606024407.786638029@am.sony.com>>
 Content-Type: text/plain; charset=UTF-8
-Cc: Paul Mackerras <paulus@samba.org>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,45 +25,882 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-PS3 sys-manager updates to reflect the new PS3 unifed device support.
-Fixups to the PS3 sys-manager driver to properly support sys_reboot().
- - Add varable request_tag to struct ps3_sys_manager_header.
- - Move ctrl_alt_del from PS3_SM_EVENT_POWER_RELEASED to
-   PS3_SM_EVENT_POWER_PRESSED.
- - Make the PS3 sys-manager driver a loadable module.
- - Add new file sys-manager-core.c.
- - Add new struct ps3_sys_manager_ops for dynamic binding.
- - Put data sent to device on stack.
- - Add support for PS3_SM_SERVICE_ID_REQUEST_ERROR.
+Make the PS3 ps3av driver a loadable module.
+  - Replace static data with malloc'ed.
+      o Allocate struct ps3av dynamically, as it contains data used as vuart
+        receive/transmit buffers
+      o Move static recv_buf from ps3av_do_pkt() to struct ps3av
+  - Move ps3av_vuart_{read,write}() from drivers/ps3/ps3av_cmd.c to
+    drivers/ps3/ps3av.c and make them static as they're used in.
+  - Make device a PS3 system-bus device.
+  - Update copyright formatting.
+  - Make two new routines ps3av_register_flip_ctl() and ps3av_flip_ctl() to
+    support late binding of the frame buffer filp control routine.
 
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- drivers/ps3/Makefile           |    1 
- drivers/ps3/sys-manager-core.c |   68 ++++++++++
- drivers/ps3/sys-manager.c      |  278 ++++++++++++++++++++++++++---------------
- include/asm-powerpc/ps3.h      |   15 +-
- 4 files changed, 259 insertions(+), 103 deletions(-)
+ drivers/ps3/Makefile        |    3 
+ drivers/ps3/ps3av.c         |  368 +++++++++++++++++++++++---------------------
+ drivers/ps3/ps3av_cmd.c     |   35 ----
+ include/asm-powerpc/ps3av.h |   36 ++--
+ 4 files changed, 216 insertions(+), 226 deletions(-)
 
 --- a/drivers/ps3/Makefile
 +++ b/drivers/ps3/Makefile
-@@ -1,3 +1,4 @@
+@@ -1,4 +1,5 @@
  obj-$(CONFIG_PS3_VUART) += vuart.o
- obj-$(CONFIG_PS3_PS3AV) += ps3av.o ps3av_cmd.o
-+obj-$(CONFIG_PPC_PS3) += sys-manager-core.o
+-obj-$(CONFIG_PS3_PS3AV) += ps3av.o ps3av_cmd.o
++obj-$(CONFIG_PS3_PS3AV) += ps3av_mod.o
++ps3av_mod-objs		+= ps3av.o ps3av_cmd.o
+ obj-$(CONFIG_PPC_PS3) += sys-manager-core.o
  obj-$(CONFIG_PS3_SYS_MANAGER) += sys-manager.o
---- /dev/null
-+++ b/drivers/ps3/sys-manager-core.c
-@@ -0,0 +1,68 @@
-+/*
-+ *  PS3 System Manager core.
-+ *
+--- a/drivers/ps3/ps3av.c
++++ b/drivers/ps3/ps3av.c
+@@ -1,32 +1,30 @@
+ /*
+- * Copyright (C) 2006 Sony Computer Entertainment Inc.
+- * Copyright 2006, 2007 Sony Corporation
++ *  PS3 AV backend support.
+  *
+- * AV backend support for PS3
 + *  Copyright (C) 2007 Sony Computer Entertainment Inc.
 + *  Copyright 2007 Sony Corp.
-+ *
+  *
+- * This program is free software; you can redistribute it and/or modify it
+- * under the terms of the GNU General Public License as published
+- * by the Free Software Foundation; version 2 of the License.
 + *  This program is free software; you can redistribute it and/or modify
 + *  it under the terms of the GNU General Public License as published by
 + *  the Free Software Foundation; version 2 of the License.
-+ *
+  *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- * General Public License for more details.
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
+  *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  */
+-
++#define DEBUG
++#include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/delay.h>
+ #include <linux/notifier.h>
+-#include <linux/reboot.h>
+-#include <linux/kernel.h>
+ #include <linux/ioctl.h>
+ 
+ #include <asm/firmware.h>
+-#include <asm/lv1call.h>
+ #include <asm/ps3av.h>
+ #include <asm/ps3.h>
+ 
+@@ -39,13 +37,12 @@ static int timeout = 5000;	/* in msec ( 
+ module_param(timeout, int, 0644);
+ 
+ static struct ps3av {
+-	int available;
+ 	struct mutex mutex;
+ 	struct work_struct work;
+ 	struct completion done;
+ 	struct workqueue_struct *wq;
+ 	int open_count;
+-	struct ps3_vuart_port_device *dev;
++	struct ps3_system_bus_device *dev;
+ 
+ 	int region;
+ 	struct ps3av_pkt_av_get_hw_conf av_hw_conf;
+@@ -55,11 +52,13 @@ static struct ps3av {
+ 	u32 audio_port;
+ 	int ps3av_mode;
+ 	int ps3av_mode_old;
+-} ps3av;
+-
+-static struct ps3_vuart_port_device ps3av_dev = {
+-	.match_id = PS3_MATCH_ID_AV_SETTINGS
+-};
++	union {
++		struct ps3av_reply_hdr reply_hdr;
++		u8 raw[PS3AV_BUF_SIZE];
++	} recv_buf;
++	void (*flip_ctl)(int on, void *data);
++	void *flip_data;
++} *ps3av;
+ 
+ /* color space */
+ #define YUV444 PS3AV_CMD_VIDEO_CS_YUV444_8
+@@ -169,7 +168,7 @@ static int ps3av_parse_event_packet(cons
+ 	if (hdr->cid & PS3AV_EVENT_CMD_MASK) {
+ 		table = ps3av_search_cmd_table(hdr->cid, PS3AV_EVENT_CMD_MASK);
+ 		if (table)
+-			dev_dbg(&ps3av_dev.core,
++			dev_dbg(&ps3av->dev->core,
+ 				"recv event packet cid:%08x port:0x%x size:%d\n",
+ 				hdr->cid, ps3av_event_get_port_id(hdr->cid),
+ 				hdr->size);
+@@ -182,6 +181,41 @@ static int ps3av_parse_event_packet(cons
+ 	return 0;
+ }
+ 
++
++#define POLLING_INTERVAL  25	/* in msec */
++
++static int ps3av_vuart_write(struct ps3_system_bus_device *dev,
++			     const void *buf, unsigned long size)
++{
++	int error;
++	dev_dbg(&dev->core, " -> %s:%d\n", __func__, __LINE__);
++	error = ps3_vuart_write(dev, buf, size);
++	dev_dbg(&dev->core, " <- %s:%d\n", __func__, __LINE__);
++	return error ? error : size;
++}
++
++static int ps3av_vuart_read(struct ps3_system_bus_device *dev, void *buf,
++			    unsigned long size, int timeout)
++{
++	int error;
++	int loopcnt = 0;
++
++	dev_dbg(&dev->core, " -> %s:%d\n", __func__, __LINE__);
++	timeout = (timeout + POLLING_INTERVAL - 1) / POLLING_INTERVAL;
++	while (loopcnt++ <= timeout) {
++		error = ps3_vuart_read(dev, buf, size);
++		if (!error)
++			return size;
++		if (error != -EAGAIN) {
++			printk(KERN_ERR "%s: ps3_vuart_read failed %d\n",
++			       __func__, error);
++			return error;
++		}
++		msleep(POLLING_INTERVAL);
++	}
++	return -EWOULDBLOCK;
++}
++
+ static int ps3av_send_cmd_pkt(const struct ps3av_send_hdr *send_buf,
+ 			      struct ps3av_reply_hdr *recv_buf, int write_len,
+ 			      int read_len)
+@@ -190,13 +224,13 @@ static int ps3av_send_cmd_pkt(const stru
+ 	u32 cmd;
+ 	int event;
+ 
+-	if (!ps3av.available)
++	if (!ps3av)
+ 		return -ENODEV;
+ 
+ 	/* send pkt */
+-	res = ps3av_vuart_write(ps3av.dev, send_buf, write_len);
++	res = ps3av_vuart_write(ps3av->dev, send_buf, write_len);
+ 	if (res < 0) {
+-		dev_dbg(&ps3av_dev.core,
++		dev_dbg(&ps3av->dev->core,
+ 			"%s: ps3av_vuart_write() failed (result=%d)\n",
+ 			__func__, res);
+ 		return res;
+@@ -206,20 +240,20 @@ static int ps3av_send_cmd_pkt(const stru
+ 	cmd = send_buf->cid;
+ 	do {
+ 		/* read header */
+-		res = ps3av_vuart_read(ps3av.dev, recv_buf, PS3AV_HDR_SIZE,
++		res = ps3av_vuart_read(ps3av->dev, recv_buf, PS3AV_HDR_SIZE,
+ 				       timeout);
+ 		if (res != PS3AV_HDR_SIZE) {
+-			dev_dbg(&ps3av_dev.core,
++			dev_dbg(&ps3av->dev->core,
+ 				"%s: ps3av_vuart_read() failed (result=%d)\n",
+ 				__func__, res);
+ 			return res;
+ 		}
+ 
+ 		/* read body */
+-		res = ps3av_vuart_read(ps3av.dev, &recv_buf->cid,
++		res = ps3av_vuart_read(ps3av->dev, &recv_buf->cid,
+ 				       recv_buf->size, timeout);
+ 		if (res < 0) {
+-			dev_dbg(&ps3av_dev.core,
++			dev_dbg(&ps3av->dev->core,
+ 				"%s: ps3av_vuart_read() failed (result=%d)\n",
+ 				__func__, res);
+ 			return res;
+@@ -230,7 +264,7 @@ static int ps3av_send_cmd_pkt(const stru
+ 	} while (event);
+ 
+ 	if ((cmd | PS3AV_REPLY_BIT) != recv_buf->cid) {
+-		dev_dbg(&ps3av_dev.core, "%s: reply err (result=%x)\n",
++		dev_dbg(&ps3av->dev->core, "%s: reply err (result=%x)\n",
+ 			__func__, recv_buf->cid);
+ 		return -EINVAL;
+ 	}
+@@ -245,7 +279,7 @@ static int ps3av_process_reply_packet(st
+ 	int return_len;
+ 
+ 	if (recv_buf->version != PS3AV_VERSION) {
+-		dev_dbg(&ps3av_dev.core, "reply_packet invalid version:%x\n",
++		dev_dbg(&ps3av->dev->core, "reply_packet invalid version:%x\n",
+ 			recv_buf->version);
+ 		return -EFAULT;
+ 	}
+@@ -267,16 +301,11 @@ int ps3av_do_pkt(u32 cid, u16 send_len, 
+ 		 struct ps3av_send_hdr *buf)
+ {
+ 	int res = 0;
+-	static union {
+-		struct ps3av_reply_hdr reply_hdr;
+-		u8 raw[PS3AV_BUF_SIZE];
+-	} recv_buf;
+-
+ 	u32 *table;
+ 
+-	BUG_ON(!ps3av.available);
++	BUG_ON(!ps3av);
+ 
+-	mutex_lock(&ps3av.mutex);
++	mutex_lock(&ps3av->mutex);
+ 
+ 	table = ps3av_search_cmd_table(cid, PS3AV_CID_MASK);
+ 	BUG_ON(!table);
+@@ -288,7 +317,7 @@ int ps3av_do_pkt(u32 cid, u16 send_len, 
+ 	ps3av_set_hdr(cid, send_len, buf);
+ 
+ 	/* send packet via vuart */
+-	res = ps3av_send_cmd_pkt(buf, &recv_buf.reply_hdr, send_len,
++	res = ps3av_send_cmd_pkt(buf, &ps3av->recv_buf.reply_hdr, send_len,
+ 				 usr_buf_size);
+ 	if (res < 0) {
+ 		printk(KERN_ERR
+@@ -298,7 +327,7 @@ int ps3av_do_pkt(u32 cid, u16 send_len, 
+ 	}
+ 
+ 	/* process reply packet */
+-	res = ps3av_process_reply_packet(buf, &recv_buf.reply_hdr,
++	res = ps3av_process_reply_packet(buf, &ps3av->recv_buf.reply_hdr,
+ 					 usr_buf_size);
+ 	if (res < 0) {
+ 		printk(KERN_ERR "%s: put_return_status() failed (result=%d)\n",
+@@ -306,11 +335,11 @@ int ps3av_do_pkt(u32 cid, u16 send_len, 
+ 		goto err;
+ 	}
+ 
+-	mutex_unlock(&ps3av.mutex);
++	mutex_unlock(&ps3av->mutex);
+ 	return 0;
+ 
+       err:
+-	mutex_unlock(&ps3av.mutex);
++	mutex_unlock(&ps3av->mutex);
+ 	printk(KERN_ERR "%s: failed cid:%x res:%d\n", __func__, cid, res);
+ 	return res;
+ }
+@@ -319,11 +348,11 @@ static int ps3av_set_av_video_mute(u32 m
+ {
+ 	int i, num_of_av_port, res;
+ 
+-	num_of_av_port = ps3av.av_hw_conf.num_of_hdmi +
+-			 ps3av.av_hw_conf.num_of_avmulti;
++	num_of_av_port = ps3av->av_hw_conf.num_of_hdmi +
++			 ps3av->av_hw_conf.num_of_avmulti;
+ 	/* video mute on */
+ 	for (i = 0; i < num_of_av_port; i++) {
+-		res = ps3av_cmd_av_video_mute(1, &ps3av.av_port[i], mute);
++		res = ps3av_cmd_av_video_mute(1, &ps3av->av_port[i], mute);
+ 		if (res < 0)
+ 			return -1;
+ 	}
+@@ -335,13 +364,13 @@ static int ps3av_set_video_disable_sig(v
+ {
+ 	int i, num_of_hdmi_port, num_of_av_port, res;
+ 
+-	num_of_hdmi_port = ps3av.av_hw_conf.num_of_hdmi;
+-	num_of_av_port = ps3av.av_hw_conf.num_of_hdmi +
+-			 ps3av.av_hw_conf.num_of_avmulti;
++	num_of_hdmi_port = ps3av->av_hw_conf.num_of_hdmi;
++	num_of_av_port = ps3av->av_hw_conf.num_of_hdmi +
++			 ps3av->av_hw_conf.num_of_avmulti;
+ 
+ 	/* tv mute */
+ 	for (i = 0; i < num_of_hdmi_port; i++) {
+-		res = ps3av_cmd_av_tv_mute(ps3av.av_port[i],
++		res = ps3av_cmd_av_tv_mute(ps3av->av_port[i],
+ 					   PS3AV_CMD_MUTE_ON);
+ 		if (res < 0)
+ 			return -1;
+@@ -350,11 +379,11 @@ static int ps3av_set_video_disable_sig(v
+ 
+ 	/* video mute on */
+ 	for (i = 0; i < num_of_av_port; i++) {
+-		res = ps3av_cmd_av_video_disable_sig(ps3av.av_port[i]);
++		res = ps3av_cmd_av_video_disable_sig(ps3av->av_port[i]);
+ 		if (res < 0)
+ 			return -1;
+ 		if (i < num_of_hdmi_port) {
+-			res = ps3av_cmd_av_tv_mute(ps3av.av_port[i],
++			res = ps3av_cmd_av_tv_mute(ps3av->av_port[i],
+ 						   PS3AV_CMD_MUTE_OFF);
+ 			if (res < 0)
+ 				return -1;
+@@ -369,17 +398,17 @@ static int ps3av_set_audio_mute(u32 mute
+ {
+ 	int i, num_of_av_port, num_of_opt_port, res;
+ 
+-	num_of_av_port = ps3av.av_hw_conf.num_of_hdmi +
+-			 ps3av.av_hw_conf.num_of_avmulti;
+-	num_of_opt_port = ps3av.av_hw_conf.num_of_spdif;
++	num_of_av_port = ps3av->av_hw_conf.num_of_hdmi +
++			 ps3av->av_hw_conf.num_of_avmulti;
++	num_of_opt_port = ps3av->av_hw_conf.num_of_spdif;
+ 
+ 	for (i = 0; i < num_of_av_port; i++) {
+-		res = ps3av_cmd_av_audio_mute(1, &ps3av.av_port[i], mute);
++		res = ps3av_cmd_av_audio_mute(1, &ps3av->av_port[i], mute);
+ 		if (res < 0)
+ 			return -1;
+ 	}
+ 	for (i = 0; i < num_of_opt_port; i++) {
+-		res = ps3av_cmd_audio_mute(1, &ps3av.opt_port[i], mute);
++		res = ps3av_cmd_audio_mute(1, &ps3av->opt_port[i], mute);
+ 		if (res < 0)
+ 			return -1;
+ 	}
+@@ -394,40 +423,40 @@ int ps3av_set_audio_mode(u32 ch, u32 fs,
+ 	struct ps3av_pkt_audio_mode audio_mode;
+ 	u32 len = 0;
+ 
+-	num_of_audio = ps3av.av_hw_conf.num_of_hdmi +
+-		       ps3av.av_hw_conf.num_of_avmulti +
+-		       ps3av.av_hw_conf.num_of_spdif;
++	num_of_audio = ps3av->av_hw_conf.num_of_hdmi +
++		       ps3av->av_hw_conf.num_of_avmulti +
++		       ps3av->av_hw_conf.num_of_spdif;
+ 
+ 	avb_param.num_of_video_pkt = 0;
+ 	avb_param.num_of_audio_pkt = PS3AV_AVB_NUM_AUDIO;	/* always 0 */
+ 	avb_param.num_of_av_video_pkt = 0;
+-	avb_param.num_of_av_audio_pkt = ps3av.av_hw_conf.num_of_hdmi;
++	avb_param.num_of_av_audio_pkt = ps3av->av_hw_conf.num_of_hdmi;
+ 
+-	vid = video_mode_table[ps3av.ps3av_mode].vid;
++	vid = video_mode_table[ps3av->ps3av_mode].vid;
+ 
+ 	/* audio mute */
+ 	ps3av_set_audio_mute(PS3AV_CMD_MUTE_ON);
+ 
+ 	/* audio inactive */
+-	res = ps3av_cmd_audio_active(0, ps3av.audio_port);
++	res = ps3av_cmd_audio_active(0, ps3av->audio_port);
+ 	if (res < 0)
+-		dev_dbg(&ps3av_dev.core,
++		dev_dbg(&ps3av->dev->core,
+ 			"ps3av_cmd_audio_active OFF failed\n");
+ 
+ 	/* audio_pkt */
+ 	for (i = 0; i < num_of_audio; i++) {
+-		ps3av_cmd_set_audio_mode(&audio_mode, ps3av.av_port[i], ch, fs,
+-					 word_bits, format, source);
+-		if (i < ps3av.av_hw_conf.num_of_hdmi) {
++		ps3av_cmd_set_audio_mode(&audio_mode, ps3av->av_port[i], ch,
++					 fs, word_bits, format, source);
++		if (i < ps3av->av_hw_conf.num_of_hdmi) {
+ 			/* hdmi only */
+ 			len += ps3av_cmd_set_av_audio_param(&avb_param.buf[len],
+-							    ps3av.av_port[i],
++							    ps3av->av_port[i],
+ 							    &audio_mode, vid);
+ 		}
+ 		/* audio_mode pkt should be sent separately */
+ 		res = ps3av_cmd_audio_mode(&audio_mode);
+ 		if (res < 0)
+-			dev_dbg(&ps3av_dev.core,
++			dev_dbg(&ps3av->dev->core,
+ 				"ps3av_cmd_audio_mode failed, port:%x\n", i);
+ 	}
+ 
+@@ -435,15 +464,15 @@ int ps3av_set_audio_mode(u32 ch, u32 fs,
+ 	len += offsetof(struct ps3av_pkt_avb_param, buf);
+ 	res = ps3av_cmd_avb_param(&avb_param, len);
+ 	if (res < 0)
+-		dev_dbg(&ps3av_dev.core, "ps3av_cmd_avb_param failed\n");
++		dev_dbg(&ps3av->dev->core, "ps3av_cmd_avb_param failed\n");
+ 
+ 	/* audio mute */
+ 	ps3av_set_audio_mute(PS3AV_CMD_MUTE_OFF);
+ 
+ 	/* audio active */
+-	res = ps3av_cmd_audio_active(1, ps3av.audio_port);
++	res = ps3av_cmd_audio_active(1, ps3av->audio_port);
+ 	if (res < 0)
+-		dev_dbg(&ps3av_dev.core, "ps3av_cmd_audio_active ON failed\n");
++		dev_dbg(&ps3av->dev->core, "ps3av_cmd_audio_active ON failed\n");
+ 
+ 	return 0;
+ }
+@@ -456,7 +485,7 @@ static int ps3av_set_videomode(void)
+ 	ps3av_set_av_video_mute(PS3AV_CMD_MUTE_ON);
+ 
+ 	/* wake up ps3avd to do the actual video mode setting */
+-	queue_work(ps3av.wq, &ps3av.work);
++	queue_work(ps3av->wq, &ps3av->work);
+ 
+ 	return 0;
+ }
+@@ -473,8 +502,8 @@ static void ps3av_set_videomode_cont(u32
+ 
+ 	avb_param.num_of_video_pkt = PS3AV_AVB_NUM_VIDEO;	/* num of head */
+ 	avb_param.num_of_audio_pkt = 0;
+-	avb_param.num_of_av_video_pkt = ps3av.av_hw_conf.num_of_hdmi +
+-					ps3av.av_hw_conf.num_of_avmulti;
++	avb_param.num_of_av_video_pkt = ps3av->av_hw_conf.num_of_hdmi +
++					ps3av->av_hw_conf.num_of_avmulti;
+ 	avb_param.num_of_av_audio_pkt = 0;
+ 
+ 	/* video signal off */
+@@ -484,21 +513,21 @@ static void ps3av_set_videomode_cont(u32
+ 	if (id & PS3AV_MODE_HDCP_OFF) {
+ 		res = ps3av_cmd_av_hdmi_mode(PS3AV_CMD_AV_HDMI_HDCP_OFF);
+ 		if (res == PS3AV_STATUS_UNSUPPORTED_HDMI_MODE)
+-			dev_dbg(&ps3av_dev.core, "Not supported\n");
++			dev_dbg(&ps3av->dev->core, "Not supported\n");
+ 		else if (res)
+-			dev_dbg(&ps3av_dev.core,
++			dev_dbg(&ps3av->dev->core,
+ 				"ps3av_cmd_av_hdmi_mode failed\n");
+ 	} else if (old_id & PS3AV_MODE_HDCP_OFF) {
+ 		res = ps3av_cmd_av_hdmi_mode(PS3AV_CMD_AV_HDMI_MODE_NORMAL);
+ 		if (res < 0 && res != PS3AV_STATUS_UNSUPPORTED_HDMI_MODE)
+-			dev_dbg(&ps3av_dev.core,
++			dev_dbg(&ps3av->dev->core,
+ 				"ps3av_cmd_av_hdmi_mode failed\n");
+ 	}
+ 
+ 	/* video_pkt */
+ 	for (i = 0; i < avb_param.num_of_video_pkt; i++)
+ 		len += ps3av_cmd_set_video_mode(&avb_param.buf[len],
+-						ps3av.head[i], video_mode->vid,
++						ps3av->head[i], video_mode->vid,
+ 						video_mode->fmt, id);
+ 	/* av_video_pkt */
+ 	for (i = 0; i < avb_param.num_of_av_video_pkt; i++) {
+@@ -507,12 +536,12 @@ static void ps3av_set_videomode_cont(u32
+ 		else
+ 			av_video_cs = video_mode->cs;
+ #ifndef PS3AV_HDMI_YUV
+-		if (ps3av.av_port[i] == PS3AV_CMD_AVPORT_HDMI_0 ||
+-		    ps3av.av_port[i] == PS3AV_CMD_AVPORT_HDMI_1)
++		if (ps3av->av_port[i] == PS3AV_CMD_AVPORT_HDMI_0 ||
++		    ps3av->av_port[i] == PS3AV_CMD_AVPORT_HDMI_1)
+ 			av_video_cs = RGB8;	/* use RGB for HDMI */
+ #endif
+ 		len += ps3av_cmd_set_av_video_cs(&avb_param.buf[len],
+-						 ps3av.av_port[i],
++						 ps3av->av_port[i],
+ 						 video_mode->vid, av_video_cs,
+ 						 video_mode->aspect, id);
+ 	}
+@@ -524,7 +553,7 @@ static void ps3av_set_videomode_cont(u32
+ 		       "%s: Command failed. Please try your request again. \n",
+ 		       __func__);
+ 	else if (res)
+-		dev_dbg(&ps3av_dev.core, "ps3av_cmd_avb_param failed\n");
++		dev_dbg(&ps3av->dev->core, "ps3av_cmd_avb_param failed\n");
+ 
+ 	msleep(1500);
+ 	/* av video mute */
+@@ -533,8 +562,8 @@ static void ps3av_set_videomode_cont(u32
+ 
+ static void ps3avd(struct work_struct *work)
+ {
+-	ps3av_set_videomode_cont(ps3av.ps3av_mode, ps3av.ps3av_mode_old);
+-	complete(&ps3av.done);
++	ps3av_set_videomode_cont(ps3av->ps3av_mode, ps3av->ps3av_mode_old);
++	complete(&ps3av->done);
+ }
+ 
+ static int ps3av_vid2table_id(int vid)
+@@ -601,7 +630,7 @@ static int ps3av_hdmi_get_vid(struct ps3
+ 		return vid;
+ 	}
+ 
+-	if (ps3av.region & PS3AV_REGION_60)
++	if (ps3av->region & PS3AV_REGION_60)
+ 		vid = PS3AV_DEFAULT_HDMI_VID_REG_60;
+ 	else
+ 		vid = PS3AV_DEFAULT_HDMI_VID_REG_50;
+@@ -643,16 +672,16 @@ static int ps3av_auto_videomode(struct p
+ 		vid = PS3AV_DEFAULT_DVI_VID;
+ 	} else if (vid == -1) {
+ 		/* no HDMI interface or HDMI is off */
+-		if (ps3av.region & PS3AV_REGION_60)
++		if (ps3av->region & PS3AV_REGION_60)
+ 			vid = PS3AV_DEFAULT_AVMULTI_VID_REG_60;
+ 		else
+ 			vid = PS3AV_DEFAULT_AVMULTI_VID_REG_50;
+-		if (ps3av.region & PS3AV_REGION_RGB)
++		if (ps3av->region & PS3AV_REGION_RGB)
+ 			rgb = PS3AV_MODE_RGB;
+ 	} else if (boot) {
+ 		/* HDMI: using DEFAULT HDMI_VID while booting up */
+ 		info = &monitor_info.info;
+-		if (ps3av.region & PS3AV_REGION_60) {
++		if (ps3av->region & PS3AV_REGION_60) {
+ 			if (info->res_60.res_bits & PS3AV_RESBIT_720x480P)
+ 				vid = PS3AV_DEFAULT_HDMI_VID_REG_60;
+ 			else if (info->res_50.res_bits & PS3AV_RESBIT_720x576P)
+@@ -715,14 +744,14 @@ int ps3av_set_video_mode(u32 id, int boo
+ 
+ 	size = ARRAY_SIZE(video_mode_table);
+ 	if ((id & PS3AV_MODE_MASK) > size - 1 || id < 0) {
+-		dev_dbg(&ps3av_dev.core, "%s: error id :%d\n", __func__, id);
++		dev_dbg(&ps3av->dev->core, "%s: error id :%d\n", __func__, id);
+ 		return -EINVAL;
+ 	}
+ 
+ 	/* auto mode */
+ 	option = id & ~PS3AV_MODE_MASK;
+ 	if ((id & PS3AV_MODE_MASK) == 0) {
+-		id = ps3av_auto_videomode(&ps3av.av_hw_conf, boot);
++		id = ps3av_auto_videomode(&ps3av->av_hw_conf, boot);
+ 		if (id < 1) {
+ 			printk(KERN_ERR "%s: invalid id :%d\n", __func__, id);
+ 			return -EINVAL;
+@@ -731,11 +760,11 @@ int ps3av_set_video_mode(u32 id, int boo
+ 	}
+ 
+ 	/* set videomode */
+-	wait_for_completion(&ps3av.done);
+-	ps3av.ps3av_mode_old = ps3av.ps3av_mode;
+-	ps3av.ps3av_mode = id;
++	wait_for_completion(&ps3av->done);
++	ps3av->ps3av_mode_old = ps3av->ps3av_mode;
++	ps3av->ps3av_mode = id;
+ 	if (ps3av_set_videomode())
+-		ps3av.ps3av_mode = ps3av.ps3av_mode_old;
++		ps3av->ps3av_mode = ps3av->ps3av_mode_old;
+ 
+ 	return 0;
+ }
+@@ -744,7 +773,7 @@ EXPORT_SYMBOL_GPL(ps3av_set_video_mode);
+ 
+ int ps3av_get_auto_mode(int boot)
+ {
+-	return ps3av_auto_videomode(&ps3av.av_hw_conf, boot);
++	return ps3av_auto_videomode(&ps3av->av_hw_conf, boot);
+ }
+ 
+ EXPORT_SYMBOL_GPL(ps3av_get_auto_mode);
+@@ -772,7 +801,7 @@ EXPORT_SYMBOL_GPL(ps3av_set_mode);
+ 
+ int ps3av_get_mode(void)
+ {
+-	return ps3av.ps3av_mode;
++	return ps3av ? ps3av->ps3av_mode : 0;
+ }
+ 
+ EXPORT_SYMBOL_GPL(ps3av_get_mode);
+@@ -842,82 +871,60 @@ int ps3av_audio_mute(int mute)
+ 
+ EXPORT_SYMBOL_GPL(ps3av_audio_mute);
+ 
+-int ps3av_dev_open(void)
++void ps3av_register_flip_ctl(void (*flip_ctl)(int on, void *data),
++			     void *flip_data)
+ {
+-	int status = 0;
+-
+-	mutex_lock(&ps3av.mutex);
+-	if (!ps3av.open_count++) {
+-		status = lv1_gpu_open(0);
+-		if (status) {
+-			printk(KERN_ERR "%s: lv1_gpu_open failed %d\n",
+-			       __func__, status);
+-			ps3av.open_count--;
+-		}
+-	}
+-	mutex_unlock(&ps3av.mutex);
+-
+-	return status;
++	mutex_lock(&ps3av->mutex);
++	ps3av->flip_ctl = flip_ctl;
++	ps3av->flip_data = flip_data;
++	mutex_unlock(&ps3av->mutex);
+ }
++EXPORT_SYMBOL_GPL(ps3av_register_flip_ctl);
+ 
+-EXPORT_SYMBOL_GPL(ps3av_dev_open);
+-
+-int ps3av_dev_close(void)
++void ps3av_flip_ctl(int on)
+ {
+-	int status = 0;
+-
+-	mutex_lock(&ps3av.mutex);
+-	if (ps3av.open_count <= 0) {
+-		printk(KERN_ERR "%s: GPU already closed\n", __func__);
+-		status = -1;
+-	} else if (!--ps3av.open_count) {
+-		status = lv1_gpu_close();
+-		if (status)
+-			printk(KERN_WARNING "%s: lv1_gpu_close failed %d\n",
+-			       __func__, status);
+-	}
+-	mutex_unlock(&ps3av.mutex);
+-
+-	return status;
++	mutex_lock(&ps3av->mutex);
++	if (ps3av->flip_ctl)
++		ps3av->flip_ctl(on, ps3av->flip_data);
++	mutex_unlock(&ps3av->mutex);
+ }
+ 
+-EXPORT_SYMBOL_GPL(ps3av_dev_close);
+-
+-static int ps3av_probe(struct ps3_vuart_port_device *dev)
++static int ps3av_probe(struct ps3_system_bus_device *dev)
+ {
+ 	int res;
+ 	u32 id;
+ 
+-	dev_dbg(&ps3av_dev.core, "init ...\n");
+-	dev_dbg(&ps3av_dev.core, "  timeout=%d\n", timeout);
+-
+-	memset(&ps3av, 0, sizeof(ps3av));
++	dev_dbg(&dev->core, " -> %s:%d\n", __func__, __LINE__);
++	dev_dbg(&dev->core, "  timeout=%d\n", timeout);
+ 
+-	mutex_init(&ps3av.mutex);
+-	ps3av.ps3av_mode = 0;
+-	ps3av.dev = dev;
+-
+-	INIT_WORK(&ps3av.work, ps3avd);
+-	init_completion(&ps3av.done);
+-	complete(&ps3av.done);
+-	ps3av.wq = create_singlethread_workqueue("ps3avd");
+-	if (!ps3av.wq)
++	ps3av = kzalloc(sizeof(*ps3av), GFP_KERNEL);
++	if (!ps3av)
+ 		return -ENOMEM;
+ 
+-	ps3av.available = 1;
++	mutex_init(&ps3av->mutex);
++	ps3av->ps3av_mode = 0;
++	ps3av->dev = dev;
++
++	INIT_WORK(&ps3av->work, ps3avd);
++	init_completion(&ps3av->done);
++	complete(&ps3av->done);
++	ps3av->wq = create_singlethread_workqueue("ps3avd");
++	if (!ps3av->wq)
++		goto fail;
++
+ 	switch (ps3_os_area_get_av_multi_out()) {
+ 	case PS3_PARAM_AV_MULTI_OUT_NTSC:
+-		ps3av.region = PS3AV_REGION_60;
++		ps3av->region = PS3AV_REGION_60;
+ 		break;
+ 	case PS3_PARAM_AV_MULTI_OUT_PAL_YCBCR:
+ 	case PS3_PARAM_AV_MULTI_OUT_SECAM:
+-		ps3av.region = PS3AV_REGION_50;
++		ps3av->region = PS3AV_REGION_50;
+ 		break;
+ 	case PS3_PARAM_AV_MULTI_OUT_PAL_RGB:
+-		ps3av.region = PS3AV_REGION_50 | PS3AV_REGION_RGB;
++		ps3av->region = PS3AV_REGION_50 | PS3AV_REGION_RGB;
+ 		break;
+ 	default:
+-		ps3av.region = PS3AV_REGION_60;
++		ps3av->region = PS3AV_REGION_60;
+ 		break;
+ 	}
+ 
+@@ -927,38 +934,48 @@ static int ps3av_probe(struct ps3_vuart_
+ 		printk(KERN_ERR "%s: ps3av_cmd_init failed %d\n", __func__,
+ 		       res);
+ 
+-	ps3av_get_hw_conf(&ps3av);
+-	id = ps3av_auto_videomode(&ps3av.av_hw_conf, 1);
+-	mutex_lock(&ps3av.mutex);
+-	ps3av.ps3av_mode = id;
+-	mutex_unlock(&ps3av.mutex);
++	ps3av_get_hw_conf(ps3av);
++	id = ps3av_auto_videomode(&ps3av->av_hw_conf, 1);
++	mutex_lock(&ps3av->mutex);
++	ps3av->ps3av_mode = id;
++	mutex_unlock(&ps3av->mutex);
+ 
+-	dev_dbg(&ps3av_dev.core, "init...done\n");
++	dev_dbg(&dev->core, " <- %s:%d\n", __func__, __LINE__);
+ 
+ 	return 0;
++
++fail:
++	kfree(ps3av);
++	ps3av = NULL;
++	return -ENOMEM;
+ }
+ 
+-static int ps3av_remove(struct ps3_vuart_port_device *dev)
++static int ps3av_remove(struct ps3_system_bus_device *dev)
+ {
+-	if (ps3av.available) {
++	dev_dbg(&dev->core, " -> %s:%d\n", __func__, __LINE__);
++	if (ps3av) {
+ 		ps3av_cmd_fin();
+-		if (ps3av.wq)
+-			destroy_workqueue(ps3av.wq);
+-		ps3av.available = 0;
++		if (ps3av->wq)
++			destroy_workqueue(ps3av->wq);
++		kfree(ps3av);
++		ps3av = NULL;
+ 	}
+ 
++	dev_dbg(&dev->core, " <- %s:%d\n", __func__, __LINE__);
+ 	return 0;
+ }
+ 
+-static void ps3av_shutdown(struct ps3_vuart_port_device *dev)
++static void ps3av_shutdown(struct ps3_system_bus_device *dev)
+ {
++	dev_dbg(&dev->core, " -> %s:%d\n", __func__, __LINE__);
+ 	ps3av_remove(dev);
++	dev_dbg(&dev->core, " <- %s:%d\n", __func__, __LINE__);
+ }
+ 
+ static struct ps3_vuart_port_driver ps3av_driver = {
+-	.match_id = PS3_MATCH_ID_AV_SETTINGS,
+ 	.core = {
+-		.name = "ps3_av",
++		.match_id = PS3_MATCH_ID_AV_SETTINGS,
++		.core = {.name = "ps3_av",},
+ 	},
+ 	.probe = ps3av_probe,
+ 	.remove = ps3av_remove,
+@@ -972,6 +989,8 @@ static int ps3av_module_init(void)
+ 	if (!firmware_has_feature(FW_FEATURE_PS3_LV1))
+ 		return -ENODEV;
+ 
++	pr_debug(" -> %s:%d\n", __func__, __LINE__);
++
+ 	error = ps3_vuart_port_driver_register(&ps3av_driver);
+ 	if (error) {
+ 		printk(KERN_ERR
+@@ -980,20 +999,21 @@ static int ps3av_module_init(void)
+ 		return error;
+ 	}
+ 
+-	error = ps3_vuart_port_device_register(&ps3av_dev);
+-	if (error)
+-		printk(KERN_ERR
+-		       "%s: ps3_vuart_port_device_register failed %d\n",
+-		       __func__, error);
+-
++	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+ 	return error;
+ }
+ 
+ static void __exit ps3av_module_exit(void)
+ {
+-	device_unregister(&ps3av_dev.core);
++	pr_debug(" -> %s:%d\n", __func__, __LINE__);
+ 	ps3_vuart_port_driver_unregister(&ps3av_driver);
++	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+ }
+ 
+ subsys_initcall(ps3av_module_init);
+ module_exit(ps3av_module_exit);
++
++MODULE_LICENSE("GPL v2");
++MODULE_DESCRIPTION("PS3 AV Settings Driver");
++MODULE_AUTHOR("Sony Computer Entertainment Inc.");
++MODULE_ALIAS(PS3_MODULE_ALIAS_AV_SETTINGS);
+--- a/drivers/ps3/ps3av_cmd.c
++++ b/drivers/ps3/ps3av_cmd.c
+@@ -868,7 +868,7 @@ int ps3av_cmd_avb_param(struct ps3av_pkt
+ {
+ 	int res;
+ 
+-	ps3fb_flip_ctl(0);	/* flip off */
++	ps3av_flip_ctl(0);	/* flip off */
+ 
+ 	/* avb packet */
+ 	res = ps3av_do_pkt(PS3AV_CID_AVB_PARAM, send_len, sizeof(*avb),
+@@ -882,7 +882,7 @@ int ps3av_cmd_avb_param(struct ps3av_pkt
+ 			 res);
+ 
+       out:
+-	ps3fb_flip_ctl(1);	/* flip on */
++	ps3av_flip_ctl(1);	/* flip on */
+ 	return res;
+ }
+ 
+@@ -1003,34 +1003,3 @@ void ps3av_cmd_av_monitor_info_dump(cons
+ 		| PS3AV_CMD_AV_LAYOUT_176 \
+ 		| PS3AV_CMD_AV_LAYOUT_192)
+ 
+-/************************* vuart ***************************/
+-
+-#define POLLING_INTERVAL  25	/* in msec */
+-
+-int ps3av_vuart_write(struct ps3_vuart_port_device *dev, const void *buf,
+-		      unsigned long size)
+-{
+-	int error = ps3_vuart_write(dev, buf, size);
+-	return error ? error : size;
+-}
+-
+-int ps3av_vuart_read(struct ps3_vuart_port_device *dev, void *buf,
+-		     unsigned long size, int timeout)
+-{
+-	int error;
+-	int loopcnt = 0;
+-
+-	timeout = (timeout + POLLING_INTERVAL - 1) / POLLING_INTERVAL;
+-	while (loopcnt++ <= timeout) {
+-		error = ps3_vuart_read(dev, buf, size);
+-		if (!error)
+-			return size;
+-		if (error != -EAGAIN) {
+-			printk(KERN_ERR "%s: ps3_vuart_read failed %d\n",
+-			       __func__, error);
+-			return error;
+-		}
+-		msleep(POLLING_INTERVAL);
+-	}
+-	return -EWOULDBLOCK;
+-}
+--- a/include/asm-powerpc/ps3av.h
++++ b/include/asm-powerpc/ps3av.h
+@@ -1,20 +1,23 @@
+ /*
+- * Copyright (C) 2006 Sony Computer Entertainment Inc.
+- * Copyright 2006, 2007 Sony Corporation
++ *  PS3 AV backend support.
+  *
+- * This program is free software; you can redistribute it and/or modify it
+- * under the terms of the GNU General Public License as published
+- * by the Free Software Foundation; version 2 of the License.
++ *  Copyright (C) 2007 Sony Computer Entertainment Inc.
++ *  Copyright 2007 Sony Corp.
+  *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- * General Public License for more details.
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
+  *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 + *  This program is distributed in the hope that it will be useful,
 + *  but WITHOUT ANY WARRANTY; without even the implied warranty of
 + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -71,617 +909,33 @@ Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 + *  You should have received a copy of the GNU General Public License
 + *  along with this program; if not, write to the Free Software
 + *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+#define DEBUG
-+#include <linux/kernel.h>
-+#include <asm/ps3.h>
-+
-+/**
-+ * Staticly linked routines that allow late binding of a loaded sys-manager
-+ * module.
-+ */
-+
-+static struct ps3_sys_manager_ops ps3_sys_manager_ops;
-+
-+/**
-+ * ps3_register_sys_manager_ops - Bind ps3_sys_manager_ops to a module.
-+ * @ops: struct ps3_sys_manager_ops.
-+ *
-+ * To be called from ps3_sys_manager_probe() and ps3_sys_manager_remove() to
-+ * register call back ops for power control.  Copies data to the static
-+ * variable ps3_sys_manager_ops.
-+ */
-+
-+void ps3_sys_manager_register_ops(const struct ps3_sys_manager_ops *ops)
-+{
-+	BUG_ON(!ops);
-+	BUG_ON(!ops->dev);
-+	ps3_sys_manager_ops = ops ? *ops : ps3_sys_manager_ops;
-+}
-+EXPORT_SYMBOL_GPL(ps3_sys_manager_register_ops);
-+
-+void ps3_sys_manager_power_off(void)
-+{
-+	if (ps3_sys_manager_ops.power_off)
-+		ps3_sys_manager_ops.power_off(ps3_sys_manager_ops.dev);
-+
-+	printk(KERN_EMERG "System Halted, OK to turn off power\n");
-+	local_irq_disable();
-+	while(1)
-+		(void)0;
-+}
-+
-+void ps3_sys_manager_restart(void)
-+{
-+	if (ps3_sys_manager_ops.restart)
-+		ps3_sys_manager_ops.restart(ps3_sys_manager_ops.dev);
-+
-+	printk(KERN_EMERG "System Halted, OK to turn off power\n");
-+	local_irq_disable();
-+	while(1)
-+		(void)0;
-+}
---- a/drivers/ps3/sys-manager.c
-+++ b/drivers/ps3/sys-manager.c
-@@ -35,7 +35,7 @@ MODULE_DESCRIPTION("PS3 System Manager")
- /**
-  * ps3_sys_manager - PS3 system manager driver.
-  *
-- * The system manager provides an asyncronous system event notification
-+ * The system manager provides an asynchronous system event notification
-  * mechanism for reporting events like thermal alert and button presses to
-  * guests.  It also provides support to control system shutdown and startup.
-  *
-@@ -52,6 +52,7 @@ MODULE_DESCRIPTION("PS3 System Manager")
-  * @size: Header size in bytes, curently 16.
-  * @payload_size: Message payload size in bytes.
-  * @service_id: Message type, one of enum ps3_sys_manager_service_id.
-+ * @request_tag: Unique number to identify reply.
   */
- 
- struct ps3_sys_manager_header {
-@@ -61,29 +62,49 @@ struct ps3_sys_manager_header {
- 	u16 reserved_1;
- 	u32 payload_size;
- 	u16 service_id;
--	u16 reserved_2[3];
-+	u16 reserved_2;
-+	u32 request_tag;
- };
- 
-+#define dump_sm_header(_h) _dump_sm_header(_h, __func__, __LINE__)
-+static void __maybe_unused _dump_sm_header(
-+	const struct ps3_sys_manager_header* h, const char *func, int line)
-+{
-+	pr_debug("%s:%d: version:      %xh\n", func, line, h->version);
-+	pr_debug("%s:%d: size:         %xh\n", func, line, h->size);
-+	pr_debug("%s:%d: payload_size: %xh\n", func, line, h->payload_size);
-+	pr_debug("%s:%d: service_id:   %xh\n", func, line, h->service_id);
-+	pr_debug("%s:%d: request_tag:  %xh\n", func, line, h->request_tag);
-+}
 +
- /**
-- * @PS3_SM_RX_MSG_LEN - System manager received message length.
-+ * @PS3_SM_RX_MSG_LEN_MIN - Shortest received message length.
-+ * @PS3_SM_RX_MSG_LEN_MAX - Longest received message length.
-  *
-- * Currently all messages received from the system manager are the same length
-- * (16 bytes header + 16 bytes payload = 32 bytes).  This knowlege is used to
-- * simplify the logic.
-+ * Currently all messages received from the system manager are either
-+ * (16 bytes header + 8 bytes payload = 24 bytes) or (16 bytes header
-+ * + 16 bytes payload = 32 bytes).  This knowlege is used to simplify
-+ * the logic.
-  */
+ #ifndef _ASM_POWERPC_PS3AV_H_
+ #define _ASM_POWERPC_PS3AV_H_
  
- enum {
--	PS3_SM_RX_MSG_LEN = 32,
-+	PS3_SM_RX_MSG_LEN_MIN = 24,
-+	PS3_SM_RX_MSG_LEN_MAX = 32,
- };
+@@ -705,12 +708,6 @@ static inline void ps3av_cmd_av_monitor_
+ extern int ps3av_cmd_video_get_monitor_info(struct ps3av_pkt_av_get_monitor_info *,
+ 					    u32);
  
- /**
-  * enum ps3_sys_manager_service_id - Message header service_id.
-- * @PS3_SM_SERVICE_ID_REQUEST:      guest --> sys_manager.
-- * @PS3_SM_SERVICE_ID_COMMAND:      guest <-- sys_manager.
-- * @PS3_SM_SERVICE_ID_RESPONSE:     guest --> sys_manager.
-- * @PS3_SM_SERVICE_ID_SET_ATTR:     guest --> sys_manager.
-- * @PS3_SM_SERVICE_ID_EXTERN_EVENT: guest <-- sys_manager.
-- * @PS3_SM_SERVICE_ID_SET_NEXT_OP:  guest --> sys_manager.
-+ * @PS3_SM_SERVICE_ID_REQUEST:       guest --> sys_manager.
-+ * @PS3_SM_SERVICE_ID_REQUEST_ERROR: guest <-- sys_manager.
-+ * @PS3_SM_SERVICE_ID_COMMAND:       guest <-- sys_manager.
-+ * @PS3_SM_SERVICE_ID_RESPONSE:      guest --> sys_manager.
-+ * @PS3_SM_SERVICE_ID_SET_ATTR:      guest --> sys_manager.
-+ * @PS3_SM_SERVICE_ID_EXTERN_EVENT:  guest <-- sys_manager.
-+ * @PS3_SM_SERVICE_ID_SET_NEXT_OP:   guest --> sys_manager.
-+ *
-+ * PS3_SM_SERVICE_ID_REQUEST_ERROR is returned for invalid data values in a
-+ * a PS3_SM_SERVICE_ID_REQUEST message.  It also seems to be returned when
-+ * a REQUEST message is sent at the wrong time.
-  */
- 
- enum ps3_sys_manager_service_id {
-@@ -93,6 +114,7 @@ enum ps3_sys_manager_service_id {
- 	PS3_SM_SERVICE_ID_COMMAND = 3,
- 	PS3_SM_SERVICE_ID_EXTERN_EVENT = 4,
- 	PS3_SM_SERVICE_ID_SET_NEXT_OP = 5,
-+	PS3_SM_SERVICE_ID_REQUEST_ERROR = 6,
- 	PS3_SM_SERVICE_ID_SET_ATTR = 8,
- };
- 
-@@ -185,11 +207,21 @@ enum ps3_sys_manager_cmd {
- };
- 
- /**
-+ * ps3_sm_force_power_off - Poweroff helper.
-+ *
-+ * A global variable used to force a poweroff when the power button has
-+ * been pressed irrespective of how init handles the ctrl_alt_del signal.
-+ *
-+ */
-+
-+static unsigned int ps3_sm_force_power_off;
-+
-+/**
-  * ps3_sys_manager_write - Helper to write a two part message to the vuart.
-  *
-  */
- 
--static int ps3_sys_manager_write(struct ps3_vuart_port_device *dev,
-+static int ps3_sys_manager_write(struct ps3_system_bus_device *dev,
- 	const struct ps3_sys_manager_header *header, const void *payload)
- {
- 	int result;
-@@ -213,15 +245,10 @@ static int ps3_sys_manager_write(struct 
-  *
-  */
- 
--static int ps3_sys_manager_send_attr(struct ps3_vuart_port_device *dev,
-+static int ps3_sys_manager_send_attr(struct ps3_system_bus_device *dev,
- 	enum ps3_sys_manager_attr attr)
- {
--	static const struct ps3_sys_manager_header header = {
--		.version = 1,
--		.size = 16,
--		.payload_size = 16,
--		.service_id = PS3_SM_SERVICE_ID_SET_ATTR,
--	};
-+	struct ps3_sys_manager_header header;
- 	struct {
- 		u8 version;
- 		u8 reserved_1[3];
-@@ -232,6 +259,12 @@ static int ps3_sys_manager_send_attr(str
- 
- 	dev_dbg(&dev->core, "%s:%d: %xh\n", __func__, __LINE__, attr);
- 
-+	memset(&header, 0, sizeof(header));
-+	header.version = 1;
-+	header.size = 16;
-+	header.payload_size = 16;
-+	header.service_id = PS3_SM_SERVICE_ID_SET_ATTR;
-+
- 	memset(&payload, 0, sizeof(payload));
- 	payload.version = 1;
- 	payload.attribute = attr;
-@@ -245,16 +278,11 @@ static int ps3_sys_manager_send_attr(str
-  * Tell the system manager what to do after this lpar is destroyed.
-  */
- 
--static int ps3_sys_manager_send_next_op(struct ps3_vuart_port_device *dev,
-+static int ps3_sys_manager_send_next_op(struct ps3_system_bus_device *dev,
- 	enum ps3_sys_manager_next_op op,
- 	enum ps3_sys_manager_wake_source wake_source)
- {
--	static const struct ps3_sys_manager_header header = {
--		.version = 1,
--		.size = 16,
--		.payload_size = 16,
--		.service_id = PS3_SM_SERVICE_ID_SET_NEXT_OP,
--	};
-+	struct ps3_sys_manager_header header;
- 	struct {
- 		u8 version;
- 		u8 type;
-@@ -268,6 +296,12 @@ static int ps3_sys_manager_send_next_op(
- 
- 	dev_dbg(&dev->core, "%s:%d: (%xh)\n", __func__, __LINE__, op);
- 
-+	memset(&header, 0, sizeof(header));
-+	header.version = 1;
-+	header.size = 16;
-+	header.payload_size = 16;
-+	header.service_id = PS3_SM_SERVICE_ID_SET_NEXT_OP;
-+
- 	memset(&payload, 0, sizeof(payload));
- 	payload.version = 3;
- 	payload.type = op;
-@@ -286,32 +320,35 @@ static int ps3_sys_manager_send_next_op(
-  * the command is then communicated back to the system manager with a response
-  * message.
-  *
-- * Currently, the only supported request it the 'shutdown self' request.
-+ * Currently, the only supported request is the 'shutdown self' request.
-  */
- 
--static int ps3_sys_manager_send_request_shutdown(struct ps3_vuart_port_device *dev)
-+static int ps3_sys_manager_send_request_shutdown(
-+	struct ps3_system_bus_device *dev)
- {
--	static const struct ps3_sys_manager_header header = {
--		.version = 1,
--		.size = 16,
--		.payload_size = 16,
--		.service_id = PS3_SM_SERVICE_ID_REQUEST,
--	};
-+	struct ps3_sys_manager_header header;
- 	struct {
- 		u8 version;
- 		u8 type;
- 		u8 gos_id;
- 		u8 reserved_1[13];
--	} static const payload = {
--		.version = 1,
--		.type = 1, /* shutdown */
--		.gos_id = 0, /* self */
--	};
-+	} payload;
- 
- 	BUILD_BUG_ON(sizeof(payload) != 16);
- 
- 	dev_dbg(&dev->core, "%s:%d\n", __func__, __LINE__);
- 
-+	memset(&header, 0, sizeof(header));
-+	header.version = 1;
-+	header.size = 16;
-+	header.payload_size = 16;
-+	header.service_id = PS3_SM_SERVICE_ID_REQUEST;
-+
-+	memset(&payload, 0, sizeof(payload));
-+	payload.version = 1;
-+	payload.type = 1; /* shutdown */
-+	payload.gos_id = 0; /* self */
-+
- 	return ps3_sys_manager_write(dev, &header, &payload);
- }
- 
-@@ -323,15 +360,10 @@ static int ps3_sys_manager_send_request_
-  * failure of a command sent by the system manager.
-  */
- 
--static int ps3_sys_manager_send_response(struct ps3_vuart_port_device *dev,
-+static int ps3_sys_manager_send_response(struct ps3_system_bus_device *dev,
- 	u64 status)
- {
--	static const struct ps3_sys_manager_header header = {
--		.version = 1,
--		.size = 16,
--		.payload_size = 16,
--		.service_id = PS3_SM_SERVICE_ID_RESPONSE,
--	};
-+	struct ps3_sys_manager_header header;
- 	struct {
- 		u8 version;
- 		u8 reserved_1[3];
-@@ -344,6 +376,12 @@ static int ps3_sys_manager_send_response
- 	dev_dbg(&dev->core, "%s:%d: (%s)\n", __func__, __LINE__,
- 		(status ? "nak" : "ack"));
- 
-+	memset(&header, 0, sizeof(header));
-+	header.version = 1;
-+	header.size = 16;
-+	header.payload_size = 16;
-+	header.service_id = PS3_SM_SERVICE_ID_RESPONSE;
-+
- 	memset(&payload, 0, sizeof(payload));
- 	payload.version = 1;
- 	payload.status = status;
-@@ -356,7 +394,7 @@ static int ps3_sys_manager_send_response
-  *
-  */
- 
--static int ps3_sys_manager_handle_event(struct ps3_vuart_port_device *dev)
-+static int ps3_sys_manager_handle_event(struct ps3_system_bus_device *dev)
- {
- 	int result;
- 	struct {
-@@ -370,7 +408,7 @@ static int ps3_sys_manager_handle_event(
- 	BUILD_BUG_ON(sizeof(event) != 16);
- 
- 	result = ps3_vuart_read(dev, &event, sizeof(event));
--	BUG_ON(result);
-+	BUG_ON(result && "need to retry here");
- 
- 	if (event.version != 1) {
- 		dev_dbg(&dev->core, "%s:%d: unsupported event version (%u)\n",
-@@ -382,11 +420,24 @@ static int ps3_sys_manager_handle_event(
- 	case PS3_SM_EVENT_POWER_PRESSED:
- 		dev_dbg(&dev->core, "%s:%d: POWER_PRESSED\n",
- 			__func__, __LINE__);
-+		ps3_sm_force_power_off = 1;
-+		wmb();
-+		kill_cad_pid(SIGINT, 1); /* ctrl_alt_del */
- 		break;
- 	case PS3_SM_EVENT_POWER_RELEASED:
- 		dev_dbg(&dev->core, "%s:%d: POWER_RELEASED (%u ms)\n",
- 			__func__, __LINE__, event.value);
--		kill_cad_pid(SIGINT, 1);
-+		break;
-+	case PS3_SM_EVENT_RESET_PRESSED:
-+		dev_dbg(&dev->core, "%s:%d: RESET_PRESSED\n",
-+			__func__, __LINE__);
-+		ps3_sm_force_power_off = 0;
-+		wmb();
-+		kill_cad_pid(SIGINT, 1); /* ctrl_alt_del */
-+		break;
-+	case PS3_SM_EVENT_RESET_RELEASED:
-+		dev_dbg(&dev->core, "%s:%d: RESET_RELEASED (%u ms)\n",
-+			__func__, __LINE__, event.value);
- 		break;
- 	case PS3_SM_EVENT_THERMAL_ALERT:
- 		dev_dbg(&dev->core, "%s:%d: THERMAL_ALERT (zone %u)\n",
-@@ -411,7 +462,7 @@ static int ps3_sys_manager_handle_event(
-  * The system manager sends this in reply to a 'request' message from the guest.
-  */
- 
--static int ps3_sys_manager_handle_cmd(struct ps3_vuart_port_device *dev)
-+static int ps3_sys_manager_handle_cmd(struct ps3_system_bus_device *dev)
- {
- 	int result;
- 	struct {
-@@ -425,6 +476,7 @@ static int ps3_sys_manager_handle_cmd(st
- 	dev_dbg(&dev->core, "%s:%d\n", __func__, __LINE__);
- 
- 	result = ps3_vuart_read(dev, &cmd, sizeof(cmd));
-+	BUG_ON(result && "need to retry here");
- 
- 	if(result)
- 		return result;
-@@ -448,9 +500,10 @@ static int ps3_sys_manager_handle_cmd(st
- /**
-  * ps3_sys_manager_handle_msg - First stage msg handler.
-  *
-+ * Can be called directly to manually poll vuart and pump message handler.
-  */
- 
--static int ps3_sys_manager_handle_msg(struct ps3_vuart_port_device *dev)
-+static int ps3_sys_manager_handle_msg(struct ps3_system_bus_device *dev)
- {
- 	int result;
- 	struct ps3_sys_manager_header header;
-@@ -464,12 +517,17 @@ static int ps3_sys_manager_handle_msg(st
- 	if (header.version != 1) {
- 		dev_dbg(&dev->core, "%s:%d: unsupported header version (%u)\n",
- 			__func__, __LINE__, header.version);
-+		dump_sm_header(&header);
- 		goto fail_header;
- 	}
- 
- 	BUILD_BUG_ON(sizeof(header) != 16);
--	BUG_ON(header.size != 16);
--	BUG_ON(header.payload_size != 16);
-+
-+	if(header.size != 16 || (header.payload_size != 8
-+		&& header.payload_size != 16)) {
-+		dump_sm_header(&header);
-+		BUG();
-+	}
- 
- 	switch (header.service_id) {
- 	case PS3_SM_SERVICE_ID_EXTERN_EVENT:
-@@ -478,6 +536,11 @@ static int ps3_sys_manager_handle_msg(st
- 	case PS3_SM_SERVICE_ID_COMMAND:
- 		dev_dbg(&dev->core, "%s:%d: COMMAND\n", __func__, __LINE__);
- 		return ps3_sys_manager_handle_cmd(dev);
-+	case PS3_SM_SERVICE_ID_REQUEST_ERROR:
-+		dev_dbg(&dev->core, "%s:%d: REQUEST_ERROR\n", __func__,
-+			__LINE__);
-+		dump_sm_header(&header);
-+		break;
- 	default:
- 		dev_dbg(&dev->core, "%s:%d: unknown service_id (%u)\n",
- 			__func__, __LINE__, header.service_id);
-@@ -494,45 +557,25 @@ fail_id:
- }
- 
- /**
-- * ps3_sys_manager_work - Asyncronous read handler.
-+ * ps3_sys_manager_final_power_off - The final platform machine_power_off routine.
-  *
-- * Signaled when a complete message arrives at the vuart port.
-- */
+-struct ps3_vuart_port_device;
+-extern int ps3av_vuart_write(struct ps3_vuart_port_device *dev,
+-			     const void *buf, unsigned long size);
+-extern int ps3av_vuart_read(struct ps3_vuart_port_device *dev, void *buf,
+-			    unsigned long size, int timeout);
 -
--static void ps3_sys_manager_work(struct work_struct *work)
--{
--	struct ps3_vuart_port_device *dev = ps3_vuart_work_to_port_device(work);
--
--	ps3_sys_manager_handle_msg(dev);
--	ps3_vuart_read_async(dev, ps3_sys_manager_work, PS3_SM_RX_MSG_LEN);
--}
--
--struct {
--	struct ps3_vuart_port_device *dev;
--} static drv_priv;
--
--/**
-- * ps3_sys_manager_restart - The final platform machine_restart routine.
-- *
-- * This routine never returns.  The routine disables asyncronous vuart reads
-+ * This routine never returns.  The routine disables asynchronous vuart reads
-  * then spins calling ps3_sys_manager_handle_msg() to receive and acknowledge
-  * the shutdown command sent from the system manager.  Soon after the
-  * acknowledgement is sent the lpar is destroyed by the HV.  This routine
-- * should only be called from ps3_restart().
-+ * should only be called from ps3_power_off() through
-+ * ps3_sys_manager_ops.power_off.
-  */
+ extern int ps3av_set_video_mode(u32, int);
+ extern int ps3av_set_audio_mode(u32, u32, u32, u32, u32);
+ extern int ps3av_get_auto_mode(int);
+@@ -723,6 +720,9 @@ extern int ps3av_video_mute(int);
+ extern int ps3av_audio_mute(int);
+ extern int ps3av_dev_open(void);
+ extern int ps3av_dev_close(void);
++extern void ps3av_register_flip_ctl(void (*flip_ctl)(int on, void *data),
++				    void *flip_data);
++extern void ps3av_flip_ctl(int on);
  
--void ps3_sys_manager_restart(void)
-+static void ps3_sys_manager_final_power_off(struct ps3_system_bus_device *dev)
- {
--	struct ps3_vuart_port_device *dev = drv_priv.dev;
--
--	BUG_ON(!drv_priv.dev);
-+	BUG_ON(!dev);
- 
- 	dev_dbg(&dev->core, "%s:%d\n", __func__, __LINE__);
- 
- 	ps3_vuart_cancel_async(dev);
- 
--	ps3_sys_manager_send_attr(dev, 0);
--	ps3_sys_manager_send_next_op(dev, PS3_SM_NEXT_OP_LPAR_REBOOT,
-+	ps3_sys_manager_send_next_op(dev, PS3_SM_NEXT_OP_SYS_SHUTDOWN,
- 		PS3_SM_WAKE_DEFAULT);
- 	ps3_sys_manager_send_request_shutdown(dev);
- 
-@@ -543,26 +586,33 @@ void ps3_sys_manager_restart(void)
- }
- 
- /**
-- * ps3_sys_manager_power_off - The final platform machine_power_off routine.
-+ * ps3_sys_manager_final_restart - The final platform machine_restart routine.
-  *
-- * This routine never returns.  The routine disables asyncronous vuart reads
-+ * This routine never returns.  The routine disables asynchronous vuart reads
-  * then spins calling ps3_sys_manager_handle_msg() to receive and acknowledge
-  * the shutdown command sent from the system manager.  Soon after the
-  * acknowledgement is sent the lpar is destroyed by the HV.  This routine
-- * should only be called from ps3_power_off().
-+ * should only be called from ps3_restart() through ps3_sys_manager_ops.restart.
-  */
- 
--void ps3_sys_manager_power_off(void)
-+static void ps3_sys_manager_final_restart(struct ps3_system_bus_device *dev)
- {
--	struct ps3_vuart_port_device *dev = drv_priv.dev;
--
--	BUG_ON(!drv_priv.dev);
-+	BUG_ON(!dev);
- 
- 	dev_dbg(&dev->core, "%s:%d\n", __func__, __LINE__);
- 
-+	/* Check if we got here via a power button event. */
-+
-+	if(ps3_sm_force_power_off) {
-+		dev_dbg(&dev->core, "%s:%d: forcing poweroff\n",
-+			__func__, __LINE__);
-+		ps3_sys_manager_final_power_off(dev);
-+	}
-+
- 	ps3_vuart_cancel_async(dev);
- 
--	ps3_sys_manager_send_next_op(dev, PS3_SM_NEXT_OP_SYS_SHUTDOWN,
-+	ps3_sys_manager_send_attr(dev, 0);
-+	ps3_sys_manager_send_next_op(dev, PS3_SM_NEXT_OP_LPAR_REBOOT,
- 		PS3_SM_WAKE_DEFAULT);
- 	ps3_sys_manager_send_request_shutdown(dev);
- 
-@@ -572,31 +622,62 @@ void ps3_sys_manager_power_off(void)
- 		ps3_sys_manager_handle_msg(dev);
- }
- 
--static int ps3_sys_manager_probe(struct ps3_vuart_port_device *dev)
-+/**
-+ * ps3_sys_manager_work - Asynchronous read handler.
-+ *
-+ * Signaled when PS3_SM_RX_MSG_LEN_MIN bytes arrive at the vuart port.
-+ */
-+
-+static void ps3_sys_manager_work(struct ps3_system_bus_device *dev)
-+{
-+	ps3_sys_manager_handle_msg(dev);
-+	ps3_vuart_read_async(dev, PS3_SM_RX_MSG_LEN_MIN);
-+}
-+
-+static int ps3_sys_manager_probe(struct ps3_system_bus_device *dev)
- {
- 	int result;
-+	struct ps3_sys_manager_ops ops;
- 
- 	dev_dbg(&dev->core, "%s:%d\n", __func__, __LINE__);
- 
--	BUG_ON(drv_priv.dev);
--	drv_priv.dev = dev;
-+	ops.power_off = ps3_sys_manager_final_power_off;
-+	ops.restart = ps3_sys_manager_final_restart;
-+	ops.dev = dev;
-+
-+	/* ps3_sys_manager_register_ops copies ops. */
-+
-+	ps3_sys_manager_register_ops(&ops);
- 
- 	result = ps3_sys_manager_send_attr(dev, PS3_SM_ATTR_ALL);
- 	BUG_ON(result);
- 
--	result = ps3_vuart_read_async(dev, ps3_sys_manager_work,
--		PS3_SM_RX_MSG_LEN);
-+	result = ps3_vuart_read_async(dev, PS3_SM_RX_MSG_LEN_MIN);
- 	BUG_ON(result);
- 
- 	return result;
- }
- 
-+static int ps3_sys_manager_remove(struct ps3_system_bus_device *dev)
-+{
-+	dev_dbg(&dev->core, "%s:%d\n", __func__, __LINE__);
-+	return 0;
-+}
-+
-+static void ps3_sys_manager_shutdown(struct ps3_system_bus_device *dev)
-+{
-+	dev_dbg(&dev->core, "%s:%d\n", __func__, __LINE__);
-+}
-+
- static struct ps3_vuart_port_driver ps3_sys_manager = {
--	.match_id = PS3_MATCH_ID_SYSTEM_MANAGER,
- 	.core = {
--		.name = "ps3_sys_manager",
-+		.match_id = PS3_MATCH_ID_SYSTEM_MANAGER,
-+		.core = {.name = "ps3_sys_manager",},
- 	},
- 	.probe = ps3_sys_manager_probe,
-+	.remove = ps3_sys_manager_remove,
-+	.shutdown = ps3_sys_manager_shutdown,
-+	.work = ps3_sys_manager_work,
- };
- 
- static int __init ps3_sys_manager_init(void)
-@@ -608,3 +689,6 @@ static int __init ps3_sys_manager_init(v
- }
- 
- module_init(ps3_sys_manager_init);
-+/* Module remove not supported. */
-+
-+MODULE_ALIAS(PS3_MODULE_ALIAS_SYSTEM_MANAGER);
---- a/include/asm-powerpc/ps3.h
-+++ b/include/asm-powerpc/ps3.h
-@@ -410,13 +410,15 @@ extern struct bus_type ps3_system_bus_ty
- 
- /* system manager */
- 
--#ifdef CONFIG_PS3_SYS_MANAGER
--void ps3_sys_manager_restart(void);
-+struct ps3_sys_manager_ops {
-+	struct ps3_system_bus_device *dev;
-+	void (*power_off)(struct ps3_system_bus_device *dev);
-+	void (*restart)(struct ps3_system_bus_device *dev);
-+};
-+
-+void ps3_sys_manager_register_ops(const struct ps3_sys_manager_ops *ops);
- void ps3_sys_manager_power_off(void);
--#else
--static inline void ps3_sys_manager_restart(void) {}
--static inline void ps3_sys_manager_power_off(void) {}
--#endif
-+void ps3_sys_manager_restart(void);
- 
- struct ps3_prealloc {
-     const char *name;
-@@ -427,4 +429,5 @@ struct ps3_prealloc {
- 
- extern struct ps3_prealloc ps3fb_videomemory;
- 
-+
- #endif
+ #endif /* __KERNEL__ */
+ #endif	/* _ASM_POWERPC_PS3AV_H_ */
 
 -- 
