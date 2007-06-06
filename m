@@ -1,26 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
-	[151.189.21.50])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D31DFDDEB9
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 19:47:52 +1000 (EST)
-In-Reply-To: <1181113438.31677.234.camel@localhost.localdomain>
-References: <20070604095625.GF17456@chiana.homelinux.org>
-	<4E25DA41-741E-40AC-9186-936FEEFE6B29@freescale.com>
-	<20070604211740.GN17456@chiana.homelinux.org>
-	<C1F9584D-E778-4BE7-B11A-5505BA9B6F6C@freescale.com>
-	<cbf493edec7259df199568389814dab6@kernel.crashing.org>
-	<1181113438.31677.234.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <3641c2a601dbccc9757fe9443d9330ca@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: 83xx GPIO/EXT int in arch/powerpc/
-Date: Wed, 6 Jun 2007 11:47:42 +0200
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id B2FC6DDDFA
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 21:27:59 +1000 (EST)
+Date: Wed, 6 Jun 2007 13:27:54 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [patch 07/18] PS3: Make ps3av.h usable from user space
+In-Reply-To: <20070606074609.GA31975@lst.de>
+Message-ID: <Pine.LNX.4.62.0706061325340.24545@pademelon.sonytel.be>
+References: <20070606024407.786638029@am.sony.com>>
+	<46662337.9060908@am.sony.com> <20070606074609.GA31975@lst.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Masashi Kimoto <Masashi_Kimoto@hq.scei.sony.co.jp>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,81 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> In addition, linux always reserve numbers 0...15. 0 is
-> always illegal and 1..15 can only be mapped to a 8259 type legacy ISA
-> controller. This is to avoid problem with stupid drivers from the x86
-> world.
+On Wed, 6 Jun 2007, Christoph Hellwig wrote:
+> On Tue, Jun 05, 2007 at 08:00:07PM -0700, Geoff Levand wrote:
+> > The user applications to manage the PS3 AV modes can use values
+> > defined in this header.
+> 
+> NACK.  First please don't introduce new unifdef-y headers but always
+> separated them.  Second I don't see any of the values actually used
+> in a user<->kerne interface.  If the application only happens to use
+> the same values it should ship a copy of the header intead.
 
-Of course, it doesn't help if you have an i8259 but have
-non-legacy-PC devices on it.  Oh the horror!
+ps3videomode (from ps3-utils,
+git://git.kernel.org/pub/scm/linux/kernel/git/geoff/ps3-utils.git) uses the
+PS3AV_MODE_* definitions for the PS3FB_IOCTL_[SG]ETMODE ioctls on /dev/fb0.
 
-> Now, there is no automagic way of setting up GPIOs. You have to 
-> manually
-> (from your firmware that is, or maybe from your platform code),
-> configure the appropriate GPIO to the appropriate HW irq source on the
-> IPIC that matches what you put in your DTS.
+But it indeed just uses a few values, and ps3videomode.c already handles the
+case were <asm/ps3av.h> is not available, so I guess we can drop the export.
 
-It *really* shouldn't be Linux platform code, if you can
-avoid it at all.  It's just more trouble than it's worth.
+Gr{oetje,eeting}s,
 
->  - You can create a device-node for the PCI device. PCI devices
-> normally, in linux, don't need to have device-nodes in the DTS, at 
-> least
-> it's not mandatory, but you -can- do it. If your node has the correct
-> "reg" property,
+						Geert
 
-What is "correct" in this case?  We probably should describe
-what properties are required in a (non-phb) pci node for
-platforms that don't use the device tree for probing PCI.
-In this specific case, do you only need the configuration
-address in the "reg"?
-
-> it should be matches by the linux parser, and thus you
-> have the ability to put an interrupts property in there. It would
-> normally be a PCI interrupt specification, but you can specify
-> explicitely an interrupt parent that points to the IPIC and thus have 
-> an
-> interrupt pointing directly there. That's the example that, I think,
-> Andy gave you
-
-Yeah.
-
->  - You can do it in your interrupt-map. That's probably the cleanest 
-> way
-> to do it.
-
-Not really.  If the device interrupt is physically connected
-directly to a GPIO or a PIC or whatever, if it doesn't go
-through the PCI bus; then it shouldn't be represented in
-the device tree as if it did.  The higher-up bridge has
-nothing whatsoever to do with this device's interrupt.
-
-It's a simple hack of course, it can be useful sometimes.
-It's not "clean" at all however.
-
-> Just make sure you have
-> an entry there for your device pin A dev/fn whose specification points
-> to the IPIC with the appropriate IRQ number and that should work fine.
-
-Depending on the rest of the tree, this would often mean
-you have to do a much bigger interrupt-map-mask than
-without this hack, and the corresponding explosion in
-interrupt-map size.
-
-> Now, that's assuming GPIOs, when used as external interrupts, are
-> directly routed to the IPIC. I don't know the 83xx so I just assumed
-> it :-)
-
-Almost always that's how it works yeah.  And the "GPIO"
-stage isn't normally represented in the device tree, GPIO
-settings are considered a part of the PCB layout ;-) (one
-more reason why Linux shouldn't have to touch it).
-
-> If that's not the case, you may need some intermediary cascaded
-> interrupt controller or something around those lines.
-
-Yeah, but that's just the more general case of the
-general case :-)
-
-
-Segher
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
