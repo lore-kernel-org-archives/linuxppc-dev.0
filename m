@@ -1,19 +1,23 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 1EE34DDEDF
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 08:18:29 +1000 (EST)
-Date: Wed, 6 Jun 2007 17:24:57 -0500
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: MPC8349ea Random Device Generator driver
-Message-ID: <20070606222456.GA28225@lixom.net>
-References: <BAY122-F18923A7AA6D3A4D96A360085200@phx.gbl>
-	<46672DB4.80504@freescale.com> <20070606220913.GA27820@lixom.net>
-	<46673009.6000109@freescale.com>
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id EFD9ADDEF1
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 08:19:35 +1000 (EST)
+Message-ID: <466732EE.8080306@freescale.com>
+Date: Wed, 06 Jun 2007 17:19:26 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <46673009.6000109@freescale.com>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, sl@powerlinux.fr,
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: MPC8349ea Random Device Generator driver
+References: <BAY122-F18923A7AA6D3A4D96A360085200@phx.gbl>
+	<20070606220913.GA27820@lixom.net> <46673009.6000109@freescale.com>
+	<200706070011.43347.arnd@arndb.de>
+In-Reply-To: <200706070011.43347.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org, sl@powerlinux.fr,
 	Philippe Lachenal <philippe.lachenal@hotmail.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,63 +28,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jun 06, 2007 at 05:07:05PM -0500, Timur Tabi wrote:
-> Olof Johansson wrote:
-> 
-> >There's nothing wrong with the way he coded that up. Lots of drivers
-> >are written that way (all of mine are). It's at least as clear as any
-> >structure, and it doesn't cause temptation to do...
-> 
-> That vast majority of Freescale SOC device register maps are handled via a 
-> structure. He's doing everything via 32-bit operations, even though the 
-> registers are 64 bits, and therefore he has twice as much macros as he 
-> needs.
+Arnd Bergmann wrote:
 
-I see only one double access back to back, not a big deal. I do however
-fail to see how a couple of constructs are working, separate email with
-those questions later though.
+> The only code that is allowed to dereference an __iomem pointer is the
+> implementation of readl/writel and similar functions.
+> The code you gave as an example gives you a warning when building with
+> make C=1 using sparse, and missed barriers.
 
-> >>>+
-> >>>+
-> >>>+	/* check for things like FIFO underflow */
-> >>>+	
-> >>>+	u32 v;
-> >>>+
-> >>>+	v = in_be32(rng_regs + TALITOS_RNGISR_HI);
-> >>	u64 v;
-> >>	v = rng->rngisr;
-> >>
-> >>or something like that.  Try to use the built-in support for 64-bit data 
-> >>types when possible.
-> >
-> >...this. NO! Don't reference ioremapped memory from regular code like
-> >that. The way he's doing it is the preferred way.
-> 
-> Can you explain that better?  What is "regular code"?
+Well, that's why I said "or something like that".
 
->From http://kerneltrap.org/node/3848:
+Anyway, there's a more fundamental problem.  I can't find any 64-bit versions of the 
+in_be/out_be/read/write functions.  Because the registers are big-endian, then we have a 
+few choices:
 
----
-In the byte-order case, what we have is:
+1) Create 64-bit versions of these functions.  Can someone tell me why they don't exist 
+already?
 
-	typedef __u16 __bitwise __le16;
-	typedef __u16 __bitwise __be16;
-	typedef __u32 __bitwise __le32;
-	typedef __u32 __bitwise __be32;
-	typedef __u64 __bitwise __le64;
-	typedef __u64 __bitwise __be64;
+2) Do something stupid like u32 v = in_be32(((void *) &rng->rngisr) + 4);
 
-and if you think about the above rules about what is acceptable for 
-bitwise types, you'll likely immediately notivce that it automatically 
-means
+3) Change the struct like this:
 
- - you can never assign a __le16 type to any other integer type or any 
-   other bitwise type. You'd get a warnign about incompatible types. Makes 
-   sense, no?
+struct sec_rng {
+	__be32	rngmr_hi;
+	__be32	rngmr_lo;
+	u8 res1[8];
+	__be32 rngdsr_hi;
+	__be32 rngdsr_lo;
+	__be32 rngrcr_hi;
+	__be32 rngrcr_lo;
 ...
----
 
-Note that rngisr is __be64.  Sparse should complain loudly over your code.
+Comments?
 
-
--Olof
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
