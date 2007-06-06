@@ -3,19 +3,18 @@ Received: from outbound3-blu-R.bigfish.com (outbound-blu.frontbridge.com
 	[65.55.251.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 77034DE124
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 12:59:57 +1000 (EST)
-Message-ID: <46662326.4030706@am.sony.com>
-Date: Tue, 05 Jun 2007 19:59:50 -0700
+	by ozlabs.org (Postfix) with ESMTP id 10C22DDED4
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jun 2007 13:00:43 +1000 (EST)
+Message-ID: <46662354.60604@am.sony.com>
+Date: Tue, 05 Jun 2007 20:00:36 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 05/18] PS3: Fix sparse warnings
+Subject: [patch 10/18] PS3: System-bus uevent
 References: <20070606024407.786638029@am.sony.com>>
 In-Reply-To: <20070606024407.786638029@am.sony.com>>
 Content-Type: text/plain; charset=UTF-8
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Paul Mackerras <paulus@samba.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,48 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fix some PS3 build warnings reported by `make C=1'.  You need to
-install sparse:
-  git://git.kernel.org/pub/scm/devel/sparse/sparse.git
+To allow userspace to automatically load modules, we need to hook up
+uevent for ps3_system_bus devices. I've used the form 'ps3:%d' with the
+ps3_match_id, since that's what we use for matching drivers.
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/platforms/ps3/os-area.c |    4 ++--
- arch/powerpc/platforms/ps3/spu.c     |    3 ++-
- 2 files changed, 4 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/ps3/system-bus.c |   16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
---- a/arch/powerpc/platforms/ps3/os-area.c
-+++ b/arch/powerpc/platforms/ps3/os-area.c
-@@ -133,7 +133,7 @@ struct saved_params {
- } static saved_params;
- 
- #define dump_header(_a) _dump_header(_a, __func__, __LINE__)
--static void _dump_header(const struct os_area_header __iomem *h, const char* func,
-+static void _dump_header(const struct os_area_header *h, const char* func,
- 	int line)
- {
- 	pr_debug("%s:%d: h.magic_num:         '%s'\n", func, line,
-@@ -151,7 +151,7 @@ static void _dump_header(const struct os
+--- a/arch/powerpc/platforms/ps3/system-bus.c
++++ b/arch/powerpc/platforms/ps3/system-bus.c
+@@ -433,9 +433,25 @@ static void ps3_system_bus_shutdown(stru
+ 	dev_dbg(&dev->core, " <- %s:%d\n", __func__, __LINE__);
  }
  
- #define dump_params(_a) _dump_params(_a, __func__, __LINE__)
--static void _dump_params(const struct os_area_params __iomem *p, const char* func,
-+static void _dump_params(const struct os_area_params *p, const char* func,
- 	int line)
- {
- 	pr_debug("%s:%d: p.boot_flag:       %u\n", func, line, p->boot_flag);
---- a/arch/powerpc/platforms/ps3/spu.c
-+++ b/arch/powerpc/platforms/ps3/spu.c
-@@ -190,7 +190,8 @@ static int __init setup_areas(struct spu
- 		goto fail_ioremap;
- 	}
- 
--	spu->local_store = ioremap(spu->local_store_phys, LS_SIZE);
-+	spu->local_store = (__force void *)ioremap(spu->local_store_phys,
-+						   LS_SIZE);
- 	if (!spu->local_store) {
- 		pr_debug("%s:%d: ioremap local_store failed\n",
- 			__func__, __LINE__);
++static int ps3_system_bus_uevent(struct device *_dev, char **envp,
++				 int num_envp, char *buffer, int buffer_size)
++{
++	struct ps3_system_bus_device *dev = ps3_dev_to_system_bus_dev(_dev);
++	int i=0, length = 0;
++
++	if (add_uevent_var(envp, num_envp, &i, buffer, buffer_size,
++			   &length, "MODALIAS=ps3:%d",
++			   dev->match_id))
++		return -ENOMEM;
++
++	envp[i] = NULL;
++	return 0;
++}
++
+ struct bus_type ps3_system_bus_type = {
+ 	.name = "ps3_system_bus",
+ 	.match = ps3_system_bus_match,
++	.uevent = ps3_system_bus_uevent,
+ 	.probe = ps3_system_bus_probe,
+ 	.remove = ps3_system_bus_remove,
+ 	.shutdown = ps3_system_bus_shutdown,
 
 -- 
