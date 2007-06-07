@@ -1,23 +1,34 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound3-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
-	[207.46.163.16])
+Return-Path: <afleming@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id A0A25DDF17
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 02:19:18 +1000 (EST)
-Message-ID: <46682FFB.7000000@am.sony.com>
-Date: Thu, 07 Jun 2007 09:19:07 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH] kexec ppc64: fix misaligned cmdline
-References: <25445.1180941825@neuling.org>	<8f5d8a214e9042b0c556ac7256928a52@bga.com>	<26608.1180950136@neuling.org>
-	<10188.1181179162@neuling.org>
-In-Reply-To: <10188.1181179162@neuling.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: dwmw2@infradead.org, kexec@lists.infradead.org,
-	Milton Miller <miltonm@bga.com>, linuxppc-dev@ozlabs.org,
-	horms@verge.net.au
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4872FDDF35
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 02:21:44 +1000 (EST)
+In-Reply-To: <1181113764.31677.242.camel@localhost.localdomain>
+References: <1180720112.14219.62.camel@ld0161-tx32>
+	<dfc15991e31bfc09389461dc443acd7c@kernel.crashing.org>
+	<1180734314.5674.49.camel@rhino>
+	<4fb92a9dfccf515bdc1522d08f10f823@kernel.crashing.org>
+	<20070602085359.GA10333@iram.es>
+	<3ebd6ca6877ea74925f066ff96ac81db@kernel.crashing.org>
+	<20070602195308.GA21618@iram.es>
+	<12ad593bd17f769e44f05bc24eac4d0a@kernel.crashing.org>
+	<1180828907.14025.37.camel@localhost.localdomain>
+	<28e0600256815f93db45b2f4eb2d9df5@kernel.crashing.org>
+	<20070603083339.GB2157@iram.es>
+	<02DC2E36-86B1-4458-BB0C-13CF79AC1D11@freescale.com>
+	<466492DC.6050708@mvista.com>
+	<1181113764.31677.242.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <FE5191F7-8A1D-428A-B4F0-32AD3A08B08A@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
+Date: Thu, 7 Jun 2007 11:21:41 -0500
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,26 +38,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Neuling wrote:
-> If the cmdline changes between boots, we can get misalignment of the
-> bootargs entry, which in turn corrupts our device tree blob and hence
-> kills our kexec boot.  Also, if there was no /chosen/bootargs
-> previously, we'd never add a new one. 
-> 
-> This ignores the bootargs while parsing the tree and inserts it later. 
-> 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
 
-Hi.
+On Jun 6, 2007, at 02:09, Benjamin Herrenschmidt wrote:
 
-Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
+> On Mon, 2007-06-04 at 15:31 -0700, Randy Vinson wrote:
+>> Actually, that's not strictly true. If a card containing a P2P bridge
+>> is
+>> installed into PCI slot 4, the i8259 will end up on a bus that is not
+>> numbered bus 1. I've often wondered how something like that is  
+>> handled
+>> in the DTS.
+>
+> The bus number shouldn't matter as long as low IO cycles are properly
+> forwarded to it.
 
-I tested this with PS3 and it works as expected.  I added it to my
-ps3-kexec-tools.git.  With this patch mainline kexec will work
-with the PS3.
+Right.  Unless there's an interrupt mapping, which has to include the  
+bus number in the filter.  When that happens, parsing the interrupt  
+map for the i8259's mapping fails because its address doesn't match.
 
-I still have a work-in-progress patch started by David Woodhouse
-to support building a 32 bit kexec executable for PPC64 platforms.
-I don't have any definite plan to work on it though.
-
--Geoff
+Andy
