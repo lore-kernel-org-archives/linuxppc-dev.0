@@ -1,21 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-13.arcor-online.net (mail-in-13.arcor-online.net
-	[151.189.21.53])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 291DFDDEE4
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 23:32:51 +1000 (EST)
-In-Reply-To: <Pine.LNX.4.60.0706042159090.3653@poirot.grange>
-References: <Pine.LNX.4.60.0706042159090.3653@poirot.grange>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <b7b230e13a4d74b2af967ca2e7fae400@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] add rtc-on-i2c node to two linkstation device-trees
-Date: Thu, 7 Jun 2007 15:32:40 +0200
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 8BAA3DDECF
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 00:03:39 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: MPC8349ea Random Number Generator driver
+Date: Thu, 7 Jun 2007 16:03:14 +0200
+References: <BAY122-F20901751968A5E85E76FBB85260@phx.gbl>
+In-Reply-To: <BAY122-F20901751968A5E85E76FBB85260@phx.gbl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200706071603.15837.arnd@arndb.de>
+Cc: sl@powerlinux.fr, Philippe Lachenal <philippe.lachenal@hotmail.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,11 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> If approved here, this patch will follow the previous one for i2c-of
-> definitions to the -mm tree, to fix linkstation breakage caused by
-> converting rtc-rs5c372 driver to the new i2c api.
+On Thursday 07 June 2007, Philippe Lachenal wrote:
+> +-
+> +-=A0=A0=A0=A0=A0=A0return ioremap(res.start, 1 + res.end - res.start);
+> +-}
+>=20
+>=20
+> why is there a =A01+ res.end-res.start ? Am I wrong in not adding one in =
+my=20
+> code ?
+>=20
 
-The changes look good to me.
+Yes. The res.start is the first byte in the area, res.end is the last one.
+=46or example, in a two byte range, start could be 100, and end 101.
+res.end - res.start would therefore be one, not two as ioremap expects.
 
-
-Segher
+	Arnd <><
