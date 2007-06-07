@@ -1,15 +1,20 @@
-Return-Path: <gmuruga@gdatech.com>
-Received: from darwaza.gdatech.com (darwaza.gdatech.com [66.237.41.98])
-	by ozlabs.org (Postfix) with ESMTP id 803D7DDDFB
+Return-Path: <akonovalov@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id DF607DDF04
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Jun 2007 03:21:23 +1000 (EST)
-Date: Thu, 7 Jun 2007 09:49:57 -0700
-Message-Id: <200706071649.l57Gnv113770@sierra.gdatech.com>
-From: "Muruga Ganapathy" <gmuruga@gdatech.com>
-To: "Soohyung Cho" <xfree@paran.com>, <linuxppc-embedded@ozlabs.org>
-Subject: Re: write u-boot.bin on mpc8349e-mITX-gp with bdi2000
+	Fri,  8 Jun 2007 04:33:32 +1000 (EST)
+Message-ID: <466850FB.5030505@ru.mvista.com>
+Date: Thu, 07 Jun 2007 22:39:55 +0400
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: [spi-devel-general] [PATCH] Simple driver for Xilinx SPI
+	controler.
+References: <4666BF47.8080103@ru.mvista.com>
+	<200706062209.09731.david-b@pacbell.net>
+In-Reply-To: <200706062209.09731.david-b@pacbell.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: spi-devel-general@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,58 +25,284 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-You may want to talk to Abarton to see whether they have the BDI2000 
-configuration file with 8349 support and use it for flashing the 
-u-boot.
+Hi David,
+
+Thanks for reviewing this stuff!
+
+David Brownell wrote:
+> On Wednesday 06 June 2007, Andrei Konovalov wrote:
+>> Would be nice to get this driver into mainline.
+>> Reviews and comments are welcome.
+> 
+> I'll ignore the Kconfig flamage ... ;)
+> 
+> 
+>> --- /dev/null
+>> +++ b/drivers/spi/xilinx_spi.c
+>> @@ -0,0 +1,447 @@
+>> +/*
+>> + * xilinx_spi.c
+>> + *
+>> + * Xilinx SPI controler driver (master mode only)
+>> + *
+>> + * Author: MontaVista Software, Inc.
+>> + *         source@mvista.com
+>> + *
+>> + * 2002-2007 (c) MontaVista Software, Inc.  This file is licensed under the
+>> + * terms of the GNU General Public License version 2.  This program is licensed
+>> + * "as is" without any warranty of any kind, whether express or implied.
+>> + */
+>> +
+>> +
+>> +/* Simple macros to get the code more readable */
+>> +#define xspi_in16(addr)		in_be16((u16 __iomem *)(addr))
+>> +#define xspi_in32(addr)		in_be32((u32 __iomem *)(addr))
+>> +#define xspi_out16(addr, value)	out_be16((u16 __iomem *)(addr), (value))
+>> +#define xspi_out32(addr, value)	out_be32((u32 __iomem *)(addr), (value))
+> 
+> I'm rather used to seeing I/O addressses passed around as "void __iomem *"
+> so those sorts of cast are not needed...  :)
+
+I've decided to make the base_address (u8 __iomem *) to make it easier to
+add the register offsets to the base. Like that:
+
+static void xspi_init_hw(u8 __iomem *regs_base)
+{
+	/* Reset the SPI device */
+	xspi_out32(regs_base + XIPIF_V123B_RESETR_OFFSET,
+		   XIPIF_V123B_RESET_MASK);
+...
+
+Without the cast, out_be32(regs_base + XIPIF_V123B_RESETR_OFFSET, XIPIF_V123B_RESET_MASK)
+produces a warning.
+
+Another solution could be
+
+#define XSPI_REG(base, offset) (void *)((base) + (offset))
+and
+	/* Reset the SPI device */
+	out_be32(XSPI_REG(regs_base, XIPIF_V123B_RESETR_OFFSET),
+	         XIPIF_V123B_RESET_MASK);
+
+Is it better?
+
+>> +
+>> +static void xspi_abort_transfer(u8 __iomem *regs_base)
+>> +{
+> 
+> You should not need an abort primitive.  This is called only
+> in the remove-controller path.  By the time it's called,
+> every child spi_device on this bus segment should have been
+> removed ... which means any spi_driver attached to that
+> device has already returned from its remove() method, which
+> in turn means that there will be no spi_message objects in
+> flight from any of those drivers.
+
+I am paranoid enough not to rely 100% on the spi_device's and the spi_bitbang
+doing all that :)
+Agreed, xspi_abort_transfer is bad name here. But I still would like to
+leave these two writes:
+
++	/* Deselect the slave on the SPI bus */
++	xspi_out32(regs_base + XSPI_SSR_OFFSET, 0xffff);
++	/* Disable the transmitter */
++	xspi_out16(regs_base + XSPI_CR_OFFSET,
++		   XSPI_CR_TRANS_INHIBIT | XSPI_CR_MANUAL_SSELECT);
+
+in xilinx_spi_remove(). Just in case :)
+
+>> +static void xilinx_spi_chipselect(struct spi_device *spi, int is_on)
+>> +{
+>> +	struct xilinx_spi *xspi;
+>> +	u8 __iomem *regs_base;
+>> +
+>> +	xspi = spi_master_get_devdata(spi->master);
+>> +	regs_base = xspi->regs;
+>> +
+>> +	if (is_on == BITBANG_CS_INACTIVE) {
+>> +		/* Deselect the slave on the SPI bus */
+>> +		xspi_out32(regs_base + XSPI_SSR_OFFSET, 0xffff);
+> 
+> I take it you can't support SPI_CS_HIGH??
+
+There is no clear indication in the SPI controller docs that SPI_CS_HIGH
+would work. I suspect it would as we don't use the ability of the controller
+to generate the chip selects automatically (the auto mode doesn't support SPI_CS_HIGH).
+But it is more safe to advertise SPI_CS_HIGH is not supported.
+
+>> +/* spi_bitbang requires custom setup_transfer() to be defined if there is a
+>> + * custom txrx_bufs(). We have nothing to setup here as the SPI IP block
+>> + * supports just 8 bits per word, and SPI clock can't be changed in software.
+>> + * Check for 8 bits per word; speed_hz checking could be added if the SPI
+>> + * clock information is available. Chip select delay calculations could be
+>> + * added here as soon as bitbang_work() can be made aware of the delay value.
+>> + */
+>> +static int xilinx_spi_setup_transfer(struct spi_device *spi,
+>> +				     struct spi_transfer *t)
+>> +{
+>> +	u8 bits_per_word;
+>> +
+>> +	bits_per_word = (t) ? t->bits_per_word : spi->bits_per_word;
+>> +	if (bits_per_word != 8)
+>> +		return -EINVAL;
+> 
+> Speed checking *SHOULD* be added; the clock info can be platform data.
+> 
+> It would make trouble if a driver needed to turn the clock down to,
+> say, 400 KHz for some operation, and the controller said "yes" but
+> kept it at 25 MHz or whatever.  It's OK if the driver is told that
+> 400 KHz can't happen though -- it's possible to recover from that.
+
+OK
+
+> (Although in practice it's best to have the transfer method do
+> the error checking, so that messages that will fail do so before
+> they are allowed to enter the I/O queue.)
+> 
+> ISTR you may need to delegate to the default method here too, but
+> it's been a while since I poked at that level and the issue might
+> not apply to this particular driver config.
+> 
+> 
+> 
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +
+>> +static int xilinx_spi_setup(struct spi_device *spi)
+>> +{
+>> +	struct spi_bitbang *bitbang;
+>> +	struct xilinx_spi *xspi;
+>> +	int retval;
+>> +
+>> +	xspi = spi_master_get_devdata(spi->master);
+>> +	bitbang = &xspi->bitbang;
+> 
+> You need to verify ALL the input parameters.  In particular,
+> mask spi->mode against all the values this driver recognizes
+> and supports.  If you don't support SPI_LSB_FIRST it's a bug
+> if setup() succeeds after setting that.  Same thing with all
+> other bits defined today (SPI_3WIRE, SPI_CS_HIGH) and in the
+> future... 
+> 
+> For an example, see the atmel_spi.c driver and MODEBITS.
+> There's a patch in MM that makes all the SPI controller
+> drivers have analagous tests ... and for bitbang there's
+> a patch adding spi_bitbang.mode flags to declare any
+> extra spi->mode flags that should be accepted.
+
+OK. Thanks.
+
+>> +	...
+>> +	
+>> +static irqreturn_t xilinx_spi_irq(int irq, void *dev_id)
+>> +{
+>> +	struct xilinx_spi *xspi;
+>> +	u8 __iomem *regs_base;
+>> +	u32 ipif_isr;
+>> +
+>> +	xspi = (struct xilinx_spi *) dev_id;
+>> +	regs_base = xspi->regs;
+>> +
+>> +     	/* Get the IPIF inetrrupts, and clear them immediately */
+> 
+> Spell checkers will tell you this is "interrupts" ... ;)
+
+Oops...
+
+>> +	ipif_isr = xspi_in32(regs_base + XIPIF_V123B_IISR_OFFSET);
+>> +	xspi_out32(regs_base + XIPIF_V123B_IISR_OFFSET, ipif_isr);
+>> +
+>> +	if (ipif_isr & XSPI_INTR_TX_EMPTY) {	/* Transmission completed */
+>> +		u16 cr;
+>> +		u8 sr;
+>> +
+>> +		/* A transmit has just completed. Process received data and
+>> +		 * check for more data to transmit. Always inhibit the
+>> +		 * transmitter while the Isr refills the transmit register/FIFO,
+>> +		 * or make sure it is stopped if we're done.
+>> +	         */
+>> +		cr = xspi_in16(regs_base + XSPI_CR_OFFSET);
+>> +		xspi_out16(regs_base + XSPI_CR_OFFSET,
+>> +			   cr | XSPI_CR_TRANS_INHIBIT);
+>> +
+>> +		/* Read out all the data from the Rx FIFO */
+>> +		sr = in_8(regs_base + XSPI_SR_OFFSET);
+>> +		while ((sr & XSPI_SR_RX_EMPTY_MASK) == 0) {
+>> +			u8 data;
+>> +
+>> +			data = in_8(regs_base + XSPI_RXD_OFFSET);
+>> +			if (xspi->rx_ptr) {
+>> +				*xspi->rx_ptr++ = data;
+>> +			}
+>> +			sr = in_8(regs_base + XSPI_SR_OFFSET);
+>> +		}
+>> +
+>> +	        /* See if there is more data to send */
+>> +		if (xspi->remaining_bytes > 0) {
+>> +			/* sr content is valid here; no need for io_8() */
+>> +			while ((sr & XSPI_SR_TX_FULL_MASK) == 0
+>> +				&& xspi->remaining_bytes > 0) {
+>> +				if (xspi->tx_ptr) {
+>> +					out_8(regs_base + XSPI_TXD_OFFSET,
+>> +					      *xspi->tx_ptr++);
+>> +				} else {
+>> +					out_8(regs_base + XSPI_TXD_OFFSET, 0);
+>> +				}
+> 
+> This duplicates the loop in txrx_bufs(); that's bad style.
+> Have one routine holding the shared code.
+
+OK
+
+>> +static int __init xilinx_spi_probe(struct platform_device *dev)
+>> +{
+>> +	int ret = 0;
+>> +	struct spi_master *master;
+>> +	struct xilinx_spi *xspi;
+>> +	struct xspi_platform_data *pdata;
+>> +	struct resource *r;
+>> +
+>> +	/* Get resources(memory, IRQ) associated with the device */
+>> +	master = spi_alloc_master(&dev->dev, sizeof(struct xilinx_spi));
+>> +
+>> +	if (master == NULL) {
+>> +		return -ENOMEM;
+>> +	}
+>> +
+>> +	platform_set_drvdata(dev, master);
+>> +	pdata = dev->dev.platform_data;
+>> +
+>> +	if (pdata == NULL) {
+>> +		ret = -ENODEV;
+>> +		goto put_master;
+>> +	}
+>> +
+>> +	r = platform_get_resource(dev, IORESOURCE_MEM, 0);
+>> +	if (r == NULL) {
+>> +		ret = -ENODEV;
+>> +		goto put_master;
+>> +	}
+>> +
+>> +	xspi = spi_master_get_devdata(master);
+>> +	xspi->bitbang.master = spi_master_get(master);
+>> +	xspi->bitbang.chipselect = xilinx_spi_chipselect;
+>> +	xspi->bitbang.setup_transfer = xilinx_spi_setup_transfer;
+>> +	xspi->bitbang.txrx_bufs = xilinx_spi_txrx_bufs;
+>> +	xspi->bitbang.master->setup = xilinx_spi_setup;
+>> +	init_completion(&xspi->done);
+>> +
+>> +	xspi->regs = ioremap(r->start, r->end - r->start + 1);
+> 
+> Strictly speaking a request_region() should precede the ioremap,
+> but a lot of folk don't bother.  However, lacking that I'd put
+> the request_irq() earlier, since that will be the only resource
+> providing any guard against another driver sharing the hardware.
+
+Will add request_region(). I was confused by platform_device_register()
+doing something with the resources (contrary to the "plain" device_register()).
 
 
-
-> Hello. 
-> 
-> Now I'm trying to write u-boot.bin on mpc8349e-mITX-gp with bdi2000. 
-> But I don't have correct bdi2000 configuration file for mpc8349e-mITX-
-gp. 
-> 
-> How can I write u-boot.bin on that board? 
-> Unfortunately I erased u-boot area on that board so there no u-boot 
-anymore
-> on that board. 
-> Is there anyone can show bdi2000 configuration file for mpc8349e-mITX-
-gp? 
-> Or please let me know how to write u-boot on that board with bdi2000. 
-> 
-> I'll appreciate any comments.
-> 
-> 
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
-
-*************************************************************
-GDA Technologies, Inc.		
-1010 Rincon Circle 
-San Jose CA, 95131
-Phone	(408) 432-3090
-Fax	(408) 432-3091
-
-Accelerate Your Innovation	
-**************************************************************
-
-
-=====
-This message contains information from GDA Technologies Inc and 
-affiliates, and is intended for the sole use of the individual and 
-entity to whom it is addressed. It may contain information, including 
-any attachments, that is privileged, confidential and exempt from 
-disclosure under applicable law. If you are not the intended addressee, 
-nor authorized to receive for the intended addressee, you are hereby 
-notified that you may not use, copy, disclose or distribute to anyone 
-the message or any information contained in the message. If you have 
-received this electronic transmission in error, please notify the 
-sender immediately by a "reply to sender only" message and destroy all 
-electronic and hard copies of the communication, including attachments.
-====
+Thanks,
+Andrei
