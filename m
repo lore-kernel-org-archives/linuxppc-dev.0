@@ -1,15 +1,14 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 7 Jun 2007 11:58:21 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Stuart Yoder <b08248@freescale.com>
+Subject: Re: [PATCH] powerpc: add table of contents to booting-without-of-txt
+Message-ID: <20070607015821.GC24230@localhost.localdomain>
+References: <200706051829.l55ITEAR028492@ld0164-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18023.24703.555674.28511@cargo.ozlabs.ibm.com>
-Date: Thu, 7 Jun 2007 11:33:51 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH] fix stolen time for SMT without LPAR 
-In-Reply-To: <16370.1180069711@neuling.org>
-References: <12635.1180013602@neuling.org>
-	<16370.1180069711@neuling.org>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <200706051829.l55ITEAR028492@ld0164-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,20 +18,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Neuling writes:
+On Tue, Jun 05, 2007 at 01:29:14PM -0500, Stuart Yoder wrote:
+> Add table of contents.
+> 
+> Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
+> ---
+> 
+>  I think this should help make the doc more easily navigated and will help
+>  make the structure visible so someone editing will know where to put
+>  stuff.
 
-> -	if (!cpu_has_feature(CPU_FTR_PURR))
-> +	if (!cpu_has_feature(CPU_FTR_PURR) &&
-> +	    !firmware_has_feature(FW_FEATURE_SPLPAR))
->  		return;
->  	for_each_possible_cpu(cpu)
->  		spin_lock_init(&per_cpu(cpu_purr_data, cpu).lock);
+I like it in theory.  Whether it will remain updated in sync with the
+rest of the document remains to be seen...
 
-This means that on a machine with SPLPAR but not a PURR, e.g. a JS21,
-we'll try to read the PURR register and do the stolen time calculation
-with whatever value was in the register before the mfspr from the
-PURR.  If we're going to make this change then we also need to add
-code to do the H_PURR hcall instead of reading the PURR directly on
-such machines.
+Acked-by: David Gibson <david@gibson.dropbear.id.au>
 
-Paul.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
