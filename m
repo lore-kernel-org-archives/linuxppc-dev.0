@@ -1,26 +1,26 @@
 Return-Path: <tie-fei.zang@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
+	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id F3E58DDDEB
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 13:13:56 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l573DpNH013858
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Jun 2007 20:13:51 -0700 (MST)
+	by ozlabs.org (Postfix) with ESMTP id 2D7C5DDEDA
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 13:20:12 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	l573K7Mx026272
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Jun 2007 20:20:07 -0700 (MST)
 Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
 	[10.192.129.207])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l573DnxC021103
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Jun 2007 22:13:50 -0500 (CDT)
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l573K6eE007866
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Jun 2007 22:20:07 -0500 (CDT)
 Subject: [PATCH]: Add 8548 pcie bus number workaround
 From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
 To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Message-Id: <1181186000.10296.35.camel@localhost.localdomain>
+Message-Id: <1181186378.10296.41.camel@localhost.localdomain>
 Mime-Version: 1.0
-Date: 07 Jun 2007 11:13:21 +0800
+Date: 07 Jun 2007 11:19:38 +0800
 Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -42,7 +42,12 @@ the PCI architecture. So "bus->number == hose->bus_offset"
 judgment is added.
 
 Some minor space indentation clean up.
+
+Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
 ---
+Please ignore the previous and pick up this one.
+Sorry for it!
+
  arch/powerpc/sysdev/fsl_pcie.c |   28 ++++++++++++++--------------
  1 files changed, 14 insertions(+), 14 deletions(-)
 
