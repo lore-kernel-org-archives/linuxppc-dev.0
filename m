@@ -1,15 +1,22 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Milton Miller <miltonm@bga.com>, linuxppc-dev@ozlabs.org,
-	horms@verge.net.au, kexec@lists.infradead.org,
-	Santhosh Rao <sonny@burdell.org>
-Subject: [PATCH] kexec ppc64: fix misaligned cmdline 
-In-reply-to: <26608.1180950136@neuling.org> 
-References: <25445.1180941825@neuling.org>
-	<8f5d8a214e9042b0c556ac7256928a52@bga.com>
-	<26608.1180950136@neuling.org>
-Date: Thu, 07 Jun 2007 11:19:22 +1000
-Message-ID: <10188.1181179162@neuling.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 6FCECDDDFE
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 11:25:47 +1000 (EST)
+Date: Thu, 7 Jun 2007 11:25:41 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [patch 08/18] PS3: Kexec support
+Message-Id: <20070607112541.5a296cd1.sfr@canb.auug.org.au>
+In-Reply-To: <46672D34.8010808@am.sony.com>
+References: <20070606024407.786638029@am.sony.com>
+	<4666233F.1080103@am.sony.com>
+	<1181102510.5536.15.camel@concordia.ozlabs.ibm.com>
+	<46672D34.8010808@am.sony.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__7_Jun_2007_11_25_41_+1000_JDqxYxSnpf0+gzR0"
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,144 +26,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If the cmdline changes between boots, we can get misalignment of the
-bootargs entry, which in turn corrupts our device tree blob and hence
-kills our kexec boot.  Also, if there was no /chosen/bootargs
-previously, we'd never add a new one. 
+--Signature=_Thu__7_Jun_2007_11_25_41_+1000_JDqxYxSnpf0+gzR0
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This ignores the bootargs while parsing the tree and inserts it later. 
+Hi Geoff,
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
-This hopefully address issues raised by Milton.  
+On Wed, 06 Jun 2007 14:55:00 -0700 Geoff Levand <geoffrey.levand@am.sony.co=
+m> wrote:
+>
+> Michael Ellerman wrote:
+> > On Tue, 2007-06-05 at 20:00 -0700, Geoff Levand wrote:
+> >> Fixup the core platform parts needed for kexec to work on the PS3.
+> >>  - Setup ps3_hpte_clear correctly.
+> >>  - Mask interrupts on irq removal.
+> >>  - Release all hypervisor resources.
+> >=20
+> > The irq changes might be kexec related, but it's a mess to review. You
+> > seem to moving a bunch of code around in the patch as well.
+>=20
+> Yes, I need to move the static chip_mask routines up so they would be
+> defined before the irq setup/destroy routines.
 
- kexec/arch/ppc64/fs2dt.c |   95 +++++++++++++++++++++++++++++++----------------
- 1 file changed, 63 insertions(+), 32 deletions(-)
+I think Michael's point then is that if you submitted a separate
+preceding patch that just moves stuff around without any other changes
+(if at all possible) then reviewing the changes in this would be much
+easier (and our confidence would be higher).
 
-Index: kexec-tools-testing/kexec/arch/ppc64/fs2dt.c
-===================================================================
---- kexec-tools-testing.orig/kexec/arch/ppc64/fs2dt.c
-+++ kexec-tools-testing/kexec/arch/ppc64/fs2dt.c
-@@ -18,6 +18,7 @@
-  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-  */
- 
-+#define _GNU_SOURCE
- #include <sys/types.h>
- #include <sys/stat.h>
- 
-@@ -233,6 +234,12 @@ static void putprops(char *fn, struct di
- 		    !reuse_initrd)
- 				continue;
- 
-+		/* This property will be created later in putnode() So
-+		 * ignore it now.
-+		 */
-+		if (!strcmp(dp->d_name, "bootargs"))
-+			continue;
-+
- 		if (! S_ISREG(statbuf.st_mode))
- 			continue;
- 
-@@ -257,38 +264,6 @@ static void putprops(char *fn, struct di
- 
- 		checkprop(fn, dt, len);
- 
--		/* Get the cmdline from the device-tree and modify it */
--		if (!strcmp(dp->d_name, "bootargs")) {
--			int cmd_len;
--			char temp_cmdline[COMMAND_LINE_SIZE] = { "" };
--			char *param = NULL;
--			cmd_len = strlen(local_cmdline);
--			if (cmd_len != 0) {
--				param = strstr(local_cmdline, "crashkernel=");
--				if (param)
--					crash_param = 1;
--				param = strstr(local_cmdline, "root=");
--			}
--			if (!param) {
--				char *old_param;
--				memcpy(temp_cmdline, dt, len);
--				param = strstr(temp_cmdline, "root=");
--				if (param) {
--					old_param = strtok(param, " ");
--					if (cmd_len != 0)
--						strcat(local_cmdline, " ");
--					strcat(local_cmdline, old_param);
--				}
--			}
--			strcat(local_cmdline, " ");
--			cmd_len = strlen(local_cmdline);
--			cmd_len = cmd_len + 1;
--			memcpy(dt, local_cmdline,cmd_len);
--			len = cmd_len;
--			*dt_len = cmd_len;
--			fprintf(stderr, "Modified cmdline:%s\n", local_cmdline);
--		}
--
- 		dt += (len + 3)/4;
- 		if (!strcmp(dp->d_name, "reg") && usablemem_rgns.size)
- 			add_usable_mem_property(fd, len);
-@@ -385,6 +360,62 @@ static void putnode(void)
- 		reserve(initrd_base, initrd_size);
- 	}
- 
-+	/* Add cmdline to the second kernel.  Check to see if the new
-+	 * cmdline has a root=.  If not, use the old root= cmdline.  */
-+	if (!strcmp(basename,"/chosen/")) {
-+		size_t cmd_len = 0;
-+		char *param = NULL;
-+
-+		cmd_len = strlen(local_cmdline);
-+		if (cmd_len != 0) {
-+			param = strstr(local_cmdline, "crashkernel=");
-+			if (param)
-+				crash_param = 1;
-+			/* does the new cmdline have a root= ? ... */
-+			param = strstr(local_cmdline, "root=");
-+		}
-+
-+		/* ... if not, grab root= from the old command line */
-+		if (!param) {
-+			char filename[MAXPATH];
-+			FILE *fp;
-+			char *last_cmdline = NULL;
-+			char *old_param;
-+
-+			strcpy(filename, pathname);
-+			strcat(filename, "bootargs");
-+			fp = fopen(filename, "r");
-+			if (fp) {
-+				if (getline(&last_cmdline, &cmd_len, fp) == -1)
-+					die("unable to read %s\n", filename);
-+
-+				param = strstr(last_cmdline, "root=");
-+				if (param) {
-+					old_param = strtok(param, " ");
-+					if (cmd_len != 0)
-+						strcat(local_cmdline, " ");
-+					strcat(local_cmdline, old_param);
-+				}
-+			}
-+			if (last_cmdline)
-+				free(last_cmdline);
-+		}
-+		strcat(local_cmdline, " ");
-+		cmd_len = strlen(local_cmdline);
-+		cmd_len = cmd_len + 1;
-+
-+		/* add new bootargs */
-+		*dt++ = 3;
-+		*dt++ = cmd_len;
-+		*dt++ = propnum("bootargs");
-+		if ((cmd_len >= 8) && ((unsigned long)dt & 0x4))
-+			dt++;
-+		memcpy(dt, local_cmdline,cmd_len);
-+		dt += (cmd_len + 3)/4;
-+
-+		fprintf(stderr, "Modified cmdline:%s\n", local_cmdline);
-+	}
-+
- 	for (i=0; i < numlist; i++) {
- 		dp = namelist[i];
- 		strcpy(dn, dp->d_name);
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__7_Jun_2007_11_25_41_+1000_JDqxYxSnpf0+gzR0
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGZ16aFdBgD/zoJvwRAgftAJ9RufFg+oRAkfe+3ELMLOEEgKqA3gCfdFoa
+npgWfiC2IRnAaiiR1kGYXcU=
+=qMga
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__7_Jun_2007_11_25_41_+1000_JDqxYxSnpf0+gzR0--
