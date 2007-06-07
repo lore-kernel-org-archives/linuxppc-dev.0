@@ -1,23 +1,21 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 6CB6CDDF0E
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 01:30:16 +1000 (EST)
-Date: Thu, 7 Jun 2007 10:36:50 -0500
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: MPC8349ea Random Device Generator driver
-Message-ID: <20070607153650.GC2851@lixom.net>
-References: <BAY122-F18923A7AA6D3A4D96A360085200@phx.gbl>
-	<46672DB4.80504@freescale.com> <20070606220913.GA27820@lixom.net>
-	<46673009.6000109@freescale.com> <20070606222456.GA28225@lixom.net>
-	<466735F3.7040504@freescale.com> <20070606235440.GA28400@lixom.net>
-	<466814E7.3090101@freescale.com> <20070607152041.GA2851@lixom.net>
-	<46682233.7060601@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <46682233.7060601@freescale.com>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, sl@powerlinux.fr,
-	Philippe Lachenal <philippe.lachenal@hotmail.fr>
+Return-Path: <jdl@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2895ADDF29
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 01:31:32 +1000 (EST)
+Subject: Re: [RFC] 85XX: Allow 8259 cascade to share an MPIC interrupt line.
+From: Jon Loeliger <jdl@freescale.com>
+To: Randy Vinson <rvinson@mvista.com>
+In-Reply-To: <466755AC.40201@mvista.com>
+References: <466755AC.40201@mvista.com>
+Content-Type: text/plain
+Message-Id: <1181230255.31686.3.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Thu, 07 Jun 2007 10:30:55 -0500
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,17 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 07, 2007 at 10:20:19AM -0500, Timur Tabi wrote:
+On Wed, 2007-06-06 at 19:47, Randy Vinson wrote:
+> The Freescale MPC8555CDS and MPC8548CDS reference hardware has a legacy
+> 8259 interrupt controller pair contained within a VIA VT82C686B Southbridge
+> on the main carrier board. The processor complex plugs into the carrier
+> card using a PCI slot which limits the available interrupts to the
+> INTA-INTD PCI interrupts. The output of the 8259 cascade pair is routed
+> through a gate array and connected to the PCI INTA interrupt line.
+> The normal interrupt chaining hook (set_irq_chained_handler) does
+> not allow sharing of the chained interrupt which prevents the
+> use of PCI INTA by PCI devices. This patch allows the 8259 cascade
+> pair to share their interrupt line with PCI devices.
+> 
+> Signed-off-by: Randy Vinson <rvinson@mvista.com>
+> ---
+> Note that there may very well be a better way of accomplishing this. If someone
+> has a better alternative, I'm open to it. This was just the simplest way I could
+> get this to work.
+> 
+> Also, the addition of the .end routine for the MPIC is not strictly necessary for
+> this patch. It's there so this code will run from within the threaded interrupt
+> context used by the Real Time patch.
 
-> Ok, I understand that, too.  I just don't understand absolutist statements like "you can 
-> never assign a __le16 type to any other integer type" when our code is full of example of 
-> doing just that.
 
-Because you're doing it wrong, and your code is broken. Try running
-it through sparse and watch the spew. I get 68 sparse warnings on
-arch/powerpc/sysdev/*
+Hmm.  I feel that at least the last paragraph here needs
+to be above the --- line for future patch readers.  Otherwise
+it's relationship to the rest of the patch details will be
+intermixed and lost.
 
-You have some work to do!
-
-
--Olof
+Thanks,
+jdl
