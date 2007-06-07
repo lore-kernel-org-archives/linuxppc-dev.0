@@ -1,19 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B2E1BDDEBD
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 08:26:08 +1000 (EST)
-Subject: Re: [PATCH] Fix per-cpu allocation on oldworld SMP powermacs
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18023.64811.643218.556485@cargo.ozlabs.ibm.com>
-References: <18023.64811.643218.556485@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Fri, 08 Jun 2007 08:26:02 +1000
-Message-Id: <1181255162.14818.79.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mgreer@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id 63527DDEE8
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 08:28:17 +1000 (EST)
+Date: Thu, 7 Jun 2007 15:29:12 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Randy Vinson <rvinson@mvista.com>
+Subject: Re: [PATCH] 85xxCDS: Make sure restart resets the PCI bus.
+Message-ID: <20070607222912.GB12076@mag.az.mvista.com>
+References: <46686CAF.4030407@mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <46686CAF.4030407@mvista.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,36 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-06-07 at 22:42 +1000, Paul Mackerras wrote:
-> diff --git a/arch/powerpc/platforms/powermac/setup.c
-> b/arch/powerpc/platforms/powermac/setup.c
-> index 07b1c4e..c519b2a 100644
-> --- a/arch/powerpc/platforms/powermac/setup.c
-> +++ b/arch/powerpc/platforms/powermac/setup.c
-> @@ -363,8 +363,19 @@ static void __init pmac_setup_arch(void)
->                 smp_ops = &core99_smp_ops;
->         }
->  #ifdef CONFIG_PPC32
-> -       else
-> +       else {
-> +               /*
-> +                * We have to set bits in cpu_possible_map here since
-> the
-> +                * secondary CPU(s) aren't in the device tree, and
-> +                * setup_per_cpu_areas only allocates per-cpu data for
-> +                * CPUs in the cpu_possible_map.
-> +                */
-> +               int cpu;
+On Thu, Jun 07, 2007 at 01:38:07PM -0700, Randy Vinson wrote:
+> --- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+> +++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+
+> +	if ((dev = pci_get_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_82C686,
+> +					NULL))) {
 > +
-> +               for (cpu = 1; cpu < 4 && cpu < NR_CPUS; ++cpu)
-> +                       cpu_set(cpu, cpu_possible_map);
->                 smp_ops = &psurge_smp_ops;
-> +       }
->  #endif
->  #endif /* CONFIG_SMP */ 
+> +		/* Use the VIA Super Southbridge to force a PCI reset */
+> +		pci_read_config_byte(dev, 0x47, &tmp);
+> +		pci_write_config_byte(dev, 0x47, tmp | 1);
 
-Why not use the result from probe() instead which returns the number of
-possible CPUs ? That would catch more than just the powermac case ... we
-might have similar issues when finally porting PReP over...
+How about adding another "pci_read_config_byte(dev, 0x47, &tmp);" to
+flush the write out of any fifo's and adding a comment that explains
+that once that write hits the hardware, the reset is essentially
+instantaneous.  IOW, there isn't a race between this reset and the reset
+you'd call if/when it falls out of this 'if'.
 
-Ben.
+> +
+> +		pci_dev_put(dev);
+> +	}
+> +
+> +	/*
+> +	 *  We should only get here if the P2P bridge is disabled. In that
+> +	 *  case, just use the default reset.
+> +	 */
+> +	mpc85xx_restart(NULL);
+
+Mark
