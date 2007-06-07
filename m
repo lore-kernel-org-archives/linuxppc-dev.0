@@ -1,30 +1,24 @@
-Return-Path: <SRS0+8f2be1f524bb961c24bd+1383+infradead.org+dwmw2@canuck.srs.infradead.org>
-Received: from canuck.infradead.org (canuck.infradead.org [209.217.80.40])
+Return-Path: <jdl@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 928FFDDECB
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 02:06:56 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
-From: David Woodhouse <dwmw2@infradead.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <18fbfbaf113ab76b602d279848d9b405@kernel.crashing.org>
-References: <7fc919fce0761f861be3069a853d3169@bga.com>
-	<bd6ef296692e8cfb81118f2dc85189a5@kernel.crashing.org>
-	<4662EAA9.70104@ru.mvista.com>
-	<e4197fd2753f2b4d548d5dde9e3fd1d3@kernel.crashing.org>
-	<466308F4.8050004@ru.mvista.com>
-	<8ac5664208e0f59329b62ac2138bbc8c@kernel.crashing.org>
-	<466312C2.4090200@ru.mvista.com>
-	<548a7e11ffb577f6395b8f5a9c2fba2d@kernel.crashing.org>
-	<466323EF.5040807@ru.mvista.com>
-	<1181228442.2785.60.camel@pmac.infradead.org>
-	<18fbfbaf113ab76b602d279848d9b405@kernel.crashing.org>
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2A956DDF10
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 02:08:42 +1000 (EST)
+Subject: Re: [PATCH] Fix drivers/rtc/Kconfig for powerpc
+From: Jon Loeliger <jdl@freescale.com>
+To: Wade Farnsworth <wfarnsworth@mvista.com>
+In-Reply-To: <1181150240.5674.139.camel@rhino>
+References: <1181149064.5674.134.camel@rhino>
+	<1181149622.12740.32.camel@ld0161-tx32>
+	<1181150240.5674.139.camel@rhino>
 Content-Type: text/plain
-Date: Thu, 07 Jun 2007 17:05:58 +0100
-Message-Id: <1181232358.2785.79.camel@pmac.infradead.org>
+Message-Id: <1181232488.31686.19.camel@ld0161-tx32>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	Milton Miller <miltonm@bga.com>
+Date: Thu, 07 Jun 2007 11:08:08 -0500
+Cc: a.zummo@towertech.it, rtc-linux@googlegroups.com,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,46 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-06-07 at 17:55 +0200, Segher Boessenkool wrote:
-> > Any representation of flash devices in the device-tree should ideally
-> > have 'bus width' and 'interleave' properties to contain this
-> > information.
-> >
-> > The 'bus width' cannot necessarily be inferred, especially where a 
-> > given
-> > bus can be configured to allow multiple sizes of access. It's purely a
-> > function of how the flash chips are wired up. That's why we actually
-> > call it 'bank width', not 'bus width' in the Linux code.
-> 
-> Ah, "bank width" as in "bus width" per chip select.  I see.
-> 
-> So I think the best thing to have would be
-> 
-> 	compatible      "cfi-flash"
-> 	bank-width      like you said
-> 	device-width    width of a single flash device
-> 	reg             complete address range of this thing
-> 
-> and then the Linux OF CFI flash code / MTD code just keeps
-> on probing devices from that address range until it has it
-> filled.
-> 
-> Sounds good / comments / anything I missed?
+On Wed, 2007-06-06 at 12:17, Wade Farnsworth wrote:
 
-That seems reasonable. I would personally have used 'interleave' to give
-the number of devices interleaved together into the specified
-bank-width, rather than specifying device-width. People might get
-confused by device-width because many devices can actually be _either_
-x16 or x8. But I don't care much. Linux will only be using the
-bank-width anyway.
+> > 
+> > Did you miss where I ACK'ed it 16-May-2007? :-)
+> 
+> Ah okay, maybe I don't understand what that means.  When you say
+> "Acked-by" does that mean you'll push it upstream?
 
-The other thing that might be seen in the 'compatible' property would be
-'jedec-flash', and in that case perhaps we also want properties for the
-manufacturer and device ident? Linux wouldn't necessarily care about
-them, but other operating systems might.
+I meant that I picked the patch up, applied it to my tree,
+tested it, and verified that _I_ thought it was good.
+It received my Vote of Confidence, for whatever that is worth.
 
-And we also need partition information to get through somehow, in the
-cases where the firmware knows it.
+> What I meant was I haven't seen anybody pick up this patch yet, and
+> would like to know it if will be, or if there is something else I need
+> to do.
 
--- 
-dwmw2
+Right.  This patch is in "generic" PowerPC related code,
+and not in my area to "push upstream".  I would expect, say,
+Paul to pick it up directly.  Perhaps Kumar would pick it up
+and stage it for Paul.  Perhaps akpm would pick it up. :-)
+
+> --Wade
+
+HTH,
+jdl
