@@ -1,23 +1,11 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 2.6.22-rc4] ehea: Fixed possible kernel panic on VLAN
-	packet recv
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Thomas Klein <osstklei@de.ibm.com>
-In-Reply-To: <200706062053.16986.osstklei@de.ibm.com>
-References: <200706062053.16986.osstklei@de.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-mcXb+V+eRMmRMoHPYMoC"
-Date: Thu, 07 Jun 2007 10:35:00 +1000
-Message-Id: <1181176500.4166.1.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
-	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>
-Reply-To: michael@ellerman.id.au
+Return-Path: <mgreer@mvista.com>
+Date: Wed, 6 Jun 2007 17:38:00 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Subject: [PATCH 1/2] powerpc: call add_preferred_console when mpsc is console
+Message-ID: <20070607003800.GA4301@mag.az.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,88 +15,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+When a Marvell MPSC (serial controller) port is the specified
+/chosen/stdout-path device, call 'add_preferred_console()' so the user
+doesn't have to specify a 'console=ttyMMx' cmdline argument.
 
---=-mcXb+V+eRMmRMoHPYMoC
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Mark A. Greer <mgreer@mvista.com>
+Acked-by: Dale Farnsworth <dale@farnsworth.org>
+---
+ arch/powerpc/sysdev/mv64x60_dev.c |   28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
 
-On Wed, 2007-06-06 at 20:53 +0200, Thomas Klein wrote:
-> This patch fixes a possible kernel panic due to not checking the vlan gro=
-up
-> when processing received VLAN packets and a malfunction in VLAN/hyperviso=
-r
-> registration.
->=20
->=20
-> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
-> ---
->=20
->=20
-> diff -Nurp -X dontdiff linux-2.6.22-rc4/drivers/net/ehea/ehea.h patched_k=
-ernel/drivers/net/ehea/ehea.h
-> --- linux-2.6.22-rc4/drivers/net/ehea/ehea.h	2007-06-05 02:57:25.00000000=
-0 +0200
-> +++ patched_kernel/drivers/net/ehea/ehea.h	2007-06-06 12:53:58.000000000 =
-+0200
-> @@ -39,7 +39,7 @@
->  #include <asm/io.h>
-> =20
->  #define DRV_NAME	"ehea"
-> -#define DRV_VERSION	"EHEA_0061"
-> +#define DRV_VERSION	"EHEA_0064"
-> =20
->  #define EHEA_MSG_DEFAULT (NETIF_MSG_LINK | NETIF_MSG_TIMER \
->  	| NETIF_MSG_RX_ERR | NETIF_MSG_TX_ERR)
-> diff -Nurp -X dontdiff linux-2.6.22-rc4/drivers/net/ehea/ehea_main.c patc=
-hed_kernel/drivers/net/ehea/ehea_main.c
-> --- linux-2.6.22-rc4/drivers/net/ehea/ehea_main.c	2007-06-05 02:57:25.000=
-000000 +0200
-> +++ patched_kernel/drivers/net/ehea/ehea_main.c	2007-06-06 12:53:58.00000=
-0000 +0200
-> @@ -1947,7 +1945,7 @@ static void ehea_vlan_rx_add_vid(struct=20
->  	}
-> =20
->  	index =3D (vid / 64);
-> -	cb1->vlan_filter[index] |=3D ((u64)(1 << (vid & 0x3F)));
-> +	cb1->vlan_filter[index] |=3D ((u64)(0x8000000000000000 >> (vid & 0x3F))=
-);
-> =20
->  	hret =3D ehea_h_modify_ehea_port(adapter->handle, port->logical_port_id=
-,
->  				       H_PORT_CB1, H_PORT_CB1_ALL, cb1);
-> @@ -1982,7 +1980,7 @@ static void ehea_vlan_rx_kill_vid(struct
->  	}
-> =20
->  	index =3D (vid / 64);
-> -	cb1->vlan_filter[index] &=3D ~((u64)(1 << (vid & 0x3F)));
-> +	cb1->vlan_filter[index] &=3D ~((u64)(0x8000000000000000 >> (vid & 0x3F)=
-));
-
-These two seem ripe for splitting into some sort of helper routine.
-Which would leave only one place to get it right.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-mcXb+V+eRMmRMoHPYMoC
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGZ1K0dSjSd0sB4dIRAgCPAKC0cdqLYHAJcGSH7K3tj8soQgn0VwCgsqcG
-Mpkt/9j8eZqK2t8M2IARs+g=
-=BG5i
------END PGP SIGNATURE-----
-
---=-mcXb+V+eRMmRMoHPYMoC--
+diff --git a/arch/powerpc/sysdev/mv64x60_dev.c b/arch/powerpc/sysdev/mv64x60_dev.c
+index 4b0a9c8..b618fa6 100644
+--- a/arch/powerpc/sysdev/mv64x60_dev.c
++++ b/arch/powerpc/sysdev/mv64x60_dev.c
+@@ -12,6 +12,7 @@
+ #include <linux/stddef.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
++#include <linux/console.h>
+ #include <linux/mv643xx.h>
+ #include <linux/platform_device.h>
+ 
+@@ -420,3 +421,30 @@ error:
+ 	return err;
+ }
+ arch_initcall(mv64x60_device_setup);
++
++static int __init mv64x60_add_mpsc_console(void)
++{
++	struct device_node *np = NULL;
++	const char *prop;
++
++	prop = of_get_property(of_chosen, "linux,stdout-path", NULL);
++	if (prop == NULL)
++		goto not_mpsc;
++
++	np = of_find_node_by_path(prop);
++	if (!np)
++		goto not_mpsc;
++
++	if (!of_device_is_compatible(np, "marvell,mpsc"))
++		goto not_mpsc;
++
++	prop = of_get_property(np, "block-index", NULL);
++	if (!prop)
++		goto not_mpsc;
++
++	add_preferred_console("ttyMM", *(int *)prop, NULL);
++
++not_mpsc:
++	return 0;
++}
++console_initcall(mv64x60_add_mpsc_console);
