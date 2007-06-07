@@ -1,20 +1,35 @@
-Return-Path: <wfarnsworth@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id C7324DDF1A
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 02:51:25 +1000 (EST)
-Subject: Re: [PATCH] Fix the LPC47M192 SuperIO on the MPC8641 HPCN
-From: Wade Farnsworth <wfarnsworth@mvista.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>,
-	Jon Loeliger <jdl@freescale.com>
-In-Reply-To: <63ff9dee6b212cc7908c8e1b73920ea6@kernel.crashing.org>
-References: <1181147415.5674.108.camel@rhino>
-	<200706070039.51541.arnd@arndb.de> <1181232276.5674.146.camel@rhino>
-	<63ff9dee6b212cc7908c8e1b73920ea6@kernel.crashing.org>
-Content-Type: text/plain
-Date: Thu, 07 Jun 2007 09:51:24 -0700
-Message-Id: <1181235084.5674.190.camel@rhino>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, Arnd Bergmann <arnd@arndb.de>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-06.arcor-online.net (mail-in-06.arcor-online.net
+	[151.189.21.46])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D146ADDF1B
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 02:53:15 +1000 (EST)
+In-Reply-To: <FE5191F7-8A1D-428A-B4F0-32AD3A08B08A@freescale.com>
+References: <1180720112.14219.62.camel@ld0161-tx32>
+	<dfc15991e31bfc09389461dc443acd7c@kernel.crashing.org>
+	<1180734314.5674.49.camel@rhino>
+	<4fb92a9dfccf515bdc1522d08f10f823@kernel.crashing.org>
+	<20070602085359.GA10333@iram.es>
+	<3ebd6ca6877ea74925f066ff96ac81db@kernel.crashing.org>
+	<20070602195308.GA21618@iram.es>
+	<12ad593bd17f769e44f05bc24eac4d0a@kernel.crashing.org>
+	<1180828907.14025.37.camel@localhost.localdomain>
+	<28e0600256815f93db45b2f4eb2d9df5@kernel.crashing.org>
+	<20070603083339.GB2157@iram.es>
+	<02DC2E36-86B1-4458-BB0C-13CF79AC1D11@freescale.com>
+	<466492DC.6050708@mvista.com>
+	<1181113764.31677.242.camel@localhost.localdomain>
+	<FE5191F7-8A1D-428A-B4F0-32AD3A08B08A@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <bfe9e3f1cb3bbbe8f061173da27eef90@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
+Date: Thu, 7 Jun 2007 18:53:09 +0200
+To: Andy Fleming <afleming@freescale.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,43 +39,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-06-07 at 18:35 +0200, Segher Boessenkool wrote:
-> >> Hardcoded I/O port numbers always worry me a little. I know that this 
-> >> is
-> >> supposed to work in general, but can't you read the I/O port range 
-> >> from
-> >> a device tree property?
-> >
-> > I suppose I could create a device node for the Super I/O config
-> > registers and use those instead of hardcoding it here.
-> 
-> I'd just hide it all, do this setup in the firmware,
-> where it belongs, and don't expose the superio config
-> in the device tree.
+>> The bus number shouldn't matter as long as low IO cycles are properly
+>> forwarded to it.
+>
+> Right.  Unless there's an interrupt mapping, which has to include the
+> bus number in the filter.
 
-That's a valid point.  This probably could (should?) be handled by
-U-boot.
+No it doesn't; the PCI device # of the thing that gets
+its interrupt mapped is enough.  PCI bus # is not a
+hardware property (except for bus #0) so it isn't a
+structural thing in the device tree at all.
 
-Jon, or others do you have any opinions on this?
+> When that happens, parsing the interrupt
+> map for the i8259's mapping fails because its address doesn't match.
 
-> 
-> > superio_cfg@4e {
-> > 	reg = <1 4e 2>;
-> > 	compatible = "smsc-lpc47m192-cfg";
-> > };
-> >
-> > I'm not sure if the name and compatible properties are appropriate
-> > though.  Any recommendations?
-> 
-> "superio" and "smsc,lpc47m192" I'd say.  You also
-> then should link the logical devices on the superio
-> to the device nodes that represent those.  I'm not
-> sure this is all worth it, this is low-level setup
-> the firmware should do and everything else can treat
-> it as a black box.
+That's because you're trying to map interrupts from
+two separate interrupt domains in your interrupt-map:
+the PCI bus of that node, and some child PCI bus
+somewhere deeper down.  This isn't designed to work,
+and hey, it doesn't ;-)
 
-OK, if we decide to keep this, I'll use those instead.
 
-Thanks.
-
---Wade
+Segher
