@@ -1,23 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 33D81DDE0C
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 12:54:17 +1000 (EST)
-Subject: Re: [patch 08/18] PS3: Kexec support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: michael@ellerman.id.au
-In-Reply-To: <1181183468.4166.5.camel@concordia.ozlabs.ibm.com>
-References: <20070606024407.786638029@am.sony.com> >
-	<4666233F.1080103@am.sony.com>
-	<1181102510.5536.15.camel@concordia.ozlabs.ibm.com>
-	<46672D34.8010808@am.sony.com>
-	<1181183468.4166.5.camel@concordia.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Thu, 07 Jun 2007 12:54:06 +1000
-Message-Id: <1181184846.31677.277.camel@localhost.localdomain>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A54A2DDEBA
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 12:55:58 +1000 (EST)
+Date: Wed, 6 Jun 2007 21:55:49 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: "Philippe Lachenal" <philippe.lachenal@hotmail.fr>
+Subject: Re: MPC8349ea Random Device Generator driver
+Message-Id: <20070606215549.02ff8084.kim.phillips@freescale.com>
+In-Reply-To: <BAY122-F18923A7AA6D3A4D96A360085200@phx.gbl>
+References: <BAY122-F18923A7AA6D3A4D96A360085200@phx.gbl>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, sl@powerlinux.fr
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,38 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-06-07 at 12:31 +1000, Michael Ellerman wrote:
-> > >> +  pr_debug("%s:%d: cpu %u, virq %d\n", __func__, __LINE__,
-> pd->cpu, virq);
-> > >> +
-> > >> +  local_irq_save(flags);
-> > >> +  asm volatile(
-> > >> +               "1:        ldarx %0,0,%3\n"
-> > >> +               "andc      %0,%0,%2\n"
-> > >> +               "stdcx.    %0,0,%3\n"
-> > >> +               "bne-      1b"
-> > >> +               : "=&r" (old), "+m" (*p)
-> > >> +               : "r" (bit), "r" (p)
-> > >> +               : "cc" );
-> > >> +
-> > >> +  lv1_did_update_interrupt_mask(pd->node, pd->cpu);
-> > >> +  local_irq_restore(flags);
-> > > 
-> > > How is this different from set_bit() ?  (asm-powerpc/bitops.h)
-> > > 
-> > > ps. now that I see you're just moving this code around someone's
-> > > probably already asked that question. 
+On Tue, 05 Jun 2007 17:42:08 +0200
+"Philippe Lachenal" <philippe.lachenal@hotmail.fr> wrote:
 
-Actually the above is clear_bit :-)
+> Hello !
+> 
+> I've made a driver for the MPC8349ea Random Device Generator, and I 
+> therefore submit it to your impartial judgment.. ;)
+> thanks a lot !
+> 
+> Lachenal Philippe
+> 
 
-That would thus be something around the lines of:
+the Random Device Generator, eh?  didn't know we had one of those. ;)
 
- clear_bit(&pd->bmp.mask, 63 - virq);
+The RNG h/w block in question shares registers, initialization and
+configuration with what's known as the Freescale SEC device (a.k.a.
+talitos).  Talitos does crypto and public key ops, and some
+implementations don't have an RNG EU.  There needs to be one driver for
+the SEC, and it's not an rng driver.
 
-Geoff, feel free to replace it with the clear_bit if you think it's
-nicer that way :-) (and double check I didn't smoke crack when doing
-the above conversion).
-
-The other one in unmask would be set_bit() of course.
-
-Ben.
+Kim
