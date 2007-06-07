@@ -1,20 +1,17 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 47A2CDDEC7
+Return-Path: <eemingliu@hotmail.com>
+Received: from bay0-omc3-s31.bay0.hotmail.com (bay0-omc3-s31.bay0.hotmail.com
+	[65.54.246.231]) by ozlabs.org (Postfix) with ESMTP id 751ABDDE43
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Jun 2007 20:07:00 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-embedded@ozlabs.org
+	Thu,  7 Jun 2007 21:20:12 +1000 (EST)
+Message-ID: <BAY138-F35699348E26C40AED449B3B2260@phx.gbl>
+In-Reply-To: <200706071201.46637.arnd@arndb.de>
+From: "Ming Liu" <eemingliu@hotmail.com>
+To: arnd@arndb.de
 Subject: Re: a question on "iowrite32()"
-Date: Thu, 7 Jun 2007 12:01:46 +0200
-References: <BAY138-F6B2DA6BEF021C7026E522B2270@phx.gbl>
-	<20070607062054.GD23294@moe.telargo.com>
-In-Reply-To: <20070607062054.GD23294@moe.telargo.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200706071201.46637.arnd@arndb.de>
-Cc: linuxppc@ozlabs.org, Domen Puncer <domen.puncer@telargo.com>
+Date: Thu, 07 Jun 2007 11:20:10 +0000
+Mime-Version: 1.0
+Content-Type: text/plain; charset=gb2312; format=flowed
+Cc: domen.puncer@telargo.com, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,29 +22,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thursday 07 June 2007, Domen Puncer wrote:
-> out_be32?
-> I recall something about iowrite32 being PCI stuff and therefore little
-> endian, but don't count on this being right.
+Dear Arnd,
 
-You're completely right, out_be32 is the correct one. The primitives
-we have for writing 32 bit I/O space are:
+>Since of_iomap() is rather new and hardly used by any drivers, we
+>could still redefine it so that you would use iowrite32{,be}() instead
+>of out_{be,le}32, but currently that doesn't work.
 
-writel(): PCI memory space from ioremap
-outl(): PCI I/O space from a struct resource
-iowrite32(): PCI memory or I/O space from pci_iomap
-iowrite32be(): defined but not useful anywhere currently
-out_be32(): big-endian memory address from of_address_to_resource or of_iomap
-out_le32(): like out_be32(), but little-endian
-__raw_writel(): always broken, don't use
+So if I am correct, your suggestion is to use iowrite32be() in my device 
+driver, right? However, I cannot find such a function defined in my 2.6.10 
+kernel. Isn't iowrite32be() a standard IO function like iowrite32(), or 
+there is a patch to export this function?
 
-Since of_iomap() is rather new and hardly used by any drivers, we
-could still redefine it so that you would use iowrite32{,be}() instead
-of out_{be,le}32, but currently that doesn't work.
+Thanks for your information.
 
-I also thought about changing of_iomap() to use the devres functions,
-which basically attach information about the mapping to the device
-structure, and automatically unmap those when the of_platform_driver
-gets unregistered.
+BR
+Ming
 
-	Arnd <><
+_________________________________________________________________
+与联机的朋友进行交流，请使用 MSN Messenger:  http://messenger.msn.com/cn  
