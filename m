@@ -1,23 +1,26 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-02.arcor-online.net (mail-in-02.arcor-online.net
-	[151.189.21.42])
+Return-Path: <jdl@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3EB43DDF12
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 02:35:35 +1000 (EST)
-In-Reply-To: <1181232276.5674.146.camel@rhino>
-References: <1181147415.5674.108.camel@rhino>
-	<200706070039.51541.arnd@arndb.de>
-	<1181232276.5674.146.camel@rhino>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <63ff9dee6b212cc7908c8e1b73920ea6@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] Fix the LPC47M192 SuperIO on the MPC8641 HPCN
-Date: Thu, 7 Jun 2007 18:35:10 +0200
+	by ozlabs.org (Postfix) with ESMTP id 5A5B5DDE2E
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 02:37:58 +1000 (EST)
+Subject: Re: [PATCH] Fix drivers/rtc/Kconfig for powerpc
+From: Jon Loeliger <jdl@freescale.com>
 To: Wade Farnsworth <wfarnsworth@mvista.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <1181233980.5674.174.camel@rhino>
+References: <1181149064.5674.134.camel@rhino>
+	<1181149622.12740.32.camel@ld0161-tx32>
+	<1181150240.5674.139.camel@rhino>
+	<1181232488.31686.19.camel@ld0161-tx32>
+	<1181233980.5674.174.camel@rhino>
+Content-Type: text/plain
+Message-Id: <1181234266.31686.37.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Thu, 07 Jun 2007 11:37:46 -0500
+Cc: a.zummo@towertech.it, rtc-linux@googlegroups.com,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,33 +30,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Hardcoded I/O port numbers always worry me a little. I know that this 
->> is
->> supposed to work in general, but can't you read the I/O port range 
->> from
->> a device tree property?
->
-> I suppose I could create a device node for the Super I/O config
-> registers and use those instead of hardcoding it here.
+On Thu, 2007-06-07 at 11:33, Wade Farnsworth wrote:
+> 
+> But since this is in drivers/rtc/Kconfig, wouldn't the maintainer of
+> that subsystem be expected to pick this up?
 
-I'd just hide it all, do this setup in the firmware,
-where it belongs, and don't expose the superio config
-in the device tree.
+Oh, sure.  In which case he/she may be waiting on
+someone over in PowerPC land to ACK it first. :-)
+Dunno.
 
-> superio_cfg@4e {
-> 	reg = <1 4e 2>;
-> 	compatible = "smsc-lpc47m192-cfg";
-> };
->
-> I'm not sure if the name and compatible properties are appropriate
-> though.  Any recommendations?
-
-"superio" and "smsc,lpc47m192" I'd say.  You also
-then should link the logical devices on the superio
-to the device nodes that represent those.  I'm not
-sure this is all worth it, this is low-level setup
-the firmware should do and everything else can treat
-it as a black box.
-
-
-Segher
+jdl
