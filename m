@@ -1,23 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 190E3DDEBA
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 12:48:14 +1000 (EST)
-Date: Thu, 7 Jun 2007 12:48:06 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 33D81DDE0C
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 12:54:17 +1000 (EST)
 Subject: Re: [patch 08/18] PS3: Kexec support
-Message-Id: <20070607124806.836e9197.sfr@canb.auug.org.au>
-In-Reply-To: <46676051.5010603@am.sony.com>
-References: <20070606024407.786638029@am.sony.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: michael@ellerman.id.au
+In-Reply-To: <1181183468.4166.5.camel@concordia.ozlabs.ibm.com>
+References: <20070606024407.786638029@am.sony.com> >
 	<4666233F.1080103@am.sony.com>
 	<1181102510.5536.15.camel@concordia.ozlabs.ibm.com>
 	<46672D34.8010808@am.sony.com>
-	<20070607112541.5a296cd1.sfr@canb.auug.org.au>
-	<46676051.5010603@am.sony.com>
+	<1181183468.4166.5.camel@concordia.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Thu, 07 Jun 2007 12:54:06 +1000
+Message-Id: <1181184846.31677.277.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__7_Jun_2007_12_48_06_+1000_9h=8RMGPg0Dv1fji"
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,32 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__7_Jun_2007_12_48_06_+1000_9h=8RMGPg0Dv1fji
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 2007-06-07 at 12:31 +1000, Michael Ellerman wrote:
+> > >> +  pr_debug("%s:%d: cpu %u, virq %d\n", __func__, __LINE__,
+> pd->cpu, virq);
+> > >> +
+> > >> +  local_irq_save(flags);
+> > >> +  asm volatile(
+> > >> +               "1:        ldarx %0,0,%3\n"
+> > >> +               "andc      %0,%0,%2\n"
+> > >> +               "stdcx.    %0,0,%3\n"
+> > >> +               "bne-      1b"
+> > >> +               : "=&r" (old), "+m" (*p)
+> > >> +               : "r" (bit), "r" (p)
+> > >> +               : "cc" );
+> > >> +
+> > >> +  lv1_did_update_interrupt_mask(pd->node, pd->cpu);
+> > >> +  local_irq_restore(flags);
+> > > 
+> > > How is this different from set_bit() ?  (asm-powerpc/bitops.h)
+> > > 
+> > > ps. now that I see you're just moving this code around someone's
+> > > probably already asked that question. 
 
-On Wed, 06 Jun 2007 18:33:05 -0700 Geoff Levand <geoffrey.levand@am.sony.co=
-m> wrote:
->
-> Yes, sorry, I understood.  I've already split it up for the next round.
+Actually the above is clear_bit :-)
 
-Excellent, thanks.
+That would thus be something around the lines of:
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+ clear_bit(&pd->bmp.mask, 63 - virq);
 
---Signature=_Thu__7_Jun_2007_12_48_06_+1000_9h=8RMGPg0Dv1fji
-Content-Type: application/pgp-signature
+Geoff, feel free to replace it with the clear_bit if you think it's
+nicer that way :-) (and double check I didn't smoke crack when doing
+the above conversion).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+The other one in unmask would be set_bit() of course.
 
-iD8DBQFGZ3HrFdBgD/zoJvwRAgmtAKCNn1mOdyzevhAriJC3XCKS7dHODACdGdoF
-T2U8/HdKRUyuCc/pRFI4XjQ=
-=bGn9
------END PGP SIGNATURE-----
-
---Signature=_Thu__7_Jun_2007_12_48_06_+1000_9h=8RMGPg0Dv1fji--
+Ben.
