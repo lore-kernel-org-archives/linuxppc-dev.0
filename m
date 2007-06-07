@@ -1,24 +1,16 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
-	[151.189.21.41])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B31E3DDF1B
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 03:00:29 +1000 (EST)
-In-Reply-To: <1181233610.5674.167.camel@rhino>
-References: <1181148145.5674.121.camel@rhino>
-	<2a56a9d008269d393c68959f1804c21d@kernel.crashing.org>
-	<1181233610.5674.167.camel@rhino>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <cd1e655423140dbb20af2821d5c3955f@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] When checking I8042 io port,
-	use of_find_compatible_node() instead of of_find_node_by_type()
-Date: Thu, 7 Jun 2007 18:59:48 +0200
-To: Wade Farnsworth <wfarnsworth@mvista.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 508A7DDF31
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 03:01:42 +1000 (EST)
+Date: Thu, 7 Jun 2007 12:08:16 -0500
+To: paulus@samba.org
+Subject: [PATCH] powerpc: Don't use long for 32-bit temp variables in spin
+	lock ops
+Message-ID: <20070607170816.GA4273@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,75 +20,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> In check_legacy_ioport(), instead of using of_find_node_by_type() to
->>> find the 8042 node, use of_find_compatible_node() to find either the
->>> keyboard or mouse node.
->>
->> Why?
+The spinlock ops have long as their return type (as well as for some
+of the temporary types internally). All locks are 32-bit, so it makes
+no sense to do 64-bit ops on them.
 
-^^^^^^^^
+For example, this is how my compiler built _spin_lock() for me:
 
-Why do you need/want this at all?
+c0000000004b2050:       li      r0,0
+c0000000004b2054:       stb     r0,460(r13)
+c0000000004b2058:       lwz     r0,8(r13)
+c0000000004b205c:       lwarx   r9,0,r3
+c0000000004b2060:       cmpwi   r9,0
+c0000000004b2064:       bne-    c0000000004b2078 <._spin_lock+0x28>
+c0000000004b2068:       stwcx.  r0,0,r3
+c0000000004b206c:       nop
+c0000000004b2070:       bne+    c0000000004b205c <._spin_lock+0xc>
+c0000000004b2074:       isync
+c0000000004b2078:       cmpdi   cr7,r9,0
+c0000000004b207c:       .long 0x4dfe0020
+c0000000004b2080:       mr      r1,r1
+c0000000004b2084:       lwz     r0,0(r3)
+c0000000004b2088:       cmpdi   cr7,r0,0
+c0000000004b208c:       bne+    cr7,c0000000004b2080 <._spin_lock+0x30>
+c0000000004b2090:       mr      r2,r2
+c0000000004b2094:       b       c0000000004b2058 <._spin_lock+0x8>
 
->>>  	switch(base_port) {
->>>  	case I8042_DATA_REG:
->>> -		np = of_find_node_by_type(NULL, "8042");
->>> +		np = of_find_compatible_node(NULL, NULL, "pnpPNP,303");
->>> +		if (!np)
->>> +			np = of_find_compatible_node(NULL, NULL, "pnpPNP,f03");
->>> +		if (np) {
->>> +			parent = of_get_parent(np);
->>> +			of_node_put(np);
->>> +			np = parent;
->>> +		}
->>
->> This breaks other boards using 8042, if those exist --
->> if this code is board-specific, it is in the wrong file.
->
-> Perhaps I was a little too bold here.
->
-> I guess if this breaks other boards
+Note the cmpdi at ..78 when r9 was loaded with lwarx.
 
-I don't know, but neither do you ;-)
-
-> then I should leave the check for
-> the device type, or perhaps just drop this patch altogether.
-
-Maybe you want to test for _either_ of the three devices?
-
-> In the latter case, the 8042 node would need to have device_type =
-> "8042".  This contradicts what you posted in an earlier conversation we
-> had regarding the 8641 device tree:
->
-> On Thu, 2007-05-17 at 01:40 +0200, Segher Boessenkool wrote:
->>>>>> +                                8042@60 {
->>>>>> +                                        device_type = "8042";
->>>>
->>>> Drop the device_type.  A number as a name isn't
->>>> all that great, either.
->>>
->>> Currently in order for the i8042 devices to be initialized,
->>> check_legacy_ioport() must find a node with device_type "8042".
->>
->> So fix that :-)
->
-> This is my attempt to fix it :)
-
-A bit too harsh though...  Deprecate first, remove
-later.
-
-> Now if you prefer that the 8042 node on the 8641 has the device_type
-> "8042", I will gladly add it back and drop this patch.
-
-Never ever device_type.  "compatible" perhaps.  And
-not a bare number, either.
-
-I'm not sure what the Linux code here does exactly --
-it seems to me you're allowing a legacy I/O port mapping
-when legacy drivers probe for it, right?  Instead you
-should change those drivers to not probe (perhaps by
-refusing the I/O range access here), and be explicitly
-instantiated from your device tree parsing code.
+Unfortunately I haven't found a way to get rid of the duplicate
+comparison alltogether.
 
 
-Segher
+Signed-off-by: Olof Johansson <olof@lixom.net>
+
+
+Index: 2.6.21/include/asm-powerpc/spinlock.h
+===================================================================
+--- 2.6.21.orig/include/asm-powerpc/spinlock.h
++++ 2.6.21/include/asm-powerpc/spinlock.h
+@@ -53,9 +53,9 @@
+  * This returns the old value in the lock, so we succeeded
+  * in getting the lock if the return value is 0.
+  */
+-static __inline__ unsigned long __spin_trylock(raw_spinlock_t *lock)
++static __inline__ unsigned int __spin_trylock(raw_spinlock_t *lock)
+ {
+-	unsigned long tmp, token;
++	unsigned int tmp, token;
+ 
+ 	token = LOCK_TOKEN;
+ 	__asm__ __volatile__(
+@@ -179,9 +179,9 @@ extern void __raw_spin_unlock_wait(raw_s
+  * This returns the old value in the lock + 1,
+  * so we got a read lock if the return value is > 0.
+  */
+-static long __inline__ __read_trylock(raw_rwlock_t *rw)
++static int __inline__ __read_trylock(raw_rwlock_t *rw)
+ {
+-	long tmp;
++	int tmp;
+ 
+ 	__asm__ __volatile__(
+ "1:	lwarx		%0,0,%1\n"
+@@ -203,9 +203,9 @@ static long __inline__ __read_trylock(ra
+  * This returns the old value in the lock,
+  * so we got the write lock if the return value is 0.
+  */
+-static __inline__ long __write_trylock(raw_rwlock_t *rw)
++static __inline__ int __write_trylock(raw_rwlock_t *rw)
+ {
+-	long tmp, token;
++	int tmp, token;
+ 
+ 	token = WRLOCK_TOKEN;
+ 	__asm__ __volatile__(
+@@ -263,7 +263,7 @@ static int __inline__ __raw_write_tryloc
+ 
+ static void __inline__ __raw_read_unlock(raw_rwlock_t *rw)
+ {
+-	long tmp;
++	int tmp;
+ 
+ 	__asm__ __volatile__(
+ 	"# read_unlock\n\t"
