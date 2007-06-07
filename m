@@ -1,18 +1,33 @@
-Return-Path: <wfarnsworth@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 671A3DDEF6
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 02:42:47 +1000 (EST)
-Subject: Re: [PATCH] Fix the LPC47M192 SuperIO on the MPC8641 HPCN
-From: Wade Farnsworth <wfarnsworth@mvista.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <af3aa7bd5ff385f5ad94aa7c1d456a35@kernel.crashing.org>
-References: <1181147415.5674.108.camel@rhino>
-	<af3aa7bd5ff385f5ad94aa7c1d456a35@kernel.crashing.org>
-Content-Type: text/plain
-Date: Thu, 07 Jun 2007 09:42:45 -0700
-Message-Id: <1181234565.5674.182.camel@rhino>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
+	[151.189.21.47])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B0061DDF11
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 02:46:51 +1000 (EST)
+In-Reply-To: <1181232358.2785.79.camel@pmac.infradead.org>
+References: <7fc919fce0761f861be3069a853d3169@bga.com>
+	<bd6ef296692e8cfb81118f2dc85189a5@kernel.crashing.org>
+	<4662EAA9.70104@ru.mvista.com>
+	<e4197fd2753f2b4d548d5dde9e3fd1d3@kernel.crashing.org>
+	<466308F4.8050004@ru.mvista.com>
+	<8ac5664208e0f59329b62ac2138bbc8c@kernel.crashing.org>
+	<466312C2.4090200@ru.mvista.com>
+	<548a7e11ffb577f6395b8f5a9c2fba2d@kernel.crashing.org>
+	<466323EF.5040807@ru.mvista.com>
+	<1181228442.2785.60.camel@pmac.infradead.org>
+	<18fbfbaf113ab76b602d279848d9b405@kernel.crashing.org>
+	<1181232358.2785.79.camel@pmac.infradead.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <04823a3fa3fc5d1e6c14ef896fabfdb0@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
+Date: Thu, 7 Jun 2007 18:46:45 +0200
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,33 +37,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-06-07 at 15:01 +0200, Segher Boessenkool wrote:
-> > +	/* enable superio @ 0x4e and keyboard/mouse address decoding */
-> > +	pci_write_config_byte(dev, 0x63, 0x90);
-> 
-> I doubt that comment is accurate.
+>> So I think the best thing to have would be
+>>
+>> 	compatible      "cfi-flash"
+>> 	bank-width      like you said
+>> 	device-width    width of a single flash device
+>> 	reg             complete address range of this thing
+>>
+>> and then the Linux OF CFI flash code / MTD code just keeps
+>> on probing devices from that address range until it has it
+>> filled.
+>>
+>> Sounds good / comments / anything I missed?
+>
+> That seems reasonable. I would personally have used 'interleave' to 
+> give
+> the number of devices interleaved together into the specified
+> bank-width, rather than specifying device-width.
 
-m1575 legacy interface device register 0x63 is the legacy I/O decoding
-control.
+I think "device-width" is much clearer -- from the name
+"interleave" you cannot tell that it actually means
+"number-of-interleaved-devices-in-this-bank".
 
-Writing 0x90 enables ports 0x4e and 0x4f for Super I/O configuration and
-ports 0x60 and 0x64 for keyboard/mouse.
+> People might get
+> confused by device-width because many devices can actually be _either_
+> x16 or x8.
 
-> 
-> > +	outb(0x07, 0x4e);	/* device selector register */
-> > +	outb(0x07, 0x4f);	/* select keyboard registers (device 7) */
-> 
-> Please abstract out the 4e,4f access sequence, so
-> you can just say  write_sio(0x30, 1);  or similar.
+Well after it has been soldered down to the board, it's
+pretty much fixed what the device's bus width is ;-)
 
-Sure.
+> But I don't care much. Linux will only be using the
+> bank-width anyway.
 
-> 
-> > +	/* Enable superio runtime registers for gpio in pci i/o space */
-> > +	outb(0x20, 0x4e);	/* device id register */
-> 
-> This write is superfluous as far as I can see.
+So it can reliably detect interleaving itself?
 
-Yes, it appears so.  I'll remove it.
+I'd like "device-width" to be a required property still,
+for the benefit of non-Linux device tree users, or just
+in case.
 
---Wade
+> The other thing that might be seen in the 'compatible' property would 
+> be
+> 'jedec-flash',
+
+I don't want to deal with that yet, one thing at a time,
+and CFI flash it is now.  JEDEC is a bit hairier.
+
+> and in that case perhaps we also want properties for the
+> manufacturer and device ident?
+
+Certainly, since they cannot be reliably probed.
+
+> Linux wouldn't necessarily care about
+> them, but other operating systems might.
+>
+> And we also need partition information to get through somehow, in the
+> cases where the firmware knows it.
+
+A child node per partition I suppose, dunno.
+
+
+Segher
