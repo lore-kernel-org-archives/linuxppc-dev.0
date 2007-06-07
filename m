@@ -1,24 +1,23 @@
-Return-Path: <jdl@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound3-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
+	[207.46.163.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2A956DDF10
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 02:08:42 +1000 (EST)
-Subject: Re: [PATCH] Fix drivers/rtc/Kconfig for powerpc
-From: Jon Loeliger <jdl@freescale.com>
-To: Wade Farnsworth <wfarnsworth@mvista.com>
-In-Reply-To: <1181150240.5674.139.camel@rhino>
-References: <1181149064.5674.134.camel@rhino>
-	<1181149622.12740.32.camel@ld0161-tx32>
-	<1181150240.5674.139.camel@rhino>
-Content-Type: text/plain
-Message-Id: <1181232488.31686.19.camel@ld0161-tx32>
-Mime-Version: 1.0
-Date: Thu, 07 Jun 2007 11:08:08 -0500
-Cc: a.zummo@towertech.it, rtc-linux@googlegroups.com,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id A0A25DDF17
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 02:19:18 +1000 (EST)
+Message-ID: <46682FFB.7000000@am.sony.com>
+Date: Thu, 07 Jun 2007 09:19:07 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] kexec ppc64: fix misaligned cmdline
+References: <25445.1180941825@neuling.org>	<8f5d8a214e9042b0c556ac7256928a52@bga.com>	<26608.1180950136@neuling.org>
+	<10188.1181179162@neuling.org>
+In-Reply-To: <10188.1181179162@neuling.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: dwmw2@infradead.org, kexec@lists.infradead.org,
+	Milton Miller <miltonm@bga.com>, linuxppc-dev@ozlabs.org,
+	horms@verge.net.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,28 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-06-06 at 12:17, Wade Farnsworth wrote:
-
-> > 
-> > Did you miss where I ACK'ed it 16-May-2007? :-)
+Michael Neuling wrote:
+> If the cmdline changes between boots, we can get misalignment of the
+> bootargs entry, which in turn corrupts our device tree blob and hence
+> kills our kexec boot.  Also, if there was no /chosen/bootargs
+> previously, we'd never add a new one. 
 > 
-> Ah okay, maybe I don't understand what that means.  When you say
-> "Acked-by" does that mean you'll push it upstream?
+> This ignores the bootargs while parsing the tree and inserts it later. 
+> 
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
 
-I meant that I picked the patch up, applied it to my tree,
-tested it, and verified that _I_ thought it was good.
-It received my Vote of Confidence, for whatever that is worth.
+Hi.
 
-> What I meant was I haven't seen anybody pick up this patch yet, and
-> would like to know it if will be, or if there is something else I need
-> to do.
+Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
-Right.  This patch is in "generic" PowerPC related code,
-and not in my area to "push upstream".  I would expect, say,
-Paul to pick it up directly.  Perhaps Kumar would pick it up
-and stage it for Paul.  Perhaps akpm would pick it up. :-)
+I tested this with PS3 and it works as expected.  I added it to my
+ps3-kexec-tools.git.  With this patch mainline kexec will work
+with the PS3.
 
-> --Wade
+I still have a work-in-progress patch started by David Woodhouse
+to support building a 32 bit kexec executable for PPC64 platforms.
+I don't have any definite plan to work on it though.
 
-HTH,
-jdl
+-Geoff
