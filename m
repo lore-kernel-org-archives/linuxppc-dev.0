@@ -1,14 +1,12 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 7 Jun 2007 11:58:21 +1000
+Date: Thu, 7 Jun 2007 12:07:35 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Stuart Yoder <b08248@freescale.com>
-Subject: Re: [PATCH] powerpc: add table of contents to booting-without-of-txt
-Message-ID: <20070607015821.GC24230@localhost.localdomain>
-References: <200706051829.l55ITEAR028492@ld0164-tx32.am.freescale.net>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: dtc: Fix recognition of whitespace characters
+Message-ID: <20070607020735.GD24230@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200706051829.l55ITEAR028492@ld0164-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org, Mark Lacas <lacas@synapse.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,20 +16,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jun 05, 2007 at 01:29:14PM -0500, Stuart Yoder wrote:
-> Add table of contents.
-> 
-> Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
-> ---
-> 
->  I think this should help make the doc more easily navigated and will help
->  make the structure visible so someone editing will know where to put
->  stuff.
+At present, the lexer in dtc recognizes only space, tab and newline as
+whitespace characters.  This is broken; in particular this means that
+dtc will get syntax errors on files with DOS-style (CR-LF) newlines.
 
-I like it in theory.  Whether it will remain updated in sync with the
-rest of the document remains to be seen...
+This patch fixes the problem, using flex's built-int [:space:]
+character class.
 
-Acked-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+---
+
+Jon, please apply.
+
+Index: dtc/dtc-lexer.l
+===================================================================
+--- dtc.orig/dtc-lexer.l	2007-06-07 12:00:31.000000000 +1000
++++ dtc/dtc-lexer.l	2007-06-07 12:03:31.000000000 +1000
+@@ -27,7 +27,7 @@
+ 
+ PROPCHAR	[a-zA-Z0-9,._+*#?-]
+ UNITCHAR	[0-9a-f,]
+-WS		[ \t\n]
++WS		[[:space:]]
+ 
+ REFCHAR		({PROPCHAR}|{UNITCHAR}|[/@])
+ 
+
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
