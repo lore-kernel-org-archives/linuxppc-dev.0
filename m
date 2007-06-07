@@ -1,31 +1,16 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DE023DDEBD
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 19:05:22 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	l5795HVZ015460
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Jun 2007 02:05:17 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l5795Fx6021246
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Jun 2007 04:05:16 -0500 (CDT)
-Subject: Re: [PATCH]: Add 8548 pcie bus number workaround
-From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <D373FFB6-49B6-414B-AEEB-65AB62EB5AD5@kernel.crashing.org>
-References: <1181186378.10296.41.camel@localhost.localdomain>
-	<D373FFB6-49B6-414B-AEEB-65AB62EB5AD5@kernel.crashing.org>
-Content-Type: text/plain
-Message-Id: <1181207084.11479.15.camel@localhost.localdomain>
+Return-Path: <philippe.lachenal@hotmail.fr>
+Received: from bay0-omc2-s38.bay0.hotmail.com (bay0-omc2-s38.bay0.hotmail.com
+	[65.54.246.174]) by ozlabs.org (Postfix) with ESMTP id 0BC48DDED5
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 21:29:57 +1000 (EST)
+Message-ID: <BAY122-F20901751968A5E85E76FBB85260@phx.gbl>
+In-Reply-To: <200706061615.11380.arnd@arndb.de>
+From: "Philippe Lachenal" <philippe.lachenal@hotmail.fr>
+To: arnd@arndb.de, linuxppc-dev@ozlabs.org
+Subject: Re: MPC8349ea Random Number Generator driver
+Date: Thu, 07 Jun 2007 13:29:52 +0200
 Mime-Version: 1.0
-Date: 07 Jun 2007 17:04:45 +0800
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
+Cc: sl@powerlinux.fr
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,40 +20,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-06-07 at 14:48, Kumar Gala wrote:
-> On Jun 6, 2007, at 10:19 PM, Zang Roy-r61911 wrote:
-> 
-> >
-> > From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-> >
-> > Remove legacy pcie support for 8641 chip.
-> > General PCI code can fully support 8641 Rev2.0 chip.
-> > For 8548 PEX controller, PCIE host controller configure
-> > space can only be accessed as "bus->number = 0" in
-> > the PCI architecture. So "bus->number == hose->bus_offset"
-> > judgment is added.
-> 
-> Uugh, I'm completely confused.  Does 8548 rev 2.x have some errata  
-> (or 'feature') that 8641 doesn't have?
-NO! I do not think so!
-It is a story about the 85xx/86xx pcie road map.
-Originally, fsl_pcie.c is based on the pcie support code for 86xx (1.x
-or later).
+Hi !
 
-Jdl and I separate this part of code for the purpose to support both
-85xx/86xx pcie. So this part of code contains some garbage code for
-legacy 86xx pcie support or debug information. I have discussed this
-with the original developer.
+Thank you for your answer :)
 
-So in this patch I remove the unused code. Is it wrong?
-Now this file is target to support 8548 rev 1.x and 2.x pcie controller.
-Now, I am working to put some common code to support 85xx/86xx pcie in
-this file, such as atmu init and link status check.
 
-Moer patches will be posted to provide a completely pcie support for
-85xx/86xx.
+>Looks good from the point of integration into the driver framework.
+>I can't judge the hwrng specific parts, but don't see anything
+>fundamentally wrong there.
+>
+> > +static int __init mpc834x_itx_declare_of_platform_devices(void)
+> > +{
+> > +       if (!machine_is(mpc834x_itx)){
+> > +               printk("__init mpc834x_itx_declare_of_platform_devices 
+>error\n");
+> > +               return 0;
+> > +       }
+>
+>I would think that it's not strictly an error to be running on some other
+>hardware than yours ;-)
+>
+>Just remove the printk here.
 
-Thanks.
-Roy 
- 
- 
+I would think that you're right.. ;)
+
+
+
+
+
+> > +       err = of_address_to_resource(rng_np, 0, &res);
+> > +       if (err)
+> > +               return -ENODEV; > +       rng_regs = ioremap(res.start, 
+>(res.end - res.start));
+>
+>This can be done in one step with the new 'of_iomap' function.
+
+
+nice :)
+
+... I've checked this function, (yours ? ;) ) and  there's a very small 
+difference between it and what I've done :
+
++-static void __iomem *of_iomap(struct device_node *np)
++-{
++-	struct resource res;
++-
++-	if (of_address_to_resource(np, 0, &res))
++-		return NULL;
++-
++-	pr_debug("Resource start: 0x%lx\n", res.start);
++-	pr_debug("Resource end: 0x%lx\n", res.end);
++-
++-	return ioremap(res.start, 1 + res.end - res.start);
++-}
+
+
+why is there a  1+ res.end-res.start ? Am I wrong in not adding one in my 
+code ?
+
+
+
+
+
+
+
+
+> > +       printk(KERN_INFO "Registering Talitos RNG\n");
+> > +
+> > +       err = hwrng_register(&talitos_rng);
+> > +       if (err){
+> > +               printk(".............. failure\n");
+> > +               iounmap(rng_regs);
+> > +       }
+>
+>This printk should have a KERN_ERROR or similar level.
+>Ideally, replace all instances of printk in your driver with 'dev_err',
+>'dev_info' or similar calls from <linux/device.h>.
+>
+>	Arnd <><
+
+
+ok, I will remove those ugly printks ;)
+
+Phil
+
+_________________________________________________________________
+Personnalisez votre Messenger avec Live.com 
+http://www.windowslive.fr/livecom/
