@@ -2,32 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DE242DDEE3
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 08:12:36 +1000 (EST)
-Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
+	by ozlabs.org (Postfix) with ESMTP id B2E1BDDEBD
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 08:26:08 +1000 (EST)
+Subject: Re: [PATCH] Fix per-cpu allocation on oldworld SMP powermacs
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andy Fleming <afleming@freescale.com>
-In-Reply-To: <FE5191F7-8A1D-428A-B4F0-32AD3A08B08A@freescale.com>
-References: <1180720112.14219.62.camel@ld0161-tx32>
-	<dfc15991e31bfc09389461dc443acd7c@kernel.crashing.org>
-	<1180734314.5674.49.camel@rhino>
-	<4fb92a9dfccf515bdc1522d08f10f823@kernel.crashing.org>
-	<20070602085359.GA10333@iram.es>
-	<3ebd6ca6877ea74925f066ff96ac81db@kernel.crashing.org>
-	<20070602195308.GA21618@iram.es>
-	<12ad593bd17f769e44f05bc24eac4d0a@kernel.crashing.org>
-	<1180828907.14025.37.camel@localhost.localdomain>
-	<28e0600256815f93db45b2f4eb2d9df5@kernel.crashing.org>
-	<20070603083339.GB2157@iram.es>
-	<02DC2E36-86B1-4458-BB0C-13CF79AC1D11@freescale.com>
-	<466492DC.6050708@mvista.com>
-	<1181113764.31677.242.camel@localhost.localdomain>
-	<FE5191F7-8A1D-428A-B4F0-32AD3A08B08A@freescale.com>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18023.64811.643218.556485@cargo.ozlabs.ibm.com>
+References: <18023.64811.643218.556485@cargo.ozlabs.ibm.com>
 Content-Type: text/plain
-Date: Fri, 08 Jun 2007 08:12:10 +1000
-Message-Id: <1181254330.14818.71.camel@localhost.localdomain>
+Date: Fri, 08 Jun 2007 08:26:02 +1000
+Message-Id: <1181255162.14818.79.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,17 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-06-07 at 11:21 -0500, Andy Fleming wrote:
-> > The bus number shouldn't matter as long as low IO cycles are
-> properly
-> > forwarded to it.
-> 
-> Right.  Unless there's an interrupt mapping, which has to include
-> the  
-> bus number in the filter.  When that happens, parsing the interrupt  
-> map for the i8259's mapping fails because its address doesn't match. 
+On Thu, 2007-06-07 at 22:42 +1000, Paul Mackerras wrote:
+> diff --git a/arch/powerpc/platforms/powermac/setup.c
+> b/arch/powerpc/platforms/powermac/setup.c
+> index 07b1c4e..c519b2a 100644
+> --- a/arch/powerpc/platforms/powermac/setup.c
+> +++ b/arch/powerpc/platforms/powermac/setup.c
+> @@ -363,8 +363,19 @@ static void __init pmac_setup_arch(void)
+>                 smp_ops = &core99_smp_ops;
+>         }
+>  #ifdef CONFIG_PPC32
+> -       else
+> +       else {
+> +               /*
+> +                * We have to set bits in cpu_possible_map here since
+> the
+> +                * secondary CPU(s) aren't in the device tree, and
+> +                * setup_per_cpu_areas only allocates per-cpu data for
+> +                * CPUs in the cpu_possible_map.
+> +                */
+> +               int cpu;
+> +
+> +               for (cpu = 1; cpu < 4 && cpu < NR_CPUS; ++cpu)
+> +                       cpu_set(cpu, cpu_possible_map);
+>                 smp_ops = &psurge_smp_ops;
+> +       }
+>  #endif
+>  #endif /* CONFIG_SMP */ 
 
-Hrm... does the interrupt-map include the bus number for you ? They
-generally don't ...
+Why not use the result from probe() instead which returns the number of
+possible CPUs ? That would catch more than just the powermac case ... we
+might have similar issues when finally porting PReP over...
 
 Ben.
