@@ -1,21 +1,18 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A54A2DDEBA
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 12:55:58 +1000 (EST)
-Date: Wed, 6 Jun 2007 21:55:49 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: "Philippe Lachenal" <philippe.lachenal@hotmail.fr>
-Subject: Re: MPC8349ea Random Device Generator driver
-Message-Id: <20070606215549.02ff8084.kim.phillips@freescale.com>
-In-Reply-To: <BAY122-F18923A7AA6D3A4D96A360085200@phx.gbl>
-References: <BAY122-F18923A7AA6D3A4D96A360085200@phx.gbl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, sl@powerlinux.fr
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [208.123.74.7])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id EE8AFDDEC8
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2007 12:56:41 +1000 (EST)
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: dtc: Fix recognition of whitespace characters 
+In-Reply-To: Your message of "Thu, 07 Jun 2007 12:07:35 +1000."
+	<20070607020735.GD24230@localhost.localdomain>
+References: <20070607020735.GD24230@localhost.localdomain> 
+Date: Wed, 06 Jun 2007 21:56:36 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1Hw8Au-0003a8-61@jdl.com>
+Cc: linuxppc-dev@ozlabs.org, Mark Lacas <lacas@synapse.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,24 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 05 Jun 2007 17:42:08 +0200
-"Philippe Lachenal" <philippe.lachenal@hotmail.fr> wrote:
+So, like, the other day David Gibson mumbled:
+> At present, the lexer in dtc recognizes only space, tab and newline as
+> whitespace characters.  This is broken; in particular this means that
+> dtc will get syntax errors on files with DOS-style (CR-LF) newlines.
 
-> Hello !
+Doctor, it hurts when I use DOS. :-)
+
+> This patch fixes the problem, using flex's built-int [:space:]
+> character class.
 > 
-> I've made a driver for the MPC8349ea Random Device Generator, and I 
-> therefore submit it to your impartial judgment.. ;)
-> thanks a lot !
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+> ---
 > 
-> Lachenal Philippe
-> 
+> Jon, please apply.
 
-the Random Device Generator, eh?  didn't know we had one of those. ;)
+Applied.
 
-The RNG h/w block in question shares registers, initialization and
-configuration with what's known as the Freescale SEC device (a.k.a.
-talitos).  Talitos does crypto and public key ops, and some
-implementations don't have an RNG EU.  There needs to be one driver for
-the SEC, and it's not an rng driver.
-
-Kim
+Thanks,
+jdl
