@@ -1,17 +1,20 @@
-Return-Path: <mgreer@mvista.com>
-Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id 63527DDEE8
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 08:28:17 +1000 (EST)
-Date: Thu, 7 Jun 2007 15:29:12 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Randy Vinson <rvinson@mvista.com>
-Subject: Re: [PATCH] 85xxCDS: Make sure restart resets the PCI bus.
-Message-ID: <20070607222912.GB12076@mag.az.mvista.com>
-References: <46686CAF.4030407@mvista.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 8 Jun 2007 09:34:31 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: Re: [PATCH] Fix drivers/rtc/Kconfig for powerpc
+Message-ID: <20070607233431.GA17298@localhost.localdomain>
+References: <1181149064.5674.134.camel@rhino>
+	<1181149622.12740.32.camel@ld0161-tx32>
+	<1181150240.5674.139.camel@rhino>
+	<1181232488.31686.19.camel@ld0161-tx32>
+	<1181233980.5674.174.camel@rhino>
+	<1181234266.31686.37.camel@ld0161-tx32>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <46686CAF.4030407@mvista.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1181234266.31686.37.camel@ld0161-tx32>
+Cc: a.zummo@towertech.it, rtc-linux@googlegroups.com,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,31 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 07, 2007 at 01:38:07PM -0700, Randy Vinson wrote:
-> --- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-> +++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+On Thu, Jun 07, 2007 at 11:37:46AM -0500, Jon Loeliger wrote:
+> On Thu, 2007-06-07 at 11:33, Wade Farnsworth wrote:
+> > 
+> > But since this is in drivers/rtc/Kconfig, wouldn't the maintainer of
+> > that subsystem be expected to pick this up?
+> 
+> Oh, sure.  In which case he/she may be waiting on
+> someone over in PowerPC land to ACK it first. :-)
+> Dunno.
 
-> +	if ((dev = pci_get_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_82C686,
-> +					NULL))) {
-> +
-> +		/* Use the VIA Super Southbridge to force a PCI reset */
-> +		pci_read_config_byte(dev, 0x47, &tmp);
-> +		pci_write_config_byte(dev, 0x47, tmp | 1);
+Sure.  This patch is so simple though, I think it could go straight to
+Andrew Morton.
 
-How about adding another "pci_read_config_byte(dev, 0x47, &tmp);" to
-flush the write out of any fifo's and adding a comment that explains
-that once that write hits the hardware, the reset is essentially
-instantaneous.  IOW, there isn't a race between this reset and the reset
-you'd call if/when it falls out of this 'if'.
-
-> +
-> +		pci_dev_put(dev);
-> +	}
-> +
-> +	/*
-> +	 *  We should only get here if the P2P bridge is disabled. In that
-> +	 *  case, just use the default reset.
-> +	 */
-> +	mpc85xx_restart(NULL);
-
-Mark
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
