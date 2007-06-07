@@ -1,34 +1,19 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4872FDDF35
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 02:21:44 +1000 (EST)
-In-Reply-To: <1181113764.31677.242.camel@localhost.localdomain>
-References: <1180720112.14219.62.camel@ld0161-tx32>
-	<dfc15991e31bfc09389461dc443acd7c@kernel.crashing.org>
-	<1180734314.5674.49.camel@rhino>
-	<4fb92a9dfccf515bdc1522d08f10f823@kernel.crashing.org>
-	<20070602085359.GA10333@iram.es>
-	<3ebd6ca6877ea74925f066ff96ac81db@kernel.crashing.org>
-	<20070602195308.GA21618@iram.es>
-	<12ad593bd17f769e44f05bc24eac4d0a@kernel.crashing.org>
-	<1180828907.14025.37.camel@localhost.localdomain>
-	<28e0600256815f93db45b2f4eb2d9df5@kernel.crashing.org>
-	<20070603083339.GB2157@iram.es>
-	<02DC2E36-86B1-4458-BB0C-13CF79AC1D11@freescale.com>
-	<466492DC.6050708@mvista.com>
-	<1181113764.31677.242.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <FE5191F7-8A1D-428A-B4F0-32AD3A08B08A@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH 2/8] Add uli1575 pci-bridge sector to MPC8641HPCN dts file.
-Date: Thu, 7 Jun 2007 11:21:41 -0500
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <wfarnsworth@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 38690DDEA0
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 02:26:52 +1000 (EST)
+Subject: Re: [PATCH] When checking I8042 io port, use
+	of_find_compatible_node() instead of of_find_node_by_type()
+From: Wade Farnsworth <wfarnsworth@mvista.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <2a56a9d008269d393c68959f1804c21d@kernel.crashing.org>
+References: <1181148145.5674.121.camel@rhino>
+	<2a56a9d008269d393c68959f1804c21d@kernel.crashing.org>
+Content-Type: text/plain
+Date: Thu, 07 Jun 2007 09:26:50 -0700
+Message-Id: <1181233610.5674.167.camel@rhino>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,22 +23,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2007-06-07 at 15:05 +0200, Segher Boessenkool wrote:
+> > In check_legacy_ioport(), instead of using of_find_node_by_type() to
+> > find the 8042 node, use of_find_compatible_node() to find either the
+> > keyboard or mouse node.
+> 
+> Why?
+> 
+> >  	switch(base_port) {
+> >  	case I8042_DATA_REG:
+> > -		np = of_find_node_by_type(NULL, "8042");
+> > +		np = of_find_compatible_node(NULL, NULL, "pnpPNP,303");
+> > +		if (!np)
+> > +			np = of_find_compatible_node(NULL, NULL, "pnpPNP,f03");
+> > +		if (np) {
+> > +			parent = of_get_parent(np);
+> > +			of_node_put(np);
+> > +			np = parent;
+> > +		}
+> 
+> This breaks other boards using 8042, if those exist --
+> if this code is board-specific, it is in the wrong file.
 
-On Jun 6, 2007, at 02:09, Benjamin Herrenschmidt wrote:
+Perhaps I was a little too bold here.
 
-> On Mon, 2007-06-04 at 15:31 -0700, Randy Vinson wrote:
->> Actually, that's not strictly true. If a card containing a P2P bridge
->> is
->> installed into PCI slot 4, the i8259 will end up on a bus that is not
->> numbered bus 1. I've often wondered how something like that is  
->> handled
->> in the DTS.
->
-> The bus number shouldn't matter as long as low IO cycles are properly
-> forwarded to it.
+I guess if this breaks other boards then I should leave the check for
+the device type, or perhaps just drop this patch altogether.
 
-Right.  Unless there's an interrupt mapping, which has to include the  
-bus number in the filter.  When that happens, parsing the interrupt  
-map for the i8259's mapping fails because its address doesn't match.
+In the latter case, the 8042 node would need to have device_type =
+"8042".  This contradicts what you posted in an earlier conversation we
+had regarding the 8641 device tree:
 
-Andy
+On Thu, 2007-05-17 at 01:40 +0200, Segher Boessenkool wrote:
+> >>>> +                                8042@60 {
+> >>>> +                                        device_type = "8042";
+> >>
+> >> Drop the device_type.  A number as a name isn't
+> >> all that great, either.
+> >
+> > Currently in order for the i8042 devices to be initialized,
+> > check_legacy_ioport() must find a node with device_type "8042".
+> 
+> So fix that :-)
+
+This is my attempt to fix it :)
+
+Now if you prefer that the 8042 node on the 8641 has the device_type
+"8042", I will gladly add it back and drop this patch.
+
+--Wade
