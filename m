@@ -1,20 +1,37 @@
-Return-Path: <dale@farnsworth.org>
-Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	by ozlabs.org (Postfix) with SMTP id F1D6FDDF43
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Jun 2007 03:20:39 +1000 (EST)
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Fri, 8 Jun 2007 10:20:37 -0700
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Add Marvell mv64x60 udbg putc/getc functions
-Message-ID: <20070608172037.GA9192@xyzzy.farnsworth.org>
-References: <20070523220518.GA2312@xyzzy.farnsworth.org>
-	<18022.20173.857845.49576@cargo.ozlabs.ibm.com>
-	<20070606172900.GA29951@xyzzy.farnsworth.org>
-	<1181268915.6026.5.camel@concordia.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1181268915.6026.5.camel@concordia.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 493FDDDF24
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Jun 2007 05:19:22 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l58JJJm9011750
+	for <linuxppc-dev@ozlabs.org>; Fri, 8 Jun 2007 15:19:19 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l58JJIdn238840
+	for <linuxppc-dev@ozlabs.org>; Fri, 8 Jun 2007 13:19:18 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l58JJI7j005843
+	for <linuxppc-dev@ozlabs.org>; Fri, 8 Jun 2007 13:19:18 -0600
+Subject: Re: [PATCH 1/3] [PATCH i386] during VM oom condition, kill all
+	threads in process group
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070607171018.d51fc5da.akpm@linux-foundation.org>
+References: <20070605174831.21740.33119.stgit@farscape.rchland.ibm.com>
+	<20070607153459.2a1b3230.akpm@linux-foundation.org>
+	<20070607231621.GB32549@kryten>
+	<20070607171018.d51fc5da.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 08 Jun 2007 14:19:18 -0500
+Message-Id: <1181330358.21409.31.camel@farscape.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>,
+	linux-kernel@vger.kernel.org
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,47 +41,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jun 08, 2007 at 12:15:15PM +1000, Michael Ellerman wrote:
-> On Wed, 2007-06-06 at 10:29 -0700, Dale Farnsworth wrote:
-> > On Wed, Jun 06, 2007 at 04:06:05PM +1000, Paul Mackerras wrote:
-> > > Dale Farnsworth writes:
-> > > 
-> > > > Paul, this patch is unchanged from the one I posted 10 days ago.
-> > > > At that time, I saw no discussion, other than Mark's ACK.  I'd 
-> > > > argue that this is a bugfix, and hope that it could go into 2.6.22.
-> > > 
-> > > Um, it seems rather large, and in particular adds a fair bit of
-> > > completely new code.  Is there a simpler way of getting to an
-> > > acceptable point - e.g. just not use the udbg console on these boards?
-> > 
-> > Yeah, that was the first approach I took.  Unfortunately, currently the
-> > udbg console is included unconditionally on arch/powerpc.  I created the
-> > patch below to conditionalize the use of udbg console.  I thought it a
-> > bit risky for 2.6.22, but I think it's the right approach long term.
-> > 
-> > > If we don't have udbg support for them then the udbg console would
-> > > seem a bit pointless, no?
-> > 
-> > There is value in that with the udbg console we do see console output
-> > much earlier.  While there's some new code (I didn't think it was all
-> > that much), the impact is limited to the single platform now using the
-> > mv64x60 console port, the prpmc2800.
+On Thu, 2007-06-07 at 17:10 -0700, Andrew Morton wrote:
+> On Thu, 7 Jun 2007 18:16:21 -0500
+> Anton Blanchard <anton@samba.org> wrote:
 > 
-> You don't select PPC_UDBG for any of the cell platforms, which AFAICT
-> means you'll break early debugging on those.
+> >  
+> > Hi,
+> > 
+> > > zap_other_threads() requires tasklist_lock.
 
-Actually, I do select PPC_UDBG for PPC_IBM_CELL_BLADE (via
-PPC_UDBG_16550) and for PPC_CELLEB (via PPC_UDBG_BEAT).  I couldn't
-figure out which console PPC_PS3 uses, but that support is noted as
-incomplete, so I didn't spend much time researching it.
+Yup, I missed that.   Thanks for pointing it out.
 
-Still, it's difficult to be sure I caught them all; that's why I
-decided to defer the patch until the next merge window.
+> > > 
+> > > If we're going to do this then we should probably create some new function
+> > > (with a better name) which takes tasklsit_lock and then calls
+> > > zap_other_threads().
 
-> I think you should be able to do this in terms of
-> CONFIG_PPC_EARLY_DEBUG, which already exists.
+I expect this will be a write_lock_irq() since zap_other_threads will be
+doing a bit more than just reading the task info.
 
-Nope.  Many platforms use the udbg console early on without enabling
-CONFIG_PPC_EARLY_DEBUG.
+This will be down in a do-page-fault failure path (see
+arch/*/mm/fault.c).  I wonder if calling write_lock is going to be safe,
+or if its possible to get into a deadlock?  i.e. should I branch back up
+to the survive: label if I can't take the lock?  Would that even be
+sufficient? or is it not an issue here? 
 
--Dale
+> > > 
+> > > Does this patch fix any observed-in-the-real-world problem?  If so, please
+> > > describe it.
+> > 
+> > Yeah we have had complaints where threaded apps have only one thread
+> > shot down instead of the entire process. This leaves the application in
+> > a bad state, whereas if it had been killed cleanly the application could
+> > have restarted.
+> > 
+> > My understanding is that fatal signals should kill all threads in the
+> > group.
+> > 
+> 
+> OK, well could we please get all that info appropriatelt captured in #2's
+> changelog?
+Yup, next spin I'll add more to the changelog. 
+
+> 
+> Other architectures will probably need to implement this.
+
+-Will
