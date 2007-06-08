@@ -1,28 +1,24 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-11.arcor-online.net (mail-in-11.arcor-online.net
+	[151.189.21.51])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BBB1DDDF94
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Jun 2007 05:32:44 +1000 (EST)
-Date: Fri, 8 Jun 2007 12:32:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: will_schmidt@vnet.ibm.com
-Subject: Re: [PATCH 1/3] [PATCH i386] during VM oom condition, kill all
-	threads in process group
-Message-Id: <20070608123230.520655f5.akpm@linux-foundation.org>
-In-Reply-To: <1181330358.21409.31.camel@farscape.rchland.ibm.com>
-References: <20070605174831.21740.33119.stgit@farscape.rchland.ibm.com>
-	<20070607153459.2a1b3230.akpm@linux-foundation.org>
-	<20070607231621.GB32549@kryten>
-	<20070607171018.d51fc5da.akpm@linux-foundation.org>
-	<1181330358.21409.31.camel@farscape.rchland.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, "Eric W.
-	Biederman" <ebiederm@xmission.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-	Anton Blanchard <anton@samba.org>, linux-kernel@vger.kernel.org
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8BAA5DDF7A
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Jun 2007 05:36:49 +1000 (EST)
+In-Reply-To: <200706082126.23435.arnd@arndb.de>
+References: <f0cd638495b96585dec513f41335154e60675813.1180961962.git.michael@ellerman.id.au>
+	<1181271180.6026.10.camel@concordia.ozlabs.ibm.com>
+	<cc1d6d368ded181bbbdad8e4f4cb37ae@kernel.crashing.org>
+	<200706082126.23435.arnd@arndb.de>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <65a522813f1b95748a3acc0c05e0285c@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC/PATCH 4/4] Add support for MSI on Axon-based Cell systems
+Date: Fri, 8 Jun 2007 21:36:39 +0200
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,39 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 08 Jun 2007 14:19:18 -0500
-Will Schmidt <will_schmidt@vnet.ibm.com> wrote:
+>>>>> + =A0 =A0 =A0 for_each_compatible_node(node, NULL, =
+"ibm,axon-msic") {
+>>>>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if =
+(axon_msi_setup_one(of_node_get(node)) =3D=3D 0)
+>>>>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 found++;
+>>>>> + =A0 =A0 =A0 }
+>>>>> + =A0 =A0 =A0 of_node_put(node);
+>>
+>> So where is the of_node_put() done for the of_node_get()
+>> inside the loop?
+>
+> of_find_compatible_node does an of_node_put() on the device_node
+> that you pass in as the 'from' argument. In the last step, 'node'
+> is set to NULL and we put the previous element.
 
-> > > > zap_other_threads() requires tasklist_lock.
-> 
-> Yup, I missed that.   Thanks for pointing it out.
-> 
-> > > > 
-> > > > If we're going to do this then we should probably create some new function
-> > > > (with a better name) which takes tasklsit_lock and then calls
-> > > > zap_other_threads().
-> 
-> I expect this will be a write_lock_irq() since zap_other_threads will be
-> doing a bit more than just reading the task info.
+That wasn't my question though?
 
-No, I think read_lock() will be sufficient.
 
-In fact, it's probably the case that rcu_read_lock() is now sufficient
-locking coverage for zap_other_threads() (cc's people).
-
-It had better be, because do_group_exit() forgot to take tasklist_lock.  It
-is perhaps relying upon spin_lock()'s hidden rcu_read_lock() properties
-without so much as a code comment, which would be somewhat nasty of it.
-
-You could perhaps just call do_group_exit() from within the fault handler,
-btw.
-
-> This will be down in a do-page-fault failure path (see
-> arch/*/mm/fault.c).  I wonder if calling write_lock is going to be safe,
-> or if its possible to get into a deadlock?  i.e. should I branch back up
-> to the survive: label if I can't take the lock?  Would that even be
-> sufficient? or is it not an issue here? 
-
-You can take the lock in the fault handler.  Nobody should be getting
-pagefaults while holding tasklist_lock.  (Well, a vmalloc fault might, but
-that's a special-case which doesn't allocate memory or anything like that).
+Segher
