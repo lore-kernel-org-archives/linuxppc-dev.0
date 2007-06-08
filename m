@@ -1,18 +1,18 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Add Marvell mv64x60 udbg putc/getc functions
+Subject: Re: [RFC/PATCH 4/4] Add support for MSI on Axon-based Cell systems
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Dale Farnsworth <dale@farnsworth.org>
-In-Reply-To: <20070606172900.GA29951@xyzzy.farnsworth.org>
-References: <20070523220518.GA2312@xyzzy.farnsworth.org>
-	<18022.20173.857845.49576@cargo.ozlabs.ibm.com>
-	<20070606172900.GA29951@xyzzy.farnsworth.org>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200706041912.04651.arnd@arndb.de>
+References: <f0cd638495b96585dec513f41335154e60675813.1180961962.git.michael@ellerman.id.au>
+	<90f8b99fa6a8e4b8898d64630d96036f68668b03.1180961962.git.michael@ellerman.id.au>
+	<200706041912.04651.arnd@arndb.de>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-pRC+Ru3XFeLrsCD03jIo"
-Date: Fri, 08 Jun 2007 12:15:15 +1000
-Message-Id: <1181268915.6026.5.camel@concordia.ozlabs.ibm.com>
+	boundary="=-nc+HJkOncKYJRJuA1Q/o"
+Date: Fri, 08 Jun 2007 12:53:00 +1000
+Message-Id: <1181271180.6026.10.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,40 +24,27 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-pRC+Ru3XFeLrsCD03jIo
+--=-nc+HJkOncKYJRJuA1Q/o
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2007-06-06 at 10:29 -0700, Dale Farnsworth wrote:
-> On Wed, Jun 06, 2007 at 04:06:05PM +1000, Paul Mackerras wrote:
-> > Dale Farnsworth writes:
-> >=20
-> > > Paul, this patch is unchanged from the one I posted 10 days ago.
-> > > At that time, I saw no discussion, other than Mark's ACK.  I'd=20
-> > > argue that this is a bugfix, and hope that it could go into 2.6.22.
-> >=20
-> > Um, it seems rather large, and in particular adds a fair bit of
-> > completely new code.  Is there a simpler way of getting to an
-> > acceptable point - e.g. just not use the udbg console on these boards?
+On Mon, 2007-06-04 at 19:12 +0200, Arnd Bergmann wrote:
+> On Monday 04 June 2007, Michael Ellerman wrote:
+> > +       for_each_compatible_node(node, NULL, "ibm,axon-msic") {
+> > +               if (axon_msi_setup_one(of_node_get(node)) =3D=3D 0)
+> > +                       found++;
+> > +       }
+> > +       of_node_put(node);
 >=20
-> Yeah, that was the first approach I took.  Unfortunately, currently the
-> udbg console is included unconditionally on arch/powerpc.  I created the
-> patch below to conditionalize the use of udbg console.  I thought it a
-> bit risky for 2.6.22, but I think it's the right approach long term.
->=20
-> > If we don't have udbg support for them then the udbg console would
-> > seem a bit pointless, no?
->=20
-> There is value in that with the udbg console we do see console output
-> much earlier.  While there's some new code (I didn't think it was all
-> that much), the impact is limited to the single platform now using the
-> mv64x60 console port, the prpmc2800.
+> One more thing: AFAICS 'node' is guaranteed to be NULL when you get
+> out of the for_each_compatible_node loop, so you don't need the
+> of_node_put().
 
-You don't select PPC_UDBG for any of the cell platforms, which AFAICT
-means you'll break early debugging on those.
+Yeah it is. I kind of like having the put there, because the idiom is
+often to have a for_each_* with a break in it, in which case you need
+the put.
 
-I think you should be able to do this in terms of
-CONFIG_PPC_EARLY_DEBUG, which already exists.
+But in this case it's a waste so I'll remove it.
 
 cheers
 
@@ -71,16 +58,16 @@ phone: +61 2 6212 1183 (tie line 70 21183)
 We do not inherit the earth from our ancestors,
 we borrow it from our children. - S.M.A.R.T Person
 
---=-pRC+Ru3XFeLrsCD03jIo
+--=-nc+HJkOncKYJRJuA1Q/o
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQBGaLuzdSjSd0sB4dIRArWLAKC84QeiGuqTwgiU80Ra2gv+4i2zwQCeNo5D
-2ARLwTldwojV8y7snp82z08=
-=7mub
+iD8DBQBGaMSMdSjSd0sB4dIRAoJMAJ0U1i/43AjpEIjEXGWldlrUQ9iuywCgnD1h
+YP3N4OJlZMQYKnSHqjMQdsQ=
+=k1WE
 -----END PGP SIGNATURE-----
 
---=-pRC+Ru3XFeLrsCD03jIo--
+--=-nc+HJkOncKYJRJuA1Q/o--
