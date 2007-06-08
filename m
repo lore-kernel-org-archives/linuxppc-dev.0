@@ -1,30 +1,22 @@
-Return-Path: <ebiederm@xmission.com>
-Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
-	[166.70.28.69])
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound2-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 063C1DDE43
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Jun 2007 08:55:54 +1000 (EST)
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: will_schmidt@vnet.ibm.com
-Subject: Re: [PATCH 1/3] [PATCH i386] during VM oom condition,
-	kill all threads in process group
-References: <20070605174831.21740.33119.stgit@farscape.rchland.ibm.com>
-	<20070607153459.2a1b3230.akpm@linux-foundation.org>
-	<20070607231621.GB32549@kryten>
-	<20070607171018.d51fc5da.akpm@linux-foundation.org>
-	<1181330358.21409.31.camel@farscape.rchland.ibm.com>
-	<20070608123230.520655f5.akpm@linux-foundation.org>
-	<1181337147.21409.42.camel@farscape.rchland.ibm.com>
-Date: Fri, 08 Jun 2007 16:48:41 -0600
-In-Reply-To: <1181337147.21409.42.camel@farscape.rchland.ibm.com> (Will
-	Schmidt's message of "Fri, 08 Jun 2007 16:12:26 -0500")
-Message-ID: <m1abvarrjq.fsf@ebiederm.dsl.xmission.com>
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 29AD9DDEEE
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Jun 2007 09:22:47 +1000 (EST)
+Message-ID: <4669E4BD.7060002@am.sony.com>
+Date: Fri, 08 Jun 2007 16:22:37 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
-	Anton Blanchard <anton@samba.org>
+To: gregkh@suse.de
+Subject: [patch] PS3: Fix USB return value
+References: <20070606024407.786638029@am.sony.com>>
+	<46662443.9020905@am.sony.com>
+In-Reply-To: <46662443.9020905@am.sony.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: owen@stampflee.com, Paul Mackerras <paulus@samba.org>,
+	linux-usb-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,36 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Will Schmidt <will_schmidt@vnet.ibm.com> writes:
+Fix a minor error on the return value of ps3_ehci_driver_register()
+and ps3_ohci_driver_register() when running on non-PS3 systems.
 
-> On Fri, 2007-06-08 at 12:32 -0700, Andrew Morton wrote:
->> On Fri, 08 Jun 2007 14:19:18 -0500
->> Will Schmidt <will_schmidt@vnet.ibm.com> wrote:
->> 
->> > > > > zap_other_threads() requires tasklist_lock.
->> > 
->
->> In fact, it's probably the case that rcu_read_lock() is now sufficient
->> locking coverage for zap_other_threads() (cc's people).
->> 
->> It had better be, because do_group_exit() forgot to take tasklist_lock.  It
->> is perhaps relying upon spin_lock()'s hidden rcu_read_lock() properties
->> without so much as a code comment, which would be somewhat nasty of it.
->
->> You could perhaps just call do_group_exit() from within the fault
->> handler,
->> btw.
->
-> Yup, so looks like I can actually replace the existing do_exit() call
-> with do_group_exit().   I'll sit on this for a bit to give other folks a
-> chance to comment on which lock call is sufficient, read_lock() or
-> rcu_read_lock(), etc;  and do_group_exit()'s issue with taking
-> tasklist_lock. 
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+---
+Hi Greg,
 
-No.  The rcu_read_lock is not sufficient.
-Yes.  sighand->siglock is enough, and we explicitly take it in
-do_group_exit before calling zap_other_threads.
+Testers found a problem with my latest PS3 USB patch.  Please
+add it in.
 
-Unless I have completely miss-understood this thread.
+-Geoff
 
-Eric
+ drivers/usb/host/ehci-ps3.c |    2 +-
+ drivers/usb/host/ohci-ps3.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+--- a/drivers/usb/host/ehci-ps3.c
++++ b/drivers/usb/host/ehci-ps3.c
+@@ -227,7 +227,7 @@ static int ps3_ehci_driver_register(stru
+ {
+ 	return firmware_has_feature(FW_FEATURE_PS3_LV1)
+ 		? ps3_system_bus_driver_register(drv)
+-		: -ENODEV;
++		: 0;
+ }
+ 
+ static void ps3_ehci_driver_unregister(struct ps3_system_bus_driver *drv)
+--- a/drivers/usb/host/ohci-ps3.c
++++ b/drivers/usb/host/ohci-ps3.c
+@@ -230,7 +230,7 @@ static int ps3_ohci_driver_register(stru
+ {
+ 	return firmware_has_feature(FW_FEATURE_PS3_LV1)
+ 		? ps3_system_bus_driver_register(drv)
+-		: -ENODEV;
++		: 0;
+ }
+ 
+ static void ps3_ohci_driver_unregister(struct ps3_system_bus_driver *drv)
