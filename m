@@ -1,20 +1,17 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 8 Jun 2007 09:34:31 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: Re: [PATCH] Fix drivers/rtc/Kconfig for powerpc
-Message-ID: <20070607233431.GA17298@localhost.localdomain>
-References: <1181149064.5674.134.camel@rhino>
-	<1181149622.12740.32.camel@ld0161-tx32>
-	<1181150240.5674.139.camel@rhino>
-	<1181232488.31686.19.camel@ld0161-tx32>
-	<1181233980.5674.174.camel@rhino>
-	<1181234266.31686.37.camel@ld0161-tx32>
+Return-Path: <djiang@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 86EF0DDF39
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 10:14:24 +1000 (EST)
+Message-ID: <46689F90.205@mvista.com>
+Date: Thu, 07 Jun 2007 17:15:12 -0700
+From: Dave Jiang <djiang@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1181234266.31686.37.camel@ld0161-tx32>
-Cc: a.zummo@towertech.it, rtc-linux@googlegroups.com,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
+To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: publish 85xx soc dts entries as of_device on
+	cds	and ads platforms
+References: <20070522232849.GA26092@blade.az.mvista.com>
+In-Reply-To: <20070522232849.GA26092@blade.az.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,21 +21,107 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 07, 2007 at 11:37:46AM -0500, Jon Loeliger wrote:
-> On Thu, 2007-06-07 at 11:33, Wade Farnsworth wrote:
-> > 
-> > But since this is in drivers/rtc/Kconfig, wouldn't the maintainer of
-> > that subsystem be expected to pick this up?
+Dave Jiang wrote:
+> Publish the devices listed in dts under SOC as of_device just like what
+> mpc85xx_mds platforms do. The 85xx cds and ads platforms currently do not
+> export the devices in dts as of_device.
 > 
-> Oh, sure.  In which case he/she may be waiting on
-> someone over in PowerPC land to ACK it first. :-)
-> Dunno.
+> I need the memory controller, L2 cache-controller, and the PCI controller
+> published as of_device so the mpc85xx EDAC driver can claim them for usage.
 
-Sure.  This patch is so simple though, I think it could go straight to
-Andrew Morton.
+Since I've seen no activity in regard to this patch, can someone please tell me
+if the devices in dts under the SOC entry for 85xx are suppose to be published
+as of_device or is this patch wrong? I'm going to be looking at the mpc86xx
+EDAC support and will have to do something similar. Am I suppose to setup
+platform devices for the EDAC resources or use of_device? If of_device then I
+should be publishing them similar to the mpc85xx_mds platforms right? If not,
+I'll resubmit my platform device setup patch for the mpc85xx.... Thx!
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> The mpc85xx EDAC driver can be found at:
+> http://bluesmoke.sourceforge.net/
+> 
+> It's in development to be pushed into the kernel.
+> 
+> Signed-off-by: Dave Jiang <djiang@mvista.com>
+> 
+> ---
+> 
+>  arch/powerpc/platforms/85xx/mpc85xx_ads.c |   19 +++++++++++++++++++
+>  arch/powerpc/platforms/85xx/mpc85xx_cds.c |   19 +++++++++++++++++++
+>  2 files changed, 38 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+> index 5d27621..217cc13 100644
+> --- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+> @@ -18,6 +18,8 @@
+>  #include <linux/delay.h>
+>  #include <linux/seq_file.h>
+>  
+> +#include <asm/of_device.h>
+> +#include <asm/of_platform.h>
+>  #include <asm/system.h>
+>  #include <asm/time.h>
+>  #include <asm/machdep.h>
+> @@ -277,6 +279,23 @@ static int __init mpc85xx_ads_probe(void)
+>          return of_flat_dt_is_compatible(root, "MPC85xxADS");
+>  }
+>  
+> +static struct of_device_id mpc85xx_ids[] = {
+> +	{ .type = "soc", },
+> +	{ .compatible = "soc", },
+> +	{},
+> +};
+> +
+> +static int __init mpc85xx_publish_devices(void)
+> +{
+> +	if (!machine_is(mpc85xx_ads))
+> +		return 0;
+> +
+> +	of_platform_bus_probe(NULL, mpc85xx_ids, NULL);
+> +
+> +	return 0;
+> +}
+> +device_initcall(mpc85xx_publish_devices);
+> +
+>  define_machine(mpc85xx_ads) {
+>  	.name			= "MPC85xx ADS",
+>  	.probe			= mpc85xx_ads_probe,
+> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+> index 1490eb3..77ef0cf 100644
+> --- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+> +++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+> @@ -26,6 +26,8 @@
+>  #include <linux/module.h>
+>  #include <linux/fsl_devices.h>
+>  
+> +#include <asm/of_device.h>
+> +#include <asm/of_platform.h>
+>  #include <asm/system.h>
+>  #include <asm/pgtable.h>
+>  #include <asm/page.h>
+> @@ -296,6 +298,23 @@ static int __init mpc85xx_cds_probe(void)
+>          return of_flat_dt_is_compatible(root, "MPC85xxCDS");
+>  }
+>  
+> +static struct of_device_id mpc85xx_ids[] = {
+> +	{ .type = "soc", },
+> +	{ .compatible = "soc", },
+> +	{},
+> +};
+> +
+> +static int __init mpc85xx_publish_devices(void)
+> +{
+> +	if (!machine_is(mpc85xx_cds))
+> +		return 0;
+> +
+> +	of_platform_bus_probe(NULL, mpc85xx_ids, NULL);
+> +
+> +	return 0;
+> +}
+> +device_initcall(mpc85xx_publish_devices);
+> +
+>  define_machine(mpc85xx_cds) {
+>  	.name		= "MPC85xx CDS",
+>  	.probe		= mpc85xx_cds_probe,
+> 
