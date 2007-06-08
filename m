@@ -1,17 +1,19 @@
-Return-Path: <djiang@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 86EF0DDF39
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2007 10:14:24 +1000 (EST)
-Message-ID: <46689F90.205@mvista.com>
-Date: Thu, 07 Jun 2007 17:15:12 -0700
-From: Dave Jiang <djiang@mvista.com>
-MIME-Version: 1.0
-To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: publish 85xx soc dts entries as of_device on
-	cds	and ads platforms
-References: <20070522232849.GA26092@blade.az.mvista.com>
-In-Reply-To: <20070522232849.GA26092@blade.az.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Add Marvell mv64x60 udbg putc/getc functions
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Dale Farnsworth <dale@farnsworth.org>
+In-Reply-To: <20070606172900.GA29951@xyzzy.farnsworth.org>
+References: <20070523220518.GA2312@xyzzy.farnsworth.org>
+	<18022.20173.857845.49576@cargo.ozlabs.ibm.com>
+	<20070606172900.GA29951@xyzzy.farnsworth.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-pRC+Ru3XFeLrsCD03jIo"
+Date: Fri, 08 Jun 2007 12:15:15 +1000
+Message-Id: <1181268915.6026.5.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,107 +23,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dave Jiang wrote:
-> Publish the devices listed in dts under SOC as of_device just like what
-> mpc85xx_mds platforms do. The 85xx cds and ads platforms currently do not
-> export the devices in dts as of_device.
-> 
-> I need the memory controller, L2 cache-controller, and the PCI controller
-> published as of_device so the mpc85xx EDAC driver can claim them for usage.
 
-Since I've seen no activity in regard to this patch, can someone please tell me
-if the devices in dts under the SOC entry for 85xx are suppose to be published
-as of_device or is this patch wrong? I'm going to be looking at the mpc86xx
-EDAC support and will have to do something similar. Am I suppose to setup
-platform devices for the EDAC resources or use of_device? If of_device then I
-should be publishing them similar to the mpc85xx_mds platforms right? If not,
-I'll resubmit my platform device setup patch for the mpc85xx.... Thx!
+--=-pRC+Ru3XFeLrsCD03jIo
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> The mpc85xx EDAC driver can be found at:
-> http://bluesmoke.sourceforge.net/
-> 
-> It's in development to be pushed into the kernel.
-> 
-> Signed-off-by: Dave Jiang <djiang@mvista.com>
-> 
-> ---
-> 
->  arch/powerpc/platforms/85xx/mpc85xx_ads.c |   19 +++++++++++++++++++
->  arch/powerpc/platforms/85xx/mpc85xx_cds.c |   19 +++++++++++++++++++
->  2 files changed, 38 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-> index 5d27621..217cc13 100644
-> --- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-> @@ -18,6 +18,8 @@
->  #include <linux/delay.h>
->  #include <linux/seq_file.h>
->  
-> +#include <asm/of_device.h>
-> +#include <asm/of_platform.h>
->  #include <asm/system.h>
->  #include <asm/time.h>
->  #include <asm/machdep.h>
-> @@ -277,6 +279,23 @@ static int __init mpc85xx_ads_probe(void)
->          return of_flat_dt_is_compatible(root, "MPC85xxADS");
->  }
->  
-> +static struct of_device_id mpc85xx_ids[] = {
-> +	{ .type = "soc", },
-> +	{ .compatible = "soc", },
-> +	{},
-> +};
-> +
-> +static int __init mpc85xx_publish_devices(void)
-> +{
-> +	if (!machine_is(mpc85xx_ads))
-> +		return 0;
-> +
-> +	of_platform_bus_probe(NULL, mpc85xx_ids, NULL);
-> +
-> +	return 0;
-> +}
-> +device_initcall(mpc85xx_publish_devices);
-> +
->  define_machine(mpc85xx_ads) {
->  	.name			= "MPC85xx ADS",
->  	.probe			= mpc85xx_ads_probe,
-> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-> index 1490eb3..77ef0cf 100644
-> --- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-> +++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-> @@ -26,6 +26,8 @@
->  #include <linux/module.h>
->  #include <linux/fsl_devices.h>
->  
-> +#include <asm/of_device.h>
-> +#include <asm/of_platform.h>
->  #include <asm/system.h>
->  #include <asm/pgtable.h>
->  #include <asm/page.h>
-> @@ -296,6 +298,23 @@ static int __init mpc85xx_cds_probe(void)
->          return of_flat_dt_is_compatible(root, "MPC85xxCDS");
->  }
->  
-> +static struct of_device_id mpc85xx_ids[] = {
-> +	{ .type = "soc", },
-> +	{ .compatible = "soc", },
-> +	{},
-> +};
-> +
-> +static int __init mpc85xx_publish_devices(void)
-> +{
-> +	if (!machine_is(mpc85xx_cds))
-> +		return 0;
-> +
-> +	of_platform_bus_probe(NULL, mpc85xx_ids, NULL);
-> +
-> +	return 0;
-> +}
-> +device_initcall(mpc85xx_publish_devices);
-> +
->  define_machine(mpc85xx_cds) {
->  	.name		= "MPC85xx CDS",
->  	.probe		= mpc85xx_cds_probe,
-> 
+On Wed, 2007-06-06 at 10:29 -0700, Dale Farnsworth wrote:
+> On Wed, Jun 06, 2007 at 04:06:05PM +1000, Paul Mackerras wrote:
+> > Dale Farnsworth writes:
+> >=20
+> > > Paul, this patch is unchanged from the one I posted 10 days ago.
+> > > At that time, I saw no discussion, other than Mark's ACK.  I'd=20
+> > > argue that this is a bugfix, and hope that it could go into 2.6.22.
+> >=20
+> > Um, it seems rather large, and in particular adds a fair bit of
+> > completely new code.  Is there a simpler way of getting to an
+> > acceptable point - e.g. just not use the udbg console on these boards?
+>=20
+> Yeah, that was the first approach I took.  Unfortunately, currently the
+> udbg console is included unconditionally on arch/powerpc.  I created the
+> patch below to conditionalize the use of udbg console.  I thought it a
+> bit risky for 2.6.22, but I think it's the right approach long term.
+>=20
+> > If we don't have udbg support for them then the udbg console would
+> > seem a bit pointless, no?
+>=20
+> There is value in that with the udbg console we do see console output
+> much earlier.  While there's some new code (I didn't think it was all
+> that much), the impact is limited to the single platform now using the
+> mv64x60 console port, the prpmc2800.
+
+You don't select PPC_UDBG for any of the cell platforms, which AFAICT
+means you'll break early debugging on those.
+
+I think you should be able to do this in terms of
+CONFIG_PPC_EARLY_DEBUG, which already exists.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-pRC+Ru3XFeLrsCD03jIo
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGaLuzdSjSd0sB4dIRArWLAKC84QeiGuqTwgiU80Ra2gv+4i2zwQCeNo5D
+2ARLwTldwojV8y7snp82z08=
+=7mub
+-----END PGP SIGNATURE-----
+
+--=-pRC+Ru3XFeLrsCD03jIo--
