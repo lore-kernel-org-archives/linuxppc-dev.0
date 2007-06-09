@@ -1,17 +1,16 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc1-s33.bay0.hotmail.com (bay0-omc1-s33.bay0.hotmail.com
-	[65.54.246.105]) by ozlabs.org (Postfix) with ESMTP id 1174DDDF15
+Return-Path: <silicom@163.com>
+Received: from m13-129.163.com (m13-129.163.com [220.181.13.129])
+	by ozlabs.org (Postfix) with SMTP id 3F924DDF91
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Jun 2007 23:51:26 +1000 (EST)
-Message-ID: <BAY138-F14C8777C9DA602F253346CB2250@phx.gbl>
-In-Reply-To: <200706071609.19399.arnd@arndb.de>
-From: "Ming Liu" <eemingliu@hotmail.com>
-To: arnd@arndb.de
-Subject: Re: a question on "iowrite32()"
-Date: Fri, 08 Jun 2007 13:51:21 +0000
-Mime-Version: 1.0
-Content-Type: text/plain; charset=gb2312; format=flowed
-Cc: domen.puncer@telargo.com, linuxppc-embedded@ozlabs.org
+	Sat,  9 Jun 2007 22:38:40 +1000 (EST)
+Date: Sat, 9 Jun 2007 20:21:30 +0800 (CST)
+From: silicom <silicom@163.com>
+To: linuxppc-embedded@ozlabs.org
+Message-ID: <1316548361.5052161181391690811.JavaMail.coremail@bj163app129.163.com>
+Subject: a question for linux framebuffer driver
+MIME-Version: 1.0
+Content-Type: multipart/Alternative;
+	boundary="----=_Part_502267_1006930903.1181391690810"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,46 +21,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Arnd,
-I have turned to use out_be32. My system works quite well now. Thanks for 
-your suggestions. :)
+------=_Part_502267_1006930903.1181391690810
+Content-Type: text/plain; charset=gbk
+Content-Transfer-Encoding: 7bit
 
-BR
-Ming
+Hello,
+Now I'm porting framebuffer driver for ml403 in linux 2.6.17.1, but I find after registering the driver using driver_register function in xilinxfb_int, the xilinxfb_drv_probe function has not been called, so framebuffer not registered yet, no devices founded(but I have connected the monitor). I want to know when will xilinxfb_drv_probe be called?
+   
+------=_Part_502267_1006930903.1181391690810
+Content-Type: text/html; charset=gbk
+Content-Transfer-Encoding: quoted-printable
 
-
->From: Arnd Bergmann <arnd@arndb.de>
->To: "Ming Liu" <eemingliu@hotmail.com>
->CC: domen.puncer@telargo.com, linuxppc-embedded@ozlabs.org
->Subject: Re: a question on "iowrite32()"
->Date: Thu, 7 Jun 2007 16:09:18 +0200
+<div>Hello,<br>Now I'm porting framebuffer driver for ml403 in linux 2.6.17=
+1, but I find after registering the driver using driver_register function =
+in xilinxfb_int, the xilinxfb_drv_probe function has not been called, so fr=
+amebuffer not registered yet, no devices founded(but I have connected the m=
+onitor). I want to know when will xilinxfb_drv_probe be called?<br></div><d=
+iv>&nbsp;</div><div>&nbsp;</div><div>&nbsp;</div><br><!-- footer --><br><hr=
 >
->On Thursday 07 June 2007, Ming Liu wrote:
-> > >Since of_iomap() is rather new and hardly used by any drivers, we
-> > >could still redefine it so that you would use iowrite32{,be}() instead
-> > >of out_{be,le}32, but currently that doesn't work.
-> >
-> > So if I am correct, your suggestion is to use iowrite32be() in my 
-device
-> > driver, right?
->
->What I was saying is that iowrite32be is broken for other reasons, as it
->is only defined for PCI and ISA devices and you should _not_ use it,
->even if it solves the endianess problem.
->
->What you should use is out_be32().
->
-> > However, I cannot find such a function defined in my 2.6.10 kernel.
-> > Isn't iowrite32be() a standard IO function like iowrite32(), or there 
-is
-> > a patch to export this function?
->
->It's a standard function, is was added less than two years ago.
->You should really consider upgrading to a recent kernel version for
->a number of reasons, but they are all unrelated to your current problem 
-;-)
->
->	Arnd <><
-
-_________________________________________________________________
-享用世界上最大的电子邮件系统— MSN Hotmail。  http://www.hotmail.com  
+<a style=3D"font-size:14px;line-height:15px; color:#000; text-decoration:no=
+ne" href=3D"http://event.mail.163.com/chanel/xyq.htm?from=3D163_NO1" target=
+=3D"_blank"><span style=3D"text-decoration:underline; color:blue">150 =CD=
+=F2 =C8=CB =CD=AC =CA=B1 =D4=DA =CD=E6 =B5=C4 =CD=F8 =D3=CE=A3=AC=C4=E3 =B2=
+=BB =CA=D4 =CA=D4 =C2=F0 =A3=BF </span> </a>
+------=_Part_502267_1006930903.1181391690810--
