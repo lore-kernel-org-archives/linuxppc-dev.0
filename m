@@ -1,17 +1,19 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 0C5B8DDEFD
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Jun 2007 18:17:28 +1000 (EST)
-Mime-Version: 1.0 (Apple Message framework v624)
-In-Reply-To: <4666233F.1080103@am.sony.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <aedf9b62aefb7f14cb71ba5bba9c5e38@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [patch 08/18] PS3: Kexec support (and a tutoral on the kexec flow
-	for 64 bit powerpc)
-Date: Sat, 9 Jun 2007 03:17:27 -0500
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Return-Path: <vitb@kernel.crashing.org>
+Received: from aca800fc.ipt.aol.com (unknown [85.21.88.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 89C7ADDF0A
+	for <linuxppc-dev@ozlabs.org>; Sun, 10 Jun 2007 02:21:26 +1000 (EST)
+To: Jeff Garzik <jeff@garzik.org>
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: [PATCH] PHY fixed driver: rework release path and update phy_id
+	notation
+Date: Sat, 09 Jun 2007 20:21:18 +0400
+Message-ID: <20070609162118.2680.99019.stgit@ACA800FC.ipt.aol.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,182 +23,206 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed Jun 6 13:00:15 EST 2007, Geoff Levand wrote:
 
-> Fixup the core platform parts needed for kexec to work on the PS3.
->  - Setup ps3_hpte_clear correctly.
->  - Mask interrupts on irq removal.
->  - Release all hypervisor resources.
->
-> Signed-off-by: Geoff Levand <geoffrey.levand at am.sony.com>
-> ---
->  arch/powerpc/platforms/ps3/htab.c      |   14 +-
->  arch/powerpc/platforms/ps3/interrupt.c |  199 
-> ++++++++++++++++++++-------------
->  arch/powerpc/platforms/ps3/setup.c     |   29 ++--
->  3 files changed, 147 insertions(+), 95 deletions(-)
->
-> --- a/arch/powerpc/platforms/ps3/htab.c
-> +++ b/arch/powerpc/platforms/ps3/htab.c
-> @@ -234,10 +234,18 @@ static void ps3_hpte_invalidate(unsigned
->
->  static void ps3_hpte_clear(void)
->  {
-> -       /* Make sure to clean up the frame buffer device first */
-> -       ps3fb_cleanup();
+device_bind_driver() error code returning has been fixed. 
+release() function has been written, so that to free resources
+in correct way; the release path is now clean.
 
-I'm glad to see this go.  Which patch added the call to the driver?
+Before the rework, it used to cause
+ Device 'fixed@100:1' does not have a release() function, it is broken
+ and must be fixed.
+ BUG: at drivers/base/core.c:104 device_release()
+ 
+ Call Trace:  
+  [<ffffffff802ec380>] kobject_cleanup+0x53/0x7e
+  [<ffffffff802ec3ab>] kobject_release+0x0/0x9
+  [<ffffffff802ecf3f>] kref_put+0x74/0x81
+  [<ffffffff8035493b>] fixed_mdio_register_device+0x230/0x265
+  [<ffffffff80564d31>] fixed_init+0x1f/0x35
+  [<ffffffff802071a4>] init+0x147/0x2fb
+  [<ffffffff80223b6e>] schedule_tail+0x36/0x92
+  [<ffffffff8020a678>] child_rip+0xa/0x12
+  [<ffffffff80311714>] acpi_ds_init_one_object+0x0/0x83
+  [<ffffffff8020705d>] init+0x0/0x2fb
+  [<ffffffff8020a66e>] child_rip+0x0/0x12  
 
-> +       int result;
->
-> -       lv1_unmap_htab(htab_addr);
-> +       DBG(" -> %s:%d\n", __func__, __LINE__);
-> +
-> +       result = lv1_unmap_htab(htab_addr);
-> +       BUG_ON(result);
-> +
-> +       ps3_mm_shutdown();
-> +
-> +       ps3_mm_vas_destroy();
->
-I tried to look at these to check that nothing dynamically allocated 
-was being touched.   I didn't find anything if the memory had been 
-hot-unplugged, but it also looked like they skipped the last one.
 
-> +
-> +       DBG(" <- %s:%d\n", __func__, __LINE__);
->  }
->
->  void __init ps3_hpte_init(unsigned long htab_size)
->
-[skipped interrupt.c changes]
+Also changed the notation of the fixed phy definition on
+mdio bus to the form of <speed>+<duplex> to make it able to be used by
+gianfar and ucc_geth that define phy_id strictly as "%d:%d"
 
-> --- a/arch/powerpc/platforms/ps3/setup.c
-> +++ b/arch/powerpc/platforms/ps3/setup.c
-> @@ -209,31 +209,28 @@ static int __init ps3_probe(void)
->  #if defined(CONFIG_KEXEC)
->  static void ps3_kexec_cpu_down(int crash_shutdown, int secondary)
->  {
-> -       DBG(" -> %s:%d\n", __func__, __LINE__);
-> +       int result;
-> +       u64 ppe_id;
-> +       u64 thread_id = secondary ? 1 : 0;
+Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
 
-This is wrong.   This is not what secondary means.  To get the 
-thread_id you must use smp_processor_id for logical or 
-hard_smp_processor_id() for the hardware thread id.
+---
 
-> +
-> +       DBG(" -> %s:%d: (%d)\n", __func__, __LINE__, secondary);
-> +       ps3_smp_cleanup_cpu(thread_id);
-> +
-> +       lv1_get_logical_ppe_id(&ppe_id);
-> +       result = lv1_configure_irq_state_bitmap(ppe_id, secondary ? 0 
-> : 1, 0);
+ drivers/net/phy/Kconfig |    4 ++
+ drivers/net/phy/fixed.c |   93 +++++++++++++++++++++++++++--------------------
+ 2 files changed, 57 insertions(+), 40 deletions(-)
 
-As the second argument is thread id, again this is wrong.
-
->
-> -       if (secondary) {
-> -               int cpu;
-> -               for_each_online_cpu(cpu)
-> -                       if (cpu)
-> -                               ps3_smp_cleanup_cpu(cpu);
-> -       } else
-> -               ps3_smp_cleanup_cpu(0);
-> +       /* seems to fail on second call */
-> +       DBG("%s:%d: lv1_configure_irq_state_bitmap (%d) %s\n", 
-> __func__,
-> +               __LINE__, secondary, ps3_result(result));
->
->         DBG(" <- %s:%d\n", __func__, __LINE__);
->  }
-
-Once linux is running, all processors are identical.  That is the S in 
-SMP.   However, during kernel boot, we need one cpu to be running and 
-the others to wait until the path is prepared.  Since kexec effectively 
-leads to a boot, one cpu becomes known as the boot cpu and the rest 
-become secondary cpus.
-
-There are two paths to enter the kexec code: the panic code, and the 
-shutdown/reboot syscall.  For normal kexec, whatever cpu thread is 
-running the user process when it makes the reboot system call will be 
-the master.  For crash kexec, its whichever thread called panic.
-
-The secondary flag to cpu_down exists because the secondary cpus will 
-call it in ipi context but will not return to the irq layer to eoi the 
-ipi.  The call to cpu_down is made from kexec_smp_down initiated via 
-the smp_call_function ipi context but instead of returning, 
-kexec_smp_down calls kexec_smp_wait which will mark the paca, switch to 
-real mode and spin with the hardware thread in r3 until the master 
-tells them its done copying the kernel, when it will jump to address 
-0x60.
-
-The code in default_machine_kexec calls kexec_prepare_cpus which uses 
-smp_call_function to ipi the other cpus and have them call 
-kexec_cpu_down.  After the secondaries have marked their paca, cpu_down 
-will be called on the master with the secondary arg 0.  During this 
-call all other cpus are spinning.  After this call, the cpu will switch 
-to a statically allocated stack and copy the new image pages into 
-place, destroying any dynamically allocated and per-cpu data.  It then 
-calls switches to real mode and calls the htab_clear hook to tear down 
-the page tables, leaving a clean state for the new kernel.  When 
-finished it copies 256 bytes from the entry point to address 0 and 
-tells any slaves to branch to 0x60.  It then branches to the entry 
-point (not address 0) with r3 containing its hardware cpu id, r4 
-containing the entry address, and r5 containing 0.
-
-When using kexec-tools, the entry point in v2wrap.S stores the master 
-cpu id, calls the generic C code to checksum the image, then stores the 
-master cpu id as the boot cpu in the device tree header, loads r3 with 
-the device tree, and enters the new kernel.  (This adjusts for the 
-difference between leaving the kernel, where cpu id is in r3, and 
-entering the kernel, which expects a pointer to the device tree.   The 
-kexec_load syscall just supplies memory contents and the entry point; 
-the design is that any registers needed by the new code are to be set 
-by a trampoline added to the list of image segments by user space.  The 
-master cpu is not known until kexec is initiated and therefore is 
-passed in the r3 (the very existence of the device-tree structure is 
-only known to user space, not passed to the system call); the 
-specification of r4 and r5 for the master thread is for convenience)
-
-Since there is no handoff to say the slave noticed that the master was 
-done copying the image, I have submitted a kernel patch to release the 
-slaves to the new kernel's wait code entry point at 0x60 before calling 
-the htab_clear routine, giving them the time that the htab_clear 
-function executes in addition to the time for the code in purgatory.  
-The patch \to copy the payload kernel's spin loop instead of creating 
-another loop and sync gate is in kexec-testing.
-
-Note that the order describe above is for the 64 bit PowerPC port; most 
-architectures switch to real mode, flash invalidate the mmu and copy 
-the new kernel in real mode using an relocatable assembly routine 
-running at a location chosen by the kernel (a page that is neither an 
-image source or destination page).   The LPAR real mode limitations 
-deem this impractical; instead we reserve the kernel text, data, and 
-bss space, the mmu hash table (in non-lpar mode), and any tce tables.  
-If the execed image was a kernel, it will copy itself to its linked 
-location as it must when started from open firmware.
-
->
->  static void ps3_machine_kexec(struct kimage *image)
->  {
-> -       unsigned long ppe_id;
-> -
->         DBG(" -> %s:%d\n", __func__, __LINE__);
->
-> -       lv1_get_logical_ppe_id(&ppe_id);
-> -       lv1_configure_irq_state_bitmap(ppe_id, 0, 0);
-> -       ps3_mm_shutdown();
-> -       ps3_mm_vas_destroy();
-> -
-> -       default_machine_kexec(image);
-> +       default_machine_kexec(image); // needs ipi, never returns.
->
->         DBG(" <- %s:%d\n", __func__, __LINE__);
->  }
->
-
-Others noted this now passthough function can be eliminated.
-
-milton
+diff --git a/drivers/net/phy/Kconfig b/drivers/net/phy/Kconfig
+index 09b6f25..a938c48 100644
+--- a/drivers/net/phy/Kconfig
++++ b/drivers/net/phy/Kconfig
+@@ -71,4 +71,8 @@ config FIXED_MII_100_FDX
+ 	bool "Emulation for 100M Fdx fixed PHY behavior"
+ 	depends on FIXED_PHY
+ 
++config FIXED_MII_1000_FDX
++	bool "Emulation for 1000M Fdx fixed PHY behavior"
++	depends on FIXED_PHY
++
+ endif # PHYLIB
+diff --git a/drivers/net/phy/fixed.c b/drivers/net/phy/fixed.c
+index 68c99b4..34b9111 100644
+--- a/drivers/net/phy/fixed.c
++++ b/drivers/net/phy/fixed.c
+@@ -187,12 +187,29 @@ static struct phy_driver fixed_mdio_driver = {
+ 	.driver 	= { .owner = THIS_MODULE,},
+ };
+ 
++static void fixed_mdio_release (struct device * dev)
++{
++	struct phy_device *phydev = container_of(dev, struct phy_device, dev);
++	struct mii_bus *bus = phydev->bus;
++	struct fixed_info *fixed = bus->priv;
++
++	kfree(phydev);
++	kfree(bus->dev);
++	kfree(bus);
++	kfree(fixed->regs);
++	kfree(fixed);
++}
++
+ /*-----------------------------------------------------------------------------
+  *  This func is used to create all the necessary stuff, bind
+  * the fixed phy driver and register all it on the mdio_bus_type.
+- * speed is either 10 or 100, duplex is boolean.
++ * speed is either 10 or 100 or 1000, duplex is boolean.
+  * number is used to create multiple fixed PHYs, so that several devices can
+  * utilize them simultaneously.
++ *
++ * The device on mdio bus will look like <bus_id>:<phy_id>,
++ * bus_id = number 
++ * phy_id = speed+duplex.
+  *-----------------------------------------------------------------------------*/
+ static int fixed_mdio_register_device(int number, int speed, int duplex)
+ {
+@@ -221,6 +238,12 @@ static int fixed_mdio_register_device(int number, int speed, int duplex)
+ 	}
+ 
+ 	fixed->regs = kzalloc(MII_REGS_NUM*sizeof(int), GFP_KERNEL);
++	if (NULL == fixed->regs) {
++		kfree(dev);
++		kfree(new_bus);
++		kfree(fixed);
++		return -ENOMEM;
++	}
+ 	fixed->regs_num = MII_REGS_NUM;
+ 	fixed->phy_status.speed = speed;
+ 	fixed->phy_status.duplex = duplex;
+@@ -249,57 +272,43 @@ static int fixed_mdio_register_device(int number, int speed, int duplex)
+ 	fixed->phydev = phydev;
+ 
+ 	if(NULL == phydev) {
+-		err = -ENOMEM;
+-		goto device_create_fail;
++		kfree(dev);
++		kfree(new_bus);
++		kfree(fixed->regs);
++		kfree(fixed);
++		return -ENOMEM;
+ 	}
+ 
+ 	phydev->irq = PHY_IGNORE_INTERRUPT;
+ 	phydev->dev.bus = &mdio_bus_type;
+ 
+-	if(number)
+-		snprintf(phydev->dev.bus_id, BUS_ID_SIZE,
+-				"fixed_%d@%d:%d", number, speed, duplex);
+-	else
+-		snprintf(phydev->dev.bus_id, BUS_ID_SIZE,
+-				"fixed@%d:%d", speed, duplex);
++	snprintf(phydev->dev.bus_id, BUS_ID_SIZE,
++				"%d:%d", number, speed + duplex);
++
+ 	phydev->bus = new_bus;
+ 
++	phydev->dev.driver = &fixed_mdio_driver.driver;
++ 	phydev->dev.release = fixed_mdio_release;
++ 
++ 	err = phydev->dev.driver->probe(&phydev->dev);
++ 	if(err < 0) {
++ 		printk(KERN_ERR "Phy %s: problems with fixed driver\n",
++				phydev->dev.bus_id);
++ 		kfree(phydev);
++ 		kfree(dev);
++ 		kfree(new_bus);
++ 		kfree(fixed->regs);
++ 		kfree(fixed);
++ 		return err;
++ 	}
++ 
+ 	err = device_register(&phydev->dev);
+ 	if(err) {
+ 		printk(KERN_ERR "Phy %s failed to register\n",
+ 				phydev->dev.bus_id);
+-		goto bus_register_fail;
+-	}
+-
+-	/*
+-	   the mdio bus has phy_id match... In order not to do it
+-	   artificially, we are binding the driver here by hand;
+-	   it will be the same for all the fixed phys anyway.
+-	 */
+-	phydev->dev.driver = &fixed_mdio_driver.driver;
+-
+-	err = phydev->dev.driver->probe(&phydev->dev);
+-	if(err < 0) {
+-		printk(KERN_ERR "Phy %s: problems with fixed driver\n",phydev->dev.bus_id);
+-		goto probe_fail;
+ 	}
+ 
+-	err = device_bind_driver(&phydev->dev);
+-	if (err)
+-		goto probe_fail;
+-
+ 	return 0;
+-
+-probe_fail:
+-	device_unregister(&phydev->dev);
+-bus_register_fail:
+-	kfree(phydev);
+-device_create_fail:
+-	kfree(dev);
+-	kfree(new_bus);
+-	kfree(fixed);
+-
+-	return err;
+ }
+ 
+ 
+@@ -322,11 +331,11 @@ static int __init fixed_init(void)
+ 	   driver to them.
+ 
+ 	   Then the external software can lookup the phy bus by searching
+-	   fixed@speed:duplex, e.g. fixed@100:1, to be connected to the
++	   0:speed+duplex, e.g. 0:101, to be connected to the
+ 	   virtual 100M Fdx phy.
+ 
+ 	   In case several virtual PHYs required, the bus_id will be in form
+-	   fixed_<num>@<speed>:<duplex>, which make it able even to define
++	   <num>:<duplex>+<speed>, which make it able even to define
+ 	   driver-specific link control callback, if for instance PHY is completely
+ 	   SW-driven.
+ 
+@@ -338,6 +347,10 @@ static int __init fixed_init(void)
+ #endif
+ #endif
+ 
++#ifdef CONFIG_FIXED_MII_1000_FDX
++	fixed_mdio_register_device(0, 1000, 1);
++#endif
++
+ #ifdef CONFIG_FIXED_MII_100_FDX
+ 	fixed_mdio_register_device(0, 100, 1);
+ #endif
