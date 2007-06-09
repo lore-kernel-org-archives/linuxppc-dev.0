@@ -1,15 +1,15 @@
 Return-Path: <vbordug@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id CAE82DDEBA
-	for <linuxppc-dev@ozlabs.org>; Sun, 10 Jun 2007 01:25:15 +1000 (EST)
-Date: Sat, 9 Jun 2007 19:25:16 +0400
+	by ozlabs.org (Postfix) with ESMTP id 5E865DDEF1
+	for <linuxppc-dev@ozlabs.org>; Sun, 10 Jun 2007 01:27:20 +1000 (EST)
+Date: Sat, 9 Jun 2007 19:08:47 +0400
 From: Vitaly Bordug <vbordug@ru.mvista.com>
 To: Mark Zhan <rongkai.zhan@windriver.com>
-Subject: Re: [PATCH 3/6] 82xx: Add the support of Wind River SBC
+Subject: Re: [PATCH 1/6] 82xx: Add the support of Wind River SBC
 	PowerQUICCII 82xx
-Message-ID: <20070609192516.092ff1b6@vitb.ru.mvista.com>
-In-Reply-To: <1181292878.11341.15.camel@mark>
-References: <1181292878.11341.15.camel@mark>
+Message-ID: <20070609190847.1eb18d80@vitb.ru.mvista.com>
+In-Reply-To: <1181292534.11341.9.camel@mark>
+References: <1181292534.11341.9.camel@mark>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
@@ -23,16 +23,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 08 Jun 2007 16:54:38 +0800
+On Fri, 08 Jun 2007 16:48:53 +0800
 Mark Zhan <rongkai.zhan@windriver.com> wrote:
 
->  			snprintf((char*)&bus_id[(*id)], BUS_ID_SIZE, "%x:%02x",
-> -							(u32)res.start, fs_enet_data.phy_addr);
-> +				fs_enet_dev->id, fs_enet_data.phy_addr);
-> +
->  			fs_enet_data.bus_id = (char*)&bus_id[(*id)];
+> Current MII bitbang bus driver hard-codes the phy mask of mii_bus to
+> ~0x09, which is actually specific for the FSL boards. This patch will
+> make the bitbang driver to generate MII bus phy_mask dynamically.
+> 
+Please send this to netdev, CC me.
 
-Have to admit this is not correct. The issue is in fs_enet code (which should take mdio bus id, not device id), and I'll cover it.
+Of course since subject goes into SCM, it should be individual
+and reflect briefly the nature of the specific change.
+
+
+> Signed-off-by: Mark Zhan <rongkai.zhan@windriver.com>
+> ---
 
 -- 
 Sincerely, 
