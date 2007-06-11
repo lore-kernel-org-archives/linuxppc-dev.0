@@ -1,16 +1,19 @@
-Return-Path: <TMJohnson@fyldemicro.com>
-Received: from fyldemicro.co.uk (www.fyldemicro.co.uk [213.48.132.32])
-	by ozlabs.org (Postfix) with ESMTP id 8C8E5DDE3C
+Return-Path: <j.borkhuis@dutchspace.nl>
+Received: from kirk.dutchspace.nl (kirk.dutchspace.nl [193.200.147.14])
+	by ozlabs.org (Postfix) with ESMTP id 1932EDDEDC
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 11 Jun 2007 19:01:46 +1000 (EST)
+	Mon, 11 Jun 2007 19:04:18 +1000 (EST)
+Received: from [10.21.30.78] (snitkin.dutchspace.nl [10.21.30.78])
+	by kirk.dutchspace.nl (8.11.7p1+Sun/8.10.2) with ESMTP id l5B8kQN21627
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 11 Jun 2007 10:46:26 +0200 (MEST)
+Message-ID: <466D0C56.3080804@dutchspace.nl>
+Date: Mon, 11 Jun 2007 10:48:22 +0200
+From: Johan Borkhuis <j.borkhuis@dutchspace.nl>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C7AC05.6D919317"
-Subject: Using xgpio
-Date: Mon, 11 Jun 2007 09:49:27 +0100
-Message-ID: <02296E583CC11C4D9365985B761F1DDE442971@W2003SERVER.fyldemicro.local>
-From: "Thomas Johnson" <TMJohnson@fyldemicro.com>
-To: <linuxppc-embedded@ozlabs.org>
+To: linuxppc-embedded@ozlabs.org
+Subject: Question on nfsroot shared by multiple targets
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,62 +24,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hello,
 
-------_=_NextPart_001_01C7AC05.6D919317
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+I have the following setup: one server, with DHCP server and NFS-root 
+for an embedded target. With one target this works OK, but now I want to 
+add another target. The problem I see is that both targets are going to 
+write into the same logfiles and lockfiles.
+I did setup the DHCP server in such a way that the NFS-root of the 
+target points to /nfsroot/<last octet of IP address>. But for this to 
+work I need a copy of the complete tree for each target board. I would 
+prefer to have only one tree for all targets, as this saves the effort 
+of keeping all trees in sync.
+I could create a smaller NFS-root per target, with only /etc, /var and 
+some other directories and mount-points and mount all directories from a 
+central nfsroot using the local fstab in /etc. This could work for /var, 
+but I would still need to keep /etc in sync.
 
-Hi,
-=20
-Can anyone give me an example of using the xgpio on an ML403 using
-Montavista Linux.=20
-=20
-I can see the driver uses ioctl but this only seems to be able to set
-the io direction, and I am not clear how to use this, for instance how
-do I turn one of the led's on/off or read the GPIO_SW's.
-=20
-Many thanks.
-=20
-Tom Johnson=20
+Is there another way to do this, or is this the correct way to setup a 
+multi-target system?
 
-
-------_=_NextPart_001_01C7AC05.6D919317
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.6000.16441" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D953564408-11062007>Hi,</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D953564408-11062007></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D953564408-11062007>Can =
-anyone give me=20
-an example of using the xgpio on an ML403 using Montavista Linux.=20
-</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D953564408-11062007></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D953564408-11062007>I can =
-see=20
-the&nbsp;driver uses ioctl but this only seems to be able to set the io=20
-direction, and I am not clear how to use this, for instance how do I =
-turn one of=20
-the led's on/off or read the GPIO_SW's.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D953564408-11062007></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D953564408-11062007>Many=20
-thanks.</SPAN></FONT></DIV>
-<DIV><SPAN lang=3Den-gb><FONT face=3DArial =
-size=3D2></FONT></SPAN>&nbsp;</DIV>
-<DIV><SPAN lang=3Den-gb><FONT face=3DArial size=3D2>Tom =
-Johnson</FONT></SPAN>=20
-<BR></DIV></BODY></HTML>
-
-------_=_NextPart_001_01C7AC05.6D919317--
+Kind regards,
+    Johan Borkhuis
