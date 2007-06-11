@@ -2,14 +2,14 @@ Return-Path: <vitb@gate.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0364ADDF07
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 04:58:35 +1000 (EST)
-Date: Mon, 11 Jun 2007 13:58:31 -0500
+	by ozlabs.org (Postfix) with ESMTP id A37EFDDF10
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 05:03:30 +1000 (EST)
+Date: Mon, 11 Jun 2007 14:03:27 -0500
 From: Vitaly Bordug <vitb@gate.crashing.org>
 To: Mark Zhan <rongkai.zhan@windriver.com>
 Subject: Re: [PATCH] MII bitbang driver should generate MII bus phy_mask
 	dynamically
-Message-ID: <20070611185831.GA31896@gate.crashing.org>
+Message-ID: <20070611190327.GB31896@gate.crashing.org>
 References: <1181548417.5217.13.camel@mark>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -30,11 +30,12 @@ On Mon, Jun 11, 2007 at 03:53:37PM +0800, Mark Zhan wrote:
 > ~0x09, which is actually specific to the FSL boards. This patch will
 > make the bitbang driver to generate MII bus phy_mask dynamically, by the
 > PHY irq info provided by the platform.
+
+just realized that haven't mentioned that it's OK from  me,
+assuming Andy's comment taken into account...
 > 
 > Signed-off-by: Mark Zhan <rongkai.zhan@windriver.com>
-Acked-by: Vitaly Bordug <vitb@kernel.crashing.org>
 > ---
-
 >  b/drivers/net/fs_enet/mii-bitbang.c |    9 ++++++---
 >  1 file changed, 6 insertions(+), 3 deletions(-)
 > 
