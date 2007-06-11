@@ -1,16 +1,17 @@
 Return-Path: <miltonm@bga.com>
 Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id A9A96DDEE2
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jun 2007 17:06:13 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id BD691DDEE9
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jun 2007 17:08:13 +1000 (EST)
 Mime-Version: 1.0 (Apple Message framework v624)
-In-Reply-To: <1181147873.5674.116.camel@rhino>
+In-Reply-To: <4666234B.2020208@am.sony.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <3e02d9714b50f74002e52153270e3e42@bga.com>
+Message-Id: <c52d99b0071ef223a51612ce7d0cddea@bga.com>
 From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH] Create add_rtc() function to enable the RTC CMOS driver
-Date: Mon, 11 Jun 2007 02:06:11 -0500
-To: Wade Farnsworth <wfarnsworth@mvista.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Subject: Re: [patch 09/18] PS3: System-bus rework 
+Date: Mon, 11 Jun 2007 02:07:50 -0500
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,99 +21,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu Jun 7 02:37:53 EST 2007, Wade Farnsworth wrote:
+On Wed Jun 6 13:00:27 EST 2007, Geoff Levand wrote:
 
-No changelog, just the subject?
+> Rework the PS3 system bus to unify device support.
+>  - DMA region sizes must be a power of two
+>  - storage bus DMA updates:
+>   - Small fixes for the PS3 DMA core:
+>       o fix alignment bug
+>       o kill superfluous test
+>       o indentation
+>       o spelling
+>       o export ps3_dma_region_{create,free}()
+>   - ps3_dma_region_init():
+>       o Add `addr' and `len' parameters, so you can create a DMA 
+> region that
+>         does not cover all memory (use `NULL' and `0' to cover all 
+> memory).
+>         This is needed because there are not sufficient IOMMU 
+> resources to have
+>         all DMA regions cover all memory.
+>       o Uninline
+>  - Added remove and shutdown routines to all to all drivers.
 
-> ---
+That'd be all y'all .
+
+Oh, wait, changelogs are not ususally in Texan. :-)
+
+
+>  - Added loadable module support to all drivers.
+>  - Added HV calls for iopte management (needed by sound driver).
 >
->  arch/powerpc/kernel/setup-common.c |   31 +++++++++++++++++++++++++++
->  1 file changed, 31 insertions(+)
->
-> Index: linux-2.6-powerpc-8641/arch/powerpc/kernel/setup-common.c
-> ===================================================================
-> --- linux-2.6-powerpc-8641.orig/arch/powerpc/kernel/setup-common.c
-> +++ linux-2.6-powerpc-8641/arch/powerpc/kernel/setup-common.c
-
-A driver specific ifdef in setup-common?
-
-Please put this in a file in sysdev.   Possibly linked on the config 
-with the existing ifdef, if you can't find a related file.
-
-> @@ -32,6 +32,7 @@
->  #include <linux/unistd.h>
->  #include <linux/serial.h>
->  #include <linux/serial_8250.h>
-> +#include <linux/mc146818rtc.h>
->  #include <asm/io.h>
->  #include <asm/prom.h>
->  #include <asm/processor.h>
-> @@ -447,6 +448,36 @@ static __init int add_pcspkr(void)
->  }
->  device_initcall(add_pcspkr);
-
-Oh, we already did this with the pc speaker?
-
-I stand by my first impression.  Although one could argue its similar 
-in scope to check_legacy_io_port, probe_machine is totally unrelated 
-and between pc speaker and check legacy io port.  At least the grouping
-of these functions in the file should be cleaned up.
 
 
-> +#ifdef CONFIG_RTC_DRV_CMOS
-> +static int  __init add_rtc(void)
-> +{
-> +       struct device_node *np;
-> +       struct platform_device *pd;
-> +       struct resource res;
+Just a quick scan through :
+
+
+> --- a/arch/powerpc/platforms/ps3/mm.c
+> +++ b/arch/powerpc/platforms/ps3/mm.c
+> -#define DBG(fmt...) do{if(0)printk(fmt);}while(0)
+> +#define DBG(fmt...) do { if (0) printk(fmt);} while (0)
+
+While there isn't a style guide for one line defines, while you're 
+adding spaces add one more after the ; before the } where a new line 
+would normally appear.
+
+
+> +       BUG_ON(!dev->bus_id);
+> +       mutex_lock(&usage_hack.mutex);
 > +
-> +       np = of_find_compatible_node(NULL, NULL, "pnpPNP,b00");
-> +       if (!np)
-> +               return -ENODEV;
-> +
-> +       if (of_address_to_resource(np, 0, &res)) {
-> +               of_node_put(np);
-> +               return -ENODEV;
-> +       }
-> +
+> +       if(dev->bus_id == 1 && dev->dev_id == 1) {
+> +               usage_hack.sb_11++;
 
-Ok you have found a resource, but not mapped it.
-
-> +       pd = platform_device_register_simple("rtc_cmos", -1,
-> +                                            &res, 1);
-> +       of_node_put(np);
-> +       if (IS_ERR(pd))
-> +               return PTR_ERR(pd);
-> +
-> +       /* rtc-cmos only supports 24-hr mode */
-> +       CMOS_WRITE(CMOS_READ(RTC_CONTROL) | RTC_24H, RTC_CONTROL);
-> +
-
-But now you invoke a macro from somewhere, which would appear to write 
-to the device.   Probably with some hard-coded isa port, as it doesn't 
-take any obvious device or resource argument.
-
-Is this writing to the legacy io port?   What mapped that resource?
-
-If the driver only works with the standard port, then should you check 
-the resource is that standard port?  Or does the compatibility also 
-dictate the resource, in which case assigning the resource is 
-redundant.
-
-This is after the device register, so the platform driver might think 
-it owns the device.   Or it my be off doing its own initialization.  Or 
-the driver subsystem may have requested the platform device be loaded, 
-and it has not run at all (assuming it can be a module for the moment).
-
-
-> +       return 0;
-> +}
-> +device_initcall(add_rtc);
-> +#endif /* CONFIG_RTC_DRV_CMOS */
-> +
->  void probe_machine(void)
->  {
->         extern struct machdep_calls __machine_desc_start;
->
+If you expect to leave this hack in for a while, how about adding a 
+DEVICE_IS(dev, bus, device) macro?
 
 milton
