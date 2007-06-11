@@ -1,20 +1,18 @@
-Return-Path: <rzhan@windriver.com>
-Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id C2CCFDDED0
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jun 2007 18:00:00 +1000 (EST)
-Subject: Re: [PATCH 3/6] 82xx: Add the support of Wind River SBC
-	PowerQUICCII 82xx
-From: Mark Zhan <rongkai.zhan@windriver.com>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-In-Reply-To: <20070609192516.092ff1b6@vitb.ru.mvista.com>
-References: <1181292878.11341.15.camel@mark>
-	<20070609192516.092ff1b6@vitb.ru.mvista.com>
-Content-Type: text/plain
-Date: Mon, 11 Jun 2007 15:59:36 +0800
-Message-Id: <1181548776.5217.18.camel@mark>
+Return-Path: <alessandro.zummo@towertech.it>
+Received: from mx0.towertech.it (mx0.towertech.it [213.215.222.73])
+	by ozlabs.org (Postfix) with SMTP id DAD87DDEE1
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jun 2007 21:25:13 +1000 (EST)
+Date: Mon, 11 Jun 2007 13:25:08 +0200
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: rtc-linux@googlegroups.com
+Subject: Re: [rtc-linux] [PATCH] Add the support of ST M48T59 RTC chip in
+	rtc-class driver subsystem
+Message-ID: <20070611132508.0993a0f7@inspiron>
+In-Reply-To: <1181548600.5217.16.camel@mark>
+References: <1181548600.5217.16.camel@mark>
 Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"paulus@samba.org" <paulus@samba.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,22 +22,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Vitaly,
+On Mon, 11 Jun 2007 15:56:40 +0800
+Mark Zhan <rongkai.zhan@windriver.com> wrote:
 
-Since you will cover this issue, so I will remove this chunk from my
-patch, and re-submit my patches.
+> 
+> Add the support of ST M48T59 RTC chip driver in RTC class subsystem for
+> Wind River SBC PowerQUICCII 82xx board
 
-Thanks
-Mark Zhan
-On Sat, 2007-06-09 at 19:25 +0400, Vitaly Bordug wrote:
-> On Fri, 08 Jun 2007 16:54:38 +0800
-> Mark Zhan <rongkai.zhan@windriver.com> wrote:
-> 
-> >  			snprintf((char*)&bus_id[(*id)], BUS_ID_SIZE, "%x:%02x",
-> > -							(u32)res.start, fs_enet_data.phy_addr);
-> > +				fs_enet_dev->id, fs_enet_data.phy_addr);
-> > +
-> >  			fs_enet_data.bus_id = (char*)&bus_id[(*id)];
-> 
-> Have to admit this is not correct. The issue is in fs_enet code (which should take mdio bus id, not device id), and I'll cover it.
-> 
+ Hello Mark, thanks for you contribution. Code looks
+ good, I only have some minor comments:
+
+>  
+> +config RTC_DRV_M48T59
+> +	tristate "ST M48T59"
+> +	depends on RTC_CLASS
+> +	help
+> +	  If you say Y here you will get support for the
+> +	  ST M48T59 RTC chip.
+> +
+> +	  This driver can also be built as a module, if so, the module
+> +	  will be called "rtc-m48t59".
+
+ Please add some infos about the Wind River board in the help.
+
+> +
+> +#ifdef DEBUG_M48T59
+> +#define DPRINTK(fmt, args...)	printk(KERN_DEBUG "%s: "fmt,
+> __FUNCTION__, ##args)
+> +#else
+> +#define DPRINTK(fmt, args...)
+> +#endif
+
+ please use standard device debugging/reporting functions
+
+
+> +
+> +static unsigned char * m48t59_vbase = NULL;
+> +static unsigned int m48t59_irq = -1;
+
+ those shouldn't be globals. please see other drivers for suggestions
+ on encapsulation.
+
+> +static int m48t59_rtc_proc(struct device *dev, struct seq_file *seq)
+> +{
+> +	unsigned char val;
+> +
+> +	val = M48T59_READ(M48T59_FLAGS);
+> +	seq_printf(seq, "battery\t\t: %s\n",
+> +		 (val & M48T59_FLAGS_BF) ? "low" : "normal");
+> +
+> +	return 0;
+> +}
+
+ this is going to be deprecated, you can use it but it will fade away
+ sooner or later. you might want to add a sysfs attribute
+ with the battery info.
+
+ thanks.
+
+-- 
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
