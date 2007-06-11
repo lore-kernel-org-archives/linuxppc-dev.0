@@ -1,15 +1,16 @@
-Return-Path: <chenxurcy@yahoo.com.cn>
-Received: from web92009.mail.cnb.yahoo.com (web92009.mail.cnb.yahoo.com
-	[203.209.230.56]) by ozlabs.org (Postfix) with SMTP id 37F91DDEF7
+Return-Path: <TMJohnson@fyldemicro.com>
+Received: from fyldemicro.co.uk (www.fyldemicro.co.uk [213.48.132.32])
+	by ozlabs.org (Postfix) with ESMTP id 8C8E5DDE3C
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 11 Jun 2007 12:54:22 +1000 (EST)
-Date: Mon, 11 Jun 2007 10:47:40 +0800 (CST)
-From: xu chen <chenxurcy@yahoo.com.cn>
-Subject: opb_ethernet driver
-To: linuxppc-embedded@ozlabs.org
+	Mon, 11 Jun 2007 19:01:46 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-2010683304-1181530060=:63061"
-Message-ID: <452567.63061.qm@web92009.mail.cnb.yahoo.com>
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C7AC05.6D919317"
+Subject: Using xgpio
+Date: Mon, 11 Jun 2007 09:49:27 +0100
+Message-ID: <02296E583CC11C4D9365985B761F1DDE442971@W2003SERVER.fyldemicro.local>
+From: "Thomas Johnson" <TMJohnson@fyldemicro.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,28 +21,62 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-2010683304-1181530060=:63061
-Content-Type: text/plain; charset=gb2312
-Content-Transfer-Encoding: 8bit
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01C7AC05.6D919317
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+=20
+Can anyone give me an example of using the xgpio on an ML403 using
+Montavista Linux.=20
+=20
+I can see the driver uses ioctl but this only seems to be able to set
+the io direction, and I am not clear how to use this, for instance how
+do I turn one of the led's on/off or read the GPIO_SW's.
+=20
+Many thanks.
+=20
+Tom Johnson=20
 
 
-Hello.
-      I'm porting an opb_ethernet driver to my ml403 board now, using the 2.6.17 kernel. I know the ethernet support 3 mode: No DMA, simple DMA, scatter gather DMA, when I use the No DMA mode, we can write the skb into the FIFO, but can't ping other PCs in the network. When I use the simple DMA mode, at the time of ping, in the driver, we should initialize the DMA channel, but when transfering the skb, the DMA returns a "DMA bus time out" signal.
-     Now I'm worry about it. Who had encountered the problem before? I think I need some help.
+------_=_NextPart_001_01C7AC05.6D919317
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.6000.16441" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D953564408-11062007>Hi,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D953564408-11062007></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D953564408-11062007>Can =
+anyone give me=20
+an example of using the xgpio on an ML403 using Montavista Linux.=20
+</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D953564408-11062007></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D953564408-11062007>I can =
+see=20
+the&nbsp;driver uses ioctl but this only seems to be able to set the io=20
+direction, and I am not clear how to use this, for instance how do I =
+turn one of=20
+the led's on/off or read the GPIO_SW's.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D953564408-11062007></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D953564408-11062007>Many=20
+thanks.</SPAN></FONT></DIV>
+<DIV><SPAN lang=3Den-gb><FONT face=3DArial =
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN lang=3Den-gb><FONT face=3DArial size=3D2>Tom =
+Johnson</FONT></SPAN>=20
+<BR></DIV></BODY></HTML>
 
-
-
-       
----------------------------------
-ÇÀ×¢ÑÅ»¢Ãâ·ÑÓÊÏä3.5GÈÝÁ¿£¬20M¸½¼þ£¡ 
---0-2010683304-1181530060=:63061
-Content-Type: text/html; charset=gb2312
-Content-Transfer-Encoding: 8bit
-
-<pre><tt><tt><a href="Compose?To=linuxppc-embedded@ozlabs.org&amp;YY=88037&amp;order=down&amp;sort=date&amp;pos=0">Hello.<br>      I'm porting an opb_ethernet driver to my ml403 board now, using the 2.6.17 kernel. I know the ethernet support 3 mode: No DMA, simple DMA, scatter gather DMA, when I use the No DMA mode, we can write the skb into the FIFO, but can't ping other PCs in the network. When I use the simple DMA mode, at the time of ping, in the driver, we should initialize the DMA channel, but when transfering the skb, the DMA returns a "DMA bus time out" signal.<br>     Now I'm worry about it. Who had encountered the problem before? I think I need some help.<br></a></tt></tt></pre><BR><BR><p>&#32;
-
-
-
-      <hr size=1><a href="http://cn.mail.yahoo.com" target=blank>ÇÀ×¢ÑÅ»¢Ãâ·ÑÓÊÏä3.5GÈÝÁ¿£¬20M¸½¼þ£¡</a> 
---0-2010683304-1181530060=:63061--
+------_=_NextPart_001_01C7AC05.6D919317--
