@@ -1,18 +1,17 @@
-Return-Path: <alessandro.zummo@towertech.it>
-Received: from mx0.towertech.it (mx0.towertech.it [213.215.222.73])
-	by ozlabs.org (Postfix) with SMTP id DAD87DDEE1
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jun 2007 21:25:13 +1000 (EST)
-Date: Mon, 11 Jun 2007 13:25:08 +0200
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: rtc-linux@googlegroups.com
-Subject: Re: [rtc-linux] [PATCH] Add the support of ST M48T59 RTC chip in
-	rtc-class driver subsystem
-Message-ID: <20070611132508.0993a0f7@inspiron>
-In-Reply-To: <1181548600.5217.16.camel@mark>
-References: <1181548600.5217.16.camel@mark>
+Return-Path: <rzhan@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id ADFF9DDE16
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jun 2007 21:55:46 +1000 (EST)
+Subject: [PATCH] MII bitbang driver should generate MII bus phy_mask
+	dynamically
+From: Mark Zhan <rongkai.zhan@windriver.com>
+To: netdev@vger.kernel.org
+Content-Type: text/plain
+Date: Mon, 11 Jun 2007 15:53:37 +0800
+Message-Id: <1181548417.5217.13.camel@mark>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Vitaly Bordug <vbordug@ru.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,69 +21,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 11 Jun 2007 15:56:40 +0800
-Mark Zhan <rongkai.zhan@windriver.com> wrote:
+Current MII bitbang bus driver hard-codes the phy mask of mii_bus to
+~0x09, which is actually specific to the FSL boards. This patch will
+make the bitbang driver to generate MII bus phy_mask dynamically, by the
+PHY irq info provided by the platform.
 
-> 
-> Add the support of ST M48T59 RTC chip driver in RTC class subsystem for
-> Wind River SBC PowerQUICCII 82xx board
+Signed-off-by: Mark Zhan <rongkai.zhan@windriver.com>
+---
+ b/drivers/net/fs_enet/mii-bitbang.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
- Hello Mark, thanks for you contribution. Code looks
- good, I only have some minor comments:
-
->  
-> +config RTC_DRV_M48T59
-> +	tristate "ST M48T59"
-> +	depends on RTC_CLASS
-> +	help
-> +	  If you say Y here you will get support for the
-> +	  ST M48T59 RTC chip.
-> +
-> +	  This driver can also be built as a module, if so, the module
-> +	  will be called "rtc-m48t59".
-
- Please add some infos about the Wind River board in the help.
-
-> +
-> +#ifdef DEBUG_M48T59
-> +#define DPRINTK(fmt, args...)	printk(KERN_DEBUG "%s: "fmt,
-> __FUNCTION__, ##args)
-> +#else
-> +#define DPRINTK(fmt, args...)
-> +#endif
-
- please use standard device debugging/reporting functions
-
-
-> +
-> +static unsigned char * m48t59_vbase = NULL;
-> +static unsigned int m48t59_irq = -1;
-
- those shouldn't be globals. please see other drivers for suggestions
- on encapsulation.
-
-> +static int m48t59_rtc_proc(struct device *dev, struct seq_file *seq)
-> +{
-> +	unsigned char val;
-> +
-> +	val = M48T59_READ(M48T59_FLAGS);
-> +	seq_printf(seq, "battery\t\t: %s\n",
-> +		 (val & M48T59_FLAGS_BF) ? "low" : "normal");
-> +
-> +	return 0;
-> +}
-
- this is going to be deprecated, you can use it but it will fade away
- sooner or later. you might want to add a sysfs attribute
- with the battery info.
-
- thanks.
-
--- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
+diff --git a/drivers/net/fs_enet/mii-bitbang.c
+b/drivers/net/fs_enet/mii-bitbang.c
+index d384010..3732d69 100644
+--- a/drivers/net/fs_enet/mii-bitbang.c
++++ b/drivers/net/fs_enet/mii-bitbang.c
+@@ -315,7 +315,7 @@ static int __devinit fs_enet_mdio_probe(
+ 	struct fs_mii_bb_platform_info *pdata;
+ 	struct mii_bus *new_bus;
+ 	struct bb_info *bitbang;
+-	int err = 0;
++	int i, err = 0;
+ 
+ 	if (NULL == dev)
+ 		return -EINVAL;
+@@ -336,14 +336,17 @@ static int __devinit fs_enet_mdio_probe(
+ 	new_bus->reset = &fs_enet_mii_bb_reset,
+ 	new_bus->id = pdev->id;
+ 
+-	new_bus->phy_mask = ~0x9;
+ 	pdata = (struct fs_mii_bb_platform_info *)pdev->dev.platform_data;
+-
+ 	if (NULL == pdata) {
+ 		printk(KERN_ERR "gfar mdio %d: Missing platform data!\n", pdev->id);
+ 		return -ENODEV;
+ 	}
+ 
++	new_bus->phy_mask = 0xFFFFFFFF;
++	for (i = 0; i < PHY_MAX_ADDR; i++)
++		if (pdata->irq[i] != -1)
++			new_bus->phy_mask &= ~(1 << i);
++
+ 	/*set up workspace*/
+ 	fs_mii_bitbang_init(bitbang, pdata);
+ 
