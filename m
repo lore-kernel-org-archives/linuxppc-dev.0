@@ -1,22 +1,21 @@
-Return-Path: <nvbolhuis@aimsys.nl>
-Received: from smtp-vbr5.xs4all.nl (smtp-vbr5.xs4all.nl [194.109.24.25])
-	by ozlabs.org (Postfix) with ESMTP id 0C9F8DDEC8
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound6-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id C297DDDED2
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 12 Jun 2007 01:46:50 +1000 (EST)
-Received: from mail3.aimsys.nl (a80-127-156-242.adsl.xs4all.nl
-	[80.127.156.242])
-	by smtp-vbr5.xs4all.nl (8.13.8/8.13.8) with ESMTP id l5BFffwE004845
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 11 Jun 2007 17:41:41 +0200 (CEST)
-	(envelope-from nvbolhuis@aimsys.nl)
-Message-ID: <466D6DEB.1030405@aimsys.nl>
-Date: Mon, 11 Jun 2007 17:44:43 +0200
-From: "N. van Bolhuis" <nvbolhuis@aimsys.nl>
+	Tue, 12 Jun 2007 02:03:18 +1000 (EST)
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: ioctl on 870 FEC causes "badness in local_bh_enable at
-	kernel/softirq.c"
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="gb2312"
+Subject: RE: a question for linux framebuffer driver
+Date: Mon, 11 Jun 2007 09:03:11 -0700
+In-Reply-To: <1316548361.5052161181391690811.JavaMail.coremail@bj163app129.163.com>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "silicom" <silicom@163.com>,
+	<linuxppc-embedded@ozlabs.org>
+Message-Id: <20070611160313.B1A36DA8056@mail207-sin.bigfish.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,50 +27,41 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-I found a minor problem for the linux PPC PowerQuic_II FEC driver.
+The kernel has to be informed of the device itself using =
+platform_device_register.
+I believe in the kernel you have you'll have to add code to do this, and =
 
-When doing an:
+/arch/ppc/platforms/4xx/virtex.c is a reasonable place.=20
 
-ioctl(.. SIOCGMIIREG ..) or
-ioctl(.. SIOCSMIIREG ..)
+Steve
 
-the following kernel message pops up:
-
-Badness in local_bh_enable at kernel/softirq.c:137
-Call Trace:
-[C102FC80] [C0008E04]  (unreliable)
-[C102FCA0] [C0003608]
-[C102FCB0] [C0003EB0]
-[C102FCD0] [C000310C]
-[C102FD90] [C102FE40]
-[C102FDA0] [C010794C]
-[C102FDC0] [C01079C0]
-[C102FDE0] [C010E7DC]
-[C102FE00] [C01316C0]
-[C102FE20] [C0132A08]
-[C102FEA0] [C0126408]
-[C102FEC0] [C0064B10]
-[C102FEE0] [C0064F1C]
-[C102FF10] [C0064F98]
-[C102FF40] [C0002AC4]
-
-
-This is because drivers/net/fs_enet/fs_enet-main.c:fs_ioctl
-disables the interrupts with spin_lock_irqsave after which it calls
-phy_mii_ioctl. This leads to drivers/net/phy/phy.c:phy_read
-being called which does spin_lock_bh/spin_unlock_bh.
-Obviously the spin_unlock_bh enables softirqs and it is correctly
-complaining irqs are disabled.
-
-fs_ioctl and phy_read are used by many others so I'm not sure
-how to solve this. Therefore I ask this list.
-
-Maybe fs_ioctl can use spin_(un)lock but I'm not sure.
-
-Anybody has a fix or ideas about this ?
-
----
-N. van Bolhuis.
-
--- 
-This message has been scanned for viruses and is believed to be clean
+> -----Original Message-----
+> From:=20
+> linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org
+> =20
+> [mailto:linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@oz
+> labs.org] On Behalf Of silicom
+> Sent: Saturday, June 09, 2007 5:22 AM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: a question for linux framebuffer driver
+>=20
+> Hello,
+> Now I'm porting framebuffer driver for ml403 in linux=20
+> 2.6.171, but I find after registering the driver using=20
+> driver_register function in xilinxfb_int, the=20
+> xilinxfb_drv_probe function has not been called, so=20
+> framebuffer not registered yet, no devices founded(but I have=20
+> connected the monitor). I want to know when will=20
+> xilinxfb_drv_probe be called?
+>=20
+> =20
+> =20
+> =20
+>=20
+>=20
+> ________________________________
+>=20
+> 150 =CD=F2 =C8=CB =CD=AC =CA=B1 =D4=DA =CD=E6 =B5=C4 =CD=F8 =
+=D3=CE=A3=AC=C4=E3 =B2=BB =CA=D4 =CA=D4 =C2=F0 =A3=BF=20
+> <http://event.mail.163.com/chanel/xyq.htm?from=3D163_NO1>=20
+>=20
