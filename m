@@ -1,14 +1,13 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 4E975DDECA
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 66650DDECC
 	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 09:36:26 +1000 (EST)
-Message-Id: <20070611233353.868146215@arndb.de>
+Message-Id: <20070611233353.734704855@arndb.de>
 References: <20070611232824.489103547@arndb.de>
-Date: Tue, 12 Jun 2007 01:28:27 +0200
+Date: Tue, 12 Jun 2007 01:28:26 +0200
 From: arnd@arndb.de
 To: paulus@samba.org
-Subject: [patch 03/10] powerpc: move 82xx/83xx/86xx Kconfig options to
-	platform selection
+Subject: [patch 02/10] powerpc: Move CONFIG_PPC64 into CPU selection
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,108 +18,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The cores used in the MPC82xx/83xx/86xx embedded controllers are very similar
-to those in the 32 bit general-purpose processors, so it makes sense to
-treat them as the same CPU family.
+Currently, PPC64 is a top level configuration option in
+arch/powerpc/Kconfig, which is somewhat unconventional.
 
-Choosing between the embedded platforms and the multiplatform code is
-now done in the platform menu, but functionally everything stays the
-same.
+Moving it into the CPU selection menu is a natural choice,
+and is transparent to the rest of the configuration logic.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Index: linux-2.6/arch/powerpc/platforms/Kconfig
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/Kconfig
-@@ -2,7 +2,7 @@ menu "Platform support"
- 
- choice
- 	prompt "Machine type"
--	depends on PPC64 || CLASSIC32
-+	depends on PPC64 || 6xx
- 	default PPC_MULTIPLATFORM
- 
- config PPC_MULTIPLATFORM
-@@ -23,8 +23,32 @@ config APUS
- 	  Select APUS if configuring for a PowerUP Amiga.
- 	  More information is available at:
- 	  <http://linux-apus.sourceforge.net/>.
-+
-+config PPC_82xx
-+	bool "Freescale 82xx"
-+	depends on 6xx
-+
-+config PPC_83xx
-+	bool "Freescale 83xx"
-+	depends on 6xx
-+	select FSL_SOC
-+	select 83xx
-+	select WANT_DEVICE_TREE
-+
-+config PPC_86xx
-+	bool "Freescale 86xx"
-+	depends on 6xx
-+	select FSL_SOC
-+	select FSL_PCIE
-+	select ALTIVEC
-+	help
-+	  The Freescale E600 SoCs have 74xx cores.
- endchoice
- 
-+config CLASSIC32
-+	def_bool y
-+	depends on 6xx && PPC_MULTIPLATFORM
-+
- source "arch/powerpc/platforms/pseries/Kconfig"
- source "arch/powerpc/platforms/iseries/Kconfig"
- source "arch/powerpc/platforms/chrp/Kconfig"
 Index: linux-2.6/arch/powerpc/platforms/Kconfig.cputype
 ===================================================================
 --- linux-2.6.orig/arch/powerpc/platforms/Kconfig.cputype
 +++ linux-2.6/arch/powerpc/platforms/Kconfig.cputype
-@@ -15,24 +15,10 @@ config PPC64
- 	bool "any 64 bit PowerPC"
- 	select PPC_FPU
- 
+@@ -1,37 +1,24 @@
+-config PPC64
+-	bool "64-bit kernel"
+-	default n
+-	help
+-	  This option selects whether a 32-bit or a 64-bit kernel
+-	  will be built.
+-
+ menu "Processor support"
+ choice
+ 	prompt "Processor Type"
+-	depends on PPC32
+ 	default 6xx
+-
 -config CLASSIC32
 -	bool "52xx/6xx/7xx/74xx"
 -	select PPC_FPU
 -	select 6xx
+ 	help
+ 	  There are four families of PowerPC chips supported.  The more common
+ 	  types (601, 603, 604, 740, 750, 7400), the Motorola embedded
+-	  versions (821, 823, 850, 855, 860, 52xx, 82xx, 83xx), the AMCC
+-	  embedded versions (403 and 405) and the high end 64 bit Power
+-	  processors (POWER 3, POWER4, and IBM PPC970 also known as G5).
 -
--config PPC_82xx
--	bool "Freescale 82xx"
--	select 6xx
-+config 6xx
-+	bool "52xx/6xx/7xx/74xx/82xx/83xx/86xx"
- 	select PPC_FPU
+-	  This option is the catch-all for 6xx types, including some of the
+-	  embedded versions.  Unless there is see an option for the specific
+-	  chip family you are using, you want this option.
++	  versions (8xx, 55xx, 85xx), the AMCC embedded version (403, 405,
++	  440, 460) and the 64 bit processors (POWER 3, POWER4, POWER5,
++	  POWER6, PowerPC 970, Cell/B.E., PA6T).
  
--config PPC_83xx
--	bool "Freescale 83xx"
--	select 6xx
--	select FSL_SOC
--	select 83xx
--	select PPC_FPU
--	select WANT_DEVICE_TREE
--
- config PPC_85xx
- 	bool "Freescale 85xx"
- 	select E500
-@@ -40,16 +26,6 @@ config PPC_85xx
- 	select 85xx
- 	select WANT_DEVICE_TREE
+-	  You do not want this if you are building a kernel for a 64 bit
+-	  IBM RS/6000 or an Apple G5, choose 6xx.
++	  If unsure, select 52xx/6xx/7xx/74xx.
  
--config PPC_86xx
--	bool "Freescale 86xx"
--	select 6xx
--	select FSL_SOC
--	select FSL_PCIE
--	select PPC_FPU
--	select ALTIVEC
--	help
--	  The Freescale E600 SoCs have 74xx cores.
--
- config PPC_8xx
- 	bool "Freescale 8xx"
- 	select FSL_SOC
+-	  If unsure, select this option
++config PPC64
++	bool "any 64 bit PowerPC"
++	select PPC_FPU
+ 
+-	  Note that the kernel runs in 32-bit mode even on 64-bit chips.
++config CLASSIC32
++	bool "52xx/6xx/7xx/74xx"
++	select PPC_FPU
++	select 6xx
+ 
+ config PPC_82xx
+ 	bool "Freescale 82xx"
+@@ -120,7 +107,6 @@ config E500
+ 
+ config PPC_FPU
+ 	bool
+-	default y if PPC64
+ 
+ config 4xx
+ 	bool
 
 --
