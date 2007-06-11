@@ -1,23 +1,21 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
+Return-Path: <vitb@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 42D5FDDEFD
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 05:24:45 +1000 (EST)
-Date: Mon, 11 Jun 2007 12:24:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [PATCH] PHY fixed driver: rework release path and update phy_id
-	notation
-Message-Id: <20070611122432.30219cfd.akpm@linux-foundation.org>
-In-Reply-To: <20070609162118.2680.99019.stgit@ACA800FC.ipt.aol.com>
-References: <20070609162118.2680.99019.stgit@ACA800FC.ipt.aol.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0364ADDF07
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 04:58:35 +1000 (EST)
+Date: Mon, 11 Jun 2007 13:58:31 -0500
+From: Vitaly Bordug <vitb@gate.crashing.org>
+To: Mark Zhan <rongkai.zhan@windriver.com>
+Subject: Re: [PATCH] MII bitbang driver should generate MII bus phy_mask
+	dynamically
+Message-ID: <20070611185831.GA31896@gate.crashing.org>
+References: <1181548417.5217.13.camel@mark>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1181548417.5217.13.camel@mark>
+Cc: netdev@vger.kernel.org, Vitaly Bordug <vbordug@ru.mvista.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,108 +25,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 09 Jun 2007 20:21:18 +0400
-Vitaly Bordug <vitb@kernel.crashing.org> wrote:
+On Mon, Jun 11, 2007 at 03:53:37PM +0800, Mark Zhan wrote:
+> Current MII bitbang bus driver hard-codes the phy mask of mii_bus to
+> ~0x09, which is actually specific to the FSL boards. This patch will
+> make the bitbang driver to generate MII bus phy_mask dynamically, by the
+> PHY irq info provided by the platform.
+> 
+> Signed-off-by: Mark Zhan <rongkai.zhan@windriver.com>
+Acked-by: Vitaly Bordug <vitb@kernel.crashing.org>
+> ---
 
+>  b/drivers/net/fs_enet/mii-bitbang.c |    9 ++++++---
+>  1 file changed, 6 insertions(+), 3 deletions(-)
 > 
-> device_bind_driver() error code returning has been fixed. 
-> release() function has been written, so that to free resources
-> in correct way; the release path is now clean.
-> 
-> Before the rework, it used to cause
->  Device 'fixed@100:1' does not have a release() function, it is broken
->  and must be fixed.
->  BUG: at drivers/base/core.c:104 device_release()
+> diff --git a/drivers/net/fs_enet/mii-bitbang.c
+> b/drivers/net/fs_enet/mii-bitbang.c
+> index d384010..3732d69 100644
+> --- a/drivers/net/fs_enet/mii-bitbang.c
+> +++ b/drivers/net/fs_enet/mii-bitbang.c
+> @@ -315,7 +315,7 @@ static int __devinit fs_enet_mdio_probe(
+>  	struct fs_mii_bb_platform_info *pdata;
+>  	struct mii_bus *new_bus;
+>  	struct bb_info *bitbang;
+> -	int err = 0;
+> +	int i, err = 0;
 >  
->  Call Trace:  
->   [<ffffffff802ec380>] kobject_cleanup+0x53/0x7e
->   [<ffffffff802ec3ab>] kobject_release+0x0/0x9
->   [<ffffffff802ecf3f>] kref_put+0x74/0x81
->   [<ffffffff8035493b>] fixed_mdio_register_device+0x230/0x265
->   [<ffffffff80564d31>] fixed_init+0x1f/0x35
->   [<ffffffff802071a4>] init+0x147/0x2fb
->   [<ffffffff80223b6e>] schedule_tail+0x36/0x92
->   [<ffffffff8020a678>] child_rip+0xa/0x12
->   [<ffffffff80311714>] acpi_ds_init_one_object+0x0/0x83
->   [<ffffffff8020705d>] init+0x0/0x2fb
->   [<ffffffff8020a66e>] child_rip+0x0/0x12  
-> 
-> 
-> Also changed the notation of the fixed phy definition on
-> mdio bus to the form of <speed>+<duplex> to make it able to be used by
-> gianfar and ucc_geth that define phy_id strictly as "%d:%d"
-> 
+>  	if (NULL == dev)
+>  		return -EINVAL;
+> @@ -336,14 +336,17 @@ static int __devinit fs_enet_mdio_probe(
+>  	new_bus->reset = &fs_enet_mii_bb_reset,
+>  	new_bus->id = pdev->id;
 >  
->  static int fixed_mdio_register_device(int number, int speed, int duplex)
->  {
-> @@ -221,6 +238,12 @@ static int fixed_mdio_register_device(int number, int speed, int duplex)
+> -	new_bus->phy_mask = ~0x9;
+>  	pdata = (struct fs_mii_bb_platform_info *)pdev->dev.platform_data;
+> -
+>  	if (NULL == pdata) {
+>  		printk(KERN_ERR "gfar mdio %d: Missing platform data!\n", pdev->id);
+>  		return -ENODEV;
 >  	}
 >  
->  	fixed->regs = kzalloc(MII_REGS_NUM*sizeof(int), GFP_KERNEL);
-> +	if (NULL == fixed->regs) {
-> +		kfree(dev);
-> +		kfree(new_bus);
-> +		kfree(fixed);
-> +		return -ENOMEM;
-> +	}
->  	fixed->regs_num = MII_REGS_NUM;
->  	fixed->phy_status.speed = speed;
->  	fixed->phy_status.duplex = duplex;
-> @@ -249,57 +272,43 @@ static int fixed_mdio_register_device(int number, int speed, int duplex)
->  	fixed->phydev = phydev;
->  
->  	if(NULL == phydev) {
-> -		err = -ENOMEM;
-> -		goto device_create_fail;
-> +		kfree(dev);
-> +		kfree(new_bus);
-> +		kfree(fixed->regs);
-> +		kfree(fixed);
-> +		return -ENOMEM;
->  	}
->  
->  	phydev->irq = PHY_IGNORE_INTERRUPT;
->  	phydev->dev.bus = &mdio_bus_type;
->  
-> -	if(number)
-> -		snprintf(phydev->dev.bus_id, BUS_ID_SIZE,
-> -				"fixed_%d@%d:%d", number, speed, duplex);
-> -	else
-> -		snprintf(phydev->dev.bus_id, BUS_ID_SIZE,
-> -				"fixed@%d:%d", speed, duplex);
-> +	snprintf(phydev->dev.bus_id, BUS_ID_SIZE,
-> +				"%d:%d", number, speed + duplex);
+> +	new_bus->phy_mask = 0xFFFFFFFF;
+> +	for (i = 0; i < PHY_MAX_ADDR; i++)
+> +		if (pdata->irq[i] != -1)
+> +			new_bus->phy_mask &= ~(1 << i);
 > +
->  	phydev->bus = new_bus;
+>  	/*set up workspace*/
+>  	fs_mii_bitbang_init(bitbang, pdata);
 >  
-> +	phydev->dev.driver = &fixed_mdio_driver.driver;
-> + 	phydev->dev.release = fixed_mdio_release;
-> + 
-> + 	err = phydev->dev.driver->probe(&phydev->dev);
-> + 	if(err < 0) {
-> + 		printk(KERN_ERR "Phy %s: problems with fixed driver\n",
-> +				phydev->dev.bus_id);
-> + 		kfree(phydev);
-> + 		kfree(dev);
-> + 		kfree(new_bus);
-> + 		kfree(fixed->regs);
-> + 		kfree(fixed);
-> + 		return err;
-> + 	}
-
-This is pretty fragile code.  It would be better to consolidate all the
-cleanup in a single spot at the end of fixed_mdio_register_device() and to
-then employ the usual `goto err_foo;' technique.
-
-Generally, embedding multiple return points into a large function like this
-is a thing we prefer to avoid: it increases the risk that later changes will
-introduce resource leaks, locking errors, etc.
-
-
-Also, the
-
-	if (NULL == some_ptr)
-
-thing does look rather weird.  It is normally done to force a compile error
-if someone uses "=" instead of "==", but gcc will warn about that anyway,
-so it isn't really needed.
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
