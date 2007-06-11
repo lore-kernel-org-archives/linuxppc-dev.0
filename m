@@ -1,13 +1,13 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id A3F83DDECC
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 09:36:27 +1000 (EST)
-Message-Id: <20070611233354.573564809@arndb.de>
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 7165CDDECF
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 09:36:26 +1000 (EST)
+Message-Id: <20070611233354.289486461@arndb.de>
 References: <20070611232824.489103547@arndb.de>
-Date: Tue, 12 Jun 2007 01:28:32 +0200
+Date: Tue, 12 Jun 2007 01:28:30 +0200
 From: arnd@arndb.de
 To: paulus@samba.org
-Subject: [patch 08/10] powerpc: multiplatformize 85xx Kconfig
+Subject: [patch 06/10] powerpc: multiplatformize embedded6xx Kconfig
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,100 +18,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The various e500 platforms can be built in a single kernel,
-as long as a small conflict in the header files is resolved.
+The existing embedded 6xx platforms will happily coexist
+with each other in a single kernel if you let them.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
-Index: linux-2.6/arch/powerpc/platforms/85xx/Kconfig
+---
+Index: linux-2.6/arch/powerpc/platforms/Kconfig
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/85xx/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/85xx/Kconfig
-@@ -1,28 +1,27 @@
+--- linux-2.6.orig/arch/powerpc/platforms/Kconfig
++++ linux-2.6/arch/powerpc/platforms/Kconfig
+@@ -12,10 +12,6 @@ config PPC_MULTIPLATFORM
+ 	  RS/6000 machine, an Apple machine, or a PReP, CHRP,
+ 	  Maple or Cell-based machine.
+ 
+-config EMBEDDED6xx
+-	bool "Embedded 6xx/7xx/7xxx-based board"
+-	depends on PPC32 && (BROKEN||BROKEN_ON_SMP)
+-
+ config APUS
+ 	bool "Amiga-APUS"
+ 	depends on PPC32 && BROKEN
+@@ -33,7 +29,6 @@ config CLASSIC32
+ source "arch/powerpc/platforms/pseries/Kconfig"
+ source "arch/powerpc/platforms/iseries/Kconfig"
+ source "arch/powerpc/platforms/chrp/Kconfig"
+-source "arch/powerpc/platforms/52xx/Kconfig"
+ source "arch/powerpc/platforms/powermac/Kconfig"
+ source "arch/powerpc/platforms/prep/Kconfig"
+ source "arch/powerpc/platforms/maple/Kconfig"
+@@ -42,6 +37,7 @@ source "arch/powerpc/platforms/celleb/Kc
+ source "arch/powerpc/platforms/ps3/Kconfig"
+ source "arch/powerpc/platforms/cell/Kconfig"
+ source "arch/powerpc/platforms/8xx/Kconfig"
++source "arch/powerpc/platforms/52xx/Kconfig"
+ source "arch/powerpc/platforms/82xx/Kconfig"
+ source "arch/powerpc/platforms/83xx/Kconfig"
+ source "arch/powerpc/platforms/85xx/Kconfig"
+Index: linux-2.6/arch/powerpc/platforms/embedded6xx/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/embedded6xx/Kconfig
++++ linux-2.6/arch/powerpc/platforms/embedded6xx/Kconfig
+@@ -1,9 +1,10 @@
 -choice
 -	prompt "Machine Type"
--	depends on PPC_85xx
--	default MPC8540_ADS
--
- config MPC8540_ADS
- 	bool "Freescale MPC8540 ADS"
-+	depends on PPC_85xx
- 	select DEFAULT_UIMAGE
- 	help
- 	  This option enables support for the MPC 8540 ADS board
+-	depends on EMBEDDED6xx
++config EMBEDDED6xx
++	bool "Embedded 6xx"
  
- config MPC8560_ADS
- 	bool "Freescale MPC8560 ADS"
-+	depends on PPC_85xx
- 	select DEFAULT_UIMAGE
- 	help
- 	  This option enables support for the MPC 8560 ADS board
+ config LINKSTATION
+ 	bool "Linkstation / Kurobox(HG) from Buffalo"
++	depends on EMBEDDED6xx
++	depends on (BROKEN || BROKEN_ON_SMP)
+ 	select MPIC
+ 	select FSL_SOC
+ 	select PPC_UDBG_16550 if SERIAL_8250
+@@ -17,6 +18,8 @@ config LINKSTATION
  
- config MPC85xx_CDS
- 	bool "Freescale MPC85xx CDS"
-+	depends on PPC_85xx
+ config MPC7448HPC2
+ 	bool "Freescale MPC7448HPC2(Taiga)"
++	depends on EMBEDDED6xx
++	depends on (BROKEN || BROKEN_ON_SMP)
+ 	select TSI108_BRIDGE
  	select DEFAULT_UIMAGE
- 	help
- 	  This option enables support for the MPC85xx CDS board
- 
- config MPC85xx_MDS
- 	bool "Freescale MPC85xx MDS"
-+	depends on PPC_85xx
- 	select DEFAULT_UIMAGE
- #	select QUICC_ENGINE
- 	help
-@@ -30,12 +29,11 @@ config MPC85xx_MDS
- 
- config MPC8544_DS
- 	bool "Freescale MPC8544 DS"
-+	depends on PPC_85xx
- 	select DEFAULT_UIMAGE
- 	help
- 	  This option enables support for the MPC8544 DS board
- 
--endchoice
--
- config MPC8540
- 	bool
  	select PPC_UDBG_16550
-Index: linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_ads.h
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/85xx/mpc85xx_ads.h
-+++ linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_ads.h
-@@ -29,14 +29,14 @@
- #define MPC85xx_CPM_OFFSET	(0x80000)
+@@ -26,6 +29,7 @@ config MPC7448HPC2
  
- #define CPM_MAP_ADDR		(get_immrbase() + MPC85xx_CPM_OFFSET)
--#define CPM_IRQ_OFFSET		60
-+#define MPC85xxADS_CPM_IRQ_OFFSET		60
+ config PPC_HOLLY
+ 	bool "PPC750GX/CL with TSI10x bridge (Hickory/Holly)"
++	depends on EMBEDDED6xx
+ 	select TSI108_BRIDGE
+ 	select PPC_UDBG_16550
+ 	help
+@@ -34,12 +38,12 @@ config PPC_HOLLY
  
--#define SIU_INT_SMC1		((uint)0x04+CPM_IRQ_OFFSET)
--#define SIU_INT_SMC2		((uint)0x05+CPM_IRQ_OFFSET)
--#define SIU_INT_SCC1		((uint)0x28+CPM_IRQ_OFFSET)
--#define SIU_INT_SCC2		((uint)0x29+CPM_IRQ_OFFSET)
--#define SIU_INT_SCC3		((uint)0x2a+CPM_IRQ_OFFSET)
--#define SIU_INT_SCC4		((uint)0x2b+CPM_IRQ_OFFSET)
-+#define SIU_INT_SMC1		((uint)0x04+MPC85xxADS_CPM_IRQ_OFFSET)
-+#define SIU_INT_SMC2		((uint)0x05+MPC85xxADS_CPM_IRQ_OFFSET)
-+#define SIU_INT_SCC1		((uint)0x28+MPC85xxADS_CPM_IRQ_OFFSET)
-+#define SIU_INT_SCC2		((uint)0x29+MPC85xxADS_CPM_IRQ_OFFSET)
-+#define SIU_INT_SCC3		((uint)0x2a+MPC85xxADS_CPM_IRQ_OFFSET)
-+#define SIU_INT_SCC4		((uint)0x2b+MPC85xxADS_CPM_IRQ_OFFSET)
+ config PPC_PRPMC2800
+ 	bool "Motorola-PrPMC2800"
++	depends on EMBEDDED6xx
+ 	select MV64X60
+ 	select NOT_COHERENT_CACHE
+ 	select WANT_DEVICE_TREE
+ 	help
+ 	  This option enables support for the Motorola PrPMC2800 board
+-endchoice
  
- /* FCC1 Clock Source Configuration.  These can be
-  * redefined in the board specific file.
-Index: linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_cds.h
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/85xx/mpc85xx_cds.h
-+++ linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_cds.h
-@@ -36,7 +36,7 @@
- #define PIRQ1A			MPC85xx_IRQ_EXT11
- 
- #define NR_8259_INTS		16
--#define CPM_IRQ_OFFSET		NR_8259_INTS
-+#define MPC85xxCDS_CPM_IRQ_OFFSET		NR_8259_INTS
- 
- #define MPC85xx_OPENPIC_IRQ_OFFSET	80
- 
+ config TSI108_BRIDGE
+ 	bool
 
 --
