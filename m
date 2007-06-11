@@ -1,13 +1,13 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 66650DDECC
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 712EDDDECE
 	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 09:36:26 +1000 (EST)
-Message-Id: <20070611233353.734704855@arndb.de>
+Message-Id: <20070611233354.142076324@arndb.de>
 References: <20070611232824.489103547@arndb.de>
-Date: Tue, 12 Jun 2007 01:28:26 +0200
+Date: Tue, 12 Jun 2007 01:28:29 +0200
 From: arnd@arndb.de
 To: paulus@samba.org
-Subject: [patch 02/10] powerpc: Move CONFIG_PPC64 into CPU selection
+Subject: [patch 05/10] powerpc: Multiplatformize 8{2,3,6}xx configuration
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,73 +18,170 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently, PPC64 is a top level configuration option in
-arch/powerpc/Kconfig, which is somewhat unconventional.
+All platforms based on 6xx compatible cores should be able to
+coexisting in a single kernel image and do all necessary configuration
+based on the device tree.
 
-Moving it into the CPU selection menu is a natural choice,
-and is transparent to the rest of the configuration logic.
+This moves the missing 8{2,3,6}xx platforms under
+CONFIG_PPC_MULTIPLATFORM to make that possible to configure.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Index: linux-2.6/arch/powerpc/platforms/Kconfig.cputype
+Index: linux-2.6/arch/powerpc/platforms/82xx/Kconfig
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/Kconfig.cputype
-+++ linux-2.6/arch/powerpc/platforms/Kconfig.cputype
-@@ -1,37 +1,24 @@
--config PPC64
--	bool "64-bit kernel"
--	default n
--	help
--	  This option selects whether a 32-bit or a 64-bit kernel
--	  will be built.
--
- menu "Processor support"
- choice
- 	prompt "Processor Type"
--	depends on PPC32
- 	default 6xx
--
--config CLASSIC32
--	bool "52xx/6xx/7xx/74xx"
--	select PPC_FPU
--	select 6xx
+--- linux-2.6.orig/arch/powerpc/platforms/82xx/Kconfig
++++ linux-2.6/arch/powerpc/platforms/82xx/Kconfig
+@@ -1,10 +1,10 @@
+-choice
+-	prompt "Machine Type"
+-	depends on PPC_82xx
+-	default MPC82xx_ADS
++config PPC_82xx
++	bool "Freescale 82xx"
++	depends on PPC_MULTIPLATFORM && 6xx
+ 
+ config MPC82xx_ADS
+ 	bool "Freescale MPC82xx ADS"
++	depends on PPC_82xx
+ 	select DEFAULT_UIMAGE
+ 	select PQ2ADS
+ 	select 8272
+@@ -13,8 +13,6 @@ config MPC82xx_ADS
  	help
- 	  There are four families of PowerPC chips supported.  The more common
- 	  types (601, 603, 604, 740, 750, 7400), the Motorola embedded
--	  versions (821, 823, 850, 855, 860, 52xx, 82xx, 83xx), the AMCC
--	  embedded versions (403 and 405) and the high end 64 bit Power
--	  processors (POWER 3, POWER4, and IBM PPC970 also known as G5).
+ 	This option enables support for the MPC8272 ADS board
+ 
+-endchoice
 -
--	  This option is the catch-all for 6xx types, including some of the
--	  embedded versions.  Unless there is see an option for the specific
--	  chip family you are using, you want this option.
-+	  versions (8xx, 55xx, 85xx), the AMCC embedded version (403, 405,
-+	  440, 460) and the 64 bit processors (POWER 3, POWER4, POWER5,
-+	  POWER6, PowerPC 970, Cell/B.E., PA6T).
- 
--	  You do not want this if you are building a kernel for a 64 bit
--	  IBM RS/6000 or an Apple G5, choose 6xx.
-+	  If unsure, select 52xx/6xx/7xx/74xx.
- 
--	  If unsure, select this option
-+config PPC64
-+	bool "any 64 bit PowerPC"
-+	select PPC_FPU
- 
--	  Note that the kernel runs in 32-bit mode even on 64-bit chips.
-+config CLASSIC32
-+	bool "52xx/6xx/7xx/74xx"
-+	select PPC_FPU
-+	select 6xx
- 
- config PPC_82xx
- 	bool "Freescale 82xx"
-@@ -120,7 +107,6 @@ config E500
- 
- config PPC_FPU
+ config PQ2ADS
  	bool
--	default y if PPC64
+ 	default n
+Index: linux-2.6/arch/powerpc/platforms/83xx/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/83xx/Kconfig
++++ linux-2.6/arch/powerpc/platforms/83xx/Kconfig
+@@ -1,16 +1,20 @@
+-choice
+-	prompt "Machine Type"
+-	depends on PPC_83xx
+-	default MPC834x_MDS
++config PPC_83xx
++	bool "Freescale 83xx"
++	depends on PPC_MULTIPLATFORM && 6xx
++	select FSL_SOC
++	select 83xx
++	select WANT_DEVICE_TREE
  
- config 4xx
+ config MPC8313_RDB
+ 	bool "Freescale MPC8313 RDB"
++	depends on PPC_83xx
+ 	select DEFAULT_UIMAGE
+ 	help
+ 	  This option enables support for the MPC8313 RDB board.
+ 
+ config MPC832x_MDS
+ 	bool "Freescale MPC832x MDS"
++	depends on PPC_83xx
+ 	select DEFAULT_UIMAGE
+ 	select QUICC_ENGINE
+ 	help
+@@ -18,6 +22,7 @@ config MPC832x_MDS
+ 
+ config MPC832x_RDB
+ 	bool "Freescale MPC832x RDB"
++	depends on PPC_83xx
+ 	select DEFAULT_UIMAGE
+ 	select QUICC_ENGINE
+ 	help
+@@ -25,6 +30,7 @@ config MPC832x_RDB
+ 
+ config MPC834x_MDS
+ 	bool "Freescale MPC834x MDS"
++	depends on PPC_83xx
+ 	select DEFAULT_UIMAGE
+ 	help
+ 	  This option enables support for the MPC 834x MDS evaluation board.
+@@ -36,6 +42,7 @@ config MPC834x_MDS
+ 
+ config MPC834x_ITX
+ 	bool "Freescale MPC834x ITX"
++	depends on PPC_83xx
+ 	select DEFAULT_UIMAGE
+ 	help
+ 	  This option enables support for the MPC 834x ITX evaluation board.
+@@ -45,13 +52,12 @@ config MPC834x_ITX
+ 
+ config MPC836x_MDS
+ 	bool "Freescale MPC836x MDS"
++	depends on PPC_83xx
+ 	select DEFAULT_UIMAGE
+ 	select QUICC_ENGINE
+ 	help
+ 	  This option enables support for the MPC836x MDS Processor Board.
+ 
+-endchoice
+-
+ config PPC_MPC831x
  	bool
+ 	select PPC_UDBG_16550
+Index: linux-2.6/arch/powerpc/platforms/86xx/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/86xx/Kconfig
++++ linux-2.6/arch/powerpc/platforms/86xx/Kconfig
+@@ -1,17 +1,20 @@
+-choice
+-	prompt "Machine Type"
+-	depends on PPC_86xx
+-	default MPC8641_HPCN
++config PPC_86xx
++	bool "Freescale 86xx"
++	depends on PPC_MULTIPLATFORM && 6xx
++	select FSL_SOC
++	select FSL_PCIE
++	select ALTIVEC
++	help
++	  The Freescale E600 SoCs have 74xx cores.
+ 
+ config MPC8641_HPCN
+ 	bool "Freescale MPC8641 HPCN"
++	depends on PPC_86xx
+ 	select PPC_I8259
+ 	select DEFAULT_UIMAGE
+ 	help
+ 	  This option enables support for the MPC8641 HPCN board.
+ 
+-endchoice
+-
+ config MPC8641
+ 	bool
+ 	select PPC_INDIRECT_PCI
+Index: linux-2.6/arch/powerpc/platforms/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/Kconfig
++++ linux-2.6/arch/powerpc/platforms/Kconfig
+@@ -24,25 +24,6 @@ config APUS
+ 	  More information is available at:
+ 	  <http://linux-apus.sourceforge.net/>.
+ 
+-config PPC_82xx
+-	bool "Freescale 82xx"
+-	depends on 6xx
+-
+-config PPC_83xx
+-	bool "Freescale 83xx"
+-	depends on 6xx
+-	select FSL_SOC
+-	select 83xx
+-	select WANT_DEVICE_TREE
+-
+-config PPC_86xx
+-	bool "Freescale 86xx"
+-	depends on 6xx
+-	select FSL_SOC
+-	select FSL_PCIE
+-	select ALTIVEC
+-	help
+-	  The Freescale E600 SoCs have 74xx cores.
+ endchoice
+ 
+ config CLASSIC32
 
 --
