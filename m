@@ -1,20 +1,19 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 55F5BDDE2D
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 21:49:23 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [patch 02/10] powerpc: Move CONFIG_PPC64 into CPU selection
-Date: Tue, 12 Jun 2007 13:49:18 +0200
-References: <20070611232824.489103547@arndb.de>
-	<200706121008.01661.arnd@arndb.de>
-	<18030.32600.921348.218117@cargo.ozlabs.ibm.com>
-In-Reply-To: <18030.32600.921348.218117@cargo.ozlabs.ibm.com>
+Return-Path: <nielsen.esben@googlemail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
+	by ozlabs.org (Postfix) with ESMTP id E786FDDE26
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 20:29:39 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id c2so125404ugf
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 03:29:28 -0700 (PDT)
+Date: Tue, 12 Jun 2007 12:29:18 +0200 (CEST)
+From: Esben Nielsen <nielsen.esben@googlemail.com>
+To: Andrei Konovalov <akonovalov@ru.mvista.com>
+Subject: Re: Xilinx git tree at source.mvista.com
+In-Reply-To: <46555294.6040104@ru.mvista.com>
+Message-ID: <Pine.LNX.4.64.0706121228350.9045@frodo.shire>
+References: <46555294.6040104@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200706121349.18662.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,14 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 12 June 2007, Paul Mackerras wrote:
-> It's mostly subjective, I guess. =A0None of the reasons you've cited
-> seem at all compelling to me, and if we change this stuff then we'll
-> all get unnecessary questions next time we make a kernel. =A0Anyway I
-> like it the way it is, and I'm the maintainer.=20
+On Thu, 24 May 2007, Andrei Konovalov wrote:
 
-Ok, fair enough. At least that means I didn't miss an obvious point.
-I'll follow up with an updated patch set when no more comments about
-the other patches come in.
+> Hello,
+>
+> My Xilinx Virtex Development tree is now alive again.
+>
+> Please use the dev branch (master is just the ko copy):
+> http://source.mvista.com/git/gitweb.cgi?p=linux-xilinx-26.git;a=shortlog;h=dev
 
-	Arnd <><
+I can not access the git-tree there: No such project :-(
+
+Is that git-tree still alive? Or should I use another?
+Any news on Xilinx's own git-tree?
+
+Regards,
+Esben
