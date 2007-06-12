@@ -1,11 +1,18 @@
-Return-Path: <dale@farnsworth.org>
-Date: 12 Jun 2007 10:09:29 -0700
-Message-ID: <20070612170929.11064.qmail@farnsworth.org>
-From: "Dale Farnsworth" <dale@farnsworth.org>
-To: nielsen.esben@googlemail.com, Linuxppc-embedded@ozlabs.org
-Subject: Re: Xilinx git tree at source.mvista.com
-In-Reply-To: <Pine.LNX.4.64.0706121228350.9045@frodo.shire>
-References: <46555294.6040104@ru.mvista.com>
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 60BD1DDE26
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 13 Jun 2007 03:39:48 +1000 (EST)
+Date: Tue, 12 Jun 2007 19:39:46 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Domen Puncer <domen.puncer@telargo.com>
+Subject: Re: [PATCH] mpc5200: rtc driver
+In-Reply-To: <20070612093821.GH23294@moe.telargo.com>
+Message-ID: <Pine.LNX.4.60.0706121935240.5241@poirot.grange>
+References: <20070612093821.GH23294@moe.telargo.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -16,19 +23,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In article <Pine.LNX.4.64.0706121228350.9045@frodo.shire> you write:
-> On Thu, 24 May 2007, Andrei Konovalov wrote:
-> 
-> > Hello,
-> >
-> > My Xilinx Virtex Development tree is now alive again.
-> >
-> > Please use the dev branch (master is just the ko copy):
-> > http://source.mvista.com/git/gitweb.cgi?p=linux-xilinx-26.git;a=shortlog;h=dev
-> 
-> I can not access the git-tree there: No such project :-(
+On Tue, 12 Jun 2007, Domen Puncer wrote:
 
-Oops.  I misconfigured gitweb while updating it.  I've fixed it, so
-please try again.
+> Index: work-powerpc.git/include/asm-powerpc/mpc5200_rtc.h
+> ===================================================================
+> --- /dev/null
+> +++ work-powerpc.git/include/asm-powerpc/mpc5200_rtc.h
+> @@ -0,0 +1,49 @@
+> +#ifndef _MPC5200_RTC_H_
+> +#define _MPC5200_RTC_H_
+> +
+> +/* RTC */
+> +struct mpc52xx_rtc {
 
--Dale
+Is it really worth putting a header that's only ever going to be used by 1 
+file under drivers/rtc under include/asm-*/? If this struct is really only 
+for rtc-mpc52xx, just define it .c?
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
