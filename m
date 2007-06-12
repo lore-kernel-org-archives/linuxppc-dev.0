@@ -1,27 +1,28 @@
 Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B9420DDE27
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 01:19:21 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l5CFJG0i013733
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 11:19:16 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l5CFJFim252842
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 09:19:15 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l5CFJF0P027794
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 09:19:15 -0600
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A44F4DDEDA
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 01:19:25 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l5CEGXqP030667
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 10:16:33 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l5CFJJa2301714
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 11:19:19 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l5CFJJ5I003655
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 11:19:19 -0400
 From: Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: [PATCH 1/3] powerpc: during VM oom condition,
+Subject: [PATCH 3/3] i386: During VM oom condition,
 	kill all threads in process group
 To: linuxppc-dev@ozlabs.org, anton@samba.org, linux-kernel@vger.kernel.org
-Date: Tue, 12 Jun 2007 10:19:01 -0500
-Message-ID: <20070612151901.2869.59390.stgit@farscape.rchland.ibm.com>
+Date: Tue, 12 Jun 2007 10:19:13 -0500
+Message-ID: <20070612151912.2869.43167.stgit@farscape.rchland.ibm.com>
+In-Reply-To: <20070612151901.2869.59390.stgit@farscape.rchland.ibm.com>
+References: <20070612151901.2869.59390.stgit@farscape.rchland.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: will_schmidt@vnet.ibm.com
@@ -43,30 +44,30 @@ condition.
 
 Killing just one of the process threads can leave the application in a
 bad state, whereas killing the entire process group would
-allow for the application to restart, or otherwise handled, and makes it
-very obvious that something has gone wrong.
+allow for the application to restart, or otherwise handled, and makes it very
+obvious that something has gone wrong.
 
 This change allows the entire process group to be taken down, rather than
 just the one thread.
 
-lightly tested on powerpc
+tested lightly on i386.
 
-Signed-off-by: Will <will_schmidt@vnet.ibm.com>
+Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
 ---
 
- arch/powerpc/mm/fault.c |    2 +-
+ arch/i386/mm/fault.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 03aeb3a..de1dcee 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -393,7 +393,7 @@ out_of_memory:
+diff --git a/arch/i386/mm/fault.c b/arch/i386/mm/fault.c
+index b8c4e25..a47e712 100644
+--- a/arch/i386/mm/fault.c
++++ b/arch/i386/mm/fault.c
+@@ -568,7 +568,7 @@ out_of_memory:
  	}
- 	printk("VM: killing process %s\n", current->comm);
- 	if (user_mode(regs))
+ 	printk("VM: killing process %s\n", tsk->comm);
+ 	if (error_code & 4)
 -		do_exit(SIGKILL);
 +		do_group_exit(SIGKILL);
- 	return SIGKILL;
+ 	goto no_context;
  
  do_sigbus:
