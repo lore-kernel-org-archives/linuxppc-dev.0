@@ -1,20 +1,21 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id B991CDDEEA
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 18:08:08 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [patch 02/10] powerpc: Move CONFIG_PPC64 into CPU selection
-Date: Tue, 12 Jun 2007 10:08:01 +0200
-References: <20070611232824.489103547@arndb.de>
-	<20070611233353.734704855@arndb.de>
-	<18030.15937.699275.958545@cargo.ozlabs.ibm.com>
-In-Reply-To: <18030.15937.699275.958545@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Message-Id: <200706121008.01661.arnd@arndb.de>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Cc: Paul Mackerras <paulus@samba.org>
+Return-Path: <wei.zhang@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 44C1ADDDFA
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 18:55:15 +1000 (EST)
+From: Zhang Wei <wei.zhang@freescale.com>
+To: mporter@kernel.crashing.org
+Subject: [PATCH 1/5] Add the explanation and sample of RapidIO DTS sector to
+	the document of booting-without-of.txt file.
+Date: Tue, 12 Jun 2007 17:02:16 +0800
+Message-Id: <1181638939310-git-send-email-wei.zhang@freescale.com>
+In-Reply-To: <11816389393593-git-send-email-wei.zhang@freescale.com>
+References: <11816389393593-git-send-email-wei.zhang@freescale.com>
+Sender: Zhang Wei <wei.zhang@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,67 +25,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 12 June 2007, Paul Mackerras wrote:
-> > Currently, PPC64 is a top level configuration option in
-> > arch/powerpc/Kconfig, which is somewhat unconventional.
->=20
-> It makes a lot of sense to me to have 32 vs. 64 bits as a high level
-> binary selector that conditions the things that follow. =A0I don't think
-> it makes sense to push it down into the CPU selection menu.
+Add the explanation and a sample of RapidIO DTS sector to the document of booting-without-of.txt file.
 
-Can you eleborate, other than stating the exact opposite of what
-my comment said?
+Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+---
+ Documentation/powerpc/booting-without-of.txt |   41 ++++++++++++++++++++++++++
+ 1 files changed, 41 insertions(+), 0 deletions(-)
 
-I don't mind removing this patch from the series, but I'd like to
-understand the reason. I've always thought of the top-level option
-as a temporary ugly hack that should eventually go away ;-)
-
-Other than subjective feelings, my reasons for this patch were:
-
-* No other architecture I have seen uses bool options in the top-level
-  menu, so it would be more consistant to move it to the cpu type
-  selection menu.
-
-* we have six (depending on how you count) PPC CPU families
-  supported by Linux (4xx, 6xx, 8xx, e200, e500, ppc64), each
-  of them incompatible with the others, meaning that you can run
-  common user space but not a common kernel. Having the list in
-  as the first Kconfig choice seems logical to me, because
-  all other options more or less depend on these.
-
-* The only major difference between ppc64 and the others is the
-  object format of the kernel binary. My impression when playing
-  with the cpu selection menu was that we have a lot more stuff
-  depending on 6xx than on ppc64.
-
-* Given the choice between the equivalent
-
-> config PPC64
-> 	bool
->
-> choice
-> 	depends on !PPC64
-> config 4xx
-> config 6xx
-> config 8xx
-> config E200
-> config E500
-> endchoice
-
-and
-
-> choice
-> config PPC64
-> config 4xx
-> config 6xx
-> config 8xx
-> config E200
-> config E500
-> endchoice
-
-I find the latter easier to understand regarding further options
-depending on each of them in the individual platforms, e.g. each
-of the platforms/foo/Kconfig files depends on exactly one of these
-six options.=20
-
-	Arnd <><
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index b49ce16..359c899 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -1729,6 +1729,47 @@ platforms are moved over to use the flattened-device-tree model.
+ 
+    More devices will be defined as this spec matures.
+ 
++   k) RapidIO
++
++   Required properties:
++
++    - device_type : Should be "rapidio"
++    - compatible : Should be "fsl,rapidio-v0.0" or "fsl,rapidio-v1.0"
++      and so on. The version number is got from IP Block Revision
++      Register of RapidIO controller.
++    - #address-cells : Address representation for "rapidio" devices.
++      This field represents the number of cells needed to represent
++      the RapidIO address of the registers.  For supporting more than
++      36-bits RapidIO address, this field should be <2>.
++      See 1) above for more details on defining #address-cells.
++    - reg : Offset and length of the register set for the device
++    - ranges : Should be defined as specified in 1) to describe the
++      translation of addresses for memory mapped RapidIO memory
++      space.
++    - interrupt-parent : the phandle for the interrupt controller that
++      services interrupts for this device.
++    - interrupts : <a b> where a is the interrupt number and b is a
++      field that represents an encoding of the sense and level
++      information for the interrupt.  This should be encoded based on
++      the information in section 2) depending on the type of interrupt
++      controller you have. For this sector, interrupts order should be
++      <err_irq bell_outb_irq bell_inb_irq msg1_tx_irq msg1_rx_irq
++      msg2_tx_irq msg2_rx_irq ... msgN_tx_irq msgN_rx_irq>.
++
++  Example:
++
++	srio@c0000{
++		device_type = "rapidio";
++		compatible = "fsl,rapidio-v1.0";
++		#address-cells = <2>;
++		reg = <c0000 20000>;
++		ranges = <0 0 c0000000 20000000>;
++		interrupt-parent = <&mpic>;
++		/* err_irq bell_outb_irq bell_inb_irq msg1_tx_irq msg1_rx_irq
++						      msg2_tx_irq msg2_rx_irq */
++		interrupts = <30 2 31 2 32 2 35 2 36 2 37 2 38 2>;
++	};
++
+ VII - Specifying interrupt information for devices
+ ===================================================
+ 
+-- 
+1.5.1
