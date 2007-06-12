@@ -1,20 +1,20 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound2-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
-	[207.46.163.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 9C3DBDE097
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 04:56:16 +1000 (EST)
-Message-ID: <466EEBE5.4040402@am.sony.com>
-Date: Tue, 12 Jun 2007 11:54:29 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id DDCB9DE01E
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 05:25:29 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [patch 00/18] PS3 patches for 2.6.23
+Date: Tue, 12 Jun 2007 21:25:19 +0200
+References: <71e5ae7f85657e4ab5bfbc809cab9c60@bga.com>
+	<466EE45A.4050104@am.sony.com>
+In-Reply-To: <466EE45A.4050104@am.sony.com>
 MIME-Version: 1.0
-To: paulus@samba.org
-Subject: [patch 24/30] powerpc: Correct __secondary_hold comment
-References: <20070612181825.730300780@am.sony.com>>
-In-Reply-To: <20070612181825.730300780@am.sony.com>>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200706122125.19398.arnd@arndb.de>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Remove references to pSeries and OpenFirmware in the __secondary_hold
-usage comment.  __secondary_hold is a generic routine and can be used
-by other platforms.
+On Tuesday 12 June 2007, Geoff Levand wrote:
+>=20
+> > The dependent series is currently split per file. =A0 While this makes =
+it=20
+> > easier to see what a given area looks like after all the patches, it=20
+> > means that the kernel compile will break during the series. =A0Breaking=
+=20
+> > git bisect is frowned upon, so it will need to be re-split for merge. =
+=A0
+> > (Or disable the ps3 system bus during the merge of the series).
+>=20
+>=20
+> Yes, I realize the state of the patches. =A0I will try to rework them for
+> the next round. =A0As the existing PS3 support is incomplete, I don't
+> think there will be many doing a git-bisect with PS3 support enabled.
 
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
----
- arch/powerpc/kernel/head_64.S |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+I think it's ok to split the patches like this for review purposes.
 
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -103,8 +103,8 @@ __secondary_hold_acknowledge:
- 
- 	. = 0x60
- /*
-- * The following code is used on pSeries to hold secondary processors
-- * in a spin loop after they have been freed from OpenFirmware, but
-+ * The following code is used to hold secondary processors
-+ * in a spin loop after they have entered the kernel, but
-  * before the bulk of the kernel has been relocated.  This code
-  * is relocated to physical address 0x60 before prom_init is run.
-  * All of it must fit below the first exception vector at 0x100.
+=46or the upstream merge, it's probably best if Geoff commits all
+patches with cross-dependencies as a single git checkin, and asks
+Paul (or me) to pull from there. That will take care of the git-bisect
+problem, and give a nicer changelog at the same time.
 
--- 
+Of course, patches that only have directed dependencies should go
+in as separate changesets whereever that makes sense.
+
+	Arnd <><
