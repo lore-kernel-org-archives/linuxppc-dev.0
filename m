@@ -3,18 +3,19 @@ Received: from outbound5-dub-R.bigfish.com (outbound-dub.frontbridge.com
 	[213.199.154.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 01FA4DDE26
+	by ozlabs.org (Postfix) with ESMTP id 70F02DDEF3
 	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 04:55:40 +1000 (EST)
-Message-ID: <466EEBC4.9060203@am.sony.com>
-Date: Tue, 12 Jun 2007 11:53:56 -0700
+Message-ID: <466EEBB3.3060307@am.sony.com>
+Date: Tue, 12 Jun 2007 11:53:39 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 20/30] PS3: Rename processor id symbols
+Subject: [patch 18/30] PS3: Frame buffer system-bus rework
 References: <20070612181825.730300780@am.sony.com>>
 In-Reply-To: <20070612181825.730300780@am.sony.com>>
 Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,172 +25,539 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Rename the PS3 static symbols node to ppe_id and cpu to thread_id
-to clarify usage.
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
+Convert the ps3fb device from a platform device to a PS3 system bus device.
+Fix the remove and shutdown methods to support kexec and to make ps3fb a
+loadable module.
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/platforms/ps3/interrupt.c |   55 +++++++++++++++++----------------
- 1 file changed, 29 insertions(+), 26 deletions(-)
+ arch/powerpc/platforms/ps3/setup.c |    9 -
+ drivers/video/Kconfig              |    4 
+ drivers/video/ps3fb.c              |  288 ++++++++++++++++---------------------
+ include/asm-powerpc/ps3fb.h        |   12 -
+ 4 files changed, 132 insertions(+), 181 deletions(-)
 
---- a/arch/powerpc/platforms/ps3/interrupt.c
-+++ b/arch/powerpc/platforms/ps3/interrupt.c
-@@ -79,14 +79,14 @@ struct ps3_bmp {
- /**
-  * struct ps3_private - a per cpu data structure
-  * @bmp: ps3_bmp structure
-- * @node: HV logical_ppe_id
-- * @cpu: HV thread_id
-+ * @ppe_id: HV logical_ppe_id
-+ * @thread_id: HV thread_id
-  */
+--- a/arch/powerpc/platforms/ps3/setup.c
++++ b/arch/powerpc/platforms/ps3/setup.c
+@@ -108,7 +108,7 @@ static void ps3_panic(char *str)
+ 	while(1);
+ }
  
- struct ps3_private {
- 	struct ps3_bmp bmp __attribute__ ((aligned (PS3_BMP_MINALIGN)));
--	u64 node;
--	unsigned int cpu;
-+	u64 ppe_id;
-+	u64 thread_id;
+-#ifdef CONFIG_FB_PS3
++#if defined(CONFIG_FB_PS3) || defined(CONFIG_FB_PS3_MODULE)
+ static void prealloc(struct ps3_prealloc *p)
+ {
+ 	if (!p->size)
+@@ -126,10 +126,11 @@ static void prealloc(struct ps3_prealloc
+ }
+ 
+ struct ps3_prealloc ps3fb_videomemory = {
+-    .name = "ps3fb videomemory",
+-    .size = CONFIG_FB_PS3_DEFAULT_SIZE_M*1024*1024,
+-    .align = 1024*1024			/* the GPU requires 1 MiB alignment */
++	.name = "ps3fb videomemory",
++	.size = CONFIG_FB_PS3_DEFAULT_SIZE_M*1024*1024,
++	.align = 1024*1024		/* the GPU requires 1 MiB alignment */
+ };
++EXPORT_SYMBOL_GPL(ps3fb_videomemory);
+ #define prealloc_ps3fb_videomemory()	prealloc(&ps3fb_videomemory)
+ 
+ static int __init early_parse_ps3fb(char *p)
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -1790,8 +1790,8 @@ config FB_IBM_GXT4500
+ 	  adaptor, found on some IBM System P (pSeries) machines.
+ 
+ config FB_PS3
+-	bool "PS3 GPU framebuffer driver"
+-	depends on (FB = y) && PS3_PS3AV
++	tristate "PS3 GPU framebuffer driver"
++	depends on FB && PS3_PS3AV
+ 	select FB_SYS_FILLRECT
+ 	select FB_SYS_COPYAREA
+ 	select FB_SYS_IMAGEBLIT
+--- a/drivers/video/ps3fb.c
++++ b/drivers/video/ps3fb.c
+@@ -27,7 +27,6 @@
+ #include <linux/vmalloc.h>
+ #include <linux/delay.h>
+ #include <linux/interrupt.h>
+-#include <linux/platform_device.h>
+ #include <linux/console.h>
+ #include <linux/ioctl.h>
+ #include <linux/notifier.h>
+@@ -46,6 +45,9 @@
+ #include <asm/ps3fb.h>
+ #include <asm/ps3.h>
+ 
++
++#define DEVICE_NAME		"ps3fb"
++
+ #ifdef PS3FB_DEBUG
+ #define DPRINTK(fmt, args...) printk("%s: " fmt, __func__ , ##args)
+ #else
+@@ -126,7 +128,6 @@ struct gpu_driver_info {
+ 
+ struct ps3fb_priv {
+ 	unsigned int irq_no;
+-	void *dev;
+ 
+ 	u64 context_handle, memory_handle;
+ 	void *xdr_ea;
+@@ -171,7 +172,7 @@ static const struct ps3fb_res_table ps3f
+ 	{    0,    0,   0,   0 , 0} };
+ 
+ /* default resolution */
+-#define GPU_RES_INDEX 0		/* 720 x 480 */
++#define GPU_RES_INDEX	0		/* 720 x 480 */
+ 
+ static const struct fb_videomode ps3fb_modedb[] = {
+     /* 60 Hz broadcast modes (modes "1" to "5") */
+@@ -298,10 +299,9 @@ static const struct fb_videomode ps3fb_m
+ #define FB_OFF(i)	(GPU_OFFSET - VP_OFF(i) % GPU_OFFSET)
+ 
+ static int ps3fb_mode;
+-module_param(ps3fb_mode, bool, 0);
+-
+-static char *mode_option __initdata;
++module_param(ps3fb_mode, int, 0);
+ 
++static char *mode_option __devinitdata;
+ 
+ static int ps3fb_get_res_table(u32 xres, u32 yres)
+ {
+@@ -681,15 +681,15 @@ int ps3fb_wait_for_vsync(u32 crtc)
+ 
+ EXPORT_SYMBOL_GPL(ps3fb_wait_for_vsync);
+ 
+-void ps3fb_flip_ctl(int on)
++void ps3fb_flip_ctl(int on, void *data)
+ {
++	struct ps3fb_priv *priv = data;
+ 	if (on)
+-		atomic_dec_if_positive(&ps3fb.ext_flip);
++		atomic_dec_if_positive(&priv->ext_flip);
+ 	else
+-		atomic_inc(&ps3fb.ext_flip);
++		atomic_inc(&priv->ext_flip);
+ }
+ 
+-EXPORT_SYMBOL_GPL(ps3fb_flip_ctl);
+ 
+     /*
+      * ioctl
+@@ -851,37 +851,9 @@ static irqreturn_t ps3fb_vsync_interrupt
+ 	return IRQ_HANDLED;
+ }
+ 
+-#ifndef MODULE
+-static int __init ps3fb_setup(char *options)
+-{
+-	char *this_opt;
+-	int mode = 0;
+ 
+-	if (!options || !*options)
+-		return 0;	/* no options */
+-
+-	while ((this_opt = strsep(&options, ",")) != NULL) {
+-		if (!*this_opt)
+-			continue;
+-		if (!strncmp(this_opt, "mode:", 5))
+-			mode = simple_strtoul(this_opt + 5, NULL, 0);
+-		else
+-			mode_option = this_opt;
+-	}
+-	return mode;
+-}
+-#endif	/* MODULE */
+-
+-    /*
+-     *  Initialisation
+-     */
+-
+-static void ps3fb_platform_release(struct device *device)
+-{
+-	/* This is called when the reference count goes to zero. */
+-}
+-
+-static int ps3fb_vsync_settings(struct gpu_driver_info *dinfo, void *dev)
++static int ps3fb_vsync_settings(struct gpu_driver_info *dinfo,
++				struct ps3_system_bus_device *dev)
+ {
+ 	int error;
+ 
+@@ -897,7 +869,6 @@ static int ps3fb_vsync_settings(struct g
+ 		return -EINVAL;
+ 	}
+ 
+-	ps3fb.dev = dev;
+ 	error = ps3_irq_plug_setup(PS3_BINDING_CPU_ANY, dinfo->irq.irq_outlet,
+ 				   &ps3fb.irq_no);
+ 	if (error) {
+@@ -907,7 +878,7 @@ static int ps3fb_vsync_settings(struct g
+ 	}
+ 
+ 	error = request_irq(ps3fb.irq_no, ps3fb_vsync_interrupt, IRQF_DISABLED,
+-			    "ps3fb vsync", ps3fb.dev);
++			    DEVICE_NAME, dev);
+ 	if (error) {
+ 		printk(KERN_ERR "%s: request_irq failed %d\n", __func__,
+ 		       error);
+@@ -966,16 +937,47 @@ static struct fb_ops ps3fb_ops = {
  };
  
- static DEFINE_PER_CPU(struct ps3_private, ps3_private);
-@@ -106,7 +106,8 @@ static void ps3_chip_mask(unsigned int v
- 	u64 old;
- 	unsigned long flags;
+ static struct fb_fix_screeninfo ps3fb_fix __initdata = {
+-	.id =		"PS3 FB",
++	.id =		DEVICE_NAME,
+ 	.type =		FB_TYPE_PACKED_PIXELS,
+ 	.visual =	FB_VISUAL_TRUECOLOR,
+ 	.accel =	FB_ACCEL_NONE,
+ };
  
--	pr_debug("%s:%d: cpu %u, virq %d\n", __func__, __LINE__, pd->cpu, virq);
-+	pr_debug("%s:%d: thread_id %lu, virq %d\n", __func__, __LINE__,
-+		pd->thread_id, virq);
- 
- 	local_irq_save(flags);
- 	asm volatile(
-@@ -118,7 +119,7 @@ static void ps3_chip_mask(unsigned int v
- 		     : "r" (bit), "r" (p)
- 		     : "cc" );
- 
--	lv1_did_update_interrupt_mask(pd->node, pd->cpu);
-+	lv1_did_update_interrupt_mask(pd->ppe_id, pd->thread_id);
- 	local_irq_restore(flags);
- }
- 
-@@ -137,7 +138,8 @@ static void ps3_chip_unmask(unsigned int
- 	u64 old;
- 	unsigned long flags;
- 
--	pr_debug("%s:%d: cpu %u, virq %d\n", __func__, __LINE__, pd->cpu, virq);
-+	pr_debug("%s:%d: thread_id %lu, virq %d\n", __func__, __LINE__,
-+		pd->thread_id, virq);
- 
- 	local_irq_save(flags);
- 	asm volatile(
-@@ -149,7 +151,7 @@ static void ps3_chip_unmask(unsigned int
- 		     : "r" (bit), "r" (p)
- 		     : "cc" );
- 
--	lv1_did_update_interrupt_mask(pd->node, pd->cpu);
-+	lv1_did_update_interrupt_mask(pd->ppe_id, pd->thread_id);
- 	local_irq_restore(flags);
- }
- 
-@@ -163,7 +165,7 @@ static void ps3_chip_unmask(unsigned int
- static void ps3_chip_eoi(unsigned int virq)
+-static int __init ps3fb_probe(struct platform_device *dev)
++static int ps3fb_set_sync(void)
++{
++	int status;
++
++#ifdef HEAD_A
++	status = lv1_gpu_context_attribute(0x0,
++					   L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_SYNC,
++					   0, L1GPU_DISPLAY_SYNC_VSYNC, 0, 0);
++	if (status) {
++		printk(KERN_ERR
++		       "%s: lv1_gpu_context_attribute DISPLAY_SYNC failed: %d\n",
++		       __func__, status);
++		return -1;
++	}
++#endif
++#ifdef HEAD_B
++	status = lv1_gpu_context_attribute(0x0,
++					   L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_SYNC,
++					   1, L1GPU_DISPLAY_SYNC_VSYNC, 0, 0);
++
++	if (status) {
++		printk(KERN_ERR
++		       "%s: lv1_gpu_context_attribute DISPLAY_MODE failed: %d\n",
++		       __func__, status);
++		return -1;
++	}
++#endif
++	return 0;
++}
++
++static int __devinit ps3fb_probe(struct ps3_system_bus_device *dev)
  {
- 	const struct ps3_private *pd = get_irq_chip_data(virq);
--	lv1_end_of_interrupt_ext(pd->node, pd->cpu, virq);
-+	lv1_end_of_interrupt_ext(pd->ppe_id, pd->thread_id, virq);
+ 	struct fb_info *info;
+ 	int retval = -ENOMEM;
++	u32 xres, yres;
+ 	u64 ddr_lpar = 0;
+ 	u64 lpar_dma_control = 0;
+ 	u64 lpar_driver_info = 0;
+@@ -986,6 +988,30 @@ static int __init ps3fb_probe(struct pla
+ 	unsigned long offset;
+ 	struct task_struct *task;
+ 
++	status = ps3_open_hv_device(dev);
++	if (status) {
++		printk(KERN_ERR "%s: ps3_open_hv_device failed\n", __func__);
++		goto err;
++	}
++
++	if (!ps3fb_mode)
++		ps3fb_mode = ps3av_get_mode();
++	DPRINTK("ps3av_mode:%d\n", ps3fb_mode);
++
++	if (ps3fb_mode > 0 &&
++	    !ps3av_video_mode2res(ps3fb_mode, &xres, &yres)) {
++		ps3fb.res_index = ps3fb_get_res_table(xres, yres);
++		DPRINTK("res_index:%d\n", ps3fb.res_index);
++	} else
++		ps3fb.res_index = GPU_RES_INDEX;
++
++	atomic_set(&ps3fb.f_count, -1);	/* fbcon opens ps3fb */
++	atomic_set(&ps3fb.ext_flip, 0);	/* for flip with vsync */
++	init_waitqueue_head(&ps3fb.wait_vsync);
++	ps3fb.num_frames = 1;
++
++	ps3fb_set_sync();
++
+ 	/* get gpu context handle */
+ 	status = lv1_gpu_memory_allocate(DDR_SIZE, 0, 0, 0, 0,
+ 					 &ps3fb.memory_handle, &ddr_lpar);
+@@ -1029,7 +1055,7 @@ static int __init ps3fb_probe(struct pla
+ 	 * leakage into userspace
+ 	 */
+ 	memset(ps3fb.xdr_ea, 0, ps3fb_videomemory.size);
+-	info = framebuffer_alloc(sizeof(u32) * 16, &dev->dev);
++	info = framebuffer_alloc(sizeof(u32) * 16, &dev->core);
+ 	if (!info)
+ 		goto err_free_irq;
+ 
+@@ -1061,19 +1087,20 @@ static int __init ps3fb_probe(struct pla
+ 	if (retval < 0)
+ 		goto err_fb_dealloc;
+ 
+-	platform_set_drvdata(dev, info);
++	dev->core.driver_data = info;
+ 
+ 	printk(KERN_INFO
+ 	       "fb%d: PS3 frame buffer device, using %ld KiB of video memory\n",
+ 	       info->node, ps3fb_videomemory.size >> 10);
+ 
+-	task = kthread_run(ps3fbd, info, "ps3fbd");
++	task = kthread_run(ps3fbd, info, DEVICE_NAME);
+ 	if (IS_ERR(task)) {
+ 		retval = PTR_ERR(task);
+ 		goto err_unregister_framebuffer;
+ 	}
+ 
+ 	ps3fb.task = task;
++	ps3av_register_flip_ctl(ps3fb_flip_ctl, &ps3fb);
+ 
+ 	return 0;
+ 
+@@ -1084,7 +1111,7 @@ err_fb_dealloc:
+ err_framebuffer_release:
+ 	framebuffer_release(info);
+ err_free_irq:
+-	free_irq(ps3fb.irq_no, ps3fb.dev);
++	free_irq(ps3fb.irq_no, dev);
+ 	ps3_irq_plug_destroy(ps3fb.irq_no);
+ err_iounmap_dinfo:
+ 	iounmap((u8 __iomem *)ps3fb.dinfo);
+@@ -1096,26 +1123,30 @@ err:
+ 	return retval;
  }
  
- /**
-@@ -242,8 +244,8 @@ int ps3_virq_destroy(unsigned int virq)
+-static void ps3fb_shutdown(struct platform_device *dev)
++static int ps3fb_shutdown(struct ps3_system_bus_device *dev)
  {
- 	const struct ps3_private *pd = get_irq_chip_data(virq);
+-	ps3fb_flip_ctl(0);	/* flip off */
++	int status;
++	struct fb_info *info = dev->core.driver_data;
++
++	DPRINTK(" -> %s:%d\n", __func__, __LINE__);
++
++	ps3fb_flip_ctl(0, &ps3fb);	/* flip off */
+ 	ps3fb.dinfo->irq.mask = 0;
+-	free_irq(ps3fb.irq_no, ps3fb.dev);
+-	ps3_irq_plug_destroy(ps3fb.irq_no);
+-	iounmap((u8 __iomem *)ps3fb.dinfo);
+-}
  
--	pr_debug("%s:%d: node %lu, cpu %d, virq %u\n", __func__, __LINE__,
--		pd->node, pd->cpu, virq);
-+	pr_debug("%s:%d: ppe_id %lu, thread_id %lu, virq %u\n", __func__,
-+		__LINE__, pd->ppe_id, pd->thread_id, virq);
+-void ps3fb_cleanup(void)
+-{
+-	int status;
++	if (info) {
++		unregister_framebuffer(info);
++		fb_dealloc_cmap(&info->cmap);
++		framebuffer_release(info);
++	}
  
- 	set_irq_chip_data(virq, NULL);
- 	irq_dispose_mapping(virq);
-@@ -279,7 +281,8 @@ int ps3_irq_plug_setup(enum ps3_cpu_bind
++	ps3av_register_flip_ctl(NULL, NULL);
+ 	if (ps3fb.task) {
+ 		struct task_struct *task = ps3fb.task;
+ 		ps3fb.task = NULL;
+ 		kthread_stop(task);
+ 	}
+ 	if (ps3fb.irq_no) {
+-		free_irq(ps3fb.irq_no, ps3fb.dev);
++		free_irq(ps3fb.irq_no, dev);
+ 		ps3_irq_plug_destroy(ps3fb.irq_no);
+ 	}
+ 	iounmap((u8 __iomem *)ps3fb.dinfo);
+@@ -1128,134 +1159,65 @@ void ps3fb_cleanup(void)
+ 	if (status)
+ 		DPRINTK("lv1_gpu_memory_free failed: %d\n", status);
  
- 	/* Binds outlet to cpu + virq. */
+-	ps3av_dev_close();
+-}
+-
+-EXPORT_SYMBOL_GPL(ps3fb_cleanup);
+-
+-static int ps3fb_remove(struct platform_device *dev)
+-{
+-	struct fb_info *info = platform_get_drvdata(dev);
++	ps3_close_hv_device(dev);
++	DPRINTK(" <- %s:%d\n", __func__, __LINE__);
  
--	result = lv1_connect_irq_plug_ext(pd->node, pd->cpu, *virq, outlet, 0);
-+	result = lv1_connect_irq_plug_ext(pd->ppe_id, pd->thread_id, *virq,
-+		outlet, 0);
- 
- 	if (result) {
- 		pr_info("%s:%d: lv1_connect_irq_plug_ext failed: %s\n",
-@@ -311,12 +314,12 @@ int ps3_irq_plug_destroy(unsigned int vi
- 	int result;
- 	const struct ps3_private *pd = get_irq_chip_data(virq);
- 
--	pr_debug("%s:%d: node %lu, cpu %d, virq %u\n", __func__, __LINE__,
--		pd->node, pd->cpu, virq);
-+	pr_debug("%s:%d: ppe_id %lu, thread_id %lu, virq %u\n", __func__,
-+		__LINE__, pd->ppe_id, pd->thread_id, virq);
- 
- 	ps3_chip_mask(virq);
- 
--	result = lv1_disconnect_irq_plug_ext(pd->node, pd->cpu, virq);
-+	result = lv1_disconnect_irq_plug_ext(pd->ppe_id, pd->thread_id, virq);
- 
- 	if (result)
- 		pr_info("%s:%d: lv1_disconnect_irq_plug_ext failed: %s\n",
-@@ -658,8 +661,8 @@ static void _dump_bmp(struct ps3_private
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&pd->bmp.lock, flags);
--	_dump_64_bmp("stat", &pd->bmp.status, pd->cpu, func, line);
--	_dump_64_bmp("mask", &pd->bmp.mask, pd->cpu, func, line);
-+	_dump_64_bmp("stat", &pd->bmp.status, pd->thread_id, func, line);
-+	_dump_64_bmp("mask", &pd->bmp.mask, pd->thread_id, func, line);
- 	spin_unlock_irqrestore(&pd->bmp.lock, flags);
+-	if (info) {
+-		unregister_framebuffer(info);
+-		fb_dealloc_cmap(&info->cmap);
+-		framebuffer_release(info);
+-	}
+-	ps3fb_cleanup();
+ 	return 0;
  }
  
-@@ -670,7 +673,7 @@ static void __maybe_unused _dump_mask(st
- 	unsigned long flags;
+-static struct platform_driver ps3fb_driver = {
+-	.probe	= ps3fb_probe,
+-	.remove = ps3fb_remove,
+-	.shutdown = ps3fb_shutdown,
+-	.driver = { .name = "ps3fb" }
++static struct ps3_system_bus_driver ps3fb_driver = {
++	.match_id	= PS3_MATCH_ID_GRAPHICS,
++	.core.name	= DEVICE_NAME,
++	.core.owner	= THIS_MODULE,
++	.probe		= ps3fb_probe,
++	.remove		= ps3fb_shutdown,
++	.shutdown	= ps3fb_shutdown,
+ };
  
- 	spin_lock_irqsave(&pd->bmp.lock, flags);
--	_dump_64_bmp("mask", &pd->bmp.mask, pd->cpu, func, line);
-+	_dump_64_bmp("mask", &pd->bmp.mask, pd->thread_id, func, line);
- 	spin_unlock_irqrestore(&pd->bmp.lock, flags);
+-static struct platform_device ps3fb_device = {
+-	.name	= "ps3fb",
+-	.id	= 0,
+-	.dev	= { .release = ps3fb_platform_release }
+-};
+-
+-int ps3fb_set_sync(void)
++static int __init ps3fb_setup(void)
+ {
+-	int status;
++	char *options, *this_opt;
+ 
+-#ifdef HEAD_A
+-	status = lv1_gpu_context_attribute(0x0,
+-					   L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_SYNC,
+-					   0, L1GPU_DISPLAY_SYNC_VSYNC, 0, 0);
+-	if (status) {
+-		printk(KERN_ERR
+-		       "%s: lv1_gpu_context_attribute DISPLAY_SYNC failed: %d\n",
+-		       __func__, status);
+-		return -1;
+-	}
++#ifdef MODULE
++	return 0;
+ #endif
+-#ifdef HEAD_B
+-	status = lv1_gpu_context_attribute(0x0,
+-					   L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_SYNC,
+-					   1, L1GPU_DISPLAY_SYNC_VSYNC, 0, 0);
+ 
+-	if (status) {
+-		printk(KERN_ERR
+-		       "%s: lv1_gpu_context_attribute DISPLAY_MODE failed: %d\n",
+-		       __func__, status);
+-		return -1;
++	if (fb_get_options(DEVICE_NAME, &options))
++		return -ENXIO;
++
++	if (!options || !*options)
++		return 0;
++
++	while ((this_opt = strsep(&options, ",")) != NULL) {
++		if (!*this_opt)
++			continue;
++		if (!strncmp(this_opt, "mode:", 5))
++			ps3fb_mode = simple_strtoul(this_opt + 5, NULL, 0);
++		else
++			mode_option = this_opt;
+ 	}
+-#endif
+ 	return 0;
  }
- #else
-@@ -723,8 +726,8 @@ static unsigned int ps3_get_irq(void)
- 	plug &= 0x3f;
  
- 	if (unlikely(plug) == NO_IRQ) {
--		pr_debug("%s:%d: no plug found: cpu %u\n", __func__, __LINE__,
--			pd->cpu);
-+		pr_debug("%s:%d: no plug found: thread_id %lu\n", __func__,
-+			__LINE__, pd->thread_id);
- 		dump_bmp(&per_cpu(ps3_private, 0));
- 		dump_bmp(&per_cpu(ps3_private, 1));
- 		return NO_IRQ;
-@@ -754,16 +757,16 @@ void __init ps3_init_IRQ(void)
- 	for_each_possible_cpu(cpu) {
- 		struct ps3_private *pd = &per_cpu(ps3_private, cpu);
+-EXPORT_SYMBOL_GPL(ps3fb_set_sync);
+-
+ static int __init ps3fb_init(void)
+ {
+-	int error;
+-#ifndef MODULE
+-	int mode;
+-	char *option = NULL;
+-
+-	if (fb_get_options("ps3fb", &option))
+-		goto err;
+-#endif
+-
+-	if (!ps3fb_videomemory.address)
+-		goto err;
+-
+-	error = ps3av_dev_open();
+-	if (error) {
+-		printk(KERN_ERR "%s: ps3av_dev_open failed\n", __func__);
+-		goto err;
+-	}
+-
+-	ps3fb_mode = ps3av_get_mode();
+-	DPRINTK("ps3av_mode:%d\n", ps3fb_mode);
+-#ifndef MODULE
+-	mode = ps3fb_setup(option);	/* check boot option */
+-	if (mode)
+-		ps3fb_mode = mode;
+-#endif
+-	if (ps3fb_mode > 0) {
+-		u32 xres, yres;
+-		ps3av_video_mode2res(ps3fb_mode, &xres, &yres);
+-		ps3fb.res_index = ps3fb_get_res_table(xres, yres);
+-		DPRINTK("res_index:%d\n", ps3fb.res_index);
+-	} else
+-		ps3fb.res_index = GPU_RES_INDEX;
+-
+-	atomic_set(&ps3fb.f_count, -1);	/* fbcon opens ps3fb */
+-	atomic_set(&ps3fb.ext_flip, 0);	/* for flip with vsync */
+-	init_waitqueue_head(&ps3fb.wait_vsync);
+-	ps3fb.num_frames = 1;
+-
+-	error = platform_driver_register(&ps3fb_driver);
+-	if (!error) {
+-		error = platform_device_register(&ps3fb_device);
+-		if (error)
+-			platform_driver_unregister(&ps3fb_driver);
+-	}
+-
+-	ps3fb_set_sync();
+-
+-	return error;
++	if (!ps3fb_videomemory.address ||  ps3fb_setup())
++		return -ENXIO;
  
--		lv1_get_logical_ppe_id(&pd->node);
--		pd->cpu = get_hard_smp_processor_id(cpu);
-+		lv1_get_logical_ppe_id(&pd->ppe_id);
-+		pd->thread_id = get_hard_smp_processor_id(cpu);
- 		spin_lock_init(&pd->bmp.lock);
+-err:
+-	return -ENXIO;
++	return ps3_system_bus_driver_register(&ps3fb_driver);
+ }
  
--		pr_debug("%s:%d: node %lu, cpu %d, bmp %lxh\n", __func__,
--			__LINE__, pd->node, pd->cpu,
-+		pr_debug("%s:%d: ppe_id %lu, thread_id %lu, bmp %lxh\n",
-+			__func__, __LINE__, pd->ppe_id, pd->thread_id,
- 			ps3_mm_phys_to_lpar(__pa(&pd->bmp)));
+-module_init(ps3fb_init);
+-
+-#ifdef MODULE
+ static void __exit ps3fb_exit(void)
+ {
+-	platform_device_unregister(&ps3fb_device);
+-	platform_driver_unregister(&ps3fb_driver);
++	DPRINTK(" -> %s:%d\n", __func__, __LINE__);
++	ps3_system_bus_driver_unregister(&ps3fb_driver);
++	DPRINTK(" <- %s:%d\n", __func__, __LINE__);
+ }
  
--		result = lv1_configure_irq_state_bitmap(pd->node, pd->cpu,
--			ps3_mm_phys_to_lpar(__pa(&pd->bmp)));
-+		result = lv1_configure_irq_state_bitmap(pd->ppe_id,
-+			pd->thread_id, ps3_mm_phys_to_lpar(__pa(&pd->bmp)));
++module_init(ps3fb_init);
+ module_exit(ps3fb_exit);
  
- 		if (result)
- 			pr_debug("%s:%d: lv1_configure_irq_state_bitmap failed:"
+ MODULE_LICENSE("GPL");
+-#endif				/* MODULE */
++MODULE_DESCRIPTION("PS3 GPU Frame Buffer Driver");
++MODULE_AUTHOR("Sony Computer Entertainment Inc.");
++MODULE_ALIAS(PS3_MODULE_ALIAS_GRAPHICS);
+--- a/include/asm-powerpc/ps3fb.h
++++ b/include/asm-powerpc/ps3fb.h
+@@ -41,16 +41,4 @@ struct ps3fb_ioctl_res {
+ 	__u32 num_frames; /* num of frame buffers */
+ };
+ 
+-#ifdef __KERNEL__
+-
+-#ifdef CONFIG_FB_PS3
+-extern void ps3fb_flip_ctl(int on);
+-extern void ps3fb_cleanup(void);
+-#else
+-static inline void ps3fb_flip_ctl(int on) {}
+-static inline void ps3fb_cleanup(void) {}
+-#endif
+-
+-#endif /* __KERNEL__ */
+-
+ #endif /* _ASM_POWERPC_PS3FB_H_ */
 
 -- 
