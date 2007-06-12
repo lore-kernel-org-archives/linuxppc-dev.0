@@ -1,13 +1,13 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id A12C4DDE49
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 02:44:31 +1000 (EST)
-Message-Id: <20070612163751.276242069@arndb.de>
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 3BD7FDDEE1
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 02:44:32 +1000 (EST)
+Message-Id: <20070612163751.702376215@arndb.de>
 References: <20070612163016.253915076@arndb.de>
-Date: Tue, 12 Jun 2007 18:30:23 +0200
+Date: Tue, 12 Jun 2007 18:30:26 +0200
 From: arnd@arndb.de
 To: paulus@samba.org
-Subject: [patch 07/13] powerpc: multiplatformize 85xx configuration
+Subject: [patch 10/13] powerpc: mpc82xx_ads build fix
 Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,100 +18,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The various e500 platforms can be built in a single kernel,
-as long as a small conflict in the header files is resolved.
+needed for 6xx allyesconfig
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
-Index: linux-2.6/arch/powerpc/platforms/85xx/Kconfig
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/85xx/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/85xx/Kconfig
-@@ -1,28 +1,27 @@
--choice
--	prompt "Machine Type"
--	depends on PPC_85xx
--	default MPC8540_ADS
--
- config MPC8540_ADS
- 	bool "Freescale MPC8540 ADS"
-+	depends on PPC_85xx
- 	select DEFAULT_UIMAGE
- 	help
- 	  This option enables support for the MPC 8540 ADS board
+--- linux-2.6.orig/arch/powerpc/platforms/82xx/mpc82xx_ads.c
++++ linux-2.6/arch/powerpc/platforms/82xx/mpc82xx_ads.c
+@@ -49,7 +49,7 @@
+ #include <linux/fs_enet_pd.h>
  
- config MPC8560_ADS
- 	bool "Freescale MPC8560 ADS"
-+	depends on PPC_85xx
- 	select DEFAULT_UIMAGE
- 	help
- 	  This option enables support for the MPC 8560 ADS board
+ #include <sysdev/fsl_soc.h>
+-#include <../sysdev/cpm2_pic.h>
++#include <../../sysdev/cpm2_pic.h>
  
- config MPC85xx_CDS
- 	bool "Freescale MPC85xx CDS"
-+	depends on PPC_85xx
- 	select DEFAULT_UIMAGE
- 	help
- 	  This option enables support for the MPC85xx CDS board
- 
- config MPC85xx_MDS
- 	bool "Freescale MPC85xx MDS"
-+	depends on PPC_85xx
- 	select DEFAULT_UIMAGE
- #	select QUICC_ENGINE
- 	help
-@@ -30,12 +29,11 @@ config MPC85xx_MDS
- 
- config MPC8544_DS
- 	bool "Freescale MPC8544 DS"
-+	depends on PPC_85xx
- 	select DEFAULT_UIMAGE
- 	help
- 	  This option enables support for the MPC8544 DS board
- 
--endchoice
--
- config MPC8540
- 	bool
- 	select PPC_UDBG_16550
-Index: linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_ads.h
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/85xx/mpc85xx_ads.h
-+++ linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_ads.h
-@@ -29,14 +29,14 @@
- #define MPC85xx_CPM_OFFSET	(0x80000)
- 
- #define CPM_MAP_ADDR		(get_immrbase() + MPC85xx_CPM_OFFSET)
--#define CPM_IRQ_OFFSET		60
-+#define MPC85xxADS_CPM_IRQ_OFFSET		60
- 
--#define SIU_INT_SMC1		((uint)0x04+CPM_IRQ_OFFSET)
--#define SIU_INT_SMC2		((uint)0x05+CPM_IRQ_OFFSET)
--#define SIU_INT_SCC1		((uint)0x28+CPM_IRQ_OFFSET)
--#define SIU_INT_SCC2		((uint)0x29+CPM_IRQ_OFFSET)
--#define SIU_INT_SCC3		((uint)0x2a+CPM_IRQ_OFFSET)
--#define SIU_INT_SCC4		((uint)0x2b+CPM_IRQ_OFFSET)
-+#define SIU_INT_SMC1		((uint)0x04+MPC85xxADS_CPM_IRQ_OFFSET)
-+#define SIU_INT_SMC2		((uint)0x05+MPC85xxADS_CPM_IRQ_OFFSET)
-+#define SIU_INT_SCC1		((uint)0x28+MPC85xxADS_CPM_IRQ_OFFSET)
-+#define SIU_INT_SCC2		((uint)0x29+MPC85xxADS_CPM_IRQ_OFFSET)
-+#define SIU_INT_SCC3		((uint)0x2a+MPC85xxADS_CPM_IRQ_OFFSET)
-+#define SIU_INT_SCC4		((uint)0x2b+MPC85xxADS_CPM_IRQ_OFFSET)
- 
- /* FCC1 Clock Source Configuration.  These can be
-  * redefined in the board specific file.
-Index: linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_cds.h
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/85xx/mpc85xx_cds.h
-+++ linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_cds.h
-@@ -36,7 +36,7 @@
- #define PIRQ1A			MPC85xx_IRQ_EXT11
- 
- #define NR_8259_INTS		16
--#define CPM_IRQ_OFFSET		NR_8259_INTS
-+#define MPC85xxCDS_CPM_IRQ_OFFSET		NR_8259_INTS
- 
- #define MPC85xx_OPENPIC_IRQ_OFFSET	80
+ #include "pq2ads.h"
  
 
 --
