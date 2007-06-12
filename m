@@ -1,23 +1,13 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AE104DDE0F
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 02:18:34 +1000 (EST)
-Message-ID: <466EC752.1010207@freescale.com>
-Date: Tue, 12 Jun 2007 11:18:26 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-Subject: Re: [PATCH v3]: Fix e500 v2 core reboot bug
-References: <1180406209.8139.13.camel@localhost.localdomain>
-	<1181639293.8953.7.camel@localhost.localdomain>
-In-Reply-To: <1181639293.8953.7.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id E1A39DDE0F
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 02:39:21 +1000 (EST)
+Message-Id: <20070612163016.253915076@arndb.de>
+Date: Tue, 12 Jun 2007 18:30:16 +0200
+From: arnd@arndb.de
+To: paulus@samba.org
+Subject: [patch 00/13] CPU selection Kconfig cleanup, take 3
+Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,18 +17,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Zang Roy-r61911 wrote:
-> From: roy zang <tie-fei.zang@freescale.com>
-> 
-> Fix the reset bug on 8548CDS board.
->>From MPC8548CDS with e500 v2 core, a new reset control register is added.
-> This register is used for the cpu reset.
-> 
-> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+Next try:
 
-Acked-by: Timur Tabi <timur@freescale.com>
+I've removed the patch that moves CONFIG_PPC64 into the CPU selection
+now, and split out the unrelated bug fix noticed by Stephen.
 
+During testing, I found a few more bugs, for which I include patches
+as well this time. Building without PCI support seems to be not well
+tested in general.
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+I also had a few bug fixes to make 8xx build, but it became clear
+that it's pretty pointless in the current code as there are too
+many bugs in there. There is not even a single 8xx configuration
+that can build in arch/powerpc, it should probably just be marked
+as broken.
+
+	Arnd <><
