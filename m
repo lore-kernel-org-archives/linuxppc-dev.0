@@ -1,13 +1,13 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 8866CDDE19
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 02:44:28 +1000 (EST)
-Message-Id: <20070612163750.849941692@arndb.de>
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id E1800DDE30
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 02:44:27 +1000 (EST)
+Message-Id: <20070612163751.124207337@arndb.de>
 References: <20070612163016.253915076@arndb.de>
-Date: Tue, 12 Jun 2007 18:30:20 +0200
+Date: Tue, 12 Jun 2007 18:30:22 +0200
 From: arnd@arndb.de
 To: paulus@samba.org
-Subject: [patch 04/13] powerpc: multiplatformize 8{2,3,6}xx configuration
+Subject: [patch 06/13] powerpc: multiplatformize 52xx configuration
 Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,170 +18,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-All platforms based on 6xx compatible cores should be able to
-coexisting in a single kernel image and do all necessary configuration
-based on the device tree.
-
-This moves the missing 8{2,3,6}xx platforms under
-CONFIG_PPC_MULTIPLATFORM to make that possible to configure.
+Efika and Lite5200 can both coexist with other 6xx compatible
+configurations, so change the Kconfig allow selecting both
+at the same time.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Index: linux-2.6/arch/powerpc/platforms/82xx/Kconfig
+
+Index: linux-2.6/arch/powerpc/platforms/52xx/Kconfig
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/82xx/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/82xx/Kconfig
-@@ -1,10 +1,10 @@
--choice
--	prompt "Machine Type"
--	depends on PPC_82xx
--	default MPC82xx_ADS
-+config PPC_82xx
-+	bool "Freescale 82xx"
-+	depends on PPC_MULTIPLATFORM && 6xx
- 
- config MPC82xx_ADS
- 	bool "Freescale MPC82xx ADS"
-+	depends on PPC_82xx
- 	select DEFAULT_UIMAGE
- 	select PQ2ADS
- 	select 8272
-@@ -13,8 +13,6 @@ config MPC82xx_ADS
- 	help
- 	This option enables support for the MPC8272 ADS board
- 
--endchoice
--
- config PQ2ADS
- 	bool
+--- linux-2.6.orig/arch/powerpc/platforms/52xx/Kconfig
++++ linux-2.6/arch/powerpc/platforms/52xx/Kconfig
+@@ -1,11 +1,26 @@
+ config PPC_MPC52xx
+-	bool
++	bool "Freescale 52xx"
+ 	select FSL_SOC
++
++config PPC_EFIKA
++	bool "bPlan Efika 5k2. MPC5200B based computer"
++	depends on PPC_MULTIPLATFORM && PPC32
++	depends on PPC_MPC52xx
++	select PPC_RTAS
++	select RTAS_PROC
++	select PPC_NATIVE
++	default n
++
++config PPC_LITE5200
++	bool "Freescale Lite5200 Eval Board"
++	depends on PPC_MULTIPLATFORM && PPC32
++	depends on PPC_MPC52xx
++	select PPC_MPC5200
  	default n
-Index: linux-2.6/arch/powerpc/platforms/83xx/Kconfig
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/83xx/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/83xx/Kconfig
-@@ -1,16 +1,20 @@
--choice
--	prompt "Machine Type"
--	depends on PPC_83xx
--	default MPC834x_MDS
-+config PPC_83xx
-+	bool "Freescale 83xx"
-+	depends on PPC_MULTIPLATFORM && 6xx
-+	select FSL_SOC
-+	select 83xx
-+	select WANT_DEVICE_TREE
  
- config MPC8313_RDB
- 	bool "Freescale MPC8313 RDB"
-+	depends on PPC_83xx
- 	select DEFAULT_UIMAGE
- 	help
- 	  This option enables support for the MPC8313 RDB board.
- 
- config MPC832x_MDS
- 	bool "Freescale MPC832x MDS"
-+	depends on PPC_83xx
- 	select DEFAULT_UIMAGE
- 	select QUICC_ENGINE
- 	help
-@@ -18,6 +22,7 @@ config MPC832x_MDS
- 
- config MPC832x_RDB
- 	bool "Freescale MPC832x RDB"
-+	depends on PPC_83xx
- 	select DEFAULT_UIMAGE
- 	select QUICC_ENGINE
- 	help
-@@ -25,6 +30,7 @@ config MPC832x_RDB
- 
- config MPC834x_MDS
- 	bool "Freescale MPC834x MDS"
-+	depends on PPC_83xx
- 	select DEFAULT_UIMAGE
- 	help
- 	  This option enables support for the MPC 834x MDS evaluation board.
-@@ -36,6 +42,7 @@ config MPC834x_MDS
- 
- config MPC834x_ITX
- 	bool "Freescale MPC834x ITX"
-+	depends on PPC_83xx
- 	select DEFAULT_UIMAGE
- 	help
- 	  This option enables support for the MPC 834x ITX evaluation board.
-@@ -45,13 +52,12 @@ config MPC834x_ITX
- 
- config MPC836x_MDS
- 	bool "Freescale MPC836x MDS"
-+	depends on PPC_83xx
- 	select DEFAULT_UIMAGE
- 	select QUICC_ENGINE
- 	help
- 	  This option enables support for the MPC836x MDS Processor Board.
- 
--endchoice
--
- config PPC_MPC831x
+ config PPC_MPC5200
  	bool
- 	select PPC_UDBG_16550
-Index: linux-2.6/arch/powerpc/platforms/86xx/Kconfig
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/86xx/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/86xx/Kconfig
-@@ -1,17 +1,20 @@
--choice
--	prompt "Machine Type"
--	depends on PPC_86xx
--	default MPC8641_HPCN
-+config PPC_86xx
-+	bool "Freescale 86xx"
-+	depends on PPC_MULTIPLATFORM && 6xx
-+	select FSL_SOC
-+	select FSL_PCIE
-+	select ALTIVEC
-+	help
-+	  The Freescale E600 SoCs have 74xx cores.
+-	select PPC_MPC52xx
++	depends on PPC_MPC52xx
+ 	default n
  
- config MPC8641_HPCN
- 	bool "Freescale MPC8641 HPCN"
-+	depends on PPC_86xx
- 	select PPC_I8259
- 	select DEFAULT_UIMAGE
- 	help
- 	  This option enables support for the MPC8641 HPCN board.
+ config PPC_MPC5200_BUGFIX
+@@ -18,19 +33,4 @@ config PPC_MPC5200_BUGFIX
  
--endchoice
+ 	  It is safe to say 'Y' here
+ 
+-config PPC_EFIKA
+-	bool "bPlan Efika 5k2. MPC5200B based computer"
+-	depends on PPC_MULTIPLATFORM && PPC32
+-	select PPC_RTAS
+-	select RTAS_PROC
+-	select PPC_MPC52xx
+-	select PPC_NATIVE
+-	default n
 -
- config MPC8641
- 	bool
- 	select PPC_INDIRECT_PCI
-Index: linux-2.6/arch/powerpc/platforms/Kconfig
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/Kconfig
-@@ -24,25 +24,6 @@ config APUS
- 	  More information is available at:
- 	  <http://linux-apus.sourceforge.net/>.
- 
--config PPC_82xx
--	bool "Freescale 82xx"
--	depends on 6xx
+-config PPC_LITE5200
+-	bool "Freescale Lite5200 Eval Board"
+-	depends on PPC_MULTIPLATFORM && PPC32
+-	select PPC_MPC5200
+-	default n
 -
--config PPC_83xx
--	bool "Freescale 83xx"
--	depends on 6xx
--	select FSL_SOC
--	select 83xx
--	select WANT_DEVICE_TREE
--
--config PPC_86xx
--	bool "Freescale 86xx"
--	depends on 6xx
--	select FSL_SOC
--	select FSL_PCIE
--	select ALTIVEC
--	help
--	  The Freescale E600 SoCs have 74xx cores.
- endchoice
  
- config CLASSIC32
 
 --
