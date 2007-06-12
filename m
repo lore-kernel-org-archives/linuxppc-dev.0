@@ -1,20 +1,20 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 4651ADDEF3
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 17:46:32 +1000 (EST)
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id B991CDDEEA
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 18:08:08 +1000 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [patch 06/10] powerpc: multiplatformize embedded6xx Kconfig
-Date: Tue, 12 Jun 2007 09:46:22 +0200
+Subject: Re: [patch 02/10] powerpc: Move CONFIG_PPC64 into CPU selection
+Date: Tue, 12 Jun 2007 10:08:01 +0200
 References: <20070611232824.489103547@arndb.de>
-	<20070611233354.289486461@arndb.de>
-	<F72846CE-5742-4413-A2EB-AC1B4080048E@kernel.crashing.org>
-In-Reply-To: <F72846CE-5742-4413-A2EB-AC1B4080048E@kernel.crashing.org>
+	<20070611233353.734704855@arndb.de>
+	<18030.15937.699275.958545@cargo.ozlabs.ibm.com>
+In-Reply-To: <18030.15937.699275.958545@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
+Message-Id: <200706121008.01661.arnd@arndb.de>
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200706120946.22401.arnd@arndb.de>
-Cc: paulus@samba.org
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,19 +24,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 12 June 2007, Kumar Gala wrote:
-> > -config EMBEDDED6xx
-> > -=A0=A0=A0=A0=A0bool "Embedded 6xx/7xx/7xxx-based board"
-> > -=A0=A0=A0=A0=A0depends on PPC32 && (BROKEN||BROKEN_ON_SMP)
-> > -
+On Tuesday 12 June 2007, Paul Mackerras wrote:
+> > Currently, PPC64 is a top level configuration option in
+> > arch/powerpc/Kconfig, which is somewhat unconventional.
 >=20
-> Do we know why this was marked BROKEN?
+> It makes a lot of sense to me to have 32 vs. 64 bits as a high level
+> binary selector that conditions the things that follow. =A0I don't think
+> it makes sense to push it down into the CPU selection menu.
 
-I don't know. As far as I can tell, (BROKEN||BROKEN_ON_SMP) is the
-same as simply BROKEN_ON_SMP, which makes the option only show
-up when SMP is disabled.
+Can you eleborate, other than stating the exact opposite of what
+my comment said?
 
-My patch doesn't change that behaviour, I just moved the dependency
-down to the individual boards.
+I don't mind removing this patch from the series, but I'd like to
+understand the reason. I've always thought of the top-level option
+as a temporary ugly hack that should eventually go away ;-)
+
+Other than subjective feelings, my reasons for this patch were:
+
+* No other architecture I have seen uses bool options in the top-level
+  menu, so it would be more consistant to move it to the cpu type
+  selection menu.
+
+* we have six (depending on how you count) PPC CPU families
+  supported by Linux (4xx, 6xx, 8xx, e200, e500, ppc64), each
+  of them incompatible with the others, meaning that you can run
+  common user space but not a common kernel. Having the list in
+  as the first Kconfig choice seems logical to me, because
+  all other options more or less depend on these.
+
+* The only major difference between ppc64 and the others is the
+  object format of the kernel binary. My impression when playing
+  with the cpu selection menu was that we have a lot more stuff
+  depending on 6xx than on ppc64.
+
+* Given the choice between the equivalent
+
+> config PPC64
+> 	bool
+>
+> choice
+> 	depends on !PPC64
+> config 4xx
+> config 6xx
+> config 8xx
+> config E200
+> config E500
+> endchoice
+
+and
+
+> choice
+> config PPC64
+> config 4xx
+> config 6xx
+> config 8xx
+> config E200
+> config E500
+> endchoice
+
+I find the latter easier to understand regarding further options
+depending on each of them in the individual platforms, e.g. each
+of the platforms/foo/Kconfig files depends on exactly one of these
+six options.=20
 
 	Arnd <><
