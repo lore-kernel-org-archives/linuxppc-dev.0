@@ -1,14 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 12 Jun 2007 13:45:22 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: xu chen <chenxurcy@yahoo.com.cn>
-Subject: Re: opb_ethernet driver
-Message-ID: <20070612034522.GA4198@localhost.localdomain>
-References: <22250.22723.qm@web92006.mail.cnb.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <22250.22723.qm@web92006.mail.cnb.yahoo.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id E2229DDED8
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 14:02:34 +1000 (EST)
+Date: Tue, 12 Jun 2007 14:02:14 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: arnd@arndb.de
+Subject: Re: [patch 01/10] powerpc: split out CPU specific options into a
+	new Kconfig file
+Message-Id: <20070612140214.1a7dfd9d.sfr@canb.auug.org.au>
+In-Reply-To: <20070611233353.602822721@arndb.de>
+References: <20070611232824.489103547@arndb.de>
+	<20070611233353.602822721@arndb.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__12_Jun_2007_14_02_14_+1000_Bt1+9UDPzaA1zhDi"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,15 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jun 11, 2007 at 10:37:55AM +0800, xu chen wrote:
-> Hello.
->       I'm porting an opb_ethernet driver to my ml403 board now, using the 2.6.17 kernel. I know the ethernet support 3 mode: No DMA, simple DMA, scatter gather DMA, when I use the No DMA mode, we can write the skb into the FIFO, but can't ping other PCs in the network. When I use the simple DMA mode, at the time of ping, in the driver, we should initialize the DMA channel, but when transfering the skb, the DMA returns a "DMA bus time out" signal. 
->      Now I'm worry about it. Who had encountered the problem before? I think I need some help.
+--Signature=_Tue__12_Jun_2007_14_02_14_+1000_Bt1+9UDPzaA1zhDi
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-What's an opb_ethernet?
+On Tue, 12 Jun 2007 01:28:25 +0200 arnd@arndb.de wrote:
+>
+> -config VIRT_CPU_ACCOUNTING
+> -	bool "Deterministic task and CPU time accounting"
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+I am not sure that this belongs with all the rest.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__12_Jun_2007_14_02_14_+1000_Bt1+9UDPzaA1zhDi
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGbhrKFdBgD/zoJvwRAquLAKCUYs+dBbH9EXWWtfqAYkSwIAh7JwCgguYq
+0GdOd/lB5EgfbWJoesQP3e4=
+=2K43
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__12_Jun_2007_14_02_14_+1000_Bt1+9UDPzaA1zhDi--
