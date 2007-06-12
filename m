@@ -3,18 +3,20 @@ Received: from outbound4-dub-R.bigfish.com (outbound-dub.frontbridge.com
 	[213.199.154.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 70366DDE38
+	by ozlabs.org (Postfix) with ESMTP id C58FDDDE9F
 	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 04:55:32 +1000 (EST)
-Message-ID: <466EE947.2080009@am.sony.com>
-Date: Tue, 12 Jun 2007 11:43:19 -0700
+Message-ID: <466EE965.404@am.sony.com>
+Date: Tue, 12 Jun 2007 11:43:49 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 04/30] PS3: Compare firmware version
+Subject: [patch 05/30] PS3: Use ioremap_flags
 References: <20070612181825.730300780@am.sony.com>>
 In-Reply-To: <20070612181825.730300780@am.sony.com>>
 Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>,
+	Masato Noguchi <Masato.Noguchi@jp.sony.com>, linuxppc-dev@ozlabs.org,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,84 +26,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Masakazu Mokuno <mokuno@sm.sony.co.jp>
+Use ioremap_flags() to map SPU regions as non-guarded.
+Change the use of _ioremap() to ioremap_flags().
 
-Add a utility routine ps3_compare_firmware_version() to compare system
-firmware versions.  Uses the existing ps3_get_firmware_version() routine.
-
-Signed-off-by: Masakazu Mokuno <mokuno@sm.sony.co.jp>
+CC: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+CC: Masato Noguchi <Masato.Noguchi@jp.sony.com>
+CC: Takao Shinohara <shin@sm.sony.co.jp>
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/platforms/ps3/setup.c |   32 ++++++++++++++++++++------------
- include/asm-powerpc/ps3.h          |    3 ++-
- 2 files changed, 22 insertions(+), 13 deletions(-)
+ arch/powerpc/platforms/ps3/htab.c |    2 +-
+ arch/powerpc/platforms/ps3/spu.c  |   19 ++++++++++++-------
+ 2 files changed, 13 insertions(+), 8 deletions(-)
 
---- a/arch/powerpc/platforms/ps3/setup.c
-+++ b/arch/powerpc/platforms/ps3/setup.c
-@@ -46,18 +46,26 @@
- static void smp_send_stop(void) {}
- #endif
+--- a/arch/powerpc/platforms/ps3/htab.c
++++ b/arch/powerpc/platforms/ps3/htab.c
+@@ -273,7 +273,7 @@ void __init ps3_map_htab(void)
  
--int ps3_get_firmware_version(union ps3_firmware_version *v)
-+static union ps3_firmware_version ps3_firmware_version;
+ 	result = lv1_map_htab(0, &htab_addr);
+ 
+-	htab = (hpte_t *)__ioremap(htab_addr, htab_size,
++	htab = (hpte_t *)ioremap_flags(htab_addr, htab_size,
+ 				   pgprot_val(PAGE_READONLY_X));
+ 
+ 	DBG("%s:%d: lpar %016lxh, virt %016lxh\n", __func__, __LINE__,
+--- a/arch/powerpc/platforms/ps3/spu.c
++++ b/arch/powerpc/platforms/ps3/spu.c
+@@ -182,30 +182,35 @@ static int __init setup_areas(struct spu
+ {
+ 	struct table {char* name; unsigned long addr; unsigned long size;};
+ 
+-	spu_pdata(spu)->shadow = __ioremap(
++	spu_pdata(spu)->shadow = (__force void *)ioremap_flags(
+ 		spu_pdata(spu)->shadow_addr, sizeof(struct spe_shadow),
+-		pgprot_val(PAGE_READONLY) | _PAGE_NO_CACHE | _PAGE_GUARDED);
++		pgprot_val(PAGE_READONLY) | _PAGE_NO_CACHE);
 +
-+void ps3_get_firmware_version(union ps3_firmware_version *v)
- {
--	int result = lv1_get_version_info(&v->raw);
-+	*v = ps3_firmware_version;
-+}
-+EXPORT_SYMBOL_GPL(ps3_get_firmware_version);
+ 	if (!spu_pdata(spu)->shadow) {
+ 		pr_debug("%s:%d: ioremap shadow failed\n", __func__, __LINE__);
+ 		goto fail_ioremap;
+ 	}
  
--	if (result) {
--		v->raw = 0;
--		return -1;
--	}
-+int ps3_compare_firmware_version(u16 major, u16 minor, u16 rev)
-+{
-+	union ps3_firmware_version x;
+-	spu->local_store = ioremap(spu->local_store_phys, LS_SIZE);
++	spu->local_store = (__force void *)ioremap_flags(spu->local_store_phys,
++		LS_SIZE, _PAGE_NO_CACHE);
 +
-+	x.pad = 0;
-+	x.major = major;
-+	x.minor = minor;
-+	x.rev = rev;
+ 	if (!spu->local_store) {
+ 		pr_debug("%s:%d: ioremap local_store failed\n",
+ 			__func__, __LINE__);
+ 		goto fail_ioremap;
+ 	}
  
--	return result;
-+	return (ps3_firmware_version.raw - x.raw);
- }
--EXPORT_SYMBOL_GPL(ps3_get_firmware_version);
-+EXPORT_SYMBOL_GPL(ps3_compare_firmware_version);
+-	spu->problem = ioremap(spu->problem_phys,
+-		sizeof(struct spu_problem));
++	spu->problem = (__force void *)ioremap_flags(spu->problem_phys,
++		sizeof(struct spu_problem), _PAGE_NO_CACHE);
++
+ 	if (!spu->problem) {
+ 		pr_debug("%s:%d: ioremap problem failed\n", __func__, __LINE__);
+ 		goto fail_ioremap;
+ 	}
  
- static void ps3_power_save(void)
- {
-@@ -146,13 +154,13 @@ static int ps3_set_dabr(u64 dabr)
- 
- static void __init ps3_setup_arch(void)
- {
--	union ps3_firmware_version v;
- 
- 	DBG(" -> %s:%d\n", __func__, __LINE__);
- 
--	ps3_get_firmware_version(&v);
--	printk(KERN_INFO "PS3 firmware version %u.%u.%u\n", v.major, v.minor,
--		v.rev);
-+	lv1_get_version_info(&ps3_firmware_version.raw);
-+	printk(KERN_INFO "PS3 firmware version %u.%u.%u\n",
-+	       ps3_firmware_version.major, ps3_firmware_version.minor,
-+	       ps3_firmware_version.rev);
- 
- 	ps3_spu_set_platform();
- 	ps3_map_htab();
---- a/include/asm-powerpc/ps3.h
-+++ b/include/asm-powerpc/ps3.h
-@@ -35,7 +35,8 @@ union ps3_firmware_version {
- 	};
- };
- 
--int ps3_get_firmware_version(union ps3_firmware_version *v);
-+void ps3_get_firmware_version(union ps3_firmware_version *v);
-+int ps3_compare_firmware_version(u16 major, u16 minor, u16 rev);
- 
- /* 'Other OS' area */
- 
+-	spu->priv2 = ioremap(spu_pdata(spu)->priv2_addr,
+-		sizeof(struct spu_priv2));
++	spu->priv2 = (__force void *)ioremap_flags(spu_pdata(spu)->priv2_addr,
++		sizeof(struct spu_priv2), _PAGE_NO_CACHE);
++
+ 	if (!spu->priv2) {
+ 		pr_debug("%s:%d: ioremap priv2 failed\n", __func__, __LINE__);
+ 		goto fail_ioremap;
 
 -- 
