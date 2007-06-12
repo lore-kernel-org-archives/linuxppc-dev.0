@@ -3,14 +3,14 @@ Received: from outbound1-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
 	[207.46.163.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id BE5D3DDECC
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 04:55:41 +1000 (EST)
-Message-ID: <466EEBD0.9080609@am.sony.com>
-Date: Tue, 12 Jun 2007 11:54:08 -0700
+	by ozlabs.org (Postfix) with ESMTP id 7D7B7DDEEC
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 04:55:42 +1000 (EST)
+Message-ID: <466EEBF0.5030702@am.sony.com>
+Date: Tue, 12 Jun 2007 11:54:40 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 21/30] PS3: Use clear_bit
+Subject: [patch 26/30] Powerpc: Add u64 printf to bootwrapper
 References: <20070612181825.730300780@am.sony.com>>
 In-Reply-To: <20070612181825.730300780@am.sony.com>>
 Content-Type: text/plain; charset=UTF-8
@@ -24,67 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Replace inline asm to bitops routines in the PS3 interrupt
-chip mask routines.
+Add support for the 'll' (long long) printf qualifier in the powerpc zImage
+bootwrapper.  This is useful for bootwrapper debugging on 64 bit platforms.
 
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/platforms/ps3/interrupt.c |   26 ++------------------------
- 1 file changed, 2 insertions(+), 24 deletions(-)
+ arch/powerpc/boot/stdio.c |   10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
---- a/arch/powerpc/platforms/ps3/interrupt.c
-+++ b/arch/powerpc/platforms/ps3/interrupt.c
-@@ -101,24 +101,13 @@ static DEFINE_PER_CPU(struct ps3_private
- static void ps3_chip_mask(unsigned int virq)
- {
- 	struct ps3_private *pd = get_irq_chip_data(virq);
--	u64 bit = 0x8000000000000000UL >> virq;
--	u64 *p = &pd->bmp.mask;
--	u64 old;
- 	unsigned long flags;
+--- a/arch/powerpc/boot/stdio.c
++++ b/arch/powerpc/boot/stdio.c
+@@ -190,7 +190,11 @@ int vsprintf(char *buf, const char *fmt,
  
- 	pr_debug("%s:%d: thread_id %lu, virq %d\n", __func__, __LINE__,
- 		pd->thread_id, virq);
- 
- 	local_irq_save(flags);
--	asm volatile(
--		     "1:	ldarx %0,0,%3\n"
--		     "andc	%0,%0,%2\n"
--		     "stdcx.	%0,0,%3\n"
--		     "bne-	1b"
--		     : "=&r" (old), "+m" (*p)
--		     : "r" (bit), "r" (p)
--		     : "cc" );
--
-+	clear_bit(63 - virq, &pd->bmp.mask);
- 	lv1_did_update_interrupt_mask(pd->ppe_id, pd->thread_id);
- 	local_irq_restore(flags);
- }
-@@ -133,24 +122,13 @@ static void ps3_chip_mask(unsigned int v
- static void ps3_chip_unmask(unsigned int virq)
- {
- 	struct ps3_private *pd = get_irq_chip_data(virq);
--	u64 bit = 0x8000000000000000UL >> virq;
--	u64 *p = &pd->bmp.mask;
--	u64 old;
- 	unsigned long flags;
- 
- 	pr_debug("%s:%d: thread_id %lu, virq %d\n", __func__, __LINE__,
- 		pd->thread_id, virq);
- 
- 	local_irq_save(flags);
--	asm volatile(
--		     "1:	ldarx %0,0,%3\n"
--		     "or	%0,%0,%2\n"
--		     "stdcx.	%0,0,%3\n"
--		     "bne-	1b"
--		     : "=&r" (old), "+m" (*p)
--		     : "r" (bit), "r" (p)
--		     : "cc" );
--
-+	set_bit(63 - virq, &pd->bmp.mask);
- 	lv1_did_update_interrupt_mask(pd->ppe_id, pd->thread_id);
- 	local_irq_restore(flags);
- }
+ 		/* get the conversion qualifier */
+ 		qualifier = -1;
+-		if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L' || *fmt =='Z') {
++		if (*fmt == 'l' && *(fmt + 1) =='l') {
++			qualifier = 'q';
++			fmt += 2;
++		} else if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L'
++			|| *fmt =='Z') {
+ 			qualifier = *fmt;
+ 			++fmt;
+ 		}
+@@ -281,6 +285,10 @@ int vsprintf(char *buf, const char *fmt,
+ 			num = va_arg(args, unsigned long);
+ 			if (flags & SIGN)
+ 				num = (signed long) num;
++		} else if (qualifier == 'q') {
++			num = va_arg(args, unsigned long long);
++			if (flags & SIGN)
++				num = (signed long long) num;
+ 		} else if (qualifier == 'Z') {
+ 			num = va_arg(args, size_t);
+ 		} else if (qualifier == 'h') {
 
 -- 
