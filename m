@@ -1,13 +1,13 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id CEC2CDDE2E
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 02:44:27 +1000 (EST)
-Message-Id: <20070612163750.988227241@arndb.de>
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 8866CDDE19
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 02:44:28 +1000 (EST)
+Message-Id: <20070612163750.849941692@arndb.de>
 References: <20070612163016.253915076@arndb.de>
-Date: Tue, 12 Jun 2007 18:30:21 +0200
+Date: Tue, 12 Jun 2007 18:30:20 +0200
 From: arnd@arndb.de
 To: paulus@samba.org
-Subject: [patch 05/13] powerpc: multiplatformize embedded6xx configuration
+Subject: [patch 04/13] powerpc: multiplatformize 8{2,3,6}xx configuration
 Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,90 +18,170 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The existing embedded 6xx platforms will happily coexist
-with each other in a single kernel if you let them.
+All platforms based on 6xx compatible cores should be able to
+coexisting in a single kernel image and do all necessary configuration
+based on the device tree.
+
+This moves the missing 8{2,3,6}xx platforms under
+CONFIG_PPC_MULTIPLATFORM to make that possible to configure.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
+Index: linux-2.6/arch/powerpc/platforms/82xx/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/82xx/Kconfig
++++ linux-2.6/arch/powerpc/platforms/82xx/Kconfig
+@@ -1,10 +1,10 @@
+-choice
+-	prompt "Machine Type"
+-	depends on PPC_82xx
+-	default MPC82xx_ADS
++config PPC_82xx
++	bool "Freescale 82xx"
++	depends on PPC_MULTIPLATFORM && 6xx
+ 
+ config MPC82xx_ADS
+ 	bool "Freescale MPC82xx ADS"
++	depends on PPC_82xx
+ 	select DEFAULT_UIMAGE
+ 	select PQ2ADS
+ 	select 8272
+@@ -13,8 +13,6 @@ config MPC82xx_ADS
+ 	help
+ 	This option enables support for the MPC8272 ADS board
+ 
+-endchoice
+-
+ config PQ2ADS
+ 	bool
+ 	default n
+Index: linux-2.6/arch/powerpc/platforms/83xx/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/83xx/Kconfig
++++ linux-2.6/arch/powerpc/platforms/83xx/Kconfig
+@@ -1,16 +1,20 @@
+-choice
+-	prompt "Machine Type"
+-	depends on PPC_83xx
+-	default MPC834x_MDS
++config PPC_83xx
++	bool "Freescale 83xx"
++	depends on PPC_MULTIPLATFORM && 6xx
++	select FSL_SOC
++	select 83xx
++	select WANT_DEVICE_TREE
+ 
+ config MPC8313_RDB
+ 	bool "Freescale MPC8313 RDB"
++	depends on PPC_83xx
+ 	select DEFAULT_UIMAGE
+ 	help
+ 	  This option enables support for the MPC8313 RDB board.
+ 
+ config MPC832x_MDS
+ 	bool "Freescale MPC832x MDS"
++	depends on PPC_83xx
+ 	select DEFAULT_UIMAGE
+ 	select QUICC_ENGINE
+ 	help
+@@ -18,6 +22,7 @@ config MPC832x_MDS
+ 
+ config MPC832x_RDB
+ 	bool "Freescale MPC832x RDB"
++	depends on PPC_83xx
+ 	select DEFAULT_UIMAGE
+ 	select QUICC_ENGINE
+ 	help
+@@ -25,6 +30,7 @@ config MPC832x_RDB
+ 
+ config MPC834x_MDS
+ 	bool "Freescale MPC834x MDS"
++	depends on PPC_83xx
+ 	select DEFAULT_UIMAGE
+ 	help
+ 	  This option enables support for the MPC 834x MDS evaluation board.
+@@ -36,6 +42,7 @@ config MPC834x_MDS
+ 
+ config MPC834x_ITX
+ 	bool "Freescale MPC834x ITX"
++	depends on PPC_83xx
+ 	select DEFAULT_UIMAGE
+ 	help
+ 	  This option enables support for the MPC 834x ITX evaluation board.
+@@ -45,13 +52,12 @@ config MPC834x_ITX
+ 
+ config MPC836x_MDS
+ 	bool "Freescale MPC836x MDS"
++	depends on PPC_83xx
+ 	select DEFAULT_UIMAGE
+ 	select QUICC_ENGINE
+ 	help
+ 	  This option enables support for the MPC836x MDS Processor Board.
+ 
+-endchoice
+-
+ config PPC_MPC831x
+ 	bool
+ 	select PPC_UDBG_16550
+Index: linux-2.6/arch/powerpc/platforms/86xx/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/86xx/Kconfig
++++ linux-2.6/arch/powerpc/platforms/86xx/Kconfig
+@@ -1,17 +1,20 @@
+-choice
+-	prompt "Machine Type"
+-	depends on PPC_86xx
+-	default MPC8641_HPCN
++config PPC_86xx
++	bool "Freescale 86xx"
++	depends on PPC_MULTIPLATFORM && 6xx
++	select FSL_SOC
++	select FSL_PCIE
++	select ALTIVEC
++	help
++	  The Freescale E600 SoCs have 74xx cores.
+ 
+ config MPC8641_HPCN
+ 	bool "Freescale MPC8641 HPCN"
++	depends on PPC_86xx
+ 	select PPC_I8259
+ 	select DEFAULT_UIMAGE
+ 	help
+ 	  This option enables support for the MPC8641 HPCN board.
+ 
+-endchoice
+-
+ config MPC8641
+ 	bool
+ 	select PPC_INDIRECT_PCI
 Index: linux-2.6/arch/powerpc/platforms/Kconfig
 ===================================================================
 --- linux-2.6.orig/arch/powerpc/platforms/Kconfig
 +++ linux-2.6/arch/powerpc/platforms/Kconfig
-@@ -12,10 +12,6 @@ config PPC_MULTIPLATFORM
- 	  RS/6000 machine, an Apple machine, or a PReP, CHRP,
- 	  Maple or Cell-based machine.
+@@ -24,25 +24,6 @@ config APUS
+ 	  More information is available at:
+ 	  <http://linux-apus.sourceforge.net/>.
  
--config EMBEDDED6xx
--	bool "Embedded 6xx/7xx/7xxx-based board"
--	depends on PPC32 && (BROKEN||BROKEN_ON_SMP)
+-config PPC_82xx
+-	bool "Freescale 82xx"
+-	depends on 6xx
 -
- config APUS
- 	bool "Amiga-APUS"
- 	depends on PPC32 && BROKEN
-@@ -33,7 +29,6 @@ config CLASSIC32
- source "arch/powerpc/platforms/pseries/Kconfig"
- source "arch/powerpc/platforms/iseries/Kconfig"
- source "arch/powerpc/platforms/chrp/Kconfig"
--source "arch/powerpc/platforms/52xx/Kconfig"
- source "arch/powerpc/platforms/powermac/Kconfig"
- source "arch/powerpc/platforms/prep/Kconfig"
- source "arch/powerpc/platforms/maple/Kconfig"
-@@ -42,6 +37,7 @@ source "arch/powerpc/platforms/celleb/Kc
- source "arch/powerpc/platforms/ps3/Kconfig"
- source "arch/powerpc/platforms/cell/Kconfig"
- source "arch/powerpc/platforms/8xx/Kconfig"
-+source "arch/powerpc/platforms/52xx/Kconfig"
- source "arch/powerpc/platforms/82xx/Kconfig"
- source "arch/powerpc/platforms/83xx/Kconfig"
- source "arch/powerpc/platforms/85xx/Kconfig"
-Index: linux-2.6/arch/powerpc/platforms/embedded6xx/Kconfig
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/embedded6xx/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/embedded6xx/Kconfig
-@@ -1,9 +1,10 @@
--choice
--	prompt "Machine Type"
--	depends on EMBEDDED6xx
-+config EMBEDDED6xx
-+	bool "Embedded 6xx"
+-config PPC_83xx
+-	bool "Freescale 83xx"
+-	depends on 6xx
+-	select FSL_SOC
+-	select 83xx
+-	select WANT_DEVICE_TREE
+-
+-config PPC_86xx
+-	bool "Freescale 86xx"
+-	depends on 6xx
+-	select FSL_SOC
+-	select FSL_PCIE
+-	select ALTIVEC
+-	help
+-	  The Freescale E600 SoCs have 74xx cores.
+ endchoice
  
- config LINKSTATION
- 	bool "Linkstation / Kurobox(HG) from Buffalo"
-+	depends on EMBEDDED6xx
-+	depends on (BROKEN || BROKEN_ON_SMP)
- 	select MPIC
- 	select FSL_SOC
- 	select PPC_UDBG_16550 if SERIAL_8250
-@@ -17,6 +18,8 @@ config LINKSTATION
- 
- config MPC7448HPC2
- 	bool "Freescale MPC7448HPC2(Taiga)"
-+	depends on EMBEDDED6xx
-+	depends on (BROKEN || BROKEN_ON_SMP)
- 	select TSI108_BRIDGE
- 	select DEFAULT_UIMAGE
- 	select PPC_UDBG_16550
-@@ -26,6 +29,7 @@ config MPC7448HPC2
- 
- config PPC_HOLLY
- 	bool "PPC750GX/CL with TSI10x bridge (Hickory/Holly)"
-+	depends on EMBEDDED6xx
- 	select TSI108_BRIDGE
- 	select PPC_UDBG_16550
- 	help
-@@ -34,12 +38,12 @@ config PPC_HOLLY
- 
- config PPC_PRPMC2800
- 	bool "Motorola-PrPMC2800"
-+	depends on EMBEDDED6xx
- 	select MV64X60
- 	select NOT_COHERENT_CACHE
- 	select WANT_DEVICE_TREE
- 	help
- 	  This option enables support for the Motorola PrPMC2800 board
--endchoice
- 
- config TSI108_BRIDGE
- 	bool
+ config CLASSIC32
 
 --
