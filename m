@@ -1,20 +1,25 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id DDCB9DE01E
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 05:25:29 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [patch 00/18] PS3 patches for 2.6.23
-Date: Tue, 12 Jun 2007 21:25:19 +0200
-References: <71e5ae7f85657e4ab5bfbc809cab9c60@bga.com>
-	<466EE45A.4050104@am.sony.com>
-In-Reply-To: <466EE45A.4050104@am.sony.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200706122125.19398.arnd@arndb.de>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Milton Miller <miltonm@bga.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7393DDDD05
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 07:32:33 +1000 (EST)
+Subject: Re: [patch 02/10] powerpc: Move CONFIG_PPC64 into CPU selection
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <d8ba058b9bc8f9738d2c3d764c568c1e@kernel.crashing.org>
+References: <20070611232824.489103547@arndb.de>
+	<20070611233353.734704855@arndb.de>
+	<18030.15937.699275.958545@cargo.ozlabs.ibm.com>
+	<200706121008.01661.arnd@arndb.de>
+	<18030.32600.921348.218117@cargo.ozlabs.ibm.com>
+	<d8ba058b9bc8f9738d2c3d764c568c1e@kernel.crashing.org>
+Content-Type: text/plain
+Date: Wed, 13 Jun 2007 07:32:24 +1000
+Message-Id: <1181683944.14818.268.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,30 +29,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 12 June 2007, Geoff Levand wrote:
->=20
-> > The dependent series is currently split per file. =A0 While this makes =
-it=20
-> > easier to see what a given area looks like after all the patches, it=20
-> > means that the kernel compile will break during the series. =A0Breaking=
-=20
-> > git bisect is frowned upon, so it will need to be re-split for merge. =
-=A0
-> > (Or disable the ps3 system bus during the merge of the series).
->=20
->=20
-> Yes, I realize the state of the patches. =A0I will try to rework them for
-> the next round. =A0As the existing PS3 support is incomplete, I don't
-> think there will be many doing a git-bisect with PS3 support enabled.
+On Tue, 2007-06-12 at 13:35 +0200, Segher Boessenkool wrote:
+> and/or allow a single kernel image to work on both 32-bit and
+> 64-bit systems,  The current situation is far removed from that,
+> so this patch is a bit premature in that aspect. 
 
-I think it's ok to split the patches like this for review purposes.
+Won't happen :-)
 
-=46or the upstream merge, it's probably best if Geoff commits all
-patches with cross-dependencies as a single git checkin, and asks
-Paul (or me) to pull from there. That will take care of the git-bisect
-problem, and give a nicer changelog at the same time.
-
-Of course, patches that only have directed dependencies should go
-in as separate changesets whereever that makes sense.
-
-	Arnd <><
+Ben.
