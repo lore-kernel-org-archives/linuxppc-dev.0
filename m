@@ -1,20 +1,21 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound6-dub-R.bigfish.com (outbound-dub.frontbridge.com
+Received: from outbound2-dub-R.bigfish.com (outbound-dub.frontbridge.com
 	[213.199.154.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id F3E39DDEF0
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 04:55:34 +1000 (EST)
-Message-ID: <466EE976.5030006@am.sony.com>
-Date: Tue, 12 Jun 2007 11:44:06 -0700
+	by ozlabs.org (Postfix) with ESMTP id 09ABADDF12
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 04:55:36 +1000 (EST)
+Message-ID: <466EE96B.8060605@am.sony.com>
+Date: Tue, 12 Jun 2007 11:43:55 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 08/30] PS3: Move chip mask defs up
+Subject: [patch 06/30] PS3: Fix sparse warnings
 References: <20070612181825.730300780@am.sony.com>>
 In-Reply-To: <20070612181825.730300780@am.sony.com>>
 Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,178 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This just moves the definitions of the PS3 chip_mask routines up
-above the irq setup routines.  This change is needed for the
-kexec updates that follow.  Also adds some inline documentation
-to the routines.
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
+Fix some PS3 build warnings reported by `make C=1'.  You need to
+install sparse:
+  git://git.kernel.org/pub/scm/devel/sparse/sparse.git
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/platforms/ps3/interrupt.c |  147 +++++++++++++++++++--------------
- 1 file changed, 86 insertions(+), 61 deletions(-)
+ arch/powerpc/platforms/ps3/os-area.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/arch/powerpc/platforms/ps3/interrupt.c
-+++ b/arch/powerpc/platforms/ps3/interrupt.c
-@@ -91,6 +91,92 @@ struct ps3_private {
- static DEFINE_PER_CPU(struct ps3_private, ps3_private);
+--- a/arch/powerpc/platforms/ps3/os-area.c
++++ b/arch/powerpc/platforms/ps3/os-area.c
+@@ -133,7 +133,7 @@ struct saved_params {
+ } static saved_params;
  
- /**
-+ * ps3_chip_mask - Set an interrupt mask bit in ps3_bmp.
-+ * @virq: The assigned Linux virq.
-+ *
-+ * Sets ps3_bmp.mask and calls lv1_did_update_interrupt_mask().
-+ */
-+
-+static void ps3_chip_mask(unsigned int virq)
-+{
-+	struct ps3_private *pd = get_irq_chip_data(virq);
-+	u64 bit = 0x8000000000000000UL >> virq;
-+	u64 *p = &pd->bmp.mask;
-+	u64 old;
-+	unsigned long flags;
-+
-+	pr_debug("%s:%d: cpu %u, virq %d\n", __func__, __LINE__, pd->cpu, virq);
-+
-+	local_irq_save(flags);
-+	asm volatile(
-+		     "1:	ldarx %0,0,%3\n"
-+		     "andc	%0,%0,%2\n"
-+		     "stdcx.	%0,0,%3\n"
-+		     "bne-	1b"
-+		     : "=&r" (old), "+m" (*p)
-+		     : "r" (bit), "r" (p)
-+		     : "cc" );
-+
-+	lv1_did_update_interrupt_mask(pd->node, pd->cpu);
-+	local_irq_restore(flags);
-+}
-+
-+/**
-+ * ps3_chip_unmask - Clear an interrupt mask bit in ps3_bmp.
-+ * @virq: The assigned Linux virq.
-+ *
-+ * Clears ps3_bmp.mask and calls lv1_did_update_interrupt_mask().
-+ */
-+
-+static void ps3_chip_unmask(unsigned int virq)
-+{
-+	struct ps3_private *pd = get_irq_chip_data(virq);
-+	u64 bit = 0x8000000000000000UL >> virq;
-+	u64 *p = &pd->bmp.mask;
-+	u64 old;
-+	unsigned long flags;
-+
-+	pr_debug("%s:%d: cpu %u, virq %d\n", __func__, __LINE__, pd->cpu, virq);
-+
-+	local_irq_save(flags);
-+	asm volatile(
-+		     "1:	ldarx %0,0,%3\n"
-+		     "or	%0,%0,%2\n"
-+		     "stdcx.	%0,0,%3\n"
-+		     "bne-	1b"
-+		     : "=&r" (old), "+m" (*p)
-+		     : "r" (bit), "r" (p)
-+		     : "cc" );
-+
-+	lv1_did_update_interrupt_mask(pd->node, pd->cpu);
-+	local_irq_restore(flags);
-+}
-+
-+/**
-+ * ps3_chip_eoi - HV end-of-interrupt.
-+ * @virq: The assigned Linux virq.
-+ *
-+ * Calls lv1_end_of_interrupt_ext().
-+ */
-+
-+static void ps3_chip_eoi(unsigned int virq)
-+{
-+	const struct ps3_private *pd = get_irq_chip_data(virq);
-+	lv1_end_of_interrupt_ext(pd->node, pd->cpu, virq);
-+}
-+
-+/**
-+ * ps3_irq_chip - Represents the ps3_bmp as a Linux struct irq_chip.
-+ */
-+
-+static struct irq_chip ps3_irq_chip = {
-+	.typename = "ps3",
-+	.mask = ps3_chip_mask,
-+	.unmask = ps3_chip_unmask,
-+	.eoi = ps3_chip_eoi,
-+};
-+
-+/**
-  * ps3_virq_setup - virq related setup.
-  * @cpu: enum ps3_cpu_binding indicating the cpu the interrupt should be
-  * serviced on.
-@@ -565,67 +651,6 @@ static void __maybe_unused _dump_mask(st
- static void dump_bmp(struct ps3_private* pd) {};
- #endif /* defined(DEBUG) */
- 
--static void ps3_chip_mask(unsigned int virq)
--{
--	struct ps3_private *pd = get_irq_chip_data(virq);
--	u64 bit = 0x8000000000000000UL >> virq;
--	u64 *p = &pd->bmp.mask;
--	u64 old;
--	unsigned long flags;
--
--	pr_debug("%s:%d: cpu %u, virq %d\n", __func__, __LINE__, pd->cpu, virq);
--
--	local_irq_save(flags);
--	asm volatile(
--		     "1:	ldarx %0,0,%3\n"
--		     "andc	%0,%0,%2\n"
--		     "stdcx.	%0,0,%3\n"
--		     "bne-	1b"
--		     : "=&r" (old), "+m" (*p)
--		     : "r" (bit), "r" (p)
--		     : "cc" );
--
--	lv1_did_update_interrupt_mask(pd->node, pd->cpu);
--	local_irq_restore(flags);
--}
--
--static void ps3_chip_unmask(unsigned int virq)
--{
--	struct ps3_private *pd = get_irq_chip_data(virq);
--	u64 bit = 0x8000000000000000UL >> virq;
--	u64 *p = &pd->bmp.mask;
--	u64 old;
--	unsigned long flags;
--
--	pr_debug("%s:%d: cpu %u, virq %d\n", __func__, __LINE__, pd->cpu, virq);
--
--	local_irq_save(flags);
--	asm volatile(
--		     "1:	ldarx %0,0,%3\n"
--		     "or	%0,%0,%2\n"
--		     "stdcx.	%0,0,%3\n"
--		     "bne-	1b"
--		     : "=&r" (old), "+m" (*p)
--		     : "r" (bit), "r" (p)
--		     : "cc" );
--
--	lv1_did_update_interrupt_mask(pd->node, pd->cpu);
--	local_irq_restore(flags);
--}
--
--static void ps3_chip_eoi(unsigned int virq)
--{
--	const struct ps3_private *pd = get_irq_chip_data(virq);
--	lv1_end_of_interrupt_ext(pd->node, pd->cpu, virq);
--}
--
--static struct irq_chip irq_chip = {
--	.typename = "ps3",
--	.mask = ps3_chip_mask,
--	.unmask = ps3_chip_unmask,
--	.eoi = ps3_chip_eoi,
--};
--
- static void ps3_host_unmap(struct irq_host *h, unsigned int virq)
+ #define dump_header(_a) _dump_header(_a, __func__, __LINE__)
+-static void _dump_header(const struct os_area_header __iomem *h, const char* func,
++static void _dump_header(const struct os_area_header *h, const char* func,
+ 	int line)
  {
- 	set_irq_chip_data(virq, NULL);
+ 	pr_debug("%s:%d: h.magic_num:         '%s'\n", func, line,
+@@ -151,7 +151,7 @@ static void _dump_header(const struct os
+ }
+ 
+ #define dump_params(_a) _dump_params(_a, __func__, __LINE__)
+-static void _dump_params(const struct os_area_params __iomem *p, const char* func,
++static void _dump_params(const struct os_area_params *p, const char* func,
+ 	int line)
+ {
+ 	pr_debug("%s:%d: p.boot_flag:       %u\n", func, line, p->boot_flag);
 
 -- 
