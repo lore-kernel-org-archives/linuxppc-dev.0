@@ -1,22 +1,11 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp111.sbc.mail.mud.yahoo.com (smtp111.sbc.mail.mud.yahoo.com
-	[68.142.198.210]) by ozlabs.org (Postfix) with SMTP id E678BDDE17
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Jun 2007 02:28:20 +1000 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: spi-devel-general@lists.sourceforge.net
-Subject: Re: [spi-devel-general] [PATCH] Simple driver for Xilinx SPI
-	controler.
-Date: Tue, 12 Jun 2007 09:28:08 -0700
-References: <4666BF47.8080103@ru.mvista.com>
-	<200706062209.09731.david-b@pacbell.net>
-	<466ADC4B.4050806@ru.mvista.com>
-In-Reply-To: <466ADC4B.4050806@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200706120928.09176.david-b@pacbell.net>
-Cc: Andrei Konovalov <akonovalov@ru.mvista.com>, linuxppc-embedded@ozlabs.org
+Return-Path: <dale@farnsworth.org>
+Date: 12 Jun 2007 10:09:29 -0700
+Message-ID: <20070612170929.11064.qmail@farnsworth.org>
+From: "Dale Farnsworth" <dale@farnsworth.org>
+To: nielsen.esben@googlemail.com, Linuxppc-embedded@ozlabs.org
+Subject: Re: Xilinx git tree at source.mvista.com
+In-Reply-To: <Pine.LNX.4.64.0706121228350.9045@frodo.shire>
+References: <46555294.6040104@ru.mvista.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,13 +16,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Saturday 09 June 2007, Andrei Konovalov wrote:
-> The new patch is attached to this message.
+In article <Pine.LNX.4.64.0706121228350.9045@frodo.shire> you write:
+> On Thu, 24 May 2007, Andrei Konovalov wrote:
+> 
+> > Hello,
+> >
+> > My Xilinx Virtex Development tree is now alive again.
+> >
+> > Please use the dev branch (master is just the ko copy):
+> > http://source.mvista.com/git/gitweb.cgi?p=linux-xilinx-26.git;a=shortlog;h=dev
+> 
+> I can not access the git-tree there: No such project :-(
 
-Would you send a version that doesn't produce so many
-warnings when run against scripts/checkpatch.pl ??
+Oops.  I misconfigured gitweb while updating it.  I've fixed it, so
+please try again.
 
-The issues seem to be mostly whitespace and linelength,
-so that should be easy.
-
-- Dave
+-Dale
