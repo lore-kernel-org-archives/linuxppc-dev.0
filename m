@@ -1,20 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8A786DDEDD
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 15:59:34 +1000 (EST)
-In-Reply-To: <20070611233354.289486461@arndb.de>
-References: <20070611232824.489103547@arndb.de>
-	<20070611233354.289486461@arndb.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <F72846CE-5742-4413-A2EB-AC1B4080048E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [patch 06/10] powerpc: multiplatformize embedded6xx Kconfig
-Date: Tue, 12 Jun 2007 00:59:53 -0500
-To: arnd@arndb.de
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <rzhan@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id BB0AADDEE1
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 16:04:22 +1000 (EST)
+Subject: RE: [PATCH 5/6]: 82xx: Add the support of Wind River SBC
+	PowerQUICCII 82xx
+From: Mark Zhan <rongkai.zhan@windriver.com>
+To: Li Yang-r58472 <LeoLi@freescale.com>
+In-Reply-To: <989B956029373F45A0B8AF0297081890D2AA5B@zch01exm26.fsl.freescale.net>
+References: <989B956029373F45A0B8AF0297081890D2AA5B@zch01exm26.fsl.freescale.net>
+Content-Type: text/plain
+Date: Tue, 12 Jun 2007 14:03:59 +0800
+Message-Id: <1181628239.25503.15.camel@mark>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +22,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi Li Yang,
 
-On Jun 11, 2007, at 6:28 PM, arnd@arndb.de wrote:
+On Mon, 2007-06-11 at 21:51 +0800, Li Yang-r58472 wrote:
 
-> The existing embedded 6xx platforms will happily coexist
-> with each other in a single kernel if you let them.
->
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
-> Index: linux-2.6/arch/powerpc/platforms/Kconfig
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/platforms/Kconfig
-> +++ linux-2.6/arch/powerpc/platforms/Kconfig
-> @@ -12,10 +12,6 @@ config PPC_MULTIPLATFORM
->  	  RS/6000 machine, an Apple machine, or a PReP, CHRP,
->  	  Maple or Cell-based machine.
->
-> -config EMBEDDED6xx
-> -	bool "Embedded 6xx/7xx/7xxx-based board"
-> -	depends on PPC32 && (BROKEN||BROKEN_ON_SMP)
-> -
+> Shouldn't these come from device tree too?
+> 
+> Moreover, you can no longer use the hard coded IRQ numbers.  They need
+> to be mapped to virtual irq, and the driver needs to use the virtual irq
+> number.
+> 
 
-Do we know why this was marked BROKEN?
+Actually this is a fake interrupt. Please see my code comment:
 
-- k
+/*
+ * For SBCPQ2 board, the interrupt of M48T59 RTC chip
+ * will generate a machine check exception. We use a
+ * fake irq to give the platform machine_check_exception() hook
+ * a chance to call the driver ISR. If IRQ_HANDLED is returned,
+ * then we will survive from the machine check exception.
+ */
+
+
+> I don't believe the following are necessary.  New MTD mapping should be
+> defined in device tree.
+> 
+
+Oh, here I just want to document the memory mapping for this board. I
+think, even we already have devtree, it is a good idea that we always
+document the H/W setting in platform header file, which will definitely
+make life easier.
+
+
+> > +/*
+> > + * Wind River SBC PowerQUICCII 82xx Physical Memory Map (CS0 for
+> > OnBoard Flash)
+> > + *
+......
+> 
+> Use < &interrupt-controller > as interrupt-parent instead.
+> 
+
+Got it. 
+
+> - Leo
+
+Thanks
+Mark Zhan
