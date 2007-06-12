@@ -1,18 +1,16 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 60BD1DDE26
+Return-Path: <grant.likely@secretlab.ca>
+Received: from sandbox.secretlab.ca (S01060016b61d1226.cg.shawcable.net
+	[68.147.67.118]) by ozlabs.org (Postfix) with ESMTP id B8AC0DDE1A
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Jun 2007 03:39:48 +1000 (EST)
-Date: Tue, 12 Jun 2007 19:39:46 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Domen Puncer <domen.puncer@telargo.com>
-Subject: Re: [PATCH] mpc5200: rtc driver
-In-Reply-To: <20070612093821.GH23294@moe.telargo.com>
-Message-ID: <Pine.LNX.4.60.0706121935240.5241@poirot.grange>
-References: <20070612093821.GH23294@moe.telargo.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
+	Wed, 13 Jun 2007 09:26:45 +1000 (EST)
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Peter Korsgaard <jacmet@sunsite.dk>, linux-usb-devel@lists.sourceforge.net,
+	linuxppc-embedded@ozlabs.org
+Subject: [PATCH 1/6] [C67x00] Add test of active flag when checking TDs
+Date: Tue, 12 Jun 2007 17:02:16 -0600
+Message-Id: <11816893494143-git-send-email-grant.likely@secretlab.ca>
+In-Reply-To: <11816893411272-git-send-email-grant.likely@secretlab.ca>
+References: <11816893411272-git-send-email-grant.likely@secretlab.ca>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,24 +21,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 12 Jun 2007, Domen Puncer wrote:
+The active flag in a TD needs to be checked to determine whether or not
+the TD was processed in the frame.  Without this check, the HCD assumes
+the TD completed successfully, when in reality it was not processed at all.
 
-> Index: work-powerpc.git/include/asm-powerpc/mpc5200_rtc.h
-> ===================================================================
-> --- /dev/null
-> +++ work-powerpc.git/include/asm-powerpc/mpc5200_rtc.h
-> @@ -0,0 +1,49 @@
-> +#ifndef _MPC5200_RTC_H_
-> +#define _MPC5200_RTC_H_
-> +
-> +/* RTC */
-> +struct mpc52xx_rtc {
-
-Is it really worth putting a header that's only ever going to be used by 1 
-file under drivers/rtc under include/asm-*/? If this struct is really only 
-for rtc-mpc52xx, just define it .c?
-
-Thanks
-Guennadi
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
-Guennadi Liakhovetski
+ drivers/usb/c67x00/c67x00-sched.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/usb/c67x00/c67x00-sched.c b/drivers/usb/c67x00/c67x00-sched.c
+index 84b40a4..952bdab 100644
+--- a/drivers/usb/c67x00/c67x00-sched.c
++++ b/drivers/usb/c67x00/c67x00-sched.c
+@@ -1020,8 +1020,8 @@ static void check_td_list(struct c67x00_hcd *c67x00, struct pt_regs *regs)
+ 			goto cont;
+ 		}
+ 
+-		if ((td->status & TD_STATUSMASK_NAK) || !td_sequence_ok(td) ||
+-		    !td_acked(td))
++		if ((td->status & TD_STATUSMASK_NAK) ||
++		    !td_sequence_ok(td) || !td_acked(td) || td_active(td))
+ 			goto cont;
+ 
+ 		/* Sequence ok and acked, don't need to fix toggle */
+-- 
+1.4.4.2
