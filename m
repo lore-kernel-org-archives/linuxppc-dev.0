@@ -1,18 +1,25 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Message-ID: <18030.32673.259326.715305@cargo.ozlabs.ibm.com>
-Date: Tue, 12 Jun 2007 21:12:33 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [patch 01/10] powerpc: split out CPU specific options into a new
-	Kconfig file
-In-Reply-To: <200706120942.48045.arnd@arndb.de>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
+	[151.189.21.44])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4EA56DDE0A
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 21:35:54 +1000 (EST)
+In-Reply-To: <18030.32600.921348.218117@cargo.ozlabs.ibm.com>
 References: <20070611232824.489103547@arndb.de>
-	<20070611233353.602822721@arndb.de>
-	<20070612140214.1a7dfd9d.sfr@canb.auug.org.au>
-	<200706120942.48045.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
+	<20070611233353.734704855@arndb.de>
+	<18030.15937.699275.958545@cargo.ozlabs.ibm.com>
+	<200706121008.01661.arnd@arndb.de>
+	<18030.32600.921348.218117@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <d8ba058b9bc8f9738d2c3d764c568c1e@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [patch 02/10] powerpc: Move CONFIG_PPC64 into CPU selection
+Date: Tue, 12 Jun 2007 13:35:29 +0200
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,21 +29,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann writes:
+>> * The only major difference between ppc64 and the others is the
+>>   object format of the kernel binary.
+>
+> I disagree with that.  There are major differences at the
+> implementation level for a lot of things.
 
-> On Tuesday 12 June 2007, Stephen Rothwell wrote:
-> >   On Tue, 12 Jun 2007 01:28:25 +0200 arnd@arndb.de wrote:
-> > >
-> > > -config VIRT=5FCPU=5FACCOUNTING
-> > > -=A0=A0=A0=A0=A0bool "Deterministic task and CPU time accounting"=
+It would be good to converge the 32- and 64-bit implementations,
+and/or allow a single kernel image to work on both 32-bit and
+64-bit systems,  The current situation is far removed from that,
+so this patch is a bit premature in that aspect.
 
-> >=20
-> > I am not sure that this belongs with all the rest.
->=20
-> It's selected by arch/powerpc/platforms/embedded6xx/Kconfig.
 
-Where=3F  I don't see it.  VIRT=5FCPU=5FACCOUNTING is a 64-bit only opt=
-ion,
-at least until someone implements it for 32-bit.
-
-Paul.
+Segher
