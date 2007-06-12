@@ -1,21 +1,20 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound5-dub-R.bigfish.com (outbound-dub.frontbridge.com
+Received: from outbound6-dub-R.bigfish.com (outbound-dub.frontbridge.com
 	[213.199.154.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 70492DDE3E
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 04:55:38 +1000 (EST)
-Message-ID: <466EEB8D.4090008@am.sony.com>
-Date: Tue, 12 Jun 2007 11:53:01 -0700
+	by ozlabs.org (Postfix) with ESMTP id 325E3DDF22
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 04:55:39 +1000 (EST)
+Message-ID: <466EEBA5.3080503@am.sony.com>
+Date: Tue, 12 Jun 2007 11:53:25 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 14/30] PS3: Repository probe cleanups
+Subject: [patch 16/30] PS3: System manager re-work
 References: <20070612181825.730300780@am.sony.com>>
 In-Reply-To: <20070612181825.730300780@am.sony.com>>
 Content-Type: text/plain; charset=UTF-8
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,777 +24,664 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Repository updates:
-  - Extract ps3_repository_find_bus() from ps3_repository_find_device(), as the
-    storage driver needs it.
-  - Make ps3_repository_find_device() return -ENODEV if a device is not found,
-    just like if a bus is not found.
-  - Add ps3_repository_read_vuart_sysmgr_port() and
-    ps3_repository_read_vuart_av_port() to get vuart port info.
-  - Add device enumeration routines ps3_repository_find_device() and
-    ps3_repository_find_devices().
-  - Cleanup debug routines.
+PS3 sys-manager updates to reflect the new PS3 unifed device support.
+Fixups to the PS3 sys-manager driver to properly support sys_reboot().
+ - Add varable request_tag to struct ps3_sys_manager_header.
+ - Move ctrl_alt_del from PS3_SM_EVENT_POWER_RELEASED to
+   PS3_SM_EVENT_POWER_PRESSED.
+ - Make the PS3 sys-manager driver a loadable module.
+ - Add new file sys-manager-core.c.
+ - Add new struct ps3_sys_manager_ops for dynamic binding.
+ - Put data sent to device on stack.
+ - Add support for PS3_SM_SERVICE_ID_REQUEST_ERROR.
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/platforms/ps3/platform.h   |   31 +
- arch/powerpc/platforms/ps3/repository.c |  592 +++++++++++++++++---------------
- 2 files changed, 340 insertions(+), 283 deletions(-)
+ drivers/ps3/Makefile           |    1 
+ drivers/ps3/sys-manager-core.c |   68 +++++++++
+ drivers/ps3/sys-manager.c      |  280 ++++++++++++++++++++++++++---------------
+ include/asm-powerpc/ps3.h      |   15 +-
+ 4 files changed, 259 insertions(+), 105 deletions(-)
 
---- a/arch/powerpc/platforms/ps3/platform.h
-+++ b/arch/powerpc/platforms/ps3/platform.h
-@@ -131,24 +131,28 @@ int ps3_repository_read_dev_reg(unsigned
- /* repository bus enumerators */
- 
- struct ps3_repository_device {
-+	enum ps3_bus_type bus_type;
- 	unsigned int bus_index;
-+	unsigned int bus_id;
-+	enum ps3_dev_type dev_type;
- 	unsigned int dev_index;
--	struct ps3_device_id did;
-+	unsigned int dev_id;
- };
- 
--int ps3_repository_find_device(enum ps3_bus_type bus_type,
--	enum ps3_dev_type dev_type,
--	const struct ps3_repository_device *start_dev,
--	struct ps3_repository_device *dev);
--static inline int ps3_repository_find_first_device(
--	enum ps3_bus_type bus_type, enum ps3_dev_type dev_type,
--	struct ps3_repository_device *dev)
-+static inline struct ps3_repository_device *ps3_repository_bump_device(
-+	struct ps3_repository_device *repo)
- {
--	return ps3_repository_find_device(bus_type, dev_type, NULL, dev);
-+	repo->dev_index++;
-+	return repo;
- }
--int ps3_repository_find_interrupt(const struct ps3_repository_device *dev,
-+int ps3_repository_find_device(struct ps3_repository_device *repo);
-+int ps3_repository_find_devices(enum ps3_bus_type bus_type,
-+	int (*callback)(const struct ps3_repository_device *repo));
-+int ps3_repository_find_bus(enum ps3_bus_type bus_type, unsigned int from,
-+	unsigned int *bus_index);
-+int ps3_repository_find_interrupt(const struct ps3_repository_device *repo,
- 	enum ps3_interrupt_type intr_type, unsigned int *interrupt_id);
--int ps3_repository_find_reg(const struct ps3_repository_device *dev,
-+int ps3_repository_find_reg(const struct ps3_repository_device *repo,
- 	enum ps3_reg_type reg_type, u64 *bus_addr, u64 *len);
- 
- /* repository block device info */
-@@ -218,6 +222,11 @@ int ps3_repository_read_num_spu_resource
- int ps3_repository_read_spu_resource_id(unsigned int res_index,
- 	enum ps3_spu_resource_type* resource_type, unsigned int *resource_id);
- 
-+/* repository vuart info */
+--- a/drivers/ps3/Makefile
++++ b/drivers/ps3/Makefile
+@@ -1,3 +1,4 @@
+ obj-$(CONFIG_PS3_VUART) += vuart.o
+ obj-$(CONFIG_PS3_PS3AV) += ps3av.o ps3av_cmd.o
++obj-$(CONFIG_PPC_PS3) += sys-manager-core.o
+ obj-$(CONFIG_PS3_SYS_MANAGER) += sys-manager.o
+--- /dev/null
++++ b/drivers/ps3/sys-manager-core.c
+@@ -0,0 +1,68 @@
++/*
++ *  PS3 System Manager core.
++ *
++ *  Copyright (C) 2007 Sony Computer Entertainment Inc.
++ *  Copyright 2007 Sony Corp.
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
 +
-+int ps3_repository_read_vuart_av_port(unsigned int *port);
-+int ps3_repository_read_vuart_sysmgr_port(unsigned int *port);
++#include <linux/kernel.h>
++#include <asm/ps3.h>
 +
- /* Page table entries */
- #define IOPTE_PP_W		0x8000000000000000ul /* protection: write */
- #define IOPTE_PP_R		0x4000000000000000ul /* protection: read */
---- a/arch/powerpc/platforms/ps3/repository.c
-+++ b/arch/powerpc/platforms/ps3/repository.c
-@@ -138,7 +138,7 @@ static int read_node(unsigned int lpar_i
- 		pr_debug("%s:%d: lv1_get_repository_node_value failed: %s\n",
- 			__func__, __LINE__, ps3_result(result));
- 		dump_node_name(lpar_id, n1, n2, n3, n4);
--		return result;
-+		return -ENOENT;
- 	}
- 
- 	dump_node(lpar_id, n1, n2, n3, n4, v1, v2);
-@@ -155,7 +155,7 @@ static int read_node(unsigned int lpar_i
- 		pr_debug("%s:%d: warning: discarding non-zero v2: %016lx\n",
- 			__func__, __LINE__, v2);
- 
--	return result;
-+	return 0;
- }
- 
- int ps3_repository_read_bus_str(unsigned int bus_index, const char *bus_str,
-@@ -314,324 +314,140 @@ int ps3_repository_read_dev_reg(unsigned
- 		reg_index, bus_addr, len);
- }
- 
--#if defined(DEBUG)
--int ps3_repository_dump_resource_info(unsigned int bus_index,
--	unsigned int dev_index)
--{
--	int result = 0;
--	unsigned int res_index;
- 
--	pr_debug(" -> %s:%d: (%u:%u)\n", __func__, __LINE__,
--		bus_index, dev_index);
- 
--	for (res_index = 0; res_index < 10; res_index++) {
--		enum ps3_interrupt_type intr_type;
--		unsigned int interrupt_id;
-+int ps3_repository_find_device(struct ps3_repository_device *repo)
++/**
++ * Staticly linked routines that allow late binding of a loaded sys-manager
++ * module.
++ */
++
++static struct ps3_sys_manager_ops ps3_sys_manager_ops;
++
++/**
++ * ps3_register_sys_manager_ops - Bind ps3_sys_manager_ops to a module.
++ * @ops: struct ps3_sys_manager_ops.
++ *
++ * To be called from ps3_sys_manager_probe() and ps3_sys_manager_remove() to
++ * register call back ops for power control.  Copies data to the static
++ * variable ps3_sys_manager_ops.
++ */
++
++void ps3_sys_manager_register_ops(const struct ps3_sys_manager_ops *ops)
 +{
-+	int result;
-+	struct ps3_repository_device tmp = *repo;
-+	unsigned int num_dev;
- 
--		result = ps3_repository_read_dev_intr(bus_index, dev_index,
--			res_index, &intr_type, &interrupt_id);
-+	BUG_ON(repo->bus_index > 10);
-+	BUG_ON(repo->dev_index > 10);
- 
--		if (result) {
--			if (result !=  LV1_NO_ENTRY)
--				pr_debug("%s:%d ps3_repository_read_dev_intr"
--					" (%u:%u) failed\n", __func__, __LINE__,
--					bus_index, dev_index);
--			break;
--		}
-+	result = ps3_repository_read_bus_num_dev(tmp.bus_index, &num_dev);
- 
--		pr_debug("%s:%d (%u:%u) intr_type %u, interrupt_id %u\n",
--			__func__, __LINE__, bus_index, dev_index, intr_type,
--			interrupt_id);
-+	if (result) {
-+		pr_debug("%s:%d read_bus_num_dev failed\n", __func__, __LINE__);
-+		return result;
- 	}
- 
--	for (res_index = 0; res_index < 10; res_index++) {
--		enum ps3_reg_type reg_type;
--		u64 bus_addr;
--		u64 len;
--
--		result = ps3_repository_read_dev_reg(bus_index, dev_index,
--			res_index, &reg_type, &bus_addr, &len);
-+	pr_debug("%s:%d: bus_type %u, bus_index %u, bus_id %u, num_dev %u\n",
-+		__func__, __LINE__, tmp.bus_type, tmp.bus_index, tmp.bus_id,
-+		num_dev);
- 
--		if (result) {
--			if (result !=  LV1_NO_ENTRY)
--				pr_debug("%s:%d ps3_repository_read_dev_reg"
--					" (%u:%u) failed\n", __func__, __LINE__,
--					bus_index, dev_index);
--			break;
--		}
--
--		pr_debug("%s:%d (%u:%u) reg_type %u, bus_addr %lxh, len %lxh\n",
--			__func__, __LINE__, bus_index, dev_index, reg_type,
--			bus_addr, len);
-+	if (tmp.dev_index >= num_dev) {
-+		pr_debug("%s:%d: no device found\n", __func__, __LINE__);
-+		return -ENODEV;
- 	}
- 
--	pr_debug(" <- %s:%d\n", __func__, __LINE__);
--	return result;
--}
-+	result = ps3_repository_read_dev_type(tmp.bus_index, tmp.dev_index,
-+		&tmp.dev_type);
- 
--static int dump_stor_dev_info(unsigned int bus_index, unsigned int dev_index)
--{
--	int result = 0;
--	unsigned int num_regions, region_index;
--	u64 port, blk_size, num_blocks;
--
--	pr_debug(" -> %s:%d: (%u:%u)\n", __func__, __LINE__,
--		bus_index, dev_index);
--
--	result = ps3_repository_read_stor_dev_info(bus_index, dev_index, &port,
--		&blk_size, &num_blocks, &num_regions);
- 	if (result) {
--		pr_debug("%s:%d ps3_repository_read_stor_dev_info"
--			" (%u:%u) failed\n", __func__, __LINE__,
--			bus_index, dev_index);
--		goto out;
-+		pr_debug("%s:%d read_dev_type failed\n", __func__, __LINE__);
-+		return result;
- 	}
- 
--	pr_debug("%s:%d  (%u:%u): port %lu, blk_size %lu, num_blocks "
--		 "%lu, num_regions %u\n",
--		 __func__, __LINE__, bus_index, dev_index, port,
--		 blk_size, num_blocks, num_regions);
-+	result = ps3_repository_read_dev_id(tmp.bus_index, tmp.dev_index,
-+		&tmp.dev_id);
- 
--	for (region_index = 0; region_index < num_regions; region_index++) {
--		unsigned int region_id;
--		u64 region_start, region_size;
--
--		result = ps3_repository_read_stor_dev_region(bus_index,
--			dev_index, region_index, &region_id, &region_start,
--			&region_size);
--		if (result) {
--			 pr_debug("%s:%d ps3_repository_read_stor_dev_region"
--				  " (%u:%u) failed\n", __func__, __LINE__,
--				  bus_index, dev_index);
--			break;
--		}
--
--		pr_debug("%s:%d (%u:%u) region_id %u, start %lxh, size %lxh\n",
--			 __func__, __LINE__, bus_index, dev_index, region_id,
--			 region_start, region_size);
-+	if (result) {
-+		pr_debug("%s:%d ps3_repository_read_dev_id failed\n", __func__,
-+		__LINE__);
-+		return result;
- 	}
- 
--out:
--	pr_debug(" <- %s:%d\n", __func__, __LINE__);
--	return result;
--}
--
--static int dump_device_info(unsigned int bus_index, enum ps3_bus_type bus_type,
--			    unsigned int num_dev)
--{
--	int result = 0;
--	unsigned int dev_index;
--
--	pr_debug(" -> %s:%d: bus_%u\n", __func__, __LINE__, bus_index);
--
--	for (dev_index = 0; dev_index < num_dev; dev_index++) {
--		enum ps3_dev_type dev_type;
--		unsigned int dev_id;
-+	pr_debug("%s:%d: found: dev_type %u, dev_index %u, dev_id %u\n",
-+		__func__, __LINE__, tmp.dev_type, tmp.dev_index, tmp.dev_id);
- 
--		result = ps3_repository_read_dev_type(bus_index, dev_index,
--			&dev_type);
--
--		if (result) {
--			pr_debug("%s:%d ps3_repository_read_dev_type"
--				" (%u:%u) failed\n", __func__, __LINE__,
--				bus_index, dev_index);
--			break;
--		}
--
--		result = ps3_repository_read_dev_id(bus_index, dev_index,
--			&dev_id);
--
--		if (result) {
--			pr_debug("%s:%d ps3_repository_read_dev_id"
--				" (%u:%u) failed\n", __func__, __LINE__,
--				bus_index, dev_index);
--			continue;
--		}
--
--		pr_debug("%s:%d  (%u:%u): dev_type %u, dev_id %u\n", __func__,
--			__LINE__, bus_index, dev_index, dev_type, dev_id);
--
--		ps3_repository_dump_resource_info(bus_index, dev_index);
--
--		if (bus_type == PS3_BUS_TYPE_STORAGE)
--			dump_stor_dev_info(bus_index, dev_index);
--	}
--
--	pr_debug(" <- %s:%d\n", __func__, __LINE__);
--	return result;
-+	*repo = tmp;
-+	return 0;
- }
- 
--int ps3_repository_dump_bus_info(void)
-+int __devinit ps3_repository_find_devices(enum ps3_bus_type bus_type,
-+	int (*callback)(const struct ps3_repository_device *repo))
- {
- 	int result = 0;
--	unsigned int bus_index;
-+	struct ps3_repository_device repo;
- 
--	pr_debug(" -> %s:%d\n", __func__, __LINE__);
-+	pr_debug(" -> %s:%d: find bus_type %u\n", __func__, __LINE__, bus_type);
- 
--	for (bus_index = 0; bus_index < 10; bus_index++) {
--		enum ps3_bus_type bus_type;
--		unsigned int bus_id;
--		unsigned int num_dev;
-+	for (repo.bus_index = 0; repo.bus_index < 10; repo.bus_index++) {
- 
--		result = ps3_repository_read_bus_type(bus_index, &bus_type);
-+		result = ps3_repository_read_bus_type(repo.bus_index,
-+			&repo.bus_type);
- 
- 		if (result) {
- 			pr_debug("%s:%d read_bus_type(%u) failed\n",
--				__func__, __LINE__, bus_index);
-+				__func__, __LINE__, repo.bus_index);
- 			break;
- 		}
- 
--		result = ps3_repository_read_bus_id(bus_index, &bus_id);
--
--		if (result) {
--			pr_debug("%s:%d read_bus_id(%u) failed\n",
--				__func__, __LINE__, bus_index);
-+		if (repo.bus_type != bus_type) {
-+			pr_debug("%s:%d: skip, bus_type %u\n", __func__,
-+				__LINE__, repo.bus_type);
- 			continue;
- 		}
- 
--		if (bus_index != bus_id)
--			pr_debug("%s:%d bus_index != bus_id\n",
--				__func__, __LINE__);
--
--		result = ps3_repository_read_bus_num_dev(bus_index, &num_dev);
-+		result = ps3_repository_read_bus_id(repo.bus_index,
-+			&repo.bus_id);
- 
- 		if (result) {
--			pr_debug("%s:%d read_bus_num_dev(%u) failed\n",
--				__func__, __LINE__, bus_index);
-+			pr_debug("%s:%d read_bus_id(%u) failed\n",
-+				__func__, __LINE__, repo.bus_index);
- 			continue;
- 		}
- 
--		pr_debug("%s:%d bus_%u: bus_type %u, bus_id %u, num_dev %u\n",
--			__func__, __LINE__, bus_index, bus_type, bus_id,
--			num_dev);
--
--		dump_device_info(bus_index, bus_type, num_dev);
--	}
-+		for (repo.dev_index = 0; ; repo.dev_index++) {
-+			result = ps3_repository_find_device(&repo);
- 
--	pr_debug(" <- %s:%d\n", __func__, __LINE__);
--	return result;
--}
--#endif /* defined(DEBUG) */
--
--static int find_device(unsigned int bus_index, unsigned int num_dev,
--	unsigned int start_dev_index, enum ps3_dev_type dev_type,
--	struct ps3_repository_device *dev)
--{
--	int result = 0;
--	unsigned int dev_index;
--
--	pr_debug("%s:%d: find dev_type %u\n", __func__, __LINE__, dev_type);
--
--	dev->dev_index = UINT_MAX;
--
--	for (dev_index = start_dev_index; dev_index < num_dev; dev_index++) {
--		enum ps3_dev_type x;
--
--		result = ps3_repository_read_dev_type(bus_index, dev_index,
--			&x);
--
--		if (result) {
--			pr_debug("%s:%d read_dev_type failed\n",
--				__func__, __LINE__);
--			return result;
-+			if(result == -ENODEV) {
-+				result = 0;
-+				break;
-+			} else if(result)
-+				break;
++	BUG_ON(!ops);
++	BUG_ON(!ops->dev);
++	ps3_sys_manager_ops = ops ? *ops : ps3_sys_manager_ops;
++}
++EXPORT_SYMBOL_GPL(ps3_sys_manager_register_ops);
 +
-+			result = callback(&repo);
-+
-+			if (result) {
-+				pr_debug("%s:%d: abort at callback\n", __func__,
-+					__LINE__);
-+				break;
-+			}
- 		}
--
--		if (x == dev_type)
--			break;
-+		break;
- 	}
- 
--	if (dev_index == num_dev)
--		return -1;
--
--	pr_debug("%s:%d: found dev_type %u at dev_index %u\n",
--		__func__, __LINE__, dev_type, dev_index);
--
--	result = ps3_repository_read_dev_id(bus_index, dev_index,
--		&dev->did.dev_id);
--
--	if (result) {
--		pr_debug("%s:%d read_dev_id failed\n",
--			__func__, __LINE__);
--		return result;
--	}
--
--	dev->dev_index = dev_index;
--
--	pr_debug("%s:%d found: dev_id %u\n", __func__, __LINE__,
--		dev->did.dev_id);
--
-+	pr_debug(" <- %s:%d\n", __func__, __LINE__);
- 	return result;
- }
- 
--int ps3_repository_find_device (enum ps3_bus_type bus_type,
--	enum ps3_dev_type dev_type,
--	const struct ps3_repository_device *start_dev,
--	struct ps3_repository_device *dev)
-+int ps3_repository_find_bus(enum ps3_bus_type bus_type, unsigned int from,
-+	unsigned int *bus_index)
- {
--	int result = 0;
--	unsigned int bus_index;
--	unsigned int num_dev;
--
--	pr_debug("%s:%d: find bus_type %u, dev_type %u\n", __func__, __LINE__,
--		bus_type, dev_type);
--
--	BUG_ON(start_dev && start_dev->bus_index > 10);
--
--	for (bus_index = start_dev ? start_dev->bus_index : 0; bus_index < 10;
--		bus_index++) {
--		enum ps3_bus_type x;
--
--		result = ps3_repository_read_bus_type(bus_index, &x);
--
--		if (result) {
-+	unsigned int i;
-+	enum ps3_bus_type type;
-+	int error;
-+
-+	for (i = from; i < 10; i++) {
-+		error = ps3_repository_read_bus_type(i, &type);
-+		if (error) {
- 			pr_debug("%s:%d read_bus_type failed\n",
- 				__func__, __LINE__);
--			dev->bus_index = UINT_MAX;
--			return result;
-+			*bus_index = UINT_MAX;
-+			return error;
-+		}
-+		if (type == bus_type) {
-+			*bus_index = i;
-+			return 0;
- 		}
--		if (x == bus_type)
--			break;
--	}
--
--	if (bus_index >= 10)
--		return -ENODEV;
--
--	pr_debug("%s:%d: found bus_type %u at bus_index %u\n",
--		__func__, __LINE__, bus_type, bus_index);
--
--	result = ps3_repository_read_bus_num_dev(bus_index, &num_dev);
--
--	if (result) {
--		pr_debug("%s:%d read_bus_num_dev failed\n",
--			__func__, __LINE__);
--		return result;
--	}
--
--	result = find_device(bus_index, num_dev, start_dev
--		? start_dev->dev_index + 1 : 0, dev_type, dev);
--
--	if (result) {
--		pr_debug("%s:%d get_did failed\n", __func__, __LINE__);
--		return result;
--	}
--
--	result = ps3_repository_read_bus_id(bus_index, &dev->did.bus_id);
--
--	if (result) {
--		pr_debug("%s:%d read_bus_id failed\n",
--			__func__, __LINE__);
--		return result;
- 	}
--
--	dev->bus_index = bus_index;
--
--	pr_debug("%s:%d found: bus_id %u, dev_id %u\n",
--		__func__, __LINE__, dev->did.bus_id, dev->did.dev_id);
--
--	return result;
-+	*bus_index = UINT_MAX;
-+	return -ENODEV;
- }
- 
--int ps3_repository_find_interrupt(const struct ps3_repository_device *dev,
-+int ps3_repository_find_interrupt(const struct ps3_repository_device *repo,
- 	enum ps3_interrupt_type intr_type, unsigned int *interrupt_id)
- {
- 	int result = 0;
-@@ -645,8 +461,8 @@ int ps3_repository_find_interrupt(const 
- 		enum ps3_interrupt_type t;
- 		unsigned int id;
- 
--		result = ps3_repository_read_dev_intr(dev->bus_index,
--			dev->dev_index, res_index, &t, &id);
-+		result = ps3_repository_read_dev_intr(repo->bus_index,
-+			repo->dev_index, res_index, &t, &id);
- 
- 		if (result) {
- 			pr_debug("%s:%d read_dev_intr failed\n",
-@@ -669,7 +485,7 @@ int ps3_repository_find_interrupt(const 
- 	return result;
- }
- 
--int ps3_repository_find_reg(const struct ps3_repository_device *dev,
-+int ps3_repository_find_reg(const struct ps3_repository_device *repo,
- 	enum ps3_reg_type reg_type, u64 *bus_addr, u64 *len)
- {
- 	int result = 0;
-@@ -684,8 +500,8 @@ int ps3_repository_find_reg(const struct
- 		u64 a;
- 		u64 l;
- 
--		result = ps3_repository_read_dev_reg(dev->bus_index,
--			dev->dev_index, res_index, &t, &a, &l);
-+		result = ps3_repository_read_dev_reg(repo->bus_index,
-+			repo->dev_index, res_index, &t, &a, &l);
- 
- 		if (result) {
- 			pr_debug("%s:%d read_dev_reg failed\n",
-@@ -965,6 +781,36 @@ int ps3_repository_read_boot_dat_size(un
- 	return result;
- }
- 
-+int ps3_repository_read_vuart_av_port(unsigned int *port)
++void ps3_sys_manager_power_off(void)
 +{
-+	int result;
-+	u64 v1;
++	if (ps3_sys_manager_ops.power_off)
++		ps3_sys_manager_ops.power_off(ps3_sys_manager_ops.dev);
 +
-+	result = read_node(PS3_LPAR_ID_CURRENT,
-+		make_first_field("bi", 0),
-+		make_field("vir_uart", 0),
-+		make_field("port", 0),
-+		make_field("avset", 0),
-+		&v1, 0);
-+	*port = v1;
-+	return result;
++	printk(KERN_EMERG "System Halted, OK to turn off power\n");
++	local_irq_disable();
++	while(1)
++		(void)0;
 +}
 +
-+int ps3_repository_read_vuart_sysmgr_port(unsigned int *port)
++void ps3_sys_manager_restart(void)
 +{
-+	int result;
-+	u64 v1;
++	if (ps3_sys_manager_ops.restart)
++		ps3_sys_manager_ops.restart(ps3_sys_manager_ops.dev);
 +
-+	result = read_node(PS3_LPAR_ID_CURRENT,
-+		make_first_field("bi", 0),
-+		make_field("vir_uart", 0),
-+		make_field("port", 0),
-+		make_field("sysmgr", 0),
-+		&v1, 0);
-+	*port = v1;
-+	return result;
++	printk(KERN_EMERG "System Halted, OK to turn off power\n");
++	local_irq_disable();
++	while(1)
++		(void)0;
++}
+--- a/drivers/ps3/sys-manager.c
++++ b/drivers/ps3/sys-manager.c
+@@ -35,7 +35,7 @@ MODULE_DESCRIPTION("PS3 System Manager")
+ /**
+  * ps3_sys_manager - PS3 system manager driver.
+  *
+- * The system manager provides an asyncronous system event notification
++ * The system manager provides an asynchronous system event notification
+  * mechanism for reporting events like thermal alert and button presses to
+  * guests.  It also provides support to control system shutdown and startup.
+  *
+@@ -52,6 +52,7 @@ MODULE_DESCRIPTION("PS3 System Manager")
+  * @size: Header size in bytes, curently 16.
+  * @payload_size: Message payload size in bytes.
+  * @service_id: Message type, one of enum ps3_sys_manager_service_id.
++ * @request_tag: Unique number to identify reply.
+  */
+ 
+ struct ps3_sys_manager_header {
+@@ -61,29 +62,49 @@ struct ps3_sys_manager_header {
+ 	u16 reserved_1;
+ 	u32 payload_size;
+ 	u16 service_id;
+-	u16 reserved_2[3];
++	u16 reserved_2;
++	u32 request_tag;
+ };
+ 
++#define dump_sm_header(_h) _dump_sm_header(_h, __func__, __LINE__)
++static void __maybe_unused _dump_sm_header(
++	const struct ps3_sys_manager_header* h, const char *func, int line)
++{
++	pr_debug("%s:%d: version:      %xh\n", func, line, h->version);
++	pr_debug("%s:%d: size:         %xh\n", func, line, h->size);
++	pr_debug("%s:%d: payload_size: %xh\n", func, line, h->payload_size);
++	pr_debug("%s:%d: service_id:   %xh\n", func, line, h->service_id);
++	pr_debug("%s:%d: request_tag:  %xh\n", func, line, h->request_tag);
 +}
 +
  /**
-   * ps3_repository_read_boot_dat_info - Get address and size of cell_ext_os_area.
-   * address: lpar address of cell_ext_os_area
-@@ -1026,3 +872,205 @@ int ps3_repository_read_be_tb_freq(unsig
- 	return result ? result
- 		: ps3_repository_read_tb_freq(node_id, tb_freq);
+- * @PS3_SM_RX_MSG_LEN - System manager received message length.
++ * @PS3_SM_RX_MSG_LEN_MIN - Shortest received message length.
++ * @PS3_SM_RX_MSG_LEN_MAX - Longest received message length.
+  *
+- * Currently all messages received from the system manager are the same length
+- * (16 bytes header + 16 bytes payload = 32 bytes).  This knowlege is used to
+- * simplify the logic.
++ * Currently all messages received from the system manager are either
++ * (16 bytes header + 8 bytes payload = 24 bytes) or (16 bytes header
++ * + 16 bytes payload = 32 bytes).  This knowlege is used to simplify
++ * the logic.
+  */
+ 
+ enum {
+-	PS3_SM_RX_MSG_LEN = 32,
++	PS3_SM_RX_MSG_LEN_MIN = 24,
++	PS3_SM_RX_MSG_LEN_MAX = 32,
+ };
+ 
+ /**
+  * enum ps3_sys_manager_service_id - Message header service_id.
+- * @PS3_SM_SERVICE_ID_REQUEST:      guest --> sys_manager.
+- * @PS3_SM_SERVICE_ID_COMMAND:      guest <-- sys_manager.
+- * @PS3_SM_SERVICE_ID_RESPONSE:     guest --> sys_manager.
+- * @PS3_SM_SERVICE_ID_SET_ATTR:     guest --> sys_manager.
+- * @PS3_SM_SERVICE_ID_EXTERN_EVENT: guest <-- sys_manager.
+- * @PS3_SM_SERVICE_ID_SET_NEXT_OP:  guest --> sys_manager.
++ * @PS3_SM_SERVICE_ID_REQUEST:       guest --> sys_manager.
++ * @PS3_SM_SERVICE_ID_REQUEST_ERROR: guest <-- sys_manager.
++ * @PS3_SM_SERVICE_ID_COMMAND:       guest <-- sys_manager.
++ * @PS3_SM_SERVICE_ID_RESPONSE:      guest --> sys_manager.
++ * @PS3_SM_SERVICE_ID_SET_ATTR:      guest --> sys_manager.
++ * @PS3_SM_SERVICE_ID_EXTERN_EVENT:  guest <-- sys_manager.
++ * @PS3_SM_SERVICE_ID_SET_NEXT_OP:   guest --> sys_manager.
++ *
++ * PS3_SM_SERVICE_ID_REQUEST_ERROR is returned for invalid data values in a
++ * a PS3_SM_SERVICE_ID_REQUEST message.  It also seems to be returned when
++ * a REQUEST message is sent at the wrong time.
+  */
+ 
+ enum ps3_sys_manager_service_id {
+@@ -93,6 +114,7 @@ enum ps3_sys_manager_service_id {
+ 	PS3_SM_SERVICE_ID_COMMAND = 3,
+ 	PS3_SM_SERVICE_ID_EXTERN_EVENT = 4,
+ 	PS3_SM_SERVICE_ID_SET_NEXT_OP = 5,
++	PS3_SM_SERVICE_ID_REQUEST_ERROR = 6,
+ 	PS3_SM_SERVICE_ID_SET_ATTR = 8,
+ };
+ 
+@@ -185,11 +207,21 @@ enum ps3_sys_manager_cmd {
+ };
+ 
+ /**
++ * ps3_sm_force_power_off - Poweroff helper.
++ *
++ * A global variable used to force a poweroff when the power button has
++ * been pressed irrespective of how init handles the ctrl_alt_del signal.
++ *
++ */
++
++static unsigned int ps3_sm_force_power_off;
++
++/**
+  * ps3_sys_manager_write - Helper to write a two part message to the vuart.
+  *
+  */
+ 
+-static int ps3_sys_manager_write(struct ps3_vuart_port_device *dev,
++static int ps3_sys_manager_write(struct ps3_system_bus_device *dev,
+ 	const struct ps3_sys_manager_header *header, const void *payload)
+ {
+ 	int result;
+@@ -213,15 +245,10 @@ static int ps3_sys_manager_write(struct 
+  *
+  */
+ 
+-static int ps3_sys_manager_send_attr(struct ps3_vuart_port_device *dev,
++static int ps3_sys_manager_send_attr(struct ps3_system_bus_device *dev,
+ 	enum ps3_sys_manager_attr attr)
+ {
+-	static const struct ps3_sys_manager_header header = {
+-		.version = 1,
+-		.size = 16,
+-		.payload_size = 16,
+-		.service_id = PS3_SM_SERVICE_ID_SET_ATTR,
+-	};
++	struct ps3_sys_manager_header header;
+ 	struct {
+ 		u8 version;
+ 		u8 reserved_1[3];
+@@ -232,6 +259,12 @@ static int ps3_sys_manager_send_attr(str
+ 
+ 	dev_dbg(&dev->core, "%s:%d: %xh\n", __func__, __LINE__, attr);
+ 
++	memset(&header, 0, sizeof(header));
++	header.version = 1;
++	header.size = 16;
++	header.payload_size = 16;
++	header.service_id = PS3_SM_SERVICE_ID_SET_ATTR;
++
+ 	memset(&payload, 0, sizeof(payload));
+ 	payload.version = 1;
+ 	payload.attribute = attr;
+@@ -245,16 +278,11 @@ static int ps3_sys_manager_send_attr(str
+  * Tell the system manager what to do after this lpar is destroyed.
+  */
+ 
+-static int ps3_sys_manager_send_next_op(struct ps3_vuart_port_device *dev,
++static int ps3_sys_manager_send_next_op(struct ps3_system_bus_device *dev,
+ 	enum ps3_sys_manager_next_op op,
+ 	enum ps3_sys_manager_wake_source wake_source)
+ {
+-	static const struct ps3_sys_manager_header header = {
+-		.version = 1,
+-		.size = 16,
+-		.payload_size = 16,
+-		.service_id = PS3_SM_SERVICE_ID_SET_NEXT_OP,
+-	};
++	struct ps3_sys_manager_header header;
+ 	struct {
+ 		u8 version;
+ 		u8 type;
+@@ -268,6 +296,12 @@ static int ps3_sys_manager_send_next_op(
+ 
+ 	dev_dbg(&dev->core, "%s:%d: (%xh)\n", __func__, __LINE__, op);
+ 
++	memset(&header, 0, sizeof(header));
++	header.version = 1;
++	header.size = 16;
++	header.payload_size = 16;
++	header.service_id = PS3_SM_SERVICE_ID_SET_NEXT_OP;
++
+ 	memset(&payload, 0, sizeof(payload));
+ 	payload.version = 3;
+ 	payload.type = op;
+@@ -286,32 +320,35 @@ static int ps3_sys_manager_send_next_op(
+  * the command is then communicated back to the system manager with a response
+  * message.
+  *
+- * Currently, the only supported request it the 'shutdown self' request.
++ * Currently, the only supported request is the 'shutdown self' request.
+  */
+ 
+-static int ps3_sys_manager_send_request_shutdown(struct ps3_vuart_port_device *dev)
++static int ps3_sys_manager_send_request_shutdown(
++	struct ps3_system_bus_device *dev)
+ {
+-	static const struct ps3_sys_manager_header header = {
+-		.version = 1,
+-		.size = 16,
+-		.payload_size = 16,
+-		.service_id = PS3_SM_SERVICE_ID_REQUEST,
+-	};
++	struct ps3_sys_manager_header header;
+ 	struct {
+ 		u8 version;
+ 		u8 type;
+ 		u8 gos_id;
+ 		u8 reserved_1[13];
+-	} static const payload = {
+-		.version = 1,
+-		.type = 1, /* shutdown */
+-		.gos_id = 0, /* self */
+-	};
++	} payload;
+ 
+ 	BUILD_BUG_ON(sizeof(payload) != 16);
+ 
+ 	dev_dbg(&dev->core, "%s:%d\n", __func__, __LINE__);
+ 
++	memset(&header, 0, sizeof(header));
++	header.version = 1;
++	header.size = 16;
++	header.payload_size = 16;
++	header.service_id = PS3_SM_SERVICE_ID_REQUEST;
++
++	memset(&payload, 0, sizeof(payload));
++	payload.version = 1;
++	payload.type = 1; /* shutdown */
++	payload.gos_id = 0; /* self */
++
+ 	return ps3_sys_manager_write(dev, &header, &payload);
  }
+ 
+@@ -323,15 +360,10 @@ static int ps3_sys_manager_send_request_
+  * failure of a command sent by the system manager.
+  */
+ 
+-static int ps3_sys_manager_send_response(struct ps3_vuart_port_device *dev,
++static int ps3_sys_manager_send_response(struct ps3_system_bus_device *dev,
+ 	u64 status)
+ {
+-	static const struct ps3_sys_manager_header header = {
+-		.version = 1,
+-		.size = 16,
+-		.payload_size = 16,
+-		.service_id = PS3_SM_SERVICE_ID_RESPONSE,
+-	};
++	struct ps3_sys_manager_header header;
+ 	struct {
+ 		u8 version;
+ 		u8 reserved_1[3];
+@@ -344,6 +376,12 @@ static int ps3_sys_manager_send_response
+ 	dev_dbg(&dev->core, "%s:%d: (%s)\n", __func__, __LINE__,
+ 		(status ? "nak" : "ack"));
+ 
++	memset(&header, 0, sizeof(header));
++	header.version = 1;
++	header.size = 16;
++	header.payload_size = 16;
++	header.service_id = PS3_SM_SERVICE_ID_RESPONSE;
 +
-+#if defined(DEBUG)
+ 	memset(&payload, 0, sizeof(payload));
+ 	payload.version = 1;
+ 	payload.status = status;
+@@ -356,7 +394,7 @@ static int ps3_sys_manager_send_response
+  *
+  */
+ 
+-static int ps3_sys_manager_handle_event(struct ps3_vuart_port_device *dev)
++static int ps3_sys_manager_handle_event(struct ps3_system_bus_device *dev)
+ {
+ 	int result;
+ 	struct {
+@@ -370,7 +408,7 @@ static int ps3_sys_manager_handle_event(
+ 	BUILD_BUG_ON(sizeof(event) != 16);
+ 
+ 	result = ps3_vuart_read(dev, &event, sizeof(event));
+-	BUG_ON(result);
++	BUG_ON(result && "need to retry here");
+ 
+ 	if (event.version != 1) {
+ 		dev_dbg(&dev->core, "%s:%d: unsupported event version (%u)\n",
+@@ -382,11 +420,24 @@ static int ps3_sys_manager_handle_event(
+ 	case PS3_SM_EVENT_POWER_PRESSED:
+ 		dev_dbg(&dev->core, "%s:%d: POWER_PRESSED\n",
+ 			__func__, __LINE__);
++		ps3_sm_force_power_off = 1;
++		wmb();
++		kill_cad_pid(SIGINT, 1); /* ctrl_alt_del */
+ 		break;
+ 	case PS3_SM_EVENT_POWER_RELEASED:
+ 		dev_dbg(&dev->core, "%s:%d: POWER_RELEASED (%u ms)\n",
+ 			__func__, __LINE__, event.value);
+-		kill_cad_pid(SIGINT, 1);
++		break;
++	case PS3_SM_EVENT_RESET_PRESSED:
++		dev_dbg(&dev->core, "%s:%d: RESET_PRESSED\n",
++			__func__, __LINE__);
++		ps3_sm_force_power_off = 0;
++		wmb();
++		kill_cad_pid(SIGINT, 1); /* ctrl_alt_del */
++		break;
++	case PS3_SM_EVENT_RESET_RELEASED:
++		dev_dbg(&dev->core, "%s:%d: RESET_RELEASED (%u ms)\n",
++			__func__, __LINE__, event.value);
+ 		break;
+ 	case PS3_SM_EVENT_THERMAL_ALERT:
+ 		dev_dbg(&dev->core, "%s:%d: THERMAL_ALERT (zone %u)\n",
+@@ -411,7 +462,7 @@ static int ps3_sys_manager_handle_event(
+  * The system manager sends this in reply to a 'request' message from the guest.
+  */
+ 
+-static int ps3_sys_manager_handle_cmd(struct ps3_vuart_port_device *dev)
++static int ps3_sys_manager_handle_cmd(struct ps3_system_bus_device *dev)
+ {
+ 	int result;
+ 	struct {
+@@ -425,6 +476,7 @@ static int ps3_sys_manager_handle_cmd(st
+ 	dev_dbg(&dev->core, "%s:%d\n", __func__, __LINE__);
+ 
+ 	result = ps3_vuart_read(dev, &cmd, sizeof(cmd));
++	BUG_ON(result && "need to retry here");
+ 
+ 	if(result)
+ 		return result;
+@@ -448,9 +500,10 @@ static int ps3_sys_manager_handle_cmd(st
+ /**
+  * ps3_sys_manager_handle_msg - First stage msg handler.
+  *
++ * Can be called directly to manually poll vuart and pump message handler.
+  */
+ 
+-static int ps3_sys_manager_handle_msg(struct ps3_vuart_port_device *dev)
++static int ps3_sys_manager_handle_msg(struct ps3_system_bus_device *dev)
+ {
+ 	int result;
+ 	struct ps3_sys_manager_header header;
+@@ -464,12 +517,17 @@ static int ps3_sys_manager_handle_msg(st
+ 	if (header.version != 1) {
+ 		dev_dbg(&dev->core, "%s:%d: unsupported header version (%u)\n",
+ 			__func__, __LINE__, header.version);
++		dump_sm_header(&header);
+ 		goto fail_header;
+ 	}
+ 
+ 	BUILD_BUG_ON(sizeof(header) != 16);
+-	BUG_ON(header.size != 16);
+-	BUG_ON(header.payload_size != 16);
 +
-+int ps3_repository_dump_resource_info(const struct ps3_repository_device *repo)
++	if(header.size != 16 || (header.payload_size != 8
++		&& header.payload_size != 16)) {
++		dump_sm_header(&header);
++		BUG();
++	}
+ 
+ 	switch (header.service_id) {
+ 	case PS3_SM_SERVICE_ID_EXTERN_EVENT:
+@@ -478,6 +536,11 @@ static int ps3_sys_manager_handle_msg(st
+ 	case PS3_SM_SERVICE_ID_COMMAND:
+ 		dev_dbg(&dev->core, "%s:%d: COMMAND\n", __func__, __LINE__);
+ 		return ps3_sys_manager_handle_cmd(dev);
++	case PS3_SM_SERVICE_ID_REQUEST_ERROR:
++		dev_dbg(&dev->core, "%s:%d: REQUEST_ERROR\n", __func__,
++			__LINE__);
++		dump_sm_header(&header);
++		break;
+ 	default:
+ 		dev_dbg(&dev->core, "%s:%d: unknown service_id (%u)\n",
+ 			__func__, __LINE__, header.service_id);
+@@ -494,45 +557,25 @@ fail_id:
+ }
+ 
+ /**
+- * ps3_sys_manager_work - Asyncronous read handler.
++ * ps3_sys_manager_final_power_off - The final platform machine_power_off routine.
+  *
+- * Signaled when a complete message arrives at the vuart port.
+- */
+-
+-static void ps3_sys_manager_work(struct work_struct *work)
+-{
+-	struct ps3_vuart_port_device *dev = ps3_vuart_work_to_port_device(work);
+-
+-	ps3_sys_manager_handle_msg(dev);
+-	ps3_vuart_read_async(dev, ps3_sys_manager_work, PS3_SM_RX_MSG_LEN);
+-}
+-
+-struct {
+-	struct ps3_vuart_port_device *dev;
+-} static drv_priv;
+-
+-/**
+- * ps3_sys_manager_restart - The final platform machine_restart routine.
+- *
+- * This routine never returns.  The routine disables asyncronous vuart reads
++ * This routine never returns.  The routine disables asynchronous vuart reads
+  * then spins calling ps3_sys_manager_handle_msg() to receive and acknowledge
+  * the shutdown command sent from the system manager.  Soon after the
+  * acknowledgement is sent the lpar is destroyed by the HV.  This routine
+- * should only be called from ps3_restart().
++ * should only be called from ps3_power_off() through
++ * ps3_sys_manager_ops.power_off.
+  */
+ 
+-void ps3_sys_manager_restart(void)
++static void ps3_sys_manager_final_power_off(struct ps3_system_bus_device *dev)
+ {
+-	struct ps3_vuart_port_device *dev = drv_priv.dev;
+-
+-	BUG_ON(!drv_priv.dev);
++	BUG_ON(!dev);
+ 
+ 	dev_dbg(&dev->core, "%s:%d\n", __func__, __LINE__);
+ 
+ 	ps3_vuart_cancel_async(dev);
+ 
+-	ps3_sys_manager_send_attr(dev, 0);
+-	ps3_sys_manager_send_next_op(dev, PS3_SM_NEXT_OP_LPAR_REBOOT,
++	ps3_sys_manager_send_next_op(dev, PS3_SM_NEXT_OP_SYS_SHUTDOWN,
+ 		PS3_SM_WAKE_DEFAULT);
+ 	ps3_sys_manager_send_request_shutdown(dev);
+ 
+@@ -543,26 +586,33 @@ void ps3_sys_manager_restart(void)
+ }
+ 
+ /**
+- * ps3_sys_manager_power_off - The final platform machine_power_off routine.
++ * ps3_sys_manager_final_restart - The final platform machine_restart routine.
+  *
+- * This routine never returns.  The routine disables asyncronous vuart reads
++ * This routine never returns.  The routine disables asynchronous vuart reads
+  * then spins calling ps3_sys_manager_handle_msg() to receive and acknowledge
+  * the shutdown command sent from the system manager.  Soon after the
+  * acknowledgement is sent the lpar is destroyed by the HV.  This routine
+- * should only be called from ps3_power_off().
++ * should only be called from ps3_restart() through ps3_sys_manager_ops.restart.
+  */
+ 
+-void ps3_sys_manager_power_off(void)
++static void ps3_sys_manager_final_restart(struct ps3_system_bus_device *dev)
+ {
+-	struct ps3_vuart_port_device *dev = drv_priv.dev;
+-
+-	BUG_ON(!drv_priv.dev);
++	BUG_ON(!dev);
+ 
+ 	dev_dbg(&dev->core, "%s:%d\n", __func__, __LINE__);
+ 
++	/* Check if we got here via a power button event. */
++
++	if(ps3_sm_force_power_off) {
++		dev_dbg(&dev->core, "%s:%d: forcing poweroff\n",
++			__func__, __LINE__);
++		ps3_sys_manager_final_power_off(dev);
++	}
++
+ 	ps3_vuart_cancel_async(dev);
+ 
+-	ps3_sys_manager_send_next_op(dev, PS3_SM_NEXT_OP_SYS_SHUTDOWN,
++	ps3_sys_manager_send_attr(dev, 0);
++	ps3_sys_manager_send_next_op(dev, PS3_SM_NEXT_OP_LPAR_REBOOT,
+ 		PS3_SM_WAKE_DEFAULT);
+ 	ps3_sys_manager_send_request_shutdown(dev);
+ 
+@@ -572,31 +622,60 @@ void ps3_sys_manager_power_off(void)
+ 		ps3_sys_manager_handle_msg(dev);
+ }
+ 
+-static int ps3_sys_manager_probe(struct ps3_vuart_port_device *dev)
++/**
++ * ps3_sys_manager_work - Asynchronous read handler.
++ *
++ * Signaled when PS3_SM_RX_MSG_LEN_MIN bytes arrive at the vuart port.
++ */
++
++static void ps3_sys_manager_work(struct ps3_system_bus_device *dev)
 +{
-+	int result = 0;
-+	unsigned int res_index;
-+
-+	pr_debug(" -> %s:%d: (%u:%u)\n", __func__, __LINE__,
-+		repo->bus_index, repo->dev_index);
-+
-+	for (res_index = 0; res_index < 10; res_index++) {
-+		enum ps3_interrupt_type intr_type;
-+		unsigned int interrupt_id;
-+
-+		result = ps3_repository_read_dev_intr(repo->bus_index,
-+			repo->dev_index, res_index, &intr_type, &interrupt_id);
-+
-+		if (result) {
-+			if (result !=  LV1_NO_ENTRY)
-+				pr_debug("%s:%d ps3_repository_read_dev_intr"
-+					" (%u:%u) failed\n", __func__, __LINE__,
-+					repo->bus_index, repo->dev_index);
-+			break;
-+		}
-+
-+		pr_debug("%s:%d (%u:%u) intr_type %u, interrupt_id %u\n",
-+			__func__, __LINE__, repo->bus_index, repo->dev_index,
-+			intr_type, interrupt_id);
-+	}
-+
-+	for (res_index = 0; res_index < 10; res_index++) {
-+		enum ps3_reg_type reg_type;
-+		u64 bus_addr;
-+		u64 len;
-+
-+		result = ps3_repository_read_dev_reg(repo->bus_index,
-+			repo->dev_index, res_index, &reg_type, &bus_addr, &len);
-+
-+		if (result) {
-+			if (result !=  LV1_NO_ENTRY)
-+				pr_debug("%s:%d ps3_repository_read_dev_reg"
-+					" (%u:%u) failed\n", __func__, __LINE__,
-+					repo->bus_index, repo->dev_index);
-+			break;
-+		}
-+
-+		pr_debug("%s:%d (%u:%u) reg_type %u, bus_addr %lxh, len %lxh\n",
-+			__func__, __LINE__, repo->bus_index, repo->dev_index,
-+			reg_type, bus_addr, len);
-+	}
-+
-+	pr_debug(" <- %s:%d\n", __func__, __LINE__);
-+	return result;
++	ps3_sys_manager_handle_msg(dev);
++	ps3_vuart_read_async(dev, PS3_SM_RX_MSG_LEN_MIN);
 +}
 +
-+static int dump_stor_dev_info(struct ps3_repository_device *repo)
++static int ps3_sys_manager_probe(struct ps3_system_bus_device *dev)
+ {
+ 	int result;
++	struct ps3_sys_manager_ops ops;
+ 
+ 	dev_dbg(&dev->core, "%s:%d\n", __func__, __LINE__);
+ 
+-	BUG_ON(drv_priv.dev);
+-	drv_priv.dev = dev;
++	ops.power_off = ps3_sys_manager_final_power_off;
++	ops.restart = ps3_sys_manager_final_restart;
++	ops.dev = dev;
++
++	/* ps3_sys_manager_register_ops copies ops. */
++
++	ps3_sys_manager_register_ops(&ops);
+ 
+ 	result = ps3_sys_manager_send_attr(dev, PS3_SM_ATTR_ALL);
+ 	BUG_ON(result);
+ 
+-	result = ps3_vuart_read_async(dev, ps3_sys_manager_work,
+-		PS3_SM_RX_MSG_LEN);
++	result = ps3_vuart_read_async(dev, PS3_SM_RX_MSG_LEN_MIN);
+ 	BUG_ON(result);
+ 
+ 	return result;
+ }
+ 
++static int ps3_sys_manager_remove(struct ps3_system_bus_device *dev)
 +{
-+	int result = 0;
-+	unsigned int num_regions, region_index;
-+	u64 port, blk_size, num_blocks;
-+
-+	pr_debug(" -> %s:%d: (%u:%u)\n", __func__, __LINE__,
-+		repo->bus_index, repo->dev_index);
-+
-+	result = ps3_repository_read_stor_dev_info(repo->bus_index,
-+		repo->dev_index, &port, &blk_size, &num_blocks, &num_regions);
-+	if (result) {
-+		pr_debug("%s:%d ps3_repository_read_stor_dev_info"
-+			" (%u:%u) failed\n", __func__, __LINE__,
-+			repo->bus_index, repo->dev_index);
-+		goto out;
-+	}
-+
-+	pr_debug("%s:%d  (%u:%u): port %lu, blk_size %lu, num_blocks "
-+		 "%lu, num_regions %u\n",
-+		 __func__, __LINE__, repo->bus_index, repo->dev_index, port,
-+		 blk_size, num_blocks, num_regions);
-+
-+	for (region_index = 0; region_index < num_regions; region_index++) {
-+		unsigned int region_id;
-+		u64 region_start, region_size;
-+
-+		result = ps3_repository_read_stor_dev_region(repo->bus_index,
-+			repo->dev_index, region_index, &region_id,
-+			&region_start, &region_size);
-+		if (result) {
-+			 pr_debug("%s:%d ps3_repository_read_stor_dev_region"
-+				  " (%u:%u) failed\n", __func__, __LINE__,
-+				  repo->bus_index, repo->dev_index);
-+			break;
-+		}
-+
-+		pr_debug("%s:%d (%u:%u) region_id %u, start %lxh, size %lxh\n",
-+			__func__, __LINE__, repo->bus_index, repo->dev_index,
-+			region_id, region_start, region_size);
-+	}
-+
-+out:
-+	pr_debug(" <- %s:%d\n", __func__, __LINE__);
-+	return result;
++	dev_dbg(&dev->core, "%s:%d\n", __func__, __LINE__);
++	return 0;
 +}
 +
-+static int dump_device_info(struct ps3_repository_device *repo,
-+	unsigned int num_dev)
++static void ps3_sys_manager_shutdown(struct ps3_system_bus_device *dev)
 +{
-+	int result = 0;
-+
-+	pr_debug(" -> %s:%d: bus_%u\n", __func__, __LINE__, repo->bus_index);
-+
-+	for (repo->dev_index = 0; repo->dev_index < num_dev;
-+		repo->dev_index++) {
-+
-+		result = ps3_repository_read_dev_type(repo->bus_index,
-+			repo->dev_index, &repo->dev_type);
-+
-+		if (result) {
-+			pr_debug("%s:%d ps3_repository_read_dev_type"
-+				" (%u:%u) failed\n", __func__, __LINE__,
-+				repo->bus_index, repo->dev_index);
-+			break;
-+		}
-+
-+		result = ps3_repository_read_dev_id(repo->bus_index,
-+			repo->dev_index, &repo->dev_id);
-+
-+		if (result) {
-+			pr_debug("%s:%d ps3_repository_read_dev_id"
-+				" (%u:%u) failed\n", __func__, __LINE__,
-+				repo->bus_index, repo->dev_index);
-+			continue;
-+		}
-+
-+		pr_debug("%s:%d  (%u:%u): dev_type %u, dev_id %u\n", __func__,
-+			__LINE__, repo->bus_index, repo->dev_index,
-+			repo->dev_type, repo->dev_id);
-+
-+		ps3_repository_dump_resource_info(repo);
-+
-+		if (repo->bus_type == PS3_BUS_TYPE_STORAGE)
-+			dump_stor_dev_info(repo);
-+	}
-+
-+	pr_debug(" <- %s:%d\n", __func__, __LINE__);
-+	return result;
++	dev_dbg(&dev->core, "%s:%d\n", __func__, __LINE__);
 +}
 +
-+int ps3_repository_dump_bus_info(void)
-+{
-+	int result = 0;
-+	struct ps3_repository_device repo;
+ static struct ps3_vuart_port_driver ps3_sys_manager = {
+-	.match_id = PS3_MATCH_ID_SYSTEM_MANAGER,
+-	.core = {
+-		.name = "ps3_sys_manager",
+-	},
++	.core.match_id = PS3_MATCH_ID_SYSTEM_MANAGER,
++	.core.core.name = "ps3_sys_manager",
+ 	.probe = ps3_sys_manager_probe,
++	.remove = ps3_sys_manager_remove,
++	.shutdown = ps3_sys_manager_shutdown,
++	.work = ps3_sys_manager_work,
+ };
+ 
+ static int __init ps3_sys_manager_init(void)
+@@ -608,3 +687,6 @@ static int __init ps3_sys_manager_init(v
+ }
+ 
+ module_init(ps3_sys_manager_init);
++/* Module remove not supported. */
 +
-+	pr_debug(" -> %s:%d\n", __func__, __LINE__);
++MODULE_ALIAS(PS3_MODULE_ALIAS_SYSTEM_MANAGER);
+--- a/include/asm-powerpc/ps3.h
++++ b/include/asm-powerpc/ps3.h
+@@ -410,13 +410,15 @@ extern struct bus_type ps3_system_bus_ty
+ 
+ /* system manager */
+ 
+-#ifdef CONFIG_PS3_SYS_MANAGER
+-void ps3_sys_manager_restart(void);
++struct ps3_sys_manager_ops {
++	struct ps3_system_bus_device *dev;
++	void (*power_off)(struct ps3_system_bus_device *dev);
++	void (*restart)(struct ps3_system_bus_device *dev);
++};
 +
-+	memset(&repo, 0, sizeof(repo));
++void ps3_sys_manager_register_ops(const struct ps3_sys_manager_ops *ops);
+ void ps3_sys_manager_power_off(void);
+-#else
+-static inline void ps3_sys_manager_restart(void) {}
+-static inline void ps3_sys_manager_power_off(void) {}
+-#endif
++void ps3_sys_manager_restart(void);
+ 
+ struct ps3_prealloc {
+     const char *name;
+@@ -427,4 +429,5 @@ struct ps3_prealloc {
+ 
+ extern struct ps3_prealloc ps3fb_videomemory;
+ 
 +
-+	for (repo.bus_index = 0; repo.bus_index < 10; repo.bus_index++) {
-+		unsigned int num_dev;
-+
-+		result = ps3_repository_read_bus_type(repo.bus_index,
-+			&repo.bus_type);
-+
-+		if (result) {
-+			pr_debug("%s:%d read_bus_type(%u) failed\n",
-+				__func__, __LINE__, repo.bus_index);
-+			break;
-+		}
-+
-+		result = ps3_repository_read_bus_id(repo.bus_index,
-+			&repo.bus_id);
-+
-+		if (result) {
-+			pr_debug("%s:%d read_bus_id(%u) failed\n",
-+				__func__, __LINE__, repo.bus_index);
-+			continue;
-+		}
-+
-+		if (repo.bus_index != repo.bus_id)
-+			pr_debug("%s:%d bus_index != bus_id\n",
-+				__func__, __LINE__);
-+
-+		result = ps3_repository_read_bus_num_dev(repo.bus_index,
-+			&num_dev);
-+
-+		if (result) {
-+			pr_debug("%s:%d read_bus_num_dev(%u) failed\n",
-+				__func__, __LINE__, repo.bus_index);
-+			continue;
-+		}
-+
-+		pr_debug("%s:%d bus_%u: bus_type %u, bus_id %u, num_dev %u\n",
-+			__func__, __LINE__, repo.bus_index, repo.bus_type,
-+			repo.bus_id, num_dev);
-+
-+		dump_device_info(&repo, num_dev);
-+	}
-+
-+	pr_debug(" <- %s:%d\n", __func__, __LINE__);
-+	return result;
-+}
-+
-+#endif /* defined(DEBUG) */
+ #endif
 
 -- 
