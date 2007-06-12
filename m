@@ -3,14 +3,14 @@ Received: from outbound2-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
 	[207.46.163.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 9C09FDE096
+	by ozlabs.org (Postfix) with ESMTP id 9C3DBDE097
 	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 04:56:16 +1000 (EST)
-Message-ID: <466EEBE9.9080800@am.sony.com>
-Date: Tue, 12 Jun 2007 11:54:33 -0700
+Message-ID: <466EEBE5.4040402@am.sony.com>
+Date: Tue, 12 Jun 2007 11:54:29 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 25/30] Powerpc: Add signed types to bootwrapper
+Subject: [patch 24/30] powerpc: Correct __secondary_hold comment
 References: <20070612181825.730300780@am.sony.com>>
 In-Reply-To: <20070612181825.730300780@am.sony.com>>
 Content-Type: text/plain; charset=UTF-8
@@ -24,26 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add signed types to the powerpc zImage bootwrapper. These are needed by the
-PS3 hcall interface.
+Remove references to pSeries and OpenFirmware in the __secondary_hold
+usage comment.  __secondary_hold is a generic routine and can be used
+by other platforms.
 
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/boot/types.h |    4 ++++
- 1 file changed, 4 insertions(+)
+ arch/powerpc/kernel/head_64.S |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/arch/powerpc/boot/types.h
-+++ b/arch/powerpc/boot/types.h
-@@ -7,6 +7,10 @@ typedef unsigned char		u8;
- typedef unsigned short		u16;
- typedef unsigned int		u32;
- typedef unsigned long long	u64;
-+typedef signed char		s8;
-+typedef short			s16;
-+typedef int			s32;
-+typedef long long		s64;
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -103,8 +103,8 @@ __secondary_hold_acknowledge:
  
- #define min(x,y) ({ \
- 	typeof(x) _x = (x);	\
+ 	. = 0x60
+ /*
+- * The following code is used on pSeries to hold secondary processors
+- * in a spin loop after they have been freed from OpenFirmware, but
++ * The following code is used to hold secondary processors
++ * in a spin loop after they have entered the kernel, but
+  * before the bulk of the kernel has been relocated.  This code
+  * is relocated to physical address 0x60 before prom_init is run.
+  * All of it must fit below the first exception vector at 0x100.
 
 -- 
