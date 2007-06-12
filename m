@@ -1,17 +1,20 @@
 Return-Path: <grant.likely@secretlab.ca>
 Received: from sandbox.secretlab.ca (S01060016b61d1226.cg.shawcable.net
-	[68.147.67.118]) by ozlabs.org (Postfix) with ESMTP id B5BB0DDD0D
+	[68.147.67.118]) by ozlabs.org (Postfix) with ESMTP id B6B32DDE18
 	for <linuxppc-embedded@ozlabs.org>;
 	Wed, 13 Jun 2007 09:26:45 +1000 (EST)
 From: Grant Likely <grant.likely@secretlab.ca>
 To: Peter Korsgaard <jacmet@sunsite.dk>, linux-usb-devel@lists.sourceforge.net,
 	linuxppc-embedded@ozlabs.org
-Subject: [PATCH 2/6] [C67x00] Fix calculation of frame bandwidth
-Date: Tue, 12 Jun 2007 17:02:17 -0600
-Message-Id: <11816893492706-git-send-email-grant.likely@secretlab.ca>
-In-Reply-To: <11816893494143-git-send-email-grant.likely@secretlab.ca>
+Subject: [PATCH 4/6] [C67x00] Added error handling paths to lowlevel interface
+	code
+Date: Tue, 12 Jun 2007 17:02:19 -0600
+Message-Id: <1181689350166-git-send-email-grant.likely@secretlab.ca>
+In-Reply-To: <11816893493783-git-send-email-grant.likely@secretlab.ca>
 References: <11816893411272-git-send-email-grant.likely@secretlab.ca>
 	<11816893494143-git-send-email-grant.likely@secretlab.ca>
+	<11816893492706-git-send-email-grant.likely@secretlab.ca>
+	<11816893493783-git-send-email-grant.likely@secretlab.ca>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,99 +25,192 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Use the correct formulas and values for calculating the bittime within
-a frame.
+Fix up some of the error paths in the low level code to not go into an
+endless loop.  Replace the endless loops with failout code.
+
+This patch is just a first step.  It eliminates the endless loops, but
+some of the code paths don't yet have a failure path, so instead the
+driver uses BUG_ON() to die with lots of noise.  The driver needs to be
+refactored to add in the failure paths so the driver can fail gracefully
+
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
- drivers/usb/c67x00/c67x00-hcd.h   |   10 ++++++--
- drivers/usb/c67x00/c67x00-sched.c |   42 +++++++++++++++++++++++++++++++++---
- 2 files changed, 45 insertions(+), 7 deletions(-)
+ drivers/usb/c67x00/c67x00-drv.c    |    8 ++++-
+ drivers/usb/c67x00/c67x00-ll-hpi.c |   57 ++++++++++++++++++++++-------------
+ drivers/usb/c67x00/c67x00-ll-hpi.h |    6 ++--
+ 3 files changed, 46 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/usb/c67x00/c67x00-hcd.h b/drivers/usb/c67x00/c67x00-hcd.h
-index 8f8eff1..94ce7ec 100644
---- a/drivers/usb/c67x00/c67x00-hcd.h
-+++ b/drivers/usb/c67x00/c67x00-hcd.h
-@@ -46,12 +46,16 @@
-  * The current implementation switches between _STD (default) and _ISO (when
-  * isochronous transfers are scheduled), in order to optimize the throughput
-  * in normal cicrumstances, but also provide good isochronous behaviour.
-+ *
-+ * Bandwidth is described in bit time so with a 12MHz USB clock and 1ms
-+ * frames; there are 12000 bit times per frame.
-  */
+diff --git a/drivers/usb/c67x00/c67x00-drv.c b/drivers/usb/c67x00/c67x00-drv.c
+index 6b38248..2737344 100644
+--- a/drivers/usb/c67x00/c67x00-drv.c
++++ b/drivers/usb/c67x00/c67x00-drv.c
+@@ -209,7 +209,11 @@ static int __devinit usb_c67x00_drv_probe(struct platform_device *pdev)
+ 		goto request_irq_failed;
+ 	}
  
--#define MAX_FRAME_BW_STD	4000
--#define MAX_FRAME_BW_ISO	2400
-+#define TOTAL_FRAME_BW		12000
-+#define DEFAULT_EOT		2250
+-	c67x00_ll_reset(drv);
++	ret = c67x00_ll_reset(drv);
++	if (ret) {
++		dev_err(&pdev->dev, "Device reset failed\n");
++		goto reset_failed;
++	}
  
--#define DEFAULT_EOT		6500
-+#define MAX_FRAME_BW_STD	(TOTAL_FRAME_BW - DEFAULT_EOT)
-+#define MAX_FRAME_BW_ISO	2400
+ 	for (i = 0; i < C67X00_SIES; i++)
+ 		probe_sie(&drv->sie[i]);
+@@ -218,6 +222,8 @@ static int __devinit usb_c67x00_drv_probe(struct platform_device *pdev)
  
- /*
-  * Periodic transfers may only use 90% of the full frame, but as
-diff --git a/drivers/usb/c67x00/c67x00-sched.c b/drivers/usb/c67x00/c67x00-sched.c
-index 952bdab..0d08af7 100644
---- a/drivers/usb/c67x00/c67x00-sched.c
-+++ b/drivers/usb/c67x00/c67x00-sched.c
-@@ -520,11 +520,45 @@ static inline void giveback_urb(struct c67x00_hcd *c67x00, struct urb *urb,
+ 	return 0;
+ 
++reset_failed:
++	free_irq(res2->start, drv);
+ request_irq_failed:
+ 	iounmap(drv->hpi.base);
+ map_failed:
+diff --git a/drivers/usb/c67x00/c67x00-ll-hpi.c b/drivers/usb/c67x00/c67x00-ll-hpi.c
+index f47ce79..868736a 100644
+--- a/drivers/usb/c67x00/c67x00-ll-hpi.c
++++ b/drivers/usb/c67x00/c67x00-ll-hpi.c
+@@ -243,7 +243,7 @@ static inline u16 ll_recv_msg(struct c67x00_drv *drv)
+ 	INIT_COMPLETION(drv->lcp.msg_received);
+ 	WARN_ON(!res);
+ 
+-	return res;
++	return (res == 0) ? -EIO : 0;
+ }
+ 
+ static inline void ll_release(struct c67x00_drv *drv)
+@@ -283,18 +283,22 @@ static inline void c67x00_ll_husb_sie_init(struct c67x00_sie *sie)
+ {
+ 	struct c67x00_drv *drv = sie->drv;
+ 	struct lcp_int_data data;
++	int rc;
+ 
+-	c67x00_comm_exec_int(drv, HUSB_SIE_INIT_INT(sie->sie_num), &data);
++	rc = c67x00_comm_exec_int(drv, HUSB_SIE_INIT_INT(sie->sie_num), &data);
++	BUG_ON(rc); /* No return path for error code; crash spectacularly */
+ }
+ 
+ void c67x00_ll_husb_reset(struct c67x00_sie *sie, int port)
+ {
+ 	struct c67x00_drv *drv = sie->drv;
+ 	struct lcp_int_data data;
++	int rc;
+ 
+ 	data.regs[0] = 50;	/* Reset USB port for 50ms */
+ 	data.regs[1] = port | (sie->sie_num << 1);
+-	c67x00_comm_exec_int(drv, HUSB_RESET_INT, &data);
++	rc = c67x00_comm_exec_int(drv, HUSB_RESET_INT, &data);
++	BUG_ON(rc); /* No return path for error code; crash spectacularly */
+ }
+ 
+ void c67x00_ll_husb_set_current_td(struct c67x00_sie *sie, u16 addr)
+@@ -358,10 +362,12 @@ void c67x00_ll_susb_init(struct c67x00_sie *sie)
+ {
+ 	struct c67x00_drv *drv = sie->drv;
+ 	struct lcp_int_data data;
++	int rc;
+ 
+ 	data.regs[1] = 1;	/* full speed */
+ 	data.regs[2] = sie->sie_num + 1;
+-	c67x00_comm_exec_int(drv, SUSB_INIT_INT, &data);
++	rc = c67x00_comm_exec_int(drv, SUSB_INIT_INT, &data);
++	BUG_ON(rc); /* No return path for error code; crash spectacularly */
+ 
+ 	hpi_clear_bits(drv, HPI_IRQ_ROUTING_REG,
+ 		       SOFEOP_TO_HPI_EN(sie->sie_num));
+@@ -384,45 +390,54 @@ void c67x00_ll_irq(struct c67x00_drv *drv)
+ u16 c67x00_comm_read_ctrl_reg(struct c67x00_drv * drv, u16 addr)
+ {
+ 	unsigned long msg, res;
++	int rc;
+ 
+ 	ll_start(drv);
+-	do {
+-		hpi_write_word(drv, COMM_CTRL_REG_ADDR, addr);
+-		hpi_send_mbox(drv, COMM_READ_CTRL_REG);
+-	} while (!ll_recv_msg(drv));
++	hpi_write_word(drv, COMM_CTRL_REG_ADDR, addr);
++	hpi_send_mbox(drv, COMM_READ_CTRL_REG);
++	rc = ll_recv_msg(drv);
++
++	BUG_ON(rc); /* No return path for error code; crash spectacularly */
++
+ 	msg = drv->lcp.last_msg;
+ 	if (msg != COMM_ACK) {
+ 		dev_warn(&drv->pdev->dev, "COMM_READ_CTRL_REG didn't ACK!\n");
+ 		res = 0;
+-	} else
++	} else {
+ 		res = hpi_read_word(drv, COMM_CTRL_REG_DATA);
++	}
+ 	ll_release(drv);
+ 	return res;
+ }
+ 
+-void c67x00_comm_exec_int(struct c67x00_drv *drv, u16 nr,
++int c67x00_comm_exec_int(struct c67x00_drv *drv, u16 nr,
+ 			  struct lcp_int_data *data)
+ {
++	int i, rc;
++
+ 	ll_start(drv);
+-	do {
+-		int i;
+-		hpi_write_word(drv, COMM_INT_NUM, nr);
+-		for (i = 0; i < COMM_REGS; i++)
+-			hpi_write_word(drv, COMM_R(i), data->regs[i]);
+-		hpi_send_mbox(drv, COMM_EXEC_INT);
+-	} while (!ll_recv_msg(drv));
++	hpi_write_word(drv, COMM_INT_NUM, nr);
++	for (i = 0; i < COMM_REGS; i++)
++		hpi_write_word(drv, COMM_R(i), data->regs[i]);
++	hpi_send_mbox(drv, COMM_EXEC_INT);
++	rc = ll_recv_msg(drv);
+ 	ll_release(drv);
++
++	return rc;
+ }
  
  /* -------------------------------------------------------------------------- */
  
--static int claim_frame_bw(struct c67x00_hcd *c67x00, int len, int periodic)
-+static int claim_frame_bw(struct c67x00_hcd *c67x00, struct urb *urb,
-+			  int len, int periodic)
+-void c67x00_ll_reset(struct c67x00_drv *drv)
++int c67x00_ll_reset(struct c67x00_drv *drv)
  {
--	int bit_time = len * 8;
-+	struct urb_priv *urbp = urb->hcpriv;
-+	int bit_time;
++	int rc;
 +
-+	/* According to the C67x00 BIOS user manual, page 3-18,19, the
-+	 * following calculations provide the full speed bit times for
-+	 * a transaction.
-+	 *
-+	 * FS(in)	= 112.5 +  9.36*BC + HOST_DELAY
-+	 * FS(in,iso)	=  90.5 +  9.36*BC + HOST_DELAY
-+	 * FS(out)	= 112.5 +  9.36*BC + HOST_DELAY
-+	 * FS(out,iso)	=  78.4 +  9.36*BC + HOST_DELAY
-+	 * LS(in)	= 802.4 + 75.78*BC + HOST_DELAY
-+	 * LS(out)	= 802.6 + 74.67*BC + HOST_DELAY
-+	 *
-+	 * HOST_DELAY == 106 for the c67200 and c67300.
-+	 */
+ 	ll_start(drv);
+-	do {
+-		hpi_send_mbox(drv, COMM_RESET);
+-	} while (!ll_recv_msg(drv));
++	hpi_send_mbox(drv, COMM_RESET);
++	rc = ll_recv_msg(drv);
+ 	ll_release(drv);
 +
-+	/* make calculations in 1/100 bit times to maintain resolution */
-+	if (urbp->ep_data->dev->speed == USB_SPEED_LOW) {
-+		/* Low speed pipe */
-+		if (usb_pipein(urb->pipe))
-+			bit_time = 80240 + 7578*len;
-+		else
-+			bit_time = 80260 + 7467*len;
-+	} else {
-+		/* FS pipes */
-+		if (usb_pipeisoc(urb->pipe))
-+			bit_time = usb_pipein(urb->pipe) ? 9050 : 7840;
-+		else
-+			bit_time = 11250;
-+		bit_time += 936*len;
-+	}
++	return rc;
+ }
  
--	/* TODO don't we need to take low speed into regards? */
-+	/* Scale back down to integer bit times.  Use a host delay of 106.
-+	 * (this is the only place it is used) */
-+	bit_time = ((bit_time+50) / 100) + 106;
+ /* -------------------------------------------------------------------------- */
+diff --git a/drivers/usb/c67x00/c67x00-ll-hpi.h b/drivers/usb/c67x00/c67x00-ll-hpi.h
+index 118cd7d..3f84348 100644
+--- a/drivers/usb/c67x00/c67x00-ll-hpi.h
++++ b/drivers/usb/c67x00/c67x00-ll-hpi.h
+@@ -85,14 +85,14 @@ void c67x00_read_mem_le16(struct c67x00_drv *drv, u16 addr,
  
- 	if (unlikely(bit_time + c67x00->bandwidth_allocated >=
- 		     c67x00->max_frame_bw))
-@@ -565,7 +599,7 @@ static int create_td(struct c67x00_hcd *c67x00,
- 	__u8 cmd = 0;
- 	int tt = 0;
+ u16 c67x00_comm_read_ctrl_reg(struct c67x00_drv *drv, u16 addr);
  
--	if (claim_frame_bw(c67x00, len,
-+	if (claim_frame_bw(c67x00, urb, len,
- 			   usb_pipeisoc(urb->pipe) || usb_pipeint(urb->pipe)))
- 		return -EMSGSIZE;	/* Not really an error, but expected */
+-void c67x00_comm_exec_int(struct c67x00_drv *drv, u16 nr,
+-			  struct lcp_int_data *data);
++int c67x00_comm_exec_int(struct c67x00_drv *drv, u16 nr,
++			 struct lcp_int_data *data);
  
+ /* Called by c67x00_irq to handle lcp interrupts */
+ void c67x00_ll_irq(struct c67x00_drv *drv);
+ 
+ void c67x00_ll_init(struct c67x00_drv *drv);
+ void c67x00_ll_release(struct c67x00_drv *drv);
+-void c67x00_ll_reset(struct c67x00_drv *drv);
++int c67x00_ll_reset(struct c67x00_drv *drv);
+ 
+ #endif				/* _USB_C67X00_LL_HPI_H */
 -- 
 1.4.4.2
