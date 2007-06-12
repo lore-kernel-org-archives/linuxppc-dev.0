@@ -1,13 +1,13 @@
 Return-Path: <domen.puncer@telargo.com>
-Received: from out001.atlarge.net (out001.atlarge.net [129.41.63.69])
-	by ozlabs.org (Postfix) with ESMTP id 47798DDF0A
+Received: from out002.atlarge.net (out002.atlarge.net [129.41.63.60])
+	by ozlabs.org (Postfix) with ESMTP id 96F19DDD06
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 12 Jun 2007 18:59:40 +1000 (EST)
-Date: Tue, 12 Jun 2007 10:59:31 +0200
+	Tue, 12 Jun 2007 19:38:38 +1000 (EST)
+Date: Tue, 12 Jun 2007 11:38:21 +0200
 From: Domen Puncer <domen.puncer@telargo.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH] mpc5200: /dev/watchdog driver for GPT0
-Message-ID: <20070612085931.GG23294@moe.telargo.com>
+Subject: [PATCH] mpc5200: rtc driver
+Message-ID: <20070612093821.GH23294@moe.telargo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -20,310 +20,388 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Driver for internal mpc5200 watchdog on general purpose timer 0.
-For IPB clock of 132 MHz the maximum timeout is about 32 seconds.
+Driver for internal rtc on mpc5200.
+It isn't very useful, since its contents don't remain on
+power off.
+Can be used to set alarm for wake-up from deep-sleep or
+one second periodic interrupt ;-)
 
 
 Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
 
 ---
-Hi!
+ drivers/rtc/Kconfig               |   10 +
+ drivers/rtc/Makefile              |    1 
+ drivers/rtc/rtc-mpc5200.c         |  282 ++++++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/mpc5200_rtc.h |   49 ++++++
+ 4 files changed, 342 insertions(+)
 
-I also have some generic GPT code that one could extend with
-what he/she needs. Mail me if you'd find it useful.
-
-
- drivers/char/watchdog/Kconfig       |    4 
- drivers/char/watchdog/Makefile      |    1 
- drivers/char/watchdog/mpc5200_wdt.c |  257 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 262 insertions(+)
-
-Index: work-powerpc.git/drivers/char/watchdog/Kconfig
+Index: work-powerpc.git/drivers/rtc/Kconfig
 ===================================================================
---- work-powerpc.git.orig/drivers/char/watchdog/Kconfig
-+++ work-powerpc.git/drivers/char/watchdog/Kconfig
-@@ -521,6 +521,10 @@ config 8xx_WDT
- 	tristate "MPC8xx Watchdog Timer"
- 	depends on 8xx
+--- work-powerpc.git.orig/drivers/rtc/Kconfig
++++ work-powerpc.git/drivers/rtc/Kconfig
+@@ -401,4 +401,14 @@ config RTC_DRV_RS5C313
+ 	help
+ 	  If you say yes here you get support for the Ricoh RS5C313 RTC chips.
  
-+config MPC5200_WDT
-+	tristate "MPC5200 Watchdog Timer"
-+	depends on PPC_MPC52xx
++config RTC_DRV_MPC5200
++	tristate "MPC5200 RTC"
++	depends on RTC_CLASS
++	help
++	  If you say yes here you will get support for the
++	  RTC built in MPC5200(b) CPU.
 +
- config 83xx_WDT
- 	tristate "MPC83xx Watchdog Timer"
- 	depends on PPC_83xx
-Index: work-powerpc.git/drivers/char/watchdog/Makefile
++	  This driver can also be built as a module. If so, the module
++	  will be called rtc-mpc5200.
++
+ endmenu
+Index: work-powerpc.git/drivers/rtc/Makefile
 ===================================================================
---- work-powerpc.git.orig/drivers/char/watchdog/Makefile
-+++ work-powerpc.git/drivers/char/watchdog/Makefile
-@@ -64,6 +64,7 @@ obj-$(CONFIG_SBC_EPX_C3_WATCHDOG) += sbc
- 
- # PowerPC Architecture
- obj-$(CONFIG_8xx_WDT) += mpc8xx_wdt.o
-+obj-$(CONFIG_MPC5200_WDT) += mpc5200_wdt.o
- obj-$(CONFIG_83xx_WDT) += mpc83xx_wdt.o
- obj-$(CONFIG_MV64X60_WDT) += mv64x60_wdt.o
- obj-$(CONFIG_BOOKE_WDT) += booke_wdt.o
-Index: work-powerpc.git/drivers/char/watchdog/mpc5200_wdt.c
+--- work-powerpc.git.orig/drivers/rtc/Makefile
++++ work-powerpc.git/drivers/rtc/Makefile
+@@ -41,3 +41,4 @@ obj-$(CONFIG_RTC_DRV_V3020)	+= rtc-v3020
+ obj-$(CONFIG_RTC_DRV_AT91RM9200)+= rtc-at91rm9200.o
+ obj-$(CONFIG_RTC_DRV_SH)	+= rtc-sh.o
+ obj-$(CONFIG_RTC_DRV_BFIN)	+= rtc-bfin.o
++obj-$(CONFIG_RTC_DRV_MPC5200)	+= rtc-mpc5200.o
+Index: work-powerpc.git/drivers/rtc/rtc-mpc5200.c
 ===================================================================
 --- /dev/null
-+++ work-powerpc.git/drivers/char/watchdog/mpc5200_wdt.c
-@@ -0,0 +1,257 @@
-+#include <linux/init.h>
++++ work-powerpc.git/drivers/rtc/rtc-mpc5200.c
+@@ -0,0 +1,282 @@
 +#include <linux/module.h>
-+#include <linux/miscdevice.h>
-+#include <linux/watchdog.h>
-+#include <linux/io.h>
++#include <linux/rtc.h>
++#include <asm/of_device.h>
 +#include <asm/of_platform.h>
-+#include <asm/uaccess.h>
++#include <asm/io.h>
 +#include <asm/mpc52xx.h>
++#include <asm/mpc5200_rtc.h>
 +
 +
-+#define GPT_MODE_WDT		(1<<15)
-+#define GPT_MODE_CE		(1<<12)
-+#define GPT_MODE_MS_TIMER	(0x4)
-+
-+
-+struct mpc5200_wdt {
-+	unsigned count;	/* timer ticks before watchdog kicks in */
-+	long ipb_freq;
-+	struct miscdevice miscdev;
-+	struct resource mem;
-+	struct mpc52xx_gpt __iomem *regs;
-+	struct mpc52xx_gpt saved_regs;
++struct mpc5200_rtc_data {
++	unsigned irq;
++	unsigned irq_periodic;
++	struct mpc52xx_rtc __iomem *regs;
++	struct rtc_device *rtc;
 +};
 +
-+
-+/* misc devices don't provide a way, to get back to 'dev' or 'miscdev' from
-+ * file operations, which sucks. But there can be max 1 watchdog anyway, so...
-+ */
-+static struct mpc5200_wdt *wdt_global;
-+
-+
-+/* helper to calculate timeout in timer counts */
-+static void mpc5200_wdt_set_timeout(struct mpc5200_wdt *wdt, int timeout)
++static int mpc5200_rtc_read_time(struct device *dev, struct rtc_time *tm)
 +{
-+	/* use biggest prescaler of 64k */
-+	wdt->count = (wdt->ipb_freq + 0xffff) / 0x10000 * timeout;
++	struct mpc5200_rtc_data *rtc = dev_get_drvdata(dev);
++	struct mpc52xx_rtc __iomem *regs = rtc->regs;
++	int tmp;
 +
-+	if (wdt->count > 0xffff)
-+		wdt->count = 0xffff;
-+}
-+/* return timeout in seconds (calculated from timer count) */
-+static int mpc5200_wdt_get_timeout(struct mpc5200_wdt *wdt)
-+{
-+	return wdt->count * 0x10000 / wdt->ipb_freq;
-+}
++	tm->tm_sec = in_8(&regs->second);
++	tm->tm_min = in_8(&regs->minute);
 +
++	/* 12 hour format? */
++	if (in_8(&regs->hour) & 0x20)
++		tm->tm_hour = (in_8(&regs->hour) >> 1) + (in_8(&regs->hour) & 1 ? 12 : 0);
++	else
++		tm->tm_hour = in_8(&regs->hour);
 +
-+/* watchdog operations */
-+static int mpc5200_wdt_start(struct mpc5200_wdt *wdt)
-+{
-+	/* disable */
-+	out_be32(&wdt->regs->mode, 0);
-+	/* set timeout, with maximum prescaler */
-+	out_be32(&wdt->regs->count, 0x0 | wdt->count);
-+	/* enable watchdog */
-+	out_be32(&wdt->regs->mode, GPT_MODE_CE | GPT_MODE_WDT | GPT_MODE_MS_TIMER);
++	tmp = in_8(&regs->wday_mday);
++	tm->tm_mday = tmp & 0x1f;
++	tm->tm_mon = in_8(&regs->month) - 1;
++	tm->tm_year = in_be16(&regs->year) - 1900;
++	tm->tm_wday = (tmp >> 5) % 7;
++	tm->tm_yday = rtc_year_days(tm->tm_mday, tm->tm_mon, tm->tm_year);
++	tm->tm_isdst = 0;
 +
 +	return 0;
 +}
-+static int mpc5200_wdt_ping(struct mpc5200_wdt *wdt)
++
++static int mpc5200_rtc_set_time(struct device *dev, struct rtc_time *tm)
 +{
-+	/* writing A5 to OCPW resets the watchdog */
-+	out_be32(&wdt->regs->mode, 0xA5000000 | (0xffffff & in_be32(&wdt->regs->mode)));
-+	return 0;
-+}
-+static int mpc5200_wdt_stop(struct mpc5200_wdt *wdt)
-+{
-+	out_be32(&wdt->regs->mode, 0);
++	struct mpc5200_rtc_data *rtc = dev_get_drvdata(dev);
++	struct mpc52xx_rtc __iomem *regs = rtc->regs;
++
++	/* time */
++	out_8(&regs->second_set, tm->tm_sec);
++	out_8(&regs->minute_set, tm->tm_min);
++	out_8(&regs->hour_set, tm->tm_hour);
++
++	/* set time sequence */
++	out_8(&regs->set_time, 0x1);
++	out_8(&regs->set_time, 0x3);
++	out_8(&regs->set_time, 0x1);
++	out_8(&regs->set_time, 0x0);
++
++	/* date */
++	out_8(&regs->month_set, tm->tm_mon + 1);
++	out_8(&regs->weekday_set, tm->tm_wday ? tm->tm_wday : 7);
++	out_8(&regs->date_set, tm->tm_mday);
++	out_be16(&regs->year_set, tm->tm_year + 1900);
++
++	/* set date sequence */
++	out_8(&regs->set_date, 0x1);
++	out_8(&regs->set_date, 0x3);
++	out_8(&regs->set_date, 0x1);
++	out_8(&regs->set_date, 0x0);
++
 +	return 0;
 +}
 +
-+
-+/* file operations */
-+static ssize_t mpc5200_wdt_write(struct file *file, const char *data,
-+		size_t len, loff_t *ppos)
++static int mpc5200_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alrm)
 +{
-+	struct mpc5200_wdt *wdt = file->private_data;
-+	mpc5200_wdt_ping(wdt);
++	struct mpc5200_rtc_data *rtc = dev_get_drvdata(dev);
++	struct mpc52xx_rtc __iomem *regs = rtc->regs;
++
++	alrm->time.tm_sec = -1;
++	alrm->time.tm_min = in_8(&regs->alm_min_set);
++	alrm->time.tm_hour = in_8(&regs->alm_hour_set);
++
++	alrm->time.tm_mday = -1;
++	alrm->time.tm_mon = -1;
++	alrm->time.tm_year = -1;
++
++	alrm->enabled = in_8(&regs->alm_enable);
++	alrm->pending = in_8(&regs->alm_status);
++
 +	return 0;
 +}
-+static struct watchdog_info mpc5200_wdt_info = {
-+	.options	= WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING,
-+	.identity	= "mpc5200 watchdog on GPT0",
-+};
-+static int mpc5200_wdt_ioctl(struct inode *inode, struct file *file,
-+		unsigned int cmd, unsigned long arg)
++
++static int mpc5200_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *alrm)
 +{
-+	struct mpc5200_wdt *wdt = file->private_data;
-+	int __user *data = (int __user *)arg;
-+	int timeout;
-+	int ret = 0;
++	struct mpc5200_rtc_data *rtc = dev_get_drvdata(dev);
++	struct mpc52xx_rtc __iomem *regs = rtc->regs;
++
++	out_8(&regs->alm_min_set, alrm->time.tm_min);
++	out_8(&regs->alm_hour_set, alrm->time.tm_hour);
++
++	out_8(&regs->alm_enable, alrm->enabled);
++
++	return 0;
++}
++
++static irqreturn_t rtc_handler(int irq, void *dev)
++{
++	struct mpc5200_rtc_data *rtc = dev_get_drvdata((struct device *)dev);
++	struct mpc52xx_rtc __iomem *regs = rtc->regs;
++
++	if (in_8(&regs->int_alm)) {
++		/* acknowledge */
++		out_8(&regs->int_alm, 1);
++
++		rtc_update_irq(rtc->rtc, 1, RTC_IRQF | RTC_AF);
++		return IRQ_HANDLED;
++	}
++
++	return IRQ_NONE;
++}
++
++static irqreturn_t rtc_handler_upd(int irq, void *dev)
++{
++	struct mpc5200_rtc_data *rtc = dev_get_drvdata((struct device *)dev);
++	struct mpc52xx_rtc __iomem *regs = rtc->regs;
++
++	if (in_8(&regs->int_sec) && (in_8(&regs->int_enable) & 0x1)) {
++		/* acknowledge */
++		out_8(&regs->int_sec, 1);
++
++		rtc_update_irq(rtc->rtc, 1, RTC_IRQF | RTC_UF);
++		return IRQ_HANDLED;
++	}
++
++	return IRQ_NONE;
++}
++
++static int mpc5200_rtc_ioctl(struct device *dev, unsigned int cmd, unsigned long arg)
++{
++	struct mpc5200_rtc_data *rtc = dev_get_drvdata(dev);
++	struct mpc52xx_rtc __iomem *regs = rtc->regs;
 +
 +	switch (cmd) {
-+	case WDIOC_GETSUPPORT:
-+		ret = copy_to_user(data, &mpc5200_wdt_info, sizeof(mpc5200_wdt_info));
-+		if (ret)
-+			ret = -EFAULT;
++	/* alarm interrupt */
++	case RTC_AIE_ON:
++		out_8(&regs->alm_enable, 1);
++		break;
++	case RTC_AIE_OFF:
++		out_8(&regs->alm_enable, 0);
 +		break;
 +
-+	case WDIOC_KEEPALIVE:
-+		mpc5200_wdt_ping(wdt);
++	/* update interrupt (periodic second in mpc5200 words) */
++	case RTC_UIE_ON:
++		out_8(&regs->int_enable, (in_8(&regs->int_enable) & ~0x8) | 0x1);
++		break;
++	case RTC_UIE_OFF:
++		out_8(&regs->int_enable, in_8(&regs->int_enable) & ~0x1);
 +		break;
 +
-+	case WDIOC_SETTIMEOUT:
-+		ret = get_user(timeout, data);
-+		if (ret)
-+			break;
-+		mpc5200_wdt_set_timeout(wdt, timeout);
-+		mpc5200_wdt_start(wdt);
-+		/* fall through and return the timeout */
++	/* no periodic interrupts */
++	case RTC_IRQP_READ:
++	case RTC_IRQP_SET:
++		return -ENOTTY;
 +
-+	case WDIOC_GETTIMEOUT:
-+		timeout = mpc5200_wdt_get_timeout(wdt);
-+		ret = put_user(timeout, data);
-+		break;
++	default:
++		return -ENOIOCTLCMD;
 +	}
-+	return ret;
-+}
-+static int mpc5200_wdt_open(struct inode *inode, struct file *file)
-+{
-+	mpc5200_wdt_set_timeout(wdt_global, 30);
-+	mpc5200_wdt_start(wdt_global);
-+	file->private_data = wdt_global;
-+	return 0;
-+}
-+static int mpc5200_wdt_release(struct inode *inode, struct file *file)
-+{
-+#if WATCHDOG_NOWAYOUT == 0
-+	struct mpc5200_wdt *wdt = file->private_data;
-+	mpc5200_wdt_stop(wdt);
-+#endif
 +	return 0;
 +}
 +
-+static struct file_operations mpc5200_wdt_fops = {
-+	.owner	= THIS_MODULE,
-+	.write	= mpc5200_wdt_write,
-+	.ioctl	= mpc5200_wdt_ioctl,
-+	.open	= mpc5200_wdt_open,
-+	.release = mpc5200_wdt_release,
++static const struct rtc_class_ops mpc5200_rtc_ops = {
++	.read_time	= mpc5200_rtc_read_time,
++	.set_time	= mpc5200_rtc_set_time,
++	.read_alarm	= mpc5200_rtc_read_alarm,
++	.set_alarm	= mpc5200_rtc_set_alarm,
++	.ioctl		= mpc5200_rtc_ioctl,
 +};
 +
-+/* module operations */
-+static int mpc5200_wdt_probe(struct of_device *op, const struct of_device_id *match)
++static int __devinit mpc5200_rtc_probe(struct of_device *op, const struct of_device_id *match)
 +{
-+	struct mpc5200_wdt *wdt;
-+	int err;
-+	const void *has_wdt;
-+	int size;
++	struct mpc5200_rtc_data *rtc;
++	int err = 0;
 +
-+	has_wdt = of_get_property(op->node, "has-wdt", NULL);
-+	if (!has_wdt)
-+		return -ENODEV;
-+
-+	wdt = kzalloc(sizeof(*wdt), GFP_KERNEL);
-+	if (!wdt)
-+		return -ENOMEM;
-+
-+	wdt->ipb_freq = mpc52xx_find_ipb_freq(op->node);
-+
-+	err = of_address_to_resource(op->node, 0, &wdt->mem);
-+	if (err)
-+		goto out_free;
-+	size = wdt->mem.end - wdt->mem.start + 1;
-+	if (!request_mem_region(wdt->mem.start, size, "mpc5200_wdt")) {
-+		err = -ENODEV;
-+		goto out_free;
-+	}
-+	wdt->regs = ioremap(wdt->mem.start, size);
-+	if (!wdt->regs) {
-+		err = -ENODEV;
-+		goto out_release;
++	rtc = kzalloc(sizeof(*rtc), GFP_KERNEL);
++	if (!rtc) {
++		err = -ENOMEM;
++		goto out;
 +	}
 +
-+	dev_set_drvdata(&op->dev, wdt);
++	rtc->regs = mpc52xx_find_and_map("mpc5200-rtc");
++	if (!rtc->regs) {
++		printk(KERN_ERR "%s: couldn't map io space\n", __func__);
++		err = -ENOSYS;
++		goto out_free;
++	}
 +
-+	wdt->miscdev = (struct miscdevice) {
-+		.minor	= WATCHDOG_MINOR,
-+		.name	= "watchdog",
-+		.fops	= &mpc5200_wdt_fops,
-+		.parent = &op->dev,
-+	};
-+	wdt_global = wdt;
-+	err = misc_register(&wdt->miscdev);
-+	if (!err)
-+		return 0;
++	rtc->rtc = rtc_device_register("mpc5200-rtc", &op->dev,
++			&mpc5200_rtc_ops, THIS_MODULE);
++	if (IS_ERR(rtc->rtc)) {
++		err = PTR_ERR(rtc->rtc);
++		goto out_unmap;
++	}
 +
-+	iounmap(wdt->regs);
-+ out_release:
-+	release_mem_region(wdt->mem.start, size);
++	dev_set_drvdata(&op->dev, rtc);
++
++	rtc->irq = irq_of_parse_and_map(op->node, 1);
++	if ((err = request_irq(rtc->irq, rtc_handler, IRQF_DISABLED, "mpc5200-rtc", &op->dev))) {
++		printk(KERN_ERR "%s: could not request irq: %i\n", __func__, rtc->irq);
++		goto out_dispose;
++	}
++
++	rtc->irq_periodic = irq_of_parse_and_map(op->node, 0);
++	if ((err = request_irq(rtc->irq_periodic, rtc_handler_upd, IRQF_DISABLED,
++					"mpc5200-rtc_upd", &op->dev))) {
++		printk(KERN_ERR "%s: could not request irq: %i\n", __func__, rtc->irq_periodic);
++		goto out_dispose2;
++	}
++
++	goto out;
++
++ out_dispose2:
++	irq_dispose_mapping(rtc->irq_periodic);
++	free_irq(rtc->irq, &op->dev);
++ out_dispose:
++	irq_dispose_mapping(rtc->irq);
++ out_unmap:
++	iounmap(rtc->regs);
 + out_free:
-+	kfree(wdt);
++	kfree(rtc);
++ out:
 +	return err;
 +}
 +
-+static int mpc5200_wdt_remove(struct of_device *op)
++static int __devexit mpc5200_rtc_remove(struct of_device *op)
 +{
-+	struct mpc5200_wdt *wdt = dev_get_drvdata(&op->dev);
++	struct mpc5200_rtc_data *rtc = dev_get_drvdata(&op->dev);
++	struct mpc52xx_rtc __iomem *regs = rtc->regs;
 +
-+	mpc5200_wdt_stop(wdt);
-+	misc_deregister(&wdt->miscdev);
-+	iounmap(wdt->regs);
-+	release_mem_region(wdt->mem.start, wdt->mem.end - wdt->mem.start + 1);
-+	kfree(wdt);
++	/* disable interrupt, so there are no nasty surprises */
++	out_8(&regs->alm_enable, 0);
++	out_8(&regs->int_enable, in_8(&regs->int_enable) & ~0x1);
 +
-+	return 0;
-+}
-+static int mpc5200_wdt_suspend(struct of_device *op, pm_message_t state)
-+{
-+	struct mpc5200_wdt *wdt = dev_get_drvdata(&op->dev);
-+	mpc5200_wdt_stop(wdt);
-+	return 0;
-+}
-+static int mpc5200_wdt_resume(struct of_device *op)
-+{
-+	struct mpc5200_wdt *wdt = dev_get_drvdata(&op->dev);
-+	mpc5200_wdt_start(wdt);
-+	return 0;
-+}
-+static int mpc5200_wdt_shutdown(struct of_device *op)
-+{
-+	struct mpc5200_wdt *wdt = dev_get_drvdata(&op->dev);
-+	mpc5200_wdt_stop(wdt);
++	rtc_device_unregister(rtc->rtc);
++	iounmap(rtc->regs);
++	free_irq(rtc->irq, &op->dev);
++	free_irq(rtc->irq_periodic, &op->dev);
++	irq_dispose_mapping(rtc->irq);
++	irq_dispose_mapping(rtc->irq_periodic);
++	kfree(rtc);
++	dev_set_drvdata(&op->dev, NULL);
++
 +	return 0;
 +}
 +
-+static struct of_device_id mpc5200_wdt_match[] = {
-+	{ .compatible = "mpc5200-gpt", },
++static struct of_device_id mpc5200_rtc_match[] = {
++	{ .type = "rtc", .compatible = "mpc5200-rtc", },
 +	{},
 +};
-+static struct of_platform_driver mpc5200_wdt_driver = {
++
++static struct of_platform_driver mpc5200_rtc_driver = {
 +	.owner		= THIS_MODULE,
-+	.name		= "mpc5200-gpt-wdt",
-+	.match_table	= mpc5200_wdt_match,
-+	.probe		= mpc5200_wdt_probe,
-+	.remove		= mpc5200_wdt_remove,
-+	.suspend	= mpc5200_wdt_suspend,
-+	.resume		= mpc5200_wdt_resume,
-+	.shutdown	= mpc5200_wdt_shutdown,
++	.name		= "mpc5200-rtc",
++	.match_table	= mpc5200_rtc_match,
++	.probe		= mpc5200_rtc_probe,
++	.remove		= mpc5200_rtc_remove,
 +};
 +
-+
-+static int __init mpc5200_wdt_init(void)
++static int __init mpc5200_rtc_init(void)
 +{
-+	return of_register_platform_driver(&mpc5200_wdt_driver);
++	return of_register_platform_driver(&mpc5200_rtc_driver);
 +}
 +
-+static void __exit mpc5200_wdt_exit(void)
++static void __exit mpc5200_rtc_exit(void)
 +{
-+	of_unregister_platform_driver(&mpc5200_wdt_driver);
++	of_unregister_platform_driver(&mpc5200_rtc_driver);
 +}
 +
-+module_init(mpc5200_wdt_init);
-+module_exit(mpc5200_wdt_exit);
-+
-+MODULE_AUTHOR("Domen Puncer <domen.puncer@telargo.com>");
 +MODULE_LICENSE("Dual BSD/GPL");
++MODULE_AUTHOR("Domen Puncer <domen.puncer@telargo.com>");
++
++module_init(mpc5200_rtc_init);
++module_exit(mpc5200_rtc_exit);
+Index: work-powerpc.git/include/asm-powerpc/mpc5200_rtc.h
+===================================================================
+--- /dev/null
++++ work-powerpc.git/include/asm-powerpc/mpc5200_rtc.h
+@@ -0,0 +1,49 @@
++#ifndef _MPC5200_RTC_H_
++#define _MPC5200_RTC_H_
++
++/* RTC */
++struct mpc52xx_rtc {
++	u8	set_time;	/* RTC + 0x00 */
++	u8	hour_set;	/* RTC + 0x01 */
++	u8	minute_set;	/* RTC + 0x02 */
++	u8	second_set;	/* RTC + 0x03 */
++
++	u8	set_date;	/* RTC + 0x04 */
++	u8	month_set;	/* RTC + 0x05 */
++	u8	weekday_set;	/* RTC + 0x06 */
++	u8	date_set;	/* RTC + 0x07 */
++
++	u8	write_sw;	/* RTC + 0x08 */
++	u8	sw_set;		/* RTC + 0x09 */
++	u16	year_set;	/* RTC + 0x0a */
++
++	u8	alm_enable;	/* RTC + 0x0c */
++	u8	alm_hour_set;	/* RTC + 0x0d */
++	u8	alm_min_set;	/* RTC + 0x0e */
++	u8 	int_enable;	/* RTC + 0x0f */
++
++	u8	reserved1;
++	u8	hour;		/* RTC + 0x11 */
++	u8	minute;		/* RTC + 0x12 */
++	u8	second;		/* RTC + 0x13 */
++
++	u8	month;		/* RTC + 0x14 */
++	u8	wday_mday;	/* RTC + 0x15 */
++	u16	year;		/* RTC + 0x16 */
++
++	u8	int_alm;	/* RTC + 0x18 */
++	u8	int_sw;		/* RTC + 0x19 */
++	u8	alm_status;	/* RTC + 0x1a */
++	u8	sw_minute;	/* RTC + 0x1b */
++
++	u8	bus_error_1;	/* RTC + 0x1c */
++	u8	int_day;	/* RTC + 0x1d */
++	u8	int_min;	/* RTC + 0x1e */
++	u8	int_sec;	/* RTC + 0x1f */
++
++	u8	pterm;		/* RTC + 0x20 */
++	u8	eterm;		/* RTC + 0x21 */
++	u16	reserved2;
++};
++
++#endif /* _MPC5200_RTC_H_ */
