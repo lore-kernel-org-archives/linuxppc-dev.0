@@ -1,20 +1,20 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound3-dub-R.bigfish.com (outbound-dub.frontbridge.com
+Received: from outbound6-dub-R.bigfish.com (outbound-dub.frontbridge.com
 	[213.199.154.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 229A9DDE35
+	by ozlabs.org (Postfix) with ESMTP id D54BFDDEBF
 	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 04:55:36 +1000 (EST)
-Message-ID: <466EE98A.9050408@am.sony.com>
-Date: Tue, 12 Jun 2007 11:44:26 -0700
+Message-ID: <466EEB79.80802@am.sony.com>
+Date: Tue, 12 Jun 2007 11:52:41 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 10/30] PS3: Kexec support
+Subject: [patch 12/30] PS3: System-bus uevent
 References: <20070612181825.730300780@am.sony.com>>
 In-Reply-To: <20070612181825.730300780@am.sony.com>>
 Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,267 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fixup the core platform parts needed for kexec to work on the PS3.
- - Setup ps3_hpte_clear correctly.
- - Mask interrupts on irq removal.
- - Release all hypervisor resources.
- - Create new routine ps3_shutdown_IRQ()
+From: David Woodhouse <dwmw2@infradead.org>
 
+To allow userspace to automatically load modules, we need to hook up
+uevent for ps3_system_bus devices. I've used the form 'ps3:%d' with the
+ps3_match_id, since that's what we use for matching drivers.
+
+Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/platforms/ps3/htab.c      |   13 ++++--
- arch/powerpc/platforms/ps3/interrupt.c |   68 +++++++++++++++++++++++++--------
- arch/powerpc/platforms/ps3/platform.h  |    1 
- arch/powerpc/platforms/ps3/setup.c     |   29 ++------------
- arch/powerpc/platforms/ps3/smp.c       |    2 
- 5 files changed, 70 insertions(+), 43 deletions(-)
+ arch/powerpc/platforms/ps3/system-bus.c |   16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
---- a/arch/powerpc/platforms/ps3/htab.c
-+++ b/arch/powerpc/platforms/ps3/htab.c
-@@ -235,10 +235,17 @@ static void ps3_hpte_invalidate(unsigned
- 
- static void ps3_hpte_clear(void)
- {
--	/* Make sure to clean up the frame buffer device first */
--	ps3fb_cleanup();
-+	int result;
- 
--	lv1_unmap_htab(htab_addr);
-+	DBG(" -> %s:%d\n", __func__, __LINE__);
-+
-+	result = lv1_unmap_htab(htab_addr);
-+	BUG_ON(result);
-+
-+	ps3_mm_shutdown();
-+	ps3_mm_vas_destroy();
-+
-+	DBG(" <- %s:%d\n", __func__, __LINE__);
+--- a/arch/powerpc/platforms/ps3/system-bus.c
++++ b/arch/powerpc/platforms/ps3/system-bus.c
+@@ -437,9 +437,25 @@ static void ps3_system_bus_shutdown(stru
+ 	dev_dbg(&dev->core, " <- %s:%d\n", __func__, __LINE__);
  }
  
- void __init ps3_hpte_init(unsigned long htab_size)
---- a/arch/powerpc/platforms/ps3/interrupt.c
-+++ b/arch/powerpc/platforms/ps3/interrupt.c
-@@ -221,6 +221,8 @@ int ps3_virq_setup(enum ps3_cpu_binding 
- 		goto fail_set;
- 	}
- 
-+	ps3_chip_mask(*virq);
-+
- 	return result;
- 
- fail_set:
-@@ -312,6 +314,8 @@ int ps3_irq_plug_destroy(unsigned int vi
- 	pr_debug("%s:%d: node %lu, cpu %d, virq %u\n", __func__, __LINE__,
- 		pd->node, pd->cpu, virq);
- 
-+	ps3_chip_mask(virq);
-+
- 	result = lv1_disconnect_irq_plug_ext(pd->node, pd->cpu, virq);
- 
- 	if (result)
-@@ -369,7 +373,9 @@ int ps3_event_receive_port_destroy(unsig
- {
- 	int result;
- 
--	pr_debug(" -> %s:%d virq: %u\n", __func__, __LINE__, virq);
-+	pr_debug(" -> %s:%d virq %u\n", __func__, __LINE__, virq);
-+
-+	ps3_chip_mask(virq);
- 
- 	result = lv1_destruct_event_receive_port(virq_to_hw(virq));
- 
-@@ -377,17 +383,14 @@ int ps3_event_receive_port_destroy(unsig
- 		pr_debug("%s:%d: lv1_destruct_event_receive_port failed: %s\n",
- 			__func__, __LINE__, ps3_result(result));
- 
--	/* lv1_destruct_event_receive_port() destroys the IRQ plug,
--	 * so don't call ps3_irq_plug_destroy() here.
-+	/*
-+	 * Don't call ps3_virq_destroy() here since ps3_smp_cleanup_cpu()
-+	 * calls from interrupt context (smp_call_function) when kexecing.
- 	 */
- 
--	result = ps3_virq_destroy(virq);
--	BUG_ON(result);
--
- 	pr_debug(" <- %s:%d\n", __func__, __LINE__);
- 	return result;
- }
--EXPORT_SYMBOL_GPL(ps3_event_receive_port_destroy);
- 
- int ps3_send_event_locally(unsigned int virq)
- {
-@@ -459,6 +462,14 @@ int ps3_sb_event_receive_port_destroy(co
- 	result = ps3_event_receive_port_destroy(virq);
- 	BUG_ON(result);
- 
-+	/*
-+	 * ps3_event_receive_port_destroy() destroys the IRQ plug,
-+	 * so don't call ps3_irq_plug_destroy() here.
-+	 */
-+
-+	result = ps3_virq_destroy(virq);
-+	BUG_ON(result);
-+
- 	pr_debug(" <- %s:%d\n", __func__, __LINE__);
- 	return result;
- }
-@@ -499,16 +510,24 @@ EXPORT_SYMBOL_GPL(ps3_io_irq_setup);
- int ps3_io_irq_destroy(unsigned int virq)
- {
- 	int result;
-+	unsigned long outlet = virq_to_hw(virq);
- 
--	result = lv1_destruct_io_irq_outlet(virq_to_hw(virq));
-+	ps3_chip_mask(virq);
- 
--	if (result)
--		pr_debug("%s:%d: lv1_destruct_io_irq_outlet failed: %s\n",
--			__func__, __LINE__, ps3_result(result));
-+	/*
-+	 * lv1_destruct_io_irq_outlet() will destroy the IRQ plug,
-+	 * so call ps3_irq_plug_destroy() first.
-+	 */
- 
- 	result = ps3_irq_plug_destroy(virq);
- 	BUG_ON(result);
- 
-+	result = lv1_destruct_io_irq_outlet(outlet);
-+
-+	if (result)
-+		pr_debug("%s:%d: lv1_destruct_io_irq_outlet failed: %s\n",
-+			__func__, __LINE__, ps3_result(result));
-+
- 	return result;
- }
- EXPORT_SYMBOL_GPL(ps3_io_irq_destroy);
-@@ -553,6 +572,7 @@ int ps3_vuart_irq_destroy(unsigned int v
- {
- 	int result;
- 
-+	ps3_chip_mask(virq);
- 	result = lv1_deconfigure_virtual_uart_irq();
- 
- 	if (result) {
-@@ -601,9 +621,14 @@ int ps3_spe_irq_setup(enum ps3_cpu_bindi
- 
- int ps3_spe_irq_destroy(unsigned int virq)
- {
--	int result = ps3_irq_plug_destroy(virq);
-+	int result;
-+
-+	ps3_chip_mask(virq);
-+
-+	result = ps3_irq_plug_destroy(virq);
- 	BUG_ON(result);
--	return 0;
-+
-+	return result;
- }
- 
- 
-@@ -663,7 +688,7 @@ static int ps3_host_map(struct irq_host 
- 	pr_debug("%s:%d: hwirq %lu, virq %u\n", __func__, __LINE__, hwirq,
- 		virq);
- 
--	set_irq_chip_and_handler(virq, &irq_chip, handle_fasteoi_irq);
-+	set_irq_chip_and_handler(virq, &ps3_irq_chip, handle_fasteoi_irq);
- 
- 	return 0;
- }
-@@ -683,7 +708,7 @@ void __init ps3_register_ipi_debug_brk(u
- 		cpu, virq, pd->bmp.ipi_debug_brk_mask);
- }
- 
--unsigned int ps3_get_irq(void)
-+static unsigned int ps3_get_irq(void)
- {
- 	struct ps3_private *pd = &__get_cpu_var(ps3_private);
- 	u64 x = (pd->bmp.status & pd->bmp.mask);
-@@ -748,3 +773,16 @@ void __init ps3_init_IRQ(void)
- 
- 	ppc_md.get_irq = ps3_get_irq;
- }
-+
-+void ps3_shutdown_IRQ(int cpu)
++static int ps3_system_bus_uevent(struct device *_dev, char **envp,
++				 int num_envp, char *buffer, int buffer_size)
 +{
-+	int result;
-+	u64 ppe_id;
-+	u64 thread_id = get_hard_smp_processor_id(cpu);
++	struct ps3_system_bus_device *dev = ps3_dev_to_system_bus_dev(_dev);
++	int i=0, length = 0;
 +
-+	lv1_get_logical_ppe_id(&ppe_id);
-+	result = lv1_configure_irq_state_bitmap(ppe_id, thread_id, 0);
++	if (add_uevent_var(envp, num_envp, &i, buffer, buffer_size,
++			   &length, "MODALIAS=ps3:%d",
++			   dev->match_id))
++		return -ENOMEM;
 +
-+	DBG("%s:%d: lv1_configure_irq_state_bitmap (%lu:%lu/%d) %s\n", __func__,
-+		__LINE__, ppe_id, thread_id, cpu, ps3_result(result));
++	envp[i] = NULL;
++	return 0;
 +}
---- a/arch/powerpc/platforms/ps3/platform.h
-+++ b/arch/powerpc/platforms/ps3/platform.h
-@@ -41,6 +41,7 @@ void ps3_mm_shutdown(void);
- /* irq */
- 
- void ps3_init_IRQ(void);
-+void ps3_shutdown_IRQ(int cpu);
- void __init ps3_register_ipi_debug_brk(unsigned int cpu, unsigned int virq);
- 
- /* smp */
---- a/arch/powerpc/platforms/ps3/setup.c
-+++ b/arch/powerpc/platforms/ps3/setup.c
-@@ -210,31 +210,12 @@ static int __init ps3_probe(void)
- #if defined(CONFIG_KEXEC)
- static void ps3_kexec_cpu_down(int crash_shutdown, int secondary)
- {
--	DBG(" -> %s:%d\n", __func__, __LINE__);
-+	int cpu = smp_processor_id();
- 
--	if (secondary) {
--		int cpu;
--		for_each_online_cpu(cpu)
--			if (cpu)
--				ps3_smp_cleanup_cpu(cpu);
--	} else
--		ps3_smp_cleanup_cpu(0);
-+	DBG(" -> %s:%d: (%d)\n", __func__, __LINE__, cpu);
- 
--	DBG(" <- %s:%d\n", __func__, __LINE__);
--}
--
--static void ps3_machine_kexec(struct kimage *image)
--{
--	unsigned long ppe_id;
--
--	DBG(" -> %s:%d\n", __func__, __LINE__);
--
--	lv1_get_logical_ppe_id(&ppe_id);
--	lv1_configure_irq_state_bitmap(ppe_id, 0, 0);
--	ps3_mm_shutdown();
--	ps3_mm_vas_destroy();
--
--	default_machine_kexec(image);
-+	ps3_smp_cleanup_cpu(cpu);
-+	ps3_shutdown_IRQ(cpu);
- 
- 	DBG(" <- %s:%d\n", __func__, __LINE__);
- }
-@@ -256,7 +237,7 @@ define_machine(ps3) {
- 	.power_off			= ps3_power_off,
- #if defined(CONFIG_KEXEC)
- 	.kexec_cpu_down			= ps3_kexec_cpu_down,
--	.machine_kexec			= ps3_machine_kexec,
-+	.machine_kexec			= default_machine_kexec,
- 	.machine_kexec_prepare		= default_machine_kexec_prepare,
- 	.machine_crash_shutdown		= default_machine_crash_shutdown,
- #endif
---- a/arch/powerpc/platforms/ps3/smp.c
-+++ b/arch/powerpc/platforms/ps3/smp.c
-@@ -139,7 +139,7 @@ void ps3_smp_cleanup_cpu(int cpu)
- 	DBG(" -> %s:%d: (%d)\n", __func__, __LINE__, cpu);
- 
- 	for (i = 0; i < MSG_COUNT; i++) {
--		free_irq(virqs[i], (void*)(long)i);
-+		/* Can't call free_irq from interrupt context. */
- 		ps3_event_receive_port_destroy(virqs[i]);
- 		virqs[i] = NO_IRQ;
- 	}
++
+ struct bus_type ps3_system_bus_type = {
+ 	.name = "ps3_system_bus",
+ 	.match = ps3_system_bus_match,
++	.uevent = ps3_system_bus_uevent,
+ 	.probe = ps3_system_bus_probe,
+ 	.remove = ps3_system_bus_remove,
+ 	.shutdown = ps3_system_bus_shutdown,
 
 -- 
