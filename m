@@ -1,23 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.226])
-	by ozlabs.org (Postfix) with ESMTP id 6CECDDDE1D
+Return-Path: <stern@rowland.harvard.edu>
+Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
+	by ozlabs.org (Postfix) with SMTP id DD8D8DDE2B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Jun 2007 02:19:59 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id v1so231262nzb
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Jun 2007 09:19:58 -0700 (PDT)
-Message-ID: <fa686aa40706130919u602498aw319cff16452079bc@mail.gmail.com>
-Date: Wed, 13 Jun 2007 10:19:57 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Alan Stern" <stern@rowland.harvard.edu>
+	Thu, 14 Jun 2007 02:38:19 +1000 (EST)
+Date: Wed, 13 Jun 2007 12:38:15 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Grant Likely <grant.likely@secretlab.ca>
 Subject: Re: [linux-usb-devel] [PATCH 6/6] [C67x00] Merge c67x00-hub.c into
 	c67x00-hcd.c
-In-Reply-To: <Pine.LNX.4.44L0.0706131130120.3607-100000@iolanthe.rowland.org>
+In-Reply-To: <fa686aa40706130919u602498aw319cff16452079bc@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0706131233220.3607-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <fa686aa40706130809q78a875f5u45e458eaa54eae2d@mail.gmail.com>
-	<Pine.LNX.4.44L0.0706131130120.3607-100000@iolanthe.rowland.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: Peter Korsgaard <jacmet@sunsite.dk>, linux-usb-devel@lists.sourceforge.net,
 	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -30,106 +24,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 6/13/07, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Wed, 13 Jun 2007, Grant Likely wrote:
->
-> > On 6/13/07, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > > On Wed, 13 Jun 2007, Grant Likely wrote:
-> > >
-> > > > On 6/12/07, Peter Korsgaard <jacmet@sunsite.dk> wrote:
-> > > > > >>>>> "Grant" == Grant Likely <grant.likely@secretlab.ca> writes:
-> > > > >
-> > > > > Hi,
-> > > > >
-> > > > >  Grant> Rather than c67x00-hub.c being compiled seperately, the
-> > > > >  Grant> original code had c67x00-hub.c *included* by c67x00-hcd.c.
-> > > > >  Grant> This is a very bad idea.
-> > >
-> > > What's so bad about it?  It's an elegant solution to the problem of
-> > > breaking a very long driver up into smaller, more digestible pieces
-> > > without polluting the kernel's namespace with lots of extra global
-> > > symbols.
-> >
-> > Primarily because it breaks convention.  Convention is that you
-> > #include .h files, and you compile and link .c files.  Convention is
-> > important because it reflects the common patterns we use when reading
-> > and writing (but mostly reading) code.
->
-> The problem is that there are conflicting conventions.  You mentioned
-> one.  But there's another: .h files contain declarations and things
-> that should be shared among multiple source files, and .c files contain
-> things that generate object code (executable routines, static
-> definitions, and so on).  The idea is that sharing something which
-> generates object code would be a mistake, since every source file which
-> included it would generate a copy of those same objects.
+On Wed, 13 Jun 2007, Grant Likely wrote:
 
-I agree 100%
+> I think we're crossing wires here.  In this particular case, I think
+> the hub support code is sufficiently small that it doesn't need to be
+> split off into a separate file.  (It's only 180 lines)  I'm not
+> suggesting that the hub support stuff be moved to a .h file.
+> 
+> If the code was larger, I argue that c67x00-hub.c should be compiled
+> separately from c67x00-hcd.c and that 'c67x00-hub.c' be added to
+> 'c67x00-$(CONFIG_USB_C67X00_HCD)' in the Makefile.
 
-> So if you want to #include a file which generates object code, one
-> convention says it should be named .h and the other says it should be
-> named .c.  A possible solution would be to use yet a different suffix,
-> but I think that would only make matters worse.
+> Heh, 'polluted' is too loaded a term, and it suggests something I
+> didn't mean.  When the driver is built into the kernel, there are a
+> number of c67x00_* symbols which are exported.  These symbols are not
+> used anywhere other than in the c67x00 driver code.  However, this is
+> necessary because the overall driver splits the various subsystems
+> into separate .c files which are linked together.  This approach is
+> well supported by convention in the kernel, and all the non-static
+> symbols use the c67x00_ prefix to avoid collisions.
+> 
+> For example, see ib_core-y in drivers/infiniband/core/Makefile and
+> pcieportdrv-y in drivers/pci/pcie/Makefile.
+> 
+> Since the driver already makes use of this approach, I don't think it
+> makes sense to use a difference approach for the root hub support
+> code.  (Again, I'm specifically talking about the c67x00 driver here;
+> I've not looked at the *hci drivers in detail).
 
-Right, so I disagree with both approaches.  If it generates object
-code, it should go into a .c file which is compiled and linked on it's
-own.
+But you did say earlier that the way other drivers were written was a
+bad idea...
 
-> (Just to add to the confusion, some people feel that .c files shouldn't
-> include much that _doesn't_ generate object code.  Hence they put
-> top-level declarations in a .h file, even though it is #included in
-> only one .c file.  This is mainly a matter of taste...)
+In any case I agree that the root-hub code in c67x00 should be written
+to match the style used by the rest of the driver.
 
-Heeheehee
+> Of course, when it is built as a module, none of those symbols show up
+> because they are not exported.
 
-> > Yes there are exceptions, and yes it can be done, but there better be
-> > a damn good reason for doing so.  In this particular case, I really
-> > don't think it is warranted.
->
-> The reason for doing it is the second convention.  IMO that's just as
-> good a reason for doing it as the first convention is for not doing it.
+True.  And true as well of the other drivers which #include *.c files.
 
-I think we're crossing wires here.  In this particular case, I think
-the hub support code is sufficiently small that it doesn't need to be
-split off into a separate file.  (It's only 180 lines)  I'm not
-suggesting that the hub support stuff be moved to a .h file.
-
-If the code was larger, I argue that c67x00-hub.c should be compiled
-separately from c67x00-hcd.c and that 'c67x00-hub.c' be added to
-'c67x00-$(CONFIG_USB_C67X00_HCD)' in the Makefile.
->
-> >  We're not talking about a great deal of
-> > code, and we're *already* polluting the kernel namespace with c67x00_*
-> > function names because the driver is already in multiple pieces.
->
-> Sorry, I don't know what you mean.  How does the fact that uhci-hcd is
-> in multiple pieces create names like c67x00_*?  Besides, the fact that
-> we are already doing it doesn't justify unnecessarily doing even more.
-
-Heh, 'polluted' is too loaded a term, and it suggests something I
-didn't mean.  When the driver is built into the kernel, there are a
-number of c67x00_* symbols which are exported.  These symbols are not
-used anywhere other than in the c67x00 driver code.  However, this is
-necessary because the overall driver splits the various subsystems
-into separate .c files which are linked together.  This approach is
-well supported by convention in the kernel, and all the non-static
-symbols use the c67x00_ prefix to avoid collisions.
-
-For example, see ib_core-y in drivers/infiniband/core/Makefile and
-pcieportdrv-y in drivers/pci/pcie/Makefile.
-
-Since the driver already makes use of this approach, I don't think it
-makes sense to use a difference approach for the root hub support
-code.  (Again, I'm specifically talking about the c67x00 driver here;
-I've not looked at the *hci drivers in detail).
-
-Of course, when it is built as a module, none of those symbols show up
-because they are not exported.
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Alan Stern
