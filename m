@@ -1,24 +1,16 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 13 Jun 2007 16:11:52 +1000
+Date: Wed, 13 Jun 2007 16:12:54 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
-Message-ID: <20070613061152.GF16148@localhost.localdomain>
-References: <8ac5664208e0f59329b62ac2138bbc8c@kernel.crashing.org>
-	<466312C2.4090200@ru.mvista.com>
-	<548a7e11ffb577f6395b8f5a9c2fba2d@kernel.crashing.org>
-	<466323EF.5040807@ru.mvista.com>
-	<1181228442.2785.60.camel@pmac.infradead.org>
-	<18fbfbaf113ab76b602d279848d9b405@kernel.crashing.org>
-	<20070612044459.GD4198@localhost.localdomain>
-	<9e1a55ac71a2ecf5155d2fddf547025e@kernel.crashing.org>
-	<20070613031615.GC16148@localhost.localdomain>
-	<96f5b23c4f53e986e8caa2156f149cd8@kernel.crashing.org>
+Message-ID: <20070613061254.GG16148@localhost.localdomain>
+References: <7878cf1aec340b976b90b86b9e83bf18@kernel.crashing.org>
+	<20070612044246.GC4198@localhost.localdomain>
+	<9fbd7a7f5cdde58768569ab23c7aec7c@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <96f5b23c4f53e986e8caa2156f149cd8@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	David Woodhouse <dwmw2@infradead.org>, Milton Miller <miltonm@bga.com>
+In-Reply-To: <9fbd7a7f5cdde58768569ab23c7aec7c@kernel.crashing.org>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,29 +20,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jun 13, 2007 at 07:05:31AM +0200, Segher Boessenkool wrote:
-> >>> Of course, Ebony has flash which is JEDEC rather than CFI probed, so 
-> >>> I
-> >>> have an interest in a binding for that, too.
-> >>
-> >> For JEDEC flash, you probably want extra properties
-> >> for manufacturing ID and chip ID.  Also, you need
-> >> to describe the block sizes in some way (on CFI, this
-> >> can be probed; on JEDEC, not).  Anything else?
-> >
-> > Hrm.  At the moment it appears to work without supplying this
-> > information for the Ebony flash...  I wonder if there are defaults in
-> > the mtd layer or something.
+On Tue, Jun 12, 2007 at 12:50:25PM +0200, Segher Boessenkool wrote:
+> > So, what you're suggesting is a subnode for each described partition?
 > 
-> MTD does a lot of heuristic probing.  It is pretty good,
-> but it would be nice if you could skip that and hand it
-> the exact values it needs.  Also, this information should
-> be in the device tree no matter what, even if Linux
-> doesn't use it yet ;-)
+> I'm saying this is a reasonable way to describe the regions
+> of flash the firmware itself cares about.
+> 
+> This isn't anything new; it is done like this on some
+> Apple systems, for example.
+> 
+> > Seems an awfully verbose way of going about it,
+> 
+> Not verbose, but flexible, and in line with everything
+> else about the device tree.
+> 
+> > and I don't see what
+> > it buys us over the partitions/partition-names pair of properties.
+> 
+> It is extensible.  It makes parsing trivial.  It
+> represents a flash partition in a way similar to how
+> a "whole" flash device is represented.
 
-I agree.  Of course, this means figuring out what the values actually
-are for Ebony.  I presently have no idea, since the heuristic probing
-appears to work without problem.
+Hrm, ok.  Between you and BenH you've convinced me.  I'll try to come
+up with something.  I think we'll still need to support the old
+properties as backwards compatibility thing.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
