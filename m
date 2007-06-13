@@ -1,29 +1,24 @@
-Return-Path: <oleg@tv-sign.ru>
-Received: from mail.screens.ru (mail.screens.ru [213.234.233.54])
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 631ACDDEC7
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 03:49:37 +1000 (EST)
-Date: Wed, 13 Jun 2007 19:51:24 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 1/3] [PATCH i386] during VM oom condition,
-	kill all threads in process group
-Message-ID: <20070613155124.GA275@tv-sign.ru>
-References: <20070605174831.21740.33119.stgit@farscape.rchland.ibm.com>
-	<20070607153459.2a1b3230.akpm@linux-foundation.org>
-	<20070607231621.GB32549@kryten>
-	<20070607171018.d51fc5da.akpm@linux-foundation.org>
-	<1181330358.21409.31.camel@farscape.rchland.ibm.com>
-	<20070608123230.520655f5.akpm@linux-foundation.org>
-	<1181337147.21409.42.camel@farscape.rchland.ibm.com>
-	<m1abvarrjq.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <m1abvarrjq.fsf@ebiederm.dsl.xmission.com>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	will_schmidt@vnet.ibm.com, Anton Blanchard <anton@samba.org>,
-	linux-kernel@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTP id 3DD2CDDDF5
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 05:47:31 +1000 (EST)
+Message-ID: <467049C7.9090000@garzik.org>
+Date: Wed, 13 Jun 2007 15:47:19 -0400
+From: Jeff Garzik <jeff@garzik.org>
+MIME-Version: 1.0
+To: Thomas Klein <osstklei@de.ibm.com>
+Subject: Re: [PATCH 1/2] ehea: Whitespace cleanup
+References: <200705311354.09992.osstklei@de.ibm.com>
+In-Reply-To: <200705311354.09992.osstklei@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Christoph Raisch <raisch@de.ibm.com>,
+	Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,41 +28,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 06/08, Eric W. Biederman wrote:
->
-> Will Schmidt <will_schmidt@vnet.ibm.com> writes:
+Thomas Klein wrote:
+> This patch fixes several whitespace issues.
 > 
-> > On Fri, 2007-06-08 at 12:32 -0700, Andrew Morton wrote:
-> >> On Fri, 08 Jun 2007 14:19:18 -0500
-> >> Will Schmidt <will_schmidt@vnet.ibm.com> wrote:
-> >> 
-> >> > > > > zap_other_threads() requires tasklist_lock.
-> >> > 
-> >
-> >> In fact, it's probably the case that rcu_read_lock() is now sufficient
-> >> locking coverage for zap_other_threads() (cc's people).
-> >> 
-> >> It had better be, because do_group_exit() forgot to take tasklist_lock.  It
-> >> is perhaps relying upon spin_lock()'s hidden rcu_read_lock() properties
-> >> without so much as a code comment, which would be somewhat nasty of it.
-> >
-> >> You could perhaps just call do_group_exit() from within the fault
-> >> handler,
-> >> btw.
-> >
-> > Yup, so looks like I can actually replace the existing do_exit() call
-> > with do_group_exit().   I'll sit on this for a bit to give other folks a
-> > chance to comment on which lock call is sufficient, read_lock() or
-> > rcu_read_lock(), etc;  and do_group_exit()'s issue with taking
-> > tasklist_lock. 
-> 
-> No.  The rcu_read_lock is not sufficient.
-> Yes.  sighand->siglock is enough, and we explicitly take it in
-> do_group_exit before calling zap_other_threads.
+> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
 
-Yes, we don't need tasklist_lock (or rcu_read_lock).
-
-de_thread() calls zap_other_threads() under tasklist_lock, but this
-is because we can change child_reaper.
-
-Oleg.
+Patch is obviously OK, but needs rediffing since I had to apply fixes 
+before cleanups (standard patch ordering)
