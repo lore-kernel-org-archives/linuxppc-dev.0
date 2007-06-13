@@ -1,14 +1,12 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 4B24EDDE1E
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 00:09:55 +1000 (EST)
-Date: Wed, 13 Jun 2007 16:09:53 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [patch 29/30] PS3: Device tree source.
-In-Reply-To: <b6fa43eadda7c64fe95ed99e78dcf277@kernel.crashing.org>
-Message-ID: <Pine.LNX.4.62.0706131609190.20109@pademelon.sonytel.be>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
+	[151.189.21.47])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3C88ADDE1E
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 00:18:44 +1000 (EST)
+In-Reply-To: <Pine.LNX.4.62.0706131609190.20109@pademelon.sonytel.be>
 References: <20070612181825.730300780@am.sony.com>>
 	<466EEC01.6080807@am.sony.com>
 	<f7c4ca74d3e2031e01264f31f09e515a@kernel.crashing.org>
@@ -18,9 +16,14 @@ References: <20070612181825.730300780@am.sony.com>>
 	<184b5119eca8beae9a28453096b6fe26@kernel.crashing.org>
 	<Pine.LNX.4.62.0706131542280.20109@pademelon.sonytel.be>
 	<b6fa43eadda7c64fe95ed99e78dcf277@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-134096607-1181743793=:20109"
+	<Pine.LNX.4.62.0706131609190.20109@pademelon.sonytel.be>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <d13fe04437156ea27f697210f00aedf0@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [patch 29/30] PS3: Device tree source.
+Date: Wed, 13 Jun 2007 16:18:36 +0200
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -31,43 +34,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+>>> It is built-in for the kboot kernel.
+>>> It is passed from the bootstrap to the 2nd stage kernel.
+>>
+>> The 2nd stage kernel isn't userland.
+>
+> If you consider the kboot kernel `firmware', there can be breakage 
+> between
+> firmware and kernel versions.
 
----584337861-134096607-1181743793=:20109
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Ah I see.  Your first kernel is in flash, the second
+on disk?
 
-On Wed, 13 Jun 2007, Segher Boessenkool wrote:
-> >> The device tree is not a userspace ABI.  Since
-> >> in this case it is built into the kernel image
-> >> (is it, actually?) there is no breakage between
-> >> firmware and kernel versions, either.
-> >
-> > It is built-in for the kboot kernel.
-> > It is passed from the bootstrap to the 2nd stage kernel.
-> 
-> The 2nd stage kernel isn't userland.
+There's no reason not to have the second kernel
+recognise the old device tree names, at least for
+a while.  Nothing special here.  This is independent
+from either or not correcting the device tree, and
+correcting the kernel to look at the right properties
+if possible (it can always fall back to the bad old
+ways, if it cannot figure out what machine type it is
+running on otherwise).
 
-If you consider the kboot kernel `firmware', there can be breakage between
-firmware and kernel versions.
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1930 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Centre Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 413.825.160 · RPR Brussels	
-Fortis Bank Londerzeel IBAN BE39 0013 8235 8619 GEBA-BE-BB	
----584337861-134096607-1181743793=:20109--
+Segher
