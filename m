@@ -1,10 +1,10 @@
 Return-Path: <dgibson@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 10/13] Derive ebc ranges property from EBC registers
+Subject: [PATCH 12/13] Don't store a command line in the Holly device tree
 In-Reply-To: <20070613045031.GD16148@localhost.localdomain>
-Message-Id: <20070613045259.CFD2FDDF15@ozlabs.org>
-Date: Wed, 13 Jun 2007 14:52:59 +1000 (EST)
+Message-Id: <20070613045300.C2FC9DDF12@ozlabs.org>
+Date: Wed, 13 Jun 2007 14:53:00 +1000 (EST)
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,156 +15,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In the device tree for Ebony, the 'ranges' property in the node for
-the EBC bridge shows the mappings from the chip select / address lines
-actually used for the EBC peripherals into the address space of the
-OPB.  At present, these mappings are hardcoded in ebony.dts for the
-mappings set up by the OpenBIOS firmware when it configures the EBC
-bridge.
+Currently, the Holly device tree includes a bootargs property in
+/chosen, which gives a commandline.  This is somewhat inconvenient,
+because it means an alternative default command line can't be given in
+the kernel config - the value obtained from the dts via the
+bootwrapper will always override CONFIG_CMDLINE.
 
-This patch replaces the hardcoded mappings with code in the zImage to
-read the EBC configuration registers and create an appropriate ranges
-property based on them.  This should make the zImage and kernel more
-robust to changes in firmware configuration.  In particular, some of
-the Ebony's DIP switches can change the effective address of the Flash
-and other peripherals in OPB space.  With this patch, the kernel will
-be able to cope with at least some of the possible variations.
+This patch removes the command line from the dts, and instead puts the
+same command line as a default in holly_defconfig.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 ---
 
- arch/powerpc/boot/44x.c         |   29 +++++++++++++++++++++++++++++
- arch/powerpc/boot/44x.h         |    1 +
- arch/powerpc/boot/dcr.h         |   37 +++++++++++++++++++++++++++++++++++++
- arch/powerpc/boot/dts/ebony.dts |    8 +++-----
- arch/powerpc/boot/ebony.c       |    1 +
- 5 files changed, 71 insertions(+), 5 deletions(-)
+ arch/powerpc/boot/dts/holly.dts      |    1 -
+ arch/powerpc/configs/holly_defconfig |    3 ++-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Index: working-2.6/arch/powerpc/boot/dcr.h
+Index: working-2.6/arch/powerpc/boot/dts/holly.dts
 ===================================================================
---- working-2.6.orig/arch/powerpc/boot/dcr.h	2007-05-08 15:07:45.000000000 +1000
-+++ working-2.6/arch/powerpc/boot/dcr.h	2007-05-28 15:42:37.000000000 +1000
-@@ -26,6 +26,43 @@ static const unsigned long sdram_bxcr[] 
- #define			SDRAM_CONFIG_BANK_SIZE(reg)	\
- 	(0x00400000 << ((reg & SDRAM_CONFIG_SIZE_MASK) >> 17))
+--- working-2.6.orig/arch/powerpc/boot/dts/holly.dts	2007-05-08 14:58:06.000000000 +1000
++++ working-2.6/arch/powerpc/boot/dts/holly.dts	2007-05-24 13:55:38.000000000 +1000
+@@ -193,6 +193,5 @@
  
-+/* 440GP External Bus Controller (EBC) */
-+#define DCRN_EBC0_CFGADDR				0x012
-+#define DCRN_EBC0_CFGDATA				0x013
-+#define   EBC_NUM_BANKS					  8
-+#define   EBC_B0CR					  0x00
-+#define   EBC_B1CR					  0x01
-+#define   EBC_B2CR					  0x02
-+#define   EBC_B3CR					  0x03
-+#define   EBC_B4CR					  0x04
-+#define   EBC_B5CR					  0x05
-+#define   EBC_B6CR					  0x06
-+#define   EBC_B7CR					  0x07
-+#define   EBC_BXCR(n)					  (n)
-+#define	    EBC_BXCR_BAS				    0xfff00000
-+#define	    EBC_BXCR_BS				  	    0x000e0000
-+#define	    EBC_BXCR_BANK_SIZE(reg) \
-+	(0x100000 << (((reg) & EBC_BXCR_BS) >> 17))
-+#define	    EBC_BXCR_BU				  	    0x00018000
-+#define	      EBC_BXCR_BU_OFF			  	      0x00000000
-+#define	      EBC_BXCR_BU_RO			  	      0x00008000
-+#define	      EBC_BXCR_BU_WO			  	      0x00010000
-+#define	      EBC_BXCR_BU_RW			  	      0x00018000
-+#define	    EBC_BXCR_BW				  	    0x00006000
-+#define   EBC_B0AP					  0x10
-+#define   EBC_B1AP					  0x11
-+#define   EBC_B2AP					  0x12
-+#define   EBC_B3AP					  0x13
-+#define   EBC_B4AP					  0x14
-+#define   EBC_B5AP					  0x15
-+#define   EBC_B6AP					  0x16
-+#define   EBC_B7AP					  0x17
-+#define   EBC_BXAP(n)					  (0x10+(n))
-+#define   EBC_BEAR					  0x20
-+#define   EBC_BESR					  0x21
-+#define   EBC_CFG					  0x23
-+#define   EBC_CID					  0x24
-+
- /* 440GP Clock, PM, chip control */
- #define DCRN_CPC0_SR					0x0b0
- #define DCRN_CPC0_ER					0x0b1
-Index: working-2.6/arch/powerpc/boot/ebony.c
+ 	chosen {
+ 		linux,stdout-path = "/tsi109@c0000000/serial@7808";
+-		bootargs = "console=ttyS0,115200";
+ 	};
+ };
+Index: working-2.6/arch/powerpc/configs/holly_defconfig
 ===================================================================
---- working-2.6.orig/arch/powerpc/boot/ebony.c	2007-05-28 15:42:37.000000000 +1000
-+++ working-2.6/arch/powerpc/boot/ebony.c	2007-05-28 15:54:59.000000000 +1000
-@@ -100,6 +100,7 @@ static void ebony_fixups(void)
- 	ibm440gp_fixup_clocks(sysclk, 6 * 1843200);
- 	ibm44x_fixup_memsize();
- 	dt_fixup_mac_addresses(ebony_mac0, ebony_mac1);
-+	ibm4xx_fixup_ebc_ranges("/plb/opb/ebc");
- }
- 
- void ebony_init(void *mac0, void *mac1)
-Index: working-2.6/arch/powerpc/boot/dts/ebony.dts
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/dts/ebony.dts	2007-05-21 12:47:17.000000000 +1000
-+++ working-2.6/arch/powerpc/boot/dts/ebony.dts	2007-05-28 15:54:59.000000000 +1000
-@@ -135,11 +135,9 @@
- 				#address-cells = <2>;
- 				#size-cells = <1>;
- 				clock-frequency = <0>; // Filled in by zImage
--				ranges = <0 00000000 fff00000 100000
--					  1 00000000 48000000 100000
--					  2 00000000 ff800000 400000
--					  3 00000000 48200000 100000
--					  7 00000000 48300000 100000>;
-+				// ranges property is supplied by zImage
-+				// based on firmware's configuration of the
-+				// EBC bridge
- 				interrupts = <5 4>;
- 				interrupt-parent = <&UIC1>;
- 
-Index: working-2.6/arch/powerpc/boot/44x.c
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/44x.c	2007-05-28 15:42:37.000000000 +1000
-+++ working-2.6/arch/powerpc/boot/44x.c	2007-05-28 15:42:37.000000000 +1000
-@@ -54,3 +54,32 @@ void ibm44x_dbcr_reset(void)
- 		);
- 
- }
-+
-+/* Read 4xx EBC bus bridge registers to get mappings of the peripheral
-+ * banks into the OPB address space */
-+void ibm4xx_fixup_ebc_ranges(const char *ebc)
-+{
-+	void *devp;
-+	u32 bxcr;
-+	u32 ranges[EBC_NUM_BANKS*4];
-+	u32 *p = ranges;
-+	int i;
-+
-+	for (i = 0; i < EBC_NUM_BANKS; i++) {
-+		mtdcr(DCRN_EBC0_CFGADDR, EBC_BXCR(i));
-+		bxcr = mfdcr(DCRN_EBC0_CFGDATA);
-+
-+		if ((bxcr & EBC_BXCR_BU) != EBC_BXCR_BU_OFF) {
-+			*p++ = i;
-+			*p++ = 0;
-+			*p++ = bxcr & EBC_BXCR_BAS;
-+			*p++ = EBC_BXCR_BANK_SIZE(bxcr);
-+		}
-+	}
-+
-+	devp = finddevice(ebc);
-+	if (! devp)
-+		fatal("Couldn't locate EBC node %s\n\r", ebc);
-+
-+	setprop(devp, "ranges", ranges, (p - ranges) * sizeof(u32));
-+}
-Index: working-2.6/arch/powerpc/boot/44x.h
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/44x.h	2007-05-28 15:42:37.000000000 +1000
-+++ working-2.6/arch/powerpc/boot/44x.h	2007-05-28 15:42:37.000000000 +1000
-@@ -11,6 +11,7 @@
- #define _PPC_BOOT_44X_H_
- 
- void ibm44x_fixup_memsize(void);
-+void ibm4xx_fixup_ebc_ranges(const char *ebc);
- 
- void ibm44x_dbcr_reset(void);
- void ebony_init(void *mac0, void *mac1);
+--- working-2.6.orig/arch/powerpc/configs/holly_defconfig	2007-05-24 13:55:53.000000000 +1000
++++ working-2.6/arch/powerpc/configs/holly_defconfig	2007-05-24 13:56:16.000000000 +1000
+@@ -182,7 +182,8 @@ CONFIG_SPLIT_PTLOCK_CPUS=4
+ # CONFIG_RESOURCES_64BIT is not set
+ CONFIG_ZONE_DMA_FLAG=1
+ CONFIG_PROC_DEVICETREE=y
+-# CONFIG_CMDLINE_BOOL is not set
++CONFIG_CMDLINE_BOOL=y
++CONFIG_CMDLINE="console=ttyS0,115200"
+ # CONFIG_PM is not set
+ # CONFIG_SECCOMP is not set
+ # CONFIG_WANT_DEVICE_TREE is not set
