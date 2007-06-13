@@ -1,20 +1,23 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id 6D7D7DDE3B
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 02:06:12 +1000 (EST)
-Subject: Re: [PATCH] PHY fixed driver: rework release path and update
-	phy_id notation
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-In-Reply-To: <20070609162118.2680.99019.stgit@ACA800FC.ipt.aol.com>
-References: <20070609162118.2680.99019.stgit@ACA800FC.ipt.aol.com>
-Content-Type: text/plain
-Date: Wed, 13 Jun 2007 18:06:09 +0200
-Message-Id: <1181750769.30670.304.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org
-Reply-To: joakim.tjernlund@transmode.se
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound6-dub-R.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id EE576DDE46
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 03:36:09 +1000 (EST)
+Message-ID: <46702AFE.8080800@am.sony.com>
+Date: Wed, 13 Jun 2007 10:35:58 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: Olaf Hering <olaf@aepfle.de>
+Subject: Re: [patch 29/30] PS3: Device tree source.
+References: <20070612181825.730300780@am.sony.com>>
+	<466EEC01.6080807@am.sony.com>
+	<f7c4ca74d3e2031e01264f31f09e515a@kernel.crashing.org>
+	<20070613084023.GA28629@aepfle.de>
+In-Reply-To: <20070613084023.GA28629@aepfle.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,43 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2007-06-09 at 20:21 +0400, Vitaly Bordug wrote:
-> device_bind_driver() error code returning has been fixed. 
-> release() function has been written, so that to free resources
-> in correct way; the release path is now clean.
+Olaf Hering wrote:
+> On Wed, Jun 13, Segher Boessenkool wrote:
 > 
-> Before the rework, it used to cause
->  Device 'fixed@100:1' does not have a release() function, it is broken
->  and must be fixed.
->  BUG: at drivers/base/core.c:104 device_release()
->  
->  Call Trace:  
->   [<ffffffff802ec380>] kobject_cleanup+0x53/0x7e
->   [<ffffffff802ec3ab>] kobject_release+0x0/0x9
->   [<ffffffff802ecf3f>] kref_put+0x74/0x81
->   [<ffffffff8035493b>] fixed_mdio_register_device+0x230/0x265
->   [<ffffffff80564d31>] fixed_init+0x1f/0x35
->   [<ffffffff802071a4>] init+0x147/0x2fb
->   [<ffffffff80223b6e>] schedule_tail+0x36/0x92
->   [<ffffffff8020a678>] child_rip+0xa/0x12
->   [<ffffffff80311714>] acpi_ds_init_one_object+0x0/0x83
->   [<ffffffff8020705d>] init+0x0/0x2fb
->   [<ffffffff8020a66e>] child_rip+0x0/0x12  
+>> There is one real bug though.
 > 
+> Indeed.
 > 
-> Also changed the notation of the fixed phy definition on
-> mdio bus to the form of <speed>+<duplex> to make it able to be used by
-> gianfar and ucc_geth that define phy_id strictly as "%d:%d"
+>> > +/ {
+>> > +	model = "PS3 Game Console";
+>> 
+>> model = "sony,some-model-number" or similar
+>> 
+>> > +	compatible = "PS3";
+>> 
+>> name = "sony,ps3"
 > 
-> Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+> Both are wrong.
+> 
+> Stick to the values used right now.
+> Which is 'PS3PF'
 
-Hi Vitaly
+Hi Olaf.
 
-I am about to test this but I am having trouble figuring out how to
-make ucc_geth find this PHY. Need some hints/template what to write
-in the dts or board init code.
+I specifically changed this because this kernel is
+NOT compatible with the device tree of the legacy
+kernel (2.6.16) that used PS3PF.
 
-Also, I need several fixed PHYs, maybe you should export
-fixed_mdio_register_device() ?
+If this was set as PS3PF, then there would be no
+way to tell that an incompatible DT has been passed.
 
- Jocke
+See my patch below how I use it to work around the
+incompatability:
+
+http://git.kernel.org/?p=linux/kernel/git/geoff/ps3-linux-patches.git;a=blob;f=ps3-hacks/ps3-legacy-bootloader-hack.diff
+
+-Geoff
