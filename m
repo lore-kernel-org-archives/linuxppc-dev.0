@@ -1,31 +1,33 @@
 Return-Path: <tie-fei.zang@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 13144DDE02
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 16:17:02 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	l5D6GvF8018414
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 23:16:58 -0700 (MST)
+	by ozlabs.org (Postfix) with ESMTP id A807CDDE1D
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 16:24:53 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l5D6Obx3022214
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 23:24:38 -0700 (MST)
 Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
 	[10.192.129.207])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l5D6GuGm004818
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 01:16:57 -0500 (CDT)
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l5D6OaZN000425
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 01:24:37 -0500 (CDT)
 Subject: Re: [PATCH v3]: Fix e500 v2 core reboot bug
 From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <f81c6f149f20c52f547f39ca0cc8d67c@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <1181713501.9397.10.camel@localhost.localdomain>
 References: <1180406209.8139.13.camel@localhost.localdomain>
 	<1181639293.8953.7.camel@localhost.localdomain>
 	<f81c6f149f20c52f547f39ca0cc8d67c@kernel.crashing.org>
+	<1181713501.9397.10.camel@localhost.localdomain>
 Content-Type: text/plain
-Message-Id: <1181715391.9397.16.camel@localhost.localdomain>
+Message-Id: <1181715851.9397.22.camel@localhost.localdomain>
 Mime-Version: 1.0
-Date: 13 Jun 2007 14:16:31 +0800
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Date: 13 Jun 2007 14:24:11 +0800
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,8 +45,9 @@ This register is used for the cpu reset.
 
 Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
 ---
-Please pick up this one.
-Thanks for Segher's comment!
+Please ignore the mail sent just now and pick up this one.
+Sorry for the garbage!
+Thanks for Segher's comment.
 
  arch/powerpc/boot/dts/mpc8548cds.dts |    6 ++++++
  arch/powerpc/platforms/85xx/misc.c   |   31 +++++++++++++++++++++++++++++++
