@@ -1,25 +1,20 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id E7EF5DDE33
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 02:04:31 +1000 (EST)
-Date: Wed, 13 Jun 2007 18:04:36 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [patch 29/30] PS3: Device tree source.
-Message-ID: <20070613160436.GA32196@aepfle.de>
-References: <20070612181825.730300780@am.sony.com>>
-	<466EEC01.6080807@am.sony.com>
-	<f7c4ca74d3e2031e01264f31f09e515a@kernel.crashing.org>
-	<20070613084023.GA28629@aepfle.de>
-	<0502b4de346bce374f98c49a99be50c1@kernel.crashing.org>
-	<20070613112448.GA29239@aepfle.de>
-	<184b5119eca8beae9a28453096b6fe26@kernel.crashing.org>
-	<20070613122852.GA30524@aepfle.de>
-	<d225d2e50cd1881a9fe2c015c3602c4c@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <d225d2e50cd1881a9fe2c015c3602c4c@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
+	by ozlabs.org (Postfix) with ESMTP id 6D7D7DDE3B
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 02:06:12 +1000 (EST)
+Subject: Re: [PATCH] PHY fixed driver: rework release path and update
+	phy_id notation
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+In-Reply-To: <20070609162118.2680.99019.stgit@ACA800FC.ipt.aol.com>
+References: <20070609162118.2680.99019.stgit@ACA800FC.ipt.aol.com>
+Content-Type: text/plain
+Date: Wed, 13 Jun 2007 18:06:09 +0200
+Message-Id: <1181750769.30670.304.camel@gentoo-jocke.transmode.se>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org
+Reply-To: joakim.tjernlund@transmode.se
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,9 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jun 13, Segher Boessenkool wrote:
+On Sat, 2007-06-09 at 20:21 +0400, Vitaly Bordug wrote:
+> device_bind_driver() error code returning has been fixed. 
+> release() function has been written, so that to free resources
+> in correct way; the release path is now clean.
+> 
+> Before the rework, it used to cause
+>  Device 'fixed@100:1' does not have a release() function, it is broken
+>  and must be fixed.
+>  BUG: at drivers/base/core.c:104 device_release()
+>  
+>  Call Trace:  
+>   [<ffffffff802ec380>] kobject_cleanup+0x53/0x7e
+>   [<ffffffff802ec3ab>] kobject_release+0x0/0x9
+>   [<ffffffff802ecf3f>] kref_put+0x74/0x81
+>   [<ffffffff8035493b>] fixed_mdio_register_device+0x230/0x265
+>   [<ffffffff80564d31>] fixed_init+0x1f/0x35
+>   [<ffffffff802071a4>] init+0x147/0x2fb
+>   [<ffffffff80223b6e>] schedule_tail+0x36/0x92
+>   [<ffffffff8020a678>] child_rip+0xa/0x12
+>   [<ffffffff80311714>] acpi_ds_init_one_object+0x0/0x83
+>   [<ffffffff8020705d>] init+0x0/0x2fb
+>   [<ffffffff8020a66e>] child_rip+0x0/0x12  
+> 
+> 
+> Also changed the notation of the fixed phy definition on
+> mdio bus to the form of <speed>+<duplex> to make it able to be used by
+> gianfar and ucc_geth that define phy_id strictly as "%d:%d"
+> 
+> Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
 
-> What's wrong with uname -m or cat /proc/cpuinfo?
+Hi Vitaly
 
-At some point I switched to the device-tree, but I can not remember why
-/proc/cpuinfo was not good enough.
+I am about to test this but I am having trouble figuring out how to
+make ucc_geth find this PHY. Need some hints/template what to write
+in the dts or board init code.
+
+Also, I need several fixed PHYs, maybe you should export
+fixed_mdio_register_device() ?
+
+ Jocke
