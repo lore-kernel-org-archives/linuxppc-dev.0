@@ -1,9 +1,10 @@
 Return-Path: <dgibson@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 11/13] Consolidate cuboot initialization code
+Subject: [PATCH 13/13] Fix problems with device tree representation of TSI-1xx
+	bridges
 In-Reply-To: <20070613045031.GD16148@localhost.localdomain>
-Message-Id: <20070613045300.B0D1DDDEC7@ozlabs.org>
+Message-Id: <20070613045301.111A1DDEBB@ozlabs.org>
 Date: Wed, 13 Jun 2007 14:53:00 +1000 (EST)
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -15,204 +16,335 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The various cuboot platforms (i.e. pre-device tree aware u-boot for
-83xx, 85xx and Ebony) share a certain amount of code for parsing the
-boot parameters.  To a certain extent that's inevitable, since they
-platforms have different definitions of the bd_t structure.  However,
-with some macro work and a helper function, this patch improves the
-situation a bit.
+This patch fixes some problems with the way the some things
+represented in the device tree for the Holly and Taiga boards.  This
+means changes both to the dts files, and to the code which
+instantiates the tsi108 ethernet platform devices based on the device
+tree.
 
-In the process, this fixes a bug on Ebony, which was incorrectly
-handling the parameters passed form u-boot for the command line (the
-bug was copied from 83xx and 85xx which have subsequently been fixed).
+	- First, and most importantly, the ethernet PHYs are given
+with an identical 'reg' property.  This reg currently encodes the
+accessible register used to initiate mdio interaction with the PHYs,
+rather than a meaningful address on the parent bus (mdio in this
+case), which is incorrect.  Instead we give the address of these
+registers as 'reg' in the mdio node itself, and encode the ID of each
+phy in their 'reg' propertyies.
+	- Currently the platform device constructor enables a
+workaround in the tsi108 ethernet driver based on the compatible
+property of the PHY.  This is incorrect, because the workaround in
+question is necessary due to the board's wiring of the PHY, not the
+model of PHY itself.  This patch alters the constructor to instead
+enable the workaround based on a new special property in the PHY node.
+	- The compatible properties on a number of nodes in the device
+tree are insufficiently precise.  In particular the PHYs give only
+"bcm54xx", which is broken, since there are many bcm54xx PHY models,
+and they have differences which matter.  The mdio had a compatible
+property of "tsi-ethernet" identical to the ethernet MAC nodes, which
+doesn't make sense.  The ethernet, i2c, bridge and PCI nodes were
+given only as "tsi-*" which is somewhat inprecise, we replace with
+"tsi108-*" in the case of Taiga (which has a TSI108 bridge), and
+"tsi109-*", "tsi108-*" in the case of Holly (which has a TSI109
+bridge).
+	- We remove some "model" properties from the ethernets on
+Taiga board which were neither useful nor adequately precise.
+	- On Holly we change to using a dtc label instead of a full
+path to reference the MPIC node, which makes the dts a little more
+readable.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 ---
 
- arch/powerpc/boot/Makefile       |    2 +-
- arch/powerpc/boot/cuboot-83xx.c  |   13 ++-----------
- arch/powerpc/boot/cuboot-85xx.c  |   13 ++-----------
- arch/powerpc/boot/cuboot-ebony.c |   16 ++--------------
- arch/powerpc/boot/cuboot.c       |   35 +++++++++++++++++++++++++++++++++++
- arch/powerpc/boot/cuboot.h       |   14 ++++++++++++++
- 6 files changed, 56 insertions(+), 37 deletions(-)
+ arch/powerpc/boot/dts/holly.dts       |   51 ++++++++++++++++++----------------
+ arch/powerpc/boot/dts/mpc7448hpc2.dts |   33 ++++++++++------------
+ arch/powerpc/sysdev/tsi108_dev.c      |   33 ++++++++++++++--------
+ 3 files changed, 65 insertions(+), 52 deletions(-)
 
-Index: working-2.6/arch/powerpc/boot/cuboot.c
+Index: working-2.6/arch/powerpc/boot/dts/holly.dts
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/boot/cuboot.c	2007-05-29 17:23:39.000000000 +1000
-@@ -0,0 +1,35 @@
-+/*
-+ * Compatibility for old (not device tree aware) U-Boot versions
-+ *
-+ * Author: Scott Wood <scottwood@freescale.com>
-+ * Consolidated using macros by David Gibson <david@gibson.dropbear.id.au>
-+ *
-+ * Copyright 2007 David Gibson, IBM Corporation.
-+ * Copyright (c) 2007 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
-+ */
-+
-+#include "ops.h"
-+#include "stdio.h"
-+
-+#include "ppcboot.h"
-+
-+extern char _end[];
-+extern char _dtb_start[], _dtb_end[];
-+
-+void cuboot_init(unsigned long r4, unsigned long r5,
-+		 unsigned long r6, unsigned long r7,
-+		 unsigned long end_of_ram)
-+{
-+	unsigned long avail_ram = end_of_ram - (unsigned long)_end;
-+
-+	loader_info.initrd_addr = r4;
-+	loader_info.initrd_size = r4 ? r5 - r4 : 0;
-+	loader_info.cmdline = (char *)r6;
-+	loader_info.cmdline_len = r7 - r6;
-+
-+	simple_alloc_init(_end, avail_ram - 1024*1024, 32, 64);
-+}
-Index: working-2.6/arch/powerpc/boot/cuboot-83xx.c
+--- working-2.6.orig/arch/powerpc/boot/dts/holly.dts	2007-06-13 14:40:27.000000000 +1000
++++ working-2.6/arch/powerpc/boot/dts/holly.dts	2007-06-13 14:40:27.000000000 +1000
+@@ -46,7 +46,7 @@
+ 
+   	tsi109@c0000000 {
+ 		device_type = "tsi-bridge";
+-		compatible = "tsi-bridge";
++		compatible = "tsi109-bridge", "tsi108-bridge";
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+ 		ranges = <00000000 c0000000 00010000>;
+@@ -54,52 +54,55 @@
+ 
+ 		i2c@7000 {
+ 			device_type = "i2c";
+-			compatible  = "tsi-i2c";
+-			interrupt-parent = < &/tsi109@c0000000/pic@7400 >;
++			compatible  = "tsi109-i2c", "tsi108-i2c";
++			interrupt-parent = <&MPIC>;
+ 			interrupts = <e 2>;
+ 			reg = <7000 400>;
+ 		};
+ 
+-		mdio@6000 {
++		MDIO: mdio@6000 {
+ 			device_type = "mdio";
+-			compatible = "tsi-ethernet";
++			compatible = "tsi109-mdio", "tsi108-mdio";
++			reg = <6000 50>;
++			#address-cells = <1>;
++			#size-cells = <0>;
+ 
+-			PHY1: ethernet-phy@6000 {
+-				device_type = "ethernet-phy";
+-				compatible = "bcm54xx";
+-				reg = <6000 50>;
+-				phy-id = <1>;
++			PHY1: ethernet-phy@1 {
++				compatible = "bcm5461a";
++				reg = <1>;
++				txc-rxc-delay-disable;
+ 			};
+ 
+-			PHY2: ethernet-phy@6400 {
+-				device_type = "ethernet-phy";
+-				compatible = "bcm54xx";
+-				reg = <6000 50>;
+-				phy-id = <2>;
++			PHY2: ethernet-phy@2 {
++				compatible = "bcm5461a";
++				reg = <2>;
++				txc-rxc-delay-disable;
+ 			};
+ 		};
+ 
+ 		ethernet@6200 {
+ 			device_type = "network";
+-			compatible = "tsi-ethernet";
++			compatible = "tsi109-ethernet", "tsi108-ethernet";
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <6000 200>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+-			interrupt-parent = < &/tsi109@c0000000/pic@7400 >;
++			interrupt-parent = <&MPIC>;
+ 			interrupts = <10 2>;
++			mdio-handle = <&MDIO>;
+ 			phy-handle = <&PHY1>;
+ 		};
+ 
+ 		ethernet@6600 {
+ 			device_type = "network";
+-			compatible = "tsi-ethernet";
++			compatible = "tsi109-ethernet", "tsi108-ethernet";
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <6400 200>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+-			interrupt-parent = < &/tsi109@c0000000/pic@7400 >;
++			interrupt-parent = <&MPIC>;
+ 			interrupts = <11 2>;
++			mdio-handle = <&MDIO>;
+ 			phy-handle = <&PHY2>;
+ 		};
+ 
+@@ -110,7 +113,7 @@
+ 			virtual-reg = <c0007808>;
+ 			clock-frequency = <3F9C6000>;
+ 			current-speed = <1c200>;
+-			interrupt-parent = < &/tsi109@c0000000/pic@7400 >;
++			interrupt-parent = <&MPIC>;
+ 			interrupts = <c 2>;
+ 		};
+ 
+@@ -121,7 +124,7 @@
+ 			virtual-reg = <c0007c08>;
+ 			clock-frequency = <3F9C6000>;
+ 			current-speed = <1c200>;
+-			interrupt-parent = < &/tsi109@c0000000/pic@7400 >;
++			interrupt-parent = <&MPIC>;
+ 			interrupts = <d 2>;
+ 		};
+ 
+@@ -136,7 +139,7 @@
+ 
+ 		pci@1000 {
+ 			device_type = "pci";
+-			compatible = "tsi109";
++			compatible = "tsi109-pci", "tsi108-pci";
+ 			#interrupt-cells = <1>;
+ 			#size-cells = <2>;
+ 			#address-cells = <3>;
+@@ -150,7 +153,7 @@
+ 			ranges = <02000000 0 40000000 40000000 0 10000000
+ 				  01000000 0 00000000 7e000000 0 00010000>;
+ 			clock-frequency = <7f28154>;
+-			interrupt-parent = < &/tsi109@c0000000/pic@7400 >;
++			interrupt-parent = <&MPIC>;
+ 			interrupts = <17 2>;
+ 			interrupt-map-mask = <f800 0 0 7>;
+ 			/*----------------------------------------------------+
+@@ -186,7 +189,7 @@
+  				#address-cells = <0>;
+  				#interrupt-cells = <2>;
+  				interrupts = <17 2>;
+-				interrupt-parent = < &/tsi109@c0000000/pic@7400 >;
++				interrupt-parent = <&MPIC>;
+ 			};
+ 		};
+ 	};
+Index: working-2.6/arch/powerpc/sysdev/tsi108_dev.c
 ===================================================================
---- working-2.6.orig/arch/powerpc/boot/cuboot-83xx.c	2007-05-29 17:23:36.000000000 +1000
-+++ working-2.6/arch/powerpc/boot/cuboot-83xx.c	2007-05-29 17:23:39.000000000 +1000
-@@ -12,12 +12,12 @@
+--- working-2.6.orig/arch/powerpc/sysdev/tsi108_dev.c	2007-05-08 14:58:06.000000000 +1000
++++ working-2.6/arch/powerpc/sysdev/tsi108_dev.c	2007-06-13 14:40:27.000000000 +1000
+@@ -72,12 +72,11 @@ static int __init tsi108_eth_of_init(voi
+ 	int ret;
  
- #include "ops.h"
- #include "stdio.h"
-+#include "cuboot.h"
+ 	for (np = NULL, i = 0;
+-	     (np = of_find_compatible_node(np, "network", "tsi-ethernet")) != NULL;
++	     (np = of_find_compatible_node(np, "network", "tsi108-ethernet")) != NULL;
+ 	     i++) {
+ 		struct resource r[2];
+-		struct device_node *phy;
++		struct device_node *phy, *mdio;
+ 		hw_info tsi_eth_data;
+-		const unsigned int *id;
+ 		const unsigned int *phy_id;
+ 		const void *mac_addr;
+ 		const phandle *ph;
+@@ -111,6 +110,13 @@ static int __init tsi108_eth_of_init(voi
+ 		if (mac_addr)
+ 			memcpy(tsi_eth_data.mac_addr, mac_addr, 6);
  
- #define TARGET_83xx
- #include "ppcboot.h"
- 
- static bd_t bd;
--extern char _end[];
- extern char _dtb_start[], _dtb_end[];
- 
- static void platform_fixups(void)
-@@ -52,16 +52,7 @@ static void platform_fixups(void)
- void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-                    unsigned long r6, unsigned long r7)
- {
--	unsigned long end_of_ram = bd.bi_memstart + bd.bi_memsize;
--	unsigned long avail_ram = end_of_ram - (unsigned long)_end;
--
--	memcpy(&bd, (bd_t *)r3, sizeof(bd));
--	loader_info.initrd_addr = r4;
--	loader_info.initrd_size = r4 ? r5 - r4 : 0;
--	loader_info.cmdline = (char *)r6;
--	loader_info.cmdline_len = r7 - r6;
--
--	simple_alloc_init(_end, avail_ram - 1024*1024, 32, 64);
-+	CUBOOT_INIT();
- 	ft_init(_dtb_start, _dtb_end - _dtb_start, 32);
- 	serial_console_init();
- 	platform_ops.fixups = platform_fixups;
-Index: working-2.6/arch/powerpc/boot/cuboot-85xx.c
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/cuboot-85xx.c	2007-05-29 17:23:36.000000000 +1000
-+++ working-2.6/arch/powerpc/boot/cuboot-85xx.c	2007-05-29 17:23:39.000000000 +1000
-@@ -12,12 +12,12 @@
- 
- #include "ops.h"
- #include "stdio.h"
-+#include "cuboot.h"
- 
- #define TARGET_85xx
- #include "ppcboot.h"
- 
- static bd_t bd;
--extern char _end[];
- extern char _dtb_start[], _dtb_end[];
- 
- static void platform_fixups(void)
-@@ -53,16 +53,7 @@ static void platform_fixups(void)
- void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-                    unsigned long r6, unsigned long r7)
- {
--	unsigned long end_of_ram = bd.bi_memstart + bd.bi_memsize;
--	unsigned long avail_ram = end_of_ram - (unsigned long)_end;
--
--	memcpy(&bd, (bd_t *)r3, sizeof(bd));
--	loader_info.initrd_addr = r4;
--	loader_info.initrd_size = r4 ? r5 - r4 : 0;
--	loader_info.cmdline = (char *)r6;
--	loader_info.cmdline_len = r7 - r6;
--
--	simple_alloc_init(_end, avail_ram - 1024*1024, 32, 64);
-+	CUBOOT_INIT();
- 	ft_init(_dtb_start, _dtb_end - _dtb_start, 32);
- 	serial_console_init();
- 	platform_ops.fixups = platform_fixups;
-Index: working-2.6/arch/powerpc/boot/cuboot.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/boot/cuboot.h	2007-05-29 17:23:39.000000000 +1000
-@@ -0,0 +1,14 @@
-+#ifndef _PPC_BOOT_CUBOOT_H_
-+#define _PPC_BOOT_CUBOOT_H_
++		ph = of_get_property(np, "mdio-handle", NULL);
++		mdio = of_find_node_by_phandle(*ph);
++		ret = of_address_to_resource(mdio, 0, &res);
++		of_node_put(mdio);
++		if (ret)
++			goto unreg;
 +
-+void cuboot_init(unsigned long r4, unsigned long r5,
-+		 unsigned long r6, unsigned long r7,
-+		 unsigned long end_of_ram);
+ 		ph = of_get_property(np, "phy-handle", NULL);
+ 		phy = of_find_node_by_phandle(*ph);
+ 
+@@ -119,20 +125,25 @@ static int __init tsi108_eth_of_init(voi
+ 			goto unreg;
+ 		}
+ 
+-		id = of_get_property(phy, "reg", NULL);
+-		phy_id = of_get_property(phy, "phy-id", NULL);
+-		ret = of_address_to_resource(phy, 0, &res);
+-		if (ret) {
+-			of_node_put(phy);
+-			goto unreg;
+-		}
++		phy_id = of_get_property(phy, "reg", NULL);
 +
-+#define CUBOOT_INIT() \
-+	do { \
-+		memcpy(&bd, (bd_t *)r3, sizeof(bd)); \
-+		cuboot_init(r4, r5, r6, r7, bd.bi_memstart + bd.bi_memsize); \
-+	} while (0)
+ 		tsi_eth_data.regs = r[0].start;
+ 		tsi_eth_data.phyregs = res.start;
+ 		tsi_eth_data.phy = *phy_id;
+ 		tsi_eth_data.irq_num = irq_of_parse_and_map(np, 0);
+-		if (of_device_is_compatible(phy, "bcm54xx"))
 +
-+#endif /* _PPC_BOOT_CUBOOT_H_ */
-Index: working-2.6/arch/powerpc/boot/cuboot-ebony.c
++		/* Some boards with the TSI108 bridge (e.g. Holly)
++		 * have a miswiring of the ethernet PHYs which
++		 * requires a workaround.  The special
++		 * "txc-rxc-delay-disable" property enables this
++		 * workaround.  FIXME: Need to port the tsi108_eth
++		 * driver itself to phylib and use a non-misleading
++		 * name for the workaround flag - it's not actually to
++		 * do with the model of PHY in use */
++		if (of_get_property(phy, "txc-rxc-delay-disable", NULL))
+ 			tsi_eth_data.phy_type = TSI108_PHY_BCM54XX;
+ 		of_node_put(phy);
++
+ 		ret =
+ 		    platform_device_add_data(tsi_eth_dev, &tsi_eth_data,
+ 					     sizeof(hw_info));
+Index: working-2.6/arch/powerpc/boot/dts/mpc7448hpc2.dts
 ===================================================================
---- working-2.6.orig/arch/powerpc/boot/cuboot-ebony.c	2007-05-29 17:23:36.000000000 +1000
-+++ working-2.6/arch/powerpc/boot/cuboot-ebony.c	2007-05-29 17:23:39.000000000 +1000
-@@ -15,28 +15,16 @@
- #include "ops.h"
- #include "stdio.h"
- #include "44x.h"
-+#include "cuboot.h"
+--- working-2.6.orig/arch/powerpc/boot/dts/mpc7448hpc2.dts	2007-05-21 12:47:17.000000000 +1000
++++ working-2.6/arch/powerpc/boot/dts/mpc7448hpc2.dts	2007-06-13 14:40:27.000000000 +1000
+@@ -45,7 +45,7 @@
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+ 		#interrupt-cells = <2>;
+-		device_type = "tsi-bridge";
++		device_type = "tsi108-bridge";
+ 		ranges = <00000000 c0000000 00010000>;
+ 		reg = <c0000000 00010000>;
+ 		bus-frequency = <0>;
+@@ -55,27 +55,26 @@
+ 			interrupts = <E 0>;
+ 			reg = <7000 400>;
+ 			device_type = "i2c";
+-			compatible  = "tsi-i2c";
++			compatible  = "tsi108-i2c";
+ 		};
  
- #define TARGET_44x
- #include "ppcboot.h"
+-		mdio@6000 {
++		MDIO: mdio@6000 {
+ 			device_type = "mdio";
+-			compatible = "tsi-ethernet";
++			compatible = "tsi108-mdio";
++			reg = <6000 50>;
++			#address-cells = <1>;
++			#size-cells = <0>;
  
- static bd_t bd;
--extern char _end[];
--
--BSS_STACK(4096);
+-			phy8: ethernet-phy@6000 {
++			phy8: ethernet-phy@8 {
+ 				interrupt-parent = <&mpic>;
+ 				interrupts = <2 1>;
+-				reg = <6000 50>;
+-				phy-id = <8>;
+-				device_type = "ethernet-phy";
++				reg = <8>;
+ 			};
  
- void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-                    unsigned long r6, unsigned long r7)
- {
--	unsigned long end_of_ram = bd.bi_memstart + bd.bi_memsize;
--	unsigned long avail_ram = end_of_ram - (unsigned long)_end;
--
--	memcpy(&bd, (bd_t *)r3, sizeof(bd));
--	loader_info.initrd_addr = r4;
--	loader_info.initrd_size = r4 ? r5 : 0;
--	loader_info.cmdline = (char *)r6;
--	loader_info.cmdline_len = r7 - r6;
--
--	simple_alloc_init(_end, avail_ram, 32, 64);
--
-+	CUBOOT_INIT();
- 	ebony_init(&bd.bi_enetaddr, &bd.bi_enet1addr);
- }
-Index: working-2.6/arch/powerpc/boot/Makefile
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/Makefile	2007-05-29 17:23:53.000000000 +1000
-+++ working-2.6/arch/powerpc/boot/Makefile	2007-05-29 17:24:16.000000000 +1000
-@@ -44,7 +44,7 @@ $(addprefix $(obj)/,$(zlib) gunzip_util.
- src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
- 		ns16550.c serial.c simple_alloc.c div64.S util.S \
- 		gunzip_util.c elf_util.c $(zlib) devtree.c oflib.c ofconsole.c \
--		44x.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c
-+		44x.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c
- src-plat := of.c cuboot-83xx.c cuboot-85xx.c holly.c \
- 		cuboot-ebony.c treeboot-ebony.c prpmc2800.c
- src-boot := $(src-wlib) $(src-plat) empty.c
+-			phy9: ethernet-phy@6400 {
++			phy9: ethernet-phy@9 {
+ 				interrupt-parent = <&mpic>;
+ 				interrupts = <2 1>;
+-				reg = <6000 50>;
+-				phy-id = <9>;
+-				device_type = "ethernet-phy";
++				reg = <9>;
+ 			};
+ 
+ 		};
+@@ -83,12 +82,12 @@
+ 		ethernet@6200 {
+ 			#size-cells = <0>;
+ 			device_type = "network";
+-			model = "TSI-ETH";
+-			compatible = "tsi-ethernet";
++			compatible = "tsi108-ethernet";
+ 			reg = <6000 200>;
+ 			address = [ 00 06 D2 00 00 01 ];
+ 			interrupts = <10 2>;
+ 			interrupt-parent = <&mpic>;
++			mdio-handle = <&MDIO>;
+ 			phy-handle = <&phy8>;
+ 		};
+ 
+@@ -96,12 +95,12 @@
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			device_type = "network";
+-			model = "TSI-ETH";
+-			compatible = "tsi-ethernet";
++			compatible = "tsi108-ethernet";
+ 			reg = <6400 200>;
+ 			address = [ 00 06 D2 00 00 02 ];
+ 			interrupts = <11 2>;
+ 			interrupt-parent = <&mpic>;
++			mdio-handle = <&MDIO>;
+ 			phy-handle = <&phy9>;
+ 		};
+ 
+@@ -135,7 +134,7 @@
+                        	big-endian;
+ 		};
+ 		pci@1000 {
+-			compatible = "tsi10x";
++			compatible = "tsi108-pci";
+ 			device_type = "pci";
+ 			#interrupt-cells = <1>;
+ 			#size-cells = <2>;
