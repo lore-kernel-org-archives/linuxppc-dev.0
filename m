@@ -1,16 +1,29 @@
-Return-Path: <silicom@163.com>
-Received: from m13-51.163.com (m13-51.163.com [220.181.13.51])
-	by ozlabs.org (Postfix) with SMTP id 081EADDE23
+Return-Path: <jacmet@sunsite.dk>
+Received: from smtp40.mobistarmail.be (smtp40.mobistarmail.be [193.252.23.61])
+	by ozlabs.org (Postfix) with ESMTP id 27822DDD08
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Jun 2007 14:39:30 +1000 (EST)
-Date: Wed, 13 Jun 2007 12:20:38 +0800 (CST)
-From: silicom <silicom@163.com>
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <2073728.680191181708438505.JavaMail.coremail@bj163app51.163.com>
-Subject: Request for framebuffer full patch
+	Wed, 13 Jun 2007 15:58:30 +1000 (EST)
+Received: from me-wanadoo.net (localhost [127.0.0.1])
+	by mwinf4017.mobistarmail.be (SMTP Server) with ESMTP id 4B4E17000091
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 13 Jun 2007 07:58:26 +0200 (CEST)
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 6/6] [C67x00] Merge c67x00-hub.c into c67x00-hcd.c
+References: <11816893411272-git-send-email-grant.likely@secretlab.ca>
+	<11816893494143-git-send-email-grant.likely@secretlab.ca>
+	<11816893492706-git-send-email-grant.likely@secretlab.ca>
+	<11816893493783-git-send-email-grant.likely@secretlab.ca>
+	<1181689350166-git-send-email-grant.likely@secretlab.ca>
+	<11816893503814-git-send-email-grant.likely@secretlab.ca>
+	<11816893511659-git-send-email-grant.likely@secretlab.ca>
+Date: Wed, 13 Jun 2007 07:58:31 +0200
+In-Reply-To: <11816893511659-git-send-email-grant.likely@secretlab.ca> (Grant
+	Likely's message of "Tue, 12 Jun 2007 17:02:21 -0600")
+Message-ID: <87645sieew.fsf@p4.be.48ers.dk>
 MIME-Version: 1.0
-Content-Type: multipart/Alternative;
-	boundary="----=_Part_70398_24602447.1181708438503"
+Content-Type: text/plain; charset=us-ascii
+Cc: linux-usb-devel@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,25 +34,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_70398_24602447.1181708438503
-Content-Type: text/plain; charset=gbk
-Content-Transfer-Encoding: 7bit
+>>>>> "Grant" == Grant Likely <grant.likely@secretlab.ca> writes:
 
- Hi,
-can anybody send me the full patch for framebuffer driver?
-thanks,
-sherbin
-  
-------=_Part_70398_24602447.1181708438503
-Content-Type: text/html; charset=gbk
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-<div>&nbsp;</div><div>Hi,<br>can anybody send me the full patch for framebu=
-ffer driver?<br><br>thanks,<br>sherbin<br></div><div>&nbsp;</div><div>&nbsp=
-;</div><br><!-- footer --><br><hr>
-<a style=3D"font-size:14px;line-height:15px; color:#000; text-decoration:no=
-ne" href=3D"http://event.mail.163.com/chanel/xyq.htm?from=3D163_NO1" target=
-=3D"_blank"><span style=3D"text-decoration:underline; color:blue">150 =CD=
-=F2 =C8=CB =CD=AC =CA=B1 =D4=DA =CD=E6 =B5=C4 =CD=F8 =D3=CE=A3=AC=C4=E3 =B2=
-=BB =CA=D4 =CA=D4 =C2=F0 =A3=BF </span> </a>
-------=_Part_70398_24602447.1181708438503--
+ Grant> Rather than c67x00-hub.c being compiled seperately, the
+ Grant> original code had c67x00-hub.c *included* by c67x00-hcd.c.
+ Grant> This is a very bad idea.  Simplest solution is to merge the
+ Grant> two files into one and be done with it.
+
+Yeah, it isn't exactly pretty, but it's what the other hcd drivers do,
+E.G.:
+
+% grep -rs "include.*hub.c" *c 
+ehci-hcd.c:#include "ehci-hub.c"
+ohci-hcd.c:#include "ohci-hub.c"
+uhci-hcd.c:#include "uhci-hub.c"
+
+I don't quite know why they do it like that though ..
+
+-- 
+Bye, Peter Korsgaard
