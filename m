@@ -1,27 +1,17 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
-	[151.189.21.50])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 266E3DDE05
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 19:49:11 +1000 (EST)
-In-Reply-To: <46B96294322F7D458F9648B60E15112C526DF5@zch01exm26.fsl.freescale.net>
-References: <11816389393593-git-send-email-wei.zhang@freescale.com>
-	<1181638939310-git-send-email-wei.zhang@freescale.com>
-	<39c7d60cebf03badd106d7f75a08f449@kernel.crashing.org>
-	<46B96294322F7D458F9648B60E15112C526DD9@zch01exm26.fsl.freescale.net>
-	<59453d80f2f111b72e8f24e7b489c23e@kernel.crashing.org>
-	<46B96294322F7D458F9648B60E15112C526DF5@zch01exm26.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <9f8ab14c257b414bba3fb47671f398d1@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/5] Add the explanation and sample of RapidIO DTS sector
-	to the document of booting-without-of.txt file.
-Date: Wed, 13 Jun 2007 11:48:53 +0200
-To: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
+Return-Path: <vbuzov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 3F40DDDD0D
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 20:50:41 +1000 (EST)
+Received: from dolphin.spb.rtsoft.ru (unknown [10.149.0.1])
+	by buildserver.ru.mvista.com (Postfix) with ESMTP id 90C328815
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 15:19:33 +0500 (SAMST)
+Subject: [RFC/PATCH] powerpc: MPC7450 L2 HW cache flush feature utilization
+From: Vladislav Buzov <vbuzov@ru.mvista.com>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Wed, 13 Jun 2007 14:19:33 +0400
+Message-Id: <1181729973.25586.31.camel@dolphin.spb.rtsoft.ru>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,69 +21,111 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> +    - device_type : Should be "rapidio"
->>>>
->>>> There is no OF binding, so no.
->>>
->>> So, we need to define it.
->>
->> If you want to.  Until that has been done, don't use
->> a "device_type".  Linux won't use it, anyway.
->
-> Do you have another ideas about that? Only remove it?
+Hello folks,
 
-Yeah, remove it.
+I'm currently working on a Linux 2.6.x port for a MCP7448 based board.
+And I'm observing that some memory areas become corrupted on early
+kernel startup. Namely some parts of kernel page table, that leads to
+sudden kernel crashes. After some investigations I've managed to narrow
+the problem down to a _set_L2CR() function that seems to not work for
+this processor and the memory become corrupted after the cache is
+flushed and re-enabled.
 
->>> Using IP Block Revision is a
->>> clear choice.
->>
->> I don't think so.  For one thing, it describes a version of
->> a cell design, not a version of an actual device.  For another
->> thing, if I hear "8641" I know what you're talking about (sort
->> of, anyway), but I draw a blank stare if you say "v1.0".  I'm
->> sure I'm not the only one.  Concrete names are good.
->>
->
->> From the different view ways, there are different results. Getting the
-> version from RapidIO IP revision register is clear to me. :)
+Note that I'm working with arch/ppc code. I've looked through
+arch/powerpc sources and found some fixes for MPC7450 processors family
+in l2cr_6xx.S. Then I've backported them to arch/ppc but it didn't help.
 
-It's not in line with how all other "compatible" properties
-are done though.
+I read the MPC7450 reference manual and it describes a method to flush
+the cache using L2 hardware flushing feature. The cache flushing
+procedure consist of several steps and some of them are dictated by
+MPC7448 errata (www.freescale.com/files/32bit/doc/errata/MPC7448CE.pdf,
+Erratum no.3).
 
->> But the rapidio node doesn't know or care what the interrupts
->> are connected to, and neither should it.  That's what the
->> interrupt mapping recommended practice is for.
->
-> There are no rapidio device in it. Doorbell, msg are all parts of
-> rapidio controller.
-> For example, 8641 rapidio controller have 2 msg unit: msg0 and msg1.
-> They are not rapidio devices. Each msg unit has the tx_irq and rx_irq.
+When I implemented that method in _set_L2CR() (patch included below)
+following the MPC7450 reference manual, things worked fine. With these
+changes the kernel works stable. The same result I get when I force a
+boot loader to not enable the L2 cache before starting the kernel.
 
-Ah, I think I understand what you mean now.  Yes, the binding
-for this specific rapidio controller should define the _order_
-of the interrupts in the "interrupts" property; but it cannot
-define the format of the single entries, that is defined by
-the interrupt controller node it is connected to already.
+So, I have couple questions:
 
->>>> You want a #size-cells as well.
->>>
->>> The size is not used in this sector, so no defined.
->>
->> The size _is_ used; in the "ranges" property in this node,
->> for example.  It is also needed to describe the "reg" for
->> any child node of this node.
->>
->> A non-existant "#size-cells" means 1, and "#address-cells"
->> means 2, so in principle you could do without these
->> properties; but Linux doesn't parse the tree correctly in
->> that case (which reminds me, I have some more patches to
->> send).
->
-> Ok, I'll add it in the next version for more religious.
+First, I'm looking for a help and advice why the current _set_L2CR()
+implementation may not work for MPC7450 (namely 7448 with 1Mb L2 cache
+installed). Is it a bug in _set_L2CR()  or a hardware problem. I've
+mentioned above about MPC7450 hardware bug in L2 hardware flushing
+mechanism. May it be applicable to common cache flushing procedure based
+on sequence of lwz/dcbf instructions?
 
-It's not religious; true OF believers say leave the node
-out if its value would be 1.  It's just that Linux doesn't
-handle that properly yet, so you want to protect yourself :-)
+I'd like to note that I've had a hard time to find a root cause of the
+problem in the current _set_L2CR() implementation. I changed a size of
+memory used to fill and then flush the cache, tried to apply the
+workaround for the MPC7448 hardware bug above and nothing helped except
+the patch below.
 
+Second, Is this patch acceptable?
 
-Segher
+Any feedback will be appreciated.
+
+Thanks in advance,
+Vlad.
+
+---
+
+ arch/powerpc/kernel/l2cr_6xx.S |   38 ++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 38 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/kernel/l2cr_6xx.S b/arch/powerpc/kernel/l2cr_6xx.S
+index 858f28a..e6d96a6 100644
+--- a/arch/powerpc/kernel/l2cr_6xx.S
++++ b/arch/powerpc/kernel/l2cr_6xx.S
+@@ -156,6 +156,19 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ 	  ****/
+ 
+ BEGIN_FTR_SECTION
++	/* MPC7450 provides a L2 hardware flushing mechanism
++	 * implemented through L2CR[L2HWF] bit. Refer to MPC7450
++	 * reference manual p. 3-53 for details.
++	 */
++
++	/* Set L2CR[L2IO], L2CR[L2DO] to lock the cache */
++	mfspr	r4, SPRN_L2CR
++	oris	r4, r4, 0x0011
++	sync
++	mtspr	SPRN_L2CR, r4
++	sync
++	isync
++	
+ 	/* Disable L2 prefetch on some 745x and try to ensure
+ 	 * L2 prefetch engines are idle. As explained by errata
+ 	 * text, we can't be sure they are, we just hope very hard
+@@ -173,6 +186,31 @@ BEGIN_FTR_SECTION
+ 	dcbf	0,r4
+ 	dcbf	0,r4
+ 	dcbf	0,r4
++
++	/* Flush and invalidate L2:
++	 * Set L2HWF and wait till it is cleared.
++	 */
++	mfspr	r4, SPRN_L2CR
++	ori	r4, r4, 0x0800
++	sync
++	mtspr	SPRN_L2CR, r4
++	sync
++	isync
++	
++1:	mfspr	r4, SPRN_L2CR
++	rlwinm.	r0,r4,0,20,20
++	bne	1b
++
++	/* Clear L2IO, L2DO to unlock the cache */
++	mfspr	r4, SPRN_L2CR
++	rlwinm  r4, r4, 0, 12, 10
++	rlwinm	r4, r4, 0, 16, 14
++	sync
++	mtspr	SPRN_L2CR, r4
++	sync
++	isync
++
++	b	2f
+ END_FTR_SECTION_IFSET(CPU_FTR_SPEC7450)
+ 
+ 	/* TODO: use HW flush assist when available */
