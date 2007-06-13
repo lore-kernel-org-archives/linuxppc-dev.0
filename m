@@ -1,33 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.183])
-	by ozlabs.org (Postfix) with ESMTP id 31202DDE21
+Return-Path: <akonovalov@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id 469D2DDE09
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Jun 2007 00:33:07 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so265934wag
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Jun 2007 07:33:06 -0700 (PDT)
-Message-ID: <fa686aa40706130733u51aaf7der3eedc5a36f61a795@mail.gmail.com>
-Date: Wed, 13 Jun 2007 08:33:05 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "phil culler" <phil.culler@gmail.com>
-Subject: Re: [linux-usb-devel] [PATCH 6/6] [C67x00] Merge c67x00-hub.c into
-	c67x00-hcd.c
-In-Reply-To: <a94a91430706130659v2ac10f82h355c0bbb4fd6f2cb@mail.gmail.com>
+	Thu, 14 Jun 2007 00:49:19 +1000 (EST)
+Message-ID: <4670057F.3060303@ru.mvista.com>
+Date: Wed, 13 Jun 2007 18:55:59 +0400
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <11816893411272-git-send-email-grant.likely@secretlab.ca>
-	<11816893494143-git-send-email-grant.likely@secretlab.ca>
-	<11816893492706-git-send-email-grant.likely@secretlab.ca>
-	<11816893493783-git-send-email-grant.likely@secretlab.ca>
-	<1181689350166-git-send-email-grant.likely@secretlab.ca>
-	<11816893503814-git-send-email-grant.likely@secretlab.ca>
-	<11816893511659-git-send-email-grant.likely@secretlab.ca>
-	<87645sieew.fsf@p4.be.48ers.dk>
-	<fa686aa40706130554l36fefa13w4e2b1957a9fc5288@mail.gmail.com>
-	<a94a91430706130659v2ac10f82h355c0bbb4fd6f2cb@mail.gmail.com>
-Cc: Peter Korsgaard <jacmet@sunsite.dk>, linux-usb-devel@lists.sourceforge.net,
-	linuxppc-embedded@ozlabs.org
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: [spi-devel-general] [PATCH] Simple driver for Xilinx SPI
+	controler.
+References: <4666BF47.8080103@ru.mvista.com>
+	<200706062209.09731.david-b@pacbell.net>
+	<466ADC4B.4050806@ru.mvista.com>
+	<200706120928.09176.david-b@pacbell.net>
+In-Reply-To: <200706120928.09176.david-b@pacbell.net>
+Content-Type: multipart/mixed; boundary="------------060400000005020506000101"
+Cc: spi-devel-general@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -38,54 +27,549 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 6/13/07, phil culler <phil.culler@gmail.com> wrote:
->
-> On 6/13/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> > On 6/12/07, Peter Korsgaard <jacmet@sunsite.dk> wrote:
-> > > >>>>> "Grant" == Grant Likely <grant.likely@secretlab.ca > writes:
-> > >
-> > > Hi,
-> > >
-> > >  Grant> Rather than c67x00-hub.c being compiled seperately, the
-> > >  Grant> original code had c67x00-hub.c *included* by c67x00-hcd.c.
-> > >  Grant> This is a very bad idea.  Simplest solution is to merge the
-> > >  Grant> two files into one and be done with it.
->
->
-> > Hi Guys,
-> > I'm currently implementing the gadget API for the c67x00 (specifically
-> CY7C63200) and have several questions.
-> >
-> > 1. Are you aware of any others working on the gadget API for this driver?
+This is a multi-part message in MIME format.
+--------------060400000005020506000101
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Other than the skeleton that Peter wrote, No.  However, Peter has done
-much of the low level work that is shared between HCD and Gadget.  You
-need to look at his patchset.
+David Brownell wrote:
+> On Saturday 09 June 2007, Andrei Konovalov wrote:
+>> The new patch is attached to this message.
+> 
+> Would you send a version that doesn't produce so many
+> warnings when run against scripts/checkpatch.pl ??
+> 
+> The issues seem to be mostly whitespace and linelength,
+> so that should be easy.
+> 
+> - Dave
 
-http://thread.gmane.org/gmane.linux.usb.devel/53285
 
-> > 2. I'm doing this on an embedded device (Xilinix/PPC) with no hardware DMA
-> and on top of MontaVista 4.01 (2.6.10-kernel). I'd prefer to develop on a
-> current kernel using something like a PCI card. Can you recommend a
-> reasonably-priced development platform for the c67x00?
+Here is the updated patch (attached).
+The changes are just
+- replace "#include <asm/io.h>" with "#include <linux/io.h>"
+- whitespace and linelength mods
 
-Hmm, I don't know.  I don't know of any.  I'm doing all my devel on an
-ml403.  Check with Cypress.  I think they have an ARM based
-development kit for the c67x00.
+Thanks again,
+Andrei
 
-> > 3. Any suggestions about preventing additional ugly code? I'm adding the
-> bulk of the API in c67x00-udc.c
 
-Yes, post your patches to the list so so others can comment.  That's
-the best way to find out if you're taking a bad approach.  Also,
-follow the Linux kernel coding convention and run your code through
-scripts/Lindent
+--------------060400000005020506000101
+Content-Type: text/x-patch;
+ name="xilinx-spi-driver.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="xilinx-spi-driver.patch"
 
-Cheers,
-g.
+Simple driver for Xilinx SPI controler.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+From: Andrei Konovalov <ank@localhost.localdomain>
+
+Only master mode is supported. No support for multiple masters.
+Slave mode is not supported either.
+Not using level 1 drivers from EDK.
+
+Signed-off-by: Yuri Frolov <yfrolov@ru.mvista.com>
+Signed-off-by: Andrei Konovalov <akonovalov@ru.mvista.com>
+---
+
+ arch/ppc/syslib/virtex_devices.h |    7 +
+ drivers/spi/Kconfig              |    9 +
+ drivers/spi/Makefile             |    1 
+ drivers/spi/xilinx_spi.c         |  438 ++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 455 insertions(+), 0 deletions(-)
+
+diff --git a/arch/ppc/syslib/virtex_devices.h b/arch/ppc/syslib/virtex_devices.h
+index 3d4be14..9f38d92 100644
+--- a/arch/ppc/syslib/virtex_devices.h
++++ b/arch/ppc/syslib/virtex_devices.h
+@@ -31,4 +31,11 @@ void __init virtex_early_serial_map(void);
+  */
+ int virtex_device_fixup(struct platform_device *dev);
+ 
++/* SPI Controller IP */
++struct xspi_platform_data {
++	s16 bus_num;
++	u16 num_chipselect;
++	u32 speed_hz;
++};
++
+ #endif  /* __ASM_VIRTEX_DEVICES_H__ */
+diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
+index 5e3f748..851d651 100644
+--- a/drivers/spi/Kconfig
++++ b/drivers/spi/Kconfig
+@@ -156,6 +156,15 @@ config SPI_S3C24XX_GPIO
+ 	  GPIO lines to provide the SPI bus. This can be used where
+ 	  the inbuilt hardware cannot provide the transfer mode, or
+ 	  where the board is using non hardware connected pins.
++
++config SPI_XILINX
++	tristate "Xilinx SPI controller"
++	depends on SPI_MASTER && XILINX_VIRTEX && EXPERIMENTAL
++	select SPI_BITBANG
++	help
++	  This enables using the SPI controller IP from Xilinx EDK in master
++	  mode. See the DS464, "OPB Serial Peripheral Interface (SPI) (v1.00e)"
++	  Product Specification document for the hardware details.
+ #
+ # Add new SPI master controllers in alphabetical order above this line
+ #
+diff --git a/drivers/spi/Makefile b/drivers/spi/Makefile
+index 5788d86..a2412bd 100644
+--- a/drivers/spi/Makefile
++++ b/drivers/spi/Makefile
+@@ -23,6 +23,7 @@ obj-$(CONFIG_SPI_MPC52xx_PSC)		+= mpc52xx_psc_spi.o
+ obj-$(CONFIG_SPI_MPC83xx)		+= spi_mpc83xx.o
+ obj-$(CONFIG_SPI_S3C24XX_GPIO)		+= spi_s3c24xx_gpio.o
+ obj-$(CONFIG_SPI_S3C24XX)		+= spi_s3c24xx.o
++obj-$(CONFIG_SPI_XILINX)		+= xilinx_spi.o
+ # 	... add above this line ...
+ 
+ # SPI protocol drivers (device/link on bus)
+diff --git a/drivers/spi/xilinx_spi.c b/drivers/spi/xilinx_spi.c
+new file mode 100644
+index 0000000..b09f7c6
+--- /dev/null
++++ b/drivers/spi/xilinx_spi.c
+@@ -0,0 +1,438 @@
++/*
++ * xilinx_spi.c
++ *
++ * Xilinx SPI controler driver (master mode only)
++ *
++ * Author: MontaVista Software, Inc.
++ *         source@mvista.com
++ *
++ * 2002-2007 (c) MontaVista Software, Inc.  This file is licensed under the
++ * terms of the GNU General Public License version 2.  This program is licensed
++ * "as is" without any warranty of any kind, whether express or implied.
++ */
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/interrupt.h>
++#include <linux/platform_device.h>
++#include <linux/spi/spi.h>
++#include <linux/spi/spi_bitbang.h>
++#include <linux/io.h>
++
++#include <syslib/virtex_devices.h>
++
++#define XILINX_SPI_NAME "xspi"
++
++/* Register definitions as per "OPB Serial Peripheral Interface (SPI) (v1.00e)
++ * Product Specification", DS464
++ */
++#define XSPI_CR_OFFSET		0x62	/* 16-bit Control Register */
++
++#define XSPI_CR_ENABLE		0x02
++#define XSPI_CR_MASTER_MODE	0x04
++#define XSPI_CR_CPOL		0x08
++#define XSPI_CR_CPHA		0x10
++#define XSPI_CR_MODE_MASK	(XSPI_CR_CPHA | XSPI_CR_CPOL)
++#define XSPI_CR_TXFIFO_RESET	0x20
++#define XSPI_CR_RXFIFO_RESET	0x40
++#define XSPI_CR_MANUAL_SSELECT	0x80
++#define XSPI_CR_TRANS_INHIBIT	0x100
++
++#define XSPI_SR_OFFSET		0x67	/* 8-bit Status Register */
++
++#define XSPI_SR_RX_EMPTY_MASK	0x01	/* Receive FIFO is empty */
++#define XSPI_SR_RX_FULL_MASK	0x02	/* Receive FIFO is full */
++#define XSPI_SR_TX_EMPTY_MASK	0x04	/* Transmit FIFO is empty */
++#define XSPI_SR_TX_FULL_MASK	0x08	/* Transmit FIFO is full */
++#define XSPI_SR_MODE_FAULT_MASK	0x10	/* Mode fault error */
++
++#define XSPI_TXD_OFFSET		0x6b	/* 8-bit Data Transmit Register */
++#define XSPI_RXD_OFFSET		0x6f	/* 8-bit Data Receive Register */
++
++#define XSPI_SSR_OFFSET		0x70	/* 32-bit Slave Select Register */
++
++/* Register definitions as per "OPB IPIF (v3.01c) Product Specification", DS414
++ * IPIF registers are 32 bit
++ */
++#define XIPIF_V123B_DGIER_OFFSET	0x1c	/* IPIF global int enable reg */
++#define XIPIF_V123B_GINTR_ENABLE	0x80000000
++
++#define XIPIF_V123B_IISR_OFFSET		0x20	/* IPIF interrupt status reg */
++#define XIPIF_V123B_IIER_OFFSET		0x28	/* IPIF interrupt enable reg */
++
++#define XSPI_INTR_MODE_FAULT		0x01	/* Mode fault error */
++#define XSPI_INTR_SLAVE_MODE_FAULT	0x02	/* Selected as slave while
++						 * disabled */
++#define XSPI_INTR_TX_EMPTY		0x04	/* TxFIFO is empty */
++#define XSPI_INTR_TX_UNDERRUN		0x08	/* TxFIFO was underrun */
++#define XSPI_INTR_RX_FULL		0x10	/* RxFIFO is full */
++#define XSPI_INTR_RX_OVERRUN		0x20	/* RxFIFO was overrun */
++
++#define XIPIF_V123B_RESETR_OFFSET	0x40	/* IPIF reset register */
++#define XIPIF_V123B_RESET_MASK		0x0a	/* the value to write */
++
++struct xilinx_spi {
++	/* bitbang has to be first */
++	struct spi_bitbang bitbang;
++	struct completion done;
++
++	u32		regs_phys;  /* phys. address of the control registers */
++	void __iomem	*regs;	    /* virt. address of the control registers */
++
++	u32 irq;
++
++	u32 speed_hz;		/* SCK has a fixed frequency of speed_hz Hz */
++
++	u8 *rx_ptr;		/* pointer in the Tx buffer */
++	const u8 *tx_ptr;	/* pointer in the Rx buffer */
++	int remaining_bytes;	/* the number of bytes left to transfer */
++};
++
++static void xspi_init_hw(void __iomem *regs_base)
++{
++	/* Reset the SPI device */
++	out_be32(regs_base + XIPIF_V123B_RESETR_OFFSET,
++		 XIPIF_V123B_RESET_MASK);
++	/* Disable all the interrupts just in case */
++	out_be32(regs_base + XIPIF_V123B_IIER_OFFSET, 0);
++	/* Enable the global IPIF interrupt */
++	out_be32(regs_base + XIPIF_V123B_DGIER_OFFSET,
++		 XIPIF_V123B_GINTR_ENABLE);
++	/* Deselect the slave on the SPI bus */
++	out_be32(regs_base + XSPI_SSR_OFFSET, 0xffff);
++	/* Disable the transmitter, enable Manual Slave Select Assertion,
++	 * put SPI controller into master mode, and enable it */
++	out_be16(regs_base + XSPI_CR_OFFSET,
++		 XSPI_CR_TRANS_INHIBIT | XSPI_CR_MANUAL_SSELECT
++		 | XSPI_CR_MASTER_MODE | XSPI_CR_ENABLE);
++}
++
++static void xilinx_spi_chipselect(struct spi_device *spi, int is_on)
++{
++	struct xilinx_spi *xspi = spi_master_get_devdata(spi->master);
++
++	if (is_on == BITBANG_CS_INACTIVE) {
++		/* Deselect the slave on the SPI bus */
++		out_be32(xspi->regs + XSPI_SSR_OFFSET, 0xffff);
++	} else if (is_on == BITBANG_CS_ACTIVE) {
++		/* Set the SPI clock phase and polarity */
++		u16 cr = in_be16(xspi->regs + XSPI_CR_OFFSET)
++			 & ~XSPI_CR_MODE_MASK;
++		if (spi->mode & SPI_CPHA)
++			cr |= XSPI_CR_CPHA;
++		if (spi->mode & SPI_CPOL)
++			cr |= XSPI_CR_CPOL;
++		out_be16(xspi->regs + XSPI_CR_OFFSET, cr);
++
++		/* We do not check spi->max_speed_hz here as the SPI clock
++		 * frequency is not software programmable (the IP block design
++		 * parameter)
++		 */
++
++		/* Activate the chip select */
++		out_be32(xspi->regs + XSPI_SSR_OFFSET,
++			 ~(0x0001 << spi->chip_select));
++	}
++}
++
++/* spi_bitbang requires custom setup_transfer() to be defined if there is a
++ * custom txrx_bufs(). We have nothing to setup here as the SPI IP block
++ * supports just 8 bits per word, and SPI clock can't be changed in software.
++ * Check for 8 bits per word. Chip select delay calculations could be
++ * added here as soon as bitbang_work() can be made aware of the delay value.
++ */
++static int xilinx_spi_setup_transfer(struct spi_device *spi,
++				     struct spi_transfer *t)
++{
++	u8 bits_per_word;
++	u32 hz;
++	struct xilinx_spi *xspi = spi_master_get_devdata(spi->master);
++
++	bits_per_word = (t) ? t->bits_per_word : spi->bits_per_word;
++	hz = (t) ? t->speed_hz : spi->max_speed_hz;
++	if (bits_per_word != 8) {
++		dev_err(&spi->dev, "%s, unsupported bits_per_word=%d\n",
++			__FUNCTION__, bits_per_word);
++		return -EINVAL;
++	}
++
++	if (hz && xspi->speed_hz > hz) {
++		dev_err(&spi->dev, "%s, unsupported clock rate %uHz\n",
++			__FUNCTION__, hz);
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++/* the spi->mode bits understood by this driver: */
++#define MODEBITS (SPI_CPOL | SPI_CPHA)
++
++static int xilinx_spi_setup(struct spi_device *spi)
++{
++	struct spi_bitbang *bitbang;
++	struct xilinx_spi *xspi;
++	int retval;
++
++	xspi = spi_master_get_devdata(spi->master);
++	bitbang = &xspi->bitbang;
++
++	if (!spi->bits_per_word)
++		spi->bits_per_word = 8;
++
++	if (spi->mode & ~MODEBITS) {
++		dev_err(&spi->dev, "%s, unsupported mode bits %x\n",
++			__FUNCTION__, spi->mode & ~MODEBITS);
++		return -EINVAL;
++	}
++
++	retval = xilinx_spi_setup_transfer(spi, NULL);
++	if (retval < 0)
++		return retval;
++
++	dev_dbg(&spi->dev, "%s, mode %d, %u bits/w, %u nsec/bit\n",
++		__FUNCTION__, spi->mode & MODEBITS, spi->bits_per_word, 0);
++
++	return 0;
++}
++
++static inline void xilinx_spi_fill_tx_fifo(struct xilinx_spi *xspi)
++{
++	u8 sr;
++
++	/* Fill the Tx FIFO with as many bytes as possible */
++	sr = in_8(xspi->regs + XSPI_SR_OFFSET);
++	while ((sr & XSPI_SR_TX_FULL_MASK) == 0 && xspi->remaining_bytes > 0) {
++		if (xspi->tx_ptr) {
++			out_8(xspi->regs + XSPI_TXD_OFFSET, *xspi->tx_ptr++);
++		} else {
++			out_8(xspi->regs + XSPI_TXD_OFFSET, 0);
++		}
++		xspi->remaining_bytes--;
++		sr = in_8(xspi->regs + XSPI_SR_OFFSET);
++	}
++}
++
++static int xilinx_spi_txrx_bufs(struct spi_device *spi, struct spi_transfer *t)
++{
++	struct xilinx_spi *xspi = spi_master_get_devdata(spi->master);
++	u32 ipif_ier;
++	u16 cr;
++
++	/* We get here with transmitter inhibited */
++
++	xspi->tx_ptr = t->tx_buf;
++	xspi->rx_ptr = t->rx_buf;
++	xspi->remaining_bytes = t->len;
++	INIT_COMPLETION(xspi->done);
++
++	xilinx_spi_fill_tx_fifo(xspi);
++
++	/* Enable the transmit empty interrupt, which we use to determine
++	 * progress on the transmission.
++	 */
++	ipif_ier = in_be32(xspi->regs + XIPIF_V123B_IIER_OFFSET);
++	out_be32(xspi->regs + XIPIF_V123B_IIER_OFFSET,
++		 ipif_ier | XSPI_INTR_TX_EMPTY);
++
++	/* Start the transfer by not inhibiting the transmitter any longer */
++	cr = in_be16(xspi->regs + XSPI_CR_OFFSET) & ~XSPI_CR_TRANS_INHIBIT;
++	out_be16(xspi->regs + XSPI_CR_OFFSET, cr);
++
++	wait_for_completion(&xspi->done);
++
++	/* Disable the transmit empty interrupt */
++	out_be32(xspi->regs + XIPIF_V123B_IIER_OFFSET, ipif_ier);
++
++	return t->len - xspi->remaining_bytes;
++}
++
++
++/* This driver supports single master mode only. Hence Tx FIFO Empty
++ * is the only interrupt we care about.
++ * Receive FIFO Overrun, Transmit FIFO Underrun, Mode Fault, and Slave Mode
++ * Fault are not to happen.
++ */
++static irqreturn_t xilinx_spi_irq(int irq, void *dev_id)
++{
++	struct xilinx_spi *xspi = dev_id;
++	u32 ipif_isr;
++
++	/* Get the IPIF interrupts, and clear them immediately */
++	ipif_isr = in_be32(xspi->regs + XIPIF_V123B_IISR_OFFSET);
++	out_be32(xspi->regs + XIPIF_V123B_IISR_OFFSET, ipif_isr);
++
++	if (ipif_isr & XSPI_INTR_TX_EMPTY) {	/* Transmission completed */
++		u16 cr;
++		u8 sr;
++
++		/* A transmit has just completed. Process received data and
++		 * check for more data to transmit. Always inhibit the
++		 * transmitter while the Isr refills the transmit register/FIFO,
++		 * or make sure it is stopped if we're done.
++		 */
++		cr = in_be16(xspi->regs + XSPI_CR_OFFSET);
++		out_be16(xspi->regs + XSPI_CR_OFFSET,
++			 cr | XSPI_CR_TRANS_INHIBIT);
++
++		/* Read out all the data from the Rx FIFO */
++		sr = in_8(xspi->regs + XSPI_SR_OFFSET);
++		while ((sr & XSPI_SR_RX_EMPTY_MASK) == 0) {
++			u8 data;
++
++			data = in_8(xspi->regs + XSPI_RXD_OFFSET);
++			if (xspi->rx_ptr) {
++				*xspi->rx_ptr++ = data;
++			}
++			sr = in_8(xspi->regs + XSPI_SR_OFFSET);
++		}
++
++		/* See if there is more data to send */
++		if (xspi->remaining_bytes > 0) {
++			xilinx_spi_fill_tx_fifo(xspi);
++			/* Start the transfer by not inhibiting the
++			 * transmitter any longer
++			 */
++			out_be16(xspi->regs + XSPI_CR_OFFSET, cr);
++		} else {
++			/* No more data to send.
++			 * Indicate the transfer is completed.
++			 */
++			complete(&xspi->done);
++		}
++	} else {
++		/* spurious interrupt */
++	}
++
++	return IRQ_HANDLED;
++}
++
++static int __init xilinx_spi_probe(struct platform_device *dev)
++{
++	int ret = 0;
++	struct spi_master *master;
++	struct xilinx_spi *xspi;
++	struct xspi_platform_data *pdata;
++	struct resource *r;
++
++	/* Get resources(memory, IRQ) associated with the device */
++	master = spi_alloc_master(&dev->dev, sizeof(struct xilinx_spi));
++
++	if (master == NULL) {
++		return -ENOMEM;
++	}
++
++	platform_set_drvdata(dev, master);
++	pdata = dev->dev.platform_data;
++
++	if (pdata == NULL) {
++		ret = -ENODEV;
++		goto put_master;
++	}
++
++	r = platform_get_resource(dev, IORESOURCE_MEM, 0);
++	if (r == NULL) {
++		ret = -ENODEV;
++		goto put_master;
++	}
++
++	xspi = spi_master_get_devdata(master);
++	xspi->bitbang.master = spi_master_get(master);
++	xspi->bitbang.chipselect = xilinx_spi_chipselect;
++	xspi->bitbang.setup_transfer = xilinx_spi_setup_transfer;
++	xspi->bitbang.txrx_bufs = xilinx_spi_txrx_bufs;
++	xspi->bitbang.master->setup = xilinx_spi_setup;
++	init_completion(&xspi->done);
++
++	if (!request_mem_region(r->start,
++			r->end - r->start + 1, XILINX_SPI_NAME)) {
++		ret = -ENXIO;
++		goto put_master;
++	}
++
++	xspi->regs = ioremap(r->start, r->end - r->start + 1);
++	if (xspi->regs == NULL) {
++		ret = -ENOMEM;
++		goto put_master;
++	}
++
++	xspi->irq = platform_get_irq(dev, 0);
++	if (xspi->irq < 0) {
++		ret = -ENXIO;
++		goto unmap_io;
++	}
++
++	master->bus_num = pdata->bus_num;
++	master->num_chipselect = pdata->num_chipselect;
++	xspi->speed_hz = pdata->speed_hz;
++
++	/* SPI controller initializations */
++	xspi_init_hw(xspi->regs);
++
++	/* Register for SPI Interrupt */
++	ret = request_irq(xspi->irq, xilinx_spi_irq, 0, XILINX_SPI_NAME, xspi);
++	if (ret != 0)
++		goto unmap_io;
++
++	ret = spi_bitbang_start(&xspi->bitbang);
++	if (ret != 0) {
++		printk(KERN_ALERT "spi_btbang_start FAILED\n");
++		goto free_irq;
++	}
++
++	printk(KERN_INFO "%s: at 0x%08X mapped to 0x%08X, irq=%d\n",
++	       dev->dev.bus_id, r->start, (u32)xspi->regs, xspi->irq);
++
++	return ret;
++
++free_irq:
++	free_irq(xspi->irq, xspi);
++unmap_io:
++	iounmap(xspi->regs);
++put_master:
++	spi_master_put(master);
++	return ret;
++}
++
++static int __devexit xilinx_spi_remove(struct platform_device *dev)
++{
++	struct xilinx_spi *xspi;
++	struct spi_master *master;
++
++	master = platform_get_drvdata(dev);
++	xspi = spi_master_get_devdata(master);
++
++	spi_bitbang_stop(&xspi->bitbang);
++	free_irq(xspi->irq, xspi);
++	iounmap(xspi->regs);
++	platform_set_drvdata(dev, 0);
++	spi_master_put(xspi->bitbang.master);
++
++	return 0;
++}
++
++static struct platform_driver xilinx_spi_driver = {
++	.probe	= xilinx_spi_probe,
++	.remove	= __devexit_p(xilinx_spi_remove),
++	.driver = {
++		   .name = XILINX_SPI_NAME,
++		   .owner = THIS_MODULE,
++	},
++};
++
++static int __init xilinx_spi_init(void)
++{
++	return platform_driver_register(&xilinx_spi_driver);
++}
++
++static void __exit xilinx_spi_exit(void)
++{
++	platform_driver_unregister(&xilinx_spi_driver);
++}
++
++module_init(xilinx_spi_init);
++module_exit(xilinx_spi_exit);
++
++MODULE_AUTHOR("MontaVista Software, Inc. <source@mvista.com>");
++MODULE_DESCRIPTION("Xilinx SPI driver");
++MODULE_LICENSE("GPL");
+
+--------------060400000005020506000101--
