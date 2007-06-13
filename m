@@ -1,23 +1,12 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
-	[151.189.21.50])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B613DDDE25
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 14:45:03 +1000 (EST)
-In-Reply-To: <1181639293.8953.7.camel@localhost.localdomain>
-References: <1180406209.8139.13.camel@localhost.localdomain>
-	<1181639293.8953.7.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <f81c6f149f20c52f547f39ca0cc8d67c@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v3]: Fix e500 v2 core reboot bug
-Date: Wed, 13 Jun 2007 06:44:50 +0200
-To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 13 Jun 2007 14:50:31 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [0/13] Queued patches for 2.6.13
+Message-ID: <20070613045031.GD16148@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,32 +16,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> +		global-utilities@e0000 {	//global utilities reg
-> +			compatible = "fsl,mpc8548-guts";
-> +			reg = <e0000 1000>;
-> +			fsl,has-rstcr;
-> +		};
+Hi Paul,
 
-Looks good.
+Here's my current queue of patches which I'm hoping will go in for
+2.6.13.  If they could go into an appropriate branch of powerpc.git in
+the meantime that would be great.
 
-> +	np = of_find_node_by_name(NULL, "global-utilities");
-> +	if ((np && of_get_property(np, "fsl,has-rstcr", NULL))) {
-> +		const u32 *prop = of_get_property(np, "reg", NULL);
-> +		if (prop) {
-> +		/* map reset control register
-> +		 * 0xE00B0 is offset of reset control register
-> +		 */
-> +			rstcr = ioremap(get_immrbase() + *prop + 0xB0, 0xff);
-> +			if (!rstcr)
-> +				printk (KERN_EMERG "Error: reset control register not mapped, 
-> spinning!\n");
-> +		}
-> +	else
-> +		printk (KERN_INFO "rstcr compatible register does not exist!\n");
-> +	}
-
-This needs an of_node_put(np).  Oh and the indenting
-is off.
-
-
-Segher
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
