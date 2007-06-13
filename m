@@ -1,22 +1,12 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-06.arcor-online.net (mail-in-06.arcor-online.net
-	[151.189.21.46])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2DF90DDE25
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 14:52:28 +1000 (EST)
-In-Reply-To: <466EEC01.6080807@am.sony.com>
-References: <20070612181825.730300780@am.sony.com>>
-	<466EEC01.6080807@am.sony.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <f7c4ca74d3e2031e01264f31f09e515a@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [patch 29/30] PS3: Device tree source.
-Date: Wed, 13 Jun 2007 06:52:20 +0200
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <dgibson@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+From: David Gibson <david@gibson.dropbear.id.au>
+Subject: [PATCH 2/13] Split out asm-ppc/mmu.h portions for the "classic"
+	hash-based MMU
+In-Reply-To: <20070613045031.GD16148@localhost.localdomain>
+Message-Id: <20070613045254.22BE5DDE33@ozlabs.org>
+Date: Wed, 13 Jun 2007 14:52:54 +1000 (EST)
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,47 +16,127 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Geoff,
+arch/powerpc still relies on asm-ppc/mmu.h for most 32-bit MMU types.
+This patch is another step towards fixing this.  It takes the portions
+of asm-ppc/mmu.h related to the "classic" 32-bit hash page table MMU
+which are still relevant in arch/powerpc and puts them in a new
+asm-powerpc/mmu-hash32.h, included when appropriate from
+asm-powerpc/mmu.h.
 
-Not much that can be wrong in this tree, so I'll get really
-pedantic, so you can have the best device tree ever ;-)
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+---
 
-There is one real bug though.
+ include/asm-powerpc/mmu-hash32.h |   91 +++++++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/mmu.h        |    3 +
+ 2 files changed, 94 insertions(+)
 
-> +/ {
-> +	model = "PS3 Game Console";
-
-model = "sony,some-model-number" or similar
-
-> +	compatible = "PS3";
-
-name = "sony,ps3"
-
-> +	/*
-> +	 * Need to keep linux,platform for a while, not used by kernel.
-> +	 */
-
-Why that?
-
-> +	 * Seems the only way currently to indicate a processor has multiple
-> +	 * threads is with an ibm,ppc-interrupt-server#s entry.
-
-Yes, a better way should be defined.  Any suggestions?
-
-> +		CBE,PPE {
-
-PowerPC,CBE@0 or cpu@0 -- the important thing is you need
-the @0 unit address.
-
-> +			device_type = "cpu";
-> +			reg = <0>;
-> +			ibm,ppc-interrupt-server#s = <0 1>;
-> +			clock-frequency = <0>;
-> +			timebase-frequency = <0>;
-> +			i-cache-size = <8000>;
-> +			d-cache-size = <8000>;
-
-I thought DL1 was 64kB, I might be wrong though?
-
-
-Segher
+Index: working-2.6/include/asm-powerpc/mmu-hash32.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ working-2.6/include/asm-powerpc/mmu-hash32.h	2007-05-09 15:45:31.000000000 +1000
+@@ -0,0 +1,91 @@
++#ifndef _ASM_POWERPC_MMU_HASH32_H_
++#define _ASM_POWERPC_MMU_HASH32_H_
++/*
++ * 32-bit hash table MMU support
++ */
++
++/*
++ * BATs
++ */
++
++/* Block size masks */
++#define BL_128K	0x000
++#define BL_256K 0x001
++#define BL_512K 0x003
++#define BL_1M   0x007
++#define BL_2M   0x00F
++#define BL_4M   0x01F
++#define BL_8M   0x03F
++#define BL_16M  0x07F
++#define BL_32M  0x0FF
++#define BL_64M  0x1FF
++#define BL_128M 0x3FF
++#define BL_256M 0x7FF
++
++/* BAT Access Protection */
++#define BPP_XX	0x00		/* No access */
++#define BPP_RX	0x01		/* Read only */
++#define BPP_RW	0x02		/* Read/write */
++
++#ifndef __ASSEMBLY__
++typedef struct _BAT {
++	struct {
++		unsigned long bepi:15;	/* Effective page index (virtual address) */
++		unsigned long :4;	/* Unused */
++		unsigned long bl:11;	/* Block size mask */
++		unsigned long vs:1;	/* Supervisor valid */
++		unsigned long vp:1;	/* User valid */
++	} batu; 		/* Upper register */
++	struct {
++		unsigned long brpn:15;	/* Real page index (physical address) */
++		unsigned long :10;	/* Unused */
++		unsigned long w:1;	/* Write-thru cache */
++		unsigned long i:1;	/* Cache inhibit */
++		unsigned long m:1;	/* Memory coherence */
++		unsigned long g:1;	/* Guarded (MBZ in IBAT) */
++		unsigned long :1;	/* Unused */
++		unsigned long pp:2;	/* Page access protections */
++	} batl;			/* Lower register */
++} BAT;
++#endif /* !__ASSEMBLY__ */
++
++/*
++ * Hash table
++ */
++
++/* Values for PP (assumes Ks=0, Kp=1) */
++#define PP_RWXX	0	/* Supervisor read/write, User none */
++#define PP_RWRX 1	/* Supervisor read/write, User read */
++#define PP_RWRW 2	/* Supervisor read/write, User read/write */
++#define PP_RXRX 3	/* Supervisor read,       User read */
++
++#ifndef __ASSEMBLY__
++
++/* Hardware Page Table Entry */
++typedef struct _PTE {
++	unsigned long v:1;	/* Entry is valid */
++	unsigned long vsid:24;	/* Virtual segment identifier */
++	unsigned long h:1;	/* Hash algorithm indicator */
++	unsigned long api:6;	/* Abbreviated page index */
++	unsigned long rpn:20;	/* Real (physical) page number */
++	unsigned long    :3;	/* Unused */
++	unsigned long r:1;	/* Referenced */
++	unsigned long c:1;	/* Changed */
++	unsigned long w:1;	/* Write-thru cache mode */
++	unsigned long i:1;	/* Cache inhibited */
++	unsigned long m:1;	/* Memory coherence */
++	unsigned long g:1;	/* Guarded */
++	unsigned long  :1;	/* Unused */
++	unsigned long pp:2;	/* Page protection */
++} PTE;
++
++typedef struct {
++	unsigned long id;
++	unsigned long vdso_base;
++} mm_context_t;
++
++typedef unsigned long phys_addr_t;
++
++#endif /* !__ASSEMBLY__ */
++
++#endif /* _ASM_POWERPC_MMU_HASH32_H_ */
+Index: working-2.6/include/asm-powerpc/mmu.h
+===================================================================
+--- working-2.6.orig/include/asm-powerpc/mmu.h	2007-05-07 12:57:07.000000000 +1000
++++ working-2.6/include/asm-powerpc/mmu.h	2007-05-09 15:29:12.000000000 +1000
+@@ -5,6 +5,9 @@
+ #ifdef CONFIG_PPC64
+ /* 64-bit classic hash table MMU */
+ #  include <asm/mmu-hash64.h>
++#elif defined(CONFIG_PPC_STD_MMU)
++/* 32-bit classic hash table MMU */
++#  include <asm/mmu-hash32.h>
+ #elif defined(CONFIG_44x)
+ /* 44x-style software loaded TLB */
+ #  include <asm/mmu-44x.h>
