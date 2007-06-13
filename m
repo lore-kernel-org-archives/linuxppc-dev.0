@@ -1,20 +1,17 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 8B0D6DDEEF
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 19:10:59 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [patch 05/30] PS3: Use ioremap_flags
-Date: Wed, 13 Jun 2007 11:10:48 +0200
-References: <20070612181825.730300780@am.sony.com>
-	<20070612181825.730300780@am.sony.com>> <466EE965.404@am.sony.com>
-In-Reply-To: <466EE965.404@am.sony.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200706131110.48809.arnd@arndb.de>
-Cc: Masato Noguchi <Masato.Noguchi@jp.sony.com>, linuxppc-dev@ozlabs.org,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, paulus@samba.org
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <20070613061254.GG16148@localhost.localdomain>
+References: <7878cf1aec340b976b90b86b9e83bf18@kernel.crashing.org>
+	<20070612044246.GC4198@localhost.localdomain>
+	<9fbd7a7f5cdde58768569ab23c7aec7c@kernel.crashing.org>
+	<20070613061254.GG16148@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <bc98b5372977d171b0075074bfce7747@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
+Date: Wed, 13 Jun 2007 11:13:21 +0200
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,14 +21,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-T24gVHVlc2RheSAxMiBKdW5lIDIwMDcsIEdlb2ZmIExldmFuZCB3cm90ZToKPiAtwqDCoMKgwqDC
-oMKgwqBzcHUtPnByb2JsZW0gPSBpb3JlbWFwKHNwdS0+cHJvYmxlbV9waHlzLAo+IC3CoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBzaXplb2Yoc3RydWN0IHNwdV9wcm9ibGVtKSk7Cj4gK8Kg
-wqDCoMKgwqDCoMKgc3B1LT5wcm9ibGVtID0gKF9fZm9yY2Ugdm9pZCAqKWlvcmVtYXBfZmxhZ3Mo
-c3B1LT5wcm9ibGVtX3BoeXMsCj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHNpemVv
-ZihzdHJ1Y3Qgc3B1X3Byb2JsZW0pLCBfUEFHRV9OT19DQUNIRSk7Cj4gKwoKVW5saWtlIHRoZSBs
-b2NhbF9zdG9yZSBtZW1iZXIsIG9mIHN0cnVjdCBzcHUsIC0+cHJvYmxlbSBhbmQgLT5wcml2Mgpt
-ZW1iZXJzIGFyZSBfX2lvbWVtLCBzbyB5b3Ugc2hvdWxkIG5vdCBkbyBhIF9fZm9yY2UgY2FzdCBo
-ZXJlLgoKT3RoZXIgdGhhbiB0aGF0LCB0aGUgcGF0Y2ggbG9va3MgZ29vZC4KCk5vdGUgdGhhdCBJ
-IG1heSByZXBseSBmYXN0ZXIgaXMgeW91IHNlbmQgeW91ciBtZXNzYWdlcyB0byBhcm5kQGFybmRi
-LmRlCmluc3RlYWQgb2YgYXJuZC5iZXJnbWFubkBkZS5pYm0uY29tLgoKCUFybmQgPD48Cg==
+> Hrm, ok.  Between you and BenH you've convinced me.  I'll try to come
+> up with something.  I think we'll still need to support the old
+> properties as backwards compatibility thing.
+
+Yes, of course.
+
+I'm still not happy with creating nodes for application
+flash partitions in the device tree; this isn't done
+for disk partitions either, for analogue reasons (namely,
+that info doesn't belong in the device tree, it is the
+wrong abstraction).
+
+How do non-device-tree MTD users handle this?
+
+
+Segher
