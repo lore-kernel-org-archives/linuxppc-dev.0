@@ -1,32 +1,23 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <biovore@biovore.net>
+Received: from last-exile (unknown [207.114.88.194])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5010EDDD08
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 15:45:33 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	l5D5jSpE011696
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 22:45:28 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l5D5jQpw026572
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 00:45:27 -0500 (CDT)
-Subject: Re: [PATCH v3]: Fix e500 v2 core reboot bug
-From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <f81c6f149f20c52f547f39ca0cc8d67c@kernel.crashing.org>
-References: <1180406209.8139.13.camel@localhost.localdomain>
-	<1181639293.8953.7.camel@localhost.localdomain>
-	<f81c6f149f20c52f547f39ca0cc8d67c@kernel.crashing.org>
-Content-Type: text/plain
-Message-Id: <1181713501.9397.10.camel@localhost.localdomain>
-Mime-Version: 1.0
-Date: 13 Jun 2007 13:45:02 +0800
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+	(Client CN "biovore", Issuer "biovore" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id B4E16DDE0D
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 13:51:25 +1000 (EST)
+Received: from kb3gtn.local (c-69-143-224-204.hsd1.md.comcast.net
+	[69.143.224.204])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by last-exile (Postfix) with ESMTP id 5CBC645C200
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2007 23:26:00 -0400 (EDT)
+From: biovore <biovore@biovore.net>
+To: linuxppc-dev@ozlabs.org
+Subject: ml-310 linux-2.6
+Date: Tue, 12 Jun 2007 23:24:55 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200706122324.55394.biovore@biovore.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,39 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-06-13 at 12:44, Segher Boessenkool wrote:
-> > +             global-utilities@e0000 {        //global utilities reg
-> > +                     compatible = "fsl,mpc8548-guts";
-> > +                     reg = <e0000 1000>;
-> > +                     fsl,has-rstcr;
-> > +             };
-> 
-> Looks good.
-> 
-> > +     np = of_find_node_by_name(NULL, "global-utilities");
-> > +     if ((np && of_get_property(np, "fsl,has-rstcr", NULL))) {
-> > +             const u32 *prop = of_get_property(np, "reg", NULL);
-> > +             if (prop) {
-> > +             /* map reset control register
-> > +              * 0xE00B0 is offset of reset control register
-> > +              */
-> > +                     rstcr = ioremap(get_immrbase() + *prop + 0xB0,
-> 0xff);
-> > +                     if (!rstcr)
-> > +                             printk (KERN_EMERG "Error: reset
-> control register not mapped, 
-> > spinning!\n");
-> > +             }
-> > +     else
-> > +             printk (KERN_INFO "rstcr compatible register does not
-> exist!\n");
-> > +     }
-> 
-> This needs an of_node_put(np).  Oh and the indenting
-> is off.
-It is my oversight!
-I had thought to add of_node_put(), but forget.
-I just checkout the code and decide to have a small revise.
+Hello,
+	Dose anyone on this list know if a generic kernel from kernel.org can be 
+built to run on the ml-310?  All I am trying to do first is just get a the 
+serial port and the ddr memory controller working.. (no PCI)  I am using EDK 
+9.1i on linux.   I have gotten the EDK to make the drivers and update the 
+xparameters.h file but when I go to build it using my powerpc-405-linux-gnu- 
+crosscompiler it fails and complains that there are allot of missing xilinix 
+#defines.   
 
-Thanks.
-Roy
+Any help would be nice.
+
+Peter Fetterer
+biovore(at)biovore.net
