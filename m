@@ -1,20 +1,29 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.183])
-	by ozlabs.org (Postfix) with ESMTP id 44971DDE37
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 12:39:52 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so503632wag
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 19:39:51 -0700 (PDT)
-Message-ID: <fa686aa40706131939p75e168a8hfe626e5452261c1f@mail.gmail.com>
-Date: Wed, 13 Jun 2007 20:39:51 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: biovore <biovore@biovore.net>
-Subject: Re: New to ML-310
-In-Reply-To: <200706132031.53942.biovore@biovore.net>
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0F4C3DDE9F
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 13:12:44 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l5E3CdYY005813
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 20:12:39 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l5E3CbXe011246
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 22:12:38 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <200706132031.53942.biovore@biovore.net>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: ucc_geth DPRAM alloc error, 2.6.22-rc3
+Date: Thu, 14 Jun 2007 11:14:30 +0800
+Message-ID: <989B956029373F45A0B8AF0297081890D2AD2D@zch01exm26.fsl.freescale.net>
+In-Reply-To: <1181744529.30670.298.camel@gentoo-jocke.transmode.se>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: <joakim.tjernlund@transmode.se>,
+	"linuxppc-dev Development" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,39 +33,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 6/13/07, biovore <biovore@biovore.net> wrote:
->   CC      arch/ppc/syslib/xilinx_pic.o
-> arch/ppc/syslib/xilinx_pic.c:30:5: warning: "XPAR_XINTC_USE_DCR" is not
-> defined
-> arch/ppc/syslib/xilinx_pic.c:121:5: warning: "XPAR_XINTC_USE_DCR" is not
-> defined
-> arch/ppc/syslib/xilinx_pic.c: In function 'ppc4xx_pic_init':
-> arch/ppc/syslib/xilinx_pic.c:122: error: 'XPAR_INTC_0_BASEADDR' undeclared
-> (first use in this function)
-> arch/ppc/syslib/xilinx_pic.c:122: error: (Each undeclared identifier is
-> reported only once
-> arch/ppc/syslib/xilinx_pic.c:122: error: for each function it appears in.)
-> arch/ppc/syslib/xilinx_pic.c:148: error: 'XPAR_INTC_0_KIND_OF_INTR' undeclared
-> (first use in this function)
-> make[1]: *** [arch/ppc/syslib/xilinx_pic.o] Error 1
-> make: *** [arch/ppc/syslib] Error 2
->
-> This to me looks like my xparameters.h file is missing something..    Any
-> ideas?
+> -----Original Message-----
+> From: Joakim Tjernlund [mailto:joakim.tjernlund@transmode.se]
+> Sent: Wednesday, June 13, 2007 10:22 PM
+> To: 'linuxppc-dev Development'; Li Yang-r58472
+> Subject: ucc_geth DPRAM alloc error, 2.6.22-rc3
+>=20
+> Trying to bring up a third ethernet i/f(ifconfig eth2 up) on
+> a Freescale 832x CPU gives me this:
+>  ifconfig eth2 up
+>  ucc_geth_startup: Can not allocate DPRAM memory for p_thread_data_tx.
+>  eth2: Cannot configure net device, aborting.
+>  SIOCSIFFLAGS: Cannot allocate memory
+>=20
+> This worked in 2.6.20
+Hi Joakim,
 
-Go into software settings, and set a driver for the intc core.  (Or
-you might be missing an interrupt controller entirely in your design)
+Thanks for the bug report.  The cause of this problem is that ucc_geth
+is set to work in 1000Mbps mode.  However, 8323 only supports 100Mbps.
+1000Mbps mode consumes much more MURAM for virtual FIFO.
 
-BTW, I wouldn't bother with getting EDK to patch your kernel tree.
-You're better off to generate the BSP into an empty directory and just
-copy in your custom xparams file.  The EDK patching is fragile if you
-don't use exactly the right kernel version.
+I will investigate this problem further, and see if a patch is needed.
 
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+- Leo
