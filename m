@@ -1,23 +1,21 @@
-Return-Path: <biovore@biovore.net>
-Received: from last-exile (unknown [207.114.88.194])
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound1-dub-R.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "biovore", Issuer "biovore" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id D7613DDE42
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 10:31:52 +1000 (EST)
-Received: from kb3gtn.local (c-69-143-224-204.hsd1.md.comcast.net
-	[69.143.224.204])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by last-exile (Postfix) with ESMTP id 9DE4945C179
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 20:31:54 -0400 (EDT)
-From: biovore <biovore@biovore.net>
-To: linuxppc-dev@ozlabs.org
-Subject: New to ML-310
-Date: Wed, 13 Jun 2007 20:31:53 -0400
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 610F9DDE1D
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 11:31:42 +1000 (EST)
+Message-ID: <46709A76.4000602@am.sony.com>
+Date: Wed, 13 Jun 2007 18:31:34 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200706132031.53942.biovore@biovore.net>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: [patch 29/30 v2] PS3: Device tree source.
+References: <20070612181825.730300780@am.sony.com>>
+	<466EEC01.6080807@am.sony.com>
+In-Reply-To: <466EEC01.6080807@am.sony.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,38 +25,100 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello everyone on the list,
-	I have managed to get my hands on a ML-310 play around with in my spare time 
-at home.  I working on trying to build a linux kernel for the system.  I have 
-ISE 9.1i and EDK 9.1i and am using there system generator to patch a 
-linux-2.6.22-rc3 kernel I checked out of the montivista kernel git repos.   I 
-am familiar with crosscompiling kernels for fix processors of arm and ppc, 
-but I am running into problems dealing with the PPC405 in the virtex-II.
-The EDK generates a bunch of code and patches the kernel.  I then go into the 
-kernel directory and run ./xmake and it seems to go off and do some stuff to 
-the .config file and then starts to build the kernel.  I all goes nicely 
-until it hits the following error.
+Subject: PS3: Device tree source.
 
-  CC      arch/ppc/syslib/xilinx_pic.o
-arch/ppc/syslib/xilinx_pic.c:30:5: warning: "XPAR_XINTC_USE_DCR" is not 
-defined
-arch/ppc/syslib/xilinx_pic.c:121:5: warning: "XPAR_XINTC_USE_DCR" is not 
-defined
-arch/ppc/syslib/xilinx_pic.c: In function 'ppc4xx_pic_init':
-arch/ppc/syslib/xilinx_pic.c:122: error: 'XPAR_INTC_0_BASEADDR' undeclared 
-(first use in this function)
-arch/ppc/syslib/xilinx_pic.c:122: error: (Each undeclared identifier is 
-reported only once
-arch/ppc/syslib/xilinx_pic.c:122: error: for each function it appears in.)
-arch/ppc/syslib/xilinx_pic.c:148: error: 'XPAR_INTC_0_KIND_OF_INTR' undeclared 
-(first use in this function)
-make[1]: *** [arch/ppc/syslib/xilinx_pic.o] Error 1
-make: *** [arch/ppc/syslib] Error 2
+The PS3 device tree source.
 
-This to me looks like my xparameters.h file is missing something..    Any 
-ideas?
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+---
 
-Peter Fetterer
---
-The force is like duct tape.  It has a dark side, a light side and binds the 
-universe together.
+ver2: Here's an updated version based on the discussions.
+
+-Geoff
+
+ arch/powerpc/boot/dts/ps3.dts      |   68 +++++++++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/ps3/setup.c |    2 -
+ 2 files changed, 69 insertions(+), 1 deletion(-)
+
+--- /dev/null
++++ b/arch/powerpc/boot/dts/ps3.dts
+@@ -0,0 +1,68 @@
++/*
++ *  PS3 Game Console device tree.
++ *
++ *  Copyright (C) 2007 Sony Computer Entertainment Inc.
++ *  Copyright 2007 Sony Corp.
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++/ {
++	model = "SonyPS3";
++	compatible = "sony,ps3";
++	#size-cells = <2>;
++	#address-cells = <2>;
++
++	chosen {
++	};
++
++	/*
++	 * We'll get the size of the bootmem block from lv1 after startup,
++	 * so we'll put a null entry here.
++	 */
++
++	memory {
++		device_type = "memory";
++		reg = <0 0 0 0>;
++	};
++
++	/*
++	 * The boot cpu is always zero for PS3.
++	 *
++	 * dtc expects a clock-frequency and timebase-frequency entries, so
++	 * we'll put a null entries here.  These will be initialized after
++	 * startup with data from lv1.
++	 *
++	 * Seems the only way currently to indicate a processor has multiple
++	 * threads is with an ibm,ppc-interrupt-server#s entry.  We'll put one
++	 * here so we can bring up both of ours.  See smp_setup_cpu_maps().
++	 */
++
++	cpus {
++		#size-cells = <0>;
++		#address-cells = <1>;
++
++		cpu@0 {
++			device_type = "cpu";
++			reg = <0>;
++			ibm,ppc-interrupt-server#s = <0 1>;
++			clock-frequency = <0>;
++			timebase-frequency = <0>;
++			i-cache-size = <8000>;
++			d-cache-size = <8000>;
++			i-cache-line-size = <80>;
++			d-cache-line-size = <80>;
++		};
++	};
++};
+--- a/arch/powerpc/platforms/ps3/setup.c
++++ b/arch/powerpc/platforms/ps3/setup.c
+@@ -193,7 +193,7 @@ static int __init ps3_probe(void)
+ 	DBG(" -> %s:%d\n", __func__, __LINE__);
+ 
+ 	dt_root = of_get_flat_dt_root();
+-	if (!of_flat_dt_is_compatible(dt_root, "PS3"))
++	if (!of_flat_dt_is_compatible(dt_root, "sony,ps3"))
+ 		return 0;
+ 
+ 	powerpc_firmware_features |= FW_FEATURE_PS3_POSSIBLE;
