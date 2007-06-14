@@ -1,20 +1,21 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 497FEDDED9
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 17:59:12 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [patch 12/13] powerpc: fix building without PCI
-Date: Thu, 14 Jun 2007 09:58:51 +0200
-References: <20070612163016.253915076@arndb.de>
-	<20070612163751.979776796@arndb.de>
-	<18032.40314.440212.19149@cargo.ozlabs.ibm.com>
-In-Reply-To: <18032.40314.440212.19149@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200706140958.52118.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <20070614042906.GC11177@localhost.localdomain>
+References: <7878cf1aec340b976b90b86b9e83bf18@kernel.crashing.org>
+	<20070612044246.GC4198@localhost.localdomain>
+	<9fbd7a7f5cdde58768569ab23c7aec7c@kernel.crashing.org>
+	<20070613061254.GG16148@localhost.localdomain>
+	<bc98b5372977d171b0075074bfce7747@kernel.crashing.org>
+	<20070613091904.GA30948@localhost.localdomain>
+	<791ab8b82c5b5d2b3ae4827a891a43ea@kernel.crashing.org>
+	<20070614042906.GC11177@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <468c8d125e1e35a985aee2a21676ce2f@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
+Date: Thu, 14 Jun 2007 10:00:45 +0200
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,17 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 14 June 2007, Paul Mackerras wrote:
-> > Some code looks can be configured to be built without
-> > PCI support, but does not work properly.
->=20
-> I don't think it makes sense to build a chrp kernel without PCI. =A0I
-> would rather just always select PCI for chrp rather than uglifying the
-> code with all those ifdefs.
+>> I think some binary partition table format that can be
+>> used by _all_ MTD consumers should be defined.  How
+>> that table should be communicated to the kernel in the
+>> device tree case we can discuss later, then.  Maybe
+>> something as simple as storing it in flash, and have a
+>> "partition-table-offset" property or something like that.
+>>
+>> This is something the MTD people will have to buy into
+>> of course.
+>
+> I tought I saw some config option implying that there already existed
+> an on-device partition table format for flashes.
 
-Ok, good. I had done that at first but then saw that the chrp code
-already has a conditional on CONFIG_PCI in the Makefile and changed
-it.
-I have changed it back in my series now.
+Interesting.
 
-	Arnd <><
+> Doesn't help us for
+> existing boards which don't expect such a setup, of course.
+
+If they don't use a device tree yet, I don't see much
+of a problem.  If they do already, that can be fixed,
+too -- gradually.
+
+> Incidentally, with either the partitions-described-by-properties, or
+> the revised more-flexible partitions-described-by-subnodes format, I'm
+> not seeing it as required that the whole of the flash address space be
+> described.
+
+Indeed.  It is fine to simply tell the OS "there is
+some flash here, you figure out what to use it for".
+
+> So it would certainly be possible to *only* describe the
+> sections of the flash used by firmware.  But I'm suggesting that we
+> optionally allow other partitions to be described for boards / systems
+> which have strong conventions about how the flash is divided and where
+> we don't have any other way of recording the partition layout short of
+> hardcoding.
+
+As long as it's optional there should be no harm in
+that, of course.
+
+
+Segher
