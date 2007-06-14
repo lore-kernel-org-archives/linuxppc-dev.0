@@ -1,23 +1,22 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound1-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
+Return-Path: <matt@genesi-usa.com>
+Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
+	[66.98.186.96])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 4D7E5DDF1C
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jun 2007 05:03:25 +1000 (EST)
-Message-ID: <467190F4.4000307@am.sony.com>
-Date: Thu, 14 Jun 2007 12:03:16 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9EFB7DDF0C
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jun 2007 06:54:42 +1000 (EST)
+Received: from 82-46-178-156.cable.ubr06.king.blueyonder.co.uk
+	([82.46.178.156] helo=[192.168.2.228])
+	by mail.genesi-usa.com with esmtpa (Exim 4.66 (FreeBSD))
+	(envelope-from <matt@genesi-usa.com>) id 1Hyw5w-000BIR-O6
+	for linuxppc-dev@ozlabs.org; Thu, 14 Jun 2007 20:39:05 +0000
+Message-ID: <4671AB2B.8000008@genesi-usa.com>
+Date: Thu, 14 Jun 2007 21:55:07 +0100
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: [patch 05/30 v2] PS3: Use ioremap_flags
-References: <20070612181825.730300780@am.sony.com>> <466EE965.404@am.sony.com>
-In-Reply-To: <466EE965.404@am.sony.com>
+To: ppc-dev <linuxppc-dev@ozlabs.org>
+Subject: PowerPC boot wrapper and seperate initrd images
 Content-Type: text/plain; charset=UTF-8
-Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>,
-	Masato Noguchi <Masato.Noguchi@jp.sony.com>,
-	linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,71 +26,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Use ioremap_flags() to map SPU and htab regions as non-guarded.
-Change the use of _ioremap() to ioremap_flags().
+I am trying to get my head around this, so here goes on my take on how the
+current boot loader works.
 
-CC: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-CC: Masato Noguchi <Masato.Noguchi@jp.sony.com>
-CC: Takao Shinohara <shin@sm.sony.co.jp>
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
----
+In essence the wrapper script appends a linux kernel and initrd,
+compresses and throws on a little loader (chrp/of or uboot/dts or whatever)
+at the front.
 
-Ver 2: Fixed casts, removed _PAGE_GUARDED from spu problem and priv2 regions.
+For Open Firmware, at boot (in of.c) it takes the values in r3 & r4
+(r5 being the prom entry point) as initrd address and initrd size.
 
- arch/powerpc/platforms/ps3/htab.c |    2 +-
- arch/powerpc/platforms/ps3/spu.c  |   13 +++++++++----
- 2 files changed, 10 insertions(+), 5 deletions(-)
+Somewhat later in the main loader (main.c:prep_initrd) it sets properties
+in the /chosen node which put the initrd address and initrd size in
+the device-tree for further reference (linux,initrd-size and linux,initrd-start)
 
---- a/arch/powerpc/platforms/ps3/htab.c
-+++ b/arch/powerpc/platforms/ps3/htab.c
-@@ -273,7 +273,7 @@ void __init ps3_map_htab(void)
- 
- 	result = lv1_map_htab(0, &htab_addr);
- 
--	htab = (hpte_t *)__ioremap(htab_addr, htab_size,
-+	htab = (__force hpte_t *)ioremap_flags(htab_addr, htab_size,
- 				   pgprot_val(PAGE_READONLY_X));
- 
- 	DBG("%s:%d: lpar %016lxh, virt %016lxh\n", __func__, __LINE__,
---- a/arch/powerpc/platforms/ps3/spu.c
-+++ b/arch/powerpc/platforms/ps3/spu.c
-@@ -182,15 +182,18 @@ static int __init setup_areas(struct spu
- {
- 	struct table {char* name; unsigned long addr; unsigned long size;};
- 
--	spu_pdata(spu)->shadow = __ioremap(
--		spu_pdata(spu)->shadow_addr, sizeof(struct spe_shadow),
--		pgprot_val(PAGE_READONLY) | _PAGE_NO_CACHE | _PAGE_GUARDED);
-+	spu_pdata(spu)->shadow = ioremap_flags(spu_pdata(spu)->shadow_addr,
-+					       sizeof(struct spe_shadow),
-+					       pgprot_val(PAGE_READONLY) |
-+					       _PAGE_NO_CACHE);
- 	if (!spu_pdata(spu)->shadow) {
- 		pr_debug("%s:%d: ioremap shadow failed\n", __func__, __LINE__);
- 		goto fail_ioremap;
- 	}
- 
--	spu->local_store = ioremap(spu->local_store_phys, LS_SIZE);
-+	spu->local_store = (__force void *)ioremap_flags(spu->local_store_phys,
-+		LS_SIZE, _PAGE_NO_CACHE);
-+
- 	if (!spu->local_store) {
- 		pr_debug("%s:%d: ioremap local_store failed\n",
- 			__func__, __LINE__);
-@@ -199,6 +202,7 @@ static int __init setup_areas(struct spu
- 
- 	spu->problem = ioremap(spu->problem_phys,
- 		sizeof(struct spu_problem));
-+
- 	if (!spu->problem) {
- 		pr_debug("%s:%d: ioremap problem failed\n", __func__, __LINE__);
- 		goto fail_ioremap;
-@@ -206,6 +210,7 @@ static int __init setup_areas(struct spu
- 
- 	spu->priv2 = ioremap(spu_pdata(spu)->priv2_addr,
- 		sizeof(struct spu_priv2));
-+
- 	if (!spu->priv2) {
- 		pr_debug("%s:%d: ioremap priv2 failed\n", __func__, __LINE__);
- 		goto fail_ioremap;
+I think this is a given.. it doesn't get too complicated. However what I
+am looking to do is have it so that a first stage bootloader (Forth
+script or binary like Yaboot) loads in the initrd into memory via the
+client interface or whatever other method, then just fires up the
+kernel.
+
+This is simply because.. yaboot doesn't work here yet (Pegasos/Efika).
+This is causing problems with distributions as they like to ship a
+kernel and seperate initrd - and expect a boot loader like BootX or
+Yaboot or Quick (pick one) to do all it's heavy lifting.
+
+However we CAN get the data into the right place, with a tiny Forth
+script, and there are some standard properties to reference it.
+
+The linux,initrd-size and linux,initrd-start properties would
+be set in the device tree by this tiny forth boot loader.
+
+That means of.c needs to pick them up, and main.c needs not to trash
+them.
+
+What I am asking, then, if all that information is correct, is if it
+would be acceptable in any terms to add this code to the boot wrapper;
+in platform_init, it would get the properties out of the tree and
+assign them in the loader_info structure (maybe only if the r3 and
+r4 values are invalid).
+
+Then in main.c perhaps NOT set those values if they are already in
+the device tree.. but I am not sure if any manipulation of the
+values is going on. I assume they're absolute, real-mode addresses
+and not being weirdly relocated or as an offset to the kernel
+(I didn't look to hard).
+
+Is it an insane or stupid idea, that everyone hates and thinks
+we should just fix our broken firmware, or do you think it would
+come in handy? I'm considering it's a 20-line patch that wouldn't
+harm anyone..
+
+Any comments?
+
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
