@@ -1,19 +1,21 @@
-Return-Path: <stern@rowland.harvard.edu>
-Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
-	by ozlabs.org (Postfix) with SMTP id DD8D8DDE2B
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 364D1DDE46
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Jun 2007 02:38:19 +1000 (EST)
-Date: Wed, 13 Jun 2007 12:38:15 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [linux-usb-devel] [PATCH 6/6] [C67x00] Merge c67x00-hub.c into
-	c67x00-hcd.c
-In-Reply-To: <fa686aa40706130919u602498aw319cff16452079bc@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0706131233220.3607-100000@iolanthe.rowland.org>
+	Thu, 14 Jun 2007 11:43:25 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1HyeMr-0005WS-QM
+	for linuxppc-embedded@ozlabs.org; Wed, 13 Jun 2007 18:43:21 -0700
+Message-ID: <11112197.post@talk.nabble.com>
+Date: Wed, 13 Jun 2007 18:43:21 -0700 (PDT)
+From: Leonardo Araujo <leonardoaraujo.santos@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Steps needed to get Linux 2.6 Running on Xilinx ML403
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Peter Korsgaard <jacmet@sunsite.dk>, linux-usb-devel@lists.sourceforge.net,
-	linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,43 +26,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 13 Jun 2007, Grant Likely wrote:
 
-> I think we're crossing wires here.  In this particular case, I think
-> the hub support code is sufficiently small that it doesn't need to be
-> split off into a separate file.  (It's only 180 lines)  I'm not
-> suggesting that the hub support stuff be moved to a .h file.
-> 
-> If the code was larger, I argue that c67x00-hub.c should be compiled
-> separately from c67x00-hcd.c and that 'c67x00-hub.c' be added to
-> 'c67x00-$(CONFIG_USB_C67X00_HCD)' in the Makefile.
+Hi guys I just bouht a ML403 board and started to study how can I get Linux
+2.6 working in this board.... My questions are.....
 
-> Heh, 'polluted' is too loaded a term, and it suggests something I
-> didn't mean.  When the driver is built into the kernel, there are a
-> number of c67x00_* symbols which are exported.  These symbols are not
-> used anywhere other than in the c67x00 driver code.  However, this is
-> necessary because the overall driver splits the various subsystems
-> into separate .c files which are linked together.  This approach is
-> well supported by convention in the kernel, and all the non-static
-> symbols use the c67x00_ prefix to avoid collisions.
-> 
-> For example, see ib_core-y in drivers/infiniband/core/Makefile and
-> pcieportdrv-y in drivers/pci/pcie/Makefile.
-> 
-> Since the driver already makes use of this approach, I don't think it
-> makes sense to use a difference approach for the root hub support
-> code.  (Again, I'm specifically talking about the c67x00 driver here;
-> I've not looked at the *hci drivers in detail).
+1)The most prepared source tree is the
+http://source.mvista.com/git/gitweb.cgi?p=linux-xilinx-26.git;a=log
+there I will have the linux prepared to work with Video and network devices
+installed on my board?
 
-But you did say earlier that the way other drivers were written was a
-bad idea...
+2)I must use ELDK with this source to provide basic functionality to my
+Linux working on my board as gcc, gdb....?
 
-In any case I agree that the root-hub code in c67x00 should be written
-to match the style used by the rest of the driver.
+3)Reading some previous posts... I saw some steps used to compile the Linux
+... are they right?
+3.1) Use EDK 8.2.02 to generate the base system for ml403. EDK generated BSP
+files.
+3.2)Copy the linux-2.6.20.tar.bz2 into proper location in eldk directory and
+extracted there, Then copy all of the BSP files into the root folder of my
+kernel source.
+3.3)Edit the Makefile and set the ARCH and CROSS_COMPILE variables , also I
+set all of the env variables needed by edk. 
 
-> Of course, when it is built as a module, none of those symbols show up
-> because they are not exported.
+4) Ok now I got my kernel compiled in my Computer..... how do I transfer
+this kernel to my CF card on board?.... I must do some kind o bzimage....?
 
-True.  And true as well of the other drivers which #include *.c files.
 
-Alan Stern
+Thanks 
+Leonardo Araujo dos Santos
+leonardoaraujo.santos@gmail.com
+-- 
+View this message in context: http://www.nabble.com/Steps-needed-to-get-Linux-2.6-Running-on-Xilinx-ML403-tf3918874.html#a11112197
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
