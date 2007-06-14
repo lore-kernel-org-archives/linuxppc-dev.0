@@ -1,15 +1,16 @@
 Return-Path: <sshtylyov@ru.mvista.com>
-Message-ID: <46713711.5010709@ru.mvista.com>
-Date: Thu, 14 Jun 2007 16:39:45 +0400
+Message-ID: <4671390D.1060606@ru.mvista.com>
+Date: Thu, 14 Jun 2007 16:48:13 +0400
 From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
+To: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
-References: <7878cf1aec340b976b90b86b9e83bf18@kernel.crashing.org>	<20070612044246.GC4198@localhost.localdomain>	<9fbd7a7f5cdde58768569ab23c7aec7c@kernel.crashing.org>	<20070613061254.GG16148@localhost.localdomain>	<bc98b5372977d171b0075074bfce7747@kernel.crashing.org>	<20070613091904.GA30948@localhost.localdomain>	<791ab8b82c5b5d2b3ae4827a891a43ea@kernel.crashing.org>
-	<20070614042906.GC11177@localhost.localdomain>
-In-Reply-To: <20070614042906.GC11177@localhost.localdomain>
+References: <7878cf1aec340b976b90b86b9e83bf18@kernel.crashing.org>	<20070612044246.GC4198@localhost.localdomain>
+	<9fbd7a7f5cdde58768569ab23c7aec7c@kernel.crashing.org>
+In-Reply-To: <9fbd7a7f5cdde58768569ab23c7aec7c@kernel.crashing.org>
 Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,38 +20,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
+Segher Boessenkool wrote:
+>>So, what you're suggesting is a subnode for each described partition?
 
->>>>How do non-device-tree MTD users handle this?
+> I'm saying this is a reasonable way to describe the regions
+> of flash the firmware itself cares about.
 
->>>Invidual, board-specific map files with hardcoded partition tables.
+> This isn't anything new; it is done like this on some
+> Apple systems, for example.
 
->>That's what I was afraid of.  Sigh.
+    First you're saying that nodes should correspont to *real* devices, then 
+it turns out that there have been precedents for the nodes corresponding to 
+completely virtual entities? ;-)
 
->>>See drivers/mtd/maps/ebony.c for example.
+>>Seems an awfully verbose way of going about it,
 
->>[/me looks...]  Oh horror.
+> Not verbose, but flexible, and in line with everything
 
->>>Hence my view of the device
->>>tree as a preferable option.
+    Yes, I'd agree about more flexibility...
 
->>I think some binary partition table format that can be
->>used by _all_ MTD consumers should be defined.  How
->>that table should be communicated to the kernel in the
->>device tree case we can discuss later, then.  Maybe
->>something as simple as storing it in flash, and have a
->>"partition-table-offset" property or something like that.
+> else about the device tree.
 
->>This is something the MTD people will have to buy into
->>of course.
+    How about your earlier arguments against the representation of flashes?
 
-> I tought I saw some config option implying that there already existed
-> an on-device partition table format for flashes.  Doesn't help us for
+>>and I don't see what
+>>it buys us over the partitions/partition-names pair of properties.
 
-    You probably mean RedBoot table?
+> It is extensible.  It makes parsing trivial.  It
 
-> existing boards which don't expect such a setup, of course.
+    Excellent -- previously my arguments about more simplicity for 
+representing  flash itself were sent to /dev/null.
 
-    Exactly. It's specific to RedBoot.
+> represents a flash partition in a way similar to how
+> a "whole" flash device is represented.
+
+    Except it's not a device. :-)
+
+> Segher
 
 WBR, Sergei
