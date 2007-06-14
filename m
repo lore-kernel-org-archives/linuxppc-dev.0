@@ -1,29 +1,26 @@
-Return-Path: <DaveLiu@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A089EDDDFE
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 12:31:24 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l5E2VINF029421
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 19:31:19 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l5E2VHNZ029917
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 21:31:18 -0500 (CDT)
-Subject: Re: ucc_geth DPRAM alloc error, 2.6.22-rc3
-From: Dave Liu <r63238@freescale.com>
-To: joakim.tjernlund@transmode.se
-In-Reply-To: <1181744529.30670.298.camel@gentoo-jocke.transmode.se>
-References: <1181744529.30670.298.camel@gentoo-jocke.transmode.se>
-Content-Type: text/plain
-Date: Thu, 14 Jun 2007 10:31:17 +0800
-Message-Id: <1181788277.3658.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: 'linuxppc-dev Development' <linuxppc-dev@ozlabs.org>
+Return-Path: <shin@sm.sony.co.jp>
+Received: from mgw2.sony.co.jp (MGW2.Sony.CO.JP [137.153.0.14])
+	by ozlabs.org (Postfix) with ESMTP id 933CADDF87
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 12:31:42 +1000 (EST)
+Received: from mail34.sony.co.jp (localhost [127.0.0.1])
+	by mail34.sony.co.jp (R8/Sony) with ESMTP id l5E2VbKl005426
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 11:31:37 +0900 (JST)
+Received: from mailgw02.scei.sony.co.jp (mailgw02.scei.sony.co.jp [43.27.73.8])
+	by mail34.sony.co.jp (R8/Sony) with SMTP id l5E2VbxP005418
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 11:31:37 +0900 (JST)
+In-Reply-To: <466EE965.404@am.sony.com>
+References: <20070612181825.730300780@am.sony.com>> <466EE965.404@am.sony.com>
+Mime-Version: 1.0 (Apple Message framework v624)
+Message-Id: <b28db8e8f870934a46f25581c808d8b8@sm.sony.co.jp>
+From: Takao Shinohara <shin@sm.sony.co.jp>
+Subject: Re: [patch 05/30] PS3: Use ioremap_flags
+Date: Thu, 14 Jun 2007 11:31:29 +0900
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Masato Noguchi <Masato.Noguchi@jp.sony.com>,
+	Paul Mackerras <paulus@samba.org>, Arnd Bergmann <arnd@arndb.de>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,17 +30,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-06-13 at 16:22 +0200, Joakim Tjernlund wrote:
-> Trying to bring up a third ethernet i/f(ifconfig eth2 up) on
-> a Freescale 832x CPU gives me this:
->  ifconfig eth2 up
->  ucc_geth_startup: Can not allocate DPRAM memory for p_thread_data_tx.
->  eth2: Cannot configure net device, aborting.
->  SIOCSIFFLAGS: Cannot allocate memory
-> 
-> This worked in 2.6.20
 
-Could you print the MURAM memory usage for debug?
-eg. start address and size.
+On 2007/06/13, at 3:43, Geoff Levand wrote:
+> -	spu->problem = ioremap(spu->problem_phys,
+> -		sizeof(struct spu_problem));
+> +	spu->problem = (__force void *)ioremap_flags(spu->problem_phys,
+> +		sizeof(struct spu_problem), _PAGE_NO_CACHE);
+> +
+>  	if (!spu->problem) {
+>  		pr_debug("%s:%d: ioremap problem failed\n", __func__, __LINE__);
+>  		goto fail_ioremap;
+>  	}
+>
+> -	spu->priv2 = ioremap(spu_pdata(spu)->priv2_addr,
+> -		sizeof(struct spu_priv2));
+> +	spu->priv2 = (__force void 
+> *)ioremap_flags(spu_pdata(spu)->priv2_addr,
+> +		sizeof(struct spu_priv2), _PAGE_NO_CACHE);
+> +
+>  	if (!spu->priv2) {
+>  		pr_debug("%s:%d: ioremap priv2 failed\n", __func__, __LINE__);
+>  		goto fail_ioremap;
 
--d
+spu->problem and spu->priv2 needs _PAGE_GUARDED, because they are
+MMIO register region.
+
+-- Takao Shinohara
