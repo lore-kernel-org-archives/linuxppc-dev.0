@@ -1,20 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.233])
-	by ozlabs.org (Postfix) with ESMTP id 53217DDD06
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 16:13:44 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id v1so420023nzb
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 23:13:43 -0700 (PDT)
-Message-ID: <fa686aa40706132313h7eb29b3ax9fb417fc54a1e30@mail.gmail.com>
-Date: Thu, 14 Jun 2007 00:13:42 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "xu chen" <chenxurcy@yahoo.com.cn>, linuxppc-dev@ozlabs.org
-Subject: Re: opb_ethernet driver
-In-Reply-To: <20070612034522.GA4198@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <22250.22723.qm@web92006.mail.cnb.yahoo.com>
-	<20070612034522.GA4198@localhost.localdomain>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
+	by ozlabs.org (Postfix) with ESMTP id 196A0DDE9E
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 17:03:12 +1000 (EST)
+Subject: Re: ucc_geth DPRAM alloc error, 2.6.22-rc3
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: Dave Liu <r63238@freescale.com>
+In-Reply-To: <1181788277.3658.1.camel@localhost.localdomain>
+References: <1181744529.30670.298.camel@gentoo-jocke.transmode.se>
+	<1181788277.3658.1.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 14 Jun 2007 09:03:08 +0200
+Message-Id: <1181804588.30670.344.camel@gentoo-jocke.transmode.se>
+Mime-Version: 1.0
+Cc: 'linuxppc-dev Development' <linuxppc-dev@ozlabs.org>
+Reply-To: joakim.tjernlund@transmode.se
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,21 +23,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 6/11/07, David Gibson <david@gibson.dropbear.id.au> wrote:
-> On Mon, Jun 11, 2007 at 10:37:55AM +0800, xu chen wrote:
-> > Hello.
-> >       I'm porting an opb_ethernet driver to my ml403 board now, using the 2.6.17 kernel. I know the ethernet support 3 mode: No DMA, simple DMA, scatter gather DMA, when I use the No DMA mode, we can write the skb into the FIFO, but can't ping other PCs in the network. When I use the simple DMA mode, at the time of ping, in the driver, we should initialize the DMA channel, but when transfering the skb, the DMA returns a "DMA bus time out" signal.
-> >      Now I'm worry about it. Who had encountered the problem before? I think I need some help.
->
-> What's an opb_ethernet?
+On Thu, 2007-06-14 at 10:31 +0800, Dave Liu wrote:
+> On Wed, 2007-06-13 at 16:22 +0200, Joakim Tjernlund wrote:
+> > Trying to bring up a third ethernet i/f(ifconfig eth2 up) on
+> > a Freescale 832x CPU gives me this:
+> >  ifconfig eth2 up
+> >  ucc_geth_startup: Can not allocate DPRAM memory for p_thread_data_tx.
+> >  eth2: Cannot configure net device, aborting.
+> >  SIOCSIFFLAGS: Cannot allocate memory
+> > 
+> > This worked in 2.6.20
+> 
+> Could you print the MURAM memory usage for debug?
+> eg. start address and size.
+> 
+> -d
 
-In this context, it's a Xilinx Ethernet IP core implemented in an FPGA
-and connected to the OPB bus.
+Like this?
+eth1:
+MURAM alloc, start:1400, size:512, align:8
+MURAM alloc, start:1608, size:520, align:8
+MURAM alloc, start:1880, size:128, align:128
+MURAM alloc, start:1a00, size:416, align:256
+MURAM alloc, start:1bc0, size:64, align:32
+MURAM alloc, start:1d00, size:256, align:256
+MURAM alloc, start:1f00, size:160, align:256
+MURAM alloc, start:1fc0, size:12, align:64
+MURAM alloc, start:2000, size:48, align:8
+MURAM alloc, start:2080, size:128, align:128
+MURAM alloc, start:2180, size:128, align:128
+MURAM alloc, start:2280, size:128, align:128
+MURAM alloc, start:2380, size:128, align:128
+MURAM alloc, start:2440, size:64, align:64
+MURAM alloc, start:24c0, size:64, align:64
+MURAM alloc, start:2540, size:64, align:64
+MURAM alloc, start:25c0, size:64, align:64
+MURAM alloc, start:262c, size:93, align:4
 
-g.
+eth0:
+MURAM alloc, start:2630, size:512, align:8
+MURAM alloc, start:2838, size:520, align:8
+MURAM alloc, start:2a80, size:128, align:128
+MURAM alloc, start:2c00, size:416, align:256
+MURAM alloc, start:2de0, size:64, align:32
+MURAM alloc, start:2f00, size:256, align:256
+MURAM alloc, start:3100, size:160, align:256
+MURAM alloc, start:3200, size:12, align:64
+MURAM alloc, start:3228, size:48, align:8
+MURAM alloc, start:3280, size:128, align:128
+MURAM alloc, start:3380, size:128, align:128
+MURAM alloc, start:3480, size:128, align:128
+MURAM alloc, start:3580, size:128, align:128
+MURAM alloc, start:3680, size:64, align:64
+MURAM alloc, start:3700, size:64, align:64
+MURAM alloc, start:3780, size:64, align:64
+MURAM alloc, start:3800, size:64, align:64
+MURAM alloc, start:3858, size:93, align:4
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+eth2:
+MURAM alloc, start:3858, size:512, align:8
+MURAM alloc, start:3a60, size:520, align:8
+MURAM alloc, start:3c80, size:128, align:128
+MURAM alloc, start:fffffff4, size:416, align:256
+
+Jocke
