@@ -1,22 +1,18 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound3-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id D9ACADDF04
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jun 2007 03:05:16 +1000 (EST)
-Message-ID: <46717542.3000705@am.sony.com>
-Date: Thu, 14 Jun 2007 10:05:06 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <vbuzov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id ACAB8DDF12
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jun 2007 03:12:14 +1000 (EST)
+Message-ID: <467176EB.7060404@ru.mvista.com>
+Date: Thu, 14 Jun 2007 21:12:11 +0400
+From: Vladislav Buzov <vbuzov@ru.mvista.com>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [patch 29/30 v2] PS3: Device tree source.
-References: <20070612181825.730300780@am.sony.com>>
-	<466EEC01.6080807@am.sony.com> <46709A76.4000602@am.sony.com>
-	<Pine.LNX.4.62.0706140954540.26873@pademelon.sonytel.be>
-In-Reply-To: <Pine.LNX.4.62.0706140954540.26873@pademelon.sonytel.be>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC/PATCH] powerpc: MPC7450 L2 HW cache flush feature utilization
+References: <1181729973.25586.31.camel@dolphin.spb.rtsoft.ru>
+	<db0d38e5b5e1a9a3a7fe35d25ebd357a@kernel.crashing.org>
+In-Reply-To: <db0d38e5b5e1a9a3a7fe35d25ebd357a@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,24 +22,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Geert Uytterhoeven wrote:
-> On Wed, 13 Jun 2007, Geoff Levand wrote:
->> Subject: PS3: Device tree source.
->> 
->> The PS3 device tree source.
->> 
->> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
->> ---
->> 
->> ver2: Here's an updated version based on the discussions.
-> 
-> This one doesn't seem to work. The kernel hangs very early in the boot process.
-> I haven't digged into it yet to find out why.
+Segher Boessenkool wrote:
 
-The trouble was not in this patch, but that I didn't update
-ps3-legacy-bootloader-hack.diff to match this change.  I
-committed an update to my git repositories on kernel.org.
+>> I read the MPC7450 reference manual and it describes a method to flush
+>> the cache using L2 hardware flushing feature. The cache flushing
+>> procedure consist of several steps and some of them are dictated by
+>> MPC7448 errata (www.freescale.com/files/32bit/doc/errata/MPC7448CE.pdf,
+>> Erratum no.3).
+>
+>
+> Are these errata 7448-only?  If not, I wonder what is
+> done on PowerMacs?
 
-Sorry if this inconvenienced anyone.
 
--Geoff 
+This is a errata for 7448 only. I've looked through errata for other 
+7450 processors (7450, 7457) and they contain the same erratum for L2 
+cache: "L2 hardware flush may not flush every line from the L2 cache" 
+The workaround for this problem is: "Set the IONLY and DONLY bits in the 
+L2CR prior to the L2 hardware flush", and the projected solution is: 
+"The workaround has been documented in the MPC7450 RISC Microprocessor 
+Family User’s Manual as the correct way to flush the L2 cache"
+
+I have tried to apply the same workaround for a common 
+non-hardware-assistant _set_L2CR() implementation. I tried to completely 
+lock the cache before a whole flushing procedure, tried to set the L2DO 
+before filling the cache, fill it and then set the L2IO and issue a 
+number of dcbf's. But nothing helped.
+
+>
+>> First, I'm looking for a help and advice why the current _set_L2CR()
+>> implementation may not work for MPC7450 (namely 7448 with 1Mb L2 cache
+>> installed). Is it a bug in _set_L2CR()  or a hardware problem.
+>
+>
+> I think that if anyone here could answer this straight
+> away, the source code would have been fixed already ;-)
+
+Yeah, I guess I'm a first person who encountered this problem.
+
+>
+>> I've
+>> mentioned above about MPC7450 hardware bug in L2 hardware flushing
+>> mechanism. May it be applicable to common cache flushing procedure based
+>> on sequence of lwz/dcbf instructions?
+>
+>
+> Dunno, too lazy to download that PDF, perhaps you can
+> quote the relevant part?
+>
+>> Second, Is this patch acceptable?
+>
+>
+> Looks reasonable enough to me...  if it works (on all
+> things considered "7450" by the kernel).
+
+I've double checked this. All processors considered 7450 in the kernel 
+are covered by MPC7450 RISC Microprocessor Family Reference Manual where 
+hardware cache flushing procedure is described.
+
+>
+>>      /* TODO: use HW flush assist when available */
+>
+>
+> You want to get rid of this old comment though -- and
+> perhaps branch over the non-hardware-assisted cache
+> flushing code.
+
+Ok, I agree that the comment is obsolete now. Would you please explain 
+why the branch over non-hardware-assisted code should be removed as 
+well. Technically the cache is flushed and there is no need to use extra 
+commands to fill and then re-flush the cache.
+
+Thank you,
+Vlad.
+
+>
+>
+> Segher
+>
