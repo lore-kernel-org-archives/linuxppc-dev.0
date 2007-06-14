@@ -1,18 +1,23 @@
-Return-Path: <vbuzov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id ACAB8DDF12
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jun 2007 03:12:14 +1000 (EST)
-Message-ID: <467176EB.7060404@ru.mvista.com>
-Date: Thu, 14 Jun 2007 21:12:11 +0400
-From: Vladislav Buzov <vbuzov@ru.mvista.com>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound1-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 4D7E5DDF1C
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jun 2007 05:03:25 +1000 (EST)
+Message-ID: <467190F4.4000307@am.sony.com>
+Date: Thu, 14 Jun 2007 12:03:16 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC/PATCH] powerpc: MPC7450 L2 HW cache flush feature utilization
-References: <1181729973.25586.31.camel@dolphin.spb.rtsoft.ru>
-	<db0d38e5b5e1a9a3a7fe35d25ebd357a@kernel.crashing.org>
-In-Reply-To: <db0d38e5b5e1a9a3a7fe35d25ebd357a@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: [patch 05/30 v2] PS3: Use ioremap_flags
+References: <20070612181825.730300780@am.sony.com>> <466EE965.404@am.sony.com>
+In-Reply-To: <466EE965.404@am.sony.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>,
+	Masato Noguchi <Masato.Noguchi@jp.sony.com>,
+	linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,81 +27,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
+Use ioremap_flags() to map SPU and htab regions as non-guarded.
+Change the use of _ioremap() to ioremap_flags().
 
->> I read the MPC7450 reference manual and it describes a method to flush
->> the cache using L2 hardware flushing feature. The cache flushing
->> procedure consist of several steps and some of them are dictated by
->> MPC7448 errata (www.freescale.com/files/32bit/doc/errata/MPC7448CE.pdf,
->> Erratum no.3).
->
->
-> Are these errata 7448-only?  If not, I wonder what is
-> done on PowerMacs?
+CC: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+CC: Masato Noguchi <Masato.Noguchi@jp.sony.com>
+CC: Takao Shinohara <shin@sm.sony.co.jp>
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+---
 
+Ver 2: Fixed casts, removed _PAGE_GUARDED from spu problem and priv2 regions.
 
-This is a errata for 7448 only. I've looked through errata for other 
-7450 processors (7450, 7457) and they contain the same erratum for L2 
-cache: "L2 hardware flush may not flush every line from the L2 cache" 
-The workaround for this problem is: "Set the IONLY and DONLY bits in the 
-L2CR prior to the L2 hardware flush", and the projected solution is: 
-"The workaround has been documented in the MPC7450 RISC Microprocessor 
-Family User’s Manual as the correct way to flush the L2 cache"
+ arch/powerpc/platforms/ps3/htab.c |    2 +-
+ arch/powerpc/platforms/ps3/spu.c  |   13 +++++++++----
+ 2 files changed, 10 insertions(+), 5 deletions(-)
 
-I have tried to apply the same workaround for a common 
-non-hardware-assistant _set_L2CR() implementation. I tried to completely 
-lock the cache before a whole flushing procedure, tried to set the L2DO 
-before filling the cache, fill it and then set the L2IO and issue a 
-number of dcbf's. But nothing helped.
-
->
->> First, I'm looking for a help and advice why the current _set_L2CR()
->> implementation may not work for MPC7450 (namely 7448 with 1Mb L2 cache
->> installed). Is it a bug in _set_L2CR()  or a hardware problem.
->
->
-> I think that if anyone here could answer this straight
-> away, the source code would have been fixed already ;-)
-
-Yeah, I guess I'm a first person who encountered this problem.
-
->
->> I've
->> mentioned above about MPC7450 hardware bug in L2 hardware flushing
->> mechanism. May it be applicable to common cache flushing procedure based
->> on sequence of lwz/dcbf instructions?
->
->
-> Dunno, too lazy to download that PDF, perhaps you can
-> quote the relevant part?
->
->> Second, Is this patch acceptable?
->
->
-> Looks reasonable enough to me...  if it works (on all
-> things considered "7450" by the kernel).
-
-I've double checked this. All processors considered 7450 in the kernel 
-are covered by MPC7450 RISC Microprocessor Family Reference Manual where 
-hardware cache flushing procedure is described.
-
->
->>      /* TODO: use HW flush assist when available */
->
->
-> You want to get rid of this old comment though -- and
-> perhaps branch over the non-hardware-assisted cache
-> flushing code.
-
-Ok, I agree that the comment is obsolete now. Would you please explain 
-why the branch over non-hardware-assisted code should be removed as 
-well. Technically the cache is flushed and there is no need to use extra 
-commands to fill and then re-flush the cache.
-
-Thank you,
-Vlad.
-
->
->
-> Segher
->
+--- a/arch/powerpc/platforms/ps3/htab.c
++++ b/arch/powerpc/platforms/ps3/htab.c
+@@ -273,7 +273,7 @@ void __init ps3_map_htab(void)
+ 
+ 	result = lv1_map_htab(0, &htab_addr);
+ 
+-	htab = (hpte_t *)__ioremap(htab_addr, htab_size,
++	htab = (__force hpte_t *)ioremap_flags(htab_addr, htab_size,
+ 				   pgprot_val(PAGE_READONLY_X));
+ 
+ 	DBG("%s:%d: lpar %016lxh, virt %016lxh\n", __func__, __LINE__,
+--- a/arch/powerpc/platforms/ps3/spu.c
++++ b/arch/powerpc/platforms/ps3/spu.c
+@@ -182,15 +182,18 @@ static int __init setup_areas(struct spu
+ {
+ 	struct table {char* name; unsigned long addr; unsigned long size;};
+ 
+-	spu_pdata(spu)->shadow = __ioremap(
+-		spu_pdata(spu)->shadow_addr, sizeof(struct spe_shadow),
+-		pgprot_val(PAGE_READONLY) | _PAGE_NO_CACHE | _PAGE_GUARDED);
++	spu_pdata(spu)->shadow = ioremap_flags(spu_pdata(spu)->shadow_addr,
++					       sizeof(struct spe_shadow),
++					       pgprot_val(PAGE_READONLY) |
++					       _PAGE_NO_CACHE);
+ 	if (!spu_pdata(spu)->shadow) {
+ 		pr_debug("%s:%d: ioremap shadow failed\n", __func__, __LINE__);
+ 		goto fail_ioremap;
+ 	}
+ 
+-	spu->local_store = ioremap(spu->local_store_phys, LS_SIZE);
++	spu->local_store = (__force void *)ioremap_flags(spu->local_store_phys,
++		LS_SIZE, _PAGE_NO_CACHE);
++
+ 	if (!spu->local_store) {
+ 		pr_debug("%s:%d: ioremap local_store failed\n",
+ 			__func__, __LINE__);
+@@ -199,6 +202,7 @@ static int __init setup_areas(struct spu
+ 
+ 	spu->problem = ioremap(spu->problem_phys,
+ 		sizeof(struct spu_problem));
++
+ 	if (!spu->problem) {
+ 		pr_debug("%s:%d: ioremap problem failed\n", __func__, __LINE__);
+ 		goto fail_ioremap;
+@@ -206,6 +210,7 @@ static int __init setup_areas(struct spu
+ 
+ 	spu->priv2 = ioremap(spu_pdata(spu)->priv2_addr,
+ 		sizeof(struct spu_priv2));
++
+ 	if (!spu->priv2) {
+ 		pr_debug("%s:%d: ioremap priv2 failed\n", __func__, __LINE__);
+ 		goto fail_ioremap;
