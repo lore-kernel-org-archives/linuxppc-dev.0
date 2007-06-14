@@ -1,19 +1,20 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound1-dub-R.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16])
+Received: from outbound1-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 610F9DDE1D
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 11:31:42 +1000 (EST)
-Message-ID: <46709A76.4000602@am.sony.com>
-Date: Wed, 13 Jun 2007 18:31:34 -0700
+	by ozlabs.org (Postfix) with ESMTP id 77843DDF83
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 11:31:54 +1000 (EST)
+Message-ID: <46709A84.7030307@am.sony.com>
+Date: Wed, 13 Jun 2007 18:31:48 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: [patch 29/30 v2] PS3: Device tree source.
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [patch 29/30] PS3: Device tree source.
 References: <20070612181825.730300780@am.sony.com>>
 	<466EEC01.6080807@am.sony.com>
-In-Reply-To: <466EEC01.6080807@am.sony.com>
+	<f7c4ca74d3e2031e01264f31f09e515a@kernel.crashing.org>
+In-Reply-To: <f7c4ca74d3e2031e01264f31f09e515a@kernel.crashing.org>
 Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,100 +26,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Subject: PS3: Device tree source.
+Hi.
 
-The PS3 device tree source.
+Segher Boessenkool wrote:
+> Hi Geoff,
+> 
+> Not much that can be wrong in this tree, so I'll get really
+> pedantic, so you can have the best device tree ever ;-)
+> 
+> There is one real bug though.
+> 
+>> +/ {
+>> +	model = "PS3 Game Console";
+> 
+> model = "sony,some-model-number" or similar
 
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
----
+There is no real model number for this product.  Model
+numbers specify configuration like PAL video or 60GB disk.
 
-ver2: Here's an updated version based on the discussions.
+model = "sony,ps3xxxxx"?  That doesn't seem any better than
+model = "sony,ps3", but then what will be used for compatible?
+
+I will use model = "SonyPS3";
+
+>> +	compatible = "PS3";
+> 
+> name = "sony,ps3"
+
+
+As Ben H. said, the top level 'name' cannot be set, and
+I found dtc exits with an error if you include one.
+
+The compatible entry is generally used to test for machine
+type, so I think that needs to remain, and I will use 
+compatible = "sony,ps3".
+
+
+>> +	/*
+>> +	 * Need to keep linux,platform for a while, not used by kernel.
+>> +	 */
+> 
+> Why that?
+
+
+Newer dtc seems to be OK with this removed, old ones exited with error.
+
+
+>> +	 * Seems the only way currently to indicate a processor has multiple
+>> +	 * threads is with an ibm,ppc-interrupt-server#s entry.
+> 
+> Yes, a better way should be defined.  Any suggestions?
+
+
+No, there was some discussion to fix it, but no action.
+
+ 
+>> +		CBE,PPE {
+> 
+> PowerPC,CBE@0 or cpu@0 -- the important thing is you need
+> the @0 unit address.
+ 
+
+OK, I set it up as cpu@0, since the actual type seems to be probed for.
+
+
+>> +			device_type = "cpu";
+>> +			reg = <0>;
+>> +			ibm,ppc-interrupt-server#s = <0 1>;
+>> +			clock-frequency = <0>;
+>> +			timebase-frequency = <0>;
+>> +			i-cache-size = <8000>;
+>> +			d-cache-size = <8000>;
+> 
+> I thought DL1 was 64kB, I might be wrong though?
+
+The BE handbook says 32.
 
 -Geoff
-
- arch/powerpc/boot/dts/ps3.dts      |   68 +++++++++++++++++++++++++++++++++++++
- arch/powerpc/platforms/ps3/setup.c |    2 -
- 2 files changed, 69 insertions(+), 1 deletion(-)
-
---- /dev/null
-+++ b/arch/powerpc/boot/dts/ps3.dts
-@@ -0,0 +1,68 @@
-+/*
-+ *  PS3 Game Console device tree.
-+ *
-+ *  Copyright (C) 2007 Sony Computer Entertainment Inc.
-+ *  Copyright 2007 Sony Corp.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; version 2 of the License.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+
-+/ {
-+	model = "SonyPS3";
-+	compatible = "sony,ps3";
-+	#size-cells = <2>;
-+	#address-cells = <2>;
-+
-+	chosen {
-+	};
-+
-+	/*
-+	 * We'll get the size of the bootmem block from lv1 after startup,
-+	 * so we'll put a null entry here.
-+	 */
-+
-+	memory {
-+		device_type = "memory";
-+		reg = <0 0 0 0>;
-+	};
-+
-+	/*
-+	 * The boot cpu is always zero for PS3.
-+	 *
-+	 * dtc expects a clock-frequency and timebase-frequency entries, so
-+	 * we'll put a null entries here.  These will be initialized after
-+	 * startup with data from lv1.
-+	 *
-+	 * Seems the only way currently to indicate a processor has multiple
-+	 * threads is with an ibm,ppc-interrupt-server#s entry.  We'll put one
-+	 * here so we can bring up both of ours.  See smp_setup_cpu_maps().
-+	 */
-+
-+	cpus {
-+		#size-cells = <0>;
-+		#address-cells = <1>;
-+
-+		cpu@0 {
-+			device_type = "cpu";
-+			reg = <0>;
-+			ibm,ppc-interrupt-server#s = <0 1>;
-+			clock-frequency = <0>;
-+			timebase-frequency = <0>;
-+			i-cache-size = <8000>;
-+			d-cache-size = <8000>;
-+			i-cache-line-size = <80>;
-+			d-cache-line-size = <80>;
-+		};
-+	};
-+};
---- a/arch/powerpc/platforms/ps3/setup.c
-+++ b/arch/powerpc/platforms/ps3/setup.c
-@@ -193,7 +193,7 @@ static int __init ps3_probe(void)
- 	DBG(" -> %s:%d\n", __func__, __LINE__);
- 
- 	dt_root = of_get_flat_dt_root();
--	if (!of_flat_dt_is_compatible(dt_root, "PS3"))
-+	if (!of_flat_dt_is_compatible(dt_root, "sony,ps3"))
- 		return 0;
- 
- 	powerpc_firmware_features |= FW_FEATURE_PS3_POSSIBLE;
