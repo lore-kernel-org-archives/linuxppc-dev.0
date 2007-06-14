@@ -1,19 +1,17 @@
-Return-Path: <chuck@ThePTRGroup.com>
-Received: from mail.theptrgroup.com (mail.theptrgroup.com [71.246.247.9])
-	by ozlabs.org (Postfix) with ESMTP id F4217DDEEC
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 22:39:18 +1000 (EST)
-Message-ID: <4671321E.9000204@ThePTRGroup.com>
-Date: Thu, 14 Jun 2007 08:18:38 -0400
-From: Chuck Meade <chuck@ThePTRGroup.com>
-MIME-Version: 1.0
-To: joakim.tjernlund@transmode.se
-Subject: Re: ucc_geth DPRAM alloc error, 2.6.22-rc3
-References: <989B956029373F45A0B8AF0297081890D2ADB4@zch01exm26.fsl.freescale.net>
-	<1181807671.30670.358.camel@gentoo-jocke.transmode.se>
-In-Reply-To: <1181807671.30670.358.camel@gentoo-jocke.transmode.se>
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	Liu Dave-r63238 <DaveLiu@freescale.com>
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <4671390D.1060606@ru.mvista.com>
+References: <7878cf1aec340b976b90b86b9e83bf18@kernel.crashing.org>	<20070612044246.GC4198@localhost.localdomain>
+	<9fbd7a7f5cdde58768569ab23c7aec7c@kernel.crashing.org>
+	<4671390D.1060606@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <5f5cc841be768a8d34e7278a8d221b97@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
+Date: Thu, 14 Jun 2007 15:18:05 +0200
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,108 +21,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This output looks buggy:
+>>> So, what you're suggesting is a subnode for each described partition?
+>
+>> I'm saying this is a reasonable way to describe the regions
+>> of flash the firmware itself cares about.
+>
+>> This isn't anything new; it is done like this on some
+>> Apple systems, for example.
+>
+>    First you're saying that nodes should correspont to *real* devices, 
+> then it turns out that there have been precedents for the nodes 
+> corresponding to completely virtual entities? ;-)
 
-Joakim Tjernlund wrote:
-> On Thu, 2007-06-14 at 15:37 +0800, Li Yang-r58472 wrote:
->> Try remove the following lines in rheap.c
->>
->>          /* given alignment larger that default rheap alignment */
->>          if (alignment > info->alignment)
->>                  size += alignment - 1;
->>
->> I don't know if this breaks other things, just have a try.
-> I did and got this alloc:
-> MURAM alloc, start:400, size:200(512), align:8(8)
-> MURAM alloc, start:600, size:208(520), align:8(8)
-> MURAM alloc, start:880, size:80(128), align:80(128)
+Every physical device should have its own node (there
+_can_ be exceptions, but if you can help it at all...)
 
-Bogus -- note the overlap below
-> MURAM alloc, start:900, size:1a0(416), align:100(256)
-> MURAM alloc, start:a40, size:40(64), align:20(32)
+There can be virtual devices as well, although you don't
+often need or want them.  There are a few pseudo-nodes
+too, not representing _any_ device, physical or virtual.
 
-> MURAM alloc, start:b00, size:100(256), align:100(256)
+>>> Seems an awfully verbose way of going about it,
+>
+>> Not verbose, but flexible, and in line with everything
+>
+>    Yes, I'd agree about more flexibility...
 
-Another overlap(s) below-- all of these overlap
-> MURAM alloc, start:c00, size:a0(160), align:100(256)
-> MURAM alloc, start:c40, size:c(12), align:40(64)
-> MURAM alloc, start:c18, size:30(48), align:8(8)
-> MURAM alloc, start:c80, size:80(128), align:80(128)
+Good to hear :-)
 
-> MURAM alloc, start:d00, size:80(128), align:80(128)
-> MURAM alloc, start:d80, size:80(128), align:80(128)
-> MURAM alloc, start:e00, size:80(128), align:80(128)
-> MURAM alloc, start:e80, size:40(64), align:40(64)
-> MURAM alloc, start:ec0, size:40(64), align:40(64)
-> MURAM alloc, start:f00, size:40(64), align:40(64)
+>> else about the device tree.
+>
+>    How about your earlier arguments against the representation of 
+> flashes?
 
-Another overlap--
-> MURAM alloc, start:f40, size:40(64), align:40(64)
-> MURAM alloc, start:f44, size:5d(93), align:4(4)
+What arguments, exactly?  Perhaps you're not understanding
+exactly what I meant, or perhaps I changed my mind -- that
+happens sometimes, after long discussions.  That is what
+those discussions are for, even -- only after looking at
+every detail, and discussing all those details with other
+people, including non-experts on OF who can bring in valuable
+concerns about use cases etc.; only then can a good device
+binding be defined.  Sometimes also it should be concluded
+there is not enough experience yet on how to do a certain
+device binding; in such a case, the best course of action is
+usually to _not_ define such a binding yet.
 
-> MURAM alloc, start:f48, size:200(512), align:8(8)
-> MURAM alloc, start:1148, size:208(520), align:8(8)
-> MURAM alloc, start:1380, size:80(128), align:80(128)
+>>> and I don't see what
+>>> it buys us over the partitions/partition-names pair of properties.
+>
+>> It is extensible.  It makes parsing trivial.  It
+>
+>    Excellent -- previously my arguments about more simplicity for 
+> representing  flash itself were sent to /dev/null.
 
-And here-
-> MURAM alloc, start:1400, size:1a0(416), align:100(256)
-> MURAM alloc, start:1580, size:40(64), align:20(32)
+Do you like my proposed CFI binding?  I need a bit more
+input on how to do a JEDEC flash binding still.  After
+I've written it all up properly, I plan to send this to
+the OF working group to turn it into a standard binding.
 
-> MURAM alloc, start:1600, size:100(256), align:100(256)
+>> represents a flash partition in a way similar to how
+>> a "whole" flash device is represented.
+>
+>    Except it's not a device. :-)
 
-Here- note the start address moving backward.  All overlap.
-> MURAM alloc, start:1700, size:a0(160), align:100(256)
-> MURAM alloc, start:1780, size:c(12), align:40(64)
-> MURAM alloc, start:1758, size:30(48), align:8(8)
+Yes, but in many aspects it can be treated as one.  And
+it cannot be mistaken for one, either.
 
-> MURAM alloc, start:1800, size:80(128), align:80(128)
-> MURAM alloc, start:1880, size:80(128), align:80(128)
-> MURAM alloc, start:1900, size:80(128), align:80(128)
 
-And-
-> MURAM alloc, start:1980, size:80(128), align:80(128)
-> MURAM alloc, start:19c0, size:40(64), align:40(64)
-
-> MURAM alloc, start:1a00, size:40(64), align:40(64)
-> MURAM alloc, start:1a40, size:40(64), align:40(64)
-
-And-
-> MURAM alloc, start:1a80, size:40(64), align:40(64)
-> MURAM alloc, start:1a88, size:5d(93), align:4(4)
-> MURAM alloc, start:1a88, size:200(512), align:8(8)
-
-> MURAM alloc, start:1c88, size:208(520), align:8(8)
-> MURAM alloc, start:1f00, size:80(128), align:80(128)
-
-And-
-> MURAM alloc, start:2000, size:1a0(416), align:100(256)
-> MURAM alloc, start:20c0, size:40(64), align:20(32)
-
-> MURAM alloc, start:2100, size:100(256), align:100(256)
-> MURAM alloc, start:2200, size:a0(160), align:100(256)
-
-An overlap exists here too-
-> MURAM alloc, start:22c0, size:c(12), align:40(64)
-> MURAM alloc, start:22a0, size:30(48), align:8(8)
-
-> MURAM alloc, start:2300, size:80(128), align:80(128)
-> MURAM alloc, start:2380, size:80(128), align:80(128)
-> MURAM alloc, start:2400, size:80(128), align:80(128)
-> MURAM alloc, start:2480, size:80(128), align:80(128)
-> MURAM alloc, start:2500, size:40(64), align:40(64)
-> MURAM alloc, start:2540, size:40(64), align:40(64)
-> MURAM alloc, start:2580, size:40(64), align:40(64)
-
-And-
-> MURAM alloc, start:25c0, size:40(64), align:40(64)
-> MURAM alloc, start:25cc, size:5d(93), align:4(4)
-> 
-> But I can't ping anymore
-
-These buffer overlaps probably have a lot to do with your pings stopping.
-I would say first order of business would be to investigate what could
-be generating all these overlapped allocations.  Some of these make me think
-the allocator code could be racy, like allocations are not aware of other
-"recent" or ongoing allocations.  But in any case the allocator is broken.
-
-Chuck
+Segher
