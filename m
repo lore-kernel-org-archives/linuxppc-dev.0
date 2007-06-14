@@ -1,22 +1,23 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound1-sin-R.bigfish.com (outbound-sin.frontbridge.com
+Received: from outbound5-sin-R.bigfish.com (outbound-sin.frontbridge.com
 	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 77843DDF83
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 11:31:54 +1000 (EST)
-Message-ID: <46709A84.7030307@am.sony.com>
-Date: Wed, 13 Jun 2007 18:31:48 -0700
+	by ozlabs.org (Postfix) with ESMTP id 0B34ADDE41
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 11:42:51 +1000 (EST)
+Message-ID: <46709D15.8080606@am.sony.com>
+Date: Wed, 13 Jun 2007 18:42:45 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [patch 29/30] PS3: Device tree source.
-References: <20070612181825.730300780@am.sony.com>>
-	<466EEC01.6080807@am.sony.com>
-	<f7c4ca74d3e2031e01264f31f09e515a@kernel.crashing.org>
-In-Reply-To: <f7c4ca74d3e2031e01264f31f09e515a@kernel.crashing.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [patch 05/30] PS3: Use ioremap_flags
+References: <20070612181825.730300780@am.sony.com>
+	<20070612181825.730300780@am.sony.com>>
+	<466EE965.404@am.sony.com> <200706131110.48809.arnd@arndb.de>
+In-Reply-To: <200706131110.48809.arnd@arndb.de>
 Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Cc: Masato Noguchi <Masato.Noguchi@jp.sony.com>, linuxppc-dev@ozlabs.org,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,80 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi.
-
-Segher Boessenkool wrote:
-> Hi Geoff,
+Arnd Bergmann wrote:
+> On Tuesday 12 June 2007, Geoff Levand wrote:
+>> -       spu->problem = ioremap(spu->problem_phys,
+>> -               sizeof(struct spu_problem));
+>> +       spu->problem = (__force void *)ioremap_flags(spu->problem_phys,
+>> +               sizeof(struct spu_problem), _PAGE_NO_CACHE);
+>> +
 > 
-> Not much that can be wrong in this tree, so I'll get really
-> pedantic, so you can have the best device tree ever ;-)
-> 
-> There is one real bug though.
-> 
->> +/ {
->> +	model = "PS3 Game Console";
-> 
-> model = "sony,some-model-number" or similar
-
-There is no real model number for this product.  Model
-numbers specify configuration like PAL video or 60GB disk.
-
-model = "sony,ps3xxxxx"?  That doesn't seem any better than
-model = "sony,ps3", but then what will be used for compatible?
-
-I will use model = "SonyPS3";
-
->> +	compatible = "PS3";
-> 
-> name = "sony,ps3"
+> Unlike the local_store member, of struct spu, ->problem and ->priv2
+> members are __iomem, so you should not do a __force cast here.
 
 
-As Ben H. said, the top level 'name' cannot be set, and
-I found dtc exits with an error if you include one.
-
-The compatible entry is generally used to test for machine
-type, so I think that needs to remain, and I will use 
-compatible = "sony,ps3".
-
-
->> +	/*
->> +	 * Need to keep linux,platform for a while, not used by kernel.
->> +	 */
-> 
-> Why that?
-
-
-Newer dtc seems to be OK with this removed, old ones exited with error.
-
-
->> +	 * Seems the only way currently to indicate a processor has multiple
->> +	 * threads is with an ibm,ppc-interrupt-server#s entry.
-> 
-> Yes, a better way should be defined.  Any suggestions?
-
-
-No, there was some discussion to fix it, but no action.
-
- 
->> +		CBE,PPE {
-> 
-> PowerPC,CBE@0 or cpu@0 -- the important thing is you need
-> the @0 unit address.
- 
-
-OK, I set it up as cpu@0, since the actual type seems to be probed for.
-
-
->> +			device_type = "cpu";
->> +			reg = <0>;
->> +			ibm,ppc-interrupt-server#s = <0 1>;
->> +			clock-frequency = <0>;
->> +			timebase-frequency = <0>;
->> +			i-cache-size = <8000>;
->> +			d-cache-size = <8000>;
-> 
-> I thought DL1 was 64kB, I might be wrong though?
-
-The BE handbook says 32.
+OK, thanks for checking it, I just did a quick edit without thinking.
 
 -Geoff
