@@ -1,29 +1,25 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BF4B5DDE3E
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 15:31:08 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l5E5V5xK021458
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 01:31:05 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l5E5V5Up559736
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 01:31:05 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l5E5V5Gu022263
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 01:31:05 -0400
-Message-ID: <4670D2B6.8020302@in.ibm.com>
-Date: Thu, 14 Jun 2007 11:01:34 +0530
-From: "Sachin P. Sant" <sachinp@in.ibm.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] Fix Kexec/Kdump for power6
-Content-Type: multipart/mixed; boundary="------------070803070507010600060603"
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: sachinp@in.ibm.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8F4D0DDEBA
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 15:52:55 +1000 (EST)
+In-Reply-To: <59453d80f2f111b72e8f24e7b489c23e@kernel.crashing.org>
+References: <11816389393593-git-send-email-wei.zhang@freescale.com>
+	<1181638939310-git-send-email-wei.zhang@freescale.com>
+	<39c7d60cebf03badd106d7f75a08f449@kernel.crashing.org>
+	<46B96294322F7D458F9648B60E15112C526DD9@zch01exm26.fsl.freescale.net>
+	<59453d80f2f111b72e8f24e7b489c23e@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <CF39A363-25C6-4780-96EC-6750D77C287F@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/5] Add the explanation and sample of RapidIO DTS sector
+	to the document of booting-without-of.txt file.
+Date: Thu, 14 Jun 2007 00:53:11 -0500
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
+	Zhang Wei-r63237 <Wei.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,110 +29,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------070803070507010600060603
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+>> Some silicons of Freescale processor are the same RapidIO controller,
+>> such as mpc8540/mpc8560 are the same (v0.0), mpc8548/mpc8641 are the
+>> same (v1.0). For v1.0 RapidIO controller, should we use mpc8548 or
+>> mpc8641? Those will make people confused.
+>
+> Not at all.  On an 8641 it could be
+>
+> 	compatible = "fsl,mpc8641-rapidio" "fsl,mpc8548-rapidio";
+>
+> which states "this is the 8641 thing and it is compatible
+> to the 8548 thing".  Perfectly clear.
 
-Paul, please consider the following patch for next merge.
+The concern is this isn't just compatible = "..8641.." "..8548.." but  
+something like:
 
-Thanks
--Sachin
+"..8641.." "..8641d.." "..8548.." "..8548e.." "..8543.." "..8543e.."  
+"..8572.." "..8572e.." "..8567.." "..8567e.." "..8568.." "..8568e.."
 
-Signed-off-by : Sachin Sant <sachinp@in.ibm.com>
-Signed-off-by : Mohan Kumar M <mohan@in.ibm.com>
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Acked-by: Olof Johansson <olof@lixom.net>
+>> Using IP Block Revision is a
+>> clear choice.
+>
+> I don't think so.  For one thing, it describes a version of
+> a cell design, not a version of an actual device.  For another
+> thing, if I hear "8641" I know what you're talking about (sort
+> of, anyway), but I draw a blank stare if you say "v1.0".  I'm
+> sure I'm not the only one.  Concrete names are good.
 
+While I agree concrete names are good, we put these 'blocks' in so  
+many devices that using the device to match on is pointless.
 
---------------070803070507010600060603
-Content-Type: text/plain;
- name="kexec-kdump-on-power6"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="kexec-kdump-on-power6"
+I'm all for making up a name like 'Grande', 'Del', 'Janeiro'.  This  
+is effective what we did with gianfar.  The name gets picked up  
+pretty quickly by people.
 
-* On Power machines supporting VRMA, Kexec/Kdump does not work.
-* Hypervisor stores VRMA mapping used by the OS, in the hpte hash tables.
-* Make sure these hpte entries are left untouched.
-*
-* This patch also adds plpar_pte_read_raw() on the lines of
-* plpar_pte_remove_raw().
-
-Signed-off-by : Sachin Sant <sachinp@in.ibm.com>
-Signed-off-by : Mohan Kumar M <mohan@in.ibm.com>
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Acked-by: Olof Johansson <olof@lixom.net>
----
-
-diff -Naurp old/arch/powerpc/platforms/pseries/lpar.c new/arch/powerpc/platforms/pseries/lpar.c
---- old/arch/powerpc/platforms/pseries/lpar.c	2007-06-05 06:27:25.000000000 +0530
-+++ new/arch/powerpc/platforms/pseries/lpar.c	2007-06-07 15:28:07.000000000 +0530
-@@ -373,12 +373,23 @@ static void pSeries_lpar_hptab_clear(voi
- {
- 	unsigned long size_bytes = 1UL << ppc64_pft_size;
- 	unsigned long hpte_count = size_bytes >> 4;
--	unsigned long dummy1, dummy2;
-+	unsigned long dummy1, dummy2, dword0;
-+	long lpar_rc;
- 	int i;
- 
- 	/* TODO: Use bulk call */
--	for (i = 0; i < hpte_count; i++)
--		plpar_pte_remove_raw(0, i, 0, &dummy1, &dummy2);
-+	for (i = 0; i < hpte_count; i++) {
-+		/* dont remove HPTEs with VRMA mappings */
-+		lpar_rc = plpar_pte_remove_raw(H_ANDCOND, i, HPTE_V_1TB_SEG,
-+						&dummy1, &dummy2);
-+		if (lpar_rc == H_NOT_FOUND) {
-+			lpar_rc = plpar_pte_read_raw(0, i, &dword0, &dummy1);
-+			if (!lpar_rc && ((dword0 & HPTE_V_VRMA_MASK)
-+				!= HPTE_V_VRMA_MASK))
-+				/* Can be hpte for 1TB Seg. So remove it */
-+				plpar_pte_remove_raw(0, i, 0, &dummy1, &dummy2);
-+		}
-+	}
- }
- 
- /*
-diff -Naurp old/arch/powerpc/platforms/pseries/plpar_wrappers.h new/arch/powerpc/platforms/pseries/plpar_wrappers.h
---- old/arch/powerpc/platforms/pseries/plpar_wrappers.h	2007-06-05 06:27:25.000000000 +0530
-+++ new/arch/powerpc/platforms/pseries/plpar_wrappers.h	2007-06-07 15:28:07.000000000 +0530
-@@ -108,6 +108,21 @@ static inline long plpar_pte_read(unsign
- 	return rc;
- }
- 
-+/* plpar_pte_read_raw can be called in real mode. It calls plpar_hcall_raw */
-+static inline long plpar_pte_read_raw(unsigned long flags, unsigned long ptex,
-+		unsigned long *old_pteh_ret, unsigned long *old_ptel_ret)
-+{
-+	long rc;
-+	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-+
-+	rc = plpar_hcall_raw(H_READ, retbuf, flags, ptex);
-+
-+	*old_pteh_ret = retbuf[0];
-+	*old_ptel_ret = retbuf[1];
-+
-+	return rc;
-+}
-+
- static inline long plpar_pte_protect(unsigned long flags, unsigned long ptex,
- 		unsigned long avpn)
- {
-diff -Naurp old/include/asm-powerpc/mmu-hash64.h new/include/asm-powerpc/mmu-hash64.h
---- old/include/asm-powerpc/mmu-hash64.h	2007-06-05 06:27:25.000000000 +0530
-+++ new/include/asm-powerpc/mmu-hash64.h	2007-06-07 15:28:46.000000000 +0530
-@@ -94,6 +94,9 @@ extern char initial_stab[];
- #define HPTE_R_C		ASM_CONST(0x0000000000000080)
- #define HPTE_R_R		ASM_CONST(0x0000000000000100)
- 
-+#define HPTE_V_1TB_SEG		ASM_CONST(0x4000000000000000)
-+#define HPTE_V_VRMA_MASK	ASM_CONST(0x4001ffffff000000)
-+
- /* Values for PP (assumes Ks=0, Kp=1) */
- /* pp0 will always be 0 for linux     */
- #define PP_RWXX	0	/* Supervisor read/write, User none */
-
-
---------------070803070507010600060603--
+- k
