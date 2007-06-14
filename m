@@ -1,20 +1,15 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id 3D576DDED8
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 20:32:14 +1000 (EST)
-From: Gabriel Paubert <paubert@iram.es>
-Date: Thu, 14 Jun 2007 12:32:03 +0200
-To: Mark Zhan <rongkai.zhan@windriver.com>
-Subject: Re: [PATCH] Add the support of ST M48T59 RTC chip in rtc-class driver
-	subsystem
-Message-ID: <20070614103203.GA21400@iram.es>
-References: <1181548600.5217.16.camel@mark> <20070611121145.GA11297@iram.es>
-	<1181656776.3975.16.camel@mark>
+Return-Path: <sshtylyov@ru.mvista.com>
+Message-ID: <46713711.5010709@ru.mvista.com>
+Date: Thu, 14 Jun 2007 16:39:45 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1181656776.3975.16.camel@mark>
-Cc: a.zummo@towertech.it, rtc-linux@googlegroups.com,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
+References: <7878cf1aec340b976b90b86b9e83bf18@kernel.crashing.org>	<20070612044246.GC4198@localhost.localdomain>	<9fbd7a7f5cdde58768569ab23c7aec7c@kernel.crashing.org>	<20070613061254.GG16148@localhost.localdomain>	<bc98b5372977d171b0075074bfce7747@kernel.crashing.org>	<20070613091904.GA30948@localhost.localdomain>	<791ab8b82c5b5d2b3ae4827a891a43ea@kernel.crashing.org>
+	<20070614042906.GC11177@localhost.localdomain>
+In-Reply-To: <20070614042906.GC11177@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,51 +19,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jun 12, 2007 at 09:59:36PM +0800, Mark Zhan wrote:
-> Hi Gabriel,
-> 
-> On Mon, 2007-06-11 at 14:11 +0200, Gabriel Paubert wrote:
-> ....
-> > There are other boards which have exactly the same chip, but use
-> > a very different (uglier) access method: using ISA 2 I/O ports
-> > (0x74 and 0x75) to write the address and another port (0x77) to 
-> > read/write the data.
-> > 
-> > Besides that, these boards also use the NVRAM part which means that
-> > a spinlock must be used to serialize between RTC and NVRAM access.
-> > 
-> > I have no idea whether the drivers should be shared or two
-> > different drivers should be written... But if there are two
-> > different drivers, there should be a way to distinguish them
-> > (different config name, different module names, and some
-> > explanation in the config help text).
-> > 
-> 
-> I will rework this driver to add a platform data structure which enables
-> the platform to provide the platform specific access method.
+David Gibson wrote:
 
-I'm not even sure that this is a good idea: the direct mapped nvram/RTC 
-is much simpler, and adding another indirection layer transforms many 
-leaf functions into non leaf one, which makes the code significantly bigger.
+>>>>How do non-device-tree MTD users handle this?
 
-> 
-> For the NVRAM issue, I have no idea how other boards access the NVRAM.
-> So could you provide me more information?
+>>>Invidual, board-specific map files with hardcoded partition tables.
 
-That's the hardest problem. Since you use the same ISA (yuck) I/O
-ports to access the NVRAM and the RTC (after all it is the same chip,
-using the same address pins), the accesses need to be serialized
-through a shared spinlock. 
+>>That's what I was afraid of.  Sigh.
 
-With a direct mapped like your machine, the drivers can be completely 
-independent: they will never step on each other's toes. 
+>>>See drivers/mtd/maps/ebony.c for example.
 
-I've not yet made up my mind on which is the best way to handle
-the problem and am leaving tomorrow for about 1 week. For
-now I think that your patch is fine (using NO_IRQ as I suggested)
-and I shall revisit it when time comes to port the kernel
-to these boards (running 2.2 for 8 years, it's not a few
-more months to switch to 2.6 that matters).
+>>[/me looks...]  Oh horror.
 
-	Regards,
-	Gabriel
+>>>Hence my view of the device
+>>>tree as a preferable option.
+
+>>I think some binary partition table format that can be
+>>used by _all_ MTD consumers should be defined.  How
+>>that table should be communicated to the kernel in the
+>>device tree case we can discuss later, then.  Maybe
+>>something as simple as storing it in flash, and have a
+>>"partition-table-offset" property or something like that.
+
+>>This is something the MTD people will have to buy into
+>>of course.
+
+> I tought I saw some config option implying that there already existed
+> an on-device partition table format for flashes.  Doesn't help us for
+
+    You probably mean RedBoot table?
+
+> existing boards which don't expect such a setup, of course.
+
+    Exactly. It's specific to RedBoot.
+
+WBR, Sergei
