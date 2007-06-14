@@ -1,14 +1,19 @@
-Return-Path: <rvinson@mvista.com>
+Return-Path: <mgreer@mvista.com>
 Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id E7DE6DDF18
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jun 2007 08:05:33 +1000 (EST)
-Message-ID: <4671BBAA.40102@mvista.com>
-Date: Thu, 14 Jun 2007 15:05:30 -0700
-From: Randy Vinson <rvinson@mvista.com>
+	by ozlabs.org (Postfix) with ESMTP id 37BA6DDF1E
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jun 2007 08:25:14 +1000 (EST)
+Date: Thu, 14 Jun 2007 15:26:20 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Vladislav Buzov <vbuzov@ru.mvista.com>
+Subject: Re: [RFC/PATCH] powerpc: MPC7450 L2 HW cache flush feature utilization
+Message-ID: <20070614222620.GA17382@mag.az.mvista.com>
+References: <1181729973.25586.31.camel@dolphin.spb.rtsoft.ru>
+	<db0d38e5b5e1a9a3a7fe35d25ebd357a@kernel.crashing.org>
+	<467176EB.7060404@ru.mvista.com>
 MIME-Version: 1.0
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] 85xxCDS: Delay 8259 cascade hookup.
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <467176EB.7060404@ru.mvista.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,98 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The interrupts of an E100 card inserted in PCI slot 4 may be on at bootup.
-The resulting interrupt flood interacts with the 8259 cascade handler and
-prevents proper boot up. There is a quirk for the E100 that will disable
-the E100's interrupts but to use it, the 8259 cascade hookup must be
-delayed until after the quirk has run. This patch delays the 8259 cascade
-hookup by registering a device_initcall() which runs after the PCI quirk
-for the E100.
+On Thu, Jun 14, 2007 at 09:12:11PM +0400, Vladislav Buzov wrote:
+> Segher Boessenkool wrote:
 
-Signed-off-by: Randy Vinson <rvinson@mvista.com>
----
-NOTE: This is a follow-up to my previous 8259 cascade patch. I
-encountered this problem on the 8548CDS system I use for test.
-I'm not sure it is an isolated incident or a common occurance. I'm
-posting this patch in case it's common.
- 
- arch/powerpc/platforms/85xx/mpc85xx_cds.c |   33 +++++++++++++++++++---------
- 1 files changed, 22 insertions(+), 11 deletions(-)
+> >>      /* TODO: use HW flush assist when available */
+> >
+> >
+> > You want to get rid of this old comment though -- and
+> > perhaps branch over the non-hardware-assisted cache
+> > flushing code.
+> 
+> Ok, I agree that the comment is obsolete now. Would you please explain 
+> why the branch over non-hardware-assisted code should be removed as 
+> well. Technically the cache is flushed and there is no need to use extra 
+> commands to fill and then re-flush the cache.
 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-index a8720bf..939285a 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-@@ -183,10 +183,6 @@ static void __init mpc85xx_cds_pic_init(void)
- 	struct mpic *mpic;
- 	struct resource r;
- 	struct device_node *np = NULL;
--#if defined(CONFIG_PPC_I8259) && defined(CONFIG_PCI)
--	struct device_node *cascade_node = NULL;
--	int cascade_irq;
--#endif
- 
- 	np = of_find_node_by_type(np, "open-pic");
- 
-@@ -231,8 +227,16 @@ static void __init mpc85xx_cds_pic_init(void)
- 	mpic_assign_isu(mpic, 14, r.start + 0x10100);
- 
- 	mpic_init(mpic);
-+}
- 
- #if defined(CONFIG_PPC_I8259) && defined(CONFIG_PCI)
-+static int mpc85xx_cds_8259_attach(void)
-+{
-+	int ret;
-+	struct device_node *np = NULL;
-+	struct device_node *cascade_node = NULL;
-+	int cascade_irq;
-+
- 	/* Initialize the i8259 controller */
- 	for_each_node_by_type(np, "interrupt-controller")
- 		if (of_device_is_compatible(np, "chrp,iic")) {
-@@ -242,13 +246,13 @@ static void __init mpc85xx_cds_pic_init(void)
- 
- 	if (cascade_node == NULL) {
- 		printk(KERN_DEBUG "Could not find i8259 PIC\n");
--		return;
-+		return -ENODEV;
- 	}
- 
- 	cascade_irq = irq_of_parse_and_map(cascade_node, 0);
- 	if (cascade_irq == NO_IRQ) {
- 		printk(KERN_ERR "Failed to map cascade interrupt\n");
--		return;
-+		return -ENXIO;
- 	}
- 
- 	i8259_init(cascade_node, 0);
-@@ -260,14 +264,21 @@ static void __init mpc85xx_cds_pic_init(void)
- 	 *  disabled when the last user of the shared IRQ line frees their
- 	 *  interrupt.
- 	 */
--	if (setup_irq(cascade_irq, &mpc85xxcds_8259_irqaction))
-+	if ((ret = setup_irq(cascade_irq, &mpc85xxcds_8259_irqaction))) {
- 		printk(KERN_ERR "Failed to setup cascade interrupt\n");
--	else
--		/* Success. Connect our low-level cascade handler. */
--		set_irq_handler(cascade_irq, mpc85xx_8259_cascade_handler);
--#endif /* CONFIG_PPC_I8259 */
-+		return ret;
-+	}
-+
-+	/* Success. Connect our low-level cascade handler. */
-+	set_irq_handler(cascade_irq, mpc85xx_8259_cascade_handler);
-+
-+	return 0;
- }
- 
-+device_initcall(mpc85xx_cds_8259_attach);
-+
-+#endif /* CONFIG_PPC_I8259 */
-+
- /*
-  * Setup the architecture
-  */
--- 
-1.5.0.GIT
+I think Segher is saying that you can skip the manual invalidation too
+(although he said "flushing", I think he really meant "invalidation"--
+the manual flushing is already skipped).  If I'm reading the manual
+correctly, L2HWF does the invalidation as well so both the manual
+flushing and invalidation can be skipped.
+
+Mark
