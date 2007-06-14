@@ -1,26 +1,20 @@
-Return-Path: <shin@sm.sony.co.jp>
-Received: from mgw2.sony.co.jp (MGW2.Sony.CO.JP [137.153.0.14])
-	by ozlabs.org (Postfix) with ESMTP id 933CADDF87
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 12:31:42 +1000 (EST)
-Received: from mail34.sony.co.jp (localhost [127.0.0.1])
-	by mail34.sony.co.jp (R8/Sony) with ESMTP id l5E2VbKl005426
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 11:31:37 +0900 (JST)
-Received: from mailgw02.scei.sony.co.jp (mailgw02.scei.sony.co.jp [43.27.73.8])
-	by mail34.sony.co.jp (R8/Sony) with SMTP id l5E2VbxP005418
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 11:31:37 +0900 (JST)
-In-Reply-To: <466EE965.404@am.sony.com>
-References: <20070612181825.730300780@am.sony.com>> <466EE965.404@am.sony.com>
-Mime-Version: 1.0 (Apple Message framework v624)
-Message-Id: <b28db8e8f870934a46f25581c808d8b8@sm.sony.co.jp>
-From: Takao Shinohara <shin@sm.sony.co.jp>
-Subject: Re: [patch 05/30] PS3: Use ioremap_flags
-Date: Thu, 14 Jun 2007 11:31:29 +0900
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Masato Noguchi <Masato.Noguchi@jp.sony.com>,
-	Paul Mackerras <paulus@samba.org>, Arnd Bergmann <arnd@arndb.de>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.183])
+	by ozlabs.org (Postfix) with ESMTP id 44971DDE37
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 12:39:52 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so503632wag
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2007 19:39:51 -0700 (PDT)
+Message-ID: <fa686aa40706131939p75e168a8hfe626e5452261c1f@mail.gmail.com>
+Date: Wed, 13 Jun 2007 20:39:51 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: biovore <biovore@biovore.net>
+Subject: Re: New to ML-310
+In-Reply-To: <200706132031.53942.biovore@biovore.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <200706132031.53942.biovore@biovore.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,29 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On 2007/06/13, at 3:43, Geoff Levand wrote:
-> -	spu->problem = ioremap(spu->problem_phys,
-> -		sizeof(struct spu_problem));
-> +	spu->problem = (__force void *)ioremap_flags(spu->problem_phys,
-> +		sizeof(struct spu_problem), _PAGE_NO_CACHE);
-> +
->  	if (!spu->problem) {
->  		pr_debug("%s:%d: ioremap problem failed\n", __func__, __LINE__);
->  		goto fail_ioremap;
->  	}
+On 6/13/07, biovore <biovore@biovore.net> wrote:
+>   CC      arch/ppc/syslib/xilinx_pic.o
+> arch/ppc/syslib/xilinx_pic.c:30:5: warning: "XPAR_XINTC_USE_DCR" is not
+> defined
+> arch/ppc/syslib/xilinx_pic.c:121:5: warning: "XPAR_XINTC_USE_DCR" is not
+> defined
+> arch/ppc/syslib/xilinx_pic.c: In function 'ppc4xx_pic_init':
+> arch/ppc/syslib/xilinx_pic.c:122: error: 'XPAR_INTC_0_BASEADDR' undeclared
+> (first use in this function)
+> arch/ppc/syslib/xilinx_pic.c:122: error: (Each undeclared identifier is
+> reported only once
+> arch/ppc/syslib/xilinx_pic.c:122: error: for each function it appears in.)
+> arch/ppc/syslib/xilinx_pic.c:148: error: 'XPAR_INTC_0_KIND_OF_INTR' undeclared
+> (first use in this function)
+> make[1]: *** [arch/ppc/syslib/xilinx_pic.o] Error 1
+> make: *** [arch/ppc/syslib] Error 2
 >
-> -	spu->priv2 = ioremap(spu_pdata(spu)->priv2_addr,
-> -		sizeof(struct spu_priv2));
-> +	spu->priv2 = (__force void 
-> *)ioremap_flags(spu_pdata(spu)->priv2_addr,
-> +		sizeof(struct spu_priv2), _PAGE_NO_CACHE);
-> +
->  	if (!spu->priv2) {
->  		pr_debug("%s:%d: ioremap priv2 failed\n", __func__, __LINE__);
->  		goto fail_ioremap;
+> This to me looks like my xparameters.h file is missing something..    Any
+> ideas?
 
-spu->problem and spu->priv2 needs _PAGE_GUARDED, because they are
-MMIO register region.
+Go into software settings, and set a driver for the intc core.  (Or
+you might be missing an interrupt controller entirely in your design)
 
--- Takao Shinohara
+BTW, I wouldn't bother with getting EDK to patch your kernel tree.
+You're better off to generate the BSP into an empty directory and just
+copy in your custom xparams file.  The EDK patching is fragile if you
+don't use exactly the right kernel version.
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
