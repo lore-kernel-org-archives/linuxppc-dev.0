@@ -3,18 +3,18 @@ Received: from outbound5-sin-R.bigfish.com (outbound-sin.frontbridge.com
 	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id EEE67DE2EC
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 08:18:43 +1000 (EST)
-Message-ID: <46730D5F.4040701@am.sony.com>
-Date: Fri, 15 Jun 2007 15:06:23 -0700
+	by ozlabs.org (Postfix) with ESMTP id 8C1D2DEDFE
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 08:18:53 +1000 (EST)
+Message-ID: <467301EC.8090201@am.sony.com>
+Date: Fri, 15 Jun 2007 14:17:32 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 24/33] powerpc: Correct __secondary_hold comment
+Subject: [patch 01/33] Cell: Add spu shutdown method
 References: <20070615204749.629571012@am.sony.com>>
 In-Reply-To: <20070615204749.629571012@am.sony.com>>
 Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Remove references to pSeries and OpenFirmware in the __secondary_hold
-usage comment.  __secondary_hold is a generic routine and can be used
-by other platforms.
+Add a shutdown method to spu_sysdev_class to allow proper spu resource
+cleanup on system shutdown.  This is needed to support kexec on the PS3
+platform.
 
+Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/kernel/head_64.S |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/cell/spu_base.c |   12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -103,8 +103,8 @@ __secondary_hold_acknowledge:
+--- a/arch/powerpc/platforms/cell/spu_base.c
++++ b/arch/powerpc/platforms/cell/spu_base.c
+@@ -462,8 +462,18 @@ void spu_free(struct spu *spu)
+ }
+ EXPORT_SYMBOL_GPL(spu_free);
  
- 	. = 0x60
- /*
-- * The following code is used on pSeries to hold secondary processors
-- * in a spin loop after they have been freed from OpenFirmware, but
-+ * The following code is used to hold secondary processors
-+ * in a spin loop after they have entered the kernel, but
-  * before the bulk of the kernel has been relocated.  This code
-  * is relocated to physical address 0x60 before prom_init is run.
-  * All of it must fit below the first exception vector at 0x100.
++static int spu_shutdown(struct sys_device *sysdev)
++{
++	struct spu *spu = container_of(sysdev, struct spu, sysdev);
++
++	spu_free_irqs(spu);
++	spu_destroy_spu(spu);
++	return 0;
++}
++
+ struct sysdev_class spu_sysdev_class = {
+-	set_kset_name("spu")
++	set_kset_name("spu"),
++	.shutdown = spu_shutdown,
+ };
+ 
+ int spu_add_sysdev_attr(struct sysdev_attribute *attr)
 
 -- 
