@@ -1,21 +1,21 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id E4B62DDF7E
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 07:17:13 +1000 (EST)
-Date: Fri, 15 Jun 2007 14:17:20 -0700 (PDT)
-Message-Id: <20070615.141720.112626963.davem@davemloft.net>
-To: Geert.Uytterhoeven@sonycom.com
+	by ozlabs.org (Postfix) with ESMTP id 2BE28DDF92
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 07:19:10 +1000 (EST)
+Date: Fri, 15 Jun 2007 14:19:17 -0700 (PDT)
+Message-Id: <20070615.141917.85409547.davem@davemloft.net>
+To: alan@lxorguk.ukuu.org.uk
 Subject: Re: [patch 4/6] ps3: Disk Storage Driver
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.62.0706151642010.8248@pademelon.sonytel.be>
-References: <20070615120848.352093000@pademelon.sonytel.be>
-	<1181918159.25228.543.camel@pmac.infradead.org>
+In-Reply-To: <20070615171545.316dfac7@the-village.bc.nu>
+References: <1181918159.25228.543.camel@pmac.infradead.org>
 	<Pine.LNX.4.62.0706151642010.8248@pademelon.sonytel.be>
+	<20070615171545.316dfac7@the-village.bc.nu>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Cc: axboe@kernel.dk, James.Bottomley@SteelEye.com, linux-scsi@vger.kernel.org,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, dwmw2@infradead.org
+	paulus@samba.org, Geert.Uytterhoeven@sonycom.com, dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,34 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Date: Fri, 15 Jun 2007 16:43:05 +0200 (CEST)
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Date: Fri, 15 Jun 2007 17:15:45 +0100
 
-> On Fri, 15 Jun 2007, David Woodhouse wrote:
-> > On Fri, 2007-06-15 at 13:39 +0200, Geert Uytterhoeven wrote:
-> > > Add a Disk Storage Driver for the PS3:
-> > >   - Implemented as a block device driver with a dynamic major
-> > >   - Disk names (and partitions) are of the format ps3d%c(%u)
-> > >   - Uses software scatter-gather with a 64 KiB bounce buffer as the hypervisor
-> > >     doesn't support scatter-gather
+> > > Any particular reason why this is done as a separate block device driver
+> > > rather than as SCSI?
 > > 
-> > Any particular reason why this is done as a separate block device driver
-> > rather than as SCSI?
+> > Because no new fake SCSI drivers are accepted anymore.
 > 
-> Because no new fake SCSI drivers are accepted anymore.
+> Where did drivers/ata come from ;)
+> 
+> How about making it a fake ata driver if James is being fussy 8)
 
-I'm strongly divided on this issue as I'm about to hit the same exact
-thing for Sun Logical Domains on sparc64 Niagara systems.
+That sounds like a good idea for my virtual I/O case on
+Niagara too actually :-)
 
-In fact the interface I get to use allows SCSI commands to be sent
-pass-through to the device, even though the basic virtual I/O API is
-purely block I/O based.
-
-It's senseless to make people build new major/minor numbers for
-all these new quirky storage drivers.  People have to add support
-for the new major number to installers and all kinds of other
-tools.
-
-If the SCSI guys were smart, there would be a totally generic helper
-layer that allows anyone to hook into the SCSI layer as a virtual SCSI
-disk provider in like 10 lines of code. :-)
+Another quirk I have to deal with is that under LDOMs you
+can export full disks and also just slices.  So I'll have
+to get down into the partition machinery to support that
+somehow.
