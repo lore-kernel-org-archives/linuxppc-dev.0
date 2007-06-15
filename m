@@ -1,16 +1,16 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound3-dub-R.bigfish.com (outbound-dub.frontbridge.com
+Received: from outbound2-dub-R.bigfish.com (outbound-dub.frontbridge.com
 	[213.199.154.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0774FDE0DE
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 08:08:03 +1000 (EST)
-Message-ID: <46730D7B.1000703@am.sony.com>
-Date: Fri, 15 Jun 2007 15:06:51 -0700
+	by ozlabs.org (Postfix) with ESMTP id 58C0FDE064
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 08:08:05 +1000 (EST)
+Message-ID: <46730D74.7090306@am.sony.com>
+Date: Fri, 15 Jun 2007 15:06:44 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 29/33] PS3: Device tree source.
+Subject: [patch 28/33] powerpc: Bootwrapper global scope kernel_entry_t.
 References: <20070615204749.629571012@am.sony.com>>
 In-Reply-To: <20070615204749.629571012@am.sony.com>>
 Content-Type: text/plain; charset=UTF-8
@@ -24,97 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The PS3 device tree source.
+For the convenience of custom platform code make the powerpc
+bootwrapper typdef kernel_entry_t global in scope.
 
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- o After extended mail and IRC discussions, everyone aggreed on this one.
+ arch/powerpc/boot/main.c |    2 --
+ arch/powerpc/boot/ops.h  |    2 ++
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
- arch/powerpc/boot/dts/ps3.dts      |   68 +++++++++++++++++++++++++++++++++++++
- arch/powerpc/platforms/ps3/setup.c |    2 -
- 2 files changed, 69 insertions(+), 1 deletion(-)
-
---- /dev/null
-+++ b/arch/powerpc/boot/dts/ps3.dts
-@@ -0,0 +1,68 @@
-+/*
-+ *  PS3 Game Console device tree.
-+ *
-+ *  Copyright (C) 2007 Sony Computer Entertainment Inc.
-+ *  Copyright 2007 Sony Corp.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; version 2 of the License.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+
-+/ {
-+	model = "SonyPS3";
-+	compatible = "sony,ps3";
-+	#size-cells = <2>;
-+	#address-cells = <2>;
-+
-+	chosen {
-+	};
-+
-+	/*
-+	 * We'll get the size of the bootmem block from lv1 after startup,
-+	 * so we'll put a null entry here.
-+	 */
-+
-+	memory {
-+		device_type = "memory";
-+		reg = <0 0 0 0>;
-+	};
-+
-+	/*
-+	 * The boot cpu is always zero for PS3.
-+	 *
-+	 * dtc expects a clock-frequency and timebase-frequency entries, so
-+	 * we'll put a null entries here.  These will be initialized after
-+	 * startup with data from lv1.
-+	 *
-+	 * Seems the only way currently to indicate a processor has multiple
-+	 * threads is with an ibm,ppc-interrupt-server#s entry.  We'll put one
-+	 * here so we can bring up both of ours.  See smp_setup_cpu_maps().
-+	 */
-+
-+	cpus {
-+		#size-cells = <0>;
-+		#address-cells = <1>;
-+
-+		cpu@0 {
-+			device_type = "cpu";
-+			reg = <0>;
-+			ibm,ppc-interrupt-server#s = <0 1>;
-+			clock-frequency = <0>;
-+			timebase-frequency = <0>;
-+			i-cache-size = <8000>;
-+			d-cache-size = <8000>;
-+			i-cache-line-size = <80>;
-+			d-cache-line-size = <80>;
-+		};
-+	};
-+};
---- a/arch/powerpc/platforms/ps3/setup.c
-+++ b/arch/powerpc/platforms/ps3/setup.c
-@@ -193,7 +193,7 @@ static int __init ps3_probe(void)
- 	DBG(" -> %s:%d\n", __func__, __LINE__);
+--- a/arch/powerpc/boot/main.c
++++ b/arch/powerpc/boot/main.c
+@@ -36,8 +36,6 @@ struct addr_range {
+ 	unsigned long size;
+ };
  
- 	dt_root = of_get_flat_dt_root();
--	if (!of_flat_dt_is_compatible(dt_root, "PS3"))
-+	if (!of_flat_dt_is_compatible(dt_root, "sony,ps3"))
- 		return 0;
+-typedef void (*kernel_entry_t)(unsigned long, unsigned long, void *);
+-
+ #undef DEBUG
  
- 	powerpc_firmware_features |= FW_FEATURE_PS3_POSSIBLE;
+ static struct addr_range prep_kernel(void)
+--- a/arch/powerpc/boot/ops.h
++++ b/arch/powerpc/boot/ops.h
+@@ -19,6 +19,8 @@
+ #define	MAX_PATH_LEN		256
+ #define	MAX_PROP_LEN		256 /* What should this be? */
+ 
++typedef void (*kernel_entry_t)(unsigned long r3, unsigned long r4, void *r5);
++
+ /* Platform specific operations */
+ struct platform_ops {
+ 	void	(*fixups)(void);
 
 -- 
