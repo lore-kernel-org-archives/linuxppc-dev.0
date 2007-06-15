@@ -3,14 +3,14 @@ Received: from outbound5-dub-R.bigfish.com (outbound-dub.frontbridge.com
 	[213.199.154.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 1D8AFDE16D
+	by ozlabs.org (Postfix) with ESMTP id F0E71DE12F
 	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 08:08:55 +1000 (EST)
-Message-ID: <46730D8A.9090309@am.sony.com>
-Date: Fri, 15 Jun 2007 15:07:06 -0700
+Message-ID: <46730DA2.2050406@am.sony.com>
+Date: Fri, 15 Jun 2007 15:07:30 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 30/33] PS3: Bootwrapper support.
+Subject: [patch 33/33] PS3: Update ps3_defconfig
 References: <20070615204749.629571012@am.sony.com>>
 In-Reply-To: <20070615204749.629571012@am.sony.com>>
 Content-Type: text/plain; charset=UTF-8
@@ -24,660 +24,293 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add support to build the PS3 flash rom image.
-
-zImage.ps3 is a wrapped image that contains a flat device tree, an lv1
-compatible entry point, a wrapper program with a standard entry point,
-and an optional initrd.  otheros.bld is the gzip compresed rom image built
-from zImage.ps3.  otheros.bld is suitable for programming into the PS3 boot
-flash memory.
-
-Also remove the now unneeded lmb calls in the platform code.
+Update ps3_defconfig.
 
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/boot/Makefile         |   21 ++--
- arch/powerpc/boot/ps3-head.S       |   84 ++++++++++++++++
- arch/powerpc/boot/ps3-hvcall.S     |  184 +++++++++++++++++++++++++++++++++++++
- arch/powerpc/boot/ps3.c            |  158 +++++++++++++++++++++++++++++++
- arch/powerpc/boot/wrapper          |   55 +++++++++++
- arch/powerpc/boot/zImage.ps3.lds.S |   50 ++++++++++
- arch/powerpc/platforms/ps3/mm.c    |    2 
- 7 files changed, 543 insertions(+), 11 deletions(-)
+ arch/powerpc/configs/ps3_defconfig |  131 +++++++++++++++----------------------
+ 1 file changed, 55 insertions(+), 76 deletions(-)
 
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -41,11 +41,13 @@ zliblinuxheader := zlib.h zconf.h zutil.
- $(addprefix $(obj)/,$(zlib) gunzip_util.o main.o): \
- 	$(addprefix $(obj)/,$(zliblinuxheader)) $(addprefix $(obj)/,$(zlibheader))
+--- a/arch/powerpc/configs/ps3_defconfig
++++ b/arch/powerpc/configs/ps3_defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.21
+-# Fri May 11 10:16:27 2007
++# Linux kernel version: 2.6.22-rc4
++# Thu Jun 14 19:52:01 2007
+ #
+ CONFIG_PPC64=y
+ CONFIG_64BIT=y
+@@ -87,7 +87,11 @@ CONFIG_BUG=y
+ CONFIG_ELF_CORE=y
+ CONFIG_BASE_FULL=y
+ CONFIG_FUTEX=y
++CONFIG_ANON_INODES=y
+ CONFIG_EPOLL=y
++CONFIG_SIGNALFD=y
++CONFIG_TIMERFD=y
++CONFIG_EVENTFD=y
+ CONFIG_SHMEM=y
+ CONFIG_VM_EVENT_COUNTERS=y
+ CONFIG_SLAB=y
+@@ -152,7 +156,11 @@ CONFIG_PS3_HTAB_SIZE=20
+ CONFIG_PS3_USE_LPAR_ADDR=y
+ CONFIG_PS3_VUART=y
+ CONFIG_PS3_PS3AV=y
+-CONFIG_PS3_SYS_MANAGER=y
++CONFIG_PS3_SYS_MANAGER=m
++CONFIG_PS3_STORAGE=y
++CONFIG_PS3_DISK=y
++CONFIG_PS3_ROM=y
++CONFIG_PS3_FLASH=y
+ CONFIG_PPC_CELL=y
+ # CONFIG_PPC_CELL_NATIVE is not set
+ # CONFIG_PPC_IBM_CELL_BLADE is not set
+@@ -301,20 +309,8 @@ CONFIG_IPV6_SIT=y
+ # CONFIG_IPV6_MULTIPLE_TABLES is not set
+ # CONFIG_NETWORK_SECMARK is not set
+ # CONFIG_NETFILTER is not set
+-
+-#
+-# DCCP Configuration (EXPERIMENTAL)
+-#
+ # CONFIG_IP_DCCP is not set
+-
+-#
+-# SCTP Configuration (EXPERIMENTAL)
+-#
+ # CONFIG_IP_SCTP is not set
+-
+-#
+-# TIPC Configuration (EXPERIMENTAL)
+-#
+ # CONFIG_TIPC is not set
+ # CONFIG_ATM is not set
+ # CONFIG_BRIDGE is not set
+@@ -343,7 +339,7 @@ CONFIG_BT=m
+ CONFIG_BT_L2CAP=m
+ CONFIG_BT_SCO=m
+ CONFIG_BT_RFCOMM=m
+-# CONFIG_BT_RFCOMM_TTY is not set
++CONFIG_BT_RFCOMM_TTY=y
+ # CONFIG_BT_BNEP is not set
+ CONFIG_BT_HIDP=m
  
-+src-plat-$(CONFIG_PPC_PS3) += ps3-head.S ps3-hvcall.S ps3.c
-+
- src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
- 		ns16550.c serial.c simple_alloc.c div64.S util.S \
- 		gunzip_util.c elf_util.c $(zlib) devtree.c \
- 		44x.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c
--src-plat := of.c cuboot-83xx.c cuboot-85xx.c holly.c \
-+src-plat := $(src-plat-y) of.c cuboot-83xx.c cuboot-85xx.c holly.c \
- 		cuboot-ebony.c treeboot-ebony.c prpmc2800.c
- src-boot := $(src-wlib) $(src-plat) empty.c
+@@ -352,7 +348,9 @@ CONFIG_BT_HIDP=m
+ #
+ CONFIG_BT_HCIUSB=m
+ CONFIG_BT_HCIUSB_SCO=y
+-# CONFIG_BT_HCIUART is not set
++CONFIG_BT_HCIUART=m
++CONFIG_BT_HCIUART_H4=y
++CONFIG_BT_HCIUART_BCSP=y
+ # CONFIG_BT_HCIBCM203X is not set
+ # CONFIG_BT_HCIBPA10X is not set
+ # CONFIG_BT_HCIBFUSB is not set
+@@ -418,10 +416,6 @@ CONFIG_BLK_DEV_RAM_BLOCKSIZE=1024
+ # Misc devices
+ #
+ # CONFIG_BLINK is not set
+-
+-#
+-# ATA/ATAPI/MFM/RLL support
+-#
+ # CONFIG_IDE is not set
  
-@@ -75,11 +77,11 @@ $(addprefix $(obj)/,$(zliblinuxheader)):
- $(obj)/empty.c:
- 	@touch $@
+ #
+@@ -447,7 +441,7 @@ CONFIG_CHR_DEV_SG=m
+ #
+ # Some SCSI devices (e.g. CD jukebox) support multiple LUNs
+ #
+-# CONFIG_SCSI_MULTI_LUN is not set
++CONFIG_SCSI_MULTI_LUN=y
+ # CONFIG_SCSI_CONSTANTS is not set
+ # CONFIG_SCSI_LOGGING is not set
+ # CONFIG_SCSI_SCAN_ASYNC is not set
+@@ -467,11 +461,6 @@ CONFIG_SCSI_WAIT_SCAN=m
+ #
+ # CONFIG_ISCSI_TCP is not set
+ # CONFIG_SCSI_DEBUG is not set
+-# CONFIG_SCSI_ESP_CORE is not set
+-
+-#
+-# Serial ATA (prod) and Parallel ATA (experimental) drivers
+-#
+ # CONFIG_ATA is not set
  
--$(obj)/zImage.lds $(obj)/zImage.coff.lds: $(obj)/%: $(srctree)/$(src)/%.S
-+$(obj)/zImage.lds $(obj)/zImage.coff.lds $(obj)/zImage.ps3.lds: $(obj)/%: $(srctree)/$(src)/%.S
- 	@cp $< $@
+ #
+@@ -490,27 +479,13 @@ CONFIG_NETDEVICES=y
+ # CONFIG_TUN is not set
  
- clean-files := $(zlib) $(zlibheader) $(zliblinuxheader) \
--		empty.c zImage.coff.lds zImage.lds
-+		empty.c zImage zImage.coff.lds zImage.ps3.lds zImage.lds
+ #
+-# PHY device support
+-#
+-
+-#
+ # Ethernet (10 or 100Mbit)
+ #
+ # CONFIG_NET_ETHERNET is not set
+ CONFIG_MII=m
+-
+-#
+-# Ethernet (1000 Mbit)
+-#
+-
+-#
+-# Ethernet (10000 Mbit)
+-#
+-CONFIG_MLX4_DEBUG=y
+-
+-#
+-# Token Ring devices
+-#
++CONFIG_NETDEV_1000=y
++CONFIG_GELIC_NET=y
++# CONFIG_NETDEV_10000 is not set
  
- quiet_cmd_bootcc = BOOTCC  $@
-       cmd_bootcc = $(CROSS32CC) -Wp,-MD,$(depfile) $(BOOTCFLAGS) -c -o $@ $<
-@@ -102,7 +104,7 @@ hostprogs-y	:= addnote addRamDisk hack-c
+ #
+ # Wireless LAN
+@@ -536,10 +511,6 @@ CONFIG_USB_NET_MCS7830=m
+ # CONFIG_USB_NET_RNDIS_HOST is not set
+ # CONFIG_USB_NET_CDC_SUBSET is not set
+ # CONFIG_USB_NET_ZAURUS is not set
+-
+-#
+-# Wan interfaces
+-#
+ # CONFIG_WAN is not set
+ # CONFIG_PPP is not set
+ # CONFIG_SLIP is not set
+@@ -563,6 +534,7 @@ CONFIG_USB_NET_MCS7830=m
+ #
+ CONFIG_INPUT=y
+ # CONFIG_INPUT_FF_MEMLESS is not set
++# CONFIG_INPUT_POLLDEV is not set
  
- targets		+= $(patsubst $(obj)/%,%,$(obj-boot) wrapper.a)
- extra-y		:= $(obj)/wrapper.a $(obj-plat) $(obj)/empty.o \
--		   $(obj)/zImage.lds $(obj)/zImage.coff.lds
-+		   $(obj)/zImage.lds $(obj)/zImage.coff.lds $(obj)/zImage.ps3.lds
+ #
+ # Userland interfaces
+@@ -581,7 +553,27 @@ CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
+ #
+ # CONFIG_INPUT_KEYBOARD is not set
+ # CONFIG_INPUT_MOUSE is not set
+-# CONFIG_INPUT_JOYSTICK is not set
++CONFIG_INPUT_JOYSTICK=y
++# CONFIG_JOYSTICK_ANALOG is not set
++# CONFIG_JOYSTICK_A3D is not set
++# CONFIG_JOYSTICK_ADI is not set
++# CONFIG_JOYSTICK_COBRA is not set
++# CONFIG_JOYSTICK_GF2K is not set
++# CONFIG_JOYSTICK_GRIP is not set
++# CONFIG_JOYSTICK_GRIP_MP is not set
++# CONFIG_JOYSTICK_GUILLEMOT is not set
++# CONFIG_JOYSTICK_INTERACT is not set
++# CONFIG_JOYSTICK_SIDEWINDER is not set
++# CONFIG_JOYSTICK_TMDC is not set
++# CONFIG_JOYSTICK_IFORCE is not set
++# CONFIG_JOYSTICK_WARRIOR is not set
++# CONFIG_JOYSTICK_MAGELLAN is not set
++# CONFIG_JOYSTICK_SPACEORB is not set
++# CONFIG_JOYSTICK_SPACEBALL is not set
++# CONFIG_JOYSTICK_STINGER is not set
++# CONFIG_JOYSTICK_TWIDJOY is not set
++# CONFIG_JOYSTICK_JOYDUMP is not set
++# CONFIG_JOYSTICK_XPAD is not set
+ # CONFIG_INPUT_TABLET is not set
+ # CONFIG_INPUT_TOUCHSCREEN is not set
+ # CONFIG_INPUT_MISC is not set
+@@ -598,7 +590,7 @@ CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
+ CONFIG_VT=y
+ CONFIG_VT_CONSOLE=y
+ CONFIG_HW_CONSOLE=y
+-# CONFIG_VT_HW_CONSOLE_BINDING is not set
++CONFIG_VT_HW_CONSOLE_BINDING=y
+ # CONFIG_SERIAL_NONSTANDARD is not set
  
- wrapper		:=$(srctree)/$(src)/wrapper
- wrapperbits	:= $(extra-y) $(addprefix $(obj)/,addnote hack-coff mktree) \
-@@ -187,11 +189,12 @@ $(obj)/zImage.%: vmlinux $(wrapperbits)
- $(obj)/zImage.iseries: vmlinux
- 	$(STRIP) -s -R .comment $< -o $@
+ #
+@@ -652,12 +644,8 @@ CONFIG_GEN_RTC=y
+ # Multimedia devices
+ #
+ # CONFIG_VIDEO_DEV is not set
+-
+-#
+-# Digital Video Broadcasting Devices
+-#
+-# CONFIG_DVB is not set
+-# CONFIG_USB_DABUSB is not set
++# CONFIG_DVB_CORE is not set
++# CONFIG_DAB is not set
  
--$(obj)/zImage.ps3: vmlinux
--	$(STRIP) -s -R .comment $< -o $@
-+$(obj)/zImage.ps3: vmlinux  $(wrapper) $(wrapperbits) $(srctree)/$(src)/dts/ps3.dts
-+	$(STRIP) -s -R .comment $< -o vmlinux.strip
-+	$(call cmd,wrap,ps3,$(srctree)/$(src)/dts/ps3.dts,,)
+ #
+ # Graphics support
+@@ -672,13 +660,13 @@ CONFIG_GEN_RTC=y
+ CONFIG_FB=y
+ # CONFIG_FIRMWARE_EDID is not set
+ # CONFIG_FB_DDC is not set
+-CONFIG_FB_CFB_FILLRECT=y
+-CONFIG_FB_CFB_COPYAREA=y
+-CONFIG_FB_CFB_IMAGEBLIT=y
+-# CONFIG_FB_SYS_FILLRECT is not set
+-# CONFIG_FB_SYS_COPYAREA is not set
+-# CONFIG_FB_SYS_IMAGEBLIT is not set
+-# CONFIG_FB_SYS_FOPS is not set
++# CONFIG_FB_CFB_FILLRECT is not set
++# CONFIG_FB_CFB_COPYAREA is not set
++# CONFIG_FB_CFB_IMAGEBLIT is not set
++CONFIG_FB_SYS_FILLRECT=y
++CONFIG_FB_SYS_COPYAREA=y
++CONFIG_FB_SYS_IMAGEBLIT=y
++CONFIG_FB_SYS_FOPS=y
+ CONFIG_FB_DEFERRED_IO=y
+ # CONFIG_FB_SVGALIB is not set
+ # CONFIG_FB_MACMODES is not set
+@@ -751,9 +739,10 @@ CONFIG_SND_VERBOSE_PROCFS=y
+ #
+ # CONFIG_SND_USB_AUDIO is not set
+ # CONFIG_SND_USB_USX2Y is not set
++# CONFIG_SND_USB_CAIAQ is not set
  
--$(obj)/zImage.initrd.ps3: vmlinux
--	@echo "  WARNING zImage.initrd.ps3 not supported (yet)"
-+$(obj)/zImage.initrd.ps3: vmlinux  $(wrapper) $(wrapperbits) $(srctree)/$(src)/dts/ps3.dts $(obj)/ramdisk.image.gz
-+	$(call cmd,wrap,ps3,$(srctree)/$(src)/dts/ps3.dts,,$(obj)/ramdisk.image.gz)
+ #
+-# SoC audio support
++# System on Chip audio support
+ #
+ # CONFIG_SND_SOC is not set
  
- $(obj)/zImage.holly-elf: vmlinux $(wrapperbits)
- 	$(call if_changed,wrap,holly,$(obj)/dts/holly.dts,,)
-@@ -230,7 +233,7 @@ install: $(CONFIGURE) $(addprefix $(obj)
+@@ -1098,7 +1087,6 @@ CONFIG_NLS_ISO8859_1=y
+ #
+ # CONFIG_DLM is not set
+ # CONFIG_UCC_SLOW is not set
+-# CONFIG_UCC_FAST is not set
  
- # anything not in $(targets)
- clean-files += $(image-) $(initrd-) zImage zImage.initrd cuImage.* \
--	treeImage.* zImage.dts zImage.dts_initrd
-+	treeImage.* zImage.dts zImage.dts_initrd otheros.bld
+ #
+ # Library routines
+@@ -1125,7 +1113,7 @@ CONFIG_HAS_DMA=y
+ #
+ # CONFIG_PRINTK_TIME is not set
+ CONFIG_ENABLE_MUST_CHECK=y
+-# CONFIG_MAGIC_SYSRQ is not set
++CONFIG_MAGIC_SYSRQ=y
+ # CONFIG_UNUSED_SYMBOLS is not set
+ # CONFIG_DEBUG_FS is not set
+ # CONFIG_HEADERS_CHECK is not set
+@@ -1155,16 +1143,7 @@ CONFIG_DEBUG_STACKOVERFLOW=y
+ # CONFIG_DEBUGGER is not set
+ CONFIG_IRQSTACKS=y
+ # CONFIG_BOOTX_TEXT is not set
+-CONFIG_PPC_EARLY_DEBUG=y
+-# CONFIG_PPC_EARLY_DEBUG_LPAR is not set
+-# CONFIG_PPC_EARLY_DEBUG_G5 is not set
+-# CONFIG_PPC_EARLY_DEBUG_RTAS_PANEL is not set
+-# CONFIG_PPC_EARLY_DEBUG_RTAS_CONSOLE is not set
+-# CONFIG_PPC_EARLY_DEBUG_MAPLE is not set
+-# CONFIG_PPC_EARLY_DEBUG_ISERIES is not set
+-# CONFIG_PPC_EARLY_DEBUG_PAS_REALMODE is not set
+-# CONFIG_PPC_EARLY_DEBUG_BEAT is not set
+-# CONFIG_PPC_EARLY_DEBUG_44x is not set
++# CONFIG_PPC_EARLY_DEBUG is not set
  
- # clean up files cached by wrapper
- clean-kernel := vmlinux.strip vmlinux.bin
---- /dev/null
-+++ b/arch/powerpc/boot/ps3-head.S
-@@ -0,0 +1,84 @@
-+/*
-+ *  PS3 bootwrapper entry.
-+ *
-+ *  Copyright (C) 2007 Sony Computer Entertainment Inc.
-+ *  Copyright 2007 Sony Corp.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; version 2 of the License.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+
-+#include "ppc_asm.h"
-+
-+	.text
-+
-+/*
-+ * __system_reset_overlay - The PS3 first stage entry.
-+ *
-+ * The bootwraper build script copies the 0x100 bytes at symbol
-+ * __system_reset_overlay to offset 0x100 of the rom image.
-+ */
-+
-+	.globl __system_reset_overlay
-+__system_reset_overlay:
-+
-+	/* Switch to 32-bit mode. */
-+
-+	mfmsr	r9
-+	clrldi	r9,r9,1
-+	mtmsrd	r9
-+	nop
-+
-+	/* Get thread number in r3 and branch. */
-+
-+	mfspr	r3, 0x88
-+	cntlzw.	r3, r3
-+	li	r4, 0
-+	li	r5, 0
-+	beq	1f
-+
-+	/* Secondary goes to __secondary_hold in kernel. */
-+
-+	li	r4, 0x60
-+	mtctr	r4
-+	bctr
-+
-+	/* Primary waits for __secondary_hold_acknowledge. */
-+1:
-+	li	r5, 0x10 /* __secondary_hold_acknowledge */
-+	or	28, 28, 28 /* db8cyc */
-+
-+	ld	r4, 0(r5)
-+	cmpdi	r4, 0
-+	beq	1b
-+
-+	/* Primary goes to _zimage_start in wrapper. */
-+
-+	lis	r4, _zimage_start@ha
-+	addi	r4, r4, _zimage_start@l
-+	mtctr	r4
-+	bctr
-+
-+/*
-+ * __system_reset_kernel - Place holder for the kernel reset vector.
-+ *
-+ * The bootwrapper build script copies 0x100 bytes from offset 0x100
-+ * of the rom image to the symbol __system_reset_kernel.  At runtime
-+ * the bootwrapper program copies the 0x100 bytes at __system_reset_kernel
-+ * to ram address 0x100.  This symbol must occupy 0x100 bytes.
-+ */
-+
-+	.globl __system_reset_kernel
-+__system_reset_kernel:
-+
-+	. = __system_reset_kernel + 0x100
---- /dev/null
-+++ b/arch/powerpc/boot/ps3-hvcall.S
-@@ -0,0 +1,184 @@
-+/*
-+ *  PS3 bootwrapper hvcalls.
-+ *
-+ *  Copyright (C) 2007 Sony Computer Entertainment Inc.
-+ *  Copyright 2007 Sony Corp.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; version 2 of the License.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+
-+#include "ppc_asm.h"
-+
-+/*
-+ * The PS3 hypervisor uses a 64 bit "C" language calling convention.
-+ * The routines here marshal arguments between the 32 bit wrapper
-+ * program and the 64 bit hvcalls.
-+ *
-+ *  wrapper           lv1
-+ *  32-bit (h,l)      64-bit
-+ *
-+ *  1: r3,r4          <-> r3
-+ *  2: r5,r6          <-> r4
-+ *  3: r7,r8          <-> r5
-+ *  4: r9,r10         <-> r6
-+ *  5: 8(r1),12(r1)   <-> r7
-+ *  6: 16(r1),20(r1)  <-> r8
-+ *  7: 24(r1),28(r1)  <-> r9
-+ *  8: 32(r1),36(r1)  <-> r10
-+ *
-+ */
-+
-+.macro GLOBAL name
-+	.section ".text"
-+	.balign 4
-+	.globl \name
-+\name:
-+.endm
-+
-+.macro NO_SUPPORT name
-+	GLOBAL \name
-+	b ps3_no_support
-+.endm
-+
-+.macro HVCALL num
-+	li r11, \num
-+	.long 0x44000022
-+	extsw r3, r3
-+.endm
-+
-+.macro SAVE_LR offset=4
-+	mflr r0
-+	stw r0, \offset(r1)
-+.endm
-+
-+.macro LOAD_LR offset=4
-+	lwz r0, \offset(r1)
-+	mtlr r0
-+.endm
-+
-+.macro LOAD_64_REG target,high,low
-+	sldi r11, \high, 32
-+	or \target, r11, \low
-+.endm
-+
-+.macro LOAD_64_STACK target,offset
-+	ld \target, \offset(r1)
-+.endm
-+
-+.macro LOAD_R3
-+	LOAD_64_REG r3,r3,r4
-+.endm
-+
-+.macro LOAD_R4
-+	LOAD_64_REG r4,r5,r6
-+.endm
-+
-+.macro LOAD_R5
-+	LOAD_64_REG r5,r7,r8
-+.endm
-+
-+.macro LOAD_R6
-+	LOAD_64_REG r6,r9,r10
-+.endm
-+
-+.macro LOAD_R7
-+	LOAD_64_STACK r7,8
-+.endm
-+
-+.macro LOAD_R8
-+	LOAD_64_STACK r8,16
-+.endm
-+
-+.macro LOAD_R9
-+	LOAD_64_STACK r9,24
-+.endm
-+
-+.macro LOAD_R10
-+	LOAD_64_STACK r10,32
-+.endm
-+
-+.macro LOAD_REGS_0
-+	stwu 1,-16(1)
-+	stw 3, 8(1)
-+.endm
-+
-+.macro LOAD_REGS_5
-+	LOAD_R3
-+	LOAD_R4
-+	LOAD_R5
-+	LOAD_R6
-+	LOAD_R7
-+.endm
-+
-+.macro LOAD_REGS_6
-+	LOAD_REGS_5
-+	LOAD_R8
-+.endm
-+
-+.macro LOAD_REGS_8
-+	LOAD_REGS_6
-+	LOAD_R9
-+	LOAD_R10
-+.endm
-+
-+.macro STORE_REGS_0_1
-+	lwz r11, 8(r1)
-+	std r4, 0(r11)
-+	mr r4, r3
-+	li r3, 0
-+	addi r1,r1,16
-+.endm
-+
-+.macro STORE_REGS_5_2
-+	lwz r11, 16(r1)
-+	std r4, 0(r11)
-+	lwz r11, 24(r1)
-+	std r5, 0(r11)
-+.endm
-+
-+.macro STORE_REGS_6_1
-+	lwz r11, 24(r1)
-+	std r4, 0(r11)
-+.endm
-+
-+GLOBAL lv1_get_logical_ppe_id
-+	SAVE_LR
-+	LOAD_REGS_0
-+	HVCALL 69
-+	STORE_REGS_0_1
-+	LOAD_LR
-+	blr
-+
-+GLOBAL lv1_get_logical_partition_id
-+	SAVE_LR
-+	LOAD_REGS_0
-+	HVCALL 74
-+	STORE_REGS_0_1
-+	LOAD_LR
-+	blr
-+
-+GLOBAL lv1_get_repository_node_value
-+	SAVE_LR
-+	LOAD_REGS_5
-+	HVCALL 91
-+	STORE_REGS_5_2
-+	LOAD_LR
-+	blr
-+
-+GLOBAL lv1_panic
-+	SAVE_LR
-+	LOAD_REGS_8
-+	HVCALL 255
-+	LOAD_LR
-+	blr
---- /dev/null
-+++ b/arch/powerpc/boot/ps3.c
-@@ -0,0 +1,158 @@
-+/*
-+ *  PS3 bootwrapper support.
-+ *
-+ *  Copyright (C) 2007 Sony Computer Entertainment Inc.
-+ *  Copyright 2007 Sony Corp.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; version 2 of the License.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+
-+#include <stdarg.h>
-+#include <stddef.h>
-+#include "types.h"
-+#include "elf.h"
-+#include "string.h"
-+#include "stdio.h"
-+#include "page.h"
-+#include "ops.h"
-+
-+extern s64 lv1_panic(u64 in_1);
-+extern s64 lv1_get_logical_partition_id(u64 *out_1);
-+extern s64 lv1_get_logical_ppe_id(u64 *out_1);
-+extern s64 lv1_get_repository_node_value(u64 in_1, u64 in_2, u64 in_3,
-+	u64 in_4, u64 in_5, u64 *out_1, u64 *out_2);
-+
-+#ifdef DEBUG
-+#define DBG(fmt...) printf(fmt)
-+#else
-+static inline int __attribute__ ((format (printf, 1, 2))) DBG(
-+	const char *fmt, ...) {return 0;}
-+#endif
-+
-+BSS_STACK(4096);
-+
-+/* A buffer that may be edited by tools operating on a zImage binary so as to
-+ * edit the command line passed to vmlinux (by setting /chosen/bootargs).
-+ * The buffer is put in it's own section so that tools may locate it easier.
-+ */
-+static char cmdline[COMMAND_LINE_SIZE]
-+	__attribute__((__section__("__builtin_cmdline")));
-+
-+static void prep_cmdline(void *chosen)
-+{
-+	if (cmdline[0] == '\0')
-+		getprop(chosen, "bootargs", cmdline, COMMAND_LINE_SIZE-1);
-+	else
-+		setprop_str(chosen, "bootargs", cmdline);
-+
-+	printf("cmdline: '%s'\n", cmdline);
-+}
-+
-+static void ps3_console_write(const char *buf, int len)
-+{
-+}
-+
-+static void ps3_exit(void)
-+{
-+	printf("ps3_exit\n");
-+	lv1_panic(0); /* zero = no reboot */
-+	while (1);
-+}
-+
-+static int ps3_repository_read_rm_size(u64 *rm_size)
-+{
-+	s64 result;
-+	u64 lpar_id;
-+	u64 ppe_id;
-+	u64 v2;
-+
-+	result = lv1_get_logical_partition_id(&lpar_id);
-+
-+	if (result)
-+		return -1;
-+
-+	result = lv1_get_logical_ppe_id(&ppe_id);
-+
-+	if (result)
-+		return -1;
-+
-+	/*
-+	 * n1: 0000000062690000 : ....bi..
-+	 * n2: 7075000000000000 : pu......
-+	 * n3: 0000000000000001 : ........
-+	 * n4: 726d5f73697a6500 : rm_size.
-+	*/
-+
-+	result = lv1_get_repository_node_value(lpar_id, 0x0000000062690000ULL,
-+		0x7075000000000000ULL, ppe_id, 0x726d5f73697a6500ULL, rm_size,
-+		&v2);
-+
-+	printf("%s:%d: ppe_id  %lu \n", __func__, __LINE__,
-+		(unsigned long)ppe_id);
-+	printf("%s:%d: lpar_id %lu \n", __func__, __LINE__,
-+		(unsigned long)lpar_id);
-+	printf("%s:%d: rm_size %llxh \n", __func__, __LINE__, *rm_size);
-+
-+	return result ? -1 : 0;
-+}
-+
-+void ps3_copy_vectors(void)
-+{
-+	extern char __system_reset_kernel[];
-+
-+	memcpy((void *)0x100, __system_reset_kernel, 0x100);
-+	flush_cache((void *)0x100, 0x100);
-+}
-+
-+void platform_init(void)
-+{
-+	extern char _end[];
-+	extern char _dtb_start[];
-+	extern char _initrd_start[];
-+	extern char _initrd_end[];
-+	const u32 heapsize = 0x1000000 - (u32)_end; /* 16MiB */
-+	void *chosen;
-+	unsigned long ft_addr;
-+	u64 rm_size;
-+
-+	console_ops.write = ps3_console_write;
-+	platform_ops.exit = ps3_exit;
-+
-+	printf("\n-- PS3 bootwrapper --\n");
-+
-+	simple_alloc_init(_end, heapsize, 32, 64);
-+	ft_init(_dtb_start, 0, 4);
-+
-+	chosen = finddevice("/chosen");
-+
-+	ps3_repository_read_rm_size(&rm_size);
-+	dt_fixup_memory(0, rm_size);
-+
-+	if (_initrd_end > _initrd_start) {
-+		setprop_val(chosen, "linux,initrd-start", (u32)(_initrd_start));
-+		setprop_val(chosen, "linux,initrd-end", (u32)(_initrd_end));
-+	}
-+
-+	prep_cmdline(chosen);
-+
-+	ft_addr = dt_ops.finalize();
-+
-+	ps3_copy_vectors();
-+
-+	printf(" flat tree at 0x%lx\n\r", ft_addr);
-+
-+	((kernel_entry_t)0)(ft_addr, 0, NULL);
-+
-+	ps3_exit();
-+}
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -144,6 +144,15 @@ miboot|uboot)
- cuboot*)
-     gzip=
-     ;;
-+ps3)
-+    platformo="$object/ps3-head.o $object/ps3-hvcall.o $object/ps3.o"
-+    lds=$object/zImage.ps3.lds
-+    gzip=
-+    ext=bin
-+    objflags="-O binary"
-+    ksection=.kernel:vmlinux.bin
-+    isection=.kernel:initrd
-+    ;;
- esac
- 
- vmz="$tmpdir/`basename \"$kernel\"`.$ext"
-@@ -239,4 +248,50 @@ treeboot*)
-     fi
-     exit 0
-     ;;
-+ps3)
-+    # The ps3's loader supports loading gzipped binary images from flash
-+    # rom to addr zero. The loader enters the image at addr 0x100.  A
-+    # bootwrapper overlay is use to arrange for the kernel to be loaded
-+    # to addr zero and to have a suitable bootwrapper entry at 0x100.
-+    # To construct the rom image, 0x100 bytes from offset 0x100 in the
-+    # kernel is copied to the bootwrapper symbol __system_reset_kernel.
-+    # The 0x100 bytes at the bootwrapper symbol __system_reset_overlay is
-+    # then copied to offset 0x100.  At runtime the bootwrapper program
-+    # copies the 0x100 bytes at __system_reset_kernel to addr 0x100.
-+
-+    system_reset_overlay=0x`${CROSS}nm "$ofile" \
-+        | grep ' __system_reset_overlay$'       \
-+        | cut -d' ' -f1`
-+    system_reset_overlay=`printf "%d" $system_reset_overlay`
-+    system_reset_kernel=0x`${CROSS}nm "$ofile" \
-+        | grep ' __system_reset_kernel$'       \
-+        | cut -d' ' -f1`
-+    system_reset_kernel=`printf "%d" $system_reset_kernel`
-+    overlay_dest="256"
-+    overlay_size="256"
-+
-+    rm -f "$object/otheros.bld"
-+
-+    ${CROSS}objcopy -O binary "$ofile" "$ofile.bin"
-+
-+    msg=$(dd if="$ofile.bin" of="$ofile.bin" conv=notrunc \
-+        skip=$overlay_dest seek=$system_reset_kernel      \
-+        count=$overlay_size bs=1 2>&1)
-+
-+    if [ $? -ne "0" ]; then
-+       echo $msg
-+       exit 1
-+    fi
-+
-+    msg=$(dd if="$ofile.bin" of="$ofile.bin" conv=notrunc \
-+        skip=$system_reset_overlay seek=$overlay_dest     \
-+        count=$overlay_size bs=1 2>&1)
-+
-+    if [ $? -ne "0" ]; then
-+       echo $msg
-+       exit 2
-+    fi
-+
-+    gzip --force -9 --stdout "$ofile.bin" > "$object/otheros.bld"
-+    ;;
- esac
---- /dev/null
-+++ b/arch/powerpc/boot/zImage.ps3.lds.S
-@@ -0,0 +1,50 @@
-+OUTPUT_ARCH(powerpc:common)
-+ENTRY(_zimage_start)
-+EXTERN(_zimage_start)
-+SECTIONS
-+{
-+  _vmlinux_start =  .;
-+  .kernel:vmlinux.bin : { *(.kernel:vmlinux.bin) }
-+  _vmlinux_end =  .;
-+
-+  . = ALIGN(8);
-+  _dtb_start = .;
-+  .kernel:dtb : { *(.kernel:dtb) }
-+  _dtb_end = .;
-+
-+  . = ALIGN(4096);
-+  _initrd_start =  .;
-+  .kernel:initrd : { *(.kernel:initrd) }
-+  _initrd_end =  .;
-+
-+  _start = .;
-+  .text      :
-+  {
-+    *(.text)
-+    *(.fixup)
-+  }
-+  _etext = .;
-+  . = ALIGN(4096);
-+  .data    :
-+  {
-+    *(.rodata*)
-+    *(.data*)
-+    *(.sdata*)
-+    __got2_start = .;
-+    *(.got2)
-+    __got2_end = .;
-+  }
-+
-+  . = ALIGN(4096);
-+  _edata  =  .;
-+
-+  . = ALIGN(4096);
-+  __bss_start = .;
-+  .bss       :
-+  {
-+   *(.sbss)
-+   *(.bss)
-+  }
-+  . = ALIGN(4096);
-+  _end = . ;
-+}
---- a/arch/powerpc/platforms/ps3/mm.c
-+++ b/arch/powerpc/platforms/ps3/mm.c
-@@ -1213,8 +1213,6 @@ void __init ps3_mm_init(void)
- 	BUG_ON(map.rm.base);
- 	BUG_ON(!map.rm.size);
- 
--	lmb_add(map.rm.base, map.rm.size);
--	lmb_analyze();
- 
- 	/* arrange to do this in ps3_mm_add_memory */
- 	ps3_mm_region_create(&map.r1, map.total - map.rm.size);
+ #
+ # Security options
 
 -- 
