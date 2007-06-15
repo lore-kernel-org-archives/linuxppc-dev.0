@@ -1,24 +1,28 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-02.arcor-online.net (mail-in-02.arcor-online.net
-	[151.189.21.42])
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
+	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E2C68DDF52
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jun 2007 18:16:15 +1000 (EST)
-In-Reply-To: <20070614222620.GA17382@mag.az.mvista.com>
-References: <1181729973.25586.31.camel@dolphin.spb.rtsoft.ru>
-	<db0d38e5b5e1a9a3a7fe35d25ebd357a@kernel.crashing.org>
-	<467176EB.7060404@ru.mvista.com>
-	<20070614222620.GA17382@mag.az.mvista.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <c6cd3a9fe7713f081354cca9b4306811@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC/PATCH] powerpc: MPC7450 L2 HW cache flush feature utilization
-Date: Fri, 15 Jun 2007 10:16:04 +0200
-To: "Mark A. Greer" <mgreer@mvista.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTP id 4C843DDF57
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jun 2007 18:22:43 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	l5F8MXG4010530
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jun 2007 01:22:34 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l5F8MWYm015698
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jun 2007 03:22:33 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: for-2.6.23 branch in powerpc.git created
+Date: Fri, 15 Jun 2007 16:24:24 +0800
+Message-ID: <989B956029373F45A0B8AF0297081890D2AEF5@zch01exm26.fsl.freescale.net>
+In-Reply-To: <18034.6787.951861.623265@cargo.ozlabs.ibm.com>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Paul Mackerras" <paulus@samba.org>, <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,29 +32,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>      /* TODO: use HW flush assist when available */
->>>
->>> You want to get rid of this old comment though -- and
->>> perhaps branch over the non-hardware-assisted cache
->>> flushing code.
->>
->> Ok, I agree that the comment is obsolete now. Would you please explain
->> why the branch over non-hardware-assisted code should be removed as
->> well. Technically the cache is flushed and there is no need to use 
->> extra
->> commands to fill and then re-flush the cache.
->
-> I think Segher is saying that you can skip the manual invalidation too
-> (although he said "flushing", I think he really meant "invalidation"--
-> the manual flushing is already skipped).
 
-Erm yes.
+> -----Original Message-----
+> From: linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org
+[mailto:linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org] On Behalf
+Of
+> Paul Mackerras
+> Sent: Friday, June 15, 2007 12:50 PM
+> To: linuxppc-dev@ozlabs.org
+> Subject: for-2.6.23 branch in powerpc.git created
+>=20
+> I have created a for-2.6.23 branch in the powerpc.git repository
+> (git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git)
+> where I have started queueing up patches to go in once the 2.6.23
+> merge window opens.  For now at least it's the same as the master
+> branch.
+>=20
+> The patches I put in are listed below.  If you have a patch that
+> should go in but isn't listed, remind me about it.
 
-> If I'm reading the manual
-> correctly, L2HWF does the invalidation as well so both the manual
-> flushing and invalidation can be skipped.
+[PATCH] qe_lib: export symbols for QE driver to compile as module
+[PATCH v4] 83xx USB platform code rework
 
-Yeah.  Not that it really matters of course.
-
-
-Segher
+- Leo
