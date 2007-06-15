@@ -1,21 +1,22 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound5-sin-R.bigfish.com (outbound-sin.frontbridge.com
+Received: from outbound3-sin-R.bigfish.com (outbound-sin.frontbridge.com
 	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 4B691DE06C
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 08:18:57 +1000 (EST)
-Message-ID: <4673024E.9060908@am.sony.com>
-Date: Fri, 15 Jun 2007 14:19:10 -0700
+	by ozlabs.org (Postfix) with ESMTP id 0E8B4DE556
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 08:22:32 +1000 (EST)
+Message-ID: <46730240.5000200@am.sony.com>
+Date: Fri, 15 Jun 2007 14:18:56 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 07/33] PS3: Add support for HDMI RGB Full Range mode
+Subject: [patch 05/33] PS3: Use ioremap_flags
 References: <20070615204749.629571012@am.sony.com>>
 In-Reply-To: <20070615204749.629571012@am.sony.com>>
 Content-Type: text/plain; charset=UTF-8
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	linuxppc-dev@ozlabs.org, Masashi Kimoto <Masashi_Kimoto@hq.scei.sony.co.jp>
+Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>,
+	Masato Noguchi <Masato.Noguchi@jp.sony.com>, linuxppc-dev@ozlabs.org,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,100 +26,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Masashi Kimoto <Masashi_Kimoto@hq.scei.sony.co.jp>
+Use ioremap_flags() to map SPU regions as non-guarded.
+Change the use of _ioremap() to ioremap_flags().
 
-Add support for HDMI RGB Full Range mode, which is available on system
-software 1.80 or newer.
-
-CC: Masashi Kimoto <Masashi_Kimoto@hq.scei.sony.co.jp>
+CC: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+CC: Masato Noguchi <Masato.Noguchi@jp.sony.com>
+CC: Takao Shinohara <shin@sm.sony.co.jp>
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- drivers/ps3/ps3av_cmd.c     |   16 ++++++++++++++++
- include/asm-powerpc/ps3av.h |   12 +++++++++---
- 2 files changed, 25 insertions(+), 3 deletions(-)
+  o After a number of revisions, I think everyone agrees this is now correct.
 
---- a/drivers/ps3/ps3av_cmd.c
-+++ b/drivers/ps3/ps3av_cmd.c
-@@ -143,6 +143,14 @@ static u32 ps3av_vid_video2av(int vid)
- 	return PS3AV_CMD_AV_VID_480P;
- }
+ arch/powerpc/platforms/ps3/htab.c |    2 +-
+ arch/powerpc/platforms/ps3/spu.c  |   13 +++++++++----
+ 2 files changed, 10 insertions(+), 5 deletions(-)
+
+--- a/arch/powerpc/platforms/ps3/htab.c
++++ b/arch/powerpc/platforms/ps3/htab.c
+@@ -273,7 +273,7 @@ void __init ps3_map_htab(void)
  
-+static int ps3av_hdmi_range(void)
-+{
-+	if (ps3_compare_firmware_version(1, 8, 0) < 0)
-+		return 0;
-+	else
-+		return 1; /* supported */
-+}
-+
- int ps3av_cmd_init(void)
+ 	result = lv1_map_htab(0, &htab_addr);
+ 
+-	htab = (hpte_t *)__ioremap(htab_addr, htab_size,
++	htab = (__force hpte_t *)ioremap_flags(htab_addr, htab_size,
+ 				   pgprot_val(PAGE_READONLY_X));
+ 
+ 	DBG("%s:%d: lpar %016lxh, virt %016lxh\n", __func__, __LINE__,
+--- a/arch/powerpc/platforms/ps3/spu.c
++++ b/arch/powerpc/platforms/ps3/spu.c
+@@ -182,15 +182,18 @@ static int __init setup_areas(struct spu
  {
- 	int res;
-@@ -350,6 +358,10 @@ u32 ps3av_cmd_set_av_video_cs(void *p, u
- 	/* should be same as video_mode.video_cs_out */
- 	av_video_cs->av_cs_in = ps3av_cs_video2av(PS3AV_CMD_VIDEO_CS_RGB_8);
- 	av_video_cs->bitlen_out = ps3av_cs_video2av_bitlen(cs_out);
-+	if ((id & PS3AV_MODE_WHITE) && ps3av_hdmi_range())
-+		av_video_cs->super_white = PS3AV_CMD_AV_SUPER_WHITE_ON;
-+	else /* default off */
-+		av_video_cs->super_white = PS3AV_CMD_AV_SUPER_WHITE_OFF;
- 	av_video_cs->aspect = aspect;
- 	if (id & PS3AV_MODE_DITHER) {
- 		av_video_cs->dither = PS3AV_CMD_AV_DITHER_ON
-@@ -392,6 +404,10 @@ u32 ps3av_cmd_set_video_mode(void *p, u3
- 	video_mode->pitch = video_mode->width * 4;	/* line_length */
- 	video_mode->video_out_format = PS3AV_CMD_VIDEO_OUT_FORMAT_RGB_12BIT;
- 	video_mode->video_format = ps3av_video_fmt_table[video_fmt].format;
-+	if ((id & PS3AV_MODE_COLOR) && ps3av_hdmi_range())
-+		video_mode->video_cl_cnv = PS3AV_CMD_VIDEO_CL_CNV_DISABLE_LUT;
-+	else /* default enable */
-+		video_mode->video_cl_cnv = PS3AV_CMD_VIDEO_CL_CNV_ENABLE_LUT;
- 	video_mode->video_order = ps3av_video_fmt_table[video_fmt].order;
+ 	struct table {char* name; unsigned long addr; unsigned long size;};
  
- 	pr_debug("%s: video_mode:vid:%x width:%d height:%d pitch:%d out_format:%d format:%x order:%x\n",
---- a/include/asm-powerpc/ps3av.h
-+++ b/include/asm-powerpc/ps3av.h
-@@ -159,6 +159,9 @@
- #define PS3AV_CMD_VIDEO_FMT_X8R8G8B8			0x0000
- /* video_out_format */
- #define PS3AV_CMD_VIDEO_OUT_FORMAT_RGB_12BIT		0x0000
-+/* video_cl_cnv */
-+#define PS3AV_CMD_VIDEO_CL_CNV_ENABLE_LUT		0x0000
-+#define PS3AV_CMD_VIDEO_CL_CNV_DISABLE_LUT		0x0010
- /* video_sync */
- #define PS3AV_CMD_VIDEO_SYNC_VSYNC			0x0001
- #define PS3AV_CMD_VIDEO_SYNC_CSYNC			0x0004
-@@ -311,6 +314,8 @@
- #define PS3AV_MODE_MASK				0x000F
- #define PS3AV_MODE_HDCP_OFF			0x1000	/* Retail PS3 product doesn't support this */
- #define PS3AV_MODE_DITHER			0x0800
-+#define PS3AV_MODE_COLOR			0x0400
-+#define PS3AV_MODE_WHITE			0x0200
- #define PS3AV_MODE_FULL				0x0080
- #define PS3AV_MODE_DVI				0x0040
- #define PS3AV_MODE_RGB				0x0020
-@@ -529,9 +534,9 @@ struct ps3av_pkt_video_mode {
- 	u32 video_out_format;	/* in: out format */
- 	u32 video_format;	/* in: input frame buffer format */
- 	u8 reserved3;
--	u8 reserved4;
-+	u8 video_cl_cnv;	/* in: color conversion */
- 	u16 video_order;	/* in: input RGB order */
--	u32 reserved5;
-+	u32 reserved4;
- };
+-	spu_pdata(spu)->shadow = __ioremap(
+-		spu_pdata(spu)->shadow_addr, sizeof(struct spe_shadow),
+-		pgprot_val(PAGE_READONLY) | _PAGE_NO_CACHE | _PAGE_GUARDED);
++	spu_pdata(spu)->shadow = ioremap_flags(spu_pdata(spu)->shadow_addr,
++					       sizeof(struct spe_shadow),
++					       pgprot_val(PAGE_READONLY) |
++					       _PAGE_NO_CACHE);
+ 	if (!spu_pdata(spu)->shadow) {
+ 		pr_debug("%s:%d: ioremap shadow failed\n", __func__, __LINE__);
+ 		goto fail_ioremap;
+ 	}
  
- /* video: format */
-@@ -539,7 +544,8 @@ struct ps3av_pkt_video_format {
- 	struct ps3av_send_hdr send_hdr;
- 	u32 video_head;		/* in: head */
- 	u32 video_format;	/* in: frame buffer format */
--	u16 reserved;
-+	u8 reserved;
-+	u8 video_cl_cnv;	/* in: color conversion */
- 	u16 video_order;	/* in: input RGB order */
- };
+-	spu->local_store = ioremap(spu->local_store_phys, LS_SIZE);
++	spu->local_store = (__force void *)ioremap_flags(spu->local_store_phys,
++		LS_SIZE, _PAGE_NO_CACHE);
++
+ 	if (!spu->local_store) {
+ 		pr_debug("%s:%d: ioremap local_store failed\n",
+ 			__func__, __LINE__);
+@@ -199,6 +202,7 @@ static int __init setup_areas(struct spu
  
+ 	spu->problem = ioremap(spu->problem_phys,
+ 		sizeof(struct spu_problem));
++
+ 	if (!spu->problem) {
+ 		pr_debug("%s:%d: ioremap problem failed\n", __func__, __LINE__);
+ 		goto fail_ioremap;
+@@ -206,6 +210,7 @@ static int __init setup_areas(struct spu
+ 
+ 	spu->priv2 = ioremap(spu_pdata(spu)->priv2_addr,
+ 		sizeof(struct spu_priv2));
++
+ 	if (!spu->priv2) {
+ 		pr_debug("%s:%d: ioremap priv2 failed\n", __func__, __LINE__);
+ 		goto fail_ioremap;
 
 -- 
