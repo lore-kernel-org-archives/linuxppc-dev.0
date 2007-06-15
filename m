@@ -1,20 +1,24 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound3-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from the-village.bc.nu (unknown [81.2.110.250])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 958CFDE6AC
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 08:23:16 +1000 (EST)
-Message-ID: <46730AC2.2030002@am.sony.com>
-Date: Fri, 15 Jun 2007 14:55:14 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: paulus@samba.org
-Subject: [patch 12/33] PS3: System-bus uevent
-References: <20070615204749.629571012@am.sony.com>>
-In-Reply-To: <20070615204749.629571012@am.sony.com>>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 97B95DE113
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 09:05:51 +1000 (EST)
+Date: Sat, 16 Jun 2007 00:11:02 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [patch 4/6] ps3: Disk Storage Driver
+Message-ID: <20070616001102.3d2fa850@the-village.bc.nu>
+In-Reply-To: <20070615.141917.85409547.davem@davemloft.net>
+References: <1181918159.25228.543.camel@pmac.infradead.org>
+	<Pine.LNX.4.62.0706151642010.8248@pademelon.sonytel.be>
+	<20070615171545.316dfac7@the-village.bc.nu>
+	<20070615.141917.85409547.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: axboe@kernel.dk, James.Bottomley@SteelEye.com, linux-scsi@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, Geert.Uytterhoeven@sonycom.com, dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,47 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: David Woodhouse <dwmw2@infradead.org>
+> That sounds like a good idea for my virtual I/O case on
+> Niagara too actually :-)
 
-To allow userspace to automatically load modules, we need to hook up
-uevent for ps3_system_bus devices. I've used the form 'ps3:%d' with the
-ps3_match_id, since that's what we use for matching drivers.
+It was actually meant semi-seriously in that drivers/ata sits on top of
+the abstract parts of drivers/scsi which James keeps asking for someone to
+get split properly off and which would sort all these out.
 
-Signed-off-by: David Woodhouse <dwmw2@infradead.org>
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
----
-  o Fixed WS.
+> Another quirk I have to deal with is that under LDOMs you
+> can export full disks and also just slices.  So I'll have
+> to get down into the partition machinery to support that
+> somehow.
 
- arch/powerpc/platforms/ps3/system-bus.c |   16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+If your slices don't fit the PC worldview you might want to look at
+dmraid and just use device mapper to handle them. It is a lot more
+flexible and we could actually bin all our partition code and use this
+but for back compatibility.
 
---- a/arch/powerpc/platforms/ps3/system-bus.c
-+++ b/arch/powerpc/platforms/ps3/system-bus.c
-@@ -437,9 +437,25 @@ static void ps3_system_bus_shutdown(stru
- 	dev_dbg(&dev->core, " <- %s:%d\n", __func__, __LINE__);
- }
- 
-+static int ps3_system_bus_uevent(struct device *_dev, char **envp,
-+				 int num_envp, char *buffer, int buffer_size)
-+{
-+	struct ps3_system_bus_device *dev = ps3_dev_to_system_bus_dev(_dev);
-+	int i = 0, length = 0;
-+
-+	if (add_uevent_var(envp, num_envp, &i, buffer, buffer_size,
-+			   &length, "MODALIAS=ps3:%d",
-+			   dev->match_id))
-+		return -ENOMEM;
-+
-+	envp[i] = NULL;
-+	return 0;
-+}
-+
- struct bus_type ps3_system_bus_type = {
- 	.name = "ps3_system_bus",
- 	.match = ps3_system_bus_match,
-+	.uevent = ps3_system_bus_uevent,
- 	.probe = ps3_system_bus_probe,
- 	.remove = ps3_system_bus_remove,
- 	.shutdown = ps3_system_bus_shutdown,
-
--- 
+Alan
