@@ -1,18 +1,19 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 8E6DCDDFEF
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 09:08:41 +1000 (EST)
-Date: Fri, 15 Jun 2007 16:08:58 -0700 (PDT)
-Message-Id: <20070615.160858.26276547.davem@davemloft.net>
-To: James.Bottomley@SteelEye.com
+Return-Path: <James.Bottomley@SteelEye.com>
+Received: from hancock.sc.steeleye.com (hancock.steeleye.com [71.30.118.248])
+	by ozlabs.org (Postfix) with ESMTP id 21E01DE18F
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 09:11:20 +1000 (EST)
 Subject: Re: [patch 4/6] ps3: Disk Storage Driver
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1181947242.3600.8.camel@mulgrave.il.steeleye.com>
-References: <20070615171545.316dfac7@the-village.bc.nu>
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20070615.141917.85409547.davem@davemloft.net>
+References: <1181918159.25228.543.camel@pmac.infradead.org>
+	<Pine.LNX.4.62.0706151642010.8248@pademelon.sonytel.be>
+	<20070615171545.316dfac7@the-village.bc.nu>
 	<20070615.141917.85409547.davem@davemloft.net>
-	<1181947242.3600.8.camel@mulgrave.il.steeleye.com>
+Content-Type: text/plain
+Date: Fri, 15 Jun 2007 15:40:42 -0700
+Message-Id: <1181947242.3600.8.camel@mulgrave.il.steeleye.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
 Cc: axboe@kernel.dk, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org, paulus@samba.org,
 	Geert.Uytterhoeven@sonycom.com, dwmw2@infradead.org,
@@ -26,27 +27,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: James Bottomley <James.Bottomley@SteelEye.com>
-Date: Fri, 15 Jun 2007 15:40:42 -0700
-
-> On Fri, 2007-06-15 at 14:19 -0700, David Miller wrote:
-> > Another quirk I have to deal with is that under LDOMs you
-> > can export full disks and also just slices.  So I'll have
-> > to get down into the partition machinery to support that
-> > somehow.
+On Fri, 2007-06-15 at 14:19 -0700, David Miller wrote:
+> From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> Date: Fri, 15 Jun 2007 17:15:45 +0100
 > 
-> For this, it sounds like you might find nbd a more enticing
-> proposition ... it already is partition independent and is basically a
-> block to net socket exporter.
+> > > > Any particular reason why this is done as a separate block device driver
+> > > > rather than as SCSI?
+> > > 
+> > > Because no new fake SCSI drivers are accepted anymore.
+> > 
+> > Where did drivers/ata come from ;)
+> > 
+> > How about making it a fake ata driver if James is being fussy 8)
+> 
+> That sounds like a good idea for my virtual I/O case on
+> Niagara too actually :-)
 
-That's not gonna work, it's a totally different model.
+I have no objections to VIO servers speaking SCSI ... if you want to do
+that, I suggest you look at an existing example, like
+drivers/scsi/ibmvscsi (the actual communication piece is very ppc
+hypervisor specific, though).
 
-I have a predefined protocol over hypervisor provided "channels" and
-page flipping also done by the hypervisor for the bulk data transfer.
-For the client side I cannot change the hypervisor nor the server
-speaking on the other end.  And when I do write a server I do want
-it to be able to speak to all of the existing clients.
+However, I do strongly believe that using SCSI for devices which truly
+aren't SCSI (i.e. you have to code a shim in the driver between the SCSI
+commands and whatever your device speaks) is wrong ... if SCSI has
+features that the generic block layer doesn't, then we need to move the
+function from SCSI to block to give you access ... in theory this was
+the rationale for having libata as the last "fake" SCSI driver, so we
+could identify this functionality and begin to move it.
 
-There's SCSI command pass through as well, as I keep mentioning as
-it's an important reason I don't want to go with any of the non-SCSI
-solutions (other than perhaps ATA) being suggested.
+> Another quirk I have to deal with is that under LDOMs you
+> can export full disks and also just slices.  So I'll have
+> to get down into the partition machinery to support that
+> somehow.
+
+For this, it sounds like you might find nbd a more enticing
+proposition ... it already is partition independent and is basically a
+block to net socket exporter.
+
+James
