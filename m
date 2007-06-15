@@ -1,21 +1,20 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 2BE28DDF92
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 07:19:10 +1000 (EST)
-Date: Fri, 15 Jun 2007 14:19:17 -0700 (PDT)
-Message-Id: <20070615.141917.85409547.davem@davemloft.net>
-To: alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 4/6] ps3: Disk Storage Driver
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070615171545.316dfac7@the-village.bc.nu>
-References: <1181918159.25228.543.camel@pmac.infradead.org>
-	<Pine.LNX.4.62.0706151642010.8248@pademelon.sonytel.be>
-	<20070615171545.316dfac7@the-village.bc.nu>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: axboe@kernel.dk, James.Bottomley@SteelEye.com, linux-scsi@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, Geert.Uytterhoeven@sonycom.com, dwmw2@infradead.org
+Return-Path: <mgreer@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id 38FD0DDFC4
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 07:19:11 +1000 (EST)
+Date: Fri, 15 Jun 2007 14:20:16 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC/PATCH] powerpc: MPC7450 L2 HW cache flush feature utilization
+Message-ID: <20070615212016.GB18055@mag.az.mvista.com>
+References: <1181729973.25586.31.camel@dolphin.spb.rtsoft.ru>
+	<db0d38e5b5e1a9a3a7fe35d25ebd357a@kernel.crashing.org>
+	<467176EB.7060404@ru.mvista.com>
+	<6c416bf9f79a648fc82f64619aca86de@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <6c416bf9f79a648fc82f64619aca86de@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,22 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date: Fri, 15 Jun 2007 17:15:45 +0100
+On Fri, Jun 15, 2007 at 10:14:24AM +0200, Segher Boessenkool wrote:
 
-> > > Any particular reason why this is done as a separate block device driver
-> > > rather than as SCSI?
-> > 
-> > Because no new fake SCSI drivers are accepted anymore.
+> > I've double checked this. All processors considered 7450 in the kernel 
+> > are covered by MPC7450 RISC Microprocessor Family Reference Manual 
+> > where hardware cache flushing procedure is described.
 > 
-> Where did drivers/ata come from ;)
-> 
-> How about making it a fake ata driver if James is being fussy 8)
+> Nice.  Now all that remains to be done is for the patch to
+> be tested on actual hardware for at least a few of those
+> other CPUs.  Any volunteers?
 
-That sounds like a good idea for my virtual I/O case on
-Niagara too actually :-)
+I just booted & played around on a prpmc2800e (7447A, 512MB) with
+this patch and it seemed to work fine.
 
-Another quirk I have to deal with is that under LDOMs you
-can export full disks and also just slices.  So I'll have
-to get down into the partition machinery to support that
-somehow.
+I *may* have some old sandpoint 745x modules that still work but
+I'll have to get the sandpoint working in arch/powerpc again.
+I'll try to get to that in a week or so.
+
+Mark
