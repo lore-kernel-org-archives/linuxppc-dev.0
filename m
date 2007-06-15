@@ -1,20 +1,21 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound1-sin-R.bigfish.com (outbound-sin.frontbridge.com
+Received: from outbound2-sin-R.bigfish.com (outbound-sin.frontbridge.com
 	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 6C2E5DDFDC
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 08:07:47 +1000 (EST)
-Message-ID: <467301F6.5070005@am.sony.com>
-Date: Fri, 15 Jun 2007 14:17:42 -0700
+	by ozlabs.org (Postfix) with ESMTP id 28F73DDFDC
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 08:07:49 +1000 (EST)
+Message-ID: <46730248.3080703@am.sony.com>
+Date: Fri, 15 Jun 2007 14:19:04 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 02/33] PS3: Rename IPI symbols
+Subject: [patch 06/33] PS3: Fix sparse warnings
 References: <20070615204749.629571012@am.sony.com>>
 In-Reply-To: <20070615204749.629571012@am.sony.com>>
 Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,63 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Rename the PS3 static symbol virqs to ps3_ipi_virqs to aid in
-debugging.
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
+Fix some PS3 build warnings reported by `make C=1'.  You need to
+install sparse:
+  git://git.kernel.org/pub/scm/devel/sparse/sparse.git
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/platforms/ps3/smp.c |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ arch/powerpc/platforms/ps3/os-area.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/arch/powerpc/platforms/ps3/smp.c
-+++ b/arch/powerpc/platforms/ps3/smp.c
-@@ -39,11 +39,11 @@ static irqreturn_t ipi_function_handler(
+--- a/arch/powerpc/platforms/ps3/os-area.c
++++ b/arch/powerpc/platforms/ps3/os-area.c
+@@ -133,7 +133,7 @@ struct saved_params {
+ } static saved_params;
+ 
+ #define dump_header(_a) _dump_header(_a, __func__, __LINE__)
+-static void _dump_header(const struct os_area_header __iomem *h, const char* func,
++static void _dump_header(const struct os_area_header *h, const char *func,
+ 	int line)
+ {
+ 	pr_debug("%s:%d: h.magic_num:         '%s'\n", func, line,
+@@ -151,7 +151,7 @@ static void _dump_header(const struct os
  }
  
- /**
--  * virqs - a per cpu array of virqs for ipi use
-+  * ps3_ipi_virqs - a per cpu array of virqs for ipi use
-   */
- 
- #define MSG_COUNT 4
--static DEFINE_PER_CPU(unsigned int, virqs[MSG_COUNT]);
-+static DEFINE_PER_CPU(unsigned int, ps3_ipi_virqs[MSG_COUNT]);
- 
- static const char *names[MSG_COUNT] = {
- 	"ipi call",
-@@ -62,7 +62,7 @@ static void do_message_pass(int target, 
- 		return;
- 	}
- 
--	virq = per_cpu(virqs, target)[msg];
-+	virq = per_cpu(ps3_ipi_virqs, target)[msg];
- 	result = ps3_send_event_locally(virq);
- 
- 	if (result)
-@@ -94,13 +94,13 @@ static int ps3_smp_probe(void)
- static void __init ps3_smp_setup_cpu(int cpu)
+ #define dump_params(_a) _dump_params(_a, __func__, __LINE__)
+-static void _dump_params(const struct os_area_params __iomem *p, const char* func,
++static void _dump_params(const struct os_area_params *p, const char *func,
+ 	int line)
  {
- 	int result;
--	unsigned int *virqs = per_cpu(virqs, cpu);
-+	unsigned int *virqs = per_cpu(ps3_ipi_virqs, cpu);
- 	int i;
- 
- 	DBG(" -> %s:%d: (%d)\n", __func__, __LINE__, cpu);
- 
- 	/*
--	 * Check assumptions on virqs[] indexing. If this
-+	 * Check assumptions on ps3_ipi_virqs[] indexing. If this
- 	 * check fails, then a different mapping of PPC_MSG_
- 	 * to index needs to be setup.
- 	 */
-@@ -132,7 +132,7 @@ static void __init ps3_smp_setup_cpu(int
- 
- void ps3_smp_cleanup_cpu(int cpu)
- {
--	unsigned int *virqs = per_cpu(virqs, cpu);
-+	unsigned int *virqs = per_cpu(ps3_ipi_virqs, cpu);
- 	int i;
- 
- 	DBG(" -> %s:%d: (%d)\n", __func__, __LINE__, cpu);
+ 	pr_debug("%s:%d: p.boot_flag:       %u\n", func, line, p->boot_flag);
 
 -- 
