@@ -1,32 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
-	[151.189.21.50])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5B5C7DDF23
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jun 2007 21:22:21 +1000 (EST)
-In-Reply-To: <20070615041233.GA30104@localhost.localdomain>
-References: <548a7e11ffb577f6395b8f5a9c2fba2d@kernel.crashing.org>
-	<466323EF.5040807@ru.mvista.com>
-	<1181228442.2785.60.camel@pmac.infradead.org>
-	<18fbfbaf113ab76b602d279848d9b405@kernel.crashing.org>
-	<20070612044459.GD4198@localhost.localdomain>
-	<9e1a55ac71a2ecf5155d2fddf547025e@kernel.crashing.org>
-	<20070613031615.GC16148@localhost.localdomain>
-	<96f5b23c4f53e986e8caa2156f149cd8@kernel.crashing.org>
-	<20070613061152.GF16148@localhost.localdomain>
-	<40446e5131495e077da798bc54843b2a@kernel.crashing.org>
-	<20070615041233.GA30104@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <4734020f827fdf8a34c7babd46fbf593@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
-Date: Fri, 15 Jun 2007 13:22:09 +0200
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	David Woodhouse <dwmw2@infradead.org>, Milton Miller <miltonm@bga.com>
+Return-Path: <geert@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 9FED3DDF87
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jun 2007 22:11:23 +1000 (EST)
+Message-Id: <20070615120848.002575000@pademelon.sonytel.be>
+References: <20070615113919.142332000@pademelon.sonytel.be>
+Date: Fri, 15 Jun 2007 13:39:20 +0200
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@ozlabs.org
+Subject: [patch 1/6] ps3: Preallocate bootmem memory for the PS3 FLASH ROM
+	storage driver
+Sender: Geert Uytterhoeven <geert@sonycom.com>
+Cc: Jens Axboe <axboe@kernel.dk>,
+	"James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,38 +24,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> I agree.  Of course, this means figuring out what the values actually
->>> are for Ebony.  I presently have no idea, since the heuristic probing
->>> appears to work without problem.
->>
->> Doesn't it show it in sysfs, or in the dmesg at least?
->> Maybe some other important stuff is there, too.
->
-> Not as far as I can tell.  Only dmesg information I can see is:
->
-> 1ff800000.large-fla: Found 1 x8 devices at 0x0 in 8-bit bank
-> 1ff800000.large-fla: Found 1 x8 devices at 0x200000 in 8-bit bank
-> number of JEDEC chips: 2
-> cfi_cmdset_0002: Disabling erase-suspend-program due to code
-> brokenness.
+Preallocate 256 KiB of bootmem memory for the PS3 FLASH ROM storage driver.
 
-Hrm, nothing in sysfs either?
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+---
+ arch/powerpc/platforms/ps3/setup.c |   19 ++++++++++++++++++-
+ include/asm-powerpc/ps3.h          |    1 +
+ 2 files changed, 19 insertions(+), 1 deletion(-)
 
-Anyway, from jedec_probe.c:
+--- a/arch/powerpc/platforms/ps3/setup.c
++++ b/arch/powerpc/platforms/ps3/setup.c
+@@ -107,7 +107,8 @@ static void ps3_panic(char *str)
+ 	while(1);
+ }
+ 
+-#if defined(CONFIG_FB_PS3) || defined(CONFIG_FB_PS3_MODULE)
++#if defined(CONFIG_FB_PS3) || defined(CONFIG_FB_PS3_MODULE) || \
++    defined(CONFIG_PS3_FLASH) || defined(CONFIG_PS3_FLASH_MODULE)
+ static void prealloc(struct ps3_prealloc *p)
+ {
+ 	if (!p->size)
+@@ -123,7 +124,9 @@ static void prealloc(struct ps3_prealloc
+ 	printk(KERN_INFO "%s: %lu bytes at %p\n", p->name, p->size,
+ 	       p->address);
+ }
++#endif
+ 
++#if defined(CONFIG_FB_PS3) || defined(CONFIG_FB_PS3_MODULE)
+ struct ps3_prealloc ps3fb_videomemory = {
+ 	.name = "ps3fb videomemory",
+ 	.size = CONFIG_FB_PS3_DEFAULT_SIZE_M*1024*1024,
+@@ -146,6 +149,18 @@ early_param("ps3fb", early_parse_ps3fb);
+ #define prealloc_ps3fb_videomemory()	do { } while (0)
+ #endif
+ 
++#if defined(CONFIG_PS3_FLASH) || defined(CONFIG_PS3_FLASH_MODULE)
++struct ps3_prealloc ps3flash_bounce_buffer = {
++	.name = "ps3flash bounce buffer",
++	.size = 256*1024,
++	.align = 256*1024
++};
++EXPORT_SYMBOL_GPL(ps3flash_bounce_buffer);
++#define prealloc_ps3flash_bounce_buffer()	prealloc(&ps3flash_bounce_buffer)
++#else
++#define prealloc_ps3flash_bounce_buffer()	do { } while (0)
++#endif
++
+ static int ps3_set_dabr(u64 dabr)
+ {
+ 	enum {DABR_USER = 1, DABR_KERNEL = 2,};
+@@ -175,6 +190,8 @@ static void __init ps3_setup_arch(void)
+ #endif
+ 
+ 	prealloc_ps3fb_videomemory();
++	prealloc_ps3flash_bounce_buffer();
++
+ 	ppc_md.power_save = ps3_power_save;
+ 
+ 	DBG(" <- %s:%d\n", __func__, __LINE__);
+--- a/include/asm-powerpc/ps3.h
++++ b/include/asm-powerpc/ps3.h
+@@ -427,6 +427,7 @@ struct ps3_prealloc {
+ };
+ 
+ extern struct ps3_prealloc ps3fb_videomemory;
++extern struct ps3_prealloc ps3flash_bounce_buffer;
+ 
+ 
+ #endif
 
-                 cfi->mfr = jedec_read_mfr(map, base, cfi);
-                 cfi->id = jedec_read_id(map, base, cfi);
-                 DEBUG(MTD_DEBUG_LEVEL3,
-                       "Search for id:(%02x %02x) interleave(%d) 
-type(%d)\n",
-                         cfi->mfr, cfi->id, cfi_interleave(cfi), 
-cfi->device_type);
+-- 
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
 
-so you'll could enable some more debugging output.
-
-Or, open the case, look at the chips, and look it up
-in the big table at the start of that file (or the
-relevant datasheet).
-
-
-Segher
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
