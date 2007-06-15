@@ -1,16 +1,16 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound2-dub-R.bigfish.com (outbound-dub.frontbridge.com
+Received: from outbound3-dub-R.bigfish.com (outbound-dub.frontbridge.com
 	[213.199.154.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 5816CDE0E5
+	by ozlabs.org (Postfix) with ESMTP id 0774FDE0DE
 	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 08:08:03 +1000 (EST)
-Message-ID: <46730D94.9020906@am.sony.com>
-Date: Fri, 15 Jun 2007 15:07:16 -0700
+Message-ID: <46730D7B.1000703@am.sony.com>
+Date: Fri, 15 Jun 2007 15:06:51 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 31/33] PS3: Select MEMORY_HOTPLUG.
+Subject: [patch 29/33] PS3: Device tree source.
 References: <20070615204749.629571012@am.sony.com>>
 In-Reply-To: <20070615204749.629571012@am.sony.com>>
 Content-Type: text/plain; charset=UTF-8
@@ -24,23 +24,97 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The PS3 uses the kernel's hotplug memory support, so make sure it is
-always enabled when building for PS3.
+The PS3 device tree source.
 
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/platforms/ps3/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
+ o After extended mail and IRC discussions, everyone aggreed on this one.
 
---- a/arch/powerpc/platforms/ps3/Kconfig
-+++ b/arch/powerpc/platforms/ps3/Kconfig
-@@ -7,6 +7,7 @@ config PPC_PS3
- 	select USB_OHCI_BIG_ENDIAN_MMIO
- 	select USB_ARCH_HAS_EHCI
- 	select USB_EHCI_BIG_ENDIAN_MMIO
-+	select MEMORY_HOTPLUG
- 	help
- 	  This option enables support for the Sony PS3 game console
- 	  and other platforms using the PS3 hypervisor.
+ arch/powerpc/boot/dts/ps3.dts      |   68 +++++++++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/ps3/setup.c |    2 -
+ 2 files changed, 69 insertions(+), 1 deletion(-)
+
+--- /dev/null
++++ b/arch/powerpc/boot/dts/ps3.dts
+@@ -0,0 +1,68 @@
++/*
++ *  PS3 Game Console device tree.
++ *
++ *  Copyright (C) 2007 Sony Computer Entertainment Inc.
++ *  Copyright 2007 Sony Corp.
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++/ {
++	model = "SonyPS3";
++	compatible = "sony,ps3";
++	#size-cells = <2>;
++	#address-cells = <2>;
++
++	chosen {
++	};
++
++	/*
++	 * We'll get the size of the bootmem block from lv1 after startup,
++	 * so we'll put a null entry here.
++	 */
++
++	memory {
++		device_type = "memory";
++		reg = <0 0 0 0>;
++	};
++
++	/*
++	 * The boot cpu is always zero for PS3.
++	 *
++	 * dtc expects a clock-frequency and timebase-frequency entries, so
++	 * we'll put a null entries here.  These will be initialized after
++	 * startup with data from lv1.
++	 *
++	 * Seems the only way currently to indicate a processor has multiple
++	 * threads is with an ibm,ppc-interrupt-server#s entry.  We'll put one
++	 * here so we can bring up both of ours.  See smp_setup_cpu_maps().
++	 */
++
++	cpus {
++		#size-cells = <0>;
++		#address-cells = <1>;
++
++		cpu@0 {
++			device_type = "cpu";
++			reg = <0>;
++			ibm,ppc-interrupt-server#s = <0 1>;
++			clock-frequency = <0>;
++			timebase-frequency = <0>;
++			i-cache-size = <8000>;
++			d-cache-size = <8000>;
++			i-cache-line-size = <80>;
++			d-cache-line-size = <80>;
++		};
++	};
++};
+--- a/arch/powerpc/platforms/ps3/setup.c
++++ b/arch/powerpc/platforms/ps3/setup.c
+@@ -193,7 +193,7 @@ static int __init ps3_probe(void)
+ 	DBG(" -> %s:%d\n", __func__, __LINE__);
+ 
+ 	dt_root = of_get_flat_dt_root();
+-	if (!of_flat_dt_is_compatible(dt_root, "PS3"))
++	if (!of_flat_dt_is_compatible(dt_root, "sony,ps3"))
+ 		return 0;
+ 
+ 	powerpc_firmware_features |= FW_FEATURE_PS3_POSSIBLE;
 
 -- 
