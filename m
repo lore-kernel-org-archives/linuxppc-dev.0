@@ -1,28 +1,17 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6DDFDDDF08
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jun 2007 12:43:04 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l5F2gwQl027660
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 19:42:58 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l5F2gumm022117
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2007 21:42:57 -0500 (CDT)
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id DB905DDF36
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jun 2007 13:49:33 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C7AF00.2EAF5E0C"
 Subject: RE: ucc_geth DPRAM alloc error, 2.6.22-rc3
-Date: Fri, 15 Jun 2007 10:44:49 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890D2AE6C@zch01exm26.fsl.freescale.net>
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B0307485D@ismail.innsys.innovsys.com>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Rune Torgersen" <runet@innovsys.com>, <joakim.tjernlund@transmode.se>
+Date: Thu, 14 Jun 2007 22:47:20 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B07B41E@ismail.innsys.innovsys.com>
+References: <989B956029373F45A0B8AF0297081890D2AE6C@zch01exm26.fsl.freescale.net>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Li Yang-r58472" <LeoLi@freescale.com>,
+	<joakim.tjernlund@transmode.se>
 Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
 	Liu Dave-r63238 <DaveLiu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -34,23 +23,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Rune Torgersen [mailto:runet@innovsys.com]
-> Sent: Friday, June 15, 2007 6:50 AM
-> To: joakim.tjernlund@transmode.se; Li Yang-r58472
-> Cc: linuxppc-dev Development; Liu Dave-r63238
-> Subject: RE: ucc_geth DPRAM alloc error, 2.6.22-rc3
->=20
-> Here is what I had to do to get best-fit + not allocating too much:
-> (against 2.6.18)
-> --- linux-innsys/arch/ppc/lib/rheap.c	2006/10/10 22:54:41	175
-> +++ linux-innsys/arch/ppc/lib/rheap.c	2006/12/03 18:04:42	205
-{snip}
->  	if (assure_empty(info, 1) < 0)
->  		return ERR_PTR(-ENOMEM);
+This is a multi-part message in MIME format.
 
-You also need to change this to assure_empty(info, 2), as you are very
-likely to need 2 slots afterward.  You need to assure there are enough
-slots or grow the block number.
+------_=_NextPart_001_01C7AF00.2EAF5E0C
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-- Leo
+>From: Li Yang-r58472 [mailto:LeoLi@freescale.com]
+>>  	if (assure_empty(info, 1) < 0)
+>>  		return ERR_PTR(-ENOMEM);
+
+>You also need to change this to assure_empty(info, 2), as you are very
+>likely to need 2 slots afterward.  You need to assure there are enough
+>slots or grow the block number.
+
+Ahh. I'll fix that in my code.
+It was a quick&dirty hack to get the allocator to work wen we used most =
+of the available DPRAM.
+
+------_=_NextPart_001_01C7AF00.2EAF5E0C
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7652.24">
+<TITLE>RE: ucc_geth DPRAM alloc error, 2.6.22-rc3</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+
+<P><FONT SIZE=3D2>&gt;From: Li Yang-r58472 [<A =
+HREF=3D"mailto:LeoLi@freescale.com">mailto:LeoLi@freescale.com</A>]<BR>
+&gt;&gt;&nbsp; &nbsp;&nbsp;&nbsp; if (assure_empty(info, 1) &lt; 0)<BR>
+&gt;&gt;&nbsp; &nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return ERR_PTR(-ENOMEM);<BR>
+<BR>
+&gt;You also need to change this to assure_empty(info, 2), as you are =
+very<BR>
+&gt;likely to need 2 slots afterward.&nbsp; You need to assure there are =
+enough<BR>
+&gt;slots or grow the block number.<BR>
+<BR>
+Ahh. I'll fix that in my code.<BR>
+It was a quick&amp;dirty hack to get the allocator to work wen we used =
+most of the available DPRAM.<BR>
+</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C7AF00.2EAF5E0C--
