@@ -1,18 +1,18 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 2196FDDFA5
+Return-Path: <kokiparam@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.245])
+	by ozlabs.org (Postfix) with ESMTP id E97E0DDF24
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 15 Jun 2007 22:19:22 +1000 (EST)
-Message-ID: <467283C6.2040108@anagramm.de>
-Date: Fri, 15 Jun 2007 14:19:18 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
+	Fri, 15 Jun 2007 22:59:41 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so182262anc
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 15 Jun 2007 05:59:40 -0700 (PDT)
+Message-ID: <9192ec3c0706150559n2699df54g9895023c1ae77ca7@mail.gmail.com>
+Date: Fri, 15 Jun 2007 18:29:39 +0530
+From: "koki la" <kokiparam@gmail.com>
+To: linuxppc-embedded@ozlabs.org, matthias.fuchs@esd-electronics.com
+Subject: Requesting driver
 MIME-Version: 1.0
-To: pete c <prchan_0779@yahoo.com>
-Subject: Re: silicon motion sm502 or sm501
-References: <490778.40354.qm@web82806.mail.mud.yahoo.com>
-In-Reply-To: <490778.40354.qm@web82806.mail.mud.yahoo.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,36 +23,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello, Pete!
+Hi,
 
-pete c schrieb:
-> Hi ,
-> im looing for a silicon motion sm501 or sm502
-> pci voyager gx demo board.
+In one of my project I am developing a graphics card based on SM722
+silicon motion chip under a powepc processor.
 
-Try to get the newer SM502 one. Avoid the older SM501-AA revision.
+I am in need of  driver for sm722 under Linux 2.4 .version
 
-> I saw a message of yours on a news group,
-> do you know where i can get one of these,
-> or do you have one i can buy from you?
+If u have/found code please attach me.
 
-I have a board here. It's still in use, so we don't sell it (yet).
-We have a few SM501GX08LF00-AB (8MB Mem on Chip, Lead Free, Rev. AB)
-in stock. If you need some samples, feel free to contact me off list.
-
-Otherwise, ask Silicon Motion for your local Silicon Motion Distributor.
-Then ask the Distributor...
-In Germany, a SMI Distributor is HY-LINE: http://www.hy-line.de/
-
-Regards,
--- 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+Thanking you.
+With regards,
+P.Kokila
