@@ -3,18 +3,16 @@ Received: from outbound6-sin-R.bigfish.com (outbound-sin.frontbridge.com
 	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B26EADE1D5
+	by ozlabs.org (Postfix) with ESMTP id B6AE6DE1D6
 	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 08:09:09 +1000 (EST)
-Message-ID: <46730AC8.6000303@am.sony.com>
-Date: Fri, 15 Jun 2007 14:55:20 -0700
+Message-ID: <467301DB.7000108@am.sony.com>
+Date: Fri, 15 Jun 2007 14:17:15 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 13/33] PS3: System-bus modinfo attribute
-References: <20070615204749.629571012@am.sony.com>>
-In-Reply-To: <20070615204749.629571012@am.sony.com>>
+Subject: [patch 00/33] PS3 patches for 2.6.23, take 3
 Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,50 +22,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: David Woodhouse <dwmw2@infradead.org>
+	Hi Paul.
+	
+	I feel these patches are now ready.  There are no outstanding issues.
+	We did a lot of format cleanups since the last set, so these have a
+	lot of small differences.
+	
+	There are three new patches.  Patch 31 to set CONFIG_MEMORY_HOTPLUG
+	for PS3 builds, Patch 32 a collection of sparse warning fixes,
+	and Patch 33 to update ps3_defconfig.
+	
+	[01/32] Cell: Add spu shutdown method
+	[02/32] PS3: Rename IPI symbols
+	[03/32] PS3: Use __maybe_unused
+	[04/32] PS3: Compare firmware version
+	[05/32] PS3: Use ioremap_flags
+	[06/32] PS3: Fix sparse warnings
+	[07/32] PS3: Add support for HDMI RGB Full Range mode
+	[08/32] PS3: Move chip mask defs up
+	[09/32] PS3: Simplify definition of DBG
+	[10/32] PS3: Kexec support
+	[11/32] PS3: System-bus rework
+	[12/32] PS3: System-bus uevent
+	[13/32] PS3: System-bus modinfo attribute
+	[14/32] PS3: Repository probe cleanups
+	[15/32] PS3: Vuart rework
+	[16/32] PS3: System manager re-work
+	[17/32] PS3: Rework AV settings driver
+	[18/32] PS3: Frame buffer system-bus rework
+	[19/32] PS3: Device registration routines.
+	[20/32] PS3: Rename processor id symbols
+	[21/32] PS3: Use clear_bit
+	[22/32] powerpc: Output params value in early_init_devtree
+	[23/32] powerpc: Localize mmu_off
+	[24/32] powerpc: Correct __secondary_hold comment
+	[25/32] Powerpc: Add signed types to bootwrapper
+	[26/32] Powerpc: Add u64 printf to bootwrapper
+	[27/32] Powerpc: Fix constantness of bootwrapper arg
+	[28/32] powerpc: Bootwrapper global scope kernel_entry_t.
+	[29/32] PS3: Device tree source.
+	[30/32] PS3: Bootwrapper support.
+	[31/32] PS3: Select MEMORY_HOTPLUG.
+	[32/32] PS3: Fix more sparse warnings
+	[33/33] PS3: Update ps3_defconfig
 
-Add modinfo attribute to ps3_system_bus devices.  Also make them all
-children of the same ps3_system_bus 'device' so they appear in a
-corresponding subdirectory under /sys/devices 
-
-Signed-off-by: David Woodhouse <dwmw2@infradead.org>
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
----
-  o Fixed WS.
-
- arch/powerpc/platforms/ps3/system-bus.c |   15 +++++++++++++++
- 1 file changed, 15 insertions(+)
-
---- a/arch/powerpc/platforms/ps3/system-bus.c
-+++ b/arch/powerpc/platforms/ps3/system-bus.c
-@@ -452,6 +452,20 @@ static int ps3_system_bus_uevent(struct 
- 	return 0;
- }
- 
-+static ssize_t modalias_show(struct device *_dev, struct device_attribute *a,
-+	char *buf)
-+{
-+	struct ps3_system_bus_device *dev = ps3_dev_to_system_bus_dev(_dev);
-+	int len = snprintf(buf, PAGE_SIZE, "ps3:%d\n", dev->match_id);
-+
-+	return (len >= PAGE_SIZE) ? (PAGE_SIZE - 1) : len;
-+}
-+
-+static struct device_attribute ps3_system_bus_dev_attrs[] = {
-+	__ATTR_RO(modalias),
-+	__ATTR_NULL,
-+};
-+
- struct bus_type ps3_system_bus_type = {
- 	.name = "ps3_system_bus",
- 	.match = ps3_system_bus_match,
-@@ -459,6 +473,7 @@ struct bus_type ps3_system_bus_type = {
- 	.probe = ps3_system_bus_probe,
- 	.remove = ps3_system_bus_remove,
- 	.shutdown = ps3_system_bus_shutdown,
-+	.dev_attrs = ps3_system_bus_dev_attrs,
- };
- 
- static int __init ps3_system_bus_init(void)
+	-Geoff
 
 -- 
