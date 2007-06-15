@@ -1,21 +1,20 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 0A87DDDFFD
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 07:55:41 +1000 (EST)
-Date: Fri, 15 Jun 2007 14:55:59 -0700 (PDT)
-Message-Id: <20070615.145559.88477207.davem@davemloft.net>
-To: jeff@garzik.org
-Subject: Re: [patch 4/6] ps3: Disk Storage Driver
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <467309BA.8000009@garzik.org>
-References: <Pine.LNX.4.62.0706151642010.8248@pademelon.sonytel.be>
-	<20070615.141720.112626963.davem@davemloft.net>
-	<467309BA.8000009@garzik.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: axboe@kernel.dk, James.Bottomley@SteelEye.com, linux-scsi@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, Geert.Uytterhoeven@sonycom.com, dwmw2@infradead.org
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound1-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 6C2E5DDFDC
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 08:07:47 +1000 (EST)
+Message-ID: <467301F6.5070005@am.sony.com>
+Date: Fri, 15 Jun 2007 14:17:42 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: paulus@samba.org
+Subject: [patch 02/33] PS3: Rename IPI symbols
+References: <20070615204749.629571012@am.sony.com>>
+In-Reply-To: <20070615204749.629571012@am.sony.com>>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,16 +24,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Jeff Garzik <jeff@garzik.org>
-Date: Fri, 15 Jun 2007 17:50:50 -0400
+Rename the PS3 static symbol virqs to ps3_ipi_virqs to aid in
+debugging.
 
-> FWIW that's why libata followed the path it did:  faking SCSI required 
-> the least amount of code for the maximal amount of existing storage 
-> driver and platform installer support.
-> 
-> Well, that and the fact that ATAPI is really SCSI, but that's offtopic 
-> for this thread.  :)
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+---
+ arch/powerpc/platforms/ps3/smp.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-Yep I absolutely understand that, and for my case as well it's
-nearly always SCSI underneath that's why you can send SCSI
-commands passthru to the virtual disk server if you like.
+--- a/arch/powerpc/platforms/ps3/smp.c
++++ b/arch/powerpc/platforms/ps3/smp.c
+@@ -39,11 +39,11 @@ static irqreturn_t ipi_function_handler(
+ }
+ 
+ /**
+-  * virqs - a per cpu array of virqs for ipi use
++  * ps3_ipi_virqs - a per cpu array of virqs for ipi use
+   */
+ 
+ #define MSG_COUNT 4
+-static DEFINE_PER_CPU(unsigned int, virqs[MSG_COUNT]);
++static DEFINE_PER_CPU(unsigned int, ps3_ipi_virqs[MSG_COUNT]);
+ 
+ static const char *names[MSG_COUNT] = {
+ 	"ipi call",
+@@ -62,7 +62,7 @@ static void do_message_pass(int target, 
+ 		return;
+ 	}
+ 
+-	virq = per_cpu(virqs, target)[msg];
++	virq = per_cpu(ps3_ipi_virqs, target)[msg];
+ 	result = ps3_send_event_locally(virq);
+ 
+ 	if (result)
+@@ -94,13 +94,13 @@ static int ps3_smp_probe(void)
+ static void __init ps3_smp_setup_cpu(int cpu)
+ {
+ 	int result;
+-	unsigned int *virqs = per_cpu(virqs, cpu);
++	unsigned int *virqs = per_cpu(ps3_ipi_virqs, cpu);
+ 	int i;
+ 
+ 	DBG(" -> %s:%d: (%d)\n", __func__, __LINE__, cpu);
+ 
+ 	/*
+-	 * Check assumptions on virqs[] indexing. If this
++	 * Check assumptions on ps3_ipi_virqs[] indexing. If this
+ 	 * check fails, then a different mapping of PPC_MSG_
+ 	 * to index needs to be setup.
+ 	 */
+@@ -132,7 +132,7 @@ static void __init ps3_smp_setup_cpu(int
+ 
+ void ps3_smp_cleanup_cpu(int cpu)
+ {
+-	unsigned int *virqs = per_cpu(virqs, cpu);
++	unsigned int *virqs = per_cpu(ps3_ipi_virqs, cpu);
+ 	int i;
+ 
+ 	DBG(" -> %s:%d: (%d)\n", __func__, __LINE__, cpu);
+
+-- 
