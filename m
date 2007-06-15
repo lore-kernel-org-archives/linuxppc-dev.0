@@ -1,34 +1,26 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
-	[151.189.21.47])
+Received: from mail-in-02.arcor-online.net (mail-in-02.arcor-online.net
+	[151.189.21.42])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BEAF0DDF5F
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jun 2007 19:00:16 +1000 (EST)
-In-Reply-To: <1181897276.25228.325.camel@pmac.infradead.org>
-References: <bd6ef296692e8cfb81118f2dc85189a5@kernel.crashing.org>
-	<4662EAA9.70104@ru.mvista.com>
-	<e4197fd2753f2b4d548d5dde9e3fd1d3@kernel.crashing.org>
-	<466308F4.8050004@ru.mvista.com>
-	<8ac5664208e0f59329b62ac2138bbc8c@kernel.crashing.org>
-	<466312C2.4090200@ru.mvista.com>
-	<548a7e11ffb577f6395b8f5a9c2fba2d@kernel.crashing.org>
-	<466323EF.5040807@ru.mvista.com>
-	<1181228442.2785.60.camel@pmac.infradead.org>
-	<18fbfbaf113ab76b602d279848d9b405@kernel.crashing.org>
-	<20070615041423.GB30104@localhost.localdomain>
-	<6dcf3b4c6c7fcd8060baccf5374316c5@kernel.crashing.org>
-	<1181897276.25228.325.camel@pmac.infradead.org>
+	by ozlabs.org (Postfix) with ESMTP id A82D5DDF5F
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jun 2007 19:02:01 +1000 (EST)
+In-Reply-To: <46725411.3080002@ru.mvista.com>
+References: <1181729973.25586.31.camel@dolphin.spb.rtsoft.ru>
+	<db0d38e5b5e1a9a3a7fe35d25ebd357a@kernel.crashing.org>
+	<467176EB.7060404@ru.mvista.com>
+	<20070614222620.GA17382@mag.az.mvista.com>
+	<c6cd3a9fe7713f081354cca9b4306811@kernel.crashing.org>
+	<46725411.3080002@ru.mvista.com>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <1171d168bbf553153b0af6a9b7f8d27d@kernel.crashing.org>
+Message-Id: <a849b0caedb72f3799c095d3ab6cebd1@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
-Date: Fri, 15 Jun 2007 10:59:58 +0200
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	Milton Miller <miltonm@bga.com>, David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [RFC/PATCH] powerpc: MPC7450 L2 HW cache flush feature utilization
+Date: Fri, 15 Jun 2007 11:01:55 +0200
+To: "Vladislav D. Buzov" <vbuzov@ru.mvista.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,17 +30,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Yes, certainly.  Or, the other way around I like better
->> ("bank-width" optional).
->
-> No, we need bank-width. It's device-width which can be optional.
+> Hrm. I don't think that cache invalidation should be skipped. It is 
+> done after _set_L2CR() explicitly disabled the cache, in part of cache 
+> enabling procedure. Note that cache is flushed only if _set_L2CR() is 
+> called for already enabled cache. So, to skip cache invalidation there 
+> is a need to somehow track whether the cache has been 
+> flushed/invalidated before disabling or not. Since the manual 
+> invalidation does not break anything I think it is better to leave it 
+> as is rather than overload a _set_L2CR() logic.
 
-One is defaulted to the other so it doesn't really
-matter _which_ you make optional, the OS device driver
-can always get both values.  For the device tree, it
-seems more natural to have "device-width" a required
-property.  Feel free to disagree but I'd like to hear
-arguments if so :-)
+Yeah just leave it, it definitely is the safer thing to do.
+Do fix the comment though ;-)
 
 
 Segher
