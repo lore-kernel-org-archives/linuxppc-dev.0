@@ -1,16 +1,16 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound6-sin-R.bigfish.com (outbound-sin.frontbridge.com
+Received: from outbound8-sin-R.bigfish.com (outbound-sin.frontbridge.com
 	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 858FCDE059
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 08:09:10 +1000 (EST)
-Message-ID: <46730D56.8010008@am.sony.com>
-Date: Fri, 15 Jun 2007 15:06:14 -0700
+	by ozlabs.org (Postfix) with ESMTP id A8934DE11F
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 08:09:17 +1000 (EST)
+Message-ID: <46730216.2090104@am.sony.com>
+Date: Fri, 15 Jun 2007 14:18:14 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 22/33] powerpc: Output params value in early_init_devtree
+Subject: [patch 03/33] PS3: Use __maybe_unused
 References: <20070615204749.629571012@am.sony.com>>
 In-Reply-To: <20070615204749.629571012@am.sony.com>>
 Content-Type: text/plain; charset=UTF-8
@@ -24,25 +24,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add a printout of the params value to early_init_devtree.
-This value is handy to have for comparison when debugging the
-bootwrapper code.
+Change the PS3 debug routines from using the GCC specific
+'__attribute__ ((unused))' to the preprocessor macro
+__maybe_unused.
 
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/kernel/prom.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/platforms/ps3/interrupt.c |    4 ++--
+ arch/powerpc/platforms/ps3/time.c      |    2 +-
+ drivers/ps3/vuart.c                    |    4 ++--
+ 3 files changed, 5 insertions(+), 5 deletions(-)
 
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -1005,7 +1005,7 @@ static void __init early_reserve_mem(voi
+--- a/arch/powerpc/platforms/ps3/interrupt.c
++++ b/arch/powerpc/platforms/ps3/interrupt.c
+@@ -533,7 +533,7 @@ static void _dump_64_bmp(const char *hea
+ 		*p & 0xffff);
+ }
  
- void __init early_init_devtree(void *params)
+-static void __attribute__ ((unused)) _dump_256_bmp(const char *header,
++static void __maybe_unused _dump_256_bmp(const char *header,
+ 	const u64 *p, unsigned cpu, const char* func, int line)
  {
--	DBG(" -> early_init_devtree()\n");
-+	DBG(" -> early_init_devtree(%p)\n", params);
+ 	pr_debug("%s:%d: %s %u {%016lx:%016lx:%016lx:%016lx}\n",
+@@ -552,7 +552,7 @@ static void _dump_bmp(struct ps3_private
+ }
  
- 	/* Setup flat device-tree pointer */
- 	initial_boot_params = params;
+ #define dump_mask(_x) _dump_mask(_x, __func__, __LINE__)
+-static void __attribute__ ((unused)) _dump_mask(struct ps3_private* pd,
++static void __maybe_unused _dump_mask(struct ps3_private *pd,
+ 	const char* func, int line)
+ {
+ 	unsigned long flags;
+--- a/arch/powerpc/platforms/ps3/time.c
++++ b/arch/powerpc/platforms/ps3/time.c
+@@ -39,7 +39,7 @@ static void _dump_tm(const struct rtc_ti
+ }
+ 
+ #define dump_time(_a) _dump_time(_a, __func__, __LINE__)
+-static void __attribute__ ((unused)) _dump_time(int time, const char* func,
++static void __maybe_unused _dump_time(int time, const char *func,
+ 	int line)
+ {
+ 	struct rtc_time tm;
+--- a/drivers/ps3/vuart.c
++++ b/drivers/ps3/vuart.c
+@@ -83,7 +83,7 @@ struct ports_bmp {
+ } __attribute__ ((aligned (32)));
+ 
+ #define dump_ports_bmp(_b) _dump_ports_bmp(_b, __func__, __LINE__)
+-static void __attribute__ ((unused)) _dump_ports_bmp(
++static void __maybe_unused _dump_ports_bmp(
+ 	const struct ports_bmp* bmp, const char* func, int line)
+ {
+ 	pr_debug("%s:%d: ports_bmp: %016lxh\n", func, line, bmp->status);
+@@ -107,7 +107,7 @@ static int ps3_vuart_match_id_to_port(en
+ }
+ 
+ #define dump_port_params(_b) _dump_port_params(_b, __func__, __LINE__)
+-static void __attribute__ ((unused)) _dump_port_params(unsigned int port_number,
++static void __maybe_unused _dump_port_params(unsigned int port_number,
+ 	const char* func, int line)
+ {
+ #if defined(DEBUG)
 
 -- 
