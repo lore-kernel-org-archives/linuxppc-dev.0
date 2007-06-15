@@ -1,19 +1,24 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id DB905DDF36
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jun 2007 13:49:33 +1000 (EST)
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 15 Jun 2007 14:12:33 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
+Message-ID: <20070615041233.GA30104@localhost.localdomain>
+References: <548a7e11ffb577f6395b8f5a9c2fba2d@kernel.crashing.org>
+	<466323EF.5040807@ru.mvista.com>
+	<1181228442.2785.60.camel@pmac.infradead.org>
+	<18fbfbaf113ab76b602d279848d9b405@kernel.crashing.org>
+	<20070612044459.GD4198@localhost.localdomain>
+	<9e1a55ac71a2ecf5155d2fddf547025e@kernel.crashing.org>
+	<20070613031615.GC16148@localhost.localdomain>
+	<96f5b23c4f53e986e8caa2156f149cd8@kernel.crashing.org>
+	<20070613061152.GF16148@localhost.localdomain>
+	<40446e5131495e077da798bc54843b2a@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C7AF00.2EAF5E0C"
-Subject: RE: ucc_geth DPRAM alloc error, 2.6.22-rc3
-Date: Thu, 14 Jun 2007 22:47:20 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B07B41E@ismail.innsys.innovsys.com>
-References: <989B956029373F45A0B8AF0297081890D2AE6C@zch01exm26.fsl.freescale.net>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Li Yang-r58472" <LeoLi@freescale.com>,
-	<joakim.tjernlund@transmode.se>
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	Liu Dave-r63238 <DaveLiu@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <40446e5131495e077da798bc54843b2a@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	David Woodhouse <dwmw2@infradead.org>, Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,60 +28,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Wed, Jun 13, 2007 at 11:10:42AM +0200, Segher Boessenkool wrote:
+> >> MTD does a lot of heuristic probing.  It is pretty good,
+> >> but it would be nice if you could skip that and hand it
+> >> the exact values it needs.  Also, this information should
+> >> be in the device tree no matter what, even if Linux
+> >> doesn't use it yet ;-)
+> >
+> > I agree.  Of course, this means figuring out what the values actually
+> > are for Ebony.  I presently have no idea, since the heuristic probing
+> > appears to work without problem.
+> 
+> Doesn't it show it in sysfs, or in the dmesg at least?
+> Maybe some other important stuff is there, too.
 
-------_=_NextPart_001_01C7AF00.2EAF5E0C
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Not as far as I can tell.  Only dmesg information I can see is:
 
->From: Li Yang-r58472 [mailto:LeoLi@freescale.com]
->>  	if (assure_empty(info, 1) < 0)
->>  		return ERR_PTR(-ENOMEM);
+1ff800000.large-fla: Found 1 x8 devices at 0x0 in 8-bit bank
+1ff800000.large-fla: Found 1 x8 devices at 0x200000 in 8-bit bank
+number of JEDEC chips: 2
+cfi_cmdset_0002: Disabling erase-suspend-program due to code
+brokenness.
 
->You also need to change this to assure_empty(info, 2), as you are very
->likely to need 2 slots afterward.  You need to assure there are enough
->slots or grow the block number.
-
-Ahh. I'll fix that in my code.
-It was a quick&dirty hack to get the allocator to work wen we used most =
-of the available DPRAM.
-
-------_=_NextPart_001_01C7AF00.2EAF5E0C
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7652.24">
-<TITLE>RE: ucc_geth DPRAM alloc error, 2.6.22-rc3</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
-
-<P><FONT SIZE=3D2>&gt;From: Li Yang-r58472 [<A =
-HREF=3D"mailto:LeoLi@freescale.com">mailto:LeoLi@freescale.com</A>]<BR>
-&gt;&gt;&nbsp; &nbsp;&nbsp;&nbsp; if (assure_empty(info, 1) &lt; 0)<BR>
-&gt;&gt;&nbsp; &nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return ERR_PTR(-ENOMEM);<BR>
-<BR>
-&gt;You also need to change this to assure_empty(info, 2), as you are =
-very<BR>
-&gt;likely to need 2 slots afterward.&nbsp; You need to assure there are =
-enough<BR>
-&gt;slots or grow the block number.<BR>
-<BR>
-Ahh. I'll fix that in my code.<BR>
-It was a quick&amp;dirty hack to get the allocator to work wen we used =
-most of the available DPRAM.<BR>
-</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C7AF00.2EAF5E0C--
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
