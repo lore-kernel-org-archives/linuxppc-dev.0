@@ -1,20 +1,20 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound5-dub-R.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16])
+Received: from outbound6-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id F0E71DE12F
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 08:08:55 +1000 (EST)
-Message-ID: <46730DA2.2050406@am.sony.com>
-Date: Fri, 15 Jun 2007 15:07:30 -0700
+	by ozlabs.org (Postfix) with ESMTP id B26EADE1D5
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 08:09:09 +1000 (EST)
+Message-ID: <46730AC8.6000303@am.sony.com>
+Date: Fri, 15 Jun 2007 14:55:20 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 33/33] PS3: Update ps3_defconfig
+Subject: [patch 13/33] PS3: System-bus modinfo attribute
 References: <20070615204749.629571012@am.sony.com>>
 In-Reply-To: <20070615204749.629571012@am.sony.com>>
 Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,293 +24,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Update ps3_defconfig.
+From: David Woodhouse <dwmw2@infradead.org>
 
+Add modinfo attribute to ps3_system_bus devices.  Also make them all
+children of the same ps3_system_bus 'device' so they appear in a
+corresponding subdirectory under /sys/devices 
+
+Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/configs/ps3_defconfig |  131 +++++++++++++++----------------------
- 1 file changed, 55 insertions(+), 76 deletions(-)
+  o Fixed WS.
 
---- a/arch/powerpc/configs/ps3_defconfig
-+++ b/arch/powerpc/configs/ps3_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.21
--# Fri May 11 10:16:27 2007
-+# Linux kernel version: 2.6.22-rc4
-+# Thu Jun 14 19:52:01 2007
- #
- CONFIG_PPC64=y
- CONFIG_64BIT=y
-@@ -87,7 +87,11 @@ CONFIG_BUG=y
- CONFIG_ELF_CORE=y
- CONFIG_BASE_FULL=y
- CONFIG_FUTEX=y
-+CONFIG_ANON_INODES=y
- CONFIG_EPOLL=y
-+CONFIG_SIGNALFD=y
-+CONFIG_TIMERFD=y
-+CONFIG_EVENTFD=y
- CONFIG_SHMEM=y
- CONFIG_VM_EVENT_COUNTERS=y
- CONFIG_SLAB=y
-@@ -152,7 +156,11 @@ CONFIG_PS3_HTAB_SIZE=20
- CONFIG_PS3_USE_LPAR_ADDR=y
- CONFIG_PS3_VUART=y
- CONFIG_PS3_PS3AV=y
--CONFIG_PS3_SYS_MANAGER=y
-+CONFIG_PS3_SYS_MANAGER=m
-+CONFIG_PS3_STORAGE=y
-+CONFIG_PS3_DISK=y
-+CONFIG_PS3_ROM=y
-+CONFIG_PS3_FLASH=y
- CONFIG_PPC_CELL=y
- # CONFIG_PPC_CELL_NATIVE is not set
- # CONFIG_PPC_IBM_CELL_BLADE is not set
-@@ -301,20 +309,8 @@ CONFIG_IPV6_SIT=y
- # CONFIG_IPV6_MULTIPLE_TABLES is not set
- # CONFIG_NETWORK_SECMARK is not set
- # CONFIG_NETFILTER is not set
--
--#
--# DCCP Configuration (EXPERIMENTAL)
--#
- # CONFIG_IP_DCCP is not set
--
--#
--# SCTP Configuration (EXPERIMENTAL)
--#
- # CONFIG_IP_SCTP is not set
--
--#
--# TIPC Configuration (EXPERIMENTAL)
--#
- # CONFIG_TIPC is not set
- # CONFIG_ATM is not set
- # CONFIG_BRIDGE is not set
-@@ -343,7 +339,7 @@ CONFIG_BT=m
- CONFIG_BT_L2CAP=m
- CONFIG_BT_SCO=m
- CONFIG_BT_RFCOMM=m
--# CONFIG_BT_RFCOMM_TTY is not set
-+CONFIG_BT_RFCOMM_TTY=y
- # CONFIG_BT_BNEP is not set
- CONFIG_BT_HIDP=m
+ arch/powerpc/platforms/ps3/system-bus.c |   15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+--- a/arch/powerpc/platforms/ps3/system-bus.c
++++ b/arch/powerpc/platforms/ps3/system-bus.c
+@@ -452,6 +452,20 @@ static int ps3_system_bus_uevent(struct 
+ 	return 0;
+ }
  
-@@ -352,7 +348,9 @@ CONFIG_BT_HIDP=m
- #
- CONFIG_BT_HCIUSB=m
- CONFIG_BT_HCIUSB_SCO=y
--# CONFIG_BT_HCIUART is not set
-+CONFIG_BT_HCIUART=m
-+CONFIG_BT_HCIUART_H4=y
-+CONFIG_BT_HCIUART_BCSP=y
- # CONFIG_BT_HCIBCM203X is not set
- # CONFIG_BT_HCIBPA10X is not set
- # CONFIG_BT_HCIBFUSB is not set
-@@ -418,10 +416,6 @@ CONFIG_BLK_DEV_RAM_BLOCKSIZE=1024
- # Misc devices
- #
- # CONFIG_BLINK is not set
--
--#
--# ATA/ATAPI/MFM/RLL support
--#
- # CONFIG_IDE is not set
++static ssize_t modalias_show(struct device *_dev, struct device_attribute *a,
++	char *buf)
++{
++	struct ps3_system_bus_device *dev = ps3_dev_to_system_bus_dev(_dev);
++	int len = snprintf(buf, PAGE_SIZE, "ps3:%d\n", dev->match_id);
++
++	return (len >= PAGE_SIZE) ? (PAGE_SIZE - 1) : len;
++}
++
++static struct device_attribute ps3_system_bus_dev_attrs[] = {
++	__ATTR_RO(modalias),
++	__ATTR_NULL,
++};
++
+ struct bus_type ps3_system_bus_type = {
+ 	.name = "ps3_system_bus",
+ 	.match = ps3_system_bus_match,
+@@ -459,6 +473,7 @@ struct bus_type ps3_system_bus_type = {
+ 	.probe = ps3_system_bus_probe,
+ 	.remove = ps3_system_bus_remove,
+ 	.shutdown = ps3_system_bus_shutdown,
++	.dev_attrs = ps3_system_bus_dev_attrs,
+ };
  
- #
-@@ -447,7 +441,7 @@ CONFIG_CHR_DEV_SG=m
- #
- # Some SCSI devices (e.g. CD jukebox) support multiple LUNs
- #
--# CONFIG_SCSI_MULTI_LUN is not set
-+CONFIG_SCSI_MULTI_LUN=y
- # CONFIG_SCSI_CONSTANTS is not set
- # CONFIG_SCSI_LOGGING is not set
- # CONFIG_SCSI_SCAN_ASYNC is not set
-@@ -467,11 +461,6 @@ CONFIG_SCSI_WAIT_SCAN=m
- #
- # CONFIG_ISCSI_TCP is not set
- # CONFIG_SCSI_DEBUG is not set
--# CONFIG_SCSI_ESP_CORE is not set
--
--#
--# Serial ATA (prod) and Parallel ATA (experimental) drivers
--#
- # CONFIG_ATA is not set
- 
- #
-@@ -490,27 +479,13 @@ CONFIG_NETDEVICES=y
- # CONFIG_TUN is not set
- 
- #
--# PHY device support
--#
--
--#
- # Ethernet (10 or 100Mbit)
- #
- # CONFIG_NET_ETHERNET is not set
- CONFIG_MII=m
--
--#
--# Ethernet (1000 Mbit)
--#
--
--#
--# Ethernet (10000 Mbit)
--#
--CONFIG_MLX4_DEBUG=y
--
--#
--# Token Ring devices
--#
-+CONFIG_NETDEV_1000=y
-+CONFIG_GELIC_NET=y
-+# CONFIG_NETDEV_10000 is not set
- 
- #
- # Wireless LAN
-@@ -536,10 +511,6 @@ CONFIG_USB_NET_MCS7830=m
- # CONFIG_USB_NET_RNDIS_HOST is not set
- # CONFIG_USB_NET_CDC_SUBSET is not set
- # CONFIG_USB_NET_ZAURUS is not set
--
--#
--# Wan interfaces
--#
- # CONFIG_WAN is not set
- # CONFIG_PPP is not set
- # CONFIG_SLIP is not set
-@@ -563,6 +534,7 @@ CONFIG_USB_NET_MCS7830=m
- #
- CONFIG_INPUT=y
- # CONFIG_INPUT_FF_MEMLESS is not set
-+# CONFIG_INPUT_POLLDEV is not set
- 
- #
- # Userland interfaces
-@@ -581,7 +553,27 @@ CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
- #
- # CONFIG_INPUT_KEYBOARD is not set
- # CONFIG_INPUT_MOUSE is not set
--# CONFIG_INPUT_JOYSTICK is not set
-+CONFIG_INPUT_JOYSTICK=y
-+# CONFIG_JOYSTICK_ANALOG is not set
-+# CONFIG_JOYSTICK_A3D is not set
-+# CONFIG_JOYSTICK_ADI is not set
-+# CONFIG_JOYSTICK_COBRA is not set
-+# CONFIG_JOYSTICK_GF2K is not set
-+# CONFIG_JOYSTICK_GRIP is not set
-+# CONFIG_JOYSTICK_GRIP_MP is not set
-+# CONFIG_JOYSTICK_GUILLEMOT is not set
-+# CONFIG_JOYSTICK_INTERACT is not set
-+# CONFIG_JOYSTICK_SIDEWINDER is not set
-+# CONFIG_JOYSTICK_TMDC is not set
-+# CONFIG_JOYSTICK_IFORCE is not set
-+# CONFIG_JOYSTICK_WARRIOR is not set
-+# CONFIG_JOYSTICK_MAGELLAN is not set
-+# CONFIG_JOYSTICK_SPACEORB is not set
-+# CONFIG_JOYSTICK_SPACEBALL is not set
-+# CONFIG_JOYSTICK_STINGER is not set
-+# CONFIG_JOYSTICK_TWIDJOY is not set
-+# CONFIG_JOYSTICK_JOYDUMP is not set
-+# CONFIG_JOYSTICK_XPAD is not set
- # CONFIG_INPUT_TABLET is not set
- # CONFIG_INPUT_TOUCHSCREEN is not set
- # CONFIG_INPUT_MISC is not set
-@@ -598,7 +590,7 @@ CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
- CONFIG_VT=y
- CONFIG_VT_CONSOLE=y
- CONFIG_HW_CONSOLE=y
--# CONFIG_VT_HW_CONSOLE_BINDING is not set
-+CONFIG_VT_HW_CONSOLE_BINDING=y
- # CONFIG_SERIAL_NONSTANDARD is not set
- 
- #
-@@ -652,12 +644,8 @@ CONFIG_GEN_RTC=y
- # Multimedia devices
- #
- # CONFIG_VIDEO_DEV is not set
--
--#
--# Digital Video Broadcasting Devices
--#
--# CONFIG_DVB is not set
--# CONFIG_USB_DABUSB is not set
-+# CONFIG_DVB_CORE is not set
-+# CONFIG_DAB is not set
- 
- #
- # Graphics support
-@@ -672,13 +660,13 @@ CONFIG_GEN_RTC=y
- CONFIG_FB=y
- # CONFIG_FIRMWARE_EDID is not set
- # CONFIG_FB_DDC is not set
--CONFIG_FB_CFB_FILLRECT=y
--CONFIG_FB_CFB_COPYAREA=y
--CONFIG_FB_CFB_IMAGEBLIT=y
--# CONFIG_FB_SYS_FILLRECT is not set
--# CONFIG_FB_SYS_COPYAREA is not set
--# CONFIG_FB_SYS_IMAGEBLIT is not set
--# CONFIG_FB_SYS_FOPS is not set
-+# CONFIG_FB_CFB_FILLRECT is not set
-+# CONFIG_FB_CFB_COPYAREA is not set
-+# CONFIG_FB_CFB_IMAGEBLIT is not set
-+CONFIG_FB_SYS_FILLRECT=y
-+CONFIG_FB_SYS_COPYAREA=y
-+CONFIG_FB_SYS_IMAGEBLIT=y
-+CONFIG_FB_SYS_FOPS=y
- CONFIG_FB_DEFERRED_IO=y
- # CONFIG_FB_SVGALIB is not set
- # CONFIG_FB_MACMODES is not set
-@@ -751,9 +739,10 @@ CONFIG_SND_VERBOSE_PROCFS=y
- #
- # CONFIG_SND_USB_AUDIO is not set
- # CONFIG_SND_USB_USX2Y is not set
-+# CONFIG_SND_USB_CAIAQ is not set
- 
- #
--# SoC audio support
-+# System on Chip audio support
- #
- # CONFIG_SND_SOC is not set
- 
-@@ -1098,7 +1087,6 @@ CONFIG_NLS_ISO8859_1=y
- #
- # CONFIG_DLM is not set
- # CONFIG_UCC_SLOW is not set
--# CONFIG_UCC_FAST is not set
- 
- #
- # Library routines
-@@ -1125,7 +1113,7 @@ CONFIG_HAS_DMA=y
- #
- # CONFIG_PRINTK_TIME is not set
- CONFIG_ENABLE_MUST_CHECK=y
--# CONFIG_MAGIC_SYSRQ is not set
-+CONFIG_MAGIC_SYSRQ=y
- # CONFIG_UNUSED_SYMBOLS is not set
- # CONFIG_DEBUG_FS is not set
- # CONFIG_HEADERS_CHECK is not set
-@@ -1155,16 +1143,7 @@ CONFIG_DEBUG_STACKOVERFLOW=y
- # CONFIG_DEBUGGER is not set
- CONFIG_IRQSTACKS=y
- # CONFIG_BOOTX_TEXT is not set
--CONFIG_PPC_EARLY_DEBUG=y
--# CONFIG_PPC_EARLY_DEBUG_LPAR is not set
--# CONFIG_PPC_EARLY_DEBUG_G5 is not set
--# CONFIG_PPC_EARLY_DEBUG_RTAS_PANEL is not set
--# CONFIG_PPC_EARLY_DEBUG_RTAS_CONSOLE is not set
--# CONFIG_PPC_EARLY_DEBUG_MAPLE is not set
--# CONFIG_PPC_EARLY_DEBUG_ISERIES is not set
--# CONFIG_PPC_EARLY_DEBUG_PAS_REALMODE is not set
--# CONFIG_PPC_EARLY_DEBUG_BEAT is not set
--# CONFIG_PPC_EARLY_DEBUG_44x is not set
-+# CONFIG_PPC_EARLY_DEBUG is not set
- 
- #
- # Security options
+ static int __init ps3_system_bus_init(void)
 
 -- 
