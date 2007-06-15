@@ -1,26 +1,17 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Received: from the-village.bc.nu (unknown [81.2.110.250])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A50D9DDEF4
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 02:10:26 +1000 (EST)
-Date: Fri, 15 Jun 2007 17:15:45 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [patch 4/6] ps3: Disk Storage Driver
-Message-ID: <20070615171545.316dfac7@the-village.bc.nu>
-In-Reply-To: <Pine.LNX.4.62.0706151642010.8248@pademelon.sonytel.be>
-References: <20070615113919.142332000@pademelon.sonytel.be>
-	<20070615120848.352093000@pademelon.sonytel.be>
-	<1181918159.25228.543.camel@pmac.infradead.org>
-	<Pine.LNX.4.62.0706151642010.8248@pademelon.sonytel.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Jens Axboe <axboe@kernel.dk>,
-	"James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	David Woodhouse <dwmw2@infradead.org>
+Return-Path: <mgreer@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id 15829DDFB8
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 02:28:11 +1000 (EST)
+Date: Fri, 15 Jun 2007 09:29:19 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: for-2.6.23 branch in powerpc.git created
+Message-ID: <20070615162919.GA18055@mag.az.mvista.com>
+References: <18034.6787.951861.623265@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <18034.6787.951861.623265@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,11 +21,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > Any particular reason why this is done as a separate block device driver
-> > rather than as SCSI?
-> 
-> Because no new fake SCSI drivers are accepted anymore.
+On Fri, Jun 15, 2007 at 02:50:11PM +1000, Paul Mackerras wrote:
 
-Where did drivers/ata come from ;)
+> The patches I put in are listed below.  If you have a patch that
+> should go in but isn't listed, remind me about it.
 
-How about making it a fake ata driver if James is being fussy 8)
+Hi Paul.  I have a few too:
+
+3 patches cleaning boot/Makefile when wrapping a dt:
+
+http://patchwork.ozlabs.org/linuxppc/patch?id=11428
+http://patchwork.ozlabs.org/linuxppc/patch?id=11429
+http://patchwork.ozlabs.org/linuxppc/patch?id=11430
+
+2 patches for mv64x60/prpmc2800 to use 'add_preferred_console()':
+
+http://patchwork.ozlabs.org/linuxppc/patch?id=11585
+http://patchwork.ozlabs.org/linuxppc/patch?id=11586
+
+Mark
