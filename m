@@ -1,16 +1,16 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound8-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
+Received: from outbound6-dub-R.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id A8934DE11F
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 08:09:17 +1000 (EST)
-Message-ID: <46730216.2090104@am.sony.com>
-Date: Fri, 15 Jun 2007 14:18:14 -0700
+	by ozlabs.org (Postfix) with ESMTP id 71C03DE17A
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 08:09:18 +1000 (EST)
+Message-ID: <46730D64.5080800@am.sony.com>
+Date: Fri, 15 Jun 2007 15:06:28 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 03/33] PS3: Use __maybe_unused
+Subject: [patch 25/33] Powerpc: Add signed types to bootwrapper
 References: <20070615204749.629571012@am.sony.com>>
 In-Reply-To: <20070615204749.629571012@am.sony.com>>
 Content-Type: text/plain; charset=UTF-8
@@ -24,67 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Change the PS3 debug routines from using the GCC specific
-'__attribute__ ((unused))' to the preprocessor macro
-__maybe_unused.
+Add signed types to the powerpc zImage bootwrapper. These are needed by the
+PS3 hcall interface.
 
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/platforms/ps3/interrupt.c |    4 ++--
- arch/powerpc/platforms/ps3/time.c      |    2 +-
- drivers/ps3/vuart.c                    |    4 ++--
- 3 files changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/boot/types.h |    4 ++++
+ 1 file changed, 4 insertions(+)
 
---- a/arch/powerpc/platforms/ps3/interrupt.c
-+++ b/arch/powerpc/platforms/ps3/interrupt.c
-@@ -533,7 +533,7 @@ static void _dump_64_bmp(const char *hea
- 		*p & 0xffff);
- }
+--- a/arch/powerpc/boot/types.h
++++ b/arch/powerpc/boot/types.h
+@@ -7,6 +7,10 @@ typedef unsigned char		u8;
+ typedef unsigned short		u16;
+ typedef unsigned int		u32;
+ typedef unsigned long long	u64;
++typedef signed char		s8;
++typedef short			s16;
++typedef int			s32;
++typedef long long		s64;
  
--static void __attribute__ ((unused)) _dump_256_bmp(const char *header,
-+static void __maybe_unused _dump_256_bmp(const char *header,
- 	const u64 *p, unsigned cpu, const char* func, int line)
- {
- 	pr_debug("%s:%d: %s %u {%016lx:%016lx:%016lx:%016lx}\n",
-@@ -552,7 +552,7 @@ static void _dump_bmp(struct ps3_private
- }
- 
- #define dump_mask(_x) _dump_mask(_x, __func__, __LINE__)
--static void __attribute__ ((unused)) _dump_mask(struct ps3_private* pd,
-+static void __maybe_unused _dump_mask(struct ps3_private *pd,
- 	const char* func, int line)
- {
- 	unsigned long flags;
---- a/arch/powerpc/platforms/ps3/time.c
-+++ b/arch/powerpc/platforms/ps3/time.c
-@@ -39,7 +39,7 @@ static void _dump_tm(const struct rtc_ti
- }
- 
- #define dump_time(_a) _dump_time(_a, __func__, __LINE__)
--static void __attribute__ ((unused)) _dump_time(int time, const char* func,
-+static void __maybe_unused _dump_time(int time, const char *func,
- 	int line)
- {
- 	struct rtc_time tm;
---- a/drivers/ps3/vuart.c
-+++ b/drivers/ps3/vuart.c
-@@ -83,7 +83,7 @@ struct ports_bmp {
- } __attribute__ ((aligned (32)));
- 
- #define dump_ports_bmp(_b) _dump_ports_bmp(_b, __func__, __LINE__)
--static void __attribute__ ((unused)) _dump_ports_bmp(
-+static void __maybe_unused _dump_ports_bmp(
- 	const struct ports_bmp* bmp, const char* func, int line)
- {
- 	pr_debug("%s:%d: ports_bmp: %016lxh\n", func, line, bmp->status);
-@@ -107,7 +107,7 @@ static int ps3_vuart_match_id_to_port(en
- }
- 
- #define dump_port_params(_b) _dump_port_params(_b, __func__, __LINE__)
--static void __attribute__ ((unused)) _dump_port_params(unsigned int port_number,
-+static void __maybe_unused _dump_port_params(unsigned int port_number,
- 	const char* func, int line)
- {
- #if defined(DEBUG)
+ #define min(x,y) ({ \
+ 	typeof(x) _x = (x);	\
 
 -- 
