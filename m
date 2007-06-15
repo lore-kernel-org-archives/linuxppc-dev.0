@@ -1,26 +1,21 @@
-Return-Path: <SRS0+ad8f260a5d864d237ed6+1391+infradead.org+dwmw2@canuck.srs.infradead.org>
-Subject: Re: [PATCH] powerpc: Create "rom" (MTD) device prpmc2800
-From: David Woodhouse <dwmw2@infradead.org>
+Return-Path: <vbuzov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 50002DDE49
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jun 2007 18:56:20 +1000 (EST)
+Message-ID: <46725411.3080002@ru.mvista.com>
+Date: Fri, 15 Jun 2007 12:55:45 +0400
+From: "Vladislav D. Buzov" <vbuzov@ru.mvista.com>
+MIME-Version: 1.0
 To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <6dcf3b4c6c7fcd8060baccf5374316c5@kernel.crashing.org>
-References: <bd6ef296692e8cfb81118f2dc85189a5@kernel.crashing.org>
-	<4662EAA9.70104@ru.mvista.com>
-	<e4197fd2753f2b4d548d5dde9e3fd1d3@kernel.crashing.org>
-	<466308F4.8050004@ru.mvista.com>
-	<8ac5664208e0f59329b62ac2138bbc8c@kernel.crashing.org>
-	<466312C2.4090200@ru.mvista.com>
-	<548a7e11ffb577f6395b8f5a9c2fba2d@kernel.crashing.org>
-	<466323EF.5040807@ru.mvista.com>
-	<1181228442.2785.60.camel@pmac.infradead.org>
-	<18fbfbaf113ab76b602d279848d9b405@kernel.crashing.org>
-	<20070615041423.GB30104@localhost.localdomain>
-	<6dcf3b4c6c7fcd8060baccf5374316c5@kernel.crashing.org>
-Content-Type: text/plain
-Date: Fri, 15 Jun 2007 09:47:56 +0100
-Message-Id: <1181897276.25228.325.camel@pmac.infradead.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	Milton Miller <miltonm@bga.com>, David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [RFC/PATCH] powerpc: MPC7450 L2 HW cache flush feature utilization
+References: <1181729973.25586.31.camel@dolphin.spb.rtsoft.ru>
+	<db0d38e5b5e1a9a3a7fe35d25ebd357a@kernel.crashing.org>
+	<467176EB.7060404@ru.mvista.com>
+	<20070614222620.GA17382@mag.az.mvista.com>
+	<c6cd3a9fe7713f081354cca9b4306811@kernel.crashing.org>
+In-Reply-To: <c6cd3a9fe7713f081354cca9b4306811@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,11 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-06-15 at 10:42 +0200, Segher Boessenkool wrote:
-> Yes, certainly.  Or, the other way around I like better
-> ("bank-width" optional).
 
-No, we need bank-width. It's device-width which can be optional.
 
--- 
-dwmw2
+Segher Boessenkool wrote:
+>>>>>      /* TODO: use HW flush assist when available */
+>>>>
+>>>> You want to get rid of this old comment though -- and
+>>>> perhaps branch over the non-hardware-assisted cache
+>>>> flushing code.
+>>>
+>>> Ok, I agree that the comment is obsolete now. Would you please explain
+>>> why the branch over non-hardware-assisted code should be removed as
+>>> well. Technically the cache is flushed and there is no need to use 
+>>> extra
+>>> commands to fill and then re-flush the cache.
+>>
+>> I think Segher is saying that you can skip the manual invalidation too
+>> (although he said "flushing", I think he really meant "invalidation"--
+>> the manual flushing is already skipped).
+>
+> Erm yes.
+>
+>> If I'm reading the manual
+>> correctly, L2HWF does the invalidation as well so both the manual
+>> flushing and invalidation can be skipped.
+>
+> Yeah.  Not that it really matters of course.
+Hrm. I don't think that cache invalidation should be skipped. It is done 
+after _set_L2CR() explicitly disabled the cache, in part of cache 
+enabling procedure. Note that cache is flushed only if _set_L2CR() is 
+called for already enabled cache. So, to skip cache invalidation there 
+is a need to somehow track whether the cache has been 
+flushed/invalidated before disabling or not. Since the manual 
+invalidation does not break anything I think it is better to leave it as 
+is rather than overload a _set_L2CR() logic.
+
+Vlad.
+>
+>
+> Segher
+>
