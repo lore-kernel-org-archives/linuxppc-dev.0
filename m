@@ -1,24 +1,15 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 686F0DE005
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 04:28:27 +1000 (EST)
-Date: Fri, 15 Jun 2007 13:28:03 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [patch 00/13] CPU selection Kconfig cleanup, take 3
-Message-Id: <20070615132803.00e43768.kim.phillips@freescale.com>
-In-Reply-To: <B4E893D5-A61E-4A91-B31C-AF9B7C0B116D@kernel.crashing.org>
-References: <20070612163016.253915076@arndb.de>
-	<18032.40447.579128.989284@cargo.ozlabs.ibm.com>
-	<B4E893D5-A61E-4A91-B31C-AF9B7C0B116D@kernel.crashing.org>
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 07E90DDFE3
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 04:54:51 +1000 (EST)
+Date: Fri, 15 Jun 2007 12:33:08 -0500
+From: Milton Miller <miltonm@bga.com>
+To: linuxppc-dev@ozlabs.org,
+Subject: [PATCH] numa: enforce iommu-off memory address limit
+Message-Id: <111819287886b8b45671.846930886.miltonm@bga.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, arnd@arndb.de,
-	sfr@canb.auug.org.au
+Content-Type: text/plain; charset=UTF-8
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,30 +19,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 14 Jun 2007 08:33:19 -0500
-Kumar Gala <galak@kernel.crashing.org> wrote:
 
-> 
-> On Jun 13, 2007, at 8:46 PM, Paul Mackerras wrote:
-> 
-> > Most of this series of patches touch 8xxx or 5xxx stuff in one way or
-> > another, so I'll leave it to Kumar to make the decision about them.
-> > I'll put in 1/13.
-> 
-> Arnd,
-> 
-> I'm a little hesitant to move the embedded ppc's over to  
-> multiplatform quite yet.  One feature I wanted was in Kconfig a way  
-> to enforce the selection of at least one choice, as well as being  
-> able to optimize things since we only had one choice selected.
-> 
-> See the following thread for discussion I had with Sam & Roman on the  
-> subject:
-> 
-> http://marc.info/?t=117156757000002&r=1&w=2
-> 
+Don't short circuit the lmb_end_of_DRAM if iommu_is_off.
 
-FWIW, this patchseries tests ok on 83xx, and I didn't have a problem
-selecting at least one choice ;)
+If linux,iommu-off is in /chosen (because iommu=off was on the command
+line), we limit the memory when adding it to the lmbs and page tables,
+but not when numa parses the device tree for numa affinity.  When we
+free bootmem, we then try to use these pages without mapping them or
+allocating supporting data structures resulting in bad_page and/or data
+storage interrupts.
 
-Kim
+Signed-off-by: Milton Miller <miltonm@bga.com>
+--- 
+Paul, I think this can wait for 2.6.23 although its small enough
+if you want to send it for 2.6.22.
+
+Index: kernel/arch/powerpc/mm/numa.c
+===================================================================
+--- kernel.orig/arch/powerpc/mm/numa.c	2007-06-15 01:10:19.000000000 -0500
++++ kernel/arch/powerpc/mm/numa.c	2007-06-15 01:41:32.000000000 -0500
+@@ -21,6 +21,7 @@
+ #include <asm/lmb.h>
+ #include <asm/system.h>
+ #include <asm/smp.h>
++#include <asm/iommu.h>
+ 
+ static int numa_enabled = 1;
+ 
+@@ -286,7 +287,7 @@ static unsigned long __init numa_enforce
+ 	 * having memory holes below the limit.
+ 	 */
+ 
+-	if (! memory_limit)
++	if (!memory_limit && !iommu_is_off)
+ 		return size;
+ 
+ 	if (start + size <= lmb_end_of_DRAM())
