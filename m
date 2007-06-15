@@ -1,17 +1,27 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id DA4F3DDFAD
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 03:47:10 +1000 (EST)
-Date: Fri, 15 Jun 2007 19:47:07 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: for-2.6.23 branch in powerpc.git created
-In-Reply-To: <18034.6787.951861.623265@cargo.ozlabs.ibm.com>
-Message-ID: <Pine.LNX.4.60.0706151915580.5979@poirot.grange>
-References: <18034.6787.951861.623265@cargo.ozlabs.ibm.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id E4DDADDFCD
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 04:05:07 +1000 (EST)
+Date: Fri, 15 Jun 2007 20:05:05 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [patch 4/6] ps3: Disk Storage Driver
+In-Reply-To: <20070615171545.316dfac7@the-village.bc.nu>
+Message-ID: <Pine.LNX.4.62.0706152004090.15507@pademelon.sonytel.be>
+References: <20070615113919.142332000@pademelon.sonytel.be>
+	<20070615120848.352093000@pademelon.sonytel.be>
+	<1181918159.25228.543.camel@pmac.infradead.org>
+	<Pine.LNX.4.62.0706151642010.8248@pademelon.sonytel.be>
+	<20070615171545.316dfac7@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-1688040106-1181930705=:15507"
+Cc: Jens Axboe <axboe@kernel.dk>,
+	"James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,34 +31,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 15 Jun 2007, Paul Mackerras wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> I have created a for-2.6.23 branch in the powerpc.git repository
-> (git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git)
-> where I have started queueing up patches to go in once the 2.6.23
-> merge window opens.  For now at least it's the same as the master
-> branch.
+---584337861-1688040106-1181930705=:15507
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+On Fri, 15 Jun 2007, Alan Cox wrote:
+> > > Any particular reason why this is done as a separate block device driver
+> > > rather than as SCSI?
+> > 
+> > Because no new fake SCSI drivers are accepted anymore.
 > 
-> The patches I put in are listed below.  If you have a patch that
-> should go in but isn't listed, remind me about it.
+> Where did drivers/ata come from ;)
 
-How about this one:
+I was told that one got in just before the moratorium on fake SCSI.
 
-http://ozlabs.org/pipermail/linuxppc-dev/2007-May/036319.html
+> How about making it a fake ata driver if James is being fussy 8)
 
-Don't think linking timer.o if CONFIG_RTC_CLASS is defined presents a 
-problem now, but it will later, when platforms appear, that wish to use PM 
-and use generic rtc.
+I don't think Christoph likes fake ATA drivers neither ;-)
 
-These two i2c patches:
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
 
-http://ozlabs.org/pipermail/linuxppc-dev/2007-June/037327.html
-http://ozlabs.org/pipermail/linuxppc-dev/2007-June/037328.html
-
-also would be nice to get in, although, they only make sense with an ack 
-from Scott Wood and another patch from him, as explained in links above...
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-1688040106-1181930705=:15507--
