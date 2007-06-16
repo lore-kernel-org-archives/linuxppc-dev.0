@@ -1,13 +1,13 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 5D9FADDFE8
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 10:09:13 +1000 (EST)
-Message-Id: <20070616000618.183462070@arndb.de>
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id ADC59DDFD6
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 10:09:11 +1000 (EST)
+Message-Id: <20070616000618.965439750@arndb.de>
 References: <20070616000511.712667424@arndb.de>
-Date: Sat, 16 Jun 2007 02:05:12 +0200
+Date: Sat, 16 Jun 2007 02:05:18 +0200
 From: arnd@arndb.de
 To: paulus@samba.org
-Subject: [patch 1/9] move 82xx/83xx/86xx Kconfig options to platform selection
+Subject: [patch 7/9] disallow building powermac and tsi108 without PCI
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,166 +18,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The cores used in the MPC82xx/83xx/86xx embedded controllers are very similar
-to those in the 32 bit general-purpose processors, so it makes sense to
-treat them as the same CPU family.
+The TSI108 code and the 32 bit powermac and chrp platforms
+have dependency on PCI that is not easy or desirable to get rid
+of.
 
-Choosing between the embedded platforms and the multiplatform code is
-now done in the platform menu, but functionally everything stays the
-same.
+The easiest fix is to always select CONFIG_PCI if one of those
+platforms is enabled.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Index: linux-2.6/arch/powerpc/platforms/Kconfig
+
+Index: linux-2.6/arch/powerpc/platforms/embedded6xx/Kconfig
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/Kconfig
-@@ -2,7 +2,7 @@ menu "Platform support"
+--- linux-2.6.orig/arch/powerpc/platforms/embedded6xx/Kconfig
++++ linux-2.6/arch/powerpc/platforms/embedded6xx/Kconfig
+@@ -18,6 +18,7 @@ config LINKSTATION
  
- choice
- 	prompt "Machine type"
--	depends on PPC64 || CLASSIC32
-+	depends on PPC64 || 6xx
- 	default PPC_MULTIPLATFORM
- 
- config PPC_MULTIPLATFORM
-@@ -16,8 +16,31 @@ config EMBEDDED6xx
- 	bool "Embedded 6xx/7xx/7xxx-based board"
- 	depends on PPC32 && (BROKEN||BROKEN_ON_SMP)
- 
-+config PPC_82xx
-+	bool "Freescale 82xx"
-+	depends on 6xx
-+
-+config PPC_83xx
-+	bool "Freescale 83xx"
-+	depends on 6xx
-+	select FSL_SOC
-+	select 83xx
-+	select WANT_DEVICE_TREE
-+
-+config PPC_86xx
-+	bool "Freescale 86xx"
-+	depends on 6xx
-+	select FSL_SOC
-+	select FSL_PCIE
-+	select ALTIVEC
-+	help
-+	  The Freescale E600 SoCs have 74xx cores.
- endchoice
- 
-+config CLASSIC32
-+	def_bool y
-+	depends on 6xx && PPC_MULTIPLATFORM
-+
- source "arch/powerpc/platforms/pseries/Kconfig"
- source "arch/powerpc/platforms/iseries/Kconfig"
- source "arch/powerpc/platforms/chrp/Kconfig"
-Index: linux-2.6/arch/powerpc/platforms/Kconfig.cputype
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/Kconfig.cputype
-+++ linux-2.6/arch/powerpc/platforms/Kconfig.cputype
-@@ -10,41 +10,20 @@ choice
- 	prompt "Processor Type"
- 	depends on PPC32
- 	default 6xx
--
--config CLASSIC32
--	bool "52xx/6xx/7xx/74xx"
--	select PPC_FPU
--	select 6xx
+ config MPC7448HPC2
+ 	bool "Freescale MPC7448HPC2(Taiga)"
++	select PCI
+ 	select TSI108_BRIDGE
+ 	select DEFAULT_UIMAGE
+ 	select PPC_UDBG_16550
+@@ -31,6 +32,7 @@ config PPC_HOLLY
+ 	select TSI108_BRIDGE
+ 	select PPC_UDBG_16550
+ 	select CPU_7xx
++	select PCI
  	help
--	  There are four families of PowerPC chips supported.  The more common
--	  types (601, 603, 604, 740, 750, 7400), the Motorola embedded
--	  versions (821, 823, 850, 855, 860, 52xx, 82xx, 83xx), the AMCC
--	  embedded versions (403 and 405) and the high end 64 bit Power
--	  processors (POWER 3, POWER4, and IBM PPC970 also known as G5).
--
--	  This option is the catch-all for 6xx types, including some of the
--	  embedded versions.  Unless there is see an option for the specific
--	  chip family you are using, you want this option.
--
--	  You do not want this if you are building a kernel for a 64 bit
--	  IBM RS/6000 or an Apple G5, choose 6xx.
--
--	  If unsure, select this option
--
--	  Note that the kernel runs in 32-bit mode even on 64-bit chips.
--
--config PPC_82xx
--	bool "Freescale 82xx"
--	select 6xx
--	select PPC_FPU
-+	  There are five families of 32 bit PowerPC chips supported.
-+	  The most common ones are the desktop and server CPUs (601, 603,
-+	  604, 740, 750, 74xx) CPUs from Freescale and IBM, with their
-+	  embedded 52xx/82xx/83xx/86xx counterparts.
-+	  The other embeeded parts, namely 4xx, 8xx, e200 (55xx) and e500
-+	  (85xx) each form a family of their own that is not compatible
-+	  with the others.
- 
--config PPC_83xx
--	bool "Freescale 83xx"
--	select 6xx
--	select FSL_SOC
--	select 83xx
-+	  If unsure, select 52xx/6xx/7xx/74xx/82xx/83xx/86xx.
-+
-+config 6xx
-+	bool "52xx/6xx/7xx/74xx/82xx/83xx/86xx"
- 	select PPC_FPU
--	select WANT_DEVICE_TREE
- 
- config PPC_85xx
- 	bool "Freescale 85xx"
-@@ -53,16 +32,6 @@ config PPC_85xx
- 	select 85xx
- 	select WANT_DEVICE_TREE
- 
--config PPC_86xx
--	bool "Freescale 86xx"
--	select 6xx
--	select FSL_SOC
--	select FSL_PCIE
--	select PPC_FPU
--	select ALTIVEC
--	help
--	  The Freescale E600 SoCs have 74xx cores.
--
- config PPC_8xx
- 	bool "Freescale 8xx"
- 	select FSL_SOC
-Index: linux-2.6/arch/powerpc/platforms/82xx/Kconfig
+ 	  Select PPC_HOLLY if configuring for an IBM 750GX/CL Eval
+ 	  Board with TSI108/9 bridge (Hickory/Holly)
+Index: linux-2.6/arch/powerpc/platforms/powermac/Kconfig
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/82xx/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/82xx/Kconfig
-@@ -1,5 +1,5 @@
- choice
--	prompt "Machine Type"
-+	prompt "82xx Board Type"
- 	depends on PPC_82xx
- 	default MPC82xx_ADS
- 
-Index: linux-2.6/arch/powerpc/platforms/83xx/Kconfig
+--- linux-2.6.orig/arch/powerpc/platforms/powermac/Kconfig
++++ linux-2.6/arch/powerpc/platforms/powermac/Kconfig
+@@ -2,6 +2,7 @@ config PPC_PMAC
+ 	bool "Apple PowerMac based machines"
+ 	depends on PPC_MULTIPLATFORM
+ 	select MPIC
++	select PCI
+ 	select PPC_INDIRECT_PCI if PPC32
+ 	select PPC_MPC106 if PPC32
+ 	select PPC_NATIVE
+Index: linux-2.6/arch/powerpc/Kconfig
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/83xx/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/83xx/Kconfig
-@@ -1,5 +1,5 @@
- choice
--	prompt "Machine Type"
-+	prompt "83xx Board Type"
- 	depends on PPC_83xx
- 	default MPC834x_MDS
- 
-Index: linux-2.6/arch/powerpc/platforms/86xx/Kconfig
+--- linux-2.6.orig/arch/powerpc/Kconfig
++++ linux-2.6/arch/powerpc/Kconfig
+@@ -435,7 +435,7 @@ config MCA
+ config PCI
+ 	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx || PPC_86xx \
+ 		|| PPC_MPC52xx || (EMBEDDED && (PPC_PSERIES || PPC_ISERIES)) \
+-		|| MPC7448HPC2 || PPC_PS3 || PPC_HOLLY
++		|| PPC_PS3
+ 	default y if !40x && !CPM2 && !8xx && !PPC_83xx \
+ 		&& !PPC_85xx && !PPC_86xx
+ 	default PCI_PERMEDIA if !4xx && !CPM2 && !8xx
+Index: linux-2.6/arch/powerpc/platforms/chrp/Kconfig
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/86xx/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/86xx/Kconfig
-@@ -1,5 +1,5 @@
- choice
--	prompt "Machine Type"
-+	prompt "86xx Board Type"
- 	depends on PPC_86xx
- 	default MPC8641_HPCN
- 
+--- linux-2.6.orig/arch/powerpc/platforms/chrp/Kconfig
++++ linux-2.6/arch/powerpc/platforms/chrp/Kconfig
+@@ -8,4 +8,5 @@ config PPC_CHRP
+ 	select PPC_MPC106
+ 	select PPC_UDBG_16550
+ 	select PPC_NATIVE
++	select PCI
+ 	default y
+Index: linux-2.6/arch/powerpc/platforms/chrp/Makefile
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/chrp/Makefile
++++ linux-2.6/arch/powerpc/platforms/chrp/Makefile
+@@ -1,4 +1,3 @@
+-obj-y				+= setup.o time.o pegasos_eth.o
+-obj-$(CONFIG_PCI)		+= pci.o
++obj-y				+= setup.o time.o pegasos_eth.o pci.o
+ obj-$(CONFIG_SMP)		+= smp.o
+ obj-$(CONFIG_NVRAM)		+= nvram.o
 
 --
