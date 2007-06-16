@@ -1,23 +1,15 @@
-Return-Path: <urwithsudheer@gmail.com>
-Received: from gdatech.co.in (mail.gdatech.co.in [202.144.30.226])
-	by ozlabs.org (Postfix) with ESMTP id 5CC54DDE26
+Return-Path: <mamsadegh@hotmail.com>
+Received: from bay0-omc2-s39.bay0.hotmail.com (bay0-omc2-s39.bay0.hotmail.com
+	[65.54.246.175]) by ozlabs.org (Postfix) with ESMTP id 5AFD0DDE10
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 16 Jun 2007 19:56:41 +1000 (EST)
-Received: from [192.168.0.2] (localhost.localdomain [127.0.0.1])
-	by predator.gdatech.co.in (Postfix-out) with ESMTP id 10FD48780C6
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 16 Jun 2007 02:27:43 -0700 (PDT)
-Received: from mail.gdatech.co.in (unknown [192.168.0.1])
-	by predator.gdatech.co.in (Postfix-out) with ESMTP id 57B6D8780B2
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 16 Jun 2007 02:27:42 -0700 (PDT)
-Message-ID: <4673AD08.1080800@gmail.com>
-Date: Sat, 16 Jun 2007 14:57:36 +0530
-From: sudheer <urwithsudheer@gmail.com>
+	Sun, 17 Jun 2007 02:01:29 +1000 (EST)
+Message-ID: <BAY115-W23811373D25C5CC82F5CDBB21D0@phx.gbl>
+From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
+To: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
+Subject: base system for avnet virtex 4 fx mini module
+Date: Sat, 16 Jun 2007 16:01:27 +0000
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Regarding MPC8540 IRQ Issue 
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,39 +20,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello All
 
-I am working on MPC8540 board placing it in the PCI slot of the x86 system.
-After system bootup , i could see the powerpc board detected and pci 
-config space configured.
-But i could not find any IRQ assigned for it.
+Dear all,
 
-SetUp:
-Host: x86 System- Linux-2.6.9
-HOST PCI Slot is 64-bit, 66MHz
-Agent: MPC8540 Board.
+After brining up linux on ML403 I'm now going toward using AVNET mini modul=
+e as the next step
 
-Here is dump of "lspci -vx " for this device.
+I studied available examples from AVNET and I can not find any suitable bas=
+e system with both of TEMAC and Flash memory interfaces available in it.
 
-04:03.0 Power PC: Motorola MPC8540 (rev 20) (prog-if 01)
-        Flags: bus master, 66Mhz, fast devsel, latency 64
-        Memory at dee00000 (32-bit, non-prefetchable) [size=1M]
-        Capabilities: [60] #00 [0000]
-00: 57 10 08 00 46 01 b0 00 20 01 20 0b 00 40 00 00
-10: 00 00 e0 de 00 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-30: 00 00 00 00 60 00 00 00 00 00 00 00 00 00 00 00
+Does any body here can share his EDK project on AVNET mini module with me? =
+Mainly I need a base system with both of Hard TEMAC, PLB TEMAC and EMC flas=
+h interface available in it.
 
- From the above dump - IRQ Pin & Line of config space shows zeroes.
+thanks for kindness and help,
+mohammad sadegh sadri
 
-I tried writing a small module and probing for IRQ generating a message 
-interrupt. Though i could see in the 8540 message status register that 
-interrupt is generated, i could not get any IRQ when i do the probe. For 
-this trial,  i have configured the PIC message enable register, message 
-vector/priority and destination registers, processor current task 
-priority register (CPTR).
-
-Can anyone give me some suggestions to try out.
-
-Thanks
-Sudheer
+_________________________________________________________________
+Explore the seven wonders of the world
+http://search.msn.com/results.aspx?q=3D7+wonders+world&mkt=3Den-US&form=3DQ=
+BRE=
