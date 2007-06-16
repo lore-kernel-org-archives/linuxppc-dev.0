@@ -1,13 +1,13 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id C8C33DDFF4
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 10:09:13 +1000 (EST)
-Message-Id: <20070616000619.096176701@arndb.de>
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 3E4F5DDFE5
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 10:09:14 +1000 (EST)
+Message-Id: <20070616000618.836850961@arndb.de>
 References: <20070616000511.712667424@arndb.de>
-Date: Sat, 16 Jun 2007 02:05:19 +0200
+Date: Sat, 16 Jun 2007 02:05:17 +0200
 From: arnd@arndb.de
 To: paulus@samba.org
-Subject: [patch 8/9] fix conflicting mpc85xx board headers
+Subject: [patch 6/9] fix building without PCI
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,51 +18,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In order to allow multiplatform kernels, we can not have header
-files that define the same symbols. Probably these board specific
-headers should just go away entirely, but for the easiest fix
-is to rename the conflicting symbols.
+Some code looks can be configured to be built without
+PCI support, but does not work properly.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-Index: linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_ads.h
+Index: linux-2.6/arch/powerpc/platforms/52xx/efika.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/85xx/mpc85xx_ads.h
-+++ linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_ads.h
-@@ -29,14 +29,14 @@
- #define MPC85xx_CPM_OFFSET	(0x80000)
+--- linux-2.6.orig/arch/powerpc/platforms/52xx/efika.c
++++ linux-2.6/arch/powerpc/platforms/52xx/efika.c
+@@ -252,6 +252,8 @@ define_machine(efika)
+ 	.progress		= rtas_progress,
+ 	.get_boot_time		= rtas_get_boot_time,
+ 	.calibrate_decr		= generic_calibrate_decr,
++#ifdef CONFIG_PCI
+ 	.phys_mem_access_prot	= pci_phys_mem_access_prot,
++#endif
+ };
  
- #define CPM_MAP_ADDR		(get_immrbase() + MPC85xx_CPM_OFFSET)
--#define CPM_IRQ_OFFSET		60
-+#define MPC85xxADS_CPM_IRQ_OFFSET		60
- 
--#define SIU_INT_SMC1		((uint)0x04+CPM_IRQ_OFFSET)
--#define SIU_INT_SMC2		((uint)0x05+CPM_IRQ_OFFSET)
--#define SIU_INT_SCC1		((uint)0x28+CPM_IRQ_OFFSET)
--#define SIU_INT_SCC2		((uint)0x29+CPM_IRQ_OFFSET)
--#define SIU_INT_SCC3		((uint)0x2a+CPM_IRQ_OFFSET)
--#define SIU_INT_SCC4		((uint)0x2b+CPM_IRQ_OFFSET)
-+#define SIU_INT_SMC1		((uint)0x04+MPC85xxADS_CPM_IRQ_OFFSET)
-+#define SIU_INT_SMC2		((uint)0x05+MPC85xxADS_CPM_IRQ_OFFSET)
-+#define SIU_INT_SCC1		((uint)0x28+MPC85xxADS_CPM_IRQ_OFFSET)
-+#define SIU_INT_SCC2		((uint)0x29+MPC85xxADS_CPM_IRQ_OFFSET)
-+#define SIU_INT_SCC3		((uint)0x2a+MPC85xxADS_CPM_IRQ_OFFSET)
-+#define SIU_INT_SCC4		((uint)0x2b+MPC85xxADS_CPM_IRQ_OFFSET)
- 
- /* FCC1 Clock Source Configuration.  These can be
-  * redefined in the board specific file.
-Index: linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_cds.h
+Index: linux-2.6/arch/powerpc/platforms/embedded6xx/linkstation.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/85xx/mpc85xx_cds.h
-+++ linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_cds.h
-@@ -36,7 +36,7 @@
- #define PIRQ1A			MPC85xx_IRQ_EXT11
+--- linux-2.6.orig/arch/powerpc/platforms/embedded6xx/linkstation.c
++++ linux-2.6/arch/powerpc/platforms/embedded6xx/linkstation.c
+@@ -56,6 +56,7 @@ static struct mtd_partition linkstation_
  
- #define NR_8259_INTS		16
--#define CPM_IRQ_OFFSET		NR_8259_INTS
-+#define MPC85xxCDS_CPM_IRQ_OFFSET		NR_8259_INTS
- 
- #define MPC85xx_OPENPIC_IRQ_OFFSET	80
+ static int __init linkstation_add_bridge(struct device_node *dev)
+ {
++#ifdef CONFIG_PCI
+ 	int len;
+ 	struct pci_controller *hose;
+ 	const int *bus_range;
+@@ -78,7 +79,7 @@ static int __init linkstation_add_bridge
+ 	/* Interpret the "ranges" property */
+ 	/* This also maps the I/O region and sets isa_io/mem_base */
+ 	pci_process_bridge_OF_ranges(hose, dev, 1);
+-
++#endif
+ 	return 0;
+ }
  
 
 --
