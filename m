@@ -1,17 +1,24 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] numa: enforce iommu-off memory address limit
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Milton Miller <miltonm@bga.com>
-In-Reply-To: <111819287886b8b45671.846930886.miltonm@bga.com>
-References: <111819287886b8b45671.846930886.miltonm@bga.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-04Y9lLGu9b1c4ONiP8xJ"
-Date: Sat, 16 Jun 2007 14:34:13 +1000
-Message-Id: <1181968453.21287.5.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 38067DDF2B
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 16:22:06 +1000 (EST)
+Date: Sat, 16 Jun 2007 08:21:52 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: David Miller <davem@davemloft.net>
+Subject: Re: [patch 4/6] ps3: Disk Storage Driver
+In-Reply-To: <20070615.141917.85409547.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.62.0706160819200.15507@pademelon.sonytel.be>
+References: <1181918159.25228.543.camel@pmac.infradead.org>
+	<Pine.LNX.4.62.0706151642010.8248@pademelon.sonytel.be>
+	<20070615171545.316dfac7@the-village.bc.nu>
+	<20070615.141917.85409547.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-540623539-1181974912=:15507"
+Cc: axboe@kernel.dk, James.Bottomley@SteelEye.com, linux-scsi@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, dwmw2@infradead.org, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,75 +28,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
---=-04Y9lLGu9b1c4ONiP8xJ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+---584337861-540623539-1181974912=:15507
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-On Fri, 2007-06-15 at 12:33 -0500, Milton Miller wrote:
-> Don't short circuit the lmb_end_of_DRAM if iommu_is_off.
->=20
-> If linux,iommu-off is in /chosen (because iommu=3Doff was on the command
-> line), we limit the memory when adding it to the lmbs and page tables,
-> but not when numa parses the device tree for numa affinity.  When we
-> free bootmem, we then try to use these pages without mapping them or
-> allocating supporting data structures resulting in bad_page and/or data
-> storage interrupts.
->=20
-> Signed-off-by: Milton Miller <miltonm@bga.com>
-> ---=20
-> Paul, I think this can wait for 2.6.23 although its small enough
-> if you want to send it for 2.6.22.
->=20
-> Index: kernel/arch/powerpc/mm/numa.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- kernel.orig/arch/powerpc/mm/numa.c	2007-06-15 01:10:19.000000000 -050=
-0
-> +++ kernel/arch/powerpc/mm/numa.c	2007-06-15 01:41:32.000000000 -0500
-> @@ -21,6 +21,7 @@
->  #include <asm/lmb.h>
->  #include <asm/system.h>
->  #include <asm/smp.h>
-> +#include <asm/iommu.h>
-> =20
->  static int numa_enabled =3D 1;
-> =20
-> @@ -286,7 +287,7 @@ static unsigned long __init numa_enforce
->  	 * having memory holes below the limit.
->  	 */
-> =20
-> -	if (! memory_limit)
-> +	if (!memory_limit && !iommu_is_off)
->  		return size;
+On Fri, 15 Jun 2007, David Miller wrote:
+> From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> Date: Fri, 15 Jun 2007 17:15:45 +0100
+> 
+> > > > Any particular reason why this is done as a separate block device driver
+> > > > rather than as SCSI?
+> > > 
+> > > Because no new fake SCSI drivers are accepted anymore.
+> > 
+> > Where did drivers/ata come from ;)
+> > 
+> > How about making it a fake ata driver if James is being fussy 8)
+> 
+> That sounds like a good idea for my virtual I/O case on
+> Niagara too actually :-)
+> 
+> Another quirk I have to deal with is that under LDOMs you
+> can export full disks and also just slices.  So I'll have
+> to get down into the partition machinery to support that
+> somehow.
 
-I'd rather just remove the check entirely, and rename the routine -
-numa_check_end_of_ram() or something.
+The PS3 hypervisor also splits each device in regions (cfr. partitions), with
+different access rights depending the OS that runs on top of it. The old
+virtual SCSI driver treated each region as a separate LUN.
 
-cheers
+As currently only one region can be accessed by Linux anyway, I didn't bother
+supporting multiple accessible regions in the new storage drivers.
 
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-04Y9lLGu9b1c4ONiP8xJ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGc2hFdSjSd0sB4dIRAkhoAKCxx5xvJX4YIGySoqy4ZFzTU/kIDgCghtZX
-5BUc5lwSPr9LYDofjsLtQlE=
-=vcNa
------END PGP SIGNATURE-----
-
---=-04Y9lLGu9b1c4ONiP8xJ--
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-540623539-1181974912=:15507--
