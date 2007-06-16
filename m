@@ -1,13 +1,13 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 1FFD2DDFFC
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 10:09:15 +1000 (EST)
-Message-Id: <20070616000619.225463944@arndb.de>
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 3D010DDFE2
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 10:09:14 +1000 (EST)
+Message-Id: <20070616000618.446050982@arndb.de>
 References: <20070616000511.712667424@arndb.de>
-Date: Sat, 16 Jun 2007 02:05:20 +0200
+Date: Sat, 16 Jun 2007 02:05:14 +0200
 From: arnd@arndb.de
 To: paulus@samba.org
-Subject: [patch 9/9] enable multiplatform support for embedded boards
+Subject: [patch 3/9] rename add_bridge to avoid namespace clashes
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,382 +18,353 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This makes it possible to build kernels for any combination of
-board types that can coexisting in the same binary. It is for
-reference only right now, because there are still concerns
-that it might make future optimizations harder to implement.
+Many platforms currently define their own add_bridge function, some
+of them globally. This breaks some multiplatform configurations.
+Prefixing each of these functions with the platform name avoids
+this problem.
 
-Cc: Kumar Gala <galak@kernel.crashing.org>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
-Index: linux-2.6/arch/powerpc/platforms/52xx/Kconfig
+Index: linux-2.6/arch/powerpc/platforms/82xx/mpc82xx_ads.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/52xx/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/52xx/Kconfig
-@@ -1,38 +1,35 @@
- config PPC_MPC52xx
--	bool
-+	bool "Freescale 52xx"
- 	select FSL_SOC
--	default n
--
--config PPC_MPC5200
--	bool
--	select PPC_MPC52xx
--	default n
--
--config PPC_MPC5200_BUGFIX
--	bool "MPC5200 (L25R) bugfix support"
--	depends on PPC_MPC5200
--	default n
--	help
--	  Enable workarounds for original MPC5200 errata.  This is not required
--	  for MPC5200B based boards.
--
--	  It is safe to say 'Y' here
-+	depends on 6xx
+--- linux-2.6.orig/arch/powerpc/platforms/82xx/mpc82xx_ads.c
++++ linux-2.6/arch/powerpc/platforms/82xx/mpc82xx_ads.c
+@@ -515,7 +515,7 @@ static int m82xx_pci_exclude_device(u_ch
+ 		return PCIBIOS_SUCCESSFUL;
+ }
  
- config PPC_EFIKA
- 	bool "bPlan Efika 5k2. MPC5200B based computer"
--	depends on PPC_MULTIPLATFORM && PPC32
-+	depends on PPC_MPC52xx
- 	select PPC_RTAS
- 	select RTAS_PROC
--	select PPC_MPC52xx
- 	select PPC_NATIVE
- 	select CPU_603e
- 	default n
+-void __init add_bridge(struct device_node *np)
++static void __init mpc82xx_add_bridge(struct device_node *np)
+ {
+ 	int len;
+ 	struct pci_controller *hose;
+@@ -584,7 +584,7 @@ static void __init mpc82xx_ads_setup_arc
+ #ifdef CONFIG_PCI
+ 	ppc_md.pci_exclude_device = m82xx_pci_exclude_device;
+ 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
+-		add_bridge(np);
++		mpc82xx_add_bridge(np);
  
- config PPC_LITE5200
- 	bool "Freescale Lite5200 Eval Board"
--	depends on PPC_MULTIPLATFORM && PPC32
-+	depends on PPC_MPC52xx
- 	select PPC_MPC5200
- 	select CPU_603e
- 	default n
- 
-+config PPC_MPC5200
-+	bool
-+	depends on PPC_MPC52xx
-+	default n
-+
-+config PPC_MPC5200_BUGFIX
-+	bool "MPC5200 (L25R) bugfix support"
-+	depends on PPC_MPC5200
-+	default n
-+	help
-+	  Enable workarounds for original MPC5200 errata.  This is not required
-+	  for MPC5200B based boards.
- 
-+	  It is safe to say 'Y' here
-Index: linux-2.6/arch/powerpc/platforms/82xx/Kconfig
+ 	of_node_put(np);
+ #endif
+Index: linux-2.6/arch/powerpc/platforms/83xx/mpc836x_mds.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/82xx/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/82xx/Kconfig
-@@ -1,21 +1,19 @@
--choice
--	prompt "82xx Board Type"
--	depends on PPC_82xx
--	default MPC82xx_ADS
-+config PPC_82xx
-+	bool "Freescale 82xx"
-+	depends on PPC_MULTIPLATFORM && 6xx
-+	select CPU_603e
+--- linux-2.6.orig/arch/powerpc/platforms/83xx/mpc836x_mds.c
++++ linux-2.6/arch/powerpc/platforms/83xx/mpc836x_mds.c
+@@ -86,7 +86,7 @@ static void __init mpc836x_mds_setup_arc
  
- config MPC82xx_ADS
- 	bool "Freescale MPC82xx ADS"
-+	depends on PPC_82xx
- 	select DEFAULT_UIMAGE
- 	select PQ2ADS
- 	select 8272
- 	select 8260
- 	select FSL_SOC
--	select CPU_603e
- 	help
- 	This option enables support for the MPC8272 ADS board
+ #ifdef CONFIG_PCI
+ 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
+-		add_bridge(np);
++		mpc83xx_add_bridge(np);
+ 	ppc_md.pci_exclude_device = mpc83xx_exclude_device;
+ #endif
  
--endchoice
--
- config PQ2ADS
- 	bool
- 	default n
-Index: linux-2.6/arch/powerpc/platforms/83xx/Kconfig
+Index: linux-2.6/arch/powerpc/platforms/83xx/mpc83xx.h
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/83xx/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/83xx/Kconfig
-@@ -1,35 +1,38 @@
--choice
--	prompt "83xx Board Type"
--	depends on PPC_83xx
--	default MPC834x_MDS
-+config PPC_83xx
-+	bool "Freescale 83xx"
-+	depends on PPC_MULTIPLATFORM && 6xx
-+	select FSL_SOC
-+	select 83xx
-+	select WANT_DEVICE_TREE
-+	select CPU_603e
+--- linux-2.6.orig/arch/powerpc/platforms/83xx/mpc83xx.h
++++ linux-2.6/arch/powerpc/platforms/83xx/mpc83xx.h
+@@ -27,7 +27,7 @@
+  * mpc83xx_* files. Mostly for use by mpc83xx_setup
+  */
  
- config MPC8313_RDB
- 	bool "Freescale MPC8313 RDB"
-+	depends on PPC_83xx
- 	select DEFAULT_UIMAGE
--	select CPU_603e
- 	help
- 	  This option enables support for the MPC8313 RDB board.
- 
- config MPC832x_MDS
- 	bool "Freescale MPC832x MDS"
-+	depends on PPC_83xx
- 	select DEFAULT_UIMAGE
- 	select QUICC_ENGINE
--	select CPU_603e
- 	help
- 	  This option enables support for the MPC832x MDS evaluation board.
- 
- config MPC832x_RDB
- 	bool "Freescale MPC832x RDB"
-+	depends on PPC_83xx
- 	select DEFAULT_UIMAGE
- 	select QUICC_ENGINE
--	select CPU_603e
- 	help
- 	  This option enables support for the MPC8323 RDB board.
- 
- config MPC834x_MDS
- 	bool "Freescale MPC834x MDS"
-+	depends on PPC_83xx
- 	select DEFAULT_UIMAGE
--	select CPU_603e
- 	help
- 	  This option enables support for the MPC 834x MDS evaluation board.
- 
-@@ -40,8 +43,8 @@ config MPC834x_MDS
- 
- config MPC834x_ITX
- 	bool "Freescale MPC834x ITX"
-+	depends on PPC_83xx
- 	select DEFAULT_UIMAGE
--	select CPU_603e
- 	help
- 	  This option enables support for the MPC 834x ITX evaluation board.
- 
-@@ -50,14 +53,12 @@ config MPC834x_ITX
- 
- config MPC836x_MDS
- 	bool "Freescale MPC836x MDS"
-+	depends on PPC_83xx
- 	select DEFAULT_UIMAGE
- 	select QUICC_ENGINE
--	select CPU_603e
- 	help
- 	  This option enables support for the MPC836x MDS Processor Board.
- 
--endchoice
--
- config PPC_MPC831x
- 	bool
- 	select PPC_UDBG_16550
-Index: linux-2.6/arch/powerpc/platforms/85xx/Kconfig
+-extern int add_bridge(struct device_node *dev);
++extern int mpc83xx_add_bridge(struct device_node *dev);
+ extern int mpc83xx_exclude_device(u_char bus, u_char devfn);
+ extern void mpc83xx_restart(char *cmd);
+ extern long mpc83xx_time_init(void);
+Index: linux-2.6/arch/powerpc/platforms/83xx/mpc8313_rdb.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/85xx/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/85xx/Kconfig
-@@ -1,28 +1,27 @@
--choice
--	prompt "Machine Type"
--	depends on PPC_85xx
--	default MPC8540_ADS
--
- config MPC8540_ADS
- 	bool "Freescale MPC8540 ADS"
-+	depends on PPC_85xx
- 	select DEFAULT_UIMAGE
- 	help
- 	  This option enables support for the MPC 8540 ADS board
+--- linux-2.6.orig/arch/powerpc/platforms/83xx/mpc8313_rdb.c
++++ linux-2.6/arch/powerpc/platforms/83xx/mpc8313_rdb.c
+@@ -49,7 +49,7 @@ static void __init mpc8313_rdb_setup_arc
  
- config MPC8560_ADS
- 	bool "Freescale MPC8560 ADS"
-+	depends on PPC_85xx
- 	select DEFAULT_UIMAGE
- 	help
- 	  This option enables support for the MPC 8560 ADS board
+ #ifdef CONFIG_PCI
+ 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
+-		add_bridge(np);
++		mpc83xx_add_bridge(np);
  
- config MPC85xx_CDS
- 	bool "Freescale MPC85xx CDS"
-+	depends on PPC_85xx
- 	select DEFAULT_UIMAGE
- 	help
- 	  This option enables support for the MPC85xx CDS board
- 
- config MPC85xx_MDS
- 	bool "Freescale MPC85xx MDS"
-+	depends on PPC_85xx
- 	select DEFAULT_UIMAGE
- #	select QUICC_ENGINE
- 	help
-@@ -30,12 +29,11 @@ config MPC85xx_MDS
- 
- config MPC8544_DS
- 	bool "Freescale MPC8544 DS"
-+	depends on PPC_85xx
- 	select DEFAULT_UIMAGE
- 	help
- 	  This option enables support for the MPC8544 DS board
- 
--endchoice
--
- config MPC8540
- 	bool
- 	select PPC_UDBG_16550
-Index: linux-2.6/arch/powerpc/platforms/86xx/Kconfig
+ 	ppc_md.pci_exclude_device = mpc83xx_exclude_device;
+ #endif
+Index: linux-2.6/arch/powerpc/platforms/83xx/mpc832x_mds.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/86xx/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/86xx/Kconfig
-@@ -1,18 +1,21 @@
--choice
--	prompt "86xx Board Type"
--	depends on PPC_86xx
--	default MPC8641_HPCN
-+config PPC_86xx
-+	bool "Freescale 86xx"
-+	depends on PPC_MULTIPLATFORM && 6xx
-+	select FSL_SOC
-+	select FSL_PCIE
-+	select ALTIVEC
-+	select CPU_74xx
-+	help
-+	  The Freescale E600 SoCs have 74xx cores.
+--- linux-2.6.orig/arch/powerpc/platforms/83xx/mpc832x_mds.c
++++ linux-2.6/arch/powerpc/platforms/83xx/mpc832x_mds.c
+@@ -80,7 +80,7 @@ static void __init mpc832x_sys_setup_arc
  
- config MPC8641_HPCN
- 	bool "Freescale MPC8641 HPCN"
-+	depends on PPC_86xx
- 	select PPC_I8259
- 	select DEFAULT_UIMAGE
--	select CPU_74xx
- 	help
- 	  This option enables support for the MPC8641 HPCN board.
+ #ifdef CONFIG_PCI
+ 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
+-		add_bridge(np);
++		mpc83xx_add_bridge(np);
+ 	ppc_md.pci_exclude_device = mpc83xx_exclude_device;
+ #endif
  
--endchoice
--
- config MPC8641
- 	bool
- 	select PPC_INDIRECT_PCI
-Index: linux-2.6/arch/powerpc/platforms/Kconfig
+Index: linux-2.6/arch/powerpc/platforms/83xx/mpc832x_rdb.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/Kconfig
-@@ -1,50 +1,16 @@
- menu "Platform support"
+--- linux-2.6.orig/arch/powerpc/platforms/83xx/mpc832x_rdb.c
++++ linux-2.6/arch/powerpc/platforms/83xx/mpc832x_rdb.c
+@@ -53,7 +53,7 @@ static void __init mpc832x_rdb_setup_arc
  
--choice
--	prompt "Machine type"
--	depends on PPC64 || 6xx
--	default PPC_MULTIPLATFORM
--
- config PPC_MULTIPLATFORM
--	bool "Generic desktop/server/laptop"
--	help
--	  Select this option if configuring for an IBM pSeries or
--	  RS/6000 machine, an Apple machine, or a PReP, CHRP,
--	  Maple or Cell-based machine.
--
--config EMBEDDED6xx
--	bool "Embedded 6xx/7xx/7xxx-based board"
--	depends on PPC32 && (BROKEN||BROKEN_ON_SMP)
--
--config PPC_82xx
--	bool "Freescale 82xx"
--	depends on 6xx
--
--config PPC_83xx
--	bool "Freescale 83xx"
--	depends on 6xx
--	select FSL_SOC
--	select 83xx
--	select WANT_DEVICE_TREE
--
--config PPC_86xx
--	bool "Freescale 86xx"
--	depends on 6xx
--	select FSL_SOC
--	select FSL_PCIE
--	select ALTIVEC
--	help
--	  The Freescale E600 SoCs have 74xx cores.
--endchoice
-+	def_bool y
-+	depends on 6xx || PPC64
+ #ifdef CONFIG_PCI
+ 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
+-		add_bridge(np);
++		mpc83xx_add_bridge(np);
  
- config CLASSIC32
- 	def_bool y
--	depends on 6xx && PPC_MULTIPLATFORM
-+	depends on 6xx
- 
- source "arch/powerpc/platforms/pseries/Kconfig"
- source "arch/powerpc/platforms/iseries/Kconfig"
- source "arch/powerpc/platforms/chrp/Kconfig"
--source "arch/powerpc/platforms/52xx/Kconfig"
- source "arch/powerpc/platforms/powermac/Kconfig"
- source "arch/powerpc/platforms/prep/Kconfig"
- source "arch/powerpc/platforms/maple/Kconfig"
-@@ -53,6 +19,7 @@ source "arch/powerpc/platforms/celleb/Kc
- source "arch/powerpc/platforms/ps3/Kconfig"
- source "arch/powerpc/platforms/cell/Kconfig"
- source "arch/powerpc/platforms/8xx/Kconfig"
-+source "arch/powerpc/platforms/52xx/Kconfig"
- source "arch/powerpc/platforms/82xx/Kconfig"
- source "arch/powerpc/platforms/83xx/Kconfig"
- source "arch/powerpc/platforms/85xx/Kconfig"
-Index: linux-2.6/arch/powerpc/platforms/embedded6xx/Kconfig
+ 	ppc_md.pci_exclude_device = mpc83xx_exclude_device;
+ #endif
+Index: linux-2.6/arch/powerpc/platforms/83xx/mpc834x_itx.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/embedded6xx/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/embedded6xx/Kconfig
-@@ -1,9 +1,11 @@
--choice
--	prompt "Machine Type"
--	depends on EMBEDDED6xx
-+config EMBEDDED6xx
-+	bool "Embedded 6xx"
-+	depends on 6xx
+--- linux-2.6.orig/arch/powerpc/platforms/83xx/mpc834x_itx.c
++++ linux-2.6/arch/powerpc/platforms/83xx/mpc834x_itx.c
+@@ -59,7 +59,7 @@ static void __init mpc834x_itx_setup_arc
  
- config LINKSTATION
- 	bool "Linkstation / Kurobox(HG) from Buffalo"
-+	depends on EMBEDDED6xx
-+	depends on (BROKEN || BROKEN_ON_SMP)
- 	select MPIC
- 	select FSL_SOC
- 	select PPC_UDBG_16550 if SERIAL_8250
-@@ -18,6 +20,8 @@ config LINKSTATION
+ #ifdef CONFIG_PCI
+ 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
+-		add_bridge(np);
++		mpc83xx_add_bridge(np);
  
- config MPC7448HPC2
- 	bool "Freescale MPC7448HPC2(Taiga)"
-+	depends on EMBEDDED6xx
-+	depends on (BROKEN || BROKEN_ON_SMP)
- 	select PCI
- 	select TSI108_BRIDGE
- 	select DEFAULT_UIMAGE
-@@ -29,6 +33,7 @@ config MPC7448HPC2
+ 	ppc_md.pci_exclude_device = mpc83xx_exclude_device;
+ #endif
+Index: linux-2.6/arch/powerpc/platforms/83xx/mpc834x_mds.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/83xx/mpc834x_mds.c
++++ linux-2.6/arch/powerpc/platforms/83xx/mpc834x_mds.c
+@@ -129,7 +129,7 @@ static void __init mpc834x_mds_setup_arc
  
- config PPC_HOLLY
- 	bool "PPC750GX/CL with TSI10x bridge (Hickory/Holly)"
-+	depends on EMBEDDED6xx
- 	select TSI108_BRIDGE
- 	select PPC_UDBG_16550
- 	select CPU_7xx
-@@ -39,13 +44,13 @@ config PPC_HOLLY
+ #ifdef CONFIG_PCI
+ 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
+-		add_bridge(np);
++		mpc83xx_add_bridge(np);
  
- config PPC_PRPMC2800
- 	bool "Motorola-PrPMC2800"
-+	depends on EMBEDDED6xx
- 	select MV64X60
- 	select NOT_COHERENT_CACHE
- 	select WANT_DEVICE_TREE
- 	select CPU_74xx
- 	help
- 	  This option enables support for the Motorola PrPMC2800 board
--endchoice
+ 	ppc_md.pci_exclude_device = mpc83xx_exclude_device;
+ #endif
+Index: linux-2.6/arch/powerpc/platforms/83xx/pci.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/83xx/pci.c
++++ linux-2.6/arch/powerpc/platforms/83xx/pci.c
+@@ -45,7 +45,7 @@ int mpc83xx_exclude_device(u_char bus, u
+ 	return PCIBIOS_SUCCESSFUL;
+ }
  
- config TSI108_BRIDGE
- 	bool
+-int __init add_bridge(struct device_node *dev)
++int __init mpc83xx_add_bridge(struct device_node *dev)
+ {
+ 	int len;
+ 	struct pci_controller *hose;
+Index: linux-2.6/arch/powerpc/platforms/85xx/mpc85xx.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/85xx/mpc85xx.h
++++ linux-2.6/arch/powerpc/platforms/85xx/mpc85xx.h
+@@ -15,4 +15,4 @@
+  */
+ 
+ extern void mpc85xx_restart(char *);
+-extern int add_bridge(struct device_node *dev);
++extern int mpc85xx_add_bridge(struct device_node *dev);
+Index: linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/85xx/mpc85xx_ads.c
++++ linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+@@ -241,7 +241,7 @@ static void __init mpc85xx_ads_setup_arc
+ 
+ #ifdef CONFIG_PCI
+ 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
+-		add_bridge(np);
++		mpc85xx_add_bridge(np);
+ 	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
+ #endif
+ }
+Index: linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/85xx/mpc85xx_cds.c
++++ linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+@@ -257,7 +257,7 @@ static void __init mpc85xx_cds_setup_arc
+ 
+ #ifdef CONFIG_PCI
+ 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
+-		add_bridge(np);
++		mpc85xx_add_bridge(np);
+ 
+ 	ppc_md.pcibios_fixup = mpc85xx_cds_pcibios_fixup;
+ 	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
+Index: linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -100,7 +100,7 @@ static void __init mpc85xx_mds_setup_arc
+ 
+ #ifdef CONFIG_PCI
+ 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;) {
+-		add_bridge(np);
++		mpc85xx_add_bridge(np);
+ 	}
+ 	of_node_put(np);
+ #endif
+Index: linux-2.6/arch/powerpc/platforms/85xx/pci.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/85xx/pci.c
++++ linux-2.6/arch/powerpc/platforms/85xx/pci.c
+@@ -36,7 +36,7 @@
+ int mpc85xx_pci2_busno = 0;
+ 
+ #ifdef CONFIG_PCI
+-int __init add_bridge(struct device_node *dev)
++int __init mpc85xx_add_bridge(struct device_node *dev)
+ {
+ 	int len;
+ 	struct pci_controller *hose;
+Index: linux-2.6/arch/powerpc/platforms/86xx/mpc86xx.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/86xx/mpc86xx.h
++++ linux-2.6/arch/powerpc/platforms/86xx/mpc86xx.h
+@@ -15,7 +15,7 @@
+  * mpc86xx_* files. Mostly for use by mpc86xx_setup().
+  */
+ 
+-extern int add_bridge(struct device_node *dev);
++extern int mpc86xx_add_bridge(struct device_node *dev);
+ 
+ extern int mpc86xx_exclude_device(u_char bus, u_char devfn);
+ 
+Index: linux-2.6/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
++++ linux-2.6/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+@@ -364,7 +364,7 @@ mpc86xx_hpcn_setup_arch(void)
+ 
+ #ifdef CONFIG_PCI
+ 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
+-		add_bridge(np);
++		mpc86xx_add_bridge(np);
+ 
+ 	ppc_md.pci_exclude_device = mpc86xx_exclude_device;
+ #endif
+Index: linux-2.6/arch/powerpc/platforms/86xx/pci.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/86xx/pci.c
++++ linux-2.6/arch/powerpc/platforms/86xx/pci.c
+@@ -148,7 +148,7 @@ int mpc86xx_exclude_device(u_char bus, u
+ 	return PCIBIOS_SUCCESSFUL;
+ }
+ 
+-int __init add_bridge(struct device_node *dev)
++int __init mpc86xx_add_bridge(struct device_node *dev)
+ {
+ 	int len;
+ 	struct pci_controller *hose;
+Index: linux-2.6/arch/powerpc/platforms/embedded6xx/linkstation.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/embedded6xx/linkstation.c
++++ linux-2.6/arch/powerpc/platforms/embedded6xx/linkstation.c
+@@ -54,7 +54,7 @@ static struct mtd_partition linkstation_
+ 	},
+ };
+ 
+-static int __init add_bridge(struct device_node *dev)
++static int __init linkstation_add_bridge(struct device_node *dev)
+ {
+ 	int len;
+ 	struct pci_controller *hose;
+@@ -92,7 +92,7 @@ static void __init linkstation_setup_arc
+ 
+ 	/* Lookup PCI host bridges */
+ 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
+-		add_bridge(np);
++		linkstation_add_bridge(np);
+ 
+ 	printk(KERN_INFO "BUFFALO Network Attached Storage Series\n");
+ 	printk(KERN_INFO "(C) 2002-2005 BUFFALO INC.\n");
+Index: linux-2.6/arch/powerpc/platforms/maple/pci.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/maple/pci.c
++++ linux-2.6/arch/powerpc/platforms/maple/pci.c
+@@ -444,7 +444,7 @@ static void __init setup_u3_ht(struct pc
+ 	u3_ht = hose;
+ }
+ 
+-static int __init add_bridge(struct device_node *dev)
++static int __init maple_add_bridge(struct device_node *dev)
+ {
+ 	int len;
+ 	struct pci_controller *hose;
+@@ -541,7 +541,7 @@ void __init maple_pci_init(void)
+ 			continue;
+ 		if ((of_device_is_compatible(np, "u4-pcie") ||
+ 		     of_device_is_compatible(np, "u3-agp")) &&
+-		    add_bridge(np) == 0)
++		    maple_add_bridge(np) == 0)
+ 			of_node_get(np);
+ 
+ 		if (of_device_is_compatible(np, "u3-ht")) {
+@@ -553,7 +553,7 @@ void __init maple_pci_init(void)
+ 
+ 	/* Now setup the HyperTransport host if we found any
+ 	 */
+-	if (ht && add_bridge(ht) != 0)
++	if (ht && maple_add_bridge(ht) != 0)
+ 		of_node_put(ht);
+ 
+ 	/* Setup the linkage between OF nodes and PHBs */ 
+Index: linux-2.6/arch/powerpc/platforms/pasemi/pci.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/pasemi/pci.c
++++ linux-2.6/arch/powerpc/platforms/pasemi/pci.c
+@@ -132,7 +132,7 @@ static void __init setup_pa_pxp(struct p
+ 	hose->cfg_data = ioremap(0xe0000000, 0x10000000);
+ }
+ 
+-static int __init add_bridge(struct device_node *dev)
++static int __init pas_add_bridge(struct device_node *dev)
+ {
+ 	struct pci_controller *hose;
+ 
+@@ -167,7 +167,7 @@ void __init pas_pci_init(void)
+ 	}
+ 
+ 	for (np = NULL; (np = of_get_next_child(root, np)) != NULL;)
+-		if (np->name && !strcmp(np->name, "pxp") && !add_bridge(np))
++		if (np->name && !strcmp(np->name, "pxp") && !pas_add_bridge(np))
+ 			of_node_get(np);
+ 
+ 	of_node_put(root);
+Index: linux-2.6/arch/powerpc/platforms/powermac/pci.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/powermac/pci.c
++++ linux-2.6/arch/powerpc/platforms/powermac/pci.c
+@@ -35,8 +35,6 @@
+ #define DBG(x...)
+ #endif
+ 
+-static int add_bridge(struct device_node *dev);
+-
+ /* XXX Could be per-controller, but I don't think we risk anything by
+  * assuming we won't have both UniNorth and Bandit */
+ static int has_uninorth;
+@@ -897,7 +895,7 @@ static void __init setup_u3_ht(struct pc
+  * "pci" (a MPC106) and no bandit or chaos bridges, and contrariwise,
+  * if we have one or more bandit or chaos bridges, we don't have a MPC106.
+  */
+-static int __init add_bridge(struct device_node *dev)
++static int __init pmac_add_bridge(struct device_node *dev)
+ {
+ 	int len;
+ 	struct pci_controller *hose;
+@@ -1023,7 +1021,7 @@ void __init pmac_pci_init(void)
+ 		if (strcmp(np->name, "bandit") == 0
+ 		    || strcmp(np->name, "chaos") == 0
+ 		    || strcmp(np->name, "pci") == 0) {
+-			if (add_bridge(np) == 0)
++			if (pmac_add_bridge(np) == 0)
+ 				of_node_get(np);
+ 		}
+ 		if (strcmp(np->name, "ht") == 0) {
+@@ -1037,7 +1035,7 @@ void __init pmac_pci_init(void)
+ 	/* Probe HT last as it relies on the agp resources to be already
+ 	 * setup
+ 	 */
+-	if (ht && add_bridge(ht) != 0)
++	if (ht && pmac_add_bridge(ht) != 0)
+ 		of_node_put(ht);
+ 
+ 	/* Setup the linkage between OF nodes and PHBs */
 
 --
