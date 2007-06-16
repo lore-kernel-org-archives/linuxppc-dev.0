@@ -1,21 +1,20 @@
-Return-Path: <mb@bu3sch.de>
-Received: from vs166246.vserver.de
-	(static-ip-62-75-166-246.inaddr.intergenia.de [62.75.166.246])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <flar@cynthia.pants.nu>
+Received: from cynthia.pants.nu (adsl-216-102-214-42.dsl.snfc21.pacbell.net
+	[216.102.214.42]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9C28BDDE08
-	for <linuxppc-dev@ozlabs.org>; Sun, 17 Jun 2007 00:09:10 +1000 (EST)
-From: Michael Buesch <mb@bu3sch.de>
-To: Segher Boessenkool <segher@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id AF47CDDE39
+	for <linuxppc-dev@ozlabs.org>; Sun, 17 Jun 2007 04:09:57 +1000 (EST)
+Date: Sat, 16 Jun 2007 09:10:09 -0700
+From: Brad Boyer <flar@allandria.com>
+To: Michael Buesch <mb@bu3sch.de>
 Subject: Re: Powerbook hard shutdown after boot if it's hot
-Date: Sat, 16 Jun 2007 16:09:00 +0200
-References: <200706141739.12754.mb@bu3sch.de> <200706161504.41168.mb@bu3sch.de>
-	<eb7515dbdeec906704d8139424ceee4a@kernel.crashing.org>
-In-Reply-To: <eb7515dbdeec906704d8139424ceee4a@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200706161609.00302.mb@bu3sch.de>
+Message-ID: <20070616161009.GA26989@cynthia.pants.nu>
+References: <200706141739.12754.mb@bu3sch.de>
+	<1181955074.26853.105.camel@localhost.localdomain>
+	<200706161504.41168.mb@bu3sch.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200706161504.41168.mb@bu3sch.de>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,20 +25,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 16 June 2007 15:40:39 Segher Boessenkool wrote:
-> > I think this powerdown is not really related to the adt chip/driver.
-> > I think it's more likely some PMU issue and the PMU forces the machine
-> > down. How's the PMU involved into temperatures? Does it get
-> > the temperature values from the adt chip?
-> 
-> It is connected to the overtemp alarm interrupt pin of
-> the temperature sensors at least.
-> 
-> Does this shutdown only happen if you boot Linux while
-> you were running Linux before, too?
+On Sat, Jun 16, 2007 at 03:04:41PM +0200, Michael Buesch wrote:
+> Where in the kernel code are the PMU messages handled?
 
-No, it also happens, if I heat up the machine in OSX
-and boot linux. Booting OSX does not cause it, then.
+The main place to look would be drivers/macintosh/via-pmu.c, and
+it looks like the bulk of the work is being done in the function
+pmu_handle_data(). You might want to take a look at other parts
+of the driver as well.
 
--- 
-Greetings Michael.
+	Brad Boyer
+	flar@allandria.com
