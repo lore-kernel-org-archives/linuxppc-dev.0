@@ -1,13 +1,13 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id ADC59DDFD6
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 10:09:11 +1000 (EST)
-Message-Id: <20070616000618.965439750@arndb.de>
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 8162FDDFE3
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jun 2007 10:09:13 +1000 (EST)
+Message-Id: <20070616000618.706193913@arndb.de>
 References: <20070616000511.712667424@arndb.de>
-Date: Sat, 16 Jun 2007 02:05:18 +0200
+Date: Sat, 16 Jun 2007 02:05:16 +0200
 From: arnd@arndb.de
 To: paulus@samba.org
-Subject: [patch 7/9] disallow building powermac and tsi108 without PCI
+Subject: [patch 5/9] kill isa_{io,mem}_base definitions for !PCI
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,79 +18,210 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The TSI108 code and the 32 bit powermac and chrp platforms
-have dependency on PCI that is not easy or desirable to get rid
-of.
+When CONFIG_PCI is disabled, the definitions for isa_io_base,
+isa_mem_base and pci_dram_offset are entirely unused, but they
+can result in link failure because they are defined in multiple
+places.
 
-The easiest fix is to always select CONFIG_PCI if one of those
-platforms is enabled.
+The easiest fix is to just remove all these definitions.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-Index: linux-2.6/arch/powerpc/platforms/embedded6xx/Kconfig
+Index: linux-2.6/arch/powerpc/platforms/83xx/mpc8313_rdb.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/embedded6xx/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/embedded6xx/Kconfig
-@@ -18,6 +18,7 @@ config LINKSTATION
+--- linux-2.6.orig/arch/powerpc/platforms/83xx/mpc8313_rdb.c
++++ linux-2.6/arch/powerpc/platforms/83xx/mpc8313_rdb.c
+@@ -28,11 +28,6 @@
+ #define DBG(fmt...)
+ #endif
  
- config MPC7448HPC2
- 	bool "Freescale MPC7448HPC2(Taiga)"
-+	select PCI
- 	select TSI108_BRIDGE
- 	select DEFAULT_UIMAGE
- 	select PPC_UDBG_16550
-@@ -31,6 +32,7 @@ config PPC_HOLLY
- 	select TSI108_BRIDGE
- 	select PPC_UDBG_16550
- 	select CPU_7xx
-+	select PCI
- 	help
- 	  Select PPC_HOLLY if configuring for an IBM 750GX/CL Eval
- 	  Board with TSI108/9 bridge (Hickory/Holly)
-Index: linux-2.6/arch/powerpc/platforms/powermac/Kconfig
+-#ifndef CONFIG_PCI
+-unsigned long isa_io_base = 0;
+-unsigned long isa_mem_base = 0;
+-#endif
+-
+ /* ************************************************************************
+  *
+  * Setup the architecture
+Index: linux-2.6/arch/powerpc/platforms/83xx/mpc832x_mds.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/powermac/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/powermac/Kconfig
-@@ -2,6 +2,7 @@ config PPC_PMAC
- 	bool "Apple PowerMac based machines"
- 	depends on PPC_MULTIPLATFORM
- 	select MPIC
-+	select PCI
- 	select PPC_INDIRECT_PCI if PPC32
- 	select PPC_MPC106 if PPC32
- 	select PPC_NATIVE
-Index: linux-2.6/arch/powerpc/Kconfig
+--- linux-2.6.orig/arch/powerpc/platforms/83xx/mpc832x_mds.c
++++ linux-2.6/arch/powerpc/platforms/83xx/mpc832x_mds.c
+@@ -49,11 +49,6 @@
+ #define DBG(fmt...)
+ #endif
+ 
+-#ifndef CONFIG_PCI
+-unsigned long isa_io_base = 0;
+-unsigned long isa_mem_base = 0;
+-#endif
+-
+ static u8 *bcsr_regs = NULL;
+ 
+ /* ************************************************************************
+Index: linux-2.6/arch/powerpc/platforms/83xx/mpc832x_rdb.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/Kconfig
-+++ linux-2.6/arch/powerpc/Kconfig
-@@ -435,7 +435,7 @@ config MCA
- config PCI
- 	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx || PPC_86xx \
- 		|| PPC_MPC52xx || (EMBEDDED && (PPC_PSERIES || PPC_ISERIES)) \
--		|| MPC7448HPC2 || PPC_PS3 || PPC_HOLLY
-+		|| PPC_PS3
- 	default y if !40x && !CPM2 && !8xx && !PPC_83xx \
- 		&& !PPC_85xx && !PPC_86xx
- 	default PCI_PERMEDIA if !4xx && !CPM2 && !8xx
-Index: linux-2.6/arch/powerpc/platforms/chrp/Kconfig
+--- linux-2.6.orig/arch/powerpc/platforms/83xx/mpc832x_rdb.c
++++ linux-2.6/arch/powerpc/platforms/83xx/mpc832x_rdb.c
+@@ -32,11 +32,6 @@
+ #define DBG(fmt...)
+ #endif
+ 
+-#ifndef CONFIG_PCI
+-unsigned long isa_io_base = 0;
+-unsigned long isa_mem_base = 0;
+-#endif
+-
+ /* ************************************************************************
+  *
+  * Setup the architecture
+Index: linux-2.6/arch/powerpc/platforms/83xx/mpc834x_itx.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/chrp/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/chrp/Kconfig
-@@ -8,4 +8,5 @@ config PPC_CHRP
- 	select PPC_MPC106
- 	select PPC_UDBG_16550
- 	select PPC_NATIVE
-+	select PCI
- 	default y
-Index: linux-2.6/arch/powerpc/platforms/chrp/Makefile
+--- linux-2.6.orig/arch/powerpc/platforms/83xx/mpc834x_itx.c
++++ linux-2.6/arch/powerpc/platforms/83xx/mpc834x_itx.c
+@@ -38,11 +38,6 @@
+ 
+ #include "mpc83xx.h"
+ 
+-#ifndef CONFIG_PCI
+-unsigned long isa_io_base = 0;
+-unsigned long isa_mem_base = 0;
+-#endif
+-
+ /* ************************************************************************
+  *
+  * Setup the architecture
+Index: linux-2.6/arch/powerpc/platforms/83xx/mpc834x_mds.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/chrp/Makefile
-+++ linux-2.6/arch/powerpc/platforms/chrp/Makefile
-@@ -1,4 +1,3 @@
--obj-y				+= setup.o time.o pegasos_eth.o
--obj-$(CONFIG_PCI)		+= pci.o
-+obj-y				+= setup.o time.o pegasos_eth.o pci.o
- obj-$(CONFIG_SMP)		+= smp.o
- obj-$(CONFIG_NVRAM)		+= nvram.o
+--- linux-2.6.orig/arch/powerpc/platforms/83xx/mpc834x_mds.c
++++ linux-2.6/arch/powerpc/platforms/83xx/mpc834x_mds.c
+@@ -38,11 +38,6 @@
+ 
+ #include "mpc83xx.h"
+ 
+-#ifndef CONFIG_PCI
+-unsigned long isa_io_base = 0;
+-unsigned long isa_mem_base = 0;
+-#endif
+-
+ #define BCSR5_INT_USB		0x02
+ /* Note: This is only for PB, not for PB+PIB
+  * On PB only port0 is connected using ULPI */
+Index: linux-2.6/arch/powerpc/platforms/83xx/mpc836x_mds.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/83xx/mpc836x_mds.c
++++ linux-2.6/arch/powerpc/platforms/83xx/mpc836x_mds.c
+@@ -55,11 +55,6 @@
+ #define DBG(fmt...)
+ #endif
+ 
+-#ifndef CONFIG_PCI
+-unsigned long isa_io_base = 0;
+-unsigned long isa_mem_base = 0;
+-#endif
+-
+ static u8 *bcsr_regs = NULL;
+ 
+ /* ************************************************************************
+Index: linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/85xx/mpc85xx_ads.c
++++ linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+@@ -38,11 +38,6 @@
+ #include <asm/fs_pd.h>
+ #endif
+ 
+-#ifndef CONFIG_PCI
+-unsigned long isa_io_base = 0;
+-unsigned long isa_mem_base = 0;
+-#endif
+-
+ #ifdef CONFIG_PCI
+ static int mpc85xx_exclude_device(u_char bus, u_char devfn)
+ {
+Index: linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/85xx/mpc85xx_cds.c
++++ linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+@@ -47,11 +47,6 @@
+ #include <sysdev/fsl_soc.h>
+ #include "mpc85xx.h"
+ 
+-#ifndef CONFIG_PCI
+-unsigned long isa_io_base = 0;
+-unsigned long isa_mem_base = 0;
+-#endif
+-
+ static int cds_pci_slot = 2;
+ static volatile u8 *cadmus;
+ 
+Index: linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -59,11 +59,6 @@
+ #define DBG(fmt...)
+ #endif
+ 
+-#ifndef CONFIG_PCI
+-unsigned long isa_io_base = 0;
+-unsigned long isa_mem_base = 0;
+-#endif
+-
+ /* ************************************************************************
+  *
+  * Setup the architecture
+Index: linux-2.6/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
++++ linux-2.6/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+@@ -44,13 +44,6 @@
+ #define DBG(fmt...) do { } while(0)
+ #endif
+ 
+-#ifndef CONFIG_PCI
+-unsigned long isa_io_base = 0;
+-unsigned long isa_mem_base = 0;
+-unsigned long pci_dram_offset = 0;
+-#endif
+-
+-
+ #ifdef CONFIG_PCI
+ static void mpc86xx_8259_cascade(unsigned int irq, struct irq_desc *desc)
+ {
+Index: linux-2.6/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
++++ linux-2.6/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
+@@ -54,12 +54,6 @@
+ 
+ #define MPC7448HPC2_PCI_CFG_PHYS 0xfb000000
+ 
+-#ifndef CONFIG_PCI
+-isa_io_base = MPC7448_HPC2_ISA_IO_BASE;
+-isa_mem_base = MPC7448_HPC2_ISA_MEM_BASE;
+-pci_dram_offset = MPC7448_HPC2_PCI_MEM_OFFSET;
+-#endif
+-
+ extern void _nmask_and_or_msr(unsigned long nmask, unsigned long or_val);
+ 
+ int mpc7448_hpc2_exclude_device(u_char bus, u_char devfn)
+Index: linux-2.6/include/asm-powerpc/mpc86xx.h
+===================================================================
+--- linux-2.6.orig/include/asm-powerpc/mpc86xx.h
++++ linux-2.6/include/asm-powerpc/mpc86xx.h
+@@ -19,12 +19,6 @@
+ 
+ #ifdef CONFIG_PPC_86xx
+ 
+-#define _IO_BASE        isa_io_base
+-#define _ISA_MEM_BASE   isa_mem_base
+-#ifdef CONFIG_PCI
+-#define PCI_DRAM_OFFSET pci_dram_offset
+-#endif
+-
+ #define CPU0_BOOT_RELEASE 0x01000000
+ #define CPU1_BOOT_RELEASE 0x02000000
+ #define CPU_ALL_RELEASED (CPU0_BOOT_RELEASE | CPU1_BOOT_RELEASE)
 
 --
