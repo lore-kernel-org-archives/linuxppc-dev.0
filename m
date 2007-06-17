@@ -1,20 +1,23 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 5304ADDECD
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 01:32:44 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [patch 5/9] kill isa_{io,mem}_base definitions for !PCI
-Date: Sun, 17 Jun 2007 17:32:43 +0200
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
+	[151.189.21.44])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 05AA6DDEDA
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 02:12:01 +1000 (EST)
+In-Reply-To: <91EBCC0C-48B7-4748-A936-E74CEB7685E0@kernel.crashing.org>
 References: <20070616000511.712667424@arndb.de>
-	<20070616000618.706193913@arndb.de>
-	<43F789E2-BBB2-4382-9DA2-619357E9E006@kernel.crashing.org>
-In-Reply-To: <43F789E2-BBB2-4382-9DA2-619357E9E006@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200706171732.43969.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	<20070616000618.314570319@arndb.de>
+	<91EBCC0C-48B7-4748-A936-E74CEB7685E0@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <4919e259332813addb0c287848fa48c3@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [patch 2/9] autoselect optimal -mcpu= flag by platform
+Date: Sun, 17 Jun 2007 18:11:50 +0200
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,17 +27,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sunday 17 June 2007, Kumar Gala wrote:
-> > -#ifndef CONFIG_PCI
-> > -isa_io_base =3D MPC7448_HPC2_ISA_IO_BASE;
-> > -isa_mem_base =3D MPC7448_HPC2_ISA_MEM_BASE;
-> > -pci_dram_offset =3D MPC7448_HPC2_PCI_MEM_OFFSET;
-> > -#endif
-> > -
-> > =A0extern void _nmask_and_or_msr(unsigned long nmask, unsigned long =A0
-> > or_val);
->=20
-> can you remove the defines in mpc7448_hpc2.h since they are appear to =A0
-> only be used here.
+> Is there a reason we don't distinguish between 7400/7410 and 74{4,5}
+> x?  Is it because we dont have any discrete systems with just a 7400
+> on it?
 
-Ok, good idea.
+It's quite important for 74[01]0 systems to not run
+code tuned for 7450.  Older Macs have such CPUs, the
+user should have the option to tune for it.
+
+> Also I'd suggest we have the config options be a 1:1 matching for the
+> -mcpu/-mtune options in gcc for the following cases:
+>
+>> +	default "-mcpu=750" if CPU_7xx
+>> +	default "-mcpu=7450" if CPU_74xx
+>> +	default "-mcpu=860" if PPC_8xx
+>> +	default "-mcpu=8540" if PPC_85xx
+
+It would be good to do that for all cases, unfortunately
+GCC doesn't recognise all CPU/core names as -mcpu options.
+
+
+Segher
