@@ -1,25 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
-	[151.189.21.43])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2FAF7DDECA
-	for <linuxppc-dev@ozlabs.org>; Sun, 17 Jun 2007 10:22:28 +1000 (EST)
-In-Reply-To: <200706170214.11247.arnd@arndb.de>
-References: <20070612163016.253915076@arndb.de>
-	<200706150151.40056.arnd@arndb.de>
-	<21B37470-5341-4AC7-9334-B58F0BCFAAC9@kernel.crashing.org>
-	<200706170214.11247.arnd@arndb.de>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <f8a87cbd246847e830d0e6e986eec408@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [patch 00/13] CPU selection Kconfig cleanup, take 3
-Date: Sun, 17 Jun 2007 02:22:22 +0200
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Stephen Rothwell <sfr@canb.auug.org.au>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 687BFDDE08
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 00:28:37 +1000 (EST)
+In-Reply-To: <20070616000618.314570319@arndb.de>
+References: <20070616000511.712667424@arndb.de>
+	<20070616000618.314570319@arndb.de>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <91EBCC0C-48B7-4748-A936-E74CEB7685E0@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [patch 2/9] autoselect optimal -mcpu= flag by platform
+Date: Sun, 17 Jun 2007 09:29:14 -0500
+To: arnd@arndb.de
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,26 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> People have run into the issue so I think it desires at least a =A0
->> little concern. =A0See: http://marc.info/?t=3D117529164800005&r=3D1&w=3D=
-2
+
+On Jun 15, 2007, at 7:05 PM, arnd@arndb.de wrote:
+
+> We can choose the -mcpu= gcc flags for compiling the kernel
+> based on the platform that we build for. In case of multiplatform
+> kernels, this chooses a setting for a common subset.
 >
-> But isn't the reported problem just a bug in the build system?
+> When using a platform type that can use different CPUs, a
+> new option CONFIG_PPC_CPU_SELECTION can be enabled to select
+> more specifically which CPUs the kernel will be able to
+> run on.
+>
+> This replaces the CONFIG_POWER4_ONLY option with an much more
+> generic approach.
+>
+> Also, when CONFIG_PPC_CPU_SELECTION is set, it is now possible
+> to select a CPU to tune for by means of the -mtune= option.
+>
+> I tried to be very careful when coding the specific rules into
+> the Kconfig language, but it would be good to have a few
+> people sanity-checking them.
+>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-Yes, that's a completely separate bug.
+Is there a reason we don't distinguish between 7400/7410 and 74{4,5} 
+x?  Is it because we dont have any discrete systems with just a 7400  
+on it?
 
-> My impression was that the user did not complain about the fact
-> that the kernel he was trying to build would not boot on any
-> platform, but rather that the kernel tried to build a zImage
-> that was not defined, resulting in a build error.
+Also I'd suggest we have the config options be a 1:1 matching for the  
+-mcpu/-mtune options in gcc for the following cases:
 
-It's the only valid complaint, anyway :-)
+> +	default "-mcpu=750" if CPU_7xx
+> +	default "-mcpu=7450" if CPU_74xx
+> +	default "-mcpu=860" if PPC_8xx
+> +	default "-mcpu=8540" if PPC_85xx
 
-> Obviously, any configuration that can be selected by the user
-> should be able to compile and link without errors, even if it's
-> not particularly useful.
+So if in the future we have code scheduling for 8599 or some other  
+variant we don't have to go change the Kconfig just add to it.
 
-Yes.
-
-
-Segher
+- k
