@@ -1,19 +1,18 @@
-Return-Path: <mgreer@mvista.com>
-Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id 0773EDDEFB
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 06:27:41 +1000 (EST)
-Date: Mon, 18 Jun 2007 13:25:18 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Gerhard Pircher <gerhard_pircher@gmx.net>
-Subject: Re: [RFC] Device tree for new desktop platform in arch/powerpc
-Message-ID: <20070618202518.GG8740@mag.az.mvista.com>
-References: <20070618185715.321010@gmx.net>
-	<20070618191529.GC8740@mag.az.mvista.com>
-	<20070618194359.321010@gmx.net>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 22A08DDEDA
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 07:14:33 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: CONFIG_PS3_USE_LPAR_ADDR dramically increases boot time
+Date: Mon, 18 Jun 2007 23:14:26 +0200
+References: <F4482BED-242B-42AD-96FF-3CB14B6BC5BE@watson.ibm.com>
+In-Reply-To: <F4482BED-242B-42AD-96FF-3CB14B6BC5BE@watson.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070618194359.321010@gmx.net>
-Cc: linuxppc-dev@ozlabs.org, "list <linuxppc-dev"@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200706182314.26918.arnd@arndb.de>
+Cc: Jimi Xenidis <jimix@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,20 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jun 18, 2007 at 09:43:59PM +0200, Gerhard Pircher wrote:
-> Von: "Mark A. Greer" <mgreer@mvista.com>
-> > On Mon, Jun 18, 2007 at 08:57:15PM +0200, Gerhard Pircher wrote:
-> > 
-> > > 1. The AmigaOne makes use of different G3...
-> > 
-> > I'm far from an authoritative figure on this but making a
-> > reasonable default (in your dts file) then updating in the 
-> > bootwrapper makes sense to me.  That's what I did for several 
-> > properties in the prpmc2800's dts.
-> So, the bootwrapper should update the name property of the CPU node. Is the cpu node name used somewhere?
+On Monday 18 June 2007, Jimi Xenidis wrote:
+>=20
+> The following change set:
+> =A0 =A0http://git.kernel.org/?p=3Dlinux/kernel/git/paulus/=20
+> powerpc.git;a=3Dcommit;h=3D261efc3f178c8c5b55d76208aee1f39ce247f723
+>=20
+> setting CONFIG_PS3_USE_LPAR_ADDR (which is the default for PS3) =A0
+> changes increases MAX_PHYSADDR_BITS =A0from 44 to 47 which makes the =A0
+> array 8 time bigger and takes way longer for sparse_init() to run on =A0
+> simulator.
+>=20
+> Is this really the right approach?
+> Cell is actually 42 so could not the special address space be 43 or 44?
 
-Oh, sorry I really talking about the cpu frequencies, etc.
-I don't think the name of the cpu node matters but I'd have to check.
-Others probably know off the top of their heads.
+Unfortunately, the hypervisor chooses the addresses where things get
+mapped, and since they are guest-real, there is no hard limit where
+the hypervisor puts them, like the 42 bit limit on bare metal.
 
-Mark
+I guess this will improve if we get virt_mem_map support on powerpc,
+but I'm not sure if that's currently being worked on.
+
+	Arnd <><
