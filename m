@@ -1,29 +1,24 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
-	[151.189.21.44])
+Received: from mail-in-05.arcor-online.net (mail-in-05.arcor-online.net
+	[151.189.21.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 04E0FDDE16
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 22:43:52 +1000 (EST)
-In-Reply-To: <46B96294322F7D458F9648B60E15112C527171@zch01exm26.fsl.freescale.net>
-References: <11816389393593-git-send-email-wei.zhang@freescale.com>
-	<1181638939310-git-send-email-wei.zhang@freescale.com>
-	<39c7d60cebf03badd106d7f75a08f449@kernel.crashing.org>
-	<46B96294322F7D458F9648B60E15112C526DD9@zch01exm26.fsl.freescale.net>
-	<59453d80f2f111b72e8f24e7b489c23e@kernel.crashing.org>
-	<CF39A363-25C6-4780-96EC-6750D77C287F@kernel.crashing.org>
-	<2e7b08497aae9219233aed72628e46c6@kernel.crashing.org>
-	<46B96294322F7D458F9648B60E15112C527171@zch01exm26.fsl.freescale.net>
+	by ozlabs.org (Postfix) with ESMTP id ED9ECDDEEA
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 22:52:24 +1000 (EST)
+In-Reply-To: <fbae4506b772f07d2a8c1d230bea82c8@bga.com>
+References: <111819314606b8b45671.846930886.miltonm@bga.com>
+	<4672EE95.3030407@freescale.com>
+	<fbae4506b772f07d2a8c1d230bea82c8@bga.com>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <8ce6f7f0f93921b9b6ed883fba247c2b@kernel.crashing.org>
+Message-Id: <bfbd4f126c427f590198a3e50a789b0c@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/5] Add the explanation and sample of RapidIO DTS sector
-	to the document of booting-without-of.txt file.
-Date: Mon, 18 Jun 2007 14:43:43 +0200
-To: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] boot: find initrd location from device-tree
+Date: Mon, 18 Jun 2007 14:52:12 +0200
+To: Milton Miller <miltonm@bga.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,66 +28,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> You don't need to mention _all_ compatible devices in
->> the "compatible" property, only the few that matter;
->> typically the oldest one, and sometimes some intermediate
->> device that has extra features over the original one.
->
-> The oldest one is difficult to find out sometime. Can we only set the
-> self name in dts, such as "fsl, rapidio-8641", and add this 
-> 'compatible'
-> property to the driver ids arrays?
-
-You can do that, but you typically don't need to -- the
-whole idea of "compatible" is to avoid this, and not need
-to have huge "pci id" style tables in the device drivers
-that need constant updating.  But you _can_ do it, sure.
-
-> Such as:
->
-> static struct of_device_id of_rio_rpn_ids[] = {
-> 	{ .compatible = "fsl, rapidio-8540",},
-> 	{ .compatible = "fsl, rapidio-8560",},
-> 	{ .compatible = "fsl, rapidio-8641",},
-> 	{ .compatible = "fsl, rapidio-8548",},
-> 	{},
-> };
->
-> How about that?
-
-I would just put 8540 in the table and in all device trees
-in this case.
-
->> It isn't useful to add "compatible" entries that no OS
->> probes for.
+>>> +     /* if the initrd is above 4G, its untouchable in 32 bit mode */
+>>> +     if (initrd_end <= UINT_MAX && initrd_start < initrd_end) {
+>>> +             loader_info.initrd_addr = initrd_start;
+>>> +             loader_info.initrd_size  = initrd_end - initrd_start;
+>>> +     } else {
+>>> +             printf("ignoring loader supplied initrd parameters\n");
 >>
->>>> Concrete names are good.
->>>
->>> While I agree concrete names are good, we put these 'blocks' in so
->>> many devices that using the device to match on is pointless.
->>
->> You *definitely* should put the device name for _this_
->> device in there, in case it needs some special workaround.
->>
->>> I'm all for making up a name like 'Grande', 'Del',
->> 'Janeiro'.  This is
->>> effective what we did with gianfar.  The name gets picked up pretty
->>> quickly by people.
->>
->> That can be used as the "base" name, yes.
+>> Saying why might be helpful.
 >
-> Do you have the name list? I can change my codes according them.
+> Hmm... well, that would mean seperating the && of the if; there are two
+> possible reasons. (1) this 32-bit code can't handle such large
+> addresses (in which case a 64-bit kernel may work), and (2) end is >=
+> start (which means there really isn't any data.  I suppose I could
+> reverse the sense of the if, use an else if, and make the final else
+> the good path.
 
-Nope.
+"ignoring loader supplied nonsensical initrd parameters"
 
-> How about 'Mercurary', 'Venus', 'Earth', 'Mars', 'Saturn', 'Jupiter',
-> 'Uranus', 'Neptune',
-> Or 'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra',
-> 'Scorpius', 'Sagittarius', 'Capricornus', 'Aquarius', 'Pisces' ?
+You do need to fix the comment, though :-)
 
-I don't like making up names just for this, I don't see what good
-this would do.  Using a pre-existing code name is fine of course,
-as long as it is a unique identifier, since that's all that matters.
+>>> +#define _LIBC_LIMITS_H_              /* don't recurse to system's
+>> headers */
+>>> +#include <limits.h>          /* MAX_UINT, etc */
+>>> +
+>>
+>> I think it's really a bad idea to use any headers from outside the
+>> boot context here.  We're dealing with explicit sized ints, so we can
+>> safely define our own constants giving the limit values.
+>
+> As I said in the patch changelog, the only headers picked up here are
+> libgcc.
+
+Which the kernel doesn't use.  It _should_ be fine
+nevertheless, <limits.h> is part of the "freestanding"
+headers -- why do you need to do a "libc" trick though?
+This doesn't work when not using glibc I guess?
 
 
 Segher
