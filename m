@@ -1,21 +1,14 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-11.arcor-online.net (mail-in-11.arcor-online.net
-	[151.189.21.51])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B49D7DDEC7
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 02:57:11 +1000 (EST)
-In-Reply-To: <26778ed0e343676aa0c4fd0f4fa0746b@bga.com>
-References: <26778ed0e343676aa0c4fd0f4fa0746b@bga.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <4056ac22c88873e2caf674f3dd482b2d@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [patch 24/33] powerpc: Correct __secondary_hold comment
-Date: Mon, 18 Jun 2007 18:56:58 +0200
-To: Milton Miller <miltonm@bga.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id DC86DDDE17
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 04:57:17 +1000 (EST)
+Content-Type: multipart/mixed; boundary="========GMX321011182193035149819"
+Date: Mon, 18 Jun 2007 20:57:15 +0200
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+Message-ID: <20070618185715.321010@gmx.net>
+MIME-Version: 1.0
+Subject: [RFC] Device tree for new desktop platform in arch/powerpc
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,19 +18,136 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> How does this text sound?
->
-> This code starting at offset 0x60 is used to hold secondary processors
-> before the kernel has been relocated to its linked address.  Any
-> platform or pre-boot environment may transfer secondary processors to
-> the kernel by copying the first 0x100 bytes to address 0, and then
-> instructing the secondary cpus to branch to address 0x60 after placing
-> their hardware id (as specified by the device tree) in r3.
+--========GMX321011182193035149819
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-I think it is a Really Bad Idea(tm) to make this part of
-the kernel ABI.  Can't you just make the secondaries enter
-the kernel by jumping to the normal kernel entry point
-(with some flag set in some register I suppose)?
+Hi,
 
+I'm working on support for the AmigaOne and started to write a device tree source file for use with the cuboot bootwrapper. Additionally to the booting-without-of.txt document and other dts files I found some OpenFirmware related documents on http://playground.sun.com/1275/ and tried to follow their guidelines. Note that I didn't try to compile the dts file yet, as it is not yet complete.
 
-Segher
+Some questions arose during the implementation, which I hope some of you can answer:
+
+1. The AmigaOne makes use of different G3 (750Cx, 750GL, 750GX) and G4 (7400, 7450, 7455, 7457) CPUs. The current dts file defines a cpu node with the name "PowerPC,7xxx@0" and the bootwrapper just fills in the cpu-, bus- and timebase frequencies. Is this the recommended way, or should the bootwrapper create a fresh cpu node with the correct name of the CPU (e.g. "PowerPC,7455@ 0" - I guess this would require a table with all PVR values and their corresponding CPU name. Or is there a function in the kernel that do this?).
+
+2. I tried to define all ISA devices, which are integrated in the southbridge (VT82C686B). Currently these are child nodes of the device tree root. Should they be child nodes of the southbridge's PCI-to-ISA device node? If so, where should I specify the register address ranges (reg property)? In the PCI device node or in the ISA device nodes, as it is now?
+
+3. The dts files define the device_type of a serial port as "serial", whereas the OF spec says "pnpPNP,501". What's the difference between the two?
+
+4. I couldn't find any information for a device tree representation of the i8259 interrupt controller in the booting-without-of.txt file. Is my implementation correct (inspired by the OF documents)?
+
+I would be grateful, if you could take a look at my dts file and comment on every line that doesn't meet your views.
+
+Thanks in advance!
+
+regards,
+
+Gerhard
+-- 
+GMX FreeMail: 1 GB Postfach, 5 E-Mail-Adressen, 10 Free SMS.
+Alle Infos und kostenlose Anmeldung: http://www.gmx.net/de/go/freemail
+
+--========GMX321011182193035149819
+Content-Type: application/octet-stream; name="amigaone.dts"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="amigaone.dts"
+
+LyoKICogQW1pZ2FPbmUgRGV2aWNlIFRyZWUgU291cmNlCiAqCiAqIENvcHlyaWdodCAyMDA3IEdl
+cmhhcmQgUGlyY2hlciAoZ2VyaGFyZF9waXJjaGVyQGdteC5uZXQpCiAqCiAqIFRoaXMgcHJvZ3Jh
+bSBpcyBmcmVlIHNvZnR3YXJlOyB5b3UgY2FuIHJlZGlzdHJpYnV0ZSAgaXQgYW5kL29yIG1vZGlm
+eSBpdAogKiB1bmRlciAgdGhlIHRlcm1zIG9mICB0aGUgR05VIEdlbmVyYWwgIFB1YmxpYyBMaWNl
+bnNlIGFzIHB1Ymxpc2hlZCBieSB0aGUKICogRnJlZSBTb2Z0d2FyZSBGb3VuZGF0aW9uOyAgZWl0
+aGVyIHZlcnNpb24gMiBvZiB0aGUgIExpY2Vuc2UsIG9yIChhdCB5b3VyCiAqIG9wdGlvbikgYW55
+IGxhdGVyIHZlcnNpb24uCiAqLwoKCi8gewoJbW9kZWwgPSAiRXlldGVjaCxBbWlnYU9uZSI7Cglj
+b21wYXRpYmxlID0gIkV5ZXRlY2gsQW1pZ2FPbmUiICJNQUksVGVyb24iOwoJI2FkZHJlc3MtY2Vs
+bHMgPSA8MT47Cgkjc2l6ZS1jZWxscyA9IDwxPjsKCgljcHVzIHsKCQkjYWRkcmVzcy1jZWxscyA9
+IDwxPjsKCQkjc2l6ZS1jZWxscyA9IDwwPjsKCgkJUG93ZXJQQyw3eHh4QDAgewkJCS8vIENhbiBi
+ZSA3NXggb3IgNzQ1eD8KCQkJZGV2aWNlX3R5cGUgPSAiY3B1IjsKCQkJcmVnID0gPDA+OwoJCQlk
+LWNhY2hlLWxpbmUtc2l6ZSA9IDwyMD47CS8vIDMyIGJ5dGVzCgkJCWktY2FjaGUtbGluZS1zaXpl
+ID0gPDIwPjsJLy8gMzIgYnl0ZXMKCQkJZC1jYWNoZS1zaXplID0gPDgwMDA+OwkJLy8gTDEsIDMy
+SwoJCQlpLWNhY2hlLXNpemUgPSA8ODAwMD47CQkvLyBMMSwgMzJLCgkJCXRpbWViYXNlLWZyZXF1
+ZW5jeSA9IDwwPjsJLy8gMzMuMyBNSHosIGZyb20gVS1ib290CgkJCWNsb2NrLWZyZXF1ZW5jeSA9
+IDwwPjsJCS8vIEZyb20gVS1ib290CgkJCWJ1cy1mcmVxdWVuY3kgPSA8MD47CQkvLyBGcm9tIFUt
+Ym9vdAoJCQkzMi1iaXQ7CgkJfTsKCX07CgoJbWVtb3J5IHsKCQlkZXZpY2VfdHlwZSA9ICJtZW1v
+cnkiOwoJCXJlZyA9IDwwIDA+OwkJCQkvLyBGcm9tIFUtYm9vdAoJfTsKCgkvLyBTaG91bGQgdGhl
+IGZvbGxvd2luZyBub2RlcyBiZSBjaGlsZHMgb2YgYSBJU0EgYnVzIG5vZGU/CgoJZG1hLWNvbnRy
+b2xsZXIgewoJCWRldmljZV90eXBlID0gImRtYS1jb250cm9sbGVyIjsKCQljb21wYXRpYmxlID0g
+ImNocnAsZG1hIjsKCQlyZWcgPSA8MCAxMCA4MCAxMCBjMCAyMD47CgkJLyogQ2hhbm5lbCA0IHJl
+c2VydmVyZCwgY2FzY2FkZSBtb2RlLCAyeDMyayB0cmFuc2Zlci9jb3VudGVyCgkJICogd2lkdGhz
+IGFuZCBidXMgbWFzdGVyIGNhcGFiaWxpdHkuIElzIHRoaXMgcmVhbGx5IG5lY2Vzc2FyeT8KCQkg
+Ki8KLyoJCWRtYSA9IDw0IDQgMjAgMjAgMT47ICovCgkJI2FkZHJlc3MtY2VsbHMgPSA8MT47CgkJ
+I3NpemUtY2VsbHMgPSA8MD47CQkJLy8gTm8gcGh5c2ljYWwgYWRkcmVzcy4KCX07CgogIAlpbnRl
+cnJ1cHQtY29udHJvbGxlciB7CgkJZGV2aWNlX3R5cGUgPSAiaW50ZXJydXB0LWNvbnRyb2xsZXIi
+OwoJCWNvbXBhdGlibGUgPSAiY2hycCxpaWMiOwoJCWludGVycnVwdC1jb250cm9sbGVyOwoJCXJl
+ZyA9IDwyMCAyIGEwIDIgNGQwIDI+OwoJCXJlc2VydmVkLWludGVycnVwdHMgPSA8Mj47CgkJI2Fk
+ZHJlc3MtY2VsbHMgPSA8MT47CgkJI3NpemUtY2VsbHMgPSA8MD47CgkJI2ludGVycnVwdC1jZWxs
+cyA9IDwyPjsKCX07CgoJODA0MkA2MCB7CgkJZGV2aWNlX3R5cGUgPSAiODA0MiI7CgkJY29tcGF0
+aWJsZSA9ICJjaHJwLDgwNDIiOwoJCXJlZyA9IDw2MCAxMD47CgkJaW50ZXJydXB0cyA9IDwxIDMg
+YyAzPjsJCQkvLyBJUlExLCBJUlExMiAocmlzaW5nIGVkZ2UpCgkJaW50ZXJydXB0LXBhcmVudCA9
+IDwmaW50ZXJydXB0LWNvbnRyb2xsZXI+OwoJCSNhZGRyZXNzLWNlbGxzID0gPDE+OwoJCSNzaXpl
+LWNlbGxzID0gPDA+OwkJCS8vIE5vIHBoeXNpY2FsIGFkZHJlc3MuCgoJCWtleWJvYXJkIHsKCQkJ
+ZGV2aWNlX3R5cGUgPSAia2V5Ym9hcmQiOwoJCQljb21wYXRpYmxlID0gInBucFBOUCwzMDMiOwoJ
+CQlyZWcgPSA8MD47CgkJfTsKCgkJbW91c2UgewoJCQlkZXZpY2VfdHlwZSA9ICJtb3VzZSI7CgkJ
+CWNvbXBhdGlibGUgPSAicG5wUE5QLGYwMyI7CgkJCXJlZyA9IDwxPjsKCQl9OwoJfTsKCgl0aW1l
+ckA0MCB7CgkJZGV2aWNlX3R5cGUgPSAidGltZXIiOwoJCXJlZyA9IDw0MCAyMD4KCQkjYWRkcmVz
+cy1jZWxscyA9IDwxPjsKCQkjc2l6ZS1jZWxscyA9IDwwPjsKCX07CgoJcnRjQDcwIHsKCQlkZXZp
+Y2VfdHlwZSA9ICJydGMiOwoJCWNvbXBhdGlibGUgPSA8ZHMxMzg1LXJ0Yz47CgkJcmVnID0gPDcw
+IDI+OwoJCWludGVycnVwdHMgPSA8OCAzPjsKCQkjYWRkcmVzcy1jZWxscyA9IDwxPjsKCQkjc2l6
+ZS1jZWxscyA9IDwwPjsKCX07CgoJc2VyaWFsQDNmOCB7CgkJZGV2aWNlX3R5cGUgPSAic2VyaWFs
+IjsKLyoJCWNvbXBhdGlibGUgPSAicG5wUE5QLDUwMSI7Ki8KCQljb21wYXRpYmxlID0gIm5zMTY1
+NTAiOwoJCXJlZyA9IDwzZjggOD47CgkJaW50ZXJydXB0cyA9IDw0IDM+OwkJCS8vIElSUTQgKHJp
+c2luZyBlZGdlKQoJCWludGVycnVwdC1wYXJlbnQgPSA8JmludGVycnVwdC1jb250cm9sbGVyPjsK
+CQljbG9jay1mcmVxdWVuY3kgPSA8MD47CQkJLy8gTm90IG5lY2Vzc2FyeT8KCQkjYWRkcmVzcy1j
+ZWxscyA9IDwxPjsKCQkjc2l6ZS1jZWxscyA9IDwwPjsKCX07CgoJc2VyaWFsQDJmOCB7CgkJZGV2
+aWNlX3R5cGUgPSAic2VyaWFsIjsKLyoJCWNvbXBhdGlibGUgPSAicG5wUE5QLDUwMSI7Ki8KCQlj
+b21wYXRpYmxlID0gIm5zMTY1NTAiOwoJCXJlZyA9IDwyZjggOD47CgkJaW50ZXJydXB0cyA9IDwz
+IDM+OwkJCS8vIElSUTMgKHJpc2luZyBlZGdlKQoJCWludGVycnVwdC1wYXJlbnQgPSA8JmludGVy
+cnVwdC1jb250cm9sbGVyPjsKCQljbG9jay1mcmVxdWVuY3kgPSA8MD47CQkJLy8gTm90IG5lY2Vz
+c2FyeT8KCQkjYWRkcmVzcy1jZWxscyA9IDwxPjsKCQkjc2l6ZS1jZWxscyA9IDwwPjsKCX07CgoJ
+cGFyYWxsZWxAMzc4IHsKCQlkZXZpY2VfdHlwZSA9ICJwYXJhbGxlbCI7CgkJY29tcGF0aWJsZSA9
+ICJjaHJwLGVjcCI7CgkJcmVnID0gPDM3OCAzIDc3OCAzPjsKLyoJCWludGVycnVwdHMgPSA8Nz47
+Ki8JCQkvLyBObyBJUlEgZnJlZSBvbiBBbWlnYU9uZSEKCQlpbnRlcnJ1cHQtcGFyZW50ID0gPCZp
+bnRlcnJ1cHQtY29udHJvbGxlcj47Ci8qCQlkbWEgPSA8MyAwIDAgMD47Ki8JCQkvLyBQYXJhbGxl
+bCBwb3J0IERNQSBtb2RlPwoJCSNhZGRyZXNzLWNlbGxzID0gPDE+OwoJCSNzaXplLWNlbGxzID0g
+PDA+OwoJfTsKCglmZGNAM2YwIHsKCQlkZXZpY2VfdHlwZSA9ICJmZGMiOwoJCWNvbXBhdGlibGUg
+PSAicG5wUE5QLDcwMCI7CgkJcmVnID0gPDNmMCA4PjsKCQlpbnRlcnJ1cHRzID0gPDYgMz47CQkJ
+Ly8gSVJRNiAocmlzaW5nIGVkZ2UpCgkJaW50ZXJydXB0LXBhcmVudCA9IDwmaW50ZXJydXB0LWNv
+bnRyb2xsZXI+OwovKgkJZG1hID0gPCA+OyovCQkJCS8vIEZsb3BweSBETUEgbW9kZT8KCQkjYWRk
+cmVzcy1jZWxscyA9IDwxPjsKCQkjc2l6ZS1jZWxscyA9IDwwPjsKCgkJZGlzayB7CgkJCWRldmlj
+ZV90eXBlID0gImJsb2NrIjsKCQkJcmVnID0gPDA+OwoJCX07Cgl9OwkKCiAgCXBjaUA4MDAwMDAw
+MCB7CgkJZGV2aWNlX3R5cGUgPSAicGNpIjsKCQlidXMtZnJlcXVlbmN5ID0gPDAxZmNhMDU1PjsJ
+CS8vIDMzLjNNSHoKCQlidXMtcmFuZ2UgPSA8MCBmPjsKCQlyZWcgPSA8ODAwMDAwMDAgN2YwMDAw
+MDA+OwkJCS8vIFdob2xlIFBDSSBzcGFjZS4KCQlyYW5nZXMgPSA8MDEwMDAwMDAgMCAwIGZlMDAw
+MDAwIDAgMDBjMDAwMDAJLy8gUENJIEkvTwoJCQkgIDAyMDAwMDAwIDAgMCA4MDAwMDAwMCAwIDdk
+MDAwMDAwCS8vIFBDSSBtZW1vcnkKCQkJICAwMjAwMDAwMCAwIDAgZmQwMDAwMDAgMCAwMTAwMDAw
+MAkvLyBQQ0kgYWxpYXMgbWVtb3J5CgkJCSAgMDAwMDAwMDAgMCAwIGZlYzAwMDAwIDAgMDAzMDAw
+MDA+OwkvLyBQQ0kgY29uZmlnCgkJODI1OS1pbnRlcnJ1cHQtYWNrbm93bGVkZ2UgPSA8ZmVmMDAw
+MDA+OwoJCSNhZGRyZXNzLWNlbGxzID0gPDM+OwoJCSNzaXplLWNlbGxzID0gPDI+OwoJfTsKfTsK
+
+--========GMX321011182193035149819
+Content-Type: application/octet-stream; name="ioports"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="ioports"
+
+MDAwMDAwMDAtMDBiZmZmZmYgOiBQQ0kgaG9zdCBicmlkZ2UKICAwMDAwMDAwMC0wMDAwMDAxZiA6
+IGRtYTEKICAwMDAwMDAyMC0wMDAwMDAyMSA6IDgyNTkgKG1hc3RlcikKICAwMDAwMDA0MC0wMDAw
+MDA1ZiA6IHRpbWVyCiAgMDAwMDAwNjAtMDAwMDAwNmYgOiBpODA0MgogIDAwMDAwMDgwLTAwMDAw
+MDhmIDogZG1hIHBhZ2UgcmVnCiAgMDAwMDAwYTAtMDAwMDAwYTEgOiA4MjU5IChzbGF2ZSkKICAw
+MDAwMDBjMC0wMDAwMDBkZiA6IGRtYTIKICAwMDAwMDE3MC0wMDAwMDE3NyA6IGlkZTEKICAwMDAw
+MDFmMC0wMDAwMDFmNyA6IGlkZTAKICAwMDAwMDJmOC0wMDAwMDJmZiA6IHNlcmlhbAogIDAwMDAw
+Mzc2LTAwMDAwMzc2IDogaWRlMQogIDAwMDAwMzc4LTAwMDAwMzdhIDogcGFycG9ydDAKICAwMDAw
+MDNjMC0wMDAwMDNkZiA6IHZnYSsKICAwMDAwMDNlOC0wMDAwMDNlZiA6IHNlcmlhbAogIDAwMDAw
+M2Y2LTAwMDAwM2Y2IDogaWRlMAogIDAwMDAwM2Y4LTAwMDAwM2ZmIDogc2VyaWFsCiAgMDAwMDA0
+ZDAtMDAwMDA0ZDEgOiA4MjU5IGVkZ2UgY29udHJvbAogIDAwMDAyMDAwLTAwMDAyZmZmIDogUENJ
+IEJ1cyAjMDEKICAgIDAwMDAyMDAwLTAwMDAyMGZmIDogMDAwMDowMTowMC4wCiAgMDAwMGNjMDAt
+MDAwMGNjMGYgOiAwMDAwOjAwOjA3LjEKICAgIDAwMDBjYzAwLTAwMDBjYzA3IDogaWRlMAogICAg
+MDAwMGNjMDgtMDAwMGNjMGYgOiBpZGUxCiAgMDA4MDIwMDAtMDA4MDIwN2YgOiAwMDAwOjAwOjA2
+LjAKICAwMDgwMjA4MC0wMDgwMjA5ZiA6IDAwMDA6MDA6MDcuMgogICAgMDA4MDIwODAtMDA4MDIw
+OWYgOiB1aGNpX2hjZAogIDAwODAyMGEwLTAwODAyMGJmIDogMDAwMDowMDowNy4zCiAgICAwMDgw
+MjBhMC0wMDgwMjBiZiA6IHVoY2lfaGNkCiAgMDA4MDIxMDAtMDA4MDIxZmYgOiAwMDAwOjAwOjA3
+LjUKICAwMDgwMjIwMC0wMDgwMjIwMyA6IDAwMDA6MDA6MDcuNQogIDAwODAyMjA0LTAwODAyMjA3
+IDogMDAwMDowMDowNy41CiAgMDA4MDIzMDAtMDA4MDIzZmYgOiAwMDAwOjAwOjA3LjYKICAwMDgw
+MjQwMC0wMDgwMjQxZiA6IDAwMDA6MDA6MDkuMAogICAgMDA4MDI0MDAtMDA4MDI0MWYgOiBFTVUx
+MEsxCiAgMDA4MDI0MjAtMDA4MDI0MjcgOiAwMDAwOjAwOjA5LjEKICAgIDAwODAyNDIwLTAwODAy
+NDI3IDogZW11MTBrMS1ncAplMTAwZTAwMC1lMTAwZTA3ZiA6IDAwMDA6MDA6MDYuMAo=
+--========GMX321011182193035149819--
