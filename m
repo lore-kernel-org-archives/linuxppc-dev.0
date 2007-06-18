@@ -1,18 +1,10 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id B47A0DDE19
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 16:08:49 +1000 (EST)
-In-Reply-To: <4672EE95.3030407@freescale.com>
-References: <111819314606b8b45671.846930886.miltonm@bga.com>
-	<4672EE95.3030407@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <fbae4506b772f07d2a8c1d230bea82c8@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH] boot: find initrd location from device-tree
-Date: Mon, 18 Jun 2007 01:08:43 -0500
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <c9982de4efc00ba092d6982a61f98ed2765130bf.1182156508.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH 1/1] Add support for MSI on Axon-based Cell systems
+Date: Mon, 18 Jun 2007 18:49:44 +1000 (EST)
+Cc: Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,140 +14,485 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-[replying to David and Scott the second sub-thread]
+This patch adds support for the setup and decoding of MSIs
+on Axon-based Cell systems, using the MSIC mechanism.
 
-On Jun 15, 2007, at 2:55 PM, Scott Wood wrote:
-> Milton Miller wrote:
->> The file name dtscan reflects the possibility that simiar functions
->> like the rmo_top might be added to the file.
-> Aren't these kind of things what devtree.c is for?
+This involves setting up an area of BE memory which the Axon
+then uses as a FIFO for MSI messages. When one or more MSIs
+are decoded by the MSIC we receive an interrupt on the MPIC,
+and the MSI messages are written into the FIFO. At the moment
+we use a 64KB FIFO, one per MSIC/BE.
 
-Hmm... i guess .. I didn't need the fixups in that file, but I guess 
-the xlate routines couuld be useful for find top of memory.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+I've updated this to use a more robust, correct and I think straight forward
+way of configuring the FIFO size - hopefully y'all agree. I think I've
+addressed all the other points people raised as well. Thanks for the feedback.
 
-That file is for "not specific to device tree library (firmware 
-callback vs flat tree)" utilities?
+ arch/powerpc/platforms/cell/Makefile   |    2 +
+ arch/powerpc/platforms/cell/axon_msi.c |  445 ++++++++++++++++++++++++++++++++
+ 2 files changed, 447 insertions(+), 0 deletions(-)
 
-On Mon Jun 18 13:18:22 EST 2007, David Gibson wrote:
-> On Fri, Jun 15, 2007 at 12:34:30PM -0500, Milton Miller wrote:
-> >
-> > The types.h header now includes libgcc limits.h for UINT_MAX.
-> >
-
-
-> > ---
-> > The file name dtscan reflects the possibility that simiar functions
-> > like the rmo_top might be added to the file.
->
-> Hrm, not sure if it's worth creating a new file for this, it could
-> probably go in devtree.c.
-
-Ok, two votes.  I'll move it next post.
-
-> > +void dt_find_initrd(void)
-> > +{
-> > +     int rc;
-> > +     unsigned long long initrd_start, initrd_end;
-> > +     void *devp;
-> > +     static const char start_prop[] = "linux,initrd-start";
-> > +     static const char end_prop[] = "linux,initrd-end";
->
-> I see no point to using these constants, just use literals in the
-> getprop() calls.
-
-When I had them inline, the get-property and the printf calls exceeded 
-80 characters, making lots of multi-line function calls.  And 
-seperating them out out made the error printfs the same, so they could 
-be collapsed by gcc.  Either isn't a real strong argument, so if you 
-insist I will write it out, but I thought it was nicer this way.
-
->
-> > +     devp = finddevice("/chosen");
-> > +     if (! devp) {
-> > +             return;
-> > +     }
-> > +
-> > +     /* The properties had to be 8 bytes until 2.6.22  */
-> > +     rc = getprop(devp, start_prop, &initrd_start, 
-> sizeof(initrd_start));
-> > +     if (rc < 0)
-> > +             return;
-> > +     if (rc == sizeof(unsigned long)) {
-> > +             unsigned long tmp;
-> > +             memcpy(&tmp, &initrd_start, rc);
-> > +             initrd_start = tmp;
-> > +     } else if (rc != sizeof(initrd_start)) {
-> > +             printf("unexpected length of %s in /chosen!\n\r", 
-> start_prop);
-> > +             return;
-> > +     }
-> > +
-> > +     rc = getprop(devp, end_prop, &initrd_end, sizeof(initrd_end));
-> > +     if (rc < 0) {
-> > +             printf("chosen has %s but no %s!\n\r", start_prop, 
-> end_prop);
-> > +             return;
-> > +     }
-> > +     if (rc == sizeof(unsigned long)) {
-> > +             unsigned long tmp;
-> > +             memcpy(&tmp, &initrd_end, rc);
-> > +             initrd_end = tmp;
-> > +     } else if (rc != sizeof(initrd_end)) {
-> > +             printf("unexpected length of %s in /chosen!\n\r", 
-> end_prop);
-> > +             return;
-> > +     }
-> > +
-> > +     if (!initrd_start)
-> > +             return;
-> > +
-> > +     /* if the initrd is above 4G, its untouchable in 32 bit mode */
-> > +     if (initrd_end <= UINT_MAX && initrd_start < initrd_end) {
-> > +             loader_info.initrd_addr = initrd_start;
-> > +             loader_info.initrd_size  = initrd_end - initrd_start;
-> > +     } else {
-> > +             printf("ignoring loader supplied initrd parameters\n");
->
-> Saying why might be helpful.
-
-Hmm... well, that would mean seperating the && of the if; there are two 
-possible reasons. (1) this 32-bit code can't handle such large 
-addresses (in which case a 64-bit kernel may work), and (2) end is >= 
-start (which means there really isn't any data.  I suppose I could 
-reverse the sense of the if, use an else if, and make the final else 
-the good path.
-
-
-
->
-> > +     }
-> > +}
-...
-> > Index: kernel/arch/powerpc/boot/types.h
-> > ===================================================================
-> > --- kernel.orig/arch/powerpc/boot/types.h     2007-06-15 
-> 03:36:21.000000000 -0500
-> > +++ kernel/arch/powerpc/boot/types.h  2007-06-15 03:44:34.000000000 
-> -0500
-> > @@ -1,6 +1,9 @@
-> >  #ifndef _TYPES_H_
-> >  #define _TYPES_H_
-> >
-> > +#define _LIBC_LIMITS_H_              /* don't recurse to system's 
-> headers */
-> > +#include <limits.h>          /* MAX_UINT, etc */
-> > +
->
-> I think it's really a bad idea to use any headers from outside the
-> boot context here.  We're dealing with explicit sized ints, so we can
-> safely define our own constants giving the limit values.
-
-As I said in the patch changelog, the only headers picked up here are 
-libgcc.  The compiler is part of the boot context, and we already pick 
-up stdarg from there.   The flag there appears to be what libgcc 
-expects the library to use.
-
-I could change the comment to say /* get libgcc header only */ or 
-something else you suggest.
-
-milton
+diff --git a/arch/powerpc/platforms/cell/Makefile b/arch/powerpc/platforms/cell/Makefile
+index 869af89..6615d40 100644
+--- a/arch/powerpc/platforms/cell/Makefile
++++ b/arch/powerpc/platforms/cell/Makefile
+@@ -23,3 +23,5 @@ obj-$(CONFIG_SPU_BASE)			+= spu_callbacks.o spu_base.o \
+ 					   $(spu-priv1-y) \
+ 					   $(spu-manage-y) \
+ 					   spufs/
++
++obj-$(CONFIG_PCI_MSI)			+= axon_msi.o
+diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
+new file mode 100644
+index 0000000..4c9ab5b
+--- /dev/null
++++ b/arch/powerpc/platforms/cell/axon_msi.c
+@@ -0,0 +1,445 @@
++/*
++ * Copyright 2007, Michael Ellerman, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++
++#include <linux/interrupt.h>
++#include <linux/irq.h>
++#include <linux/kernel.h>
++#include <linux/pci.h>
++#include <linux/msi.h>
++#include <linux/reboot.h>
++
++#include <asm/dcr.h>
++#include <asm/machdep.h>
++#include <asm/prom.h>
++
++
++/*
++ * MSIC registers, specified as offsets from dcr_base
++ */
++#define MSIC_CTRL_REG	0x0
++
++/* Base Address registers specify FIFO location in BE memory */
++#define MSIC_BASE_ADDR_HI_REG	0x3
++#define MSIC_BASE_ADDR_LO_REG	0x4
++
++/* Hold the read/write offsets into the FIFO */
++#define MSIC_READ_OFFSET_REG	0x5
++#define MSIC_WRITE_OFFSET_REG	0x6
++
++
++/* MSIC control register flags */
++#define MSIC_CTRL_ENABLE		0x0001
++#define MSIC_CTRL_FIFO_FULL_ENABLE	0x0002
++#define MSIC_CTRL_IRQ_ENABLE		0x0008
++#define MSIC_CTRL_FULL_STOP_ENABLE	0x0010
++
++/*
++ * The MSIC can be configured to use a FIFO of 32KB, 64KB, 128KB or 256KB.
++ * Currently we're using a 64KB FIFO size.
++ */
++#define MSIC_FIFO_SIZE_SHIFT	16
++#define MSIC_FIFO_SIZE_BYTES	(1 << MSIC_FIFO_SIZE_SHIFT)
++
++/*
++ * To configure the FIFO size as (1 << n) bytes, we write (n - 15) into bits
++ * 8-9 of the MSIC control reg.
++ */
++#define MSIC_CTRL_FIFO_SIZE	(((MSIC_FIFO_SIZE_SHIFT - 15) << 8) & 0x300)
++
++/*
++ * We need to mask the read/write offsets to make sure they stay within
++ * the bounds of the FIFO. Also they should always be 16-byte aligned.
++ */
++#define MSIC_FIFO_SIZE_MASK	((MSIC_FIFO_SIZE_BYTES - 1) & ~0xFu)
++
++/* Each entry in the FIFO is 16 bytes, the first 4 bytes hold the irq # */
++#define MSIC_FIFO_ENTRY_SIZE	0x10
++
++
++struct axon_msic {
++	struct device_node *dn;
++	struct irq_host *irq_host;
++	__le32 *fifo;
++	dcr_host_t dcr_host;
++	struct list_head list;
++	u32 read_offset;
++	u32 dcr_base;
++};
++
++static LIST_HEAD(axon_msic_list);
++
++static void msic_dcr_write(struct axon_msic *msic, unsigned int dcr_n, u32 val)
++{
++	pr_debug("axon_msi: dcr_write(0x%x, 0x%x)\n", val, dcr_n);
++
++	dcr_write(msic->dcr_host, msic->dcr_base + dcr_n, val);
++}
++
++static u32 msic_dcr_read(struct axon_msic *msic, unsigned int dcr_n)
++{
++	return dcr_read(msic->dcr_host, msic->dcr_base + dcr_n);
++}
++
++static void axon_msi_cascade(unsigned int irq, struct irq_desc *desc)
++{
++	struct axon_msic *msic = get_irq_data(irq);
++	u32 write_offset, msi;
++	int idx;
++
++	write_offset = msic_dcr_read(msic, MSIC_WRITE_OFFSET_REG);
++	pr_debug("axon_msi: original write_offset 0x%x\n", write_offset);
++
++	/* write_offset doesn't wrap properly, so we have to mask it */
++	write_offset &= MSIC_FIFO_SIZE_MASK;
++
++	while (msic->read_offset != write_offset) {
++		idx  = msic->read_offset / sizeof(__le32);
++		msi  = le32_to_cpu(msic->fifo[idx]);
++		msi &= 0xFFFF;
++
++		pr_debug("axon_msi: woff %x roff %x msi %x\n",
++			  write_offset, msic->read_offset, msi);
++
++		msic->read_offset += MSIC_FIFO_ENTRY_SIZE;
++		msic->read_offset &= MSIC_FIFO_SIZE_MASK;
++
++		if (msi < NR_IRQS && irq_map[msi].host == msic->irq_host)
++			generic_handle_irq(msi);
++		else
++			pr_debug("axon_msi: invalid irq 0x%x!\n", msi);
++	}
++
++	desc->chip->eoi(irq);
++}
++
++static struct axon_msic *find_msi_translator(struct pci_dev *dev)
++{
++	struct irq_host *irq_host;
++	struct device_node *dn, *tmp;
++	const phandle *ph;
++	struct axon_msic *msic = NULL;
++
++	dn = pci_device_to_OF_node(dev);
++	if (!dn) {
++		dev_dbg(&dev->dev, "axon_msi: no pci_dn found\n");
++		return NULL;
++	}
++
++	for (; dn; tmp = of_get_parent(dn), of_node_put(dn), dn = tmp) {
++		ph = of_get_property(dn, "msi-translator", NULL);
++		if (ph)
++			break;
++	}
++
++	if (!ph) {
++		dev_dbg(&dev->dev,
++			"axon_msi: no msi-translator property found\n");
++		goto out_error;
++	}
++
++	tmp = dn;
++	dn = of_find_node_by_phandle(*ph);
++	if (!dn) {
++		dev_dbg(&dev->dev,
++			"axon_msi: msi-translator doesn't point to a node\n");
++		goto out_error;
++	}
++
++	irq_host = irq_find_host(dn);
++	if (!irq_host) {
++		dev_dbg(&dev->dev, "axon_msi: no irq_host found for node %s\n",
++			dn->full_name);
++		goto out_error;
++	}
++
++	msic = irq_host->host_data;
++
++out_error:
++	of_node_put(dn);
++	of_node_put(tmp);
++
++	return msic;
++}
++
++static int axon_msi_check_device(struct pci_dev *dev, int nvec, int type)
++{
++	if (!find_msi_translator(dev))
++		return -ENODEV;
++
++	return 0;
++}
++
++static int setup_msi_msg_address(struct pci_dev *dev, struct msi_msg *msg)
++{
++	struct device_node *dn, *tmp;
++	struct msi_desc *entry;
++	int len;
++	const u32 *prop;
++
++	dn = pci_device_to_OF_node(dev);
++	if (!dn) {
++		dev_dbg(&dev->dev, "axon_msi: no pci_dn found\n");
++		return -ENODEV;
++	}
++
++	entry = list_first_entry(&dev->msi_list, struct msi_desc, list);
++
++	for (; dn; tmp = of_get_parent(dn), of_node_put(dn), dn = tmp) {
++		if (entry->msi_attrib.is_64) {
++			prop = of_get_property(dn, "msi-address-64", &len);
++			if (prop)
++				break;
++		}
++
++		prop = of_get_property(dn, "msi-address-32", &len);
++		if (prop)
++			break;
++	}
++
++	if (!prop) {
++		dev_dbg(&dev->dev,
++			"axon_msi: no msi-address-(32|64) properties found\n");
++		return -ENOENT;
++	}
++
++	switch (len) {
++	case 8:
++		msg->address_hi = prop[0];
++		msg->address_lo = prop[1];
++		break;
++	case 4:
++		msg->address_hi = 0;
++		msg->address_lo = prop[0];
++		break;
++	default:
++		dev_dbg(&dev->dev,
++			"axon_msi: malformed msi-address-(32|64) property\n");
++		of_node_put(dn);
++		return -EINVAL;
++	}
++
++	of_node_put(dn);
++
++	return 0;
++}
++
++static int axon_msi_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
++{
++	unsigned int virq, rc;
++	struct msi_desc *entry;
++	struct msi_msg msg;
++	struct axon_msic *msic;
++
++	msic = find_msi_translator(dev);
++	if (!msic)
++		return -ENODEV;
++
++	rc = setup_msi_msg_address(dev, &msg);
++	if (rc)
++		return rc;
++
++	/* We rely on being able to stash a virq in a u16 */
++	BUILD_BUG_ON(NR_IRQS > 65536);
++
++	list_for_each_entry(entry, &dev->msi_list, list) {
++		virq = irq_create_direct_mapping(msic->irq_host);
++		if (virq == NO_IRQ) {
++			dev_warn(&dev->dev,
++				 "axon_msi: virq allocation failed!\n");
++			return -1;
++		}
++		dev_dbg(&dev->dev, "axon_msi: allocated virq 0x%x\n", virq);
++
++		set_irq_msi(virq, entry);
++		msg.data = virq;
++		write_msi_msg(virq, &msg);
++	}
++
++	return 0;
++}
++
++static void axon_msi_teardown_msi_irqs(struct pci_dev *dev)
++{
++	struct msi_desc *entry;
++
++	dev_dbg(&dev->dev, "axon_msi: tearing down msi irqs\n");
++
++	list_for_each_entry(entry, &dev->msi_list, list) {
++		if (entry->irq == NO_IRQ)
++			continue;
++
++		set_irq_msi(entry->irq, NULL);
++		irq_dispose_mapping(entry->irq);
++	}
++}
++
++static struct irq_chip msic_irq_chip = {
++	.mask		= mask_msi_irq,
++	.unmask		= unmask_msi_irq,
++	.shutdown	= unmask_msi_irq,
++	.typename	= "AXON-MSI",
++};
++
++static int msic_host_map(struct irq_host *h, unsigned int virq,
++			 irq_hw_number_t hw)
++{
++	set_irq_chip_and_handler(virq, &msic_irq_chip, handle_simple_irq);
++
++	return 0;
++}
++
++static int msic_host_match(struct irq_host *host, struct device_node *dn)
++{
++	struct axon_msic *msic = host->host_data;
++
++	return msic->dn == dn;
++}
++
++static struct irq_host_ops msic_host_ops = {
++	.match	= msic_host_match,
++	.map	= msic_host_map,
++};
++
++static int axon_msi_notify_reboot(struct notifier_block *nb,
++				  unsigned long code, void *data)
++{
++	struct axon_msic *msic;
++	u32 tmp;
++
++	list_for_each_entry(msic, &axon_msic_list, list) {
++		pr_debug("axon_msi: disabling %s\n", msic->dn->full_name);
++		tmp  = msic_dcr_read(msic, MSIC_CTRL_REG);
++		tmp &= ~MSIC_CTRL_ENABLE & ~MSIC_CTRL_IRQ_ENABLE;
++		msic_dcr_write(msic, MSIC_CTRL_REG, tmp);
++	}
++
++	return 0;
++}
++
++static struct notifier_block axon_msi_reboot_notifier = {
++	.notifier_call = axon_msi_notify_reboot
++};
++
++static int axon_msi_setup_one(struct device_node *dn)
++{
++	struct page *page;
++	struct axon_msic *msic;
++	unsigned int virq;
++	int dcr_len;
++
++	pr_debug("axon_msi: setting up dn %s\n", dn->full_name);
++
++	msic = kzalloc(sizeof(struct axon_msic), GFP_KERNEL);
++	if (!msic) {
++		printk(KERN_ERR "axon_msi: couldn't allocate msic for %s\n",
++		       dn->full_name);
++		goto out;
++	}
++
++	msic->dcr_base = dcr_resource_start(dn, 0);
++	dcr_len = dcr_resource_len(dn, 0);
++
++	if (msic->dcr_base == 0 || dcr_len == 0) {
++		printk(KERN_ERR
++		       "axon_msi: couldn't parse dcr properties on %s\n",
++			dn->full_name);
++		goto out;
++	}
++
++	msic->dcr_host = dcr_map(dn, msic->dcr_base, dcr_len);
++	if (!DCR_MAP_OK(msic->dcr_host)) {
++		printk(KERN_ERR "axon_msi: dcr_map failed for %s\n",
++		       dn->full_name);
++		goto out_free_msic;
++	}
++
++	page = alloc_pages_node(of_node_to_nid(dn), GFP_KERNEL,
++				get_order(MSIC_FIFO_SIZE_BYTES));
++	if (!page) {
++		printk(KERN_ERR "axon_msi: couldn't allocate fifo for %s\n",
++		       dn->full_name);
++		goto out_free_msic;
++	}
++
++	msic->fifo = page_address(page);
++
++	msic->irq_host = irq_alloc_host(IRQ_HOST_MAP_NOMAP, NR_IRQS,
++					&msic_host_ops, 0);
++	if (!msic->irq_host) {
++		printk(KERN_ERR "axon_msi: couldn't allocate irq_host for %s\n",
++		       dn->full_name);
++		goto out_free_fifo;
++	}
++
++	msic->irq_host->host_data = msic;
++
++	virq = irq_of_parse_and_map(dn, 0);
++	if (virq == NO_IRQ) {
++		printk(KERN_ERR "axon_msi: irq parse and map failed for %s\n",
++		       dn->full_name);
++		goto out_free_host;
++	}
++
++	msic->dn = of_node_get(dn);
++
++	set_irq_data(virq, msic);
++	set_irq_chained_handler(virq, axon_msi_cascade);
++	pr_debug("axon_msi: irq 0x%x setup for axon_msi\n", virq);
++
++	/* Enable the MSIC hardware */
++	msic_dcr_write(msic, MSIC_BASE_ADDR_HI_REG, (u64)msic->fifo >> 32);
++	msic_dcr_write(msic, MSIC_BASE_ADDR_LO_REG,
++				  (u64)msic->fifo & 0xFFFFFFFF);
++	msic_dcr_write(msic, MSIC_CTRL_REG,
++			MSIC_CTRL_IRQ_ENABLE | MSIC_CTRL_ENABLE |
++			MSIC_CTRL_FIFO_SIZE);
++
++	list_add(&msic->list, &axon_msic_list);
++
++	printk(KERN_DEBUG "axon_msi: setup MSIC on %s\n", dn->full_name);
++
++	return 0;
++
++out_free_host:
++	kfree(msic->irq_host);
++out_free_fifo:
++	__free_pages(virt_to_page(msic->fifo), get_order(MSIC_FIFO_SIZE_BYTES));
++out_free_msic:
++	kfree(msic);
++out:
++
++	return -1;
++}
++
++static int axon_msi_init(void)
++{
++	struct device_node *dn;
++	int found = 0;
++
++	pr_debug("axon_msi: initialising ...\n");
++
++	for_each_compatible_node(dn, NULL, "ibm,axon-msic") {
++		if (axon_msi_setup_one(dn) == 0)
++			found++;
++	}
++
++	if (found) {
++		ppc_md.setup_msi_irqs = axon_msi_setup_msi_irqs;
++		ppc_md.teardown_msi_irqs = axon_msi_teardown_msi_irqs;
++		ppc_md.msi_check_device = axon_msi_check_device;
++
++		register_reboot_notifier(&axon_msi_reboot_notifier);
++
++		pr_debug("axon_msi: registered callbacks!\n");
++	}
++
++	return 0;
++}
++arch_initcall(axon_msi_init);
+-- 
+1.5.1.3.g7a33b
