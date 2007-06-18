@@ -1,23 +1,31 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <mohan@in.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1A831DDE21
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 14:31:57 +1000 (EST)
-In-Reply-To: <200706180109.11482.arnd@arndb.de>
-References: <20070612163016.253915076@arndb.de>
-	<200706170214.11247.arnd@arndb.de>
-	<4E0AC3E6-98F8-40BD-BA85-60766E097E4A@kernel.crashing.org>
-	<200706180109.11482.arnd@arndb.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A99C864E-5D7A-4610-BA75-A3B9CF54D575@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [patch 00/13] CPU selection Kconfig cleanup, take 3
-Date: Sun, 17 Jun 2007 23:32:31 -0500
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1B4BFDDEE0
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 15:07:44 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l5I44frT013190
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 00:04:41 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l5I57cwK471766
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 01:07:38 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l5I57cop031171
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 01:07:38 -0400
+Date: Mon, 18 Jun 2007 10:37:31 +0530
+From: Mohan Kumar M <mohan@in.ibm.com>
 To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
-	Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: for-2.6.23 branch in powerpc.git created
+Message-ID: <20070618050731.GB7562@in.ibm.com>
+References: <18034.6787.951861.623265@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <18034.6787.951861.623265@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: mohan@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,29 +35,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Jun 17, 2007, at 6:09 PM, Arnd Bergmann wrote:
-
-> On Sunday 17 June 2007, Kumar Gala wrote:
->> I commented on some minor nits with the patches.  I'm probably ok
->> with patches 1-7 going in.  I'm not ready for 8 at this point, we
->> need to do more proper cleanup to get 85xx/cpm2 support into a
->> multiplatforms single kernel state.
+On Fri, Jun 15, 2007 at 02:50:11PM +1000, Paul Mackerras wrote:
+> The patches I put in are listed below.  If you have a patch that
+> should go in but isn't listed, remind me about it.
 >
-> Ok, makes sense. I've fixed up the other patches according to
-> your comments (did not change 8xx stuff though) and pushed
-> it out to
-> git://git.kernel.org/pub/scm/linux/kernel/git/arnd/cell-2.6 powerpc- 
-> kconfig
->
-> Paul, please pull from there, I'll remember not to try messing with
-> 32 bit in the future but wanted to get this in after spending so
-> much work on it.
+Hi Paul,
 
-Paul,
+Can you take this?
 
-I'll pull these into my tree with a bunch of other ppc32/embedded  
-related patches for you to pull all at once since I've got other  
-changes that will depend on them.
+http://patchwork.ozlabs.org/linuxppc/patch?id=11676
 
-- k
+Regards,
+Mohan.
