@@ -1,38 +1,23 @@
-Return-Path: <Wei.Zhang@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5C80EDDEDF
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 13:28:09 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l5I3S3TJ023006
-	for <linuxppc-dev@ozlabs.org>; Sun, 17 Jun 2007 20:28:03 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l5I3S1mZ017937
-	for <linuxppc-dev@ozlabs.org>; Sun, 17 Jun 2007 22:28:02 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH 1/5] Add the explanation and sample of RapidIO DTS sector
-	to the document of booting-without-of.txt file.
-Date: Mon, 18 Jun 2007 11:27:59 +0800
-Message-ID: <46B96294322F7D458F9648B60E15112C527171@zch01exm26.fsl.freescale.net>
-In-Reply-To: <2e7b08497aae9219233aed72628e46c6@kernel.crashing.org>
-References: <11816389393593-git-send-email-wei.zhang@freescale.com>
-	<1181638939310-git-send-email-wei.zhang@freescale.com>
-	<39c7d60cebf03badd106d7f75a08f449@kernel.crashing.org>
-	<46B96294322F7D458F9648B60E15112C526DD9@zch01exm26.fsl.freescale.net>
-	<59453d80f2f111b72e8f24e7b489c23e@kernel.crashing.org>
-	<CF39A363-25C6-4780-96EC-6750D77C287F@kernel.crashing.org>
-	<2e7b08497aae9219233aed72628e46c6@kernel.crashing.org>
-From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-To: "Segher Boessenkool" <segher@kernel.crashing.org>,
-	"Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1A831DDE21
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 14:31:57 +1000 (EST)
+In-Reply-To: <200706180109.11482.arnd@arndb.de>
+References: <20070612163016.253915076@arndb.de>
+	<200706170214.11247.arnd@arndb.de>
+	<4E0AC3E6-98F8-40BD-BA85-60766E097E4A@kernel.crashing.org>
+	<200706180109.11482.arnd@arndb.de>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A99C864E-5D7A-4610-BA75-A3B9CF54D575@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [patch 00/13] CPU selection Kconfig cleanup, take 3
+Date: Sun, 17 Jun 2007 23:32:31 -0500
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
+	Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,58 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi, Kumar and Segher,=20
 
+On Jun 17, 2007, at 6:09 PM, Arnd Bergmann wrote:
+
+> On Sunday 17 June 2007, Kumar Gala wrote:
+>> I commented on some minor nits with the patches.  I'm probably ok
+>> with patches 1-7 going in.  I'm not ready for 8 at this point, we
+>> need to do more proper cleanup to get 85xx/cpm2 support into a
+>> multiplatforms single kernel state.
 >
-> > "..8641.." "..8641d.." "..8548.." "..8548e.." "..8543.."=20
-> "..8543e.."=20
-> > "..8572.." "..8572e.." "..8567.." "..8567e.." "..8568.." "..8568e.."
->=20
-> You don't need to mention _all_ compatible devices in
-> the "compatible" property, only the few that matter;
-> typically the oldest one, and sometimes some intermediate
-> device that has extra features over the original one.
->=20
+> Ok, makes sense. I've fixed up the other patches according to
+> your comments (did not change 8xx stuff though) and pushed
+> it out to
+> git://git.kernel.org/pub/scm/linux/kernel/git/arnd/cell-2.6 powerpc- 
+> kconfig
+>
+> Paul, please pull from there, I'll remember not to try messing with
+> 32 bit in the future but wanted to get this in after spending so
+> much work on it.
 
-The oldest one is difficult to find out sometime. Can we only set the
-self name in dts, such as "fsl, rapidio-8641", and add this 'compatible'
-property to the driver ids arrays? Such as:
+Paul,
 
-static struct of_device_id of_rio_rpn_ids[] =3D {
-	{ .compatible =3D "fsl, rapidio-8540",},
-	{ .compatible =3D "fsl, rapidio-8560",},
-	{ .compatible =3D "fsl, rapidio-8641",},
-	{ .compatible =3D "fsl, rapidio-8548",},
-	{},
-};
+I'll pull these into my tree with a bunch of other ppc32/embedded  
+related patches for you to pull all at once since I've got other  
+changes that will depend on them.
 
-How about that?
-
-> It isn't useful to add "compatible" entries that no OS
-> probes for.
->=20
-> >> Concrete names are good.
-> >
-> > While I agree concrete names are good, we put these 'blocks' in so=20
-> > many devices that using the device to match on is pointless.
->=20
-> You *definitely* should put the device name for _this_
-> device in there, in case it needs some special workaround.
->=20
-> > I'm all for making up a name like 'Grande', 'Del',=20
-> 'Janeiro'.  This is=20
-> > effective what we did with gianfar.  The name gets picked up pretty=20
-> > quickly by people.
->=20
-> That can be used as the "base" name, yes.
->=20
-
-Do you have the name list? I can change my codes according them.
-
-How about 'Mercurary', 'Venus', 'Earth', 'Mars', 'Saturn', 'Jupiter',
-'Uranus', 'Neptune',
-Or 'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra',
-'Scorpius', 'Sagittarius', 'Capricornus', 'Aquarius', 'Pisces' ?
-
-Thanks!
-Wei.
+- k
