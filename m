@@ -1,20 +1,21 @@
-Return-Path: <pantelis.antoniou@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
-	by ozlabs.org (Postfix) with ESMTP id 5B3F2DDE1C
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 22:15:08 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id c2so1370298ugf
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 05:15:06 -0700 (PDT)
-In-Reply-To: <46766C91.6090903@freescale.com>
-References: <46766C91.6090903@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=UTF-8; delsp=yes; format=flowed
-Message-Id: <03F6FDB0-3D7B-4272-AC1C-8E06F82DD815@gmail.com>
-From: Pantelis Antoniou <pantelis.antoniou@gmail.com>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
+	by ozlabs.org (Postfix) with ESMTP id 72235DDEF6
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 22:25:51 +1000 (EST)
 Subject: Re: [PATCH] rheap: eliminates internal fragments caused by alignment
-Date: Mon, 18 Jun 2007 15:14:42 +0300
-To: Li Yang <leoli@freescale.com>
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>, Paul <paulus@samba.org>,
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: Pantelis Antoniou <pantelis.antoniou@gmail.com>
+In-Reply-To: <03F6FDB0-3D7B-4272-AC1C-8E06F82DD815@gmail.com>
+References: <46766C91.6090903@freescale.com>
+	<03F6FDB0-3D7B-4272-AC1C-8E06F82DD815@gmail.com>
+Content-Type: text/plain
+Date: Mon, 18 Jun 2007 14:25:49 +0200
+Message-Id: <1182169549.2969.20.camel@gentoo-jocke.transmode.se>
+Mime-Version: 1.0
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Li Yang <leoli@freescale.com>, Paul <paulus@samba.org>,
 	Vitaly Bordug <vbordug@ru.mvista.com>
+Reply-To: joakim.tjernlund@transmode.se
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,115 +25,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Li,
+On Mon, 2007-06-18 at 15:14 +0300, Pantelis Antoniou wrote:
+> Hi Li,
+> 
+> The patch appears fine at first glance.
+> 
+> I'm really curious what kind of alignment do you use in order to have so
+> much wasted space that re-inserting the leftovers makes so much of a
+> difference.
+This I what you get for eth0 with patch,
+all hex, decimal within()
+MURAM alloc, start:400, size:200(512), align:8(8)
+MURAM alloc, start:600, size:208(520), align:8(8)
+MURAM alloc, start:880, size:80(128), align:80(128)
+MURAM alloc, start:900, size:1a0(416), align:100(256)
+MURAM alloc, start:aa0, size:40(64), align:20(32)
+MURAM alloc, start:b00, size:100(256), align:100(256)
+MURAM alloc, start:c00, size:a0(160), align:100(256)
+MURAM alloc, start:cc0, size:c(12), align:40(64)
+MURAM alloc, start:cd0, size:30(48), align:8(8)
+MURAM alloc, start:d00, size:80(128), align:80(128)
+MURAM alloc, start:d80, size:80(128), align:80(128)
+MURAM alloc, start:e00, size:80(128), align:80(128)
+MURAM alloc, start:e80, size:80(128), align:80(128)
+MURAM alloc, start:f00, size:40(64), align:40(64)
+MURAM alloc, start:f40, size:40(64), align:40(64)
+MURAM alloc, start:f80, size:40(64), align:40(64)
+MURAM alloc, start:fc0, size:40(64), align:40(64)
+MURAM alloc, start:1000, size:5d(93), align:4(4)
 
-The patch appears fine at first glance.
+And this is what you get without patch:
+MURAM alloc, start:1400, size:200(512), align:8(8)
+MURAM alloc, start:1608, size:208(520), align:8(8)
+MURAM alloc, start:1880, size:80(128), align:80(128)
+MURAM alloc, start:1a00, size:1a0(416), align:100(256)
+MURAM alloc, start:1bc0, size:40(64), align:20(32)
+MURAM alloc, start:1d00, size:100(256), align:100(256)
+MURAM alloc, start:1f00, size:a0(160), align:100(256)
+MURAM alloc, start:1fc0, size:c(12), align:40(64)
+MURAM alloc, start:2000, size:30(48), align:8(8)
+MURAM alloc, start:2080, size:80(128), align:80(128)
+MURAM alloc, start:2180, size:80(128), align:80(128)
+MURAM alloc, start:2280, size:80(128), align:80(128)
+MURAM alloc, start:2380, size:80(128), align:80(128)
+MURAM alloc, start:2440, size:40(64), align:40(64)
+MURAM alloc, start:24c0, size:40(64), align:40(64)
+MURAM alloc, start:2540, size:40(64), align:40(64)
+MURAM alloc, start:25c0, size:40(64), align:40(64)
+MURAM alloc, start:262c, size:5d(93), align:4(4)
 
-I'm really curious what kind of alignment do you use in order to have so
-much wasted space that re-inserting the leftovers makes so much of a
-difference.
-
--- Pantelis
-
-
-On 18 =CE=99=CE=BF=CF=85=CE=BD 2007, at 2:29 =CE=9C=CE=9C, Li Yang =
-wrote:
-
-> The patch adds fragments caused by rh_alloc_align() back to free =20
-> list, instead
-> of allocating the whole chunk of memory.  This will greatly improve =20=
-
-> memory
-> utilization managed by rheap.
->
-> It solves MURAM not enough problem with 3 UCCs enabled on MPC8323.
->
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> ---
-> arch/powerpc/lib/rheap.c |   48 ++++++++++++++++++++++++++=20
-> +------------------
-> 1 files changed, 29 insertions(+), 19 deletions(-)
->
-> diff --git a/arch/powerpc/lib/rheap.c b/arch/powerpc/lib/rheap.c
-> index 180ee29..2f24ea0 100644
-> --- a/arch/powerpc/lib/rheap.c
-> +++ b/arch/powerpc/lib/rheap.c
-> @@ -437,27 +437,26 @@ unsigned long rh_alloc_align(rh_info_t * =20
-> info, int size, int alignment, const ch
-> 	struct list_head *l;
-> 	rh_block_t *blk;
-> 	rh_block_t *newblk;
-> -	unsigned long start;
-> +	unsigned long start, sp_size;
-> 	/* Validate size, and alignment must be power of two */
-> 	if (size <=3D 0 || (alignment & (alignment - 1)) !=3D 0)
-> 		return (unsigned long) -EINVAL;
-> -	/* given alignment larger that default rheap alignment */
-> -	if (alignment > info->alignment)
-> -		size +=3D alignment - 1;
-> -
-> 	/* Align to configured alignment */
-> 	size =3D (size + (info->alignment - 1)) & ~(info->alignment - =
-1);
-> -	if (assure_empty(info, 1) < 0)
-> +	if (assure_empty(info, 2) < 0)
-> 		return (unsigned long) -ENOMEM;
-> 	blk =3D NULL;
-> 	list_for_each(l, &info->free_list) {
-> 		blk =3D list_entry(l, rh_block_t, list);
-> -		if (size <=3D blk->size)
-> -			break;
-> +		if (size <=3D blk->size) {
-> +			start =3D (blk->start + alignment - 1) & =
-~(alignment - 1);
-> +			if (start + size <=3D blk->start + blk->size)
-> +				break;
-> +		}
-> 		blk =3D NULL;
-> 	}
-> @@ -470,25 +469,36 @@ unsigned long rh_alloc_align(rh_info_t * =20
-> info, int size, int alignment, const ch
-> 		list_del(&blk->list);
-> 		newblk =3D blk;
-> 	} else {
-> +		/* Fragment caused, split if needed */
-> +		/* Create block for fragment in the beginning */
-> +		sp_size =3D start - blk->start;
-> +		if (sp_size) {
-> +			rh_block_t *spblk;
-> +
-> +			spblk =3D get_slot(info);
-> +			spblk->start =3D blk->start;
-> +			spblk->size =3D sp_size;
-> +			/* add before the blk */
-> +			list_add(&spblk->list, blk->list.prev);
-> +		}
-> 		newblk =3D get_slot(info);
-> -		newblk->start =3D blk->start;
-> +		newblk->start =3D start;
-> 		newblk->size =3D size;
-> -		/* blk still in free list, with updated start, size */
-> -		blk->start +=3D size;
-> -		blk->size -=3D size;
-> +		/* blk still in free list, with updated start and size
-> +		 * for fragment in the end */
-> +		blk->start =3D start + size;
-> +		blk->size -=3D sp_size + size;
-> +		/* No fragment in the end, remove blk */
-> +		if (blk->size =3D=3D 0) {
-> +			list_del(&blk->list);
-> +			release_slot(info, blk);
-> +		}
-> 	}
-> 	newblk->owner =3D owner;
-> -	start =3D newblk->start;
-> 	attach_taken_block(info, newblk);
-> -	/* for larger alignment return fixed up pointer  */
-> -	/* this is no problem with the deallocator since */
-> -	/* we scan for pointers that lie in the blocks   */
-> -	if (alignment > info->alignment)
-> -		start =3D (start + alignment - 1) & ~(alignment - 1);
-> -
-> 	return start;
-> }
->
+ Jocke
