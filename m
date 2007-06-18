@@ -1,23 +1,29 @@
-Return-Path: <pantelis.antoniou@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
-	by ozlabs.org (Postfix) with ESMTP id 87B3EDDEFC
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 22:31:39 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id c2so1372853ugf
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 05:31:37 -0700 (PDT)
-In-Reply-To: <1182169549.2969.20.camel@gentoo-jocke.transmode.se>
-References: <46766C91.6090903@freescale.com>
-	<03F6FDB0-3D7B-4272-AC1C-8E06F82DD815@gmail.com>
-	<1182169549.2969.20.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=UTF-8; delsp=yes; format=flowed
-Message-Id: <DA299F48-E5A6-495C-8169-A211D4C83864@gmail.com>
-From: Pantelis Antoniou <pantelis.antoniou@gmail.com>
-Subject: Re: [PATCH] rheap: eliminates internal fragments caused by alignment
-Date: Mon, 18 Jun 2007 15:31:12 +0300
-To: joakim.tjernlund@transmode.se
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	Li Yang <leoli@freescale.com>, Paul <paulus@samba.org>,
-	Vitaly Bordug <vbordug@ru.mvista.com>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
+	[151.189.21.44])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 04E0FDDE16
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 22:43:52 +1000 (EST)
+In-Reply-To: <46B96294322F7D458F9648B60E15112C527171@zch01exm26.fsl.freescale.net>
+References: <11816389393593-git-send-email-wei.zhang@freescale.com>
+	<1181638939310-git-send-email-wei.zhang@freescale.com>
+	<39c7d60cebf03badd106d7f75a08f449@kernel.crashing.org>
+	<46B96294322F7D458F9648B60E15112C526DD9@zch01exm26.fsl.freescale.net>
+	<59453d80f2f111b72e8f24e7b489c23e@kernel.crashing.org>
+	<CF39A363-25C6-4780-96EC-6750D77C287F@kernel.crashing.org>
+	<2e7b08497aae9219233aed72628e46c6@kernel.crashing.org>
+	<46B96294322F7D458F9648B60E15112C527171@zch01exm26.fsl.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <8ce6f7f0f93921b9b6ed883fba247c2b@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/5] Add the explanation and sample of RapidIO DTS sector
+	to the document of booting-without-of.txt file.
+Date: Mon, 18 Jun 2007 14:43:43 +0200
+To: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,75 +33,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On 18 =CE=99=CE=BF=CF=85=CE=BD 2007, at 3:25 =CE=9C=CE=9C, Joakim =
-Tjernlund wrote:
-
-> On Mon, 2007-06-18 at 15:14 +0300, Pantelis Antoniou wrote:
->> Hi Li,
->>
->> The patch appears fine at first glance.
->>
->> I'm really curious what kind of alignment do you use in order to =20
->> have so
->> much wasted space that re-inserting the leftovers makes so much of a
->> difference.
-
-Jocke,
-
-Ugh, 256?
-
-That's not nice at all.
-I'm not sure that even then you're going to have any guarantees that
-the allocations will be successful.
-
-I'm afraid that in those case it would be better for the board
-platform setup to have the space preallocated according to the BSP
-requirements.
-
-Just my $0.02.
-
--- Pantelis
-
-> This I what you get for eth0 with patch,
-> all hex, decimal within()
-> MURAM alloc, start:400, size:200(512), align:8(8)
-> MURAM alloc, start:600, size:208(520), align:8(8)
-> MURAM alloc, start:880, size:80(128), align:80(128)
-> MURAM alloc, start:900, size:1a0(416), align:100(256)
-> MURAM alloc, start:aa0, size:40(64), align:20(32)
-> MURAM alloc, start:b00, size:100(256), align:100(256)
-> MURAM alloc, start:c00, size:a0(160), align:100(256)
-> MURAM alloc, start:cc0, size:c(12), align:40(64)
-> MURAM alloc, start:cd0, size:30(48), align:8(8)
-> MURAM alloc, start:d00, size:80(128), align:80(128)
-> MURAM alloc, start:d80, size:80(128), align:80(128)
-> MURAM alloc, start:e00, size:80(128), align:80(128)
-> MURAM alloc, start:e80, size:80(128), align:80(128)
-> MURAM alloc, start:f00, size:40(64), align:40(64)
-> MURAM alloc, start:f40, size:40(64), align:40(64)
-> MURAM alloc, start:f80, size:40(64), align:40(64)
-> MURAM alloc, start:fc0, size:40(64), align:40(64)
-> MURAM alloc, start:1000, size:5d(93), align:4(4)
+>> You don't need to mention _all_ compatible devices in
+>> the "compatible" property, only the few that matter;
+>> typically the oldest one, and sometimes some intermediate
+>> device that has extra features over the original one.
 >
-> And this is what you get without patch:
-> MURAM alloc, start:1400, size:200(512), align:8(8)
-> MURAM alloc, start:1608, size:208(520), align:8(8)
-> MURAM alloc, start:1880, size:80(128), align:80(128)
-> MURAM alloc, start:1a00, size:1a0(416), align:100(256)
-> MURAM alloc, start:1bc0, size:40(64), align:20(32)
-> MURAM alloc, start:1d00, size:100(256), align:100(256)
-> MURAM alloc, start:1f00, size:a0(160), align:100(256)
-> MURAM alloc, start:1fc0, size:c(12), align:40(64)
-> MURAM alloc, start:2000, size:30(48), align:8(8)
-> MURAM alloc, start:2080, size:80(128), align:80(128)
-> MURAM alloc, start:2180, size:80(128), align:80(128)
-> MURAM alloc, start:2280, size:80(128), align:80(128)
-> MURAM alloc, start:2380, size:80(128), align:80(128)
-> MURAM alloc, start:2440, size:40(64), align:40(64)
-> MURAM alloc, start:24c0, size:40(64), align:40(64)
-> MURAM alloc, start:2540, size:40(64), align:40(64)
-> MURAM alloc, start:25c0, size:40(64), align:40(64)
-> MURAM alloc, start:262c, size:5d(93), align:4(4)
+> The oldest one is difficult to find out sometime. Can we only set the
+> self name in dts, such as "fsl, rapidio-8641", and add this 
+> 'compatible'
+> property to the driver ids arrays?
+
+You can do that, but you typically don't need to -- the
+whole idea of "compatible" is to avoid this, and not need
+to have huge "pci id" style tables in the device drivers
+that need constant updating.  But you _can_ do it, sure.
+
+> Such as:
 >
->  Jocke
+> static struct of_device_id of_rio_rpn_ids[] = {
+> 	{ .compatible = "fsl, rapidio-8540",},
+> 	{ .compatible = "fsl, rapidio-8560",},
+> 	{ .compatible = "fsl, rapidio-8641",},
+> 	{ .compatible = "fsl, rapidio-8548",},
+> 	{},
+> };
+>
+> How about that?
+
+I would just put 8540 in the table and in all device trees
+in this case.
+
+>> It isn't useful to add "compatible" entries that no OS
+>> probes for.
+>>
+>>>> Concrete names are good.
+>>>
+>>> While I agree concrete names are good, we put these 'blocks' in so
+>>> many devices that using the device to match on is pointless.
+>>
+>> You *definitely* should put the device name for _this_
+>> device in there, in case it needs some special workaround.
+>>
+>>> I'm all for making up a name like 'Grande', 'Del',
+>> 'Janeiro'.  This is
+>>> effective what we did with gianfar.  The name gets picked up pretty
+>>> quickly by people.
+>>
+>> That can be used as the "base" name, yes.
+>
+> Do you have the name list? I can change my codes according them.
+
+Nope.
+
+> How about 'Mercurary', 'Venus', 'Earth', 'Mars', 'Saturn', 'Jupiter',
+> 'Uranus', 'Neptune',
+> Or 'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra',
+> 'Scorpius', 'Sagittarius', 'Capricornus', 'Aquarius', 'Pisces' ?
+
+I don't like making up names just for this, I don't see what good
+this would do.  Using a pre-existing code name is fine of course,
+as long as it is a unique identifier, since that's all that matters.
+
+
+Segher
