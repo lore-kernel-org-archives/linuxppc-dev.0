@@ -1,14 +1,14 @@
 Return-Path: <miltonm@bga.com>
 Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 9B109DDDFA
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 02:30:17 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id F3F5EDDE21
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 02:30:50 +1000 (EST)
 Mime-Version: 1.0 (Apple Message framework v624)
-In-Reply-To: <20070615120848.558678000@pademelon.sonytel.be>
+In-Reply-To: <20070615120848.454492000@pademelon.sonytel.be>
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <89ca7c200ed0f7c47387af99643df6a1@bga.com>
+Message-Id: <d46c75da8a86ab5cd83b63f9dbfee33f@bga.com>
 From: Milton Miller <miltonm@bga.com>
-Subject: Re: [patch 6/6] ps3: FLASH ROM Storage Driver
-Date: Mon, 18 Jun 2007 11:30:06 -0500
+Subject: Re: [patch 5/6] ps3: ROM Storage Driver
+Date: Mon, 18 Jun 2007 11:30:39 -0500
 To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -20,53 +20,193 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
 > From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 >
-> Add a FLASH ROM Storage Driver for the PS3:
->   - Implemented as a misc character device driver
->   - Uses a fixed 256 KiB buffer allocated from boot memory as the 
+> Add a CD/DVD/BD Storage Driver for the PS3:
+>   - Implemented as a SCSI device driver
+>   - Uses software scatter-gather with a 64 KiB bounce buffer as the 
 > hypervisor
->     requires the writing of aligned 256 KiB blocks
+>     doesn't support scatter-gather
 >
-> CC: Geoff Levand <geoffrey.levand@am.sony.com>
-> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> ---
-> Changes since previous submission:
->       o Don't use `default y' in Kconfig
->       o #include <linux/uaccess.h> instead of <asm/uaccess.h>
->       o Set up sysfs links between misc character device and PS3 
-> system device:
-> 	  . /sys/class/misc/ps3flash/device -> 
-> ../../../devices/ps3_system/sb_01
-> 	  . /sys/devices/ps3_system/sb_01/misc:ps3flash -> 
-> ../../../class/misc/ps3flash
+
+
 >
->  arch/powerpc/platforms/ps3/Kconfig |   11 +
->  drivers/char/Makefile              |    2
->  drivers/char/ps3flash.c            |  404 
-> +++++++++++++++++++++++++++++++++++++
->  3 files changed, 417 insertions(+)
+> +config PS3_ROM
+> +	tristate "PS3 ROM Storage Driver"
+> +	depends on PPC_PS3 && BLK_DEV_SR
+> +	select PS3_STORAGE
+> +	help
+> +	  Include support for the PS3 ROM Storage.
+> +
+> +	  This support is required to access the PS3 BD/DVD/CD-ROM drive.
+> +	  In general, all users will say Y or M.
+> +
 
-You indicated that the primary reasons to use this driver were to boot 
-back into GameOS, or reinstall the boot loader, yet your Kconfig entry 
-says "In general, all users will say Y or M".  This could give a bit 
-more guidance.
 
-ps3flash_read_write_sectors chooses a string every call that is only 
-used on the error path.
+When I think ROM I usually dont' start with optical media.
 
-ps3flash_read gives priority to returning an encountered error.  If it 
-made partial progress (eg partially mapped user buffer) it should 
-return the count of bytes sent to the user.
+Have you condered calling this the optical driver?
 
-ps3_write will call the hypervisor to write an aligned chunk of memory 
-every call.  I'm guessing the hypervisor does no buffering of the 
-flash.  If the file is written with a small block size, this will
-cause unnecessary flash wear.  Have you considered requiring the 
-application to write the full 256MiB, or alternatively delaying the 
-actual write call until either close, the write reaches the boundary, 
-or a read or write accesses another chunk?   Yes, the later would mean 
-short writes would receive the error on close.
+Or at least putting BD?DVD?CD-ROM on the prompt.
 
-milton
+
+Why does it depend on BLK_DEV_SR?
+
+...
+> +
+> +#include <linux/cdrom.h>
+> +#include <linux/highmem.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/kthread.h>
+> +
+> +#include <scsi/scsi.h>
+> +#include <scsi/scsi_cmnd.h>
+> +#include <scsi/scsi_dbg.h>
+> +#include <scsi/scsi_device.h>
+> +#include <scsi/scsi_host.h>
+> +
+> +#include <asm/lv1call.h>
+> +#include <asm/ps3stor.h>
+> +
+> +
+> +#define DEVICE_NAME			"ps3rom"
+> +
+> +#define BOUNCE_SIZE			(64*1024)
+> +
+> +#define PS3ROM_MAX_SECTORS		(BOUNCE_SIZE / CD_FRAMESIZE)
+> +
+
+the above describes the device
+
+> +#define LV1_STORAGE_SEND_ATAPI_COMMAND	(1)
+> +
+>
+while this one is part of the hypervisor ABI.
+
+
+> +
+> +struct ps3rom_private {
+> +	struct ps3_storage_device *dev;
+> +	struct scsi_cmnd *cmd;
+> +};
+> +#define ps3rom_priv(dev)	((dev)->sbd.core.driver_data)
+>
+
+The above is driver defined.
+
+> +
+> +struct lv1_atapi_cmnd_block {
+> +	u8	pkt[32];	/* packet command block           */
+> +	u32	pktlen;		/* should be 12 for ATAPI 8020    */
+> +	u32	blocks;
+> +	u32	block_size;
+> +	u32	proto;		/* transfer mode                  */
+> +	u32	in_out;		/* transfer direction             */
+> +	u64	buffer;		/* parameter except command block */
+> +	u32	arglen;		/* length above                   */
+> +};
+> +
+
+Its minor, but I'd probably put the define down here with the rest of 
+the ABI contants vs all defines then structs then enums.
+
+> +enum lv1_atapi_proto {
+> +	NON_DATA_PROTO     = 0,
+> +	PIO_DATA_IN_PROTO  = 1,
+> +	PIO_DATA_OUT_PROTO = 2,
+> +	DMA_PROTO = 3
+> +};
+> +
+> +enum lv1_atapi_in_out {
+> +	DIR_WRITE = 0, /* memory -> device */
+> +	DIR_READ = 1 /* device -> memory */
+> +};
+> +
+>
+
+
+...
+
+
+> +
+> +static int __devinit ps3rom_probe(struct ps3_system_bus_device *_dev)
+> +{
+> +	struct ps3_storage_device *dev = to_ps3_storage_device(&_dev->core);
+> +	int error;
+> +	struct Scsi_Host *host;
+> +	struct ps3rom_private *priv;
+> +
+> +	if (dev->blk_size != CD_FRAMESIZE) {
+> +		dev_err(&dev->sbd.core,
+> +			"%s:%u: cannot handle block size %lu\n", __func__,
+> +			__LINE__, dev->blk_size);
+> +		return -EINVAL;
+> +	}
+> +
+> +	dev->bounce_size = BOUNCE_SIZE;
+> +	dev->bounce_buf = kmalloc(BOUNCE_SIZE, GFP_DMA);
+> +	if (!dev->bounce_buf) {
+> +		return -ENOMEM;
+> +	}
+> +
+> +	error = ps3stor_setup(dev);
+> +	if (error)
+> +		goto fail_free_bounce;
+> +
+> +	/* override the interrupt handler */
+> +	free_irq(dev->irq, dev);
+> +	error = request_irq(dev->irq, ps3rom_interrupt, IRQF_DISABLED,
+> +			    dev->sbd.core.driver->name, dev);
+> +	if (error) {
+> +		dev_err(&dev->sbd.core, "%s:%u: request_irq failed %d\n",
+> +			__func__, __LINE__, error);
+> +		goto fail_teardown;
+> +	}
+> +
+
+Somebody's help isn't helpful?  Layering problem?
+
+
+> +	host = scsi_host_alloc(&ps3rom_host_template,
+> +			       sizeof(struct ps3rom_private));
+> +	if (!host) {
+> +		dev_err(&dev->sbd.core, "%s:%u: scsi_host_alloc failed\n",
+> +			__func__, __LINE__);
+> +		goto fail_teardown;
+> +	}
+> +
+> +	priv = (struct ps3rom_private *)host->hostdata;
+> +	ps3rom_priv(dev) = host;
+> +	priv->dev = dev;
+>
+
+Is there code to clear ->priv when failing or unregistering?  Usually 
+these fields are set to NULL to avoid accidental use of stale pointers 
+to freed memory.  Discovering a NULL pointer defereence is usually 
+easier than a stale usage.
+
+> +
+> +	/* One device/LUN per SCSI bus */
+> +	host->max_id = 1;
+> +	host->max_lun = 1;
+> +
+> +	error = scsi_add_host(host, &dev->sbd.core);
+> +	if (error) {
+> +		dev_err(&dev->sbd.core, "%s:%u: scsi_host_alloc failed %d\n",
+> +			__func__, __LINE__, error);
+> +		error = -ENODEV;
+> +		goto fail_host_put;
+> +	}
+> +
+> +	scsi_scan_host(host);
+> +	return 0;
+> +
+> +fail_host_put:
+> +	scsi_host_put(host);
+> +fail_teardown:
+> +	ps3stor_teardown(dev);
+> +fail_free_bounce:
+> +	kfree(dev->bounce_buf);
+> +	return error;
+> +}
+>
