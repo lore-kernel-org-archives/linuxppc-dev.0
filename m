@@ -1,23 +1,16 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id 26420DDEEC
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 23:24:44 +1000 (EST)
-Subject: Re: [PATCH] rheap: eliminates internal fragments caused by alignment
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: Pantelis Antoniou <pantelis.antoniou@gmail.com>
-In-Reply-To: <DA299F48-E5A6-495C-8169-A211D4C83864@gmail.com>
-References: <46766C91.6090903@freescale.com>
-	<03F6FDB0-3D7B-4272-AC1C-8E06F82DD815@gmail.com>
-	<1182169549.2969.20.camel@gentoo-jocke.transmode.se>
-	<DA299F48-E5A6-495C-8169-A211D4C83864@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 18 Jun 2007 15:24:42 +0200
-Message-Id: <1182173082.2969.28.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	Li Yang <leoli@freescale.com>, Paul <paulus@samba.org>,
-	Vitaly Bordug <vbordug@ru.mvista.com>
-Reply-To: joakim.tjernlund@transmode.se
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id BF478DDE09
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 00:08:26 +1000 (EST)
+Mime-Version: 1.0 (Apple Message framework v624)
+In-Reply-To: <46730D5F.4040701@am.sony.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <26778ed0e343676aa0c4fd0f4fa0746b@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [patch 24/33] powerpc: Correct __secondary_hold comment
+Date: Mon, 18 Jun 2007 09:08:30 -0500
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,42 +20,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-06-18 at 15:31 +0300, Pantelis Antoniou wrote:
-> On 18 =CE=99=CE=BF=CF=85=CE=BD 2007, at 3:25 =CE=9C=CE=9C, Joakim Tjernlu=
-nd wrote:
->=20
-> > On Mon, 2007-06-18 at 15:14 +0300, Pantelis Antoniou wrote:
-> >> Hi Li,
-> >>
-> >> The patch appears fine at first glance.
-> >>
-> >> I'm really curious what kind of alignment do you use in order to =20
-> >> have so
-> >> much wasted space that re-inserting the leftovers makes so much of a
-> >> difference.
->=20
-> Jocke,
->=20
-> Ugh, 256?
+On Sat Jun 16 08:06:23 EST 2007, Geoff Levand wrote:
+> Remove references to pSeries and OpenFirmware in the __secondary_hold
+> usage comment.  __secondary_hold is a generic routine and can be used
+> by other platforms.
 
-Yes, the ucc_geth needs lots of alignment. Leo can tell you more :)
+The comment is correct, just incomplete.  Well, the part that you 
+changed anyways.  How about changing the subject to:
 
->=20
-> That's not nice at all.
-> I'm not sure that even then you're going to have any guarantees that
-> the allocations will be successful.
->=20
-> I'm afraid that in those case it would be better for the board
-> platform setup to have the space preallocated according to the BSP
-> requirements.
+Expand comment for other uses of __secondary_hold.
 
-Maybe, but without the PATCH you will run out of space very quickly
-and you cannot bring up 3 ethernet interfaces. Rheap is plain wrong
-as is today and needs this patch.
+>
+> Signed-off-by: Geoff Levand <geoffrey.levand at am.sony.com>
+> ---
+>  arch/powerpc/kernel/head_64.S |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> --- a/arch/powerpc/kernel/head_64.S
+> +++ b/arch/powerpc/kernel/head_64.S
+> @@ -103,8 +103,8 @@ __secondary_hold_acknowledge:
+>
+>         . = 0x60
+>  /*
+> - * The following code is used on pSeries to hold secondary processors
+> - * in a spin loop after they have been freed from OpenFirmware, but
+> + * The following code is used to hold secondary processors
+> + * in a spin loop after they have entered the kernel, but
+>   * before the bulk of the kernel has been relocated.  This code
+>   * is relocated to physical address 0x60 before prom_init is run.
+>   * All of it must fit below the first exception vector at 0x100.
+>
 
- Jocke
+I don't like the resulting wording.  In particular, I don't like "after 
+they have entered the kernel", as most of the kernel is not available 
+to be entered.  In addition, the unchanged part of the comment refers 
+to relocating from offset 0x60-0x100 to address 0x60, but in fact 
+offset 0x0-0x100 is placed at address 0 (0x60 is just the entry point), 
+and its done from within prom_init not before.
 
->=20
-> Just my $0.02.
->=20
-> -- Pantelis
+How does this text sound?
+
+This code starting at offset 0x60 is used to hold secondary processors 
+before the kernel has been relocated to its linked address.  Any 
+platform or pre-boot environment may transfer secondary processors to 
+the kernel by copying the first 0x100 bytes to address 0, and then 
+instructing the secondary cpus to branch to address 0x60 after placing 
+their hardware id (as specified by the device tree) in r3.  When 
+booting from OpenFirmware using the client interface, the copy is 
+performed by the boot cpu in prom_init and then the start-cpu method is 
+used to transfer the cpus to this loop.  Although 
+__secondary_hold_acknoledge is used serially to provide a positive 
+handshake that each cpu has started, neither its address nor the 
+protocol is considered part of the kernel entry ABI and should not be 
+relied on by external code.  The code and data for the secondary cpus 
+must be contained in bytes 0x4 - 0x100, that is before the first 
+exception vector and after at least one instruction for the master 
+entrypoint.
+
+milton
