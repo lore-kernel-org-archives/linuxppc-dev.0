@@ -1,14 +1,14 @@
 Return-Path: <miltonm@bga.com>
 Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id BF478DDE09
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 00:08:26 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 839BEDDF0F
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 00:08:45 +1000 (EST)
 Mime-Version: 1.0 (Apple Message framework v624)
-In-Reply-To: <46730D5F.4040701@am.sony.com>
+In-Reply-To: <46730D5B.300@am.sony.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <26778ed0e343676aa0c4fd0f4fa0746b@bga.com>
+Message-Id: <891b0e086ebe9ebf85355f893f5dafa9@bga.com>
 From: Milton Miller <miltonm@bga.com>
-Subject: Re: [patch 24/33] powerpc: Correct __secondary_hold comment
-Date: Mon, 18 Jun 2007 09:08:30 -0500
+Subject: Re: [patch 23/33] powerpc: Localize mmu_off 
+Date: Mon, 18 Jun 2007 09:08:56 -0500
 To: Geoff Levand <geoffrey.levand@am.sony.com>
 Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -20,61 +20,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat Jun 16 08:06:23 EST 2007, Geoff Levand wrote:
-> Remove references to pSeries and OpenFirmware in the __secondary_hold
-> usage comment.  __secondary_hold is a generic routine and can be used
-> by other platforms.
+On Sat Jun 16 08:06:19 EST 2007, Geoff Levand wrote:
+> This just removes the dependency __mmu_off has on the symbol
+> __after_prom_start.  I found the current code inconvenient when I
+> wanted to put some debugging code between the call to __mmu_off
+> and the branch to __after_prom_start.
 
-The comment is correct, just incomplete.  Well, the part that you 
-changed anyways.  How about changing the subject to:
+You are entering this code with the mmu on?
 
-Expand comment for other uses of __secondary_hold.
+My first thought was that is unexpected, but aparently Apple machines 
+do that, so its supported for the master -- not the slaves.
 
->
 > Signed-off-by: Geoff Levand <geoffrey.levand at am.sony.com>
 > ---
->  arch/powerpc/kernel/head_64.S |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  arch/powerpc/kernel/head_64.S |    4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 >
 > --- a/arch/powerpc/kernel/head_64.S
 > +++ b/arch/powerpc/kernel/head_64.S
-> @@ -103,8 +103,8 @@ __secondary_hold_acknowledge:
+> @@ -1695,9 +1695,11 @@ _GLOBAL(__start_initialization_multiplat
+>  2:
 >
->         . = 0x60
->  /*
-> - * The following code is used on pSeries to hold secondary processors
-> - * in a spin loop after they have been freed from OpenFirmware, but
-> + * The following code is used to hold secondary processors
-> + * in a spin loop after they have entered the kernel, but
->   * before the bulk of the kernel has been relocated.  This code
->   * is relocated to physical address 0x60 before prom_init is run.
->   * All of it must fit below the first exception vector at 0x100.
+>         /* Switch off MMU if not already */
+> -       LOAD_REG_IMMEDIATE(r4, .__after_prom_start - KERNELBASE)
+> +       LOAD_REG_IMMEDIATE(r4, __mmu_off_return - KERNELBASE)
+>         add     r4,r4,r30
+>         bl      .__mmu_off
+> +__mmu_off_return:
+> +
+>         b       .__after_prom_start
 >
+>  _STATIC(__boot_from_prom)
+>
+> -- 
 
-I don't like the resulting wording.  In particular, I don't like "after 
-they have entered the kernel", as most of the kernel is not available 
-to be entered.  In addition, the unchanged part of the comment refers 
-to relocating from offset 0x60-0x100 to address 0x60, but in fact 
-offset 0x0-0x100 is placed at address 0 (0x60 is just the entry point), 
-and its done from within prom_init not before.
+That seems like a long label.
 
-How does this text sound?
+I could stand a 1: there (ie a local numeric label).
 
-This code starting at offset 0x60 is used to hold secondary processors 
-before the kernel has been relocated to its linked address.  Any 
-platform or pre-boot environment may transfer secondary processors to 
-the kernel by copying the first 0x100 bytes to address 0, and then 
-instructing the secondary cpus to branch to address 0x60 after placing 
-their hardware id (as specified by the device tree) in r3.  When 
-booting from OpenFirmware using the client interface, the copy is 
-performed by the boot cpu in prom_init and then the start-cpu method is 
-used to transfer the cpus to this loop.  Although 
-__secondary_hold_acknoledge is used serially to provide a positive 
-handshake that each cpu has started, neither its address nor the 
-protocol is considered part of the kernel entry ABI and should not be 
-relied on by external code.  The code and data for the secondary cpus 
-must be contained in bytes 0x4 - 0x100, that is before the first 
-exception vector and after at least one instruction for the master 
-entrypoint.
+Hmm... how about always going directly there:
+
+-       bl      .__mmu_off
+-       b       .__after_prom_start
++       mtlr    r4
++       b       .__mmu_off
+
+
+So that there is no space to add code that is skipped if the mmu was on?
 
 milton
