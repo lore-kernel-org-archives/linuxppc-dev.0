@@ -1,18 +1,14 @@
-Return-Path: <mgreer@mvista.com>
-Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id 36DD3DDF8A
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 08:58:33 +1000 (EST)
-Date: Mon, 18 Jun 2007 15:55:37 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [patch 30/33] PS3: Bootwrapper support.
-Message-ID: <20070618225537.GA19966@mag.az.mvista.com>
-References: <46730D8A.9090309@am.sony.com>
-	<951969d2021fe6e78917ef8bdb47cf6f@bga.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <951969d2021fe6e78917ef8bdb47cf6f@bga.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 36F4FDDFAC
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 08:59:42 +1000 (EST)
+Message-Id: <20070618224923.057240097@arndb.de>
+References: <20070618224247.972139855@arndb.de>
+Date: Tue, 19 Jun 2007 00:42:48 +0200
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [patch 1/5] Enable SPU switch notification to detect currently active
+	SPU tasks.
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,76 +18,132 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jun 18, 2007 at 09:20:10AM -0500, Milton Miller wrote:
-> On Sat Jun 16 08:07:06 EST 2007, Geoff Levand wrote:
+From: Maynard Johnson <mpjohn@us.ibm.com>
+This patch adds to the capability of spu_switch_event_register so that the
+caller is also notified of currently active SPU tasks.  It also exports
+spu_switch_event_register and spu_switch_event_unregister.
 
-> > @@ -187,11 +189,12 @@ $(obj)/zImage.%: vmlinux $(wrapperbits)
-> >  $(obj)/zImage.iseries: vmlinux
-> >         $(STRIP) -s -R .comment $< -o $@
-> >
-> > -$(obj)/zImage.ps3: vmlinux
-> > -       $(STRIP) -s -R .comment $< -o $@
-> > +$(obj)/zImage.ps3: vmlinux  $(wrapper) $(wrapperbits) 
-> > $(srctree)/$(src)/dts/ps3.dts
-> > +       $(STRIP) -s -R .comment $< -o vmlinux.strip
-> > +       $(call cmd,wrap,ps3,$(srctree)/$(src)/dts/ps3.dts,,)
-> >
-> > -$(obj)/zImage.initrd.ps3: vmlinux
-> > -       @echo "  WARNING zImage.initrd.ps3 not supported (yet)"
-> > +$(obj)/zImage.initrd.ps3: vmlinux  $(wrapper) $(wrapperbits) 
-> > $(srctree)/$(src)/dts/ps3.dts $(obj)/ramdisk.image.gz
-> > +       $(call 
-> > cmd,wrap,ps3,$(srctree)/$(src)/dts/ps3.dts,,$(obj)/ramdisk.image.gz)
-> 
-> The separate rule here is to pick up ps3.dts, correct?
-> 
-> After Marc's 3 patch series this would be handled by the config file.
-           ^ k  :)
+Signed-off-by: Maynard Johnson <mpjohn@us.ibm.com>
+Signed-off-by: Carl Love <carll@us.ibm.com>
+Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
-Yep.  Hack the appropriate Kconfig to 'select WANT_DEVICE_TREE'
-then make config to set DEVICE_TREE to the name of your dts file
-(e.g., ps3.dts).  See configs/prpmc2800_defconfig for an example.
+Index: linux-2.6/arch/powerpc/platforms/cell/spufs/sched.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/sched.c
++++ linux-2.6/arch/powerpc/platforms/cell/spufs/sched.c
+@@ -119,21 +119,47 @@ static void spu_remove_from_active_list(
+ 
+ static BLOCKING_NOTIFIER_HEAD(spu_switch_notifier);
+ 
+-static void spu_switch_notify(struct spu *spu, struct spu_context *ctx)
++void spu_switch_notify(struct spu *spu, struct spu_context *ctx)
+ {
+ 	blocking_notifier_call_chain(&spu_switch_notifier,
+ 			    ctx ? ctx->object_id : 0, spu);
+ }
+ 
++static void notify_spus_active(void)
++{
++	int node;
++	/* Wake up the active spu_contexts. When the awakened processes
++	 * see their "notify_active" flag is set, they will call
++	 * spu_switch_notify();
++	 */
++	for (node = 0; node < MAX_NUMNODES; node++) {
++		struct spu *spu;
++		mutex_lock(&spu_prio->active_mutex[node]);
++		list_for_each_entry(spu, &spu_prio->active_list[node], list) {
++			struct spu_context *ctx = spu->ctx;
++			set_bit(SPU_SCHED_NOTIFY_ACTIVE, &ctx->sched_flags);
++			mb();
++			wake_up_all(&ctx->stop_wq);
++		}
++		mutex_unlock(&spu_prio->active_mutex[node]);
++	}
++}
++
+ int spu_switch_event_register(struct notifier_block * n)
+ {
+-	return blocking_notifier_chain_register(&spu_switch_notifier, n);
++	int ret;
++	ret = blocking_notifier_chain_register(&spu_switch_notifier, n);
++	if (!ret)
++		notify_spus_active();
++	return ret;
+ }
++EXPORT_SYMBOL_GPL(spu_switch_event_register);
+ 
+ int spu_switch_event_unregister(struct notifier_block * n)
+ {
+ 	return blocking_notifier_chain_unregister(&spu_switch_notifier, n);
+ }
++EXPORT_SYMBOL_GPL(spu_switch_event_unregister);
+ 
+ /**
+  * spu_bind_context - bind spu context to physical spu
+Index: linux-2.6/arch/powerpc/platforms/cell/spufs/spufs.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/spufs.h
++++ linux-2.6/arch/powerpc/platforms/cell/spufs/spufs.h
+@@ -42,6 +42,7 @@ struct spu_gang;
+ /* ctx->sched_flags */
+ enum {
+ 	SPU_SCHED_EXITING = 0,
++	SPU_SCHED_NOTIFY_ACTIVE,
+ };
+ 
+ struct spu_context {
+@@ -202,6 +203,7 @@ void spu_acquire_saved(struct spu_contex
+ int spu_activate(struct spu_context *ctx, unsigned long flags);
+ void spu_deactivate(struct spu_context *ctx);
+ void spu_yield(struct spu_context *ctx);
++void spu_switch_notify(struct spu *spu, struct spu_context *ctx);
+ void spu_start_tick(struct spu_context *ctx);
+ void spu_stop_tick(struct spu_context *ctx);
+ void spu_sched_tick(struct work_struct *work);
+Index: linux-2.6/arch/powerpc/platforms/cell/spufs/run.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/run.c
++++ linux-2.6/arch/powerpc/platforms/cell/spufs/run.c
+@@ -24,9 +24,11 @@ static inline int spu_stopped(struct spu
+ 	u64 pte_fault;
+ 
+ 	*stat = ctx->ops->status_read(ctx);
+-	if (ctx->state != SPU_STATE_RUNNABLE)
+-		return 1;
++
+ 	spu = ctx->spu;
++	if (ctx->state != SPU_STATE_RUNNABLE ||
++	    test_bit(SPU_SCHED_NOTIFY_ACTIVE, &ctx->sched_flags))
++		return 1;
+ 	pte_fault = spu->dsisr &
+ 	    (MFC_DSISR_PTE_NOT_FOUND | MFC_DSISR_ACCESS_DENIED);
+ 	return (!(*stat & 0x1) || pte_fault || spu->class_0_pending) ? 1 : 0;
+@@ -294,6 +296,7 @@ long spufs_run_spu(struct file *file, st
+ 		   u32 *npc, u32 *event)
+ {
+ 	int ret;
++	struct spu * spu;
+ 	u32 status;
+ 
+ 	if (mutex_lock_interruptible(&ctx->run_mutex))
+@@ -314,8 +317,17 @@ long spufs_run_spu(struct file *file, st
+ 
+ 	do {
+ 		ret = spufs_wait(ctx->stop_wq, spu_stopped(ctx, &status));
++		spu = ctx->spu;
+ 		if (unlikely(ret))
+ 			break;
++		if (unlikely(test_bit(SPU_SCHED_NOTIFY_ACTIVE,
++				      &ctx->sched_flags))) {
++			clear_bit(SPU_SCHED_NOTIFY_ACTIVE, &ctx->sched_flags);
++			if (!(status & SPU_STATUS_STOPPED_BY_STOP)) {
++				spu_switch_notify(spu, ctx);
++				continue;
++			}
++		}
+ 		if ((status & SPU_STATUS_STOPPED_BY_STOP) &&
+ 		    (status >> SPU_STOP_STATUS_SHIFT == 0x2104)) {
+ 			ret = spu_process_callback(ctx);
 
-The patches Milton is referring to are at:
-http://patchwork.ozlabs.org/linuxppc/patch?id=11428 + 11429 + 11430
-
-> > +
-> > +       /* Primary goes to _zimage_start in wrapper. */
-> > +
-> > +       lis     r4, _zimage_start at ha
-> > +       addi    r4, r4, _zimage_start at l
-> > +       mtctr   r4
-> > +       bctr
-> > +
-> > +/*
-> > + * __system_reset_kernel - Place holder for the kernel reset vector.
-> > + *
-> > + * The bootwrapper build script copies 0x100 bytes from offset 0x100
-> > + * of the rom image to the symbol __system_reset_kernel.  At runtime
-> > + * the bootwrapper program copies the 0x100 bytes at 
-> > __system_reset_kernel
-> > + * to ram address 0x100.  This symbol must occupy 0x100 bytes.
-> > + */
-> > +
-> > +       .globl __system_reset_kernel
-> > +__system_reset_kernel:
-> > +
-> > +       . = __system_reset_kernel + 0x100
-> 
-> Not bad.   Since this code doesn't have to be at any particular 
-> location when it is built (you have no .org or similar, its all PIC), I 
-> don't see anything that couldn't be done from an asm block in the 
-> platform .c file, like the entry point in prpmc2800.c file; that would 
-> save a file in the boot directory.  In that case __system_reset_kernel 
-> would be an array of 256 bytes.
-
-Agree.
-
-As for the rest of Geoff's patch, I think I get the gist of what's going
-on but it would be really nice to have it described in English (and put
-in the patch description).  That way others (like me) could understand
-the problem you're solving and what your solution is.
-
-(Hey, Paul made me do that so you can too! ;)
-
-Mark
+--
