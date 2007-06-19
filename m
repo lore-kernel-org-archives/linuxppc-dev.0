@@ -1,22 +1,14 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-11.arcor-online.net (mail-in-11.arcor-online.net
-	[151.189.21.51])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 03385DDF4E
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 16:16:20 +1000 (EST)
-In-Reply-To: <20070619054232.GB32039@localhost.localdomain>
-References: <20070618185715.321010@gmx.net>
-	<20070619054232.GB32039@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <69de6646562b9fb3432909afff57a962@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC] Device tree for new desktop platform in arch/powerpc
-Date: Tue, 19 Jun 2007 08:16:09 +0200
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: ppcdev list <linuxppc-dev@ozlabs.org>
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 7505EDDE37
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 16:36:02 +1000 (EST)
+Date: Tue, 19 Jun 2007 16:35:57 +1000
+To: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
+Subject: [PATCH/RFC] Modify sched_clock() to make CONFIG_PRINTK_TIME more sane.
+Message-ID: <20070619063557.GK9768@bakeyournoodle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+From: tony@bakeyournoodle.com (Tony Breeds)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,61 +18,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>   	interrupt-controller {
->> 		device_type = "interrupt-controller";
->> 		compatible = "chrp,iic";
->
-> Is there a device binding defined somewhere for "chrp,iic"?
+When booting a current kernel with CONFIG_PRINTK_TIME enabled you'll
+see messages like:
 
-In the CHRP platform binding, which doesn't apply here.
+[    0.000000] time_init: decrementer frequency = 188.044000 MHz
+[    0.000000] time_init: processor frequency   = 1504.352000 MHz
+[3712914.436297] Console: colour dummy device 80x25
 
->> 		keyboard {
->> 			device_type = "keyboard";
->> 			compatible = "pnpPNP,303";
->> 			reg = <0>;
->> 		};
->
->> 		mouse {
->> 			device_type = "mouse";
->> 			compatible = "pnpPNP,f03";
->> 			reg = <1>;
->> 		};
->> 	};
->
->> 	timer@40 {
->> 		device_type = "timer";
->
-> For flat device trees we're generally avoiding setting the device_type
-> property unless there is a clearly defined "class binding" which
-> applies.  There are a number of cases here where I'm not sure if
-> that's true.
+This patch modifies sched_clock() to report the offset since the machine booted
+so the same printk's now look like:
 
-Keyboard and mouse have defined "device_type"s.  Timer I
-don't think so.
+[    0.000000] time_init: decrementer frequency = 188.044000 MHz
+[    0.000000] time_init: processor frequency   = 1504.352000 MHz
+[    0.000135] Console: colour dummy device 80x25
 
-Either way, I'd leave out the device_type here, the OS
-isn't supposed to use it anyway.
+Effectivly including the uptime in printk()s.
 
->> 	serial@3f8 {
->> 		device_type = "serial";
->> /*		compatible = "pnpPNP,501";*/
->> 		compatible = "ns16550";
->> 		reg = <3f8 8>;
->> 		interrupts = <4 3>;			// IRQ4 (rising edge)
->> 		interrupt-parent = <&interrupt-controller>;
->> 		clock-frequency = <0>;			// Not necessary?
->
-> Probably necessary, but may need to be filled in from the bootwrapper.
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 
-If absent, "clock-frequency" should be taken to be the
-default thing.  Actually, for pnpPNP (PC-style) serial,
-the clock frequency is fixed.
+---
 
->>   	pci@80000000 {
->> 		device_type = "pci";
->> 		bus-frequency = <01fca055>;		// 33.3MHz
+ arch/powerpc/kernel/time.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-So write it in decimal...
+Index: working/arch/powerpc/kernel/time.c
+===================================================================
+--- working.orig/arch/powerpc/kernel/time.c
++++ working/arch/powerpc/kernel/time.c
+@@ -115,6 +115,7 @@ EXPORT_SYMBOL_GPL(rtc_lock);
+ 
+ u64 tb_to_ns_scale;
+ unsigned tb_to_ns_shift;
++unsigned long boot_tb;
+ 
+ struct gettimeofday_struct do_gtod;
+ 
+@@ -735,7 +736,7 @@ unsigned long long sched_clock(void)
+ {
+ 	if (__USE_RTC())
+ 		return get_rtc();
+-	return mulhdu(get_tb(), tb_to_ns_scale) << tb_to_ns_shift;
++	return mulhdu(get_tb() - boot_tb, tb_to_ns_scale) << tb_to_ns_shift;
+ }
+ 
+ int do_settimeofday(struct timespec *tv)
+@@ -960,6 +961,8 @@ void __init time_init(void)
+ 	}
+ 	tb_to_ns_scale = scale;
+ 	tb_to_ns_shift = shift;
++	/* Save the current timebase to pretty up CONFIG_PRINTK_TIME */
++	boot_tb = get_tb();
+ 
+ 	tm = get_boot_time();
+ 
+Yours Tony
 
-
-Segher
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
