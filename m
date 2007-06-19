@@ -1,31 +1,17 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 56332DDE3E
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 14:00:26 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l5J40KCN005733
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 21:00:20 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l5J40GLr018552
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 23:00:17 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-7"
-Subject: RE: [PATCH] rheap: eliminates internal fragments caused by alignment
-Date: Tue, 19 Jun 2007 12:02:09 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890D82CAB@zch01exm26.fsl.freescale.net>
-In-Reply-To: <DA299F48-E5A6-495C-8169-A211D4C83864@gmail.com>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Pantelis Antoniou" <pantelis.antoniou@gmail.com>,
-	<joakim.tjernlund@transmode.se>
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>, Paul <paulus@samba.org>,
-	Vitaly Bordug <vbordug@ru.mvista.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 04ABBDDEEA
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 14:37:45 +1000 (EST)
+Subject: [PATCH] fix snd-powermac refounting bugs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Tue, 19 Jun 2007 14:37:39 +1000
+Message-Id: <1182227860.26853.308.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,53 +21,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Pantelis Antoniou [mailto:pantelis.antoniou@gmail.com]
-> Sent: Monday, June 18, 2007 8:31 PM
-> To: joakim.tjernlund@transmode.se
-> Cc: Li Yang-r58472; Paul; Vitaly Bordug; linuxppc-dev Development
-> Subject: Re: [PATCH] rheap: eliminates internal fragments caused by =
-alignment
->=20
->=20
-> On 18 =C9=EF=F5=ED 2007, at 3:25 =CC=CC, Joakim Tjernlund wrote:
->=20
-> > On Mon, 2007-06-18 at 15:14 +0300, Pantelis Antoniou wrote:
-> >> Hi Li,
-> >>
-> >> The patch appears fine at first glance.
-> >>
-> >> I'm really curious what kind of alignment do you use in order to
-> >> have so
-> >> much wasted space that re-inserting the leftovers makes so much of =
-a
-> >> difference.
->=20
-> Jocke,
->=20
-> Ugh, 256?
->=20
-> That's not nice at all.
-Pantelis,
+The old snd-powermac driver has some serious refcounting issues when
+initialisation fails, which is the case on all new machines with
+a layout-id since those are handled by the new snd-powermac driver.
 
-For QE, most of the MURAM allocation requires relative large alignment.  =
-SDMA buffer even needs a 4k alignment.
+Some of those bugs seem to have been under the radar for some time
+(like double pci_dev_put), but one was actually added in 2.6.22 with
+Stephen attempt at teaching refcounting to the driver which didn't
+do it at all.
 
-> I'm not sure that even then you're going to have any guarantees that
-> the allocations will be successful.
->=20
-> I'm afraid that in those case it would be better for the board
-> platform setup to have the space preallocated according to the BSP
-> requirements.
+This patch fixes both, thus removing all sort of kref errors that
+would happen if that driver gets loaded on a G5 machine or a recent
+PowerBook due to OF nodes left around with a 0 refcount.
 
-Dynamic allocation surely can't match the efficiency of manual =
-allocation.  But with this patch applied, the utilization efficiency =
-will be good enough for most systems to work correctly, and without the =
-great trouble to partition the space yourself.  Moreover, given the fact =
-that in QE drivers some MURAM usage can be tunable, it will be more =
-suitable to use the dynamic allocation.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-A general policy will be helpful, that allocations with huge alignment =
-(like 4k) should always be done as early as possible.
-
-- Leo
+Index: linux-work/sound/ppc/pmac.c
+===================================================================
+--- linux-work.orig/sound/ppc/pmac.c	2007-06-19 14:18:09.000000000 +1000
++++ linux-work/sound/ppc/pmac.c	2007-06-19 14:27:08.000000000 +1000
+@@ -775,7 +775,8 @@ static int snd_pmac_free(struct snd_pmac
+ 		out_le32(&chip->awacs->control, in_le32(&chip->awacs->control) & 0xfff);
+ 	}
+ 
+-	snd_pmac_sound_feature(chip, 0);
++	if (chip->node)
++		snd_pmac_sound_feature(chip, 0);
+ 
+ 	/* clean up mixer if any */
+ 	if (chip->mixer_free)
+@@ -925,6 +926,7 @@ static int __init snd_pmac_detect(struct
+ 	}
+ 	if (! sound) {
+ 		of_node_put(chip->node);
++		chip->node = NULL;
+ 		return -ENODEV;
+ 	}
+ 	prop = of_get_property(sound, "sub-frame", NULL);
+@@ -937,7 +939,9 @@ static int __init snd_pmac_detect(struct
+ 		printk(KERN_INFO "snd-powermac no longer handles any "
+ 				 "machines with a layout-id property "
+ 				 "in the device-tree, use snd-aoa.\n");
++		of_node_put(sound);
+ 		of_node_put(chip->node);
++		chip->node = NULL;
+ 		return -ENODEV;
+ 	}
+ 	/* This should be verified on older screamers */
+@@ -1297,8 +1301,6 @@ int __init snd_pmac_new(struct snd_card 
+ 	return 0;
+ 
+  __error:
+-	if (chip->pdev)
+-		pci_dev_put(chip->pdev);
+ 	snd_pmac_free(chip);
+ 	return err;
+ }
