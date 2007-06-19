@@ -1,20 +1,22 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id 6BC64DDEEF
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2007 02:17:29 +1000 (EST)
-Subject: Re: [PATCH] rheap: eliminates internal fragments caused by alignment
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: Li Yang <leoli@freescale.com>
-In-Reply-To: <1182167304.2969.8.camel@gentoo-jocke.transmode.se>
-References: <46766C91.6090903@freescale.com>
-	<1182167304.2969.8.camel@gentoo-jocke.transmode.se>
-Content-Type: text/plain
-Date: Tue, 19 Jun 2007 18:17:25 +0200
-Message-Id: <1182269845.2969.117.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>, Paul <paulus@samba.org>,
-	Vitaly Bordug <vbordug@ru.mvista.com>
-Reply-To: joakim.tjernlund@transmode.se
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7CF83DDF55
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2007 02:18:26 +1000 (EST)
+Message-ID: <467801CA.4090907@freescale.com>
+Date: Tue, 19 Jun 2007 11:18:18 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: for-2.6.23 branch in powerpc.git created
+References: <18034.6787.951861.623265@cargo.ozlabs.ibm.com>	<Pine.LNX.4.60.0706151915580.5979@poirot.grange>	<4672D694.5060701@freescale.com>
+	<18039.30713.948665.48880@cargo.ozlabs.ibm.com>
+In-Reply-To: <18039.30713.948665.48880@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-06-18 at 13:48 +0200, Joakim Tjernlund wrote:
-> On Mon, 2007-06-18 at 19:29 +0800, Li Yang wrote:
-> > The patch adds fragments caused by rh_alloc_align() back to free list, instead
-> > of allocating the whole chunk of memory.  This will greatly improve memory
-> > utilization managed by rheap.
-> > 
-> > It solves MURAM not enough problem with 3 UCCs enabled on MPC8323.
-> > 
-> > Signed-off-by: Li Yang <leoli@freescale.com>
-> > ---
+Paul Mackerras wrote:
+>>I assume you mean "Call of_register_i2c_devices() for fsl-i2c"
+>>(http://ozlabs.org/pipermail/linuxppc-dev/2007-May/036333.html)?
 > 
-> For what it is worth:
-> I have tested this patch and it solves the problem with 3 UCCs
-> as ethernet for me. This fixes a regression introduced after 2.6.20
-> Please consider for 2.6.22
-> Acked-by: Joakim Tjernlund <joakim.tjernlund@transmode.se> 
+> 
+> Isn't that the one where you replied to yourself saying you'd posted
+> the wrong patch?  Did you ever post the right patch?
 
-I noticed Paulus pull request to Linus and this patch wasn't
-included. I really want to see it included.
+I did, but discussion ensued, and the consensus was that the original 
+patch is the way to do it.
 
- Jocke
+-Scott
