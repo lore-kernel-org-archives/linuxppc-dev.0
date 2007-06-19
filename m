@@ -1,18 +1,23 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org
-Subject: Re: [Cbe-oss-dev] [patch 3/5] cell: updated driver for DDR2 memory on
-	AXON
-Date: Wed, 20 Jun 2007 01:03:24 +0200
-References: <20070618224247.972139855@arndb.de>
-	<20070618224923.364578320@arndb.de>
-	<20070619154812.GA20347@ps3linux.grid.fixstars.com>
-In-Reply-To: <20070619154812.GA20347@ps3linux.grid.fixstars.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 51CE4DDEE0
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2007 09:04:41 +1000 (EST)
+Date: Tue, 19 Jun 2007 18:04:32 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Subject: Re: [PATCH] rheap: eliminates internal fragments caused by alignment
+In-Reply-To: <1182269845.2969.117.camel@gentoo-jocke.transmode.se>
+Message-ID: <Pine.LNX.4.64.0706191804100.27810@gate.crashing.org>
+References: <46766C91.6090903@freescale.com>
+	<1182167304.2969.8.camel@gentoo-jocke.transmode.se>
+	<1182269845.2969.117.camel@gentoo-jocke.transmode.se>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200706200103.24799.arnd@arndb.de>
-Cc: Akinobu Mita <mita@fixstars.com>, linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Li Yang <leoli@freescale.com>, Paul <paulus@samba.org>,
+	Vitaly Bordug <vbordug@ru.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,46 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 19 June 2007, Akinobu Mita wrote:
-> > +	if (of_address_to_resource(device->node, 0, &resource) != 0) {
-> > +		dev_err(&device->dev, "Cannot access device tree\n");
-> > +		rc = -EFAULT;
-> > +		goto failed;
-> > +	}
-> 
-> of_address_to_resource() returns error code on failure:
-> 
-> 	rc = of_address_to_resource(device->node, 0, &resource);
-> 	if (rc) {
-> 		dev_err(&device->dev, "Cannot access device tree\n");
-> 		goto failed;
-> 	}
-> 
-> is better.
 
-Right.
 
-> > +	bank->ph_addr = resource.start;
-> > +	bank->io_addr = (unsigned long) ioremap_flags(
-> > +			bank->ph_addr, bank->size, _PAGE_NO_CACHE);
-> > +	if (bank->io_addr == 0) {
-> > +		dev_err(&device->dev, "ioremap() failed\n");
-> > +		rc = -EFAULT;
-> > +		goto failed;
-> > +	}
-> > +
-> > +	bank->disk = alloc_disk(AXON_RAM_MINORS_PER_DISK);
-> > +	if (bank->disk == NULL) {
-> > +		dev_err(&device->dev, "Cannot register disk\n");
-> > +		rc = -EFAULT;
-> > +		goto failed;
-> > +	}
-> 
-> -ENOMEM is better than -EFAULT. Because alloc_disk() failure happens
-> only when it runs out of memory.
+On Tue, 19 Jun 2007, Joakim Tjernlund wrote:
 
-yes. EFAULT should only be used when an access to user memory has failed,
-so it's wrong practically everywhere in here, your other comments are
-obviously correct as well. 
+> On Mon, 2007-06-18 at 13:48 +0200, Joakim Tjernlund wrote:
+> > On Mon, 2007-06-18 at 19:29 +0800, Li Yang wrote:
+> > > The patch adds fragments caused by rh_alloc_align() back to free list, instead
+> > > of allocating the whole chunk of memory.  This will greatly improve memory
+> > > utilization managed by rheap.
+> > >
+> > > It solves MURAM not enough problem with 3 UCCs enabled on MPC8323.
+> > >
+> > > Signed-off-by: Li Yang <leoli@freescale.com>
+> > > ---
+> >
+> > For what it is worth:
+> > I have tested this patch and it solves the problem with 3 UCCs
+> > as ethernet for me. This fixes a regression introduced after 2.6.20
+> > Please consider for 2.6.22
+> > Acked-by: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+>
+> I noticed Paulus pull request to Linus and this patch wasn't
+> included. I really want to see it included.
+>
 
-	Arnd <><
+I'll push (or request pull) from Linus tonight for this to go into 2.6.22
+
+- k
