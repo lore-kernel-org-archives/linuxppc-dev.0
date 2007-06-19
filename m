@@ -1,25 +1,18 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BE1D9DDE1C
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 18:16:00 +1000 (EST)
-Date: Tue, 19 Jun 2007 10:15:46 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [patch 4/6] ps3: Disk Storage Driver
-Message-ID: <20070619081546.GA25336@lst.de>
-References: <1181947242.3600.8.camel@mulgrave.il.steeleye.com>
-	<20070615.160858.26276547.davem@davemloft.net>
-	<20070619055629.GE18542@lst.de>
-	<20070618.230731.11645150.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070618.230731.11645150.davem@davemloft.net>
-Cc: James.Bottomley@SteelEye.com, axboe@kernel.dk, linux-scsi@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, Geert.Uytterhoeven@sonycom.com,
-	dwmw2@infradead.org, hch@lst.de, alan@lxorguk.ukuu.org.uk
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 7C59EDDF15
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 18:40:17 +1000 (EST)
+Content-Type: text/plain; charset="us-ascii"
+Date: Tue, 19 Jun 2007 10:40:15 +0200
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+In-Reply-To: <20070619054232.GB32039@localhost.localdomain>
+Message-ID: <20070619084015.202120@gmx.net>
+MIME-Version: 1.0
+References: <20070618185715.321010@gmx.net>
+	<20070619054232.GB32039@localhost.localdomain>
+Subject: Re: [RFC] Device tree for new desktop platform in arch/powerpc
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,11 +22,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jun 18, 2007 at 11:07:31PM -0700, David Miller wrote:
-> The main disk I/O block read and write is done using descriptors
-> sent to the disk server.  SCSI pass-through is provided (optionally)
-> so that disk analysis tools can do things like MODE_SENSE on the
-> disk.
 
-SG_IO can easily be implemented for block devices.  See cciss in
-current mainline for an example.
+-------- Original-Nachricht --------
+Datum: Tue, 19 Jun 2007 15:42:32 +1000
+Von: David Gibson <david@gibson.dropbear.id.au>
+An: Gerhard Pircher <gerhard_pircher@gmx.net>
+CC: linuxppc-dev@ozlabs.org, "list <linuxppc-dev"@ozlabs.org
+Betreff: Re: [RFC] Device tree for new desktop platform in arch/powerpc
+
+> > 3. The dts files define the device_type of a serial port as
+> > "serial", whereas the OF spec says "pnpPNP,501". What's the
+> > difference between the two?
+> 
+> Err... device_type == "pnpPNP,501", or compatible == "pnpPNP,501"?
+Sorry, I meant compatible = "ns16550" and compatible = "pnpPNP,501".
+
+> This node has no children, so #address-cells and #size-cells values
+> are meaningless.
+Ah, I thought these properties are always necessary, if a ranges or reg
+property is defined.
+
+> >   	interrupt-controller {
+> > 		device_type = "interrupt-controller";
+> > 		compatible = "chrp,iic";
+> 
+> Is there a device binding defined somewhere for "chrp,iic"?
+Dunno. :-) It's based on these document here:
+http://playground.sun.com/1275/bindings/devices/html/isa-pic-1_1d.html
+http://playground.sun.com/1275/bindings/pci/pci2_1.pdf
+
+> This should cause a dtc error.  Either you want &/interrupt-controller
+> or give the interrupt-controller node a label and refer to that.  It's
+> either '&/some/full/path' or '&label'.
+That makes sense.
+
+> > 	timer@40 {
+> > 		device_type = "timer";
+> 
+> For flat device trees we're generally avoiding setting the device_type
+> property unless there is a clearly defined "class binding" which
+> applies.  There are a number of cases here where I'm not sure if
+> that's true.
+What about platforms that provide a real OF device tree? Do they define
+device nodes for timers?
+
+> > 		clock-frequency = <0>;			// Not necessary?
+> 
+> Probably necessary, but may need to be filled in from the bootwrapper.
+This should be a constant anyway, so I can define it here.
+
+> > 	fdc@3f0 {
+> > 		device_type = "fdc";
+> > 		compatible = "pnpPNP,700";
+> > 		reg = <3f0 8>;
+> > 		interrupts = <6 3>;
+> > 		interrupt-parent = <&interrupt-controller>;
+> > /*		dma = < >;*/
+> > 		#address-cells = <1>;
+> > 		#size-cells = <0>;
+> >
+> > 		disk {
+> > 			device_type = "block";
+> > 			reg = <0>;
+> > 		};
+> >
+> Don't think you need this subnode.
+It's mentioned here (if I interpreted it correctly):
+http://playground.sun.com/1275/bindings/devices/html/fdc.html
+Not sure, if the Linux kernel needs it.
+
+Thanks!
+
+regards,
+
+Gerhard
+-- 
+GMX FreeMail: 1 GB Postfach, 5 E-Mail-Adressen, 10 Free SMS.
+Alle Infos und kostenlose Anmeldung: http://www.gmx.net/de/go/freemail
