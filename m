@@ -1,14 +1,12 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 7505EDDE37
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 16:36:02 +1000 (EST)
-Date: Tue, 19 Jun 2007 16:35:57 +1000
-To: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH/RFC] Modify sched_clock() to make CONFIG_PRINTK_TIME more sane.
-Message-ID: <20070619063557.GK9768@bakeyournoodle.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 19 Jun 2007 16:42:16 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Abolish unused ucBoardRev variables
+Message-ID: <20070619064216.GC32039@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-From: tony@bakeyournoodle.com (Tony Breeds)
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,60 +16,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-When booting a current kernel with CONFIG_PRINTK_TIME enabled you'll
-see messages like:
+asm-powerpc/processor.h declares, and arch/ppc/platforms/prep_setup.c
+defines variables ucBoardRev, ucBoardRevMaj and ucBoardRevMin which
+are used nowhere in the current kernel (neither in arch/ppc nor
+arch/powerpc).  This patch removes them.
 
-[    0.000000] time_init: decrementer frequency = 188.044000 MHz
-[    0.000000] time_init: processor frequency   = 1504.352000 MHz
-[3712914.436297] Console: colour dummy device 80x25
-
-This patch modifies sched_clock() to report the offset since the machine booted
-so the same printk's now look like:
-
-[    0.000000] time_init: decrementer frequency = 188.044000 MHz
-[    0.000000] time_init: processor frequency   = 1504.352000 MHz
-[    0.000135] Console: colour dummy device 80x25
-
-Effectivly including the uptime in printk()s.
-
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
 ---
 
- arch/powerpc/kernel/time.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+Please merge for 2.6.23
 
-Index: working/arch/powerpc/kernel/time.c
+Index: working-2.6/arch/ppc/platforms/prep_setup.c
 ===================================================================
---- working.orig/arch/powerpc/kernel/time.c
-+++ working/arch/powerpc/kernel/time.c
-@@ -115,6 +115,7 @@ EXPORT_SYMBOL_GPL(rtc_lock);
+--- working-2.6.orig/arch/ppc/platforms/prep_setup.c	2007-06-19 16:38:20.000000000 +1000
++++ working-2.6/arch/ppc/platforms/prep_setup.c	2007-06-19 16:38:23.000000000 +1000
+@@ -69,9 +69,6 @@
  
- u64 tb_to_ns_scale;
- unsigned tb_to_ns_shift;
-+unsigned long boot_tb;
+ TODC_ALLOC();
  
- struct gettimeofday_struct do_gtod;
+-unsigned char ucBoardRev;
+-unsigned char ucBoardRevMaj, ucBoardRevMin;
+-
+ extern unsigned char prep_nvram_read_val(int addr);
+ extern void prep_nvram_write_val(int addr,
+ 				 unsigned char val);
+Index: working-2.6/include/asm-powerpc/processor.h
+===================================================================
+--- working-2.6.orig/include/asm-powerpc/processor.h	2007-06-19 16:38:03.000000000 +1000
++++ working-2.6/include/asm-powerpc/processor.h	2007-06-19 16:38:09.000000000 +1000
+@@ -43,14 +43,6 @@ extern int _chrp_type;
+ /* what kind of prep workstation we are */
+ extern int _prep_type;
  
-@@ -735,7 +736,7 @@ unsigned long long sched_clock(void)
- {
- 	if (__USE_RTC())
- 		return get_rtc();
--	return mulhdu(get_tb(), tb_to_ns_scale) << tb_to_ns_shift;
-+	return mulhdu(get_tb() - boot_tb, tb_to_ns_scale) << tb_to_ns_shift;
- }
+-/*
+- * This is used to identify the board type from a given PReP board
+- * vendor. Board revision is also made available. This will be moved
+- * elsewhere soon
+- */
+-extern unsigned char ucBoardRev;
+-extern unsigned char ucBoardRevMaj, ucBoardRevMin;
+-
+ #endif /* CONFIG_PPC_PREP */
  
- int do_settimeofday(struct timespec *tv)
-@@ -960,6 +961,8 @@ void __init time_init(void)
- 	}
- 	tb_to_ns_scale = scale;
- 	tb_to_ns_shift = shift;
-+	/* Save the current timebase to pretty up CONFIG_PRINTK_TIME */
-+	boot_tb = get_tb();
- 
- 	tm = get_boot_time();
- 
-Yours Tony
+ #endif /* defined(__KERNEL__) && defined(CONFIG_PPC32) */
 
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
