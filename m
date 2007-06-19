@@ -1,12 +1,21 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <9a9e13609d106a224005981d3469af14cb6fd738.1182233192.git.michael@ellerman.id.au>
-In-Reply-To: <9ac0032bf8356ff6e41b0860b6f67dddf9bda2f5.1182233192.git.michael@ellerman.id.au>
-References: <9ac0032bf8356ff6e41b0860b6f67dddf9bda2f5.1182233192.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 3/3] Add a warning to help trackdown device_node refcounting
-	bugs
-Date: Tue, 19 Jun 2007 16:08:00 +1000 (EST)
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
+	[151.189.21.43])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B36C4DDF39
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 16:08:50 +1000 (EST)
+In-Reply-To: <20070618185715.321010@gmx.net>
+References: <20070618185715.321010@gmx.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <136ef2695edbe7c8a535b5b4c7a669bf@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC] Device tree for new desktop platform in arch/powerpc
+Date: Tue, 19 Jun 2007 08:08:42 +0200
+To: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+Cc: ppcdev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,79 +25,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-When the refcount for a device node goes to 0, we call the
-destructor - of_node_release(). This should only happen if we've
-already detached the node from the device tree.
-
-So add a flag OF_DETACHED which tracks detached-ness, and if we
-find ourselves in of_node_release() without it set, issue a
-warning and don't free the device_node. To avoid warning
-continuously reinitialise the kref to a sane value.
-
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
-The warning looks something like the following. In this case it shows that
-I erroneously did an of_node_put() inside the of_find_node_by_type() loop
-in setup_arch().
-
-WARNING: Bad of_node_put() on /memory@b8000000
-Call Trace:
-[c0000000007e3ba0] [c00000000000f74c] .show_stack+0x6c/0x1a0 (unreliable)
-[c0000000007e3c40] [c00000000002397c] .of_node_release+0x44/0xe8
-[c0000000007e3cd0] [c00000000021f4e0] .kref_put+0x74/0x94
-[c0000000007e3d50] [c000000000022b34] .of_node_put+0x20/0x34
-[c0000000007e3dc0] [c000000000022fcc] .of_find_node_by_type+0x90/0xc8
-[c0000000007e3e50] [c00000000063ff78] .setup_arch+0x1b8/0x234
-[c0000000007e3ee0] [c0000000006376ac] .start_kernel+0xd8/0x3e4
-[c0000000007e3f90] [c0000000000084c8] .start_here_common+0x54/0x8c
+[Your "To:" header was broken...]
 
 
- arch/powerpc/kernel/prom.c |   11 +++++++++++
- include/asm-powerpc/prom.h |    1 +
- 2 files changed, 12 insertions(+), 0 deletions(-)
+> 1. The AmigaOne makes use of different G3 (750Cx, 750GL, 750GX) and G4 
+> (7400, 7450, 7455, 7457) CPUs. The current dts file defines a cpu node 
+> with the name "PowerPC,7xxx@0" and the bootwrapper just fills in the 
+> cpu-, bus- and timebase frequencies. Is this the recommended way, or 
+> should the bootwrapper create a fresh cpu node with the correct name 
+> of the CPU (e.g. "PowerPC,7455@ 0" - I guess this would require a 
+> table with all PVR values and their corresponding CPU name. Or is 
+> there a function in the kernel that do this?).
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 4f70764..e0f61bb 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -1375,8 +1375,17 @@ static void of_node_release(struct kref *kref)
- 	struct device_node *node = kref_to_device_node(kref);
- 	struct property *prop = node->properties;
- 
-+	/* We should never be releasing nodes that haven't been detached. */
-+	if (!of_node_check_flag(node, OF_DETACHED)) {
-+		printk("WARNING: Bad of_node_put() on %s\n", node->full_name);
-+		dump_stack();
-+		kref_init(&node->kref);
-+		return;
-+	}
-+
- 	if (!of_node_check_flag(node, OF_DYNAMIC))
- 		return;
-+
- 	while (prop) {
- 		struct property *next = prop->next;
- 		kfree(prop->name);
-@@ -1457,6 +1466,8 @@ void of_detach_node(const struct device_node *np)
- 		prevsib->sibling = np->sibling;
- 	}
- 
-+	of_node_set_flag(np, OF_DETACHED);
-+
- out_unlock:
- 	write_unlock(&devtree_lock);
- }
-diff --git a/include/asm-powerpc/prom.h b/include/asm-powerpc/prom.h
-index 6eb98aa..01b27f2 100644
---- a/include/asm-powerpc/prom.h
-+++ b/include/asm-powerpc/prom.h
-@@ -99,6 +99,7 @@ extern struct device_node *of_chosen;
- 
- /* flag descriptions */
- #define OF_DYNAMIC	1 /* node and properties were allocated via kmalloc */
-+#define OF_DETACHED	2 /* node has been detached from the device tree */
- 
- static inline int of_node_check_flag(struct device_node *n, unsigned long flag)
- {
--- 
-1.5.1.3.g7a33b
+Just name the cpu nodes "cpu@0" etc.  The "generic names"
+recommended practice wants this, and the node names here
+aren't actually used by anything anyway, except they look
+nice to the user.  The PowerPC ISA binding predates the
+generic names r.p. btw.
+
+> 2. I tried to define all ISA devices, which are integrated in the 
+> southbridge (VT82C686B). Currently these are child nodes of the device 
+> tree root.
+
+This cannot work on PowerPC since PowerPC doesn't have
+legacy I/O on the system bus.
+
+> Should they be child nodes of the southbridge's PCI-to-ISA device node?
+
+Yes.
+
+> If so, where should I specify the register address ranges (reg 
+> property)? In the PCI device node or in the ISA device nodes, as it is 
+> now?
+
+Both.  Each device has a "reg" property that describes that
+device's registers relative to the addressing on the bus it
+sits on.  All busses that do a direct one-to-one mapping of
+some address range (perhaps with a translation) have a "ranges"
+property describing that.
+
+> 3. The dts files define the device_type of a serial port as "serial", 
+> whereas the OF spec says "pnpPNP,501". What's the difference between 
+> the two?
+
+"device_type" is "serial", "compatible" is "pnpPNP,whatever".
+
+Where in the OF specs did you find this pnpPNP thing btw?
+
+> 4. I couldn't find any information for a device tree representation of 
+> the i8259 interrupt controller in the booting-without-of.txt file. Is 
+> my implementation correct (inspired by the OF documents)?
+
+"name" = "device_type" = "interrupt-controller".
+"compatible" is one of those pnpPNP things.
+
+> I would be grateful, if you could take a look at my dts file and 
+> comment on every line that doesn't meet your views.
+
+Please send the thing inline, not as an attachment.
+
+
+Segher
