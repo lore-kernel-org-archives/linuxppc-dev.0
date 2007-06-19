@@ -1,21 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-06.arcor-online.net (mail-in-06.arcor-online.net
-	[151.189.21.46])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 636A4DDE02
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2007 20:06:56 +1000 (EST)
-In-Reply-To: <1182298510.5674.358.camel@rhino>
-References: <1182298510.5674.358.camel@rhino>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <c5941587e5e4cb07efbc86845c9a15a4@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v2] Create add_rtc() function to enable the RTC CMOS driver
-Date: Wed, 20 Jun 2007 12:06:48 +0200
-To: Wade Farnsworth <wfarnsworth@mvista.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 22906DDEAB
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2007 21:16:21 +1000 (EST)
+Subject: Re: random code execution - kernel oops
+From: Johannes Berg <johannes@sipsolutions.net>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1182171859.21013.3.camel@johannes.berg>
+References: <1182171859.21013.3.camel@johannes.berg>
+Content-Type: text/plain
+Date: Tue, 19 Jun 2007 18:06:52 +0200
+Message-Id: <1182269212.3714.1.camel@johannes.berg>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,15 +22,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> This creates a function to register the platform device based on the 
-> RTC
-> device node and verifies that the RTC port against the hard-coded value
-> in asm/mc146818rtc.h.  It also sets the RTC to 24-hr mode as 12-hr mode
-> is not currently supported by the driver.
+On Mon, 2007-06-18 at 15:04 +0200, Johannes Berg wrote:
+> unsigned long hx = 0x4bfcc50c;
+> int main()
+> {
+>   asm("bl hx");
+> }
 
-The 24h thing should be set in the driver itself.  Does the
-driver handle binary vs. decimal mode btw?  If not, you'll
-want to do the analogue thing for that.
+The net result of which is trying to execute code in a region without
+access permissions.
 
+Segher dug into the problem and suggested the patch below which does
+indeed fix the problem:
 
-Segher
+---
+ arch/powerpc/mm/fault.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+--- wireless-dev.orig/arch/powerpc/mm/fault.c	2007-06-19 16:12:16.080612233 +0200
++++ wireless-dev/arch/powerpc/mm/fault.c	2007-06-19 16:12:27.480612233 +0200
+@@ -279,14 +279,13 @@ good_area:
+ #endif /* CONFIG_8xx */
+ 
+ 	if (is_exec) {
+-#ifdef CONFIG_PPC64
++#if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
+ 		/* protection fault */
+ 		if (error_code & DSISR_PROTFAULT)
+ 			goto bad_area;
+ 		if (!(vma->vm_flags & VM_EXEC))
+ 			goto bad_area;
+-#endif
+-#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
++#else
+ 		pte_t *ptep;
+ 		pmd_t *pmdp;
+ 
