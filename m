@@ -1,24 +1,27 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 18EC1DDF2A
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 22:51:28 +1000 (EST)
-Date: Tue, 19 Jun 2007 14:51:25 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [patch 4/6] ps3: Disk Storage Driver
-In-Reply-To: <20070619054324.GA18542@lst.de>
-Message-ID: <Pine.LNX.4.62.0706191450120.4069@pademelon.sonytel.be>
-References: <20070615113919.142332000@pademelon.sonytel.be>
-	<20070615120848.352093000@pademelon.sonytel.be>
-	<20070619054324.GA18542@lst.de>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-1258837334-1182257485=:4069"
-Cc: Jens Axboe <axboe@kernel.dk>,
-	"James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
+	[151.189.21.47])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6BD1DDDE25
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 23:15:53 +1000 (EST)
+In-Reply-To: <20070619123721.202110@gmx.net>
+References: <20070618185715.321010@gmx.net>
+	<20070619054232.GB32039@localhost.localdomain>
+	<20070619084015.202120@gmx.net>
+	<73aafd0955b8ea695af9221b48aaa3f1@kernel.crashing.org>
+	<20070619095251.202080@gmx.net>
+	<81b5cc3c799c9ec65df04468d4d9051e@kernel.crashing.org>
+	<20070619123721.202110@gmx.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <bec0a23b1a544fe66810f43a73b142a2@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC] Device tree for new desktop platform in arch/powerpc
+Date: Tue, 19 Jun 2007 15:15:33 +0200
+To: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+Cc: linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,47 +31,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+>>> I guess I can define both of them or do they conflict (IIRC
+>>> the two hardware revision should be compatible)?
+>>
+>> Use one or the other, not both.  Perhaps you'll need
+>> to add the pnpPNP,500 and pnpPNP,501 entries to the
+>> generic OF serial code, should be trivial to do.
+> I guess I stick with compatible = "serial" for now, as it should
+> also work with the generic serial console support code.
 
----584337861-1258837334-1182257485=:4069
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+"compatible" = "serial" is completely wrong -- it is
+a generic name and should never be matched on.
 
-On Tue, 19 Jun 2007, Christoph Hellwig wrote:
-> On Fri, Jun 15, 2007 at 01:39:23PM +0200, Geert Uytterhoeven wrote:
-> > From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> > 
-> > Add a Disk Storage Driver for the PS3:
-> >   - Implemented as a block device driver with a dynamic major
-> >   - Disk names (and partitions) are of the format ps3d%c(%u)
-> >   - Uses software scatter-gather with a 64 KiB bounce buffer as the hypervisor
-> >     doesn't support scatter-gather
-> 
-> Looks good to me.  Only nitpicks are:
-> 
->  - ps3disk_priv should probably be an inline function instead of a macro
+>> The 16550A supports something the 16550 doesn't (don't
+>> ask me what, I forgot :-) ), so don't say it is an A
+>> when it isn't; the other way around is fine though.
+>>
+>> And it doesn't matter much for Linux anyway currently,
+>> the "generic" kernel driver will do its own wacky probing.
+> Yes, that's why the current AmigaOne kernels (2.6.16) detect 3 serial
+> ports, whereas there should be only 2 (the first two are detected by
+> probing for the VIA southbridge and the last one IIRC is registered by
+> request_region()). I hope the device tree fixes this.
 
-I used a macro because you can do
+It should, yes.
 
-    ps3disk_pri(dev) = ...;
+>>> Where are all this "pnpPNP,xxx" identifiers specified (except
+>>> for serial parallel, fdc, keyboard, mouse)?
+>>
+>> They are defined by the vendor of the devices; for
+>> vendor "PNP", i.e. legacy non-PNP PC devices, that
+>> is MicroSoft.
+> Downloaded the file you pointed to and the OF generic names document. I
+> thought the OF core specification defines them, but it's not available
+> freely.
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
+That's a common misconception :-)
 
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1258837334-1182257485=:4069--
+<ftp://playground.sun.com/pub/p1275/coredoc/1275-1994/1275.ps.gz>
+
+
+Segher
