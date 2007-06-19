@@ -1,22 +1,24 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound1-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 8FA77DDF08
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 10:01:48 +1000 (EST)
-Message-ID: <46771CE7.8040901@am.sony.com>
-Date: Mon, 18 Jun 2007 17:01:43 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [patch 30/33] PS3: Bootwrapper support.
-References: <46730D8A.9090309@am.sony.com>
-	<951969d2021fe6e78917ef8bdb47cf6f@bga.com>
-	<20070618225537.GA19966@mag.az.mvista.com>
-In-Reply-To: <20070618225537.GA19966@mag.az.mvista.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, Milton Miller <miltonm@bga.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2C868DDF1D
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 10:05:04 +1000 (EST)
+In-Reply-To: <A99C864E-5D7A-4610-BA75-A3B9CF54D575@kernel.crashing.org>
+References: <20070612163016.253915076@arndb.de>
+	<200706170214.11247.arnd@arndb.de>
+	<4E0AC3E6-98F8-40BD-BA85-60766E097E4A@kernel.crashing.org>
+	<200706180109.11482.arnd@arndb.de>
+	<A99C864E-5D7A-4610-BA75-A3B9CF54D575@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <FDDC4B07-B98C-4395-A3E1-E167B7C13EF4@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [patch 00/13] CPU selection Kconfig cleanup, take 3
+Date: Mon, 18 Jun 2007 19:05:36 -0500
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
+	Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,31 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mark A. Greer wrote:
->> Not bad.   Since this code doesn't have to be at any particular 
->> location when it is built (you have no .org or similar, its all PIC), I 
->> don't see anything that couldn't be done from an asm block in the 
->> platform .c file, like the entry point in prpmc2800.c file; that would 
->> save a file in the boot directory.  In that case __system_reset_kernel 
->> would be an array of 256 bytes.
-> 
-> Agree.
-> 
-> As for the rest of Geoff's patch, I think I get the gist of what's going
-> on but it would be really nice to have it described in English (and put
-> in the patch description).  That way others (like me) could understand
-> the problem you're solving and what your solution is.
+On Jun 17, 2007, at 6:09 PM, Arnd Bergmann wrote:
 
-This is from the comment the patch adds to the wrapper script.  I think
-it gives you what you need:
+> On Sunday 17 June 2007, Kumar Gala wrote:
+>> I commented on some minor nits with the patches.  I'm probably ok
+>> with patches 1-7 going in.  I'm not ready for 8 at this point, we
+>> need to do more proper cleanup to get 85xx/cpm2 support into a
+>> multiplatforms single kernel state.
+>
+> Ok, makes sense. I've fixed up the other patches according to
+> your comments (did not change 8xx stuff though) and pushed
+> it out to
+> git://git.kernel.org/pub/scm/linux/kernel/git/arnd/cell-2.6 powerpc- 
+> kconfig
+>
+> Paul, please pull from there, I'll remember not to try messing with
+> 32 bit in the future but wanted to get this in after spending so
+> much work on it.
 
-+ps3)
-+    # The ps3's loader supports loading gzipped binary images from flash
-+    # rom to addr zero. The loader enters the image at addr 0x100.  A
-+    # bootwrapper overlay is use to arrange for the kernel to be loaded
-+    # to addr zero and to have a suitable bootwrapper entry at 0x100.
-+    # To construct the rom image, 0x100 bytes from offset 0x100 in the
-+    # kernel is copied to the bootwrapper symbol __system_reset_kernel.
-+    # The 0x100 bytes at the bootwrapper symbol __system_reset_overlay is
-+    # then copied to offset 0x100.  At runtime the bootwrapper program
-+    # copies the 0x100 bytes at __system_reset_kernel to addr 0x100.
+Paul,
+
+I'll pull these into my tree with a bunch of other ppc32/embedded  
+related patches for you to pull all at once since I've got other  
+changes that will depend on them.
+
+- k
