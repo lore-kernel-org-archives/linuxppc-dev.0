@@ -1,22 +1,26 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-08.arcor-online.net (mail-in-08.arcor-online.net
-	[151.189.21.48])
+Received: from mail-in-06.arcor-online.net (mail-in-06.arcor-online.net
+	[151.189.21.46])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BCB1FDDF15
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 16:44:01 +1000 (EST)
-In-Reply-To: <20070619063557.GK9768@bakeyournoodle.com>
-References: <20070619063557.GK9768@bakeyournoodle.com>
+	by ozlabs.org (Postfix) with ESMTP id B5C0EDDF2E
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 16:44:35 +1000 (EST)
+In-Reply-To: <20070619012557.GB24530@localhost.localdomain>
+References: <111819314606b8b45671.846930886.miltonm@bga.com>
+	<4672EE95.3030407@freescale.com>
+	<fbae4506b772f07d2a8c1d230bea82c8@bga.com>
+	<bfbd4f126c427f590198a3e50a789b0c@kernel.crashing.org>
+	<20070619012557.GB24530@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <17efca495a2d08aa8ad577fca22659c0@kernel.crashing.org>
+Message-Id: <b563fc486105742f2a75a862bdaab20c@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH/RFC] Modify sched_clock() to make CONFIG_PRINTK_TIME more
-	sane.
-Date: Tue, 19 Jun 2007 08:43:51 +0200
-To: tony@bakeyournoodle.com (Tony Breeds)
-Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] boot: find initrd location from device-tree
+Date: Tue, 19 Jun 2007 08:44:28 +0200
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,24 +30,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> When booting a current kernel with CONFIG_PRINTK_TIME enabled you'll
-> see messages like:
+>>> As I said in the patch changelog, the only headers picked up here are
+>>> libgcc.
+>>
+>> Which the kernel doesn't use.  It _should_ be fine
+>> nevertheless, <limits.h> is part of the "freestanding"
+>> headers -- why do you need to do a "libc" trick though?
+>> This doesn't work when not using glibc I guess?
 >
-> [    0.000000] time_init: decrementer frequency = 188.044000 MHz
-> [    0.000000] time_init: processor frequency   = 1504.352000 MHz
-> [3712914.436297] Console: colour dummy device 80x25
->
-> This patch modifies sched_clock() to report the offset since the 
-> machine booted
-> so the same printk's now look like:
->
-> [    0.000000] time_init: decrementer frequency = 188.044000 MHz
-> [    0.000000] time_init: processor frequency   = 1504.352000 MHz
-> [    0.000135] Console: colour dummy device 80x25
->
-> Effectivly including the uptime in printk()s.
+> IMO if it needs this define magic to work properly, it's not a good
+> idea to include it at all.  Especially since avoiding it is easy and
+> safe in this case.
 
-This was long overdue, thank you Tony!
+100% agreed.
 
 
 Segher
