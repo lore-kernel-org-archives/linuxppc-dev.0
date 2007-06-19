@@ -1,22 +1,22 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound7-blu-R.bigfish.com (outbound-blu.frontbridge.com
+Received: from outbound1-blu-R.bigfish.com (outbound-blu.frontbridge.com
 	[65.55.251.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 36310DDED7
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 09:56:02 +1000 (EST)
-Message-ID: <46771B8C.7000202@am.sony.com>
-Date: Mon, 18 Jun 2007 16:55:56 -0700
+	by ozlabs.org (Postfix) with ESMTP id 8FA77DDF08
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 10:01:48 +1000 (EST)
+Message-ID: <46771CE7.8040901@am.sony.com>
+Date: Mon, 18 Jun 2007 17:01:43 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: CONFIG_PS3_USE_LPAR_ADDR dramically increases boot time
-References: <F4482BED-242B-42AD-96FF-3CB14B6BC5BE@watson.ibm.com>
-	<F8264F80-17F0-47C6-AF58-9EBBF42DC24C@pobox.com>
-	<46771140.5000205@am.sony.com> <200706190153.36496.arnd@arndb.de>
-In-Reply-To: <200706190153.36496.arnd@arndb.de>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [patch 30/33] PS3: Bootwrapper support.
+References: <46730D8A.9090309@am.sony.com>
+	<951969d2021fe6e78917ef8bdb47cf6f@bga.com>
+	<20070618225537.GA19966@mag.az.mvista.com>
+In-Reply-To: <20070618225537.GA19966@mag.az.mvista.com>
 Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Jimi Xenidis <jimix@pobox.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Tuesday 19 June 2007, Geoff Levand wrote:
->> Arnd mention that he planed to re-do the spu region management, and
->> I think with that we can use CONFIG_PS3_USE_LPAR_ADDR=n and the spufs
->> at the same time.  Arnd, what is the status?
+Mark A. Greer wrote:
+>> Not bad.   Since this code doesn't have to be at any particular 
+>> location when it is built (you have no .org or similar, its all PIC), I 
+>> don't see anything that couldn't be done from an asm block in the 
+>> platform .c file, like the entry point in prpmc2800.c file; that would 
+>> save a file in the boot directory.  In that case __system_reset_kernel 
+>> would be an array of 256 bytes.
 > 
-> BenH already changed the spufs code to use the nopfn method instead of
-> nopage, so we no longer depend on sparsemem. Does that take care
-> of the problem?
+> Agree.
+> 
+> As for the rest of Geoff's patch, I think I get the gist of what's going
+> on but it would be really nice to have it described in English (and put
+> in the patch description).  That way others (like me) could understand
+> the problem you're solving and what your solution is.
 
-I think that there is a good chance it will, but I'll need to look at
-it, as it was some time ago I did that work.
+This is from the comment the patch adds to the wrapper script.  I think
+it gives you what you need:
 
--Geoff
++ps3)
++    # The ps3's loader supports loading gzipped binary images from flash
++    # rom to addr zero. The loader enters the image at addr 0x100.  A
++    # bootwrapper overlay is use to arrange for the kernel to be loaded
++    # to addr zero and to have a suitable bootwrapper entry at 0x100.
++    # To construct the rom image, 0x100 bytes from offset 0x100 in the
++    # kernel is copied to the bootwrapper symbol __system_reset_kernel.
++    # The 0x100 bytes at the bootwrapper symbol __system_reset_overlay is
++    # then copied to offset 0x100.  At runtime the bootwrapper program
++    # copies the 0x100 bytes at __system_reset_kernel to addr 0x100.
