@@ -1,20 +1,28 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 0961BDDF23
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 17:09:30 +1000 (EST)
-Date: Tue, 19 Jun 2007 09:09:18 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [patch 18/33] PS3: Frame buffer system-bus rework
-In-Reply-To: <18039.31768.282185.497245@cargo.ozlabs.ibm.com>
-Message-ID: <Pine.LNX.4.62.0706190908370.5713@pademelon.sonytel.be>
-References: <20070615204749.629571012@am.sony.com>
-	<46730D32.8060803@am.sony.com>
-	<18039.31768.282185.497245@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-133955480-1182236958=:5713"
-Cc: linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 42AEFDDEFC
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 17:19:57 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l5J7Jfqx017415
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 00:19:42 -0700 (MST)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l5J7JevV027573
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 02:19:41 -0500 (CDT)
+Subject: [PATCH 1/2]: Document the global utilities node define and example
+From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Content-Type: text/plain
+Message-Id: <1182237558.3269.14.camel@localhost.localdomain>
+Mime-Version: 1.0
+Date: 19 Jun 2007 15:19:18 +0800
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,46 +32,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+From: Roy Zang <tie-fei.zang@freescale.com>
 
----584337861-133955480-1182236958=:5713
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Document the global utilities node define and example.
+Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+---
+Based on current paul's tree!
 
-	Hi Paul,
+ Documentation/powerpc/booting-without-of.txt |   28 ++++++++++++++++++++++++++
+ 1 files changed, 28 insertions(+), 0 deletions(-)
 
-On Tue, 19 Jun 2007, Paul Mackerras wrote:
-> Geoff Levand writes:
-> > From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> > 
-> > Convert the ps3fb device from a platform device to a PS3 system bus device.
-> > Fix the remove and shutdown methods to support kexec and to make ps3fb a
-> > loadable module.
-> 
-> Are you going to submit this to the fb maintainer (Antonio Daplas?) or
-> do you want me to take it because of dependencies on other patches in
-> your series?
-
-I think it's best if you take it, since the changes to ps3fb depend on the
-PS3 system bus device core changes.
-
-With kind regards,
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index d42d981..bdae4fc 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -51,6 +51,7 @@ Table of Contents
+       h) Board Control and Status (BCSR)
+       i) Freescale QUICC Engine module (QE)
+       g) Flash chip nodes
++      k) Global Utilities Block
  
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+   VII - Specifying interrupt information for devices
+     1) interrupts property
+@@ -1782,6 +1783,33 @@ platforms are moved over to use the flattened-device-tree model.
+  		partition-names = "fs\0firmware";
+  	};
  
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-133955480-1182236958=:5713--
++   k) Global Utilities Block
++
++   The global utilities block controls power management, I/O device 
++   enabling, power-on-reset configuration monitoring, general-purpose
++   I/O signal configuration, alternate function selection for multiplexed
++   signals, and clock control.
++
++   Required properties:
++
++    - compatible : Should define the compatible device type for
++      global-utilities.
++    - reg : Offset and length of the register set for the device.
++
++  Recommended properties:
++
++    - fsl,has-rstcr : Indicates that the global utilities register set
++      contains a functioning "reset control register" (i.e. the board
++      is wired to reset upon setting the HRESET_REQ bit in this register).
++
++    Example:
++
++	global-utilities@e0000 {	/* global utilities reg */
++		compatible = "fsl,mpc8548-guts";
++		reg = <e0000 1000>;
++		fsl,has-rstcr;
++	};
++
+    More devices will be defined as this spec matures.
+ 
+ VII - Specifying interrupt information for devices
+-- 
+1.5.1
