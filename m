@@ -1,16 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18039.30713.948665.48880@cargo.ozlabs.ibm.com>
-Date: Tue, 19 Jun 2007 16:30:17 +1000
+Message-ID: <18039.31697.402356.570828@cargo.ozlabs.ibm.com>
+Date: Tue, 19 Jun 2007 16:46:41 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: for-2.6.23 branch in powerpc.git created
-In-Reply-To: <4672D694.5060701@freescale.com>
-References: <18034.6787.951861.623265@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.60.0706151915580.5979@poirot.grange>
-	<4672D694.5060701@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [patch 23/33] powerpc: Localize mmu_off
+In-Reply-To: <46730D5B.300@am.sony.com>
+References: <20070615204749.629571012@am.sony.com> <46730D5B.300@am.sony.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,30 +18,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood writes:
+Geoff Levand writes:
 
-> Guennadi Liakhovetski wrote:
-> > These two i2c patches:
-> > 
-> > http://ozlabs.org/pipermail/linuxppc-dev/2007-June/037327.html
-> 
-> This looks OK as an interim measure, though at some point I'd like to 
-> get around to letting both devices and drivers specify a list of match 
-> names.
-> 
-> > http://ozlabs.org/pipermail/linuxppc-dev/2007-June/037328.html
-> 
-> I'd leave out the device_type, and the "rtc" in "rtc-r5c372" is 
-> redundant if that's all the r5c372 chip does, but other than that it 
-> looks good.
-> 
-> > also would be nice to get in, although, they only make sense with an ack 
-> > from Scott Wood and another patch from him, as explained in links above...
-> 
-> I assume you mean "Call of_register_i2c_devices() for fsl-i2c"
-> (http://ozlabs.org/pipermail/linuxppc-dev/2007-May/036333.html)?
+> This just removes the dependency __mmu_off has on the symbol
+> __after_prom_start.  I found the current code inconvenient when I
+> wanted to put some debugging code between the call to __mmu_off
+> and the branch to __after_prom_start.
 
-Isn't that the one where you replied to yourself saying you'd posted
-the wrong patch?  Did you ever post the right patch?
+So we do an extra unnecessary branch...  I realize it doesn't really
+matter, but on the other hand, if you're hacking around with debug
+stuff, you can easily change __after_prom_start to the label where
+your debug code starts.
 
 Paul.
