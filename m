@@ -1,17 +1,12 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 19 Jun 2007 15:08:12 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [RFC] Device tree for new desktop platform in arch/powerpc
-Message-ID: <20070619050812.GA32039@localhost.localdomain>
-References: <20070618185715.321010@gmx.net>
-	<20070618191529.GC8740@mag.az.mvista.com>
-	<20070618194359.321010@gmx.net>
-	<20070618202518.GG8740@mag.az.mvista.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070618202518.GG8740@mag.az.mvista.com>
-Cc: "list <linuxppc-dev"@ozlabs.org, linuxppc-dev@ozlabs.org
+Message-ID: <18039.27686.176506.53055@cargo.ozlabs.ibm.com>
+Date: Tue, 19 Jun 2007 15:39:50 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@linux-foundation.org
+Subject: Please pull powerpc.git merge branch
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,29 +16,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jun 18, 2007 at 01:25:18PM -0700, Mark A. Greer wrote:
-> On Mon, Jun 18, 2007 at 09:43:59PM +0200, Gerhard Pircher wrote:
-> > Von: "Mark A. Greer" <mgreer@mvista.com>
-> > > On Mon, Jun 18, 2007 at 08:57:15PM +0200, Gerhard Pircher wrote:
-> > > 
-> > > > 1. The AmigaOne makes use of different G3...
-> > > 
-> > > I'm far from an authoritative figure on this but making a
-> > > reasonable default (in your dts file) then updating in the 
-> > > bootwrapper makes sense to me.  That's what I did for several 
-> > > properties in the prpmc2800's dts.
-> > So, the bootwrapper should update the name property of the CPU node. Is the cpu node name used somewhere?
-> 
-> Oh, sorry I really talking about the cpu frequencies, etc.
-> I don't think the name of the cpu node matters but I'd have to check.
-> Others probably know off the top of their heads.
+Linus,
 
-I don't believe the name is actually used.  It would be nice to get it
-right, though - I think it can be considered option for the first cut,
-though.
+Please do:
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+
+to get a fix from Ben H for some refcounting bugs in the snd-powermac
+driver.
+
+Thanks,
+Paul.
+
+ sound/ppc/pmac.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
+
+commit 41e904dee22066ae7ac3a7f695b2c8bd43ce4e04
+Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date:   Tue Jun 19 14:37:39 2007 +1000
+
+    [POWERPC] Fix snd-powermac refcounting bugs
+    
+    The old snd-powermac driver has some serious refcounting issues when
+    initialisation fails, which is the case on all new machines with
+    a layout-id since those are handled by the new snd-aoa driver.
+    
+    Some of those bugs seem to have been under the radar for some time
+    (like double pci_dev_put), but one was actually added in 2.6.22 with
+    Stephen attempt at teaching refcounting to the driver which didn't
+    do it at all.
+    
+    This patch fixes both, thus removing all sort of kref errors that
+    would happen if that driver gets loaded on a G5 machine or a recent
+    PowerBook due to OF nodes left around with a 0 refcount.
+    
+    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
