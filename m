@@ -1,18 +1,16 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id B4ACADDF8A
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2007 00:45:38 +1000 (EST)
-Date: Tue, 19 Jun 2007 09:53:56 -0500
-To: Tony Breeds <tony@bakeyournoodle.com>
-Subject: Re: [PATCH/RFC] Modify sched_clock() to make CONFIG_PRINTK_TIME more
-	sane.
-Message-ID: <20070619145356.GA20382@lixom.net>
-References: <20070619063557.GK9768@bakeyournoodle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070619063557.GK9768@bakeyournoodle.com>
-From: olof@lixom.net (Olof Johansson)
-Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from localhost.localhost (dslb-084-056-187-006.pools.arcor-ip.net
+	[84.56.187.6]) by ozlabs.org (Postfix) with ESMTP id E58B3DDEF0
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2007 01:21:50 +1000 (EST)
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] PowerPC: Prevent data exception in kernel space (32-bit)
+Date: Tue, 19 Jun 2007 17:07:04 +0200
+Message-Id: <1182265624255-git-send-email-segher@kernel.crashing.org>
+Message-Id: <9051d9387cad9fa7d8143dc1816949cbc80696b7.1182264776.git.segher@kernel.crashing.org>
+In-Reply-To: <1182171859.21013.3.camel@johannes.berg>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,38 +20,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+The "is_exec" branch of the protection check in do_page_fault()
+didn't do anything on 32-bit PowerPC.  So if a userland program
+jumps to a page with Linux protection flags "---p", all the tests
+happily fall through, and handle_mm_fault() is called, which in
+turn calls handle_pte_fault(), which calls update_mmu_cache(),
+which goes flush the dcache to a page with no access rights.
 
-On Tue, Jun 19, 2007 at 04:35:57PM +1000, Tony Breeds wrote:
-> When booting a current kernel with CONFIG_PRINTK_TIME enabled you'll
-> see messages like:
-> 
-> [    0.000000] time_init: decrementer frequency = 188.044000 MHz
-> [    0.000000] time_init: processor frequency   = 1504.352000 MHz
-> [3712914.436297] Console: colour dummy device 80x25
-> 
-> This patch modifies sched_clock() to report the offset since the machine booted
-> so the same printk's now look like:
-> 
-> [    0.000000] time_init: decrementer frequency = 188.044000 MHz
-> [    0.000000] time_init: processor frequency   = 1504.352000 MHz
-> [    0.000135] Console: colour dummy device 80x25
-> 
-> Effectivly including the uptime in printk()s.
+Boom.
 
-Nice!
+Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Johannes Berg <johannes@sipsolutions.net>
+Cc: Paul Mackerras <paulus@samba.org>
+---
+Johannes, please test.  Paul, I think you'll want this for .22 still?
+If the patch is correct, anyway ;-)
 
-> Index: working/arch/powerpc/kernel/time.c
-> ===================================================================
-> --- working.orig/arch/powerpc/kernel/time.c
-> +++ working/arch/powerpc/kernel/time.c
-> @@ -115,6 +115,7 @@ EXPORT_SYMBOL_GPL(rtc_lock);
->  
->  u64 tb_to_ns_scale;
->  unsigned tb_to_ns_shift;
-> +unsigned long boot_tb;
+ arch/powerpc/mm/fault.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-It only seems to be used in this file, so it can be static, right?
-
-
--Olof
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index bfe9013..115b25f 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -279,14 +279,13 @@ good_area:
+ #endif /* CONFIG_8xx */
+ 
+ 	if (is_exec) {
+-#ifdef CONFIG_PPC64
++#if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
+ 		/* protection fault */
+ 		if (error_code & DSISR_PROTFAULT)
+ 			goto bad_area;
+ 		if (!(vma->vm_flags & VM_EXEC))
+ 			goto bad_area;
+-#endif
+-#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
++#else
+ 		pte_t *ptep;
+ 		pmd_t *pmdp;
+ 
+-- 
+1.5.2.1.144.gabc40-dirty
