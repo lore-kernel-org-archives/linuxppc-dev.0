@@ -1,20 +1,15 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from mx.dlasys.net (24.152.192.123.res-cmts.eph.ptd.net
-	[24.152.192.123]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 18AB3DDF82
+Return-Path: <domen.puncer@telargo.com>
+Received: from out002.atlarge.net (out002.atlarge.net [129.41.63.60])
+	by ozlabs.org (Postfix) with ESMTP id 7B8D7DDFBD
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Jun 2007 19:39:08 +1000 (EST)
-Message-ID: <4677A3D8.8000107@dlasys.net>
-Date: Tue, 19 Jun 2007 05:37:28 -0400
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
+	Tue, 19 Jun 2007 19:54:15 +1000 (EST)
+Date: Tue, 19 Jun 2007 11:54:08 +0200
+From: Domen Puncer <domen.puncer@telargo.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: [PATCH] lite5200b: flash definition in dts
+Message-ID: <20070619095408.GK23294@moe.telargo.com>
 MIME-Version: 1.0
-To: "Shelley, Mike" <Mike.Shelley@viasat.com>
-Subject: Re: booting zImage.elf
-References: <821B2170E9E7F04FA38DF7EC21DE4871084A0ED0@VCAEXCH01.hq.corp.viasat.com>
-In-Reply-To: <821B2170E9E7F04FA38DF7EC21DE4871084A0ED0@VCAEXCH01.hq.corp.viasat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,59 +20,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-    An elf file is not just a collection of bits exactly as they would
-be found in memory.
-    The code in it may get loaded into several distinct regions, it may
-include information to allocate additional regions,
-    the code may be relocatable or have relocation information.
+Add flash definition for flash on lite5200b, and while at it
+fix "ranges" for soc node.
 
-    It is unlikely (maybe impossible) that you can create an elf file
-that you can just jump into.
-
-    There are other file formats that you can build the kernel as that
-would more closely correspond to what you are after.
-    Because I normally build zImage.elf files and my loader handles
-them  well I am not experienced with creating other formats,
-    but I think the u-boot documentation should give you some pointers.
-    You do not convert the zImage.elf, you build the kernel with the
-image format that you want.
-
-    zImage.elf is actually a very simple elf file, that performs some
-rudimentary initialization, and then decompresses what is really the
-kernel image into memory
-    and executes it. The compressed image inside the zImage.elf is
-closer to what you are looking for.
-   
-   
-   
-  
-
-Shelley, Mike wrote:
-> I've been trying to read up on how elf works and how to boot the linux kernel image with a custom boot loader.  I can't seem to find anything about booting an elf image.  I'm using a PCI Express XpressFX Board (which has a Virtex4), by PLDA, with DDR2 memory.  I've got the kernel image booting using a BDI to load it. Now I need to get it to load without the BDI.
->
-> The quick question is, Is it possible to load zImage.elf straight into memory, then jump to the address it was loaded to?  If not, how do I convert the elf image into just a bootable image that I can jump to?
->
-> I looked at the uboot code to load elf files, and it appears to copy the sections around.  Is this necessary?
->
-> Pointers on where else to look or how to do this would be greatly appreciated.
->
-> Michael
->
->   
-> ------------------------------------------------------------------------
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Kernel now writes:
+[   11.159134] fe000000.flash: Found 2 x8 devices at 0x0 in 16-bit bank
+[   11.165696]  Amd/Fujitsu Extended Query Table at 0x0040
+[   11.171109] fe000000.flash: CFI does not contain boot bank location. Assuming top.
+[   11.178911] number of CFI chips: 1
+[   11.182427] cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
+[   11.190402] RedBoot partition parsing not available
+[   11.195449] physmap-flash fe000000.flash: Using OF partition information
+[   11.202359] Creating 2 MTD partitions on "fe000000.flash":
+[   11.208023] 0x00000000-0x01f00000 : "data"
+[   11.213712] 0x01f00000-0x02000000 : "u-boot"
 
 
--- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+I have not managed to write anything to flash from Linux, ideas?
+JEDEC probe does not succeed.
+CFI does (cfi_ident struct is filled and "looks" OK),
+but mfr and id are 0xffff.
 
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
+
+Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
+
+---
+ arch/powerpc/boot/dts/lite5200b.dts |   14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+Index: work-powerpc.git/arch/powerpc/boot/dts/lite5200b.dts
+===================================================================
+--- work-powerpc.git.orig/arch/powerpc/boot/dts/lite5200b.dts
++++ work-powerpc.git/arch/powerpc/boot/dts/lite5200b.dts
+@@ -52,11 +52,23 @@
+ 		revision = "";			// from bootloader
+ 		#interrupt-cells = <3>;
+ 		device_type = "soc";
+-		ranges = <0 f0000000 f0010000>;
++		ranges = <00000000 f0000000 00010000
++			  fe000000 fe000000 02000000>;
+ 		reg = <f0000000 00010000>;
+ 		bus-frequency = <0>;		// from bootloader
+ 		system-frequency = <0>;		// from bootloader
+ 
++		flash@fe000000 {
++			device_type = "rom";
++			compatible = "direct-mapped";
++			probe-type = "CFI";
++			reg = <fe000000 02000000>;
++			bank-width = <2>;
++			partitions = <00000000 01f00000
++				      01f00000 00100000>;
++			partition-names = "data", "u-boot";
++		};
++
+ 		cdm@200 {
+ 			compatible = "mpc5200b-cdm\0mpc5200-cdm";
+ 			reg = <200 38>;
