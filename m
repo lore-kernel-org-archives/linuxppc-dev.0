@@ -2,22 +2,24 @@ Return-Path: <hch@lst.de>
 Received: from mail.lst.de (verein.lst.de [213.95.11.210])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 439D4DDF10
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 15:52:02 +1000 (EST)
-Date: Tue, 19 Jun 2007 07:51:58 +0200
+	by ozlabs.org (Postfix) with ESMTP id 5C9A4DDF1D
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 15:54:09 +1000 (EST)
+Date: Tue, 19 Jun 2007 07:53:58 +0200
 From: Christoph Hellwig <hch@lst.de>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [patch 5/6] ps3: ROM Storage Driver
-Message-ID: <20070619055158.GC18542@lst.de>
-References: <20070615113919.142332000@pademelon.sonytel.be>
-	<20070615120848.454492000@pademelon.sonytel.be>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [patch 4/6] ps3: Disk Storage Driver
+Message-ID: <20070619055358.GD18542@lst.de>
+References: <1181918159.25228.543.camel@pmac.infradead.org>
+	<Pine.LNX.4.62.0706151642010.8248@pademelon.sonytel.be>
+	<20070615171545.316dfac7@the-village.bc.nu>
+	<20070615.141917.85409547.davem@davemloft.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070615120848.454492000@pademelon.sonytel.be>
-Cc: Jens Axboe <axboe@kernel.dk>,
-	"James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <20070615.141917.85409547.davem@davemloft.net>
+Cc: axboe@kernel.dk, James.Bottomley@SteelEye.com, linux-scsi@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, Geert.Uytterhoeven@sonycom.com,
+	dwmw2@infradead.org, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,28 +29,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Jun 15, 2007 at 02:19:17PM -0700, David Miller wrote:
+> Another quirk I have to deal with is that under LDOMs you
+> can export full disks and also just slices.  So I'll have
+> to get down into the partition machinery to support that
+> somehow.
 
-Looks pretty nice.
-
-Some more comments:
-
- - no need for the BLK_DEV_SR dependency, it should depend on SCSI
-   instead (which might be implied by beeing in the scsi menu, don't
-   remember that detail)
- - ps3rom_priv should probably be an inline
- - the cmd field in struct ps3rom_private should probably be renamed
-   to curr_cmd or something along the line to make sure this is the
-   current command we deal with and the driver can only deal with one
-   command at a time.
- - The comment in ps3rom_queuecommand should explain why we prefer
-   lv1_storage_{read,write} over just sending down the scsi cdb,
-   not just that we prefer it.
- - I don't think you need to decode the 6 byte commands at all,
-   ATAPI only has the 10 byte variants and you can tell the scsi
-   layer not to ever send the 6 byte ones by setting the use_10_for_rw
-   flag in ->slave_configure
- - same comment about the free_irq/request_irq pair as in the disk
-   driver.
- - please use the new shost_priv helper in scsi-misc for accessing
-   the hostdata file in struct Scsi_Host so that the ugly casts
-   can go away.
+What's the problem with that?  Partition machinery is perfectly
+fine with just getting a raw disk without a partition table,
+and it obviously doesn't care if the raw disk it sees is part
+of a partition on the storage server.
