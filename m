@@ -1,11 +1,12 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <4509235daf44688f6e30675d2d480e7f786c8c60.1182233192.git.michael@ellerman.id.au>
+Message-Id: <9a9e13609d106a224005981d3469af14cb6fd738.1182233192.git.michael@ellerman.id.au>
 In-Reply-To: <9ac0032bf8356ff6e41b0860b6f67dddf9bda2f5.1182233192.git.michael@ellerman.id.au>
 References: <9ac0032bf8356ff6e41b0860b6f67dddf9bda2f5.1182233192.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 2/3] Generalise device_node flag interface
-Date: Tue, 19 Jun 2007 16:07:58 +1000 (EST)
+Subject: [PATCH 3/3] Add a warning to help trackdown device_node refcounting
+	bugs
+Date: Tue, 19 Jun 2007 16:08:00 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,68 +16,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The struct device_node currently has a _flags variable, although
-it's only used for one flag - OF_DYNAMIC. Generalise the flag
-accessors so we can use them with other flags in future.
+When the refcount for a device node goes to 0, we call the
+destructor - of_node_release(). This should only happen if we've
+already detached the node from the device tree.
+
+So add a flag OF_DETACHED which tracks detached-ness, and if we
+find ourselves in of_node_release() without it set, issue a
+warning and don't free the device_node. To avoid warning
+continuously reinitialise the kref to a sane value.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/kernel/prom.c                |    2 +-
- arch/powerpc/platforms/pseries/reconfig.c |    2 +-
- include/asm-powerpc/prom.h                |   14 +++++++++++---
- 3 files changed, 13 insertions(+), 5 deletions(-)
+The warning looks something like the following. In this case it shows that
+I erroneously did an of_node_put() inside the of_find_node_by_type() loop
+in setup_arch().
+
+WARNING: Bad of_node_put() on /memory@b8000000
+Call Trace:
+[c0000000007e3ba0] [c00000000000f74c] .show_stack+0x6c/0x1a0 (unreliable)
+[c0000000007e3c40] [c00000000002397c] .of_node_release+0x44/0xe8
+[c0000000007e3cd0] [c00000000021f4e0] .kref_put+0x74/0x94
+[c0000000007e3d50] [c000000000022b34] .of_node_put+0x20/0x34
+[c0000000007e3dc0] [c000000000022fcc] .of_find_node_by_type+0x90/0xc8
+[c0000000007e3e50] [c00000000063ff78] .setup_arch+0x1b8/0x234
+[c0000000007e3ee0] [c0000000006376ac] .start_kernel+0xd8/0x3e4
+[c0000000007e3f90] [c0000000000084c8] .start_here_common+0x54/0x8c
+
+
+ arch/powerpc/kernel/prom.c |   11 +++++++++++
+ include/asm-powerpc/prom.h |    1 +
+ 2 files changed, 12 insertions(+), 0 deletions(-)
 
 diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 6ea94cf..4f70764 100644
+index 4f70764..e0f61bb 100644
 --- a/arch/powerpc/kernel/prom.c
 +++ b/arch/powerpc/kernel/prom.c
-@@ -1375,7 +1375,7 @@ static void of_node_release(struct kref *kref)
+@@ -1375,8 +1375,17 @@ static void of_node_release(struct kref *kref)
  	struct device_node *node = kref_to_device_node(kref);
  	struct property *prop = node->properties;
  
--	if (!OF_IS_DYNAMIC(node))
-+	if (!of_node_check_flag(node, OF_DYNAMIC))
++	/* We should never be releasing nodes that haven't been detached. */
++	if (!of_node_check_flag(node, OF_DETACHED)) {
++		printk("WARNING: Bad of_node_put() on %s\n", node->full_name);
++		dump_stack();
++		kref_init(&node->kref);
++		return;
++	}
++
+ 	if (!of_node_check_flag(node, OF_DYNAMIC))
  		return;
++
  	while (prop) {
  		struct property *next = prop->next;
-diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
-index 5aa97af..c02f874 100644
---- a/arch/powerpc/platforms/pseries/reconfig.c
-+++ b/arch/powerpc/platforms/pseries/reconfig.c
-@@ -123,7 +123,7 @@ static int pSeries_reconfig_add_node(const char *path, struct property *proplist
- 	strcpy(np->full_name, path);
+ 		kfree(prop->name);
+@@ -1457,6 +1466,8 @@ void of_detach_node(const struct device_node *np)
+ 		prevsib->sibling = np->sibling;
+ 	}
  
- 	np->properties = proplist;
--	OF_MARK_DYNAMIC(np);
-+	of_node_set_flag(np, OF_DYNAMIC);
- 	kref_init(&np->kref);
- 
- 	np->parent = derive_parent(path);
++	of_node_set_flag(np, OF_DETACHED);
++
+ out_unlock:
+ 	write_unlock(&devtree_lock);
+ }
 diff --git a/include/asm-powerpc/prom.h b/include/asm-powerpc/prom.h
-index 6845af9..6eb98aa 100644
+index 6eb98aa..01b27f2 100644
 --- a/include/asm-powerpc/prom.h
 +++ b/include/asm-powerpc/prom.h
-@@ -98,10 +98,18 @@ struct device_node {
- extern struct device_node *of_chosen;
+@@ -99,6 +99,7 @@ extern struct device_node *of_chosen;
  
  /* flag descriptions */
--#define OF_DYNAMIC 1 /* node and properties were allocated via kmalloc */
-+#define OF_DYNAMIC	1 /* node and properties were allocated via kmalloc */
-+
-+static inline int of_node_check_flag(struct device_node *n, unsigned long flag)
-+{
-+	return test_bit(flag, &n->_flags);
-+}
-+
-+static inline void of_node_set_flag(struct device_node *n, unsigned long flag)
-+{
-+	set_bit(flag, &n->_flags);
-+}
+ #define OF_DYNAMIC	1 /* node and properties were allocated via kmalloc */
++#define OF_DETACHED	2 /* node has been detached from the device tree */
  
--#define OF_IS_DYNAMIC(x) test_bit(OF_DYNAMIC, &x->_flags)
--#define OF_MARK_DYNAMIC(x) set_bit(OF_DYNAMIC, &x->_flags)
- 
- #define HAVE_ARCH_DEVTREE_FIXUPS
- 
+ static inline int of_node_check_flag(struct device_node *n, unsigned long flag)
+ {
 -- 
 1.5.1.3.g7a33b
