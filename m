@@ -1,18 +1,31 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 19 Jun 2007 11:25:57 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] boot: find initrd location from device-tree
-Message-ID: <20070619012557.GB24530@localhost.localdomain>
-References: <111819314606b8b45671.846930886.miltonm@bga.com>
-	<4672EE95.3030407@freescale.com>
-	<fbae4506b772f07d2a8c1d230bea82c8@bga.com>
-	<bfbd4f126c427f590198a3e50a789b0c@kernel.crashing.org>
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 56332DDE3E
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 14:00:26 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l5J40KCN005733
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 21:00:20 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l5J40GLr018552
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 23:00:17 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <bfbd4f126c427f590198a3e50a789b0c@kernel.crashing.org>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Milton Miller <miltonm@bga.com>
+Content-Type: text/plain;
+	charset="iso-8859-7"
+Subject: RE: [PATCH] rheap: eliminates internal fragments caused by alignment
+Date: Tue, 19 Jun 2007 12:02:09 +0800
+Message-ID: <989B956029373F45A0B8AF0297081890D82CAB@zch01exm26.fsl.freescale.net>
+In-Reply-To: <DA299F48-E5A6-495C-8169-A211D4C83864@gmail.com>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Pantelis Antoniou" <pantelis.antoniou@gmail.com>,
+	<joakim.tjernlund@transmode.se>
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>, Paul <paulus@samba.org>,
+	Vitaly Bordug <vbordug@ru.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,50 +35,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jun 18, 2007 at 02:52:12PM +0200, Segher Boessenkool wrote:
-> >>> +     /* if the initrd is above 4G, its untouchable in 32 bit mode */
-> >>> +     if (initrd_end <= UINT_MAX && initrd_start < initrd_end) {
-> >>> +             loader_info.initrd_addr = initrd_start;
-> >>> +             loader_info.initrd_size  = initrd_end - initrd_start;
-> >>> +     } else {
-> >>> +             printf("ignoring loader supplied initrd parameters\n");
+> -----Original Message-----
+> From: Pantelis Antoniou [mailto:pantelis.antoniou@gmail.com]
+> Sent: Monday, June 18, 2007 8:31 PM
+> To: joakim.tjernlund@transmode.se
+> Cc: Li Yang-r58472; Paul; Vitaly Bordug; linuxppc-dev Development
+> Subject: Re: [PATCH] rheap: eliminates internal fragments caused by =
+alignment
+>=20
+>=20
+> On 18 =C9=EF=F5=ED 2007, at 3:25 =CC=CC, Joakim Tjernlund wrote:
+>=20
+> > On Mon, 2007-06-18 at 15:14 +0300, Pantelis Antoniou wrote:
+> >> Hi Li,
 > >>
-> >> Saying why might be helpful.
-> >
-> > Hmm... well, that would mean seperating the && of the if; there are two
-> > possible reasons. (1) this 32-bit code can't handle such large
-> > addresses (in which case a 64-bit kernel may work), and (2) end is >=
-> > start (which means there really isn't any data.  I suppose I could
-> > reverse the sense of the if, use an else if, and make the final else
-> > the good path.
-> 
-> "ignoring loader supplied nonsensical initrd parameters"
-> 
-> You do need to fix the comment, though :-)
-> 
-> >>> +#define _LIBC_LIMITS_H_              /* don't recurse to system's
-> >> headers */
-> >>> +#include <limits.h>          /* MAX_UINT, etc */
-> >>> +
+> >> The patch appears fine at first glance.
 > >>
-> >> I think it's really a bad idea to use any headers from outside the
-> >> boot context here.  We're dealing with explicit sized ints, so we can
-> >> safely define our own constants giving the limit values.
-> >
-> > As I said in the patch changelog, the only headers picked up here are
-> > libgcc.
-> 
-> Which the kernel doesn't use.  It _should_ be fine
-> nevertheless, <limits.h> is part of the "freestanding"
-> headers -- why do you need to do a "libc" trick though?
-> This doesn't work when not using glibc I guess?
+> >> I'm really curious what kind of alignment do you use in order to
+> >> have so
+> >> much wasted space that re-inserting the leftovers makes so much of =
+a
+> >> difference.
+>=20
+> Jocke,
+>=20
+> Ugh, 256?
+>=20
+> That's not nice at all.
+Pantelis,
 
-IMO if it needs this define magic to work properly, it's not a good
-idea to include it at all.  Especially since avoiding it is easy and
-safe in this case.
+For QE, most of the MURAM allocation requires relative large alignment.  =
+SDMA buffer even needs a 4k alignment.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> I'm not sure that even then you're going to have any guarantees that
+> the allocations will be successful.
+>=20
+> I'm afraid that in those case it would be better for the board
+> platform setup to have the space preallocated according to the BSP
+> requirements.
+
+Dynamic allocation surely can't match the efficiency of manual =
+allocation.  But with this patch applied, the utilization efficiency =
+will be good enough for most systems to work correctly, and without the =
+great trouble to partition the space yourself.  Moreover, given the fact =
+that in QE drivers some MURAM usage can be tunable, it will be more =
+suitable to use the dynamic allocation.
+
+A general policy will be helpful, that allocations with huge alignment =
+(like 4k) should always be done as early as possible.
+
+- Leo
