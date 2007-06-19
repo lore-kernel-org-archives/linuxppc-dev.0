@@ -1,23 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 62F6FDDF11
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 11:23:50 +1000 (EST)
-Subject: Re: CONFIG_PS3_USE_LPAR_ADDR dramically increases boot time
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jimi Xenidis <jimix@pobox.com>
-In-Reply-To: <7F58A02C-5C4C-4717-8D32-65C75C342ADB@pobox.com>
-References: <F4482BED-242B-42AD-96FF-3CB14B6BC5BE@watson.ibm.com>
-	<200706182314.26918.arnd@arndb.de>
-	<F8264F80-17F0-47C6-AF58-9EBBF42DC24C@pobox.com>
-	<46771140.5000205@am.sony.com>
-	<7F58A02C-5C4C-4717-8D32-65C75C342ADB@pobox.com>
-Content-Type: text/plain
-Date: Tue, 19 Jun 2007 11:23:38 +1000
-Message-Id: <1182216218.26853.305.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 19 Jun 2007 11:25:57 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] boot: find initrd location from device-tree
+Message-ID: <20070619012557.GB24530@localhost.localdomain>
+References: <111819314606b8b45671.846930886.miltonm@bga.com>
+	<4672EE95.3030407@freescale.com>
+	<fbae4506b772f07d2a8c1d230bea82c8@bga.com>
+	<bfbd4f126c427f590198a3e50a789b0c@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <bfbd4f126c427f590198a3e50a789b0c@kernel.crashing.org>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,22 +22,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-06-18 at 20:13 -0400, Jimi Xenidis wrote:
-> > When CONFIG_PS3_USE_LPAR_ADDR=n a translation in the platform code
-> > sets up the page table to map the region to low addresses
-> (continuous
-> > with the boot mem region), but that translation is not compatible
-> > with the mapping scheme used by the spu regions, which use sparse
-> mem.
+On Mon, Jun 18, 2007 at 02:52:12PM +0200, Segher Boessenkool wrote:
+> >>> +     /* if the initrd is above 4G, its untouchable in 32 bit mode */
+> >>> +     if (initrd_end <= UINT_MAX && initrd_start < initrd_end) {
+> >>> +             loader_info.initrd_addr = initrd_start;
+> >>> +             loader_info.initrd_size  = initrd_end - initrd_start;
+> >>> +     } else {
+> >>> +             printf("ignoring loader supplied initrd parameters\n");
+> >>
+> >> Saying why might be helpful.
+> >
+> > Hmm... well, that would mean seperating the && of the if; there are two
+> > possible reasons. (1) this 32-bit code can't handle such large
+> > addresses (in which case a 64-bit kernel may work), and (2) end is >=
+> > start (which means there really isn't any data.  I suppose I could
+> > reverse the sense of the if, use an else if, and make the final else
+> > the good path.
 > 
-> hmm.. sparse mem is for the linear map. 
+> "ignoring loader supplied nonsensical initrd parameters"
+> 
+> You do need to fix the comment, though :-)
+> 
+> >>> +#define _LIBC_LIMITS_H_              /* don't recurse to system's
+> >> headers */
+> >>> +#include <limits.h>          /* MAX_UINT, etc */
+> >>> +
+> >>
+> >> I think it's really a bad idea to use any headers from outside the
+> >> boot context here.  We're dealing with explicit sized ints, so we can
+> >> safely define our own constants giving the limit values.
+> >
+> > As I said in the patch changelog, the only headers picked up here are
+> > libgcc.
+> 
+> Which the kernel doesn't use.  It _should_ be fine
+> nevertheless, <limits.h> is part of the "freestanding"
+> headers -- why do you need to do a "libc" trick though?
+> This doesn't work when not using glibc I guess?
 
-SPE local store used to have special struct pages for it in order to
-return things from nopage(). It was dodgy and racy. I killed that
-recently, it was causing more problem than it was solving. So it should
-be fine now. I'm now using nopfn() and inserting the PTEs directly from
-the nopfn() hook.
+IMO if it needs this define magic to work properly, it's not a good
+idea to include it at all.  Especially since avoiding it is easy and
+safe in this case.
 
-So Geoff, you can remove the option for now or make it n by default.
-
-Ben.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
