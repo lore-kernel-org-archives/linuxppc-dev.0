@@ -1,24 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2C868DDF1D
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 10:05:04 +1000 (EST)
-In-Reply-To: <A99C864E-5D7A-4610-BA75-A3B9CF54D575@kernel.crashing.org>
-References: <20070612163016.253915076@arndb.de>
-	<200706170214.11247.arnd@arndb.de>
-	<4E0AC3E6-98F8-40BD-BA85-60766E097E4A@kernel.crashing.org>
-	<200706180109.11482.arnd@arndb.de>
-	<A99C864E-5D7A-4610-BA75-A3B9CF54D575@kernel.crashing.org>
+Return-Path: <xenidis@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.230])
+	by ozlabs.org (Postfix) with ESMTP id C5C7ADDF67
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 10:14:04 +1000 (EST)
+Received: by wx-out-0506.google.com with SMTP id t13so1429198wxc
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2007 17:14:03 -0700 (PDT)
+In-Reply-To: <46771140.5000205@am.sony.com>
+References: <F4482BED-242B-42AD-96FF-3CB14B6BC5BE@watson.ibm.com>
+	<200706182314.26918.arnd@arndb.de>
+	<F8264F80-17F0-47C6-AF58-9EBBF42DC24C@pobox.com>
+	<46771140.5000205@am.sony.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <FDDC4B07-B98C-4395-A3E1-E167B7C13EF4@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [patch 00/13] CPU selection Kconfig cleanup, take 3
-Date: Mon, 18 Jun 2007 19:05:36 -0500
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
-	Stephen Rothwell <sfr@canb.auug.org.au>
+Message-Id: <7F58A02C-5C4C-4717-8D32-65C75C342ADB@pobox.com>
+From: Jimi Xenidis <jimix@pobox.com>
+Subject: Re: CONFIG_PS3_USE_LPAR_ADDR dramically increases boot time
+Date: Mon, 18 Jun 2007 20:13:52 -0400
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Sender: Jimi Xenidis <xenidis@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,28 +27,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Jun 17, 2007, at 6:09 PM, Arnd Bergmann wrote:
 
-> On Sunday 17 June 2007, Kumar Gala wrote:
->> I commented on some minor nits with the patches.  I'm probably ok
->> with patches 1-7 going in.  I'm not ready for 8 at this point, we
->> need to do more proper cleanup to get 85xx/cpm2 support into a
->> multiplatforms single kernel state.
+On Jun 18, 2007, at 7:12 PM, Geoff Levand wrote:
+
+> Hi Jimi.
 >
-> Ok, makes sense. I've fixed up the other patches according to
-> your comments (did not change 8xx stuff though) and pushed
-> it out to
-> git://git.kernel.org/pub/scm/linux/kernel/git/arnd/cell-2.6 powerpc- 
-> kconfig
+> Jimi Xenidis wrote:
+>> On Jun 18, 2007, at 5:14 PM, Arnd Bergmann wrote:
+>>
+>>> On Monday 18 June 2007, Jimi Xenidis wrote:
+>>>>
+>>>> The following change set:
+>>>>    http://git.kernel.org/?p=linux/kernel/git/paulus/
+>>>> powerpc.git;a=commit;h=261efc3f178c8c5b55d76208aee1f39ce247f723
+>>>>
+>>>> setting CONFIG_PS3_USE_LPAR_ADDR (which is the default for PS3)
+>>>> changes increases MAX_PHYSADDR_BITS  from 44 to 47 which makes the
+>>>> array 8 time bigger and takes way longer for sparse_init() to  
+>>>> run on
+>>>> simulator.
+>>>>
+>>>> Is this really the right approach?
+>>>> Cell is actually 42 so could not the special address space be 43
+>>>> or 44?
+>>>
+>>> Unfortunately, the hypervisor chooses the addresses where things get
+>>> mapped, and since they are guest-real, there is no hard limit where
+>>> the hypervisor puts them, like the 42 bit limit on bare metal.
+>>>
+>>> I guess this will improve if we get virt_mem_map support on powerpc,
+>>> but I'm not sure if that's currently being worked on.
+>>
+>> I feel a little nit-picky worrying about slowing down boot, I'm sure
+>> it negligible on HW, and complaining about 2K vs 16K memsection. But
+>> it is important to point out that this effects all PPC64 targets if a
+>> distro decides to include the PS3 config in their PPC64 image.
 >
-> Paul, please pull from there, I'll remember not to try messing with
-> 32 bit in the future but wanted to get this in after spending so
-> much work on it.
+>
+> When CONFIG_PS3_USE_LPAR_ADDR=n a translation in the platform code
+> sets up the page table to map the region to low addresses (continuous
+> with the boot mem region), but that translation is not compatible
+> with the mapping scheme used by the spu regions, which use sparse mem.
 
-Paul,
+hmm.. sparse mem is for the linear map.
+Why is are SPE areas  in the linear map?
 
-I'll pull these into my tree with a bunch of other ppc32/embedded  
-related patches for you to pull all at once since I've got other  
-changes that will depend on them.
-
-- k
+>
+> Arnd mention that he planed to re-do the spu region management, and
+> I think with that we can use CONFIG_PS3_USE_LPAR_ADDR=n and the spufs
+> at the same time.  Arnd, what is the status?
+>
+> -Geoff
+>
