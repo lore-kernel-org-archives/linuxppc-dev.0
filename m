@@ -1,22 +1,9 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id B8678DDF2D
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2007 16:07:13 +1000 (EST)
-Date: Mon, 18 Jun 2007 23:07:31 -0700 (PDT)
-Message-Id: <20070618.230731.11645150.davem@davemloft.net>
-To: hch@lst.de
-Subject: Re: [patch 4/6] ps3: Disk Storage Driver
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070619055629.GE18542@lst.de>
-References: <1181947242.3600.8.camel@mulgrave.il.steeleye.com>
-	<20070615.160858.26276547.davem@davemloft.net>
-	<20070619055629.GE18542@lst.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: James.Bottomley@SteelEye.com, axboe@kernel.dk, linux-scsi@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, Geert.Uytterhoeven@sonycom.com,
-	dwmw2@infradead.org, alan@lxorguk.ukuu.org.uk
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <9ac0032bf8356ff6e41b0860b6f67dddf9bda2f5.1182233192.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH 1/3] Check for the root node in of_detach_node()
+Date: Tue, 19 Jun 2007 16:07:56 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,28 +13,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Christoph Hellwig <hch@lst.de>
-Date: Tue, 19 Jun 2007 07:56:29 +0200
+It's not sensible to call of_detach_node() on the root node,
+but we should check for it just to be safe.
 
-> A SCSI pass through is of course perfectly fine.  If you have a separate
-> block passthrough that has additional magic a separate block driver is
-> the way to go because it actually is simpler than a scsi driver decoding
-> command blocks and translating them to deep magic.  The ps3 storage
-> drivers this thread discussed are a good example for that.  We now
-> have a very nice and simple disk, scsi and flash chardev driver each
-> that don't include abstractions layers and cruft.  Combine that with
-> their initial scsi layer driver that was full of internal dispatches
-> because each of these device types speaks a completely different command
-> set.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/kernel/prom.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-That's how I'm currently writing my virtual disk client driver
-for the Sun LDOMS stuff, as a block device.
-
-The remaining issues are the partitioning (which we're discussing in
-another thread) and how to export the scsi passthru support in such a
-non-scsi block driver.
-
-The main disk I/O block read and write is done using descriptors
-sent to the disk server.  SCSI pass-through is provided (optionally)
-so that disk analysis tools can do things like MODE_SENSE on the
-disk.
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index af42dda..6ea94cf 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -1432,6 +1432,8 @@ void of_detach_node(const struct device_node *np)
+ 	write_lock(&devtree_lock);
+ 
+ 	parent = np->parent;
++	if (!parent)
++		goto out_unlock;
+ 
+ 	if (allnodes == np)
+ 		allnodes = np->allnext;
+@@ -1455,6 +1457,7 @@ void of_detach_node(const struct device_node *np)
+ 		prevsib->sibling = np->sibling;
+ 	}
+ 
++out_unlock:
+ 	write_unlock(&devtree_lock);
+ }
+ 
+-- 
+1.5.1.3.g7a33b
