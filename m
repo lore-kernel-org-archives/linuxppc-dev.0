@@ -1,14 +1,17 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18039.31697.402356.570828@cargo.ozlabs.ibm.com>
-Date: Tue, 19 Jun 2007 16:46:41 +1000
+Message-ID: <18039.31575.330603.260727@cargo.ozlabs.ibm.com>
+Date: Tue, 19 Jun 2007 16:44:39 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [patch 23/33] powerpc: Localize mmu_off
-In-Reply-To: <46730D5B.300@am.sony.com>
-References: <20070615204749.629571012@am.sony.com> <46730D5B.300@am.sony.com>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [patch 30/33] PS3: Bootwrapper support.
+In-Reply-To: <46771CE7.8040901@am.sony.com>
+References: <46730D8A.9090309@am.sony.com>
+	<951969d2021fe6e78917ef8bdb47cf6f@bga.com>
+	<20070618225537.GA19966@mag.az.mvista.com>
+	<46771CE7.8040901@am.sony.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,14 +23,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Geoff Levand writes:
 
-> This just removes the dependency __mmu_off has on the symbol
-> __after_prom_start.  I found the current code inconvenient when I
-> wanted to put some debugging code between the call to __mmu_off
-> and the branch to __after_prom_start.
+> This is from the comment the patch adds to the wrapper script.  I think
+> it gives you what you need:
+> 
+> +ps3)
+> +    # The ps3's loader supports loading gzipped binary images from flash
+> +    # rom to addr zero. The loader enters the image at addr 0x100.  A
+> +    # bootwrapper overlay is use to arrange for the kernel to be loaded
+> +    # to addr zero and to have a suitable bootwrapper entry at 0x100.
+> +    # To construct the rom image, 0x100 bytes from offset 0x100 in the
+> +    # kernel is copied to the bootwrapper symbol __system_reset_kernel.
+> +    # The 0x100 bytes at the bootwrapper symbol __system_reset_overlay is
+> +    # then copied to offset 0x100.  At runtime the bootwrapper program
+> +    # copies the 0x100 bytes at __system_reset_kernel to addr 0x100.
 
-So we do an extra unnecessary branch...  I realize it doesn't really
-matter, but on the other hand, if you're hacking around with debug
-stuff, you can easily change __after_prom_start to the label where
-your debug code starts.
+Yes, that is useful, but Mark is right, your patch description is a
+bit terse, and something like that in the patch description would be
+useful.
 
 Paul.
