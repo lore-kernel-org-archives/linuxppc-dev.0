@@ -1,30 +1,16 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id 07838DDDE6
+Return-Path: <sithglan@stud.informatik.uni-erlangen.de>
+Received: from faui03.informatik.uni-erlangen.de
+	(faui03.informatik.uni-erlangen.de [131.188.30.103])
+	by ozlabs.org (Postfix) with ESMTP id 584C8DDEBB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 20 Jun 2007 17:22:28 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by protonic.prtnl (Postfix) with ESMTP id C012729EC5
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 20 Jun 2007 09:19:54 +0200 (CEST)
-Received: from protonic.prtnl ([127.0.0.1])
-	by localhost (protonic [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
-	id 15156-03 for <linuxppc-embedded@ozlabs.org>;
-	Wed, 20 Jun 2007 09:19:53 +0200 (CEST)
-Received: from archvile.prtnl (archvile.prtnl [192.168.1.153])
-	by protonic.prtnl (Postfix) with ESMTP id E797029EBC
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 20 Jun 2007 09:19:52 +0200 (CEST)
-From: David Jander <david.jander@protonic.nl>
+	Wed, 20 Jun 2007 17:50:10 +1000 (EST)
+Date: Wed, 20 Jun 2007 09:41:21 +0200
+From: Thomas Glanzmann <thomas@glanzmann.de>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: CAN YOU HELLP ME
-Date: Wed, 20 Jun 2007 09:23:44 +0200
-References: <loom.20070620T040706-80@post.gmane.org>
-In-Reply-To: <loom.20070620T040706-80@post.gmane.org>
+Subject: AVNET/Memec Virtex4FX12LC Linux Kernel Tree
+Message-ID: <20070620074120.GA12184@cip.informatik.uni-erlangen.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200706200923.44248.david.jander@protonic.nl>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,35 +21,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 20 June 2007 04:20:09 volcano wrote:
-> hello my dear friend:
->    I have read the u-boot last week ,and thank you for all your kind
-> help.My linux code is based on MPC8260,so I want to continue the read of
-> the linux2.6.18 based on mpc8260.can you give me some kind suggestions
-> about how to read all these codes clearly.,and if some reference is given
-> would be welcome.
+Hello,
+I would like to be able to boot a self compiled Linux 2.6(.20?!) Kernel on a
+Virtex 4 FX 12 LC Board. I have the cross compile suite ready, compiled
+a zImage an I am able to load it up. But nothing appears on the serial
+device. I have a Montavista Demo based on a 2.4 and a so called Linux
+Starter Kit also based on the 2.4 Kernel from Montavista / AVNET both
+work. At least the kernel boots and I am able to reproduce the hardware
+they used.  However I would like to know if for example a 2.6.20
+upstream kernel works out of the box after I parameterized it the right
+way or if there is a separate tree to begin with?
 
-I suppose you want to have something as a guide to the linux-kernel 
-source-code, right?
-Well, I haven't found anything like that exactly, but luckily the source-code 
-is mostly quite easy to understand, and after fiddling for a while you'll get 
-the hang of it.
-
-Here you might find some useful information on books and on-line material over 
-the linux kernel:
-
-http://www.linux.org/dist/kernel.html
-
-It is also helful to check the lkml (linux-kernel-mailing list) every now and 
-then, to see what's "hot".
-
-The kernel itself is in constant changes that happen so quickly, that after 
-finishing a guide like this, you would probably already need to change it. 
-Therefore it is the intention to make the linux-kernel sources as readable as 
-possible, so that the code is self-explanatory. The code itself is the 
-manual.
-
-Greetings,
-
--- 
-David Jander
+        Thomas
