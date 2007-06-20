@@ -1,15 +1,9 @@
-Return-Path: <wfarnsworth@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id D1581DDED6
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2007 10:15:12 +1000 (EST)
-Subject: [PATCH v2] Create add_rtc() function to enable the RTC CMOS driver
-From: Wade Farnsworth <wfarnsworth@mvista.com>
-To: paulus@samba.org
-Content-Type: text/plain
-Date: Tue, 19 Jun 2007 17:15:10 -0700
-Message-Id: <1182298510.5674.358.camel@rhino>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <0985172bce73e36071c221bfdc5e1b28b474b308.1182300841.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH 1/1] Make the debugfs "powerpc" dir globally accessible
+Date: Wed, 20 Jun 2007 10:54:19 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,90 +13,102 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In order to use the RTC CMOS driver, each architecture must register a
-platform device for the RTC.
+The prom.c debugging code creates a "powerpc" directory in debugfs,
+which is nice, but doesn't allow any other debugging code to stick things
+under "powerpc" in debugfs. So make it global.
 
-This creates a function to register the platform device based on the RTC
-device node and verifies that the RTC port against the hard-coded value
-in asm/mc146818rtc.h.  It also sets the RTC to 24-hr mode as 12-hr mode
-is not currently supported by the driver.
+While we're there we should make the prom.c debugging code depend on
+CONFIG_DEBUG_FS, because it doesn't work otherwise.
 
-Signed-off-by: Wade Farnsworth <wfarnsworth@mvista.com>
-
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
 
- arch/powerpc/sysdev/Makefile         |    1 
- arch/powerpc/sysdev/rtc_cmos_setup.c |   54 +++++++++++++++++++++++++
- 2 files changed, 55 insertions(+)
+I should probably mention, if the root creation fails we'll end up with
+the "flat-device-tree" file sitting in the root of debugfs, which is not
+quite what we wanted - but good enough.
 
-Index: linux-2.6-powerpc-8641/arch/powerpc/sysdev/Makefile
-===================================================================
---- linux-2.6-powerpc-8641.orig/arch/powerpc/sysdev/Makefile
-+++ linux-2.6-powerpc-8641/arch/powerpc/sysdev/Makefile
-@@ -18,6 +18,7 @@ obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pc
- obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
- mv64x60-$(CONFIG_PCI)		+= mv64x60_pci.o
- obj-$(CONFIG_MV64X60)		+= $(mv64x60-y) mv64x60_pic.o mv64x60_dev.o
-+obj-$(CONFIG_RTC_DRV_CMOS)	+= rtc_cmos_setup.o
+
+ arch/powerpc/kernel/prom.c         |    9 +++------
+ arch/powerpc/kernel/setup-common.c |   13 +++++++++++++
+ include/asm-powerpc/system.h       |    2 ++
+ 3 files changed, 18 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index af42dda..e36b21c 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -52,6 +52,7 @@
+ #include <asm/pSeries_reconfig.h>
+ #include <asm/pci-bridge.h>
+ #include <asm/kexec.h>
++#include <asm/system.h>
  
- # contains only the suspend handler for time
- obj-$(CONFIG_PM)		+= timer.o
-Index: linux-2.6-powerpc-8641/arch/powerpc/sysdev/rtc_cmos_setup.c
-===================================================================
---- /dev/null
-+++ linux-2.6-powerpc-8641/arch/powerpc/sysdev/rtc_cmos_setup.c
-@@ -0,0 +1,54 @@
-+/*
-+ * Setup code for PC-style Real-Time Clock.
-+ *
-+ * Author: Wade Farnsworth <wfarnsworth@mvista.com>
-+ *
-+ * 2007 (c) MontaVista Software, Inc. This file is licensed under
-+ * the terms of the GNU General Public License version 2. This program
-+ * is licensed "as is" without any warranty of any kind, whether express
-+ * or implied.
-+ */
+ #ifdef DEBUG
+ #define DBG(fmt...) printk(KERN_ERR fmt)
+@@ -1716,22 +1717,18 @@ struct device_node *of_get_cpu_node(int cpu, unsigned int *thread)
+ }
+ EXPORT_SYMBOL(of_get_cpu_node);
+ 
+-#ifdef DEBUG
++#if defined(CONFIG_DEBUG_FS) && defined(DEBUG)
+ static struct debugfs_blob_wrapper flat_dt_blob;
+ 
+ static int __init export_flat_device_tree(void)
+ {
+ 	struct dentry *d;
+ 
+-	d = debugfs_create_dir("powerpc", NULL);
+-	if (!d)
+-		return 1;
+-
+ 	flat_dt_blob.data = initial_boot_params;
+ 	flat_dt_blob.size = initial_boot_params->totalsize;
+ 
+ 	d = debugfs_create_blob("flat-device-tree", S_IFREG | S_IRUSR,
+-				d, &flat_dt_blob);
++				powerpc_debugfs_root, &flat_dt_blob);
+ 	if (!d)
+ 		return 1;
+ 
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index ed07a19..3a08f4e 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -32,6 +32,7 @@
+ #include <linux/unistd.h>
+ #include <linux/serial.h>
+ #include <linux/serial_8250.h>
++#include <linux/debugfs.h>
+ #include <asm/io.h>
+ #include <asm/prom.h>
+ #include <asm/processor.h>
+@@ -571,3 +572,15 @@ static int __init check_cache_coherency(void)
+ 
+ late_initcall(check_cache_coherency);
+ #endif /* CONFIG_CHECK_CACHE_COHERENCY */
 +
-+#include <linux/platform_device.h>
-+#include <linux/err.h>
-+#include <linux/init.h>
-+#include <linux/mc146818rtc.h>
++#ifdef CONFIG_DEBUG_FS
++struct dentry *powerpc_debugfs_root;
 +
-+#include <asm/prom.h>
-+
-+static int  __init add_rtc(void)
++static int powerpc_debugfs_init(void)
 +{
-+	struct device_node *np;
-+	struct platform_device *pd;
-+	struct resource res;
++	powerpc_debugfs_root = debugfs_create_dir("powerpc", NULL);
 +
-+	np = of_find_compatible_node(NULL, NULL, "pnpPNP,b00");
-+	if (!np)
-+		return -ENODEV;
-+
-+	if (of_address_to_resource(np, 0, &res)) {
-+		of_node_put(np);
-+		return -ENODEV;
-+	}
-+
-+	/*
-+	 * RTC_PORT(x) is hardcoded in asm/mc146818rtc.h.  Verify that the
-+	 * address provided by the device node matches.
-+	 */
-+	if (res.start != RTC_PORT(0)) {
-+		of_node_put(np);
-+		return -ENODEV;
-+	}
-+
-+	pd = platform_device_register_simple("rtc_cmos", -1,
-+					     &res, 1);
-+	of_node_put(np);
-+	if (IS_ERR(pd))
-+		return PTR_ERR(pd);
-+
-+	/* rtc-cmos only supports 24-hr mode */
-+	CMOS_WRITE(CMOS_READ(RTC_CONTROL) | RTC_24H, RTC_CONTROL);
-+
-+	return 0;
++	return powerpc_debugfs_root == NULL;
 +}
-+fs_initcall(add_rtc);
++arch_initcall(powerpc_debugfs_init);
++#endif
+diff --git a/include/asm-powerpc/system.h b/include/asm-powerpc/system.h
+index 09621f6..464b9c5 100644
+--- a/include/asm-powerpc/system.h
++++ b/include/asm-powerpc/system.h
+@@ -559,5 +559,7 @@ static inline void create_function_call(unsigned long addr, void * func)
+ extern void account_system_vtime(struct task_struct *);
+ #endif
+ 
++extern struct dentry *powerpc_debugfs_root;
++
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_SYSTEM_H */
+-- 
+1.5.1.3.g7a33b
