@@ -1,18 +1,18 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 22906DDEAB
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2007 21:16:21 +1000 (EST)
-Subject: Re: random code execution - kernel oops
-From: Johannes Berg <johannes@sipsolutions.net>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-In-Reply-To: <1182171859.21013.3.camel@johannes.berg>
-References: <1182171859.21013.3.camel@johannes.berg>
-Content-Type: text/plain
-Date: Tue, 19 Jun 2007 18:06:52 +0200
-Message-Id: <1182269212.3714.1.camel@johannes.berg>
-Mime-Version: 1.0
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id DB094DDE42
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2007 22:16:48 +1000 (EST)
+In-Reply-To: <Pine.LNX.4.62.0706191405190.4069@pademelon.sonytel.be>
+References: <d46c75da8a86ab5cd83b63f9dbfee33f@bga.com>
+	<Pine.LNX.4.62.0706191405190.4069@pademelon.sonytel.be>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <dcf4c6884c22627387c1ccf4a04158e3@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [patch 5/6] ps3: ROM Storage Driver
+Date: Wed, 20 Jun 2007 07:16:33 -0500
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,39 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-06-18 at 15:04 +0200, Johannes Berg wrote:
-> unsigned long hx = 0x4bfcc50c;
-> int main()
-> {
->   asm("bl hx");
-> }
+On Jun 19, 2007, at 7:29 AM, Geert Uytterhoeven wrote:
+> On Mon, 18 Jun 2007, Milton Miller wrote:
+>>> +config PS3_ROM
+>>> +	tristate "PS3 ROM Storage Driver"
+>>> +	depends on PPC_PS3 && BLK_DEV_SR
+>>> +	select PS3_STORAGE
+>>> +	help
+>>> +	  Include support for the PS3 ROM Storage.
+>>> +
+>>> +	  This support is required to access the PS3 BD/DVD/CD-ROM drive.
+>>> +	  In general, all users will say Y or M.
+>>> +
+>>
+>> Why does it depend on BLK_DEV_SR?
+>
+> Because it needs SCSI CD-ROM support.
+>
 
-The net result of which is trying to execute code in a region without
-access permissions.
+To compile?  I don't see any exports there.
 
-Segher dug into the problem and suggested the patch below which does
-indeed fix the problem:
+My point is if it only relies on it to produce the device node, then 
+you should provide guidance in your help text but not make the module 
+build dependent on it.
 
----
- arch/powerpc/mm/fault.c |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
-
---- wireless-dev.orig/arch/powerpc/mm/fault.c	2007-06-19 16:12:16.080612233 +0200
-+++ wireless-dev/arch/powerpc/mm/fault.c	2007-06-19 16:12:27.480612233 +0200
-@@ -279,14 +279,13 @@ good_area:
- #endif /* CONFIG_8xx */
- 
- 	if (is_exec) {
--#ifdef CONFIG_PPC64
-+#if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
- 		/* protection fault */
- 		if (error_code & DSISR_PROTFAULT)
- 			goto bad_area;
- 		if (!(vma->vm_flags & VM_EXEC))
- 			goto bad_area;
--#endif
--#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
-+#else
- 		pte_t *ptep;
- 		pmd_t *pmdp;
- 
+milton
