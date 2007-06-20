@@ -1,20 +1,22 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: mita@fixstars.com
-Subject: Re: [Cbe-oss-dev] [patch 2/5] Add support to OProfile for profiling
-	Cell/B.E. SPUs
-Date: Wed, 20 Jun 2007 11:35:58 +0200
-References: <20070618224247.972139855@arndb.de>
-	<20070618224923.221791941@arndb.de>
-	<36420.202.32.178.37.1182306728.squirrel@webmail.fixstars.com>
-In-Reply-To: <36420.202.32.178.37.1182306728.squirrel@webmail.fixstars.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200706201135.58985.arnd@arndb.de>
-Cc: Bob Nelson <rrnelson@us.ibm.com>, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Maynard Johnson <mpjohn@us.ibm.com>, cbe-oss-dev@ozlabs.org,
-	Carl Love <carll@us.ibm.com>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-05.arcor-online.net (mail-in-05.arcor-online.net
+	[151.189.21.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3100DDDE0E
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2007 19:57:48 +1000 (EST)
+In-Reply-To: <1182298510.5674.357.camel@rhino>
+References: <1182298510.5674.357.camel@rhino>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <5492541032afa2123835334cdf42966d@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] Add a check for keyboard/mouse device nodes in
+	check_legacy_ioport()
+Date: Wed, 20 Jun 2007 11:57:32 +0200
+To: Wade Farnsworth <wfarnsworth@mvista.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,20 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 20 June 2007, mita@fixstars.com wrote:
-> > +
-> > +=A0=A0=A0=A0=A0/* Allocate arrays for collecting SPU PC samples */
-> > +=A0=A0=A0=A0=A0samples =3D (u32 *) kzalloc(SPUS_PER_NODE *
-> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0 =A0TRACE_ARRAY_SIZE * sizeof(u32), GFP_KERNEL);
-> > +
->=20
-> =A0- Unnecessary cast for kzalloc().
->=20
-> =A0- Allocation failure is ignored here. But there is no error handling
-> =A0 =A0in timer fuction (profile_spus), too.
+> The device tree for the MPC8641 HPCN does not implement the device type
+> property for I8042 nodes.
+>
+> In addition to checking the I8042 node's device type, also match the
+> keyboard and/or mouse nodes' compatible property.
+>
+> Signed-off-by: Wade Farnsworth <wfarnsworth@mvista.com>
 
-Right. Bob, can you make a patch to remove the case and make sure that
-we never access the sample array when the allocation has failed?
+Looks good.
 
-	Arnd <><
+
+Segher
