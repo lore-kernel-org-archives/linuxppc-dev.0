@@ -1,20 +1,37 @@
-Return-Path: <adetsch@br.ibm.com>
-Message-ID: <46797776.3070202@br.ibm.com>
-Date: Wed, 20 Jun 2007 15:52:38 -0300
-From: =?ISO-8859-1?Q?Andr=E9_Detsch?= <adetsch@br.ibm.com>
-MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: [Cbe-oss-dev] [patch 4/5] cell: saving spus information for	kexec
-	crash
-References: <20070618224247.972139855@arndb.de>
-	<20070618224923.498962312@arndb.de>
-	<1182211119.23887.3.camel@concordia.ozlabs.ibm.com>
-In-Reply-To: <1182211119.23887.3.camel@concordia.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
-	Luke Browning <LukeBrowning@us.ibm.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Lucio Jose Herculano Correia <luciojhc@br.ibm.com>, cbe-oss-dev@ozlabs.org
+Return-Path: <johnstul@us.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D862EDDE3E
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Jun 2007 07:06:39 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l5KL6Z1D002226
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2007 17:06:35 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l5KL6Z8d268692
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2007 15:06:35 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l5KL6YFl022111
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2007 15:06:35 -0600
+Subject: Re: [RFC] clocksouce implementation for powerpc
+From: john stultz <johnstul@us.ibm.com>
+To: Tony Breeds <tony@bakeyournoodle.com>
+In-Reply-To: <20070620065710.GR9768@bakeyournoodle.com>
+References: <20070616101126.296384219@inhelltoy.tec.linutronix.de>
+	<20070616101637.107940593@inhelltoy.tec.linutronix.de>
+	<1182009083.11539.369.camel@imap.mvista.com>
+	<20070620065710.GR9768@bakeyournoodle.com>
+Content-Type: text/plain
+Date: Wed, 20 Jun 2007 14:06:01 -0700
+Message-Id: <1182373561.6559.39.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Andrew Morton <akpm@osdl.org>, Daniel Walker <dwalker@mvista.com>,
+	LKML <linux-kernel@vger.kernel.org>,
+	LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
+	Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,41 +41,105 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-Michael Ellerman wrote:
-> On Tue, 2007-06-19 at 00:42 +0200, Arnd Bergmann wrote:
->> plain text document attachment (cell-spus-info-kexec-crash-1.diff)
->> From: Andre Detsch <adetsch@br.ibm.com>
->> This patch adds support for investigating spus information after a
->> kernel crash event, through kdump vmcore file.
->> Implementation is based on xmon code, but the new functionality was
->> kept independent from xmon.
->>
->> Signed-off-by: Lucio Jose Herculano Correia <luciojhc@br.ibm.com>
->> Signed-off-by: Andre Detsch <adetsch@br.ibm.com>
->> Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+On Wed, 2007-06-20 at 16:57 +1000, Tony Breeds wrote:
+> On Sat, Jun 16, 2007 at 08:51:23AM -0700, Daniel Walker wrote:
+> > On Sat, 2007-06-16 at 10:36 +0000, Thomas Gleixner wrote:
+> > > plain text document attachment
+> > > (clocksource-add-settimeofday-hook.patch)
+> > > From: Tony Breeds <tony@bakeyournoodle.com >
+> > > 
+> > > I'm working on a clocksource implementation for all powerpc platforms.
+> > > some of these platforms needs to do a little work as part of the
+> > > settimeofday() syscall and I can't see a way to do that without adding
+> > > this hook to clocksource.
+> > > 
+> > 
+> > 
+> > I'd like to see how this is used? If the code that uses this API change
+> > isn't ready yet, then this patch should really wait..
 > 
-> 
-> I'd like to have this patch share the emergency stopping logic with the
-> xmon code, I'll try and get a patch done in the next few days.
-> 
+> This is my current patch to rework arch/powerpc/kernel/time.c to create
+> a clocksource.  It's not ready for inclusion.
 
-Hi Michael,
+Hey Tony,
+	Thanks for sending this out! I really appreciate this work, as its been
+on my todo forever, and I've just not been able to focus on it.
+Currently it seems a bit minimal of a conversion (ideally there should
+be very little time code left), but It looks like a great start!
 
-What aspect of the patch do you think would benefit from sharing logic 
-with xmon? The structures (struct crash_spu + crash_register_spus 
-function) or the stop spus logic itself (crash_kexec_stop_spus)? Or both?
+More comments below.
 
-My first approach was actually to use the same structure and code as 
-xmon (as you might remember from an private email I've sent before 
-posting the patch). However, talking with Luke, we decided to keep xmon 
-and crash data independent from each other, since he was interested on 
-eventually allowing xmon to be run before the second kernel gets loaded. 
-  So, having a separate structure for crash info would allow us to save 
-the exact state when the crash occurred, no matter of what the user did 
-while running xmon.
+> powerpc needs to keep the vdso in sync whenener settimeodfay() is
+> called.  Adding the hook the to the clocksource structure was my way of
+> allowing this to happen.  There are other approaches, but this seemed to
+> best allow for runtime.  Initially I considered using update_vsyscall()
+> but this is called from do_timer(), and I don't need this code run then
+> :(
 
-Best regards,
+I might be missing a subtlety in the ppc code, but I'm still not sure if
+I see the need for the clocksource settimeofday hook.
 
---
-Andre Detsch
+update_vsyscall() is intended to provide a hook that allows the generic
+time code to provide all the needed timekeeping state to the arch
+specific vsyscall implementation. It is called any time the base
+timekeeping variables are changed.
+
+You're already calling timer_recalc_offset from there which looks almost
+as expensive as the settime hook, so I'm not sure I understand the
+division.
+
+But to your credit, the patch Sergei and I have been slowly working on
+(I believe I've sent that to you already, but if not let me know) never
+got the VDSO code working, so good show!
+
+> +static void clocksource_settimeofday(struct clocksource *cs,
+> +                                     struct timespec *ts)
+> +{
+> +	u64 new_xsec;
+> +
+> +#ifdef CONFIG_PPC_ISERIES
+> +	if (firmware_has_feature(FW_FEATURE_ISERIES) && first_settimeofday) {
+> +		iSeries_tb_recal();
+> +		first_settimeofday = 0;
+> +	}
+> +#endif
+> +
+> +	/* Make userspace gettimeofday spin until we're done. */
+> +	++vdso_data->tb_update_count;
+> +	smp_mb();
+> +
+> +	/* In case of a large backwards jump in time with NTP, we want the
+> +	 * clock to be updated as soon as the PLL is again in lock.
+> +	 */
+> +	last_rtc_update = xtime.tv_sec - 658;
+> +
+> +	new_xsec = xtime.tv_nsec;
+> +	if (new_xsec != 0) {
+> +		new_xsec *= XSEC_PER_SEC;
+> +		do_div(new_xsec, NSEC_PER_SEC);
+> +	}
+> +
+> +	new_xsec += (u64)xtime.tv_sec * XSEC_PER_SEC;
+> +
+> +	vdso_data->tz_minuteswest = sys_tz.tz_minuteswest;
+> +	vdso_data->tz_dsttime = sys_tz.tz_dsttime;
+> +
+> +	update_gtod(tb_last_jiffy, new_xsec, do_gtod.varp->tb_to_xs);
+> +}
+> +
+> +void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
+> +{
+> +	timer_recalc_offset(tb_last_jiffy);
+> +	timer_check_rtc();
+> +}
+
+I think it would be enlightening to flatten this out a bit. Putting both
+the timer_recalc_offset and clocksource_settime code in the same
+function. It might illustrate where some optimizations could be done and
+where it might make more sense to split things up.
+
+Also I'd leave timer_check_rtc() in the timer_interrupt for now (later
+moving it to tglx's generic rtc update).
+
+thanks
+-john
