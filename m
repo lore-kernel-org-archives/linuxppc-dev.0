@@ -1,22 +1,22 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 473BADDE00
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2007 16:57:11 +1000 (EST)
-Date: Wed, 20 Jun 2007 16:57:10 +1000
-To: Daniel Walker <dwalker@mvista.com>
-Subject: [RFC] clocksouce implementation for powerpc
-Message-ID: <20070620065710.GR9768@bakeyournoodle.com>
-References: <20070616101126.296384219@inhelltoy.tec.linutronix.de>
-	<20070616101637.107940593@inhelltoy.tec.linutronix.de>
-	<1182009083.11539.369.camel@imap.mvista.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 8C520DDEB6
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2007 17:37:59 +1000 (EST)
+Date: Wed, 20 Jun 2007 09:37:51 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Tony Breeds <tony@bakeyournoodle.com>
+Subject: Re: [PATCH/RFC] Modify sched_clock() to make CONFIG_PRINTK_TIME more
+	sane.
+In-Reply-To: <20070620020211.GO9768@bakeyournoodle.com>
+Message-ID: <Pine.LNX.4.62.0706200936300.27011@pademelon.sonytel.be>
+References: <20070619063557.GK9768@bakeyournoodle.com>
+	<20070619145356.GA20382@lixom.net>
+	<20070620020211.GO9768@bakeyournoodle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1182009083.11539.369.camel@imap.mvista.com>
-From: tony@bakeyournoodle.com (Tony Breeds)
-Cc: Andrew Morton <akpm@osdl.org>, john stultz <johnstul@us.ibm.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
-	Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-1526020133-1182325060=:27011"
+Cc: Olof Johansson <olof@lixom.net>, LinuxPPC-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,334 +26,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Jun 16, 2007 at 08:51:23AM -0700, Daniel Walker wrote:
-> On Sat, 2007-06-16 at 10:36 +0000, Thomas Gleixner wrote:
-> > plain text document attachment
-> > (clocksource-add-settimeofday-hook.patch)
-> > From: Tony Breeds <tony@bakeyournoodle.com >
-> > 
-> > I'm working on a clocksource implementation for all powerpc platforms.
-> > some of these platforms needs to do a little work as part of the
-> > settimeofday() syscall and I can't see a way to do that without adding
-> > this hook to clocksource.
-> > 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---584337861-1526020133-1182325060=:27011
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.62.0706200937451.27011@pademelon.sonytel.be>
+
+On Wed, 20 Jun 2007, Tony Breeds wrote:
+> On Tue, Jun 19, 2007 at 09:53:56AM -0500, Olof Johansson wrote:
+> > It only seems to be used in this file, so it can be static, right?
 > 
+> True, I was following suit with tb_to_ns_scale, tb_to_ns_shift which
+> could also be static.
 > 
-> I'd like to see how this is used? If the code that uses this API change
-> isn't ready yet, then this patch should really wait..
+> Here's an updated patch that makes them all static and updates the
+> commit message as well.
+> 
+> From: Tony Breeds <tony@bakeyournoodle.com>
+> 
+> Modify sched_clock() to make CONFIG_PRINTK_TIME more sane.
+> 
+> When booting a current kernel with CONFIG_PRINTK_TIME enabled you'll
+> see messages like:
+> 
+> [    0.000000] time_init: decrementer frequency = 188.044000 MHz
+> [    0.000000] time_init: processor frequency   = 1504.352000 MHz
+> [3712914.436297] Console: colour dummy device 80x25
+> 
+> This cause by the initialisation of tb_to_ns_scale in time_init(), suddenly the
+> multiplication in sched_clock() now does something :).  This patch modifies
+> sched_clock() to report the offset since the machine booted so the same
+> printk's now look like:
+> 
+> [    0.000000] time_init: decrementer frequency = 188.044000 MHz
+> [    0.000000] time_init: processor frequency   = 1504.352000 MHz
+> [    0.000135] Console: colour dummy device 80x25
+> 
+> Effectively including the uptime in printk()s.
 
-This is my current patch to rework arch/powerpc/kernel/time.c to create
-a clocksource.  It's not ready for inclusion.
+Just wondering, does the INITIAL_JIFFIES mechanism to catch wrap bugs still
+work after this patch?
 
-powerpc needs to keep the vdso in sync whenener settimeodfay() is
-called.  Adding the hook the to the clocksource structure was my way of
-allowing this to happen.  There are other approaches, but this seemed to
-best allow for runtime.  Initially I considered using update_vsyscall()
-but this is called from do_timer(), and I don't need this code run then
-:(
+include/linux/jiffies.h:
+| /*
+|  * Have the 32 bit jiffies value wrap 5 minutes after boot
+|  * so jiffies wrap bugs show up earlier.
+|  */
+| #define INITIAL_JIFFIES ((unsigned long)(unsigned int) (-300*HZ))
 
-This has been booted on pSeries and iSeries (I'm using glibc 2.5, which
-uses the vdso gettimeoday())
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
 
-All comments appreiated.
-
-Index: working/arch/powerpc/Kconfig
-===================================================================
---- working.orig/arch/powerpc/Kconfig
-+++ working/arch/powerpc/Kconfig
-@@ -31,6 +31,12 @@ config MMU
- 	bool
- 	default y
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
  
-+config GENERIC_TIME
-+	def_bool y
-+
-+config GENERIC_TIME_VSYSCALL
-+	def_bool y
-+
- config GENERIC_HARDIRQS
- 	bool
- 	default y
-Index: working/arch/powerpc/kernel/time.c
-===================================================================
---- working.orig/arch/powerpc/kernel/time.c
-+++ working/arch/powerpc/kernel/time.c
-@@ -74,6 +74,30 @@
- #endif
- #include <asm/smp.h>
- 
-+/* powerpc clocksource/clockevent code */
-+
-+/* TODO:
-+ *  o Code style
-+ *    * Variable names ... be consistent.
-+ *
-+ * TODO: Clocksource
-+ *  o Need a _USE_RTC() clocksource impelementation
-+ *  o xtime:  Either time.c manages it, or clocksource does, not both
-+ */
-+
-+#include <linux/clocksource.h>
-+
-+static struct clocksource clocksource_timebase = {
-+	.name         = "timebase",
-+	.rating       = 200,
-+	.flags        = CLOCK_SOURCE_IS_CONTINUOUS,
-+	.mask         = CLOCKSOURCE_MASK(64),
-+	.shift        = 22,
-+	.mult         = 0,	/* To be filled in */
-+	.read         = NULL,   /* To be filled in */
-+	.settimeofday = NULL,   /* To be filled in */
-+};
-+
- /* keep track of when we need to update the rtc */
- time_t last_rtc_update;
- #ifdef CONFIG_PPC_ISERIES
-@@ -376,65 +400,6 @@ static __inline__ void timer_check_rtc(v
-         }
- }
- 
--/*
-- * This version of gettimeofday has microsecond resolution.
-- */
--static inline void __do_gettimeofday(struct timeval *tv)
--{
--	unsigned long sec, usec;
--	u64 tb_ticks, xsec;
--	struct gettimeofday_vars *temp_varp;
--	u64 temp_tb_to_xs, temp_stamp_xsec;
--
--	/*
--	 * These calculations are faster (gets rid of divides)
--	 * if done in units of 1/2^20 rather than microseconds.
--	 * The conversion to microseconds at the end is done
--	 * without a divide (and in fact, without a multiply)
--	 */
--	temp_varp = do_gtod.varp;
--
--	/* Sampling the time base must be done after loading
--	 * do_gtod.varp in order to avoid racing with update_gtod.
--	 */
--	data_barrier(temp_varp);
--	tb_ticks = get_tb() - temp_varp->tb_orig_stamp;
--	temp_tb_to_xs = temp_varp->tb_to_xs;
--	temp_stamp_xsec = temp_varp->stamp_xsec;
--	xsec = temp_stamp_xsec + mulhdu(tb_ticks, temp_tb_to_xs);
--	sec = xsec / XSEC_PER_SEC;
--	usec = (unsigned long)xsec & (XSEC_PER_SEC - 1);
--	usec = SCALE_XSEC(usec, 1000000);
--
--	tv->tv_sec = sec;
--	tv->tv_usec = usec;
--}
--
--void do_gettimeofday(struct timeval *tv)
--{
--	if (__USE_RTC()) {
--		/* do this the old way */
--		unsigned long flags, seq;
--		unsigned int sec, nsec, usec;
--
--		do {
--			seq = read_seqbegin_irqsave(&xtime_lock, flags);
--			sec = xtime.tv_sec;
--			nsec = xtime.tv_nsec + tb_ticks_since(tb_last_jiffy);
--		} while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
--		usec = nsec / 1000;
--		while (usec >= 1000000) {
--			usec -= 1000000;
--			++sec;
--		}
--		tv->tv_sec = sec;
--		tv->tv_usec = usec;
--		return;
--	}
--	__do_gettimeofday(tv);
--}
--
--EXPORT_SYMBOL(do_gettimeofday);
- 
- /*
-  * There are two copies of tb_to_xs and stamp_xsec so that no
-@@ -666,8 +631,8 @@ void timer_interrupt(struct pt_regs * re
- 		if (per_cpu(last_jiffy, cpu) >= tb_next_jiffy) {
- 			tb_last_jiffy = tb_next_jiffy;
- 			do_timer(1);
--			timer_recalc_offset(tb_last_jiffy);
--			timer_check_rtc();
-+			/* timer_recalc_offset() && timer_check_rtc()
-+			 * are now called from update_vsyscall() */
- 		}
- 		write_sequnlock(&xtime_lock);
- 	}
-@@ -739,77 +704,6 @@ unsigned long long sched_clock(void)
- 	return mulhdu(get_tb() - boot_tb, tb_to_ns_scale) << tb_to_ns_shift;
- }
- 
--int do_settimeofday(struct timespec *tv)
--{
--	time_t wtm_sec, new_sec = tv->tv_sec;
--	long wtm_nsec, new_nsec = tv->tv_nsec;
--	unsigned long flags;
--	u64 new_xsec;
--	unsigned long tb_delta;
--
--	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
--		return -EINVAL;
--
--	write_seqlock_irqsave(&xtime_lock, flags);
--
--	/*
--	 * Updating the RTC is not the job of this code. If the time is
--	 * stepped under NTP, the RTC will be updated after STA_UNSYNC
--	 * is cleared.  Tools like clock/hwclock either copy the RTC
--	 * to the system time, in which case there is no point in writing
--	 * to the RTC again, or write to the RTC but then they don't call
--	 * settimeofday to perform this operation.
--	 */
--#ifdef CONFIG_PPC_ISERIES
--	if (firmware_has_feature(FW_FEATURE_ISERIES) && first_settimeofday) {
--		iSeries_tb_recal();
--		first_settimeofday = 0;
--	}
--#endif
--
--	/* Make userspace gettimeofday spin until we're done. */
--	++vdso_data->tb_update_count;
--	smp_mb();
--
--	/*
--	 * Subtract off the number of nanoseconds since the
--	 * beginning of the last tick.
--	 */
--	tb_delta = tb_ticks_since(tb_last_jiffy);
--	tb_delta = mulhdu(tb_delta, do_gtod.varp->tb_to_xs); /* in xsec */
--	new_nsec -= SCALE_XSEC(tb_delta, 1000000000);
--
--	wtm_sec  = wall_to_monotonic.tv_sec + (xtime.tv_sec - new_sec);
--	wtm_nsec = wall_to_monotonic.tv_nsec + (xtime.tv_nsec - new_nsec);
--
-- 	set_normalized_timespec(&xtime, new_sec, new_nsec);
--	set_normalized_timespec(&wall_to_monotonic, wtm_sec, wtm_nsec);
--
--	/* In case of a large backwards jump in time with NTP, we want the 
--	 * clock to be updated as soon as the PLL is again in lock.
--	 */
--	last_rtc_update = new_sec - 658;
--
--	ntp_clear();
--
--	new_xsec = xtime.tv_nsec;
--	if (new_xsec != 0) {
--		new_xsec *= XSEC_PER_SEC;
--		do_div(new_xsec, NSEC_PER_SEC);
--	}
--	new_xsec += (u64)xtime.tv_sec * XSEC_PER_SEC;
--	update_gtod(tb_last_jiffy, new_xsec, do_gtod.varp->tb_to_xs);
--
--	vdso_data->tz_minuteswest = sys_tz.tz_minuteswest;
--	vdso_data->tz_dsttime = sys_tz.tz_dsttime;
--
--	write_sequnlock_irqrestore(&xtime_lock, flags);
--	clock_was_set();
--	return 0;
--}
--
--EXPORT_SYMBOL(do_settimeofday);
--
- static int __init get_freq(char *name, int cells, unsigned long *val)
- {
- 	struct device_node *cpu;
-@@ -878,6 +772,78 @@ unsigned long get_boot_time(void)
- 		      tm.tm_hour, tm.tm_min, tm.tm_sec);
- }
- 
-+/* clocksource code */
-+static cycle_t timebase_read(void)
-+{
-+	return (cycle_t)get_tb();
-+}
-+
-+static void clocksource_settimeofday(struct clocksource *cs,
-+                                     struct timespec *ts)
-+{
-+	u64 new_xsec;
-+
-+#ifdef CONFIG_PPC_ISERIES
-+	if (firmware_has_feature(FW_FEATURE_ISERIES) && first_settimeofday) {
-+		iSeries_tb_recal();
-+		first_settimeofday = 0;
-+	}
-+#endif
-+
-+	/* Make userspace gettimeofday spin until we're done. */
-+	++vdso_data->tb_update_count;
-+	smp_mb();
-+
-+	/* In case of a large backwards jump in time with NTP, we want the
-+	 * clock to be updated as soon as the PLL is again in lock.
-+	 */
-+	last_rtc_update = xtime.tv_sec - 658;
-+
-+	new_xsec = xtime.tv_nsec;
-+	if (new_xsec != 0) {
-+		new_xsec *= XSEC_PER_SEC;
-+		do_div(new_xsec, NSEC_PER_SEC);
-+	}
-+
-+	new_xsec += (u64)xtime.tv_sec * XSEC_PER_SEC;
-+
-+	vdso_data->tz_minuteswest = sys_tz.tz_minuteswest;
-+	vdso_data->tz_dsttime = sys_tz.tz_dsttime;
-+
-+	update_gtod(tb_last_jiffy, new_xsec, do_gtod.varp->tb_to_xs);
-+}
-+
-+void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
-+{
-+	timer_recalc_offset(tb_last_jiffy);
-+	timer_check_rtc();
-+}
-+
-+void __init clocksource_init(void)
-+{
-+	int mult;
-+
-+	if (__USE_RTC())
-+		return;
-+
-+	mult = clocksource_hz2mult(tb_ticks_per_sec,
-+	                           clocksource_timebase.shift);
-+	clocksource_timebase.mult = mult;
-+
-+	clocksource_timebase.read = timebase_read;
-+	clocksource_timebase.settimeofday = clocksource_settimeofday;
-+
-+	if (clocksource_register(&clocksource_timebase)) {
-+		printk(KERN_ERR "clocksource: %s is already registered\n",
-+		       clocksource_timebase.name);
-+		return;
-+	}
-+
-+	printk(KERN_INFO "clocksource: %s mult[%x] shift[%d] registered\n",
-+	       clocksource_timebase.name,
-+	       clocksource_timebase.mult, clocksource_timebase.shift);
-+}
-+
- /* This function is only called on the boot processor */
- void __init time_init(void)
- {
-@@ -999,6 +965,9 @@ void __init time_init(void)
- 	                        -xtime.tv_sec, -xtime.tv_nsec);
- 	write_sequnlock_irqrestore(&xtime_lock, flags);
- 
-+	/* Register the clocksource */
-+	clocksource_init();
-+
- 	/* Not exact, but the timer interrupt takes care of this */
- 	set_dec(tb_ticks_per_jiffy);
- }
-Yours Tony
-
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-1526020133-1182325060=:27011--
