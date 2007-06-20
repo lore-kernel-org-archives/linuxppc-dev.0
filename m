@@ -1,22 +1,22 @@
 Return-Path: <Geert.Uytterhoeven@sonycom.com>
 Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 8C520DDEB6
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2007 17:37:59 +1000 (EST)
-Date: Wed, 20 Jun 2007 09:37:51 +0200 (CEST)
+	by ozlabs.org (Postfix) with ESMTP id D6A9CDDDFA
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2007 17:41:52 +1000 (EST)
+Date: Wed, 20 Jun 2007 09:41:47 +0200 (CEST)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Sender: geert@sonytel.be
 To: Tony Breeds <tony@bakeyournoodle.com>
-Subject: Re: [PATCH/RFC] Modify sched_clock() to make CONFIG_PRINTK_TIME more
-	sane.
-In-Reply-To: <20070620020211.GO9768@bakeyournoodle.com>
-Message-ID: <Pine.LNX.4.62.0706200936300.27011@pademelon.sonytel.be>
+Subject: Re: [PATCH/RFC] Make certain timekeeping variables __read_mostly
+In-Reply-To: <20070620031333.GP9768@bakeyournoodle.com>
+Message-ID: <Pine.LNX.4.62.0706200940260.27011@pademelon.sonytel.be>
 References: <20070619063557.GK9768@bakeyournoodle.com>
 	<20070619145356.GA20382@lixom.net>
 	<20070620020211.GO9768@bakeyournoodle.com>
+	<20070620031333.GP9768@bakeyournoodle.com>
 MIME-Version: 1.0
 Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-1526020133-1182325060=:27011"
-Cc: Olof Johansson <olof@lixom.net>, LinuxPPC-dev <linuxppc-dev@ozlabs.org>
+	BOUNDARY="-584337861-2044335871-1182325307=:27011"
+Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,52 +29,19 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
   This message is in MIME format.  The first part should be readable text,
   while the remaining parts are likely unreadable without MIME-aware tools.
 
----584337861-1526020133-1182325060=:27011
-Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+---584337861-2044335871-1182325307=:27011
+Content-Type: TEXT/PLAIN; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.62.0706200937451.27011@pademelon.sonytel.be>
 
 On Wed, 20 Jun 2007, Tony Breeds wrote:
-> On Tue, Jun 19, 2007 at 09:53:56AM -0500, Olof Johansson wrote:
-> > It only seems to be used in this file, so it can be static, right?
+> On Wed, Jun 20, 2007 at 12:02:11PM +1000, Tony Breeds wrote:
+> > Also this patch makes tb_to_ns_scale and tb_to_ns_shift static for good
+> > measure.
 > 
-> True, I was following suit with tb_to_ns_scale, tb_to_ns_shift which
-> could also be static.
-> 
-> Here's an updated patch that makes them all static and updates the
-> commit message as well.
-> 
-> From: Tony Breeds <tony@bakeyournoodle.com>
-> 
-> Modify sched_clock() to make CONFIG_PRINTK_TIME more sane.
-> 
-> When booting a current kernel with CONFIG_PRINTK_TIME enabled you'll
-> see messages like:
-> 
-> [    0.000000] time_init: decrementer frequency = 188.044000 MHz
-> [    0.000000] time_init: processor frequency   = 1504.352000 MHz
-> [3712914.436297] Console: colour dummy device 80x25
-> 
-> This cause by the initialisation of tb_to_ns_scale in time_init(), suddenly the
-> multiplication in sched_clock() now does something :).  This patch modifies
-> sched_clock() to report the offset since the machine booted so the same
-> printk's now look like:
-> 
-> [    0.000000] time_init: decrementer frequency = 188.044000 MHz
-> [    0.000000] time_init: processor frequency   = 1504.352000 MHz
-> [    0.000135] Console: colour dummy device 80x25
-> 
-> Effectively including the uptime in printk()s.
+> While we're ate it these 3 variables can be marked __read_mostly.
 
-Just wondering, does the INITIAL_JIFFIES mechanism to catch wrap bugs still
-work after this patch?
-
-include/linux/jiffies.h:
-| /*
-|  * Have the 32 bit jiffies value wrap 5 minutes after boot
-|  * so jiffies wrap bugs show up earlier.
-|  */
-| #define INITIAL_JIFFIES ((unsigned long)(unsigned int) (-300*HZ))
+There's no __read_mostly support for powerpc yet (is there?), so __read_mostly
+just expands to nothing?
 
 With kind regards,
  
@@ -94,4 +61,4 @@ A division of Sony Service Centre (Europe) N.V.
 Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
 VAT BE 0413.825.160 · RPR Brussels	
 Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1526020133-1182325060=:27011--
+---584337861-2044335871-1182325307=:27011--
