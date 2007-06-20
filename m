@@ -1,22 +1,20 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id D6A9CDDDFA
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2007 17:41:52 +1000 (EST)
-Date: Wed, 20 Jun 2007 09:41:47 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Tony Breeds <tony@bakeyournoodle.com>
-Subject: Re: [PATCH/RFC] Make certain timekeeping variables __read_mostly
-In-Reply-To: <20070620031333.GP9768@bakeyournoodle.com>
-Message-ID: <Pine.LNX.4.62.0706200940260.27011@pademelon.sonytel.be>
-References: <20070619063557.GK9768@bakeyournoodle.com>
-	<20070619145356.GA20382@lixom.net>
-	<20070620020211.GO9768@bakeyournoodle.com>
-	<20070620031333.GP9768@bakeyournoodle.com>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: mita@fixstars.com
+Subject: Re: [Cbe-oss-dev] [patch 2/5] Add support to OProfile for profiling
+	Cell/B.E. SPUs
+Date: Wed, 20 Jun 2007 11:35:58 +0200
+References: <20070618224247.972139855@arndb.de>
+	<20070618224923.221791941@arndb.de>
+	<36420.202.32.178.37.1182306728.squirrel@webmail.fixstars.com>
+In-Reply-To: <36420.202.32.178.37.1182306728.squirrel@webmail.fixstars.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-2044335871-1182325307=:27011"
-Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200706201135.58985.arnd@arndb.de>
+Cc: Bob Nelson <rrnelson@us.ibm.com>, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Maynard Johnson <mpjohn@us.ibm.com>, cbe-oss-dev@ozlabs.org,
+	Carl Love <carll@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,39 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Wednesday 20 June 2007, mita@fixstars.com wrote:
+> > +
+> > +=A0=A0=A0=A0=A0/* Allocate arrays for collecting SPU PC samples */
+> > +=A0=A0=A0=A0=A0samples =3D (u32 *) kzalloc(SPUS_PER_NODE *
+> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0 =A0TRACE_ARRAY_SIZE * sizeof(u32), GFP_KERNEL);
+> > +
+>=20
+> =A0- Unnecessary cast for kzalloc().
+>=20
+> =A0- Allocation failure is ignored here. But there is no error handling
+> =A0 =A0in timer fuction (profile_spus), too.
 
----584337861-2044335871-1182325307=:27011
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Right. Bob, can you make a patch to remove the case and make sure that
+we never access the sample array when the allocation has failed?
 
-On Wed, 20 Jun 2007, Tony Breeds wrote:
-> On Wed, Jun 20, 2007 at 12:02:11PM +1000, Tony Breeds wrote:
-> > Also this patch makes tb_to_ns_scale and tb_to_ns_shift static for good
-> > measure.
-> 
-> While we're ate it these 3 variables can be marked __read_mostly.
-
-There's no __read_mostly support for powerpc yet (is there?), so __read_mostly
-just expands to nothing?
-
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-2044335871-1182325307=:27011--
+	Arnd <><
