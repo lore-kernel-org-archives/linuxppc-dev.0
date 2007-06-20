@@ -1,9 +1,19 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <0985172bce73e36071c221bfdc5e1b28b474b308.1182300841.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 1/1] Make the debugfs "powerpc" dir globally accessible
-Date: Wed, 20 Jun 2007 10:54:19 +1000 (EST)
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 82AD0DDDCA
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2007 12:02:11 +1000 (EST)
+Date: Wed, 20 Jun 2007 12:02:11 +1000
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH/RFC] Modify sched_clock() to make CONFIG_PRINTK_TIME more
+	sane.
+Message-ID: <20070620020211.GO9768@bakeyournoodle.com>
+References: <20070619063557.GK9768@bakeyournoodle.com>
+	<20070619145356.GA20382@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20070619145356.GA20382@lixom.net>
+From: tony@bakeyournoodle.com (Tony Breeds)
+Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,102 +23,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The prom.c debugging code creates a "powerpc" directory in debugfs,
-which is nice, but doesn't allow any other debugging code to stick things
-under "powerpc" in debugfs. So make it global.
+On Tue, Jun 19, 2007 at 09:53:56AM -0500, Olof Johansson wrote:
+ 
+> It only seems to be used in this file, so it can be static, right?
 
-While we're there we should make the prom.c debugging code depend on
-CONFIG_DEBUG_FS, because it doesn't work otherwise.
+True, I was following suit with tb_to_ns_scale, tb_to_ns_shift which
+could also be static.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+Here's an updated patch that makes them all static and updates the
+commit message as well.
+
+From: Tony Breeds <tony@bakeyournoodle.com>
+
+Modify sched_clock() to make CONFIG_PRINTK_TIME more sane.
+
+When booting a current kernel with CONFIG_PRINTK_TIME enabled you'll
+see messages like:
+
+[    0.000000] time_init: decrementer frequency = 188.044000 MHz
+[    0.000000] time_init: processor frequency   = 1504.352000 MHz
+[3712914.436297] Console: colour dummy device 80x25
+
+This cause by the initialisation of tb_to_ns_scale in time_init(), suddenly the
+multiplication in sched_clock() now does something :).  This patch modifies
+sched_clock() to report the offset since the machine booted so the same
+printk's now look like:
+
+[    0.000000] time_init: decrementer frequency = 188.044000 MHz
+[    0.000000] time_init: processor frequency   = 1504.352000 MHz
+[    0.000135] Console: colour dummy device 80x25
+
+Effectively including the uptime in printk()s.
+
+Also this patch makes tb_to_ns_scale and tb_to_ns_shift static for good
+measure.
+
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+
 ---
+There looks to be other variables that could be made static, I think
+that's a job for another day though.
 
-I should probably mention, if the root creation fails we'll end up with
-the "flat-device-tree" file sitting in the root of debugfs, which is not
-quite what we wanted - but good enough.
+ arch/powerpc/kernel/time.c |    9 ++++++---
+  1 file changed, 6 insertions(+), 3 deletions(-)
 
-
- arch/powerpc/kernel/prom.c         |    9 +++------
- arch/powerpc/kernel/setup-common.c |   13 +++++++++++++
- include/asm-powerpc/system.h       |    2 ++
- 3 files changed, 18 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index af42dda..e36b21c 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -52,6 +52,7 @@
- #include <asm/pSeries_reconfig.h>
- #include <asm/pci-bridge.h>
- #include <asm/kexec.h>
-+#include <asm/system.h>
+Index: working/arch/powerpc/kernel/time.c
+===================================================================
+--- working.orig/arch/powerpc/kernel/time.c
++++ working/arch/powerpc/kernel/time.c
+@@ -113,8 +113,9 @@ u64 ticklen_to_xs;	/* 0.64 fraction */
+ DEFINE_SPINLOCK(rtc_lock);
+ EXPORT_SYMBOL_GPL(rtc_lock);
  
- #ifdef DEBUG
- #define DBG(fmt...) printk(KERN_ERR fmt)
-@@ -1716,22 +1717,18 @@ struct device_node *of_get_cpu_node(int cpu, unsigned int *thread)
- }
- EXPORT_SYMBOL(of_get_cpu_node);
+-u64 tb_to_ns_scale;
+-unsigned tb_to_ns_shift;
++static u64 tb_to_ns_scale;
++static unsigned tb_to_ns_shift;
++static unsigned long boot_tb;
  
--#ifdef DEBUG
-+#if defined(CONFIG_DEBUG_FS) && defined(DEBUG)
- static struct debugfs_blob_wrapper flat_dt_blob;
+ struct gettimeofday_struct do_gtod;
  
- static int __init export_flat_device_tree(void)
+@@ -735,7 +736,7 @@ unsigned long long sched_clock(void)
  {
- 	struct dentry *d;
+ 	if (__USE_RTC())
+ 		return get_rtc();
+-	return mulhdu(get_tb(), tb_to_ns_scale) << tb_to_ns_shift;
++	return mulhdu(get_tb() - boot_tb, tb_to_ns_scale) << tb_to_ns_shift;
+ }
  
--	d = debugfs_create_dir("powerpc", NULL);
--	if (!d)
--		return 1;
--
- 	flat_dt_blob.data = initial_boot_params;
- 	flat_dt_blob.size = initial_boot_params->totalsize;
+ int do_settimeofday(struct timespec *tv)
+@@ -960,6 +961,8 @@ void __init time_init(void)
+ 	}
+ 	tb_to_ns_scale = scale;
+ 	tb_to_ns_shift = shift;
++	/* Save the current timebase to pretty up CONFIG_PRINTK_TIME */
++	boot_tb = get_tb();
  
- 	d = debugfs_create_blob("flat-device-tree", S_IFREG | S_IRUSR,
--				d, &flat_dt_blob);
-+				powerpc_debugfs_root, &flat_dt_blob);
- 	if (!d)
- 		return 1;
+ 	tm = get_boot_time();
  
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index ed07a19..3a08f4e 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -32,6 +32,7 @@
- #include <linux/unistd.h>
- #include <linux/serial.h>
- #include <linux/serial_8250.h>
-+#include <linux/debugfs.h>
- #include <asm/io.h>
- #include <asm/prom.h>
- #include <asm/processor.h>
-@@ -571,3 +572,15 @@ static int __init check_cache_coherency(void)
- 
- late_initcall(check_cache_coherency);
- #endif /* CONFIG_CHECK_CACHE_COHERENCY */
-+
-+#ifdef CONFIG_DEBUG_FS
-+struct dentry *powerpc_debugfs_root;
-+
-+static int powerpc_debugfs_init(void)
-+{
-+	powerpc_debugfs_root = debugfs_create_dir("powerpc", NULL);
-+
-+	return powerpc_debugfs_root == NULL;
-+}
-+arch_initcall(powerpc_debugfs_init);
-+#endif
-diff --git a/include/asm-powerpc/system.h b/include/asm-powerpc/system.h
-index 09621f6..464b9c5 100644
---- a/include/asm-powerpc/system.h
-+++ b/include/asm-powerpc/system.h
-@@ -559,5 +559,7 @@ static inline void create_function_call(unsigned long addr, void * func)
- extern void account_system_vtime(struct task_struct *);
- #endif
- 
-+extern struct dentry *powerpc_debugfs_root;
-+
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_SYSTEM_H */
--- 
-1.5.1.3.g7a33b
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
