@@ -1,17 +1,21 @@
-Return-Path: <wfarnsworth@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 4161EDDF07
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Jun 2007 02:59:34 +1000 (EST)
-Subject: [PATCH v3] Create add_rtc() function to enable the RTC CMOS driver
-From: Wade Farnsworth <wfarnsworth@mvista.com>
-To: paulus@samba.org
-In-Reply-To: <1182298510.5674.358.camel@rhino>
-References: <1182298510.5674.358.camel@rhino>
-Content-Type: text/plain
-Date: Wed, 20 Jun 2007 09:59:32 -0700
-Message-Id: <1182358772.5674.383.camel@rhino>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 0863BDDE07
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Jun 2007 03:19:09 +1000 (EST)
+Message-ID: <467961F1.1060909@ru.mvista.com>
+Date: Wed, 20 Jun 2007 21:20:49 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: Tony Breeds <tony@bakeyournoodle.com>
+Subject: Re: [RFC] clocksouce implementation for powerpc
+References: <20070616101126.296384219@inhelltoy.tec.linutronix.de>	<20070616101637.107940593@inhelltoy.tec.linutronix.de>	<1182009083.11539.369.camel@imap.mvista.com>	<20070620065710.GR9768@bakeyournoodle.com>
+	<1182351439.18168.79.camel@imap.mvista.com>
+In-Reply-To: <1182351439.18168.79.camel@imap.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: Andrew Morton <akpm@osdl.org>, Daniel Walker <dwalker@mvista.com>,
+	john stultz <johnstul@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+	LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
+	Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,87 +25,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In order to use the RTC CMOS driver, each architecture must register a
-platform device for the RTC.
+Daniel Walker wrote:
+>>+static void clocksource_settimeofday(struct clocksource *cs,
+>>+                                     struct timespec *ts)
+>>+{
+>>+	u64 new_xsec;
+>>+
+>>+#ifdef CONFIG_PPC_ISERIES
+>>+	if (firmware_has_feature(FW_FEATURE_ISERIES) && first_settimeofday) {
+>>+		iSeries_tb_recal();
+>>+		first_settimeofday = 0;
+>>+	}
+>>+#endif
+>>+
+>>+	/* Make userspace gettimeofday spin until we're done. */
+>>+	++vdso_data->tb_update_count;
+>>+	smp_mb();
+>>+
+>>+	/* In case of a large backwards jump in time with NTP, we want the
+>>+	 * clock to be updated as soon as the PLL is again in lock.
+>>+	 */
+>>+	last_rtc_update = xtime.tv_sec - 658;
+>>+
+>>+	new_xsec = xtime.tv_nsec;
+>>+	if (new_xsec != 0) {
+>>+		new_xsec *= XSEC_PER_SEC;
+>>+		do_div(new_xsec, NSEC_PER_SEC);
+>>+	}
+>>+
+>>+	new_xsec += (u64)xtime.tv_sec * XSEC_PER_SEC;
+>>+
+>>+	vdso_data->tz_minuteswest = sys_tz.tz_minuteswest;
+>>+	vdso_data->tz_dsttime = sys_tz.tz_dsttime;
 
-This creates a function to register the platform device based on the RTC
-device node and verifies that the RTC port against the hard-coded value
-in asm/mc146818rtc.h.
+    I'm not sure why these are copied *only* here. Shouldn't they be copied 
+only once, at init. time?
 
-Signed-off-by: Wade Farnsworth <wfarnsworth@mvista.com>
+>>+
+>>+	update_gtod(tb_last_jiffy, new_xsec, do_gtod.varp->tb_to_xs);
+>>+}
 
----
+> It does look too large to run from interrupt context,
 
- arch/powerpc/sysdev/Makefile         |    1 
- arch/powerpc/sysdev/rtc_cmos_setup.c |   51 +++++++++++++++++++++++++
- 2 files changed, 52 insertions(+)
+    You mean if this would have been "included" into update_vsyscall()?
 
-Index: linux-2.6-powerpc-8641/arch/powerpc/sysdev/Makefile
-===================================================================
---- linux-2.6-powerpc-8641.orig/arch/powerpc/sysdev/Makefile
-+++ linux-2.6-powerpc-8641/arch/powerpc/sysdev/Makefile
-@@ -18,6 +18,7 @@ obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pc
- obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
- mv64x60-$(CONFIG_PCI)		+= mv64x60_pci.o
- obj-$(CONFIG_MV64X60)		+= $(mv64x60-y) mv64x60_pic.o mv64x60_dev.o
-+obj-$(CONFIG_RTC_DRV_CMOS)	+= rtc_cmos_setup.o
- 
- # contains only the suspend handler for time
- obj-$(CONFIG_PM)		+= timer.o
-Index: linux-2.6-powerpc-8641/arch/powerpc/sysdev/rtc_cmos_setup.c
-===================================================================
---- /dev/null
-+++ linux-2.6-powerpc-8641/arch/powerpc/sysdev/rtc_cmos_setup.c
-@@ -0,0 +1,51 @@
-+/*
-+ * Setup code for PC-style Real-Time Clock.
-+ *
-+ * Author: Wade Farnsworth <wfarnsworth@mvista.com>
-+ *
-+ * 2007 (c) MontaVista Software, Inc. This file is licensed under
-+ * the terms of the GNU General Public License version 2. This program
-+ * is licensed "as is" without any warranty of any kind, whether
-express
-+ * or implied.
-+ */
-+
-+#include <linux/platform_device.h>
-+#include <linux/err.h>
-+#include <linux/init.h>
-+#include <linux/mc146818rtc.h>
-+
-+#include <asm/prom.h>
-+
-+static int  __init add_rtc(void)
-+{
-+	struct device_node *np;
-+	struct platform_device *pd;
-+	struct resource res;
-+
-+	np = of_find_compatible_node(NULL, NULL, "pnpPNP,b00");
-+	if (!np)
-+		return -ENODEV;
-+
-+	if (of_address_to_resource(np, 0, &res)) {
-+		of_node_put(np);
-+		return -ENODEV;
-+	}
-+
-+	/*
-+	 * RTC_PORT(x) is hardcoded in asm/mc146818rtc.h.  Verify that the
-+	 * address provided by the device node matches.
-+	 */
-+	if (res.start != RTC_PORT(0)) {
-+		of_node_put(np);
-+		return -ENODEV;
-+	}
-+
-+	pd = platform_device_register_simple("rtc_cmos", -1,
-+					     &res, 1);
-+	of_node_put(np);
-+	if (IS_ERR(pd))
-+		return PTR_ERR(pd);
-+
-+	return 0;
-+}
-+fs_initcall(add_rtc);
+> but it also looks
+> like it could get cleaned out more ..
+
+    Yeah, at least new_xsec calculation is duplicated in timer_recalc_offset()..
+
+>>+void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
+>>+{
+>>+	timer_recalc_offset(tb_last_jiffy);
+>>+	timer_check_rtc();
+>>+}
+
+> Hmm .. This doesn't look like it's taking into account that the time has
+> changed ..
+
+    Why? By the time it gets called (form the timer softirq context) 
+tb_last_jiffy should've been incremented. Well, this won't happen wither in or 
+right after the timer interrupt... since timer has no IRQ on PowerPC -- it 
+signals "exception". Well, HRT works somehow anyway. :-)
+
+> Your time has effectively incremented by one jiffie .. The
+> vdso_data doesn't appear to be updated ..
+
+    Moreover, it will get called for settimeofday() as well which would seem 
+to double the overhead since your clocksource hook will get called beforehand.
+
+WBR, Sergei
