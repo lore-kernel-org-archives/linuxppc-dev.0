@@ -1,18 +1,16 @@
-Return-Path: <bgholikh@cisco.com>
-Received: from sj-iport-1.cisco.com (sj-iport-1-in.cisco.com [171.71.176.70])
-	by ozlabs.org (Postfix) with ESMTP id D7368DDE2F
+Return-Path: <sithglan@stud.informatik.uni-erlangen.de>
+Received: from faui03.informatik.uni-erlangen.de
+	(faui03.informatik.uni-erlangen.de [131.188.30.103])
+	by ozlabs.org (Postfix) with ESMTP id 69F66DDEE7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Jun 2007 22:30:08 +1000 (EST)
+	Thu, 21 Jun 2007 22:33:06 +1000 (EST)
+Date: Thu, 21 Jun 2007 14:33:03 +0200
+From: Thomas Glanzmann <thomas@glanzmann.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: start_kernel does not get called on Virtex 4 FX 12 ppc 405
+Message-ID: <20070621123303.GD27854@cip.informatik.uni-erlangen.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: General question on upgrading Linux version
-Date: Thu, 21 Jun 2007 05:29:15 -0700
-Message-ID: <F795765B112E7344AF36AA911279641502D1A3FF@xmb-sjc-212.amer.cisco.com>
-In-Reply-To: <33351C82-D56D-4414-81F1-328D36A7993D@freescale.com>
-From: "Bizhan Gholikhamseh \(bgholikh\)" <bgholikh@cisco.com>
-To: "Andy Fleming" <afleming@freescale.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,43 +21,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-=20
+Hello,
+I still have the problem that embedded kernel boot loader "load_kernel"
+is working but "start_kernel" is never reached AFAIT.  The last message
+that I see is: "Now booting the kernel".
 
-> -----Original Message-----
-> From: Andy Fleming [mailto:afleming@freescale.com]=20
-> Sent: Wednesday, June 20, 2007 2:52 PM
-> To: Bizhan Gholikhamseh (bgholikh)
-> Cc: linuxppc-embedded@ozlabs.org
-> Subject: Re: General question on upgrading Linux version
->=20
->=20
-> On Jun 20, 2007, at 16:29, Bizhan Gholikhamseh ((bgholikh)) wrote:
->=20
-> > Hi All,
-> > We are using MPC8541 processor from freescale. Our current kernel=20
-> > version is based on 2.6.11 plus some patches provided by Freescale.
-> > I would like to update our Kernel version to a more recent version.
-> > I would greatly appreciate if you could provide me with=20
-> some general=20
-> > guideline on how to proceed .....
->=20
-> You should be able to check out the latest sources from=20
-> git:// git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
+So I turned some LEDs on the Development board off in "load_kernel" and
+tried to turn them back on in "start_kernel" I would like to know if
+that still works. Or is not possible because the IO addresses are not
+mapped via the MMU at the time. When I try to turn them back on in
+"start_kernel"?
 
-The current stable kernel release is 2.6.21. Could I use that tree
-instead ?
+I used the following code:
 
->=20
-> You will probably also need a newer u-boot from here:
->=20
-> git://www.denx.de/git/u-boot-mpc85xx.git
-Currently we are using uboot 1.2. Do I have to update the u-boot version
-also or I can bypass that for now?
-Thanks,
-Bizhan
+*(volatile unsigned int *) (0x40000000 + 4) = 0x0;
+__asm__ volatile ("eieio");
+*(volatile unsigned int *) (0x40000000 + 0) = 0x0;
+__asm__ volatile ("eieio");
 
->=20
-> Please tell me if you have any problems using these.
->=20
-> Andy
->=20
+First memory mapped io is direction register and the second call turns the leds
+on/off. It works in the "load_kernel" routine.
+
+        Thomas
