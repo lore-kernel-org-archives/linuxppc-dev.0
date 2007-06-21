@@ -1,20 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E54A7DDEE9
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jun 2007 08:28:29 +1000 (EST)
-In-Reply-To: <1182461025.21421.48.camel@ld0161-tx32>
-References: <1180996188.9632.68.camel@ld0161-tx32>
-	<1182461025.21421.48.camel@ld0161-tx32>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <BE8C03AC-BA36-4A65-AFC6-A548E04A0359@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2 0/9] Add Generic PCI-E support to 8641HPCN
-Date: Thu, 21 Jun 2007 17:29:13 -0500
-To: Jon Loeliger <jdl@freescale.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTP id 3EB03DDED9
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jun 2007 09:22:57 +1000 (EST)
+Subject: Re: [RFC] Device tree for new desktop platform in arch/powerpc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gerhard Pircher <gerhard_pircher@gmx.net>
+In-Reply-To: <20070621132059.25900@gmx.net>
+References: <20070618185715.321010@gmx.net>
+	<1182429406.24740.6.camel@localhost.localdomain>
+	<20070621132059.25900@gmx.net>
+Content-Type: text/plain
+Date: Fri, 22 Jun 2007 09:22:49 +1000
+Message-Id: <1182468169.24740.15.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,27 +26,23 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jun 21, 2007, at 4:23 PM, Jon Loeliger wrote:
+> > Haven't looked at your .dts yet but it should be "interrupt-controller",
+> > compatible "chrp,iic" or "i8259", with a #interrupt-cells of 2 and
+> > interrupts following the standard ISA encoding. You probably also want
+> > an interrupt-parent property in the isa bridge node pointing back to the
+> > 8259 so it becomes the default for all ISA devices.
 
-> On Mon, 2007-06-04 at 17:29, Jon Loeliger wrote:
->> Paul,
->>
->> This 8-part patch set combines the two previous patch
->> sets, 5 from Zheng Wei, and 3 from me, along with one
->> from Wade Farnsworth into one nice-n-happy set, all
->> designed to re-enable PCI-Express on the MPC8641HPCN board.
->>
->> This is version 2 of the patch set and incorporates
->> improvements suggested by list reviewers.
->
->
-> Paul,
->
-> I hadn't seen any further comment on this series of
-> patches for PCI on 8641.  Any chance we could get them
-> applied to your repo?
+> What about PCI devices? Wouldn't it better to define the interrupt-parent property in the PCI bus node?
 
-I've got a "cleaner" version of the float bus patch that I need to  
-post and will apply the others to my tree.
+PCI devices generally have their interrupts specified by an
+interrupt-map in the PCI bridge.
 
-- k
+Do you have the recommended practice "interrupt mapping" standard ?
+
+It also allowed to make it optional to have nodes for the PCI devices in
+slots, you can provide the mapping of all 4 INT# lines in the bridge
+node and linux can use it when probing for devices, so your bootwrapper
+doesn't have to know what's in the slots and doesn't have to create
+device nodes for those.
+
+Ben.
