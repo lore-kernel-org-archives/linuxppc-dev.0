@@ -1,18 +1,16 @@
-Return-Path: <akonovalov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 8E9C2DDE41
+Return-Path: <sithglan@stud.informatik.uni-erlangen.de>
+Received: from faui03.informatik.uni-erlangen.de
+	(faui03.informatik.uni-erlangen.de [131.188.30.103])
+	by ozlabs.org (Postfix) with ESMTP id 09EE8DDDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Jun 2007 00:46:47 +1000 (EST)
-Message-ID: <467A90FD.8060609@ru.mvista.com>
-Date: Thu, 21 Jun 2007 18:53:49 +0400
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
+	Fri, 22 Jun 2007 01:15:55 +1000 (EST)
+Date: Thu, 21 Jun 2007 17:15:54 +0200
+From: Thomas Glanzmann <thomas@glanzmann.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: Virtex4FX12LC hangs in calibrating delay loop
+Message-ID: <20070621151554.GA22663@cip.informatik.uni-erlangen.de>
 MIME-Version: 1.0
-To: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
-Subject: Re: Virtex 4 Avnet Mini-Module Networking.
-References: <BAY115-W5609334AE7FC568C37A5DB2120@phx.gbl>
-In-Reply-To: <BAY115-W5609334AE7FC568C37A5DB2120@phx.gbl>
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,68 +21,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Mohammad Sadegh Sadri wrote:
-> I'm wondering where are the original developers of TEMAC driver these days, I have not seen any posts from any of andrei
-> nor grant in the recent weeks. may be they are involved in other projects.
+Hello,
+I used the HEAD secretlabs kernel and used ml403 defconfig. I still see
+no serial output from the _kernel_ on the serial console. But I do see
+output from the in kernel embedded boot loader "load_kernel". I typed in
+stop in xmd and got an instruction pointer which points to:
 
-As for me - no, not until the end of this week..
+        c00045a0 <__delay>:
+        c00045a0:       2c 03 00 00     cmpwi   r3,0
+        c00045a4:       7c 69 03 a6     mtctr   r3
+        c00045a8:       4d 82 00 20     beqlr
+        c00045ac:       42 00 00 00     bdnz-   c00045ac <__delay+0xc>       <<<<<<<<
+        c00045b0:       4e 80 00 20     blr
 
-I am puzzled with the following:
+So I guess it is the calibrating delay loop and I am not sure. I can reproduce
+this. It is always in this function. Now I wonder is my board missing
+timer interrupts? What could be the reason for this. And of course one
+much more important question:
 
-I've got ML405 recently. There is a prebuilt bitstream with TEMAC in SGDMA mode for this board made by Xilinx (XAPP941).
-With the TEMAC driver from EDK 9.1SP2 and the XAPP941 bitstream I've got (no jumbo frames):
+        - Is the serial console initialized before or after the
+          calibrating delay loop?
 
-   XTemac: using sgDMA mode.
-   XTemac: using TxDRE mode
-   XTemac: using RxDRE mode
-   XTemac: buffer descriptor size: 32768 (0x8000)
-   XTemac: (buffer_descriptor_init) phy: 0x3cf8000, virt: 0xff100000, size: 0x8000
-   eth%d: XTemac: PHY detected at address 7.
-   eth0: Xilinx TEMAC #0 at 0x80000000 mapped to 0xC5060000, irq=0
-   eth0: XTemac id 1.0f, block id 5, type 8
-<snip>
-   eth0: XTemac: Options: 0xb8f2
-   eth0: XTemac: We renegotiated the speed to: 1000
-   eth0: XTemac: speed set to 1000Mb/s
-   eth0: XTemac: Send Threshold = 16, Receive Threshold = 2
-   eth0: XTemac: Send Wait bound = 1, Receive Wait bound = 1
-<snip>
-   root@192.168.119.11:~/netperf-2.4.1/src# ./netperf -l 30 -H 192.168.119.1 -i 10,
-   2 -I 99,10 -t UDP_STREAM -- -m 32768 -s 262144
-   UDP UNIDIRECTIONAL SEND TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to 192.168.11
-   9.1 (192.168.119.1) port 0 AF_INET : ±5.0% @ 99% conf.
-   Socket  Message  Elapsed      Messages
-   Size    Size     Time         Okay Errors   Throughput
-   bytes   bytes    secs            #      #   10^6bits/sec
+Is there a way to get a backtrace out of this? If that is the case what
+do I have to do? Recompile the Kernel with frame pointers and attach
+gdb?
 
-   217088   32768   30.00       26391      0     230.60
-   107520           30.00       26377            230.48
-
-Not that bad for this setup.
-
-With xps (EDK 9.1 without any SPs) I've tried creating exact the same design.
-So that exact the same kernel etc could be used for the both bitstreams.
-And with the self-made one I see exact the same output with the only difference:
-
-   root@192.168.119.11:~/netperf-2.4.1/src# ./netperf -l 30 -H 192.168.119.1 -i 10,
-   2 -I 99,10 -t UDP_STREAM -- -m 32768 -s 262144
-   UDP UNIDIRECTIONAL SEND TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to 192.168.11
-   9.1 (192.168.119.1) port 0 AF_INET : ±5.0% @ 99% conf.
-   Socket  Message  Elapsed      Messages
-   Size    Size     Time         Okay Errors   Throughput
-   bytes   bytes    secs            #      #   10^6bits/sec
-
-   217088   32768   30.00        9593      0      83.82
-   107520           30.00        9586             83.76
-
-:o(
-
-Rebuilding the XAPP941 project with EDK 9.1.00 still leaves 230Mb/sec.
-I also pulled the additional timing constraints from XAPP941's data/system.ucf
-into the self-made data/system.ucf, but this haven't change anything.
-
-I've run out of ideas, and switched from TEMAC to other Xilinx stuff for a while.
-
-
-Thanks,
-Andrei
+        Thomas
