@@ -1,17 +1,17 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 5B3DBDDE02
+Return-Path: <akonovalov@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id 083CBDDE43
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Jun 2007 22:52:27 +1000 (EST)
-Message-ID: <4683AEFD.60007@anagramm.de>
-Date: Thu, 28 Jun 2007 14:52:13 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
+	Thu, 21 Jun 2007 23:16:52 +1000 (EST)
+Message-ID: <467A7BE9.2030603@ru.mvista.com>
+Date: Thu, 21 Jun 2007 17:23:53 +0400
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
 MIME-Version: 1.0
-To: "Bizhan Gholikhamseh (bgholikh)" <bgholikh@cisco.com>
-Subject: Re: General question on upgrading Linux version
-References: <F795765B112E7344AF36AA911279641502D1A3FA@xmb-sjc-212.amer.cisco.com>
-In-Reply-To: <F795765B112E7344AF36AA911279641502D1A3FA@xmb-sjc-212.amer.cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Thomas Glanzmann <thomas@glanzmann.de>
+Subject: Re: OPB vs. PLB DDR Memory Controller
+References: <20070620134537.GA11302@cip.informatik.uni-erlangen.de>
+In-Reply-To: <20070620134537.GA11302@cip.informatik.uni-erlangen.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,36 +23,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello, Bizhan!
+Hello Thomas,
 
-Bizhan Gholikhamseh (bgholikh) schrieb:
-> Hi All,
-> We are using MPC8541 processor from freescale. Our current kernel 
-> version is based on 2.6.11 plus some patches provided by Freescale. I 
-> would like to update our Kernel version to a more recent version.
+Thomas Glanzmann wrote:
+> Hello,
+> I used secretlabs kernel tree and build my hardware once with the obp
+> uart and once with the uart lite and compiled in the coresponding
+> drivers into the linux kernel.
+> 
+>         loaded at:     00400000 004951A0
+>         board data at: 00000000 0000007C
+>         relocated to:  0040402C 004040A8
+>         zimage at:     00404EE5 00492F1A
+>         avail ram:     00496000 7C9E2378
+> 
+>         Linux/PPC load: root=/dev/nfs rw ip=on
 
-I am not sure about the exact versions but you propably need to switch
-over from devfs to udev. (usually no big deal)
+This cmd line doesn't tell the kernel where the console is.
+You could try
+   "console=ttyS0,9600 root=/dev/nfs rw ip=on" (if the UART is 16x50)
+or
+   "console=ttyUL0 root=/dev/nfs rw ip=on" (if the UART is UART Lite)
 
-> I would greatly appreciate if you could provide me with some general 
-> guideline on how to proceed .....
+Thanks,
+Andrei
 
-I follow the latest stable and latest-git from kernel.org. I didn't run
-into major problems over here for MPC8540, however I am still on the old
-ARCH=ppc. ARCH=powerpc compiles fine as well. I just had no time to have
-a closer look at the DeviceTree/OpenFirmware/U-Boot stuff.
 
-Is there any brief HowTo migrate from ppc to powerpc including u-boot?
-
-Best greets,
--- 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+>         Uncompressing Linux...done.
+>         Now booting the kernel
+> 
+> As you can see the embedded boot loader works, but the kernel does not
+> produce any output. I wonder if I have to configure Linux that it has a
+> OPB Memory Controller instead of a PLB Memory Controller. I used the
+> ml403 Option in my kernel config.
+> 
+>         Thomas
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
