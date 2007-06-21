@@ -2,18 +2,22 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B60F2DDEF5
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Jun 2007 22:37:06 +1000 (EST)
-Subject: Re: [RFC] Device tree for new desktop platform in arch/powerpc
+	by ozlabs.org (Postfix) with ESMTP id 11684DDEFB
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Jun 2007 22:37:58 +1000 (EST)
+Subject: Re: [RFC/PATCH] powerpc: MPC7450 L2 HW cache flush feature utilization
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gerhard Pircher <gerhard_pircher@gmx.net>
-In-Reply-To: <20070618185715.321010@gmx.net>
-References: <20070618185715.321010@gmx.net>
+To: "Mark A. Greer" <mgreer@mvista.com>
+In-Reply-To: <20070615212016.GB18055@mag.az.mvista.com>
+References: <1181729973.25586.31.camel@dolphin.spb.rtsoft.ru>
+	<db0d38e5b5e1a9a3a7fe35d25ebd357a@kernel.crashing.org>
+	<467176EB.7060404@ru.mvista.com>
+	<6c416bf9f79a648fc82f64619aca86de@kernel.crashing.org>
+	<20070615212016.GB18055@mag.az.mvista.com>
 Content-Type: text/plain
-Date: Thu, 21 Jun 2007 22:36:46 +1000
-Message-Id: <1182429406.24740.6.camel@localhost.localdomain>
+Date: Thu, 21 Jun 2007 22:37:22 +1000
+Message-Id: <1182429443.24740.8.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: list <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,40 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 2007-06-15 at 14:20 -0700, Mark A. Greer wrote:
+> On Fri, Jun 15, 2007 at 10:14:24AM +0200, Segher Boessenkool wrote:
+> 
+> > > I've double checked this. All processors considered 7450 in the kernel 
+> > > are covered by MPC7450 RISC Microprocessor Family Reference Manual 
+> > > where hardware cache flushing procedure is described.
+> > 
+> > Nice.  Now all that remains to be done is for the patch to
+> > be tested on actual hardware for at least a few of those
+> > other CPUs.  Any volunteers?
+> 
+> I just booted & played around on a prpmc2800e (7447A, 512MB) with
+> this patch and it seemed to work fine.
+> 
+> I *may* have some old sandpoint 745x modules that still work but
+> I'll have to get the sandpoint working in arch/powerpc again.
+> I'll try to get to that in a week or so.
 
-> 2. I tried to define all ISA devices, which are integrated in the
-> southbridge (VT82C686B). Currently these are child nodes of the device
-> tree root. Should they be child nodes of the southbridge's PCI-to-ISA
-> device node? If so, where should I specify the register address ranges
-> (reg property)? In the PCI device node or in the ISA device nodes, as
-> it is now?
-
-You should have /pci/isa <--- this is the PCI2ISA bridge
-
-and the ISA devices below that. Best is I send you an example of a CHRP
-or pSeries devie-tree with ISA stuff on it tomorrow. Ping me if I
-forget.
-
-> 3. The dts files define the device_type of a serial port as "serial",
-> whereas the OF spec says "pnpPNP,501". What's the difference between
-> the two?
-
-Use the pnp stuff for "compatible", you can mostly ignore device_type or
-set it to the same as name.
-
-> 4. I couldn't find any information for a device tree representation of
-> the i8259 interrupt controller in the booting-without-of.txt file. Is
-> my implementation correct (inspired by the OF documents)?
-
-Haven't looked at your .dts yet but it should be "interrupt-controller",
-compatible "chrp,iic" or "i8259", with a #interrupt-cells of 2 and
-interrupts following the standard ISA encoding. You probably also want
-an interrupt-parent property in the isa bridge node pointing back to the
-8259 so it becomes the default for all ISA devices.
-
-> I would be grateful, if you could take a look at my dts file and
-> comment on every line that doesn't meet your views.
-
-Will do as soon as I find some time...
+The thing that needs torture is the powerbook sleep/wakeup code. That's
+where all the cache flushing issues have been biting in the past.
 
 Ben.
