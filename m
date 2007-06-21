@@ -3,20 +3,19 @@ Received: from outbound5-dub-R.bigfish.com (outbound-dub.frontbridge.com
 	[213.199.154.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id C4EA3DDEE7
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jun 2007 08:18:33 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id B4525DDEF0
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jun 2007 08:27:47 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-Subject: RE: [patch 18/33] PS3: Frame buffer system-bus rework
-Date: Thu, 21 Jun 2007 15:18:25 -0700
-Message-ID: <591B6A09961C354991CD653B274DC8C203E0521B@ussdixms03.am.sony.com>
-References: <20070615204749.629571012@am.sony.com><46730D32.8060803@am.sony.com>
-	<18039.31768.282185.497245@cargo.ozlabs.ibm.com>
+Subject: RE: [patch 30/33] PS3: Bootwrapper support.
+Date: Thu, 21 Jun 2007 15:24:54 -0700
+Message-ID: <591B6A09961C354991CD653B274DC8C203E0521D@ussdixms03.am.sony.com>
+References: <46730D8A.9090309@am.sony.com><951969d2021fe6e78917ef8bdb47cf6f@bga.com><20070618225537.GA19966@mag.az.mvista.com><46771CE7.8040901@am.sony.com>
+	<18039.31575.330603.260727@cargo.ozlabs.ibm.com>
 From: "Levand, Geoffrey" <Geoffrey.Levand@am.sony.com>
 To: "Paul Mackerras" <paulus@samba.org>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,35 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+
+
+
 -----Original Message-----
 From: Paul Mackerras [mailto:paulus@samba.org]
-Sent: Mon 6/18/2007 11:47 PM
+Sent: Mon 6/18/2007 11:44 PM
 To: Levand, Geoffrey
-Cc: linuxppc-dev@ozlabs.org; linux-fbdev-devel@lists.sourceforge.net; =
-Geert Uytterhoeven
-Subject: Re: [patch 18/33] PS3: Frame buffer system-bus rework
+Cc: Mark A. Greer; ppcdev; Milton Miller
+Subject: Re: [patch 30/33] PS3: Bootwrapper support.
 =20
 Geoff Levand writes:
 
-> From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> This is from the comment the patch adds to the wrapper script.  I =
+think
+> it gives you what you need:
 >=20
-> Convert the ps3fb device from a platform device to a PS3 system bus =
-device.
-> Fix the remove and shutdown methods to support kexec and to make ps3fb =
-a
-> loadable module.
+> +ps3)
+> +    # The ps3's loader supports loading gzipped binary images from =
+flash
+> +    # rom to addr zero. The loader enters the image at addr 0x100.  A
+> +    # bootwrapper overlay is use to arrange for the kernel to be =
+loaded
+> +    # to addr zero and to have a suitable bootwrapper entry at 0x100.
+> +    # To construct the rom image, 0x100 bytes from offset 0x100 in =
+the
+> +    # kernel is copied to the bootwrapper symbol =
+__system_reset_kernel.
+> +    # The 0x100 bytes at the bootwrapper symbol =
+__system_reset_overlay is
+> +    # then copied to offset 0x100.  At runtime the bootwrapper =
+program
+> +    # copies the 0x100 bytes at __system_reset_kernel to addr 0x100.
 
-Are you going to submit this to the fb maintainer (Antonio Daplas?) or
-do you want me to take it because of dependencies on other patches in
-your series?
+Yes, that is useful, but Mark is right, your patch description is a
+bit terse, and something like that in the patch description would be
+useful.
 
-
-Hi Paul,
-
-Sorry for the delay, and this formatting.  I am away on holiday,
-with just a crappy Web browser interface...
-
-I was hoping you could take it, as it fits in with the series, and
-touches my platform code.  Thanks.
+I prepared a new patch with this description and was waiting a while to =
+get
+all the comments.  I'll send it out soon.
 
 -Geoff
