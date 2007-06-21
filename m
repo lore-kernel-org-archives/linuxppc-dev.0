@@ -1,22 +1,19 @@
 Return-Path: <marc.leeman@gmail.com>
-Received: from lmailproxy04.edpnet.net (lmailproxy04.edpnet.net [212.71.1.197])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E70DADDECA
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jun 2007 03:13:50 +1000 (EST)
-Date: Thu, 21 Jun 2007 19:13:40 +0200
+Date: Thu, 21 Jun 2007 20:33:50 +0200
 From: Marc Leeman <marc.leeman@gmail.com>
-To: Kumar Gala <galak@kernel.crashing.org>
+To: Matt Sealey <matt@genesi-usa.com>
 Subject: Re: network load 8245 vs. 8347E
-Message-ID: <20070621171340.GS5417@chiana.homelinux.org>
+Message-ID: <20070621183349.GT5417@chiana.homelinux.org>
 References: <20070621141519.GQ5417@chiana.homelinux.org>
 	<0090CCD0-EBB4-4475-BF03-36AF41E2DDA1@kernel.crashing.org>
 	<20070621155616.GR5417@chiana.homelinux.org>
+	<20070621171340.GS5417@chiana.homelinux.org>
+	<467ABCDC.8060401@genesi-usa.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Lez9QO3Seu3ycz0M"
-In-Reply-To: <20070621155616.GR5417@chiana.homelinux.org>
-Cc: linuxppc-dev@ozlabs.org
+	protocol="application/pgp-signature"; boundary="c7rykKtsZvepKFKR"
+In-Reply-To: <467ABCDC.8060401@genesi-usa.com>
+Cc: Linuxppc-dev@ozlabs.org
 Reply-To: Marc Leeman <marc.leeman@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,32 +25,50 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---Lez9QO3Seu3ycz0M
+--c7rykKtsZvepKFKR
 Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-> Simply the load of the processor. The 8245 is running ppc/2.6.17, the
-> 8347e is running powerpc/2.6.21.1.
+> Isn't it just because the Intel  chipset is a REALLY nice ethernet
+> controller and the integrated one in the 8347E isn't as good? :)
 
-Sorry, I'm confusing my boards: this particular board with the 8245
-processor is running 2.4.34 [1].
+Well, that's something what I'm afraid off: that for any kind of decent
+network performance we'd need an external chipset. But there are some
+other hickups we need to investigate with the 8347.
 
-so
-8245: 2.4.34
-8237e: 2.6.21.1
+I just hope it's either a configuration problem, a not so efficient
+driver implementation -> no re-design :)
 
-[1] the 2.4 line balanced the load better of multiple streams being
-taken in wrt to the 2.6 kernels; this is the reason we stuck with 2.4
-for this platform.
+> You could try turning the interrupt coaelescing off in the e100
+> driver and see how well it does, then. Or knock the bundling
+> threshold or timer down to something similar to the 8347E is using..
+> or turn the ones on the 8347E up to match the ones the e100 driver
+> is using :)
+>=20
+> All these options used to be modprobe options but the latest
+> e100 driver seems to hardcode a bunch of them probably for best
+> performance. Anyway, putting them on a level peg would mean at
+> least you are comparing onboard apples with pci apples.
+
+I started doing this this evening, but at first glance, changing sysfs
+params (on the gianfar driver) didn't change much.
+
+I'll start comparing 8245/e100/2.4.34, 8245/e100/2.6.17 and
+8347E/gianfar/2.6.21.1 tomorrow.
+
+Anyway a load of 30% for a single process where an older processor only
+takes around 5% seems too much of a difference to be solved with simple
+parameter settings.
 
 --=20
   greetz, marc
-He claims to be a human from a planet called Erp.
-	Aeryn - Premiere
+Open your ears, or your tentacles, or whatever orifice it is you
+listen with!
+	Crichton - Back and Back and Back to the Future
 chiana 2.6.18-4-ixp4xx #1 Tue Mar 27 18:01:56 BST 2007 GNU/Linux
 
---Lez9QO3Seu3ycz0M
+--c7rykKtsZvepKFKR
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -61,9 +76,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFGerHDUQpj09NWLeERAmEHAJ9yLw+LoxUyR2vjvsC7FGC5QsBJrACZATiU
-cfzHD7bW4ur3qZQsIf0fp4k=
-=FKNa
+iD8DBQFGesSNUQpj09NWLeERAtqgAKCWjGX+XpLcRfdcKgzU6TT+6t4x8ACfd64s
+Cu0IbXYcD8s3yv5Y7hVdnQ0=
+=xF2N
 -----END PGP SIGNATURE-----
 
---Lez9QO3Seu3ycz0M--
+--c7rykKtsZvepKFKR--
