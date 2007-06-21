@@ -1,19 +1,22 @@
-Return-Path: <geert@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id ACEB4DDE36
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jun 2007 00:16:03 +1000 (EST)
-Message-Id: <20070621141515.268620000@pademelon.sonytel.be>
-References: <20070621141419.480922000@pademelon.sonytel.be>
-Date: Thu, 21 Jun 2007 16:14:21 +0200
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@ozlabs.org
-Subject: [patch 2/6] ps3: Storage Driver Core
-Sender: Geert Uytterhoeven <geert@sonycom.com>
-Cc: Jens Axboe <axboe@kernel.dk>,
-	"James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
+	[151.189.21.50])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A1A70DDF70
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jun 2007 00:24:31 +1000 (EST)
+In-Reply-To: <1182429406.24740.6.camel@localhost.localdomain>
+References: <20070618185715.321010@gmx.net>
+	<1182429406.24740.6.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <e3de5208ef08748bb23d2b19cb040e04@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC] Device tree for new desktop platform in arch/powerpc
+Date: Thu, 21 Jun 2007 16:24:17 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,444 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+>> 3. The dts files define the device_type of a serial port as "serial",
+>> whereas the OF spec says "pnpPNP,501". What's the difference between
+>> the two?
+>
+> Use the pnp stuff for "compatible", you can mostly ignore device_type 
+> or
+> set it to the same as name.
 
-Add storage driver core support for the PS3.
-PS3 storage devices are a special kind of PS3 system bus devices
+Only if the name is indeed the correct, defined, device_type
+for that device, and you implement the whole binding for that
+device_type (I recommend you do, for serial; it makes it
+easier to use that device as an early console).
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
----
-v3:
-  - Rename and move ps3stor_interrupt() to ps3flash_interrupt()
-  - Add an interrupt handler parameter to ps3stor_setup(), so it doesn't have
-    to be overridden later
+>> 4. I couldn't find any information for a device tree representation of
+>> the i8259 interrupt controller in the booting-without-of.txt file. Is
+>> my implementation correct (inspired by the OF documents)?
+>
+> Haven't looked at your .dts yet but it should be 
+> "interrupt-controller",
+> compatible "chrp,iic" or "i8259", with a #interrupt-cells of 2 and
+> interrupts following the standard ISA encoding. You probably also want
+> an interrupt-parent property in the isa bridge node pointing back to 
+> the
+> 8259 so it becomes the default for all ISA devices.
 
-v2:
-  - Remove the `name' parameters of ps3stor_setup(), as it can be obtained from
-    the driver structure
-  - Cleanup struct ps3_storage_device
+Yeah.  You can also use the "pnpPNP," name for the 8259 if
+it is hooked up like on a PC.
 
- arch/powerpc/platforms/ps3/Kconfig |    4 
- drivers/ps3/Makefile               |    1 
- drivers/ps3/ps3stor_lib.c          |  302 +++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/ps3stor.h      |   71 ++++++++
- 4 files changed, 378 insertions(+)
+>> I would be grateful, if you could take a look at my dts file and
+>> comment on every line that doesn't meet your views.
 
---- a/arch/powerpc/platforms/ps3/Kconfig
-+++ b/arch/powerpc/platforms/ps3/Kconfig
-@@ -98,4 +98,8 @@ config PS3_SYS_MANAGER
- 	  This support is required for system control.  In
- 	  general, all users will say Y or M.
- 
-+config PS3_STORAGE
-+	depends on PPC_PS3
-+	tristate
-+
- endmenu
---- a/drivers/ps3/Makefile
-+++ b/drivers/ps3/Makefile
-@@ -3,3 +3,4 @@ obj-$(CONFIG_PS3_PS3AV) += ps3av_mod.o
- ps3av_mod-objs		+= ps3av.o ps3av_cmd.o
- obj-$(CONFIG_PPC_PS3) += sys-manager-core.o
- obj-$(CONFIG_PS3_SYS_MANAGER) += sys-manager.o
-+obj-$(CONFIG_PS3_STORAGE) += ps3stor_lib.o
---- /dev/null
-+++ b/drivers/ps3/ps3stor_lib.c
-@@ -0,0 +1,302 @@
-+/*
-+ * PS3 Storage Library
-+ *
-+ * Copyright (C) 2007 Sony Computer Entertainment Inc.
-+ * Copyright 2007 Sony Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published
-+ * by the Free Software Foundation; version 2 of the License.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-+ */
-+
-+#include <linux/dma-mapping.h>
-+
-+#include <asm/lv1call.h>
-+#include <asm/ps3stor.h>
-+
-+
-+static int ps3stor_probe_access(struct ps3_storage_device *dev)
-+{
-+	int res, error;
-+	unsigned int i;
-+	unsigned long n;
-+
-+	if (dev->sbd.match_id == PS3_MATCH_ID_STOR_ROM) {
-+		/* special case: CD-ROM is assumed always accessible */
-+		dev->accessible_regions = 1;
-+		return 0;
-+	}
-+
-+	error = -EPERM;
-+	for (i = 0; i < dev->num_regions; i++) {
-+		dev_dbg(&dev->sbd.core,
-+			"%s:%u: checking accessibility of region %u\n",
-+			__func__, __LINE__, i);
-+
-+		dev->region_idx = i;
-+		res = ps3stor_read_write_sectors(dev, dev->bounce_lpar, 0, 1,
-+						 0);
-+		if (res) {
-+			dev_dbg(&dev->sbd.core, "%s:%u: read failed, "
-+				"region %u is not accessible\n", __func__,
-+				__LINE__, i);
-+			continue;
-+		}
-+
-+		dev_dbg(&dev->sbd.core, "%s:%u: region %u is accessible\n",
-+			__func__, __LINE__, i);
-+		set_bit(i, &dev->accessible_regions);
-+
-+		/* We can access at least one region */
-+		error = 0;
-+	}
-+	if (error)
-+		return error;
-+
-+	n = hweight_long(dev->accessible_regions);
-+	if (n > 1)
-+		dev_info(&dev->sbd.core,
-+			 "%s:%u: %lu accessible regions found. Only the first "
-+			 "one will be used",
-+			 __func__, __LINE__, n);
-+	dev->region_idx = __ffs(dev->accessible_regions);
-+	dev_info(&dev->sbd.core,
-+		 "First accessible region has index %u start %lu size %lu\n",
-+		 dev->region_idx, dev->regions[dev->region_idx].start,
-+		 dev->regions[dev->region_idx].size);
-+
-+	return 0;
-+}
-+
-+
-+/**
-+ *	ps3stor_setup - Setup a storage device before use
-+ *	@dev: Pointer to a struct ps3_storage_device
-+ *	@handler: Pointer to an interrupt handler
-+ *
-+ *	Returns 0 for success, or an error code
-+ */
-+int ps3stor_setup(struct ps3_storage_device *dev, irq_handler_t handler)
-+{
-+	int error, res, alignment;
-+	enum ps3_dma_page_size page_size;
-+
-+	error = ps3_open_hv_device(&dev->sbd);
-+	if (error) {
-+		dev_err(&dev->sbd.core,
-+			"%s:%u: ps3_open_hv_device failed %d\n", __func__,
-+			__LINE__, error);
-+		goto fail;
-+	}
-+
-+	error = ps3_sb_event_receive_port_setup(&dev->sbd, PS3_BINDING_CPU_ANY,
-+						&dev->irq);
-+	if (error) {
-+		dev_err(&dev->sbd.core,
-+			"%s:%u: ps3_sb_event_receive_port_setup failed %d\n",
-+		       __func__, __LINE__, error);
-+		goto fail_close_device;
-+	}
-+
-+	error = request_irq(dev->irq, handler, IRQF_DISABLED,
-+			    dev->sbd.core.driver->name, dev);
-+	if (error) {
-+		dev_err(&dev->sbd.core, "%s:%u: request_irq failed %d\n",
-+			__func__, __LINE__, error);
-+		goto fail_sb_event_receive_port_destroy;
-+	}
-+
-+	alignment = min(__ffs(dev->bounce_size),
-+			__ffs((unsigned long)dev->bounce_buf));
-+	if (alignment < 12) {
-+		dev_err(&dev->sbd.core,
-+			"%s:%u: bounce buffer not aligned (%lx at 0x%p)\n",
-+			__func__, __LINE__, dev->bounce_size, dev->bounce_buf);
-+		error = -EINVAL;
-+		goto fail_free_irq;
-+	} else if (alignment < 16)
-+		page_size = PS3_DMA_4K;
-+	else
-+		page_size = PS3_DMA_64K;
-+	dev->sbd.d_region = &dev->dma_region;
-+	ps3_dma_region_init(&dev->sbd, &dev->dma_region, page_size,
-+			    PS3_DMA_OTHER, dev->bounce_buf, dev->bounce_size);
-+	res = ps3_dma_region_create(&dev->dma_region);
-+	if (res) {
-+		dev_err(&dev->sbd.core, "%s:%u: cannot create DMA region\n",
-+			__func__, __LINE__);
-+		error = -ENOMEM;
-+		goto fail_free_irq;
-+	}
-+
-+	dev->bounce_lpar = ps3_mm_phys_to_lpar(__pa(dev->bounce_buf));
-+	dev->bounce_dma = dma_map_single(&dev->sbd.core, dev->bounce_buf,
-+					 dev->bounce_size, DMA_BIDIRECTIONAL);
-+	if (!dev->bounce_dma) {
-+		dev_err(&dev->sbd.core, "%s:%u: map DMA region failed\n",
-+			__func__, __LINE__);
-+		error = -ENODEV;
-+		goto fail_free_dma;
-+	}
-+
-+	error = ps3stor_probe_access(dev);
-+	if (error) {
-+		dev_err(&dev->sbd.core, "%s:%u: No accessible regions found\n",
-+			__func__, __LINE__);
-+		goto fail_unmap_dma;
-+	}
-+	return 0;
-+
-+fail_unmap_dma:
-+	dma_unmap_single(&dev->sbd.core, dev->bounce_dma, dev->bounce_size,
-+			 DMA_BIDIRECTIONAL);
-+fail_free_dma:
-+	ps3_dma_region_free(&dev->dma_region);
-+fail_free_irq:
-+	free_irq(dev->irq, dev);
-+fail_sb_event_receive_port_destroy:
-+	ps3_sb_event_receive_port_destroy(&dev->sbd, dev->irq);
-+fail_close_device:
-+	ps3_close_hv_device(&dev->sbd);
-+fail:
-+	return error;
-+}
-+EXPORT_SYMBOL_GPL(ps3stor_setup);
-+
-+
-+/**
-+ *	ps3stor_teardown - Tear down a storage device after use
-+ *	@dev: Pointer to a struct ps3_storage_device
-+ */
-+void ps3stor_teardown(struct ps3_storage_device *dev)
-+{
-+	int error;
-+
-+	dma_unmap_single(&dev->sbd.core, dev->bounce_dma, dev->bounce_size,
-+			 DMA_BIDIRECTIONAL);
-+	ps3_dma_region_free(&dev->dma_region);
-+
-+	free_irq(dev->irq, dev);
-+
-+	error = ps3_sb_event_receive_port_destroy(&dev->sbd, dev->irq);
-+	if (error)
-+		dev_err(&dev->sbd.core,
-+			"%s:%u: destroy event receive port failed %d\n",
-+			__func__, __LINE__, error);
-+
-+	error = ps3_close_hv_device(&dev->sbd);
-+	if (error)
-+		dev_err(&dev->sbd.core,
-+			"%s:%u: ps3_close_hv_device failed %d\n", __func__,
-+			__LINE__, error);
-+}
-+EXPORT_SYMBOL_GPL(ps3stor_teardown);
-+
-+
-+/**
-+ *	ps3stor_read_write_sectors - read/write from/to a storage device
-+ *	@dev: Pointer to a struct ps3_storage_device
-+ *	@lpar: HV logical partition address
-+ *	@start_sector: First sector to read/write
-+ *	@sectors: Number of sectors to read/write
-+ *	@write: Flag indicating write (non-zero) or read (zero)
-+ *
-+ *	Returns 0 for success, -1 in case of failure to submit the command, or
-+ *	an LV1 status value in case of other errors
-+ */
-+u64 ps3stor_read_write_sectors(struct ps3_storage_device *dev, u64 lpar,
-+			       u64 start_sector, u64 sectors, int write)
-+{
-+	unsigned int region_id = dev->regions[dev->region_idx].id;
-+	const char *op = write ? "write" : "read";
-+	int res;
-+
-+	dev_dbg(&dev->sbd.core, "%s:%u: %s %lu sectors starting at %lu\n",
-+		__func__, __LINE__, op, sectors, start_sector);
-+
-+	init_completion(&dev->done);
-+	res = write ? lv1_storage_write(dev->sbd.dev_id, region_id,
-+					start_sector, sectors, 0, lpar,
-+					&dev->tag)
-+		    : lv1_storage_read(dev->sbd.dev_id, region_id,
-+				       start_sector, sectors, 0, lpar,
-+				       &dev->tag);
-+	if (res) {
-+		dev_dbg(&dev->sbd.core, "%s:%u: %s failed %d\n", __func__,
-+			__LINE__, op, res);
-+		return -1;
-+	}
-+
-+	wait_for_completion(&dev->done);
-+	if (dev->lv1_status) {
-+		dev_dbg(&dev->sbd.core, "%s:%u: %s failed 0x%lx\n", __func__,
-+			__LINE__, op, dev->lv1_status);
-+		return dev->lv1_status;
-+	}
-+
-+	dev_dbg(&dev->sbd.core, "%s:%u: %s completed\n", __func__, __LINE__,
-+		op);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(ps3stor_read_write_sectors);
-+
-+
-+/**
-+ *	ps3stor_send_command - send a device command to a storage device
-+ *	@dev: Pointer to a struct ps3_storage_device
-+ *	@cmd: Command number
-+ *	@arg1: First command argument
-+ *	@arg2: Second command argument
-+ *	@arg3: Third command argument
-+ *	@arg4: Fourth command argument
-+ *
-+ *	Returns 0 for success, -1 in case of failure to submit the command, or
-+ *	an LV1 status value in case of other errors
-+ */
-+u64 ps3stor_send_command(struct ps3_storage_device *dev, u64 cmd, u64 arg1,
-+			 u64 arg2, u64 arg3, u64 arg4)
-+{
-+	int res;
-+
-+	dev_dbg(&dev->sbd.core, "%s:%u: send device command 0x%lx\n", __func__,
-+		__LINE__, cmd);
-+
-+	init_completion(&dev->done);
-+
-+	res = lv1_storage_send_device_command(dev->sbd.dev_id, cmd, arg1,
-+					      arg2, arg3, arg4, &dev->tag);
-+	if (res) {
-+		dev_err(&dev->sbd.core,
-+			"%s:%u: send_device_command 0x%lx failed %d\n",
-+			__func__, __LINE__, cmd, res);
-+		return -1;
-+	}
-+
-+	wait_for_completion(&dev->done);
-+	if (dev->lv1_status) {
-+		dev_dbg(&dev->sbd.core, "%s:%u: command 0x%lx failed 0x%lx\n",
-+			__func__, __LINE__, cmd, dev->lv1_status);
-+		return dev->lv1_status;
-+	}
-+
-+	dev_dbg(&dev->sbd.core, "%s:%u: command 0x%lx completed\n", __func__,
-+		__LINE__, cmd);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(ps3stor_send_command);
-+
-+
-+MODULE_LICENSE("GPL");
-+MODULE_DESCRIPTION("PS3 Storage Bus Library");
-+MODULE_AUTHOR("Sony Corporation");
---- /dev/null
-+++ b/include/asm-powerpc/ps3stor.h
-@@ -0,0 +1,71 @@
-+/*
-+ * PS3 Storage Devices
-+ *
-+ * Copyright (C) 2007 Sony Computer Entertainment Inc.
-+ * Copyright 2007 Sony Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published
-+ * by the Free Software Foundation; version 2 of the License.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-+ */
-+
-+#ifndef _ASM_POWERPC_PS3STOR_H_
-+#define _ASM_POWERPC_PS3STOR_H_
-+
-+#include <linux/interrupt.h>
-+
-+#include <asm/ps3.h>
-+
-+
-+struct ps3_storage_region {
-+	unsigned int id;
-+	u64 start;
-+	u64 size;
-+};
-+
-+struct ps3_storage_device {
-+	struct ps3_system_bus_device sbd;
-+
-+	struct ps3_dma_region dma_region;
-+	unsigned int irq;
-+	u64 blk_size;
-+
-+	u64 tag;
-+	u64 lv1_status;
-+	struct completion done;
-+
-+	unsigned long bounce_size;
-+	void *bounce_buf;
-+	u64 bounce_lpar;
-+	dma_addr_t bounce_dma;
-+
-+	unsigned int num_regions;
-+	unsigned long accessible_regions;
-+	unsigned int region_idx;		/* first accessible region */
-+	struct ps3_storage_region regions[0];	/* Must be last */
-+};
-+
-+static inline struct ps3_storage_device *to_ps3_storage_device(struct device *dev)
-+{
-+	return container_of(dev, struct ps3_storage_device, sbd.core);
-+}
-+
-+extern int ps3stor_setup(struct ps3_storage_device *dev,
-+			 irq_handler_t handler);
-+extern void ps3stor_teardown(struct ps3_storage_device *dev);
-+extern u64 ps3stor_read_write_sectors(struct ps3_storage_device *dev, u64 lpar,
-+				      u64 start_sector, u64 sectors,
-+				      int write);
-+extern u64 ps3stor_send_command(struct ps3_storage_device *dev, u64 cmd,
-+				u64 arg1, u64 arg2, u64 arg3, u64 arg4);
-+
-+#endif /* _ASM_POWERPC_PS3STOR_H_ */
+Please send a new .dts based on the comments you've had so far?
 
--- 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
 
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+Segher
