@@ -1,22 +1,27 @@
-Return-Path: <marc.leeman@gmail.com>
-Date: Thu, 21 Jun 2007 21:09:36 +0200
-From: Marc Leeman <marc.leeman@gmail.com>
-To: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: network load 8245 vs. 8347E
-Message-ID: <20070621190936.GU5417@chiana.homelinux.org>
-References: <20070621141519.GQ5417@chiana.homelinux.org>
-	<0090CCD0-EBB4-4475-BF03-36AF41E2DDA1@kernel.crashing.org>
-	<20070621155616.GR5417@chiana.homelinux.org>
-	<20070621171340.GS5417@chiana.homelinux.org>
-	<467ABCDC.8060401@genesi-usa.com>
-	<20070621183349.GT5417@chiana.homelinux.org>
-	<467AC93C.2020408@genesi-usa.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="WVf18ZLo9bznw8Mz"
-In-Reply-To: <467AC93C.2020408@genesi-usa.com>
-Cc: Linuxppc-dev@ozlabs.org
-Reply-To: Marc Leeman <marc.leeman@gmail.com>
+Return-Path: <jdl@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9380CDDEDC
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jun 2007 07:23:51 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l5LLNkmu029303
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Jun 2007 14:23:46 -0700 (MST)
+Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l5LLNj0i013677
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Jun 2007 16:23:45 -0500 (CDT)
+Subject: Re: [PATCH v2 0/9] Add Generic PCI-E support to 8641HPCN
+From: Jon Loeliger <jdl@freescale.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1180996188.9632.68.camel@ld0161-tx32>
+References: <1180996188.9632.68.camel@ld0161-tx32>
+Content-Type: text/plain
+Message-Id: <1182461025.21421.48.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Thu, 21 Jun 2007 16:23:45 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,38 +31,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 2007-06-04 at 17:29, Jon Loeliger wrote:
+> Paul,
+> 
+> This 8-part patch set combines the two previous patch
+> sets, 5 from Zheng Wei, and 3 from me, along with one
+> from Wade Farnsworth into one nice-n-happy set, all
+> designed to re-enable PCI-Express on the MPC8641HPCN board.
+> 
+> This is version 2 of the patch set and incorporates
+> improvements suggested by list reviewers.
 
---WVf18ZLo9bznw8Mz
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-> You might just be lucky that 2.4 is less bloated and has to handle less
-> features than 2.6 and it's lowering the CPU usage :)
+Paul,
 
-Actually, I backported the e100 driver from the 2.6 series to the 2.4
-series. It performed better. Perhaps I should re-sync again with what is
-currently in the 2.6, but as I said, not much work is put in the older
-platforms due to a load of proto 8347e boards being ported..
+I hadn't seen any further comment on this series of
+patches for PCI on 8641.  Any chance we could get them
+applied to your repo?
 
---=20
-  greetz, marc
-Long enough for me to see your blue backside meditating, but not long
-enough for you to touch me.
-	Rygel - PK Tech Girl
-chiana 2.6.18-4-ixp4xx #1 Tue Mar 27 18:01:56 BST 2007 GNU/Linux
-
---WVf18ZLo9bznw8Mz
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGeszvUQpj09NWLeERAtlvAJ49+mvuW4NHIXLC511jHW6N2G7DEACfSQIY
-or7EJ3KbmlRv3NCfm85+bxg=
-=SOqI
------END PGP SIGNATURE-----
-
---WVf18ZLo9bznw8Mz--
+Thanks,
+jdl
