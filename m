@@ -1,18 +1,32 @@
-Return-Path: <akonovalov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id C4E43DDEA2
+Return-Path: <Martin.Leisner@xerox.com>
+Received: from wvmler2.mail.xerox.com (wvmler2.mail.xerox.com [13.8.138.217])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "wvmler2.mail.xerox.com",
+	Issuer "wvmler2.mail.xerox.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 6D867DDE08
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Jun 2007 04:11:51 +1000 (EST)
-Message-ID: <467AC10C.4050906@ru.mvista.com>
-Date: Thu, 21 Jun 2007 22:18:52 +0400
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
+	Fri, 22 Jun 2007 06:46:16 +1000 (EST)
+Received: from wvmlir2.mail.xerox.com (wvmlir2.mail.xerox.com [13.147.8.222])
+	by wvmler2.mail.xerox.com (8.13.8/8.13.6) with ESMTP id
+	l5LKkCj7020391
+	for <linuxppc-embedded@ozlabs.org>; Thu, 21 Jun 2007 13:46:13 -0700
+Received: from wvmlir2.mail.xerox.com (localhost [127.0.0.1])
+	by wvmlir2.mail.xerox.com (8.13.8/8.13.6) with ESMTP id l5LKk8AM027762
+	for <linuxppc-embedded@ozlabs.org>; Thu, 21 Jun 2007 13:46:08 -0700
+Received: from USA7061GW002.na.xerox.net (usa7061gw002.na.xerox.net
+	[13.151.210.15])
+	by wvmlir2.mail.xerox.com (8.13.8/8.13.6) with ESMTP id l5LKk8LI027752
+	for <linuxppc-embedded@ozlabs.org>; Thu, 21 Jun 2007 13:46:08 -0700
 MIME-Version: 1.0
-To: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
-Subject: Re: Virtex 4 Avnet Mini-Module Networking.
-References: <BAY115-W111D8089A1F12D9A5764AAB2100@phx.gbl>
-In-Reply-To: <BAY115-W111D8089A1F12D9A5764AAB2100@phx.gbl>
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: sata_mv as module on taiga?
+Date: Thu, 21 Jun 2007 16:46:03 -0400
+Message-ID: <556445368AFA1C438794ABDA8901891C066B5B1C@usa0300ms03.na.xerox.net>
+From: "Leisner, Martin" <Martin.Leisner@xerox.com>
+To: <linuxppc-embedded@ozlabs.org>
+Cc: "Puzio, Robert E" <Robert.Puzio@xerox.com>, "Lund,
+	Nathan" <Nathan.Lund@xerox.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,135 +37,81 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Mohammad Sadegh Sadri wrote:
-> 
-> very interesting
-> 
-> the provided xps project from xapp941 results 230Mbits but your custome system is 83.0Mbits, yes?
+I'm using 2.6.20.11 on a taiga board.
 
-yes
+With the default kernel config, sata_mv runs fine if nothing is in the
+pci slots.
 
-> just, are you sure the ppc core has the same core clock frequency in both designs? I mean may be the xapp941 is running at 300MHz but yours at 100MHz. 
+If I install a vitesse 7174 (or an intel gd32144, I happen to have both)
+it causes bizarre failures in the sata_mv driver:
+sata_mv 0000:00:03.0: version 0.7
+sata_mv 0000:00:03.0: 32 slots 4 ports SCSI mode IRQ via INTx
+ata1: SATA max UDMA/133 cmd 0x0 ctl 0xE10A2120 bmdma 0x0 irq 38
+ata2: SATA max UDMA/133 cmd 0x0 ctl 0xE10A4120 bmdma 0x0 irq 38
+ata3: SATA max UDMA/133 cmd 0x0 ctl 0xE10A6120 bmdma 0x0 irq 38
+ata4: SATA max UDMA/133 cmd 0x0 ctl 0xE10A8120 bmdma 0x0 irq 38
+scsi0 : sata_mv
+ATA: abnormal status 0x80 on port 0xE10A211C
+ATA: abnormal status 0x80 on port 0xE10A211C
+ATA: abnormal status 0x80 on port 0xE10A211C
+ATA: abnormal status 0x80 on port 0xE10A211C
+ATA: abnormal status 0x80 on port 0xE10A211C
+ATA: abnormal status 0x80 on port 0xE10A211C
+ata1.00: qc timeout (cmd 0xec)
+ata1.00: failed to IDENTIFY (I/O error, err_mask=3D0x4)
+ATA: abnormal status 0x80 on port 0xE10A211C
+ATA: abnormal status 0x80 on port 0xE10A211C
+ATA: abnormal status 0x80 on port 0xE10A211C
+ATA: abnormal status 0x80 on port 0xE10A211C
+ATA: abnormal status 0x80 on port 0xE10A211C
+ata1.00: qc timeout (cmd 0xec)
+ata1.00: failed to IDENTIFY (I/O error, err_mask=3D0x4)
+ATA: abnormal status 0x80 on port 0xE10A211C
+ATA: abnormal status 0x80 on port 0xE10A211C
+ATA: abnormal status 0x80 on port 0xE10A211C
+ATA: abnormal status 0x80 on port 0xE10A211C
+ATA: abnormal status 0x80 on port 0xE10A211C
+ata1.00: qc timeout (cmd 0xec)
+ata1.00: failed to IDENTIFY (I/O error, err_mask=3D0x4)
+ata1.00: limiting speed to PIO0
+ata1.00: disabled
 
-both run at 300MHz
+When it works I see:
+sata_mv 0000:00:03.0: version 0.7
+sata_mv 0000:00:03.0: 32 slots 4 ports SCSI mode IRQ via INTx
+ata1: SATA max UDMA/133 cmd 0x0 ctl 0xE10A2120 bmdma 0x0 irq 38
+ata2: SATA max UDMA/133 cmd 0x0 ctl 0xE10A4120 bmdma 0x0 irq 38
+ata3: SATA max UDMA/133 cmd 0x0 ctl 0xE10A6120 bmdma 0x0 irq 38
+ata4: SATA max UDMA/133 cmd 0x0 ctl 0xE10A8120 bmdma 0x0 irq 38
+scsi0 : sata_mv
+ata1.00: ATA-6, max UDMA/133, 156301488 sectors: LBA48 NCQ (depth 0/32)
+ata1.00: configured for UDMA/133
+scsi1 : sata_mv
+ata2: no device found (phy stat 00000000)
+scsi2 : sata_mv
+ata3: no device found (phy stat 00000000)
+scsi3 : sata_mv
+ata4: no device found (phy stat 00000000)
+scsi 0:0:0:0: Direct-Access     ATA      ST380817AS       3.42 PQ: 0
+ANSI: 5
+SCSI device sda: 156301488 512-byte hdwr sectors (80026 MB)
+sda: Write Protect is off
+SCSI device sda: write cache: enabled, read cache: enabled, doesn't
+support DPO or FUA
+SCSI device sda: 156301488 512-byte hdwr sectors (80026 MB)
+sda: Write Protect is off
+SCSI device sda: write cache: enabled, read cache: enabled, doesn't
+support DPO or FUA
+ sda: sda1 sda2 sda3 < sda5 sda6 sda7 sda8 sda9 sda10 sda11 sda12 sda13
+sda14 sda15 >
+sd 0:0:0:0: Attached scsi disk sda
 
-> And what about a custom system with 9.1SP2? does that gives the same performance?
+Note the failure are VERY slow (I don't having timing printks on in the
+default configuration).
 
-haven't tried this yet
+Also, with 2.6.21.1, it works without a problem (but we want to bring up
+2.6.20 on another system
+with the GD32144 driver -- which doesn't work on our custom system or
+the taiga board.
 
-> Finally If possible please release the test results for TCP streams. ( 9.1 no SP and 9.1 SP2 )
-
-The TEMAC driver is from EDK 9.1.02 (IOW, SP2).
-
-bitstream made by myself with EDK 9.1.00:
-=========================================
-
-root@192.168.119.11:~/netperf-2.4.1/src# ./netperf -l 30 -H 192.168.119.1 -i 10, 2 -I 99,10 -t TCP_STREAM -- -m 32768 -s 262144
-TCP STREAM TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to 192.168.119.1 (192.168.119.1) port 0 AF_INET : ±5.0% @ 99% conf.
-Recv   Send    Send
-Socket Socket  Message  Elapsed
-Size   Size    Size     Time     Throughput
-bytes  bytes   bytes    secs.    10^6bits/sec
-
-  87380 217088  32768    30.00      41.66
-
-bitstream from XAPP941:
-=======================
-
-root@192.168.119.11:~/netperf-2.4.1/src# ./netperf -l 30 -H 192.168.119.1 -i 10, 2 -I 99,10 -t TCP_STREAM -- -m 32768 -s 262144
-TCP STREAM TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to 192.168.119.1 (192.168.119.1) port 0 AF_INET : ±5.0% @ 99% conf.
-Recv   Send    Send
-Socket Socket  Message  Elapsed
-Size   Size    Size     Time     Throughput
-bytes  bytes   bytes    secs.    10^6bits/sec
-
-  87380 217088  32768    30.00     111.86
-
-And I didn't test ML405 receive performance.
-
-Thanks,
-Andrei
-
-> thanks
-> 
-> 
-> 
-> ----------------------------------------
->> Date: Thu, 21 Jun 2007 18:53:49 +0400
->> From: akonovalov@ru.mvista.com
->> To: mamsadegh@hotmail.com
->> CC: linuxppc-embedded@ozlabs.org; kashiwagi@co-nss.co.jp; glenn.g.hart@us.westinghouse.com
->> Subject: Re: Virtex 4 Avnet Mini-Module Networking.
->>
->> Mohammad Sadegh Sadri wrote:
->>> I'm wondering where are the original developers of TEMAC driver these days, I have not seen any posts from any of andrei
->>> nor grant in the recent weeks. may be they are involved in other projects.
->> As for me - no, not until the end of this week..
->>
->> I am puzzled with the following:
->>
->> I've got ML405 recently. There is a prebuilt bitstream with TEMAC in SGDMA mode for this board made by Xilinx (XAPP941).
->> With the TEMAC driver from EDK 9.1SP2 and the XAPP941 bitstream I've got (no jumbo frames):
->>
->>    XTemac: using sgDMA mode.
->>    XTemac: using TxDRE mode
->>    XTemac: using RxDRE mode
->>    XTemac: buffer descriptor size: 32768 (0x8000)
->>    XTemac: (buffer_descriptor_init) phy: 0x3cf8000, virt: 0xff100000, size: 0x8000
->>    eth%d: XTemac: PHY detected at address 7.
->>    eth0: Xilinx TEMAC #0 at 0x80000000 mapped to 0xC5060000, irq=0
->>    eth0: XTemac id 1.0f, block id 5, type 8
->>
->>    eth0: XTemac: Options: 0xb8f2
->>    eth0: XTemac: We renegotiated the speed to: 1000
->>    eth0: XTemac: speed set to 1000Mb/s
->>    eth0: XTemac: Send Threshold = 16, Receive Threshold = 2
->>    eth0: XTemac: Send Wait bound = 1, Receive Wait bound = 1
->>
->>    root@192.168.119.11:~/netperf-2.4.1/src# ./netperf -l 30 -H 192.168.119.1 -i 10,
->>    2 -I 99,10 -t UDP_STREAM -- -m 32768 -s 262144
->>    UDP UNIDIRECTIONAL SEND TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to 192.168.11
->>    9.1 (192.168.119.1) port 0 AF_INET : ±5.0% @ 99% conf.
->>    Socket  Message  Elapsed      Messages
->>    Size    Size     Time         Okay Errors   Throughput
->>    bytes   bytes    secs            #      #   10^6bits/sec
->>
->>    217088   32768   30.00       26391      0     230.60
->>    107520           30.00       26377            230.48
->>
->> Not that bad for this setup.
->>
->> With xps (EDK 9.1 without any SPs) I've tried creating exact the same design.
->> So that exact the same kernel etc could be used for the both bitstreams.
->> And with the self-made one I see exact the same output with the only difference:
->>
->>    root@192.168.119.11:~/netperf-2.4.1/src# ./netperf -l 30 -H 192.168.119.1 -i 10,
->>    2 -I 99,10 -t UDP_STREAM -- -m 32768 -s 262144
->>    UDP UNIDIRECTIONAL SEND TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to 192.168.11
->>    9.1 (192.168.119.1) port 0 AF_INET : ±5.0% @ 99% conf.
->>    Socket  Message  Elapsed      Messages
->>    Size    Size     Time         Okay Errors   Throughput
->>    bytes   bytes    secs            #      #   10^6bits/sec
->>
->>    217088   32768   30.00        9593      0      83.82
->>    107520           30.00        9586             83.76
->>
->> :o(
->>
->> Rebuilding the XAPP941 project with EDK 9.1.00 still leaves 230Mb/sec.
->> I also pulled the additional timing constraints from XAPP941's data/system.ucf
->> into the self-made data/system.ucf, but this haven't change anything.
->>
->> I've run out of ideas, and switched from TEMAC to other Xilinx stuff for a while.
->>
->>
->> Thanks,
->> Andrei
-> 
-> _________________________________________________________________
-> Connect to the next generation of MSN Messenger 
-> http://imagine-msn.com/messenger/launch80/default.aspx?locale=en-us&source=wlmailtagline
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+marty
