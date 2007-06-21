@@ -1,20 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 93B8CDDF1E
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Jun 2007 22:42:25 +1000 (EST)
-Subject: Re: [RFC] Device tree for new desktop platform in arch/powerpc
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20070619054232.GB32039@localhost.localdomain>
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id D283BDDE10
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Jun 2007 23:21:01 +1000 (EST)
+Content-Type: text/plain; charset="us-ascii"
+Date: Thu, 21 Jun 2007 15:20:59 +0200
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+In-Reply-To: <1182429406.24740.6.camel@localhost.localdomain>
+Message-ID: <20070621132059.25900@gmx.net>
+MIME-Version: 1.0
 References: <20070618185715.321010@gmx.net>
-	<20070619054232.GB32039@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 21 Jun 2007 22:42:13 +1000
-Message-Id: <1182429733.24740.12.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: list <linuxppc-dev@ozlabs.org>
+	<1182429406.24740.6.camel@localhost.localdomain>
+Subject: Re: [RFC] Device tree for new desktop platform in arch/powerpc
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,48 +22,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-06-19 at 15:42 +1000, David Gibson wrote:
+
+-------- Original-Nachricht --------
+Datum: Thu, 21 Jun 2007 22:36:46 +1000
+Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+An: Gerhard Pircher <gerhard_pircher@gmx.net>
+CC: linuxppc-dev@ozlabs.org, list <linuxppc-dev@ozlabs.org>
+Betreff: Re: [RFC] Device tree for new desktop platform in arch/powerpc
+
+> You should have /pci/isa <--- this is the PCI2ISA bridge
 > 
-> Is there a device binding defined somewhere for "chrp,iic"?
+> and the ISA devices below that. Best is I send you an example of a CHRP
+> or pSeries devie-tree with ISA stuff on it tomorrow. Ping me if I
+> forget.
+That would help a lot. Thank you!
 
-Yes, it's the standard for 8259 on chrp and chrp-like platforms.
+> Haven't looked at your .dts yet but it should be "interrupt-controller",
+> compatible "chrp,iic" or "i8259", with a #interrupt-cells of 2 and
+> interrupts following the standard ISA encoding. You probably also want
+> an interrupt-parent property in the isa bridge node pointing back to the
+> 8259 so it becomes the default for all ISA devices.
+What about PCI devices? Wouldn't it better to define the interrupt-parent property in the PCI bus node?
 
-> >               interrupt-controller;
-> >               reg = <20 2 a0 2 4d0 2>;
-> >               reserved-interrupts = <2>;
-
-I'm currious about the above though, what is it ?
-
-> >               #address-cells = <1>;
-
-Why #address-cells set to 1 ? In a PIC node, in fact, I would expect it
-to be 0 to avoid any spurrious "reg" matching for interrupts.
-
-> >               #size-cells = <0>;
-> >               #interrupt-cells = <2>;
-> >       };
-> 
-> >       8042@60 {
-> >               device_type = "8042";
-> >               compatible = "chrp,8042";
-> >               reg = <60 10>;
-> >               interrupts = <1 3 c 3>;                 // IRQ1, IRQ12
-> (rising edge)
-> >               interrupt-parent = <&interrupt-controller>;
-
-Just put the interrupt-parent pointer once in the isa bridge and all isa
-devices below the bridge.
-
-> This should cause a dtc error.  Either you want &/interrupt-controller
-> or give the interrupt-controller node a label and refer to that.  It's
-> either '&/some/full/path' or '&label'.
-> 
-> >               #address-cells = <1>;
-> >               #size-cells = <0>;                      // No physical
-> address.
-> 
-> Comment is arguably incorrect.
-
-Yeah, not sure what that is supposed to be.
-
-Ben.
+Gerhard
+-- 
+GMX FreeMail: 1 GB Postfach, 5 E-Mail-Adressen, 10 Free SMS.
+Alle Infos und kostenlose Anmeldung: http://www.gmx.net/de/go/freemail
