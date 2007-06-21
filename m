@@ -1,15 +1,19 @@
-Return-Path: <domen.puncer@telargo.com>
-Received: from out001.atlarge.net (out001.atlarge.net [129.41.63.69])
-	by ozlabs.org (Postfix) with ESMTP id E53B6DDEF0
+Return-Path: <iluri@fagorautomation.es>
+Received: from smtp-out1b.sarenet.es (smtp-out1b.sarenet.es [194.30.18.11])
+	by ozlabs.org (Postfix) with ESMTP id DD5CDDDE08
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Jun 2007 17:45:15 +1000 (EST)
-Date: Thu, 21 Jun 2007 09:45:07 +0200
-From: Domen Puncer <domen.puncer@telargo.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH] mpc52xx: sparse fixes
-Message-ID: <20070621074507.GL23294@moe.telargo.com>
+	Thu, 21 Jun 2007 19:49:21 +1000 (EST)
+Received: from ntvir (unknown [212.81.206.17])
+	by smtp-out1b.sarenet.es (Postfix) with ESMTP id 2BD626D481
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 21 Jun 2007 11:16:25 +0200 (CEST)
+Message-ID: <467A4247.6040807@fagorautomation.es>
+Date: Thu, 21 Jun 2007 11:17:59 +0200
+From: Igor Luri <iluri@fagorautomation.es>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-embedded@ozlabs.org
+Subject: Fujitsu MB86276 (Lime) graphic controller
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,83 +24,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-sparse caught these static functions / __iomem annotations
-under arch/powerpc/platform/52xx/
+Hi all.
+
+We are planning to use Fujitsu's Lime graphic controller in a custom 
+board based in MPC5200B processor. Lime is based on the 'Coral' device 
+family, and Linux 2.4.x kernel from Denx supports Coral P controller.
+
+¿Someone has  modified Coral P driver to support Lime? ¿Someone knows 
+how to do it?
+
+Microsys offers MPX5200G board with a MPC5200B processor and Fujitsu's 
+Lime graphic controller running Linux 2.6, but we haven't found any 
+Fujitsu's Lime driver.
+
+http://www.microsys.de/index.php?p=Products/miriac_Modules/CPU_Modules/MPX5200G
+http://www.microsys.de/index.php?p=News/Linux_2.6
+
+Any reference would be welcome.
 
 
-Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
-
----
- arch/powerpc/platforms/52xx/efika.c      |    4 ++--
- arch/powerpc/platforms/52xx/lite5200.c   |    2 +-
- arch/powerpc/platforms/52xx/mpc52xx_pm.c |    8 ++++----
- 3 files changed, 7 insertions(+), 7 deletions(-)
-
-Index: work-powerpc.git/arch/powerpc/platforms/52xx/efika.c
-===================================================================
---- work-powerpc.git.orig/arch/powerpc/platforms/52xx/efika.c
-+++ work-powerpc.git/arch/powerpc/platforms/52xx/efika.c
-@@ -83,7 +83,7 @@ static struct pci_ops rtas_pci_ops = {
- };
- 
- 
--void __init efika_pcisetup(void)
-+static void __init efika_pcisetup(void)
- {
- 	const int *bus_range;
- 	int len;
-@@ -145,7 +145,7 @@ void __init efika_pcisetup(void)
- }
- 
- #else
--void __init efika_pcisetup(void)
-+static void __init efika_pcisetup(void)
- {}
- #endif
- 
-Index: work-powerpc.git/arch/powerpc/platforms/52xx/lite5200.c
-===================================================================
---- work-powerpc.git.orig/arch/powerpc/platforms/52xx/lite5200.c
-+++ work-powerpc.git/arch/powerpc/platforms/52xx/lite5200.c
-@@ -158,7 +158,7 @@ static void __init lite5200_setup_arch(v
- 
- }
- 
--void lite5200_show_cpuinfo(struct seq_file *m)
-+static void lite5200_show_cpuinfo(struct seq_file *m)
- {
- 	struct device_node* np = of_find_all_nodes(NULL);
- 	const char *model = NULL;
-Index: work-powerpc.git/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-===================================================================
---- work-powerpc.git.orig/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-+++ work-powerpc.git/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-@@ -9,8 +9,8 @@
- 
- 
- /* these are defined in mpc52xx_sleep.S, and only used here */
--extern void mpc52xx_deep_sleep(void *sram, void *sdram_regs,
--		struct mpc52xx_cdm *, struct mpc52xx_intr *);
-+extern void mpc52xx_deep_sleep(void __iomem *sram, void __iomem *sdram_regs,
-+		struct mpc52xx_cdm __iomem *, struct mpc52xx_intr __iomem*);
- extern void mpc52xx_ds_sram(void);
- extern const long mpc52xx_ds_sram_size;
- extern void mpc52xx_ds_cached(void);
-@@ -21,7 +21,7 @@ static void __iomem *sdram;
- static struct mpc52xx_cdm __iomem *cdm;
- static struct mpc52xx_intr __iomem *intr;
- static struct mpc52xx_gpio_wkup __iomem *gpiow;
--static void *sram;
-+static void __iomem *sram;
- static int sram_size;
- 
- struct mpc52xx_suspend mpc52xx_suspend;
-@@ -100,7 +100,7 @@ int mpc52xx_pm_enter(suspend_state_t sta
- 	u32 clk_enables;
- 	u32 msr, hid0;
- 	u32 intr_main_mask;
--	void __iomem * irq_0x500 = (void *)CONFIG_KERNEL_START + 0x500;
-+	void __iomem * irq_0x500 = (void __iomem *)CONFIG_KERNEL_START + 0x500;
- 	unsigned long irq_0x500_stop = (unsigned long)irq_0x500 + mpc52xx_ds_cached_size;
- 	char saved_0x500[mpc52xx_ds_cached_size];
- 
+Best regards.
