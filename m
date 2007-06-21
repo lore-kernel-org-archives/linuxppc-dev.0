@@ -1,17 +1,19 @@
 Return-Path: <gerhard_pircher@gmx.net>
 Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id D283BDDE10
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Jun 2007 23:21:01 +1000 (EST)
-Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 21 Jun 2007 15:20:59 +0200
+	by ozlabs.org (Postfix) with SMTP id 0DE57DDEF5
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Jun 2007 23:28:53 +1000 (EST)
+Content-Type: text/plain; charset="utf-8"
+Date: Thu, 21 Jun 2007 15:28:51 +0200
 From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <1182429406.24740.6.camel@localhost.localdomain>
-Message-ID: <20070621132059.25900@gmx.net>
+In-Reply-To: <1182429733.24740.12.camel@localhost.localdomain>
+Message-ID: <20070621132851.25900@gmx.net>
 MIME-Version: 1.0
-References: <20070618185715.321010@gmx.net>
-	<1182429406.24740.6.camel@localhost.localdomain>
+References: <20070618185715.321010@gmx.net>	
+	<20070619054232.GB32039@localhost.localdomain>
+	<1182429733.24740.12.camel@localhost.localdomain>
 Subject: Re: [RFC] Device tree for new desktop platform in arch/powerpc
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	david@gibson.dropbear.id.au
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,25 +26,34 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 
 -------- Original-Nachricht --------
-Datum: Thu, 21 Jun 2007 22:36:46 +1000
+Datum: Thu, 21 Jun 2007 22:42:13 +1000
 Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-An: Gerhard Pircher <gerhard_pircher@gmx.net>
-CC: linuxppc-dev@ozlabs.org, list <linuxppc-dev@ozlabs.org>
+An: David Gibson <david@gibson.dropbear.id.au>
+CC: Gerhard Pircher <gerhard_pircher@gmx.net>, linuxppc-dev@ozlabs.org, list <linuxppc-dev@ozlabs.org>
 Betreff: Re: [RFC] Device tree for new desktop platform in arch/powerpc
 
-> You should have /pci/isa <--- this is the PCI2ISA bridge
+> > >               interrupt-controller;
+> > >               reg = <20 2 a0 2 4d0 2>;
+> > >               reserved-interrupts = <2>;
 > 
-> and the ISA devices below that. Best is I send you an example of a CHRP
-> or pSeries devie-tree with ISA stuff on it tomorrow. Ping me if I
-> forget.
-That would help a lot. Thank you!
+> I'm currious about the above though, what is it ?
 
-> Haven't looked at your .dts yet but it should be "interrupt-controller",
-> compatible "chrp,iic" or "i8259", with a #interrupt-cells of 2 and
-> interrupts following the standard ISA encoding. You probably also want
-> an interrupt-parent property in the isa bridge node pointing back to the
-> 8259 so it becomes the default for all ISA devices.
-What about PCI devices? Wouldn't it better to define the interrupt-parent property in the PCI bus node?
+Quote from the CHRP ISA interrupt controller device binding document:
+“reserved-interrupts”
+Standard property name to define reserved interrupts.
+prop-encoded-array: An integer array, encoded with encode-int.
+The value of this property shall be a list of ISA interrupts which cannot
+be assigned due to cascading, wiring, or other reasons. Only the irq# part
+of the property is pertinent to this use.
+- End -
+
+> > >               #address-cells = <1>;
+> 
+> Why #address-cells set to 1 ? In a PIC node, in fact, I would expect it
+> to be 0 to avoid any spurrious "reg" matching for interrupts.
+Yeah, I got them wrong almost everywhere.
+
+regards,
 
 Gerhard
 -- 
