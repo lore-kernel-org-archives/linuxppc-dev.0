@@ -2,20 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 731F2DDE38
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jun 2007 23:43:45 +1000 (EST)
-In-Reply-To: <BE8C03AC-BA36-4A65-AFC6-A548E04A0359@kernel.crashing.org>
-References: <1180996188.9632.68.camel@ld0161-tx32>
-	<1182461025.21421.48.camel@ld0161-tx32>
-	<BE8C03AC-BA36-4A65-AFC6-A548E04A0359@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 830C0DDE1A
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jun 2007 23:48:07 +1000 (EST)
+In-Reply-To: <1180996203.9632.71.camel@ld0161-tx32>
+References: <1180996203.9632.71.camel@ld0161-tx32>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <09602423-F30E-4C35-96EE-2B781AEF628B@kernel.crashing.org>
+Message-Id: <6B5376FC-C0C8-4DB1-81A3-C886E8F817DF@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2 0/9] Add Generic PCI-E support to 8641HPCN
-Date: Fri, 22 Jun 2007 08:44:29 -0500
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH v2 3/9] 8641HPCN: Add PCI-Express link training status
+	check
+Date: Fri, 22 Jun 2007 08:48:56 -0500
+To: Jon Loeliger <jdl@freescale.com>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,35 +25,65 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jun 21, 2007, at 5:29 PM, Kumar Gala wrote:
+On Jun 4, 2007, at 5:30 PM, Jon Loeliger wrote:
 
+> From: Zhang Wei <wei.zhang@freescale.com>
 >
-> On Jun 21, 2007, at 4:23 PM, Jon Loeliger wrote:
+> Avoid system halt while the link training is fault.
 >
->> On Mon, 2007-06-04 at 17:29, Jon Loeliger wrote:
->>> Paul,
->>>
->>> This 8-part patch set combines the two previous patch
->>> sets, 5 from Zheng Wei, and 3 from me, along with one
->>> from Wade Farnsworth into one nice-n-happy set, all
->>> designed to re-enable PCI-Express on the MPC8641HPCN board.
->>>
->>> This is version 2 of the patch set and incorporates
->>> improvements suggested by list reviewers.
->>
->>
->> Paul,
->>
->> I hadn't seen any further comment on this series of
->> patches for PCI on 8641.  Any chance we could get them
->> applied to your repo?
+> Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+> Acked-by: Roy Zang <tie-fei.zang@freescale.com>
+> Signed-off-by: Jon Loeliger <jdl@freescale.com>
+> ---
+>  arch/powerpc/platforms/86xx/pci.c |   12 +++++++++++-
+>  1 files changed, 11 insertions(+), 1 deletions(-)
 >
-> I've got a "cleaner" version of the float bus patch that I need to
-> post and will apply the others to my tree.
+> diff --git a/arch/powerpc/platforms/86xx/pci.c b/arch/powerpc/ 
+> platforms/86xx/pci.c
+> index 7efae7c..07ff52c 100644
+> --- a/arch/powerpc/platforms/86xx/pci.c
+> +++ b/arch/powerpc/platforms/86xx/pci.c
+> @@ -122,7 +122,6 @@ static void __init
+>  mpc86xx_setup_pcie(struct pci_controller *hose, u32 pcie_offset,  
+> u32 pcie_size)
+>  {
+>  	u16 cmd;
+> -	unsigned int temps;
+>
+>  	DBG("PCIE host controller register offset 0x%08x, size 0x%08x.\n",
+>  			pcie_offset, pcie_size);
+> @@ -140,6 +139,9 @@ int mpc86xx_exclude_device(u_char bus, u_char  
+> devfn)
+>  	return PCIBIOS_SUCCESSFUL;
+>  }
+>
+> +#define PCIE_LTSSM	0x04000004	/* PCIe Link Training and Status */
+> +#define PCIE_LTSSM_L0	0x16		/* L0 state */
+> +
+>  int __init add_bridge(struct device_node *dev)
+>  {
+>  	int len;
+> @@ -148,12 +150,20 @@ int __init add_bridge(struct device_node *dev)
+>  	const int *bus_range;
+>  	int has_address = 0;
+>  	int primary = 0;
+> +	void *pcicfg_addr;
+>
+>  	DBG("Adding PCIE host bridge %s\n", dev->full_name);
+>
+>  	/* Fetch host bridge registers address */
+>  	has_address = (of_address_to_resource(dev, 0, &rsrc) == 0);
+>
+> +	/* Probe the hose link training status */
+> +	pcicfg_addr = ioremap(rsrc.start, 0x1000);
+> +	out_be32(pcicfg_addr, 0x80000000 | PCIE_LTSSM);
+> +	if (in_le16(pcicfg_addr + 4) < PCIE_LTSSM_L0)
+> +		return -ENXIO;
+> +	iounmap(pcicfg_addr);
 
-I've posted a RFC for a change to pci indirect that should address  
-our float bus problem.
-
-http://ozlabs.org/pipermail/linuxppc-dev/2007-June/038263.html
+Is there a reason we don't do this with early_read_config_word, while  
+it requires we alloc the hose, it seems cleaner.  If this fails, I  
+think the memory wasted on the hose is a minor concern.  (assuming my  
+other patch to support extended regs in pci indirect).
 
 - k
