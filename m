@@ -1,22 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-11.arcor-online.net (mail-in-11.arcor-online.net
-	[151.189.21.51])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 41720DDEC7
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jun 2007 17:56:34 +1000 (EST)
-In-Reply-To: <20070622033158.GA21419@localhost.localdomain>
-References: <1182298510.5674.358.camel@rhino> <1182358772.5674.383.camel@rhino>
-	<20070622033158.GA21419@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <ba34492532ac9dfd43bd9f2ae427deef@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v3] Create add_rtc() function to enable the RTC CMOS driver
-Date: Fri, 22 Jun 2007 09:56:24 +0200
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [RFC] Device tree for new desktop platform in arch/powerpc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <be8290e4a9e76608b8ede05deaaf91af@kernel.crashing.org>
+References: <20070618185715.321010@gmx.net>
+	<20070619054232.GB32039@localhost.localdomain>
+	<1182429733.24740.12.camel@localhost.localdomain>
+	<558860c3d90100cd18df5f9a66cce3f9@kernel.crashing.org>
+	<1182468325.24740.18.camel@localhost.localdomain>
+	<be8290e4a9e76608b8ede05deaaf91af@kernel.crashing.org>
+Content-Type: text/plain
+Date: Fri, 22 Jun 2007 18:16:31 +1000
+Message-Id: <1182500191.24740.49.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: list <linuxppc-dev@ozlabs.org>, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,27 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Hrm.  It seems rather specific.  Can we do this more generally, by
-> creating an of_platform device which binds to rtc nodes, then
-> registers an appropriate platform device for each so that the generic
-> rtc drivers pick them up.  Obviously we'd need some sort of table
-> mapping the device node compatible properties to the appropriate
-> platform device names.
+On Fri, 2007-06-22 at 09:52 +0200, Segher Boessenkool wrote:
+> >> The "#address-cells" property should be completely absent,
+> >> even; for interrupt matching, that means "treat as 0, no
+> >> unit address used in interrupt mapping, just the interrupt
+> >> number", and for the "normal" purpose (defining the format
+> >> of devices on the bus rooted at / represented by this node)
+> >> it means "there is no such bus" -- this is different from
+> >> #address-cells = 0.
+> >
+> > I'd rather have it present and explicitely set to 0,
+> 
+> It is not the "right thing" to do, but should be harmless
+> in most situations.
 
->> +	 * RTC_PORT(x) is hardcoded in asm/mc146818rtc.h.  Verify that the
->> +	 * address provided by the device node matches.
->> +	 */
->> +	if (res.start != RTC_PORT(0)) {
->> +		of_node_put(np);
->> +		return -ENODEV;
->> +	}
->
-> This looks totally bogus.  If we have a device tree we should be using
-> the address information from there, not using hardcoded magic.  Sounds
-> like asm/mc146818rtc.h needs some serious fixing.
+It's pretty much the right thing to do in that case imho... based on the
+assumption that a common practice is worth 10 standards :-)
 
-Both of your comments would be nice extensions (and the right
-way forwards), but Wade's patch is good as-is already.
+(I think I could even quote Linus on that one, let's just say that I
+totally agree with him on those matters, I'd rather have people
+"standardize" around existing common practices that happen to also work
+well with existing code rather than doing differently because that's
+what a 10 yrs old unmaintained piece of pdf says should be done :-)
 
-
-Segher
+Ben.
