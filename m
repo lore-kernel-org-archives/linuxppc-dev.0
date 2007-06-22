@@ -1,24 +1,19 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 4A8BEDDEC0
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jun 2007 16:10:48 +1000 (EST)
-Date: Fri, 22 Jun 2007 16:10:47 +1000
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [RFC] clocksouce implementation for powerpc
-Message-ID: <20070622061047.GW9768@bakeyournoodle.com>
-References: <20070616101126.296384219@inhelltoy.tec.linutronix.de>
-	<20070616101637.107940593@inhelltoy.tec.linutronix.de>
-	<1182009083.11539.369.camel@imap.mvista.com>
-	<20070620065710.GR9768@bakeyournoodle.com>
-	<46795B9B.2020401@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <46795B9B.2020401@ru.mvista.com>
-From: tony@bakeyournoodle.com (Tony Breeds)
-Cc: Andrew Morton <akpm@osdl.org>, Daniel Walker <dwalker@mvista.com>,
-	john stultz <johnstul@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-	LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
-	Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: Move iSeries_tb_recal from do_settimeofday() into it's own
+	late_initcall.
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Tony Breeds <tony@bakeyournoodle.com>
+In-Reply-To: <20070622054324.GV9768@bakeyournoodle.com>
+References: <20070622054324.GV9768@bakeyournoodle.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-addJEiHTjse1xSN8yMv2"
+Date: Fri, 22 Jun 2007 16:13:56 +1000
+Message-Id: <1182492836.5760.10.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
+	Stephen Rothwell <sfr@canb.auug.org.au>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,50 +23,198 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jun 20, 2007 at 08:53:47PM +0400, Sergei Shtylyov wrote:
 
-Hi Sergei,
-	Thanks for taking the time to look over my patch.
+--=-addJEiHTjse1xSN8yMv2
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
->    I guess it's been based on the prior work by John Stultz (and me too :-)?
+On Fri, 2007-06-22 at 15:43 +1000, Tony Breeds wrote:
+> Move iSeries_tb_recal from do_settimeofday() into it's own late_initcall.
+>=20
+> Currently iSeries will recalibrate the cputime_factors, from the first
+> settimeofday() call.
+>=20
+> It seems the reason for doing this is to ensure a resaonable time delta a=
+fter
+> time_init().  On current kernels (with udev), this call is made 40-60 sec=
+onds
+> into the boot process, by moving it to a late initcall it is called
+> approximately 5 seconds after time_init() is called.  This is sufficient =
+to
+> recalibrate the timebase.
 
-At some level I guess so.  John did send me a patch a while ago.
- 
->    If you mean the init. part, this has been already done by me -- I've 
-> implemented read_persistent_clock() and got rid of xtime setting. What's 
-> left is to implemet update_persistent_clock() and get rid of 
-> timer_check_rtc()...
+Gutsy :)
 
-Actually I think that comment is redundant.  and should be removed
-sorry.
+The safer option would be to have the init call schedule work for 40-60
+seconds after boot, but it's up to you :)
 
->    Perhaps we even need to raise the rating to 300 or 400 -- according to 
-> what <linux/clocksource.h> says?
+>=20
+>=20
+>=20
+> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+> CC: Stephen Rothwell <sfr@canb.auug.org.au>
+>=20
+> ---
+>=20
+>  arch/powerpc/kernel/time.c             |   30 +++++++++++++++----------
+>  arch/powerpc/platforms/iseries/setup.c |    7 +----
+>  include/asm-powerpc/time.h             |    4 +++
+>  3 files changed, 25 insertions(+), 16 deletions(-)
+>=20
+> Index: working/arch/powerpc/kernel/time.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- working.orig/arch/powerpc/kernel/time.c	2007-06-22 11:02:24.000000000=
+ +1000
+> +++ working/arch/powerpc/kernel/time.c	2007-06-22 11:40:44.000000000 +100=
+0
+> @@ -77,9 +77,8 @@
+>  /* keep track of when we need to update the rtc */
+>  time_t last_rtc_update;
+>  #ifdef CONFIG_PPC_ISERIES
+> -unsigned long iSeries_recal_titan =3D 0;
+> -unsigned long iSeries_recal_tb =3D 0;=20
+> -static unsigned long first_settimeofday =3D 1;
+> +static unsigned long __initdata iSeries_recal_titan;
+> +static signed long __initdata iSeries_recal_tb;
+>  #endif
 
-Sure.
- 
-> >+	.flags        = CLOCK_SOURCE_IS_CONTINUOUS,
-> >+	.mask         = CLOCKSOURCE_MASK(64),
-> >+	.shift        = 22,
-> 
->    PPC64 has issues with the fixed shift value, see:
-> 
-> http://patchwork.ozlabs.org/linuxppc/patch?id=11125
+While you're at it, can you de-camelcase the names? Same comment
+elsewhere.
 
-Thanks!
- 
-> >+	.mult         = 0,	/* To be filled in */
-> >+	.read         = NULL,   /* To be filled in */
-> >+	.settimeofday = NULL,   /* To be filled in */
-> 
->    I don't quite understand why not just init them right away?  The values 
-> are fixed anyways.
+>  /* The decrementer counts down by 128 every 128ns on a 601. */
+> @@ -551,10 +550,15 @@ EXPORT_SYMBOL(profile_pc);
+>   * returned by the service processor for the timebase frequency. =20
+>   */
+> =20
+> -static void iSeries_tb_recal(void)
+> +static int __init iSeries_tb_recal(void)
+>  {
+>  	struct div_result divres;
+>  	unsigned long titan, tb;
+> +
+> +	/* Make sure we only run on iSeries */
+> +	if (!firmware_has_feature(FW_FEATURE_ISERIES))
+> +		return -ENODEV;
 
-Well at least mult needs to be calculated at runtime, and I prefer to
-have the structure near the top of the file at which stage the
-read/settimeofday functions aren't defined.
+Is ENODEV the magic "init-call didn't actually fail" value? You don't
+want anything in the log.
 
-Yours Tony
+> +
+>  	tb =3D get_tb();
+>  	titan =3D HvCallXm_loadTod();
+>  	if ( iSeries_recal_titan ) {
+> @@ -595,8 +599,18 @@ static void iSeries_tb_recal(void)
+>  	}
+>  	iSeries_recal_titan =3D titan;
+>  	iSeries_recal_tb =3D tb;
+> +
+> +	return 0;
+>  }
+> -#endif
+> +late_initcall(iSeries_tb_recal);
+> +
+> +/* Called from platforms/iseries/setup.c:iSeries_init_early() */
 
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+The comment is only going to be wrong once someone moves something
+around. Better still, why not put this code in setup.c?
+
+> +void __init iSeries_time_init_early(void)
+> +{
+> +	iSeries_recal_tb =3D get_tb();
+> +	iSeries_recal_titan =3D HvCallXm_loadTod();
+> +}
+> +#endif /* CONFIG_PPC_ISERIES */
+> =20
+>  /*
+>   * For iSeries shared processors, we have to let the hypervisor
+> @@ -760,12 +774,6 @@ int do_settimeofday(struct timespec *tv)
+>  	 * to the RTC again, or write to the RTC but then they don't call
+>  	 * settimeofday to perform this operation.
+>  	 */
+> -#ifdef CONFIG_PPC_ISERIES
+> -	if (firmware_has_feature(FW_FEATURE_ISERIES) && first_settimeofday) {
+> -		iSeries_tb_recal();
+> -		first_settimeofday =3D 0;
+> -	}
+> -#endif
+> =20
+>  	/* Make userspace gettimeofday spin until we're done. */
+>  	++vdso_data->tb_update_count;
+> Index: working/arch/powerpc/platforms/iseries/setup.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- working.orig/arch/powerpc/platforms/iseries/setup.c	2007-06-22 11:02:=
+42.000000000 +1000
+> +++ working/arch/powerpc/platforms/iseries/setup.c	2007-06-22 11:10:04.00=
+0000000 +1000
+> @@ -79,8 +79,6 @@ extern void iSeries_pci_final_fixup(void
+>  static void iSeries_pci_final_fixup(void) { }
+>  #endif
+> =20
+> -extern unsigned long iSeries_recal_tb;
+> -extern unsigned long iSeries_recal_titan;
+> =20
+>  struct MemoryBlock {
+>  	unsigned long absStart;
+> @@ -292,9 +290,8 @@ static void __init iSeries_init_early(vo
+>  {
+>  	DBG(" -> iSeries_init_early()\n");
+> =20
+> -	iSeries_recal_tb =3D get_tb();
+> -	iSeries_recal_titan =3D HvCallXm_loadTod();
+> -
+> +	/* Snapshot the timebase, for use in later recalibration */
+> +	iSeries_time_init_early();
+
+Newline here please :)
+
+>  	/*
+>  	 * Initialize the DMA/TCE management
+>  	 */
+> Index: working/include/asm-powerpc/time.h
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- working.orig/include/asm-powerpc/time.h	2007-06-22 11:03:37.000000000=
+ +1000
+> +++ working/include/asm-powerpc/time.h	2007-06-22 11:40:59.000000000 +100=
+0
+> @@ -240,5 +240,9 @@ extern void snapshot_timebases(void);
+>  #define snapshot_timebases()			do { } while (0)
+>  #endif
+> =20
+> +#ifdef CONFIG_PPC_ISERIES
+> +extern void iSeries_time_init_early(void);
+> +#endif
+
+I don't think we bother with #ifdef around externs, unless you're
+providing a no-op version.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-addJEiHTjse1xSN8yMv2
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGe2ikdSjSd0sB4dIRAqMxAKCcHumrxICzLJUDp7M29zUV7trVYwCdF2A9
+RNGnHtFygQ25kE+Xu8m3Ag4=
+=5Xcx
+-----END PGP SIGNATURE-----
+
+--=-addJEiHTjse1xSN8yMv2--
