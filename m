@@ -1,14 +1,11 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 22 Jun 2007 13:31:58 +1000
+Date: Fri, 22 Jun 2007 14:58:55 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Wade Farnsworth <wfarnsworth@mvista.com>
-Subject: Re: [PATCH v3] Create add_rtc() function to enable the RTC CMOS driver
-Message-ID: <20070622033158.GA21419@localhost.localdomain>
-References: <1182298510.5674.358.camel@rhino> <1182358772.5674.383.camel@rhino>
+To: linuxppc-dev@ozlabs.org
+Subject: Split out asm-ppc/mmu.h portions for PowerPC 8xx
+Message-ID: <20070622045855.GA11775@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1182358772.5674.383.camel@rhino>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,104 +15,190 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jun 20, 2007 at 09:59:32AM -0700, Wade Farnsworth wrote:
-> In order to use the RTC CMOS driver, each architecture must register a
-> platform device for the RTC.
-> 
-> This creates a function to register the platform device based on the RTC
-> device node and verifies that the RTC port against the hard-coded value
-> in asm/mc146818rtc.h.
-> 
-> Signed-off-by: Wade Farnsworth <wfarnsworth@mvista.com>
+arch/powerpc still relies on asm-ppc/mmu.h for some 32-bit MMU types.
+This patch is another step towards fixing this.  It takes the portions
+of asm-ppc/mmu.h related to 8xx embedded CPUs which are still relevant
+in arch/powerpc and puts them in a new asm-powerpc/mmu-8xx.h,
+included when appropriate from asm-powerpc/mmu.h.
 
-Hrm.  It seems rather specific.  Can we do this more generally, by
-creating an of_platform device which binds to rtc nodes, then
-registers an appropriate platform device for each so that the generic
-rtc drivers pick them up.  Obviously we'd need some sort of table
-mapping the device node compatible properties to the appropriate
-platform device names.
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+---
 
-> Index: linux-2.6-powerpc-8641/arch/powerpc/sysdev/Makefile
-> ===================================================================
-> --- linux-2.6-powerpc-8641.orig/arch/powerpc/sysdev/Makefile
-> +++ linux-2.6-powerpc-8641/arch/powerpc/sysdev/Makefile
-> @@ -18,6 +18,7 @@ obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pc
->  obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
->  mv64x60-$(CONFIG_PCI)		+= mv64x60_pci.o
->  obj-$(CONFIG_MV64X60)		+= $(mv64x60-y) mv64x60_pic.o mv64x60_dev.o
-> +obj-$(CONFIG_RTC_DRV_CMOS)	+= rtc_cmos_setup.o
->  
->  # contains only the suspend handler for time
->  obj-$(CONFIG_PM)		+= timer.o
-> Index: linux-2.6-powerpc-8641/arch/powerpc/sysdev/rtc_cmos_setup.c
-> ===================================================================
-> --- /dev/null
-> +++ linux-2.6-powerpc-8641/arch/powerpc/sysdev/rtc_cmos_setup.c
-> @@ -0,0 +1,51 @@
-> +/*
-> + * Setup code for PC-style Real-Time Clock.
-> + *
-> + * Author: Wade Farnsworth <wfarnsworth@mvista.com>
-> + *
-> + * 2007 (c) MontaVista Software, Inc. This file is licensed under
-> + * the terms of the GNU General Public License version 2. This program
-> + * is licensed "as is" without any warranty of any kind, whether
-> express
-> + * or implied.
-> + */
-> +
-> +#include <linux/platform_device.h>
-> +#include <linux/err.h>
-> +#include <linux/init.h>
-> +#include <linux/mc146818rtc.h>
-> +
-> +#include <asm/prom.h>
-> +
-> +static int  __init add_rtc(void)
-> +{
-> +	struct device_node *np;
-> +	struct platform_device *pd;
-> +	struct resource res;
-> +
-> +	np = of_find_compatible_node(NULL, NULL, "pnpPNP,b00");
-> +	if (!np)
-> +		return -ENODEV;
-> +
-> +	if (of_address_to_resource(np, 0, &res)) {
-> +		of_node_put(np);
-> +		return -ENODEV;
-> +	}
-> +
-> +	/*
-> +	 * RTC_PORT(x) is hardcoded in asm/mc146818rtc.h.  Verify that the
-> +	 * address provided by the device node matches.
-> +	 */
-> +	if (res.start != RTC_PORT(0)) {
-> +		of_node_put(np);
-> +		return -ENODEV;
-> +	}
+This applies on top of my earlier patch splitting out the Freescale
+Book-E portions of mmu.h.  I've compiled this (with
+mpc866_ads_defconfig) but can someone with access to an 8xx system
+give it a whirl?
 
-This looks totally bogus.  If we have a device tree we should be using
-the address information from there, not using hardcoded magic.  Sounds
-like asm/mc146818rtc.h needs some serious fixing.
-
-> +
-> +	pd = platform_device_register_simple("rtc_cmos", -1,
-> +					     &res, 1);
-> +	of_node_put(np);
-> +	if (IS_ERR(pd))
-> +		return PTR_ERR(pd);
-> +
-> +	return 0;
-> +}
-> +fs_initcall(add_rtc);
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+Index: working-2.6/include/asm-powerpc/mmu.h
+===================================================================
+--- working-2.6.orig/include/asm-powerpc/mmu.h	2007-06-22 14:38:56.000000000 +1000
++++ working-2.6/include/asm-powerpc/mmu.h	2007-06-22 14:41:53.000000000 +1000
+@@ -14,10 +14,9 @@
+ #elif defined(CONFIG_FSL_BOOKE)
+ /* Freescale Book-E software loaded TLB */
+ #  include <asm/mmu-fsl-booke.h>
+-#else
+-/* Other 32-bit.  FIXME: split up the other 32-bit MMU types, and
+- * revise for arch/powerpc */
+-#  include <asm-ppc/mmu.h>
++#elif defined (CONFIG_PPC_8xx)
++/* Motorola/Freescale 8xx software loaded TLB */
++#  include <asm/mmu-8xx.h>
+ #endif
+ 
+ #endif /* __KERNEL__ */
+Index: working-2.6/include/asm-powerpc/mmu-8xx.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ working-2.6/include/asm-powerpc/mmu-8xx.h	2007-06-22 14:38:56.000000000 +1000
+@@ -0,0 +1,147 @@
++#ifndef _ASM_POWERPC_MMU_8XX_H_
++#define _ASM_POWERPC_MMU_8XX_H_
++/*
++ * PPC8xx support
++ */
++
++/* Control/status registers for the MPC8xx.
++ * A write operation to these registers causes serialized access.
++ * During software tablewalk, the registers used perform mask/shift-add
++ * operations when written/read.  A TLB entry is created when the Mx_RPN
++ * is written, and the contents of several registers are used to
++ * create the entry.
++ */
++#define SPRN_MI_CTR	784	/* Instruction TLB control register */
++#define MI_GPM		0x80000000	/* Set domain manager mode */
++#define MI_PPM		0x40000000	/* Set subpage protection */
++#define MI_CIDEF	0x20000000	/* Set cache inhibit when MMU dis */
++#define MI_RSV4I	0x08000000	/* Reserve 4 TLB entries */
++#define MI_PPCS		0x02000000	/* Use MI_RPN prob/priv state */
++#define MI_IDXMASK	0x00001f00	/* TLB index to be loaded */
++#define MI_RESETVAL	0x00000000	/* Value of register at reset */
++
++/* These are the Ks and Kp from the PowerPC books.  For proper operation,
++ * Ks = 0, Kp = 1.
++ */
++#define SPRN_MI_AP	786
++#define MI_Ks		0x80000000	/* Should not be set */
++#define MI_Kp		0x40000000	/* Should always be set */
++
++/* The effective page number register.  When read, contains the information
++ * about the last instruction TLB miss.  When MI_RPN is written, bits in
++ * this register are used to create the TLB entry.
++ */
++#define SPRN_MI_EPN	787
++#define MI_EPNMASK	0xfffff000	/* Effective page number for entry */
++#define MI_EVALID	0x00000200	/* Entry is valid */
++#define MI_ASIDMASK	0x0000000f	/* ASID match value */
++					/* Reset value is undefined */
++
++/* A "level 1" or "segment" or whatever you want to call it register.
++ * For the instruction TLB, it contains bits that get loaded into the
++ * TLB entry when the MI_RPN is written.
++ */
++#define SPRN_MI_TWC	789
++#define MI_APG		0x000001e0	/* Access protection group (0) */
++#define MI_GUARDED	0x00000010	/* Guarded storage */
++#define MI_PSMASK	0x0000000c	/* Mask of page size bits */
++#define MI_PS8MEG	0x0000000c	/* 8M page size */
++#define MI_PS512K	0x00000004	/* 512K page size */
++#define MI_PS4K_16K	0x00000000	/* 4K or 16K page size */
++#define MI_SVALID	0x00000001	/* Segment entry is valid */
++					/* Reset value is undefined */
++
++/* Real page number.  Defined by the pte.  Writing this register
++ * causes a TLB entry to be created for the instruction TLB, using
++ * additional information from the MI_EPN, and MI_TWC registers.
++ */
++#define SPRN_MI_RPN	790
++
++/* Define an RPN value for mapping kernel memory to large virtual
++ * pages for boot initialization.  This has real page number of 0,
++ * large page size, shared page, cache enabled, and valid.
++ * Also mark all subpages valid and write access.
++ */
++#define MI_BOOTINIT	0x000001fd
++
++#define SPRN_MD_CTR	792	/* Data TLB control register */
++#define MD_GPM		0x80000000	/* Set domain manager mode */
++#define MD_PPM		0x40000000	/* Set subpage protection */
++#define MD_CIDEF	0x20000000	/* Set cache inhibit when MMU dis */
++#define MD_WTDEF	0x10000000	/* Set writethrough when MMU dis */
++#define MD_RSV4I	0x08000000	/* Reserve 4 TLB entries */
++#define MD_TWAM		0x04000000	/* Use 4K page hardware assist */
++#define MD_PPCS		0x02000000	/* Use MI_RPN prob/priv state */
++#define MD_IDXMASK	0x00001f00	/* TLB index to be loaded */
++#define MD_RESETVAL	0x04000000	/* Value of register at reset */
++
++#define SPRN_M_CASID	793	/* Address space ID (context) to match */
++#define MC_ASIDMASK	0x0000000f	/* Bits used for ASID value */
++
++
++/* These are the Ks and Kp from the PowerPC books.  For proper operation,
++ * Ks = 0, Kp = 1.
++ */
++#define SPRN_MD_AP	794
++#define MD_Ks		0x80000000	/* Should not be set */
++#define MD_Kp		0x40000000	/* Should always be set */
++
++/* The effective page number register.  When read, contains the information
++ * about the last instruction TLB miss.  When MD_RPN is written, bits in
++ * this register are used to create the TLB entry.
++ */
++#define SPRN_MD_EPN	795
++#define MD_EPNMASK	0xfffff000	/* Effective page number for entry */
++#define MD_EVALID	0x00000200	/* Entry is valid */
++#define MD_ASIDMASK	0x0000000f	/* ASID match value */
++					/* Reset value is undefined */
++
++/* The pointer to the base address of the first level page table.
++ * During a software tablewalk, reading this register provides the address
++ * of the entry associated with MD_EPN.
++ */
++#define SPRN_M_TWB	796
++#define	M_L1TB		0xfffff000	/* Level 1 table base address */
++#define M_L1INDX	0x00000ffc	/* Level 1 index, when read */
++					/* Reset value is undefined */
++
++/* A "level 1" or "segment" or whatever you want to call it register.
++ * For the data TLB, it contains bits that get loaded into the TLB entry
++ * when the MD_RPN is written.  It is also provides the hardware assist
++ * for finding the PTE address during software tablewalk.
++ */
++#define SPRN_MD_TWC	797
++#define MD_L2TB		0xfffff000	/* Level 2 table base address */
++#define MD_L2INDX	0xfffffe00	/* Level 2 index (*pte), when read */
++#define MD_APG		0x000001e0	/* Access protection group (0) */
++#define MD_GUARDED	0x00000010	/* Guarded storage */
++#define MD_PSMASK	0x0000000c	/* Mask of page size bits */
++#define MD_PS8MEG	0x0000000c	/* 8M page size */
++#define MD_PS512K	0x00000004	/* 512K page size */
++#define MD_PS4K_16K	0x00000000	/* 4K or 16K page size */
++#define MD_WT		0x00000002	/* Use writethrough page attribute */
++#define MD_SVALID	0x00000001	/* Segment entry is valid */
++					/* Reset value is undefined */
++
++
++/* Real page number.  Defined by the pte.  Writing this register
++ * causes a TLB entry to be created for the data TLB, using
++ * additional information from the MD_EPN, and MD_TWC registers.
++ */
++#define SPRN_MD_RPN	798
++
++/* This is a temporary storage register that could be used to save
++ * a processor working register during a tablewalk.
++ */
++#define SPRN_M_TW	799
++
++#ifndef __ASSEMBLY__
++typedef unsigned long phys_addr_t;
++
++typedef struct {
++	unsigned long id;
++	unsigned long vdso_base;
++} mm_context_t;
++#endif /* !__ASSEMBLY__ */
++
++#endif /* _ASM_POWERPC_MMU_8XX_H_ */
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
