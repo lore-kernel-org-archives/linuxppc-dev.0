@@ -1,28 +1,23 @@
-Return-Path: <dpetchkine@certicom.com>
-Received: from mail.ca.certicom.com (mail.ca.certicom.com [38.113.160.197])
-	by ozlabs.org (Postfix) with ESMTP id 5C59DDDE20
+Return-Path: <Martin.Leisner@xerox.com>
+Received: from wbmler3.mail.xerox.com (wbmler3.mail.xerox.com [13.13.138.218])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "wbmler3.mail.xerox.com",
+	Issuer "wbmler3.mail.xerox.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 306D2DDED9
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Jun 2007 03:58:09 +1000 (EST)
-Received: from spamfilter.certicom.com (localhost.localdomain [127.0.0.1])
-	by mail.ca.certicom.com (Postfix) with ESMTP id 37F1110027FE9
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Jun 2007 09:28:58 -0400 (EDT)
-Received: from mail.ca.certicom.com ([127.0.0.1])
-	by spamfilter.certicom.com (storm.certicom.com [127.0.0.1])
-	(amavisd-new, port 10024)
-	with ESMTP id Cp9Op67r3ttP for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Jun 2007 09:28:56 -0400 (EDT)
-Received: from domino1.certicom.com (domino1.certicom.com [10.0.1.24])
-	by mail.ca.certicom.com (Postfix) with ESMTP
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Jun 2007 09:28:56 -0400 (EDT)
-Message-ID: <467C06B8.6070303@certicom.com>
-Date: Fri, 22 Jun 2007 13:28:24 -0400
-From: Dmitri Petchkine <dpetchkine@certicom.com>
+	Sat, 23 Jun 2007 04:09:01 +1000 (EST)
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Memory coherency on MPC8272
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: version control for dts/dtb?
+Date: Fri, 22 Jun 2007 14:08:43 -0400
+Message-ID: <556445368AFA1C438794ABDA8901891C066B5B1F@usa0300ms03.na.xerox.net>
+In-reply-to: <1182533095.29873.30.camel@ld0161-tx32>
+References: <000301c7b03e$0e2a42a0$9700a8c0@hplaptop>
+	<1182533095.29873.30.camel@ld0161-tx32>
+From: "Leisner, Martin" <Martin.Leisner@xerox.com>
+To: "Jon Loeliger" <jdl@freescale.com>, "marty" <leisner@rochester.rr.com>
+Cc: "Lund, Nathan" <Nathan.Lund@xerox.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,78 +28,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi All,
+I made a node "revision" which was tied into rcs...
 
-I am working on a user-space application interacting with the security 
-engine on MPC8272, which runs Linux 2.6.10_mvl401 (Montavista Pro 
-4.0.1). The driver (version 1.2 22-Feb-2006) for the security engine is 
-written by Freescale.
-
-The application calls the driver through ioctl() to perform a crypto 
-operation. It is non-blocking call, so the app sits and waits for the 
-result when it becomes available. Once the driver notifies the app via a 
-signal, the latter does another ioctl() to get the result back to the 
-user space from the kernel-space.
-
-Sometimes the returned buffer is just all zeroes which is incorrect.
-
-Here is the piece of code in the driver which copies the data back to 
-the user space:
-
-sec1_ioctl.c:
-int SEC1_ioctl(struct inode  *nd,
-                struct file   *fil,
-                unsigned int   ioctlCode,
-                unsigned long  param)
-{
+ ...
+        compatible =3D "mpc74xx";
+        revision =3D "$Revision: 1.7 $";
+        #address-cells =3D <1>;
+        #size-cells =3D <1>;
+        linux,phandle =3D <100>;
 ...
-         case IOCTL_COPYTO:
-             mem = (MALLOC_REQ *)param;
-             mem->pid = current->pid;
-             copy_to_user(mem->to, mem->from, mem->sz);
-             status = SEC1_SUCCESS;
-             break;
-...
-}
 
-The definition of MALLOC_REQ (file Sec1.h):
+This seems to do what I wanted, I can then see in /proc/device-tree what
+dts I'm running...
 
-typedef struct
-{
-     unsigned long sz;   /* Number of bytes to allocate
-                            Zero means to use the default.  A value
-                            of zero can be used to avoid fragmentation. */
-     void         *ptr;  /* Pointer to the adress that is to
-                            be returned by a call to KernelMalloc()
-                            or a pointer to an address that is to
-                            be freed when calling KernelFree()   */
-     char         *to;   /* copy to pointer */
-     char         *from; /* copy from pointer*/
-     int           pid;  /* pid of requestor */
-} MALLOC_REQ;
-
-
-The problem goes away if I add printing of some buffer (it can be 
-mem->to or mem->from, or even another, unrelated buffer) AFTER the call 
-to copy_to_user(), i.e.:
-
-         case IOCTL_COPYTO:
-         {   char garbage[128]; /* new line */
-             mem = (MALLOC_REQ *)param;
-             mem->pid = current->pid;
-             copy_to_user(mem->to, mem->from, mem->sz);
-
-             PRINT_HEX( garbage, 128 ); /* new line */
-
-             status = SEC1_SUCCESS;
-             break;
-          }
-
-My understanding that the security hardware of MPC8272 uses DMA to write 
-results into the memory which may cause a coherency problem.
-
-My exposure to such hardware issues is very limited, so I appreciate any 
-advice on how to fix it.
-
-Thanks in advance,
-Dmitri Pechkin
+marty
+> -----Original Message-----
+> From:=20
+> linuxppc-embedded-bounces+martin.leisner=3Dxerox.com@ozlabs.org=20
+> [mailto:linuxppc-embedded-bounces+martin.leisner=3Dxerox.com@ozl
+> abs.org] On Behalf Of Jon Loeliger
+> Sent: Friday, June 22, 2007 1:25 PM
+> To: marty
+> Cc: linuxppc-embedded@ozlabs.org
+> Subject: Re: version control for dts/dtb?
+>=20
+> On Sat, 2007-06-16 at 12:44, marty wrote:
+> > Is there a  wy to figure out the version of the dtb file I'm  using?
+> > At a minimum, it would be useful to have a node with the=20
+> conversion time=20
+> > stuck somewhere...
+> >=20
+> > I ran dtc to convert binary to source, but that isn't=20
+> necessarily what I=20
+> > wanted to look at -- just a single date
+> > code would be sufficient...
+> >=20
+> > marty
+>=20
+>=20
+> There is currently no direct version stamp in the
+> DTS or DTB files.  You may be able to derive some
+> knowledge by running a DTB file through the DTC
+> with the input file as "dtb" and looking at an
+> output file of DTS, though.  That is, "-I dtb -O dts"
+> and looking at it.
+>=20
+> HTH,
+> jdl
+>=20
+>=20
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>=20
