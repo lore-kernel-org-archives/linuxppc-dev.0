@@ -1,11 +1,16 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 22 Jun 2007 14:58:55 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: Split out asm-ppc/mmu.h portions for PowerPC 8xx
-Message-ID: <20070622045855.GA11775@localhost.localdomain>
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 7A453DDEC7
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jun 2007 15:43:25 +1000 (EST)
+Date: Fri, 22 Jun 2007 15:43:24 +1000
+To: LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
+	Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Move iSeries_tb_recal from do_settimeofday() into it's own
+	late_initcall.
+Message-ID: <20070622054324.GV9768@bakeyournoodle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+From: tony@bakeyournoodle.com (Tony Breeds)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,193 +20,135 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-arch/powerpc still relies on asm-ppc/mmu.h for some 32-bit MMU types.
-This patch is another step towards fixing this.  It takes the portions
-of asm-ppc/mmu.h related to 8xx embedded CPUs which are still relevant
-in arch/powerpc and puts them in a new asm-powerpc/mmu-8xx.h,
-included when appropriate from asm-powerpc/mmu.h.
+Move iSeries_tb_recal from do_settimeofday() into it's own late_initcall.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Currently iSeries will recalibrate the cputime_factors, from the first
+settimeofday() call.
+
+It seems the reason for doing this is to ensure a resaonable time delta after
+time_init().  On current kernels (with udev), this call is made 40-60 seconds
+into the boot process, by moving it to a late initcall it is called
+approximately 5 seconds after time_init() is called.  This is sufficient to
+recalibrate the timebase.
+
+
+
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>
+
 ---
 
-This applies on top of my earlier patch splitting out the Freescale
-Book-E portions of mmu.h.  I've compiled this (with
-mpc866_ads_defconfig) but can someone with access to an 8xx system
-give it a whirl?
+ arch/powerpc/kernel/time.c             |   30 +++++++++++++++----------
+ arch/powerpc/platforms/iseries/setup.c |    7 +----
+ include/asm-powerpc/time.h             |    4 +++
+ 3 files changed, 25 insertions(+), 16 deletions(-)
 
-Index: working-2.6/include/asm-powerpc/mmu.h
+Index: working/arch/powerpc/kernel/time.c
 ===================================================================
---- working-2.6.orig/include/asm-powerpc/mmu.h	2007-06-22 14:38:56.000000000 +1000
-+++ working-2.6/include/asm-powerpc/mmu.h	2007-06-22 14:41:53.000000000 +1000
-@@ -14,10 +14,9 @@
- #elif defined(CONFIG_FSL_BOOKE)
- /* Freescale Book-E software loaded TLB */
- #  include <asm/mmu-fsl-booke.h>
--#else
--/* Other 32-bit.  FIXME: split up the other 32-bit MMU types, and
-- * revise for arch/powerpc */
--#  include <asm-ppc/mmu.h>
-+#elif defined (CONFIG_PPC_8xx)
-+/* Motorola/Freescale 8xx software loaded TLB */
-+#  include <asm/mmu-8xx.h>
+--- working.orig/arch/powerpc/kernel/time.c	2007-06-22 11:02:24.000000000 +1000
++++ working/arch/powerpc/kernel/time.c	2007-06-22 11:40:44.000000000 +1000
+@@ -77,9 +77,8 @@
+ /* keep track of when we need to update the rtc */
+ time_t last_rtc_update;
+ #ifdef CONFIG_PPC_ISERIES
+-unsigned long iSeries_recal_titan = 0;
+-unsigned long iSeries_recal_tb = 0; 
+-static unsigned long first_settimeofday = 1;
++static unsigned long __initdata iSeries_recal_titan;
++static signed long __initdata iSeries_recal_tb;
  #endif
  
- #endif /* __KERNEL__ */
-Index: working-2.6/include/asm-powerpc/mmu-8xx.h
+ /* The decrementer counts down by 128 every 128ns on a 601. */
+@@ -551,10 +550,15 @@ EXPORT_SYMBOL(profile_pc);
+  * returned by the service processor for the timebase frequency.  
+  */
+ 
+-static void iSeries_tb_recal(void)
++static int __init iSeries_tb_recal(void)
+ {
+ 	struct div_result divres;
+ 	unsigned long titan, tb;
++
++	/* Make sure we only run on iSeries */
++	if (!firmware_has_feature(FW_FEATURE_ISERIES))
++		return -ENODEV;
++
+ 	tb = get_tb();
+ 	titan = HvCallXm_loadTod();
+ 	if ( iSeries_recal_titan ) {
+@@ -595,8 +599,18 @@ static void iSeries_tb_recal(void)
+ 	}
+ 	iSeries_recal_titan = titan;
+ 	iSeries_recal_tb = tb;
++
++	return 0;
+ }
+-#endif
++late_initcall(iSeries_tb_recal);
++
++/* Called from platforms/iseries/setup.c:iSeries_init_early() */
++void __init iSeries_time_init_early(void)
++{
++	iSeries_recal_tb = get_tb();
++	iSeries_recal_titan = HvCallXm_loadTod();
++}
++#endif /* CONFIG_PPC_ISERIES */
+ 
+ /*
+  * For iSeries shared processors, we have to let the hypervisor
+@@ -760,12 +774,6 @@ int do_settimeofday(struct timespec *tv)
+ 	 * to the RTC again, or write to the RTC but then they don't call
+ 	 * settimeofday to perform this operation.
+ 	 */
+-#ifdef CONFIG_PPC_ISERIES
+-	if (firmware_has_feature(FW_FEATURE_ISERIES) && first_settimeofday) {
+-		iSeries_tb_recal();
+-		first_settimeofday = 0;
+-	}
+-#endif
+ 
+ 	/* Make userspace gettimeofday spin until we're done. */
+ 	++vdso_data->tb_update_count;
+Index: working/arch/powerpc/platforms/iseries/setup.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/include/asm-powerpc/mmu-8xx.h	2007-06-22 14:38:56.000000000 +1000
-@@ -0,0 +1,147 @@
-+#ifndef _ASM_POWERPC_MMU_8XX_H_
-+#define _ASM_POWERPC_MMU_8XX_H_
-+/*
-+ * PPC8xx support
-+ */
+--- working.orig/arch/powerpc/platforms/iseries/setup.c	2007-06-22 11:02:42.000000000 +1000
++++ working/arch/powerpc/platforms/iseries/setup.c	2007-06-22 11:10:04.000000000 +1000
+@@ -79,8 +79,6 @@ extern void iSeries_pci_final_fixup(void
+ static void iSeries_pci_final_fixup(void) { }
+ #endif
+ 
+-extern unsigned long iSeries_recal_tb;
+-extern unsigned long iSeries_recal_titan;
+ 
+ struct MemoryBlock {
+ 	unsigned long absStart;
+@@ -292,9 +290,8 @@ static void __init iSeries_init_early(vo
+ {
+ 	DBG(" -> iSeries_init_early()\n");
+ 
+-	iSeries_recal_tb = get_tb();
+-	iSeries_recal_titan = HvCallXm_loadTod();
+-
++	/* Snapshot the timebase, for use in later recalibration */
++	iSeries_time_init_early();
+ 	/*
+ 	 * Initialize the DMA/TCE management
+ 	 */
+Index: working/include/asm-powerpc/time.h
+===================================================================
+--- working.orig/include/asm-powerpc/time.h	2007-06-22 11:03:37.000000000 +1000
++++ working/include/asm-powerpc/time.h	2007-06-22 11:40:59.000000000 +1000
+@@ -240,5 +240,9 @@ extern void snapshot_timebases(void);
+ #define snapshot_timebases()			do { } while (0)
+ #endif
+ 
++#ifdef CONFIG_PPC_ISERIES
++extern void iSeries_time_init_early(void);
++#endif
 +
-+/* Control/status registers for the MPC8xx.
-+ * A write operation to these registers causes serialized access.
-+ * During software tablewalk, the registers used perform mask/shift-add
-+ * operations when written/read.  A TLB entry is created when the Mx_RPN
-+ * is written, and the contents of several registers are used to
-+ * create the entry.
-+ */
-+#define SPRN_MI_CTR	784	/* Instruction TLB control register */
-+#define MI_GPM		0x80000000	/* Set domain manager mode */
-+#define MI_PPM		0x40000000	/* Set subpage protection */
-+#define MI_CIDEF	0x20000000	/* Set cache inhibit when MMU dis */
-+#define MI_RSV4I	0x08000000	/* Reserve 4 TLB entries */
-+#define MI_PPCS		0x02000000	/* Use MI_RPN prob/priv state */
-+#define MI_IDXMASK	0x00001f00	/* TLB index to be loaded */
-+#define MI_RESETVAL	0x00000000	/* Value of register at reset */
-+
-+/* These are the Ks and Kp from the PowerPC books.  For proper operation,
-+ * Ks = 0, Kp = 1.
-+ */
-+#define SPRN_MI_AP	786
-+#define MI_Ks		0x80000000	/* Should not be set */
-+#define MI_Kp		0x40000000	/* Should always be set */
-+
-+/* The effective page number register.  When read, contains the information
-+ * about the last instruction TLB miss.  When MI_RPN is written, bits in
-+ * this register are used to create the TLB entry.
-+ */
-+#define SPRN_MI_EPN	787
-+#define MI_EPNMASK	0xfffff000	/* Effective page number for entry */
-+#define MI_EVALID	0x00000200	/* Entry is valid */
-+#define MI_ASIDMASK	0x0000000f	/* ASID match value */
-+					/* Reset value is undefined */
-+
-+/* A "level 1" or "segment" or whatever you want to call it register.
-+ * For the instruction TLB, it contains bits that get loaded into the
-+ * TLB entry when the MI_RPN is written.
-+ */
-+#define SPRN_MI_TWC	789
-+#define MI_APG		0x000001e0	/* Access protection group (0) */
-+#define MI_GUARDED	0x00000010	/* Guarded storage */
-+#define MI_PSMASK	0x0000000c	/* Mask of page size bits */
-+#define MI_PS8MEG	0x0000000c	/* 8M page size */
-+#define MI_PS512K	0x00000004	/* 512K page size */
-+#define MI_PS4K_16K	0x00000000	/* 4K or 16K page size */
-+#define MI_SVALID	0x00000001	/* Segment entry is valid */
-+					/* Reset value is undefined */
-+
-+/* Real page number.  Defined by the pte.  Writing this register
-+ * causes a TLB entry to be created for the instruction TLB, using
-+ * additional information from the MI_EPN, and MI_TWC registers.
-+ */
-+#define SPRN_MI_RPN	790
-+
-+/* Define an RPN value for mapping kernel memory to large virtual
-+ * pages for boot initialization.  This has real page number of 0,
-+ * large page size, shared page, cache enabled, and valid.
-+ * Also mark all subpages valid and write access.
-+ */
-+#define MI_BOOTINIT	0x000001fd
-+
-+#define SPRN_MD_CTR	792	/* Data TLB control register */
-+#define MD_GPM		0x80000000	/* Set domain manager mode */
-+#define MD_PPM		0x40000000	/* Set subpage protection */
-+#define MD_CIDEF	0x20000000	/* Set cache inhibit when MMU dis */
-+#define MD_WTDEF	0x10000000	/* Set writethrough when MMU dis */
-+#define MD_RSV4I	0x08000000	/* Reserve 4 TLB entries */
-+#define MD_TWAM		0x04000000	/* Use 4K page hardware assist */
-+#define MD_PPCS		0x02000000	/* Use MI_RPN prob/priv state */
-+#define MD_IDXMASK	0x00001f00	/* TLB index to be loaded */
-+#define MD_RESETVAL	0x04000000	/* Value of register at reset */
-+
-+#define SPRN_M_CASID	793	/* Address space ID (context) to match */
-+#define MC_ASIDMASK	0x0000000f	/* Bits used for ASID value */
-+
-+
-+/* These are the Ks and Kp from the PowerPC books.  For proper operation,
-+ * Ks = 0, Kp = 1.
-+ */
-+#define SPRN_MD_AP	794
-+#define MD_Ks		0x80000000	/* Should not be set */
-+#define MD_Kp		0x40000000	/* Should always be set */
-+
-+/* The effective page number register.  When read, contains the information
-+ * about the last instruction TLB miss.  When MD_RPN is written, bits in
-+ * this register are used to create the TLB entry.
-+ */
-+#define SPRN_MD_EPN	795
-+#define MD_EPNMASK	0xfffff000	/* Effective page number for entry */
-+#define MD_EVALID	0x00000200	/* Entry is valid */
-+#define MD_ASIDMASK	0x0000000f	/* ASID match value */
-+					/* Reset value is undefined */
-+
-+/* The pointer to the base address of the first level page table.
-+ * During a software tablewalk, reading this register provides the address
-+ * of the entry associated with MD_EPN.
-+ */
-+#define SPRN_M_TWB	796
-+#define	M_L1TB		0xfffff000	/* Level 1 table base address */
-+#define M_L1INDX	0x00000ffc	/* Level 1 index, when read */
-+					/* Reset value is undefined */
-+
-+/* A "level 1" or "segment" or whatever you want to call it register.
-+ * For the data TLB, it contains bits that get loaded into the TLB entry
-+ * when the MD_RPN is written.  It is also provides the hardware assist
-+ * for finding the PTE address during software tablewalk.
-+ */
-+#define SPRN_MD_TWC	797
-+#define MD_L2TB		0xfffff000	/* Level 2 table base address */
-+#define MD_L2INDX	0xfffffe00	/* Level 2 index (*pte), when read */
-+#define MD_APG		0x000001e0	/* Access protection group (0) */
-+#define MD_GUARDED	0x00000010	/* Guarded storage */
-+#define MD_PSMASK	0x0000000c	/* Mask of page size bits */
-+#define MD_PS8MEG	0x0000000c	/* 8M page size */
-+#define MD_PS512K	0x00000004	/* 512K page size */
-+#define MD_PS4K_16K	0x00000000	/* 4K or 16K page size */
-+#define MD_WT		0x00000002	/* Use writethrough page attribute */
-+#define MD_SVALID	0x00000001	/* Segment entry is valid */
-+					/* Reset value is undefined */
-+
-+
-+/* Real page number.  Defined by the pte.  Writing this register
-+ * causes a TLB entry to be created for the data TLB, using
-+ * additional information from the MD_EPN, and MD_TWC registers.
-+ */
-+#define SPRN_MD_RPN	798
-+
-+/* This is a temporary storage register that could be used to save
-+ * a processor working register during a tablewalk.
-+ */
-+#define SPRN_M_TW	799
-+
-+#ifndef __ASSEMBLY__
-+typedef unsigned long phys_addr_t;
-+
-+typedef struct {
-+	unsigned long id;
-+	unsigned long vdso_base;
-+} mm_context_t;
-+#endif /* !__ASSEMBLY__ */
-+
-+#endif /* _ASM_POWERPC_MMU_8XX_H_ */
+ #endif /* __KERNEL__ */
+ #endif /* __POWERPC_TIME_H */
+Yours Tony
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
