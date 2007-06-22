@@ -1,18 +1,35 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 992EEDDE08
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Jun 2007 03:02:23 +1000 (EST)
-Date: Fri, 22 Jun 2007 12:11:11 -0500
-To: norsk5@xmission.com
-Subject: [PATCH v2] [2.6.23] edac: pasemi_edac backend driver
-Message-ID: <20070622171111.GA10012@lixom.net>
-References: <20070425204309.GA19781@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070425204309.GA19781@lixom.net>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, egor@pasemi.com,
-	bluesmoke-devel@lists.sourceforge.net
+Return-Path: <krafft@de.ibm.com>
+Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate4.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6D2E7DDE26
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Jun 2007 03:49:38 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate4.de.ibm.com (8.13.8/8.13.8) with ESMTP id l5MHnXVw031616
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jun 2007 17:49:33 GMT
+Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
+	[9.149.165.213])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.3) with
+	ESMTP id l5MHnXun593938
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jun 2007 19:49:33 +0200
+Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l5MHnXLo029208
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jun 2007 19:49:33 +0200
+Received: from localhost (dyn-9-152-242-67.boeblingen.de.ibm.com
+	[9.152.242.67])
+	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.12.11) with ESMTP
+	id l5MHnX02028800
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jun 2007 19:49:33 +0200
+Date: Fri, 22 Jun 2007 19:48:53 +0200
+From: Christian Krafft <krafft@de.ibm.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: [patch] powerpc: sysfs fix compiler warning
+Message-ID: <20070622194853.72fb652a@localhost>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_E7_tUgshyV/DJbz3GpZ9Vrv";
+	protocol="application/pgp-signature"; micalg=PGP-SHA1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,356 +39,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-EDAC driver for the memory controllers on PA Semi PA6T-1682M.
+--Sig_E7_tUgshyV/DJbz3GpZ9Vrv
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Egor Martovetsky <egor@pasemi.com>
-Signed-off-by: Olof Johansson <olof@lixom.net>
+From: Christian Krafft <krafft@de.ibm.com>
 
----
-Changes since last submission:
+This patch fixes the following compiler warning:
+arch/powerpc/kernel/sysfs.c:385: warning: ignoring return value of
+`sysfs_create_group',
 
-* Rebased on top of 2.6.22-rc4-mm2 with the EDAC changes merged there.
-* Minor checkpatch.pl cleanups
-* Renamed ctl_name
-* Added dev_name
-* edac_mc.h -> edac_core.h
+Signed-off-by: Christian Krafft <krafft@de.ibm.com>
 
-Index: mm/drivers/edac/pasemi_edac.c
-===================================================================
---- /dev/null
-+++ mm/drivers/edac/pasemi_edac.c
-@@ -0,0 +1,298 @@
-+/*
-+ * Copyright (C) 2006-2007 PA Semi, Inc
-+ *
-+ * Author: Egor Martovetsky <egor@pasemi.com>
-+ * Maintained by: Olof Johansson <olof@lixom.net>
-+ *
-+ * Driver for the PWRficient onchip memory controllers
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ */
-+
-+
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/pci.h>
-+#include <linux/pci_ids.h>
-+#include <linux/slab.h>
-+#include "edac_core.h"
-+
-+#define MODULE_NAME "pasemi_edac"
-+
-+#define MCCFG_MCEN				0x300
-+#define   MCCFG_MCEN_MMC_EN			0x00000001
-+#define MCCFG_ERRCOR				0x388
-+#define   MCCFG_ERRCOR_RNK_FAIL_DET_EN		0x00000100
-+#define   MCCFG_ERRCOR_ECC_GEN_EN		0x00000010
-+#define   MCCFG_ERRCOR_ECC_CRR_EN		0x00000001
-+#define MCCFG_SCRUB				0x384
-+#define   MCCFG_SCRUB_RGLR_SCRB_EN		0x00000001
-+#define MCDEBUG_ERRCTL1				0x728
-+#define   MCDEBUG_ERRCTL1_RFL_LOG_EN		0x00080000
-+#define   MCDEBUG_ERRCTL1_MBE_LOG_EN		0x00040000
-+#define   MCDEBUG_ERRCTL1_SBE_LOG_EN		0x00020000
-+#define MCDEBUG_ERRSTA				0x730
-+#define   MCDEBUG_ERRSTA_RFL_STATUS		0x00000004
-+#define   MCDEBUG_ERRSTA_MBE_STATUS		0x00000002
-+#define   MCDEBUG_ERRSTA_SBE_STATUS		0x00000001
-+#define MCDEBUG_ERRCNT1				0x734
-+#define   MCDEBUG_ERRCNT1_SBE_CNT_OVRFLO	0x00000080
-+#define MCDEBUG_ERRLOG1A			0x738
-+#define   MCDEBUG_ERRLOG1A_MERR_TYPE_M		0x30000000
-+#define   MCDEBUG_ERRLOG1A_MERR_TYPE_NONE	0x00000000
-+#define   MCDEBUG_ERRLOG1A_MERR_TYPE_SBE	0x10000000
-+#define   MCDEBUG_ERRLOG1A_MERR_TYPE_MBE	0x20000000
-+#define   MCDEBUG_ERRLOG1A_MERR_TYPE_RFL	0x30000000
-+#define   MCDEBUG_ERRLOG1A_MERR_BA_M		0x00700000
-+#define   MCDEBUG_ERRLOG1A_MERR_BA_S		20
-+#define   MCDEBUG_ERRLOG1A_MERR_CS_M		0x00070000
-+#define   MCDEBUG_ERRLOG1A_MERR_CS_S		16
-+#define   MCDEBUG_ERRLOG1A_SYNDROME_M		0x0000ffff
-+#define MCDRAM_RANKCFG				0x114
-+#define   MCDRAM_RANKCFG_EN			0x00000001
-+#define   MCDRAM_RANKCFG_TYPE_SIZE_M		0x000001c0
-+#define   MCDRAM_RANKCFG_TYPE_SIZE_S		6
-+
-+#define PASEMI_EDAC_NR_CSROWS			8
-+#define PASEMI_EDAC_NR_CHANS			1
-+#define PASEMI_EDAC_ERROR_GRAIN			64
-+
-+static int last_page_in_mmc;
-+static int system_mmc_id;
-+
-+
-+static u32 pasemi_edac_get_error_info(struct mem_ctl_info *mci)
-+{
-+	struct pci_dev *pdev = to_pci_dev(mci->dev);
-+	u32 tmp;
-+
-+	pci_read_config_dword(pdev, MCDEBUG_ERRSTA,
-+			      &tmp);
-+
-+	tmp &= (MCDEBUG_ERRSTA_RFL_STATUS | MCDEBUG_ERRSTA_MBE_STATUS
-+		| MCDEBUG_ERRSTA_SBE_STATUS);
-+
-+	if (tmp) {
-+		if (tmp & MCDEBUG_ERRSTA_SBE_STATUS)
-+			pci_write_config_dword(pdev, MCDEBUG_ERRCNT1,
-+					       MCDEBUG_ERRCNT1_SBE_CNT_OVRFLO);
-+		pci_write_config_dword(pdev, MCDEBUG_ERRSTA, tmp);
-+	}
-+
-+	return tmp;
-+}
-+
-+static void pasemi_edac_process_error_info(struct mem_ctl_info *mci, u32 errsta)
-+{
-+	struct pci_dev *pdev = to_pci_dev(mci->dev);
-+	u32 errlog1a;
-+	u32 cs;
-+
-+	if (!errsta)
-+		return;
-+
-+	pci_read_config_dword(pdev, MCDEBUG_ERRLOG1A, &errlog1a);
-+
-+	cs = (errlog1a & MCDEBUG_ERRLOG1A_MERR_CS_M) >>
-+		MCDEBUG_ERRLOG1A_MERR_CS_S;
-+
-+	/* uncorrectable/multi-bit errors */
-+	if (errsta & (MCDEBUG_ERRSTA_MBE_STATUS |
-+		      MCDEBUG_ERRSTA_RFL_STATUS)) {
-+		edac_mc_handle_ue(mci, mci->csrows[cs].first_page, 0,
-+				  cs, mci->ctl_name);
-+	}
-+
-+	/* correctable/single-bit errors */
-+	if (errsta & MCDEBUG_ERRSTA_SBE_STATUS) {
-+		edac_mc_handle_ce(mci, mci->csrows[cs].first_page, 0,
-+				  0, cs, 0, mci->ctl_name);
-+	}
-+}
-+
-+static void pasemi_edac_check(struct mem_ctl_info *mci)
-+{
-+	u32 errsta;
-+
-+	errsta = pasemi_edac_get_error_info(mci);
-+	if (errsta)
-+		pasemi_edac_process_error_info(mci, errsta);
-+}
-+
-+static int pasemi_edac_init_csrows(struct mem_ctl_info *mci,
-+				   struct pci_dev *pdev,
-+				   enum edac_type edac_mode)
-+{
-+	struct csrow_info *csrow;
-+	u32 rankcfg;
-+	int index;
-+
-+	for (index = 0; index < mci->nr_csrows; index++) {
-+		csrow = &mci->csrows[index];
-+
-+		pci_read_config_dword(pdev,
-+				      MCDRAM_RANKCFG + (index * 12),
-+				      &rankcfg);
-+
-+		if (!(rankcfg & MCDRAM_RANKCFG_EN))
-+			continue;
-+
-+		switch ((rankcfg & MCDRAM_RANKCFG_TYPE_SIZE_M) >>
-+			MCDRAM_RANKCFG_TYPE_SIZE_S) {
-+		case 0:
-+			csrow->nr_pages = 128 << (20 - PAGE_SHIFT);
-+			break;
-+		case 1:
-+			csrow->nr_pages = 256 << (20 - PAGE_SHIFT);
-+			break;
-+		case 2:
-+		case 3:
-+			csrow->nr_pages = 512 << (20 - PAGE_SHIFT);
-+			break;
-+		case 4:
-+			csrow->nr_pages = 1024 << (20 - PAGE_SHIFT);
-+			break;
-+		case 5:
-+			csrow->nr_pages = 2048 << (20 - PAGE_SHIFT);
-+			break;
-+		default:
-+			edac_mc_printk(mci, KERN_ERR,
-+				       "Unrecognized Rank Config\n");
-+			return -EINVAL;
+Index: linux-2.6.22-rc5/arch/powerpc/kernel/sysfs.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.22-rc5.orig/arch/powerpc/kernel/sysfs.c
++++ linux-2.6.22-rc5/arch/powerpc/kernel/sysfs.c
+@@ -380,16 +380,23 @@ int cpu_add_sysdev_attr_group(struct att
+ {
+ 	int cpu;
+ 	struct sys_device *sysdev;
++	int error;
+=20
+ 	mutex_lock(&cpu_mutex);
+=20
+ 	for_each_possible_cpu(cpu) {
+ 		sysdev =3D get_cpu_sysdev(cpu);
+-		sysfs_create_group(&sysdev->kobj, attrs);
++		error |=3D sysfs_create_group(&sysdev->kobj, attrs);
+ 	}
+=20
++	if(error)
++		for_each_possible_cpu(cpu) {
++			sysdev =3D get_cpu_sysdev(cpu);
++			sysfs_remove_group(&sysdev->kobj, attrs);
 +		}
 +
-+		csrow->first_page = last_page_in_mmc;
-+		csrow->last_page = csrow->first_page + csrow->nr_pages - 1;
-+		last_page_in_mmc += csrow->nr_pages;
-+		csrow->page_mask = 0;
-+		csrow->grain = PASEMI_EDAC_ERROR_GRAIN;
-+		csrow->mtype = MEM_DDR;
-+		csrow->dtype = DEV_UNKNOWN;
-+		csrow->edac_mode = edac_mode;
-+	}
-+	return 0;
-+}
-+
-+static int __devinit pasemi_edac_probe(struct pci_dev *pdev,
-+		const struct pci_device_id *ent)
-+{
-+	struct mem_ctl_info *mci = NULL;
-+	u32 errctl1, errcor, scrub, mcen;
-+
-+	pci_read_config_dword(pdev, MCCFG_MCEN, &mcen);
-+	if (!(mcen & MCCFG_MCEN_MMC_EN))
-+		return -ENODEV;
-+
-+	/*
-+	 * We should think about enabling other error detection later on
-+	 */
-+
-+	pci_read_config_dword(pdev, MCDEBUG_ERRCTL1, &errctl1);
-+	errctl1 |= MCDEBUG_ERRCTL1_SBE_LOG_EN |
-+		MCDEBUG_ERRCTL1_MBE_LOG_EN |
-+		MCDEBUG_ERRCTL1_RFL_LOG_EN;
-+	pci_write_config_dword(pdev, MCDEBUG_ERRCTL1, errctl1);
-+
-+	mci = edac_mc_alloc(0, PASEMI_EDAC_NR_CSROWS, PASEMI_EDAC_NR_CHANS);
-+
-+	if (mci == NULL)
-+		return -ENOMEM;
-+
-+	pci_read_config_dword(pdev, MCCFG_ERRCOR, &errcor);
-+	errcor |= MCCFG_ERRCOR_RNK_FAIL_DET_EN |
-+		MCCFG_ERRCOR_ECC_GEN_EN |
-+		MCCFG_ERRCOR_ECC_CRR_EN;
-+
-+	mci->dev = &pdev->dev;
-+	mci->mtype_cap = MEM_FLAG_DDR | MEM_FLAG_RDDR;
-+	mci->edac_ctl_cap = EDAC_FLAG_NONE | EDAC_FLAG_EC | EDAC_FLAG_SECDED;
-+	mci->edac_cap = (errcor & MCCFG_ERRCOR_ECC_GEN_EN) ?
-+		((errcor & MCCFG_ERRCOR_ECC_CRR_EN) ?
-+		 (EDAC_FLAG_EC | EDAC_FLAG_SECDED) : EDAC_FLAG_EC) :
-+		EDAC_FLAG_NONE;
-+	mci->mod_name = MODULE_NAME;
-+	mci->dev_name = pci_name(pdev);
-+	mci->ctl_name = "pasemi,1682m-mc";
-+	mci->edac_check = pasemi_edac_check;
-+	mci->ctl_page_to_phys = NULL;
-+	pci_read_config_dword(pdev, MCCFG_SCRUB, &scrub);
-+	mci->scrub_cap = SCRUB_FLAG_HW_PROG | SCRUB_FLAG_HW_SRC;
-+	mci->scrub_mode =
-+		((errcor & MCCFG_ERRCOR_ECC_CRR_EN) ? SCRUB_FLAG_HW_SRC : 0) |
-+		((scrub & MCCFG_SCRUB_RGLR_SCRB_EN) ? SCRUB_FLAG_HW_PROG : 0);
-+
-+	if (pasemi_edac_init_csrows(mci, pdev,
-+				    (mci->edac_cap & EDAC_FLAG_SECDED) ?
-+				    EDAC_SECDED :
-+				    ((mci->edac_cap & EDAC_FLAG_EC) ?
-+				     EDAC_EC : EDAC_NONE)))
-+		goto fail;
-+
-+	/*
-+	 * Clear status
-+	 */
-+	pasemi_edac_get_error_info(mci);
-+
-+	if (edac_mc_add_mc(mci, system_mmc_id++)) {
-+		goto fail;
-+	}
-+
-+	/* get this far and it's successful */
-+	return 0;
-+
-+fail:
-+	edac_mc_free(mci);
-+	return -ENODEV;
-+}
-+
-+static void __devexit pasemi_edac_remove(struct pci_dev *pdev)
-+{
-+	struct mem_ctl_info *mci = edac_mc_del_mc(&pdev->dev);
-+
-+	if (!mci)
-+		return;
-+
-+	edac_mc_free(mci);
-+}
-+
-+
-+static const struct pci_device_id pasemi_edac_pci_tbl[] = {
-+	{ PCI_DEVICE(PCI_VENDOR_ID_PASEMI, 0xa00a) },
-+};
-+
-+MODULE_DEVICE_TABLE(pci, pasemi_edac_pci_tbl);
-+
-+static struct pci_driver pasemi_edac_driver = {
-+	.name = MODULE_NAME,
-+	.probe = pasemi_edac_probe,
-+	.remove = __devexit_p(pasemi_edac_remove),
-+	.id_table = pasemi_edac_pci_tbl,
-+};
-+
-+static int __init pasemi_edac_init(void)
-+{
-+	return pci_register_driver(&pasemi_edac_driver);
-+}
-+
-+static void __exit pasemi_edac_exit(void)
-+{
-+	pci_unregister_driver(&pasemi_edac_driver);
-+}
-+
-+module_init(pasemi_edac_init);
-+module_exit(pasemi_edac_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Egor Martovetsky <egor@pasemi.com>");
-+MODULE_DESCRIPTION("MC support for PA Semi PA6T-1682M memory controller");
-Index: mm/drivers/edac/Kconfig
-===================================================================
---- mm.orig/drivers/edac/Kconfig
-+++ mm/drivers/edac/Kconfig
-@@ -9,7 +9,7 @@
- menuconfig EDAC
- 	tristate "EDAC - error detection and reporting (EXPERIMENTAL)"
- 	depends on HAS_IOMEM
--	depends on X86 && EXPERIMENTAL
-+	depends on (X86 || PPC) && EXPERIMENTAL
- 	help
- 	  EDAC is designed to report errors in the core system.
- 	  These are low-level errors that are reported in the CPU or
-@@ -116,4 +116,12 @@ config EDAC_I5000
- 	  Support for error detection and correction the Intel
- 	  Greekcreek/Blackford chipsets.
- 
-+config EDAC_PASEMI
-+	tristate "PA Semi PWRficient"
-+	depends on EDAC_MM_EDAC && PCI
-+	help
-+	  Support for error detection and correction on PA Semi
-+	  PWRficient.
-+
-+
- endif # EDAC
-Index: mm/drivers/edac/Makefile
-===================================================================
---- mm.orig/drivers/edac/Makefile
-+++ mm/drivers/edac/Makefile
-@@ -26,4 +26,5 @@ obj-$(CONFIG_EDAC_I82875P)		+= i82875p_e
- obj-$(CONFIG_EDAC_I3000)		+= i3000_edac.o
- obj-$(CONFIG_EDAC_I82860)		+= i82860_edac.o
- obj-$(CONFIG_EDAC_R82600)		+= r82600_edac.o
-+obj-$(CONFIG_EDAC_PASEMI)		+= pasemi_edac.o
- 
+ 	mutex_unlock(&cpu_mutex);
+-	return 0;
++	return error;
+ }
+ EXPORT_SYMBOL_GPL(cpu_add_sysdev_attr_group);
+=20
+
+
+--=20
+Mit freundlichen Gruessen,
+kind regards,
+
+Christian Krafft
+IBM Systems & Technology Group,
+Linux Kernel Development
+IT Specialist
+
+
+Vorsitzender des Aufsichtsrats:	Martin Jetter
+Geschaeftsfuehrung:		Herbert Kircher
+Sitz der Gesellschaft:		Boeblingen
+Registriergericht:		Amtsgericht Stuttgart, HRB 243294
+
+
+--Sig_E7_tUgshyV/DJbz3GpZ9Vrv
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGfAuP6rqK4qDx+dcRAnJDAJ9MexyiOK/fafelksg2wK45arbQOgCfSrI7
+xL8Li2agvEEyCRuLl2olxjM=
+=JVw1
+-----END PGP SIGNATURE-----
+
+--Sig_E7_tUgshyV/DJbz3GpZ9Vrv--
