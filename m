@@ -1,17 +1,14 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] [POWERPC] update g5_defconfig
-From: Michael Ellerman <michael@ellerman.id.au>
-To: will_schmidt@vnet.ibm.com
-In-Reply-To: <1182461834.25426.38.camel@farscape.rchland.ibm.com>
-References: <1182461834.25426.38.camel@farscape.rchland.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-e0WmN6IR9+9s5rL0pGmV"
-Date: Fri, 22 Jun 2007 09:42:09 +1000
-Message-Id: <1182469329.13799.3.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
-Reply-To: michael@ellerman.id.au
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 22 Jun 2007 13:31:58 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Wade Farnsworth <wfarnsworth@mvista.com>
+Subject: Re: [PATCH v3] Create add_rtc() function to enable the RTC CMOS driver
+Message-ID: <20070622033158.GA21419@localhost.localdomain>
+References: <1182298510.5674.358.camel@rhino> <1182358772.5674.383.camel@rhino>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1182358772.5674.383.camel@rhino>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,191 +18,107 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Jun 20, 2007 at 09:59:32AM -0700, Wade Farnsworth wrote:
+> In order to use the RTC CMOS driver, each architecture must register a
+> platform device for the RTC.
+> 
+> This creates a function to register the platform device based on the RTC
+> device node and verifies that the RTC port against the hard-coded value
+> in asm/mc146818rtc.h.
+> 
+> Signed-off-by: Wade Farnsworth <wfarnsworth@mvista.com>
 
---=-e0WmN6IR9+9s5rL0pGmV
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Hrm.  It seems rather specific.  Can we do this more generally, by
+creating an of_platform device which binds to rtc nodes, then
+registers an appropriate platform device for each so that the generic
+rtc drivers pick them up.  Obviously we'd need some sort of table
+mapping the device node compatible properties to the appropriate
+platform device names.
 
-On Thu, 2007-06-21 at 16:37 -0500, Will Schmidt wrote:
-> Update the g5_defconfig.    This is choosing all defaults via "make
-> oldconfig", then going back and enabling CONFIG_MACINTOSH_DRIVERS and
-> options underneath that.    Specifically this is to allow the windfarm
-> driver to be automatically configured when building a defconfig kernel.=20
->=20
->=20
-> Signed-off-by Will Schmidt <will_schmidt@vnet.ibm.com>
->=20
-> ---
->  g5_defconfig |  354 ++++++++++++++++++++++++++++++----------------------=
--------
->  1 file changed, 185 insertions(+), 169 deletions(-)
->=20
-> diff --git a/arch/powerpc/configs/g5_defconfig b/arch/powerpc/configs/g5_=
-defconfig
-> index 3ccf19d..a47a41d 100644
-> --- a/arch/powerpc/configs/g5_defconfig
-> +++ b/arch/powerpc/configs/g5_defconfig
-> @@ -1,7 +1,7 @@
->  #
->  # Automatically generated make config: don't edit
-> -# Linux kernel version: 2.6.20-rc5
-> -# Mon Jan 22 22:15:04 2007
-> +# Linux kernel version: 2.6.22-rc5
-> +# Thu Jun 21 15:53:16 2007
->  #
->  CONFIG_PPC64=3Dy
->  CONFIG_64BIT=3Dy
-> @@ -27,6 +27,7 @@ CONFIG_GENERIC_TBSYNC=3Dy
->  CONFIG_AUDIT_ARCH=3Dy
->  CONFIG_GENERIC_BUG=3Dy
->  # CONFIG_DEFAULT_UIMAGE is not set
-> +CONFIG_PPC64_SWSUSP=3Dy
-> =20
->  #
->  # Processor support
-> @@ -39,6 +40,7 @@ CONFIG_PPC_FPU=3Dy
->  # CONFIG_PPC_OF_PLATFORM_PCI is not set
->  CONFIG_ALTIVEC=3Dy
->  CONFIG_PPC_STD_MMU=3Dy
-> +CONFIG_PPC_MM_SLICES=3Dy
->  CONFIG_VIRT_CPU_ACCOUNTING=3Dy
->  CONFIG_SMP=3Dy
->  CONFIG_NR_CPUS=3D4
-> @@ -59,6 +61,7 @@ CONFIG_LOCALVERSION_AUTO=3Dy
->  CONFIG_SWAP=3Dy
->  CONFIG_SYSVIPC=3Dy
->  # CONFIG_IPC_NS is not set
-> +CONFIG_SYSVIPC_SYSCTL=3Dy
->  CONFIG_POSIX_MQUEUE=3Dy
->  # CONFIG_BSD_PROCESS_ACCT is not set
->  # CONFIG_TASKSTATS is not set
-> @@ -66,9 +69,11 @@ CONFIG_POSIX_MQUEUE=3Dy
->  # CONFIG_AUDIT is not set
->  CONFIG_IKCONFIG=3Dy
->  CONFIG_IKCONFIG_PROC=3Dy
-> +CONFIG_LOG_BUF_SHIFT=3D17
->  # CONFIG_CPUSETS is not set
->  CONFIG_SYSFS_DEPRECATED=3Dy
->  # CONFIG_RELAY is not set
-> +CONFIG_BLK_DEV_INITRD=3Dy
->  CONFIG_INITRAMFS_SOURCE=3D""
->  CONFIG_CC_OPTIMIZE_FOR_SIZE=3Dy
->  CONFIG_SYSCTL=3Dy
-> @@ -83,14 +88,19 @@ CONFIG_BUG=3Dy
->  CONFIG_ELF_CORE=3Dy
->  CONFIG_BASE_FULL=3Dy
->  CONFIG_FUTEX=3Dy
-> +CONFIG_ANON_INODES=3Dy
->  CONFIG_EPOLL=3Dy
-> +CONFIG_SIGNALFD=3Dy
-> +CONFIG_TIMERFD=3Dy
-> +CONFIG_EVENTFD=3Dy
->  CONFIG_SHMEM=3Dy
-> -CONFIG_SLAB=3Dy
->  CONFIG_VM_EVENT_COUNTERS=3Dy
-> +CONFIG_SLAB=3Dy
-> +# CONFIG_SLUB is not set
-> +# CONFIG_SLOB is not set
->  CONFIG_RT_MUTEXES=3Dy
->  # CONFIG_TINY_SHMEM is not set
->  CONFIG_BASE_SMALL=3D0
-> -# CONFIG_SLOB is not set
-> =20
->  #
->  # Loadable module support
-> @@ -131,15 +141,21 @@ CONFIG_PPC_MULTIPLATFORM=3Dy
->  # CONFIG_PPC_PSERIES is not set
->  # CONFIG_PPC_ISERIES is not set
->  # CONFIG_PPC_MPC52xx is not set
-> +# CONFIG_PPC_MPC5200 is not set
->  CONFIG_PPC_PMAC=3Dy
->  CONFIG_PPC_PMAC64=3Dy
->  # CONFIG_PPC_MAPLE is not set
->  # CONFIG_PPC_PASEMI is not set
-> +# CONFIG_PPC_CELLEB is not set
-> +# CONFIG_PPC_PS3 is not set
->  # CONFIG_PPC_CELL is not set
->  # CONFIG_PPC_CELL_NATIVE is not set
->  # CONFIG_PPC_IBM_CELL_BLADE is not set
-> -# CONFIG_PPC_PS3 is not set
-> +# CONFIG_PQ2ADS is not set
->  CONFIG_PPC_NATIVE=3Dy
-> +CONFIG_MPIC=3Dy
-> +# CONFIG_MPIC_WEIRD is not set
-> +# CONFIG_PPC_I8259 is not set
->  CONFIG_U3_DART=3Dy
->  # CONFIG_PPC_RTAS is not set
->  # CONFIG_MMIO_NVRAM is not set
-> @@ -160,9 +176,12 @@ CONFIG_CPU_FREQ_GOV_POWERSAVE=3Dy
->  CONFIG_CPU_FREQ_GOV_USERSPACE=3Dy
->  # CONFIG_CPU_FREQ_GOV_ONDEMAND is not set
->  # CONFIG_CPU_FREQ_GOV_CONSERVATIVE is not set
+> Index: linux-2.6-powerpc-8641/arch/powerpc/sysdev/Makefile
+> ===================================================================
+> --- linux-2.6-powerpc-8641.orig/arch/powerpc/sysdev/Makefile
+> +++ linux-2.6-powerpc-8641/arch/powerpc/sysdev/Makefile
+> @@ -18,6 +18,7 @@ obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pc
+>  obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
+>  mv64x60-$(CONFIG_PCI)		+= mv64x60_pci.o
+>  obj-$(CONFIG_MV64X60)		+= $(mv64x60-y) mv64x60_pic.o mv64x60_dev.o
+> +obj-$(CONFIG_RTC_DRV_CMOS)	+= rtc_cmos_setup.o
+>  
+>  # contains only the suspend handler for time
+>  obj-$(CONFIG_PM)		+= timer.o
+> Index: linux-2.6-powerpc-8641/arch/powerpc/sysdev/rtc_cmos_setup.c
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6-powerpc-8641/arch/powerpc/sysdev/rtc_cmos_setup.c
+> @@ -0,0 +1,51 @@
+> +/*
+> + * Setup code for PC-style Real-Time Clock.
+> + *
+> + * Author: Wade Farnsworth <wfarnsworth@mvista.com>
+> + *
+> + * 2007 (c) MontaVista Software, Inc. This file is licensed under
+> + * the terms of the GNU General Public License version 2. This program
+> + * is licensed "as is" without any warranty of any kind, whether
+> express
+> + * or implied.
+> + */
 > +
-> +#
-> +# CPU Frequency drivers
-> +#
->  CONFIG_CPU_FREQ_PMAC64=3Dy
-> -# CONFIG_WANT_EARLY_SERIAL is not set
-> -CONFIG_MPIC=3Dy
-> +# CONFIG_CPM2 is not set
-> =20
->  #
->  # Kernel options
-> @@ -199,34 +218,34 @@ CONFIG_FLAT_NODE_MEM_MAP=3Dy
->  # CONFIG_SPARSEMEM_STATIC is not set
->  CONFIG_SPLIT_PTLOCK_CPUS=3D4
->  CONFIG_RESOURCES_64BIT=3Dy
-> +CONFIG_ZONE_DMA_FLAG=3D1
-> +# CONFIG_PPC_HAS_HASH_64K is not set
->  # CONFIG_PPC_64K_PAGES is not set
->  # CONFIG_SCHED_SMT is not set
->  CONFIG_PROC_DEVICETREE=3Dy
->  # CONFIG_CMDLINE_BOOL is not set
->  # CONFIG_PM is not set
->  CONFIG_SECCOMP=3Dy
-> +# CONFIG_WANT_DEVICE_TREE is not set
->  CONFIG_ISA_DMA_API=3Dy
-> =20
->  #
->  # Bus options
->  #
-> +CONFIG_ZONE_DMA=3Dy
->  CONFIG_GENERIC_ISA_DMA=3Dy
-> -# CONFIG_MPIC_WEIRD is not set
-> -# CONFIG_PPC_I8259 is not set
->  # CONFIG_PPC_INDIRECT_PCI is not set
->  CONFIG_PCI=3Dy
->  CONFIG_PCI_DOMAINS=3Dy
->  # CONFIG_PCIEPORTBUS is not set
-> +CONFIG_ARCH_SUPPORTS_MSI=3Dy
-> +# CONFIG_PCI_MSI is not set
+> +#include <linux/platform_device.h>
+> +#include <linux/err.h>
+> +#include <linux/init.h>
+> +#include <linux/mc146818rtc.h>
+> +
+> +#include <asm/prom.h>
+> +
+> +static int  __init add_rtc(void)
+> +{
+> +	struct device_node *np;
+> +	struct platform_device *pd;
+> +	struct resource res;
+> +
+> +	np = of_find_compatible_node(NULL, NULL, "pnpPNP,b00");
+> +	if (!np)
+> +		return -ENODEV;
+> +
+> +	if (of_address_to_resource(np, 0, &res)) {
+> +		of_node_put(np);
+> +		return -ENODEV;
+> +	}
+> +
+> +	/*
+> +	 * RTC_PORT(x) is hardcoded in asm/mc146818rtc.h.  Verify that the
+> +	 * address provided by the device node matches.
+> +	 */
+> +	if (res.start != RTC_PORT(0)) {
+> +		of_node_put(np);
+> +		return -ENODEV;
+> +	}
 
-I think we should turn MSI on, it works fine on the G5 here, and the
-drivers are pretty good at falling back to LSI if it doesn't work for
-some reason.
+This looks totally bogus.  If we have a device tree we should be using
+the address information from there, not using hardcoded magic.  Sounds
+like asm/mc146818rtc.h needs some serious fixing.
 
-cheers
+> +
+> +	pd = platform_device_register_simple("rtc_cmos", -1,
+> +					     &res, 1);
+> +	of_node_put(np);
+> +	if (IS_ERR(pd))
+> +		return PTR_ERR(pd);
+> +
+> +	return 0;
+> +}
+> +fs_initcall(add_rtc);
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-e0WmN6IR9+9s5rL0pGmV
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGewzQdSjSd0sB4dIRAg1fAJ9KvLqspaPEIWMxwjeczqZHwqyGpwCgku+y
-T5TUs+iEo333soPNYkSWpWs=
-=t6qh
------END PGP SIGNATURE-----
-
---=-e0WmN6IR9+9s5rL0pGmV--
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
