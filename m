@@ -1,20 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D4592DDEC7
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jun 2007 23:50:03 +1000 (EST)
-In-Reply-To: <1180996227.9632.77.camel@ld0161-tx32>
-References: <1180996227.9632.77.camel@ld0161-tx32>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <062E6779-8D69-4700-896C-FE06A5F8947E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2 9/9] Created quirk_mpc8641_transparent() to initialize
-	bridge resources.
-Date: Fri, 22 Jun 2007 08:50:42 -0500
-To: Jon Loeliger <jdl@freescale.com>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+Return-Path: <krafft@de.ibm.com>
+Date: Fri, 22 Jun 2007 16:10:39 +0200
+From: Christian Krafft <krafft@de.ibm.com>
+To: Akinobu Mita <mita@fixstars.com>
+Subject: Re: [Cbe-oss-dev] [patch 1/5] cell: pmi remove support for mutiple
+	devices.
+Message-ID: <20070622161039.2d863fd9@localhost>
+In-Reply-To: <20070621140731.GA24496@ps3linux.grid.fixstars.com>
+References: <20070621130944.083f8fa5@localhost>
+	<20070621131644.03a8ec31@localhost>
+	<20070621140731.GA24496@ps3linux.grid.fixstars.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary=Sig_VJ9RKS5jjkd_cPCWBnV6g8s;
+	protocol="application/pgp-signature"; micalg=PGP-SHA1
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	"cbe-oss-dev@ozlabs.org" <cbe-oss-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,55 +23,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Sig_VJ9RKS5jjkd_cPCWBnV6g8s
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-On Jun 4, 2007, at 5:30 PM, Jon Loeliger wrote:
+Hi,
 
-> The 8641 RC poses as a transparent bridge, but does not implement the
-> IO_BASE or IO_LIMIT registers in the config space.  This means that
-> the code which initializes the bridge resources ends up setting the
-> IO resources erroneously.
->
-> This change sets RC of mpc8641 to be a transparent bridge
-> for legacy I/O access and initializes the RC bridge resources
-> from the device tree.
->
-> Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
-> Signed-off-by: Andy Fleming <afleming@freescale.com>
-> Signed-off-by: Jon Loeliger <jdl@freescale.com>
-> ---
->
-> Incorporates review suggestions from Milton.
->
->  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |   76 +++++++++++++++++ 
-> +++++++++++
->  1 files changed, 76 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/ 
-> powerpc/platforms/86xx/mpc86xx_hpcn.c
-> index a82da4b..83a2c28 100644
-> --- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-> +++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-> @@ -318,6 +318,7 @@ static void __devinit quirk_uli5288(struct  
-> pci_dev *dev)
->  static void __devinit quirk_uli5229(struct pci_dev *dev)
->  {
->  	unsigned short temp;
-> +
->  	pci_write_config_word(dev, 0x04, 0x0405);
->  	dev->class &= ~0x5;
->  	pci_read_config_word(dev, 0x4a, &temp);
-> @@ -325,6 +326,75 @@ static void __devinit quirk_uli5229(struct  
-> pci_dev *dev)
->  	pci_write_config_word(dev, 0x4a, temp);
->  }
->
-> +static void __devinit quirk_mpc8641_transparent(struct pci_dev *dev)
-> +{
+On Thu, 21 Jun 2007 23:07:31 +0900
+Akinobu Mita <mita@fixstars.com> wrote:
 
-Shouldn't we put this in fsl_pcie.c since it will be need by everyone  
-using an 85xx/86xx pci-e controller?
+> > =20
+> > -	kfree(dev->dev.driver_data);
+> > +	kfree(data);
+>=20
+> Shouldn't it set data =3D NULL here?
+>=20
+> I guess we will get "pmi: driver has already been initialized" message
+> and -EBUSY on reloading pmi driver.
+>=20
+> > =20
+> >  	return 0;
+> >  }
 
-[snip]
-> +}
+That problem did actually not occur.
+Anyway, I added the line for completeness and consistency.
 
-- k
+But while testing I found another bug that occurred when freeing the irq. T=
+he dev_id when requesting the irq was NULL,
+but not when freeing the irq. I'm resending the patch as a reply to the fir=
+st version.
+
+--=20
+Mit freundlichen Gruessen,
+kind regards,
+
+Christian Krafft
+IBM Systems & Technology Group,
+Linux Kernel Development
+IT Specialist
+
+
+Vorsitzender des Aufsichtsrats:	Martin Jetter
+Geschaeftsfuehrung:		Herbert Kircher
+Sitz der Gesellschaft:		Boeblingen
+Registriergericht:		Amtsgericht Stuttgart, HRB 243294
+
+
+--Sig_VJ9RKS5jjkd_cPCWBnV6g8s
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGe9h06rqK4qDx+dcRAvsDAJ4yt2VcQ6ZicKd98kHCmqK2Y1rNCQCggysb
+8lmUeivQYc7i6GyZ4LiEBAM=
+=yNYD
+-----END PGP SIGNATURE-----
+
+--Sig_VJ9RKS5jjkd_cPCWBnV6g8s--
