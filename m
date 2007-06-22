@@ -1,35 +1,15 @@
-Return-Path: <krafft@de.ibm.com>
-Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate4.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6D2E7DDE26
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Jun 2007 03:49:38 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate4.de.ibm.com (8.13.8/8.13.8) with ESMTP id l5MHnXVw031616
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jun 2007 17:49:33 GMT
-Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
-	[9.149.165.213])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.3) with
-	ESMTP id l5MHnXun593938
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jun 2007 19:49:33 +0200
-Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l5MHnXLo029208
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jun 2007 19:49:33 +0200
-Received: from localhost (dyn-9-152-242-67.boeblingen.de.ibm.com
-	[9.152.242.67])
-	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.12.11) with ESMTP
-	id l5MHnX02028800
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jun 2007 19:49:33 +0200
-Date: Fri, 22 Jun 2007 19:48:53 +0200
-From: Christian Krafft <krafft@de.ibm.com>
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: [patch] powerpc: sysfs fix compiler warning
-Message-ID: <20070622194853.72fb652a@localhost>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_E7_tUgshyV/DJbz3GpZ9Vrv";
-	protocol="application/pgp-signature"; micalg=PGP-SHA1
+Return-Path: <tmorrison@empirix.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Follow up on 4 Gig of DDR on  MPC8548E
+Date: Fri, 22 Jun 2007 13:49:42 -0400
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D90108361D90@EMPBEDEX.empirix.com>
+In-Reply-To: <mailman.1956.1182519826.2671.linuxppc-dev@ozlabs.org>
+References: <mailman.1956.1182519826.2671.linuxppc-dev@ozlabs.org>
+From: "Morrison, Tom" <tmorrison@empirix.com>
+To: <linuxppc-dev@ozlabs.org>, <ltib@nongnu.org>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,78 +19,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Sig_E7_tUgshyV/DJbz3GpZ9Vrv
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+All,
 
-From: Christian Krafft <krafft@de.ibm.com>
+We are running into a very strange problem that I=20
+am hoping someone here might have some insight upon.
 
-This patch fixes the following compiler warning:
-arch/powerpc/kernel/sysfs.c:385: warning: ignoring return value of
-`sysfs_create_group',
+Setup:
+   1) 4 Gig of DDR RAM (at physical addresses 0-0xF_FFFF_FFFF)
 
-Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+   2) LTIB/Linux Kernel (2.6.11++) - I know we are behind the
+	times, but it was too risky to go with latest/greatest.
 
-Index: linux-2.6.22-rc5/arch/powerpc/kernel/sysfs.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.22-rc5.orig/arch/powerpc/kernel/sysfs.c
-+++ linux-2.6.22-rc5/arch/powerpc/kernel/sysfs.c
-@@ -380,16 +380,23 @@ int cpu_add_sysdev_attr_group(struct att
- {
- 	int cpu;
- 	struct sys_device *sysdev;
-+	int error;
-=20
- 	mutex_lock(&cpu_mutex);
-=20
- 	for_each_possible_cpu(cpu) {
- 		sysdev =3D get_cpu_sysdev(cpu);
--		sysfs_create_group(&sysdev->kobj, attrs);
-+		error |=3D sysfs_create_group(&sysdev->kobj, attrs);
- 	}
-=20
-+	if(error)
-+		for_each_possible_cpu(cpu) {
-+			sysdev =3D get_cpu_sysdev(cpu);
-+			sysfs_remove_group(&sysdev->kobj, attrs);
-+		}
-+
- 	mutex_unlock(&cpu_mutex);
--	return 0;
-+	return error;
- }
- EXPORT_SYMBOL_GPL(cpu_add_sysdev_attr_group);
-=20
+   3) U-boot passes a Max MEM of 3 GIG to the kernel at boot...
+	But, we are using on the bootcmd =3D=3D> mem=3D2 GIG + a few pages
 
+Symptoms:
+  a) 	Kernel boots - but fails / and hangs when it attempts to=20
+	open the initial console:
 
---=20
-Mit freundlichen Gruessen,
-kind regards,
+>> EXT2-fs warning: mounting unchecked fs, running e2fsck is recommended
+>> VFS: Mounted root (ext2 filesystem).
+>>  316k init
+>> EXT2-fs error (device sda1): ext2_check_page: bad entry in directory
+#2: >> unaligned directory entry - offset=3D0, inode=3D128,
+rec_len=3D8961,name_len=3D69
+>> Warning: unable to open an initial console.
 
-Christian Krafft
-IBM Systems & Technology Group,
-Linux Kernel Development
-IT Specialist
+--- a little debugging indicates that it is trying to open the      ----
+--- /dev/console device - and one of first physical pages allocated ----
+--- is above the 2 GIG boundary (0x80000000)                        ----
 
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3Dfurther =
+tests=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+  =20
+   b) if we pass a 'mem=3D2GIG' or less (even though 4 GIG of DDR) -=20
+	it works correctly, and we boot up normally...
 
-Vorsitzender des Aufsichtsrats:	Martin Jetter
-Geschaeftsfuehrung:		Herbert Kircher
-Sitz der Gesellschaft:		Boeblingen
-Registriergericht:		Amtsgericht Stuttgart, HRB 243294
+   d) Further, If we do #b, and ioremap a physical address=20
+	above the 2GIG and read/write those addresses - it works.....
+	=3D=3D> This tells me the memory is working...
 
+My gut tells me this might be something to do with the 2=20
+Gig boundary and specifically a "signed" versus "unsigned"=20
+address/offsets mismatch maybe somewhere in the file system??
 
---Sig_E7_tUgshyV/DJbz3GpZ9Vrv
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+We are debugging this - but it is painful and slow process=20
+to narrow the root problem - I am hoping somebody around=20
+here has some knowledge of this type of failure and can help us!
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+All the Best~!
 
-iD8DBQFGfAuP6rqK4qDx+dcRAnJDAJ9MexyiOK/fafelksg2wK45arbQOgCfSrI7
-xL8Li2agvEEyCRuLl2olxjM=
-=JVw1
------END PGP SIGNATURE-----
-
---Sig_E7_tUgshyV/DJbz3GpZ9Vrv--
+Tom Morrison
+Principal S/W Engineer
+Empirix, Inc (www.empirix.com)
+tmorrison@empirix.com
+(781) 266 - 3567
