@@ -1,22 +1,26 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
-	[151.189.21.41])
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound4-fra-R.bigfish.com (outbound-fra.frontbridge.com
+	[62.209.45.174])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 44B6BDDEC0
-	for <linuxppc-dev@ozlabs.org>; Sun, 24 Jun 2007 01:50:31 +1000 (EST)
-In-Reply-To: <11825407952085-git-send-email-timur@freescale.com>
-References: <11825407952085-git-send-email-timur@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <70d005ce549921cc56481fe0b26faaa4@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: fix MAC address entries for 83xx, 85xx,
-	and 86xx device trees
-Date: Sat, 23 Jun 2007 17:50:23 +0200
-To: Timur Tabi <timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 4CB78DDE0C
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 Jun 2007 04:39:34 +1000 (EST)
+Message-ID: <467D68D5.6070202@am.sony.com>
+Date: Sat, 23 Jun 2007 11:39:17 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: CONFIG_PS3_USE_LPAR_ADDR dramically increases boot time
+References: <F4482BED-242B-42AD-96FF-3CB14B6BC5BE@watson.ibm.com>	
+	<200706182314.26918.arnd@arndb.de>	
+	<F8264F80-17F0-47C6-AF58-9EBBF42DC24C@pobox.com>	
+	<46771140.5000205@am.sony.com>	
+	<7F58A02C-5C4C-4717-8D32-65C75C342ADB@pobox.com>
+	<1182216218.26853.305
+In-Reply-To: <1182216218.26853.305.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+	Jimi Xenidis <jimix@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,24 +30,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> For the 83xx, 85xx, and 86xx device trees, add a "local-mac-address" 
-> property
-> to every Ethernet node that didn't have one.  Add a comment indicating 
-> that
-> the "address" and/or "mac-address" properties are deprecated in DTS 
-> files
-> and will be removed at a later time.  Change all MAC address 
-> properties to
-> have a zero MAC address value.
+Benjamin Herrenschmidt wrote:
+> On Mon, 2007-06-18 at 20:13 -0400, Jimi Xenidis wrote:
+>> > When CONFIG_PS3_USE_LPAR_ADDR=n a translation in the platform code
+>> > sets up the page table to map the region to low addresses
+>> (continuous
+>> > with the boot mem region), but that translation is not compatible
+>> > with the mapping scheme used by the spu regions, which use sparse
+>> mem.
+>> 
+>> hmm.. sparse mem is for the linear map. 
+> 
+> SPE local store used to have special struct pages for it in order to
+> return things from nopage(). It was dodgy and racy. I killed that
+> recently, it was causing more problem than it was solving. So it should
+> be fine now. I'm now using nopfn() and inserting the PTEs directly from
+> the nopfn() hook.
+> 
+> So Geoff, you can remove the option for now or make it n by default.
 
-Shouldn't you use the "??" notation instead, or is that
-still not implemented?
+OK, I'll look into it after I return from OLS.
 
-Otherwise, looks good, ACK.
-
-[I would have preferred if you had removed "address" right
-away (replaced by "mac-address"), but since it is marked
-for removal anyway, that's fine with me].
-
-
-Segher
+-Geoff
