@@ -1,21 +1,23 @@
-Return-Path: <mb@bu3sch.de>
-Received: from vs166246.vserver.de
-	(static-ip-62-75-166-246.inaddr.intergenia.de [62.75.166.246])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F0535DDECF
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Jun 2007 19:47:45 +1000 (EST)
-From: Michael Buesch <mb@bu3sch.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [patch] powerpc: sysfs fix compiler warning
-Date: Sat, 23 Jun 2007 11:46:54 +0200
-References: <20070622194853.72fb652a@localhost>
-In-Reply-To: <20070622194853.72fb652a@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200706231146.54959.mb@bu3sch.de>
-Cc: Christian Krafft <krafft@de.ibm.com>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-08.arcor-online.net (mail-in-08.arcor-online.net
+	[151.189.21.48])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 25F4BDDE36
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 Jun 2007 01:46:11 +1000 (EST)
+In-Reply-To: <467BE91F.1030003@ru.mvista.com>
+References: <1181729973.25586.31.camel@dolphin.spb.rtsoft.ru>	<db0d38e5b5e1a9a3a7fe35d25ebd357a@kernel.crashing.org>	<467176EB.7060404@ru.mvista.com>	<6c416bf9f79a648fc82f64619aca86de@kernel.crashing.org>	<20070615212016.GB18055@mag.az.mvista.com>
+	<1182429443.24740.8.camel@localhost.localdomain>
+	<467BE91F.1030003@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <3372b921591ca9731d2703f04e6c35f1@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC/PATCH] powerpc: MPC7450 L2 HW cache flush feature utilization
+Date: Sat, 23 Jun 2007 17:46:01 +0200
+To: Vladislav Buzov <vbuzov@ru.mvista.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,59 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 22 June 2007 19:48:53 Christian Krafft wrote:
-> From: Christian Krafft <krafft@de.ibm.com>
-> 
-> This patch fixes the following compiler warning:
-> arch/powerpc/kernel/sysfs.c:385: warning: ignoring return value of
-> `sysfs_create_group',
-> 
-> Signed-off-by: Christian Krafft <krafft@de.ibm.com>
-> 
-> Index: linux-2.6.22-rc5/arch/powerpc/kernel/sysfs.c
-> ===================================================================
-> --- linux-2.6.22-rc5.orig/arch/powerpc/kernel/sysfs.c
-> +++ linux-2.6.22-rc5/arch/powerpc/kernel/sysfs.c
-> @@ -380,16 +380,23 @@ int cpu_add_sysdev_attr_group(struct att
->  {
->  	int cpu;
->  	struct sys_device *sysdev;
-> +	int error;
->  
->  	mutex_lock(&cpu_mutex);
->  
->  	for_each_possible_cpu(cpu) {
->  		sysdev = get_cpu_sysdev(cpu);
-> -		sysfs_create_group(&sysdev->kobj, attrs);
-> +		error |= sysfs_create_group(&sysdev->kobj, attrs);
+> Note that 745x processors have L3 cache installed and may have the same
+> problem requiring similar code modifications to use L3 hardware 
+> flushing
+> mechanism.
 
-That is probably dangerous, if multiple sysfs_create_group fail
-with different error codes. So it will wiggle the error codes
-together.
+What does the erratum say?
 
->  	}
->  
-> +	if(error)
- {
-> +		for_each_possible_cpu(cpu) {
-> +			sysdev = get_cpu_sysdev(cpu);
-> +			sysfs_remove_group(&sysdev->kobj, attrs);
-> +		}
-probably do something like
-		error = -ENOENT;
- }
-or some other error code here to fix it.
-> +
->  	mutex_unlock(&cpu_mutex);
-> -	return 0;
-> +	return error;
->  }
->  EXPORT_SYMBOL_GPL(cpu_add_sysdev_attr_group);
->  
-> 
-> 
+The L3 is a very different beast from the L2, IIRC it is
+a pure victim cache so it cannot have this problem at all?
 
 
-
--- 
-Greetings Michael.
+Segher
