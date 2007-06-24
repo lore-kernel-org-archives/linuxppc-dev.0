@@ -1,14 +1,18 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 4A0D6DDED5
-	for <linuxppc-dev@ozlabs.org>; Sun, 24 Jun 2007 16:57:13 +1000 (EST)
-Date: Sun, 24 Jun 2007 08:57:08 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] make two xmon variables static
-Message-ID: <20070624065708.GA7730@aepfle.de>
+Return-Path: <yur@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 82AB3DDED0
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 Jun 2007 22:08:40 +1000 (EST)
+From: Yuri Tikhonov <yur@emcraft.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] ppc: Marvell mv64x60 drivers for ppc platforms fix
+Date: Sun, 24 Jun 2007 15:52:31 +0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200706241552.31483.yur@emcraft.com>
+Cc: Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,23 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+ This patch fixes the issue of erroneously involving the 
+arch/powerpc/sysdev/mv64x60*.c files into the compilation 
+process for ppc- (not powerpc-) based platforms (e.g., 
+P3M750).
 
-xmon_early and xmon_off are only used in this file.
+ Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
 
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
+--
 
----
- arch/powerpc/xmon/xmon.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -2634,7 +2634,7 @@ static int __init setup_xmon_sysrq(void)
- __initcall(setup_xmon_sysrq);
- #endif /* CONFIG_MAGIC_SYSRQ */
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index c3ce0bd..25eaa14 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -17,7 +17,9 @@ obj-$(CONFIG_FSL_PCIE)		+= fsl_pcie.o
+ obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
+ obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
+ mv64x60-$(CONFIG_PCI)		+= mv64x60_pci.o
++ifeq ($(CONFIG_PPC_MERGE),y)
+ obj-$(CONFIG_MV64X60)		+= $(mv64x60-y) mv64x60_pic.o mv64x60_dev.o
++endif
  
--int __initdata xmon_early, xmon_off;
-+static int __initdata xmon_early, xmon_off;
- 
- static int __init early_parse_xmon(char *p)
- {
+ # contains only the suspend handler for time
+ obj-$(CONFIG_PM)		+= timer.o
