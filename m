@@ -1,16 +1,15 @@
-Return-Path: <mamsadegh@hotmail.com>
-Received: from bay0-omc3-s31.bay0.hotmail.com (bay0-omc3-s31.bay0.hotmail.com
-	[65.54.246.231]) by ozlabs.org (Postfix) with ESMTP id DB920DDEF1
+Return-Path: <clifford@clifford.at>
+Received: from phoenix.clifford.at (phoenix.clifford.at [88.198.7.52])
+	by ozlabs.org (Postfix) with ESMTP id 2A522DDF01
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 25 Jun 2007 00:36:04 +1000 (EST)
-Message-ID: <BAY115-W543A1618F5BCC720DEFE8B2150@phx.gbl>
-From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
-To: <eemingliu@hotmail.com>
-Subject: RE: ML403 gigabit ethernet bandwidth - 2.6 kernel
-Date: Sun, 24 Jun 2007 14:36:03 +0000
-Content-Type: text/plain; charset="gb2312"
-MIME-Version: 1.0
-Cc: akonovalov@ru.mvista.com, linuxppc-embedded@ozlabs.org
+	Mon, 25 Jun 2007 06:00:27 +1000 (EST)
+Date: Sun, 24 Jun 2007 21:39:32 +0200
+From: Clifford Wolf <clifford@clifford.at>
+To: linuxppc-embedded@ozlabs.org
+Subject: Mem-2-Mem DMA - Generalized API
+Message-ID: <20070624193932.GA11797@clifford.at>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,166 +20,58 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-Dear Ming
+I've sent this mail to lkml some days ago:
 
-We have changed our system characteristics to have TX_THRESHOLD=16 and RX_THRESHOLD=8 and in addition we enabled jumbo frames of 8982 bytes.
+http://lkml.org/lkml/2007/6/23/27
 
-The results are as follows:
-PC-->ML403
-TCP_SENDFILE : 38Mbps
+and got that answer from Clemens Koller pointing to this mailing list:
 
-ML403--->PC
-TCP_SENDFILE: 155Mbps
+http://lkml.org/lkml/2007/6/23/128
 
-The transfer rate from ML403 to PC has improved by a factor of 2, 
-I see on the posts here in the mailing list that you have reached a band width of 301Mbps.
+short summary:
 
-we are also wondering why we do not have any improve in PC to ML403 bandwidth
+I'm working on an MPC8349E based project and as some of you might know this
+chip has a four channel (bus-) memory-to-memory DMA controller.
 
-also we observed if  TX_THRESHOLD=16 and RX_THRESHOLD=2, then PC to ML403 bandwidth will increase to some thing near 60Mbps. 
+Unfortunately the linux kernel is atm lacking a generic interface for such
+DMA controllers.
 
+Instead of directly programming the DMA controller in my periphery driver
+I'd prefer implementing a generic api/scheduler and would like to discuss
+the implementation details. Such an api would make device drivers more
+portable and would allow easy sharing of the DMA controller among many
+device drivers.
 
+<end of short summary>
 
+imo there should be register/unregister functions for the driver(s)
+handling the DMA controller(s) as well as a generic function for submiting
+dma transfers.
 
+Since at least the MPC8349E DMA controller has support for scatter/gather
+dma modes and can run source/destionation optionally in 8, 16 or 32 fifo
+mode this function would have a more complicated interface than memcpy().
 
+The function for submitting dma transfers could be passed a function
+pointer (as well a void data pointer for passing metadata) which is
+called in interrupt context as soon as the tranfser has been completed.
 
+Clemens pointed out that it could also be of use to additionaly get some
+kind of progress notifications so the partial data can already be processed
+before the entire dma transfer has been completed.
 
-----------------------------------------
-> From: eemingliu@hotmail.com
-> To: mamsadegh@hotmail.com; akonovalov@ru.mvista.com; linuxppc-embedded@ozlabs.org; grant.likely@secretlab.ca
-> Subject: RE: ML403 gigabit ethernet bandwidth - 2.6 kernel
-> Date: Sat, 23 Jun 2007 19:10:16 +0000
-> 
-> Use the following command in Linux please:
-> 
-> ifconfig eth0 mtu 8982
-> 
-> As well you should do that on your PC in the measurement.
-> 
-> Ming
-> 
-> 
-> >From: Mohammad Sadegh Sadri 
-> >To: Ming Liu , 
-> ,, 
-> 
-> >Subject: RE: ML403 gigabit ethernet bandwidth - 2.6 kernel
-> >Date: Sat, 23 Jun 2007 19:08:29 +0000
-> >
-> >
-> >Dear Ming,
-> >
-> >Really thanks for reply,
-> >
-> >about thresholds and waitbound OK! I'll adjust them in adapter.c ,
-> >
-> >but what about enabling jumbo frames? should I do any thing special to 
-> enable Jumbo fram support?
-> >
-> >we were thinking that it is enabled by default. Is it?
-> >
-> >thanks
-> >
-> >
-> >
-> >
-> >----------------------------------------
-> > > From: eemingliu@hotmail.com
-> > > To: mamsadegh@hotmail.com; akonovalov@ru.mvista.com; 
-> linuxppc-embedded@ozlabs.org; grant.likely@secretlab.ca
-> > > Subject: RE: ML403 gigabit ethernet bandwidth - 2.6 kernel
-> > > Date: Sat, 23 Jun 2007 18:48:19 +0000
-> > >
-> > > Dear Mohammad,
-> > > There are some parameters which could be adjusted to improve the
-> > > performance. They are: TX and RX_Threshold TX and RX_waitbound. In my
-> > > system, we use TX_Threshold=16 and Rx_Threshold=8 and both waitbound=1.
-> > >
-> > > Also Jumbo frame of 8982 could be enable.
-> > >
-> > > Try those hints and share your improvement with us.
-> > >
-> > > BR
-> > > Ming
-> > >
-> > > >From: Mohammad Sadegh Sadri
-> > > >To: Andrei Konovalov , Linux PPC Linux
-> > > PPC, Grant Likely
-> > > >Subject: ML403 gigabit ethernet bandwidth - 2.6 kernel
-> > > >Date: Sat, 23 Jun 2007 12:19:12 +0000
-> > > >
-> > > >
-> > > >Dear all,
-> > > >
-> > > >Recently we did a set of tests on performance of virtex 4FX hard TEMAC
-> > > module using ML403
-> > > >
-> > > >we studied all of the posts here carefully: these are the system
-> > > characteristics;
-> > > >
-> > > >Board : ML403
-> > > >EDK    : EDK9.1SP2
-> > > >Hard TEMAC version and PLTEMAC version are both 3.0.a
-> > > >PPC clock frequency :  300MHz
-> > > >Kernel : 2.6.21-rc7 , downloaded from grant's git tree some thing near 
-> one
-> > > week ago
-> > > >DMA type: 3 (sg dma)
-> > > >DRE : enabled for TX and RX, (2)
-> > > >CSUM offload is enabled for both of TX and RX
-> > > >tx and rx fifo sizes : 131072 bits
-> > > >
-> > > >the board comes up over NFS root file system completely and without 
-> any
-> > > problems.
-> > > >
-> > > >PC system used for these tests is : CPU P4 Dual Core, 3.4GHz , 
-> 2Gigabytes
-> > > memory, Dual gigabit ethernet port, running linux 2.6.21.3
-> > > >We have tested the PC system band width and it can easily reach 
-> 966mbits/s
-> > > when connected to the same PC. ( using the same cross cable used for 
-> ml403
-> > > test)
-> > > >
-> > > >Netperf is compiled with TCP SEND FILE enabled, ( -DHAVE_SENDFILE)
-> > > >
-> > > >(from board to PC)
-> > > >netperf -t TCP_SENDFILE -H 10.10.10.250 -F /boot/zImage.elf -- -m 
-> 16384 -s
-> > > 87380 -S 87380
-> > > >
-> > > >the measured bandwidth for this test was just 40.66Mbits.
-> > > >It is also true for netperf from PC to board.
-> > > >
-> > > >we do not have any more idea about what we should do to improve the
-> > > bandwidth.
-> > > >any help or ideas is appreciated...
-> > > >
-> > > >_________________________________________________________________
-> > > >Connect to the next generation of MSN
-> > > 
-> Messenger?>http://imagine-msn.com/messenger/launch80/default.aspx?locale=en-us&source=wlmailtagline
-> 
-> > >
-> > > >_______________________________________________
-> > > >Linuxppc-embedded mailing list
-> > > >Linuxppc-embedded@ozlabs.org
-> > > >https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> > >
-> > > _________________________________________________________________
-> > > 免费下载 MSN Explorer:   http://explorer.msn.com/lccn/
-> > >
-> >
-> >_________________________________________________________________
-> >News, entertainment and everything you care about at Live.com. Get it now!
-> >http://www.live.com/getstarted.aspx
-> 
-> _________________________________________________________________
-> 免费下载 MSN Explorer:   http://explorer.msn.com/lccn/  
-> 
+In addition to the bare-bone 'callback in interrupt context' api I would
+also like to have small wrapper which just sleeps until the transfer has
+been finished.
 
-_________________________________________________________________
-Discover the new Windows Vista
-http://search.msn.com/results.aspx?q=windows+vista&mkt=en-US&form=QBRE
+I would be very interested in your feedback, thoughts and whishes regarding
+such an api to avoid rewrite-cycles later on.
+
+yours,
+ - clifford
+
+-- 
+"The generation of random numbers is too important to be left to chance."
+ - Robert R. Coveyou, Oak Ridge National Laboratory.
