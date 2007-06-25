@@ -1,17 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: RE: Follow up on 4 Gig of DDR on  MPC8548E
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Morrison, Tom" <tmorrison@empirix.com>
-In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D901053E84E5@EMPBEDEX.empirix.com>
-References: <mailman.1956.1182519826.2671.linuxppc-dev@ozlabs.org>
-	<BD261180E6D35F4D9D32F3E44FD3D90108361D90@EMPBEDEX.empirix.com>
-	<DCEAAC0833DD314AB0B58112AD99B93B0310C3ED@ismail.innsys.innovsys.com>
-	<BD261180E6D35F4D9D32F3E44FD3D901053E84E5@EMPBEDEX.empirix.com>
-Content-Type: text/plain
-Date: Tue, 26 Jun 2007 09:32:03 +1000
-Message-Id: <1182814323.5521.143.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, ltib@nongnu.org, linuxppc-embedded@ozlabs.org
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 3CB0FDDE09
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2007 09:37:46 +1000 (EST)
+Date: Tue, 26 Jun 2007 09:37:45 +1000
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Fix VDSO gettimeofday() when called with NULL struct
+	timeval.
+Message-ID: <20070625233745.GF9768@bakeyournoodle.com>
+References: <20070625105836.GE9768@bakeyournoodle.com>
+	<1182775182.5521.62.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1182775182.5521.62.camel@localhost.localdomain>
+From: tony@bakeyournoodle.com (Tony Breeds)
+Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,17 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Jun 25, 2007 at 10:39:42PM +1000, Benjamin Herrenschmidt wrote:
+ 
+> Please use cmplwi here.
 
-> apparently after more investigations - it looks like there is something in the ext2 driver code
-> that is mal-adjusted....I haven't talked to the guy today who was looking at that - but the ext2
-> driver code that was openning a 'virtual file' / console - had some problems mapping that
-> space - again, my gut is telling me more stronger there is a problem with signed/unsigned...
-> now deeper in the ext2 code...
+Will do.
+ 
+> And fix that one while at it :-) It's the same thing, but at least one
+> is explicit on the size of the comparison. Also, I don't think you need
+> to renumber the labels, or did I miss something ?
 
-I very much doubt there is a signed/unsigned issue in ext2 or
-elsewhere...
+No I did.
 
-You have CONFIG_HIGHMEM ? What are your setting for KERNELBASE and
-PAGE_OFFSET ?
+Yours Tony
 
-Ben.
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
