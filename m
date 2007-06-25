@@ -1,31 +1,23 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4EA08DDEE1
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2007 00:51:09 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l5PEp6tk012060
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jun 2007 10:51:06 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l5PEp5DJ205850
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jun 2007 08:51:05 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l5PEp4d2024929
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jun 2007 08:51:05 -0600
-Subject: Re: libfdt merged into DTC repo!
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Jon Loeliger <jdl@jdl.com>
-In-Reply-To: <E1I2pUz-0008MH-3F@jdl.com>
-References: <E1I2pUz-0008MH-3F@jdl.com>
-Content-Type: text/plain
-Date: Mon, 25 Jun 2007 09:51:03 -0500
-Message-Id: <1182783063.23775.40.camel@weaponx.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, u-boot-users@lists.sourceforge.net
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 50445DDEFD
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2007 01:07:32 +1000 (EST)
+Message-ID: <467FDA2C.8020607@freescale.com>
+Date: Mon, 25 Jun 2007 10:07:24 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: fix MAC address entries for 83xx, 85xx, and
+	86xx device trees
+References: <11825407952085-git-send-email-timur@freescale.com>
+	<70d005ce549921cc56481fe0b26faaa4@kernel.crashing.org>
+In-Reply-To: <70d005ce549921cc56481fe0b26faaa4@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,16 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-06-25 at 09:25 -0500, Jon Loeliger wrote:
-> Folks,
-> 
-> David Gibson has successfully wrestled the libfdt legal beast!
-> As a result, I have merged the current versions of the libfdt
-> into the DTC repository as maintained on jdl.com.
+Segher Boessenkool wrote:
 
-Cool.  Congrats David.
+> Shouldn't you use the "??" notation instead, or is that
+> still not implemented?
 
-So I'm assuming the DTC git tree will be the canonical source for libfdt
-then?
+I just tested the very latest dtc, and it does not support ??.
 
-josh
+> [I would have preferred if you had removed "address" right
+> away (replaced by "mac-address"), but since it is marked
+> for removal anyway, that's fine with me].
+
+My initial patch removed address and mac-address, but Kumar reminded me that we don't want 
+to break things so quickly.  I didn't want to run any regression tests on all these 
+platforms and versions to see which obsolete properties could be removed from which DTS.
+
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
