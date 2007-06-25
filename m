@@ -1,23 +1,19 @@
-Return-Path: <bhupi.saharan@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.224])
-	by ozlabs.org (Postfix) with ESMTP id 23640DDEDE
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 670A9DDE22
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 25 Jun 2007 21:52:52 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id 69so870822wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 25 Jun 2007 04:52:51 -0700 (PDT)
-Message-ID: <720399a30706250452m4f04f6e6w1f0fdb4b0da76b12@mail.gmail.com>
-Date: Mon, 25 Jun 2007 04:52:50 -0700
-From: "Bhupender Saharan" <bhupi.saharan@gmail.com>
-To: "Mohammad Sadegh Sadri" <mamsadegh@hotmail.com>
-Subject: Re: ML403 gigabit ethernet bandwidth - 2.6 kernel
-In-Reply-To: <BAY115-W1188529D49F71948165AF6B2160@phx.gbl>
+	Mon, 25 Jun 2007 22:53:22 +1000 (EST)
+Message-ID: <467FBABD.9040103@anagramm.de>
+Date: Mon, 25 Jun 2007 14:53:17 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_153_12213300.1182772370337"
-References: <BAY115-W1188529D49F71948165AF6B2160@phx.gbl>
-Cc: Andrei Konovalov <akonovalov@ru.mvista.com>,
-	Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
+To: Matt Sealey <matt@genesi-usa.com>
+Subject: Re: Mem-2-Mem DMA - Generalized API
+References: <20070624193932.GA11797@clifford.at>	<200706242221.57507.arnd@arndb.de>
+	<467FA0EA.3000607@genesi-usa.com>
+In-Reply-To: <467FA0EA.3000607@genesi-usa.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,98 +24,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_153_12213300.1182772370337
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hello, Matt!
 
-Hi,
+Matt Sealey schrieb:
+> IOAT and Intel's DMA engine driver is very IOAT specific in places..
+> 
+> I had a peek at it as I have a little interest in the concept; at least the
+> two platforms Genesi has been supporting (Pegasos and Efika) have quite
+> competant DMA engines which are woefully underused (i.e. not at all).
 
-We need to findout where is the bottlenect.
+True.
 
-1. Run vmstat on the ML403 board and find out the percentage CPU is busy
-when you are transferring the file. That will show if cpu is busy or not.
-2. Run oprofile and find out which are the routines eating away the cpu
-time.
+> There exists a Marvell DMA driver somewhere (I have a copy, someone on
+> this list posted it about a year ago) and while the MPC5200B doesn't have
+> explicit support for DMA from memory to memory (although memory to SRAM
+> might work in chunks, or memory to a FIFO wired as a loopback like in
+> the docs..??)
+ >
+> There is so much you can do with most SoC DMA controllers, and it's not
+> even limited to PowerPC (most ARM/XScale SoCs have very capable devices
+> inside too). I can only imagine that nobody got excited over IOAT because
+> the entire programming interface stinks of "offloading gigabit ethernet"
+> and not much else.
 
-Once we have data from both the above routines, we can find out the
-bottlenecks.
+The main question remains: Is it possible to have a flexible cross platform
+DMA API which handles even complex requests and does scheduling, prioritizing,
+queuing, locking, (re-)building/caching of SG lists... automagically.
 
+It could fall back to CPU's memcpy if the hardware doesn't have
+the ability to use the DMA machine because all channels are already busy,
+or the requested memory isn't DMAable or the request is just too small
+that it doesn't make sense to setup a DMA channel.
+Filling memory with zero is also a simple task for a DMA engine.
+(Thinking about malloc() and memset())
 
-Regards
-Bhupi
+The problem is IMHO similar to video acceleration. Within the
+Xorg's XAA/EXA/whatever framework, the drivers accelerate certain
+calls if the hardware has the capability to do so. Other calls fall back
+to some default non accelerated memcpy() & friends.
 
+Sounds like a lot of fun... replacing kernel's and libc's memcpy() with
+memcpy_with_dma_if_possible(). :-)
 
-On 6/23/07, Mohammad Sadegh Sadri <mamsadegh@hotmail.com> wrote:
->
->
-> Dear all,
->
-> Recently we did a set of tests on performance of virtex 4FX hard TEMAC
-> module using ML403
->
-> we studied all of the posts here carefully: these are the system
-> characteristics;
->
-> Board : ML403
-> EDK    : EDK9.1SP2
-> Hard TEMAC version and PLTEMAC version are both 3.0.a
-> PPC clock frequency :  300MHz
-> Kernel : 2.6.21-rc7 , downloaded from grant's git tree some thing near one
-> week ago
-> DMA type: 3 (sg dma)
-> DRE : enabled for TX and RX, (2)
-> CSUM offload is enabled for both of TX and RX
-> tx and rx fifo sizes : 131072 bits
->
-> the board comes up over NFS root file system completely and without any
-> problems.
->
-> PC system used for these tests is : CPU P4 Dual Core, 3.4GHz , 2Gigabytes
-> memory, Dual gigabit ethernet port, running linux 2.6.21.3
-> We have tested the PC system band width and it can easily reach 966mbits/s
-> when connected to the same PC. ( using the same cross cable used for ml403
-> test)
->
-> Netperf is compiled with TCP SEND FILE enabled, ( -DHAVE_SENDFILE)
->
-> (from board to PC)
-> netperf -t TCP_SENDFILE -H 10.10.10.250 -F /boot/zImage.elf -- -m 16384 -s
-> 87380 -S 87380
->
-> the measured bandwidth for this test was just 40.66Mbits.
-> It is also true for netperf from PC to board.
->
-> we do not have any more idea about what we should do to improve the
-> bandwidth.
-> any help or ideas is appreciated...
->
-> _________________________________________________________________
-> Connect to the next generation of MSN Messenger
->
-> http://imagine-msn.com/messenger/launch80/default.aspx?locale=en-us&source=wlmailtagline
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
-
-------=_Part_153_12213300.1182772370337
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hi,<br><br>We need to findout where is the bottlenect.<br><br>1. Run vmstat on the ML403 board and find out the percentage CPU is busy when you are transferring the file. That will show if cpu is busy or not.<br>2. Run oprofile and find out which are the routines eating away the cpu time.
-<br><br>Once we have data from both the above routines, we can find out the bottlenecks.<br><br><br>Regards<br>Bhupi<br><br><br><div><span class="gmail_quote">On 6/23/07, <b class="gmail_sendername">Mohammad Sadegh Sadri</b>
- &lt;<a href="mailto:mamsadegh@hotmail.com">mamsadegh@hotmail.com</a>&gt; wrote:</span><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><br>Dear all,
-<br><br>Recently we did a set of tests on performance of virtex 4FX hard TEMAC module using ML403<br><br>we studied all of the posts here carefully: these are the system characteristics;<br><br>Board : ML403<br>EDK&nbsp;&nbsp;&nbsp;&nbsp;: EDK9.1SP2
-<br>Hard TEMAC version and PLTEMAC version are both 3.0.a<br>PPC clock frequency :&nbsp;&nbsp;300MHz<br>Kernel : 2.6.21-rc7 , downloaded from grant&#39;s git tree some thing near one week ago<br>DMA type: 3 (sg dma)<br>DRE : enabled for TX and RX, (2)
-<br>CSUM offload is enabled for both of TX and RX<br>tx and rx fifo sizes : 131072 bits<br><br>the board comes up over NFS root file system completely and without any problems.<br><br>PC system used for these tests is : CPU P4 Dual Core, 
-3.4GHz , 2Gigabytes memory, Dual gigabit ethernet port, running linux <a href="http://2.6.21.3">2.6.21.3</a><br>We have tested the PC system band width and it can easily reach 966mbits/s when connected to the same PC. ( using the same cross cable used for ml403 test)
-<br><br>Netperf is compiled with TCP SEND FILE enabled, ( -DHAVE_SENDFILE)<br><br>(from board to PC)<br>netperf -t TCP_SENDFILE -H <a href="http://10.10.10.250">10.10.10.250</a> -F /boot/zImage.elf -- -m 16384 -s 87380 -S 87380
-<br><br>the measured bandwidth for this test was just 40.66Mbits.<br>It is also true for netperf from PC to board.<br><br>we do not have any more idea about what we should do to improve the bandwidth.<br>any help or ideas is appreciated...
-<br><br>_________________________________________________________________<br>Connect to the next generation of MSN Messenger<br><a href="http://imagine-msn.com/messenger/launch80/default.aspx?locale=en-us&amp;source=wlmailtagline">
-http://imagine-msn.com/messenger/launch80/default.aspx?locale=en-us&amp;source=wlmailtagline</a><br>_______________________________________________<br>Linuxppc-embedded mailing list<br><a href="mailto:Linuxppc-embedded@ozlabs.org">
-Linuxppc-embedded@ozlabs.org</a><br><a href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a><br></blockquote></div><br>
-
-------=_Part_153_12213300.1182772370337--
+Best regards,
+-- 
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
