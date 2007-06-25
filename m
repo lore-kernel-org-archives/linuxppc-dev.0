@@ -1,18 +1,25 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 5E252DDEFE
+Return-Path: <zhangyuting@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
+	by ozlabs.org (Postfix) with ESMTP id 9F200DDE46
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 25 Jun 2007 06:23:54 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
+	Mon, 25 Jun 2007 16:23:48 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id c2so1216357ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 24 Jun 2007 23:23:45 -0700 (PDT)
+Message-ID: <be40b9670706242323l4a261d2dk30d36191a4ac7e1a@mail.gmail.com>
+Date: Mon, 25 Jun 2007 14:23:44 +0800
+From: "=?GB2312?B?1cXA1g==?=" <zhangyuting@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Mem-2-Mem DMA - Generalized API
-Date: Sun, 24 Jun 2007 22:21:57 +0200
-References: <20070624193932.GA11797@clifford.at>
-In-Reply-To: <20070624193932.GA11797@clifford.at>
+Subject: Fwd: PowerPC 8248
+In-Reply-To: <be40b9670706242309y338390b6j1ff91d0c9d5e8995@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200706242221.57507.arnd@arndb.de>
+Content-Type: multipart/alternative;
+	boundary="----=_Part_145654_27288310.1182752624492"
+References: <-4679633020103399188@unknownmsgid>
+	<be40b9670706210119w40320cd1i3466681748f1fc8e@mail.gmail.com>
+	<be40b9670706210126r19571531rbec518b16077034e@mail.gmail.com>
+	<be40b9670706242249j61f813ban5d181fb266c07452@mail.gmail.com>
+	<be40b9670706242309y338390b6j1ff91d0c9d5e8995@mail.gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,14 +30,80 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sunday 24 June 2007, Clifford Wolf wrote:
-> I'm working on an MPC8349E based project and as some of you might know this
-> chip has a four channel (bus-) memory-to-memory DMA controller.
-> 
-> Unfortunately the linux kernel is atm lacking a generic interface for such
-> DMA controllers.
+------=_Part_145654_27288310.1182752624492
+Content-Type: text/plain; charset=GB2312; format=flowed
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
-So what's wrong with the include/linux/dmaengine.h API? I thought it was
-designed to cover this sort of DMA controller?
+IERlYXIgU2lyo7oKCiAgICAgIEkgYW0gYSBncmFkdWF0ZSBzdHVkZW50IGZyb20gVHNpbmdodWEg
+VW5pdmVyc2l0eSwgQ2hpbmEsIEkgY2FtZSB0byB0aGUKc2FtZSBwcm9ibGVtIHRoYXQgc2VlbXMg
+b25jZSB5b3UgZ290IGFuZCB3cm90ZSBvbiB0aGUgUFBDIGVtYmVkZWQgZm9ydW0sCnRoYXQsIHdp
+dGggdS1ib290IDEuMS4xIGZyb20gZnJlZXNhY2xlLCBJIGNhbiBub3QgcG9ydCBteSA4MjQ4Lzgy
+NzIgZnJvbSAyLjR0bwoyLjYga2VybmVsLgoKICAgICAgSSBzYXcgeW91ciBhbnN3ZXIgaXMgdGhh
+dCB0byBlZGl0ICJhcmNoL3BwYy9wbGF0Zm9ybXMvcHEyYWRzLmgiIGFuZApjaGFuZ2UgdGhlICIj
+ZGVmaW5lIEJDU1JfQUREUiAoKHVpbnQpIDB4ZjQ1MDAwMDApIiB0byBtYXRjaCB0aGUgdS1ib290
+CiJ1LWJvb3QvaW5jbHVkZS9jb25maWdzL01QQzgyNjBBRFMuaCIuCgogICAgICBJIGZvbGxvdyB0
+aGlzLCBhbmQgaXQgc3RpbGwgbm8gbHVja3ksIGJ1dCB0aGVyZSBpcyBhIGRpZmZlcmVuY2UKYmV0
+d2VlbiB0aGUgdHdvIGtlcm5lbCwgYmVmb3JlIEkgZWRpdGVkIEJDU1JfQUREUiwgdGhlIG5ldyBr
+ZXJuZWwganVzdCBoYW5nLAphZnRlciBJIGVkaXQgaXQsIHRoZSBuZXcga2VybmVsIGlzIGp1c3Qg
+cmVzdGFydCB0aGUgcmlnaHQgcGxhY2Ugd2hlcmUgaXQKaGFuZ3MuCgogICAgICBJIGdvdCBteSBr
+ZXJuZWwgZnJvbSBrZXJuZWwub3JnICgyLjYuMTMpLCBhbmQgSSB3b25kZXIgaXMgdGhlcmUKc29t
+ZXRoaW5nIGVsc2UgSSBzaG91bGQgcGF5IGF0dGVudGlvbiwgb3IgZ290IG15IGtlcm5lbCBmcm9t
+IHNvbWVvdGhlcgpwbGFjZT8KCiAgICAgIEkgYW0gbG9va2luZyBmb3J3YXJkIHRvIHlvdXIgcmVw
+bHkgYW5kIGJlc3QgcmVnYXJkcyEKCiAgIC0tCtXFwNYKWmhhbmdsZQpDRVJORVQsIFRzaW5naHVh
+IFVuaXZlcnNpdHkKemhhbmd5dXRpbmdAZ21haWwuY29tCk1vYmlsZTogKzg2MTM2OS0zMDktMTIw
+MApPZmZpY2U6IDAxMC02MjYwMzkyOApMYWI6IDAxMC02MjYwMzMxOApBZGRyOiBGSVQgNC0yMDQs
+IFRTSU5HSFVBIFVOSVYuLCBDaGluYQpMYWIgQWRkcjogRklUIDEtMjEwLCBUU0lOR0hVQSBVTklW
+LiwgQ2hpbmEKUG9zdGNvZGU6IDEwMDA4NAoKCi0tIArVxcDWClpoYW5nbGUKQ0VSTkVULCBUc2lu
+Z2h1YSBVbml2ZXJzaXR5CnpoYW5neXV0aW5nQGdtYWlsLmNvbQpNb2JpbGU6ICs4NjEzNjktMzA5
+LTEyMDAKT2ZmaWNlOiAwMTAtNjI2MDM5MjgKTGFiOiAwMTAtNjI2MDMzMTgKQWRkcjogRklUIDQt
+MjA0LCBUU0lOR0hVQSBVTklWLiwgQ2hpbmEKTGFiIEFkZHI6IEZJVCAxLTIxMCwgVFNJTkdIVUEg
+VU5JVi4sIENoaW5hClBvc3Rjb2RlOiAxMDAwODQK
+------=_Part_145654_27288310.1182752624492
+Content-Type: text/html; charset=GB2312
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
-	Arnd <><
+PHNwYW4gY2xhc3M9ImdtYWlsX3F1b3RlIj48L3NwYW4+CjxkaXY+RGVhciBTaXKjujwvZGl2Pgo8
+ZGl2PiZuYnNwOzwvZGl2Pgo8ZGl2PiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyBJIGFt
+IGEgZ3JhZHVhdGUgc3R1ZGVudCBmcm9tIFRzaW5naHVhIFVuaXZlcnNpdHksIENoaW5hLCBJIGNh
+bWUgdG8gdGhlIHNhbWUgcHJvYmxlbSB0aGF0IHNlZW1zIG9uY2UgeW91Jm5ic3A7Z290IGFuZCZu
+YnNwO3dyb3RlIG9uIHRoZSBQUEMgZW1iZWRlZCZuYnNwO2ZvcnVtLCB0aGF0LCB3aXRoIHUtYm9v
+dCAxLjEuMSZuYnNwO2Zyb20gZnJlZXNhY2xlLCZuYnNwO0kgY2FuIG5vdCZuYnNwO3BvcnQgbXkg
+ODI0OC84MjcyIGZyb20gCjIuNCB0byAyLjYga2VybmVsLjwvZGl2Pgo8ZGl2PiZuYnNwOzwvZGl2
+Pgo8ZGl2PiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyBJIHNhdyB5b3VyIGFuc3dlciBp
+cyB0aGF0Jm5ic3A7dG8gZWRpdCAmcXVvdDthcmNoL3BwYy9wbGF0Zm9ybXMvcHEyYWRzLmgmcXVv
+dDsgYW5kIGNoYW5nZSB0aGUgJnF1b3Q7I2RlZmluZSBCQ1NSX0FERFIgKCh1aW50KSAweGY0NTAw
+MDAwKSZxdW90OyB0byBtYXRjaCB0aGUgdS1ib290ICZxdW90O3UtYm9vdC9pbmNsdWRlL2NvbmZp
+Z3MvTVBDODI2MEFEUy5oJnF1b3Q7LjwvZGl2PgoKPGRpdj4mbmJzcDs8L2Rpdj4KPGRpdj4mbmJz
+cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgSSBmb2xsb3cgdGhpcywgYW5kIGl0IHN0aWxsIG5v
+IGx1Y2t5LCBidXQgdGhlcmUgaXMgYSBkaWZmZXJlbmNlIGJldHdlZW4gdGhlIHR3byBrZXJuZWws
+IGJlZm9yZSBJIGVkaXRlZCBCQ1NSX0FERFIsIHRoZSBuZXcga2VybmVsIGp1c3QgaGFuZywgYWZ0
+ZXIgSSBlZGl0IGl0LCB0aGUgbmV3IGtlcm5lbCBpcyBqdXN0IHJlc3RhcnQgdGhlIHJpZ2h0IHBs
+YWNlIHdoZXJlIGl0IGhhbmdzLiAKPC9kaXY+CjxkaXY+Jm5ic3A7PC9kaXY+CjxkaXY+Jm5ic3A7
+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7SSBnb3QgbXkga2VybmVsIGZyb20gPGEgb25j
+bGljaz0icmV0dXJuIHRvcC5qcy5PcGVuRXh0TGluayh3aW5kb3csZXZlbnQsdGhpcykiIGhyZWY9
+Imh0dHA6Ly9rZXJuZWwub3JnLyIgdGFyZ2V0PSJfYmxhbmsiPmtlcm5lbC5vcmc8L2E+ICgyLjYu
+MTMpLCBhbmQgSSB3b25kZXIgaXMgdGhlcmUgc29tZXRoaW5nIGVsc2UgSSBzaG91bGQgcGF5IGF0
+dGVudGlvbiwgb3IgZ290IG15IGtlcm5lbCBmcm9tIHNvbWVvdGhlciBwbGFjZT8KPC9kaXY+Cjxk
+aXY+Jm5ic3A7PC9kaXY+CjxkaXY+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
+SSBhbSBsb29raW5nIGZvcndhcmQgdG8geW91ciByZXBseSBhbmQgYmVzdCByZWdhcmRzITwvZGl2
+Pgo8ZGl2PiZuYnNwOzwvZGl2Pgo8ZGl2PiZuYnNwOyZuYnNwOyZuYnNwOy0tIDxzcGFuIGNsYXNz
+PSJxIj48YnI+1cXA1jxicj5aaGFuZ2xlPGJyPkNFUk5FVCwgVHNpbmdodWEgVW5pdmVyc2l0eTxi
+cj48YSBvbmNsaWNrPSJyZXR1cm4gdG9wLmpzLk9wZW5FeHRMaW5rKHdpbmRvdyxldmVudCx0aGlz
+KSIgaHJlZj0ibWFpbHRvOnpoYW5neXV0aW5nQGdtYWlsLmNvbSIgdGFyZ2V0PSJfYmxhbmsiPnpo
+YW5neXV0aW5nQGdtYWlsLmNvbTwvYT48YnI+TW9iaWxlOiArODYxMzY5LTMwOS0xMjAwIAo8YnI+
+T2ZmaWNlOiAwMTAtNjI2MDM5Mjg8YnI+TGFiOiAwMTAtNjI2MDMzMTg8YnI+QWRkcjogRklUIDQt
+MjA0LCBUU0lOR0hVQSBVTklWLiwgQ2hpbmE8YnI+TGFiIEFkZHI6IEZJVCAxLTIxMCwgVFNJTkdI
+VUEgVU5JVi4sIENoaW5hIDxicj5Qb3N0Y29kZTogMTAwMDg0PHNwYW4+PC9zcGFuPiZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
+OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
+OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOzwvc3Bhbj48L2Rpdj48YnIgY2xlYXI9ImFs
+bCI+Cjxicj4tLSA8YnI+1cXA1jxicj5aaGFuZ2xlPGJyPkNFUk5FVCwgVHNpbmdodWEgVW5pdmVy
+c2l0eTxicj48YSBocmVmPSJtYWlsdG86emhhbmd5dXRpbmdAZ21haWwuY29tIj56aGFuZ3l1dGlu
+Z0BnbWFpbC5jb208L2E+PGJyPk1vYmlsZTogKzg2MTM2OS0zMDktMTIwMDxicj5PZmZpY2U6IDAx
+MC02MjYwMzkyODxicj5MYWI6IDAxMC02MjYwMzMxODxicj5BZGRyOiBGSVQgNC0yMDQsIFRTSU5H
+SFVBIFVOSVYuLCBDaGluYQo8YnI+TGFiIEFkZHI6IEZJVCAxLTIxMCwgVFNJTkdIVUEgVU5JVi4s
+IENoaW5hIDxicj5Qb3N0Y29kZTogMTAwMDg0IAo=
+------=_Part_145654_27288310.1182752624492--
