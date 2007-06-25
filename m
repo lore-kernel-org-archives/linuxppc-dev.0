@@ -1,23 +1,15 @@
-Return-Path: <SRS0+7cfff2985c2512d6f44d+1401+infradead.org+hch@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 63205DDE1C
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2007 05:39:20 +1000 (EST)
-Date: Mon, 25 Jun 2007 20:39:09 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH v2] pcmcia: CompactFlash driver for PA Semi Electra boards
-Message-ID: <20070625193909.GA26021@infradead.org>
-References: <20070625010311.GA31355@lixom.net>
-	<20070625171221.GA6684@lixom.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070625171221.GA6684@lixom.net>
-Cc: Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
-	Russell King <rmk+lkml@arm.linux.org.uk>,
-	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
+Return-Path: <galak@kernel.crashing.org>
+In-Reply-To: <1182796800.23775.51.camel@weaponx.rchland.ibm.com>
+References: <20070625182304.GC31840@mag.az.mvista.com>
+	<1182796800.23775.51.camel@weaponx.rchland.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <0FBD8D7C-1A60-4305-992C-5C28ECE41278@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [CURIOUSITY] When will we stop caring about arch/ppc?
+Date: Mon, 25 Jun 2007 14:42:13 -0500
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,13 +19,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jun 25, 2007 at 12:12:21PM -0500, Olof Johansson wrote:
-> Driver for the CompactFlash slot on the PA Semi Electra eval board. It's
-> a simple device sitting on localbus, with interrupts and detect/voltage
-> control over GPIO.
-> 
-> The driver is implemented as an of_platform driver, and adds localbus
-> as a bus being probed by the of_platform framework.
 
-Looks good to me. The only odd thing is the inconsistant use of
-#ifdef CONFIG_PCMCIA in setup.c.
+On Jun 25, 2007, at 1:40 PM, Josh Boyer wrote:
+
+> On Mon, 2007-06-25 at 11:23 -0700, Mark A. Greer wrote:
+>> Any opinions on when we stop worrying about arch/ppc and start  
+>> getting
+>> rid of it for real?
+>
+> There are lots of boards in the 4xx family that don't exist yet in
+> powerpc.  I don't think we want it to die until they get moved  
+> over, or
+> at least marked as in a "danger zone" for a while.
+
+Agreed, we need to go through and figure out what all really needs to  
+get moved over for other boards.  I know 4xx has only one board  
+supported in arch/powerpc and I dont believe the support is complete.
+
+> Maybe what we could do is designate a kernel release where we'll stop
+> taking new arch/ppc submissions?
+
+I think we stopped taking new submissions to arch/ppc a while ago...  
+someone sneak something in on us?  We tend to only do bug fixes or  
+deal with issues related to moving things between arch/ppc & arch/ 
+powerpc.
+
+- k
