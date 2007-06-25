@@ -1,19 +1,24 @@
-Return-Path: <djiang@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 8EC91DDE33
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2007 02:07:59 +1000 (EST)
-Message-ID: <467FE8BF.6060407@mvista.com>
-Date: Mon, 25 Jun 2007 09:09:35 -0700
-From: Dave Jiang <djiang@mvista.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] powerpc: setup Marvell mv64x60 platform devices for EDAC
-References: <20070522232432.GA26046@blade.az.mvista.com>
-	<18047.24840.233508.259767@cargo.ozlabs.ibm.com>
-In-Reply-To: <18047.24840.233508.259767@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Doug Thompson <norsk5@yahoo.com>, dfarnsworth@mvista.com,
-	linuxppc-dev@ozlabs.org
+Return-Path: <jdl@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 15466DDEF7
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2007 02:20:06 +1000 (EST)
+Subject: Re: [PATCH] powerpc: fix MAC address entries for 83xx, 85xx, and
+	86xx device trees
+From: Jon Loeliger <jdl@freescale.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <70d005ce549921cc56481fe0b26faaa4@kernel.crashing.org>
+References: <11825407952085-git-send-email-timur@freescale.com>
+	<70d005ce549921cc56481fe0b26faaa4@kernel.crashing.org>
+Content-Type: text/plain
+Message-Id: <1182788398.26135.5.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Mon, 25 Jun 2007 11:19:58 -0500
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,39 +28,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras wrote:
-> Dave Jiang writes:
+On Sat, 2007-06-23 at 10:50, Segher Boessenkool wrote:
+> > For the 83xx, 85xx, and 86xx device trees, add a "local-mac-address" 
+> > property
+> > to every Ethernet node that didn't have one.  Add a comment indicating 
+> > that
+> > the "address" and/or "mac-address" properties are deprecated in DTS 
+> > files
+> > and will be removed at a later time.  Change all MAC address 
+> > properties to
+> > have a zero MAC address value.
 > 
->> The mv64x60 EDAC driver can be found at:
->> http://bluesmoke.sourceforge.net/
->>
->> It's in development to be pushed into the kernel.
-> 
-> Am I correct in thinking this patch is useless without that driver?
-> 
-> Is that driver being submitted for 2.6.23?  If so, who is submitting
-> it and to whom?  Does it look like it will be accepted?
-> 
-> Paul.
+> Shouldn't you use the "??" notation instead, or is that
+> still not implemented?
 
-Paul,
+That is correct.  It is still not implemented.
 
-Yes you are correct. I have not yet submitted the driver to akpm. I'm waiting
-for the core EDAC changes to be accepted, which are in the mm tree right now.
-The driver relies on some new API changes to EDAC that are in the mm tree.
-Without those changes the driver is pretty useless. The driver is publicly
-available from the sourceforge EDAC SVN at the moment and patches against the
-latest mm tree. If you like I can ask Doug Thompson (the EDAC maintainer) to
-put the driver in the mm tree.
-
-This is also the same for the mpc85xx EDAC driver. Of course that needs the
-publish of the of_device patch.
-
--- 
-
-------------------------------------------------------
-Dave Jiang
-Software Engineer
-MontaVista Software, Inc.
-http://www.mvista.com
-------------------------------------------------------
+jdl
