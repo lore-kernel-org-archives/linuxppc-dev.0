@@ -1,20 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 10FC9DDF01
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jun 2007 11:36:50 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] pcmcia: ppc64 needs 32-bit ioaddr_t
-Date: Mon, 25 Jun 2007 03:35:56 +0200
-References: <20070625005439.GA31289@lixom.net>
-In-Reply-To: <20070625005439.GA31289@lixom.net>
+Return-Path: <mita@fixstars.com>
+Message-ID: <39455.202.227.43.1.1182735882.squirrel@webmail.fixstars.com>
+In-Reply-To: <20070622161039.2d863fd9@localhost>
+References: <20070621130944.083f8fa5@localhost>
+	<20070621131644.03a8ec31@localhost>
+	<20070621140731.GA24496@ps3linux.grid.fixstars.com>
+	<20070622161039.2d863fd9@localhost>
+Date: Mon, 25 Jun 2007 10:44:42 +0900 (JST)
+Subject: Re: [Cbe-oss-dev] [patch 1/5] cell: pmi remove support for mutiple
+	devices.
+From: "Akinobu Mita" <mita@fixstars.com>
+To: "Christian Krafft" <krafft@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200706250335.56739.arnd@arndb.de>
-Cc: Olof Johansson <olof@lixom.net>, akpm@osdl.org,
-	linux-pcmcia@lists.infradead.org, paulus@samba.org,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain;charset=iso-2022-jp
+Cc: Akinobu Mita <mita@fixstars.com>,
+	"cbe-oss-dev@ozlabs.org" <cbe-oss-dev@ozlabs.org>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,21 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 25 June 2007, Olof Johansson wrote:
-> ppc64 really needs ioaddr_t to be 32-bit, since I/O addresses really are
-> MMIO addresses, and remapped at an offset that's well above 16 bits in
-> some cases.
-> 
-> While the type is exported to userspace, there hasn't been any platforms
-> with PCMCIA on 64-bit powerpc until now, so changing it won't regress
-> any existing users.
 
-I just realized that this argument is bogus, because the user space tools
-are probably, or at least potentially, built as 32 bit binaries, which
-means that any interface using these _will_ break.
+>> > -kfree(dev->dev.driver_data);
+>> > +kfree(data);
+>>
+>> Shouldn't it set data = NULL here?
+>>
+>> I guess we will get "pmi: driver has already been initialized" message
+>> and -EBUSY on reloading pmi driver.
+>>
+>> >
+>> >  return 0;
+>> >  }
+>
+> That problem did actually not occur.
+> Anyway, I added the line for completeness and consistency.
 
-However, I could not find any actual user space interfaces in 2.6.22-rc
-that are built around ioaddr_t. What are they, or have the been removed
-by now?
+The data is located in module data. So unloading module clean up
+the data, too. I missed it.
 
-	Arnd <><
+In order to test the problem I said, we need to re-probe pmi driver
+without unloading pmi driver. (http://lwn.net/Articles/143397/)
+
+I hope your updated version of patch fixes the problem.
