@@ -1,22 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-09.arcor-online.net (mail-in-09.arcor-online.net
-	[151.189.21.49])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 40CFBDDEBB
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jun 2007 23:36:07 +1000 (EST)
-In-Reply-To: <20070625105836.GE9768@bakeyournoodle.com>
-References: <20070625105836.GE9768@bakeyournoodle.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <757f020b834543583be36b73b932da3e@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] Fix VDSO gettimeofday() when called with NULL struct
-	timeval.
-Date: Mon, 25 Jun 2007 15:35:51 +0200
-To: tony@bakeyournoodle.com (Tony Breeds)
-Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <vbuzov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 8FED5DDEE8
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2007 00:09:37 +1000 (EST)
+Message-ID: <467FCC9D.6010904@ru.mvista.com>
+Date: Mon, 25 Jun 2007 18:09:33 +0400
+From: Vladislav Buzov <vbuzov@ru.mvista.com>
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC/PATCH] powerpc: MPC7450 L2 HW cache flush feature utilization
+References: <1181729973.25586.31.camel@dolphin.spb.rtsoft.ru>	<db0d38e5b5e1a9a3a7fe35d25ebd357a@kernel.crashing.org>	<467176EB.7060404@ru.mvista.com>	<6c416bf9f79a648fc82f64619aca86de@kernel.crashing.org>	<20070615212016.GB18055@mag.az.mvista.com>
+	<1182429443.24740.8.camel@localhost.localdomain>
+	<467BE91F.1030003@ru.mvista.com>
+	<3372b921591ca9731d2703f04e6c35f1@kernel.crashing.org>
+In-Reply-To: <3372b921591ca9731d2703f04e6c35f1@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,39 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> 	It'd be nice if this made it into 2.6.22, esp. now that more
-> distros are shipping glibc's that will use the VDSO.
+Segher Boessenkool wrote:
 
-Yeah.  Not really vital though, no sane program would call
-gettimeofday() with a NULL timeval (since that doesn't do
-anything).  Or did you find such a program (other than a
-testsuite)?
+>> Note that 745x processors have L3 cache installed and may have the same
+>> problem requiring similar code modifications to use L3 hardware flushing
+>> mechanism.
+>
+>
+> What does the erratum say?
 
-> +++ working/arch/powerpc/kernel/vdso32/gettimeofday.S	2007-06-25 
-> 19:40:34.000000000 +1000
-> @@ -32,8 +32,10 @@ V_FUNCTION_BEGIN(__kernel_gettimeofday)
->  	mr	r11,r4			/* r11 saves tz */
->  	bl	__get_datapage@local	/* get data page */
->  	mr	r9, r3			/* datapage ptr in r9 */
-> +	cmpli	cr0,r10,0		/* check if tv is NULL */
+The erratum says nothing about any HW bugs with L3 cache flush. I just 
+mentioned that the L3 cache flush operation described in MPC7450 
+Reference manual is similar to the L2 using the L3 cache hardware 
+flushing mechanism. For instance, it requires a complete L3 locking 
+before flushing.
 
-cmplwi r10,0
+>
+> The L3 is a very different beast from the L2, IIRC it is
+> a pure victim cache so it cannot have this problem at all?
 
-cmpli with two or three arguments is not an existing PowerPC
-instruction.  Also, don't write cr0 if you don't do the same
-in the accompanying branch insn, it only confuses things.
+I'm not sure if it is a pure victim cache. I read the MPC7450 reference 
+manual and see that the L3 cache operates similarly to the L2. The main 
+difference between those caches is that L3 uses an external SRAM memory 
+while L2 is a pure on-chip cache.
 
-> +	beq	1f
->  	bl	__do_get_xsec@local	/* get xsec from tb & kernel */
-> -	bne-	2f			/* out of line -> do syscall */
-> +	bne-	3f			/* out of line -> do syscall */
+Vlad.
 
-No need to renumber the labels.  Either pick a higher
-number for your new label (nothing says they need to be
-in order); or reuse some other number (both your new and
-the original 1: can be 1: without any problem, these are
-local labels after all); or you can use 0: since that's
-a valid local label as well.
-
-
-Segher
+>
+>
+> Segher
+>
