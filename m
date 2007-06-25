@@ -1,25 +1,19 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
-	[66.98.186.96])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C5772DDDF7
+Return-Path: <greg.crocker@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.231])
+	by ozlabs.org (Postfix) with ESMTP id 5C19DDDEEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Jun 2007 07:19:53 +1000 (EST)
-Message-ID: <4680319A.5050503@genesi-usa.com>
-Date: Mon, 25 Jun 2007 22:20:26 +0100
-From: Matt Sealey <matt@genesi-usa.com>
+	Tue, 26 Jun 2007 05:42:11 +1000 (EST)
+Received: by wx-out-0506.google.com with SMTP id t13so1383498wxc
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 25 Jun 2007 12:42:09 -0700 (PDT)
+Message-ID: <e4fee3c50706251242h722c00dbpfc7881aa890a5e1e@mail.gmail.com>
+Date: Mon, 25 Jun 2007 15:42:09 -0400
+From: "Greg Crocker" <greg.crocker@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: RE: ML403 gigabit ethernet bandwidth - 2.6 kernel
 MIME-Version: 1.0
-To: Clifford Wolf <clifford@clifford.at>
-Subject: Re: Mem-2-Mem DMA - Generalized API
-References: <20070624193932.GA11797@clifford.at>
-	<200706242221.57507.arnd@arndb.de>
-	<467FA0EA.3000607@genesi-usa.com> <467FBABD.9040103@anagramm.de>
-	<467FD1DF.4000602@genesi-usa.com>
-	<20070625180110.GH20463@clifford.at>
-In-Reply-To: <20070625180110.GH20463@clifford.at>
-Content-Type: text/plain; charset=UTF-8
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_Part_40291_15729050.1182800529356"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,47 +24,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Clifford Wolf wrote:
-> Hi,
->
-> However, i don't think that implementing stuff like memset() in a dma
-> controller is any good because that would just flood the memory bus which
-> would then block in 99% of all cases the cpu until the dma is finished.
->
-> It would however cost less power than doing that in the CPU. ;-)
+------=_Part_40291_15729050.1182800529356
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-At least while the DMA transfer is happening, you could preempt to some
-other task. Would it flood the memory bus? When a DMA transfer happens
-would it really do it in such a way that it would stall the CPU on a
-memory access far more than it would usually?
+I was able to achieve ~320 Mbit/sec data rate using the Gigabit System
+Reference Design (GSRD XAPP535/536) from Xilinx.  This utilizes the
+LocalLink TEMAC to perform the transfers.  The reference design provides the
+Linux 2.4 drivers that can be ported to Linux 2.6 with a little effort.
 
-I think it would have to be extremely badly designed to be even ABLE to do
-that, or at least, you'd be doing some incredibly unwise things to be able
-to flood it like that.
+This implementation did not use checksum offloading and the data rates were
+achieved using TCP_STREAM on netperf.
 
->> Indeed. I wonder if we could pull apart the IOAT/DMA stuff and genericise
->> it (it should be possible) or simply add to it, or if making a powerpc
->> specific dma engine abstraction would be an easier idea.
->
-> I don't think that this would actually be powerpc specific in any way. But
-> since such general purpose dma controllers are more common in embedded
-> hardware this still seams to be the right place to discuss the issue.
+Greg
 
-I meant powerpc platform (as in ARCH=powerpc) specific. Rather than dropping
-it in the global drivers, just keep it as a library for powerpc. Everyone
-else can get it later with a move into the full tree. As long as the headers
-have common, easy to get to names that do not conflict with anything
-preexisting, it would not affect anything.
+------=_Part_40291_15729050.1182800529356
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Taking IOAT as an example and fixing it's weirdness would be a better start
-than making a whole new API, but I think doing development *WITH* IOAT and
-potentially trashing all.. umm.. 4 users, and the weird Linux kernel tripling
-of development cost when heavily updating an actively maintained subsystem
-that everyone else wants to touch, that would be detrimental. We don't want
-to break Intel and we don't want to be tracking Intel's patches or having
-extra weirdness break in (or for the number of users of that DMA system to
-explode underneath New DMA Development)
+I was able to achieve ~320 Mbit/sec data rate using the Gigabit System Reference Design (GSRD XAPP535/536) from Xilinx.&nbsp; This utilizes the LocalLink TEMAC to perform the transfers.&nbsp; The reference design provides the Linux 
+2.4 drivers that can be ported to Linux 2.6 with a little effort.&nbsp; <br><br>This implementation did not use checksum offloading and the data rates were achieved using TCP_STREAM on netperf.<br><br>Greg<br>
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+------=_Part_40291_15729050.1182800529356--
