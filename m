@@ -1,19 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1EB05DDF1D
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jun 2007 11:50:13 +1000 (EST)
-In-Reply-To: <20070624224652.2950.qmail@farnsworth.org>
-References: <20070624224652.2950.qmail@farnsworth.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A6094184-7DFA-4ADC-B16D-20C7593135AA@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] ppc: Marvell mv64x60 drivers for ppc platforms fix
-Date: Sun, 24 Jun 2007 20:49:58 -0500
-To: Dale Farnsworth <dale@farnsworth.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 07A9CDDF0B
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jun 2007 12:33:41 +1000 (EST)
+Date: Sun, 24 Jun 2007 21:42:52 -0500
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] pcmcia: ppc64 needs 32-bit ioaddr_t
+Message-ID: <20070625024252.GA31653@lixom.net>
+References: <20070625005439.GA31289@lixom.net>
+	<200706250335.56739.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200706250335.56739.arnd@arndb.de>
+From: olof@lixom.net (Olof Johansson)
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, linux-pcmcia@lists.infradead.org,
+	paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,40 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Jun 25, 2007 at 03:35:56AM +0200, Arnd Bergmann wrote:
+> On Monday 25 June 2007, Olof Johansson wrote:
+> > ppc64 really needs ioaddr_t to be 32-bit, since I/O addresses really are
+> > MMIO addresses, and remapped at an offset that's well above 16 bits in
+> > some cases.
+> > 
+> > While the type is exported to userspace, there hasn't been any platforms
+> > with PCMCIA on 64-bit powerpc until now, so changing it won't regress
+> > any existing users.
+> 
+> I just realized that this argument is bogus, because the user space tools
+> are probably, or at least potentially, built as 32 bit binaries, which
+> means that any interface using these _will_ break.
 
-On Jun 24, 2007, at 5:46 PM, Dale Farnsworth wrote:
+Fortunately, on the userspace ABI, it should just be the cardmgr
+ioctls that are affected. In this case there are no current 64-bit PPC
+platforms with PCMCIA, so there are no existing users to regress. New
+users (with 32-bit userspace) shouldn't be using the cardmgr tools.
 
-> In article <200706241552.31483.yur@emcraft.com> you write:
->>  This patch fixes the issue of erroneously involving the
->> arch/powerpc/sysdev/mv64x60*.c files into the compilation
->> process for ppc- (not powerpc-) based platforms (e.g.,
->> P3M750).
->>
->>  Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
->>
->> --
->>
->> diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/ 
->> Makefile
->> index c3ce0bd..25eaa14 100644
->> --- a/arch/powerpc/sysdev/Makefile
->> +++ b/arch/powerpc/sysdev/Makefile
->> @@ -17,7 +17,9 @@ obj-$(CONFIG_FSL_PCIE)		+= fsl_pcie.o
->>  obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
->>  obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
->>  mv64x60-$(CONFIG_PCI)		+= mv64x60_pci.o
->
-> Shouldn't the above line also be placed inside the of following ifeq ?
->
->> +ifeq ($(CONFIG_PPC_MERGE),y)
->>  obj-$(CONFIG_MV64X60)		+= $(mv64x60-y) mv64x60_pic.o mv64x60_dev.o
->> +endif
->>
->>  # contains only the suspend handler for time
->>  obj-$(CONFIG_PM)		+= timer.o
+So yes, someone who takes an old 32-bit userspace with cardmgr, moves
+it to a new 64-bit platform and expects the old 32-bit tools to work
+will find that they don't. Not that they would have otherwise either.
 
-Also, lets just move these into the existing ifeq  
-($CONFIG_PPC_MERGE,y) block in that makefile rather than introducing  
-a new one.
+> However, I could not find any actual user space interfaces in 2.6.22-rc
+> that are built around ioaddr_t. What are they, or have the been removed
+> by now?
 
-- k
+Last time I posted this I got the answer from Christoph that it's cardmgr
+and the ioctl interface it uses, and there's still users out there that
+have been neglecting the error messages, etc.
+
+Unfortunately, ioaddr_t is used both in the ioctl interface as well as
+to pass around some of the same structures within the kernel. So I could
+either do major overhaul of the PCMCIA stack, or change this type for
+ppc64. I went for the latter given that MIPS and ARM obviously already
+got away with doing it.
+
+
+-Olof
