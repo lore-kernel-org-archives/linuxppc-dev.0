@@ -1,16 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 25 Jun 2007 13:33:48 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v3] Create add_rtc() function to enable the RTC CMOS driver
-Message-ID: <20070625033348.GC9763@localhost.localdomain>
-References: <1182298510.5674.358.camel@rhino> <1182358772.5674.383.camel@rhino>
-	<20070622033158.GA21419@localhost.localdomain>
-	<ba34492532ac9dfd43bd9f2ae427deef@kernel.crashing.org>
-MIME-Version: 1.0
+Return-Path: <SRS0+7cfff2985c2512d6f44d+1401+infradead.org+hch@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8C111DDE45
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jun 2007 15:53:17 +1000 (EST)
+Date: Mon, 25 Jun 2007 06:53:04 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] pcmcia: ppc64 needs 32-bit ioaddr_t
+Message-ID: <20070625055304.GA1057@infradead.org>
+References: <20070625005439.GA31289@lixom.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <ba34492532ac9dfd43bd9f2ae427deef@kernel.crashing.org>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+In-Reply-To: <20070625005439.GA31289@lixom.net>
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, linux-pcmcia@lists.infradead.org,
+	paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,33 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jun 22, 2007 at 09:56:24AM +0200, Segher Boessenkool wrote:
-> > Hrm.  It seems rather specific.  Can we do this more generally, by
-> > creating an of_platform device which binds to rtc nodes, then
-> > registers an appropriate platform device for each so that the generic
-> > rtc drivers pick them up.  Obviously we'd need some sort of table
-> > mapping the device node compatible properties to the appropriate
-> > platform device names.
+On Sun, Jun 24, 2007 at 07:54:39PM -0500, Olof Johansson wrote:
+> ppc64 really needs ioaddr_t to be 32-bit, since I/O addresses really are
+> MMIO addresses, and remapped at an offset that's well above 16 bits in
+> some cases.
 > 
-> >> +	 * RTC_PORT(x) is hardcoded in asm/mc146818rtc.h.  Verify that the
-> >> +	 * address provided by the device node matches.
-> >> +	 */
-> >> +	if (res.start != RTC_PORT(0)) {
-> >> +		of_node_put(np);
-> >> +		return -ENODEV;
-> >> +	}
-> >
-> > This looks totally bogus.  If we have a device tree we should be using
-> > the address information from there, not using hardcoded magic.  Sounds
-> > like asm/mc146818rtc.h needs some serious fixing.
-> 
-> Both of your comments would be nice extensions (and the right
-> way forwards), but Wade's patch is good as-is already.
+> While the type is exported to userspace, there hasn't been any platforms
+> with PCMCIA on 64-bit powerpc until now, so changing it won't regress
+> any existing users.
 
-True enough.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Drivers should be using kio_addr_t, please fix up the remaining drivers
+to do this instead of chaning the user-visible type.
