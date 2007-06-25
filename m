@@ -1,13 +1,15 @@
-Return-Path: <dale@farnsworth.org>
-Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	by ozlabs.org (Postfix) with SMTP id AAE01DDEFF
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jun 2007 08:46:56 +1000 (EST)
-Date: 24 Jun 2007 15:46:52 -0700
-Message-ID: <20070624224652.2950.qmail@farnsworth.org>
-From: "Dale Farnsworth" <dale@farnsworth.org>
-To: yur@emcraft.com, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] ppc: Marvell mv64x60 drivers for ppc platforms fix
-In-Reply-To: <200706241552.31483.yur@emcraft.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 2FED7DDF05
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jun 2007 10:45:31 +1000 (EST)
+Date: Sun, 24 Jun 2007 19:54:39 -0500
+To: linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
+Subject: [PATCH] pcmcia: ppc64 needs 32-bit ioaddr_t
+Message-ID: <20070625005439.GA31289@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: olof@lixom.net (Olof Johansson)
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,34 +19,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In article <200706241552.31483.yur@emcraft.com> you write:
->  This patch fixes the issue of erroneously involving the 
-> arch/powerpc/sysdev/mv64x60*.c files into the compilation 
-> process for ppc- (not powerpc-) based platforms (e.g., 
-> P3M750).
-> 
->  Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
-> 
-> --
-> 
-> diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-> index c3ce0bd..25eaa14 100644
-> --- a/arch/powerpc/sysdev/Makefile
-> +++ b/arch/powerpc/sysdev/Makefile
-> @@ -17,7 +17,9 @@ obj-$(CONFIG_FSL_PCIE)		+= fsl_pcie.o
->  obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
->  obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
->  mv64x60-$(CONFIG_PCI)		+= mv64x60_pci.o
+ppc64 really needs ioaddr_t to be 32-bit, since I/O addresses really are
+MMIO addresses, and remapped at an offset that's well above 16 bits in
+some cases.
 
-Shouldn't the above line also be placed inside the of following ifeq ?
+While the type is exported to userspace, there hasn't been any platforms
+with PCMCIA on 64-bit powerpc until now, so changing it won't regress
+any existing users.
 
-> +ifeq ($(CONFIG_PPC_MERGE),y)
->  obj-$(CONFIG_MV64X60)		+= $(mv64x60-y) mv64x60_pic.o mv64x60_dev.o
-> +endif
->  
->  # contains only the suspend handler for time
->  obj-$(CONFIG_PM)		+= timer.o
 
-Thanks,
+Signed-off-by: Olof Johansson <olof@lixom.net>
+Acked-by: Paul Mackerras <paulus@samba.org>
 
--Dale
+Index: 2.6.21/include/pcmcia/cs_types.h
+===================================================================
+--- 2.6.21.orig/include/pcmcia/cs_types.h
++++ 2.6.21/include/pcmcia/cs_types.h
+@@ -21,7 +21,7 @@
+ #include <sys/types.h>
+ #endif
+ 
+-#if defined(__arm__) || defined(__mips__)
++#if defined(__arm__) || defined(__mips__) || defined(__powerpc64__)
+ /* This (ioaddr_t) is exposed to userspace & hence cannot be changed. */
+ typedef u_int   ioaddr_t;
+ #else
