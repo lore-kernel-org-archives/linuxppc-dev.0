@@ -1,20 +1,19 @@
-Return-Path: <mita@fixstars.com>
-Message-ID: <39455.202.227.43.1.1182735882.squirrel@webmail.fixstars.com>
-In-Reply-To: <20070622161039.2d863fd9@localhost>
-References: <20070621130944.083f8fa5@localhost>
-	<20070621131644.03a8ec31@localhost>
-	<20070621140731.GA24496@ps3linux.grid.fixstars.com>
-	<20070622161039.2d863fd9@localhost>
-Date: Mon, 25 Jun 2007 10:44:42 +0900 (JST)
-Subject: Re: [Cbe-oss-dev] [patch 1/5] cell: pmi remove support for mutiple
-	devices.
-From: "Akinobu Mita" <mita@fixstars.com>
-To: "Christian Krafft" <krafft@de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-2022-jp
-Cc: Akinobu Mita <mita@fixstars.com>,
-	"cbe-oss-dev@ozlabs.org" <cbe-oss-dev@ozlabs.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1EB05DDF1D
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jun 2007 11:50:13 +1000 (EST)
+In-Reply-To: <20070624224652.2950.qmail@farnsworth.org>
+References: <20070624224652.2950.qmail@farnsworth.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A6094184-7DFA-4ADC-B16D-20C7593135AA@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] ppc: Marvell mv64x60 drivers for ppc platforms fix
+Date: Sun, 24 Jun 2007 20:49:58 -0500
+To: Dale Farnsworth <dale@farnsworth.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,25 +24,39 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
->> > -kfree(dev->dev.driver_data);
->> > +kfree(data);
+On Jun 24, 2007, at 5:46 PM, Dale Farnsworth wrote:
+
+> In article <200706241552.31483.yur@emcraft.com> you write:
+>>  This patch fixes the issue of erroneously involving the
+>> arch/powerpc/sysdev/mv64x60*.c files into the compilation
+>> process for ppc- (not powerpc-) based platforms (e.g.,
+>> P3M750).
 >>
->> Shouldn't it set data = NULL here?
+>>  Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
 >>
->> I guess we will get "pmi: driver has already been initialized" message
->> and -EBUSY on reloading pmi driver.
+>> --
 >>
->> >
->> >  return 0;
->> >  }
+>> diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/ 
+>> Makefile
+>> index c3ce0bd..25eaa14 100644
+>> --- a/arch/powerpc/sysdev/Makefile
+>> +++ b/arch/powerpc/sysdev/Makefile
+>> @@ -17,7 +17,9 @@ obj-$(CONFIG_FSL_PCIE)		+= fsl_pcie.o
+>>  obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
+>>  obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
+>>  mv64x60-$(CONFIG_PCI)		+= mv64x60_pci.o
 >
-> That problem did actually not occur.
-> Anyway, I added the line for completeness and consistency.
+> Shouldn't the above line also be placed inside the of following ifeq ?
+>
+>> +ifeq ($(CONFIG_PPC_MERGE),y)
+>>  obj-$(CONFIG_MV64X60)		+= $(mv64x60-y) mv64x60_pic.o mv64x60_dev.o
+>> +endif
+>>
+>>  # contains only the suspend handler for time
+>>  obj-$(CONFIG_PM)		+= timer.o
 
-The data is located in module data. So unloading module clean up
-the data, too. I missed it.
+Also, lets just move these into the existing ifeq  
+($CONFIG_PPC_MERGE,y) block in that makefile rather than introducing  
+a new one.
 
-In order to test the problem I said, we need to re-probe pmi driver
-without unloading pmi driver. (http://lwn.net/Articles/143397/)
-
-I hope your updated version of patch fixes the problem.
+- k
