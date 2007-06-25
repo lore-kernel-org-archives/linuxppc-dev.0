@@ -1,23 +1,19 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 50445DDEFD
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2007 01:07:32 +1000 (EST)
-Message-ID: <467FDA2C.8020607@freescale.com>
-Date: Mon, 25 Jun 2007 10:07:24 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id BB944DDDF8
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2007 01:40:53 +1000 (EST)
+Date: Mon, 25 Jun 2007 10:50:08 -0500
+To: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+	linux-pcmcia@lists.infradead.org, linuxppc-dev@ozlabs.org,
+	Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [PATCH] pcmcia: CompactFlash driver for PA Semi Electra boards
+Message-ID: <20070625155008.GA5217@lixom.net>
+References: <20070625010311.GA31355@lixom.net>
+	<20070625055636.GB1057@infradead.org>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: fix MAC address entries for 83xx, 85xx, and
-	86xx device trees
-References: <11825407952085-git-send-email-timur@freescale.com>
-	<70d005ce549921cc56481fe0b26faaa4@kernel.crashing.org>
-In-Reply-To: <70d005ce549921cc56481fe0b26faaa4@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070625055636.GB1057@infradead.org>
+From: olof@lixom.net (Olof Johansson)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,21 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
+On Mon, Jun 25, 2007 at 06:56:36AM +0100, Christoph Hellwig wrote:
+> > +static int bus_notify(struct notifier_block *nb, unsigned long action,
+> > +		      void *data)
+> > +{
+> > +	struct device *dev = data;
+> > +
+> > +	printk("bus notify called\n");
+> > +
+> > +	/* We are only intereted in device addition */
+> > +	if (action != BUS_NOTIFY_ADD_DEVICE)
+> > +		return 0;
+> > +
+> > +	/* We use the direct ops for localbus */
+> > +	dev->archdata.dma_ops = &dma_direct_ops;
+> > +
+> > +	return 0;
+> > +}
+> 
+> Sorry for not coming back to you after the last posting of the patch,
+> but I still really this bit of the code.  We don't set dma ops from
+> a driver anywhere else in the tree, so I'd really prefer if you could
+> handle this in architecture code somewhere.  Especially as dma_direct_ops
+> and the pcmcia_bug_type shouldn't really be something exported to users.
+> 
+> Also this code is unlogic if not buggy.  Just because you have one
+> electra bridge it doesn't mean all pcmcia is driven by it.  In fact I'm
+> pretty sure there are cardbus/pcmcia bridges that can be plugged into
+> plain pci slots.
 
-> Shouldn't you use the "??" notation instead, or is that
-> still not implemented?
+Yeah, all good points. Also, I obviously missed to take out the debug
+printk. I'll post an updated patch separately.
 
-I just tested the very latest dtc, and it does not support ??.
 
-> [I would have preferred if you had removed "address" right
-> away (replaced by "mac-address"), but since it is marked
-> for removal anyway, that's fine with me].
+Thanks!
 
-My initial patch removed address and mac-address, but Kumar reminded me that we don't want 
-to break things so quickly.  I didn't want to run any regression tests on all these 
-platforms and versions to see which obsolete properties could be removed from which DTS.
-
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+-Olof
