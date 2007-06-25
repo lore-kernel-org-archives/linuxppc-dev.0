@@ -1,16 +1,16 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [CURIOUSITY] When will we stop caring about arch/ppc?
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <0FBD8D7C-1A60-4305-992C-5C28ECE41278@kernel.crashing.org>
-References: <20070625182304.GC31840@mag.az.mvista.com>
-	<1182796800.23775.51.camel@weaponx.rchland.ibm.com>
-	<0FBD8D7C-1A60-4305-992C-5C28ECE41278@kernel.crashing.org>
-Content-Type: text/plain
-Date: Mon, 25 Jun 2007 15:50:09 -0500
-Message-Id: <1182804609.20939.5.camel@weaponx.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Return-Path: <tmorrison@empirix.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Follow up on 4 Gig of DDR on  MPC8548E
+Date: Mon, 25 Jun 2007 19:12:07 -0400
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D901053E84E5@EMPBEDEX.empirix.com>
+References: <mailman.1956.1182519826.2671.linuxppc-dev@ozlabs.org>
+	<BD261180E6D35F4D9D32F3E44FD3D90108361D90@EMPBEDEX.empirix.com>
+	<DCEAAC0833DD314AB0B58112AD99B93B0310C3ED@ismail.innsys.innovsys.com>
+From: "Morrison, Tom" <tmorrison@empirix.com>
+To: "Rune Torgersen" <runet@innovsys.com>, <linuxppc-dev@ozlabs.org>,
+	<ltib@nongnu.org>, <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,43 +20,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-06-25 at 14:42 -0500, Kumar Gala wrote:
-> On Jun 25, 2007, at 1:40 PM, Josh Boyer wrote:
-> 
-> > On Mon, 2007-06-25 at 11:23 -0700, Mark A. Greer wrote:
-> >> Any opinions on when we stop worrying about arch/ppc and start  
-> >> getting
-> >> rid of it for real?
-> >
-> > There are lots of boards in the 4xx family that don't exist yet in
-> > powerpc.  I don't think we want it to die until they get moved  
-> > over, or
-> > at least marked as in a "danger zone" for a while.
-> 
-> Agreed, we need to go through and figure out what all really needs to  
-> get moved over for other boards.  I know 4xx has only one board  
-> supported in arch/powerpc and I dont believe the support is complete.
+>> 0x0000_0000 to 0xffff_ffff or do you have 64GB of mem...
 
-Right.  Ebony boots at least.  Needs PCI to be completed.  There are
-lots of other 44x boards that should probably be brought over and are in
-various stages of completion.  Bamboo, Taishan, Sequoia, Katmai, etc.
+4 GIG DDR Memory...that we say...there is 3 GIG for the moment...
+=20
+the LAW's are  setup in priority order - thus, if you have overlapping
+regions (aka: PCI & DDR memory) the one with the lower #'d LAW
+is the one it is mapped to....
 
-For 40x, I hope to get working on a Walnut port soon.  Not sure much
-else is really needed there.
+>> If you have all physical mem in the first 32bit, where are your PCI
+>> windows set?
+>> And in modst cases the PCI devices (if they are bus-mastring ) need =
+1-1
+>> inbound mapping to be able to write to memory.
 
-There's also the Xilinx boards.
+you can use the LAW's to remap anything to anywhere...
+see above for priority - but in our case, we are mapping
+the PCI/PEX/Local Bus to the last 4 GIG at a higher=20
+priority LAW than the DDR...that is what the MPC8548=20
+spec says how it works...and it does - if you don't tell
+the kernel there is more than 2GIG (and ioremap that last
+GIG to access the full 'other' 2 GIG...
+=20
+that is not the issue here....
+=20
+apparently after more investigations - it looks like there is something =
+in the ext2 driver code
+that is mal-adjusted....I haven't talked to the guy today who was =
+looking at that - but the ext2
+driver code that was openning a 'virtual file' / console - had some =
+problems mapping that
+space - again, my gut is telling me more stronger there is a problem =
+with signed/unsigned...
+now deeper in the ext2 code...
 
-> > Maybe what we could do is designate a kernel release where we'll stop
-> > taking new arch/ppc submissions?
-> 
-> I think we stopped taking new submissions to arch/ppc a while ago...  
-> someone sneak something in on us?  We tend to only do bug fixes or  
-> deal with issues related to moving things between arch/ppc & arch/ 
-> powerpc.
-
-Well, there's definitely been an aversion to it.  But I meant adding
-something in the Documentation/powerpc/ directory and maybe
-feature-removal-schedule.txt.  Basically a written down thing in the
-kernel source to refer people to.
-
-josh
+Am at the Freescale Technical Forum the next few days - if any of you =
+guys
+are down here in Florida...I am intending to track down a few freescale =
+folk
+on this issue...:-)
+=20
+Tom
