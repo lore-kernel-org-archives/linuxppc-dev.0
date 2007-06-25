@@ -1,20 +1,16 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 1C3E7DDDEB
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2007 06:34:24 +1000 (EST)
-Date: Mon, 25 Jun 2007 15:43:41 -0500
-To: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-	linux-pcmcia@lists.infradead.org, linuxppc-dev@ozlabs.org,
-	Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [PATCH v2] pcmcia: CompactFlash driver for PA Semi Electra boards
-Message-ID: <20070625204341.GA8865@lixom.net>
-References: <20070625010311.GA31355@lixom.net>
-	<20070625171221.GA6684@lixom.net>
-	<20070625193909.GA26021@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070625193909.GA26021@infradead.org>
-From: olof@lixom.net (Olof Johansson)
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [CURIOUSITY] When will we stop caring about arch/ppc?
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <0FBD8D7C-1A60-4305-992C-5C28ECE41278@kernel.crashing.org>
+References: <20070625182304.GC31840@mag.az.mvista.com>
+	<1182796800.23775.51.camel@weaponx.rchland.ibm.com>
+	<0FBD8D7C-1A60-4305-992C-5C28ECE41278@kernel.crashing.org>
+Content-Type: text/plain
+Date: Mon, 25 Jun 2007 15:50:09 -0500
+Message-Id: <1182804609.20939.5.camel@weaponx.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,28 +20,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jun 25, 2007 at 08:39:09PM +0100, Christoph Hellwig wrote:
-> On Mon, Jun 25, 2007 at 12:12:21PM -0500, Olof Johansson wrote:
-> > Driver for the CompactFlash slot on the PA Semi Electra eval board. It's
-> > a simple device sitting on localbus, with interrupts and detect/voltage
-> > control over GPIO.
-> > 
-> > The driver is implemented as an of_platform driver, and adds localbus
-> > as a bus being probed by the of_platform framework.
+On Mon, 2007-06-25 at 14:42 -0500, Kumar Gala wrote:
+> On Jun 25, 2007, at 1:40 PM, Josh Boyer wrote:
 > 
-> Looks good to me. The only odd thing is the inconsistant use of
-> #ifdef CONFIG_PCMCIA in setup.c.
+> > On Mon, 2007-06-25 at 11:23 -0700, Mark A. Greer wrote:
+> >> Any opinions on when we stop worrying about arch/ppc and start  
+> >> getting
+> >> rid of it for real?
+> >
+> > There are lots of boards in the 4xx family that don't exist yet in
+> > powerpc.  I don't think we want it to die until they get moved  
+> > over, or
+> > at least marked as in a "danger zone" for a while.
+> 
+> Agreed, we need to go through and figure out what all really needs to  
+> get moved over for other boards.  I know 4xx has only one board  
+> supported in arch/powerpc and I dont believe the support is complete.
 
-Thanks, and thanks for the review.
+Right.  Ebony boots at least.  Needs PCI to be completed.  There are
+lots of other 44x boards that should probably be brought over and are in
+various stages of completion.  Bamboo, Taishan, Sequoia, Katmai, etc.
 
-The ifdef is needed since for CONFIG_PCMCIA=n builds, the bus notifier
-isn't available. I wanted to do the bus notifier registration explicitly
-before the of_platform bus probe to avoid later surprises due to reordered
-initcalls in case it was split up in it's own initcall.
+For 40x, I hope to get working on a Walnut port soon.  Not sure much
+else is really needed there.
 
-I could add the code under ifdef as well, but it didn't seem too
-critical. Once the second major board comes along I'll probably move it
-out to a per-board file, there's no real need for it just yet.
+There's also the Xilinx boards.
 
+> > Maybe what we could do is designate a kernel release where we'll stop
+> > taking new arch/ppc submissions?
+> 
+> I think we stopped taking new submissions to arch/ppc a while ago...  
+> someone sneak something in on us?  We tend to only do bug fixes or  
+> deal with issues related to moving things between arch/ppc & arch/ 
+> powerpc.
 
--Olof
+Well, there's definitely been an aversion to it.  But I meant adding
+something in the Documentation/powerpc/ directory and maybe
+feature-removal-schedule.txt.  Basically a written down thing in the
+kernel source to refer people to.
+
+josh
