@@ -1,24 +1,21 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 457F5DDEFE
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2007 12:02:02 +1000 (EST)
-Date: Mon, 25 Jun 2007 19:00:57 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michael Ellerman <michael@ellerman.id.au>
+Return-Path: <michael@ellerman.id.au>
 Subject: Re: [PATCH 3/3] Make jprobes a little safer for users
-Message-Id: <20070625190057.c8dcb110.akpm@linux-foundation.org>
-In-Reply-To: <7a070581b2fe53ea65216e86c86abc4f40464341.1182822366.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070625190057.c8dcb110.akpm@linux-foundation.org>
 References: <78935473b1f70c863ab0be7d6cf4bcb04922b20b.1182822366.git.michael@ellerman.id.au>
 	<7a070581b2fe53ea65216e86c86abc4f40464341.1182822366.git.michael@ellerman.id.au>
+	<20070625190057.c8dcb110.akpm@linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-KyjEHQpPkznzha+9hND4"
+Date: Tue, 26 Jun 2007 12:06:46 +1000
+Message-Id: <1182823606.6673.1.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org, Christoph,
+Cc: linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org,
 	linux-kernel@vger.kernel.org, anil.s.keshavamurthy@intel.com,
-	linuxppc-dev@ozlabs.org, Hellwig <hch@lst.de>
+	linuxppc-dev@ozlabs.org, Christoph Hellwig <hch@lst.de>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,28 +25,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 26 Jun 2007 11:48:51 +1000 (EST) Michael Ellerman <michael@ellerman.id.au> wrote:
 
-> I realise jprobes are a razor-blades-included type of interface, but
-> that doesn't mean we can't try and make them safer to use. This guy I
-> know once wrote code like this:
-> 
-> struct jprobe jp = { .kp.symbol_name = "foo", .entry = "jprobe_foo" };
-> 
-> And then his kernel exploded. Oops.
-> 
-> This patch adds an arch hook, arch_deref_entry_point() (I don't like it either)
-> which takes the void * in a struct jprobe, and gives back the text address
-> that it represents.
-> 
-> We can then use that in register_jprobe() to check that the entry point
-> we're passed is actually in the kernel text, rather than just some random
-> value.
-> 
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> ---
->  arch/ia64/kernel/kprobes.c    |    7 ++++++-
->  arch/powerpc/kernel/kprobes.c |   11 ++++++++---
->  kernel/kprobes.c              |    9 +++++++++
+--=-KyjEHQpPkznzha+9hND4
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-We're missing a declaration of arch_deref_entry_point() in some header file?
+On Mon, 2007-06-25 at 19:00 -0700, Andrew Morton wrote:
+> On Tue, 26 Jun 2007 11:48:51 +1000 (EST) Michael Ellerman <michael@ellerm=
+an.id.au> wrote:
+>=20
+> > I realise jprobes are a razor-blades-included type of interface, but
+> > that doesn't mean we can't try and make them safer to use. This guy I
+> > know once wrote code like this:
+> >=20
+> > struct jprobe jp =3D { .kp.symbol_name =3D "foo", .entry =3D "jprobe_fo=
+o" };
+> >=20
+> > And then his kernel exploded. Oops.
+> >=20
+> > This patch adds an arch hook, arch_deref_entry_point() (I don't like it=
+ either)
+> > which takes the void * in a struct jprobe, and gives back the text addr=
+ess
+> > that it represents.
+> >=20
+> > We can then use that in register_jprobe() to check that the entry point
+> > we're passed is actually in the kernel text, rather than just some rand=
+om
+> > value.
+> >=20
+> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> > ---
+> >  arch/ia64/kernel/kprobes.c    |    7 ++++++-
+> >  arch/powerpc/kernel/kprobes.c |   11 ++++++++---
+> >  kernel/kprobes.c              |    9 +++++++++
+>=20
+> We're missing a declaration of arch_deref_entry_point() in some header fi=
+le?
+
+Yeah I guess. It's declared weak in kernel/kprobes.c, but there should
+be a definition somewhere to make sure the three versions don't get out
+of sync. I'll send a patch.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-KyjEHQpPkznzha+9hND4
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGgHS2dSjSd0sB4dIRAkojAJ4tr2mPuEsr5ZO0m1JfAbm0aS2n0gCgpezg
+vpaDZAvWChFhLvbzJ01LVdk=
+=doSd
+-----END PGP SIGNATURE-----
+
+--=-KyjEHQpPkznzha+9hND4--
