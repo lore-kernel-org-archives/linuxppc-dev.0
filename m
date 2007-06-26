@@ -2,18 +2,18 @@ Return-Path: <hch@lst.de>
 Received: from mail.lst.de (verein.lst.de [213.95.11.210])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 59A0FDDE2F
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2007 15:53:13 +1000 (EST)
-Date: Tue, 26 Jun 2007 07:52:36 +0200
+	by ozlabs.org (Postfix) with ESMTP id 09011DDE3A
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2007 15:54:33 +1000 (EST)
+Date: Tue, 26 Jun 2007 07:53:47 +0200
 From: Christoph Hellwig <hch@lst.de>
 To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 2/3] Remove JPROBE_ENTRY()
-Message-ID: <20070626055236.GA6841@lst.de>
+Subject: Re: [PATCH 3/3] Make jprobes a little safer for users
+Message-ID: <20070626055347.GB6841@lst.de>
 References: <78935473b1f70c863ab0be7d6cf4bcb04922b20b.1182822366.git.michael@ellerman.id.au>
-	<98c8ff25191ced991066092ffd4899526097da1e.1182822366.git.michael@ellerman.id.au>
+	<7a070581b2fe53ea65216e86c86abc4f40464341.1182822366.git.michael@ellerman.id.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <98c8ff25191ced991066092ffd4899526097da1e.1182822366.git.michael@ellerman.id.au>
+In-Reply-To: <7a070581b2fe53ea65216e86c86abc4f40464341.1182822366.git.michael@ellerman.id.au>
 Cc: linux-arch@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
 	linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
 	anil.s.keshavamurthy@intel.com, linuxppc-dev@ozlabs.org,
@@ -28,12 +28,21 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Tue, Jun 26, 2007 at 11:48:51AM +1000, Michael Ellerman wrote:
-> AFAICT now that jprobe.entry is a void *, JPROBE_ENTRY doesn't do
-> anything useful - so remove it ..
+> I realise jprobes are a razor-blades-included type of interface, but
+> that doesn't mean we can't try and make them safer to use. This guy I
+> know once wrote code like this:
 > 
-> I've left a do-nothing version so that out-of-tree jprobes code will still
-> compile without modifications.
+> struct jprobe jp = { .kp.symbol_name = "foo", .entry = "jprobe_foo" };
+> 
+> And then his kernel exploded. Oops.
+> 
+> This patch adds an arch hook, arch_deref_entry_point() (I don't like it either)
+> which takes the void * in a struct jprobe, and gives back the text address
+> that it represents.
+> 
+> We can then use that in register_jprobe() to check that the entry point
+> we're passed is actually in the kernel text, rather than just some random
+> value.
 
-Please kill the definition.  We don't want to keep unused crap around
-just to let code compile.  And I have some plans for even deeper change
-in this area, so they'll have to change anyway.
+Please don't add more weak functions, they're utterly horrible for
+anyone trying to understand the code.  Otherwise this looks fine to me.
