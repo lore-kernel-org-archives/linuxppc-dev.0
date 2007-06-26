@@ -1,21 +1,31 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 3/3] Make jprobes a little safer for users
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070625190057.c8dcb110.akpm@linux-foundation.org>
-References: <78935473b1f70c863ab0be7d6cf4bcb04922b20b.1182822366.git.michael@ellerman.id.au>
-	<7a070581b2fe53ea65216e86c86abc4f40464341.1182822366.git.michael@ellerman.id.au>
-	<20070625190057.c8dcb110.akpm@linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-KyjEHQpPkznzha+9hND4"
-Date: Tue, 26 Jun 2007 12:06:46 +1000
-Message-Id: <1182823606.6673.1.camel@concordia.ozlabs.ibm.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 79D49DDED2
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2007 12:22:36 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l5Q2MXh9021167
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jun 2007 22:22:33 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l5Q2MX5h256492
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jun 2007 20:22:33 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l5Q2MW0l024026
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jun 2007 20:22:33 -0600
+Date: Mon, 25 Jun 2007 21:33:06 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: dtc: Remove redundant copy of the GPL
+Message-ID: <20070626023305.GA11906@crusty.rchland.ibm.com>
+References: <20070626014449.GD4383@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org,
-	linux-kernel@vger.kernel.org, anil.s.keshavamurthy@intel.com,
-	linuxppc-dev@ozlabs.org, Christoph Hellwig <hch@lst.de>
-Reply-To: michael@ellerman.id.au
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070626014449.GD4383@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,70 +35,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Jun 26, 2007 at 11:44:49AM +1000, David Gibson wrote:
+> The dtc tree currently includes two copies of the GPL - one which was
+> there originally, and one imported from the libfdt tree.  This patch
+> gets rid of the extra copy in the libfdt tree.
+> 
+> In addition it renames the file containing the remaining copy from
+> COPYING to GPL.  Since libfdt is dual-licensed, this seems clearer.
 
---=-KyjEHQpPkznzha+9hND4
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+You might want to remove the mysterious reference to the LGPL in the
+EXTRA_DIST variable in the Makefile while you're at it.
 
-On Mon, 2007-06-25 at 19:00 -0700, Andrew Morton wrote:
-> On Tue, 26 Jun 2007 11:48:51 +1000 (EST) Michael Ellerman <michael@ellerm=
-an.id.au> wrote:
->=20
-> > I realise jprobes are a razor-blades-included type of interface, but
-> > that doesn't mean we can't try and make them safer to use. This guy I
-> > know once wrote code like this:
-> >=20
-> > struct jprobe jp =3D { .kp.symbol_name =3D "foo", .entry =3D "jprobe_fo=
-o" };
-> >=20
-> > And then his kernel exploded. Oops.
-> >=20
-> > This patch adds an arch hook, arch_deref_entry_point() (I don't like it=
- either)
-> > which takes the void * in a struct jprobe, and gives back the text addr=
-ess
-> > that it represents.
-> >=20
-> > We can then use that in register_jprobe() to check that the entry point
-> > we're passed is actually in the kernel text, rather than just some rand=
-om
-> > value.
-> >=20
-> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> > ---
-> >  arch/ia64/kernel/kprobes.c    |    7 ++++++-
-> >  arch/powerpc/kernel/kprobes.c |   11 ++++++++---
-> >  kernel/kprobes.c              |    9 +++++++++
->=20
-> We're missing a declaration of arch_deref_entry_point() in some header fi=
-le?
-
-Yeah I guess. It's declared weak in kernel/kprobes.c, but there should
-be a definition somewhere to make sure the three versions don't get out
-of sync. I'll send a patch.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-KyjEHQpPkznzha+9hND4
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGgHS2dSjSd0sB4dIRAkojAJ4tr2mPuEsr5ZO0m1JfAbm0aS2n0gCgpezg
-vpaDZAvWChFhLvbzJ01LVdk=
-=doSd
------END PGP SIGNATURE-----
-
---=-KyjEHQpPkznzha+9hND4--
+josh
