@@ -1,26 +1,26 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-02.arcor-online.net (mail-in-02.arcor-online.net
+	[151.189.21.42])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 20B68DDE0F
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2007 16:51:43 +1000 (EST)
-Date: Mon, 25 Jun 2007 23:51:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: michael@ellerman.id.au
-Subject: Re: [PATCH 3/3] Make jprobes a little safer for users
-Message-Id: <20070625235103.2d8dea18.akpm@linux-foundation.org>
-In-Reply-To: <1182837838.6673.17.camel@concordia.ozlabs.ibm.com>
-References: <78935473b1f70c863ab0be7d6cf4bcb04922b20b.1182822366.git.michael@ellerman.id.au>
-	<7a070581b2fe53ea65216e86c86abc4f40464341.1182822366.git.michael@ellerman.id.au>
-	<20070626055347.GB6841@lst.de>
-	<1182837838.6673.17.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org,
-	linux-kernel@vger.kernel.org, anil.s.keshavamurthy@intel.com,
-	linuxppc-dev@ozlabs.org, Christoph Hellwig <hch@lst.de>
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C0487DDE30
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2007 17:40:50 +1000 (EST)
+In-Reply-To: <467FE6E5.1070403@freescale.com>
+References: <11825407952085-git-send-email-timur@freescale.com>
+	<70d005ce549921cc56481fe0b26faaa4@kernel.crashing.org>
+	<467FDA2C.8020607@freescale.com>
+	<05ae4090f00e42580b7dcbf0619cc0b7@kernel.crashing.org>
+	<467FE6E5.1070403@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <b50d825c36a92dc2e16f486455e0623d@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: fix MAC address entries for 83xx, 85xx,
+	and 86xx device trees
+Date: Tue, 26 Jun 2007 09:40:44 +0200
+To: Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,60 +30,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 26 Jun 2007 16:03:58 +1000 Michael Ellerman <michael@ellerman.id.au> wrote:
+>> Yup, they're both marked for removal so let's just remove them
+>> at the same time.
+>
+> As soon as Paul creates a "for-2.6.25" branch, that's when I was 
+> planning on doing it.
 
-> On Tue, 2007-06-26 at 07:53 +0200, Christoph Hellwig wrote:
-> > On Tue, Jun 26, 2007 at 11:48:51AM +1000, Michael Ellerman wrote:
-> > > I realise jprobes are a razor-blades-included type of interface, but
-> > > that doesn't mean we can't try and make them safer to use. This guy I
-> > > know once wrote code like this:
-> > > 
-> > > struct jprobe jp = { .kp.symbol_name = "foo", .entry = "jprobe_foo" };
-> > > 
-> > > And then his kernel exploded. Oops.
-> > > 
-> > > This patch adds an arch hook, arch_deref_entry_point() (I don't like it either)
-> > > which takes the void * in a struct jprobe, and gives back the text address
-> > > that it represents.
-> > > 
-> > > We can then use that in register_jprobe() to check that the entry point
-> > > we're passed is actually in the kernel text, rather than just some random
-> > > value.
-> > 
-> > Please don't add more weak functions, they're utterly horrible for
-> > anyone trying to understand the code.  Otherwise this looks fine to me.
-> 
-> What do you recommend instead? #define ARCH_HAS_FOO_BAR ?
+Sounds like as good a time as any.
 
-o lord, save us, no.
+>> Does the kernel provide a warning to users of too-old firmware^Wuboot
+>> telling them to update btw?
+>
+> Nope.  The current U-Boot code updates mac-address and/or 
+> local-mac-address, whichever ones exist.  If neither exists, it 
+> doesn't do anything.  If both exists, it updates both with the same 
+> value.  This makes it DTS-agnostic, so to speak.
+>
+> The kernel looks at each of the properties and uses the first one that 
+> has a valid MAC address.  Again, this is U-Boot- and DTS-agnostic.
 
-> I don't see what's utterly horrible about them.
+Yeah, that's fine.   I just meant the current kernel (before
+.25) could detect you are using a uboot that won't work after
+.25 anymore, and shout at the user.  Would save you some bug
+reports ;-)
 
-Me either.
+> In other words, the current U-Boot and Linux code is written to not 
+> care what the other one does.  I have no plans to remove the code in 
+> the kernel that looks for obsolete entries (I'm talking about function 
+> of_get_mac_address), because it's "safe".
 
-> The fact that they're
-> weak is fairly reasonable documentation that they're overridden
-> somewhere else. And grep/cscope/ctags will find both the weak and
-> non-weak versions for you?
+Well you should remove the "address" thing, it is _not_ safe.
 
-yup.
+> However, now that you mention it, I could update function 
+> of_get_mac_address() to display a warning if it only finds the 
+> 'address' property.
 
-In this case we could just require that each jprobes-supporting
-architecture implement arch_deref_entry_point().
+Yeah exactly.
+
+>   That property is definitely wrong and should never be in the DTS or 
+> any device tree passed to the kernel.
 
 
-Or one could do the Linus trick.  In each architecture which implements
-arch_deref_entry_point() do:
-
-#define arch_deref_entry_point arch_deref_entry_point
-
-in the per-arch header file then, in non-arch code, do
-
-#ifndef arch_deref_entry_point
-static unsigned long arch_deref_entry_point(...)
-{
-	<generic implementation>
-}
-#endif
-
-That's just the ARCH_HAS_FOO_BAR thing, only less fugly.
+Segher
