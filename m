@@ -1,17 +1,20 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org
-Subject: Re: [Cbe-oss-dev] [patch 3/5] cell: updated driver for DDR2 memory on
-	AXON
-Date: Tue, 26 Jun 2007 18:21:05 +0200
-References: <OF39A5D2DB.6FC50A30-ONC1257306.0051B925-C1257306.0052040B@de.ibm.com>
-In-Reply-To: <OF39A5D2DB.6FC50A30-ONC1257306.0051B925-C1257306.0052040B@de.ibm.com>
+Return-Path: <mgreer@mvista.com>
+Date: Tue, 26 Jun 2007 10:18:11 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [CURIOUSITY] When will we stop caring about arch/ppc?
+Message-ID: <20070626171811.GD31457@mag.az.mvista.com>
+References: <20070625182304.GC31840@mag.az.mvista.com>
+	<1182796800.23775.51.camel@weaponx.rchland.ibm.com>
+	<0FBD8D7C-1A60-4305-992C-5C28ECE41278@kernel.crashing.org>
+	<1182804609.20939.5.camel@weaponx.rchland.ibm.com>
+	<b75c4d9610522f1a45ed1e65c9a4a548@kernel.crashing.org>
+	<1182864764.19501.7.camel@weaponx.rchland.ibm.com>
+	<1ce7f225511ea3d67a63b8a4ac683e0c@kernel.crashing.org>
 MIME-Version: 1.0
-Message-Id: <200706261821.06516.arnd@arndb.de>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Cc: Maxim Shchetynin <maxim@de.ibm.com>, linuxppc-dev@ozlabs.org,
-	Carsten Otte <cotte@de.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1ce7f225511ea3d67a63b8a4ac683e0c@kernel.crashing.org>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,31 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 26 June 2007, Maxim Shchetynin wrote:
-> Actually, axon_ram's direct_access method would not be used by ext2 at all
-> - ext2 feels comfortable with make_request().
+On Tue, Jun 26, 2007 at 03:46:58PM +0200, Segher Boessenkool wrote:
+> >>> But I meant adding
+> >>> something in the Documentation/powerpc/ directory and maybe
+> >>> feature-removal-schedule.txt.  Basically a written down thing in the
+> >>> kernel source to refer people to.
+> >>
+> >> How about this time next year -- special event at
+> >> the OLS PowerPC BOF :-)
+> >
+> > Heh, sounds good to me.
+> >
+> > Of course, getting stuff done in a year.... ;)
+> 
+> Well the arch/ppc tree is basically frozen already, all Freescale
+> stuff got moved over already as far as I can see, and 4xx has
+> started moving.  I think a year is enough, since the tree is
+> frozen anyway, people can resurrect stuff from older releases
+> if need be, no problem with deleting it.  In fact, why not do
+> so this year :-)  [Yeah that was a joke].
 
-not for mmap().
+Actually, I wouldn't have a problem with getting rid of arch/ppc right
+now.  It won't really be lost, just git checkout your favorite tag that
+still has it.  It'll get rid of code people shouldn't be worrying about
+anymore anyway.
 
-What will actually happen if you try to mount an axonram device with ext2?
-I suppose mount should fail with a proper error code if the block size is
-larger than 4kb, but does that happen?
+I realize, I'm probably the only one with this opinion so you don't have
+to tell me all the reasons I'm wrong. :)
 
-If you have a 4k block size axonram device, the ext2 really should work
-using XIP as expected, including the mmap() operation.
-
-> We have the direct_access method here only because it is needed for the
-> azfs file-system, which we recommend to use for accessing the Axon's RAM
-> rather then ext2 or any other buffered file-systems.
-
-I think I've understood what the problem is now. The generic xip code
-assumes that the data to be mapped has a 'struct page' in mem_map,
-and that it's part of the linear kernel mapping. This is actually
-true on s390, where it is currently used, but not for us. The point
-on s390 is that the kernel virtual address is _identical_ to the
-physical address, so it may never have shown up as a problem.
-
-I'll talk to Carsten about this, he already had plans to remove
-the need for struct page from the filemap_xip infrastructure.
-
-	Arnd <><
+Mark
