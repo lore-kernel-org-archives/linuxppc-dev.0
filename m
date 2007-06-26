@@ -1,12 +1,15 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <tmorrison@empirix.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18048.58771.1270.408497@cargo.ozlabs.ibm.com>
-Date: Tue, 26 Jun 2007 20:08:19 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-Subject: Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Follow up on 4 Gig of DDR on  MPC8548E
+Date: Tue, 26 Jun 2007 07:11:39 -0400
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D901053E84EE@EMPBEDEX.empirix.com>
+References: <mailman.1956.1182519826.2671.linuxppc-dev@ozlabs.org><BD261180E6D35F4D9D32F3E44FD3D90108361D90@EMPBEDEX.empirix.com><DCEAAC0833DD314AB0B58112AD99B93B0310C3ED@ismail.innsys.innovsys.com><BD261180E6D35F4D9D32F3E44FD3D901053E84E5@EMPBEDEX.empirix.com>
+	<1182814323.5521.143.camel@localhost.localdomain>
+From: "Morrison, Tom" <tmorrison@empirix.com>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, ltib@nongnu.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,101 +19,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+>> apparently after more investigations - it looks like there is =
+something in the ext2 driver code
+>> that is mal-adjusted....I haven't talked to the guy today who was =
+looking at that - but the ext2
+>> driver code that was openning a 'virtual file' / console - had some =
+problems mapping that
+>> space - again, my gut is telling me more stronger there is a problem =
+with signed/unsigned...
+>> now deeper in the ext2 code...
 
-Please do:
+> I very much doubt there is a signed/unsigned issue in ext2 or =
+elsewhere...
+>
+> You have CONFIG_HIGHMEM ? What are your setting for KERNELBASE and =
+PAGE_OFFSET ?
 
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+Ben,
+=20
+I am sorry it I alluded to ext2 code itself having a signed/unsigned =
+problem -=20
+just that the problem was manifesting itself inside the ext2 code in a =
+very=20
+strange way ...with something that I guessed below it that was violating =
 
-to get two more bug fixes for powerpc, plus defconfig updates.
-
-Thanks,
-Paul.
-
- arch/powerpc/configs/cell_defconfig        |  243 ++++++---------
- arch/powerpc/configs/celleb_defconfig      |  169 +++-------
- arch/powerpc/configs/chrp32_defconfig      |  353 +++++++++++++--------
- arch/powerpc/configs/ebony_defconfig       |  138 +++-----
- arch/powerpc/configs/g5_defconfig          |  342 +++++++++++----------
- arch/powerpc/configs/holly_defconfig       |  125 ++------
- arch/powerpc/configs/iseries_defconfig     |   36 --
- arch/powerpc/configs/linkstation_defconfig |  384 ++++++++++-------------
- arch/powerpc/configs/lite5200_defconfig    |  182 +++++------
- arch/powerpc/configs/maple_defconfig       |  248 +++++++--------
- arch/powerpc/configs/pasemi_defconfig      |   58 ----
- arch/powerpc/configs/pmac32_defconfig      |  375 +++++++++++------------
- arch/powerpc/configs/ppc64_defconfig       |  460 +++++++++++++++++-----------
- arch/powerpc/configs/prpmc2800_defconfig   |   98 +-----
- arch/powerpc/configs/ps3_defconfig         |   79 +----
- arch/powerpc/configs/pseries_defconfig     |  387 ++++++++++++++----------
- arch/powerpc/kernel/signal_64.c            |   10 -
- arch/powerpc/kernel/vdso32/gettimeofday.S  |    4 
- arch/powerpc/kernel/vdso64/gettimeofday.S  |    7 
- 19 files changed, 1748 insertions(+), 1950 deletions(-)
-
-commit ae62fbb5f1f796d87cbdbe6701e13f2b52d5c0a7
-Author: Paul Mackerras <paulus@samba.org>
-Date:   Tue Jun 26 14:49:11 2007 +1000
-
-    [POWERPC] Fix subtle FP state corruption bug in signal return on SMP
-    
-    This fixes a bug which can cause corruption of the floating-point state
-    on return from a signal handler.  If we have a signal handler that has
-    used the floating-point registers, and it happens to context-switch to
-    another task while copying the interrupted floating-point state from the
-    user stack into the thread struct (e.g. because of a page fault, or
-    because it gets preempted), the context switch code will think that the
-    FP registers contain valid FP state that needs to be copied into the
-    thread_struct, and will thus overwrite the values that the signal return
-    code has put into the thread_struct.
-    
-    This can occur because we clear the MSR bits that indicate the presence
-    of valid FP state after copying the state into the thread_struct.  To fix
-    this we just move the clearing of the MSR bits to before the copy.  A
-    similar potential problem also occurs with the Altivec state, and this
-    fixes that in the same way.
-    
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit 74609f4536f2b8fd6a48381bbbe3cd37da20a527
-Author: Tony Breeds <tony@bakeyournoodle.com>
-Date:   Tue Jun 26 09:50:32 2007 +1000
-
-    [POWERPC] Fix VDSO gettimeofday() when called with NULL struct timeval
-    
-    Consider the prototype for gettimeofday():
-    	int gettimofday(struct timeval *tv, struct timezone *tz);
-    
-    Although it is valid to call with /either/ tv or tz being NULL, and
-    the C version of sys_gettimeofday() supports this, the current version
-    of gettimeofday() in the VDSO will SEGV if called with a NULL tv.
-    
-    This adds a check for tv being NULL so that it doesn't SEGV.
-    
-    Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
-    Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit ca74c013441200b162f6a384b23b833d1865a9e8
-Author: Paul Mackerras <paulus@samba.org>
-Date:   Tue Jun 26 14:19:35 2007 +1000
-
-    [POWERPC] Update defconfigs
-    
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit d30d6badd1769a00bc5a800b8af4e8b3f169c633
-Author: will schmidt <will_schmidt@vnet.ibm.com>
-Date:   Sat Jun 23 01:24:56 2007 +1000
-
-    [POWERPC] Update g5_defconfig
-    
-    Update the g5_defconfig with default settings.
-    This is to keep things up to date, and specifically to ensure that the
-    CONFIG_MACINTOSH_DRIVERS option is enabled.  This also turns on
-    CONFIG_MSI.
-    
-    Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
-    cc: Michael Ellerman <michael@ellerman.id.au>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
+a signed/unsigned API....
+=20
+and I was wrong with this hunch (gotta check my hunch meter)...
+It was a nuance in the configuration of inbound windows for PCI/PEX=20
+that was dribbling onto the memory that was consistently being i/o =
+mapped
+to the ext2 driver - which then got confused and bailed completely.
+=20
+We now have it working as we want it to with all 4 GIG of=20
+DDR working as we want it.
+=20
+Thank you for pushing us to push through the hunch and get to the=20
+root cause. It was a tough one to find.
+=20
+Tom
+=20
