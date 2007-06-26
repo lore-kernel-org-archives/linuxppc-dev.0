@@ -1,31 +1,26 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Return-Path: <timur@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9611ADDE1D
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2007 01:11:32 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l5QF6VEH018007
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2007 11:06:31 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l5QFBRaj267048
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2007 09:11:28 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l5QFBRXj021158
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2007 09:11:27 -0600
-Date: Tue, 26 Jun 2007 10:11:26 -0500
-To: xu chen <chenxurcy@yahoo.com.cn>
-Subject: Re: Who can help me with my NFS?
-Message-ID: <20070626151126.GC4482@austin.ibm.com>
-References: <947266.20019.qm@web92009.mail.cnb.yahoo.com>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 409A6DDEDE
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2007 01:22:15 +1000 (EST)
+Message-ID: <46812F19.1070302@freescale.com>
+Date: Tue, 26 Jun 2007 10:22:01 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <947266.20019.qm@web92009.mail.cnb.yahoo.com>
-From: linas@austin.ibm.com (Linas Vepstas)
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: fix MAC address entries for 83xx, 85xx, and
+	86xx device trees
+References: <11825407952085-git-send-email-timur@freescale.com>
+	<70d005ce549921cc56481fe0b26faaa4@kernel.crashing.org>
+	<467FDA2C.8020607@freescale.com>
+	<05ae4090f00e42580b7dcbf0619cc0b7@kernel.crashing.org>
+	<467FE6E5.1070403@freescale.com>
+	<b50d825c36a92dc2e16f486455e0623d@kernel.crashing.org>
+In-Reply-To: <b50d825c36a92dc2e16f486455e0623d@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -36,13 +31,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jun 26, 2007 at 01:59:33PM +0800, xu chen wrote:
-> I ported my opb_ethernet driver to the ml403 board, with the reference system provided by Xilinx Co. Now I can ping the host with the board, and can also ping the board with PC. But I can't mount the NFS of my PC. The host configuration is correct,  and the host can also be mounted by other PCs. Here is my tcpdump log when the board mount the PC's NFS, PC's IP: 192.168.1.107; board's IP: 192.168.1.134
+Segher Boessenkool wrote:
 
-Does telnet work? Can you ftp?
+> Yeah, that's fine.   I just meant the current kernel (before
+> .25) could detect you are using a uboot that won't work after
+> .25 anymore, and shout at the user.  Would save you some bug
+> reports ;-)
 
-I had problems with nfs once when the device driver failed to compute the 
-checksum on the packets. This allowed some things to work, but not
-others.  Does tcp work, but udp is borken, or are tehy both broken?
+I don't think that's possible.  I'm only updating the DTS files, not the kernel, because 
+the kernel has already been updated.  Any 2.6.21 or later kernel will work with any U-Boot 
+and any DTS.  The only time we're going to run into a problem is if someone updates the 
+DTS but does *not* update U-Boot.  In this case, U-Boot won't find what it's looking for. 
+  Some U-Boots will even panic in these cases.  Not only that, but older U-Boots don't 
+even check the version number of the device tree they're parsing, and they'll just fail 
+silently when they get a version they don't understand.  Unfortunately, I don't see how I 
+can fix these problems.
 
---linas
+>> In other words, the current U-Boot and Linux code is written to not 
+>> care what the other one does.  I have no plans to remove the code in 
+>> the kernel that looks for obsolete entries (I'm talking about function 
+>> of_get_mac_address), because it's "safe".
+> 
+> Well you should remove the "address" thing, it is _not_ safe.
+
+Checking for 'address' after finding no match on 'mac-address' and 'local-mac-address' is 
+safe, because if that's the only property that has a valid MAC address, I want to use it. 
+  As long as there are people out there using U-Boot 1.1.x, we'll need to keep that code 
+around.
+
+>> However, now that you mention it, I could update function 
+>> of_get_mac_address() to display a warning if it only finds the 
+>> 'address' property.
+> 
+> Yeah exactly.
+
+Ok, I will submit a patch to do that.
+
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
