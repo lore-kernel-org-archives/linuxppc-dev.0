@@ -1,20 +1,12 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A15C4DDE1F
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2007 18:19:15 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1I36GV-0007tm-Qm
-	for linuxppc-dev@ozlabs.org; Tue, 26 Jun 2007 01:19:11 -0700
-Message-ID: <11301692.post@talk.nabble.com>
-Date: Tue, 26 Jun 2007 01:19:11 -0700 (PDT)
-From: Nethra <nethra_gmit@yahoo.co.in>
-To: linuxppc-dev@ozlabs.org
-Subject: reboot command in linux is not working
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Message-ID: <18048.58771.1270.408497@cargo.ozlabs.ibm.com>
+Date: Tue, 26 Jun 2007 20:08:19 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@linux-foundation.org
+Subject: Please pull powerpc.git merge branch
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,75 +16,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Linus,
 
-hi,
- I m using MPC8272ADS board , u-boot-1.1.6 and linux is 2.6.10 (montavista).
+Please do:
 
-reboot command is not working...what may be the problem?
- 
-this is the output i m getting after giving reboot command....
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-root@cashel:~#
-root@cashel:~#
-root@cashel:~#
-root@cashel:~# reboot
+to get two more bug fixes for powerpc, plus defconfig updates.
 
-Broadcast message from root (console) (Thu Jan  1 00:00:46 1970):
+Thanks,
+Paul.
 
-The system is going down for reboot NOW!
-INIT: Switching to runlevel: 6
-INIT: Sending processes the TERM signal
-INIT: Sending processes the KILL signal
-Stopping MontaVista target tools daemon: mvltd. Stopping internet
-superserver: inetd.
-Stopping NFS common utilities: lockd statd.
-Stopping portmap daemon: portmap.
-Stopping hotplug subsystem:
-   pci
-   pci      [success]
-   usb
-   usb      [success]
-   isapnp
-   isapnp   [success]
-   ide
-   ide      [success]
-   input
-   input    [success]
-   scsi
-   scsi     [success]
-done.
-Stopping system log daemon: klogd syslogd.
-Unmounting /dev...done.
-Sending all processes the TERM signal... done.
-Sending all processes the KILL signal... done.
-Unmounting remote filesystems... done.
-Deactivating swap...done.
-Unmounting local filesystems...done.
-Starting reboot command: reboot
-Rebooting...
-Restarting system.teMachine check in kernel mode.
-Caused by (from SRR1=41000): Transfer error ack signal
-Oops: machine check, sig: 7 [#1]
-PREEMPT
-NIP: FF000104 LR: FF000104 SP: C315DE00 REGS: c315dd50 TRAP: 0200    Not
-tainted
-MSR: 00041000 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 00
-TASK = c37560f0[1035] 'reboot' THREAD: c315c000
-Last syscall: 54
-GPR00: 00001032 C315DE00 C37560F0 00249CA0 FF000104 00001002 0000349C
-EFFFFFFF
-GPR08: C021E133 C000E7A8 0000C000 00100088 00000001 1001A108 100D4FF8
-100C9368
-GPR16: FFFFFFFF 00000000 00000000 00000000 00000000 00000001 00000001
-00000001
-GPR24: 00000000 00000001 00000000 00000000 00000000 00000004 00000000
-FF000104
-Call trace: [00001032]
+ arch/powerpc/configs/cell_defconfig        |  243 ++++++---------
+ arch/powerpc/configs/celleb_defconfig      |  169 +++-------
+ arch/powerpc/configs/chrp32_defconfig      |  353 +++++++++++++--------
+ arch/powerpc/configs/ebony_defconfig       |  138 +++-----
+ arch/powerpc/configs/g5_defconfig          |  342 +++++++++++----------
+ arch/powerpc/configs/holly_defconfig       |  125 ++------
+ arch/powerpc/configs/iseries_defconfig     |   36 --
+ arch/powerpc/configs/linkstation_defconfig |  384 ++++++++++-------------
+ arch/powerpc/configs/lite5200_defconfig    |  182 +++++------
+ arch/powerpc/configs/maple_defconfig       |  248 +++++++--------
+ arch/powerpc/configs/pasemi_defconfig      |   58 ----
+ arch/powerpc/configs/pmac32_defconfig      |  375 +++++++++++------------
+ arch/powerpc/configs/ppc64_defconfig       |  460 +++++++++++++++++-----------
+ arch/powerpc/configs/prpmc2800_defconfig   |   98 +-----
+ arch/powerpc/configs/ps3_defconfig         |   79 +----
+ arch/powerpc/configs/pseries_defconfig     |  387 ++++++++++++++----------
+ arch/powerpc/kernel/signal_64.c            |   10 -
+ arch/powerpc/kernel/vdso32/gettimeofday.S  |    4 
+ arch/powerpc/kernel/vdso64/gettimeofday.S  |    7 
+ 19 files changed, 1748 insertions(+), 1950 deletions(-)
 
+commit ae62fbb5f1f796d87cbdbe6701e13f2b52d5c0a7
+Author: Paul Mackerras <paulus@samba.org>
+Date:   Tue Jun 26 14:49:11 2007 +1000
 
-thanks in advance,
+    [POWERPC] Fix subtle FP state corruption bug in signal return on SMP
+    
+    This fixes a bug which can cause corruption of the floating-point state
+    on return from a signal handler.  If we have a signal handler that has
+    used the floating-point registers, and it happens to context-switch to
+    another task while copying the interrupted floating-point state from the
+    user stack into the thread struct (e.g. because of a page fault, or
+    because it gets preempted), the context switch code will think that the
+    FP registers contain valid FP state that needs to be copied into the
+    thread_struct, and will thus overwrite the values that the signal return
+    code has put into the thread_struct.
+    
+    This can occur because we clear the MSR bits that indicate the presence
+    of valid FP state after copying the state into the thread_struct.  To fix
+    this we just move the clearing of the MSR bits to before the copy.  A
+    similar potential problem also occurs with the Altivec state, and this
+    fixes that in the same way.
+    
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
 
-Nethra
--- 
-View this message in context: http://www.nabble.com/reboot-command-in-linux-is-not-working-tf3981084.html#a11301692
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+commit 74609f4536f2b8fd6a48381bbbe3cd37da20a527
+Author: Tony Breeds <tony@bakeyournoodle.com>
+Date:   Tue Jun 26 09:50:32 2007 +1000
+
+    [POWERPC] Fix VDSO gettimeofday() when called with NULL struct timeval
+    
+    Consider the prototype for gettimeofday():
+    	int gettimofday(struct timeval *tv, struct timezone *tz);
+    
+    Although it is valid to call with /either/ tv or tz being NULL, and
+    the C version of sys_gettimeofday() supports this, the current version
+    of gettimeofday() in the VDSO will SEGV if called with a NULL tv.
+    
+    This adds a check for tv being NULL so that it doesn't SEGV.
+    
+    Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+    Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
+
+commit ca74c013441200b162f6a384b23b833d1865a9e8
+Author: Paul Mackerras <paulus@samba.org>
+Date:   Tue Jun 26 14:19:35 2007 +1000
+
+    [POWERPC] Update defconfigs
+    
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
+
+commit d30d6badd1769a00bc5a800b8af4e8b3f169c633
+Author: will schmidt <will_schmidt@vnet.ibm.com>
+Date:   Sat Jun 23 01:24:56 2007 +1000
+
+    [POWERPC] Update g5_defconfig
+    
+    Update the g5_defconfig with default settings.
+    This is to keep things up to date, and specifically to ensure that the
+    CONFIG_MACINTOSH_DRIVERS option is enabled.  This also turns on
+    CONFIG_MSI.
+    
+    Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
+    cc: Michael Ellerman <michael@ellerman.id.au>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
