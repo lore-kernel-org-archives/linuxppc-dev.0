@@ -1,16 +1,35 @@
-Return-Path: <mamsadegh@hotmail.com>
-Received: from bay0-omc3-s27.bay0.hotmail.com (bay0-omc3-s27.bay0.hotmail.com
-	[65.54.246.227]) by ozlabs.org (Postfix) with ESMTP id 50A31DDE47
+Return-Path: <stevewin@us.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 48F95DDEE6
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Jun 2007 00:53:57 +1000 (EST)
-Message-ID: <BAY115-W41EBB7B6501204F68D497B20B0@phx.gbl>
-From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
-To: <eemingliu@hotmail.com>
-Subject: RE: ML403 gigabit ethernet bandwidth - 2.6 kernel
-Date: Tue, 26 Jun 2007 14:53:55 +0000
-Content-Type: text/plain; charset="gb2312"
+	Wed, 27 Jun 2007 02:01:06 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l5QG13GF002995
+	for <linuxppc-embedded@ozlabs.org>; Tue, 26 Jun 2007 12:01:03 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l5QG11PR259924
+	for <linuxppc-embedded@ozlabs.org>; Tue, 26 Jun 2007 10:01:02 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l5QG102n022152
+	for <linuxppc-embedded@ozlabs.org>; Tue, 26 Jun 2007 10:01:01 -0600
+Received: from d03nm125.boulder.ibm.com (d03nm125.boulder.ibm.com
+	[9.17.195.151])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	l5QG10td022131
+	for <linuxppc-embedded@ozlabs.org>; Tue, 26 Jun 2007 10:01:00 -0600
+In-Reply-To: <OF6593F764.1D9AA110-ON87257305.0067371E-85257305.00688AB4@us.ibm.com>
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Cc: akonovalov@ru.mvista.com, linuxppc-embedded@ozlabs.org
+Subject: Re: Katmai w/ DENX git - "init has generated signal 4" error
+Message-ID: <OFBF408254.9B235C85-ON87257306.0057DC6C-85257306.0057F0B4@us.ibm.com>
+From: Stephen Winiecki <stevewin@us.ibm.com>
+Date: Tue, 26 Jun 2007 12:02:14 -0400
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,222 +40,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+> I'm using the Denx linux-2.6-denx.git repository with a Katmai board. I 
+> want to boot off a disk (initialized w/ Debian 4.0).  I've installed a 
+> Promise Ultra133 Tx2 IDE controller card in the PCI slot, and configured 
 
-Dear Ming,
+> it in the kernel.    I boot this same disk w/ IDE card on other 4xx 
+boards 
+> without a problem (Bamboo w/ Denx 4.1 for example).  I am getting an 
+error 
+> "init has generated signal 4 but has no handler for it".
 
-Thanks to your comments , Our tests now give the following results:
-
-ML403--->PC : 410Mbits/s
-PC--->ML403 : 210Mbits/s
-
-We have described the characteristics of our base system in previous posts here
-
-In additiona we have :
-1- enabled the ppc caches
-2- we have set BD_IN_BRAM in adapter.c to 1. ( default is 0 )
-
-TX_THRESHOLD is 16 and RX_THRESHOLD is 2.
-
-the virtex4 fx12 device on ML403 is now completely full, we do not have any free block memories nor any logic slices. Maybe if we had more space we could choose higher values for XTE_SEND_BD_CNT and XTE_RECV_BD_CNT i.e. 384. Do you think this will improve performance? 
-
-There is also another interesting test,
-We executed netperf on both of PC and ML403 simultanously , when we do not put BDs in BRAM, the performance of ML403-->PC link drops from 390Mbits to 45Mbits, but when using PLB BRAMs for BDs the performance decreases from 410Mbits/s to just 130Mbita/s. It is important when the user wants to transfer data in both directions simulatanously. 
-
-Thanks
-
-
-
-
-----------------------------------------
-> From: eemingliu@hotmail.com
-> To: mamsadegh@hotmail.com
-> CC: akonovalov@ru.mvista.com; linuxppc-embedded@ozlabs.org
-> Subject: RE: ML403 gigabit ethernet bandwidth - 2.6 kernel
-> Date: Mon, 25 Jun 2007 10:03:30 +0000
-> 
-> Dear Mohammad,
-> 
-> >The results are as follows:
-> >PC-->ML403
-> >TCP_SENDFILE : 38Mbps
-> >
-> >ML403--->PC
-> >TCP_SENDFILE: 155Mbps
-> 
-> This result is unreasonable. Because PC is more powerful than your board, 
-> so PC->board should be faster than board->PC.
-> 
-> >The transfer rate from ML403 to PC has improved by a factor of 2,
-> >I see on the posts here in the mailing list that you have reached a band 
-> width of 301Mbps.
-> 
-> Yes, with all features which could improve performance enabled, we can get 
-> around 300Mbps for TCP transfer. one more hint, did you enable caches on 
-> your system? perhaps it will help. Anyway, double check your hardware 
-> design to make sure all features are enabled.That's all I can suggest.
-> 
-> BR
-> Ming
-> 
-> 
-> >
-> >
-> >
-> >
-> >----------------------------------------
-> > > From: eemingliu@hotmail.com
-> > > To: mamsadegh@hotmail.com; akonovalov@ru.mvista.com; 
-> linuxppc-embedded@ozlabs.org; grant.likely@secretlab.ca
-> > > Subject: RE: ML403 gigabit ethernet bandwidth - 2.6 kernel
-> > > Date: Sat, 23 Jun 2007 19:10:16 +0000
-> > >
-> > > Use the following command in Linux please:
-> > >
-> > > ifconfig eth0 mtu 8982
-> > >
-> > > As well you should do that on your PC in the measurement.
-> > >
-> > > Ming
-> > >
-> > >
-> > > >From: Mohammad Sadegh Sadri
-> > > >To: Ming Liu ,
-> > > ,,
-> > >
-> > > >Subject: RE: ML403 gigabit ethernet bandwidth - 2.6 kernel
-> > > >Date: Sat, 23 Jun 2007 19:08:29 +0000
-> > > >
-> > > >
-> > > >Dear Ming,
-> > > >
-> > > >Really thanks for reply,
-> > > >
-> > > >about thresholds and waitbound OK! I'll adjust them in adapter.c ,
-> > > >
-> > > >but what about enabling jumbo frames? should I do any thing special to
-> > > enable Jumbo fram support?
-> > > >
-> > > >we were thinking that it is enabled by default. Is it?
-> > > >
-> > > >thanks
-> > > >
-> > > >
-> > > >
-> > > >
-> > > >----------------------------------------
-> > > > > From: eemingliu@hotmail.com
-> > > > > To: mamsadegh@hotmail.com; akonovalov@ru.mvista.com;
-> > > linuxppc-embedded@ozlabs.org; grant.likely@secretlab.ca
-> > > > > Subject: RE: ML403 gigabit ethernet bandwidth - 2.6 kernel
-> > > > > Date: Sat, 23 Jun 2007 18:48:19 +0000
-> > > > >
-> > > > > Dear Mohammad,
-> > > > > There are some parameters which could be adjusted to improve the
-> > > > > performance. They are: TX and RX_Threshold TX and RX_waitbound. In 
-> my
-> > > > > system, we use TX_Threshold=16 and Rx_Threshold=8 and both 
-> waitbound=1.
-> > > > >
-> > > > > Also Jumbo frame of 8982 could be enable.
-> > > > >
-> > > > > Try those hints and share your improvement with us.
-> > > > >
-> > > > > BR
-> > > > > Ming
-> > > > >
-> > > > > >From: Mohammad Sadegh Sadri
-> > > > > >To: Andrei Konovalov , Linux PPC Linux
-> > > > > PPC, Grant Likely
-> > > > > >Subject: ML403 gigabit ethernet bandwidth - 2.6 kernel
-> > > > > >Date: Sat, 23 Jun 2007 12:19:12 +0000
-> > > > > >
-> > > > > >
-> > > > > >Dear all,
-> > > > > >
-> > > > > >Recently we did a set of tests on performance of virtex 4FX hard 
-> TEMAC
-> > > > > module using ML403
-> > > > > >
-> > > > > >we studied all of the posts here carefully: these are the system
-> > > > > characteristics;
-> > > > > >
-> > > > > >Board : ML403
-> > > > > >EDK    : EDK9.1SP2
-> > > > > >Hard TEMAC version and PLTEMAC version are both 3.0.a
-> > > > > >PPC clock frequency :  300MHz
-> > > > > >Kernel : 2.6.21-rc7 , downloaded from grant's git tree some thing 
-> near
-> > > one
-> > > > > week ago
-> > > > > >DMA type: 3 (sg dma)
-> > > > > >DRE : enabled for TX and RX, (2)
-> > > > > >CSUM offload is enabled for both of TX and RX
-> > > > > >tx and rx fifo sizes : 131072 bits
-> > > > > >
-> > > > > >the board comes up over NFS root file system completely and 
-> without
-> > > any
-> > > > > problems.
-> > > > > >
-> > > > > >PC system used for these tests is : CPU P4 Dual Core, 3.4GHz ,
-> > > 2Gigabytes
-> > > > > memory, Dual gigabit ethernet port, running linux 2.6.21.3
-> > > > > >We have tested the PC system band width and it can easily reach
-> > > 966mbits/s
-> > > > > when connected to the same PC. ( using the same cross cable used 
-> for
-> > > ml403
-> > > > > test)
-> > > > > >
-> > > > > >Netperf is compiled with TCP SEND FILE enabled, ( -DHAVE_SENDFILE)
-> > > > > >
-> > > > > >(from board to PC)
-> > > > > >netperf -t TCP_SENDFILE -H 10.10.10.250 -F /boot/zImage.elf -- -m
-> > > 16384 -s
-> > > > > 87380 -S 87380
-> > > > > >
-> > > > > >the measured bandwidth for this test was just 40.66Mbits.
-> > > > > >It is also true for netperf from PC to board.
-> > > > > >
-> > > > > >we do not have any more idea about what we should do to improve 
-> the
-> > > > > bandwidth.
-> > > > > >any help or ideas is appreciated...
-> > > > > >
-> > > > > >_________________________________________________________________
-> > > > > >Connect to the next generation of MSN
-> > > > >
-> > > 
-> Messenger?>http://imagine-msn.com/messenger/launch80/default.aspx?locale=en-us&source=wlmailtagline
-> 
-> > >
-> > > > >
-> > > > > >_______________________________________________
-> > > > > >Linuxppc-embedded mailing list
-> > > > > >Linuxppc-embedded@ozlabs.org
-> > > > > >https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> > > > >
-> > > > > _________________________________________________________________
-> > > > > 免费下载 MSN Explorer:   http://explorer.msn.com/lccn/
-> > > > >
-> > > >
-> > > >_________________________________________________________________
-> > > >News, entertainment and everything you care about at Live.com. Get it 
-> now!
-> > > >http://www.live.com/getstarted.aspx
-> > >
-> > > _________________________________________________________________
-> > > 免费下载 MSN Explorer:   http://explorer.msn.com/lccn/
-> > >
-> >
-> >_________________________________________________________________
-> >Discover the new Windows Vista
-> >http://search.msn.com/results.aspx?q=windows+vista&mkt=en-US&form=QBRE
-> 
-> _________________________________________________________________
-> 免费下载 MSN Explorer:   http://explorer.msn.com/lccn/  
-> 
-
-_________________________________________________________________
-News, entertainment and everything you care about at Live.com. Get it now!
-http://www.live.com/getstarted.aspx
+I believe the problem may be due to lack of HW FP on the processor(?). 
+Copying an embedded 440 RFS on disk works OK.
