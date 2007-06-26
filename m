@@ -1,22 +1,18 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A8382DDDFD
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2007 07:12:00 +1000 (EST)
-Date: Wed, 27 Jun 2007 01:11:49 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
+Return-Path: <cotte@de.ibm.com>
+Message-ID: <46815286.1010808@de.ibm.com>
+Date: Tue, 26 Jun 2007 19:53:10 +0200
+From: Carsten Otte <cotte@de.ibm.com>
+MIME-Version: 1.0
 To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [CURIOUSITY] When will we stop caring about arch/ppc?
-Message-ID: <20070627011149.14bf9fba@localhost.localdomain>
-In-Reply-To: <200706261903.41801.arnd@arndb.de>
-References: <20070625182304.GC31840@mag.az.mvista.com>
-	<1182864764.19501.7.camel@weaponx.rchland.ibm.com>
-	<1ce7f225511ea3d67a63b8a4ac683e0c@kernel.crashing.org>
-	<200706261903.41801.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [Cbe-oss-dev] [patch 3/5] cell: updated driver for DDR2 memory
+	on AXON
+References: <OF39A5D2DB.6FC50A30-ONC1257306.0051B925-C1257306.0052040B@de.ibm.com>
+	<200706261821.06516.arnd@arndb.de>
+In-Reply-To: <200706261821.06516.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Maxim Shchetynin <maxim@de.ibm.com>, linuxppc-dev@ozlabs.org,
+	cbe-oss-dev@ozlabs.org
+Reply-To: carsteno@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,37 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 26 Jun 2007 19:03:41 +0200
 Arnd Bergmann wrote:
-
-> On Tuesday 26 June 2007, Segher Boessenkool wrote:
-> > Well the arch/ppc tree is basically frozen already, all Freescale
-> > stuff got moved over already as far as I can see, and 4xx has
-> > started moving.
+> What will actually happen if you try to mount an axonram device with ext2?
+> I suppose mount should fail with a proper error code if the block size is
+> larger than 4kb, but does that happen?
 > 
-> 8xx has been moved over, but last time I tried, it was not possible
-> to actually compile that code. Note sure if the arch/ppc version of
-> it is in a much better shape though.
+> If you have a 4k block size axonram device, the ext2 really should work
+> using XIP as expected, including the mmap() operation.
 > 
-8xx should be ok now, yet, we have to be aware that only 2 platforms are in arch/powerpc
-and there are plenty in arch/ppc still.
+Absolutely. What's the symptom if you try mount -o xip? I am willing 
+to fix any bugs that show in the ext2/xip code in that scenario...
 
-> 82xx seems to be in a similar state to 4xx, with a single platform
-> moved over, but most of the code still being arch/ppc only.
+>> We have the direct_access method here only because it is needed for the
+>> azfs file-system, which we recommend to use for accessing the Axon's RAM
+>> rather then ext2 or any other buffered file-systems.
 > 
-The situation is better here - most stuff is very similar to what is done (except sandpoint but that's another story)
-and the number of platforms is reasonable.
-
-for the 8xx feild, there is quite a lot of boards...
-with all the "specifics", it is nearly impossible to provide robust port without actual HW
-(or, heh, the result won't work at all).
-
-> 	Arnd <><
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
-
--- 
-Sincerely, Vitaly
+> I think I've understood what the problem is now. The generic xip code
+> assumes that the data to be mapped has a 'struct page' in mem_map,
+> and that it's part of the linear kernel mapping. This is actually
+> true on s390, where it is currently used, but not for us. The point
+> on s390 is that the kernel virtual address is _identical_ to the
+> physical address, so it may never have shown up as a problem.
+> 
+> I'll talk to Carsten about this, he already had plans to remove
+> the need for struct page from the filemap_xip infrastructure.
+Removing the need for struct page is indeed impossible with current 
+memory management because of the fact that VM_PFNMAP vmas have the 
+downside that they require a linear physical image of the vma. Ext2 
+does not comply to that requriement, a given file may be spread all 
+over a media.
