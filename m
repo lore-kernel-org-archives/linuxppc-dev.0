@@ -1,32 +1,21 @@
-Return-Path: <stevewin@us.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CA6C7DDEEA
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 50CCFDDEE3
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Jun 2007 07:37:15 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l5QLWBDO003211
-	for <linuxppc-embedded@ozlabs.org>; Tue, 26 Jun 2007 17:32:11 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l5QLbAUH259222
-	for <linuxppc-embedded@ozlabs.org>; Tue, 26 Jun 2007 15:37:10 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l5QLbAsS010300
-	for <linuxppc-embedded@ozlabs.org>; Tue, 26 Jun 2007 15:37:10 -0600
-In-Reply-To: <1182877959.19501.17.camel@weaponx.rchland.ibm.com>
-To: jwboyer@linux.vnet.ibm.com, vbarshak@ru.mvista.com
+	Wed, 27 Jun 2007 01:11:58 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1I3Chv-0001jL-MB
+	for linuxppc-embedded@ozlabs.org; Tue, 26 Jun 2007 08:11:55 -0700
+Message-ID: <11307459.post@talk.nabble.com>
+Date: Tue, 26 Jun 2007 08:11:55 -0700 (PDT)
+From: sarpa <vsarpangala@satline.net>
+To: linuxppc-embedded@ozlabs.org
+Subject: zImage on mpc5200
 MIME-Version: 1.0
-Subject: Re: Katmai w/ DENX git - "init has generated signal 4" error
-Message-ID: <OF374AD003.85F388B3-ON87257306.0075D915-85257306.0076BA68@us.ibm.com>
-From: Stephen Winiecki <stevewin@us.ibm.com>
-Date: Tue, 26 Jun 2007 17:38:31 -0400
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -37,18 +26,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote on 06/26/2007 01:12:38 PM:
 
-> Signal 4 is SIGILL, which could be returned for float instructions I
-> suppose.  Try turning on CONFIG_MATH_EMULATION in your kernel config for
-> Katmai and see if the problem goes away.
-
-Thanks Josh - that actually did the trick w/ the original distro (which 
-apparently generates some FP ops).
-
-Valentine Barshak <vbarshak@ru.mvista.com> wrote on 06/26/2007 01:58:23 
-PM:
-> Looks like 440SPe entry  is missing in the arch/ppc/kernel/cputable.c
-
-I'm using a git snapshot version of the DENX kernel - is there some effort 
-underway to start to merge this platform support into the public tree?
+I am building the Linux kernel target "zImage.elf" in PPC branch of Linux
+Kernel 2.6.16.11 and then converting it to zImage.bin using OBJCOPY so that
+i can flash it to my PPC based target using BDI. i am currently facing
+issues in booting this kernel using my own bootloader(i am not using
+u-boot). Before I flood mailing list with more detailed questions I just
+wish to know if the standalone kernel image type zImage.elf is know to work
+in Linux kernel 2.6.16.11 or not ? Has anyone ever tested standalone
+zImage.elf on PPC ? Note that I am able to boot uImage using U-boot for this
+kernel but now I am trying to use my own Bootloader to boot zImage.elf "
+-- 
+View this message in context: http://www.nabble.com/zImage-on-mpc5200-tf3982933.html#a11307459
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
