@@ -1,18 +1,29 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 04CB5DDF5C
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2007 21:29:17 +1000 (EST)
-In-Reply-To: <d8960a6c86859c19b84dc9fd41446fbd@bga.com>
-References: <d8960a6c86859c19b84dc9fd41446fbd@bga.com>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <64edb4cfb6f38bd6e1d7de64bbbebae6@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: udbg_16550.c and legacy_serial.c
-Date: Wed, 27 Jun 2007 06:29:26 -0500
-To: Milton Miller <miltonm@bga.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E5834DDF04
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2007 23:49:39 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l5RDnZQw028354
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2007 09:49:35 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l5RDnZue254478
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2007 07:49:35 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l5RDnYQT031549
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2007 07:49:34 -0600
+Subject: [PATCH] Schedule removal of arch/ppc
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: paulus@samba.org
+Content-Type: text/plain
+Date: Wed, 27 Jun 2007 08:49:33 -0500
+Message-Id: <1182952173.9889.4.camel@weaponx.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,32 +33,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Jun 27, 2007, at 6:22 AM, Milton Miller wrote:
-> (4) Adding a 5th udbg_putc method that calls a byte read to 
-> udbg_comport->lsr masked with THRE until 0 and performs a byte write 
-> to ->thr shows we have the wrong abstraction.   Please make the 
-> inb/outb a method with the comport.  It would seem the actual init_xx 
-> could be in the platforms, passing inb, outb, and comport to a helper 
-> in udbg_16550.c.   I'm fine with declaring all the early inits in 
-> udbg.h
->
+The arch/ppc tree has been in a semi-nebulous "bug fix only" state for a
+few kernel releases now.  The patch below officially declares this as of
+the 2.6.22 kernel release and schedules arch/ppc for removal in June of
+2008.
 
+Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-I'll repost that with a different subject in case someone else wants to 
-work on that.
-
-
-Also, while researching this, I found that check_legacy_serial_console 
-has a check for legacy_serial_console < 0 in it.  Since that is set to 
-the legacy_ports array we pass to the serial layer, it would seem all 
-the other parsing to find the console is redundant; we can get the np 
-that we already found.   However, it also means that the code to notice 
-the stdout path is ch-a or ch-b will never be executed because of that 
-check.
-
-The comment about stdout being a wierd phandle should read 
-"/chosen/stdout is a ihandle.  use linux,stdout-path instead".
-
-no patch at this hour.
-
-milton
+diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-
+index 7d3f205..170a32e 100644
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -348,3 +348,15 @@ Who:  Tejun Heo <htejun@gmail.com>
+ 
+ ---------------------------
+ 
++What: The arch/ppc and include/asm-ppc directories
++When: Jun 2008
++Why:  The arch/powerpc tree is the merged architecture for ppc32 and ppc64
++      platforms.  Currently there are efforts underway to port the remaining
++      arch/ppc platforms the the merged tree.  New submissions to the arch/ppc
++      tree have been frozen with the 2.6.22 kernel release and that tree will
++      remain in bug-fix only mode until it's scheduled removal.  Platforms
++      that are not ported by June 2008 will be removed due to the lack of an
++      interested maintainer.
++Who:  linuxppc-dev@ozlabs.org
++
++---------------------------
