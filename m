@@ -1,13 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 27 Jun 2007 17:10:08 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/3] First cut at PReP support for arch/powerpc
-Message-ID: <20070627071008.GA30648@localhost.localdomain>
-References: <20070627065335.GD11191@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070627065335.GD11191@localhost.localdomain>
+Return-Path: <wei.zhang@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5DDBEDDE3F
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2007 18:28:22 +1000 (EST)
+From: Zhang Wei <wei.zhang@freescale.com>
+To: mporter@kernel.crashing.org
+Subject: [PATCH 1/5 v2] Add the explanation and a sample of RapidIO DTS sector
+	to the document of booting-without-of.txt file.
+Date: Wed, 27 Jun 2007 16:35:44 +0800
+Message-Id: <11829333481977-git-send-email-wei.zhang@freescale.com>
+In-Reply-To: <11829333481420-git-send-email-wei.zhang@freescale.com>
+References: <11829333481420-git-send-email-wei.zhang@freescale.com>
+Sender: Zhang Wei <wei.zhang@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,44 +25,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here is an implementation to allow PReP systems to boot under the
-arch/powerpc codebase, one of the few remaining platforms supported in
-arch/ppc but not so far in arch/powerpc.
+Add the explanation and a sample of RapidIO DTS sector to the document of booting-without-of.txt file.
 
-This support is still fairly incomplete - it needs to obtain a lot
-more device information from the residual data and put it into the
-device tree, rather than relying on hardcoded values (both in the code
-and in prep.dts).  Likewise many peripherals will not be supported -
-in particular the RTC is not yet supported, so the time will generally
-be wrong.
+Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+---
+ Documentation/powerpc/booting-without-of.txt |   34 ++++++++++++++++++++++++++
+ 1 files changed, 34 insertions(+), 0 deletions(-)
 
-Still, it should do enough to boot on a number of PReP machines, and
-makes a reasonable start.
-
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-
-Too big for the list, the patch is at:
-	http://ozlabs.org/~dgibson/home/prep-support
-
- arch/powerpc/Kconfig.debug           |    7 
- arch/powerpc/boot/Makefile           |    8 
- arch/powerpc/boot/dts/prep.dts       |  130 ++++
- arch/powerpc/boot/mkprep.c           |  178 ++++++
- arch/powerpc/boot/pnp.h              |  640 ++++++++++++++++++++++
- arch/powerpc/boot/prep.c             |  150 +++++
- arch/powerpc/boot/residual.h         |  313 ++++++++++
- arch/powerpc/boot/wrapper            |    7 
- arch/powerpc/configs/prep_defconfig  | 1006 +++++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/misc_32.S        |   27 
- arch/powerpc/kernel/setup_32.c       |    1 
- arch/powerpc/kernel/udbg.c           |    2 
- arch/powerpc/kernel/udbg_16550.c     |   28 
- arch/powerpc/platforms/Makefile      |    1 
- arch/powerpc/platforms/prep/Kconfig  |    3 
- arch/powerpc/platforms/prep/Makefile |    4 
- arch/powerpc/platforms/prep/nvram.c  |  135 ++++
- arch/powerpc/platforms/prep/pci.c    |   66 ++
- arch/powerpc/platforms/prep/setup.c  |  720 +++++++++++++++++++++++++
- include/asm-powerpc/residual.h       |  350 ++++++++++++
- include/asm-powerpc/udbg.h           |    1 
- 21 files changed, 3772 insertions(+), 5 deletions(-)
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index b49ce16..98692ca 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -1727,6 +1727,40 @@ platforms are moved over to use the flattened-device-tree model.
+  		partition-names = "fs\0firmware";
+  	};
+ 
++   k) RapidIO
++
++   Required properties:
++
++    - compatible : Should be "fsl,rapidio-delta" for Freescale
++      PowerPC RapidIO controller.
++    - #address-cells : Address representation for "rapidio" devices.
++      This field represents the number of cells needed to represent
++      the RapidIO address of the registers.  For supporting more than
++      32-bits RapidIO address, this field should be <2>.
++      See 1) above for more details on defining #address-cells.
++    - reg : Offset and length of the register set for the device
++    - ranges : Should be defined as specified in 1) to describe the
++      translation of addresses for memory mapped RapidIO memory
++      space.
++    - interrupts : binding interrupts for this device sector,
++      please follow below orders:
++      <err_irq bell_outb_irq bell_inb_irq msg1_tx_irq msg1_rx_irq
++      msg2_tx_irq msg2_rx_irq ... msgN_tx_irq msgN_rx_irq>.
++
++  Example:
++
++	srio@c0000{
++		compatible = "fsl,rapidio-delta";
++		#address-cells = <2>;
++		#size-cells = <2>;
++		reg = <c0000 20000>;
++		ranges = <0 0 c0000000 20000000>;
++		interrupt-parent = <&mpic>;
++		/* err_irq bell_outb_irq bell_inb_irq msg1_tx_irq msg1_rx_irq
++						      msg2_tx_irq msg2_rx_irq */
++		interrupts = <30 2 31 2 32 2 35 2 36 2 37 2 38 2>;
++	};
++
+    More devices will be defined as this spec matures.
+ 
+ VII - Specifying interrupt information for devices
+-- 
+1.5.1
