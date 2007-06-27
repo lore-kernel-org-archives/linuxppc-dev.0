@@ -2,18 +2,20 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D8776DDFC2
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2007 04:19:27 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id CDFBCDDFBE
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2007 04:19:29 +1000 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 4/8] [POWERPC] Use global_number in ppc32 pci_controller
-Date: Wed, 27 Jun 2007 13:19:14 -0500
-Message-Id: <11829683663762-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <11829683631074-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 5/8] [POWERPC] Merge ppc32 and ppc64
+	pcibios_alloc_controller() prototypes
+Date: Wed, 27 Jun 2007 13:19:15 -0500
+Message-Id: <11829683691025-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <11829683663762-git-send-email-galak@kernel.crashing.org>
 References: <11829683583721-git-send-email-galak@kernel.crashing.org>
 	<11829683604166-git-send-email-galak@kernel.crashing.org>
 	<11829683612573-git-send-email-galak@kernel.crashing.org>
 	<11829683631074-git-send-email-galak@kernel.crashing.org>
+	<11829683663762-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,249 +25,280 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Make the pci_controller struct use global_number for the PHB domain number
-instead of index to match what ppc64 does and reuse its pci_domain_nr code.
-
-Introduced a pci-common.c to handle shared code between ppc32 & ppc64.
+Make the ppc32 pcibios_alloc_controller take a device node to match
+the ppc64 prototypes and have it set arch_data.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/kernel/Makefile        |    2 +-
- arch/powerpc/kernel/pci-common.c    |   53 +++++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/pci_32.c        |    6 ++--
- arch/powerpc/kernel/pci_64.c        |   16 ----------
- arch/powerpc/platforms/52xx/efika.c |    4 +-
- arch/powerpc/platforms/chrp/pci.c   |    4 +-
- include/asm-powerpc/pci-bridge.h    |    2 +-
- include/asm-powerpc/pci.h           |    7 +---
- 8 files changed, 64 insertions(+), 30 deletions(-)
- create mode 100644 arch/powerpc/kernel/pci-common.c
+ arch/powerpc/kernel/pci_32.c                     |    3 ++-
+ arch/powerpc/platforms/52xx/efika.c              |    3 +--
+ arch/powerpc/platforms/52xx/mpc52xx_pci.c        |    4 +---
+ arch/powerpc/platforms/82xx/mpc82xx_ads.c        |    4 +---
+ arch/powerpc/platforms/83xx/pci.c                |    3 +--
+ arch/powerpc/platforms/85xx/pci.c                |    3 +--
+ arch/powerpc/platforms/86xx/pci.c                |    4 ++--
+ arch/powerpc/platforms/chrp/pci.c                |    3 +--
+ arch/powerpc/platforms/embedded6xx/linkstation.c |    3 +--
+ arch/powerpc/platforms/powermac/pci.c            |    6 ------
+ arch/powerpc/sysdev/mv64x60_pci.c                |    4 +---
+ arch/powerpc/sysdev/tsi108_pci.c                 |    3 +--
+ include/asm-powerpc/pci-bridge.h                 |    8 +++-----
+ 13 files changed, 16 insertions(+), 35 deletions(-)
 
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index eb6a33e..42c42ec 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -68,7 +68,7 @@ obj-$(CONFIG_MODULES)		+= $(module-y)
- 
- pci64-$(CONFIG_PPC64)		+= pci_64.o pci_dn.o isa-bridge.o
- pci32-$(CONFIG_PPC32)		:= pci_32.o
--obj-$(CONFIG_PCI)		+= $(pci64-y) $(pci32-y)
-+obj-$(CONFIG_PCI)		+= $(pci64-y) $(pci32-y) pci-common.o
- obj-$(CONFIG_PCI_MSI)		+= msi.o
- kexec-$(CONFIG_PPC64)		:= machine_kexec_64.o
- kexec-$(CONFIG_PPC32)		:= machine_kexec_32.o
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-new file mode 100644
-index 0000000..3ca8cfb
---- /dev/null
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -0,0 +1,53 @@
-+/*
-+ * Contains common pci routines for ALL ppc platform
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#undef DEBUG
-+
-+#include <linux/kernel.h>
-+#include <linux/pci.h>
-+#include <linux/string.h>
-+#include <linux/init.h>
-+#include <linux/bootmem.h>
-+#include <linux/mm.h>
-+#include <linux/list.h>
-+#include <linux/syscalls.h>
-+#include <linux/irq.h>
-+#include <linux/vmalloc.h>
-+
-+#include <asm/processor.h>
-+#include <asm/io.h>
-+#include <asm/prom.h>
-+#include <asm/pci-bridge.h>
-+#include <asm/byteorder.h>
-+#include <asm/machdep.h>
-+#include <asm/ppc-pci.h>
-+#include <asm/firmware.h>
-+
-+#ifdef DEBUG
-+#include <asm/udbg.h>
-+#define DBG(fmt...) printk(fmt)
-+#else
-+#define DBG(fmt...)
-+#endif
-+
-+/*
-+ * Return the domain number for this bus.
-+ */
-+int pci_domain_nr(struct pci_bus *bus)
-+{
-+	if (firmware_has_feature(FW_FEATURE_ISERIES))
-+		return 0;
-+	else {
-+		struct pci_controller *hose = pci_bus_to_host(bus);
-+
-+		return hose->global_number;
-+	}
-+}
-+
-+EXPORT_SYMBOL(pci_domain_nr);
 diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
-index 2d4a1c4..56deb31 100644
+index 56deb31..df3251c 100644
 --- a/arch/powerpc/kernel/pci_32.c
 +++ b/arch/powerpc/kernel/pci_32.c
-@@ -620,7 +620,7 @@ pcibios_alloc_controller(void)
- 	*hose_tail = hose;
+@@ -610,7 +610,7 @@ pcibios_enable_resources(struct pci_dev *dev, int mask)
+ static int next_controller_index;
+ 
+ struct pci_controller * __init
+-pcibios_alloc_controller(void)
++pcibios_alloc_controller(struct device_node *dev)
+ {
+ 	struct pci_controller *hose;
+ 
+@@ -621,6 +621,7 @@ pcibios_alloc_controller(void)
  	hose_tail = &hose->next;
  
--	hose->index = next_controller_index++;
-+	hose->global_number = next_controller_index++;
+ 	hose->global_number = next_controller_index++;
++	hose->arch_data = dev;
  
  	return hose;
  }
-@@ -1336,7 +1336,7 @@ void __init pcibios_fixup_bus(struct pci_bus *bus)
- 		if (!res->flags) {
- 			if (io_offset)
- 				printk(KERN_ERR "I/O resource not set for host"
--				       " bridge %d\n", hose->index);
-+				       " bridge %d\n", hose->global_number);
- 			res->start = 0;
- 			res->end = IO_SPACE_LIMIT;
- 			res->flags = IORESOURCE_IO;
-@@ -1350,7 +1350,7 @@ void __init pcibios_fixup_bus(struct pci_bus *bus)
- 				if (i > 0)
- 					continue;
- 				printk(KERN_ERR "Memory resource not set for "
--				       "host bridge %d\n", hose->index);
-+				       "host bridge %d\n", hose->global_number);
- 				res->start = hose->pci_mem_offset;
- 				res->end = ~0U;
- 				res->flags = IORESOURCE_MEM;
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index 6ae67eb..23494fe 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -636,22 +636,6 @@ int pcibios_enable_device(struct pci_dev *dev, int mask)
- 	return 0;
- }
- 
--/*
-- * Return the domain number for this bus.
-- */
--int pci_domain_nr(struct pci_bus *bus)
--{
--	if (firmware_has_feature(FW_FEATURE_ISERIES))
--		return 0;
--	else {
--		struct pci_controller *hose = pci_bus_to_host(bus);
--
--		return hose->global_number;
--	}
--}
--
--EXPORT_SYMBOL(pci_domain_nr);
--
- /* Decide whether to display the domain number in /proc */
- int pci_proc_domain(struct pci_bus *bus)
- {
 diff --git a/arch/powerpc/platforms/52xx/efika.c b/arch/powerpc/platforms/52xx/efika.c
-index 4cb4419..010be5c 100644
+index 010be5c..0256423 100644
 --- a/arch/powerpc/platforms/52xx/efika.c
 +++ b/arch/powerpc/platforms/52xx/efika.c
-@@ -54,7 +54,7 @@ static int rtas_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
- 	struct pci_controller *hose = bus->sysdata;
- 	unsigned long addr = (offset & 0xff) | ((devfn & 0xff) << 8)
- 	    | (((bus->number - hose->first_busno) & 0xff) << 16)
--	    | (hose->index << 24);
-+	    | (hose->global_number << 24);
- 	int ret = -1;
- 	int rval;
+@@ -128,7 +128,7 @@ void __init efika_pcisetup(void)
+ 	printk(" controlled by %s\n", pcictrl->full_name);
+ 	printk("\n");
  
-@@ -69,7 +69,7 @@ static int rtas_write_config(struct pci_bus *bus, unsigned int devfn,
- 	struct pci_controller *hose = bus->sysdata;
- 	unsigned long addr = (offset & 0xff) | ((devfn & 0xff) << 8)
- 	    | (((bus->number - hose->first_busno) & 0xff) << 16)
--	    | (hose->index << 24);
-+	    | (hose->global_number << 24);
- 	int rval;
+-	hose = pcibios_alloc_controller();
++	hose = pcibios_alloc_controller(of_node_get(pcictrl));
+ 	if (!hose) {
+ 		printk(KERN_WARNING EFIKA_PLATFORM_NAME
+ 		       ": Can't allocate PCI controller structure for %s\n",
+@@ -136,7 +136,6 @@ void __init efika_pcisetup(void)
+ 		return;
+ 	}
  
- 	rval = rtas_call(rtas_token("write-pci-config"), 3, 1, NULL,
+-	hose->arch_data = of_node_get(pcictrl);
+ 	hose->first_busno = bus_range[0];
+ 	hose->last_busno = bus_range[1];
+ 	hose->ops = &rtas_pci_ops;
+diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pci.c b/arch/powerpc/platforms/52xx/mpc52xx_pci.c
+index 69a0421..4c6c82a 100644
+--- a/arch/powerpc/platforms/52xx/mpc52xx_pci.c
++++ b/arch/powerpc/platforms/52xx/mpc52xx_pci.c
+@@ -385,12 +385,10 @@ mpc52xx_add_bridge(struct device_node *node)
+ 	 * tree are needed to configure the 52xx PCI controller.  Rather
+ 	 * than parse the tree here, let pci_process_bridge_OF_ranges()
+ 	 * do it for us and extract the values after the fact */
+-	hose = pcibios_alloc_controller();
++	hose = pcibios_alloc_controller(node);
+ 	if (!hose)
+ 		return -ENOMEM;
+ 
+-	hose->arch_data = node;
+-
+ 	hose->first_busno = bus_range ? bus_range[0] : 0;
+ 	hose->last_busno = bus_range ? bus_range[1] : 0xff;
+ 
+diff --git a/arch/powerpc/platforms/82xx/mpc82xx_ads.c b/arch/powerpc/platforms/82xx/mpc82xx_ads.c
+index d1e0919..da20832 100644
+--- a/arch/powerpc/platforms/82xx/mpc82xx_ads.c
++++ b/arch/powerpc/platforms/82xx/mpc82xx_ads.c
+@@ -543,13 +543,11 @@ static void __init mpc82xx_add_bridge(struct device_node *np)
+ 
+ 	pci_assign_all_buses = 1;
+ 
+-	hose = pcibios_alloc_controller();
++	hose = pcibios_alloc_controller(np);
+ 
+ 	if (!hose)
+ 		return;
+ 
+-	hose->arch_data = np;
+-
+ 	hose->first_busno = bus_range ? bus_range[0] : 0;
+ 	hose->last_busno = bus_range ? bus_range[1] : 0xff;
+ 
+diff --git a/arch/powerpc/platforms/83xx/pci.c b/arch/powerpc/platforms/83xx/pci.c
+index f49ed27..c0e2b89 100644
+--- a/arch/powerpc/platforms/83xx/pci.c
++++ b/arch/powerpc/platforms/83xx/pci.c
+@@ -62,10 +62,9 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
+ 	}
+ 
+ 	pci_assign_all_buses = 1;
+-	hose = pcibios_alloc_controller();
++	hose = pcibios_alloc_controller(dev);
+ 	if (!hose)
+ 		return -ENOMEM;
+-	hose->arch_data = dev;
+ 
+ 	hose->first_busno = bus_range ? bus_range[0] : 0;
+ 	hose->last_busno = bus_range ? bus_range[1] : 0xff;
+diff --git a/arch/powerpc/platforms/85xx/pci.c b/arch/powerpc/platforms/85xx/pci.c
+index a25b3e7..8118417 100644
+--- a/arch/powerpc/platforms/85xx/pci.c
++++ b/arch/powerpc/platforms/85xx/pci.c
+@@ -56,10 +56,9 @@ int __init mpc85xx_add_bridge(struct device_node *dev)
+ 	}
+ 
+ 	pci_assign_all_buses = 1;
+-	hose = pcibios_alloc_controller();
++	hose = pcibios_alloc_controller(dev);
+ 	if (!hose)
+ 		return -ENOMEM;
+-	hose->arch_data = dev;
+ 
+ 	hose->first_busno = bus_range ? bus_range[0] : 0;
+ 	hose->last_busno = bus_range ? bus_range[1] : 0xff;
+diff --git a/arch/powerpc/platforms/86xx/pci.c b/arch/powerpc/platforms/86xx/pci.c
+index 2d7254c..5cb2188 100644
+--- a/arch/powerpc/platforms/86xx/pci.c
++++ b/arch/powerpc/platforms/86xx/pci.c
+@@ -196,10 +196,10 @@ int __init mpc86xx_add_bridge(struct device_node *dev)
+ 		       " bus 0\n", dev->full_name);
+ 
+ 	pci_assign_all_buses = 1;
+-	hose = pcibios_alloc_controller();
++	hose = pcibios_alloc_controller(dev);
+ 	if (!hose)
+ 		return -ENOMEM;
+-	hose->arch_data = dev;
++
+ 	hose->indirect_type = PPC_INDIRECT_TYPE_EXT_REG |
+ 				PPC_INDIRECT_TYPE_SURPRESS_PRIMARY_BUS;
+ 
 diff --git a/arch/powerpc/platforms/chrp/pci.c b/arch/powerpc/platforms/chrp/pci.c
-index d32fedc..d840863 100644
+index d840863..3690624 100644
 --- a/arch/powerpc/platforms/chrp/pci.c
 +++ b/arch/powerpc/platforms/chrp/pci.c
-@@ -99,7 +99,7 @@ int rtas_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
- 	struct pci_controller *hose = bus->sysdata;
- 	unsigned long addr = (offset & 0xff) | ((devfn & 0xff) << 8)
- 		| (((bus->number - hose->first_busno) & 0xff) << 16)
--		| (hose->index << 24);
-+		| (hose->global_number << 24);
-         int ret = -1;
- 	int rval;
+@@ -254,13 +254,12 @@ chrp_find_bridges(void)
+ 			printk(" at %llx", (unsigned long long)r.start);
+ 		printk("\n");
  
-@@ -114,7 +114,7 @@ int rtas_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
- 	struct pci_controller *hose = bus->sysdata;
- 	unsigned long addr = (offset & 0xff) | ((devfn & 0xff) << 8)
- 		| (((bus->number - hose->first_busno) & 0xff) << 16)
--		| (hose->index << 24);
-+		| (hose->global_number << 24);
- 	int rval;
+-		hose = pcibios_alloc_controller();
++		hose = pcibios_alloc_controller(dev);
+ 		if (!hose) {
+ 			printk("Can't allocate PCI controller structure for %s\n",
+ 				dev->full_name);
+ 			continue;
+ 		}
+-		hose->arch_data = dev;
+ 		hose->first_busno = bus_range[0];
+ 		hose->last_busno = bus_range[1];
  
- 	rval = rtas_call(rtas_token("write-pci-config"), 3, 1, NULL,
+diff --git a/arch/powerpc/platforms/embedded6xx/linkstation.c b/arch/powerpc/platforms/embedded6xx/linkstation.c
+index 885c789..f4d0a7a 100644
+--- a/arch/powerpc/platforms/embedded6xx/linkstation.c
++++ b/arch/powerpc/platforms/embedded6xx/linkstation.c
+@@ -68,12 +68,11 @@ static int __init linkstation_add_bridge(struct device_node *dev)
+ 		printk(KERN_WARNING "Can't get bus-range for %s, assume"
+ 				" bus 0\n", dev->full_name);
+ 
+-	hose = pcibios_alloc_controller();
++	hose = pcibios_alloc_controller(dev);
+ 	if (hose == NULL)
+ 		return -ENOMEM;
+ 	hose->first_busno = bus_range ? bus_range[0] : 0;
+ 	hose->last_busno = bus_range ? bus_range[1] : 0xff;
+-	hose->arch_data = dev;
+ 	setup_indirect_pci(hose, 0xfec00000, 0xfee00000);
+ 
+ 	/* Interpret the "ranges" property */
+diff --git a/arch/powerpc/platforms/powermac/pci.c b/arch/powerpc/platforms/powermac/pci.c
+index fb853c0..92586db 100644
+--- a/arch/powerpc/platforms/powermac/pci.c
++++ b/arch/powerpc/platforms/powermac/pci.c
+@@ -916,15 +916,9 @@ static int __init pmac_add_bridge(struct device_node *dev)
+ 		       " bus 0\n", dev->full_name);
+ 	}
+ 
+-	/* XXX Different prototypes, to be merged */
+-#ifdef CONFIG_PPC64
+ 	hose = pcibios_alloc_controller(dev);
+-#else
+-	hose = pcibios_alloc_controller();
+-#endif
+ 	if (!hose)
+ 		return -ENOMEM;
+-	hose->arch_data = dev;
+ 	hose->first_busno = bus_range ? bus_range[0] : 0;
+ 	hose->last_busno = bus_range ? bus_range[1] : 0xff;
+ 
+diff --git a/arch/powerpc/sysdev/mv64x60_pci.c b/arch/powerpc/sysdev/mv64x60_pci.c
+index 2e77384..45db86c 100644
+--- a/arch/powerpc/sysdev/mv64x60_pci.c
++++ b/arch/powerpc/sysdev/mv64x60_pci.c
+@@ -137,12 +137,10 @@ static int __init mv64x60_add_bridge(struct device_node *dev)
+ 		printk(KERN_WARNING "Can't get bus-range for %s, assume"
+ 		       " bus 0\n", dev->full_name);
+ 
+-	hose = pcibios_alloc_controller();
++	hose = pcibios_alloc_controller(dev);
+ 	if (!hose)
+ 		return -ENOMEM;
+ 
+-	hose->arch_data = dev;
+-
+ 	hose->first_busno = bus_range ? bus_range[0] : 0;
+ 	hose->last_busno = bus_range ? bus_range[1] : 0xff;
+ 
+diff --git a/arch/powerpc/sysdev/tsi108_pci.c b/arch/powerpc/sysdev/tsi108_pci.c
+index 298e2dd..90db8a7 100644
+--- a/arch/powerpc/sysdev/tsi108_pci.c
++++ b/arch/powerpc/sysdev/tsi108_pci.c
+@@ -221,13 +221,12 @@ int __init tsi108_setup_pci(struct device_node *dev, u32 cfg_phys, int primary)
+ 		       " bus 0\n", dev->full_name);
+ 	}
+ 
+-	hose = pcibios_alloc_controller();
++	hose = pcibios_alloc_controller(dev);
+ 
+ 	if (!hose) {
+ 		printk("PCI Host bridge init failed\n");
+ 		return -ENOMEM;
+ 	}
+-	hose->arch_data = dev;
+ 
+ 	hose->first_busno = bus_range ? bus_range[0] : 0;
+ 	hose->last_busno = bus_range ? bus_range[1] : 0xff;
 diff --git a/include/asm-powerpc/pci-bridge.h b/include/asm-powerpc/pci-bridge.h
-index e2b2b6b..80cfb4a 100644
+index 80cfb4a..d5a9c9f 100644
 --- a/include/asm-powerpc/pci-bridge.h
 +++ b/include/asm-powerpc/pci-bridge.h
-@@ -21,7 +21,6 @@ extern struct pci_controller* pci_bus_to_hose(int bus);
- struct pci_controller {
- 	struct pci_bus *bus;
- 	void *arch_data;
--	int index;			/* PCI domain number */
- 	struct pci_controller *next;
- 	struct device *parent;
+@@ -9,9 +9,6 @@
+ struct device_node;
+ struct pci_controller;
  
-@@ -60,6 +59,7 @@ struct pci_controller {
- 	 */
- 	struct resource	io_resource;
- 	struct resource mem_resources[3];
-+	int global_number;		/* PCI domain number */
- };
- 
- static inline struct pci_controller *pci_bus_to_host(struct pci_bus *bus)
-diff --git a/include/asm-powerpc/pci.h b/include/asm-powerpc/pci.h
-index 93e3752..0cd3e77 100644
---- a/include/asm-powerpc/pci.h
-+++ b/include/asm-powerpc/pci.h
-@@ -107,8 +107,6 @@ static inline void pci_dma_burst_advice(struct pci_dev *pdev,
- #define get_pci_dma_ops()	NULL
- #endif
- 
--extern int pci_domain_nr(struct pci_bus *bus);
+-/* Allocate a new PCI host bridge structure */
+-extern struct pci_controller* pcibios_alloc_controller(void);
 -
- /* Decide whether to display the domain number in /proc */
- extern int pci_proc_domain(struct pci_bus *bus);
+ /* Get the PCI host controller for a bus */
+ extern struct pci_controller* pci_bus_to_hose(int bus);
  
-@@ -130,9 +128,6 @@ static inline void pci_dma_burst_advice(struct pci_dev *pdev,
-  */
- #define pci_dac_dma_supported(pci_dev, mask)	(0)
+@@ -232,8 +229,6 @@ static inline struct pci_controller *pci_bus_to_host(struct pci_bus *bus)
+ 	return PCI_DN(busdn)->phb;
+ }
  
--/* Return the index of the PCI controller for device PDEV. */
--#define pci_domain_nr(bus) ((struct pci_controller *)(bus)->sysdata)->index
--
- /* Set the name of the bus as it appears in /proc/bus/pci */
- static inline int pci_proc_domain(struct pci_bus *bus)
- {
-@@ -141,6 +136,8 @@ static inline int pci_proc_domain(struct pci_bus *bus)
+-extern struct pci_controller *
+-pcibios_alloc_controller(struct device_node *dev);
+ extern void pcibios_free_controller(struct pci_controller *phb);
  
- #endif /* CONFIG_PPC64 */
+ extern void isa_bridge_find_early(struct pci_controller *hose);
+@@ -263,6 +258,9 @@ extern void
+ pci_process_bridge_OF_ranges(struct pci_controller *hose,
+ 			   struct device_node *dev, int primary);
  
-+extern int pci_domain_nr(struct pci_bus *bus);
-+
- struct vm_area_struct;
- /* Map a range of PCI memory or I/O space for a device into user space */
- int pci_mmap_page_range(struct pci_dev *pdev, struct vm_area_struct *vma,
++/* Allocate a new PCI host bridge structure */
++extern struct pci_controller *
++pcibios_alloc_controller(struct device_node *dev);
+ #ifdef CONFIG_PCI
+ extern unsigned long pci_address_to_pio(phys_addr_t address);
+ #else
 -- 
 1.5.2.1
