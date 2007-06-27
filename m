@@ -1,22 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.237])
-	by ozlabs.org (Postfix) with ESMTP id DFF7FDDF01
+Return-Path: <dbeamonte@telnet-ri.es>
+Received: from correo.efor.es (62.81.153.195.static.user.ono.com
+	[62.81.153.195]) by ozlabs.org (Postfix) with ESMTP id 36A55DDF0A
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Jun 2007 15:17:24 +1000 (EST)
-Received: by qb-out-0506.google.com with SMTP id z8so64906qbc
+	Wed, 27 Jun 2007 19:10:22 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by leela.efor.es (Postfix) with ESMTP id 5602E2FA981
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Jun 2007 22:17:22 -0700 (PDT)
-Message-ID: <fa686aa40706262217td510097u23d6667a71c1a65a@mail.gmail.com>
-Date: Wed, 27 Jun 2007 01:17:22 -0400
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: sarpa <vsarpangala@satline.net>
-Subject: Re: zImage on mpc5200
-In-Reply-To: <11307459.post@talk.nabble.com>
+	Wed, 27 Jun 2007 10:50:39 +0200 (CEST)
+Received: from [192.168.200.117] (101.Red-81-33-23.staticIP.rima-tde.net
+	[81.33.23.101]) by leela.efor.es (Postfix) with ESMTP id 986462FA9CF
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 27 Jun 2007 10:50:38 +0200 (CEST)
+Message-ID: <468224AB.7040004@telnet-ri.es>
+Date: Wed, 27 Jun 2007 10:49:47 +0200
+From: David <dbeamonte@telnet-ri.es>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <11307459.post@talk.nabble.com>
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: USB for MPC82xx
+Content-Type: text/plain; charset=us-ascii; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,27 +28,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 6/26/07, sarpa <vsarpangala@satline.net> wrote:
->
-> I am building the Linux kernel target "zImage.elf" in PPC branch of Linux
-> Kernel 2.6.16.11 and then converting it to zImage.bin using OBJCOPY so that
-> i can flash it to my PPC based target using BDI. i am currently facing
-> issues in booting this kernel using my own bootloader(i am not using
-> u-boot). Before I flood mailing list with more detailed questions I just
-> wish to know if the standalone kernel image type zImage.elf is know to work
-> in Linux kernel 2.6.16.11 or not ? Has anyone ever tested standalone
-> zImage.elf on PPC ? Note that I am able to boot uImage using U-boot for this
-> kernel but now I am trying to use my own Bootloader to boot zImage.elf "
+Hi,
 
-I can't say about it on the 5200, or on kernel 2.6.16 because I
-haven't tried that exact configuration (without u-boot); but
-zImage.elf do boot perfectly well without u-boot.  I frequently boot
-my virtex platform in that way.
+I know this is a quite old issue but I'm getting quite crazy with it and 
+I hope that someone can help me.
 
-g.
+The plot is that I'm trying to use USB on an MPC8272. I already know 
+that there is a 2.6.x driver that solves this, but the main issue is 
+that we are using a 2.4.31 kernel. So we have
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+I have read a lot about a 2.4 driver that Pantelis Antoniou wrote, but I 
+haven't been able to find it.
+
+Does anybody know where I could find a driver?
+
+The other option is to backport the 2.6 driver to 2.4, but I will try 
+not to think on that by the moment.
+
+Regards,
+
+David
