@@ -1,9 +1,11 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 27 Jun 2007 16:53:35 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
 To: Paul Mackerras <paulus@samba.org>
-Message-Id: <01dda2cd72b3ffa07bf313a4d6ee3f7c5cd40dd9.1182924137.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 1/1] Turn off debugging in arch/powerpc/kernel/pci_64.c
-Date: Wed, 27 Jun 2007 16:02:55 +1000 (EST)
+Subject: [PATCH 0/3] PReP support
+Message-ID: <20070627065335.GD11191@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,26 +16,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Commit 3d5134ee8341bffc4f539049abb9e90d469b448d left debugging turned on
-in arch/powerpc/kernel/pci_64.c
+Here is a string of three patches which make a first cut at supporting
+PReP machines under arch/powerpc.  The first two are, I think, ready
+for merge.  The third, well, up to you whether we ought to do the
+numerous necessary cleanups before or after merge.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/kernel/pci_64.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index 6ae67eb..9fa2ecb 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -11,7 +11,7 @@
-  *      2 of the License, or (at your option) any later version.
-  */
- 
--#define DEBUG
-+#undef DEBUG
- 
- #include <linux/kernel.h>
- #include <linux/pci.h>
 -- 
-1.5.1.3.g7a33b
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
