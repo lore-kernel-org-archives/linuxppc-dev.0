@@ -2,21 +2,21 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C4BDFDDF47
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2007 11:16:50 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 2E34DDDF7E
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2007 11:16:51 +1000 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 06/15] [POWERPC] Added self_busno to indicate which bus number
-	the PHB is
-Date: Tue, 26 Jun 2007 20:16:36 -0500
-Message-Id: <1182907013252-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <11829070111239-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 07/15] [POWERPC] Removed remnants of bus_offset
+Date: Tue, 26 Jun 2007 20:16:37 -0500
+Message-Id: <1182907014549-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1182907013252-git-send-email-galak@kernel.crashing.org>
 References: <11829070051484-git-send-email-galak@kernel.crashing.org>
 	<11829070063989-git-send-email-galak@kernel.crashing.org>
 	<11829070073637-git-send-email-galak@kernel.crashing.org>
 	<11829070091056-git-send-email-galak@kernel.crashing.org>
 	<11829070102887-git-send-email-galak@kernel.crashing.org>
 	<11829070111239-git-send-email-galak@kernel.crashing.org>
+	<1182907013252-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,72 +26,106 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Added self_busno to pci_controller and indirect PCI ops to be set by
-board code to indicate which bus number to use when talking to the PHB.
-By default we use zero since the majority of controllers that have
-implicit mechanisms to talk to the PHBs use a bus number of zero.
+Removed the remants of bus_offset and use self_busno in the mv64x60 case
+and use pci_assign_all_buses on 83xx/85xx.
+
+83xx/85xx have multiple PHBs and the firmwares on these devices tend not
+to handle topologies with P2P bridges well so we let Linux just reassign
+the bus numbers to match.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/sysdev/indirect_pci.c |   12 ++++++++++--
+ arch/powerpc/platforms/83xx/pci.c  |    2 +-
+ arch/powerpc/platforms/85xx/pci.c  |    2 +-
+ arch/powerpc/sysdev/indirect_pci.c |    4 ++--
+ arch/powerpc/sysdev/mv64x60_pci.c  |    2 +-
  include/asm-ppc/pci-bridge.h       |    1 +
- 2 files changed, 11 insertions(+), 2 deletions(-)
+ 5 files changed, 6 insertions(+), 5 deletions(-)
 
+diff --git a/arch/powerpc/platforms/83xx/pci.c b/arch/powerpc/platforms/83xx/pci.c
+index 8da935c..f49ed27 100644
+--- a/arch/powerpc/platforms/83xx/pci.c
++++ b/arch/powerpc/platforms/83xx/pci.c
+@@ -61,6 +61,7 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
+ 		       " bus 0\n", dev->full_name);
+ 	}
+ 
++	pci_assign_all_buses = 1;
+ 	hose = pcibios_alloc_controller();
+ 	if (!hose)
+ 		return -ENOMEM;
+@@ -80,7 +81,6 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
+ 	if ((rsrc.start & 0xfffff) == 0x8600) {
+ 		setup_indirect_pci(hose, immr + 0x8380, immr + 0x8384);
+ 		primary = 0;
+-		hose->bus_offset = hose->first_busno;
+ 	}
+ 
+ 	printk(KERN_INFO "Found MPC83xx PCI host bridge at 0x%016llx. "
+diff --git a/arch/powerpc/platforms/85xx/pci.c b/arch/powerpc/platforms/85xx/pci.c
+index be67f67..a25b3e7 100644
+--- a/arch/powerpc/platforms/85xx/pci.c
++++ b/arch/powerpc/platforms/85xx/pci.c
+@@ -55,6 +55,7 @@ int __init mpc85xx_add_bridge(struct device_node *dev)
+ 		       " bus 0\n", dev->full_name);
+ 	}
+ 
++	pci_assign_all_buses = 1;
+ 	hose = pcibios_alloc_controller();
+ 	if (!hose)
+ 		return -ENOMEM;
+@@ -71,7 +72,6 @@ int __init mpc85xx_add_bridge(struct device_node *dev)
+ 	if ((rsrc.start & 0xfffff) == 0x9000) {
+ 		setup_indirect_pci(hose, immr + 0x9000, immr + 0x9004);
+ 		primary = 0;
+-		hose->bus_offset = hose->first_busno;
+ 	}
+ 
+ 	printk(KERN_INFO "Found MPC85xx PCI host bridge at 0x%016llx. "
 diff --git a/arch/powerpc/sysdev/indirect_pci.c b/arch/powerpc/sysdev/indirect_pci.c
-index 3dedf8f..d490e71 100644
+index d490e71..efe3cff 100644
 --- a/arch/powerpc/sysdev/indirect_pci.c
 +++ b/arch/powerpc/sysdev/indirect_pci.c
-@@ -33,6 +33,7 @@ indirect_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
- 	struct pci_controller *hose = bus->sysdata;
- 	volatile void __iomem *cfg_data;
- 	u8 cfg_type = 0;
-+	u32 bus_no;
- 
- 	if (ppc_md.pci_exclude_device)
- 		if (ppc_md.pci_exclude_device(hose, bus->number, devfn))
-@@ -42,8 +43,11 @@ indirect_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
- 		if (bus->number != hose->first_busno)
+@@ -44,7 +44,7 @@ indirect_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
  			cfg_type = 1;
  
-+	bus_no = (bus->number == hose->first_busno) ?
-+			hose->self_busno : bus->number - hose->bus_offset;
-+
+ 	bus_no = (bus->number == hose->first_busno) ?
+-			hose->self_busno : bus->number - hose->bus_offset;
++			hose->self_busno : bus->number;
+ 
  	PCI_CFG_OUT(hose->cfg_addr,
--		 (0x80000000 | ((bus->number - hose->bus_offset) << 16)
-+		 (0x80000000 | (bus_no << 16)
- 		  | (devfn << 8) | ((offset & 0xfc) | cfg_type)));
- 
- 	/*
-@@ -72,6 +76,7 @@ indirect_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
- 	struct pci_controller *hose = bus->sysdata;
- 	volatile void __iomem *cfg_data;
- 	u8 cfg_type = 0;
-+	u32 bus_no;
- 
- 	if (ppc_md.pci_exclude_device)
- 		if (ppc_md.pci_exclude_device(hose, bus->number, devfn))
-@@ -81,8 +86,11 @@ indirect_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
- 		if (bus->number != hose->first_busno)
+ 		 (0x80000000 | (bus_no << 16)
+@@ -87,7 +87,7 @@ indirect_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
  			cfg_type = 1;
  
-+	bus_no = (bus->number == hose->first_busno) ?
-+			hose->self_busno : bus->number - hose->bus_offset;
-+
- 	PCI_CFG_OUT(hose->cfg_addr,
--		 (0x80000000 | ((bus->number - hose->bus_offset) << 16)
-+		 (0x80000000 | (bus_no << 16)
- 		  | (devfn << 8) | ((offset & 0xfc) | cfg_type)));
+ 	bus_no = (bus->number == hose->first_busno) ?
+-			hose->self_busno : bus->number - hose->bus_offset;
++			hose->self_busno : bus->number;
  
- 	/*
+ 	PCI_CFG_OUT(hose->cfg_addr,
+ 		 (0x80000000 | (bus_no << 16)
+diff --git a/arch/powerpc/sysdev/mv64x60_pci.c b/arch/powerpc/sysdev/mv64x60_pci.c
+index 6b08e76..2e77384 100644
+--- a/arch/powerpc/sysdev/mv64x60_pci.c
++++ b/arch/powerpc/sysdev/mv64x60_pci.c
+@@ -147,7 +147,7 @@ static int __init mv64x60_add_bridge(struct device_node *dev)
+ 	hose->last_busno = bus_range ? bus_range[1] : 0xff;
+ 
+ 	setup_indirect_pci(hose, rsrc.start, rsrc.start + 4);
+-	hose->bus_offset = hose->first_busno;
++	hose->self_busno = hose->first_busno;
+ 
+ 	printk(KERN_INFO "Found MV64x60 PCI host bridge at 0x%016llx. "
+ 	       "Firmware bus number: %d->%d\n",
 diff --git a/include/asm-ppc/pci-bridge.h b/include/asm-ppc/pci-bridge.h
-index 4d35b84..2c2abda 100644
+index 2c2abda..70aab66 100644
 --- a/include/asm-ppc/pci-bridge.h
 +++ b/include/asm-ppc/pci-bridge.h
-@@ -47,6 +47,7 @@ struct pci_controller {
- 
+@@ -48,6 +48,7 @@ struct pci_controller {
  	int first_busno;
  	int last_busno;
-+	int self_busno;
+ 	int self_busno;
++	/* bus_offset is only used by ARCH=ppc */
  	int bus_offset;
  
  	void __iomem *io_base_virt;
