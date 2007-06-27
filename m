@@ -1,23 +1,21 @@
-Return-Path: <dbeamonte@telnet-ri.es>
-Received: from correo.efor.es (62.81.153.195.static.user.ono.com
-	[62.81.153.195]) by ozlabs.org (Postfix) with ESMTP id 36A55DDF0A
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BE6A9DDF1F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Jun 2007 19:10:22 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by leela.efor.es (Postfix) with ESMTP id 5602E2FA981
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Jun 2007 10:50:39 +0200 (CEST)
-Received: from [192.168.200.117] (101.Red-81-33-23.staticIP.rima-tde.net
-	[81.33.23.101]) by leela.efor.es (Postfix) with ESMTP id 986462FA9CF
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Jun 2007 10:50:38 +0200 (CEST)
-Message-ID: <468224AB.7040004@telnet-ri.es>
-Date: Wed, 27 Jun 2007 10:49:47 +0200
-From: David <dbeamonte@telnet-ri.es>
-MIME-Version: 1.0
+	Thu, 28 Jun 2007 02:40:10 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1I3aYp-0004bL-22
+	for linuxppc-embedded@ozlabs.org; Wed, 27 Jun 2007 09:40:07 -0700
+Message-ID: <11328063.post@talk.nabble.com>
+Date: Wed, 27 Jun 2007 09:40:05 -0700 (PDT)
+From: khollan <khollan@daktronics.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: USB for MPC82xx
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Porting Linux to Xilinx ML410
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,23 +26,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
 
-I know this is a quite old issue but I'm getting quite crazy with it and 
-I hope that someone can help me.
+Hi Im trying to get linux 2.6 to run on my ML410 board from xilinx.  I just
+created a real simple system with a Uartlite DDR2 and DDR interupt
+controller and sysace.  I installed the patches I found for Uartlite and
+sysace I found here.  I boot the zImage with XMD with the following
+commands:
+dow t:/zImage.elf
+con
+This is what I get out the serial port:
+loaded at:     00400000 00537138
+board data at: 00000000 00000018
+relocated to:  00404064 0040407C
+zimage at:     00404E6D 005345F1
+avail ram:     00538000 7C7F1B78
 
-The plot is that I'm trying to use USB on an MPC8272. I already know 
-that there is a 2.6.x driver that solves this, but the main issue is 
-that we are using a 2.4.31 kernel. So we have
+Linux/PPC load: console=ttyUL0,9600 root=/dev/xsysace/disc0/part3 rw
+Uncompressing Linux...done.
+Now booting the kernel
 
-I have read a lot about a 2.4 driver that Pantelis Antoniou wrote, but I 
-haven't been able to find it.
-
-Does anybody know where I could find a driver?
-
-The other option is to backport the 2.6 driver to 2.4, but I will try 
-not to think on that by the moment.
-
-Regards,
-
-David
+It always stall on the Now booting the kernel.  Im new to linux building and
+any help or suggestions are greatly appreciated.
+Thanks
+Kevin
+-- 
+View this message in context: http://www.nabble.com/Porting-Linux-to-Xilinx-ML410-tf3989483.html#a11328063
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
