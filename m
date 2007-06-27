@@ -2,14 +2,15 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 444C5DDFF4
+	by ozlabs.org (Postfix) with ESMTP id 383B8DDFF3
 	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2007 11:17:00 +1000 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 12/15] [POWERPC] 86xx: Workaround PCI_PRIMARY_BUS usage
-Date: Tue, 26 Jun 2007 20:16:42 -0500
-Message-Id: <11829070232635-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <11829070222511-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 10/15] [POWERPC] Added indirect_type to handle variants of PCI
+	ops
+Date: Tue, 26 Jun 2007 20:16:40 -0500
+Message-Id: <1182907020965-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <11829070192461-git-send-email-galak@kernel.crashing.org>
 References: <11829070051484-git-send-email-galak@kernel.crashing.org>
 	<11829070063989-git-send-email-galak@kernel.crashing.org>
 	<11829070073637-git-send-email-galak@kernel.crashing.org>
@@ -20,8 +21,6 @@ References: <11829070051484-git-send-email-galak@kernel.crashing.org>
 	<1182907014549-git-send-email-galak@kernel.crashing.org>
 	<1182907015126-git-send-email-galak@kernel.crashing.org>
 	<11829070192461-git-send-email-galak@kernel.crashing.org>
-	<1182907020965-git-send-email-galak@kernel.crashing.org>
-	<11829070222511-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,78 +30,109 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The Freescale PCI-e controllers have an issue in that they use the
-PCI_PRIMARY_BUS register in the virtual P2P bridge to determine which
-bus number to match on when generating a type 0 config cycle.  The
-issue is if we are renumbering bus numbers to match Linux we will try
-setting the PCI_PRIMARY_BUS and will not know which bus number to use
-for generating type 0 config cycles.  We surpress writing the register
-in the P2P bridge and always keep it at zero.
+The generic PCI config ops indirect support for ppc32 covers only two
+cases (implicit vs explicit) type 0/1 config cycles via set_cfg_type.
+Added a indirect_type bit mask to handle other variants.
 
-In the future when proper PCI domain support is working we should be
-able to remove this.
+Added support for PCI-e extended registers and moved the cfg_type
+handling into the bit mask for ARCH=powerpc.  We can also use this to
+handle indirect quirks.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/platforms/86xx/pci.c  |    4 +++-
- arch/powerpc/sysdev/indirect_pci.c |    6 ++++++
- include/asm-ppc/pci-bridge.h       |    5 +++++
- 3 files changed, 14 insertions(+), 1 deletions(-)
+ arch/powerpc/sysdev/indirect_pci.c |   22 ++++++++++++++++------
+ include/asm-ppc/pci-bridge.h       |   10 ++++++++++
+ 2 files changed, 26 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/platforms/86xx/pci.c b/arch/powerpc/platforms/86xx/pci.c
-index 3825e1a..6f3c0f6 100644
---- a/arch/powerpc/platforms/86xx/pci.c
-+++ b/arch/powerpc/platforms/86xx/pci.c
-@@ -158,11 +158,13 @@ int __init mpc86xx_add_bridge(struct device_node *dev)
- 		printk(KERN_WARNING "Can't get bus-range for %s, assume"
- 		       " bus 0\n", dev->full_name);
- 
-+	pci_assign_all_buses = 1;
- 	hose = pcibios_alloc_controller();
- 	if (!hose)
- 		return -ENOMEM;
- 	hose->arch_data = dev;
--	hose->indirect_type = PPC_INDIRECT_TYPE_EXT_REG;
-+	hose->indirect_type = PPC_INDIRECT_TYPE_EXT_REG |
-+				PPC_INDIRECT_TYPE_SURPRESS_PRIMARY_BUS;
- 
- 	hose->first_busno = bus_range ? bus_range[0] : 0x0;
- 	hose->last_busno = bus_range ? bus_range[1] : 0xff;
 diff --git a/arch/powerpc/sysdev/indirect_pci.c b/arch/powerpc/sysdev/indirect_pci.c
-index 3a16122..c7e6e85 100644
+index efe3cff..3a16122 100644
 --- a/arch/powerpc/sysdev/indirect_pci.c
 +++ b/arch/powerpc/sysdev/indirect_pci.c
-@@ -103,6 +103,12 @@ indirect_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
- 		 (0x80000000 | (bus_no << 16)
- 		  | (devfn << 8) | reg | cfg_type));
+@@ -33,22 +33,27 @@ indirect_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
+ 	struct pci_controller *hose = bus->sysdata;
+ 	volatile void __iomem *cfg_data;
+ 	u8 cfg_type = 0;
+-	u32 bus_no;
++	u32 bus_no, reg;
  
-+	/* surpress setting of PCI_PRIMARY_BUS */
-+	if (hose->indirect_type & PPC_INDIRECT_TYPE_SURPRESS_PRIMARY_BUS)
-+		if ((offset == PCI_PRIMARY_BUS) &&
-+			(bus->number == hose->first_busno))
-+		val &= 0xffffff00;
+ 	if (ppc_md.pci_exclude_device)
+ 		if (ppc_md.pci_exclude_device(hose, bus->number, devfn))
+ 			return PCIBIOS_DEVICE_NOT_FOUND;
+ 	
+-	if (hose->set_cfg_type)
++	if (hose->indirect_type & PPC_INDIRECT_TYPE_SET_CFG_TYPE)
+ 		if (bus->number != hose->first_busno)
+ 			cfg_type = 1;
+ 
+ 	bus_no = (bus->number == hose->first_busno) ?
+ 			hose->self_busno : bus->number;
+ 
++	if (hose->indirect_type & PPC_INDIRECT_TYPE_EXT_REG)
++		reg = ((offset & 0xf00) << 16) | (offset & 0xfc);
++	else
++		reg = offset & 0xfc;
 +
+ 	PCI_CFG_OUT(hose->cfg_addr,
+ 		 (0x80000000 | (bus_no << 16)
+-		  | (devfn << 8) | ((offset & 0xfc) | cfg_type)));
++		  | (devfn << 8) | reg | cfg_type));
+ 
  	/*
  	 * Note: the caller has already checked that offset is
- 	 * suitably aligned and that len is 1, 2 or 4.
+@@ -76,22 +81,27 @@ indirect_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
+ 	struct pci_controller *hose = bus->sysdata;
+ 	volatile void __iomem *cfg_data;
+ 	u8 cfg_type = 0;
+-	u32 bus_no;
++	u32 bus_no, reg;
+ 
+ 	if (ppc_md.pci_exclude_device)
+ 		if (ppc_md.pci_exclude_device(hose, bus->number, devfn))
+ 			return PCIBIOS_DEVICE_NOT_FOUND;
+ 
+-	if (hose->set_cfg_type)
++	if (hose->indirect_type & PPC_INDIRECT_TYPE_SET_CFG_TYPE)
+ 		if (bus->number != hose->first_busno)
+ 			cfg_type = 1;
+ 
+ 	bus_no = (bus->number == hose->first_busno) ?
+ 			hose->self_busno : bus->number;
+ 
++	if (hose->indirect_type & PPC_INDIRECT_TYPE_EXT_REG)
++		reg = ((offset & 0xf00) << 16) | (offset & 0xfc);
++	else
++		reg = offset & 0xfc;
++
+ 	PCI_CFG_OUT(hose->cfg_addr,
+ 		 (0x80000000 | (bus_no << 16)
+-		  | (devfn << 8) | ((offset & 0xfc) | cfg_type)));
++		  | (devfn << 8) | reg | cfg_type));
+ 
+ 	/*
+ 	 * Note: the caller has already checked that offset is
 diff --git a/include/asm-ppc/pci-bridge.h b/include/asm-ppc/pci-bridge.h
-index 0dee56b..c09fbf0 100644
+index 70aab66..0dee56b 100644
 --- a/include/asm-ppc/pci-bridge.h
 +++ b/include/asm-ppc/pci-bridge.h
-@@ -73,9 +73,14 @@ struct pci_controller {
- 	 * Used for variants of PCI indirect handling and possible quirks:
- 	 *  SET_CFG_TYPE - used on 4xx or any PHB that does explicit type0/1
- 	 *  EXT_REG - provides access to PCI-e extended registers
-+	 *  SURPRESS_PRIMARY_BUS - we surpress the setting of PCI_PRIMARY_BUS
-+	 *   on Freescale PCI-e controllers since they used the PCI_PRIMARY_BUS
-+	 *   to determine which bus number to match on when generating type0
-+	 *   config cycles
+@@ -65,9 +65,19 @@ struct pci_controller {
+ 	/*
+ 	 * If set, indirect method will set the cfg_type bit as
+ 	 * needed to generate type 1 configuration transactions.
++	 * use only on ARCH=ppc
  	 */
- #define PPC_INDIRECT_TYPE_SET_CFG_TYPE		(0x00000001)
- #define PPC_INDIRECT_TYPE_EXT_REG		(0x00000002)
-+#define PPC_INDIRECT_TYPE_SURPRESS_PRIMARY_BUS	(0x00000004)
- 	u32 indirect_type;
+ 	int set_cfg_type;
  
++	/*
++	 * Used for variants of PCI indirect handling and possible quirks:
++	 *  SET_CFG_TYPE - used on 4xx or any PHB that does explicit type0/1
++	 *  EXT_REG - provides access to PCI-e extended registers
++	 */
++#define PPC_INDIRECT_TYPE_SET_CFG_TYPE		(0x00000001)
++#define PPC_INDIRECT_TYPE_EXT_REG		(0x00000002)
++	u32 indirect_type;
++
  	/* Currently, we limit ourselves to 1 IO range and 3 mem
+ 	 * ranges since the common pci_bus structure can't handle more
+ 	 */
 -- 
 1.5.2.1
