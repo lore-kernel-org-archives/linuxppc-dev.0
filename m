@@ -1,12 +1,12 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
+	[151.189.21.47])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
+	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B3E91DDF66
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2007 05:57:46 +1000 (EST)
-In-Reply-To: <11829070192461-git-send-email-galak@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id B1B91DDF3F
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2007 06:39:44 +1000 (EST)
+In-Reply-To: <C84F154C-EBC9-471F-A1E1-635A385E684A@freescale.com>
 References: <11829070051484-git-send-email-galak@kernel.crashing.org>
 	<11829070063989-git-send-email-galak@kernel.crashing.org>
 	<11829070073637-git-send-email-galak@kernel.crashing.org>
@@ -17,14 +17,15 @@ References: <11829070051484-git-send-email-galak@kernel.crashing.org>
 	<1182907014549-git-send-email-galak@kernel.crashing.org>
 	<1182907015126-git-send-email-galak@kernel.crashing.org>
 	<11829070192461-git-send-email-galak@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <C84F154C-EBC9-471F-A1E1-635A385E684A@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
+	<C84F154C-EBC9-471F-A1E1-635A385E684A@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <8fa84ed4810eb9aca18739bf709e71d9@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH 09/15] [POWERPC] 86xx: Add uli1575 pci-bridge sector to
 	MPC8641HPCN dts file.
-Date: Wed, 27 Jun 2007 14:57:34 -0500
-To: Kumar Gala <galak@kernel.crashing.org>
+Date: Wed, 27 Jun 2007 22:39:14 +0200
+To: Andy Fleming <afleming@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -35,30 +36,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Jun 26, 2007, at 20:16, Kumar Gala wrote:
-
-> From: Wade Farnsworth <wfarnsworth@mvista.com>
+>> -		ranges = <0 f8000000 00100000>;
+>> -		reg = <f8000000 00100000>;	// CCSRBAR 1M
+>> +		ranges = <00001000 f8001000 000ff000
+> [...]
+>> +		reg = <f8000000 00001000>;	// CCSRBAR
 >
-> This adds device nodes for the PCI bridges as well as the ISA  
-> devices on
-> the newer revision MPC8641HPCN.  It also adds the PCI ranges to the  
-> soc
-> node so that address translation for the ISA devices works properly.
+> This can't be right, and I suspect it will break any kernel access to
+> the first 0x1000 bytes of the CCSR_BAR space.  reg should actually
+> describe the register space of the SOC.  If ranges needs to specify
+> that, too, they should be able to be redundant.  But this looks like
+> a big hack, to me.  Am I missing something?
 
->
-> -		ranges = <0 f8000000 00100000>;
-> -		reg = <f8000000 00100000>;	// CCSRBAR 1M
-> +		ranges = <00001000 f8001000 000ff000
-[...]
-> +		reg = <f8000000 00001000>;	// CCSRBAR
+"reg" and "ranges" can never overlap really.
 
+Is this the special case where the PHB is visible in
+PCI configuration space?
 
-This can't be right, and I suspect it will break any kernel access to  
-the first 0x1000 bytes of the CCSR_BAR space.  reg should actually  
-describe the register space of the SOC.  If ranges needs to specify  
-that, too, they should be able to be redundant.  But this looks like  
-a big hack, to me.  Am I missing something?
+Or, please explain what CCSR_BAR is...
 
 
-Andy
+Segher
