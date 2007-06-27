@@ -1,21 +1,9 @@
-Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <20070627012206.GB11191@localhost.localdomain>
-References: <11829070051484-git-send-email-galak@kernel.crashing.org>
-	<11829070063989-git-send-email-galak@kernel.crashing.org>
-	<11829070073637-git-send-email-galak@kernel.crashing.org>
-	<11829070091056-git-send-email-galak@kernel.crashing.org>
-	<11829070102887-git-send-email-galak@kernel.crashing.org>
-	<11829070111239-git-send-email-galak@kernel.crashing.org>
-	<1182907013252-git-send-email-galak@kernel.crashing.org>
-	<1182907014549-git-send-email-galak@kernel.crashing.org>
-	<20070627012206.GB11191@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <51DE9687-717E-4411-981F-EC03AC27D2F9@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 07/15] [POWERPC] Removed remnants of bus_offset
-Date: Tue, 26 Jun 2007 23:27:29 -0500
-To: David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <michael@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+Message-Id: <01dda2cd72b3ffa07bf313a4d6ee3f7c5cd40dd9.1182924137.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH 1/1] Turn off debugging in arch/powerpc/kernel/pci_64.c
+Date: Wed, 27 Jun 2007 16:02:55 +1000 (EST)
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,39 +14,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Commit 3d5134ee8341bffc4f539049abb9e90d469b448d left debugging turned on
+in arch/powerpc/kernel/pci_64.c
 
-On Jun 26, 2007, at 8:22 PM, David Gibson wrote:
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/kernel/pci_64.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> On Tue, Jun 26, 2007 at 08:16:37PM -0500, Kumar Gala wrote:
->> Removed the remants of bus_offset and use self_busno in the  
->> mv64x60 case
->> and use pci_assign_all_buses on 83xx/85xx.
->>
->> 83xx/85xx have multiple PHBs and the firmwares on these devices  
->> tend not
->> to handle topologies with P2P bridges well so we let Linux just  
->> reassign
->> the bus numbers to match.
->
-> [snip]
->> diff --git a/include/asm-ppc/pci-bridge.h b/include/asm-ppc/pci- 
->> bridge.h
->> index 2c2abda..70aab66 100644
->> --- a/include/asm-ppc/pci-bridge.h
->> +++ b/include/asm-ppc/pci-bridge.h
->> @@ -48,6 +48,7 @@ struct pci_controller {
->>  	int first_busno;
->>  	int last_busno;
->>  	int self_busno;
->> +	/* bus_offset is only used by ARCH=ppc */
->>  	int bus_offset;
->>
->>  	void __iomem *io_base_virt;
->
-> Might be a good time to copy asm-ppc/pci-bridge.h to
-> asm-powerpc/pci-bridge-32.h, yeah?
-
-Yeah I'll look at something towards that, seeing as its one of the  
-few headers we are including directly.
-
-- k
+diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+index 6ae67eb..9fa2ecb 100644
+--- a/arch/powerpc/kernel/pci_64.c
++++ b/arch/powerpc/kernel/pci_64.c
+@@ -11,7 +11,7 @@
+  *      2 of the License, or (at your option) any later version.
+  */
+ 
+-#define DEBUG
++#undef DEBUG
+ 
+ #include <linux/kernel.h>
+ #include <linux/pci.h>
+-- 
+1.5.1.3.g7a33b
