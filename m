@@ -2,20 +2,21 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4B460DDF48
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2007 11:16:49 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id C4BDFDDF47
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2007 11:16:50 +1000 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 05/15] [POWERPC] Remove bus_offset in places its not really
-	used
-Date: Tue, 26 Jun 2007 20:16:35 -0500
-Message-Id: <11829070111239-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <11829070102887-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 06/15] [POWERPC] Added self_busno to indicate which bus number
+	the PHB is
+Date: Tue, 26 Jun 2007 20:16:36 -0500
+Message-Id: <1182907013252-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <11829070111239-git-send-email-galak@kernel.crashing.org>
 References: <11829070051484-git-send-email-galak@kernel.crashing.org>
 	<11829070063989-git-send-email-galak@kernel.crashing.org>
 	<11829070073637-git-send-email-galak@kernel.crashing.org>
 	<11829070091056-git-send-email-galak@kernel.crashing.org>
 	<11829070102887-git-send-email-galak@kernel.crashing.org>
+	<11829070111239-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,61 +26,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The user of the fsl_pcie code doesn't set bus_offset and 82xx doesn't
-require it either.  Remove the places in the code that reference it so
-we can remove it all together.
+Added self_busno to pci_controller and indirect PCI ops to be set by
+board code to indicate which bus number to use when talking to the PHB.
+By default we use zero since the majority of controllers that have
+implicit mechanisms to talk to the PHBs use a bus number of zero.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/platforms/82xx/mpc82xx_ads.c |    1 -
- arch/powerpc/sysdev/fsl_pcie.c            |    8 ++++----
- 2 files changed, 4 insertions(+), 5 deletions(-)
+ arch/powerpc/sysdev/indirect_pci.c |   12 ++++++++++--
+ include/asm-ppc/pci-bridge.h       |    1 +
+ 2 files changed, 11 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/82xx/mpc82xx_ads.c b/arch/powerpc/platforms/82xx/mpc82xx_ads.c
-index 715107b..d1e0919 100644
---- a/arch/powerpc/platforms/82xx/mpc82xx_ads.c
-+++ b/arch/powerpc/platforms/82xx/mpc82xx_ads.c
-@@ -552,7 +552,6 @@ static void __init mpc82xx_add_bridge(struct device_node *np)
+diff --git a/arch/powerpc/sysdev/indirect_pci.c b/arch/powerpc/sysdev/indirect_pci.c
+index 3dedf8f..d490e71 100644
+--- a/arch/powerpc/sysdev/indirect_pci.c
++++ b/arch/powerpc/sysdev/indirect_pci.c
+@@ -33,6 +33,7 @@ indirect_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
+ 	struct pci_controller *hose = bus->sysdata;
+ 	volatile void __iomem *cfg_data;
+ 	u8 cfg_type = 0;
++	u32 bus_no;
  
- 	hose->first_busno = bus_range ? bus_range[0] : 0;
- 	hose->last_busno = bus_range ? bus_range[1] : 0xff;
--	hose->bus_offset = 0;
+ 	if (ppc_md.pci_exclude_device)
+ 		if (ppc_md.pci_exclude_device(hose, bus->number, devfn))
+@@ -42,8 +43,11 @@ indirect_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
+ 		if (bus->number != hose->first_busno)
+ 			cfg_type = 1;
  
- 	setup_indirect_pci(hose,
- 			   r.start + offsetof(pci_cpm2_t, pci_cfg_addr),
-diff --git a/arch/powerpc/sysdev/fsl_pcie.c b/arch/powerpc/sysdev/fsl_pcie.c
-index 6bbd7f8..ea3ec6b 100644
---- a/arch/powerpc/sysdev/fsl_pcie.c
-+++ b/arch/powerpc/sysdev/fsl_pcie.c
-@@ -50,12 +50,12 @@ indirect_read_config_pcie(struct pci_bus *bus, unsigned int devfn, int offset,
- 	if (bus->number == 0xff) {
- 		PCI_CFG_OUT(hose->cfg_addr,
- 			    (0x80000000 | ((offset & 0xf00) << 16) |
--			     ((bus->number - hose->bus_offset) << 16)
-+			     (bus->number<< 16)
- 			     | (devfn << 8) | ((offset & 0xfc) )));
- 	} else {
- 		PCI_CFG_OUT(hose->cfg_addr,
- 			    (0x80000001 | ((offset & 0xf00) << 16) |
--			     ((bus->number - hose->bus_offset) << 16)
-+			     (bus->number<< 16)
- 			     | (devfn << 8) | ((offset & 0xfc) )));
- 	}
++	bus_no = (bus->number == hose->first_busno) ?
++			hose->self_busno : bus->number - hose->bus_offset;
++
+ 	PCI_CFG_OUT(hose->cfg_addr,
+-		 (0x80000000 | ((bus->number - hose->bus_offset) << 16)
++		 (0x80000000 | (bus_no << 16)
+ 		  | (devfn << 8) | ((offset & 0xfc) | cfg_type)));
  
-@@ -101,12 +101,12 @@ indirect_write_config_pcie(struct pci_bus *bus, unsigned int devfn, int offset,
- 	if (bus->number == 0xff) {
- 		PCI_CFG_OUT(hose->cfg_addr,
- 			    (0x80000000 | ((offset & 0xf00) << 16) |
--			     ((bus->number - hose->bus_offset) << 16)
-+			     (bus->number << 16)
- 			     | (devfn << 8) | ((offset & 0xfc) )));
- 	} else {
- 		PCI_CFG_OUT(hose->cfg_addr,
- 			    (0x80000001 | ((offset & 0xf00) << 16) |
--			     ((bus->number - hose->bus_offset) << 16)
-+			     (bus->number << 16)
- 			     | (devfn << 8) | ((offset & 0xfc) )));
-         }
+ 	/*
+@@ -72,6 +76,7 @@ indirect_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
+ 	struct pci_controller *hose = bus->sysdata;
+ 	volatile void __iomem *cfg_data;
+ 	u8 cfg_type = 0;
++	u32 bus_no;
  
+ 	if (ppc_md.pci_exclude_device)
+ 		if (ppc_md.pci_exclude_device(hose, bus->number, devfn))
+@@ -81,8 +86,11 @@ indirect_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
+ 		if (bus->number != hose->first_busno)
+ 			cfg_type = 1;
+ 
++	bus_no = (bus->number == hose->first_busno) ?
++			hose->self_busno : bus->number - hose->bus_offset;
++
+ 	PCI_CFG_OUT(hose->cfg_addr,
+-		 (0x80000000 | ((bus->number - hose->bus_offset) << 16)
++		 (0x80000000 | (bus_no << 16)
+ 		  | (devfn << 8) | ((offset & 0xfc) | cfg_type)));
+ 
+ 	/*
+diff --git a/include/asm-ppc/pci-bridge.h b/include/asm-ppc/pci-bridge.h
+index 4d35b84..2c2abda 100644
+--- a/include/asm-ppc/pci-bridge.h
++++ b/include/asm-ppc/pci-bridge.h
+@@ -47,6 +47,7 @@ struct pci_controller {
+ 
+ 	int first_busno;
+ 	int last_busno;
++	int self_busno;
+ 	int bus_offset;
+ 
+ 	void __iomem *io_base_virt;
 -- 
 1.5.2.1
