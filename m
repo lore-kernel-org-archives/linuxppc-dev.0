@@ -1,21 +1,22 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BE6A9DDF1F
+Return-Path: <afleming@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 932C4DDF09
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Jun 2007 02:40:10 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1I3aYp-0004bL-22
-	for linuxppc-embedded@ozlabs.org; Wed, 27 Jun 2007 09:40:07 -0700
-Message-ID: <11328063.post@talk.nabble.com>
-Date: Wed, 27 Jun 2007 09:40:05 -0700 (PDT)
-From: khollan <khollan@daktronics.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Porting Linux to Xilinx ML410
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 28 Jun 2007 05:33:07 +1000 (EST)
+In-Reply-To: <OF7929EEAE.73E06DAF-ON48257306.0036AB63-48257306.0039FAD3@coship.com>
+References: <OF7929EEAE.73E06DAF-ON48257306.0036AB63-48257306.0039FAD3@coship.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <6AEDE2FF-D54A-46A2-AACC-EFEA59861D1D@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Subject: Re: booting linux-2.6.15 hang on custom mpc8555 board
+Date: Wed, 27 Jun 2007 14:32:52 -0500
+To: huangyun@coship.com
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,28 +28,21 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Hi Im trying to get linux 2.6 to run on my ML410 board from xilinx.  I just
-created a real simple system with a Uartlite DDR2 and DDR interupt
-controller and sysace.  I installed the patches I found for Uartlite and
-sysace I found here.  I boot the zImage with XMD with the following
-commands:
-dow t:/zImage.elf
-con
-This is what I get out the serial port:
-loaded at:     00400000 00537138
-board data at: 00000000 00000018
-relocated to:  00404064 0040407C
-zimage at:     00404E6D 005345F1
-avail ram:     00538000 7C7F1B78
+On Jun 26, 2007, at 05:33, huangyun@coship.com wrote:
 
-Linux/PPC load: console=ttyUL0,9600 root=/dev/xsysace/disc0/part3 rw
-Uncompressing Linux...done.
-Now booting the kernel
+>
+> hi,everyone
+>    I have porting linux2.6.15 of eldk4.0 to my mpc8555 board, my  
+> bootloader
+> is u-boot1.1.6, the uboot running is ok,but it hang at booting  
+> kernel.no
+> any print message.
+> I have check the CCSRBAR(0xe0000000) and bd_t struct is the  same  
+> as linux
+> kernel,  my serial port use uart1. somebody help me! i'm a linux  
+> kernel
+> newer.
 
-It always stall on the Now booting the kernel.  Im new to linux building and
-any help or suggestions are greatly appreciated.
-Thanks
-Kevin
--- 
-View this message in context: http://www.nabble.com/Porting-Linux-to-Xilinx-ML410-tf3989483.html#a11328063
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+What's your boot command line?
+
+Andy
