@@ -1,16 +1,16 @@
 Return-Path: <miltonm@bga.com>
 Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 7404CDDEB6
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2007 21:20:22 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id B9735DE06A
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2007 21:20:42 +1000 (EST)
+In-Reply-To: <20070625171221.GA6684@lixom.net>
 Mime-Version: 1.0 (Apple Message framework v624)
-In-Reply-To: <20070625010311.GA31355@lixom.net>
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <024cbfe00dde1c97bb249b925f55ebee@bga.com>
+Message-Id: <3d37f1da59dc2a063a06bbd6092ed96a@bga.com>
 From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH] pcmcia: CompactFlash driver for PA Semi Electra boards
-Date: Wed, 27 Jun 2007 06:20:27 -0500
+Subject: Re: [PATCH v2] pcmcia: CompactFlash driver for PA Semi Electra boards
+Date: Wed, 27 Jun 2007 06:20:38 -0500
 To: Olof Johansson <olof@lixom.net>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Christoph Hellwig <hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,248 +20,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Olof.
-
-On Mon Jun 25 11:03:11 EST 2007, Olof Johansson wrote:
-> Driver for the CompactFlash slot on the PA Semi Electra eval board. 
-> It's
-> a simple device sitting on localbus, with interrupts and detect/voltage
-> control over GPIO.
+> On Mon, Jun 25, 2007 at 08:39:09PM +0100, Christoph Hellwig wrote:
+>> On Mon, Jun 25, 2007 at 12:12:21PM -0500, Olof Johansson wrote:
+>>> Driver for the CompactFlash slot on the PA Semi Electra eval board. 
+>>> It's
+>>> a simple device sitting on localbus, with interrupts and 
+>>> detect/voltage
+>>> control over GPIO.
+>>>
+>>> The driver is implemented as an of_platform driver, and adds localbus
+>>> as a bus being probed by the of_platform framework.
+>>
+>> Looks good to me. The only odd thing is the inconsistant use of
+>> #ifdef CONFIG_PCMCIA in setup.c.
 >
-> The driver is implemented as an of_platform driver, and adds localbus
-> as a bus being probed by the of_platform framework.
+> The ifdef is needed since for CONFIG_PCMCIA=n builds, the bus notifier
+> isn't available. I wanted to do the bus notifier registration 
+> explicitly
+> before the of_platform bus probe to avoid later surprises due to 
+> reordered
+> initcalls in case it was split up in it's own initcall.
 
-...
-> +
-> +static int __devinit electra_cf_probe(struct of_device *ofdev,
-> +                                     const struct of_device_id *match)
-> +{
-> +       struct device *device = &ofdev->dev;
-> +       struct device_node *np = ofdev->node;
-> +       struct electra_cf_socket   *cf;
-> +       struct resource mem, io;
-> +       int status;
-> +       const unsigned int *prop;
-> +       int err;
-> +
-> +       err = of_address_to_resource(np, 0, &mem);
-> +       if (err)
-> +               return -EINVAL;
-> +
-> +       err = of_address_to_resource(np, 1, &io);
-> +       if (err)
-> +               return -EINVAL;
-> +
-> +       cf = kzalloc(sizeof *cf, GFP_KERNEL);
-> +       if (!cf)
-> +               return -ENOMEM;
-> +
-> +       init_timer(&cf->timer);
-> +       cf->timer.function = electra_cf_timer;
-> +       cf->timer.data = (unsigned long) cf;
-> +
-> +       cf->ofdev = ofdev;
-> +       cf->mem_phys = mem.start;
-> +       cf->mem_base = ioremap(mem.start, mem.end - mem.start);
-> +       cf->io_size = PAGE_ALIGN(io.end - io.start);
-> +
-> +       cf->io_virt = reserve_phb_iospace(cf->io_size);
-> +
-> +       cf->gpio_base = ioremap(0xfc103000, 0x1000);
-> +       dev_set_drvdata(device, cf);
-> +
-> +       if (!cf->mem_base || !cf->io_virt || !cf->gpio_base) {
-> +               dev_err(device, "can't ioremap ranges\n");
-> +               status = -ENOMEM;
-> +               goto fail1;
-> +       }
-> +
-> +       __ioremap_explicit(io.start, (unsigned long)cf->io_virt, 
-> cf->io_size,
-> +                          _PAGE_NO_CACHE | _PAGE_GUARDED);
-> +
-> +       cf->io_base = (unsigned long)cf->io_virt - VMALLOC_END;
-> +
-> +       cf->iomem.start = (unsigned long)cf->mem_base;
-> +       cf->iomem.end = (unsigned long)cf->mem_base + (mem.end - 
-> mem.start);
-> +       cf->iomem.flags = IORESOURCE_MEM;
-> +
-> +       cf->irq = irq_of_parse_and_map(np, 0);
-> +
-> +       status = request_irq(cf->irq, electra_cf_irq, IRQF_SHARED,
-> +                            driver_name, cf);
-> +       if (status < 0) {
-> +               dev_err(device, "request_irq failed\n");
-> +               goto fail1;
-> +       }
-> +
-> +       cf->socket.pci_irq = cf->irq;
-> +
-> +       prop = get_property(np, "card-detect-gpio", NULL);
-> +       cf->gpio_detect = *prop;
-> +       prop = get_property(np, "card-vsense-gpio", NULL);
-> +       cf->gpio_vsense = *prop;
-> +       prop = get_property(np, "card-3v-gpio", NULL);
-> +       cf->gpio_3v = *prop;
-> +       prop = get_property(np, "card-5v-gpio", NULL);
-> +       cf->gpio_5v = *prop;
-> +
+If CONFIG_PCMCIA=m then your notifier is not registered.  The modprobe 
+of your of_driver loads ds.ko, registers the bus, then registers your 
+driver.  When the socket driver tries to dma, the BUG in dma_64 for no 
+archdata.dma_ops triggers.
 
-get_property is now a #define for of_get_property.  I think the use of 
-get_property is being deprecated.
+It seems like we need
 
-If of_get_property fails to find the property, then you will 
-dereference a NULL pointer in a probe function and will leave the 
-bus_type locked.
+(1) a notifier that a bus is registered, run before allowing any 
+devices, so that platforms can register bus notifiers by bus name 
+before the devices and drivers are registered.
 
-> +       cf->socket.io_offset = cf->io_base;
-> +
-> +       /* reserve chip-select regions */
-> +       if (!request_mem_region(mem.start, mem.end + 1 - mem.start,
-> +                               driver_name)) {
-> +               status = -ENXIO;
-> +               dev_err(device, "Can't claim memory region\n");
-> +               goto fail1;
-> +       }
-> +
-> +       if (!request_region(cf->io_base, cf->io_size, driver_name)) {
-> +               status = -ENXIO;
-> +               dev_err(device, "Can't claim I/O region\n");
-> +               goto fail2;
-> +       }
-> +
-> +       cf->socket.owner = THIS_MODULE;
-> +       cf->socket.dev.parent = &ofdev->dev;
-> +       cf->socket.ops = &electra_cf_ops;
-> +       cf->socket.resource_ops = &pccard_static_ops;
-> +       cf->socket.features = SS_CAP_PCCARD | SS_CAP_STATIC_MAP |
-> +                               SS_CAP_MEM_ALIGN;
-> +       cf->socket.map_size = 0x800;
-> +
-> +       status = pcmcia_register_socket(&cf->socket);
-> +       if (status < 0) {
-> +               dev_err(device, "pcmcia_register_socket failed\n");
-> +               goto fail3;
-> +       }
-> +
-> +       dev_info(device, "at mem 0x%lx io 0x%lx irq %d\n",
-> +                mem.start, io.start, cf->irq);
-> +
-> +       cf->active = 1;
-> +       electra_cf_timer((unsigned long)cf);
-> +       return 0;
-> +
-> +fail3:
-> +       release_mem_region(io.start, io.end + 1 - io.start);
-> +fail2:
-> +       release_mem_region(mem.start, mem.end + 1 - mem.start);
-> +fail1:
-> +       /* XXX No way to undo the io reservation at this time */
+(2) a powerpc64 generic pcmcia bus notifier that copys the dma ops from 
+the parent socket.
 
-What io reservation is this comment referring to?
+(3) something to set the dma_ops to direct_dma_ops on the of device.
+
+If we don't want (3) to be in the driver (as Christoph previosly 
+mentioned), then it needs to be a seperate bus that reuses the of 
+matching.  This would be similar to how ibmebus is setup.   If I 
+remember the discussion, ibmebus is to provide the alternate dma ops 
+and steals match etc code from the of_platform bus type.
 
 
-Where is the request_irq undone?
+Oh, is this why you have depends on PCMCIA=y ?
 
-> +       if (cf->mem_base)
-> +               iounmap(cf->mem_base);
-> +       if (cf->gpio_base)
-> +               iounmap(cf->gpio_base);
-> +       device_init_wakeup(&ofdev->dev, 0);
-> +       kfree(cf);
-> +       return status;
-> +
-> +}
-> +
-> +static int __devexit electra_cf_remove(struct of_device *ofdev)
-> +{
-> +       struct device *device = &ofdev->dev;
-> +       struct electra_cf_socket *cf;
-> +
-> +       cf = dev_get_drvdata(device);
-> +
-> +       cf->active = 0;
-> +       pcmcia_unregister_socket(&cf->socket);
-> +       free_irq(cf->irq, cf);
-> +       del_timer_sync(&cf->timer);
-> +
-> +       iounmap(cf->mem_base);
-> +       iounmap(cf->gpio_base);
-> +       release_mem_region(cf->mem_phys, cf->mem_size);
-> +       release_region(cf->io_base, cf->io_size);
-> +
->
 
-irq_request?
+> I could add the code under ifdef as well, but it didn't seem too
+> critical. Once the second major board comes along I'll probably move it
+> out to a per-board file, there's no real need for it just yet.
 
-> +       kfree(cf);
-> +
-> +       return 0;
-> +}
-> +
-> +static int bus_notify(struct notifier_block *nb, unsigned long action,
-> +                     void *data)
-> +{
-> +       struct device *dev = data;
-> +
-> +       printk("bus notify called\n");
-> +
-> +       /* We are only intereted in device addition */
-> +       if (action != BUS_NOTIFY_ADD_DEVICE)
-> +               return 0;
-> +
-> +       /* We use the direct ops for localbus */
-> +       dev->archdata.dma_ops = &dma_direct_ops;
-> +
-
-I'm also replying to your reply to hch's reply.  Is that enough of a 
-reply? :-)
-
-> +       return 0;
-> +}
-> +
-> +static struct notifier_block bus_notifier = {
-> +       .notifier_call = bus_notify,
-> +};
-> +
-> +static struct of_device_id electra_cf_match[] =
-> +{
-> +       {
-> +               .compatible   = "electra-cf",
-> +       },
-> +       {},
-> +};
-> +
-> +static struct of_platform_driver electra_cf_driver =
-> +{
-> +       .name      = (char *)driver_name,
-> +       .match_table    = electra_cf_match,
-> +       .probe    = electra_cf_probe,
-> +       .remove   = electra_cf_remove,
-> +};
-> +
-> +static int __init electra_cf_init(void)
-> +{
-> +       bus_register_notifier(&pcmcia_bus_type, &bus_notifier);
-> +       return of_register_platform_driver(&electra_cf_driver);
-> +}
-> +module_init(electra_cf_init);
-> +
-> +static void __exit electra_cf_exit(void)
-> +{
-> +       bus_unregister_notifier(&pcmcia_bus_type, &bus_notifier);
-> +       of_unregister_platform_driver(&electra_cf_driver);
-
-Should these be reversed?  (if we keep it here)
-
-> +}
-> +module_exit(electra_cf_exit);
-> +
-> +MODULE_LICENSE("GPL");
-> +MODULE_AUTHOR ("Olof Johansson <olof at lixom.net>");
-> +MODULE_DESCRIPTION("PA Semi Electra CF driver");
-> +
-
-cheers,
 milton
