@@ -1,19 +1,16 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 02250DDF07
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2007 19:39:29 +1000 (EST)
-Subject: Re: powerpc stacktrace and lockdep support
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20070108135458.GA23395@lst.de>
-References: <20070108135458.GA23395@lst.de>
-Content-Type: text/plain
-Date: Wed, 27 Jun 2007 00:47:53 +0200
-Message-Id: <1182898073.4769.6.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 7404CDDEB6
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2007 21:20:22 +1000 (EST)
+Mime-Version: 1.0 (Apple Message framework v624)
+In-Reply-To: <20070625010311.GA31355@lixom.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <024cbfe00dde1c97bb249b925f55ebee@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH] pcmcia: CompactFlash driver for PA Semi Electra boards
+Date: Wed, 27 Jun 2007 06:20:27 -0500
+To: Olof Johansson <olof@lixom.net>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,530 +20,248 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-01-08 at 14:54 +0100, Christoph Hellwig wrote:
-> I recently tried to work on lockdep for powerpc.  I have preliminary
-> version of the stacktrace code
+Hi Olof.
 
-That seems to work.
+On Mon Jun 25 11:03:11 EST 2007, Olof Johansson wrote:
+> Driver for the CompactFlash slot on the PA Semi Electra eval board. 
+> It's
+> a simple device sitting on localbus, with interrupts and detect/voltage
+> control over GPIO.
+>
+> The driver is implemented as an of_platform driver, and adds localbus
+> as a bus being probed by the of_platform framework.
 
-> , but had to give up on trace irqflags
-> support because I'm not that knowledgeable on lowlevel ppc details.
-
-I gave it a try. Actually what I had wanted to do was add lockdep
-support for things like
-
-function A:
-lock()
-flush_scheduled_work()
-unlock()
-
-function B: (work function that is scheduled)
 ...
-lock()
-...
-unlock()
-...
+> +
+> +static int __devinit electra_cf_probe(struct of_device *ofdev,
+> +                                     const struct of_device_id *match)
+> +{
+> +       struct device *device = &ofdev->dev;
+> +       struct device_node *np = ofdev->node;
+> +       struct electra_cf_socket   *cf;
+> +       struct resource mem, io;
+> +       int status;
+> +       const unsigned int *prop;
+> +       int err;
+> +
+> +       err = of_address_to_resource(np, 0, &mem);
+> +       if (err)
+> +               return -EINVAL;
+> +
+> +       err = of_address_to_resource(np, 1, &io);
+> +       if (err)
+> +               return -EINVAL;
+> +
+> +       cf = kzalloc(sizeof *cf, GFP_KERNEL);
+> +       if (!cf)
+> +               return -ENOMEM;
+> +
+> +       init_timer(&cf->timer);
+> +       cf->timer.function = electra_cf_timer;
+> +       cf->timer.data = (unsigned long) cf;
+> +
+> +       cf->ofdev = ofdev;
+> +       cf->mem_phys = mem.start;
+> +       cf->mem_base = ioremap(mem.start, mem.end - mem.start);
+> +       cf->io_size = PAGE_ALIGN(io.end - io.start);
+> +
+> +       cf->io_virt = reserve_phb_iospace(cf->io_size);
+> +
+> +       cf->gpio_base = ioremap(0xfc103000, 0x1000);
+> +       dev_set_drvdata(device, cf);
+> +
+> +       if (!cf->mem_base || !cf->io_virt || !cf->gpio_base) {
+> +               dev_err(device, "can't ioremap ranges\n");
+> +               status = -ENOMEM;
+> +               goto fail1;
+> +       }
+> +
+> +       __ioremap_explicit(io.start, (unsigned long)cf->io_virt, 
+> cf->io_size,
+> +                          _PAGE_NO_CACHE | _PAGE_GUARDED);
+> +
+> +       cf->io_base = (unsigned long)cf->io_virt - VMALLOC_END;
+> +
+> +       cf->iomem.start = (unsigned long)cf->mem_base;
+> +       cf->iomem.end = (unsigned long)cf->mem_base + (mem.end - 
+> mem.start);
+> +       cf->iomem.flags = IORESOURCE_MEM;
+> +
+> +       cf->irq = irq_of_parse_and_map(np, 0);
+> +
+> +       status = request_irq(cf->irq, electra_cf_irq, IRQF_SHARED,
+> +                            driver_name, cf);
+> +       if (status < 0) {
+> +               dev_err(device, "request_irq failed\n");
+> +               goto fail1;
+> +       }
+> +
+> +       cf->socket.pci_irq = cf->irq;
+> +
+> +       prop = get_property(np, "card-detect-gpio", NULL);
+> +       cf->gpio_detect = *prop;
+> +       prop = get_property(np, "card-vsense-gpio", NULL);
+> +       cf->gpio_vsense = *prop;
+> +       prop = get_property(np, "card-3v-gpio", NULL);
+> +       cf->gpio_3v = *prop;
+> +       prop = get_property(np, "card-5v-gpio", NULL);
+> +       cf->gpio_5v = *prop;
+> +
 
-which can obviously deadlock but isn't caught by any debugging
-mechanisms right now.
+get_property is now a #define for of_get_property.  I think the use of 
+get_property is being deprecated.
 
-So anyway, lockdep doesn't work here since I only own powerpc machines,
-hence I tried to make it work. Below is the patch, it's quite ugly and
-only works on 64-bit right now, it'll probably totally screw up on
-32-bit (though hopefully it only makes lockdep complain and stop itself
-on 32-bit).
+If of_get_property fails to find the property, then you will 
+dereference a NULL pointer in a probe function and will leave the 
+bus_type locked.
 
-I currently get a lockdep report in XFS with this code. Not sure if
-there's a bug in this code or if it actually complains rightfully, the
-self-tests all pass...
+> +       cf->socket.io_offset = cf->io_base;
+> +
+> +       /* reserve chip-select regions */
+> +       if (!request_mem_region(mem.start, mem.end + 1 - mem.start,
+> +                               driver_name)) {
+> +               status = -ENXIO;
+> +               dev_err(device, "Can't claim memory region\n");
+> +               goto fail1;
+> +       }
+> +
+> +       if (!request_region(cf->io_base, cf->io_size, driver_name)) {
+> +               status = -ENXIO;
+> +               dev_err(device, "Can't claim I/O region\n");
+> +               goto fail2;
+> +       }
+> +
+> +       cf->socket.owner = THIS_MODULE;
+> +       cf->socket.dev.parent = &ofdev->dev;
+> +       cf->socket.ops = &electra_cf_ops;
+> +       cf->socket.resource_ops = &pccard_static_ops;
+> +       cf->socket.features = SS_CAP_PCCARD | SS_CAP_STATIC_MAP |
+> +                               SS_CAP_MEM_ALIGN;
+> +       cf->socket.map_size = 0x800;
+> +
+> +       status = pcmcia_register_socket(&cf->socket);
+> +       if (status < 0) {
+> +               dev_err(device, "pcmcia_register_socket failed\n");
+> +               goto fail3;
+> +       }
+> +
+> +       dev_info(device, "at mem 0x%lx io 0x%lx irq %d\n",
+> +                mem.start, io.start, cf->irq);
+> +
+> +       cf->active = 1;
+> +       electra_cf_timer((unsigned long)cf);
+> +       return 0;
+> +
+> +fail3:
+> +       release_mem_region(io.start, io.end + 1 - io.start);
+> +fail2:
+> +       release_mem_region(mem.start, mem.end + 1 - mem.start);
+> +fail1:
+> +       /* XXX No way to undo the io reservation at this time */
 
----
- arch/powerpc/Kconfig            |    8 +++++
- arch/powerpc/kernel/Makefile    |    1 
- arch/powerpc/kernel/entry_64.S  |   23 ++++++++++++++++
- arch/powerpc/kernel/head_64.S   |   55 ++++++++++++++++++++++++++++++++--------
- arch/powerpc/kernel/irq.c       |    2 -
- arch/powerpc/kernel/irqtrace.S  |   42 ++++++++++++++++++++++++++++++
- arch/powerpc/kernel/ppc_ksyms.c |    2 -
- arch/powerpc/kernel/setup_64.c  |    6 ++++
- include/asm-powerpc/hw_irq.h    |   34 +++++++++++++-----------
- include/asm-powerpc/irqflags.h  |   11 ++++----
- include/asm-powerpc/rwsem.h     |   34 ++++++++++++++++++------
- include/asm-powerpc/spinlock.h  |    1 
- 12 files changed, 177 insertions(+), 42 deletions(-)
+What io reservation is this comment referring to?
 
---- linux-2.6-git.orig/arch/powerpc/Kconfig	2007-06-26 18:12:10.424850274 +0200
-+++ linux-2.6-git/arch/powerpc/Kconfig	2007-06-26 20:01:50.544814034 +0200
-@@ -38,6 +38,14 @@ config STACKTRACE_SUPPORT
- 	bool
- 	default y
- 
-+config TRACE_IRQFLAGS_SUPPORT
-+	bool
-+	default y
-+
-+config LOCKDEP_SUPPORT
-+	bool
-+	default y
-+
- config RWSEM_GENERIC_SPINLOCK
- 	bool
- 
---- linux-2.6-git.orig/arch/powerpc/kernel/irq.c	2007-06-26 18:12:10.491850274 +0200
-+++ linux-2.6-git/arch/powerpc/kernel/irq.c	2007-06-26 18:12:11.376850274 +0200
-@@ -114,7 +114,7 @@ static inline void set_soft_enabled(unsi
- 	: : "r" (enable), "i" (offsetof(struct paca_struct, soft_enabled)));
- }
- 
--void local_irq_restore(unsigned long en)
-+void raw_local_irq_restore(unsigned long en)
- {
- 	/*
- 	 * get_paca()->soft_enabled = en;
---- linux-2.6-git.orig/arch/powerpc/kernel/ppc_ksyms.c	2007-06-26 18:12:10.513850274 +0200
-+++ linux-2.6-git/arch/powerpc/kernel/ppc_ksyms.c	2007-06-26 18:12:11.377850274 +0200
-@@ -50,7 +50,7 @@
- #endif
- 
- #ifdef CONFIG_PPC64
--EXPORT_SYMBOL(local_irq_restore);
-+EXPORT_SYMBOL(raw_local_irq_restore);
- #endif
- 
- #ifdef CONFIG_PPC32
---- linux-2.6-git.orig/include/asm-powerpc/hw_irq.h	2007-06-26 18:12:10.618850274 +0200
-+++ linux-2.6-git/include/asm-powerpc/hw_irq.h	2007-06-26 18:12:11.443850274 +0200
-@@ -27,7 +27,7 @@ static inline unsigned long local_get_fl
- 	return flags;
- }
- 
--static inline unsigned long local_irq_disable(void)
-+static inline unsigned long raw_local_irq_disable(void)
- {
- 	unsigned long flags, zero;
- 
-@@ -39,14 +39,15 @@ static inline unsigned long local_irq_di
- 	return flags;
- }
- 
--extern void local_irq_restore(unsigned long);
-+extern void raw_local_irq_restore(unsigned long);
- extern void iseries_handle_interrupts(void);
- 
--#define local_irq_enable()	local_irq_restore(1)
--#define local_save_flags(flags)	((flags) = local_get_flags())
--#define local_irq_save(flags)	((flags) = local_irq_disable())
-+#define raw_local_irq_enable()	raw_local_irq_restore(1)
-+#define raw_local_save_flags(flags)	((flags) = local_get_flags())
-+#define raw_local_irq_save(flags)	((flags) = raw_local_irq_disable())
- 
--#define irqs_disabled()		(local_get_flags() == 0)
-+#define raw_irqs_disabled()		(local_get_flags() == 0)
-+#define raw_irqs_disabled_flags(flags)		((flags) == 0)
- 
- #define __hard_irq_enable()	__mtmsrd(mfmsr() | MSR_EE, 1)
- #define __hard_irq_disable()	__mtmsrd(mfmsr() & ~MSR_EE, 1)
-@@ -62,13 +63,13 @@ extern void iseries_handle_interrupts(vo
- 
- #if defined(CONFIG_BOOKE)
- #define SET_MSR_EE(x)	mtmsr(x)
--#define local_irq_restore(flags)	__asm__ __volatile__("wrtee %0" : : "r" (flags) : "memory")
-+#define raw_local_irq_restore(flags)	__asm__ __volatile__("wrtee %0" : : "r" (flags) : "memory")
- #else
- #define SET_MSR_EE(x)	mtmsr(x)
--#define local_irq_restore(flags)	mtmsr(flags)
-+#define raw_local_irq_restore(flags)	mtmsr(flags)
- #endif
- 
--static inline void local_irq_disable(void)
-+static inline void raw_local_irq_disable(void)
- {
- #ifdef CONFIG_BOOKE
- 	__asm__ __volatile__("wrteei 0": : :"memory");
-@@ -80,7 +81,7 @@ static inline void local_irq_disable(voi
- #endif
- }
- 
--static inline void local_irq_enable(void)
-+static inline void raw_local_irq_enable(void)
- {
- #ifdef CONFIG_BOOKE
- 	__asm__ __volatile__("wrteei 1": : :"memory");
-@@ -92,7 +93,7 @@ static inline void local_irq_enable(void
- #endif
- }
- 
--static inline void local_irq_save_ptr(unsigned long *flags)
-+static inline void raw_local_irq_save_ptr(unsigned long *flags)
- {
- 	unsigned long msr;
- 	msr = mfmsr();
-@@ -105,12 +106,13 @@ static inline void local_irq_save_ptr(un
- 	__asm__ __volatile__("": : :"memory");
- }
- 
--#define local_save_flags(flags)	((flags) = mfmsr())
--#define local_irq_save(flags)	local_irq_save_ptr(&flags)
--#define irqs_disabled()		((mfmsr() & MSR_EE) == 0)
-+#define raw_local_save_flags(flags)	((flags) = mfmsr())
-+#define raw_local_irq_save(flags)	raw_local_irq_save_ptr(&flags)
-+#define raw_irqs_disabled()		((mfmsr() & MSR_EE) == 0)
-+#define raw_irqs_disabled_flags(flags)		(((flags) & MSR_EE) == 0)
- 
--#define hard_irq_enable()	local_irq_enable()
--#define hard_irq_disable()	local_irq_disable()
-+#define hard_irq_enable()	raw_local_irq_enable()
-+#define hard_irq_disable()	raw_local_irq_disable()
- 
- #endif /* CONFIG_PPC64 */
- 
---- linux-2.6-git.orig/include/asm-powerpc/irqflags.h	2007-06-26 18:12:10.669850274 +0200
-+++ linux-2.6-git/include/asm-powerpc/irqflags.h	2007-06-27 00:35:50.806820710 +0200
-@@ -10,19 +10,20 @@
- #ifndef _ASM_IRQFLAGS_H
- #define _ASM_IRQFLAGS_H
- 
-+#ifndef __ASSEMBLY__
- /*
-  * Get definitions for raw_local_save_flags(x), etc.
-  */
- #include <asm-powerpc/hw_irq.h>
-+#endif
- 
- /*
-- * Do the CPU's IRQ-state tracing from assembly code. We call a
-- * C function, so save all the C-clobbered registers:
-+ * Do the CPU's IRQ-state tracing from assembly code. Also
-+ * note the code in arch/powerpc/kernel/irqtrace.S.
-  */
- #ifdef CONFIG_TRACE_IRQFLAGS
--
--#error No support on PowerPC yet for CONFIG_TRACE_IRQFLAGS
--
-+# define TRACE_IRQS_ON		bl .powerpc_trace_irqs_on
-+# define TRACE_IRQS_OFF		bl .powerpc_trace_irqs_off
- #else
- # define TRACE_IRQS_ON
- # define TRACE_IRQS_OFF
---- linux-2.6-git.orig/include/asm-powerpc/rwsem.h	2007-06-26 18:12:10.747850274 +0200
-+++ linux-2.6-git/include/asm-powerpc/rwsem.h	2007-06-27 00:13:57.397341965 +0200
-@@ -28,11 +28,21 @@ struct rw_semaphore {
- #define RWSEM_ACTIVE_WRITE_BIAS		(RWSEM_WAITING_BIAS + RWSEM_ACTIVE_BIAS)
- 	spinlock_t		wait_lock;
- 	struct list_head	wait_list;
-+#ifdef CONFIG_DEBUG_LOCK_ALLOC
-+	struct lockdep_map	dep_map;
-+#endif
- };
- 
-+#ifdef CONFIG_DEBUG_LOCK_ALLOC
-+# define __RWSEM_DEP_MAP_INIT(lockname) , .dep_map = { .name = #lockname }
-+#else
-+# define __RWSEM_DEP_MAP_INIT(lockname)
-+#endif
-+
- #define __RWSEM_INITIALIZER(name) \
- 	{ RWSEM_UNLOCKED_VALUE, SPIN_LOCK_UNLOCKED, \
--	  LIST_HEAD_INIT((name).wait_list) }
-+	  LIST_HEAD_INIT((name).wait_list) \
-+	  __RWSEM_DEP_MAP_INIT(name) }
- 
- #define DECLARE_RWSEM(name)		\
- 	struct rw_semaphore name = __RWSEM_INITIALIZER(name)
-@@ -42,12 +52,15 @@ extern struct rw_semaphore *rwsem_down_w
- extern struct rw_semaphore *rwsem_wake(struct rw_semaphore *sem);
- extern struct rw_semaphore *rwsem_downgrade_wake(struct rw_semaphore *sem);
- 
--static inline void init_rwsem(struct rw_semaphore *sem)
--{
--	sem->count = RWSEM_UNLOCKED_VALUE;
--	spin_lock_init(&sem->wait_lock);
--	INIT_LIST_HEAD(&sem->wait_list);
--}
-+extern void __init_rwsem(struct rw_semaphore *sem, const char *name,
-+			 struct lock_class_key *key);
-+
-+#define init_rwsem(sem)					\
-+	do {						\
-+		static struct lock_class_key __key;	\
-+							\
-+		__init_rwsem((sem), #sem, &__key);	\
-+	} while (0)
- 
- /*
-  * lock for reading
-@@ -74,7 +87,7 @@ static inline int __down_read_trylock(st
- /*
-  * lock for writing
-  */
--static inline void __down_write(struct rw_semaphore *sem)
-+static inline void __down_write_nested(struct rw_semaphore *sem, int subclass)
- {
- 	int tmp;
- 
-@@ -84,6 +97,11 @@ static inline void __down_write(struct r
- 		rwsem_down_write_failed(sem);
- }
- 
-+static inline void __down_write(struct rw_semaphore *sem)
-+{
-+	__down_write_nested(sem, 0);
-+}
-+
- static inline int __down_write_trylock(struct rw_semaphore *sem)
- {
- 	int tmp;
---- linux-2.6-git.orig/include/asm-powerpc/spinlock.h	2007-06-26 18:12:10.639850274 +0200
-+++ linux-2.6-git/include/asm-powerpc/spinlock.h	2007-06-26 18:12:11.446850274 +0200
-@@ -19,6 +19,7 @@
-  *
-  * (the type definitions are in asm/spinlock_types.h)
-  */
-+#include <linux/irqflags.h>
- #ifdef CONFIG_PPC64
- #include <asm/paca.h>
- #include <asm/hvcall.h>
---- linux-2.6-git.orig/arch/powerpc/kernel/head_64.S	2007-06-26 18:12:10.537850274 +0200
-+++ linux-2.6-git/arch/powerpc/kernel/head_64.S	2007-06-27 00:34:57.402820710 +0200
-@@ -34,6 +34,7 @@
- #include <asm/iseries/lpar_map.h>
- #include <asm/thread_info.h>
- #include <asm/firmware.h>
-+#include <asm/irqflags.h>
- 
- #define DO_SOFT_DISABLE
- 
-@@ -394,6 +395,12 @@ label##_iSeries:							\
- 	EXCEPTION_PROLOG_ISERIES_2;					\
- 	b	label##_common;						\
- 
-+#ifdef CONFIG_TRACE_IRQFLAGS
-+#define TRACE_DISABLE_INTS bl .powerpc_trace_irqs_off
-+#else
-+#define TRACE_DISABLE_INTS
-+#endif
-+
- #ifdef CONFIG_PPC_ISERIES
- #define DISABLE_INTS				\
- 	li	r11,0;				\
-@@ -405,14 +412,15 @@ BEGIN_FW_FTR_SECTION;				\
- 	mfmsr	r10;				\
- 	ori	r10,r10,MSR_EE;			\
- 	mtmsrd	r10,1;				\
--END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISERIES)
-+END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISERIES);	\
-+	TRACE_DISABLE_INTS
- 
- #else
- #define DISABLE_INTS				\
- 	li	r11,0;				\
- 	stb	r11,PACASOFTIRQEN(r13);		\
--	stb	r11,PACAHARDIRQEN(r13)
--
-+	stb	r11,PACAHARDIRQEN(r13);		\
-+	TRACE_DISABLE_INTS
- #endif /* CONFIG_PPC_ISERIES */
- 
- #define ENABLE_INTS				\
-@@ -965,24 +973,38 @@ bad_stack:
-  */
- fast_exc_return_irq:			/* restores irq state too */
- 	ld	r3,SOFTE(r1)
--	ld	r12,_MSR(r1)
-+#ifdef CONFIG_TRACE_IRQFLAGS
-+	cmpdi	r3,0
-+	beq	1f
-+	bl	.trace_hardirqs_on
-+	ld	r3,SOFTE(r1)
-+1:
- 	stb	r3,PACASOFTIRQEN(r13)	/* restore paca->soft_enabled */
-+	cmpdi	r3,0
-+	bne	2f
-+	bl	.trace_hardirqs_off
-+	ld	r3,SOFTE(r1)
-+2:
-+#else
-+	stb	r3,PACASOFTIRQEN(r13)	/* restore paca->soft_enabled */
-+#endif
-+	ld	r12,_MSR(r1)
- 	rldicl	r4,r12,49,63		/* get MSR_EE to LSB */
- 	stb	r4,PACAHARDIRQEN(r13)	/* restore paca->hard_enabled */
--	b	1f
-+	b	3f
- 
- 	.globl	fast_exception_return
- fast_exception_return:
- 	ld	r12,_MSR(r1)
--1:	ld	r11,_NIP(r1)
-+3:	ld	r11,_NIP(r1)
- 	andi.	r3,r12,MSR_RI		/* check if RI is set */
- 	beq-	unrecov_fer
- 
- #ifdef CONFIG_VIRT_CPU_ACCOUNTING
- 	andi.	r3,r12,MSR_PR
--	beq	2f
-+	beq	4f
- 	ACCOUNT_CPU_USER_EXIT(r3, r4)
--2:
-+4:
- #endif
- 
- 	ld	r3,_CCR(r1)
-@@ -1387,11 +1409,24 @@ END_FW_FTR_SECTION_IFCLR(FW_FEATURE_ISER
- 
- 	/*
- 	 * hash_page couldn't handle it, set soft interrupt enable back
--	 * to what it was before the trap.  Note that .local_irq_restore
-+	 * to what it was before the trap.  Note that .raw_local_irq_restore
- 	 * handles any interrupts pending at this point.
- 	 */
- 	ld	r3,SOFTE(r1)
--	bl	.local_irq_restore
-+#ifdef CONFIG_TRACE_IRQFLAGS
-+	cmpdi	r3,0
-+	beq	14f
-+	bl	.trace_hardirqs_on
-+	ld	r3,SOFTE(r1)
-+14:
-+	bl	.raw_local_irq_restore
-+	cmpdi	r3,0
-+	bne	15f
-+	bl	.trace_hardirqs_off
-+15:
-+#else
-+	bl	.raw_local_irq_restore
-+#endif
- 	b	11f
- 
- /* Here we have a page fault that hash_page can't handle. */
---- linux-2.6-git.orig/arch/powerpc/kernel/setup_64.c	2007-06-26 18:12:10.594850274 +0200
-+++ linux-2.6-git/arch/powerpc/kernel/setup_64.c	2007-06-26 18:12:11.451850274 +0200
-@@ -33,6 +33,7 @@
- #include <linux/serial_8250.h>
- #include <linux/bootmem.h>
- #include <linux/pci.h>
-+#include <linux/lockdep.h>
- #include <asm/io.h>
- #include <asm/kdump.h>
- #include <asm/prom.h>
-@@ -359,6 +360,11 @@ void __init setup_system(void)
- 			  &__start___fw_ftr_fixup, &__stop___fw_ftr_fixup);
- 
- 	/*
-+	 * start lockdep
-+	 */
-+	lockdep_init();
-+
-+	/*
- 	 * Unflatten the device-tree passed by prom_init or kexec
- 	 */
- 	unflatten_device_tree();
---- linux-2.6-git.orig/arch/powerpc/kernel/entry_64.S	2007-06-26 18:20:59.030850274 +0200
-+++ linux-2.6-git/arch/powerpc/kernel/entry_64.S	2007-06-26 21:25:58.630569893 +0200
-@@ -29,6 +29,7 @@
- #include <asm/cputable.h>
- #include <asm/firmware.h>
- #include <asm/bug.h>
-+#include <asm/irqflags.h>
- 
- /*
-  * System calls.
-@@ -91,6 +92,13 @@ system_call_common:
- 	li	r10,1
- 	stb	r10,PACASOFTIRQEN(r13)
- 	stb	r10,PACAHARDIRQEN(r13)
-+#ifdef CONFIG_TRACE_IRQFLAGS
-+	bl	.trace_hardirqs_on
-+	REST_GPR(0,r1)
-+	REST_4GPRS(3,r1)
-+	REST_2GPRS(7,r1)
-+	addi	r9,r1,STACK_FRAME_OVERHEAD
-+#endif
- 	std	r10,SOFTE(r1)
- #ifdef CONFIG_PPC_ISERIES
- BEGIN_FW_FTR_SECTION
-@@ -491,8 +499,20 @@ BEGIN_FW_FTR_SECTION
- 4:
- END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISERIES)
- #endif
-+#ifdef CONFIG_TRACE_IRQFLAGS
-+	cmpdi	r5,0
-+	beq	5f
-+	bl	.trace_hardirqs_on
-+	ld	r5,SOFTE(r1)
- 	stb	r5,PACASOFTIRQEN(r13)
--
-+	b	6f
-+5:
-+	stb	r5,PACASOFTIRQEN(r13)
-+	bl	.trace_hardirqs_off
-+6:
-+#else
-+	stb	r5,PACASOFTIRQEN(r13)
-+#endif
- 	/* extract EE bit and use it to restore paca->hard_enabled */
- 	ld	r3,_MSR(r1)
- 	rldicl	r4,r3,49,63		/* r0 = (r3 >> 15) & 1 */
-@@ -560,6 +580,7 @@ do_work:
- 	bne	restore
- 	/* here we are preempting the current task */
- 1:
-+	TRACE_IRQS_ON
- 	li	r0,1
- 	stb	r0,PACASOFTIRQEN(r13)
- 	stb	r0,PACAHARDIRQEN(r13)
---- linux-2.6-git.orig/arch/powerpc/kernel/Makefile	2007-06-26 19:27:54.032776841 +0200
-+++ linux-2.6-git/arch/powerpc/kernel/Makefile	2007-06-27 00:30:19.115820710 +0200
-@@ -62,6 +62,7 @@ obj-$(CONFIG_SMP)		+= smp.o
- obj-$(CONFIG_KPROBES)		+= kprobes.o
- obj-$(CONFIG_PPC_UDBG_16550)	+= legacy_serial.o udbg_16550.o
- obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
-+obj-$(CONFIG_TRACE_IRQFLAGS)	+= irqtrace.o
- 
- module-$(CONFIG_PPC64)		+= module_64.o
- obj-$(CONFIG_MODULES)		+= $(module-y)
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-git/arch/powerpc/kernel/irqtrace.S	2007-06-27 00:32:07.125820710 +0200
-@@ -0,0 +1,42 @@
-+/*
-+ * crappy helper for irq-trace
-+ */
-+
-+#include <asm/ppc_asm.h>
-+#include <asm/asm-offsets.h>
-+
-+#define STACKSPACE	GPR0 + 16*8
-+
-+#ifdef __powerpc64__
-+#define ST	std
-+#define L	ld
-+#else
-+#define ST	stw
-+#define L	lw
-+#endif
-+
-+#define PRE				\
-+	subi	r1,r1,STACKSPACE ;	\
-+	SAVE_GPR(0, r1) ;		\
-+	SAVE_8GPRS(2, r1) ;		\
-+	SAVE_4GPRS(10, r1) ;		\
-+	mfcr	r0 ;			\
-+	ST	r0, (14*8)(r1) ;	\
-+	mflr	r0 ;			\
-+	ST	r0, (15*8)(r1)
-+
-+#define POST				\
-+	REST_8GPRS(2, r1) ;		\
-+	REST_4GPRS(10, r1) ;		\
-+	L	r0, (14*8)(r1) ;	\
-+	mtcr	r0 ;			\
-+	L	r0, (15*8)(r1) ;	\
-+	mtlr	r0 ;			\
-+	REST_GPR(0, r1) ;		\
-+	addi	r1,r1,STACKSPACE
-+
-+_GLOBAL(powerpc_trace_irqs_off)
-+	PRE
-+	bl .trace_hardirqs_off
-+	POST
-+	blr
+
+Where is the request_irq undone?
+
+> +       if (cf->mem_base)
+> +               iounmap(cf->mem_base);
+> +       if (cf->gpio_base)
+> +               iounmap(cf->gpio_base);
+> +       device_init_wakeup(&ofdev->dev, 0);
+> +       kfree(cf);
+> +       return status;
+> +
+> +}
+> +
+> +static int __devexit electra_cf_remove(struct of_device *ofdev)
+> +{
+> +       struct device *device = &ofdev->dev;
+> +       struct electra_cf_socket *cf;
+> +
+> +       cf = dev_get_drvdata(device);
+> +
+> +       cf->active = 0;
+> +       pcmcia_unregister_socket(&cf->socket);
+> +       free_irq(cf->irq, cf);
+> +       del_timer_sync(&cf->timer);
+> +
+> +       iounmap(cf->mem_base);
+> +       iounmap(cf->gpio_base);
+> +       release_mem_region(cf->mem_phys, cf->mem_size);
+> +       release_region(cf->io_base, cf->io_size);
+> +
+>
+
+irq_request?
+
+> +       kfree(cf);
+> +
+> +       return 0;
+> +}
+> +
+> +static int bus_notify(struct notifier_block *nb, unsigned long action,
+> +                     void *data)
+> +{
+> +       struct device *dev = data;
+> +
+> +       printk("bus notify called\n");
+> +
+> +       /* We are only intereted in device addition */
+> +       if (action != BUS_NOTIFY_ADD_DEVICE)
+> +               return 0;
+> +
+> +       /* We use the direct ops for localbus */
+> +       dev->archdata.dma_ops = &dma_direct_ops;
+> +
+
+I'm also replying to your reply to hch's reply.  Is that enough of a 
+reply? :-)
+
+> +       return 0;
+> +}
+> +
+> +static struct notifier_block bus_notifier = {
+> +       .notifier_call = bus_notify,
+> +};
+> +
+> +static struct of_device_id electra_cf_match[] =
+> +{
+> +       {
+> +               .compatible   = "electra-cf",
+> +       },
+> +       {},
+> +};
+> +
+> +static struct of_platform_driver electra_cf_driver =
+> +{
+> +       .name      = (char *)driver_name,
+> +       .match_table    = electra_cf_match,
+> +       .probe    = electra_cf_probe,
+> +       .remove   = electra_cf_remove,
+> +};
+> +
+> +static int __init electra_cf_init(void)
+> +{
+> +       bus_register_notifier(&pcmcia_bus_type, &bus_notifier);
+> +       return of_register_platform_driver(&electra_cf_driver);
+> +}
+> +module_init(electra_cf_init);
+> +
+> +static void __exit electra_cf_exit(void)
+> +{
+> +       bus_unregister_notifier(&pcmcia_bus_type, &bus_notifier);
+> +       of_unregister_platform_driver(&electra_cf_driver);
+
+Should these be reversed?  (if we keep it here)
+
+> +}
+> +module_exit(electra_cf_exit);
+> +
+> +MODULE_LICENSE("GPL");
+> +MODULE_AUTHOR ("Olof Johansson <olof at lixom.net>");
+> +MODULE_DESCRIPTION("PA Semi Electra CF driver");
+> +
+
+cheers,
+milton
