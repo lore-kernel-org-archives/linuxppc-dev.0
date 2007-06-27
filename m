@@ -1,16 +1,16 @@
 Return-Path: <miltonm@bga.com>
 Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id B9735DE06A
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2007 21:20:42 +1000 (EST)
-In-Reply-To: <20070625171221.GA6684@lixom.net>
+	by ozlabs.org (Postfix) with ESMTP id B102ADDF43
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2007 21:22:22 +1000 (EST)
 Mime-Version: 1.0 (Apple Message framework v624)
+In-Reply-To: <20070627071008.GA30648@localhost.localdomain>
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <3d37f1da59dc2a063a06bbd6092ed96a@bga.com>
+Message-Id: <d8960a6c86859c19b84dc9fd41446fbd@bga.com>
 From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH v2] pcmcia: CompactFlash driver for PA Semi Electra boards
-Date: Wed, 27 Jun 2007 06:20:38 -0500
-To: Olof Johansson <olof@lixom.net>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH 3/3] First cut at PReP support for arch/powerpc
+Date: Wed, 27 Jun 2007 06:22:27 -0500
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,55 +20,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> On Mon, Jun 25, 2007 at 08:39:09PM +0100, Christoph Hellwig wrote:
->> On Mon, Jun 25, 2007 at 12:12:21PM -0500, Olof Johansson wrote:
->>> Driver for the CompactFlash slot on the PA Semi Electra eval board. 
->>> It's
->>> a simple device sitting on localbus, with interrupts and 
->>> detect/voltage
->>> control over GPIO.
->>>
->>> The driver is implemented as an of_platform driver, and adds localbus
->>> as a bus being probed by the of_platform framework.
->>
->> Looks good to me. The only odd thing is the inconsistant use of
->> #ifdef CONFIG_PCMCIA in setup.c.
+On Wed Jun 27 17:10:08 EST 2007, David Gibson wrote:
+> Here is an implementation to allow PReP systems to boot under the
+> arch/powerpc codebase, one of the few remaining platforms supported in
+> arch/ppc but not so far in arch/powerpc.
 >
-> The ifdef is needed since for CONFIG_PCMCIA=n builds, the bus notifier
-> isn't available. I wanted to do the bus notifier registration 
-> explicitly
-> before the of_platform bus probe to avoid later surprises due to 
-> reordered
-> initcalls in case it was split up in it's own initcall.
-
-If CONFIG_PCMCIA=m then your notifier is not registered.  The modprobe 
-of your of_driver loads ds.ko, registers the bus, then registers your 
-driver.  When the socket driver tries to dma, the BUG in dma_64 for no 
-archdata.dma_ops triggers.
-
-It seems like we need
-
-(1) a notifier that a bus is registered, run before allowing any 
-devices, so that platforms can register bus notifiers by bus name 
-before the devices and drivers are registered.
-
-(2) a powerpc64 generic pcmcia bus notifier that copys the dma ops from 
-the parent socket.
-
-(3) something to set the dma_ops to direct_dma_ops on the of device.
-
-If we don't want (3) to be in the driver (as Christoph previosly 
-mentioned), then it needs to be a seperate bus that reuses the of 
-matching.  This would be similar to how ibmebus is setup.   If I 
-remember the discussion, ibmebus is to provide the alternate dma ops 
-and steals match etc code from the of_platform bus type.
+> This support is still fairly incomplete - it needs to obtain a lot
+> more device information from the residual data and put it into the
+> device tree, rather than relying on hardcoded values (both in the code
+> and in prep.dts).  Likewise many peripherals will not be supported -
+> in particular the RTC is not yet supported, so the time will generally
+> be wrong.
 
 
-Oh, is this why you have depends on PCMCIA=y ?
+Hi David.
 
+A few things I noticed:
 
-> I could add the code under ifdef as well, but it didn't seem too
-> critical. Once the second major board comes along I'll probably move it
-> out to a per-board file, there's no real need for it just yet.
+(1) Your cleaned up mkprep.c seems to always put on a floppy header, 
+where as before that was optional with the -php flag.  Is that header 
+right for a hard disk partition?  Or would that just have the 1-sector 
+header?  The comments in the old mkprep impiled the raw elf contents 
+are used for netboot.  What if the zImage does't fit on the 1.44MB disk 
+given in the header?
+
+(2) Uour wrapper rule can leave behind zImage.dts.prep.elf, but there 
+is no clean rule for that
+
+(3) Is this the right platform to create the device tree from scratch 
+by traversing fw data?  A significiant number of the properties are to 
+be filled in or say IBM, which is incorrect.
+
+(4) Adding a 5th udbg_putc method that calls a byte read to 
+udbg_comport->lsr masked with THRE until 0 and performs a byte write to 
+->thr shows we have the wrong abstraction.   Please make the inb/outb a 
+method with the comport.  It would seem the actual init_xx could be in 
+the platforms, passing inb, outb, and comport to a helper in 
+udbg_16550.c.   I'm fine with declaring all the early inits in udbg.h
+
+(5) the printk PReP architecture is in the middle of prep_find_bridges?
+
+(6) #if 0 prep_request_io will need platform check
+
+(7) do you expect both the kernel and the boot code will continue to 
+need residual.h?  If so, can we have the boot dir make a copy like the 
+zlib headers?  Or is this only temporary, the kernel only needs a copy 
+of the raw blob to export to userspace in the same spot and the 
+include/asm-powerpc copy will go away?
 
 milton
