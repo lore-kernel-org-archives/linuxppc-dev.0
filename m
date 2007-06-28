@@ -1,23 +1,21 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2FEEADDF47
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2007 09:09:17 +1000 (EST)
-Date: Wed, 27 Jun 2007 16:09:08 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Subject: Re: mm snapshot broken-out-2007-06-27-03-28.tar.gz uploaded
-Message-Id: <20070627160908.fe9052e4.akpm@linux-foundation.org>
-In-Reply-To: <200706280057.07481.m.kozlowski@tuxland.pl>
-References: <200706271030.l5RAUgKE015163@imap1.linux-foundation.org>
-	<200706280057.07481.m.kozlowski@tuxland.pl>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 749B5DDF67
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2007 10:14:13 +1000 (EST)
+Date: Thu, 28 Jun 2007 10:14:01 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 4/8] [POWERPC] Use global_number in ppc32 pci_controller
+Message-Id: <20070628101401.6790aafd.sfr@canb.auug.org.au>
+In-Reply-To: <11829683663762-git-send-email-galak@kernel.crashing.org>
+References: <11829683583721-git-send-email-galak@kernel.crashing.org>
+	<11829683604166-git-send-email-galak@kernel.crashing.org>
+	<11829683612573-git-send-email-galak@kernel.crashing.org>
+	<11829683631074-git-send-email-galak@kernel.crashing.org>
+	<11829683663762-git-send-email-galak@kernel.crashing.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
-	Adrian Bunk <bunk@stusta.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,53 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 28 Jun 2007 00:57:07 +0200
-Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
+Hi Kumar,
 
-> Hello,
-> 
-> 	Build problems on iMac G3.
-> 
-> 1) allnoconfig results in this:
-> 
->  CC      arch/powerpc/mm/tlb_32.o
-> In file included from include/asm/tlb.h:60,
->                  from arch/powerpc/mm/tlb_32.c:30:
-> include/asm-generic/tlb.h: In function 'tlb_flush_mmu':
-> include/asm-generic/tlb.h:76: error: implicit declaration of function 'release_pages'
-> include/asm-generic/tlb.h: In function 'tlb_remove_page':
-> include/asm-generic/tlb.h:105: error: implicit declaration of function 'page_cache_release'
-> make[1]: *** [arch/powerpc/mm/tlb_32.o] Blad 1
-> make: *** [arch/powerpc/mm] Blad 2
-> 
-> 
-> The patch below fixes that for me.
-> 
-> Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-> 
->  arch/powerpc/mm/tlb_32.c |    2 ++
->  1 file changed, 2 insertions(+)
-> 
-> --- linux-2.6.22-rc6-bo-a/arch/powerpc/mm/tlb_32.c	2007-06-27 23:38:49.000000000 +0200
-> +++ linux-2.6.22-rc6-bo-b/arch/powerpc/mm/tlb_32.c	2007-06-27 23:18:05.000000000 +0200
-> @@ -26,6 +26,8 @@
->  #include <linux/mm.h>
->  #include <linux/init.h>
->  #include <linux/highmem.h>
-> +#include <linux/pagemap.h>
-> +
->  #include <asm/tlbflush.h>
->  #include <asm/tlb.h>
+All this stuff looks good, thanks.
 
-OK.
-  
-> 
-> 
-> 2) These are conflicts introduced by kernel-sys_nic-should-include-linux-syscallsh.patch
-> 
->   CC      kernel/sys_ni.o
-> kernel/sys_ni.c:16: error: conflicting types for 'sys_nfsservctl'
-> include/linux/syscalls.h:497: error: previous declaration of 'sys_nfsservctl' was here
-> kernel/sys_ni.c:17: error: conflicting types for 'sys_quotactl'
+On Wed, 27 Jun 2007 13:19:14 -0500 Kumar Gala <galak@kernel.crashing.org> wrote:
+>
+> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+> new file mode 100644
+> index 0000000..3ca8cfb
+> --- /dev/null
+> +++ b/arch/powerpc/kernel/pci-common.c
+> @@ -0,0 +1,53 @@
+> +/*
+> + * Contains common pci routines for ALL ppc platform
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version
+> + * 2 of the License, or (at your option) any later version.
+> + */
 
-erk, I suspect that's unfixable, or not worth fixing.
+This needs some copyright notice presumably based on the code you are
+moving to here.
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
