@@ -2,24 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BFBB5DDF41
+	by ozlabs.org (Postfix) with ESMTP id CD92DDDF2A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Jun 2007 11:15:35 +1000 (EST)
-In-Reply-To: <1158362585.2622.27.camel@vader.jdub.homelinux.org>
-References: <20060824123841.4756.qmail@web36601.mail.mud.yahoo.com>
-	<1156423796.5640.23.camel@zod.rchland.ibm.com>
-	<1156424295.19482.11.camel@localhost>
-	<20060824132338.GA27468@gate.crashing.org>
-	<c3d0340b0609151606i2d01b963h4c7cd6a182d8c80@mail.gmail.com>
-	<1158362585.2622.27.camel@vader.jdub.homelinux.org>
+	Thu, 28 Jun 2007 11:20:41 +1000 (EST)
+In-Reply-To: <F795765B112E7344AF36AA911279641502D1A42C@xmb-sjc-212.amer.cisco.com>
+References: <F795765B112E7344AF36AA911279641502D1A42C@xmb-sjc-212.amer.cisco.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <4E1AC218-F960-4B82-AB21-9DD90511AC3B@kernel.crashing.org>
+Message-Id: <2DD9CF30-5127-4EC1-8D8E-BC6552A832AE@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: ARCH=ppc or ARCH=powerpc
-Date: Wed, 27 Jun 2007 20:14:45 -0500
-To: Josh Boyer <jwboyer@jdub.homelinux.org>
-Cc: Matt Porter <mporter@embeddedalley.com>, linuxppc-embedded@ozlabs.org
+Date: Wed, 27 Jun 2007 20:20:28 -0500
+To: Bizhan Gholikhamseh ((bgholikh)) <bgholikh@cisco.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,26 +26,33 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Sep 15, 2006, at 6:23 PM, Josh Boyer wrote:
+On Jun 27, 2007, at 4:41 PM, Bizhan Gholikhamseh ((bgholikh)) wrote:
 
-> On Fri, 2006-09-15 at 16:06 -0700, Shawn Jin wrote:
->> Hi Matt,
->>
->>> The goal is to have the new 4xx arch/powerpc support not break 4xx
->>> arch/ppc support. So as boards are merged and verified working,
->>> we'll remove the equivalent support from arch/ppc...
->>>
->>> Some boards/chips may just die if no maintainer step up to port
->>> them over...but all the important stuff should get an interested
->>> party once we get the initial 4xx support in arch/powerpc working.
->>
->> When can we expect this done? I have a 440 based SoC project ongoing
->> and am thinking when I should start moving to arch/powerpc.
+> Hi All,
+> Sorry for asking this question again, I am still not clear on some  
+> of the issues.
+> Background:
+> We have developed a custom board based on Freescale reference  
+> board: MPC8555_CDS with MPC8541E processor running Linux 2.6.11 and  
+> uboot 1.1.2 version.
 >
-> There is no set date or kernel release where this will be done.  In
-> other words "when it gets done, it gets done". :)
+> I would like to update the Linux kernel to the latest available  
+> kernel 2.6.21.
+> Here are my questions:
+> 1- Should I use ARCH=ppc or ARCH=powerpc to build the kernel?
 
-There is some push for putting a date one year from now as when arch/ 
-ppc will go away.
+Move to ARCH=powerpc.
+
+> 2- I have seen similar filenames under arch/ppc and arch/powerpc,  
+> which one applies to MPC8541E?
+
+There is support for MPC8541e in both arch/ppc & arch/powerpc.
+
+> 3- Once I build the kernel, could I load the kernel with uboot  
+> version 1.1.2 or not? if not what I should do?
+
+I can't remember if u-boot 1.1.2 had support for the device tree or  
+not.  If not you can use the cuImage target in arch/powerpc and use  
+your existing u-boot. (or upgrade u-boot)
 
 - k
