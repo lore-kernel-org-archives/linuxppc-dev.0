@@ -1,12 +1,12 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 28 Jun 2007 11:27:57 +1000
+Date: Thu, 28 Jun 2007 11:32:31 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Disable old EMAC driver in arch/powerpc
-Message-ID: <20070628012757.GE15298@localhost.localdomain>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: dtc: Remove bogus break statement
+Message-ID: <20070628013231.GF15298@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Cc: , linuxppc-dev@ozlabs.org, 5B@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,28 +16,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The EMAC driver, in drivers/net/ibm_emac, for the embedded Ethernet
-MAC found in PowerPC 4xx embedded chips is not suitable for
-arch/powerpc.  It will not build because it relies on the old arch/ppc
-OCP mechanism.  BenH has a new, device-tree aware version of the
-driver which will work in arch/powerpc, but until it's merged, this
-patch will disable the old, non-building version.
+Commit 0738774fcc34b78a708a127fb4b2f193d08c94ba introduced some
+incorrect indentation / bracketing in unflatten_tree().  By luck, the
+extra break statement intended to be within an if block, but actually
+afterwards has no semantic effect.  Still, this patch gets rid of it
+for cleanliness.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Index: working-2.6/drivers/net/Kconfig
+Index: dtc/flattree.c
 ===================================================================
---- working-2.6.orig/drivers/net/Kconfig	2007-06-28 11:16:31.000000000 +1000
-+++ working-2.6/drivers/net/Kconfig	2007-06-28 11:16:37.000000000 +1000
-@@ -1187,7 +1187,7 @@
+--- dtc.orig/flattree.c	2007-06-26 15:28:34.000000000 +1000
++++ dtc/flattree.c	2007-06-26 15:28:52.000000000 +1000
+@@ -779,7 +779,6 @@ static struct node *unflatten_tree(struc
+ 			if (!(flags & FTF_NOPS))
+ 				fprintf(stderr, "Warning: NOP tag found in flat tree"
+ 					" version <16\n");
+-				break;
  
- config IBM_EMAC
- 	tristate "PowerPC 4xx on-chip Ethernet support"
--	depends on 4xx
-+	depends on 4xx && !PPC_MERGE
- 	help
- 	  This driver supports the PowerPC 4xx EMAC family of on-chip
-           Ethernet controllers.
+ 			/* Ignore */
+ 			break;
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
