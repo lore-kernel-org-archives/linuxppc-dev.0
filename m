@@ -1,23 +1,25 @@
-Return-Path: <bgholikh@cisco.com>
-Received: from sj-iport-1.cisco.com (sj-iport-1-in.cisco.com [171.71.176.70])
-	by ozlabs.org (Postfix) with ESMTP id CFE33DDF8B
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BFBB5DDF41
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Jun 2007 07:41:20 +1000 (EST)
-Received: from sj-core-2.cisco.com (sj-core-2.cisco.com [171.71.177.254])
-	by sj-dkim-4.cisco.com (8.12.11/8.12.11) with ESMTP id l5RLfI1f013996
-	for <linuxppc-embedded@ozlabs.org>; Wed, 27 Jun 2007 14:41:18 -0700
-Received: from xbh-sjc-221.amer.cisco.com (xbh-sjc-221.cisco.com
-	[128.107.191.63])
-	by sj-core-2.cisco.com (8.12.10/8.12.6) with ESMTP id l5RLfIn0013742
-	for <linuxppc-embedded@ozlabs.org>; Wed, 27 Jun 2007 21:41:18 GMT
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C7B903.E4E2A6C4"
-Subject: ARCH=ppc or ARCH=powerpc
-Date: Wed, 27 Jun 2007 14:41:17 -0700
-Message-ID: <F795765B112E7344AF36AA911279641502D1A42C@xmb-sjc-212.amer.cisco.com>
-From: "Bizhan Gholikhamseh \(bgholikh\)" <bgholikh@cisco.com>
-To: <linuxppc-embedded@ozlabs.org>
+	Thu, 28 Jun 2007 11:15:35 +1000 (EST)
+In-Reply-To: <1158362585.2622.27.camel@vader.jdub.homelinux.org>
+References: <20060824123841.4756.qmail@web36601.mail.mud.yahoo.com>
+	<1156423796.5640.23.camel@zod.rchland.ibm.com>
+	<1156424295.19482.11.camel@localhost>
+	<20060824132338.GA27468@gate.crashing.org>
+	<c3d0340b0609151606i2d01b963h4c7cd6a182d8c80@mail.gmail.com>
+	<1158362585.2622.27.camel@vader.jdub.homelinux.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <4E1AC218-F960-4B82-AB21-9DD90511AC3B@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: ARCH=ppc or ARCH=powerpc
+Date: Wed, 27 Jun 2007 20:14:45 -0500
+To: Josh Boyer <jwboyer@jdub.homelinux.org>
+Cc: Matt Porter <mporter@embeddedalley.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,88 +30,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C7B903.E4E2A6C4
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+On Sep 15, 2006, at 6:23 PM, Josh Boyer wrote:
 
-Hi All,
-Sorry for asking this question again, I am still not clear on some of
-the issues.
-Background:
-We have developed a custom board based on Freescale reference board:
-MPC8555_CDS with MPC8541E processor running Linux 2.6.11 and uboot 1.1.2
-version.
-=20
-I would like to update the Linux kernel to the latest available kernel
-2.6.21.
-Here are my questions:
-1- Should I use ARCH=3Dppc or ARCH=3Dpowerpc to build the kernel?
-2- I have seen similar filenames under arch/ppc and arch/powerpc, which
-one applies to MPC8541E?
-3- Once I build the kernel, could I load the kernel with uboot version
-1.1.2 or not? if not what I should do?
-=20
-Many thanks in advance,
-Bizhan
-=20
+> On Fri, 2006-09-15 at 16:06 -0700, Shawn Jin wrote:
+>> Hi Matt,
+>>
+>>> The goal is to have the new 4xx arch/powerpc support not break 4xx
+>>> arch/ppc support. So as boards are merged and verified working,
+>>> we'll remove the equivalent support from arch/ppc...
+>>>
+>>> Some boards/chips may just die if no maintainer step up to port
+>>> them over...but all the important stuff should get an interested
+>>> party once we get the initial 4xx support in arch/powerpc working.
+>>
+>> When can we expect this done? I have a 440 based SoC project ongoing
+>> and am thinking when I should start moving to arch/powerpc.
+>
+> There is no set date or kernel release where this will be done.  In
+> other words "when it gets done, it gets done". :)
 
-------_=_NextPart_001_01C7B903.E4E2A6C4
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+There is some push for putting a date one year from now as when arch/ 
+ppc will go away.
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2800.1498" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D245352421-27062007>Hi=20
-All,</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D245352421-27062007>Sorry =
-for asking=20
-this question again, I am still not clear on some of the=20
-issues.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D245352421-27062007>Background:</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D245352421-27062007>We =
-have developed=20
-a&nbsp;custom board based on Freescale reference board: =
-MPC8555_CDS&nbsp;with=20
-MPC8541E processor running Linux 2.6.11 and uboot 1.1.2=20
-version.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D245352421-27062007>&nbsp;</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D245352421-27062007>I =
-would like to=20
-update the Linux kernel to the latest available kernel=20
-2.6.21.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D245352421-27062007>Here =
-are my=20
-questions:</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D245352421-27062007>1- =
-Should I use=20
-ARCH=3Dppc or ARCH=3Dpowerpc to build the kernel?</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D245352421-27062007>2- I =
-have seen=20
-similar filenames under arch/ppc and arch/powerpc, which one applies to=20
-MPC8541E?</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D245352421-27062007>3- =
-Once I build the=20
-kernel, could I load the kernel with uboot version 1.1.2 or not? if not =
-what I=20
-should do?</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D245352421-27062007></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D245352421-27062007>Many =
-thanks in=20
-advance,</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D245352421-27062007>Bizhan</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D245352421-27062007></SPAN></FONT>&nbsp;</DIV></BODY></HTML>
-
-------_=_NextPart_001_01C7B903.E4E2A6C4--
+- k
