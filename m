@@ -1,24 +1,23 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1720BDDF83
+Return-Path: <bgholikh@cisco.com>
+Received: from sj-iport-3.cisco.com (sj-iport-3-in.cisco.com [171.71.176.72])
+	by ozlabs.org (Postfix) with ESMTP id 88D36DDF6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 29 Jun 2007 03:53:27 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1I3yBH-0000DR-Km
-	for linuxppc-embedded@ozlabs.org; Thu, 28 Jun 2007 10:53:23 -0700
-Message-ID: <11347823.post@talk.nabble.com>
-Date: Thu, 28 Jun 2007 10:53:23 -0700 (PDT)
-From: khollan <khollan@daktronics.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Porting Linux to Xilinx ML410
-In-Reply-To: <20070627211825.GA2003@cip.informatik.uni-erlangen.de>
+	Fri, 29 Jun 2007 07:54:47 +1000 (EST)
+Received: from sj-core-2.cisco.com (sj-core-2.cisco.com [171.71.177.254])
+	by sj-dkim-4.cisco.com (8.12.11/8.12.11) with ESMTP id l5SLsiEM007579
+	for <linuxppc-embedded@ozlabs.org>; Thu, 28 Jun 2007 14:54:44 -0700
+Received: from xbh-sjc-211.amer.cisco.com (xbh-sjc-211.cisco.com
+	[171.70.151.144])
+	by sj-core-2.cisco.com (8.12.10/8.12.6) with ESMTP id l5SLsen2017264
+	for <linuxppc-embedded@ozlabs.org>; Thu, 28 Jun 2007 21:54:44 GMT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <11328063.post@talk.nabble.com>
-	<20070627211825.GA2003@cip.informatik.uni-erlangen.de>
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C7B9CE.EE435916"
+Subject: cuImage question
+Date: Thu, 28 Jun 2007 14:54:41 -0700
+Message-ID: <F795765B112E7344AF36AA911279641502D1A436@xmb-sjc-212.amer.cisco.com>
+From: "Bizhan Gholikhamseh \(bgholikh\)" <bgholikh@cisco.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,18 +28,67 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
+------_=_NextPart_001_01C7B9CE.EE435916
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-I fixed my error.  I was using gcc 4.1.0 and read some other threads here
-and found that there is a linker error in gcc 4.1.0  So I created a new
-toolchain with crosstool with gcc 4.0.2 and my system booted until it tried
-to mount the root file system like I had planned.  Now Ill have to create a
-rfs and see if it will boot all the way.
+Hi All,
+I am kind of new to the concept of "cuImage" and I am not able to find
+any info on the net(?).
+=20
+We are using older version of the uboot: 1.1.2. I have compiled the
+latest kernel from git tree for
+MPC8541E from freescale.=20
+=20
+I would appreciate any hints on how to use 'cuImage" to load this image
+with our legacy uboot version?
+=20
+Many thanks in advance,
+Bizhan
 
-Thanks for your replies
+------_=_NextPart_001_01C7B9CE.EE435916
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Kevin
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2800.1498" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D014284921-28062007>Hi=20
+All,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D014284921-28062007>I am =
+kind of new to=20
+the concept of "cuImage" and I am not able to find any info on the=20
+net(?).</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D014284921-28062007></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D014284921-28062007>We are =
+using older=20
+version of the uboot: 1.1.2. I have compiled the latest kernel from git =
+tree=20
+for</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN =
+class=3D014284921-28062007>MPC8541E from=20
+freescale. </SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D014284921-28062007></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D014284921-28062007>I =
+would appreciate=20
+any hints on how to use 'cuImage" to load this image with our legacy =
+uboot=20
+version?</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D014284921-28062007></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D014284921-28062007>Many =
+thanks in=20
+advance,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D014284921-28062007>Bizhan</SPAN></FONT></DIV></BODY></HTML>
 
--- 
-View this message in context: http://www.nabble.com/Porting-Linux-to-Xilinx-ML410-tf3989483.html#a11347823
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+------_=_NextPart_001_01C7B9CE.EE435916--
