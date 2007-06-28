@@ -1,28 +1,24 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-05.arcor-online.net (mail-in-05.arcor-online.net
+	[151.189.21.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
+	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 31619DDF78
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2007 16:55:24 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l5S6tJwS020874
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2007 23:55:19 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l5S6tH96013647
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2007 01:55:18 -0500 (CDT)
-Subject: Re: for-2.6.23 branch in powerpc.git created
-From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18034.6787.951861.623265@cargo.ozlabs.ibm.com>
-References: <18034.6787.951861.623265@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Message-Id: <1183013700.17009.15.camel@localhost.localdomain>
-Mime-Version: 1.0
-Date: 28 Jun 2007 14:55:00 +0800
+	by ozlabs.org (Postfix) with ESMTP id 4AD92DDEBF
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2007 18:24:16 +1000 (EST)
+In-Reply-To: <467FCC9D.6010904@ru.mvista.com>
+References: <1181729973.25586.31.camel@dolphin.spb.rtsoft.ru>	<db0d38e5b5e1a9a3a7fe35d25ebd357a@kernel.crashing.org>	<467176EB.7060404@ru.mvista.com>	<6c416bf9f79a648fc82f64619aca86de@kernel.crashing.org>	<20070615212016.GB18055@mag.az.mvista.com>
+	<1182429443.24740.8.camel@localhost.localdomain>
+	<467BE91F.1030003@ru.mvista.com>
+	<3372b921591ca9731d2703f04e6c35f1@kernel.crashing.org>
+	<467FCC9D.6010904@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <ce09df5afe642e8f6e9a576306cc1e41@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC/PATCH] powerpc: MPC7450 L2 HW cache flush feature utilization
+Date: Thu, 28 Jun 2007 10:24:06 +0200
+To: Vladislav Buzov <vbuzov@ru.mvista.com>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -33,32 +29,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-06-15 at 12:50, Paul Mackerras wrote:
-> I have created a for-2.6.23 branch in the powerpc.git repository
-> (git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git)
-> where I have started queueing up patches to go in once the 2.6.23
-> merge window opens.  For now at least it's the same as the master
-> branch.
-> 
-> The patches I put in are listed below.  If you have a patch that
-> should go in but isn't listed, remind me about it.
-> 
+>>> Note that 745x processors have L3 cache installed and may have the 
+>>> same
+>>> problem requiring similar code modifications to use L3 hardware 
+>>> flushing
+>>> mechanism.
+>>
+>> What does the erratum say?
+>
+> The erratum says nothing about any HW bugs with L3 cache flush. I just 
+> mentioned that the L3 cache flush operation described in MPC7450 
+> Reference manual is similar to the L2 using the L3 cache hardware 
+> flushing mechanism. For instance, it requires a complete L3 locking 
+> before flushing.
 
-Paul,
-These patches should go in 2.6.23.
-1 add cuboot for 7448hpc2 board
-http://ozlabs.org/pipermail/linuxppc-dev/2007-May/036834.html
+Then I think we should use that mechanism in the Linux kernel.
+Anything else is waiting for bugs to bite.
 
-2. Remove redundant pci_read_irq_line() function for 85xx platform
-Acked by Ben
-http://ozlabs.org/pipermail/linuxppc-dev/2007-June/037117.html
+>> The L3 is a very different beast from the L2, IIRC it is
+>> a pure victim cache so it cannot have this problem at all?
+>
+> I'm not sure if it is a pure victim cache. I read the MPC7450 
+> reference manual and see that the L3 cache operates similarly to the 
+> L2. The main difference between those caches is that L3 uses an 
+> external SRAM memory while L2 is a pure on-chip cache.
 
-3. Fix e500 v2 core reboot bug
-http://ozlabs.org/pipermail/linuxppc-dev/2007-June/037799.html
+Yeah but it isn't involved in any prefetching AFAIK.  Anyway,
+moot point, since we really should do the recommended flush
+algorithm (esp. since we clearly do not sufficiently understand
+the details of the L3 operation!)
 
-4. Document the global utilities node define and example
 
-http://ozlabs.org/pipermail/linuxppc-dev/2007-June/038136.html
-http://ozlabs.org/pipermail/linuxppc-dev/2007-June/038137.html
-
-Roy
+Segher
