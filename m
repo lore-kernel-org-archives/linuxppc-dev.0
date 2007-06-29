@@ -1,20 +1,19 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id A395FDDF82
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Jun 2007 22:52:55 +1000 (EST)
-Message-ID: <4685010C.4000108@ru.mvista.com>
-Date: Fri, 29 Jun 2007 16:54:36 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 76950DDF4E
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Jun 2007 23:46:30 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Please pull from 'for_paulus' branch
+Date: Fri, 29 Jun 2007 15:45:53 +0200
+References: <Pine.LNX.4.64.0706290023590.15748@blarg.am.freescale.net>
+	<18052.42546.78964.805791@cargo.ozlabs.ibm.com>
+In-Reply-To: <18052.42546.78964.805791@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-To: kgdb-bugreport@lists.sourceforge.net
-Subject: Re: 2.6.22-rc6-mm1
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
-	<200706291432.10128.m.kozlowski@tuxland.pl>
-In-Reply-To: <200706291432.10128.m.kozlowski@tuxland.pl>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Mariusz Kozlowski <m.kozlowski@tuxland.pl>, paulus@samba.org,
-	jason.wessel@windriver.com, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200706291545.53890.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,28 +23,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+On Friday 29 June 2007, Paul Mackerras wrote:
+> It turns out that with Arnd's patches we now get "-mcpu=3Dpowerpc64" on
+> the command line, and that means that gcc *doesn't* put "-mppc64" the
+> as command line, and as barfs on the 64-bit instructions. =A0That's
+> presumably a gcc bug, but we'll have to work around it. =A0I think the
+> best thing is just to not put the -mcpu=3Dpowerpc64 in CFLAGS when no
+> specific CPU is selected.
 
-Mariusz Kozlowski wrote:
+I can't reproduce the problem here unfortunately. My idea was to always
+pass _some_ -mcpu=3D flag, in order to make sure it does not use
+an inappropriate default, e.g. when the compiler is built for a default
+for power4 but you actually want to build a power3 kernel.
 
-> 	allmodconfig on powerpc (iMac g3) fails due to
-> git-kgdb.patch. allmodconfig defaults should be changed?
+Would it work reliably if we switch the arguments to
+'-mcpu=3Dpowerpc64 -m64' instead of '-m64 -mcpu=3Dpowerpc64'? That
+might be better than taking it out entirely.
 
->   CC      arch/powerpc/kernel/kgdb.o
-> arch/powerpc/kernel/kgdb.c:485:2: error: #error Both XMON and KGDB selected 
-> in .config. Unselect one of them.
-> make[1]: *** [arch/powerpc/kernel/kgdb.o] Blad 1
-> make: *** [arch/powerpc/kernel] Blad 2
-
-    I'm not sure if this will work out but maybe it's worth to disable XMON if 
-KGDB is selected, like this?
-
-config XMON
-	bool "Include xmon kernel debugger"
-	depends on DEBUGGER && !KGDB
-
-> Regards,
-
-> 	Mariusz
-
-WBR, Sergei
+	Arnd <><
