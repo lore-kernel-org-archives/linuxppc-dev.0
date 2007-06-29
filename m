@@ -1,32 +1,24 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
+	[151.189.21.41])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CD5F4DDF99
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jun 2007 01:32:37 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l5TFWZQS005365
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Jun 2007 11:32:35 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l5TFWYaE204608
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Jun 2007 09:32:34 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l5TFWYIr016981
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Jun 2007 09:32:34 -0600
-Subject: Re: [PATCH v2] dtc: Add install makefile target
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Andreas Schwab <schwab@suse.de>
-In-Reply-To: <jehcoqsrzw.fsf@sykes.suse.de>
-References: <1183128803.30145.29.camel@weaponx.rchland.ibm.com>
-	<jehcoqsrzw.fsf@sykes.suse.de>
-Content-Type: text/plain
-Date: Fri, 29 Jun 2007 10:32:33 -0500
-Message-Id: <1183131153.30145.36.camel@weaponx.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 65E8DDDF79
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jun 2007 02:05:41 +1000 (EST)
+In-Reply-To: <1183130011.30145.35.camel@weaponx.rchland.ibm.com>
+References: <1182952173.9889.4.camel@weaponx.rchland.ibm.com>
+	<1183128867.1170.341.camel@pmac.infradead.org>
+	<1183130011.30145.35.camel@weaponx.rchland.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <00b4db6df4432cc8c611a0e4673db87c@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] Schedule removal of arch/ppc
+Date: Fri, 29 Jun 2007 18:05:25 +0200
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,19 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-06-29 at 17:24 +0200, Andreas Schwab wrote:
-> Josh Boyer <jwboyer@linux.vnet.ibm.com> writes:
-> 
-> > +install: dtc ftdump
-> > +	$(INSTALL) -d $(DESTDIR)/$(BINDIR)
-> > +	$(INSTALL) -m 755 dtc $(DESTDIR)/$(BINDIR)
-> > +	$(INSTALL) -m 755 ftdump $(DESTDIR)/$(BINDIR)
-> 
-> Don't put a slash after $(DESTDIR).  You'll end up with a doulbe slash.
+>>> +      remain in bug-fix only mode until it's scheduled removal.  
+>>> Platforms
+>>
+>> http://www.angryflower.com/itsits.gif
+>
+> That's it?  I'm scheduling the demise of an entire architecture 
+> sub-tree
+> and the only comment you can make is about a superfluous apostrophe? ;)
 
-/me bangs head on desk.
+Oh there are bigger issues with your patch...
 
-Why is it that the 9 line patches are always the most screwed up ones?
-I'll fix it again.  Maybe after more coffee.
+s/the the/to the/
 
-josh
+> Anyway, I'll fix it after waiting a bit more to see if anyone has
+> further comments.
+
+I think we all agree arch/ppc/ has to DIE so it's all up
+to Paul now to schedule its execution...
+
+
+Segher
