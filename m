@@ -1,23 +1,20 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
-	[66.98.186.96])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 67A9DDDF0F
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jun 2007 03:08:13 +1000 (EST)
-Message-ID: <46853CA2.2040203@genesi-usa.com>
-Date: Fri, 29 Jun 2007 18:08:50 +0100
-From: Matt Sealey <matt@genesi-usa.com>
+Return-Path: <mgreer@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id 633AADDFB4
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jun 2007 03:24:59 +1000 (EST)
+Date: Fri, 29 Jun 2007 10:23:57 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH] Schedule removal of arch/ppc
+Message-ID: <20070629172357.GB25595@mag.az.mvista.com>
+References: <1182952173.9889.4.camel@weaponx.rchland.ibm.com>
+	<1183128867.1170.341.camel@pmac.infradead.org>
+	<1183130011.30145.35.camel@weaponx.rchland.ibm.com>
+	<1183130082.1170.344.camel@pmac.infradead.org>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: PCI IO range limitation
-References: <46838B54.2010806@semihalf.com>	
-	<1183052634.5521.284.camel@localhost.localdomain>	
-	<46844692.1040804@genesi-usa.com>
-	<1183075997.5521.292.camel@localhost.localdomain>
-In-Reply-To: <1183075997.5521.292.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Marian Balakowicz <m8@semihalf.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1183130082.1170.344.camel@pmac.infradead.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,30 +24,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-
-> On Fri, 2007-06-29 at 00:38 +0100, Matt Sealey wrote:
->> Benjamin Herrenschmidt wrote:
->>> On Thu, 2007-06-28 at 12:20 +0200, Marian Balakowicz wrote:
->>>> Hi,
->>>>
->>>> Trying to change PCI IO window base for 52xx target I found that
->>>> we are pretty much limited to a "0" offset only.
->>> We just fixed that for 64 bits but 32 bits still has the limitation.
->>> Note that it's not a very good idea to have your IO range at !0 if
->>> you're going to use anything ISA-like, such as a VGA video card or other
->>> legacy devices behind a PCI southbridge or SuperIO.
->> The chances of that on an MPC52xx platform are practically zero, aren't
->> they?
+On Fri, Jun 29, 2007 at 04:14:42PM +0100, David Woodhouse wrote:
+> On Fri, 2007-06-29 at 10:13 -0500, Josh Boyer wrote:
+> > That's it?  I'm scheduling the demise of an entire architecture
+> > sub-tree and the only comment you can make is about a superfluous
+> > apostrophe? ;)
 > 
-> Euh... don't you use VGA video cards on Efika ? :-)
+> Sorry, allow me to rephrase...
+> 
+> http://www.angryflower.com/itsits.gif 
+> DIE arch/ppc DIE!
 
-Define "legacy device"? What should that entail? You mean like mapping
-most of those registers to the first couple of kilobytes of "IO"?
-
-If they're just left as their own on their own as PCI devices, why would
-it matter what the window was?
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+I second that motion. ;)
