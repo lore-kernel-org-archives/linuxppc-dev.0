@@ -4,24 +4,21 @@ Received: from mail-in-12.arcor-online.net (mail-in-12.arcor-online.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 85104DDE2F
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Jun 2007 19:49:51 +1000 (EST)
-In-Reply-To: <46B96294322F7D458F9648B60E15112C6F3312@zch01exm26.fsl.freescale.net>
-References: <11829333481420-git-send-email-wei.zhang@freescale.com>
-	<11829333481977-git-send-email-wei.zhang@freescale.com>
-	<5f0438212493766009684d63e41c85cc@kernel.crashing.org>
-	<46B96294322F7D458F9648B60E15112C6F3281@zch01exm26.fsl.freescale.net>
-	<8ee77b5f79ee0c0c5ead1f0acbe95bda@kernel.crashing.org>
-	<46B96294322F7D458F9648B60E15112C6F3312@zch01exm26.fsl.freescale.net>
+	by ozlabs.org (Postfix) with ESMTP id 7DDE6DDF93
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Jun 2007 19:51:07 +1000 (EST)
+In-Reply-To: <18052.53604.173632.186062@cargo.ozlabs.ibm.com>
+References: <Pine.LNX.4.64.0706290023590.15748@blarg.am.freescale.net>
+	<18052.42546.78964.805791@cargo.ozlabs.ibm.com>
+	<fd3e668b664f28db6aa3071b1abdc642@kernel.crashing.org>
+	<18052.53604.173632.186062@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <e463944d2ab9266347361f7cd3b61b09@kernel.crashing.org>
+Message-Id: <86458f827c7ba4a92be4861c1cd3b928@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/5 v2] Add the explanation and a sample of RapidIO DTS
-	sector to the document of booting-without-of.txt file.
-Date: Fri, 29 Jun 2007 11:49:42 +0200
-To: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
+Subject: Re: Please pull from 'for_paulus' branch
+Date: Fri, 29 Jun 2007 11:51:02 +0200
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,30 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> No.  The #address-cells is determined by the bus binding,
->> so that all RapidIO busses on the planet can be represented
->> in a similar way in the OF device tree.  Take for example
->> the PCI binding, which gives you three address cells -- one
->> to distinguish between different address spaces (configuration
->> space, legacy I/O space, memory mapped space) and to contain
->> some flags (prefetchable vs. non-prefetchable, etc.); the
->> other two 32-bit cells contain a 64-bit address, although
->> config and legacy I/O never are more than 32 bit, and many
->> PCI devices can't do 64-bit addressing at all.
->>
->> Now, there is no OF binding for RapidIO yet of course, but
->> it would be good to start thinking about one while doing
->> the binding for your specific controller -- it will make
->> life easier down the line for everyone, including yourself.
->>
-> How about I add more words here for more clear expression?
-> Such as "<2> for 34 and 50 bit address, <3> for 66 bit address".
+>> It is not.  -mcpu=powerpc64 doesn't select an ABI, and your
+>> GCC presumably defaults to the 32-bit ABI.  Use -m64 on the
+>> GCC command line, too, you need it, and it solves this issue
+>> as a side effect.
+>
+> No, actually the command line had -m64 on it.  The situation is this:
+>
+> gcc -m64 -mtune=power4 works
+> gcc -m64 -mcpu=powerpc64 -mtune=power4 fails.
+>
+> The problem is in the spec file where it works out what parameters to
+> pass to `as'.  Without any -mcpu it correctly defaults to passing
+> -mppc64 (when -m64 is given).  It then also has a list of -mcpu values
+> and the corresponding flag to pass to as, but powerpc64 isn't in that
+> list.  Thus with -mcpu=powerpc64 we don't get -mppc64 passed to as.
 
-You should more explicitly define the address format, i.e.
-what every bit means -- just saying it is 64 or 96 bits isn't
-enough.  While you're doing that, think of a way that can
-represent _every possible_ RapidIO address, not just the ones
-supported by this particular controller.
+Oh okay, badness.  What's the GCC PR #?
 
 
 Segher
