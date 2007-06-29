@@ -1,21 +1,32 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 04461DDF98
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jun 2007 00:44:22 +1000 (EST)
-In-Reply-To: <200706291545.53890.arnd@arndb.de>
-References: <Pine.LNX.4.64.0706290023590.15748@blarg.am.freescale.net>
-	<18052.42546.78964.805791@cargo.ozlabs.ibm.com>
-	<200706291545.53890.arnd@arndb.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <5921DF9C-31D0-4805-B699-4E634DAA2FB4@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Please pull from 'for_paulus' branch
-Date: Fri, 29 Jun 2007 09:44:23 -0500
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 19926DDFCE
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jun 2007 00:50:58 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l5TEotSX031540
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Jun 2007 10:50:55 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l5TEotqd237358
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Jun 2007 08:50:55 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l5TEos3h006153
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Jun 2007 08:50:55 -0600
+Subject: Re: [PATCH] dtc: Add install makefile target
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Olaf Hering <olaf@aepfle.de>
+In-Reply-To: <20070629143414.GA13053@aepfle.de>
+References: <1183125374.30145.14.camel@weaponx.rchland.ibm.com>
+	<20070629143414.GA13053@aepfle.de>
+Content-Type: text/plain
+Date: Fri, 29 Jun 2007 09:50:53 -0500
+Message-Id: <1183128653.30145.26.camel@weaponx.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,29 +36,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 2007-06-29 at 16:34 +0200, Olaf Hering wrote:
+> On Fri, Jun 29, Josh Boyer wrote:
+> 
+> > +DESTDIR = /
+> > +BINDIR = usr/bin
+> 
+> +DESTDIR=
+> +BINDIR=/usr/bin
+> 
+> Just like every other package out there.
 
-On Jun 29, 2007, at 8:45 AM, Arnd Bergmann wrote:
+Urgh.  I thought I had fixed that already.  Will resubmit.
 
-> On Friday 29 June 2007, Paul Mackerras wrote:
->> It turns out that with Arnd's patches we now get "-mcpu=powerpc64" on
->> the command line, and that means that gcc *doesn't* put "-mppc64" the
->> as command line, and as barfs on the 64-bit instructions.  That's
->> presumably a gcc bug, but we'll have to work around it.  I think the
->> best thing is just to not put the -mcpu=powerpc64 in CFLAGS when no
->> specific CPU is selected.
->
-> I can't reproduce the problem here unfortunately. My idea was to  
-> always
-> pass _some_ -mcpu= flag, in order to make sure it does not use
-> an inappropriate default, e.g. when the compiler is built for a  
-> default
-> for power4 but you actually want to build a power3 kernel.
->
-> Would it work reliably if we switch the arguments to
-> '-mcpu=powerpc64 -m64' instead of '-m64 -mcpu=powerpc64'? That
-> might be better than taking it out entirely.
-
-Is there a reason you didn't use -mcpu=power3 and -mcpu=rs64 for  
-those to CPU options?
-
-- k
+josh
