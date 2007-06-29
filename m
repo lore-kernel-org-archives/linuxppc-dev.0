@@ -1,19 +1,35 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 8BA86DDEAB
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jun 2007 05:48:53 +1000 (EST)
-Date: Fri, 29 Jun 2007 21:48:52 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: for-2.6.23 branch in powerpc.git created
-In-Reply-To: <18051.22185.374607.755419@cargo.ozlabs.ibm.com>
-Message-ID: <Pine.LNX.4.60.0706292131390.4227@poirot.grange>
-References: <18034.6787.951861.623265@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.60.0706151915580.5979@poirot.grange>
-	<18051.22185.374607.755419@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9A682DDFB4
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jun 2007 06:40:21 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l5TKeFH8016683
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Jun 2007 16:40:15 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l5TKeFU3217670
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Jun 2007 14:40:15 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l5TKeFUn017902
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Jun 2007 14:40:15 -0600
+Subject: Re: [PATCH v2] Fix VDSO gettimeofday() when called with NULL
+	struct timeval.
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: Tony Breeds <tony@bakeyournoodle.com>,
+	will_schmidt <will_schmidt@vnet.ibm.com>
+In-Reply-To: <20070625235032.GH9768@bakeyournoodle.com>
+References: <20070625105836.GE9768@bakeyournoodle.com>
+	<20070625235032.GH9768@bakeyournoodle.com>
+Content-Type: text/plain
+Date: Fri, 29 Jun 2007 15:39:44 -0500
+Message-Id: <1183149584.22547.51.camel@farscape.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,40 +39,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 28 Jun 2007, Paul Mackerras wrote:
+On Tue, 2007-06-26 at 09:50 +1000, Tony Breeds wrote:
+> Updated to include feedback from Ben and Segher, also reposition the
+> compare in the 64bit VDSO to catch all the references to tv.
 
-> Guennadi Liakhovetski writes:
+
+> --- working.orig/arch/powerpc/kernel/vdso64/gettimeofday.S
+> +++ working/arch/powerpc/kernel/vdso64/gettimeofday.S
+
+<snippage>
+> @@ -32,6 +31,8 @@ V_FUNCTION_BEGIN(__kernel_gettimeofday)
+>  	mr	r11,r3			/* r11 holds tv */
+>  	mr	r10,r4			/* r10 holds tz */
+>  	bl	V_LOCAL_FUNC(__get_datapage)	/* get data page */
+> +	cmpldi	r10,0			/* check if tv is NULL */
+
+Whoops!    r10 holds tz value, not tv.   This should be r11.  
+
+As is, a (64-bit) userspace app calling gettimeofday(&tv,NULL); will
+"silently fail", and the application is left using whatever old data
+happens to be in the tv structure.
+
+This affected my G5 (gentoo), most noticable when apps like 'ping' and
+nfs-mounts quit working properly.  :-) 
+
+patch follows momentarily... 
+
+> +	beq	2f
+>  	bl	V_LOCAL_FUNC(__do_get_xsec)	/* get xsec from tb & kernel */
+>  	lis     r7,15			/* r7 = 1000000 = USEC_PER_SEC */
+>  	ori     r7,r7,16960
+> @@ -43,8 +44,8 @@ V_FUNCTION_BEGIN(__kernel_gettimeofday)
+>  					 * XSEC_PER_SEC
+>  					 */
+>  	rldicl  r0,r0,44,20
+> -	cmpldi	cr0,r10,0		/* check if tz is NULL */
+>  	std	r0,TVAL64_TV_USEC(r11)	/* store usec in tv */
+> +2:	cmpldi	r10,0			/* check if tz is NULL */
+>  	beq	1f
+>  	lwz	r4,CFG_TZ_MINUTEWEST(r3)/* fill tz */
+>  	lwz	r5,CFG_TZ_DSTTIME(r3)
 > 
-> > These two i2c patches:
-> > 
-> > http://ozlabs.org/pipermail/linuxppc-dev/2007-June/037327.html
-> > http://ozlabs.org/pipermail/linuxppc-dev/2007-June/037328.html
-> > 
-> > also would be nice to get in, although, they only make sense with an ack 
-> > from Scott Wood and another patch from him, as explained in links above...
+> Yours Tony
 > 
-> Looks OK, but the first of those two patches doesn't have a
-> Signed-off-by: line, and the description is not suitable.
+>   linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+>   Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
 > 
-> Please repost that patch with a nice description that describes what
-> the patch does and why, without references to other web pages.  You
-> don't need to describe what is different from previous patches or who
-> suggested those changes.
-
-Ok, just reposted. I even used the original subject line and the 
-description from Scott's email. I also removed the part for 
-drivers/i2c/busses/i2c-mpc.c - it is a separate patch 
-http://ozlabs.org/pipermail/linuxppc-dev/2007-May/036079.html and I hope 
-it'll make it in either via ppc or via i2c tree (it was cc'ed) as well as 
-http://ozlabs.org/pipermail/linuxppc-dev/2007-May/036333.html (sorry, 
-Paul, for links again).
-
-Speaking about i2c@lm-sensors.org - which way should these patches go? Is 
-it the usual separation drivers/i2c goes via i2c and arch/powerpc via ppc? 
-Or should I also email i2c folks to tell them not to use the original 
-patch from Scott?
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
