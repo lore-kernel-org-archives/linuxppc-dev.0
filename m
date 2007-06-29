@@ -1,22 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 41EBCDDFA7
+Return-Path: <pradyumna.sampath@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.182])
+	by ozlabs.org (Postfix) with ESMTP id 5CCAEDDF6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 29 Jun 2007 13:15:46 +1000 (EST)
-In-Reply-To: <20070628083624.GE8794@dd.nec.com.au>
-References: <F795765B112E7344AF36AA911279641502D1A42C@xmb-sjc-212.amer.cisco.com>
-	<2DD9CF30-5127-4EC1-8D8E-BC6552A832AE@kernel.crashing.org>
-	<20070628074430.GC8794@dd.nec.com.au>
-	<20070628083624.GE8794@dd.nec.com.au>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <780999D9-1628-4708-9ED4-61C51A200A49@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: ARCH=ppc or ARCH=powerpc
-Date: Thu, 28 Jun 2007 22:15:38 -0500
-To: Erik Christiansen <erik@dd.nec.com.au>
+	Fri, 29 Jun 2007 18:12:33 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so1434674pyi
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 29 Jun 2007 01:12:30 -0700 (PDT)
+Message-ID: <f87351060706290112o407f75e5h9dffd9939ab80ef9@mail.gmail.com>
+Date: Fri, 29 Jun 2007 13:42:29 +0530
+From: "Pradyumna Sampath" <pradyumna.sampath@gmail.com>
+To: "Nicholas Hickman" <nhickman@dtechlabs.com>
+Subject: Re: mpc8270 & Intel 82551ER on 2.6.17.14
+In-Reply-To: <8140AAF341CC904BA92C3D6A5A1909782A2FA3@ditech-1.ditechllc.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <8140AAF341CC904BA92C3D6A5A1909782A2FA3@ditech-1.ditechllc.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -28,32 +26,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Nicholas,
 
-On Jun 28, 2007, at 3:36 AM, Erik Christiansen wrote:
+On 6/29/07, Nicholas Hickman <nhickman@dtechlabs.com> wrote:
+>
+>
+> I am having trouble getting two 82551ER Ethernet controllers running in
+> Linux.  I am able to scan the PCI bus and see the devices and I was even
+> able to program the EEPROM from U-boot.
+>
+> In the kernel I mapped the IRQ's through /arch/ppc/m82xx_pci.c.  I've been
+> using the e100 drive that comes with the 2.6.17.14 kernel and have also
+> tried the driver directly from Intel.  Both give the same results.  The PCI
+> scan shows the correct output for how the device should be configured.
+<snip..>
 
-> On Thu, Jun 28, 2007 at 05:44:30PM +1000, Erik Christiansen wrote:
->> Encountering a kernel build error with ARCH=ppc, after configuring  
->> as much as
->> possible for MPC8248, I've just tried ARCH=powerpc on  
->> linux-2.6.21.5, with this
->> slightly scary result:
->
-> Oh dear. Please excuse the noise. That was clearly acute lack of
-> familiarity with menuconfig.   <blush>
->
-> Minus fingerfumbling, ARCH=powerpc starts to build, before coughing  
-> up a
-> bunch of compiler errors:
->
-> cpm2_common.c:63: error: 'CPM_MAP_ADDR' undeclared
->
-> Is that due to this patch not being accepted?:
->    http://patchwork.ozlabs.org/linuxppc/patch?id=8891
->
-> If the patch's "State Superseded" means something else fixes the build
-> failure, then how could I lay my grubby paws on that little gem?
+I have the same, exact same problem. But there are some of the
+differences with the setup though. I have an MPC5200B and the other
+difference is that I have a 2.6.21-rt3. However its the same ethernet
+controller.
 
-It probably means there was a newer version of the patch w/changes  
-made to it based on feedback.
+I am trying out a few things here, some of them being complete
+guesses. But if I hit something, I will let this list know. Anyone
+else had similar issues ? Request you to please holler.
 
-- k
+regards
+prady
+-- 
+htp://prady.livejournal.com
