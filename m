@@ -1,18 +1,24 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] Schedule removal of arch/ppc
-From: Michael Ellerman <michael@ellerman.id.au>
-To: David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1183128867.1170.341.camel@pmac.infradead.org>
-References: <1182952173.9889.4.camel@weaponx.rchland.ibm.com>
-	<1183128867.1170.341.camel@pmac.infradead.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-WKZkLjzUtcTzwJb/tyfN"
-Date: Sat, 30 Jun 2007 17:58:21 +1000
-Message-Id: <1183190301.21968.4.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <schwab@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 66E7FDDF9D
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jun 2007 18:10:21 +1000 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Please pull from 'for_paulus' branch
+References: <Pine.LNX.4.64.0706290023590.15748@blarg.am.freescale.net>
+	<18052.42546.78964.805791@cargo.ozlabs.ibm.com>
+	<jelke2ss3n.fsf@sykes.suse.de>
+	<18053.65260.136499.154352@cargo.ozlabs.ibm.com>
+Date: Sat, 30 Jun 2007 10:10:15 +0200
+In-Reply-To: <18053.65260.136499.154352@cargo.ozlabs.ibm.com> (Paul
+	Mackerras's message of "Sat\, 30 Jun 2007 16\:57\:48 +1000")
+Message-ID: <jeir95j21k.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+	amodra@bigpond.net.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,42 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Paul Mackerras <paulus@samba.org> writes:
 
---=-WKZkLjzUtcTzwJb/tyfN
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> Andreas Schwab writes:
+>
+>> The assembler should be called with -a64, which has the effect of
+>> defaulting to -mppc64.
+>
+> Yes, the assembler is called with -a64, but that doesn't appear to
+> have the effect of defaulting to -mppc64.
 
-On Fri, 2007-06-29 at 15:54 +0100, David Woodhouse wrote:
-> On Wed, 2007-06-27 at 08:49 -0500, Josh Boyer wrote:
-> > +      remain in bug-fix only mode until it's scheduled removal.  Platf=
-orms
->=20
-> http://www.angryflower.com/itsits.gif
+Is your assembler older than 4 years?
 
-Hahaha. Is there one for your as well?
+Andreas.
 
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-WKZkLjzUtcTzwJb/tyfN
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGhg0ddSjSd0sB4dIRAiz8AJoDurIXBEX+dDPp/kqZxFprAlhuTwCgoM+1
-qEkmjrL+VcI3YSAxBki4xFE=
-=GS6n
------END PGP SIGNATURE-----
-
---=-WKZkLjzUtcTzwJb/tyfN--
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
