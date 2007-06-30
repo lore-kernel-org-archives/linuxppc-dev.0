@@ -1,75 +1,75 @@
-Return-Path: <gallatin@myri.com>
-Received: from myri.com (dsl.myri.com [64.172.73.26])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B7BF7DDDE9
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2007 23:34:56 +1000 (EST)
-Message-ID: <46AF3A6B.2040006@myri.com>
-Date: Tue, 31 Jul 2007 09:34:35 -0400
-From: Andrew Gallatin <gallatin@myri.com>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
+	by ozlabs.org (Postfix) with ESMTP id C37AFDDF86
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun,  1 Jul 2007 00:02:58 +1000 (EST)
+From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
+To: "'Andy Fleming'" <afleming@freescale.com>
+Subject: RE: 83xx: requesting external interrupts
+Date: Sat, 30 Jun 2007 16:02:50 +0200
+Message-ID: <004501c7bb1f$58c84a50$0e67a8c0@Jocke>
 MIME-Version: 1.0
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: Re: [PATCH 0/4][RFC] lro: Generic Large Receive Offload for TCP
-	traffic
-References: <200707301724.33865.ossthema@de.ibm.com>
-	<46AE4AC9.6060109@myri.com>
-	<200707311233.31227.ossthema@de.ibm.com>
-In-Reply-To: <200707311233.31227.ossthema@de.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
-	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>,
-	David Miller <davem@davemloft.net>
-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <1B23F0C1-3BDF-434B-BF90-E75BB4C3994B@freescale.com>
+Cc: linuxppc-embedded@ozlabs.org
+List-Id: Linux on Embedded PowerPC Developers Mail List
+	<linuxppc-embedded.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
+List-Post: <mailto:linuxppc-embedded@ozlabs.org>
+List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Jan-Bernd Themann wrote:
-> On Monday 30 July 2007 22:32, Andrew Gallatin wrote:
+ 
 
->> Second, you still need to set skb->ip_summed = CHECKSUM_UNNECESSARY
->> when modified packets are flushed, else the stack will see bad
->> checksums for packets from CHECKSUM_COMPLETE drivers using the
->> skb interface.  Fixed in the attached patch.
+> -----Original Message-----
+> From: Andy Fleming [mailto:afleming@freescale.com] 
+> Sent: den 30 juni 2007 01:55
+> To: Joakim Tjernlund
+> Cc: bwarren@qstreams.com; linuxppc-embedded@ozlabs.org
+> Subject: Re: 83xx: requesting external interrupts
 > 
-> I thought about it... As we do update the TCP checksum for aggregated
-> packets we could add a second ip_summed field in the net_lro_mgr struct 
-> used for aggregated packets to support HW that does not have any checksum helper
-> functionality. These drivers could set this ip_summed field to CHECKSUM_NONE, 
-> and thus leave the checksum check to the stack. I'm not sure if these old devices benefit
-> a lot from LRO. So what do you think?
-
-This might be handy, and it would also fix the problem with
-CHECKSUM_PARTIAL drivers using the skb interface by allowing them
-to set it to CHECKSUM_UNNECESSARY.
-
-
->> Fourth, I did some traffic sniffing to try to figure out what's going
->> on above, and saw tcpdump complain about bad checksums.  Have you tried
->> running tcpdump -s 65535 -vvv?  Have you also seen bad checksums?
->> I seem to see this for both page- and skb-based versions of the driver.
->>
 > 
-> Hmmm, can't confirm that. For our skb-based version I see
-> correct checksums for aggregated packets and for the page-based version as well.
-> I used: (tcpdump -i ethX -s 0 -w dump.bin) in combination with ethereal.
-> Don't see problems as well with your tcpdump command.
+> On Jun 29, 2007, at 06:34, Joakim Tjernlund wrote:
+> > mdio@2320 {
+> > 			#address-cells = <1>;
+> > 			#size-cells = <0>;
+> > 			reg = <2320 18>;
+> > 			device_type = "mdio";
+> > 			compatible = "ucc_geth_phy";
+> >
+> > 			phy1: ethernet-phy@0 {
+> > 				interrupt-parent = <&ipic>;
+> > 				interrupts = <12 2>; //EXT IRQ2
+> > 				reg = <0>; // 0
+> > 				device_type = "ethernet-phy";
+> > 				interface = <3>; //ENET_100_MII
+> > 			};
+> >
+> > Now the things is that the IRQ works with and without the
+> >  /* All external IRQs + Generic timer IRQs must be initialized by  
+> > BSP */
+> >  const int bsp_irqs[] = {48, 17, 18, 19, 20, 21, 22, 23, 90, 78,  
+> > 84, 72};
+> >  for (i=0;i<sizeof(bsp_irqs)/sizeof(bsp_irqs[0]);i++)
+> > 	virq = irq_create_mapping(NULL, bsp_irqs[i]);
+> 
+> 
+> This isn't how to use the device tree.  That is, you *aren't* using  
+> the device tree.  You want to read the node of every device you want  
+> to set up, and create the mapping.  Look at irq_of_parse_and_map().   
+> Look in include/asm-powerpc/prom.h, at of_irq_to_resource(), which  
+> maps an irq in the device tree.
 
-I'm still trying to get a handle on this.  It happens both with
-page based and skb based receive for me..  I would not be
-surprised if I was doing something wrong in myri10ge.  But
-I don't see it without LRO, or with my LRO.  I'll let you
-know when I figure it out..
+I use both!
+I see that ipic.c does all the work for me, so I should just drop
+the above code. It is strange though that the virq # changes if
+I keep the code.
 
-In the meantime, in case you have any insight, I've left a
-capture of a small "netcat" transfer of a 64KB file full
-of zeros at http://www.myri.com/staff/gallatin/lro/netcat_dump.bz2
+hmm, maybe if I sort the bsp_irqs[] list numerically it will be the same?
+Am at home ATM so I can't verify.
 
-Drew
+ Jocke
