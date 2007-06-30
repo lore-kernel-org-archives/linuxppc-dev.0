@@ -1,22 +1,20 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2234FDDFB3
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jun 2007 18:58:16 +1000 (EST)
-Date: Sat, 30 Jun 2007 10:58:08 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: powerpc stacktrace and lockdep support
-Message-ID: <20070630085808.GA15386@lst.de>
-References: <20070108135458.GA23395@lst.de>
-	<1182898073.4769.6.camel@johannes.berg>
-	<1182970829.4769.62.camel@johannes.berg>
-	<1183047642.3735.0.camel@johannes.berg>
+Return-Path: <amodra@bigpond.net.au>
+Received: from omta03sl.mx.bigpond.com (omta03sl.mx.bigpond.com
+	[144.140.92.155]) by ozlabs.org (Postfix) with ESMTP id F3262DDEEC
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jun 2007 20:57:42 +1000 (EST)
+Date: Sat, 30 Jun 2007 20:27:41 +0930
+From: Alan Modra <amodra@bigpond.net.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Please pull from 'for_paulus' branch
+Message-ID: <20070630105741.GD497@bubble.grove.modra.org>
+References: <Pine.LNX.4.64.0706290023590.15748@blarg.am.freescale.net>
+	<18052.42546.78964.805791@cargo.ozlabs.ibm.com>
+	<jelke2ss3n.fsf@sykes.suse.de>
+	<18053.65260.136499.154352@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1183047642.3735.0.camel@johannes.berg>
-Cc: linuxppc-dev@ozlabs.org, Christoph Hellwig <hch@lst.de>
+In-Reply-To: <18053.65260.136499.154352@cargo.ozlabs.ibm.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,8 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 28, 2007 at 06:20:42PM +0200, Johannes Berg wrote:
-> This one doesn't break 32-bit build by simply disabling irqtrace for
-> 32-bit.
+On Sat, Jun 30, 2007 at 04:57:48PM +1000, Paul Mackerras wrote:
+> Andreas Schwab writes:
+> 
+> > The assembler should be called with -a64, which has the effect of
+> > defaulting to -mppc64.
+> 
+> Yes, the assembler is called with -a64, but that doesn't appear to
+> have the effect of defaulting to -mppc64.
+> 
+> [Alan: this thread is about the fact that compiling C code with "gcc
+> -m64 -mcpu=powerpc64" will give assembler errors, complaining about
+> instructions like sldi, whereas compiling with "gcc -m64" doesn't.]
 
-This looks really cool to me.  I'd love to see this in 2.6.23.
+Eh?  For a long time, powerpc gcc has passed "-many" to the assembler,
+which should avoid this sort of problem.  Broken toolchain, I'd say.
+
+-- 
+Alan Modra
+IBM OzLabs - Linux Technology Centre
