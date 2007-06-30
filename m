@@ -1,26 +1,22 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CD0F5DDFA1
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jun 2007 18:49:50 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Please pull from 'for_paulus' branch
-References: <Pine.LNX.4.64.0706290023590.15748@blarg.am.freescale.net>
-	<18052.42546.78964.805791@cargo.ozlabs.ibm.com>
-	<jelke2ss3n.fsf@sykes.suse.de>
-	<18053.65260.136499.154352@cargo.ozlabs.ibm.com>
-	<jeir95j21k.fsf@sykes.suse.de>
-	<18054.4311.784767.549009@cargo.ozlabs.ibm.com>
-Date: Sat, 30 Jun 2007 10:49:45 +0200
-In-Reply-To: <18054.4311.784767.549009@cargo.ozlabs.ibm.com> (Paul Mackerras's
-	message of "Sat\, 30 Jun 2007 18\:14\:15 +1000")
-Message-ID: <jed4zdj07q.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
-	amodra@bigpond.net.au
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2234FDDFB3
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jun 2007 18:58:16 +1000 (EST)
+Date: Sat, 30 Jun 2007 10:58:08 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: powerpc stacktrace and lockdep support
+Message-ID: <20070630085808.GA15386@lst.de>
+References: <20070108135458.GA23395@lst.de>
+	<1182898073.4769.6.camel@johannes.berg>
+	<1182970829.4769.62.camel@johannes.berg>
+	<1183047642.3735.0.camel@johannes.berg>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1183047642.3735.0.camel@johannes.berg>
+Cc: linuxppc-dev@ozlabs.org, Christoph Hellwig <hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,30 +26,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@samba.org> writes:
+On Thu, Jun 28, 2007 at 06:20:42PM +0200, Johannes Berg wrote:
+> This one doesn't break 32-bit build by simply disabling irqtrace for
+> 32-bit.
 
-> Andreas Schwab writes:
->
->> Is your assembler older than 4 years?
->
-> No, well, at least not unless Debian sid is seriously behind the
-> times.  It's version 2.17 from the Debian binutils 2.17-3 package.
-
-Probably some debian patches messed it up.  I'd suggest reporting that
-to them.  FWIW, the unmodified assembler gives this error when operating
-in 32bit mode:
-
-$ echo 'sldi 0,0,10' | as
-{standard input}: Assembler messages:
-{standard input}:1: Error: Unrecognized opcode: `rldicr'
-
-But just addding -many (which gcc always passes) will let the assembler
-accept this.
-
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+This looks really cool to me.  I'd love to see this in 2.6.23.
