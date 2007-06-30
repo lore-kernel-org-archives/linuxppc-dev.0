@@ -1,17 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18053.65260.136499.154352@cargo.ozlabs.ibm.com>
-Date: Sat, 30 Jun 2007 16:57:48 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Andreas Schwab <schwab@suse.de>
-Subject: Re: Please pull from 'for_paulus' branch
-In-Reply-To: <jelke2ss3n.fsf@sykes.suse.de>
-References: <Pine.LNX.4.64.0706290023590.15748@blarg.am.freescale.net>
-	<18052.42546.78964.805791@cargo.ozlabs.ibm.com>
-	<jelke2ss3n.fsf@sykes.suse.de>
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
-	amodra@bigpond.net.au
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] Schedule removal of arch/ppc
+From: Michael Ellerman <michael@ellerman.id.au>
+To: David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <1183128867.1170.341.camel@pmac.infradead.org>
+References: <1182952173.9889.4.camel@weaponx.rchland.ibm.com>
+	<1183128867.1170.341.camel@pmac.infradead.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-WKZkLjzUtcTzwJb/tyfN"
+Date: Sat, 30 Jun 2007 17:58:21 +1000
+Message-Id: <1183190301.21968.4.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,16 +22,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andreas Schwab writes:
 
-> The assembler should be called with -a64, which has the effect of
-> defaulting to -mppc64.
+--=-WKZkLjzUtcTzwJb/tyfN
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Yes, the assembler is called with -a64, but that doesn't appear to
-have the effect of defaulting to -mppc64.
+On Fri, 2007-06-29 at 15:54 +0100, David Woodhouse wrote:
+> On Wed, 2007-06-27 at 08:49 -0500, Josh Boyer wrote:
+> > +      remain in bug-fix only mode until it's scheduled removal.  Platf=
+orms
+>=20
+> http://www.angryflower.com/itsits.gif
 
-[Alan: this thread is about the fact that compiling C code with "gcc
--m64 -mcpu=powerpc64" will give assembler errors, complaining about
-instructions like sldi, whereas compiling with "gcc -m64" doesn't.]
+Hahaha. Is there one for your as well?
 
-Paul.
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-WKZkLjzUtcTzwJb/tyfN
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGhg0ddSjSd0sB4dIRAiz8AJoDurIXBEX+dDPp/kqZxFprAlhuTwCgoM+1
+qEkmjrL+VcI3YSAxBki4xFE=
+=GS6n
+-----END PGP SIGNATURE-----
+
+--=-WKZkLjzUtcTzwJb/tyfN--
