@@ -1,23 +1,19 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from ananke.telenet-ops.be (ananke.telenet-ops.be [195.130.137.78])
-	by ozlabs.org (Postfix) with ESMTP id 59F43DDF73
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jul 2007 09:24:34 +1000 (EST)
-Date: Mon, 2 Jul 2007 01:24:28 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@linux-m68k.org
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: [RFC: 2.6 patch] ppc: remove APUS support
-In-Reply-To: <20070701230843.GD10869@stusta.de>
-Message-ID: <Pine.LNX.4.64.0707020114220.30442@anakin>
-References: <20070701202206.GO10869@stusta.de>
-	<Pine.LNX.4.64.0707020053530.30442@anakin>
-	<20070701230843.GD10869@stusta.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Kumar Gala <galak@freescale.com>,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0C18ADDF7C
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jul 2007 09:36:47 +1000 (EST)
+In-Reply-To: <Pine.LNX.4.60.0706292113240.4227@poirot.grange>
+References: <Pine.LNX.4.60.0706292113240.4227@poirot.grange>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <E6C54DC8-3152-4EE6-A1A1-389B41B23FC9@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Add of_register_i2c_devices()
+Date: Sun, 1 Jul 2007 18:36:55 -0500
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,77 +23,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2 Jul 2007, Adrian Bunk wrote:
-> On Mon, Jul 02, 2007 at 12:55:36AM +0200, Geert Uytterhoeven wrote:
-> > On Sun, 1 Jul 2007, Adrian Bunk wrote:
-> > > Current status of APUS:
-> > > - arch/powerpc/: a patch to remove it is in powerpc.git
-> > > - arch/ppc/: marked BROKEN since 2 years
-> > > 
-> > > This patch therefore removes the remaining parts of APUS support.
-> > 
-> > > --- linux-2.6.22-rc6-mm1/include/asm-m68k/pgtable.h.old	2007-06-30 01:23:33.000000000 +0200
-> > > +++ linux-2.6.22-rc6-mm1/include/asm-m68k/pgtable.h	2007-06-30 01:23:43.000000000 +0200
-> > > @@ -107,8 +107,6 @@ extern void *empty_zero_page;
-> > >  /* 64-bit machines, beware!  SRB. */
-> > >  #define SIZEOF_PTR_LOG2			       2
-> > >  
-> > > -#define mm_end_of_chunk(addr, len)	0
-> > > -
-> > >  extern void kernel_set_cachemode(void *addr, unsigned long size, int cmode);
-> > >  
-> > >  /*
-> > > --- linux-2.6.22-rc6-mm1/drivers/scsi/a2091.c.old	2007-06-30 01:23:53.000000000 +0200
-> > > +++ linux-2.6.22-rc6-mm1/drivers/scsi/a2091.c	2007-06-30 01:24:08.000000000 +0200
-> > > @@ -46,8 +46,7 @@ static int dma_setup(struct scsi_cmnd *c
-> > >      struct Scsi_Host *instance = cmd->device->host;
-> > >  
-> > >      /* don't allow DMA if the physical address is bad */
-> > > -    if (addr & A2091_XFER_MASK ||
-> > > -	(!dir_in && mm_end_of_chunk (addr, cmd->SCp.this_residual)))
-> > > +    if (addr & A2091_XFER_MASK)
-> > >      {
-> > >  	HDATA(instance)->dma_bounce_len = (cmd->SCp.this_residual + 511)
-> > >  	    & ~0x1ff;
-> > > --- linux-2.6.22-rc6-mm1/drivers/scsi/a3000.c.old	2007-06-30 01:24:17.000000000 +0200
-> > > +++ linux-2.6.22-rc6-mm1/drivers/scsi/a3000.c	2007-06-30 01:24:26.000000000 +0200
-> > > @@ -54,8 +54,7 @@ static int dma_setup(struct scsi_cmnd *c
-> > >       * end of a physical memory chunk, then allocate a bounce
-> > >       * buffer
-> > >       */
-> > > -    if (addr & A3000_XFER_MASK ||
-> > > -	(!dir_in && mm_end_of_chunk (addr, cmd->SCp.this_residual)))
-> > > +    if (addr & A3000_XFER_MASK)
-> > >      {
-> > >  	HDATA(a3000_host)->dma_bounce_len = (cmd->SCp.this_residual + 511)
-> > >  	    & ~0x1ff;
-> > > --- linux-2.6.22-rc6-mm1/drivers/scsi/gvp11.c.old	2007-06-30 01:24:35.000000000 +0200
-> > > +++ linux-2.6.22-rc6-mm1/drivers/scsi/gvp11.c	2007-06-30 01:24:46.000000000 +0200
-> > > @@ -54,8 +54,7 @@ static int dma_setup(struct scsi_cmnd *c
-> > >      static int scsi_alloc_out_of_range = 0;
-> > >  
-> > >      /* use bounce buffer if the physical address is bad */
-> > > -    if (addr & HDATA(cmd->device->host)->dma_xfer_mask ||
-> > > -	(!dir_in && mm_end_of_chunk (addr, cmd->SCp.this_residual)))
-> > > +    if (addr & HDATA(cmd->device->host)->dma_xfer_mask)
-> > >      {
-> > >  	HDATA(cmd->device->host)->dma_bounce_len = (cmd->SCp.this_residual + 511)
-> > >  	    & ~0x1ff;
-> > 
-> > These seem to be completely unrelated to removing APUS support?
-> 
-> For APUS mm_end_of_chunk() was an actual function, otherwise it was 
-> always 0.
 
-Oops, you're right.
+On Jun 29, 2007, at 2:20 PM, Guennadi Liakhovetski wrote:
 
-Gr{oetje,eeting}s,
+> Add of_register_i2c_devices(), which scans the children of the  
+> specified
+> I2C adapter node, and registers them with the I2C code.
+>
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> Signed-off-by: G. Liakhovetski <g.liakhovetski@gmx.de>
 
-						Geert
+I'm still against this patch since it means we are stating that I2C  
+devices in the device tree must us the linux driver names.  The two  
+should be de-coupled.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+- k
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+>
+> diff --git a/arch/powerpc/kernel/prom_parse.c b/arch/powerpc/kernel/ 
+> prom_parse.c
+> index 3786dcc..9caf96d 100644
+> --- a/arch/powerpc/kernel/prom_parse.c
+> +++ b/arch/powerpc/kernel/prom_parse.c
+> @@ -1067,3 +1067,49 @@ void __iomem *of_iomap(struct device_node  
+> *np, int index)
+>  	return ioremap(res.start, 1 + res.end - res.start);
+>  }
+>  EXPORT_SYMBOL(of_iomap);
+> +
+> +#ifdef CONFIG_I2C
+> +#include <linux/i2c.h>
+> +
+> +void of_register_i2c_devices(struct device_node *adap_node, int  
+> bus_num)
+> +{
+> +	struct device_node *node = NULL;
+> +
+> +	while ((node = of_get_next_child(adap_node, node))) {
+> +		struct i2c_board_info info;
+> +		const u32 *addr;
+> +		const char *name, *model;
+> +		int len;
+> +
+> +		addr = of_get_property(node, "reg", &len);
+> +		if (!addr || len < sizeof(int) || *addr > 0xffff)
+> +			continue;
+> +
+> +		info.irq = irq_of_parse_and_map(node, 0);
+> +		if (info.irq == NO_IRQ)
+> +			info.irq = -1;
+> +
+> +		name = of_get_property(node, "compatible", NULL);
+> +		if (!name)
+> +			name = node->name;
+> +		if (!name)
+> +			continue;
+> +
+> +		model = of_get_property(node, "model", NULL);
+> +		if (!model)
+> +			model = name;
+> +
+> +		/* FIXME: the i2c code should allow drivers to specify
+> +		 * multiple match names; board code shouldn't need to
+> +		 * know what driver will handle a given type.
+> +		 */
+> +
+> +		snprintf(info.driver_name, KOBJ_NAME_LEN, name);
+> +		snprintf(info.type, KOBJ_NAME_LEN, model);
+> +		info.platform_data = NULL;
+> +		info.addr = *addr;
+> +
+> +		i2c_register_board_info(bus_num, &info, 1);
+> +	}
+> +}
+> +#endif /* CONFIG_I2C */
+> diff --git a/include/asm-powerpc/prom.h b/include/asm-powerpc/prom.h
+> index 6845af9..ed085e1 100644
+> --- a/include/asm-powerpc/prom.h
+> +++ b/include/asm-powerpc/prom.h
+> @@ -305,6 +305,7 @@ extern int of_irq_map_raw(struct device_node  
+> *parent, const u32 *intspec,
+>  			  u32 ointsize, const u32 *addr,
+>  			  struct of_irq *out_irq);
+>
+> +void of_register_i2c_devices(struct device_node *adap_node, int  
+> bus_num);
+>
+>  /**
+>   * of_irq_map_one - Resolve an interrupt for a device
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
