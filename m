@@ -1,12 +1,24 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <geert@linux-m68k.org>
+Received: from dike.telenet-ops.be (dike.telenet-ops.be [195.130.132.36])
+	by ozlabs.org (Postfix) with ESMTP id E4DB1DDF54
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jul 2007 15:25:52 +1000 (EST)
+Received: from ananke.telenet-ops.be (ananke.telenet-ops.be [195.130.137.78])
+	by dike.telenet-ops.be (Postfix) with ESMTP id A3E31821EFF
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jul 2007 00:55:53 +0200 (CEST)
+Date: Mon, 2 Jul 2007 00:55:36 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@linux-m68k.org
+To: Adrian Bunk <bunk@stusta.de>
+Subject: Re: [RFC: 2.6 patch] ppc: remove APUS support
+In-Reply-To: <20070701202206.GO10869@stusta.de>
+Message-ID: <Pine.LNX.4.64.0707020053530.30442@anakin>
+References: <20070701202206.GO10869@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18056.32340.502484.171937@cargo.ozlabs.ibm.com>
-Date: Mon, 2 Jul 2007 14:25:56 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-Subject: Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Kumar Gala <galak@freescale.com>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,71 +28,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+On Sun, 1 Jul 2007, Adrian Bunk wrote:
+> Current status of APUS:
+> - arch/powerpc/: a patch to remove it is in powerpc.git
+> - arch/ppc/: marked BROKEN since 2 years
+> 
+> This patch therefore removes the remaining parts of APUS support.
 
-Please do:
+> --- linux-2.6.22-rc6-mm1/include/asm-m68k/pgtable.h.old	2007-06-30 01:23:33.000000000 +0200
+> +++ linux-2.6.22-rc6-mm1/include/asm-m68k/pgtable.h	2007-06-30 01:23:43.000000000 +0200
+> @@ -107,8 +107,6 @@ extern void *empty_zero_page;
+>  /* 64-bit machines, beware!  SRB. */
+>  #define SIZEOF_PTR_LOG2			       2
+>  
+> -#define mm_end_of_chunk(addr, len)	0
+> -
+>  extern void kernel_set_cachemode(void *addr, unsigned long size, int cmode);
+>  
+>  /*
+> --- linux-2.6.22-rc6-mm1/drivers/scsi/a2091.c.old	2007-06-30 01:23:53.000000000 +0200
+> +++ linux-2.6.22-rc6-mm1/drivers/scsi/a2091.c	2007-06-30 01:24:08.000000000 +0200
+> @@ -46,8 +46,7 @@ static int dma_setup(struct scsi_cmnd *c
+>      struct Scsi_Host *instance = cmd->device->host;
+>  
+>      /* don't allow DMA if the physical address is bad */
+> -    if (addr & A2091_XFER_MASK ||
+> -	(!dir_in && mm_end_of_chunk (addr, cmd->SCp.this_residual)))
+> +    if (addr & A2091_XFER_MASK)
+>      {
+>  	HDATA(instance)->dma_bounce_len = (cmd->SCp.this_residual + 511)
+>  	    & ~0x1ff;
+> --- linux-2.6.22-rc6-mm1/drivers/scsi/a3000.c.old	2007-06-30 01:24:17.000000000 +0200
+> +++ linux-2.6.22-rc6-mm1/drivers/scsi/a3000.c	2007-06-30 01:24:26.000000000 +0200
+> @@ -54,8 +54,7 @@ static int dma_setup(struct scsi_cmnd *c
+>       * end of a physical memory chunk, then allocate a bounce
+>       * buffer
+>       */
+> -    if (addr & A3000_XFER_MASK ||
+> -	(!dir_in && mm_end_of_chunk (addr, cmd->SCp.this_residual)))
+> +    if (addr & A3000_XFER_MASK)
+>      {
+>  	HDATA(a3000_host)->dma_bounce_len = (cmd->SCp.this_residual + 511)
+>  	    & ~0x1ff;
+> --- linux-2.6.22-rc6-mm1/drivers/scsi/gvp11.c.old	2007-06-30 01:24:35.000000000 +0200
+> +++ linux-2.6.22-rc6-mm1/drivers/scsi/gvp11.c	2007-06-30 01:24:46.000000000 +0200
+> @@ -54,8 +54,7 @@ static int dma_setup(struct scsi_cmnd *c
+>      static int scsi_alloc_out_of_range = 0;
+>  
+>      /* use bounce buffer if the physical address is bad */
+> -    if (addr & HDATA(cmd->device->host)->dma_xfer_mask ||
+> -	(!dir_in && mm_end_of_chunk (addr, cmd->SCp.this_residual)))
+> +    if (addr & HDATA(cmd->device->host)->dma_xfer_mask)
+>      {
+>  	HDATA(cmd->device->host)->dma_bounce_len = (cmd->SCp.this_residual + 511)
+>  	    & ~0x1ff;
 
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+These seem to be completely unrelated to removing APUS support?
 
-My defconfig updates exposed some compile failures on powerpc, which
-these three commits fix.
+Gr{oetje,eeting}s,
 
-Thanks,
-Paul.
+						Geert
 
- arch/powerpc/kernel/irq.c                 |    6 ++++++
- arch/powerpc/platforms/cell/cbe_cpufreq.c |   15 ++++++++++-----
- drivers/net/Kconfig                       |    2 +-
- include/asm-powerpc/irq.h                 |    5 +----
- 4 files changed, 18 insertions(+), 10 deletions(-)
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-commit 9f7905812e5919862acb6ede63e10d3d1bb4958e
-Author: Olof Johansson <olof@lixom.net>
-Date:   Mon Jun 4 14:47:04 2007 +1000
-
-    [POWERPC] Uninline and export virq_to_hw() for the pasemi_mac driver
-    
-    Uninline virq_to_hw and export it so modules can use it. The alternative
-    would be to export the irq_map array instead, but it's an infrequently
-    called function, and keeping the array unexported seems considerably
-    cleaner.
-    
-    This is needed so that the pasemi_mac driver can be compiled as a module.
-    
-    Signed-off-by: Olof Johansson <olof@lixom.net>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit ee5d1b7f2a01ce4d95ca247b5a499b72f31cdbe8
-Author: Christian Krafft <krafft@de.ibm.com>
-Date:   Thu Jun 28 21:14:38 2007 +1000
-
-    [POWERPC] Fix PMI breakage in cbe_cbufreq driver
-    
-    The recent change to cell_defconfig to enable cpufreq on Cell exposed
-    the fact that the cbe_cpufreq driver currently needs the PMI interface
-    code to compile, but Kconfig doesn't make sure that the PMI interface
-    code gets built if cbe_cpufreq is enabled.
-    
-    In fact cbe_cpufreq can work without PMI, so this ifdefs out the code
-    that deals with PMI.  This is a minimal solution for 2.6.22; a more
-    comprehensive solution will be merged for 2.6.23.
-    
-    Signed-off-by: Christian Krafft <krafft@de.ibm.com>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit 86affd5a00a92e491e5f00ed659492767519fdf7
-Author: David Gibson <david@gibson.dropbear.id.au>
-Date:   Thu Jun 28 11:27:57 2007 +1000
-
-    [POWERPC] Disable old EMAC driver in arch/powerpc
-    
-    The EMAC driver, in drivers/net/ibm_emac, for the embedded Ethernet
-    MAC found in PowerPC 4xx embedded chips is not suitable for
-    arch/powerpc.  It will not build because it relies on the old arch/ppc
-    OCP mechanism.  BenH has a new, device-tree aware version of the
-    driver which will work in arch/powerpc, but until it's merged, this
-    patch will disable the old, non-building version.
-    
-    Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
