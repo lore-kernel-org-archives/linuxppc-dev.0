@@ -1,23 +1,21 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 89269DDF13
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jul 2007 09:10:59 +1000 (EST)
-In-Reply-To: <20070702224643.GA21539@ld0162-tx32.am.freescale.net>
-References: <Pine.LNX.4.60.0706292113240.4227@poirot.grange>
-	<00a85f152aa3547f0f0b4acd7954468a@kernel.crashing.org>
-	<Pine.LNX.4.60.0707022114020.3339@poirot.grange>
-	<20070702224643.GA21539@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <0a3d0917402e24efbe6224c544ddd432@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Add of_register_i2c_devices()
-Date: Tue, 3 Jul 2007 01:10:47 +0200
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 27F02DDE46
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jul 2007 09:20:45 +1000 (EST)
+Date: Tue, 3 Jul 2007 09:20:44 +1000
+To: Will Schmidt <will_schmidt@vnet.ibm.com>
+Subject: Re: [PATCH v2.1 ] Fix VDSO gettimeofday() when called with NULL
+	struct timeval.
+Message-ID: <20070702232044.GT9768@bakeyournoodle.com>
+References: <20070625105836.GE9768@bakeyournoodle.com>
+	<20070625235032.GH9768@bakeyournoodle.com>
+	<1183149584.22547.51.camel@farscape.rchland.ibm.com>
+	<1183150190.22547.62.camel@farscape.rchland.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1183150190.22547.62.camel@farscape.rchland.ibm.com>
+From: tony@bakeyournoodle.com (Tony Breeds)
+Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,30 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> AFAIK, i2c is not specified by OF standard. So, we are free to chose 
->> any
->> "compatible" fields for our dts. Which we then would need to match 
->> against
->> drivers. So, why not make this a 1-to-1 match? I.e.,
->> [OF]			[I2C]
->> compatible	<->	driver_name
->> model		<->	type
->
-> If we do this, then the compatible field should probably be preceded 
-> with
-> "linux,", which would get stripped by of_register_i2c_devices().  This
-> would only be an interim measure until we can figure out some sort of
-> name registry via power.org.  Once that happens, non-"linux," 
-> compatible
-> fields could be looked up in an OF-to-linux table, or there could be a
-> way for i2c devices to specify OF matches in addition to driver name.
+On Fri, Jun 29, 2007 at 03:49:50PM -0500, Will Schmidt wrote:
+> 
+> The vdso64 portion of patch 74609f4536f2b8fd6a48381bbbe3cd37da20a527 for
+> fixing problems with NULL gettimeofday input mistakenly checks for a
+> null tz field twice, when it should be checking for null tz once, and
+> null tv once; by way of a r10/r11 typo. 
+> 
+> Any application calling gettimeofday(&tv,NULL) will "fail".
+> 
+> This corrects that typo, and makes my G5 happy.
 
-Why even think of doing this?  Just put the bloody name of
-the device in the "compatible" property and match on that.
-What is so hard about this?
+Ooops thanks Will!
 
-If the answer is "the Linux I2C stuff is badly structured",
-well, you know what to do :-)
+The /really/ sad thing is I got it right in the first version of the
+patch :(
 
+Yours Tony
 
-Segher
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
