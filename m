@@ -1,17 +1,19 @@
-Return-Path: <ylin@airvana.com>
-Received: from airmail.wirelessworld.airvananet.com (airmail.airvananet.com
-	[12.6.244.34]) by ozlabs.org (Postfix) with ESMTP id 179EEDDF1F
+Return-Path: <nhickman@dtechlabs.com>
+Received: from mail.dtechlabs.com (66.239.149.149.ptr.us.xo.net
+	[66.239.149.149]) by ozlabs.org (Postfix) with SMTP id 04A40DDF4C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  3 Jul 2007 02:02:58 +1000 (EST)
+	Tue,  3 Jul 2007 04:41:16 +1000 (EST)
+Subject: RE: mpc8270 & Intel 82551ER on 2.6.17.14
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Anyone using QE UART mode?
-Date: Mon, 2 Jul 2007 12:01:56 -0400
-Message-ID: <8F798BFDA851B943B3A1B2510E9287850350A908@airmail.wirelessworld.airvananet.com>
-In-Reply-To: <46891C6B.3090507@freescale.com>
-From: "Ying Lin" <ylin@airvana.com>
-To: "Timur Tabi" <timur@freescale.com>
+	charset="US-ASCII"
+Date: Mon, 2 Jul 2007 14:41:13 -0400
+Message-ID: <8140AAF341CC904BA92C3D6A5A1909782A300A@ditech-1.ditechllc.com>
+In-Reply-To: <f87351060706290112o407f75e5h9dffd9939ab80ef9@mail.gmail.com>
+References: <8140AAF341CC904BA92C3D6A5A1909782A2FA3@ditech-1.ditechllc.com>
+	<f87351060706290112o407f75e5h9dffd9939ab80ef9@mail.gmail.com>
+From: "Nicholas Hickman" <nhickman@dtechlabs.com>
+To: "Pradyumna Sampath" <pradyumna.sampath@gmail.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,33 +25,67 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-OK, the missing piece (UART driver) I am looking for is not available
-yet.  I will seek alternative solutions (create a simple UART driver, or
-just wait).
-Thanks for the information.=20
-Ying=20
+Pradyumna,
+
+With the help of some others I have finally figured it out.  I took a
+step back and read the manual over and over along with debugging my
+U-boot until it worked.  My issue there was with the SIUMCR. Since I now
+had that working in U-boot I moved on to the kernel where I found that I
+was redefining the SIUMCR here:
+
+arch/ppc/syslib/m82xx_pci.c=20
+approx line 248
+#elif defined CONFIG_PQ2FADS || MYBOARD
+        /*
+         * Setting required to enable IRQ1-IRQ7 (SIUMCR [DPPC]),
+         * and local bus for PCI (SIUMCR [LBPC]).
+         */
+        immap->im_siu_conf.siu_82xx.sc_siumcr =3D
+
+I was entering this routine since I was basing my config off of the
+PQ2FADS board.  I removed my board definition from the elif and
+everything seems to be working fine.
+
+Good luck!
+
+
+-Nick
+
 
 -----Original Message-----
-From: Timur Tabi [mailto:timur@freescale.com]=20
-Sent: Monday, July 02, 2007 11:40 AM
-To: Ying Lin
+From: Pradyumna Sampath [mailto:pradyumna.sampath@gmail.com]=20
+Sent: Friday, June 29, 2007 4:12 AM
+To: Nicholas Hickman
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Anyone using QE UART mode?
+Subject: Re: mpc8270 & Intel 82551ER on 2.6.17.14
 
-Ying Lin wrote:
-> How to enable TTY devices using QUICC Engine UCC UART Mode?
->=20
-> Are Linux kernel patches enough to enable them?  Or, additional=20
-> programming required?
+Hi Nicholas,
 
-I'm working on a device driver for QE UART mode, but it's not working
-yet.  The QE UART is=20
-like the CPM UART, but I'm having troubel getting it to work.
+On 6/29/07, Nicholas Hickman <nhickman@dtechlabs.com> wrote:
+>
+>
+> I am having trouble getting two 82551ER Ethernet controllers running=20
+> in Linux.  I am able to scan the PCI bus and see the devices and I was
 
-It is *not* trivial, or even easy, to enabled.  It's a full-blown UART
-driver that also=20
-deals with the complexity of the QE.
+> even able to program the EEPROM from U-boot.
+>
+> In the kernel I mapped the IRQ's through /arch/ppc/m82xx_pci.c.  I've=20
+> been using the e100 drive that comes with the 2.6.17.14 kernel and=20
+> have also tried the driver directly from Intel.  Both give the same=20
+> results.  The PCI scan shows the correct output for how the device
+should be configured.
+<snip..>
 
---=20
-Timur Tabi
-Linux Kernel Developer @ Freescale
+I have the same, exact same problem. But there are some of the
+differences with the setup though. I have an MPC5200B and the other
+difference is that I have a 2.6.21-rt3. However its the same ethernet
+controller.
+
+I am trying out a few things here, some of them being complete guesses.
+But if I hit something, I will let this list know. Anyone else had
+similar issues ? Request you to please holler.
+
+regards
+prady
+--
+htp://prady.livejournal.com
