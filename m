@@ -1,32 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A6F34DDF1F
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jul 2007 02:07:00 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l62G6vga010090
-	for <linuxppc-dev@ozlabs.org>; Mon, 2 Jul 2007 12:06:57 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l62G6vbd259330
-	for <linuxppc-dev@ozlabs.org>; Mon, 2 Jul 2007 10:06:57 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l62G6vvx016499
-	for <linuxppc-dev@ozlabs.org>; Mon, 2 Jul 2007 10:06:57 -0600
-Received: from [9.10.86.36] (weaponx.rchland.ibm.com [9.10.86.36])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	l62G6s59016188
-	for <linuxppc-dev@ozlabs.org>; Mon, 2 Jul 2007 10:06:54 -0600
-Subject: [PATCH] Consolidate PowerPC 750 cputable features
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain
-Date: Mon, 02 Jul 2007 11:06:53 -0500
-Message-Id: <1183392413.16523.25.camel@weaponx.rchland.ibm.com>
-Mime-Version: 1.0
+Return-Path: <jason.wessel@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id 8951CDDEF4
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jul 2007 02:37:26 +1000 (EST)
+Message-ID: <4689025C.8000001@windriver.com>
+Date: Mon, 02 Jul 2007 08:49:16 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+MIME-Version: 1.0
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: 2.6.22-rc6-mm1
+References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
+	<200706291432.10128.m.kozlowski@tuxland.pl>
+	<4685010C.4000108@ru.mvista.com>
+In-Reply-To: <4685010C.4000108@ru.mvista.com>
+Content-Type: multipart/mixed; boundary="------------070207060901030309020002"
+Cc: kgdb-bugreport@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org,
+	Mariusz Kozlowski <m.kozlowski@tuxland.pl>, paulus@samba.org,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,46 +26,98 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The 750 CPU_FTR macros have quite a bit of duplication in them.  Consolidate
-them to use CPU_FTRS_750 and only list the unique features for derivatives.
+This is a multi-part message in MIME format.
+--------------070207060901030309020002
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Sergei Shtylyov wrote:
+> Hello.
+>
+> Mariusz Kozlowski wrote:
+>
+>   
+>> 	allmodconfig on powerpc (iMac g3) fails due to
+>> git-kgdb.patch. allmodconfig defaults should be changed?
+>>     
+>
+>   
+>>   CC      arch/powerpc/kernel/kgdb.o
+>> arch/powerpc/kernel/kgdb.c:485:2: error: #error Both XMON and KGDB selected 
+>> in .config. Unselect one of them.
+>> make[1]: *** [arch/powerpc/kernel/kgdb.o] Blad 1
+>> make: *** [arch/powerpc/kernel] Blad 2
+>>     
+>
+>     I'm not sure if this will work out but maybe it's worth to disable XMON if 
+> KGDB is selected, like this?
+>
+> config XMON
+> 	bool "Include xmon kernel debugger"
+> 	depends on DEBUGGER && !KGDB
+>
+>   
+
+It did not seem that you can make a radio button / multi-select kernel 
+config option unless the options are in the same Kconfig file.  Given 
+that xmon and kgdb are mutually exclusive at the moment.
+
+What Sergei mentioned is the fix that needs to be used for the time being. 
+
+Attached is the patch I put in the for_mm branch in the linux-2.6-kgdb 
+git tree.
+
+Jason.
+
+
+
+--------------070207060901030309020002
+Content-Type: text/plain;
+ name="xmon_or_kgdb.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="xmon_or_kgdb.patch"
+
+xmon_or_kgdb.patch
+
+From: Jason Wessel <jason.wessel@windriver.com>
+Subject: [PATCH] Turn off xmon if kgdb is active on ppc and powerpc
+
+Xmon and kgdb are mutuall exclusive at the moment so xmon should be
+turned off in the kernel config options if kgdb selected.  The case with "make allmodconfig" was failing and this patch addresses the problem.
+
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+
 ---
- include/asm-powerpc/cputable.h |   26 ++++++--------------------
- 1 file changed, 6 insertions(+), 20 deletions(-)
+ arch/powerpc/Kconfig.debug |    2 +-
+ arch/ppc/Kconfig.debug     |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
---- linux-2.6.orig/include/asm-powerpc/cputable.h
-+++ linux-2.6/include/asm-powerpc/cputable.h
-@@ -225,26 +225,12 @@ extern void do_feature_fixups(unsigned l
- 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
- 	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
- 	    CPU_FTR_PPC_LE)
--#define CPU_FTRS_750CL	(CPU_FTR_COMMON | \
--	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
--	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
--	    CPU_FTR_HAS_HIGH_BATS | CPU_FTR_PPC_LE)
--#define CPU_FTRS_750FX1	(CPU_FTR_COMMON | \
--	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
--	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
--	    CPU_FTR_DUAL_PLL_750FX | CPU_FTR_NO_DPM | CPU_FTR_PPC_LE)
--#define CPU_FTRS_750FX2	(CPU_FTR_COMMON | \
--	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
--	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
--	    CPU_FTR_NO_DPM | CPU_FTR_PPC_LE)
--#define CPU_FTRS_750FX	(CPU_FTR_COMMON | \
--	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
--	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
--	    CPU_FTR_DUAL_PLL_750FX | CPU_FTR_HAS_HIGH_BATS | CPU_FTR_PPC_LE)
--#define CPU_FTRS_750GX	(CPU_FTR_COMMON | \
--	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
--	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
--	    CPU_FTR_DUAL_PLL_750FX | CPU_FTR_HAS_HIGH_BATS | CPU_FTR_PPC_LE)
-+#define CPU_FTRS_750CL	(CPU_FTRS_750 | CPU_FTR_HAS_HIGH_BATS)
-+#define CPU_FTRS_750FX1	(CPU_FTRS_750 | CPU_FTR_DUAL_PLL_750FX | CPU_FTR_NO_DPM)
-+#define CPU_FTRS_750FX2	(CPU_FTRS_750 | CPU_FTR_NO_DPM)
-+#define CPU_FTRS_750FX	(CPU_FTRS_750 | CPU_FTR_DUAL_PLL_750FX | \
-+		CPU_FTR_HAS_HIGH_BATS)
-+#define CPU_FTRS_750GX	(CPU_FTRS_750FX)
- #define CPU_FTRS_7400_NOTAU	(CPU_FTR_COMMON | \
- 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_HPTE_TABLE | \
+Index: linux-2.6-kgdb/arch/powerpc/Kconfig.debug
+===================================================================
+--- linux-2.6-kgdb.orig/arch/powerpc/Kconfig.debug
++++ linux-2.6-kgdb/arch/powerpc/Kconfig.debug
+@@ -43,7 +43,7 @@ config HCALL_STATS
+ 
+ config XMON
+ 	bool "Include xmon kernel debugger"
+-	depends on DEBUG_KERNEL
++	depends on DEBUG_KERNEL && !KGDB
+ 	help
+ 	  Include in-kernel hooks for the xmon kernel monitor/debugger.
+ 	  Unless you are intending to debug the kernel, say N here.
+Index: linux-2.6-kgdb/arch/ppc/Kconfig.debug
+===================================================================
+--- linux-2.6-kgdb.orig/arch/ppc/Kconfig.debug
++++ linux-2.6-kgdb/arch/ppc/Kconfig.debug
+@@ -4,7 +4,7 @@ source "lib/Kconfig.debug"
+ 
+ config XMON
+ 	bool "Include xmon kernel debugger"
+-	depends on DEBUG_KERNEL
++	depends on DEBUG_KERNEL && !KGDB
+ 	help
+ 	  Include in-kernel hooks for the xmon kernel monitor/debugger.
+ 	  Unless you are intending to debug the kernel, say N here.
+
+--------------070207060901030309020002--
