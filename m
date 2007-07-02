@@ -1,22 +1,15 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 2516FDDEFC
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jul 2007 00:21:36 +1000 (EST)
-Message-ID: <46890A52.6020201@ru.mvista.com>
-Date: Mon, 02 Jul 2007 18:23:14 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Jason Wessel <jason.wessel@windriver.com>
-Subject: Re: 2.6.22-rc6-mm1
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
-	<200706291432.10128.m.kozlowski@tuxland.pl>
-	<4685010C.4000108@ru.mvista.com> <4689025C.8000001@windriver.com>
-In-Reply-To: <4689025C.8000001@windriver.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: kgdb-bugreport@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org,
-	Mariusz Kozlowski <m.kozlowski@tuxland.pl>, paulus@samba.org,
-	Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <jdl@jdl.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] dtc: Add install makefile target 
+In-Reply-To: Your message of "Mon, 02 Jul 2007 08:46:55 CDT."
+	<1183384015.16523.0.camel@weaponx.rchland.ibm.com>
+References: <1183128803.30145.29.camel@weaponx.rchland.ibm.com>
+	<E1I5MAY-0005jS-Hk@jdl.com>
+	<1183384015.16523.0.camel@weaponx.rchland.ibm.com>
+Date: Mon, 02 Jul 2007 09:36:17 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1I5N0j-0006Fc-Ly@jdl.com>
+Cc: linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,53 +19,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+So, like, the other day Josh Boyer mumbled:
+> > Applied with the following changes --amend'ed in as well:
+> 
+> Great.  Thanks Jon, saves me from having to send out yet another patch.
 
-Jason Wessel wrote:
+No problem.  --amend is spiffy.  And besides, we
+really should avoid those "doulbe slash" [sic] issues!
 
->>>     allmodconfig on powerpc (iMac g3) fails due to
->>> git-kgdb.patch. allmodconfig defaults should be changed?
+jdl
 
->>>   CC      arch/powerpc/kernel/kgdb.o
->>> arch/powerpc/kernel/kgdb.c:485:2: error: #error Both XMON and KGDB 
->>> selected in .config. Unselect one of them.
->>> make[1]: *** [arch/powerpc/kernel/kgdb.o] Blad 1
->>> make: *** [arch/powerpc/kernel] Blad 2
-
->>     I'm not sure if this will work out but maybe it's worth to disable 
->> XMON if KGDB is selected, like this?
->> config XMON
->>     bool "Include xmon kernel debugger"
->>     depends on DEBUGGER && !KGDB
-
-> It did not seem that you can make a radio button / multi-select kernel 
-> config option unless the options are in the same Kconfig file.  Given 
-> that xmon and kgdb are mutually exclusive at the moment.
-
-> What Sergei mentioned is the fix that needs to be used for the time being.
-> Attached is the patch I put in the for_mm branch in the linux-2.6-kgdb 
-> git tree.
-
-> Jason.
-
-> ------------------------------------------------------------------------
-
-> xmon_or_kgdb.patch
-
-> From: Jason Wessel <jason.wessel@windriver.com>
-> Subject: [PATCH] Turn off xmon if kgdb is active on ppc and powerpc
-
-> Xmon and kgdb are mutuall exclusive at the moment so xmon should be
-> turned off in the kernel config options if kgdb selected.  The case with "make allmodconfig" was failing and this patch addresses the problem.
-
-> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-
-> ---
->  arch/powerpc/Kconfig.debug |    2 +-
->  arch/ppc/Kconfig.debug     |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-
-    This patch does not seem complete as the #error that was tiggering has not 
-been deleleted from arch/powerpc/kernel/kgdb.c (and not it's useless)
-
-WBR, Sergei
+PS -- Thankfully, we avoided any Angryflower Incidents! :-)
