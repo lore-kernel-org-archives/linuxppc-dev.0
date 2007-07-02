@@ -1,23 +1,13 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AC5E1DDEF3
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jul 2007 22:38:59 +1000 (EST)
-Message-ID: <4688F1DE.8040701@garzik.org>
-Date: Mon, 02 Jul 2007 08:38:54 -0400
-From: Jeff Garzik <jeff@garzik.org>
-MIME-Version: 1.0
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: Re: [PATCH/RESENT] ehea: Whitespace cleanup
-References: <200707021300.46813.ossthema@de.ibm.com>
-In-Reply-To: <200707021300.46813.ossthema@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
+Return-Path: <jdl@jdl.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: dtc: Remove bogus break statement 
+In-Reply-To: Your message of "Thu, 28 Jun 2007 11:32:31 +1000."
+	<20070628013231.GF15298@localhost.localdomain>
+References: <20070628013231.GF15298@localhost.localdomain> 
+Date: Mon, 02 Jul 2007 08:33:44 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1I5M2C-0005bM-M9@jdl.com>
+Cc: linuxppc-dev@ozlabs.org, 5B@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,9 +17,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jan-Bernd Themann wrote:
-> This patch fixes several whitespace issues.
+So, like, the other day David Gibson mumbled:
+> Commit 0738774fcc34b78a708a127fb4b2f193d08c94ba introduced some
+> incorrect indentation / bracketing in unflatten_tree().  By luck, the
+> extra break statement intended to be within an if block, but actually
+> afterwards has no semantic effect.  Still, this patch gets rid of it
+> for cleanliness.
 > 
-> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-applied
+Applied.
+
+Thanks,
+jdl
