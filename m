@@ -1,13 +1,13 @@
 Return-Path: <jdl@jdl.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: dtc: Remove bogus break statement 
-In-Reply-To: Your message of "Thu, 28 Jun 2007 11:32:31 +1000."
-	<20070628013231.GF15298@localhost.localdomain>
-References: <20070628013231.GF15298@localhost.localdomain> 
-Date: Mon, 02 Jul 2007 08:33:44 -0500
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] dtc: Add install makefile target 
+In-Reply-To: Your message of "Fri, 29 Jun 2007 09:53:23 CDT."
+	<1183128803.30145.29.camel@weaponx.rchland.ibm.com>
+References: <1183128803.30145.29.camel@weaponx.rchland.ibm.com> 
+Date: Mon, 02 Jul 2007 08:42:22 -0500
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1I5M2C-0005bM-M9@jdl.com>
-Cc: linuxppc-dev@ozlabs.org, 5B@ozlabs.org
+Message-Id: <E1I5MAY-0005jS-Hk@jdl.com>
+Cc: linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,16 +17,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day David Gibson mumbled:
-> Commit 0738774fcc34b78a708a127fb4b2f193d08c94ba introduced some
-> incorrect indentation / bracketing in unflatten_tree().  By luck, the
-> extra break statement intended to be within an if block, but actually
-> afterwards has no semantic effect.  Still, this patch gets rid of it
-> for cleanliness.
+So, like, the other day Josh Boyer mumbled:
+> Add a minimal install target
 > 
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-Applied.
+Applied with the following changes --amend'ed in as well:
+
+    > +install: dtc ftdump
+    > +     $(INSTALL) -d $(DESTDIR)/$(BINDIR)
+    > +     $(INSTALL) -m 755 dtc $(DESTDIR)/$(BINDIR)
+    > +     $(INSTALL) -m 755 ftdump $(DESTDIR)/$(BINDIR)
+
+    Don't put a slash after $(DESTDIR).  You'll end up with a doulbe slash.
+
+    Andreas.
 
 Thanks,
 jdl
