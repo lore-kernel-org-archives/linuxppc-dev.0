@@ -1,21 +1,17 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5D478DDF16
+Return-Path: <ylin@airvana.com>
+Received: from airmail.wirelessworld.airvananet.com (airmail.airvananet.com
+	[12.6.244.34]) by ozlabs.org (Postfix) with ESMTP id 179EEDDF1F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  3 Jul 2007 01:40:45 +1000 (EST)
-Message-ID: <46891C6B.3090507@freescale.com>
-Date: Mon, 02 Jul 2007 10:40:27 -0500
-From: Timur Tabi <timur@freescale.com>
+	Tue,  3 Jul 2007 02:02:58 +1000 (EST)
 MIME-Version: 1.0
-To: Ying Lin <ylin@airvana.com>
-Subject: Re: Anyone using QE UART mode?
-References: <8F798BFDA851B943B3A1B2510E9287850350A905@airmail.wirelessworld.airvananet.com>
-In-Reply-To: <8F798BFDA851B943B3A1B2510E9287850350A905@airmail.wirelessworld.airvananet.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Anyone using QE UART mode?
+Date: Mon, 2 Jul 2007 12:01:56 -0400
+Message-ID: <8F798BFDA851B943B3A1B2510E9287850350A908@airmail.wirelessworld.airvananet.com>
+In-Reply-To: <46891C6B.3090507@freescale.com>
+From: "Ying Lin" <ylin@airvana.com>
+To: "Timur Tabi" <timur@freescale.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,18 +23,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+OK, the missing piece (UART driver) I am looking for is not available
+yet.  I will seek alternative solutions (create a simple UART driver, or
+just wait).
+Thanks for the information.=20
+Ying=20
+
+-----Original Message-----
+From: Timur Tabi [mailto:timur@freescale.com]=20
+Sent: Monday, July 02, 2007 11:40 AM
+To: Ying Lin
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Anyone using QE UART mode?
+
 Ying Lin wrote:
 > How to enable TTY devices using QUICC Engine UCC UART Mode?
-> 
-> Are Linux kernel patches enough to enable them?  Or, additional 
+>=20
+> Are Linux kernel patches enough to enable them?  Or, additional=20
 > programming required?
 
-I'm working on a device driver for QE UART mode, but it's not working yet.  The QE UART is 
+I'm working on a device driver for QE UART mode, but it's not working
+yet.  The QE UART is=20
 like the CPM UART, but I'm having troubel getting it to work.
 
-It is *not* trivial, or even easy, to enabled.  It's a full-blown UART driver that also 
+It is *not* trivial, or even easy, to enabled.  It's a full-blown UART
+driver that also=20
 deals with the complexity of the QE.
 
--- 
+--=20
 Timur Tabi
 Linux Kernel Developer @ Freescale
