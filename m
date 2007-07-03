@@ -1,19 +1,18 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id 82655DDF01
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jul 2007 18:50:53 +1000 (EST)
-Subject: RE: [PATCH] ucc_geth.c, make PHY device optional.
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: Li Yang-r58472 <LeoLi@freescale.com>
-In-Reply-To: <989B956029373F45A0B8AF0297081890D8385E@zch01exm26.fsl.freescale.net>
-References: <989B956029373F45A0B8AF0297081890D8385E@zch01exm26.fsl.freescale.net>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D3FC1DDE39
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jul 2007 21:42:18 +1000 (EST)
+Subject: [PATCH] powermac i2c: use mutex
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Content-Type: text/plain
-Date: Wed, 04 Jul 2007 10:50:46 +0200
-Message-Id: <1183539047.20673.216.camel@gentoo-jocke.transmode.se>
+Date: Wed, 04 Jul 2007 01:01:54 +0200
+Message-Id: <1183503714.4021.25.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	Netdev <netdev@vger.kernel.org>
-Reply-To: joakim.tjernlund@transmode.se
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,130 +22,118 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-07-03 at 19:38 +0800, Li Yang-r58472 wrote:
-> > -----Original Message-----
-> > From: Joakim Tjernlund [mailto:joakim.tjernlund@transmode.se]
-> > Sent: Tuesday, July 03, 2007 7:20 PM
-> > To: Li Yang-r58472
-> > Cc: linuxppc-dev Development; Netdev; Fleming Andy-afleming
-> > Subject: RE: [PATCH] ucc_geth.c, make PHY device optional.
-> > 
-> > On Tue, 2007-07-03 at 16:22 +0800, Li Yang-r58472 wrote:
-> > > > -----Original Message-----
-> > > > From: Joakim Tjernlund [mailto:joakim.tjernlund@transmode.se]
-> > > > Sent: Tuesday, July 03, 2007 3:21 PM
-> > > > To: Li Yang-r58472
-> > > > Cc: linuxppc-dev Development; Netdev; Fleming Andy-afleming
-> > > > Subject: RE: [PATCH] ucc_geth.c, make PHY device optional.
-> > > >
-> > > > On Tue, 2007-07-03 at 11:42 +0800, Li Yang-r58472 wrote:
-> > > > > > -----Original Message-----
-> > > > > > From: netdev-owner@vger.kernel.org
-> > > > > [mailto:netdev-owner@vger.kernel.org] On
-> > > > > > Behalf Of Joakim Tjernlund
-> > > > > > Sent: Tuesday, July 03, 2007 8:52 AM
-> > > > > > To: 'linuxppc-dev Development'; 'Netdev'; Li Yang-r58472
-> > > > > > Subject: [PATCH] ucc_geth.c, make PHY device optional.
-> > > > > >
-> > > > > > > This patch makes the PHY optional for ucc_geth.c ethernet
-> > > driver.
-> > > > > > > This is useful to support a direct mii to mii connection to,
-> for
-> > > > > example,
-> > > > > > > a onboard swicth.
-> > > > > > >
-> > > > > > > Signed-off-by: Joakim Tjernlund
-> <joakim.tjernlund@transmode.se>
-> > > > > > ----
-> > > > > Hi Joakim,
-> > > > >
-> > > > > I'm wondering if we really need to have the option to disable
-> > > phylib.
-> > > >
-> > > > maybe, but it has to be dynamic too. I need to use PHY on UCC2 and
-> mii
-> > > > on UCC3 and UCC4.
-> > > >
-> > > > > Actually we have made phylib selected by default for ucc_geth.
-> Many
-> > > L2
-> > > > > switch chips have the capacity to be controlled.  Therefore they
-> can
-> > > be
-> > > > > managed as a phy device.
-> > > >
-> > > > Yes, they can be but why force a PHY impl. when its is of no use?
-> The
-> > > > only thing the eth driver needs from the it is speed and duplex.
-> If
-> > > > these are fixed, you don't need to talk with a PHY.
-> > >
-> > > The driver needs to get and set the link speed/status on runtime
-> (such
-> > > as for ethtool interface).  Currently this is implementation through
-> > > phydev interface.  IMHO, it will be easier to maintain if we only
-> use
-> > > this standard interface, rather than use different interfaces for
-> > > different cases.
-> > 
-> > hmm maybe, but there is no need to much around with speed/status
-> > from user space. The speed and duplex must be set before user space
-> > is up.
-> > 
-> > >
-> > > >
-> > > > > For the MII interface which is not
-> > > > > configurable, shouldn't we use the fixed phy support from
-> Vitaly?
-> > > >
-> > > > Well, I think the the fixed phy is great when your eth driver
-> requires
-> > > a
-> > > > PHY, but it is a workaround with extra processing overhead. IMHO
-> the
-> > > > best impl. is to make the PHY optional in the eth driver and as
-> you
-> > > can
-> > > > see from the patch, that was really simple.
-> > >
-> > > I agree there is overhead. However, it will have the advantage of
-> > > abstracting all the PHY related stuff out of controller driver.
-> > >
-> > > >
-> > > > An useful extension would be to add a new propety in the DTS to
-> hold
-> > > > initial speed and duplex(perhaps extend phy-connection-type). This
-> > > > would be useful for the fixed driver too as one could derive speed
-> and
-> > > > duplex for the fixed phy from that property instead of creating a
-> > > fixed
-> > > > phy for each speed and duplex one want to support.
-> > >
-> > > I agree that there should be a device node to configure it.  The
-> current
-> > > fixed phy driver is a little bit too complex to emulate the register
-> > > access.  Maybe it's better to have a null phy driver which just
-> reads
-> > > PHY capacity and status from device node.
-> > 
-> > A null phy driver is better than the current fixed phy, I agree.
-> > Where would you like to put initial speed and duplex? In a fake phy
-> node
-> > or in the ethernet node?
-> 
-> I think a fake phy node is better.
-> 
-> - Leo
+Convert the semaphores in low_i2c that are used as mutexes to real
+mutexes.
 
-OK, but then a new property in PHY node is needed which holds
-the initial speed and duplex. 
-initial-phy-capacity = <speed duplex> ?
-This should be useful for real PHYs too if, for instance, autoneg isn't
-working/supported/wanted.
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 
-Maybe it should be:
-initial-phy-capacity = <speed duplex autoneg> 
-or
-initial-phy-capability = <speed duplex autoneg> 
+---
+ arch/powerpc/platforms/powermac/low_i2c.c |   23 ++++++++++++-----------
+ 1 file changed, 12 insertions(+), 11 deletions(-)
 
- Jocke
+--- wireless-dev.orig/arch/powerpc/platforms/powermac/low_i2c.c	2007-07-04 00:42:08.267749881 +0200
++++ wireless-dev/arch/powerpc/platforms/powermac/low_i2c.c	2007-07-04 00:42:48.667749881 +0200
+@@ -42,6 +42,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/completion.h>
+ #include <linux/timer.h>
++#include <linux/mutex.h>
+ #include <asm/keylargo.h>
+ #include <asm/uninorth.h>
+ #include <asm/io.h>
+@@ -84,7 +85,7 @@ struct pmac_i2c_bus
+ 	void			*hostdata;
+ 	int			channel;	/* some hosts have multiple */
+ 	int			mode;		/* current mode */
+-	struct semaphore	sem;
++	struct mutex		mutex;
+ 	int			opened;
+ 	int			polled;		/* open mode */
+ 	struct platform_device	*platform_dev;
+@@ -104,7 +105,7 @@ static LIST_HEAD(pmac_i2c_busses);
+ 
+ struct pmac_i2c_host_kw
+ {
+-	struct semaphore	mutex;		/* Access mutex for use by
++	struct mutex		mutex;		/* Access mutex for use by
+ 						 * i2c-keywest */
+ 	void __iomem		*base;		/* register base address */
+ 	int			bsteps;		/* register stepping */
+@@ -375,14 +376,14 @@ static void kw_i2c_timeout(unsigned long
+ static int kw_i2c_open(struct pmac_i2c_bus *bus)
+ {
+ 	struct pmac_i2c_host_kw *host = bus->hostdata;
+-	down(&host->mutex);
++	mutex_lock(&host->mutex);
+ 	return 0;
+ }
+ 
+ static void kw_i2c_close(struct pmac_i2c_bus *bus)
+ {
+ 	struct pmac_i2c_host_kw *host = bus->hostdata;
+-	up(&host->mutex);
++	mutex_unlock(&host->mutex);
+ }
+ 
+ static int kw_i2c_xfer(struct pmac_i2c_bus *bus, u8 addrdir, int subsize,
+@@ -498,7 +499,7 @@ static struct pmac_i2c_host_kw *__init k
+ 		kfree(host);
+ 		return NULL;
+ 	}
+-	init_MUTEX(&host->mutex);
++	mutex_init(&host->mutex);
+ 	init_completion(&host->complete);
+ 	spin_lock_init(&host->lock);
+ 	init_timer(&host->timeout_timer);
+@@ -571,7 +572,7 @@ static void __init kw_i2c_add(struct pma
+ 	bus->open = kw_i2c_open;
+ 	bus->close = kw_i2c_close;
+ 	bus->xfer = kw_i2c_xfer;
+-	init_MUTEX(&bus->sem);
++	mutex_init(&bus->mutex);
+ 	if (controller == busnode)
+ 		bus->flags = pmac_i2c_multibus;
+ 	list_add(&bus->link, &pmac_i2c_busses);
+@@ -798,7 +799,7 @@ static void __init pmu_i2c_probe(void)
+ 		bus->mode = pmac_i2c_mode_std;
+ 		bus->hostdata = bus + 1;
+ 		bus->xfer = pmu_i2c_xfer;
+-		init_MUTEX(&bus->sem);
++		mutex_init(&bus->mutex);
+ 		bus->flags = pmac_i2c_multibus;
+ 		list_add(&bus->link, &pmac_i2c_busses);
+ 
+@@ -921,7 +922,7 @@ static void __init smu_i2c_probe(void)
+ 		bus->mode = pmac_i2c_mode_std;
+ 		bus->hostdata = bus + 1;
+ 		bus->xfer = smu_i2c_xfer;
+-		init_MUTEX(&bus->sem);
++		mutex_init(&bus->mutex);
+ 		bus->flags = 0;
+ 		list_add(&bus->link, &pmac_i2c_busses);
+ 
+@@ -1093,13 +1094,13 @@ int pmac_i2c_open(struct pmac_i2c_bus *b
+ {
+ 	int rc;
+ 
+-	down(&bus->sem);
++	mutex_lock(&bus->mutex);
+ 	bus->polled = polled || pmac_i2c_force_poll;
+ 	bus->opened = 1;
+ 	bus->mode = pmac_i2c_mode_std;
+ 	if (bus->open && (rc = bus->open(bus)) != 0) {
+ 		bus->opened = 0;
+-		up(&bus->sem);
++		mutex_unlock(&bus->mutex);
+ 		return rc;
+ 	}
+ 	return 0;
+@@ -1112,7 +1113,7 @@ void pmac_i2c_close(struct pmac_i2c_bus 
+ 	if (bus->close)
+ 		bus->close(bus);
+ 	bus->opened = 0;
+-	up(&bus->sem);
++	mutex_unlock(&bus->mutex);
+ }
+ EXPORT_SYMBOL_GPL(pmac_i2c_close);
+ 
