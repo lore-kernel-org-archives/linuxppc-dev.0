@@ -1,30 +1,15 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DAD39DDF37
+Return-Path: <b_kisku@yahoo.co.in>
+Received: from web8506.mail.in.yahoo.com (web8506.mail.in.yahoo.com
+	[202.43.219.168]) by ozlabs.org (Postfix) with SMTP id C0D98DDF12
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  3 Jul 2007 18:31:22 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	l638Ulc2018009
-	for <linuxppc-embedded@ozlabs.org>; Tue, 3 Jul 2007 01:31:17 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l638UjBc001723
-	for <linuxppc-embedded@ozlabs.org>; Tue, 3 Jul 2007 03:30:46 -0500 (CDT)
+	Tue,  3 Jul 2007 21:30:07 +1000 (EST)
+Date: Tue, 3 Jul 2007 12:23:25 +0100 (BST)
+From: Barisa kisku <b_kisku@yahoo.co.in>
+Subject: NFS mounting problem in mpc860 based board
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: Anyone using QE UART mode?
-Date: Tue, 3 Jul 2007 16:32:42 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890D83844@zch01exm26.fsl.freescale.net>
-In-Reply-To: <8F798BFDA851B943B3A1B2510E9287850350A908@airmail.wirelessworld.airvananet.com>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Ying Lin" <ylin@airvana.com>, "Tabi Timur-B04825" <timur@freescale.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <566752.34558.qm@web8506.mail.in.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,23 +20,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: linuxppc-embedded-bounces+leoli=3Dfreescale.com@ozlabs.org
-> [mailto:linuxppc-embedded-bounces+leoli=3Dfreescale.com@ozlabs.org] On
-Behalf
-> Of Ying Lin
-> Sent: Tuesday, July 03, 2007 12:02 AM
-> To: Tabi Timur-B04825
-> Cc: linuxppc-embedded@ozlabs.org
-> Subject: RE: Anyone using QE UART mode?
->=20
-> OK, the missing piece (UART driver) I am looking for is not available
-> yet.  I will seek alternative solutions (create a simple UART driver,
-or
-> just wait).
+hi,
 
-Which chip are you using?  There should be separate 16550 compatible
-UART controller on MPC8360.  The driver is already there and working
-pretty well.
+I have ported u-boot 1.1.6 in a custom board based on
+mpc860.using "tftpboot" command Linux kernel uImage is
+downloaded.And it was run with "bootm" command and
+controls are transfered to linux properly.
 
-- Leo
+While kernel is mounting root file system through nfs
+it is not able to send the message properly.By
+observing through "Ethereal" at server machine, no ARP
+message is reaching.
+
+Print coming in console of embedded system is:
+portmap: "Unable to get port number for  nfsd of
+server"
+
+But i am able to mount the file system in the given
+server from other machine in the LAN.
+
+Again by looking at the status of the BDs it seems
+that the ethernet driver is sending message properly
+to the LAN.
+
+If anybody has come across this type of problem,
+please help me in debugging.
+
+Thanks in advance.
+
+Regards,
+Barisa Kisku
+
+
+
+
+
+
+
+		
+__________________________________________________________
+Yahoo! India Answers: Share what you know. Learn something new
+http://in.answers.yahoo.com/
