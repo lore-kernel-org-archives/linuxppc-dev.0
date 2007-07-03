@@ -2,22 +2,22 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id ABB1BDDF66
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jul 2007 08:52:14 +1000 (EST)
-In-Reply-To: <468ACEC1.5000805@freescale.com>
-References: <468ABF4A.60001@freescale.com>
-	<513A555F-5C7F-4FEF-B215-E0E683FEF9E1@kernel.crashing.org>
-	<468ACA6F.5010107@freescale.com> <20070703223612.GA27682@lixom.net>
-	<468ACEC1.5000805@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id EA5B8DDE23
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jul 2007 09:02:42 +1000 (EST)
+In-Reply-To: <Pine.LNX.4.60.0707032356270.3876@poirot.grange>
+References: <Pine.LNX.4.60.0706292113240.4227@poirot.grange>
+	<00a85f152aa3547f0f0b4acd7954468a@kernel.crashing.org>
+	<Pine.LNX.4.60.0707022114020.3339@poirot.grange>
+	<2055bb54b9816faaf5b2ceedc9cfa039@kernel.crashing.org>
+	<Pine.LNX.4.60.0707032356270.3876@poirot.grange>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <86F97E62-38AF-4E51-A8E1-B76A720B891E@kernel.crashing.org>
+Message-Id: <E0E696F1-2F9E-4D6B-A194-EB42BA826BCD@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: Should of_device_is_compatible() use strcmp() rather than
-	strncasecmp()?
-Date: Wed, 4 Jul 2007 00:52:04 +0200
-To: Scott Wood <scottwood@freescale.com>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: Add of_register_i2c_devices()
+Date: Wed, 4 Jul 2007 01:02:12 +0200
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,37 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> What's the value add in doing this? The code to handle both cases  
->> still
->> has to be in there (just under ifdef now). Is there actually any harm
->> in doing case-insensitive matching today, where things break because
->> there are conflicting properties with different cases?
+>> Just use "compatible" exactly the way it is meant to be
+>> used and your life will be so much simpler.  And don't
+>> even think about using a very generic property like "model"
+>> for a purpose totally different from its intended purpose.
 >
-> Not for case insensitivity (that I know of), but the whole reason I  
-> posted this was because of time spent trying to figure out why my  
-> serial port recently stopped working -- apparently, it's checking  
-> nodes in a different order now (or something along those lines),  
-> causing the substring match to match against the wrong thing.
+> AFAIU, the only way currently to attach an i2c device to a driver  
+> is to
+> match against driver's name. Let's take the rtc-rs5c372.c example. It
+> services rs5c372a, rs5c372b, rv5c386, rv5c387a. And it registers  
+> itself
+> with the name "rtc-rs5c372". We want to just specify in our dts, e.g.,
+> 'compatible = "rs5c372b";', right? And ask the i2c layer to find a
+> suitable driver for us. Which means a pretty big change to i2c  
+> core. Is
+> this what you think is the proper solution? I could try to think  
+> about it
+> / discuss on i2c and eventually cook up a patch, just want to make  
+> sure I
+> understand you right.
 
-Substring matching is WRONG WRONG WRONG.
+Your device is an rs5c372b.  So, that's what you put in
+your device tree.  Simple so far, right?
 
-> It's even more idiotic to break valid device trees just because the  
-> kernel has always done so.  Putting it under ifdef, especially once  
-> the default is conformant behavior, will make it more likely that  
-> future device trees are compliant in that regrad, as long as Linux  
-> is involved in the testing process.
+Now some OF I2C code goes looking for IIC devices in the
+device tree.  It finds this thing, and from a table or
+something it derives that it has to tell the kernel I2C
+layer this is an "rtc-rs5c372".  [It would be nicer if it
+could just instantiate the correct driver directly, but
+if that's how the Linux I2C layer works, so be it].
 
-We should just implement *targeted* workarounds, not say
-"oh, some trees use bad upper/lower casing?  Let's just match
-case-insensitive then".
-
->> Even with the dts files, there are several of them
->> that have errors in them. There will be more in the future as well.
->
-> And the earlier we implement stricter checking, the fewer of them  
-> there will be.
-
-Yes, unfortunately.
+No change in the I2C "core" needed, just an OF "compatible"
+matching thing like is needed *everywhere else* too.
 
 
 Segher
