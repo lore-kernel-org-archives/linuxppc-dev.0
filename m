@@ -1,23 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.179])
-	by ozlabs.org (Postfix) with ESMTP id 4BFEEDDEC6
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jul 2007 04:14:26 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so2796606wag
-	for <linuxppc-dev@ozlabs.org>; Tue, 03 Jul 2007 11:14:25 -0700 (PDT)
-Message-ID: <fa686aa40707031114u1d77cadbp40d7af4663583b0f@mail.gmail.com>
-Date: Tue, 3 Jul 2007 12:14:25 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] Schedule removal of arch/ppc
-In-Reply-To: <1183486153.3590.24.camel@weaponx.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <1183469146.3590.7.camel@weaponx.rchland.ibm.com>
-	<26d387970707030747u69ee8d2axb79452e5e1b7fa2d@mail.gmail.com>
-	<fa686aa40707031003q7d4b40dan220a8a5ac31bbc69@mail.gmail.com>
-	<1183486153.3590.24.camel@weaponx.rchland.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <b07421@freescale.com>
+Date: Tue, 3 Jul 2007 13:29:30 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [CURIOUSITY] When will we stop caring about arch/ppc?
+Message-ID: <20070703182930.GA26688@ld0162-tx32.am.freescale.net>
+References: <20070625182304.GC31840@mag.az.mvista.com>
+	<1182796800.23775.51.camel@weaponx.rchland.ibm.com>
+	<0FBD8D7C-1A60-4305-992C-5C28ECE41278@kernel.crashing.org>
+	<1182804609.20939.5.camel@weaponx.rchland.ibm.com>
+	<b75c4d9610522f1a45ed1e65c9a4a548@kernel.crashing.org>
+	<1182864764.19501.7.camel@weaponx.rchland.ibm.com>
+	<1ce7f225511ea3d67a63b8a4ac683e0c@kernel.crashing.org>
+	<20070626171811.GD31457@mag.az.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070626171811.GD31457@mag.az.mvista.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,24 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/3/07, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
-> > Please don't; us 4xx folks aren't yet ready.  Active support for
-> > Xilinx Virtex in arch/ppc only right now.  I want to move over to
-> > arch/powerpc; but end of year is rather aggressive.
->
-> Selfishly, that's why I listed it as June 2008 to begin with.  We've got
-> base 440 support in arch/powerpc now, but it needs more work.  And I
-> just started 405 this morning.
->
-> However, I definitely want some date present when arch/ppc will go away.
-> Otherwise it will languish on indefinitely, more so than it already has.
+On Tue, Jun 26, 2007 at 10:18:11AM -0700, Mark A. Greer wrote:
+> Actually, I wouldn't have a problem with getting rid of arch/ppc right
+> now.  It won't really be lost, just git checkout your favorite tag that
+> still has it.  It'll get rid of code people shouldn't be worrying about
+> anymore anyway.
+> 
+> I realize, I'm probably the only one with this opinion so you don't have
+> to tell me all the reasons I'm wrong. :)
 
-I agree.
+Not at all -- it'd save me a lot of "#ifdef CONFIG_PPC_MERGE"s in my CPM
+driver patches. :-)
 
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+-Scott
