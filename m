@@ -1,30 +1,29 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4F744DDF1D
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jul 2007 18:21:35 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	l638L2LK012264
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Jul 2007 01:21:32 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l638L037011814
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Jul 2007 03:21:01 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH] ucc_geth.c, make PHY device optional.
-Date: Tue, 3 Jul 2007 16:22:55 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890D8383E@zch01exm26.fsl.freescale.net>
-In-Reply-To: <1183447246.20673.155.camel@gentoo-jocke.transmode.se>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: <joakim.tjernlund@transmode.se>
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	Netdev <netdev@vger.kernel.org>
+	by ozlabs.org (Postfix) with ESMTP id C5D0CDDEBB
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jul 2007 18:26:15 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l638QAQ6016677
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Jul 2007 01:26:10 -0700 (MST)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l638Q2rF000440
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Jul 2007 03:26:03 -0500 (CDT)
+Subject: Re: Patches added to 2.6.23 branch
+From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18057.57417.999506.887803@cargo.ozlabs.ibm.com>
+References: <18057.57417.999506.887803@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Message-Id: <1183451146.14800.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+Date: 03 Jul 2007 16:25:46 +0800
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,79 +33,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Joakim Tjernlund [mailto:joakim.tjernlund@transmode.se]
-> Sent: Tuesday, July 03, 2007 3:21 PM
-> To: Li Yang-r58472
-> Cc: linuxppc-dev Development; Netdev; Fleming Andy-afleming
-> Subject: RE: [PATCH] ucc_geth.c, make PHY device optional.
->=20
-> On Tue, 2007-07-03 at 11:42 +0800, Li Yang-r58472 wrote:
-> > > -----Original Message-----
-> > > From: netdev-owner@vger.kernel.org
-> > [mailto:netdev-owner@vger.kernel.org] On
-> > > Behalf Of Joakim Tjernlund
-> > > Sent: Tuesday, July 03, 2007 8:52 AM
-> > > To: 'linuxppc-dev Development'; 'Netdev'; Li Yang-r58472
-> > > Subject: [PATCH] ucc_geth.c, make PHY device optional.
-> > >
-> > > > This patch makes the PHY optional for ucc_geth.c ethernet
-driver.
-> > > > This is useful to support a direct mii to mii connection to, for
-> > example,
-> > > > a onboard swicth.
-> > > >
-> > > > Signed-off-by: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-> > > ----
-> > Hi Joakim,
-> >
-> > I'm wondering if we really need to have the option to disable
-phylib.
->=20
-> maybe, but it has to be dynamic too. I need to use PHY on UCC2 and mii
-> on UCC3 and UCC4.
->=20
-> > Actually we have made phylib selected by default for ucc_geth.  Many
-L2
-> > switch chips have the capacity to be controlled.  Therefore they can
-be
-> > managed as a phy device.
->=20
-> Yes, they can be but why force a PHY impl. when its is of no use? The
-> only thing the eth driver needs from the it is speed and duplex. If
-> these are fixed, you don't need to talk with a PHY.
+Paul
 
-The driver needs to get and set the link speed/status on runtime (such
-as for ethtool interface).  Currently this is implementation through
-phydev interface.  IMHO, it will be easier to maintain if we only use
-this standard interface, rather than use different interfaces for
-different cases.
+Could you help to add these patches:
 
->=20
-> > For the MII interface which is not
-> > configurable, shouldn't we use the fixed phy support from Vitaly?
->=20
-> Well, I think the the fixed phy is great when your eth driver requires
-a
-> PHY, but it is a workaround with extra processing overhead. IMHO the
-> best impl. is to make the PHY optional in the eth driver and as you
-can
-> see from the patch, that was really simple.
+1 add cuboot for 7448hpc2 board
+http://ozlabs.org/pipermail/linuxppc-dev/2007-May/036834.html
 
-I agree there is overhead. However, it will have the advantage of
-abstracting all the PHY related stuff out of controller driver.
+2. Remove redundant pci_read_irq_line() function for 85xx platform
+Acked by Ben
+http://ozlabs.org/pipermail/linuxppc-dev/2007-June/037117.html
 
->=20
-> An useful extension would be to add a new propety in the DTS to hold
-> initial speed and duplex(perhaps extend phy-connection-type). This
-> would be useful for the fixed driver too as one could derive speed and
-> duplex for the fixed phy from that property instead of creating a
-fixed
-> phy for each speed and duplex one want to support.
+3. Fix e500 v2 core reboot bug
+http://ozlabs.org/pipermail/linuxppc-dev/2007-June/037799.html
 
-I agree that there should be a device node to configure it.  The current
-fixed phy driver is a little bit too complex to emulate the register
-access.  Maybe it's better to have a null phy driver which just reads
-PHY capacity and status from device node.
+4. Document the global utilities node define and example
 
-- Leo
+http://ozlabs.org/pipermail/linuxppc-dev/2007-June/038136.html
+http://ozlabs.org/pipermail/linuxppc-dev/2007-June/038137.html
+
+Roy
+
+On Tue, 2007-07-03 at 13:36, Paul Mackerras wrote: 
+> The following patches have been added to the for-2.6.23 branch on
+> powerpc.git.  In addition, the master branch has the merge of the
+> for-2.6.23 and merge branches, which means that it is up-to-date with
+> Linus' 2.6.22-rc7 plus the patches I recently asked Linus to pull for
+> inclusion in 2.6.22.
+> 
+> Paul.
