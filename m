@@ -1,32 +1,23 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <SRS0+d4ed8532fc229d852d10+1409+infradead.org+mchehab@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0ABD1DDF42
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jul 2007 01:00:46 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l63F0aMZ011802
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Jul 2007 11:00:36 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l63F0WXw214786
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Jul 2007 09:00:33 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l63F0Lfl005316
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Jul 2007 09:00:22 -0600
-Subject: Re: [PATCH v2] Schedule removal of arch/ppc
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: tgall@gentoo.org
-In-Reply-To: <26d387970707030747u69ee8d2axb79452e5e1b7fa2d@mail.gmail.com>
-References: <1183469146.3590.7.camel@weaponx.rchland.ibm.com>
-	<26d387970707030747u69ee8d2axb79452e5e1b7fa2d@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 03 Jul 2007 10:00:20 -0500
-Message-Id: <1183474821.3590.13.camel@weaponx.rchland.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7A281DDEC8
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jul 2007 01:02:46 +1000 (EST)
+Subject: Re: How to handle patches that cross maintainers?
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <4BEFAFC6-3346-4F29-B1C5-377952E3FBBF@kernel.crashing.org>
+References: <4BEFAFC6-3346-4F29-B1C5-377952E3FBBF@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 03 Jul 2007 12:01:50 -0300
+Message-Id: <1183474910.3926.134.camel@gaivota>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,18 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-07-03 at 09:47 -0500, Tom Gall wrote:
-> June 2008 is a long time away to let this linger. Why not say by End
-> of the year 2007?  That should give folks essentially two more 2.6
-> releases.
+Em Ter, 2007-07-03 às 04:01 -0500, Kumar Gala escreveu:
+> Andrew,
+> 
+> I was hoping to get your input on how to handle patches that cross  
+> maintainers.  I've got a patch that is pretty PPC specific, but  
+> happens to touch some drivers as well.
+> 
+> Here's the diffstat to get a rough idea:
+> 
+> arch/powerpc/kernel/io.c                |   12 ++++++------
+> arch/powerpc/mm/hash_native_64.c        |    2 +-
+> arch/powerpc/mm/stab.c                  |    4 ++--
+> drivers/ide/pci/scc_pata.c              |    4 ++--
+> drivers/media/dvb/bt8xx/bt878.h         |    5 ++---
+> drivers/serial/cpm_uart/cpm_uart_core.c |    2 +-
+> include/asm-powerpc/system.h            |    2 +-
+> 7 files changed, 15 insertions(+), 16 deletions(-)
+> 
+> Now, I've had this issue before w/o any good sense on how to handle it.
 
-A year seemed like the appropriate amount of time for an arch removal.
-And Segher had made a suggestion that it could be officially killed
-during the PowerPC BOF at OLS 2008 for fun.  But honestly, it doesn't
-matter to me.  As others have said, things can always be resurrected
-from old tags if needs be.
+The better is to copy all of us and wait for some time to allow each
+maintainer to ack or comment the changeset, if needed.
 
-Essentially, I'm trying to be sneaky and get Paul to declare it dead
-officially.  When it actually dies, I don't care ;)
+Please c/c me for any changes on /drivers/media stuff.
 
-josh
+Cheers,
+Mauro
