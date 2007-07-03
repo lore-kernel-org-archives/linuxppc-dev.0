@@ -1,19 +1,21 @@
-Return-Path: <jwboyer@jdub.homelinux.org>
-Received: from jdub.homelinux.org (unknown [209.180.55.243])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D4621DDEAB
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.181])
+	by ozlabs.org (Postfix) with ESMTP id 4D426DDE29
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  3 Jul 2007 12:36:30 +1000 (EST)
-Subject: RE: help on dts compiler please.
-From: Josh Boyer <jwboyer@jdub.homelinux.org>
-To: "Bizhan Gholikhamseh (bgholikh)" <bgholikh@cisco.com>
-In-Reply-To: <F795765B112E7344AF36AA911279641502D1A45A@xmb-sjc-212.amer.cisco.com>
-References: <F795765B112E7344AF36AA911279641502D1A45A@xmb-sjc-212.amer.cisco.com>
-Content-Type: text/plain
-Date: Mon, 02 Jul 2007 21:32:20 -0500
-Message-Id: <1183429940.9030.1.camel@vader.jdub.homelinux.org>
-Mime-Version: 1.0
+	Tue,  3 Jul 2007 13:36:55 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so2524306wag
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 02 Jul 2007 20:36:53 -0700 (PDT)
+Message-ID: <fa686aa40707022036m1abdc1f7l33062e240be5304a@mail.gmail.com>
+Date: Mon, 2 Jul 2007 21:36:53 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: silicom <silicom@163.com>
+Subject: Re: Can anyone help me about ac97 driver
+In-Reply-To: <1329478984.2865871183429363889.JavaMail.coremail@bj163app129.163.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <1329478984.2865871183429363889.JavaMail.coremail@bj163app129.163.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,19 +27,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-07-02 at 18:49 -0700, Bizhan Gholikhamseh (bgholikh) wrote:
-> > > $ dtc -f -I dts -O dtb mpc8541cds.dts
-> > > DTC: dts->dtb  on file "mpc8541cds.dts"
-> > > syntax error at line 15
-> > > FATAL ERROR: Couldn't read input tree
-> > 
-> > Where did you get your dtc version from?
-> > 
-> Sorry I answered the question wrong. I downloaded the gzip tar file from
-> David Gibson web page.
+On 7/2/07, silicom <silicom@163.com> wrote:
+>
+> Hi
+>     I'm writing an ac97 driver with interrupt mode on xilinx ml403 and linux
+> 2.6.17.1 platform but encounter a incredible problem,can anyone send me a
+> copy of the driver code.
 
-That is a very out of date dtc.  Try using the one found here:
+I think there is a driver in MontaVista's 2.4 tree, but I haven't used
+it and don't know how well it works.
 
-git://www.jdl.com/software/dtc.git
+http://penguinppc.org/kernel/#historical
 
-josh
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
