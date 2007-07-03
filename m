@@ -1,21 +1,24 @@
-Return-Path: <jim.houston@ccur.com>
-Received: from mail.ccur.com (mail.ccur.com [66.10.65.12])
-	by ozlabs.org (Postfix) with ESMTP id 7DA7EDDE2B
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jul 2007 10:44:06 +1000 (EST)
-Subject: Re: idr_get_new_above() limitation?
-From: Jim Houston <jim.houston@ccur.com>
-To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-In-Reply-To: <200707021919.27251.hnguyen@linux.vnet.ibm.com>
-References: <200707021919.27251.hnguyen@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Mon, 02 Jul 2007 20:31:40 -0400
-Message-Id: <1183422700.3130.27.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
-	Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
-	linuxppc-dev@ozlabs.org, raisch@de.ibm.com,
-	Andrew Morton <akpm@linux-foundation.org>
-Reply-To: jim.houston@ccur.com
+Return-Path: <tgall.foo@gmail.com>
+Received: from ik-out-1112.google.com (ik-out-1112.google.com [66.249.90.180])
+	by ozlabs.org (Postfix) with ESMTP id 545F7DDEF0
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jul 2007 12:26:12 +1000 (EST)
+Received: by ik-out-1112.google.com with SMTP id b35so1523622ika
+	for <linuxppc-dev@ozlabs.org>; Mon, 02 Jul 2007 19:26:10 -0700 (PDT)
+Message-ID: <26d387970707021926p43dc5e4o51d29f17a10813ca@mail.gmail.com>
+Date: Mon, 2 Jul 2007 21:26:10 -0500
+From: "Tom Gall" <tgall.foo@gmail.com>
+To: "Gabriel Paubert" <paubert@iram.es>
+Subject: Re: [PATCH 3/3] First cut at PReP support for arch/powerpc
+In-Reply-To: <20070628100020.GA24215@iram.es>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_68518_12438759.1183429570066"
+References: <20070627065335.GD11191@localhost.localdomain>
+	<20070627071008.GA30648@localhost.localdomain>
+	<b1bc50e84cd3f8009eca2b470bea026f@kernel.crashing.org>
+	<20070628100020.GA24215@iram.es>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: tgall@gentoo.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,30 +28,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-07-02 at 19:19 +0200, Hoang-Nam Nguyen wrote:
+------=_Part_68518_12438759.1183429570066
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> i=3fffffff token=3fffffff t=000000003fffffff
-> i=40000000 token=40000000 t=0000000000000000
-> Invalid object 0000000000000000. Expected 40000000
-> 
-> That means token 0x40000000 seems to be the "upper boundary" of idr_find().
-> However the behaviour is not consistent in that it was returned by
-> idr_get_new_above().
+On 6/28/07, Gabriel Paubert <paubert@iram.es> wrote:
+>
+> On Thu, Jun 28, 2007 at 10:59:35AM +0200, Segher Boessenkool wrote:
+> <snip>
+> > Do all (supported) PReP boards have one CPU only?
+>
+> Not sure, but I don't have any. I believe that there were
+> dual processors MTX boards, and dual 604 MVME boards were
+> offered (but probably not very popular).
 
-Hi Nam,
 
-Yes this is a bug.  Thanks for the great test module.
+There were several IBM RS/6000 models that  were PReP and were at least dual
+systems. The 240 I recall was a dual 604. There were some Fxx and Exx models
+I think might have gone all the way up to 4 ways but my memory is getting
+fuzzy.
 
-The problem is in idr_get_new_above_int() in the loop which
-adds new layers to the top of the radix tree.  It is failing
-the "layers < (MAX_LEVEL - 1)" test.  It doesn't allocate the
-new layer but still calls sub_alloc() which relies on having
-the new layer properly constructed.  I believe that it is
-allocating the slot which corresponds to id = 0.
+One thing for sure ... not alot of this hardware exists anymore.
 
-I believe this is an off by one error in calculating the
-MAX_LEVEL value.  I will do a more careful review and post 
-a fix in the next day or so.  I have been in Ottawa for OLS.
-I'm flying home tomorrow.
+Regards,
 
-Jim Houston - Concurrent Computer Corp.
+Tom
+
+------=_Part_68518_12438759.1183429570066
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<br><br><div><span class="gmail_quote">On 6/28/07, <b class="gmail_sendername">Gabriel Paubert</b> &lt;<a href="mailto:paubert@iram.es">paubert@iram.es</a>&gt; wrote:</span><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+On Thu, Jun 28, 2007 at 10:59:35AM +0200, Segher Boessenkool wrote:<br>&lt;snip&gt;<br>&gt; Do all (supported) PReP boards have one CPU only?<br><br>Not sure, but I don&#39;t have any. I believe that there were<br>dual processors MTX boards, and dual 604 MVME boards were
+<br>offered (but probably not very popular).</blockquote><div><br>There were several IBM RS/6000 models that&nbsp; were PReP and were at least dual systems. The 240 I recall was a dual 604. There were some Fxx and Exx models I think might have gone all the way up to 4 ways but my memory is getting fuzzy. 
+<br><br>One thing for sure ... not alot of this hardware exists anymore.<br>&nbsp;</div>Regards,<br><br>Tom<br></div><br>
+
+------=_Part_68518_12438759.1183429570066--
