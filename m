@@ -1,17 +1,21 @@
-Return-Path: <mathieu.desnoyers@polymtl.ca>
-Received: from smtp.polymtl.ca (smtp.polymtl.ca [132.207.4.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.polymtl.ca", Issuer "Ca_Cert_Smtp_Poly" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0D2FBDDF35
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jul 2007 02:56:47 +1000 (EST)
-Message-Id: <20070703164629.363240511@polymtl.ca>
-References: <20070703164534.492133618@polymtl.ca>
-Date: Tue, 03 Jul 2007 12:45:36 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [patch 2/3] Add missing DATA_DATA in powerpc
-Cc: paulus@samba.org, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.181])
+	by ozlabs.org (Postfix) with ESMTP id 7B06BDDEB6
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jul 2007 03:03:45 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so2769425wag
+	for <linuxppc-dev@ozlabs.org>; Tue, 03 Jul 2007 10:03:44 -0700 (PDT)
+Message-ID: <fa686aa40707031003q7d4b40dan220a8a5ac31bbc69@mail.gmail.com>
+Date: Tue, 3 Jul 2007 11:03:43 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: tgall@gentoo.org
+Subject: Re: [PATCH v2] Schedule removal of arch/ppc
+In-Reply-To: <26d387970707030747u69ee8d2axb79452e5e1b7fa2d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <1183469146.3590.7.camel@weaponx.rchland.ibm.com>
+	<26d387970707030747u69ee8d2axb79452e5e1b7fa2d@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,30 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: paulus@samba.org
-CC: linuxppc-dev@ozlabs.org
---
- arch/powerpc/kernel/vmlinux.lds.S |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+On 7/3/07, Tom Gall <tgall.foo@gmail.com> wrote:
+> June 2008 is a long time away to let this linger. Why not say by End of the
+> year 2007?  That should give folks essentially two more 2.6 releases.
 
-Index: linux-2.6-lttng/arch/powerpc/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/powerpc/kernel/vmlinux.lds.S	2007-06-16 22:17:53.000000000 -0400
-+++ linux-2.6-lttng/arch/powerpc/kernel/vmlinux.lds.S	2007-06-16 22:18:32.000000000 -0400
-@@ -173,7 +173,9 @@
- 	}
- #else
- 	.data : {
--		*(.data .data.rel* .toc1)
-+		DATA_DATA
-+		*(.data.rel*)
-+		*(.toc1)
- 		*(.branch_lt)
- 	}
- 
+Please don't; us 4xx folks aren't yet ready.  Active support for
+Xilinx Virtex in arch/ppc only right now.  I want to move over to
+arch/powerpc; but end of year is rather aggressive.
+
+cheers,
+g.
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
