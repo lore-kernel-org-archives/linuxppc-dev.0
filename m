@@ -1,32 +1,19 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 38C4EDDEBE
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jul 2007 18:44:59 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l638isO0017718
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Jul 2007 01:44:55 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l638ir9i010501
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Jul 2007 03:44:54 -0500 (CDT)
-Subject: Re: Patches added to 2.6.23 branch
-From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <D7FB6C3D-BBA4-45A9-84CA-3D671D1FAEB8@kernel.crashing.org>
-References: <18057.57417.999506.887803@cargo.ozlabs.ibm.com>
-	<1183451146.14800.4.camel@localhost.localdomain>
-	<D7FB6C3D-BBA4-45A9-84CA-3D671D1FAEB8@kernel.crashing.org>
-Content-Type: text/plain
-Message-Id: <1183452277.14948.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-Date: 03 Jul 2007 16:44:37 +0800
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7D026DDEC8
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jul 2007 19:01:38 +1000 (EST)
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <4BEFAFC6-3346-4F29-B1C5-377952E3FBBF@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: How to handle patches that cross maintainers?
+Date: Tue, 3 Jul 2007 04:01:20 -0500
+To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+	Paul Mackerras <paulus@samba.org>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,18 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-07-03 at 16:32, Kumar Gala wrote:
-> On Jul 3, 2007, at 3:25 AM, Zang Roy-r61911 wrote:
-> 
-> > Paul
-> >
-> > Could you help to add these patches:
-> >
-> > 1 add cuboot for 7448hpc2 board
-> > http://ozlabs.org/pipermail/linuxppc-dev/2007-May/036834.html
-> 
-> Reviewing this one.
-> 
-It has been stayed in the list for more than one month.
-I need it go into 2.6.23.
-Roy
+Andrew,
+
+I was hoping to get your input on how to handle patches that cross  
+maintainers.  I've got a patch that is pretty PPC specific, but  
+happens to touch some drivers as well.
+
+Here's the diffstat to get a rough idea:
+
+arch/powerpc/kernel/io.c                |   12 ++++++------
+arch/powerpc/mm/hash_native_64.c        |    2 +-
+arch/powerpc/mm/stab.c                  |    4 ++--
+drivers/ide/pci/scc_pata.c              |    4 ++--
+drivers/media/dvb/bt8xx/bt878.h         |    5 ++---
+drivers/serial/cpm_uart/cpm_uart_core.c |    2 +-
+include/asm-powerpc/system.h            |    2 +-
+7 files changed, 15 insertions(+), 16 deletions(-)
+
+Now, I've had this issue before w/o any good sense on how to handle it.
+
+Suggestions?
+
+- k
