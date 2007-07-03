@@ -1,16 +1,19 @@
-Return-Path: <ut@ulrich-teichert.org>
-Received: from mxoutlb04.versatel.de (mxoutlb04.versatel.de [89.246.255.234])
-	by ozlabs.org (Postfix) with ESMTP id BB045DDF10
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jul 2007 16:53:12 +1000 (EST)
-Message-Id: <200707030650.l636o0h8015848@arbas.nms.ulrich-teichert.org>
-Subject: Re: [PATCH 3/3] First cut at PReP support for arch/powerpc
-To: tgall@gentoo.org
-Date: Tue, 3 Jul 2007 08:50:00 +0200 (MEST)
-In-Reply-To: <26d387970707021926p43dc5e4o51d29f17a10813ca@mail.gmail.com>
-From: Ulrich Teichert <krypton@ulrich-teichert.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
+	by ozlabs.org (Postfix) with ESMTP id B022FDDF22
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jul 2007 17:20:50 +1000 (EST)
+Subject: RE: [PATCH] ucc_geth.c, make PHY device optional.
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: Li Yang-r58472 <LeoLi@freescale.com>
+In-Reply-To: <989B956029373F45A0B8AF0297081890D837CB@zch01exm26.fsl.freescale.net>
+References: <989B956029373F45A0B8AF0297081890D837CB@zch01exm26.fsl.freescale.net>
+Content-Type: text/plain
+Date: Tue, 03 Jul 2007 09:20:46 +0200
+Message-Id: <1183447246.20673.155.camel@gentoo-jocke.transmode.se>
+Mime-Version: 1.0
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Netdev <netdev@vger.kernel.org>
+Reply-To: joakim.tjernlund@transmode.se
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,34 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Tue, 2007-07-03 at 11:42 +0800, Li Yang-r58472 wrote:
+> > -----Original Message-----
+> > From: netdev-owner@vger.kernel.org
+> [mailto:netdev-owner@vger.kernel.org] On
+> > Behalf Of Joakim Tjernlund
+> > Sent: Tuesday, July 03, 2007 8:52 AM
+> > To: 'linuxppc-dev Development'; 'Netdev'; Li Yang-r58472
+> > Subject: [PATCH] ucc_geth.c, make PHY device optional.
+> > 
+> > > This patch makes the PHY optional for ucc_geth.c ethernet driver.
+> > > This is useful to support a direct mii to mii connection to, for
+> example,
+> > > a onboard swicth.
+> > >
+> > > Signed-off-by: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+> > ----
+> Hi Joakim,
+> 
+> I'm wondering if we really need to have the option to disable phylib.
 
->> On Thu, Jun 28, 2007 at 10:59:35AM +0200, Segher Boessenkool wrote:
->> <snip>
->> > Do all (supported) PReP boards have one CPU only?
->>
->> Not sure, but I don't have any. I believe that there were
->> dual processors MTX boards, and dual 604 MVME boards were
->> offered (but probably not very popular).
->
->
->There were several IBM RS/6000 models that  were PReP and were at least dual
->systems. The 240 I recall was a dual 604. There were some Fxx and Exx models
->I think might have gone all the way up to 4 ways but my memory is getting
->fuzzy.
+maybe, but it has to be dynamic too. I need to use PHY on UCC2 and mii
+on UCC3 and UCC4.
 
-I have a 240 at home and it's definitely a dual PReP box. I think that the H70
-is PReP, too - that would be a 4 CPU box.
+> Actually we have made phylib selected by default for ucc_geth.  Many L2
+> switch chips have the capacity to be controlled.  Therefore they can be
+> managed as a phy device.
 
->One thing for sure ... not alot of this hardware exists anymore.
-[del]
+Yes, they can be but why force a PHY impl. when its is of no use? The
+only thing the eth driver needs from the it is speed and duplex. If
+these are fixed, you don't need to talk with a PHY.
 
-Oh, the 43p 140 shows up ebay quite often - for reasonable prices in Germany.
-Even the multi CPU boxes are available from time to time.
+> For the MII interface which is not
+> configurable, shouldn't we use the fixed phy support from Vitaly?
 
-HTH,
-Uli
--- 
-Dipl. Inf. Ulrich Teichert|e-mail: Ulrich.Teichert@gmx.de
-Stormweg 24               |listening to: Channel 13 Is Haunted (Hex Dispensers)
-24539 Neumuenster, Germany|Adrenalin (Supabond), Ne Me Touch Pas (Opération S)
+Well, I think the the fixed phy is great when your eth driver requires a
+PHY, but it is a workaround with extra processing overhead. IMHO the
+best impl. is to make the PHY optional in the eth driver and as you can
+see from the patch, that was really simple.
+
+An useful extension would be to add a new propety in the DTS to hold
+initial speed and duplex(perhaps extend phy-connection-type). This
+would be useful for the fixed driver too as one could derive speed and
+duplex for the fixed phy from that property instead of creating a fixed
+phy for each speed and duplex one want to support.
+
+ Jocke
