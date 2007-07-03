@@ -1,18 +1,21 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id E09B9DDD0C
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jul 2007 10:52:27 +1000 (EST)
-From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-To: "'linuxppc-dev Development'" <linuxppc-dev@ozlabs.org>,
-	"'Netdev'" <netdev@vger.kernel.org>,
-	"'Li Yang-r58472'" <LeoLi@freescale.com>
-Subject: [PATCH] ucc_geth.c, make PHY device optional.
-Date: Tue, 3 Jul 2007 02:52:13 +0200
-Message-ID: <012701c7bd0c$64fe67c0$0e67a8c0@Jocke>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <1183142980.20673.89.camel@gentoo-jocke.transmode.se>
+Return-Path: <jim.houston@ccur.com>
+Received: from mail.ccur.com (mail.ccur.com [66.10.65.12])
+	by ozlabs.org (Postfix) with ESMTP id 7DA7EDDE2B
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jul 2007 10:44:06 +1000 (EST)
+Subject: Re: idr_get_new_above() limitation?
+From: Jim Houston <jim.houston@ccur.com>
+To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+In-Reply-To: <200707021919.27251.hnguyen@linux.vnet.ibm.com>
+References: <200707021919.27251.hnguyen@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Mon, 02 Jul 2007 20:31:40 -0400
+Message-Id: <1183422700.3130.27.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
+	Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
+	linuxppc-dev@ozlabs.org, raisch@de.ibm.com,
+	Andrew Morton <akpm@linux-foundation.org>
+Reply-To: jim.houston@ccur.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,15 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> This patch makes the PHY optional for ucc_geth.c ethernet driver.
-> This is useful to support a direct mii to mii connection to, for example,
-> a onboard swicth.
+On Mon, 2007-07-02 at 19:19 +0200, Hoang-Nam Nguyen wrote:
+
+> i=3fffffff token=3fffffff t=000000003fffffff
+> i=40000000 token=40000000 t=0000000000000000
+> Invalid object 0000000000000000. Expected 40000000
 > 
-> Signed-off-by: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-----
-[SNIP patch sent last Friday]
+> That means token 0x40000000 seems to be the "upper boundary" of idr_find().
+> However the behaviour is not consistent in that it was returned by
+> idr_get_new_above().
 
-Since this is my last week before vacation, I would really like to
-get feedback on this patch sooner than later :)
+Hi Nam,
 
- Jocke
+Yes this is a bug.  Thanks for the great test module.
+
+The problem is in idr_get_new_above_int() in the loop which
+adds new layers to the top of the radix tree.  It is failing
+the "layers < (MAX_LEVEL - 1)" test.  It doesn't allocate the
+new layer but still calls sub_alloc() which relies on having
+the new layer properly constructed.  I believe that it is
+allocating the slot which corresponds to id = 0.
+
+I believe this is an off by one error in calculating the
+MAX_LEVEL value.  I will do a more careful review and post 
+a fix in the next day or so.  I have been in Ottawa for OLS.
+I'm flying home tomorrow.
+
+Jim Houston - Concurrent Computer Corp.
