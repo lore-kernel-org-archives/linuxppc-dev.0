@@ -1,23 +1,20 @@
-Return-Path: <SRS0+d4ed8532fc229d852d10+1409+infradead.org+mchehab@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7A281DDEC8
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jul 2007 01:02:46 +1000 (EST)
-Subject: Re: How to handle patches that cross maintainers?
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4BEFAFC6-3346-4F29-B1C5-377952E3FBBF@kernel.crashing.org>
-References: <4BEFAFC6-3346-4F29-B1C5-377952E3FBBF@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 03 Jul 2007 12:01:50 -0300
-Message-Id: <1183474910.3926.134.camel@gaivota>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id F0EEBDDE3D
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jul 2007 02:49:10 +1000 (EST)
+Date: Tue, 3 Jul 2007 18:49:02 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] Schedule removal of arch/ppc
+In-Reply-To: <1183474821.3590.13.camel@weaponx.rchland.ibm.com>
+Message-ID: <Pine.LNX.4.62.0707031848041.8675@pademelon.sonytel.be>
+References: <1183469146.3590.7.camel@weaponx.rchland.ibm.com>
+	<26d387970707030747u69ee8d2axb79452e5e1b7fa2d@mail.gmail.com>
+	<1183474821.3590.13.camel@weaponx.rchland.ibm.com>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-416127444-1183481342=:8675"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,30 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Em Ter, 2007-07-03 às 04:01 -0500, Kumar Gala escreveu:
-> Andrew,
-> 
-> I was hoping to get your input on how to handle patches that cross  
-> maintainers.  I've got a patch that is pretty PPC specific, but  
-> happens to touch some drivers as well.
-> 
-> Here's the diffstat to get a rough idea:
-> 
-> arch/powerpc/kernel/io.c                |   12 ++++++------
-> arch/powerpc/mm/hash_native_64.c        |    2 +-
-> arch/powerpc/mm/stab.c                  |    4 ++--
-> drivers/ide/pci/scc_pata.c              |    4 ++--
-> drivers/media/dvb/bt8xx/bt878.h         |    5 ++---
-> drivers/serial/cpm_uart/cpm_uart_core.c |    2 +-
-> include/asm-powerpc/system.h            |    2 +-
-> 7 files changed, 15 insertions(+), 16 deletions(-)
-> 
-> Now, I've had this issue before w/o any good sense on how to handle it.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-The better is to copy all of us and wait for some time to allow each
-maintainer to ack or comment the changeset, if needed.
+---584337861-416127444-1183481342=:8675
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Please c/c me for any changes on /drivers/media stuff.
+On Tue, 3 Jul 2007, Josh Boyer wrote:
+> And Segher had made a suggestion that it could be officially killed
+> during the PowerPC BOF at OLS 2008 for fun.  But honestly, it doesn't
+                            ^^^
+Or perhaps TLS/MLS/VLS/... (forgot about the 4th alternative location)? ;-)
 
-Cheers,
-Mauro
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-416127444-1183481342=:8675--
