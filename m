@@ -1,19 +1,30 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AA741DDF21
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jul 2007 18:33:00 +1000 (EST)
-In-Reply-To: <1183451146.14800.4.camel@localhost.localdomain>
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 38C4EDDEBE
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jul 2007 18:44:59 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l638isO0017718
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Jul 2007 01:44:55 -0700 (MST)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l638ir9i010501
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Jul 2007 03:44:54 -0500 (CDT)
+Subject: Re: Patches added to 2.6.23 branch
+From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <D7FB6C3D-BBA4-45A9-84CA-3D671D1FAEB8@kernel.crashing.org>
 References: <18057.57417.999506.887803@cargo.ozlabs.ibm.com>
 	<1183451146.14800.4.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <D7FB6C3D-BBA4-45A9-84CA-3D671D1FAEB8@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Patches added to 2.6.23 branch
-Date: Tue, 3 Jul 2007 03:32:44 -0500
-To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+	<D7FB6C3D-BBA4-45A9-84CA-3D671D1FAEB8@kernel.crashing.org>
+Content-Type: text/plain
+Message-Id: <1183452277.14948.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+Date: 03 Jul 2007 16:44:37 +0800
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,30 +36,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Jul 3, 2007, at 3:25 AM, Zang Roy-r61911 wrote:
-
-> Paul
->
-> Could you help to add these patches:
->
-> 1 add cuboot for 7448hpc2 board
-> http://ozlabs.org/pipermail/linuxppc-dev/2007-May/036834.html
-
-Reviewing this one.
-
-> 2. Remove redundant pci_read_irq_line() function for 85xx platform
-> Acked by Ben
-> http://ozlabs.org/pipermail/linuxppc-dev/2007-June/037117.html
->
-> 3. Fix e500 v2 core reboot bug
-> http://ozlabs.org/pipermail/linuxppc-dev/2007-June/037799.html
->
-> 4. Document the global utilities node define and example
->
-> http://ozlabs.org/pipermail/linuxppc-dev/2007-June/038136.html
-> http://ozlabs.org/pipermail/linuxppc-dev/2007-June/038137.html
-
-I've pulled all these into my tree.
-
-- k
+On Tue, 2007-07-03 at 16:32, Kumar Gala wrote:
+> On Jul 3, 2007, at 3:25 AM, Zang Roy-r61911 wrote:
+> 
+> > Paul
+> >
+> > Could you help to add these patches:
+> >
+> > 1 add cuboot for 7448hpc2 board
+> > http://ozlabs.org/pipermail/linuxppc-dev/2007-May/036834.html
+> 
+> Reviewing this one.
+> 
+It has been stayed in the list for more than one month.
+I need it go into 2.6.23.
+Roy
