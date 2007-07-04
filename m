@@ -1,16 +1,19 @@
 Return-Path: <geert@sonycom.com>
 Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id CF543DDEC1
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jul 2007 23:24:50 +1000 (EST)
-Message-Id: <20070704132212.726923000@pademelon.sonytel.be>
-Date: Wed, 04 Jul 2007 15:22:12 +0200
+	by ozlabs.org (Postfix) with ESMTP id A0801DDEC2
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jul 2007 23:24:51 +1000 (EST)
+Message-Id: <20070704132346.174381000@pademelon.sonytel.be>
+References: <20070704132212.726923000@pademelon.sonytel.be>
+Date: Wed, 04 Jul 2007 15:22:13 +0200
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: Paul Mackerras <paulus@samba.org>, Jens Axboe <axboe@kernel.dk>,
 	"James E.J.  Bottomley" <James.Bottomley@SteelEye.com>,
 	Alessandro Rubini <rubini@ipvvis.unipv.it>
-Subject: [patch 0/6] PS3 Storage Drivers for 2.6.23, take 4
+Subject: [patch 1/6] ps3: Preallocate bootmem memory for the PS3 FLASH ROM
+	storage driver
 Sender: Geert Uytterhoeven <geert@sonycom.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
 	linux-scsi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,33 +24,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-	Hi,
+Preallocate 256 KiB of bootmem memory for the PS3 FLASH ROM storage driver.
+This can be disabled by passing `ps3flash=off' on the kernel command line.
 
-This is the fourth submission of the new PS3 storage drivers:
-  [1] ps3: Preallocate bootmem memory for the PS3 FLASH ROM storage driver
-  [2] ps3: Storage Driver Core
-  [3] ps3: Storage device registration routines.
-  [4] ps3: Disk Storage Driver
-  [5] ps3: BD/DVD/CD-ROM Storage Driver
-  [6] ps3: FLASH ROM Storage Driver
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+---
+v3:
+  - Allow to disable ps3flash (and the preallocated 256 KiB buffer) using
+    `ps3flash=off'
 
-They are based on:
-  - the current Linux kernel source tree,
-  - plus the PS3 patches already submitted by Geoff Levand on linuxppc-dev,
-  - plus the shost_priv() patch in scsi-misc (commit
-    bcd92c9fbcc679ee95003083056f0441a1f474fa).
+ arch/powerpc/platforms/ps3/setup.c |   31 ++++++++++++++++++++++++++++++-
+ include/asm-powerpc/ps3.h          |    1 +
+ 2 files changed, 31 insertions(+), 1 deletion(-)
 
-All issues raised during the previous review rounds should be fixed.
-There were no more comments after the third submission.
+--- a/arch/powerpc/platforms/ps3/setup.c
++++ b/arch/powerpc/platforms/ps3/setup.c
+@@ -107,7 +107,8 @@ static void ps3_panic(char *str)
+ 	while(1);
+ }
+ 
+-#if defined(CONFIG_FB_PS3) || defined(CONFIG_FB_PS3_MODULE)
++#if defined(CONFIG_FB_PS3) || defined(CONFIG_FB_PS3_MODULE) || \
++    defined(CONFIG_PS3_FLASH) || defined(CONFIG_PS3_FLASH_MODULE)
+ static void prealloc(struct ps3_prealloc *p)
+ {
+ 	if (!p->size)
+@@ -123,7 +124,9 @@ static void prealloc(struct ps3_prealloc
+ 	printk(KERN_INFO "%s: %lu bytes at %p\n", p->name, p->size,
+ 	       p->address);
+ }
++#endif
+ 
++#if defined(CONFIG_FB_PS3) || defined(CONFIG_FB_PS3_MODULE)
+ struct ps3_prealloc ps3fb_videomemory = {
+ 	.name = "ps3fb videomemory",
+ 	.size = CONFIG_FB_PS3_DEFAULT_SIZE_M*1024*1024,
+@@ -146,6 +149,30 @@ early_param("ps3fb", early_parse_ps3fb);
+ #define prealloc_ps3fb_videomemory()	do { } while (0)
+ #endif
+ 
++#if defined(CONFIG_PS3_FLASH) || defined(CONFIG_PS3_FLASH_MODULE)
++struct ps3_prealloc ps3flash_bounce_buffer = {
++	.name = "ps3flash bounce buffer",
++	.size = 256*1024,
++	.align = 256*1024
++};
++EXPORT_SYMBOL_GPL(ps3flash_bounce_buffer);
++#define prealloc_ps3flash_bounce_buffer()	prealloc(&ps3flash_bounce_buffer)
++
++static int __init early_parse_ps3flash(char *p)
++{
++	if (!p)
++		return 1;
++
++	if (!strcmp(p, "off"))
++		ps3flash_bounce_buffer.size = 0;
++
++	return 0;
++}
++early_param("ps3flash", early_parse_ps3flash);
++#else
++#define prealloc_ps3flash_bounce_buffer()	do { } while (0)
++#endif
++
+ static int ps3_set_dabr(u64 dabr)
+ {
+ 	enum {DABR_USER = 1, DABR_KERNEL = 2,};
+@@ -175,6 +202,8 @@ static void __init ps3_setup_arch(void)
+ #endif
+ 
+ 	prealloc_ps3fb_videomemory();
++	prealloc_ps3flash_bounce_buffer();
++
+ 	ppc_md.power_save = ps3_power_save;
+ 
+ 	DBG(" <- %s:%d\n", __func__, __LINE__);
+--- a/include/asm-powerpc/ps3.h
++++ b/include/asm-powerpc/ps3.h
+@@ -427,6 +427,7 @@ struct ps3_prealloc {
+ };
+ 
+ extern struct ps3_prealloc ps3fb_videomemory;
++extern struct ps3_prealloc ps3flash_bounce_buffer;
+ 
+ 
+ #endif
 
-Paul already integrated Geoff Levand's PS3 patches and the first 3 patches
-in this series in the for-2.6.23 branch in powerpc.git.
-
-Maintainers of block/SCSI/misc, can you please ack the last 3 patches so Paul
-can take them, too?
-
-Thanks in advance!
-
+-- 
 With kind regards,
  
 Geert Uytterhoeven
