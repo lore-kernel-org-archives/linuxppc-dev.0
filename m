@@ -1,19 +1,35 @@
-Return-Path: <geert@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id E6DD8DDF5B
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jul 2007 23:24:55 +1000 (EST)
-Message-Id: <20070704132346.389168000@pademelon.sonytel.be>
-References: <20070704132212.726923000@pademelon.sonytel.be>
-Date: Wed, 04 Jul 2007 15:22:15 +0200
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Paul Mackerras <paulus@samba.org>, Jens Axboe <axboe@kernel.dk>,
-	"James E.J.  Bottomley" <James.Bottomley@SteelEye.com>,
-	Alessandro Rubini <rubini@ipvvis.unipv.it>
-Subject: [patch 3/6] ps3: Storage device registration routines.
-Sender: Geert Uytterhoeven <geert@sonycom.com>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-scsi@vger.kernel.org
+Return-Path: <ossthema@de.ibm.com>
+Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.29.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id CE029DDEFE
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jul 2007 20:34:29 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate1.de.ibm.com (8.13.8/8.13.8) with ESMTP id l64AYO2i095206
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Jul 2007 10:34:24 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.3) with
+	ESMTP id l64AYO0w2121964
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Jul 2007 12:34:24 +0200
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l64AYO79007339
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Jul 2007 12:34:24 +0200
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: [PATCH 1/2] eHEA: Capability flag for DLPAR support
+Date: Wed, 4 Jul 2007 12:09:36 +0200
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200707041209.37127.ossthema@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,343 +39,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add support for storage devices to the device probe code.
+This patch introduces a capability flag that is used by the DLPAR userspace
+tool to check which DLPAR features are supported by the eHEA driver.
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+
+
 ---
-v2:
-  - use msleep() instead of schedule_timeout()
+ drivers/net/ehea/ehea.h      |    8 +++++++-
+ drivers/net/ehea/ehea_main.c |   17 +++++++++++++++++
+ 2 files changed, 24 insertions(+), 1 deletions(-)
 
- arch/powerpc/platforms/ps3/device-init.c |  286 +++++++++++++++++++++++++++++++
- 1 files changed, 286 insertions(+)
-
---- a/arch/powerpc/platforms/ps3/device-init.c
-+++ b/arch/powerpc/platforms/ps3/device-init.c
-@@ -26,6 +26,7 @@
+diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
+index abaf3ac..809e3f2 100644
+--- a/drivers/net/ehea/ehea.h
++++ b/drivers/net/ehea/ehea.h
+@@ -39,7 +39,13 @@
+ #include <asm/io.h>
  
- #include <asm/firmware.h>
- #include <asm/lv1call.h>
-+#include <asm/ps3stor.h>
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0065"
++#define DRV_VERSION	"EHEA_0066"
++
++/* EHEA capability flags */
++#define DLPAR_PORT_ADD_REM 1
++#define DLPAR_MEM_ADD 2
++#define DLPAR_MEM_REM 4
++#define EHEA_CAPABILITIES (DLPAR_PORT_ADD_REM)
  
- #include "platform.h"
- 
-@@ -237,6 +238,262 @@ static int __init ps3_setup_vuart_device
- 	return result;
+ #define EHEA_MSG_DEFAULT (NETIF_MSG_LINK | NETIF_MSG_TIMER \
+ 	| NETIF_MSG_RX_ERR | NETIF_MSG_TX_ERR)
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index bdb5241..f8c0908 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -2923,6 +2923,15 @@ static int check_module_parm(void)
+ 	return ret;
  }
  
-+static int ps3stor_wait_for_completion(u64 dev_id, u64 tag,
-+				       unsigned int timeout)
++static ssize_t ehea_show_capabilities(struct device_driver *drv,
++				      char *buf)
 +{
-+	int result = -1;
-+	unsigned int retries = 0;
-+	u64 status;
-+
-+	for (retries = 0; retries < timeout; retries++) {
-+		result = lv1_storage_check_async_status(dev_id, tag, &status);
-+		if (!result)
-+			break;
-+
-+		msleep(1);
-+	}
-+
-+	if (result)
-+		pr_debug("%s:%u: check_async_status: %s, status %lx\n",
-+			 __func__, __LINE__, ps3_result(result), status);
-+
-+	return result;
++	return sprintf(buf, "%d", EHEA_CAPABILITIES);
 +}
 +
-+/**
-+ * ps3_storage_wait_for_device - Wait for a storage device to become ready.
-+ * @repo: The repository device to wait for.
-+ *
-+ * Uses the hypervisor's storage device notification mechanism to wait until
-+ * a storage device is ready.  The device notification mechanism uses a
-+ * psuedo device (id = -1) to asynchronously notify the guest when storage
-+ * devices become ready.  The notification device has a block size of 512
-+ * bytes.
-+ */
++static DRIVER_ATTR(capabilities, S_IRUSR | S_IRGRP | S_IROTH,
++		   ehea_show_capabilities, NULL);
 +
-+static int ps3_storage_wait_for_device(const struct ps3_repository_device *repo)
-+{
-+	int result;
-+	const u64 notification_dev_id = (u64)-1LL;
-+	const unsigned int timeout = HZ;
-+	u64 lpar;
-+	u64 tag;
-+	struct {
-+		u64 operation_code;	/* must be zero */
-+		u64 event_mask;		/* 1 = device ready */
-+	} *notify_cmd;
-+	struct {
-+		u64 event_type;		/* notify_device_ready */
-+		u64 bus_id;
-+		u64 dev_id;
-+		u64 dev_type;
-+		u64 dev_port;
-+	} *notify_event;
-+	enum {
-+		notify_device_ready = 1
-+	};
-+
-+	pr_debug(" -> %s:%u: bus_id %u, dev_id %u, dev_type %u\n", __func__,
-+		 __LINE__, repo->bus_id, repo->dev_id, repo->dev_type);
-+
-+	notify_cmd = kzalloc(512, GFP_KERNEL);
-+	notify_event = (void *)notify_cmd;
-+	if (!notify_cmd)
-+		return -ENOMEM;
-+
-+	lpar = ps3_mm_phys_to_lpar(__pa(notify_cmd));
-+
-+	result = lv1_open_device(repo->bus_id, notification_dev_id, 0);
-+	if (result) {
-+		printk(KERN_ERR "%s:%u: lv1_open_device %s\n", __func__,
-+		       __LINE__, ps3_result(result));
-+		result = -ENODEV;
-+		goto fail_free;
-+	}
-+
-+	/* Setup and write the request for device notification. */
-+
-+	notify_cmd->operation_code = 0;	/* must be zero */
-+	notify_cmd->event_mask = 0x01;	/* device ready */
-+
-+	result = lv1_storage_write(notification_dev_id, 0, 0, 1, 0, lpar,
-+				   &tag);
-+	if (result) {
-+		printk(KERN_ERR "%s:%u: write failed %s\n", __func__, __LINE__,
-+		       ps3_result(result));
-+		result = -ENODEV;
-+		goto fail_close;
-+	}
-+
-+	/* Wait for the write completion */
-+
-+	result = ps3stor_wait_for_completion(notification_dev_id, tag,
-+					     timeout);
-+	if (result) {
-+		printk(KERN_ERR "%s:%u: write not completed %s\n", __func__,
-+		       __LINE__, ps3_result(result));
-+		result = -ENODEV;
-+		goto fail_close;
-+	}
-+
-+	/* Loop here processing the requested notification events. */
-+
-+	result = -ENODEV;
-+	while (1) {
-+		memset(notify_event, 0, sizeof(*notify_event));
-+
-+		result = lv1_storage_read(notification_dev_id, 0, 0, 1, 0,
-+					  lpar, &tag);
-+		if (result) {
-+			printk(KERN_ERR "%s:%u: write failed %s\n", __func__,
-+			       __LINE__, ps3_result(result));
-+			break;
-+		}
-+
-+		result = ps3stor_wait_for_completion(notification_dev_id, tag,
-+						     timeout);
-+		if (result) {
-+			printk(KERN_ERR "%s:%u: read not completed %s\n",
-+			       __func__, __LINE__, ps3_result(result));
-+			break;
-+		}
-+
-+		if (notify_event->event_type != notify_device_ready ||
-+		    notify_event->bus_id != repo->bus_id) {
-+			pr_debug("%s:%u: bad notify_event: event %lu, "
-+				 "dev_id %lu, dev_type %lu\n",
-+				 __func__, __LINE__, notify_event->event_type,
-+				 notify_event->dev_id, notify_event->dev_type);
-+			break;
-+		}
-+
-+		if (notify_event->dev_id == repo->dev_id &&
-+		    notify_event->dev_type == repo->dev_type) {
-+			pr_debug("%s:%u: device ready: dev_id %u\n", __func__,
-+				 __LINE__, repo->dev_id);
-+			result = 0;
-+			break;
-+		}
-+
-+		if (notify_event->dev_id == repo->dev_id &&
-+		    notify_event->dev_type == PS3_DEV_TYPE_NOACCESS) {
-+			pr_debug("%s:%u: no access: dev_id %u\n", __func__,
-+				 __LINE__, repo->dev_id);
-+			break;
-+		}
-+	}
-+
-+fail_close:
-+	lv1_close_device(repo->bus_id, notification_dev_id);
-+fail_free:
-+	kfree(notify_cmd);
-+	pr_debug(" <- %s:%u\n", __func__, __LINE__);
-+	return result;
-+}
-+
-+static int ps3_setup_storage_dev(const struct ps3_repository_device *repo,
-+				 enum ps3_match_id match_id)
-+{
-+	int result;
-+	struct ps3_storage_device *p;
-+	u64 port, blk_size, num_blocks;
-+	unsigned int num_regions, i;
-+
-+	pr_debug(" -> %s:%u: match_id %u\n", __func__, __LINE__, match_id);
-+
-+	result = ps3_repository_read_stor_dev_info(repo->bus_index,
-+						   repo->dev_index, &port,
-+						   &blk_size, &num_blocks,
-+						   &num_regions);
-+	if (result) {
-+		printk(KERN_ERR "%s:%u: _read_stor_dev_info failed %d\n",
-+		       __func__, __LINE__, result);
-+		return -ENODEV;
-+	}
-+
-+	pr_debug("%s:%u: index %u:%u: port %lu blk_size %lu num_blocks %lu "
-+		 "num_regions %u\n", __func__, __LINE__, repo->bus_index,
-+		 repo->dev_index, port, blk_size, num_blocks, num_regions);
-+
-+	p = kzalloc(sizeof(struct ps3_storage_device) +
-+		    num_regions * sizeof(struct ps3_storage_region),
-+		    GFP_KERNEL);
-+	if (!p) {
-+		result = -ENOMEM;
-+		goto fail_malloc;
-+	}
-+
-+	p->sbd.match_id = match_id;
-+	p->sbd.dev_type = PS3_DEVICE_TYPE_SB;
-+	p->sbd.bus_id = repo->bus_id;
-+	p->sbd.dev_id = repo->dev_id;
-+	p->sbd.d_region = &p->dma_region;
-+	p->blk_size = blk_size;
-+	p->num_regions = num_regions;
-+
-+	result = ps3_repository_find_interrupt(repo,
-+					       PS3_INTERRUPT_TYPE_EVENT_PORT,
-+					       &p->sbd.interrupt_id);
-+	if (result) {
-+		printk(KERN_ERR "%s:%u: find_interrupt failed %d\n", __func__,
-+		       __LINE__, result);
-+		result = -ENODEV;
-+		goto fail_find_interrupt;
-+	}
-+
-+	/* FIXME: Arrange to only do this on a 'cold' boot */
-+
-+	result = ps3_storage_wait_for_device(repo);
-+	if (result) {
-+		printk(KERN_ERR "%s:%u: storage_notification failed %d\n",
-+		       __func__, __LINE__, result);
-+		result = -ENODEV;
-+		goto fail_probe_notification;
-+	}
-+
-+	for (i = 0; i < num_regions; i++) {
-+		unsigned int id;
-+		u64 start, size;
-+
-+		result = ps3_repository_read_stor_dev_region(repo->bus_index,
-+							     repo->dev_index,
-+							     i, &id, &start,
-+							     &size);
-+		if (result) {
-+			printk(KERN_ERR
-+			       "%s:%u: read_stor_dev_region failed %d\n",
-+			       __func__, __LINE__, result);
-+			result = -ENODEV;
-+			goto fail_read_region;
-+		}
-+		pr_debug("%s:%u: region %u: id %u start %lu size %lu\n",
-+			 __func__, __LINE__, i, id, start, size);
-+
-+		p->regions[i].id = id;
-+		p->regions[i].start = start;
-+		p->regions[i].size = size;
-+	}
-+
-+	result = ps3_system_bus_device_register(&p->sbd);
-+	if (result) {
-+		pr_debug("%s:%u ps3_system_bus_device_register failed\n",
-+			 __func__, __LINE__);
-+		goto fail_device_register;
-+	}
-+
-+	pr_debug(" <- %s:%u\n", __func__, __LINE__);
-+	return 0;
-+
-+fail_device_register:
-+fail_read_region:
-+fail_probe_notification:
-+fail_find_interrupt:
-+	kfree(p);
-+fail_malloc:
-+	pr_debug(" <- %s:%u: fail.\n", __func__, __LINE__);
-+	return result;
-+}
-+
- static int __init ps3_register_vuart_devices(void)
+ int __init ehea_module_init(void)
  {
- 	int result;
-@@ -356,6 +613,35 @@ static int ps3_register_repository_devic
- 				__func__, __LINE__);
- 		}
- 		break;
-+	case PS3_DEV_TYPE_STOR_DISK:
-+		result = ps3_setup_storage_dev(repo, PS3_MATCH_ID_STOR_DISK);
+ 	int ret;
+@@ -2937,12 +2946,20 @@ int __init ehea_module_init(void)
+ 	if (ret)
+ 		ehea_error("failed registering eHEA device driver on ebus");
+ 
++	ret = driver_create_file(&ehea_driver.driver, &driver_attr_capabilities);
++	if (ret) {
++		ehea_error("failed to register capabilities attribute, ret=%d", ret);
++		ibmebus_unregister_driver(&ehea_driver);
++		goto out;
++	}
 +
-+		/* Some devices are not accessable from the Other OS lpar. */
-+		if (result == -ENODEV) {
-+			result = 0;
-+			pr_debug("%s:%u: not accessable\n", __func__,
-+				 __LINE__);
-+		}
-+
-+		if (result)
-+			pr_debug("%s:%u ps3_setup_storage_dev failed\n",
-+				 __func__, __LINE__);
-+		break;
-+
-+	case PS3_DEV_TYPE_STOR_ROM:
-+		result = ps3_setup_storage_dev(repo, PS3_MATCH_ID_STOR_ROM);
-+		if (result)
-+			pr_debug("%s:%u ps3_setup_storage_dev failed\n",
-+				 __func__, __LINE__);
-+		break;
-+
-+	case PS3_DEV_TYPE_STOR_FLASH:
-+		result = ps3_setup_storage_dev(repo, PS3_MATCH_ID_STOR_FLASH);
-+		if (result)
-+			pr_debug("%s:%u ps3_setup_storage_dev failed\n",
-+				 __func__, __LINE__);
-+		break;
-+
- 	default:
- 		result = 0;
- 		pr_debug("%s:%u: unsupported dev_type %u\n", __func__, __LINE__,
-
+ out:
+ 	return ret;
+ }
+ 
+ static void __exit ehea_module_exit(void)
+ {
++	driver_remove_file(&ehea_driver.driver, &driver_attr_capabilities);
+ 	ibmebus_unregister_driver(&ehea_driver);
+ }
+ 
 -- 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+1.5.2
