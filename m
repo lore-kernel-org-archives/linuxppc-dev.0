@@ -1,22 +1,18 @@
 Return-Path: <matvejchikov@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.181])
-	by ozlabs.org (Postfix) with ESMTP id D4687DDE37
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.180])
+	by ozlabs.org (Postfix) with ESMTP id F41F6DDEFC
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  4 Jul 2007 15:42:29 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so4530754pyi
+	Wed,  4 Jul 2007 15:51:11 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so4534591pyi
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 03 Jul 2007 22:42:26 -0700 (PDT)
-Message-ID: <8496f91a0707032242w40c0f398s87ab5a9249c0e902@mail.gmail.com>
-Date: Wed, 4 Jul 2007 09:42:26 +0400
+	Tue, 03 Jul 2007 22:51:09 -0700 (PDT)
+Message-ID: <8496f91a0707032251m6fea386cu2405899d2945fd07@mail.gmail.com>
+Date: Wed, 4 Jul 2007 09:51:09 +0400
 From: "Matvejchikov Ilya" <matvejchikov@gmail.com>
-To: "li.chunlin@zte.com.cn" <li.chunlin@zte.com.cn>
-Subject: Re: about FCC of MPC8270
-In-Reply-To: <OF067D5541.23C80493-ON4825730E.001766FC-4825730E.00183FCF@zte.com.cn>
+To: linuxppc-embedded@ozlabs.org
+Subject: Too many spurious interrupts on mpc82xx with linux-2.4.35.5
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <4b73d43f0707030931v42aefc72x2598546e48ae87e8@mail.gmail.com>
-	<OF067D5541.23C80493-ON4825730E.001766FC-4825730E.00183FCF@zte.com.cn>
-Cc: linuxppc-embedded@ozlabs.org
 Reply-To: matvejchikov@gmail.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -28,27 +24,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi!
+Hi all!
 
-Do you use CPM_FCC_SPECIAL_BASE constant? (include/asm-ppc/cpm2.h)
-In my case (8250, 8260) FCCs only works when it is set to 0x3000...
+If you still have this problem, try this patch. It helps :)
 
+Signed-off-by : Matvejchikov Ilya <matvejchikov@gmail.com>
+---
+diff -purN linux-2.4.34.5-vanilla/arch/ppc/kernel/cpm2_pic.c
+linux-2.4.34.5/arch/ppc/kernel/cpm2_pic.c
+--- linux-2.4.34.5-vanilla/arch/ppc/kernel/cpm2_pic.c	2007-06-06
+23:20:53.000000000 +0400
++++ linux-2.4.34.5/arch/ppc/kernel/cpm2_pic.c	2007-06-28
+12:17:42.000000000 +0400
+@@ -79,6 +79,12 @@ static void cpm2_mask_and_ack(unsigned i
+ 	ppc_cached_irq_mask[word] &= ~(1 << (31 - bit));
+ 	simr[word] = ppc_cached_irq_mask[word];
+ 	sipnr[word] = 1 << (31 - bit);
++
++	/*
++	 * Work around large numbers of spurious IRQs on PowerPC 82xx
++	 * systems.
++	 */
++	mb();
+ }
 
-2007/7/4, li.chunlin@zte.com.cn <li.chunlin@zte.com.cn>:
->
-> hello, every one
->
->    I have a board with mpc8270. And there are two ethernet interface by fcc1
-> and fcc2. Now in linux kernel 2.6.14 fcc1 is ok, but fcc2 is some wrong. I
-> set loopback of fcc2 or rmii. that's ok. But i set loopback in phy, it is
-> wrong. But fcc2 is ok in u-boot.
->
-> I take a look with oscillograph. i find that there is signal from fcc2 to
-> phy and there is signal from phy to fcc2 in data pins. But fcc2 cannot
-> receive data and fcc2 can send data.
->
-> who know the reason? Can you tell me?
->
-> thanks.
-> lichunlin
->
+ static void cpm2_end_irq(unsigned int irq_nr)
