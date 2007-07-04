@@ -1,22 +1,21 @@
-Return-Path: <jcrigby@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.245])
-	by ozlabs.org (Postfix) with ESMTP id C5500DDE3D
+Return-Path: <li.chunlin@zte.com.cn>
+Received: from mx4.zte.com.cn (mx2.zte.no [202.103.147.155])
+	by ozlabs.org (Postfix) with ESMTP id 5703EDDF05
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  4 Jul 2007 02:31:01 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so360417anc
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 03 Jul 2007 09:31:00 -0700 (PDT)
-Message-ID: <4b73d43f0707030931v42aefc72x2598546e48ae87e8@mail.gmail.com>
-Date: Tue, 3 Jul 2007 10:31:00 -0600
-From: "John Rigby" <jcrigby@gmail.com>
-To: "=?ISO-8859-1?Q?K=E1ri_Dav=ED=F0sson?=" <kari.davidsson@marel.is>
-Subject: Re: OF devices and non OF devices
-In-Reply-To: <DD39B5C3F4963040ADC9768BE7E430CB020D3B9D@is-hdq-exchange.marel.net>
+	Wed,  4 Jul 2007 14:35:24 +1000 (EST)
+Received: from notes_smtp.zte.com.cn ([10.30.1.239])
+	by mse2.zte.com.cn with ESMTP id l644PB8H064559
+	for <linuxppc-embedded@ozlabs.org>; Wed, 4 Jul 2007 12:25:11 +0800 (CST)
+	(envelope-from li.chunlin@zte.com.cn)
+In-Reply-To: <4b73d43f0707030931v42aefc72x2598546e48ae87e8@mail.gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: about FCC of MPC8270
 MIME-Version: 1.0
+Message-ID: <OF067D5541.23C80493-ON4825730E.001766FC-4825730E.00183FCF@zte.com.cn>
+From: li.chunlin@zte.com.cn
+Date: Wed, 4 Jul 2007 12:24:13 +0800
 Content-Type: multipart/alternative;
-	boundary="----=_Part_113345_11808954.1183480260155"
-References: <DD39B5C3F4963040ADC9768BE7E430CB020D3B9D@is-hdq-exchange.marel.net>
-Cc: linuxppc-embedded@ozlabs.org
+	boundary="=_alternative 00183FCD4825730E_="
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,142 +26,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_113345_11808954.1183480260155
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+This is a multipart message in MIME format.
+--=_alternative 00183FCD4825730E_=
+Content-Type: text/plain; charset="US-ASCII"
 
-One place to find binding between OF devices and non OF devices is in
-arch/powerpc/sysdev/fsl_soc.c
-The typical pattern is:
-    if of_find_compatible_node "of-device-name"
-        platform_device_register_simple ""platform-device-name"
-        platform_device_add_data ...
+hello, every one
 
+   I have a board with mpc8270. And there are two ethernet interface by 
+fcc1 and fcc2. Now in linux kernel 2.6.14 fcc1 is ok, but fcc2 is some 
+wrong. I set loopback of fcc2 or rmii. that's ok. But i set loopback in 
+phy, it is wrong. But fcc2 is ok in u-boot.
 
-On 7/3/07, K=E1ri Dav=ED=F0sson <kari.davidsson@marel.is> wrote:
->
-> Hi,
->
-> I am attempting to get some non OF devices working for an mpc 5200 board,
-> in particular
-> PCF8563 RTC.
->
-> This device has an non OF device interface which I believe is correct.
-> After all it should work
-> on non OF platforms.
->
-> I have managed to get the board to run the i2c initialization (and probe)
-> for the fsl-mpc i2c driver by
-> converting the fsl-mpc i2c driver to OF driver (I found some patch here
-> that I based this work on).
+I take a look with oscillograph. i find that there is signal from fcc2 to 
+phy and there is signal from phy to fcc2 in data pins. But fcc2 cannot 
+receive data and fcc2 can send data.
+
+who know the reason? Can you tell me? 
+
+thanks.
+lichunlin
 
 
-fsl-i2c is one of the devices handled by fsl_soc.c so you shouldn't need to
-change anything to
-make it work in the latest kernel.  CONFIG_FSL_SOC was only added to
-lite5200_defconfig recently so
-that may explain why it's not on in your kernel.
+--------------------------------------------------------
+ZTE Information Security Notice: The information contained in this mail is solely property of the sender's organization. This mail communication is confidential. Recipients named above are obligated to maintain secrecy and are not permitted to disclose the contents of this communication to others.
+This email and any files transmitted with it are confidential and intended solely for the use of the individual or entity to whom they are addressed. If you have received this email in error please notify the originator of the message. Any views expressed in this message are those of the individual sender.
+This message has been scanned for viruses and Spam by ZTE Anti-Spam system.
 
-Since the PCF8563 driver is not OF driver only its initaliziation code is
-> run but the .probe function
-> of the driver is never run. Basically (as far as I can understand) the
-> .probe is never run because the
-> driver is not an OF driver.
->
-> I could convert the PCF8563 driver to OF driver and make it work for our
-> puposes but I feel this is
-> 1) Wrong
-> 2) therefore wasted work.
+--=_alternative 00183FCD4825730E_=
+Content-Type: text/html; charset="US-ASCII"
 
 
-Since the driver must run on non OF platforms then it should not be
-converted.  You just need to add a platform_device_register somewhere.
-I don't think fsl_soc.c is  the right place since it is not part of an
-freescale SOC.
-You could probably put it in a board specific startup routine.
-
-What seems to elude me is some glue that glues together the OF part of the
-> driver space to the non OF part
-> of the driver space.
->
-> Any hints or pointers on where to find this glue?
->
-> Regards,
-> kd
->
-> P.S. Kernel is post 2.6.20.
->
-> --
-> K=E1ri Dav=ED=F0sson                   | kari.davidsson@marel.is
-> Hugb=FAna=F0arger=F0                   | www.marel.com
-> Tel: 563-8156 Fax: +354 563 8001
-> Iceland
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
-
-------=_Part_113345_11808954.1183480260155
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-One place to find binding between OF devices and non OF devices is in arch/=
-powerpc/sysdev/fsl_soc.c<br>The typical pattern is:<br>&nbsp;&nbsp;&nbsp; i=
-f of_find_compatible_node &quot;of-device-name&quot;<br>&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp; platform_device_register_simple &quot;&quot;platfor=
-m-device-name&quot;
-<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; platform_device_add_data ...=
-<br><br>&nbsp; <br><div><span class=3D"gmail_quote">On 7/3/07, <b class=3D"=
-gmail_sendername">K=E1ri Dav=ED=F0sson</b> &lt;<a href=3D"mailto:kari.david=
-sson@marel.is">kari.davidsson@marel.is</a>&gt; wrote:
-</span><blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rg=
-b(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">Hi,<br><br=
->I am attempting to get some non OF devices working for an mpc 5200 board, =
-in particular
-<br>PCF8563 RTC.<br><br>This device has an non OF device interface which I =
-believe is correct. After all it should work<br>on non OF platforms.<br><br=
->I have managed to get the board to run the i2c initialization (and probe) =
-for the fsl-mpc i2c driver by
-<br>converting the fsl-mpc i2c driver to OF driver (I found some patch here=
- that I based this work on).</blockquote><div><br>fsl-i2c is one of the dev=
-ices handled by fsl_soc.c so you shouldn&#39;t need to change anything to
-<br>make it work in the latest kernel.&nbsp; CONFIG_FSL_SOC was only added =
-to lite5200_defconfig recently so <br>that may explain why it&#39;s not on =
-in your kernel.<br></div><br><blockquote class=3D"gmail_quote" style=3D"bor=
-der-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-=
-left: 1ex;">
-Since the PCF8563 driver is not OF driver only its initaliziation code is r=
-un but the .probe function<br>of the driver is never run. Basically (as far=
- as I can understand) the .probe is never run because the<br>driver is not =
-an OF driver.
-<br><br>I could convert the PCF8563 driver to OF driver and make it work fo=
-r our puposes but I feel this is<br>1) Wrong<br>2) therefore wasted work.</=
-blockquote><div><br>Since the driver must run on non OF platforms then it s=
-hould not be converted.&nbsp; You just need to add a platform_device_regist=
-er somewhere.
-<br>I don&#39;t think fsl_soc.c is&nbsp; the right place since it is not pa=
-rt of an freescale SOC.<br>You could probably put it in a board specific st=
-artup routine.<br></div><br><blockquote class=3D"gmail_quote" style=3D"bord=
-er-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-l=
-eft: 1ex;">
-What seems to elude me is some glue that glues together the OF part of the =
-driver space to the non OF part<br>of the driver space.<br><br>Any hints or=
- pointers on where to find this glue?<br><br>Regards,<br>kd<br><br>P.S. Ker=
-nel is post=20
-2.6.20.<br><br>--<br>K=E1ri Dav=ED=F0sson&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-| <a href=3D"mailto:kari.davidsson@marel.is">kari.davidsson@marel.is</a><br=
->Hugb=FAna=F0arger=F0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | <a href=3D"http://=
-www.marel.com">www.marel.com</a><br>Tel: 563-8156 Fax: +354 563 8001
-<br>Iceland<br>_______________________________________________<br>Linuxppc-=
-embedded mailing list<br><a href=3D"mailto:Linuxppc-embedded@ozlabs.org">Li=
-nuxppc-embedded@ozlabs.org</a><br><a href=3D"https://ozlabs.org/mailman/lis=
-tinfo/linuxppc-embedded">
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a><br></blockquote><=
-/div><br>
-
-------=_Part_113345_11808954.1183480260155--
+<br><font size=2 face="sans-serif">hello, every one</font>
+<br>
+<br><font size=2 face="sans-serif">&nbsp; &nbsp;I have a board with mpc8270.
+And there are two ethernet interface by fcc1 and fcc2. Now in linux kernel
+2.6.14 fcc1 is ok, but fcc2 is some wrong. I set loopback of fcc2 or rmii.
+that's ok. But i set loopback in phy, it is wrong. But fcc2 is ok in u-boot.</font>
+<br>
+<br><font size=2 face="sans-serif">I take a look with oscillograph. i find
+that there is signal from fcc2 to phy and there is signal from phy to fcc2
+in data pins. But fcc2 cannot receive data and fcc2 can send data.</font>
+<br>
+<br><font size=2 face="sans-serif">who know the reason? Can you tell me?
+</font>
+<br>
+<br><font size=2 face="sans-serif">thanks.</font>
+<br><font size=2 face="sans-serif">lichunlin</font>
+<br><br><pre>
+--------------------------------------------------------
+ZTE&nbsp;Information&nbsp;Security&nbsp;Notice:&nbsp;The&nbsp;information&nbsp;contained&nbsp;in&nbsp;this&nbsp;mail&nbsp;is&nbsp;solely&nbsp;property&nbsp;of&nbsp;the&nbsp;sender's&nbsp;organization.&nbsp;This&nbsp;mail&nbsp;communication&nbsp;is&nbsp;confidential.&nbsp;Recipients&nbsp;named&nbsp;above&nbsp;are&nbsp;obligated&nbsp;to&nbsp;maintain&nbsp;secrecy&nbsp;and&nbsp;are&nbsp;not&nbsp;permitted&nbsp;to&nbsp;disclose&nbsp;the&nbsp;contents&nbsp;of&nbsp;this&nbsp;communication&nbsp;to&nbsp;others.
+This&nbsp;email&nbsp;and&nbsp;any&nbsp;files&nbsp;transmitted&nbsp;with&nbsp;it&nbsp;are&nbsp;confidential&nbsp;and&nbsp;intended&nbsp;solely&nbsp;for&nbsp;the&nbsp;use&nbsp;of&nbsp;the&nbsp;individual&nbsp;or&nbsp;entity&nbsp;to&nbsp;whom&nbsp;they&nbsp;are&nbsp;addressed.&nbsp;If&nbsp;you&nbsp;have&nbsp;received&nbsp;this&nbsp;email&nbsp;in&nbsp;error&nbsp;please&nbsp;notify&nbsp;the&nbsp;originator&nbsp;of&nbsp;the&nbsp;message.&nbsp;Any&nbsp;views&nbsp;expressed&nbsp;in&nbsp;this&nbsp;message&nbsp;are&nbsp;those&nbsp;of&nbsp;the&nbsp;individual&nbsp;sender.
+This&nbsp;message&nbsp;has&nbsp;been&nbsp;scanned&nbsp;for&nbsp;viruses&nbsp;and&nbsp;Spam&nbsp;by&nbsp;ZTE&nbsp;Anti-Spam&nbsp;system.
+</pre>
+--=_alternative 00183FCD4825730E_=--
