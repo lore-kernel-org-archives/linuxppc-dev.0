@@ -1,23 +1,29 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 6B078DDF35
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jul 2007 15:28:24 +1000 (EST)
-Date: Wed, 4 Jul 2007 07:28:21 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Add of_register_i2c_devices()
-In-Reply-To: <E0E696F1-2F9E-4D6B-A194-EB42BA826BCD@kernel.crashing.org>
-Message-ID: <Pine.LNX.4.60.0707040707010.4300@poirot.grange>
-References: <Pine.LNX.4.60.0706292113240.4227@poirot.grange>
-	<00a85f152aa3547f0f0b4acd7954468a@kernel.crashing.org>
-	<Pine.LNX.4.60.0707022114020.3339@poirot.grange>
-	<2055bb54b9816faaf5b2ceedc9cfa039@kernel.crashing.org>
-	<Pine.LNX.4.60.0707032356270.3876@poirot.grange>
-	<E0E696F1-2F9E-4D6B-A194-EB42BA826BCD@kernel.crashing.org>
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C190ADDE9E
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jul 2007 15:33:49 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l645XiQp029725
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Jul 2007 22:33:44 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l645XgAx000722
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Jul 2007 00:33:43 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	i2c@lm-sensors.org
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH 2.6.23] 83xx USB platform code rework
+Date: Wed, 4 Jul 2007 13:35:38 +0800
+Message-ID: <989B956029373F45A0B8AF0297081890D83910@zch01exm26.fsl.freescale.net>
+In-Reply-To: <20070704141514.cc77369f.sfr@canb.auug.org.au>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Stephen Rothwell" <sfr@canb.auug.org.au>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,47 +33,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 4 Jul 2007, Segher Boessenkool wrote:
+> -----Original Message-----
+> From: Stephen Rothwell [mailto:sfr@canb.auug.org.au]
+> Sent: Wednesday, July 04, 2007 12:15 PM
+> To: Li Yang-r58472
+> Cc: paulus@samba.org; galak@kernel.crashing.org;
+linuxppc-dev@ozlabs.org
+> Subject: Re: [PATCH 2.6.23] 83xx USB platform code rework
+>=20
+> Hi Li,
+>=20
+> On Tue,  3 Jul 2007 17:43:16 +0800 Li Yang <leoli@freescale.com>
+wrote:
+> >
+> > Add 831x USB platform setup code and rework 834x USB
+> > platform setup code.  Move USB platform code to usb.c
+> > for different boards with CPU of the same series to share
+> > the USB initialization code.
+>=20
+> If there really is a part of this that is just code movement, then
+that
+> should be split out into a separate patch.  It makes the reviewers job
+so
+> much easier.
 
-> Your device is an rs5c372b.  So, that's what you put in
-> your device tree.  Simple so far, right?
+Actually, it is not pure code movement.  The code has been re-written.
 
-Yep.
-
-> Now some OF I2C code goes looking for IIC devices in the
-> device tree.  It finds this thing, and from a table or
-> something it derives that it has to tell the kernel I2C
-> layer this is an "rtc-rs5c372".
-
-(I2C ML cc'ed.)
-
-This is where I WOULD disagree. These tables would rather live inside the 
-i2c layer, be filled by respective drivers themselves. Noone except the 
-rs5c372 driver can know which devices it can handle. Using the very same 
-your argument - what if in a future version this driver disappears and 
-another one will be used for these devices? Then that driver will have to 
-register support for this device.
-
-For this to work i2c would need something similar to what pci, usb do - 
-register supported device ids. The only difference is that instead of 
-numerical IDs we have to use plain text names for i2c devices...
-
-> [It would be nicer if it
-> could just instantiate the correct driver directly, but
-> if that's how the Linux I2C layer works, so be it].
-> 
-> No change in the I2C "core" needed, just an OF "compatible"
-> matching thing like is needed *everywhere else* too.
-
-Yes, this is why I put "would". Looks like this is the common powerpc 
-practice ATM - to make such a glue to map arbitrary "OF names" to what 
-respective drivers react to. Like in the case of the serial driver. But - 
-i2c is much more diverse and dynamic than serial, so, maybe it is worth 
-thinking about "fixing" i2c? Once again my offer for the i2c folks - I 
-could try to think about a design for this, but I would happily accept 
-anybody else more proficient with i2c do it.
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+- Leo
