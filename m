@@ -1,18 +1,21 @@
-Return-Path: <li.chunlin@zte.com.cn>
-Received: from mx4.zte.com.cn (unknown [202.103.147.155])
-	by ozlabs.org (Postfix) with ESMTP id 6F817DDDE7
+Return-Path: <clifford@clifford.at>
+Received: from phoenix.clifford.at (phoenix.clifford.at [88.198.7.52])
+	by ozlabs.org (Postfix) with ESMTP id B0B9EDDDE7
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  4 Jul 2007 17:52:35 +1000 (EST)
-In-Reply-To: <8496f91a0707040002w6e036024i7c22fdd01c0c21d8@mail.gmail.com>
-To: matvejchikov@gmail.com
-Subject: Re: about FCC of MPC8270
-MIME-Version: 1.0
-Message-ID: <OF0F6D8F13.FC8F531D-ON4825730E.002B02E1-4825730E.002B23F6@zte.com.cn>
-From: li.chunlin@zte.com.cn
-Date: Wed, 4 Jul 2007 15:50:33 +0800
-Content-Type: multipart/alternative;
-	boundary="=_alternative 002B23F34825730E_="
-Cc: linuxppc-embedded@ozlabs.org
+	Wed,  4 Jul 2007 19:02:27 +1000 (EST)
+Date: Wed, 4 Jul 2007 11:05:54 +0200
+From: Clifford Wolf <clifford@clifford.at>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Mem-2-Mem DMA - Generalized API
+Message-ID: <20070704090554.GA30693@clifford.at>
+References: <20070624193932.GA11797@clifford.at>
+	<200706242221.57507.arnd@arndb.de>
+	<467FA0EA.3000607@genesi-usa.com> <467FBABD.9040103@anagramm.de>
+	<467FD1DF.4000602@genesi-usa.com>
+	<20070625180110.GH20463@clifford.at>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070625180110.GH20463@clifford.at>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,112 +26,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 002B23F34825730E_=
-Content-Type: text/plain; charset="GB2312"
-Content-Transfer-Encoding: base64
+Hi,
 
-Tm90IG9rIHdpdGggMHgzMDAwDQoNCg0KDQoNCg0KDQoiTWF0dmVqY2hpa292IElseWEiIDxtYXR2
-ZWpjaGlrb3ZAZ21haWwuY29tPg0KDQoNCiANCiAgICAgICAgytW8/sjLo7ogICAgICAgICJsaS5j
-aHVubGluQHp0ZS5jb20uY24iIDxsaS5jaHVubGluQHp0ZS5jb20uY24+DQogICAgICAgILOty82j
-uiAgbGludXhwcGMtZW1iZWRkZWRAb3psYWJzLm9yZw0KICAgICAgICDW98zio7ogIFJlOiBhYm91
-dCBGQ0Mgb2YgTVBDODI3MA0KDQoNClRyeSAweDMwMDANCg0KMjAwNy83LzQsIGxpLmNodW5saW5A
-enRlLmNvbS5jbiA8bGkuY2h1bmxpbkB6dGUuY29tLmNuPjoNCj4NCj4gSSB1c2UgaXQuIEFuZCBp
-dCBpczogI2RlZmluZSBDUE1fRkNDX1NQRUNJQUxfQkFTRSAoKHVpbnQpMHgwMDAwYjAwMCkNCj4N
-Cj4NCj4NCj4NCj4gSGkhDQo+DQo+ICBEbyB5b3UgdXNlIENQTV9GQ0NfU1BFQ0lBTF9CQVNFIGNv
-bnN0YW50PyAoaW5jbHVkZS9hc20tcHBjL2NwbTIuaCkNCj4gIEluIG15IGNhc2UgKDgyNTAsIDgy
-NjApIEZDQ3Mgb25seSB3b3JrcyB3aGVuIGl0IGlzIHNldCB0byAweDMwMDAuLi4NCj4NCj4NCj4g
-IDIwMDcvNy80LCBsaS5jaHVubGluQHp0ZS5jb20uY24gPGxpLmNodW5saW5AenRlLmNvbS5jbj46
-DQo+ICA+DQo+ICA+IGhlbGxvLCBldmVyeSBvbmUNCj4gID4NCj4gID4gICAgSSBoYXZlIGEgYm9h
-cmQgd2l0aCBtcGM4MjcwLiBBbmQgdGhlcmUgYXJlIHR3byBldGhlcm5ldCBpbnRlcmZhY2UgDQpi
-eQ0KPiBmY2MxDQo+ICA+IGFuZCBmY2MyLiBOb3cgaW4gbGludXgga2VybmVsIDIuNi4xNCBmY2Mx
-IGlzIG9rLCBidXQgZmNjMiBpcyBzb21lIA0Kd3JvbmcuDQo+IEkNCj4gID4gc2V0IGxvb3BiYWNr
-IG9mIGZjYzIgb3Igcm1paS4gdGhhdCdzIG9rLiBCdXQgaSBzZXQgbG9vcGJhY2sgaW4gcGh5LCAN
-Cml0IGlzDQo+ICA+IHdyb25nLiBCdXQgZmNjMiBpcyBvayBpbiB1LWJvb3QuDQo+ICA+DQo+ICA+
-IEkgdGFrZSBhIGxvb2sgd2l0aCBvc2NpbGxvZ3JhcGguIGkgZmluZCB0aGF0IHRoZXJlIGlzIHNp
-Z25hbCBmcm9tIA0KZmNjMiB0bw0KPiAgPiBwaHkgYW5kIHRoZXJlIGlzIHNpZ25hbCBmcm9tIHBo
-eSB0byBmY2MyIGluIGRhdGEgcGlucy4gQnV0IGZjYzIgDQpjYW5ub3QNCj4gID4gcmVjZWl2ZSBk
-YXRhIGFuZCBmY2MyIGNhbiBzZW5kIGRhdGEuDQo+ICA+DQo+ICA+IHdobyBrbm93IHRoZSByZWFz
-b24/IENhbiB5b3UgdGVsbCBtZT8NCj4gID4NCj4gID4gdGhhbmtzLg0KPiAgPiBsaWNodW5saW4N
-Cj4gID4NCg0KDQoNCg0KDQoNCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tDQpaVEUgSW5mb3JtYXRpb24gU2VjdXJpdHkgTm90aWNlOiBUaGUg
-aW5mb3JtYXRpb24gY29udGFpbmVkIGluIHRoaXMgbWFpbCBpcyBzb2xlbHkgcHJvcGVydHkgb2Yg
-dGhlIHNlbmRlcidzIG9yZ2FuaXphdGlvbi4gVGhpcyBtYWlsIGNvbW11bmljYXRpb24gaXMgY29u
-ZmlkZW50aWFsLiBSZWNpcGllbnRzIG5hbWVkIGFib3ZlIGFyZSBvYmxpZ2F0ZWQgdG8gbWFpbnRh
-aW4gc2VjcmVjeSBhbmQgYXJlIG5vdCBwZXJtaXR0ZWQgdG8gZGlzY2xvc2UgdGhlIGNvbnRlbnRz
-IG9mIHRoaXMgY29tbXVuaWNhdGlvbiB0byBvdGhlcnMuDQpUaGlzIGVtYWlsIGFuZCBhbnkgZmls
-ZXMgdHJhbnNtaXR0ZWQgd2l0aCBpdCBhcmUgY29uZmlkZW50aWFsIGFuZCBpbnRlbmRlZCBzb2xl
-bHkgZm9yIHRoZSB1c2Ugb2YgdGhlIGluZGl2aWR1YWwgb3IgZW50aXR5IHRvIHdob20gdGhleSBh
-cmUgYWRkcmVzc2VkLiBJZiB5b3UgaGF2ZSByZWNlaXZlZCB0aGlzIGVtYWlsIGluIGVycm9yIHBs
-ZWFzZSBub3RpZnkgdGhlIG9yaWdpbmF0b3Igb2YgdGhlIG1lc3NhZ2UuIEFueSB2aWV3cyBleHBy
-ZXNzZWQgaW4gdGhpcyBtZXNzYWdlIGFyZSB0aG9zZSBvZiB0aGUgaW5kaXZpZHVhbCBzZW5kZXIu
-DQpUaGlzIG1lc3NhZ2UgaGFzIGJlZW4gc2Nhbm5lZCBmb3IgdmlydXNlcyBhbmQgU3BhbSBieSBa
-VEUgQW50aS1TcGFtIHN5c3RlbS4NCg==
---=_alternative 002B23F34825730E_=
-Content-Type: text/html; charset="GB2312"
-Content-Transfer-Encoding: base64
+On Mon, Jun 25, 2007 at 08:01:10PM +0200, Clifford Wolf wrote:
+> I've put a 'draft header file' of an api as I would have expected it
+> online: [...]
 
-DQo8YnI+PGZvbnQgc2l6ZT0yIGZhY2U9InNhbnMtc2VyaWYiPk5vdCBvayB3aXRoIDB4MzAwMDwv
-Zm9udD4NCjxicj4NCjxicj4NCjxicj4NCjxicj4NCjxicj4NCjx0YWJsZSB3aWR0aD0xMDAlPg0K
-PHRyIHZhbGlnbj10b3A+DQo8dGQ+DQo8dGQ+PGZvbnQgc2l6ZT0xIGZhY2U9InNhbnMtc2VyaWYi
-PjxiPiZxdW90O01hdHZlamNoaWtvdiBJbHlhJnF1b3Q7ICZsdDttYXR2ZWpjaGlrb3ZAZ21haWwu
-Y29tJmd0OzwvYj48L2ZvbnQ+DQo8YnI+DQo8YnI+DQo8dGQ+PGZvbnQgc2l6ZT0xIGZhY2U9IkFy
-aWFsIj4mbmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJzcDsgPC9mb250Pg0KPGJyPjxmb250IHNpemU9
-MSBmYWNlPSJzYW5zLXNlcmlmIj4mbmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJzcDsgytW8/sjLo7oN
-CiZuYnNwOyAmbmJzcDsgJm5ic3A7ICZuYnNwOyZxdW90O2xpLmNodW5saW5AenRlLmNvbS5jbiZx
-dW90OyAmbHQ7bGkuY2h1bmxpbkB6dGUuY29tLmNuJmd0OzwvZm9udD4NCjxicj48Zm9udCBzaXpl
-PTEgZmFjZT0ic2Fucy1zZXJpZiI+Jm5ic3A7ICZuYnNwOyAmbmJzcDsgJm5ic3A7ILOty82jug0K
-Jm5ic3A7ICZuYnNwOyAmbmJzcDsgJm5ic3A7bGludXhwcGMtZW1iZWRkZWRAb3psYWJzLm9yZzwv
-Zm9udD4NCjxicj48Zm9udCBzaXplPTEgZmFjZT0ic2Fucy1zZXJpZiI+Jm5ic3A7ICZuYnNwOyAm
-bmJzcDsgJm5ic3A7INb3zOKjug0KJm5ic3A7ICZuYnNwOyAmbmJzcDsgJm5ic3A7UmU6IGFib3V0
-IEZDQyBvZiBNUEM4MjcwPC9mb250PjwvdGFibGU+DQo8YnI+DQo8YnI+DQo8YnI+PGZvbnQgc2l6
-ZT0yPjx0dD5UcnkgMHgzMDAwPGJyPg0KPGJyPg0KMjAwNy83LzQsIGxpLmNodW5saW5AenRlLmNv
-bS5jbiAmbHQ7bGkuY2h1bmxpbkB6dGUuY29tLmNuJmd0Ozo8YnI+DQomZ3Q7PGJyPg0KJmd0OyBJ
-IHVzZSBpdC4gQW5kIGl0IGlzOiAjZGVmaW5lIENQTV9GQ0NfU1BFQ0lBTF9CQVNFICZuYnNwOyAm
-bmJzcDsgJm5ic3A7DQombmJzcDsoKHVpbnQpMHgwMDAwYjAwMCk8YnI+DQomZ3Q7PGJyPg0KJmd0
-Ozxicj4NCiZndDs8YnI+DQomZ3Q7PGJyPg0KJmd0OyBIaSE8YnI+DQomZ3Q7PGJyPg0KJmd0OyAm
-bmJzcDtEbyB5b3UgdXNlIENQTV9GQ0NfU1BFQ0lBTF9CQVNFIGNvbnN0YW50PyAoaW5jbHVkZS9h
-c20tcHBjL2NwbTIuaCk8YnI+DQomZ3Q7ICZuYnNwO0luIG15IGNhc2UgKDgyNTAsIDgyNjApIEZD
-Q3Mgb25seSB3b3JrcyB3aGVuIGl0IGlzIHNldCB0byAweDMwMDAuLi48YnI+DQomZ3Q7PGJyPg0K
-Jmd0Ozxicj4NCiZndDsgJm5ic3A7MjAwNy83LzQsIGxpLmNodW5saW5AenRlLmNvbS5jbiAmbHQ7
-bGkuY2h1bmxpbkB6dGUuY29tLmNuJmd0Ozo8YnI+DQomZ3Q7ICZuYnNwOyZndDs8YnI+DQomZ3Q7
-ICZuYnNwOyZndDsgaGVsbG8sIGV2ZXJ5IG9uZTxicj4NCiZndDsgJm5ic3A7Jmd0Ozxicj4NCiZn
-dDsgJm5ic3A7Jmd0OyAmbmJzcDsgJm5ic3A7SSBoYXZlIGEgYm9hcmQgd2l0aCBtcGM4MjcwLiBB
-bmQgdGhlcmUgYXJlDQp0d28gZXRoZXJuZXQgaW50ZXJmYWNlIGJ5PGJyPg0KJmd0OyBmY2MxPGJy
-Pg0KJmd0OyAmbmJzcDsmZ3Q7IGFuZCBmY2MyLiBOb3cgaW4gbGludXgga2VybmVsIDIuNi4xNCBm
-Y2MxIGlzIG9rLCBidXQgZmNjMg0KaXMgc29tZSB3cm9uZy48YnI+DQomZ3Q7IEk8YnI+DQomZ3Q7
-ICZuYnNwOyZndDsgc2V0IGxvb3BiYWNrIG9mIGZjYzIgb3Igcm1paS4gdGhhdCdzIG9rLiBCdXQg
-aSBzZXQgbG9vcGJhY2sNCmluIHBoeSwgaXQgaXM8YnI+DQomZ3Q7ICZuYnNwOyZndDsgd3Jvbmcu
-IEJ1dCBmY2MyIGlzIG9rIGluIHUtYm9vdC48YnI+DQomZ3Q7ICZuYnNwOyZndDs8YnI+DQomZ3Q7
-ICZuYnNwOyZndDsgSSB0YWtlIGEgbG9vayB3aXRoIG9zY2lsbG9ncmFwaC4gaSBmaW5kIHRoYXQg
-dGhlcmUgaXMgc2lnbmFsDQpmcm9tIGZjYzIgdG88YnI+DQomZ3Q7ICZuYnNwOyZndDsgcGh5IGFu
-ZCB0aGVyZSBpcyBzaWduYWwgZnJvbSBwaHkgdG8gZmNjMiBpbiBkYXRhIHBpbnMuDQpCdXQgZmNj
-MiBjYW5ub3Q8YnI+DQomZ3Q7ICZuYnNwOyZndDsgcmVjZWl2ZSBkYXRhIGFuZCBmY2MyIGNhbiBz
-ZW5kIGRhdGEuPGJyPg0KJmd0OyAmbmJzcDsmZ3Q7PGJyPg0KJmd0OyAmbmJzcDsmZ3Q7IHdobyBr
-bm93IHRoZSByZWFzb24/IENhbiB5b3UgdGVsbCBtZT88YnI+DQomZ3Q7ICZuYnNwOyZndDs8YnI+
-DQomZ3Q7ICZuYnNwOyZndDsgdGhhbmtzLjxicj4NCiZndDsgJm5ic3A7Jmd0OyBsaWNodW5saW48
-YnI+DQomZ3Q7ICZuYnNwOyZndDs8YnI+DQo8YnI+DQo8YnI+DQo8L3R0PjwvZm9udD4NCjxicj4N
-Cjxicj48cHJlPg0KLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0NClpURSZuYnNwO0luZm9ybWF0aW9uJm5ic3A7U2VjdXJpdHkmbmJzcDtOb3Rp
-Y2U6Jm5ic3A7VGhlJm5ic3A7aW5mb3JtYXRpb24mbmJzcDtjb250YWluZWQmbmJzcDtpbiZuYnNw
-O3RoaXMmbmJzcDttYWlsJm5ic3A7aXMmbmJzcDtzb2xlbHkmbmJzcDtwcm9wZXJ0eSZuYnNwO29m
-Jm5ic3A7dGhlJm5ic3A7c2VuZGVyJ3MmbmJzcDtvcmdhbml6YXRpb24uJm5ic3A7VGhpcyZuYnNw
-O21haWwmbmJzcDtjb21tdW5pY2F0aW9uJm5ic3A7aXMmbmJzcDtjb25maWRlbnRpYWwuJm5ic3A7
-UmVjaXBpZW50cyZuYnNwO25hbWVkJm5ic3A7YWJvdmUmbmJzcDthcmUmbmJzcDtvYmxpZ2F0ZWQm
-bmJzcDt0byZuYnNwO21haW50YWluJm5ic3A7c2VjcmVjeSZuYnNwO2FuZCZuYnNwO2FyZSZuYnNw
-O25vdCZuYnNwO3Blcm1pdHRlZCZuYnNwO3RvJm5ic3A7ZGlzY2xvc2UmbmJzcDt0aGUmbmJzcDtj
-b250ZW50cyZuYnNwO29mJm5ic3A7dGhpcyZuYnNwO2NvbW11bmljYXRpb24mbmJzcDt0byZuYnNw
-O290aGVycy4NClRoaXMmbmJzcDtlbWFpbCZuYnNwO2FuZCZuYnNwO2FueSZuYnNwO2ZpbGVzJm5i
-c3A7dHJhbnNtaXR0ZWQmbmJzcDt3aXRoJm5ic3A7aXQmbmJzcDthcmUmbmJzcDtjb25maWRlbnRp
-YWwmbmJzcDthbmQmbmJzcDtpbnRlbmRlZCZuYnNwO3NvbGVseSZuYnNwO2ZvciZuYnNwO3RoZSZu
-YnNwO3VzZSZuYnNwO29mJm5ic3A7dGhlJm5ic3A7aW5kaXZpZHVhbCZuYnNwO29yJm5ic3A7ZW50
-aXR5Jm5ic3A7dG8mbmJzcDt3aG9tJm5ic3A7dGhleSZuYnNwO2FyZSZuYnNwO2FkZHJlc3NlZC4m
-bmJzcDtJZiZuYnNwO3lvdSZuYnNwO2hhdmUmbmJzcDtyZWNlaXZlZCZuYnNwO3RoaXMmbmJzcDtl
-bWFpbCZuYnNwO2luJm5ic3A7ZXJyb3ImbmJzcDtwbGVhc2UmbmJzcDtub3RpZnkmbmJzcDt0aGUm
-bmJzcDtvcmlnaW5hdG9yJm5ic3A7b2YmbmJzcDt0aGUmbmJzcDttZXNzYWdlLiZuYnNwO0FueSZu
-YnNwO3ZpZXdzJm5ic3A7ZXhwcmVzc2VkJm5ic3A7aW4mbmJzcDt0aGlzJm5ic3A7bWVzc2FnZSZu
-YnNwO2FyZSZuYnNwO3Rob3NlJm5ic3A7b2YmbmJzcDt0aGUmbmJzcDtpbmRpdmlkdWFsJm5ic3A7
-c2VuZGVyLg0KVGhpcyZuYnNwO21lc3NhZ2UmbmJzcDtoYXMmbmJzcDtiZWVuJm5ic3A7c2Nhbm5l
-ZCZuYnNwO2ZvciZuYnNwO3ZpcnVzZXMmbmJzcDthbmQmbmJzcDtTcGFtJm5ic3A7YnkmbmJzcDta
-VEUmbmJzcDtBbnRpLVNwYW0mbmJzcDtzeXN0ZW0uDQo8L3ByZT4=
---=_alternative 002B23F34825730E_=--
+Ok, so here comes the first implementation:
+(I also have other projects, so it took a while.. ;-)
+
+	http://www.clifford.at/priv/dmatransfer-20070704.diff
+
+This is just for the MPC8349 DMA now, registers are still hardcoded in the
+driver instead of beeing taken from the platform files and support for
+scatter-gather is still missing and the Kconfig integration isn't checking
+if we are building for the mpc8349 (or even ppc) yet. But I think the
+direction of the API is pretty clear.
+
+The patch also contains a hackish demo client (dma_demo_client.ko) which is
+performing some dma transfers in the 256th MB of physical memory. So it
+should only be used on a machine with 256MB of memory bootet with mem=255M
+(but changing that should be trivial). The demo client shows well how the
+API works and how much overhead the API adds.
+
+Any feedback this time?
+
+yours,
+ - clifford
+
+-- 
+#!/usr/bin/perl
+$p="1"x1002;for$c(2..1000){if($p=~/^.{$c}0/){next;};printf"%3d\%s",
+$c,++$x%14?" ":"\n";while($p=~s/^((.{$c})+)1/${1}0/){}}$_="lPSFZQ".
+"SJNFTZBUZ<IUUQ:;;XXX.DMJGGPSE.BU;QSJNF;>\n";y:B-Zl;:a-x M/:;print;
