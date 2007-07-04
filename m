@@ -1,19 +1,18 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id BD7D8DDEE9
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jul 2007 14:15:39 +1000 (EST)
-Date: Wed, 4 Jul 2007 14:15:14 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH 2.6.23] 83xx USB platform code rework
-Message-Id: <20070704141514.cc77369f.sfr@canb.auug.org.au>
-In-Reply-To: <11834557963629-git-send-email-leoli@freescale.com>
-References: <11834557963629-git-send-email-leoli@freescale.com>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 2/3] Modify sched_clock() to make CONFIG_PRINTK_TIME
+	more sane.
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Tony Breeds <tony@bakeyournoodle.com>
+In-Reply-To: <20070704040431.1A13432C46D@thor>
+References: <20070704040431.1A13432C46D@thor>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-X5rH9bbMbDjVaukoX9EM"
+Date: Wed, 04 Jul 2007 14:27:48 +1000
+Message-Id: <1183523268.26479.0.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__4_Jul_2007_14_15_14_+1000_vCBPvHQ4DnJXSEvv"
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,38 +22,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__4_Jul_2007_14_15_14_+1000_vCBPvHQ4DnJXSEvv
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
+
+--=-X5rH9bbMbDjVaukoX9EM
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-Hi Li,
+On Wed, 2007-07-04 at 14:04 +1000, Tony Breeds wrote:
+> When booting a current kernel with CONFIG_PRINTK_TIME enabled you'll
+> see messages like:
+>=20
+> [    0.000000] time_init: decrementer frequency =3D 188.044000 MHz
+> [    0.000000] time_init: processor frequency   =3D 1504.352000 MHz
+> [3712914.436297] Console: colour dummy device 80x25
+>=20
+> This cause by the initialisation of tb_to_ns_scale in time_init(), sudden=
+ly the
+> multiplication in sched_clock() now does something :).  This patch modifi=
+es
+> sched_clock() to report the offset since the machine booted so the same
+> printk's now look like:
+>=20
+> [    0.000000] time_init: decrementer frequency =3D 188.044000 MHz
+> [    0.000000] time_init: processor frequency   =3D 1504.352000 MHz
+> [    0.000135] Console: colour dummy device 80x25
+>=20
+> Effectivly including the uptime in printk()s.
 
-On Tue,  3 Jul 2007 17:43:16 +0800 Li Yang <leoli@freescale.com> wrote:
->
-> Add 831x USB platform setup code and rework 834x USB
-> platform setup code.  Move USB platform code to usb.c
-> for different boards with CPU of the same series to share
-> the USB initialization code.
+Is this what other archs do?
 
-If there really is a part of this that is just code movement, then that
-should be split out into a separate patch.  It makes the reviewers job so
-much easier.
+cheers
 
 --=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
---Signature=_Wed__4_Jul_2007_14_15_14_+1000_vCBPvHQ4DnJXSEvv
-Content-Type: application/pgp-signature
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-X5rH9bbMbDjVaukoX9EM
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFGix7cTgG2atn1QN8RAsWTAJ0ZsPUqD5F7L5FyRazO9xR7bE8nCgCffgNf
-kzWLvGEy6AJ0kzACwSHWfuk=
-=04bu
+iD8DBQBGiyHEdSjSd0sB4dIRAuQaAJ4luHA99iCRLl7+N70ZTVeErQCufwCguD+N
+zaj8nQ/lz6yi7u0XkUJ5vOg=
+=xf25
 -----END PGP SIGNATURE-----
 
---Signature=_Wed__4_Jul_2007_14_15_14_+1000_vCBPvHQ4DnJXSEvv--
+--=-X5rH9bbMbDjVaukoX9EM--
