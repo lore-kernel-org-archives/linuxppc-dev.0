@@ -1,13 +1,13 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id C34D1DDF2B
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 03:03:48 +1000 (EST)
-Message-Id: <20070705170235.041261000@lixom.net>
+	by ozlabs.org (Postfix) with ESMTP id 8B426DDF35
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 03:03:49 +1000 (EST)
+Message-Id: <20070705170237.793235000@lixom.net>
 References: <20070705170233.258351000@lixom.net>
-Date: Thu, 05 Jul 2007 12:02:39 -0500
+Date: Thu, 05 Jul 2007 12:02:49 -0500
 From: Olof Johansson <olof@lixom.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 06/35] pasemi_mac: Abstract out register access
+Subject: [patch 16/35] Electra ide platform glue
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,390 +17,157 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Abstract out the PCI config read/write accesses into reg read/write ones, still
-calling the pci accessors on the back end.
+Glue code to hook up the pata_platform on the PA Semi Electra eval board.
+CFE sets up device tree entries for the IDE interface, with device type
+'ide' and compatible field 'electra-ide'.
+
+We unfortunately need to modify the resources before calling the generic
+platform driver, since the device tree only has one register window in
+it and the driver expects two. Adding this as an of_platform driver
+instead doesn't give us any benefit, it just adds one more layer of
+register/probe functions.
+
+Since CONFIG_PATA_PLATFORM depends on CONFIG_EMBEDDED, add that as a
+default for PPC_PASEMI.
+
 
 Signed-off-by: Olof Johansson <olof@lixom.net>
 
-
-Index: netdev-2.6/drivers/net/pasemi_mac.c
+Index: 2.6.21/arch/powerpc/platforms/pasemi/Makefile
 ===================================================================
---- netdev-2.6.orig/drivers/net/pasemi_mac.c
-+++ netdev-2.6/drivers/net/pasemi_mac.c
-@@ -81,6 +81,48 @@ MODULE_PARM_DESC(debug, "PA Semi MAC bit
- 
- static struct pasdma_status *dma_status;
- 
-+static unsigned int read_iob_reg(struct pasemi_mac *mac, unsigned int reg)
+--- 2.6.21.orig/arch/powerpc/platforms/pasemi/Makefile
++++ 2.6.21/arch/powerpc/platforms/pasemi/Makefile
+@@ -1,3 +1,4 @@
+ obj-y	+= setup.o pci.o time.o idle.o powersave.o iommu.o
+ obj-$(CONFIG_PPC_PASEMI_MDIO)	+= gpio_mdio.o
++obj-$(CONFIG_ELECTRA_IDE) += electra_ide.o
+ obj-$(CONFIG_PPC_PASEMI_CPUFREQ) += cpufreq.o
+Index: 2.6.21/arch/powerpc/platforms/pasemi/electra_ide.c
+===================================================================
+--- /dev/null
++++ 2.6.21/arch/powerpc/platforms/pasemi/electra_ide.c
+@@ -0,0 +1,96 @@
++/*
++ * Copyright (C) 2007 PA Semi, Inc
++ *
++ * Maintained by: Olof Johansson <olof@lixom.net>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
++ */
++
++#include <linux/platform_device.h>
++
++#include <asm/prom.h>
++#include <asm/system.h>
++
++/* The electra IDE interface is incredibly simple: Just a device on the localbus
++ * with interrupts hooked up to one of the GPIOs. The device tree contains the
++ * address window and interrupt mappings already, and the pata_platform driver handles
++ * the rest. We just need to hook the two up.
++ */
++
++#define MAX_IFS	4	/* really, we have only one */
++
++static struct platform_device *pdevs[MAX_IFS];
++
++static int __devinit electra_ide_init(void)
 +{
-+	unsigned int val;
++	struct device_node *np;
++	struct resource r[3];
++	int ret = 0;
++	int i;
 +
-+	pci_read_config_dword(mac->iob_pdev, reg, &val);
-+	return val;
++	np = of_find_compatible_node(NULL, "ide", "electra-ide");
++	i = 0;
++
++	while (np && i < MAX_IFS) {
++		memset(r, 0, sizeof(r));
++
++		/* pata_platform wants two address ranges: one for the base registers,
++		 * another for the control (altstatus). It's located at offset 0x3f6 in
++		 * the window, but the device tree only has one large register window
++		 * that covers both ranges. So we need to split it up by hand here:
++		 */
++
++		ret = of_address_to_resource(np, 0, &r[0]);
++		if (ret)
++			goto out;
++		ret = of_address_to_resource(np, 0, &r[1]);
++		if (ret)
++			goto out;
++
++		r[1].start += 0x3f6;
++		r[0].end = r[1].start-1;
++
++		r[2].start = irq_of_parse_and_map(np, 0);
++		r[2].end = irq_of_parse_and_map(np, 0);
++		r[2].flags = IORESOURCE_IRQ;
++
++		pr_debug("registering platform device at 0x%lx/0x%lx, irq is %ld\n",
++			 r[0].start, r[1].start, r[2].start);
++		pdevs[i] = platform_device_register_simple("pata_platform", i, r, 3);
++		if (IS_ERR(pdevs[i])) {
++			ret = PTR_ERR(pdevs[i]);
++			pdevs[i] = NULL;
++			goto out;
++		}
++		np = of_find_compatible_node(np, "ide", "electra-ide");
++	}
++out:
++	return ret;
 +}
++module_init(electra_ide_init);
 +
-+static void write_iob_reg(struct pasemi_mac *mac, unsigned int reg,
-+			  unsigned int val)
++static void __devexit electra_ide_exit(void)
 +{
-+	pci_write_config_dword(mac->iob_pdev, reg, val);
++	int i;
++
++	for (i = 0; i < MAX_IFS; i++)
++		if (pdevs[i])
++			platform_device_unregister(pdevs[i]);
 +}
++module_exit(electra_ide_exit);
 +
-+static unsigned int read_mac_reg(struct pasemi_mac *mac, unsigned int reg)
-+{
-+	unsigned int val;
 +
-+	pci_read_config_dword(mac->pdev, reg, &val);
-+	return val;
-+}
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR ("Olof Johansson <olof@lixom.net>");
++MODULE_DESCRIPTION("PA Semi Electra IDE driver");
+Index: 2.6.21/arch/powerpc/platforms/pasemi/Kconfig
+===================================================================
+--- 2.6.21.orig/arch/powerpc/platforms/pasemi/Kconfig
++++ 2.6.21/arch/powerpc/platforms/pasemi/Kconfig
+@@ -6,6 +6,7 @@ config PPC_PASEMI
+ 	select PPC_UDBG_16550
+ 	select GENERIC_TBSYNC
+ 	select PPC_NATIVE
++	select EMBEDDED
+ 	help
+ 	  This option enables support for PA Semi's PWRficient line
+ 	  of SoC processors, including PA6T-1682M
+@@ -26,4 +27,13 @@ config PPC_PASEMI_MDIO
+ 	help
+ 	  Driver for MDIO via GPIO on PWRficient platforms
+ 
++config ELECTRA_IDE
++      tristate "Electra IDE driver"
++      default y
++      depends on PPC_PASEMI && ATA
++      select PATA_PLATFORM
++      help
++	This includes driver support for the Electra on-board IDE
++	interface.
 +
-+static void write_mac_reg(struct pasemi_mac *mac, unsigned int reg,
-+			  unsigned int val)
-+{
-+	pci_write_config_dword(mac->pdev, reg, val);
-+}
-+
-+static unsigned int read_dma_reg(struct pasemi_mac *mac, unsigned int reg)
-+{
-+	unsigned int val;
-+
-+	pci_read_config_dword(mac->dma_pdev, reg, &val);
-+	return val;
-+}
-+
-+static void write_dma_reg(struct pasemi_mac *mac, unsigned int reg,
-+			  unsigned int val)
-+{
-+	pci_write_config_dword(mac->dma_pdev, reg, val);
-+}
-+
- static int pasemi_get_mac_addr(struct pasemi_mac *mac)
- {
- 	struct pci_dev *pdev = mac->pdev;
-@@ -166,22 +208,21 @@ static int pasemi_mac_setup_rx_resources
- 
- 	memset(ring->buffers, 0, RX_RING_SIZE * sizeof(u64));
- 
--	pci_write_config_dword(mac->dma_pdev, PAS_DMA_RXCHAN_BASEL(chan_id),
--			       PAS_DMA_RXCHAN_BASEL_BRBL(ring->dma));
-+	write_dma_reg(mac, PAS_DMA_RXCHAN_BASEL(chan_id), PAS_DMA_RXCHAN_BASEL_BRBL(ring->dma));
-+
-+	write_dma_reg(mac, PAS_DMA_RXCHAN_BASEU(chan_id),
-+			   PAS_DMA_RXCHAN_BASEU_BRBH(ring->dma >> 32) |
-+			   PAS_DMA_RXCHAN_BASEU_SIZ(RX_RING_SIZE >> 2));
-+
-+	write_dma_reg(mac, PAS_DMA_RXCHAN_CFG(chan_id),
-+			   PAS_DMA_RXCHAN_CFG_HBU(1));
- 
--	pci_write_config_dword(mac->dma_pdev, PAS_DMA_RXCHAN_BASEU(chan_id),
--			       PAS_DMA_RXCHAN_BASEU_BRBH(ring->dma >> 32) |
--			       PAS_DMA_RXCHAN_BASEU_SIZ(RX_RING_SIZE >> 2));
--
--	pci_write_config_dword(mac->dma_pdev, PAS_DMA_RXCHAN_CFG(chan_id),
--			       PAS_DMA_RXCHAN_CFG_HBU(1));
--
--	pci_write_config_dword(mac->dma_pdev, PAS_DMA_RXINT_BASEL(mac->dma_if),
--			       PAS_DMA_RXINT_BASEL_BRBL(__pa(ring->buffers)));
--
--	pci_write_config_dword(mac->dma_pdev, PAS_DMA_RXINT_BASEU(mac->dma_if),
--			       PAS_DMA_RXINT_BASEU_BRBH(__pa(ring->buffers) >> 32) |
--			       PAS_DMA_RXINT_BASEU_SIZ(RX_RING_SIZE >> 3));
-+	write_dma_reg(mac, PAS_DMA_RXINT_BASEL(mac->dma_if),
-+			   PAS_DMA_RXINT_BASEL_BRBL(__pa(ring->buffers)));
-+
-+	write_dma_reg(mac, PAS_DMA_RXINT_BASEU(mac->dma_if),
-+			   PAS_DMA_RXINT_BASEU_BRBH(__pa(ring->buffers) >> 32) |
-+			   PAS_DMA_RXINT_BASEU_SIZ(RX_RING_SIZE >> 3));
- 
- 	ring->next_to_fill = 0;
- 	ring->next_to_clean = 0;
-@@ -233,18 +274,18 @@ static int pasemi_mac_setup_tx_resources
- 
- 	memset(ring->desc, 0, TX_RING_SIZE * sizeof(struct pas_dma_xct_descr));
- 
--	pci_write_config_dword(mac->dma_pdev, PAS_DMA_TXCHAN_BASEL(chan_id),
--			       PAS_DMA_TXCHAN_BASEL_BRBL(ring->dma));
-+	write_dma_reg(mac, PAS_DMA_TXCHAN_BASEL(chan_id),
-+			   PAS_DMA_TXCHAN_BASEL_BRBL(ring->dma));
- 	val = PAS_DMA_TXCHAN_BASEU_BRBH(ring->dma >> 32);
- 	val |= PAS_DMA_TXCHAN_BASEU_SIZ(TX_RING_SIZE >> 2);
- 
--	pci_write_config_dword(mac->dma_pdev, PAS_DMA_TXCHAN_BASEU(chan_id), val);
-+	write_dma_reg(mac, PAS_DMA_TXCHAN_BASEU(chan_id), val);
- 
--	pci_write_config_dword(mac->dma_pdev, PAS_DMA_TXCHAN_CFG(chan_id),
--			       PAS_DMA_TXCHAN_CFG_TY_IFACE |
--			       PAS_DMA_TXCHAN_CFG_TATTR(mac->dma_if) |
--			       PAS_DMA_TXCHAN_CFG_UP |
--			       PAS_DMA_TXCHAN_CFG_WT(2));
-+	write_dma_reg(mac, PAS_DMA_TXCHAN_CFG(chan_id),
-+			   PAS_DMA_TXCHAN_CFG_TY_IFACE |
-+			   PAS_DMA_TXCHAN_CFG_TATTR(mac->dma_if) |
-+			   PAS_DMA_TXCHAN_CFG_UP |
-+			   PAS_DMA_TXCHAN_CFG_WT(2));
- 
- 	ring->next_to_use = 0;
- 	ring->next_to_clean = 0;
-@@ -383,12 +424,8 @@ static void pasemi_mac_replenish_rx_ring
- 
- 	wmb();
- 
--	pci_write_config_dword(mac->dma_pdev,
--			       PAS_DMA_RXCHAN_INCR(mac->dma_rxch),
--			       limit - count);
--	pci_write_config_dword(mac->dma_pdev,
--			       PAS_DMA_RXINT_INCR(mac->dma_if),
--			       limit - count);
-+	write_dma_reg(mac, PAS_DMA_RXCHAN_INCR(mac->dma_rxch), limit - count);
-+	write_dma_reg(mac, PAS_DMA_RXINT_INCR(mac->dma_if), limit - count);
- 
- 	mac->rx->next_to_fill += limit - count;
- }
-@@ -404,9 +441,7 @@ static void pasemi_mac_restart_rx_intr(s
- 
- 	reg = PAS_IOB_DMA_RXCH_RESET_PCNT(pcnt) | PAS_IOB_DMA_RXCH_RESET_PINTC;
- 
--	pci_write_config_dword(mac->iob_pdev,
--			       PAS_IOB_DMA_RXCH_RESET(mac->dma_rxch),
--			       reg);
-+	write_iob_reg(mac, PAS_IOB_DMA_RXCH_RESET(mac->dma_rxch), reg);
- }
- 
- static void pasemi_mac_restart_tx_intr(struct pasemi_mac *mac)
-@@ -418,8 +453,7 @@ static void pasemi_mac_restart_tx_intr(s
- 
- 	reg = PAS_IOB_DMA_TXCH_RESET_PCNT(pcnt) | PAS_IOB_DMA_TXCH_RESET_PINTC;
- 
--	pci_write_config_dword(mac->iob_pdev,
--			       PAS_IOB_DMA_TXCH_RESET(mac->dma_txch), reg);
-+	write_iob_reg(mac, PAS_IOB_DMA_TXCH_RESET(mac->dma_txch), reg);
- }
- 
- 
-@@ -574,8 +608,6 @@ static irqreturn_t pasemi_mac_rx_intr(in
- 	 * all others.
- 	 */
- 
--	pci_read_config_dword(mac->dma_pdev, PAS_DMA_RXINT_RCMDSTA(mac->dma_if), &reg);
--
- 	reg = 0;
- 	if (*mac->rx_status & PAS_STATUS_SOFT)
- 		reg |= PAS_IOB_DMA_RXCH_RESET_SINTC;
-@@ -586,9 +618,7 @@ static irqreturn_t pasemi_mac_rx_intr(in
- 
- 	netif_rx_schedule(dev);
- 
--	pci_write_config_dword(mac->iob_pdev,
--			       PAS_IOB_DMA_RXCH_RESET(mac->dma_rxch), reg);
--
-+	write_iob_reg(mac, PAS_IOB_DMA_RXCH_RESET(mac->dma_rxch), reg);
- 
- 	return IRQ_HANDLED;
- }
-@@ -613,9 +643,7 @@ static irqreturn_t pasemi_mac_tx_intr(in
- 	if (*mac->tx_status & PAS_STATUS_ERROR)
- 		reg |= PAS_IOB_DMA_TXCH_RESET_DINTC;
- 
--	pci_write_config_dword(mac->iob_pdev,
--			       PAS_IOB_DMA_TXCH_RESET(mac->dma_txch),
--			       reg);
-+	write_iob_reg(mac, PAS_IOB_DMA_TXCH_RESET(mac->dma_txch), reg);
- 
- 	return IRQ_HANDLED;
- }
-@@ -641,7 +669,7 @@ static void pasemi_adjust_link(struct ne
- 	} else
- 		netif_carrier_on(dev);
- 
--	pci_read_config_dword(mac->pdev, PAS_MAC_CFG_PCFG, &flags);
-+	flags = read_mac_reg(mac, PAS_MAC_CFG_PCFG);
- 	new_flags = flags & ~(PAS_MAC_CFG_PCFG_HD | PAS_MAC_CFG_PCFG_SPD_M |
- 			      PAS_MAC_CFG_PCFG_TSR_M);
- 
-@@ -673,7 +701,7 @@ static void pasemi_adjust_link(struct ne
- 	mac->link = mac->phydev->link;
- 
- 	if (new_flags != flags)
--		pci_write_config_dword(mac->pdev, PAS_MAC_CFG_PCFG, new_flags);
-+		write_mac_reg(mac, PAS_MAC_CFG_PCFG, new_flags);
- 
- 	if (msg && netif_msg_link(mac))
- 		printk(KERN_INFO "%s: Link is up at %d Mbps, %s duplex.\n",
-@@ -736,39 +764,37 @@ static int pasemi_mac_open(struct net_de
- 	int ret;
- 
- 	/* enable rx section */
--	pci_write_config_dword(mac->dma_pdev, PAS_DMA_COM_RXCMD,
--			       PAS_DMA_COM_RXCMD_EN);
-+	write_dma_reg(mac, PAS_DMA_COM_RXCMD, PAS_DMA_COM_RXCMD_EN);
- 
- 	/* enable tx section */
--	pci_write_config_dword(mac->dma_pdev, PAS_DMA_COM_TXCMD,
--			       PAS_DMA_COM_TXCMD_EN);
-+	write_dma_reg(mac, PAS_DMA_COM_TXCMD, PAS_DMA_COM_TXCMD_EN);
- 
- 	flags = PAS_MAC_CFG_TXP_FCE | PAS_MAC_CFG_TXP_FPC(3) |
- 		PAS_MAC_CFG_TXP_SL(3) | PAS_MAC_CFG_TXP_COB(0xf) |
- 		PAS_MAC_CFG_TXP_TIFT(8) | PAS_MAC_CFG_TXP_TIFG(12);
- 
--	pci_write_config_dword(mac->pdev, PAS_MAC_CFG_TXP, flags);
-+	write_mac_reg(mac, PAS_MAC_CFG_TXP, flags);
- 
- 	flags = PAS_MAC_CFG_PCFG_S1 | PAS_MAC_CFG_PCFG_PE |
- 		PAS_MAC_CFG_PCFG_PR | PAS_MAC_CFG_PCFG_CE;
- 
- 	flags |= PAS_MAC_CFG_PCFG_TSR_1G | PAS_MAC_CFG_PCFG_SPD_1G;
- 
--	pci_write_config_dword(mac->iob_pdev, PAS_IOB_DMA_RXCH_CFG(mac->dma_rxch),
--			       PAS_IOB_DMA_RXCH_CFG_CNTTH(0));
-+	write_iob_reg(mac, PAS_IOB_DMA_RXCH_CFG(mac->dma_rxch),
-+			   PAS_IOB_DMA_RXCH_CFG_CNTTH(0));
- 
--	pci_write_config_dword(mac->iob_pdev, PAS_IOB_DMA_TXCH_CFG(mac->dma_txch),
--			       PAS_IOB_DMA_TXCH_CFG_CNTTH(32));
-+	write_iob_reg(mac, PAS_IOB_DMA_TXCH_CFG(mac->dma_txch),
-+			   PAS_IOB_DMA_TXCH_CFG_CNTTH(32));
- 
- 	/* Clear out any residual packet count state from firmware */
- 	pasemi_mac_restart_rx_intr(mac);
- 	pasemi_mac_restart_tx_intr(mac);
- 
- 	/* 0xffffff is max value, about 16ms */
--	pci_write_config_dword(mac->iob_pdev, PAS_IOB_DMA_COM_TIMEOUTCFG,
--			       PAS_IOB_DMA_COM_TIMEOUTCFG_TCNT(0xffffff));
-+	write_iob_reg(mac, PAS_IOB_DMA_COM_TIMEOUTCFG,
-+			   PAS_IOB_DMA_COM_TIMEOUTCFG_TCNT(0xffffff));
- 
--	pci_write_config_dword(mac->pdev, PAS_MAC_CFG_PCFG, flags);
-+	write_mac_reg(mac, PAS_MAC_CFG_PCFG, flags);
- 
- 	ret = pasemi_mac_setup_rx_resources(dev);
- 	if (ret)
-@@ -778,25 +804,22 @@ static int pasemi_mac_open(struct net_de
- 	if (ret)
- 		goto out_tx_resources;
- 
--	pci_write_config_dword(mac->pdev, PAS_MAC_IPC_CHNL,
--			       PAS_MAC_IPC_CHNL_DCHNO(mac->dma_rxch) |
--			       PAS_MAC_IPC_CHNL_BCH(mac->dma_rxch));
-+	write_mac_reg(mac, PAS_MAC_IPC_CHNL,
-+			   PAS_MAC_IPC_CHNL_DCHNO(mac->dma_rxch) |
-+			   PAS_MAC_IPC_CHNL_BCH(mac->dma_rxch));
- 
- 	/* enable rx if */
--	pci_write_config_dword(mac->dma_pdev,
--			       PAS_DMA_RXINT_RCMDSTA(mac->dma_if),
--			       PAS_DMA_RXINT_RCMDSTA_EN);
-+	write_dma_reg(mac, PAS_DMA_RXINT_RCMDSTA(mac->dma_if),
-+			   PAS_DMA_RXINT_RCMDSTA_EN);
- 
- 	/* enable rx channel */
--	pci_write_config_dword(mac->dma_pdev,
--			       PAS_DMA_RXCHAN_CCMDSTA(mac->dma_rxch),
--			       PAS_DMA_RXCHAN_CCMDSTA_EN |
--			       PAS_DMA_RXCHAN_CCMDSTA_DU);
-+	write_dma_reg(mac, PAS_DMA_RXCHAN_CCMDSTA(mac->dma_rxch),
-+			   PAS_DMA_RXCHAN_CCMDSTA_EN |
-+			   PAS_DMA_RXCHAN_CCMDSTA_DU);
- 
- 	/* enable tx channel */
--	pci_write_config_dword(mac->dma_pdev,
--			       PAS_DMA_TXCHAN_TCMDSTA(mac->dma_txch),
--			       PAS_DMA_TXCHAN_TCMDSTA_EN);
-+	write_dma_reg(mac, PAS_DMA_TXCHAN_TCMDSTA(mac->dma_txch),
-+			   PAS_DMA_TXCHAN_TCMDSTA_EN);
- 
- 	pasemi_mac_replenish_rx_ring(dev);
- 
-@@ -875,20 +898,12 @@ static int pasemi_mac_close(struct net_d
- 	pasemi_mac_clean_rx(mac, RX_RING_SIZE);
- 
- 	/* Disable interface */
--	pci_write_config_dword(mac->dma_pdev,
--			       PAS_DMA_TXCHAN_TCMDSTA(mac->dma_txch),
--			       PAS_DMA_TXCHAN_TCMDSTA_ST);
--	pci_write_config_dword(mac->dma_pdev,
--		      PAS_DMA_RXINT_RCMDSTA(mac->dma_if),
--		      PAS_DMA_RXINT_RCMDSTA_ST);
--	pci_write_config_dword(mac->dma_pdev,
--		      PAS_DMA_RXCHAN_CCMDSTA(mac->dma_rxch),
--		      PAS_DMA_RXCHAN_CCMDSTA_ST);
-+	write_dma_reg(mac, PAS_DMA_TXCHAN_TCMDSTA(mac->dma_txch), PAS_DMA_TXCHAN_TCMDSTA_ST);
-+	write_dma_reg(mac, PAS_DMA_RXINT_RCMDSTA(mac->dma_if), PAS_DMA_RXINT_RCMDSTA_ST);
-+	write_dma_reg(mac, PAS_DMA_RXCHAN_CCMDSTA(mac->dma_rxch), PAS_DMA_RXCHAN_CCMDSTA_ST);
- 
- 	for (retries = 0; retries < MAX_RETRIES; retries++) {
--		pci_read_config_dword(mac->dma_pdev,
--				      PAS_DMA_TXCHAN_TCMDSTA(mac->dma_txch),
--				      &stat);
-+		stat = read_dma_reg(mac, PAS_DMA_TXCHAN_TCMDSTA(mac->dma_txch));
- 		if (!(stat & PAS_DMA_TXCHAN_TCMDSTA_ACT))
- 			break;
- 		cond_resched();
-@@ -898,9 +913,7 @@ static int pasemi_mac_close(struct net_d
- 		dev_err(&mac->dma_pdev->dev, "Failed to stop tx channel\n");
- 
- 	for (retries = 0; retries < MAX_RETRIES; retries++) {
--		pci_read_config_dword(mac->dma_pdev,
--				      PAS_DMA_RXCHAN_CCMDSTA(mac->dma_rxch),
--				      &stat);
-+		stat = read_dma_reg(mac, PAS_DMA_RXCHAN_CCMDSTA(mac->dma_rxch));
- 		if (!(stat & PAS_DMA_RXCHAN_CCMDSTA_ACT))
- 			break;
- 		cond_resched();
-@@ -910,9 +923,7 @@ static int pasemi_mac_close(struct net_d
- 		dev_err(&mac->dma_pdev->dev, "Failed to stop rx channel\n");
- 
- 	for (retries = 0; retries < MAX_RETRIES; retries++) {
--		pci_read_config_dword(mac->dma_pdev,
--				      PAS_DMA_RXINT_RCMDSTA(mac->dma_if),
--				      &stat);
-+		stat = read_dma_reg(mac, PAS_DMA_RXINT_RCMDSTA(mac->dma_if));
- 		if (!(stat & PAS_DMA_RXINT_RCMDSTA_ACT))
- 			break;
- 		cond_resched();
-@@ -925,12 +936,9 @@ static int pasemi_mac_close(struct net_d
- 	 * stopping, since you can't disable when active.
- 	 */
- 
--	pci_write_config_dword(mac->dma_pdev,
--			       PAS_DMA_TXCHAN_TCMDSTA(mac->dma_txch), 0);
--	pci_write_config_dword(mac->dma_pdev,
--			       PAS_DMA_RXCHAN_CCMDSTA(mac->dma_rxch), 0);
--	pci_write_config_dword(mac->dma_pdev,
--			       PAS_DMA_RXINT_RCMDSTA(mac->dma_if), 0);
-+	write_dma_reg(mac, PAS_DMA_TXCHAN_TCMDSTA(mac->dma_txch), 0);
-+	write_dma_reg(mac, PAS_DMA_RXCHAN_CCMDSTA(mac->dma_rxch), 0);
-+	write_dma_reg(mac, PAS_DMA_RXINT_RCMDSTA(mac->dma_if), 0);
- 
- 	free_irq(mac->tx_irq, dev);
- 	free_irq(mac->rx_irq, dev);
-@@ -1011,8 +1019,7 @@ static int pasemi_mac_start_tx(struct sk
- 
- 	spin_unlock_irqrestore(&txring->lock, flags);
- 
--	pci_write_config_dword(mac->dma_pdev,
--			       PAS_DMA_TXCHAN_INCR(mac->dma_txch), 1);
-+	write_dma_reg(mac, PAS_DMA_TXCHAN_INCR(mac->dma_txch), 1);
- 
- 	return NETDEV_TX_OK;
- 
-@@ -1035,7 +1042,7 @@ static void pasemi_mac_set_rx_mode(struc
- 	struct pasemi_mac *mac = netdev_priv(dev);
- 	unsigned int flags;
- 
--	pci_read_config_dword(mac->pdev, PAS_MAC_CFG_PCFG, &flags);
-+	flags = read_mac_reg(mac, PAS_MAC_CFG_PCFG);
- 
- 	/* Set promiscuous */
- 	if (dev->flags & IFF_PROMISC)
-@@ -1043,7 +1050,7 @@ static void pasemi_mac_set_rx_mode(struc
- 	else
- 		flags &= ~PAS_MAC_CFG_PCFG_PR;
- 
--	pci_write_config_dword(mac->pdev, PAS_MAC_CFG_PCFG, flags);
-+	write_mac_reg(mac, PAS_MAC_CFG_PCFG, flags);
- }
- 
- 
+ endmenu
 
 --
