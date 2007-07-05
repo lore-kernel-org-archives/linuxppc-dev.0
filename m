@@ -1,13 +1,13 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id CF10DDDF5D
+	by ozlabs.org (Postfix) with ESMTP id 0F979DDF61
 	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 03:03:50 +1000 (EST)
-Message-Id: <20070705170239.160818000@lixom.net>
+Message-Id: <20070705170242.449250000@lixom.net>
 References: <20070705170233.258351000@lixom.net>
-Date: Thu, 05 Jul 2007 12:02:54 -0500
+Date: Thu, 05 Jul 2007 12:03:06 -0500
 From: Olof Johansson <olof@lixom.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 21/35] Use MSR_PMM to disable profiling of the idle loop
+Subject: [patch 33/35] Work around errata 5667
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,69 +17,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Use MSR_PMM to disable performance monitor counting while in idle,
-instead of using the CTRL register like on the IBM implementation.
+Always keep a page mapped at EA 0. Right now it is shared among all
+processes, as long as noone does a NULL pointer deref and uses the data
+there, there should be no security implications. Still, this is better
+not used in any kind of environment where users can't be trusted.
 
-This needs further cleanup. It should be possible to switch over the
-default behaviour to MSR_PMM on IBM hardware too.
 
-Index: 2.6.21/arch/powerpc/kernel/process.c
+Index: mainline/arch/powerpc/kernel/process.c
 ===================================================================
---- 2.6.21.orig/arch/powerpc/kernel/process.c
-+++ 2.6.21/arch/powerpc/kernel/process.c
-@@ -972,13 +972,18 @@ void ppc64_runlatch_on(void)
- {
- 	unsigned long ctrl;
+--- mainline.orig/arch/powerpc/kernel/process.c
++++ mainline/arch/powerpc/kernel/process.c
+@@ -330,6 +330,14 @@ struct task_struct *__switch_to(struct t
+ 	calculate_steal_time();
  
--	if (cpu_has_feature(CPU_FTR_CTRL) && !test_thread_flag(TIF_RUNLATCH)) {
-+//	if (cpu_has_feature(CPU_FTR_CTRL) && !test_thread_flag(TIF_RUNLATCH)) {
-+	if (!test_thread_flag(TIF_RUNLATCH)) {
- 		HMT_medium();
+ 	last = _switch(old_thread, new_thread);
++	/* current is still really us, just a different us :-) */
++	if (current->mm) {
++#ifdef CONFIG_PPC_HAS_HASH_64K
++		__hash_page_64K(0, _PAGE_USER|_PAGE_RW, get_vsid(current->mm->context.id, 0), &current->zero_pte.pte, 0x300, 1);
++#else
++		__hash_page_4K(0, _PAGE_USER|_PAGE_RW, get_vsid(current->mm->context.id, 0), &current->zero_pte, 0x300, 1);
++#endif
++	}
  
- 		ctrl = mfspr(SPRN_CTRLF);
- 		ctrl |= CTRL_RUNLATCH;
- 		mtspr(SPRN_CTRLT, ctrl);
+ 	local_irq_restore(flags);
  
-+		ctrl = mfmsr();
-+		ctrl &= ~MSR_PMM;
-+		mtmsrd(ctrl);
+Index: mainline/kernel/fork.c
+===================================================================
+--- mainline.orig/kernel/fork.c
++++ mainline/kernel/fork.c
+@@ -104,8 +104,12 @@ struct kmem_cache *vm_area_cachep;
+ /* SLAB cache for mm_struct structures (tsk->mm) */
+ static struct kmem_cache *mm_cachep;
+ 
++static struct page *zero_page;
 +
- 		set_thread_flag(TIF_RUNLATCH);
- 	}
- }
-@@ -987,7 +992,8 @@ void ppc64_runlatch_off(void)
+ void free_task(struct task_struct *tsk)
  {
- 	unsigned long ctrl;
- 
--	if (cpu_has_feature(CPU_FTR_CTRL) && test_thread_flag(TIF_RUNLATCH)) {
-+//	if (cpu_has_feature(CPU_FTR_CTRL) && test_thread_flag(TIF_RUNLATCH)) {
-+	if (test_thread_flag(TIF_RUNLATCH)) {
- 		HMT_medium();
- 
- 		clear_thread_flag(TIF_RUNLATCH);
-@@ -995,6 +1001,10 @@ void ppc64_runlatch_off(void)
- 		ctrl = mfspr(SPRN_CTRLF);
- 		ctrl &= ~CTRL_RUNLATCH;
- 		mtspr(SPRN_CTRLT, ctrl);
++	if (tsk->mm)
++		flush_hash_page(get_vsid(tsk->mm->context.id, 0) << 28, tsk->zero_pte, MMU_PAGE_4K, 0);
+ 	free_thread_info(tsk->stack);
+ 	rt_mutex_debug_task_free(tsk);
+ 	free_task_struct(tsk);
+@@ -156,6 +160,8 @@ void __init fork_init(unsigned long memp
+ 	init_task.signal->rlim[RLIMIT_NPROC].rlim_max = max_threads/2;
+ 	init_task.signal->rlim[RLIMIT_SIGPENDING] =
+ 		init_task.signal->rlim[RLIMIT_NPROC];
 +
-+		ctrl = mfmsr();
-+		ctrl |= MSR_PMM;
-+		mtmsrd(ctrl);
- 	}
++	zero_page = alloc_page(GFP_KERNEL);
  }
+ 
+ static struct task_struct *dup_task_struct(struct task_struct *orig)
+@@ -182,6 +188,11 @@ static struct task_struct *dup_task_stru
+ #ifdef CONFIG_CC_STACKPROTECTOR
+ 	tsk->stack_canary = get_random_int();
  #endif
-Index: 2.6.21/arch/powerpc/oprofile/op_model_pa6t.c
-===================================================================
---- 2.6.21.orig/arch/powerpc/oprofile/op_model_pa6t.c
-+++ 2.6.21/arch/powerpc/oprofile/op_model_pa6t.c
-@@ -109,6 +109,8 @@ static void pa6t_reg_setup(struct op_cou
- 			pr_debug("turned off counter %u\n", pmc);
- 		}
++#ifdef CONFIG_PPC_64K_PAGES
++	tsk->zero_pte.pte = mk_pte(zero_page,_PAGE_BASE|_PAGE_RW|_PAGE_USER|_PAGE_EXEC);
++#else
++	tsk->zero_pte = mk_pte(zero_page,_PAGE_BASE|_PAGE_RW|_PAGE_USER|_PAGE_EXEC);
++#endif
  
-+	sys->mmcr0 |= PA6T_MMCR0_FCM1;
-+
- 	if (sys->enable_kernel)
- 		sys->mmcr0 |= PA6T_MMCR0_SUPEN | PA6T_MMCR0_HYPEN;
- 	else
+ 	/* One for us, one for whoever does the "release_task()" (usually parent) */
+ 	atomic_set(&tsk->usage,2);
+Index: mainline/include/linux/sched.h
+===================================================================
+--- mainline.orig/include/linux/sched.h
++++ mainline/include/linux/sched.h
+@@ -863,6 +863,7 @@ struct task_struct {
+ 	struct list_head ptrace_list;
+ 
+ 	struct mm_struct *mm, *active_mm;
++	real_pte_t zero_pte;
+ 
+ /* task state */
+ 	struct linux_binfmt *binfmt;
 
 --
