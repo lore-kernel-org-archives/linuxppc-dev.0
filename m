@@ -1,13 +1,13 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 9116CDDF39
+	by ozlabs.org (Postfix) with ESMTP id 73DE2DDF33
 	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 03:03:49 +1000 (EST)
-Message-Id: <20070705170237.519898000@lixom.net>
+Message-Id: <20070705170236.976353000@lixom.net>
 References: <20070705170233.258351000@lixom.net>
-Date: Thu, 05 Jul 2007 12:02:48 -0500
+Date: Thu, 05 Jul 2007 12:02:46 -0500
 From: Olof Johansson <olof@lixom.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 15/35] Export HID registers via sysfs
+Subject: [patch 13/35] Cleanup marvell phy driver init
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,47 +17,147 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Export some of the HID registers via sysfs. Useful when debugging.
+Simplify the marvell driver init a bit: Make the supported devices an
+array instead of explicitly registering each structure. This makes it
+considerably easier to add new devices down the road.
 
 
-Index: 2.6.21/arch/powerpc/kernel/sysfs.c
+Signed-off-by: Olof Johansson <olof@lixom.net>
+
+Index: mainline/drivers/net/phy/marvell.c
 ===================================================================
---- 2.6.21.orig/arch/powerpc/kernel/sysfs.c
-+++ 2.6.21/arch/powerpc/kernel/sysfs.c
-@@ -197,6 +197,17 @@ SYSFS_PMCSETUP(pa6t_pmc3, SPRN_PA6T_PMC3
- SYSFS_PMCSETUP(pa6t_pmc4, SPRN_PA6T_PMC4);
- SYSFS_PMCSETUP(pa6t_pmc5, SPRN_PA6T_PMC5);
+--- mainline.orig/drivers/net/phy/marvell.c
++++ mainline/drivers/net/phy/marvell.c
+@@ -238,77 +238,71 @@ static int m88e1145_config_init(struct p
+ 	return 0;
+ }
  
-+SYSFS_PMCSETUP(hid0, SPRN_HID0);
-+SYSFS_PMCSETUP(hid1, SPRN_HID1);
-+SYSFS_PMCSETUP(hid4, SPRN_HID4);
-+SYSFS_PMCSETUP(hid5, SPRN_HID5);
-+SYSFS_PMCSETUP(ima0, SPRN_PA6T_IMA0);
-+SYSFS_PMCSETUP(ima1, SPRN_PA6T_IMA1);
-+SYSFS_PMCSETUP(ima2, SPRN_PA6T_IMA2); 
-+SYSFS_PMCSETUP(imaat, SPRN_PA6T_IMAAT);
-+SYSFS_PMCSETUP(btcr, SPRN_PA6T_BTCR);
-+SYSFS_PMCSETUP(pccr, SPRN_PA6T_PCCR);
-+SYSFS_PMCSETUP(rpccr, SPRN_PA6T_RPCCR);
- 
- static SYSDEV_ATTR(mmcra, 0600, show_mmcra, store_mmcra);
- static SYSDEV_ATTR(spurr, 0600, show_spurr, NULL);
-@@ -228,6 +239,16 @@ static struct sysdev_attribute pa6t_attr
- 	_SYSDEV_ATTR(pmc3, 0600, show_pa6t_pmc3, store_pa6t_pmc3),
- 	_SYSDEV_ATTR(pmc4, 0600, show_pa6t_pmc4, store_pa6t_pmc4),
- 	_SYSDEV_ATTR(pmc5, 0600, show_pa6t_pmc5, store_pa6t_pmc5),
-+	_SYSDEV_ATTR(hid0, 0600, show_hid0, store_hid0),
-+	_SYSDEV_ATTR(hid1, 0600, show_hid1, store_hid1),
-+	_SYSDEV_ATTR(hid4, 0600, show_hid4, store_hid4),
-+	_SYSDEV_ATTR(hid5, 0600, show_hid5, store_hid5),
-+	_SYSDEV_ATTR(ima0, 0600, show_ima0, store_ima0),
-+	_SYSDEV_ATTR(ima1, 0600, show_ima1, store_ima1),
-+	_SYSDEV_ATTR(ima2, 0600, show_ima2, store_ima2),
-+	_SYSDEV_ATTR(imaat, 0600, show_imaat, store_imaat),
-+	_SYSDEV_ATTR(btcr, 0600, show_btcr, store_btcr),
-+	_SYSDEV_ATTR(pccr, 0600, show_pccr, store_pccr),
+-static struct phy_driver m88e1101_driver = {
+-	.phy_id = 0x01410c60,
+-	.phy_id_mask = 0xfffffff0,
+-	.name = "Marvell 88E1101",
+-	.features = PHY_GBIT_FEATURES,
+-	.flags = PHY_HAS_INTERRUPT,
+-	.config_aneg = &marvell_config_aneg,
+-	.read_status = &genphy_read_status,
+-	.ack_interrupt = &marvell_ack_interrupt,
+-	.config_intr = &marvell_config_intr,
+-	.driver = {.owner = THIS_MODULE,},
+-};
+-
+-static struct phy_driver m88e1111_driver = {
+-	.phy_id = 0x01410cc0,
+-	.phy_id_mask = 0xfffffff0,
+-	.name = "Marvell 88E1111",
+-	.features = PHY_GBIT_FEATURES,
+-	.flags = PHY_HAS_INTERRUPT,
+-	.config_aneg = &marvell_config_aneg,
+-	.read_status = &genphy_read_status,
+-	.ack_interrupt = &marvell_ack_interrupt,
+-	.config_intr = &marvell_config_intr,
+-	.config_init = &m88e1111_config_init,
+-	.driver = {.owner = THIS_MODULE,},
+-};
+-
+-static struct phy_driver m88e1145_driver = {
+-	.phy_id = 0x01410cd0,
+-	.phy_id_mask = 0xfffffff0,
+-	.name = "Marvell 88E1145",
+-	.features = PHY_GBIT_FEATURES,
+-	.flags = PHY_HAS_INTERRUPT,
+-	.config_init = &m88e1145_config_init,
+-	.config_aneg = &marvell_config_aneg,
+-	.read_status = &genphy_read_status,
+-	.ack_interrupt = &marvell_ack_interrupt,
+-	.config_intr = &marvell_config_intr,
+-	.driver = {.owner = THIS_MODULE,},
++static struct phy_driver marvell_drivers[] = {
++	{
++		.phy_id = 0x01410c60,
++		.phy_id_mask = 0xfffffff0,
++		.name = "Marvell 88E1101",
++		.features = PHY_GBIT_FEATURES,
++		.flags = PHY_HAS_INTERRUPT,
++		.config_aneg = &marvell_config_aneg,
++		.read_status = &genphy_read_status,
++		.ack_interrupt = &marvell_ack_interrupt,
++		.config_intr = &marvell_config_intr,
++		.driver = {.owner = THIS_MODULE,},
++	},
++	{
++		.phy_id = 0x01410cc0,
++		.phy_id_mask = 0xfffffff0,
++		.name = "Marvell 88E1111",
++		.features = PHY_GBIT_FEATURES,
++		.flags = PHY_HAS_INTERRUPT,
++		.config_init = &m88e1111_config_init,
++		.config_aneg = &marvell_config_aneg,
++		.read_status = &genphy_read_status,
++		.ack_interrupt = &marvell_ack_interrupt,
++		.config_intr = &marvell_config_intr,
++		.driver = {.owner = THIS_MODULE,},
++	},
++	{
++		.phy_id = 0x01410cd0,
++		.phy_id_mask = 0xfffffff0,
++		.name = "Marvell 88E1145",
++		.features = PHY_GBIT_FEATURES,
++		.flags = PHY_HAS_INTERRUPT,
++		.config_init = &m88e1145_config_init,
++		.config_aneg = &marvell_config_aneg,
++		.read_status = &genphy_read_status,
++		.ack_interrupt = &marvell_ack_interrupt,
++		.config_intr = &marvell_config_intr,
++		.driver = {.owner = THIS_MODULE,},
++	}
  };
  
+ static int __init marvell_init(void)
+ {
+ 	int ret;
++	int i;
  
+-	ret = phy_driver_register(&m88e1101_driver);
+-	if (ret)
+-		return ret;
+-
+-	ret = phy_driver_register(&m88e1111_driver);
+-	if (ret)
+-		goto err1111;
+-
+-	ret = phy_driver_register(&m88e1145_driver);
+-	if (ret)
+-		goto err1145;
++	for (i = 0; i < ARRAY_SIZE(marvell_drivers); i++) {
++		ret = phy_driver_register(&marvell_drivers[i]);
+ 
+-	return 0;
++		if (ret) {
++			while (i-- > 0)
++				phy_driver_unregister(&marvell_drivers[i]);
++			return ret;
++		}
++	}
+ 
+-err1145:
+-	phy_driver_unregister(&m88e1111_driver);
+-err1111:
+-	phy_driver_unregister(&m88e1101_driver);
+-	return ret;
++	return 0;
+ }
+ 
+ static void __exit marvell_exit(void)
+ {
+-	phy_driver_unregister(&m88e1101_driver);
+-	phy_driver_unregister(&m88e1111_driver);
+-	phy_driver_unregister(&m88e1145_driver);
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(marvell_drivers); i++)
++		phy_driver_unregister(&marvell_drivers[i]);
+ }
+ 
+ module_init(marvell_init);
 
 --
