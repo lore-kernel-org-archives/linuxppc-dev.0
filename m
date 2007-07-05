@@ -1,24 +1,19 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AA37ADDDDB
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id B25DDDDE46
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  6 Jul 2007 06:23:35 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1I6XrO-0000OB-Bh
-	for linuxppc-embedded@ozlabs.org; Thu, 05 Jul 2007 13:23:30 -0700
-Message-ID: <11453962.post@talk.nabble.com>
-Date: Thu, 5 Jul 2007 13:23:30 -0700 (PDT)
-From: khollan <khollan@daktronics.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Porting Linux to Xilinx ML410
-In-Reply-To: <fa686aa40707021551y469e1b7fv3b8c329b904b3d6@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <11328063.post@talk.nabble.com> <11401755.post@talk.nabble.com>
-	<fa686aa40707021551y469e1b7fv3b8c329b904b3d6@mail.gmail.com>
+	Fri,  6 Jul 2007 08:20:36 +1000 (EST)
+To: "Kimmo Surakka" <kusti@iki.fi>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: TQM5200 problems (kernel 2.4) 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 04 Jul 2007 17:51:58 +0300."
+	<a44e83440707040751o4f2e195dte8c2edafd5f864c@mail.gmail.com>
+Date: Fri, 06 Jul 2007 00:13:27 +0200
+Sender: wd@denx.de
+Message-Id: <20070705221327.92FB5353A91@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,19 +24,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Dear Kimmo,
 
-Thanks I fixed the error, my system ace hardware wasn't working correctly.
-Now I have a new problem during the init process.  It gives me this message
+in message <a44e83440707040751o4f2e195dte8c2edafd5f864c@mail.gmail.com> you wrote:
+>
+> Problem #1: PPP unreliability. If I just fetch the latest 2.4 kernel
+> from http://www.denx.de/cgi-bin/gitweb.cgi?p=linuxppc_2_4_devel.git;a=summary
 
-Starting pid 213 tty '': '/sbin/getty'
-process '/sbin/getty 9600 ttyUL0 (pid 213) exited. Scheduling it for
-restart.
+Did you try the 2.6 kernel tree?  It  will  be  much  easier  to  get
+people's attention when you use a current code base.
 
-And it tries to respawn it indefinetly.
-If I pass the kernel command Init=/bin/sh I can get into the shell correctly
-Any Ideas what this problem is?
-Thanks for your help
-Kevin
+Alternatively, you may ask us for support. We know that old 2.4  tree
+pretty well.
+
+Best regards,
+
+Wolfgang Denk
+
 -- 
-View this message in context: http://www.nabble.com/Porting-Linux-to-Xilinx-ML410-tf3989483.html#a11453962
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+The explanation requiring the fewest assumptions is the  most  likely
+to be correct.                                    -- William of Occam
