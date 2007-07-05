@@ -1,24 +1,18 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 56FD7DDF6C
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 04:29:41 +1000 (EST)
-Date: Thu, 5 Jul 2007 11:28:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: linas@austin.ibm.com (Linas Vepstas)
-Subject: Re: [PATCH]: PCI Error Recovery: Symbios SCSI device driver
-Message-Id: <20070705112838.2d8c959b.akpm@linux-foundation.org>
-In-Reply-To: <20070702183917.GJ4501@austin.ibm.com>
-References: <20070702183917.GJ4501@austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: James.Bottomley@steeleye.com, linux-scsi@vger.kernel.org, matthew@wil.cx,
-	willy@debian.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-pci@atrey.karlin.mff.cuni.cz
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 5FA09DDF15
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 04:51:22 +1000 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Thu, 5 Jul 2007 20:50:21 +0200
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [patch 27/35] Work around errata 4290
+Message-ID: <20070705185021.GA26069@iram.es>
+References: <20070705170233.258351000@lixom.net>
+	<20070705170240.803460000@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070705170240.803460000@lixom.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,33 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2 Jul 2007 13:39:17 -0500
-linas@austin.ibm.com (Linas Vepstas) wrote:
-
+On Thu, Jul 05, 2007 at 12:03:00PM -0500, Olof Johansson wrote:
+> Workaround for errata 4290: The decrementer ticks at half the expected rate
+> so load it with half the value it would otherwise be loaded with.
 > 
-> Various PCI bus errors can be signaled by newer PCI controllers.  
-> This patch adds the PCI error recovery callbacks to the Symbios 
-> SCSI device driver.  The patch has been tested, and appears to 
-> work well.
 > 
+> Index: 2.6.21/include/asm-powerpc/time.h
+> ===================================================================
+> --- 2.6.21.orig/include/asm-powerpc/time.h
+> +++ 2.6.21/include/asm-powerpc/time.h
+> @@ -173,6 +173,13 @@ static inline unsigned int get_dec(void)
+>  
+>  static inline void set_dec(int val)
+>  {
+> +#ifdef CONFIG_PPC_PASEMI
+> +	/* PA6T rev Ax have decrementer ticking at 1/2 tb rate */
+> +	val >>= 2;
 
-yup, this is identical to -mm's
-pci-error-recovery-symbios-scsi-base-support.patch
+Comment does not match code: looks like a divide by 4 to me!
 
-What is the status of
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/pci-error-recovery-symbios-scsi-first-failure.patch?
+> +	if (!val)
+> +		val = 1;
+> +#endif
+> +
+>  #if defined(CONFIG_40x)
+>  	return;		/* Have to let it auto-reload */
+>  #elif defined(CONFIG_8xx_CPU6)
 
-> 
-> ----
-> 
-> Hi,
-> 
-> This patch has been bouncing around for a long time, and has made
-> appearences in various -mm trees since 2.6.something-teen. However,
-> it has never made it into mainline, and I'm starting to get concerned
-> that it will miss 2.6.23 as well. 
-
-Well you've sent it a couple of times, and I've sent it in five more times
-over the past year.  Once we were told "awaiting maintainer ack".
-
-This situation is fairly stupid.  How about we make you the maintainer?
+	Gabriel
