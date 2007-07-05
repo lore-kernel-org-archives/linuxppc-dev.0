@@ -1,25 +1,12 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3D5AFDDF3E
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 02:41:16 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l65Gf855025469
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Jul 2007 09:41:12 -0700 (MST)
-Received: from [10.82.19.119] (ld0169-tx32.am.freescale.net [10.82.19.119])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l65Gf75Q027833
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Jul 2007 11:41:08 -0500 (CDT)
-Message-ID: <468D1F23.6000803@freescale.com>
-Date: Thu, 05 Jul 2007 11:41:07 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 69892DDE2C
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 03:03:46 +1000 (EST)
+Message-Id: <20070705170233.258351000@lixom.net>
+Date: Thu, 05 Jul 2007 12:02:33 -0500
+From: Olof Johansson <olof@lixom.net>
 To: linuxppc-dev@ozlabs.org
-Subject: PowerPC equivalent to dma_mmap_writecombine()?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: [patch 00/35] PA Semi patch set
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,22 +16,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm porting a driver from ARM to PowerPC, and I came across this function:
+The following series is a snapshot of the in-progress and out-of-tree
+errata workarounds that I'm currently maintaining.
 
-static int at91_pcm_mmap(struct snd_pcm_substream *substream,
-	struct vm_area_struct *vma)
-{
-	struct snd_pcm_runtime *runtime = substream->runtime;
+The first patches are mostly copies of stuff that has already been sent
+out for upstream merge, followed by some patches that are not yet ready
+to be merged (need cleanup, more work). Last are some errata workarounds
+for various bugs in the sample-level silicon.
 
-	return dma_mmap_writecombine(substream->pcm->card->dev, vma,
-				     runtime->dma_area,
-				     runtime->dma_addr,
-				     runtime->dma_bytes);
-}
+Some of the workarounds are quite ugly and touches various parts of the
+kernels in not so pretty ways. No need to tell me about it.
 
-There are no dma_mmap_x() functions in arch/powerpc.  Can someone tell me what the powerpc 
-equivalent to dma_mmap_writecombine() is?
+They are also not multiplatform-friendly. Since they are all temporary
+it hasn't been a priority.
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+This is not a request for review or merge, just a FYI to "get the patches
+out there".
+
+--
