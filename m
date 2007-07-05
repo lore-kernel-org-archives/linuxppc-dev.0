@@ -1,13 +1,13 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 699F5DDF4E
+	by ozlabs.org (Postfix) with ESMTP id C91AEDDF5A
 	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 03:03:50 +1000 (EST)
-Message-Id: <20070705170238.347478000@lixom.net>
+Message-Id: <20070705170241.899406000@lixom.net>
 References: <20070705170233.258351000@lixom.net>
-Date: Thu, 05 Jul 2007 12:02:51 -0500
+Date: Thu, 05 Jul 2007 12:03:04 -0500
 From: Olof Johansson <olof@lixom.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 18/35] Spread IRQs among cpus by default
+Subject: [patch 31/35] Work around errata 4161
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,27 +17,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Spread IRQs between the two cores on our openpic. Without this,
-they get delivered to cpu 0 as long as it's available.
+Errata 4161: Concurring ptesyncs on both cores might lock up the
+cores. Most ptesyncs are already under tlbie_lock, so use that in the only
+other remaining location (the timer interrupt ones we've added ourselves).
 
-This needs a bit more cleanup -- it needs a flag so it can coexist
-with other implementations.
 
-Index: 2.6.21/arch/powerpc/sysdev/mpic.c
+Index: 2.6.21/arch/powerpc/kernel/time.c
 ===================================================================
---- 2.6.21.orig/arch/powerpc/sysdev/mpic.c
-+++ 2.6.21/arch/powerpc/sysdev/mpic.c
-@@ -1191,6 +1191,11 @@ void __init mpic_init(struct mpic *mpic)
- 			   mpic_read(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0))
- 			   | MPIC_GREG_GCONF_8259_PTHROU_DIS);
+--- 2.6.21.orig/arch/powerpc/kernel/time.c
++++ 2.6.21/arch/powerpc/kernel/time.c
+@@ -618,8 +618,11 @@ void timer_interrupt(struct pt_regs * re
+ 	int cpu = smp_processor_id();
+ 	unsigned long ticks;
+ 	u64 tb_next_jiffy;
++	extern spinlock_t native_tlbie_lock;
  
-+	mpic_write(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0),
-+		   mpic_read(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0))
-+		   | 0x10000000);
-+
-+
- 	/* Set current processor priority to 0 */
- 	mpic_cpu_write(MPIC_INFO(CPU_CURRENT_TASK_PRI), 0);
- }
++	spin_lock(&native_tlbie_lock);
+ 	asm("ptesync");
++	spin_unlock(&native_tlbie_lock);
+ 
+ #ifdef CONFIG_PPC32
+ 	if (atomic_read(&ppc_n_lost_interrupts) != 0)
+Index: 2.6.21/arch/powerpc/mm/hash_native_64.c
+===================================================================
+--- 2.6.21.orig/arch/powerpc/mm/hash_native_64.c
++++ 2.6.21/arch/powerpc/mm/hash_native_64.c
+@@ -35,7 +35,7 @@
+ 
+ #define HPTE_LOCK_BIT 3
+ 
+-static DEFINE_SPINLOCK(native_tlbie_lock);
++DEFINE_SPINLOCK(native_tlbie_lock);
+ 
+ static inline void __tlbie(unsigned long va, unsigned int psize)
+ {
 
 --
