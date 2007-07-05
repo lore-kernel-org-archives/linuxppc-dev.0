@@ -1,13 +1,14 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 70D95DDF29
+	by ozlabs.org (Postfix) with ESMTP id 6E972DDF24
 	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 03:03:47 +1000 (EST)
-Message-Id: <20070705170234.489685000@lixom.net>
+Message-Id: <20070705170234.215137000@lixom.net>
 References: <20070705170233.258351000@lixom.net>
-Date: Thu, 05 Jul 2007 12:02:37 -0500
+Date: Thu, 05 Jul 2007 12:02:36 -0500
 From: Olof Johansson <olof@lixom.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 04/35] pasemi_mac: Fix TX interrupt threshold
+Subject: [patch 03/35] Change powerpc64 ioaddr_t to u_int
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,24 +18,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It was mistakenly set to interrupt on the second packet instead of first, causing
-some interesting latency behaviour.
+ppc64 really needs ioaddr_t to be 32-bit, since I/O addresses really are
+MMIO addresses, and remapped at an offset that's well above 16 bits in
+some cases.
+
+While the type is exported to userspace, there hasn't been any platforms
+with PCMCIA on 64-bit powerpc until now, so changing it won't regress
+any existing users.
 
 
 Signed-off-by: Olof Johansson <olof@lixom.net>
+Acked-by: Paul Mackerras <paulus@samba.org>
 
-Index: netdev-2.6/drivers/net/pasemi_mac.c
+Index: 2.6.21/include/pcmcia/cs_types.h
 ===================================================================
---- netdev-2.6.orig/drivers/net/pasemi_mac.c
-+++ netdev-2.6/drivers/net/pasemi_mac.c
-@@ -755,7 +755,7 @@ static int pasemi_mac_open(struct net_de
- 	flags |= PAS_MAC_CFG_PCFG_TSR_1G | PAS_MAC_CFG_PCFG_SPD_1G;
+--- 2.6.21.orig/include/pcmcia/cs_types.h
++++ 2.6.21/include/pcmcia/cs_types.h
+@@ -21,7 +21,7 @@
+ #include <sys/types.h>
+ #endif
  
- 	pci_write_config_dword(mac->iob_pdev, PAS_IOB_DMA_RXCH_CFG(mac->dma_rxch),
--			       PAS_IOB_DMA_RXCH_CFG_CNTTH(1));
-+			       PAS_IOB_DMA_RXCH_CFG_CNTTH(0));
- 
- 	pci_write_config_dword(mac->iob_pdev, PAS_IOB_DMA_TXCH_CFG(mac->dma_txch),
- 			       PAS_IOB_DMA_TXCH_CFG_CNTTH(32));
+-#if defined(__arm__) || defined(__mips__)
++#if defined(__arm__) || defined(__mips__) || defined(__powerpc64__)
+ /* This (ioaddr_t) is exposed to userspace & hence cannot be changed. */
+ typedef u_int   ioaddr_t;
+ #else
 
 --
