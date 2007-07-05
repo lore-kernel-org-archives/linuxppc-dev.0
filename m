@@ -1,13 +1,13 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id DAAFDDDF2D
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 03:03:48 +1000 (EST)
-Message-Id: <20070705170236.697308000@lixom.net>
+	by ozlabs.org (Postfix) with ESMTP id 105D8DDF31
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 03:03:49 +1000 (EST)
+Message-Id: <20070705170236.161722000@lixom.net>
 References: <20070705170233.258351000@lixom.net>
-Date: Thu, 05 Jul 2007 12:02:45 -0500
+Date: Thu, 05 Jul 2007 12:02:43 -0500
 From: Olof Johansson <olof@lixom.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 12/35] pasemi_mac: Enable LLTX
+Subject: [patch 10/35] pasemi_mac: Minor performance tweaks
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,9 +17,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Enable LLTX on pasemi_mac: we're already doing sufficient locking
-in the driver to enable it.
-
+Various minor performance tweaks, do some explicit prefetching of packet
+data, etc.
 
 Signed-off-by: Olof Johansson <olof@lixom.net>
 
@@ -27,14 +26,86 @@ Index: netdev-2.6/drivers/net/pasemi_mac.c
 ===================================================================
 --- netdev-2.6.orig/drivers/net/pasemi_mac.c
 +++ netdev-2.6/drivers/net/pasemi_mac.c
-@@ -1239,7 +1239,7 @@ pasemi_mac_probe(struct pci_dev *pdev, c
- 	dev->set_multicast_list = pasemi_mac_set_rx_mode;
- 	dev->weight = 64;
- 	dev->poll = pasemi_mac_poll;
--	dev->features = NETIF_F_HW_CSUM;
-+	dev->features = NETIF_F_HW_CSUM | NETIF_F_LLTX;
+@@ -481,6 +481,7 @@ static int pasemi_mac_clean_rx(struct pa
+ 		rmb();
  
- 	err = pasemi_mac_map_regs(mac);
- 	if (err)
+ 		dp = &RX_DESC(mac, n);
++		prefetchw(dp);
+ 		macrx = dp->macrx;
+ 
+ 		if (!(macrx & XCT_MACRX_O))
+@@ -502,8 +503,10 @@ static int pasemi_mac_clean_rx(struct pa
+ 			if (info->dma == dma)
+ 				break;
+ 		}
++		prefetchw(info);
+ 
+ 		skb = info->skb;
++		prefetchw(skb);
+ 		info->dma = 0;
+ 
+ 		pci_unmap_single(mac->dma_pdev, dma, skb->len,
+@@ -526,9 +529,7 @@ static int pasemi_mac_clean_rx(struct pa
+ 
+ 		skb_put(skb, len);
+ 
+-		skb->protocol = eth_type_trans(skb, mac->netdev);
+-
+-		if ((macrx & XCT_MACRX_HTY_M) == XCT_MACRX_HTY_IPV4_OK) {
++		if (likely((macrx & XCT_MACRX_HTY_M) == XCT_MACRX_HTY_IPV4_OK)) {
+ 			skb->ip_summed = CHECKSUM_COMPLETE;
+ 			skb->csum = (macrx & XCT_MACRX_CSUM_M) >>
+ 					   XCT_MACRX_CSUM_S;
+@@ -538,6 +539,7 @@ static int pasemi_mac_clean_rx(struct pa
+ 		mac->stats.rx_bytes += len;
+ 		mac->stats.rx_packets++;
+ 
++		skb->protocol = eth_type_trans(skb, mac->netdev);
+ 		netif_receive_skb(skb);
+ 
+ 		dp->ptr = 0;
+@@ -569,7 +571,7 @@ static int pasemi_mac_clean_tx(struct pa
+ 
+ 	for (i = start; i < mac->tx->next_to_use; i++) {
+ 		dp = &TX_DESC(mac, i);
+-		if (!dp || (dp->mactx & XCT_MACTX_O))
++		if (unlikely(dp->mactx & XCT_MACTX_O))
+ 			break;
+ 
+ 		count++;
+@@ -957,7 +959,7 @@ static int pasemi_mac_start_tx(struct sk
+ 	struct pasemi_mac_txring *txring;
+ 	struct pasemi_mac_buffer *info;
+ 	struct pas_dma_xct_descr *dp;
+-	u64 dflags;
++	u64 dflags, mactx, ptr;
+ 	dma_addr_t map;
+ 	int flags;
+ 
+@@ -985,6 +987,9 @@ static int pasemi_mac_start_tx(struct sk
+ 	if (dma_mapping_error(map))
+ 		return NETDEV_TX_BUSY;
+ 
++	mactx = dflags | XCT_MACTX_LLEN(skb->len);
++	ptr   = XCT_PTR_LEN(skb->len) | XCT_PTR_ADDR(map);
++
+ 	txring = mac->tx;
+ 
+ 	spin_lock_irqsave(&txring->lock, flags);
+@@ -1005,12 +1010,11 @@ static int pasemi_mac_start_tx(struct sk
+ 		}
+ 	}
+ 
+-
+ 	dp = &TX_DESC(mac, txring->next_to_use);
+ 	info = &TX_DESC_INFO(mac, txring->next_to_use);
+ 
+-	dp->mactx = dflags | XCT_MACTX_LLEN(skb->len);
+-	dp->ptr   = XCT_PTR_LEN(skb->len) | XCT_PTR_ADDR(map);
++	dp->mactx = mactx;
++	dp->ptr = ptr;
+ 	info->dma = map;
+ 	info->skb = skb;
+ 
 
 --
