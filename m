@@ -1,13 +1,13 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id ECDF2DDF5F
+	by ozlabs.org (Postfix) with ESMTP id 0ED5BDDF60
 	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 03:03:50 +1000 (EST)
-Message-Id: <20070705170243.003467000@lixom.net>
+Message-Id: <20070705170240.257555000@lixom.net>
 References: <20070705170233.258351000@lixom.net>
-Date: Thu, 05 Jul 2007 12:03:08 -0500
+Date: Thu, 05 Jul 2007 12:02:58 -0500
 From: Olof Johansson <olof@lixom.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 35/35] Work around errata 5652
+Subject: [patch 25/35] Work around errata 4025
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,59 +17,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Due to errata 5652 we might sometimes end up with duplicate SLB entries.
+Errata 4025 workaround: A SLB load can in some cases be corrupted. As a workaround,
+insert an instruction with sync side effects after the load (in this case it's the
+mtmsrd).
 
-This causes a machine check, so detect it (and print debug info), but
-recover instead of killing the process and/or crashing the machine.
-
-
-Index: 2.6.21/arch/powerpc/platforms/pasemi/setup.c
+Index: 2.6.21/arch/powerpc/kernel/entry_64.S
 ===================================================================
---- 2.6.21.orig/arch/powerpc/platforms/pasemi/setup.c
-+++ 2.6.21/arch/powerpc/platforms/pasemi/setup.c
-@@ -36,6 +36,7 @@
- #include <asm/smp.h>
- #include <asm/time.h>
- #include <asm/of_platform.h>
-+#include <asm/mmu-hash64.h>
+--- 2.6.21.orig/arch/powerpc/kernel/entry_64.S
++++ 2.6.21/arch/powerpc/kernel/entry_64.S
+@@ -395,6 +395,8 @@ BEGIN_FTR_SECTION
+ 	slbie	r6
+ 	slbie	r6		/* Workaround POWER5 < DD2.1 issue */
+ 	slbmte	r7,r0
++	mfmsr	r7		/* PA6T Ax workaround */
++	mtmsrd	r7
+ 	isync
  
- #include "pasemi.h"
+ 2:
+Index: 2.6.21/arch/powerpc/mm/slb.c
+===================================================================
+--- 2.6.21.orig/arch/powerpc/mm/slb.c
++++ 2.6.21/arch/powerpc/mm/slb.c
+@@ -79,7 +79,7 @@ static inline void create_shadowed_slbe(
+ 	slb_shadow_update(mk_esid_data(ea, entry), mk_vsid_data(ea, flags),
+ 			  entry);
  
-@@ -176,7 +177,7 @@ static int pas_machine_check_handler(str
- {
- 	int cpu = smp_processor_id();
- 	unsigned long srr0, srr1, dsisr;
--	int dump_slb = 0;
-+	int dump_slb = 0, flush_slb = 0;
- 	int dump_memsta = 0;
+-	asm volatile("slbmte  %0,%1" :
++	asm volatile("slbmte  %0,%1 ; mfmsr %0 ; mtmsrd %0" :
+ 		     : "r" (mk_vsid_data(ea, flags)),
+ 		       "r" (mk_esid_data(ea, entry))
+ 		     : "memory" );
+@@ -113,8 +113,14 @@ void slb_flush_and_rebolt(void)
+ 		     "slbia\n"
+ 		     /* Slot 1 - first VMALLOC segment */
+ 		     "slbmte	%0,%1\n"
++		     /* PA6T Ax workaround */
++		     "mfmsr	%0\n"
++		     "mtmsrd	%0\n"
+ 		     /* Slot 2 - kernel stack */
+ 		     "slbmte	%2,%3\n"
++		     /* PA6T Ax workaround */
++		     "mfmsr	%0\n"
++		     "mtmsrd	%0\n"
+ 		     "isync"
+ 		     :: "r"(mk_vsid_data(VMALLOC_START, vflags)),
+ 		        "r"(mk_esid_data(VMALLOC_START, 1)),
+Index: 2.6.21/arch/powerpc/mm/slb_low.S
+===================================================================
+--- 2.6.21.orig/arch/powerpc/mm/slb_low.S
++++ 2.6.21/arch/powerpc/mm/slb_low.S
+@@ -221,6 +221,8 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISER
+ 	 * we enter with and the rfid we exit with are context synchronizing.
+ 	 */
+ 	slbmte	r11,r10
++	mfmsr	r3
++	mtmsrd	r3
  
- 	srr0 = regs->nip;
-@@ -200,6 +201,7 @@ static int pas_machine_check_handler(str
- 		if (dsisr & 0x2000) {
- 			printk(KERN_ERR "MMU SLB multi-hit or invalid B field\n");
- 			dump_slb = 1;
-+			flush_slb = 1;
- 		}
- 		if (dsisr & 0x1000)
- 			printk(KERN_ERR "Recoverable Duptags\n");
-@@ -215,6 +217,7 @@ static int pas_machine_check_handler(str
- 	if (srr1 & 0x40000) {
- 		printk(KERN_ERR "I-side SLB multiple hit\n");
- 		dump_slb = 1;
-+		flush_slb = 1;
- 	}
- 	if (srr1 & 0x20000) {
- 		printk(KERN_ERR "I-cache parity error hit\n");
-@@ -243,6 +246,10 @@ static int pas_machine_check_handler(str
- 		}
- 	}
- 
-+	if (flush_slb)
-+		/* We really can recover from this. flush, rebolt and go. */
-+		slb_flush_and_rebolt();
-+
- 	/* SRR1[62] is from MSR[62] if recoverable, so pass that back */
- 	return !!(srr1 & 0x2);
- }
+ 	/* we're done for kernel addresses */
+ 	crclr	4*cr0+eq		/* set result to "success" */
 
 --
