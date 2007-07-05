@@ -1,12 +1,13 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 69892DDE2C
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 03:03:46 +1000 (EST)
-Message-Id: <20070705170233.258351000@lixom.net>
-Date: Thu, 05 Jul 2007 12:02:33 -0500
+	by ozlabs.org (Postfix) with ESMTP id 70D95DDF29
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 03:03:47 +1000 (EST)
+Message-Id: <20070705170234.489685000@lixom.net>
+References: <20070705170233.258351000@lixom.net>
+Date: Thu, 05 Jul 2007 12:02:37 -0500
 From: Olof Johansson <olof@lixom.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 00/35] PA Semi patch set
+Subject: [patch 04/35] pasemi_mac: Fix TX interrupt threshold
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,21 +17,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The following series is a snapshot of the in-progress and out-of-tree
-errata workarounds that I'm currently maintaining.
+It was mistakenly set to interrupt on the second packet instead of first, causing
+some interesting latency behaviour.
 
-The first patches are mostly copies of stuff that has already been sent
-out for upstream merge, followed by some patches that are not yet ready
-to be merged (need cleanup, more work). Last are some errata workarounds
-for various bugs in the sample-level silicon.
 
-Some of the workarounds are quite ugly and touches various parts of the
-kernels in not so pretty ways. No need to tell me about it.
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-They are also not multiplatform-friendly. Since they are all temporary
-it hasn't been a priority.
-
-This is not a request for review or merge, just a FYI to "get the patches
-out there".
+Index: netdev-2.6/drivers/net/pasemi_mac.c
+===================================================================
+--- netdev-2.6.orig/drivers/net/pasemi_mac.c
++++ netdev-2.6/drivers/net/pasemi_mac.c
+@@ -755,7 +755,7 @@ static int pasemi_mac_open(struct net_de
+ 	flags |= PAS_MAC_CFG_PCFG_TSR_1G | PAS_MAC_CFG_PCFG_SPD_1G;
+ 
+ 	pci_write_config_dword(mac->iob_pdev, PAS_IOB_DMA_RXCH_CFG(mac->dma_rxch),
+-			       PAS_IOB_DMA_RXCH_CFG_CNTTH(1));
++			       PAS_IOB_DMA_RXCH_CFG_CNTTH(0));
+ 
+ 	pci_write_config_dword(mac->iob_pdev, PAS_IOB_DMA_TXCH_CFG(mac->dma_txch),
+ 			       PAS_IOB_DMA_TXCH_CFG_CNTTH(32));
 
 --
