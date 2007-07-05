@@ -1,20 +1,40 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 4C981DDF70
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 00:38:29 +1000 (EST)
-Date: Thu, 5 Jul 2007 09:49:14 -0500
-To: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-	linux-pcmcia@lists.infradead.org, linuxppc-dev@ozlabs.org, miltonm@bga.com
-Subject: [PATCH v3] pcmcia: CompactFlash driver for PA Semi Electra boards
-Message-ID: <20070705144914.GA14284@lixom.net>
-References: <20070625010311.GA31355@lixom.net>
-	<20070625171221.GA6684@lixom.net>
-	<20070625193909.GA26021@infradead.org>
-	<20070625204341.GA8865@lixom.net>
+Return-Path: <ossthema@de.ibm.com>
+Received: from mtagate5.de.ibm.com (mtagate5.de.ibm.com [195.212.29.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate5.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1B4AFDDF2B
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 00:49:49 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate5.de.ibm.com (8.13.8/8.13.8) with ESMTP id l65Enj3J945130
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Jul 2007 14:49:45 GMT
+Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
+	[9.149.165.213])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.3) with
+	ESMTP id l65Enjg32072678
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Jul 2007 16:49:45 +0200
+Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l65Enixv012715
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Jul 2007 16:49:45 +0200
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [PATCH 2/2] eHEA: Receive SKB Aggregation,
+	generic LRO helper functions
+Date: Thu, 5 Jul 2007 16:24:46 +0200
+References: <200707050926.30468.ossthema@de.ibm.com>
+	<20070705082056.GA358@2ka.mipt.ru>
+In-Reply-To: <20070705082056.GA358@2ka.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070625204341.GA8865@lixom.net>
-From: olof@lixom.net (Olof Johansson)
+Content-Type: text/plain;
+  charset="koi8-r"
+Message-Id: <200707051624.46887.ossthema@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
+	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Christoph Hellwig <hch@infradead.org>, linux-ppc <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,526 +44,147 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Driver for the CompactFlash slot on the PA Semi Electra eval board. It's
-a simple device sitting on localbus, with interrupts and detect/voltage
-control over GPIO.
+Hi, 
 
-The driver is implemented as an of_platform driver, and adds localbus
-as a bus being probed by the of_platform framework.
+thanks for your comment. 
 
+Jan-Bernd
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
-
----
-
-On Mon, Jun 25, 2007 at 03:43:41PM -0500, olof wrote:
-
-> The ifdef is needed since for CONFIG_PCMCIA=n builds, the bus notifier
-> isn't available. I wanted to do the bus notifier registration explicitly
-> before the of_platform bus probe to avoid later surprises due to reordered
-> initcalls in case it was split up in it's own initcall.
+On Thursday 05 July 2007 10:20, you wrote:
+> Hi Jan-Bernd.
 > 
-> I could add the code under ifdef as well, but it didn't seem too
-> critical. Once the second major board comes along I'll probably move it
-> out to a per-board file, there's no real need for it just yet.
+> [ Dropped spambot/i.e. unrelated mail lists ]
+> 
+> On Thu, Jul 05, 2007 at 09:26:30AM +0200, Jan-Bernd Themann (ossthema@de.ibm.com) wrote:
+> > This patch enables the receive side processing to aggregate TCP packets within
+> > the HEA device driver. It analyses the packets already received after an
+> > interrupt arrived and forwards these as chains of SKBs for the same TCP
+> > connection with modified header field. We have seen a lower CPU load and
+> > improved throughput for small numbers of parallel TCP connections.
+> > As this feature is considered as experimental it is switched off by default
+> > and can be activated via a module parameter.
+> 
+> I've couple of comments on the driver, but mainly the fact of decreased
+> CPU usage itself - what was the magnitude of the win with this driver,
+> it looks like because of per-packet receive code path invocation is the
+> place of the latency...
+> Your implementation looks generic enough to be used by any driver, don't
+> you want to push it separately from eHEA driver?
+> 
 
-Alright, turns out I still need to declare the extern bus type, which would mean
-two #ifdefs in one function. Moving it out instead.
+We can try to come up with a generic file with these helperfunctions.
+What do you think about putting them into /net/ipv4/inet_lro.c and 
+/include/linux/inet_lro.h ?
 
-I've addressed Milton's comments as well.
+Latency: We didn't measure it so far, but it leads to a significant improvement
+concerning the throughput. Our LRO algorithm only handles X packets a time
+(depends on MTU and budget), so the upper bound delay is X*processing a single
+packet from driver perspective. 
 
-Who's maintaining PCMCIA? MAINTAINERS only lists a mailing list, no person. Seems
-weird for a component that's marked as maintained.
+> 
+> > +static int lro_tcp_check(struct iphdr *iph, struct tcphdr *tcph,
+> > +			 int tcp_data_len, struct ehea_lro *lro)
+> > +{
+> > +	if (tcp_data_len == 0)
+> > +		return -1;
+> > +
+> > +	if (iph->ihl != IPH_LEN_WO_OPTIONS)
+> > +		return -1;
+> > +
+> > +	if (tcph->cwr || tcph->ece || tcph->urg || !tcph->ack || tcph->psh
+> > +	    || tcph->rst || tcph->syn || tcph->fin)
+> > +		return -1;
+> > +
+> > +	if (INET_ECN_is_ce(ipv4_get_dsfield(iph)))
+> > +		return -1;
+> > +
+> > +	if (tcph->doff != TCPH_LEN_WO_OPTIONS
+> > +	    && tcph->doff != TCPH_LEN_W_TIMESTAMP)
+> > +		return -1;
+> > +
+> > +	/* check tcp options (only timestamp allowed) */
+> > +	if (tcph->doff == TCPH_LEN_W_TIMESTAMP) {
+> > +		u32 *topt = (u32 *)(tcph + 1);
+> > +
+> > +		if (*topt != htonl((TCPOPT_NOP << 24) | (TCPOPT_NOP << 16)
+> > +				   | (TCPOPT_TIMESTAMP << 8) | TCPOLEN_TIMESTAMP))
+> > +			return -1;
+> > +
+> > +		/* timestamp should be in right order */
+> > +		topt++;
+> > +		if (lro && (ntohl(lro->tcp_rcv_tsval) > ntohl(*topt)))
+> > +			return -1;
+> 
+> This should use before/after technique like PAWS in TCP code or there will be a
+> problem with wrapper timestamps.
+> 
 
+good point, will look into this
 
-Index: mainline/drivers/pcmcia/Kconfig
-===================================================================
---- mainline.orig/drivers/pcmcia/Kconfig
-+++ mainline/drivers/pcmcia/Kconfig
-@@ -270,6 +270,13 @@ config AT91_CF
- 	  Say Y here to support the CompactFlash controller on AT91 chips.
- 	  Or choose M to compile the driver as a module named "at91_cf".
- 
-+config ELECTRA_CF
-+	bool "Electra CompactFlash Controller"
-+	depends on PCMCIA=y && PPC_PASEMI
-+	help
-+	  Say Y here to support the CompactFlash controller on the
-+	  PA Semi Electra eval board.
-+
- config PCCARD_NONSTATIC
- 	tristate
- 
-Index: mainline/drivers/pcmcia/Makefile
-===================================================================
---- mainline.orig/drivers/pcmcia/Makefile
-+++ mainline/drivers/pcmcia/Makefile
-@@ -37,6 +37,7 @@ obj-$(CONFIG_PCMCIA_VRC4171)			+= vrc417
- obj-$(CONFIG_PCMCIA_VRC4173)			+= vrc4173_cardu.o
- obj-$(CONFIG_OMAP_CF)				+= omap_cf.o
- obj-$(CONFIG_AT91_CF)				+= at91_cf.o
-+obj-$(CONFIG_ELECTRA_CF)			+= electra_cf.o
- 
- sa11xx_core-y					+= soc_common.o sa11xx_base.o
- pxa2xx_core-y					+= soc_common.o pxa2xx_base.o
-Index: mainline/drivers/pcmcia/electra_cf.c
-===================================================================
---- /dev/null
-+++ mainline/drivers/pcmcia/electra_cf.c
-@@ -0,0 +1,374 @@
-+/*
-+ * Copyright (C) 2007 PA Semi, Inc
-+ *
-+ * Maintained by: Olof Johansson <olof@lixom.net>
-+ *
-+ * Based on drivers/pcmcia/omap_cf.c
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/sched.h>
-+#include <linux/platform_device.h>
-+#include <linux/errno.h>
-+#include <linux/init.h>
-+#include <linux/delay.h>
-+#include <linux/interrupt.h>
-+
-+#include <pcmcia/ss.h>
-+#include <asm/of_platform.h>
-+
-+static const char driver_name[] = "electra-cf";
-+
-+struct electra_cf_socket {
-+	struct pcmcia_socket	socket;
-+
-+	struct timer_list	timer;
-+	unsigned		present:1;
-+	unsigned		active:1;
-+
-+	struct of_device	*ofdev;
-+	unsigned long		mem_phys;
-+	void __iomem *		mem_base;
-+	unsigned long		mem_size;
-+	void __iomem *		io_virt;
-+	unsigned int		io_base;
-+	unsigned int		io_size;
-+	u_int			irq;
-+	struct resource		iomem;
-+	void __iomem *		gpio_base;
-+	int			gpio_detect;
-+	int			gpio_vsense;
-+	int			gpio_3v;
-+	int			gpio_5v;
-+};
-+
-+#define	POLL_INTERVAL		(2 * HZ)
-+
-+
-+static int electra_cf_present(struct electra_cf_socket *cf)
-+{
-+	unsigned int gpio;
-+
-+	gpio = in_le32(cf->gpio_base+0x40);
-+	return !(gpio & (1 << cf->gpio_detect));
-+}
-+
-+static int electra_cf_ss_init(struct pcmcia_socket *s)
-+{
-+	return 0;
-+}
-+
-+/* the timer is primarily to kick this socket's pccardd */
-+static void electra_cf_timer(unsigned long _cf)
-+{
-+	struct electra_cf_socket *cf = (void *) _cf;
-+	int present = electra_cf_present(cf);
-+
-+	if (present != cf->present) {
-+		cf->present = present;
-+		pcmcia_parse_events(&cf->socket, SS_DETECT);
-+	}
-+
-+	if (cf->active)
-+		mod_timer(&cf->timer, jiffies + POLL_INTERVAL);
-+}
-+
-+static irqreturn_t electra_cf_irq(int irq, void *_cf)
-+{
-+	electra_cf_timer((unsigned long)_cf);
-+	return IRQ_HANDLED;
-+}
-+
-+static int electra_cf_get_status(struct pcmcia_socket *s, u_int *sp)
-+{
-+	struct electra_cf_socket *cf;
-+
-+	if (!sp)
-+		return -EINVAL;
-+
-+	cf = container_of(s, struct electra_cf_socket, socket);
-+
-+	/* NOTE CF is always 3VCARD */
-+	if (electra_cf_present(cf)) {
-+		struct electra_cf_socket *cf;
-+
-+		*sp = SS_READY | SS_DETECT | SS_POWERON | SS_3VCARD;
-+		cf = container_of(s, struct electra_cf_socket, socket);
-+		s->pci_irq = cf->irq;
-+	} else
-+		*sp = 0;
-+	return 0;
-+}
-+
-+static int electra_cf_set_socket(struct pcmcia_socket *sock,
-+				 struct socket_state_t *s)
-+{
-+	unsigned int gpio;
-+	unsigned int vcc;
-+	struct electra_cf_socket *cf;
-+
-+	cf = container_of(sock, struct electra_cf_socket, socket);
-+
-+	/* "reset" means no power in our case */
-+	vcc = (s->flags & SS_RESET) ? 0 : s->Vcc;
-+
-+	switch (vcc) {
-+	case 0:
-+		gpio = 0;
-+		break;
-+	case 33:
-+		gpio = (1 << cf->gpio_3v);
-+		break;
-+	default:
-+		/* CF is 3.3V only */
-+		return -EINVAL;
-+	}
-+
-+	gpio |= 1 << (cf->gpio_3v + 16); /* enwr */
-+	gpio |= 1 << (cf->gpio_5v + 16); /* enwr */
-+	out_le32(cf->gpio_base+0x90, gpio);
-+
-+	pr_debug("%s: Vcc %d, io_irq %d, flags %04x csc %04x\n",
-+		driver_name, s->Vcc, s->io_irq, s->flags, s->csc_mask);
-+
-+	return 0;
-+}
-+
-+static int electra_cf_set_io_map(struct pcmcia_socket *s,
-+				 struct pccard_io_map *io)
-+{
-+	return 0;
-+}
-+
-+static int electra_cf_set_mem_map(struct pcmcia_socket *s,
-+				  struct pccard_mem_map *map)
-+{
-+	struct electra_cf_socket *cf;
-+
-+	if (map->card_start)
-+		return -EINVAL;
-+	cf = container_of(s, struct electra_cf_socket, socket);
-+	map->static_start = cf->mem_phys;
-+	map->flags &= MAP_ACTIVE|MAP_ATTRIB;
-+	if (!(map->flags & MAP_ATTRIB))
-+		map->static_start += 0x800;
-+	return 0;
-+}
-+
-+static struct pccard_operations electra_cf_ops = {
-+	.init			= electra_cf_ss_init,
-+	.get_status		= electra_cf_get_status,
-+	.set_socket		= electra_cf_set_socket,
-+	.set_io_map		= electra_cf_set_io_map,
-+	.set_mem_map		= electra_cf_set_mem_map,
-+};
-+
-+static int __devinit electra_cf_probe(struct of_device *ofdev,
-+				      const struct of_device_id *match)
-+{
-+	struct device *device = &ofdev->dev;
-+	struct device_node *np = ofdev->node;
-+	struct electra_cf_socket   *cf;
-+	struct resource mem, io;
-+	int status;
-+	const unsigned int *prop;
-+	int err;
-+
-+	err = of_address_to_resource(np, 0, &mem);
-+	if (err)
-+		return -EINVAL;
-+
-+	err = of_address_to_resource(np, 1, &io);
-+	if (err)
-+		return -EINVAL;
-+
-+	cf = kzalloc(sizeof *cf, GFP_KERNEL);
-+	if (!cf)
-+		return -ENOMEM;
-+
-+	init_timer(&cf->timer);
-+	cf->timer.function = electra_cf_timer;
-+	cf->timer.data = (unsigned long) cf;
-+	cf->irq = NO_IRQ;
-+
-+	cf->ofdev = ofdev;
-+	cf->mem_phys = mem.start;
-+	cf->mem_base = ioremap(mem.start, mem.end - mem.start);
-+	cf->io_size = PAGE_ALIGN(io.end - io.start);
-+
-+	cf->io_virt = reserve_phb_iospace(cf->io_size);
-+
-+	cf->gpio_base = ioremap(0xfc103000, 0x1000);
-+	dev_set_drvdata(device, cf);
-+
-+	if (!cf->mem_base || !cf->io_virt || !cf->gpio_base) {
-+		dev_err(device, "can't ioremap ranges\n");
-+		status = -ENOMEM;
-+		goto fail1;
-+	}
-+
-+	__ioremap_explicit(io.start, (unsigned long)cf->io_virt, cf->io_size,
-+			   _PAGE_NO_CACHE | _PAGE_GUARDED);
-+
-+	cf->io_base = (unsigned long)cf->io_virt - VMALLOC_END;
-+
-+	cf->iomem.start = (unsigned long)cf->mem_base;
-+	cf->iomem.end = (unsigned long)cf->mem_base + (mem.end - mem.start);
-+	cf->iomem.flags = IORESOURCE_MEM;
-+
-+	cf->irq = irq_of_parse_and_map(np, 0);
-+
-+	status = request_irq(cf->irq, electra_cf_irq, IRQF_SHARED,
-+			     driver_name, cf);
-+	if (status < 0) {
-+		dev_err(device, "request_irq failed\n");
-+		goto fail1;
-+	}
-+
-+	cf->socket.pci_irq = cf->irq;
-+
-+	prop = of_get_property(np, "card-detect-gpio", NULL);
-+	if (!prop)
-+		goto fail1;
-+	cf->gpio_detect = *prop;
-+
-+	prop = of_get_property(np, "card-vsense-gpio", NULL);
-+	if (!prop)
-+		goto fail1;
-+	cf->gpio_vsense = *prop;
-+
-+	prop = of_get_property(np, "card-3v-gpio", NULL);
-+	if (!prop)
-+		goto fail1;
-+	cf->gpio_3v = *prop;
-+
-+	prop = of_get_property(np, "card-5v-gpio", NULL);
-+	if (!prop)
-+		goto fail1;
-+	cf->gpio_5v = *prop;
-+
-+	cf->socket.io_offset = cf->io_base;
-+
-+	/* reserve chip-select regions */
-+	if (!request_mem_region(mem.start, mem.end + 1 - mem.start,
-+				driver_name)) {
-+		status = -ENXIO;
-+		dev_err(device, "Can't claim memory region\n");
-+		goto fail1;
-+	}
-+
-+	if (!request_region(cf->io_base, cf->io_size, driver_name)) {
-+		status = -ENXIO;
-+		dev_err(device, "Can't claim I/O region\n");
-+		goto fail2;
-+	}
-+
-+	cf->socket.owner = THIS_MODULE;
-+	cf->socket.dev.parent = &ofdev->dev;
-+	cf->socket.ops = &electra_cf_ops;
-+	cf->socket.resource_ops = &pccard_static_ops;
-+	cf->socket.features = SS_CAP_PCCARD | SS_CAP_STATIC_MAP |
-+				SS_CAP_MEM_ALIGN;
-+	cf->socket.map_size = 0x800;
-+
-+	status = pcmcia_register_socket(&cf->socket);
-+	if (status < 0) {
-+		dev_err(device, "pcmcia_register_socket failed\n");
-+		goto fail3;
-+	}
-+
-+	dev_info(device, "at mem 0x%lx io 0x%lx irq %d\n",
-+		 mem.start, io.start, cf->irq);
-+
-+	cf->active = 1;
-+	electra_cf_timer((unsigned long)cf);
-+	return 0;
-+
-+fail3:
-+	release_mem_region(io.start, io.end + 1 - io.start);
-+fail2:
-+	release_mem_region(mem.start, mem.end + 1 - mem.start);
-+fail1:
-+	if (cf->irq != NO_IRQ)
-+		free_irq(cf->irq, cf);
-+
-+	/* XXX No way to undo the ioremap_explicit at this time */
-+	if (cf->mem_base)
-+		iounmap(cf->mem_base);
-+	if (cf->gpio_base)
-+		iounmap(cf->gpio_base);
-+	device_init_wakeup(&ofdev->dev, 0);
-+	kfree(cf);
-+	return status;
-+
-+}
-+
-+static int __devexit electra_cf_remove(struct of_device *ofdev)
-+{
-+	struct device *device = &ofdev->dev;
-+	struct electra_cf_socket *cf;
-+
-+	cf = dev_get_drvdata(device);
-+
-+	cf->active = 0;
-+	pcmcia_unregister_socket(&cf->socket);
-+	free_irq(cf->irq, cf);
-+	del_timer_sync(&cf->timer);
-+
-+	iounmap(cf->mem_base);
-+	iounmap(cf->gpio_base);
-+	release_mem_region(cf->mem_phys, cf->mem_size);
-+	release_region(cf->io_base, cf->io_size);
-+
-+	kfree(cf);
-+
-+	return 0;
-+}
-+
-+static struct of_device_id electra_cf_match[] =
-+{
-+	{
-+		.compatible   = "electra-cf",
-+	},
-+	{},
-+};
-+
-+static struct of_platform_driver electra_cf_driver =
-+{
-+	.name	   = (char *)driver_name,
-+	.match_table    = electra_cf_match,
-+	.probe	  = electra_cf_probe,
-+	.remove   = electra_cf_remove,
-+};
-+
-+static int __init electra_cf_init(void)
-+{
-+	return of_register_platform_driver(&electra_cf_driver);
-+}
-+module_init(electra_cf_init);
-+
-+static void __exit electra_cf_exit(void)
-+{
-+	of_unregister_platform_driver(&electra_cf_driver);
-+}
-+module_exit(electra_cf_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR ("Olof Johansson <olof@lixom.net>");
-+MODULE_DESCRIPTION("PA Semi Electra CF driver");
-+
-Index: mainline/arch/powerpc/platforms/pasemi/setup.c
-===================================================================
---- mainline.orig/arch/powerpc/platforms/pasemi/setup.c
-+++ mainline/arch/powerpc/platforms/pasemi/setup.c
-@@ -37,6 +37,10 @@
- #include <asm/time.h>
- #include <asm/of_platform.h>
- 
-+#include <pcmcia/ss.h>
-+#include <pcmcia/cistpl.h>
-+#include <pcmcia/ds.h>
-+
- #include "pasemi.h"
- 
- static void __iomem *reset_reg;
-@@ -204,7 +208,57 @@ static void __init pas_init_early(void)
- 	iommu_init_early_pasemi();
- }
- 
-+#ifdef CONFIG_PCMCIA
-+static int pcmcia_notify(struct notifier_block *nb, unsigned long action,
-+			 void *data)
-+{
-+	struct device *dev = data;
-+	struct device *parent;
-+	struct pcmcia_device *pdev = to_pcmcia_dev(dev);
-+
-+	/* We are only intereted in device addition */
-+	if (action != BUS_NOTIFY_ADD_DEVICE)
-+		return 0;
-+
-+	parent = pdev->socket->dev.parent;
-+
-+	/* We know electra_cf devices will always have of_node set, since
-+	 * electra_cf is an of_platform driver.
-+	 */
-+	if (!parent->archdata.of_node)
-+		return 0;
-+
-+	if (!of_device_is_compatible(parent->archdata.of_node, "electra-cf"))
-+		return 0;
-+
-+	/* We use the direct ops for localbus */
-+	dev->archdata.dma_ops = &dma_direct_ops;
-+
-+	return 0;
-+}
-+
-+static struct notifier_block pcmcia_notifier = {
-+	.notifier_call = pcmcia_notify,
-+};
-+
-+static inline void pasemi_pcmcia_init(void)
-+{
-+	extern struct bus_type pcmcia_bus_type;
-+
-+	bus_register_notifier(&pcmcia_bus_type, &pcmcia_notifier);
-+}
-+
-+#else
-+
-+static inline void pasemi_pcmcia_init(void)
-+{
-+}
-+
-+#endif
-+
-+
- static struct of_device_id pasemi_bus_ids[] = {
-+	{ .type = "localbus", },
- 	{ .type = "sdc", },
- 	{},
- };
-@@ -214,6 +268,8 @@ static int __init pasemi_publish_devices
- 	if (!machine_is(pasemi))
- 		return 0;
- 
-+	pasemi_pcmcia_init();
-+
- 	/* Publish OF platform devices for SDC and other non-PCI devices */
- 	of_platform_bus_probe(NULL, pasemi_bus_ids, NULL);
- 
+> > +
+> > +		/* timestamp reply should not be zero */
+> > +		topt++;
+> > +		if (*topt == 0)
+> > +			return -1;
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static void update_tcp_ip_header(struct ehea_lro *lro)
+> > +{
+> > +	struct iphdr *iph = lro->iph;
+> > +	struct tcphdr *tcph = lro->tcph;
+> > +	u32 *p;
+> > +
+> > +	tcph->ack_seq = lro->tcp_ack;
+> > +	tcph->window = lro->tcp_window;
+> > +
+> > +	if (lro->tcp_saw_tstamp) {
+> > +		p = (u32 *)(tcph + 1);
+> > +		*(p+2) = lro->tcp_rcv_tsecr;
+> > +	}
+> > +
+> > +	iph->tot_len = htons(lro->ip_tot_len);
+> > +	iph->check = 0;
+> > +	iph->check = ip_fast_csum((u8 *)lro->iph, iph->ihl);
+> > +}
+> > +
+> > +static void init_lro_desc(struct ehea_lro *lro, struct ehea_cqe *cqe,
+> > +			  struct sk_buff *skb, struct iphdr *iph,
+> > +			  struct tcphdr *tcph, u32 tcp_data_len)
+> > +{
+> > +	u32 *ptr;
+> > +
+> > +	lro->parent = skb;
+> > +	lro->iph = iph;
+> > +	lro->tcph = tcph;
+> > +	lro->tcp_next_seq = ntohl(tcph->seq) + tcp_data_len;
+> > +	lro->tcp_ack = ntohl(tcph->ack_seq);
+> 
+> How do you handle misordering or duplicate acks or resends?
+> 
+
+we just forward these packets and leave it to the network stack to
+handle them. As soon as we get a packet which does not match we
+just flush the LRO session and the current packet 
+(forward to stack as separate SKBs)
+
+> > +	lro->skb_sg_cnt = 1;
+> > +	lro->ip_tot_len = ntohs(iph->tot_len);
+> > +
+> > +	if (tcph->doff == 8) {
+> > +		ptr = (u32 *)(tcph+1);
+> > +		lro->tcp_saw_tstamp = 1;
+> > +		lro->tcp_rcv_tsval = *(ptr+1);
+> > +		lro->tcp_rcv_tsecr = *(ptr+2);
+> > +	}
+> > +
+> > +	if (cqe->status & EHEA_CQE_VLAN_TAG_XTRACT) {
+> > +		lro->vlan_packet = 1;
+> > +		lro->vlan_tag = cqe->vlan_tag;
+> > +	}
+> > +
+> > +	lro->active = 1;
+> > +}
+> 
