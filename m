@@ -1,17 +1,18 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 59470DDE3B
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Jul 2007 19:34:37 +1000 (EST)
-Subject: [PATCH] arch/powerpc/kernel/sysfs.c: move NUMA exports
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain
-Date: Thu, 05 Jul 2007 11:35:33 +0200
-Message-Id: <1183628133.3818.28.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 11FAADDDD5
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Jul 2007 23:26:51 +1000 (EST)
+Date: Thu, 5 Jul 2007 08:37:34 -0500
+To: Sonny Rao <sonny@burdell.org>
+Subject: Re: [PATCH] pseries: don't die if unknown/missing interrupt
+	controller property
+Message-ID: <20070705133734.GA9215@lixom.net>
+References: <20070702004937.GA15712@kevlar.boston.burdell.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070702004937.GA15712@kevlar.boston.burdell.org>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,39 +22,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-With !CONFIG_NUMA, these are static inlines in the header file so don't
-generate exports for them then.
+On Sun, Jul 01, 2007 at 08:49:37PM -0400, Sonny Rao wrote:
+> The pseries platform does not have a default function for init_IRQ and
+> does not install one if it doesn't find or doesn't recognize an
+> interrupt controller in the device tree.  Currently, the kernel dies
+> when it tries to call the NULL init_IRQ() function.  Clean that up.
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Doesn't it make more sense to make init_IRQ() check that the pointer is
+set instead? That'll work for more platforms than just pseries.
 
----
- arch/powerpc/kernel/sysfs.c |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
 
---- wireless-dev.orig/arch/powerpc/kernel/sysfs.c	2007-07-05 11:33:33.135640003 +0200
-+++ wireless-dev/arch/powerpc/kernel/sysfs.c	2007-07-05 11:34:04.125640003 +0200
-@@ -442,12 +442,14 @@ int sysfs_add_device_to_node(struct sys_
- 	return sysfs_create_link(&node->sysdev.kobj, &dev->kobj,
- 			kobject_name(&dev->kobj));
- }
-+EXPORT_SYMBOL_GPL(sysfs_add_device_to_node);
- 
- void sysfs_remove_device_from_node(struct sys_device *dev, int nid)
- {
- 	struct node *node = &node_devices[nid];
- 	sysfs_remove_link(&node->sysdev.kobj, kobject_name(&dev->kobj));
- }
-+EXPORT_SYMBOL_GPL(sysfs_remove_device_from_node);
- 
- #else
- static void register_nodes(void)
-@@ -457,9 +459,6 @@ static void register_nodes(void)
- 
- #endif
- 
--EXPORT_SYMBOL_GPL(sysfs_add_device_to_node);
--EXPORT_SYMBOL_GPL(sysfs_remove_device_from_node);
--
- /* Only valid if CPU is present. */
- static ssize_t show_physical_id(struct sys_device *dev, char *buf)
- {
+-Olof
