@@ -1,25 +1,12 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id EAFDDDDF15
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Jul 2007 03:50:24 +1000 (EST)
-Date: Wed, 4 Jul 2007 19:50:09 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Add of_register_i2c_devices()
-In-Reply-To: <030A74A7-7D15-46C3-9ACE-21A42D395E65@kernel.crashing.org>
-Message-ID: <Pine.LNX.4.60.0707041938170.5952@poirot.grange>
-References: <Pine.LNX.4.60.0706292113240.4227@poirot.grange>
-	<00a85f152aa3547f0f0b4acd7954468a@kernel.crashing.org>
-	<Pine.LNX.4.60.0707022114020.3339@poirot.grange>
-	<2055bb54b9816faaf5b2ceedc9cfa039@kernel.crashing.org>
-	<Pine.LNX.4.60.0707032356270.3876@poirot.grange>
-	<E0E696F1-2F9E-4D6B-A194-EB42BA826BCD@kernel.crashing.org>
-	<Pine.LNX.4.60.0707040707010.4300@poirot.grange>
-	<030A74A7-7D15-46C3-9ACE-21A42D395E65@kernel.crashing.org>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	i2c@lm-sensors.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18060.19770.186791.470423@cargo.ozlabs.ibm.com>
+Date: Thu, 5 Jul 2007 11:45:30 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@linux-foundation.org
+Subject: Please pull powerpc.git merge branch
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,58 +16,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 4 Jul 2007, Segher Boessenkool wrote:
+Linus,
 
-> > be filled by respective drivers themselves.
-> 
-> That would be nicer yes, but a bigger change.
+Did my pull request fall through the cracks, or is there a problem
+with it?
 
-Aha, but nicer!:-)
+Please do
 
-> > For this to work i2c would need something similar to what pci, usb do -
-> > register supported device ids. The only difference is that instead of
-> > numerical IDs we have to use plain text names for i2c devices...
-> 
-> Yeah, that would be nice.  Are you suggesting the Linux I2C
-> layer should use "OF-style" names as its "native" naming
-> scheme?  I'd rather keep the namespaces separate, coupling
-> them always seems like a great idea and always turns out a
-> disaster.
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-Sorry, I'm probably missing something here. What's the principal 
-difference between the "OF-style" and "native" names? Wouldn't "rs5c372b" 
-be a natural name for both the DT "compatible" property and the list of 
-driver supported devices in i2c?
+Thanks,
+Paul.
 
-The only thing that I can see here is devices with not so obvious names. 
-OTOH, we do want all .dts to use the same name for the same chip, soooo...
+ arch/powerpc/configs/mpc7448_hpc2_defconfig  |  212 +++++++-----------
+ arch/powerpc/configs/mpc8272_ads_defconfig   |  293 +++++++++++++++----------
+ arch/powerpc/configs/mpc8313_rdb_defconfig   |  310 +++++++++++++-------------
+ arch/powerpc/configs/mpc832x_mds_defconfig   |  176 ++++++---------
+ arch/powerpc/configs/mpc832x_rdb_defconfig   |  229 ++++++++-----------
+ arch/powerpc/configs/mpc834x_itx_defconfig   |  265 +++++++++++-----------
+ arch/powerpc/configs/mpc834x_itxgp_defconfig |  232 ++++++++++---------
+ arch/powerpc/configs/mpc834x_mds_defconfig   |  195 ++++++++--------
+ arch/powerpc/configs/mpc836x_mds_defconfig   |  176 ++++++---------
+ arch/powerpc/configs/mpc8540_ads_defconfig   |  201 ++++++++---------
+ arch/powerpc/configs/mpc8544_ds_defconfig    |  193 +++++++---------
+ arch/powerpc/configs/mpc8560_ads_defconfig   |  201 ++++++++---------
+ arch/powerpc/configs/mpc8568mds_defconfig    |  191 +++++++---------
+ arch/powerpc/configs/mpc85xx_cds_defconfig   |  206 +++++++++--------
+ arch/powerpc/configs/mpc8641_hpcn_defconfig  |  200 ++++++++---------
+ arch/powerpc/configs/mpc866_ads_defconfig    |  213 +++++++++---------
+ arch/powerpc/configs/mpc885_ads_defconfig    |  222 +++++++++----------
+ arch/powerpc/kernel/irq.c                    |    6 +
+ arch/powerpc/platforms/cell/cbe_cpufreq.c    |   15 +
+ drivers/net/Kconfig                          |    2 
+ include/asm-powerpc/irq.h                    |    5 
+ 21 files changed, 1781 insertions(+), 1962 deletions(-)
 
-> > Yes, this is why I put "would". Looks like this is the common powerpc
-> > practice ATM - to make such a glue to map arbitrary "OF names" to what
-> > respective drivers react to. Like in the case of the serial driver.
-> 
-> Yes.  This is the most flexible scheme possible and allows
-> for all kinds of fixups/workarounds in case of broken device
-> trees (or broken kernel code, for that matter).
+commit 795bb15e0735bd2b0015ca333fa157399b72c168
+Author: Kumar Gala <galak@kernel.crashing.org>
+Date:   Mon Jul 2 00:04:36 2007 -0500
 
-Well, I think, I might bite. But - mostly for the above argument, i.e., 
-just because it offers slightly more flexibility, doesn't require changes 
-to existing drivers / subsystems...
+    [POWERPC] Update defconfigs
+    
+    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-> > But -
-> > i2c is much more diverse and dynamic than serial, so, maybe it is worth
-> > thinking about "fixing" i2c?
-> 
-> Be my guest :-)  I care more about the OF side of things, but
-> let me ask anyway -- what do you see as "broken" in the Linux
-> IIC "core" that needs fixing here?
+commit 9f7905812e5919862acb6ede63e10d3d1bb4958e
+Author: Olof Johansson <olof@lixom.net>
+Date:   Mon Jun 4 14:47:04 2007 +1000
 
-No, I put "fixing" in quotes, i.e., I didn't really mean it was some 
-brokenness. Just nobody needed this until now. Just that device - driver 
-matching in i2c happens based on driver id, not device id, like in pci, 
-usb, maybe others.
+    [POWERPC] Uninline and export virq_to_hw() for the pasemi_mac driver
+    
+    Uninline virq_to_hw and export it so modules can use it. The alternative
+    would be to export the irq_map array instead, but it's an infrequently
+    called function, and keeping the array unexported seems considerably
+    cleaner.
+    
+    This is needed so that the pasemi_mac driver can be compiled as a module.
+    
+    Signed-off-by: Olof Johansson <olof@lixom.net>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+commit ee5d1b7f2a01ce4d95ca247b5a499b72f31cdbe8
+Author: Christian Krafft <krafft@de.ibm.com>
+Date:   Thu Jun 28 21:14:38 2007 +1000
+
+    [POWERPC] Fix PMI breakage in cbe_cbufreq driver
+    
+    The recent change to cell_defconfig to enable cpufreq on Cell exposed
+    the fact that the cbe_cpufreq driver currently needs the PMI interface
+    code to compile, but Kconfig doesn't make sure that the PMI interface
+    code gets built if cbe_cpufreq is enabled.
+    
+    In fact cbe_cpufreq can work without PMI, so this ifdefs out the code
+    that deals with PMI.  This is a minimal solution for 2.6.22; a more
+    comprehensive solution will be merged for 2.6.23.
+    
+    Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
+
+commit 86affd5a00a92e491e5f00ed659492767519fdf7
+Author: David Gibson <david@gibson.dropbear.id.au>
+Date:   Thu Jun 28 11:27:57 2007 +1000
+
+    [POWERPC] Disable old EMAC driver in arch/powerpc
+    
+    The EMAC driver, in drivers/net/ibm_emac, for the embedded Ethernet
+    MAC found in PowerPC 4xx embedded chips is not suitable for
+    arch/powerpc.  It will not build because it relies on the old arch/ppc
+    OCP mechanism.  BenH has a new, device-tree aware version of the
+    driver which will work in arch/powerpc, but until it's merged, this
+    patch will disable the old, non-building version.
+    
+    Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
