@@ -1,12 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
+Return-Path: <>
+Received: from asclepius.site5.com (asclepius.site5.com [70.47.36.37])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C257ADDDDB
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Jul 2007 13:25:12 +1000 (EST)
+Date: Wed, 4 Jul 2007 22:35:43 -0400
+From: Sonny Rao <sonny@burdell.org>
+To: linuxppc-dev@ozlabs.org, paulus@samba.org
+Subject: Re: [PATCH] pseries: don't die if unknown/missing interrupt
+	controller property
+Message-ID: <20070705023543.GA21522@kevlar.boston.burdell.org>
+References: <20070702004937.GA15712@kevlar.boston.burdell.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18060.19770.186791.470423@cargo.ozlabs.ibm.com>
-Date: Thu, 5 Jul 2007 11:45:30 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-Subject: Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20070702004937.GA15712@kevlar.boston.burdell.org>
+Cc: miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,96 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+On Sun, Jul 01, 2007 at 08:49:37PM -0400, Sonny Rao wrote:
+> The pseries platform does not have a default function for init_IRQ and
+> does not install one if it doesn't find or doesn't recognize an
+> interrupt controller in the device tree.  Currently, the kernel dies
+> when it tries to call the NULL init_IRQ() function.  Clean that up.
+> 
+> Signed-off-by: Sonny Rao <sonny@burdell.org>
+> 
+> --- kernel/arch/powerpc/platforms/pseries/setup.c~orig	2007-06-26 16:23:38.000000000 -0500
+> +++ kernel/arch/powerpc/platforms/pseries/setup.c	2007-06-26 19:09:53.000000000 -0500
+> @@ -274,6 +274,12 @@ static void pseries_lpar_enable_pmcs(voi
+>  		get_lppaca()->pmcregs_in_use = 1;
+>  }
+>  
+> +static void no_irq_init(void)
+> +{
+> +	printk(KERN_ERR "no_irq_init: failed to recognize"
+> +	       " interrupt-controller\n");
+> +}
+> +
+>  static void __init pseries_discover_pic(void)
+>  {
+>  	struct device_node *np;
+> @@ -296,8 +302,6 @@ static void __init pseries_discover_pic(
+>  			return;
+>  		}
+>  	}
+> -	printk(KERN_ERR "pSeries_discover_pic: failed to recognize"
+> -	       " interrupt-controller\n");
+>  }
+>  
+>  static void __init pSeries_setup_arch(void)
+> @@ -594,4 +598,5 @@ define_machine(pseries) {
+>  	.check_legacy_ioport	= pSeries_check_legacy_ioport,
+>  	.system_reset_exception = pSeries_system_reset_exception,
+>  	.machine_check_exception = pSeries_machine_check_exception,
+> +	.init_IRQ		= no_irq_init,  
+>  };
 
-Did my pull request fall through the cracks, or is there a problem
-with it?
 
-Please do
-
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
-
-Thanks,
-Paul.
-
- arch/powerpc/configs/mpc7448_hpc2_defconfig  |  212 +++++++-----------
- arch/powerpc/configs/mpc8272_ads_defconfig   |  293 +++++++++++++++----------
- arch/powerpc/configs/mpc8313_rdb_defconfig   |  310 +++++++++++++-------------
- arch/powerpc/configs/mpc832x_mds_defconfig   |  176 ++++++---------
- arch/powerpc/configs/mpc832x_rdb_defconfig   |  229 ++++++++-----------
- arch/powerpc/configs/mpc834x_itx_defconfig   |  265 +++++++++++-----------
- arch/powerpc/configs/mpc834x_itxgp_defconfig |  232 ++++++++++---------
- arch/powerpc/configs/mpc834x_mds_defconfig   |  195 ++++++++--------
- arch/powerpc/configs/mpc836x_mds_defconfig   |  176 ++++++---------
- arch/powerpc/configs/mpc8540_ads_defconfig   |  201 ++++++++---------
- arch/powerpc/configs/mpc8544_ds_defconfig    |  193 +++++++---------
- arch/powerpc/configs/mpc8560_ads_defconfig   |  201 ++++++++---------
- arch/powerpc/configs/mpc8568mds_defconfig    |  191 +++++++---------
- arch/powerpc/configs/mpc85xx_cds_defconfig   |  206 +++++++++--------
- arch/powerpc/configs/mpc8641_hpcn_defconfig  |  200 ++++++++---------
- arch/powerpc/configs/mpc866_ads_defconfig    |  213 +++++++++---------
- arch/powerpc/configs/mpc885_ads_defconfig    |  222 +++++++++----------
- arch/powerpc/kernel/irq.c                    |    6 +
- arch/powerpc/platforms/cell/cbe_cpufreq.c    |   15 +
- drivers/net/Kconfig                          |    2 
- include/asm-powerpc/irq.h                    |    5 
- 21 files changed, 1781 insertions(+), 1962 deletions(-)
-
-commit 795bb15e0735bd2b0015ca333fa157399b72c168
-Author: Kumar Gala <galak@kernel.crashing.org>
-Date:   Mon Jul 2 00:04:36 2007 -0500
-
-    [POWERPC] Update defconfigs
-    
-    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-
-commit 9f7905812e5919862acb6ede63e10d3d1bb4958e
-Author: Olof Johansson <olof@lixom.net>
-Date:   Mon Jun 4 14:47:04 2007 +1000
-
-    [POWERPC] Uninline and export virq_to_hw() for the pasemi_mac driver
-    
-    Uninline virq_to_hw and export it so modules can use it. The alternative
-    would be to export the irq_map array instead, but it's an infrequently
-    called function, and keeping the array unexported seems considerably
-    cleaner.
-    
-    This is needed so that the pasemi_mac driver can be compiled as a module.
-    
-    Signed-off-by: Olof Johansson <olof@lixom.net>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit ee5d1b7f2a01ce4d95ca247b5a499b72f31cdbe8
-Author: Christian Krafft <krafft@de.ibm.com>
-Date:   Thu Jun 28 21:14:38 2007 +1000
-
-    [POWERPC] Fix PMI breakage in cbe_cbufreq driver
-    
-    The recent change to cell_defconfig to enable cpufreq on Cell exposed
-    the fact that the cbe_cpufreq driver currently needs the PMI interface
-    code to compile, but Kconfig doesn't make sure that the PMI interface
-    code gets built if cbe_cpufreq is enabled.
-    
-    In fact cbe_cpufreq can work without PMI, so this ifdefs out the code
-    that deals with PMI.  This is a minimal solution for 2.6.22; a more
-    comprehensive solution will be merged for 2.6.23.
-    
-    Signed-off-by: Christian Krafft <krafft@de.ibm.com>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit 86affd5a00a92e491e5f00ed659492767519fdf7
-Author: David Gibson <david@gibson.dropbear.id.au>
-Date:   Thu Jun 28 11:27:57 2007 +1000
-
-    [POWERPC] Disable old EMAC driver in arch/powerpc
-    
-    The EMAC driver, in drivers/net/ibm_emac, for the embedded Ethernet
-    MAC found in PowerPC 4xx embedded chips is not suitable for
-    arch/powerpc.  It will not build because it relies on the old arch/ppc
-    OCP mechanism.  BenH has a new, device-tree aware version of the
-    driver which will work in arch/powerpc, but until it's merged, this
-    patch will disable the old, non-building version.
-    
-    Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
+Hi Paul, if there's no objection I'd like this to go into 2.6.23 thanks.
