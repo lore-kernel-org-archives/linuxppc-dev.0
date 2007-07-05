@@ -1,13 +1,13 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 58644DDF6A
+	by ozlabs.org (Postfix) with ESMTP id 7FF50DDF72
 	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 03:03:51 +1000 (EST)
-Message-Id: <20070705170241.356893000@lixom.net>
+Message-Id: <20070705170241.635415000@lixom.net>
 References: <20070705170233.258351000@lixom.net>
-Date: Thu, 05 Jul 2007 12:03:02 -0500
+Date: Thu, 05 Jul 2007 12:03:03 -0500
 From: Olof Johansson <olof@lixom.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 29/35] Work around errata 4910
+Subject: [patch 30/35] Disable PURR on pa6t
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,25 +17,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Don't allow unguarded mappings in PCI-express space. This is resolves
-problems with frame buffers having garbage on them due to failing
-write merges.
+Our PURR ticks at the wrong rate (same as the decrementer). Since it
+doesn't really have any value-add besides on partitioned and multithreaded
+systems, refrain from using it at the moment.
 
 
-Index: 2.6.21/arch/powerpc/mm/hash_native_64.c
+Index: 2.6.21/include/asm-powerpc/cputable.h
 ===================================================================
---- 2.6.21.orig/arch/powerpc/mm/hash_native_64.c
-+++ 2.6.21/arch/powerpc/mm/hash_native_64.c
-@@ -152,6 +152,10 @@ static long native_hpte_insert(unsigned 
- 	if (i == HPTES_PER_GROUP)
- 		return -1;
- 
-+	/* Workaround for bug 4910: No non-guarded access over IOB */
-+	if (pa >= 0x80000000 && pa < 0x100000000)
-+		rflags |= _PAGE_GUARDED;
-+
- 	hpte_v = hpte_encode_v(va, psize) | vflags | HPTE_V_VALID;
- 	hpte_r = hpte_encode_r(pa, psize) | rflags;
+--- 2.6.21.orig/include/asm-powerpc/cputable.h
++++ 2.6.21/include/asm-powerpc/cputable.h
+@@ -356,7 +356,7 @@ extern void do_feature_fixups(unsigned l
+ #define CPU_FTRS_PA6T (CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CI_LARGE_PAGE | \
+-	    CPU_FTR_PURR | CPU_FTR_REAL_LE)
++	    CPU_FTR_REAL_LE)
+ #define CPU_FTRS_COMPATIBLE	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2)
  
 
 --
