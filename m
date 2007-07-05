@@ -1,19 +1,23 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 3A24ADDDFE
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 05:15:57 +1000 (EST)
-Date: Thu, 5 Jul 2007 14:26:44 -0500
-To: Gabriel Paubert <paubert@iram.es>
-Subject: Re: [patch 27/35] Work around errata 4290
-Message-ID: <20070705192644.GA17491@lixom.net>
-References: <20070705170233.258351000@lixom.net>
-	<20070705170240.803460000@lixom.net>
-	<20070705185021.GA26069@iram.es>
+Return-Path: <willy@parisc-linux.org>
+Received: from mail.parisc-linux.org (palinux.external.hp.com [192.25.206.14])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.parisc-linux.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DE826DDEDA
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 05:16:22 +1000 (EST)
+Date: Thu, 5 Jul 2007 12:54:06 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH]: PCI Error Recovery: Symbios SCSI device driver
+Message-ID: <20070705185406.GA3527@parisc-linux.org>
+References: <20070702183917.GJ4501@austin.ibm.com>
+	<20070705112838.2d8c959b.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070705185021.GA26069@iram.es>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20070705112838.2d8c959b.akpm@linux-foundation.org>
+Cc: James.Bottomley@steeleye.com, linux-scsi@vger.kernel.org, willy@debian.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, linux-pci@atrey.karlin.mff.cuni.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,30 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 05, 2007 at 08:50:21PM +0200, Gabriel Paubert wrote:
-> On Thu, Jul 05, 2007 at 12:03:00PM -0500, Olof Johansson wrote:
-> > Workaround for errata 4290: The decrementer ticks at half the expected rate
-> > so load it with half the value it would otherwise be loaded with.
-> > 
-> > 
-> > Index: 2.6.21/include/asm-powerpc/time.h
-> > ===================================================================
-> > --- 2.6.21.orig/include/asm-powerpc/time.h
-> > +++ 2.6.21/include/asm-powerpc/time.h
-> > @@ -173,6 +173,13 @@ static inline unsigned int get_dec(void)
-> >  
-> >  static inline void set_dec(int val)
-> >  {
-> > +#ifdef CONFIG_PPC_PASEMI
-> > +	/* PA6T rev Ax have decrementer ticking at 1/2 tb rate */
-> > +	val >>= 2;
+On Thu, Jul 05, 2007 at 11:28:38AM -0700, Andrew Morton wrote:
+> Well you've sent it a couple of times, and I've sent it in five more times
+> over the past year.  Once we were told "awaiting maintainer ack".
 > 
-> Comment does not match code: looks like a divide by 4 to me!
+> This situation is fairly stupid.  How about we make you the maintainer?
 
-You're right. Thanks for catching it.
+Last time I looked at it, I still wasn't comfortable with it.  I'm going
+to look at it again.
 
-Never caught it because the timer code behaves just fine anyway, but
-it'll waste power by waking up twice as often when idle.
+I'm fairly sure Linas doesn't want to be the sym2 maintainer.  It's
+still an ugly pile of junk that needs cleaning up.
 
-
--Olof
+-- 
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
