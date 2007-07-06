@@ -2,17 +2,18 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7E2E3DDFCE
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 23:24:38 +1000 (EST)
-In-Reply-To: <468D68D4.4050704@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id 4B313DDFF0
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 23:36:47 +1000 (EST)
+In-Reply-To: <1183720722.3818.126.camel@johannes.berg>
 References: <468D68D4.4050704@freescale.com>
+	<1183720722.3818.126.camel@johannes.berg>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <4A6D2FF2-ADD3-4D8A-ADBB-F04CAA778539@kernel.crashing.org>
+Message-Id: <9E7F4501-6F8F-430B-AC14-8DCDE437A2F9@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: Executing from readablee, no-exec pages
-Date: Fri, 6 Jul 2007 15:24:20 +0200
-To: Scott Wood <scottwood@freescale.com>
+Date: Fri, 6 Jul 2007 15:36:36 +0200
+To: Johannes Berg <johannes@sipsolutions.net>
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,58 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> As revealed by the recent "Prevent data exception in kernel
-> space" patch, versions of glibc prior to 2.4[1] assume that,
-
-Are you sure that this hasn't been fixed somewhere in the 2.3
-series, too?
-
-> on powerpc32, they can execute out of any readable mapping,
-> regardless of whether it is marked for execution.  This happens
-> in the elf_machine_load_address() function.
+>> As revealed by the recent "Prevent data exception in kernel space"
+>> patch, versions of glibc prior to 2.4[1] assume that, on  
+>> powerpc32, they
+>> can execute out of any readable mapping, regardless of whether it is
+>> marked for execution.  This happens in the elf_machine_load_address()
+>> function.
 >
-> To maintain compatibility with these versions, we could change
-> the test in do_page_fault() to include VM_READ as well as VM_EXEC
-> on targets that don't have a separate exec-bit in hardware (are
-> there any powerpc mmus that do?).  However, Segher suggested on
-> IRC that we may want to drop compatibility with those old versions
-> of glibc, and that I should seek your input.
+> Umm, are you sure about this? The "prevent data exception in kernel
+> space" patch came from a test program I had that attempted to  
+> execute a
+> page with /no permissions/ at all!
 
-"drop compatibility" -- this sounds worse than it is, this is all
-about supporting a badly broken application.
+I haven't looked at the code path in detail, but I believe Scott's
+analysis is correct.  The kernel would merrily let a program run
+code from a page without execute permission (so also from a page
+without any permissions at all); not anymore, after my patch.
 
-I wonder how this works with 32-bit userland on a 64-bit kernel,
-or with older kernels.  With arch/ppc/ an exec fault would do
-the read checks IIRC, maybe we need to change to that.
+Programs relying on this behaviour are obviously buggy, but the
+problem is that one of these broken programs is glibc, at least
+some not-all-that-new but also not-all-that-old versions.
 
-> Personally, I'd rather stick the VM_READ in there, partially for
-> selfish reasons (our root filesystems are based on older glibcs),
-> and because it seems a little too soon to deprecate glibc 2.3,
+> I know that I used to have problems with mono making this  
+> assumption but
+> these have since been fixed; however if I understand you correctly  
+> then
+> you can always pre-fault the page by a read and then execute it so I
+> don't see the point in not doing the change you suggest.
 
-Oh I don't know, can't we just deprecate glibc completely?  ;-)
+Too many negatives, I don't see which way you're arguing :-)
 
-> but also because in the absence of hardware support, the VM_EXEC
-> check will be nondeterministic, kicking in only when the first
-> fault for a page is to execute.
+I think you're saying to treat read access as including execute
+access?  I believe that would be too permissive here.
 
-I don't think that is a big concern.
-
-> [1] It's possible that there are other instances of this in 2.4 and  
-> that the actual version is newer; I ran into obnoxious cross  
-> compilation issues trying to try it.  However,
-
-<rant>"Trying to try it" sounds like compiling glibc, indeed.</rant>
-
-> <rant>
-> Glibc already has target-specific code/headers; if you need to know  
-> something that you'd otherwise need a runs-on-the-target autoconf  
-> test for, why not just stick it in such a target-specific header?   
-> In this case, it was trying to figure out the size of "long double".
-> </rant>
-
-You can do a test like this by cross-compiling some code, and looking
-at the size of the symbol in the resulting object file.  Well that's
-all off-topic here.
+Anyway, let's first decide what is the right thing to do, and
+only then look at the code ;-)
 
 
 Segher
