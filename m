@@ -1,23 +1,22 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 1E52CDE01F
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jul 2007 01:52:25 +1000 (EST)
-Date: Fri, 6 Jul 2007 17:52:23 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] compat32: ignore the LOOP_CLR_FD ioctl
-In-Reply-To: <jevecxhep6.fsf@sykes.suse.de>
-Message-ID: <Pine.LNX.4.62.0707061749250.17331@pademelon.sonytel.be>
-References: <Pine.LNX.4.62.0707061431360.1203@pademelon.sonytel.be>
-	<jevecxhep6.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-1022588381-1183737050=:17331"
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Adrian 'Trivial' Bunk <trivial@kernel.org>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Hiroaki Fuse <Hiroaki_Fuse@hq.scei.sony.co.jp>
+Return-Path: <b07421@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id F2B0CDDF4C
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jul 2007 02:49:52 +1000 (EST)
+Date: Fri, 6 Jul 2007 11:49:42 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Executing from readablee, no-exec pages
+Message-ID: <20070706164942.GA10806@ld0162-tx32.am.freescale.net>
+References: <468D68D4.4050704@freescale.com>
+	<4A6D2FF2-ADD3-4D8A-ADBB-F04CAA778539@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4A6D2FF2-ADD3-4D8A-ADBB-F04CAA778539@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,59 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Fri, Jul 06, 2007 at 03:24:20PM +0200, Segher Boessenkool wrote:
+> >Personally, I'd rather stick the VM_READ in there, partially for
+> >selfish reasons (our root filesystems are based on older glibcs),
+> >and because it seems a little too soon to deprecate glibc 2.3,
+> 
+> Oh I don't know, can't we just deprecate glibc completely?  ;-)
 
----584337861-1022588381-1183737050=:17331
-Content-Type: TEXT/PLAIN; CHARSET=UTF-8
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.62.0707061751551.17331@pademelon.sonytel.be>
+I wish. :-)
 
-compat32: Ignore the LOOP_CLR_FD ioctl for the loop block device, to kill an
-annoying kernel message when e.g. busybox umount is used.
+> >but also because in the absence of hardware support, the VM_EXEC
+> >check will be nondeterministic, kicking in only when the first
+> >fault for a page is to execute.
+> 
+> I don't think that is a big concern.
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
- fs/compat_ioctl.c |    4 ++++
- 1 files changed, 4 insertions(+)
+Well, it means that leaving VM_READ out of the check (except where the
+hardware PTE has an exec bit) isn't really buying us anything
+security-wise (especially since the primary reason for no-exec protection
+is to avoid code injections via stack overflow, and those pages will
+usually already be present), so it doesn't hurt much to let things keep
+working.
 
---- a/fs/compat_ioctl.c
-+++ b/fs/compat_ioctl.c
-@@ -63,6 +63,7 @@
- #include <linux/wireless.h>
- #include <linux/atalk.h>
- #include <linux/blktrace_api.h>
-+#include <linux/loop.h>
- 
- #include <net/bluetooth/bluetooth.h>
- #include <net/bluetooth/hci.h>
-@@ -3489,6 +3490,9 @@ HANDLE_IOCTL(LPSETTIMEOUT, lp_timeout_tr
- 
- IGNORE_IOCTL(VFAT_IOCTL_READDIR_BOTH32)
- IGNORE_IOCTL(VFAT_IOCTL_READDIR_SHORT32)
-+
-+/* loop */
-+IGNORE_IOCTL(LOOP_CLR_FD)
- };
- 
- #define IOCTL_HASHSIZE 256
+At the least, I'd like it to keep working for a few more kernel releases
+(with a warning printed when a VM_EXEC-only test would have failed), so
+people have time to upgrade glibc.
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1022588381-1183737050=:17331--
+-Scott
