@@ -1,19 +1,23 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id B25DDDDE46
+Return-Path: <kimmo.surakka@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.181])
+	by ozlabs.org (Postfix) with ESMTP id 15B0DDDF1C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  6 Jul 2007 08:20:36 +1000 (EST)
-To: "Kimmo Surakka" <kusti@iki.fi>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: TQM5200 problems (kernel 2.4) 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 04 Jul 2007 17:51:58 +0300."
-	<a44e83440707040751o4f2e195dte8c2edafd5f864c@mail.gmail.com>
-Date: Fri, 06 Jul 2007 00:13:27 +0200
-Sender: wd@denx.de
-Message-Id: <20070705221327.92FB5353A91@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Fri,  6 Jul 2007 16:21:29 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so151563wag
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 05 Jul 2007 23:21:28 -0700 (PDT)
+Message-ID: <a44e83440707052321h14413336p9001daaa5a6a0181@mail.gmail.com>
+Date: Fri, 6 Jul 2007 09:21:27 +0300
+From: "Kimmo Surakka" <kusti@iki.fi>
+Sender: kimmo.surakka@gmail.com
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: TQM5200 problems (kernel 2.4)
+In-Reply-To: <20070705065429.GC4186@moe.telargo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <a44e83440707040751o4f2e195dte8c2edafd5f864c@mail.gmail.com>
+	<20070705065429.GC4186@moe.telargo.com>
+Cc: Domen Puncer <domen.puncer@telargo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,26 +28,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Kimmo,
+> This is probably a hardware bug as described in:
+> http://ozlabs.org/pipermail/linuxppc-embedded/2005-July/019038.html
 
-in message <a44e83440707040751o4f2e195dte8c2edafd5f864c@mail.gmail.com> you wrote:
+Yes, that seems to be the case. The patch basically disables and again
+enables the bus so that the missing clock pulse gets generated. I also
+changes the code a bit so that an extra byte is not sent at the end of
+transmissions.
+
+The message http://ozlabs.org/pipermail/linuxppc-embedded/2005-July/019076.html
+suggests to use a bit-banging driver instead of the buggy MPC5200 i2c
+hardware. Maybe I'll look into that.
+
+> > Warning: kfree_skb on hard IRQ c008ecfc
+> > Warning: kfree_skb on hard IRQ c008ecfc
+> > Warning: kfree_skb on hard IRQ c008ecfc
 >
-> Problem #1: PPP unreliability. If I just fetch the latest 2.4 kernel
-> from http://www.denx.de/cgi-bin/gitweb.cgi?p=linuxppc_2_4_devel.git;a=summary
+> I'm not seeing these (2.6-git from kernel.org)
 
-Did you try the 2.6 kernel tree?  It  will  be  much  easier  to  get
-people's attention when you use a current code base.
-
-Alternatively, you may ask us for support. We know that old 2.4  tree
-pretty well.
-
-Best regards,
-
-Wolfgang Denk
+Maybe it's indeed time to start using the 2.6 series, then. Thanks!
 
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-The explanation requiring the fewest assumptions is the  most  likely
-to be correct.                                    -- William of Occam
+Kimmo Surakka <kusti@iki.fi>
+http://www.iki.fi/kusti
