@@ -1,22 +1,19 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BAC12DDFC0
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 22:58:14 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: Too verbose compat_ioctl messages?
-References: <Pine.LNX.4.62.0707061431360.1203@pademelon.sonytel.be>
-Date: Fri, 06 Jul 2007 14:57:57 +0200
-In-Reply-To: <Pine.LNX.4.62.0707061431360.1203@pademelon.sonytel.be> (Geert
-	Uytterhoeven's message of "Fri\, 6 Jul 2007 14\:47\:57 +0200 \(CEST\)")
-Message-ID: <jevecxhep6.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Hiroaki Fuse <Hiroaki_Fuse@hq.scei.sony.co.jp>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7E2E3DDFCE
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 23:24:38 +1000 (EST)
+In-Reply-To: <468D68D4.4050704@freescale.com>
+References: <468D68D4.4050704@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <4A6D2FF2-ADD3-4D8A-ADBB-F04CAA778539@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Executing from readablee, no-exec pages
+Date: Fri, 6 Jul 2007 15:24:20 +0200
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +23,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> writes:
+> As revealed by the recent "Prevent data exception in kernel
+> space" patch, versions of glibc prior to 2.4[1] assume that,
 
-> Is there anything we can do about this?
+Are you sure that this hasn't been fixed somewhere in the 2.3
+series, too?
 
-Define it as IGNORE_IOCTL in fs/compat_ioctl.c?
+> on powerpc32, they can execute out of any readable mapping,
+> regardless of whether it is marked for execution.  This happens
+> in the elf_machine_load_address() function.
+>
+> To maintain compatibility with these versions, we could change
+> the test in do_page_fault() to include VM_READ as well as VM_EXEC
+> on targets that don't have a separate exec-bit in hardware (are
+> there any powerpc mmus that do?).  However, Segher suggested on
+> IRC that we may want to drop compatibility with those old versions
+> of glibc, and that I should seek your input.
 
-Andreas.
+"drop compatibility" -- this sounds worse than it is, this is all
+about supporting a badly broken application.
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+I wonder how this works with 32-bit userland on a 64-bit kernel,
+or with older kernels.  With arch/ppc/ an exec fault would do
+the read checks IIRC, maybe we need to change to that.
+
+> Personally, I'd rather stick the VM_READ in there, partially for
+> selfish reasons (our root filesystems are based on older glibcs),
+> and because it seems a little too soon to deprecate glibc 2.3,
+
+Oh I don't know, can't we just deprecate glibc completely?  ;-)
+
+> but also because in the absence of hardware support, the VM_EXEC
+> check will be nondeterministic, kicking in only when the first
+> fault for a page is to execute.
+
+I don't think that is a big concern.
+
+> [1] It's possible that there are other instances of this in 2.4 and  
+> that the actual version is newer; I ran into obnoxious cross  
+> compilation issues trying to try it.  However,
+
+<rant>"Trying to try it" sounds like compiling glibc, indeed.</rant>
+
+> <rant>
+> Glibc already has target-specific code/headers; if you need to know  
+> something that you'd otherwise need a runs-on-the-target autoconf  
+> test for, why not just stick it in such a target-specific header?   
+> In this case, it was trying to figure out the size of "long double".
+> </rant>
+
+You can do a test like this by cross-compiling some code, and looking
+at the size of the symbol in the resulting object file.  Well that's
+all off-topic here.
+
+
+Segher
