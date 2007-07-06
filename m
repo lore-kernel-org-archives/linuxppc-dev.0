@@ -2,25 +2,24 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C7DE6DE083
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 20:37:40 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 5779BDDE44
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 20:58:39 +1000 (EST)
 Subject: Re: powerpc stacktrace and lockdep support
 From: Johannes Berg <johannes@sipsolutions.net>
-To: Christoph Hellwig <hch@lst.de>
-In-Reply-To: <1183713827.3818.71.camel@johannes.berg>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+In-Reply-To: <468D45CD.1080008@ru.mvista.com>
 References: <20070108135458.GA23395@lst.de>
 	<1182898073.4769.6.camel@johannes.berg>
 	<1182970829.4769.62.camel@johannes.berg>
-	<1183047642.3735.0.camel@johannes.berg> <20070630085808.GA15386@lst.de>
-	<1183588814.3818.1.camel@johannes.berg>
-	<1183713827.3818.71.camel@johannes.berg>
+	<1183047642.3735.0.camel@johannes.berg>
+	<468D45CD.1080008@ru.mvista.com>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-+dCgfBqgYCg2eSin6u0A"
-Date: Fri, 06 Jul 2007 11:54:21 +0200
-Message-Id: <1183715661.3818.91.camel@johannes.berg>
+	boundary="=-Myqp90QvsM4DSznWiTWo"
+Date: Fri, 06 Jul 2007 12:59:37 +0200
+Message-Id: <1183719577.3818.115.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Christoph Hellwig <hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,92 +30,79 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-+dCgfBqgYCg2eSin6u0A
+--=-Myqp90QvsM4DSznWiTWo
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-*sigh* I really shouldn't have mailed this out in the first place. Every
-time I look at it I find new bugs despite the fact that it actually
-works on my machine.
+Sergei, Thanks for your review!
 
->  	ld	r3,SOFTE(r1)
-> -	bl	.local_irq_restore
-> +#ifdef CONFIG_TRACE_IRQFLAGS
-> +	cmpdi	r3,0
-> +	beq	14f
-> +	bl	.trace_hardirqs_on
-> +	ld	r3,SOFTE(r1)
-> +14:
-> +	bl	.raw_local_irq_restore
-> +	cmpdi	r3,0
+>     I suggest to also remove these 3 lines from the heading comment in th=
+is=20
+> file -- they're not true anyway:
+>=20
+>   * This file gets included from lowlevel asm headers too, to provide
+>   * wrapped versions of the local_irq_*() APIs, based on the
+>   * raw_local_irq_*() macros from the lowlevel headers.
 
-This should reload r3 before the second compare as raw_local_irq_restore
-returns nothing (void). And why does it need a second compare anyway?
-Just rewrite as
+Good point.
 
-	ld	r3, SOFTE(r1)
-#ifdef CONFIG_TRACE_IRQFLAGS
-	cmpdi	r3, 0
-	bne	14f
-	bl	.raw_local_irq_restore
-	bl	.trace_hardirqs_off
-	b	15f
-14:
-	bl	.trace_hardirqs_on
-	li	r3, 1
-#endif
-	bl	.raw_local_irq_restore
-15:
+> > +#ifdef CONFIG_TRACE_IRQFLAGS
+> > +#define TRACE_DISABLE_INTS bl .powerpc_trace_hardirqs_off
+> > +#else
+> > +#define TRACE_DISABLE_INTS
+> > +#endif
+> > +
+>=20
+>     Erm, weren't those supposed to be in <asm-powerpc/irqflags.h>?
 
-which has the advantage of having only one conditional branch and less
-preprocessor foo.
+I guess they could be there. I was mucking my way through ;)
 
-> +#ifdef CONFIG_TRACE_IRQFLAGS
-> +	cmpdi	r5,0
-> +	beq	5f
-> +	bl	.trace_hardirqs_on
-> +	ld	r5,SOFTE(r1)
->  	stb	r5,PACASOFTIRQEN(r13)
-> -
-> +	b	6f
-> +5:
-> +	stb	r5,PACASOFTIRQEN(r13)
-> +	bl	.trace_hardirqs_off
-> +6:
-> +#else
-> +	stb	r5,PACASOFTIRQEN(r13)
-> +#endif
+>     The following code seemed over-engineered:
 
-Similarly, that could be rewritten as
+Yeah, perfectly correct. See my last mail to this thread from this
+morning.
 
-#ifdef CONFIG_TRACE_IRQFLAGS
-	cmpdi	r5, 0
-	bne	5f
-	stb	r5, PACASOFTIRQEN(r13)
-	bl	.trace_hardirqs_off
-	b	6f
-5:
-	bl	.trace_hardirqs_on
-	li	r5, 1
-#endif
-	stb	r5, PACASOFTIRQEN(r13)
-6:
+>     Again, could have been more compact... unless trace_hardirqs_*() call=
+s=20
+> need to be in certain order WRT writes to PACASOFTIRQEN -- if so, in the =
+1st=20
+> case that I've pointed out the order was not identical (probably wrong?).=
+..
 
-I can't test these modifications over the weekend but they should be
-fine.
+Yeah, there is an ordering requirement and it was wrong in that version
+of the patch.
+
+> > +/*
+> > + * crappy helper for irq-trace
+> > + */
+> > +
+> > +#include <asm/ppc_asm.h>
+> > +#include <asm/asm-offsets.h>
+> > +
+> > +#define STACKSPACE	GPR0 + 16*8
+>=20
+>     I guess this should be 16*4 for PPC32.
+
+>     Didn't you forget to add GPR0 to the offsets here?
+
+>     You certainly did. I bet you're clobbering GPR11/12 (if I didn't misc=
+ount)...
+
+All correct. That might even be why it didn't work on 32-bit for me and
+then I gave up. In any case, I completely rewrote this file.
 
 johannes
 
---=-+dCgfBqgYCg2eSin6u0A
+--=-Myqp90QvsM4DSznWiTWo
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iD8DBQBGjhFN/ETPhpq3jKURArX7AJwOKM43q+iFsvhfvoR65iYmCJaGkQCglfvM
-WL57Ru2e65Kd8s57eOB4dFc=
-=KURj
+iD8DBQBGjiCZ/ETPhpq3jKURAjJ2AKCjG0p622sEIqsbBz6JjlpqwhAOVwCfQ6sT
+KquAbapmxljjQniHaiBxpzs=
+=LKyq
 -----END PGP SIGNATURE-----
 
---=-+dCgfBqgYCg2eSin6u0A--
+--=-Myqp90QvsM4DSznWiTWo--
