@@ -1,19 +1,20 @@
-Return-Path: <hpa@zytor.com>
-Received: from terminus.zytor.com (terminus.zytor.com [192.83.249.54])
+Return-Path: <jeremy@goop.org>
+Received: from mail.goop.org (gw.goop.org [64.81.55.164])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5A6ADDDFCF
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jul 2007 04:36:56 +1000 (EST)
-Message-ID: <468E8BBF.9020907@zytor.com>
-Date: Fri, 06 Jul 2007 11:36:47 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
+	(Client CN "*.goop.org", Issuer "Goop.org CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 393B1DE05F
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jul 2007 04:40:59 +1000 (EST)
+Message-ID: <468E8CB6.8050505@goop.org>
+Date: Fri, 06 Jul 2007 11:40:54 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
 Subject: Re: Too verbose compat_ioctl messages?
 References: <Pine.LNX.4.62.0707061431360.1203@pademelon.sonytel.be>	<468E6E33.3040000@zytor.com>
 	<p737ipd1jsg.fsf@bingen.suse.de> <468E8B07.2030404@goop.org>
-In-Reply-To: <468E8B07.2030404@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	<468E8BBF.9020907@zytor.com>
+In-Reply-To: <468E8BBF.9020907@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
 	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
 	Andi Kleen <andi@firstfloor.org>,
@@ -28,17 +29,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jeremy Fitzhardinge wrote:
->>
->> ENOTTY is so excessively misnamed that it is actually surprising
->> anybody ever got that "right" (for very small values of right i guess)
-> 
-> But it *isn't* a typewriter.  Of course, it's not a giraffe either.
-> 
+H. Peter Anvin wrote:
+> The union of things that are not typewriters and not giraffes are rather
+> large, indeed.
+>
+> This is getting philosophical.
+>   
 
-The union of things that are not typewriters and not giraffes are rather
-large, indeed.
+I think my point is that we're rather short of good quality open source 
+giraffe drivers.
 
-This is getting philosophical.
-
-	-hpa
+    J
