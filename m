@@ -1,16 +1,21 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 0CBABDDEEF
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 22:48:03 +1000 (EST)
-Date: Fri, 6 Jul 2007 14:47:57 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Too verbose compat_ioctl messages?
-Message-ID: <Pine.LNX.4.62.0707061431360.1203@pademelon.sonytel.be>
+Return-Path: <schwab@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BAC12DDFC0
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 22:58:14 +1000 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: Too verbose compat_ioctl messages?
+References: <Pine.LNX.4.62.0707061431360.1203@pademelon.sonytel.be>
+Date: Fri, 06 Jul 2007 14:57:57 +0200
+In-Reply-To: <Pine.LNX.4.62.0707061431360.1203@pademelon.sonytel.be> (Geert
+	Uytterhoeven's message of "Fri\, 6 Jul 2007 14\:47\:57 +0200 \(CEST\)")
+Message-ID: <jevecxhep6.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-186828651-1183726077=:1203"
+Content-Type: text/plain; charset=iso-8859-1
 Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
 	Hiroaki Fuse <Hiroaki_Fuse@hq.scei.sony.co.jp>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,61 +26,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> writes:
 
----584337861-186828651-1183726077=:1203
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+> Is there anything we can do about this?
 
-	Hi,
+Define it as IGNORE_IOCTL in fs/compat_ioctl.c?
 
-Fuse-san discovered that running the umount that's part of busybox on a PS3
-with a recent kernel causes an error message to be printed on the console:
+Andreas.
 
-| ioctl32(busybox:1340): Unknown cmd fd(3) cmd(00004c01){t:'L';sz:0} arg(00000000) on /dev/sda1 
-
-On older kernels (e.g. 2.6.16), this doesn't happen.
-
-It can easily be reproduced by installing busybox and running
-
-| busybox umount /mountpoint
-
-on a mounted filesystem (except when using the loop device).
-
-Apparently Busybox uses the LOOP_CLR_FD ioctl when unmounting a file system,
-which is supported by the loop device only.
-On other block device types, this ioctl is not supported:
-  - With a 64-bit application, the block layer returns ENOTTY (Inappropriate
-    ioctl for device), while the SCSI layer returns EINVAL (Invalid argument)
-  - With a 32-bit application, the compat_ioctl code returns EINVAL (Invalid
-    argument) and prints an error on the console (for the first 50
-    occurrencies, cfr. fs/compat_ioctl.c:compat_sys_ioctl())
-
-As I understand, compat_ioctl_error() is used to inform the user about ioctl
-values that are not yet handled by the compat_ioctl layer. However, LOOP_CLR_FD
-doesn't need to be handled (no data to convert between 32-bit and 64-bit), and
-it's perfectly valid for a block device to not implement it.
-So it's confusing to print this error message.
-
-Is there anything we can do about this?
-
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village 路 Da Vincilaan 7-D1 路 B-1935 Zaventem 路 Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 路 B-1840 Londerzeel 路 Belgium	
-VAT BE 0413.825.160 路 RPR Brussels	
-Fortis Bank Zaventem 路 Swift GEBABEBB08A 路 IBAN BE39001382358619
----584337861-186828651-1183726077=:1203--
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstra遝 5, 90409 N黵nberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
