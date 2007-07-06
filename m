@@ -1,21 +1,22 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 0F53DDE24A
+Return-Path: <mark@mtfhpc.demon.co.uk>
+Received: from anchor-post-36.mail.demon.net (anchor-post-36.mail.demon.net
+	[194.217.242.86]) by ozlabs.org (Postfix) with ESMTP id 8375ADE044
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  7 Jul 2007 23:30:17 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
+	Sat,  7 Jul 2007 05:08:04 +1000 (EST)
+Received: from mtfhpc.demon.co.uk ([83.104.139.140])
+	by anchor-post-36.mail.demon.net with esmtp (Exim 4.42)
+	id 1I6qYd-0004nN-KQ
+	for linuxppc-embedded@ozlabs.org; Fri, 06 Jul 2007 16:21:23 +0000
+Received: from localhost (mark@localhost)
+	by mtfhpc.demon.co.uk (8.9.3/8.9.3) with ESMTP id RAA04820
+	for <linuxppc-embedded@ozlabs.org>; Fri, 6 Jul 2007 17:21:22 +0100
+Date: Fri, 6 Jul 2007 17:21:21 +0100 (BST)
+From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Mem-2-Mem DMA - Generalized API
-Date: Sat, 7 Jul 2007 15:28:00 +0200
-References: <20070624193932.GA11797@clifford.at>
-	<200707071508.04143.arnd@arndb.de>
-	<20070707132748.GB32740@clifford.at>
-In-Reply-To: <20070707132748.GB32740@clifford.at>
+Subject: ARCH=ppc vs ARCH=powerpc
+Message-ID: <Pine.LNX.4.61.0707061706140.4792@mtfhpc.demon.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200707071528.00449.arnd@arndb.de>
-Cc: Clifford Wolf <clifford@clifford.at>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,25 +27,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Saturday 07 July 2007, Clifford Wolf wrote:
-> > > +=A0=A0=A0// make sure all pending requests have finished before retu=
-rning
-> > > +=A0=A0=A0down_write(&backend->unreg_sem);
-> > > +=A0=A0=A0up_write(&backend->unreg_sem);
-> > > +}
-> >=20
-> > This usage of rw semaphores looks fishy.=20
->=20
-> yep. do you have a better idea how to implement this easily?
->=20
+Hi,
 
-I'd guess what you really want is reference counting. Every request
-that gets assigned to a backend should get a kref on that backend
-and give that up once it gets released itself.
+I have noticed and read a few comments regarding the demise of ARCH=ppc.
 
-I guess you can then have one more reference that you get in
-dmatransfer_register_backend and release in dmatransfer_unregister_backend.
-When you release the last reference, you call complete(),
-and dmatransfer_unregister_backend() ends with a wait_for_completion().
+Having two PowerPC arcitectures and only supprting one of them makes 
+little sense. Is it not time to migrate (where required) the remaining 
+code from arch/ppc to arch/powerpc and asm-ppc to asm-powerpc. There are 
+not many files left that are unique to ARCH=ppc so it should not take too 
+long.
 
-	Arnd <><
+For me, the requirement is to keep support for the cards indicated in 
+arch/ppc/config/xxx_defconfig (as I have one that I might what to use with 
+linux) in the same way as they are supported in ARCH=ppc.
+
+I have just made some tweeks to get ARCH=ppc building for me but I still 
+need to sort out what is required to get around *** Error: Headers not 
+exportable for this architecture (ppc).
+
+Regards
+ 	Mark Fortescue.
