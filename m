@@ -1,19 +1,27 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 57894DE076
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jul 2007 07:26:39 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: PowerPC equivalent to dma_mmap_writecombine()?
-Date: Fri, 6 Jul 2007 23:26:22 +0200
-References: <468D1F23.6000803@freescale.com> <200707051813.53762.arnd@arndb.de>
-	<468EA3DA.8070903@freescale.com>
-In-Reply-To: <468EA3DA.8070903@freescale.com>
+Return-Path: <ahuja@austin.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E6ACEDDF84
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jul 2007 08:00:00 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l66LxvT5012863
+	for <linuxppc-dev@ozlabs.org>; Fri, 6 Jul 2007 17:59:57 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l66Lxux9532440
+	for <linuxppc-dev@ozlabs.org>; Fri, 6 Jul 2007 17:59:56 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l66LxuVH017015
+	for <linuxppc-dev@ozlabs.org>; Fri, 6 Jul 2007 17:59:56 -0400
+Message-ID: <468EBB5B.2070309@austin.ibm.com>
+Date: Fri, 06 Jul 2007 16:59:55 -0500
+From: Manish Ahuja <ahuja@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200707062326.23808.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org
+To: ppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Minor: Removed double return. 
+Content-Type: multipart/mixed; boundary="------------070302000702000505020305"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,33 +31,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 06 July 2007, Timur Tabi wrote:
-> Arnd Bergmann wrote:
->=20
-> > Not sure exactly what arm does here, but it sounds like you want
-> > to call remap_pfn_range with the _PAGE_NO_CACHE bit set in the
-> > protection flags, and _PAGE_GUARDED not set.
->=20
-> I always have a hard time with these mapping functions. =A0Is this right?
->=20
-> vma->vm_page_prot =3D __pgprot((pgprot_val(vma->vm_page_prot) | _PAGE_NO_=
-CACHE) &=20
-> ~_PAGE_GUARDED));
->=20
-> ret =3D remap_pfn_range(vma, vma->vm_start, runtime->dma_addr, runtime->d=
-ma_bytes,=20
-> vma->vm_page_prot);
->=20
-> Alternatively, could I use function snd_pcm_lib_mmap_iomem() (sound/core/=
-pcm_native.c)?=20
-> It looks like it does the right thing, although it doesn't unset the guar=
-ded bit. =A0If=20
-> that's wrong, I can submit a patch to unset that bit on PowerPC, but like=
- I said, I can=20
-> never quite get my head around this mapping stuff.
+This is a multi-part message in MIME format.
+--------------070302000702000505020305
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-The guarded bit is disabled by default, so you don't need t remove it, so
-the function you quoted should be alright for this purpose. Not sure if you
-need the ioremap in there though.
+Found 2 instances of return one right after each other in 
+arch_add_memory(). This minor patch fixes it.
+Signed-off-by:Manish Ahuja <mahuja@us.ibm.com>
 
-	Arnd <><
+
+
+--------------070302000702000505020305
+Content-Type: text/plain;
+ name="double-return"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="double-return"
+
+Index: 2.6.22-rc4/arch/powerpc/mm/mem.c
+===================================================================
+--- 2.6.22-rc4.orig/arch/powerpc/mm/mem.c	2007-06-11 21:10:46.000000000 -0500
++++ 2.6.22-rc4/arch/powerpc/mm/mem.c	2007-06-29 22:52:42.000000000 -0500
+@@ -129,8 +129,6 @@
+ 	zone = pgdata->node_zones;
+ 
+ 	return __add_pages(zone, start_pfn, nr_pages);
+-
+-	return 0;
+ }
+ 
+ /*
+
+--------------070302000702000505020305--
