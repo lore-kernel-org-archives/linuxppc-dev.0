@@ -1,19 +1,22 @@
-Return-Path: <SRS0+c1968525e2f9b8480a17+1412+infradead.org+dwmw2@canuck.srs.infradead.org>
-Received: from canuck.infradead.org (canuck.infradead.org [209.217.80.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AEED3DDFBB
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jul 2007 00:41:28 +1000 (EST)
-Subject: Re: Executing from readablee, no-exec pages
-From: David Woodhouse <dwmw2@infradead.org>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <468D68D4.4050704@freescale.com>
-References: <468D68D4.4050704@freescale.com>
-Content-Type: text/plain
-Date: Fri, 06 Jul 2007 10:42:01 -0400
-Message-Id: <1183732922.2747.36.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id EEF4BDDECB
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jul 2007 01:49:24 +1000 (EST)
+Date: Fri, 6 Jul 2007 17:49:23 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Andreas Schwab <schwab@suse.de>
+Subject: Re: Too verbose compat_ioctl messages?
+In-Reply-To: <jevecxhep6.fsf@sykes.suse.de>
+Message-ID: <Pine.LNX.4.62.0707061749070.17331@pademelon.sonytel.be>
+References: <Pine.LNX.4.62.0707061431360.1203@pademelon.sonytel.be>
+	<jevecxhep6.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-1704365950-1183736963=:17331"
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Hiroaki Fuse <Hiroaki_Fuse@hq.scei.sony.co.jp>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,18 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-07-05 at 16:55 -0500, Scott Wood wrote:
-> To maintain compatibility with these versions, we could change the test 
-> in do_page_fault() to include VM_READ as well as VM_EXEC on targets that 
-> don't have a separate exec-bit in hardware (are there any powerpc mmus 
-> that do?).  
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-64-bit implementations since POWER4 have separate exec permissions,
-don't they? So any userspace which tries to execute non-executable pages
-is already broken when running on a ppc64 machine; I wouldn't worry too
-much about letting it break on ppc32 too.
+---584337861-1704365950-1183736963=:17331
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-We already use vDSO signal trampolines even on the 32-bit kernel, right?
+On Fri, 6 Jul 2007, Andreas Schwab wrote:
+> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> writes:
+> 
+> > Is there anything we can do about this?
+> 
+> Define it as IGNORE_IOCTL in fs/compat_ioctl.c?
 
--- 
-dwmw2
+Works fine, thx! I'll submit a patch.
+
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-1704365950-1183736963=:17331--
