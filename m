@@ -1,21 +1,24 @@
-Return-Path: <>
-Received: from asclepius.site5.com (asclepius.site5.com [70.47.36.37])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4B3D0DDF6E
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 19:39:22 +1000 (EST)
-Date: Fri, 6 Jul 2007 05:16:34 -0400
-From: Sonny Rao <sonny@burdell.org>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH] pseries: don't die if unknown/missing interrupt
-	controller property
-Message-ID: <20070706091634.GA19238@kevlar.boston.burdell.org>
-References: <20070702004937.GA15712@kevlar.boston.burdell.org>
-	<20070705133734.GA9215@lixom.net>
+	by ozlabs.org (Postfix) with ESMTP id B9672DDF94
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2007 20:37:25 +1000 (EST)
+Subject: Re: powerpc stacktrace and lockdep support
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Christoph Hellwig <hch@lst.de>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1183588814.3818.1.camel@johannes.berg>
+References: <20070108135458.GA23395@lst.de>
+	<1182898073.4769.6.camel@johannes.berg>
+	<1182970829.4769.62.camel@johannes.berg>
+	<1183047642.3735.0.camel@johannes.berg> <20070630085808.GA15386@lst.de>
+	<1183588814.3818.1.camel@johannes.berg>
+Content-Type: text/plain
+Date: Fri, 06 Jul 2007 11:23:47 +0200
+Message-Id: <1183713827.3818.71.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070705133734.GA9215@lixom.net>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, miltonm@bga.com
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +28,505 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 05, 2007 at 08:37:34AM -0500, Olof Johansson wrote:
-> On Sun, Jul 01, 2007 at 08:49:37PM -0400, Sonny Rao wrote:
-> > The pseries platform does not have a default function for init_IRQ and
-> > does not install one if it doesn't find or doesn't recognize an
-> > interrupt controller in the device tree.  Currently, the kernel dies
-> > when it tries to call the NULL init_IRQ() function.  Clean that up.
+On Thu, 2007-07-05 at 00:40 +0200, Johannes Berg wrote:
+> On Sat, 2007-06-30 at 10:58 +0200, Christoph Hellwig wrote:
+> > On Thu, Jun 28, 2007 at 06:20:42PM +0200, Johannes Berg wrote:
+> > > This one doesn't break 32-bit build by simply disabling irqtrace for
+> > > 32-bit.
+> > 
+> > This looks really cool to me.  I'd love to see this in 2.6.23.
 > 
-> Doesn't it make more sense to make init_IRQ() check that the pointer is
-> set instead? That'll work for more platforms than just pseries.
+> Hmm. Looks like I just found a case where I forgot to trace in some
+> place:
+> 
+> [  241.629380] hardirqs last  enabled at (1319): [<c0000000000b3718>] .get_page_from_freelist+0x298/0x620
+> [  241.629714] hardirqs last disabled at (1320): [<c000000000033690>] .native_hpte_invalidate+0x60/0x320
+> [  241.629732] softirqs last  enabled at (1282): [<c000000000059e28>] .__do_softirq+0x198/0x1e0
+> [  241.629748] softirqs last disabled at (1273): [<c00000000000c7e4>] .do_softirq+0xd4/0xe0
 
-Yeah, that might be the simplest way.  The only reason I can think of
-to do it this way is that (I think) every single other platform in
-arch/powerpc statically initializes init_IRQ, with pseries being the
-oddball.  It doesn't matter much to me, so I can post another patch in a
-bit.
+Not sure what that was, but I found one place where it could have come
+from (do an interdiff if you want to know). Below patch is a bit nicer,
+especially those trace_hardirqs wrappers. However, the presence of those
+itself is indication that I haven't given most of the hooks I added much
+thought. Though, in case somebody wants to develop it further I'll even
+sign it off.
 
-Sonny
+For me it's doing what I want, it allows me to develop with and for
+lockdep, take advantage of lockdep and still use my machine (with forced
+preemption) as expected; however I don't think I'd be comfortable with
+anybody else using it except on test machines unless somebody else gives
+it a thorough look first. Especially for say iSeries which is quite
+different in the low-level code and I can't even test.
+
+johannes
+
+Subject: powerpc: 64-bit irqtrace support
+From: Johannes Berg <johannes@sipsolutions.net>
+
+This adds irqtrace support to 64-bit powerpc.
+
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+
+---
+ arch/powerpc/Kconfig            |    9 ++++
+ arch/powerpc/kernel/Makefile    |    1 
+ arch/powerpc/kernel/entry_64.S  |   24 +++++++++++
+ arch/powerpc/kernel/head_64.S   |   54 +++++++++++++++++++++-----
+ arch/powerpc/kernel/irq.c       |    2 
+ arch/powerpc/kernel/irqtrace.S  |   82 ++++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/ppc_ksyms.c |    2 
+ arch/powerpc/kernel/setup_64.c  |    6 ++
+ include/asm-powerpc/hw_irq.h    |   14 +++---
+ include/asm-powerpc/irqflags.h  |   13 ------
+ include/asm-powerpc/rwsem.h     |   34 ++++++++++++----
+ include/asm-powerpc/spinlock.h  |    1 
+ 12 files changed, 202 insertions(+), 40 deletions(-)
+
+--- linux-2.6-git.orig/arch/powerpc/Kconfig	2007-07-05 23:01:18.001397556 +0200
++++ linux-2.6-git/arch/powerpc/Kconfig	2007-07-05 23:01:18.068397556 +0200
+@@ -38,6 +38,15 @@ config STACKTRACE_SUPPORT
+ 	bool
+ 	default y
+ 
++config TRACE_IRQFLAGS_SUPPORT
++	bool
++	depends on PPC64
++	default y
++
++config LOCKDEP_SUPPORT
++	bool
++	default y
++
+ config RWSEM_GENERIC_SPINLOCK
+ 	bool
+ 
+--- linux-2.6-git.orig/arch/powerpc/kernel/irq.c	2007-07-05 23:01:11.727397556 +0200
++++ linux-2.6-git/arch/powerpc/kernel/irq.c	2007-07-05 23:01:18.084397556 +0200
+@@ -114,7 +114,7 @@ static inline void set_soft_enabled(unsi
+ 	: : "r" (enable), "i" (offsetof(struct paca_struct, soft_enabled)));
+ }
+ 
+-void local_irq_restore(unsigned long en)
++void raw_local_irq_restore(unsigned long en)
+ {
+ 	/*
+ 	 * get_paca()->soft_enabled = en;
+--- linux-2.6-git.orig/arch/powerpc/kernel/ppc_ksyms.c	2007-07-05 23:01:11.759397556 +0200
++++ linux-2.6-git/arch/powerpc/kernel/ppc_ksyms.c	2007-07-05 23:01:18.094397556 +0200
+@@ -50,7 +50,7 @@
+ #endif
+ 
+ #ifdef CONFIG_PPC64
+-EXPORT_SYMBOL(local_irq_restore);
++EXPORT_SYMBOL(raw_local_irq_restore);
+ #endif
+ 
+ #ifdef CONFIG_PPC32
+--- linux-2.6-git.orig/include/asm-powerpc/hw_irq.h	2007-07-05 23:01:11.985397556 +0200
++++ linux-2.6-git/include/asm-powerpc/hw_irq.h	2007-07-05 23:01:18.108397556 +0200
+@@ -27,7 +27,7 @@ static inline unsigned long local_get_fl
+ 	return flags;
+ }
+ 
+-static inline unsigned long local_irq_disable(void)
++static inline unsigned long raw_local_irq_disable(void)
+ {
+ 	unsigned long flags, zero;
+ 
+@@ -39,14 +39,15 @@ static inline unsigned long local_irq_di
+ 	return flags;
+ }
+ 
+-extern void local_irq_restore(unsigned long);
++extern void raw_local_irq_restore(unsigned long);
+ extern void iseries_handle_interrupts(void);
+ 
+-#define local_irq_enable()	local_irq_restore(1)
+-#define local_save_flags(flags)	((flags) = local_get_flags())
+-#define local_irq_save(flags)	((flags) = local_irq_disable())
++#define raw_local_irq_enable()	raw_local_irq_restore(1)
++#define raw_local_save_flags(flags)	((flags) = local_get_flags())
++#define raw_local_irq_save(flags)	((flags) = raw_local_irq_disable())
+ 
+-#define irqs_disabled()		(local_get_flags() == 0)
++#define raw_irqs_disabled()		(local_get_flags() == 0)
++#define raw_irqs_disabled_flags(flags)		((flags) == 0)
+ 
+ #define __hard_irq_enable()	__mtmsrd(mfmsr() | MSR_EE, 1)
+ #define __hard_irq_disable()	__mtmsrd(mfmsr() & ~MSR_EE, 1)
+@@ -108,6 +109,7 @@ static inline void local_irq_save_ptr(un
+ #define local_save_flags(flags)	((flags) = mfmsr())
+ #define local_irq_save(flags)	local_irq_save_ptr(&flags)
+ #define irqs_disabled()		((mfmsr() & MSR_EE) == 0)
++#define irqs_disabled_flags(flags)		(((flags) & MSR_EE) == 0)
+ 
+ #define hard_irq_enable()	local_irq_enable()
+ #define hard_irq_disable()	local_irq_disable()
+--- linux-2.6-git.orig/include/asm-powerpc/irqflags.h	2007-07-05 23:01:12.018397556 +0200
++++ linux-2.6-git/include/asm-powerpc/irqflags.h	2007-07-05 23:01:18.141397556 +0200
+@@ -15,17 +15,4 @@
+  */
+ #include <asm-powerpc/hw_irq.h>
+ 
+-/*
+- * Do the CPU's IRQ-state tracing from assembly code. We call a
+- * C function, so save all the C-clobbered registers:
+- */
+-#ifdef CONFIG_TRACE_IRQFLAGS
+-
+-#error No support on PowerPC yet for CONFIG_TRACE_IRQFLAGS
+-
+-#else
+-# define TRACE_IRQS_ON
+-# define TRACE_IRQS_OFF
+-#endif
+-
+ #endif
+--- linux-2.6-git.orig/include/asm-powerpc/rwsem.h	2007-07-05 23:01:12.050397556 +0200
++++ linux-2.6-git/include/asm-powerpc/rwsem.h	2007-07-05 23:01:18.149397556 +0200
+@@ -28,11 +28,21 @@ struct rw_semaphore {
+ #define RWSEM_ACTIVE_WRITE_BIAS		(RWSEM_WAITING_BIAS + RWSEM_ACTIVE_BIAS)
+ 	spinlock_t		wait_lock;
+ 	struct list_head	wait_list;
++#ifdef CONFIG_DEBUG_LOCK_ALLOC
++	struct lockdep_map	dep_map;
++#endif
+ };
+ 
++#ifdef CONFIG_DEBUG_LOCK_ALLOC
++# define __RWSEM_DEP_MAP_INIT(lockname) , .dep_map = { .name = #lockname }
++#else
++# define __RWSEM_DEP_MAP_INIT(lockname)
++#endif
++
+ #define __RWSEM_INITIALIZER(name) \
+ 	{ RWSEM_UNLOCKED_VALUE, SPIN_LOCK_UNLOCKED, \
+-	  LIST_HEAD_INIT((name).wait_list) }
++	  LIST_HEAD_INIT((name).wait_list) \
++	  __RWSEM_DEP_MAP_INIT(name) }
+ 
+ #define DECLARE_RWSEM(name)		\
+ 	struct rw_semaphore name = __RWSEM_INITIALIZER(name)
+@@ -42,12 +52,15 @@ extern struct rw_semaphore *rwsem_down_w
+ extern struct rw_semaphore *rwsem_wake(struct rw_semaphore *sem);
+ extern struct rw_semaphore *rwsem_downgrade_wake(struct rw_semaphore *sem);
+ 
+-static inline void init_rwsem(struct rw_semaphore *sem)
+-{
+-	sem->count = RWSEM_UNLOCKED_VALUE;
+-	spin_lock_init(&sem->wait_lock);
+-	INIT_LIST_HEAD(&sem->wait_list);
+-}
++extern void __init_rwsem(struct rw_semaphore *sem, const char *name,
++			 struct lock_class_key *key);
++
++#define init_rwsem(sem)					\
++	do {						\
++		static struct lock_class_key __key;	\
++							\
++		__init_rwsem((sem), #sem, &__key);	\
++	} while (0)
+ 
+ /*
+  * lock for reading
+@@ -74,7 +87,7 @@ static inline int __down_read_trylock(st
+ /*
+  * lock for writing
+  */
+-static inline void __down_write(struct rw_semaphore *sem)
++static inline void __down_write_nested(struct rw_semaphore *sem, int subclass)
+ {
+ 	int tmp;
+ 
+@@ -84,6 +97,11 @@ static inline void __down_write(struct r
+ 		rwsem_down_write_failed(sem);
+ }
+ 
++static inline void __down_write(struct rw_semaphore *sem)
++{
++	__down_write_nested(sem, 0);
++}
++
+ static inline int __down_write_trylock(struct rw_semaphore *sem)
+ {
+ 	int tmp;
+--- linux-2.6-git.orig/include/asm-powerpc/spinlock.h	2007-07-05 23:01:12.097397556 +0200
++++ linux-2.6-git/include/asm-powerpc/spinlock.h	2007-07-05 23:01:18.152397556 +0200
+@@ -19,6 +19,7 @@
+  *
+  * (the type definitions are in asm/spinlock_types.h)
+  */
++#include <linux/irqflags.h>
+ #ifdef CONFIG_PPC64
+ #include <asm/paca.h>
+ #include <asm/hvcall.h>
+--- linux-2.6-git.orig/arch/powerpc/kernel/head_64.S	2007-07-05 23:01:11.796397556 +0200
++++ linux-2.6-git/arch/powerpc/kernel/head_64.S	2007-07-05 23:01:18.173397556 +0200
+@@ -394,6 +394,12 @@ label##_iSeries:							\
+ 	EXCEPTION_PROLOG_ISERIES_2;					\
+ 	b	label##_common;						\
+ 
++#ifdef CONFIG_TRACE_IRQFLAGS
++#define TRACE_DISABLE_INTS bl .powerpc_trace_hardirqs_off
++#else
++#define TRACE_DISABLE_INTS
++#endif
++
+ #ifdef CONFIG_PPC_ISERIES
+ #define DISABLE_INTS				\
+ 	li	r11,0;				\
+@@ -405,14 +411,15 @@ BEGIN_FW_FTR_SECTION;				\
+ 	mfmsr	r10;				\
+ 	ori	r10,r10,MSR_EE;			\
+ 	mtmsrd	r10,1;				\
+-END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISERIES)
++END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISERIES);	\
++	TRACE_DISABLE_INTS
+ 
+ #else
+ #define DISABLE_INTS				\
+ 	li	r11,0;				\
+ 	stb	r11,PACASOFTIRQEN(r13);		\
+-	stb	r11,PACAHARDIRQEN(r13)
+-
++	stb	r11,PACAHARDIRQEN(r13);		\
++	TRACE_DISABLE_INTS
+ #endif /* CONFIG_PPC_ISERIES */
+ 
+ #define ENABLE_INTS				\
+@@ -965,24 +972,38 @@ bad_stack:
+  */
+ fast_exc_return_irq:			/* restores irq state too */
+ 	ld	r3,SOFTE(r1)
+-	ld	r12,_MSR(r1)
++#ifdef CONFIG_TRACE_IRQFLAGS
++	cmpdi	r3,0
++	beq	1f
++	bl	.trace_hardirqs_on
++	ld	r3,SOFTE(r1)
++1:
+ 	stb	r3,PACASOFTIRQEN(r13)	/* restore paca->soft_enabled */
++	cmpdi	r3,0
++	bne	2f
++	bl	.trace_hardirqs_off
++	ld	r3,SOFTE(r1)
++2:
++#else
++	stb	r3,PACASOFTIRQEN(r13)	/* restore paca->soft_enabled */
++#endif
++	ld	r12,_MSR(r1)
+ 	rldicl	r4,r12,49,63		/* get MSR_EE to LSB */
+ 	stb	r4,PACAHARDIRQEN(r13)	/* restore paca->hard_enabled */
+-	b	1f
++	b	3f
+ 
+ 	.globl	fast_exception_return
+ fast_exception_return:
+ 	ld	r12,_MSR(r1)
+-1:	ld	r11,_NIP(r1)
++3:	ld	r11,_NIP(r1)
+ 	andi.	r3,r12,MSR_RI		/* check if RI is set */
+ 	beq-	unrecov_fer
+ 
+ #ifdef CONFIG_VIRT_CPU_ACCOUNTING
+ 	andi.	r3,r12,MSR_PR
+-	beq	2f
++	beq	4f
+ 	ACCOUNT_CPU_USER_EXIT(r3, r4)
+-2:
++4:
+ #endif
+ 
+ 	ld	r3,_CCR(r1)
+@@ -1387,11 +1408,24 @@ END_FW_FTR_SECTION_IFCLR(FW_FEATURE_ISER
+ 
+ 	/*
+ 	 * hash_page couldn't handle it, set soft interrupt enable back
+-	 * to what it was before the trap.  Note that .local_irq_restore
++	 * to what it was before the trap.  Note that .raw_local_irq_restore
+ 	 * handles any interrupts pending at this point.
+ 	 */
+ 	ld	r3,SOFTE(r1)
+-	bl	.local_irq_restore
++#ifdef CONFIG_TRACE_IRQFLAGS
++	cmpdi	r3,0
++	beq	14f
++	bl	.trace_hardirqs_on
++	ld	r3,SOFTE(r1)
++14:
++	bl	.raw_local_irq_restore
++	cmpdi	r3,0
++	bne	15f
++	bl	.trace_hardirqs_off
++15:
++#else
++	bl	.raw_local_irq_restore
++#endif
+ 	b	11f
+ 
+ /* Here we have a page fault that hash_page can't handle. */
+--- linux-2.6-git.orig/arch/powerpc/kernel/setup_64.c	2007-07-05 23:01:11.829397556 +0200
++++ linux-2.6-git/arch/powerpc/kernel/setup_64.c	2007-07-05 23:01:18.185397556 +0200
+@@ -33,6 +33,7 @@
+ #include <linux/serial_8250.h>
+ #include <linux/bootmem.h>
+ #include <linux/pci.h>
++#include <linux/lockdep.h>
+ #include <asm/io.h>
+ #include <asm/kdump.h>
+ #include <asm/prom.h>
+@@ -359,6 +360,11 @@ void __init setup_system(void)
+ 			  &__start___fw_ftr_fixup, &__stop___fw_ftr_fixup);
+ 
+ 	/*
++	 * start lockdep
++	 */
++	lockdep_init();
++
++	/*
+ 	 * Unflatten the device-tree passed by prom_init or kexec
+ 	 */
+ 	unflatten_device_tree();
+--- linux-2.6-git.orig/arch/powerpc/kernel/entry_64.S	2007-07-05 23:01:11.864397556 +0200
++++ linux-2.6-git/arch/powerpc/kernel/entry_64.S	2007-07-05 23:01:18.211397556 +0200
+@@ -88,6 +88,13 @@ system_call_common:
+ 	addi	r9,r1,STACK_FRAME_OVERHEAD
+ 	ld	r11,exception_marker@toc(r2)
+ 	std	r11,-16(r9)		/* "regshere" marker */
++#ifdef CONFIG_TRACE_IRQFLAGS
++	bl	.trace_hardirqs_on
++	REST_GPR(0,r1)
++	REST_4GPRS(3,r1)
++	REST_2GPRS(7,r1)
++	addi	r9,r1,STACK_FRAME_OVERHEAD
++#endif
+ 	li	r10,1
+ 	stb	r10,PACASOFTIRQEN(r13)
+ 	stb	r10,PACAHARDIRQEN(r13)
+@@ -491,8 +498,20 @@ BEGIN_FW_FTR_SECTION
+ 4:
+ END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISERIES)
+ #endif
++#ifdef CONFIG_TRACE_IRQFLAGS
++	cmpdi	r5,0
++	beq	5f
++	bl	.trace_hardirqs_on
++	ld	r5,SOFTE(r1)
+ 	stb	r5,PACASOFTIRQEN(r13)
+-
++	b	6f
++5:
++	stb	r5,PACASOFTIRQEN(r13)
++	bl	.trace_hardirqs_off
++6:
++#else
++	stb	r5,PACASOFTIRQEN(r13)
++#endif
+ 	/* extract EE bit and use it to restore paca->hard_enabled */
+ 	ld	r3,_MSR(r1)
+ 	rldicl	r4,r3,49,63		/* r0 = (r3 >> 15) & 1 */
+@@ -560,6 +579,9 @@ do_work:
+ 	bne	restore
+ 	/* here we are preempting the current task */
+ 1:
++#ifdef CONFIG_TRACE_IRQFLAGS
++	bl	.powerpc_trace_hardirqs_on
++#endif
+ 	li	r0,1
+ 	stb	r0,PACASOFTIRQEN(r13)
+ 	stb	r0,PACAHARDIRQEN(r13)
+--- linux-2.6-git.orig/arch/powerpc/kernel/Makefile	2007-07-05 23:01:18.002397556 +0200
++++ linux-2.6-git/arch/powerpc/kernel/Makefile	2007-07-05 23:01:18.212397556 +0200
+@@ -62,6 +62,7 @@ obj-$(CONFIG_SMP)		+= smp.o
+ obj-$(CONFIG_KPROBES)		+= kprobes.o
+ obj-$(CONFIG_PPC_UDBG_16550)	+= legacy_serial.o udbg_16550.o
+ obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
++obj-$(CONFIG_TRACE_IRQFLAGS)	+= irqtrace.o
+ 
+ module-$(CONFIG_PPC64)		+= module_64.o
+ obj-$(CONFIG_MODULES)		+= $(module-y)
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-git/arch/powerpc/kernel/irqtrace.S	2007-07-06 02:11:15.110814034 +0200
+@@ -0,0 +1,82 @@
++/*
++ * helpers for irq-trace
++ *
++ * We invoke the hardirq trace functions from various inconvenient
++ * places; these helpers save all callee-saved registers.
++ *
++ * Author: Johannes Berg <johannes@sipsolutions.net>
++ */
++
++#include <asm/ppc_asm.h>
++#include <asm/asm-offsets.h>
++
++#ifdef CONFIG_PPC64
++#define ST	std
++#define STU	stdu
++#define L	ld
++#define WSZ	8
++#define FREE	32
++#else
++#error double-check please
++#define ST	stw
++#define STU	stwu
++#define L	lwz
++#define WSZ	4
++#define FREE	16
++#endif
++
++#define STACKSPACE	(FREE + 16*WSZ)
++#define SAVE(n)		(FREE + n*WSZ)
++
++_GLOBAL(powerpc_trace_hardirqs_on)
++	ST	r3, (SAVE(2)-STACKSPACE)(r1)
++	LOAD_REG_IMMEDIATE(r3, .trace_hardirqs_on)
++	b	powerpc_trace_hardirqs
++
++_GLOBAL(powerpc_trace_hardirqs_off)
++	ST	r3, (SAVE(2)-STACKSPACE)(r1)
++	LOAD_REG_IMMEDIATE(r3, .trace_hardirqs_off)
++
++powerpc_trace_hardirqs:
++	ST	r0, (SAVE(0)-STACKSPACE)(r1)
++	mflr	r0
++	ST	r0, LRSAVE(r1)
++	STU	r1, -STACKSPACE(r1)
++	mfctr	r0
++	ST	r0, SAVE(14)(r1)
++	mtctr	r3
++	ST	r2, SAVE(1)(r1)
++	ST	r4, SAVE(3)(r1)
++	ST	r5, SAVE(4)(r1)
++	ST	r6, SAVE(5)(r1)
++	ST	r7, SAVE(6)(r1)
++	ST	r8, SAVE(7)(r1)
++	ST	r9, SAVE(8)(r1)
++	ST	r10, SAVE(9)(r1)
++	ST	r11, SAVE(10)(r1)
++	ST	r12, SAVE(11)(r1)
++	ST	r13, SAVE(12)(r1)
++	mfcr	r0
++	ST	r0, SAVE(13)(r1)
++	bctrl
++	L	r2, SAVE(1)(r1)
++	L	r3, SAVE(2)(r1)
++	L	r4, SAVE(3)(r1)
++	L	r5, SAVE(4)(r1)
++	L	r6, SAVE(5)(r1)
++	L	r7, SAVE(6)(r1)
++	L	r8, SAVE(7)(r1)
++	L	r9, SAVE(8)(r1)
++	L	r10, SAVE(9)(r1)
++	L	r11, SAVE(10)(r1)
++	L	r12, SAVE(11)(r1)
++	L	r13, SAVE(12)(r1)
++	L	r0, SAVE(13)(r1)
++	mtcr	r0
++	L	r0, SAVE(14)(r1)
++	mtctr	r0
++	L	r1, 0(r1)
++	L	r0, LRSAVE(r1)
++	mtlr	r0
++	L	r0, (SAVE(0)-STACKSPACE)(r1)
++	blr
