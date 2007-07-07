@@ -1,10 +1,10 @@
 Return-Path: <miltonm@sullivan.realtime.net>
-Date: Sat, 7 Jul 2007 01:18:54 -0500 (CDT)
-Subject: [PATCH 11/11] dtc: format memory reserve as pairs on two lines
+Date: Sat, 7 Jul 2007 01:18:50 -0500 (CDT)
+Subject: [PATCH 06/11] dtc: allow a label: in any dts context
 Sender: <miltonm@realtime.net>
 From: Milton Miller <miltonm@bga.com>
 To: Jon Loeliger <jdl@jdl.com>
-Message-Id: <dtc-5-11.miltonm@bga.com>
+Message-Id: <dtc-5-06.miltonm@bga.com>
 In-Reply-To: <dtc-5-00.miltonm@bga.com>
 Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -16,33 +16,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-When writing the memory reserve table in assembly output,
-emit both halves of each 64 bit number on a single .long
-statement.  This results in two lines per memory reserve
-slot instead of four, each line contains one field (start
-or size).
+Change the lexer to recognise a label in any context.  Place
+before other celldata and bytestrings to avoid the initial
+characters being stolen by other matches.
+
+A label is a character sequence starting with an alphabetic
+or underscore optinally followed by the same plus digits and
+terminating in a colon.
+
+The included terminating colon will prevent matching hex numbers.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 --- 
-Purely consmentic but aids in showing the data is from
-a single 64 bit quantity.  The end marker and the extra
-reserved slots were already emitting a pair of zeros per
-statement.
+The following patches parse matches in CELLDATA and BYTESTRING
+in addition to the current INITIAL context; matches in MEMRESERVE
+and INCLUDE context will not be parsed.
 
-Index: dtc/flattree.c
-===================================================================
---- dtc.orig/flattree.c	2007-06-14 22:59:24.000000000 -0500
-+++ dtc/flattree.c	2007-06-14 22:59:28.000000000 -0500
-@@ -514,10 +514,10 @@ void dt_to_asm(FILE *f, struct boot_info
- 			fprintf(f, "\t.globl\t%s\n", re->label);
- 			fprintf(f, "%s:\n", re->label);
+diff --git a/dtc-lexer.l b/dtc-lexer.l
+index 77ccd54..0e356bb 100644
+--- a/dtc-lexer.l
++++ b/dtc-lexer.l
+@@ -107,6 +107,16 @@ #endif
+ 			BEGIN(INITIAL);
+ 			return ';';
  		}
--		fprintf(f, "\t.long\t0x%08x\n\t.long\t0x%08x\n",
-+		fprintf(f, "\t.long\t0x%08x, 0x%08x\n",
- 			(unsigned int)(re->re.address >> 32),
- 			(unsigned int)(re->re.address & 0xffffffff));
--		fprintf(f, "\t.long\t0x%08x\n\t.long\t0x%08x\n",
-+		fprintf(f, "\t.long\t0x%08x, 0x%08x\n",
- 			(unsigned int)(re->re.size >> 32),
- 			(unsigned int)(re->re.size & 0xffffffff));
- 	}
++
++<*>[a-zA-Z_][a-zA-Z0-9_]*:	{
++			yylloc.filenum = srcpos_filenum;
++			yylloc.first_line = yylineno;
++			DPRINT("Label: %s\n", yytext);
++			yylval.str = strdup(yytext);
++			yylval.str[yyleng-1] = '\0';
++			return DT_LABEL;
++		}
++
+ <CELLDATA>[bodh]# {
+ 			yylloc.filenum = srcpos_filenum;
+ 			yylloc.first_line = yylineno;
+@@ -189,15 +199,6 @@ #endif
+ 		}
+ 
+ 
+-[a-zA-Z_][a-zA-Z0-9_]*:	{
+-			yylloc.filenum = srcpos_filenum;
+-			yylloc.first_line = yylineno;
+-			DPRINT("Label: %s\n", yytext);
+-			yylval.str = strdup(yytext);
+-			yylval.str[yyleng-1] = '\0';
+-			return DT_LABEL;
+-		}
+-
+ <*>{WS}+	/* eat whitespace */
+ 
+ <*>"/*"([^*]|\*+[^*/])*\*+"/"	{
