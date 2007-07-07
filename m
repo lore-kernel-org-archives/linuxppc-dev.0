@@ -2,17 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5316ADDFE9
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jul 2007 12:33:38 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 3F788DE0DA
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jul 2007 12:33:42 +1000 (EST)
 Subject: Re: Executing from readablee, no-exec pages
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1183732922.2747.36.camel@shinybook.infradead.org>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20070706164942.GA10806@ld0162-tx32.am.freescale.net>
 References: <468D68D4.4050704@freescale.com>
-	<1183732922.2747.36.camel@shinybook.infradead.org>
+	<4A6D2FF2-ADD3-4D8A-ADBB-F04CAA778539@kernel.crashing.org>
+	<20070706164942.GA10806@ld0162-tx32.am.freescale.net>
 Content-Type: text/plain
-Date: Sat, 07 Jul 2007 12:33:00 +1000
-Message-Id: <1183775580.3388.191.camel@localhost.localdomain>
+Date: Sat, 07 Jul 2007 12:33:32 +1000
+Message-Id: <1183775612.3388.193.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,21 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-07-06 at 10:42 -0400, David Woodhouse wrote:
-> On Thu, 2007-07-05 at 16:55 -0500, Scott Wood wrote:
-> > To maintain compatibility with these versions, we could change the test 
-> > in do_page_fault() to include VM_READ as well as VM_EXEC on targets that 
-> > don't have a separate exec-bit in hardware (are there any powerpc mmus 
-> > that do?).  
-> 
-> 64-bit implementations since POWER4 have separate exec permissions,
-> don't they? So any userspace which tries to execute non-executable pages
-> is already broken when running on a ppc64 machine; I wouldn't worry too
-> much about letting it break on ppc32 too.
-> 
-> We already use vDSO signal trampolines even on the 32-bit kernel, right?
 
-The problem was with old glibc 32 bits which used to jump to an
-instruction in the .got iirc that wasn't in an executable section
+> Well, it means that leaving VM_READ out of the check (except where the
+> hardware PTE has an exec bit) isn't really buying us anything
+> security-wise (especially since the primary reason for no-exec protection
+> is to avoid code injections via stack overflow, and those pages will
+> usually already be present), so it doesn't hurt much to let things keep
+> working.
+> 
+> At the least, I'd like it to keep working for a few more kernel releases
+> (with a warning printed when a VM_EXEC-only test would have failed), so
+> people have time to upgrade glibc.
+
+I agree. Care to send a patch ? :-0
 
 Ben.
