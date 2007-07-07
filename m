@@ -1,19 +1,19 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 911B7DE1BF
-	for <linuxppc-dev@ozlabs.org>; Sun,  8 Jul 2007 04:14:54 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/2] [ide] mmio ide support
-Date: Sat, 7 Jul 2007 20:07:10 +0200
-References: <20070707094852.9473.21013.stgit@localhost.localdomain>
-	<200707071419.52650.arnd@arndb.de> <468FC4AC.9030701@ru.mvista.com>
-In-Reply-To: <468FC4AC.9030701@ru.mvista.com>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 9AFE6DE186
+	for <linuxppc-dev@ozlabs.org>; Sun,  8 Jul 2007 04:27:38 +1000 (EST)
+Message-ID: <468FDB8F.4050007@ru.mvista.com>
+Date: Sat, 07 Jul 2007 22:29:35 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200707072007.10448.arnd@arndb.de>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/5] Add legacy devices to mpc8641_hpcn.dts
+References: <1179245829.8132.100.camel@rhino>
+	<1179246470.8132.112.camel@rhino>	<1179333421.7018.17.camel@ld0161-tx32>
+	<b77c4b3dd22795a73cd32a0623722e51@kernel.crashing.org>
+In-Reply-To: <b77c4b3dd22795a73cd32a0623722e51@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,36 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 07 July 2007, Sergei Shtylyov wrote:
-> Arnd Bergmann wrote:
-> 
-> >>This adds support for MMIO IDE device like CompactFlash 
-> >>in TrueIDE mode.
-> 
-> >>Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com> 
-> >>Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
-> 
-> > Hmm, are we still adding new IDE drivers? Do you also have a
-> 
->     Yes, why not?
+Hello.
 
-The last time someone (I think Akira Iguchi) wanted to add
-a new powerpc specific IDE driver, that was rejected based
-on the argument that drivers/ide/ is going away soon. Most
-current distros have already moved over to using libata
-exclusively.
+Segher Boessenkool wrote:
+>>>+			isa@f0 {
 
-> > about to add the electra_ide.c driver in 2.6.23, I guess there
-> > should really be _one_ driver that is able to handle all
-> > of_device based ATA hosts.
-> 
->     One driver to rule them all. :-)
->     That may be not so simple as it seems...
+> isa@1e
 
-It's certainly not easy to support all ATA chips that
-have special capabilities and bugs, but the electra and the
-mpc8349-itx both seem to support only the most basic ATA
-PIO mode anyway, which does not require much special
-handling beyond finding the right mmio addresses.
+>>>+				8042@60 {
+>>>+					device_type = "8042";
 
-	Arnd <><
+> Drop the device_type.  A number as a name isn't
+> all that great, either.
+
+   Yet it's kinda accepted years ago, see:
+
+http://playground.sun.com/1275/proposals/Closed/Accepted/381-it.txt
+
+    Ugh, it's hard to find these documents... All "name", "device_type", and 
+"compatible" must all be "8042".
+
+> Segher
+
+WBR, Sergei
