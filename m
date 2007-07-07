@@ -1,10 +1,10 @@
 Return-Path: <miltonm@sullivan.realtime.net>
 Date: Sat, 7 Jul 2007 01:18:47 -0500 (CDT)
-Subject: [PATCH 01/11] dtc: fix asm for version 17
+Subject: [PATCH 02/11] dtc: move declaration of yyerror
 Sender: <miltonm@realtime.net>
 From: Milton Miller <miltonm@bga.com>
 To: Jon Loeliger <jdl@jdl.com>
-Message-Id: <dtc-5-01.miltonm@bga.com>
+Message-Id: <dtc-5-02.miltonm@bga.com>
 In-Reply-To: <dtc-5-00.miltonm@bga.com>
 Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -16,25 +16,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The version 17 flat device tree format added struct size.  When
-writing versin 17 assembly output the field must be emitted.
+yyerror() is used by both dtc-parser.y and dtc-lexer.l, so move
+the declaration to srcpos.h.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 --- 
-Found when trying to parse the binary from the assembled output.
+eliminates implicit declaration warning.
 
-Index: dtc/flattree.c
+Index: dtc/dtc-parser.y
 ===================================================================
---- dtc.orig/flattree.c	2007-06-14 22:56:59.000000000 -0500
-+++ dtc/flattree.c	2007-06-14 22:59:00.000000000 -0500
-@@ -477,6 +477,10 @@ void dt_to_asm(FILE *f, struct boot_info
- 		fprintf(f, "\t.long\t_%s_strings_end - _%s_strings_start\t/* size_dt_strings */\n",
- 			symprefix, symprefix);
+--- dtc.orig/dtc-parser.y	2007-06-14 23:16:18.000000000 -0500
++++ dtc/dtc-parser.y	2007-06-14 23:16:25.000000000 -0500
+@@ -26,7 +26,6 @@
+ #include "srcpos.h"
  
-+	if (vi->flags & FTF_STRUCTSIZE)
-+		fprintf(f, "\t.long\t_%s_struct_end - _%s_struct_start\t/* size_dt_struct */\n",
-+			symprefix, symprefix);
-+
- 	/*
- 	 * Reserve map entries.
- 	 * Align the reserve map to a doubleword boundary.
+ int yylex(void);
+-void yyerror(char const *);
+ cell_t cell_from_string(char *s, unsigned int base);
+ 
+ extern struct boot_info *the_boot_info;
+Index: dtc/srcpos.h
+===================================================================
+--- dtc.orig/srcpos.h	2007-06-14 23:16:18.000000000 -0500
++++ dtc/srcpos.h	2007-06-14 23:16:25.000000000 -0500
+@@ -62,6 +62,7 @@ typedef struct YYLTYPE {
+ 
+ 
+ 
++extern void yyerror(char const *);
+ 
+ extern int srcpos_filenum;
+ 
