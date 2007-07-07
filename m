@@ -1,21 +1,19 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 6A5AFDE172
-	for <linuxppc-dev@ozlabs.org>; Sun,  8 Jul 2007 01:19:06 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 3487FDDFD6
+	for <linuxppc-dev@ozlabs.org>; Sun,  8 Jul 2007 02:44:51 +1000 (EST)
+Message-ID: <468FC376.2040405@ru.mvista.com>
+Date: Sat, 07 Jul 2007 20:46:46 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: Vitaly Bordug <vitb@kernel.crashing.org>
 Subject: Re: [PATCH 2/2] [POWERPC] mmio ide support for mpc8349-itx target
-Date: Sat, 7 Jul 2007 17:12:44 +0200
 References: <20070707094852.9473.21013.stgit@localhost.localdomain>
 	<20070707094900.9473.48577.stgit@localhost.localdomain>
-	<20070707150708.GA5387@lixom.net>
-In-Reply-To: <20070707150708.GA5387@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200707071712.45173.arnd@arndb.de>
-Cc: Olof Johansson <olof@lixom.net>, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org
+In-Reply-To: <20070707094900.9473.48577.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,25 +23,157 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 07 July 2007, Olof Johansson wrote:
-> On Sat, Jul 07, 2007 at 01:49:00PM +0400, Vitaly Bordug wrote:
-> > 
-> > This updates relevant platform code
-> > (freescale mpc8349itx target) to make the CompactFlash
-> > work in TrueIDE mode.
-> 
-> Shouldn't you be writing a PCMCIA driver instead for the CF, so it
-> handles other devices as well? Then you get storage "for free", as
-> well as hotplug, etc.
+Hello.
 
-CF memory cards can be in either TrueIDE mode or PCMCIA mode. If you
-only need to support memory cards, you should always use True-IDE
-mode, because that offers a _much_ higher throughput with PIO mode
-6 (25 MB/s) or UDMA mode 6 (133MB/s), compared to the PIO mode 0
-(3.3 MB/s) in PCMCIA mode.
+Vitaly Bordug wrote:
 
-Of course, if the bus can only sustain PIO mode 0 anyway, you can
-just as well do a PCMCIA driver, and get the ability to plug in
-other cards, e.g. wlan or modem cards.
+> This updates relevant platform code
+> (freescale mpc8349itx target) to make the CompactFlash
+> work in TrueIDE mode.
 
-	Arnd <><
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+
+    It would have been good if you tried to actualy compile your code. ;-)
+
+> diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
+> index db0d003..b3e80ab 100644
+> --- a/arch/powerpc/boot/dts/mpc8349emitx.dts
+> +++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
+> @@ -42,7 +42,7 @@
+>  		#size-cells = <1>;
+>  		#interrupt-cells = <2>;
+>  		device_type = "soc";
+> -		ranges = <0 e0000000 00100000>;
+> +		ranges = <0 e0000000 1f000000>;
+>  		reg = <e0000000 00000200>;
+>  		bus-frequency = <0>;                    // from bootloader
+>  
+> @@ -229,6 +229,21 @@
+>  			descriptor-types-mask = <01010ebf>;
+>  		};
+>  
+> +		ide@10000000 {
+> + 			#interrupt-cells = <2>;
+
+    Hm, why define that prop for a node with no children?
+
+> + 			interrupts = <17 8>;
+> + 			interrupt-map = <0 0 0 1 700 17 8>;
+> + 			interrupt-map-mask = <0>;
+> + 
+> + 			#size-cells = <1>;
+> + 			#address-cells = <1>;
+
+    Same question here.
+
+> + 			reg = <10000000 10 10000200 10>;
+> + 
+> + 			device_type = "ide";
+
+    I think that already adopted device type is "ata", not "ide".
+
+> + 			compatible = "mmio-ide";
+> + 			interrupt-parent = < &ipic >;
+> + 		};
+> +
+>  		ipic: pic@700 {
+>  			interrupt-controller;
+>  			#address-cells = <0>;
+> diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+> index cad1757..b3fe011 100644
+> --- a/arch/powerpc/sysdev/fsl_soc.c
+> +++ b/arch/powerpc/sysdev/fsl_soc.c
+> @@ -1103,3 +1103,116 @@ err:
+>  arch_initcall(cpm_smc_uart_of_init);
+>  
+>  #endif /* CONFIG_8xx */
+> +
+> +#ifdef CONFIG_MPC834x_ITX
+
+    Erm, isn't this stuff misplaced? Is this really SoC device? I remember 
+seeng this in the arch/ppc/ platform code before (in the internal tree)...
+
+> +#include <linux/ide.h>
+> +#include <linux/mmio-ide.h>
+> +#include <asm-ppc/mpc83xx.h>
+> +
+> +static void mmio_ide_outsw(unsigned long port, void *addr, u32 count)
+> +{
+> +	_outsw_ns((void __iomem *)port, addr, count);
+> +}
+> +
+> +static void mmio_ide_insw(unsigned long port, void *addr, u32 count)
+> +{
+> +	_insw_ns((void __iomem *)port, addr, count);
+> +}
+> +
+> +void mmio_ide_mmiops (ide_hwif_t *hwif)
+> +{
+> +	default_hwif_mmiops(hwif);
+> +	hwif->OUTL = NULL;
+
+    OUTL() method no longer exists.
+
+> +	hwif->OUTSW = mmio_ide_outsw;
+> +	hwif->OUTSL = NULL;
+> +	hwif->INL = NULL;
+
+    And neither INL() does.
+
+> +	hwif->INSW = mmio_ide_insw;
+> +	hwif->INSL = NULL;
+> +}
+> +
+> +void mmio_ide_selectproc (ide_drive_t *drive)
+> +{
+> +	u8 stat;
+> +
+> +	stat = drive->hwif->INB(IDE_STATUS_REG);
+> +	if ((stat & READY_STAT) && (stat & BUSY_STAT))
+> +		drive->present = 0;
+> +	else
+> +		drive->present = 1;
+> +}
+> +
+
+    Heh, attempt to emulate hotplug. :-)
+
+> +static int __init fsl_mmio_ide_of_init(void)
+> +{
+> +	struct device_node *np;
+> +	unsigned int i;
+> +
+> +	for (np = NULL, i = 0;
+> +	     (np = of_find_compatible_node(np, "ide", "mmio-ide")) != NULL;
+> +	     i++) {
+> +		int ret = 0;
+> +		struct resource res[3];
+> +		struct platform_device *pdev = NULL;
+> +		static struct mmio_ide_platform_data pdata = {
+> +			/* TODO: pass via OF? */
+> +			.byte_lanes_swapping = 0,
+> +			.regaddr_step        = 2,
+> +			.mmiops              = mmio_ide_mmiops,
+> +			.selectproc          = mmio_ide_selectproc,
+
+    Definitely, you won't be able to pass methods via of_platform_device. :-)
+
+> +		};
+> +
+> +		memset(res, 0, sizeof(res));
+> +
+> +		ret = of_address_to_resource(np, 0, &res[0]);
+> +		if (ret) {
+> +			printk(KERN_ERR "mmio-ide.%d: unable to get "
+> +			       "resource from OF\n",i );
+
+    CodingStyle: space after comma, no space before paren.
+
+[...]
+> +		res[2].name = "mmio-ide";
+> +		res[2].flags = IORESOURCE_IRQ;;
+
+    One ; too many here. ;-)
+
+MBR, Sergei
