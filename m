@@ -1,22 +1,12 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.180])
-	by ozlabs.org (Postfix) with ESMTP id 524DFDDDFE
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jul 2007 15:46:49 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so533262wag
-	for <linuxppc-dev@ozlabs.org>; Fri, 06 Jul 2007 22:46:48 -0700 (PDT)
-Message-ID: <fa686aa40707062246j71a347acje8559b7b6be9d38b@mail.gmail.com>
-Date: Fri, 6 Jul 2007 23:46:48 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Arnd Bergmann" <arnd@arndb.de>
-Subject: Re: [PATCH] Add USB support to mpc8349-mitx board port
-In-Reply-To: <200707070148.20526.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <20070706222909.19943.39455.stgit@trillian.secretlab.ca>
-	<200707070148.20526.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, leoli@freescale.com,
-	Timur Tabi <timur@freescale.com>
+Return-Path: <miltonm@sullivan.realtime.net>
+Date: Sat, 7 Jul 2007 01:18:47 -0500 (CDT)
+Subject: [PATCH 01/11] dtc: fix asm for version 17
+Sender: <miltonm@realtime.net>
+From: Milton Miller <miltonm@bga.com>
+To: Jon Loeliger <jdl@jdl.com>
+Message-Id: <dtc-5-01.miltonm@bga.com>
+In-Reply-To: <dtc-5-00.miltonm@bga.com>
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,43 +16,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/6/07, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Saturday 07 July 2007, Grant Likely wrote:
-> > --- a/arch/powerpc/platforms/83xx/mpc834x_itx.c
-> > +++ b/arch/powerpc/platforms/83xx/mpc834x_itx.c
-> > @@ -63,6 +63,8 @@ static void __init mpc834x_itx_setup_arch(void)
-> >
-> > ppc_md.pci_exclude_device = mpc83xx_exclude_device;
-> > #endif
-> > +
-> > +mpc834x_usb_cfg();
-> > }
->
-> Why is that necessary? Shouldn't there be an of_platform_driver that
-> simply does all the setup automatically if the device is present?
+The version 17 flat device tree format added struct size.  When
+writing versin 17 assembly output the field must be emitted.
 
-This call is actually for SoC setup stuff.  There are actually 2 USB
-engines on the SoC, and this call figures out what mode the pins are
-supposed to be in.  I think this stuff firmly falls into the platform
-setup arena since it is highly chip specific.
+Signed-off-by: Milton Miller <miltonm@bga.com>
+--- 
+Found when trying to parse the binary from the assembled output.
 
-You bring up a good point though.  The current usb support code in
-sysdev/fsl_soc.c uses arch_initcall(fsl_usb_of_init) to go searching
-for USB interfaces in the device tree, which are EHCI (and sometimes
-OTG) compatible.  fsl_usb_of_init calls
-platform_device_register_simple() for each USB device found which is
-kind of a round about way of doing things.  That should probably be
-depreciated and an of_platform_device binding should be added to the
-EHCI driver.
-
-This same comment probably goes for the other arch_initcall functions
-in fsl_soc.c which do exactly the same thing for other devices.
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Index: dtc/flattree.c
+===================================================================
+--- dtc.orig/flattree.c	2007-06-14 22:56:59.000000000 -0500
++++ dtc/flattree.c	2007-06-14 22:59:00.000000000 -0500
+@@ -477,6 +477,10 @@ void dt_to_asm(FILE *f, struct boot_info
+ 		fprintf(f, "\t.long\t_%s_strings_end - _%s_strings_start\t/* size_dt_strings */\n",
+ 			symprefix, symprefix);
+ 
++	if (vi->flags & FTF_STRUCTSIZE)
++		fprintf(f, "\t.long\t_%s_struct_end - _%s_struct_start\t/* size_dt_struct */\n",
++			symprefix, symprefix);
++
+ 	/*
+ 	 * Reserve map entries.
+ 	 * Align the reserve map to a doubleword boundary.
