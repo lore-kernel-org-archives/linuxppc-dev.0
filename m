@@ -1,10 +1,10 @@
 Return-Path: <miltonm@sullivan.realtime.net>
-Date: Sat, 7 Jul 2007 01:18:49 -0500 (CDT)
-Subject: [PATCH 05/11] dtc: clean up grow_data_for()
+Date: Sat, 7 Jul 2007 01:18:52 -0500 (CDT)
+Subject: [PATCH 08/11] dtc: store labels in asscending order
 Sender: <miltonm@realtime.net>
 From: Milton Miller <miltonm@bga.com>
 To: Jon Loeliger <jdl@jdl.com>
-Message-Id: <dtc-5-05.miltonm@bga.com>
+Message-Id: <dtc-5-08.miltonm@bga.com>
 In-Reply-To: <dtc-5-00.miltonm@bga.com>
 Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -16,39 +16,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Change the grow_data_for function to copy struct data and
-modifiy the fields it is updating instead of storing all
-fields individually to a stack allocated struct.
+When adding a label, walk to the end of the list since the
+label reflects the end of the data.
 
-This reduces maintence for future enhancements as now all
-instances of struct data are created by modifying a copy
-of an existing struct data or directly copying empty_data.
+Since merging data buffers already preserved the order, this
+will cause the labels to be emitted in order when writing
+assembly output.
+
+It should also aid emiting labels when writing dts output
+should that be added in the future (data formatting would
+need to break at each label).
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 --- 
-It took me a bit of time to find the source of the
-uninitialized pointer that was causing my changes
-to segfault.
+Currently cosmetic as the labels will be on the correct
+data either way.
 
-diff --git a/data.c b/data.c
-index 5d7db17..3d68792 100644
---- a/data.c
-+++ b/data.c
-@@ -57,6 +57,8 @@ struct data data_grow_for(struct data d,
- 	if (xlen == 0)
- 		return d;
+Index: dtc/data.c
+===================================================================
+--- dtc.orig/data.c	2007-06-14 21:39:34.000000000 -0500
++++ dtc/data.c	2007-06-14 21:50:52.000000000 -0500
+@@ -301,16 +301,22 @@ struct data data_add_fixup(struct data d
  
-+	nd = d;
+ struct data data_add_label(struct data d, char *label)
+ {
+-	struct fixup *f;
++	struct fixup *f, **p;
+ 	struct data nd;
+ 
+ 	f = xmalloc(sizeof(*f));
+ 	f->offset = d.len;
+ 	f->ref = label;
+-	f->next = d.labels;
+ 
+ 	nd = d;
+-	nd.labels = f;
++	p = &nd.labels;
 +
- 	newsize = xlen;
++	/* adding to end keeps them sorted */
++	while (*p)
++		p = &((*p)->next);
++
++	f->next = *p;
++	*p = f;
  
- 	while ((d.len + xlen) > newsize)
-@@ -64,8 +66,6 @@ struct data data_grow_for(struct data d,
- 
- 	nd.asize = newsize;
- 	nd.val = xrealloc(d.val, newsize);
--	nd.len = d.len;
--	nd.refs = d.refs;
- 
- 	assert(nd.asize >= (d.len + xlen));
- 
+ 	return nd;
+ }
