@@ -1,32 +1,21 @@
-Return-Path: <ahuja@austin.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6B7D9DDFF4
-	for <linuxppc-dev@ozlabs.org>; Sun,  8 Jul 2007 06:26:27 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l67KQMvY011085
-	for <linuxppc-dev@ozlabs.org>; Sat, 7 Jul 2007 16:26:22 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l67KQMHY218490
-	for <linuxppc-dev@ozlabs.org>; Sat, 7 Jul 2007 14:26:22 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l67KQM4C028017
-	for <linuxppc-dev@ozlabs.org>; Sat, 7 Jul 2007 14:26:22 -0600
-Message-ID: <468FF6EC.6030301@austin.ibm.com>
-Date: Sat, 07 Jul 2007 15:26:20 -0500
-From: Manish Ahuja <ahuja@austin.ibm.com>
-MIME-Version: 1.0
-To: Linas Vepstas <linas@austin.ibm.com>
-Subject: Re: [PATCH] pseries: Re: Minor: Removed double return.
-References: <468EBB5B.2070309@austin.ibm.com>
-	<20070706225826.GE4457@austin.ibm.com>
-In-Reply-To: <20070706225826.GE4457@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 92778DE0DC
+	for <linuxppc-dev@ozlabs.org>; Sun,  8 Jul 2007 08:08:28 +1000 (EST)
+In-Reply-To: <1183827083.3066.64.camel@shinybook.infradead.org>
+References: <1183784308.3066.16.camel@shinybook.infradead.org>
+	<200707071410.14998.arnd@arndb.de>
+	<1183827083.3066.64.camel@shinybook.infradead.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <C3EADEA0-E7CC-41B9-8F5D-E5D28AB48262@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] Handle reg-shift property for of_serial ports
+Date: Sun, 8 Jul 2007 00:06:50 +0200
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,39 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ah yes, my mistake. Does it require a repost then ?
+> Ok, how about 'sparse16550'? Otherwise identical to ns16550, but with
+> the reg-shift property. I'll send a patch shortly, and I'll reorder  
+> the
+> match table -- if something claims compatibility with both 8250 and
+> 16550, shouldn't we drive it as the latter?
+>
+> Can we add properties to indicate the common high-speed modes too? The
+> Natsemi baud-base thing could be autodetected by 8250.c if you'd  
+> let it,
+> but the SMSC trick just has to be set as a UPF_MAGIC_MULTIPLIER flag.
 
-Thanks,
-Manish
+So just use "compatible" = "smsc,blablabla".  Your device
+has extra features over a 16550, namely that extra multiplier
+or whatever; so just match those new features from the device
+name (i.e., "compatible" property), don't try to retrofit those
+features onto an existing driver.
 
-Linas Vepstas wrote:
-> You want to say its a patch in the subject line.
->
-> --linas
->
-> On Fri, Jul 06, 2007 at 04:59:55PM -0500, Manish Ahuja wrote:
->   
->> Found 2 instances of return one right after each other in 
->> arch_add_memory(). This minor patch fixes it.
->> Signed-off-by:Manish Ahuja <mahuja@us.ibm.com>
->>
->>
->>     
->
->   
->> Index: 2.6.22-rc4/arch/powerpc/mm/mem.c
->> ===================================================================
->> --- 2.6.22-rc4.orig/arch/powerpc/mm/mem.c	2007-06-11 21:10:46.000000000 -0500
->> +++ 2.6.22-rc4/arch/powerpc/mm/mem.c	2007-06-29 22:52:42.000000000 -0500
->> @@ -129,8 +129,6 @@
->>  	zone = pgdata->node_zones;
->>  
->>  	return __add_pages(zone, start_pfn, nr_pages);
->> -
->> -	return 0;
->>  }
->>  
->>  /*
->>     
->
->   
+And don't make up names for devices (like "sparse16550") unless
+you really really have to, it definitely isn't needed here.
+
+For your new device name, you can either have the register
+spacing an implicit property of the device, or you can put
+it in a "reg-shift" property if you want.
+
+
+Segher
