@@ -1,18 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 4A4E6DE088
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jul 2007 09:48:37 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] Add USB support to mpc8349-mitx board port
-Date: Sat, 7 Jul 2007 01:48:20 +0200
-References: <20070706222909.19943.39455.stgit@trillian.secretlab.ca>
-In-Reply-To: <20070706222909.19943.39455.stgit@trillian.secretlab.ca>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200707070148.20526.arnd@arndb.de>
-Cc: leoli@freescale.com, paulus@samba.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5316ADDFE9
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jul 2007 12:33:38 +1000 (EST)
+Subject: Re: Executing from readablee, no-exec pages
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <1183732922.2747.36.camel@shinybook.infradead.org>
+References: <468D68D4.4050704@freescale.com>
+	<1183732922.2747.36.camel@shinybook.infradead.org>
+Content-Type: text/plain
+Date: Sat, 07 Jul 2007 12:33:00 +1000
+Message-Id: <1183775580.3388.191.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,19 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 07 July 2007, Grant Likely wrote:
-> --- a/arch/powerpc/platforms/83xx/mpc834x_itx.c
-> +++ b/arch/powerpc/platforms/83xx/mpc834x_itx.c
-> @@ -63,6 +63,8 @@ static void __init mpc834x_itx_setup_arch(void)
-> =A0
-> =A0=A0=A0=A0=A0=A0=A0=A0ppc_md.pci_exclude_device =3D mpc83xx_exclude_dev=
-ice;
-> =A0#endif
-> +
-> +=A0=A0=A0=A0=A0=A0=A0mpc834x_usb_cfg();
-> =A0}
+On Fri, 2007-07-06 at 10:42 -0400, David Woodhouse wrote:
+> On Thu, 2007-07-05 at 16:55 -0500, Scott Wood wrote:
+> > To maintain compatibility with these versions, we could change the test 
+> > in do_page_fault() to include VM_READ as well as VM_EXEC on targets that 
+> > don't have a separate exec-bit in hardware (are there any powerpc mmus 
+> > that do?).  
+> 
+> 64-bit implementations since POWER4 have separate exec permissions,
+> don't they? So any userspace which tries to execute non-executable pages
+> is already broken when running on a ppc64 machine; I wouldn't worry too
+> much about letting it break on ppc32 too.
+> 
+> We already use vDSO signal trampolines even on the 32-bit kernel, right?
 
-Why is that necessary? Shouldn't there be an of_platform_driver that
-simply does all the setup automatically if the device is present?
+The problem was with old glibc 32 bits which used to jump to an
+instruction in the .got iirc that wasn't in an executable section
 
-	Arnd <><
+Ben.
