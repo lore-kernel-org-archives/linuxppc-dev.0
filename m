@@ -1,10 +1,10 @@
 Return-Path: <miltonm@sullivan.realtime.net>
-Date: Sat, 7 Jul 2007 01:18:49 -0500 (CDT)
-Subject: [PATCH 04/11] dtc: implement labels on memory reserve slots
+Date: Sat, 7 Jul 2007 01:18:53 -0500 (CDT)
+Subject: [PATCH 10/11] dtc: align header comments in asm output
 Sender: <miltonm@realtime.net>
 From: Milton Miller <miltonm@bga.com>
 To: Jon Loeliger <jdl@jdl.com>
-Message-Id: <dtc-5-04.miltonm@bga.com>
+Message-Id: <dtc-5-10.miltonm@bga.com>
 In-Reply-To: <dtc-5-00.miltonm@bga.com>
 Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -16,47 +16,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Allow a label to be placed on a memory reserve entry.
-Change the parser to recogonise and store them.  Emit
-them when writing assembly output.
+Insert tabs to align the comments describing the fields of the
+boot parameters header struct.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 --- 
-The infrastructure for storing the label was already present, so
-the changes are small.
+Previously some of the comments were seperated by one space and
+others by one tab from the field.
 
-Index: dtc/dtc-parser.y
-===================================================================
---- dtc.orig/dtc-parser.y	2007-06-14 22:59:05.000000000 -0500
-+++ dtc/dtc-parser.y	2007-06-14 22:59:07.000000000 -0500
-@@ -92,11 +92,11 @@ memreserves:	memreserve memreserves {
- 		}
- 	;
- 
--memreserve:	DT_MEMRESERVE DT_ADDR DT_ADDR ';' {
--			$$ = build_reserve_entry($2, $3, NULL);
-+memreserve:	label DT_MEMRESERVE DT_ADDR DT_ADDR ';' {
-+			$$ = build_reserve_entry($3, $4, $1);
- 		}
--	|	DT_MEMRESERVE DT_ADDR '-' DT_ADDR ';' {
--			$$ = build_reserve_entry($2, $4 - $2 + 1, NULL);
-+	|	label DT_MEMRESERVE DT_ADDR '-' DT_ADDR ';' {
-+			$$ = build_reserve_entry($3, $5 - $3 + 1, $1);
- 		}
- 	;
- 
+Purely cosmetic, but then so are the comments.
+
 Index: dtc/flattree.c
 ===================================================================
---- dtc.orig/flattree.c	2007-06-14 22:59:00.000000000 -0500
-+++ dtc/flattree.c	2007-06-14 22:59:07.000000000 -0500
-@@ -497,6 +497,10 @@ void dt_to_asm(FILE *f, struct boot_info
- 	 * as it appears .quad isn't available in some assemblers.
- 	 */
- 	for (re = bi->reservelist; re; re = re->next) {
-+		if (re->label) {
-+			fprintf(f, "\t.globl\t%s\n", re->label);
-+			fprintf(f, "%s:\n", re->label);
-+		}
- 		fprintf(f, "\t.long\t0x%08x\n\t.long\t0x%08x\n",
- 			(unsigned int)(re->re.address >> 32),
- 			(unsigned int)(re->re.address & 0xffffffff));
+--- dtc.orig/flattree.c	2007-06-20 03:13:25.000000000 -0500
++++ dtc/flattree.c	2007-06-20 03:13:51.000000000 -0500
+@@ -469,21 +469,21 @@ void dt_to_asm(FILE *f, struct boot_info
+ 
+ 	emit_label(f, symprefix, "blob_start");
+ 	emit_label(f, symprefix, "header");
+-	fprintf(f, "\t.long\tOF_DT_HEADER /* magic */\n");
+-	fprintf(f, "\t.long\t_%s_blob_abs_end - _%s_blob_start /* totalsize */\n",
++	fprintf(f, "\t.long\tOF_DT_HEADER\t\t\t\t/* magic */\n");
++	fprintf(f, "\t.long\t_%s_blob_abs_end - _%s_blob_start\t/* totalsize */\n",
+ 		symprefix, symprefix);
+-	fprintf(f, "\t.long\t_%s_struct_start - _%s_blob_start /* off_dt_struct */\n",
++	fprintf(f, "\t.long\t_%s_struct_start - _%s_blob_start\t/* off_dt_struct */\n",
+ 		symprefix, symprefix);
+-	fprintf(f, "\t.long\t_%s_strings_start - _%s_blob_start /* off_dt_strings */\n",
++	fprintf(f, "\t.long\t_%s_strings_start - _%s_blob_start\t/* off_dt_strings */\n",
+ 		symprefix, symprefix);
+-	fprintf(f, "\t.long\t_%s_reserve_map - _%s_blob_start /* off_dt_strings */\n",
++	fprintf(f, "\t.long\t_%s_reserve_map - _%s_blob_start\t/* off_dt_strings */\n",
+ 		symprefix, symprefix);
+-	fprintf(f, "\t.long\t%d /* version */\n", vi->version);
+-	fprintf(f, "\t.long\t%d /* last_comp_version */\n",
++	fprintf(f, "\t.long\t%d\t\t\t\t\t/* version */\n", vi->version);
++	fprintf(f, "\t.long\t%d\t\t\t\t\t/* last_comp_version */\n",
+ 		vi->last_comp_version);
+ 
+ 	if (vi->flags & FTF_BOOTCPUID)
+-		fprintf(f, "\t.long\t%i\t/*boot_cpuid_phys*/\n",
++		fprintf(f, "\t.long\t%i\t\t\t\t\t/* boot_cpuid_phys */\n",
+ 			boot_cpuid_phys);
+ 
+ 	if (vi->flags & FTF_STRTABSIZE)
