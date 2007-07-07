@@ -1,24 +1,21 @@
-Return-Path: <clifford@clifford.at>
-Received: from phoenix.clifford.at (phoenix.clifford.at [88.198.7.52])
-	by ozlabs.org (Postfix) with ESMTP id 36AD9DE01B
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 61D09DDEEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  7 Jul 2007 18:36:59 +1000 (EST)
-Date: Sat, 7 Jul 2007 10:41:14 +0200
-From: Clifford Wolf <clifford@clifford.at>
-To: Timur Tabi <timur@freescale.com>
+	Sat,  7 Jul 2007 23:10:25 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-embedded@ozlabs.org
 Subject: Re: Mem-2-Mem DMA - Generalized API
-Message-ID: <20070707084114.GD8448@clifford.at>
+Date: Sat, 7 Jul 2007 15:08:03 +0200
 References: <20070624193932.GA11797@clifford.at>
-	<200706242221.57507.arnd@arndb.de>
-	<467FA0EA.3000607@genesi-usa.com> <467FBABD.9040103@anagramm.de>
-	<467FD1DF.4000602@genesi-usa.com>
 	<20070625180110.GH20463@clifford.at>
 	<20070704090554.GA30693@clifford.at>
-	<468F239B.5070800@freescale.com>
+In-Reply-To: <20070704090554.GA30693@clifford.at>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <468F239B.5070800@freescale.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200707071508.04143.arnd@arndb.de>
+Cc: Clifford Wolf <clifford@clifford.at>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,43 +26,269 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-
-On Sat, Jul 07, 2007 at 12:24:43AM -0500, Timur Tabi wrote:
-> Clifford Wolf wrote:
->> Hi,
->> On Mon, Jun 25, 2007 at 08:01:10PM +0200, Clifford Wolf wrote:
->>> I've put a 'draft header file' of an api as I would have expected it
->>> online: [...]
->> Ok, so here comes the first implementation:
->> (I also have other projects, so it took a while.. ;-)
->> 	http://www.clifford.at/priv/dmatransfer-20070704.diff
+On Wednesday 04 July 2007, Clifford Wolf wrote:
+> Ok, so here comes the first implementation:
+> (I also have other projects, so it took a while.. ;-)
 >
-> Why aren't you following the DMA API in include/linux/dmaengine.h?
+>         http://www.clifford.at/priv/dmatransfer-20070704.diff
+>
+> This is just for the MPC8349 DMA now, registers are still hardcoded in the
+> driver instead of beeing taken from the platform files and support for
+> scatter-gather is still missing and the Kconfig integration isn't checking
+> if we are building for the mpc8349 (or even ppc) yet. But I think the
+> direction of the API is pretty clear.
 
-because dmaengine statically assigns dma channels to drivers. it does trhat
-becaus it is in fact not a generic api but only designed for speeding up
-TCP using the Intel I/OAT engine. If more drivers would try to use it one
-would need to decide at compile time which driver should be the one that
-may use the dmaengine.
+Is this a superset of what the dmaengine API can do? If not, I would
+guess that things can get really confusing for the user.
+Is it possible to wrap the existing dmaengine code inside of a
+dmatransfer implementation?
 
-My dmatransfer api assigns the dma channels dynamically and there is no
-limit how many drivers could use dmatransfer instead of ioremap and memcpy.
+You should probably have the authors of the dmaengine on Cc in
+your next version of the driver, if you indend to replace their
+code.
 
-Also my framework has support for scatter/gather dma, fifo modes and all
-that stuff (but the mpc8349dma driver doen't implement it yet).
+> +
+> +/*** A dmatransfer is described using input and output chunks ***/
+> +
+> +// set one of this bits in fifo mode an none in linear mode
 
-'Extending' dmaengine in a way so it supports all this would result in
-replacing every public api function of dmaengine and having a much more
-complicated backend. The only current dmaengine user is the tcp/ip code
-which is just a few (less than 10 if i remember correctly) lines of code.
+Please follow the common kernel commenting style, which allows
 
-Imo dmaengine should be replaced by an entirely different api instead of
-hacking around its shortcommings. Thats why I propose the dmatransfer api.
+/* one-line comment */
 
-yours,
- - clifford
+/*
+ * multi-line
+ * comment
+ */
 
--- 
-for(var d,i=<>just</>,j=function(){d~=i~(defined(i=next[*],i)?" ":"
-");},just,another,SPL,hacker;defined i||({debug d;return 0;});j());
+/**
+ * identifier - description in kerneldoc format
+ * @name: struct member or function argument
+ * @name2: another one
+ *
+ * long description here
+ */
+
+> +struct dmatransfer
+> +{
+> +	struct kref refcount;
+> +
+> +	// callbacks (may be called in interrupt context)
+> +	dmatransfer_progress_callback_t progress_callback;
+> +	dmatransfer_finish_callback_t finish_callback;
+> +	dmatransfer_release_callback_t release_callback;
+> +
+> +	// private data from the requestor
+> +	union {
+> +		void *data_voidp;
+> +		__u32 data_u32;
+> +		__u64 data_u64;
+> +	} data;
+
+This could simply be an unsigned long, I guess. We tend to
+use unsigned long for generic data, unless it always is a pointer.
+
+> +	__u32 flags;
+> +
+> +	// how many input and output junks
+> +	int n_input_chunks;
+> +	int n_output_chunks;
+
+unsigned?
+
+> +	// these are used internally in dmatransfer_request_*
+> +	enum {
+> +		DMATRANSFER_ASYNC,
+> +		DMATRANSFER_WAITING,
+> +		DMATRANSFER_FINISHED
+> +	} status;
+> +	wait_queue_head_t wq;
+> +
+> +	// these are used internally in the backends
+> +	struct dmatransfer_backend *backend;
+> +	struct list_head backend_spool;
+> +	void *backend_data_voidp;
+> +
+> +	// this array first contains all input and output chunk descriptions (in
+> this order) +	struct dmatransfer_chunk chunks[];
+> +};
+
+
+
+> +
+> +// This functions may return -EINVAL when the requested transfer can't be
+> +// done in hardware and DMATRANSFER_DMAONLY is set and -EAGAIN if there
+> are +// no free DMA channels and DMATRANSFER_NOSPOOL is set for the
+> transfer. +extern int dmatransfer_request_async(struct dmatransfer
+> *transfer); 
+
+Put the description in front of the function definition in kerneldoc format
+
+> +extern int dmatransfer_request_wait(struct dmatransfer *transfer); 
+> +extern struct dmatransfer *dmatransfer_malloc(int chunks_n, int flags);
+
+maybe better dmatransfer_alloc instead of dmatransfer_malloc?
+To me, malloc sort of implies that it only does a pure allocation,
+not also the initialization.
+
+> +extern void dmatransfer_release(struct kref *kref);
+
+There is a recent tendency to always leave out the 'extern' keyword
+for function declarations.
+
+> +/*** Backend drivers register themself using this struct ***/
+> +
+> +enum dmatransfer_quality {
+> +	DMATRANSFER_QUALITY_NO = 0,
+> +	DMATRANSFER_QUALITY_SOFT = 1,
+> +	DMATRANSFER_QUALITY_SPOOL = 2,
+> +	DMATRANSFER_QUALITY_GOOD = 3,
+> +	DMATRANSFER_QUALITY_BEST = 4,
+> +};
+> +
+> +struct dmatransfer_backend
+> +{
+> +	enum dmatransfer_quality (*check)(struct dmatransfer *transfer);
+> +	void (*perform)(struct dmatransfer *transfer);
+> +
+> +	// performing transfers is 'reading' and unregistering is 'writing'
+> +	struct rw_semaphore unreg_sem;
+> +
+> +	// internally used by the dmatransfer core
+> +	struct list_head backend_list;
+> +};
+> +
+> +extern void dmatransfer_finish(struct dmatransfer *transfer);
+> +
+> +extern void dmatransfer_register_backend(struct dmatransfer_backend
+> *backend); +
+> +// This function may sleep until all pending dma transfers for this
+> backend +// have been finished.
+> +extern void dmatransfer_unregister_backend(struct dmatransfer_backend
+> *backend); +
+> +#endif /* DMATRANSFER_H */
+> +
+
+
+> +#include <linux/dmatransfer.h>
+> +#include <linux/module.h>
+> +#include <linux/sched.h>
+> +
+> +static rwlock_t backend_list_lock = RW_LOCK_UNLOCKED;
+> +static LIST_HEAD(backend_list);
+> +
+> +static int dmatransfer_request_worker(struct dmatransfer *transfer)
+> +{
+> +	enum dmatransfer_quality best_quality = DMATRANSFER_QUALITY_NO;
+> +	struct dmatransfer_backend *best_backend = 0;
+> +	int error_ret = -EINVAL;
+> +	struct list_head *p;
+> +
+> +	// WARNING:
+> +	// There is a non-critical race in this codepath: backend->check() may
+> return +	// that the DMA request can be performed without spooling for two
+> concurrently +	// running dmatransfer_request_worker() instances. If the
+> backend has only one +	// free channel this will result in one request
+> beeing executed without spooling +	// and the other one beeing spooled. So
+> DMATRANSFER_NOSPOOL does not guarantee +	// that the request isn't spooled
+> - just that we _try_ to avoid spooling. +
+
+You appear to have a lot of overly long lines. Try to limit your code to less
+than 80 characters per line.
+
+> +struct dmatransfer *dmatransfer_malloc(int chunks_n, int flags)
+> +{
+> +	size_t transfer_size = sizeof(struct dmatransfer) + 2*sizeof(struct
+> dmatransfer_chunk); +	struct dmatransfer *transfer = kmalloc(transfer_size,
+> flags);
+> +	memset(transfer, 0, transfer_size);
+
+Use kzalloc instead kmalloc+memset.
+
+> +void dmatransfer_register_backend(struct dmatransfer_backend *backend)
+> +{
+> +	unsigned long irqflags;
+> +
+> +	init_rwsem(&backend->unreg_sem);
+> +
+> +	write_lock_irqsave(&backend_list_lock, irqflags);
+> +	INIT_LIST_HEAD(&backend->backend_list);
+> +	list_add(&backend->backend_list, &backend_list);
+> +	write_unlock_irqrestore(&backend_list_lock, irqflags);
+> +}
+> +
+> +void dmatransfer_unregister_backend(struct dmatransfer_backend *backend)
+> +{
+> +	unsigned long irqflags;
+> +	write_lock_irqsave(&backend_list_lock, irqflags);
+> +	list_del(&backend->backend_list);
+> +	write_unlock_irqrestore(&backend_list_lock, irqflags);
+> +
+> +	// make sure all pending requests have finished before returning
+> +	down_write(&backend->unreg_sem);
+> +	up_write(&backend->unreg_sem);
+> +}
+
+This usage of rw semaphores looks fishy. 
+
+> +EXPORT_SYMBOL(dmatransfer_request_async);
+> +EXPORT_SYMBOL(dmatransfer_request_wait);
+> +
+> +EXPORT_SYMBOL(dmatransfer_malloc);
+> +EXPORT_SYMBOL(dmatransfer_release);
+> +
+> +EXPORT_SYMBOL(dmatransfer_finish);
+> +
+> +EXPORT_SYMBOL(dmatransfer_register_backend);
+> +EXPORT_SYMBOL(dmatransfer_unregister_backend);
+
+Please put the EXPORT_SYMBOL lines directly below the respective symbol definitions.
+Also, make them EXPORT_SYMBOL_GPL() or explain why you don't. For new subsystems,
+we normally don't use non-GPL exports any more.
+
+> +#define CHANNEL_N 4
+> +
+> +static LIST_HEAD(spool);
+> +static struct dmatransfer *spool_current_transfers[CHANNEL_N];
+> +static spinlock_t spool_lock = SPIN_LOCK_UNLOCKED;
+
+use DEFINE_SPINLOCK instead of assigning to SPIN_LOCK_UNLOCKED.
+
+> +#define BIT(_name, _n) (1<<(_n))
+
+I personally don't like such macros. Why don't you just define named
+constants for the bits in there right position?
+
+s/BIT(TE, 7)/DMASR_TE/
+
+> +		iowrite32(transfer->chunks[0].bus_address,
+> reg_map[i]+REG_OFFSET_DMASAR);
+> +		iowrite32(transfer->chunks[1].bus_address,
+> reg_map[i]+REG_OFFSET_DMADAR); +		iowrite32(transfer->chunks[1].bytecount, 
+>  reg_map[i]+REG_OFFSET_DMABCR); +
+> +		iowrite32(BIT(TE, 7) | BIT(EOSI, 1) | BIT(EOCDI, 0),
+> reg_map[i]+REG_OFFSET_DMASR); +
+> +		dmamr = 0;
+> +		dmamr |= BIT(EOTIE, 7);
+> +		dmamr |= BIT(CTM, 2);
+> +		iowrite32(dmamr, reg_map[i]+REG_OFFSET_DMAMR);
+> +
+> +		dmamr |= BIT(CS, 0);
+> +		iowrite32(dmamr, reg_map[i]+REG_OFFSET_DMAMR);
+> +	}
+> +}
+
+iowrite32 is currently only well-defined for PCI devices, which I believe
+this devide is not. Use out_be32 or out_le32 instead.
+
+> +		if ((dmasr & (BIT(TE, 7) | BIT(EOCDI, 0))) != 0) {
+> +			if ((dmasr & BIT(TE, 7)) != 0) {
+> +				printk(KERN_ERR "MPC8349 DMA Transfer Error on DMA channel #%d.\n",
+> i); +				BUG();
+> +			} 
+
+BUG() may be a little harsh here, especially since you are holding spinlocks.
+It would be better to try to recover here, unless you expect actual data
+corruption, in which case a full panic() might be more appropriate.
+
+	Arnd <><
