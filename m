@@ -1,21 +1,21 @@
-Return-Path: <clifford@clifford.at>
-Received: from phoenix.clifford.at (phoenix.clifford.at [88.198.7.52])
-	by ozlabs.org (Postfix) with ESMTP id 301E2DE141
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 0F53DDE24A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  7 Jul 2007 23:29:58 +1000 (EST)
-Date: Sat, 7 Jul 2007 15:34:14 +0200
-From: Clifford Wolf <clifford@clifford.at>
-To: Arnd Bergmann <arnd@arndb.de>
+	Sat,  7 Jul 2007 23:30:17 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-embedded@ozlabs.org
 Subject: Re: Mem-2-Mem DMA - Generalized API
-Message-ID: <20070707133414.GC32740@clifford.at>
+Date: Sat, 7 Jul 2007 15:28:00 +0200
 References: <20070624193932.GA11797@clifford.at>
-	<20070625180110.GH20463@clifford.at>
-	<20070704090554.GA30693@clifford.at>
 	<200707071508.04143.arnd@arndb.de>
+	<20070707132748.GB32740@clifford.at>
+In-Reply-To: <20070707132748.GB32740@clifford.at>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200707071508.04143.arnd@arndb.de>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200707071528.00449.arnd@arndb.de>
+Cc: Clifford Wolf <clifford@clifford.at>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,42 +26,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi again,
+On Saturday 07 July 2007, Clifford Wolf wrote:
+> > > +=A0=A0=A0// make sure all pending requests have finished before retu=
+rning
+> > > +=A0=A0=A0down_write(&backend->unreg_sem);
+> > > +=A0=A0=A0up_write(&backend->unreg_sem);
+> > > +}
+> >=20
+> > This usage of rw semaphores looks fishy.=20
+>=20
+> yep. do you have a better idea how to implement this easily?
+>=20
 
-On Sat, Jul 07, 2007 at 03:08:03PM +0200, Arnd Bergmann wrote:
-> Is this a superset of what the dmaengine API can do? If not, I would
-> guess that things can get really confusing for the user.
+I'd guess what you really want is reference counting. Every request
+that gets assigned to a backend should get a kref on that backend
+and give that up once it gets released itself.
 
-dmatransfer should replace the dmaengine API. dmaengine has only one client
-(the tcp/ip network stack - just a few lines of code) and provides only one
-driver (ioatdma).
+I guess you can then have one more reference that you get in
+dmatransfer_register_backend and release in dmatransfer_unregister_backend.
+When you release the last reference, you call complete(),
+and dmatransfer_unregister_backend() ends with a wait_for_completion().
 
-I would have added a ioatdma driver to dmatransfer but unfortunately I
-don't have the hardware..
-
-> Is it possible to wrap the existing dmaengine code inside of a
-> dmatransfer implementation?
-
-sure - but that wouldn't make much sense. dmaengine gives away exclusive
-use rights to dma channels. so if dmatransfer is using dmaengine, noone
-else could use it.
-
-> You should probably have the authors of the dmaengine on Cc in
-> your next version of the driver, if you indend to replace their
-> code.
-
-I'll write them a personal mail to get things rolling as soon as the next
-dmatransfer release with the cleanups you suggested and scatter/gather as
-well as fifo support is out.
-
-yours,
- - clifford
-
--- 
-ocaml graphics.cma <( echo 'open Graphics;;open_graph " 640x480"let
-complex_mul(a,b)(c,d)=(a*.c-.b*.d,a*.d+.b*.c)let complex_add(a,b)(c
-,d)=(a+.c,b+.d);;let rec mandel c n=if n>0 then let z=mandel c(n-1)
-in complex_add(complex_mul z z)c else (0.0,0.0);; for x=0 to 640 do
-for y=0 to 480 do let c=((float_of_int(x-450))/.200.0,(float_of_int
-(y-240))/.200.0) in let cabs2(a,b)=(a*.a)+.(b*.b)in if cabs2(mandel
-c 50)<4.0 then plot x y done done;;read_line()' )
+	Arnd <><
