@@ -2,21 +2,22 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E79D0DE1AE
-	for <linuxppc-dev@ozlabs.org>; Sun,  8 Jul 2007 08:17:00 +1000 (EST)
-In-Reply-To: <200707071952.44524.arnd@arndb.de>
+	by ozlabs.org (Postfix) with ESMTP id CA20FDE211
+	for <linuxppc-dev@ozlabs.org>; Sun,  8 Jul 2007 08:22:37 +1000 (EST)
+In-Reply-To: <200707071955.07910.arnd@arndb.de>
 References: <1183784308.3066.16.camel@shinybook.infradead.org>
+	<200707071410.14998.arnd@arndb.de>
 	<1183827083.3066.64.camel@shinybook.infradead.org>
-	<468FC849.20801@ru.mvista.com> <200707071952.44524.arnd@arndb.de>
+	<200707071955.07910.arnd@arndb.de>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <32C5C654-0537-4349-A0F8-0C1166DD5C5C@kernel.crashing.org>
+Message-Id: <2F897796-6FE6-4AA8-87D5-83F24EB596BF@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH] Handle reg-shift property for of_serial ports
-Date: Sun, 8 Jul 2007 00:15:43 +0200
+Date: Sun, 8 Jul 2007 00:21:19 +0200
 To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
-	paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,19 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> No, you're right. http://playground.sun.com/1275/proposals/Closed/ 
-> Accepted/384-it.txt
-> actually mentions that the the name should be "i8250". It also  
-> mentions
-> that the compatible property should contain "pnpPNP,501" for  
-> ns16450 and
-> higher,
+>> Can we add properties to indicate the common high-speed modes too?  
+>> The
+>> Natsemi baud-base thing could be autodetected by 8250.c if you'd  
+>> let it,
+>> but the SMSC trick just has to be set as a UPF_MAGIC_MULTIPLIER flag.
+>
+> Yes, that sounds good. I do not have enough understanding about the
+> extra feature to know which ones should get detected with their own
+> property, so I left that out for the next person that needs it...
 
-16550 and higher
+Since these devices will work (just not with the extra-high
+baudrates) when driven as a "standard" 16550, you can indeed
+just add a property to declare the device supports this stuff.
 
-> and "pnpPNP,500" for all serial ports starting from i8250.
+But please also declare the device to be such a special device
+in its "compatible" property.  So you end up with something like
 
-Yup.
+	serial@i3f8
+	{
+		reg = <1 3f8>;
+		device_type = "serial";
+		compatible = "smsc,12345", "ns16550a", "pnpPNP,501";
+		clock-frequency = 1843200;
+		smsc-multipliers; # <--- there's the new thing
+	}
 
 
 Segher
