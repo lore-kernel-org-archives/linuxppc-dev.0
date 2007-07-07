@@ -1,10 +1,10 @@
 Return-Path: <miltonm@sullivan.realtime.net>
-Date: Sat, 7 Jul 2007 01:18:47 -0500 (CDT)
-Subject: [PATCH 02/11] dtc: move declaration of yyerror
+Date: Sat, 7 Jul 2007 01:18:49 -0500 (CDT)
+Subject: [PATCH 05/11] dtc: clean up grow_data_for()
 Sender: <miltonm@realtime.net>
 From: Milton Miller <miltonm@bga.com>
 To: Jon Loeliger <jdl@jdl.com>
-Message-Id: <dtc-5-02.miltonm@bga.com>
+Message-Id: <dtc-5-05.miltonm@bga.com>
 In-Reply-To: <dtc-5-00.miltonm@bga.com>
 Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -16,34 +16,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-yyerror() is used by both dtc-parser.y and dtc-lexer.l, so move
-the declaration to srcpos.h.
+Change the grow_data_for function to copy struct data and
+modifiy the fields it is updating instead of storing all
+fields individually to a stack allocated struct.
+
+This reduces maintence for future enhancements as now all
+instances of struct data are created by modifying a copy
+of an existing struct data or directly copying empty_data.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 --- 
-eliminates implicit declaration warning.
+It took me a bit of time to find the source of the
+uninitialized pointer that was causing my changes
+to segfault.
 
-Index: dtc/dtc-parser.y
-===================================================================
---- dtc.orig/dtc-parser.y	2007-06-14 23:16:18.000000000 -0500
-+++ dtc/dtc-parser.y	2007-06-14 23:16:25.000000000 -0500
-@@ -26,7 +26,6 @@
- #include "srcpos.h"
+diff --git a/data.c b/data.c
+index 5d7db17..3d68792 100644
+--- a/data.c
++++ b/data.c
+@@ -57,6 +57,8 @@ struct data data_grow_for(struct data d,
+ 	if (xlen == 0)
+ 		return d;
  
- int yylex(void);
--void yyerror(char const *);
- cell_t cell_from_string(char *s, unsigned int base);
++	nd = d;
++
+ 	newsize = xlen;
  
- extern struct boot_info *the_boot_info;
-Index: dtc/srcpos.h
-===================================================================
---- dtc.orig/srcpos.h	2007-06-14 23:16:18.000000000 -0500
-+++ dtc/srcpos.h	2007-06-14 23:16:25.000000000 -0500
-@@ -62,6 +62,7 @@ typedef struct YYLTYPE {
+ 	while ((d.len + xlen) > newsize)
+@@ -64,8 +66,6 @@ struct data data_grow_for(struct data d,
  
+ 	nd.asize = newsize;
+ 	nd.val = xrealloc(d.val, newsize);
+-	nd.len = d.len;
+-	nd.refs = d.refs;
  
- 
-+extern void yyerror(char const *);
- 
- extern int srcpos_filenum;
+ 	assert(nd.asize >= (d.len + xlen));
  
