@@ -1,20 +1,18 @@
-Return-Path: <SRS0+bd14105a136047a0bf47+1413+infradead.org+dwmw2@canuck.srs.infradead.org>
-Received: from canuck.infradead.org (canuck.infradead.org [209.217.80.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 78E57DE179
-	for <linuxppc-dev@ozlabs.org>; Sun,  8 Jul 2007 02:57:35 +1000 (EST)
-Subject: [PATCH 2/2] Add 'sparse16550' support to PowerPC bootwrapper
-From: David Woodhouse <dwmw2@infradead.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200707071410.14998.arnd@arndb.de>
-References: <1183784308.3066.16.camel@shinybook.infradead.org>
-	<200707071410.14998.arnd@arndb.de>
-Content-Type: text/plain
-Date: Sat, 07 Jul 2007 12:57:50 -0400
-Message-Id: <1183827470.3066.73.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 95FB1DE1A8
+	for <linuxppc-dev@ozlabs.org>; Sun,  8 Jul 2007 03:05:25 +1000 (EST)
+Message-ID: <468FC849.20801@ru.mvista.com>
+Date: Sat, 07 Jul 2007 21:07:21 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH] Handle reg-shift property for of_serial ports
+References: <1183784308.3066.16.camel@shinybook.infradead.org>	<200707071410.14998.arnd@arndb.de>
+	<1183827083.3066.64.camel@shinybook.infradead.org>
+In-Reply-To: <1183827083.3066.64.camel@shinybook.infradead.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,26 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The bootwrapper already handles a 'reg-shift' property on serial ports
-and does the right thing. However, these ports really shouldn't be
-claiming to be compatible with 'ns16550'. Introduce a new 'sparse16550'
-type for them instead.
+Hello.
 
-Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+David Woodhouse wrote:
 
-diff --git a/arch/powerpc/boot/serial.c b/arch/powerpc/boot/serial.c
-index 7fd3233..6d9f3f8 100644
---- a/arch/powerpc/boot/serial.c
-+++ b/arch/powerpc/boot/serial.c
-@@ -123,7 +123,7 @@ int serial_console_init(void)
- 	if (getprop(devp, "compatible", compat, sizeof(compat)) < 0)
- 		goto err_out;
- 
--	if (!strcmp(compat, "ns16550"))
-+	if (!strcmp(compat, "ns16550") || !strcmp(compat, "sparse16550"))
- 		rc = ns16550_console_init(devp, &serial_cd);
- 	else if (!strcmp(compat, "marvell,mpsc"))
- 		rc = mpsc_console_init(devp, &serial_cd);
+>>Given the existence of the boards, it looks correct to do this.
+>>However, I wonder if it was correct for the MV64660 to claim
+>>compatibily witn ns16550 if the programming model is not exactly
+>>the same. The official OF serial port bindings don't mention the
+>>reg-shift property, so it maybe would have been better to have
 
--- 
-dwmw2
+   I'd preferred "reg-stride" or "reg-size" but see below...
+
+>>a different value for the "compatible" property, in order not
+>>to confuse existing operating systems that implement the standard. 
+
+> Ok, how about 'sparse16550'? Otherwise identical to ns16550, but with
+
+    Erm, wouldn't it be *too* generic approach?  I'd suggest to name the 
+device with its own name and make of_serial.c recognize it and register with 
+8250.c as needed.
+
+> the reg-shift property. I'll send a patch shortly, and I'll reorder the
+> match table -- if something claims compatibility with both 8250 and
+> 16550, shouldn't we drive it as the latter?
+
+    Certainly. BTW, was there really "ns8250" -- 8250 is Intel's chip?
+
+WBR, Sergei
