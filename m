@@ -1,13 +1,18 @@
-Return-Path: <jdl@jdl.com>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 00/11] dtc: some fixes, and make asm labels for data 
-In-Reply-To: Your message of "Sat, 07 Jul 2007 01:18:45 CDT."
-	<dtc-5-00.miltonm@bga.com>
-References: <dtc-5-00.miltonm@bga.com> 
-Date: Sat, 07 Jul 2007 14:24:06 -0500
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1I7Ft0-0004Eq-5e@jdl.com>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id C9175DE1E4
+	for <linuxppc-dev@ozlabs.org>; Sun,  8 Jul 2007 05:31:21 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/5] Add legacy devices to mpc8641_hpcn.dts
+Date: Sat, 7 Jul 2007 21:23:25 +0200
+References: <1179245829.8132.100.camel@rhino> <1179246470.8132.112.camel@rhino>
+	<468FE27F.4090105@ru.mvista.com>
+In-Reply-To: <468FE27F.4090105@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200707072123.26073.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,32 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day Milton Miller mumbled:
-> The following series adds the features of labeling memory reserve
-> slots and labeling specific bytes or cells of property data.  When
-> translating from dts to asm, a global symbol is created with the
-> name matching the label in the dts file.
-
-Milton,
-
-I applied the whole lot.
-Minor English typo corrections in commit log messages.
-
-Also, I added two patches on top of these to reorganize
-the Makefile into a better top-down layout and added
-some Version string support, borrowed almost verbatim
-from the Linux Makefiles.  We're going to arbitrarily
-start with 1.0.0 unless someone has a good argument for
-something else!
-
-And, for those keeping track, my "To Do" list here still
-contains the notion of breaking the booting-without-of.txt
-file into two parts.  The technical descriptions of the DTC
-and its file (blob) layout will move to the DTC repository
-while the descriptions of nodes and properties will remain
-in the kernel repository.
-
-Let me know what you think...
-
-Thanks,
-jdl
+T24gU2F0dXJkYXkgMDcgSnVseSAyMDA3LCBTZXJnZWkgU2h0eWx5b3Ygd3JvdGU6Cj4gPiAroKCg
+oKCgoKCgoKCgoKCgoKCgoKCgaXNhQGYwIHsKPiA+ICugoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoGRldmljZV90eXBlID0gImlzYSI7Cj4gPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKAjaW50ZXJydXB0LWNlbGxzID0gPDI+Owo+ID4gLaCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgYnVpbHQtaW47Cj4gPiAtoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKBjb21wYXRpYmxl
+ID0gImNocnAsaWljIjsKPiA+IC0goCCgIKAgoCCgIKAgoCCgoKCgoKAgoCCgIKAgoGJpZy1lbmRp
+YW47Cj4gPiAtoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKBpbnRlcnJ1cHRzID0gPDQ5IDI+
+Owo+ID4gLaCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgaW50ZXJydXB0LXBhcmVudCA9IDwm
+bXBpYz47Cj4gPiAroKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAjc2l6ZS1jZWxscyA9IDwx
+PjsKPiA+ICugoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCNhZGRyZXNzLWNlbGxzID0gPDI+
+Owo+ID4gK6CgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgcmVnID0gPGYwMDAgMCAwIDAgMD47
+Cj4gPiAroKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKByYW5nZXMgPSA8MSAwIDAxMDAwMDAw
+IDAgMCAwMDAwMTAwMD47Cj4gPiAroKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKBpbnRlcnJ1
+cHQtcGFyZW50ID0gPDRkMD47Cj4gPiArCj4gPiAroKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKA4MDQyQDYwIHsKPiA+ICugoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgZGV2
+aWNlX3R5cGUgPSAiODA0MiI7Cj4gPiAroKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoHJlZyA9IDwxIDYwIDEgMSA2NCAxPjsKPiAKPiCgIKAgV2hhdCBkb2VzIHRoYXQgbGVhZGlu
+ZyAxIGluIHRoZSBhZGRyZXNzIHNpZ25pZnk/CgpJdCBzaWduaWZpZXMgYW4gSS9PIHBvcnQgYWRk
+cmVzcyBpbnN0ZWFkIG9mIGFuIE1NSU8gYWRkcmVzcywgbm90ZSBob3cKPDEgNjA+IGlzIHRyYW5z
+Zm9ybWVkIHRvIDwxMDAwMDAwIDAgNjA+IG9uIFBDSSwgd2hpY2ggaXMgdHJhbnNmb3JtZWQKdG8g
+bW1pbyBhZGRyZXNzIDxlMjAwMDAwMCA2MD4gaW4gdGhlIGhvc3QgdGhyb3VnaCB0aGUgdmFyaW91
+cyByYW5nZXMKcHJvcGVydGllcy4KCglBcm5kIDw+PAo=
