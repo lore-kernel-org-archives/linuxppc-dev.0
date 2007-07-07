@@ -1,21 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <SRS0+bd14105a136047a0bf47+1413+infradead.org+dwmw2@canuck.srs.infradead.org>
+Received: from canuck.infradead.org (canuck.infradead.org [209.217.80.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3F788DE0DA
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jul 2007 12:33:42 +1000 (EST)
-Subject: Re: Executing from readablee, no-exec pages
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20070706164942.GA10806@ld0162-tx32.am.freescale.net>
-References: <468D68D4.4050704@freescale.com>
-	<4A6D2FF2-ADD3-4D8A-ADBB-F04CAA778539@kernel.crashing.org>
-	<20070706164942.GA10806@ld0162-tx32.am.freescale.net>
+	by ozlabs.org (Postfix) with ESMTP id 32EB0DDFA4
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jul 2007 14:58:18 +1000 (EST)
+Subject: [PATCH] Handle reg-shift property for of_serial ports
+From: David Woodhouse <dwmw2@infradead.org>
+To: paulus@samba.org
 Content-Type: text/plain
-Date: Sat, 07 Jul 2007 12:33:32 +1000
-Message-Id: <1183775612.3388.193.camel@localhost.localdomain>
+Date: Sat, 07 Jul 2007 00:58:28 -0400
+Message-Id: <1183784308.3066.16.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org, arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,18 +21,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The MV64660 has reg-shift==2 for its otherwise 16550-compatible uarts.
+While the bootwrapper copes with this, of_serial.c doesn't. (The udbg
+code doesn't either, but I'll fix that later).
 
-> Well, it means that leaving VM_READ out of the check (except where the
-> hardware PTE has an exec bit) isn't really buying us anything
-> security-wise (especially since the primary reason for no-exec protection
-> is to avoid code injections via stack overflow, and those pages will
-> usually already be present), so it doesn't hurt much to let things keep
-> working.
-> 
-> At the least, I'd like it to keep working for a few more kernel releases
-> (with a warning printed when a VM_EXEC-only test would have failed), so
-> people have time to upgrade glibc.
+Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 
-I agree. Care to send a patch ? :-0
+diff --git a/drivers/serial/of_serial.c b/drivers/serial/of_serial.c
+index 7ffdaea..0761ff9 100644
+--- a/drivers/serial/of_serial.c
++++ b/drivers/serial/of_serial.c
+@@ -25,12 +25,13 @@ static int __devinit of_platform_serial_setup(struct of_device *ofdev,
+ {
+ 	struct resource resource;
+ 	struct device_node *np = ofdev->node;
+-	const unsigned int *clk, *spd;
++	const unsigned int *clk, *spd, *rs;
+ 	int ret;
+ 
+ 	memset(port, 0, sizeof *port);
+ 	spd = of_get_property(np, "current-speed", NULL);
+ 	clk = of_get_property(np, "clock-frequency", NULL);
++	rs = of_get_property(np, "reg-shift", NULL);
+ 	if (!clk) {
+ 		dev_warn(&ofdev->dev, "no clock-frequency property set\n");
+ 		return -ENODEV;
+@@ -48,6 +49,8 @@ static int __devinit of_platform_serial_setup(struct of_device *ofdev,
+ 	port->iotype = UPIO_MEM;
+ 	port->type = type;
+ 	port->uartclk = *clk;
++	if (rs)
++		port->regshift = *rs;
+ 	port->flags = UPF_SHARE_IRQ | UPF_BOOT_AUTOCONF | UPF_IOREMAP
+ 		| UPF_FIXED_PORT;
+ 	port->dev = &ofdev->dev;
 
-Ben.
+
+-- 
+dwmw2
