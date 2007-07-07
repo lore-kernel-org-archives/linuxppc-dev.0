@@ -1,17 +1,13 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id C68D9DE06F
-	for <linuxppc-dev@ozlabs.org>; Sun,  8 Jul 2007 04:57:14 +1000 (EST)
-Message-ID: <468FE27F.4090105@ru.mvista.com>
-Date: Sat, 07 Jul 2007 22:59:11 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Wade Farnsworth <wfarnsworth@mvista.com>
-Subject: Re: [PATCH 2/5] Add legacy devices to mpc8641_hpcn.dts
-References: <1179245829.8132.100.camel@rhino> <1179246470.8132.112.camel@rhino>
-In-Reply-To: <1179246470.8132.112.camel@rhino>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <jdl@jdl.com>
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH 00/11] dtc: some fixes, and make asm labels for data 
+In-Reply-To: Your message of "Sat, 07 Jul 2007 01:18:45 CDT."
+	<dtc-5-00.miltonm@bga.com>
+References: <dtc-5-00.miltonm@bga.com> 
+Date: Sat, 07 Jul 2007 14:24:06 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1I7Ft0-0004Eq-5e@jdl.com>
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,88 +17,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Wade Farnsworth wrote:
-> This adds device nodes for the ISA devices on the MPC8641 HPCN to the
-> dts.  Additionally, it moves the node for the i8259 to the isa bus,
-> since the i8259 is actually on that bus.
+So, like, the other day Milton Miller mumbled:
+> The following series adds the features of labeling memory reserve
+> slots and labeling specific bytes or cells of property data.  When
+> translating from dts to asm, a global symbol is created with the
+> name matching the label in the dts file.
 
-> Signed-off-by: Wade Farnsworth <wfarnsworth@mvista.com>
+Milton,
 
-    Sorry for the belated comments... :-<
+I applied the whole lot.
+Minor English typo corrections in commit log messages.
 
-> Index: linux-2.6-8641/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-> ===================================================================
-> --- linux-2.6-8641.orig/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-> +++ linux-2.6-8641/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-> @@ -285,17 +285,45 @@
->  				f800 0 0 3 &i8259 0 0
->  				f800 0 0 4 &i8259 0 0
->  				>;
-> -			i8259: i8259@4d0 {
-> -				clock-frequency = <0>;
-> -				interrupt-controller;
-> -				device_type = "interrupt-controller";
-> -				#address-cells = <0>;
-> +
-> +			isa@f0 {
-> +				device_type = "isa";
->  				#interrupt-cells = <2>;
-> -				built-in;
-> -				compatible = "chrp,iic";
-> -                	        big-endian;
-> -				interrupts = <49 2>;
-> -				interrupt-parent = <&mpic>;
-> +				#size-cells = <1>;
-> +				#address-cells = <2>;
-> +				reg = <f000 0 0 0 0>;
-> +				ranges = <1 0 01000000 0 0 00001000>;
-> +				interrupt-parent = <4d0>;
-> +
-> +				8042@60 {
-> +					device_type = "8042";
-> +					reg = <1 60 1 1 64 1>;
+Also, I added two patches on top of these to reorganize
+the Makefile into a better top-down layout and added
+some Version string support, borrowed almost verbatim
+from the Linux Makefiles.  We're going to arbitrarily
+start with 1.0.0 unless someone has a good argument for
+something else!
 
-    What does that leading 1 in the address signify?
+And, for those keeping track, my "To Do" list here still
+contains the notion of breaking the booting-without-of.txt
+file into two parts.  The technical descriptions of the DTC
+and its file (blob) layout will move to the DTC repository
+while the descriptions of nodes and properties will remain
+in the kernel repository.
 
-> +					interrupts = <1 3 c 3>;
-> +					interrupt-parent = <4d0>;
-> +				};
-> +
-> +				rtc@70 {
-> +					device_type = "rtc";
-> +					reg = <1 70 2>;
-> +				};
-> +
-> +				gpio@400 {
-> +					device_type = "gpio";
-> +					reg = <1 400 80>;
-> +				};
-> +
-> +				i8259: i8259@4d0 {
-> +					clock-frequency = <0>;
+Let me know what you think...
 
-    I don't think it's at all applicable here.
-
-> +					interrupt-controller;
-> +					device_type = "interrupt-controller";
-> +					#address-cells = <0>;
-> +					#interrupt-cells = <2>;
-> +					built-in;
-> +					compatible = "chrp,iic";
-> +                	        	big-endian;
-
-    Really?
-
-> +					interrupts = <49 2>;
-> +					interrupt-parent = <&mpic>;
-> +				};
-
-    The "reg" property is missing here. And "reserved-interrupts" accordig to:
-
-http://playground.sun.com/1275/bindings/devices/html/isa-pic-1_1d.html
-
-    BTW, I've found the offisial 8042 binding is here:
-
-http://playground.sun.com/1275/bindings/devices/html/8042.html
-
-WBR, Sergei
+Thanks,
+jdl
