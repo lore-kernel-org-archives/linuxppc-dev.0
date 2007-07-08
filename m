@@ -1,24 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.180])
-	by ozlabs.org (Postfix) with ESMTP id 77ACCDE20E
-	for <linuxppc-dev@ozlabs.org>; Sun,  8 Jul 2007 10:48:55 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so786747wag
-	for <linuxppc-dev@ozlabs.org>; Sat, 07 Jul 2007 17:48:54 -0700 (PDT)
-Message-ID: <fa686aa40707071748g7f00f4c7jb761cceb7d72456d@mail.gmail.com>
-Date: Sat, 7 Jul 2007 18:48:54 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "John Rigby" <jcrigby@gmail.com>
-Subject: Re: [PATCH] Add USB support to mpc8349-mitx board port
-In-Reply-To: <4b73d43f0707071734yeedd7e6g53101d45fbec899e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <20070706222909.19943.39455.stgit@trillian.secretlab.ca>
-	<200707070148.20526.arnd@arndb.de>
-	<fa686aa40707062246j71a347acje8559b7b6be9d38b@mail.gmail.com>
-	<4b73d43f0707071734yeedd7e6g53101d45fbec899e@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, leoli@freescale.com, paulus@samba.org,
-	Timur Tabi <timur@freescale.com>, Arnd Bergmann <arnd@arndb.de>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0C24EDE205
+	for <linuxppc-dev@ozlabs.org>; Sun,  8 Jul 2007 10:54:18 +1000 (EST)
+Subject: Re: [PATCH 1/2] [ide] mmio ide support
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20070707210234.6aed88bb@the-village.bc.nu>
+References: <20070707094852.9473.21013.stgit@localhost.localdomain>
+	<200707071419.52650.arnd@arndb.de>
+	<20070707210234.6aed88bb@the-village.bc.nu>
+Content-Type: text/plain
+Date: Sun, 08 Jul 2007 10:54:08 +1000
+Message-Id: <1183856048.3388.246.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,26 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/7/07, John Rigby <jcrigby@gmail.com> wrote:
-> > This same comment probably goes for the other arch_initcall functions
-> > in fsl_soc.c which do exactly the same thing for other devices.
->
-> This depends,  some devices in fsl_soc.c may exist on non-powerpc SoCs
-> that do not have OF.  The USB core in 8349 for example also is in the
-> arm based mx27 and mx31.  These devices should remain platform devices
-> and the glue in fls_soc.c will continure to be needed.
+On Sat, 2007-07-07 at 21:02 +0100, Alan Cox wrote:
+> > You could also make it an of_platform_driver at the same time
+> > instead of adding more cruft to fsl_soc.c. Since we're already
+> > about to add the electra_ide.c driver in 2.6.23, I guess there
+> > should really be _one_ driver that is able to handle all
+> > of_device based ATA hosts.
+> 
+> and do so using libata. Preferably ata_platform but it does look like
+> ata_of would make sense as a companion.
 
-I disagree; the current method is "glue for the glue".  There is no
-reason why the driver cannot have two bindings; one for
-platform_device and one for of_platform_device.  It's about the same
-amount of code, but uses less indirection for the device tree case.
+I wouldn't push for it too much tho. It's perfectly fine to have
+"helpers" generate xx_platform from the device-tree. Since I added the
+generic dev_archdata to struct device, it's easy for the arch to keep
+track of OF devices for anything, it doesn't have to be an of_platform
+device or anything like that anymore.
 
-Cheers,
-g.
+One of the things I have in mind is to provide a way to register
+"constructors" that are based on an OF match set. Those would then be
+called by the arch code for every OF node that matches, and would then
+"construct" the appropriate linux device. Could be some kind of platform
+device, could even be PCI devs.
 
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Ben.
