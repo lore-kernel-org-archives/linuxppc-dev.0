@@ -1,22 +1,18 @@
-Return-Path: <bzolnier@gmail.com>
-Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.188])
-	by ozlabs.org (Postfix) with ESMTP id 8CDA4DDE2C
-	for <linuxppc-dev@ozlabs.org>; Sun,  8 Jul 2007 23:59:53 +1000 (EST)
-Received: by mu-out-0910.google.com with SMTP id w1so417926mue
-	for <linuxppc-dev@ozlabs.org>; Sun, 08 Jul 2007 06:59:51 -0700 (PDT)
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 1/2] [ide] mmio ide support
-Date: Sun, 8 Jul 2007 15:15:41 +0200
-References: <20070707094852.9473.21013.stgit@localhost.localdomain>
-	<468FC4AC.9030701@ru.mvista.com> <200707072007.10448.arnd@arndb.de>
-In-Reply-To: <200707072007.10448.arnd@arndb.de>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 29D3EDDEED
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jul 2007 06:48:19 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/5] Add legacy devices to mpc8641_hpcn.dts
+Date: Sun, 8 Jul 2007 22:36:36 +0200
+References: <1179245829.8132.100.camel@rhino> <468FDB8F.4050007@ru.mvista.com>
+	<3D4AB802-A3D2-46CC-9BD1-1064EE0AC84C@kernel.crashing.org>
+In-Reply-To: <3D4AB802-A3D2-46CC-9BD1-1064EE0AC84C@kernel.crashing.org>
 MIME-Version: 1.0
-Message-Id: <200707081515.42105.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org
+Message-Id: <200707082236.36722.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,35 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sunday 08 July 2007, Segher Boessenkool wrote:
+> >>>> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A08042@60 {
+> >>>> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0device_type =3D "8042";
+> >
+> >> Drop the device_type. =A0A number as a name isn't
+> >> all that great, either.
+> >
+> > =A0 Yet it's kinda accepted years ago, see:
+> >
+> > http://playground.sun.com/1275/proposals/Closed/Accepted/381-it.txt
+>=20
+> That's not a published recommendation or anything like that.
+>=20
 
-Hi,
+But still, it's what got used in what appears to be all ISA based machines
+with such a keyboard controller, both PowerPC and i386 ones.
 
-On Saturday 07 July 2007, Arnd Bergmann wrote:
-> On Saturday 07 July 2007, Sergei Shtylyov wrote:
-> > Arnd Bergmann wrote:
-> > 
-> > >>This adds support for MMIO IDE device like CompactFlash 
-> > >>in TrueIDE mode.
-> > 
-> > >>Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com> 
-> > >>Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
-> > 
-> > > Hmm, are we still adding new IDE drivers? Do you also have a
-> > 
-> >     Yes, why not?
-> 
-> The last time someone (I think Akira Iguchi) wanted to add
-> a new powerpc specific IDE driver, that was rejected based
+Are you suggesting that we should declare all existing machines wrong and do
+our own thing instead?
 
-linux/drivers/ide/pci/scc_pata.c
-
-New IDE host drivers are still fine.
-
-> on the argument that drivers/ide/ is going away soon. Most
-> current distros have already moved over to using libata
-> exclusively.
-
-The in-kernel default for PATA systems is still IDE subsystem.
-
-Thanks,
-Bart
+	Arnd <><
