@@ -2,21 +2,21 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B7463DDF1A
-	for <linuxppc-dev@ozlabs.org>; Sun,  8 Jul 2007 23:13:29 +1000 (EST)
-In-Reply-To: <468FDB8F.4050007@ru.mvista.com>
-References: <1179245829.8132.100.camel@rhino>
-	<1179246470.8132.112.camel@rhino>	<1179333421.7018.17.camel@ld0161-tx32>
-	<b77c4b3dd22795a73cd32a0623722e51@kernel.crashing.org>
-	<468FDB8F.4050007@ru.mvista.com>
+	by ozlabs.org (Postfix) with ESMTP id 36B6CDDE11
+	for <linuxppc-dev@ozlabs.org>; Sun,  8 Jul 2007 23:31:49 +1000 (EST)
+In-Reply-To: <468FC376.2040405@ru.mvista.com>
+References: <20070707094852.9473.21013.stgit@localhost.localdomain>
+	<20070707094900.9473.48577.stgit@localhost.localdomain>
+	<468FC376.2040405@ru.mvista.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <3D4AB802-A3D2-46CC-9BD1-1064EE0AC84C@kernel.crashing.org>
+Message-Id: <3F401C47-2A18-4692-AA71-D0D5FE24D94F@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2/5] Add legacy devices to mpc8641_hpcn.dts
-Date: Sun, 8 Jul 2007 15:13:06 +0200
+Subject: Re: [PATCH 2/2] [POWERPC] mmio ide support for mpc8349-itx target
+Date: Sun, 8 Jul 2007 15:31:43 +0200
 To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>> +				8042@60 {
->>>> +					device_type = "8042";
+>> +		ide@10000000 {
+>> + 			#interrupt-cells = <2>;
 >
->> Drop the device_type.  A number as a name isn't
->> all that great, either.
+>     Hm, why define that prop for a node with no children?
 >
->   Yet it's kinda accepted years ago, see:
->
-> http://playground.sun.com/1275/proposals/Closed/Accepted/381-it.txt
+>> + 			interrupts = <17 8>;
+>> + 			interrupt-map = <0 0 0 1 700 17 8>;
+>> + 			interrupt-map-mask = <0>;
 
-That's not a published recommendation or anything like that.
+This map-mask makes no sense either.  And neither does
+the map itself.
+
+>> +
+>> + 			#size-cells = <1>;
+>> + 			#address-cells = <1>;
+>
+>     Same question here.
+
+The ide node might want children, namely disks or optical
+drives or such, but #size-cells should be 0.
+
+>> + 			reg = <10000000 10 10000200 10>;
+>> +
+>> + 			device_type = "ide";
+>
+>     I think that already adopted device type is "ata", not "ide".
+
+"ata" is not a hardware thing, "ide" is.  Or so I'm told.
+I'd leave out the "device_type" completely though, certainly
+if you can't point me at a published device binding :-)
 
 
 Segher
