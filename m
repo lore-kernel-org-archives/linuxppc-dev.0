@@ -1,23 +1,32 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <linas@austin.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BC70EDDEE1
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 07:16:47 +1000 (EST)
-Message-ID: <4692A5B8.9010702@freescale.com>
-Date: Mon, 09 Jul 2007 16:16:40 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] Allow exec on 32-bit from readable, non-exec pages, with
-	a warning.
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id CED29DDED0
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 07:29:30 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l69LTRfM003349
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jul 2007 17:29:27 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l69LTRZS492800
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jul 2007 17:29:27 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l69LTQ3w002130
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jul 2007 17:29:27 -0400
+Date: Mon, 9 Jul 2007 16:29:26 -0500
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] Allow exec on 32-bit from readable, non-exec pages,
+	with a warning.
+Message-ID: <20070709212926.GN4457@austin.ibm.com>
 References: <20070709195743.GA26089@ld0162-tx32.am.freescale.net>
-	<200707092225.25287.arnd@arndb.de>
-In-Reply-To: <200707092225.25287.arnd@arndb.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	<200707092225.25287.arnd@arndb.de> <4692A5B8.9010702@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4692A5B8.9010702@freescale.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,28 +36,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Monday 09 July 2007, Scott Wood wrote:
+On Mon, Jul 09, 2007 at 04:16:40PM -0500, Scott Wood wrote:
+> Arnd Bergmann wrote:
+> > I may be missing the obvious, but doesn't that defeat the purpose of
+> > non-executable mappings?
 > 
->>In older versions of glibc (through 2.3), the dynamic linker executes a
->>small amount of code from the data segment, which is not marked as
->>executable.  A recent change (commit 9ba4ace39fdfe22268daca9f28c5df384ae462cf)
->>stops this from working; there should be a deprecation period before
->>older glibc versions stop working.
->>
->>The problem has been observed on glibc 2.2.  While glibc 2.3 has the same
->>code, I did not see the problem; it may be that it accesses the page in
->>question as data before executing from it, and thus it is already mapped.
+> The hardware in question doesn't support non-executable mappings; 
+> otherwise, it'd never have worked in the first place.  Note that this is 
+> only allowed on 32-bit, non-book-E.
 > 
-> 
-> I may be missing the obvious, but doesn't that defeat the purpose of
-> non-executable mappings?
+> There isn't much value in enforcing non-exec mappings only if it happens 
+> to be the first fault on a given page.
 
-The hardware in question doesn't support non-executable mappings; 
-otherwise, it'd never have worked in the first place.  Note that this is 
-only allowed on 32-bit, non-book-E.
+Thank you. I was reading this thread last week, and scratching my head,
+thinking wtf ??
 
-There isn't much value in enforcing non-exec mappings only if it happens 
-to be the first fault on a given page.
-
--Scott
+--linas
