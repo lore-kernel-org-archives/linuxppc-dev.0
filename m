@@ -1,38 +1,24 @@
-Return-Path: <fenkes@de.ibm.com>
-Received: from mtagate1.uk.ibm.com (mtagate1.uk.ibm.com [195.212.29.134])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate1.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6D8BBDE0DC
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jul 2007 23:34:03 +1000 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate1.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l69DXw2T039906
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jul 2007 13:33:58 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
-	[9.149.37.228])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.3) with
-	ESMTP id l69DXsNf573676
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jul 2007 14:33:55 +0100
-Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l69DXrgh005777
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jul 2007 14:33:54 +0100
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	"OF-General" <general@lists.openfabrics.org>,
-	Roland Dreier <rolandd@cisco.com>
-Subject: [PATCH 13/13] IB/ehca: Improve latency by unlocking the SQ/RQ after
-	triggering the hardware
-References: <200707091502.22407.fenkes@de.ibm.com>
-In-Reply-To: <200707091502.22407.fenkes@de.ibm.com>
-MIME-Version: 1.0
-Date: Mon, 9 Jul 2007 15:33:52 +0200
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200707091533.53383.fenkes@de.ibm.com>
-Cc: Stefan Roscher <stefan.roscher@de.ibm.com>,
-	Christoph Raisch <raisch@de.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AE6F6DDEE6
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 00:43:53 +1000 (EST)
+In-Reply-To: <46922D86.5040305@ru.mvista.com>
+References: <1179245829.8132.100.camel@rhino>
+	<1179246470.8132.112.camel@rhino>	<1179333421.7018.17.camel@ld0161-tx32>
+	<b77c4b3dd22795a73cd32a0623722e51@kernel.crashing.org>
+	<468FDB8F.4050007@ru.mvista.com>
+	<3D4AB802-A3D2-46CC-9BD1-1064EE0AC84C@kernel.crashing.org>
+	<46922D86.5040305@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <5816A150-CF82-4608-B175-C70183D2662D@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/5] Add legacy devices to mpc8641_hpcn.dts
+Date: Mon, 9 Jul 2007 16:43:17 +0200
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,39 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
+>>>   Yet it's kinda accepted years ago, see:
+>
+>>> http://playground.sun.com/1275/proposals/Closed/Accepted/381-it.txt
+>
+>> That's not a published recommendation or anything like that.
+>
+>    There's also this document with a status of "unapproved draft":
+>
+> http://playground.sun.com/1275/bindings/devices/html/8042.html
+>
+>    So, all this never got final approval? Somewhat confusing (well,  
+> what one could expect from OF? :-)
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
----
- drivers/infiniband/hw/ehca/ehca_reqs.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+I think this 8042 thing became part of the CHRP binding.  There
+never was a (published) x86 binding btw.  So for our current
+purposes (flat device tree) I recommend we just do the minimal
+sane thing, i.e., no device_type and some good "compatible" entry.
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_reqs.c b/drivers/infiniband/hw/ehca/ehca_reqs.c
-index fd3ba22..61da65e 100644
---- a/drivers/infiniband/hw/ehca/ehca_reqs.c
-+++ b/drivers/infiniband/hw/ehca/ehca_reqs.c
-@@ -407,10 +407,9 @@ int ehca_post_send(struct ib_qp *qp,
- 	} /* eof for cur_send_wr */
- 
- post_send_exit0:
--	/* UNLOCK the QUEUE */
--	spin_unlock_irqrestore(&my_qp->spinlock_s, flags);
- 	iosync(); /* serialize GAL register access */
- 	hipz_update_sqa(my_qp, wqe_cnt);
-+	spin_unlock_irqrestore(&my_qp->spinlock_s, flags);
- 	return ret;
- }
- 
-@@ -473,9 +472,9 @@ static int internal_post_recv(struct ehca_qp *my_qp,
- 	} /* eof for cur_recv_wr */
- 
- post_recv_exit0:
--	spin_unlock_irqrestore(&my_qp->spinlock_r, flags);
- 	iosync(); /* serialize GAL register access */
- 	hipz_update_rqa(my_qp, wqe_cnt);
-+	spin_unlock_irqrestore(&my_qp->spinlock_r, flags);
- 	return ret;
- }
- 
--- 
-1.5.2
+
+Segher
