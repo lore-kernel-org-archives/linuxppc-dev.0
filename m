@@ -1,22 +1,20 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-3.cisco.com (sj-iport-3-in.cisco.com [171.71.176.72])
-	by ozlabs.org (Postfix) with ESMTP id B3A4CDDF06
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 07:38:08 +1000 (EST)
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Subject: Re: [PATCH 08/13] IB/ehca: Lock renaming, static initializers
-References: <200707091502.22407.fenkes@de.ibm.com>
-	<200707091529.04073.fenkes@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 09 Jul 2007 14:38:03 -0700
-In-Reply-To: <200707091529.04073.fenkes@de.ibm.com> (Joachim Fenkes's message
-	of "Mon, 9 Jul 2007 15:29:03 +0200")
-Message-ID: <adavectw950.fsf@cisco.com>
-MIME-Version: 1.0
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 50BE3DDED0
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 07:49:01 +1000 (EST)
+Date: Mon, 9 Jul 2007 16:48:53 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: paulus@samba.org
+Subject: [PATCH v2] Allow exec on 32-bit from readable, non-exec pages,
+	with a warning.
+Message-ID: <20070709214853.GA29912@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: LKML <linux-kernel@vger.kernel.org>, LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	OF-General <general@lists.openfabrics.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,6 +24,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > +DEFINE_SPINLOCK(hcall_lock);
+In older versions of glibc (through 2.3), the dynamic linker executes a
+small amount of code from the data segment, which is not marked as
+executable.  A recent change (commit 9ba4ace39fdfe22268daca9f28c5df384ae462cf)
+stops this from working; there should be a deprecation period before
+older glibc versions stop working.
 
-This can be static.  (I fixed it up when I applied the patch)
+The problem has been observed on glibc 2.2.  While glibc 2.3 has the same
+code, I did not see the problem; it may be that it accesses the page in
+question as data before executing from it, and thus it is already mapped.
+
+Note that this only applies to the classic 32-bit PowerPC MMU and the
+MPC8xx MMU, not Book E, 64-bit, etc.  These MMUs do not support per-page
+no-exec, and thus this patch isn't taking away any effective protection
+enforcement.  Currently, such accesses will fail only if the page in
+question has not already been faulted on (and thus mapped).
+
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+v2: Added to the changelog to explain why this change isn't harmful.
+
+ arch/powerpc/mm/fault.c |   22 +++++++++++++++++++++-
+ 1 files changed, 21 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 0ece513..2445512 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -125,6 +125,18 @@ static void do_dabr(struct pt_regs *regs, unsigned long address,
+ }
+ #endif /* !(CONFIG_4xx || CONFIG_BOOKE)*/
+ 
++#ifdef CONFIG_PPC32
++static void warn_exec_from_noexec(void)
++{
++	if (printk_ratelimit())
++		printk(KERN_WARNING "Process %s (%d) attempted to execute from "
++		                    "a non-executable page.\n"
++		       KERN_WARNING "This may stop working in future kernels.  "
++		                    "Please upgrade your libc.\n",
++		       current->comm, current->pid);
++}
++#endif
++
+ /*
+  * For 600- and 800-family processors, the error_code parameter is DSISR
+  * for a data fault, SRR1 for an instruction fault. For 400-family processors
+@@ -283,8 +295,16 @@ good_area:
+ 		/* protection fault */
+ 		if (error_code & DSISR_PROTFAULT)
+ 			goto bad_area;
+-		if (!(vma->vm_flags & VM_EXEC))
++		if (!(vma->vm_flags & VM_EXEC)) {
++#ifdef CONFIG_PPC32
++			if (vma->vm_flags & VM_READ)
++				warn_exec_from_noexec();
++			else
++				goto bad_area;
++#else
+ 			goto bad_area;
++#endif
++		}
+ #else
+ 		pte_t *ptep;
+ 		pmd_t *pmdp;
+-- 
+1.5.0.3
