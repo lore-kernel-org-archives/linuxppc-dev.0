@@ -1,29 +1,21 @@
-Return-Path: <ahuja@austin.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Return-Path: <>
+Received: from asclepius.site5.com (asclepius.site5.com [70.47.36.37])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 20322DDE17
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 03:31:36 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l69HWiQK028814
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jul 2007 13:32:44 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l69HVW6M402600
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jul 2007 13:31:32 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l69HVWga001466
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jul 2007 13:31:32 -0400
-Message-ID: <469270F3.4070206@austin.ibm.com>
-Date: Mon, 09 Jul 2007 12:31:31 -0500
-From: Manish Ahuja <ahuja@austin.ibm.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] Infinite loop/always true check possible with unsigned
-	counter.
-Content-Type: multipart/mixed; boundary="------------020909020004030502000701"
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0C982DDE2F
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 03:54:55 +1000 (EST)
+Date: Mon, 9 Jul 2007 13:31:44 -0400
+From: Sonny Rao <sonny@burdell.org>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] [POWERPC] check for NULL ppc_md.init_IRQ() before calling
+Message-ID: <20070709173144.GA26009@kevlar.boston.burdell.org>
+References: <20070702004937.GA15712@kevlar.boston.burdell.org>
+	<20070705133734.GA9215@lixom.net>
+	<20070706091634.GA19238@kevlar.boston.burdell.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070706091634.GA19238@kevlar.boston.burdell.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,45 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------020909020004030502000701
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Fri, Jul 06, 2007 at 05:16:34AM -0400, Sonny Rao wrote:
+> On Thu, Jul 05, 2007 at 08:37:34AM -0500, Olof Johansson wrote:
+> > On Sun, Jul 01, 2007 at 08:49:37PM -0400, Sonny Rao wrote:
+> > > The pseries platform does not have a default function for init_IRQ and
+> > > does not install one if it doesn't find or doesn't recognize an
+> > > interrupt controller in the device tree.  Currently, the kernel dies
+> > > when it tries to call the NULL init_IRQ() function.  Clean that up.
+> > 
+> > Doesn't it make more sense to make init_IRQ() check that the pointer is
+> > set instead? That'll work for more platforms than just pseries.
+> 
+> Yeah, that might be the simplest way.  The only reason I can think of
+> to do it this way is that (I think) every single other platform in
+> arch/powerpc statically initializes init_IRQ, with pseries being the
+> oddball.  It doesn't matter much to me, so I can post another patch in a
+> bit.
 
-Fix to correct a possible infinite loop or an always true check when the 
-unsigned long counter "i" is used in
-lmb_add_region() in the following for loop:
+Check to make sure ppc_md.init_IRQ exists before calling it.
 
-for (i = rgn->cnt-1; i >= 0; i--)
+Signed-off-by: Sonny Rao <sonny@burdell.org>
 
-Signed-off-by: Manish Ahuja <ahuja@us.ibm.com>
-
-
---------------020909020004030502000701
-Content-Type: text/plain;
- name="unsigned"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="unsigned"
-
----
- arch/powerpc/mm/lmb.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: 2.6.22-rc4/arch/powerpc/mm/lmb.c
-===================================================================
---- 2.6.22-rc4.orig/arch/powerpc/mm/lmb.c	2007-06-11 21:10:46.000000000 -0500
-+++ 2.6.22-rc4/arch/powerpc/mm/lmb.c	2007-07-06 21:47:40.000000000 -0500
-@@ -138,8 +138,8 @@ void __init lmb_analyze(void)
- static long __init lmb_add_region(struct lmb_region *rgn, unsigned long base,
- 				  unsigned long size)
- {
--	unsigned long i, coalesced = 0;
--	long adjacent;
-+	unsigned long coalesced = 0;
-+	long adjacent, i;
+--- linux/arch/powerpc/kernel/irq.c~orig 2007-07-09 12:46:58.000000000 -0500
++++ linux/arch/powerpc/kernel/irq.c 2007-07-09 12:47:07.000000000 -0500
+@@ -337,8 +337,8 @@ void do_IRQ(struct pt_regs *regs)
  
- 	/* First try and coalesce this LMB with another. */
- 	for (i=0; i < rgn->cnt; i++) {
-
---------------020909020004030502000701--
+ void __init init_IRQ(void)
+ {
+-
+-	ppc_md.init_IRQ();
++	if (ppc_md.init_IRQ)
++		ppc_md.init_IRQ();
+ #ifdef CONFIG_PPC64
+ 	irq_ctx_init();
+ #endif
