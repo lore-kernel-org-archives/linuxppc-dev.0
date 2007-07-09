@@ -1,18 +1,25 @@
-Return-Path: <domen.puncer@telargo.com>
-Received: from out001.atlarge.net (out001.atlarge.net [129.41.63.69])
-	by ozlabs.org (Postfix) with ESMTP id 231FADDE3E
+Return-Path: <laurent.pinchart@technotrade.biz>
+Received: from mailrelay001.isp.belgacom.be (mailrelay001.isp.belgacom.be
+	[195.238.6.51]) by ozlabs.org (Postfix) with ESMTP id C9359DDE25
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  9 Jul 2007 17:52:09 +1000 (EST)
-Date: Mon, 9 Jul 2007 09:52:03 +0200
-From: Domen Puncer <domen.puncer@telargo.com>
+	Mon,  9 Jul 2007 22:58:24 +1000 (EST)
+Received: from mail.technotrade.biz (localhost [127.0.0.1])
+	by mail.technotrade.biz (Postfix) with ESMTP id 605152066
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon,  9 Jul 2007 14:58:21 +0200 (CEST)
+Received: from pclaurent.technotrade.biz (pclaurent.technotrade.biz
+	[192.168.1.47])
+	by mail.technotrade.biz (Postfix) with ESMTP id 4F59E1DE8
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon,  9 Jul 2007 14:58:21 +0200 (CEST)
+From: Laurent Pinchart <laurent.pinchart@technotrade.biz>
 To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH] mpc52xx: sparse fixes
-Message-ID: <20070709075203.GF4186@moe.telargo.com>
-References: <20070621074507.GL23294@moe.telargo.com>
+Subject: [PATCH] [PPC]: Add linux/pagemap.h to arch/ppc/mm/tlb.c
+Date: Mon, 9 Jul 2007 14:58:18 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070621074507.GL23294@moe.telargo.com>
-Cc: Sylvain Munaut <tnt@246tNt.com>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200707091458.19445.laurent.pinchart@technotrade.biz>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,87 +30,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-sparse caught these static functions / __iomem annotations
-under arch/powerpc/platform/52xx/
+When compiled without swap support, arch/mm/tlb.c complains about missing
+function declarations. This patch fixes the warnings.
 
-
-Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
-
+Signed-off-by: Laurent Pinchart <laurent.pinchart@technotrade.biz>
 ---
-Reposting, adding tnt to Cc, and requesting inclusion.
-The patch is pretty much harmless :-)
+ arch/ppc/mm/tlb.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-
- arch/powerpc/platforms/52xx/efika.c      |    4 ++--
- arch/powerpc/platforms/52xx/lite5200.c   |    2 +-
- arch/powerpc/platforms/52xx/mpc52xx_pm.c |    8 ++++----
- 3 files changed, 7 insertions(+), 7 deletions(-)
-
-Index: work-powerpc.git/arch/powerpc/platforms/52xx/efika.c
-===================================================================
---- work-powerpc.git.orig/arch/powerpc/platforms/52xx/efika.c
-+++ work-powerpc.git/arch/powerpc/platforms/52xx/efika.c
-@@ -83,7 +83,7 @@ static struct pci_ops rtas_pci_ops = {
- };
+diff --git a/arch/ppc/mm/tlb.c b/arch/ppc/mm/tlb.c
+index fa29740..4ff260b 100644
+--- a/arch/ppc/mm/tlb.c
++++ b/arch/ppc/mm/tlb.c
+@@ -27,6 +27,7 @@
+ #include <linux/mm.h>
+ #include <linux/init.h>
+ #include <linux/highmem.h>
++#include <linux/pagemap.h>
+ #include <asm/tlbflush.h>
+ #include <asm/tlb.h>
  
- 
--void __init efika_pcisetup(void)
-+static void __init efika_pcisetup(void)
- {
- 	const int *bus_range;
- 	int len;
-@@ -145,7 +145,7 @@ void __init efika_pcisetup(void)
- }
- 
- #else
--void __init efika_pcisetup(void)
-+static void __init efika_pcisetup(void)
- {}
- #endif
- 
-Index: work-powerpc.git/arch/powerpc/platforms/52xx/lite5200.c
-===================================================================
---- work-powerpc.git.orig/arch/powerpc/platforms/52xx/lite5200.c
-+++ work-powerpc.git/arch/powerpc/platforms/52xx/lite5200.c
-@@ -156,7 +156,7 @@ static void __init lite5200_setup_arch(v
- 
- }
- 
--void lite5200_show_cpuinfo(struct seq_file *m)
-+static void lite5200_show_cpuinfo(struct seq_file *m)
- {
- 	struct device_node* np = of_find_all_nodes(NULL);
- 	const char *model = NULL;
-Index: work-powerpc.git/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-===================================================================
---- work-powerpc.git.orig/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-+++ work-powerpc.git/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-@@ -9,8 +9,8 @@
- 
- 
- /* these are defined in mpc52xx_sleep.S, and only used here */
--extern void mpc52xx_deep_sleep(void *sram, void *sdram_regs,
--		struct mpc52xx_cdm *, struct mpc52xx_intr *);
-+extern void mpc52xx_deep_sleep(void __iomem *sram, void __iomem *sdram_regs,
-+		struct mpc52xx_cdm __iomem *, struct mpc52xx_intr __iomem*);
- extern void mpc52xx_ds_sram(void);
- extern const long mpc52xx_ds_sram_size;
- extern void mpc52xx_ds_cached(void);
-@@ -21,7 +21,7 @@ static void __iomem *sdram;
- static struct mpc52xx_cdm __iomem *cdm;
- static struct mpc52xx_intr __iomem *intr;
- static struct mpc52xx_gpio_wkup __iomem *gpiow;
--static void *sram;
-+static void __iomem *sram;
- static int sram_size;
- 
- struct mpc52xx_suspend mpc52xx_suspend;
-@@ -100,7 +100,7 @@ int mpc52xx_pm_enter(suspend_state_t sta
- 	u32 clk_enables;
- 	u32 msr, hid0;
- 	u32 intr_main_mask;
--	void __iomem * irq_0x500 = (void *)CONFIG_KERNEL_START + 0x500;
-+	void __iomem * irq_0x500 = (void __iomem *)CONFIG_KERNEL_START + 0x500;
- 	unsigned long irq_0x500_stop = (unsigned long)irq_0x500 + mpc52xx_ds_cached_size;
- 	char saved_0x500[mpc52xx_ds_cached_size];
- 
+-- 
+1.5.0
