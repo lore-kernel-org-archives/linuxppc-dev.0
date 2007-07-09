@@ -1,22 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 47519DDE3F
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jul 2007 17:23:05 +1000 (EST)
-Date: Mon, 9 Jul 2007 17:23:02 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [patch 01/35] pasemi: rename platform
-Message-Id: <20070709172302.149e3fe0.sfr@canb.auug.org.au>
-In-Reply-To: <20070709001835.GA30821@lixom.net>
-References: <20070705170233.258351000@lixom.net>
-	<20070705170233.671358000@lixom.net>
-	<20070709095259.0720669b.sfr@canb.auug.org.au>
-	<20070709001835.GA30821@lixom.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__9_Jul_2007_17_23_02_+1000_D9_z.SJW+OoYyUc9"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 07A33DDE17
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jul 2007 22:41:51 +1000 (EST)
+Message-ID: <46922D86.5040305@ru.mvista.com>
+Date: Mon, 09 Jul 2007 16:43:50 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/5] Add legacy devices to mpc8641_hpcn.dts
+References: <1179245829.8132.100.camel@rhino>
+	<1179246470.8132.112.camel@rhino>	<1179333421.7018.17.camel@ld0161-tx32>
+	<b77c4b3dd22795a73cd32a0623722e51@kernel.crashing.org>
+	<468FDB8F.4050007@ru.mvista.com>
+	<3D4AB802-A3D2-46CC-9BD1-1064EE0AC84C@kernel.crashing.org>
+In-Reply-To: <3D4AB802-A3D2-46CC-9BD1-1064EE0AC84C@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,36 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Mon__9_Jul_2007_17_23_02_+1000_D9_z.SJW+OoYyUc9
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hello.
 
-On Sun, 8 Jul 2007 19:18:35 -0500 Olof Johansson <olof@lixom.net> wrote:
->
-> On Mon, Jul 09, 2007 at 09:52:59AM +1000, Stephen Rothwell wrote:
-> >=20
-> > This should also fix a problem further up in that file (in
-> > pasemi_publish_devices) where we check for "machine_is(pasemi)".
->=20
-> Yup, that's how I discovered the machine name being less than intuitive.
+Segher Boessenkool wrote:
+>>>>> +                8042@60 {
+>>>>> +                    device_type = "8042";
 
-So it is worth noting in the chnge log.
+>>> Drop the device_type.  A number as a name isn't
+>>> all that great, either.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+>>   Yet it's kinda accepted years ago, see:
 
---Signature=_Mon__9_Jul_2007_17_23_02_+1000_D9_z.SJW+OoYyUc9
-Content-Type: application/pgp-signature
+>> http://playground.sun.com/1275/proposals/Closed/Accepted/381-it.txt
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+> That's not a published recommendation or anything like that.
 
-iD8DBQFGkeJbTgG2atn1QN8RApKZAJ9USwntanJM/qAbrHrRh9qzKzwD/wCfQ+DP
-UFLzW7E7UyfirX2M3UCILSM=
-=BFHP
------END PGP SIGNATURE-----
+    There's also this document with a status of "unapproved draft":
 
---Signature=_Mon__9_Jul_2007_17_23_02_+1000_D9_z.SJW+OoYyUc9--
+http://playground.sun.com/1275/bindings/devices/html/8042.html
+
+    So, all this never got final approval? Somewhat confusing (well, what one 
+could expect from OF? :-)
+
+> Segher
+
+WBR, Sergei
