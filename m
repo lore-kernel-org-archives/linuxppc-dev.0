@@ -1,36 +1,35 @@
 Return-Path: <fenkes@de.ibm.com>
-Received: from mtagate8.de.ibm.com (mtagate8.de.ibm.com [195.212.29.157])
+Received: from mtagate2.de.ibm.com (mtagate2.de.ibm.com [195.212.29.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate8.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 66462DDF69
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jul 2007 23:30:46 +1000 (EST)
+	(Client CN "mtagate2.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7F8C2DE097
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jul 2007 23:31:16 +1000 (EST)
 Received: from d12nrmr1607.megacenter.de.ibm.com
 	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate8.de.ibm.com (8.13.8/8.13.8) with ESMTP id l69DUfSd306328
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jul 2007 13:30:41 GMT
-Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
-	[9.149.165.229])
+	by mtagate2.de.ibm.com (8.13.8/8.13.8) with ESMTP id l69DVCPY083172
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jul 2007 13:31:12 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
 	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.3) with
-	ESMTP id l69DUg9G1478864
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jul 2007 15:30:42 +0200
-Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l69DUe0W029326
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jul 2007 15:30:41 +0200
+	ESMTP id l69DVCwm1916972
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jul 2007 15:31:12 +0200
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l69DVBPF010077
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jul 2007 15:31:12 +0200
 From: Joachim Fenkes <fenkes@de.ibm.com>
 To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
 	LKML <linux-kernel@vger.kernel.org>,
 	"OF-General" <general@lists.openfabrics.org>,
 	Roland Dreier <rolandd@cisco.com>
-Subject: [PATCH 09/13] IB/ehca: Refactor synchronization between completions
-	and destroy_cq using atomic_t
+Subject: [PATCH 10/13] IB/ehca: Change idr spinlocks into rwlocks
 References: <200707091502.22407.fenkes@de.ibm.com>
 In-Reply-To: <200707091502.22407.fenkes@de.ibm.com>
 MIME-Version: 1.0
-Date: Mon, 9 Jul 2007 15:30:39 +0200
+Date: Mon, 9 Jul 2007 15:31:10 +0200
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200707091530.40581.fenkes@de.ibm.com>
+Message-Id: <200707091531.11544.fenkes@de.ibm.com>
 Cc: Stefan Roscher <stefan.roscher@de.ibm.com>,
 	Christoph Raisch <raisch@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -42,223 +41,236 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-- ehca_cq.nr_events is made an atomic_t, eliminating a lot of locking.
-- The CQ is removed from the CQ idr first now to make sure no more
-  completions are scheduled on that CQ. The "wait for all completions to
-  end" code becomes much simpler this way.
+This eliminates lock contention among IRQs as well as the need to disable
+IRQs around idr_find, because there are no IRQ writers.
 
 Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
 ---
- drivers/infiniband/hw/ehca/ehca_classes.h |    4 +-
- drivers/infiniband/hw/ehca/ehca_cq.c      |   26 +++++++-------------
- drivers/infiniband/hw/ehca/ehca_irq.c     |   36 +++++++++++++---------------
- drivers/infiniband/hw/ehca/ehca_irq.h     |    1 -
- drivers/infiniband/hw/ehca/ehca_tools.h   |    1 +
- 5 files changed, 29 insertions(+), 39 deletions(-)
+ drivers/infiniband/hw/ehca/ehca_classes.h |    4 ++--
+ drivers/infiniband/hw/ehca/ehca_cq.c      |   12 ++++++------
+ drivers/infiniband/hw/ehca/ehca_irq.c     |   19 ++++++++-----------
+ drivers/infiniband/hw/ehca/ehca_main.c    |    4 ++--
+ drivers/infiniband/hw/ehca/ehca_qp.c      |   12 ++++++------
+ drivers/infiniband/hw/ehca/ehca_uverbs.c  |    9 ++++-----
+ 6 files changed, 28 insertions(+), 32 deletions(-)
 
 diff --git a/drivers/infiniband/hw/ehca/ehca_classes.h b/drivers/infiniband/hw/ehca/ehca_classes.h
-index 3550047..8580f2a 100644
+index 8580f2a..f1e0db2 100644
 --- a/drivers/infiniband/hw/ehca/ehca_classes.h
 +++ b/drivers/infiniband/hw/ehca/ehca_classes.h
-@@ -174,8 +174,8 @@ struct ehca_cq {
- 	spinlock_t cb_lock;
- 	struct hlist_head qp_hashtab[QP_HASHTAB_LEN];
- 	struct list_head entry;
--	u32 nr_callbacks; /* #events assigned to cpu by scaling code */
--	u32 nr_events;    /* #events seen */
-+	u32 nr_callbacks;   /* #events assigned to cpu by scaling code */
-+	atomic_t nr_events; /* #events seen */
- 	wait_queue_head_t wait_completion;
- 	spinlock_t task_lock;
- 	u32 ownpid;
+@@ -293,8 +293,8 @@ void ehca_cleanup_av_cache(void);
+ int ehca_init_mrmw_cache(void);
+ void ehca_cleanup_mrmw_cache(void);
+ 
+-extern spinlock_t ehca_qp_idr_lock;
+-extern spinlock_t ehca_cq_idr_lock;
++extern rwlock_t ehca_qp_idr_lock;
++extern rwlock_t ehca_cq_idr_lock;
+ extern struct idr ehca_qp_idr;
+ extern struct idr ehca_cq_idr;
+ 
 diff --git a/drivers/infiniband/hw/ehca/ehca_cq.c b/drivers/infiniband/hw/ehca/ehca_cq.c
-index 94bad27..3729997 100644
+index 3729997..01d4a14 100644
 --- a/drivers/infiniband/hw/ehca/ehca_cq.c
 +++ b/drivers/infiniband/hw/ehca/ehca_cq.c
-@@ -146,6 +146,7 @@ struct ib_cq *ehca_create_cq(struct ib_device *device, int cqe, int comp_vector,
- 	spin_lock_init(&my_cq->spinlock);
- 	spin_lock_init(&my_cq->cb_lock);
- 	spin_lock_init(&my_cq->task_lock);
-+	atomic_set(&my_cq->nr_events, 0);
- 	init_waitqueue_head(&my_cq->wait_completion);
- 	my_cq->ownpid = current->tgid;
+@@ -163,9 +163,9 @@ struct ib_cq *ehca_create_cq(struct ib_device *device, int cqe, int comp_vector,
+ 			goto create_cq_exit1;
+ 		}
  
-@@ -303,16 +304,6 @@ create_cq_exit1:
- 	return cq;
- }
+-		spin_lock_irqsave(&ehca_cq_idr_lock, flags);
++		write_lock_irqsave(&ehca_cq_idr_lock, flags);
+ 		ret = idr_get_new(&ehca_cq_idr, my_cq, &my_cq->token);
+-		spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
++		write_unlock_irqrestore(&ehca_cq_idr_lock, flags);
  
--static int get_cq_nr_events(struct ehca_cq *my_cq)
--{
--	int ret;
--	unsigned long flags;
+ 	} while (ret == -EAGAIN);
+ 
+@@ -294,9 +294,9 @@ create_cq_exit3:
+ 			 "cq_num=%x h_ret=%lx", my_cq, my_cq->cq_number, h_ret);
+ 
+ create_cq_exit2:
 -	spin_lock_irqsave(&ehca_cq_idr_lock, flags);
--	ret = my_cq->nr_events;
++	write_lock_irqsave(&ehca_cq_idr_lock, flags);
+ 	idr_remove(&ehca_cq_idr, my_cq->token);
 -	spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
--	return ret;
--}
--
- int ehca_destroy_cq(struct ib_cq *cq)
++	write_unlock_irqrestore(&ehca_cq_idr_lock, flags);
+ 
+ create_cq_exit1:
+ 	kmem_cache_free(cq_cache, my_cq);
+@@ -334,9 +334,9 @@ int ehca_destroy_cq(struct ib_cq *cq)
+ 	 * remove the CQ from the idr first to make sure
+ 	 * no more interrupt tasklets will touch this CQ
+ 	 */
+-	spin_lock_irqsave(&ehca_cq_idr_lock, flags);
++	write_lock_irqsave(&ehca_cq_idr_lock, flags);
+ 	idr_remove(&ehca_cq_idr, my_cq->token);
+-	spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
++	write_unlock_irqrestore(&ehca_cq_idr_lock, flags);
+ 
+ 	/* now wait until all pending events have completed */
+ 	wait_event(my_cq->wait_completion, !atomic_read(&my_cq->nr_events));
+diff --git a/drivers/infiniband/hw/ehca/ehca_irq.c b/drivers/infiniband/hw/ehca/ehca_irq.c
+index 3e790a3..02b73c8 100644
+--- a/drivers/infiniband/hw/ehca/ehca_irq.c
++++ b/drivers/infiniband/hw/ehca/ehca_irq.c
+@@ -180,12 +180,11 @@ static void qp_event_callback(struct ehca_shca *shca,
  {
- 	u64 h_ret;
-@@ -339,17 +330,18 @@ int ehca_destroy_cq(struct ib_cq *cq)
+ 	struct ib_event event;
+ 	struct ehca_qp *qp;
+-	unsigned long flags;
+ 	u32 token = EHCA_BMASK_GET(EQE_QP_TOKEN, eqe);
+ 
+-	spin_lock_irqsave(&ehca_qp_idr_lock, flags);
++	read_lock(&ehca_qp_idr_lock);
+ 	qp = idr_find(&ehca_qp_idr, token);
+-	spin_unlock_irqrestore(&ehca_qp_idr_lock, flags);
++	read_unlock(&ehca_qp_idr_lock);
+ 
+ 
+ 	if (!qp)
+@@ -209,14 +208,13 @@ static void cq_event_callback(struct ehca_shca *shca,
+ 			      u64 eqe)
+ {
+ 	struct ehca_cq *cq;
+-	unsigned long flags;
+ 	u32 token = EHCA_BMASK_GET(EQE_CQ_TOKEN, eqe);
+ 
+-	spin_lock_irqsave(&ehca_cq_idr_lock, flags);
++	read_lock(&ehca_cq_idr_lock);
+ 	cq = idr_find(&ehca_cq_idr, token);
+ 	if (cq)
+ 		atomic_inc(&cq->nr_events);
+-	spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
++	read_unlock(&ehca_cq_idr_lock);
+ 
+ 	if (!cq)
+ 		return;
+@@ -411,7 +409,6 @@ static inline void process_eqe(struct ehca_shca *shca, struct ehca_eqe *eqe)
+ {
+ 	u64 eqe_value;
+ 	u32 token;
+-	unsigned long flags;
+ 	struct ehca_cq *cq;
+ 
+ 	eqe_value = eqe->entry;
+@@ -419,11 +416,11 @@ static inline void process_eqe(struct ehca_shca *shca, struct ehca_eqe *eqe)
+ 	if (EHCA_BMASK_GET(EQE_COMPLETION_EVENT, eqe_value)) {
+ 		ehca_dbg(&shca->ib_device, "Got completion event");
+ 		token = EHCA_BMASK_GET(EQE_CQ_TOKEN, eqe_value);
+-		spin_lock_irqsave(&ehca_cq_idr_lock, flags);
++		read_lock(&ehca_cq_idr_lock);
+ 		cq = idr_find(&ehca_cq_idr, token);
+ 		if (cq)
+ 			atomic_inc(&cq->nr_events);
+-		spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
++		read_unlock(&ehca_cq_idr_lock);
+ 		if (cq == NULL) {
+ 			ehca_err(&shca->ib_device,
+ 				 "Invalid eqe for non-existing cq token=%x",
+@@ -480,11 +477,11 @@ void ehca_process_eq(struct ehca_shca *shca, int is_irq)
+ 		eqe_value = eqe_cache[eqe_cnt].eqe->entry;
+ 		if (EHCA_BMASK_GET(EQE_COMPLETION_EVENT, eqe_value)) {
+ 			token = EHCA_BMASK_GET(EQE_CQ_TOKEN, eqe_value);
+-			spin_lock(&ehca_cq_idr_lock);
++			read_lock(&ehca_cq_idr_lock);
+ 			eqe_cache[eqe_cnt].cq = idr_find(&ehca_cq_idr, token);
+ 			if (eqe_cache[eqe_cnt].cq)
+ 				atomic_inc(&eqe_cache[eqe_cnt].cq->nr_events);
+-			spin_unlock(&ehca_cq_idr_lock);
++			read_unlock(&ehca_cq_idr_lock);
+ 			if (!eqe_cache[eqe_cnt].cq) {
+ 				ehca_err(&shca->ib_device,
+ 					 "Invalid eqe for non-existing cq "
+diff --git a/drivers/infiniband/hw/ehca/ehca_main.c b/drivers/infiniband/hw/ehca/ehca_main.c
+index 77db890..e58e821 100644
+--- a/drivers/infiniband/hw/ehca/ehca_main.c
++++ b/drivers/infiniband/hw/ehca/ehca_main.c
+@@ -96,8 +96,8 @@ MODULE_PARM_DESC(static_rate,
+ MODULE_PARM_DESC(scaling_code,
+ 		 "set scaling code (0: disabled/default, 1: enabled)");
+ 
+-DEFINE_SPINLOCK(ehca_qp_idr_lock);
+-DEFINE_SPINLOCK(ehca_cq_idr_lock);
++DEFINE_RWLOCK(ehca_qp_idr_lock);
++DEFINE_RWLOCK(ehca_cq_idr_lock);
+ DEFINE_IDR(ehca_qp_idr);
+ DEFINE_IDR(ehca_cq_idr);
+ 
+diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
+index ac4ff26..7452ef4 100644
+--- a/drivers/infiniband/hw/ehca/ehca_qp.c
++++ b/drivers/infiniband/hw/ehca/ehca_qp.c
+@@ -512,9 +512,9 @@ struct ehca_qp *internal_create_qp(struct ib_pd *pd,
+ 			goto create_qp_exit0;
+ 		}
+ 
+-		spin_lock_irqsave(&ehca_qp_idr_lock, flags);
++		write_lock_irqsave(&ehca_qp_idr_lock, flags);
+ 		ret = idr_get_new(&ehca_qp_idr, my_qp, &my_qp->token);
+-		spin_unlock_irqrestore(&ehca_qp_idr_lock, flags);
++		write_unlock_irqrestore(&ehca_qp_idr_lock, flags);
+ 
+ 	} while (ret == -EAGAIN);
+ 
+@@ -733,9 +733,9 @@ create_qp_exit2:
+ 	hipz_h_destroy_qp(shca->ipz_hca_handle, my_qp);
+ 
+ create_qp_exit1:
+-	spin_lock_irqsave(&ehca_qp_idr_lock, flags);
++	write_lock_irqsave(&ehca_qp_idr_lock, flags);
+ 	idr_remove(&ehca_qp_idr, my_qp->token);
+-	spin_unlock_irqrestore(&ehca_qp_idr_lock, flags);
++	write_unlock_irqrestore(&ehca_qp_idr_lock, flags);
+ 
+ create_qp_exit0:
+ 	kmem_cache_free(qp_cache, my_qp);
+@@ -1706,9 +1706,9 @@ int internal_destroy_qp(struct ib_device *dev, struct ehca_qp *my_qp,
  		}
  	}
  
-+	/*
-+	 * remove the CQ from the idr first to make sure
-+	 * no more interrupt tasklets will touch this CQ
-+	 */
- 	spin_lock_irqsave(&ehca_cq_idr_lock, flags);
--	while (my_cq->nr_events) {
--		spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
--		wait_event(my_cq->wait_completion, !get_cq_nr_events(my_cq));
+-	spin_lock_irqsave(&ehca_qp_idr_lock, flags);
++	write_lock_irqsave(&ehca_qp_idr_lock, flags);
+ 	idr_remove(&ehca_qp_idr, my_qp->token);
+-	spin_unlock_irqrestore(&ehca_qp_idr_lock, flags);
++	write_unlock_irqrestore(&ehca_qp_idr_lock, flags);
+ 
+ 	h_ret = hipz_h_destroy_qp(shca->ipz_hca_handle, my_qp);
+ 	if (h_ret != H_SUCCESS) {
+diff --git a/drivers/infiniband/hw/ehca/ehca_uverbs.c b/drivers/infiniband/hw/ehca/ehca_uverbs.c
+index d8fe37d..3031b3b 100644
+--- a/drivers/infiniband/hw/ehca/ehca_uverbs.c
++++ b/drivers/infiniband/hw/ehca/ehca_uverbs.c
+@@ -253,7 +253,6 @@ int ehca_mmap(struct ib_ucontext *context, struct vm_area_struct *vma)
+ 	u32 rsrc_type = (fileoffset >> 24) & 0xF; /* sq,rq,cmnd_window */
+ 	u32 cur_pid = current->tgid;
+ 	u32 ret;
+-	unsigned long flags;
+ 	struct ehca_cq *cq;
+ 	struct ehca_qp *qp;
+ 	struct ehca_pd *pd;
+@@ -261,9 +260,9 @@ int ehca_mmap(struct ib_ucontext *context, struct vm_area_struct *vma)
+ 
+ 	switch (q_type) {
+ 	case  1: /* CQ */
 -		spin_lock_irqsave(&ehca_cq_idr_lock, flags);
--		/* recheck nr_events to assure no cqe has just arrived */
--	}
--
- 	idr_remove(&ehca_cq_idr, my_cq->token);
- 	spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
- 
-+	/* now wait until all pending events have completed */
-+	wait_event(my_cq->wait_completion, !atomic_read(&my_cq->nr_events));
-+
-+	/* nobody's using our CQ any longer -- we can destroy it */
- 	h_ret = hipz_h_destroy_cq(adapter_handle, my_cq, 0);
- 	if (h_ret == H_R_STATE) {
- 		/* cq in err: read err data and destroy it forcibly */
-diff --git a/drivers/infiniband/hw/ehca/ehca_irq.c b/drivers/infiniband/hw/ehca/ehca_irq.c
-index 100329b..3e790a3 100644
---- a/drivers/infiniband/hw/ehca/ehca_irq.c
-+++ b/drivers/infiniband/hw/ehca/ehca_irq.c
-@@ -5,6 +5,8 @@
-  *
-  *  Authors: Heiko J Schick <schickhj@de.ibm.com>
-  *           Khadija Souissi <souissi@de.ibm.com>
-+ *           Hoang-Nam Nguyen <hnguyen@de.ibm.com>
-+ *           Joachim Fenkes <fenkes@de.ibm.com>
-  *
-  *  Copyright (c) 2005 IBM Corporation
-  *
-@@ -212,6 +214,8 @@ static void cq_event_callback(struct ehca_shca *shca,
- 
- 	spin_lock_irqsave(&ehca_cq_idr_lock, flags);
- 	cq = idr_find(&ehca_cq_idr, token);
-+	if (cq)
-+		atomic_inc(&cq->nr_events);
- 	spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
- 
- 	if (!cq)
-@@ -219,6 +223,9 @@ static void cq_event_callback(struct ehca_shca *shca,
- 
- 	ehca_error_data(shca, cq, cq->ipz_cq_handle.handle);
- 
-+	if (atomic_dec_and_test(&cq->nr_events))
-+		wake_up(&cq->wait_completion);
-+
- 	return;
- }
- 
-@@ -414,25 +421,22 @@ static inline void process_eqe(struct ehca_shca *shca, struct ehca_eqe *eqe)
- 		token = EHCA_BMASK_GET(EQE_CQ_TOKEN, eqe_value);
- 		spin_lock_irqsave(&ehca_cq_idr_lock, flags);
- 		cq = idr_find(&ehca_cq_idr, token);
-+		if (cq)
-+			atomic_inc(&cq->nr_events);
-+		spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
- 		if (cq == NULL) {
--			spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
- 			ehca_err(&shca->ib_device,
- 				 "Invalid eqe for non-existing cq token=%x",
- 				 token);
- 			return;
- 		}
- 		reset_eq_pending(cq);
--		cq->nr_events++;
++		read_lock(&ehca_cq_idr_lock);
+ 		cq = idr_find(&ehca_cq_idr, idr_handle);
 -		spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
- 		if (ehca_scaling_code)
- 			queue_comp_task(cq);
- 		else {
- 			comp_event_callback(cq);
--			spin_lock_irqsave(&ehca_cq_idr_lock, flags);
--			cq->nr_events--;
--			if (!cq->nr_events)
-+			if (atomic_dec_and_test(&cq->nr_events))
- 				wake_up(&cq->wait_completion);
--			spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
- 		}
- 	} else {
- 		ehca_dbg(&shca->ib_device, "Got non completion event");
-@@ -478,15 +482,15 @@ void ehca_process_eq(struct ehca_shca *shca, int is_irq)
- 			token = EHCA_BMASK_GET(EQE_CQ_TOKEN, eqe_value);
- 			spin_lock(&ehca_cq_idr_lock);
- 			eqe_cache[eqe_cnt].cq = idr_find(&ehca_cq_idr, token);
-+			if (eqe_cache[eqe_cnt].cq)
-+				atomic_inc(&eqe_cache[eqe_cnt].cq->nr_events);
-+			spin_unlock(&ehca_cq_idr_lock);
- 			if (!eqe_cache[eqe_cnt].cq) {
--				spin_unlock(&ehca_cq_idr_lock);
- 				ehca_err(&shca->ib_device,
- 					 "Invalid eqe for non-existing cq "
- 					 "token=%x", token);
- 				continue;
- 			}
--			eqe_cache[eqe_cnt].cq->nr_events++;
--			spin_unlock(&ehca_cq_idr_lock);
- 		} else
- 			eqe_cache[eqe_cnt].cq = NULL;
- 		eqe_cnt++;
-@@ -517,11 +521,8 @@ void ehca_process_eq(struct ehca_shca *shca, int is_irq)
- 			else {
- 				struct ehca_cq *cq = eq->eqe_cache[i].cq;
- 				comp_event_callback(cq);
--				spin_lock(&ehca_cq_idr_lock);
--				cq->nr_events--;
--				if (!cq->nr_events)
-+				if (atomic_dec_and_test(&cq->nr_events))
- 					wake_up(&cq->wait_completion);
--				spin_unlock(&ehca_cq_idr_lock);
- 			}
- 		} else {
- 			ehca_dbg(&shca->ib_device, "Got non completion event");
-@@ -621,13 +622,10 @@ static void run_comp_task(struct ehca_cpu_comp_task* cct)
- 	while (!list_empty(&cct->cq_list)) {
- 		cq = list_entry(cct->cq_list.next, struct ehca_cq, entry);
- 		spin_unlock_irqrestore(&cct->task_lock, flags);
--		comp_event_callback(cq);
++		read_unlock(&ehca_cq_idr_lock);
  
--		spin_lock_irqsave(&ehca_cq_idr_lock, flags);
--		cq->nr_events--;
--		if (!cq->nr_events)
-+		comp_event_callback(cq);
-+		if (atomic_dec_and_test(&cq->nr_events))
- 			wake_up(&cq->wait_completion);
--		spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
+ 		/* make sure this mmap really belongs to the authorized user */
+ 		if (!cq)
+@@ -289,9 +288,9 @@ int ehca_mmap(struct ib_ucontext *context, struct vm_area_struct *vma)
+ 		break;
  
- 		spin_lock_irqsave(&cct->task_lock, flags);
- 		spin_lock(&cq->task_lock);
-diff --git a/drivers/infiniband/hw/ehca/ehca_irq.h b/drivers/infiniband/hw/ehca/ehca_irq.h
-index 6ed06ee..3346cb0 100644
---- a/drivers/infiniband/hw/ehca/ehca_irq.h
-+++ b/drivers/infiniband/hw/ehca/ehca_irq.h
-@@ -47,7 +47,6 @@ struct ehca_shca;
+ 	case 2: /* QP */
+-		spin_lock_irqsave(&ehca_qp_idr_lock, flags);
++		read_lock(&ehca_qp_idr_lock);
+ 		qp = idr_find(&ehca_qp_idr, idr_handle);
+-		spin_unlock_irqrestore(&ehca_qp_idr_lock, flags);
++		read_unlock(&ehca_qp_idr_lock);
  
- #include <linux/interrupt.h>
- #include <linux/types.h>
--#include <asm/atomic.h>
- 
- int ehca_error_data(struct ehca_shca *shca, void *data, u64 resource);
- 
-diff --git a/drivers/infiniband/hw/ehca/ehca_tools.h b/drivers/infiniband/hw/ehca/ehca_tools.h
-index 973c4b5..03b185f 100644
---- a/drivers/infiniband/hw/ehca/ehca_tools.h
-+++ b/drivers/infiniband/hw/ehca/ehca_tools.h
-@@ -59,6 +59,7 @@
- #include <linux/cpu.h>
- #include <linux/device.h>
- 
-+#include <asm/atomic.h>
- #include <asm/abs_addr.h>
- #include <asm/ibmebus.h>
- #include <asm/io.h>
+ 		/* make sure this mmap really belongs to the authorized user */
+ 		if (!qp)
 -- 
 1.5.2
