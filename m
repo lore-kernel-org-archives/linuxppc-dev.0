@@ -1,19 +1,18 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 6C4E9DDE30
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jul 2007 09:53:09 +1000 (EST)
-Date: Mon, 9 Jul 2007 09:52:59 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Olof Johansson <olof@lixom.net>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id B4DBEDDF09
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jul 2007 10:07:33 +1000 (EST)
+Date: Sun, 8 Jul 2007 19:18:35 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
 Subject: Re: [patch 01/35] pasemi: rename platform
-Message-Id: <20070709095259.0720669b.sfr@canb.auug.org.au>
-In-Reply-To: <20070705170233.671358000@lixom.net>
+Message-ID: <20070709001835.GA30821@lixom.net>
 References: <20070705170233.258351000@lixom.net>
 	<20070705170233.671358000@lixom.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__9_Jul_2007_09_52_59_+1000_RV6VD+MIBon0DUI4"
+	<20070709095259.0720669b.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070709095259.0720669b.sfr@canb.auug.org.au>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,33 +23,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Mon__9_Jul_2007_09_52_59_+1000_RV6VD+MIBon0DUI4
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Jul 09, 2007 at 09:52:59AM +1000, Stephen Rothwell wrote:
+> On Thu, 05 Jul 2007 12:02:34 -0500 Olof Johansson <olof@lixom.net> wrote:
+> >
+> > Rename the pasemi platform to "pasemi" to be in line with the platforms
+> > directory name.
+> 
+> This should also fix a problem further up in that file (in
+> pasemi_publish_devices) where we check for "machine_is(pasemi)".
 
-On Thu, 05 Jul 2007 12:02:34 -0500 Olof Johansson <olof@lixom.net> wrote:
->
-> Rename the pasemi platform to "pasemi" to be in line with the platforms
-> directory name.
+Yup, that's how I discovered the machine name being less than intuitive.
 
-This should also fix a problem further up in that file (in
-pasemi_publish_devices) where we check for "machine_is(pasemi)".
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__9_Jul_2007_09_52_59_+1000_RV6VD+MIBon0DUI4
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGkXjoTgG2atn1QN8RAjupAKCD3c2nXtWwr/JbTxUlwpgjWMJuDwCdEvdd
-jhc5C6xwuiYGbVq77SebZrA=
-=B5iR
------END PGP SIGNATURE-----
-
---Signature=_Mon__9_Jul_2007_09_52_59_+1000_RV6VD+MIBon0DUI4--
+-Olof
