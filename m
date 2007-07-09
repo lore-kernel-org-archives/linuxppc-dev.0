@@ -2,20 +2,19 @@ Return-Path: <jwboyer@jdub.homelinux.org>
 Received: from jdub.homelinux.org (unknown [209.180.55.243])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A9A71DDF18
+	by ozlabs.org (Postfix) with ESMTP id B453FDDF18
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  9 Jul 2007 13:37:37 +1000 (EST)
+	Mon,  9 Jul 2007 13:38:33 +1000 (EST)
 Subject: Re: ARCH=ppc vs ARCH=powerpc
 From: Josh Boyer <jwboyer@jdub.homelinux.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200707090234.14851.arnd@arndb.de>
+To: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+In-Reply-To: <Pine.LNX.4.61.0707061706140.4792@mtfhpc.demon.co.uk>
 References: <Pine.LNX.4.61.0707061706140.4792@mtfhpc.demon.co.uk>
-	<200707090234.14851.arnd@arndb.de>
 Content-Type: text/plain
-Date: Sun, 08 Jul 2007 22:37:30 -0500
-Message-Id: <1183952250.3308.0.camel@vader.jdub.homelinux.org>
+Date: Sun, 08 Jul 2007 22:38:28 -0500
+Message-Id: <1183952308.3308.2.camel@vader.jdub.homelinux.org>
 Mime-Version: 1.0
-Cc: Mark Fortescue <mark@mtfhpc.demon.co.uk>, linuxppc-embedded@ozlabs.org
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,20 +25,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-07-09 at 02:34 +0200, Arnd Bergmann wrote:
-> On Friday 06 July 2007, Mark Fortescue wrote:
-> > For me, the requirement is to keep support for the cards indicated in 
-> > arch/ppc/config/xxx_defconfig (as I have one that I might what to use with 
-> > linux) in the same way as they are supported in ARCH=ppc.
+On Fri, 2007-07-06 at 17:21 +0100, Mark Fortescue wrote:
+> Hi,
 > 
-> The one thing that is holding up the transition to arch/powerpc is lack
-> of people with access to the respective boards. If you have one board
-> that you care about, it would be good if you look into getting it moved
-> over. Tell us if you have problems doing so. It shouldn't be all that
-> hard any more, and if it is, maybe some documentation is missing.
+> I have noticed and read a few comments regarding the demise of ARCH=ppc.
+> 
+> Having two PowerPC arcitectures and only supprting one of them makes 
+> little sense. Is it not time to migrate (where required) the remaining 
+> code from arch/ppc to arch/powerpc and asm-ppc to asm-powerpc. There are 
+> not many files left that are unique to ARCH=ppc so it should not take too 
+> long.
 
-It's not just lack of boards.  It's lack of understanding of the
-requirements to get a board port into arch/powerpc.  Namely, the device
-tree stuff.
+It was started in 2005.  It's taken too long already.
+
+Bug fixes will still be taken until arch/ppc dies.  New platform/board
+support, no.
 
 josh
