@@ -1,20 +1,23 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 8100BDDEF2
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 07:35:08 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] Allow exec on 32-bit from readable, non-exec pages,
-	with a warning.
-Date: Mon, 9 Jul 2007 22:52:09 +0200
-References: <20070709195743.GA26089@ld0162-tx32.am.freescale.net>
-	<200707092225.25287.arnd@arndb.de> <4692A5B8.9010702@freescale.com>
-In-Reply-To: <4692A5B8.9010702@freescale.com>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-3.cisco.com (sj-iport-3-in.cisco.com [171.71.176.72])
+	by ozlabs.org (Postfix) with ESMTP id B2501DDF0F
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 07:35:40 +1000 (EST)
+To: Joachim Fenkes <fenkes@de.ibm.com>
+Subject: Re: [PATCH 06/13] IB/ehca: Set SEND_GRH flag for all non-LL UD QPs on
+	eHCA2
+References: <200707091502.22407.fenkes@de.ibm.com>
+	<200707091527.14272.fenkes@de.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Mon, 09 Jul 2007 14:35:31 -0700
+In-Reply-To: <200707091527.14272.fenkes@de.ibm.com> (Joachim Fenkes's message
+	of "Mon, 9 Jul 2007 15:27:13 +0200")
+Message-ID: <adazm25w998.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200707092252.09795.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: text/plain; charset=us-ascii
+Cc: LKML <linux-kernel@vger.kernel.org>, LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>,
+	OF-General <general@lists.openfabrics.org>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,19 +27,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 09 July 2007, Scott Wood wrote:
-> The hardware in question doesn't support non-executable mappings;=20
-> otherwise, it'd never have worked in the first place. =A0Note that this i=
-s=20
-> only allowed on 32-bit, non-book-E.
->=20
-> There isn't much value in enforcing non-exec mappings only if it happens=
-=20
-> to be the first fault on a given page.
+Out of curiousity, does this mean that a GRH will be sent on all UD
+messages (for non-LL QPs)?
 
-Ok, much clearer now. Do you mind adding that explanation to the
-changelog text? If it's going into the stable kernel update, there
-may be more people reading this with the same problem understanding
-the patch.
+What decides if a QP is LL or not?
 
-	Arnd <><
+ - R.
