@@ -1,37 +1,19 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 97007DDEC9
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 05:56:31 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l69Jp3JI030107
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jul 2007 15:51:03 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l69JuOSA207300
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jul 2007 13:56:25 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l69JuOSg008022
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jul 2007 13:56:24 -0600
-Date: Mon, 9 Jul 2007 14:56:23 -0500
-To: Marc Leeman <marc.leeman@gmail.com>
-Subject: Re: 2.4/2.6/ppc/powerpc/8245/8347e
-Message-ID: <20070709195623.GK4457@austin.ibm.com>
-References: <20070621141519.GQ5417@chiana.homelinux.org>
-	<0090CCD0-EBB4-4475-BF03-36AF41E2DDA1@kernel.crashing.org>
-	<20070621155616.GR5417@chiana.homelinux.org>
-	<20070621171340.GS5417@chiana.homelinux.org>
-	<20070628180632.GA2660@chiana.homelinux.org>
-	<20070629145936.GL2660@chiana.homelinux.org>
-	<20070709154723.GD2660@chiana.homelinux.org>
-MIME-Version: 1.0
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B7D4CDDEDB
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 05:57:51 +1000 (EST)
+Date: Mon, 9 Jul 2007 14:57:43 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: paulus@samba.org
+Subject: [PATCH] Allow exec on 32-bit from readable, non-exec pages,
+	with a warning.
+Message-ID: <20070709195743.GA26089@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070709154723.GD2660@chiana.homelinux.org>
-From: linas@austin.ibm.com (Linas Vepstas)
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -42,24 +24,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 09, 2007 at 05:47:23PM +0200, Marc Leeman wrote:
-> 
-> Disabling this replaces the advanced SLAB allocator and
-> kmalloc support with the drastically simpler SLOB allocator.
-> SLOB is more space efficient but does not scale well and is
-> more susceptible to fragmentation. 
-> --------
-> 
-> I was expecting a lower DMM performance but wasn't expecting such a
-> drain on kernel/network load.
+In older versions of glibc (through 2.3), the dynamic linker executes a
+small amount of code from the data segment, which is not marked as
+executable.  A recent change (commit 9ba4ace39fdfe22268daca9f28c5df384ae462cf)
+stops this from working; there should be a deprecation period before
+older glibc versions stop working.
 
-OK, to be clear: you seem to be saying that using the SLOB instead
-of the SLAB allocator results in such terrible memory fragmentation
-that network performance is degraded by large factors (2x or 5x or
-something like that, if I remember your earlier emails). Is that right?
+The problem has been observed on glibc 2.2.  While glibc 2.3 has the same
+code, I did not see the problem; it may be that it accesses the page in
+question as data before executing from it, and thus it is already mapped.
 
-I thought I heard about some memory-defrag patches being posted.  
-What happens if these are used together with SLOB? Does one regain the
-lost performance? Perhaps maybe one gets even better performance?
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+Unfortunately, this didn't make it into 2.6.22, but it should probably go
+into the stable branch...
 
---linas
+ arch/powerpc/mm/fault.c |   22 +++++++++++++++++++++-
+ 1 files changed, 21 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 0ece513..2445512 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -125,6 +125,18 @@ static void do_dabr(struct pt_regs *regs, unsigned long address,
+ }
+ #endif /* !(CONFIG_4xx || CONFIG_BOOKE)*/
+ 
++#ifdef CONFIG_PPC32
++static void warn_exec_from_noexec(void)
++{
++	if (printk_ratelimit())
++		printk(KERN_WARNING "Process %s (%d) attempted to execute from "
++		                    "a non-executable page.\n"
++		       KERN_WARNING "This may stop working in future kernels.  "
++		                    "Please upgrade your libc.\n",
++		       current->comm, current->pid);
++}
++#endif
++
+ /*
+  * For 600- and 800-family processors, the error_code parameter is DSISR
+  * for a data fault, SRR1 for an instruction fault. For 400-family processors
+@@ -283,8 +295,16 @@ good_area:
+ 		/* protection fault */
+ 		if (error_code & DSISR_PROTFAULT)
+ 			goto bad_area;
+-		if (!(vma->vm_flags & VM_EXEC))
++		if (!(vma->vm_flags & VM_EXEC)) {
++#ifdef CONFIG_PPC32
++			if (vma->vm_flags & VM_READ)
++				warn_exec_from_noexec();
++			else
++				goto bad_area;
++#else
+ 			goto bad_area;
++#endif
++		}
+ #else
+ 		pte_t *ptep;
+ 		pmd_t *pmdp;
+-- 
+1.5.0.3
