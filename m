@@ -1,21 +1,35 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 07A33DDE17
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jul 2007 22:41:51 +1000 (EST)
-Message-ID: <46922D86.5040305@ru.mvista.com>
-Date: Mon, 09 Jul 2007 16:43:50 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <fenkes@de.ibm.com>
+Received: from mtagate8.de.ibm.com (mtagate8.de.ibm.com [195.212.29.157])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate8.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C48F6DDED8
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jul 2007 23:02:27 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate8.de.ibm.com (8.13.8/8.13.8) with ESMTP id l69D2NVc213178
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jul 2007 13:02:23 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.3) with
+	ESMTP id l69D2NvX2072726
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jul 2007 15:02:23 +0200
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l69D2MPq016599
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jul 2007 15:02:23 +0200
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	"OF-General" <general@lists.openfabrics.org>,
+	Roland Dreier <rolandd@cisco.com>
+Subject: [PATCH 00/13] IB/ehca: eHCA2 enablement & some fixes
+Date: Mon, 9 Jul 2007 15:02:21 +0200
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2/5] Add legacy devices to mpc8641_hpcn.dts
-References: <1179245829.8132.100.camel@rhino>
-	<1179246470.8132.112.camel@rhino>	<1179333421.7018.17.camel@ld0161-tx32>
-	<b77c4b3dd22795a73cd32a0623722e51@kernel.crashing.org>
-	<468FDB8F.4050007@ru.mvista.com>
-	<3D4AB802-A3D2-46CC-9BD1-1064EE0AC84C@kernel.crashing.org>
-In-Reply-To: <3D4AB802-A3D2-46CC-9BD1-1064EE0AC84C@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200707091502.22407.fenkes@de.ibm.com>
+Cc: Stefan Roscher <stefan.roscher@de.ibm.com>,
+	Christoph Raisch <raisch@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +39,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+This patch series enables the eHCA device driver to support new functions of
+the eHCA2 chip. In addition, there are some bug fixes, code optimizations
+and general new features included. Another set of patches will follow.
 
-Segher Boessenkool wrote:
->>>>> +                8042@60 {
->>>>> +                    device_type = "8042";
+The patches, in detail, are:
 
->>> Drop the device_type.  A number as a name isn't
->>> all that great, either.
+[01/13] fixes a wrong parameter description
+[02/13] adds HW capabilities autodetection
+[03/13] restructures the QP code, preparing for Share Receive Queues (SRQ)
+[04/13] adds SRQ support
+[05/13] adds support for UD low latency QPs
+[06/13] sets a flag that needs to be set on eHCA2
+[07/13] adds RDMA atomic attributes to the data returned by query_qp()
+[08/13] straightens out lock flag naming and adds static initializers
+[09/13] refactors synchronization between completions and destroy_cq()
+[10/13] changes the global idr spinlocks into rwlocks
+[11/13] returns the QP pointer in poll_cq() instead of NULL
+[12/13] adds notifications in case the SM LID etc. changes
+[13/13] adds a slight latency improvement
 
->>   Yet it's kinda accepted years ago, see:
+The patches should apply cleanly, in order, against Roland's git. Please
+review the changes and apply the patches for 2.6.23 if they are okay.
 
->> http://playground.sun.com/1275/proposals/Closed/Accepted/381-it.txt
+Regards,
+  Joachim
 
-> That's not a published recommendation or anything like that.
-
-    There's also this document with a status of "unapproved draft":
-
-http://playground.sun.com/1275/bindings/devices/html/8042.html
-
-    So, all this never got final approval? Somewhat confusing (well, what one 
-could expect from OF? :-)
-
-> Segher
-
-WBR, Sergei
+=2D-=20
+Joachim Fenkes =A0-- =A0eHCA Linux Driver Developer and Hardware Tamer
+IBM Deutschland Entwicklung GmbH =A0-- =A0Dept. 3627 (I/O Firmware Dev. 2)
+Schoenaicher Strasse 220 =A0-- =A071032 Boeblingen =A0-- =A0Germany
+eMail: fenkes@de.ibm.com
