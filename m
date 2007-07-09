@@ -1,25 +1,19 @@
-Return-Path: <laurent.pinchart@technotrade.biz>
-Received: from mailrelay001.isp.belgacom.be (mailrelay001.isp.belgacom.be
-	[195.238.6.51]) by ozlabs.org (Postfix) with ESMTP id C9359DDE25
+Return-Path: <mark@mtfhpc.demon.co.uk>
+Received: from anchor-post-30.mail.demon.net (anchor-post-30.mail.demon.net
+	[194.217.242.88]) by ozlabs.org (Postfix) with ESMTP id A19D5DDD05
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  9 Jul 2007 22:58:24 +1000 (EST)
-Received: from mail.technotrade.biz (localhost [127.0.0.1])
-	by mail.technotrade.biz (Postfix) with ESMTP id 605152066
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  9 Jul 2007 14:58:21 +0200 (CEST)
-Received: from pclaurent.technotrade.biz (pclaurent.technotrade.biz
-	[192.168.1.47])
-	by mail.technotrade.biz (Postfix) with ESMTP id 4F59E1DE8
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  9 Jul 2007 14:58:21 +0200 (CEST)
-From: Laurent Pinchart <laurent.pinchart@technotrade.biz>
-To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH] [PPC]: Add linux/pagemap.h to arch/ppc/mm/tlb.c
-Date: Mon, 9 Jul 2007 14:58:18 +0200
+	Tue, 10 Jul 2007 00:33:45 +1000 (EST)
+Date: Mon, 9 Jul 2007 15:33:05 +0100 (BST)
+From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: ARCH=ppc vs ARCH=powerpc
+In-Reply-To: <200707090234.14851.arnd@arndb.de>
+Message-ID: <Pine.LNX.4.61.0707091528510.12823@mtfhpc.demon.co.uk>
+References: <Pine.LNX.4.61.0707061706140.4792@mtfhpc.demon.co.uk>
+	<200707090234.14851.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200707091458.19445.laurent.pinchart@technotrade.biz>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,25 +24,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-When compiled without swap support, arch/mm/tlb.c complains about missing
-function declarations. This patch fixes the warnings.
+Hi All,
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@technotrade.biz>
----
- arch/ppc/mm/tlb.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+I am currently trying to identify an anoying feature of linux on my 
+sparc32 systems but I will do some work on the ppc -> powerpc migration 
+as soon as I have exauhsted my current avenues of investiation on the 
+sparc32 issue.
 
-diff --git a/arch/ppc/mm/tlb.c b/arch/ppc/mm/tlb.c
-index fa29740..4ff260b 100644
---- a/arch/ppc/mm/tlb.c
-+++ b/arch/ppc/mm/tlb.c
-@@ -27,6 +27,7 @@
- #include <linux/mm.h>
- #include <linux/init.h>
- #include <linux/highmem.h>
-+#include <linux/pagemap.h>
- #include <asm/tlbflush.h>
- #include <asm/tlb.h>
- 
--- 
-1.5.0
+Regards
+ 	Mark Fortescue.
+
+On Mon, 9 Jul 2007, Arnd Bergmann wrote:
+
+> On Friday 06 July 2007, Mark Fortescue wrote:
+>> For me, the requirement is to keep support for the cards indicated in
+>> arch/ppc/config/xxx_defconfig (as I have one that I might what to use with
+>> linux) in the same way as they are supported in ARCH=ppc.
+>
+> The one thing that is holding up the transition to arch/powerpc is lack
+> of people with access to the respective boards. If you have one board
+> that you care about, it would be good if you look into getting it moved
+> over. Tell us if you have problems doing so. It shouldn't be all that
+> hard any more, and if it is, maybe some documentation is missing.
+>
+>> I have just made some tweeks to get ARCH=ppc building for me but I still
+>> need to sort out what is required to get around *** Error: Headers not
+>> exportable for this architecture (ppc).
+>
+> You should simply install the headers with ARCH=powerc, even when the
+> kernel is built with ARCH=ppc. From the user space point of view, there
+> is only one set of headers.
+>
+> 	Arnd <><
+>
