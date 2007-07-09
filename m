@@ -1,21 +1,17 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
-	by ozlabs.org (Postfix) with ESMTP id 3AA43DDDF4
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 08:11:59 +1000 (EST)
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Subject: Re: [PATCH 00/13] IB/ehca: eHCA2 enablement & some fixes
-References: <200707091502.22407.fenkes@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 09 Jul 2007 15:11:42 -0700
-In-Reply-To: <200707091502.22407.fenkes@de.ibm.com> (Joachim Fenkes's message
-	of "Mon, 9 Jul 2007 15:02:21 +0200")
-Message-ID: <adak5t9w7kx.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: LKML <linux-kernel@vger.kernel.org>, LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	OF-General <general@lists.openfabrics.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Return-Path: <b08248@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B9001DDE2F
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 08:35:37 +1000 (EST)
+Date: Mon, 9 Jul 2007 17:35:27 -0500
+From: Stuart Yoder <b08248@freescale.com>
+Message-Id: <200707092235.l69MZRnh015324@ld0164-tx32.am.freescale.net>
+To: paulus@samba.org
+Subject: [PATCH v2][POWERPC] document ipic level/sense info
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,10 +21,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-thanks, I applied these for 2.6.23 and fixed a bunch of minor things
-that scripts/checkpatch.pl complained about (since I was in a mood to
-do mindless things).  In the future please run that yourself and clean
-up the obvious things.  I generally don't worry about the 80 column
-stuff, but it will catch most whitespace problems and tell you that
-foo(x,y) should be foo(x, y) etc.  So you don't have to completely
-silence the script but at least take a look at the output.
+
+document level and sense information for the Freescale
+IPIC interrupt controller
+
+Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
+---
+ Documentation/powerpc/booting-without-of.txt |   18 +++++++++++++++++-
+ 1 files changed, 17 insertions(+), 1 deletions(-)
+
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index c169299..7ad9e42 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -50,13 +50,14 @@ Table of Contents
+       g) Freescale SOC SEC Security Engines
+       h) Board Control and Status (BCSR)
+       i) Freescale QUICC Engine module (QE)
+-      g) Flash chip nodes
++      j) Flash chip nodes
+ 
+   VII - Specifying interrupt information for devices
+     1) interrupts property
+     2) interrupt-parent property
+     3) OpenPIC Interrupt Controllers
+     4) ISA Interrupt Controllers
++    5) IPIC Interrupt Controllers
+ 
+   Appendix A - Sample SOC node for MPC8540
+ 
+@@ -1878,6 +1879,21 @@ encodings listed below:
+ 	2 =  high to low edge sensitive type enabled
+ 	3 =  low to high edge sensitive type enabled
+ 
++5) Freescale IPIC Interrupt Controllers
++---------------------------------------
++
++IPIC interrupt controllers are specific to Freescale 83xx
++SOCs.  Two cells are required to encode interrupt information.
++The first cell defines the interrupt number.  The second cell
++defines the sense and level information.
++
++Sense and level information follows the Linux convention
++(specified in include/linux/interrupt.h) and should be encoded
++as follows:
++
++	2 =  high to low edge sensitive type enabled
++	8 =  active low level sensitive type enabled
++
+ 
+ Appendix A - Sample SOC node for MPC8540
+ ========================================
+-- 
+1.5.0.3
