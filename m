@@ -4,18 +4,15 @@ Received: from az33egw01.freescale.net (az33egw01.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2E24FDDF70
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 19:36:58 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id B5808DDED0
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 19:37:40 +1000 (EST)
 From: Zhang Wei <wei.zhang@freescale.com>
-To: paulus@samba.org, galak@kernel.crashing.org
-Subject: [PATCH 1/4] Add DMA sector to
-	Documentation/powerpc/booting-without-of.txt file.
-Date: Tue, 10 Jul 2007 17:44:21 +0800
-Message-Id: <11840606624025-git-send-email-wei.zhang@freescale.com>
-In-Reply-To: <1184060662530-git-send-email-wei.zhang@freescale.com>
-References: <1184060662530-git-send-email-wei.zhang@freescale.com>
+To: akpm@linux-foundation.org, paulus@samba.org, galak@kernel.crashing.org
+Subject: [PATCH 3/4] Extend the DMA-engine API.
+Date: Tue, 10 Jul 2007 17:45:11 +0800
+Message-Id: <11840607111926-git-send-email-wei.zhang@freescale.com>
 Sender: Zhang Wei <wei.zhang@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,84 +22,93 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds DMA sector to Documentation/powerpc/booting-without-of.txt file.
+Add channel wait queue and transfer callback dma_xfer_callback().
+If the DMA controller and driver support interrupt, when the
+transfer is finished, it will wakeup the wait queue
+and call the callback function of the channel.
+
+Add dma_async_raw_xfer() to API and device_raw_xfer() to struct dma_device
+for RAW physical address DMA transfer, which will be used at transfer
+between I/O address and memory address.
 
 Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
-Signed-off-by: Ebony Zhu <ebony.zhu@freescale.com>
 ---
- Documentation/powerpc/booting-without-of.txt |   60 ++++++++++++++++++++++++++
- 1 files changed, 60 insertions(+), 0 deletions(-)
+ include/linux/dmaengine.h |   35 +++++++++++++++++++++++++++++++++++
+ 1 files changed, 35 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index c169299..08c619f 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -1790,6 +1790,66 @@ platforms are moved over to use the flattened-device-tree model.
-  		partition-names = "fs\0firmware";
-  	};
+diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
+index c94d8f1..d9dfc57 100644
+--- a/include/linux/dmaengine.h
++++ b/include/linux/dmaengine.h
+@@ -28,6 +28,7 @@
+ #include <linux/kref.h>
+ #include <linux/completion.h>
+ #include <linux/rcupdate.h>
++#include <linux/wait.h>
  
-+   k) DMA
+ /**
+  * enum dma_event - resource PNP/power managment events
+@@ -108,6 +109,8 @@ struct dma_chan {
+ 	struct list_head client_node;
+ 	struct list_head device_node;
+ 	struct dma_chan_percpu *local;
 +
-+   This sector define DMA for dma-engine driver of Freescale
-+   MPC8xxx silicon. For each DMA setor, you should define
-+   channels included.
-+   Please see below 'l) DMA channel' for DMA channel's definition.
-+
-+   Required properties:
-+
-+    - compatible : Should be "fsl,mpc8xxx-dma"
-+    - reg : Offset and length of the register set for the device
-+    - ranges : Should be defined as specified in 1) to describe the
-+               DMA controller's register.
-+
-+  Example:
-+	dma@21000{
-+		compatible = "fsl,mpc8xxx-dma";
-+		reg = <21000 100>;
-+		ranges = <0 21000 1000>;
-+		ch0@100{
-+			reg = <100 80>;
-+			extended;
-+			reserved;
-+			interrupt-parent = <&mpic>;
-+			interrupts = <14 2>;
-+		};
-+		ch1@180{
-+			reg = <180 80>;
-+			extended;
-+			reserved;
-+			interrupt-parent = <&mpic>;
-+			interrupts = <15 2>;
-+		};
-+		ch2@200{
-+			reg = <200 80>;
-+			extended;
-+			interrupt-parent = <&mpic>;
-+			interrupts = <16 2>;
-+		};
-+		ch3@280{
-+			reg = <280 80>;
-+			extended;
-+			interrupt-parent = <&mpic>;
-+			interrupts = <17 2>;
-+		};
-+	};
-+
-+   l) DMA channel
-+
-+   Required properties:
-+
-+    - reg : Offset and length of the register set for the device
-+
-+   Recommended properties :
-+
-+    - extended : Set the DMA channel to work at extended chain mode.
-+                 If not set, the DMA channel will work at basic
-+                 chain mode.
-+    - reserved : Reserve the DMA channel to device.
-+
-    More devices will be defined as this spec matures.
++	wait_queue_head_t wait_q;
+ };
  
- VII - Specifying interrupt information for devices
+ void dma_chan_cleanup(struct kref *kref);
+@@ -138,6 +141,12 @@ static inline void dma_chan_put(struct dma_chan *chan)
+ typedef void (*dma_event_callback) (struct dma_client *client,
+ 		struct dma_chan *chan, enum dma_event event);
+ 
++/*
++ * typedef dma_xfer_callback
++ *   - function pointer to a DMA transfer callback when finished
++ */
++typedef void (*dma_xfer_callback) (struct dma_chan *chan, void *data);
++
+ /**
+  * struct dma_client - info on the entity making use of DMA services
+  * @event_callback: func ptr to call when something happens
+@@ -187,6 +196,9 @@ struct dma_device {
+ 
+ 	int (*device_alloc_chan_resources)(struct dma_chan *chan);
+ 	void (*device_free_chan_resources)(struct dma_chan *chan);
++	dma_cookie_t (*device_raw_xfer)(struct dma_chan *chan,
++			dma_addr_t dest, dma_addr_t src, size_t len,
++			dma_xfer_callback cb, void *data);
+ 	dma_cookie_t (*device_memcpy_buf_to_buf)(struct dma_chan *chan,
+ 			void *dest, void *src, size_t len);
+ 	dma_cookie_t (*device_memcpy_buf_to_pg)(struct dma_chan *chan,
+@@ -209,6 +221,29 @@ void dma_async_client_chan_request(struct dma_client *client,
+ 		unsigned int number);
+ 
+ /**
++ * dma_async_raw_xfer - transfor data between physical addresses with callback
++ * @chan: DMA channel to be used
++ * @dest: destination address (physical)
++ * @src: source address (physical)
++ * @len: length
++ */
++static inline dma_cookie_t dma_async_raw_xfer(struct dma_chan *chan,
++				dma_addr_t dest, dma_addr_t src, size_t len,
++				dma_xfer_callback cb, void *data)
++{
++	int cpu = get_cpu();
++	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
++	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
++	put_cpu();
++
++	if (chan->device->device_raw_xfer)
++		return chan->device->device_raw_xfer(chan, dest, src, len,
++							cb, data);
++	else
++		return -EPERM;
++}
++
++/**
+  * dma_async_memcpy_buf_to_buf - offloaded copy between virtual addresses
+  * @chan: DMA channel to offload copy to
+  * @dest: destination address (virtual)
 -- 
 1.5.1
