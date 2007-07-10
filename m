@@ -1,21 +1,33 @@
-Return-Path: <dan.j.williams@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.246])
-	by ozlabs.org (Postfix) with ESMTP id 29523DDF21
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 04:41:33 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so248278anc
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 11:41:33 -0700 (PDT)
-Message-ID: <e9c3a7c20707101141m17e313e2k99be5b7197edc910@mail.gmail.com>
-Date: Tue, 10 Jul 2007 11:41:32 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-Sender: dan.j.williams@gmail.com
-To: "Zhang Wei" <wei.zhang@freescale.com>
-Subject: Re: [PATCH 3/4] Extend the DMA-engine API.
-In-Reply-To: <11840607111926-git-send-email-wei.zhang@freescale.com>
+Return-Path: <linas@austin.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8FC22DDEF6
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 04:49:40 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6AInbh2011092
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 14:49:37 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l6AInbuc483078
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 14:49:37 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l6AInaqx011362
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 14:49:36 -0400
+Date: Tue, 10 Jul 2007 13:49:36 -0500
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [PATCH 1/2] [ide] mmio ide support
+Message-ID: <20070710184936.GF24480@austin.ibm.com>
+References: <20070707094852.9473.21013.stgit@localhost.localdomain>
+	<468FC4AC.9030701@ru.mvista.com> <200707072007.10448.arnd@arndb.de>
+	<200707081515.42105.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <11840607111926-git-send-email-wei.zhang@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, paulus@samba.org,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200707081515.42105.bzolnier@gmail.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Arnd Bergmann <arnd@arndb.de>, linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +37,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/10/07, Zhang Wei <wei.zhang@freescale.com> wrote:
-> Add channel wait queue and transfer callback dma_xfer_callback().
-> If the DMA controller and driver support interrupt, when the
-> transfer is finished, it will wakeup the wait queue
-> and call the callback function of the channel.
->
-> Add dma_async_raw_xfer() to API and device_raw_xfer() to struct dma_device
-> for RAW physical address DMA transfer, which will be used at transfer
-> between I/O address and memory address.
->
+On Sun, Jul 08, 2007 at 03:15:41PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> 
+> > on the argument that drivers/ide/ is going away soon. Most
+> > current distros have already moved over to using libata
+> > exclusively.
+> 
+> The in-kernel default for PATA systems is still IDE subsystem.
 
-Please review the async_tx API patch series[1], it should meet your
-needs.  What you call "raw" mode support is now default for the
-dmaengine driver interface.  I plan to request that this series be
-merged for 2.6.23.
+In part because libata still does not yet work correctly 
+for at least some (older) ide chipsets (like mine).
 
-Regards,
-Dan
-
-[1]http://marc.info/?l=linux-raid&w=2&r=1&s=md-accel&q=b
+--linas
