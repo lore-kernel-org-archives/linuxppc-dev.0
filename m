@@ -1,22 +1,26 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B113BDDFA6
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 00:40:38 +1000 (EST)
-In-Reply-To: <A9B90D06-77BD-49B5-8D2D-300641A973BC@kernel.crashing.org>
-References: <200707092235.l69MZRnh015324@ld0164-tx32.am.freescale.net>
-	<fa686aa40707091548h5182d6d0r900afc1f35d4f80f@mail.gmail.com>
-	<A9B90D06-77BD-49B5-8D2D-300641A973BC@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <473A9535-CF43-4299-8D23-B97E50B5BEC3@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2][POWERPC] document ipic level/sense info
-Date: Tue, 10 Jul 2007 09:40:47 -0500
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Stuart Yoder <b08248@freescale.com>, paulus@samba.org,
-	linuxppc-dev@ozlabs.org
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3149BDDFCB
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 00:41:18 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6AEgSNO018600
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 10:42:28 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l6AEfGR2529168
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 10:41:16 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l6AEfFQE021951
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 10:41:15 -0400
+Subject: [PATCH 1/1] powerpc: Add H_ILLAN_ATTRIBUTES
+To: paulus@samba.org
+From: Brian King <brking@linux.vnet.ibm.com>
+Date: Tue, 10 Jul 2007 09:41:14 -0500
+Message-Id: <11840784743083-patch-mail.ibm.com>
+Cc: brking@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,24 +31,23 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jul 10, 2007, at 8:21 AM, Segher Boessenkool wrote:
+Adds the H_ILLAN_ATTRIBUTES hcall
 
->>> +Sense and level information follows the Linux convention
->>> +(specified in include/linux/interrupt.h) and should be encoded
->>> +as follows:
->>> +
->>> +       2 =  high to low edge sensitive type enabled
->>> +       8 =  active low level sensitive type enabled
->
->> ... but it is probably worthwhile commentting that sense types 1 & 4
->> are not supported; just to fill in the obvious gaps.  :-)
->
-> Same for sense types 0, 3, 5, 6, ...
->
-> Just name the sense types 0 and 1, similar to what all other
-> OF interrupt controller bindings do.
+Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+---
 
-I'm not really keen on changing the values at this point.  I think we  
-are stuck with them.
+ linux-2.6-bjking1/include/asm-powerpc/hvcall.h |    1 +
+ 1 file changed, 1 insertion(+)
 
-- k
+diff -puN include/asm-powerpc/hvcall.h~powerpc_illan_attrs include/asm-powerpc/hvcall.h
+--- linux-2.6/include/asm-powerpc/hvcall.h~powerpc_illan_attrs	2007-07-10 09:37:57.000000000 -0500
++++ linux-2.6-bjking1/include/asm-powerpc/hvcall.h	2007-07-10 09:37:57.000000000 -0500
+@@ -206,6 +206,7 @@
+ #define H_FREE_LOGICAL_LAN_BUFFER 0x1D4
+ #define H_QUERY_INT_STATE       0x1E4
+ #define H_POLL_PENDING		0x1D8
++#define H_ILLAN_ATTRIBUTES	0x244
+ #define H_JOIN			0x298
+ #define H_VASI_STATE            0x2A4
+ #define H_ENABLE_CRQ		0x2B0
+_
