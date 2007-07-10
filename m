@@ -2,20 +2,19 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 83499DDECB
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 23:09:06 +1000 (EST)
-In-Reply-To: <4692A5B8.9010702@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id 95FA4DDEE6
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 23:11:28 +1000 (EST)
+In-Reply-To: <20070709195743.GA26089@ld0162-tx32.am.freescale.net>
 References: <20070709195743.GA26089@ld0162-tx32.am.freescale.net>
-	<200707092225.25287.arnd@arndb.de> <4692A5B8.9010702@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <8CA741AA-D200-474F-943D-ECE4B3ACD38B@kernel.crashing.org>
+Message-Id: <B6D787C6-6EA9-4866-AC3F-EB75F6D433F6@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH] Allow exec on 32-bit from readable, non-exec pages,
 	with a warning.
-Date: Tue, 10 Jul 2007 15:08:53 +0200
+Date: Tue, 10 Jul 2007 15:11:16 +0200
 To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,22 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> I may be missing the obvious, but doesn't that defeat the purpose of
->> non-executable mappings?
+> In older versions of glibc (through 2.3), the dynamic linker  
+> executes a
+> small amount of code from the data segment, which is not marked as
+> executable.  A recent change (commit  
+> 9ba4ace39fdfe22268daca9f28c5df384ae462cf)
+> stops this from working; there should be a deprecation period before
+> older glibc versions stop working.
 >
-> The hardware in question doesn't support non-executable mappings;
-
-Not on a per-page basis, anyway.
-
-> otherwise, it'd never have worked in the first place.  Note that  
-> this is
-> only allowed on 32-bit, non-book-E.
+> The problem has been observed on glibc 2.2.  While glibc 2.3 has  
+> the same
+> code, I did not see the problem; it may be that it accesses the  
+> page in
+> question as data before executing from it, and thus it is already  
+> mapped.
 >
-> There isn't much value in enforcing non-exec mappings only if it  
-> happens
-> to be the first fault on a given page.
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
 
-Yeah.  Giving the warning is a good thing though.
+Acked-by: Segher Boessenkool <segher@kernel.crashing.org>
+
+> Unfortunately, this didn't make it into 2.6.22, but it should  
+> probably go
+> into the stable branch...
+
+Both .21.x and .22.x I suppose; if we care about glibc 2.2.x
+at all still, that is.
+
+So to make double sure, this doesn't warn on glibc 2.3.x?
 
 
 Segher
