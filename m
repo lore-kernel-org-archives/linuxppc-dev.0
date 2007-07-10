@@ -1,16 +1,26 @@
-Return-Path: <dale@farnsworth.org>
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Tue, 10 Jul 2007 06:50:05 -0700
-To: ThomasB <psyphi@gmail.com>
-Subject: Re: [kernel-2.6.19]Marvell GT-64260 and Ethernet
-Message-ID: <20070710135004.GA13589@xyzzy.farnsworth.org>
-References: <13b81f0c0707092336r5c7f4996u6f9c73d95c63bdc6@mail.gmail.com>
-	<20070710132207.12018.qmail@farnsworth.org>
-	<13b81f0c0707100641i56e08bd3n7c7911782a81628a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <13b81f0c0707100641i56e08bd3n7c7911782a81628a@mail.gmail.com>
-Cc: Linuxppc-embedded@ozlabs.org
+Return-Path: <khali@linux-fr.org>
+Received: from kellthuzad.dmz.nerim.net (smtp-dmz-232-tuesday.dmz.nerim.net
+	[195.5.254.232]) by ozlabs.org (Postfix) with ESMTP id 0627FDDEE3
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 10 Jul 2007 23:10:45 +1000 (EST)
+Received: from kraid.nerim.net (smtp-102-tuesday.nerim.net [62.4.16.102])
+	by kellthuzad.dmz.nerim.net (Postfix) with ESMTP id 7F5CB13B56
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 10 Jul 2007 14:40:22 +0200 (CEST)
+Date: Tue, 10 Jul 2007 14:40:30 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] i2c-mpc: work around missing-9th-clock-pulse bug
+Message-ID: <20070710144030.3786cbf3@hyperion.delvare>
+In-Reply-To: <fa686aa40707092322v58bbdad0veb0ee2ec00f125b0@mail.gmail.com>
+References: <20070709071955.GD4186@moe.telargo.com>
+	<fa686aa40707090853j6079b0c7rbcff7c449baa15e0@mail.gmail.com>
+	<20070710061736.GG4186@moe.telargo.com>
+	<fa686aa40707092322v58bbdad0veb0ee2ec00f125b0@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org, Domen Puncer <domen.puncer@telargo.com>,
+	i2c@lm-sensors.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,11 +31,75 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 10, 2007 at 03:41:25PM +0200, ThomasB wrote:
-> It's nevertheless odd, I read about a file named gt64260_eth.c during my
-> search on the internet.But I wasn't able to find it :(.
+Hi Grant, hi Domen,
 
-It was in the (now obsolete) linuxppc_2_4_devel kernel.  I can send
-you a copy, but a merged mv64x60 driver will be much better.
+On Tue, 10 Jul 2007 00:22:05 -0600, Grant Likely wrote:
+> On 7/10/07, Domen Puncer <domen.puncer@telargo.com> wrote:
+> > Work around a problem reported on:
+> > http://ozlabs.org/pipermail/linuxppc-embedded/2005-July/019038.html
+> > Without this patch I2C on mpc5200 becomes unusable after a while.
+> > Tested on mpc5200 boards by Matthias and me.
+> >
+> >
+> > Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
+> 
+> Looks good to me,
+> 
+> Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
--Dale
+OK, I will take this patch, but I'd like you to add a comment before
+mpc_i2c_fixup() explaining what exactly the problem is and how it is
+worked around. Otherwise it's a bit obscure what is going on.
+
+I guess you want this patch in 2.6.23-rc1?
+
+> > ---
+> >  drivers/i2c/busses/i2c-mpc.c |   17 +++++++++++++++++
+> >  1 file changed, 17 insertions(+)
+> >
+> > Index: work-powerpc.git/drivers/i2c/busses/i2c-mpc.c
+> > ===================================================================
+> > --- work-powerpc.git.orig/drivers/i2c/busses/i2c-mpc.c
+> > +++ work-powerpc.git/drivers/i2c/busses/i2c-mpc.c
+> > @@ -74,6 +74,20 @@ static irqreturn_t mpc_i2c_isr(int irq,
+> >         return IRQ_HANDLED;
+> >  }
+> >
+> > +static void mpc_i2c_fixup(struct mpc_i2c *i2c)
+> > +{
+> > +       writeccr(i2c, 0);
+> > +       udelay(30);
+> > +       writeccr(i2c, CCR_MEN);
+> > +       udelay(30);
+> > +       writeccr(i2c, CCR_MSTA | CCR_MTX);
+> > +       udelay(30);
+> > +       writeccr(i2c, CCR_MSTA | CCR_MTX | CCR_MEN);
+> > +       udelay(30);
+> > +       writeccr(i2c, CCR_MEN);
+> > +       udelay(30);
+> > +}
+> > +
+> >  static int i2c_wait(struct mpc_i2c *i2c, unsigned timeout, int writing)
+> >  {
+> >         unsigned long orig_jiffies = jiffies;
+> > @@ -153,6 +167,7 @@ static void mpc_i2c_start(struct mpc_i2c
+> >  static void mpc_i2c_stop(struct mpc_i2c *i2c)
+> >  {
+> >         writeccr(i2c, CCR_MEN);
+> > +       writeccr(i2c, 0);
+> >  }
+> >
+> >  static int mpc_write(struct mpc_i2c *i2c, int target,
+> > @@ -245,6 +260,8 @@ static int mpc_xfer(struct i2c_adapter *
+> >                 }
+> >                 if (time_after(jiffies, orig_jiffies + HZ)) {
+> >                         pr_debug("I2C: timeout\n");
+> > +                       if (readb(i2c->base + MPC_I2C_SR) == (CSR_MCF | CSR_MBB | CSR_RXAK))
+> > +                               mpc_i2c_fixup(i2c);
+> >                         return -EIO;
+> >                 }
+> >                 schedule();
+> >
+
+-- 
+Jean Delvare
