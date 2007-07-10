@@ -1,21 +1,12 @@
-Return-Path: <bzolnier@gmail.com>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.233])
-	by ozlabs.org (Postfix) with ESMTP id 1CBCCDDEBF
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 08:04:47 +1000 (EST)
-Received: by wx-out-0506.google.com with SMTP id h27so1189916wxd
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 15:04:46 -0700 (PDT)
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH] ide: Use inline function for eieio
-Date: Tue, 10 Jul 2007 23:58:37 +0200
-References: <Pine.LNX.4.64.0707100018020.5814@blarg.am.freescale.net>
-	<469384B3.1080502@ru.mvista.com>
-In-Reply-To: <469384B3.1080502@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200707102358.37236.bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <miltonm@sullivan.realtime.net>
+Date: Tue, 10 Jul 2007 17:07:03 -0500 (CDT)
+Subject: [PATCH 0/15] bootwrapper: support for kexec to zImage
+Sender: <miltonm@realtime.net>
+From: Milton Miller <miltonm@bga.com>
+To: linuxppc-dev@ozlabs.org
+Message-Id: <boot-6-00.miltonm@bga.com>
+Cc: Paul Mackerras <paulus@samba.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,27 +16,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This series creates a 32 bit zImage wrapper for a 32 or 64 bit PowerPC
+Linux kernel.   This allows you to kexec a zImage with its compressed
+vmlinux instead of the uncompressed vmlinux elf.  The elf is also
+packaged as a 64 bit elf for use by kexec-tools for 64 bit kernels.
 
-[ added Kou back to cc: ]
+This series also adds code to extract the vmlinux elf file from an
+initramfs (or other platform supplied location).  This allows one
+to load the elf once (compressed) and use it both for userspace and
+for the actual boot.
 
-On Tuesday 10 July 2007, Sergei Shtylyov wrote:
-> Hello.
-> 
-> Kumar Gala wrote:
-> > Move to using inline function variant of eieio instead of inline assmebly.
-> 
-> > Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-
-applied
-
-Please use host driver name ("scc_pata" in this case) instead of "ide" in
-the patch summary if your changes are limited to a single host driver.
-
-This helps later when going through git logs.
-
-> Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-
-added
-
-Thanks,
-Bart
+milton
