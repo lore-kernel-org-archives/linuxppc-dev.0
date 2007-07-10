@@ -1,28 +1,19 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from pd2mo1so.prod.shaw.ca (shawidc-mo1.cg.shawcable.net
-	[24.71.223.10]) by ozlabs.org (Postfix) with ESMTP id B1A06DDED2
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 09:51:49 +1000 (EST)
-Received: from pd4mr3so.prod.shaw.ca
-	(pd4mr3so-qfe3.prod.shaw.ca [10.0.141.214]) by l-daemon
-	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
-	with ESMTP id <0JKX000LYRLYVP40@l-daemon> for linuxppc-dev@ozlabs.org;
-	Mon, 09 Jul 2007 17:51:34 -0600 (MDT)
-Received: from pn2ml7so.prod.shaw.ca ([10.0.121.151])
-	by pd4mr3so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
-	(built Sep
-	5 2006)) with ESMTP id <0JKX00A41RLTR1H0@pd4mr3so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Mon, 09 Jul 2007 17:51:30 -0600 (MDT)
-Received: from trillian.secretlab.ca ([68.147.67.118])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JKX001G1RLSWZB0@l-daemon> for linuxppc-dev@ozlabs.org;
-	Mon, 09 Jul 2007 17:51:29 -0600 (MDT)
-Date: Mon, 09 Jul 2007 17:51:05 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] xilinxfb: Parameterize xilinxfb platform device registration
-To: linuxppc-dev@ozlabs.org, paulus@samba.org
-Message-id: <20070709235105.4826.79342.stgit@trillian>
-Content-type: text/plain; charset=utf-8; format=fixed
+Return-Path: <bunk@stusta.de>
+Received: from mailhub.stusta.mhn.de (emailhub.stusta.mhn.de [141.84.69.5])
+	by ozlabs.org (Postfix) with ESMTP id 0FF00DDECB
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 10:18:48 +1000 (EST)
+Date: Tue, 10 Jul 2007 02:19:18 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Mikael Pettersson <mikpe@it.uu.se>, adaplas@gmail.com
+Subject: [2.6 patch] drivers/video/macmodes.c:mac_find_mode() mustn't be
+	__devinit
+Message-ID: <20070710001918.GP3492@stusta.de>
+References: <200707092347.l69NlElB023451@harpo.it.uu.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <200707092347.l69NlElB023451@harpo.it.uu.se>
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, stable@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,71 +23,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+On Tue, Jul 10, 2007 at 01:47:14AM +0200, Mikael Pettersson wrote:
+> A vanilla 2.6.22 built for ppc32 and configured with CONFIG_FB_MACMODES=y, CONFIG_HOTPLUG=n,
+> and CONFIG_MODULES=y, triggers the following warning from modpost:
+> 
+> WARNING: drivers/built-in.o(__ksymtab+0x3b0): Section mismatch: reference to .init.text:mac_find_mode (between '__ksymtab_mac_find_mode' and '__ksymtab_mac_map_monitor_sense')
+> 
+> There's an EXPORT_SYMBOL(mac_find_mode), but mac_find_mode() is __devinit
+> and thus __init in this kernel.
 
-This patch allows multiple xilinxfb devices to be registered and used
+So let's fix it.  ;-)
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-cc: Andrei Konovalov <akonovalov@ru.mvista.com>
+> /Mikael
+
+cu
+Adrian
+
+
+<--  snip  -->
+
+
+If it's EXPORT_SYMBOL'ed it can't be __devinit.
+
+Reported by Mikael Pettersson.
+
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+
 ---
 
- arch/ppc/syslib/virtex_devices.c |   38 +++++++++++++++++++++++++-------------
- 1 files changed, 25 insertions(+), 13 deletions(-)
+@stable:
+Fixes a real bug on ppc.
 
-diff --git a/arch/ppc/syslib/virtex_devices.c b/arch/ppc/syslib/virtex_devices.c
-index 83f978f..9b473cf 100644
---- a/arch/ppc/syslib/virtex_devices.c
-+++ b/arch/ppc/syslib/virtex_devices.c
-@@ -152,6 +152,21 @@
- 	}, \
- }
+ drivers/video/macmodes.c |    5 ++---
+ drivers/video/macmodes.h |    8 ++++----
+ 2 files changed, 6 insertions(+), 7 deletions(-)
+
+--- linux-2.6.22-rc6-mm1/drivers/video/macmodes.h.old	2007-07-10 01:55:14.000000000 +0200
++++ linux-2.6.22-rc6-mm1/drivers/video/macmodes.h	2007-07-10 01:55:29.000000000 +0200
+@@ -55,10 +55,10 @@
+ extern int mac_var_to_vmode(const struct fb_var_screeninfo *var, int *vmode,
+ 			    int *cmode);
+ extern int mac_map_monitor_sense(int sense);
+-extern int __devinit mac_find_mode(struct fb_var_screeninfo *var,
+-				   struct fb_info *info,
+-				   const char *mode_option,
+-				   unsigned int default_bpp);
++extern int mac_find_mode(struct fb_var_screeninfo *var,
++			 struct fb_info *info,
++			 const char *mode_option,
++			 unsigned int default_bpp);
  
-+/*
-+ * ML300/ML403 Video Device: shortcut macro for single instance
-+ */
-+#define XPAR_TFT(num) { \
-+	.name = "xilinxfb", \
-+	.id = num, \
-+	.num_resources = 1, \
-+	.resource = (struct resource[]) { \
-+		{ \
-+			.start = XPAR_TFT_##num##_BASEADDR, \
-+			.end = XPAR_TFT_##num##_BASEADDR+7, \
-+			.flags = IORESOURCE_IO, \
-+		}, \
-+	}, \
-+}
  
- /* UART 8250 driver platform data table */
- struct plat_serial8250_port virtex_serial_platform_data[] = {
-@@ -274,20 +289,17 @@ struct platform_device virtex_platform_devices[] = {
- #endif
- #endif
+     /*
+--- linux-2.6.22-rc6-mm1/drivers/video/macmodes.c.old	2007-07-10 01:54:36.000000000 +0200
++++ linux-2.6.22-rc6-mm1/drivers/video/macmodes.c	2007-07-10 01:55:04.000000000 +0200
+@@ -369,9 +369,8 @@
+  *
+  */
  
--	/* ML300/403 reference design framebuffer */
- #if defined(XPAR_TFT_0_BASEADDR)
--	{
--		.name		= "xilinxfb",
--		.id		= 0,
--		.num_resources	= 1,
--		.resource = (struct resource[]) {
--			{
--				.start	= XPAR_TFT_0_BASEADDR,
--				.end	= XPAR_TFT_0_BASEADDR+7,
--				.flags	= IORESOURCE_IO,
--			},
--		},
--	},
-+	XPAR_TFT(0),
-+#endif
-+#if defined(XPAR_TFT_1_BASEADDR)
-+	XPAR_TFT(1),
-+#endif
-+#if defined(XPAR_TFT_2_BASEADDR)
-+	XPAR_TFT(2),
-+#endif
-+#if defined(XPAR_TFT_3_BASEADDR)
-+	XPAR_TFT(3),
- #endif
- };
- 
+-int __devinit mac_find_mode(struct fb_var_screeninfo *var,
+-			    struct fb_info *info, const char *mode_option,
+-			    unsigned int default_bpp)
++int mac_find_mode(struct fb_var_screeninfo *var, struct fb_info *info,
++		  const char *mode_option, unsigned int default_bpp)
+ {
+     const struct fb_videomode *db = NULL;
+     unsigned int dbsize = 0;
