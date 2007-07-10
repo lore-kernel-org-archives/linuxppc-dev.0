@@ -1,24 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <psyphi@gmail.com>
 Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.179])
-	by ozlabs.org (Postfix) with ESMTP id 0D310DDE1D
+	by ozlabs.org (Postfix) with ESMTP id 803FBDDE25
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 10 Jul 2007 16:22:06 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so1634573wag
+	Tue, 10 Jul 2007 16:36:53 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so1639154wag
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 09 Jul 2007 23:22:05 -0700 (PDT)
-Message-ID: <fa686aa40707092322v58bbdad0veb0ee2ec00f125b0@mail.gmail.com>
-Date: Tue, 10 Jul 2007 00:22:05 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Domen Puncer" <domen.puncer@telargo.com>
-Subject: Re: [PATCH] i2c-mpc: work around missing-9th-clock-pulse bug
-In-Reply-To: <20070710061736.GG4186@moe.telargo.com>
+	Mon, 09 Jul 2007 23:36:52 -0700 (PDT)
+Message-ID: <13b81f0c0707092336r5c7f4996u6f9c73d95c63bdc6@mail.gmail.com>
+Date: Tue, 10 Jul 2007 08:36:52 +0200
+From: ThomasB <psyphi@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: [kernel-2.6.19]Marvell GT-64260 and Ethernet
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <20070709071955.GD4186@moe.telargo.com>
-	<fa686aa40707090853j6079b0c7rbcff7c449baa15e0@mail.gmail.com>
-	<20070710061736.GG4186@moe.telargo.com>
-Cc: khali@linux-fr.org, i2c@lm-sensors.org, linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_Part_178529_7210368.1184049412233"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,97 +24,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 7/10/07, Domen Puncer <domen.puncer@telargo.com> wrote:
-> On 09/07/07 09:53 -0600, Grant Likely wrote:
-> > On 7/9/07, Domen Puncer <domen.puncer@telargo.com> wrote:
-> > >Work around a problem reported on:
-> > >http://ozlabs.org/pipermail/linuxppc-embedded/2005-July/019038.html
-> > >Without this patch I2C on mpc5200 becomes unusable after a while.
-> > >Tested on mpc5200 based boards by Matthias and me.
-> > >
-> > >Index: work-powerpc.git/drivers/i2c/busses/i2c-mpc.c
-> > >===================================================================
-> > >--- work-powerpc.git.orig/drivers/i2c/busses/i2c-mpc.c
-> > >+++ work-powerpc.git/drivers/i2c/busses/i2c-mpc.c
-> > >@@ -153,6 +167,9 @@ static void mpc_i2c_start(struct mpc_i2c
-> > > static void mpc_i2c_stop(struct mpc_i2c *i2c)
-> > > {
-> > >        writeccr(i2c, CCR_MEN);
-> > >+       mb();
-> > >+       writeccr(i2c, 0);
-> > >+       mb();
-> > > }
-> >
-> > Are the mb() calls necessary?  The writeccr path includes eieio; is
-> > that not sufficient?
->
-> Right, v2:
->
->
-> Work around a problem reported on:
-> http://ozlabs.org/pipermail/linuxppc-embedded/2005-July/019038.html
-> Without this patch I2C on mpc5200 becomes unusable after a while.
-> Tested on mpc5200 boards by Matthias and me.
->
->
-> Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
+------=_Part_178529_7210368.1184049412233
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Looks good to me,
-
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
-
->
-> ---
->  drivers/i2c/busses/i2c-mpc.c |   17 +++++++++++++++++
->  1 file changed, 17 insertions(+)
->
-> Index: work-powerpc.git/drivers/i2c/busses/i2c-mpc.c
-> ===================================================================
-> --- work-powerpc.git.orig/drivers/i2c/busses/i2c-mpc.c
-> +++ work-powerpc.git/drivers/i2c/busses/i2c-mpc.c
-> @@ -74,6 +74,20 @@ static irqreturn_t mpc_i2c_isr(int irq,
->         return IRQ_HANDLED;
->  }
->
-> +static void mpc_i2c_fixup(struct mpc_i2c *i2c)
-> +{
-> +       writeccr(i2c, 0);
-> +       udelay(30);
-> +       writeccr(i2c, CCR_MEN);
-> +       udelay(30);
-> +       writeccr(i2c, CCR_MSTA | CCR_MTX);
-> +       udelay(30);
-> +       writeccr(i2c, CCR_MSTA | CCR_MTX | CCR_MEN);
-> +       udelay(30);
-> +       writeccr(i2c, CCR_MEN);
-> +       udelay(30);
-> +}
-> +
->  static int i2c_wait(struct mpc_i2c *i2c, unsigned timeout, int writing)
->  {
->         unsigned long orig_jiffies = jiffies;
-> @@ -153,6 +167,7 @@ static void mpc_i2c_start(struct mpc_i2c
->  static void mpc_i2c_stop(struct mpc_i2c *i2c)
->  {
->         writeccr(i2c, CCR_MEN);
-> +       writeccr(i2c, 0);
->  }
->
->  static int mpc_write(struct mpc_i2c *i2c, int target,
-> @@ -245,6 +260,8 @@ static int mpc_xfer(struct i2c_adapter *
->                 }
->                 if (time_after(jiffies, orig_jiffies + HZ)) {
->                         pr_debug("I2C: timeout\n");
-> +                       if (readb(i2c->base + MPC_I2C_SR) == (CSR_MCF | CSR_MBB | CSR_RXAK))
-> +                               mpc_i2c_fixup(i2c);
->                         return -EIO;
->                 }
->                 schedule();
->
+Hi all,
+I'm porting a Linux kernel 2.6.19 on a PowerPC 750 FX board.
+My Linux runs completely except for Ethernet. I don't find any Ethernet
+driver for my bridge. Do you know if there is an Ethernet driver for the
+Marvell GT-64260 bridge for PowerPC processor. I found a GT-64260 ethernet
+driver in the kernel 2.4.34 for MIPS processor, will it be possible to port
+it in a 2.6 kernel?
+Thanks for you help.
 
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+ThomasB
+http://psyphi.zeblog.com/
+
+------=_Part_178529_7210368.1184049412233
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi all,<br>I&#39;m porting a Linux kernel 2.6.19 on a PowerPC 750 FX board.<br>My Linux runs completely except for Ethernet. I don&#39;t find any Ethernet driver for my bridge. Do you know if there is an Ethernet driver for the Marvell GT-64260 bridge for PowerPC processor. I found a GT-64260 ethernet driver in the kernel 
+2.4.34 for MIPS processor, will it be possible to port it in a 2.6 kernel?<br>Thanks for you help.<br><br clear="all"><br>-- <br>ThomasB<br><a href="http://psyphi.zeblog.com/" target="_blank" onclick="return top.js.OpenExtLink(window,event,this)">
+http://psyphi.zeblog.com/
+</a>
+
+------=_Part_178529_7210368.1184049412233--
