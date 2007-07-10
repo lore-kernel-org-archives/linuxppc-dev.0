@@ -1,10 +1,10 @@
 Return-Path: <miltonm@sullivan.realtime.net>
-Date: Tue, 10 Jul 2007 17:12:09 -0500 (CDT)
-Subject: [PATCH 11/15] bootwrapper: allow vmlinuz to be an external payload
+Date: Tue, 10 Jul 2007 17:12:36 -0500 (CDT)
+Subject: [PATCH 12/15] bootwrapper: extract the vmlinux from initramfs
 Sender: <miltonm@realtime.net>
 From: Milton Miller <miltonm@bga.com>
 To: linuxppc-dev@ozlabs.org
-Message-Id: <boot-6-11.miltonm@bga.com>
+Message-Id: <boot-6-12.miltonm@bga.com>
 In-Reply-To: <boot-6-00.miltonm@bga.com>
 Cc: Paul Mackerras <paulus@samba.org>,
 	David Gibson <david@gibson.dropbear.id.au>
@@ -17,83 +17,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Allow the boot wrapper to obtain the vmlinux elf from an external
-platform supplied location instead of embedding it at link time.
+Teach the kexec platform to find the vmlinux from the initramfs.
 
-When used with the cpio library, the kernel can be stored as a file
-an file in the initramfs, allowing the same (compressed) copy of
-the vmlinux elf to be used for both the kernel to execute and any
-user space tools such as kexec (for reboot), crash dump, or oprofile.
+The implementation searches the initramfs for a file specified
+by the boot-file property in chosen.
 
-Another use would be to uncompress directly from a memory mapped
-region such as a flash partition.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 --- 
-Check for no find_vmlinuz method before calling it.
+Status: working.
 
-The source and source len varables are passed to the routine only
-to allow them to be printed later.
-
-This patch follows the current policy of using linker attached data
-in preference to platform supplied data (matching the initrd and
-command line).
-
-While the platform could supply archive-start, length, and offset,
-in loader data, it would require decompressing the skiped portion
-twice when the offset is not known in advance.
-
-The prpmc2800 code shows that this hook to find the kernel and the
-the code to uncompress the header may want to be separated from the
-vmlinux alloc, decompress, and flush code.  I haven't explored an
-actual split.
-
-Index: work.git/arch/powerpc/boot/main.c
+Index: work.git/arch/powerpc/boot/kexec.c
 ===================================================================
---- work.git.orig/arch/powerpc/boot/main.c	2007-07-10 03:44:40.000000000 -0500
-+++ work.git/arch/powerpc/boot/main.c	2007-07-10 04:04:02.000000000 -0500
-@@ -47,10 +47,19 @@ static struct addr_range prep_kernel(voi
- 	struct elf_info ei;
- 	int len;
+--- work.git.orig/arch/powerpc/boot/kexec.c	2007-07-10 04:01:57.000000000 -0500
++++ work.git/arch/powerpc/boot/kexec.c	2007-07-10 04:04:09.000000000 -0500
+@@ -23,6 +23,8 @@
+ #include "flatdevtree.h"
+ #include "page.h"
+ #include "types.h"
++#include "cpio.h"
++#include "stat.h"
  
--	/* gunzip the ELF header of the kernel */
--	gunzip_start(&gzstate, vmlinuz_addr, vmlinuz_size);
--	gunzip_exactly(&gzstate, elfheader, sizeof(elfheader));
-+	/* Initialze zlib.  Any attached kernel overrides find_vmlinuz */
-+	if (vmlinuz_size)
-+		gunzip_start(&gzstate, vmlinuz_addr, vmlinuz_size);
-+	else
-+		if (platform_ops.find_vmlinuz)
-+			platform_ops.find_vmlinuz(&gzstate, &vmlinuz_addr,
-+					&vmlinuz_size);
-+		else
-+			fatal("Can't find a kernel to boot: no attached "
-+				"vmlinuz and no find_vmlinuz method\n\r");
+ extern char _start[];
+ extern char _end[];
+@@ -92,6 +94,51 @@ static void find_rmo_end(void)
+ 	rmo_end = (void *)*rp;
+ }
  
-+	/* gunzip and parse the ELF header of the kernel */
-+	gunzip_exactly(&gzstate, elfheader, sizeof(elfheader));
- 	if (!parse_elf64(elfheader, &ei) && !parse_elf32(elfheader, &ei))
- 		fatal("Error: not a valid PPC32 or PPC64 ELF file!\n\r");
- 
-Index: work.git/arch/powerpc/boot/ops.h
-===================================================================
---- work.git.orig/arch/powerpc/boot/ops.h	2007-07-10 04:01:57.000000000 -0500
-+++ work.git/arch/powerpc/boot/ops.h	2007-07-10 04:04:02.000000000 -0500
-@@ -24,6 +24,8 @@ typedef void (*kernel_entry_t)(unsigned 
- 
- struct boot_param_header;
- 
-+struct gunzip_state;
++void find_vmlinux_in_initramfs(struct gunzip_state *state,
++		void **srcp, unsigned long *lenp)
++{
++	void *devp;
++	int rc;
++	char path[MAX_PATH];
 +
- /* Platform specific operations */
- struct platform_ops {
- 	void	(*fixups)(void);
-@@ -33,6 +35,8 @@ struct platform_ops {
- 	void *	(*realloc)(void *ptr, unsigned long size);
- 	void	(*exit)(void);
- 	void *	(*vmlinux_alloc)(unsigned long size);
-+ 	void	(*find_vmlinuz)(struct gunzip_state *, void **srcp,
-+ 			unsigned long *lenp);
- };
- extern struct platform_ops platform_ops;
++	if (!loader_info.initrd_size)
++		dt_find_initrd();
++	if (!loader_info.initrd_size)
++		fatal("find_vmlinux: no initramfs");
++	devp = finddevice("/chosen");
++	if (!devp)
++		fatal("find_vmlinux: no /chosen to find vmlinux");
++	rc = getprop(devp, "boot-file", path, sizeof(path));
++	if (rc < 0)
++		fatal("find_vmlinux: no boot-file property in /chosen")
++	else if (rc == 0 || rc > MAX_PATH)
++		fatal("boot-file too long in /chosen")
++
++	rc = find_in_initramfs(path, (void *)loader_info.initrd_addr,
++			loader_info.initrd_size, state);
++	if (!rc)
++		fatal("find_vmlinux: couldn't find boot-file %s in initramfs",
++				path);
++
++	rc = get_cpio_file_mode();
++	if (!S_ISREG(rc))
++		fatal("find_vmlinux: boot-file %s is not a regular file",
++				path)
++
++	get_cpio_info(srcp, &rc);
++	*lenp = get_cpio_file_size();
++}
++
++void cpio_error(char *msg)
++{
++	void *srcp;
++	int read;
++
++	get_cpio_info(&srcp, &read);
++
++	fatal("cpio_error at %p + 0x%x(%d): %s", srcp, read, read, msg);
++}
++
+ /**
+  * setup_initial_heap - setup a small heap in the bss
+  * Using a preallocated heap, setup for scanning the device tree.
+@@ -178,6 +225,7 @@ void kexec_platform_init(struct boot_par
+ 	ranges_init_malloc();
+ 	init_flat_tree(dt_blob);
  
++	platform_ops.find_vmlinuz = find_vmlinux_in_initramfs;
+ 	platform_ops.vmlinux_alloc = kexec_vmlinux_alloc;
+ 	platform_ops.fixups = kexec_fixups;
+ 	finalize_chain = dt_ops.finalize;
