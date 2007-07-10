@@ -1,23 +1,18 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7A2EBDDE9F
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 19:55:52 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Paul Mackerras <paulus@samba.org>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18067.23198.856592.39397@cargo.ozlabs.ibm.com>
+Date: Tue, 10 Jul 2007 20:08:30 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Andreas Schwab <schwab@suse.de>
 Subject: Re: [PATCH] Infinite loop/always true check possible with unsigned
 	counter.
+In-Reply-To: <jewsx8fuqk.fsf@sykes.suse.de>
 References: <469270F3.4070206@austin.ibm.com> <46928691.2040008@austin.ibm.com>
 	<18066.53384.449544.952545@cargo.ozlabs.ibm.com>
 	<je1wfgh9qj.fsf@sykes.suse.de>
 	<18067.22066.466767.663198@cargo.ozlabs.ibm.com>
-Date: Tue, 10 Jul 2007 11:55:47 +0200
-In-Reply-To: <18067.22066.466767.663198@cargo.ozlabs.ibm.com> (Paul
-	Mackerras's message of "Tue\, 10 Jul 2007 19\:49\:38 +1000")
-Message-ID: <jewsx8fuqk.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	<jewsx8fuqk.fsf@sykes.suse.de>
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,38 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@samba.org> writes:
+Andreas Schwab writes:
 
-> Andreas Schwab writes:
->> Paul Mackerras <paulus@samba.org> writes:
->> 
->> > Manish Ahuja writes:
->> >
->> >> Repost to fix my email id.
->> >> 
->> >> Fix to correct a possible infinite loop or an always true check when the 
->> >> unsigned long counter "i" is used in
->> >> lmb_add_region() in the following for loop:
->> >> 
->> >> for (i = rgn->cnt-1; i >= 0; i--)
->> >
->> > Unfortunately this won't fix the bug.  Since rgn->cnt is unsigned
->> > long, the comparison will be done as an unsigned comparison even if i
->> > is signed.
->> 
->> ??? There is no rgn->cnt involved in the comparison.
->
-> Look further down in lmb_add_region; there is a second for loop that
-> does
->
-> 	for (i = rgn->cnt-1; i >= 0; i--)
+> >> ??? There is no rgn->cnt involved in the comparison.
+> >
+> > Look further down in lmb_add_region; there is a second for loop that
+> > does
+> >
+> > 	for (i = rgn->cnt-1; i >= 0; i--)
+> 
+> Which is exactly the one quoted above.  I still don't see your point.
 
-Which is exactly the one quoted above.  I still don't see your point.
+You're right - my mistake.
 
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Paul.
