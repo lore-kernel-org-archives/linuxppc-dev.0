@@ -1,32 +1,18 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 91229DDDE7
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 02:47:27 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6AGlOvn021993
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 12:47:24 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l6AGlOcU205758
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 10:47:24 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6AGlNYl029056
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 10:47:23 -0600
-Subject: Re: [PATCH] Consolidate mm_context_t definition in mmu.h
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200707101836.26413.arnd@arndb.de>
-References: <1184079709.32199.6.camel@weaponx.rchland.ibm.com>
-	<200707101836.26413.arnd@arndb.de>
+Return-Path: <wfarnsworth@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id DB6B7DDE33
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 02:55:48 +1000 (EST)
+Subject: [PATCH v4] Create add_rtc() function to enable the RTC CMOS driver
+From: Wade Farnsworth <wfarnsworth@mvista.com>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18067.29586.481904.580320@cargo.ozlabs.ibm.com>
+References: <1182298510.5674.358.camel@rhino> <1182358772.5674.383.camel@rhino>
+	<18067.29586.481904.580320@cargo.ozlabs.ibm.com>
 Content-Type: text/plain
-Date: Tue, 10 Jul 2007 11:47:22 -0500
-Message-Id: <1184086042.32199.11.camel@weaponx.rchland.ibm.com>
+Date: Tue, 10 Jul 2007 09:55:46 -0700
+Message-Id: <1184086546.16794.18.camel@rhino>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, david@gibson.dropbear.id.au
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,59 +22,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-07-10 at 18:36 +0200, Arnd Bergmann wrote:
-> On Tuesday 10 July 2007, Josh Boyer wrote:
-> > +#ifdef CONFIG_PPC64
-> > +typedef unsigned long mm_context_id_t;
-> > +
-> > +typedef struct {
-> > +       mm_context_id_t id;
-> > +       u16 user_psize;         /* page size index */
-> > +
-> > +#ifdef CONFIG_PPC_MM_SLICES
-> > +       u64 low_slices_psize;   /* SLB page size encodings */
-> > +       u64 high_slices_psize;  /* 4 bits per slice for now */
-> > +#else
-> > +       u16 sllp;               /* SLB page size encoding */
-> > +#endif
-> > +       unsigned long vdso_base;
-> > +} mm_context_t;
-> > +
-> > +#else /* !CONFIG_PPC64 */
-> > +
-> > +typedef struct {
-> > +       unsigned long id;
-> > +       unsigned long vdso_base;
-> > +} mm_context_t;
-> > +
-> > +#endif /* CONFIG_PPC64 */
-> 
-> 
-> It seems to me that you can easily consolidate this further, if you
-> allow the mm_context_id_t on 32 bit, or remove it on 64 bit:
+In order to use the RTC CMOS driver, each architecture must register a
+platform device for the RTC.
 
-Hm... good point.  Though...
+This creates a function to register the platform device based on the RTC
+device node and verifies that the RTC port against the hard-coded value
+in asm/mc146818rtc.h.
 
-> 
-> +typedef unsigned long mm_context_id_t;
-> +
-> +typedef struct {
-> +       mm_context_id_t id;
-> +       u16 user_psize;         /* page size index */
-> +
-> +#ifdef CONFIG_PPC64
+Signed-off-by: Wade Farnsworth <wfarnsworth@mvista.com>
 
-This needs to be moved up to encompass the u16 user_psize member as
-well, yes?
+---
 
-> +#ifdef CONFIG_PPC_MM_SLICES
-> +       u64 low_slices_psize;   /* SLB page size encodings */
-> +       u64 high_slices_psize;  /* 4 bits per slice for now */
-> +#else
-> +       u16 sllp;               /* SLB page size encoding */
-> +#endif
-> +#endif
-> +       unsigned long vdso_base;
-> +} mm_context_t;
+Fixed line wrapping.
 
-josh
+ arch/powerpc/sysdev/Makefile         |    1 
+ arch/powerpc/sysdev/rtc_cmos_setup.c |   49 +++++++++++++++++++++++++
+ 2 files changed, 50 insertions(+)
+
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index 7d8ac1b..f65078c 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -16,6 +16,7 @@ obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
+ obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
+ mv64x60-$(CONFIG_PCI)		+= mv64x60_pci.o
+ obj-$(CONFIG_MV64X60)		+= $(mv64x60-y) mv64x60_pic.o mv64x60_dev.o
++obj-$(CONFIG_RTC_DRV_CMOS)	+= rtc_cmos_setup.o
+ 
+ # contains only the suspend handler for time
+ ifeq ($(CONFIG_RTC_CLASS),)
+diff --git a/arch/powerpc/sysdev/rtc_cmos_setup.c b/arch/powerpc/sysdev/rtc_cmos_setup.c
+new file mode 100644
+index 0000000..e276048
+--- /dev/null
++++ b/arch/powerpc/sysdev/rtc_cmos_setup.c
+@@ -0,0 +1,49 @@
++/*
++ * Setup code for PC-style Real-Time Clock.
++ *
++ * Author: Wade Farnsworth <wfarnsworth@mvista.com>
++ *
++ * 2007 (c) MontaVista Software, Inc. This file is licensed under
++ * the terms of the GNU General Public License version 2. This program
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
++ */
++
++#include <linux/platform_device.h>
++#include <linux/err.h>
++#include <linux/init.h>
++#include <linux/mc146818rtc.h>
++
++#include <asm/prom.h>
++
++static int  __init add_rtc(void)
++{
++	struct device_node *np;
++	struct platform_device *pd;
++	struct resource res;
++	int ret;
++
++	np = of_find_compatible_node(NULL, NULL, "pnpPNP,b00");
++	if (!np)
++		return -ENODEV;
++
++	ret = of_address_to_resource(np, 0, &res);
++	of_node_put(np);
++	if (ret)
++		return ret;
++
++	/*
++	 * RTC_PORT(x) is hardcoded in asm/mc146818rtc.h.  Verify that the
++	 * address provided by the device node matches.
++	 */
++	if (res.start != RTC_PORT(0))
++		return -EINVAL;
++
++	pd = platform_device_register_simple("rtc_cmos", -1,
++					     &res, 1);
++	if (IS_ERR(pd))
++		return PTR_ERR(pd);
++
++	return 0;
++}
++fs_initcall(add_rtc);
