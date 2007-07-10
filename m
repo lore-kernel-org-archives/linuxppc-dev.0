@@ -1,17 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 02573DDED4
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 15:23:30 +1000 (EST)
-Date: Tue, 10 Jul 2007 00:23:10 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: bzolnier@gmail.com
-Subject: [PATCH] ide: Use inline function for eieio
-Message-ID: <Pine.LNX.4.64.0707100018020.5814@blarg.am.freescale.net>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18067.6045.422080.668394@cargo.ozlabs.ibm.com>
+Date: Tue, 10 Jul 2007 15:22:37 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: Patches added to 2.6.23 branch
+In-Reply-To: <20070703141528.GC18565@lst.de>
+References: <18057.57417.999506.887803@cargo.ozlabs.ibm.com>
+	<20070703141528.GC18565@lst.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,33 +19,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Move to using inline function variant of eieio instead of inline assmebly.
+Christoph Hellwig writes:
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> On Tue, Jul 03, 2007 at 03:36:09PM +1000, Paul Mackerras wrote:
+> > The following patches have been added to the for-2.6.23 branch on
+> > powerpc.git.  In addition, the master branch has the merge of the
+> > for-2.6.23 and merge branches, which means that it is up-to-date with
+> > Linus' 2.6.22-rc7 plus the patches I recently asked Linus to pull for
+> > inclusion in 2.6.22.
+> 
+> What happened to Ben's and my signal and ptrace patches?
 
----
-commit ff6ce6329e19cb82ee12447fe16c76c3dae7c1f4
-tree ef830cd02624a79d7fa8c33b41f7229ff25a7d77
-parent b30083183bf4987c8f7e9a8f753002a7ca5dc084
-author Kumar Gala <galak@kernel.crashing.org> Tue, 10 Jul 2007 00:13:54 -0500
-committer Kumar Gala <galak@kernel.crashing.org> Tue, 10 Jul 2007 00:13:54 -0500
+They are in already; they were in the first lot (see my post to
+linuxppc-dev of 15 June, "for-2.6.23 branch in powerpc.git created".
 
- drivers/ide/pci/scc_pata.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/ide/pci/scc_pata.c b/drivers/ide/pci/scc_pata.c
-index 55bc0a3..b9fd2ac 100644
---- a/drivers/ide/pci/scc_pata.c
-+++ b/drivers/ide/pci/scc_pata.c
-@@ -165,9 +165,9 @@ scc_ide_outbsync(ide_drive_t * drive, u8 addr, unsigned long port)
- 	ide_hwif_t *hwif = HWIF(drive);
-
- 	out_be32((void*)port, addr);
--	__asm__ __volatile__("eieio":::"memory");
-+	eieio();
- 	in_be32((void*)(hwif->dma_base + 0x01c));
--	__asm__ __volatile__("eieio":::"memory");
-+	eieio();
- }
-
- static void
+Paul.
