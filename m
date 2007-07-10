@@ -1,10 +1,10 @@
 Return-Path: <miltonm@sullivan.realtime.net>
-Date: Tue, 10 Jul 2007 17:12:36 -0500 (CDT)
-Subject: [PATCH 12/15] bootwrapper: extract the vmlinux from initramfs
+Date: Tue, 10 Jul 2007 17:12:43 -0500 (CDT)
+Subject: [PATCH 13/15] bootwrapper: attach an empty vmlinux
 Sender: <miltonm@realtime.net>
 From: Milton Miller <miltonm@bga.com>
 To: linuxppc-dev@ozlabs.org
-Message-Id: <boot-6-12.miltonm@bga.com>
+Message-Id: <boot-6-13.miltonm@bga.com>
 In-Reply-To: <boot-6-00.miltonm@bga.com>
 Cc: Paul Mackerras <paulus@samba.org>,
 	David Gibson <david@gibson.dropbear.id.au>
@@ -17,86 +17,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Teach the kexec platform to find the vmlinux from the initramfs.
+Allow the boot wrapper code to be linked without an attached vmlinux.
 
-The implementation searches the initramfs for a file specified
-by the boot-file property in chosen.
+Rather than invent a new syntax to invoke the wrapper, attach the
+stripped version of empty.o, which produces the same result.
 
+This new intermediary is called zBoot.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 --- 
-Status: working.
+Initial attempts to remove the dependency on vmlinux in the arch Makefile
+have lead to multiple make commands competing in the boot directory and
+destroying each other.
 
-Index: work.git/arch/powerpc/boot/kexec.c
+Index: work.git/arch/powerpc/boot/Makefile
 ===================================================================
---- work.git.orig/arch/powerpc/boot/kexec.c	2007-07-10 04:01:57.000000000 -0500
-+++ work.git/arch/powerpc/boot/kexec.c	2007-07-10 04:04:09.000000000 -0500
-@@ -23,6 +23,8 @@
- #include "flatdevtree.h"
- #include "page.h"
- #include "types.h"
-+#include "cpio.h"
-+#include "stat.h"
+--- work.git.orig/arch/powerpc/boot/Makefile	2007-07-10 16:38:01.000000000 -0500
++++ work.git/arch/powerpc/boot/Makefile	2007-07-10 16:41:01.000000000 -0500
+@@ -124,7 +124,8 @@ endif
+ # args (to if_changed): 1 = (this rule), 2 = platform, 3 = dts 4=dtb 5=initrd
+ quiet_cmd_wrap	= WRAP    $@
+       cmd_wrap	=$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
+-		$(if $3, -s $3)$(if $4, -d $4)$(if $5, -i $5) vmlinux
++		$(if $3, -s $3)$(if $4, -d $4)$(if $5, -i $5) \
++		$(if $6,$6,vmlinux)
  
- extern char _start[];
- extern char _end[];
-@@ -92,6 +94,51 @@ static void find_rmo_end(void)
- 	rmo_end = (void *)*rp;
- }
+ kexec-$(CONFIG_PPC32)			+= zImage.kexec
+ kexec-$(CONFIG_PPC64)			+= zImage.kexec64
+@@ -142,6 +143,7 @@ image-$(CONFIG_PPC_PRPMC2800)		+= zImage
+ image-$(CONFIG_PPC_ISERIES)		+= zImage.iseries
+ image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
+ image-$(CONFIG_KEXEC)			+= $(kexec-y)
++image-$(CONFIG_KEXEC)			+= $(patsubst zImage%,zBoot%,$(kexec-y))
  
-+void find_vmlinux_in_initramfs(struct gunzip_state *state,
-+		void **srcp, unsigned long *lenp)
-+{
-+	void *devp;
-+	int rc;
-+	char path[MAX_PATH];
-+
-+	if (!loader_info.initrd_size)
-+		dt_find_initrd();
-+	if (!loader_info.initrd_size)
-+		fatal("find_vmlinux: no initramfs");
-+	devp = finddevice("/chosen");
-+	if (!devp)
-+		fatal("find_vmlinux: no /chosen to find vmlinux");
-+	rc = getprop(devp, "boot-file", path, sizeof(path));
-+	if (rc < 0)
-+		fatal("find_vmlinux: no boot-file property in /chosen")
-+	else if (rc == 0 || rc > MAX_PATH)
-+		fatal("boot-file too long in /chosen")
-+
-+	rc = find_in_initramfs(path, (void *)loader_info.initrd_addr,
-+			loader_info.initrd_size, state);
-+	if (!rc)
-+		fatal("find_vmlinux: couldn't find boot-file %s in initramfs",
-+				path);
-+
-+	rc = get_cpio_file_mode();
-+	if (!S_ISREG(rc))
-+		fatal("find_vmlinux: boot-file %s is not a regular file",
-+				path)
-+
-+	get_cpio_info(srcp, &rc);
-+	*lenp = get_cpio_file_size();
-+}
-+
-+void cpio_error(char *msg)
-+{
-+	void *srcp;
-+	int read;
-+
-+	get_cpio_info(&srcp, &read);
-+
-+	fatal("cpio_error at %p + 0x%x(%d): %s", srcp, read, read, msg);
-+}
-+
- /**
-  * setup_initial_heap - setup a small heap in the bss
-  * Using a preallocated heap, setup for scanning the device tree.
-@@ -178,6 +225,7 @@ void kexec_platform_init(struct boot_par
- 	ranges_init_malloc();
- 	init_flat_tree(dt_blob);
+ ifneq ($(CONFIG_DEVICE_TREE),"")
+ image-$(CONFIG_PPC_83xx)		+= cuImage.83xx
+@@ -190,6 +192,9 @@ $(obj)/vmlinux.strip: vmlinux
+ $(obj)/zImage.iseries: vmlinux
+ 	$(STRIP) -s -R .comment $< -o $@
  
-+	platform_ops.find_vmlinuz = find_vmlinux_in_initramfs;
- 	platform_ops.vmlinux_alloc = kexec_vmlinux_alloc;
- 	platform_ops.fixups = kexec_fixups;
- 	finalize_chain = dt_ops.finalize;
++$(obj)/zBoot.%: $(wrapperbits)
++	$(call if_changed,wrap,$*,,,,$(obj)/empty.o)
++
+ $(obj)/zImage.ps3: vmlinux  $(wrapper) $(wrapperbits) $(srctree)/$(src)/dts/ps3.dts
+ 	$(STRIP) -s -R .comment $< -o vmlinux.strip
+ 	$(call cmd,wrap,ps3,$(srctree)/$(src)/dts/ps3.dts,,)
+@@ -227,7 +232,7 @@ clean-files += $(image-) $(initrd-) zIma
+ 	treeImage.* $(kexec-)
+ 
+ # clean up files cached by wrapper
+-clean-kernel := vmlinux.strip vmlinux.bin
++clean-kernel := vmlinux.strip vmlinux.bin empty.o.bin
+ clean-kernel += $(addsuffix .gz,$(clean-kernel))
+ # If not absolute clean-files are relative to $(obj).
+ clean-files += $(addprefix $(objtree)/, $(clean-kernel))
+Index: work.git/arch/powerpc/boot/wrapper
+===================================================================
+--- work.git.orig/arch/powerpc/boot/wrapper	2007-07-10 16:37:30.000000000 -0500
++++ work.git/arch/powerpc/boot/wrapper	2007-07-10 16:41:01.000000000 -0500
+@@ -161,6 +161,13 @@ ps3)
+     ;;
+ esac
+ 
++if [ "$kernel" = $object/empty.o ] ; then
++    ext=bin
++    objflags="-O binary"
++    gzip=
++fi
++
++
+ vmz="$tmpdir/`basename \"$kernel\"`.$ext"
+ if [ -z "$cacheit" -o ! -f "$vmz$gzip" -o "$vmz$gzip" -ot "$kernel" ]; then
+     ${CROSS}objcopy $objflags "$kernel" "$vmz.$$"
