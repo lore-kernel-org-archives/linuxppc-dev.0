@@ -1,35 +1,21 @@
-Return-Path: <RAISCH@de.ibm.com>
-Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.29.150])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E1BF3DDED4
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 23:49:11 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate1.de.ibm.com (8.13.8/8.13.8) with ESMTP id l6ADn7J1088740
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 13:49:07 GMT
-Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
-	[9.149.165.228])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.3) with
-	ESMTP id l6ADn7VA2142406
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 15:49:07 +0200
-Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l6ADn6al024052
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 15:49:07 +0200
-In-Reply-To: <adazm25w998.fsf@cisco.com>
-Subject: Re: [PATCH 06/13] IB/ehca: Set SEND_GRH flag for all non-LL UD QPs on
-	eHCA2
-To: Roland Dreier <rdreier@cisco.com>
-Message-ID: <OF5A4240D2.61426860-ONC1257314.0047B786-C1257314.004BE620@de.ibm.com>
-From: Christoph Raisch <RAISCH@de.ibm.com>
-Date: Tue, 10 Jul 2007 18:35:49 +0200
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Joachim Fenkes <fenkes@de.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	OF-General <general@lists.openfabrics.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E180DDDED9
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 23:56:10 +1000 (EST)
+In-Reply-To: <11840606621515-git-send-email-wei.zhang@freescale.com>
+References: <1184060662530-git-send-email-wei.zhang@freescale.com>
+	<11840606624025-git-send-email-wei.zhang@freescale.com>
+	<11840606621515-git-send-email-wei.zhang@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <55F09B00-F81A-4B70-B0F7-2FEBDBB2B48A@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/4] Add dma sector to mpc8641hpcn board dts
+Date: Tue, 10 Jul 2007 15:55:58 +0200
+To: Zhang Wei <wei.zhang@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,30 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> +		dma@21000{
+> +			compatible = "fsl,mpc8xxx-dma";
+
+Please use a real name, not this "xxx" stuff.
+
+> +			reg = <21000 100>;
+> +			ranges = <0 21000 1000>;
+
+These overlap, that can't be right; it is just begging for
+trouble.
+
+> +			ch0@100{
+> +				reg = <100 80>;
+> +				extended;
+
+I think you want a little more detailed property name
+than "extended" here?
 
 
-> What decides if a QP is LL or not?
->
->  - R.
-Currently we use a high bit in the QP type, which is not how we want to
-keep it permanently.
-What would you suggest, add two additional LL QP types, or change something
-more fundamental
-in libibverbs and kernel ib core?
-We think we can get along quite well with the existing parameters in the
-current create QP.
-The current user-kernel interface is ok for these new QPs for post_send +
-post_recv,
-but unfortunately the libibverbs userspace calls don't match exactly how
-the LL queues are to be used.
-We would need something like the LL QP interface in libehca in libibverbs
-to keep that interface generic.
-
-We didn't see a usage yet for LL QP in kernel, so maybe we should continue
-that
-discussion on general@openfabrics only.
-We could provide example code in libehca/samples if needed.
-
-
-Gruss / Regards
-Christoph + Nam
+Segher
