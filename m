@@ -1,18 +1,21 @@
-Return-Path: <akonovalov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 0D9CFDDE05
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 18:26:46 +1000 (EST)
-Message-ID: <46934496.40805@ru.mvista.com>
-Date: Tue, 10 Jul 2007 12:34:30 +0400
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] xilinxfb: Parameterize xilinxfb platform device
-	registration
-References: <20070709235105.4826.79342.stgit@trillian>
-In-Reply-To: <20070709235105.4826.79342.stgit@trillian>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <wei.zhang@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 54997DDDE7
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 19:36:53 +1000 (EST)
+From: Zhang Wei <wei.zhang@freescale.com>
+To: paulus@samba.org, galak@kernel.crashing.org
+Subject: [PATCH 2/4] Add dma sector to mpc8641hpcn board dts
+Date: Tue, 10 Jul 2007 17:44:22 +0800
+Message-Id: <11840606621515-git-send-email-wei.zhang@freescale.com>
+In-Reply-To: <11840606624025-git-send-email-wei.zhang@freescale.com>
+References: <1184060662530-git-send-email-wei.zhang@freescale.com>
+	<11840606624025-git-send-email-wei.zhang@freescale.com>
+Sender: Zhang Wei <wei.zhang@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,77 +25,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
-> 
-> This patch allows multiple xilinxfb devices to be registered and used
-> 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> cc: Andrei Konovalov <akonovalov@ru.mvista.com>
-> ---
+This patch add DMA sector to MPC8641HPCN board dts.
 
-Looks OK for me.
+Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+Signed-off-by: Ebony Zhu <ebony.zhu@freescale.com>
+---
+ arch/powerpc/boot/dts/mpc8641_hpcn.dts |   30 ++++++++++++++++++++++++++++++
+ 1 files changed, 30 insertions(+), 0 deletions(-)
 
-Thanks,
-Andrei
-
->  arch/ppc/syslib/virtex_devices.c |   38 +++++++++++++++++++++++++-------------
->  1 files changed, 25 insertions(+), 13 deletions(-)
-> 
-> diff --git a/arch/ppc/syslib/virtex_devices.c b/arch/ppc/syslib/virtex_devices.c
-> index 83f978f..9b473cf 100644
-> --- a/arch/ppc/syslib/virtex_devices.c
-> +++ b/arch/ppc/syslib/virtex_devices.c
-> @@ -152,6 +152,21 @@
->  	}, \
->  }
->  
-> +/*
-> + * ML300/ML403 Video Device: shortcut macro for single instance
-> + */
-> +#define XPAR_TFT(num) { \
-> +	.name = "xilinxfb", \
-> +	.id = num, \
-> +	.num_resources = 1, \
-> +	.resource = (struct resource[]) { \
-> +		{ \
-> +			.start = XPAR_TFT_##num##_BASEADDR, \
-> +			.end = XPAR_TFT_##num##_BASEADDR+7, \
-> +			.flags = IORESOURCE_IO, \
-> +		}, \
-> +	}, \
-> +}
->  
->  /* UART 8250 driver platform data table */
->  struct plat_serial8250_port virtex_serial_platform_data[] = {
-> @@ -274,20 +289,17 @@ struct platform_device virtex_platform_devices[] = {
->  #endif
->  #endif
->  
-> -	/* ML300/403 reference design framebuffer */
->  #if defined(XPAR_TFT_0_BASEADDR)
-> -	{
-> -		.name		= "xilinxfb",
-> -		.id		= 0,
-> -		.num_resources	= 1,
-> -		.resource = (struct resource[]) {
-> -			{
-> -				.start	= XPAR_TFT_0_BASEADDR,
-> -				.end	= XPAR_TFT_0_BASEADDR+7,
-> -				.flags	= IORESOURCE_IO,
-> -			},
-> -		},
-> -	},
-> +	XPAR_TFT(0),
-> +#endif
-> +#if defined(XPAR_TFT_1_BASEADDR)
-> +	XPAR_TFT(1),
-> +#endif
-> +#if defined(XPAR_TFT_2_BASEADDR)
-> +	XPAR_TFT(2),
-> +#endif
-> +#if defined(XPAR_TFT_3_BASEADDR)
-> +	XPAR_TFT(3),
->  #endif
->  };
->  
+diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+index 393cfdf..8a70736 100644
+--- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
++++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+@@ -405,5 +405,35 @@
+ 			device_type = "open-pic";
+ 			big-endian;
+ 		};
++
++		dma@21000{
++			compatible = "fsl,mpc8xxx-dma";
++			reg = <21000 100>;
++			ranges = <0 21000 1000>;
++			ch0@100{
++				reg = <100 80>;
++				extended;
++				interrupt-parent = <&mpic>;
++				interrupts = <14 2>;
++			};
++			ch1@180{
++				reg = <180 80>;
++				extended;
++				interrupt-parent = <&mpic>;
++				interrupts = <15 2>;
++			};
++			ch2@200{
++				reg = <200 80>;
++				extended;
++				interrupt-parent = <&mpic>;
++				interrupts = <16 2>;
++			};
++			ch3@280{
++				reg = <280 80>;
++				extended;
++				interrupt-parent = <&mpic>;
++				interrupts = <17 2>;
++			};
++		};
+ 	};
+ };
+-- 
+1.5.1
