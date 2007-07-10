@@ -1,16 +1,23 @@
-Return-Path: <mgreer@mvista.com>
-Date: Tue, 10 Jul 2007 06:51:02 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: ThomasB <psyphi@gmail.com>
-Subject: Re: [kernel-2.6.19]Marvell GT-64260 and Ethernet
-Message-ID: <20070710135102.GA22993@mag.az.mvista.com>
-References: <13b81f0c0707092336r5c7f4996u6f9c73d95c63bdc6@mail.gmail.com>
-	<20070710132207.12018.qmail@farnsworth.org>
-	<13b81f0c0707100641i56e08bd3n7c7911782a81628a@mail.gmail.com>
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 09422DDEF1
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 11 Jul 2007 01:52:24 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1I8I0j-0003SD-Ka
+	for linuxppc-embedded@ozlabs.org; Tue, 10 Jul 2007 08:52:21 -0700
+Message-ID: <11523745.post@talk.nabble.com>
+Date: Tue, 10 Jul 2007 08:52:20 -0700 (PDT)
+From: Mirek23 <miroslaw.dach@psi.ch>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: xilinx gpio in kernel 2.6
+In-Reply-To: <10285090.post@talk.nabble.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <13b81f0c0707100641i56e08bd3n7c7911782a81628a@mail.gmail.com>
-Cc: Linuxppc-embedded@ozlabs.org
+References: <10254948.post@talk.nabble.com> <10285090.post@talk.nabble.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,30 +28,72 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 10, 2007 at 03:41:25PM +0200, ThomasB wrote:
-> >Isn't the ethernet the same on the 64260, 64360, 64460?
-> >
-> >There's definitely a driver for 6436x and above..
-> 
-> I just try it, it doesn't work, I receive without end the message:
-> mv643xx PHY read timeout, port 0
-> 
-> >I believe that Steve Hill <sjhill@realitydiluted.com> has patched
-> >the mv643xx_eth driver to work with the 64260 and plans to submit
-> >the patches.
-> That's means the patch isn't yet ready?
 
-It probably means you don't something set up for whatever PHY you're
-using.
+Hi All,
 
-> I will try to contact him.
+ After some time I have found the way how to deal with GPIO driver from the
+user space:
 
-A good idea.
+First you have to mknod xgpio under /dev :
+crw-rw-rw-    1 root     root      10, 185 Jun  1 13:59 /dev/xgpio
 
-> It's nevertheless odd, I read about a file named gt64260_eth.c during my
-> search on the internet.But I wasn't able to find it :(.
+Example program below shows how to read from the GPIO channel.
+To write to the channel change the call:
+ioctl(fgpio,XGPIO_IN,&sGpioData); to ioctl(fgpio,XGPIO_OUT,&sGpioData);
 
-There was one for 2.4 that was in the ppc devel tree but it never went
-mainline.  Hopefully, Steve can help you from here.
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
 
-Mark
+#include <linux/xgpio_ioctl.h>
+
+
+main(){
+
+
+  int fgpio =0;
+  struct xgpio_ioctl_data sGpioData;
+    /* {
+        __u32 device;
+        __u32 mask;
+        __u32 data;
+        }*/
+
+  sGpioData.device=0; /* N=0,1,2,3-> GPIO DEV NR   2*N   (Lower 32 bit part
+)
+                                                   2*N+1 (Upper 32 bit part
+)*/
+  sGpioData.mask=0xffffffff;
+  sGpioData.data=0x55555555;
+
+fgpio = open ("/dev/xgpio",O_RDWR);
+ if( fgpio != -1){
+
+   ioctl(fgpio,XGPIO_IN,&sGpioData);//pointer here to  xgpio_ioctl_data
+   printf("Dip Swich readout 0x%X\n",sGpioData.data);
+ }
+ else
+   printf("Can not open GPIO\n");
+
+ close(fgpio);
+}// end main
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+-- 
+View this message in context: http://www.nabble.com/xilinx-gpio-in-kernel-2.6-tf3670122.html#a11523745
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
