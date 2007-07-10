@@ -1,10 +1,10 @@
 Return-Path: <miltonm@sullivan.realtime.net>
-Date: Tue, 10 Jul 2007 17:10:20 -0500 (CDT)
-Subject: [PATCH 7/15] bootwrapper: Add kexec callable zImage wrapper
+Date: Tue, 10 Jul 2007 17:10:47 -0500 (CDT)
+Subject: [PATCH 8/15] bootwrapper: convert flatdevtree to version 16
 Sender: <miltonm@realtime.net>
 From: Milton Miller <miltonm@bga.com>
 To: linuxppc-dev@ozlabs.org
-Message-Id: <boot-6-07.miltonm@bga.com>
+Message-Id: <boot-6-08.miltonm@bga.com>
 In-Reply-To: <boot-6-00.miltonm@bga.com>
 Cc: Paul Mackerras <paulus@samba.org>,
 	David Gibson <david@gibson.dropbear.id.au>
@@ -17,38 +17,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+kexec-tools still produces a version 2 device tree, while the
+libraries in the wrapper only support version 16 and later.
 
-This code creates a 32 bit zImage wrapper for a 32 or 64 bit PowerPC
-Linux kernel.   This allows you to kexec a zImage with its compressed
-vmlinux instead of the uncompressed vmlinux elf.  The elf is also
-packaged as a 64 bit elf for use by kexec-tools for 64 bit kernels.
-
-Limitations:
-
-The memory node off the root with a name starting with "memory" must
-contain enough free memory (not in the reserved ranges) in the first
-reg range to uncompress the the kernel with padding.
+Add a routine to convert a v2 flat device tree to a v16 one inplace
+by inserting OF_DT_NOP and chomping full path.  Make space for new
+headers by moving and then chomping the OF_DT_NOPs.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 ---
-I split a few more routines out from this file.
+Rediffed Makefile
 
-I removed the call serial_console_init because some of the serial
-console require a loader supplied virtural address mapping which
-will not exist when called from kexec.
-
-Successfully boots from and to a 64 bit kernel when loaded at 0 and
-when loaded after the kernel _end on machines with with initrds,
-rtas, and various other data reserved.
-
-The next patch needed to load using kexec-tools without an externally
-generated flat device tree.
-
-Index: work.git/arch/powerpc/boot/kexec.c
+Index: work.git/arch/powerpc/boot/flatdevtree_conv.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ work.git/arch/powerpc/boot/kexec.c	2007-07-10 16:37:30.000000000 -0500
-@@ -0,0 +1,181 @@
++++ work.git/arch/powerpc/boot/flatdevtree_conv.c	2007-07-10 16:08:20.000000000 -0500
+@@ -0,0 +1,280 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -68,310 +52,304 @@ Index: work.git/arch/powerpc/boot/kexec.c
 + *
 + * Authors: Milton Miller <miltonm@bga.com>
 + */
-+
-+#include "ops.h"
-+#include "stdio.h"
 +#include "flatdevtree.h"
-+#include "page.h"
-+#include "types.h"
++#include "stdio.h"
++#include "ops.h"
 +
-+extern char _start[];
-+extern char _end[];
++#define MIN_VERSION 2
++#define OUT_VERSION 16
++#define OUT_COMPAT 16
 +
-+BSS_STACK(16*1024);
-+
-+static void find_console_from_tree(void)
++#ifdef NO_CHECK
++static int check_v123_tree(u32 *start, u32 *limit)
 +{
-+	int rc = -1;
-+
-+	if (rc) {
-+		/* no console, oh well */
-+	}
++	return 0;
 +}
-+
-+/* fixme: use find_device_by_type "memory" and xlate_reg */
-+static void find_rmo_end(void)
++#else
++/**
++ * check_v123_tree - check integrety of a version 1, 2, or 3 tree
++ * @start: the start of the device tree struct
++ * @limit: the end of the region for the struct
++ * structural checks on device_tree
++ */
++static int check_v123_tree(u32 *start, u32 *limit)
 +{
-+	unsigned int na, ns, reg[4], *rp;
-+	void *devp;
-+	int rc;
++	u32 len;
++	int depth = 0;
++	u32 *dtp = start;
 +
-+	devp = finddevice("/");
-+	if (!devp)
-+		fatal("Ack, device-tree root");
-+	rc = getprop(devp, "#address-cells", &na, sizeof(na));
-+	if (rc != sizeof(na))
-+		fatal("Ack, no #address-cells in root");
-+	rc = getprop(devp, "#size-cells", &ns, sizeof(ns));
-+	if (rc != sizeof(ns))
-+		fatal("Ack, no #size-cells in root");
-+	if (!na || !ns || na + ns > ARRAY_SIZE(reg))
-+		fatal("#addr-cells or #size-cells unusable");
-+	do {
-+		devp = finddevice("/memory@0");
-+		if (!devp)
-+			devp = finddevice("/memory");
-+		if (!devp)
-+			devp = finddevice("/memory@00000000");
-+		if (!devp)
-+			devp = finddevice("/memory@0000000000000000");
-+		if (!devp)
-+			fatal("Ack, can't find  memory");
-+		rc = getprop(devp, "reg", reg, sizeof(reg));
-+		if (rc < (na + ns) * sizeof(int))
-+			fatal("Ack, no valid reg property in memory");
-+
-+		rp = &reg[0];
-+		while (na--) {
-+			if (*rp)
-+				fatal("didn't find memory at 0");
-+			rp++;
++	while (dtp < limit)
++		switch (*dtp) {
++		case OF_DT_END:
++			if (depth)
++				return -1;
++			return ++dtp - start;
++		case OF_DT_NOP:
++			dtp++;
++			break;
++		case OF_DT_END_NODE:
++			dtp++;
++			depth--;
++			break;
++		case OF_DT_BEGIN_NODE:
++			len = strlen((char *)(++dtp));
++			/* check path is suffix to previous? */
++			dtp += 1 + (len / 4);
++			depth++;
++			break;
++		case OF_DT_PROP:
++			len = dtp[1];
++			dtp += 3;
++			if ((len >= 8) && ((long)dtp & 4))
++				dtp++;
++			dtp += (len + 3) / 4;
++			break;
++		default:
++			return -1;
 +		}
-+		while (--ns) {
-+			if (*rp) {
-+				/* first range >= 4G , use 2G */
-+				rmo_end = (void *)0x80000000;
-+				return;
-+			}
-+			rp++;
-+		}
-+	} while (0);
-+
-+	rmo_end = (void *)*rp;
++	return -1;	/* no OF_DT_END */
 +}
++#endif
 +
 +/**
-+ * setup_initial_heap - setup a small heap in the bss
-+ * Using a preallocated heap, setup for scanning the device tree.
-+ * Intended for the initial read while the tree will remain read-only so
-+ * a minimal malloc and search limit can be used.  This way we don't have
-+ * lots of data or bss to clear.
++ * nop_to_v16 - add %OF_DT_NOP to hide alignment differences
++ * @dtp: pointer to the beginning of the struct area to modify
++ * insert %OF_DT_NOP into the dt_struct @dtp to make it v16 from v1, 2, or 3.
 + */
-+static void setup_initial_heap(void)
++static int nop_to_v16(u32 *dtp)
 +{
-+	static char initial_heap[8*1024];
-+	void *heap_end;
++	int nops = 0;
++	char *p, *s;
++	int len;
++	u32 *next;
 +
-+	heap_end = simple_alloc_init(initial_heap,
-+			sizeof(initial_heap) * 7 / 8,
-+			sizeof(long), 64);
++	while (*dtp != OF_DT_END)
++		switch (*dtp) {
++		case OF_DT_BEGIN_NODE:
++			/* v2 & v3 names are full path, v16+ is relative */
++			p = (char *)(++dtp);
++			len = strlen(p);
++			next = dtp + 1 + len / 4;
 +
-+	if (heap_end - sizeof(initial_heap) > (void *)&initial_heap[0])
-+		fatal("Initial heap too big\n\r");
++			for (s = p + len; *s != '/'; s--)
++				if (s == p)
++					fatal("name %s has no '/'", p);
++
++			len -= s++ - p;		/* not the slash but the nul */
++			memmove(p, s, len);
++			while (len % 4)
++				p[len++] = '\0';
++			dtp += len / 4;
++			while (dtp != next) {
++				*dtp++ = OF_DT_NOP;
++				nops++;
++			}
++			break;
++		case OF_DT_PROP:
++			/* convert from align_8 to align_4 via prefixing nop */
++			len = dtp[1];
++			if ((len >= 8) && !((long)dtp & 4)) {
++				memmove(dtp+1, dtp, 12);
++				*dtp++ = OF_DT_NOP;
++				nops++;
++			}
++			dtp += 3 + (len + 3)/4;
++			break;
++		default:
++			fatal("%s: unrecognised tag %d at %p\n", __FUNCTION__,
++				*dtp, dtp);
++		case OF_DT_NOP:
++			nops ++;
++			/* fall through */
++		case OF_DT_END_NODE:
++			dtp ++;
++			break;
++		}
++	return nops;
 +}
 +
-+static void early_scan_flat_tree(struct boot_param_header *dt_blob)
-+{
-+	int rc;
-+
-+	rc = ft_init(dt_blob, dt_blob->totalsize, 50);
-+	if (rc)
-+		fatal("couldn't initialize device-tree\n\r");
-+
-+	find_rmo_end();
-+	dt_find_initrd();
-+}
-+
-+static void init_flat_tree(struct boot_param_header *dt_blob)
-+{
-+	int rc;
-+
-+	rc = ft_init(dt_blob, dt_blob->totalsize, /* max_finddevice */ 1024);
-+	if (rc)
-+		fatal("Unable to initialize device_tree library!\n\r");
-+}
-+
-+static void *saved_vmlinux_addr;
-+
-+static void *kexec_vmlinux_alloc(unsigned long size)
-+{
-+	void *addr;
-+
-+	addr = ranges_vmlinux_alloc(size);
-+
-+	saved_vmlinux_addr = addr;
-+	return addr;
-+}
-+
-+static void kexec_fixups(void)
-+{
-+	wait_slaves_moved();
-+}
-+
-+static unsigned long (*finalize_chain)(void);
-+
-+static unsigned long kexec_finalize(void)
-+{
-+	send_slaves_to_kernel(saved_vmlinux_addr);
-+
-+	return finalize_chain();
-+}
-+
-+void kexec_platform_init(struct boot_param_header *dt_blob)
-+{
-+	slaves_are_low();
-+	move_slaves_up();
-+
-+	setup_initial_heap();
-+	early_scan_flat_tree(dt_blob);
-+
-+	/* drivers can malloc and read the tree, but not realloc later
-+	 * or modify the tree now.
-+	 */
-+	if (!console_ops.write)
-+		find_console_from_tree();
-+
-+	add_known_ranges(dt_blob);
-+	ranges_init_malloc();
-+	init_flat_tree(dt_blob);
-+
-+	platform_ops.vmlinux_alloc = kexec_vmlinux_alloc;
-+	platform_ops.fixups = kexec_fixups;
-+	finalize_chain = dt_ops.finalize;
-+	dt_ops.finalize = kexec_finalize;
-+}
-Index: work.git/arch/powerpc/boot/crt0_kexec.S
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ work.git/arch/powerpc/boot/crt0_kexec.S	2007-07-10 16:37:30.000000000 -0500
-@@ -0,0 +1,45 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-+ *
-+ * Copyright 2007 IBM Corporation.
-+ *
-+ * Authors: Milton Miller <miltonm@bga.com>
-+ *
++#if MIN_VERSION < 3 || OUT_VERSION > 16
++/**
++ * move_nops_fwd - move nops in a v16 dt_struct to the beginning
++ * @start - device tree starting address
++ * @count - number of %OF_DT_NOP cells to move
 + */
++static void move_nops_fwd(u32 *start, int count)
++{
++	u32 *dtp = start;
++	int len;
++	while (count)
++		switch (*dtp) {
++		case OF_DT_NOP:
++			memmove(start+1,start,(dtp-start) * 4);
++			*start++ = OF_DT_NOP;
++			dtp++;
++			count--;
++			break;
++		case OF_DT_END_NODE:
++			dtp++;
++			break;
++		case OF_DT_BEGIN_NODE:
++			len = strlen((char *)(++dtp));
++			dtp += 1 + len / 4;
++			break;
++		case OF_DT_PROP:
++			len = dtp[1];
++			dtp += 3 + (len + 3) / 4;
++			break;
++		case OF_DT_END:
++			fatal("Not enough nops -- need %d more\n", count);
++			return;
++		default:
++			fatal("%s: unknown tag %d at %p", __FUNCTION__, *dtp, dtp)
++		}
++}
++#endif
++
++/**
++ * conv_flattree_inplace upgrade the version of a boot_param_header
++ * @tree: pointer to the device tree header to convert
++ *
++ * Converts a v1, 2, 3 device tree (of at least MIN_VERSION)
++ * in place to OUT_VERSION (16) format, usable by flatdevtree.c
++ */
++void conv_flattree_inplace(struct boot_param_header *tree)
++{
++	u32 *dtp;
++	u32 need = 0, nops;
++	int slen;
++
++	if (tree->magic != OF_DT_HEADER)
++		fatal("%s: no magic", __FUNCTION__);
++
++	if (tree->last_comp_version > 3)
++		return;			/* don't know what to do */
++
++	if (tree->version < MIN_VERSION) {
++		printf("%s: Warning: can't handle version %d tree\n",
++				__FUNCTION__, tree->version);
++		return;
++	}
++
++	if (tree->version < 2)
++		need++;		/* boot_cpu_id */
++
++	if (tree->version < 3)
++		need++;		/* dt_string_size */
++
++	if (OUT_VERSION > 16)
++		need++;		/* dt_struct_size */
++
++	dtp = (void *)tree + tree->off_dt_struct;
++
++	slen = check_v123_tree(dtp, (void *)tree + tree->totalsize);
++	if (slen < 0)
++		fatal("device tree check failed\n");
++
++	nops = nop_to_v16(dtp);
++
++	if (need & 1)		/* keep 8 byte alignment of mem reserve */
++		need++;
++
++	if (need > nops)
++		fatal("Didn't find enough space to add new header fields\n\r"
++			"(needed %d found %d tree %p)", need, nops, tree);
++
++	/* ok now compress the dtb struct */
++	move_nops_fwd(dtp, need);
++	dtp += need;
++
 +	/*
-+	 * The kernel calls out to the first image with
-+	 * r3 = boot cpu, r4 = entrypoint, r5 = 0
-+	 *
-+	 * kexec-tools purgatory calls this as it would a linux kernel:
-+	 * r3 = boot block, r4 = entrypoint, r5 = 0
-+	 *
-+	 * The boot block boot_cpu field has been filled in.
-+	 *
-+	 * kexec-tools and its purgatory are suppposed to copy SMP_SLAVE_SIZE
-+	 * bytes from the from entry point, but aparently instead it copies
-+	 * from the image start.
++	 * move mem_rsvmap and dt_strings if they are before dt_struct
++	 * onto our nops .  Adjust start addresses for the 3 sections.
 +	 */
-+	.globl _zimage_start
-+_zimage_start:
++	if ((tree->off_mem_rsvmap < tree->off_dt_struct) ||
++		(tree->off_dt_strings < tree->off_dt_struct)) {
++		int start, end;
++		void *ptr;
 +
-+#include "marshal_low.S"
++		if (tree->off_mem_rsvmap < tree->off_dt_strings)
++			start = tree->off_mem_rsvmap;
++		else
++			start = tree->off_dt_strings;
 +
-+	.globl	_zimage_start_plat
-+_zimage_start_plat:
-+	b	_zimage_start_lib
++		end = tree->off_dt_struct;
++		ptr = (void *)tree + start;
 +
-+	.globl	platform_init
-+platform_init:
-+	b	kexec_platform_init
-Index: work.git/arch/powerpc/boot/wrapper
-===================================================================
---- work.git.orig/arch/powerpc/boot/wrapper	2007-07-10 16:30:15.000000000 -0500
-+++ work.git/arch/powerpc/boot/wrapper	2007-07-10 16:37:30.000000000 -0500
-@@ -133,6 +133,12 @@ coff)
-     platformo=$object/of.o
-     lds=$object/zImage.coff.lds
-     ;;
-+kexec)
-+    platformo=$object/crt0_kexec.o
-+    ;;
-+kexec64)
-+    platformo="-e _zimage_start_64 $object/crt0_kexec.o"
-+    ;;
- miboot|uboot)
-     # miboot and U-boot want just the bare bits, not an ELF binary
-     ext=bin
-@@ -190,6 +196,9 @@ uboot)
-     fi
-     exit 0
-     ;;
-+kexec64)
-+    ${CROSS}objcopy -O elf64-powerpc $ofile
-+    ;;
- esac
- 
- addsec() {
++		memmove(ptr + 4 * need, ptr, end - start);
++
++		if (tree->off_mem_rsvmap < tree->off_dt_struct)
++			tree->off_mem_rsvmap += 4 * need;
++		if (tree->off_dt_strings < tree->off_dt_struct)
++			tree->off_dt_strings += 4 * need;
++	}
++	tree->off_dt_struct += 4 * need;
++
++	/* ok now we have space to extend the header. */
++	if (tree->version < 2 && MIN_VERSION < 2) {
++		tree->boot_cpuid_phys = 0;	/* default, caller can fix */
++	}
++
++	/* calculate size of dt_strings_size */
++	if (tree->version < 3 && MIN_VERSION < 3) {
++		int end = tree->totalsize;
++
++		if (tree->off_dt_strings < tree->off_mem_rsvmap)
++			end = tree->off_mem_rsvmap;
++
++		if ((tree->off_dt_strings < tree->off_dt_struct) &&
++				(end > tree->off_dt_struct))
++			end = tree->off_dt_struct;
++
++		tree->dt_strings_size = end - tree->off_dt_strings;
++	}
++
++#if OUT_VERSION > 16
++	tree->dt_struct_size = 4 * slen;
++#endif
++
++	tree->version = OUT_VERSION;
++	tree->last_comp_version = OUT_COMPAT;
++
++	return;
++}
 Index: work.git/arch/powerpc/boot/Makefile
 ===================================================================
---- work.git.orig/arch/powerpc/boot/Makefile	2007-07-10 16:34:28.000000000 -0500
-+++ work.git/arch/powerpc/boot/Makefile	2007-07-10 16:37:30.000000000 -0500
-@@ -42,11 +42,11 @@ $(addprefix $(obj)/,$(zlib) gunzip_util.
+--- work.git.orig/arch/powerpc/boot/Makefile	2007-07-10 16:05:13.000000000 -0500
++++ work.git/arch/powerpc/boot/Makefile	2007-07-10 16:05:13.000000000 -0500
+@@ -42,7 +42,7 @@ $(addprefix $(obj)/,$(zlib) gunzip_util.
  	$(addprefix $(obj)/,$(zliblinuxheader)) $(addprefix $(obj)/,$(zlibheader))
  
  src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
--		marshal.c memranges.c \
-+		marshal.c memranges.c kexec.c \
+-		marshal.c memranges.c kexec.c \
++		flatdevtree_conv.c marshal.c memranges.c kexec.c \
  		ns16550.c serial.c simple_alloc.c div64.S util.S \
  		gunzip_util.c elf_util.c $(zlib) devtree.c oflib.c ofconsole.c \
  		44x.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c
--src-plat := of.c cuboot-83xx.c cuboot-85xx.c holly.c \
-+src-plat := of.c cuboot-83xx.c cuboot-85xx.c holly.c crt0_kexec.S \
- 		cuboot-ebony.c treeboot-ebony.c prpmc2800.c \
- 		ps3-head.S ps3-hvcall.S ps3.c
- src-boot := $(src-wlib) $(src-plat) empty.c
-@@ -126,6 +126,9 @@ quiet_cmd_wrap	= WRAP    $@
-       cmd_wrap	=$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
- 		$(if $3, -s $3)$(if $4, -d $4)$(if $5, -i $5) vmlinux
- 
-+kexec-$(CONFIG_PPC32)			+= zImage.kexec
-+kexec-$(CONFIG_PPC64)			+= zImage.kexec64
-+
- image-$(CONFIG_PPC_PSERIES)		+= zImage.pseries
- image-$(CONFIG_PPC_MAPLE)		+= zImage.pseries
- image-$(CONFIG_PPC_IBM_CELL_BLADE)	+= zImage.pseries
-@@ -138,6 +141,7 @@ image-$(CONFIG_PPC_HOLLY)		+= zImage.hol
- image-$(CONFIG_PPC_PRPMC2800)		+= zImage.prpmc2800
- image-$(CONFIG_PPC_ISERIES)		+= zImage.iseries
- image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
-+image-$(CONFIG_KEXEC)			+= $(kexec-y)
- 
- ifneq ($(CONFIG_DEVICE_TREE),"")
- image-$(CONFIG_PPC_83xx)		+= cuImage.83xx
-@@ -151,7 +155,7 @@ ifeq ($(CONFIG_PPC32),y)
- image-$(CONFIG_PPC_PMAC)	+= zImage.coff zImage.miboot
- endif
- 
--initrd-  := $(patsubst zImage%, zImage.initrd%, $(image-n) $(image-))
-+initrd-  := $(patsubst zImage%, zImage.initrd%, $(image-n) $(image-) $(kexec-))
- initrd-y := $(patsubst zImage%, zImage.initrd%, \
- 		$(patsubst treeImage%, treeImage.initrd%, $(image-y)))
- initrd-y := $(filter-out $(image-y), $(initrd-y))
-@@ -219,8 +223,8 @@ install: $(CONFIGURE) $(addprefix $(obj)
- 	sh -x $(srctree)/$(src)/install.sh "$(KERNELRELEASE)" vmlinux System.map "$(INSTALL_PATH)" $<
- 
- # anything not in $(targets)
--clean-files += $(image-) $(initrd-) zImage zImage.initrd cuImage.* treeImage.* \
--	otheros.bld
-+clean-files += $(image-) $(initrd-) zImage zImage.initrd cuImage.* \
-+	treeImage.* $(kexec-)
- 
- # clean up files cached by wrapper
- clean-kernel := vmlinux.strip vmlinux.bin
 Index: work.git/arch/powerpc/boot/ops.h
 ===================================================================
---- work.git.orig/arch/powerpc/boot/ops.h	2007-07-10 16:34:28.000000000 -0500
-+++ work.git/arch/powerpc/boot/ops.h	2007-07-10 16:37:30.000000000 -0500
-@@ -90,6 +90,7 @@ void *simple_alloc_init(char *base, unsi
- void flush_cache(void *, unsigned long);
- int dt_xlate_reg(void *node, int res, unsigned long *addr, unsigned long *size);
- int dt_xlate_addr(void *node, u32 *buf, int buflen, unsigned long *xlated_addr);
-+void kexec_platform_init(struct boot_param_header *dt_blob);
+--- work.git.orig/arch/powerpc/boot/ops.h	2007-07-10 16:05:13.000000000 -0500
++++ work.git/arch/powerpc/boot/ops.h	2007-07-10 16:05:13.000000000 -0500
+@@ -80,7 +80,10 @@ struct loader_info {
+ };
+ extern struct loader_info loader_info;
  
- /* marshal slave cpus around to kernel */
- void move_slaves_up(void);
++struct boot_param_header;
++
+ void start(void);
++void conv_flattree_inplace(struct boot_param_header *tree);
+ int ft_init(void *dt_blob, unsigned int max_size, unsigned int max_find_device);
+ int serial_console_init(void);
+ int ns16550_console_init(void *devp, struct serial_console_data *scdp);
+Index: work.git/arch/powerpc/boot/kexec.c
+===================================================================
+--- work.git.orig/arch/powerpc/boot/kexec.c	2007-07-10 16:05:13.000000000 -0500
++++ work.git/arch/powerpc/boot/kexec.c	2007-07-10 16:05:13.000000000 -0500
+@@ -162,6 +162,7 @@ void kexec_platform_init(struct boot_par
+ 	move_slaves_up();
+ 
+ 	setup_initial_heap();
++	conv_flattree_inplace(dt_blob);
+ 	early_scan_flat_tree(dt_blob);
+ 
+ 	/* drivers can malloc and read the tree, but not realloc later
