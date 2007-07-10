@@ -2,16 +2,16 @@ Return-Path: <jeff@garzik.org>
 Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0ECCCDDD0C
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 02:59:59 +1000 (EST)
-Message-ID: <4693BB07.9060707@garzik.org>
-Date: Tue, 10 Jul 2007 12:59:51 -0400
+	by ozlabs.org (Postfix) with ESMTP id 269BFDDD0C
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 03:00:24 +1000 (EST)
+Message-ID: <4693BB22.5070303@garzik.org>
+Date: Tue, 10 Jul 2007 13:00:18 -0400
 From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
 To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: Re: [PATCH 1/2] eHEA: Capability flag for DLPAR support
-References: <200707050926.26087.ossthema@de.ibm.com>
-In-Reply-To: <200707050926.26087.ossthema@de.ibm.com>
+Subject: Re: [PATCH 2/2] eHEA: Receive SKB Aggregation
+References: <200707041209.48658.ossthema@de.ibm.com>
+In-Reply-To: <200707041209.48658.ossthema@de.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
 	netdev <netdev@vger.kernel.org>,
@@ -28,11 +28,17 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 Jan-Bernd Themann wrote:
-> This patch introduces a capability flag that is used by the DLPAR userspace
-> tool to check which DLPAR features are supported by the eHEA driver.
+> This patch enables the receive side processing to aggregate TCP packets within
+> the HEA device driver. It analyses the packets already received after an
+> interrupt arrived and forwards these as chains of SKBs for the same TCP
+> connection with modified header field. We have seen a lower CPU load and
+> improved throughput for small numbers of parallel TCP connections.
+> As this feature is considered as experimental it is switched off by default
+> and can be activated via a module parameter.
 > 
-> Missing goto has been included.
+> Some additional security checks have been added since the last posting.
 > 
 > Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
 
-applied
+as noted in comments, we don't need to recreate this in every driver. 
+do something more generic.
