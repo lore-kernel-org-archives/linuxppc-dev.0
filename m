@@ -1,24 +1,18 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 93C6BDDEDD
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 02:11:30 +1000 (EST)
-Date: Tue, 10 Jul 2007 11:11:21 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/4] Add DMA sector to
-	Documentation/powerpc/booting-without-of.txt file.
-Message-ID: <20070710161121.GA14556@ld0162-tx32.am.freescale.net>
-References: <1184060662530-git-send-email-wei.zhang@freescale.com>
-	<11840606624025-git-send-email-wei.zhang@freescale.com>
-	<14A08601-B779-45BF-BC22-D1A3C9997502@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <14A08601-B779-45BF-BC22-D1A3C9997502@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 13C96DDE2F
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 02:36:33 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Consolidate mm_context_t definition in mmu.h
+Date: Tue, 10 Jul 2007 18:36:25 +0200
+References: <1184079709.32199.6.camel@weaponx.rchland.ibm.com>
+In-Reply-To: <1184079709.32199.6.camel@weaponx.rchland.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200707101836.26413.arnd@arndb.de>
+Cc: paulus@samba.org, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,37 +22,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 10, 2007 at 04:01:19PM +0200, Segher Boessenkool wrote:
-> > +    - compatible : Should be "fsl,mpc8xxx-dma"
-> 
-> Should _include_, not should _be_.  And none of this xxx
-> business, of course.
+On Tuesday 10 July 2007, Josh Boyer wrote:
+> +#ifdef CONFIG_PPC64
+> +typedef unsigned long mm_context_id_t;
+> +
+> +typedef struct {
+> +=A0=A0=A0=A0=A0=A0=A0mm_context_id_t id;
+> +=A0=A0=A0=A0=A0=A0=A0u16 user_psize;=A0=A0=A0=A0=A0=A0=A0=A0=A0/* page s=
+ize index */
+> +
+> +#ifdef CONFIG_PPC_MM_SLICES
+> +=A0=A0=A0=A0=A0=A0=A0u64 low_slices_psize;=A0=A0=A0/* SLB page size enco=
+dings */
+> +=A0=A0=A0=A0=A0=A0=A0u64 high_slices_psize; =A0/* 4 bits per slice for n=
+ow */
+> +#else
+> +=A0=A0=A0=A0=A0=A0=A0u16 sllp;=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0/* SLB page size encoding */
+> +#endif
+> +=A0=A0=A0=A0=A0=A0=A0unsigned long vdso_base;
+> +} mm_context_t;
+> +
+> +#else /* !CONFIG_PPC64 */
+> +
+> +typedef struct {
+> +=A0=A0=A0=A0=A0=A0=A0unsigned long id;
+> +=A0=A0=A0=A0=A0=A0=A0unsigned long vdso_base;
+> +} mm_context_t;
+> +
+> +#endif /* CONFIG_PPC64 */
 
-Especially since the 85xx/86xx version is not 100% compatible with the
-83xx version.  How about fsl,mpc8349-dma and fsl,mpc8548-dma for the two
-variants?
 
-> > +    - extended : Set the DMA channel to work at extended chain mode.
-> > +                 If not set, the DMA channel will work at basic
-> > +                 chain mode.
-> 
-> Call it "extended-chain-mode", perhaps?
+It seems to me that you can easily consolidate this further, if you
+allow the mm_context_id_t on 32 bit, or remove it on 64 bit:
 
-Or don't call it anything.  The ability to do extended chain mode is
-implicit in being compatible with fsl,mpc8548-dma.
-
-> > +    - reserved : Reserve the DMA channel to device.
-> 
-> What does this do?  Reserve it for what device, and where?
-> The OS driver?
-
-Some hardware has DMA channels hardwired to certain peripherals, such as
-an audio codec.  This keeps them from being used as general purpose DMA
-channels.
-
-I'd rather just treat the different DMA channels as independent devices,
-rather than children of a dma "bus", and change the compatible name if
-they're not general purpose.  There's only one register that's shared
-among the channels, and it's a superfluous status summary register.
-
--Scott
++typedef unsigned long mm_context_id_t;
++
++typedef struct {
++       mm_context_id_t id;
++       u16 user_psize;         /* page size index */
++
++#ifdef CONFIG_PPC64
++#ifdef CONFIG_PPC_MM_SLICES
++       u64 low_slices_psize;   /* SLB page size encodings */
++       u64 high_slices_psize;  /* 4 bits per slice for now */
++#else
++       u16 sllp;               /* SLB page size encoding */
++#endif
++#endif
++       unsigned long vdso_base;
++} mm_context_t;
