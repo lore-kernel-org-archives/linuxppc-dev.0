@@ -1,23 +1,33 @@
-Return-Path: <jim.houston@ccur.com>
-Received: from mail.ccur.com (mail.ccur.com [66.10.65.12])
-	by ozlabs.org (Postfix) with ESMTP id 723DBDDEDB
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 06:05:44 +1000 (EST)
-Subject: [PATCH] fix idr_get_new_above id alias bugs
-From: Jim Houston <jim.houston@ccur.com>
-To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-In-Reply-To: <200707041611.30056.hnguyen@linux.vnet.ibm.com>
-References: <200707021919.27251.hnguyen@linux.vnet.ibm.com>
-	<1183422700.3130.27.camel@localhost.localdomain>
-	<200707041611.30056.hnguyen@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Tue, 10 Jul 2007 16:05:31 -0400
-Message-Id: <1184097931.3020.73.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
-	Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
-	linuxppc-dev@ozlabs.org, raisch@de.ibm.com,
-	Andrew Morton <akpm@linux-foundation.org>
-Reply-To: jim.houston@ccur.com
+Return-Path: <mjw@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 70005DDED6
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 06:11:46 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6AKBhP8019233
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 16:11:43 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l6AKBeWZ244912
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 14:11:41 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l6AKBUj6019849
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 14:11:30 -0600
+Message-ID: <4693E7EF.4020708@linux.vnet.ibm.com>
+Date: Tue, 10 Jul 2007 15:11:27 -0500
+From: Mike Wolf <mjw@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: Resend: [PATCH] oprofile support for Power 5++
+References: <4693CC5B.4020207@linux.vnet.ibm.com>
+	<14287.1184096639@neuling.org>
+In-Reply-To: <14287.1184096639@neuling.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: mjw@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,157 +37,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-Hi Everyone,
-
-Hoang-Nam Nguyen reported a bug in idr_get_new_above() 
-which occurred with a starting id value like 0x3ffffffc.
-His test module easily reproduced the problem.  Thanks.
-
-The test revealed the following bugs:
-
-1. Relying on shift operations which have undefined results
-   e.g.: 1 << n where n > word size.  On i386 an integer shift
-   only uses the low 5 bits of the shift count.
-
-2. An off by one error which prevented the top most layer
-   of the radix tree from being allocated.  This meant that
-   sub_alloc() would allocate an entry in the existing portion
-   of the radix tree which aliased the requested address.  When
-   it tried to allocate id 0x40000000, it might use the slot 
-   belonging to id 0.
-
-3. There was also a failure in the code which walked back up
-   the tree if an allocation failed.  The normal case is to
-   descend the tree checking the starting id value against the
-   bitmap at each level.  If the bit is set, we know that the
-   entire sub-tree is full and we can short cut the search.
-   We may still descend to the lowest level and find that the
-   portion of the id space we want is full.  In this case we
-   need to walk back up the tree and continue the search.
-   The existing code just returned to the previous level and
-   continued.  This resulted in an attempt to allocate an id
-   above 0x3ffffffc using the slot for id 0x3ffffc00 instead of
-   0x40000000 which it then claimed to have allocated.  The same
-   problem occurs with 0x3ff as the requested id value if it
-   is already in use.
-
-With this patch, idr.c should work as advertised allocating id
-values in the range 0...0x7fffffff.  Andrew had speculated that
-it should allow the full range 0...0xffffffff to be used.  I was
-tempted to make changes to allow this, but it would require changes
-to API, e.g. making the starting id value and the return value
-unsigned.
-
-Signed-off-by: Jim Houston <jim.houston@ccur.com>
-
---
-
-Index: linux-2.6.22-rc7/include/linux/idr.h
-===================================================================
---- linux-2.6.22-rc7.orig/include/linux/idr.h	2007-04-25 23:08:32.000000000 -0400
-+++ linux-2.6.22-rc7/include/linux/idr.h	2007-07-06 16:46:31.000000000 -0400
-@@ -18,17 +18,9 @@
- #if BITS_PER_LONG == 32
- # define IDR_BITS 5
- # define IDR_FULL 0xfffffffful
--/* We can only use two of the bits in the top level because there is
--   only one possible bit in the top level (5 bits * 7 levels = 35
--   bits, but you only use 31 bits in the id). */
--# define TOP_LEVEL_FULL (IDR_FULL >> 30)
- #elif BITS_PER_LONG == 64
- # define IDR_BITS 6
- # define IDR_FULL 0xfffffffffffffffful
--/* We can only use two of the bits in the top level because there is
--   only one possible bit in the top level (6 bits * 6 levels = 36
--   bits, but you only use 31 bits in the id). */
--# define TOP_LEVEL_FULL (IDR_FULL >> 62)
- #else
- # error "BITS_PER_LONG is not 32 or 64"
- #endif
-Index: linux-2.6.22-rc7/lib/idr.c
-===================================================================
---- linux-2.6.22-rc7.orig/lib/idr.c	2007-04-25 23:08:32.000000000 -0400
-+++ linux-2.6.22-rc7/lib/idr.c	2007-07-10 11:05:19.000000000 -0400
-@@ -105,8 +105,8 @@
- 
- 	id = *starting_id;
- 	p = idp->top;
--	l = idp->layers;
--	pa[l--] = NULL;
-+	l = idp->layers - 1;
-+	pa[l] = NULL;
- 	while (1) {
- 		/*
- 		 * We run around this while until we reach the leaf node...
-@@ -117,8 +117,14 @@
- 		if (m == IDR_SIZE) {
- 			/* no space available go back to previous layer. */
- 			l++;
--			id = (id | ((1 << (IDR_BITS * l)) - 1)) + 1;
--			if (!(p = pa[l])) {
-+			id = (id | ((1 << (IDR_BITS * l)) - 1));
-+			while (((id >> (IDR_BITS * l)) & IDR_MASK) == IDR_MASK)
-+				l++;
-+			id++;
-+			p = pa[l-1];
-+			if ((id >= MAX_ID_BIT) || (id < 0))
-+				return -3;
-+			if (!p) {
- 				*starting_id = id;
- 				return -2;
- 			}
-@@ -141,7 +147,7 @@
- 			p->ary[m] = new;
- 			p->count++;
- 		}
--		pa[l--] = p;
-+		pa[--l] = p;
- 		p = p->ary[m];
- 	}
- 	/*
-@@ -159,7 +165,7 @@
- 	 */
- 	n = id;
- 	while (p->bitmap == IDR_FULL) {
--		if (!(p = pa[++l]))
-+		if (!(p = pa[l++]))
- 			break;
- 		n = n >> IDR_BITS;
- 		__set_bit((n & IDR_MASK), &p->bitmap);
-@@ -186,7 +192,7 @@
- 	 * Add a new layer to the top of the tree if the requested
- 	 * id is larger than the currently allocated space.
- 	 */
--	while ((layers < (MAX_LEVEL - 1)) && (id >= (1 << (layers*IDR_BITS)))) {
-+	while ((layers < MAX_LEVEL) && (id & ((~0) << (layers*IDR_BITS)))) {
- 		layers++;
- 		if (!p->count)
- 			continue;
-@@ -299,7 +305,7 @@
- static void sub_remove(struct idr *idp, int shift, int id)
- {
- 	struct idr_layer *p = idp->top;
--	struct idr_layer **pa[MAX_LEVEL];
-+	struct idr_layer **pa[MAX_LEVEL+1];
- 	struct idr_layer ***paa = &pa[0];
- 	int n;
- 
-@@ -392,7 +398,7 @@
- 	/* Mask off upper bits we don't use for the search. */
- 	id &= MAX_ID_MASK;
- 
--	if (id >= (1 << n))
-+	if ((n <= MAX_ID_SHIFT) && (id & ((~0) << n)))
- 		return NULL;
- 
- 	while (n > 0 && p) {
-@@ -425,7 +431,7 @@
- 
- 	id &= MAX_ID_MASK;
- 
--	if (id >= (1 << n))
-+	if ((n <= MAX_ID_SHIFT) && (id & ((~0) << n)))
- 		return ERR_PTR(-EINVAL);
- 
- 	n -= IDR_BITS;
+Michael Neuling wrote:
+>> The patch has not been included and there have been no comments so
+>> I'm resending.
+>>
+>> This patch adds a new oprofile cpu type for Power 5 revision 3 chips.
+>> The new name is ppc64/power5++ and is used so that the performance
+>> counters can be set up correctly.
+>>     
+>
+> Does it make more sense to call this "ppc64/power5+rev3"?  
+>   
+This is a change to support new counter setup for oprofile.  It may be the
+same if there is a revision 4 or 5 etc.  So since the internal name was ++
+I followed that convention. 
+> Mikey
+>
+>   
+>> Signed-off-by: Mike Wolf <mjw@us.ibm.com>
+>>
+>> -------- 
+>> linux-2.6.18.ppc64.orig/arch/powerpc/kernel/cputable.c	2006-09-19 22:4
+>>     
+> 2:06.000000000 -0500
+>   
+>> +++ linux-2.6.18.ppc64/arch/powerpc/kernel/cputable.c	2007-06-11 12:29:47.000
+>>     
+> 000000 -0500
+>   
+>> @@ -236,6 +236,21 @@
+>>  		.oprofile_mmcra_sipr	= MMCRA_SIPR,
+>>  		.platform		= "power5",
+>>  	},
+>> +	{	/* Power5++ */
+>> +		.pvr_mask		= 0xffffff00,
+>> +		.pvr_value		= 0x003b0300,
+>> +		.cpu_name		= "POWER5+ (gs)",
+>> +		.cpu_features		= CPU_FTRS_POWER5,
+>> +		.cpu_user_features	= COMMON_USER_POWER5_PLUS,
+>> +		.icache_bsize		= 128,
+>> +		.dcache_bsize		= 128,
+>> +		.num_pmcs		= 6,
+>> +		.oprofile_cpu_type	= "ppc64/power5++",
+>> +		.oprofile_type		= PPC_OPROFILE_POWER4,
+>> +		.oprofile_mmcra_sihv	= MMCRA_SIHV,
+>> +		.oprofile_mmcra_sipr	= MMCRA_SIPR,
+>> +		.platform		= "power5+",
+>> +	},
+>>  	{	/* Power5 GS */
+>>  		.pvr_mask		= 0xffff0000,
+>>  		.pvr_value		= 0x003b0000,
+>>
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>>
+>>     
