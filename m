@@ -1,17 +1,23 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Consolidate mm_context_t definition in mmu.h
-Date: Tue, 10 Jul 2007 18:55:29 +0200
-References: <1184079709.32199.6.camel@weaponx.rchland.ibm.com>
-	<200707101836.26413.arnd@arndb.de>
-	<1184086042.32199.11.camel@weaponx.rchland.ibm.com>
-In-Reply-To: <1184086042.32199.11.camel@weaponx.rchland.ibm.com>
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0ECCCDDD0C
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 02:59:59 +1000 (EST)
+Message-ID: <4693BB07.9060707@garzik.org>
+Date: Tue, 10 Jul 2007 12:59:51 -0400
+From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200707101855.30334.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, david@gibson.dropbear.id.au
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: Re: [PATCH 1/2] eHEA: Capability flag for DLPAR support
+References: <200707050926.26087.ossthema@de.ibm.com>
+In-Reply-To: <200707050926.26087.ossthema@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,15 +27,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 10 July 2007, Josh Boyer wrote:
-> > + =A0 =A0 =A0 u16 user_psize; =A0 =A0 =A0 =A0 /* page size index */
-> > +
-> > +#ifdef CONFIG_PPC64
->=20
-> This needs to be moved up to encompass the u16 user_psize member as
-> well, yes?
->=20
+Jan-Bernd Themann wrote:
+> This patch introduces a capability flag that is used by the DLPAR userspace
+> tool to check which DLPAR features are supported by the eHEA driver.
+> 
+> Missing goto has been included.
+> 
+> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
 
-Yes, of course. my bad.
-
-	Arnd <><
+applied
