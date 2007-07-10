@@ -1,18 +1,27 @@
-Return-Path: <wei.zhang@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B8346DDEC8
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 16:26:27 +1000 (EST)
-From: Zhang Wei <wei.zhang@freescale.com>
-To: paulus@samba.org, galak@kernel.crashing.org
-Subject: [PATCH] Fix the PCI-Ex link training bug on MPC8641HPCN board.
-Date: Tue, 10 Jul 2007 14:34:12 +0800
-Message-Id: <11840492523488-git-send-email-wei.zhang@freescale.com>
-Sender: Zhang Wei <wei.zhang@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 3EDEDDDEBE
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 16:57:50 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l6A6vjwf022118
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jul 2007 23:57:46 -0700 (MST)
+Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
+	[10.192.129.204])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l6A6viJO012981
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 01:57:45 -0500 (CDT)
+Message-ID: <46932E5B.4040107@freescale.com>
+Date: Tue, 10 Jul 2007 14:59:39 +0800
+From: Li Yang <leoli@freescale.com>
+MIME-Version: 1.0
+To: Paul <paulus@samba.org>
+Subject: [PATCH] powerpc: Fix typo in Ebony default dts
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,32 +31,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If the PCI-Ex hose link training is failed, the kernel will halt at the
-PCI scan process on MPC8641HPCN board.
-
-This patch will remove and free the hose from PCI host list if the
-PCI hose link training is failed.
-
-Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
 ---
- arch/powerpc/platforms/86xx/pci.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/platforms/86xx/pci.c b/arch/powerpc/platforms/86xx/pci.c
-index 73cd5b0..0b7835c 100644
---- a/arch/powerpc/platforms/86xx/pci.c
-+++ b/arch/powerpc/platforms/86xx/pci.c
-@@ -210,8 +210,10 @@ int __init mpc86xx_add_bridge(struct device_node *dev)
- 
- 	/* Probe the hose link training status */
- 	early_read_config_word(hose, 0, 0, PCIE_LTSSM, &val);
--	if (val < PCIE_LTSSM_L0)
-+	if (val < PCIE_LTSSM_L0) {
-+		pcibios_free_controller(hose);
- 		return -ENXIO;
-+	}
- 
- 	/* Setup the PCIE host controller. */
- 	mpc86xx_setup_pcie(hose, rsrc.start, rsrc.end - rsrc.start + 1);
--- 
-1.5.1
+diff --git a/arch/powerpc/boot/dts/ebony.dts b/arch/powerpc/boot/dts/ebony.dts
+index 0ec02f4..59bbae2 100644
+--- a/arch/powerpc/boot/dts/ebony.dts
++++ b/arch/powerpc/boot/dts/ebony.dts
+@@ -31,8 +31,8 @@
+ 			reg = <0>;
+ 			clock-frequency = <0>; // Filled in by zImage
+ 			timebase-frequency = <0>; // Filled in by zImage
+-			i-cache-line-size = <32>;
+-			d-cache-line-size = <32>;
++			i-cache-line-size = <20>;
++			d-cache-line-size = <20>;
+ 			i-cache-size = <8000>; /* 32 kB */
+ 			d-cache-size = <8000>; /* 32 kB */
+ 			dcr-controller;
