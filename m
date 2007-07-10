@@ -1,27 +1,22 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3EDEDDDEBE
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 16:57:50 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l6A6vjwf022118
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jul 2007 23:57:46 -0700 (MST)
-Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
-	[10.192.129.204])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l6A6viJO012981
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 01:57:45 -0500 (CDT)
-Message-ID: <46932E5B.4040107@freescale.com>
-Date: Tue, 10 Jul 2007 14:59:39 +0800
-From: Li Yang <leoli@freescale.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 5CA57DDE30
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 17:45:18 +1000 (EST)
+Date: Tue, 10 Jul 2007 09:45:15 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Paul Mackerras <paulus@samba.org>, Jens Axboe <axboe@kernel.dk>,
+	"James E.J.  Bottomley" <James.Bottomley@SteelEye.com>,
+	Alessandro Rubini <rubini@ipvvis.unipv.it>
+Subject: Re: [patch 0/6] PS3 Storage Drivers for 2.6.23, take 4
+In-Reply-To: <20070704132212.726923000@pademelon.sonytel.be>
+Message-ID: <Pine.LNX.4.62.0707100944470.22782@pademelon.sonytel.be>
+References: <20070704132212.726923000@pademelon.sonytel.be>
 MIME-Version: 1.0
-To: Paul <paulus@samba.org>
-Subject: [PATCH] powerpc: Fix typo in Ebony default dts
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-353563100-1184053515=:22782"
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-scsi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,20 +26,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Li Yang <leoli@freescale.com>
----
-diff --git a/arch/powerpc/boot/dts/ebony.dts b/arch/powerpc/boot/dts/ebony.dts
-index 0ec02f4..59bbae2 100644
---- a/arch/powerpc/boot/dts/ebony.dts
-+++ b/arch/powerpc/boot/dts/ebony.dts
-@@ -31,8 +31,8 @@
- 			reg = <0>;
- 			clock-frequency = <0>; // Filled in by zImage
- 			timebase-frequency = <0>; // Filled in by zImage
--			i-cache-line-size = <32>;
--			d-cache-line-size = <32>;
-+			i-cache-line-size = <20>;
-+			d-cache-line-size = <20>;
- 			i-cache-size = <8000>; /* 32 kB */
- 			d-cache-size = <8000>; /* 32 kB */
- 			dcr-controller;
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---584337861-353563100-1184053515=:22782
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+On Wed, 4 Jul 2007, Geert Uytterhoeven wrote:
+> This is the fourth submission of the new PS3 storage drivers:
+>   [1] ps3: Preallocate bootmem memory for the PS3 FLASH ROM storage driver
+>   [2] ps3: Storage Driver Core
+>   [3] ps3: Storage device registration routines.
+>   [4] ps3: Disk Storage Driver
+>   [5] ps3: BD/DVD/CD-ROM Storage Driver
+>   [6] ps3: FLASH ROM Storage Driver
+> 
+> They are based on:
+>   - the current Linux kernel source tree,
+>   - plus the PS3 patches already submitted by Geoff Levand on linuxppc-dev,
+>   - plus the shost_priv() patch in scsi-misc (commit
+>     bcd92c9fbcc679ee95003083056f0441a1f474fa).
+> 
+> All issues raised during the previous review rounds should be fixed.
+> There were no more comments after the third submission.
+> 
+> Paul already integrated Geoff Levand's PS3 patches and the first 3 patches
+> in this series in the for-2.6.23 branch in powerpc.git.
+> 
+> Maintainers of block/SCSI/misc, can you please ack the last 3 patches so Paul
+> can take them, too?
+
+Ping block/SCSI/misc maintainers?
+
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-353563100-1184053515=:22782--
