@@ -1,10 +1,10 @@
 Return-Path: <miltonm@sullivan.realtime.net>
-Date: Tue, 10 Jul 2007 17:12:43 -0500 (CDT)
-Subject: [PATCH 13/15] bootwrapper: attach an empty vmlinux
+Date: Tue, 10 Jul 2007 17:12:52 -0500 (CDT)
+Subject: [PATCH 14/15] boot: add a hook to start cpus
 Sender: <miltonm@realtime.net>
 From: Milton Miller <miltonm@bga.com>
 To: linuxppc-dev@ozlabs.org
-Message-Id: <boot-6-13.miltonm@bga.com>
+Message-Id: <boot-6-14.miltonm@bga.com>
 In-Reply-To: <boot-6-00.miltonm@bga.com>
 Cc: Paul Mackerras <paulus@samba.org>,
 	David Gibson <david@gibson.dropbear.id.au>
@@ -17,75 +17,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Allow the boot wrapper code to be linked without an attached vmlinux.
-
-Rather than invent a new syntax to invoke the wrapper, attach the
-stripped version of empty.o, which produces the same result.
-
-This new intermediary is called zBoot.
+The kexec code is doing strange contortions with dtops.finalize and
+platform_ops.vmlinux_alloc to manage the slave cpus.   Add a hook
+with the needed information.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
---- 
-Initial attempts to remove the dependency on vmlinux in the arch Makefile
-have lead to multiple make commands competing in the boot directory and
-destroying each other.
-
-Index: work.git/arch/powerpc/boot/Makefile
+---
+Index: work.git/arch/powerpc/boot/kexec.c
 ===================================================================
---- work.git.orig/arch/powerpc/boot/Makefile	2007-07-10 16:38:01.000000000 -0500
-+++ work.git/arch/powerpc/boot/Makefile	2007-07-10 16:41:01.000000000 -0500
-@@ -124,7 +124,8 @@ endif
- # args (to if_changed): 1 = (this rule), 2 = platform, 3 = dts 4=dtb 5=initrd
- quiet_cmd_wrap	= WRAP    $@
-       cmd_wrap	=$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
--		$(if $3, -s $3)$(if $4, -d $4)$(if $5, -i $5) vmlinux
-+		$(if $3, -s $3)$(if $4, -d $4)$(if $5, -i $5) \
-+		$(if $6,$6,vmlinux)
+--- work.git.orig/arch/powerpc/boot/kexec.c	2007-07-10 04:39:43.000000000 -0500
++++ work.git/arch/powerpc/boot/kexec.c	2007-07-10 04:40:01.000000000 -0500
+@@ -180,32 +180,11 @@ static void init_flat_tree(struct boot_p
+ 		fatal("Unable to initialize device_tree library!\n\r");
+ }
  
- kexec-$(CONFIG_PPC32)			+= zImage.kexec
- kexec-$(CONFIG_PPC64)			+= zImage.kexec64
-@@ -142,6 +143,7 @@ image-$(CONFIG_PPC_PRPMC2800)		+= zImage
- image-$(CONFIG_PPC_ISERIES)		+= zImage.iseries
- image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
- image-$(CONFIG_KEXEC)			+= $(kexec-y)
-+image-$(CONFIG_KEXEC)			+= $(patsubst zImage%,zBoot%,$(kexec-y))
+-static void *saved_vmlinux_addr;
+-
+-static void *kexec_vmlinux_alloc(unsigned long size)
+-{
+-	void *addr;
+-
+-	addr = ranges_vmlinux_alloc(size);
+-
+-	saved_vmlinux_addr = addr;
+-	return addr;
+-}
+-
+ static void kexec_fixups(void)
+ {
+ 	wait_slaves_moved();
+ }
  
- ifneq ($(CONFIG_DEVICE_TREE),"")
- image-$(CONFIG_PPC_83xx)		+= cuImage.83xx
-@@ -190,6 +192,9 @@ $(obj)/vmlinux.strip: vmlinux
- $(obj)/zImage.iseries: vmlinux
- 	$(STRIP) -s -R .comment $< -o $@
+-static unsigned long (*finalize_chain)(void);
+-
+-static unsigned long kexec_finalize(void)
+-{
+-	send_slaves_to_kernel(saved_vmlinux_addr);
+-
+-	return finalize_chain();
+-}
+-
+ void kexec_platform_init(struct boot_param_header *dt_blob)
+ {
+ 	slaves_are_low();
+@@ -226,8 +205,7 @@ void kexec_platform_init(struct boot_par
+ 	init_flat_tree(dt_blob);
  
-+$(obj)/zBoot.%: $(wrapperbits)
-+	$(call if_changed,wrap,$*,,,,$(obj)/empty.o)
-+
- $(obj)/zImage.ps3: vmlinux  $(wrapper) $(wrapperbits) $(srctree)/$(src)/dts/ps3.dts
- 	$(STRIP) -s -R .comment $< -o vmlinux.strip
- 	$(call cmd,wrap,ps3,$(srctree)/$(src)/dts/ps3.dts,,)
-@@ -227,7 +232,7 @@ clean-files += $(image-) $(initrd-) zIma
- 	treeImage.* $(kexec-)
- 
- # clean up files cached by wrapper
--clean-kernel := vmlinux.strip vmlinux.bin
-+clean-kernel := vmlinux.strip vmlinux.bin empty.o.bin
- clean-kernel += $(addsuffix .gz,$(clean-kernel))
- # If not absolute clean-files are relative to $(obj).
- clean-files += $(addprefix $(objtree)/, $(clean-kernel))
-Index: work.git/arch/powerpc/boot/wrapper
+ 	platform_ops.find_vmlinuz = find_vmlinux_in_initramfs;
+-	platform_ops.vmlinux_alloc = kexec_vmlinux_alloc;
++	platform_ops.vmlinux_alloc = ranges_vmlinux_alloc;
+ 	platform_ops.fixups = kexec_fixups;
+-	finalize_chain = dt_ops.finalize;
+-	dt_ops.finalize = kexec_finalize;
++	platform_ops.start_smp = send_slaves_to_kernel;
+ }
+Index: work.git/arch/powerpc/boot/main.c
 ===================================================================
---- work.git.orig/arch/powerpc/boot/wrapper	2007-07-10 16:37:30.000000000 -0500
-+++ work.git/arch/powerpc/boot/wrapper	2007-07-10 16:41:01.000000000 -0500
-@@ -161,6 +161,13 @@ ps3)
-     ;;
- esac
+--- work.git.orig/arch/powerpc/boot/main.c	2007-07-10 04:39:43.000000000 -0500
++++ work.git/arch/powerpc/boot/main.c	2007-07-10 04:39:43.000000000 -0500
+@@ -212,6 +212,9 @@ void start(void)
+ 	else
+ 		printf(" using OF tree (promptr=%p)\n\r", loader_info.promptr);
  
-+if [ "$kernel" = $object/empty.o ] ; then
-+    ext=bin
-+    objflags="-O binary"
-+    gzip=
-+fi
++	if (platform_ops.start_smp)
++		platform_ops.start_smp(vmlinux.addr);
 +
-+
- vmz="$tmpdir/`basename \"$kernel\"`.$ext"
- if [ -z "$cacheit" -o ! -f "$vmz$gzip" -o "$vmz$gzip" -ot "$kernel" ]; then
-     ${CROSS}objcopy $objflags "$kernel" "$vmz.$$"
+ 	if (console_ops.close)
+ 		console_ops.close();
+ 
+Index: work.git/arch/powerpc/boot/ops.h
+===================================================================
+--- work.git.orig/arch/powerpc/boot/ops.h	2007-07-10 04:39:43.000000000 -0500
++++ work.git/arch/powerpc/boot/ops.h	2007-07-10 04:39:43.000000000 -0500
+@@ -35,6 +35,7 @@ struct platform_ops {
+ 	void *	(*realloc)(void *ptr, unsigned long size);
+ 	void	(*exit)(void);
+ 	void *	(*vmlinux_alloc)(unsigned long size);
++	void	(*start_smp)(void *vmlinux);
+  	void	(*find_vmlinuz)(struct gunzip_state *, void **srcp,
+  			unsigned long *lenp);
+ };
