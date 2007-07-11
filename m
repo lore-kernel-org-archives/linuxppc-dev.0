@@ -1,23 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jdl@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9FE8CDDE07
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 07:20:03 +1000 (EST)
-In-Reply-To: <200707112233.51899.arnd@arndb.de>
-References: <20070616000511.712667424@arndb.de>
-	<20070616000618.183462070@arndb.de>
-	<20070711153542.GB11516@mag.az.mvista.com>
-	<200707112233.51899.arnd@arndb.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <36404B9A-D091-493C-85B7-3B261A74B7CE@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [patch 1/9] move 82xx/83xx/86xx Kconfig options to platform
-	selection
-Date: Wed, 11 Jul 2007 23:19:05 +0200
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 932E8DDE00
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 07:46:05 +1000 (EST)
+Subject: [PATCH 0/2] Move DTC Technical specs out of b-w-o.txt into DTC Repo
+From: Jon Loeliger <jdl@freescale.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Message-Id: <1184190325.25384.125.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Wed, 11 Jul 2007 16:45:25 -0500
+Cc: Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +23,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Which systems in particular should allow CONFIG_TAU? Is there a more
-> specific dependency than (6xx && !(82xx || 83xx || 86xx || 52xx))?
+Folks,
 
-7xx and 7xxx CPUs (G3 and G4).  Nothing earlier (according to
-the IEEE article introducing the TAU), maybe some later units
-have it though (but I think they have incompatible things with
-a similar function).
+Here are two patches, one to the kernel, the other to
+the DTC repo, that moves the technical description
+portions of the booting-without-of.txt documentation
+out of the kernel and into the DTC repository.
 
-TAU is broken on many CPU models btw (it works, just gives
-back nonsense results).
-
-
-Segher
+Thanks,
+jdl
