@@ -1,29 +1,29 @@
 Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 62EC4DDEC6
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 23:58:52 +1000 (EST)
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 62557DDEE6
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 23:59:55 +1000 (EST)
 Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
 	[9.17.195.227])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6BDwm32000500
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 09:58:48 -0400
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6BDxqna003166
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 09:59:52 -0400
 Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
 	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l6BDwmr8250788
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 07:58:48 -0600
+	l6BDxpVt202534
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 07:59:51 -0600
 Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
 	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6BDwleo007603
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 07:58:47 -0600
-Subject: [RFC][PATCH 5/8] Fix 4xx build
+	l6BDxovU011742
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 07:59:50 -0600
+Subject: [RFC][PATCH 6/8] Walnut DTS
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
 In-Reply-To: <1184161957.32199.52.camel@weaponx.rchland.ibm.com>
 References: <1184161957.32199.52.camel@weaponx.rchland.ibm.com>
 Content-Type: text/plain
-Date: Wed, 11 Jul 2007 08:58:46 -0500
-Message-Id: <1184162326.32199.63.camel@weaponx.rchland.ibm.com>
+Date: Wed, 11 Jul 2007 08:59:49 -0500
+Message-Id: <1184162389.32199.65.camel@weaponx.rchland.ibm.com>
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -34,33 +34,127 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Remove inclusion of __res on 40x.  We don't need it in arch/powerpc
+Device tree source file for the PPC405 Walnut evaluation board.
 
 Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
 ---
- arch/powerpc/kernel/head_4xx.S  |    1 -
- arch/powerpc/kernel/ppc_ksyms.c |    2 +-
- 2 files changed, 1 insertion(+), 2 deletions(-)
+ arch/powerpc/boot/dts/walnut.dts |  113 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 113 insertions(+)
 
---- linux-2.6.orig/arch/powerpc/kernel/ppc_ksyms.c
-+++ linux-2.6/arch/powerpc/kernel/ppc_ksyms.c
-@@ -180,7 +180,7 @@ EXPORT_SYMBOL(cacheable_memcpy);
- EXPORT_SYMBOL(cpm_install_handler);
- EXPORT_SYMBOL(cpm_free_handler);
- #endif /* CONFIG_8xx */
--#if defined(CONFIG_8xx) || defined(CONFIG_40x)
-+#if defined(CONFIG_8xx)
- EXPORT_SYMBOL(__res);
- #endif
- 
---- linux-2.6.orig/arch/powerpc/kernel/head_4xx.S
-+++ linux-2.6/arch/powerpc/kernel/head_4xx.S
-@@ -35,7 +35,6 @@
- #include <asm/page.h>
- #include <asm/mmu.h>
- #include <asm/pgtable.h>
--#include <asm/ibm4xx.h>
- #include <asm/cputable.h>
- #include <asm/thread_info.h>
- #include <asm/ppc_asm.h>
+--- /dev/null
++++ linux-2.6/arch/powerpc/boot/dts/walnut.dts
+@@ -0,0 +1,113 @@
++/*
++ * Device Tree Source for IBM Walnut
++ *
++ * Copyright 2007 IBM Corp.
++ * Josh Boyer <jwboyer@linux.vnet.ibm.com>
++ *
++ * FIXME: Draft only!
++ *
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2.  This program is licensed "as is" without
++ * any warranty of any kind, whether express or implied.
++ *
++ * To build:
++ *   dtc -I dts -O asm -o walnut.S -b 0 walnut.dts
++ *   dtc -I dts -O dtb -o walnut.dtb -b 0 walnut.dts
++ */
++
++/ {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	model = "ibm,walnut";
++	compatible = "ibm,walnut";
++	dcr-parent = <&/cpus/PowerPC,405GP@0>;
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,405GP@0 {
++			device_type = "cpu";
++			reg = <0>;
++			clock-frequency = <bebc200>; /* Filled in by zImage */
++			timebase-frequency = <0>; /* Filled in by zImage */
++			i-cache-line-size = <20>;
++			d-cache-line-size = <20>;
++			i-cache-size = <8000>;
++			d-cache-size = <8000>;
++			dcr-controller;
++			dcr-access-method = "native";
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0 0>; /* Filled in by zImage */
++	};
++
++	UIC0: interrupt-controller0 {
++		compatible = "ibm,uic";
++		interrupt-controller;
++		cell-index = <0>;
++		dcr-reg = <0c0 9>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++	};
++
++	plb {
++		compatible = "ibm,plb";
++		#address-cells = <1>;
++		#size-cells = <1>;
++		ranges;
++		clock-frequency = <0>; /* Filled in by zImage */
++
++		SDRAM0: memory-controller {
++			compatible = "ibm,sdram-405gp", "ibm,sdram-440gp";
++			dcr-reg = <010 2>;
++		};
++
++		POB0: opb {
++			compatible = "ibm,opb";
++			#address-cells = <1>;
++			#size-cells = <1>;
++			ranges;
++			dcr-reg = <0a0 5>;
++			clock-frequency = <0>; /* Filled in by zImage */
++
++			UART0: serial@ef600300 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <ef600300 8>;
++				virtual-reg = <ef600300>;
++				clock-frequency = <0>; /* Filled in by zImage */
++				current-speed = <2580>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <0 4>;
++			};
++
++			UART1: serial@ef600400 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <ef600400 8>;
++				virtual-reg = <ef600400>;
++				clock-frequency = <0>; /* Filled in by zImage */
++				current-speed = <2580>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <1 4>;
++			};
++
++			EBC0: ebc {
++				compatible = "ibm,ebc-405gp", "ibm,ebc";
++				dcr-reg = <012 2>;
++				#address-cells = <1>;
++				#size-cells = <1>;
++				clock-frequency = <0>; /* Filled in by zImage */
++			};
++		};
++	};
++
++	chosen {
++		linux,stdout-path = "/plb/opb/serial@ef600300";
++	};
++};
