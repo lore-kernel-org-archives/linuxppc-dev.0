@@ -1,21 +1,22 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4117FDDDEA
+Return-Path: <glikely@secretlab.ca>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.228])
+	by ozlabs.org (Postfix) with ESMTP id 916C0DDE26
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 Jul 2007 05:15:40 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1I8het-0000Z7-OH
-	for linuxppc-embedded@ozlabs.org; Wed, 11 Jul 2007 12:15:31 -0700
-Message-ID: <11547023.post@talk.nabble.com>
-Date: Wed, 11 Jul 2007 12:15:31 -0700 (PDT)
-From: khollan <khollan@daktronics.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: ML410 PCI support
+	Thu, 12 Jul 2007 06:11:18 +1000 (EST)
+Received: by nz-out-0506.google.com with SMTP id l1so1402400nzf
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 11 Jul 2007 13:11:17 -0700 (PDT)
+Message-ID: <fa686aa40707111311i42ed56bdiff24d2680b4a8297@mail.gmail.com>
+Date: Wed, 11 Jul 2007 14:11:16 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Kevin Holland" <KHollan@daktronics.com>,
+	"Linux PPC Linux PPC" <linuxppc-embedded@ozlabs.org>
+Subject: Re: TEMAC MAC address
+In-Reply-To: <3D99384DA1D6124CBE9EE993BAA0E5B70195FDFD@exbe-dak-01.daktronics.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <3D99384DA1D6124CBE9EE993BAA0E5B70195FDFD@exbe-dak-01.daktronics.lan>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,14 +27,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On 7/11/07, Kevin Holland <KHollan@daktronics.com> wrote:
+> Grant,
+>  How do I set the MAC address?
 
-I have two questions:
-1) Has anyone wrote linux 2.6 PCI drviers for the xilinx development boards. 
-I want to get the PCI slots working on my board.
-2)How do I set the HwAddr for the TEMAC driver?  Im using Grants latest git
-tree.  My board boots and the HwAddr is set to 00:00:00:00:00:00
-Thanks for your help
-Kevin
+Badly, with an ugly hack.  :-)
+
+> When my ML410 board boots its Hardware
+> address is set to 0.  I looked through the message boards and can't seem
+> to find what Im looking for.  Thanks for your help.
+
+I set the mac addr with some Virtex specific code in
+arch/ppc/boot/simple/embed_config.c.
+
+BTW, Please at least CC: the mailing list when asking questions.
+
 -- 
-View this message in context: http://www.nabble.com/ML410-PCI-support-tf4064052.html#a11547023
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
