@@ -1,22 +1,23 @@
-Return-Path: <vitb@kernel.crashing.org>
+Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9270EDE095
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 20:48:56 +1000 (EST)
-Date: Tue, 10 Jul 2007 14:52:56 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 2/2] [POWERPC] mmio ide support for mpc8349-itx target
-Message-ID: <20070710145256.6ac64e11@localhost.localdomain>
-In-Reply-To: <468FC376.2040405@ru.mvista.com>
-References: <20070707094852.9473.21013.stgit@localhost.localdomain>
-	<20070707094900.9473.48577.stgit@localhost.localdomain>
-	<468FC376.2040405@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id A0925DDE22
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 20:57:19 +1000 (EST)
+In-Reply-To: <DB462F87-151E-4F21-80CF-209326FCEB67@kernel.crashing.org>
+References: <1184082728.20129.187.camel@localhost.localdomain>
+	<963D5B48-F1E5-4930-9F29-98D7F0E33C0A@kernel.crashing.org>
+	<DB462F87-151E-4F21-80CF-209326FCEB67@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <503D28B7-4D60-4507-9D66-BD59C0E59951@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [patch 3/6] Add 8548 CDS PCI express controller node and PCI-X
+	device node
+Date: Wed, 11 Jul 2007 12:57:05 +0200
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,19 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 07 Jul 2007 20:46:46 +0400
-Sergei Shtylyov wrote:
+>>> +			compatible = "fsl,mpc86xx-pciex","86xx";
+>>
+>> And "xx" again.  Aren't the 85- and 86- PCIe controllers
+>> compatible, btw?
+>
+> They are, but we need to distinguish between 83xx, 85xx, and 86xx  
+> pci, pciex, pci-x controllers.
 
-> > +
-> > +#ifdef CONFIG_MPC834x_ITX  
-> 
->     Erm, isn't this stuff misplaced? Is this really SoC device? I
-> remember seeng this in the arch/ppc/ platform code before (in the
-> internal tree)...
+Sure, but if 85xx-pcie and 86xx-pcie are compatible, the OS
+driver can match on the same "compatible" entry for both.
+Just choose one -- "fsl,8641-pcie" or something.  It is a
+good idea to put the exact name of the controller on the
+board in the first "compatible" entry in case it is found
+later that some specific model needs a workaround or some
+other special treatment, but in general, everything can
+just use the generic "grandfather" model to match on.
 
-The point is to declare methods bsp, as mmio access may effectively vary (having bugs or intentionally) from platform to platform. All-in-one driver approach is nice but might be an issue to handle/maintain.
 
-Thanks for looking at it, other notes make sense.
-
--- 
-Sincerely, Vitaly
+Segher
