@@ -2,28 +2,20 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 906DDDDE25
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 10:10:57 +1000 (EST)
-In-Reply-To: <18068.5829.53635.797336@cargo.ozlabs.ibm.com>
-References: <135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
-	<464C9E67.2020909@ru.mvista.com>
-	<6E0D5E13-C939-4FCE-81A3-F29DFA6436A2@kernel.crashing.org>
-	<464CA222.8000407@ru.mvista.com> <464D9E7E.3090605@genesi-usa.com>
-	<464DADFC.3080802@ru.mvista.com> <464DB800.40702@genesi-usa.com>
-	<1179499713.12981.75.camel@chaos>
-	<32E780BE-58B7-4303-AA49-1852C4C7EB50@kernel.crashing.org>
-	<464DD9DD.8030603@genesi-usa.com> <20070710105212.GA14682@iram.es>
-	<78777AB0-8FA2-4FB0-9D02-6504ED28957D@kernel.crashing.org>
-	<18068.5829.53635.797336@cargo.ozlabs.ibm.com>
+	by ozlabs.org (Postfix) with ESMTP id 3EC30DDE19
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 10:16:27 +1000 (EST)
+In-Reply-To: <18066.63111.703924.714899@cargo.ozlabs.ibm.com>
+References: <20070709214853.GA29912@ld0162-tx32.am.freescale.net>
+	<18066.63111.703924.714899@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <C7DC371B-46A3-427D-A914-C5C5D23BCE12@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A6BAF4A2-B82D-4A69-A4AD-AE797DAE531C@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-Date: Wed, 11 Jul 2007 02:10:10 +0200
+Subject: Re: [PATCH v2] Allow exec on 32-bit from readable, non-exec pages,
+	with a warning.
+Date: Wed, 11 Jul 2007 02:16:15 +0200
 To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	mingo@elte.hu, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,16 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> This scales with the number of processors since there is one
->>> decrementer per core (is it per thread on SMT chips?
->>> I don't know).
->>
->> One per core.
+>> In older versions of glibc (through 2.3), the dynamic linker  
+>> executes a
+>> small amount of code from the data segment, which is not marked as
+>> executable.  A recent change (commit  
+>> 9ba4ace39fdfe22268daca9f28c5df384ae462cf)
+>> stops this from working; there should be a deprecation period before
+>> older glibc versions stop working.
 >
-> No, each thread has its own decrementer, but the timebase is shared.
+> Actually I see no good reason to enforce no-exec at all if we can't do
+> it consistently.  And if we're not going to enforce it then there is
+> no point whinging about it.
 
-Argh, of course you're right, I'm reading the wrong ISA
-version again.  Sorry.
+I have a new patch with just this behaviour, Scott is
+testing it on old glibc (I think it succeeded, need
+confirmation though), I'll have it tested on new glibc
+tomorrow.  So patch tomorrow, and let's try to forget
+about all this after that, eh?  :-)
+
+> When I applied Segher's original patch I thought that we had the
+> read-implies-exec stuff enabled for the affected CPUs, but it turns
+> out we don't.  (We only have that stuff turned on for 32-bit processes
+> on 64-bit cpus - see elf_read_implies_exec in include/asm-powerpc/ 
+> elf.h.)
+
+I never thought "real code" would rely on executing stuff
+it didn't map as executable before.  Silly me.  In my
+defense, no one else noticed in time either ;-)
 
 
 Segher
