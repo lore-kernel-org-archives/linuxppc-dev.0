@@ -1,33 +1,34 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <ossthema@de.ibm.com>
+Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.29.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E40CFDDE2B
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 00:37:33 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6BEbUEZ020918
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 10:37:30 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l6BEbUag169346
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 08:37:30 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6BEbU6s027225
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 08:37:30 -0600
-Subject: Re: [RFC][PATCH 6/8] Walnut DTS
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Stefan Roese <sr@denx.de>
-In-Reply-To: <200707111626.52676.sr@denx.de>
-References: <1184161957.32199.52.camel@weaponx.rchland.ibm.com>
-	<1184162389.32199.65.camel@weaponx.rchland.ibm.com>
-	<200707111626.52676.sr@denx.de>
-Content-Type: text/plain
-Date: Wed, 11 Jul 2007 09:37:29 -0500
-Message-Id: <1184164649.32199.74.camel@weaponx.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5B14DDDE05
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 00:47:23 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate1.de.ibm.com (8.13.8/8.13.8) with ESMTP id l6BElI7Z078462
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 14:47:18 GMT
+Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
+	[9.149.165.213])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.3) with
+	ESMTP id l6BElHoM1818876
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 16:47:17 +0200
+Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l6BElHnv008682
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 16:47:17 +0200
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: [RFC 0/3] lro: Generic Large Receive Offload for TCP traffic
+Date: Wed, 11 Jul 2007 16:21:24 +0200
+MIME-Version: 1.0
+To: netdev <netdev@vger.kernel.org>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200707111621.24852.ossthema@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,21 +38,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-07-11 at 16:26 +0200, Stefan Roese wrote:
-> On Wednesday 11 July 2007, Josh Boyer wrote:
-> > +		PowerPC,405GP@0 {
-> > +			device_type = "cpu";
-> > +			reg = <0>;
-> > +			clock-frequency = <bebc200>; /* Filled in by zImage */
-> > +			timebase-frequency = <0>; /* Filled in by zImage */
-> > +			i-cache-line-size = <20>;
-> > +			d-cache-line-size = <20>;
-> > +			i-cache-size = <8000>;
-> > +			d-cache-size = <8000>;
-> 
-> 405 platforms have 16k cache at most.
+Generic Large Receive Offload proposal
 
-Indeed they do.  Copy/paste error.  Will fix before actually submitting
-things.  Thanks for the catch!
+After some discussions on the mailing list concerning our LRO approach,
+we agreed to provide a generic LRO patch. The algorithm is based on
+the version we developed for eHEA. The performance improvements we
+observed were significant.
 
-josh
+The LRO functionality is provided as a module, the files are put in
+linux/net/ipv4/inet_lro.c
+linux/include/linux/inet_lro.h
+
+Would this be the proper place for this functionality?
+
+Currently, the interface is exported via EXPORT_SYMBOL. Or should we use
+EXPORT_SYMBOL_GPL instead?
+
+
+The interface for the network drivers (see inet_lro.h):
+
+A driver has to declare a "LRO Management" struct (lro_mgr) and a LRO descriptor array
+of a driver defined size and enters the address of the array and the number of its
+elements in the lro_mgr struct. The driver also specifies how many packets
+may be aggregated per tcp session in the lro_mgr struct. In addition to that
+the driver provides a function that determines the TCP and IP header for the
+incoming packet (also entered in the lro_mgr struct). For some ethernet chips this
+function doesn't need to do a lot of checking there as the tcp / ip checksums are 
+checked by the HW and provides information about the packet protocoll.
+
+To pass packets to the network stack using LRO the following functions are used 
+in the NAPI poll function:
+
+void lro_receive_skb(struct net_lro_mgr *lro_mgr,
+                     struct sk_buff *skb,
+                     void *priv);
+
+or 
+
+void lro_vlan_hwaccel_receive_skb(struct net_lro_mgr *lro_mgr,
+                                  struct sk_buff *skb,
+                                  struct vlan_group *vgrp,
+                                  u16 vlan_tag,
+                                  void *priv);
+
+and before leaving the poll function the driver has to flush all open LRO sessions 
+and pass the aggregated packets to the stack:
+
+void lro_flush_all(struct net_lro_mgr *lro_mgr);
+
+[RFC 3/3] includes an eHEA patch which shows how LRO is integrated
+in the eHEA driver using this interface.
+
+
+Regards,
+Jan-Bernd
