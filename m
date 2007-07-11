@@ -1,25 +1,20 @@
-Return-Path: <domen.puncer@telargo.com>
-Received: from out002.atlarge.net (out002.atlarge.net [129.41.63.60])
-	by ozlabs.org (Postfix) with ESMTP id 8D175DDE3C
+Return-Path: <laurent.pinchart@technotrade.biz>
+Received: from mailrelay006.isp.belgacom.be (mailrelay006.isp.belgacom.be
+	[195.238.6.172]) by ozlabs.org (Postfix) with ESMTP id 4B490DDE3F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 Jul 2007 16:33:40 +1000 (EST)
-Date: Wed, 11 Jul 2007 08:33:35 +0200
-From: Domen Puncer <domen.puncer@telargo.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] i2c-mpc: work around missing-9th-clock-pulse bug
-Message-ID: <20070711063335.GB4375@moe.telargo.com>
-References: <20070709071955.GD4186@moe.telargo.com>
-	<fa686aa40707090853j6079b0c7rbcff7c449baa15e0@mail.gmail.com>
-	<20070710061736.GG4186@moe.telargo.com>
-	<fa686aa40707092322v58bbdad0veb0ee2ec00f125b0@mail.gmail.com>
-	<20070710144030.3786cbf3@hyperion.delvare>
-	<20070711054923.GA4375@moe.telargo.com>
-	<fa686aa40707102303k58bae578u7358b932c4721ec0@mail.gmail.com>
+	Wed, 11 Jul 2007 17:11:24 +1000 (EST)
+From: Laurent Pinchart <laurent.pinchart@technotrade.biz>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: MPC82xx ADS SCC ports initialisation
+Date: Wed, 11 Jul 2007 09:11:18 +0200
+References: <200707101619.52438.laurent.pinchart@technotrade.biz>
+	<20070710181133.GB14935@ld0162-tx32.am.freescale.net>
+In-Reply-To: <20070710181133.GB14935@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fa686aa40707102303k58bae578u7358b932c4721ec0@mail.gmail.com>
-Cc: Jean Delvare <khali@linux-fr.org>, i2c@lm-sensors.org,
-	linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200707110911.19477.laurent.pinchart@technotrade.biz>
+Cc: vbordug@ru.mvista.com, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,80 +25,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 11/07/07 00:03 -0600, Grant Likely wrote:
-> On 7/10/07, Domen Puncer <domen.puncer@telargo.com> wrote:
-> >On 10/07/07 14:40 +0200, Jean Delvare wrote:
-...
-> >+/* Sometimes 9th clock pulse isn't generated, so slave doesn't release
-> >+ * the bus.  Documented and suggested workaround on
-> >+ * http://ozlabs.org/pipermail/linuxppc-embedded/2005-July/019038.html
-> >+ */
-> 
-> I don't think it's a great idea to use a link;  You should copy the
-> important parts into the .c file.  Archives may not be forever, and
-> links cannot be read when offline.  If the text is too long for the
-> middle of the C file; then put the documentation at the top right
-> after the header block.
+On Tuesday 10 July 2007 20:11, Scott Wood wrote:
+> On Tue, Jul 10, 2007 at 04:19:51PM +0200, Laurent Pinchart wrote:
+> > clrbits32(&immap->im_cpmux.cmx_scr, (0x00000007 << (4 - data->clk_tx)));
+> > clrbits32(&immap->im_cpmux.cmx_scr, (0x00000038 << (4 - data->clk_rx)));
+> > setbits32(&immap->im_cpmux.cmx_scr,
+> >           ((data->clk_tx - 1) << (4 - data->clk_tx)));
+> > setbits32(&immap->im_cpmux.cmx_scr,
+> >           ((data->clk_rx - 1) << (4 - data->clk_rx)));
+> >
+> > The shift right-hand operand doesn't seem to be correct. Could anyone
+> > confirm this ?
+>
+> You are correct; it's broken.
 
-And v4:
-<----------- cut ------------->
+That code should be replaced with calls to cpm2_clk_setup 
+(arch/powerpc/sysdev/cpm2_common.c). cpm2_clk_setup currently supports FCC 
+clock setup only, but I've got a patch to add SCC clock setup support. Should 
+I send it ?
 
-Work around a problem reported on:
-http://ozlabs.org/pipermail/linuxppc-embedded/2005-July/019038.html
-Without this patch I2C on mpc5200 becomes unusable after a while.
-Tested on mpc5200 boards by Matthias Fechner and me.
+> > If my assumption is right, could anyone tell me if the MPC82xx
+> > processors are actually supported by the powerpc architecture, or if the
+> > MPC82xx ADS code is just a non-functional work in progress.
+>
+> I have a bunch of 8xx/82xx changes pending; I hope to get them cleaned up
+> before the merge window ends.
 
+That would be nice. I'll wait for your changes to continue my ppc -> powerpc 
+port.
 
-Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
+> > I also noticed that U-Boot doesn't have flatten device tree support for
+> > the MPC82xx family.
+>
+> No, but cuImage for 82xx is on its way.
 
----
- drivers/i2c/busses/i2c-mpc.c |   22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+Ok, nice to know. Adding FDT support to U-Boot for the MPC82xx family will be 
+on my todo-list once I get Linux working with cuImage.
 
-Index: work-powerpc.git/drivers/i2c/busses/i2c-mpc.c
-===================================================================
---- work-powerpc.git.orig/drivers/i2c/busses/i2c-mpc.c
-+++ work-powerpc.git/drivers/i2c/busses/i2c-mpc.c
-@@ -74,6 +74,25 @@ static irqreturn_t mpc_i2c_isr(int irq, 
- 	return IRQ_HANDLED;
- }
- 
-+/* Sometimes 9th clock pulse isn't generated, and slave doesn't release
-+ * the bus, because it wants to send ACK.
-+ * Following sequence of enabling/disabling and sending start/stop generates
-+ * the pulse, so it's all OK.
-+ */
-+static void mpc_i2c_fixup(struct mpc_i2c *i2c)
-+{
-+	writeccr(i2c, 0);
-+	udelay(30);
-+	writeccr(i2c, CCR_MEN);
-+	udelay(30);
-+	writeccr(i2c, CCR_MSTA | CCR_MTX);
-+	udelay(30);
-+	writeccr(i2c, CCR_MSTA | CCR_MTX | CCR_MEN);
-+	udelay(30);
-+	writeccr(i2c, CCR_MEN);
-+	udelay(30);
-+}
-+
- static int i2c_wait(struct mpc_i2c *i2c, unsigned timeout, int writing)
- {
- 	unsigned long orig_jiffies = jiffies;
-@@ -153,6 +172,7 @@ static void mpc_i2c_start(struct mpc_i2c
- static void mpc_i2c_stop(struct mpc_i2c *i2c)
- {
- 	writeccr(i2c, CCR_MEN);
-+	writeccr(i2c, 0);
- }
- 
- static int mpc_write(struct mpc_i2c *i2c, int target,
-@@ -245,6 +265,8 @@ static int mpc_xfer(struct i2c_adapter *
- 		}
- 		if (time_after(jiffies, orig_jiffies + HZ)) {
- 			pr_debug("I2C: timeout\n");
-+			if (readb(i2c->base + MPC_I2C_SR) == (CSR_MCF | CSR_MBB | CSR_RXAK))
-+				mpc_i2c_fixup(i2c);
- 			return -EIO;
- 		}
- 		schedule();
+Laurent Pinchart
