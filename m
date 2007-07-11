@@ -1,24 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1C3E0DDE1B
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 01:32:48 +1000 (EST)
-Message-ID: <4694F81A.4010708@freescale.com>
-Date: Wed, 11 Jul 2007 10:32:42 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <mgreer@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id 5048FDDE2D
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 01:33:52 +1000 (EST)
+Date: Wed, 11 Jul 2007 08:35:42 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: arnd@arndb.de
+Subject: Re: [patch 1/9] move 82xx/83xx/86xx Kconfig options to platform
+	selection
+Message-ID: <20070711153542.GB11516@mag.az.mvista.com>
+References: <20070616000511.712667424@arndb.de>
+	<20070616000618.183462070@arndb.de>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v2] Allow exec on 32-bit from readable, non-exec pages,
-	with a warning.
-References: <20070709214853.GA29912@ld0162-tx32.am.freescale.net>
-	<18066.63111.703924.714899@cargo.ozlabs.ibm.com>
-	<A6BAF4A2-B82D-4A69-A4AD-AE797DAE531C@kernel.crashing.org>
-In-Reply-To: <A6BAF4A2-B82D-4A69-A4AD-AE797DAE531C@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070616000618.183462070@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,17 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
->> Actually I see no good reason to enforce no-exec at all if we can't do
->> it consistently.  And if we're not going to enforce it then there is
->> no point whinging about it.
+On Sat, Jun 16, 2007 at 02:05:12AM +0200, arnd@arndb.de wrote:
+> The cores used in the MPC82xx/83xx/86xx embedded controllers are very similar
+> to those in the 32 bit general-purpose processors, so it makes sense to
+> treat them as the same CPU family.
 > 
+> Choosing between the embedded platforms and the multiplatform code is
+> now done in the platform menu, but functionally everything stays the
+> same.
 > 
-> I have a new patch with just this behaviour, Scott is
-> testing it on old glibc (I think it succeeded, need
-> confirmation though),
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Index: linux-2.6/arch/powerpc/platforms/Kconfig
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/platforms/Kconfig
+> +++ linux-2.6/arch/powerpc/platforms/Kconfig
 
-It worked fine on glibc 2.2.5 and 2.3.3 (the former of which failed 
-without the patch).
+> @@ -16,8 +16,31 @@ config EMBEDDED6xx
+>  	bool "Embedded 6xx/7xx/7xxx-based board"
+>  	depends on PPC32 && (BROKEN||BROKEN_ON_SMP)
 
--Scott
+<snip>
+
+> +config CLASSIC32
+> +	def_bool y
+> +	depends on 6xx && PPC_MULTIPLATFORM
+		       ^^^^^^^^^^^^^^^^^^^^
+Arnd, is this really what you wanted?  With it, none of the embedded
+classics have CLASSIC32 defined which means they don't get TAU or
+ALTIVEC defined which isn't good.
+
+Mark
