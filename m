@@ -1,21 +1,25 @@
 Return-Path: <laurent.pinchart@technotrade.biz>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 2597FDDDFE
+Received: from mailgate101.isp.belgacom.be (mailrelay101.isp.belgacom.be
+	[195.238.6.82]) by ozlabs.org (Postfix) with ESMTP id 0B157DDE24
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 Jul 2007 23:14:04 +1000 (EST)
+	Wed, 11 Jul 2007 23:17:55 +1000 (EST)
+Received: from mail.technotrade.biz (localhost [127.0.0.1])
+	by mail.technotrade.biz (Postfix) with ESMTP id 803291FBF
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 11 Jul 2007 15:17:53 +0200 (CEST)
+Received: from pclaurent.technotrade.biz (pclaurent.technotrade.biz
+	[192.168.1.47])
+	by mail.technotrade.biz (Postfix) with ESMTP id 3714C114A
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 11 Jul 2007 15:17:53 +0200 (CEST)
 From: Laurent Pinchart <laurent.pinchart@technotrade.biz>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: Re: MPC82xx ADS SCC ports initialisation
-Date: Wed, 11 Jul 2007 15:13:59 +0200
-References: <200707101619.52438.laurent.pinchart@technotrade.biz>
-	<200707110911.19477.laurent.pinchart@technotrade.biz>
-	<20070711143422.6b00620e@localhost.localdomain>
-In-Reply-To: <20070711143422.6b00620e@localhost.localdomain>
+To: linuxppc-embedded@ozlabs.org
+Subject: [PATCH 1/2] [POWERPC] Add SCC clock support to cpm2_clk_setup()
+Date: Wed, 11 Jul 2007 15:17:52 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200707111514.00910.laurent.pinchart@technotrade.biz>
-Cc: linuxppc-embedded@ozlabs.org
+  charset="us-ascii"
+Message-Id: <200707111517.52663.laurent.pinchart@technotrade.biz>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,69 +30,78 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Vitaly,
+cpm2_clk_setup() supports setting FCC clocks only, even though the
+cpm_clk_target enumeration lists SCC clocks. This patch adds SCC clock
+support.
 
-On Wednesday 11 July 2007 12:34, Vitaly Bordug wrote:
-> On Wed, 11 Jul 2007 09:11:18 +0200
->
-> Laurent Pinchart wrote:
-> > On Tuesday 10 July 2007 20:11, Scott Wood wrote:
-> > > On Tue, Jul 10, 2007 at 04:19:51PM +0200, Laurent Pinchart wrote:
-> > > > clrbits32(&immap->im_cpmux.cmx_scr, (0x00000007 << (4 -
-> > > > data->clk_tx))); clrbits32(&immap->im_cpmux.cmx_scr, (0x00000038
-> > > > << (4 - data->clk_rx))); setbits32(&immap->im_cpmux.cmx_scr,
-> > > >           ((data->clk_tx - 1) << (4 - data->clk_tx)));
-> > > > setbits32(&immap->im_cpmux.cmx_scr,
-> > > >           ((data->clk_rx - 1) << (4 - data->clk_rx)));
-> > > >
-> > > > The shift right-hand operand doesn't seem to be correct. Could
-> > > > anyone confirm this ?
-> > >
-> > > You are correct; it's broken.
-> >
-> > That code should be replaced with calls to cpm2_clk_setup
-> > (arch/powerpc/sysdev/cpm2_common.c). cpm2_clk_setup currently
-> > supports FCC clock setup only, but I've got a patch to add SCC clock
-> > setup support. Should I send it ?
->
-> If you have functional approach, please feel free to send it...
+Signed-off-by: Laurent Pinchart <laurent.pinchart@technotrade.biz>
+---
+ arch/powerpc/sysdev/cpm2_common.c |   38 ++++++++++++++++++++++++++++++++++--
+ 1 files changed, 35 insertions(+), 3 deletions(-)
 
-I haven't been able to test the patch, as I have no ADS hardware to test it 
-on. My MPC82xx board is far from being ported to the powerpc architecture. 
-I'll send the patch anyway. Could you evaluate it ?
-
-> > > > If my assumption is right, could anyone tell me if the MPC82xx
-> > > > processors are actually supported by the powerpc architecture, or
-> > > > if the MPC82xx ADS code is just a non-functional work in progress.
->
-> once my last changes were committed, 82xx was supported and worked fine.
-> Pretty long time I had no access to the hardware, hence some minor things
-> might require catch-up.
-
-The above code might have been worked by sheer luck though.
-
-> > > I have a bunch of 8xx/82xx changes pending; I hope to get them
-> > > cleaned up before the merge window ends.
->
-> Since I'm the only person covering 8xx/82xx for a while, I definitely want
-> to look at those changes...
->
-> > That would be nice. I'll wait for your changes to continue my ppc ->
-> > powerpc port.
-> >
-> > > > I also noticed that U-Boot doesn't have flatten device tree
-> > > > support for the MPC82xx family.
->
-> At the moment, I have a patch to add such a thing, but no ability to
-> validate it still works. If you guys will assist a little, I'll go ahead
-> and submit it to the u-boot list.
-
-I'm ready to help, but I'd like to port my board to the powerpc architecture 
-first. FDT support in U-Boot is pretty useless with the ppc architecture.
-
-> > > No, but cuImage for 82xx is on its way.
-> >
-> > Ok, nice to know. Adding FDT support to U-Boot for the MPC82xx family
-> > will be on my todo-list once I get Linux working with cuImage.
-
-Laurent Pinchart
+diff --git a/arch/powerpc/sysdev/cpm2_common.c 
+b/arch/powerpc/sysdev/cpm2_common.c
+index 9244129..459fead 100644
+--- a/arch/powerpc/sysdev/cpm2_common.c
++++ b/arch/powerpc/sysdev/cpm2_common.c
+@@ -138,7 +138,39 @@ int cpm2_clk_setup(enum cpm_clk_target target, int clock, 
+int mode)
+ 	cpmux_t *im_cpmux;
+ 	u32 *reg;
+ 	u32 mask = 7;
+-	u8 clk_map [24][3] = {
++	u8 clk_map [][3] = {
++		{CPM_CLK_SCC1, CPM_BRG1, 0},
++		{CPM_CLK_SCC1, CPM_BRG2, 1},
++		{CPM_CLK_SCC1, CPM_BRG3, 2},
++		{CPM_CLK_SCC1, CPM_BRG4, 3},
++		{CPM_CLK_SCC1, CPM_CLK5, 4},
++		{CPM_CLK_SCC1, CPM_CLK6, 5},
++		{CPM_CLK_SCC1, CPM_CLK7, 6},
++		{CPM_CLK_SCC1, CPM_CLK8, 7},
++		{CPM_CLK_SCC2, CPM_BRG1, 0},
++		{CPM_CLK_SCC2, CPM_BRG2, 1},
++		{CPM_CLK_SCC2, CPM_BRG3, 2},
++		{CPM_CLK_SCC2, CPM_BRG4, 3},
++		{CPM_CLK_SCC2, CPM_CLK5, 4},
++		{CPM_CLK_SCC2, CPM_CLK6, 5},
++		{CPM_CLK_SCC2, CPM_CLK7, 6},
++		{CPM_CLK_SCC2, CPM_CLK8, 7},
++		{CPM_CLK_SCC3, CPM_BRG1, 0},
++		{CPM_CLK_SCC3, CPM_BRG2, 1},
++		{CPM_CLK_SCC3, CPM_BRG3, 2},
++		{CPM_CLK_SCC3, CPM_BRG4, 3},
++		{CPM_CLK_SCC3, CPM_CLK5, 4},
++		{CPM_CLK_SCC3, CPM_CLK6, 5},
++		{CPM_CLK_SCC3, CPM_CLK7, 6},
++		{CPM_CLK_SCC3, CPM_CLK8, 7},
++		{CPM_CLK_SCC4, CPM_BRG1, 0},
++		{CPM_CLK_SCC4, CPM_BRG2, 1},
++		{CPM_CLK_SCC4, CPM_BRG3, 2},
++		{CPM_CLK_SCC4, CPM_BRG4, 3},
++		{CPM_CLK_SCC4, CPM_CLK5, 4},
++		{CPM_CLK_SCC4, CPM_CLK6, 5},
++		{CPM_CLK_SCC4, CPM_CLK7, 6},
++		{CPM_CLK_SCC4, CPM_CLK8, 7},
+ 		{CPM_CLK_FCC1, CPM_BRG5, 0},
+ 		{CPM_CLK_FCC1, CPM_BRG6, 1},
+ 		{CPM_CLK_FCC1, CPM_BRG7, 2},
+@@ -203,13 +235,13 @@ int cpm2_clk_setup(enum cpm_clk_target target, int 
+clock, int mode)
+ 	if (mode == CPM_CLK_RX)
+ 		shift +=3;
+ 
+-	for (i=0; i<24; i++) {
++	for (i=0; i<ARRAY_SIZE(clk_map); i++) {
+ 		if (clk_map[i][0] == target && clk_map[i][1] == clock) {
+ 			bits = clk_map[i][2];
+ 			break;
+ 		}
+ 	}
+-	if (i == sizeof(clk_map)/3)
++	if (i == ARRAY_SIZE(clk_map))
+ 	    ret = -EINVAL;
+ 
+ 	bits <<= shift;
+-- 
+1.5.0
