@@ -1,16 +1,20 @@
-Return-Path: <Antonio.DiBacco@technolabs.it>
-Received: from smtp.technolabs.it (unknown [213.82.155.20])
-	by ozlabs.org (Postfix) with ESMTP id D3EC7DDECB
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (unknown [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6F98DDDE38
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 Jul 2007 04:15:33 +1000 (EST)
+	Wed, 11 Jul 2007 11:15:05 +1000 (EST)
+Message-ID: <46942F0A.1010707@garzik.org>
+Date: Tue, 10 Jul 2007 21:14:50 -0400
+From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: Talking to PHYs on MPC880
-Date: Tue, 10 Jul 2007 20:15:29 +0200
-Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E977B81@aquib01a>
-From: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
-To: <linuxppc-embedded@ozlabs.org>
+To: Domen Puncer <domen.puncer@telargo.com>
+Subject: Re: [PATCH] pata_mpc52xx: suspend/resume support
+References: <20070703082738.GM23294@moe.telargo.com>
+In-Reply-To: <20070703082738.GM23294@moe.telargo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-ide@vger.kernel.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,19 +25,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Domen Puncer wrote:
+> Implement suspend and resume routines for mpc52xx ata driver.
+> Tested on Lite5200b with deep-sleep and low-power (not yet in-tree)
+> modes.
+> 
+> 
+> Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
+> 
+> ---
+> If anyone cares, I attached ATA_DEBUG messages at the end of patch.
+> Should it take almost 5 seconds?
+> 
+> 
+>  drivers/ata/pata_mpc52xx.c |   18 ++++++++++++++++--
+>  1 file changed, 16 insertions(+), 2 deletions(-)
 
-I have an MPC880 with his FEC1 (eth0) connected via an MII-MII interface
-to a switch.
-The MPC880 controls (through its MDIO bus controller) the PHYs of the
-switch. Each PHY has its own ethernet connector.
-
-Because I don't want the FEC to bother about the status of the PHYs, I
-chose to assign to the eth0 a "fixed@100:1" virtual PHY. Nevertheless, I
-would like to read registers of the real PHYs but issueing the ioctl
-SIOCGMIIREG  I actually access the (virtual) fixed PHY. How could I
-handle this problem?
-I can apply an ugly patch to fs_enet but I would like to receive and
-advice to do a beautiful job.
-
-Any help is appreciated.
+applied
