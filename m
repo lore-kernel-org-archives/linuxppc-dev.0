@@ -1,17 +1,35 @@
-Return-Path: <domen.puncer@telargo.com>
-Received: from out001.atlarge.net (out001.atlarge.net [129.41.63.69])
-	by ozlabs.org (Postfix) with ESMTP id 58B52DDE05
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 19:44:32 +1000 (EST)
-Date: Wed, 11 Jul 2007 11:32:20 +0200
-From: Domen Puncer <domen.puncer@telargo.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/3] powerpc clk.h interface for platforms
-Message-ID: <20070711093220.GF4375@moe.telargo.com>
-References: <20070711093113.GE4375@moe.telargo.com>
+Return-Path: <Wei.Zhang@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D2569DDE1A
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 20:00:16 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l6BA0Av3014194
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 03:00:10 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l6BA08Bt000817
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 05:00:09 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070711093113.GE4375@moe.telargo.com>
-Cc: David Brownell <david-b@pacbell.net>, Sylvain Munaut <tnt@246tNt.com>
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH 1/4] Add DMA sector to
+	Documentation/powerpc/booting-without-of.txt file.
+Date: Wed, 11 Jul 2007 18:00:07 +0800
+Message-ID: <46B96294322F7D458F9648B60E15112C6F3D1E@zch01exm26.fsl.freescale.net>
+In-Reply-To: <20070710161121.GA14556@ld0162-tx32.am.freescale.net>
+References: <1184060662530-git-send-email-wei.zhang@freescale.com>
+	<11840606624025-git-send-email-wei.zhang@freescale.com>
+	<14A08601-B779-45BF-BC22-D1A3C9997502@kernel.crashing.org>
+	<20070710161121.GA14556@ld0162-tx32.am.freescale.net>
+From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+To: "Wood Scott-B07421" <scottwood@freescale.com>,
+	"Segher Boessenkool" <segher@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,140 +39,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-clk interface for arch/powerpc, platforms should fill
-clk_functions.
+Hi,=20
 
-Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
+> -----Original Message-----
+> From: Wood Scott-B07421=20
+>=20
+> On Tue, Jul 10, 2007 at 04:01:19PM +0200, Segher Boessenkool wrote:
+> > > +    - compatible : Should be "fsl,mpc8xxx-dma"
+> >=20
+> > Should _include_, not should _be_.  And none of this xxx
+> > business, of course.
+>=20
+> Especially since the 85xx/86xx version is not 100% compatible with the
+> 83xx version.  How about fsl,mpc8349-dma and fsl,mpc8548-dma=20
+> for the two
+> variants?
 
----
- arch/powerpc/kernel/Makefile        |    3 -
- arch/powerpc/kernel/clock.c         |   82 ++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/clk_interface.h |   20 ++++++++
- 3 files changed, 104 insertions(+), 1 deletion(-)
+I want to use this one driver to fit for mpc8349 and mpc8548. But it
+seems some register difference between them.
+Ok, using "fsl,mpc8548-dma".
 
-Index: work-powerpc.git/arch/powerpc/kernel/clock.c
-===================================================================
---- /dev/null
-+++ work-powerpc.git/arch/powerpc/kernel/clock.c
-@@ -0,0 +1,82 @@
-+/*
-+ * Dummy clk implementations for powerpc.
-+ * These need to be overridden in platform code.
-+ */
-+
-+#include <linux/clk.h>
-+#include <linux/err.h>
-+#include <linux/errno.h>
-+#include <linux/module.h>
-+#include <asm/clk_interface.h>
-+
-+struct clk_interface clk_functions;
-+
-+struct clk *clk_get(struct device *dev, const char *id)
-+{
-+	if (clk_functions.clk_get)
-+		return clk_functions.clk_get(dev, id);
-+	return ERR_PTR(-ENOSYS);
-+}
-+EXPORT_SYMBOL(clk_get);
-+
-+void clk_put(struct clk *clk)
-+{
-+	if (clk_functions.clk_put)
-+		clk_functions.clk_put(clk);
-+}
-+EXPORT_SYMBOL(clk_put);
-+
-+int clk_enable(struct clk *clk)
-+{
-+	if (clk_functions.clk_enable)
-+		return clk_functions.clk_enable(clk);
-+	return -ENOSYS;
-+}
-+EXPORT_SYMBOL(clk_enable);
-+
-+void clk_disable(struct clk *clk)
-+{
-+	if (clk_functions.clk_disable)
-+		clk_functions.clk_disable(clk);
-+}
-+EXPORT_SYMBOL(clk_disable);
-+
-+unsigned long clk_get_rate(struct clk *clk)
-+{
-+	if (clk_functions.clk_get_rate)
-+		return clk_functions.clk_get_rate(clk);
-+	return 0;
-+}
-+EXPORT_SYMBOL(clk_get_rate);
-+
-+long clk_round_rate(struct clk *clk, unsigned long rate)
-+{
-+	if (clk_functions.clk_round_rate)
-+		return clk_functions.clk_round_rate(clk, rate);
-+	return -ENOSYS;
-+}
-+EXPORT_SYMBOL(clk_round_rate);
-+
-+int clk_set_rate(struct clk *clk, unsigned long rate)
-+{
-+	if (clk_functions.clk_set_rate)
-+		return clk_functions.clk_set_rate(clk, rate);
-+	return -ENOSYS;
-+}
-+EXPORT_SYMBOL(clk_set_rate);
-+
-+struct clk *clk_get_parent(struct clk *clk)
-+{
-+	if (clk_functions.clk_get_parent)
-+		return clk_functions.clk_get_parent(clk);
-+	return ERR_PTR(-ENOSYS);
-+}
-+EXPORT_SYMBOL(clk_get_parent);
-+
-+int clk_set_parent(struct clk *clk, struct clk *parent)
-+{
-+	if (clk_functions.clk_set_parent)
-+		return clk_functions.clk_set_parent(clk, parent);
-+	return -ENOSYS;
-+}
-+EXPORT_SYMBOL(clk_set_parent);
-Index: work-powerpc.git/include/asm-powerpc/clk_interface.h
-===================================================================
---- /dev/null
-+++ work-powerpc.git/include/asm-powerpc/clk_interface.h
-@@ -0,0 +1,20 @@
-+#ifndef __ASM_POWERPC_CLK_INTERFACE_H
-+#define __ASM_POWERPC_CLK_INTERFACE_H
-+
-+#include <linux/clk.h>
-+
-+struct clk_interface {
-+	struct clk*	(*clk_get)	(struct device *dev, const char *id);
-+	int		(*clk_enable)	(struct clk *clk);
-+	void		(*clk_disable)	(struct clk *clk);
-+	unsigned long	(*clk_get_rate)	(struct clk *clk);
-+	void		(*clk_put)	(struct clk *clk);
-+	long		(*clk_round_rate) (struct clk *clk, unsigned long rate);
-+	int 		(*clk_set_rate)	(struct clk *clk, unsigned long rate);
-+	int		(*clk_set_parent) (struct clk *clk, struct clk *parent);
-+	struct clk*	(*clk_get_parent) (struct clk *clk);
-+};
-+
-+extern struct clk_interface clk_functions;
-+
-+#endif /* __ASM_POWERPC_CLK_INTERFACE_H */
-Index: work-powerpc.git/arch/powerpc/kernel/Makefile
-===================================================================
---- work-powerpc.git.orig/arch/powerpc/kernel/Makefile
-+++ work-powerpc.git/arch/powerpc/kernel/Makefile
-@@ -12,7 +12,8 @@ endif
- 
- obj-y				:= semaphore.o cputable.o ptrace.o syscalls.o \
- 				   irq.o align.o signal_32.o pmc.o vdso.o \
--				   init_task.o process.o systbl.o idle.o
-+				   init_task.o process.o systbl.o idle.o \
-+				   clock.o
- obj-y				+= vdso32/
- obj-$(CONFIG_PPC64)		+= setup_64.o binfmt_elf32.o sys_ppc32.o \
- 				   signal_64.o ptrace32.o \
+>=20
+> > > +    - extended : Set the DMA channel to work at extended=20
+> chain mode.
+> > > +                 If not set, the DMA channel will work at basic
+> > > +                 chain mode.
+> >=20
+> > Call it "extended-chain-mode", perhaps?
+>=20
+It's clear, but maybe too long?
+
+> Or don't call it anything.  The ability to do extended chain mode is
+> implicit in being compatible with fsl,mpc8548-dma.
+
+The basic mode could be used for mpc83xx silicons.
+
+>=20
+> > > +    - reserved : Reserve the DMA channel to device.
+> >=20
+> > What does this do?  Reserve it for what device, and where?
+> > The OS driver?
+>=20
+> Some hardware has DMA channels hardwired to certain=20
+> peripherals, such as
+> an audio codec.  This keeps them from being used as general=20
+> purpose DMA
+> channels.
+
+DMA channels could be used as ethernet phy. You can point to DMA
+channel's 'phandle' in the device node for reserve use.
+
+>=20
+> I'd rather just treat the different DMA channels as=20
+> independent devices,
+> rather than children of a dma "bus", and change the compatible name if
+> they're not general purpose.  There's only one register that's shared
+> among the channels, and it's a superfluous status summary register.
+>=20
+
+Your and my ideas are both sides of a coin. :-)
+
+Thanks!
+Wei.
