@@ -1,21 +1,21 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 93C58DDE32
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 06:44:45 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [patch 1/9] move 82xx/83xx/86xx Kconfig options to platform
-	selection
-Date: Wed, 11 Jul 2007 22:33:51 +0200
-References: <20070616000511.712667424@arndb.de>
-	<20070616000618.183462070@arndb.de>
-	<20070711153542.GB11516@mag.az.mvista.com>
-In-Reply-To: <20070711153542.GB11516@mag.az.mvista.com>
+Return-Path: <david-b@pacbell.net>
+Received: from smtp116.sbc.mail.sp1.yahoo.com (smtp116.sbc.mail.sp1.yahoo.com
+	[69.147.64.89]) by ozlabs.org (Postfix) with SMTP id 7EC10DDE0A
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 06:52:47 +1000 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: Russell King <rmk@arm.linux.org.uk>
+Subject: Re: [PATCH 1/3] powerpc clk.h interface for platforms
+Date: Wed, 11 Jul 2007 13:52:43 -0700
+References: <20070711093113.GE4375@moe.telargo.com>
+	<200707111002.55119.david-b@pacbell.net>
+	<20070711203454.GC2301@flint.arm.linux.org.uk>
+In-Reply-To: <20070711203454.GC2301@flint.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200707112233.51899.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+  charset="us-ascii"
+Message-Id: <200707111352.44135.david-b@pacbell.net>
+Cc: linuxppc-dev@ozlabs.org, linux-mips@linux-mips.org,
+	Christoph Hellwig <hch@lst.de>, Domen Puncer <domen.puncer@telargo.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,27 +25,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 11 July 2007, Mark A. Greer wrote:
+On Wednesday 11 July 2007, Russell King wrote:
+> 
+> IOW, talk to me and I'll talk back.  Ignore me and I'll ignore them.
 
-> > +config CLASSIC32
-> > +	def_bool y
-> > +	depends on 6xx && PPC_MULTIPLATFORM
-> 		       ^^^^^^^^^^^^^^^^^^^^
-> Arnd, is this really what you wanted?  With it, none of the embedded
-> classics have CLASSIC32 defined which means they don't get TAU or
-> ALTIVEC defined which isn't good.
+Exactly why I cc'd you ... if folk want any more sharable
+cross-platform code than just the clk.h interface, I expect
+you'll have useful comments.
 
-Sorry, this was the result of a wrong patch reordering. In my initial
-patch set I ended up with 6xx == CLASSIC32 and PPC_MULTIPLATFORM=y,
-but then I backed out a few patches in the middle.
-
-I guess the best is to do another patch that moves PPC_EMBEDDED6xx into
-PPC_MULTIPLATFORM again and leaves this one as it is.
-Alternatively, we could kill CONFIG_CLASSIC32 entirely as it is used
-only in a few places. Especially after I resubmit my CPU type selection
-patch again, which allows you do it in a more fine grained way.
-
-Which systems in particular should allow CONFIG_TAU? Is there a more
-specific dependency than (6xx && !(82xx || 83xx || 86xx || 52xx))?
-
-	Arnd <><
+- Dave
