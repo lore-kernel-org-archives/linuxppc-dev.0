@@ -1,34 +1,25 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B2CFDDDEFE
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 03:55:39 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l6BHo7qw021039
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 13:50:07 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l6BHtXjN225486
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 11:55:34 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6BHtWI9031998
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 11:55:32 -0600
-Subject: Re: [RFC][PATCH 6/8] Walnut DTS
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <4EAC985A-2F04-465D-AB69-C67807310D7B@kernel.crashing.org>
-References: <1184161957.32199.52.camel@weaponx.rchland.ibm.com>
-	<1184162389.32199.65.camel@weaponx.rchland.ibm.com>
-	<4EAC985A-2F04-465D-AB69-C67807310D7B@kernel.crashing.org>
-Content-Type: text/plain
-Date: Wed, 11 Jul 2007 12:55:31 -0500
-Message-Id: <1184176531.32199.81.camel@weaponx.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A6DB5DDEBD
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 04:02:06 +1000 (EST)
+In-Reply-To: <4694F7A2.6040403@freescale.com>
+References: <1184060662530-git-send-email-wei.zhang@freescale.com>
+	<11840606624025-git-send-email-wei.zhang@freescale.com>
+	<14A08601-B779-45BF-BC22-D1A3C9997502@kernel.crashing.org>
+	<20070710161121.GA14556@ld0162-tx32.am.freescale.net>
+	<22488704-4826-413B-BD18-F75C2743FB5B@kernel.crashing.org>
+	<4694F7A2.6040403@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <01035B4E-01EB-479A-9AA7-BCFBF6C60904@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/4] Add DMA sector to
+	Documentation/powerpc/booting-without-of.txt file.
+Date: Wed, 11 Jul 2007 20:01:54 +0200
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,59 +29,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-07-11 at 19:49 +0200, Segher Boessenkool wrote:
-> > +	UIC0: interrupt-controller0 {
-> 
-> Why not just "interrupt-controller"?
+>>> Some hardware has DMA channels hardwired to certain peripherals,   
+>>> such as
+>>> an audio codec.  This keeps them from being used as general  
+>>> purpose  DMA
+>>> channels.
+>> I think you need this knowledge in the kernel drivers anyway,
+>> or at the very least, the device node for for example that
+>> audio codec needs to refer to the DMA channel in the device
+>> tree, so this "reserved" property is unnecessary.
+>
+> The generic DMA driver needs to know not to touch the reserved  
+> channels.
 
-Copy/paste error from Ebony DTS, which has multiple UICs.  Will fix.
+The generic DMA driver can look at the device tree, too.  It's
+more convenient to only have to look at the dma-controller node,
+true.  But with the proposed tree you have to look at all the
+channel nodes already.
 
-> 
-> > +		#address-cells = <0>;
-> > +		#size-cells = <0>;
-> 
-> No need for these.
+>>> I'd rather just treat the different DMA channels as independent   
+>>> devices,
+>>> rather than children of a dma "bus", and change the compatible  
+>>> name if
+>>> they're not general purpose.  There's only one register that's  
+>>> shared
+>>> among the channels, and it's a superfluous status summary register.
+>> If you make separate nodes for the channels, they need to have
+>> a parent.  I don't think it makes sense to have the channel
+>> nodes and the "master" node as siblings -- maybe it all should
+>> be just one node with a "#channels" property or such?
+>
+> I don't see the need for a master node -- there are no shared  
+> registers (other than a redundant read-only status summary  
+> register) to synchronize access to.  Each channel would be an  
+> independent device under the SoC bus.
 
-Ok.
+The "master" node is needed to describe its register block.  It
+doesn't matter whether you want to use those registers currently
+or not.
 
-> >
-> > +	plb {
-> > +		ranges;
-> 
-> Please make the valid address ranges explicit here.
+> The benefit is that if a channel needs to be driven by (for  
+> example) a sound driver, it can have a different compatible that  
+> will be matched by the sound driver,
 
-Meaning what exactly?  I thought just specifying "ranges;" simply said
-"the addresses from this node don't have any translation from the parent
-node" (or something like that).
+Nah, the sound node should just point to the channel node, or
+point to the DMA controller and describe the channel # some
+other way.  There is no need to make a special "sound DMA
+channel" device name.
 
-> 
-> > +		SDRAM0: memory-controller {
-> > +			compatible = "ibm,sdram-405gp", "ibm,sdram-440gp";
-> 
-> It's a bit weird to mention 440 here, since 405 is older.
-> Not a real problem, but if you still can change all relevant
-> OS code and device trees, I'd swap it around (make 440 trees
-> include the 405 "compatible" value).  Can you still do that
-> or is there a too big installed base already?
+> and the generic DMA driver will never see it unless the sound  
+> driver explicitly chooses to make use of the generic DMA code --  
+> and most of the time I think it'd be simpler for the special- 
+> purpose driver to manage the descriptors itself.
 
-The installed base for 440 exists of exactly 1 completely non-functional
-board ;).  I can change it.
+Sure.  But you yourself already say "most of the time" -- and
+the device tree doesn't describe how the kernel uses the hardware,
+it simply describes the hardware itself.  The sound DMA channel
+is part of the DMA controller, it is only _connected_ to the
+sound controller, it shouldn't be described as being more closely
+connected to the sound stuff than it actually is.
 
-> 
-> > +		POB0: opb {
-> > +			ranges;
-> 
-> Similar question as for PLB here.
-> 
-> > +			UART0: serial@ef600300 {
-> > +				current-speed = <2580>;
-> 
-> Write this in decimal?
 
-In a comment?  Or?
-
-> Quite a nice tree btw :-)
-
-Thanks!  Easy to do when there's nothing in it ;)
-
-josh
+Segher
