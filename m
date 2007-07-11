@@ -1,16 +1,19 @@
-Return-Path: <mikpe@user.it.uu.se>
-Received: from aun.it.uu.se (aun.it.uu.se [130.238.12.36])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 073E3DDDFE
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 20:26:31 +1000 (EST)
-Date: Wed, 11 Jul 2007 12:26:05 +0200 (MEST)
-Message-Id: <200707111026.l6BAQ5kh003472@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: albertl@mail.com, mikpe@it.uu.se
-Subject: Re: [PATCH 1/1] libata: pata_pdc2027x PLL input clock fix
-Cc: dwm@enoyolf.org, jeff@garzik.org, linux-ide@vger.kernel.org,
-	bahadir.balban@gmail.com, linuxppc-dev@ozlabs.org, alan@lxorguk.ukuu.org.uk
+	by ozlabs.org (Postfix) with ESMTP id BECC7DDDFD
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 20:28:23 +1000 (EST)
+Subject: Re: [PATCH] do firmware feature fixups after features are initialised
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <9094.1181275235@neuling.org>
+References: <9094.1181275235@neuling.org>
+Content-Type: text/plain
+Date: Wed, 11 Jul 2007 20:28:10 +1000
+Message-Id: <1184149691.6059.82.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,62 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 11 Jul 2007 10:45:35 +0800, Albert Lee wrote:
-> Mikael Pettersson wrote:
-> > 
-> > 
-> > 2.6.22 + this prints the following on my G3:
-> > 
-> > pata_pdc2027x 0000:00:0e.0: version 0.9
-> > usec_elapsed for mdelay(37) [35431]
-> > start time: [1184112028]s [775333]us 
-> > end   time: [1184112028]s [810764]us 
-> > pata_pdc2027x 0000:00:0e.0: PLL input clock 1691741 kHz
-> > pata_pdc2027x: Invalid PLL input clock 1691741kHz, give up!
-> > 
+On Fri, 2007-06-08 at 14:00 +1000, Michael Neuling wrote:
+> On pSeries the firmware features are not setup until ppc_md.init_early,
+> so we can't do the firmware feature sections fixups till after this.
 > 
-> My x86 box got this:
-> Jul 11 10:02:17 p4ht-s kernel: [  260.746980] ACPI: PCI Interrupt 0000:02:05.0[A] -> Link [LNK1] -> GSI 10 (level, low) -> IRQ 10
-> Jul 11 10:02:17 p4ht-s kernel: [  260.882905] usec_elapsed for mdelay(37) [36734]
-> Jul 11 10:02:17 p4ht-s kernel: [  260.882911] start time: [1184119336]s [999802]us 
-> Jul 11 10:02:17 p4ht-s kernel: [  260.882914] end   time: [1184119337]s [36536]us 
-> Jul 11 10:02:17 p4ht-s kernel: [  260.882917] pata_pdc2027x 0000:02:05.0: PLL input clock 16829 kHz
+> Currently firmware feature sections is only used on iSeries which inits
+> the firmware features much earlier.  This is a bug in waiting on
+> pSeries. 
 > 
-> So, it seems both mdelay(37) and do_gettimeofday() are working properly on PowerMac G3.
-> Maybe the calculated wrong PLL input is due to wrong reading of the counter register?
-> Could you please try the attached debug patch for more clue, thanks.
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> ---
+> paulus: since we aren't hitting this currently, it can wait for 2.6.23. 
 
-This, supposedly debug-only, patch gives me much better PLL calibration:
+This patch will cause the kernel to blow up at boot on various machines,
+I'm surprised we haven't hit that already.
 
-pata_pdc2027x 0000:00:0e.0: version 0.9
-bccrh [0] bccrl [0]
-bccrhv[0] bccrlv[0]
-bccrh [7FCF] bccrl [15ED]
-bccrhv[7FCF] bccrlv[15D4]
-start[0] end[1072141805] 
-usec_elapsed for mdelay(100) [105500]
-start time: [1184152411]s [689475]us 
-end   time: [1184152411]s [794975]us 
-PLL input clock[-1563248254]Hz
-usec_elapsed for mdelay(37) [35432]
-start time: [1184152411]s [818033]us 
-end   time: [1184152411]s [853465]us 
-bccrh [7FC9] bccrl [1A4B]
-bccrhv[7FC9] bccrlv[1A4B]
-bccrh [7F98] bccrl [3038]
-bccrhv[7F98] bccrlv[301F]
-start[1071946315] end[1070346296] 
-usec_elapsed for mdelay(100) [103571]
-start time: [1184152411]s [874717]us 
-end   time: [1184152411]s [978288]us 
-PLL input clock[15440000]Hz
-usec_elapsed for mdelay(37) [35431]
-start time: [1184152411]s [997039]us 
-end   time: [1184152412]s [32470]us 
-pata_pdc2027x 0000:00:0e.0: PLL input clock 15440 kHz
+The problem is that we can't service SLB miss on a !iseries machine if
+CONFIG_PPC_ISERIES is set, before the fixup occurs. (Some iseries code
+in there will not have been nop'ed out and SRR0 will be loaded with
+crap).
 
-and from then on things are fine.
+Thus we die when unflattening the device-tree on some machines.
 
-Weird. I'll try with an older gcc later (been using gcc-4.2.0 so far).
+There are two possibly solutions I see in the long run:
 
-/Mikael
+ - We could set the FW features earlier on pseries, though that is a bit
+annoying because that means doing it before the device-tree is
+unflattened.
+
+ - We could constraint lmb_alloc to the first segment until the FW fixup
+occurs, either within lmb_alloc itself, or fixup the callers such as
+unflatten_device_tree, to pass an explicit limit.
+
+What do you think ?
+
+Ben.
