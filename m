@@ -1,23 +1,21 @@
-Return-Path: <dan.j.williams@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
-	by ozlabs.org (Postfix) with ESMTP id 8D9CFDDE2E
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 02:56:33 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so309663anc
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 09:56:32 -0700 (PDT)
-Message-ID: <e9c3a7c20707110956r5ea91fd1q1d0b33b9583fe91c@mail.gmail.com>
-Date: Wed, 11 Jul 2007 09:56:31 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-Sender: dan.j.williams@gmail.com
-To: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-Subject: Re: [PATCH 3/4] Extend the DMA-engine API.
-In-Reply-To: <46B96294322F7D458F9648B60E15112C6F3CED@zch01exm26.fsl.freescale.net>
+Return-Path: <david-b@pacbell.net>
+Received: from smtp121.sbc.mail.sp1.yahoo.com (smtp121.sbc.mail.sp1.yahoo.com
+	[69.147.64.94]) by ozlabs.org (Postfix) with SMTP id C3F2FDDDF3
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 03:03:04 +1000 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH 1/3] powerpc clk.h interface for platforms
+Date: Wed, 11 Jul 2007 10:02:54 -0700
+References: <20070711093113.GE4375@moe.telargo.com>
+	<200707110856.58463.david-b@pacbell.net>
+	<20070711161633.GA4846@lst.de>
+In-Reply-To: <20070711161633.GA4846@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <11840607111926-git-send-email-wei.zhang@freescale.com>
-	<e9c3a7c20707101141m17e313e2k99be5b7197edc910@mail.gmail.com>
-	<46B96294322F7D458F9648B60E15112C6F3CED@zch01exm26.fsl.freescale.net>
-Cc: shannon.nelson@intel.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, paulus@samba.org, akpm@linux-foundation.org
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200707111002.55119.david-b@pacbell.net>
+Cc: linuxppc-dev@ozlabs.org, Domen Puncer <domen.puncer@telargo.com>,
+	Russell King <rmk@arm.linux.org.uk>, linux-mips@linux-mips.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,32 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/11/07, Zhang Wei-r63237 <Wei.Zhang@freescale.com> wrote:
-> Hi, Dan,
->
-> Do you mention here: http://marc.info/?l=linux-raid&m=118290909614463&w=2 ?
-> I see the async_tx is located at crypto/ of the above page, but my patch is for DMA engine in drivers/dma and for DMA engine driver.
->
-> Thanks!
-> Wei.
+On Wednesday 11 July 2007, Christoph Hellwig wrote:
+> On Wed, Jul 11, 2007 at 08:56:58AM -0700, David Brownell wrote:
+> > > Umm, this is about the fifth almost identical implementation of
+> > > the clk_ functions.  Please, please put it into common code.
+> > > 
+> > > And talk to the mips folks which just got a similar comment from me.
+> > 
+> > You mean like a lib/clock.c core, rather than an opsvector?
+> 
+> I mean an ops vector and surrounding wrappers.  Every architecture
+> is reimplementing their own dispatch table which is rather annoying.
 
-Hi Wei,
+ARM doesn't.  :)
 
-I was referring to:
-http://marc.info/?l=linux-raid&m=118290909528910&w=2
+But then, nobody expects one kernel to support more than one
+vendor's ARM chips; or usually, more than one generation of
+that vendor's chips.  So any dispatch table is specific to
+a given platform, and tuned to its quirks.  Not much to share
+between OMAP and AT91, for example, except in some cases maybe
+an arm926ejs block.
 
-async_tx is an api that exploits the raw capabilities of the new
-dmaengine interface.  For your case when the existing api calls do not
-provide the proper interface you can open code something like the
-following:
 
-tx = dev->device_prep_dma_<operation>(chan, len, int_flag)
-tx->tx_set_src(dma_addr_t, tx, index /* for multi-source ops */)
-tx->tx_set_dest(dma_addr_t, tx, index)
-tx->tx_submit(tx)
+> What would a lib/clock.c do?
 
-The expectation is that the most common usages of dmaengines will use
-async_tx calls, or the 'dma_async_memcpy_foo_to_bar' helper routines.
+Some folk have suggested defining a core "struct clk {...}" with
+some of the basics -- refcount, parent, maybe enough to support
+the clk_get() lookup or even more -- so that the more obvious
+stuff doesn't need constant re-implementation, and so that new
+implementations become easier.  Platforms would wrap that with
+whatever extensions they need.
 
---
-Dan
+I've not seen a solid proposal for such a thing, and it's not
+clear to me how that would play with with older code (e.g. any
+of the ARM implementations).
+
+And I'm sure there are other suggestions ... I was mostly just
+wondering just what you were suggesting.
+
+- Dave
