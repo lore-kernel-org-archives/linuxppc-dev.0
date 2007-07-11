@@ -1,22 +1,23 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 47364DDE06
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 02:34:49 +1000 (EST)
-Date: Wed, 11 Jul 2007 11:34:38 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Zhang Wei <wei.zhang@freescale.com>
-Subject: Re: [PATCH 4/4] Add DMA engine driver for Freescale MPC8xxx
-	processors.
-Message-ID: <20070711163438.GA17293@ld0162-tx32.am.freescale.net>
-References: <11840607262279-git-send-email-wei.zhang@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <11840607262279-git-send-email-wei.zhang@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <dan.j.williams@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
+	by ozlabs.org (Postfix) with ESMTP id 8D9CFDDE2E
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 02:56:33 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so309663anc
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 09:56:32 -0700 (PDT)
+Message-ID: <e9c3a7c20707110956r5ea91fd1q1d0b33b9583fe91c@mail.gmail.com>
+Date: Wed, 11 Jul 2007 09:56:31 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+Sender: dan.j.williams@gmail.com
+To: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+Subject: Re: [PATCH 3/4] Extend the DMA-engine API.
+In-Reply-To: <46B96294322F7D458F9648B60E15112C6F3CED@zch01exm26.fsl.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <11840607111926-git-send-email-wei.zhang@freescale.com>
+	<e9c3a7c20707101141m17e313e2k99be5b7197edc910@mail.gmail.com>
+	<46B96294322F7D458F9648B60E15112C6F3CED@zch01exm26.fsl.freescale.net>
+Cc: shannon.nelson@intel.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,108 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 10, 2007 at 05:45:26PM +0800, Zhang Wei wrote:
-> +config FSL_DMA
-> +	bool "Freescale MPC8xxx DMA support"
-> +	depends on DMA_ENGINE && (PPC_86xx || PPC_85xx)
+On 7/11/07, Zhang Wei-r63237 <Wei.Zhang@freescale.com> wrote:
+> Hi, Dan,
+>
+> Do you mention here: http://marc.info/?l=linux-raid&m=118290909614463&w=2 ?
+> I see the async_tx is located at crypto/ of the above page, but my patch is for DMA engine in drivers/dma and for DMA engine driver.
+>
+> Thanks!
+> Wei.
 
-Remove the dependency on specific PPC chips...  let the device tree say
-whether the hardware is present.
+Hi Wei,
 
-> +static inline int fsl_dma_idle(struct fsl_dma_chan *fsl_chan)
-> +{
-> +	return (((in_be32(&fsl_chan->reg_base->sr) & FSL_DMA_SR_CB) == 0) &&
-> +		((in_be32(&fsl_chan->reg_base->mr) & FSL_DMA_MR_CC) == 0));
-> +}
+I was referring to:
+http://marc.info/?l=linux-raid&m=118290909528910&w=2
 
-I'm still not convinced that there's any reason to check MR_CC, even if
-the driver *did* set it.
+async_tx is an api that exploits the raw capabilities of the new
+dmaengine interface.  For your case when the existing api calls do not
+provide the proper interface you can open code something like the
+following:
 
-> +	/* We need the descriptor to be aligned to 32bytes
-> +	 * for meeting FSL DMA specification requirement.
-> +	 */
-> +	fsl_chan->desc_pool = dma_pool_create("fsl_dma_engine_desc_pool",
-> +			fsl_chan->device->dev, sizeof(struct fsl_desc_sw),
-> +			32, 0);
-> +	if (unlikely(!fsl_chan->desc_pool)) {
-> +		dev_err(fsl_chan->device->dev, "No memory for channel %d "
-> +			"descriptor dma pool.\n", fsl_chan->id);
-> +		return 0;
-> +	}
-> +
-> +	/* Allocate list ring, and form the static list ring */
-> +	for (i = 0; i < FSLDMA_LD_INIT_RING_SIZE; i++) {
-> +		desc = fsl_dma_alloc_descriptor(fsl_chan->desc_pool,
-> +				GFP_KERNEL);
+tx = dev->device_prep_dma_<operation>(chan, len, int_flag)
+tx->tx_set_src(dma_addr_t, tx, index /* for multi-source ops */)
+tx->tx_set_dest(dma_addr_t, tx, index)
+tx->tx_submit(tx)
 
-It'd be much simpler to allocate the entire ring at once.  No need for
-linked lists, DMA pools, etc.  Just a single dma_alloc_coherent.
+The expectation is that the most common usages of dmaengines will use
+async_tx calls, or the 'dma_async_memcpy_foo_to_bar' helper routines.
 
-In general, this driver seems far more complex than it needs to be.
-
-> +		switch (fsl_chan->mode) {
-> +		case FSL_DMA_EXTENDED:
-
-What benefit do we get out of using extended mode?  If the driver can do
-everything it needs to with basic, with no performance penalty, why not
-always use basic?
-
-> +static dma_cookie_t do_fsl_dma_memcpy(struct fsl_dma_chan *fsl_chan,
-> +				      dma_addr_t dest,
-> +				      dma_addr_t src, size_t len,
-> +				      dma_xfer_callback cb, void *data)
-> +{
-> +	struct fsl_desc_sw *first = NULL, *prev = NULL, *list, *new;
-> +	size_t copy;
-> +	dma_cookie_t cookie;
-> +	unsigned long flags;
-> +	struct fsl_dma_device *fdev = fsl_chan->device;
-> +	int err = 0;
-> +	LIST_HEAD(link_chain);
-> +
-> +	if (unlikely(!fsl_chan || !dest || !src))
-> +		return -EFAULT;
-
--EINVAL for fsl_chan, if you bother checking at all (I wouldn't; it
-doesn't come from untrusted code.  Better to show a nasty-looking oops to
-bring attention to the problem).
-
-Don't check dest and src against NULL; zero is a potentially valid DMA
-address.
-
-> +		/* Stop the DMA */
-> +		fsl_dma_halt(fsl_chan);
-> +		/* Insert the ld descriptor to the LD ring */
-> +		list_add(&ld->node, fsl_chan->enque);
-> +		switch (fsl_chan->mode) {
-> +		case FSL_DMA_EXTENDED:
-> +			INSERT_LD_RING(fsl_chan, ld, list, next_ls_addr);
-> +			break;
-> +		case FSL_DMA_BASIC:
-> +			INSERT_LD_RING(fsl_chan, ld, link, next_ln_addr);
-> +			break;
-> +		}
-> +		spin_unlock_irqrestore(&fsl_chan->desc_lock, flags);
-
-It'd be nice if we didn't have to stop the DMA in order to insert new
-descriptors.
-
-> +	/* cookie incr and addition to used_list must be atomic */
-> +	cookie = fsl_chan->common.cookie;
-> +	cookie++;
-> +	if (cookie < 0)
-> +		cookie = 1;
-
-Why not just use the index into the ring as the cookie?
-
-> +	stat = in_be32(&fsl_chan->reg_base->sr);
-> +	dev_dbg(fsl_chan->device->dev, "event: channel %d, stat = 0x%x\n",
-> +						fsl_chan->id, stat);
-> +	if (!stat)
-> +		return IRQ_NONE;
-> +	busy = stat & (FSL_DMA_SR_CB);
-> +	stat &= ~(FSL_DMA_SR_CB | FSL_DMA_SR_CH);
-
-This masking must happen *before* the IRQ_NONE check.
-
--Scott
+--
+Dan
