@@ -1,25 +1,22 @@
-Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
-	[217.147.92.249])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AB2BEDDE1C
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 06:35:37 +1000 (EST)
-Date: Wed, 11 Jul 2007 21:34:54 +0100
-From: Russell King <rmk@arm.linux.org.uk>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 1/3] powerpc clk.h interface for platforms
-Message-ID: <20070711203454.GC2301@flint.arm.linux.org.uk>
-References: <20070711093113.GE4375@moe.telargo.com>
-	<200707110856.58463.david-b@pacbell.net>
-	<20070711161633.GA4846@lst.de>
-	<200707111002.55119.david-b@pacbell.net>
-Mime-Version: 1.0
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 780EFDDE20
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 06:39:59 +1000 (EST)
+Date: Wed, 11 Jul 2007 15:51:40 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Maynard Johnson <maynardj@us.ibm.com>
+Subject: Re: Resend: [PATCH] oprofile support for Power 5++
+Message-ID: <20070711205140.GA7298@lixom.net>
+References: <4693CC5B.4020207@linux.vnet.ibm.com>
+	<14287.1184096639@neuling.org>
+	<4693E7EF.4020708@linux.vnet.ibm.com> <911.1184099498@neuling.org>
+	<1184101660.22547.104.camel@farscape.rchland.ibm.com>
+	<4693FB3C.4060305@us.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200707111002.55119.david-b@pacbell.net>
-Sender: Russell King <rmk@arm.linux.org.uk>
-Cc: linuxppc-dev@ozlabs.org, linux-mips@linux-mips.org,
-	Christoph Hellwig <hch@lst.de>, Domen Puncer <domen.puncer@telargo.com>
+In-Reply-To: <4693FB3C.4060305@us.ibm.com>
+Cc: willschm@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+	Michael Neuling <mikey@neuling.org>, mjw@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,53 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 11, 2007 at 10:02:54AM -0700, David Brownell wrote:
-> On Wednesday 11 July 2007, Christoph Hellwig wrote:
-> > On Wed, Jul 11, 2007 at 08:56:58AM -0700, David Brownell wrote:
-> > > > Umm, this is about the fifth almost identical implementation of
-> > > > the clk_ functions.  Please, please put it into common code.
-> > > > 
-> > > > And talk to the mips folks which just got a similar comment from me.
-> > > 
-> > > You mean like a lib/clock.c core, rather than an opsvector?
+On Tue, Jul 10, 2007 at 04:33:48PM -0500, Maynard Johnson wrote:
+> Will Schmidt wrote:
+> 
+> > On Tue, 2007-07-10 at 15:31 -0500, Michael Neuling wrote:
 > > 
-> > I mean an ops vector and surrounding wrappers.  Every architecture
-> > is reimplementing their own dispatch table which is rather annoying.
-> 
-> ARM doesn't.  :)
-> 
-> But then, nobody expects one kernel to support more than one
-> vendor's ARM chips; or usually, more than one generation of
-> that vendor's chips.  So any dispatch table is specific to
-> a given platform, and tuned to its quirks.  Not much to share
-> between OMAP and AT91, for example, except in some cases maybe
-> an arm926ejs block.
+> >>>>Does it make more sense to call this "ppc64/power5+rev3"?  
+> >>>>  
+> >>>
+> >>>This is a change to support new counter setup for oprofile.  It may be the
+> >>>same if there is a revision 4 or 5 etc.  So since the internal name was ++
+> I have no idea if there will be a revision 4, etc, but I'm assuming the 
+> behavior would be the same as rev 3.  So I'm not in favor of changing 
 
-And also the information stored within a 'struct clk' is very platform
-dependent.  In the most basic situation, 'struct clk' may not actually
-be a structure, but the clock rate.  All functions with the exception of
-clk_get() and clk_get_rate() could well be no-ops, clk_get() just returns
-the 'struct clk' representing the rate and 'clk_get_rate' returns that
-as an integer.
+The way the cputable patch is now, the rev 4 would match the base revision
+anyway.  Maybe it makes more sense to make PVR xxxx01xx and xxxx02xx
+explicitly match the old power5+, and make everything else match power5++?
 
-More complex setups might want 'struct clk' to contain the address of a
-clock enable register, the bit position to enable that clock source, the
-clock rate, a refcount, and so on, all of which would be utterly useless
-for a platform which had fixed rate clocks.
+I guess it all depends on the chance of IBM doing another major rev of
+power5. Given it's current phase of product maturity I suppose it's not
+all that likely. Doing it this way saves yet another cputable entry as
+well, since it would otherwise mean two added entries instead of one.
 
-> I've not seen a solid proposal for such a thing, and it's not
-> clear to me how that would play with with older code (e.g. any
-> of the ARM implementations).
 
-If people are implementing their own incompatible changes without reference
-to the API they're invalid implementations as far as I'm concerned.  If
-they can't bothered to lift a finger to even _talk_ to me about their
-requirements they just don't have any say concerning any future
-developments IMO.
-
-IOW, talk to me and I'll talk back.  Ignore me and I'll ignore them.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+-Olof
