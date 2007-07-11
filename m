@@ -1,19 +1,25 @@
-Return-Path: <ntl@pobox.com>
-Received: from sceptre.pobox.com (sceptre.pobox.com [207.106.133.20])
-	by ozlabs.org (Postfix) with ESMTP id A24F7DDE26
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 06:29:07 +1000 (EST)
-Date: Wed, 11 Jul 2007 15:29:50 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Subject: Re: DEFINE_IDR() and the layer cache
-Message-ID: <20070711202950.GF17955@localdomain>
-References: <200707112027.30490.fenkes@de.ibm.com>
-MIME-Version: 1.0
+Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+	[217.147.92.249])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AB2BEDDE1C
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 06:35:37 +1000 (EST)
+Date: Wed, 11 Jul 2007 21:34:54 +0100
+From: Russell King <rmk@arm.linux.org.uk>
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH 1/3] powerpc clk.h interface for platforms
+Message-ID: <20070711203454.GC2301@flint.arm.linux.org.uk>
+References: <20070711093113.GE4375@moe.telargo.com>
+	<200707110856.58463.david-b@pacbell.net>
+	<20070711161633.GA4846@lst.de>
+	<200707111002.55119.david-b@pacbell.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200707112027.30490.fenkes@de.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Christoph Raisch <raisch@de.ibm.com>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>,
-	linux-kernel@vger.kernel.org, jim.houston@ccur.com
+In-Reply-To: <200707111002.55119.david-b@pacbell.net>
+Sender: Russell King <rmk@arm.linux.org.uk>
+Cc: linuxppc-dev@ozlabs.org, linux-mips@linux-mips.org,
+	Christoph Hellwig <hch@lst.de>, Domen Puncer <domen.puncer@telargo.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,46 +29,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Joachim-
+On Wed, Jul 11, 2007 at 10:02:54AM -0700, David Brownell wrote:
+> On Wednesday 11 July 2007, Christoph Hellwig wrote:
+> > On Wed, Jul 11, 2007 at 08:56:58AM -0700, David Brownell wrote:
+> > > > Umm, this is about the fifth almost identical implementation of
+> > > > the clk_ functions.  Please, please put it into common code.
+> > > > 
+> > > > And talk to the mips folks which just got a similar comment from me.
+> > > 
+> > > You mean like a lib/clock.c core, rather than an opsvector?
+> > 
+> > I mean an ops vector and surrounding wrappers.  Every architecture
+> > is reimplementing their own dispatch table which is rather annoying.
+> 
+> ARM doesn't.  :)
+> 
+> But then, nobody expects one kernel to support more than one
+> vendor's ARM chips; or usually, more than one generation of
+> that vendor's chips.  So any dispatch table is specific to
+> a given platform, and tuned to its quirks.  Not much to share
+> between OMAP and AT91, for example, except in some cases maybe
+> an arm926ejs block.
 
-Joachim Fenkes wrote:
->
-> idr_init(), when called for the first time, sets up the layer
-> cache. idr_get_new() and friends expect the cache to exist. Now, what happens
-> if the first call to idr_get_new() targets an idr initialized using
-> DEFINE_IDR() before idr_init() has been called at least once? Could this
-> happen?
+And also the information stored within a 'struct clk' is very platform
+dependent.  In the most basic situation, 'struct clk' may not actually
+be a structure, but the clock rate.  All functions with the exception of
+clk_get() and clk_get_rate() could well be no-ops, clk_get() just returns
+the 'struct clk' representing the rate and 'clk_get_rate' returns that
+as an integer.
 
-unnamed_dev_init() is the first caller of idr_init() and it happens to
-be called before the first use of idr_get_new():
+More complex setups might want 'struct clk' to contain the address of a
+clock enable register, the bit position to enable that clock source, the
+clock rate, a refcount, and so on, all of which would be utterly useless
+for a platform which had fixed rate clocks.
 
-[    0.831907]  [<c010615a>] dump_stack+0x16/0x18
-[    0.831945]  [<c01c2714>] idr_init+0x3c/0x9c
-[    0.831985]  [<c038cab8>] unnamed_dev_init+0xd/0xf
-[    0.832027]  [<c037b987>] start_kernel+0x307/0x341
-[    0.832068]  [<00000000>] 0x0
-[    0.832149]  =======================
-[    0.832881] Mount-cache hash table entries: 512
-[    0.833432]  [<c010615a>] dump_stack+0x16/0x18
-[    0.833470]  [<c01c298f>] idr_get_new_above_int+0x43/0x222
-[    0.833541]  [<c01c2b7b>] idr_get_new+0xd/0x28
-[    0.833605]  [<c0169243>] set_anon_super+0x36/0xa0
-[    0.833667]  [<c01696be>] sget+0x234/0x2c9
-[    0.833722]  [<c016a01e>] get_sb_single+0x24/0x8e
-[    0.833781]  [<c01a2468>] sysfs_get_sb+0x1c/0x1e
-[    0.833867]  [<c0169b63>] vfs_kern_mount+0x41/0x70
-[    0.833927]  [<c0169ba8>] kern_mount+0x16/0x18
-[    0.833984]  [<c038e494>] sysfs_init+0x57/0xa5
-[    0.834026]  [<c038cfe3>] mnt_init+0xc5/0x1cb
-[    0.834064]  [<c038cce8>] vfs_caches_init+0x141/0x152
-[    0.834104]  [<c037b996>] start_kernel+0x316/0x341
-[    0.834144]  [<00000000>] 0x0
-[    0.834174]  =======================
+> I've not seen a solid proposal for such a thing, and it's not
+> clear to me how that would play with with older code (e.g. any
+> of the ARM implementations).
 
-It does seem fragile, though.  AFAICT there's no guarantee that a
-DEFINE_IDR user couldn't call idr_get_new() before unnamed_dev_init()
-runs.
+If people are implementing their own incompatible changes without reference
+to the API they're invalid implementations as far as I'm concerned.  If
+they can't bothered to lift a finger to even _talk_ to me about their
+requirements they just don't have any say concerning any future
+developments IMO.
 
-Also, init_id_cache() in idr.c is racy wrt itself.  If the first two
-uses of idr_init() occur concurrently, the code could attempt to
-create idr_layer_cache twice.
+IOW, talk to me and I'll talk back.  Ignore me and I'll ignore them.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
