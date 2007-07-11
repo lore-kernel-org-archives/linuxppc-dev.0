@@ -1,19 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BECC7DDDFD
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 20:28:23 +1000 (EST)
-Subject: Re: [PATCH] do firmware feature fixups after features are initialised
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <9094.1181275235@neuling.org>
-References: <9094.1181275235@neuling.org>
-Content-Type: text/plain
-Date: Wed, 11 Jul 2007 20:28:10 +1000
-Message-Id: <1184149691.6059.82.camel@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 7BAF5DDE37
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 20:33:30 +1000 (EST)
+Date: Wed, 11 Jul 2007 12:33:08 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Consolidate mm_context_t definition in mmu.h
+Message-ID: <20070711103308.GA15536@lst.de>
+References: <1184079709.32199.6.camel@weaponx.rchland.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1184079709.32199.6.camel@weaponx.rchland.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,38 +23,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-06-08 at 14:00 +1000, Michael Neuling wrote:
-> On pSeries the firmware features are not setup until ppc_md.init_early,
-> so we can't do the firmware feature sections fixups till after this.
-> 
-> Currently firmware feature sections is only used on iSeries which inits
-> the firmware features much earlier.  This is a bug in waiting on
-> pSeries. 
-> 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> ---
-> paulus: since we aren't hitting this currently, it can wait for 2.6.23. 
+On Tue, Jul 10, 2007 at 10:01:49AM -0500, Josh Boyer wrote:
+> +
+> +#ifdef CONFIG_PPC64
+> +typedef unsigned long mm_context_id_t;
+> +
+> +typedef struct {
+> +	mm_context_id_t id;
+> +	u16 user_psize;		/* page size index */
+> +
+> +#ifdef CONFIG_PPC_MM_SLICES
+> +	u64 low_slices_psize;	/* SLB page size encodings */
+> +	u64 high_slices_psize;  /* 4 bits per slice for now */
+> +#else
+> +	u16 sllp;		/* SLB page size encoding */
+> +#endif
+> +	unsigned long vdso_base;
+> +} mm_context_t;
+> +
+> +#else /* !CONFIG_PPC64 */
+> +
+> +typedef struct {
+> +	unsigned long id;
+> +	unsigned long vdso_base;
+> +} mm_context_t;
 
-This patch will cause the kernel to blow up at boot on various machines,
-I'm surprised we haven't hit that already.
+mm_context_id_t isn't actually used anywhere but in te mm_context_t
+definition.  So if you kill it you have two common fields and a bunch
+of additional ones for PPC64 leading to a defintion like:
 
-The problem is that we can't service SLB miss on a !iseries machine if
-CONFIG_PPC_ISERIES is set, before the fixup occurs. (Some iseries code
-in there will not have been nop'ed out and SRR0 will be loaded with
-crap).
+typedef struct {
+	unsigned long id;
 
-Thus we die when unflattening the device-tree on some machines.
+#ifdef CONFIG_PPC64
+	u16 user_psize;		/* page size index */
 
-There are two possibly solutions I see in the long run:
+#ifdef CONFIG_PPC_MM_SLICES
+	u64 low_slices_psize;	/* SLB page size encodings */
+	u64 high_slices_psize;  /* 4 bits per slice for now */
+#else
+	u16 sllp;		/* SLB page size encoding */
+#endif
+#endif
 
- - We could set the FW features earlier on pseries, though that is a bit
-annoying because that means doing it before the device-tree is
-unflattened.
-
- - We could constraint lmb_alloc to the first segment until the FW fixup
-occurs, either within lmb_alloc itself, or fixup the callers such as
-unflatten_device_tree, to pass an explicit limit.
-
-What do you think ?
-
-Ben.
+	unsigned long vdso_base;
+} mm_context_t;
