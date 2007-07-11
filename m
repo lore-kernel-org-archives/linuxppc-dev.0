@@ -1,21 +1,18 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp116.sbc.mail.sp1.yahoo.com (smtp116.sbc.mail.sp1.yahoo.com
-	[69.147.64.89]) by ozlabs.org (Postfix) with SMTP id 7EC10DDE0A
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 06:52:47 +1000 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: Russell King <rmk@arm.linux.org.uk>
-Subject: Re: [PATCH 1/3] powerpc clk.h interface for platforms
-Date: Wed, 11 Jul 2007 13:52:43 -0700
-References: <20070711093113.GE4375@moe.telargo.com>
-	<200707111002.55119.david-b@pacbell.net>
-	<20070711203454.GC2301@flint.arm.linux.org.uk>
-In-Reply-To: <20070711203454.GC2301@flint.arm.linux.org.uk>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id F2BC9DDDFA
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 06:58:37 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [RFC][PATCH 3/8] 4xx MMU
+Date: Wed, 11 Jul 2007 22:56:38 +0200
+References: <1184161957.32199.52.camel@weaponx.rchland.ibm.com>
+	<1184162179.32199.58.camel@weaponx.rchland.ibm.com>
+In-Reply-To: <1184162179.32199.58.camel@weaponx.rchland.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200707111352.44135.david-b@pacbell.net>
-Cc: linuxppc-dev@ozlabs.org, linux-mips@linux-mips.org,
-	Christoph Hellwig <hch@lst.de>, Domen Puncer <domen.puncer@telargo.com>
+  charset="iso-8859-1"
+Message-Id: <200707112256.38312.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,12 +22,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 11 July 2007, Russell King wrote:
-> 
-> IOW, talk to me and I'll talk back.  Ignore me and I'll ignore them.
+On Wednesday 11 July 2007, Josh Boyer wrote:
+> +#elif defined(CONFIG_40x)
+> +/* 40x-style software loaded TLB */
+> +# =A0include <asm/mmu-4xx.h>
+> =A0#elif defined(CONFIG_44x)
+> =A0/* 44x-style software loaded TLB */
+> =A0# =A0include <asm/mmu-44x.h>
 
-Exactly why I cc'd you ... if folk want any more sharable
-cross-platform code than just the clk.h interface, I expect
-you'll have useful comments.
+If you call it mmu-4xx, shouldn't it be used
+for 44x as well? I would think this either
+should be
 
-- Dave
+> +#elif defined(CONFIG_4xx)
+> +/* 40x-style software loaded TLB */
+> +#  include <asm/mmu-4xx.h>
+> -#elif defined(CONFIG_44x)
+> -/* 44x-style software loaded TLB */
+> -#  include <asm/mmu-44x.h>
+
+or=20
+
+> +#elif defined(CONFIG_40x)
+> +/* 40x-style software loaded TLB */
+> +#  include <asm/mmu-40x.h>
+>  #elif defined(CONFIG_44x)
+>  /* 44x-style software loaded TLB */
+>  #  include <asm/mmu-44x.h>
+
+Is it actually feasible to get to a point where
+you can build a kernel that boots on both
+40x and 44x, or is it just too different?
+
+	Arnd <><
