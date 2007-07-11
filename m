@@ -1,23 +1,21 @@
-Return-Path: <khali@linux-fr.org>
-Received: from kellthuzad.dmz.nerim.net (smtp-dmz-233-wednesday.dmz.nerim.net
-	[195.5.254.233]) by ozlabs.org (Postfix) with ESMTP id 6DD68DDE1F
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 02:14:08 +1000 (EST)
-Received: from kraid.nerim.net (smtp-103-wednesday.nerim.net [62.4.16.103])
-	by kellthuzad.dmz.nerim.net (Postfix) with ESMTP id AD49D1B67C
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 17:49:41 +0200 (CEST)
-Date: Wed, 11 Jul 2007 17:50:01 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [PATCH] i2c: adds support for i2c bus on 8xx
-Message-ID: <20070711175001.291f2aea@hyperion.delvare>
-In-Reply-To: <20070511101231.241e3a30@hyperion.delvare>
-References: <20070508063131.19179.47548.stgit@localhost.localdomain>
-	<20070510112835.60fb1c2a@hyperion.delvare>
-	<20070510143554.16c5df6a@localhost.localdomain>
-	<20070511101231.241e3a30@hyperion.delvare>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <david-b@pacbell.net>
+Received: from smtp115.sbc.mail.sp1.yahoo.com (smtp115.sbc.mail.sp1.yahoo.com
+	[69.147.64.88]) by ozlabs.org (Postfix) with SMTP id 7AC9ADDE3B
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 02:15:21 +1000 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH 1/3] powerpc clk.h interface for platforms
+Date: Wed, 11 Jul 2007 08:56:58 -0700
+References: <20070711093113.GE4375@moe.telargo.com>
+	<20070711093220.GF4375@moe.telargo.com>
+	<20070711103640.GB15536@lst.de>
+In-Reply-To: <20070711103640.GB15536@lst.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200707110856.58463.david-b@pacbell.net>
+Cc: linuxppc-dev@ozlabs.org, Domen Puncer <domen.puncer@telargo.com>,
+	Russell King <rmk@arm.linux.org.uk>, linux-mips@linux-mips.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,10 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Vitaly,
+On Wednesday 11 July 2007, Christoph Hellwig wrote:
+> On Wed, Jul 11, 2007 at 11:32:20AM +0200, Domen Puncer wrote:
+> > clk interface for arch/powerpc, platforms should fill
+> > clk_functions.
+> 
+> Umm, this is about the fifth almost identical implementation of
+> the clk_ functions.  Please, please put it into common code.
+> 
+> And talk to the mips folks which just got a similar comment from me.
 
-What's the status of this patch? I didn't see any update since my
-review on May 10th. It's too late for 2.6.23 already.
+You mean like a lib/clock.c core, rather than an opsvector?
 
--- 
-Jean Delvare
+ISTR that allowing custom platform-specific implementations
+was intended to be a feature.  But it's also true that some
+folks see lack of shared implementation code as a drawback;
+so I've CC'd Russell King (who originated the interface for
+ARM platforms).
+
+- Dave
