@@ -1,19 +1,24 @@
-Return-Path: <kkboyanov@gmail.com>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.231])
-	by ozlabs.org (Postfix) with ESMTP id 47E54DDED0
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0656ADDDD5
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 Jul 2007 00:50:34 +1000 (EST)
-Received: by wx-out-0506.google.com with SMTP id h27so1374742wxd
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 Jul 2007 07:50:33 -0700 (PDT)
-Message-ID: <929bf310707110750r32557735v848d84c626f0b5d9@mail.gmail.com>
-Date: Wed, 11 Jul 2007 16:50:32 +0200
-From: "Konstantin Boyanov" <kkboyanov@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Leaf drivers on Linux?
+	Thu, 12 Jul 2007 01:21:34 +1000 (EST)
+Message-ID: <4694F578.70901@freescale.com>
+Date: Wed, 11 Jul 2007 10:21:28 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_3531_1456567.1184165432893"
+To: Laurent Pinchart <laurent.pinchart@technotrade.biz>
+Subject: Re: MPC82xx ADS SCC ports initialisation
+References: <200707101619.52438.laurent.pinchart@technotrade.biz>
+	<20070710181133.GB14935@ld0162-tx32.am.freescale.net>
+	<200707110911.19477.laurent.pinchart@technotrade.biz>
+In-Reply-To: <200707110911.19477.laurent.pinchart@technotrade.biz>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: vbordug@ru.mvista.com, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,42 +29,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_3531_1456567.1184165432893
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Laurent Pinchart wrote:
+> That code should be replaced with calls to cpm2_clk_setup 
+> (arch/powerpc/sysdev/cpm2_common.c). cpm2_clk_setup currently supports FCC 
+> clock setup only, but I've got a patch to add SCC clock setup support. Should 
+> I send it ?
 
-Hi list,
+It's already done in my working tree; I should have it picked apart into 
+postable patches in the next few days.
 
-I'm a little bit confused about an issue I hope you can shed some light on
-it.
-
-Right now I'm trying to write a driver for a vustom piece of hardware, which
-resides on a VME bus. I'm using 2.6.15 kernel with an VME driver and can
-access the device through normal ioctl()'s, read(), writes()'s. My
-confiusion comes from the fact that from my driver I have to read some
-registers when the custom device generates an interrupt, but since this
-happens in kernel space, I'm not sure wheather I can use the normal IO
-controls or not. Further confusion brings the fact that there is already a
-working device for Solaris/SPARC for this device, and there the device
-driver uses some kind of leaf driver. Is the concept of leaf and nexus
-drivers, which is present in Solaris, also present in Linux? I tried to find
-some information about differences in the two operating systems on that
-level but only ended up in the "Writing device drivers" tutorials on
-doc.sun.com.
-
-If anybody can give me some clue about this leaf stuff I'll be thankful.
-
-Best regards,
-Konstantin
-
-------=_Part_3531_1456567.1184165432893
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hi list,<br><br>I&#39;m a little bit confused about an issue I hope you can shed some light on it.<br><br>Right now I&#39;m trying to write a driver for a vustom piece of hardware, which resides on a VME bus. I&#39;m using 
-2.6.15 kernel with an VME driver and can access the device through normal ioctl()&#39;s, read(), writes()&#39;s. My confiusion comes from the fact that from my driver I have to read some registers when the custom device generates an interrupt, but since this happens in kernel space, I&#39;m not sure wheather I can use the normal IO controls or not. Further confusion brings the fact that there is already a working device for Solaris/SPARC for this device, and there the device driver uses some kind of leaf driver. Is the concept of leaf and nexus drivers, which is present in Solaris, also present in Linux? I tried to find some information about differences in the two operating systems on that level but only ended up in the &quot;Writing device drivers&quot; tutorials on 
-<a href="http://doc.sun.com">doc.sun.com</a>.<br><br>If anybody can give me some clue about this leaf stuff I&#39;ll be thankful.<br><br>Best regards,<br>Konstantin<br><br>
-
-------=_Part_3531_1456567.1184165432893--
+-Scott
