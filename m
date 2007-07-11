@@ -1,19 +1,14 @@
-Return-Path: <mgreer@mvista.com>
-Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id 5048FDDE2D
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 01:33:52 +1000 (EST)
-Date: Wed, 11 Jul 2007 08:35:42 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: arnd@arndb.de
-Subject: Re: [patch 1/9] move 82xx/83xx/86xx Kconfig options to platform
-	selection
-Message-ID: <20070711153542.GB11516@mag.az.mvista.com>
-References: <20070616000511.712667424@arndb.de>
-	<20070616000618.183462070@arndb.de>
+Return-Path: <mederle_nicolas@yahoo.fr>
+Received: from smtp007.mail.ukl.yahoo.com (smtp007.mail.ukl.yahoo.com
+	[217.12.11.96]) by ozlabs.org (Postfix) with SMTP id 8D9CBDDE3E
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 01:46:03 +1000 (EST)
+Message-ID: <4694F9BD.4090406@yahoo.fr>
+Date: Wed, 11 Jul 2007 17:39:41 +0200
+From: Nicolas Mederle <mederle_nicolas@yahoo.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070616000618.183462070@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+To: linuxppc-dev@ozlabs.org,  linuxppc-embedded@ozlabs.org
+Subject: PageFault when I write in the Serial registers, MMU ?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,33 +18,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Jun 16, 2007 at 02:05:12AM +0200, arnd@arndb.de wrote:
-> The cores used in the MPC82xx/83xx/86xx embedded controllers are very similar
-> to those in the 32 bit general-purpose processors, so it makes sense to
-> treat them as the same CPU family.
-> 
-> Choosing between the embedded platforms and the multiplatform code is
-> now done in the platform menu, but functionally everything stays the
-> same.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Index: linux-2.6/arch/powerpc/platforms/Kconfig
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/platforms/Kconfig
-> +++ linux-2.6/arch/powerpc/platforms/Kconfig
+Hi,
 
-> @@ -16,8 +16,31 @@ config EMBEDDED6xx
->  	bool "Embedded 6xx/7xx/7xxx-based board"
->  	depends on PPC32 && (BROKEN||BROKEN_ON_SMP)
+    I am porting linux on a custom board equipped with a PPC750, and I 
+will like to have some advices on the MMU. I used the powerpc arch, and 
+I built my device tree.
+    I will like to know in which files we can configure the 
+authorizations access for the I/O registers. When I use the function 
+md_ppc.progress, I have a data access fault. I modified the head. S 
+files, for add the BAT config. But I think that it is not correct, and 
+that it is possible to do it elsewhere (platform_init?). Moreover the 
+kernel modify the MMU config, it removes the BATs, and configures the 
+Registers Segments. So, must I remake the configuration? Or is it 
+possible to indicate, at the beginning, which space is reserved for I/O?
+    I studied several patch (sandpoint, PrPMC2800) but none configures 
+really the MMU for I/O registers. In the same way, I read several books, 
+but I am not able to have information that I seek, therefore I am really 
+blocked. I warmly thank you for the assistance which you will be able to 
+bring to me.
 
-<snip>
+    Mapping :     0x0000 0000    ->  0x0FFF FFFF   :   RAM
+                         0x2000 0000   ->   0x201F FFFF   :   ASIC ( 
+UART, DMA, GPIO, PIC...)
+                         0x8000 0000   ->   0x8FFF FFFF   :   PCI
+                         0xF000 0000   ->   0xFFFF FFFF   :   Flash
+    The kernel is load at 0x0, an the system is a Run In Memory. 
+Currently, I don't use the flash.
 
-> +config CLASSIC32
-> +	def_bool y
-> +	depends on 6xx && PPC_MULTIPLATFORM
-		       ^^^^^^^^^^^^^^^^^^^^
-Arnd, is this really what you wanted?  With it, none of the embedded
-classics have CLASSIC32 defined which means they don't get TAU or
-ALTIVEC defined which isn't good.
 
-Mark
+Best regards,
+Nicolas MEDERLE
+
+-- 
+Cordialement,
+
+Nicolas MEDERLE. 
