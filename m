@@ -1,21 +1,15 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp121.sbc.mail.sp1.yahoo.com (smtp121.sbc.mail.sp1.yahoo.com
-	[69.147.64.94]) by ozlabs.org (Postfix) with SMTP id C3F2FDDDF3
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 03:03:04 +1000 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 1/3] powerpc clk.h interface for platforms
-Date: Wed, 11 Jul 2007 10:02:54 -0700
-References: <20070711093113.GE4375@moe.telargo.com>
-	<200707110856.58463.david-b@pacbell.net>
-	<20070711161633.GA4846@lst.de>
-In-Reply-To: <20070711161633.GA4846@lst.de>
+Return-Path: <djiang@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 1207DDDE1E
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 03:41:01 +1000 (EST)
+Date: Wed, 11 Jul 2007 10:43:22 -0700
+From: Dave Jiang <djiang@mvista.com>
+To: paulus@samba.org
+Subject: [PATCH] powerpc: Marvell mv64x60 EDAC platform device setup
+Message-ID: <20070711174322.GA8612@blade.az.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200707111002.55119.david-b@pacbell.net>
-Cc: linuxppc-dev@ozlabs.org, Domen Puncer <domen.puncer@telargo.com>,
-	Russell King <rmk@arm.linux.org.uk>, linux-mips@linux-mips.org
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org, bluesmoke-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,42 +19,178 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 11 July 2007, Christoph Hellwig wrote:
-> On Wed, Jul 11, 2007 at 08:56:58AM -0700, David Brownell wrote:
-> > > Umm, this is about the fifth almost identical implementation of
-> > > the clk_ functions.  Please, please put it into common code.
-> > > 
-> > > And talk to the mips folks which just got a similar comment from me.
-> > 
-> > You mean like a lib/clock.c core, rather than an opsvector?
-> 
-> I mean an ops vector and surrounding wrappers.  Every architecture
-> is reimplementing their own dispatch table which is rather annoying.
+Creating platform devices (memory controller, sram error registers, cpu error
+registers, PCI error registers) for Error Detection and Correction (EDAC)
+driver.
 
-ARM doesn't.  :)
+The platform devices allow the mv64x60 EDAC driver to detect errors from the
+memory controller (ECC erorrs), SRAM controller, CPU data path error registers,
+and PCI error registers. The errors are reported to syslog. Software ECC
+scrubbing is provided. These replace the mv64x60 error handlers in the ppc
+branch. They are being moved to EDAC subsystem in order to centralize error 
+reporting.
 
-But then, nobody expects one kernel to support more than one
-vendor's ARM chips; or usually, more than one generation of
-that vendor's chips.  So any dispatch table is specific to
-a given platform, and tuned to its quirks.  Not much to share
-between OMAP and AT91, for example, except in some cases maybe
-an arm926ejs block.
+The error reporting can be triggered via interrupts from the mv64x60 bridge chip
+or via polling mechanism provided by the EDAC core code.
 
+Signed-off-by: Dave Jiang <djiang@mvista.com>
+Acked-by: Dale Farnsworth <dale@farnsworth.org>
 
-> What would a lib/clock.c do?
+---
 
-Some folk have suggested defining a core "struct clk {...}" with
-some of the basics -- refcount, parent, maybe enough to support
-the clk_get() lookup or even more -- so that the more obvious
-stuff doesn't need constant re-implementation, and so that new
-implementations become easier.  Platforms would wrap that with
-whatever extensions they need.
+The patch has been reworked per Paul's comments.
 
-I've not seen a solid proposal for such a thing, and it's not
-clear to me how that would play with with older code (e.g. any
-of the ARM implementations).
+The mv64x60 EDAC driver can be found at:
+http://bluesmoke.sourceforge.net/
 
-And I'm sure there are other suggestions ... I was mostly just
-wondering just what you were suggesting.
+It's in development to be pushed into the kernel. Still waiting on some core
+EDAC code going into the mainline. 
 
-- Dave
+ arch/powerpc/sysdev/mv64x60_dev.c |  115 +++++++++++++++++++++++++++++++++----
+ 1 files changed, 103 insertions(+), 12 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/mv64x60_dev.c b/arch/powerpc/sysdev/mv64x60_dev.c
+index b618fa6..bc8cd5a 100644
+--- a/arch/powerpc/sysdev/mv64x60_dev.c
++++ b/arch/powerpc/sysdev/mv64x60_dev.c
+@@ -17,6 +17,7 @@
+ #include <linux/platform_device.h>
+ 
+ #include <asm/prom.h>
++#include <asm/io.h>
+ 
+ /*
+  * These functions provide the necessary setup for the mv64x60 drivers.
+@@ -390,30 +391,120 @@ error:
+ 	return err;
+ }
+ 
++static int __init mv64x60_edac_pdev_init(struct device_node *np,
++					  int id,
++					  int num_addr,
++					  char *pdev_name)
++{
++	struct resource *r;
++	struct platform_device *pdev;
++	int i, ret;
++
++	r = kzalloc(num_addr * sizeof(*r) + sizeof(*r), GFP_KERNEL);
++	if (!r)
++		return -ENOMEM;
++
++	for (i = 0; i < num_addr; i++) {
++		ret = of_address_to_resource(np, i, &r[i]);
++		if (ret) {
++			kfree(r);
++			return ret;
++		}
++	}
++
++	of_irq_to_resource(np, 0, &r[i]);
++
++	pdev = platform_device_register_simple(pdev_name, id, r, num_addr + 1);
++
++	kfree(r);
++
++	if (IS_ERR(pdev))
++		return PTR_ERR(pdev);
++
++	return 0;
++}
++
++#ifdef CONFIG_PCI
++/*
++ * Bit 0 of MV64x60_PCIx_ERR_MASK does not exist on the 64360 and because of
++ * errata FEr-#11 and FEr-##16 for the 64460, it should be 0 on that chip as
++ * well.  IOW, don't set bit 0.
++ */
++#define MV64X60_PCIx_ERR_MASK_VAL	0x00a50c24
++
++/* Erratum FEr PCI-#16: clear bit 0 of PCI SERRn Mask reg. */
++static int __init mv64x60_pci_fixup(struct device_node *np)
++{
++	struct resource res;
++	void __iomem *pci_serr;
++	int ret;
++
++	ret = of_address_to_resource(np, 1, &res);
++	if (ret)
++		return ret;
++
++	pci_serr = ioremap(res.start, res.end - res.start + 1);
++	if (!pci_serr)
++		return -ENOMEM;
++
++	out_le32(pci_serr, in_le32(pci_serr) & ~0x1);
++	iounmap(pci_serr);
++
++	return 0;
++}
++#endif	/* CONFIG_PCI */
++
+ static int __init mv64x60_device_setup(void)
+ {
+ 	struct device_node *np = NULL;
+ 	int id;
+ 	int err;
+ 
+-	for (id = 0;
+-	     (np = of_find_compatible_node(np, "serial", "marvell,mpsc")); id++)
+-		if ((err = mv64x60_mpsc_device_setup(np, id)))
++	id = 0;
++	for_each_compatible_node(np, "serial", "marvell,mpsc")
++		if ((err = mv64x60_mpsc_device_setup(np, id++)))
++			goto error;
++
++	id = 0;
++	for_each_compatible_node(np, "network", "marvell,mv64x60-eth")
++		if ((err = mv64x60_eth_device_setup(np, id++)))
+ 			goto error;
+ 
+-	for (id = 0;
+-	     (np = of_find_compatible_node(np, "network",
+-					   "marvell,mv64x60-eth"));
+-	     id++)
+-		if ((err = mv64x60_eth_device_setup(np, id)))
++	id = 0;
++	for_each_compatible_node(np, "i2c", "marvell,mv64x60-i2c")
++		if ((err = mv64x60_i2c_device_setup(np, id++)))
+ 			goto error;
+ 
+-	for (id = 0;
+-	     (np = of_find_compatible_node(np, "i2c", "marvell,mv64x60-i2c"));
+-	     id++)
+-		if ((err = mv64x60_i2c_device_setup(np, id)))
++	id = 0;
++	for_each_compatible_node(np, NULL, "marvell,mv64x60-mem-ctrl")
++		if ((err = mv64x60_edac_pdev_init(np, id++, 1,
++						  "mv64x60_mc_err")))
+ 			goto error;
+ 
++	id = 0;
++	for_each_compatible_node(np, NULL, "marvell,mv64x60-cpu-error")
++		if ((err = mv64x60_edac_pdev_init(np, id++, 2,
++						  "mv64x60_cpu_err")))
++			goto error;
++
++	id = 0;
++	for_each_compatible_node(np, NULL, "marvell,mv64x60-sram-ctrl")
++		if ((err = mv64x60_edac_pdev_init(np, id++, 1,
++						  "mv64x60_sram_err")))
++			goto error;
++
++#ifdef CONFIG_PCI
++	id = 0;
++	for_each_compatible_node(np, NULL, "marvell,mv64x60-pci-error") {
++		if ((err = mv64x60_pci_fixup(np)))
++			goto error;
++
++		if ((err = mv64x60_edac_pdev_init(np, id++, 1,
++						  "mv64x60_pci_err")))
++			goto error;
++	}
++#endif
++
+ 	return 0;
+ 
+ error:
