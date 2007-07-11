@@ -2,22 +2,20 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 358BFDDE31
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 20:59:49 +1000 (EST)
-In-Reply-To: <1184121840.22066.24.camel@localhost.localdomain>
-References: <1184082728.20129.187.camel@localhost.localdomain>
-	<963D5B48-F1E5-4930-9F29-98D7F0E33C0A@kernel.crashing.org>
-	<1184121840.22066.24.camel@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 22A00DDE34
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 21:06:46 +1000 (EST)
+In-Reply-To: <1184149691.6059.82.camel@localhost.localdomain>
+References: <9094.1181275235@neuling.org>
+	<1184149691.6059.82.camel@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <0E17851B-A642-43E2-9A5D-39DFC6F30E77@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3269B7A5-2D77-4C4D-B28D-397CB73E8568@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [patch 3/6] Add 8548 CDS PCI express controller node and PCI-X
-	device node
-Date: Wed, 11 Jul 2007 12:59:36 +0200
-To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] do firmware feature fixups after features are initialised
+Date: Wed, 11 Jul 2007 13:06:25 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>,
+	paulus@samba.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,46 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>               pci1: pci@8000 {
->>>                       interrupt-map-mask = <1f800 0 0 7>;
->>
->> Set the mask to <1800 0 0 7>, and you need only 16
->> entries to encode the swizzle.  Except...
->>
->>> +                             /* bus 1 , idsel 0x2 Tsi310 bridge
->> secondary */
->>
->> ...interrupts on bus 1 should be swizzled on bus 1, not
->> at the PHB.  Really.  It is a horrible workaround for a
->> non-existing problem to do it here, and I promise you
->> it _will_ come back to hurt you later.  Not a threat,
->> just a promise :-)
+> There are two possibly solutions I see in the long run:
 >
-> I just want to make it as a temporary workaround now.
+>  - We could set the FW features earlier on pseries, though that is  
+> a bit
+> annoying because that means doing it before the device-tree is
+> unflattened.
+>
+>  - We could constraint lmb_alloc to the first segment until the FW  
+> fixup
+> occurs, either within lmb_alloc itself, or fixup the callers such as
+> unflatten_device_tree, to pass an explicit limit.
 
-That is fine.
+c) use a different SLB handler during early boot;
+d) preload some SLB entries at very early boot to cover
+    the first 4GB or so.
 
-> Extra patches will be provided to fix it.
-
-Looking forward to it!
-
->>> +             pci@a000 {
->>> +                     interrupt-map-mask = <f800 0 0 7>;
->>> +                     interrupt-map = <
->>> +
->>> +                             /* IDSEL 0x0 (PEX) */
->>> +                             00000 0 0 1 &mpic 0 1
->>> +                             00000 0 0 2 &mpic 1 0
->>> +                             00000 0 0 3 &mpic 2 0
->>> +                             00000 0 0 4 &mpic 3 0>;
->>
->> Why sense 0 for all but the first entry in this map?
-> Now, only the first entry is used.
-
-Sure, but the other three entries are incorrect.  Either
-provide correct entries, or just leave the unused entries
-out of the map; if those three interrupts aren't wired up,
-that is the right thing to do, too.
+d) sounds nice and simple, but will it work?
 
 
 Segher
