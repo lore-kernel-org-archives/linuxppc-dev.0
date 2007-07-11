@@ -1,33 +1,16 @@
-Return-Path: <Wei.Zhang@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <mikpe@user.it.uu.se>
+Received: from aun.it.uu.se (aun.it.uu.se [130.238.12.36])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 33653DDE00
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 20:06:51 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l6BA6jEL014009
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 03:06:46 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l6BA6iQp022204
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 05:06:45 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH 1/4] Add DMA sector to
-	Documentation/powerpc/booting-without-of.txt file.
-Date: Wed, 11 Jul 2007 18:06:43 +0800
-Message-ID: <46B96294322F7D458F9648B60E15112C6F3D20@zch01exm26.fsl.freescale.net>
-In-Reply-To: <14A08601-B779-45BF-BC22-D1A3C9997502@kernel.crashing.org>
-References: <1184060662530-git-send-email-wei.zhang@freescale.com>
-	<11840606624025-git-send-email-wei.zhang@freescale.com>
-	<14A08601-B779-45BF-BC22-D1A3C9997502@kernel.crashing.org>
-From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-To: "Segher Boessenkool" <segher@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 073E3DDDFE
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 20:26:31 +1000 (EST)
+Date: Wed, 11 Jul 2007 12:26:05 +0200 (MEST)
+Message-Id: <200707111026.l6BAQ5kh003472@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: albertl@mail.com, mikpe@it.uu.se
+Subject: Re: [PATCH 1/1] libata: pata_pdc2027x PLL input clock fix
+Cc: dwm@enoyolf.org, jeff@garzik.org, linux-ide@vger.kernel.org,
+	bahadir.balban@gmail.com, linuxppc-dev@ozlabs.org, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,53 +20,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,=20
+On Wed, 11 Jul 2007 10:45:35 +0800, Albert Lee wrote:
+> Mikael Pettersson wrote:
+> > 
+> > 
+> > 2.6.22 + this prints the following on my G3:
+> > 
+> > pata_pdc2027x 0000:00:0e.0: version 0.9
+> > usec_elapsed for mdelay(37) [35431]
+> > start time: [1184112028]s [775333]us 
+> > end   time: [1184112028]s [810764]us 
+> > pata_pdc2027x 0000:00:0e.0: PLL input clock 1691741 kHz
+> > pata_pdc2027x: Invalid PLL input clock 1691741kHz, give up!
+> > 
+> 
+> My x86 box got this:
+> Jul 11 10:02:17 p4ht-s kernel: [  260.746980] ACPI: PCI Interrupt 0000:02:05.0[A] -> Link [LNK1] -> GSI 10 (level, low) -> IRQ 10
+> Jul 11 10:02:17 p4ht-s kernel: [  260.882905] usec_elapsed for mdelay(37) [36734]
+> Jul 11 10:02:17 p4ht-s kernel: [  260.882911] start time: [1184119336]s [999802]us 
+> Jul 11 10:02:17 p4ht-s kernel: [  260.882914] end   time: [1184119337]s [36536]us 
+> Jul 11 10:02:17 p4ht-s kernel: [  260.882917] pata_pdc2027x 0000:02:05.0: PLL input clock 16829 kHz
+> 
+> So, it seems both mdelay(37) and do_gettimeofday() are working properly on PowerMac G3.
+> Maybe the calculated wrong PLL input is due to wrong reading of the counter register?
+> Could you please try the attached debug patch for more clue, thanks.
 
-> -----Original Message-----
-> From: Segher Boessenkool [mailto:segher@kernel.crashing.org]=20
->=20
-> > +   k) DMA
-> > +
-> > +   This sector define DMA for dma-engine driver of Freescale
->=20
-> It's called a "device node" or "node", not a "sector".
+This, supposedly debug-only, patch gives me much better PLL calibration:
 
-Ok, "node".
+pata_pdc2027x 0000:00:0e.0: version 0.9
+bccrh [0] bccrl [0]
+bccrhv[0] bccrlv[0]
+bccrh [7FCF] bccrl [15ED]
+bccrhv[7FCF] bccrlv[15D4]
+start[0] end[1072141805] 
+usec_elapsed for mdelay(100) [105500]
+start time: [1184152411]s [689475]us 
+end   time: [1184152411]s [794975]us 
+PLL input clock[-1563248254]Hz
+usec_elapsed for mdelay(37) [35432]
+start time: [1184152411]s [818033]us 
+end   time: [1184152411]s [853465]us 
+bccrh [7FC9] bccrl [1A4B]
+bccrhv[7FC9] bccrlv[1A4B]
+bccrh [7F98] bccrl [3038]
+bccrhv[7F98] bccrlv[301F]
+start[1071946315] end[1070346296] 
+usec_elapsed for mdelay(100) [103571]
+start time: [1184152411]s [874717]us 
+end   time: [1184152411]s [978288]us 
+PLL input clock[15440000]Hz
+usec_elapsed for mdelay(37) [35431]
+start time: [1184152411]s [997039]us 
+end   time: [1184152412]s [32470]us 
+pata_pdc2027x 0000:00:0e.0: PLL input clock 15440 kHz
 
->=20
-> > +    - compatible : Should be "fsl,mpc8xxx-dma"
->=20
-> Should _include_, not should _be_.  And none of this xxx
-> business, of course.
->=20
+and from then on things are fine.
 
-All right.
+Weird. I'll try with an older gcc later (been using gcc-4.2.0 so far).
 
-> > +    - extended : Set the DMA channel to work at extended=20
-> chain mode.
-> > +                 If not set, the DMA channel will work at basic
-> > +                 chain mode.
->=20
-> Call it "extended-chain-mode", perhaps?
->=20
-
-Is it maybe too long?
-
-> > +    - reserved : Reserve the DMA channel to device.
->=20
-> What does this do?  Reserve it for what device, and where?
-> The OS driver?
->=20
-
-Yes, it reserve for the special device, which must use the fixed
-channel. Thus, reserve channels requested by that device.
-
-And in the device node of dts file, you can use such as
-"dma-channel=3D<&dma-ch0>" to reference the below channel:
-
-dma-ch0: ch0@100 {
-...
-}
-
-Thanks!
-Wei.
+/Mikael
