@@ -1,31 +1,32 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 13A99DDE41
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 12:11:20 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6B2BIuN008769
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 22:11:18 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l6B2BHwW161282
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 22:11:17 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6B2BHNK003228
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 22:11:17 -0400
-Date: Tue, 10 Jul 2007 21:22:34 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v2] Consolidate mm_context_t definition in mmu.h
-Message-ID: <20070711022234.GI3925@crusty.rchland.ibm.com>
-References: <1184089950.32199.24.camel@weaponx.rchland.ibm.com>
-	<18068.4589.614583.210312@cargo.ozlabs.ibm.com>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C3C14DDE49
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 12:44:21 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l6B2iFlO021847
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 19:44:16 -0700 (MST)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l6B2iEOT004540
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 21:44:15 -0500 (CDT)
+Subject: Re: [patch 3/6] Add 8548 CDS PCI express controller node and PCI-X
+	device node
+From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <963D5B48-F1E5-4930-9F29-98D7F0E33C0A@kernel.crashing.org>
+References: <1184082728.20129.187.camel@localhost.localdomain>
+	<963D5B48-F1E5-4930-9F29-98D7F0E33C0A@kernel.crashing.org>
+Content-Type: text/plain
+Message-Id: <1184121840.22066.24.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18068.4589.614583.210312@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, arnd@arndb.de, david@gibson.dropbear.id.au
+Date: 11 Jul 2007 10:44:01 +0800
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,20 +36,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 11, 2007 at 09:10:37AM +1000, Paul Mackerras wrote:
-> Josh Boyer writes:
+On Wed, 2007-07-11 at 04:25, Segher Boessenkool wrote:
+> >               pci1: pci@8000 {
+> >                       interrupt-map-mask = <1f800 0 0 7>;
 > 
-> > All of the platforms except PPC64 share a common mm_context_t definition.
-> > Defining it in mmu.h avoids duplicating it in the platform specific mmu
-> > header files.  We further consolidate it by having the PPC32 definition
-> > share the mm_context_id_t type for the id member.
+> Set the mask to <1800 0 0 7>, and you need only 16
+> entries to encode the swizzle.  Except...
 > 
-> Unfortunately the string of ifdefs in your consolidated version makes
-> my eyes water.  I'm not sure it isn't better the way it is.
+> > +                             /* bus 1 , idsel 0x2 Tsi310 bridge
+> secondary */
+> 
+> ...interrupts on bus 1 should be swizzled on bus 1, not
+> at the PHB.  Really.  It is a horrible workaround for a
+> non-existing problem to do it here, and I promise you
+> it _will_ come back to hurt you later.  Not a threat,
+> just a promise :-)
 
-Eh, you're the maintainer.  No worries.
+I just want to make it as a temporary workaround now.
+Extra patches will be provided to fix it.
 
-Though realistically, I only added a single ifdef set in the structure.  The
-rest are all Ben's ;)
 
-josh
+> > -                     compatible = "85xx";
+> > +                     compatible = "fsl,mpc85xx-pci","85xx";
+> 
+> No more "xx" please...
+> 
+> > +             pci@a000 {
+> > +                     interrupt-map-mask = <f800 0 0 7>;
+> > +                     interrupt-map = <
+> > +
+> > +                             /* IDSEL 0x0 (PEX) */
+> > +                             00000 0 0 1 &mpic 0 1
+> > +                             00000 0 0 2 &mpic 1 0
+> > +                             00000 0 0 3 &mpic 2 0
+> > +                             00000 0 0 4 &mpic 3 0>;
+> 
+> Why sense 0 for all but the first entry in this map?
+Now, only the first entry is used.
+> 
+> > +                     compatible = "fsl,mpc86xx-pciex","86xx";
+> 
+> And "xx" again.  Aren't the 85- and 86- PCIe controllers
+> compatible, btw?
