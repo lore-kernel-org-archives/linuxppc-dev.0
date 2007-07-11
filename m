@@ -1,19 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18068.11329.460505.177523@cargo.ozlabs.ibm.com>
-Date: Wed, 11 Jul 2007 11:02:57 +1000
-From: Paul Mackerras <paulus@samba.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 34DCEDDE3E
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 12:02:34 +1000 (EST)
+In-Reply-To: <963D5B48-F1E5-4930-9F29-98D7F0E33C0A@kernel.crashing.org>
+References: <1184082728.20129.187.camel@localhost.localdomain>
+	<963D5B48-F1E5-4930-9F29-98D7F0E33C0A@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <DB462F87-151E-4F21-80CF-209326FCEB67@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [patch 3/6] Add 8548 CDS PCI express controller node and PCI-X
+	device node
+Date: Tue, 10 Jul 2007 21:02:41 -0500
 To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] Allow exec on 32-bit from readable, non-exec pages,
-	with a warning.
-In-Reply-To: <89E626D4-D48D-4062-A996-E2DFFE8248E3@kernel.crashing.org>
-References: <20070709195743.GA26089@ld0162-tx32.am.freescale.net>
-	<200707092225.25287.arnd@arndb.de> <4692A5B8.9010702@freescale.com>
-	<8CA741AA-D200-474F-943D-ECE4B3ACD38B@kernel.crashing.org>
-	<18068.5706.700933.551828@cargo.ozlabs.ibm.com>
-	<89E626D4-D48D-4062-A996-E2DFFE8248E3@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+Cc: Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,28 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool writes:
 
-> >> Yeah.  Giving the warning is a good thing though.
-> >
-> > No, it isn't; it's just noise, if we're not ever going to do anything
-> > to prevent the behaviour - and we can't.
-> 
-> The same userland code will not run correctly on PPC64 or BookE
-> systems.  Is that not a reason to warn?
+On Jul 10, 2007, at 3:25 PM, Segher Boessenkool wrote:
 
-It *will* run on ppc64 systems, because there we get the
-READ_IMPLIES_EXEC personality flag set via the elf_read_implies_exec
-thing in include/asm-powerpc/elf.h.  The READ_IMPLIES_EXEC flag is
-only set if we don't have the non-executable stack note in the ELF
-header, i.e. only for old binaries or libraries.
+>>  		pci1: pci@8000 {
+>>  			interrupt-map-mask = <1f800 0 0 7>;
+>
+> Set the mask to <1800 0 0 7>, and you need only 16
+> entries to encode the swizzle.  Except...
+>
+>> +				/* bus 1 , idsel 0x2 Tsi310 bridge secondary */
+>
+> ...interrupts on bus 1 should be swizzled on bus 1, not
+> at the PHB.  Really.  It is a horrible workaround for a
+> non-existing problem to do it here, and I promise you
+> it _will_ come back to hurt you later.  Not a threat,
+> just a promise :-)
+>
+>> -			compatible = "85xx";
+>> +			compatible = "fsl,mpc85xx-pci","85xx";
+>
+> No more "xx" please...
+>
+>> +		pci@a000 {
+>> +			interrupt-map-mask = <f800 0 0 7>;
+>> +			interrupt-map = <
+>> +
+>> +				/* IDSEL 0x0 (PEX) */
+>> +				00000 0 0 1 &mpic 0 1
+>> +				00000 0 0 2 &mpic 1 0
+>> +				00000 0 0 3 &mpic 2 0
+>> +				00000 0 0 4 &mpic 3 0>;
+>
+> Why sense 0 for all but the first entry in this map?
+>
+>> +			compatible = "fsl,mpc86xx-pciex","86xx";
+>
+> And "xx" again.  Aren't the 85- and 86- PCIe controllers
+> compatible, btw?
 
-As for Book E, that could be fixed using elf_read_implies_exec too, if
-anyone cared.  In fact maybe the correct solution is to have
+They are, but we need to distinguish between 83xx, 85xx, and 86xx  
+pci, pciex, pci-x controllers.
 
-#define elf_read_implies_exec(ex, exec_stk) \
-	(exec_stk != EXSTACK_DISABLE_X) : 0)
-
-for all 32-bit powerpc.
-
-Paul.
+- k
