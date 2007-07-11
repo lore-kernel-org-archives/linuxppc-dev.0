@@ -1,31 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C6E83DDE0A
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 06:27:32 +1000 (EST)
-In-Reply-To: <46952F11.30005@freescale.com>
-References: <1184060662530-git-send-email-wei.zhang@freescale.com>
-	<11840606624025-git-send-email-wei.zhang@freescale.com>
-	<14A08601-B779-45BF-BC22-D1A3C9997502@kernel.crashing.org>
-	<20070710161121.GA14556@ld0162-tx32.am.freescale.net>
-	<22488704-4826-413B-BD18-F75C2743FB5B@kernel.crashing.org>
-	<4694F7A2.6040403@freescale.com>
-	<01035B4E-01EB-479A-9AA7-BCFBF6C60904@kernel.crashing.org>
-	<46951EE0.6040603@freescale.com>
-	<12728378-7DC8-41D9-BCF4-5F883F651E40@kernel.crashing.org>
-	<4695298A.6090604@freescale.com>
-	<5790B879-A6F0-4FE7-91FC-9FA812BF8231@kernel.crashing.org>
-	<46952F11.30005@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <738EE0DB-8614-408C-B74A-F3C099AEA027@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/4] Add DMA sector to
-	Documentation/powerpc/booting-without-of.txt file.
-Date: Wed, 11 Jul 2007 22:27:12 +0200
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <ntl@pobox.com>
+Received: from sceptre.pobox.com (sceptre.pobox.com [207.106.133.20])
+	by ozlabs.org (Postfix) with ESMTP id A24F7DDE26
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 06:29:07 +1000 (EST)
+Date: Wed, 11 Jul 2007 15:29:50 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Joachim Fenkes <fenkes@de.ibm.com>
+Subject: Re: DEFINE_IDR() and the layer cache
+Message-ID: <20070711202950.GF17955@localdomain>
+References: <200707112027.30490.fenkes@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200707112027.30490.fenkes@de.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Christoph Raisch <raisch@de.ibm.com>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>,
+	linux-kernel@vger.kernel.org, jim.houston@ccur.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,16 +23,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> What if the mem-to-mem channels were explicitly labelled   
->>> fsl,mpc8548-dma-mem-to-mem?
->> Why would you?  Why would you put _any_ compatible property in
->> the individual channels, even; they aren't separate devices
->> after all.
+Hi Joachim-
+
+Joachim Fenkes wrote:
 >
-> They should be. :-)
+> idr_init(), when called for the first time, sets up the layer
+> cache. idr_get_new() and friends expect the cache to exist. Now, what happens
+> if the first call to idr_get_new() targets an idr initialized using
+> DEFINE_IDR() before idr_init() has been called at least once? Could this
+> happen?
 
-But they're not, no amount of wishing or trying to discount the
-shared ("master") register block will change that.
+unnamed_dev_init() is the first caller of idr_init() and it happens to
+be called before the first use of idr_get_new():
 
+[    0.831907]  [<c010615a>] dump_stack+0x16/0x18
+[    0.831945]  [<c01c2714>] idr_init+0x3c/0x9c
+[    0.831985]  [<c038cab8>] unnamed_dev_init+0xd/0xf
+[    0.832027]  [<c037b987>] start_kernel+0x307/0x341
+[    0.832068]  [<00000000>] 0x0
+[    0.832149]  =======================
+[    0.832881] Mount-cache hash table entries: 512
+[    0.833432]  [<c010615a>] dump_stack+0x16/0x18
+[    0.833470]  [<c01c298f>] idr_get_new_above_int+0x43/0x222
+[    0.833541]  [<c01c2b7b>] idr_get_new+0xd/0x28
+[    0.833605]  [<c0169243>] set_anon_super+0x36/0xa0
+[    0.833667]  [<c01696be>] sget+0x234/0x2c9
+[    0.833722]  [<c016a01e>] get_sb_single+0x24/0x8e
+[    0.833781]  [<c01a2468>] sysfs_get_sb+0x1c/0x1e
+[    0.833867]  [<c0169b63>] vfs_kern_mount+0x41/0x70
+[    0.833927]  [<c0169ba8>] kern_mount+0x16/0x18
+[    0.833984]  [<c038e494>] sysfs_init+0x57/0xa5
+[    0.834026]  [<c038cfe3>] mnt_init+0xc5/0x1cb
+[    0.834064]  [<c038cce8>] vfs_caches_init+0x141/0x152
+[    0.834104]  [<c037b996>] start_kernel+0x316/0x341
+[    0.834144]  [<00000000>] 0x0
+[    0.834174]  =======================
 
-Segher
+It does seem fragile, though.  AFAICT there's no guarantee that a
+DEFINE_IDR user couldn't call idr_get_new() before unnamed_dev_init()
+runs.
+
+Also, init_id_cache() in idr.c is racy wrt itself.  If the first two
+uses of idr_init() occur concurrently, the code could attempt to
+create idr_layer_cache twice.
