@@ -1,22 +1,21 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 780EFDDE20
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 06:39:59 +1000 (EST)
-Date: Wed, 11 Jul 2007 15:51:40 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Maynard Johnson <maynardj@us.ibm.com>
-Subject: Re: Resend: [PATCH] oprofile support for Power 5++
-Message-ID: <20070711205140.GA7298@lixom.net>
-References: <4693CC5B.4020207@linux.vnet.ibm.com>
-	<14287.1184096639@neuling.org>
-	<4693E7EF.4020708@linux.vnet.ibm.com> <911.1184099498@neuling.org>
-	<1184101660.22547.104.camel@farscape.rchland.ibm.com>
-	<4693FB3C.4060305@us.ibm.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 93C58DDE32
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 06:44:45 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [patch 1/9] move 82xx/83xx/86xx Kconfig options to platform
+	selection
+Date: Wed, 11 Jul 2007 22:33:51 +0200
+References: <20070616000511.712667424@arndb.de>
+	<20070616000618.183462070@arndb.de>
+	<20070711153542.GB11516@mag.az.mvista.com>
+In-Reply-To: <20070711153542.GB11516@mag.az.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4693FB3C.4060305@us.ibm.com>
-Cc: willschm@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
-	Michael Neuling <mikey@neuling.org>, mjw@linux.vnet.ibm.com
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200707112233.51899.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,27 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 10, 2007 at 04:33:48PM -0500, Maynard Johnson wrote:
-> Will Schmidt wrote:
-> 
-> > On Tue, 2007-07-10 at 15:31 -0500, Michael Neuling wrote:
-> > 
-> >>>>Does it make more sense to call this "ppc64/power5+rev3"?  
-> >>>>  
-> >>>
-> >>>This is a change to support new counter setup for oprofile.  It may be the
-> >>>same if there is a revision 4 or 5 etc.  So since the internal name was ++
-> I have no idea if there will be a revision 4, etc, but I'm assuming the 
-> behavior would be the same as rev 3.  So I'm not in favor of changing 
+On Wednesday 11 July 2007, Mark A. Greer wrote:
 
-The way the cputable patch is now, the rev 4 would match the base revision
-anyway.  Maybe it makes more sense to make PVR xxxx01xx and xxxx02xx
-explicitly match the old power5+, and make everything else match power5++?
+> > +config CLASSIC32
+> > +	def_bool y
+> > +	depends on 6xx && PPC_MULTIPLATFORM
+> 		       ^^^^^^^^^^^^^^^^^^^^
+> Arnd, is this really what you wanted?  With it, none of the embedded
+> classics have CLASSIC32 defined which means they don't get TAU or
+> ALTIVEC defined which isn't good.
 
-I guess it all depends on the chance of IBM doing another major rev of
-power5. Given it's current phase of product maturity I suppose it's not
-all that likely. Doing it this way saves yet another cputable entry as
-well, since it would otherwise mean two added entries instead of one.
+Sorry, this was the result of a wrong patch reordering. In my initial
+patch set I ended up with 6xx == CLASSIC32 and PPC_MULTIPLATFORM=y,
+but then I backed out a few patches in the middle.
 
+I guess the best is to do another patch that moves PPC_EMBEDDED6xx into
+PPC_MULTIPLATFORM again and leaves this one as it is.
+Alternatively, we could kill CONFIG_CLASSIC32 entirely as it is used
+only in a few places. Especially after I resubmit my CPU type selection
+patch again, which allows you do it in a more fine grained way.
 
--Olof
+Which systems in particular should allow CONFIG_TAU? Is there a more
+specific dependency than (6xx && !(82xx || 83xx || 86xx || 52xx))?
+
+	Arnd <><
