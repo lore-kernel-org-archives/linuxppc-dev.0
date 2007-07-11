@@ -1,32 +1,33 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <albertcc@tw.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C3C14DDE49
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 12:44:21 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l6B2iFlO021847
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 19:44:16 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l6B2iEOT004540
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 21:44:15 -0500 (CDT)
-Subject: Re: [patch 3/6] Add 8548 CDS PCI express controller node and PCI-X
-	device node
-From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <963D5B48-F1E5-4930-9F29-98D7F0E33C0A@kernel.crashing.org>
-References: <1184082728.20129.187.camel@localhost.localdomain>
-	<963D5B48-F1E5-4930-9F29-98D7F0E33C0A@kernel.crashing.org>
-Content-Type: text/plain
-Message-Id: <1184121840.22066.24.camel@localhost.localdomain>
-Mime-Version: 1.0
-Date: 11 Jul 2007 10:44:01 +0800
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7A006DDE1D
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 12:45:49 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6B2jjBj021039
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 22:45:45 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l6B2jjRZ257062
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 20:45:45 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l6B2jij8032078
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2007 20:45:45 -0600
+Message-ID: <4694444F.3050909@tw.ibm.com>
+Date: Wed, 11 Jul 2007 10:45:35 +0800
+From: Albert Lee <albertcc@tw.ibm.com>
+MIME-Version: 1.0
+To: Mikael Pettersson <mikpe@it.uu.se>
+Subject: Re: [PATCH 1/1] libata: pata_pdc2027x PLL input clock fix
+References: <200707102314.l6ANEWq2029195@harpo.it.uu.se>
+In-Reply-To: <200707102314.l6ANEWq2029195@harpo.it.uu.se>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: dwm@enoyolf.org, jeff@garzik.org, linux-ide@vger.kernel.org,
+	bahadir.balban@gmail.com, linuxppc-dev@ozlabs.org, alan@lxorguk.ukuu.org.uk
+Reply-To: albertl@mail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,45 +37,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-07-11 at 04:25, Segher Boessenkool wrote:
-> >               pci1: pci@8000 {
-> >                       interrupt-map-mask = <1f800 0 0 7>;
+Mikael Pettersson wrote:
 > 
-> Set the mask to <1800 0 0 7>, and you need only 16
-> entries to encode the swizzle.  Except...
 > 
-> > +                             /* bus 1 , idsel 0x2 Tsi310 bridge
-> secondary */
+> 2.6.22 + this prints the following on my G3:
 > 
-> ...interrupts on bus 1 should be swizzled on bus 1, not
-> at the PHB.  Really.  It is a horrible workaround for a
-> non-existing problem to do it here, and I promise you
-> it _will_ come back to hurt you later.  Not a threat,
-> just a promise :-)
+> pata_pdc2027x 0000:00:0e.0: version 0.9
+> usec_elapsed for mdelay(37) [35431]
+> start time: [1184112028]s [775333]us 
+> end   time: [1184112028]s [810764]us 
+> pata_pdc2027x 0000:00:0e.0: PLL input clock 1691741 kHz
+> pata_pdc2027x: Invalid PLL input clock 1691741kHz, give up!
+> 
 
-I just want to make it as a temporary workaround now.
-Extra patches will be provided to fix it.
+My x86 box got this:
+Jul 11 10:02:17 p4ht-s kernel: [  260.746980] ACPI: PCI Interrupt 0000:02:05.0[A] -> Link [LNK1] -> GSI 10 (level, low) -> IRQ 10
+Jul 11 10:02:17 p4ht-s kernel: [  260.882905] usec_elapsed for mdelay(37) [36734]
+Jul 11 10:02:17 p4ht-s kernel: [  260.882911] start time: [1184119336]s [999802]us 
+Jul 11 10:02:17 p4ht-s kernel: [  260.882914] end   time: [1184119337]s [36536]us 
+Jul 11 10:02:17 p4ht-s kernel: [  260.882917] pata_pdc2027x 0000:02:05.0: PLL input clock 16829 kHz
 
+So, it seems both mdelay(37) and do_gettimeofday() are working properly on PowerMac G3.
+Maybe the calculated wrong PLL input is due to wrong reading of the counter register?
+Could you please try the attached debug patch for more clue, thanks.
 
-> > -                     compatible = "85xx";
-> > +                     compatible = "fsl,mpc85xx-pci","85xx";
-> 
-> No more "xx" please...
-> 
-> > +             pci@a000 {
-> > +                     interrupt-map-mask = <f800 0 0 7>;
-> > +                     interrupt-map = <
-> > +
-> > +                             /* IDSEL 0x0 (PEX) */
-> > +                             00000 0 0 1 &mpic 0 1
-> > +                             00000 0 0 2 &mpic 1 0
-> > +                             00000 0 0 3 &mpic 2 0
-> > +                             00000 0 0 4 &mpic 3 0>;
-> 
-> Why sense 0 for all but the first entry in this map?
-Now, only the first entry is used.
-> 
-> > +                     compatible = "fsl,mpc86xx-pciex","86xx";
-> 
-> And "xx" again.  Aren't the 85- and 86- PCIe controllers
-> compatible, btw?
+--
+albert
+
+diff -Nrup 00_libata-dev/drivers/ata/pata_pdc2027x.c 01_debug/drivers/ata/pata_pdc2027x.c
+--- 00_libata-dev/drivers/ata/pata_pdc2027x.c	2007-07-07 09:58:55.000000000 +0800
++++ 01_debug/drivers/ata/pata_pdc2027x.c	2007-07-11 10:41:41.000000000 +0800
+@@ -574,8 +574,8 @@ retry:
+ 
+ 	counter = (bccrh << 15) | bccrl;
+ 
+-	PDPRINTK("bccrh [%X] bccrl [%X]\n", bccrh,  bccrl);
+-	PDPRINTK("bccrhv[%X] bccrlv[%X]\n", bccrhv, bccrlv);
++	printk(KERN_ERR "bccrh [%X] bccrl [%X]\n", bccrh,  bccrl);
++	printk(KERN_ERR "bccrhv[%X] bccrlv[%X]\n", bccrhv, bccrlv);
+ 
+ 	/*
+ 	 * The 30-bit decreasing counter are read by 2 pieces.
+@@ -584,7 +584,7 @@ retry:
+ 	 */
+ 	if (retry && !(bccrh == bccrhv && bccrl >= bccrlv)) {
+ 		retry--;
+-		PDPRINTK("rereading counter\n");
++		printk(KERN_ERR "rereading counter\n");
+ 		goto retry;
+ 	}
+ 
+@@ -722,8 +722,21 @@ static long pdc_detect_pll_input_clock(s
+ 	pll_clock = (start_count - end_count) / 100 *
+ 		(100000000 / usec_elapsed);
+ 
+-	PDPRINTK("start[%ld] end[%ld] \n", start_count, end_count);
+-	PDPRINTK("PLL input clock[%ld]Hz\n", pll_clock);
++	printk(KERN_ERR "start[%ld] end[%ld] \n", start_count, end_count);
++	printk(KERN_ERR "usec_elapsed for mdelay(100) [%ld]\n", usec_elapsed);
++	printk(KERN_ERR "start time: [%ld]s [%ld]us \n", start_time.tv_sec, start_time.tv_usec);
++	printk(KERN_ERR "end   time: [%ld]s [%ld]us \n", end_time.tv_sec, end_time.tv_usec);
++	printk(KERN_ERR "PLL input clock[%ld]Hz\n", pll_clock);
++
++	/* mdelay(37) for comparison */
++	do_gettimeofday(&start_time);
++	mdelay(37);
++	do_gettimeofday(&end_time);
++	usec_elapsed = (end_time.tv_sec - start_time.tv_sec) * 1000000 +
++		(end_time.tv_usec - start_time.tv_usec);
++	printk(KERN_ERR "usec_elapsed for mdelay(37) [%ld]\n", usec_elapsed);
++	printk(KERN_ERR "start time: [%ld]s [%ld]us \n", start_time.tv_sec, start_time.tv_usec);
++	printk(KERN_ERR "end   time: [%ld]s [%ld]us \n", end_time.tv_sec, end_time.tv_usec);
+ 
+ 	return pll_clock;
+ }
