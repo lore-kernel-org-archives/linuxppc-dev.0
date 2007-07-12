@@ -1,26 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.232])
-	by ozlabs.org (Postfix) with ESMTP id E69FCDDDF3
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 81DD5DDD0D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 13 Jul 2007 08:51:06 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id i21so263153wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 Jul 2007 15:51:06 -0700 (PDT)
-Message-ID: <fa686aa40707121551i7b123818i94423c386f58a5bb@mail.gmail.com>
-Date: Thu, 12 Jul 2007 16:51:04 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Robertson, Joseph M." <joseph.robertson@sanmina-sci.com>
-Subject: Re: XSysAce driver cant mount DOS part
-In-Reply-To: <939D37AEB47F1F49B88FAB6599B6023501A17209@hsv1dafpew02.das.gov.sanm.corp>
+	Fri, 13 Jul 2007 10:00:16 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] [POWERPC] Move generic MPC82xx functions out of
+	ADS-specific
+Date: Fri, 13 Jul 2007 01:59:40 +0200
+References: <200707101312.46052.laurent.pinchart@technotrade.biz>
+	<4694F66D.2010907@freescale.com>
+	<200707121704.45373.laurent.pinchart@cse-semaphore.com>
+In-Reply-To: <200707121704.45373.laurent.pinchart@cse-semaphore.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <939D37AEB47F1F49B88FAB6599B6023501A17205@hsv1dafpew02.das.gov.sanm.corp>
-	<fa686aa40707121116l1d76078aq82926eb861720474@mail.gmail.com>
-	<939D37AEB47F1F49B88FAB6599B6023501A17206@hsv1dafpew02.das.gov.sanm.corp>
-	<fa686aa40707121206n7e75e770q742adb3659f35e79@mail.gmail.com>
-	<939D37AEB47F1F49B88FAB6599B6023501A17209@hsv1dafpew02.das.gov.sanm.corp>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200707130159.40394.arnd@arndb.de>
+Cc: Laurent Pinchart <laurent.pinchart@cse-semaphore.com>,
+	Vitaly Bordug <vbordug@ru.mvista.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,27 +28,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 7/12/07, Robertson, Joseph M. <joseph.robertson@sanmina-sci.com> wrote:
-> Hi,
->
->  Ok this is surely enough to drive you nuts, but all I get is an error.
->  How the heck do you debug patch?  All I get is this.
->
-> root@tocnet_ws_9:/mnt/public2/ecau/src/linux/linux-2.6.17.1#
-> patch -p1 -un  -i xsys.patch
->  patch unexpectedly ends in middle of line
->  patch: **** Only garbage was found in the patch input.
+On Thursday 12 July 2007, Laurent Pinchart wrote:
+> > Ah, I missed that. =A0I'd just get rid of "Vendor" altogether, and incl=
+ude
+> > the vendor name in the machine name.
+>=20
+> Is there any standard/documentation regarding what show_cpuinfo should pr=
+int ?=20
+> Should it show CPU information only, or board information as well ? What=
+=20
+> about the memory size, clock settings, ... ? What are the meanings=20
+> of "vendor" and "machine" ?
 
-The Gmane web view mangles patches.  You can use an NNTP client to
-talk to gmane to get them without mangling.
+I guess the easiest would be to modify the common show_cpuinfo function
+to fall back to just printing the model, if there is no specific function:
 
-But to keep things simple, I'll just email you the patch.
+=2D-- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -175,6 +175,12 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 			seq_printf(m, "platform\t: %s\n", ppc_md.name);
+ 		if (ppc_md.show_cpuinfo !=3D NULL)
+ 			ppc_md.show_cpuinfo(m);
++		else {
++			struct device_node *root =3D of_find_node_by_path("/");
++			const char *model =3D of_get_property(root, "model", NULL);
++			seq_printf(m, "machine\t\t: %s\n", model);
++			of_node_put(root);
++		}
+=20
+ 		return 0;
+ 	}
 
-Cheers,
-g.
+With that in place, we can probably get rid of half the platform
+specific show_cpuinfo functions.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+	Arnd <><
