@@ -1,22 +1,22 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-5.cisco.com (sj-iport-5.cisco.com [171.68.10.87])
-	by ozlabs.org (Postfix) with ESMTP id 95B4FDDF8A
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 03:25:32 +1000 (EST)
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Subject: Re: [PATCH 00/10] IB/ehca: Multiple Event Queues, MR/MW rework,
-	large page MRs, fixes
-References: <200707121745.27592.fenkes@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 12 Jul 2007 10:15:24 -0700
-In-Reply-To: <200707121745.27592.fenkes@de.ibm.com> (Joachim Fenkes's message
-	of "Thu, 12 Jul 2007 17:45:26 +0200")
-Message-ID: <adawsx55ys3.fsf@cisco.com>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id EA335DDDFE
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 04:57:30 +1000 (EST)
+Message-ID: <46967990.1090203@freescale.com>
+Date: Thu, 12 Jul 2007 13:57:20 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: LKML <linux-kernel@vger.kernel.org>, LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	OF-General <general@lists.openfabrics.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+To: Zhang Wei-r63237 <Wei.Zhang@freescale.com>
+Subject: Re: [PATCH 4/4] Add DMA engine driver for Freescale MPC8xxx
+	processors.
+References: <46B96294322F7D458F9648B60E15112C6F3E46@zch01exm26.fsl.freescale.net>
+In-Reply-To: <46B96294322F7D458F9648B60E15112C6F3E46@zch01exm26.fsl.freescale.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,19 +26,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > Note that patch 7 will introduce a few lines over 80 chars that will be
- > unindented in patch 8 - I hope that's okay with you.
+Zhang Wei-r63237 wrote:
+>>It'd be much simpler to allocate the entire ring at once.  No need for
+>>linked lists, DMA pools, etc.  Just a single dma_alloc_coherent.
+>>
+> 
+> 
+> I use a flexible ld ring size here. If there is no more free ring, the
+> driver can add new ld to the ring.
 
-That's fine -- the 80 column rule is one thing I don't worry about too
-much; absurdly long lines are bad, but if a line is, say, 84 chars and
-breaking it makes the code uglier, then I just leave the 84 char line.
+I don't think that's worth all the complexity that it adds.  Most 
+drivers make do just fine with a fixed-size ring.
 
- > [09/10] fixes a lot of checkpatch.pl warnings
+>>What benefit do we get out of using extended mode?  If the 
+>>driver can do
+>>everything it needs to with basic, with no performance 
+>>penalty, why not
+>>always use basic?
+>>
+> 
+> Why there are extended mode in silicon? :) 
 
-Are these warnings from earlier patches in the series, or problems
-that already existed in the code?  If they are coming from other
-patches in the series, please just fix the earlier patches before I
-merge them.
+I've been wondering that myself. :-)
 
-Thanks,
-  Roland
+> Since there are here, we use it.
+
+"Because it's there" really isn't a good reason for adding complexity to 
+the code.
+
+>>It'd be nice if we didn't have to stop the DMA in order to insert new
+>>descriptors.
+> 
+> 
+> Since there is only happen at no more free ld in the ring. We need to
+> break the ld-ring and add new ld to it. 
+
+Or you could just block until a previous descriptor completes.
+
+>>Why not just use the index into the ring as the cookie?
+> 
+> 
+> The cookie will record all transfer by increased number. The ring index
+> is less for all transfer.
+
+I'm not sure I follow.  All you need is a way to identify a currently 
+used descriptor, right?
+
+>>>+						fsl_chan->id, stat);
+>>>+	if (!stat)
+>>>+		return IRQ_NONE;
+>>>+	busy = stat & (FSL_DMA_SR_CB);
+>>>+	stat &= ~(FSL_DMA_SR_CB | FSL_DMA_SR_CH);
+>>
+>>This masking must happen *before* the IRQ_NONE check.
+> 
+> Really? FSL_DMA_SR_CH is also a stat of event. 
+
+Does the IRQ handler always clear the bit?  If not, then it doesn't count.
+
+> And I need the FSL_DMA_SR_CB status.
+
+The busy assignment can still happen before the mask...  just move the 
+IRQ_NONE check down.
+
+-Scott
