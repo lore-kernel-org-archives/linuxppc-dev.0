@@ -1,20 +1,15 @@
-Return-Path: <bhupi.saharan@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
-	by ozlabs.org (Postfix) with ESMTP id CA147DDE0A
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 02:33:01 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k40so148577ugc
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2007 09:33:00 -0700 (PDT)
-Message-ID: <720399a30707110932n5a4ddb33u552f5b01921f34b5@mail.gmail.com>
-Date: Wed, 11 Jul 2007 09:32:59 -0700
-From: "Bhupender Saharan" <bhupi.saharan@gmail.com>
-To: "Nicolas Mederle" <mederle_nicolas@yahoo.fr>
-Subject: Re: PageFault when I write in the Serial registers, MMU ?
-In-Reply-To: <4694F9BD.4090406@yahoo.fr>
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_6220_32915590.1184171579967"
-References: <4694F9BD.4090406@yahoo.fr>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id CA530DDE04
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 16:21:27 +1000 (EST)
+Date: Thu, 12 Jul 2007 16:21:24 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] of_detach_node now modifies its argument
+Message-Id: <20070712162124.f0125b49.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,90 +19,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_6220_32915590.1184171579967
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Commit 6a281856c02d2291df2f7d9df5bfdee2e7bdd747 modified of_detach_node
+so that it now sets a flag in the passed device_node.  Remove the const
+from the parameter to get rid of this warning:
 
-Hi,
+arch/powerpc/kernel/prom.c: In function 'of_detach_node':
+arch/powerpc/kernel/prom.c:1468: warning: passing argument 1 of 'of_node_set_flag' discards qualifiers from pointer target type
 
-You could call *io_block_mapping* function from your setup.c file that will
-add the entry into MMU.
+The only caller was already passing a non-const device_node.
 
-regards
-Bhupi
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/kernel/prom.c |    2 +-
+ include/asm-powerpc/prom.h |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
+Paul, another for 2.6.23.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-
-
-
-On 7/11/07, Nicolas Mederle <mederle_nicolas@yahoo.fr> wrote:
->
-> Hi,
->
->    I am porting linux on a custom board equipped with a PPC750, and I
-> will like to have some advices on the MMU. I used the powerpc arch, and
-> I built my device tree.
->    I will like to know in which files we can configure the
-> authorizations access for the I/O registers. When I use the function
-> md_ppc.progress, I have a data access fault. I modified the head. S
-> files, for add the BAT config. But I think that it is not correct, and
-> that it is possible to do it elsewhere (platform_init?). Moreover the
-> kernel modify the MMU config, it removes the BATs, and configures the
-> Registers Segments. So, must I remake the configuration? Or is it
-> possible to indicate, at the beginning, which space is reserved for I/O?
->    I studied several patch (sandpoint, PrPMC2800) but none configures
-> really the MMU for I/O registers. In the same way, I read several books,
-> but I am not able to have information that I seek, therefore I am really
-> blocked. I warmly thank you for the assistance which you will be able to
-> bring to me.
->
->    Mapping :     0x0000 0000    ->  0x0FFF FFFF   :   RAM
->                         0x2000 0000   ->   0x201F FFFF   :   ASIC (
-> UART, DMA, GPIO, PIC...)
->                         0x8000 0000   ->   0x8FFF FFFF   :   PCI
->                         0xF000 0000   ->   0xFFFF FFFF   :   Flash
->    The kernel is load at 0x0, an the system is a Run In Memory.
-> Currently, I don't use the flash.
->
->
-> Best regards,
-> Nicolas MEDERLE
->
-> --
-> Cordialement,
->
-> Nicolas MEDERLE.
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
-
-------=_Part_6220_32915590.1184171579967
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-<div>Hi,</div>
-<div>&nbsp;</div>
-<div>You could call <strong>io_block_mapping</strong> function from your setup.c file that will add the entry into MMU.</div>
-<div>&nbsp;</div>
-<div>regards</div>
-<div>Bhupi</div>
-<div>&nbsp;</div>
-<div>&nbsp;</div>
-<div><br><br>&nbsp;</div>
-<div><span class="gmail_quote">On 7/11/07, <b class="gmail_sendername">Nicolas Mederle</b> &lt;<a href="mailto:mederle_nicolas@yahoo.fr">mederle_nicolas@yahoo.fr</a>&gt; wrote:</span>
-<blockquote class="gmail_quote" style="PADDING-LEFT: 1ex; MARGIN: 0px 0px 0px 0.8ex; BORDER-LEFT: #ccc 1px solid">Hi,<br><br>&nbsp;&nbsp; I am porting linux on a custom board equipped with a PPC750, and I<br>will like to have some advices on the MMU. I used the powerpc arch, and
-<br>I built my device tree.<br>&nbsp;&nbsp; I will like to know in which files we can configure the<br>authorizations access for the I/O registers. When I use the function<br>md_ppc.progress, I have a data access fault. I modified the head. S
-<br>files, for add the BAT config. But I think that it is not correct, and<br>that it is possible to do it elsewhere (platform_init?). Moreover the<br>kernel modify the MMU config, it removes the BATs, and configures the<br>
-Registers Segments. So, must I remake the configuration? Or is it<br>possible to indicate, at the beginning, which space is reserved for I/O?<br>&nbsp;&nbsp; I studied several patch (sandpoint, PrPMC2800) but none configures<br>really the MMU for I/O registers. In the same way, I read several books,
-<br>but I am not able to have information that I seek, therefore I am really<br>blocked. I warmly thank you for the assistance which you will be able to<br>bring to me.<br><br>&nbsp;&nbsp; Mapping :&nbsp;&nbsp;&nbsp;&nbsp; 0x0000 0000&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;&nbsp;0x0FFF FFFF&nbsp;&nbsp; :&nbsp;&nbsp; RAM
-<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0x2000 0000&nbsp;&nbsp; -&gt;&nbsp;&nbsp; 0x201F FFFF&nbsp;&nbsp; :&nbsp;&nbsp; ASIC (<br>UART, DMA, GPIO, PIC...)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0x8000 0000&nbsp;&nbsp; -&gt;&nbsp;&nbsp; 0x8FFF FFFF&nbsp;&nbsp; :&nbsp;&nbsp; PCI<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0xF000 0000&nbsp;&nbsp; -&gt;&nbsp;&nbsp; 0xFFFF FFFF&nbsp;&nbsp; :&nbsp;&nbsp; Flash
-<br>&nbsp;&nbsp; The kernel is load at 0x0, an the system is a Run In Memory.<br>Currently, I don&#39;t use the flash.<br><br><br>Best regards,<br>Nicolas MEDERLE<br><br>--<br>Cordialement,<br><br>Nicolas MEDERLE.<br><br>_______________________________________________
-<br>Linuxppc-embedded mailing list<br><a href="mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org</a><br><a href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-</a><br></blockquote></div><br>
-
-------=_Part_6220_32915590.1184171579967--
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 37ff99b..67a1bda 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -1433,7 +1433,7 @@ void of_attach_node(struct device_node *np)
+  * a reference to the node.  The memory associated with the node
+  * is not freed until its refcount goes to zero.
+  */
+-void of_detach_node(const struct device_node *np)
++void of_detach_node(struct device_node *np)
+ {
+ 	struct device_node *parent;
+ 
+diff --git a/include/asm-powerpc/prom.h b/include/asm-powerpc/prom.h
+index 1632baa..1bba741 100644
+--- a/include/asm-powerpc/prom.h
++++ b/include/asm-powerpc/prom.h
+@@ -160,7 +160,7 @@ extern unsigned long __init of_get_flat_dt_root(void);
+ 
+ /* For updating the device tree at runtime */
+ extern void of_attach_node(struct device_node *);
+-extern void of_detach_node(const struct device_node *);
++extern void of_detach_node(struct device_node *);
+ 
+ /* Other Prototypes */
+ extern void finish_device_tree(void);
