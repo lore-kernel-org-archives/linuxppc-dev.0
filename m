@@ -1,21 +1,19 @@
-Return-Path: <mgreer@mvista.com>
-Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id A0ACCDDD0C
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 09:44:47 +1000 (EST)
-Date: Wed, 11 Jul 2007 16:47:09 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [patch 1/9] move 82xx/83xx/86xx Kconfig options to platform
-	selection
-Message-ID: <20070711234709.GB18386@mag.az.mvista.com>
-References: <20070616000511.712667424@arndb.de>
-	<20070616000618.183462070@arndb.de>
-	<20070711153542.GB11516@mag.az.mvista.com>
-	<200707112233.51899.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200707112233.51899.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4CB72DDE0A
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 10:28:26 +1000 (EST)
+Subject: Re: [PATCH 1/5] Store the base address in dcr_host_t
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+In-Reply-To: <3cdc6bd05b505600609a79667f3674168e2e855b.1182493056.git.michael@ellerman.id.au>
+References: <3cdc6bd05b505600609a79667f3674168e2e855b.1182493056.git.michael@ellerman.id.au>
+Content-Type: text/plain
+Date: Thu, 12 Jul 2007 10:28:15 +1000
+Message-Id: <1184200095.6059.119.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,38 +23,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 11, 2007 at 10:33:51PM +0200, Arnd Bergmann wrote:
-> On Wednesday 11 July 2007, Mark A. Greer wrote:
+On Fri, 2007-06-22 at 16:18 +1000, Michael Ellerman wrote:
+> In its current form, dcr_map() doesn't remember the base address you passed
+> it, which means you need to store it somewhere else. Rather than adding the
+> base to another struct it seems simpler to store it in the dcr_host_t.
 > 
-> > > +config CLASSIC32
-> > > +	def_bool y
-> > > +	depends on 6xx && PPC_MULTIPLATFORM
-> > 		       ^^^^^^^^^^^^^^^^^^^^
-> > Arnd, is this really what you wanted?  With it, none of the embedded
-> > classics have CLASSIC32 defined which means they don't get TAU or
-> > ALTIVEC defined which isn't good.
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+> ---
+>  arch/powerpc/sysdev/dcr.c        |    2 +-
+>  include/asm-powerpc/dcr-mmio.h   |    6 +++++-
+>  include/asm-powerpc/dcr-native.h |    6 ++++--
+>  3 files changed, 10 insertions(+), 4 deletions(-)
 > 
-> Sorry, this was the result of a wrong patch reordering. In my initial
-> patch set I ended up with 6xx == CLASSIC32 and PPC_MULTIPLATFORM=y,
-> but then I backed out a few patches in the middle.
-
-Ah, okay.
-
-> I guess the best is to do another patch that moves PPC_EMBEDDED6xx into
-> PPC_MULTIPLATFORM again and leaves this one as it is.
-> Alternatively, we could kill CONFIG_CLASSIC32 entirely as it is used
-> only in a few places. Especially after I resubmit my CPU type selection
-> patch again, which allows you do it in a more fine grained way.
-
-Yes, it seems like getting rid of CLASSIC32 would be okay since it is
-hardly used.
-
-> Which systems in particular should allow CONFIG_TAU? Is there a more
-> specific dependency than (6xx && !(82xx || 83xx || 86xx || 52xx))?
-
-I think Segher pretty much answered this.  We definitely need to get
-ALTIVEC back soon for 74xx--currently SIGILL's my init when booting.
-Since it sounds like you're still tweaking things in Kconfig files,
-I'll leave it to you to take care of it.  If not, just let me know.
-
-Mark
+> diff --git a/arch/powerpc/sysdev/dcr.c b/arch/powerpc/sysdev/dcr.c
+> index 574b6ef..f3c5646 100644
+> --- a/arch/powerpc/sysdev/dcr.c
+> +++ b/arch/powerpc/sysdev/dcr.c
+> @@ -102,7 +102,7 @@ u64 of_translate_dcr_address(struct device_node *dev,
+>  dcr_host_t dcr_map(struct device_node *dev, unsigned int dcr_n,
+>  		   unsigned int dcr_c)
+>  {
+> -	dcr_host_t ret = { .token = NULL, .stride = 0 };
+> +	dcr_host_t ret = { .token = NULL, .stride = 0, .base = dcr_n };
+>  	u64 addr;
+>  
+>  	pr_debug("dcr_map(%s, 0x%x, 0x%x)\n",
+> diff --git a/include/asm-powerpc/dcr-mmio.h b/include/asm-powerpc/dcr-mmio.h
+> index 5dbfca8..6b82c3b 100644
+> --- a/include/asm-powerpc/dcr-mmio.h
+> +++ b/include/asm-powerpc/dcr-mmio.h
+> @@ -23,7 +23,11 @@
+>  
+>  #include <asm/io.h>
+>  
+> -typedef struct { void __iomem *token; unsigned int stride; } dcr_host_t;
+> +typedef struct {
+> +	void __iomem *token;
+> +	unsigned int stride;
+> +	unsigned int base;
+> +} dcr_host_t;
+>  
+>  #define DCR_MAP_OK(host)	((host).token != NULL)
+>  
+> diff --git a/include/asm-powerpc/dcr-native.h b/include/asm-powerpc/dcr-native.h
+> index 05af081..f41058c 100644
+> --- a/include/asm-powerpc/dcr-native.h
+> +++ b/include/asm-powerpc/dcr-native.h
+> @@ -22,11 +22,13 @@
+>  #ifdef __KERNEL__
+>  #ifndef __ASSEMBLY__
+>  
+> -typedef struct {} dcr_host_t;
+> +typedef struct {
+> +	unsigned int base;
+> +} dcr_host_t;
+>  
+>  #define DCR_MAP_OK(host)	(1)
+>  
+> -#define dcr_map(dev, dcr_n, dcr_c)	((dcr_host_t){})
+> +#define dcr_map(dev, dcr_n, dcr_c)	((dcr_host_t){ .base = (dcr_n) })
+>  #define dcr_unmap(host, dcr_n, dcr_c)	do {} while (0)
+>  #define dcr_read(host, dcr_n)		mfdcr(dcr_n)
+>  #define dcr_write(host, dcr_n, value)	mtdcr(dcr_n, value)
