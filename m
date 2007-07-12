@@ -1,19 +1,22 @@
-Return-Path: <bwaite@irobot.com>
-Received: from irobot.com (smtp1.irobot.com [66.238.211.203])
-	by ozlabs.org (Postfix) with ESMTP id 3C3D4DDDD8
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailgate100.isp.belgacom.be (mailrelay100.isp.belgacom.be
+	[195.238.6.81]) by ozlabs.org (Postfix) with ESMTP id 2E38CDDD04
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 13 Jul 2007 01:02:19 +1000 (EST)
-From: Brian Waite <bwaite@irobot.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: [kernel-2.6.19]Marvell GT-64260 and Ethernet
-Date: Thu, 12 Jul 2007 10:50:10 -0400
-References: <13b81f0c0707092336r5c7f4996u6f9c73d95c63bdc6@mail.gmail.com>
-	<4693861F.2000403@genesi-usa.com>
-In-Reply-To: <4693861F.2000403@genesi-usa.com>
+	Fri, 13 Jul 2007 01:07:33 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] [POWERPC] Move generic MPC82xx functions out of
+	ADS-specific
+Date: Thu, 12 Jul 2007 17:07:31 +0200
+References: <200707101312.46052.laurent.pinchart@technotrade.biz>
+	<200707110928.55339.laurent.pinchart@technotrade.biz>
+	<4694F66D.2010907@freescale.com>
+In-Reply-To: <4694F66D.2010907@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200707121050.10967.bwaite@irobot.com>
+Message-Id: <200707121707.31208.laurentp@cse-semaphore.com>
+Cc: Vitaly Bordug <vbordug@ru.mvista.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,20 +27,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 10 July 2007, Matt Sealey wrote:
-> Isn't the ethernet the same on the 64260, 64360, 64460?
+Hi Scott,
+
+On Wednesday 11 July 2007 17:25, Scott Wood wrote:
+> Laurent Pinchart wrote:
+> > On Tuesday 10 July 2007 20:05, Scott Wood wrote:
+> >>Why are you also moving mpc82xx_ads_show_cpuinfo() to the board file?
+> >>It's not really ADS-specific; it should just be renamed.
+> >
+> > For the MPC82xx ADS boards, mpc82xx_ads_show_cpuinfo() prints
+> >
+> > Vendor              : Freescale Semiconductor
+> > Machine             : PQ2 ADS PowerPC
+> >
+> > The vendor string is hardcoded to "Freescale Semiconductor", and the
+> > machine string is defined in pq2ads.h. What should show_cpuinfo() print ?
+> > Should the vendor be the board vendor or the CPU vendor ? What about the
+> > machine ?
 >
-> There's definitely a driver for 6436x and above..
+> Ah, I missed that.  I'd just get rid of "Vendor" altogether, and include
+> the vendor name in the machine name.
 
-There was some work done back in the early 2.6 timeframe to make a unified 
-360/260 driver. I worked on in a while ago (2+ years) I think the reason you 
-don't see it in the tree, is because we all stopped using the 260 and went to 
-the 360 as fast as possible. 
-gt64260_eth.c ill not jus work. A lot of work (Mark Greer etc) was done in 
-refactoring most of the Marvell support from 2.4->2.6. You might get away 
-with setting up the platfrom correctly for the 260. Check out the ppc/syslib 
-directory. You might find some clues there,
+Is there any standard/documentation regarding what show_cpuinfo should print ? 
+Should it show CPU information only, or board information as well ? What 
+about the memory size, clock settings, ... ? What are the meanings 
+of "vendor" and "machine" ?
 
-
-Thanks
-Brian
+-- 
+Laurent Pinchart
+CSE Semaphore Belgium
