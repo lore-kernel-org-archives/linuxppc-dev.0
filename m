@@ -1,16 +1,20 @@
-Return-Path: <cbe-oss-dev@ml.breakpoint.cc>
-Date: Thu, 12 Jul 2007 14:10:37 +0200
-From: Sebastian Siewior <cbe-oss-dev@ml.breakpoint.cc>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [Cbe-oss-dev] PS3 improved video mode autodetection for HDMI/DVI
-Message-ID: <20070712121037.GD24117@Chamillionaire.breakpoint.cc>
-References: <Pine.LNX.4.62.0707121029320.12797@pademelon.sonytel.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <Pine.LNX.4.62.0707121029320.12797@pademelon.sonytel.be>
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>,
-	Ben Collins <ben.collins@ubuntu.com>
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [208.123.74.7])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 348EEDDDF7
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 23:03:13 +1000 (EST)
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 0/2] Move DTC Technical specs out of b-w-o.txt into DTC
+	Repo
+In-Reply-To: Your message of "Thu, 12 Jul 2007 02:01:07 CDT."
+	<BFA74155-D32C-41F5-B61C-D9CE89A29B9B@kernel.crashing.org>
+References: <1184190325.25384.125.camel@ld0161-tx32>
+	<BFA74155-D32C-41F5-B61C-D9CE89A29B9B@kernel.crashing.org>
+Date: Thu, 12 Jul 2007 08:03:07 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1I8yK3-0003UC-Fk@jdl.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,39 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Geert Uytterhoeven | 2007-07-12 10:40:47 [+0200]:
+So, like, the other day Kumar Gala mumbled:
+> 
+> On Jul 11, 2007, at 4:45 PM, Jon Loeliger wrote:
+> 
+> > Folks,
+> >
+> > Here are two patches, one to the kernel, the other to
+> > the DTC repo, that moves the technical description
+> > portions of the booting-without-of.txt documentation
+> > out of the kernel and into the DTC repository.
+> 
+> Why remove it from the kernel?  It seems like this part should change  
+> infrequently and it would be good to keep its documentation with the  
+> kernel as well?
 
->If you're using a PS3 with a HDMI or DVI-D(+HDCP) monitor, please give it a
->try.
-Got 1920x1200 @60Hz on my Eizo FlexScan S2411W on boot. No quirk
-required for that one :)
+Well, all the usual reasons.  It will be improving over time,
+and it makes much more sense to keep the documntation about
+a system within the repository for that system.  And rather
+than have two copies, one of which will get out of sync,
+I feel it makes more sense to relocate the DTC technical
+descriptions to the DTC repository where it belongs.
 
->(BTW, even if autodetect works fine, I always welcome this information)
-Here it is:
+And speaking of which, I will also be removing the already extant
+and already way out of data copy of the booting-without-of.txt
+from the DTC repo as well.
 
-Monitor Info: size 96
-avport: 00
-monitor_id:  15 c3 50 18 01 01 01 01 04 11
-monitor_type: 02
-monitor_name: S2411W
-resolution_60: bits: 0000400d native: 00000000
-resolution_50: bits: 00000000 native: 00000000
-resolution_other: bits: 00000000 native: 00000000
-resolution_vesa: bits: 00000009 native: 00000000
-color space    rgb: 01
-color space yuv444: 00
-color space yuv422: 00
-color info   red: X 028f Y 0152
-color info green: X 0133 Y 026f
-color info  blue: X 009a Y 003d
-color info white: X 0141 Y 0151
-color info gamma:  000000dc
-supported_AI: 00
-speaker_info: 00
-num of audio: 00
-ps3av_hdmi_get_vid: Using supported resolution 15
-ps3_av vuart_01:  <- ps3av_probe:1014
+If a small summary of say, DTC command line usage is left in
+b-w-o.txt as a Quick Ref, I'm fine with that, of course.
 
->Geert Uytterhoeven
-
-Sebastian
+Thanks,
+jdl
