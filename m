@@ -4,19 +4,23 @@ Received: from de01egw02.freescale.net (de01egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EA335DDDFE
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 04:57:30 +1000 (EST)
-Message-ID: <46967990.1090203@freescale.com>
-Date: Thu, 12 Jul 2007 13:57:20 -0500
+	by ozlabs.org (Postfix) with ESMTP id 4001DDDECD
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 05:10:12 +1000 (EST)
+Message-ID: <46967C8C.9010602@freescale.com>
+Date: Thu, 12 Jul 2007 14:10:04 -0500
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Zhang Wei-r63237 <Wei.Zhang@freescale.com>
-Subject: Re: [PATCH 4/4] Add DMA engine driver for Freescale MPC8xxx
-	processors.
-References: <46B96294322F7D458F9648B60E15112C6F3E46@zch01exm26.fsl.freescale.net>
-In-Reply-To: <46B96294322F7D458F9648B60E15112C6F3E46@zch01exm26.fsl.freescale.net>
+To: pterry@micromemory.com
+Subject: Re: [PATCH 1/4] Add DMA sector
+	to	Documentation/powerpc/booting-without-of.txt file.
+References: <46B96294322F7D458F9648B60E15112C6F3D1E@zch01exm26.fsl.freescale.net>	
+	<4694F608.2090503@freescale.com>	
+	<368E1200-1315-4C24-9876-C92CCF65EFE3@kernel.crashing.org>	
+	<46B96294322F7D458F9648B60E15112C6F3E42@zch01exm26.fsl.freescale.net>
+	<1184260375.24515.35.camel@pterry-fc6.micromemory.com>
+In-Reply-To: <1184260375.24515.35.camel@pterry-fc6.micromemory.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, Wei.Zhang@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,67 +30,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Zhang Wei-r63237 wrote:
->>It'd be much simpler to allocate the entire ring at once.  No need for
->>linked lists, DMA pools, etc.  Just a single dma_alloc_coherent.
->>
+Phil Terry wrote:
+> Say I'm writing a sound card, video card, widget card, etc., driver.
 > 
+> My driver gets loaded by virtue of detecting the card/device (via of,
+> pci, usb, platform, whatever bus mechanisms).
 > 
-> I use a flexible ld ring size here. If there is no more free ring, the
-> driver can add new ld to the ring.
+> My driver would benefit from using a generic DMA device so it uses the
+> internal api to look for one and uses the API of that device to request
+> a channel for its use. I don't care what channel I get, I don't need a
+> fixed, reserved channel of the DMA device as specified in the dts I just
+> need an unused channel. If no channels are available or I'm in a system
+> with no generic DMA service available I can either fall back to
+> processor copying or refuse to load.
 
-I don't think that's worth all the complexity that it adds.  Most 
-drivers make do just fine with a fixed-size ring.
+The audio device example was not about using the DMA engine for generic 
+memory copying; it was about an audio device that is hardwired to a 
+certain DMA channel.  There is no way to do audio without using that 
+specific channel.
 
->>What benefit do we get out of using extended mode?  If the 
->>driver can do
->>everything it needs to with basic, with no performance 
->>penalty, why not
->>always use basic?
->>
-> 
-> Why there are extended mode in silicon? :) 
+> If the dts/of/boot loader tells the kernel its a fsl soc then it knows
+> how to work out which one and what level, and therefore knows what
+> devices, such as the DMA device are present.
 
-I've been wondering that myself. :-)
+All you'd be doing then is moving the device trees into the kernel.  The 
+dtc syntax is a convenient way of expressing the information that has to 
+live *somewhere*.
 
-> Since there are here, we use it.
+> Quite why we are using a 20 year old spec, which was never finished, and
+> ceased to be a formal spec 10 years ago as the "new" way forward is a
+> puzzle to me as well.
 
-"Because it's there" really isn't a good reason for adding complexity to 
-the code.
+Probably because there was already code there to support it. :-P
 
->>It'd be nice if we didn't have to stop the DMA in order to insert new
->>descriptors.
-> 
-> 
-> Since there is only happen at no more free ld in the ring. We need to
-> break the ld-ring and add new ld to it. 
-
-Or you could just block until a previous descriptor completes.
-
->>Why not just use the index into the ring as the cookie?
-> 
-> 
-> The cookie will record all transfer by increased number. The ring index
-> is less for all transfer.
-
-I'm not sure I follow.  All you need is a way to identify a currently 
-used descriptor, right?
-
->>>+						fsl_chan->id, stat);
->>>+	if (!stat)
->>>+		return IRQ_NONE;
->>>+	busy = stat & (FSL_DMA_SR_CB);
->>>+	stat &= ~(FSL_DMA_SR_CB | FSL_DMA_SR_CH);
->>
->>This masking must happen *before* the IRQ_NONE check.
-> 
-> Really? FSL_DMA_SR_CH is also a stat of event. 
-
-Does the IRQ handler always clear the bit?  If not, then it doesn't count.
-
-> And I need the FSL_DMA_SR_CB status.
-
-The busy assignment can still happen before the mask...  just move the 
-IRQ_NONE check down.
+It's not that bad in most respects, though unlike some, I don't think we 
+need to stick dogmatically to the exact way that Open Firmware(tm) did 
+everything.
 
 -Scott
