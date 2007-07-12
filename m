@@ -1,12 +1,13 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id B177EDDDFB
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id CB281DDDF5
 	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 07:52:29 +1000 (EST)
-Message-Id: <20070712210156.973038514@arndb.de>
-Date: Thu, 12 Jul 2007 23:01:56 +0200
+Message-Id: <20070712210909.166472555@arndb.de>
+References: <20070712210156.973038514@arndb.de>
+Date: Thu, 12 Jul 2007 23:01:58 +0200
 From: Arnd Bergmann <arnd@arndb.de>
 To: paulus@samba.org
-Subject: [PATCH 0/5] Kconfig cleanup revisited
+Subject: [PATCH 2/5] linkstation: fix multiplatform build
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -17,17 +18,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Since this was brought up by Mark, here is a resend of the
-Kconfig cleanup patches that have not been merged so far,
-with updates for the comments I received.
+The ls_uart file accidentally includes two headers from asm-ppc that
+are no longer needed but cause a broken build in some configurations.
+Kill the includes to fix the build.
 
-I stumbled over another bug in the process, and fear I have
-found a can of worms there (not opened yet): There are
-still many files under arch/powerpc that include headers
-from include/asm-ppc/. Most of these includes can simply
-be removed, but some are real bugs, where generic code still
-relies on board-specific macro definitions.
-
-	Arnd <><
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+diff --git a/arch/powerpc/platforms/embedded6xx/ls_uart.c b/arch/powerpc/platforms/embedded6xx/ls_uart.c
+index d0bee9f..3b023b0 100644
+--- a/arch/powerpc/platforms/embedded6xx/ls_uart.c
++++ b/arch/powerpc/platforms/embedded6xx/ls_uart.c
+@@ -4,8 +4,6 @@
+ #include <linux/serial_reg.h>
+ #include <linux/serial_8250.h>
+ #include <asm/io.h>
+-#include <asm/mpc10x.h>
+-#include <asm/ppc_sys.h>
+ #include <asm/prom.h>
+ #include <asm/termbits.h>
+ 
 
 --
