@@ -1,18 +1,24 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id E3A34DDE40
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 03:04:26 +1000 (EST)
-Message-ID: <46965F93.2090806@ru.mvista.com>
-Date: Thu, 12 Jul 2007 21:06:27 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <gallatin@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
+	by ozlabs.org (Postfix) with ESMTP id F25D4DE041
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 02:01:55 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k40so369099ugc
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 09:01:54 -0700 (PDT)
+Message-ID: <3cea2ee30707120901m6c5116c9q4ed0ee0c55222b19@mail.gmail.com>
+Date: Thu, 12 Jul 2007 12:01:53 -0400
+From: "Andrew Gallatin" <gallatin@gmail.com>
+To: "Jan-Bernd Themann" <ossthema@de.ibm.com>
+Subject: Re: [RFC 0/3] lro: Generic Large Receive Offload for TCP traffic
+In-Reply-To: <200707111621.24852.ossthema@de.ibm.com>
 MIME-Version: 1.0
-To: mingo@elte.hu, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Fwd: [PATCH] 2.6.18-rt7: fix more issues with 32-bit cycles_t
-	in	latency_trace.c
-References: <200611130026.17204.sshtylyov@ru.mvista.com>
-In-Reply-To: <200611130026.17204.sshtylyov@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <200707111621.24852.ossthema@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>, loic@myri.com,
+	Marcus Eder <meder@de.ibm.com>, stefan.roscher@de.ibm.com, brice@myri.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,39 +28,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello, I wrote:
+On 7/11/07, Jan-Bernd Themann <ossthema@de.ibm.com> wrote:
+> Generic Large Receive Offload proposal
 
-> In addition to clock wrap check being falsely triggered with 32-bit cycles_t,
-> as noticed to Kevin Hilman, there's another issue: using %Lx format to print
-> 32-bit values warrants erroneous values on 32-bit machines like ARM and PPC32.
+I'm very glad that somebody is stepping up to take responsibility
+for this!
 
-> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+I'm the primary author of the Myricom Myri10GE driver, and its LRO mechanism
+(which has been rejected several times when posted here).  I don't subscribe
+to the LKML or netdev lists (the b/w is way too much for me).
+Thankfully, my colleague Brice (who maintains our driver in the kernel)
+forwarded me this message.
 
-> ---
-> PPC32 actually has 64-bit timebase counter, so could provide for 64-bit
-> cycles_t -- maybe it's worth to rewrite get_cycles() to read both lower and
-> upper registers?
+I looked at your patch, and I believe that we can improve the
+performance further by using a slightly different approach, or at
+least making that approach optional.
 
-    This one (called latency-tracer-prink-fix.patch in the broken out 
-patchset) has been erroneously "restored" some months ago. Since 
-preempt_max_latency is of type 'unsigned long' now and all the other vars are 
-of type 'cycle_t' (which aliases 'u64'), only the first cast is actually 
-needed (or rather, the first format specifier needs to be changed to %08lx). 
-Erm, maybe I'll cook a patch...
+When I first did our LRO implementation, it aggregated packets
+essentially the same way you are doing it -- by appending packets to
+the frag_list.  I did quite extensive profiling, and the most expensive
+operations seemed to be the allocation and freeing of memory.  A
+colleague of mine (Loic, CC'ed) came up with the brilliant idea of
+receiving into pages.  When I implemented his suggestion, it turned
+out to be much, much more efficient to receive into pages, and to
+accumulate the pages to the frags array.
 
-> Index: linux-2.6/kernel/latency_trace.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/latency_trace.c
-> +++ linux-2.6/kernel/latency_trace.c
-> @@ -1623,8 +1623,8 @@ check_critical_timing(int cpu, struct cp
->  #ifndef CONFIG_CRITICAL_LATENCY_HIST
->  	if (!preempt_thresh && preempt_max_latency > delta) {
->  		printk("bug: updating %016Lx > %016Lx?\n",
-> -			preempt_max_latency, delta);
-> -		printk("  [%016Lx %016Lx %016Lx]\n", T0, T1, T2);
-> +			(u64)preempt_max_latency, (u64)delta);
-> +		printk("  [%016Lx %016Lx %016Lx]\n", (u64)T0, (u64)T1, (u64)T2);
->  	}
->  #endif
+The benchmarks I did on very low end machines in my lab (2GHz
+amd64 x2 3800+) showed that the receiver was saturated at roughly
+4.2Gb/s without LRO, 5.7Gb/s with frag_list based LRO, 8.6Gb/s with
+frags array based LRO, and somewhat idle at line rate with frags array
+based LRO and 32KB order=3 pages. (This is 1500b frames, BTW).
 
-WBR, Sergei
+The savings comes from being able to do fewer allocations.  For
+example, 2 1500b packets fit in a single page.  So, for a "full" frag
+array, we have 16 1/2 4KB pages and a single skb holding them.
+This works out to be 9 allocations for roughly 23KB of payload,
+rather than 16. Using order 3 (32KB) pages, it gets even better,
+and we have just 2 allocations per full skb frag list.
+
+So... It would be wonderful if your patch could also deal with
+data residing in pages, rather than in skbs.  I can understand
+how you might not want to modify your driver to do this, which
+is why I'm asking about making it optional.  However,
+your driver would probably benefit from receiving into
+pages, and I encourage you to investigate that.
+
+I'm picturing an additional path into lro, such as:
+
+int lro_maybe_receive_frags(struct net_lro_mgr *lro_mgr,
+                struct skb_frag_struct *frags,
+                int len,  void *priv);
+
+
+This would return 0 if the packet was "accepted", and an
+error if it was not.  It would then call a modified
+__lro_proc_skb() (perhaps better named __lro_proc_segment())
+which would have the length as an argument (so as to avoid
+the need to pass the skb to lro_tcp_ip_check()) in addition
+to the *frags.
+
+The only real additional work would be in having an alternate path
+inside lro_init_desc() which allocated an skb to hang the pages from
+if the passed skb was null, and in having an alternate
+lro_add_packet() path which added the frag(s), rather than chaining an
+skb.
+
+Also, your patch does not seem to maintain TCP checksums.
+To be fair, we did not maintain checksums in our earlier LRO
+work either, and it was much simpler that way! :) However,
+not maintaining the TCP checksum can lead to user complaints
+(invalid csum reported by traffic sniffers), as well as problems
+when various filtering software is used which attempts to
+re-write the TCP header.
+
+I would very much appreciate it if you could look at my LRO
+implementation in our Myri10GE driver which has been
+posted (and rejected) several times in the past by Brice.
+The source code is also available at:
+http://www.myri.com/ftp/pub/Myri10GE/myri10ge-linux.1.3.0.tgz.
+It uses a page based approach, and it maintains correct TCP
+checksums.
+
+This driver is Dual BSD/GPL licensed, and you are free to take
+whatever you like.
+
+Thank you again for stepping up with a generic implementation!
+
+Drew
