@@ -1,21 +1,28 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 917C6DDE2A
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 06:12:20 +1000 (EST)
-Date: Thu, 12 Jul 2007 22:12:18 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: Tickless Hz/hrtimers/etc. on PowerPC
-In-Reply-To: <46968960.6090402@genesi-usa.com>
-Message-ID: <Pine.LNX.4.62.0707122211330.25033@pademelon.sonytel.be>
-References: <46951C1A.4080001@genesi-usa.com> <8302.1184178785@neuling.org>
-	<46955674.9090304@genesi-usa.com> <29941.1184255383@neuling.org>
-	<46968960.6090402@genesi-usa.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-1997521270-1184271138=:25033"
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Michael Neuling <mikey@neuling.org>
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
+	[207.189.120.14])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6EE2DDDDF5
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 07:37:32 +1000 (EST)
+Date: Thu, 12 Jul 2007 14:35:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: jim.houston@ccur.com
+Subject: Re: [PATCH] fix idr_get_new_above id alias bugs
+Message-Id: <20070712143501.2c2cdf1f.akpm@linux-foundation.org>
+In-Reply-To: <1184097931.3020.73.camel@localhost.localdomain>
+References: <200707021919.27251.hnguyen@linux.vnet.ibm.com>
+	<1183422700.3130.27.camel@localhost.localdomain>
+	<200707041611.30056.hnguyen@linux.vnet.ibm.com>
+	<1184097931.3020.73.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Tejun Heo <htejun@gmail.com>, Kristian Hoegsberg <krh@redhat.com>,
+	linux-kernel@vger.kernel.org, openib-general@openib.org,
+	Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
+	linuxppc-dev@ozlabs.org, raisch@de.ibm.com,
+	Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,49 +32,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Tue, 10 Jul 2007 16:05:31 -0400
+Jim Houston <jim.houston@ccur.com> wrote:
 
----584337861-1997521270-1184271138=:25033
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Thu, 12 Jul 2007, Matt Sealey wrote:
-> Michael Neuling wrote:
-> >> And I don't want to run -rt or wireless-dev for the benefit of a single
-> >> feature. What I am after is something like Ingo Molnar throws out..
-> >> single patches done the old way, not git trees. It's so much easier to
-> >> handle and integrate for example into a Gentoo ebuild or to make a
-> >> tarball of accumulated patches from a certain release kernel.
-> > 
-> > I'm sooo with ya.  I like my patches alphabetised, but no one ever does
-> > it for me.
+> Hoang-Nam Nguyen reported a bug in idr_get_new_above() 
+> which occurred with a starting id value like 0x3ffffffc.
+> His test module easily reproduced the problem.  Thanks.
 > 
-> Well my only requirement is numbering them so they patch in order; there
-> are some cute little requirements on that, but I'd rather patch the bare
-> minimum and bring in as few quirks and new features than just grab an
-> entire -rt tree with what amounts to 60 or 70 individual patches and
-> start renumbering them.
+> The test revealed the following bugs:
+> 
+> 1. Relying on shift operations which have undefined results
+>    e.g.: 1 << n where n > word size.  On i386 an integer shift
+>    only uses the low 5 bits of the shift count.
+> 
+> 2. An off by one error which prevented the top most layer
+>    of the radix tree from being allocated.  This meant that
+>    sub_alloc() would allocate an entry in the existing portion
+>    of the radix tree which aliased the requested address.  When
+>    it tried to allocate id 0x40000000, it might use the slot 
+>    belonging to id 0.
+> 
+> 3. There was also a failure in the code which walked back up
+>    the tree if an allocation failed.  The normal case is to
+>    descend the tree checking the starting id value against the
+>    bitmap at each level.  If the bit is set, we know that the
+>    entire sub-tree is full and we can short cut the search.
+>    We may still descend to the lowest level and find that the
+>    portion of the id space we want is full.  In this case we
+>    need to walk back up the tree and continue the search.
+>    The existing code just returned to the previous level and
+>    continued.  This resulted in an attempt to allocate an id
+>    above 0x3ffffffc using the slot for id 0x3ffffc00 instead of
+>    0x40000000 which it then claimed to have allocated.  The same
+>    problem occurs with 0x3ff as the requested id value if it
+>    is already in use.
+> 
+> With this patch, idr.c should work as advertised allocating id
+> values in the range 0...0x7fffffff.  Andrew had speculated that
+> it should allow the full range 0...0xffffffff to be used.  I was
+> tempted to make changes to allow this, but it would require changes
+> to API, e.g. making the starting id value and the return value
+> unsigned.
 
-That's why quilt uses a series file, so the patch names don't have to be
-ordered.
+Problem.  There are a large number of IDR changes pending and this
+patch breaks in way which I am not at all confident in fixing.
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
+Originarily I'd just dump the earlier patches because bugfixes come
+first.  But this time there's a very large dependency trail on the
+earlier patches (especially Tejun's extensive sysfs rework in Greg's
+driver tree) so the wreckage would be extensive.
 
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1997521270-1184271138=:25033--
+Also, it's possible that Tejun's changes already fixed some of the things
+which you fixed.  Or added new bugs ;)
+
+Bottom line: a reworked patch against 2.6.22-rc6-mm1 would be muchly
+appreciated if poss, please.
+
+While you're there, it would be helpful if you could review all these
+pending IDR changes:
+
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/gregkh-driver-ida-implement-idr-based-id-allocator.patch
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/gregkh-driver-idr-fix-obscure-bug-in-allocation-path.patch
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/gregkh-driver-idr-separate-out-idr_mark_full.patch
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/lib-add-idr_for_each.patch
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/lib-add-idr_for_each-fix.patch
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/lib-add-idr_remove_all.patch
+
+Thanks.
