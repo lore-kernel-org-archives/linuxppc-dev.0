@@ -1,26 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <b07421@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4001DDDECD
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 05:10:12 +1000 (EST)
-Message-ID: <46967C8C.9010602@freescale.com>
-Date: Thu, 12 Jul 2007 14:10:04 -0500
+	by ozlabs.org (Postfix) with ESMTP id 13673DDED4
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 05:12:14 +1000 (EST)
+Date: Thu, 12 Jul 2007 14:12:05 -0500
 From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: pterry@micromemory.com
-Subject: Re: [PATCH 1/4] Add DMA sector
-	to	Documentation/powerpc/booting-without-of.txt file.
-References: <46B96294322F7D458F9648B60E15112C6F3D1E@zch01exm26.fsl.freescale.net>	
-	<4694F608.2090503@freescale.com>	
-	<368E1200-1315-4C24-9876-C92CCF65EFE3@kernel.crashing.org>	
-	<46B96294322F7D458F9648B60E15112C6F3E42@zch01exm26.fsl.freescale.net>
-	<1184260375.24515.35.camel@pterry-fc6.micromemory.com>
-In-Reply-To: <1184260375.24515.35.camel@pterry-fc6.micromemory.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, Wei.Zhang@freescale.com
+To: paulus@samba.org
+Subject: [PATCH 1/4] Make swsusp_32.S usable for suspend-to-RAM.
+Message-ID: <20070712191205.GA31358@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,41 +23,198 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Phil Terry wrote:
-> Say I'm writing a sound card, video card, widget card, etc., driver.
-> 
-> My driver gets loaded by virtue of detecting the card/device (via of,
-> pci, usb, platform, whatever bus mechanisms).
-> 
-> My driver would benefit from using a generic DMA device so it uses the
-> internal api to look for one and uses the API of that device to request
-> a channel for its use. I don't care what channel I get, I don't need a
-> fixed, reserved channel of the DMA device as specified in the dts I just
-> need an unused channel. If no channels are available or I'm in a system
-> with no generic DMA service available I can either fall back to
-> processor copying or refuse to load.
+This allows platform suspend code to re-use the generic state saving
+code, passing a pointer to the low-level suspend code.
 
-The audio device example was not about using the DMA engine for generic 
-memory copying; it was about an audio device that is hardwired to a 
-certain DMA channel.  There is no way to do audio without using that 
-specific channel.
+The resume path is modified so that non-hibernate callers skip
+hibernate-specific bits, and so that callers can specify that the MMU is
+off (and thus BATs should be restored).
 
-> If the dts/of/boot loader tells the kernel its a fsl soc then it knows
-> how to work out which one and what level, and therefore knows what
-> devices, such as the DMA device are present.
+The _GLOBAL around swsusp_save_area is changed to .global, as the former
+puts the data in the text section, which causes an oops with page
+debugging enabled.
 
-All you'd be doing then is moving the device trees into the kernel.  The 
-dtc syntax is a convenient way of expressing the information that has to 
-live *somewhere*.
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/Kconfig            |   11 +++++++
+ arch/powerpc/kernel/Makefile    |    2 +-
+ arch/powerpc/kernel/swsusp_32.S |   60 ++++++++++++++++++++++----------------
+ 3 files changed, 47 insertions(+), 26 deletions(-)
 
-> Quite why we are using a 20 year old spec, which was never finished, and
-> ceased to be a formal spec 10 years ago as the "new" way forward is a
-> puzzle to me as well.
-
-Probably because there was already code there to support it. :-P
-
-It's not that bad in most respects, though unlike some, I don't think we 
-need to stick dogmatically to the exact way that Open Firmware(tm) did 
-everything.
-
--Scott
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index cbfbd98..c89873d 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -117,6 +117,17 @@ config DEFAULT_UIMAGE
+ 	  Used to allow a board to specify it wants a uImage built by default
+ 	default n
+ 
++config PPC32_SUSPEND
++	bool
++	depends on PPC32
++	default n
++
++config PPC32_SWSUSP
++	bool
++	depends on PPC32 && SOFTWARE_SUSPEND
++	select PPC32_SUSPEND
++	default y
++
+ config PPC64_SWSUSP
+ 	bool
+ 	depends on PPC64 && (BROKEN || (PPC_PMAC64 && EXPERIMENTAL))
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 42c42ec..a4648d5 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -38,7 +38,7 @@ obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o
+ obj-$(CONFIG_6xx)		+= idle_6xx.o l2cr_6xx.o cpu_setup_6xx.o
+ obj-$(CONFIG_TAU)		+= tau_6xx.o
+ obj-$(CONFIG_SOFTWARE_SUSPEND)	+= swsusp.o suspend.o
+-obj32-$(CONFIG_SOFTWARE_SUSPEND) += swsusp_32.o
++obj32-$(CONFIG_PPC32_SUSPEND)	+= swsusp_32.o
+ obj64-$(CONFIG_SOFTWARE_SUSPEND) += swsusp_64.o swsusp_asm64.o
+ obj32-$(CONFIG_MODULES)		+= module_32.o
+ 
+diff --git a/arch/powerpc/kernel/swsusp_32.S b/arch/powerpc/kernel/swsusp_32.S
+index 69e8f86..ed1c95b 100644
+--- a/arch/powerpc/kernel/swsusp_32.S
++++ b/arch/powerpc/kernel/swsusp_32.S
+@@ -33,15 +33,21 @@
+ 	.section .data
+ 	.align	5
+ 
+-_GLOBAL(swsusp_save_area)
++	.global	swsusp_save_area
++swsusp_save_area:
+ 	.space	SL_SIZE
+ 
+ 
+ 	.section .text
+ 	.align	5
+ 
++#ifdef CONFIG_SOFTWARE_SUSPEND
+ _GLOBAL(swsusp_arch_suspend)
++	lis	r3, swsusp_save@h
++	ori	r3, r3, swsusp_save@l
++#endif
+ 
++_GLOBAL(do_suspend)
+ 	lis	r11,swsusp_save_area@h
+ 	ori	r11,r11,swsusp_save_area@l
+ 
+@@ -64,8 +70,8 @@ _GLOBAL(swsusp_arch_suspend)
+ 	stw	r4,SL_TB(r11)
+ 	mftb	r5
+ 	stw	r5,SL_TB+4(r11)
+-	mftbu	r3
+-	cmpw	r3,r4
++	mftbu	r6
++	cmpw	r6,r4
+ 	bne	1b
+ 
+ 	/* Save SPRGs */
+@@ -119,7 +125,8 @@ _GLOBAL(swsusp_arch_suspend)
+ 	/* Call the low level suspend stuff (we should probably have made
+ 	 * a stackframe...
+ 	 */
+-	bl	swsusp_save
++	mtctr	r3
++	bctrl
+ 
+ 	/* Restore LR from the save area */
+ 	lis	r11,swsusp_save_area@h
+@@ -129,7 +136,7 @@ _GLOBAL(swsusp_arch_suspend)
+ 
+ 	blr
+ 
+-
++#ifdef CONFIG_SOFTWARE_SUSPEND
+ /* Resume code */
+ _GLOBAL(swsusp_arch_resume)
+ 
+@@ -212,6 +219,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ 	bdnz	1b
+ 	sync
+ 
++	li	r3, 0
++#endif
++
++	/* r3 = nonzero if the MMU is completely disabled and
++	 * BATs may be restored, zero otherwise.
++	 */
++_GLOBAL(do_resume)
+ 	/* Ok, we are now running with the kernel data of the old
+ 	 * kernel fully restored. We can get to the save area
+ 	 * easily now. As for the rest of the code, it assumes the
+@@ -226,10 +240,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ 	bl	__restore_cpu_setup
+ #endif
+ 	/* Restore the BATs, and SDR1.  Then we can turn on the MMU.
+-	 * This is a bit hairy as we are running out of those BATs,
+-	 * but first, our code is probably in the icache, and we are
+-	 * writing the same value to the BAT, so that should be fine,
+-	 * though a better solution will have to be found long-term
++	 * This can only be done when r3 != 0 (and thus the MMU is
++	 * off).
+ 	 */
+ 	lwz	r4,SL_SDR1(r11)
+ 	mtsdr1	r4
+@@ -242,7 +254,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ 	lwz	r4,SL_SPRG0+12(r11)
+ 	mtsprg	3,r4
+ 
+-#if 0
++	cmpw	r3, 0
++	beq	1f
++
+ 	lwz	r4,SL_DBAT0(r11)
+ 	mtdbatu	0,r4
+ 	lwz	r4,SL_DBAT0+4(r11)
+@@ -275,8 +289,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ 	mtibatu	3,r4
+ 	lwz	r4,SL_IBAT3+4(r11)
+ 	mtibatl	3,r4
+-#endif
+ 
++1:
+ BEGIN_FTR_SECTION
+ 	li	r4,0
+ 	mtspr	SPRN_DBAT4U,r4
+@@ -306,8 +320,16 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_HIGH_BATS)
+ 
+ 	/* restore the MSR and turn on the MMU */
+ 	lwz	r3,SL_MSR(r11)
+-	bl	turn_on_mmu
+-	tovirt(r11,r11)
++	lis	r4, 1f@h
++	ori	r4, r4, 1f@l
++
++	mtsrr0	r4
++	mtsrr1	r3
++	sync
++	isync
++	rfi
++
++1:	tovirt(r11, r11)
+ 
+ 	/* Restore TB */
+ 	li	r3,0
+@@ -334,15 +356,3 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_HIGH_BATS)
+ 
+ 	li	r3,0
+ 	blr
+-
+-/* FIXME:This construct is actually not useful since we don't shut
+- * down the instruction MMU, we could just flip back MSR-DR on.
+- */
+-turn_on_mmu:
+-	mflr	r4
+-	mtsrr0	r4
+-	mtsrr1	r3
+-	sync
+-	isync
+-	rfi
+-
+-- 
+1.5.0.3
