@@ -1,18 +1,19 @@
 Return-Path: <b07421@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 13673DDED4
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 05:12:14 +1000 (EST)
-Date: Thu, 12 Jul 2007 14:12:05 -0500
+	by ozlabs.org (Postfix) with ESMTP id 3BBC8DDEBC
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 05:13:05 +1000 (EST)
+Date: Thu, 12 Jul 2007 14:12:57 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: paulus@samba.org
-Subject: [PATCH 1/4] Make swsusp_32.S usable for suspend-to-RAM.
-Message-ID: <20070712191205.GA31358@ld0162-tx32.am.freescale.net>
+Subject: [PATCH 2/4] Implement arch disable/enable irq hooks.
+Message-ID: <20070712191257.GA31381@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070712191205.GA31358@ld0162-tx32.am.freescale.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,198 +24,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This allows platform suspend code to re-use the generic state saving
-code, passing a pointer to the low-level suspend code.
-
-The resume path is modified so that non-hibernate callers skip
-hibernate-specific bits, and so that callers can specify that the MMU is
-off (and thus BATs should be restored).
-
-The _GLOBAL around swsusp_save_area is changed to .global, as the former
-puts the data in the text section, which causes an oops with page
-debugging enabled.
+These hooks ensure that a decrementer interrupt is not pending when
+suspending; otherwise, problems may occur.  For example, with deep sleep
+on the 831x, a pending decrementer will cause a system freeze because the
+SoC thinks the decrementer interrupt would have woken the system, but the
+core must have interrupts disabled due to the setup required for deep
+sleep.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/Kconfig            |   11 +++++++
- arch/powerpc/kernel/Makefile    |    2 +-
- arch/powerpc/kernel/swsusp_32.S |   60 ++++++++++++++++++++++----------------
- 3 files changed, 47 insertions(+), 26 deletions(-)
+ arch/powerpc/kernel/time.c    |   41 +++++++++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/machdep.h |   10 ++++++++++
+ 2 files changed, 51 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index cbfbd98..c89873d 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -117,6 +117,17 @@ config DEFAULT_UIMAGE
- 	  Used to allow a board to specify it wants a uImage built by default
- 	default n
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index e5df167..253f46d 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -728,6 +728,47 @@ void wakeup_decrementer(void)
+ 	set_dec(ticks);
+ }
  
-+config PPC32_SUSPEND
-+	bool
-+	depends on PPC32
-+	default n
++#ifdef CONFIG_PM
++void generic_suspend_disable_irqs(void)
++{
++	preempt_disable();
 +
-+config PPC32_SWSUSP
-+	bool
-+	depends on PPC32 && SOFTWARE_SUSPEND
-+	select PPC32_SUSPEND
-+	default y
-+
- config PPC64_SWSUSP
- 	bool
- 	depends on PPC64 && (BROKEN || (PPC_PMAC64 && EXPERIMENTAL))
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 42c42ec..a4648d5 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -38,7 +38,7 @@ obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o
- obj-$(CONFIG_6xx)		+= idle_6xx.o l2cr_6xx.o cpu_setup_6xx.o
- obj-$(CONFIG_TAU)		+= tau_6xx.o
- obj-$(CONFIG_SOFTWARE_SUSPEND)	+= swsusp.o suspend.o
--obj32-$(CONFIG_SOFTWARE_SUSPEND) += swsusp_32.o
-+obj32-$(CONFIG_PPC32_SUSPEND)	+= swsusp_32.o
- obj64-$(CONFIG_SOFTWARE_SUSPEND) += swsusp_64.o swsusp_asm64.o
- obj32-$(CONFIG_MODULES)		+= module_32.o
- 
-diff --git a/arch/powerpc/kernel/swsusp_32.S b/arch/powerpc/kernel/swsusp_32.S
-index 69e8f86..ed1c95b 100644
---- a/arch/powerpc/kernel/swsusp_32.S
-+++ b/arch/powerpc/kernel/swsusp_32.S
-@@ -33,15 +33,21 @@
- 	.section .data
- 	.align	5
- 
--_GLOBAL(swsusp_save_area)
-+	.global	swsusp_save_area
-+swsusp_save_area:
- 	.space	SL_SIZE
- 
- 
- 	.section .text
- 	.align	5
- 
-+#ifdef CONFIG_SOFTWARE_SUSPEND
- _GLOBAL(swsusp_arch_suspend)
-+	lis	r3, swsusp_save@h
-+	ori	r3, r3, swsusp_save@l
-+#endif
- 
-+_GLOBAL(do_suspend)
- 	lis	r11,swsusp_save_area@h
- 	ori	r11,r11,swsusp_save_area@l
- 
-@@ -64,8 +70,8 @@ _GLOBAL(swsusp_arch_suspend)
- 	stw	r4,SL_TB(r11)
- 	mftb	r5
- 	stw	r5,SL_TB+4(r11)
--	mftbu	r3
--	cmpw	r3,r4
-+	mftbu	r6
-+	cmpw	r6,r4
- 	bne	1b
- 
- 	/* Save SPRGs */
-@@ -119,7 +125,8 @@ _GLOBAL(swsusp_arch_suspend)
- 	/* Call the low level suspend stuff (we should probably have made
- 	 * a stackframe...
- 	 */
--	bl	swsusp_save
-+	mtctr	r3
-+	bctrl
- 
- 	/* Restore LR from the save area */
- 	lis	r11,swsusp_save_area@h
-@@ -129,7 +136,7 @@ _GLOBAL(swsusp_arch_suspend)
- 
- 	blr
- 
--
-+#ifdef CONFIG_SOFTWARE_SUSPEND
- /* Resume code */
- _GLOBAL(swsusp_arch_resume)
- 
-@@ -212,6 +219,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- 	bdnz	1b
- 	sync
- 
-+	li	r3, 0
-+#endif
-+
-+	/* r3 = nonzero if the MMU is completely disabled and
-+	 * BATs may be restored, zero otherwise.
++	/* Disable the decrementer, so that it doesn't interfere
++	 * with suspending.
 +	 */
-+_GLOBAL(do_resume)
- 	/* Ok, we are now running with the kernel data of the old
- 	 * kernel fully restored. We can get to the save area
- 	 * easily now. As for the rest of the code, it assumes the
-@@ -226,10 +240,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- 	bl	__restore_cpu_setup
- #endif
- 	/* Restore the BATs, and SDR1.  Then we can turn on the MMU.
--	 * This is a bit hairy as we are running out of those BATs,
--	 * but first, our code is probably in the icache, and we are
--	 * writing the same value to the BAT, so that should be fine,
--	 * though a better solution will have to be found long-term
-+	 * This can only be done when r3 != 0 (and thus the MMU is
-+	 * off).
++
++	set_dec(0x7fffffff);
++	local_irq_disable();
++	set_dec(0x7fffffff);
++}
++
++void generic_suspend_enable_irqs(void)
++{
++	wakeup_decrementer();
++
++	local_irq_enable();
++	preempt_enable();
++}
++
++/* Overrides the weak version in kernel/power/main.c */
++void arch_suspend_disable_irqs(void)
++{
++	if (ppc_md.suspend_disable_irqs)
++		ppc_md.suspend_disable_irqs();
++	else
++		generic_suspend_disable_irqs();
++}
++
++/* Overrides the weak version in kernel/power/main.c */
++void arch_suspend_enable_irqs(void)
++{
++	if (ppc_md.suspend_enable_irqs)
++		ppc_md.suspend_enable_irqs();
++	else
++		generic_suspend_enable_irqs();
++}
++#endif
++
+ #ifdef CONFIG_SMP
+ void __init smp_space_timers(unsigned int max_cpus)
+ {
+diff --git a/include/asm-powerpc/machdep.h b/include/asm-powerpc/machdep.h
+index 71c6e7e..492ecf3 100644
+--- a/include/asm-powerpc/machdep.h
++++ b/include/asm-powerpc/machdep.h
+@@ -253,6 +253,16 @@ struct machdep_calls {
  	 */
- 	lwz	r4,SL_SDR1(r11)
- 	mtsdr1	r4
-@@ -242,7 +254,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- 	lwz	r4,SL_SPRG0+12(r11)
- 	mtsprg	3,r4
- 
--#if 0
-+	cmpw	r3, 0
-+	beq	1f
+ 	void (*machine_kexec)(struct kimage *image);
+ #endif /* CONFIG_KEXEC */
 +
- 	lwz	r4,SL_DBAT0(r11)
- 	mtdbatu	0,r4
- 	lwz	r4,SL_DBAT0+4(r11)
-@@ -275,8 +289,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- 	mtibatu	3,r4
- 	lwz	r4,SL_IBAT3+4(r11)
- 	mtibatl	3,r4
--#endif
++#ifdef CONFIG_PM
++	/* These are called to disable and enable, respectively, IRQs when
++	 * entering a suspend state.  If NULL, then the generic versions
++	 * will be called.  The generic versions disable/enable the
++	 * decrementer along with interrupts.
++	 */
++	void (*suspend_disable_irqs)(void);
++	void (*suspend_enable_irqs)(void);
++#endif
+ };
  
-+1:
- BEGIN_FTR_SECTION
- 	li	r4,0
- 	mtspr	SPRN_DBAT4U,r4
-@@ -306,8 +320,16 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_HIGH_BATS)
- 
- 	/* restore the MSR and turn on the MMU */
- 	lwz	r3,SL_MSR(r11)
--	bl	turn_on_mmu
--	tovirt(r11,r11)
-+	lis	r4, 1f@h
-+	ori	r4, r4, 1f@l
-+
-+	mtsrr0	r4
-+	mtsrr1	r3
-+	sync
-+	isync
-+	rfi
-+
-+1:	tovirt(r11, r11)
- 
- 	/* Restore TB */
- 	li	r3,0
-@@ -334,15 +356,3 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_HIGH_BATS)
- 
- 	li	r3,0
- 	blr
--
--/* FIXME:This construct is actually not useful since we don't shut
-- * down the instruction MMU, we could just flip back MSR-DR on.
-- */
--turn_on_mmu:
--	mflr	r4
--	mtsrr0	r4
--	mtsrr1	r3
--	sync
--	isync
--	rfi
--
+ extern void power4_idle(void);
 -- 
 1.5.0.3
