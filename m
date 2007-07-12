@@ -1,24 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <kou.ishizaki@toshiba.co.jp>
+Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8596BDDE1D
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 17:55:27 +1000 (EST)
-In-Reply-To: <0E17851B-A642-43E2-9A5D-39DFC6F30E77@kernel.crashing.org>
-References: <1184082728.20129.187.camel@localhost.localdomain>
-	<963D5B48-F1E5-4930-9F29-98D7F0E33C0A@kernel.crashing.org>
-	<1184121840.22066.24.camel@localhost.localdomain>
-	<0E17851B-A642-43E2-9A5D-39DFC6F30E77@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <7431AAFD-73B7-4337-94CB-878285D298E3@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [patch 3/6] Add 8548 CDS PCI express controller node and PCI-X
-	device node
-Date: Thu, 12 Jul 2007 02:55:25 -0500
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTP id 66A90DDDFE
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 17:59:22 +1000 (EST)
+Date: Thu, 12 Jul 2007 16:59:15 +0900 (JST)
+Message-Id: <20070712.165915.-1300535948.kouish@swc.toshiba.co.jp>
+Subject: [PATCH] fix showing xmon help
+To: paulus@samba.org
+From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,26 +21,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->
->>>> +             pci@a000 {
->>>> +                     interrupt-map-mask = <f800 0 0 7>;
->>>> +                     interrupt-map = <
->>>> +
->>>> +                             /* IDSEL 0x0 (PEX) */
->>>> +                             00000 0 0 1 &mpic 0 1
->>>> +                             00000 0 0 2 &mpic 1 0
->>>> +                             00000 0 0 3 &mpic 2 0
->>>> +                             00000 0 0 4 &mpic 3 0>;
->>>
->>> Why sense 0 for all but the first entry in this map?
->> Now, only the first entry is used.
->
-> Sure, but the other three entries are incorrect.  Either
-> provide correct entries, or just leave the unused entries
-> out of the map; if those three interrupts aren't wired up,
-> that is the right thing to do, too.
+In some configuration, xmon help string is larger than xmon output
+buffer.  To show whole help string, this patch splits it into 2 parts.
 
-Yeah these should be sense 1 for irq b, c, d.  I'll fix that up when  
-I apply the patch.
+Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+---
 
-- k
+Index: linux-powerpc-git/arch/powerpc/xmon/xmon.c
+===================================================================
+RCS file: /home/public/cvs/linux-powerpc-git/arch/powerpc/xmon/xmon.c,v
+retrieving revision 1.1.1.7
+diff -u -p -r1.1.1.7 xmon.c
+--- linux-powerpc-git/arch/powerpc/xmon/xmon.c	11 Jul 2007 02:15:32 -0000	1.1.1.7
++++ linux-powerpc-git/arch/powerpc/xmon/xmon.c	11 Jul 2007 10:08:41 -0000
+@@ -182,7 +182,7 @@ extern void xmon_save_regs(struct pt_reg
+ 			 || ('A' <= (c) && (c) <= 'Z'))
+ #define isspace(c)	(c == ' ' || c == '\t' || c == 10 || c == 13 || c == 0)
+ 
+-static char *help_string = "\
++static char *help_string1 = "\
+ Commands:\n\
+   b	show breakpoints\n\
+   bd	set data breakpoint\n\
+@@ -210,7 +210,9 @@ Commands:\n\
+   md	compare two blocks of memory\n\
+   ml	locate a block of memory\n\
+   mz	zero a block of memory\n\
+-  mi	show information about memory allocation\n\
++  mi	show information about memory allocation\n"
++;
++static char *help_string2 = "\
+   p 	call a procedure\n\
+   r	print registers\n\
+   s	single step\n"
+@@ -833,7 +835,8 @@ cmds(struct pt_regs *excp)
+ 			mdelay(2000);
+ 			return cmd;
+ 		case '?':
+-			printf(help_string);
++			printf(help_string1);
++			printf(help_string2);
+ 			break;
+ 		case 'b':
+ 			bpt_cmds();
