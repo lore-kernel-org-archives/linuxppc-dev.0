@@ -1,21 +1,21 @@
 Return-Path: <laurent.pinchart@cse-semaphore.com>
-Received: from mailgate101.isp.belgacom.be (mailrelay101.isp.belgacom.be
-	[195.238.6.82]) by ozlabs.org (Postfix) with ESMTP id 58887DDEE0
+Received: from mailgate104.isp.belgacom.be (mailrelay104.isp.belgacom.be
+	[195.238.6.85]) by ozlabs.org (Postfix) with ESMTP id 691AADDEBA
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 13 Jul 2007 00:57:56 +1000 (EST)
+	Fri, 13 Jul 2007 01:04:48 +1000 (EST)
 From: Laurent Pinchart <laurent.pinchart@cse-semaphore.com>
 To: Scott Wood <scottwood@freescale.com>
 Subject: Re: [PATCH] [POWERPC] Move generic MPC82xx functions out of
 	ADS-specific
-Date: Thu, 12 Jul 2007 16:57:50 +0200
 References: <200707101312.46052.laurent.pinchart@technotrade.biz>
 	<200707110928.55339.laurent.pinchart@technotrade.biz>
 	<4694F66D.2010907@freescale.com>
 In-Reply-To: <4694F66D.2010907@freescale.com>
 MIME-Version: 1.0
+Date: Thu, 12 Jul 2007 17:04:45 +0200
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200707121657.51214.laurent.pinchart@cse-semaphore.com>
+Message-Id: <200707121704.45373.laurent.pinchart@cse-semaphore.com>
 Cc: Vitaly Bordug <vbordug@ru.mvista.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
