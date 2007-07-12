@@ -1,16 +1,16 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18069.41758.420516.135000@cargo.ozlabs.ibm.com>
-Date: Thu, 12 Jul 2007 13:42:22 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: Re: [PATCH 1/2] Kernel: Move all technical descriptons of the Device
-	Tree Complier
-In-Reply-To: <1184190359.25384.129.camel@ld0161-tx32>
-References: <1184190359.25384.129.camel@ld0161-tx32>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Jon Loeliger <jdl@jdl.com>
+Return-Path: <galak@kernel.crashing.org>
+In-Reply-To: <1184135957.23157.6.camel@localhost.localdomain>
+References: <1184135957.23157.6.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <C0041903-5892-4B77-962E-A5877667BBEE@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Fix mpc7448hpc2 tsi108 device_type bug
+Date: Thu, 12 Jul 2007 02:39:13 -0500
+To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,22 +20,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon Loeliger writes:
 
-> and its formats, command lines, descriptions, etc,
-> over to the Device Tree Compiler repositories now.
+On Jul 11, 2007, at 1:39 AM, Zang Roy-r61911 wrote:
 
-Hrm, section II (DT block format) is a description of a kernel
-interface, and I think it should stay.  After all, there's nothing
-that says that you have to use dtc to generate the device tree blob,
-so there is no reason for the dtc source to be the only place where
-the format is specified.
+> From: Roy Zang <tie-fei.zang@freescale.com>
+>
+> Fix mpc7448hpc2 tsi108 device_type bug.
+> Wrong device type will break the board startup.
+>
+> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+> ---
+> Please apply this patch. The bug breaks the board
+> startup.
+> Please copy patches about 74xx and tsi bridge
+> to me.
+>
+>  arch/powerpc/boot/dts/mpc7448hpc2.dts |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/powerpc/boot/dts/mpc7448hpc2.dts b/arch/powerpc/ 
+> boot/dts/mpc7448hpc2.dts
+> index 0e3d314..b9158eb 100644
+> --- a/arch/powerpc/boot/dts/mpc7448hpc2.dts
+> +++ b/arch/powerpc/boot/dts/mpc7448hpc2.dts
+> @@ -45,7 +45,7 @@
+>  		#address-cells = <1>;
+>  		#size-cells = <1>;
+>  		#interrupt-cells = <2>;
+> -		device_type = "tsi108-bridge";
+> +		device_type = "tsi-bridge";
 
-I have no problem with that section being copied over to the dtc
-source.
+Is there a reason we don't add:
 
-I also don't mind section IV being removed, although a sentence saying
-that dtc is useful for generating dtbs, and where to find dtc, would
-be useful.
+                 compatible = "tsi108-bridge";
 
-Paul.
+like the holly dts has?
+
+- k
+
+>  		ranges = <00000000 c0000000 00010000>;
+>  		reg = <c0000000 00010000>;
+>  		bus-frequency = <0>;
+> -- 
+> 1.5.1
+>
+>
+>
