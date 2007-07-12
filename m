@@ -1,17 +1,19 @@
-Return-Path: <stephane.fillod@thomson.net>
-Received: from dmzraw3.extranet.thmulti.com (dmzraw3.extranet.thmulti.com
-	[141.11.234.71]) by ozlabs.org (Postfix) with ESMTP id 64731DDDCA
+Return-Path: <bwaite@irobot.com>
+Received: from irobot.com (smtp1.irobot.com [66.238.211.203])
+	by ozlabs.org (Postfix) with ESMTP id 3C3D4DDDD8
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 Jul 2007 22:34:20 +1000 (EST)
+	Fri, 13 Jul 2007 01:02:19 +1000 (EST)
+From: Brian Waite <bwaite@irobot.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: [kernel-2.6.19]Marvell GT-64260 and Ethernet
+Date: Thu, 12 Jul 2007 10:50:10 -0400
+References: <13b81f0c0707092336r5c7f4996u6f9c73d95c63bdc6@mail.gmail.com>
+	<4693861F.2000403@genesi-usa.com>
+In-Reply-To: <4693861F.2000403@genesi-usa.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: How to access physical memory from user space for MPC8260 chip
-Date: Thu, 12 Jul 2007 14:07:52 +0200
-Message-ID: <0B45E93C5FF65740AEAE690BF3848B7A4AB178@rennsmail04.eu.thmulti.com>
-From: "Fillod Stephane" <stephane.fillod@thomson.net>
-To: "suresh suresh" <sureshtang@gmail.com>,
-	<linuxppc-embedded@ozlabs.org>
+  charset="iso-8859-1"
+Message-Id: <200707121050.10967.bwaite@irobot.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,27 +24,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-suresh suresh wrote:
->I have to map physical memory to user space or kernel space. I am
-writing >driver for MPC8260 chip and I want to know how to map any
-32-bit address >space to user space and kernel space.
+On Tuesday 10 July 2007, Matt Sealey wrote:
+> Isn't the ethernet the same on the 64260, 64360, 64460?
+>
+> There's definitely a driver for 6436x and above..
 
-Your question is a linuxppc-embedded FAQ. User-land access is documented
+There was some work done back in the early 2.6 timeframe to make a unified 
+360/260 driver. I worked on in a while ago (2+ years) I think the reason you 
+don't see it in the tree, is because we all stopped using the 260 and went to 
+the 360 as fast as possible. 
+gt64260_eth.c ill not jus work. A lot of work (Mark Greer etc) was done in 
+refactoring most of the Marvell support from 2.4->2.6. You might get away 
+with setting up the platfrom correctly for the 260. Check out the ppc/syslib 
+directory. You might find some clues there,
 
-in Denx's FAQ[1], and accessible through shorter URL[2]. For more=20
-information, please follow this thread[3] (not ppc specific actually).
 
-[1]
-http://www.denx.de/twiki/bin/view/PPCEmbedded/DeviceDrivers#Section_Acce
-ssingPeripheralsFromUserSpace
-[2] http://tinyurl.com/6c7th
-[3] http://article.gmane.org/gmane.linux.ports.ppc.embedded/5053
-
-In kernel land, ioremap() is all you need.
-
-Don't forget to use the 'eieio' asm instruction if you want explicit=20
-I/O ordering.
-
-Best Regards,
---=20
-Stephane, the userland ioremap bot
+Thanks
+Brian
