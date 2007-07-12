@@ -1,13 +1,13 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id E43A2DDDFD
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 07:52:29 +1000 (EST)
-Message-Id: <20070712210909.451536561@arndb.de>
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id CEB75DE201
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 07:53:08 +1000 (EST)
+Message-Id: <20070712210909.607171957@arndb.de>
 References: <20070712210156.973038514@arndb.de>
-Date: Thu, 12 Jul 2007 23:02:00 +0200
+Date: Thu, 12 Jul 2007 23:02:01 +0200
 From: Arnd Bergmann <arnd@arndb.de>
 To: paulus@samba.org
-Subject: [PATCH 4/5] move 86xx into multiplatform
+Subject: [PATCH 5/5] move 83xx into multiplatform
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,7 +18,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-MPC86xx based machines don't need their own kernel,
+MPC83xx based machines don't need their own kernel,
 but can run one that is shared with the other 6xx
 compatible machines, so we should allow that
 in Kconfig.
@@ -26,58 +26,91 @@ in Kconfig.
 Cc: Kumar Gala <galak@kernel.crashing.org>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
-
-Kumar, I don't remember if you still had objections
-to merging 86xx annd 83xx into multiplatform after
-our last discussion.
-Please Ack or Nack the two patches.
-
-Index: linux-2.6/arch/powerpc/platforms/86xx/Kconfig
+Index: linux-2.6/arch/powerpc/platforms/83xx/Kconfig
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/86xx/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/86xx/Kconfig
-@@ -1,18 +1,20 @@
+--- linux-2.6.orig/arch/powerpc/platforms/83xx/Kconfig
++++ linux-2.6/arch/powerpc/platforms/83xx/Kconfig
+@@ -1,10 +1,13 @@
 -choice
--	prompt "86xx Board Type"
--	depends on PPC_86xx
--	default MPC8641_HPCN
-+config PPC_86xx
-+	bool "Freescale 86xx based boards"
+-	prompt "83xx Board Type"
+-	depends on PPC_83xx
+-	default MPC834x_MDS
++config PPC_83xx
++	bool "Freescale 83xx based boards"
 +	depends on 6xx
 +	select FSL_SOC
-+	select ALTIVEC
-+	help
-+	  The Freescale E600 SoCs have 74xx cores.
++	select 83xx
++	select WANT_DEVICE_TREE
  
- config MPC8641_HPCN
- 	bool "Freescale MPC8641 HPCN"
-+	depends on PPC_86xx
- 	select PPC_I8259
+ config MPC8313_RDB
+ 	bool "Freescale MPC8313 RDB"
++	depends on PPC_83xx
  	select DEFAULT_UIMAGE
- 	select CPU_7450
+ 	select CPU_603e
  	help
- 	  This option enables support for the MPC8641 HPCN board.
+@@ -12,6 +15,7 @@ config MPC8313_RDB
+ 
+ config MPC832x_MDS
+ 	bool "Freescale MPC832x MDS"
++	depends on PPC_83xx
+ 	select DEFAULT_UIMAGE
+ 	select QUICC_ENGINE
+ 	select CPU_603e
+@@ -20,6 +24,7 @@ config MPC832x_MDS
+ 
+ config MPC832x_RDB
+ 	bool "Freescale MPC832x RDB"
++	depends on PPC_83xx
+ 	select DEFAULT_UIMAGE
+ 	select QUICC_ENGINE
+ 	select CPU_603e
+@@ -28,6 +33,7 @@ config MPC832x_RDB
+ 
+ config MPC834x_MDS
+ 	bool "Freescale MPC834x MDS"
++	depends on PPC_83xx
+ 	select DEFAULT_UIMAGE
+ 	select CPU_603e
+ 	help
+@@ -40,6 +46,7 @@ config MPC834x_MDS
+ 
+ config MPC834x_ITX
+ 	bool "Freescale MPC834x ITX"
++	depends on PPC_83xx
+ 	select DEFAULT_UIMAGE
+ 	select CPU_603e
+ 	help
+@@ -50,14 +57,13 @@ config MPC834x_ITX
+ 
+ config MPC836x_MDS
+ 	bool "Freescale MPC836x MDS"
++	depends on PPC_83xx
+ 	select DEFAULT_UIMAGE
+ 	select QUICC_ENGINE
+ 	select CPU_603e
+ 	help
+ 	  This option enables support for the MPC836x MDS Processor Board.
  
 -endchoice
 -
- config MPC8641
+ config PPC_MPC831x
  	bool
- 	select PPC_INDIRECT_PCI
+ 	select PPC_UDBG_16550
 Index: linux-2.6/arch/powerpc/platforms/Kconfig
 ===================================================================
 --- linux-2.6.orig/arch/powerpc/platforms/Kconfig
 +++ linux-2.6/arch/powerpc/platforms/Kconfig
-@@ -23,13 +23,6 @@ config PPC_83xx
- 	select 83xx
- 	select WANT_DEVICE_TREE
+@@ -16,13 +16,6 @@ config PPC_82xx
+ 	bool "Freescale 82xx"
+ 	depends on 6xx
  
--config PPC_86xx
--	bool "Freescale 86xx"
+-config PPC_83xx
+-	bool "Freescale 83xx"
 -	depends on 6xx
 -	select FSL_SOC
--	select ALTIVEC
--	help
--	  The Freescale E600 SoCs have 74xx cores.
+-	select 83xx
+-	select WANT_DEVICE_TREE
+-
  endchoice
  
  config CLASSIC32
