@@ -4,30 +4,31 @@ Received: from az33egw01.freescale.net (az33egw01.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 828BADDE11
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 19:49:04 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id DA5FBDDE0D
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 19:51:49 +1000 (EST)
 Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
 	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	l6C9mwFX000859
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 02:48:59 -0700 (MST)
+	l6C9piRl001491
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 02:51:45 -0700 (MST)
 Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
 	[10.192.129.221])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l6C9mv44025705
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 04:48:58 -0500 (CDT)
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l6C9phAd026420
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2007 04:51:44 -0500 (CDT)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="US-ASCII"
-Subject: RE: [PATCH 1/4] Add DMA sector to
-	Documentation/powerpc/booting-without-of.txt file.
-Date: Thu, 12 Jul 2007 17:48:56 +0800
-Message-ID: <46B96294322F7D458F9648B60E15112C6F3E42@zch01exm26.fsl.freescale.net>
-In-Reply-To: <368E1200-1315-4C24-9876-C92CCF65EFE3@kernel.crashing.org>
-References: <46B96294322F7D458F9648B60E15112C6F3D1E@zch01exm26.fsl.freescale.net>
-	<4694F608.2090503@freescale.com>
-	<368E1200-1315-4C24-9876-C92CCF65EFE3@kernel.crashing.org>
+Subject: RE: [PATCH 2/4] Add dma sector to mpc8641hpcn board dts
+Date: Thu, 12 Jul 2007 17:51:42 +0800
+Message-ID: <46B96294322F7D458F9648B60E15112C6F3E43@zch01exm26.fsl.freescale.net>
+In-Reply-To: <1460BC39-B1B7-4025-9D4C-368FB473A260@kernel.crashing.org>
+References: <1184060662530-git-send-email-wei.zhang@freescale.com>
+	<11840606624025-git-send-email-wei.zhang@freescale.com>
+	<11840606621515-git-send-email-wei.zhang@freescale.com>
+	<55F09B00-F81A-4B70-B0F7-2FEBDBB2B48A@kernel.crashing.org>
+	<46B96294322F7D458F9648B60E15112C6F3CE1@zch01exm26.fsl.freescale.net>
+	<1460BC39-B1B7-4025-9D4C-368FB473A260@kernel.crashing.org>
 From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-To: "Segher Boessenkool" <segher@kernel.crashing.org>,
-	"Wood Scott-B07421" <scottwood@freescale.com>
+To: "Segher Boessenkool" <segher@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -42,37 +43,70 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 > -----Original Message-----
 > From: Segher Boessenkool [mailto:segher@kernel.crashing.org]=20
-> Sent: Thursday, July 12, 2007 1:54 AM
-> To: Wood Scott-B07421
-> Cc: Zhang Wei-r63237; linuxppc-dev@ozlabs.org; paulus@samba.org
-> Subject: Re: [PATCH 1/4] Add DMA sector to=20
-> Documentation/powerpc/booting-without-of.txt file.
 >=20
-> >>> I'd rather just treat the different DMA channels as independent =20
-> >>> devices,
-> >>> rather than children of a dma "bus", and change the compatible =20
-> >>> name if
-> >>> they're not general purpose.  There's only one register that's =20
-> >>> shared
-> >>> among the channels, and it's a superfluous status summary=20
-> register.
-> >>>
-> >> Your and my ideas are both sides of a coin. :-)
+> >>> +		dma@21000{
+> >>> +			compatible =3D "fsl,mpc8xxx-dma";
+> >>
+> >> Please use a real name, not this "xxx" stuff.
 > >
-> > I think there's a substantive difference between them. =20
-> Making each =20
-> > channel an independent device makes it easier for other drivers to =20
-> > use them.
+> > Does the "xxx" seems to be an evil name? :-)
 >=20
-> True.  If the DMA channels are independent enough, putting them
-> in nodes of their own isn't too cumbersome, either.
+> You are stating this particular device is compatible to
+> the "mpc8xxx-dma" device, which doesn't exist.  If it is
+> supposed to mean it is compatible to the DMA controller
+> on any 8000-series device, that is incorrect; in the future,
+> there might be many such devices with an incompatible DMA
+> controller.
 >=20
+> Just put in some real device model name.
+
+Ok, I'll use the first (or almost) real device model name.=20
+
+>=20
+> >>> +			reg =3D <21000 100>;
+> >>> +			ranges =3D <0 21000 1000>;
+> >>
+> >> These overlap, that can't be right; it is just begging for
+> >> trouble.
+> >
+> > There is no overlap. The 'reg' is used for the register of DMA
+> > controller. And the ranges is used for belows channel registers.
+>=20
+> And 21000..210ff is a subset of 21000..21fff.  So there _is_
+> overlap.
 >=20
 
-If you want to use DMA engine driver for the reserved channel, you
-should add it to dma-controller node and assign 'reserved'.
-If you don't want to use DMA engine driver, just remove it from
-dma-controller node and put the channel to special device node.
+All right. Avoid this.
+
+> > Such as ch0@100, reg=3D<100 80>, in fact, the ch0 register address =
+is
+> > 0x21100.
+>=20
+> Sure, none of the "reg"s in any of the children overlap the
+> parent "reg", but the parent "reg" overlaps the "ranges".
+>=20
+> >>> +			ch0@100{
+> >>> +				reg =3D <100 80>;
+> >>> +				extended;
+> >>
+> >> I think you want a little more detailed property name
+> >> than "extended" here?
+> >
+> > I've explained it in [PATCH 1/4] Add DMA sector to
+> > Documentation/powerpc/booting-without-of.txt file.
+> > As below:
+> > +    - extended : Set the DMA channel to work at extended=20
+> chain mode.
+> > +                 If not set, the DMA channel will work at basic
+> > +                 chain mode.
+>=20
+> Sure it's documented, but it would be good if the property
+> name itself would say a bit more than just "extended".  Property
+> names can be 31 characters, there's no need to make short names
+> (terse is good, content-free isn't).
+>=20
+
+Ok.
 
 Thanks!
 Wei.
