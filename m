@@ -1,22 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.232])
-	by ozlabs.org (Postfix) with ESMTP id 4D0F1DDE05
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 00872DDDF3
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 13 Jul 2007 15:40:49 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id l1so355520nzf
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 Jul 2007 22:40:48 -0700 (PDT)
-Message-ID: <fa686aa40707122240k14611270h6b69aedf8e560680@mail.gmail.com>
-Date: Thu, 12 Jul 2007 23:40:44 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "David H. Lynch Jr." <dhlii@dlasys.net>
-Subject: Re: TEMAC driver available
-In-Reply-To: <4696FB46.3020103@dlasys.net>
+	Fri, 13 Jul 2007 17:17:23 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1I9FOw-0000EW-LL
+	for linuxppc-embedded@ozlabs.org; Fri, 13 Jul 2007 00:17:18 -0700
+Message-ID: <11574529.post@talk.nabble.com>
+Date: Fri, 13 Jul 2007 00:17:18 -0700 (PDT)
+From: meerkat <yiming@windriver.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: boottime kernel relocation, what I missed?
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <4696FB46.3020103@dlasys.net>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,25 +26,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 7/12/07, David H. Lynch Jr. <dhlii@dlasys.net> wrote:
->     I have finally been inspired to complete my TEMAC driver to an alpha
-> state.
->     It nearly required dynamite - I had a client application where the
-> Xilinx/MV TEMAC
->     just did not work.
->
->     Anyway, the sucker is done and I guess I will post it as soon as I
-> have leaned it up
->     if there is any interest.
 
-Wonderful; good news.  I'd love to see it.  Please send a patch as
-soon as you can.
+Good day all,
 
-Cheers,
-g.
+For the first time I begin working on PPC, and on low level, and right start
+from boot sequence, one issue puzzled me.
 
+After bootstrap code (zImage) uncompressed the kernel vmLinux to physical
+memory (say from addr 0),
+it jumps to the kernel entry point, _start, using physically address. 
+
+ At this time, the MMU is not yet setup to map the kernel virtual address 
+(which is statically linked against base address KERNELBASE) to the
+physically address.
+
+$ nm vmlinux |grep early_init
+c038b8e0 T early_init
+
+
+_start calls early_init before mmu is on to map the KERNEL_BASE to
+physically address
+
+The question is how "bl  early_init"  can branch to the early_init entry
+point, properly, as early_init is still a virtual address?
+
+Thanks
+
+Jim
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+View this message in context: http://www.nabble.com/boottime-kernel-relocation%2C-what-I-missed--tf4072673.html#a11574529
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
