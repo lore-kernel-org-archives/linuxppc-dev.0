@@ -1,27 +1,18 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E4A08DDE09
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 19:35:51 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l6D9ZkSk027722
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 02:35:46 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l6D9ZiuU023985
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 04:35:45 -0500 (CDT)
-Subject: [PATCH] Add global-utilities node for mpc8544ds and mpc8572mds boards
-From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain
-Message-Id: <1184319333.30789.17.camel@localhost.localdomain>
-Mime-Version: 1.0
-Date: 13 Jul 2007 17:35:33 +0800
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <gus@ping.uio.no>
+Date: Fri, 13 Jul 2007 11:48:14 +0200
+From: =?iso-8859-1?Q?H=E5vard?= Espeland <gus@ping.uio.no>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [Cbe-oss-dev] PS3 improved video mode autodetection for HDMI/DVI
+Message-ID: <20070713094814.GD507@ping.uio.no>
+References: <Pine.LNX.4.62.0707121029320.12797@pademelon.sonytel.be>
+	<20070712140620.GB507@ping.uio.no>
+	<Pine.LNX.4.62.0707121704270.8368@pademelon.sonytel.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <Pine.LNX.4.62.0707121704270.8368@pademelon.sonytel.be>
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>,
+	Ben Collins <ben.collins@ubuntu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,49 +22,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Roy Zang <tie-fei.zang@freescale.com>
+On Thu, Jul 12, 2007 at 05:12:43PM +0200, Geert Uytterhoeven wrote:
+> On Thu, 12 Jul 2007, [iso-8859-1] H?vard Espeland wrote:
+> > On Thu, Jul 12, 2007 at 10:40:47AM +0200, Geert Uytterhoeven wrote:
+> > > If it fails, please add `#define DEBUG' to drivers/ps3/ps3av.c, send me the
+> > > `Monitor Info' output in the kernel log (dmesg), and tell me which of the
+> > > PS3 video modes (1-13) work and which don't. ps3av has a quirk database for
+> > > monitors that advertise non-working modes, so it can probably be fixed.
+> > > (BTW, even if autodetect works fine, I always welcome this information)
+> > > 
+> > > In case you have a big pile of monitors at your site, you don't have to reboot
+> > > to try them all. Just plug in the new monitor and run `ps3videomode -v 0' to
+> > > switch to the best resolution of the newly-connected monitor.
+> > 
+> > Hi, the autodetect code does not work correctly with a LG L226WTQ 
+> > (native resolution 1680x1050). The detected mode (11) works fine without
+> > fullscreen, but goes out of range with '-f'.
+> 
+> This `supported resolution 11' is not the same as the mode number to pass to
+> ps3videomode, it's a PS3AV_CMD_VIDEO_VID_* ID.
+> 
+> Vid 11 corresponds to PS3AV_CMD_VIDEO_VID_1080P_60Hz (i.e. 1080p).
+> While mode 11 is WXGA (i.e. 1280x768).
+> 
+> (Upon further inspection, this `vid' is immediately converted to a mode number,
+>  so I'll change the code to use mode numbers instead, and cause less
+>  confusion).
+> 
+> > Resolutions w/o fullscreen:
+> > OK: 2, 3, 7, 8, 11, 12
+> > BAD: 1, 4, 5, 6, 9, 10, 13
+> 
+> Looks reasonable for a 1680x1050 monitor...
+> 
+> > Resolutions with fullscreen:
+> > OK: 2, 3, 7, 8
+> > BAD: 1, 4, 5, 6, 9, 10, 11, 12, 13
+> 
+> Euh, `-f' shouldn't make any difference for modes 11-13, as they're always
+> fullscreen.
+> 
+> > Monitor Info: size 96
+> > avport: 00
+> > monitor_id:  1e 6d 4e 56 d7 2a 03 00 03 11
+> > monitor_type: 02
+> > monitor_name: L226WTQ
+> > resolution_60: bits: 0000400d native: 00000000
+> > resolution_50: bits: 00000000 native: 00000000
+> > resolution_other: bits: 00000000 native: 00000000
+> > resolution_vesa: bits: 00000001 native: 00000000
+> 
+> So your monitor advertises:
+> 
+>     Supported 60 Hz modes:   1080p 480p 720p 1080i (0000400d)
+>     Supported VESA modes:    VGA (00000001)
+> 
+> But 1080p and 1080i don't work. As 1080p is the best advertised mode, you don't
+> get anything to see :-(
+> 
+> Does this patch help? It should give you 720p by default.
+> 
+> Index: ps3-linux-2.6/drivers/ps3/ps3av.c
+> ===================================================================
+> --- ps3-linux-2.6.orig/drivers/ps3/ps3av.c	2007-07-12 10:26:33.000000000 +0200
+> +++ ps3-linux-2.6/drivers/ps3/ps3av.c	2007-07-12 16:57:39.000000000 +0200
+> @@ -720,6 +720,10 @@ static const struct ps3av_monitor_quirk 
+>  	{
+>  		.monitor_name	= "DELL 2007WFP",
+>  		.clear_60	= PS3AV_RESBIT_1920x1080I
+> +	}, {
+> +		.monitor_name	= "L226WTQ",
+> +		.clear_60	= PS3AV_RESBIT_1920x1080I |
+> +				  PS3AV_RESBIT_1920x1080P
+>  	}
+>  };
+>  
 
-Add global-utilities node for mpc8544ds and mpc8572mds boards
+The patch gives me a picture, but it does not cover the whole screen.
+Ps3videomode returns mode 67, and if i add 128 to that number I get
+working fullscreen. Additionally, the break in ps3av_fixup_monitor_info
+is misplaced and will only try the first quirk.
 
-Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
----
- arch/powerpc/boot/dts/mpc8544ds.dts  |    6 ++++++
- arch/powerpc/boot/dts/mpc8568mds.dts |    6 ++++++
- 2 files changed, 12 insertions(+), 0 deletions(-)
+dmesg:
+ps3av_hdmi_get_vid: Using supported resolution 9
 
-diff --git a/arch/powerpc/boot/dts/mpc8544ds.dts b/arch/powerpc/boot/dts/mpc8544ds.dts
-index 8285925..43bf5c1 100644
---- a/arch/powerpc/boot/dts/mpc8544ds.dts
-+++ b/arch/powerpc/boot/dts/mpc8544ds.dts
-@@ -137,6 +137,12 @@
- 			interrupt-parent = <&mpic>;
- 		};
- 
-+		global-utilities@e0000 {	//global utilities block
-+			compatible = "fsl,mpc8548-guts";
-+			reg = <e0000 1000>;
-+			fsl,has-rstcr;
-+		};
-+
- 		mpic: pic@40000 {
- 			clock-frequency = <0>;
- 			interrupt-controller;
-diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/boot/dts/mpc8568mds.dts
-index c6cd1d6..5eeb0e6 100644
---- a/arch/powerpc/boot/dts/mpc8568mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8568mds.dts
-@@ -170,6 +170,12 @@
- 			interrupt-parent = <&mpic>;
- 		};
- 
-+		global-utilities@e0000 {	//global utilities block
-+			compatible = "fsl,mpc8548-guts";
-+			reg = <e0000 1000>;
-+			fsl,has-rstcr;
-+		};
-+
- 		pci@8000 {
- 			interrupt-map-mask = <f800 0 0 7>;
- 			interrupt-map = <
 -- 
-1.5.1
+Håvard Espeland
