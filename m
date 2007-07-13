@@ -1,33 +1,23 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 27286DDDF5
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 23:11:06 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6DDB3jF010064
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 09:11:03 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l6DDB3lh262540
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 07:11:03 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6DDB2YB025163
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 07:11:03 -0600
-Subject: Re: [PATCH] Update mpc7448hpc2 device tree to be compatible for
-	tsi109 chip
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-In-Reply-To: <1184299081.30789.9.camel@localhost.localdomain>
-References: <1184299081.30789.9.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 13 Jul 2007 08:11:02 -0500
-Message-Id: <1184332262.6456.7.camel@weaponx.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Date: Fri, 13 Jul 2007 15:16:28 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [Cbe-oss-dev] PS3 improved video mode autodetection for HDMI/DVI
+In-Reply-To: <1184330152.6059.221.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.62.0707131516070.18802@pademelon.sonytel.be>
+References: <Pine.LNX.4.62.0707121029320.12797@pademelon.sonytel.be>
+	<20070712140620.GB507@ping.uio.no>
+	<Pine.LNX.4.62.0707121704270.8368@pademelon.sonytel.be>
+	<20070713094814.GD507@ping.uio.no>
+	<Pine.LNX.4.62.0707131404320.18802@pademelon.sonytel.be>
+	<1184330152.6059.221.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-1402992852-1184332588=:18802"
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>,
+	Ben Collins <ben.collins@ubuntu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,16 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-07-13 at 11:58 +0800, Zang Roy-r61911 wrote:
-> From: Roy Zang <tie-fei.zang@freescale.com>
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---584337861-1402992852-1184332588=:18802
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+On Fri, 13 Jul 2007, Benjamin Herrenschmidt wrote:
+> > Since 720p is a broadcast mode, I can't make it default to fullscreen, as a
+> > part of the image will fall off on most monitors.
 > 
-> Update mpc7448hpc2 device tree to be compatible for tsi109 chip.
+> Do you have any info from the EDID block that would tell you whether the
+> monitor displays the full picture (typical of flat panels) or not ?
 
-Are there any actual changes in the drivers or platform files for
-tsi109?  I seem to recall that Linux treated tsi108 and tsi109
-identically at the moment.
+No, all I have is struct ps3av_info_monitor.
 
-If there are changes coming that differentiate tsi109 and tsi108, please
-CC me on those so I can update the Holly board as well.
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
 
-josh
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-1402992852-1184332588=:18802--
