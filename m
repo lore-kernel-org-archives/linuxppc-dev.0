@@ -1,17 +1,18 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 506E7DDE1C
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jul 2007 07:15:12 +1000 (EST)
-Date: Sat, 14 Jul 2007 07:15:11 +1000
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: hvc_iseries not working
-Message-ID: <20070713211511.GQ10345@bakeyournoodle.com>
-References: <20070713170540.GA1987@aepfle.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20070713170540.GA1987@aepfle.de>
-From: tony@bakeyournoodle.com (Tony Breeds)
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 7358EDDDF3
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jul 2007 08:47:03 +1000 (EST)
+Date: Fri, 13 Jul 2007 15:47:02 -0700 (PDT)
+Message-Id: <20070713.154702.17863636.davem@davemloft.net>
+To: linas@austin.ibm.com
+Subject: Re: [PATCH] crash in 2.6.22-git2 sysctl_set_parent()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070713200515.GS5549@austin.ibm.com>
+References: <20070713200515.GS5549@austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, ebiederm@xmission.com,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,20 +22,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 13, 2007 at 07:05:40PM +0200, Olaf Hering wrote:
+From: linas@austin.ibm.com (Linas Vepstas)
+Date: Fri, 13 Jul 2007 15:05:15 -0500
 
-Hi Olaf,
- 
-> 2.6.21 arch/powerpc/configs/iseries_defconfig works on an i825 with v5r4
-> 2.6.22 arch/powerpc/configs/iseries_defconfig does not. But it works on
-> a i820 with v5r3.
-> 2.6.22 boots ok with CONFIG_VIOCONS
+> 
+> This is a patch (& bug report) for a crash in sysctl_set_parent() 
+> in 2.6.22-git2. 
+> 
+> Problem: 2.6.22-git2 crashes with a stack trace 
+> [c000000001d0fb00] c000000000067b4c .sysctl_set_parent+0x48/0x7c
+> [c000000001d0fb90] c000000000069b40 .register_sysctl_table+0x7c/0xf4
+> [c000000001d0fc30] c00000000065e710 .devinet_init+0x88/0xb0
+> [c000000001d0fcc0] c00000000065db74 .ip_rt_init+0x17c/0x32c
+> [c000000001d0fd70] c00000000065deec .ip_init+0x10/0x34
+> [c000000001d0fdf0] c00000000065e898 .inet_init+0x160/0x3dc
+> [c000000001d0fea0] c000000000630bc4 .kernel_init+0x204/0x3c8
+> 
+> A bit of poking around makes it clear what the problem is:
+> In sysctl_set_parent(), the for loop 
+> 
+>    for (; table->ctl_name || table->procname; table++) {
+> 
+> walks off the end of the table, and into garbage.  Basically,
+> this for-loop iterator expects all table arrays to be 
+> "null terminated".  However, net/ipv4/devinet.c statically 
+> declares an array that is not null-terminated.  The patch 
+> below fixes that; it works for me.  Its somewhat conservative;
+> if one wishes to assume that the compiler will always zero out
+> the empty parts of the structure, then this pach can be shrunk 
+> to one line: +	ctl_table		devinet_root_dir[3];
+> 
+> Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 
-Rats!
-	Can you send me the complete dmesg and .config for each kernel.
-I'll poke at this whne I get to work on Monday.
-
-Yours Tony
-
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+Thanks for tracking this down, I'll apply your patch.
