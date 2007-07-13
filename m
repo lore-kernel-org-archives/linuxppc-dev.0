@@ -1,24 +1,24 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 40F91DDDE4
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 23:26:06 +1000 (EST)
-Date: Fri, 13 Jul 2007 15:25:38 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Bob Nelson <rrnelson@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] Enable SPU switch notification to detect currently
-	active SPU tasks.
-Message-ID: <20070713132538.GA30312@lst.de>
-References: <1184283940.16584.5.camel@bnelson60.rchland.ibm.com>
-	<20070713101233.GA12426@lst.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070713101233.GA12426@lst.de>
-Cc: linuxppc <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linuxfoundation.org>,
-	oprofile <oprofile-list@lists.sourceforge.net>,
-	Philippe Elie <phil.el@wanadoo.fr>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 578B7DDD08
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 23:34:20 +1000 (EST)
+Date: Fri, 13 Jul 2007 15:34:18 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Olaf Hering <olaf@aepfle.de>
+Subject: Re: PS3 Storage Driver O_DIRECT issue
+In-Reply-To: <20070713122752.GA854@aepfle.de>
+Message-ID: <Pine.LNX.4.62.0707131532350.18802@pademelon.sonytel.be>
+References: <20070704132212.726923000@pademelon.sonytel.be>
+	<20070713122752.GA854@aepfle.de>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-1147011636-1184333658=:18802"
+Cc: Jens Axboe <axboe@kernel.dk>,
+	"James E.J.  Bottomley" <James.Bottomley@SteelEye.com>,
+	linux-scsi@vger.kernel.org, Alessandro Rubini <rubini@ipvvis.unipv.it>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,12 +28,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 13, 2007 at 12:12:33PM +0200, Christoph Hellwig wrote:
-> > -static inline int spu_stopped(struct spu_context *ctx, u32 * stat)
-> > +static inline int spu_stopped(struct spu_context *ctx, u32 *stat)
-> 
-> useless (and wrong) reformatting, please remove.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Sorry, this looked like going the wrong way to me.  I'm still not
-sure the reformatting belongs into this patch, but if it makes it easier
-for you we can keep it.
+---584337861-1147011636-1184333658=:18802
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+On Fri, 13 Jul 2007, Olaf Hering wrote:
+> This driver (or the generic PS3 code) has appearently problems with
+> O_DIRECT. 
+> glibc aborts parted because the malloc metadata get corrupted. While it
+> is reproducible, the place where it crashes changes with every version
+> of the debug attempt.
+> I dont have a handle right now, all I know is that the metadata after a
+> malloc area get overwritten with zeros.
+> 
+> 
+> Can you have a look at this? 
+> parted /dev/ps3da
+> print (a few times)
+
+I can't seem to reproduce this with parted 1.7.1-5.1 (from Debian
+etch/lenny/sid) and kernel 2.6.22-g77320894.
+
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-1147011636-1184333658=:18802--
