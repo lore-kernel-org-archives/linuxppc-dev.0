@@ -1,24 +1,27 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id E153DDDD05
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 19:31:51 +1000 (EST)
-Date: Fri, 13 Jul 2007 11:31:49 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Paul Mackerras <paulus@samba.org>,
-	"James E.J.  Bottomley" <James.Bottomley@SteelEye.com>,
-	Alessandro Rubini <rubini@ipvvis.unipv.it>
-Subject: Re: [patch 0/6] PS3 Storage Drivers for 2.6.23, take 4
-In-Reply-To: <Pine.LNX.4.62.0707100944470.22782@pademelon.sonytel.be>
-Message-ID: <Pine.LNX.4.62.0707131129500.18802@pademelon.sonytel.be>
-References: <20070704132212.726923000@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0707100944470.22782@pademelon.sonytel.be>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-1399021359-1184319102=:18802"
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	linux-scsi@vger.kernel.org
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E4A08DDE09
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 19:35:51 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l6D9ZkSk027722
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 02:35:46 -0700 (MST)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l6D9ZiuU023985
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 04:35:45 -0500 (CDT)
+Subject: [PATCH] Add global-utilities node for mpc8544ds and mpc8572mds boards
+From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Message-Id: <1184319333.30789.17.camel@localhost.localdomain>
+Mime-Version: 1.0
+Date: 13 Jul 2007 17:35:33 +0800
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,64 +31,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+From: Roy Zang <tie-fei.zang@freescale.com>
 
----584337861-1399021359-1184319102=:18802
-Content-Type: TEXT/PLAIN; CHARSET=UTF-8
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.62.0707131131471.18802@pademelon.sonytel.be>
+Add global-utilities node for mpc8544ds and mpc8572mds boards
 
-On Tue, 10 Jul 2007, Geert Uytterhoeven wrote:
-> On Wed, 4 Jul 2007, Geert Uytterhoeven wrote:
-> > This is the fourth submission of the new PS3 storage drivers:
-> >   [1] ps3: Preallocate bootmem memory for the PS3 FLASH ROM storage driver
-> >   [2] ps3: Storage Driver Core
-> >   [3] ps3: Storage device registration routines.
-> >   [4] ps3: Disk Storage Driver
-> >   [5] ps3: BD/DVD/CD-ROM Storage Driver
-> >   [6] ps3: FLASH ROM Storage Driver
-> > 
-> > They are based on:
-> >   - the current Linux kernel source tree,
-> >   - plus the PS3 patches already submitted by Geoff Levand on linuxppc-dev,
-> >   - plus the shost_priv() patch in scsi-misc (commit
-> >     bcd92c9fbcc679ee95003083056f0441a1f474fa).
-> > 
-> > All issues raised during the previous review rounds should be fixed.
-> > There were no more comments after the third submission.
-> > 
-> > Paul already integrated Geoff Levand's PS3 patches and the first 3 patches
-> > in this series in the for-2.6.23 branch in powerpc.git.
-> > 
-> > Maintainers of block/SCSI/misc, can you please ack the last 3 patches so Paul
-> > can take them, too?
-> 
-> Ping block/SCSI/misc maintainers?
+Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+---
+ arch/powerpc/boot/dts/mpc8544ds.dts  |    6 ++++++
+ arch/powerpc/boot/dts/mpc8568mds.dts |    6 ++++++
+ 2 files changed, 12 insertions(+), 0 deletions(-)
 
-Ping SCSI and misc maintainers?
-
-Please either ack patches 5 and 6, so Paulus can integrate them for 2.6.23, or
-tell me why they can't go in.
-
-Thanks again.
-
-With kind regards,
+diff --git a/arch/powerpc/boot/dts/mpc8544ds.dts b/arch/powerpc/boot/dts/mpc8544ds.dts
+index 8285925..43bf5c1 100644
+--- a/arch/powerpc/boot/dts/mpc8544ds.dts
++++ b/arch/powerpc/boot/dts/mpc8544ds.dts
+@@ -137,6 +137,12 @@
+ 			interrupt-parent = <&mpic>;
+ 		};
  
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
++		global-utilities@e0000 {	//global utilities block
++			compatible = "fsl,mpc8548-guts";
++			reg = <e0000 1000>;
++			fsl,has-rstcr;
++		};
++
+ 		mpic: pic@40000 {
+ 			clock-frequency = <0>;
+ 			interrupt-controller;
+diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/boot/dts/mpc8568mds.dts
+index c6cd1d6..5eeb0e6 100644
+--- a/arch/powerpc/boot/dts/mpc8568mds.dts
++++ b/arch/powerpc/boot/dts/mpc8568mds.dts
+@@ -170,6 +170,12 @@
+ 			interrupt-parent = <&mpic>;
+ 		};
  
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1399021359-1184319102=:18802--
++		global-utilities@e0000 {	//global utilities block
++			compatible = "fsl,mpc8548-guts";
++			reg = <e0000 1000>;
++			fsl,has-rstcr;
++		};
++
+ 		pci@8000 {
+ 			interrupt-map-mask = <f800 0 0 7>;
+ 			interrupt-map = <
+-- 
+1.5.1
