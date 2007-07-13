@@ -1,28 +1,27 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0095CDDE3E
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jul 2007 06:05:34 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6DK5Gfh009999
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 16:05:16 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l6DK5GRs474432
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 16:05:16 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6DK5GYi009061
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 16:05:16 -0400
-Date: Fri, 13 Jul 2007 15:05:15 -0500
-To: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] crash in 2.6.22-git2 sysctl_set_parent()
-Message-ID: <20070713200515.GS5549@austin.ibm.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 097ECDDDFB
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jul 2007 06:13:29 +1000 (EST)
+Date: Fri, 13 Jul 2007 22:13:27 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
+In-Reply-To: <1184340528.3402.32.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.62.0707132212520.23000@chinchilla.sonytel.be>
+References: <20070704132212.726923000@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be>
+	<1184335333.3402.20.camel@localhost.localdomain>
+	<200707131619.54898.arnd@arndb.de>
+	<Pine.LNX.4.62.0707131707290.18802@pademelon.sonytel.be>
+	<1184340528.3402.32.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584336837-1695436844-1184357607=:23000"
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-scsi@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Alessandro Rubini <rubini@vision.unipv.it>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Jens Axboe <jens.axboe@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,69 +31,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-This is a patch (& bug report) for a crash in sysctl_set_parent() 
-in 2.6.22-git2. 
+---584336837-1695436844-1184357607=:23000
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Problem: 2.6.22-git2 crashes with a stack trace 
-[c000000001d0fb00] c000000000067b4c .sysctl_set_parent+0x48/0x7c
-[c000000001d0fb90] c000000000069b40 .register_sysctl_table+0x7c/0xf4
-[c000000001d0fc30] c00000000065e710 .devinet_init+0x88/0xb0
-[c000000001d0fcc0] c00000000065db74 .ip_rt_init+0x17c/0x32c
-[c000000001d0fd70] c00000000065deec .ip_init+0x10/0x34
-[c000000001d0fdf0] c00000000065e898 .inet_init+0x160/0x3dc
-[c000000001d0fea0] c000000000630bc4 .kernel_init+0x204/0x3c8
+On Fri, 13 Jul 2007, James Bottomley wrote:
+> On Fri, 2007-07-13 at 17:10 +0200, Geert Uytterhoeven wrote:
+> > On Fri, 13 Jul 2007, Arnd Bergmann wrote:
+> > > On Friday 13 July 2007, James Bottomley wrote:
+> > > > > IC.
+> > > > > 
+> > > > >  - flush_kernel_dcache_page() is a no-op on ppc64
+> > > > >   (ARCH_HAS_FLUSH_KERNEL_DCACHE_PAGE is defined on parisc only).
+> > > > > 
+> > > > >  - For reference, drivers/scsi/ipr.c (another ppc64 driver) just uses a plain
+> > > > >   kmap/memcpy/kunmap sequence
+> > > > > 
+> > > > > So what should I do?
+> > > > 
+> > > > Ask someone who knows the architecture ... Anton, Paulus or Benh ... I'm
+> > > > fairly certain PPC is VIPT and will need some kind of alias
+> > > > resolution ... perhaps its associative enough not to let the aliases be
+> > > > a problem.
+> > > 
+> > > I'm pretty sure that no ppc64 machine needs alias resolution in the kernel,
+> > > although some are VIPT. Last time we discussed this, Segher explained it
+> > > to me, but I don't remember which way Cell does it. IIRC, it automatically
+> > > flushes cache lines that are accessed through aliases.
+> > 
+> > Thanks for confirming!
+> > 
+> > > It's probably a good idea to have the flush_kernel_dcache_page() in there
+> > > anyway, if only to serve as an example for people that copy it into
+> > > architecture-independent drivers, same as what we do for the
+> > > k{,un}map_atomic() that is also not required on ppc64.
+> > 
+> > Now my next question: why should I add it, if currently no single driver in
+> > mainline calls flush_kernel_dcache_page()? 
+> > 
+> > `git grep' finds it in the following files only:
+> >     Documentation/cachetlb.txt
+> >     arch/parisc/kernel/cache.c
+> >     arch/parisc/kernel/pacache.S
+> >     include/asm-parisc/cacheflush.h
+> >     include/linux/highmem.h
+> 
+> It's a recent addition to the API ... the previous way of doing it was
+> flush_dcache_page() but that's expensive and flushes all the user
+> aliases.  Since you know in this case there are no current user aliases
+> and you only need to flush the kernel alias, flush_kernel_dcache_page()
+> was introduced as the cheaper alternative.
 
-A bit of poking around makes it clear what the problem is:
-In sysctl_set_parent(), the for loop 
+Ah, that explains it. flush_dcache_page() is used in some drivers.
+I'll update my patches. Thanks for the comments!
 
-   for (; table->ctl_name || table->procname; table++) {
-
-walks off the end of the table, and into garbage.  Basically,
-this for-loop iterator expects all table arrays to be 
-"null terminated".  However, net/ipv4/devinet.c statically 
-declares an array that is not null-terminated.  The patch 
-below fixes that; it works for me.  Its somewhat conservative;
-if one wishes to assume that the compiler will always zero out
-the empty parts of the structure, then this pach can be shrunk 
-to one line: +	ctl_table		devinet_root_dir[3];
-
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-
-----
-I tried to audit some of the code to see where else there 
-might be similar badly-formed static declarations.  This is hard,
-as there's a lot of code. Most seems fine.
-
-
- net/core/neighbour.c |    4 ++++
- net/ipv4/devinet.c   |    7 ++++++-
- 2 files changed, 10 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.22-git2/net/ipv4/devinet.c
-===================================================================
---- linux-2.6.22-git2.orig/net/ipv4/devinet.c	2007-07-13 14:23:21.000000000 -0500
-+++ linux-2.6.22-git2/net/ipv4/devinet.c	2007-07-13 14:24:15.000000000 -0500
-@@ -1424,7 +1424,7 @@ static struct devinet_sysctl_table {
- 	ctl_table		devinet_dev[2];
- 	ctl_table		devinet_conf_dir[2];
- 	ctl_table		devinet_proto_dir[2];
--	ctl_table		devinet_root_dir[2];
-+	ctl_table		devinet_root_dir[3];
- } devinet_sysctl = {
- 	.devinet_vars = {
- 		DEVINET_SYSCTL_COMPLEX_ENTRY(FORWARDING, "forwarding",
-@@ -1493,8 +1493,13 @@ static struct devinet_sysctl_table {
- 			.data		= &ipv4_devconf.loop,
- 			.maxlen		= sizeof(int),
- 			.mode		= 0644,
-+			.child	= 0x0,
- 			.proc_handler	= &proc_dointvec,
- 		},
-+		{
-+			.ctl_name	= 0,
-+			.procname	= 0,
-+		},
- 	},
- };
+With kind regards,
  
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584336837-1695436844-1184357607=:23000--
