@@ -1,21 +1,21 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 7581EDDDF3
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jul 2007 03:05:30 +1000 (EST)
-Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
-	by mail-out.m-online.net (Postfix) with ESMTP id 834BF206CA1
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 19:10:08 +0200 (CEST)
-Received: from ibook.aepfle.de (DSL01.83.171.147.52.ip-pool.NEFkom.net
-	[83.171.147.52])
-	by mail.mnet-online.de (Postfix) with ESMTP id 81994905F8
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 19:05:28 +0200 (CEST)
-Date: Fri, 13 Jul 2007 19:05:40 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: linuxppc-dev@ozlabs.org
-Subject: hvc_iseries not working
-Message-ID: <20070713170540.GA1987@aepfle.de>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 75BBCDDDF7
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jul 2007 03:17:29 +1000 (EST)
+Message-ID: <4697B421.6010005@ru.mvista.com>
+Date: Fri, 13 Jul 2007 21:19:29 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: revert fix for threaded fasteoi	IRQ
+	handlers
+References: <200611192243.34850.sshtylyov@ru.mvista.com>	
+	<200705171719.34968.sshtylyov@ru.mvista.com>	
+	<46965B28.7000703@ru.mvista.com> <1184259173.12353.227.camel@chaos>
+In-Reply-To: <1184259173.12353.227.camel@chaos>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
+	dwalker@mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,50 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hello.
 
-2.6.21 arch/powerpc/configs/iseries_defconfig works on an i825 with v5r4
-2.6.22 arch/powerpc/configs/iseries_defconfig does not. But it works on
-a i820 with v5r3.
-2.6.22 boots ok with CONFIG_VIOCONS
+Thomas Gleixner wrote:
 
-It gets up to this point:
+>>    Now that the -rt patch has been first release in the broken-out version, 
+>>let me tell you that the following 3 patches in the series can be just 
+>>annihilated:
 
-vio_bus_init: processing c0000000fbfff570
-vio_bus_init: processing c0000000fbfff6b0
-vio_bus_init: processing c0000000fbfff7f0
-vio_bus_init: processing c0000000fbfff930
-vio_bus_init: processing c0000000fbfffa70
-vio_bus_init: processing c0000000fbfffbb0
-audit: initializing netlink socket (disabled)
-audit(1184327881.720:1): initialized
-io scheduler noop registered
-io scheduler anticipatory registered (default)
-io scheduler deadline registered
-io scheduler cfq registered
-viopath: opening connection to partition 0, setting sinst 32778, tinst 32769
-hvc: hosting partition 0
-vio_register_driver: driver hvc_console registering
-Generic RTC Driver v1.07
-RAMDISK driver initialized: 16 RAM disks of 65536K size 1024 blo
+>>preempt-irqs-ppc-ack-irq-fixups.patch
+>>preempt-irqs-ppc-fix-b5.patch
+>>preempt-irqs-ppc-fix-more-fasteoi.patch
 
+>>as all that the latter two are doing is undoing the former one.
 
-with ppc64_defconfig it looks like that:
+> Really ? I know for quite a while. 
 
+    Just reminding. :-)
 
-audit: initializing netlink socket (disabled)
-audit(1184326841.030:1): initialized
-VFS: Disk quotas dquot_6.5.1
-Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
-io scheduler noop registered
-io scheduler anticipatory registered
-io scheduler deadline registered
-io scheduler cfq registered (default)
-pci_hotplug: PCI Hot Plug PCI Core version: 0.5
-rpaphp: RPA HOT Plug PCI Controller Driver version: 0.1
-rpadlpar_io_init: partition not DLPAR capable
-HVSI: registered 0 devices
-viopath: opening connection to partition 0, setting sinst 32774, tinst 32769
-hvc: hosting partition 0
-vio_register_driver: driver hvc_console registering
-Generic RTC Driver v1.07
-Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing
+> We kept some of those files to document contributions. Go read back on
+> the LKML archives, where we were accused more than once not to keep
+> track of these things.
+
+    Yeah, I figured that out. This case is somewhat special though since the 
+patch that started this should't even have been there in the firts place.
+
+> They can be folded together and fixed up, one thing after the other
+> please.
+
+    OK, no hurry. :-)
+
+> 	tglx
+
+WBR, Sergei
