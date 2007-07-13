@@ -1,21 +1,20 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id CC712DDE06
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 22:27:41 +1000 (EST)
-Date: Fri, 13 Jul 2007 14:27:52 +0200
-From: Olaf Hering <olaf@aepfle.de>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [Cbe-oss-dev] PS3 improved video mode autodetection for HDMI/DVI
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: PS3 Storage Driver O_DIRECT issue
-Message-ID: <20070713122752.GA854@aepfle.de>
-References: <20070704132212.726923000@pademelon.sonytel.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20070704132212.726923000@pademelon.sonytel.be>
-Cc: Jens Axboe <axboe@kernel.dk>,
-	"James E.J.  Bottomley" <James.Bottomley@SteelEye.com>,
-	linux-scsi@vger.kernel.org, Alessandro Rubini <rubini@ipvvis.unipv.it>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>
+In-Reply-To: <Pine.LNX.4.62.0707131404320.18802@pademelon.sonytel.be>
+References: <Pine.LNX.4.62.0707121029320.12797@pademelon.sonytel.be>
+	<20070712140620.GB507@ping.uio.no>
+	<Pine.LNX.4.62.0707121704270.8368@pademelon.sonytel.be>
+	<20070713094814.GD507@ping.uio.no>
+	<Pine.LNX.4.62.0707131404320.18802@pademelon.sonytel.be>
+Content-Type: text/plain
+Date: Fri, 13 Jul 2007 22:35:52 +1000
+Message-Id: <1184330152.6059.221.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>,
+	Ben Collins <ben.collins@ubuntu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,15 +25,10 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-This driver (or the generic PS3 code) has appearently problems with
-O_DIRECT. 
-glibc aborts parted because the malloc metadata get corrupted. While it
-is reproducible, the place where it crashes changes with every version
-of the debug attempt.
-I dont have a handle right now, all I know is that the metadata after a
-malloc area get overwritten with zeros.
+> Since 720p is a broadcast mode, I can't make it default to fullscreen, as a
+> part of the image will fall off on most monitors.
 
+Do you have any info from the EDID block that would tell you whether the
+monitor displays the full picture (typical of flat panels) or not ?
 
-Can you have a look at this? 
-parted /dev/ps3da
-print (a few times)
+Ben.
