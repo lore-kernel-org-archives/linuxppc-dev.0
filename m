@@ -1,21 +1,19 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 75BBCDDDF7
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jul 2007 03:17:29 +1000 (EST)
-Message-ID: <4697B421.6010005@ru.mvista.com>
-Date: Fri, 13 Jul 2007 21:19:29 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <mgreer@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id 0AF31DDDF9
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jul 2007 03:29:03 +1000 (EST)
+Date: Fri, 13 Jul 2007 10:31:28 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 0/5] Kconfig cleanup revisited
+Message-ID: <20070713173128.GA1714@mag.az.mvista.com>
+References: <20070712210156.973038514@arndb.de>
+	<20070713013953.GC29074@mag.az.mvista.com>
+	<200707131154.34800.arnd@arndb.de>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: revert fix for threaded fasteoi	IRQ
-	handlers
-References: <200611192243.34850.sshtylyov@ru.mvista.com>	
-	<200705171719.34968.sshtylyov@ru.mvista.com>	
-	<46965B28.7000703@ru.mvista.com> <1184259173.12353.227.camel@chaos>
-In-Reply-To: <1184259173.12353.227.camel@chaos>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
-	dwalker@mvista.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200707131154.34800.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,36 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+On Fri, Jul 13, 2007 at 11:54:34AM +0200, Arnd Bergmann wrote:
+> On Friday 13 July 2007, Mark A. Greer wrote:
+> > I really like what you've done here, thanks.
+> > 
+> > The patches don't apply straight up so what other patches do these go
+> > on top of?
+> 
+> They are meant to apply on top of powerpc.git.
 
-Thomas Gleixner wrote:
+Yep, me too.
 
->>    Now that the -rt patch has been first release in the broken-out version, 
->>let me tell you that the following 3 patches in the series can be just 
->>annihilated:
+> I found now that
+> the first patch has a trivial reject against the for-2.6.23 branch,
+> but works fine for the master branch.
 
->>preempt-irqs-ppc-ack-irq-fixups.patch
->>preempt-irqs-ppc-fix-b5.patch
->>preempt-irqs-ppc-fix-more-fasteoi.patch
+Hrm, I'm on master and it doesn't apply but its minor so NBD.
 
->>as all that the latter two are doing is undoing the former one.
+> Should I resend?
 
-> Really ? I know for quite a while. 
+Not for me but Paul might appreciate it. :)
 
-    Just reminding. :-)
-
-> We kept some of those files to document contributions. Go read back on
-> the LKML archives, where we were accused more than once not to keep
-> track of these things.
-
-    Yeah, I figured that out. This case is somewhat special though since the 
-patch that started this should't even have been there in the firts place.
-
-> They can be folded together and fixed up, one thing after the other
-> please.
-
-    OK, no hurry. :-)
-
-> 	tglx
-
-WBR, Sergei
+Mark
