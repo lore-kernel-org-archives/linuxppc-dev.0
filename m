@@ -1,17 +1,28 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 9A04FDDD07
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jul 2007 05:22:19 +1000 (EST)
-Message-ID: <4697CFB3.8090009@anagramm.de>
-Date: Fri, 13 Jul 2007 21:17:07 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
+Return-Path: <linas@austin.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0095CDDE3E
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jul 2007 06:05:34 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6DK5Gfh009999
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 16:05:16 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l6DK5GRs474432
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 16:05:16 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l6DK5GYi009061
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 16:05:16 -0400
+Date: Fri, 13 Jul 2007 15:05:15 -0500
+To: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] crash in 2.6.22-git2 sysctl_set_parent()
+Message-ID: <20070713200515.GS5549@austin.ibm.com>
 MIME-Version: 1.0
-To: Vikram Kone <vikramkone@gmail.com>
-Subject: Re: Help required for porting ISP1362 usb device driver
-References: <003d01c7c4d8$07ea3cc0$66dd47ab@cisco.com>
-In-Reply-To: <003d01c7c4d8$07ea3cc0$66dd47ab@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,70 +32,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello, Vikram!
 
-Vikram Kone schrieb:
-> Hi..
-> I'm a linux newbie and im working on porting the USB driver ISP1362 by 
-> Philips on to my Freescale ppc board.
+This is a patch (& bug report) for a crash in sysctl_set_parent() 
+in 2.6.22-git2. 
 
-Please don't crosspost.
-Please don't write HTML.
+Problem: 2.6.22-git2 crashes with a stack trace 
+[c000000001d0fb00] c000000000067b4c .sysctl_set_parent+0x48/0x7c
+[c000000001d0fb90] c000000000069b40 .register_sysctl_table+0x7c/0xf4
+[c000000001d0fc30] c00000000065e710 .devinet_init+0x88/0xb0
+[c000000001d0fcc0] c00000000065db74 .ip_rt_init+0x17c/0x32c
+[c000000001d0fd70] c00000000065deec .ip_init+0x10/0x34
+[c000000001d0fdf0] c00000000065e898 .inet_init+0x160/0x3dc
+[c000000001d0fea0] c000000000630bc4 .kernel_init+0x204/0x3c8
 
-> I dont know how to do this... so if any of you can tell me how to do 
-> this step by step, i would be very grateful to you
->  
-> Few details..
-> I'm running RHEL with kernel 2.4.21 on a PC (i386 machine)
-> Target Machine is MPC8548 CDS by Free scale (ppc architecture) running 
-> kernel version 2.6.11
+A bit of poking around makes it clear what the problem is:
+In sysctl_set_parent(), the for loop 
 
-Did you try something like:
-http://www.freescale.com/files/32bit/doc/app_note/AN3094.pdf?fsrch=1
-I think it's one of these "step by step" things.
+   for (; table->ctl_name || table->procname; table++) {
 
-(You should consider moving up to the latest Kernel which is 2.6.22.1
-as of today. Nobody fixes bugs on that old kernel.)
+walks off the end of the table, and into garbage.  Basically,
+this for-loop iterator expects all table arrays to be 
+"null terminated".  However, net/ipv4/devinet.c statically 
+declares an array that is not null-terminated.  The patch 
+below fixes that; it works for me.  Its somewhat conservative;
+if one wishes to assume that the compiler will always zero out
+the empty parts of the structure, then this pach can be shrunk 
+to one line: +	ctl_table		devinet_root_dir[3];
 
-> I do have a ppc tool chain, if that helps.....
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 
-What tool chain?
+----
+I tried to audit some of the code to see where else there 
+might be similar badly-formed static declarations.  This is hard,
+as there's a lot of code. Most seems fine.
 
- > but i dont know how to use it
 
-Did you read the documentation?
-What problem do you have?
+ net/core/neighbour.c |    4 ++++
+ net/ipv4/devinet.c   |    7 ++++++-
+ 2 files changed, 10 insertions(+), 1 deletion(-)
 
-> P.S. I downloaded the deive driver and host controller drivers from 
-> sourceforge.net and both of them seem to work for 2.6.6 kernel for i386 
-> arch ..
-
-Fine!
-
-> P.P.S : Wolfgang ??!1 Can you help me out... I went through the archives 
-> on the list and seems thatu answered many Qs on this driver. But i didnt 
-> find any post specifcally for my problem..so
-
-Sorry, my crystal ball is broken.
-You didn't tell us any details about your problem.
-
-  > This e-mail may contain confidential and privileged material for the
-> sole use of the intended recipient. Any review, use, distribution or 
-> disclosure by others is strictly prohibited. If you are not the intended 
-> recipient (or authorized to receive for the recipient), please contact 
-> the sender by reply e-mail and delete all copies of this message.
-
-Oops... If I am not the intended recipient, please: > /dev/null my mail.
-
-Regards,
--- 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+Index: linux-2.6.22-git2/net/ipv4/devinet.c
+===================================================================
+--- linux-2.6.22-git2.orig/net/ipv4/devinet.c	2007-07-13 14:23:21.000000000 -0500
++++ linux-2.6.22-git2/net/ipv4/devinet.c	2007-07-13 14:24:15.000000000 -0500
+@@ -1424,7 +1424,7 @@ static struct devinet_sysctl_table {
+ 	ctl_table		devinet_dev[2];
+ 	ctl_table		devinet_conf_dir[2];
+ 	ctl_table		devinet_proto_dir[2];
+-	ctl_table		devinet_root_dir[2];
++	ctl_table		devinet_root_dir[3];
+ } devinet_sysctl = {
+ 	.devinet_vars = {
+ 		DEVINET_SYSCTL_COMPLEX_ENTRY(FORWARDING, "forwarding",
+@@ -1493,8 +1493,13 @@ static struct devinet_sysctl_table {
+ 			.data		= &ipv4_devconf.loop,
+ 			.maxlen		= sizeof(int),
+ 			.mode		= 0644,
++			.child	= 0x0,
+ 			.proc_handler	= &proc_dointvec,
+ 		},
++		{
++			.ctl_name	= 0,
++			.procname	= 0,
++		},
+ 	},
+ };
+ 
