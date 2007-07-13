@@ -1,13 +1,13 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 38A12DDF97
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jul 2007 05:44:51 +1000 (EST)
-Message-Id: <20070713184824.312271421@arndb.de>
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id C4A77DDE2D
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jul 2007 05:45:25 +1000 (EST)
+Message-Id: <20070713184823.881143617@arndb.de>
 References: <20070713184452.466490031@arndb.de>
-Date: Fri, 13 Jul 2007 20:44:57 +0200
+Date: Fri, 13 Jul 2007 20:44:54 +0200
 From: Arnd Bergmann <arnd@arndb.de>
 To: paulus@samba.org
-Subject: [PATCH 5/5] move 83xx into multiplatform
+Subject: [PATCH 2/5] move embedded6xx into multiplatform
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,120 +19,100 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 Jon Loeliger <jdl@freescale.com> wrote:
-X-Provags-ID: V01U2FsdGVkX183KEAUKHXvruCYhaaV52OzolDzOwR8U/cVbZz
- RqqlZgNmQVzTnk6PKfA2exuU2PW9QK2JcOV9grQhnden9S/eQ3
- 4u2xKjwqyFO/YMrW3bvyA==
+X-Provags-ID: V01U2FsdGVkX1+SaCCegn5lQjYmfKX51SjCTUcB54DR70XKrhI
+ hmGM1tKApkuJUhU1N/m27xBNFkgSrryBjxIoSP8aSjI4iolGnU
+ P+lfBacQBsWXTPdYoWsBw==
 
 > Hmmm... Shouldn't this sort of change come
 > with an update to the 8641 defconfig too?
-Content-Disposition: inline; filename=83xx-multi.diff
+Content-Disposition: inline; filename=embedded6xx-multi.diff
 
-MPC83xx based machines don't need their own kernel,
-but can run one that is shared with the other 6xx
-compatible machines, so we should allow that
-in Kconfig.
+The various embedded 6xx systems can easily coexist
+in one kernel together with the other 6xx based systems,
+so there is no strict reason to keep them separate.
 
-Cc: Kumar Gala <galak@kernel.crashing.org>
+This also fixes a problem introduced in one earlier
+patch, where the embedded 74xx based systems could
+not automatically select altivec any more.
+
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
-Index: linux-2.6/arch/powerpc/platforms/83xx/Kconfig
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/83xx/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/83xx/Kconfig
-@@ -1,10 +1,13 @@
--choice
--	prompt "83xx Board Type"
--	depends on PPC_83xx
--	default MPC834x_MDS
-+config PPC_83xx
-+	bool "Freescale 83xx based boards"
-+	depends on 6xx
-+	select FSL_SOC
-+	select 83xx
-+	select WANT_DEVICE_TREE
- 
- config MPC8313_RDB
- 	bool "Freescale MPC8313 RDB"
-+	depends on PPC_83xx
- 	select DEFAULT_UIMAGE
- 	select CPU_603e
- 	help
-@@ -12,6 +15,7 @@ config MPC8313_RDB
- 
- config MPC832x_MDS
- 	bool "Freescale MPC832x MDS"
-+	depends on PPC_83xx
- 	select DEFAULT_UIMAGE
- 	select QUICC_ENGINE
- 	select CPU_603e
-@@ -20,6 +24,7 @@ config MPC832x_MDS
- 
- config MPC832x_RDB
- 	bool "Freescale MPC832x RDB"
-+	depends on PPC_83xx
- 	select DEFAULT_UIMAGE
- 	select QUICC_ENGINE
- 	select CPU_603e
-@@ -28,6 +33,7 @@ config MPC832x_RDB
- 
- config MPC834x_MDS
- 	bool "Freescale MPC834x MDS"
-+	depends on PPC_83xx
- 	select DEFAULT_UIMAGE
- 	select CPU_603e
- 	help
-@@ -40,6 +46,7 @@ config MPC834x_MDS
- 
- config MPC834x_ITX
- 	bool "Freescale MPC834x ITX"
-+	depends on PPC_83xx
- 	select DEFAULT_UIMAGE
- 	select CPU_603e
- 	help
-@@ -50,14 +57,13 @@ config MPC834x_ITX
- 
- config MPC836x_MDS
- 	bool "Freescale MPC836x MDS"
-+	depends on PPC_83xx
- 	select DEFAULT_UIMAGE
- 	select QUICC_ENGINE
- 	select CPU_603e
- 	help
- 	  This option enables support for the MPC836x MDS Processor Board.
- 
--endchoice
--
- config PPC_MPC831x
- 	bool
- 	select PPC_UDBG_16550
+
 Index: linux-2.6/arch/powerpc/platforms/Kconfig
 ===================================================================
 --- linux-2.6.orig/arch/powerpc/platforms/Kconfig
 +++ linux-2.6/arch/powerpc/platforms/Kconfig
-@@ -16,13 +16,6 @@ config PPC_82xx
+@@ -12,10 +12,6 @@ config PPC_MULTIPLATFORM
+ 	  RS/6000 machine, an Apple machine, or a PReP, CHRP,
+ 	  Maple or Cell-based machine.
+ 
+-config EMBEDDED6xx
+-	bool "Embedded 6xx/7xx/7xxx-based board"
+-	depends on PPC32 && (BROKEN||BROKEN_ON_SMP)
+-
+ config PPC_82xx
  	bool "Freescale 82xx"
  	depends on 6xx
- 
--config PPC_83xx
--	bool "Freescale 83xx"
--	depends on 6xx
--	select FSL_SOC
--	select 83xx
--	select WANT_DEVICE_TREE
--
- endchoice
- 
- config CLASSIC32
-Index: linux-2.6/arch/powerpc/configs/mpc8313_rdb_defconfig
+Index: linux-2.6/arch/powerpc/platforms/embedded6xx/Kconfig
 ===================================================================
---- linux-2.6.orig/arch/powerpc/configs/mpc8313_rdb_defconfig
-+++ linux-2.6/arch/powerpc/configs/mpc8313_rdb_defconfig
-@@ -1,9 +1,33 @@
+--- linux-2.6.orig/arch/powerpc/platforms/embedded6xx/Kconfig
++++ linux-2.6/arch/powerpc/platforms/embedded6xx/Kconfig
+@@ -1,9 +1,10 @@
+-choice
+-	prompt "Machine Type"
+-	depends on EMBEDDED6xx
++config EMBEDDED6xx
++	bool "Embedded 6xx/7xx/7xxx-based boards"
++	depends on PPC32 && (BROKEN||BROKEN_ON_SMP) && PPC_MULTIPLATFORM
+ 
+ config LINKSTATION
+ 	bool "Linkstation / Kurobox(HG) from Buffalo"
++	depends on EMBEDDED6xx
+ 	select MPIC
+ 	select FSL_SOC
+ 	select PPC_UDBG_16550 if SERIAL_8250
+@@ -18,6 +19,7 @@ config LINKSTATION
+ 
+ config MPC7448HPC2
+ 	bool "Freescale MPC7448HPC2(Taiga)"
++	depends on EMBEDDED6xx
+ 	select TSI108_BRIDGE
+ 	select DEFAULT_UIMAGE
+ 	select PPC_UDBG_16550
+@@ -28,6 +30,7 @@ config MPC7448HPC2
+ 
+ config PPC_HOLLY
+ 	bool "PPC750GX/CL with TSI10x bridge (Hickory/Holly)"
++	depends on EMBEDDED6xx
+ 	select TSI108_BRIDGE
+ 	select PPC_UDBG_16550
+ 	select WANT_DEVICE_TREE
+@@ -38,13 +41,13 @@ config PPC_HOLLY
+ 
+ config PPC_PRPMC2800
+ 	bool "Motorola-PrPMC2800"
++	depends on EMBEDDED6xx
+ 	select MV64X60
+ 	select NOT_COHERENT_CACHE
+ 	select WANT_DEVICE_TREE
+ 	select CPU_7450
+ 	help
+ 	  This option enables support for the Motorola PrPMC2800 board
+-endchoice
+ 
+ config TSI108_BRIDGE
+ 	bool
+Index: linux-2.6/arch/powerpc/configs/holly_defconfig
+===================================================================
+--- linux-2.6.orig/arch/powerpc/configs/holly_defconfig
++++ linux-2.6/arch/powerpc/configs/holly_defconfig
+@@ -1,9 +1,32 @@
  #
  # Automatically generated make config: don't edit
- # Linux kernel version: 2.6.22-rc7
--# Sun Jul  1 23:56:55 2007
-+# Fri Jul 13 20:00:52 2007
+-# Linux kernel version: 2.6.22-rc2
+-# Thu May 31 11:25:44 2007
++# Linux kernel version: 2.6.22-rc7
++# Fri Jul 13 20:05:39 2007
  #
  # CONFIG_PPC64 is not set
 +
@@ -147,12 +127,11 @@ Index: linux-2.6/arch/powerpc/configs/mpc8313_rdb_defconfig
 +# CONFIG_E200 is not set
 +# CONFIG_PPC_CPU_SELECTION is not set
 +# CONFIG_CPU_601 is not set
-+CONFIG_CPU_603e=y
-+# CONFIG_CPU_750 is not set
++# CONFIG_CPU_603e is not set
++CONFIG_CPU_750=y
 +# CONFIG_CPU_7400 is not set
 +# CONFIG_CPU_7450 is not set
-+CONFIG_PPC_MCPU="-mcpu=603e"
-+CONFIG_83xx=y
++CONFIG_PPC_MCPU="-mcpu=750"
 +CONFIG_PPC_FPU=y
 +CONFIG_ALTIVEC=y
 +CONFIG_PPC_STD_MMU=y
@@ -162,17 +141,17 @@ Index: linux-2.6/arch/powerpc/configs/mpc8313_rdb_defconfig
  CONFIG_PPC32=y
  CONFIG_PPC_MERGE=y
  CONFIG_MMU=y
-@@ -25,28 +49,8 @@ CONFIG_PPC_UDBG_16550=y
+@@ -25,28 +48,8 @@ CONFIG_PPC_UDBG_16550=y
  CONFIG_AUDIT_ARCH=y
  CONFIG_GENERIC_BUG=y
- CONFIG_DEFAULT_UIMAGE=y
+ # CONFIG_DEFAULT_UIMAGE is not set
 -
 -#
 -# Processor support
 -#
--# CONFIG_CLASSIC32 is not set
+-CONFIG_CLASSIC32=y
 -# CONFIG_PPC_82xx is not set
--CONFIG_PPC_83xx=y
+-# CONFIG_PPC_83xx is not set
 -# CONFIG_PPC_85xx is not set
 -# CONFIG_PPC_86xx is not set
 -# CONFIG_PPC_8xx is not set
@@ -180,10 +159,10 @@ Index: linux-2.6/arch/powerpc/configs/mpc8313_rdb_defconfig
 -# CONFIG_44x is not set
 -# CONFIG_E200 is not set
 -CONFIG_6xx=y
--CONFIG_83xx=y
 -CONFIG_PPC_FPU=y
  # CONFIG_PPC_DCR_NATIVE is not set
  # CONFIG_PPC_DCR_MMIO is not set
+-# CONFIG_ALTIVEC is not set
 -CONFIG_PPC_STD_MMU=y
 -CONFIG_PPC_STD_MMU_32=y
 -# CONFIG_PPC_MM_SLICES is not set
@@ -191,12 +170,17 @@ Index: linux-2.6/arch/powerpc/configs/mpc8313_rdb_defconfig
  CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
  
  #
-@@ -135,11 +139,19 @@ CONFIG_DEFAULT_IOSCHED="anticipatory"
+@@ -136,14 +139,21 @@ CONFIG_DEFAULT_IOSCHED="anticipatory"
  #
  # Platform support
  #
+-# CONFIG_PPC_MULTIPLATFORM is not set
+-CONFIG_EMBEDDED6xx=y
+-# CONFIG_APUS is not set
 +CONFIG_PPC_MULTIPLATFORM=y
 +# CONFIG_PPC_82xx is not set
++# CONFIG_PPC_83xx is not set
++# CONFIG_PPC_86xx is not set
 +CONFIG_CLASSIC32=y
 +# CONFIG_PPC_CHRP is not set
  # CONFIG_PPC_MPC52xx is not set
@@ -207,53 +191,48 @@ Index: linux-2.6/arch/powerpc/configs/mpc8313_rdb_defconfig
  # CONFIG_PPC_CELL is not set
  # CONFIG_PPC_CELL_NATIVE is not set
  # CONFIG_PQ2ADS is not set
-+CONFIG_PPC_83xx=y
- CONFIG_MPC8313_RDB=y
- # CONFIG_MPC832x_MDS is not set
- # CONFIG_MPC832x_RDB is not set
-@@ -147,6 +159,8 @@ CONFIG_MPC8313_RDB=y
- # CONFIG_MPC834x_ITX is not set
- # CONFIG_MPC836x_MDS is not set
- CONFIG_PPC_MPC831x=y
-+# CONFIG_PPC_86xx is not set
-+# CONFIG_EMBEDDED6xx is not set
- # CONFIG_MPIC is not set
- # CONFIG_MPIC_WEIRD is not set
- # CONFIG_PPC_I8259 is not set
-@@ -157,6 +171,7 @@ CONFIG_PPC_MPC831x=y
- # CONFIG_PPC_INDIRECT_IO is not set
- # CONFIG_GENERIC_IOMAP is not set
- # CONFIG_CPU_FREQ is not set
-+# CONFIG_TAU is not set
- # CONFIG_CPM2 is not set
- 
- #
-@@ -174,6 +189,7 @@ CONFIG_PREEMPT_NONE=y
++CONFIG_EMBEDDED6xx=y
+ # CONFIG_LINKSTATION is not set
+ # CONFIG_MPC7448HPC2 is not set
+ CONFIG_PPC_HOLLY=y
+@@ -177,6 +187,7 @@ CONFIG_PREEMPT_NONE=y
  CONFIG_BINFMT_ELF=y
- # CONFIG_BINFMT_MISC is not set
+ CONFIG_BINFMT_MISC=y
  CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
 +# CONFIG_KEXEC is not set
  CONFIG_ARCH_FLATMEM_ENABLE=y
  CONFIG_ARCH_POPULATES_NODE_MAP=y
  CONFIG_SELECT_MEMORY_MODEL=y
-@@ -638,6 +654,7 @@ CONFIG_NETDEV_1000=y
+@@ -590,6 +601,7 @@ CONFIG_NETDEV_1000=y
+ # CONFIG_TIGON3 is not set
  # CONFIG_BNX2 is not set
- CONFIG_GIANFAR=y
- CONFIG_GFAR_NAPI=y
+ CONFIG_TSI108_ETH=y
 +# CONFIG_MV643XX_ETH is not set
  # CONFIG_QLA3XXX is not set
  # CONFIG_ATL1 is not set
  CONFIG_NETDEV_10000=y
-Index: linux-2.6/arch/powerpc/configs/mpc832x_mds_defconfig
+@@ -600,10 +612,6 @@ CONFIG_NETDEV_10000=y
+ # CONFIG_MYRI10GE is not set
+ # CONFIG_NETXEN_NIC is not set
+ # CONFIG_MLX4_CORE is not set
+-
+-#
+-# Token Ring devices
+-#
+ # CONFIG_TR is not set
+ 
+ #
+Index: linux-2.6/arch/powerpc/configs/linkstation_defconfig
 ===================================================================
---- linux-2.6.orig/arch/powerpc/configs/mpc832x_mds_defconfig
-+++ linux-2.6/arch/powerpc/configs/mpc832x_mds_defconfig
-@@ -1,9 +1,33 @@
+--- linux-2.6.orig/arch/powerpc/configs/linkstation_defconfig
++++ linux-2.6/arch/powerpc/configs/linkstation_defconfig
+@@ -1,9 +1,32 @@
  #
  # Automatically generated make config: don't edit
- # Linux kernel version: 2.6.22-rc7
--# Sun Jul  1 23:56:55 2007
-+# Fri Jul 13 20:00:53 2007
+-# Linux kernel version: 2.6.22-rc6
+-# Tue Jun 26 13:25:19 2007
++# Linux kernel version: 2.6.22-rc7
++# Fri Jul 13 20:05:40 2007
  #
  # CONFIG_PPC64 is not set
 +
@@ -273,7 +252,6 @@ Index: linux-2.6/arch/powerpc/configs/mpc832x_mds_defconfig
 +# CONFIG_CPU_7400 is not set
 +# CONFIG_CPU_7450 is not set
 +CONFIG_PPC_MCPU="-mcpu=603e"
-+CONFIG_83xx=y
 +CONFIG_PPC_FPU=y
 +CONFIG_ALTIVEC=y
 +CONFIG_PPC_STD_MMU=y
@@ -283,7 +261,7 @@ Index: linux-2.6/arch/powerpc/configs/mpc832x_mds_defconfig
  CONFIG_PPC32=y
  CONFIG_PPC_MERGE=y
  CONFIG_MMU=y
-@@ -25,28 +49,8 @@ CONFIG_PPC_UDBG_16550=y
+@@ -25,28 +48,8 @@ CONFIG_PPC_UDBG_16550=y
  CONFIG_AUDIT_ARCH=y
  CONFIG_GENERIC_BUG=y
  CONFIG_DEFAULT_UIMAGE=y
@@ -291,9 +269,9 @@ Index: linux-2.6/arch/powerpc/configs/mpc832x_mds_defconfig
 -#
 -# Processor support
 -#
--# CONFIG_CLASSIC32 is not set
+-CONFIG_CLASSIC32=y
 -# CONFIG_PPC_82xx is not set
--CONFIG_PPC_83xx=y
+-# CONFIG_PPC_83xx is not set
 -# CONFIG_PPC_85xx is not set
 -# CONFIG_PPC_86xx is not set
 -# CONFIG_PPC_8xx is not set
@@ -301,10 +279,10 @@ Index: linux-2.6/arch/powerpc/configs/mpc832x_mds_defconfig
 -# CONFIG_44x is not set
 -# CONFIG_E200 is not set
 -CONFIG_6xx=y
--CONFIG_83xx=y
 -CONFIG_PPC_FPU=y
  # CONFIG_PPC_DCR_NATIVE is not set
  # CONFIG_PPC_DCR_MMIO is not set
+-# CONFIG_ALTIVEC is not set
 -CONFIG_PPC_STD_MMU=y
 -CONFIG_PPC_STD_MMU_32=y
 -# CONFIG_PPC_MM_SLICES is not set
@@ -312,12 +290,17 @@ Index: linux-2.6/arch/powerpc/configs/mpc832x_mds_defconfig
  CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
  
  #
-@@ -135,11 +139,19 @@ CONFIG_DEFAULT_IOSCHED="anticipatory"
+@@ -138,14 +141,21 @@ CONFIG_DEFAULT_IOSCHED="anticipatory"
  #
  # Platform support
  #
+-# CONFIG_PPC_MULTIPLATFORM is not set
+-CONFIG_EMBEDDED6xx=y
+-# CONFIG_APUS is not set
 +CONFIG_PPC_MULTIPLATFORM=y
 +# CONFIG_PPC_82xx is not set
++# CONFIG_PPC_83xx is not set
++# CONFIG_PPC_86xx is not set
 +CONFIG_CLASSIC32=y
 +# CONFIG_PPC_CHRP is not set
  # CONFIG_PPC_MPC52xx is not set
@@ -328,270 +311,11 @@ Index: linux-2.6/arch/powerpc/configs/mpc832x_mds_defconfig
  # CONFIG_PPC_CELL is not set
  # CONFIG_PPC_CELL_NATIVE is not set
  # CONFIG_PQ2ADS is not set
-+CONFIG_PPC_83xx=y
- # CONFIG_MPC8313_RDB is not set
- CONFIG_MPC832x_MDS=y
- # CONFIG_MPC832x_RDB is not set
-@@ -147,6 +159,8 @@ CONFIG_MPC832x_MDS=y
- # CONFIG_MPC834x_ITX is not set
- # CONFIG_MPC836x_MDS is not set
- CONFIG_PPC_MPC832x=y
-+# CONFIG_PPC_86xx is not set
-+# CONFIG_EMBEDDED6xx is not set
- # CONFIG_MPIC is not set
- # CONFIG_MPIC_WEIRD is not set
- # CONFIG_PPC_I8259 is not set
-@@ -157,6 +171,7 @@ CONFIG_PPC_MPC832x=y
- # CONFIG_PPC_INDIRECT_IO is not set
- # CONFIG_GENERIC_IOMAP is not set
- # CONFIG_CPU_FREQ is not set
-+# CONFIG_TAU is not set
- CONFIG_QUICC_ENGINE=y
- # CONFIG_CPM2 is not set
- 
-@@ -176,6 +191,7 @@ CONFIG_BINFMT_ELF=y
- # CONFIG_BINFMT_MISC is not set
- CONFIG_MATH_EMULATION=y
- CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-+# CONFIG_KEXEC is not set
- CONFIG_ARCH_FLATMEM_ENABLE=y
- CONFIG_ARCH_POPULATES_NODE_MAP=y
- CONFIG_SELECT_MEMORY_MODEL=y
-@@ -535,6 +551,7 @@ CONFIG_UCC_GETH=y
- # CONFIG_UGETH_MAGIC_PACKET is not set
- # CONFIG_UGETH_FILTERING is not set
- # CONFIG_UGETH_TX_ON_DEMAND is not set
-+# CONFIG_MV643XX_ETH is not set
- # CONFIG_QLA3XXX is not set
- # CONFIG_ATL1 is not set
- CONFIG_NETDEV_10000=y
-Index: linux-2.6/arch/powerpc/configs/mpc832x_rdb_defconfig
-===================================================================
---- linux-2.6.orig/arch/powerpc/configs/mpc832x_rdb_defconfig
-+++ linux-2.6/arch/powerpc/configs/mpc832x_rdb_defconfig
-@@ -1,9 +1,33 @@
- #
- # Automatically generated make config: don't edit
- # Linux kernel version: 2.6.22-rc7
--# Sun Jul  1 23:56:56 2007
-+# Fri Jul 13 20:00:54 2007
- #
- # CONFIG_PPC64 is not set
-+
-+#
-+# Processor support
-+#
-+CONFIG_6xx=y
-+# CONFIG_PPC_85xx is not set
-+# CONFIG_PPC_8xx is not set
-+# CONFIG_40x is not set
-+# CONFIG_44x is not set
-+# CONFIG_E200 is not set
-+# CONFIG_PPC_CPU_SELECTION is not set
-+# CONFIG_CPU_601 is not set
-+CONFIG_CPU_603e=y
-+# CONFIG_CPU_750 is not set
-+# CONFIG_CPU_7400 is not set
-+# CONFIG_CPU_7450 is not set
-+CONFIG_PPC_MCPU="-mcpu=603e"
-+CONFIG_83xx=y
-+CONFIG_PPC_FPU=y
-+CONFIG_ALTIVEC=y
-+CONFIG_PPC_STD_MMU=y
-+CONFIG_PPC_STD_MMU_32=y
-+# CONFIG_PPC_MM_SLICES is not set
-+# CONFIG_SMP is not set
- CONFIG_PPC32=y
- CONFIG_PPC_MERGE=y
- CONFIG_MMU=y
-@@ -25,28 +49,8 @@ CONFIG_PPC_UDBG_16550=y
- CONFIG_AUDIT_ARCH=y
- CONFIG_GENERIC_BUG=y
- CONFIG_DEFAULT_UIMAGE=y
--
--#
--# Processor support
--#
--# CONFIG_CLASSIC32 is not set
--# CONFIG_PPC_82xx is not set
--CONFIG_PPC_83xx=y
--# CONFIG_PPC_85xx is not set
--# CONFIG_PPC_86xx is not set
--# CONFIG_PPC_8xx is not set
--# CONFIG_40x is not set
--# CONFIG_44x is not set
--# CONFIG_E200 is not set
--CONFIG_6xx=y
--CONFIG_83xx=y
--CONFIG_PPC_FPU=y
- # CONFIG_PPC_DCR_NATIVE is not set
- # CONFIG_PPC_DCR_MMIO is not set
--CONFIG_PPC_STD_MMU=y
--CONFIG_PPC_STD_MMU_32=y
--# CONFIG_PPC_MM_SLICES is not set
--# CONFIG_SMP is not set
- CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
- 
- #
-@@ -135,11 +139,19 @@ CONFIG_DEFAULT_IOSCHED="anticipatory"
- #
- # Platform support
- #
-+CONFIG_PPC_MULTIPLATFORM=y
-+# CONFIG_PPC_82xx is not set
-+CONFIG_CLASSIC32=y
-+# CONFIG_PPC_CHRP is not set
- # CONFIG_PPC_MPC52xx is not set
- # CONFIG_PPC_MPC5200 is not set
-+# CONFIG_PPC_EFIKA is not set
-+# CONFIG_PPC_LITE5200 is not set
-+# CONFIG_PPC_PMAC is not set
- # CONFIG_PPC_CELL is not set
- # CONFIG_PPC_CELL_NATIVE is not set
- # CONFIG_PQ2ADS is not set
-+CONFIG_PPC_83xx=y
- # CONFIG_MPC8313_RDB is not set
- # CONFIG_MPC832x_MDS is not set
- CONFIG_MPC832x_RDB=y
-@@ -147,6 +159,8 @@ CONFIG_MPC832x_RDB=y
- # CONFIG_MPC834x_ITX is not set
- # CONFIG_MPC836x_MDS is not set
- CONFIG_PPC_MPC832x=y
-+# CONFIG_PPC_86xx is not set
-+# CONFIG_EMBEDDED6xx is not set
- # CONFIG_MPIC is not set
- # CONFIG_MPIC_WEIRD is not set
- # CONFIG_PPC_I8259 is not set
-@@ -157,6 +171,7 @@ CONFIG_PPC_MPC832x=y
- # CONFIG_PPC_INDIRECT_IO is not set
- # CONFIG_GENERIC_IOMAP is not set
- # CONFIG_CPU_FREQ is not set
-+# CONFIG_TAU is not set
- CONFIG_QUICC_ENGINE=y
- # CONFIG_CPM2 is not set
- 
-@@ -176,6 +191,7 @@ CONFIG_BINFMT_ELF=y
- # CONFIG_BINFMT_MISC is not set
- CONFIG_MATH_EMULATION=y
- CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-+# CONFIG_KEXEC is not set
- CONFIG_ARCH_FLATMEM_ENABLE=y
- CONFIG_ARCH_POPULATES_NODE_MAP=y
- CONFIG_SELECT_MEMORY_MODEL=y
-@@ -538,6 +554,7 @@ CONFIG_UGETH_NAPI=y
- # CONFIG_UGETH_MAGIC_PACKET is not set
- # CONFIG_UGETH_FILTERING is not set
- # CONFIG_UGETH_TX_ON_DEMAND is not set
-+# CONFIG_MV643XX_ETH is not set
- # CONFIG_QLA3XXX is not set
- # CONFIG_ATL1 is not set
- CONFIG_NETDEV_10000=y
-Index: linux-2.6/arch/powerpc/configs/mpc834x_itx_defconfig
-===================================================================
---- linux-2.6.orig/arch/powerpc/configs/mpc834x_itx_defconfig
-+++ linux-2.6/arch/powerpc/configs/mpc834x_itx_defconfig
-@@ -1,9 +1,33 @@
- #
- # Automatically generated make config: don't edit
- # Linux kernel version: 2.6.22-rc7
--# Sun Jul  1 23:56:56 2007
-+# Fri Jul 13 20:01:04 2007
- #
- # CONFIG_PPC64 is not set
-+
-+#
-+# Processor support
-+#
-+CONFIG_6xx=y
-+# CONFIG_PPC_85xx is not set
-+# CONFIG_PPC_8xx is not set
-+# CONFIG_40x is not set
-+# CONFIG_44x is not set
-+# CONFIG_E200 is not set
-+# CONFIG_PPC_CPU_SELECTION is not set
-+# CONFIG_CPU_601 is not set
-+CONFIG_CPU_603e=y
-+# CONFIG_CPU_750 is not set
-+# CONFIG_CPU_7400 is not set
-+# CONFIG_CPU_7450 is not set
-+CONFIG_PPC_MCPU="-mcpu=603e"
-+CONFIG_83xx=y
-+CONFIG_PPC_FPU=y
-+CONFIG_ALTIVEC=y
-+CONFIG_PPC_STD_MMU=y
-+CONFIG_PPC_STD_MMU_32=y
-+# CONFIG_PPC_MM_SLICES is not set
-+# CONFIG_SMP is not set
- CONFIG_PPC32=y
- CONFIG_PPC_MERGE=y
- CONFIG_MMU=y
-@@ -25,28 +49,8 @@ CONFIG_PPC_UDBG_16550=y
- CONFIG_AUDIT_ARCH=y
- CONFIG_GENERIC_BUG=y
- CONFIG_DEFAULT_UIMAGE=y
--
--#
--# Processor support
--#
--# CONFIG_CLASSIC32 is not set
--# CONFIG_PPC_82xx is not set
--CONFIG_PPC_83xx=y
--# CONFIG_PPC_85xx is not set
--# CONFIG_PPC_86xx is not set
--# CONFIG_PPC_8xx is not set
--# CONFIG_40x is not set
--# CONFIG_44x is not set
--# CONFIG_E200 is not set
--CONFIG_6xx=y
--CONFIG_83xx=y
--CONFIG_PPC_FPU=y
- # CONFIG_PPC_DCR_NATIVE is not set
- # CONFIG_PPC_DCR_MMIO is not set
--CONFIG_PPC_STD_MMU=y
--CONFIG_PPC_STD_MMU_32=y
--# CONFIG_PPC_MM_SLICES is not set
--# CONFIG_SMP is not set
- CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
- 
- #
-@@ -135,11 +139,19 @@ CONFIG_DEFAULT_IOSCHED="anticipatory"
- #
- # Platform support
- #
-+CONFIG_PPC_MULTIPLATFORM=y
-+# CONFIG_PPC_82xx is not set
-+CONFIG_CLASSIC32=y
-+# CONFIG_PPC_CHRP is not set
- # CONFIG_PPC_MPC52xx is not set
- # CONFIG_PPC_MPC5200 is not set
-+# CONFIG_PPC_EFIKA is not set
-+# CONFIG_PPC_LITE5200 is not set
-+# CONFIG_PPC_PMAC is not set
- # CONFIG_PPC_CELL is not set
- # CONFIG_PPC_CELL_NATIVE is not set
- # CONFIG_PQ2ADS is not set
-+CONFIG_PPC_83xx=y
- # CONFIG_MPC8313_RDB is not set
- # CONFIG_MPC832x_MDS is not set
- # CONFIG_MPC832x_RDB is not set
-@@ -147,6 +159,8 @@ CONFIG_DEFAULT_IOSCHED="anticipatory"
- CONFIG_MPC834x_ITX=y
- # CONFIG_MPC836x_MDS is not set
- CONFIG_MPC834x=y
-+# CONFIG_PPC_86xx is not set
-+# CONFIG_EMBEDDED6xx is not set
- # CONFIG_MPIC is not set
- # CONFIG_MPIC_WEIRD is not set
- # CONFIG_PPC_I8259 is not set
-@@ -157,6 +171,7 @@ CONFIG_MPC834x=y
- # CONFIG_PPC_INDIRECT_IO is not set
- # CONFIG_GENERIC_IOMAP is not set
- # CONFIG_CPU_FREQ is not set
-+# CONFIG_TAU is not set
- # CONFIG_CPM2 is not set
- 
- #
-@@ -174,6 +189,7 @@ CONFIG_PREEMPT_NONE=y
++CONFIG_EMBEDDED6xx=y
+ CONFIG_LINKSTATION=y
+ # CONFIG_MPC7448HPC2 is not set
+ # CONFIG_PPC_HOLLY is not set
+@@ -181,6 +191,7 @@ CONFIG_PREEMPT_NONE=y
  CONFIG_BINFMT_ELF=y
  # CONFIG_BINFMT_MISC is not set
  CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
@@ -599,24 +323,24 @@ Index: linux-2.6/arch/powerpc/configs/mpc834x_itx_defconfig
  CONFIG_ARCH_FLATMEM_ENABLE=y
  CONFIG_ARCH_POPULATES_NODE_MAP=y
  CONFIG_SELECT_MEMORY_MODEL=y
-@@ -663,6 +679,7 @@ CONFIG_NETDEV_1000=y
+@@ -774,6 +785,7 @@ CONFIG_R8169=y
+ # CONFIG_VIA_VELOCITY is not set
+ # CONFIG_TIGON3 is not set
  # CONFIG_BNX2 is not set
- CONFIG_GIANFAR=y
- CONFIG_GFAR_NAPI=y
 +# CONFIG_MV643XX_ETH is not set
  # CONFIG_QLA3XXX is not set
  # CONFIG_ATL1 is not set
  CONFIG_NETDEV_10000=y
-Index: linux-2.6/arch/powerpc/configs/mpc834x_itxgp_defconfig
+Index: linux-2.6/arch/powerpc/configs/mpc7448_hpc2_defconfig
 ===================================================================
---- linux-2.6.orig/arch/powerpc/configs/mpc834x_itxgp_defconfig
-+++ linux-2.6/arch/powerpc/configs/mpc834x_itxgp_defconfig
-@@ -1,9 +1,33 @@
+--- linux-2.6.orig/arch/powerpc/configs/mpc7448_hpc2_defconfig
++++ linux-2.6/arch/powerpc/configs/mpc7448_hpc2_defconfig
+@@ -1,9 +1,32 @@
  #
  # Automatically generated make config: don't edit
  # Linux kernel version: 2.6.22-rc7
--# Sun Jul  1 23:56:56 2007
-+# Fri Jul 13 20:01:05 2007
+-# Sun Jul  1 23:56:54 2007
++# Fri Jul 13 20:05:41 2007
  #
  # CONFIG_PPC64 is not set
 +
@@ -631,12 +355,11 @@ Index: linux-2.6/arch/powerpc/configs/mpc834x_itxgp_defconfig
 +# CONFIG_E200 is not set
 +# CONFIG_PPC_CPU_SELECTION is not set
 +# CONFIG_CPU_601 is not set
-+CONFIG_CPU_603e=y
++# CONFIG_CPU_603e is not set
 +# CONFIG_CPU_750 is not set
 +# CONFIG_CPU_7400 is not set
-+# CONFIG_CPU_7450 is not set
-+CONFIG_PPC_MCPU="-mcpu=603e"
-+CONFIG_83xx=y
++CONFIG_CPU_7450=y
++CONFIG_PPC_MCPU="-mcpu=7450"
 +CONFIG_PPC_FPU=y
 +CONFIG_ALTIVEC=y
 +CONFIG_PPC_STD_MMU=y
@@ -646,7 +369,7 @@ Index: linux-2.6/arch/powerpc/configs/mpc834x_itxgp_defconfig
  CONFIG_PPC32=y
  CONFIG_PPC_MERGE=y
  CONFIG_MMU=y
-@@ -25,28 +49,8 @@ CONFIG_PPC_UDBG_16550=y
+@@ -25,28 +48,8 @@ CONFIG_PPC_UDBG_16550=y
  CONFIG_AUDIT_ARCH=y
  CONFIG_GENERIC_BUG=y
  CONFIG_DEFAULT_UIMAGE=y
@@ -654,9 +377,9 @@ Index: linux-2.6/arch/powerpc/configs/mpc834x_itxgp_defconfig
 -#
 -# Processor support
 -#
--# CONFIG_CLASSIC32 is not set
+-CONFIG_CLASSIC32=y
 -# CONFIG_PPC_82xx is not set
--CONFIG_PPC_83xx=y
+-# CONFIG_PPC_83xx is not set
 -# CONFIG_PPC_85xx is not set
 -# CONFIG_PPC_86xx is not set
 -# CONFIG_PPC_8xx is not set
@@ -664,10 +387,10 @@ Index: linux-2.6/arch/powerpc/configs/mpc834x_itxgp_defconfig
 -# CONFIG_44x is not set
 -# CONFIG_E200 is not set
 -CONFIG_6xx=y
--CONFIG_83xx=y
 -CONFIG_PPC_FPU=y
  # CONFIG_PPC_DCR_NATIVE is not set
  # CONFIG_PPC_DCR_MMIO is not set
+-# CONFIG_ALTIVEC is not set
 -CONFIG_PPC_STD_MMU=y
 -CONFIG_PPC_STD_MMU_32=y
 -# CONFIG_PPC_MM_SLICES is not set
@@ -675,12 +398,17 @@ Index: linux-2.6/arch/powerpc/configs/mpc834x_itxgp_defconfig
  CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
  
  #
-@@ -135,11 +139,19 @@ CONFIG_DEFAULT_IOSCHED="anticipatory"
+@@ -131,14 +134,21 @@ CONFIG_DEFAULT_IOSCHED="anticipatory"
  #
  # Platform support
  #
+-# CONFIG_PPC_MULTIPLATFORM is not set
+-CONFIG_EMBEDDED6xx=y
+-# CONFIG_APUS is not set
 +CONFIG_PPC_MULTIPLATFORM=y
 +# CONFIG_PPC_82xx is not set
++# CONFIG_PPC_83xx is not set
++# CONFIG_PPC_86xx is not set
 +CONFIG_CLASSIC32=y
 +# CONFIG_PPC_CHRP is not set
  # CONFIG_PPC_MPC52xx is not set
@@ -691,53 +419,37 @@ Index: linux-2.6/arch/powerpc/configs/mpc834x_itxgp_defconfig
  # CONFIG_PPC_CELL is not set
  # CONFIG_PPC_CELL_NATIVE is not set
  # CONFIG_PQ2ADS is not set
-+CONFIG_PPC_83xx=y
- # CONFIG_MPC8313_RDB is not set
- # CONFIG_MPC832x_MDS is not set
- # CONFIG_MPC832x_RDB is not set
-@@ -147,6 +159,8 @@ CONFIG_DEFAULT_IOSCHED="anticipatory"
- CONFIG_MPC834x_ITX=y
- # CONFIG_MPC836x_MDS is not set
- CONFIG_MPC834x=y
-+# CONFIG_PPC_86xx is not set
-+# CONFIG_EMBEDDED6xx is not set
- # CONFIG_MPIC is not set
- # CONFIG_MPIC_WEIRD is not set
- # CONFIG_PPC_I8259 is not set
-@@ -157,6 +171,7 @@ CONFIG_MPC834x=y
- # CONFIG_PPC_INDIRECT_IO is not set
- # CONFIG_GENERIC_IOMAP is not set
- # CONFIG_CPU_FREQ is not set
-+# CONFIG_TAU is not set
- # CONFIG_CPM2 is not set
- 
- #
-@@ -174,6 +189,7 @@ CONFIG_PREEMPT_NONE=y
++CONFIG_EMBEDDED6xx=y
+ # CONFIG_LINKSTATION is not set
+ CONFIG_MPC7448HPC2=y
+ # CONFIG_PPC_HOLLY is not set
+@@ -172,6 +182,7 @@ CONFIG_PREEMPT_NONE=y
  CONFIG_BINFMT_ELF=y
- # CONFIG_BINFMT_MISC is not set
+ CONFIG_BINFMT_MISC=y
  CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
 +# CONFIG_KEXEC is not set
  CONFIG_ARCH_FLATMEM_ENABLE=y
  CONFIG_ARCH_POPULATES_NODE_MAP=y
  CONFIG_SELECT_MEMORY_MODEL=y
-@@ -594,6 +610,7 @@ CONFIG_NETDEV_1000=y
+@@ -600,6 +611,7 @@ CONFIG_NETDEV_1000=y
+ # CONFIG_TIGON3 is not set
  # CONFIG_BNX2 is not set
- CONFIG_GIANFAR=y
- CONFIG_GFAR_NAPI=y
+ CONFIG_TSI108_ETH=y
 +# CONFIG_MV643XX_ETH is not set
  # CONFIG_QLA3XXX is not set
  # CONFIG_ATL1 is not set
  CONFIG_NETDEV_10000=y
-Index: linux-2.6/arch/powerpc/configs/mpc834x_mds_defconfig
+Index: linux-2.6/arch/powerpc/configs/prpmc2800_defconfig
 ===================================================================
---- linux-2.6.orig/arch/powerpc/configs/mpc834x_mds_defconfig
-+++ linux-2.6/arch/powerpc/configs/mpc834x_mds_defconfig
-@@ -1,9 +1,33 @@
+--- linux-2.6.orig/arch/powerpc/configs/prpmc2800_defconfig
++++ linux-2.6/arch/powerpc/configs/prpmc2800_defconfig
+@@ -1,9 +1,34 @@
  #
  # Automatically generated make config: don't edit
- # Linux kernel version: 2.6.22-rc7
--# Sun Jul  1 23:56:57 2007
-+# Fri Jul 13 20:01:05 2007
+-# Linux kernel version: 2.6.22-rc6
+-# Tue Jun 26 14:15:11 2007
++# Linux kernel version: 2.6.22-rc7
++# Fri Jul 13 20:05:42 2007
  #
  # CONFIG_PPC64 is not set
 +
@@ -752,32 +464,33 @@ Index: linux-2.6/arch/powerpc/configs/mpc834x_mds_defconfig
 +# CONFIG_E200 is not set
 +# CONFIG_PPC_CPU_SELECTION is not set
 +# CONFIG_CPU_601 is not set
-+CONFIG_CPU_603e=y
++# CONFIG_CPU_603e is not set
 +# CONFIG_CPU_750 is not set
 +# CONFIG_CPU_7400 is not set
-+# CONFIG_CPU_7450 is not set
-+CONFIG_PPC_MCPU="-mcpu=603e"
-+CONFIG_83xx=y
++CONFIG_CPU_7450=y
++CONFIG_PPC_MCPU="-mcpu=7450"
 +CONFIG_PPC_FPU=y
 +CONFIG_ALTIVEC=y
 +CONFIG_PPC_STD_MMU=y
 +CONFIG_PPC_STD_MMU_32=y
 +# CONFIG_PPC_MM_SLICES is not set
 +# CONFIG_SMP is not set
++CONFIG_NOT_COHERENT_CACHE=y
++CONFIG_CONFIG_CHECK_CACHE_COHERENCY=y
  CONFIG_PPC32=y
  CONFIG_PPC_MERGE=y
  CONFIG_MMU=y
-@@ -25,28 +49,8 @@ CONFIG_PPC_UDBG_16550=y
+@@ -25,30 +50,8 @@ CONFIG_PPC_OF=y
  CONFIG_AUDIT_ARCH=y
  CONFIG_GENERIC_BUG=y
- CONFIG_DEFAULT_UIMAGE=y
+ # CONFIG_DEFAULT_UIMAGE is not set
 -
 -#
 -# Processor support
 -#
--# CONFIG_CLASSIC32 is not set
+-CONFIG_CLASSIC32=y
 -# CONFIG_PPC_82xx is not set
--CONFIG_PPC_83xx=y
+-# CONFIG_PPC_83xx is not set
 -# CONFIG_PPC_85xx is not set
 -# CONFIG_PPC_86xx is not set
 -# CONFIG_PPC_8xx is not set
@@ -785,23 +498,30 @@ Index: linux-2.6/arch/powerpc/configs/mpc834x_mds_defconfig
 -# CONFIG_44x is not set
 -# CONFIG_E200 is not set
 -CONFIG_6xx=y
--CONFIG_83xx=y
 -CONFIG_PPC_FPU=y
  # CONFIG_PPC_DCR_NATIVE is not set
  # CONFIG_PPC_DCR_MMIO is not set
+-CONFIG_ALTIVEC=y
 -CONFIG_PPC_STD_MMU=y
 -CONFIG_PPC_STD_MMU_32=y
 -# CONFIG_PPC_MM_SLICES is not set
 -# CONFIG_SMP is not set
+-CONFIG_NOT_COHERENT_CACHE=y
+-CONFIG_CONFIG_CHECK_CACHE_COHERENCY=y
  CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
  
  #
-@@ -135,11 +139,19 @@ CONFIG_DEFAULT_IOSCHED="anticipatory"
+@@ -133,14 +136,21 @@ CONFIG_DEFAULT_IOSCHED="anticipatory"
  #
  # Platform support
  #
+-# CONFIG_PPC_MULTIPLATFORM is not set
+-CONFIG_EMBEDDED6xx=y
+-# CONFIG_APUS is not set
 +CONFIG_PPC_MULTIPLATFORM=y
 +# CONFIG_PPC_82xx is not set
++# CONFIG_PPC_83xx is not set
++# CONFIG_PPC_86xx is not set
 +CONFIG_CLASSIC32=y
 +# CONFIG_PPC_CHRP is not set
  # CONFIG_PPC_MPC52xx is not set
@@ -812,163 +532,9 @@ Index: linux-2.6/arch/powerpc/configs/mpc834x_mds_defconfig
  # CONFIG_PPC_CELL is not set
  # CONFIG_PPC_CELL_NATIVE is not set
  # CONFIG_PQ2ADS is not set
-+CONFIG_PPC_83xx=y
- # CONFIG_MPC8313_RDB is not set
- # CONFIG_MPC832x_MDS is not set
- # CONFIG_MPC832x_RDB is not set
-@@ -147,6 +159,8 @@ CONFIG_MPC834x_MDS=y
- # CONFIG_MPC834x_ITX is not set
- # CONFIG_MPC836x_MDS is not set
- CONFIG_MPC834x=y
-+# CONFIG_PPC_86xx is not set
-+# CONFIG_EMBEDDED6xx is not set
- # CONFIG_MPIC is not set
- # CONFIG_MPIC_WEIRD is not set
- # CONFIG_PPC_I8259 is not set
-@@ -157,6 +171,7 @@ CONFIG_MPC834x=y
- # CONFIG_PPC_INDIRECT_IO is not set
- # CONFIG_GENERIC_IOMAP is not set
- # CONFIG_CPU_FREQ is not set
-+# CONFIG_TAU is not set
- # CONFIG_CPM2 is not set
- 
- #
-@@ -174,6 +189,7 @@ CONFIG_PREEMPT_NONE=y
- CONFIG_BINFMT_ELF=y
- # CONFIG_BINFMT_MISC is not set
- CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-+# CONFIG_KEXEC is not set
- CONFIG_ARCH_FLATMEM_ENABLE=y
- CONFIG_ARCH_POPULATES_NODE_MAP=y
- CONFIG_SELECT_MEMORY_MODEL=y
-@@ -477,6 +493,7 @@ CONFIG_NETDEV_1000=y
- # CONFIG_BNX2 is not set
- CONFIG_GIANFAR=y
- # CONFIG_GFAR_NAPI is not set
-+# CONFIG_MV643XX_ETH is not set
- # CONFIG_QLA3XXX is not set
- # CONFIG_ATL1 is not set
- CONFIG_NETDEV_10000=y
-Index: linux-2.6/arch/powerpc/configs/mpc836x_mds_defconfig
-===================================================================
---- linux-2.6.orig/arch/powerpc/configs/mpc836x_mds_defconfig
-+++ linux-2.6/arch/powerpc/configs/mpc836x_mds_defconfig
-@@ -1,9 +1,33 @@
- #
- # Automatically generated make config: don't edit
- # Linux kernel version: 2.6.22-rc7
--# Sun Jul  1 23:56:57 2007
-+# Fri Jul 13 20:01:07 2007
- #
- # CONFIG_PPC64 is not set
-+
-+#
-+# Processor support
-+#
-+CONFIG_6xx=y
-+# CONFIG_PPC_85xx is not set
-+# CONFIG_PPC_8xx is not set
-+# CONFIG_40x is not set
-+# CONFIG_44x is not set
-+# CONFIG_E200 is not set
-+# CONFIG_PPC_CPU_SELECTION is not set
-+# CONFIG_CPU_601 is not set
-+CONFIG_CPU_603e=y
-+# CONFIG_CPU_750 is not set
-+# CONFIG_CPU_7400 is not set
-+# CONFIG_CPU_7450 is not set
-+CONFIG_PPC_MCPU="-mcpu=603e"
-+CONFIG_83xx=y
-+CONFIG_PPC_FPU=y
-+CONFIG_ALTIVEC=y
-+CONFIG_PPC_STD_MMU=y
-+CONFIG_PPC_STD_MMU_32=y
-+# CONFIG_PPC_MM_SLICES is not set
-+# CONFIG_SMP is not set
- CONFIG_PPC32=y
- CONFIG_PPC_MERGE=y
- CONFIG_MMU=y
-@@ -25,28 +49,8 @@ CONFIG_PPC_UDBG_16550=y
- CONFIG_AUDIT_ARCH=y
- CONFIG_GENERIC_BUG=y
- CONFIG_DEFAULT_UIMAGE=y
--
--#
--# Processor support
--#
--# CONFIG_CLASSIC32 is not set
--# CONFIG_PPC_82xx is not set
--CONFIG_PPC_83xx=y
--# CONFIG_PPC_85xx is not set
--# CONFIG_PPC_86xx is not set
--# CONFIG_PPC_8xx is not set
--# CONFIG_40x is not set
--# CONFIG_44x is not set
--# CONFIG_E200 is not set
--CONFIG_6xx=y
--CONFIG_83xx=y
--CONFIG_PPC_FPU=y
- # CONFIG_PPC_DCR_NATIVE is not set
- # CONFIG_PPC_DCR_MMIO is not set
--CONFIG_PPC_STD_MMU=y
--CONFIG_PPC_STD_MMU_32=y
--# CONFIG_PPC_MM_SLICES is not set
--# CONFIG_SMP is not set
- CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
- 
- #
-@@ -135,11 +139,19 @@ CONFIG_DEFAULT_IOSCHED="anticipatory"
- #
- # Platform support
- #
-+CONFIG_PPC_MULTIPLATFORM=y
-+# CONFIG_PPC_82xx is not set
-+CONFIG_CLASSIC32=y
-+# CONFIG_PPC_CHRP is not set
- # CONFIG_PPC_MPC52xx is not set
- # CONFIG_PPC_MPC5200 is not set
-+# CONFIG_PPC_EFIKA is not set
-+# CONFIG_PPC_LITE5200 is not set
-+# CONFIG_PPC_PMAC is not set
- # CONFIG_PPC_CELL is not set
- # CONFIG_PPC_CELL_NATIVE is not set
- # CONFIG_PQ2ADS is not set
-+CONFIG_PPC_83xx=y
- # CONFIG_MPC8313_RDB is not set
- # CONFIG_MPC832x_MDS is not set
- # CONFIG_MPC832x_RDB is not set
-@@ -147,6 +159,8 @@ CONFIG_DEFAULT_IOSCHED="anticipatory"
- # CONFIG_MPC834x_ITX is not set
- CONFIG_MPC836x_MDS=y
- CONFIG_PPC_MPC836x=y
-+# CONFIG_PPC_86xx is not set
-+# CONFIG_EMBEDDED6xx is not set
- # CONFIG_MPIC is not set
- # CONFIG_MPIC_WEIRD is not set
- # CONFIG_PPC_I8259 is not set
-@@ -157,6 +171,7 @@ CONFIG_PPC_MPC836x=y
- # CONFIG_PPC_INDIRECT_IO is not set
- # CONFIG_GENERIC_IOMAP is not set
- # CONFIG_CPU_FREQ is not set
-+# CONFIG_TAU is not set
- CONFIG_QUICC_ENGINE=y
- # CONFIG_CPM2 is not set
- 
-@@ -175,6 +190,7 @@ CONFIG_PREEMPT_NONE=y
- CONFIG_BINFMT_ELF=y
- # CONFIG_BINFMT_MISC is not set
- CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-+# CONFIG_KEXEC is not set
- CONFIG_ARCH_FLATMEM_ENABLE=y
- CONFIG_ARCH_POPULATES_NODE_MAP=y
- CONFIG_SELECT_MEMORY_MODEL=y
-@@ -534,6 +550,7 @@ CONFIG_UCC_GETH=y
- # CONFIG_UGETH_MAGIC_PACKET is not set
- # CONFIG_UGETH_FILTERING is not set
- # CONFIG_UGETH_TX_ON_DEMAND is not set
-+# CONFIG_MV643XX_ETH is not set
- # CONFIG_QLA3XXX is not set
- # CONFIG_ATL1 is not set
- CONFIG_NETDEV_10000=y
++CONFIG_EMBEDDED6xx=y
+ # CONFIG_LINKSTATION is not set
+ # CONFIG_MPC7448HPC2 is not set
+ # CONFIG_PPC_HOLLY is not set
 
 --
