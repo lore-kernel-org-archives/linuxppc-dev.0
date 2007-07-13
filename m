@@ -1,22 +1,21 @@
-Return-Path: <"evil@g-house.de"@mail.g-house.de>
-Received: from mail.g-house.de (ns2.g-housing.de [81.169.133.75])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 40A70DDDFE
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jul 2007 06:23:38 +1000 (EST)
-Date: Fri, 13 Jul 2007 22:23:20 +0200 (CEST)
-From: Christian Kujau <lists@nerdbynature.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Weird oopses with 2.6.22-rc7 [SOLVED]
-In-Reply-To: <alpine.DEB.0.99.0707130840470.18512@sheep.housecafe.de>
-Message-ID: <alpine.DEB.0.99.0707132221320.18512@sheep.housecafe.de>
-References: <alpine.DEB.0.99.0707130016270.18512@sheep.housecafe.de>
-	<20070712233719.GK17955@localdomain>
-	<alpine.DEB.0.99.0707130840470.18512@sheep.housecafe.de>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4B24ADDECA
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jul 2007 06:29:06 +1000 (EST)
+Message-ID: <4697E08B.6080700@freescale.com>
+Date: Fri, 13 Jul 2007 15:28:59 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=us-ascii
-Sender: "evil@g-house.de"@mail.g-house.de
-Cc: Nathan Lynch <ntl@pobox.com>, linux-kernel@vger.kernel.org
+To: Alexandre Bounine <Alexandre.Bounine@tundra.com>
+Subject: Re: [PATCH] Fix Tsi108 ethernet driver performance
+References: <1B5F013528140F45B5C671039279CA5701F8314C@NANUK.pc.tundra.com>
+In-Reply-To: <1B5F013528140F45B5C671039279CA5701F8314C@NANUK.pc.tundra.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,15 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 13 Jul 2007, Christian Kujau wrote:
-> Ah, this seem to have fixed http://lkml.org/lkml/2007/7/8/21 and really
-> looks promising, I'll try 2.6.22-git2 now.
+Alexandre Bounine wrote:
+> -/* If the RX ring has run out of memory, try periodically
+> - * to allocate some more, as otherwise poll would never
+> - * get called (apart from the initial end-of-queue condition).
+> - *
+> - * This is called once per second (by default) from the thread.
+> +/* tsi108_check_rxring() is used to periodically check if the RX ring
+> has
+> + * pending frames that have not been reported by RX interrupt (due to
+> interrupt
+> + * moderation). It is called with CHECK_RX_INTERVAL timer interval.
 
-for the record: running 2.6.22-git3 now and the Oopses went away ;)
+Wouldn't this cause latencies of up to a second in responding to 
+received packets?  I'd think that would be considered excessive.
 
-thanks,
-Christian.
--- 
-BOFH excuse #352:
+And shouldn't NAPI be reducing the RX interrupt load anyway?
 
-The cables are not the same length.
+-Scott
