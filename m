@@ -1,22 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 71C35DDDF3
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jul 2007 06:32:40 +1000 (EST)
-Message-ID: <4697E160.9000009@freescale.com>
-Date: Fri, 13 Jul 2007 15:32:32 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 506E7DDE1C
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jul 2007 07:15:12 +1000 (EST)
+Date: Sat, 14 Jul 2007 07:15:11 +1000
+To: Olaf Hering <olaf@aepfle.de>
+Subject: Re: hvc_iseries not working
+Message-ID: <20070713211511.GQ10345@bakeyournoodle.com>
+References: <20070713170540.GA1987@aepfle.de>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] Fix Tsi108 ethernet driver performance
-References: <1B5F013528140F45B5C671039279CA5701F8314C@NANUK.pc.tundra.com>
-	<4697E08B.6080700@freescale.com>
-In-Reply-To: <4697E08B.6080700@freescale.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: Alexandre Bounine <Alexandre.Bounine@tundra.com>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20070713170540.GA1987@aepfle.de>
+From: tony@bakeyournoodle.com (Tony Breeds)
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,15 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> Wouldn't this cause latencies of up to a second in responding to 
-> received packets?  I'd think that would be considered excessive.
-> 
-> And shouldn't NAPI be reducing the RX interrupt load anyway?
+On Fri, Jul 13, 2007 at 07:05:40PM +0200, Olaf Hering wrote:
 
-Sorry, I missed that you reduced the interval to 20 ms.  Still, a bit on 
-the high side, and a source of wasted CPU cycles when the network isn't 
-heavily loaded.  How much of a difference in CPU usage did you see with 
-this patch?
+Hi Olaf,
+ 
+> 2.6.21 arch/powerpc/configs/iseries_defconfig works on an i825 with v5r4
+> 2.6.22 arch/powerpc/configs/iseries_defconfig does not. But it works on
+> a i820 with v5r3.
+> 2.6.22 boots ok with CONFIG_VIOCONS
 
--Scott
+Rats!
+	Can you send me the complete dmesg and .config for each kernel.
+I'll poke at this whne I get to work on Monday.
+
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
