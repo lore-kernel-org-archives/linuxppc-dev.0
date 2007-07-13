@@ -1,27 +1,16 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 097ECDDDFB
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jul 2007 06:13:29 +1000 (EST)
-Date: Fri, 13 Jul 2007 22:13:27 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: James Bottomley <James.Bottomley@SteelEye.com>
-Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
-In-Reply-To: <1184340528.3402.32.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.62.0707132212520.23000@chinchilla.sonytel.be>
-References: <20070704132212.726923000@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be>
-	<1184335333.3402.20.camel@localhost.localdomain>
-	<200707131619.54898.arnd@arndb.de>
-	<Pine.LNX.4.62.0707131707290.18802@pademelon.sonytel.be>
-	<1184340528.3402.32.camel@localhost.localdomain>
+Return-Path: <Alexandre.Bounine@tundra.com>
+Received: from mx2.tundra.com (mail2.tundra.com [142.46.200.162])
+	by ozlabs.org (Postfix) with ESMTP id D3AC1DDED6
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jul 2007 06:18:28 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584336837-1695436844-1184357607=:23000"
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-scsi@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Alessandro Rubini <rubini@vision.unipv.it>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Jens Axboe <jens.axboe@oracle.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: [PATCH] Fix Tsi108 ethernet driver performance
+Date: Fri, 13 Jul 2007 16:00:30 -0400
+Message-ID: <1B5F013528140F45B5C671039279CA5701F8314C@NANUK.pc.tundra.com>
+From: "Alexandre Bounine" <Alexandre.Bounine@tundra.com>
+To: "Zang Roy-r61911" <tie-fei.zang@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,79 +20,137 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+From: Alexandre Bounine <alexandreb@tundra.com>
 
----584336837-1695436844-1184357607=:23000
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+This patch improves performance of the Tsi108 Ethernet driver by
+changing interrupt handling
+for frame receive path. It reduces number of interrupts generated for
+received frames and therefore lowers CPU utilization by the device
+driver.
+=20=20=20
+Signed-off-by: Alexandre Bounine <alexandreb@tundra.com>
 
-On Fri, 13 Jul 2007, James Bottomley wrote:
-> On Fri, 2007-07-13 at 17:10 +0200, Geert Uytterhoeven wrote:
-> > On Fri, 13 Jul 2007, Arnd Bergmann wrote:
-> > > On Friday 13 July 2007, James Bottomley wrote:
-> > > > > IC.
-> > > > > 
-> > > > >  - flush_kernel_dcache_page() is a no-op on ppc64
-> > > > >   (ARCH_HAS_FLUSH_KERNEL_DCACHE_PAGE is defined on parisc only).
-> > > > > 
-> > > > >  - For reference, drivers/scsi/ipr.c (another ppc64 driver) just uses a plain
-> > > > >   kmap/memcpy/kunmap sequence
-> > > > > 
-> > > > > So what should I do?
-> > > > 
-> > > > Ask someone who knows the architecture ... Anton, Paulus or Benh ... I'm
-> > > > fairly certain PPC is VIPT and will need some kind of alias
-> > > > resolution ... perhaps its associative enough not to let the aliases be
-> > > > a problem.
-> > > 
-> > > I'm pretty sure that no ppc64 machine needs alias resolution in the kernel,
-> > > although some are VIPT. Last time we discussed this, Segher explained it
-> > > to me, but I don't remember which way Cell does it. IIRC, it automatically
-> > > flushes cache lines that are accessed through aliases.
-> > 
-> > Thanks for confirming!
-> > 
-> > > It's probably a good idea to have the flush_kernel_dcache_page() in there
-> > > anyway, if only to serve as an example for people that copy it into
-> > > architecture-independent drivers, same as what we do for the
-> > > k{,un}map_atomic() that is also not required on ppc64.
-> > 
-> > Now my next question: why should I add it, if currently no single driver in
-> > mainline calls flush_kernel_dcache_page()? 
-> > 
-> > `git grep' finds it in the following files only:
-> >     Documentation/cachetlb.txt
-> >     arch/parisc/kernel/cache.c
-> >     arch/parisc/kernel/pacache.S
-> >     include/asm-parisc/cacheflush.h
-> >     include/linux/highmem.h
-> 
-> It's a recent addition to the API ... the previous way of doing it was
-> flush_dcache_page() but that's expensive and flushes all the user
-> aliases.  Since you know in this case there are no current user aliases
-> and you only need to flush the kernel alias, flush_kernel_dcache_page()
-> was introduced as the cheaper alternative.
+---
 
-Ah, that explains it. flush_dcache_page() is used in some drivers.
-I'll update my patches. Thanks for the comments!
+diff -Nurp linux-2.6.22-hpc2/drivers/net/tsi108_eth.c
+linux-2.6.22-tun/drivers/net/tsi108_eth.c
+--- linux-2.6.22-hpc2/drivers/net/tsi108_eth.c	2007-07-08
+19:32:17.000000000 -0400
++++ linux-2.6.22-tun/drivers/net/tsi108_eth.c	2007-07-12
+16:55:50.000000000 -0400
+@@ -58,6 +58,7 @@
+ #define MII_READ_DELAY 10000	/* max link wait time in msec */
+=20
+ #define TSI108_RXRING_LEN     256
++#define TSI108_RX_INT_FREQ    32
+=20
+ /* NOTE: The driver currently does not support receiving packets
+  * larger than the buffer size, so don't decrease this (unless you
+@@ -69,8 +70,10 @@
+=20
+ #define TSI108_TX_INT_FREQ    64
+=20
+-/* Check the phy status every half a second. */
+-#define CHECK_PHY_INTERVAL (HZ/2)
++/* Timer interval to check the RX queue status */
++#define CHECK_RX_INTERVAL	(HZ/50)
++/* Timer interval to check the PHY status */
++#define CHECK_PHY_INTERVAL	(CHECK_RX_INTERVAL * 10)
+=20
+ static int tsi108_init_one(struct platform_device *pdev);
+ static int tsi108_ether_remove(struct platform_device *pdev);
+@@ -104,6 +107,7 @@ struct tsi108_prv_data {
+ 	unsigned int txfree;
+=20
+ 	unsigned int phy_ok;		/* The PHY is currently powered
+on. */
++	unsigned int phy_chk_count;
+=20
+ 	/* PHY status (duplex is 1 for half, 2 for full,
+ 	 * so that the default 0 indicates that neither has
+@@ -823,7 +827,10 @@ static int tsi108_refill_rx(struct net_d
+ 		 */
+=20
+ 		data->rxring[rx].blen =3D TSI108_RX_SKB_SIZE;
+-		data->rxring[rx].misc =3D TSI108_RX_OWN | TSI108_RX_INT;
++		if (rx % TSI108_RX_INT_FREQ)
++			data->rxring[rx].misc =3D TSI108_RX_OWN;
++		else
++			data->rxring[rx].misc =3D TSI108_RX_OWN |
+TSI108_RX_INT;
+=20
+ 		data->rxhead =3D (data->rxhead + 1) % TSI108_RXRING_LEN;
+ 		data->rxfree++;
+@@ -973,24 +980,22 @@ static void tsi108_rx_int(struct net_dev
+ 	}
+ }
+=20
+-/* If the RX ring has run out of memory, try periodically
+- * to allocate some more, as otherwise poll would never
+- * get called (apart from the initial end-of-queue condition).
+- *
+- * This is called once per second (by default) from the thread.
++/* tsi108_check_rxring() is used to periodically check if the RX ring
+has
++ * pending frames that have not been reported by RX interrupt (due to
+interrupt
++ * moderation). It is called with CHECK_RX_INTERVAL timer interval.
+  */
+=20
+ static void tsi108_check_rxring(struct net_device *dev)
+ {
+ 	struct tsi108_prv_data *data =3D netdev_priv(dev);
++	unsigned int rx =3D data->rxtail;
+=20
+-	/* A poll is scheduled, as opposed to caling tsi108_refill_rx
+-	 * directly, so as to keep the receive path single-threaded
+-	 * (and thus not needing a lock).
+-	 */
+-
+-	if (netif_running(dev) && data->rxfree < TSI108_RXRING_LEN / 4)
++	/* Schedule a poll (if required) */
++	if (netif_running(dev) &&
++	    0 =3D=3D (data->rxring[rx].misc & TSI108_RX_OWN)) {
++		data->rxpending =3D 1;
+ 		tsi108_rx_int(dev);
++	}
+ }
+=20
+ static void tsi108_tx_int(struct net_device *dev)
+@@ -1295,6 +1300,7 @@ static void tsi108_init_phy(struct net_d
+=20
+ 	printk(KERN_DEBUG "PHY_STAT reg contains %08x\n", phyval);
+ 	data->phy_ok =3D 1;
++	data->phy_chk_count =3D 0;
+ 	data->init_media =3D 1;
+ 	spin_unlock_irqrestore(&phy_lock, flags);
+ }
+@@ -1664,9 +1670,12 @@ static void tsi108_timed_checker(unsigne
+ 	struct net_device *dev =3D (struct net_device *)dev_ptr;
+ 	struct tsi108_prv_data *data =3D netdev_priv(dev);
+=20
+-	tsi108_check_phy(dev);
++	/* We assume that RX queue is checked more often than PHY status
+*/
++	if (data->phy_chk_count++ =3D=3D 0)
++		tsi108_check_phy(dev);
+ 	tsi108_check_rxring(dev);
+-	mod_timer(&data->timer, jiffies + CHECK_PHY_INTERVAL);
++	data->phy_chk_count %=3D (CHECK_PHY_INTERVAL/CHECK_RX_INTERVAL);
++	mod_timer(&data->timer, jiffies + CHECK_RX_INTERVAL);
+ }
+=20
+ static int tsi108_ether_init(void)
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
 
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584336837-1695436844-1184357607=:23000--
+---=0D
+=0D
+Important Notice: This message is intended for the use of the individual to=
+ whom it is addressed and may contain information which is privileged, conf=
+idential and/or exempt from disclosure under applicable law. If the reader =
+of this message is not the intended recipient, or is not the employee or ag=
+ent responsible for delivering the message to the intended recipient, you a=
+re hereby notified that any dissemination, distribution, or copying of this=
+ communication is strictly prohibited. If you have received this communicat=
+ion in error, please notify the sender immediately by telephone or return e=
+-mail and delete the original message from your systems. Thank you. =0D
