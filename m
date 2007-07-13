@@ -1,23 +1,21 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 790F0DDE28
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 20:12:53 +1000 (EST)
-Date: Fri, 13 Jul 2007 12:12:33 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Bob Nelson <rrnelson@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] Enable SPU switch notification to detect currently
-	active SPU tasks.
-Message-ID: <20070713101233.GA12426@lst.de>
-References: <1184283940.16584.5.camel@bnelson60.rchland.ibm.com>
+	by ozlabs.org (Postfix) with ESMTP id 3DDDDDDF0A
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 20:13:04 +1000 (EST)
+Subject: Re: [PATCH 2/4] Implement arch disable/enable irq hooks.
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20070712191257.GA31381@ld0162-tx32.am.freescale.net>
+References: <20070712191257.GA31381@ld0162-tx32.am.freescale.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-8pr4LHBhvlTbiKhcPw7w"
+Date: Fri, 13 Jul 2007 12:10:00 +0200
+Message-Id: <1184321400.30334.4.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1184283940.16584.5.camel@bnelson60.rchland.ibm.com>
-Cc: linuxppc <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linuxfoundation.org>,
-	oprofile <oprofile-list@lists.sourceforge.net>,
-	Philippe Elie <phil.el@wanadoo.fr>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,50 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 12, 2007 at 06:45:40PM -0500, Bob Nelson wrote:
-> We would like this patch included in -mm and in 2.6.23.
 
-Do you plan to submit oprofile support aswell?  In that case it's fine
-otherwise please send it together with the actual oprofile support.
+--=-8pr4LHBhvlTbiKhcPw7w
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> +static void notify_spus_active(void)
+On Thu, 2007-07-12 at 14:12 -0500, Scott Wood wrote:
+> These hooks ensure that a decrementer interrupt is not pending when
+> suspending; otherwise, problems may occur.  For example, with deep sleep
+> on the 831x, a pending decrementer will cause a system freeze because the
+> SoC thinks the decrementer interrupt would have woken the system, but the
+> core must have interrupts disabled due to the setup required for deep
+> sleep.
+
+> +/* Overrides the weak version in kernel/power/main.c */
+> +void arch_suspend_disable_irqs(void)
 > +{
-> +	int node;
-> +	/* Wake up the active spu_contexts. When the awakened processes
-> +	 * see their "notify_active" flag is set, they will call
-> +	 * spu_switch_notify();
-> +	 */
+> +	if (ppc_md.suspend_disable_irqs)
+> +		ppc_md.suspend_disable_irqs();
+> +	else
+> +		generic_suspend_disable_irqs();
+> +}
 
-Small style issue, this should be:
+Looks good to me, thanks for the update with ppc_md.
 
-	int node;
+johannes
 
-	/*
-	 * Wake up the active spu_contexts.
-	 *
-	 * When the awakened processes see their "notify_active" flag is set,
-	 * they will call spu_switch_notify().
-	 */
+--=-8pr4LHBhvlTbiKhcPw7w
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-> -static inline int spu_stopped(struct spu_context *ctx, u32 * stat)
-> +static inline int spu_stopped(struct spu_context *ctx, u32 *stat)
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-useless (and wrong) reformatting, please remove.
+iD8DBQBGl093/ETPhpq3jKURAldWAJ9MvYX3r56PjZSkmAOBEN9bidqGZACfaNqy
+vQQ37u3THjEnN+OQPL5PAWQ=
+=zutm
+-----END PGP SIGNATURE-----
 
-> -static int spu_run_init(struct spu_context *ctx, u32 * npc)
-> +static int spu_run_init(struct spu_context *ctx, u32 *npc)
-
-Same here.
-
-> -static int spu_run_fini(struct spu_context *ctx, u32 * npc,
-> -			       u32 * status)
-> +static int spu_run_fini(struct spu_context *ctx, u32 *npc,
-> +			       u32 *status)
-
-Same here.
-
-> +		if (unlikely(test_bit(SPU_SCHED_NOTIFY_ACTIVE,
-> +				      &ctx->sched_flags))) {
-> +			clear_bit(SPU_SCHED_NOTIFY_ACTIVE, &ctx->sched_flags);
-
-this should use test_and_clear_bit
+--=-8pr4LHBhvlTbiKhcPw7w--
