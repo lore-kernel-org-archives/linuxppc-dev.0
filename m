@@ -1,25 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.232])
-	by ozlabs.org (Postfix) with ESMTP id C2D18DDE0A
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id BA291DDE2D
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 14 Jul 2007 03:36:09 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id l1so502046nzf
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 13 Jul 2007 10:36:09 -0700 (PDT)
-Message-ID: <fa686aa40707131036k1bc5f2c4t701a44e0ef25acc8@mail.gmail.com>
-Date: Fri, 13 Jul 2007 11:36:08 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Robertson, Joseph M." <joseph.robertson@sanmina-sci.com>
-Subject: Re: [PATCH] Xilinx SystemACE device driver
-In-Reply-To: <939D37AEB47F1F49B88FAB6599B6023501A17210@hsv1dafpew02.das.gov.sanm.corp>
+	Sat, 14 Jul 2007 05:17:18 +1000 (EST)
+Message-ID: <4697CFBC.2060700@anagramm.de>
+Date: Fri, 13 Jul 2007 21:17:16 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
 MIME-Version: 1.0
+To: Vikram Kone <vikramkone@gmail.com>
+Subject: Re: Help required for porting ISP1362 usb device driver
+References: <003d01c7c4d8$07ea3cc0$66dd47ab@cisco.com>
+In-Reply-To: <003d01c7c4d8$07ea3cc0$66dd47ab@cisco.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <20070712225138.13213.38257.stgit@trillian>
-	<939D37AEB47F1F49B88FAB6599B6023501A1720B@hsv1dafpew02.das.gov.sanm.corp>
-	<fa686aa40707130841w6a36146cufc85a62f78a53b0d@mail.gmail.com>
-	<939D37AEB47F1F49B88FAB6599B6023501A17210@hsv1dafpew02.das.gov.sanm.corp>
-Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,67 +23,70 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 7/13/07, Robertson, Joseph M. <joseph.robertson@sanmina-sci.com> wrote:
->
-> Hi,
->
->  Ok, so outlook is a problem.  The horror is that, where I work thats all I
-> can use.  They block all the outside systems like gmail, yahoo, etc.  So
-> under linux, I have to use the web access for outlook.  ugh.
->  Why I work here I don't know, they think all software HAS to be bought.
->
->  Um, so your patch creates another xsysace.c file, all by itself, which is a
-> NEW driver?
->  This replaces the 8 files of the previous driver?  What happens to all the
-> low level funcs?
->
->  Where can I get your 2.6.22 tree to see how this is all supposed to go
-> together?  Is there a tar.bz2 package?
+Hello, Vikram!
 
-Start with installing 'git'.  http://git.or.cz/
+Vikram Kone schrieb:
+> Hi..
+> I'm a linux newbie and im working on porting the USB driver ISP1362 by 
+> Philips on to my Freescale ppc board.
 
-Then clone Linus' tree:
+Please don't crosspost.
+Please don't write HTML.
 
-$ git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+> I dont know how to do this... so if any of you can tell me how to do 
+> this step by step, i would be very grateful to you
+>  
+> Few details..
+> I'm running RHEL with kernel 2.4.21 on a PC (i386 machine)
+> Target Machine is MPC8548 CDS by Free scale (ppc architecture) running 
+> kernel version 2.6.11
 
-if you're company blocks the git port, then you can use HTTP instead:
+Did you try something like:
+http://www.freescale.com/files/32bit/doc/app_note/AN3094.pdf?fsrch=1
+I think it's one of these "step by step" things.
 
-$ git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+(You should consider moving up to the latest Kernel which is 2.6.22.1
+as of today. Nobody fixes bugs on that old kernel.)
 
-There are a number of different git repos out there with virtex
-support integrated, but I'm going to use the example of my tree...  (I
-rebased my tree onto 2.6.22, so it's very up to date)
+> I do have a ppc tool chain, if that helps.....
 
-$ git fetch git://git.secretlab.ca/git/linux-2.6.git virtex-dev:virtex-dev
-(Again, you can use http:// if the git port is blocked)
+What tool chain?
 
-Now you'll have a branch in your git tree called 'virtex-dev' that
-includes my patchset.
+ > but i dont know how to use it
 
-You can checkout that branch with:
-$ git branch mybranch virtex-dev
-$ git checkout mybranch
+Did you read the documentation?
+What problem do you have?
 
-You can view the patchset with:
-$ gitk virtex-dev
+> P.S. I downloaded the deive driver and host controller drivers from 
+> sourceforge.net and both of them seem to work for 2.6.6 kernel for i386 
+> arch ..
 
-You can look at in individual patch with:
-$ git show <SHA1 id>
-(All git commits are identified with a SHA1 hash; you'll see them in
-gitk, or when you do a 'git log)
+Fine!
 
-Also, you can view the tree online at:
-http://git.secretlab.ca/cgi-bin/gitweb.cgi?p=linux-2.6.git;a=summary
+> P.P.S : Wolfgang ??!1 Can you help me out... I went through the archives 
+> on the list and seems thatu answered many Qs on this driver. But i didnt 
+> find any post specifcally for my problem..so
 
-If you click on the 'commitdiff' link for a patch, followed by
-'plain', you should get a downloadable version of the patch.
+Sorry, my crystal ball is broken.
+You didn't tell us any details about your problem.
 
-Cheers,
-g.
+  > This e-mail may contain confidential and privileged material for the
+> sole use of the intended recipient. Any review, use, distribution or 
+> disclosure by others is strictly prohibited. If you are not the intended 
+> recipient (or authorized to receive for the recipient), please contact 
+> the sender by reply e-mail and delete all copies of this message.
 
+Oops... If I am not the intended recipient, please: > /dev/null my mail.
 
+Regards,
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
