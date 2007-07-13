@@ -1,20 +1,23 @@
-Return-Path: <James.Bottomley@SteelEye.com>
-Received: from hancock.sc.steeleye.com (hancock.steeleye.com [71.30.118.248])
-	by ozlabs.org (Postfix) with ESMTP id 39153DDF0A
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 23:34:32 +1000 (EST)
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 2B74EDDE03
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 23:45:39 +1000 (EST)
+Date: Fri, 13 Jul 2007 15:45:37 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: James Bottomley <James.Bottomley@SteelEye.com>
 Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <Pine.LNX.4.62.0707131518120.18802@pademelon.sonytel.be>
+In-Reply-To: <1184333670.3402.17.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be>
 References: <20070704132212.726923000@pademelon.sonytel.be>
 	<20070704132346.591348000@pademelon.sonytel.be>
 	<1184331741.3402.13.camel@localhost.localdomain>
 	<20070713130508.GQ5328@kernel.dk>
 	<Pine.LNX.4.62.0707131518120.18802@pademelon.sonytel.be>
-Content-Type: text/plain
-Date: Fri, 13 Jul 2007 09:34:30 -0400
-Message-Id: <1184333670.3402.17.camel@localhost.localdomain>
-Mime-Version: 1.0
+	<1184333670.3402.17.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-427551646-1184334107=:18802"
 Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
 	Alessandro Rubini <rubini@vision.unipv.it>,
 	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
@@ -28,21 +31,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-07-13 at 15:25 +0200, Geert Uytterhoeven wrote:
-> kmap() just returns page_address() on ppc64, as there's no highmem.
-> kunmap() is a no-op.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> So technically I could just use page_address() directly, but Christoph
-> wanted
-> me to keep the kmap()/kunmap() sequence because it's considered a good
-> practice.
+---584337861-427551646-1184334107=:18802
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.62.0707131543131.18802@pademelon.sonytel.be>
 
-The point isn't what kmap and kunmap do ... it's the addresses they
-return.  By and large, a kernel virtual address for a page is different
-from the user virtual address.  If the cache is virtually indexed you
-get different cache lines for the same page ... and that sets you up
-with aliases you need to resolve.  parisc is the same ... our
-kmap/kunmap are nops as well, but our kernel virtual addresses are still
-different from the user virtual ones.
+On Fri, 13 Jul 2007, James Bottomley wrote:
+> On Fri, 2007-07-13 at 15:25 +0200, Geert Uytterhoeven wrote:
+> > kmap() just returns page_address() on ppc64, as there's no highmem.
+> > kunmap() is a no-op.
+> 
+> > So technically I could just use page_address() directly, but Christoph
+> > wanted
+> > me to keep the kmap()/kunmap() sequence because it's considered a good
+> > practice.
+> 
+> The point isn't what kmap and kunmap do ... it's the addresses they
+> return.  By and large, a kernel virtual address for a page is different
+> from the user virtual address.  If the cache is virtually indexed you
+> get different cache lines for the same page ... and that sets you up
+> with aliases you need to resolve.  parisc is the same ... our
+> kmap/kunmap are nops as well, but our kernel virtual addresses are still
+> different from the user virtual ones.
 
-James
+IC.
+
+  - flush_kernel_dcache_page() is a no-op on ppc64
+    (ARCH_HAS_FLUSH_KERNEL_DCACHE_PAGE is defined on parisc only).
+
+  - For reference, drivers/scsi/ipr.c (another ppc64 driver) just uses a plain
+    kmap/memcpy/kunmap sequence
+
+So what should I do?
+
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-427551646-1184334107=:18802--
