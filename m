@@ -1,32 +1,22 @@
-Return-Path: <rrnelson@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Return-Path: <b07421@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4CB55DDDE4
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B201ADDDE7
 	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jul 2007 04:25:12 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6DIP9fE031461
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 14:25:09 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l6DIP6Ew169712
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 12:25:07 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6DIP6Aj028175
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 12:25:06 -0600
-From: Bob Nelson <rrnelson@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linuxfoundation.org>,
-	Philippe Elie <phil.el@wanadoo.fr>, linuxppc <linuxppc-dev@ozlabs.org>,
-	oprofile <oprofile-list@lists.sf.net>
-Subject: [PATCH 1/2] OProfile - Enable SPU switch notification to detect
-	currently active SPU tasks
-Date: Fri, 13 Jul 2007 13:27:20 -0500
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200707131327.20412.rrnelson@linux.vnet.ibm.com>
+Date: Fri, 13 Jul 2007 13:24:52 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Alexandros Kostopoulos <akostop@inaccessnetworks.com>
+Subject: Re: questions about mpc82xx_ads and porting to other, similar,
+	platform
+Message-ID: <20070713182452.GA1480@ld0162-tx32.am.freescale.net>
+References: <op.tveavpvdnhx3hy@phoenix>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <op.tveavpvdnhx3hy@phoenix>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,171 +26,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Maynard Johnson <mpjohn@us.ibm.com>
+On Fri, Jul 13, 2007 at 11:51:15AM +0300, Alexandros Kostopoulos wrote:
+> I am trying to port kernel 2.6.22.1 to my own platform, which incorporates  
+> an mpc8275 chip. I'm using platform code for mpc82xx_ads as a template (is  
+> this right in the first place?). I have a couple of questions:
 
-This patch adds to the capability of spu_switch_event_register so that the
-caller is also notified of currently active SPU tasks.  It also exports
-spu_switch_event_register and spu_switch_event_unregister.
+I suggest waiting until I can get my 8xx/82xx patchset out (which should
+happen early next week...  it would have been earlier if I hadn't gotten
+distracted trying to get PCI to work right).  It addresses the things you
+point out.
 
-Signed-off-by: Maynard Johnson <mpjohn@us.ibm.com>
-Signed-off-by: Carl Love <carll@us.ibm.com>
-Signed-off-by: Bob Nelson <rrnelson@us.ibm.com>
-Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-Acked-by: Paul Mackerras <paulus@samba.org>
+> 1. mpc82xx_ads.c uses init_scc_ioports function to initialize the scc
+> uarts. However, this function is only used by the code in
+> arch/powerpc/sysdev/fsl_soc.c, and spefically in fs_enet_of_init(),
+> which is used to initialize the ethernet driver and not the cpm_uart
+> driver. On the other hand, cpm_uart_of_init() function seems to be the
+> one that initializes the uarts in cpm, and actually makes use of the
+> device-id, model, rx-clock and tx-clock properties of the scc nodes in
+> OF tree. So, AFAICT, init_scc_ioports should not be there, since it
+> won't be actually called at all (although I have not actually tested
+> this - I haven't yet managed to boot the kernel). Instead,
+> cpm_uart_of_init should take care of everything, except for the pport
+> initialization, which is done in u-boot anyway (at least in my case).
+> Any thoughts on this?
 
----
+All such port configuration callbacks are removed in my patchset; the
+bootloader and/or platform code is responsible for setting it up.
 
-We would like this patch included in -mm and 2.6.23.
+> 2. I have also some questions regarding the device tree. Why are there two  
+> nodes regarding the interrupt controller in there? 
 
-Index: powerpc.git/arch/powerpc/platforms/cell/spufs/sched.c
-===================================================================
---- powerpc.git.orig/arch/powerpc/platforms/cell/spufs/sched.c
-+++ powerpc.git/arch/powerpc/platforms/cell/spufs/sched.c
-@@ -204,21 +204,50 @@ static void spu_remove_from_active_list(
- 
- static BLOCKING_NOTIFIER_HEAD(spu_switch_notifier);
- 
--static void spu_switch_notify(struct spu *spu, struct spu_context *ctx)
-+void spu_switch_notify(struct spu *spu, struct spu_context *ctx)
- {
- 	blocking_notifier_call_chain(&spu_switch_notifier,
- 			    ctx ? ctx->object_id : 0, spu);
- }
- 
-+static void notify_spus_active(void)
-+{
-+	int node;
-+
-+	/*
-+	 * Wake up the active spu_contexts.
-+	 *
-+	 * When the awakened processes see their "notify_active" flag is set,
-+	 * they will call spu_switch_notify();
-+	 */
-+	for (node = 0; node < MAX_NUMNODES; node++) {
-+		struct spu *spu;
-+		mutex_lock(&spu_prio->active_mutex[node]);
-+		list_for_each_entry(spu, &spu_prio->active_list[node], list) {
-+			struct spu_context *ctx = spu->ctx;
-+			set_bit(SPU_SCHED_NOTIFY_ACTIVE, &ctx->sched_flags);
-+			mb();
-+			wake_up_all(&ctx->stop_wq);
-+		}
-+		mutex_unlock(&spu_prio->active_mutex[node]);
-+	}
-+}
-+
- int spu_switch_event_register(struct notifier_block * n)
- {
--	return blocking_notifier_chain_register(&spu_switch_notifier, n);
-+	int ret;
-+	ret = blocking_notifier_chain_register(&spu_switch_notifier, n);
-+	if (!ret)
-+		notify_spus_active();
-+	return ret;
- }
-+EXPORT_SYMBOL_GPL(spu_switch_event_register);
- 
- int spu_switch_event_unregister(struct notifier_block * n)
- {
- 	return blocking_notifier_chain_unregister(&spu_switch_notifier, n);
- }
-+EXPORT_SYMBOL_GPL(spu_switch_event_unregister);
- 
- /**
-  * spu_bind_context - bind spu context to physical spu
-Index: powerpc.git/arch/powerpc/platforms/cell/spufs/spufs.h
-===================================================================
---- powerpc.git.orig/arch/powerpc/platforms/cell/spufs/spufs.h
-+++ powerpc.git/arch/powerpc/platforms/cell/spufs/spufs.h
-@@ -53,6 +53,11 @@ enum spuctx_execution_state {
- 	SPUCTX_UTIL_MAX
- };
- 
-+/* ctx->sched_flags */
-+enum {
-+	SPU_SCHED_NOTIFY_ACTIVE,
-+};
-+
- struct spu_context {
- 	struct spu *spu;		  /* pointer to a physical SPU */
- 	struct spu_state csa;		  /* SPU context save area. */
-@@ -231,6 +236,7 @@ void spu_acquire_saved(struct spu_contex
- int spu_activate(struct spu_context *ctx, unsigned long flags);
- void spu_deactivate(struct spu_context *ctx);
- void spu_yield(struct spu_context *ctx);
-+void spu_switch_notify(struct spu *spu, struct spu_context *ctx);
- void spu_set_timeslice(struct spu_context *ctx);
- void spu_update_sched_info(struct spu_context *ctx);
- void __spu_update_sched_info(struct spu_context *ctx);
-Index: powerpc.git/arch/powerpc/platforms/cell/spufs/run.c
-===================================================================
---- powerpc.git.orig/arch/powerpc/platforms/cell/spufs/run.c
-+++ powerpc.git/arch/powerpc/platforms/cell/spufs/run.c
-@@ -18,15 +18,17 @@ void spufs_stop_callback(struct spu *spu
- 	wake_up_all(&ctx->stop_wq);
- }
- 
--static inline int spu_stopped(struct spu_context *ctx, u32 * stat)
-+static inline int spu_stopped(struct spu_context *ctx, u32 *stat)
- {
- 	struct spu *spu;
- 	u64 pte_fault;
- 
- 	*stat = ctx->ops->status_read(ctx);
--	if (ctx->state != SPU_STATE_RUNNABLE)
--		return 1;
-+
- 	spu = ctx->spu;
-+	if (ctx->state != SPU_STATE_RUNNABLE ||
-+	    test_bit(SPU_SCHED_NOTIFY_ACTIVE, &ctx->sched_flags))
-+		return 1;
- 	pte_fault = spu->dsisr &
- 	    (MFC_DSISR_PTE_NOT_FOUND | MFC_DSISR_ACCESS_DENIED);
- 	return (!(*stat & SPU_STATUS_RUNNING) || pte_fault || 
-spu->class_0_pending) ?
-@@ -124,7 +126,7 @@ out:
- 	return ret;
- }
- 
--static int spu_run_init(struct spu_context *ctx, u32 * npc)
-+static int spu_run_init(struct spu_context *ctx, u32 *npc)
- {
- 	if (ctx->flags & SPU_CREATE_ISOLATE) {
- 		unsigned long runcntl;
-@@ -154,8 +156,8 @@ static int spu_run_init(struct spu_conte
- 	return 0;
- }
- 
--static int spu_run_fini(struct spu_context *ctx, u32 * npc,
--			       u32 * status)
-+static int spu_run_fini(struct spu_context *ctx, u32 *npc,
-+			       u32 *status)
- {
- 	int ret = 0;
- 
-@@ -293,6 +295,7 @@ long spufs_run_spu(struct file *file, st
- 		   u32 *npc, u32 *event)
- {
- 	int ret;
-+	struct spu *spu;
- 	u32 status;
- 
- 	if (mutex_lock_interruptible(&ctx->run_mutex))
-@@ -326,8 +329,16 @@ long spufs_run_spu(struct file *file, st
- 
- 	do {
- 		ret = spufs_wait(ctx->stop_wq, spu_stopped(ctx, &status));
-+		spu = ctx->spu;
- 		if (unlikely(ret))
- 			break;
-+		if (unlikely(test_and_clear_bit(SPU_SCHED_NOTIFY_ACTIVE,
-+						&ctx->sched_flags))) {
-+			if (!(status & SPU_STATUS_STOPPED_BY_STOP)) {
-+				spu_switch_notify(spu, ctx);
-+				continue;
-+			}
-+		}
- 		if ((status & SPU_STATUS_STOPPED_BY_STOP) &&
- 		    (status >> SPU_STOP_STATUS_SHIFT == 0x2104)) {
- 			ret = spu_process_callback(ctx);
+There are two interrupt controllers on the mpc8272ads: one for PCI, and
+another for everything else.
+
+> and in the top level node, what does this property means: reg =
+> <f8200000 f8200004>; 
+
+It means the device tree is buggy.  It should say <f8200000 8>.
+
+> Finally, in the memory node, the reg property defines a second mem
+> region, (f4500000 f4500020). What is this? 
+
+More device tree brokenness.  It's the board control and status register
+block, which has nothing to do with memory.
+
+> maybe a special memory mapped peripheral of this board? If I have a
+> board with many mem configurations (e.g. it uses a DIMM SDRAM what can
+> be changed), what value should I place in the mem node? I have to
+> change dts every time I insert a new DIMM?
+
+No, u-boot or the bootwrapper should fill in the memory size.
+
+-Scott
