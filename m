@@ -1,20 +1,25 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] PS3 improved video mode autodetection for HDMI/DVI
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C2E47DDDFD
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 22:37:16 +1000 (EST)
+Subject: Re: [PATCH 1/2] Enable SPU switch notification to detect currently
+	active SPU tasks.
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <Pine.LNX.4.62.0707131404320.18802@pademelon.sonytel.be>
-References: <Pine.LNX.4.62.0707121029320.12797@pademelon.sonytel.be>
-	<20070712140620.GB507@ping.uio.no>
-	<Pine.LNX.4.62.0707121704270.8368@pademelon.sonytel.be>
-	<20070713094814.GD507@ping.uio.no>
-	<Pine.LNX.4.62.0707131404320.18802@pademelon.sonytel.be>
+To: Christoph Hellwig <hch@lst.de>
+In-Reply-To: <20070713101233.GA12426@lst.de>
+References: <1184283940.16584.5.camel@bnelson60.rchland.ibm.com>
+	<20070713101233.GA12426@lst.de>
 Content-Type: text/plain
-Date: Fri, 13 Jul 2007 22:35:52 +1000
-Message-Id: <1184330152.6059.221.camel@localhost.localdomain>
+Date: Fri, 13 Jul 2007 22:34:50 +1000
+Message-Id: <1184330090.6059.219.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>,
-	Ben Collins <ben.collins@ubuntu.com>
+Cc: linuxppc <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linuxfoundation.org>,
+	Bob Nelson <rrnelson@linux.vnet.ibm.com>,
+	oprofile <oprofile-list@lists.sourceforge.net>,
+	Philippe Elie <phil.el@wanadoo.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,10 +30,13 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> Since 720p is a broadcast mode, I can't make it default to fullscreen, as a
-> part of the image will fall off on most monitors.
+> > +		if (unlikely(test_bit(SPU_SCHED_NOTIFY_ACTIVE,
+> > +				      &ctx->sched_flags))) {
+> > +			clear_bit(SPU_SCHED_NOTIFY_ACTIVE, &ctx->sched_flags);
+> 
+> this should use test_and_clear_bit
 
-Do you have any info from the EDID block that would tell you whether the
-monitor displays the full picture (typical of flat panels) or not ?
+This also looks like an abuse of atomics to effectively implement a lock
+or did I miss something ?
 
 Ben.
