@@ -1,24 +1,19 @@
-Return-Path: <akostop@inaccessnetworks.com>
-Received: from inaccessnetworks.com (node3.inaccessnetworks.com
-	[212.205.200.118]) by ozlabs.org (Postfix) with ESMTP id 7FE9BDDDF7
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 18:58:50 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by inaccessnetworks.com (8.13.6/8.13.5) with ESMTP id l6D8pNHx007060
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 11:51:23 +0300
-Received: from inaccessnetworks.com ([127.0.0.1])
-	by localhost (host11.inaccessnetworks.com [127.0.0.1]) (amavisd-new,
-	port 10024) with LMTP id 06809-08 for <linuxppc-dev@ozlabs.org>;
-	Fri, 13 Jul 2007 11:51:22 +0300 (EEST)
-Received: from phoenix (phoenix.priv.inaccessnetworks.com [192.168.1.7])
-	by inaccessnetworks.com (8.13.6/8.13.5) with ESMTP id l6D8pKUr007055
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 11:51:20 +0300
-Date: Fri, 13 Jul 2007 11:51:15 +0300
-To: linuxppc-dev@ozlabs.org
-Subject: questions about mpc82xx_ads and porting to other, similar, platform
-From: "Alexandros Kostopoulos" <akostop@inaccessnetworks.com>
-Content-Type: text/plain; format=flowed; delsp=yes; charset=iso-8859-7
-MIME-Version: 1.0
-Message-ID: <op.tveavpvdnhx3hy@phoenix>
+Return-Path: <domen.puncer@telargo.com>
+Received: from kukmak.uni-mb.si (kukmak.uni-mb.si [164.8.100.3])
+	by ozlabs.org (Postfix) with ESMTP id 75F12DDDFE
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 18:59:16 +1000 (EST)
+Date: Fri, 13 Jul 2007 10:41:42 +0200
+From: Domen Puncer <domen.puncer@telargo.com>
+To: Matt Sealey <matt@genesi-usa.com>
+Subject: Re: Tickless Hz/hrtimers/etc. on PowerPC
+Message-ID: <20070713084142.GB11476@nd47.coderock.org>
+References: <46951C1A.4080001@genesi-usa.com>
+	<20070712065104.GI4375@moe.telargo.com>
+	<4696199B.3040105@genesi-usa.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4696199B.3040105@genesi-usa.com>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,67 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello all,
+On 12/07/07 13:07 +0100, Matt Sealey wrote:
+> Domen,
+> 
+> You wouldn't have tried these on the Efika yet, would you?
 
-I am trying to port kernel 2.6.22.1 to my own platform, which incorporat=
-es  =
+Not yet, but they worked on a mpc5200b based board (lite5200b).
 
-an mpc8275 chip. I'm using platform code for mpc82xx_ads as a template (=
-is  =
 
-this right in the first place?). I have a couple of questions:
+	Domen
 
-1. mpc82xx_ads.c uses init_scc_ioports function to initialize the scc  =
-
-uarts. However, this function is only used by the code in
-arch/powerpc/sysdev/fsl_soc.c, and spefically in fs_enet_of_init(), whic=
-h  =
-
-is used to initialize the ethernet driver and not the cpm_uart driver.
-On the other hand, cpm_uart_of_init() function seems to be the one that =
- =
-
-initializes the uarts in cpm, and actually makes use of the device-id,  =
-
-model, rx-clock and tx-clock properties of the scc nodes in OF tree. So,=
-  =
-
-AFAICT, init_scc_ioports should not be there, since it won't be actually=
-  =
-
-called at all (although I have not actually tested this - I haven't yet =
- =
-
-managed to boot the kernel). Instead, cpm_uart_of_init should take care =
-of  =
-
-everything, except for the pport initialization, which is done in u-boot=
-  =
-
-anyway (at least in my case). Any thoughts on this?
-
-2. I have also some questions regarding the device tree. Why are there t=
-wo  =
-
-nodes regarding the interrupt controller in there? and in the top level =
- =
-
-node, what does this property means:  reg =3D <f8200000 f8200004>; ?
-Finally, in the memory node, the reg property defines a second mem regio=
-n,  =
-
-(f4500000 f4500020). What is this? maybe a special memory mapped  =
-
-peripheral of this board? If I have a board with many mem configurations=
-  =
-
-(e.g. it uses a DIMM SDRAM what can be changed), what value should I pla=
-ce  =
-
-in the mem node? I have to change dts every time I insert a new DIMM?
-
-any help would be greatly appreciated,
-
-thank you in advance
-
-Alex
+> 
+> -- 
+> Matt Sealey <matt@genesi-usa.com>
+> Genesi, Manager, Developer Relations
+> 
+> Domen Puncer wrote:
+> > On 11/07/07 19:06 +0100, Matt Sealey wrote:
+> >> Does anyone have the definitive patchset to enable the tickless hz,
+> >> some kind of hrtimer and the other related improvements in the
+> >> PowerPC tree?
+> > 
+> > I use attached patches for tickless.
+> > Order in which they're applied:
+> > 
+> > PowerPC_GENERIC_CLOCKEVENTS.patch
+> > PowerPC_GENERIC_TIME.linux-2.6.18-rc6_timeofday-arch-ppc_C6.patch
+> > PowerPC_enable_HRT_and_dynticks_support.patch
+> > PowerPC_no_hz_fix.patch
+> > tickless-enable.patch
+> > 
+> > HTH
+> > 
+> > 
+> > 	Domen
