@@ -1,23 +1,21 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <dhlii@dlasys.net>
+Received: from mx.dlasys.net (24.152.192.123.res-cmts.eph.ptd.net
+	[24.152.192.123]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A13BCDDDE6
+	by ozlabs.org (Postfix) with ESMTP id 5695EDDDCA
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 14 Jul 2007 08:07:44 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1I9TIb-0001fN-Mf
-	for linuxppc-embedded@ozlabs.org; Fri, 13 Jul 2007 15:07:41 -0700
-Message-ID: <11588451.post@talk.nabble.com>
-Date: Fri, 13 Jul 2007 15:07:41 -0700 (PDT)
-From: meerkat <yiming@windriver.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: boottime kernel relocation, what I missed?
-In-Reply-To: <11574529.post@talk.nabble.com>
+	Sat, 14 Jul 2007 15:08:45 +1000 (EST)
+Message-ID: <469859A9.408@dlasys.net>
+Date: Sat, 14 Jul 2007 01:05:45 -0400
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <11574529.post@talk.nabble.com>
+To: "Robertson, Joseph M." <joseph.robertson@sanmina-sci.com>
+Subject: OT Re: [PATCH] Xilinx SystemACE device driver
+References: <20070712225138.13213.38257.stgit@trillian><939D37AEB47F1F49B88FAB6599B6023501A1720B@hsv1dafpew02.das.gov.sanm.corp>	<fa686aa40707130841w6a36146cufc85a62f78a53b0d@mail.gmail.com>
+	<939D37AEB47F1F49B88FAB6599B6023501A17210@hsv1dafpew02.das.gov.sanm.corp>
+In-Reply-To: <939D37AEB47F1F49B88FAB6599B6023501A17210@hsv1dafpew02.das.gov.sanm.corp>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,42 +26,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Robertson, Joseph M. wrote:
+> Hi,
+>
+> Ok, so outlook is a problem.  The horror is that, where I work thats all I can use.  They block all the outside systems like gmail, yahoo, etc.  So under linux, I have to use the web access for outlook.  ugh.  
+> Why I work here I don't know, they think all software HAS to be bought.
+    Yet they want you doing Linux development ?
 
-Figure that out, the bootstrap actually mapped the first 16M from C000000 to
-the physicall address,
-so calling a c routine, as long as it is in the first 16M, is OK
+    I am an MSCE. I tried really really hard to like exchange/outlook.
+But after loosing too many weekends and holidays to emergency rebuilds of
+    exchange mailstores I switched. Finding a better mail server proved
+trivial - I use exim/cyrus, but many many other combinations work well.
+    The only time I have had to rebuild a cyrus mailstore was when the
+HD it was on coughed up 64K bad sectors in one night.
+    I was able to recover 99% of everything, exchange would have chucked
+the whole mailstore.
+    It has taken a long time for Open Source mail clients to offer
+competitive features to OutLook
+    But almost every one I have ever tried has been more robust.
+
+    If you are planning on doing embedded linux development you will be
+more productive the more immersed you are.
+    While you can do alot of linux work from windows - one of my
+partners builds Linux apps inside visual studio,
+    it is not the same.
+
+    I have had clients with ludicrous self defeating [in]security like
+you have described.
+    I have never met a firewall I could not pierce - included at some
+defense installations I am not supposed to talk about.
+    I can pretty much always create a vpn back to my own servers and
+then do whatever I please.
+   
 
 
-meerkat wrote:
-> 
-> Good day all,
-> 
-> For the first time I begin working on PPC, and on low level, and right
-> start from boot sequence, one issue puzzled me.
-> 
-> After bootstrap code (zImage) uncompressed the kernel vmLinux to physical
-> memory (say from addr 0),
-> it jumps to the kernel entry point, _start, using physically address. 
-> 
->  At this time, the MMU is not yet setup to map the kernel virtual address 
-> (which is statically linked against base address KERNELBASE) to the
-> physically address.
-> 
-> $ nm vmlinux |grep early_init
-> c038b8e0 T early_init
-> 
-> 
-> _start calls early_init before mmu is on to map the KERNEL_BASE to
-> physically address
-> 
-> The question is how "bl  early_init"  can branch to the early_init entry
-> point, properly, as early_init is still a virtual address?
-> 
-> Thanks
-> 
-> Jim
-> 
+
+> Joe Robertson
+> x8259
+> Joseph.Robertson@sanmina-sci.com
+>   
+>
+
 
 -- 
-View this message in context: http://www.nabble.com/boottime-kernel-relocation%2C-what-I-missed--tf4072673.html#a11588451
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
