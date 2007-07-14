@@ -1,22 +1,21 @@
-Return-Path: <ebiederm@xmission.com>
-Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
-	[166.70.28.69])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4160EDDD0D
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jul 2007 11:07:15 +1000 (EST)
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: linas@austin.ibm.com (Linas Vepstas)
-Subject: Re: [PATCH] crash in 2.6.22-git2 sysctl_set_parent()
-References: <20070713200515.GS5549@austin.ibm.com>
-Date: Fri, 13 Jul 2007 19:06:56 -0600
-In-Reply-To: <20070713200515.GS5549@austin.ibm.com> (Linas Vepstas's message
-	of "Fri, 13 Jul 2007 15:05:15 -0500")
-Message-ID: <m13azreqtr.fsf@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
+Return-Path: <compudj@krystal.dyndns.org>
+Received: from tomts36-srv.bellnexxia.net (tomts36.bellnexxia.net
+	[209.226.175.93]) by ozlabs.org (Postfix) with ESMTP id 1E30CDDDD8
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jul 2007 11:20:35 +1000 (EST)
+Received: from krystal.dyndns.org ([76.65.106.98])
+	by tomts36-srv.bellnexxia.net
+	(InterMail vM.5.01.06.13 201-253-122-130-113-20050324) with ESMTP id
+	<20070714012033.KFAX1657.tomts36-srv.bellnexxia.net@krystal.dyndns.org>
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2007 21:20:33 -0400
+Date: Fri, 13 Jul 2007 21:20:33 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Powerpc - Include pagemap.h in asm/powerpc/tlb.h
+Message-ID: <20070714012033.GC31649@Krystal>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	netdev@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,92 +25,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-linas@austin.ibm.com (Linas Vepstas) writes:
+Powerpc - Include pagemap.h in asm/powerpc/tlb.h
 
-> This is a patch (& bug report) for a crash in sysctl_set_parent() 
-> in 2.6.22-git2. 
->
-> Problem: 2.6.22-git2 crashes with a stack trace 
-> [c000000001d0fb00] c000000000067b4c .sysctl_set_parent+0x48/0x7c
-> [c000000001d0fb90] c000000000069b40 .register_sysctl_table+0x7c/0xf4
-> [c000000001d0fc30] c00000000065e710 .devinet_init+0x88/0xb0
-> [c000000001d0fcc0] c00000000065db74 .ip_rt_init+0x17c/0x32c
-> [c000000001d0fd70] c00000000065deec .ip_init+0x10/0x34
-> [c000000001d0fdf0] c00000000065e898 .inet_init+0x160/0x3dc
-> [c000000001d0fea0] c000000000630bc4 .kernel_init+0x204/0x3c8
->
-> A bit of poking around makes it clear what the problem is:
-> In sysctl_set_parent(), the for loop 
->
->    for (; table->ctl_name || table->procname; table++) {
->
-> walks off the end of the table, and into garbage.  Basically,
-> this for-loop iterator expects all table arrays to be 
-> "null terminated".  However, net/ipv4/devinet.c statically 
-> declares an array that is not null-terminated.  The patch 
-> below fixes that; it works for me.  Its somewhat conservative;
-> if one wishes to assume that the compiler will always zero out
-> the empty parts of the structure, then this pach can be shrunk 
-> to one line: +	ctl_table		devinet_root_dir[3];
->
-> Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
->
-> ----
-> I tried to audit some of the code to see where else there 
-> might be similar badly-formed static declarations.  This is hard,
-> as there's a lot of code. Most seems fine.
+Fixes this powerpc build error in 2.6.22-rc6-mm1 for powerpc 64 :
 
-Right.  I believe I performed a similar audit not to long ago
-when everything was converted to C99 initializers and everything
-was fine then.
+In file included from include2/asm/tlb.h:60,
+                 from /home/compudj/git/linux-2.6-lttng/arch/powerpc/mm/init_64.
+c:56:
+/home/compudj/git/linux-2.6-lttng/include/asm-generic/tlb.h: In function 'tlb_fl
+ush_mmu':
+/home/compudj/git/linux-2.6-lttng/include/asm-generic/tlb.h:76: error: implicit 
+declaration of function 'release_pages'
+/home/compudj/git/linux-2.6-lttng/include/asm-generic/tlb.h: In function 'tlb_re
+move_page':
+/home/compudj/git/linux-2.6-lttng/include/asm-generic/tlb.h:105: error: implicit
+ declaration of function 'page_cache_release'
+make[2]: *** [arch/powerpc/mm/init_64.o] Error 1
 
+release_pages is declared in linux/pagemap.h, but cannot be included in
+linux/swap.h because of a sparc related comment:
 
->  net/core/neighbour.c |    4 ++++
->  net/ipv4/devinet.c   |    7 ++++++-
->  2 files changed, 10 insertions(+), 1 deletion(-)
->
-> Index: linux-2.6.22-git2/net/ipv4/devinet.c
-> ===================================================================
-> --- linux-2.6.22-git2.orig/net/ipv4/devinet.c 2007-07-13 14:23:21.000000000
-> -0500
-> +++ linux-2.6.22-git2/net/ipv4/devinet.c 2007-07-13 14:24:15.000000000 -0500
-> @@ -1424,7 +1424,7 @@ static struct devinet_sysctl_table {
->  	ctl_table		devinet_dev[2];
->  	ctl_table		devinet_conf_dir[2];
->  	ctl_table		devinet_proto_dir[2];
-> -	ctl_table		devinet_root_dir[2];
-> +	ctl_table		devinet_root_dir[3];
->  } devinet_sysctl = {
->  	.devinet_vars = {
->  		DEVINET_SYSCTL_COMPLEX_ENTRY(FORWARDING, "forwarding",
-> @@ -1493,8 +1493,13 @@ static struct devinet_sysctl_table {
->  			.data		= &ipv4_devconf.loop,
->  			.maxlen		= sizeof(int),
->  			.mode		= 0644,
-> +			.child	= 0x0,
->  			.proc_handler	= &proc_dointvec,
->  		},
-Where did this entry above in devinet_sysctl come from?
-> +		{
-> +			.ctl_name	= 0,
-> +			.procname	= 0,
-> +		},
-I probably would have just done:
-+		{},
->  	},
->  };
->  
+/* only sparc can not include linux/pagemap.h in this file
+ * so leave page_cache_release and release_pages undeclared... */
+#define free_page_and_swap_cache(page) \
+        page_cache_release(page)
+#define free_pages_and_swap_cache(pages, nr) \
+        release_pages((pages), (nr), 0);
 
-What added the additional entry to devinet_root_dir?  I don't see that
-in Linus' tree?
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: linuxppc-dev@ozlabs.org
+CC: Paul Mackerras <paulus@samba.org>
+---
+ include/asm-powerpc/tlb.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
-The result may be fine but if it isn't named in a per network device
-manner we are adding duplicate entries to the root /proc/sys directory
-which is wrong.
-
-Actually come to think of it I am concerned that someone added a
-settable entry into /proc/sys/ it should at least be in /proc/sys/net/
-where it won't conflict with other uses of that directory.  Especially
-as things like network devices have user controlled names.
-
-Eric
+Index: linux-2.6-lttng/include/asm-powerpc/tlb.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-powerpc/tlb.h	2007-07-13 11:30:54.000000000 -0400
++++ linux-2.6-lttng/include/asm-powerpc/tlb.h	2007-07-13 11:31:22.000000000 -0400
+@@ -23,6 +23,8 @@
+ #include <asm/mmu.h>
+ #endif
+ 
++#include <linux/pagemap.h>
++
+ struct mmu_gather;
+ 
+ #define tlb_start_vma(tlb, vma)	do { } while (0)
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
