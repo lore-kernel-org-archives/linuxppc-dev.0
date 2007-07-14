@@ -1,17 +1,19 @@
-Return-Path: <mathieu.desnoyers@polymtl.ca>
-Received: from smtp.polymtl.ca (smtp.polymtl.ca [132.207.4.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.polymtl.ca", Issuer "Ca_Cert_Smtp_Poly" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 37647DDDE6
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jul 2007 11:30:08 +1000 (EST)
-Message-Id: <20070714012904.448339795@polymtl.ca>
-References: <20070714012752.912348630@polymtl.ca>
-Date: Fri, 13 Jul 2007 21:27:54 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [patch 2/3] Add missing DATA_DATA in powerpc
-Cc: paulus@samba.org, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <jbe@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 7CEE8DDDCA
+	for <linuxppc-dev@ozlabs.org>; Sun, 15 Jul 2007 02:53:05 +1000 (EST)
+Received: from themisto.extern.pengutronix.de ([83.236.181.29] helo=localhost)
+	by metis.extern.pengutronix.de with esmtp (Exim 3.36 #1 (Debian))
+	id 1I9kWR-0000La-00
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jul 2007 18:31:08 +0200
+From: Juergen Beisert <jbe@pengutronix.de>
+To: linuxppc-dev@ozlabs.org
+Subject: How to add platform specific data to a of_device
+Date: Sat, 14 Jul 2007 18:31:03 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200707141831.04107.jbe@pengutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,35 +23,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Newer asm-generic/vmlinux.lds.h provides a DATA_DATA macro which defines the
-content of what is normally referred to by *(.data). It permits adding more
-"subsections" (declared by gcc with the section attribute or in assembly), which
-will be linked in the .data section.
+Hi,
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: paulus@samba.org
-CC: linuxppc-dev@ozlabs.org
---
- arch/powerpc/kernel/vmlinux.lds.S |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+I'm trying to use the drivers/spi/mpc52xx_psc_spi.c as an open firmware device
+(ARCH=powerpc). This device needs some platform specific data (the devices
+connected to the SPI bus and how to drive the chipselects to these devices).
 
-Index: linux-2.6-lttng/arch/powerpc/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/powerpc/kernel/vmlinux.lds.S	2007-07-11 11:55:48.000000000 -0400
-+++ linux-2.6-lttng/arch/powerpc/kernel/vmlinux.lds.S	2007-07-11 15:48:42.000000000 -0400
-@@ -174,7 +174,9 @@
- 	}
- #else
- 	.data : {
--		*(.data .data.rel* .toc1)
-+		DATA_DATA
-+		*(.data.rel*)
-+		*(.toc1)
- 		*(.branch_lt)
- 	}
- 
+The driver itself get a "struct of_device *op" in his probe function and
+does something like this:
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+struct fsl_spi_platform_data *pdata = op->dev.platform_data;
+
+My question is: How is the correct way to bring the platform specific data
+into this device structure? Is there a way to do it in the OFTree (dts file)?
+
+Or in a way like this?
+
+static struct fsl_spi_platform_data my_spi_master_info = {
+[....]
+}
+
+static int __init my_platform_register_spi(void)
+{
+       struct device_node *np = NULL;
+       struct of_device *of_dev;
+
+       if ((np = of_find_compatible_node(np, "spi", "mpc5200-psc-spi")) == NULL) {
+               printk("couldn't find of tree node\n");
+               return -1;
+       }
+       if ((of_dev = of_find_device_by_node(np)) == NULL) {
+               printk("couldn't find device by node\n");
+               return -1;
+       }
+
+       of_dev->dev.platform_data = &my_spi_master_info;
+
+       return 0;
+}
+
+Or is there any other way?
+
+Regards
+Juergen
