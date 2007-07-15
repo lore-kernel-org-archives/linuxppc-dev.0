@@ -1,22 +1,18 @@
-Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
-	[217.147.92.249])
+Return-Path: <vapier@gentoo.org>
+Received: from smtp.gentoo.org (smtp.gentoo.org [140.211.166.183])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D98E2DDDE9
-	for <linuxppc-dev@ozlabs.org>; Sun, 15 Jul 2007 21:07:01 +1000 (EST)
-Date: Sun, 15 Jul 2007 12:06:06 +0100
-From: Russell King <rmk@arm.linux.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Use resource_size_t for serial port IO addresses
-Message-ID: <20070715110606.GA32577@flint.arm.linux.org.uk>
-References: <1184335336.6456.17.camel@weaponx.rchland.ibm.com>
-	<20070713120226.797117e2.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070713120226.797117e2.akpm@linux-foundation.org>
-Sender: Russell King <rmk@arm.linux.org.uk>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, david@gibson.dropbear.id.au
+	by ozlabs.org (Postfix) with ESMTP id CD72FDDD07
+	for <linuxppc-dev@ozlabs.org>; Sun, 15 Jul 2007 13:43:45 +1000 (EST)
+From: Mike Frysinger <vapier@gentoo.org>
+To: paulus@samba.org
+Subject: [patch] use __attribute__ in asm-powerpc
+Date: Sat, 14 Jul 2007 23:36:09 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200707142336.10343.vapier@gentoo.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,51 +22,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 13, 2007 at 12:02:26PM -0700, Andrew Morton wrote:
-> On Fri, 13 Jul 2007 09:02:16 -0500
-> Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
-> 
-> > This is a resend of a patch David sent out on May 7.  Without it, the
-> > PowerPC 44x port in 2.6.22 and on is broken.  I've rebased it off of
-> > Linus' current tree.  Please consider pushing this soon.
-> > 
-> > josh
-> > 
-> > 
-> > At present, various parts of the serial code use unsigned long to
-> > define resource addresses.  This is a problem, because some 32-bit
-> > platforms have physical addresses larger than 32-bits, and have mmio
-> > serial uarts located above the 4GB point.
-> > 
-> > This patch changes the type of mapbase in both struct uart_port and
-> > struct plat_serial8250_port to resource_size_t, which can be
-> > configured to be 64 bits on such platforms.  The mapbase in
-> > serial_struct can't safely be changed, because that structure is user
-> > visible.
-> 
-> This is something we should do, but I have recollections of Russell
-> identifying problems with this patch, or at least an earlier version of it?
+Pretty much everyone uses "__attribute__" or "attribute", no one
+uses "__attribute".  This patch tweaks the three places in asm-powerpc where
+this comes up.  While only asm-powerpc/types.h is interesting (for userspace),
+I did asm-powerpc/processor.h as well for consistency.
 
-Basically, there's two patches.  This one (let's call this patch A)
-and another to prevent users being surprised (let's call that patch B).
-
-I didn't have any real objections to patch A, provided something like
-patch B was merged.  I did have objections against patch B, and I was
-intermittently working on a revised solution.
-
-However, for whatever reason [*], during the last merge window patch B
-got merged and patch A got dropped, and as a result I've now given up
-with my revised solution, and TBH, I no longer care.
-
-
-* - probably a result of the patches having been worked on several
-months prior to the merge window, then me forgetting the discussions
-that were had, and then objecting to the wrong patch with wrong
-reasoning.  I really hate this "work on patches, wait months, forget
-all about them, then try to work out what the hell happened" approach.
-It causes mistakes like this.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+diff --git a/include/asm-powerpc/processor.h b/include/asm-powerpc/processor.h
+index d947b16..2ce6ea6 100644
+--- a/include/asm-powerpc/processor.h
++++ b/include/asm-powerpc/processor.h
+@@ -153,9 +153,9 @@ struct thread_struct {
+ 	unsigned long	dabr;		/* Data address breakpoint register */
+ #ifdef CONFIG_ALTIVEC
+ 	/* Complete AltiVec register set */
+-	vector128	vr[32] __attribute((aligned(16)));
++	vector128	vr[32] __attribute__((aligned(16)));
+ 	/* AltiVec status */
+-	vector128	vscr __attribute((aligned(16)));
++	vector128	vscr __attribute__((aligned(16)));
+ 	unsigned long	vrsave;
+ 	int		used_vr;	/* set if process has used altivec */
+ #endif /* CONFIG_ALTIVEC */
+diff --git a/include/asm-powerpc/types.h b/include/asm-powerpc/types.h
+index 3b36375..a584341 100644
+--- a/include/asm-powerpc/types.h
++++ b/include/asm-powerpc/types.h
+@@ -48,7 +48,7 @@ typedef unsigned long long __u64;
+ 
+ typedef struct {
+ 	__u32 u[4];
+-} __attribute((aligned(16))) __vector128;
++} __attribute__((aligned(16))) __vector128;
+ 
+ #endif /* __ASSEMBLY__ */
+ 
