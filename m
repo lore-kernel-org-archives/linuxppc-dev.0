@@ -1,33 +1,24 @@
-Return-Path: <axboe@kernel.dk>
-Received: from kernel.dk (brick.kernel.dk [80.160.20.94])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "A common name", Issuer "A common name" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 6FCC2DE25E
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 00:39:37 +1000 (EST)
-Date: Mon, 16 Jul 2007 16:38:52 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
-Message-ID: <20070716143852.GW5195@kernel.dk>
-References: <20070704132212.726923000@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be>
-	<1184335333.3402.20.camel@localhost.localdomain>
-	<200707131619.54898.arnd@arndb.de>
-	<Pine.LNX.4.62.0707131707290.18802@pademelon.sonytel.be>
-	<1184340528.3402.32.camel@localhost.localdomain>
-	<Pine.LNX.4.62.0707132212520.23000@chinchilla.sonytel.be>
-	<Pine.LNX.4.62.0707161338230.1072@pademelon.sonytel.be>
-	<20070716121649.GI5195@kernel.dk>
-	<1184593643.3447.9.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1184593643.3447.9.camel@localhost.localdomain>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-scsi@vger.kernel.org,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Alessandro Rubini <rubini@vision.unipv.it>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5A028DE11B
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 00:54:48 +1000 (EST)
+In-Reply-To: <1184260375.24515.35.camel@pterry-fc6.micromemory.com>
+References: <46B96294322F7D458F9648B60E15112C6F3D1E@zch01exm26.fsl.freescale.net>
+	<4694F608.2090503@freescale.com>
+	<368E1200-1315-4C24-9876-C92CCF65EFE3@kernel.crashing.org>
+	<46B96294322F7D458F9648B60E15112C6F3E42@zch01exm26.fsl.freescale.net>
+	<1184260375.24515.35.camel@pterry-fc6.micromemory.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <B2EA074C-5D8E-4E13-B6BF-E81FBA52E76E@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/4] Add DMA sector to
+	Documentation/powerpc/booting-without-of.txt file.
+Date: Mon, 16 Jul 2007 16:54:35 +0200
+To: pterry@micromemory.com
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, Wei.Zhang@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,34 +28,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 16 2007, James Bottomley wrote:
-> On Mon, 2007-07-16 at 14:16 +0200, Jens Axboe wrote:
-> > On Mon, Jul 16 2007, Geert Uytterhoeven wrote:
-> > > On Fri, 13 Jul 2007, Geert Uytterhoeven wrote:
-> > > > Ah, that explains it. flush_dcache_page() is used in some drivers.
-> > > > I'll update my patches. Thanks for the comments!
-> > > 
-> > > Does this look OK?
-> > >   - Replaced KM_USER0 by KM_IRQ0 (all routines are either called from an
-> > >     interrupt handler, from .request_fn (ps3disk), or from .queuecommand
-> > >     (ps3rom))
-> > 
-> > That looks good.
-> > 
-> > >   - Add a call to flush_kernel_dcache_page() in routines that write to buffers
-> > 
-> > Hmm, I would have thought a flush_dcache_page() would be more
-> > appropriate, the backing could be page cache pages.
-> 
-> No ... that was the point of flush_kernel_dcache_page().  The page in
-> question is page cache backed and contains user mappings.  However, the
-> block layer has already done a flush_dcache_page() in get_user_pages()
-> and the user shouldn't be touching memory under I/O (unless they want
-> self induced aliasing problems) so we're free to assume all the user
-> cachelines are purged, hence all we have to do is flush the kernel alias
-> to bring the page up to date and make the users see it correctly.
+> I thought the idea of the dts/of was for the hardware specific boot
+> loader to tell the kernel about hardware that the kernel couldn't
+> otherwise know about, because its not detectable by a bus probe  
+> method,
+> etc. Its not there to tell you how to use the device or arbitrate  
+> which
+> other devices get to use a device when there are resource conflicts,
+> etc.
+>
+> If the dts/of/boot loader tells the kernel its a fsl soc then it knows
+> how to work out which one and what level, and therefore knows what
+> devices, such as the DMA device are present.
 
-Oh indeed, I missed the flush_dcache_page() in get_user_pages().
+The device tree describes _all_ hardware in the system,
+not just the things that are somewhat harder to probe
+for.  Kernel drivers are free to not use all info provided
+in the device tree and just hardcode some (correct or
+incorrect) implicit knowledge about the device in question.
+Whether this is a good idea or not is a different thing.
 
--- 
-Jens Axboe
+> I'm truly interested in understanding the correct interpretation  
+> because
+> we are developing a DMA based, rapidio distributed system on fsl 8641
+> and from lurking on here and reading the archives etc, all I see is a
+> constant butting of heads on what the dts/of is and how its  
+> supposed to
+> work.
+
+Really, most of what you see is developing bindings for
+specific devices, which takes a lot of discussion since
+it needs to be made future-proof.
+
+> Quite why we are using a 20 year old spec, which was never  
+> finished, and
+> ceased to be a formal spec 10 years ago as the "new" way forward is a
+> puzzle to me as well.
+
+You have some misconceptions about Open Firmware I'm afraid.
+
+> Not flame bait,
+
+Good, let's drop this then :-)
+
+> but if someone could point me to
+> background material it would be helpful for my education in getting up
+> to speed (on the rationale for using it going forwards, not all the  
+> old
+> sites for the spec itself).
+
+I'm afraid you'll have to get some experience using the OF
+device tree to truly appreciate its power and flexibility,
+and how many problems it solves.  Yeah this is a pretty weak
+answer.
+
+
+Segher
