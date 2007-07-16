@@ -2,29 +2,20 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 54F92DE0F8
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 01:00:56 +1000 (EST)
-In-Reply-To: <3F1CA06C-23E3-44EC-8A6E-E16BF690F664@kernel.crashing.org>
-References: <1184082728.20129.187.camel@localhost.localdomain>
-	<963D5B48-F1E5-4930-9F29-98D7F0E33C0A@kernel.crashing.org>
-	<1184121840.22066.24.camel@localhost.localdomain>
-	<0E17851B-A642-43E2-9A5D-39DFC6F30E77@kernel.crashing.org>
-	<7431AAFD-73B7-4337-94CB-878285D298E3@kernel.crashing.org>
-	<1184228873.27622.11.camel@localhost.localdomain>
-	<2EA16557-7960-4A1A-9D07-BDA3D8843460@kernel.crashing.org>
-	<1184240183.28074.113.camel@localhost.localdomain>
-	<68D5EA7E-30DF-4856-8526-BABEFE230C05@kernel.crashing.org>
-	<3F1CA06C-23E3-44EC-8A6E-E16BF690F664@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 5F299DE2BF
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 01:05:58 +1000 (EST)
+In-Reply-To: <20070716132902.118450@gmx.net>
+References: <20070716075317.15260@gmx.net>
+	<D0634B84-BD83-460E-AEC2-E8BB2837B237@kernel.crashing.org>
+	<20070716132902.118450@gmx.net>
 Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A76ECE36-4B72-4522-8EB0-A57359D0F938@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <B7E6FFC1-DD11-45E4-9F4D-ECD786C88023@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [patch 3/6] Add 8548 CDS PCI express controller node and PCI-X
-	device node
-Date: Mon, 16 Jul 2007 17:00:45 +0200
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: Legacy ISA registers/interrupts in PCI device tree node
+Date: Mon, 16 Jul 2007 17:05:49 +0200
+To: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,25 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>> is this the only fix, I've already applied a version of this to my
->>>> tree (with the irq sense fix) and just want to make sure there  
->>>> isn't
->>>> anything else.
->>> I do not get more.
->>> I'd like to enroll Segher's suggestion together with VIA chip  
->>> function
->>> in next step.
->>> We need to make basic pcie work on 8548 CDS board first.
+>>> I wonder, if there is a recommended way to specify ISA register
+>>> addresses and interrupts for a PCI device (unlike for a PCI2ISA
+>>> bridge)?
 >>
->> If you can, please make the "compatible" properties correct
->> ("pcie" instead of "pciex") before the patch goes in; it'll
->> be less work total and less confusing in the end.
->
-> I've taken care of that as well.
->
-> They are now 'fsl,mpc8548-pcie, and 'fsl,mpc8641-pcie'
+>> The PCI binding describes the required way to do this.
+> Hmm, I must reread the PCI binding spec. It didn't seem to contain any
+> information about this.
 
-Perfect, thanks!
+You can describe address regions in "reg" that aren't
+corresponding to any PCI BAR.  There is also a facility
+to describe subtractive decoding (though I don't think
+you need this).
+
+>> Yes, it should, even if you don't use this in the Linux
+>> kernel yet.
+> Well, I still have to wire up the IDE interrupts in the platform setup
+> code, right?
+
+Sure, if you want those interrupts to work, anyway ;-)
 
 
 Segher
