@@ -1,18 +1,33 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 2350CDE1A7
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 23:29:04 +1000 (EST)
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 16 Jul 2007 15:29:02 +0200
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <D0634B84-BD83-460E-AEC2-E8BB2837B237@kernel.crashing.org>
-Message-ID: <20070716132902.118450@gmx.net>
+Return-Path: <axboe@kernel.dk>
+Received: from kernel.dk (brick.kernel.dk [80.160.20.94])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "A common name", Issuer "A common name" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 26A0DDDE31
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 23:34:03 +1000 (EST)
+Date: Mon, 16 Jul 2007 15:33:17 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
+Message-ID: <20070716133316.GU5195@kernel.dk>
+References: <Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be>
+	<1184335333.3402.20.camel@localhost.localdomain>
+	<200707131619.54898.arnd@arndb.de>
+	<Pine.LNX.4.62.0707131707290.18802@pademelon.sonytel.be>
+	<1184340528.3402.32.camel@localhost.localdomain>
+	<Pine.LNX.4.62.0707132212520.23000@chinchilla.sonytel.be>
+	<Pine.LNX.4.62.0707161338230.1072@pademelon.sonytel.be>
+	<20070716121649.GI5195@kernel.dk>
+	<Pine.LNX.4.62.0707161459010.1072@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0707161515460.1072@pademelon.sonytel.be>
 MIME-Version: 1.0
-References: <20070716075317.15260@gmx.net>
-	<D0634B84-BD83-460E-AEC2-E8BB2837B237@kernel.crashing.org>
-Subject: Re: Legacy ISA registers/interrupts in PCI device tree node
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.62.0707161515460.1072@pademelon.sonytel.be>
+Cc: James Bottomley <James.Bottomley@SteelEye.com>,
+	Arnd Bergmann <arnd@arndb.de>, linux-scsi@vger.kernel.org,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Alessandro Rubini <rubini@vision.unipv.it>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,28 +37,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
--------- Original-Nachricht --------
-Datum: Mon, 16 Jul 2007 14:40:48 +0200
-Von: Segher Boessenkool <segher@kernel.crashing.org>
-An: Gerhard Pircher <gerhard_pircher@gmx.net>
-CC: linuxppc-dev@ozlabs.org
-Betreff: Re: Legacy ISA registers/interrupts in PCI device tree node
-
-> > I wonder, if there is a recommended way to specify ISA register  
-> > addresses and interrupts for a PCI device (unlike for a PCI2ISA
-> > bridge)?
+On Mon, Jul 16 2007, Geert Uytterhoeven wrote:
+> On Mon, 16 Jul 2007, Geert Uytterhoeven wrote:
+> > On Mon, 16 Jul 2007, Jens Axboe wrote:
+> > > On Mon, Jul 16 2007, Geert Uytterhoeven wrote:
+> > > > On Fri, 13 Jul 2007, Geert Uytterhoeven wrote:
+> > > > > Ah, that explains it. flush_dcache_page() is used in some drivers.
+> > > > > I'll update my patches. Thanks for the comments!
+> > > > 
+> > > > Does this look OK?
+> > > >   - Replaced KM_USER0 by KM_IRQ0 (all routines are either called from an
+> > > >     interrupt handler, from .request_fn (ps3disk), or from .queuecommand
+> > > >     (ps3rom))
+> > > 
+> > > That looks good.
+> > > 
+> > > >   - Add a call to flush_kernel_dcache_page() in routines that write to buffers
+> > > 
+> > > Hmm, I would have thought a flush_dcache_page() would be more
+> > > appropriate, the backing could be page cache pages.
+> > 
+> > OK, I'll change it to flush_dcache_page().
 > 
-> The PCI binding describes the required way to do this.
-Hmm, I must reread the PCI binding spec. It didn't seem to contain any
-information about this.
+> Upon closer look, while flush_kernel_dcache_page() is a no-op on ppc64,
+> flush_dcache_page() isn't. So I'd prefer to not call it if not really needed.
+> 
+> And according to James, flush_kernel_dcache_page() should be sufficient...
+> 
+> So I'm getting puzzled again...
 
-> Yes, it should, even if you don't use this in the Linux
-> kernel yet.
-Well, I still have to wire up the IDE interrupts in the platform setup
-code, right?
+I'll let James expand on why he thinks flush_kernel_dcache_page() should
+be sufficient. If the backing is always user memory from
+get_user_pages(), then the flush_kernel_dcache_page() looks sufficient.
+For the normal IO paths, it could be that or page cache pages too for
+instance.
 
-Gerhard
 -- 
-Ist Ihr Browser Vista-kompatibel? Jetzt die neuesten 
-Browser-Versionen downloaden: http://www.gmx.net/de/go/browser
+Jens Axboe
