@@ -1,20 +1,25 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 2C898DDE41
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 07:55:28 +1000 (EST)
-Date: Mon, 16 Jul 2007 14:55:30 -0700 (PDT)
-Message-Id: <20070716.145530.51840998.davem@davemloft.net>
-To: linas@austin.ibm.com
-Subject: Re: [PATCH] crash in 2.6.22-git2 sysctl_set_parent()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070716172535.GB5771@austin.ibm.com>
-References: <20070713200515.GS5549@austin.ibm.com>
-	<20070713.154702.17863636.davem@davemloft.net>
-	<20070716172535.GB5771@austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, ebiederm@xmission.com,
-	linux-kernel@vger.kernel.org
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6FD02DDE1C
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 08:00:09 +1000 (EST)
+Message-ID: <469BEA5F.5050508@garzik.org>
+Date: Mon, 16 Jul 2007 17:59:59 -0400
+From: Jeff Garzik <jeff@garzik.org>
+MIME-Version: 1.0
+To: Thomas Klein <osstklei@de.ibm.com>
+Subject: Re: [PATCH 1/1] eHEA: Introducing support vor DLPAR memory add
+References: <200707111632.00235.osstklei@de.ibm.com>
+In-Reply-To: <200707111632.00235.osstklei@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Christoph Raisch <raisch@de.ibm.com>,
+	Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
+	linux-ppc <linuxppc-dev@ozlabs.org>,
+	Jan-Bernd Themann <ossthema@de.ibm.com>, Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,26 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: linas@austin.ibm.com (Linas Vepstas)
-Date: Mon, 16 Jul 2007 12:25:35 -0500
-
-> On Fri, Jul 13, 2007 at 03:47:02PM -0700, David Miller wrote:
-> > From: linas@austin.ibm.com (Linas Vepstas)
-> > Date: Fri, 13 Jul 2007 15:05:15 -0500
-> > 
-> > > 
-> > > This is a patch (& bug report) for a crash in sysctl_set_parent() 
-> > > in 2.6.22-git2. 
-> > > 
-> > > Problem: 2.6.22-git2 crashes with a stack trace 
-> > > 
-> > > Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-> > 
-> > Thanks for tracking this down, I'll apply your patch.
+Thomas Klein wrote:
+> This patch adds support for DLPAR memory add to the eHEA driver. To detect
+> whether memory was added the driver uses its own memory mapping table and
+> checks for kernel addresses whether they're located in already known memory
+> sections. If not the function ehea_rereg_mrs() is triggered which performs
+> a rebuild of the mapping table and a re-registration of the global memory
+> region.
 > 
-> NAK. As I just explained in another email, this bug
-> was introduced by the "send-to-self" patch I habitually
-> apply -- so habitually, that I forgot I was not working 
-> with a "clean" tree. So it goes ... 
+> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
+> ---
+> 
+>  drivers/net/ehea/ehea.h      |   23 +++++--
+>  drivers/net/ehea/ehea_main.c |  144 +++++++++++++++++++++++++++++++++++----
+>  drivers/net/ehea/ehea_phyp.h |    3 +
+>  drivers/net/ehea/ehea_qmr.c  |  156 ++++++++++++++++++++++++++++++------------
+>  drivers/net/ehea/ehea_qmr.h  |   14 +++-
+>  5 files changed, 275 insertions(+), 65 deletions(-)
 
-I saw all of this, thanks.
+applied
