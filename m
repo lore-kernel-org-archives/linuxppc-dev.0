@@ -1,33 +1,16 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D9B2FDE227
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 03:25:43 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6GHPbCE014739
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 13:25:37 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l6GHPako112940
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 11:25:36 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6GHPZBh025008
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 11:25:35 -0600
-Date: Mon, 16 Jul 2007 12:25:35 -0500
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] crash in 2.6.22-git2 sysctl_set_parent()
-Message-ID: <20070716172535.GB5771@austin.ibm.com>
-References: <20070713200515.GS5549@austin.ibm.com>
-	<20070713.154702.17863636.davem@davemloft.net>
+Return-Path: <Alexandre.Bounine@tundra.com>
+Received: from mx2.tundra.com (mail2.tundra.com [142.46.200.162])
+	by ozlabs.org (Postfix) with ESMTP id 79CC7DDD08
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 03:35:18 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070713.154702.17863636.davem@davemloft.net>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, ebiederm@xmission.com,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: [PATCH] Fix Tsi108 ethernet driver performance
+Date: Mon, 16 Jul 2007 13:36:13 -0400
+Message-ID: <1B5F013528140F45B5C671039279CA5701F834BB@NANUK.pc.tundra.com>
+From: "Alexandre Bounine" <Alexandre.Bounine@tundra.com>
+To: <jgarzik@pobox.com>, <netdev@vger.kernel.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,23 +20,137 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 13, 2007 at 03:47:02PM -0700, David Miller wrote:
-> From: linas@austin.ibm.com (Linas Vepstas)
-> Date: Fri, 13 Jul 2007 15:05:15 -0500
-> 
-> > 
-> > This is a patch (& bug report) for a crash in sysctl_set_parent() 
-> > in 2.6.22-git2. 
-> > 
-> > Problem: 2.6.22-git2 crashes with a stack trace 
-> > 
-> > Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-> 
-> Thanks for tracking this down, I'll apply your patch.
+From: Alexandre Bounine <alexandreb@tundra.com>
 
-NAK. As I just explained in another email, this bug
-was introduced by the "send-to-self" patch I habitually
-apply -- so habitually, that I forgot I was not working 
-with a "clean" tree. So it goes ... 
+This patch improves performance of the Tsi108 Ethernet driver by
+changing interrupt handling for frame receive path. It reduces number of
+interrupts generated for received frames and therefore lowers CPU
+utilization by the device driver.
+=20=20=20
+Signed-off-by: Alexandre Bounine <alexandreb@tundra.com>
 
---linas
+---
+
+diff -Nurp linux-2.6.22-hpc2/drivers/net/tsi108_eth.c
+linux-2.6.22-tun/drivers/net/tsi108_eth.c
+--- linux-2.6.22-hpc2/drivers/net/tsi108_eth.c	2007-07-08
+19:32:17.000000000 -0400
++++ linux-2.6.22-tun/drivers/net/tsi108_eth.c	2007-07-12
+16:55:50.000000000 -0400
+@@ -58,6 +58,7 @@
+ #define MII_READ_DELAY 10000	/* max link wait time in msec */
+=20
+ #define TSI108_RXRING_LEN     256
++#define TSI108_RX_INT_FREQ    32
+=20
+ /* NOTE: The driver currently does not support receiving packets
+  * larger than the buffer size, so don't decrease this (unless you
+@@ -69,8 +70,10 @@
+=20
+ #define TSI108_TX_INT_FREQ    64
+=20
+-/* Check the phy status every half a second. */
+-#define CHECK_PHY_INTERVAL (HZ/2)
++/* Timer interval to check the RX queue status */
++#define CHECK_RX_INTERVAL	(HZ/50)
++/* Timer interval to check the PHY status */
++#define CHECK_PHY_INTERVAL	(CHECK_RX_INTERVAL * 10)
+=20
+ static int tsi108_init_one(struct platform_device *pdev);
+ static int tsi108_ether_remove(struct platform_device *pdev);
+@@ -104,6 +107,7 @@ struct tsi108_prv_data {
+ 	unsigned int txfree;
+=20
+ 	unsigned int phy_ok;		/* The PHY is currently powered
+on. */
++	unsigned int phy_chk_count;
+=20
+ 	/* PHY status (duplex is 1 for half, 2 for full,
+ 	 * so that the default 0 indicates that neither has
+@@ -823,7 +827,10 @@ static int tsi108_refill_rx(struct net_d
+ 		 */
+=20
+ 		data->rxring[rx].blen =3D TSI108_RX_SKB_SIZE;
+-		data->rxring[rx].misc =3D TSI108_RX_OWN | TSI108_RX_INT;
++		if (rx % TSI108_RX_INT_FREQ)
++			data->rxring[rx].misc =3D TSI108_RX_OWN;
++		else
++			data->rxring[rx].misc =3D TSI108_RX_OWN |
+TSI108_RX_INT;
+=20
+ 		data->rxhead =3D (data->rxhead + 1) % TSI108_RXRING_LEN;
+ 		data->rxfree++;
+@@ -973,24 +980,22 @@ static void tsi108_rx_int(struct net_dev
+ 	}
+ }
+=20
+-/* If the RX ring has run out of memory, try periodically
+- * to allocate some more, as otherwise poll would never
+- * get called (apart from the initial end-of-queue condition).
+- *
+- * This is called once per second (by default) from the thread.
++/* tsi108_check_rxring() is used to periodically check if the RX ring
+has
++ * pending frames that have not been reported by RX interrupt (due to
+interrupt
++ * moderation). It is called with CHECK_RX_INTERVAL timer interval.
+  */
+=20
+ static void tsi108_check_rxring(struct net_device *dev)
+ {
+ 	struct tsi108_prv_data *data =3D netdev_priv(dev);
++	unsigned int rx =3D data->rxtail;
+=20
+-	/* A poll is scheduled, as opposed to caling tsi108_refill_rx
+-	 * directly, so as to keep the receive path single-threaded
+-	 * (and thus not needing a lock).
+-	 */
+-
+-	if (netif_running(dev) && data->rxfree < TSI108_RXRING_LEN / 4)
++	/* Schedule a poll (if required) */
++	if (netif_running(dev) &&
++	    0 =3D=3D (data->rxring[rx].misc & TSI108_RX_OWN)) {
++		data->rxpending =3D 1;
+ 		tsi108_rx_int(dev);
++	}
+ }
+=20
+ static void tsi108_tx_int(struct net_device *dev)
+@@ -1295,6 +1300,7 @@ static void tsi108_init_phy(struct net_d
+=20
+ 	printk(KERN_DEBUG "PHY_STAT reg contains %08x\n", phyval);
+ 	data->phy_ok =3D 1;
++	data->phy_chk_count =3D 0;
+ 	data->init_media =3D 1;
+ 	spin_unlock_irqrestore(&phy_lock, flags);
+ }
+@@ -1664,9 +1670,12 @@ static void tsi108_timed_checker(unsigne
+ 	struct net_device *dev =3D (struct net_device *)dev_ptr;
+ 	struct tsi108_prv_data *data =3D netdev_priv(dev);
+=20
+-	tsi108_check_phy(dev);
++	/* We assume that RX queue is checked more often than PHY status
+*/
++	if (data->phy_chk_count++ =3D=3D 0)
++		tsi108_check_phy(dev);
+ 	tsi108_check_rxring(dev);
+-	mod_timer(&data->timer, jiffies + CHECK_PHY_INTERVAL);
++	data->phy_chk_count %=3D (CHECK_PHY_INTERVAL/CHECK_RX_INTERVAL);
++	mod_timer(&data->timer, jiffies + CHECK_RX_INTERVAL);
+ }
+=20
+ static int tsi108_ether_init(void)
+
+
+
+---=0D
+=0D
+Important Notice: This message is intended for the use of the individual to=
+ whom it is addressed and may contain information which is privileged, conf=
+idential and/or exempt from disclosure under applicable law. If the reader =
+of this message is not the intended recipient, or is not the employee or ag=
+ent responsible for delivering the message to the intended recipient, you a=
+re hereby notified that any dissemination, distribution, or copying of this=
+ communication is strictly prohibited. If you have received this communicat=
+ion in error, please notify the sender immediately by telephone or return e=
+-mail and delete the original message from your systems. Thank you. =0D
