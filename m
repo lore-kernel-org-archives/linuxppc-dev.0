@@ -1,14 +1,21 @@
-Return-Path: <rongkai.zhan@windriver.com>
-Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id 61164DDE1C
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 04:36:00 +1000 (EST)
-Message-ID: <469B33E8.8010105@windriver.com>
-Date: Mon, 16 Jul 2007 17:01:28 +0800
-From: Mark Zhan <rongkai.zhan@windriver.com>
-MIME-Version: 1.0
-To: paulus@samba.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 0/3] 82xx: Add the support for Wind River SBC PowerQUICCII
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 68771DDE0E
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 04:51:57 +1000 (EST)
+In-Reply-To: <1184299081.30789.9.camel@localhost.localdomain>
+References: <1184299081.30789.9.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <33E328EE-D550-4292-9B3C-0400417D2D9D@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] Update mpc7448hpc2 device tree to be compatible for
+	tsi109 chip
+Date: Mon, 16 Jul 2007 20:51:36 +0200
+To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,16 +25,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These 3 patches add the powerpc support of Wind River SBC PowerQUICCII.
+> Update mpc7448hpc2 device tree to be compatible for tsi109 chip.
+>
+> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
 
-1) Currently, some mpc82xx platform hooks in mpc82xx_ads.c are actually not specific to ads board. So the 1st patch 
-makes them be shared by different 82xx boards.
+Looks good, thanks!
 
-2) The 2nd patch make 'cpm_uart_of_init' be able to parse SMC uart in DTS
 
-3) The 3rd patch is the platform codes, defconfig and dts for Wind River SBC PowerQUICCII 82xx board.
-
-Any comment is welcome.
-
-Thanks
-Mark Zhan
+Segher
