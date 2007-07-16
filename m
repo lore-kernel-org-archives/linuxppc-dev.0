@@ -1,19 +1,33 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: possible dead CONFIG-related content under arch/powerpc
-From: Michael Ellerman <michael@ellerman.id.au>
+Return-Path: <axboe@kernel.dk>
+Received: from kernel.dk (brick.kernel.dk [80.160.20.94])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "A common name", Issuer "A common name" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id AE9AFDE1E4
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 23:05:33 +1000 (EST)
+Date: Mon, 16 Jul 2007 15:04:47 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
 To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <Pine.LNX.4.62.0707161116280.1072@pademelon.sonytel.be>
-References: <Pine.LNX.4.64.0707141816470.9751@localhost.localdomain>
-	<Pine.LNX.4.62.0707161116280.1072@pademelon.sonytel.be>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-ZuLm5th3bD8Cg/2/cBPm"
-Date: Mon, 16 Jul 2007 23:05:14 +1000
-Message-Id: <1184591114.17330.1.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: Linux PPC Mailing List <linuxppc-dev@ozlabs.org>,
-	"Robert P. J. Day" <rpjday@mindspring.com>
-Reply-To: michael@ellerman.id.au
+Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
+Message-ID: <20070716130447.GO5195@kernel.dk>
+References: <20070704132212.726923000@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be>
+	<1184335333.3402.20.camel@localhost.localdomain>
+	<200707131619.54898.arnd@arndb.de>
+	<Pine.LNX.4.62.0707131707290.18802@pademelon.sonytel.be>
+	<1184340528.3402.32.camel@localhost.localdomain>
+	<Pine.LNX.4.62.0707132212520.23000@chinchilla.sonytel.be>
+	<Pine.LNX.4.62.0707161338230.1072@pademelon.sonytel.be>
+	<20070716121649.GI5195@kernel.dk>
+	<Pine.LNX.4.62.0707161459010.1072@pademelon.sonytel.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.62.0707161459010.1072@pademelon.sonytel.be>
+Cc: James Bottomley <James.Bottomley@SteelEye.com>,
+	Arnd Bergmann <arnd@arndb.de>, linux-scsi@vger.kernel.org,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Alessandro Rubini <rubini@vision.unipv.it>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,43 +37,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Jul 16 2007, Geert Uytterhoeven wrote:
+> On Mon, 16 Jul 2007, Jens Axboe wrote:
+> > On Mon, Jul 16 2007, Geert Uytterhoeven wrote:
+> > > On Fri, 13 Jul 2007, Geert Uytterhoeven wrote:
+> > > > Ah, that explains it. flush_dcache_page() is used in some drivers.
+> > > > I'll update my patches. Thanks for the comments!
+> > > 
+> > > Does this look OK?
+> > >   - Replaced KM_USER0 by KM_IRQ0 (all routines are either called from an
+> > >     interrupt handler, from .request_fn (ps3disk), or from .queuecommand
+> > >     (ps3rom))
+> > 
+> > That looks good.
+> > 
+> > >   - Add a call to flush_kernel_dcache_page() in routines that write to buffers
+> > 
+> > Hmm, I would have thought a flush_dcache_page() would be more
+> > appropriate, the backing could be page cache pages.
+> 
+> OK, I'll change it to flush_dcache_page().
 
---=-ZuLm5th3bD8Cg/2/cBPm
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Then you may add my acked-by as well, if you want.
 
-On Mon, 2007-07-16 at 11:16 +0200, Geert Uytterhoeven wrote:
-> On Sat, 14 Jul 2007, Robert P. J. Day wrote:
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D SPE_BASE =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > arch/powerpc/mm/hash_utils_64.c:612:#ifdef CONFIG_SPE_BASE
-> > arch/powerpc/mm/hash_utils_64.c:747:#ifdef CONFIG_SPE_BASE
->=20
-> Interesting, should this one be CONFIG_SPU_BASE?
-
-Yes, ouch.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-ZuLm5th3bD8Cg/2/cBPm
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGm20KdSjSd0sB4dIRAlP/AJ9t1IMOcGsQ9UovpK56vByQ4uT1pwCgs3Mx
-LIn3U8DxD+c+aEFluAJK4Fs=
-=MEXu
------END PGP SIGNATURE-----
-
---=-ZuLm5th3bD8Cg/2/cBPm--
+-- 
+Jens Axboe
