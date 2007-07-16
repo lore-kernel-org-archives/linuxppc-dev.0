@@ -1,17 +1,33 @@
-Return-Path: <Alexandre.Bounine@tundra.com>
-Received: from mx2.tundra.com (mail2.tundra.com [142.46.200.162])
-	by ozlabs.org (Postfix) with ESMTP id 420C0DE181
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 03:24:36 +1000 (EST)
+Return-Path: <linas@austin.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D9B2FDE227
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 03:25:43 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6GHPbCE014739
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 13:25:37 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l6GHPako112940
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 11:25:36 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l6GHPZBh025008
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 11:25:35 -0600
+Date: Mon, 16 Jul 2007 12:25:35 -0500
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] crash in 2.6.22-git2 sysctl_set_parent()
+Message-ID: <20070716172535.GB5771@austin.ibm.com>
+References: <20070713200515.GS5549@austin.ibm.com>
+	<20070713.154702.17863636.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] Fix Tsi108 ethernet driver performance
-Date: Mon, 16 Jul 2007 13:25:27 -0400
-Message-ID: <1B5F013528140F45B5C671039279CA5701F834AD@NANUK.pc.tundra.com>
-In-Reply-To: <4697E160.9000009@freescale.com>
-From: "Alexandre Bounine" <Alexandre.Bounine@tundra.com>
-To: "Scott Wood" <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070713.154702.17863636.davem@davemloft.net>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, ebiederm@xmission.com,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,52 +37,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I agree that 20 ms is not the best option. But, as you mentioned as
-well, shorter period may bring more wasted CPU cycles.
-Using this approach to interrupt moderation I see performance
-improvement using frame flow that generates about one interrupt per
-frame. Below are CPU usage numbers reported by top for the current and
-patched versions of the Tsi108_eth driver.=20=20=20=20=20=20=20
+On Fri, Jul 13, 2007 at 03:47:02PM -0700, David Miller wrote:
+> From: linas@austin.ibm.com (Linas Vepstas)
+> Date: Fri, 13 Jul 2007 15:05:15 -0500
+> 
+> > 
+> > This is a patch (& bug report) for a crash in sysctl_set_parent() 
+> > in 2.6.22-git2. 
+> > 
+> > Problem: 2.6.22-git2 crashes with a stack trace 
+> > 
+> > Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+> 
+> Thanks for tracking this down, I'll apply your patch.
 
-Current version:
-Cpu(s):  0.0% us, 0.3% sy, 0.0% ni, 14.6% id, 0.0% wa, 14.6% hi, 70.4%
-si
+NAK. As I just explained in another email, this bug
+was introduced by the "send-to-self" patch I habitually
+apply -- so habitually, that I forgot I was not working 
+with a "clean" tree. So it goes ... 
 
-Patched version:
-Cpu(s):  0.0% us, 0.0% sy, 0.0% ni, 35.2% id, 1.2% wa, 2.4% hi, 61.2% si
-
-- Alex.
-
-
------Original Message-----
-From: Scott Wood [mailto:scottwood@freescale.com]=20
-Sent: Friday, July 13, 2007 4:33 PM
-To: Scott Wood
-Cc: Alexandre Bounine; linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] Fix Tsi108 ethernet driver performance
-
-Scott Wood wrote:
-> Wouldn't this cause latencies of up to a second in responding to=20
-> received packets?  I'd think that would be considered excessive.
->=20
-> And shouldn't NAPI be reducing the RX interrupt load anyway?
-
-Sorry, I missed that you reduced the interval to 20 ms.  Still, a bit on
-
-the high side, and a source of wasted CPU cycles when the network isn't=20
-heavily loaded.  How much of a difference in CPU usage did you see with=20
-this patch?
-
--Scott
-
----=0D
-=0D
-Important Notice: This message is intended for the use of the individual to=
- whom it is addressed and may contain information which is privileged, conf=
-idential and/or exempt from disclosure under applicable law. If the reader =
-of this message is not the intended recipient, or is not the employee or ag=
-ent responsible for delivering the message to the intended recipient, you a=
-re hereby notified that any dissemination, distribution, or copying of this=
- communication is strictly prohibited. If you have received this communicat=
-ion in error, please notify the sender immediately by telephone or return e=
--mail and delete the original message from your systems. Thank you. =0D
+--linas
