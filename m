@@ -1,32 +1,27 @@
-Return-Path: <axboe@kernel.dk>
-Received: from kernel.dk (brick.kernel.dk [80.160.20.94])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "A common name", Issuer "A common name" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id AE9AFDE1E4
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 23:05:33 +1000 (EST)
-Date: Mon, 16 Jul 2007 15:04:47 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
-Message-ID: <20070716130447.GO5195@kernel.dk>
-References: <20070704132212.726923000@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be>
-	<1184335333.3402.20.camel@localhost.localdomain>
-	<200707131619.54898.arnd@arndb.de>
-	<Pine.LNX.4.62.0707131707290.18802@pademelon.sonytel.be>
-	<1184340528.3402.32.camel@localhost.localdomain>
-	<Pine.LNX.4.62.0707132212520.23000@chinchilla.sonytel.be>
-	<Pine.LNX.4.62.0707161338230.1072@pademelon.sonytel.be>
-	<20070716121649.GI5195@kernel.dk>
-	<Pine.LNX.4.62.0707161459010.1072@pademelon.sonytel.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.62.0707161459010.1072@pademelon.sonytel.be>
-Cc: James Bottomley <James.Bottomley@SteelEye.com>,
-	Arnd Bergmann <arnd@arndb.de>, linux-scsi@vger.kernel.org,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Alessandro Rubini <rubini@vision.unipv.it>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0908DDE2D7
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 23:05:46 +1000 (EST)
+In-Reply-To: <1184240183.28074.113.camel@localhost.localdomain>
+References: <1184082728.20129.187.camel@localhost.localdomain>
+	<963D5B48-F1E5-4930-9F29-98D7F0E33C0A@kernel.crashing.org>
+	<1184121840.22066.24.camel@localhost.localdomain>
+	<0E17851B-A642-43E2-9A5D-39DFC6F30E77@kernel.crashing.org>
+	<7431AAFD-73B7-4337-94CB-878285D298E3@kernel.crashing.org>
+	<1184228873.27622.11.camel@localhost.localdomain>
+	<2EA16557-7960-4A1A-9D07-BDA3D8843460@kernel.crashing.org>
+	<1184240183.28074.113.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <68D5EA7E-30DF-4856-8526-BABEFE230C05@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [patch 3/6] Add 8548 CDS PCI express controller node and PCI-X
+	device node
+Date: Mon, 16 Jul 2007 15:05:37 +0200
+To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -37,28 +32,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 16 2007, Geert Uytterhoeven wrote:
-> On Mon, 16 Jul 2007, Jens Axboe wrote:
-> > On Mon, Jul 16 2007, Geert Uytterhoeven wrote:
-> > > On Fri, 13 Jul 2007, Geert Uytterhoeven wrote:
-> > > > Ah, that explains it. flush_dcache_page() is used in some drivers.
-> > > > I'll update my patches. Thanks for the comments!
-> > > 
-> > > Does this look OK?
-> > >   - Replaced KM_USER0 by KM_IRQ0 (all routines are either called from an
-> > >     interrupt handler, from .request_fn (ps3disk), or from .queuecommand
-> > >     (ps3rom))
-> > 
-> > That looks good.
-> > 
-> > >   - Add a call to flush_kernel_dcache_page() in routines that write to buffers
-> > 
-> > Hmm, I would have thought a flush_dcache_page() would be more
-> > appropriate, the backing could be page cache pages.
-> 
-> OK, I'll change it to flush_dcache_page().
+>> is this the only fix, I've already applied a version of this to my
+>> tree (with the irq sense fix) and just want to make sure there isn't
+>> anything else.
+> I do not get more.
+> I'd like to enroll Segher's suggestion together with VIA chip function
+> in next step.
+> We need to make basic pcie work on 8548 CDS board first.
 
-Then you may add my acked-by as well, if you want.
+If you can, please make the "compatible" properties correct
+("pcie" instead of "pciex") before the patch goes in; it'll
+be less work total and less confusing in the end.
 
--- 
-Jens Axboe
+
+Segher
