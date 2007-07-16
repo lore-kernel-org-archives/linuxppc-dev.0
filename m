@@ -1,22 +1,14 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-2.cisco.com (sj-iport-2-in.cisco.com [171.71.176.71])
-	by ozlabs.org (Postfix) with ESMTP id 6E57BDDED9
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 03:37:13 +1000 (EST)
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Subject: Re: [PATCH 10/10] IB/ehca: Support large page MRs
-References: <200707121745.27592.fenkes@de.ibm.com>
-	<200707121754.20293.fenkes@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 16 Jul 2007 10:37:09 -0700
-In-Reply-To: <200707121754.20293.fenkes@de.ibm.com> (Joachim Fenkes's message
-	of "Thu, 12 Jul 2007 17:54:19 +0200")
-Message-ID: <adaabtww8qi.fsf@cisco.com>
+Return-Path: <rongkai.zhan@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id 61164DDE1C
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 04:36:00 +1000 (EST)
+Message-ID: <469B33E8.8010105@windriver.com>
+Date: Mon, 16 Jul 2007 17:01:28 +0800
+From: Mark Zhan <rongkai.zhan@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: LKML <linux-kernel@vger.kernel.org>, LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	OF-General <general@lists.openfabrics.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+To: paulus@samba.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH 0/3] 82xx: Add the support for Wind River SBC PowerQUICCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,28 +18,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > Add support for MR pages larger than 4K on eHCA2. This reduces firmware
- > memory consumption. If enabled via the mr_largepage module parameter, the MR
- > page size will be determined based on the MR length and the hardware
- > capabilities - if the MR is >= 16M, 16M pages are used, for example.
+These 3 patches add the powerpc support of Wind River SBC PowerQUICCII.
 
-Why the module parameter?  Is there any reason a user would want to
-turn this off?  Or conversely, why is it off by default?
+1) Currently, some mpc82xx platform hooks in mpc82xx_ads.c are actually not specific to ads board. So the 1st patch 
+makes them be shared by different 82xx boards.
 
-Also this patch seems to depend heavily on the multiple EQ patch,
-which I am holding off on now.  So you may want to rebase to my
-current tree, which has all the ehca patches except the EQ one.
+2) The 2nd patch make 'cpm_uart_of_init' be able to parse SMC uart in DTS
 
- >  static ssize_t ehca_show_nr_eqs(struct device *dev,
- >  				struct device_attribute *attr,
- >  				char *buf)
- >  {
- >  	return sprintf(buf, "%d\n", ehca_nr_eqs);
- >  }
- > -
- >  static DEVICE_ATTR(nr_eqs, S_IRUGO, ehca_show_nr_eqs, NULL);
+3) The 3rd patch is the platform codes, defconfig and dts for Wind River SBC PowerQUICCII 82xx board.
 
-Although trivial, this chunk doesn't really belong in this patch --
-just fix it up in the multiple EQ patch (which I haven't merged yet).
+Any comment is welcome.
 
- - R.
+Thanks
+Mark Zhan
