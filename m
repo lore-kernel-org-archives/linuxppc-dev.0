@@ -1,35 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2DDA2DDE1B
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 08:14:04 +1000 (EST)
-Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-In-Reply-To: <1184623415.3447.48.camel@localhost.localdomain>
-References: <20070704132212.726923000@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be>
-	<1184335333.3402.20.camel@localhost.localdomain>
-	<200707131619.54898.arnd@arndb.de>
-	<Pine.LNX.4.62.0707131707290.18802@pademelon.sonytel.be>
-	<1184340528.3402.32.camel@localhost.localdomain>
-	<Pine.LNX.4.62.0707132212520.23000@chinchilla.sonytel.be>
-	<Pine.LNX.4.62.0707161338230.1072@pademelon.sonytel.be>
-	<20070716121649.GI5195@kernel.dk>
-	<1184593643.3447.9.camel@localhost.localdomain>
-	<1184622555.25235.91.camel@localhost.localdomain>
-	<1184623415.3447.48.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 17 Jul 2007 08:12:39 +1000
-Message-Id: <1184623959.25235.100.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-scsi@vger.kernel.org,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Alessandro Rubini <rubini@vision.unipv.it>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, Jens Axboe <jens.axboe@oracle.com>,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D220DDDE1E
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 08:19:00 +1000 (EST)
+Message-ID: <469BEECC.6070404@freescale.com>
+Date: Mon, 16 Jul 2007 17:18:52 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC][PATCH 6/8] Walnut DTS
+References: <1184161957.32199.52.camel@weaponx.rchland.ibm.com>	
+	<1184162389.32199.65.camel@weaponx.rchland.ibm.com>	
+	<4EAC985A-2F04-465D-AB69-C67807310D7B@kernel.crashing.org>	
+	<9696D7A991D0824DBA8DFAC74A9C5FA3030669AF@az33exm25.fsl.freescale.net>	
+	<28A3F6B9-512B-4D86-8E0D-A7680CCE2354@kernel.crashing.org>	
+	<1184622446.25235.89.camel@localhost.localdomain>	
+	<469BE93E.1070702@freescale.com>
+	<1184623898.25235.96.camel@localhost.localdomain>
+In-Reply-To: <1184623898.25235.96.camel@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Yoder Stuart-B08248 <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,25 +32,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-07-16 at 17:03 -0500, James Bottomley wrote:
-> On Tue, 2007-07-17 at 07:49 +1000, Benjamin Herrenschmidt wrote:
-> > > No ... that was the point of flush_kernel_dcache_page().  The page in
-> > > question is page cache backed and contains user mappings.  However, the
-> > > block layer has already done a flush_dcache_page() in get_user_pages()
-> > > and the user shouldn't be touching memory under I/O (unless they want
-> > > self induced aliasing problems) so we're free to assume all the user
-> > > cachelines are purged, hence all we have to do is flush the kernel alias
-> > > to bring the page up to date and make the users see it correctly.
-> > 
-> > The block layer will have done that even in the swap-out path ? (Just
-> > asking... I'm not very familiar with the block layer)
-> 
-> Er ... not really, this is the I/O path for user initiated I/O.  The
-> page out path, by definition, can't have any extant user mappings.  For
-> page out, the relevant page is flushed before its mapping is detached,
-> and then it can be paged to the backing store (or for anonymous pages to
-> the swap device) when no mappings remain.
+Benjamin Herrenschmidt wrote:
+> No, interrupt maps are useful in devices with no children in some corner
+> cases. Remember that a map doesnt need to use the address part of the
+> source specifier, thus it can be used to do a pure domain->domain
+> conversion of the irq numbers, what sort of thing. The map has the added
+> advantage that today, it's the only mechanism that allows you to specify
+> different interrupt-parents through the same nexus, which is useful for
+> 4xx.
 
-Ok, thanks.
+OK...  but if you're doing a pure IRQ number conversion, the only useful 
+#address-cells would be zero, which makes it a reasonable default IMHO 
+(unlike the arbitrary 2 for regular traversal).
 
-Ben.
+-Scott
