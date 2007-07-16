@@ -1,22 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3F32ADE35A
+Return-Path: <sprasad@bivio.net>
+Received: from corpexc01.corp.networkrobots.com (nofear-snat.bivio.net
+	[216.142.75.231]) by ozlabs.org (Postfix) with ESMTP id 4E960DE0E7
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 Jul 2007 01:46:43 +1000 (EST)
-Message-ID: <469B92DC.50609@freescale.com>
-Date: Mon, 16 Jul 2007 10:46:36 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Tue, 17 Jul 2007 02:00:46 +1000 (EST)
 MIME-Version: 1.0
-To: suresh suresh <sureshtang@gmail.com>
-Subject: Re: Kmalloc returns which address
-References: <e5eb93010707160659m6a7d0b02p623542739d28ab29@mail.gmail.com>
-In-Reply-To: <e5eb93010707160659m6a7d0b02p623542739d28ab29@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Linuxppc-embedded Digest, Vol 35, Issue 33
+Date: Mon, 16 Jul 2007 08:58:46 -0700
+Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D78D7DE9@corpexc01.corp.networkrobots.com>
+In-Reply-To: <mailman.1061.1184600645.8639.linuxppc-embedded@ozlabs.org>
+References: <mailman.1061.1184600645.8639.linuxppc-embedded@ozlabs.org>
+From: "Siva Prasad" <sprasad@bivio.net>
+To: <linuxppc-embedded@ozlabs.org>
+Cc: sureshtang@gmail.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,17 +24,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-suresh suresh wrote:
-> I want know the address return by kmalloc function? is it physical address
-> or kernel virtual address.
 
-Kernel virtual.
 
-> For Tx and Rx, hardware uses buffers, so I have to allocate buffers and 
-> pass
-> the pointer to hardware. Can I pass the pointer returned kmalloc?  or  I
-> should convert it into physical address?
+It returns kernel virtual address. If you use this buffer space for DMA,
+please use appropriate flags. You may use __pa(address) or
+virt_to_phys() to convert virtual to physical.
 
-You need to convert it; read Documentation/DMA-mapping.txt.
+- Siva
 
--Scott
+
+-----Original Message-----
+
+
+Message: 3
+Date: Mon, 16 Jul 2007 19:29:59 +0530
+From: "suresh suresh" <sureshtang@gmail.com>
+Subject: Kmalloc returns which address
+To: linuxppc-embedded@ozlabs.org
+Message-ID:
+	<e5eb93010707160659m6a7d0b02p623542739d28ab29@mail.gmail.com>
+Content-Type: text/plain; charset=3D"iso-8859-1"
+
+Hi,
+
+I am porting MPC8280 driver from vxWorks to Linux.
+
+I want know the address return by kmalloc function? is it physical
+address
+or kernel virtual address.
+
+For Tx and Rx, hardware uses buffers, so I have to allocate buffers and
+pass
+the pointer to hardware. Can I pass the pointer returned kmalloc?  or  I
+should convert it into physical address?
+
+If it returns kernel virtual address, then how to convert into physical?
+
+Thanks & Regards-
+Suresh
+-------------- next part --------------
