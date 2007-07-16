@@ -1,22 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D3AF9DDDE9
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 08:08:00 +1000 (EST)
-Subject: Re: [PATCH] the wrong variable checked after request_irq()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Al Viro <viro@ftp.linux.org.uk>
-In-Reply-To: <20070715220216.GF21668@ftp.linux.org.uk>
-References: <E1IAAFp-00053g-Ti@ZenIV.linux.org.uk>
-	<1184535638.25235.15.camel@localhost.localdomain>
-	<20070715220216.GF21668@ftp.linux.org.uk>
-Content-Type: text/plain
-Date: Mon, 16 Jul 2007 08:07:49 +1000
-Message-Id: <1184537269.25235.28.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, torvalds@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id A9D9CDDF37
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 10:45:39 +1000 (EST)
+Date: Mon, 16 Jul 2007 10:45:39 +1000
+To: Matt Sealey <matt@genesi-usa.com>
+Subject: Re: Tickless Hz/hrtimers/etc. on PowerPC
+Message-ID: <20070716004539.GS10345@bakeyournoodle.com>
+References: <46951C1A.4080001@genesi-usa.com> <8302.1184178785@neuling.org>
+	<46955674.9090304@genesi-usa.com>
+	<20070712064115.GO10345@bakeyournoodle.com>
+	<4696197E.9010002@genesi-usa.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <4696197E.9010002@genesi-usa.com>
+From: tony@bakeyournoodle.com (Tony Breeds)
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Michael Neuling <mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,37 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2007-07-15 at 23:02 +0100, Al Viro wrote:
-> On Mon, Jul 16, 2007 at 07:40:38AM +1000, Benjamin Herrenschmidt wrote:
-> > On Sun, 2007-07-15 at 20:59 +0100, Al Viro wrote:
-> > > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> > 
-> > Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > 
-> > Out of curiosity, how did you pick it up ? You have some automated tool
-> > to catch that (or sparse changes) or you just did -lots- of code
-> > inspection ?
-> 
-> While testing sparse changes, actually (comparing pointers to null
-> pointer constant spelled without a cast to void *)...  That gave several
-> hundred hits, most of them being immediately obvious (picking the lines
-> by file and line number and looking through the list had eliminated all
-> but about a dozen or two).  Several were not...
+On Thu, Jul 12, 2007 at 01:07:26PM +0100, Matt Sealey wrote:
 
-Ok. In fact, it would have been nice if gcc had been able to pick it up
-for another reason. The old code is:
+Hi Matt,
+ 
+> What does "isn't quite right yet" mean? Broken, acts funny, or just
+> a messy patch?
 
-	if (cascade == NULL)
-		return;
+If you compile with CONFIG_NO_HZ=y, the kernel is broken.
 
-	cascade_irq = irq_of_parse_and_map(cascade, 0);
-	if (cascade == NO_IRQ) {
-		printk(KERN_ERR "mpic: failed to map cascade interrupt");
-		return;
-	}
+Yours Tony
 
-And NO_IRQ is 0 on powerpc nowadays. Thus the test can never be true :-)
-
-But it looks like gcc doesn't pick that up.
-
-Ben.
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
