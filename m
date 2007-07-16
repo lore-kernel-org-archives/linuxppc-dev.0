@@ -1,23 +1,21 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <vapier@gentoo.org>
+Received: from smtp.gentoo.org (smtp.gentoo.org [140.211.166.183])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D43CFDE0A5
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 02:47:28 +1000 (EST)
-In-Reply-To: <20070716071936.GK1678@pengutronix.de>
-References: <200707141831.04107.jbe@pengutronix.de>
-	<1184446133.6059.284.camel@localhost.localdomain>
-	<20070716065144.GH1678@pengutronix.de>
-	<1184569752.25235.46.camel@localhost.localdomain>
-	<20070716071936.GK1678@pengutronix.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <F04D3251-C890-4F64-867D-DCD706F2B91B@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: How to add platform specific data to a of_device
-Date: Mon, 16 Jul 2007 18:47:21 +0200
-To: Robert Schwebel <r.schwebel@pengutronix.de>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 4450DDE17A
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 02:51:01 +1000 (EST)
+From: Mike Frysinger <vapier@gentoo.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [patch] use __attribute__ in asm-powerpc
+Date: Mon, 16 Jul 2007 12:51:37 -0400
+References: <200707142336.10343.vapier@gentoo.org>
+	<Pine.LNX.4.62.0707161117150.1072@pademelon.sonytel.be>
+In-Reply-To: <Pine.LNX.4.62.0707161117150.1072@pademelon.sonytel.be>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1377632.05SH6qtCS7";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200707161251.40449.vapier@gentoo.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,52 +25,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Well, they aren't supposed to :-) The problem at this point is  
->> more due
->> to the fact that for things that haven't been specified by  
->> official OF
->> bindings, people are going all over trying to define their own and
->> sometimes conflicting bindings and then changing them.
+--nextPart1377632.05SH6qtCS7
+Content-Type: text/plain;
+  charset="iso-8859-6"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+On Monday 16 July 2007, Geert Uytterhoeven wrote:
+> On Sat, 14 Jul 2007, Mike Frysinger wrote:
+> > Pretty much everyone uses "__attribute__" or "attribute", no one
+> > uses "__attribute".  This patch tweaks the three places in asm-powerpc
+> > where this comes up.  While only asm-powerpc/types.h is interesting (for
+> > userspace), I did asm-powerpc/processor.h as well for consistency.
+> >
+> > Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> > ---
+> > diff --git a/include/asm-powerpc/processor.h
+> > b/include/asm-powerpc/processor.h index d947b16..2ce6ea6 100644
+> > --- a/include/asm-powerpc/processor.h
+> > +++ b/include/asm-powerpc/processor.h
+> > @@ -153,9 +153,9 @@ struct thread_struct {
+> >  	unsigned long	dabr;		/* Data address breakpoint register */
+> >  #ifdef CONFIG_ALTIVEC
+> >  	/* Complete AltiVec register set */
+> > -	vector128	vr[32] __attribute((aligned(16)));
+> > +	vector128	vr[32] __attribute__((aligned(16)));
 >
-> I think it is a fundamental thing: the "we just have to wait long
-> enough, until oftree definitions have settled" proposal just isn't
-> right.
+> If the code is not exported to userspace (and thus not subject to differe=
+nt
+> compilers), I think the preferred form is plain `attribute'.
 
-The big problem here is that lots of people got the _basic_
-stuff wrong.  I feel that this is getting much better the
-last few months though :-)
+i never said asm-powerpc/processor.h was exported to userspace ... i did sa=
+y=20
+that i changed the file to be consistent with all other files.
+=2Dmike
 
-> It may be right for big irons, being well defined.
+--nextPart1377632.05SH6qtCS7
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-OF is being successfully used on many many more systems
-than just "big iron"; and many of those do have really weird
-quirks.  arch/powerpc also deals with many systems that don't
-get their device trees quite right (*cough* powermac *cough*)
-and that is doable just fine.  The quirks should be separated
-more from the normal code though, in the Linux OF layer.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.5 (GNU/Linux)
 
-> But for the
-> embedded processors, too less people are working on it, plus we  
-> have too
-> much things which could be defined.
+iQIVAwUARpuiHEFjO5/oN/WBAQIDjA/+MvlW71LHzAfh+9uBhXWFQZt0NwUr+V+2
+4x//AQ56ZYdQS8Y2T0t7RmiES0DwUc7NyxaI5onGBZpp8mb7Vv/pGKejJuCN/IBD
+HtZwFvg+y74HwVegL9VE1x4axYv8vPZyBkq8mU6Sl6ATfIKiB4f0Noffn6TH+wUl
+Blf4Bx1meny4KORuzqxbVjn74KOHwqw9qO+GezQCHh84cz2YMttuUwKLCY9L76GV
+dytgoYGS8JOmOzFshLwNG0zOyYO3TcI4pYa4LpSvlpfpeLZSGDEx2XZ6nTSh0m+y
+QSMExx0wLT1uI0GxmVP0UiBd7blB8rypo3F5BeesbNB+olO6tJo4flXcHsDunVGd
+QRRXfbEDJavTdcsT6EhIAUzJz8cLSuAfBWUkxFDKtsHUDOn9gj54tjpLvpotiJBF
+wyk/1Ro0kOsqstbmmhh1nnY3UhuFtbEsXTWCJgCrFK7GuRylxLFG4mhQmD7VMcWH
+6AwCnXpQnWYQrA0Pxkh0F8WzdrnozBskc7HoH8u2p2UR6RlYL90plzSdSzwugawi
+Nhm6/UEz2VX4xBgUsQZyABIRpx+mNF85WmZkEuDV8YcrOzZaL6bnC7o8lh7rZOfa
+eyQyxpfI6D2eegsEuXyo332aXlyRdArAgcJitGGFptNp9LnuFmF7sNKXCL7Z1SmQ
+r7QVn8m6XBg=
+=CFNW
+-----END PGP SIGNATURE-----
 
-For embedded, too often the whole bloody thing is dropped
-onto the "bigger Linux community" after it has been developed
-in-house for many many months.  And usually, lots of core
-things are very wrong.  This is a problem with "embedded"
-in general, nothing new for OF.
-
-> Speaking of the MPC5200, look at how
-> often device tree names change, e.g. for mpc5200 vs. mpc52xx vs.
-> whatever. As long as things change, you have to keep the three  
-> locations
-> in sync manually, and that's bad.
-
-No, you *do not* have to keep them in synch, that's part of
-the beauty of the device tree definition.  Sure, you have to
-make sure the consumer is at least as new as the producer,
-unless people took pains to try to create wrong-way-around
-compatibility.  Nothing new there.
-
-
-Segher
+--nextPart1377632.05SH6qtCS7--
