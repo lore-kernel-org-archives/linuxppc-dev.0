@@ -1,34 +1,30 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 43C62DE077
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 00:59:21 +1000 (EST)
-Date: Mon, 16 Jul 2007 16:59:19 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
-In-Reply-To: <20070716143852.GW5195@kernel.dk>
-Message-ID: <Pine.LNX.4.62.0707161658510.1072@pademelon.sonytel.be>
-References: <20070704132212.726923000@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be>
-	<1184335333.3402.20.camel@localhost.localdomain>
-	<200707131619.54898.arnd@arndb.de>
-	<Pine.LNX.4.62.0707131707290.18802@pademelon.sonytel.be>
-	<1184340528.3402.32.camel@localhost.localdomain>
-	<Pine.LNX.4.62.0707132212520.23000@chinchilla.sonytel.be>
-	<Pine.LNX.4.62.0707161338230.1072@pademelon.sonytel.be>
-	<20070716121649.GI5195@kernel.dk>
-	<1184593643.3447.9.camel@localhost.localdomain>
-	<20070716143852.GW5195@kernel.dk>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-1210499770-1184597959=:1072"
-Cc: James Bottomley <James.Bottomley@SteelEye.com>,
-	Arnd Bergmann <arnd@arndb.de>, linux-scsi@vger.kernel.org,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Alessandro Rubini <rubini@vision.unipv.it>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 54F92DE0F8
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 01:00:56 +1000 (EST)
+In-Reply-To: <3F1CA06C-23E3-44EC-8A6E-E16BF690F664@kernel.crashing.org>
+References: <1184082728.20129.187.camel@localhost.localdomain>
+	<963D5B48-F1E5-4930-9F29-98D7F0E33C0A@kernel.crashing.org>
+	<1184121840.22066.24.camel@localhost.localdomain>
+	<0E17851B-A642-43E2-9A5D-39DFC6F30E77@kernel.crashing.org>
+	<7431AAFD-73B7-4337-94CB-878285D298E3@kernel.crashing.org>
+	<1184228873.27622.11.camel@localhost.localdomain>
+	<2EA16557-7960-4A1A-9D07-BDA3D8843460@kernel.crashing.org>
+	<1184240183.28074.113.camel@localhost.localdomain>
+	<68D5EA7E-30DF-4856-8526-BABEFE230C05@kernel.crashing.org>
+	<3F1CA06C-23E3-44EC-8A6E-E16BF690F664@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A76ECE36-4B72-4522-8EB0-A57359D0F938@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [patch 3/6] Add 8548 CDS PCI express controller node and PCI-X
+	device node
+Date: Mon, 16 Jul 2007 17:00:45 +0200
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,61 +34,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+>>>> is this the only fix, I've already applied a version of this to my
+>>>> tree (with the irq sense fix) and just want to make sure there  
+>>>> isn't
+>>>> anything else.
+>>> I do not get more.
+>>> I'd like to enroll Segher's suggestion together with VIA chip  
+>>> function
+>>> in next step.
+>>> We need to make basic pcie work on 8548 CDS board first.
+>>
+>> If you can, please make the "compatible" properties correct
+>> ("pcie" instead of "pciex") before the patch goes in; it'll
+>> be less work total and less confusing in the end.
+>
+> I've taken care of that as well.
+>
+> They are now 'fsl,mpc8548-pcie, and 'fsl,mpc8641-pcie'
 
----584337861-1210499770-1184597959=:1072
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Perfect, thanks!
 
-On Mon, 16 Jul 2007, Jens Axboe wrote:
-> On Mon, Jul 16 2007, James Bottomley wrote:
-> > On Mon, 2007-07-16 at 14:16 +0200, Jens Axboe wrote:
-> > > On Mon, Jul 16 2007, Geert Uytterhoeven wrote:
-> > > > On Fri, 13 Jul 2007, Geert Uytterhoeven wrote:
-> > > > > Ah, that explains it. flush_dcache_page() is used in some drivers.
-> > > > > I'll update my patches. Thanks for the comments!
-> > > > 
-> > > > Does this look OK?
-> > > >   - Replaced KM_USER0 by KM_IRQ0 (all routines are either called from an
-> > > >     interrupt handler, from .request_fn (ps3disk), or from .queuecommand
-> > > >     (ps3rom))
-> > > 
-> > > That looks good.
-> > > 
-> > > >   - Add a call to flush_kernel_dcache_page() in routines that write to buffers
-> > > 
-> > > Hmm, I would have thought a flush_dcache_page() would be more
-> > > appropriate, the backing could be page cache pages.
-> > 
-> > No ... that was the point of flush_kernel_dcache_page().  The page in
-> > question is page cache backed and contains user mappings.  However, the
-> > block layer has already done a flush_dcache_page() in get_user_pages()
-> > and the user shouldn't be touching memory under I/O (unless they want
-> > self induced aliasing problems) so we're free to assume all the user
-> > cachelines are purged, hence all we have to do is flush the kernel alias
-> > to bring the page up to date and make the users see it correctly.
-> 
-> Oh indeed, I missed the flush_dcache_page() in get_user_pages().
 
-Good, thanks for reaching a consensus, so I can update my patch series.
-
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1210499770-1184597959=:1072--
+Segher
