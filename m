@@ -1,36 +1,20 @@
-Return-Path: <stuart.yoder@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A188CDDF1A
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 07:55:23 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l6GLtIJT008329
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 14:55:18 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l6GLtINK025231
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 16:55:18 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [RFC][PATCH 6/8] Walnut DTS
-Date: Mon, 16 Jul 2007 14:55:21 -0700
-Message-ID: <9696D7A991D0824DBA8DFAC74A9C5FA303067256@az33exm25.fsl.freescale.net>
-In-Reply-To: <1184622446.25235.89.camel@localhost.localdomain>
-References: <1184161957.32199.52.camel@weaponx.rchland.ibm.com>
-	<1184162389.32199.65.camel@weaponx.rchland.ibm.com>
-	<4EAC985A-2F04-465D-AB69-C67807310D7B@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA3030669AF@az33exm25.fsl.freescale.net>
-	<28A3F6B9-512B-4D86-8E0D-A7680CCE2354@kernel.crashing.org>
-	<1184622446.25235.89.camel@localhost.localdomain>
-From: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-	"Segher Boessenkool" <segher@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 2C898DDE41
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 07:55:28 +1000 (EST)
+Date: Mon, 16 Jul 2007 14:55:30 -0700 (PDT)
+Message-Id: <20070716.145530.51840998.davem@davemloft.net>
+To: linas@austin.ibm.com
+Subject: Re: [PATCH] crash in 2.6.22-git2 sysctl_set_parent()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070716172535.GB5771@austin.ibm.com>
+References: <20070713200515.GS5549@austin.ibm.com>
+	<20070713.154702.17863636.davem@davemloft.net>
+	<20070716172535.GB5771@austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, ebiederm@xmission.com,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,25 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+From: linas@austin.ibm.com (Linas Vepstas)
+Date: Mon, 16 Jul 2007 12:25:35 -0500
 
-[snip]
-> There is no child device node, but there are child interrupt=20
-> nodes, and
-> since the interrupt-tree uses #address/size-cells, it does make some
-> sense to specify them.
->=20
-> Yes, there is a default value when absent, but the simple=20
-> fact that the
-> default is different depending if you are doing a device walk or an
-> interrupt tree walk is very confusing. As I said above, the default
-> values are a source of more problem than anything else and I tend to
-> think they should be banned.
->=20
-> I would personally be inclined to define that whatever spec we come up
-> with always require #address-cells/#size-cells for any node that can
-> have either device children or interrupt children, and ban default
-> values alltogether.
+> On Fri, Jul 13, 2007 at 03:47:02PM -0700, David Miller wrote:
+> > From: linas@austin.ibm.com (Linas Vepstas)
+> > Date: Fri, 13 Jul 2007 15:05:15 -0500
+> > 
+> > > 
+> > > This is a patch (& bug report) for a crash in sysctl_set_parent() 
+> > > in 2.6.22-git2. 
+> > > 
+> > > Problem: 2.6.22-git2 crashes with a stack trace 
+> > > 
+> > > Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+> > 
+> > Thanks for tracking this down, I'll apply your patch.
+> 
+> NAK. As I just explained in another email, this bug
+> was introduced by the "send-to-self" patch I habitually
+> apply -- so habitually, that I forgot I was not working 
+> with a "clean" tree. So it goes ... 
 
-Did you really mean #size-cells here?  Shouldn't it be #interrupt-cells?
-
-Stuart
+I saw all of this, thanks.
