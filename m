@@ -1,25 +1,32 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6FD02DDE1C
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 08:00:09 +1000 (EST)
-Message-ID: <469BEA5F.5050508@garzik.org>
-Date: Mon, 16 Jul 2007 17:59:59 -0400
-From: Jeff Garzik <jeff@garzik.org>
-MIME-Version: 1.0
-To: Thomas Klein <osstklei@de.ibm.com>
-Subject: Re: [PATCH 1/1] eHEA: Introducing support vor DLPAR memory add
-References: <200707111632.00235.osstklei@de.ibm.com>
-In-Reply-To: <200707111632.00235.osstklei@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
-	linux-ppc <linuxppc-dev@ozlabs.org>,
-	Jan-Bernd Themann <ossthema@de.ibm.com>, Marcus Eder <meder@de.ibm.com>
+Return-Path: <James.Bottomley@SteelEye.com>
+Received: from hancock.sc.steeleye.com (hancock.steeleye.com [71.30.118.248])
+	by ozlabs.org (Postfix) with ESMTP id 16981DDE24
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 08:03:37 +1000 (EST)
+Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1184622555.25235.91.camel@localhost.localdomain>
+References: <20070704132212.726923000@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be>
+	<1184335333.3402.20.camel@localhost.localdomain>
+	<200707131619.54898.arnd@arndb.de>
+	<Pine.LNX.4.62.0707131707290.18802@pademelon.sonytel.be>
+	<1184340528.3402.32.camel@localhost.localdomain>
+	<Pine.LNX.4.62.0707132212520.23000@chinchilla.sonytel.be>
+	<Pine.LNX.4.62.0707161338230.1072@pademelon.sonytel.be>
+	<20070716121649.GI5195@kernel.dk>
+	<1184593643.3447.9.camel@localhost.localdomain>
+	<1184622555.25235.91.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 16 Jul 2007 17:03:34 -0500
+Message-Id: <1184623415.3447.48.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-scsi@vger.kernel.org,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Alessandro Rubini <rubini@vision.unipv.it>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>, Jens Axboe <jens.axboe@oracle.com>,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,22 +36,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thomas Klein wrote:
-> This patch adds support for DLPAR memory add to the eHEA driver. To detect
-> whether memory was added the driver uses its own memory mapping table and
-> checks for kernel addresses whether they're located in already known memory
-> sections. If not the function ehea_rereg_mrs() is triggered which performs
-> a rebuild of the mapping table and a re-registration of the global memory
-> region.
+On Tue, 2007-07-17 at 07:49 +1000, Benjamin Herrenschmidt wrote:
+> > No ... that was the point of flush_kernel_dcache_page().  The page in
+> > question is page cache backed and contains user mappings.  However, the
+> > block layer has already done a flush_dcache_page() in get_user_pages()
+> > and the user shouldn't be touching memory under I/O (unless they want
+> > self induced aliasing problems) so we're free to assume all the user
+> > cachelines are purged, hence all we have to do is flush the kernel alias
+> > to bring the page up to date and make the users see it correctly.
 > 
-> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
-> ---
-> 
->  drivers/net/ehea/ehea.h      |   23 +++++--
->  drivers/net/ehea/ehea_main.c |  144 +++++++++++++++++++++++++++++++++++----
->  drivers/net/ehea/ehea_phyp.h |    3 +
->  drivers/net/ehea/ehea_qmr.c  |  156 ++++++++++++++++++++++++++++++------------
->  drivers/net/ehea/ehea_qmr.h  |   14 +++-
->  5 files changed, 275 insertions(+), 65 deletions(-)
+> The block layer will have done that even in the swap-out path ? (Just
+> asking... I'm not very familiar with the block layer)
 
-applied
+Er ... not really, this is the I/O path for user initiated I/O.  The
+page out path, by definition, can't have any extant user mappings.  For
+page out, the relevant page is flushed before its mapping is detached,
+and then it can be paged to the backing store (or for anonymous pages to
+the swap device) when no mappings remain.
+
+James
