@@ -1,32 +1,25 @@
-Return-Path: <James.Bottomley@SteelEye.com>
-Received: from hancock.sc.steeleye.com (hancock.steeleye.com [71.30.118.248])
-	by ozlabs.org (Postfix) with ESMTP id 16981DDE24
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 08:03:37 +1000 (EST)
-Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1184622555.25235.91.camel@localhost.localdomain>
-References: <20070704132212.726923000@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be>
-	<1184335333.3402.20.camel@localhost.localdomain>
-	<200707131619.54898.arnd@arndb.de>
-	<Pine.LNX.4.62.0707131707290.18802@pademelon.sonytel.be>
-	<1184340528.3402.32.camel@localhost.localdomain>
-	<Pine.LNX.4.62.0707132212520.23000@chinchilla.sonytel.be>
-	<Pine.LNX.4.62.0707161338230.1072@pademelon.sonytel.be>
-	<20070716121649.GI5195@kernel.dk>
-	<1184593643.3447.9.camel@localhost.localdomain>
-	<1184622555.25235.91.camel@localhost.localdomain>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0A862DDE04
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 08:11:56 +1000 (EST)
+Subject: Re: [RFC][PATCH 6/8] Walnut DTS
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <469BE93E.1070702@freescale.com>
+References: <1184161957.32199.52.camel@weaponx.rchland.ibm.com>
+	<1184162389.32199.65.camel@weaponx.rchland.ibm.com>
+	<4EAC985A-2F04-465D-AB69-C67807310D7B@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA3030669AF@az33exm25.fsl.freescale.net>
+	<28A3F6B9-512B-4D86-8E0D-A7680CCE2354@kernel.crashing.org>
+	<1184622446.25235.89.camel@localhost.localdomain>
+	<469BE93E.1070702@freescale.com>
 Content-Type: text/plain
-Date: Mon, 16 Jul 2007 17:03:34 -0500
-Message-Id: <1184623415.3447.48.camel@localhost.localdomain>
+Date: Tue, 17 Jul 2007 08:11:38 +1000
+Message-Id: <1184623898.25235.96.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-scsi@vger.kernel.org,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Alessandro Rubini <rubini@vision.unipv.it>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, Jens Axboe <jens.axboe@oracle.com>,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: linuxppc-dev@ozlabs.org, Yoder Stuart-B08248 <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,22 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-07-17 at 07:49 +1000, Benjamin Herrenschmidt wrote:
-> > No ... that was the point of flush_kernel_dcache_page().  The page in
-> > question is page cache backed and contains user mappings.  However, the
-> > block layer has already done a flush_dcache_page() in get_user_pages()
-> > and the user shouldn't be touching memory under I/O (unless they want
-> > self induced aliasing problems) so we're free to assume all the user
-> > cachelines are purged, hence all we have to do is flush the kernel alias
-> > to bring the page up to date and make the users see it correctly.
+On Mon, 2007-07-16 at 16:55 -0500, Scott Wood wrote:
+> Benjamin Herrenschmidt wrote:
+> > I would personally be inclined to define that whatever spec we come up
+> > with always require #address-cells/#size-cells for any node that can
+> > have either device children or interrupt children, and ban default
+> > values alltogether.
 > 
-> The block layer will have done that even in the swap-out path ? (Just
-> asking... I'm not very familiar with the block layer)
+> When is #size-cells used in the interrupt tree at all?
 
-Er ... not really, this is the I/O path for user initiated I/O.  The
-page out path, by definition, can't have any extant user mappings.  For
-page out, the relevant page is flushed before its mapping is detached,
-and then it can be paged to the backing store (or for anonymous pages to
-the swap device) when no mappings remain.
+It's not, sorry, my fingers typed a bit too fast :-)
 
-James
+> And given the odd behavior of using an interrupt map in an interrupt 
+> parent that is not the device parent (you're potentially using keys from 
+> different domains that could clash, be a different sizes, etc), if we 
+> make any changes in that regard, I'd forbid interrupt maps in interrupt 
+> controllers with no device children, and thus #address-cells has no 
+> meaning there.
+
+No, interrupt maps are useful in devices with no children in some corner
+cases. Remember that a map doesnt need to use the address part of the
+source specifier, thus it can be used to do a pure domain->domain
+conversion of the irq numbers, what sort of thing. The map has the added
+advantage that today, it's the only mechanism that allows you to specify
+different interrupt-parents through the same nexus, which is useful for
+4xx.
+
+Ben.
