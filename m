@@ -1,32 +1,17 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7A6CCDDF4C
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 03:22:42 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6GHMbuw017645
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 13:22:37 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l6GHMbrA352418
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 13:22:37 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6GHMbcn013560
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 13:22:37 -0400
-Date: Mon, 16 Jul 2007 12:22:36 -0500
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] crash in 2.6.22-git2 sysctl_set_parent()
-Message-ID: <20070716172236.GA5771@austin.ibm.com>
-References: <20070713200515.GS5549@austin.ibm.com>
-	<m13azreqtr.fsf@ebiederm.dsl.xmission.com>
+Return-Path: <Alexandre.Bounine@tundra.com>
+Received: from mx2.tundra.com (mail2.tundra.com [142.46.200.162])
+	by ozlabs.org (Postfix) with ESMTP id 420C0DE181
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 03:24:36 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <m13azreqtr.fsf@ebiederm.dsl.xmission.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	netdev@vger.kernel.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] Fix Tsi108 ethernet driver performance
+Date: Mon, 16 Jul 2007 13:25:27 -0400
+Message-ID: <1B5F013528140F45B5C671039279CA5701F834AD@NANUK.pc.tundra.com>
+In-Reply-To: <4697E160.9000009@freescale.com>
+From: "Alexandre Bounine" <Alexandre.Bounine@tundra.com>
+To: "Scott Wood" <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,45 +21,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 13, 2007 at 07:06:56PM -0600, Eric W. Biederman wrote:
-> >  			.data		= &ipv4_devconf.loop,
-> >  			.maxlen		= sizeof(int),
-> >  			.mode		= 0644,
-> > +			.child	= 0x0,
-> >  			.proc_handler	= &proc_dointvec,
-> >  		},
-> Where did this entry above in devinet_sysctl come from?
+I agree that 20 ms is not the best option. But, as you mentioned as
+well, shorter period may bring more wasted CPU cycles.
+Using this approach to interrupt moderation I see performance
+improvement using frame flow that generates about one interrupt per
+frame. Below are CPU usage numbers reported by top for the current and
+patched versions of the Tsi108_eth driver.=20=20=20=20=20=20=20
 
-My bad.
-I habitually apply the "send-to-self" patch, since some of the 
-network testing that I do is easiest if I load up the all of the 
-adapters in the same box. (If you're not familiar with this patch ... 
-its great, and I wish it was integratedd into mainline. It allows
-one to drive network traffic through the physical devices, even
-if they are in the same box.  Without it, the network stack is
-too clever, and won't allow you to do this.)
+Current version:
+Cpu(s):  0.0% us, 0.3% sy, 0.0% ni, 14.6% id, 0.0% wa, 14.6% hi, 70.4%
+si
 
-> > +		{
-> > +			.ctl_name	= 0,
-> > +			.procname	= 0,
-> > +		},
-> I probably would have just done:
-> +		{},
+Patched version:
+Cpu(s):  0.0% us, 0.0% sy, 0.0% ni, 35.2% id, 1.2% wa, 2.4% hi, 61.2% si
 
-Yes, in retrospect, this would have been the simplest solution.
+- Alex.
 
-> What added the additional entry to devinet_root_dir?  I don't see that
-> in Linus' tree?
-> 
-> The result may be fine but if it isn't named in a per network device
-> manner we are adding duplicate entries to the root /proc/sys directory
-> which is wrong.
-> 
-> Actually come to think of it I am concerned that someone added a
-> settable entry into /proc/sys/ it should at least be in /proc/sys/net/
-> where it won't conflict with other uses of that directory.  Especially
-> as things like network devices have user controlled names.
 
-Sigh. Silly me. Haste makes waste.
+-----Original Message-----
+From: Scott Wood [mailto:scottwood@freescale.com]=20
+Sent: Friday, July 13, 2007 4:33 PM
+To: Scott Wood
+Cc: Alexandre Bounine; linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Fix Tsi108 ethernet driver performance
 
---linas
+Scott Wood wrote:
+> Wouldn't this cause latencies of up to a second in responding to=20
+> received packets?  I'd think that would be considered excessive.
+>=20
+> And shouldn't NAPI be reducing the RX interrupt load anyway?
+
+Sorry, I missed that you reduced the interval to 20 ms.  Still, a bit on
+
+the high side, and a source of wasted CPU cycles when the network isn't=20
+heavily loaded.  How much of a difference in CPU usage did you see with=20
+this patch?
+
+-Scott
+
+---=0D
+=0D
+Important Notice: This message is intended for the use of the individual to=
+ whom it is addressed and may contain information which is privileged, conf=
+idential and/or exempt from disclosure under applicable law. If the reader =
+of this message is not the intended recipient, or is not the employee or ag=
+ent responsible for delivering the message to the intended recipient, you a=
+re hereby notified that any dissemination, distribution, or copying of this=
+ communication is strictly prohibited. If you have received this communicat=
+ion in error, please notify the sender immediately by telephone or return e=
+-mail and delete the original message from your systems. Thank you. =0D
