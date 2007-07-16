@@ -1,32 +1,19 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 279C3DE14F
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 22:59:17 +1000 (EST)
-Date: Mon, 16 Jul 2007 14:59:14 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
-In-Reply-To: <20070716121649.GI5195@kernel.dk>
-Message-ID: <Pine.LNX.4.62.0707161459010.1072@pademelon.sonytel.be>
-References: <20070704132212.726923000@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be>
-	<1184335333.3402.20.camel@localhost.localdomain>
-	<200707131619.54898.arnd@arndb.de>
-	<Pine.LNX.4.62.0707131707290.18802@pademelon.sonytel.be>
-	<1184340528.3402.32.camel@localhost.localdomain>
-	<Pine.LNX.4.62.0707132212520.23000@chinchilla.sonytel.be>
-	<Pine.LNX.4.62.0707161338230.1072@pademelon.sonytel.be>
-	<20070716121649.GI5195@kernel.dk>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-1083484419-1184590754=:1072"
-Cc: James Bottomley <James.Bottomley@SteelEye.com>,
-	Arnd Bergmann <arnd@arndb.de>, linux-scsi@vger.kernel.org,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Alessandro Rubini <rubini@vision.unipv.it>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: possible dead CONFIG-related content under arch/powerpc
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <Pine.LNX.4.62.0707161116280.1072@pademelon.sonytel.be>
+References: <Pine.LNX.4.64.0707141816470.9751@localhost.localdomain>
+	<Pine.LNX.4.62.0707161116280.1072@pademelon.sonytel.be>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-ZuLm5th3bD8Cg/2/cBPm"
+Date: Mon, 16 Jul 2007 23:05:14 +1000
+Message-Id: <1184591114.17330.1.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: Linux PPC Mailing List <linuxppc-dev@ozlabs.org>,
+	"Robert P. J. Day" <rpjday@mindspring.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,49 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----584337861-1083484419-1184590754=:1072
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+--=-ZuLm5th3bD8Cg/2/cBPm
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, 16 Jul 2007, Jens Axboe wrote:
-> On Mon, Jul 16 2007, Geert Uytterhoeven wrote:
-> > On Fri, 13 Jul 2007, Geert Uytterhoeven wrote:
-> > > Ah, that explains it. flush_dcache_page() is used in some drivers.
-> > > I'll update my patches. Thanks for the comments!
-> > 
-> > Does this look OK?
-> >   - Replaced KM_USER0 by KM_IRQ0 (all routines are either called from an
-> >     interrupt handler, from .request_fn (ps3disk), or from .queuecommand
-> >     (ps3rom))
-> 
-> That looks good.
-> 
-> >   - Add a call to flush_kernel_dcache_page() in routines that write to buffers
-> 
-> Hmm, I would have thought a flush_dcache_page() would be more
-> appropriate, the backing could be page cache pages.
+On Mon, 2007-07-16 at 11:16 +0200, Geert Uytterhoeven wrote:
+> On Sat, 14 Jul 2007, Robert P. J. Day wrote:
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D SPE_BASE =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > arch/powerpc/mm/hash_utils_64.c:612:#ifdef CONFIG_SPE_BASE
+> > arch/powerpc/mm/hash_utils_64.c:747:#ifdef CONFIG_SPE_BASE
+>=20
+> Interesting, should this one be CONFIG_SPU_BASE?
 
-OK, I'll change it to flush_dcache_page().
+Yes, ouch.
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
+cheers
 
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1083484419-1184590754=:1072--
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-ZuLm5th3bD8Cg/2/cBPm
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGm20KdSjSd0sB4dIRAlP/AJ9t1IMOcGsQ9UovpK56vByQ4uT1pwCgs3Mx
+LIn3U8DxD+c+aEFluAJK4Fs=
+=MEXu
+-----END PGP SIGNATURE-----
+
+--=-ZuLm5th3bD8Cg/2/cBPm--
