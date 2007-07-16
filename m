@@ -1,22 +1,22 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-5.cisco.com (sj-iport-5.cisco.com [171.68.10.87])
-	by ozlabs.org (Postfix) with ESMTP id 9CAB7DE1A6
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 02:04:29 +1000 (EST)
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Subject: Re: [PATCH 01/10] IB/ehca: Support for multiple event queues
-References: <200707121745.27592.fenkes@de.ibm.com>
-	<200707121746.36763.fenkes@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 16 Jul 2007 09:04:26 -0700
-In-Reply-To: <200707121746.36763.fenkes@de.ibm.com> (Joachim Fenkes's message
-	of "Thu, 12 Jul 2007 17:46:35 +0200")
-Message-ID: <adalkdgz65x.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: LKML <linux-kernel@vger.kernel.org>, LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	OF-General <general@lists.openfabrics.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id EB233DE282
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 02:13:28 +1000 (EST)
+In-Reply-To: <1184489825.25235.4.camel@localhost.localdomain>
+References: <200707141831.04107.jbe@pengutronix.de>
+	<1184446133.6059.284.camel@localhost.localdomain>
+	<200707151033.29894.jbe@pengutronix.de>
+	<1184489825.25235.4.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <C0B73685-B09C-4D6F-8438-0875DDB528C0@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: How to add platform specific data to a of_device
+Date: Mon, 16 Jul 2007 18:13:21 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,26 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > The eHCA driver can now handle multiple event queues (read: interrupt
- > sources) instead of one. The number of available EQs is selected via the
- > nr_eqs module parameter.
+>> Hmm, as I stated above: Handling the SPI slave devices is done in  
+>> the SPI
+>> framework. But including this data into the dts sounds better than  
+>> including
+>> it into the BSP. Is there some documentation around how to  
+>> describe such a
+>> SPI bus with its devices in the dts?
+>
+> I don't think so, I doubt there's an SPI OF binding.
 
- > CQs are either assigned to the EQs based on the comp_vector index or, if the
- > dist_eqs module parameter is supplied, using a round-robin scheme.
+That's correct.
 
-Do you have any data on how well this round-robin assignment works?
-It seems not quite right to me for the driver to advertise nr_eqs
-completion vectors, but then if round-robin is turned on to ignore the
-consumer's decision about which vector to use.
 
-Maybe if round-robin is turned on you should report 0 as the number of
-completion vectors?  Or maybe we should allow well-known values for
-the completion vector passed to ib_create_cq to allow consumers to
-specify a policy (like round robin) instead of a particular vector?
-Maybe the whole interface is broken and we should only be exposing
-policies to consumers instead of the specific vector?
-
-I think I would rather hold off on multiple EQs for this merge window
-and plan on having something really solid and thought-out for 2.6.24.
-
- - R.
+Segher
