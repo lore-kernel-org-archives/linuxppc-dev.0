@@ -1,32 +1,18 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 290C4DE170
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 23:24:48 +1000 (EST)
-Date: Mon, 16 Jul 2007 15:24:46 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
-In-Reply-To: <Pine.LNX.4.62.0707161459010.1072@pademelon.sonytel.be>
-Message-ID: <Pine.LNX.4.62.0707161515460.1072@pademelon.sonytel.be>
-References: <20070704132212.726923000@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be>
-	<1184335333.3402.20.camel@localhost.localdomain>
-	<200707131619.54898.arnd@arndb.de>
-	<Pine.LNX.4.62.0707131707290.18802@pademelon.sonytel.be>
-	<1184340528.3402.32.camel@localhost.localdomain>
-	<Pine.LNX.4.62.0707132212520.23000@chinchilla.sonytel.be>
-	<Pine.LNX.4.62.0707161338230.1072@pademelon.sonytel.be>
-	<20070716121649.GI5195@kernel.dk>
-	<Pine.LNX.4.62.0707161459010.1072@pademelon.sonytel.be>
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 2350CDE1A7
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 23:29:04 +1000 (EST)
+Content-Type: text/plain; charset="us-ascii"
+Date: Mon, 16 Jul 2007 15:29:02 +0200
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+In-Reply-To: <D0634B84-BD83-460E-AEC2-E8BB2837B237@kernel.crashing.org>
+Message-ID: <20070716132902.118450@gmx.net>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-486052342-1184592286=:1072"
-Cc: James Bottomley <James.Bottomley@SteelEye.com>,
-	Arnd Bergmann <arnd@arndb.de>, linux-scsi@vger.kernel.org,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Alessandro Rubini <rubini@vision.unipv.it>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+References: <20070716075317.15260@gmx.net>
+	<D0634B84-BD83-460E-AEC2-E8BB2837B237@kernel.crashing.org>
+Subject: Re: Legacy ISA registers/interrupts in PCI device tree node
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,57 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----584337861-486052342-1184592286=:1072
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+-------- Original-Nachricht --------
+Datum: Mon, 16 Jul 2007 14:40:48 +0200
+Von: Segher Boessenkool <segher@kernel.crashing.org>
+An: Gerhard Pircher <gerhard_pircher@gmx.net>
+CC: linuxppc-dev@ozlabs.org
+Betreff: Re: Legacy ISA registers/interrupts in PCI device tree node
 
-On Mon, 16 Jul 2007, Geert Uytterhoeven wrote:
-> On Mon, 16 Jul 2007, Jens Axboe wrote:
-> > On Mon, Jul 16 2007, Geert Uytterhoeven wrote:
-> > > On Fri, 13 Jul 2007, Geert Uytterhoeven wrote:
-> > > > Ah, that explains it. flush_dcache_page() is used in some drivers.
-> > > > I'll update my patches. Thanks for the comments!
-> > > 
-> > > Does this look OK?
-> > >   - Replaced KM_USER0 by KM_IRQ0 (all routines are either called from an
-> > >     interrupt handler, from .request_fn (ps3disk), or from .queuecommand
-> > >     (ps3rom))
-> > 
-> > That looks good.
-> > 
-> > >   - Add a call to flush_kernel_dcache_page() in routines that write to buffers
-> > 
-> > Hmm, I would have thought a flush_dcache_page() would be more
-> > appropriate, the backing could be page cache pages.
+> > I wonder, if there is a recommended way to specify ISA register  
+> > addresses and interrupts for a PCI device (unlike for a PCI2ISA
+> > bridge)?
 > 
-> OK, I'll change it to flush_dcache_page().
+> The PCI binding describes the required way to do this.
+Hmm, I must reread the PCI binding spec. It didn't seem to contain any
+information about this.
 
-Upon closer look, while flush_kernel_dcache_page() is a no-op on ppc64,
-flush_dcache_page() isn't. So I'd prefer to not call it if not really needed.
+> Yes, it should, even if you don't use this in the Linux
+> kernel yet.
+Well, I still have to wire up the IDE interrupts in the platform setup
+code, right?
 
-And according to James, flush_kernel_dcache_page() should be sufficient...
-
-So I'm getting puzzled again...
-
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-486052342-1184592286=:1072--
+Gerhard
+-- 
+Ist Ihr Browser Vista-kompatibel? Jetzt die neuesten 
+Browser-Versionen downloaden: http://www.gmx.net/de/go/browser
