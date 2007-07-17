@@ -1,23 +1,21 @@
 Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <B07FAF3D-A8F4-45F5-8EEF-4506F4A31DF2@kernel.crashing.org>
-References: <20070709195743.GA26089@ld0162-tx32.am.freescale.net>
-	<200707092225.25287.arnd@arndb.de> <4692A5B8.9010702@freescale.com>
-	<8CA741AA-D200-474F-943D-ECE4B3ACD38B@kernel.crashing.org>
-	<18068.5706.700933.551828@cargo.ozlabs.ibm.com>
-	<89E626D4-D48D-4062-A996-E2DFFE8248E3@kernel.crashing.org>
-	<20070717024246.GA6482@localhost.localdomain>
-	<4CB813ED-9D8B-4A32-B4AC-65D27741D46C@kernel.crashing.org>
-	<B07FAF3D-A8F4-45F5-8EEF-4506F4A31DF2@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 374A2DDE07
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 02:39:40 +1000 (EST)
+In-Reply-To: <1184689617.15570.1.camel@weaponx.rchland.ibm.com>
+References: <E1IAnwC-0003Xm-6U@jdl.com>
+	<630B6BC9-389F-4F5C-AE8F-9C3131C4543E@kernel.crashing.org>
+	<1184689617.15570.1.camel@weaponx.rchland.ibm.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <C7583A0A-6F59-4DE5-B9A2-A60730CABFEC@kernel.crashing.org>
+Message-Id: <09A6A42B-8BFA-4AF1-BAC9-8EDA0EC60F40@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] Allow exec on 32-bit from readable, non-exec pages,
-	with a warning.
-Date: Tue, 17 Jul 2007 18:37:15 +0200
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Arnd Bergmann <arnd@arndb.de>, David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH] Add StorCenter DTS first draft.
+Date: Tue, 17 Jul 2007 18:38:40 +0200
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,17 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> Way back when, I distinctly recall aborting my plans to implement
->>> per-page exec on 40x, precisely because of executables like this.
+>>> +	flash@ff800000 {
+>>> +		device_type = "rom";
 >>
->> I noticed some comments to that effect in the BookE code,
->> yes.  It seems userland has been fixed enough that you
->> could think about enabling it again FWIW.
+>> I'm sure you know I find this "rom" binding to be crap.
+>> However, I didn't yet write up the "cfi" binding, so I
+>> can't complain ;-)
 >
-> Did I miss the posting of the patch with the fix?
+> Not all chips are CFI compliant.
 
-glibc-2.2 seems to be the last "bad" one.  We are at
-glibc-2.6 or so nowadays...
+I know :-)
+
+> Be sure to write up the "jedec"
+
+It's in the pipeline, it's quite a bit more complicated
+than CFI though.
+
+> and "nand" bindings while you're at it ;)
+
+NAND is pure hell :-(
 
 
 Segher
