@@ -1,24 +1,24 @@
-Return-Path: <becky.bruce@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A55F7DDE30
+Return-Path: <sureshtang@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
+	by ozlabs.org (Postfix) with ESMTP id 28C88DDE2A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 Jul 2007 06:45:34 +1000 (EST)
-In-Reply-To: <11629480.post@talk.nabble.com>
-References: <11574529.post@talk.nabble.com> <11588451.post@talk.nabble.com>
-	<0C6B2DC2-7621-4798-B3F7-7F1962A1D1A9@freescale.com>
-	<11629480.post@talk.nabble.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <F81B60DC-AC55-401C-812D-824C77BDD502@freescale.com>
-From: Becky Bruce <becky.bruce@freescale.com>
-Subject: Re: boottime kernel relocation, what I missed?
-Date: Mon, 16 Jul 2007 15:51:31 -0500
-To: meerkat <yiming@windriver.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Tue, 17 Jul 2007 15:59:05 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k40so92900ugc
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 16 Jul 2007 22:59:04 -0700 (PDT)
+Message-ID: <e5eb93010707162259l2e78c524s32ff260b3d930bdb@mail.gmail.com>
+Date: Tue, 17 Jul 2007 11:29:04 +0530
+From: "suresh suresh" <sureshtang@gmail.com>
+To: "Scott Wood" <scottwood@freescale.com>
+Subject: Re: Linuxppc-embedded Digest, Vol 35, Issue 33
+In-Reply-To: <469B9825.6070507@freescale.com>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_47579_26217569.1184651944374"
+References: <mailman.1061.1184600645.8639.linuxppc-embedded@ozlabs.org>
+	<D83235F0F3C86D4D889D8B9A0DA8C6D78D7DE9@corpexc01.corp.networkrobots.com>
+	<469B9825.6070507@freescale.com>
+Cc: linuxppc-embedded@ozlabs.org, Siva Prasad <sprasad@bivio.net>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,91 +29,64 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+------=_Part_47579_26217569.1184651944374
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Jul 16, 2007, at 2:36 PM, meerkat wrote:
+Thanks....
 
-> So are you saying linker does all the relative reference, that the  
-> bl  foo
-> is always relative even though the foo is defined in a different  
-> module? (In
-> my case, bl call is made in head.S, early_init() is defined in  
-> another file
-> setup.c).
+MPC8280 has internal memory space which contains Dualport(Dp) RAM. In the
+DpRAM we allocate some tables and these has to store pointer of the buffers
+which are allocated in external memory. Core will use this pointer to access
+the buffers, basically these buffers are used for DMA.
 
-If you see "bl foo", it's relative.  It has to be, because that's how  
-the instruction works.   Also, it's not really in a different module,  
-it's just a different file, but it's all linked into a single  
-executable image.
+Using IMMR register we can get physical address of the internal memory. Now
+can I store the address return by the kmalloc() function? or I should
+convert it into physical?
 
-Cheers,
--Becky
+Please help me how to resove this address translation.
 
+
+Regards,
+Suresh
+
+On 7/16/07, Scott Wood <scottwood@freescale.com> wrote:
 >
-> Regards,
+> Siva Prasad wrote:
+> > It returns kernel virtual address. If you use this buffer space for DMA,
+> > please use appropriate flags. You may use __pa(address) or
+> > virt_to_phys() to convert virtual to physical.
 >
-> Jim
+> No, you may not -- physical and DMA addresses are not always identical.
+>   Use the DMA mapping API.
+>
+> -Scott
 >
 >
->
->
-> Becky Bruce wrote:
->>
->>
->> On Jul 13, 2007, at 5:07 PM, meerkat wrote:
->>
->>>
->>> Figure that out, the bootstrap actually mapped the first 16M from
->>> C000000 to
->>> the physicall address,
->>> so calling a c routine, as long as it is in the first 16M, is OK
->>>
->>
->> I think you're still not understanding the fact that "bl" is a
->> *relative* branch - the branch target in the instruction encoding is
->> just an offset from the current address, not an effective address.
->> The bl should work correctly whether the code is actually running at
->> the link address reported by nm (0xcxxxxxxx in this case), or if it
->> has been loaded and executed elsewhere.
->>
->> Refer to the 32-bit Programming Environments Manual for PowerPC, or
->> in the EREF (if you're using a BookE part - e500/e200) for more
->> details.  If you're just learning PowerPC assembler, you should
->> really give this book a good thourough read.
->>
->>>
->>> meerkat wrote:
->>>>
->>>> Good day all,
->>>>
->>>> For the first time I begin working on PPC, and on low level, and
->>>> right
->>>> start from boot sequence, one issue puzzled me.
->>>>
->>>> After bootstrap code (zImage) uncompressed the kernel vmLinux to
->>>> physical
->>>> memory (say from addr 0),
->>>> it jumps to the kernel entry point, _start, using physically  
->>>> address.
->>
->> If you read the book specified above, you will see that branch
->> instructions always specify an effective address, not a physical
->> address.  You can disable translation or map the address so EA=PA,
->> but that's a different issue.
->>
->> -Becky
->> _______________________________________________
->> Linuxppc-embedded mailing list
->> Linuxppc-embedded@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->>
->>
->
-> -- 
-> View this message in context: http://www.nabble.com/boottime-kernel- 
-> relocation%2C-what-I-missed--tf4072673.html#a11629480
-> Sent from the linuxppc-embedded mailing list archive at Nabble.com.
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+------=_Part_47579_26217569.1184651944374
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Thanks....<br>
+<br>
+MPC8280 has internal memory space which contains Dualport(Dp) RAM. In
+the DpRAM we allocate some tables and these has to store pointer of the
+buffers which are allocated in external memory. Core will use this
+pointer to access the buffers, basically these buffers are used for DMA.<br>
+<br>
+Using IMMR register we can get physical address of the internal memory.
+Now can I store the address return by the kmalloc() function? or I
+should convert it into physical?<br>
+<br>
+Please help me how to resove this address translation.<br>
+<br>
+<br>
+Regards,<br>
+Suresh<br><br><div><span class="gmail_quote">On 7/16/07, <b class="gmail_sendername">Scott Wood</b> &lt;<a href="mailto:scottwood@freescale.com">scottwood@freescale.com</a>&gt; wrote:</span><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+Siva Prasad wrote:<br>&gt; It returns kernel virtual address. If you use this buffer space for DMA,<br>&gt; please use appropriate flags. You may use __pa(address) or<br>&gt; virt_to_phys() to convert virtual to physical.
+<br><br>No, you may not -- physical and DMA addresses are not always identical.<br>&nbsp;&nbsp;Use the DMA mapping API.<br><br>-Scott<br><br></blockquote></div><br>
+
+------=_Part_47579_26217569.1184651944374--
