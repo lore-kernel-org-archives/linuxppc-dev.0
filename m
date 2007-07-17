@@ -1,25 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D7D17DDE16
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CC567DDE1C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 18 Jul 2007 02:04:27 +1000 (EST)
-Message-ID: <469CE80A.5080204@freescale.com>
-Date: Tue, 17 Jul 2007 11:02:18 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: suresh suresh <sureshtang@gmail.com>
-Subject: Re: Linuxppc-embedded Digest, Vol 35, Issue 33
-References: <mailman.1061.1184600645.8639.linuxppc-embedded@ozlabs.org>	
-	<D83235F0F3C86D4D889D8B9A0DA8C6D78D7DE9@corpexc01.corp.networkrobots.com>	
-	<469B9825.6070507@freescale.com>
-	<e5eb93010707162259l2e78c524s32ff260b3d930bdb@mail.gmail.com>
-In-Reply-To: <e5eb93010707162259l2e78c524s32ff260b3d930bdb@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org, Siva Prasad <sprasad@bivio.net>
+	Wed, 18 Jul 2007 02:29:00 +1000 (EST)
+In-Reply-To: <35786B99AB3FDC45A8215724617919730136DA91@gbrwgceumf01.eu.xerox.net>
+References: <35786B99AB3FDC45A8215724617919730136DA91@gbrwgceumf01.eu.xerox.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=WINDOWS-1252; delsp=yes; format=flowed
+Message-Id: <43F1785C-E5DA-4460-A9C7-9B02431F1FE0@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Machine check exception. 2.6.20 powerpc tree. 
+Date: Tue, 17 Jul 2007 11:29:29 -0500
+To: "Ramirez-Ortiz, Jorge" <Jorge.Ramirez-Ortiz@xerox.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,19 +25,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-suresh suresh wrote:
-> MPC8280 has internal memory space which contains Dualport(Dp) RAM. In the
-> DpRAM we allocate some tables and these has to store pointer of the buffers
-> which are allocated in external memory. Core will use this pointer to 
-> access
-> the buffers, basically these buffers are used for DMA.
-> 
-> Using IMMR register we can get physical address of the internal memory. Now
-> can I store the address return by the kmalloc() function? or I should
-> convert it into physical?
 
-Yes, you need to convert it to physical.  As I said earlier, use the DMA 
-mapping API (described in Documentation/DMA-mapping.txt) to do so. 
-Specifically, look at the dma_map_single() function.
+On Jul 17, 2007, at 9:21 AM, Ramirez-Ortiz, Jorge wrote:
 
--Scott
+> Running our multithreaded application on ppc8548 (E500 core) =20
+> generates a machine check exception when trying to access some =20
+> ASIC=92s registers mapped on the PCI space (This application maps a =20=
+
+> PCI device to access its registers)
+>
+>
+>
+> machine_check_exception: task my_process, MCSR=3D0x10008, =
+NIP=3D0x10153530
+>
+> Machine check in user mode.
+>
+> Caused by (from MCSR=3D10008): Guarded Load or Cache-Inhibited stwcx.
+>
+> Bus - Read Data Bus Error
+>
+>
+>
+> Here is the assembly dump of the region of code containing the =20
+> offending instruction in user-space, with SRR0 pointing us at =20
+> 0x10153530 when the exception is raised:
+>
+>
+>
+> 0x10153528 <_ZN2vk7in_le32EPVKj+16>:    lwz     r0,8(r31)
+>
+> 0x1015352c <_ZN2vk7in_le32EPVKj+20>:    lwz     r9,8(r31)
+>
+> 0x10153530 <_ZN2vk7in_le32EPVKj+24>:    lwbrx   r0,0,r0
+>
+> 0x10153534 <_ZN2vk7in_le32EPVKj+28>:    twi     0,r0,0
+>
+> 0x10153538 <_ZN2vk7in_le32EPVKj+32>:    isync
+
+Can you get the code to dump the value of r0.  I'm wondering if =20
+you're really getting a read data bus error due to the fact that r0 =20
+is pointing to a PCI address that doesn't have a device that will =20
+respond.
+
+- k
