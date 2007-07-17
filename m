@@ -1,21 +1,22 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BA74FDDE4A
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 02:31:40 +1000 (EST)
-In-Reply-To: <1184679661.18501.41.camel@mark>
-References: <469B3401.9030602@windriver.com> <200707170327.41648.arnd@arndb.de>
-	<1184655499.18501.17.camel@mark> <200707171419.05061.arnd@arndb.de>
-	<1184679661.18501.41.camel@mark>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <AF0E1BD2-BBC1-4179-B901-55275047A36B@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 3/3] 82xx: SBCPQ2 board platform support
-Date: Tue, 17 Jul 2007 18:30:56 +0200
-To: Mark Zhan <rongkai.zhan@windriver.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, Arnd Bergmann <arnd@arndb.de>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0B850DDE07
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 02:36:59 +1000 (EST)
+Date: Tue, 17 Jul 2007 11:36:45 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: Re: [PATCH] POWERPC: Added RTC support for mpc8313RDB and utilize
+	"clock-frequency"
+Message-ID: <20070717163645.GB7347@ld0162-tx32.am.freescale.net>
+References: <20070717004913.21682.50282.stgit@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070717004913.21682.50282.stgit@localhost.localdomain>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,41 +26,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> +	np = of_find_compatible_node(NULL, "cpm-pic", "CPM2");
->>>>> +	if (np == NULL) {
->>>>> +		printk(KERN_ERR "PIC init: can not find cpm-pic node\n");
->>>>> +		return;
->>>>> +	}
->>>>
->>>> This looks like your device tree is wrong. Shouldn't the interrupt
->>>> controller have device_type="interrupt-controller" and a specific
->>>> compatible property instead of having the name in the device_type?
+On Tue, Jul 17, 2007 at 04:49:13AM +0400, Vitaly Bordug wrote:
+> +	np = of_find_node_by_type(NULL, "cpu");
+> +	if (np != 0) {
+> +		const unsigned int *fp =
+> +			get_property(np, "clock-frequency", NULL);
+> +		if (fp != 0)
+> +			loops_per_jiffy = *fp / HZ;
+> +		else
+> +			loops_per_jiffy = 50000000 / HZ;
+> +		of_node_put(np);
+> +	}
 
-So, I looked it up :-)
+This is not necessary.  It's only used for /proc/cpuinfo (delays are done
+using tb_ticks_per_usec), and it'll be overwritten by the generic
+calibrate_delay() anyway.
 
-The device_type should specify the specific interrupt
-controller programming model, because a real OF typically
-needs to know the meaning of the interrupt specifiers;
-also, when the interrupt binding recommended practice
-isn't used, it is needed to know the #interrupt-cells
-(which is implicit from the device_type in that case).
+We should be removing this from board files that have it, not adding it
+to ones that don't.
 
-If there is no defined binding for your interrupt
-controller, just don't put a device_type in your tree at
-all, for flat device trees.
+> +#if defined (CONFIG_SENSORS_DS1337) && defined (CONFIG_I2C)
+> +
+> +extern int ds1337_do_command(int id, int cmd, void *arg);
+> +extern spinlock_t rtc_lock;
+> +#define DS1337_GET_DATE		0
+> +#define DS1337_SET_DATE		1
+> +
+> +static void mpc8313rdb_get_rtc_time(struct rtc_time *tm)
+> +{
+> +	int result;
+> +
+> +	result = ds1337_do_command(0, DS1337_GET_DATE, tm);
+> +
+> +	if (result == 0)
+> +		result = mktime(tm->tm_year, tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+> +}
+> +
+> +static int mpc8313rdb_set_rtc_time(struct rtc_time *tm)
+> +{
+> +	int result;
+> +
+> +	result = ds1337_do_command(0, DS1337_SET_DATE, tm);
+> +
+> +	return result;
+> +}
+> +
+> +static int __init rtc_hookup(void)
+> +{
+> +	ppc_md.get_rtc_time = mpc8313rdb_get_rtc_time;
+> +	ppc_md.set_rtc_time = mpc8313rdb_set_rtc_time;
+> +	return 0;
+> +}
+> +late_initcall(rtc_hookup);
+> +#endif
 
->>> Here, I just copy the codes from mpc82xx_ads, is there anything  
->>> wrong?
->>
->> I just checked the Recommended Practice document for interrupt  
->> mapping
->> and it seems that it's ok. The interrupt controller needs to have
->> an property named "interrupt-controller", but does not need a  
->> specific
->> device_type. So it appears to be correct here.
+Please don't do this; drivers/i2c/chips/ds1337.c is deprecated.  You
+should be using the RTC-class driver in drivers/rtc/rtc-ds1307.c, which
+has a non-device-specific API that can be used.
 
-Please also look at the base specifications, not just
-the imap thing.  But you reached the correct conclusion.
+The ppc_md RTC functions should really just go away, though -- setting
+the clock on bootup can be done by generic code, and periodically
+updating the RTC when using NTP can be done from userspace.
 
-
-Segher
+-Scott
