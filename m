@@ -1,20 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <akostop@inaccessnetworks.com>
+Received: from inaccessnetworks.com (node3.inaccessnetworks.com
+	[212.205.200.118]) by ozlabs.org (Postfix) with ESMTP id C8960DDE10
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 22:15:25 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by inaccessnetworks.com (8.13.6/8.13.5) with ESMTP id l6HCFNkE009626
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 15:15:23 +0300
+Date: Tue, 17 Jul 2007 15:15:15 +0300
+To: "Alexandros Kostopoulos" <akostop@inaccessnetworks.com>,
+	linuxppc-dev@ozlabs.org
+Subject: Re: regarding cpm_uart and platform_bus_type
+From: "Alexandros Kostopoulos" <akostop@inaccessnetworks.com>
+Content-Type: text/plain; format=flowed; delsp=yes; charset=iso-8859-7
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18076.42297.26124.137770@cargo.ozlabs.ibm.com>
-Date: Tue, 17 Jul 2007 21:17:13 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/4] Add DMA sector to
-	Documentation/powerpc/booting-without-of.txt file.
-In-Reply-To: <B2EA074C-5D8E-4E13-B6BF-E81FBA52E76E@kernel.crashing.org>
-References: <46B96294322F7D458F9648B60E15112C6F3D1E@zch01exm26.fsl.freescale.net>
-	<4694F608.2090503@freescale.com>
-	<368E1200-1315-4C24-9876-C92CCF65EFE3@kernel.crashing.org>
-	<46B96294322F7D458F9648B60E15112C6F3E42@zch01exm26.fsl.freescale.net>
-	<1184260375.24515.35.camel@pterry-fc6.micromemory.com>
-	<B2EA074C-5D8E-4E13-B6BF-E81FBA52E76E@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Wei.Zhang@freescale.com
+References: <op.tvlxc2sjnhx3hy@phoenix>
+Message-ID: <op.tvlyyor0nhx3hy@phoenix>
+In-Reply-To: <op.tvlxc2sjnhx3hy@phoenix>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool writes:
+Hm, it seems that, after all, cpm_uart works fine without any board  
+specific code whatsoever. Sorry about the fuss. My mistake
 
-> The device tree describes _all_ hardware in the system,
-> not just the things that are somewhat harder to probe
-> for.
+Regards
 
-Actually, for embedded systems, the device tree is really only
-required to describe the things that it's useful for the Linux kernel
-to know.
+Alex
 
-The point of the device tree for embedded systems is to provide
-configuration information, not to be able to claim compliance with
-some set of legalistic requirements. :)
 
-I think in some cases we have gone a little over the top in trying to
-put everything in the device tree, in fact.  Ultimately I think it has
-to be up to the more experienced embedded developers to say how much
-detail in the device tree is actually helpful and how much is dead
-weight.
+On Tue, 17 Jul 2007 14:55:30 +0300, Alexandros Kostopoulos  
+<akostop@inaccessnetworks.com> wrote:
 
-Paul.
+> Hi all,
+>
+> I was wondering, since arch/powerpc is now based on device trees,  
+> shouldn't the cpm_uart driver (or at least a branch of it for  
+> arch/powerpc) be changed to use of_platform_bus_type instead of  
+> platform_bus_type? In my opinion, cpm_uart driver should take all its  
+> configuration (uart address base, ints etc) from dts (via the  
+> of_platform code) without any intervention from board specific code. In  
+> any case, given the current situation, how can I pass cpm_uart the  
+> address/irq of the uarts? by hardcoding it in my board specific code?  
+> mpc82xx_ads.c doesn't seem to have such code, and I was wondering how  
+> SCC uarts work in this platform? Who initializes them?
+>
+> thank you
+>
+> Alex
