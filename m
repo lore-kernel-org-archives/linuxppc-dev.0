@@ -2,17 +2,16 @@ Return-Path: <vitb@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BDDF3DDE1B
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 10:49:41 +1000 (EST)
-To: Paul Mackerras <paulus@samba.org>
+	by ozlabs.org (Postfix) with ESMTP id 1F97BDDE1F
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 10:58:38 +1000 (EST)
+To: Greg KH <greg@kroah.com>
 From: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: [PATCH] POWERPC: add support of the GiGE switch for mpc8313RDB via
-	fixed PHY
-Date: Tue, 17 Jul 2007 04:49:37 +0400
-Message-ID: <20070717004936.21700.67900.stgit@localhost.localdomain>
+Subject: [PATCH] USB_DR host support for FSL MPC831x
+Date: Tue, 17 Jul 2007 04:58:32 +0400
+Message-ID: <20070717005832.23019.99739.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,81 +22,60 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-This utilises pretend phy, making access to it via device tree. GiGE switch
-is connected to TSEC1 with fixed gigE link, so we need to emulate it
-via artificial PHY to make it work.
+Modifies fsl_ehci code so that to get USB host working on
+mpc831x platform. Verified with MPC8313RDB reference board.
 
 Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
 
 ---
 
- arch/powerpc/boot/dts/mpc8313erdb.dts     |    1 +
- arch/powerpc/platforms/83xx/mpc8313_rdb.c |   43 +++++++++++++++++++++++++++++
- 2 files changed, 44 insertions(+), 0 deletions(-)
+ arch/powerpc/boot/dts/mpc8313erdb.dts |    1 +
+ drivers/usb/host/ehci-fsl.c           |    4 +++-
+ drivers/usb/host/ehci-hcd.c           |    2 +-
+ 3 files changed, 5 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
-index a1533cc..1b351dc 100644
+index 1b351dc..c330e79 100644
 --- a/arch/powerpc/boot/dts/mpc8313erdb.dts
 +++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
-@@ -100,6 +100,7 @@
- 			#size-cells = <0>;
- 			phy1: ethernet-phy@1 {
- 				interrupt-parent = < &ipic >;
-+				compatible = "fixed";
- 				interrupts = <13 8>;
- 				reg = <1>;
- 				device_type = "ethernet-phy";
-diff --git a/arch/powerpc/platforms/83xx/mpc8313_rdb.c b/arch/powerpc/platforms/83xx/mpc8313_rdb.c
-index b410e67..5ee08fc 100644
---- a/arch/powerpc/platforms/83xx/mpc8313_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc8313_rdb.c
-@@ -115,6 +115,49 @@ static int __init rtc_hookup(void)
- late_initcall(rtc_hookup);
+@@ -90,6 +90,7 @@
+ 			interrupt-parent = < &ipic >;
+ 			interrupts = <26 8>;
+ 			phy_type = "utmi_wide";
++			control_init  = <00000280>; // UTMI ext 48 MHz clk
+ 		};
+ 
+ 		mdio@24520 {
+diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
+index c7a7c59..3e3187b 100644
+--- a/drivers/usb/host/ehci-fsl.c
++++ b/drivers/usb/host/ehci-fsl.c
+@@ -185,12 +185,14 @@ static void mpc83xx_usb_setup(struct usb_hcd *hcd)
+ 	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
+ 	struct fsl_usb2_platform_data *pdata;
+ 	void __iomem *non_ehci = hcd->regs;
++	u32 temp;
+ 
+ 	pdata =
+ 	    (struct fsl_usb2_platform_data *)hcd->self.controller->
+ 	    platform_data;
+ 	/* Enable PHY interface in the control reg. */
+-	out_be32(non_ehci + FSL_SOC_USB_CTRL, 0x00000004);
++	temp = in_be32(non_ehci + FSL_SOC_USB_CTRL);
++	out_be32(non_ehci + FSL_SOC_USB_CTRL, temp | 0x00000004);
+ 	out_be32(non_ehci + FSL_SOC_USB_SNOOP1, 0x0000001b);
+ 
+ #if defined(CONFIG_PPC32) && !defined(CONFIG_NOT_COHERENT_CACHE)
+diff --git a/drivers/usb/host/ehci-hcd.c b/drivers/usb/host/ehci-hcd.c
+index 099aff6..994a127 100644
+--- a/drivers/usb/host/ehci-hcd.c
++++ b/drivers/usb/host/ehci-hcd.c
+@@ -925,7 +925,7 @@ MODULE_LICENSE ("GPL");
+ #define	PCI_DRIVER		ehci_pci_driver
  #endif
  
-+#if defined(CONFIG_FIXED_MII_1000_FDX)
-+
-+static int fixed_set_link (void)
-+{
-+	struct fixed_info *phyinfo = fixed_mdio_get_phydev(0);	/* only one fixed phy on this platform */
-+	struct phy_device *phydev;
-+	struct device_node *np;
-+	struct device_node *child;
-+	unsigned int i;
-+	struct resource res;
-+	int ret;
-+	u32 *id = NULL;
-+
-+	if (!phyinfo)
-+		return -ENXIO;
-+	phydev = phyinfo->phydev;
-+	if (!phydev)
-+		return -ENXIO;
-+	for (np = NULL, i = 0;
-+	     (np = of_find_compatible_node(np, "mdio", "gianfar")) != NULL;
-+	     i++) {
-+
-+		memset(&res, 0, sizeof(res));
-+
-+		ret = of_address_to_resource(np, 0, &res);
-+		if (ret)
-+			return ret;
-+		child = of_find_compatible_node(np, "ethernet-phy","fixed");
-+		if (!child)
-+			return -ENXIO;
-+		id = (u32*)of_get_property(child, "reg", NULL);
-+		if (!id)
-+			return -ENXIO;
-+		break;
-+	}
-+	snprintf(phydev->dev.bus_id, BUS_ID_SIZE, PHY_ID_FMT,  res.start, *id);
-+	memset(phyinfo->regs,0xff,sizeof(phyinfo->regs[0])*phyinfo->regs_num);
-+
-+	return 0;
-+}
-+late_initcall(fixed_set_link);
-+#endif
-+
- /*
-  * Called very early, MMU is off, device-tree isn't unflattened
-  */
+-#ifdef CONFIG_MPC834x
++#if defined(CONFIG_MPC834x) || defined(CONFIG_PPC_MPC831x)
+ #include "ehci-fsl.c"
+ #define	PLATFORM_DRIVER		ehci_fsl_driver
+ #endif
