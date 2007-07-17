@@ -1,20 +1,19 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from vitb.dev.rtsoft.ru (unknown [85.21.88.2])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DC44ADDE22
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 00:52:49 +1000 (EST)
-Date: Tue, 17 Jul 2007 18:52:29 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: "Li Yang-r58472" <LeoLi@freescale.com>
-Subject: Re: [PATCH] USB_DR host support for FSL MPC831x
-Message-ID: <20070717185229.0f66e227@vitb.ru.mvista.com>
-In-Reply-To: <989B956029373F45A0B8AF0297081890F06271@zch01exm26.fsl.freescale.net>
-References: <20070717005832.23019.99739.stgit@localhost.localdomain>
-	<989B956029373F45A0B8AF0297081890F06271@zch01exm26.fsl.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Greg KH <greg@kroah.com>, linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 8EE4CDDE1A
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 00:58:03 +1000 (EST)
+In-Reply-To: <E1IAnwC-0003Xm-6U@jdl.com>
+References: <E1IAnwC-0003Xm-6U@jdl.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <630B6BC9-389F-4F5C-AE8F-9C3131C4543E@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] Add StorCenter DTS first draft.
+Date: Tue, 17 Jul 2007 16:57:27 +0200
+To: Jon Loeliger <jdl@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,99 +23,109 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 17 Jul 2007 20:18:35 +0800
-"Li Yang-r58472" <LeoLi@freescale.com> wrote:
+> Comments welcome, of course.
 
-> Hi Vitaly,
-> 
-> I believe that your patch is addresses by my patch in 2.6.23 queue:
-> http://www.kernel.org/pub/linux/kernel/people/gregkh/usb/2.6/2.6.22/usb-
-> ehci_fsl-update-for-mpc831x-support.patch
-> 
-okay, nm then. I'll revalidate with these 2 patches 
-and come up with something ontop if it won't work.
+Well you asked for it :-)
+
+> +/ {
+> +	model = "StorCenter";
+
+If you can find a real model number, put it in here,
+instead.
+
+> +	compatible = "storcenter";
+
+Needs a manufacturer name in there.
+
+> +		PowerPC,603e {			/* Really 8241 */
+
+So say "PowerPC,8241@0", or "PowerPC,e300@0" (or whatever
+the CPU core in there is), or simply "cpu@0", following
+the generic naming recommended practice.
+
+> +			bus-frequency = <0>;
+
+Is this filled in anywhere?  Please document that, if so.
+
+> +			/* Following required by dtc but not used */
+> +			i-cache-line-size = <0>;
+> +			d-cache-line-size = <0>;
+> +			i-cache-size = <4000>;
+> +			d-cache-size = <4000>;
+
+Not used _by the Linux kernel_, it's required by the
+PowerPC binding.  Perhaps that should be modified
+for flat device tree use, there are many more required
+properties that no flat tree has anyway.
+
+> +	flash@ff800000 {
+> +		device_type = "rom";
+
+I'm sure you know I find this "rom" binding to be crap.
+However, I didn't yet write up the "cfi" binding, so I
+can't complain ;-)
+
+> +		partitions = <
+> +				00000000 0000E000
+> +				0000E000 00002000
+> +				00010000 00040000
+> +				00050000 00200000
+> +				00250000 004B0000
+> +				00700000 00020000
+> +				00720000 00010000
+> +				00730000 00010000
+> +				00740000 000B0000
+> +		>;
+
+Nothing from 7f0000 to 7fffff?
+
+> +	soc10x {
+
+Bad name.  Where is the binding for this?  I don't think
+I saw it before.
+
+> +		compatible = "mpc10x";
+
+"manufacturer,106-host" or similar.  But this isn't an 10x
+at all, is it?
+
+> +		store-gathering = <0>; /* 0 == off, !0 == on */
+
+Don't define this as "!0", but as "1".
+
+> +		i2c@fdf03000 {
+> +			device_type = "i2c";
+
+No device_type, there is no I2C binding.
+
+> +			compatible = "fsl-i2c";
+
+Needs to be more specific.
+
+> +		mpic: pic@fdf40000 {
+
+interrupt-controller@fdf40000
+
+> +			#interrupt-cells = <2>;
+> +			#address-cells = <0>;
+
+No #address-cells here.
+
+> +			device_type = "open-pic";
+
+device_type = "interrupt-controller" I believe, unless
+the mpic binding does something weird.
+
+> +		pci@fe800000 {
+> +			clock-frequency = <d# 100000000>; /* Hz */
+
+100MHz PCI?  Interesting.
+
+> +			interrupt-map = <
+> +				/* IDSEL 0x15 - ETH */
+> +				7800 0 0 1 &mpic 0 1
+
+7800 isn't device 0x15.  I think you meant 15.
 
 
-> - Leo
-> 
-> > -----Original Message-----
-> > From: linuxppc-dev-bounces+leoli=freescale.com@ozlabs.org 
-> > [mailto:linuxppc-dev-bounces+leoli=freescale.com@ozlabs.org] 
-> > On Behalf Of Vitaly Bordug
-> > Sent: Tuesday, July 17, 2007 8:59 AM
-> > To: Greg KH
-> > Cc: linuxppc-dev@ozlabs.org
-> > Subject: [PATCH] USB_DR host support for FSL MPC831x
-> > 
-> > 
-> > Modifies fsl_ehci code so that to get USB host working on 
-> > mpc831x platform. Verified with MPC8313RDB reference board.
-> > 
-> > Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
-> > 
-> > ---
-> > 
-> >  arch/powerpc/boot/dts/mpc8313erdb.dts |    1 +
-> >  drivers/usb/host/ehci-fsl.c           |    4 +++-
-> >  drivers/usb/host/ehci-hcd.c           |    2 +-
-> >  3 files changed, 5 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts 
-> > b/arch/powerpc/boot/dts/mpc8313erdb.dts
-> > index 1b351dc..c330e79 100644
-> > --- a/arch/powerpc/boot/dts/mpc8313erdb.dts
-> > +++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
-> > @@ -90,6 +90,7 @@
-> >  			interrupt-parent = < &ipic >;
-> >  			interrupts = <26 8>;
-> >  			phy_type = "utmi_wide";
-> > +			control_init  = <00000280>; // UTMI ext 
-> > 48 MHz clk
-> >  		};
-> >  
-> >  		mdio@24520 {
-> > diff --git a/drivers/usb/host/ehci-fsl.c 
-> > b/drivers/usb/host/ehci-fsl.c index c7a7c59..3e3187b 100644
-> > --- a/drivers/usb/host/ehci-fsl.c
-> > +++ b/drivers/usb/host/ehci-fsl.c
-> > @@ -185,12 +185,14 @@ static void mpc83xx_usb_setup(struct 
-> > usb_hcd *hcd)
-> >  	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
-> >  	struct fsl_usb2_platform_data *pdata;
-> >  	void __iomem *non_ehci = hcd->regs;
-> > +	u32 temp;
-> >  
-> >  	pdata =
-> >  	    (struct fsl_usb2_platform_data *)hcd->self.controller->
-> >  	    platform_data;
-> >  	/* Enable PHY interface in the control reg. */
-> > -	out_be32(non_ehci + FSL_SOC_USB_CTRL, 0x00000004);
-> > +	temp = in_be32(non_ehci + FSL_SOC_USB_CTRL);
-> > +	out_be32(non_ehci + FSL_SOC_USB_CTRL, temp | 0x00000004);
-> >  	out_be32(non_ehci + FSL_SOC_USB_SNOOP1, 0x0000001b);
-> >  
-> >  #if defined(CONFIG_PPC32) && !defined(CONFIG_NOT_COHERENT_CACHE)
-> > diff --git a/drivers/usb/host/ehci-hcd.c 
-> > b/drivers/usb/host/ehci-hcd.c index 099aff6..994a127 100644
-> > --- a/drivers/usb/host/ehci-hcd.c
-> > +++ b/drivers/usb/host/ehci-hcd.c
-> > @@ -925,7 +925,7 @@ MODULE_LICENSE ("GPL");
-> >  #define	PCI_DRIVER		ehci_pci_driver
-> >  #endif
-> >  
-> > -#ifdef CONFIG_MPC834x
-> > +#if defined(CONFIG_MPC834x) || defined(CONFIG_PPC_MPC831x)
-> >  #include "ehci-fsl.c"
-> >  #define	PLATFORM_DRIVER		ehci_fsl_driver
-> >  #endif
-> > 
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> > 
-
-
--- 
-Sincerely, 
-Vitaly
+Segher
