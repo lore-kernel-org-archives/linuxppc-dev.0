@@ -1,29 +1,15 @@
-Return-Path: <Jorge.Ramirez-Ortiz@xerox.com>
-Received: from wbmler2.mail.xerox.com (wbmler2.mail.xerox.com [13.13.138.217])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "wbmler2.mail.xerox.com",
-	Issuer "wbmler2.mail.xerox.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B1492DDE11
+Return-Path: <borish@batm.co.il>
+Received: from mailserver.batm.batm.co.il (out.batm.co.il [212.199.94.207])
+	by ozlabs.org (Postfix) with ESMTP id 27440DDE22
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 18 Jul 2007 00:34:07 +1000 (EST)
-Received: from wbmlir1.mail.xerox.com (wbmlir1.mail.xerox.com [13.131.8.221])
-	by wbmler2.mail.xerox.com (8.13.8/8.13.6) with ESMTP id
-	l6HELM6l019831
-	for <linuxppc-embedded@ozlabs.org>; Tue, 17 Jul 2007 10:21:22 -0400
-Received: from wbmlir1.mail.xerox.com (localhost [127.0.0.1])
-	by wbmlir1.mail.xerox.com (8.13.8/8.13.6) with ESMTP id l6HELHpA010610
-	for <linuxppc-embedded@ozlabs.org>; Tue, 17 Jul 2007 10:21:17 -0400
-Received: from USA7061GW002.na.xerox.net (usa7061gw002.na.xerox.net
-	[13.151.210.15])
-	by wbmlir1.mail.xerox.com (8.13.8/8.13.6) with ESMTP id l6HEL7pE010407
-	for <linuxppc-embedded@ozlabs.org>; Tue, 17 Jul 2007 10:21:17 -0400
+	Wed, 18 Jul 2007 00:54:35 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C7C87D.BA0942A6"
-Subject: Machine check exception. 2.6.20 powerpc tree. 
-Date: Tue, 17 Jul 2007 15:21:18 +0100
-Message-ID: <35786B99AB3FDC45A8215724617919730136DA91@gbrwgceumf01.eu.xerox.net>
-From: "Ramirez-Ortiz, Jorge" <Jorge.Ramirez-Ortiz@xerox.com>
+	boundary="----_=_NextPart_001_01C7C880.AFABB6A0"
+Subject: Memory Corruption in Linux kernel MPC8347 revision 3
+Date: Tue, 17 Jul 2007 17:42:23 +0300
+Message-ID: <1184683343.3337.57.camel@localhost.localdomain>
+From: "Boris Shteinbock" <borish@batm.co.il>
 To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -37,332 +23,435 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C7C87D.BA0942A6
+------_=_NextPart_001_01C7C880.AFABB6A0
 Content-Type: text/plain;
-	charset="us-ascii"
+	charset="windows-1255"
 Content-Transfer-Encoding: quoted-printable
 
-Running our multithreaded application on ppc8548 (E500 core) generates a
-machine check exception when trying to access some ASIC's registers
-mapped on the PCI space (This application maps a PCI device to access
-its registers)
+	Hi Everyone.
+I am working on the Linux port for MPC8347 revision 3 custom build board
+with DDR2 memory.
 
-=20
+I've successfully ported U-boot (latest git) and the kernel itself,
+however during kernel boot I am encountering serious memory corruption
+errors. The log for one of the examples is at the bottom of this
+message.
 
-machine_check_exception: task my_process, MCSR=3D0x10008, =
-NIP=3D0x10153530
+Basically, the corruption is always happening somewhere at memory
+management intensive tasks such as networking, JFFS2 mounting etc.
 
-Machine check in user mode.
+As far as I can see, it is not related to some specific driver, because
+even it happens even at kernel configured at absolute minimum, ( console
+serial driver only and even without it)
+The place of the corruption depends on kernel configuration.
 
-Caused by (from MCSR=3D10008): Guarded Load or Cache-Inhibited stwcx.
+The DDR2 memory controller is configured correctly as far as I can tell,
+since :
+1. DDR2 controller register values are taken from VxWorks bootrom=20
+that works on this board without any problems.
+2. u-boot mtest passes successfully
+3. u-boot alternative mtest passes successfully
+4. My own custom mem tests in u-boot pass successfully
+5. If I manage two boot the board into shell prompt (with absolute
+minimum configuration) memtester application is also successful.=20
 
-Bus - Read Data Bus Error
+The minimum configuration that is one I am able to boot into shell is a
+kernel configured with serial console and small busybox JFFS2 file
+system in the flash. In this configuration, the boot fails the first
+time JFFS2 root FS is mounted. However it does boot after reset.
 
-=20
+I've tried different kernels with the same results  starting from, I
+think, 2.6.16  up to 2.6.22
+I tried the kernel that is provided by Freescale for 834x reference
+boards. ( with my board support of course)
 
-Here is the assembly dump of the region of code containing the offending
-instruction in user-space, with SRR0 pointing us at 0x10153530 when the
-exception is raised:
+I tried booting both OF flat trees (powerpc) and bd_t based builds (ppc)
 
-=20
+I've also tried all memory management options :
+SLAB, SLOB and SLUB (in the latest kernel). They all failed at some
+point of time, so the assumption is that the problem is not in the
+memory management facilities.
 
-0x10153528 <_ZN2vk7in_le32EPVKj+16>:    lwz     r0,8(r31)
+The board manufacturer swears that DDR2 memory controller values are
+correct and should work perfectly.
 
-0x1015352c <_ZN2vk7in_le32EPVKj+20>:    lwz     r9,8(r31)
+So now I almost out of options and I am seeking your help.
+Any type of input on this issue would be greatly appreciated.=20
 
-0x10153530 <_ZN2vk7in_le32EPVKj+24>:    lwbrx   r0,0,r0
+Thanks,
+Boris
 
-0x10153534 <_ZN2vk7in_le32EPVKj+28>:    twi     0,r0,0
+PS. Note that an below example represents failure during DHCP
+autoconfiguration. However the similar error happens even when
+networking is disabled completely. just in a different place.
 
-0x10153538 <_ZN2vk7in_le32EPVKj+32>:    isync
+=3D> bootm
+## Booting image at 00400000 ...
+   Image Name:   Linux-.6.21.5
+   Created:      2007-07-10  14:20:19 UTC
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    898361 Bytes =3D 877.3 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+## Current stack ends at 0x07FA3CF8 =3D> set upper limit to 0x00800000
+## cmdline at 0x007FFF00 ... 0x007FFF41
+bd address  =3D 0x07FA3FBC
+memstart    =3D 0x00000000
+memsize     =3D 0x08000000
+flashstart  =3D 0xFE000000
+flashsize   =3D 0x02000000
+flashoffset =3D 0x00033000
+sramstart   =3D 0x00000000
+sramsize    =3D 0x00000000
+bootflags   =3D 0x00000001
+intfreq     =3D    528 MHz
+busfreq     =3D    264 MHz
+ethaddr     =3D 00:04:9F:EF:23:35
+eth1addr    =3D 00:E0:0C:00:7E:25
+IP addr     =3D 10.2.222.20
+baudrate    =3D 115200 bps
+No initrd
+## Transferring control to Linux (at address 00000000) ...
+!!!! of_flat_tree =3D 00000000
+Booting without OF Flat tree
+Linux version .6.21.5 (me@localhost) (gcc version
+4.0.0 (DENX ELDK 4.1 4.0.0)) #24 Tue Jul 10 17:20:09 IDT 2007
+Zone PFN ranges:
+  DMA             0 ->    32768
+  Normal      32768 ->    32768
+early_node_map[1] active PFN ranges
+    0:        0 ->    32768
+Built 1 zonelists.  Total pages: 32512
+Kernel command line: console=3DttyS0,115200 root=3D/dev/mtdblock1
+rootfstype=3Djffs2 ip=3Ddhcp
+IPIC (128 IRQ sources, 8 External IRQs) at fe000700
+PID hash table entries: 512 (order: 9, 2048 bytes)
+Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)
+Inode-cache hash table entries: 8192 (order: 3, 32768 bytes)
+Memory: 127744k available (1584k kernel code, 444k data, 84k init, 0k
+highmem)
+Mount-cache hash table entries: 512
+NET: Registered protocol family 16
+Setup MTD partitions
+Generic PHY: Registered new driver
+NET: Registered protocol family 2
+IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
+TCP established hash table entries: 4096 (order: 3, 32768 bytes)
+TCP bind hash table entries: 4096 (order: 2, 16384 bytes)
+TCP: Hash tables configured (established 4096 bind 4096)
+TCP reno registered
+JFFS2 version 2.2. (NAND) (C) 2001-2006 Red Hat, Inc.
+io scheduler noop registered
+io scheduler anticipatory registered (default)
+io scheduler deadline registered
+io scheduler cfq registered
+Serial: 8250/16550 driver $Revision: 1.90 $ 2 ports, IRQ sharing
+disabled
+serial8250.0: ttyS0 at MMIO 0xe0004500 (irq =3D 9) is a 16550A
+serial8250.0: ttyS1 at MMIO 0xe0004600 (irq =3D 10) is a 16550A
+Gianfar MII Bus: probed
+eth0: Gianfar Ethernet Controller Version 1.2, 00:04:9f:ef:23:35
+eth0: Running with NAPI disabled
+eth0: 64/64 RX/TX BD ring size
+Broadcom BCM5241: Registered new driver
+physmap platform flash device: 02000000 at fe000000
+physmap-flash.0: Found 1 x16 devices at 0x0 in 8-bit bank
+ Amd/Fujitsu Extended Query Table at 0x0040
+physmap-flash.0: CFI does not contain boot bank location. Assuming top.
+number of CFI chips: 1
+cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
+cmdlinepart partition parsing not available
+RedBoot partition parsing not available
+Using physmap partition information
+Creating 2 MTD partitions on "physmap-flash.0":
+0x00000000-0x00100000 : "uboot"
+0x00100000-0x02000000 : "rootfs"
+IPv4 over IPv4 tunneling driver
+GRE over IPv4 tunneling driver
+TCP cubic registered
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+!!!! Gianfar init_phy. phy_id =3D 0:01
+!!!! phy_attach. phy_id =3D 0:01
+!!!! phy_attach device found. phy_id =3D 0:01
+Sending DHCP requests .<3>slab: Internal list corruption detected in
+cache 'files_cache'(21), slabp c0344000(16). Hexdump:
 
-=20
+000: 00 10 01 00 00 20 02 00 00 00 00 70 c0 34 40 70
+010: 00 00 00 10 00 00 ff 10 00 00 00 00 ff ff ff fe
+020: ff ff ff fe ff ff ff fe ff ff ff fe ff ff ff fe
+030: ff ff ff fe ff ff ff fe ff ff ff fe ff ff ff fe
+040: ff ff ff fe ff ff ff fe ff ff ff fe ff ff ff fe
+050: ff ff ff fe ff ff ff fe ff ff ff fd 00 00 00 11
+060: 00 00 00 12 00 00 00 13 00 00 00 14 ff ff ff ff
+------------[ cut here ]------------
+kernel BUG at mm/slab.c:2936!
+Oops: Exception in kernel mode, sig: 5 [#1]
+NIP: C0050F80 LR: C0050F80 CTR: 00000000
+REGS: c034fe00 TRAP: 0700   Not tainted  (.6.21.5)
+MSR: 00021032 <ME,IR,DR>  CR: 24004002  XER: 00000000
+TASK =3D c032a3c0[3] 'events/0' THREAD: c034e000
+GPR00: C0050F80 C034FEB0 C032A3C0 00000001 00000DF5 FFFFFFFF C00F5B54
+00000010
+GPR08: C01D0000 C01E0000 00000DF5 00000DF5 00000000 00F1C5DB 07FFD000
+FFFFFFFF
+GPR16: 00000001 00000000 00000000 00800000 00000000 007FFF00 00000000
+C033DAA0
+GPR24: C0339C90 00000007 00000000 C01B0000 C01B0000 C0344000 C033DAA0
+00000070
+NIP [C0050F80] check_slabp+0xe4/0x11c
+LR [C0050F80] check_slabp+0xe4/0x11c
+Call Trace:
+[C034FEB0] [C0050F80] check_slabp+0xe4/0x11c (unreliable)
+[C034FED0] [C0051450] free_block+0x88/0x138
+[C034FF00] [C0052188] drain_array+0xa0/0xe0
+[C034FF20] [C0052228] cache_reap+0x60/0x144
+[C034FF40] [C00257B0] run_workqueue+0xd0/0x170
+[C034FF60] [C0025960] worker_thread+0x110/0x144
+[C034FFC0] [C00298E4] kthread+0x74/0xb0
+[C034FFF0] [C0005F38] kernel_thread+0x44/0x60
+Instruction dump:
+387b6538 7c9df8ae 4bfc2b49 3bff0001 813e0020 5529103a 3929001c 7f9f4840
+419cffcc 3c60c01b 3863336c 4bfc2b25 <0fe00000> 48000000 80030020
+2f800000
 
-All this is fully reproducible, the offending code is repeatedly the
-byte-reverse load within the (m)mapped PCI memory segment. The offset
-within the segment may vary, even if most of the hits seem to be taken
-when reading 0x20030-0x20034 offsets from 0x80000000 PCI address space
-(which is mapped to the application via /dev/mem)
-
-=20
-
-/proc/pid/maps reports the following mappings to /dev/mem, with the
-first one being an ASIC on the PCI space whose registers we are trying
-to access, and the second one being system memory (this system memory is
-out of kernel visibility...we use 'mem=3D256M' as a kernel =
-parameter...):
-
-=20
-
-303a9000-304a9000 rw-s 80000000 00:0c 2087       /dev/mem
-
-304a9000-404a9000 rw-s 10000000 00:0c 2087       /dev/mem
-
-=20
-
-Has anybody experienced something similar using a kernel based on a
-2.6.20 powerpc tree?=20
-
-=20
-
-Many thanks
-
-=20
-
-jorge
-
-=20
-
-______________________________
-
-Jorge Ramirez-Ortiz
-
-=20
-
-=20
-
-
-------_=_NextPart_001_01C7C87D.BA0942A6
+------_=_NextPart_001_01C7C880.AFABB6A0
 Content-Type: text/html;
-	charset="us-ascii"
+	charset="windows-1255"
 Content-Transfer-Encoding: quoted-printable
 
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
-xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
 <META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Courier New";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:navy;
-	font-weight:normal;
-	font-style:normal;
-	text-decoration:none none;}
-@page Section1
-	{size:595.3pt 841.9pt;
-	margin:72.0pt 90.0pt 72.0pt 90.0pt;}
-div.Section1
-	{page:Section1;}
--->
-</style>
+charset=3Dwindows-1255">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7638.1">
+<TITLE>Memory Corruption in Linux kernel MPC8347 revision 3</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
 
-</head>
+<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT SIZE=3D2>Hi =
+Everyone.<BR>
+I am working on the Linux port for MPC8347 revision 3 custom build =
+board<BR>
+with DDR2 memory.<BR>
+<BR>
+I've successfully ported U-boot (latest git) and the kernel itself,<BR>
+however during kernel boot I am encountering serious memory =
+corruption<BR>
+errors. The log for one of the examples is at the bottom of this<BR>
+message.<BR>
+<BR>
+Basically, the corruption is always happening somewhere at memory<BR>
+management intensive tasks such as networking, JFFS2 mounting etc.<BR>
+<BR>
+As far as I can see, it is not related to some specific driver, =
+because<BR>
+even it happens even at kernel configured at absolute minimum, ( =
+console<BR>
+serial driver only and even without it)<BR>
+The place of the corruption depends on kernel configuration.<BR>
+<BR>
+The DDR2 memory controller is configured correctly as far as I can =
+tell,<BR>
+since :<BR>
+1. DDR2 controller register values are taken from VxWorks bootrom<BR>
+that works on this board without any problems.<BR>
+2. u-boot mtest passes successfully<BR>
+3. u-boot alternative mtest passes successfully<BR>
+4. My own custom mem tests in u-boot pass successfully<BR>
+5. If I manage two boot the board into shell prompt (with absolute<BR>
+minimum configuration) memtester application is also successful.<BR>
+<BR>
+The minimum configuration that is one I am able to boot into shell is =
+a<BR>
+kernel configured with serial console and small busybox JFFS2 file<BR>
+system in the flash. In this configuration, the boot fails the first<BR>
+time JFFS2 root FS is mounted. However it does boot after reset.<BR>
+<BR>
+I've tried different kernels with the same results&nbsp; starting from, =
+I<BR>
+think, 2.6.16&nbsp; up to 2.6.22<BR>
+I tried the kernel that is provided by Freescale for 834x reference<BR>
+boards. ( with my board support of course)<BR>
+<BR>
+I tried booting both OF flat trees (powerpc) and bd_t based builds =
+(ppc)<BR>
+<BR>
+I've also tried all memory management options :<BR>
+SLAB, SLOB and SLUB (in the latest kernel). They all failed at some<BR>
+point of time, so the assumption is that the problem is not in the<BR>
+memory management facilities.<BR>
+<BR>
+The board manufacturer swears that DDR2 memory controller values are<BR>
+correct and should work perfectly.<BR>
+<BR>
+So now I almost out of options and I am seeking your help.<BR>
+Any type of input on this issue would be greatly appreciated.<BR>
+<BR>
+Thanks,<BR>
+Boris<BR>
+<BR>
+PS. Note that an below example represents failure during DHCP<BR>
+autoconfiguration. However the similar error happens even when<BR>
+networking is disabled completely. just in a different place.<BR>
+<BR>
+=3D&gt; bootm<BR>
+## Booting image at 00400000 ...<BR>
+&nbsp;&nbsp; Image Name:&nbsp;&nbsp; Linux-.6.21.5<BR>
+&nbsp;&nbsp; Created:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2007-07-10&nbsp; =
+14:20:19 UTC<BR>
+&nbsp;&nbsp; Image Type:&nbsp;&nbsp; PowerPC Linux Kernel Image (gzip =
+compressed)<BR>
+&nbsp;&nbsp; Data Size:&nbsp;&nbsp;&nbsp; 898361 Bytes =3D 877.3 kB<BR>
+&nbsp;&nbsp; Load Address: 00000000<BR>
+&nbsp;&nbsp; Entry Point:&nbsp; 00000000<BR>
+&nbsp;&nbsp; Verifying Checksum ... OK<BR>
+&nbsp;&nbsp; Uncompressing Kernel Image ... OK<BR>
+## Current stack ends at 0x07FA3CF8 =3D&gt; set upper limit to =
+0x00800000<BR>
+## cmdline at 0x007FFF00 ... 0x007FFF41<BR>
+bd address&nbsp; =3D 0x07FA3FBC<BR>
+memstart&nbsp;&nbsp;&nbsp; =3D 0x00000000<BR>
+memsize&nbsp;&nbsp;&nbsp;&nbsp; =3D 0x08000000<BR>
+flashstart&nbsp; =3D 0xFE000000<BR>
+flashsize&nbsp;&nbsp; =3D 0x02000000<BR>
+flashoffset =3D 0x00033000<BR>
+sramstart&nbsp;&nbsp; =3D 0x00000000<BR>
+sramsize&nbsp;&nbsp;&nbsp; =3D 0x00000000<BR>
+bootflags&nbsp;&nbsp; =3D 0x00000001<BR>
+intfreq&nbsp;&nbsp;&nbsp;&nbsp; =3D&nbsp;&nbsp;&nbsp; 528 MHz<BR>
+busfreq&nbsp;&nbsp;&nbsp;&nbsp; =3D&nbsp;&nbsp;&nbsp; 264 MHz<BR>
+ethaddr&nbsp;&nbsp;&nbsp;&nbsp; =3D 00:04:9F:EF:23:35<BR>
+eth1addr&nbsp;&nbsp;&nbsp; =3D 00:E0:0C:00:7E:25<BR>
+IP addr&nbsp;&nbsp;&nbsp;&nbsp; =3D 10.2.222.20<BR>
+baudrate&nbsp;&nbsp;&nbsp; =3D 115200 bps<BR>
+No initrd<BR>
+## Transferring control to Linux (at address 00000000) ...<BR>
+!!!! of_flat_tree =3D 00000000<BR>
+Booting without OF Flat tree<BR>
+Linux version .6.21.5 (me@localhost) (gcc version<BR>
+4.0.0 (DENX ELDK 4.1 4.0.0)) #24 Tue Jul 10 17:20:09 IDT 2007<BR>
+Zone PFN ranges:<BR>
+&nbsp; =
+DMA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p; 0 -&gt;&nbsp;&nbsp;&nbsp; 32768<BR>
+&nbsp; Normal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 32768 =
+-&gt;&nbsp;&nbsp;&nbsp; 32768<BR>
+early_node_map[1] active PFN ranges<BR>
+&nbsp;&nbsp;&nbsp; 0:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0 =
+-&gt;&nbsp;&nbsp;&nbsp; 32768<BR>
+Built 1 zonelists.&nbsp; Total pages: 32512<BR>
+Kernel command line: console=3DttyS0,115200 root=3D/dev/mtdblock1<BR>
+rootfstype=3Djffs2 ip=3Ddhcp<BR>
+IPIC (128 IRQ sources, 8 External IRQs) at fe000700<BR>
+PID hash table entries: 512 (order: 9, 2048 bytes)<BR>
+Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)<BR>
+Inode-cache hash table entries: 8192 (order: 3, 32768 bytes)<BR>
+Memory: 127744k available (1584k kernel code, 444k data, 84k init, =
+0k<BR>
+highmem)<BR>
+Mount-cache hash table entries: 512<BR>
+NET: Registered protocol family 16<BR>
+Setup MTD partitions<BR>
+Generic PHY: Registered new driver<BR>
+NET: Registered protocol family 2<BR>
+IP route cache hash table entries: 1024 (order: 0, 4096 bytes)<BR>
+TCP established hash table entries: 4096 (order: 3, 32768 bytes)<BR>
+TCP bind hash table entries: 4096 (order: 2, 16384 bytes)<BR>
+TCP: Hash tables configured (established 4096 bind 4096)<BR>
+TCP reno registered<BR>
+JFFS2 version 2.2. (NAND) (C) 2001-2006 Red Hat, Inc.<BR>
+io scheduler noop registered<BR>
+io scheduler anticipatory registered (default)<BR>
+io scheduler deadline registered<BR>
+io scheduler cfq registered<BR>
+Serial: 8250/16550 driver $Revision: 1.90 $ 2 ports, IRQ sharing<BR>
+disabled<BR>
+serial8250.0: ttyS0 at MMIO 0xe0004500 (irq =3D 9) is a 16550A<BR>
+serial8250.0: ttyS1 at MMIO 0xe0004600 (irq =3D 10) is a 16550A<BR>
+Gianfar MII Bus: probed<BR>
+eth0: Gianfar Ethernet Controller Version 1.2, 00:04:9f:ef:23:35<BR>
+eth0: Running with NAPI disabled<BR>
+eth0: 64/64 RX/TX BD ring size<BR>
+Broadcom BCM5241: Registered new driver<BR>
+physmap platform flash device: 02000000 at fe000000<BR>
+physmap-flash.0: Found 1 x16 devices at 0x0 in 8-bit bank<BR>
+&nbsp;Amd/Fujitsu Extended Query Table at 0x0040<BR>
+physmap-flash.0: CFI does not contain boot bank location. Assuming =
+top.<BR>
+number of CFI chips: 1<BR>
+cfi_cmdset_0002: Disabling erase-suspend-program due to code =
+brokenness.<BR>
+cmdlinepart partition parsing not available<BR>
+RedBoot partition parsing not available<BR>
+Using physmap partition information<BR>
+Creating 2 MTD partitions on &quot;physmap-flash.0&quot;:<BR>
+0x00000000-0x00100000 : &quot;uboot&quot;<BR>
+0x00100000-0x02000000 : &quot;rootfs&quot;<BR>
+IPv4 over IPv4 tunneling driver<BR>
+GRE over IPv4 tunneling driver<BR>
+TCP cubic registered<BR>
+NET: Registered protocol family 1<BR>
+NET: Registered protocol family 17<BR>
+!!!! Gianfar init_phy. phy_id =3D 0:01<BR>
+!!!! phy_attach. phy_id =3D 0:01<BR>
+!!!! phy_attach device found. phy_id =3D 0:01<BR>
+Sending DHCP requests .&lt;3&gt;slab: Internal list corruption detected =
+in<BR>
+cache 'files_cache'(21), slabp c0344000(16). Hexdump:<BR>
+<BR>
+000: 00 10 01 00 00 20 02 00 00 00 00 70 c0 34 40 70<BR>
+010: 00 00 00 10 00 00 ff 10 00 00 00 00 ff ff ff fe<BR>
+020: ff ff ff fe ff ff ff fe ff ff ff fe ff ff ff fe<BR>
+030: ff ff ff fe ff ff ff fe ff ff ff fe ff ff ff fe<BR>
+040: ff ff ff fe ff ff ff fe ff ff ff fe ff ff ff fe<BR>
+050: ff ff ff fe ff ff ff fe ff ff ff fd 00 00 00 11<BR>
+060: 00 00 00 12 00 00 00 13 00 00 00 14 ff ff ff ff<BR>
+------------[ cut here ]------------<BR>
+kernel BUG at mm/slab.c:2936!<BR>
+Oops: Exception in kernel mode, sig: 5 [#1]<BR>
+NIP: C0050F80 LR: C0050F80 CTR: 00000000<BR>
+REGS: c034fe00 TRAP: 0700&nbsp;&nbsp; Not tainted&nbsp; (.6.21.5)<BR>
+MSR: 00021032 &lt;ME,IR,DR&gt;&nbsp; CR: 24004002&nbsp; XER: =
+00000000<BR>
+TASK =3D c032a3c0[3] 'events/0' THREAD: c034e000<BR>
+GPR00: C0050F80 C034FEB0 C032A3C0 00000001 00000DF5 FFFFFFFF =
+C00F5B54<BR>
+00000010<BR>
+GPR08: C01D0000 C01E0000 00000DF5 00000DF5 00000000 00F1C5DB =
+07FFD000<BR>
+FFFFFFFF<BR>
+GPR16: 00000001 00000000 00000000 00800000 00000000 007FFF00 =
+00000000<BR>
+C033DAA0<BR>
+GPR24: C0339C90 00000007 00000000 C01B0000 C01B0000 C0344000 =
+C033DAA0<BR>
+00000070<BR>
+NIP [C0050F80] check_slabp+0xe4/0x11c<BR>
+LR [C0050F80] check_slabp+0xe4/0x11c<BR>
+Call Trace:<BR>
+[C034FEB0] [C0050F80] check_slabp+0xe4/0x11c (unreliable)<BR>
+[C034FED0] [C0051450] free_block+0x88/0x138<BR>
+[C034FF00] [C0052188] drain_array+0xa0/0xe0<BR>
+[C034FF20] [C0052228] cache_reap+0x60/0x144<BR>
+[C034FF40] [C00257B0] run_workqueue+0xd0/0x170<BR>
+[C034FF60] [C0025960] worker_thread+0x110/0x144<BR>
+[C034FFC0] [C00298E4] kthread+0x74/0xb0<BR>
+[C034FFF0] [C0005F38] kernel_thread+0x44/0x60<BR>
+Instruction dump:<BR>
+387b6538 7c9df8ae 4bfc2b49 3bff0001 813e0020 5529103a 3929001c =
+7f9f4840<BR>
+419cffcc 3c60c01b 3863336c 4bfc2b25 &lt;0fe00000&gt; 48000000 =
+80030020<BR>
+2f800000<BR>
+</FONT>
+</P>
 
-<body lang=3DEN-GB link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
-lang=3DEN-US
-style=3D'font-size:10.0pt'>Running our multithreaded application on =
-ppc8548 (E500
-core) generates a machine check exception when trying to access some =
-ASIC&#8217;s
-registers mapped on the PCI space (This application maps a PCI device to =
-access
-its registers)<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
-lang=3DEN-US
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><i><font size=3D2 color=3Dblue face=3D"Courier =
-New"><span
-lang=3DEN-US =
-style=3D'font-size:10.0pt;color:blue;font-style:italic'>machine_check_exc=
-eption:
-task my_process, MCSR=3D0x10008, =
-NIP=3D0x10153530<o:p></o:p></span></font></i></p>
-
-<p class=3DMsoNormal><i><font size=3D2 color=3Dblue face=3D"Courier =
-New"><span
-lang=3DEN-US =
-style=3D'font-size:10.0pt;color:blue;font-style:italic'>Machine check
-in user mode.<o:p></o:p></span></font></i></p>
-
-<p class=3DMsoNormal><i><font size=3D2 color=3Dblue face=3D"Courier =
-New"><span
-lang=3DEN-US =
-style=3D'font-size:10.0pt;color:blue;font-style:italic'>Caused by
-(from MCSR=3D10008): <b><span style=3D'font-weight:bold'>Guarded Load or
-Cache-Inhibited stwcx</span></b>.<o:p></o:p></span></font></i></p>
-
-<p class=3DMsoNormal><i><font size=3D2 color=3Dblue face=3D"Courier =
-New"><span
-lang=3DEN-US style=3D'font-size:10.0pt;color:blue;font-style:italic'>Bus =
-- Read
-Data Bus Error<o:p></o:p></span></font></i></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
-lang=3DEN-US
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
-lang=3DEN-US
-style=3D'font-size:10.0pt'>Here is the assembly dump of the region of =
-code
-containing the offending instruction in user-space, with SRR0 pointing =
-us at
-0x10153530 when the exception is raised:<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
-lang=3DEN-US
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
-lang=3DEN-US
-style=3D'font-size:10.0pt'>0x10153528
-&lt;_ZN2vk7in_le32EPVKj+16&gt;:&nbsp;&nbsp;&nbsp; =
-lwz&nbsp;&nbsp;&nbsp;&nbsp;
-r0,8(r31)<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
-lang=3DEN-US
-style=3D'font-size:10.0pt'>0x1015352c
-&lt;_ZN2vk7in_le32EPVKj+20&gt;:&nbsp;&nbsp;&nbsp; =
-lwz&nbsp;&nbsp;&nbsp;&nbsp;
-r9,8(r31)<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
-lang=3DEN-US
-style=3D'font-size:10.0pt'>0x10153530
-&lt;_ZN2vk7in_le32EPVKj+24&gt;:&nbsp;&nbsp;&nbsp; lwbrx&nbsp;&nbsp; =
-r0,0,r0<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
-lang=3DEN-US
-style=3D'font-size:10.0pt'>0x10153534
-&lt;_ZN2vk7in_le32EPVKj+28&gt;:&nbsp;&nbsp;&nbsp; =
-twi&nbsp;&nbsp;&nbsp;&nbsp;
-0,r0,0<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
-lang=3DEN-US
-style=3D'font-size:10.0pt'>0x10153538
-&lt;_ZN2vk7in_le32EPVKj+32&gt;:&nbsp;&nbsp;&nbsp; =
-isync<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
-lang=3DEN-US
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
-lang=3DEN-US
-style=3D'font-size:10.0pt'>All this is fully reproducible, the offending =
-code is
-repeatedly the byte-reverse load within the (m)mapped PCI memory =
-segment. The offset
-within the segment may vary, even if most of the hits seem to be taken =
-when
-reading 0x20030-0x20034 offsets from 0x80000000 PCI address space (which =
-is
-mapped to the application via /dev/mem)<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
-lang=3DEN-US
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
-lang=3DEN-US
-style=3D'font-size:10.0pt'>/proc/pid/maps reports the following mappings =
-to
-/dev/mem, with the first one being an ASIC on the PCI space whose =
-registers we
-are trying to access, and the second one being system memory (this =
-system
-memory is out of kernel visibility&#8230;we use &#8216;mem=3D256M&#8217; =
-as a
-kernel parameter...):<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
-lang=3DEN-US
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
-lang=3DEN-US
-style=3D'font-size:10.0pt'>303a9000-304a9000 rw-s 80000000 00:0c
-2087&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-/dev/mem<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
-lang=3DEN-US
-style=3D'font-size:10.0pt'>304a9000-404a9000 rw-s 10000000 00:0c
-2087&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-/dev/mem<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
-lang=3DEN-US
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
-lang=3DEN-US
-style=3D'font-size:10.0pt'>Has anybody experienced something similar =
-using a
-kernel based on a 2.6.20 powerpc tree? <o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
-lang=3DEN-US
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
-lang=3DEN-US
-style=3D'font-size:10.0pt'>Many thanks<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-9.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-9.0pt;font-family:Arial;color:navy'>jorge<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-9.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><b><font size=3D1 color=3D"#003366" =
-face=3DArial><span
-style=3D'font-size:7.5pt;font-family:Arial;color:#003366;font-weight:bold=
-'>______________________________<o:p></o:p></span></font></b></p>
-
-<p class=3DMsoNormal><b><font size=3D1 color=3D"#003366" =
-face=3DArial><span
-style=3D'font-size:7.5pt;font-family:Arial;color:#003366;font-weight:bold=
-'>Jorge
-Ramirez-Ortiz<o:p></o:p></span></font></b></p>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dnavy face=3D"Courier =
-New"><span
-style=3D'font-size:12.0pt;color:navy'>&nbsp;</span></font><font
-face=3D"Times New Roman"><span style=3D'font-family:"Times New =
-Roman"'><o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Courier New"><span =
-style=3D'font-size:12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01C7C87D.BA0942A6--
+</BODY>
+</HTML>
+------_=_NextPart_001_01C7C880.AFABB6A0--
