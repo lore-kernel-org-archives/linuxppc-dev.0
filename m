@@ -1,24 +1,18 @@
-Return-Path: <akostop@inaccessnetworks.com>
-Received: from inaccessnetworks.com (node3.inaccessnetworks.com
-	[212.205.200.118]) by ozlabs.org (Postfix) with ESMTP id E815DDDE10
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 21:55:38 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by inaccessnetworks.com (8.13.6/8.13.5) with ESMTP id l6HBtaZ2009041
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 14:55:36 +0300
-Received: from inaccessnetworks.com ([127.0.0.1])
-	by localhost (host11.inaccessnetworks.com [127.0.0.1]) (amavisd-new,
-	port 10024) with LMTP id 08414-17 for <linuxppc-dev@ozlabs.org>;
-	Tue, 17 Jul 2007 14:55:35 +0300 (EEST)
-Received: from phoenix (phoenix.priv.inaccessnetworks.com [192.168.1.7])
-	by inaccessnetworks.com (8.13.6/8.13.5) with ESMTP id l6HBtZ5M009036
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 14:55:35 +0300
-Date: Tue, 17 Jul 2007 14:55:30 +0300
-To: linuxppc-dev@ozlabs.org
-Subject: regarding cpm_uart and platform_bus_type
-From: "Alexandros Kostopoulos" <akostop@inaccessnetworks.com>
-Content-Type: text/plain; format=flowed; delsp=yes; charset=iso-8859-7
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 0F204DDDF7
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 22:02:16 +1000 (EST)
+Date: Tue, 17 Jul 2007 14:02:37 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Will Schmidt <will_schmidt@vnet.ibm.com>
+Subject: Re: hvc_iseries not working
+Message-ID: <20070717120237.GA24912@aepfle.de>
+References: <20070713170540.GA1987@aepfle.de>
+	<1184600356.22547.121.camel@farscape.rchland.ibm.com>
 MIME-Version: 1.0
-Message-ID: <op.tvlxc2sjnhx3hy@phoenix>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1184600356.22547.121.camel@farscape.rchland.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,19 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+On Mon, Jul 16, Will Schmidt wrote:
 
-I was wondering, since arch/powerpc is now based on device trees,  
-shouldn't the cpm_uart driver (or at least a branch of it for  
-arch/powerpc) be changed to use of_platform_bus_type instead of  
-platform_bus_type? In my opinion, cpm_uart driver should take all its  
-configuration (uart address base, ints etc) from dts (via the of_platform  
-code) without any intervention from board specific code. In any case,  
-given the current situation, how can I pass cpm_uart the address/irq of  
-the uarts? by hardcoding it in my board specific code? mpc82xx_ads.c  
-doesn't seem to have such code, and I was wondering how SCC uarts work in  
-this platform? Who initializes them?
+> On Fri, 2007-07-13 at 19:05 +0200, Olaf Hering wrote:
+> > 2.6.21 arch/powerpc/configs/iseries_defconfig works on an i825 with v5r4
+> > 2.6.22 arch/powerpc/configs/iseries_defconfig does not. But it works on
+> > a i820 with v5r3.
+> > 2.6.22 boots ok with CONFIG_VIOCONS
+> 
+> When it works, do you have more than one processor assigned to the
+> partition?   
 
-thank you
-
-Alex
+The partition does not change, only the kernel (And iseries_defconfig) changes.
+The partition has a single cpu assigned, 0.8 %
