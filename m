@@ -1,26 +1,22 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3A6DDDDEC4
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 01:37:15 +1000 (EST)
-In-Reply-To: <18076.42297.26124.137770@cargo.ozlabs.ibm.com>
-References: <46B96294322F7D458F9648B60E15112C6F3D1E@zch01exm26.fsl.freescale.net>
-	<4694F608.2090503@freescale.com>
-	<368E1200-1315-4C24-9876-C92CCF65EFE3@kernel.crashing.org>
-	<46B96294322F7D458F9648B60E15112C6F3E42@zch01exm26.fsl.freescale.net>
-	<1184260375.24515.35.camel@pterry-fc6.micromemory.com>
-	<B2EA074C-5D8E-4E13-B6BF-E81FBA52E76E@kernel.crashing.org>
-	<18076.42297.26124.137770@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <3E9205E0-E634-4A3E-BDC1-5FB91A347D24@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/4] Add DMA sector to
-	Documentation/powerpc/booting-without-of.txt file.
-Date: Tue, 17 Jul 2007 17:36:53 +0200
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, Wei.Zhang@freescale.com
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BB1C7DDE1F
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 02:06:39 +1000 (EST)
+Message-ID: <469CE904.2090900@freescale.com>
+Date: Tue, 17 Jul 2007 11:06:28 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 2/3] 82xx: Parse SMC serial device node in DTS
+References: <469B33F9.2080604@windriver.com> <200707171506.43102.arnd@arndb.de>
+	<1184682576.18501.62.camel@mark> <200707171618.54903.arnd@arndb.de>
+In-Reply-To: <200707171618.54903.arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,40 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> The device tree describes _all_ hardware in the system,
->> not just the things that are somewhat harder to probe
->> for.
->
-> Actually, for embedded systems, the device tree is really only
-> required to describe the things that it's useful for the Linux kernel
-> to know.
+Arnd Bergmann wrote:
+> On Tuesday 17 July 2007, Mark Zhan wrote:
+> 
+>>>Well, AFAICS, all of them currently use scc. The 8xx platforms don't
+>>>even build correctly in the mainline kernel, so I guess it would
+>>>be good to change them to also list fsl,cpm-smc in the compatible
+>>>property.
+>>
+>>That probably could be done by another series of patches, and I really
+>>don't want to introduce those kinds of patches in my BSP patches. I
+>>don't know if the 8xx/82xx series patches from Scott Wood will cover
+>>this issue or not.
+> 
+> 
+> I guess he can best answer that himself. Scott, what are your plans
+> to deal with the different types of cpm ports?
 
-Sure, for example it could provide a "SoC" node with only
-an address range, and not describe all the devices on that
-SoC separately.  It still describes all of the hardware,
-not in quite so much detail though.  It also won't get all
-the benefits of using the OF device tree, but that is a
-trade off, for each group to decide on their own.
+My patchset converts the CPM enet and serial drivers to of platform 
+devices when CONFIG_PPC_MERGE is defined, and signficantly overhauls the 
+device tree binding.  A 885 CPM UART would have a compatible like this:
 
-> The point of the device tree for embedded systems is to provide
-> configuration information, not to be able to claim compliance with
-> some set of legalistic requirements. :)
+compatible = "fsl,mpc885-smc-uart", "fsl,cpm1-smc-uart",
+              "fsl,cpm1-uart", "fsl,cpm-smc-uart", "fsl,cpm-uart";
 
-Well, if you use some certain binding, you better use it
-correctly, no?  Ill-defined and ill-used interfaces aren't
-the nicest thing to deal with.
-
-> I think in some cases we have gone a little over the top in trying to
-> put everything in the device tree, in fact.  Ultimately I think it has
-> to be up to the more experienced embedded developers to say how much
-> detail in the device tree is actually helpful and how much is dead
-> weight.
-
-Yes, more complex device bindings need a lot of time to get
-right, and need a lot of input from all parties using it.
-In general, it is better to leave out things from a binding
-until it is very clear it is needed and is the right thing
-to do.
-
-
-Segher
+-Scott
