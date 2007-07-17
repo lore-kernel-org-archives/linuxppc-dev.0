@@ -1,19 +1,18 @@
 Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
-	by ozlabs.org (Postfix) with ESMTP id DA212DDE04
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 13:48:42 +1000 (EST)
-To: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
-Subject: Re: [PATCH 01/10] IB/ehca: Support for multiple event queues
-References: <OF2377E85C.B05BDE94-ONC125731A.006E64A7-C125731A.00714F9E@de.ibm.com>
+Received: from sj-iport-1.cisco.com (sj-iport-1-in.cisco.com [171.71.176.70])
+	by ozlabs.org (Postfix) with ESMTP id 3D54EDDE10
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 13:50:19 +1000 (EST)
+To: Joachim Fenkes <FENKES@de.ibm.com>
+Subject: Re: [PATCH 10/10] IB/ehca: Support large page MRs
+References: <OFD7499E67.C6B5EA9B-ONC125731A.00715FED-C125731A.007484A7@de.ibm.com>
 From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 16 Jul 2007 20:48:40 -0700
-In-Reply-To: <OF2377E85C.B05BDE94-ONC125731A.006E64A7-C125731A.00714F9E@de.ibm.com>
-	(Hoang-Nam Nguyen's message of "Mon, 16 Jul 2007 22:37:44 +0200")
-Message-ID: <ada1wf7vgfb.fsf@cisco.com>
+Date: Mon, 16 Jul 2007 20:50:13 -0700
+In-Reply-To: <OFD7499E67.C6B5EA9B-ONC125731A.00715FED-C125731A.007484A7@de.ibm.com>
+	(Joachim Fenkes's message of "Mon, 16 Jul 2007 23:11:47 +0200")
+Message-ID: <adatzs3u1sa.fsf@cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: Joachim Fenkes <fenkes@de.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+Cc: LKML <linux-kernel@vger.kernel.org>, LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
 	Christoph Raisch <raisch@de.ibm.com>,
 	OF-General <general@lists.openfabrics.org>,
 	Stefan Roscher <stefan.roscher@de.ibm.com>
@@ -26,25 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > No, I've no figures to provide here. The background of this dist_eqs
- > option is actually to allow us testing across all event queues
- > without to change the testcases resp consumers to use certain
- > event queue number. Thus, I should comment it as EXPERIMENTAL?
+ > > Why the module parameter?  Is there any reason a user would want to
+ > > turn this off?  Or conversely, why is it off by default?
+ > 
+ > We're pretty confident this new feature works, but as with all new and 
+ > possibly experimental features, there are chances it might explode your 
+ > machine when activated. So, like with the scaling code, we want the user 
+ > to make the conscious decision of using this code instead of activating it 
+ > by default.
 
-Seems like it's just development/testing code that shouldn't escape
-into the wild?
+OK, I guess.  So can we expect to, say, change the default to turning
+it on for 2.6.24 and remove the option entirely (so it's always on) in
+2.6.25?
 
- > > I think I would rather hold off on multiple EQs for this merge window
- > > and plan on having something really solid and thought-out for 2.6.24.
-
- > Fair enough. However why don't let us gather experience with this
- > feature now? Should we remove dist_eqs option for more consistency?
-
-As I said I definitely think the dist_eqs switch doesn't sound like
-something we want to expose to people.
-
-With that said I still am not sure about putting the multiple EQs
-feature in this release.  All the infrastructure is there to make
-experimenting with it fairly painless (just the low-level driver needs
-to change), and I still haven't seen much code using the feature or
-even any anecdotal information about the performance impact.
+ - R.
