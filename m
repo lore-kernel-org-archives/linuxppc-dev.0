@@ -1,28 +1,19 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B07F2DDEEF
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 08:25:18 +1000 (EST)
-Date: Tue, 17 Jul 2007 17:25:07 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC][PATCH 6/8] Walnut DTS
-Message-ID: <20070717222507.GA4682@ld0162-tx32.am.freescale.net>
-References: <1184161957.32199.52.camel@weaponx.rchland.ibm.com>
-	<1184162389.32199.65.camel@weaponx.rchland.ibm.com>
-	<4EAC985A-2F04-465D-AB69-C67807310D7B@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA3030669AF@az33exm25.fsl.freescale.net>
-	<28A3F6B9-512B-4D86-8E0D-A7680CCE2354@kernel.crashing.org>
-	<1184622446.25235.89.camel@localhost.localdomain>
-	<C2D29334-489F-49B0-8220-0D94E89FEAC3@kernel.crashing.org>
-	<1184707558.25235.159.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1184707558.25235.159.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, Yoder Stuart-B08248 <stuart.yoder@freescale.com>
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [208.123.74.7])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D7594DDEE2
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 08:27:22 +1000 (EST)
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] Add StorCenter DTS first draft. 
+In-Reply-To: Your message of "Tue, 17 Jul 2007 16:57:27 +0200."
+	<630B6BC9-389F-4F5C-AE8F-9C3131C4543E@kernel.crashing.org>
+References: <E1IAnwC-0003Xm-6U@jdl.com>
+	<630B6BC9-389F-4F5C-AE8F-9C3131C4543E@kernel.crashing.org>
+Date: Tue, 17 Jul 2007 17:27:18 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1IAvVm-0005yQ-LO@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,54 +23,93 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 18, 2007 at 07:25:57AM +1000, Benjamin Herrenschmidt wrote:
-> > > which is why I tend to prefer having it
-> > > explicitely in the interrupt controller node :-)
-> > 
-> > Which is simply incorrect.
+So, like, the other day Segher Boessenkool mumbled:
+> > +/ {
+> > +	model = "StorCenter";
 > 
-> It's absolutely not. Please, stop that moronic pin-head behaviour and
-> find me a single case where that would actually be a problem of any sort
-> or form.
+> If you can find a real model number, put it in here, instead.
 
-It could lead someone to the erroneous conclusion that an #address-cells
-other than zero in an interrupt controller that is not a device parent is
-in any way a sane or supported thing to do.
+Yep, "StorCenter" is it.  No model numer/name beyond that.
 
-It could lead people to write code that doesn't handle the absence of
-#address-cells in such a node properly.
-
-It could lead to flamewars. :-)
-
-> > You mean, the magic default values you used for #address-cells
-> > and #size-cells?  That was simply a bug, someone forgot to read
-> > the documentation...
+> > +	compatible = "storcenter";
 > 
-> No, defaults are crap, period.
+> Needs a manufacturer name in there.
 
-If there's only one value that could possibly make sense, it *not* being
-the default is crap.
+Right.  Will use:
+	compatible = "iomega,storcenter"
 
-> See above. Besides, as I said, default values are crap. And no, it's not
-> obvious which nodes define a physical address space or not, at least not
-> for a generic parser.
-
-The obvious way (which indeed isn't what the suggested algorithm does --
-but the suggested algorithm doesn't do anything sensible) is that if you
-got to the node via an interrupt-parent or interrupt-map, it doesn't use
-#address-cells, and if you got to it by going to the regular device tree
-parent, it does.
-
-Pretty much any time you use the unit address in a context other than the
-bus parent, things cease making sense.
-
-> > In some areas, perhaps.  And it would be nice to bring those
-> > areas to the attention of the working group, instead of just
-> > to complain.
+> > +		PowerPC,603e {			/* Really 8241 */
 > 
-> The working group is dead and some of the ex members of it expressed
-> their lack of interest in pursuing these matters.
+> So say "PowerPC,8241@0", or "PowerPC,e300@0" (or whatever
+> the CPU core in there is), or simply "cpu@0", following
+> the generic naming recommended practice.
 
-There is the ePAPR working group, though.
+Well, its the 8241 SoC with a 603e core...  (This is
+the same phrase currently being used on the Kurobox.)
+I'll use:
 
--Scott
+	PowerPC,8241@0 }
+
+
+> > +			bus-frequency = <0>;
+> 
+> Is this filled in anywhere?  Please document that, if so.
+
+Right.  boot{loader,wrapper}
+
+> > +	soc10x {
+> 
+> Bad name.  Where is the binding for this?  I don't think
+> I saw it before.
+
+It's what is being used, again, by the Kurobox.  I understand
+that doesn't make it "right", just precedented by now.
+
+How about "soc8241@80000000" instead?
+
+That would be similar to:
+        soc8641@f8000000 {
+and
+       soc8272@f0000000 {
+
+> > +		store-gathering = <0>; /* 0 == off, !0 == on */
+> 
+> Don't define this as "!0", but as "1".
+
+OK.
+
+> > +		i2c@fdf03000 {
+> > +			device_type = "i2c";
+> 
+> No device_type, there is no I2C binding.
+
+Right.
+
+> > +			compatible = "fsl-i2c";
+> 
+> Needs to be more specific.
+
+Hmmm...  Not sure what to use here then.  There are many
+existing examples using "fsl-i2c" already.  Granted, we've
+established that they could be wrong...  Should this be
+more like this?:
+
+    compatible = "fsl,mpc8241-i2c", "fsl-i2c";
+
+> > +		mpic: pic@fdf40000 {
+> 
+> interrupt-controller@fdf40000
+
+OK.
+
+> > +		pci@fe800000 {
+> > +			clock-frequency = <d# 100000000>; /* Hz */
+> 
+> 100MHz PCI?  Interesting.
+
+Good point. 66666666 seems more likely...
+
+
+Thanks for the review and help here!
+
+jdl
