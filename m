@@ -1,19 +1,20 @@
 Return-Path: <afleming@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 97A61DDE37
+	by ozlabs.org (Postfix) with ESMTP id 97961DDE36
 	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 11:27:32 +1000 (EST)
 From: Andy Fleming <afleming@freescale.com>
 To: jgarzik@pobox.com, paulus@samba.org, galak@kernel.crashing.org
-Subject: [PATCH 2/4] gianfar: Add phy-connection-type to gianfar nodes
-Date: Mon, 16 Jul 2007 20:26:59 -0500
-Message-Id: <11846356233423-git-send-email-afleming@freescale.com>
-In-Reply-To: <1184635622653-git-send-email-afleming@freescale.com>
+Subject: [PATCH 3/4] phy: Fix Vitesse RGMII-ID support
+Date: Mon, 16 Jul 2007 20:27:00 -0500
+Message-Id: <11846356241295-git-send-email-afleming@freescale.com>
+In-Reply-To: <11846356233423-git-send-email-afleming@freescale.com>
 References: <1184635621688-git-send-email-afleming@freescale.com>
 	<1184635622653-git-send-email-afleming@freescale.com>
+	<11846356233423-git-send-email-afleming@freescale.com>
 Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,69 +25,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The TSEC/eTSEC automatically detect their PHY interface type, unless
-the type is RGMII-ID (RGMII with internal delay).  In that situation,
-it just detects RGMII.  In order to fix this, we need to pass in rgmii-id
-if that is the connection type.
+The Vitesse PHY on the 8641D needs to be set up with internal delay to
+work in RGMII mode.  So we add skew when it is set to RGMII_ID mode.
 
 Signed-off-by: Andy Fleming <afleming@freescale.com>
+Signed-off-by: Haruki Dai <Dai.Haruki@freescale.com>
+Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
 ---
- Documentation/powerpc/booting-without-of.txt |    6 ++++++
- arch/powerpc/boot/dts/mpc8641_hpcn.dts       |    4 ++++
- 2 files changed, 10 insertions(+), 0 deletions(-)
+ drivers/net/phy/vitesse.c |   23 ++++++++++++++++++++---
+ 1 files changed, 20 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index d42d981..a41b6b1 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -1241,6 +1241,12 @@ platforms are moved over to use the flattened-device-tree model.
-       network device.  This is used by the bootwrapper to interpret
-       MAC addresses passed by the firmware when no information other
-       than indices is available to associate an address with a device.
-+    - phy-connection-type : a string naming the controller/PHY interface type,
-+      i.e., "mii" (default), "rmii", "gmii", "rgmii", "rgmii-id", "sgmii",
-+      "tbi", or "rtbi".  This property is only really needed if the connection
-+      is of type "rgmii-id", as all other connection types are detected by
-+      hardware.
+diff --git a/drivers/net/phy/vitesse.c b/drivers/net/phy/vitesse.c
+index f39ab76..6a53856 100644
+--- a/drivers/net/phy/vitesse.c
++++ b/drivers/net/phy/vitesse.c
+@@ -21,6 +21,10 @@
+ /* Vitesse Extended Control Register 1 */
+ #define MII_VSC8244_EXT_CON1           0x17
+ #define MII_VSC8244_EXTCON1_INIT       0x0000
++#define MII_VSC8244_EXTCON1_TX_SKEW_MASK	0x0c00
++#define MII_VSC8244_EXTCON1_RX_SKEW_MASK	0x0300
++#define MII_VSC8244_EXTCON1_TX_SKEW	0x0800
++#define MII_VSC8244_EXTCON1_RX_SKEW	0x0200
+ 
+ /* Vitesse Interrupt Mask Register */
+ #define MII_VSC8244_IMASK		0x19
+@@ -39,7 +43,7 @@
+ 
+ /* Vitesse Auxiliary Control/Status Register */
+ #define MII_VSC8244_AUX_CONSTAT        	0x1c
+-#define MII_VSC8244_AUXCONSTAT_INIT    	0x0004
++#define MII_VSC8244_AUXCONSTAT_INIT    	0x0000
+ #define MII_VSC8244_AUXCONSTAT_DUPLEX  	0x0020
+ #define MII_VSC8244_AUXCONSTAT_SPEED   	0x0018
+ #define MII_VSC8244_AUXCONSTAT_GBIT    	0x0010
+@@ -51,6 +55,7 @@ MODULE_LICENSE("GPL");
+ 
+ static int vsc824x_config_init(struct phy_device *phydev)
+ {
++	int extcon;
+ 	int err;
+ 
+ 	err = phy_write(phydev, MII_VSC8244_AUX_CONSTAT,
+@@ -58,8 +63,20 @@ static int vsc824x_config_init(struct phy_device *phydev)
+ 	if (err < 0)
+ 		return err;
+ 
+-	err = phy_write(phydev, MII_VSC8244_EXT_CON1,
+-			MII_VSC8244_EXTCON1_INIT);
++	extcon = phy_read(phydev, MII_VSC8244_EXT_CON1);
 +
++	if (extcon < 0)
++		return err;
++
++	extcon &= ~(MII_VSC8244_EXTCON1_TX_SKEW_MASK |
++			MII_VSC8244_EXTCON1_RX_SKEW_MASK);
++
++	if (phydev->interface == PHY_INTERFACE_MODE_RGMII_ID)
++		extcon |= (MII_VSC8244_EXTCON1_TX_SKEW |
++				MII_VSC8244_EXTCON1_RX_SKEW);
++
++	err = phy_write(phydev, MII_VSC8244_EXT_CON1, extcon);
++
+ 	return err;
+ }
  
-   Example:
- 
-diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-index 260b264..9849073 100644
---- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-+++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-@@ -121,6 +121,7 @@
- 			interrupts = <1d 2 1e 2 22 2>;
- 			interrupt-parent = <&mpic>;
- 			phy-handle = <&phy0>;
-+			phy-connection-type = "rgmii-id";
- 		};
- 
- 		ethernet@25000 {
-@@ -134,6 +135,7 @@
- 			interrupts = <23 2 24 2 28 2>;
- 			interrupt-parent = <&mpic>;
- 			phy-handle = <&phy1>;
-+			phy-connection-type = "rgmii-id";
- 		};
- 		
- 		ethernet@26000 {
-@@ -147,6 +149,7 @@
- 			interrupts = <1F 2 20 2 21 2>;
- 			interrupt-parent = <&mpic>;
- 			phy-handle = <&phy2>;
-+			phy-connection-type = "rgmii-id";
- 		};
- 
- 		ethernet@27000 {
-@@ -160,6 +163,7 @@
- 			interrupts = <25 2 26 2 27 2>;
- 			interrupt-parent = <&mpic>;
- 			phy-handle = <&phy3>;
-+			phy-connection-type = "rgmii-id";
- 		};
- 		serial@4500 {
- 			device_type = "serial";
 -- 
 1.5.0.2.230.gfbe3d-dirty
