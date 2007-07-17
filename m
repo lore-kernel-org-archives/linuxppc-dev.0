@@ -1,17 +1,21 @@
 Return-Path: <afleming@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D9B42DDE03
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 11:27:17 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 4CB10DDE35
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 11:27:32 +1000 (EST)
 From: Andy Fleming <afleming@freescale.com>
 To: jgarzik@pobox.com, paulus@samba.org, galak@kernel.crashing.org
-Subject: [PATCH 2.6.22-rc7 0/4] phy/gianfar: Fixes for gianfar and vitesse
-	RGMII-ID support
-Date: Mon, 16 Jul 2007 20:26:57 -0500
-Message-Id: <1184635621688-git-send-email-afleming@freescale.com>
+Subject: [PATCH 4/4] gianfar: Fix RGMII-ID handling in gianfar
+Date: Mon, 16 Jul 2007 20:27:01 -0500
+Message-Id: <11846356251126-git-send-email-afleming@freescale.com>
+In-Reply-To: <11846356241295-git-send-email-afleming@freescale.com>
+References: <1184635621688-git-send-email-afleming@freescale.com>
+	<1184635622653-git-send-email-afleming@freescale.com>
+	<11846356233423-git-send-email-afleming@freescale.com>
+	<11846356241295-git-send-email-afleming@freescale.com>
 Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,38 +26,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-A few bugs in the Vitesse PHY driver were found on the 8641D HPCN board.
-Originally, they were masked by a bug in the PHY Lib which was fixed by patch 
-5f708dd91d15876e26d7a57f97a255cedffca463 (Fix phy_id for Vitesse 824x PHY).
-That patch allowed the Vitesse PHY to bind on the 8641D HPCN board, thereby
-exposing a bug in the interrupt handling and a bug in the configuration of
-the PHY.  This sequence of patches fixes the irq handling bug, then fixes 
-the configuration bug in 3 places:
+The TSEC/eTSEC can detect the interface to the PHY automatically,
+but it isn't able to detect whether the RGMII connection needs internal
+delay.  So we need to detect that change in the device tree, propagate
+it to the platform data, and then check it if we're in RGMII.  This fixes
+a bug on the 8641D HPCN board where the Vitesse PHY doesn't use the delay
+for RGMII.
 
-1) The Vitesse PHY driver
-2) The gianfar driver (needs to pass in the mode correctly for internal delay)
-3) The OF device tree for arch/powerpc boards
+Signed-off-by: Andy Fleming <afleming@freescale.com>
+---
+ arch/powerpc/sysdev/fsl_soc.c |    9 +++++++++
+ drivers/net/gianfar.c         |   12 +++++++++++-
+ include/linux/fsl_devices.h   |    1 +
+ 3 files changed, 21 insertions(+), 1 deletions(-)
 
-You can apply the following patches, or pull them directly:
-
-The following changes since commit c5e3ae8823693b260ce1f217adca8add1bc0b3de:
-  Ayaz Abdulla (1):
-        forcedeth bug fix: realtek phy
-
-are found in the git repository at:
-
-  http://opensource.freescale.com/pub/scm/linux-2.6-85xx.git netdev
-
-Andy Fleming (4):
-      Fix Vitesse 824x PHY interrupt acking
-      Add phy-connection-type to gianfar nodes
-      Fix Vitesse RGMII-ID support
-      Fix RGMII-ID handling in gianfar
-
- Documentation/powerpc/booting-without-of.txt |    6 +++
- arch/powerpc/boot/dts/mpc8641_hpcn.dts       |    4 ++
- arch/powerpc/sysdev/fsl_soc.c                |    9 +++++
- drivers/net/gianfar.c                        |   12 ++++++-
- drivers/net/phy/vitesse.c                    |   46 +++++++++++++++++++++++---
- include/linux/fsl_devices.h                  |    1 +
- 6 files changed, 72 insertions(+), 6 deletions(-)
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index cad1757..64efee6 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -197,6 +197,7 @@ static int __init gfar_of_init(void)
+ 		struct gianfar_platform_data gfar_data;
+ 		const unsigned int *id;
+ 		const char *model;
++		const char *ctype;
+ 		const void *mac_addr;
+ 		const phandle *ph;
+ 		int n_res = 2;
+@@ -254,6 +255,14 @@ static int __init gfar_of_init(void)
+ 			    FSL_GIANFAR_DEV_HAS_VLAN |
+ 			    FSL_GIANFAR_DEV_HAS_EXTENDED_HASH;
+ 
++		ctype = of_get_property(np, "phy-connection-type", NULL);
++
++		/* We only care about rgmii-id.  The rest are autodetected */
++		if (ctype && !strcmp(ctype, "rgmii-id"))
++			gfar_data.interface = PHY_INTERFACE_MODE_RGMII_ID;
++		else
++			gfar_data.interface = PHY_INTERFACE_MODE_MII;
++
+ 		ph = of_get_property(np, "phy-handle", NULL);
+ 		phy = of_find_node_by_phandle(*ph);
+ 
+diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+index d7a1a58..f926905 100644
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -420,8 +420,18 @@ static phy_interface_t gfar_get_interface(struct net_device *dev)
+ 	if (ecntrl & ECNTRL_REDUCED_MODE) {
+ 		if (ecntrl & ECNTRL_REDUCED_MII_MODE)
+ 			return PHY_INTERFACE_MODE_RMII;
+-		else
++		else {
++			phy_interface_t interface = priv->einfo->interface;
++
++			/*
++			 * This isn't autodetected right now, so it must
++			 * be set by the device tree or platform code.
++			 */
++			if (interface == PHY_INTERFACE_MODE_RGMII_ID)
++				return PHY_INTERFACE_MODE_RGMII_ID;
++
+ 			return PHY_INTERFACE_MODE_RGMII;
++		}
+ 	}
+ 
+ 	if (priv->einfo->device_flags & FSL_GIANFAR_DEV_HAS_GIGABIT)
+diff --git a/include/linux/fsl_devices.h b/include/linux/fsl_devices.h
+index 73710d6..2de358f 100644
+--- a/include/linux/fsl_devices.h
++++ b/include/linux/fsl_devices.h
+@@ -53,6 +53,7 @@ struct gianfar_platform_data {
+ 	u32	bus_id;
+ 	u32	phy_id;
+ 	u8	mac_addr[6];
++	phy_interface_t interface;
+ };
+ 
+ struct gianfar_mdio_data {
+-- 
+1.5.0.2.230.gfbe3d-dirty
