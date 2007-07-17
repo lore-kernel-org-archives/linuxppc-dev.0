@@ -1,25 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5D06ADDEF3
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 08:54:30 +1000 (EST)
-Message-ID: <469D487D.1020900@freescale.com>
-Date: Tue, 17 Jul 2007 17:53:49 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: [PATCH v2] Allow exec on 32-bit from readable, non-exec pages,
-	with a warning.
-References: <20070709214853.GA29912@ld0162-tx32.am.freescale.net>
-	<1184705168.24473.32.camel@ld0161-tx32>
-	<469D3F60.8000401@freescale.com> <E1IAvmA-00062M-F4@jdl.com>
-In-Reply-To: <E1IAvmA-00062M-F4@jdl.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [208.123.74.7])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B84A6DDEC8
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 08:56:56 +1000 (EST)
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] Add StorCenter DTS first draft. 
+In-Reply-To: Your message of "Tue, 17 Jul 2007 17:34:05 CDT."
+	<469D43DD.8020102@freescale.com>
+References: <E1IAnwC-0003Xm-6U@jdl.com>
+	<630B6BC9-389F-4F5C-AE8F-9C3131C4543E@kernel.crashing.org>
+	<E1IAvVm-0005yQ-LO@jdl.com> <469D43DD.8020102@freescale.com>
+Date: Tue, 17 Jul 2007 17:56:51 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1IAvyN-00065b-Ob@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,11 +24,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon Loeliger wrote:
-> A:  They haven't been posted yet.
+So, like, the other day Scott Wood mumbled:
+> Jon Loeliger wrote:
+> > How about "soc8241@80000000" instead?
 > 
-> Q:  How do we know Segher has new patches?
+> How about just "soc@80000000"?  Those model numbers in the names are a 
+> PITA to find from limited functionality environments such as the 
+> bootwrapper, require things like stdout-path to be different on every 
+> soc, and don't comply with the generic names recommendation.
 
-He sent it to me to test, and I told him it worked...
+Oh!  Right.  No problem.
 
--Scott
+jdl
