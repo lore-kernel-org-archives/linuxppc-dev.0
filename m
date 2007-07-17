@@ -1,24 +1,18 @@
-Return-Path: <gregkh@suse.de>
-Received: from mx1.suse.de (ns1.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CBB85DDDFF
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 15:27:13 +1000 (EST)
-Date: Mon, 16 Jul 2007 22:27:02 -0700
-From: Greg KH <gregkh@suse.de>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2.6.22-rc7 0/4] phy/gianfar: Fixes for gianfar and
-	vitesse RGMII-ID support
-Message-ID: <20070717052702.GB15080@suse.de>
-References: <1184635621688-git-send-email-afleming@freescale.com>
-	<469C4E7B.6050401@garzik.org>
-	<CAD6C707-84F6-4355-A514-B9EBB565B4F9@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAD6C707-84F6-4355-A514-B9EBB565B4F9@kernel.crashing.org>
-Cc: Jeff Garzik <jeff@garzik.org>, netdev <netdev@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, stable@kernel.org
+Return-Path: <rongkai.zhan@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id 515E1DDDEB
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 15:32:19 +1000 (EST)
+Subject: Re: [PATCH 0/3] 82xx: Add the support for Wind River SBC PowerQUICCII
+From: Mark Zhan <rongkai.zhan@windriver.com>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+In-Reply-To: <20070717044414.03983375@localhost.localdomain>
+References: <469B33E8.8010105@windriver.com>
+	<20070717044414.03983375@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 17 Jul 2007 13:25:03 +0800
+Message-Id: <1184649903.10499.49.camel@mark>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,14 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 17, 2007 at 12:16:27AM -0500, Kumar Gala wrote:
->  Greg,
+Hi Vitaly,
+
+When you will send out your 8xx/82xx series patches?
+
+Thanks
+Mark Zhan
+On Tue, 2007-07-17 at 04:44 +0400, Vitaly Bordug wrote:
+> On Mon, 16 Jul 2007 17:01:28 +0800
+> Mark Zhan wrote:
 > 
->  Can you look at pulling these fixes for the next 2.6.22.x stable release.
-
-Can you send them as patches, to the stable@kernel.org address, after
-they go into Linus's tree?
-
-thanks,
-
-greg k-h
+> > These 3 patches add the powerpc support of Wind River SBC
+> > PowerQUICCII.
+> > 
+> I am sorry, but this would intercept with big 8xx/82xx series from 
+> Scott Wood I am reviewing now. it makes the initial merged code
+> more maintainable and powerpc-friendly, but would have some rework
+> required in upcoming patches for new BSPs.
+> 
+> OTOH, it would make all the changes below very short and apparent.
+> Of course, if something would block those series this one can be considered to merge.
+> 
+> 
+> > 1) Currently, some mpc82xx platform hooks in mpc82xx_ads.c are
+> > actually not specific to ads board. So the 1st patch makes them be
+> > shared by different 82xx boards.
+> > 
+> > 2) The 2nd patch make 'cpm_uart_of_init' be able to parse SMC uart in
+> > DTS
+> > 
+> > 3) The 3rd patch is the platform codes, defconfig and dts for Wind
+> > River SBC PowerQUICCII 82xx board.
+> > 
+> > Any comment is welcome.
+> > 
+> > Thanks
+> > Mark Zhan
+> > 
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@ozlabs.org
+> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
+> 
