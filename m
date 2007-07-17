@@ -1,16 +1,23 @@
-Return-Path: <joseph.robertson@sanmina-sci.com>
-Received: from mail53.messagelabs.com (mail53.messagelabs.com [216.82.249.211])
-	by ozlabs.org (Postfix) with SMTP id AC890DDED3
+Return-Path: <sprasad@bivio.net>
+Received: from corpexc01.corp.networkrobots.com (nofear-snat.bivio.net
+	[216.142.75.231]) by ozlabs.org (Postfix) with ESMTP id 890C2DDDFF
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 18 Jul 2007 08:15:00 +1000 (EST)
+	Wed, 18 Jul 2007 08:43:07 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C7C8BF.E821924E"
-Subject: Cypress c67x00 Support?
-Date: Tue, 17 Jul 2007 17:14:56 -0500
-Message-ID: <939D37AEB47F1F49B88FAB6599B6023501A1721C@hsv1dafpew02.das.gov.sanm.corp>
-From: "Robertson, Joseph M." <joseph.robertson@sanmina-sci.com>
-To: <linuxppc-embedded@ozlabs.org>
+	boundary="----_=_NextPart_001_01C7C8C3.8F53F9E2"
+Subject: RE: Linuxppc-embedded Digest, Vol 35, Issue 33
+Date: Tue, 17 Jul 2007 15:41:05 -0700
+Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D78D7FAF@corpexc01.corp.networkrobots.com>
+In-Reply-To: <e5eb93010707162259l2e78c524s32ff260b3d930bdb@mail.gmail.com>
+References: <mailman.1061.1184600645.8639.linuxppc-embedded@ozlabs.org>
+	<D83235F0F3C86D4D889D8B9A0DA8C6D78D7DE9@corpexc01.corp.networkrobots.com>
+	<469B9825.6070507@freescale.com>
+	<e5eb93010707162259l2e78c524s32ff260b3d930bdb@mail.gmail.com>
+From: "Siva Prasad" <sprasad@bivio.net>
+To: "suresh suresh" <sureshtang@gmail.com>,
+	"Scott Wood" <scottwood@freescale.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,137 +30,283 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C7C8BF.E821924E
+------_=_NextPart_001_01C7C8C3.8F53F9E2
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Well!... you can manage any way you want.
 
-I=20have=20some=20questions=20about=20the=20Cypress=20c67x00=20code=20that=
-=20was=20posted=20a=20few=20days=20ago.
-I=20got=20the=20many=20patches=20from=20the=20git=20(thanks=20Grant!),=20b=
-ut=20I=20am=20wondering,=20
+=20
 
-How=20did=20you=20guys=20fix=20up=20the=20Kconfigs=20to=20work=20with=20th=
-e=20Xilinx=20Virtex-4=20fpga?
+1) You can store the virtual address in the DpRAM, and convert to
+physical (should I say DMA mapped address) and then pass it on to the
+device under consideration here.
 
-My=20hw=20guys=20have=20put=20the=20cypress=20chip=20on=20'the=20system=20=
-ace'(OPB?)=20bus,=20a=2016=20bit=20bus,=20and=20I=20have=20the=20address=20=
-to=20it.
+=20
 
-But=20its=20definetely=20not=20PCI,=20and=20if=20you=20use=20a=20plain=20k=
-ernel=20tree=20like=20I=20have,=20I=20cannot=20access=20any=20features=20w=
-ithout=20turning=20on=20the=20PCI=20options.=20=20Which=20of=20course=20fa=
-ils,=20since=20I=20have=20no=20PCI=20parameters=20to=20feed=20the=20code.
+2) Other way would be... store the physical address in DpRAM. Use that
+address for the device, and convert to virtual before you use it in the
+code.
 
-Perhaps=20a=20better=20question=20is:=20Is=20this=20code=20intended=20for=20=
-the=20Virtex-4?
-If=20no,=20then=20I=20will=20have=20to=20fix=20it=20up.
+=20
+
+My preference is for first option.
+
+=20
+
+- Siva
+
+=20
+
+=20
+
+________________________________
+
+From: suresh suresh [mailto:sureshtang@gmail.com]=20
+Sent: Monday, July 16, 2007 10:59 PM
+To: Scott Wood
+Cc: Siva Prasad; linuxppc-embedded@ozlabs.org
+Subject: Re: Linuxppc-embedded Digest, Vol 35, Issue 33
+
+=20
+
+Thanks....
+
+MPC8280 has internal memory space which contains Dualport(Dp) RAM. In
+the DpRAM we allocate some tables and these has to store pointer of the
+buffers which are allocated in external memory. Core will use this
+pointer to access the buffers, basically these buffers are used for DMA.
+
+Using IMMR register we can get physical address of the internal memory.
+Now can I store the address return by the kmalloc() function? or I
+should convert it into physical?
+
+Please help me how to resove this address translation.
 
 
-Thanks,
+Regards,
+Suresh
 
-Joe=20Robertson
-Joseph.Robertson@sanmina-sci.com
+On 7/16/07, Scott Wood <scottwood@freescale.com> wrote:
+
+Siva Prasad wrote:
+> It returns kernel virtual address. If you use this buffer space for
+DMA,
+> please use appropriate flags. You may use __pa(address) or
+> virt_to_phys() to convert virtual to physical.=20
+
+No, you may not -- physical and DMA addresses are not always identical.
+  Use the DMA mapping API.
+
+-Scott
+
+=20
 
 
-CONFIDENTIALITY
-This=20e-mail=20message=20and=20any=20attachments=20thereto,=20is=20intend=
-ed=20only=20for=20use=20by=20the=20addressee(s)=20named=20herein=20and=20m=
-ay=20contain=20legally=20privileged=20and/or=20confidential=20information.=
-=20If=20you=20are=20not=20the=20intended=20recipient=20of=20this=20e-mail=20=
-message,=20you=20are=20hereby=20notified=20that=20any=20dissemination,=20d=
-istribution=20or=20copying=20of=20this=20e-mail=20message,=20and=20any=20a=
-ttachments=20thereto,=20is=20strictly=20prohibited.=20=20If=20you=20have=20=
-received=20this=20e-mail=20message=20in=20error,=20please=20immediately=20=
-notify=20the=20sender=20and=20permanently=20delete=20the=20original=20and=20=
-any=20copies=20of=20this=20email=20and=20any=20prints=20thereof.
-ABSENT=20AN=20EXPRESS=20STATEMENT=20TO=20THE=20CONTRARY=20HEREINABOVE,=20T=
-HIS=20E-MAIL=20IS=20NOT=20INTENDED=20AS=20A=20SUBSTITUTE=20FOR=20A=20WRITI=
-NG.=20=20Notwithstanding=20the=20Uniform=20Electronic=20Transactions=20Act=
-=20or=20the=20applicability=20of=20any=20other=20law=20of=20similar=20subs=
-tance=20and=20effect,=20absent=20an=20express=20statement=20to=20the=20con=
-trary=20hereinabove,=20this=20e-mail=20message=20its=20contents,=20and=20a=
-ny=20attachments=20hereto=20are=20not=20intended=20to=20represent=20an=20o=
-ffer=20or=20acceptance=20to=20enter=20into=20a=20contract=20and=20are=20no=
-t=20otherwise=20intended=20to=20bind=20the=20sender,=20Sanmina-SCI=20Corpo=
-ration=20(or=20any=20of=20its=20subsidiaries),=20or=20any=20other=20person=
-=20or=20entity.
-------_=_NextPart_001_01C7C8BF.E821924E
+------_=_NextPart_001_01C7C8C3.8F53F9E2
 Content-Type: text/html;
-	charset="iso-8859-1"
+	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-<!DOCTYPE=20HTML=20PUBLIC=20"-//W3C//DTD=20HTML=203.2//EN">
-<HTML>
-<HEAD>
-<META=20HTTP-EQUIV=3D"Content-Type"=20CONTENT=3D"text/html;=20charset=3Dis=
-o-8859-1">
-<META=20NAME=3D"Generator"=20CONTENT=3D"MS=20Exchange=20Server=20version=20=
-6.5.7652.24">
-<TITLE>Cypress=20c67x00=20Support?</TITLE>
-</HEAD>
-<BODY>
-<!--=20Converted=20from=20text/plain=20format=20-->
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
+xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
 
-<P><FONT=20SIZE=3D2>Hi,<BR>
-<BR>
-I=20have=20some=20questions=20about=20the=20Cypress=20c67x00=20code=20that=
-=20was=20posted=20a=20few=20days=20ago.<BR>
-I=20got=20the=20many=20patches=20from=20the=20git=20(thanks=20Grant!),=20b=
-ut=20I=20am=20wondering,<BR>
-<BR>
-How=20did=20you=20guys=20fix=20up=20the=20Kconfigs=20to=20work=20with=20th=
-e=20Xilinx=20Virtex-4=20fpga?<BR>
-<BR>
-My=20hw=20guys=20have=20put=20the=20cypress=20chip=20on=20'the=20system=20=
-ace'(OPB?)=20bus,=20a=2016=20bit=20bus,=20and=20I=20have=20the=20address=20=
-to=20it.<BR>
-<BR>
-But=20its=20definetely=20not=20PCI,=20and=20if=20you=20use=20a=20plain=20k=
-ernel=20tree=20like=20I=20have,=20I=20cannot=20access=20any=20features=20w=
-ithout=20turning=20on=20the=20PCI=20options.&nbsp;=20Which=20of=20course=20=
-fails,=20since=20I=20have=20no=20PCI=20parameters=20to=20feed=20the=20code=
-.<BR>
-<BR>
-Perhaps=20a=20better=20question=20is:=20Is=20this=20code=20intended=20for=20=
-the=20Virtex-4?<BR>
-If=20no,=20then=20I=20will=20have=20to=20fix=20it=20up.<BR>
-<BR>
-<BR>
-Thanks,<BR>
-<BR>
-Joe=20Robertson<BR>
-Joseph.Robertson@sanmina-sci.com<BR>
-<BR>
-</FONT>
-</P>
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<!--[if !mso]>
+<style>
+v\:* {behavior:url(#default#VML);}
+o\:* {behavior:url(#default#VML);}
+w\:* {behavior:url(#default#VML);}
+.shape {behavior:url(#default#VML);}
+</style>
+<![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Tahoma;
+	panose-1:2 11 6 4 3 5 4 4 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:blue;
+	text-decoration:underline;}
+span.EmailStyle18
+	{mso-style-type:personal-reply;
+	font-family:Arial;
+	color:navy;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
 
+</head>
 
-<BR>
-CONFIDENTIALITY<BR>
-This=20e-mail=20message=20and=20any=20attachments=20thereto,=20is=20intend=
-ed=20only=20for=20use=20by=20the=20addressee(s)=20named=20herein=20and=20m=
-ay=20contain=20legally=20privileged=20and/or=20confidential=20information.=
-=20If=20you=20are=20not=20the=20intended=20recipient=20of=20this=20e-mail=20=
-message,=20you=20are=20hereby=20notified=20that=20any=20dissemination,=20d=
-istribution=20or=20copying=20of=20this=20e-mail=20message,=20and=20any=20a=
-ttachments=20thereto,=20is=20strictly=20prohibited.=20=20If=20you=20have=20=
-received=20this=20e-mail=20message=20in=20error,=20please=20immediately=20=
-notify=20the=20sender=20and=20permanently=20delete=20the=20original=20and=20=
-any=20copies=20of=20this=20email=20and=20any=20prints=20thereof.<BR>
-ABSENT=20AN=20EXPRESS=20STATEMENT=20TO=20THE=20CONTRARY=20HEREINABOVE,=20T=
-HIS=20E-MAIL=20IS=20NOT=20INTENDED=20AS=20A=20SUBSTITUTE=20FOR=20A=20WRITI=
-NG.=20=20Notwithstanding=20the=20Uniform=20Electronic=20Transactions=20Act=
-=20or=20the=20applicability=20of=20any=20other=20law=20of=20similar=20subs=
-tance=20and=20effect,=20absent=20an=20express=20statement=20to=20the=20con=
-trary=20hereinabove,=20this=20e-mail=20message=20its=20contents,=20and=20a=
-ny=20attachments=20hereto=20are=20not=20intended=20to=20represent=20an=20o=
-ffer=20or=20acceptance=20to=20enter=20into=20a=20contract=20and=20are=20no=
-t=20otherwise=20intended=20to=20bind=20the=20sender,=20Sanmina-SCI=20Corpo=
-ration=20(or=20any=20of=20its=20subsidiaries),=20or=20any=20other=20person=
-=20or=20entity.<BR>
-</BODY>
-</HTML>
-------_=_NextPart_001_01C7C8BF.E821924E--
+<body lang=3DEN-US link=3Dblue vlink=3Dblue>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Well!... you can manage any way you =
+want.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>1) You can store the virtual =
+address in
+the DpRAM, and convert to physical (should I say DMA mapped address) and =
+then
+pass it on to the device under consideration =
+here.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>2) Other way would be&#8230; store =
+the
+physical address in DpRAM. Use that address for the device, and convert =
+to
+virtual before you use it in the code.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>My preference is for first =
+option.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>- Siva<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<div>
+
+<div class=3DMsoNormal align=3Dcenter style=3D'text-align:center'><font =
+size=3D3
+face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>
+
+<hr size=3D2 width=3D"100%" align=3Dcenter tabindex=3D-1>
+
+</span></font></div>
+
+<p class=3DMsoNormal><b><font size=3D2 face=3DTahoma><span =
+style=3D'font-size:10.0pt;
+font-family:Tahoma;font-weight:bold'>From:</span></font></b><font =
+size=3D2
+face=3DTahoma><span style=3D'font-size:10.0pt;font-family:Tahoma'> =
+suresh suresh
+[mailto:sureshtang@gmail.com] <br>
+<b><span style=3D'font-weight:bold'>Sent:</span></b> Monday, July 16, =
+2007 10:59
+PM<br>
+<b><span style=3D'font-weight:bold'>To:</span></b> Scott Wood<br>
+<b><span style=3D'font-weight:bold'>Cc:</span></b> Siva Prasad;
+linuxppc-embedded@ozlabs.org<br>
+<b><span style=3D'font-weight:bold'>Subject:</span></b> Re: =
+Linuxppc-embedded
+Digest, Vol 35, Issue 33</span></font><o:p></o:p></p>
+
+</div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'margin-bottom:12.0pt'><font size=3D3
+face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>Thanks....<br>
+<br>
+MPC8280 has internal memory space which contains Dualport(Dp) RAM. In =
+the DpRAM
+we allocate some tables and these has to store pointer of the buffers =
+which are
+allocated in external memory. Core will use this pointer to access the =
+buffers,
+basically these buffers are used for DMA.<br>
+<br>
+Using IMMR register we can get physical address of the internal memory. =
+Now can
+I store the address return by the kmalloc() function? or I should =
+convert it
+into physical?<br>
+<br>
+Please help me how to resove this address translation.<br>
+<br>
+<br>
+Regards,<br>
+Suresh<o:p></o:p></span></font></p>
+
+<div>
+
+<p class=3DMsoNormal><span class=3Dgmailquote><font size=3D3 =
+face=3D"Times New Roman"><span
+style=3D'font-size:12.0pt'>On 7/16/07, <b><span =
+style=3D'font-weight:bold'>Scott
+Wood</span></b> &lt;<a =
+href=3D"mailto:scottwood@freescale.com">scottwood@freescale.com</a>&gt;
+wrote:</span></font></span><o:p></o:p></p>
+
+<p class=3DMsoNormal style=3D'margin-bottom:12.0pt'><font size=3D3
+face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>Siva Prasad =
+wrote:<br>
+&gt; It returns kernel virtual address. If you use this buffer space for =
+DMA,<br>
+&gt; please use appropriate flags. You may use __pa(address) or<br>
+&gt; virt_to_phys() to convert virtual to physical. <br>
+<br>
+No, you may not -- physical and DMA addresses are not always =
+identical.<br>
+&nbsp;&nbsp;Use the DMA mapping API.<br>
+<br>
+-Scott<o:p></o:p></span></font></p>
+
+</div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01C7C8C3.8F53F9E2--
