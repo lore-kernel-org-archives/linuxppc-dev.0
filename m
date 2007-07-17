@@ -1,18 +1,20 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 0F204DDDF7
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 22:02:16 +1000 (EST)
-Date: Tue, 17 Jul 2007 14:02:37 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: Re: hvc_iseries not working
-Message-ID: <20070717120237.GA24912@aepfle.de>
-References: <20070713170540.GA1987@aepfle.de>
-	<1184600356.22547.121.camel@farscape.rchland.ibm.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1184600356.22547.121.camel@farscape.rchland.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18076.42297.26124.137770@cargo.ozlabs.ibm.com>
+Date: Tue, 17 Jul 2007 21:17:13 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/4] Add DMA sector to
+	Documentation/powerpc/booting-without-of.txt file.
+In-Reply-To: <B2EA074C-5D8E-4E13-B6BF-E81FBA52E76E@kernel.crashing.org>
+References: <46B96294322F7D458F9648B60E15112C6F3D1E@zch01exm26.fsl.freescale.net>
+	<4694F608.2090503@freescale.com>
+	<368E1200-1315-4C24-9876-C92CCF65EFE3@kernel.crashing.org>
+	<46B96294322F7D458F9648B60E15112C6F3E42@zch01exm26.fsl.freescale.net>
+	<1184260375.24515.35.camel@pterry-fc6.micromemory.com>
+	<B2EA074C-5D8E-4E13-B6BF-E81FBA52E76E@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Wei.Zhang@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,16 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 16, Will Schmidt wrote:
+Segher Boessenkool writes:
 
-> On Fri, 2007-07-13 at 19:05 +0200, Olaf Hering wrote:
-> > 2.6.21 arch/powerpc/configs/iseries_defconfig works on an i825 with v5r4
-> > 2.6.22 arch/powerpc/configs/iseries_defconfig does not. But it works on
-> > a i820 with v5r3.
-> > 2.6.22 boots ok with CONFIG_VIOCONS
-> 
-> When it works, do you have more than one processor assigned to the
-> partition?   
+> The device tree describes _all_ hardware in the system,
+> not just the things that are somewhat harder to probe
+> for.
 
-The partition does not change, only the kernel (And iseries_defconfig) changes.
-The partition has a single cpu assigned, 0.8 %
+Actually, for embedded systems, the device tree is really only
+required to describe the things that it's useful for the Linux kernel
+to know.
+
+The point of the device tree for embedded systems is to provide
+configuration information, not to be able to claim compliance with
+some set of legalistic requirements. :)
+
+I think in some cases we have gone a little over the top in trying to
+put everything in the device tree, in fact.  Ultimately I think it has
+to be up to the more experienced embedded developers to say how much
+detail in the device tree is actually helpful and how much is dead
+weight.
+
+Paul.
