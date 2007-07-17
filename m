@@ -2,17 +2,18 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9A512DDDFB
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 23:29:03 +1000 (EST)
-Subject: [PATCH] adb: replace sleep notifier with platform driver
-	suspend/resume hooks
+	by ozlabs.org (Postfix) with ESMTP id D144EDDDFE
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 23:29:45 +1000 (EST)
+Subject: [PATCH] remove awacs dmasound
 From: Johannes Berg <johannes@sipsolutions.net>
 To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
+References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
 Content-Type: text/plain
-Date: Tue, 17 Jul 2007 15:26:47 +0200
-Message-Id: <1184678807.27780.3.camel@johannes.berg>
+Date: Tue, 17 Jul 2007 15:28:31 +0200
+Message-Id: <1184678911.27780.5.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, Adrian Bunk <bunk@stusta.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,156 +23,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch replaces the pmu sleep notifier that adb had with
-suspend/resume hooks in a new platform driver/device.
+This patch kills the obsolete awacs dmasound because it is in
+the way of doing power management improvements since it uses
+ancient API.
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Adrian Bunk <bunk@stusta.de>
 
 ---
- drivers/macintosh/adb.c |   96 ++++++++++++++++++++++++++++--------------------
- 1 file changed, 57 insertions(+), 39 deletions(-)
+This patch contains only the patch for the first two files here, please
+remove the other ones manually:
 
---- wireless-dev.orig/drivers/macintosh/adb.c	2007-07-17 14:01:59.660964463 +0200
-+++ wireless-dev/drivers/macintosh/adb.c	2007-07-17 14:05:20.650964463 +0200
-@@ -89,14 +89,6 @@ static int sleepy_trackpad;
- static int autopoll_devs;
- int __adb_probe_sync;
+git rm -- sound/oss/dmasound/awacs_defs.h
+git rm -- sound/oss/dmasound/dac3550a.c
+git rm -- sound/oss/dmasound/dmasound_awacs.c
+git rm -- sound/oss/dmasound/tas3001c.c
+git rm -- sound/oss/dmasound/tas3001c.h
+git rm -- sound/oss/dmasound/tas3001c_tables.c
+git rm -- sound/oss/dmasound/tas3004.c
+git rm -- sound/oss/dmasound/tas3004.h
+git rm -- sound/oss/dmasound/tas3004_tables.c
+git rm -- sound/oss/dmasound/tas_common.c
+git rm -- sound/oss/dmasound/tas_common.h
+git rm -- sound/oss/dmasound/tas_eq_prefs.h
+git rm -- sound/oss/dmasound/tas_ioctl.h
+git rm -- sound/oss/dmasound/trans_16.c
+
+ sound/oss/dmasound/Kconfig           |   14 
+ sound/oss/dmasound/Makefile          |    6 
+ sound/oss/dmasound/awacs_defs.h      |  251 --
+ sound/oss/dmasound/dac3550a.c        |  209 --
+ sound/oss/dmasound/dmasound_awacs.c  | 3215 -----------------------------------
+ sound/oss/dmasound/tas3001c.c        |  849 ---------
+ sound/oss/dmasound/tas3001c.h        |   64 
+ sound/oss/dmasound/tas3001c_tables.c |  375 ----
+ sound/oss/dmasound/tas3004.c         | 1138 ------------
+ sound/oss/dmasound/tas3004.h         |   77 
+ sound/oss/dmasound/tas3004_tables.c  |  301 ---
+ sound/oss/dmasound/tas_common.c      |  214 --
+ sound/oss/dmasound/tas_common.h      |  284 ---
+ sound/oss/dmasound/tas_eq_prefs.h    |   24 
+ sound/oss/dmasound/tas_ioctl.h       |   24 
+ sound/oss/dmasound/trans_16.c        |  898 ---------
+ 16 files changed, 7943 deletions(-)
+
+
+--- wireless-dev.orig/sound/oss/dmasound/Makefile	2007-05-01 11:35:44.664734191 +0200
++++ wireless-dev/sound/oss/dmasound/Makefile	2007-05-01 11:36:26.054734191 +0200
+@@ -2,12 +2,6 @@
+ # Makefile for the DMA sound driver
+ #
  
--#ifdef CONFIG_PM
--static void adb_notify_sleep(struct pmu_sleep_notifier *self, int when);
--static struct pmu_sleep_notifier adb_sleep_notifier = {
--	adb_notify_sleep,
--	SLEEP_LEVEL_ADB,
--};
--#endif
+-dmasound_pmac-y			+= dmasound_awacs.o \
+-				   trans_16.o dac3550a.o tas_common.o \
+-				   tas3001c.o tas3001c_tables.o \
+-				   tas3004.o tas3004_tables.o
 -
- static int adb_scan_bus(void);
- static int do_adb_reset_bus(void);
- static void adbdev_init(void);
-@@ -281,6 +273,36 @@ adb_reset_bus(void)
- 	return 0;
- }
- 
-+#ifdef CONFIG_PM
-+/*
-+ * notify clients before sleep
-+ */
-+static int adb_suspend(struct platform_device *dev, pm_message_t state)
-+{
-+	adb_got_sleep = 1;
-+	/* We need to get a lock on the probe thread */
-+	down(&adb_probe_mutex);
-+	/* Stop autopoll */
-+	if (adb_controller->autopoll)
-+		adb_controller->autopoll(0);
-+	blocking_notifier_call_chain(&adb_client_list, ADB_MSG_POWERDOWN, NULL);
-+
-+	return 0;
-+}
-+
-+/*
-+ * reset bus after sleep
-+ */
-+static int adb_resume(struct platform_device *dev)
-+{
-+	adb_got_sleep = 0;
-+	up(&adb_probe_mutex);
-+	adb_reset_bus();
-+
-+	return 0;
-+}
-+#endif /* CONFIG_PM */
-+
- int __init adb_init(void)
- {
- 	struct adb_driver *driver;
-@@ -313,14 +335,12 @@ int __init adb_init(void)
- 		printk(KERN_WARNING "Warning: no ADB interface detected\n");
- 		adb_controller = NULL;
- 	} else {
--#ifdef CONFIG_PM
--		pmu_register_sleep_notifier(&adb_sleep_notifier);
--#endif /* CONFIG_PM */
- #ifdef CONFIG_PPC
- 		if (machine_is_compatible("AAPL,PowerBook1998") ||
- 			machine_is_compatible("PowerBook1,1"))
- 			sleepy_trackpad = 1;
- #endif /* CONFIG_PPC */
-+
- 		init_completion(&adb_probe_task_comp);
- 		adbdev_init();
- 		adb_reset_bus();
-@@ -330,33 +350,6 @@ int __init adb_init(void)
- 
- __initcall(adb_init);
- 
--#ifdef CONFIG_PM
--/*
-- * notify clients before sleep and reset bus afterwards
-- */
--void
--adb_notify_sleep(struct pmu_sleep_notifier *self, int when)
--{
--	switch (when) {
--	case PBOOK_SLEEP_REQUEST:
--		adb_got_sleep = 1;
--		/* We need to get a lock on the probe thread */
--		down(&adb_probe_mutex);
--		/* Stop autopoll */
--		if (adb_controller->autopoll)
--			adb_controller->autopoll(0);
--		blocking_notifier_call_chain(&adb_client_list,
--			ADB_MSG_POWERDOWN, NULL);
--		break;
--	case PBOOK_WAKE:
--		adb_got_sleep = 0;
--		up(&adb_probe_mutex);
--		adb_reset_bus();
--		break;
--	}
--}
--#endif /* CONFIG_PM */
--
- static int
- do_adb_reset_bus(void)
- {
-@@ -864,7 +857,29 @@ static const struct file_operations adb_
- 	.release	= adb_release,
- };
- 
--static void
-+static struct platform_driver adb_pfdrv = {
-+	.driver = {
-+		.name = "adb",
-+	},
-+#ifdef CONFIG_PM
-+	.suspend = adb_suspend,
-+	.resume = adb_resume,
-+#endif
-+};
-+
-+static struct platform_device adb_pfdev = {
-+	.name = "adb",
-+};
-+
-+static int __init
-+adb_dummy_probe(struct platform_device *dev)
-+{
-+	if (dev == &adb_pfdev)
-+		return 0;
-+	return -ENODEV;
-+}
-+
-+static void __init
- adbdev_init(void)
- {
- 	if (register_chrdev(ADB_MAJOR, "adb", &adb_fops)) {
-@@ -876,4 +891,7 @@ adbdev_init(void)
- 	if (IS_ERR(adb_dev_class))
- 		return;
- 	class_device_create(adb_dev_class, NULL, MKDEV(ADB_MAJOR, 0), NULL, "adb");
-+
-+	platform_device_register(&adb_pfdev);
-+	platform_driver_probe(&adb_pfdrv, adb_dummy_probe);
- }
+ obj-$(CONFIG_DMASOUND_ATARI)	+= dmasound_core.o dmasound_atari.o
+-obj-$(CONFIG_DMASOUND_PMAC)	+= dmasound_core.o dmasound_pmac.o
+ obj-$(CONFIG_DMASOUND_PAULA)	+= dmasound_core.o dmasound_paula.o
+ obj-$(CONFIG_DMASOUND_Q40)	+= dmasound_core.o dmasound_q40.o
