@@ -1,27 +1,27 @@
 Return-Path: <LeoLi@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D9DC1DDE11
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 22:18:44 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l6HCIcBJ020220
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 05:18:39 -0700 (MST)
+	by ozlabs.org (Postfix) with ESMTP id 12FF6DDE3C
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 22:21:27 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l6HCLCZY021311
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 05:21:12 -0700 (MST)
 Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
 	[10.192.129.221])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l6HCIbSU014998
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 07:18:38 -0500 (CDT)
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l6HCLBXj013655
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 07:21:11 -0500 (CDT)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="US-ASCII"
-Subject: RE: [PATCH] USB_DR host support for FSL MPC831x
-Date: Tue, 17 Jul 2007 20:18:35 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890F06271@zch01exm26.fsl.freescale.net>
-In-Reply-To: <20070717005832.23019.99739.stgit@localhost.localdomain>
-References: <20070717005832.23019.99739.stgit@localhost.localdomain>
+Subject: RE: [PATCH] USB_DR device support for FSL MPC831x
+Date: Tue, 17 Jul 2007 20:21:09 +0800
+Message-ID: <989B956029373F45A0B8AF0297081890F06272@zch01exm26.fsl.freescale.net>
+In-Reply-To: <20070717005849.23036.21497.stgit@localhost.localdomain>
+References: <20070717005849.23036.21497.stgit@localhost.localdomain>
 From: "Li Yang-r58472" <LeoLi@freescale.com>
 To: "Vitaly Bordug" <vitb@kernel.crashing.org>, "Greg KH" <greg@kroah.com>
 Cc: linuxppc-dev@ozlabs.org
@@ -36,9 +36,10 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Hi Vitaly,
 
-I believe that your patch is addresses by my patch in 2.6.23 queue:
+The max_ep_nr will be read from DCCPARAMS register with my patch in
+2.6.23 queue:
 http://www.kernel.org/pub/linux/kernel/people/gregkh/usb/2.6/2.6.22/usb-
-ehci_fsl-update-for-mpc831x-support.patch
+fsl_usb2_udc-get-max-ep-number-from-dccparams-register.patch
 
 - Leo
 
@@ -49,69 +50,51 @@ ehci_fsl-update-for-mpc831x-support.patch
 > Sent: Tuesday, July 17, 2007 8:59 AM
 > To: Greg KH
 > Cc: linuxppc-dev@ozlabs.org
-> Subject: [PATCH] USB_DR host support for FSL MPC831x
+> Subject: [PATCH] USB_DR device support for FSL MPC831x
 >=20
 >=20
-> Modifies fsl_ehci code so that to get USB host working on=20
-> mpc831x platform. Verified with MPC8313RDB reference board.
+> This adds support for USB device mode on mpc831x series.=20
+> Devicetree node modification is required to make it work -=20
+>=20
+> dr_mode =3D"peripheral";
+>=20
+> which should be commented out if host mode is desired onboot.
 >=20
 > Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
 >=20
 > ---
 >=20
->  arch/powerpc/boot/dts/mpc8313erdb.dts |    1 +
->  drivers/usb/host/ehci-fsl.c           |    4 +++-
->  drivers/usb/host/ehci-hcd.c           |    2 +-
->  3 files changed, 5 insertions(+), 2 deletions(-)
+>  arch/powerpc/sysdev/fsl_soc.c |    1 +
+>  include/linux/fsl_devices.h   |    1 +
+>  2 files changed, 2 insertions(+), 0 deletions(-)
 >=20
-> diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts=20
-> b/arch/powerpc/boot/dts/mpc8313erdb.dts
-> index 1b351dc..c330e79 100644
-> --- a/arch/powerpc/boot/dts/mpc8313erdb.dts
-> +++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
-> @@ -90,6 +90,7 @@
->  			interrupt-parent =3D < &ipic >;
->  			interrupts =3D <26 8>;
->  			phy_type =3D "utmi_wide";
-> +			control_init  =3D <00000280>; // UTMI ext=20
-> 48 MHz clk
->  		};
+> diff --git a/arch/powerpc/sysdev/fsl_soc.c=20
+> b/arch/powerpc/sysdev/fsl_soc.c index c0ddc80..27a1510 100644
+> --- a/arch/powerpc/sysdev/fsl_soc.c
+> +++ b/arch/powerpc/sysdev/fsl_soc.c
+> @@ -514,6 +514,7 @@ static int __init fsl_usb_of_init(void)
+>  			}
+>  		} else if (prop && !strcmp(prop, "peripheral")) {
+>  			usb_data.operating_mode =3D FSL_USB2_DR_DEVICE;
+> +			usb_data.max_ep_nr =3D *(unsigned=20
+> int*)of_get_property(np,=20
+> +"max_ep_nr",NULL);
+>  			usb_dev_dr_client =3D=20
+> platform_device_register_simple(
+>  					"fsl-usb2-udc", i, r, 2);
+>  			if (IS_ERR(usb_dev_dr_client)) {
+> diff --git a/include/linux/fsl_devices.h=20
+> b/include/linux/fsl_devices.h index 12e631f..a3feb34 100644
+> --- a/include/linux/fsl_devices.h
+> +++ b/include/linux/fsl_devices.h
+> @@ -103,6 +103,7 @@ struct fsl_usb2_platform_data {
+>  	enum fsl_usb2_operating_modes	operating_mode;
+>  	enum fsl_usb2_phy_modes		phy_mode;
+>  	unsigned int			port_enables;
+> +	unsigned int			max_ep_nr;
+>  };
 > =20
->  		mdio@24520 {
-> diff --git a/drivers/usb/host/ehci-fsl.c=20
-> b/drivers/usb/host/ehci-fsl.c index c7a7c59..3e3187b 100644
-> --- a/drivers/usb/host/ehci-fsl.c
-> +++ b/drivers/usb/host/ehci-fsl.c
-> @@ -185,12 +185,14 @@ static void mpc83xx_usb_setup(struct=20
-> usb_hcd *hcd)
->  	struct ehci_hcd *ehci =3D hcd_to_ehci(hcd);
->  	struct fsl_usb2_platform_data *pdata;
->  	void __iomem *non_ehci =3D hcd->regs;
-> +	u32 temp;
-> =20
->  	pdata =3D
->  	    (struct fsl_usb2_platform_data *)hcd->self.controller->
->  	    platform_data;
->  	/* Enable PHY interface in the control reg. */
-> -	out_be32(non_ehci + FSL_SOC_USB_CTRL, 0x00000004);
-> +	temp =3D in_be32(non_ehci + FSL_SOC_USB_CTRL);
-> +	out_be32(non_ehci + FSL_SOC_USB_CTRL, temp | 0x00000004);
->  	out_be32(non_ehci + FSL_SOC_USB_SNOOP1, 0x0000001b);
-> =20
->  #if defined(CONFIG_PPC32) && !defined(CONFIG_NOT_COHERENT_CACHE)
-> diff --git a/drivers/usb/host/ehci-hcd.c=20
-> b/drivers/usb/host/ehci-hcd.c index 099aff6..994a127 100644
-> --- a/drivers/usb/host/ehci-hcd.c
-> +++ b/drivers/usb/host/ehci-hcd.c
-> @@ -925,7 +925,7 @@ MODULE_LICENSE ("GPL");
->  #define	PCI_DRIVER		ehci_pci_driver
->  #endif
-> =20
-> -#ifdef CONFIG_MPC834x
-> +#if defined(CONFIG_MPC834x) || defined(CONFIG_PPC_MPC831x)
->  #include "ehci-fsl.c"
->  #define	PLATFORM_DRIVER		ehci_fsl_driver
->  #endif
+>  /* Flags in fsl_usb2_mph_platform_data */
 >=20
 > _______________________________________________
 > Linuxppc-dev mailing list
