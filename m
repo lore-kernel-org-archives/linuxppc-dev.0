@@ -1,18 +1,42 @@
-Return-Path: <rongkai.zhan@windriver.com>
-Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id 24BCCDDE28
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 15:32:26 +1000 (EST)
-Subject: Re: [PATCH 1/3] 82xx: some 82xx platform hook functions can be
-	shared by different boards
-From: Mark Zhan <rongkai.zhan@windriver.com>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200707170259.47098.arnd@arndb.de>
-References: <469B33F2.9040306@windriver.com> <200707170259.47098.arnd@arndb.de>
-Content-Type: text/plain
-Date: Tue, 17 Jul 2007 13:31:12 +0800
-Message-Id: <1184650272.18501.0.camel@mark>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <xma@us.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 70CF0DDE0F
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 15:57:47 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6H5vgcw005245
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 01:57:42 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l6H5vg6Q257162
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 23:57:42 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l6H5vg92021922
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 23:57:42 -0600
+Received: from d03mc012.boulder.ibm.com (d03mc012.boulder.ibm.com
+	[9.17.195.88])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	l6H5vfnC021868
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 23:57:41 -0600
+In-Reply-To: <ada1wf7vgfb.fsf@cisco.com>
+Subject: Re: [ofa-general] Re: [PATCH 01/10] IB/ehca: Support for multiple
+	event queues
+To: Roland Dreier <rdreier@cisco.com>
+Message-ID: <OF19C85704.39162967-ON8725731B.002061DC-8825731A.0078A20B@us.ibm.com>
+From: Shirley Ma <xma@us.ibm.com>
+Date: Mon, 16 Jul 2007 22:57:40 -0700
+MIME-Version: 1.0
+Content-type: multipart/alternative;
+	Boundary="0__=08BBF988DFB3E74C8f9e8a93df938690918c08BBF988DFB3E74C"
+Cc: Joachim Fenkes <fenkes@de.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+	general-bounces@lists.openfabrics.org,
+	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>,
+	OF-General <general@lists.openfabrics.org>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,73 +46,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-07-17 at 02:59 +0200, Arnd Bergmann wrote:
-> On Monday 16 July 2007, Mark Zhan wrote:
-> 
-> > @@ -96,7 +94,7 @@
-> >   	pvid = mfspr(SPRN_PVR);
-> >   	svid = mfspr(SPRN_SVR);
-> > 
-> > -	seq_printf(m, "Vendor\t\t: Freescale Semiconductor\n");
-> > +	seq_printf(m, "Vendor\t\t: %s\n", CPUINFO_VENDOR);
-> >   	seq_printf(m, "Machine\t\t: %s\n", CPUINFO_MACHINE);
-> >   	seq_printf(m, "PVR\t\t: 0x%x\n", pvid);
-> >   	seq_printf(m, "SVR\t\t: 0x%x\n", svid);
-> 
-> This is a step in the wrong direction. CPUINFO_{VENDOR,MACHINE}
-> comes from a platform specific header file, so you can not
-> use these definitions in platform independent code without
-> breaking multiplatform kernels.
-> 
-> One possible solution would be a platform specific show_cpuinfo()
-> function that calls a generic 82xx version and passes in the
-> two values. Even better would be to just dump whatever string
-> you find in the /model property in the device tree.
-> 
-
-OK, Got what you said. I will fix it.
+--0__=08BBF988DFB3E74C8f9e8a93df938690918c08BBF988DFB3E74C
+Content-type: text/plain; charset=US-ASCII
 
 
-> > +
-> > +#define RMR_CSRE 0x00000001
-> > +
-> > +void mpc82xx_restart(char *cmd)
-> > +{
-> > +	__volatile__ unsigned char dummy;
-> > +
-> > +	local_irq_disable();
-> > +	((cpm2_map_t *) cpm2_immr)->im_clkrst.car_rmr |= RMR_CSRE;
-> > +
-> > +	/* Clear the ME,EE,IR & DR bits in MSR to cause checkstop */
-> > +	mtmsr(mfmsr() & ~(MSR_ME | MSR_EE | MSR_IR | MSR_DR));
-> > +	dummy = ((cpm2_map_t *) cpm2_immr)->im_clkrst.res[0];
-> > +	printk("Restart failed\n");
-> > +	while (1) ;
-> > +}
-> 
-> I know you're just moving that code, but it looks horribly wrong
-> nonetheless. cpm2_immr is an __iomem variable, so you must not
-> dereference it but instead should use the in_8() macro to
-> access it.
-> 
-> Once you get that right, you don't need the volatile variable
-> any more.
 
-OK. will fix it.
 
-> 
-> > +void mpc82xx_halt(void)
-> > +{
-> > +	local_irq_disable();
-> > +	while (1) ;
-> > +}
-> 
-> Here, as in the function above, there should at least be a cpu_relax()
-> in the final loop. If the CPU has a nap functionality or something
-> similar, that would be even better.
 
-Not sure if mpc82xx has such kind of functionality. Based on the current
-definition of cpu_relax(), it is only meaningful for ppc64.
+Hello Roland,
 
-> 
-> 	Arnd <><
+>I still haven't seen much code using the feature or
+>even any anecdotal information about the performance impact.
+
+The multiple links performance has been significant improved according to
+the prototype IPoIB-UD mode test for eHCA driver esepcially for two links
+on the same adapter. I haven't tried mthca (PCI-X and PCI-E) yet.
+
+Thanks
+Shirley
+--0__=08BBF988DFB3E74C8f9e8a93df938690918c08BBF988DFB3E74C
+Content-type: text/html; charset=US-ASCII
+Content-Disposition: inline
+
+<html><body>
+<p><tt>Hello Roland,</tt><br>
+<br>
+<tt>&gt;I still haven't seen much code using the feature or<br>
+&gt;even any anecdotal information about the performance impact.</tt><br>
+<br>
+The multiple links performance has been significant improved according to the prototype IPoIB-UD mode test for eHCA driver esepcially for two links on the same adapter. I haven't tried mthca (PCI-X and PCI-E) yet.<br>
+<br>
+Thanks<br>
+Shirley</body></html>
+--0__=08BBF988DFB3E74C8f9e8a93df938690918c08BBF988DFB3E74C--
