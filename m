@@ -1,18 +1,18 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 5487EDDE19
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 23:59:44 +1000 (EST)
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 44625DDE16
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 00:09:45 +1000 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/3] 82xx: Parse SMC serial device node in DTS
-Date: Tue, 17 Jul 2007 15:06:42 +0200
-References: <469B33F9.2080604@windriver.com> <200707171406.03455.arnd@arndb.de>
-	<1184680385.18501.51.camel@mark>
-In-Reply-To: <1184680385.18501.51.camel@mark>
+Subject: Re: [PATCH 3/3] 82xx: SBCPQ2 board platform support
+Date: Tue, 17 Jul 2007 15:17:00 +0200
+References: <469B3401.9030602@windriver.com> <200707171419.05061.arnd@arndb.de>
+	<1184679661.18501.41.camel@mark>
+In-Reply-To: <1184679661.18501.41.camel@mark>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200707171506.43102.arnd@arndb.de>
+Message-Id: <200707171517.00649.arnd@arndb.de>
 Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,18 +24,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Tuesday 17 July 2007, Mark Zhan wrote:
-> Yes, basically I agree what you say. That should be the right way. 
 > 
-> but, the current situation is that: in all DTS files that are using smc
-> or scc as uart device, all device node definitions have the same
-> "compatible" property -- "cpm_uart"
+> Since the rtc m48t59 driver has already gone into the -mm source tree,
+> and I think, it is an ugly way to make the irq handler a global
+> function:-)
 > 
-> So what I do here is just following the upstream source tree.
-> 
+> If the driver is not built-in, and I still get the mach check exception,
+> it will turn out that other factors are causing mach check exception,
+> then just like my original codes, the kernel will not survive this
+> machine check, right?
 
-Well, AFAICS, all of them currently use scc. The 8xx platforms don't
-even build correctly in the mainline kernel, so I guess it would
-be good to change them to also list fsl,cpm-smc in the compatible
-property.
+Ok, I missed the point that you also have real machine check events
+to care about.
+
+One issue remains though: you still need to have a virtual irq number,
+not just make up a IRQ, as there is nothing that guarantees this to work.
+
+Since you already create your own irq_host, you can probably just
+give the fake irq the number '1' here, which is local to that host.
+Then you call irq_create_mapping() to create the virtual interrupt
+number that you pass to the platform_device.
 
 	Arnd <><
