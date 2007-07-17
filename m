@@ -1,18 +1,19 @@
-Return-Path: <bunk@stusta.de>
-Received: from mailhub.stusta.mhn.de (emailhub.stusta.mhn.de [141.84.69.5])
-	by ozlabs.org (Postfix) with ESMTP id 29D6FDDE03
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 23:38:33 +1000 (EST)
-Date: Tue, 17 Jul 2007 15:37:53 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] remove awacs dmasound
-Message-ID: <20070717133752.GC3801@stusta.de>
-References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
-	<1184678911.27780.5.camel@johannes.berg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1184678911.27780.5.camel@johannes.berg>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <rongkai.zhan@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id C1B30DDE06
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 23:41:13 +1000 (EST)
+Subject: Re: [PATCH 3/3] 82xx: SBCPQ2 board platform support
+From: Mark Zhan <rongkai.zhan@windriver.com>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200707171419.05061.arnd@arndb.de>
+References: <469B3401.9030602@windriver.com>
+	<200707170327.41648.arnd@arndb.de> <1184655499.18501.17.camel@mark>
+	<200707171419.05061.arnd@arndb.de>
+Content-Type: text/plain
+Date: Tue, 17 Jul 2007 21:41:01 +0800
+Message-Id: <1184679661.18501.41.camel@mark>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,67 +23,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 17, 2007 at 03:28:31PM +0200, Johannes Berg wrote:
-> This patch kills the obsolete awacs dmasound because it is in
-> the way of doing power management improvements since it uses
-> ancient API.
+> > The rtc M48T59 driver is not specific to my board, it is probably used
+> > by other board. So I can't register the rtc intr handler as the mcheck
+> > exception handler. And in the other side, there are also other machine
+> > check sources, right?
+> > 
+> > So here I add a platform mcheck hook for rtc intr handler. Yeah, it is
+> > really scary and confusing:-)
 > 
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Adrian Bunk <bunk@stusta.de>
+> I think it would really be easier to just make the m48t59 irq handler
+> a global function, and keep it out of the regular interrupt logic.
 > 
-> ---
-> This patch contains only the patch for the first two files here, please
-> remove the other ones manually:
+> Then your sbcpq2_mach_check() basically becomes trivial like
 > 
-> git rm -- sound/oss/dmasound/awacs_defs.h
-> git rm -- sound/oss/dmasound/dac3550a.c
-> git rm -- sound/oss/dmasound/dmasound_awacs.c
-> git rm -- sound/oss/dmasound/tas3001c.c
-> git rm -- sound/oss/dmasound/tas3001c.h
-> git rm -- sound/oss/dmasound/tas3001c_tables.c
-> git rm -- sound/oss/dmasound/tas3004.c
-> git rm -- sound/oss/dmasound/tas3004.h
-> git rm -- sound/oss/dmasound/tas3004_tables.c
-> git rm -- sound/oss/dmasound/tas_common.c
-> git rm -- sound/oss/dmasound/tas_common.h
-> git rm -- sound/oss/dmasound/tas_eq_prefs.h
-> git rm -- sound/oss/dmasound/tas_ioctl.h
-> git rm -- sound/oss/dmasound/trans_16.c
+> static int sbcpq2_mach_check(struct pt_regs *regs)
+> {
+> 	return m48t59_irq(NO_IRQ, NULL);
+> }
 > 
->  sound/oss/dmasound/Kconfig           |   14 
+> This has the advantage that you don't need to wait for the
+> m48t59 driver to be initialized first, instead you will just
+> get a link failure it that driver is not already built into the
+> kernel.
+> 
 
-That's not in your patch, most likely because it's already removed as 
-scheduled.
+Since the rtc m48t59 driver has already gone into the -mm source tree,
+and I think, it is an ugly way to make the irq handler a global
+function:-)
 
->  sound/oss/dmasound/Makefile          |    6 
->  sound/oss/dmasound/awacs_defs.h      |  251 --
->  sound/oss/dmasound/dac3550a.c        |  209 --
->  sound/oss/dmasound/dmasound_awacs.c  | 3215 -----------------------------------
->  sound/oss/dmasound/tas3001c.c        |  849 ---------
->  sound/oss/dmasound/tas3001c.h        |   64 
->  sound/oss/dmasound/tas3001c_tables.c |  375 ----
->  sound/oss/dmasound/tas3004.c         | 1138 ------------
->  sound/oss/dmasound/tas3004.h         |   77 
->  sound/oss/dmasound/tas3004_tables.c  |  301 ---
->  sound/oss/dmasound/tas_common.c      |  214 --
->  sound/oss/dmasound/tas_common.h      |  284 ---
->  sound/oss/dmasound/tas_eq_prefs.h    |   24 
->  sound/oss/dmasound/tas_ioctl.h       |   24 
->  sound/oss/dmasound/trans_16.c        |  898 ---------
->  16 files changed, 7943 deletions(-)
->...
+If the driver is not built-in, and I still get the mach check exception,
+it will turn out that other factors are causing mach check exception,
+then just like my original codes, the kernel will not survive this
+machine check, right?
 
-The option is already removed from the Kconfig file, and the code 
-removal is scheduled for 2.6.24. I'll take care of this (I'll send
-a patch through Andrew).
+> > > > +static void __init sbcpq2_init_IRQ(void)
+> > > > +{
+> > > > +	struct device_node *np;
+> > > > +	struct resource res;
+> > > > +
+> > > > +	np = of_find_compatible_node(NULL, "cpm-pic", "CPM2");
+> > > > +	if (np == NULL) {
+> > > > +		printk(KERN_ERR "PIC init: can not find cpm-pic node\n");
+> > > > +		return;
+> > > > +	}
+> > > 
+> > > This looks like your device tree is wrong. Shouldn't the interrupt
+> > > controller have device_type="interrupt-controller" and a specific
+> > > compatible property instead of having the name in the device_type?
+> > > 
+> > 
+> > Here, I just copy the codes from mpc82xx_ads, is there anything wrong?
+> 
+> I just checked the Recommended Practice document for interrupt mapping
+> and it seems that it's ok. The interrupt controller needs to have
+> an property named "interrupt-controller", but does not need a specific
+> device_type. So it appears to be correct here.
+> 
 
-cu
-Adrian
+Thanks a lot for your good adivce, I will try.
 
--- 
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+> > > > +	/* Boot Flash is the on-board flash */
+> > > > +	mc->memc_br0 = (SBCPQ2_BOOT_FLASH_BASE & 0xFFFF8000) | 0x0801;
+> > > > +	mc->memc_or0 = 0xFFE00896;
+> > > 
+> > > consequently, this needs to use out_be32 or similar.
+> > > Where does SBCPQ2_BOOT_FLASH_BASE come from? Shouldn't that be set
+> > > up by the boot loader to match the device tree?
+> > 
+> > Fixed. out_be32 is used.
+> 
+> btw, it would be good if you can run your code through the 'sparse'
+> checker. It will warn about this type of problem. I think I saw all
+> that you have added here, but I may have missed some, and sparse
+> can also find other problems.  Just install the tool as it comes
+> with your distro and build the kernel with the 'C=1' make option.
+> 
+> > The reason why they are needed is because some 
+> > legacy u-boot for this board probably was setting up the wrong memory
+> > map.
+> 
+> Hmm, will those legacy u-boot version be able to even boot this kernel?
+> The device tree looks like it needs to have some variables set by u-boot,
+> so I'd guess you don't need to worry about old versions that don't
+> set those either.
+
+Actually, the current u-boot 1.2.0 for this board is ported from that
+legacy one, and I don't check the details to assure that u-boot's setup
+is all right. So here I just want to double assure everything goes
+correct.
+
+Thanks
+Mark Zhan
