@@ -1,32 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C5320DDD0A
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 02:27:02 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6HGQxad001101
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 12:26:59 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l6HGQwGO257308
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 10:26:58 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6HGQwDn028271
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 10:26:58 -0600
-Subject: Re: [PATCH] Add StorCenter DTS first draft.
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Return-Path: <galak@kernel.crashing.org>
+In-Reply-To: <4CB813ED-9D8B-4A32-B4AC-65D27741D46C@kernel.crashing.org>
+References: <20070709195743.GA26089@ld0162-tx32.am.freescale.net>
+	<200707092225.25287.arnd@arndb.de> <4692A5B8.9010702@freescale.com>
+	<8CA741AA-D200-474F-943D-ECE4B3ACD38B@kernel.crashing.org>
+	<18068.5706.700933.551828@cargo.ozlabs.ibm.com>
+	<89E626D4-D48D-4062-A996-E2DFFE8248E3@kernel.crashing.org>
+	<20070717024246.GA6482@localhost.localdomain>
+	<4CB813ED-9D8B-4A32-B4AC-65D27741D46C@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <B07FAF3D-A8F4-45F5-8EEF-4506F4A31DF2@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Allow exec on 32-bit from readable, non-exec pages,
+	with a warning.
+Date: Tue, 17 Jul 2007 11:30:58 -0500
 To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <630B6BC9-389F-4F5C-AE8F-9C3131C4543E@kernel.crashing.org>
-References: <E1IAnwC-0003Xm-6U@jdl.com>
-	<630B6BC9-389F-4F5C-AE8F-9C3131C4543E@kernel.crashing.org>
-Content-Type: text/plain
-Date: Tue, 17 Jul 2007 11:26:57 -0500
-Message-Id: <1184689617.15570.1.camel@weaponx.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Arnd Bergmann <arnd@arndb.de>, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,16 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-07-17 at 16:57 +0200, Segher Boessenkool wrote:
-> 
-> > +	flash@ff800000 {
-> > +		device_type = "rom";
-> 
-> I'm sure you know I find this "rom" binding to be crap.
-> However, I didn't yet write up the "cfi" binding, so I
-> can't complain ;-)
 
-Not all chips are CFI compliant.  Be sure to write up the "jedec" and
-"nand" bindings while you're at it ;)
+On Jul 17, 2007, at 10:18 AM, Segher Boessenkool wrote:
 
-josh
+>>>>> Yeah.  Giving the warning is a good thing though.
+>>>>
+>>>> No, it isn't; it's just noise, if we're not ever going to do
+>>>> anything
+>>>> to prevent the behaviour - and we can't.
+>>>
+>>> The same userland code will not run correctly on PPC64 or BookE
+>>> systems.  Is that not a reason to warn?
+>>
+>> Way back when, I distinctly recall aborting my plans to implement
+>> per-page exec on 40x, precisely because of executables like this.
+>
+> I noticed some comments to that effect in the BookE code,
+> yes.  It seems userland has been fixed enough that you
+> could think about enabling it again FWIW.
+
+Did I miss the posting of the patch with the fix?
+
+- k
