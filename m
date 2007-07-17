@@ -1,17 +1,18 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <afleming@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 22D0FDDE29
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 11:17:27 +1000 (EST)
-To: Paul Mackerras <paulus@samba.org>
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: [PATCH] POWERPC 8xx: bump up initial memory limit for 8xx
-Date: Tue, 17 Jul 2007 05:17:23 +0400
-Message-ID: <20070717011723.23549.44672.stgit@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D9B42DDE03
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 11:27:17 +1000 (EST)
+From: Andy Fleming <afleming@freescale.com>
+To: jgarzik@pobox.com, paulus@samba.org, galak@kernel.crashing.org
+Subject: [PATCH 2.6.22-rc7 0/4] phy/gianfar: Fixes for gianfar and vitesse
+	RGMII-ID support
+Date: Mon, 16 Jul 2007 20:26:57 -0500
+Message-Id: <1184635621688-git-send-email-afleming@freescale.com>
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,31 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+A few bugs in the Vitesse PHY driver were found on the 8641D HPCN board.
+Originally, they were masked by a bug in the PHY Lib which was fixed by patch 
+5f708dd91d15876e26d7a57f97a255cedffca463 (Fix phy_id for Vitesse 824x PHY).
+That patch allowed the Vitesse PHY to bind on the 8641D HPCN board, thereby
+exposing a bug in the interrupt handling and a bug in the configuration of
+the PHY.  This sequence of patches fixes the irq handling bug, then fixes 
+the configuration bug in 3 places:
 
-From: John Traill <john.traill@freescale.com>
+1) The Vitesse PHY driver
+2) The gianfar driver (needs to pass in the mode correctly for internal delay)
+3) The OF device tree for arch/powerpc boards
 
-The 8xx can only support a max of 8M during early boot ( it seems a lot of
-8xx boards only have 8M so the bug was never triggered ). The following
-change makes it able to run with 128M.
+You can apply the following patches, or pull them directly:
 
-Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+The following changes since commit c5e3ae8823693b260ce1f217adca8add1bc0b3de:
+  Ayaz Abdulla (1):
+        forcedeth bug fix: realtek phy
 
----
+are found in the git repository at:
 
- arch/powerpc/mm/init_32.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+  http://opensource.freescale.com/pub/scm/linux-2.6-85xx.git netdev
 
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index e1f5ded..7cee86d 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -133,6 +133,9 @@ void __init MMU_init(void)
- 	/* 601 can only access 16MB at the moment */
- 	if (PVR_VER(mfspr(SPRN_PVR)) == 1)
- 		__initial_memory_limit = 0x01000000;
-+	/* 852 can only access 8MB at the moment */
-+	if (PVR_VER(mfspr(SPRN_PVR)) == 0x50)
-+		__initial_memory_limit = 0x00800000;
- 
- 	/* parse args from command line */
- 	MMU_setup();
+Andy Fleming (4):
+      Fix Vitesse 824x PHY interrupt acking
+      Add phy-connection-type to gianfar nodes
+      Fix Vitesse RGMII-ID support
+      Fix RGMII-ID handling in gianfar
+
+ Documentation/powerpc/booting-without-of.txt |    6 +++
+ arch/powerpc/boot/dts/mpc8641_hpcn.dts       |    4 ++
+ arch/powerpc/sysdev/fsl_soc.c                |    9 +++++
+ drivers/net/gianfar.c                        |   12 ++++++-
+ drivers/net/phy/vitesse.c                    |   46 +++++++++++++++++++++++---
+ include/linux/fsl_devices.h                  |    1 +
+ 6 files changed, 72 insertions(+), 6 deletions(-)
