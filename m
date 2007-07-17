@@ -1,40 +1,32 @@
-Return-Path: <xma@us.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Return-Path: <FENKES@de.ibm.com>
+Received: from mtagate7.de.ibm.com (mtagate7.de.ibm.com [195.212.29.156])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 70CF0DDE0F
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 15:57:47 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6H5vgcw005245
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 01:57:42 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l6H5vg6Q257162
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 23:57:42 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6H5vg92021922
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 23:57:42 -0600
-Received: from d03mc012.boulder.ibm.com (d03mc012.boulder.ibm.com
-	[9.17.195.88])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	l6H5vfnC021868
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2007 23:57:41 -0600
-In-Reply-To: <ada1wf7vgfb.fsf@cisco.com>
-Subject: Re: [ofa-general] Re: [PATCH 01/10] IB/ehca: Support for multiple
-	event queues
+	(Client CN "mtagate7.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9FFAFDDE16
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 16:30:39 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate7.de.ibm.com (8.13.8/8.13.8) with ESMTP id l6H6UY4W157282
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 06:30:34 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.4) with
+	ESMTP id l6H6UQJ32117876
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 08:30:34 +0200
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l6H6U93F023749
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 08:30:09 +0200
+In-Reply-To: <adatzs3u1sa.fsf@cisco.com>
 To: Roland Dreier <rdreier@cisco.com>
-Message-ID: <OF19C85704.39162967-ON8725731B.002061DC-8825731A.0078A20B@us.ibm.com>
-From: Shirley Ma <xma@us.ibm.com>
-Date: Mon, 16 Jul 2007 22:57:40 -0700
 MIME-Version: 1.0
-Content-type: multipart/alternative;
-	Boundary="0__=08BBF988DFB3E74C8f9e8a93df938690918c08BBF988DFB3E74C"
-Cc: Joachim Fenkes <fenkes@de.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	general-bounces@lists.openfabrics.org,
-	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>,
+Subject: Re: [PATCH 10/10] IB/ehca: Support large page MRs
+From: Joachim Fenkes <FENKES@de.ibm.com>
+Message-ID: <OF38142F5F.0D12E609-ONC125731B.00239A1F-C125731B.0023C7C0@de.ibm.com>
+Date: Tue, 17 Jul 2007 08:29:54 +0200
+Content-Type: text/plain; charset="US-ASCII"
+Cc: LKML <linux-kernel@vger.kernel.org>, LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>,
 	OF-General <general@lists.openfabrics.org>,
 	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -46,36 +38,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---0__=08BBF988DFB3E74C8f9e8a93df938690918c08BBF988DFB3E74C
-Content-type: text/plain; charset=US-ASCII
+Roland Dreier <rdreier@cisco.com> wrote on 17.07.2007 05:50:13:
 
+>  > > Why the module parameter?  Is there any reason a user would want to
+>  > > turn this off?  Or conversely, why is it off by default?
+>  > 
+>  > We're pretty confident this new feature works, but as with all new 
+and 
+>  > possibly experimental features, there are chances it might explode 
+your 
+>  > machine when activated. So, like with the scaling code, we want the 
+user 
+>  > to make the conscious decision of using this code instead of 
+activating it 
+>  > by default.
+> 
+> OK, I guess.  So can we expect to, say, change the default to turning
+> it on for 2.6.24 and remove the option entirely (so it's always on) in
+> 2.6.25?
 
+Deal.
 
-
-
-Hello Roland,
-
->I still haven't seen much code using the feature or
->even any anecdotal information about the performance impact.
-
-The multiple links performance has been significant improved according to
-the prototype IPoIB-UD mode test for eHCA driver esepcially for two links
-on the same adapter. I haven't tried mthca (PCI-X and PCI-E) yet.
-
-Thanks
-Shirley
---0__=08BBF988DFB3E74C8f9e8a93df938690918c08BBF988DFB3E74C
-Content-type: text/html; charset=US-ASCII
-Content-Disposition: inline
-
-<html><body>
-<p><tt>Hello Roland,</tt><br>
-<br>
-<tt>&gt;I still haven't seen much code using the feature or<br>
-&gt;even any anecdotal information about the performance impact.</tt><br>
-<br>
-The multiple links performance has been significant improved according to the prototype IPoIB-UD mode test for eHCA driver esepcially for two links on the same adapter. I haven't tried mthca (PCI-X and PCI-E) yet.<br>
-<br>
-Thanks<br>
-Shirley</body></html>
---0__=08BBF988DFB3E74C8f9e8a93df938690918c08BBF988DFB3E74C--
+Joachim
