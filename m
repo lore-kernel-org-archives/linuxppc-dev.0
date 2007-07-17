@@ -1,18 +1,21 @@
-Return-Path: <jdl@jdl.com>
-Received: from jdl.com (jdl.com [208.123.74.7])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D7594DDEE2
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 08:27:22 +1000 (EST)
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] Add StorCenter DTS first draft. 
-In-Reply-To: Your message of "Tue, 17 Jul 2007 16:57:27 +0200."
-	<630B6BC9-389F-4F5C-AE8F-9C3131C4543E@kernel.crashing.org>
-References: <E1IAnwC-0003Xm-6U@jdl.com>
-	<630B6BC9-389F-4F5C-AE8F-9C3131C4543E@kernel.crashing.org>
-Date: Tue, 17 Jul 2007 17:27:18 -0500
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1IAvVm-0005yQ-LO@jdl.com>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0CAEADDEF1
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 08:34:48 +1000 (EST)
+Message-ID: <469D43DD.8020102@freescale.com>
+Date: Tue, 17 Jul 2007 17:34:05 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: [PATCH] Add StorCenter DTS first draft.
+References: <E1IAnwC-0003Xm-6U@jdl.com>	<630B6BC9-389F-4F5C-AE8F-9C3131C4543E@kernel.crashing.org>
+	<E1IAvVm-0005yQ-LO@jdl.com>
+In-Reply-To: <E1IAvVm-0005yQ-LO@jdl.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,93 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day Segher Boessenkool mumbled:
-> > +/ {
-> > +	model = "StorCenter";
+Jon Loeliger wrote:
+> How about "soc8241@80000000" instead?
 > 
-> If you can find a real model number, put it in here, instead.
+> That would be similar to:
+>         soc8641@f8000000 {
+> and
+>        soc8272@f0000000 {
 
-Yep, "StorCenter" is it.  No model numer/name beyond that.
+How about just "soc@80000000"?  Those model numbers in the names are a 
+PITA to find from limited functionality environments such as the 
+bootwrapper, require things like stdout-path to be different on every 
+soc, and don't comply with the generic names recommendation.
 
-> > +	compatible = "storcenter";
-> 
-> Needs a manufacturer name in there.
-
-Right.  Will use:
-	compatible = "iomega,storcenter"
-
-> > +		PowerPC,603e {			/* Really 8241 */
-> 
-> So say "PowerPC,8241@0", or "PowerPC,e300@0" (or whatever
-> the CPU core in there is), or simply "cpu@0", following
-> the generic naming recommended practice.
-
-Well, its the 8241 SoC with a 603e core...  (This is
-the same phrase currently being used on the Kurobox.)
-I'll use:
-
-	PowerPC,8241@0 }
-
-
-> > +			bus-frequency = <0>;
-> 
-> Is this filled in anywhere?  Please document that, if so.
-
-Right.  boot{loader,wrapper}
-
-> > +	soc10x {
-> 
-> Bad name.  Where is the binding for this?  I don't think
-> I saw it before.
-
-It's what is being used, again, by the Kurobox.  I understand
-that doesn't make it "right", just precedented by now.
-
-How about "soc8241@80000000" instead?
-
-That would be similar to:
-        soc8641@f8000000 {
-and
-       soc8272@f0000000 {
-
-> > +		store-gathering = <0>; /* 0 == off, !0 == on */
-> 
-> Don't define this as "!0", but as "1".
-
-OK.
-
-> > +		i2c@fdf03000 {
-> > +			device_type = "i2c";
-> 
-> No device_type, there is no I2C binding.
-
-Right.
-
-> > +			compatible = "fsl-i2c";
-> 
-> Needs to be more specific.
-
-Hmmm...  Not sure what to use here then.  There are many
-existing examples using "fsl-i2c" already.  Granted, we've
-established that they could be wrong...  Should this be
-more like this?:
-
-    compatible = "fsl,mpc8241-i2c", "fsl-i2c";
-
-> > +		mpic: pic@fdf40000 {
-> 
-> interrupt-controller@fdf40000
-
-OK.
-
-> > +		pci@fe800000 {
-> > +			clock-frequency = <d# 100000000>; /* Hz */
-> 
-> 100MHz PCI?  Interesting.
-
-Good point. 66666666 seems more likely...
-
-
-Thanks for the review and help here!
-
-jdl
+-Scott
