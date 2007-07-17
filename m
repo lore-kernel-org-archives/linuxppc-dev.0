@@ -1,23 +1,19 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E94C3DDE05
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 23:44:21 +1000 (EST)
-Subject: Re: [PATCH] remove awacs dmasound
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Adrian Bunk <bunk@stusta.de>
-In-Reply-To: <20070717133752.GC3801@stusta.de>
-References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
-	<1184678911.27780.5.camel@johannes.berg>
-	<20070717133752.GC3801@stusta.de>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-BSl2rYVTYP4oeVaYy/3E"
-Date: Tue, 17 Jul 2007 15:43:00 +0200
-Message-Id: <1184679780.27780.13.camel@johannes.berg>
+Return-Path: <rongkai.zhan@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id 931B5DDE0E
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 23:53:18 +1000 (EST)
+Subject: Re: [PATCH 2/3] 82xx: Parse SMC serial device node in DTS
+From: Mark Zhan <rongkai.zhan@windriver.com>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200707171406.03455.arnd@arndb.de>
+References: <469B33F9.2080604@windriver.com>
+	<200707170302.07469.arnd@arndb.de> <1184647742.10499.34.camel@mark>
+	<200707171406.03455.arnd@arndb.de>
+Content-Type: text/plain
+Date: Tue, 17 Jul 2007 21:53:05 +0800
+Message-Id: <1184680385.18501.51.camel@mark>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,40 +23,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, 2007-07-17 at 14:06 +0200, Arnd Bergmann wrote:
+> On Tuesday 17 July 2007, Mark Zhan wrote:
+> > On Tue, 2007-07-17 at 03:02 +0200, Arnd Bergmann wrote:
+> > > On Monday 16 July 2007, Mark Zhan wrote:
+> > > > -               cpm_uart_data.uart_clk = ppc_proc_freq;
+> > > > +               if (strstr(model, "SMC")) {
+> > > > +                       cpm_uart_dev = platform_device_register_simple("fsl-cpm-smc:uart",
+> > > > +                                                       i, &r[0], 3);
+> > > > +               } else if (strstr(model, "SCC")) {
+> > > > +                       cpm_uart_dev = platform_device_register_simple("fsl-cpm-scc:uart",
+> > > > +                                                       i, &r[0], 3);
+> > > > +               }
+> > >
+> > > You should probably use of_device_is_compatible() to check
+> > > if a given device can be used by a particular driver.
+> >
+> > I think, the function of_find_compatible_node(), which is called in the
+> > for loop, has already done that. So definitely, no need to call
+> > of_device_is_compatible() any more.
+> 
+> It's a little more complicated than that. The "compatible" property should
+> indicate the exact interface of that device, so the "model" does not really
+> matter here. I don't know the difference between smc and scc, but if you
+> need to register them as different pplatform devices, they should
+> normally also have different names in "compatible", possibly in addition
+> to the existing one.
+> 
+> If the compatible property contains "fsl,cpm-smc\0cpm_uart", you can scan for
+> either of them. The loop will iterate over all cpm_uart compatible devices,
+> while the later test will look for an fsl,cpm-smc compatible device.
 
---=-BSl2rYVTYP4oeVaYy/3E
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Arnd,
 
-On Tue, 2007-07-17 at 15:37 +0200, Adrian Bunk wrote:
+Yes, basically I agree what you say. That should be the right way. 
 
-> >  sound/oss/dmasound/Kconfig           |   14=20
->=20
-> That's not in your patch, most likely because it's already removed as=20
-> scheduled.
+but, the current situation is that: in all DTS files that are using smc
+or scc as uart device, all device node definitions have the same
+"compatible" property -- "cpm_uart"
 
-Ah, good point, I just removed it manually from the patch knowing that
-it was gone from the config.
+So what I do here is just following the upstream source tree.
 
-> The option is already removed from the Kconfig file, and the code=20
-> removal is scheduled for 2.6.24. I'll take care of this (I'll send
-> a patch through Andrew).
-
-Alright. It uses the sleep notifiers I wanted to remove so I didn't want
-to leave it even if it's not selectable.
-
-johannes
-
---=-BSl2rYVTYP4oeVaYy/3E
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGnMdk/ETPhpq3jKURAjb3AJwO6Fo7+LnwjWKmTyHN2cS1O5VRMwCfQWs+
-Y5OopSvxkgZIUEghnllDUak=
-=uqnA
------END PGP SIGNATURE-----
-
---=-BSl2rYVTYP4oeVaYy/3E--
+Thanks
+Mark Zhan
