@@ -4,18 +4,15 @@ Received: from de01egw02.freescale.net (de01egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4CB10DDE35
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 11:27:32 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id D8282DDE33
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 11:27:28 +1000 (EST)
 From: Andy Fleming <afleming@freescale.com>
 To: jgarzik@pobox.com, paulus@samba.org, galak@kernel.crashing.org
-Subject: [PATCH 4/4] gianfar: Fix RGMII-ID handling in gianfar
-Date: Mon, 16 Jul 2007 20:27:01 -0500
-Message-Id: <11846356251126-git-send-email-afleming@freescale.com>
-In-Reply-To: <11846356241295-git-send-email-afleming@freescale.com>
+Subject: [PATCH 1/4] phy: Fix Vitesse 824x PHY interrupt acking
+Date: Mon, 16 Jul 2007 20:26:58 -0500
+Message-Id: <1184635622653-git-send-email-afleming@freescale.com>
+In-Reply-To: <1184635621688-git-send-email-afleming@freescale.com>
 References: <1184635621688-git-send-email-afleming@freescale.com>
-	<1184635622653-git-send-email-afleming@freescale.com>
-	<11846356233423-git-send-email-afleming@freescale.com>
-	<11846356241295-git-send-email-afleming@freescale.com>
 Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,82 +23,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The TSEC/eTSEC can detect the interface to the PHY automatically,
-but it isn't able to detect whether the RGMII connection needs internal
-delay.  So we need to detect that change in the device tree, propagate
-it to the platform data, and then check it if we're in RGMII.  This fixes
-a bug on the 8641D HPCN board where the Vitesse PHY doesn't use the delay
-for RGMII.
+The Vitesse 824x PHY doesn't allow an interrupt to be cleared if
+the mask bit for that interrupt isn't set.  This means that the PHY
+Lib's order of handling interrupts (disable, then clear) breaks on this
+PHY.  However, clearing then disabling the interrupt opens up the code
+for a silly race condition.  So rather than change the PHY Lib, we change
+the Vitesse driver so it always clears interrupts before disabling them.
+Further, the ack function only clears the interrupt if interrupts are
+enabled.
 
 Signed-off-by: Andy Fleming <afleming@freescale.com>
+Signed-off-by: York Sun <yorksun@freescale.com>
+Acked-by: Haiying Wang <Haiying.Wang@freescale.com>
 ---
- arch/powerpc/sysdev/fsl_soc.c |    9 +++++++++
- drivers/net/gianfar.c         |   12 +++++++++++-
- include/linux/fsl_devices.h   |    1 +
- 3 files changed, 21 insertions(+), 1 deletions(-)
+ drivers/net/phy/vitesse.c |   23 +++++++++++++++++++++--
+ 1 files changed, 21 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index cad1757..64efee6 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -197,6 +197,7 @@ static int __init gfar_of_init(void)
- 		struct gianfar_platform_data gfar_data;
- 		const unsigned int *id;
- 		const char *model;
-+		const char *ctype;
- 		const void *mac_addr;
- 		const phandle *ph;
- 		int n_res = 2;
-@@ -254,6 +255,14 @@ static int __init gfar_of_init(void)
- 			    FSL_GIANFAR_DEV_HAS_VLAN |
- 			    FSL_GIANFAR_DEV_HAS_EXTENDED_HASH;
+diff --git a/drivers/net/phy/vitesse.c b/drivers/net/phy/vitesse.c
+index 596222b..f39ab76 100644
+--- a/drivers/net/phy/vitesse.c
++++ b/drivers/net/phy/vitesse.c
+@@ -65,7 +65,15 @@ static int vsc824x_config_init(struct phy_device *phydev)
  
-+		ctype = of_get_property(np, "phy-connection-type", NULL);
-+
-+		/* We only care about rgmii-id.  The rest are autodetected */
-+		if (ctype && !strcmp(ctype, "rgmii-id"))
-+			gfar_data.interface = PHY_INTERFACE_MODE_RGMII_ID;
-+		else
-+			gfar_data.interface = PHY_INTERFACE_MODE_MII;
-+
- 		ph = of_get_property(np, "phy-handle", NULL);
- 		phy = of_find_node_by_phandle(*ph);
+ static int vsc824x_ack_interrupt(struct phy_device *phydev)
+ {
+-	int err = phy_read(phydev, MII_VSC8244_ISTAT);
++	int err = 0;
++	
++	/*
++	 * Don't bother to ACK the interrupts if interrupts
++	 * are disabled.  The 824x cannot clear the interrupts
++	 * if they are disabled.
++	 */
++	if (phydev->interrupts == PHY_INTERRUPT_ENABLED)
++		err = phy_read(phydev, MII_VSC8244_ISTAT);
  
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index d7a1a58..f926905 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -420,8 +420,18 @@ static phy_interface_t gfar_get_interface(struct net_device *dev)
- 	if (ecntrl & ECNTRL_REDUCED_MODE) {
- 		if (ecntrl & ECNTRL_REDUCED_MII_MODE)
- 			return PHY_INTERFACE_MODE_RMII;
--		else
-+		else {
-+			phy_interface_t interface = priv->einfo->interface;
+ 	return (err < 0) ? err : 0;
+ }
+@@ -77,8 +85,19 @@ static int vsc824x_config_intr(struct phy_device *phydev)
+ 	if (phydev->interrupts == PHY_INTERRUPT_ENABLED)
+ 		err = phy_write(phydev, MII_VSC8244_IMASK,
+ 				MII_VSC8244_IMASK_MASK);
+-	else
++	else {
++		/*
++		 * The Vitesse PHY cannot clear the interrupt
++		 * once it has disabled them, so we clear them first
++		 */
++		err = phy_read(phydev, MII_VSC8244_ISTAT);
 +
-+			/*
-+			 * This isn't autodetected right now, so it must
-+			 * be set by the device tree or platform code.
-+			 */
-+			if (interface == PHY_INTERFACE_MODE_RGMII_ID)
-+				return PHY_INTERFACE_MODE_RGMII_ID;
++		if (err)
++			return err;
 +
- 			return PHY_INTERFACE_MODE_RGMII;
-+		}
- 	}
+ 		err = phy_write(phydev, MII_VSC8244_IMASK, 0);
++	}
++
+ 	return err;
+ }
  
- 	if (priv->einfo->device_flags & FSL_GIANFAR_DEV_HAS_GIGABIT)
-diff --git a/include/linux/fsl_devices.h b/include/linux/fsl_devices.h
-index 73710d6..2de358f 100644
---- a/include/linux/fsl_devices.h
-+++ b/include/linux/fsl_devices.h
-@@ -53,6 +53,7 @@ struct gianfar_platform_data {
- 	u32	bus_id;
- 	u32	phy_id;
- 	u8	mac_addr[6];
-+	phy_interface_t interface;
- };
- 
- struct gianfar_mdio_data {
 -- 
 1.5.0.2.230.gfbe3d-dirty
