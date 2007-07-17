@@ -1,24 +1,17 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [208.123.74.7])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 35AC1DDE0C
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 00:15:22 +1000 (EST)
-In-Reply-To: <1184622446.25235.89.camel@localhost.localdomain>
-References: <1184161957.32199.52.camel@weaponx.rchland.ibm.com>
-	<1184162389.32199.65.camel@weaponx.rchland.ibm.com>
-	<4EAC985A-2F04-465D-AB69-C67807310D7B@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA3030669AF@az33exm25.fsl.freescale.net>
-	<28A3F6B9-512B-4D86-8E0D-A7680CCE2354@kernel.crashing.org>
-	<1184622446.25235.89.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=WINDOWS-1252; delsp=yes; format=flowed
-Message-Id: <C2D29334-489F-49B0-8220-0D94E89FEAC3@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC][PATCH 6/8] Walnut DTS
-Date: Tue, 17 Jul 2007 16:15:00 +0200
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Yoder Stuart-B08248 <stuart.yoder@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id CD926DDE0C
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 00:22:09 +1000 (EST)
+Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.63)
+	(envelope-from <jdl@jdl.com>) id 1IAnwC-0003Xm-6U
+	for linuxppc-dev@ozlabs.org; Tue, 17 Jul 2007 09:22:05 -0500
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Add StorCenter DTS first draft.
+Date: Tue, 17 Jul 2007 09:22:04 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1IAnwC-0003Xm-6U@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,199 +21,166 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> +		#address-cells =3D <0>;
->>>>> +		#size-cells =3D <0>;
->>>>
->>>> No need for these.
->>>
->>> Isn't a good practice to put #address-cells in interrupt controller
->>> nodes?
->>
->> It is not.
->
-> Well, that's debatable... but yes, a strict reading of the spec would
-> say that you should put neither #address-cells nor #size-cells in a =20=
+Based on the Kurobox DTS files.
 
-> leaf
-> interrupt controller.
+Signed-off-by: Oyvind Repvik <nail@nslu2-linux.org>
+Signed-off-by: Jon Loeliger <jdl@jdl.com>
+---
 
-Yes.
-
->>> If the device tree has an interrupt map defined the interrupt
->>> parent 'unit interrupt specifier' has to be interpreted according
->>> to the #address-cells of the interrupt parent.
->>
->> And "#address-cells" is defaulted to 0 if it is absent,
->> for the purpose of interrupt mapping (but not for its
->> other purposes).
->
-> This is a bit confusing though,
-
-Yes, I shouldn't say "defaulted" -- a unit interrupt specifier
-simply has no unit address part, in an interrupt domain that
-doesn't correspond to a "normal" bus.  But saying it like this
-is a little bit inexact, and it uses more words.
-
-> which is why I tend to prefer having it
-> explicitely in the interrupt controller node :-)
-
-Which is simply incorrect.
-
-> I tend to dislike
-> "magic" defaults, we've had problems with them in the past and will =20=
-
-> have
-> in the future, I much prefer having things explicit whenever possible.
-
-You mean, the magic default values you used for #address-cells
-and #size-cells?  That was simply a bug, someone forgot to read
-the documentation...
-
->> That "typical practice" is inspired by the need to explicitly
->> put #address-cells and #size-cells into the device tree if you
->> want Linux to properly parse the device tree, even if the default
->> values would work perfectly (if Linux would work correctly,
->> that is).
->
-> Linux does handle default values in some areas. The problem with =20
-> default
-> values is that they are badly defined
-
-For this?  No way:
-
-[=46rom the base spec]:
-
-=93#address-cells=94 S
-	Standard property name to define the package=92s address format.
-	prop-encoded-array: Integer, encoded with encode-int.
-
-	This property applies to packages that define a physical
-	address space, i.e., those packages with =93decode-unit=94
-	methods. The property value specifies the number of cells
-	that are used to encode a physical address within that
-	address space. The value of this property affects the other
-	functions, commands, and methods that deal with physical
-	addresses. In a package with a =93decode-unit=94 method, a =
-missing
-	=93#address-cells=94 property signifies that the number of
-	address cells is two.
-
-See?  The flat device tree unfortunately has no decode-unit, but
-it is still pretty clear which nodes "define a physical address
-space" and which do not.
-
-There is nothing badly defined here.
-
-Nothing in the "interrupt mapping" spec redefines #address-cells
-(OF isn't all that stupid you know); it simply says that a /unit
-interrupt specifier/ has no /unit address/ part if there is no
-#address-cells.  The algorithm in paragraph 7 makes it super
-clear how exactly this should work.
-
-> and the spec contains gray areas
-> and contradictions as to what the default values should be in some
-> circumstances.
-
-In some areas, perhaps.  And it would be nice to bring those
-areas to the attention of the working group, instead of just
-to complain.
-
-There is no such issue in this area, anyway.
-
-> As a general matter, I dislike default values because
-> they somewhat require background knowledge of what default values =20
-> should
-> be in different contexts to "read" a device-tree.
-
-Of course, you need way more than that knowledge to properly
-parse or read a device tree *at all*.
-
-> To be simple, I
-> believe default values are a bad idea.
-
-Linux will have to keep supporting them for "real OF", so
-requiring an explicit #address-cells where its value is 2
-doesn't really help much.  I'm not opposed to this though,
-for flat device trees at least (I think it's a good thing
-for OF trees as well, but for different reasons; and that's
-beside the point here).
-
-On the other hand, requiring an #address-cells where it is
-supposed to be absent, and you only want it so you can wrap
-your head around the interrupt mapping recommended practice
-in a more confusing and confused way, is simply WRONG.
-
->> There are no child nodes, and no binding that says there can
->> be any; neither #address-cells not #size-cells should be there.
->
-> You are being way too pedantic here.
-
-No I'm not.
-
-> The interrupt-tree uses those two properties, thus "there is
-> no child node" is open to interpretation.
-
-It isn't.  Not a bus -> no child node in the device tree.
-The interrupt tree is a completely separate thing.
-
-> There is no child device node, but there are child interrupt nodes, =20=
-
-> and
-> since the interrupt-tree uses #address/size-cells,
-
-It doesn't.
-
-> it does make some sense to specify them.
-
-If it would, the interrupt mapping spec would have had to say
-how the semantics of #address-cells were changed (and they
-weren't, and they shouldn't, and this is such a laughable idea
-I wonder why anyone would suggest it did).
-
-What the interrupt mapping spec defines is how to _use_ the
-value of #address-cells, and how to interpret its absence;
-what should be put in #address-cells for separate nodes is
-defined elsewhere (namely, in the base spec, and in relevant
-device bindings).
-
-> Yes, there is a default value when absent, but the simple fact that =20=
-
-> the
-> default is different depending if you are doing a device walk or an
-> interrupt tree walk is very confusing.
-
-Yes, perhaps there shouldn't be a default value for #a
-in the device structure; this is legacy compatibility
-though, way way way too late to change this.  You can do
-this for the flat device tree though, since a) there are
-no legacy trees around that you care about, and b) you
-need to do something to get around the fact you don't have
-decode-unit and encode-unit anyway, so little changes
-around that area should be expected.
-
-> As I said above, the default
-> values are a source of more problem than anything else and I tend to
-> think they should be banned.
-
-You cannot ban them in the Linux code.  With that in mind,
-what good would it do?  There are thousands of cases where
-absence of a property signifies something that you simply
-*cannot* forbid, period.  So why do it to this one?
-
-> I would personally be inclined to define that whatever spec we come up
-> with always require #address-cells/#size-cells for any node that can
-> have either device children
-
-That is fine, for the flat device tree.  Note that this would
-be implicit in all separate device bindings, anyway.
-
-> or interrupt children,
-
-Nope.  I hope I explained my reasoning.
-
-> and ban default values alltogether.
-
-That is simply impossible.
+Comments welcome, of course.
 
 
-Segher
+ arch/powerpc/boot/dts/storcenter.dts |  142 ++++++++++++++++++++++++++++++++++
+ 1 files changed, 142 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/storcenter.dts
+
+diff --git a/arch/powerpc/boot/dts/storcenter.dts b/arch/powerpc/boot/dts/storcenter.dts
+new file mode 100644
+index 0000000..87193fa
+--- /dev/null
++++ b/arch/powerpc/boot/dts/storcenter.dts
+@@ -0,0 +1,142 @@
++/*
++ * Device Tree Source for IOMEGA StorCenter
++ *
++ * Copyright 2007 Oyvind Repvik, Jon Loeliger
++ *
++ * Based on the Kurobox DTS by G. Liakhovetski <g.liakhovetski@gmx.de>
++ *
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2.  This program is licensed "as is" without any
++ * warranty of any kind, whether express or implied.
++ *
++ * build using:
++ *    dtc -f -b 0 -I dts -O dtb -o storcenter.dtb storcenter.dts
++ */
++
++/ {
++	model = "StorCenter";
++	compatible = "storcenter";
++	#address-cells = <1>;
++	#size-cells = <1>;
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,603e {			/* Really 8241 */
++			device_type = "cpu";
++			reg = <0>;
++			clock-frequency = <d# 200000000>;	/* Hz */
++			timebase-frequency = <d# 33333333>;	/* Hz */
++			bus-frequency = <0>;
++			/* Following required by dtc but not used */
++			i-cache-line-size = <0>;
++			d-cache-line-size = <0>;
++			i-cache-size = <4000>;
++			d-cache-size = <4000>;
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <00000000 04000000>;	/* 64MB @ 0x0 */
++	};
++
++	flash@ff800000 {
++		device_type = "rom";
++		compatible = "direct-mapped";
++		probe-type = "CFI";
++		reg = <ff800000 00800000>;
++		bank-width = <1>;
++		partitions = <
++				00000000 0000E000
++				0000E000 00002000
++				00010000 00040000
++				00050000 00200000
++				00250000 004B0000
++				00700000 00020000
++				00720000 00010000
++				00730000 00010000
++				00740000 000B0000
++		>;
++		partition-names = "uboot2env", "dtb", "uboot2",
++				  "emkernel", "emfs", "uboot1",
++				  "empty", "uboot1-env", "SysConf";
++	};
++
++
++	soc10x {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		#interrupt-cells = <2>;
++		device_type = "soc";
++		compatible = "mpc10x";
++		store-gathering = <0>; /* 0 == off, !0 == on */
++		reg = <80000000 00100000>;
++		ranges = <80000000 80000000 70000000	/* pci mem space */
++			  fdf00000 fdf00000 00100000	/* EUMB */
++			  fe000000 fe000000 00c00000	/* pci i/o space */
++			  fec00000 fec00000 00300000	/* pci cfg regs */
++			  fef00000 fef00000 00100000>;	/* pci iack */
++
++		i2c@fdf03000 {
++			device_type = "i2c";
++			compatible = "fsl-i2c";
++			reg = <fdf03000 1000>;
++			interrupts = <5 2>;
++			interrupt-parent = <&mpic>;
++		};
++
++		serial@fdf04500 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <fdf04500 8>;
++			clock-frequency = <d# 100000000>; /* Hz */
++			current-speed = <d# 115200>;
++			interrupts = <9 2>;
++			interrupt-parent = <&mpic>;
++		};
++
++		serial@fdf04600 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <fdf04600 8>;
++			clock-frequency = <d# 100000000>; /* Hz */
++			current-speed = <d# 19200>;
++			interrupts = <a 2>;
++			interrupt-parent = <&mpic>;
++		};
++
++		mpic: pic@fdf40000 {
++			#interrupt-cells = <2>;
++			#address-cells = <0>;
++			device_type = "open-pic";
++			compatible = "chrp,open-pic";
++			interrupt-controller;
++			reg = <fdf40000 40000>;
++			built-in;
++		};
++
++		pci@fe800000 {
++			#address-cells = <3>;
++			#size-cells = <2>;
++			#interrupt-cells = <1>;
++			device_type = "pci";
++			compatible = "mpc10x-pci";
++			reg = <fe800000 400000>;
++			ranges = <01000000 0        0 fe000000 0 00c00000
++				  02000000 0 80000000 80000000 0 70000000>;
++			bus-range = <0 ff>;
++			clock-frequency = <d# 100000000>; /* Hz */
++			interrupt-parent = <&mpic>;
++			interrupt-map-mask = <f800 0 0 7>;
++			interrupt-map = <
++				/* IDSEL 0x15 - ETH */
++				7800 0 0 1 &mpic 0 1
++				7800 0 0 2 &mpic 0 1
++				7800 0 0 3 &mpic 0 1
++				7800 0 0 4 &mpic 0 1 
++			>;
++		};
++	};
++};
+-- 
+1.5.2.2.249.g45fd
