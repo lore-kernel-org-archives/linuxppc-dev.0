@@ -2,14 +2,14 @@ Return-Path: <vitb@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 72387DDE10
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 10:49:18 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id BDDF3DDE1B
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 10:49:41 +1000 (EST)
 To: Paul Mackerras <paulus@samba.org>
 From: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: [PATCH] POWERPC: Added RTC support for mpc8313RDB and utilize
-	"clock-frequency"
-Date: Tue, 17 Jul 2007 04:49:13 +0400
-Message-ID: <20070717004913.21682.50282.stgit@localhost.localdomain>
+Subject: [PATCH] POWERPC: add support of the GiGE switch for mpc8313RDB via
+	fixed PHY
+Date: Tue, 17 Jul 2007 04:49:37 +0400
+Message-ID: <20070717004936.21700.67900.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
@@ -23,97 +23,81 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-This enables DS1337 embedded RTC and uses "clock-frequency"
-property to configure loops_per_jiffy. Fixed spaces vs tabs issue
-in couple of places.
+This utilises pretend phy, making access to it via device tree. GiGE switch
+is connected to TSEC1 with fixed gigE link, so we need to emulate it
+via artificial PHY to make it work.
 
 Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
 
 ---
 
- arch/powerpc/platforms/83xx/mpc8313_rdb.c |   52 ++++++++++++++++++++++++++++-
- 1 files changed, 50 insertions(+), 2 deletions(-)
+ arch/powerpc/boot/dts/mpc8313erdb.dts     |    1 +
+ arch/powerpc/platforms/83xx/mpc8313_rdb.c |   43 +++++++++++++++++++++++++++++
+ 2 files changed, 44 insertions(+), 0 deletions(-)
 
+diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
+index a1533cc..1b351dc 100644
+--- a/arch/powerpc/boot/dts/mpc8313erdb.dts
++++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
+@@ -100,6 +100,7 @@
+ 			#size-cells = <0>;
+ 			phy1: ethernet-phy@1 {
+ 				interrupt-parent = < &ipic >;
++				compatible = "fixed";
+ 				interrupts = <13 8>;
+ 				reg = <1>;
+ 				device_type = "ethernet-phy";
 diff --git a/arch/powerpc/platforms/83xx/mpc8313_rdb.c b/arch/powerpc/platforms/83xx/mpc8313_rdb.c
-index 3edfe17..b410e67 100644
+index b410e67..5ee08fc 100644
 --- a/arch/powerpc/platforms/83xx/mpc8313_rdb.c
 +++ b/arch/powerpc/platforms/83xx/mpc8313_rdb.c
-@@ -14,6 +14,8 @@
-  */
+@@ -115,6 +115,49 @@ static int __init rtc_hookup(void)
+ late_initcall(rtc_hookup);
+ #endif
  
- #include <linux/pci.h>
-+#include <linux/delay.h>
-+#include <linux/rtc.h>
- 
- #include <asm/time.h>
- #include <asm/ipic.h>
-@@ -42,6 +44,17 @@ static void __init mpc8313_rdb_setup_arch(void)
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc8313_rdb_setup_arch()", 0);
- 
-+	np = of_find_node_by_type(NULL, "cpu");
-+	if (np != 0) {
-+		const unsigned int *fp =
-+			get_property(np, "clock-frequency", NULL);
-+		if (fp != 0)
-+			loops_per_jiffy = *fp / HZ;
-+		else
-+			loops_per_jiffy = 50000000 / HZ;
-+		of_node_put(np);
++#if defined(CONFIG_FIXED_MII_1000_FDX)
++
++static int fixed_set_link (void)
++{
++	struct fixed_info *phyinfo = fixed_mdio_get_phydev(0);	/* only one fixed phy on this platform */
++	struct phy_device *phydev;
++	struct device_node *np;
++	struct device_node *child;
++	unsigned int i;
++	struct resource res;
++	int ret;
++	u32 *id = NULL;
++
++	if (!phyinfo)
++		return -ENXIO;
++	phydev = phyinfo->phydev;
++	if (!phydev)
++		return -ENXIO;
++	for (np = NULL, i = 0;
++	     (np = of_find_compatible_node(np, "mdio", "gianfar")) != NULL;
++	     i++) {
++
++		memset(&res, 0, sizeof(res));
++
++		ret = of_address_to_resource(np, 0, &res);
++		if (ret)
++			return ret;
++		child = of_find_compatible_node(np, "ethernet-phy","fixed");
++		if (!child)
++			return -ENXIO;
++		id = (u32*)of_get_property(child, "reg", NULL);
++		if (!id)
++			return -ENXIO;
++		break;
 +	}
++	snprintf(phydev->dev.bus_id, BUS_ID_SIZE, PHY_ID_FMT,  res.start, *id);
++	memset(phyinfo->regs,0xff,sizeof(phyinfo->regs[0])*phyinfo->regs_num);
 +
- #ifdef CONFIG_PCI
- 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
- 		mpc83xx_add_bridge(np);
-@@ -67,14 +80,49 @@ void __init mpc8313_rdb_init_IRQ(void)
- 	ipic_set_default_priority();
- }
- 
-+#if defined (CONFIG_SENSORS_DS1337) && defined (CONFIG_I2C)
-+
-+extern int ds1337_do_command(int id, int cmd, void *arg);
-+extern spinlock_t rtc_lock;
-+#define DS1337_GET_DATE		0
-+#define DS1337_SET_DATE		1
-+
-+static void mpc8313rdb_get_rtc_time(struct rtc_time *tm)
-+{
-+	int result;
-+
-+	result = ds1337_do_command(0, DS1337_GET_DATE, tm);
-+
-+	if (result == 0)
-+		result = mktime(tm->tm_year, tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
-+}
-+
-+static int mpc8313rdb_set_rtc_time(struct rtc_time *tm)
-+{
-+	int result;
-+
-+	result = ds1337_do_command(0, DS1337_SET_DATE, tm);
-+
-+	return result;
-+}
-+
-+static int __init rtc_hookup(void)
-+{
-+	ppc_md.get_rtc_time = mpc8313rdb_get_rtc_time;
-+	ppc_md.set_rtc_time = mpc8313rdb_set_rtc_time;
 +	return 0;
 +}
-+late_initcall(rtc_hookup);
++late_initcall(fixed_set_link);
 +#endif
 +
  /*
   * Called very early, MMU is off, device-tree isn't unflattened
   */
- static int __init mpc8313_rdb_probe(void)
- {
--        unsigned long root = of_get_flat_dt_root();
-+	unsigned long root = of_get_flat_dt_root();
- 
--        return of_flat_dt_is_compatible(root, "MPC8313ERDB");
-+	return of_flat_dt_is_compatible(root, "MPC8313ERDB");
- }
- 
- define_machine(mpc8313_rdb) {
