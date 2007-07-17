@@ -1,19 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 5E208DDE0E
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 22:59:08 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/3] 82xx: Parse SMC serial device node in DTS
-Date: Tue, 17 Jul 2007 14:06:03 +0200
-References: <469B33F9.2080604@windriver.com> <200707170302.07469.arnd@arndb.de>
-	<1184647742.10499.34.camel@mark>
-In-Reply-To: <1184647742.10499.34.camel@mark>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200707171406.03455.arnd@arndb.de>
-Cc: paulus@samba.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 87A8CDDDF8
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 23:09:29 +1000 (EST)
+In-Reply-To: <20070717004936.21700.67900.stgit@localhost.localdomain>
+References: <20070717004936.21700.67900.stgit@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <0DE0F202-0D89-4CC2-A67D-CB7D40EFB7DB@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] POWERPC: add support of the GiGE switch for mpc8313RDB
+	via fixed PHY
+Date: Tue, 17 Jul 2007 15:09:19 +0200
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,40 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 17 July 2007, Mark Zhan wrote:
-> On Tue, 2007-07-17 at 03:02 +0200, Arnd Bergmann wrote:
-> > On Monday 16 July 2007, Mark Zhan wrote:
-> > > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cpm_uart_data.uart_clk =3D ppc_proc_fre=
-q;
-> > > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (strstr(model, "SMC")) {
-> > > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 cpm_uart_dev =3D platfo=
-rm_device_register_simple("fsl-cpm-smc:uart",
-> > > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 i, &r[0], 3);
-> > > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 } else if (strstr(model, "SCC")) {
-> > > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 cpm_uart_dev =3D platfo=
-rm_device_register_simple("fsl-cpm-scc:uart",
-> > > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 i, &r[0], 3);
-> > > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
-> >
-> > You should probably use of_device_is_compatible() to check
-> > if a given device can be used by a particular driver.
->
-> I think, the function of_find_compatible_node(), which is called in the
-> for loop, has already done that. So definitely, no need to call
-> of_device_is_compatible() any more.
+> This utilises pretend phy, making access to it via device tree.  
+> GiGE switch
+> is connected to TSEC1 with fixed gigE link, so we need to emulate it
+> via artificial PHY to make it work.
 
-It's a little more complicated than that. The "compatible" property should
-indicate the exact interface of that device, so the "model" does not really
-matter here. I don't know the difference between smc and scc, but if you
-need to register them as different pplatform devices, they should
-normally also have different names in "compatible", possibly in addition
-to the existing one.
+Even if "pretend phy" in the device tree would be a good
+idea (and it's not)...
 
-If the compatible property contains "fsl,cpm-smc\0cpm_uart", you can scan f=
-or
-either of them. The loop will iterate over all cpm_uart compatible devices,
-while the later test will look for an fsl,cpm-smc compatible device.
+>  			#size-cells = <0>;
+>  			phy1: ethernet-phy@1 {
+>  				interrupt-parent = < &ipic >;
+> +				compatible = "fixed";
 
-	Arnd <><
+...you cannot seriously believe you are allowed to claim
+the name "fixed" for it.
+
+NAK.
+
+
+Segher
