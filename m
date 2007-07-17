@@ -1,22 +1,30 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <linas@austin.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BB1C7DDE1F
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 02:06:39 +1000 (EST)
-Message-ID: <469CE904.2090900@freescale.com>
-Date: Tue, 17 Jul 2007 11:06:28 -0500
-From: Scott Wood <scottwood@freescale.com>
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 89F13DDDCA
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 02:09:41 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6HG9bT9020292
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 12:09:37 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l6HG9aq4196852
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 10:09:36 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l6HG9aTi014478
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 10:09:36 -0600
+Date: Tue, 17 Jul 2007 11:09:35 -0500
+To: paulus@samba.org
+Subject: [PATCH] iommu virtual merge no longer experimental
+Message-ID: <20070717160935.GE5771@austin.ibm.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 2/3] 82xx: Parse SMC serial device node in DTS
-References: <469B33F9.2080604@windriver.com> <200707171506.43102.arnd@arndb.de>
-	<1184682576.18501.62.camel@mark> <200707171618.54903.arnd@arndb.de>
-In-Reply-To: <200707171618.54903.arnd@arndb.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org, Benjamin Herrenschmidt <benh@au1.ibm.com>,
+	Arnd Bergmann <arnd.bergmann@de.ibm.com>, Tim Schimke <tschimke@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,28 +34,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Tuesday 17 July 2007, Mark Zhan wrote:
-> 
->>>Well, AFAICS, all of them currently use scc. The 8xx platforms don't
->>>even build correctly in the mainline kernel, so I guess it would
->>>be good to change them to also list fsl,cpm-smc in the compatible
->>>property.
->>
->>That probably could be done by another series of patches, and I really
->>don't want to introduce those kinds of patches in my BSP patches. I
->>don't know if the 8xx/82xx series patches from Scott Wood will cover
->>this issue or not.
-> 
-> 
-> I guess he can best answer that himself. Scott, what are your plans
-> to deal with the different types of cpm ports?
 
-My patchset converts the CPM enet and serial drivers to of platform 
-devices when CONFIG_PPC_MERGE is defined, and signficantly overhauls the 
-device tree binding.  A 885 CPM UART would have a compatible like this:
+Per conversations with BenH, iommu virtual merging should no longer
+be considered to be an "experimental" feature. In particular, 
+CONFIG_VMERGE has been set to "y" in te defconfigs for quite a while.
 
-compatible = "fsl,mpc885-smc-uart", "fsl,cpm1-smc-uart",
-              "fsl,cpm1-uart", "fsl,cpm-smc-uart", "fsl,cpm-uart";
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 
--Scott
+----
+ arch/powerpc/Kconfig |   11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+Index: linux-2.6.22-git2/arch/powerpc/Kconfig
+===================================================================
+--- linux-2.6.22-git2.orig/arch/powerpc/Kconfig	2007-07-08 18:32:17.000000000 -0500
++++ linux-2.6.22-git2/arch/powerpc/Kconfig	2007-07-17 11:08:18.000000000 -0500
+@@ -430,16 +430,17 @@ config MATH_EMULATION
+ 	  instructions to run.
+ 
+ config IOMMU_VMERGE
+-	bool "Enable IOMMU virtual merging (EXPERIMENTAL)"
+-	depends on EXPERIMENTAL && PPC64
+-	default n
++	bool "Enable IOMMU virtual merging"
++	depends on PPC64
++	default y
+ 	help
+ 	  Cause IO segments sent to a device for DMA to be merged virtually
+ 	  by the IOMMU when they happen to have been allocated contiguously.
+ 	  This doesn't add pressure to the IOMMU allocator. However, some
+ 	  drivers don't support getting large merged segments coming back
+-	  from *_map_sg(). Say Y if you know the drivers you are using are
+-	  properly handling this case.
++	  from *_map_sg().
++
++	  Most drivers don't have this problem; it is safe to say Y here.
+ 
+ config HOTPLUG_CPU
+ 	bool "Support for enabling/disabling CPUs"
