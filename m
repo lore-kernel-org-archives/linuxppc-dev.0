@@ -2,18 +2,19 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8EE4CDDE1A
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 00:58:03 +1000 (EST)
-In-Reply-To: <E1IAnwC-0003Xm-6U@jdl.com>
-References: <E1IAnwC-0003Xm-6U@jdl.com>
+	by ozlabs.org (Postfix) with ESMTP id 05A85DDE25
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 01:08:30 +1000 (EST)
+In-Reply-To: <200707171406.03455.arnd@arndb.de>
+References: <469B33F9.2080604@windriver.com> <200707170302.07469.arnd@arndb.de>
+	<1184647742.10499.34.camel@mark> <200707171406.03455.arnd@arndb.de>
 Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <630B6BC9-389F-4F5C-AE8F-9C3131C4543E@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3D0E2A2D-9ADE-4931-9C73-8E65550C728F@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] Add StorCenter DTS first draft.
-Date: Tue, 17 Jul 2007 16:57:27 +0200
-To: Jon Loeliger <jdl@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/3] 82xx: Parse SMC serial device node in DTS
+Date: Tue, 17 Jul 2007 17:08:18 +0200
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,109 +24,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Comments welcome, of course.
+>>>> +               if (strstr(model, "SMC")) {
+>>>> +                       cpm_uart_dev =  
+>>>> platform_device_register_simple("fsl-cpm-smc:uart",
+>>>> +                                                       i, &r 
+>>>> [0], 3);
+>>>> +               } else if (strstr(model, "SCC")) {
 
-Well you asked for it :-)
+>>> You should probably use of_device_is_compatible() to check
+>>> if a given device can be used by a particular driver.
+>>
+>> I think, the function of_find_compatible_node(), which is called  
+>> in the
+>> for loop, has already done that. So definitely, no need to call
+>> of_device_is_compatible() any more.
+>
+> It's a little more complicated than that. The "compatible" property  
+> should
+> indicate the exact interface of that device, so the "model" does  
+> not really
+> matter here.
 
-> +/ {
-> +	model = "StorCenter";
+"model" is meant to be an exact manufacturer model number.
+This can be used for workaround code or such if the "compatible"
+entry isn't specific enough.  You should try to make sure your
+"compatible" entries are, though.
 
-If you can find a real model number, put it in here,
-instead.
+Oh, and strstr() is asking for trouble.  Just do a full
+compare.
 
-> +	compatible = "storcenter";
+> I don't know the difference between smc and scc, but if you
+> need to register them as different pplatform devices, they should
+> normally also have different names in "compatible", possibly in  
+> addition
+> to the existing one.
 
-Needs a manufacturer name in there.
+Either that, or if they are identical device, just used in
+different ways / connected differently, show that via some
+other properties or such.
 
-> +		PowerPC,603e {			/* Really 8241 */
+> If the compatible property contains "fsl,cpm-smc\0cpm_uart", you  
+> can scan for
+> either of them. The loop will iterate over all cpm_uart compatible  
+> devices,
+> while the later test will look for an fsl,cpm-smc compatible device.
 
-So say "PowerPC,8241@0", or "PowerPC,e300@0" (or whatever
-the CPU core in there is), or simply "cpu@0", following
-the generic naming recommended practice.
-
-> +			bus-frequency = <0>;
-
-Is this filled in anywhere?  Please document that, if so.
-
-> +			/* Following required by dtc but not used */
-> +			i-cache-line-size = <0>;
-> +			d-cache-line-size = <0>;
-> +			i-cache-size = <4000>;
-> +			d-cache-size = <4000>;
-
-Not used _by the Linux kernel_, it's required by the
-PowerPC binding.  Perhaps that should be modified
-for flat device tree use, there are many more required
-properties that no flat tree has anyway.
-
-> +	flash@ff800000 {
-> +		device_type = "rom";
-
-I'm sure you know I find this "rom" binding to be crap.
-However, I didn't yet write up the "cfi" binding, so I
-can't complain ;-)
-
-> +		partitions = <
-> +				00000000 0000E000
-> +				0000E000 00002000
-> +				00010000 00040000
-> +				00050000 00200000
-> +				00250000 004B0000
-> +				00700000 00020000
-> +				00720000 00010000
-> +				00730000 00010000
-> +				00740000 000B0000
-> +		>;
-
-Nothing from 7f0000 to 7fffff?
-
-> +	soc10x {
-
-Bad name.  Where is the binding for this?  I don't think
-I saw it before.
-
-> +		compatible = "mpc10x";
-
-"manufacturer,106-host" or similar.  But this isn't an 10x
-at all, is it?
-
-> +		store-gathering = <0>; /* 0 == off, !0 == on */
-
-Don't define this as "!0", but as "1".
-
-> +		i2c@fdf03000 {
-> +			device_type = "i2c";
-
-No device_type, there is no I2C binding.
-
-> +			compatible = "fsl-i2c";
-
-Needs to be more specific.
-
-> +		mpic: pic@fdf40000 {
-
-interrupt-controller@fdf40000
-
-> +			#interrupt-cells = <2>;
-> +			#address-cells = <0>;
-
-No #address-cells here.
-
-> +			device_type = "open-pic";
-
-device_type = "interrupt-controller" I believe, unless
-the mpic binding does something weird.
-
-> +		pci@fe800000 {
-> +			clock-frequency = <d# 100000000>; /* Hz */
-
-100MHz PCI?  Interesting.
-
-> +			interrupt-map = <
-> +				/* IDSEL 0x15 - ETH */
-> +				7800 0 0 1 &mpic 0 1
-
-7800 isn't device 0x15.  I think you meant 15.
+Well, "fsl,cpm-uart" (note the two differences), but yes.
 
 
 Segher
