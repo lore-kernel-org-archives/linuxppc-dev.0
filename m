@@ -1,26 +1,32 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
+Return-Path: <linas@austin.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BF105DDE31
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 09:44:37 +1000 (EST)
-Date: Wed, 18 Jul 2007 16:43:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [patch 2/3] ps3: BD/DVD/CD-ROM Storage Driver
-Message-Id: <20070718164351.a92ec032.akpm@linux-foundation.org>
-In-Reply-To: <20070716162206.529280000@pademelon.sonytel.be>
-References: <20070716161539.075822000@pademelon.sonytel.be>
-	<20070716162206.529280000@pademelon.sonytel.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Jens Axboe <axboe@kernel.dk>, "James
-	E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Alessandro Rubini <rubini@vision.unipv.it>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D42BBDDDE6
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 09:48:30 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6INmRZS003212
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 19:48:27 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l6INmReU270332
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 17:48:27 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l6INmRXt007866
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 17:48:27 -0600
+Date: Wed, 18 Jul 2007 18:48:26 -0500
+To: Michael Chan <mchan@broadcom.com>
+Subject: [PATCH] tg3: add PCI error recovery support
+Message-ID: <20070718234826.GO5771@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: cjlarsen@us.ibm.com, netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	daisyc@us.ibm.com, tsenglin@us.ibm.com,
+	linux-pci@atrey.karlin.mff.cuni.cz, strosake@us.ibm.com,
+	wenxiong@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,136 +36,156 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 16 Jul 2007 18:15:41 +0200
-Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 
-> From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> 
-> Add a BD/DVD/CD-ROM Storage Driver for the PS3:
->   - Implemented as a SCSI device driver
->   - Uses software scatter-gather with a 64 KiB bounce buffer as the hypervisor
->     doesn't support scatter-gather
-> 
-> --- /dev/null
-> +++ b/drivers/scsi/ps3rom.c
-> @@ -0,0 +1,538 @@
-> +/*
-> + * PS3 BD/DVD/CD-ROM Storage Driver
-> + *
-> + * Copyright (C) 2007 Sony Computer Entertainment Inc.
-> + * Copyright 2007 Sony Corp.
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of the GNU General Public License as published
-> + * by the Free Software Foundation; version 2 of the License.
-> + *
-> + * This program is distributed in the hope that it will be useful, but
-> + * WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-> + * General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License along
-> + * with this program; if not, write to the Free Software Foundation, Inc.,
-> + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-> + */
-> +
-> +#include <linux/cdrom.h>
-> +#include <linux/highmem.h>
-> +
-> +#include <scsi/scsi.h>
-> +#include <scsi/scsi_cmnd.h>
-> +#include <scsi/scsi_dbg.h>
-> +#include <scsi/scsi_device.h>
-> +#include <scsi/scsi_host.h>
-> +
-> +#include <asm/lv1call.h>
-> +#include <asm/ps3stor.h>
-> +
-> +
-> +#define DEVICE_NAME			"ps3rom"
-> +
-> +#define BOUNCE_SIZE			(64*1024)
-> +
-> +#define PS3ROM_MAX_SECTORS		(BOUNCE_SIZE / CD_FRAMESIZE)
-> +
-> +
-> +struct ps3rom_private {
-> +	struct ps3_storage_device *dev;
-> +	struct scsi_cmnd *curr_cmd;
-> +};
-> +#define ps3rom_priv(dev)	((dev)->sbd.core.driver_data)
-> +
+Add support for PCI Error Recovery for the tg3 ethernet
+device driver. The general principles of operation are
+described in Documentation/pci-error-recovery.txt
+Other drivers having similar structure include e100,
+e1000, ixgb, s2io, ipr, sym53c8xx_2, and lpfc
 
-Someone should invent a keyboard which delivers an electric shock when the
-operator types "#define".   In the meanwhile, I get to do the honours.
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+Cc: Michael Chan <mchan@broadcom.com>
 
-Please don't implement in a macro anything which can be implemented in C.
+----
 
-> +
-> +#define LV1_STORAGE_SEND_ATAPI_COMMAND	(1)
-> +
-> +struct lv1_atapi_cmnd_block {
-> +	u8	pkt[32];	/* packet command block           */
-> +	u32	pktlen;		/* should be 12 for ATAPI 8020    */
-> +	u32	blocks;
-> +	u32	block_size;
-> +	u32	proto;		/* transfer mode                  */
-> +	u32	in_out;		/* transfer direction             */
-> +	u64	buffer;		/* parameter except command block */
-> +	u32	arglen;		/* length above                   */
-> +};
-> +
-> +enum lv1_atapi_proto {
-> +	NON_DATA_PROTO     = 0,
-> +	PIO_DATA_IN_PROTO  = 1,
-> +	PIO_DATA_OUT_PROTO = 2,
-> +	DMA_PROTO = 3
-> +};
-> +
->
-> ...
->
-> +/*
-> + * copy data from device into scatter/gather buffer
-> + */
-> +static int fill_from_dev_buffer(struct scsi_cmnd *cmd, const void *buf)
-> +{
-> +	int k, req_len, act_len, len, active;
-> +	void *kaddr;
-> +	struct scatterlist *sgpnt;
-> +	unsigned int buflen;
-> +
-> +	buflen = cmd->request_bufflen;
-> +	if (!buflen)
-> +		return 0;
-> +
-> +	if (!cmd->request_buffer)
-> +		return -1;
-> +
-> +	sgpnt = cmd->request_buffer;
-> +	active = 1;
-> +	for (k = 0, req_len = 0, act_len = 0; k < cmd->use_sg; ++k, ++sgpnt) {
-> +		if (active) {
-> +			kaddr = kmap_atomic(sgpnt->page, KM_IRQ0);
-> +			if (!kaddr)
-> +				return -1;
+Michael, you are listed as the tg3 maintainer; could you
+please forward upstream if you agree?  
 
-kmap_atomic() cannot fail.  On i386, at least.  If it can fail on any other
-arch then we have a biiiiig problem.  (Multiple instances of this)
+Tested on the PCI-E version of this adapter, on power6, 
+for 85 (artificial) error injections (overnight) while
+ftp'ing dvd iso images over the link. Worked well.
 
-> +			len = sgpnt->length;
-> +			if ((req_len + len) > buflen) {
-> +				active = 0;
-> +				len = buflen - req_len;
-> +			}
-> +			memcpy(kaddr + sgpnt->offset, buf + req_len, len);
-> +			flush_kernel_dcache_page(sgpnt->page);
-> +			kunmap_atomic(kaddr, KM_IRQ0);
-> +			act_len += len;
-> +		}
-> +		req_len += sgpnt->length;
-> +	}
-> +	cmd->resid = req_len - act_len;
-> +	return 0;
-> +}
-> +
+ drivers/net/tg3.c |  108 +++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 107 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.22-git2/drivers/net/tg3.c
+===================================================================
+--- linux-2.6.22-git2.orig/drivers/net/tg3.c	2007-07-17 11:07:30.000000000 -0500
++++ linux-2.6.22-git2/drivers/net/tg3.c	2007-07-18 15:10:09.000000000 -0500
+@@ -64,7 +64,7 @@
+ 
+ #define DRV_MODULE_NAME		"tg3"
+ #define PFX DRV_MODULE_NAME	": "
+-#define DRV_MODULE_VERSION	"3.77"
++#define DRV_MODULE_VERSION	"3.77-a"
+ #define DRV_MODULE_RELDATE	"May 31, 2007"
+ 
+ #define TG3_DEF_MAC_MODE	0
+@@ -12126,11 +12126,117 @@ out:
+ 	return err;
+ }
+ 
++/**
++ * tg3_io_error_detected - called when PCI error is detected
++ * @pdev: Pointer to PCI device
++ * @state: The current pci connection state
++ *
++ * This function is called after a PCI bus error affecting
++ * this device has been detected. 
++ */
++static pci_ers_result_t tg3_io_error_detected(struct pci_dev *pdev,
++                                               pci_channel_state_t state)
++{
++	struct net_device *netdev = pci_get_drvdata(pdev);
++	struct tg3 *tp = netdev_priv(netdev);
++	struct device *dev = &netdev->dev;
++
++	dev_info(dev, "PCI I/O error detected on %s\n", netdev->name);
++
++	if (!netif_running(netdev))
++		return PCI_ERS_RESULT_NEED_RESET;
++
++	/* Want to make sure that the reset task doesn't run */
++	cancel_work_sync(&tp->reset_task);
++	tg3_netif_stop(tp);
++	del_timer_sync(&tp->timer);
++	netif_device_detach(netdev);
++	pci_disable_device(pdev);
++
++	if (state == pci_channel_io_perm_failure) {
++		/* avoid hang in dev_close() with rtnl_lock held */
++		netif_poll_enable(netdev);
++		return PCI_ERS_RESULT_DISCONNECT;
++	}
++	return PCI_ERS_RESULT_NEED_RESET;
++}
++
++/**
++ * tg3_io_slot_reset - called after the pci bus has been reset.
++ * @pdev: Pointer to PCI device
++ *
++ * Restart the card from scratch, as if from a cold-boot.
++ * At this point, the card has exprienced a hard reset,
++ * followed by fixups by BIOS, and has its config space
++ * set up identically to what it was at cold boot.
++ */
++static pci_ers_result_t tg3_io_slot_reset(struct pci_dev *pdev)
++{
++	struct net_device *netdev = pci_get_drvdata(pdev);
++	struct tg3 *tp = netdev_priv(netdev);
++	int err;
++
++	if (!netif_running(netdev))
++		return PCI_ERS_RESULT_RECOVERED;
++
++	if (pci_enable_device(pdev)) {
++		printk(KERN_ERR "tg3: %s: "
++		       "Cannot re-enable PCI device after reset.\n", netdev->name);
++		return PCI_ERS_RESULT_DISCONNECT;
++	}
++
++	pci_set_master(pdev);
++	pci_restore_state(tp->pdev);
++	netif_device_attach(netdev);
++
++	tg3_full_lock(tp, 0);
++	tp->tg3_flags |= TG3_FLAG_INIT_COMPLETE;
++	err = tg3_restart_hw(tp, 1);
++	tg3_full_unlock(tp);
++	if (err) {
++		printk(KERN_ERR "tg3: %s: "
++		       "Cannot restart hardware after reset.\n", netdev->name);
++		return PCI_ERS_RESULT_DISCONNECT;
++	}
++
++	return PCI_ERS_RESULT_RECOVERED;
++}
++
++/**
++ * tg3_io_resume - called when traffic can start flowing again.
++ * @pdev: Pointer to PCI device
++ *
++ * This callback is called when the error recovery driver tells
++ * us that its OK to resume normal operation.
++ */
++static void tg3_io_resume(struct pci_dev *pdev)
++{
++	struct net_device *netdev = pci_get_drvdata(pdev);
++	struct tg3 *tp = netdev_priv(netdev);
++
++	if (!netif_running(netdev))
++		return;
++
++	netif_wake_queue(netdev);
++
++	tp->timer.expires = jiffies + tp->timer_offset;
++	add_timer(&tp->timer);
++
++	tg3_netif_start(tp);
++}
++
++static struct pci_error_handlers tg3_err_handler = {
++	.error_detected = tg3_io_error_detected,
++	.slot_reset = tg3_io_slot_reset,
++	.resume = tg3_io_resume,
++};
++
+ static struct pci_driver tg3_driver = {
+ 	.name		= DRV_MODULE_NAME,
+ 	.id_table	= tg3_pci_tbl,
+ 	.probe		= tg3_init_one,
+ 	.remove		= __devexit_p(tg3_remove_one),
++	.err_handler = &tg3_err_handler,
+ 	.suspend	= tg3_suspend,
+ 	.resume		= tg3_resume
+ };
