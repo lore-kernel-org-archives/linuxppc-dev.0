@@ -1,19 +1,24 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay002.isp.belgacom.be (mailrelay002.isp.belgacom.be
-	[195.238.6.175]) by ozlabs.org (Postfix) with ESMTP id 1A479DDD04
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [208.106.21.240])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 670AEDDE1D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 18 Jul 2007 18:33:24 +1000 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: linuxppc-embedded@ozlabs.org,
- matvejchikov@gmail.com
-Subject: Re: WDT with 82xx
-Date: Wed, 18 Jul 2007 10:33:20 +0200
-References: <8496f91a0707160415i251aa027x6ef3899b92a5fccc@mail.gmail.com>
-In-Reply-To: <8496f91a0707160415i251aa027x6ef3899b92a5fccc@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200707181033.21045.laurentp@cse-semaphore.com>
+	Wed, 18 Jul 2007 18:41:09 +1000 (EST)
+Date: Wed, 18 Jul 2007 01:34:25 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Bugme-new] [Bug 8778] New: Ocotea board: kernel reports access
+	of bad area during boot with DEBUG_SLAB=y
+Message-ID: <20070718083425.GA29722@gate.ebshome.net>
+References: <bug-8778-10286@http.bugzilla.kernel.org/>
+	<20070718005253.942f0464.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070718005253.942f0464.akpm@linux-foundation.org>
+Cc: bart.vanassche@gmail.com, netdev@vger.kernel.org,
+	"bugme-daemon@kernel-bugs.osdl.org" <bugme-daemon@bugzilla.kernel.org>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,20 +29,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Monday 16 July 2007 13:15, Matvejchikov Ilya wrote:
-> Hi all!
->
-> Does anybody use watchdog timer with mpc82xx?
+On Wed, Jul 18, 2007 at 12:52:53AM -0700, Andrew Morton wrote:
+> On Wed, 18 Jul 2007 00:07:50 -0700 (PDT) bugme-daemon@bugzilla.kernel.org wrote:
+> 
+> > http://bugzilla.kernel.org/show_bug.cgi?id=8778
+> > 
+> >            Summary: Ocotea board: kernel reports access of bad area during
+> >                     boot with DEBUG_SLAB=y
 
-I do.
+Slab debugging is probably the culprit here. I had similar problem 
+couple of years ago, not sure something has changed since then, 
+haven't checked.
 
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
+When slab debugging was enabled it made memory allocations non L1 
+cache line aligned. This is very bad for DMA on non-coherent cache 
+arches (PPC440 is one of those archs).
 
-Chauss=E9e de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
+I have a hack for EMAC which tries to "workaround" this problem:
+	http://kernel.ebshome.net/emac_slab_debug.diff
+which might help.
 
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
+-- 
+Eugene
