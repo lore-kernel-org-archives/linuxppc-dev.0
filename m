@@ -1,25 +1,16 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id BAB35DDEC2
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 01:36:03 +1000 (EST)
-Date: Wed, 18 Jul 2007 17:36:01 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Subject: Re: [patch 1/3] ps3: Disk Storage Driver
-In-Reply-To: <Pine.LNX.4.64.0707181632200.5385@fbirervta.pbzchgretzou.qr>
-Message-ID: <Pine.LNX.4.62.0707181735110.15632@pademelon.sonytel.be>
-References: <20070716161539.075822000@pademelon.sonytel.be>
-	<20070716162206.392129000@pademelon.sonytel.be>
-	<Pine.LNX.4.64.0707181632200.5385@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-1585306974-1184772961=:15632"
-Cc: Jens Axboe <axboe@kernel.dk>,
-	"James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-	linux-scsi@vger.kernel.org, Alessandro Rubini <rubini@ipvvis.unipv.it>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Jens Axboe <jens.axboe@oracle.com>
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 06E82DDF04
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 01:43:28 +1000 (EST)
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <9b26986bc99c74c5e17e08191eb07d67@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH 10/61] bootwrapper: flatdevtree fixes
+Date: Wed, 18 Jul 2007 10:43:13 -0500
+To: Scott Wood <scottwood@freescale.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,42 +20,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+In-Reply-To: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
 
----584337861-1585306974-1184772961=:15632
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+On Wed Jul 18 11:33:08 EST 2007, Scott Wood wrote:
+> 1. ft_create_node was returning the internal pointer rather than a 
+> phandle.
+> 2. ft_find_device_rel was treating lookups relative to root as an 
+> error.
 
-On Wed, 18 Jul 2007, Jan Engelhardt wrote:
-> On Jul 16 2007 18:15, Geert Uytterhoeven wrote:
-> >Add a Disk Storage Driver for the PS3:
-> >  - Implemented as a block device driver with a dynamic major
-> >  - Disk names (and partitions) are of the format ps3d%c(%u)
-> >  - Uses software scatter-gather with a 64 KiB bounce buffer as the hypervisor
-> >    doesn't support scatter-gather
-> 
-> I wonder what virtualization has to do with a block device driver?
+No, it is treating lookups relative to NULL as an error.
 
-On the PS3, storage devices are virtualized by the hypervisor (yes, the PS3
-runs all OSes under a hypervisor).
+Your patch changes it to treat lookups relative to the NULL phandle as 
+relative to root.
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
+I've no objections to the other part, can you split these?
 
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1585306974-1184772961=:15632--
+>
+> Signed-off-by: Scott Wood <scottwood at freescale.com>
+> ---
+>  arch/powerpc/boot/flatdevtree.c |   12 ++++++++----
+>  1 files changed, 8 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/powerpc/boot/flatdevtree.c 
+> b/arch/powerpc/boot/flatdevtree.c
+> index b732644..5b69aeb 100644
+> --- a/arch/powerpc/boot/flatdevtree.c
+> +++ b/arch/powerpc/boot/flatdevtree.c
+> @@ -659,9 +659,13 @@ void *ft_find_device_rel(struct ft_cxt *cxt, 
+> const void *top,
+>  {
+>         char *node;
+>
+> -       node = ft_node_ph2node(cxt, top);
+> -       if (node == NULL)
+> -               return NULL;
+> +       if (top) {
+> +               node = ft_node_ph2node(cxt, top);
+> +               if (node == NULL)
+> +                       return NULL;
+> +       } else {
+> +               node = ft_root_node(cxt);
+> +       }
+>
+
+milton
