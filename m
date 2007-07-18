@@ -1,24 +1,33 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 12E1EDDDE4
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 06:08:56 +1000 (EST)
-Message-ID: <469E7350.3090308@freescale.com>
-Date: Wed, 18 Jul 2007 15:08:48 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 53/61] 82xx: Set NOT_COHERENT_CACHE on 8272 with PCI.
-References: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
-	<20070718013611.GY15238@ld0162-tx32.am.freescale.net>
-	<20070718032857.GF18251@localhost.localdomain>
-	<F5E8139F-E8DA-4C41-8B90-E727FD4E346C@kernel.crashing.org>
-In-Reply-To: <F5E8139F-E8DA-4C41-8B90-E727FD4E346C@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2198CDDE32
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 06:11:22 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
+	l6IK5Z4G025592
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 16:05:36 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l6IKBIgN262794
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 14:11:18 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l6IKBEmU027911
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 14:11:14 -0600
+Subject: Re: [patch 14/14] Bamboo zImage wrapper
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Milton Miller <miltonm@bga.com>
+In-Reply-To: <1184781073.16299.29.camel@weaponx.rchland.ibm.com>
+References: <6e26faa3f30dddc5fcf6294a1ecb3a78@bga.com>
+	<1184781073.16299.29.camel@weaponx.rchland.ibm.com>
+Content-Type: text/plain
+Date: Wed, 18 Jul 2007 15:11:13 -0500
+Message-Id: <1184789473.16299.52.camel@weaponx.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,21 +37,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> On Jul 17, 2007, at 10:28 PM, David Gibson wrote:
->> Hrm... I for one would be a lot more comfortable with this patch if
->> you had a theoretical explanation for why it's necessary, in addition
->> to the "seems to fix things".
+On Wed, 2007-07-18 at 12:51 -0500, Josh Boyer wrote:
+> > Is there some reason they should not all be merged into this one 
+> > platform file?
+> 
+> "they" meaning what?
+> 
+> > I can understand wanting the dcr fixups as a library, but lets wait to 
+> > do the file splits until there are actually users.  Its also easier to 
+> > see what's going to called when all the platform ops are filled in at 
+> > one spot, not spread over multiple files.
+> 
+> I copied this from Ebony.  There are multiple users already.  You have
+> two parts.  The truly common stuff in 4xx.c and the board specific
+> wrappers that do the things needed for the board.
+> 
+> You've thoroughly confused me.
 
-Sure, so would I; I just wanted to point out the issue, and make 
-available a quick fix for anyone else that might be having problems.
+Some discussion on IRC cleared this up.  Milton was suggesting I merge
+the treeboot-bamboo.c and bamboo.c files together.  I'm avoiding that
+because I do plan on creating a cuboot Bamboo target soon.
 
-My theoretical explanation is that the hardware is broken. :-P
+There is a method to my madness usually.
 
-> I agree w/David.  Have you tried turning on the  CPU_FTR_NEED_COHERENT?  
-> Take a look at include/asm-powerpc/cputable.h  and search for the 
-> reference to CONFIG_PPC_83xx.
-
-OK, that appears to work as well.
-
--Scott
+josh
