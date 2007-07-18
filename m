@@ -1,22 +1,25 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id ABA22DDF1F
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 02:10:53 +1000 (EST)
-Message-ID: <469E3B87.4030901@freescale.com>
-Date: Wed, 18 Jul 2007 11:10:47 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id C7D50DDF51
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 02:12:36 +1000 (EST)
+Date: Wed, 18 Jul 2007 18:12:34 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Olaf Hering <olaf@aepfle.de>
+Subject: Re: PS3 Storage Driver O_DIRECT issue
+In-Reply-To: <20070713122752.GA854@aepfle.de>
+Message-ID: <Pine.LNX.4.62.0707181808030.15632@pademelon.sonytel.be>
+References: <20070704132212.726923000@pademelon.sonytel.be>
+	<20070713122752.GA854@aepfle.de>
 MIME-Version: 1.0
-To: Mark Zhan <rongkai.zhan@windriver.com>
-Subject: Re: [PATCH 22/61] Rename mpc82xx_ads to mpc8272ads.
-References: <20070718013527.GT15238@ld0162-tx32.am.freescale.net>
-	<1184728051.31656.35.camel@mark>
-In-Reply-To: <1184728051.31656.35.camel@mark>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-1037303210-1184774900=:15632"
+Cc: Jens Axboe <axboe@kernel.dk>,
+	"James E.J.  Bottomley" <James.Bottomley@SteelEye.com>,
+	linux-scsi@vger.kernel.org, Alessandro Rubini <rubini@ipvvis.unipv.it>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,18 +29,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mark Zhan wrote:
-> Scott,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---584337861-1037303210-1184774900=:15632
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.62.0707181808411.15632@pademelon.sonytel.be>
+
+On Fri, 13 Jul 2007, Olaf Hering wrote:
+> This driver (or the generic PS3 code) has appearently problems with
+> O_DIRECT. 
+> glibc aborts parted because the malloc metadata get corrupted. While it
+> is reproducible, the place where it crashes changes with every version
+> of the debug attempt.
+> I dont have a handle right now, all I know is that the metadata after a
+> malloc area get overwritten with zeros.
 > 
-> It seems the old name "mpc82xx ads" is still used in your code.
-> It will be nice that your file name match your code name, you know, less
-> confusion.
+> 
+> Can you have a look at this? 
+> parted /dev/ps3da
+> print (a few times)
 
-See patch 24.
+I could reproduce it with parted 1.8.0 and later.
 
-AIUI, it's generally preferred when moving large chunks of code to first 
-have a patch that just moves it, and then a subsequent one that makes 
-changes.  I was also under the impression that git would generate a one 
-line file rename in the diff, but for some reason that didn't happen.
+The patch below fixes it (tested with 1.8.0, 1.8.2 (FC6), 1.9.0 (git)).
 
--Scott
+Apparently sometimes bio_cur_sectors(bio)*KERNEL_SECTOR_SIZE != bvec->bv_len
+when using O_DIRECT. Is that true (or a bug?)?
+
+If it's OK, I'll fold this patch into the main ps3disk patch.
+---
+ drivers/block/ps3disk.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
+
+--- a/drivers/block/ps3disk.c
++++ b/drivers/block/ps3disk.c
+@@ -108,7 +108,7 @@ static void ps3disk_scatter_gather(struc
+ 			__func__, __LINE__, i, bio_segments(bio),
+ 			bio_sectors(bio), sector);
+ 		bio_for_each_segment(bvec, bio, j) {
+-			size = bio_cur_sectors(bio)*KERNEL_SECTOR_SIZE;
++			size = bvec->bv_len;
+ 			buf = __bio_kmap_atomic(bio, j, KM_IRQ0);
+ 			if (gather)
+ 				memcpy(dev->bounce_buf+offset, buf, size);
+
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-1037303210-1184774900=:15632--
