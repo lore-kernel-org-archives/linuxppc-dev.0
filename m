@@ -1,20 +1,18 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 94BB4DDE1E
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 16:39:37 +1000 (EST)
-Date: Wed, 18 Jul 2007 08:39:35 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 01/61] Use strcasecmp() rather than strncasecmp() when
-	determining device node compatibility.
-In-Reply-To: <1184723916.1486.10.camel@concordia.ozlabs.ibm.com>
-Message-ID: <Pine.LNX.4.62.0707180838590.18423@pademelon.sonytel.be>
-References: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
-	<1184723916.1486.10.camel@concordia.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-98478038-1184740775=:18423"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 1ACBFDDE17
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 17:30:31 +1000 (EST)
+Date: Wed, 18 Jul 2007 17:30:24 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: ppc-dev <linuxppc-dev@ozlabs.org>, sparclinux@vger.kernel.org
+Subject: Start the consolidation of the OpenFrimware support routines
+Message-Id: <20070718173024.50204a1a.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__18_Jul_2007_17_30_24_+1000_I.RLRHJNv4_kbQB5"
+Cc: paulus@samba.org, "David S. Miller" <davem@davemloft.net>,
+	wli@holomorphy.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,38 +22,107 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+--Signature=_Wed__18_Jul_2007_17_30_24_+1000_I.RLRHJNv4_kbQB5
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
----584337861-98478038-1184740775=:18423
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Hi Dave, Paul,
 
-On Wed, 18 Jul 2007, Michael Ellerman wrote:
-> On Tue, 2007-07-17 at 20:31 -0500, Scott Wood wrote:
-> > Re: [PATCH 01/61] ....
-> 
-> That's gotta be close to a record ..
+The latest version of the changes is available in the git repository at:
 
-Na, last 2 series from akpm where I was CCed on a few patches had /268 resp.
-/234 ;-)
+  git://git.kernel.org/pub/scm/linux/kernel/git/sfr/ofcons.git master
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
+I will send patches to the lists if people want them.  The only changes
+from the previous version is to merge with Linus' current tree (there
+were various conflicts with PowerPC changes).  This has been built for
+Sparc and Sparc64 defconfigs but I have no Sparc hardware to boot on.  It
+has also been built for PowerPC allmodconfig and ppc64_defconfig - the
+latter has been booted on an iSeries box.
 
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-98478038-1184740775=:18423--
+The intention here is that there should be no behavioural changes and
+minimal code changes (apart from movement of the code to common places).
+There are, however a couple of unavoidable changes:
+	- some of the accessor functions now take a read lock on Sparc[64]
+where they didn't before.
+	- the bus structures are initialised at runtime.
+
+If people are happy with this, I will submit it directly to Linus.
+
+Stephen Rothwell (12):
+      Split out common parts of prom.h
+      Start split out of common open firmware code
+      Consolidate of_device_is_compatible
+      Consolidate of_find_property
+      Consolidate of_get_parent
+      Consolidate of_get_next_child
+      Consolidate of_find_node_by routines
+      Begin to consolidate of_device.c
+      Begin consolidation of of_device.h
+      [SPARC/64] Rename some functions like PowerPC
+      Create linux/of_platorm.h
+      Create drivers/of/platform.c
+
+ arch/powerpc/Kconfig              |    3 +
+ arch/powerpc/kernel/of_device.c   |  122 +----------------
+ arch/powerpc/kernel/of_platform.c |   82 +-----------
+ arch/powerpc/kernel/prom.c        |  250 +---------------------------------
+ arch/sparc/Kconfig                |    3 +
+ arch/sparc/kernel/of_device.c     |  222 ++----------------------------
+ arch/sparc/kernel/prom.c          |  173 +-----------------------
+ arch/sparc/kernel/time.c          |    2 +-
+ arch/sparc64/Kconfig              |    3 +
+ arch/sparc64/kernel/auxio.c       |    2 +-
+ arch/sparc64/kernel/of_device.c   |  238 +++-----------------------------
+ arch/sparc64/kernel/power.c       |    2 +-
+ arch/sparc64/kernel/prom.c        |  173 +-----------------------
+ arch/sparc64/kernel/time.c        |    2 +-
+ drivers/Kconfig                   |    2 +
+ drivers/Makefile                  |    1 +
+ drivers/of/Kconfig                |    3 +
+ drivers/of/Makefile               |    2 +
+ drivers/of/base.c                 |  275 +++++++++++++++++++++++++++++++++=
+++++
+ drivers/of/device.c               |  131 ++++++++++++++++++
+ drivers/of/platform.c             |   96 +++++++++++++
+ include/asm-powerpc/of_device.h   |   22 +---
+ include/asm-powerpc/of_platform.h |   38 +-----
+ include/asm-powerpc/prom.h        |   50 ++-----
+ include/asm-sparc/of_device.h     |   49 +------
+ include/asm-sparc/of_platform.h   |   32 +++++
+ include/asm-sparc/prom.h          |   62 +++------
+ include/asm-sparc64/of_device.h   |   50 +------
+ include/asm-sparc64/of_platform.h |   33 +++++
+ include/asm-sparc64/prom.h        |   62 +++------
+ include/linux/of.h                |   61 ++++++++
+ include/linux/of_device.h         |   26 ++++
+ include/linux/of_platform.h       |   57 ++++++++
+ 33 files changed, 846 insertions(+), 1483 deletions(-)
+ create mode 100644 drivers/of/Kconfig
+ create mode 100644 drivers/of/Makefile
+ create mode 100644 drivers/of/base.c
+ create mode 100644 drivers/of/device.c
+ create mode 100644 drivers/of/platform.c
+ create mode 100644 include/asm-sparc/of_platform.h
+ create mode 100644 include/asm-sparc64/of_platform.h
+ create mode 100644 include/linux/of.h
+ create mode 100644 include/linux/of_device.h
+ create mode 100644 include/linux/of_platform.h
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__18_Jul_2007_17_30_24_+1000_I.RLRHJNv4_kbQB5
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGncGUTgG2atn1QN8RAgJlAKCSz0kWfYdiiUzmK8Pb3yCxBHTiggCfVbB1
+Q+ETID2iU+ybFA0JnH0nu8w=
+=ZxdA
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__18_Jul_2007_17_30_24_+1000_I.RLRHJNv4_kbQB5--
