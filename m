@@ -1,16 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 18 Jul 2007 11:42:00 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 05/61] bootwrapper: Change cuImage .gitignore entry to
-	cuImage.*
-Message-ID: <20070718014200.GB18251@localhost.localdomain>
-References: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
-	<20070718013301.GD15238@ld0162-tx32.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070718013301.GD15238@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0B83CDE0C0
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 11:54:14 +1000 (EST)
+Subject: Re: hugetlbfs for ppc440 - kernel BUG -- follow up
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Satya <satyakiran@gmail.com>
+In-Reply-To: <acbcf3840707171407x21c1bc1al9b46ff0c692b2b4d@mail.gmail.com>
+References: <acbcf3840707171407x21c1bc1al9b46ff0c692b2b4d@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 18 Jul 2007 11:53:36 +1000
+Message-Id: <1184723616.25235.186.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: kazutomo@mcs.anl.gov, linuxppc-dev@ozlabs.org, edi@linux.vnet.ibm.com,
+	david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,32 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 17, 2007 at 08:33:01PM -0500, Scott Wood wrote:
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
->  arch/powerpc/boot/.gitignore |    4 +---
->  1 files changed, 1 insertions(+), 3 deletions(-)
+On Tue, 2007-07-17 at 16:07 -0500, Satya wrote:
+> hello,
 > 
-> diff --git a/arch/powerpc/boot/.gitignore b/arch/powerpc/boot/.gitignore
-> index eec7af7..3270335 100644
-> --- a/arch/powerpc/boot/.gitignore
-> +++ b/arch/powerpc/boot/.gitignore
-> @@ -18,9 +18,7 @@ kernel-vmlinux.strip.c
->  kernel-vmlinux.strip.gz
->  mktree
->  uImage
-> -cuImage
-> -cuImage.bin.gz
-> -cuImage.elf
-> +cuImage.*
->  zImage
->  zImage.chrp
->  zImage.coff
+> Upon investigating the below issue further, I found that
+> pte_alloc_map() calls kmap_atomic. The allocated pte page must be
+> unmapped before invoking any function that might_sleep.
+> 
+> In this case clear_huge_page() is being called without invoking
+> pte_unmap(). The 'normal' counterpart of hugetlb_no_page (which is
+> do_no_page() in mm/memory.c) does call pte_unmap() before calling
+> alloc_page() (which might sleep).
+> 
+> So, I believe pte_unmap() must be invoked first in hugetlb_no_page().
+> But the problem here is, we do not have a reference to the pmd to map
+> the pte again (using pte_offset_map()). The do_no_page() function does
+> have a pmd_t* parameter, so it can remap the pte when required.
+> 
+> For now, I resolved the problem by expanding the pte_alloc_map() macro
+> by hand and replacing kmap_atomic with kmap(), although I think it is
+> not the right thing to do.
+> 
+> Let me know if my analysis is helping you figure out the problem here. Thanks!
 
-Err... your new wildcard won't match plain 'cuImage'.
+Except that I don't see where pte_alloc_map() has been called before
+hand... hugetlb_no_page() is called by hugetlb_fault() which is called
+by __handle_mm_fault(), with no lock held.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Ben.
