@@ -1,36 +1,36 @@
 Return-Path: <b07421@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A8928DEEDB
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 11:35:48 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 03E5BDEF2A
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 11:35:50 +1000 (EST)
 Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l6I1ZgZt027627
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 18:35:43 -0700 (MST)
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l6I1ZjO5019113
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 18:35:45 -0700 (MST)
 Received: from mailserv2.am.freescale.net (mailserv2.am.freescale.net
 	[10.83.16.18])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l6I1ZgD4001493
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 20:35:42 -0500 (CDT)
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l6I1ZiqT001510
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 20:35:44 -0500 (CDT)
 Received: from ld0162-tx32.am.freescale.net (ld0162-tx32 [10.82.19.112])
 	by mailserv2.am.freescale.net (8.13.3/8.13.3) with ESMTP id
-	l6I1B1c1007929
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 20:11:01 -0500 (CDT)
+	l6I1B3hI007932
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 20:11:03 -0500 (CDT)
 Received: from ld0162-tx32.am.freescale.net (localhost [127.0.0.1])
-	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id 3CF0EAEFC9
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 20:35:41 -0500 (CDT)
+	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id 88C31AEFC9
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 20:35:43 -0500 (CDT)
 Received: (from b07421@localhost)
 	by ld0162-tx32.am.freescale.net (8.12.11/8.12.11/Submit) id
-	l6I1ZfL3015387
-	for linuxppc-dev@ozlabs.org; Tue, 17 Jul 2007 20:35:41 -0500
-Date: Tue, 17 Jul 2007 20:35:41 -0500
+	l6I1ZhUh015391
+	for linuxppc-dev@ozlabs.org; Tue, 17 Jul 2007 20:35:43 -0500
+Date: Tue, 17 Jul 2007 20:35:43 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 32/61] mpc82xx: Move PQ2 restart and halt functions out of
-	mpc8272-specific code.
-Message-ID: <20070718013541.GD15238@ld0162-tx32.am.freescale.net>
+Subject: [PATCH 33/61] mpc82xx: Remove a bunch of cruft that duplicates
+	generic functionality.
+Message-ID: <20070718013543.GE15238@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
@@ -43,161 +43,197 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I renamed it from m82xx to pq2 because it won't work on the Integrated
-Host Processor line of 82xx chips (i.e. 8240, 8245, and such).
-
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/platforms/82xx/Makefile     |    1 +
- arch/powerpc/platforms/82xx/mpc8272ads.c |   27 ++----------------
- arch/powerpc/platforms/82xx/pq2.c        |   44 ++++++++++++++++++++++++++++++
- arch/powerpc/platforms/82xx/pq2.h        |    7 +++++
- include/asm-ppc/immap_cpm2.h             |    2 +
- 5 files changed, 57 insertions(+), 24 deletions(-)
- create mode 100644 arch/powerpc/platforms/82xx/pq2.c
- create mode 100644 arch/powerpc/platforms/82xx/pq2.h
+ arch/powerpc/platforms/82xx/mpc8272ads.c |   37 ++------------
+ arch/powerpc/platforms/82xx/mpc82xx.c    |   76 +-----------------------------
+ arch/powerpc/platforms/82xx/pq2ads.h     |    5 --
+ 3 files changed, 7 insertions(+), 111 deletions(-)
 
-diff --git a/arch/powerpc/platforms/82xx/Makefile b/arch/powerpc/platforms/82xx/Makefile
-index 881a3f6..6049640 100644
---- a/arch/powerpc/platforms/82xx/Makefile
-+++ b/arch/powerpc/platforms/82xx/Makefile
-@@ -3,3 +3,4 @@
- #
- obj-$(CONFIG_PPC_82xx) += mpc82xx.o
- obj-$(CONFIG_MPC8272ADS) += mpc8272ads.o
-+obj-$(CONFIG_CPM2) += pq2.o
 diff --git a/arch/powerpc/platforms/82xx/mpc8272ads.c b/arch/powerpc/platforms/82xx/mpc8272ads.c
-index fbf9c67..cd14a48 100644
+index cd14a48..b23fa73 100644
 --- a/arch/powerpc/platforms/82xx/mpc8272ads.c
 +++ b/arch/powerpc/platforms/82xx/mpc8272ads.c
-@@ -2,7 +2,6 @@
-  * MPC8272ADS setup and early boot code plus other random bits.
-  *
-  * Author: Vitaly Bordug <vbordug@ru.mvista.com>
-- * m82xx_restart fix by Wade Farnsworth <wfarnsworth@mvista.com>
-  *
-  * Copyright (c) 2006 MontaVista Software, Inc.
-  *
-@@ -42,6 +41,7 @@
+@@ -11,42 +11,21 @@
+  * option) any later version.
+  */
+ 
+-#include <linux/stddef.h>
+-#include <linux/kernel.h>
+ #include <linux/init.h>
+-#include <linux/errno.h>
+-#include <linux/reboot.h>
+-#include <linux/pci.h>
+ #include <linux/interrupt.h>
+-#include <linux/kdev_t.h>
+-#include <linux/major.h>
+-#include <linux/console.h>
+-#include <linux/delay.h>
+-#include <linux/seq_file.h>
+-#include <linux/root_dev.h>
+-#include <linux/initrd.h>
+-#include <linux/module.h>
+ #include <linux/fsl_devices.h>
+ #include <linux/fs_uart_pd.h>
++#include <linux/fs_enet_pd.h>
+ 
+-#include <asm/system.h>
+-#include <asm/pgtable.h>
+-#include <asm/page.h>
+-#include <asm/atomic.h>
+-#include <asm/time.h>
+ #include <asm/io.h>
+-#include <asm/machdep.h>
+-#include <asm/bootinfo.h>
+ #include <asm/pci-bridge.h>
  #include <asm/mpc8260.h>
- #include <asm/irq.h>
- #include <mm/mmu_decl.h>
-+#include <platforms/82xx/pq2.h>
- #include <asm/prom.h>
+-#include <asm/irq.h>
+-#include <mm/mmu_decl.h>
+-#include <platforms/82xx/pq2.h>
+-#include <asm/prom.h>
  #include <asm/cpm2.h>
  #include <asm/udbg.h>
-@@ -603,27 +603,6 @@ static int __init mpc8272ads_probe(void)
- 	return of_flat_dt_is_compatible(root, "fsl,mpc8272ads");
- }
- 
--#define RMR_CSRE 0x00000001
--static void m82xx_restart(char *cmd)
--{
--	__volatile__ unsigned char dummy;
--
--	local_irq_disable();
--	((cpm2_map_t *) cpm2_immr)->im_clkrst.car_rmr |= RMR_CSRE;
--
--	/* Clear the ME,EE,IR & DR bits in MSR to cause checkstop */
--	mtmsr(mfmsr() & ~(MSR_ME | MSR_EE | MSR_IR | MSR_DR));
--	dummy = ((cpm2_map_t *) cpm2_immr)->im_clkrst.res[0];
--	printk("Restart failed\n");
--	while (1) ;
--}
--
--static void m82xx_halt(void)
--{
--	local_irq_disable();
--	while (1) ;
--}
--
- define_machine(mpc8272ads)
- {
- 	.name = "Freescale MPC8272ADS",
-@@ -633,6 +612,6 @@ define_machine(mpc8272ads)
- 	.show_cpuinfo = m82xx_show_cpuinfo,
- 	.get_irq = cpm2_get_irq,
- 	.calibrate_decr = m82xx_calibrate_decr,
--	.restart = m82xx_restart,
--	.halt = m82xx_halt,
-+	.restart = pq2_restart,
-+	.halt = pq2_halt,
- };
-diff --git a/arch/powerpc/platforms/82xx/pq2.c b/arch/powerpc/platforms/82xx/pq2.c
-new file mode 100644
-index 0000000..e58980d
---- /dev/null
-+++ b/arch/powerpc/platforms/82xx/pq2.c
-@@ -0,0 +1,44 @@
-+/*
-+ * Common PowerQUICC II code.
-+ *
-+ * Author: Scott Wood <scottwood@freescale.com>
-+ * Copyright (c) 2007 Freescale Semiconductor
-+ *
-+ * Based on code by Vitaly Bordug <vbordug@ru.mvista.com>
-+ * pq2_restart fix by Wade Farnsworth <wfarnsworth@mvista.com>
-+ * Copyright (c) 2006 MontaVista Software, Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <asm/cpm2.h>
-+#include <asm/io.h>
-+#include <asm/system.h>
+ #include <asm/i8259.h>
+-#include <linux/fs_enet_pd.h>
++#include <asm/time.h>
 +
 +#include <platforms/82xx/pq2.h>
-+
-+#define RMR_CSRE 0x00000001
-+
-+void pq2_restart(char *cmd)
-+{
-+	local_irq_disable();
-+	cpm2_immr->im_clkrst.car_rmr |= RMR_CSRE;
-+
-+	/* Clear the ME,EE,IR & DR bits in MSR to cause checkstop */
-+	mtmsr(mfmsr() & ~(MSR_ME | MSR_EE | MSR_IR | MSR_DR));
-+	in_8(&cpm2_immr->im_clkrst.res[0]);
-+
-+	printk("Restart failed\n");
-+	while (1)
-+		;
-+}
-+
-+void pq2_halt(void)
-+{
-+	local_irq_disable();
-+	while (1)
-+		;
-+}
-diff --git a/arch/powerpc/platforms/82xx/pq2.h b/arch/powerpc/platforms/82xx/pq2.h
-new file mode 100644
-index 0000000..3c9620f
---- /dev/null
-+++ b/arch/powerpc/platforms/82xx/pq2.h
-@@ -0,0 +1,7 @@
-+#ifndef _PQ2_H
-+#define _PQ2_H
-+
-+void pq2_restart(char *cmd);
-+void pq2_halt(void);
-+
-+#endif
-diff --git a/include/asm-ppc/immap_cpm2.h b/include/asm-ppc/immap_cpm2.h
-index 3c23d9c..8795bcc 100644
---- a/include/asm-ppc/immap_cpm2.h
-+++ b/include/asm-ppc/immap_cpm2.h
-@@ -10,6 +10,8 @@
- #ifndef __IMMAP_CPM2__
- #define __IMMAP_CPM2__
  
-+#include <linux/types.h>
-+
- /* System configuration registers.
- */
- typedef	struct sys_82xx_conf {
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/cpm2_pic.h>
+@@ -584,12 +563,6 @@ static void __init mpc8272ads_setup_arch(void)
+ 	of_node_put(np);
+ #endif
+ 
+-#ifdef  CONFIG_ROOT_NFS
+-	ROOT_DEV = Root_NFS;
+-#else
+-	ROOT_DEV = Root_HDA1;
+-#endif
+-
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("mpc8272ads_setup_arch(), finish", 0);
+ }
+@@ -611,7 +584,7 @@ define_machine(mpc8272ads)
+ 	.init_IRQ = mpc8272ads_pic_init,
+ 	.show_cpuinfo = m82xx_show_cpuinfo,
+ 	.get_irq = cpm2_get_irq,
+-	.calibrate_decr = m82xx_calibrate_decr,
++	.calibrate_decr = generic_calibrate_decr,
+ 	.restart = pq2_restart,
+ 	.halt = pq2_halt,
+ };
+diff --git a/arch/powerpc/platforms/82xx/mpc82xx.c b/arch/powerpc/platforms/82xx/mpc82xx.c
+index a2a9c8d..1d3d0e9 100644
+--- a/arch/powerpc/platforms/82xx/mpc82xx.c
++++ b/arch/powerpc/platforms/82xx/mpc82xx.c
+@@ -11,82 +11,10 @@
+  * option) any later version.
+  */
+ 
+-#include <linux/stddef.h>
+-#include <linux/kernel.h>
+-#include <linux/init.h>
+-#include <linux/errno.h>
+-#include <linux/reboot.h>
+-#include <linux/pci.h>
+-#include <linux/interrupt.h>
+-#include <linux/kdev_t.h>
+-#include <linux/major.h>
+-#include <linux/console.h>
+-#include <linux/delay.h>
+ #include <linux/seq_file.h>
+-#include <linux/root_dev.h>
+-#include <linux/initrd.h>
+-#include <linux/module.h>
+-#include <linux/fsl_devices.h>
+-#include <linux/fs_uart_pd.h>
+-
+-#include <asm/system.h>
+-#include <asm/pgtable.h>
+-#include <asm/page.h>
+-#include <asm/atomic.h>
+-#include <asm/time.h>
+-#include <asm/io.h>
+-#include <asm/machdep.h>
+-#include <asm/bootinfo.h>
+-#include <asm/pci-bridge.h>
+-#include <asm/mpc8260.h>
+-#include <asm/irq.h>
+ #include <mm/mmu_decl.h>
+-#include <asm/prom.h>
+-#include <asm/cpm2.h>
+-#include <asm/udbg.h>
+-#include <asm/i8259.h>
+-#include <linux/fs_enet_pd.h>
+-
+-#include <sysdev/fsl_soc.h>
+-#include <sysdev/cpm2_pic.h>
+-
+-#include "pq2ads.h"
+-
+-static int __init get_freq(char *name, unsigned long *val)
+-{
+-	struct device_node *cpu;
+-	const unsigned int *fp;
+-	int found = 0;
+-
+-	/* The cpu node should have timebase and clock frequency properties */
+-	cpu = of_find_node_by_type(NULL, "cpu");
+-
+-	if (cpu) {
+-		fp = of_get_property(cpu, name, NULL);
+-		if (fp) {
+-			found = 1;
+-			*val = *fp;
+-		}
+-
+-		of_node_put(cpu);
+-	}
+-
+-	return found;
+-}
+-
+-void __init m82xx_calibrate_decr(void)
+-{
+-	ppc_tb_freq = 125000000;
+-	if (!get_freq("bus-frequency", &ppc_tb_freq)) {
+-		printk(KERN_ERR "WARNING: Estimating decrementer frequency "
+-				"(not found)\n");
+-	}
+-	ppc_tb_freq /= 4;
+-	ppc_proc_freq = 1000000000;
+-	if (!get_freq("clock-frequency", &ppc_proc_freq))
+-		printk(KERN_ERR "WARNING: Estimating processor frequency"
+-				"(not found)\n");
+-}
++#include <asm/machdep.h>
++#include <asm/system.h>
+ 
+ void m82xx_show_cpuinfo(struct seq_file *m)
+ {
+diff --git a/arch/powerpc/platforms/82xx/pq2ads.h b/arch/powerpc/platforms/82xx/pq2ads.h
+index 4802292..4546ce6 100644
+--- a/arch/powerpc/platforms/82xx/pq2ads.h
++++ b/arch/powerpc/platforms/82xx/pq2ads.h
+@@ -25,10 +25,6 @@
+ #include <linux/seq_file.h>
+ #include <asm/ppcboot.h>
+ 
+-/* For our show_cpuinfo hooks. */
+-#define CPUINFO_VENDOR		"Freescale Semiconductor"
+-#define CPUINFO_MACHINE		"PQ2 ADS PowerPC"
+-
+ /* Backword-compatibility stuff for the drivers */
+ #define CPM_MAP_ADDR		((uint)0xf0000000)
+ #define CPM_IRQ_OFFSET 0
+@@ -60,7 +56,6 @@
+ 
+ void m82xx_pci_init_irq(void);
+ void m82xx_show_cpuinfo(struct seq_file *);
+-void m82xx_calibrate_decr(void);
+ 
+ #endif /* __MACH_ADS8260_DEFS */
+ #endif /* __KERNEL__ */
 -- 
 1.5.0.3
