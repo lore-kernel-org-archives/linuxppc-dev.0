@@ -1,26 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 14AA0DDEF5
+Return-Path: <glikely@secretlab.ca>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.224])
+	by ozlabs.org (Postfix) with ESMTP id 96DF5DE2F9
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 18 Jul 2007 08:55:44 +1000 (EST)
-Message-ID: <469D47DB.7070804@freescale.com>
-Date: Tue, 17 Jul 2007 17:51:07 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Wed, 18 Jul 2007 12:18:34 +1000 (EST)
+Received: by nz-out-0506.google.com with SMTP id l1so38908nzf
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 17 Jul 2007 19:18:33 -0700 (PDT)
+Message-ID: <fa686aa40707171918g2ff34d7kef320c6d409ca676@mail.gmail.com>
+Date: Tue, 17 Jul 2007 20:18:32 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Robertson, Joseph M." <joseph.robertson@sanmina-sci.com>
+Subject: Re: Cypress c67x00 Support?
+In-Reply-To: <939D37AEB47F1F49B88FAB6599B6023501A1721C@hsv1dafpew02.das.gov.sanm.corp>
 MIME-Version: 1.0
-To: Siva Prasad <sprasad@bivio.net>
-Subject: Re: Linuxppc-embedded Digest, Vol 35, Issue 33
-References: <mailman.1061.1184600645.8639.linuxppc-embedded@ozlabs.org>
-	<D83235F0F3C86D4D889D8B9A0DA8C6D78D7DE9@corpexc01.corp.networkrobots.com>
-	<469B9825.6070507@freescale.com>
-	<e5eb93010707162259l2e78c524s32ff260b3d930bdb@mail.gmail.com>
-	<D83235F0F3C86D4D889D8B9A0DA8C6D78D7FAF@corpexc01.corp.networkrobots.com>
-In-Reply-To: <D83235F0F3C86D4D889D8B9A0DA8C6D78D7FAF@corpexc01.corp.networkrobots.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: suresh suresh <sureshtang@gmail.com>, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <939D37AEB47F1F49B88FAB6599B6023501A1721C@hsv1dafpew02.das.gov.sanm.corp>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,16 +27,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Siva Prasad wrote:
-> Well!... you can manage any way you want.
-> 
->  
-> 
-> 1) You can store the virtual address in the DpRAM, and convert to
-> physical (should I say DMA mapped address) and then pass it on to the
-> device under consideration here.
+On 7/17/07, Robertson, Joseph M. <joseph.robertson@sanmina-sci.com> wrote:
+>
+>
+>
+> Hi,
+>
+>  I have some questions about the Cypress c67x00 code that was posted a few
+> days ago.
+>  I got the many patches from the git (thanks Grant!), but I am wondering,
+>
+>  How did you guys fix up the Kconfigs to work with the Xilinx Virtex-4 fpga?
 
-The DPRAM is read directly by the microcode (if it didn't, you'd just be 
-using RAM).  You don't want to put virtual addresses in there.
+You need to register the device on the platform bus.  Look at
+arch/ppc/syslib/virtex_devices.c and
+arch/ppc/platforms/4xx/xparameters/xparameters.h.  You need to fixup
+your xparameters file to match up with the c67x00 registration in
+virtex_devices.c. (hint: look at the XPAR_C67x00_USB macro)
 
--Scott
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
