@@ -1,12 +1,12 @@
 Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1B4A9DDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 19:26:53 +1000 (EST)
-Date: Wed, 18 Jul 2007 18:26:40 +0900 (JST)
-Message-Id: <20070718.182640.-1300542340.kouish@swc.toshiba.co.jp>
-Subject: [PATCH 2/2] fix showing xmon help
+	by ozlabs.org (Postfix) with ESMTP id 2E0C1DDE23
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 19:30:47 +1000 (EST)
+Date: Wed, 18 Jul 2007 18:30:29 +0900 (JST)
+Message-Id: <20070718.183029.-432835271.kouish@swc.toshiba.co.jp>
+Subject: [PATCH 1/2] Make xmon_write accept a const buffer
 To: paulus@samba.org
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
@@ -21,51 +21,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In some configuration, xmon help string is larger than xmon_printf
-buffer. We need not to use printf.  This patch adds xmon_puts and
-change to use it to show help string.
+Because xmon_write doesn't change the buffer, we should add 'const'
+qualifier to the argument which points it.
 
 Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
 ---
 
-This patch depends on [PATCH 1/2].
-
-
+Index: linux-powerpc-git/arch/powerpc/xmon/start.c
+===================================================================
+--- linux-powerpc-git.orig/arch/powerpc/xmon/start.c
++++ linux-powerpc-git/arch/powerpc/xmon/start.c
+@@ -14,7 +14,7 @@ void xmon_map_scc(void)
+ {
+ }
+ 
+-int xmon_write(void *ptr, int nb)
++int xmon_write(const void *ptr, int nb)
+ {
+ 	return udbg_write(ptr, nb);
+ }
 Index: linux-powerpc-git/arch/powerpc/xmon/nonstdio.h
 ===================================================================
 --- linux-powerpc-git.orig/arch/powerpc/xmon/nonstdio.h
 +++ linux-powerpc-git/arch/powerpc/xmon/nonstdio.h
-@@ -5,6 +5,7 @@
- 
- extern int xmon_putchar(int c);
- extern int xmon_getchar(void);
-+extern void xmon_puts(const char *);
- extern char *xmon_gets(char *, int);
+@@ -9,6 +9,6 @@ extern char *xmon_gets(char *, int);
  extern void xmon_printf(const char *, ...);
  extern void xmon_map_scc(void);
-Index: linux-powerpc-git/arch/powerpc/xmon/xmon.c
-===================================================================
---- linux-powerpc-git.orig/arch/powerpc/xmon/xmon.c
-+++ linux-powerpc-git/arch/powerpc/xmon/xmon.c
-@@ -833,7 +833,7 @@ cmds(struct pt_regs *excp)
- 			mdelay(2000);
- 			return cmd;
- 		case '?':
--			printf(help_string);
-+			xmon_puts(help_string);
- 			break;
- 		case 'b':
- 			bpt_cmds();
-Index: linux-powerpc-git/arch/powerpc/xmon/nonstdio.c
-===================================================================
---- linux-powerpc-git.orig/arch/powerpc/xmon/nonstdio.c
-+++ linux-powerpc-git/arch/powerpc/xmon/nonstdio.c
-@@ -132,3 +132,8 @@ void xmon_printf(const char *format, ...
- 	va_end(args);
- 	xmon_write(xmon_outbuf, n);
- }
-+
-+void xmon_puts(const char *str)
-+{
-+	xmon_write(str, strlen(str));
-+}
+ extern int xmon_expect(const char *str, unsigned long timeout);
+-extern int xmon_write(void *ptr, int nb);
++extern int xmon_write(const void *ptr, int nb);
+ extern int xmon_readchar(void);
+ extern int xmon_read_poll(void);
