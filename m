@@ -1,17 +1,18 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id E64A7DDE39
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 09:55:11 +1000 (EST)
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 947DEDDE1F
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 10:00:08 +1000 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 56/61] 82xx: Add pq2fads board support.
-Date: Thu, 19 Jul 2007 01:54:54 +0200
-References: <20070718013615.GB15238@ld0162-tx32.am.freescale.net>
-In-Reply-To: <20070718013615.GB15238@ld0162-tx32.am.freescale.net>
+Subject: Re: [PATCH 51/61] cpm_uart: Be an of_platform device when using
+	arch/powerpc.
+Date: Thu, 19 Jul 2007 01:59:52 +0200
+References: <20070718013606.GW15238@ld0162-tx32.am.freescale.net>
+In-Reply-To: <20070718013606.GW15238@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200707190154.55368.arnd@arndb.de>
+Message-Id: <200707190159.52695.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,12 +23,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Wednesday 18 July 2007, Scott Wood wrote:
-> +static void __init pq2fads_setup_arch(void)
-> +{
-> +	struct device_node *np;
-> +	struct resource r;
-> +	u32 *bcsr;
+> +
+> +static struct of_device_id cpm_uart_match[] =3D {
+> +=A0=A0=A0=A0=A0=A0=A0{
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0.compatible =3D "fsl,cpm-ua=
+rt",
+> +=A0=A0=A0=A0=A0=A0=A0},
+> +=A0=A0=A0=A0=A0=A0=A0{}
+> =A0};
+> +
 
-bcsr should be __iomem, right? Did you run your code through sparse?
+I guess it's fine as it is, but it might be nicer if you change
+this to have separate entries for scc and smc, and then pass
+different values though of_device_id->data into the probe()
+function.
+
+Not sure if it makes much difference at all, but that's what
+I did in the of_serial driver.
 
 	Arnd <><
