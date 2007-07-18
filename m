@@ -1,14 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 18 Jul 2007 12:01:04 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 03/11] dtc: complain about unparsed digits in cell lists
-Message-ID: <20070718020104.GD18251@localhost.localdomain>
-References: <dtc-5-00.miltonm@bga.com> <dtc-5-03.miltonm@bga.com>
+Return-Path: <satyakiran@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.226])
+	by ozlabs.org (Postfix) with ESMTP id C8502DF1A4
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 12:18:48 +1000 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so24748wxd
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 19:18:47 -0700 (PDT)
+Message-ID: <acbcf3840707171918h5dee75d9t96d6a62e8a0161fa@mail.gmail.com>
+Date: Tue, 17 Jul 2007 21:18:47 -0500
+From: Satya <satyakiran@gmail.com>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Subject: Re: hugetlbfs for ppc440 - kernel BUG -- follow up
+In-Reply-To: <1184723616.25235.186.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <dtc-5-03.miltonm@bga.com>
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <acbcf3840707171407x21c1bc1al9b46ff0c692b2b4d@mail.gmail.com>
+	<1184723616.25235.186.camel@localhost.localdomain>
+Cc: kazutomo@mcs.anl.gov, linuxppc-dev@ozlabs.org, edi@linux.vnet.ibm.com,
+	david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,26 +25,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Jul 07, 2007 at 01:18:48AM -0500, Milton Miller wrote:
-> Check that strtoul() parsed the complete string.
-> 
-> As with the number overflow case, write a non-fatal error
-> message to stdout.
-> 
-> Signed-off-by: Milton Miller <miltonm@bga.com>
-> --- 
-> I saw the FIXME and knew how to fix it.  
-> 
-> I think the severity should be higher, but opted for the
-> detailed error message compared to the fixed string of
-> yyerror() and its immediate termination of parsing.
+On 7/17/07, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> On Tue, 2007-07-17 at 16:07 -0500, Satya wrote:
+> > hello,
+> >
+> > Upon investigating the below issue further, I found that
+> > pte_alloc_map() calls kmap_atomic. The allocated pte page must be
+> > unmapped before invoking any function that might_sleep.
+> >
+> > In this case clear_huge_page() is being called without invoking
+> > pte_unmap(). The 'normal' counterpart of hugetlb_no_page (which is
+> > do_no_page() in mm/memory.c) does call pte_unmap() before calling
+> > alloc_page() (which might sleep).
+> >
+> > So, I believe pte_unmap() must be invoked first in hugetlb_no_page().
+> > But the problem here is, we do not have a reference to the pmd to map
+> > the pte again (using pte_offset_map()). The do_no_page() function does
+> > have a pmd_t* parameter, so it can remap the pte when required.
+> >
+> > For now, I resolved the problem by expanding the pte_alloc_map() macro
+> > by hand and replacing kmap_atomic with kmap(), although I think it is
+> > not the right thing to do.
+> >
+> > Let me know if my analysis is helping you figure out the problem here. Thanks!
+>
+> Except that I don't see where pte_alloc_map() has been called before
+> hand... hugetlb_no_page() is called by hugetlb_fault() which is called
+> by __handle_mm_fault(), with no lock held.
+>
 
-Yeah, it should really result in a fatal error, but delayed until
-after parsing and other error checking is complete.  Yet another one
-for the Great Error Handling Rewrite.  This is an improvement for now.
+the calling sequence is :
+
+__handle_mm_fault -> hugetlb_fault -> huge_pte_alloc() -> pte_alloc_map()
+
+where -> stands for 'calls'.
+
+hugetlb_fault() calls hugetlb_no_page() after returning from huge_pte_alloc().
+
+[huge_pte_alloc() is an arch specific call back implemented in the
+patch referred to in my earlier posts]
+
+Satya.
+
+> Ben.
+>
+>
+>
+
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+...what's remarkable, is that atoms have assembled into entities which
+are somehow able to ponder their origins.
+--
+http://cs.uic.edu/~spopuri
