@@ -1,33 +1,24 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2198CDDE32
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 06:11:22 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l6IK5Z4G025592
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 16:05:36 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l6IKBIgN262794
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 14:11:18 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6IKBEmU027911
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 14:11:14 -0600
-Subject: Re: [patch 14/14] Bamboo zImage wrapper
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Milton Miller <miltonm@bga.com>
-In-Reply-To: <1184781073.16299.29.camel@weaponx.rchland.ibm.com>
-References: <6e26faa3f30dddc5fcf6294a1ecb3a78@bga.com>
-	<1184781073.16299.29.camel@weaponx.rchland.ibm.com>
-Content-Type: text/plain
-Date: Wed, 18 Jul 2007 15:11:13 -0500
-Message-Id: <1184789473.16299.52.camel@weaponx.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Return-Path: <bzolnier@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
+	by ozlabs.org (Postfix) with ESMTP id BA19CDDDD8
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 07:07:12 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k40so348835ugc
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 14:07:10 -0700 (PDT)
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: compile error if CONFIG_BLOCK not enabled related to linux/ide.h
+	include
+Date: Wed, 18 Jul 2007 22:44:40 +0200
+References: <Pine.LNX.4.64.0707172353050.29097@blarg.am.freescale.net>
+	<200707181247.26262.bzolnier@gmail.com>
+	<162F0B67-44AB-4955-873A-150224C128CB@kernel.crashing.org>
+In-Reply-To: <162F0B67-44AB-4955-873A-150224C128CB@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200707182244.40282.bzolnier@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,27 +28,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-07-18 at 12:51 -0500, Josh Boyer wrote:
-> > Is there some reason they should not all be merged into this one 
-> > platform file?
+On Wednesday 18 July 2007, Kumar Gala wrote:
 > 
-> "they" meaning what?
+> On Jul 18, 2007, at 5:47 AM, Bartlomiej Zolnierkiewicz wrote:
 > 
-> > I can understand wanting the dcr fixups as a library, but lets wait to 
-> > do the file splits until there are actually users.  Its also easier to 
-> > see what's going to called when all the platform ops are filled in at 
-> > one spot, not spread over multiple files.
+> >
+> > Hi,
+> >
+> > On Wednesday 18 July 2007, Kumar Gala wrote:
+> >> M:      bzolnier@gmail.com
+> >> L:      linux-ide@vger.kernel.org
+> >>
+> >> We get the following compile error if CONFIG_BLOCK isn't enabled:
+> >>
+> >>   CC      arch/powerpc/kernel/setup_32.o
+> >> In file included from arch/powerpc/kernel/setup_32.c:14:
+> >> include/linux/ide.h:558: error: expected specifier-qualifier-list  
+> >> before 'request_queue_t'
+> >> include/linux/ide.h:696: warning: 'struct request' declared inside  
+> >> parameter list
+> >> include/linux/ide.h:696: warning: its scope is only this  
+> >> definition or declaration, which is probably not what you want
+> >> include/linux/ide.h:820: warning: 'struct request' declared inside  
+> >> parameter list
+> >> include/linux/ide.h:853: error: field 'wrq' has incomplete type
+> >> include/linux/ide.h:1205: error: expected ')' before '*' token
+> >> make[1]: *** [arch/powerpc/kernel/setup_32.o] Error 1
+> >> make: *** [arch/powerpc/kernel] Error 2
+> >
+> > include/linux/ide.h is exclusively for IDE subsystem
+> >
+> >> What I'm trying to figure out is if include/linux/ide.h should be  
+> >> wrapped
+> >> in a #if defined(CONFIG_IDE) || defined(CONFIG_IDE_MODULE) or if  
+> >> there is
+> >> some other desired way to handle this.
+> >
+> > Plese remove <linux/ide.h> include, there doesn't seem to be any  
+> > piece of
+> > code in arch/powerpc/kernel/setup_32.c which needs it anyway.
 > 
-> I copied this from Ebony.  There are multiple users already.  You have
-> two parts.  The truly common stuff in 4xx.c and the board specific
-> wrappers that do the things needed for the board.
+> Its needed for:
 > 
-> You've thoroughly confused me.
+> struct ide_machdep_calls ppc_ide_md;
+> 
+> which gets defined in asm/ide.h which needs linux/ide.h for the defn  
+> of ide_init_hwif.
 
-Some discussion on IRC cleared this up.  Milton was suggesting I merge
-the treeboot-bamboo.c and bamboo.c files together.  I'm avoiding that
-because I do plan on creating a cuboot Bamboo target soon.
+Ah, this is a PPC special case.
 
-There is a method to my madness usually.
+In this case I think the best solution for now is to just add #ifdefs
+(the proper/clean solution would be adding IDE host drivers for PPC
+platforms needing special handling).
 
-josh
+Thanks,
+Bart
