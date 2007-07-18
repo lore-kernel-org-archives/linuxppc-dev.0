@@ -1,16 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Message-ID: <469E3C11.1090809@freescale.com>
-Date: Wed, 18 Jul 2007 11:13:05 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH 17/61] bootwrapper: Add 8xx support.
-References: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
-	<20070718013318.GP15238@ld0162-tx32.am.freescale.net>
-	<20070718033026.GG18251@localhost.localdomain>
-In-Reply-To: <20070718033026.GG18251@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C7661DDF8A
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 02:14:17 +1000 (EST)
+In-Reply-To: <1184722754.25235.183.camel@localhost.localdomain>
+References: <E1IAnwC-0003Xm-6U@jdl.com>
+	<1184722754.25235.183.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <5F6EB5F7-C5AE-437F-9DF1-22FE38D7A841@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] Add StorCenter DTS first draft.
+Date: Wed, 18 Jul 2007 18:13:41 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,43 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Tue, Jul 17, 2007 at 08:33:18PM -0500, Scott Wood wrote:
-> [snip]
-> 
->>diff --git a/arch/powerpc/boot/cuboot-8xx.c b/arch/powerpc/boot/cuboot-8xx.c
->>new file mode 100644
->>index 0000000..35476a0
->>--- /dev/null
->>+++ b/arch/powerpc/boot/cuboot-8xx.c
->>@@ -0,0 +1,47 @@
->>+/*
->>+ * Old U-boot compatibility for 8xx
->>+ *
->>+ * Author: Scott Wood <scottwood@freescale.com>
->>+ *
->>+ * Copyright (c) 2007 Freescale Semiconductor, Inc.
->>+ *
->>+ * This program is free software; you can redistribute it and/or modify it
->>+ * under the terms of the GNU General Public License version 2 as published
->>+ * by the Free Software Foundation.
->>+ */
->>+
->>+#include "ops.h"
->>+#include "stdio.h"
->>+#include "cuboot.h"
->>+
->>+#define TARGET_8xx
->>+#define TARGET_HAS_ETH1
-> 
->            ^^^^^^^^^^^^^^^
-> Is that really true for all 8xx boards?
+>> +		PowerPC,603e {			/* Really 8241 */
+>> +			device_type = "cpu";
+>> +			reg = <0>;
+>> +			clock-frequency = <d# 200000000>;	/* Hz */
+>> +			timebase-frequency = <d# 33333333>;	/* Hz */
+>> +			bus-frequency = <0>;
+>> +			/* Following required by dtc but not used */
+>> +			i-cache-line-size = <0>;
+>> +			d-cache-line-size = <0>;
+>> +			i-cache-size = <4000>;
+>> +			d-cache-size = <4000>;
+>> +		};
+>
+> The 32 bits kernel may not be using those yet, but it will. 64 bits  
+> does
+> already and I plan to merge those bits at one point.
 
-Well, no.  Even on a given board, it depends on the version of u-boot.
+Hrm, what does it use it for?  Are you going to require
+all other defined CPU properties as well (like the PowerPC
+binding does)?
 
-There's nothing after enet1addr that the bootwrapper cares about, 
-though, so the only harm is if the device tree has a second network 
-interface but u-boot doesn't know about it, and the bootwrapper ends up 
-pulling in junk rather than leaving zeroes.
 
--Scott
+Segher
