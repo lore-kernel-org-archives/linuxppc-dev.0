@@ -1,21 +1,19 @@
-Return-Path: <rpjday@mindspring.com>
-Received: from rubicon.netdirect.ca (nic.NetDirect.CA [216.16.235.2])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7397CDDED2
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 00:22:52 +1000 (EST)
-Date: Wed, 18 Jul 2007 10:20:50 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] PPC:  Prevent direct inclusion of <asm/rwsem.h>.
-In-Reply-To: <C5BB127A-BE08-41D9-A516-2F309A1E2E52@kernel.crashing.org>
-Message-ID: <Pine.LNX.4.64.0707181018270.23545@localhost.localdomain>
-References: <Pine.LNX.4.64.0707180934550.20961@localhost.localdomain>
-	<C5BB127A-BE08-41D9-A516-2F309A1E2E52@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux PPC Mailing List <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+	by ozlabs.org (Postfix) with ESMTP id EC9ECDDE1A
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 01:02:14 +1000 (EST)
+In-Reply-To: <20070718013535.GZ15238@ld0162-tx32.am.freescale.net>
+References: <20070718013535.GZ15238@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <44F03DBB-C3D6-4AA1-9960-730F64829EC6@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 28/61] Add cpm2_set_pin().
+Date: Wed, 18 Jul 2007 10:02:40 -0500
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,44 +23,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 18 Jul 2007, Kumar Gala wrote:
 
->
-> On Jul 18, 2007, at 8:36 AM, Robert P. J. Day wrote:
->
-> >
-> > Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
->
-> Can you provide some commit description as to why we are doing this?
->
-> - k
->
-> >
-> > ---
-> >
-> >   not compile-tested, so if there's a flaw here somewhere, feel free
-> > to tweak it.
-> >
-> >  arch/ppc/syslib/ocp.c       |    2 +-
-> >  include/asm-powerpc/rwsem.h |    4 ++++
-> >  include/asm-ppc/ocp.h       |    2 +-
-> >  3 files changed, 6 insertions(+), 2 deletions(-)
+On Jul 17, 2007, at 8:35 PM, Scott Wood wrote:
 
-based on the pattern across all architectures, it would seem that
-asm/rwsem.h is not *meant* to be included directly, but only via
-linux/rwsem.h.  i'm not sure if that's the kind of rationale you're
-looking for, or if you want a more technical description.
+> This provides a generic way for board code to set up CPM pins, rather
+> than directly poking magic values into registers.
+>
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> ---
+>  arch/powerpc/sysdev/cpm2_common.c |   28 ++++++++++++++++++++++++++++
+>  include/asm-ppc/cpm2.h            |    8 ++++++++
+>  2 files changed, 36 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/powerpc/sysdev/cpm2_common.c b/arch/powerpc/ 
+> sysdev/cpm2_common.c
+> index 7e3a983..0a62df7 100644
+> --- a/arch/powerpc/sysdev/cpm2_common.c
+> +++ b/arch/powerpc/sysdev/cpm2_common.c
+> @@ -338,3 +338,31 @@ void *cpm_dpram_addr(unsigned long offset)
+>  	return (void *)(im_dprambase + offset);
+>  }
+>  EXPORT_SYMBOL(cpm_dpram_addr);
+> +
+> +struct cpm2_ioports {
+> +	u32	dir, par, sor, odr, dat;
 
-at the moment, ppc is the only architecture that is doing the above,
-but it may be that there's a good reason for that that i'm just not
-aware of.
+__be32?
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+> +	u32	res[3];
+> +};
+> +
+> +void cpm2_set_pin(int port, int pin, int flags)
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Can we make the function take a pointer to the port directly?
+
+> +{
+> +	struct cpm2_ioports __iomem *iop =
+> +		(struct cpm_ioports __iomem *)&cpm2_immr->im_ioport;
+> +
+> +	pin = 1 << (31 - pin);
+> +
+> +	if (flags & CPM_PIN_OUTPUT)
+> +		setbits32(&iop[port].dir, pin);
+> +	else
+> +		clrbits32(&iop[port].dir, pin);
+> +
+> +	if (!(flags & CPM_PIN_GPIO))
+> +		setbits32(&iop[port].par, pin);
+> +	else
+> +		clrbits32(&iop[port].par, pin);
+> +
+> +	if (flags & CPM_PIN_SECONDARY)
+> +		setbits32(&iop[port].sor, pin);
+> +	else
+> +		clrbits32(&iop[port].sor, pin);
+
+should we only do this if !(flags & CPM_PIN_GPIO)?
+
+Any reason we don't also set odr here?
+
+> +}
+> diff --git a/include/asm-ppc/cpm2.h b/include/asm-ppc/cpm2.h
+> index 12a2860..0e7ffb6 100644
+> --- a/include/asm-ppc/cpm2.h
+> +++ b/include/asm-ppc/cpm2.h
+> @@ -1244,5 +1244,13 @@ enum cpm_clk {
+>
+>  extern int cpm2_clk_setup(enum cpm_clk_target target, int clock,  
+> int mode);
+>
+> +#define CPM_PIN_INPUT     0
+> +#define CPM_PIN_OUTPUT    1
+> +#define CPM_PIN_PRIMARY   0
+> +#define CPM_PIN_SECONDARY 2
+> +#define CPM_PIN_GPIO      4
+> +
+> +void cpm2_set_pin(int port, int pin, int flags);
+> +
+>  #endif /* __CPM2__ */
+>  #endif /* __KERNEL__ */
+> -- 
+> 1.5.0.3
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
