@@ -1,14 +1,23 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH] fix future firmware feature fixups function failure
-In-reply-to: <200707111329.51580.arnd@arndb.de> 
-References: <9094.1181275235@neuling.org>
-	<1184149691.6059.82.camel@localhost.localdomain>
-	<200707111329.51580.arnd@arndb.de>
-Date: Wed, 18 Jul 2007 16:56:32 -0500
-Message-ID: <24414.1184795792@neuling.org>
-Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id C5D6DDDDFD
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 08:23:12 +1000 (EST)
+Date: Wed, 18 Jul 2007 15:23:10 -0700 (PDT)
+Message-Id: <20070718.152310.124381122.davem@davemloft.net>
+To: ossthema@de.ibm.com
+Subject: Re: [RFC 0/3] lro: Generic Large Receive Offload for TCP traffic
+	(IPv6)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200707181501.00163.ossthema@de.ibm.com>
+References: <20070715091253.GA15790@infradead.org>
+	<20070715.024015.126137834.davem@davemloft.net>
+	<200707181501.00163.ossthema@de.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: tklein@de.ibm.com, themann@de.ibm.com, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, hch@infradead.org,
+	linuxppc-dev@ozlabs.org, raisch@de.ibm.com, meder@de.ibm.com,
+	stefan.roscher@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,141 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Move firmware feature initialisation from pSeries_init_early to the
-earlier pSeries_probe_hypertas so they are initialised before firmware
-feature fixups are applied.
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Date: Wed, 18 Jul 2007 15:00:59 +0200
 
-Currently firmware feature sections are only used for iSeries which
-initialises the these features much earlier.  This is a bug in waiting
-on pSeries.
-
-Also adds some whitespace fixups.
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
-> > There are two possibly solutions I see in the long run:
-> >=20
-> > =A0- We could set the FW features earlier on pseries, though that is a bit
-> > annoying because that means doing it before the device-tree is
-> > unflattened.
-> >=20
-> > =A0- We could constraint lmb_alloc to the first segment until the FW fixup
-> > occurs, either within lmb_alloc itself, or fixup the callers such as
-> > unflatten_device_tree, to pass an explicit limit.
-> >=20
-> > What do you think ?
+> Hi,
 > 
-> If I'm understanding this right, the first solution should be something
-> along the lines of the patch below (not tested), which even removes
-> more lines than it adds. It doesn't seem that annoying to me, and it
-> makes sense to assume that the fw_features are set up after returning
-> from the ppc_md probe.
+> I suggest we keep the interface open for IPv6 support by adding 
+> an additional parameter but first just get IPv4 support only 
+> into the kernel. IPv6 support can then incrementially be added.
+> Would that be ok?
 
-I've cleaned this up and got it booting.  Seems to be doing the right
-things as I can see fw feature sections being correctly NOPed out now
-after boot.  
-
-I've booted with pseries_defconfig and ppc64_defconfig.
-
-Arnd, I've added a signed off by me, but it but this probably needs an
-explicit one from you also before it heads up.
-
-Mikey
-
- arch/powerpc/platforms/pseries/firmware.c |   19 +++----------------
- arch/powerpc/platforms/pseries/pseries.h  |    2 +-
- arch/powerpc/platforms/pseries/setup.c    |   17 +++++++++++------
- 3 files changed, 15 insertions(+), 23 deletions(-)
-
-Index: linux-2.6-ozlabs/arch/powerpc/platforms/pseries/firmware.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/platforms/pseries/firmware.c
-+++ linux-2.6-ozlabs/arch/powerpc/platforms/pseries/firmware.c
-@@ -66,24 +66,13 @@ firmware_features_table[FIRMWARE_MAX_FEA
-  * device-tree/ibm,hypertas-functions.  Ultimately this functionality may
-  * be moved into prom.c prom_init().
-  */
--void __init fw_feature_init(void)
-+void __init fw_feature_init(const char *hypertas, unsigned long len)
- {
--	struct device_node *dn;
--	const char *hypertas, *s;
--	int len, i;
-+	const char *s;
-+	int i;
- 
- 	DBG(" -> fw_feature_init()\n");
- 
--	dn = of_find_node_by_path("/rtas");
--	if (dn == NULL) {
--		printk(KERN_ERR "WARNING! Cannot find RTAS in device-tree!\n");
--		goto out;
--	}
--
--	hypertas = of_get_property(dn, "ibm,hypertas-functions", &len);
--	if (hypertas == NULL)
--		goto out;
--
- 	for (s = hypertas; s < hypertas + len; s += strlen(s) + 1) {
- 		for (i = 0; i < FIRMWARE_MAX_FEATURES; i++) {
- 			/* check value against table of strings */
-@@ -98,7 +87,5 @@ void __init fw_feature_init(void)
- 		}
- 	}
- 
--out:
--	of_node_put(dn);
- 	DBG(" <- fw_feature_init()\n");
- }
-Index: linux-2.6-ozlabs/arch/powerpc/platforms/pseries/pseries.h
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/platforms/pseries/pseries.h
-+++ linux-2.6-ozlabs/arch/powerpc/platforms/pseries/pseries.h
-@@ -10,7 +10,7 @@
- #ifndef _PSERIES_PSERIES_H
- #define _PSERIES_PSERIES_H
- 
--extern void __init fw_feature_init(void);
-+extern void __init fw_feature_init(const char *hypertas, unsigned long len);
- 
- struct pt_regs;
- 
-Index: linux-2.6-ozlabs/arch/powerpc/platforms/pseries/setup.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/platforms/pseries/setup.c
-+++ linux-2.6-ozlabs/arch/powerpc/platforms/pseries/setup.c
-@@ -320,8 +320,6 @@ static void __init pSeries_init_early(vo
- {
- 	DBG(" -> pSeries_init_early()\n");
- 
--	fw_feature_init();
--
- 	if (firmware_has_feature(FW_FEATURE_LPAR))
- 		find_udbg_vterm();
- 
-@@ -343,14 +341,21 @@ static int __init pSeries_probe_hypertas
- 					 const char *uname, int depth,
- 					 void *data)
- {
-+	const char *hypertas;
-+	unsigned long len;
-+
- 	if (depth != 1 ||
- 	    (strcmp(uname, "rtas") != 0 && strcmp(uname, "rtas@0") != 0))
-- 		return 0;
-+		return 0;
-+
-+	hypertas = of_get_flat_dt_prop(node, "ibm,hypertas-functions", &len);
-+	if (!hypertas)
-+		return 1;
- 
--	if (of_get_flat_dt_prop(node, "ibm,hypertas-functions", NULL) != NULL)
-- 		powerpc_firmware_features |= FW_FEATURE_LPAR;
-+	powerpc_firmware_features |= FW_FEATURE_LPAR;
-+	fw_feature_init(hypertas, len);
- 
-- 	return 1;
-+	return 1;
- }
- 
- static int __init pSeries_probe(void)
+I guess so.
