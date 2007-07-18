@@ -1,35 +1,35 @@
 Return-Path: <b07421@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A8B1FDF025
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 11:35:59 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id BF8CFDF054
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 11:36:01 +1000 (EST)
 Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l6I1Zsm6027680
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 18:35:54 -0700 (MST)
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l6I1Ztou019163
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 18:35:55 -0700 (MST)
 Received: from mailserv2.am.freescale.net (mailserv2.am.freescale.net
 	[10.83.16.18])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l6I1Zr9T001547
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 20:35:53 -0500 (CDT)
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l6I1ZsNP001550
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 20:35:55 -0500 (CDT)
 Received: from ld0162-tx32.am.freescale.net (ld0162-tx32 [10.82.19.112])
 	by mailserv2.am.freescale.net (8.13.3/8.13.3) with ESMTP id
-	l6I1BCZv007953
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 20:11:12 -0500 (CDT)
+	l6I1BDOs007956
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 20:11:14 -0500 (CDT)
 Received: from ld0162-tx32.am.freescale.net (localhost [127.0.0.1])
-	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id AB0ACAEFC9
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 20:35:52 -0500 (CDT)
+	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id 01EE6AEFC9
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 20:35:54 -0500 (CDT)
 Received: (from b07421@localhost)
 	by ld0162-tx32.am.freescale.net (8.12.11/8.12.11/Submit) id
-	l6I1ZqtB015420
-	for linuxppc-dev@ozlabs.org; Tue, 17 Jul 2007 20:35:52 -0500
-Date: Tue, 17 Jul 2007 20:35:52 -0500
+	l6I1Zref015424
+	for linuxppc-dev@ozlabs.org; Tue, 17 Jul 2007 20:35:53 -0500
+Date: Tue, 17 Jul 2007 20:35:53 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 40/61] 8xx: Whitespace cleanup in commproc.c
-Message-ID: <20070718013552.GL15238@ld0162-tx32.am.freescale.net>
+Subject: [PATCH 41/61] 8xx: Keep a global mpc8xx_immr mapping.
+Message-ID: <20070718013553.GM15238@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
@@ -44,73 +44,96 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/sysdev/commproc.c |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
+ arch/powerpc/sysdev/commproc.c |   20 +++++++++++---------
+ include/asm-powerpc/fs_pd.h    |   21 +++++----------------
+ 2 files changed, 16 insertions(+), 25 deletions(-)
 
 diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
-index 4f67b89..e8e79f8 100644
+index e8e79f8..f73e96d 100644
 --- a/arch/powerpc/sysdev/commproc.c
 +++ b/arch/powerpc/sysdev/commproc.c
-@@ -45,10 +45,10 @@
- #define CPM_MAP_SIZE    (0x4000)
- 
- static void m8xx_cpm_dpinit(void);
--static	uint	host_buffer;	/* One page of host buffer */
--static	uint	host_end;	/* end + 1 */
--cpm8xx_t	*cpmp;		/* Pointer to comm processor space */
--cpic8xx_t	*cpic_reg;
-+static uint host_buffer; /* One page of host buffer */
-+static uint host_end;    /* end + 1 */
-+cpm8xx_t *cpmp;          /* Pointer to comm processor space */
-+cpic8xx_t *cpic_reg;
+@@ -48,6 +48,7 @@ static void m8xx_cpm_dpinit(void);
+ static uint host_buffer; /* One page of host buffer */
+ static uint host_end;    /* end + 1 */
+ cpm8xx_t *cpmp;          /* Pointer to comm processor space */
++immap_t *mpc8xx_immr;
+ cpic8xx_t *cpic_reg;
  
  static struct device_node *cpm_pic_node;
- static struct irq_host *cpm_pic_host;
-@@ -115,7 +115,7 @@ static int cpm_pic_host_map(struct irq_host *h, unsigned int virq,
-  * and return.  This is a no-op function so we don't need any special
-  * tests in the interrupt handler.
-  */
--static	irqreturn_t cpm_error_interrupt(int irq, void *dev)
-+static irqreturn_t cpm_error_interrupt(int irq, void *dev)
- {
- 	return IRQ_HANDLED;
- }
-@@ -181,7 +181,7 @@ unsigned int cpm_pic_init(void)
- 		printk(KERN_ERR "CPM PIC init: can not find cpm node\n");
- 		goto end;
- 	}
--	eirq= irq_of_parse_and_map(np, 0);
-+	eirq = irq_of_parse_and_map(np, 0);
- 	if (eirq == NO_IRQ)
- 		goto end;
- 
-@@ -197,15 +197,15 @@ end:
+@@ -197,21 +198,26 @@ end:
  
  void cpm_reset(void)
  {
--	cpm8xx_t	*commproc;
--	sysconf8xx_t    *siu_conf;
-+	cpm8xx_t *commproc;
-+	sysconf8xx_t *siu_conf;
+-	cpm8xx_t *commproc;
+ 	sysconf8xx_t *siu_conf;
  
- 	commproc = (cpm8xx_t *)ioremap(CPM_MAP_ADDR, CPM_MAP_SIZE);
+-	commproc = (cpm8xx_t *)ioremap(CPM_MAP_ADDR, CPM_MAP_SIZE);
++	mpc8xx_immr = ioremap(get_immrbase(), 0x4000);
++	if (!mpc8xx_immr) {
++		printk(KERN_CRIT "Could not map IMMR\n");
++		return;
++	}
++
++	cpmp = &mpc8xx_immr->im_cpm;
  
  #ifdef CONFIG_UCODE_PATCH
  	/* Perform a reset.
  	*/
--	out_be16(&commproc->cp_cpcr,  CPM_CR_RST | CPM_CR_FLG);
-+	out_be16(&commproc->cp_cpcr, CPM_CR_RST | CPM_CR_FLG);
+-	out_be16(&commproc->cp_cpcr, CPM_CR_RST | CPM_CR_FLG);
++	out_be16(&cpmp->cp_cpcr, CPM_CR_RST | CPM_CR_FLG);
  
  	/* Wait for it.
  	*/
-@@ -307,7 +307,7 @@ static rh_block_t cpm_boot_dpmem_rh_block[16];
- static rh_info_t cpm_dpmem_info;
+-	while (in_be16(&commproc->cp_cpcr) & CPM_CR_FLG);
++	while (in_be16(&cpmp->cp_cpcr) & CPM_CR_FLG);
  
- #define CPM_DPMEM_ALIGNMENT	8
--static u8* dpram_vbase;
-+static u8 *dpram_vbase;
- static uint dpram_pbase;
+-	cpm_load_patch(commproc);
++	cpm_load_patch(cpmp);
+ #endif
  
- void m8xx_cpm_dpinit(void)
+ 	/* Set SDMA Bus Request priority 5.
+@@ -226,10 +232,6 @@ void cpm_reset(void)
+ 
+ 	/* Reclaim the DP memory for our use. */
+ 	m8xx_cpm_dpinit();
+-
+-	/* Tell everyone where the comm processor resides.
+-	*/
+-	cpmp = commproc;
+ }
+ 
+ /* We used to do this earlier, but have to postpone as long as possible
+diff --git a/include/asm-powerpc/fs_pd.h b/include/asm-powerpc/fs_pd.h
+index 2179a5a..82536a2 100644
+--- a/include/asm-powerpc/fs_pd.h
++++ b/include/asm-powerpc/fs_pd.h
+@@ -32,22 +32,11 @@
+ #include <asm/8xx_immap.h>
+ #include <asm/mpc8xx.h>
+ 
+-#define immr_map(member)						\
+-({									\
+-	u32 offset = offsetof(immap_t, member);				\
+-	void *addr = ioremap (IMAP_ADDR + offset,			\
+-			      sizeof( ((immap_t*)0)->member));		\
+-	addr;								\
+-})
+-
+-#define immr_map_size(member, size)					\
+-({									\
+-	u32 offset = offsetof(immap_t, member);				\
+-	void *addr = ioremap (IMAP_ADDR + offset, size);		\
+-	addr;								\
+-})
+-
+-#define immr_unmap(addr)		iounmap(addr)
++extern immap_t *mpc8xx_immr;
++
++#define immr_map(member) (&mpc8xx_immr->member)
++#define immr_map_size(member, size) (&mpc8xx_immr->member)
++#define immr_unmap(addr) iounmap(addr)
+ #endif
+ 
+ static inline int uart_baudrate(void)
 -- 
 1.5.0.3
