@@ -1,15 +1,18 @@
 Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <20070718032857.GF18251@localhost.localdomain>
-References: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
-	<20070718013611.GY15238@ld0162-tx32.am.freescale.net>
-	<20070718032857.GF18251@localhost.localdomain>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E0F65DDEB7
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 14:51:15 +1000 (EST)
+In-Reply-To: <20070718013258.GB15238@ld0162-tx32.am.freescale.net>
+References: <20070718013258.GB15238@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <F5E8139F-E8DA-4C41-8B90-E727FD4E346C@kernel.crashing.org>
+Message-Id: <D9223336-43B1-4C5C-943B-4ED5E996D220@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 53/61] 82xx: Set NOT_COHERENT_CACHE on 8272 with PCI.
-Date: Tue, 17 Jul 2007 23:30:32 -0500
-To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 03/61] Only include linux/ide.h if CONFIG_BLOCK is defined.
+Date: Tue, 17 Jul 2007 23:51:36 -0500
+To: Scott Wood <scottwood@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,24 +24,14 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jul 17, 2007, at 10:28 PM, David Gibson wrote:
+On Jul 17, 2007, at 8:32 PM, Scott Wood wrote:
 
-> On Tue, Jul 17, 2007 at 08:36:11PM -0500, Scott Wood wrote:
->> I've seen significant network corruption on a PCI network
->> card (e1000) with the mpc8272ads; the corruption went away
->> when I set CONFIG_NOT_COHERENT_CACHE.
->>
->> Signed-off-by: Scott Wood <scottwood@freescale.com>
->
-> Hrm... I for one would be a lot more comfortable with this patch if
-> you had a theoretical explanation for why it's necessary, in addition
-> to the "seems to fix things".
+> The IDE header file uses type definitions that are undefined if the
+> CONFIG_BLOCK is deselected.  This causes a compilation failure in
+> setup_32.c.
 
-I agree w/David.  Have you tried turning on the  
-CPU_FTR_NEED_COHERENT?  Take a look at include/asm-powerpc/cputable.h  
-and search for the reference to CONFIG_PPC_83xx.
-
-Even if that solves the problem we need to figure out of there is an  
-errata or what that causes this to work.
+I'm not yet convinced the solution shouldn't be more generic than  
+this.  I'm guessing the same issue exists on other platforms if you  
+don't have CONFIG_BLOCK enabled.
 
 - k
