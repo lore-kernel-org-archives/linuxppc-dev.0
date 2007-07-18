@@ -1,21 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D0F5BDE025
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 02:20:13 +1000 (EST)
-In-Reply-To: <E1IAvVm-0005yQ-LO@jdl.com>
-References: <E1IAnwC-0003Xm-6U@jdl.com>
-	<630B6BC9-389F-4F5C-AE8F-9C3131C4543E@kernel.crashing.org>
-	<E1IAvVm-0005yQ-LO@jdl.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 42A70DE17D
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 02:20:54 +1000 (EST)
+In-Reply-To: <20070718013306.GH15238@ld0162-tx32.am.freescale.net>
+References: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>,
+	<20070718013306.GH15238@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v624)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <46464F84-5040-4F37-B854-94378C9802AD@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] Add StorCenter DTS first draft. 
-Date: Wed, 18 Jul 2007 18:19:40 +0200
-To: Jon Loeliger <jdl@jdl.com>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+Message-Id: <c5856df6a88b8124fbb6a3cc6974314c@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH 09/61] bootwrapper: Add dt_is_compatible().
+Date: Wed, 18 Jul 2007 11:20:41 -0500
+To: Scott Wood <scottwood@freescale.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,57 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> +	compatible = "storcenter";
->>
->> Needs a manufacturer name in there.
->
-> Right.  Will use:
-> 	compatible = "iomega,storcenter"
+On Wed Jul 18 11:33:06 EST 2007, Scott Wood wrote:
+> +int dt_is_compatible(void *node, const char *compat)
+> +{
+> +       char *buf = (char *)prop_buf;
+> +       int compat_len = strlen(compat);
+> +       int len, pos;
+> +
+> +       len = getprop(node, "compatible", buf, MAX_PROP_LEN);
+> +       if (len < 0)
+> +               return 0;
+> +
+> +       for (pos = 0; pos + compat_len < len; pos++) {
+> +               if (!strcmp(buf + pos, compat))
+> +                       return 1;
+> +
+> +               while (buf[pos] && pos + compat_len < len)
+> +                       pos++;
 
-Okido.
+This is buggy: if you are searching for "ns16550" and the compatable is 
+"fsl,1234\0commons16550" this code will incorrectly says its 
+compatable.
 
->>> +		PowerPC,603e {			/* Really 8241 */
->>
->> So say "PowerPC,8241@0", or "PowerPC,e300@0" (or whatever
->> the CPU core in there is), or simply "cpu@0", following
->> the generic naming recommended practice.
->
-> Well, its the 8241 SoC with a 603e core...  (This is
-> the same phrase currently being used on the Kurobox.)
-> I'll use:
->
-> 	PowerPC,8241@0 }
+Comparing pos < len instead will do the right thing, at the cost of a 
+few iterations of the loop.
 
-That might be best yes.
+> +       }
+> +
+> +       return 0;
 
->>> +	soc10x {
->>
->> Bad name.  Where is the binding for this?  I don't think
->> I saw it before.
->
-> It's what is being used, again, by the Kurobox.  I understand
-> that doesn't make it "right", just precedented by now.
-
-Sure, just trying to trick you into documenting it ;-)
-
-> How about "soc8241@80000000" instead?
-
-soc@ like suggested by Scott seems just fine.
-
->>> +			compatible = "fsl-i2c";
->>
->> Needs to be more specific.
->
-> Hmmm...  Not sure what to use here then.  There are many
-> existing examples using "fsl-i2c" already.  Granted, we've
-> established that they could be wrong...  Should this be
-> more like this?:
->
->     compatible = "fsl,mpc8241-i2c", "fsl-i2c";
-
-That looks good yes.  Or if the kernel side code for
-recognising fsl,mpc8241-i2c gets merged in time, you
-can leave out fsl-i2c from your device tree completely.
-
-
-Segher
+milton
