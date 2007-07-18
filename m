@@ -1,21 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 25352DDE16
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 07:55:14 +1000 (EST)
-Subject: Re: [PATCH] Add StorCenter DTS first draft.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <5F6EB5F7-C5AE-437F-9DF1-22FE38D7A841@kernel.crashing.org>
-References: <E1IAnwC-0003Xm-6U@jdl.com>
-	<1184722754.25235.183.camel@localhost.localdomain>
-	<5F6EB5F7-C5AE-437F-9DF1-22FE38D7A841@kernel.crashing.org>
-Content-Type: text/plain
-Date: Thu, 19 Jul 2007 07:54:38 +1000
-Message-Id: <1184795678.25235.269.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] fix future firmware feature fixups function failure
+In-reply-to: <200707111329.51580.arnd@arndb.de> 
+References: <9094.1181275235@neuling.org>
+	<1184149691.6059.82.camel@localhost.localdomain>
+	<200707111329.51580.arnd@arndb.de>
+Date: Wed, 18 Jul 2007 16:56:32 -0500
+Message-ID: <24414.1184795792@neuling.org>
+Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,35 +18,141 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-07-18 at 18:13 +0200, Segher Boessenkool wrote:
-> >> +		PowerPC,603e {			/* Really 8241 */
-> >> +			device_type = "cpu";
-> >> +			reg = <0>;
-> >> +			clock-frequency = <d# 200000000>;	/* Hz */
-> >> +			timebase-frequency = <d# 33333333>;	/* Hz */
-> >> +			bus-frequency = <0>;
-> >> +			/* Following required by dtc but not used */
-> >> +			i-cache-line-size = <0>;
-> >> +			d-cache-line-size = <0>;
-> >> +			i-cache-size = <4000>;
-> >> +			d-cache-size = <4000>;
-> >> +		};
-> >
-> > The 32 bits kernel may not be using those yet, but it will. 64 bits  
-> > does
-> > already and I plan to merge those bits at one point.
+Move firmware feature initialisation from pSeries_init_early to the
+earlier pSeries_probe_hypertas so they are initialised before firmware
+feature fixups are applied.
+
+Currently firmware feature sections are only used for iSeries which
+initialises the these features much earlier.  This is a bug in waiting
+on pSeries.
+
+Also adds some whitespace fixups.
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+> > There are two possibly solutions I see in the long run:
+> >=20
+> > =A0- We could set the FW features earlier on pseries, though that is a bit
+> > annoying because that means doing it before the device-tree is
+> > unflattened.
+> >=20
+> > =A0- We could constraint lmb_alloc to the first segment until the FW fixup
+> > occurs, either within lmb_alloc itself, or fixup the callers such as
+> > unflatten_device_tree, to pass an explicit limit.
+> >=20
+> > What do you think ?
 > 
-> Hrm, what does it use it for?  Are you going to require
-> all other defined CPU properties as well (like the PowerPC
-> binding does)?
+> If I'm understanding this right, the first solution should be something
+> along the lines of the patch below (not tested), which even removes
+> more lines than it adds. It doesn't seem that annoying to me, and it
+> makes sense to assume that the fw_features are set up after returning
+> from the ppc_md probe.
 
-Cache line size is used by the kernel on ppc64 for things like clearing
-memory (to get the stride between subsequent dcbz) or flushing the
-cache :-) It's also passed on to userland.
+I've cleaned this up and got it booting.  Seems to be doing the right
+things as I can see fw feature sections being correctly NOPed out now
+after boot.  
 
-If it's absent from the device-tree, we default to the values in the
-cputable, but if you're going to put the properties in the tree, don't
-put a 0 in there. As it is, the day I make the 64 bits code common, your
-DT will break unless I special case "0".
+I've booted with pseries_defconfig and ppc64_defconfig.
 
-Ben.
+Arnd, I've added a signed off by me, but it but this probably needs an
+explicit one from you also before it heads up.
+
+Mikey
+
+ arch/powerpc/platforms/pseries/firmware.c |   19 +++----------------
+ arch/powerpc/platforms/pseries/pseries.h  |    2 +-
+ arch/powerpc/platforms/pseries/setup.c    |   17 +++++++++++------
+ 3 files changed, 15 insertions(+), 23 deletions(-)
+
+Index: linux-2.6-ozlabs/arch/powerpc/platforms/pseries/firmware.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/platforms/pseries/firmware.c
++++ linux-2.6-ozlabs/arch/powerpc/platforms/pseries/firmware.c
+@@ -66,24 +66,13 @@ firmware_features_table[FIRMWARE_MAX_FEA
+  * device-tree/ibm,hypertas-functions.  Ultimately this functionality may
+  * be moved into prom.c prom_init().
+  */
+-void __init fw_feature_init(void)
++void __init fw_feature_init(const char *hypertas, unsigned long len)
+ {
+-	struct device_node *dn;
+-	const char *hypertas, *s;
+-	int len, i;
++	const char *s;
++	int i;
+ 
+ 	DBG(" -> fw_feature_init()\n");
+ 
+-	dn = of_find_node_by_path("/rtas");
+-	if (dn == NULL) {
+-		printk(KERN_ERR "WARNING! Cannot find RTAS in device-tree!\n");
+-		goto out;
+-	}
+-
+-	hypertas = of_get_property(dn, "ibm,hypertas-functions", &len);
+-	if (hypertas == NULL)
+-		goto out;
+-
+ 	for (s = hypertas; s < hypertas + len; s += strlen(s) + 1) {
+ 		for (i = 0; i < FIRMWARE_MAX_FEATURES; i++) {
+ 			/* check value against table of strings */
+@@ -98,7 +87,5 @@ void __init fw_feature_init(void)
+ 		}
+ 	}
+ 
+-out:
+-	of_node_put(dn);
+ 	DBG(" <- fw_feature_init()\n");
+ }
+Index: linux-2.6-ozlabs/arch/powerpc/platforms/pseries/pseries.h
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/platforms/pseries/pseries.h
++++ linux-2.6-ozlabs/arch/powerpc/platforms/pseries/pseries.h
+@@ -10,7 +10,7 @@
+ #ifndef _PSERIES_PSERIES_H
+ #define _PSERIES_PSERIES_H
+ 
+-extern void __init fw_feature_init(void);
++extern void __init fw_feature_init(const char *hypertas, unsigned long len);
+ 
+ struct pt_regs;
+ 
+Index: linux-2.6-ozlabs/arch/powerpc/platforms/pseries/setup.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/platforms/pseries/setup.c
++++ linux-2.6-ozlabs/arch/powerpc/platforms/pseries/setup.c
+@@ -320,8 +320,6 @@ static void __init pSeries_init_early(vo
+ {
+ 	DBG(" -> pSeries_init_early()\n");
+ 
+-	fw_feature_init();
+-
+ 	if (firmware_has_feature(FW_FEATURE_LPAR))
+ 		find_udbg_vterm();
+ 
+@@ -343,14 +341,21 @@ static int __init pSeries_probe_hypertas
+ 					 const char *uname, int depth,
+ 					 void *data)
+ {
++	const char *hypertas;
++	unsigned long len;
++
+ 	if (depth != 1 ||
+ 	    (strcmp(uname, "rtas") != 0 && strcmp(uname, "rtas@0") != 0))
+- 		return 0;
++		return 0;
++
++	hypertas = of_get_flat_dt_prop(node, "ibm,hypertas-functions", &len);
++	if (!hypertas)
++		return 1;
+ 
+-	if (of_get_flat_dt_prop(node, "ibm,hypertas-functions", NULL) != NULL)
+- 		powerpc_firmware_features |= FW_FEATURE_LPAR;
++	powerpc_firmware_features |= FW_FEATURE_LPAR;
++	fw_feature_init(hypertas, len);
+ 
+- 	return 1;
++	return 1;
+ }
+ 
+ static int __init pSeries_probe(void)
