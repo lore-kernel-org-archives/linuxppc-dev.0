@@ -1,21 +1,22 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AF02CDDF01
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 20:18:45 +1000 (EST)
-Date: Wed, 18 Jul 2007 12:53:02 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 51/61] cpm_uart: Be an of_platform device when using
-	arch/powerpc.
-Message-ID: <20070718125302.415a9b4d@localhost.localdomain>
-In-Reply-To: <20070718013606.GW15238@ld0162-tx32.am.freescale.net>
-References: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
-	<20070718013606.GW15238@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <bzolnier@gmail.com>
+Received: from ik-out-1112.google.com (ik-out-1112.google.com [66.249.90.180])
+	by ozlabs.org (Postfix) with ESMTP id B36F9DDE2A
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 20:30:01 +1000 (EST)
+Received: by ik-out-1112.google.com with SMTP id b35so160962ika
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 03:29:59 -0700 (PDT)
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: compile error if CONFIG_BLOCK not enabled related to linux/ide.h
+	include
+Date: Wed, 18 Jul 2007 12:47:26 +0200
+References: <Pine.LNX.4.64.0707172353050.29097@blarg.am.freescale.net>
+In-Reply-To: <Pine.LNX.4.64.0707172353050.29097@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200707181247.26262.bzolnier@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,17 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 17 Jul 2007 20:36:06 -0500
-Scott Wood wrote:
 
-> The existing OF glue code was crufty and broken.  Rather than fix it,
-> it has been removed, and the serial driver now talks to the device
-> tree directly.
+Hi,
+
+On Wednesday 18 July 2007, Kumar Gala wrote:
+> M:      bzolnier@gmail.com
+> L:      linux-ide@vger.kernel.org
 > 
-> The non-CONFIG_PPC_MERGE code can do away once CPM platforms are
-> dropped from arch/ppc (which will hopefully be soon).
+> We get the following compile error if CONFIG_BLOCK isn't enabled:
+> 
+>   CC      arch/powerpc/kernel/setup_32.o
+> In file included from arch/powerpc/kernel/setup_32.c:14:
+> include/linux/ide.h:558: error: expected specifier-qualifier-list before 'request_queue_t'
+> include/linux/ide.h:696: warning: 'struct request' declared inside parameter list
+> include/linux/ide.h:696: warning: its scope is only this definition or declaration, which is probably not what you want
+> include/linux/ide.h:820: warning: 'struct request' declared inside parameter list
+> include/linux/ide.h:853: error: field 'wrq' has incomplete type
+> include/linux/ide.h:1205: error: expected ')' before '*' token
+> make[1]: *** [arch/powerpc/kernel/setup_32.o] Error 1
+> make: *** [arch/powerpc/kernel] Error 2
 
-Was is verified to boot on arch/ppc setup? 
+include/linux/ide.h is exclusively for IDE subsystem
 
--- 
-Sincerely, Vitaly
+> What I'm trying to figure out is if include/linux/ide.h should be wrapped
+> in a #if defined(CONFIG_IDE) || defined(CONFIG_IDE_MODULE) or if there is
+> some other desired way to handle this.
+
+Plese remove <linux/ide.h> include, there doesn't seem to be any piece of
+code in arch/powerpc/kernel/setup_32.c which needs it anyway.
+
+Thanks,
+Bart
