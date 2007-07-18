@@ -1,11 +1,32 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <dwg@au1.ibm.com>
+Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6F1ABDDE22
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jul 2007 10:47:04 +1000 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by ausmtp04.au.ibm.com (8.13.8/8.13.8) with ESMTP id l6N1ANWo225944
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jul 2007 11:10:23 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.250.243])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l6N0oZDc173626
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jul 2007 10:50:35 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l6N0l2jf024136
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jul 2007 10:47:02 +1000
+Date: Wed, 18 Jul 2007 11:02:21 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [RFC][PATCH 6/8] Walnut DTS
+Message-ID: <20070718010221.GA21877@localhost.localdomain>
+References: <1184161957.32199.52.camel@weaponx.rchland.ibm.com>
+	<1184162389.32199.65.camel@weaponx.rchland.ibm.com>
+	<4EAC985A-2F04-465D-AB69-C67807310D7B@kernel.crashing.org>
+	<1184176531.32199.81.camel@weaponx.rchland.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18083.21499.799118.182647@cargo.ozlabs.ibm.com>
-Date: Sun, 22 Jul 2007 22:56:27 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-Subject: Please pull powerpc.git merge branch
+In-Reply-To: <1184176531.32199.81.camel@weaponx.rchland.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,84 +37,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+On Wed, Jul 11, 2007 at 12:55:31PM -0500, Josh Boyer wrote:
+> On Wed, 2007-07-11 at 19:49 +0200, Segher Boessenkool wrote:
+> > > +	UIC0: interrupt-controller0 {
+> > 
+> > Why not just "interrupt-controller"?
+> 
+> Copy/paste error from Ebony DTS, which has multiple UICs.  Will fix.
+> 
+> > 
+> > > +		#address-cells = <0>;
+> > > +		#size-cells = <0>;
+> > 
+> > No need for these.
+> 
+> Ok.
+> 
+> > >
+> > > +	plb {
+> > > +		ranges;
+> > 
+> > Please make the valid address ranges explicit here.
+> 
+> Meaning what exactly?  I thought just specifying "ranges;" simply said
+> "the addresses from this node don't have any translation from the parent
+> node" (or something like that).
+> 
+> > 
+> > > +		SDRAM0: memory-controller {
+> > > +			compatible = "ibm,sdram-405gp", "ibm,sdram-440gp";
+> > 
+> > It's a bit weird to mention 440 here, since 405 is older.
+> > Not a real problem, but if you still can change all relevant
+> > OS code and device trees, I'd swap it around (make 440 trees
+> > include the 405 "compatible" value).  Can you still do that
+> > or is there a too big installed base already?
+> 
+> The installed base for 440 exists of exactly 1 completely non-functional
+> board ;).  I can change it.
 
-Please do
+And I don't think we even actually look at this compatible property in
+practice.
 
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
-
-to get a further powerpc update for 2.6.23.
-
-Thanks,
-Paul.
-
- arch/powerpc/configs/prpmc2800_defconfig   |    2 +-
- arch/powerpc/kernel/pci-common.c           |    2 +-
- arch/powerpc/kernel/prom.c                 |    2 +-
- arch/powerpc/kernel/smp.c                  |    7 +++++-
- arch/powerpc/mm/fault.c                    |    8 ++++++-
- arch/powerpc/mm/hash_utils_64.c            |    4 ++--
- arch/powerpc/platforms/Kconfig.cputype     |    2 +-
- arch/powerpc/platforms/embedded6xx/Kconfig |    2 +-
- arch/powerpc/platforms/pseries/firmware.c  |   19 +++--------------
- arch/powerpc/platforms/pseries/pseries.h   |    2 +-
- arch/powerpc/platforms/pseries/setup.c     |   17 ++++++++++-----
- arch/powerpc/sysdev/mpic.c                 |   32 ++++++++++++++++++++++++++++
- arch/powerpc/xmon/nonstdio.c               |    5 ++++
- arch/powerpc/xmon/nonstdio.h               |    3 ++-
- arch/powerpc/xmon/start.c                  |    2 +-
- arch/powerpc/xmon/xmon.c                   |    2 +-
- arch/ppc/syslib/mv64x60.c                  |   15 +++++++------
- drivers/char/hvc_iseries.c                 |    8 ++++---
- drivers/char/hvc_rtas.c                    |    2 +-
- drivers/char/hvcs.c                        |    8 ++++---
- drivers/macintosh/rack-meter.c             |    1 -
- drivers/pcmcia/m8xx_pcmcia.c               |    2 +-
- include/asm-powerpc/mpic.h                 |    3 +++
- include/asm-powerpc/prom.h                 |    2 +-
- include/asm-ppc/system.h                   |    1 +
- include/linux/of_platform.h                |    4 ++--
- 26 files changed, 101 insertions(+), 56 deletions(-)
-
-Avi Kivity (1):
-      [POWERPC] Allow smp_call_function_single() to current cpu
-
-Benjamin Herrenschmidt (1):
-      [POWERPC] MPIC protected sources
-
-Christoph Hellwig (1):
-      [POWERPC] mv64x60: Use mutex instead of semaphore
-
-Geert Uytterhoeven (1):
-      [POWERPC] cell: CONFIG_SPE_BASE is a typo
-
-Ishizaki Kou (2):
-      [POWERPC] Make xmon_write accept a const buffer
-      [POWERPC] fix showing xmon help
-
-Jesper Juhl (1):
-      [POWERPC] Clean up duplicate includes in drivers/macintosh/
-
-Josh Boyer (1):
-      [POWERPC] Fix ARCH=ppc builds
-
-Michael Neuling (1):
-      [POWERPC] Fix future firmware feature fixups function failure
-
-Paul Mackerras (1):
-      [POWERPC] Allow exec faults on readable areas on classic 32-bit PowerPC
-
-Robert P. J. Day (1):
-      [POWERPC] Fix misspelled "CONFIG_CHECK_CACHE_COHERENCY" Kconfig option.
-
-Segher Boessenkool (1):
-      [POWERPC] of_detach_node()'s device node argument cannot be const
-
-Stephen Rothwell (6):
-      [POWERPC] Constify of_platform_driver name
-      [POWERPC] hvcs: Make some things static and const
-      [POWERPC] Constify of_platform_driver match_table
-      [POWERPC] Quiet section mismatch in hvc_rtas.c
-      [POWERPC] init and exit markings for hvc_iseries
-      [POWERPC] Quiet section mismatch warning on pcibios_setup
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
