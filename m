@@ -1,30 +1,17 @@
 Return-Path: <scottwood@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 40D96DDF1E
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 02:47:54 +1000 (EST)
-Message-ID: <469E4432.5050900@freescale.com>
-Date: Wed, 18 Jul 2007 11:47:46 -0500
+Message-ID: <469E5ACD.3040708@freescale.com>
+Date: Wed, 18 Jul 2007 13:24:13 -0500
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC][PATCH 6/8] Walnut DTS
-References: <1184161957.32199.52.camel@weaponx.rchland.ibm.com>
-	<1184162389.32199.65.camel@weaponx.rchland.ibm.com>
-	<4EAC985A-2F04-465D-AB69-C67807310D7B@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA3030669AF@az33exm25.fsl.freescale.net>
-	<28A3F6B9-512B-4D86-8E0D-A7680CCE2354@kernel.crashing.org>
-	<1184622446.25235.89.camel@localhost.localdomain>
-	<C2D29334-489F-49B0-8220-0D94E89FEAC3@kernel.crashing.org>
-	<1184707558.25235.159.camel@localhost.localdomain>
-	<20070717222507.GA4682@ld0162-tx32.am.freescale.net>
-	<A86AB8AE-E421-457B-ABE8-9AD93CCFCDC8@kernel.crashing.org>
-In-Reply-To: <A86AB8AE-E421-457B-ABE8-9AD93CCFCDC8@kernel.crashing.org>
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH 09/61] bootwrapper: Add dt_is_compatible().
+References: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>,
+	<20070718013306.GH15238@ld0162-tx32.am.freescale.net>
+	<c5856df6a88b8124fbb6a3cc6974314c@bga.com>
+In-Reply-To: <c5856df6a88b8124fbb6a3cc6974314c@bga.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: Yoder Stuart-B08248 <stuart.yoder@freescale.com>, linuxppc-dev@ozlabs.org
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,19 +21,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
-> Yes indeed.  The problem with your suggested "obvious way"
+Milton Miller wrote:
+>> +       for (pos = 0; pos + compat_len < len; pos++) {
+>> +               if (!strcmp(buf + pos, compat))
+>> +                       return 1;
+>> +
+>> +               while (buf[pos] && pos + compat_len < len)
+>> +                       pos++;
+> 
+> 
+> This is buggy: if you are searching for "ns16550" and the compatable is 
+> "fsl,1234\0commons16550" this code will incorrectly says its compatable.
 
-I said it was obvious, not obviously correct. :-)
+How so?
 
-> is that you wouldn't get a unit address included if your
-> interrupt-map points (for some entry) at your device tree
-> parent, either.  Not all that hypothetical.
+The first iteration will compare "ns16550" to "fsl,1234", find that they 
+don't match, and advance to the '\0'.
 
-Ah, good point.  My inclination would be to, rather than check how we 
-got to the node, check whether it's the device's parent.  If not, then 
-the presence of #address-cells (other than zero for compatibility) is an 
-error.  Otherwise, #address-cells is used, and defaults are handled the 
-same as with reg/ranges translation.
+The second iteration will compare "ns16550" to "commons16550", find that 
+they don't match, and advance to the 'n'.
+
+The third iteration will not happen, since the loop condition fails, and 
+not-compatible is returned.
+
+> Comparing pos < len instead will do the right thing, at the cost of a 
+> few iterations of the loop.
+
+I'll grant that the extra iterations aren't worth doing the strlen() -- 
+I'm not sure why I did it that way.
 
 -Scott
