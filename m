@@ -1,20 +1,23 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C7661DDF8A
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 02:14:17 +1000 (EST)
-In-Reply-To: <1184722754.25235.183.camel@localhost.localdomain>
-References: <E1IAnwC-0003Xm-6U@jdl.com>
-	<1184722754.25235.183.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <5F6EB5F7-C5AE-437F-9DF1-22FE38D7A841@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] Add StorCenter DTS first draft.
-Date: Wed, 18 Jul 2007 18:13:41 +0200
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 52F7FDE305
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 02:17:09 +1000 (EST)
+Message-ID: <469E3CFE.9020903@freescale.com>
+Date: Wed, 18 Jul 2007 11:17:02 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 01/61] Use strcasecmp() rather than strncasecmp() when
+	determining device node compatibility.
+References: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
+	<99CD25DB-EAAC-4CF3-AB14-D825AD11E499@kernel.crashing.org>
+In-Reply-To: <99CD25DB-EAAC-4CF3-AB14-D825AD11E499@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,26 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> +		PowerPC,603e {			/* Really 8241 */
->> +			device_type = "cpu";
->> +			reg = <0>;
->> +			clock-frequency = <d# 200000000>;	/* Hz */
->> +			timebase-frequency = <d# 33333333>;	/* Hz */
->> +			bus-frequency = <0>;
->> +			/* Following required by dtc but not used */
->> +			i-cache-line-size = <0>;
->> +			d-cache-line-size = <0>;
->> +			i-cache-size = <4000>;
->> +			d-cache-size = <4000>;
->> +		};
->
-> The 32 bits kernel may not be using those yet, but it will. 64 bits  
-> does
-> already and I plan to merge those bits at one point.
+Kumar Gala wrote:
+> Can these patches be broken into logical clumps?
 
-Hrm, what does it use it for?  Are you going to require
-all other defined CPU properties as well (like the PowerPC
-binding does)?
+Probably...  I just wanted to get them out there quickly as there've 
+been numerous people lately inquiring about 82xx support and posting 
+patches.
 
+> Would be easier to review and obviously the fs_enet patches need to  go 
+> via jeff and netdev.
 
-Segher
+While I don't think there'll be a build break if the ethernet patches go 
+in separately, there'll be a functional breakage, so I don't want to 
+send them to Jeff until I'm confident that the rest of the patches will 
+be going in the same release.
+
+-Scott
