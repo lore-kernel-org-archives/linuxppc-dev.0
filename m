@@ -1,23 +1,26 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <axboe@kernel.dk>
+Received: from kernel.dk (brick.kernel.dk [80.160.20.94])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F3736DE489
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 05:07:20 +1000 (EST)
-Date: Wed, 18 Jul 2007 21:24:00 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 52/61] cpm_uart: Issue STOP_TX command before
-	initializing console.
-Message-ID: <20070718212400.44d345ad@localhost.localdomain>
-In-Reply-To: <469E416E.8040709@freescale.com>
-References: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
-	<20070718013608.GX15238@ld0162-tx32.am.freescale.net>
-	<20070718120022.1b007937@localhost.localdomain>
-	<469E416E.8040709@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "A common name", Issuer "A common name" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id DB68BDE09F
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 05:21:12 +1000 (EST)
+Date: Wed, 18 Jul 2007 19:57:56 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: PS3 Storage Driver O_DIRECT issue
+Message-ID: <20070718175756.GC11657@kernel.dk>
+References: <20070704132212.726923000@pademelon.sonytel.be>
+	<20070713122752.GA854@aepfle.de>
+	<Pine.LNX.4.62.0707181808030.15632@pademelon.sonytel.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.62.0707181808030.15632@pademelon.sonytel.be>
+Cc: "James E.J.  Bottomley" <James.Bottomley@SteelEye.com>,
+	Olaf Hering <olaf@aepfle.de>, linux-scsi@vger.kernel.org,
+	Alessandro Rubini <rubini@ipvvis.unipv.it>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,23 +30,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 18 Jul 2007 11:35:58 -0500
-Scott Wood wrote:
-
-> Vitaly Bordug wrote:
-> >>+	cpm_line_cr_cmd(pinfo, CPM_CR_STOP_TX);
-> >>+
+On Wed, Jul 18 2007, Geert Uytterhoeven wrote:
+> On Fri, 13 Jul 2007, Olaf Hering wrote:
+> > This driver (or the generic PS3 code) has appearently problems with
+> > O_DIRECT. 
+> > glibc aborts parted because the malloc metadata get corrupted. While it
+> > is reproducible, the place where it crashes changes with every version
+> > of the debug attempt.
+> > I dont have a handle right now, all I know is that the metadata after a
+> > malloc area get overwritten with zeros.
 > > 
 > > 
-> > I am recalling exactly the contrary patch that removes stuff to get
-> > the non-console UARTs work. Let's better revalidate this once other
-> > pieces will be in before applying.
+> > Can you have a look at this? 
+> > parted /dev/ps3da
+> > print (a few times)
 > 
-> I tried non-console UARTs and had no problem...  How would this 
-> interfere with them?  Especially as we're only doing it in the
-> console init path...
+> I could reproduce it with parted 1.8.0 and later.
+> 
+> The patch below fixes it (tested with 1.8.0, 1.8.2 (FC6), 1.9.0 (git)).
+> 
+> Apparently sometimes bio_cur_sectors(bio)*KERNEL_SECTOR_SIZE != bvec->bv_len
+> when using O_DIRECT. Is that true (or a bug?)?
+> 
+> If it's OK, I'll fold this patch into the main ps3disk patch.
 
-Bah, what I am recalling has nothing to do with console path so nm.
+The bug is in your code - you iterate the bio segments, but always
+reference the current one. Which of course makes no sense, you may as
+well just kill the loop in that case, the code would be the same.
 
 -- 
-Sincerely, Vitaly
+Jens Axboe
