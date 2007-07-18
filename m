@@ -1,18 +1,14 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 01/61] Use strcasecmp() rather than strncasecmp() when
-	determining device node compatibility.
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
-References: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-qPKcvsIVPmksUUyCxu1o"
-Date: Wed, 18 Jul 2007 11:58:36 +1000
-Message-Id: <1184723916.1486.10.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 18 Jul 2007 11:56:23 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH 01/11] dtc: fix asm for version 17
+Message-ID: <20070718015623.GC18251@localhost.localdomain>
+References: <dtc-5-00.miltonm@bga.com> <dtc-5-01.miltonm@bga.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <dtc-5-01.miltonm@bga.com>
+Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,36 +18,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sat, Jul 07, 2007 at 01:18:47AM -0500, Milton Miller wrote:
+> The version 17 flat device tree format added struct size.  When
+> writing versin 17 assembly output the field must be emitted.
+> 
+> Signed-off-by: Milton Miller <miltonm@bga.com>
+> --- 
+> Found when trying to parse the binary from the assembled output.
 
---=-qPKcvsIVPmksUUyCxu1o
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Oops, good catch.
 
-On Tue, 2007-07-17 at 20:31 -0500, Scott Wood wrote:
-> Re: [PATCH 01/61] ....
+> 
+> Index: dtc/flattree.c
+> ===================================================================
+> --- dtc.orig/flattree.c	2007-06-14 22:56:59.000000000 -0500
+> +++ dtc/flattree.c	2007-06-14 22:59:00.000000000 -0500
+> @@ -477,6 +477,10 @@ void dt_to_asm(FILE *f, struct boot_info
+>  		fprintf(f, "\t.long\t_%s_strings_end - _%s_strings_start\t/* size_dt_strings */\n",
+>  			symprefix, symprefix);
+>  
+> +	if (vi->flags & FTF_STRUCTSIZE)
+> +		fprintf(f, "\t.long\t_%s_struct_end - _%s_struct_start\t/* size_dt_struct */\n",
+> +			symprefix, symprefix);
+> +
+>  	/*
+>  	 * Reserve map entries.
+>  	 * Align the reserve map to a doubleword boundary.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
 
-That's gotta be close to a record ..
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-qPKcvsIVPmksUUyCxu1o
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGnXPLdSjSd0sB4dIRArSeAJsFWGUhmlSP/6TjMnkxMrfIwoGT/wCgjgD2
-ai0IwchJHXOSC0uZU1aYP/o=
-=/uCc
------END PGP SIGNATURE-----
-
---=-qPKcvsIVPmksUUyCxu1o--
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
