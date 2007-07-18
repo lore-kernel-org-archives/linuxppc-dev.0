@@ -1,25 +1,19 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 79BA6DDEB6
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 08:40:00 +1000 (EST)
-Message-ID: <469E96B8.3010708@garzik.org>
-Date: Wed, 18 Jul 2007 18:39:52 -0400
-From: Jeff Garzik <jeff@garzik.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 020A1DDE30
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 08:54:37 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] fix future firmware feature fixups function failure
+Date: Thu, 19 Jul 2007 00:54:16 +0200
+References: <9094.1181275235@neuling.org> <200707111329.51580.arnd@arndb.de>
+	<24414.1184795792@neuling.org>
+In-Reply-To: <24414.1184795792@neuling.org>
 MIME-Version: 1.0
-To: Thomas Klein <osstklei@de.ibm.com>
-Subject: Re: [PATCH] eHEA: Fix bonding support
-References: <200707181734.09278.osstklei@de.ibm.com>
-In-Reply-To: <200707181734.09278.osstklei@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
-	linux-ppc <linuxppc-dev@ozlabs.org>,
-	Jan-Bernd Themann <ossthema@de.ibm.com>, Marcus Eder <meder@de.ibm.com>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200707190054.17754.arnd@arndb.de>
+Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,19 +23,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thomas Klein wrote:
-> The driver didn't allow an interface's MAC address to be modified if the
-> respective interface wasn't setup - a failing Hcall was the result. Thus
-> bonding wasn't usable. The fix moves the failing Hcall which was registering
-> a MAC address for the reception of BC packets in firmware from the port up
-> and down functions to the port resources setup functions. Additionally the
-> missing update of the last_rx member of the netdev structure was added.
-> 
-> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
-> 
-> ---
->  drivers/net/ehea/ehea.h      |    2 +-
->  drivers/net/ehea/ehea_main.c |   37 +++++++++++++++++++------------------
->  2 files changed, 20 insertions(+), 19 deletions(-)
+On Wednesday 18 July 2007, Michael Neuling wrote:
+> Move firmware feature initialisation from pSeries_init_early to the
+> earlier pSeries_probe_hypertas so they are initialised before firmware
+> feature fixups are applied.
+>=20
+> Currently firmware feature sections are only used for iSeries which
+> initialises the these features much earlier. =A0This is a bug in waiting
+> on pSeries.
+>=20
+> Also adds some whitespace fixups.
+>=20
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
 
-applied
+Acked-by: Arnd Bergmann <arnd@arndb.de>
+
+Haven't tested it myself, but it certainly looks good to me. It does
+require reverting your previous patch though, are you submitting the
+reversal patch as well?
+
+	Arnd <><
