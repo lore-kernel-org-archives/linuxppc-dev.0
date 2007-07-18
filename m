@@ -1,32 +1,27 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
+	[207.189.120.14])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D42BBDDDE6
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 09:48:30 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6INmRZS003212
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 19:48:27 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l6INmReU270332
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 17:48:27 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6INmRXt007866
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 17:48:27 -0600
-Date: Wed, 18 Jul 2007 18:48:26 -0500
-To: Michael Chan <mchan@broadcom.com>
-Subject: [PATCH] tg3: add PCI error recovery support
-Message-ID: <20070718234826.GO5771@austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: cjlarsen@us.ibm.com, netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	daisyc@us.ibm.com, tsenglin@us.ibm.com,
-	linux-pci@atrey.karlin.mff.cuni.cz, strosake@us.ibm.com,
-	wenxiong@us.ibm.com
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6DE20DDE28
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 09:53:18 +1000 (EST)
+Date: Wed, 18 Jul 2007 16:52:22 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Andy Whitcroft
+	<apw@shadowen.org>
+Subject: Re: [patch 3/3] ps3: FLASH ROM Storage Driver
+Message-Id: <20070718165222.e504d92e.akpm@linux-foundation.org>
+In-Reply-To: <20070716162206.723142000@pademelon.sonytel.be>
+References: <20070716161539.075822000@pademelon.sonytel.be>
+	<20070716162206.723142000@pademelon.sonytel.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Jens Axboe <axboe@kernel.dk>, "James
+	E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Alessandro Rubini <rubini@vision.unipv.it>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,156 +31,352 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 16 Jul 2007 18:15:42 +0200
+Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 
-Add support for PCI Error Recovery for the tg3 ethernet
-device driver. The general principles of operation are
-described in Documentation/pci-error-recovery.txt
-Other drivers having similar structure include e100,
-e1000, ixgb, s2io, ipr, sym53c8xx_2, and lpfc
+> From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> 
+> Add a FLASH ROM Storage Driver for the PS3:
+>   - Implemented as a misc character device driver
+>   - Uses a fixed 256 KiB buffer allocated from boot memory as the hypervisor
+>     requires the writing of aligned 256 KiB blocks
+> 
+> --- /dev/null
+> +++ b/drivers/char/ps3flash.c
+> @@ -0,0 +1,429 @@
+> +/*
+> + * PS3 FLASH ROM Storage Driver
+> + *
+> + * Copyright (C) 2007 Sony Computer Entertainment Inc.
+> + * Copyright 2007 Sony Corp.
+> + *
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms of the GNU General Public License as published
+> + * by the Free Software Foundation; version 2 of the License.
+> + *
+> + * This program is distributed in the hope that it will be useful, but
+> + * WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> + * General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License along
+> + * with this program; if not, write to the Free Software Foundation, Inc.,
+> + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+> + */
+> +
+> +#include <linux/fs.h>
+> +#include <linux/miscdevice.h>
+> +#include <linux/uaccess.h>
+> +
+> +#include <asm/lv1call.h>
+> +#include <asm/ps3stor.h>
+> +
+> +
+> +#define DEVICE_NAME		"ps3flash"
+> +
+> +#define FLASH_BLOCK_SIZE	(256*1024)
+> +
+> +
+> +struct ps3flash_private {
+> +	struct mutex mutex;	/* Bounce buffer mutex */
+> +};
+> +#define ps3flash_priv(dev)	((dev)->sbd.core.driver_data)
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-Cc: Michael Chan <mchan@broadcom.com>
+bzzzt!
 
-----
+> +static loff_t ps3flash_llseek(struct file *file, loff_t offset, int origin)
+> +{
+> +	struct ps3_storage_device *dev = ps3flash_dev;
+> +	u64 size = dev->regions[dev->region_idx].size*dev->blk_size;
+> +
+> +	switch (origin) {
+> +	case 1:
+> +		offset += file->f_pos;
+> +		break;
+> +	case 2:
+> +		offset += size;
+> +		break;
+> +	}
+> +	if (offset < 0)
+> +		return -EINVAL;
+> +
+> +	file->f_pos = offset;
+> +	return file->f_pos;
+> +}
 
-Michael, you are listed as the tg3 maintainer; could you
-please forward upstream if you agree?  
+lseek implementations usually need locking.  file->f_mapping->host->i_mutex
+would be typical.
 
-Tested on the PCI-E version of this adapter, on power6, 
-for 85 (artificial) error injections (overnight) while
-ftp'ing dvd iso images over the link. Worked well.
+That locking mostly protects 64-bit f_pos on 32-bit architectures so you
+can perahps kinda get away with it here.  However the code is a bit racy
+even on 64-bit, for silly userspace.
 
- drivers/net/tg3.c |  108 +++++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 107 insertions(+), 1 deletion(-)
+That being said, I'd have thought that you could use one of our many
+generic lseek library fucntions here, or even an newly-exported
+block_llseek().  That assumes that i_size is correct, which I trust is the
+case.
 
-Index: linux-2.6.22-git2/drivers/net/tg3.c
-===================================================================
---- linux-2.6.22-git2.orig/drivers/net/tg3.c	2007-07-17 11:07:30.000000000 -0500
-+++ linux-2.6.22-git2/drivers/net/tg3.c	2007-07-18 15:10:09.000000000 -0500
-@@ -64,7 +64,7 @@
- 
- #define DRV_MODULE_NAME		"tg3"
- #define PFX DRV_MODULE_NAME	": "
--#define DRV_MODULE_VERSION	"3.77"
-+#define DRV_MODULE_VERSION	"3.77-a"
- #define DRV_MODULE_RELDATE	"May 31, 2007"
- 
- #define TG3_DEF_MAC_MODE	0
-@@ -12126,11 +12126,117 @@ out:
- 	return err;
- }
- 
-+/**
-+ * tg3_io_error_detected - called when PCI error is detected
-+ * @pdev: Pointer to PCI device
-+ * @state: The current pci connection state
-+ *
-+ * This function is called after a PCI bus error affecting
-+ * this device has been detected. 
-+ */
-+static pci_ers_result_t tg3_io_error_detected(struct pci_dev *pdev,
-+                                               pci_channel_state_t state)
-+{
-+	struct net_device *netdev = pci_get_drvdata(pdev);
-+	struct tg3 *tp = netdev_priv(netdev);
-+	struct device *dev = &netdev->dev;
-+
-+	dev_info(dev, "PCI I/O error detected on %s\n", netdev->name);
-+
-+	if (!netif_running(netdev))
-+		return PCI_ERS_RESULT_NEED_RESET;
-+
-+	/* Want to make sure that the reset task doesn't run */
-+	cancel_work_sync(&tp->reset_task);
-+	tg3_netif_stop(tp);
-+	del_timer_sync(&tp->timer);
-+	netif_device_detach(netdev);
-+	pci_disable_device(pdev);
-+
-+	if (state == pci_channel_io_perm_failure) {
-+		/* avoid hang in dev_close() with rtnl_lock held */
-+		netif_poll_enable(netdev);
-+		return PCI_ERS_RESULT_DISCONNECT;
-+	}
-+	return PCI_ERS_RESULT_NEED_RESET;
-+}
-+
-+/**
-+ * tg3_io_slot_reset - called after the pci bus has been reset.
-+ * @pdev: Pointer to PCI device
-+ *
-+ * Restart the card from scratch, as if from a cold-boot.
-+ * At this point, the card has exprienced a hard reset,
-+ * followed by fixups by BIOS, and has its config space
-+ * set up identically to what it was at cold boot.
-+ */
-+static pci_ers_result_t tg3_io_slot_reset(struct pci_dev *pdev)
-+{
-+	struct net_device *netdev = pci_get_drvdata(pdev);
-+	struct tg3 *tp = netdev_priv(netdev);
-+	int err;
-+
-+	if (!netif_running(netdev))
-+		return PCI_ERS_RESULT_RECOVERED;
-+
-+	if (pci_enable_device(pdev)) {
-+		printk(KERN_ERR "tg3: %s: "
-+		       "Cannot re-enable PCI device after reset.\n", netdev->name);
-+		return PCI_ERS_RESULT_DISCONNECT;
-+	}
-+
-+	pci_set_master(pdev);
-+	pci_restore_state(tp->pdev);
-+	netif_device_attach(netdev);
-+
-+	tg3_full_lock(tp, 0);
-+	tp->tg3_flags |= TG3_FLAG_INIT_COMPLETE;
-+	err = tg3_restart_hw(tp, 1);
-+	tg3_full_unlock(tp);
-+	if (err) {
-+		printk(KERN_ERR "tg3: %s: "
-+		       "Cannot restart hardware after reset.\n", netdev->name);
-+		return PCI_ERS_RESULT_DISCONNECT;
-+	}
-+
-+	return PCI_ERS_RESULT_RECOVERED;
-+}
-+
-+/**
-+ * tg3_io_resume - called when traffic can start flowing again.
-+ * @pdev: Pointer to PCI device
-+ *
-+ * This callback is called when the error recovery driver tells
-+ * us that its OK to resume normal operation.
-+ */
-+static void tg3_io_resume(struct pci_dev *pdev)
-+{
-+	struct net_device *netdev = pci_get_drvdata(pdev);
-+	struct tg3 *tp = netdev_priv(netdev);
-+
-+	if (!netif_running(netdev))
-+		return;
-+
-+	netif_wake_queue(netdev);
-+
-+	tp->timer.expires = jiffies + tp->timer_offset;
-+	add_timer(&tp->timer);
-+
-+	tg3_netif_start(tp);
-+}
-+
-+static struct pci_error_handlers tg3_err_handler = {
-+	.error_detected = tg3_io_error_detected,
-+	.slot_reset = tg3_io_slot_reset,
-+	.resume = tg3_io_resume,
-+};
-+
- static struct pci_driver tg3_driver = {
- 	.name		= DRV_MODULE_NAME,
- 	.id_table	= tg3_pci_tbl,
- 	.probe		= tg3_init_one,
- 	.remove		= __devexit_p(tg3_remove_one),
-+	.err_handler = &tg3_err_handler,
- 	.suspend	= tg3_suspend,
- 	.resume		= tg3_resume
- };
+> +static ssize_t ps3flash_read(struct file *file, char __user *buf, size_t count,
+> +			     loff_t *pos)
+> +{
+> +	struct ps3_storage_device *dev = ps3flash_dev;
+> +	struct ps3flash_private *priv = ps3flash_priv(dev);
+> +	u64 size, start_sector, end_sector, offset;
+> +	ssize_t sectors_read;
+> +	size_t remaining, n;
+> +
+> +	dev_dbg(&dev->sbd.core,
+> +		"%s:%u: Reading %zu bytes at position %lld to user 0x%p\n",
+> +		__func__, __LINE__, count, *pos, buf);
+> +
+> +	size = dev->regions[dev->region_idx].size*dev->blk_size;
+> +	if (*pos >= size || !count)
+> +		return 0;
+> +
+> +	if (*pos+count > size) {
+> +		dev_dbg(&dev->sbd.core,
+> +			"%s:%u Truncating count from %zu to %llu\n", __func__,
+> +			__LINE__, count, size - *pos);
+> +		count = size - *pos;
+> +	}
+> +
+> +	start_sector = do_div_llr(*pos, dev->blk_size, &offset);
+> +	end_sector = DIV_ROUND_UP(*pos+count, dev->blk_size);
+> +
+> +	remaining = count;
+> +	do {
+> +		mutex_lock(&priv->mutex);
+> +
+> +		sectors_read = ps3flash_read_sectors(dev, start_sector,
+> +						     end_sector-start_sector,
+> +						     0);
+> +		if (sectors_read < 0) {
+> +			mutex_unlock(&priv->mutex);
+> +			return sectors_read;
+> +		}
+> +
+> +		n = min(remaining, sectors_read*dev->blk_size-offset);
+> +		dev_dbg(&dev->sbd.core,
+> +			"%s:%u: copy %lu bytes from 0x%p to user 0x%p\n",
+> +			__func__, __LINE__, n, dev->bounce_buf+offset, buf);
+> +		if (copy_to_user(buf, dev->bounce_buf+offset, n)) {
+> +			mutex_unlock(&priv->mutex);
+> +			return -EFAULT;
+> +		}
+> +
+> +		mutex_unlock(&priv->mutex);
+> +
+> +		*pos += n;
+> +		buf += n;
+> +		remaining -= n;
+> +		start_sector += sectors_read;
+> +		offset = 0;
+> +	} while (remaining > 0);
+> +
+> +	return count;
+> +}
+
+There are several nasty deeply-embedded return points in this function.
+
+> +static ssize_t ps3flash_write(struct file *file, const char __user *buf,
+> +			      size_t count, loff_t *pos)
+> +{
+> +	struct ps3_storage_device *dev = ps3flash_dev;
+> +	struct ps3flash_private *priv = ps3flash_priv(dev);
+> +	u64 size, chunk_sectors, start_write_sector, end_write_sector,
+> +	    end_read_sector, start_read_sector, head, tail, offset;
+> +	ssize_t res;
+> +	size_t remaining, n;
+> +	unsigned int sec_off;
+> +
+> +	dev_dbg(&dev->sbd.core,
+> +		"%s:%u: Writing %zu bytes at position %lld from user 0x%p\n",
+> +		__func__, __LINE__, count, *pos, buf);
+> +
+> +	size = dev->regions[dev->region_idx].size*dev->blk_size;
+> +	if (*pos >= size || !count)
+> +		return 0;
+> +
+> +	if (*pos+count > size) {
+
+checkpatch missed stuff here.
+
+> +		dev_dbg(&dev->sbd.core,
+> +			"%s:%u Truncating count from %zu to %llu\n", __func__,
+> +			__LINE__, count, size - *pos);
+> +		count = size - *pos;
+> +	}
+> +
+> +	chunk_sectors = dev->bounce_size / dev->blk_size;
+> +
+> +	start_write_sector = do_div_llr(*pos, dev->bounce_size, &offset) *
+> +			     chunk_sectors;
+
+It's strange to see a do_div_llr() in the middle of all this 64-bit-only
+code.  Could use / and %?
+
+> +	end_write_sector = DIV_ROUND_UP(*pos+count, dev->bounce_size) *
+> +			   chunk_sectors;
+> +
+> +	end_read_sector = DIV_ROUND_UP(*pos, dev->blk_size);
+> +	start_read_sector = (*pos+count) / dev->blk_size;
+> +
+> +	/*
+> +	 * As we have to write in 256 KiB chunks, while we can read in blk_size
+> +	 * (usually 512 bytes) chunks, we perform the following steps:
+> +	 *   1. Read from start_write_sector to end_read_sector ("head")
+> +	 *   2. Read from start_read_sector to end_write_sector ("tail")
+> +	 *   3. Copy data to buffer
+> +	 *   4. Write from start_write_sector to end_write_sector
+> +	 * All of this is complicated by using only one 256 KiB bounce buffer.
+> +	 */
+> +
+> +	head = end_read_sector-start_write_sector;
+> +	tail = end_write_sector-start_read_sector;
+
+checkpatch missed this too.
+
+> +	remaining = count;
+> +	do {
+> +		mutex_lock(&priv->mutex);
+> +
+> +		if (end_read_sector >= start_read_sector) {
+> +			/* Merge head and tail */
+> +			dev_dbg(&dev->sbd.core,
+> +				"Merged head and tail: %lu sectors at %lu\n",
+> +				chunk_sectors, start_write_sector);
+> +			res = ps3flash_read_sectors(dev, start_write_sector,
+> +						    chunk_sectors, 0);
+> +			if (res < 0)
+> +				goto fail;
+> +		} else {
+> +			if (head) {
+> +				/* Read head */
+> +				dev_dbg(&dev->sbd.core,
+> +					"head: %lu sectors at %lu\n", head,
+> +					start_write_sector);
+> +				res = ps3flash_read_sectors(dev,
+> +							    start_write_sector,
+> +							    head, 0);
+> +				if (res < 0)
+> +					goto fail;
+> +			}
+> +			if (start_read_sector <
+> +			    start_write_sector+chunk_sectors) {
+> +				/* Read tail */
+> +				dev_dbg(&dev->sbd.core,
+> +					"tail: %lu sectors at %lu\n", tail,
+> +					start_read_sector);
+> +				sec_off = start_read_sector-start_write_sector;
+> +				res = ps3flash_read_sectors(dev,
+> +							    start_read_sector,
+> +							    tail, sec_off);
+> +				if (res < 0)
+> +					goto fail;
+> +			}
+> +		}
+> +
+> +		n = min(remaining, dev->bounce_size-offset);
+> +		dev_dbg(&dev->sbd.core,
+> +			"%s:%u: copy %lu bytes from user 0x%p to 0x%p\n",
+> +			__func__, __LINE__, n, buf, dev->bounce_buf+offset);
+> +		if (copy_from_user(dev->bounce_buf+offset, buf, n)) {
+> +			res = -EFAULT;
+> +			goto fail;
+> +		}
+> +
+> +		res = ps3flash_write_chunk(dev, start_write_sector);
+> +		if (res < 0)
+> +			goto fail;
+> +
+> +		mutex_unlock(&priv->mutex);
+> +
+> +		*pos += n;
+> +		buf += n;
+> +		remaining -= n;
+> +		start_write_sector += chunk_sectors;
+> +		head = 0;
+> +		offset = 0;
+> +	} while (remaining > 0);
+> +
+> +	return count;
+> +
+> +fail:
+> +	mutex_unlock(&priv->mutex);
+> +	return res;
+> +}
+>
+> ...
+>
+> +static int __devinit ps3flash_probe(struct ps3_system_bus_device *_dev)
+> +{
+> +	struct ps3_storage_device *dev = to_ps3_storage_device(&_dev->core);
+> +	struct ps3flash_private *priv;
+> +	int error;
+> +	unsigned long tmp;
+> +
+> +	tmp = dev->regions[dev->region_idx].start*dev->blk_size;
+> +	if (tmp % FLASH_BLOCK_SIZE) {
+> +		dev_err(&dev->sbd.core,
+> +			"%s:%u region start %lu is not aligned\n", __func__,
+> +			__LINE__, tmp);
+> +		return -EINVAL;
+> +	}
+> +	tmp = dev->regions[dev->region_idx].size*dev->blk_size;
+> +	if (tmp % FLASH_BLOCK_SIZE) {
+> +		dev_err(&dev->sbd.core,
+> +			"%s:%u region size %lu is not aligned\n", __func__,
+> +			__LINE__, tmp);
+> +		return -EINVAL;
+> +	}
+> +
+> +	/* use static buffer, kmalloc cannot allocate 256 KiB */
+> +	if (!ps3flash_bounce_buffer.address)
+> +		return -ENODEV;
+> +
+> +	if (ps3flash_dev) {
+> +		dev_err(&dev->sbd.core,
+> +			"Only one FLASH device is supported\n");
+> +		return -EBUSY;
+> +	}
+> +
+> +	ps3flash_dev = dev;
+> +
+> +	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
+> +	if (!priv) {
+> +		error = -ENOMEM;
+> +		goto fail;
+> +	}
+> +
+> +	ps3flash_priv(dev) = priv;
+> +	mutex_init(&priv->mutex);
+> +
+> +	dev->bounce_size = ps3flash_bounce_buffer.size;
+> +	dev->bounce_buf = ps3flash_bounce_buffer.address;
+> +
+> +	error = ps3stor_setup(dev, ps3flash_interrupt);
+> +	if (error)
+> +		goto fail_free_priv;
+> +
+> +	ps3flash_misc.parent = &dev->sbd.core;
+> +	error = misc_register(&ps3flash_misc);
+> +	if (error) {
+> +		dev_err(&dev->sbd.core, "%s:%u: misc_register failed %d\n",
+> +			__func__, __LINE__, error);
+> +		goto fail_teardown;
+> +	}
+> +
+> +	dev_info(&dev->sbd.core, "%s:%u: registered misc device %d\n",
+> +		 __func__, __LINE__, ps3flash_misc.minor);
+> +	return 0;
+> +
+> +fail_teardown:
+> +	ps3stor_teardown(dev);
+> +fail_free_priv:
+> +	kfree(priv);
+> +	ps3flash_priv(dev) = NULL;
+> +fail:
+> +	ps3flash_dev = NULL;
+> +	return error;
+> +}
+> +
