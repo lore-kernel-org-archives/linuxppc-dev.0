@@ -1,25 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <afleming@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E2C85DE347
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 04:52:14 +1000 (EST)
-Message-ID: <469E5C07.3030900@freescale.com>
-Date: Wed, 18 Jul 2007 13:29:27 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [PATCH 46/61] mpc885ads: Rework initialization.
-References: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
-	<20070718013600.GR15238@ld0162-tx32.am.freescale.net>
-	<20070718124402.18197206@localhost.localdomain>
-	<469E4267.2040001@freescale.com>
-	<20070718222455.423ee0ba@localhost.localdomain>
-In-Reply-To: <20070718222455.423ee0ba@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 0D637DED60
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 04:52:57 +1000 (EST)
+In-Reply-To: <a901b49a0707180000g1c107323ub6c95a6ef3b5b2fe@mail.gmail.com>
+References: <11847405503115-git-send-email-afleming@freescale.com>
+	<a901b49a0707180000g1c107323ub6c95a6ef3b5b2fe@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <7318E17E-C9F9-42CE-89A4-E3DBAF0A02C6@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Subject: Re: [PATCH 1/2] Fix error checking in Vitesse IRQ config
+Date: Wed, 18 Jul 2007 13:52:52 -0500
+To: pradeep singh <pradeep.rautela@gmail.com>
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,26 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Vitaly Bordug wrote:
-> On Wed, 18 Jul 2007 11:40:07 -0500
-> Scott Wood wrote:
->>The CPM reset should take care of that.
->>
-> 
-> IIRC we had CPM reset prior, and it didn't help, making all those stuff added.
 
-You previously only did the CPM reset when CONFIG_UCODE_PATH was 
-enabled.  I saw the same behavior with the smcmr clearing as with the 
-CPM reset.
+On Jul 18, 2007, at 02:00, pradeep singh wrote:
 
-> ok, I may have confused this with something else. Anyway, the only doubt point is
-> SMC2 console + SCC3 ENET functionality - it is easier to just test that.
+> On 7/18/07, Andy Fleming <afleming@freescale.com> wrote:
 
-I had some difficulty with SCC3, but I think it's unrelated -- the PHY 
-wasn't negotiating properly.  The failure mode was completely different 
-when SMC1 was left on.
+>> -               if (err)
+>> +               if (err < 0)
+>>                         return err;
+>
+> but would that mean, if phy_read returns > 0 it is a success?
 
-I tried to test it without my patches to see if it worked there, but it 
-wouldn't boot at all.
+Yes.  phy_read() returns a 32-bit value.  If there's an error, it  
+returns a negative number.  If not, it returns whatever was in the  
+register (which is only 16 bits)
 
--Scott
+phy_write() returns 0 on success, and non-zero, otherwise.  In  
+hindsight, it would have been better to be consistent.
+
+Andy
