@@ -1,17 +1,23 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
+Return-Path: <b07421@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 37B20DDDF4
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 09:15:31 +1000 (EST)
-Message-Id: <200707172309.l6HN9VWt012374@imap1.linux-foundation.org>
-Subject: - add-missing-data_data-in-powerpc.patch removed from -mm tree
-To: mathieu.desnoyers@polymtl.ca, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	mm-commits@vger.kernel.org
-From: akpm@linux-foundation.org
-Date: Tue, 17 Jul 2007 16:09:31 -0700
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2C365DDE08
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 11:31:46 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l6I1Vesj026745
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2007 18:31:40 -0700 (MST)
+Date: Tue, 17 Jul 2007 20:31:37 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 01/61] Use strcasecmp() rather than strncasecmp() when
+	determining device node compatibility.
+Message-ID: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,44 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The current code assumes "foo-bar" must always be compatible with a node
+compatible with "foo", which breaks device trees where this is not so.
 
-The patch titled
-     powerpc: add missing DATA_DATA
-has been removed from the -mm tree.  Its filename was
-     add-missing-data_data-in-powerpc.patch
+The "case" part is also wrong according to Open Firmware, but it's more
+likely to have drivers and/or device trees depending on it, and thus
+needs to be handled more carefully.
 
-This patch was dropped because it was merged into mainline or a subsystem tree
-
-------------------------------------------------------
-Subject: powerpc: add missing DATA_DATA
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: <paulus@samba.org>
-Cc: <linuxppc-dev@ozlabs.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
+ arch/powerpc/kernel/prom.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
- arch/powerpc/kernel/vmlinux.lds.S |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletion(-)
-
-diff -puN arch/powerpc/kernel/vmlinux.lds.S~add-missing-data_data-in-powerpc arch/powerpc/kernel/vmlinux.lds.S
---- a/arch/powerpc/kernel/vmlinux.lds.S~add-missing-data_data-in-powerpc
-+++ a/arch/powerpc/kernel/vmlinux.lds.S
-@@ -174,7 +174,9 @@ SECTIONS
- 	}
- #else
- 	.data : {
--		*(.data .data.rel* .toc1)
-+		DATA_DATA
-+		*(.data.rel*)
-+		*(.toc1)
- 		*(.branch_lt)
- 	}
- 
-_
-
-Patches currently in -mm which might be from mathieu.desnoyers@polymtl.ca are
-
-origin.patch
-git-kbuild.patch
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 37ff99b..0b136a5 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -218,7 +218,7 @@ int __init of_flat_dt_is_compatible(unsigned long node, const char *compat)
+ 	if (cp == NULL)
+ 		return 0;
+ 	while (cplen > 0) {
+-		if (strncasecmp(cp, compat, strlen(compat)) == 0)
++		if (strcasecmp(cp, compat) == 0)
+ 			return 1;
+ 		l = strlen(cp) + 1;
+ 		cp += l;
+@@ -1099,7 +1099,7 @@ int of_device_is_compatible(const struct device_node *device,
+ 	if (cp == NULL)
+ 		return 0;
+ 	while (cplen > 0) {
+-		if (strncasecmp(cp, compat, strlen(compat)) == 0)
++		if (strcasecmp(cp, compat) == 0)
+ 			return 1;
+ 		l = strlen(cp) + 1;
+ 		cp += l;
+-- 
+1.5.0.3
