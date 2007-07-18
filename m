@@ -1,18 +1,21 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 72E46DDE2A
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 17:36:16 +1000 (EST)
-Date: Wed, 18 Jul 2007 00:36:14 -0700 (PDT)
-Message-Id: <20070718.003614.31642446.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Subject: Re: Start the consolidation of the OpenFrimware support routines
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070718173024.50204a1a.sfr@canb.auug.org.au>
-References: <20070718173024.50204a1a.sfr@canb.auug.org.au>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 80D24DDE16
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 18:17:55 +1000 (EST)
+Date: Wed, 18 Jul 2007 18:17:46 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 07/61] bootwrapper: Set timebase_period_ns from
+	dt_fixup_cpu_clocks.
+Message-Id: <20070718181746.96b8a750.sfr@canb.auug.org.au>
+In-Reply-To: <20070718013304.GF15238@ld0162-tx32.am.freescale.net>
+References: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
+	<20070718013304.GF15238@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	wli@holomorphy.com
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__18_Jul_2007_18_17_46_+1000_M45cUhtBQye0Dz2p"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,31 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Wed, 18 Jul 2007 17:30:24 +1000
+--Signature=_Wed__18_Jul_2007_18_17_46_+1000_M45cUhtBQye0Dz2p
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Hi Dave, Paul,
-> 
-> The latest version of the changes is available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/sfr/ofcons.git master
-> 
-> I will send patches to the lists if people want them.  The only changes
-> from the previous version is to merge with Linus' current tree (there
-> were various conflicts with PowerPC changes).  This has been built for
-> Sparc and Sparc64 defconfigs but I have no Sparc hardware to boot on.  It
-> has also been built for PowerPC allmodconfig and ppc64_defconfig - the
-> latter has been booted on an iSeries box.
-> 
-> The intention here is that there should be no behavioural changes and
-> minimal code changes (apart from movement of the code to common places).
-> There are, however a couple of unavoidable changes:
-> 	- some of the accessor functions now take a read lock on Sparc[64]
-> where they didn't before.
-> 	- the bus structures are initialised at runtime.
-> 
-> If people are happy with this, I will submit it directly to Linus.
+On Tue, 17 Jul 2007 20:33:04 -0500 Scott Wood <scottwood@freescale.com> wro=
+te:
+>
+  void dt_fixup_cpu_clocks(u32 cpu, u32 tb, u32 bus)
+>  {
+> +	extern unsigned long timebase_period_ns;
 
-No objections here.  If the read lock or bus initialization issue
-causes problems, I'll fix it up after this gets merged in, don't worry
-about it.
+Why isn't this declared in a header file somewhere?
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__18_Jul_2007_18_17_46_+1000_M45cUhtBQye0Dz2p
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGncyyTgG2atn1QN8RApzMAJ9V+unIdPsCkBeKlc2WeZxdbDvLvACeOjr4
+wPv2XEzjyMt4w8Xk3MBJh+8=
+=4nSL
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__18_Jul_2007_18_17_46_+1000_M45cUhtBQye0Dz2p--
