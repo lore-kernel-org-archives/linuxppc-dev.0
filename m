@@ -1,15 +1,20 @@
 Return-Path: <scottwood@freescale.com>
-Message-ID: <469E3B27.6040406@freescale.com>
-Date: Wed, 18 Jul 2007 11:09:11 -0500
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id ABA22DDF1F
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 02:10:53 +1000 (EST)
+Message-ID: <469E3B87.4030901@freescale.com>
+Date: Wed, 18 Jul 2007 11:10:47 -0500
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH 05/61] bootwrapper: Change cuImage .gitignore entry to
-	cuImage.*
-References: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
-	<20070718013301.GD15238@ld0162-tx32.am.freescale.net>
-	<20070718014200.GB18251@localhost.localdomain>
-In-Reply-To: <20070718014200.GB18251@localhost.localdomain>
+To: Mark Zhan <rongkai.zhan@windriver.com>
+Subject: Re: [PATCH 22/61] Rename mpc82xx_ads to mpc8272ads.
+References: <20070718013527.GT15238@ld0162-tx32.am.freescale.net>
+	<1184728051.31656.35.camel@mark>
+In-Reply-To: <1184728051.31656.35.camel@mark>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -21,33 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Tue, Jul 17, 2007 at 08:33:01PM -0500, Scott Wood wrote:
+Mark Zhan wrote:
+> Scott,
 > 
->>Signed-off-by: Scott Wood <scottwood@freescale.com>
->>---
->> arch/powerpc/boot/.gitignore |    4 +---
->> 1 files changed, 1 insertions(+), 3 deletions(-)
->>
->>diff --git a/arch/powerpc/boot/.gitignore b/arch/powerpc/boot/.gitignore
->>index eec7af7..3270335 100644
->>--- a/arch/powerpc/boot/.gitignore
->>+++ b/arch/powerpc/boot/.gitignore
->>@@ -18,9 +18,7 @@ kernel-vmlinux.strip.c
->> kernel-vmlinux.strip.gz
->> mktree
->> uImage
->>-cuImage
->>-cuImage.bin.gz
->>-cuImage.elf
->>+cuImage.*
->> zImage
->> zImage.chrp
->> zImage.coff
-> 
-> 
-> Err... your new wildcard won't match plain 'cuImage'.
+> It seems the old name "mpc82xx ads" is still used in your code.
+> It will be nice that your file name match your code name, you know, less
+> confusion.
 
-When is plain "cuImage" ever generated anymore?
+See patch 24.
+
+AIUI, it's generally preferred when moving large chunks of code to first 
+have a patch that just moves it, and then a subsequent one that makes 
+changes.  I was also under the impression that git would generate a one 
+line file rename in the diff, but for some reason that didn't happen.
 
 -Scott
