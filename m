@@ -1,15 +1,22 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 19017DDFCB
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 04:51:39 +1000 (EST)
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <6e26faa3f30dddc5fcf6294a1ecb3a78@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [patch 14/14] Bamboo zImage wrapper
-Date: Wed, 18 Jul 2007 12:21:51 -0500
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8D72FDE03D
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 04:52:02 +1000 (EST)
+Message-ID: <469E614B.1000700@freescale.com>
+Date: Wed, 18 Jul 2007 13:51:55 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 28/61] Add cpm2_set_pin().
+References: <20070718013535.GZ15238@ld0162-tx32.am.freescale.net>
+	<44F03DBB-C3D6-4AA1-9960-730F64829EC6@kernel.crashing.org>
+In-Reply-To: <44F03DBB-C3D6-4AA1-9960-730F64829EC6@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,85 +26,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sorry for the broken reply but the list is broken.
+Kumar Gala wrote:
+> On Jul 17, 2007, at 8:35 PM, Scott Wood wrote:
+>> +
+>> +struct cpm2_ioports {
+>> +    u32    dir, par, sor, odr, dat;
+> 
+> __be32?
 
-On Wed Jul 18 04:16:01 EST 2007, Josh Boyer wrote:
-> Add a bootwrapper for Bamboo
+OK.
 
-bamboo is what, an evaluation board? for which processor?
+>> +    u32    res[3];
+>> +};
+>> +
+>> +void cpm2_set_pin(int port, int pin, int flags)
+> 
+> 
+> Can we make the function take a pointer to the port directly?
 
-> Signed-off-by: Josh Boyer <jwboyer at linux.vnet.ibm.com>
->
-> ---
->  arch/powerpc/boot/44x.h             |    1
->  arch/powerpc/boot/Makefile          |    5 -
->  arch/powerpc/boot/bamboo.c          |  126 
-> ++++++++++++++++++++++++++++++++++++
->  arch/powerpc/boot/dcr.h             |   11 +++
->  arch/powerpc/boot/treeboot-bamboo.c |   27 +++++++
->  5 files changed, 168 insertions(+), 2 deletions(-)
->
-> --- linux-2.6.orig/arch/powerpc/boot/Makefile
-> +++ linux-2.6/arch/powerpc/boot/Makefile
-> @@ -143,6 +143,7 @@ image-$(CONFIG_PPC_83xx)            += cuImage.83x
->  image-$(CONFIG_PPC_85xx)               += cuImage.85xx
->  image-$(CONFIG_EBONY)                  += treeImage.ebony 
-> cuImage.ebony
->  image-$(CONFIG_WALNUT)                 += treeImage.walnut
-> +image-$(CONFIG_BAMBOO)                 += treeImage.bamboo
->  endif
+I'd rather not -- it'd require the caller to use the immr struct 
+directly, and either have no type checking, or different functions for 
+different types of ports (on 8xx).
 
-You are only making one target.
+>> +{
+>> +    struct cpm2_ioports __iomem *iop =
+>> +        (struct cpm_ioports __iomem *)&cpm2_immr->im_ioport;
+>> +
+>> +    pin = 1 << (31 - pin);
+>> +
+>> +    if (flags & CPM_PIN_OUTPUT)
+>> +        setbits32(&iop[port].dir, pin);
+>> +    else
+>> +        clrbits32(&iop[port].dir, pin);
+>> +
+>> +    if (!(flags & CPM_PIN_GPIO))
+>> +        setbits32(&iop[port].par, pin);
+>> +    else
+>> +        clrbits32(&iop[port].par, pin);
+>> +
+>> +    if (flags & CPM_PIN_SECONDARY)
+>> +        setbits32(&iop[port].sor, pin);
+>> +    else
+>> +        clrbits32(&iop[port].sor, pin);
+> 
+> 
+> should we only do this if !(flags & CPM_PIN_GPIO)?
 
-> +
-> +static void bamboo_fixups(void)
-> +{
-> +       unsigned long sysclk = 33333333;
-> +       ibm440ep_fixup_clocks(sysclk, 11059200);
-> +       ibm4xx_fixup_memsize();
-> +       ibm4xx_reset_eth((u32 *)0xef600e00, (u32 *)0xef600f00);
-> +}
+I don't think it matters.
 
-This seems to have board specific information ..
+> Any reason we don't also set odr here?
 
-> +
-> +void bamboo_init(void)
-> +{
-> +       platform_ops.fixups = bamboo_fixups;
-> +       platform_ops.exit = ibm44x_dbcr_reset;
-> +       ft_init(_dtb_start, 0, 32);
-> +       serial_console_init();
-> +}
+It wasn't clear to me when we need to set it.  I can add a flag for it, 
+though.
 
-and so is this (by transitivity).
-
-> --- /dev/null
-> +++ linux-2.6/arch/powerpc/boot/treeboot-bamboo.c
-> @@ -0,0 +1,27 @@
-... [copyright header]
-> +#include "ops.h"
-> +#include "stdio.h"
-> +#include "44x.h"
-> +
-> +extern char _end[];
-> +
-> +BSS_STACK(4096);
-> +
-> +void platform_init(void)
-> +{
-> +       unsigned long end_of_ram = 0x8000000;
-> +       unsigned long avail_ram = end_of_ram - (unsigned long)_end;
-> +
-> +       simple_alloc_init(_end, avail_ram, 32, 64);
-> +       bamboo_init();
-> +}
-
-Is there some reason they should not all be merged into this one 
-platform file?
-
-I can understand wanting the dcr fixups as a library, but lets wait to 
-do the file splits until there are actually users.  Its also easier to 
-see what's going to called when all the platform ops are filled in at 
-one spot, not spread over multiple files.
-
-milton
+-Scott
