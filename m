@@ -1,38 +1,28 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
+	[207.189.120.14])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B2640DE03A
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 32B14DE100
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 19 Jul 2007 02:28:58 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6IGSnFa030258
-	for <linuxppc-embedded@ozlabs.org>; Wed, 18 Jul 2007 12:28:49 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l6IGSnpi173428
-	for <linuxppc-embedded@ozlabs.org>; Wed, 18 Jul 2007 10:28:49 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6IGSmp1004757
-	for <linuxppc-embedded@ozlabs.org>; Wed, 18 Jul 2007 10:28:49 -0600
-Subject: Re: [Bugme-new] [Bug 8778] New: Ocotea board: kernel reports
-	access of bad area during boot with DEBUG_SLAB=y
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Eugene Surovegin <ebs@ebshome.net>
+	Thu, 19 Jul 2007 04:38:30 +1000 (EST)
+Date: Wed, 18 Jul 2007 09:55:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eugene Surovegin <ebs@ebshome.net>, linux-mm@kvack.org, Christoph
+	Lameter <clameter@sgi.com>
+Subject: Re: [Bugme-new] [Bug 8778] New: Ocotea board: kernel reports access
+	of bad area during boot with DEBUG_SLAB=y
+Message-Id: <20070718095537.d344dc0a.akpm@linux-foundation.org>
 In-Reply-To: <20070718155940.GB29722@gate.ebshome.net>
 References: <bug-8778-10286@http.bugzilla.kernel.org/>
 	<20070718005253.942f0464.akpm@linux-foundation.org>
 	<20070718083425.GA29722@gate.ebshome.net>
 	<1184766070.3699.2.camel@zod.rchland.ibm.com>
 	<20070718155940.GB29722@gate.ebshome.net>
-Content-Type: text/plain
-Date: Wed, 18 Jul 2007 11:28:47 -0500
-Message-Id: <1184776127.16299.22.camel@weaponx.rchland.ibm.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: bart.vanassche@gmail.com, netdev@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
 	"bugme-daemon@kernel-bugs.osdl.org" <bugme-daemon@bugzilla.kernel.org>,
 	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -45,7 +35,8 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-07-18 at 08:59 -0700, Eugene Surovegin wrote:
+On Wed, 18 Jul 2007 08:59:40 -0700 Eugene Surovegin <ebs@ebshome.net> wrote:
+
 > On Wed, Jul 18, 2007 at 08:41:10AM -0500, Josh Boyer wrote:
 > > On Wed, 2007-07-18 at 01:34 -0700, Eugene Surovegin wrote:
 > > > On Wed, Jul 18, 2007 at 12:52:53AM -0700, Andrew Morton wrote:
@@ -74,8 +65,13 @@ On Wed, 2007-07-18 at 08:59 -0700, Eugene Surovegin wrote:
 > right one is to fix slab allocator. You cannot change all drivers to 
 > do this kind of cache flushing, and yes, I saw the same problem with 
 > PCI based NIC I tried on Ocotea at the time.
+> 
 
-Hm... good point.  I'd still like to see if your patch works around the
-reporter's problem.
+hm.  It should be the case that providing SLAB_HWCACHE_ALIGN at
+kmem_cache_create() time will override slab-debugging's offsetting
+of the returned addresses.
 
-josh
+Or is the problem occurring with memory which is returned from kmalloc(),
+rather than from kmem_cache_alloc()?
+
+A complete description of the problem would help here, please.
