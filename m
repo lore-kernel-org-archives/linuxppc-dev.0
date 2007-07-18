@@ -1,25 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4299DDDDE4
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 16:02:18 +1000 (EST)
-In-Reply-To: <AADEBC41-7CB4-4B72-89EC-5C71137E2A5B@kernel.crashing.org>
-References: <20070709214853.GA29912@ld0162-tx32.am.freescale.net>
-	<1184705168.24473.32.camel@ld0161-tx32>
-	<469D3F60.8000401@freescale.com> <E1IAvmA-00062M-F4@jdl.com>
-	<469D487D.1020900@freescale.com>
-	<AADEBC41-7CB4-4B72-89EC-5C71137E2A5B@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3198C3F2-91CE-4AF6-822B-5BA2820458C7@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2] Allow exec on 32-bit from readable, non-exec pages,
-	with a warning.
-Date: Wed, 18 Jul 2007 01:02:10 -0500
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Jon Loeliger <jdl@jdl.com>, Paul Mackerras <paulus@samba.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 144DCDDE04
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 16:07:35 +1000 (EST)
+Date: Wed, 18 Jul 2007 16:07:28 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 01/61] Use strcasecmp() rather than strncasecmp() when
+	determining device node compatibility.
+Message-Id: <20070718160728.73a747c1.sfr@canb.auug.org.au>
+In-Reply-To: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
+References: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__18_Jul_2007_16_07_28_+1000_YGk/LxaniG3Ps529"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,21 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Wed__18_Jul_2007_16_07_28_+1000_YGk/LxaniG3Ps529
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Jul 17, 2007, at 10:30 PM, Segher Boessenkool wrote:
-
->>> A:  They haven't been posted yet.
->>>
->>> Q:  How do we know Segher has new patches?
->>
->> He sent it to me to test, and I told him it worked...
+On Tue, 17 Jul 2007 20:31:37 -0500 Scott Wood <scottwood@freescale.com> wro=
+te:
 >
-> And I sent it to the list hours later, over a week ago.
+> The current code assumes "foo-bar" must always be compatible with a node
+> compatible with "foo", which breaks device trees where this is not so.
 
-Can someone send a ozlabs linuxppc list link or patchworks to the  
-"new" patch.
+This should (at least partly) wait for the OF consolidation patches
+(coming shortly), please.
 
-All I can find are patches from Scott w/Paul doesn't like, not  
-Segher's "new" version.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-- k
+--Signature=_Wed__18_Jul_2007_16_07_28_+1000_YGk/LxaniG3Ps529
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGna4kTgG2atn1QN8RAlriAKCbai4o6Xi7DO+hyhaHIYwdyFHWfgCfTqPL
+li9XZy5GORUGZVrRksnTqoA=
+=zVQt
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__18_Jul_2007_16_07_28_+1000_YGk/LxaniG3Ps529--
