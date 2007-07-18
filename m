@@ -1,27 +1,22 @@
-Return-Path: <segher@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9F5CADDEC7
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 23:54:06 +1000 (EST)
-In-Reply-To: <20070717222507.GA4682@ld0162-tx32.am.freescale.net>
-References: <1184161957.32199.52.camel@weaponx.rchland.ibm.com>
-	<1184162389.32199.65.camel@weaponx.rchland.ibm.com>
-	<4EAC985A-2F04-465D-AB69-C67807310D7B@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA3030669AF@az33exm25.fsl.freescale.net>
-	<28A3F6B9-512B-4D86-8E0D-A7680CCE2354@kernel.crashing.org>
-	<1184622446.25235.89.camel@localhost.localdomain>
-	<C2D29334-489F-49B0-8220-0D94E89FEAC3@kernel.crashing.org>
-	<1184707558.25235.159.camel@localhost.localdomain>
-	<20070717222507.GA4682@ld0162-tx32.am.freescale.net>
+	by ozlabs.org (Postfix) with ESMTP id 4AD2FDDE05
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 00:11:34 +1000 (EST)
+In-Reply-To: <200707181247.26262.bzolnier@gmail.com>
+References: <Pine.LNX.4.64.0707172353050.29097@blarg.am.freescale.net>
+	<200707181247.26262.bzolnier@gmail.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A86AB8AE-E421-457B-ABE8-9AD93CCFCDC8@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC][PATCH 6/8] Walnut DTS
-Date: Wed, 18 Jul 2007 15:53:54 +0200
-To: Scott Wood <scottwood@freescale.com>
-Cc: Yoder Stuart-B08248 <stuart.yoder@freescale.com>, linuxppc-dev@ozlabs.org
+Message-Id: <162F0B67-44AB-4955-873A-150224C128CB@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: compile error if CONFIG_BLOCK not enabled related to linux/ide.h
+	include
+Date: Wed, 18 Jul 2007 09:12:02 -0500
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,30 +26,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> See above. Besides, as I said, default values are crap. And no,  
->> it's not
->> obvious which nodes define a physical address space or not, at  
->> least not
->> for a generic parser.
+
+On Jul 18, 2007, at 5:47 AM, Bartlomiej Zolnierkiewicz wrote:
+
 >
-> The obvious way (which indeed isn't what the suggested algorithm  
-> does --
-> but the suggested algorithm doesn't do anything sensible) is that  
-> if you
-> got to the node via an interrupt-parent or interrupt-map, it  
-> doesn't use
-> #address-cells, and if you got to it by going to the regular device  
-> tree
-> parent, it does.
+> Hi,
 >
-> Pretty much any time you use the unit address in a context other  
-> than the
-> bus parent, things cease making sense.
+> On Wednesday 18 July 2007, Kumar Gala wrote:
+>> M:      bzolnier@gmail.com
+>> L:      linux-ide@vger.kernel.org
+>>
+>> We get the following compile error if CONFIG_BLOCK isn't enabled:
+>>
+>>   CC      arch/powerpc/kernel/setup_32.o
+>> In file included from arch/powerpc/kernel/setup_32.c:14:
+>> include/linux/ide.h:558: error: expected specifier-qualifier-list  
+>> before 'request_queue_t'
+>> include/linux/ide.h:696: warning: 'struct request' declared inside  
+>> parameter list
+>> include/linux/ide.h:696: warning: its scope is only this  
+>> definition or declaration, which is probably not what you want
+>> include/linux/ide.h:820: warning: 'struct request' declared inside  
+>> parameter list
+>> include/linux/ide.h:853: error: field 'wrq' has incomplete type
+>> include/linux/ide.h:1205: error: expected ')' before '*' token
+>> make[1]: *** [arch/powerpc/kernel/setup_32.o] Error 1
+>> make: *** [arch/powerpc/kernel] Error 2
+>
+> include/linux/ide.h is exclusively for IDE subsystem
+>
+>> What I'm trying to figure out is if include/linux/ide.h should be  
+>> wrapped
+>> in a #if defined(CONFIG_IDE) || defined(CONFIG_IDE_MODULE) or if  
+>> there is
+>> some other desired way to handle this.
+>
+> Plese remove <linux/ide.h> include, there doesn't seem to be any  
+> piece of
+> code in arch/powerpc/kernel/setup_32.c which needs it anyway.
 
-Yes indeed.  The problem with your suggested "obvious way"
-is that you wouldn't get a unit address included if your
-interrupt-map points (for some entry) at your device tree
-parent, either.  Not all that hypothetical.
+Its needed for:
 
+struct ide_machdep_calls ppc_ide_md;
 
-Segher
+which gets defined in asm/ide.h which needs linux/ide.h for the defn  
+of ide_init_hwif.
+
+- k
