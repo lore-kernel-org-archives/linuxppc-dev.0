@@ -1,24 +1,21 @@
-Return-Path: <bzolnier@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
-	by ozlabs.org (Postfix) with ESMTP id BA19CDDDD8
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 07:07:12 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k40so348835ugc
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2007 14:07:10 -0700 (PDT)
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: compile error if CONFIG_BLOCK not enabled related to linux/ide.h
-	include
-Date: Wed, 18 Jul 2007 22:44:40 +0200
-References: <Pine.LNX.4.64.0707172353050.29097@blarg.am.freescale.net>
-	<200707181247.26262.bzolnier@gmail.com>
-	<162F0B67-44AB-4955-873A-150224C128CB@kernel.crashing.org>
-In-Reply-To: <162F0B67-44AB-4955-873A-150224C128CB@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200707182244.40282.bzolnier@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 25352DDE16
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 07:55:14 +1000 (EST)
+Subject: Re: [PATCH] Add StorCenter DTS first draft.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <5F6EB5F7-C5AE-437F-9DF1-22FE38D7A841@kernel.crashing.org>
+References: <E1IAnwC-0003Xm-6U@jdl.com>
+	<1184722754.25235.183.camel@localhost.localdomain>
+	<5F6EB5F7-C5AE-437F-9DF1-22FE38D7A841@kernel.crashing.org>
+Content-Type: text/plain
+Date: Thu, 19 Jul 2007 07:54:38 +1000
+Message-Id: <1184795678.25235.269.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,58 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 18 July 2007, Kumar Gala wrote:
-> 
-> On Jul 18, 2007, at 5:47 AM, Bartlomiej Zolnierkiewicz wrote:
-> 
+On Wed, 2007-07-18 at 18:13 +0200, Segher Boessenkool wrote:
+> >> +		PowerPC,603e {			/* Really 8241 */
+> >> +			device_type = "cpu";
+> >> +			reg = <0>;
+> >> +			clock-frequency = <d# 200000000>;	/* Hz */
+> >> +			timebase-frequency = <d# 33333333>;	/* Hz */
+> >> +			bus-frequency = <0>;
+> >> +			/* Following required by dtc but not used */
+> >> +			i-cache-line-size = <0>;
+> >> +			d-cache-line-size = <0>;
+> >> +			i-cache-size = <4000>;
+> >> +			d-cache-size = <4000>;
+> >> +		};
 > >
-> > Hi,
-> >
-> > On Wednesday 18 July 2007, Kumar Gala wrote:
-> >> M:      bzolnier@gmail.com
-> >> L:      linux-ide@vger.kernel.org
-> >>
-> >> We get the following compile error if CONFIG_BLOCK isn't enabled:
-> >>
-> >>   CC      arch/powerpc/kernel/setup_32.o
-> >> In file included from arch/powerpc/kernel/setup_32.c:14:
-> >> include/linux/ide.h:558: error: expected specifier-qualifier-list  
-> >> before 'request_queue_t'
-> >> include/linux/ide.h:696: warning: 'struct request' declared inside  
-> >> parameter list
-> >> include/linux/ide.h:696: warning: its scope is only this  
-> >> definition or declaration, which is probably not what you want
-> >> include/linux/ide.h:820: warning: 'struct request' declared inside  
-> >> parameter list
-> >> include/linux/ide.h:853: error: field 'wrq' has incomplete type
-> >> include/linux/ide.h:1205: error: expected ')' before '*' token
-> >> make[1]: *** [arch/powerpc/kernel/setup_32.o] Error 1
-> >> make: *** [arch/powerpc/kernel] Error 2
-> >
-> > include/linux/ide.h is exclusively for IDE subsystem
-> >
-> >> What I'm trying to figure out is if include/linux/ide.h should be  
-> >> wrapped
-> >> in a #if defined(CONFIG_IDE) || defined(CONFIG_IDE_MODULE) or if  
-> >> there is
-> >> some other desired way to handle this.
-> >
-> > Plese remove <linux/ide.h> include, there doesn't seem to be any  
-> > piece of
-> > code in arch/powerpc/kernel/setup_32.c which needs it anyway.
+> > The 32 bits kernel may not be using those yet, but it will. 64 bits  
+> > does
+> > already and I plan to merge those bits at one point.
 > 
-> Its needed for:
-> 
-> struct ide_machdep_calls ppc_ide_md;
-> 
-> which gets defined in asm/ide.h which needs linux/ide.h for the defn  
-> of ide_init_hwif.
+> Hrm, what does it use it for?  Are you going to require
+> all other defined CPU properties as well (like the PowerPC
+> binding does)?
 
-Ah, this is a PPC special case.
+Cache line size is used by the kernel on ppc64 for things like clearing
+memory (to get the stride between subsequent dcbz) or flushing the
+cache :-) It's also passed on to userland.
 
-In this case I think the best solution for now is to just add #ifdefs
-(the proper/clean solution would be adding IDE host drivers for PPC
-platforms needing special handling).
+If it's absent from the device-tree, we default to the values in the
+cputable, but if you're going to put the properties in the tree, don't
+put a 0 in there. As it is, the day I make the 64 bits code common, your
+DT will break unless I special case "0".
 
-Thanks,
-Bart
+Ben.
