@@ -2,22 +2,21 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A1B2CDDE3F
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 05:07:13 +1000 (EST)
-In-Reply-To: <46464F84-5040-4F37-B854-94378C9802AD@kernel.crashing.org>
-References: <E1IAnwC-0003Xm-6U@jdl.com>
-	<630B6BC9-389F-4F5C-AE8F-9C3131C4543E@kernel.crashing.org>
-	<E1IAvVm-0005yQ-LO@jdl.com>
-	<46464F84-5040-4F37-B854-94378C9802AD@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 7A180DDE3F
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 05:07:15 +1000 (EST)
+In-Reply-To: <469E3E3F.8050302@freescale.com>
+References: <20070718013302.GE15238@ld0162-tx32.am.freescale.net>
+	<3F44085F-8A67-4134-95A3-39897F2A84FD@kernel.crashing.org>
+	<469E3E3F.8050302@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <2A35E795-6F01-4A14-BE23-B46F110DBD60@kernel.crashing.org>
+Message-Id: <71A8ECC1-931F-42AE-98B1-A4B90E4B5980@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Add StorCenter DTS first draft. 
-Date: Wed, 18 Jul 2007 13:27:52 -0500
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	Jon Loeliger <jdl@jdl.com>
+Subject: Re: [PATCH 06/61] 8xx: Don't call non-existent Soft_emulate_8xx from
+	SoftwareEmulation.
+Date: Wed, 18 Jul 2007 13:24:58 -0500
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,64 +27,38 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jul 18, 2007, at 11:19 AM, Segher Boessenkool wrote:
+On Jul 18, 2007, at 11:22 AM, Scott Wood wrote:
 
->>>> +	compatible = "storcenter";
+> Kumar Gala wrote:
+>> On Jul 17, 2007, at 8:33 PM, Scott Wood wrote:
+>>> On arch/ppc, Soft_emulate_8xx was used when full math emulation was
+>>> turned off to emulate a minimal subset of floating point load/store
+>>> instructions, to avoid needing a soft-float toolchain.  This  
+>>> function
+>>> is called, but not present, on arch/powerpc, causing a build error
+>>> if floating point emulation is turned off.
 >>>
->>> Needs a manufacturer name in there.
->>
->> Right.  Will use:
->> 	compatible = "iomega,storcenter"
+>>> As soft-float toolchains are now common, I'm deleting the call  
+>>> rather
+>>> than moving Soft_emulate_8xx over to arch/powerpc.
+>> We should move the Soft_emulate_8xx code over.  I see no reason  
+>> to  break a usage model that existed in arch/ppc.
 >
-> Okido.
+> According to the comment in softemu8xx.c, the only reason for it  
+> was that "it was easier than trying to get the libraries compiled  
+> for software floating point."  Given that soft-float toolchains are  
+> easily had now, and that full emulation could be used if one really  
+> needs to work with hard-float binaries, I don't really see the need  
+> for this...
 >
->>>> +		PowerPC,603e {			/* Really 8241 */
->>>
->>> So say "PowerPC,8241@0", or "PowerPC,e300@0" (or whatever
->>> the CPU core in there is), or simply "cpu@0", following
->>> the generic naming recommended practice.
->>
->> Well, its the 8241 SoC with a 603e core...  (This is
->> the same phrase currently being used on the Kurobox.)
->> I'll use:
->>
->> 	PowerPC,8241@0 }
->
-> That might be best yes.
->
->>>> +	soc10x {
->>>
->>> Bad name.  Where is the binding for this?  I don't think
->>> I saw it before.
->>
->> It's what is being used, again, by the Kurobox.  I understand
->> that doesn't make it "right", just precedented by now.
->
-> Sure, just trying to trick you into documenting it ;-)
->
->> How about "soc8241@80000000" instead?
->
-> soc@ like suggested by Scott seems just fine.
->
->>>> +			compatible = "fsl-i2c";
->>>
->>> Needs to be more specific.
->>
->> Hmmm...  Not sure what to use here then.  There are many
->> existing examples using "fsl-i2c" already.  Granted, we've
->> established that they could be wrong...  Should this be
->> more like this?:
->>
->>     compatible = "fsl,mpc8241-i2c", "fsl-i2c";
->
-> That looks good yes.  Or if the kernel side code for
-> recognising fsl,mpc8241-i2c gets merged in time, you
-> can leave out fsl-i2c from your device tree completely.
+> If you want to move it over and test it, though, be my guest. :-)
 
-Hmm, there are really only two fsl,i2c controllers.  The one we call  
-fsl-i2c, and the cpm-i2c controller.
+I don't see any reason to break people that might not have updated  
+their toolchains.  There is no reason for us to drop a feature like  
+this w/o some additional warning.
 
-So I'd prefer we don't use fsl,mpc8241-i2c.  I'd suggest fsl,ppc-i2c  
-or something like that.
+I think its fine to just move the code over from arch/powerpc and  
+than in the future we can deal with removing it in a more "proper"  
+manor.
 
 - k
