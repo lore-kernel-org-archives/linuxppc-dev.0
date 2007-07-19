@@ -1,18 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound9-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 32E15DDFC6
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 07:45:43 +1000 (EST)
-In-Reply-To: <fa686aa40707191249r1e73f6f7s7f2aa4502919e98a@mail.gmail.com>
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 6682ADDF88
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 07:47:16 +1000 (EST)
+Message-ID: <469FDBDC.5030700@am.sony.com>
+Date: Thu, 19 Jul 2007 14:47:08 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+Subject: PS3: Fix build with 32-bit toolchains
 References: <fa686aa40707191249r1e73f6f7s7f2aa4502919e98a@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <29147F04-4307-4720-B3C3-2AF6721967F1@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: BUG: compile failure on ps3-head.S
-Date: Thu, 19 Jul 2007 23:45:24 +0200
-To: "Grant Likely" <grant.likely@secretlab.ca>
+In-Reply-To: <fa686aa40707191249r1e73f6f7s7f2aa4502919e98a@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,15 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> commit id bafdb645779c63300763acb383f7b9dd2d427228 (on Linus' tree)
-> causes breakage on my mpc8349 build (see below).  I've worked around
-> it by removing ps3* from arch/powerpc/boot/Makefile, but I have not
-> dug into what the 'proper' solution should be.
+The PS3 bootwrapper files use instructions only available on
+64-bit CPUs.  Add the code generation directive '.machine "ppc64"'
+for toolchains configured for 32-bit CPUs.
 
-> arch/powerpc/boot/ps3-head.S:40: Error: Unrecognized opcode: `clrldi'
-> arch/powerpc/boot/ps3-head.S:41: Error: Unrecognized opcode: `mtmsrd'
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+---
+Paul,
 
-Those source files just need a .machine pseudo-op somewhere.
+Please apply for 2.6.23-rc1.
 
+ arch/powerpc/boot/ps3-head.S   |    2 ++
+ arch/powerpc/boot/ps3-hvcall.S |    2 ++
+ 2 files changed, 4 insertions(+)
 
-Segher
+--- a/arch/powerpc/boot/ps3-head.S
++++ b/arch/powerpc/boot/ps3-head.S
+@@ -20,6 +20,8 @@
+ 
+ #include "ppc_asm.h"
+ 
++	.machine "ppc64"
++
+ 	.text
+ 
+ /*
+--- a/arch/powerpc/boot/ps3-hvcall.S
++++ b/arch/powerpc/boot/ps3-hvcall.S
+@@ -20,6 +20,8 @@
+ 
+ #include "ppc_asm.h"
+ 
++	.machine "ppc64"
++
+ /*
+  * The PS3 hypervisor uses a 64 bit "C" language calling convention.
+  * The routines here marshal arguments between the 32 bit wrapper
