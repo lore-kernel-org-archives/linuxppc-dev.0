@@ -1,23 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 30E1EDDF48
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 07:04:10 +1000 (EST)
-In-Reply-To: <20070719131348.170443bb.akpm@linux-foundation.org>
-References: <20070714012033.GC31649@Krystal>
-	<20070718223034.7388e59f.akpm@linux-foundation.org>
-	<D9805F9D-04B0-4422-81F1-958B15482A93@kernel.crashing.org>
-	<20070719131348.170443bb.akpm@linux-foundation.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E7820A72-36A3-4B4D-A497-974409D3EBDE@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Powerpc - Include pagemap.h in asm/powerpc/tlb.h
-Date: Thu, 19 Jul 2007 16:04:38 -0500
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6A180DDF4D
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 07:10:23 +1000 (EST)
+Date: Thu, 19 Jul 2007 16:10:13 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 5/5] move 83xx into multiplatform
+Message-Id: <20070719161013.9f982d8f.kim.phillips@freescale.com>
+In-Reply-To: <20070713184824.312271421@arndb.de>
+References: <20070713184452.466490031@arndb.de>
+	<20070713184824.312271421@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,26 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Andrew,
->>
->> Are you sending this to linus directly or should this go via paul and
->> me?
->>
->
-> I queued it up for Paul.  I can send it over to Linus today if we  
-> have a
-> reason for that.  It's just that I dont understand the patch: does  
-> it fix
-> -mm-only breakage?  Does it fix something which already got fixed,  
-> or what?
+On Fri, 13 Jul 2007 20:44:57 +0200
+Arnd Bergmann <arnd@arndb.de> wrote:
 
-I'm seeing the same breakage in my tree.
+> MPC83xx based machines don't need their own kernel,
+> but can run one that is shared with the other 6xx
+> compatible machines, so we should allow that
+> in Kconfig.
+> 
+> Cc: Kumar Gala <galak@kernel.crashing.org>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-> One might think "gee, it's trivial, just slam it in", but these nested
-> includes are often not-trivial and something else can explode as a  
-> result.
+tested, works.  Kumar, can we get this in?
 
-I'll do a git-bisect and see if I can find the patch that causes this  
-breakage so we know what's going on.
-
-- k
+Kim
