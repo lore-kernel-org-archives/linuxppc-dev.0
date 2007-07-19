@@ -1,14 +1,13 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 19 Jul 2007 12:39:17 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 3/15] boot: simplfy gunzip_finish
-Message-ID: <20070719023917.GF20458@localhost.localdomain>
-References: <boot-6-00.miltonm@bga.com> <boot-6-03.miltonm@bga.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <boot-6-03.miltonm@bga.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] fix future firmware feature fixups function failure 
+In-reply-to: <200707190054.17754.arnd@arndb.de> 
+References: <9094.1181275235@neuling.org> <200707111329.51580.arnd@arndb.de>
+	<24414.1184795792@neuling.org> <200707190054.17754.arnd@arndb.de>
+Date: Wed, 18 Jul 2007 21:55:03 -0500
+Message-ID: <13036.1184813703@neuling.org>
+Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,26 +17,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 10, 2007 at 05:08:32PM -0500, Milton Miller wrote:
+> On Wednesday 18 July 2007, Michael Neuling wrote:
+> > Move firmware feature initialisation from pSeries_init_early to the
+> > earlier pSeries_probe_hypertas so they are initialised before firmware
+> > feature fixups are applied.
+> >=20
+> > Currently firmware feature sections are only used for iSeries which
+> > initialises the these features much earlier. =A0This is a bug in waiting
+> > on pSeries.
+> >=20
+> > Also adds some whitespace fixups.
+> >=20
+> > Signed-off-by: Michael Neuling <mikey@neuling.org>
 > 
-> Call gunzip_partial to calculate the remaining length and copy the
-> data to the user buffer.   This makes it shorter and reduces
-> duplication.
+> Acked-by: Arnd Bergmann <arnd@arndb.de>
 > 
-> Signed-off-by: Milton Miller <miltonm@bga.com>
+> Haven't tested it myself, but it certainly looks good to me. It does
+> require reverting your previous patch though, are you submitting the
+> reversal patch as well?
 
-Hrm... I guess this is sufficient.  Since we'll shortly be blowing
-away the state anyway, the lack of call to inflateEnd doesn't really
-matter.  Originally I was going to make this function call fatal() if
-the destination didn't have enough space to contain the decompressed
-tail of the image, but obviously I decided aginst that.
+Yep, this got reverted yesterday in 
+826ea8f22cf612d534f33c492c98f7895043bfd1 
 
-But, if you're going to do this, you might as well get rid of
-gunzip_finish() entirely, and have the callers using gunzip_partial
-instead.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Mikey
