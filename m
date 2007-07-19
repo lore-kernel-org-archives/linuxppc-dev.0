@@ -1,18 +1,18 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 947DEDDE1F
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 10:00:08 +1000 (EST)
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id D41C2DDE37
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 10:04:59 +1000 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 51/61] cpm_uart: Be an of_platform device when using
-	arch/powerpc.
-Date: Thu, 19 Jul 2007 01:59:52 +0200
-References: <20070718013606.GW15238@ld0162-tx32.am.freescale.net>
-In-Reply-To: <20070718013606.GW15238@ld0162-tx32.am.freescale.net>
+Subject: Re: [PATCH 37/61] cpm2: Rework 8272ads initialization,
+	and eliminate init_fcc_ioports().
+Date: Thu, 19 Jul 2007 02:04:44 +0200
+References: <20070718013548.GI15238@ld0162-tx32.am.freescale.net>
+In-Reply-To: <20070718013548.GI15238@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200707190159.52695.arnd@arndb.de>
+Message-Id: <200707190204.44825.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,22 +23,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Wednesday 18 July 2007, Scott Wood wrote:
+> +static struct cpm_pin mpc8272ads_pins[] =3D {
+> +=A0=A0=A0=A0=A0=A0=A0/* SCC1 */
+> +=A0=A0=A0=A0=A0=A0=A0{3, 30, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
+> +=A0=A0=A0=A0=A0=A0=A0{3, 31, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
 > +
-> +static struct of_device_id cpm_uart_match[] =3D {
-> +=A0=A0=A0=A0=A0=A0=A0{
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0.compatible =3D "fsl,cpm-ua=
-rt",
-> +=A0=A0=A0=A0=A0=A0=A0},
-> +=A0=A0=A0=A0=A0=A0=A0{}
-> =A0};
+> +=A0=A0=A0=A0=A0=A0=A0/* SCC4 */
+> +=A0=A0=A0=A0=A0=A0=A0{3, 21, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
+> +=A0=A0=A0=A0=A0=A0=A0{3, 22, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
 > +
+> +=A0=A0=A0=A0=A0=A0=A0/* FCC1 */
+> +=A0=A0=A0=A0=A0=A0=A0{0, 14, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
+> +=A0=A0=A0=A0=A0=A0=A0{0, 15, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
+> +=A0=A0=A0=A0=A0=A0=A0{0, 16, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
+> +=A0=A0=A0=A0=A0=A0=A0{0, 17, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
 
-I guess it's fine as it is, but it might be nicer if you change
-this to have separate entries for scc and smc, and then pass
-different values though of_device_id->data into the probe()
-function.
+I guess you considered moving such tables into the device tree at some poin=
+t,
+which doesn't seem that difficult at all to an ignorant reviewer like me.
 
-Not sure if it makes much difference at all, but that's what
-I did in the of_serial driver.
+What's the reasoning for putting it into the platform code after all?
 
 	Arnd <><
