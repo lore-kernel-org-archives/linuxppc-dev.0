@@ -1,13 +1,18 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] fix future firmware feature fixups function failure 
-In-reply-to: <200707190054.17754.arnd@arndb.de> 
-References: <9094.1181275235@neuling.org> <200707111329.51580.arnd@arndb.de>
-	<24414.1184795792@neuling.org> <200707190054.17754.arnd@arndb.de>
-Date: Wed, 18 Jul 2007 21:55:03 -0500
-Message-ID: <13036.1184813703@neuling.org>
-Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 2C835DDE41
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 14:01:47 +1000 (EST)
+In-Reply-To: <20070719023917.GF20458@localhost.localdomain>
+References: <boot-6-00.miltonm@bga.com> <boot-6-03.miltonm@bga.com>
+	<20070719023917.GF20458@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <323b556138e9e745eb4fc6327faf7774@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH 3/15] boot: simplfy gunzip_finish
+Date: Wed, 18 Jul 2007 23:01:37 -0500
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,26 +22,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> On Wednesday 18 July 2007, Michael Neuling wrote:
-> > Move firmware feature initialisation from pSeries_init_early to the
-> > earlier pSeries_probe_hypertas so they are initialised before firmware
-> > feature fixups are applied.
-> >=20
-> > Currently firmware feature sections are only used for iSeries which
-> > initialises the these features much earlier. =A0This is a bug in waiting
-> > on pSeries.
-> >=20
-> > Also adds some whitespace fixups.
-> >=20
-> > Signed-off-by: Michael Neuling <mikey@neuling.org>
-> 
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
-> 
-> Haven't tested it myself, but it certainly looks good to me. It does
-> require reverting your previous patch though, are you submitting the
-> reversal patch as well?
 
-Yep, this got reverted yesterday in 
-826ea8f22cf612d534f33c492c98f7895043bfd1 
+On Jul 18, 2007, at 9:39 PM, David Gibson wrote:
 
-Mikey
+> On Tue, Jul 10, 2007 at 05:08:32PM -0500, Milton Miller wrote:
+>>
+>> Call gunzip_partial to calculate the remaining length and copy the
+>> data to the user buffer.   This makes it shorter and reduces
+>> duplication.
+>>
+>> Signed-off-by: Milton Miller <miltonm@bga.com>
+>
+> Hrm... I guess this is sufficient.  Since we'll shortly be blowing
+> away the state anyway, the lack of call to inflateEnd doesn't really
+> matter.  Originally I was going to make this function call fatal() if
+> the destination didn't have enough space to contain the decompressed
+> tail of the image, but obviously I decided aginst that.
+>
+> But, if you're going to do this, you might as well get rid of
+> gunzip_finish() entirely, and have the callers using gunzip_partial
+> instead.
+
+Huh?   I stilll call inflateEnd if s.workspace is not NULL, I just 
+don't duplicate gunzip_partial in gunzip_finish.  Calling inflateEnd 
+will mean a future call would return an error in the compressed case 
+instead of the behavior in the non-compressed case that changes with 
+this patch from get same data again to get further data that may exist 
+after the patch.
+
+Yes, one can argue that we don't need to call inflateEnd, but I didn't 
+make that change in this patch.
+
+Or were you suggesting that we really don't need the finish function?
+
+milton
