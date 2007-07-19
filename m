@@ -1,17 +1,21 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 657E0DDFAC
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 07:51:03 +1000 (EST)
-Date: Thu, 19 Jul 2007 23:50:49 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: mgreer@mvista.com
-Subject: [PATCH] mv64x60 use mutex instead of semaphore
-Message-ID: <20070719215049.GA4896@lst.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 1C6FCDDFA5
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 08:04:46 +1000 (EST)
+In-Reply-To: <469FDBDC.5030700@am.sony.com>
+References: <fa686aa40707191249r1e73f6f7s7f2aa4502919e98a@mail.gmail.com>
+	<469FDBDC.5030700@am.sony.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A127B558-BA1C-4F18-890B-7052F2DF7488@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: PS3: Fix build with 32-bit toolchains
+Date: Thu, 19 Jul 2007 17:05:14 -0500
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,73 +26,15 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+On Jul 19, 2007, at 4:47 PM, Geoff Levand wrote:
 
-Index: linux-2.6/arch/ppc/syslib/mv64x60.c
-===================================================================
---- linux-2.6.orig/arch/ppc/syslib/mv64x60.c	2007-07-19 22:47:07.000000000 +0200
-+++ linux-2.6/arch/ppc/syslib/mv64x60.c	2007-07-19 22:48:29.000000000 +0200
-@@ -14,6 +14,7 @@
- #include <linux/pci.h>
- #include <linux/slab.h>
- #include <linux/module.h>
-+#include <linux/mutex.h>
- #include <linux/string.h>
- #include <linux/spinlock.h>
- #include <linux/mv643xx.h>
-@@ -2359,7 +2360,7 @@ mv64460_chip_specific_init(struct mv64x6
- /* Export the hotswap register via sysfs for enum event monitoring */
- #define	VAL_LEN_MAX	11 /* 32-bit hex or dec stringified number + '\n' */
- 
--DECLARE_MUTEX(mv64xxx_hs_lock);
-+static DEFINE_MUTEX(mv64xxx_hs_lock);
- 
- static ssize_t
- mv64xxx_hs_reg_read(struct kobject *kobj, char *buf, loff_t off, size_t count)
-@@ -2372,14 +2373,14 @@ mv64xxx_hs_reg_read(struct kobject *kobj
- 	if (count < VAL_LEN_MAX)
- 		return -EINVAL;
- 
--	if (down_interruptible(&mv64xxx_hs_lock))
-+	if (mutex_lock_interruptible(&mv64xxx_hs_lock))
- 		return -ERESTARTSYS;
- 	save_exclude = mv64x60_pci_exclude_bridge;
- 	mv64x60_pci_exclude_bridge = 0;
- 	early_read_config_dword(&sysfs_hose_a, 0, PCI_DEVFN(0, 0),
- 			MV64360_PCICFG_CPCI_HOTSWAP, &v);
- 	mv64x60_pci_exclude_bridge = save_exclude;
--	up(&mv64xxx_hs_lock);
-+	mutex_unlock(&mv64xxx_hs_lock);
- 
- 	return sprintf(buf, "0x%08x\n", v);
- }
-@@ -2396,14 +2397,14 @@ mv64xxx_hs_reg_write(struct kobject *kob
- 		return -EINVAL;
- 
- 	if (sscanf(buf, "%i", &v) == 1) {
--		if (down_interruptible(&mv64xxx_hs_lock))
-+		if (mutex_lock_interruptible(&mv64xxx_hs_lock))
- 			return -ERESTARTSYS;
- 		save_exclude = mv64x60_pci_exclude_bridge;
- 		mv64x60_pci_exclude_bridge = 0;
- 		early_write_config_dword(&sysfs_hose_a, 0, PCI_DEVFN(0, 0),
- 				MV64360_PCICFG_CPCI_HOTSWAP, v);
- 		mv64x60_pci_exclude_bridge = save_exclude;
--		up(&mv64xxx_hs_lock);
-+		mutex_unlock(&mv64xxx_hs_lock);
- 	}
- 	else
- 		count = -EINVAL;
-@@ -2433,10 +2434,10 @@ mv64xxx_hs_reg_valid_show(struct device 
- 	pdev = container_of(dev, struct platform_device, dev);
- 	pdp = (struct mv64xxx_pdata *)pdev->dev.platform_data;
- 
--	if (down_interruptible(&mv64xxx_hs_lock))
-+	if (mutex_lock_interruptible(&mv64xxx_hs_lock))
- 		return -ERESTARTSYS;
- 	v = pdp->hs_reg_valid;
--	up(&mv64xxx_hs_lock);
-+	mutex_unlock(&mv64xxx_hs_lock);
- 
- 	return sprintf(buf, "%i\n", v);
- }
+> The PS3 bootwrapper files use instructions only available on
+> 64-bit CPUs.  Add the code generation directive '.machine "ppc64"'
+> for toolchains configured for 32-bit CPUs.
+>
+> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+
+while this is a fix, why are we even building it Grant's case of  
+building 834x itx.
+
+- k
