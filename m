@@ -1,20 +1,17 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound9-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 6682ADDF88
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 07:47:16 +1000 (EST)
-Message-ID: <469FDBDC.5030700@am.sony.com>
-Date: Thu, 19 Jul 2007 14:47:08 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: PS3: Fix build with 32-bit toolchains
-References: <fa686aa40707191249r1e73f6f7s7f2aa4502919e98a@mail.gmail.com>
-In-Reply-To: <fa686aa40707191249r1e73f6f7s7f2aa4502919e98a@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 657E0DDFAC
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 07:51:03 +1000 (EST)
+Date: Thu, 19 Jul 2007 23:50:49 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: mgreer@mvista.com
+Subject: [PATCH] mv64x60 use mutex instead of semaphore
+Message-ID: <20070719215049.GA4896@lst.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,39 +21,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The PS3 bootwrapper files use instructions only available on
-64-bit CPUs.  Add the code generation directive '.machine "ppc64"'
-for toolchains configured for 32-bit CPUs.
 
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
----
-Paul,
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-Please apply for 2.6.23-rc1.
-
- arch/powerpc/boot/ps3-head.S   |    2 ++
- arch/powerpc/boot/ps3-hvcall.S |    2 ++
- 2 files changed, 4 insertions(+)
-
---- a/arch/powerpc/boot/ps3-head.S
-+++ b/arch/powerpc/boot/ps3-head.S
-@@ -20,6 +20,8 @@
+Index: linux-2.6/arch/ppc/syslib/mv64x60.c
+===================================================================
+--- linux-2.6.orig/arch/ppc/syslib/mv64x60.c	2007-07-19 22:47:07.000000000 +0200
++++ linux-2.6/arch/ppc/syslib/mv64x60.c	2007-07-19 22:48:29.000000000 +0200
+@@ -14,6 +14,7 @@
+ #include <linux/pci.h>
+ #include <linux/slab.h>
+ #include <linux/module.h>
++#include <linux/mutex.h>
+ #include <linux/string.h>
+ #include <linux/spinlock.h>
+ #include <linux/mv643xx.h>
+@@ -2359,7 +2360,7 @@ mv64460_chip_specific_init(struct mv64x6
+ /* Export the hotswap register via sysfs for enum event monitoring */
+ #define	VAL_LEN_MAX	11 /* 32-bit hex or dec stringified number + '\n' */
  
- #include "ppc_asm.h"
+-DECLARE_MUTEX(mv64xxx_hs_lock);
++static DEFINE_MUTEX(mv64xxx_hs_lock);
  
-+	.machine "ppc64"
-+
- 	.text
+ static ssize_t
+ mv64xxx_hs_reg_read(struct kobject *kobj, char *buf, loff_t off, size_t count)
+@@ -2372,14 +2373,14 @@ mv64xxx_hs_reg_read(struct kobject *kobj
+ 	if (count < VAL_LEN_MAX)
+ 		return -EINVAL;
  
- /*
---- a/arch/powerpc/boot/ps3-hvcall.S
-+++ b/arch/powerpc/boot/ps3-hvcall.S
-@@ -20,6 +20,8 @@
+-	if (down_interruptible(&mv64xxx_hs_lock))
++	if (mutex_lock_interruptible(&mv64xxx_hs_lock))
+ 		return -ERESTARTSYS;
+ 	save_exclude = mv64x60_pci_exclude_bridge;
+ 	mv64x60_pci_exclude_bridge = 0;
+ 	early_read_config_dword(&sysfs_hose_a, 0, PCI_DEVFN(0, 0),
+ 			MV64360_PCICFG_CPCI_HOTSWAP, &v);
+ 	mv64x60_pci_exclude_bridge = save_exclude;
+-	up(&mv64xxx_hs_lock);
++	mutex_unlock(&mv64xxx_hs_lock);
  
- #include "ppc_asm.h"
+ 	return sprintf(buf, "0x%08x\n", v);
+ }
+@@ -2396,14 +2397,14 @@ mv64xxx_hs_reg_write(struct kobject *kob
+ 		return -EINVAL;
  
-+	.machine "ppc64"
-+
- /*
-  * The PS3 hypervisor uses a 64 bit "C" language calling convention.
-  * The routines here marshal arguments between the 32 bit wrapper
+ 	if (sscanf(buf, "%i", &v) == 1) {
+-		if (down_interruptible(&mv64xxx_hs_lock))
++		if (mutex_lock_interruptible(&mv64xxx_hs_lock))
+ 			return -ERESTARTSYS;
+ 		save_exclude = mv64x60_pci_exclude_bridge;
+ 		mv64x60_pci_exclude_bridge = 0;
+ 		early_write_config_dword(&sysfs_hose_a, 0, PCI_DEVFN(0, 0),
+ 				MV64360_PCICFG_CPCI_HOTSWAP, v);
+ 		mv64x60_pci_exclude_bridge = save_exclude;
+-		up(&mv64xxx_hs_lock);
++		mutex_unlock(&mv64xxx_hs_lock);
+ 	}
+ 	else
+ 		count = -EINVAL;
+@@ -2433,10 +2434,10 @@ mv64xxx_hs_reg_valid_show(struct device 
+ 	pdev = container_of(dev, struct platform_device, dev);
+ 	pdp = (struct mv64xxx_pdata *)pdev->dev.platform_data;
+ 
+-	if (down_interruptible(&mv64xxx_hs_lock))
++	if (mutex_lock_interruptible(&mv64xxx_hs_lock))
+ 		return -ERESTARTSYS;
+ 	v = pdp->hs_reg_valid;
+-	up(&mv64xxx_hs_lock);
++	mutex_unlock(&mv64xxx_hs_lock);
+ 
+ 	return sprintf(buf, "%i\n", v);
+ }
