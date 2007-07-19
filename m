@@ -1,19 +1,19 @@
 Return-Path: <miltonm@bga.com>
 Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 48E0ADDEA3
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 15:45:30 +1000 (EST)
-In-Reply-To: <469E6241.5090604@freescale.com>
-References: <9b26986bc99c74c5e17e08191eb07d67@bga.com>
-	<469E6241.5090604@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id BDE3ADDEC0
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 15:50:46 +1000 (EST)
+In-Reply-To: <je1wf5bshh.fsf@sykes.suse.de>
+References: <20070718.182640.-1300542340.kouish@swc.toshiba.co.jp>
+	<7bd7b12c7bd2303039a850a1fee9634c@bga.com>
+	<je1wf5bshh.fsf@sykes.suse.de>
 Mime-Version: 1.0 (Apple Message framework v624)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <d385cb2ef0d915731d915efc3a8e6dff@bga.com>
+Message-Id: <664cbe49d76cfcba9d8a86e3a6946a2a@bga.com>
 From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 10/61] bootwrapper: flatdevtree fixes
-Date: Thu, 19 Jul 2007 00:45:18 -0500
-To: Scott Wood <scottwood@freescale.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 2/2] fix showing xmon help
+Date: Thu, 19 Jul 2007 00:50:22 -0500
+To: Andreas Schwab <schwab@suse.de>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,48 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Jul 18, 2007, at 1:56 PM, Scott Wood wrote:
-> Milton Miller wrote:
->> In-Reply-To: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
->> On Wed Jul 18 11:33:08 EST 2007, Scott Wood wrote:
->>> 1. ft_create_node was returning the internal pointer rather than a 
->>> phandle.
->>> 2. ft_find_device_rel was treating lookups relative to root as an 
->>> error.
->> No, it is treating lookups relative to NULL as an error.
->> Your patch changes it to treat lookups relative to the NULL phandle 
->> as relative to root.
+
+On Jul 18, 2007, at 11:12 AM, Andreas Schwab wrote:
+
+> Milton Miller <miltonm@bga.com> writes:
 >
-> Other parts of the code (such as ft_create_node) already do that. 
-> What's wrong with it?
-
-Well, that behavior may be ok, but the change log should say that is 
-the behavior you are changing.
-
-Ie I would record 2 as:
-
-When ft_find_device_rel is asked to find relative to NULL, find 
-realative to root instead of returning an error.
-
-or:
-
-ft_find_device_rel now treats lookups relative to NULL as relative to 
-the root instead of erroring out.
-
-
-My reading would say that lookups relative to the phandle of root would 
-have workied before, no?
-
+>>>                 case '?':
+>>> -                       printf(help_string);
+>>> +                       xmon_puts(help_string);
+>>>                         break;
+>>>
+>>
+>> nonstdio.h #defines printf to xmon_printf.  Please add a similar line
+>> for puts, and use the define here.  (It will avoid an unnecessary
+>> difference with the user space version).
 >
->> I've no objections to the other part, can you split these?
+> User space puts add a newline, which this xmon_puts doesn't.
 >
-> No, because change #1 won't work without change #2.
+> Andreas.
 
-Huh?
-
-I can see how changing a routine to return an external not internal 
-pointer is necessary before changing a caller creates a dependancy for 
-2 on 1, but why does it require lookups relative to the phandle NULL be 
-treated as lookups relative to the root?
+Good point.  This should be xmon_fputs #defined to fputs.
 
 milton
