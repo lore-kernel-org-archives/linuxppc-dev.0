@@ -1,22 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3ECD2DE165
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 01:33:04 +1000 (EST)
-Message-ID: <469F8427.1060708@freescale.com>
-Date: Thu, 19 Jul 2007 10:32:55 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 04/61] 8xx: Work around CPU15 erratum.
-References: <20070718013259.GC15238@ld0162-tx32.am.freescale.net>
-	<8503FAAA-42DF-4082-A755-773837490CA7@kernel.crashing.org>
-In-Reply-To: <8503FAAA-42DF-4082-A755-773837490CA7@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Date: Fri, 20 Jul 2007 01:44:32 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: Do we need to reset the master branch?
+Message-Id: <20070720014432.a46164a8.sfr@canb.auug.org.au>
+In-Reply-To: <20070719153217.GC20538@mag.az.mvista.com>
+References: <20070719151746.GB20538@mag.az.mvista.com>
+	<20070720012708.91c77527.sfr@canb.auug.org.au>
+	<20070719153217.GC20538@mag.az.mvista.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__20_Jul_2007_01_44_32_+1000_V5Qr=U+x7I=h8zRn"
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,20 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
->> The CPU15 erratum on MPC8xx chips can cause incorrect code execution
->> under certain circumstances, where there is a conditional or indirect
->> branch in the last word of a page, with a target in the last cache  line
->> of the next page.  This patch implements one of the suggested
->> workarounds, by forcing a TLB miss whenever execution crosses a page
->> boundary.  This is done by invalidating the pages before and after the
->> one being loaded into the TLB in the ITLB miss handler.
-> 
-> 
-> So you never found a bug workaround without the terrible
-> overhead of this one?  A shame :-(
+--Signature=_Fri__20_Jul_2007_01_44_32_+1000_V5Qr=U+x7I=h8zRn
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The only lower-overhead workaround I know of requires compiler 
-modifications (and I made it configurable to allow for that possibility).
+On Thu, 19 Jul 2007 08:32:17 -0700 "Mark A. Greer" <mgreer@mvista.com> wrot=
+e:
+>
+> I was in the master branch of powerpc.git and did a 'git-pull'
 
--Scott
+Sorry, I hadn't updated since this afternoon.  Looks like Paul has reset
+his master tree to be the same as Linus', so you do need to do a reset.
+Or checkout a separate branch and use
+
+git fetch -f <powerpc.git tree> master:<whatever branch tracks master>
+
+Using recent git (after 1.5.something), you can track the whole powerpc
+tree like this:
+
+git remote add powerpc git://git.kernel.org/pub/scm/linux/kernel/git/paulus=
+/powerpc.git
+git fetch powerpc
+
+This will track the tree in branches called powerpc/<branch> and do
+resets as necessary.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__20_Jul_2007_01_44_32_+1000_V5Qr=U+x7I=h8zRn
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGn4bkTgG2atn1QN8RAm8DAJ4+mZYbnWpuqNvOzrQQzHMiwl0qPACfbBFv
+mJoev8CkoqXCAd945Im8beM=
+=0aZ9
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__20_Jul_2007_01_44_32_+1000_V5Qr=U+x7I=h8zRn--
