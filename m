@@ -1,39 +1,30 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 613D2DDF22
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 04:28:31 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l6JHMghT012480
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 13:22:42 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l6JISRWa168824
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 12:28:27 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6JISRgU009060
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 12:28:27 -0600
-Message-ID: <469FAD4A.7090402@linux.vnet.ibm.com>
-Date: Thu, 19 Jul 2007 13:28:26 -0500
-From: Brian King <brking@linux.vnet.ibm.com>
+Return-Path: <michal.k.k.piotrowski@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.181])
+	by ozlabs.org (Postfix) with ESMTP id C380CDDF2B
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 04:35:50 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so768588wag
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 11:35:47 -0700 (PDT)
+Message-ID: <6bffcb0e0707191135s2d3d06aep71f42613a4385a09@mail.gmail.com>
+Date: Thu, 19 Jul 2007 20:35:47 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Satyam Sharma" <satyam.sharma@gmail.com>
+Subject: Re: [2/2] 2.6.22-git: known regressions
+In-Reply-To: <a781481a0707191007q241f5f5bh6c029da56090d8b3@mail.gmail.com>
 MIME-Version: 1.0
-To: Ragner Magalhaes <ragner.magalhaes@indt.org.br>
-Subject: Re: [PATCH 2/4] ibmveth: Implement ethtool hooks to enable/disable
-	checksum offload
-References: <1184860086366-patch-mail.ibm.com>
-	<200707191548.l6JFmEYM020387@d03av04.boulder.ibm.com>
-	<469F8C80.7070302@indt.org.br>
-	<469FA68F.9070607@linux.vnet.ibm.com>
-	<469FAA9F.9010207@indt.org.br>
-In-Reply-To: <469FAA9F.9010207@indt.org.br>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, rcjenn@linux.vnet.ibm.com,
-	santil@linux.vnet.ibm.com, netdev@vger.kernel.org
-Reply-To: brking@linux.vnet.ibm.com
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <469F9125.8040502@googlemail.com> <469F92AF.10405@googlemail.com>
+	<a781481a0707191007q241f5f5bh6c029da56090d8b3@mail.gmail.com>
+Cc: Andi Kleen <ak@suse.de>, Theodore Tso <tytso@mit.edu>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Jeff Garzik <jeff@garzik.org>, linuxppc-dev@ozlabs.org,
+	Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+	Doug Chapman <doug.chapman@hp.com>,
+	Vasily Tarasov <vtaras@openvz.org>, linux-ide@vger.kernel.org,
+	Tejun Heo <htejun@gmail.com>, Mingming Cao <cmm@us.ibm.com>,
+	linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+	Jean Delvare <khali@linux-fr.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Christoph Lameter <clameter@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,27 +34,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ragner Magalhaes wrote:
-> ext Brian King wrote:
->> Ragner Magalhaes wrote:
->>> here also, as above ...
->>>> +	if (data && (dev->features & NETIF_F_IP_CSUM))
->>>> +		return 0;
->>>> +	if (!data && !(dev->features & NETIF_F_IP_CSUM))
->>>> +		return 0;
->> This change would make the line > 80 columns, which I prefer to avoid.
->> Updated patch attached which addresses the first comment.
-> I think would not be ugly to make.
-> 
-> 	if ((data && (dev->features & NETIF_F_IP_CSUM)) ||
-> 		(!data && !(dev->features & NETIF_F_IP_CSUM)))
-> 		return 0;
+On 19/07/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
+> > Subject         : ext4 build warnings
+> > References      : http://lkml.org/lkml/2007/7/18/420
+> > Last known good : ?
+> > Submitter       : Jeff Garzik <jeff@garzik.org>
+> > Caused-By       : ?
+> > Handled-By      : Mingming Cao <cmm@us.ibm.com>
+> > Status          : unknown
+>
+> Mingming Cao fixed this:
+>
+> http://lkml.org/lkml/2007/7/18/564
+>
+> Dunno if it's in latest git
+>
 
-I find that less readable than what I currently have.
+Informations updated. Thanks!
 
--Brian
+Regards,
+Michal
 
 -- 
-Brian King
-Linux on Power Virtualization
-IBM Linux Technology Center
+LOG
+http://www.stardust.webpages.pl/log/
