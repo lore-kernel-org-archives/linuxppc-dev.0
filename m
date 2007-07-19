@@ -1,21 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1C6FCDDFA5
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 08:04:46 +1000 (EST)
-In-Reply-To: <469FDBDC.5030700@am.sony.com>
-References: <fa686aa40707191249r1e73f6f7s7f2aa4502919e98a@mail.gmail.com>
-	<469FDBDC.5030700@am.sony.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A127B558-BA1C-4F18-890B-7052F2DF7488@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: PS3: Fix build with 32-bit toolchains
-Date: Thu, 19 Jul 2007 17:05:14 -0500
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Arnd Bergmann <arnd@arndb.de>
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id AE243DDFA5
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 08:08:06 +1000 (EST)
+Date: Fri, 20 Jul 2007 00:07:18 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Add of_register_i2c_devices()
+In-Reply-To: <87DC7695-382B-4641-B9D9-75ACB49D41A4@kernel.crashing.org>
+Message-ID: <Pine.LNX.4.60.0707191932300.3365@poirot.grange>
+References: <Pine.LNX.4.60.0706292113240.4227@poirot.grange>
+	<00a85f152aa3547f0f0b4acd7954468a@kernel.crashing.org>
+	<Pine.LNX.4.60.0707022114020.3339@poirot.grange>
+	<2055bb54b9816faaf5b2ceedc9cfa039@kernel.crashing.org>
+	<Pine.LNX.4.60.0707032356270.3876@poirot.grange>
+	<E0E696F1-2F9E-4D6B-A194-EB42BA826BCD@kernel.crashing.org>
+	<Pine.LNX.4.60.0707180010330.3535@poirot.grange>
+	<87DC7695-382B-4641-B9D9-75ACB49D41A4@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,16 +28,129 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 19 Jul 2007, Segher Boessenkool wrote:
 
-On Jul 19, 2007, at 4:47 PM, Geoff Levand wrote:
+> > > Your device is an rs5c372b.  So, that's what you put in
+> > > your device tree.  Simple so far, right?
+> > > 
+> > > Now some OF I2C code goes looking for IIC devices in the
+> > > device tree.  It finds this thing, and from a table or
+> > > something it derives that it has to tell the kernel I2C
+> > > layer this is an "rtc-rs5c372".  [It would be nicer if it
+> > > could just instantiate the correct driver directly, but
+> > > if that's how the Linux I2C layer works, so be it].
+> > > 
+> > > No change in the I2C "core" needed, just an OF "compatible"
+> > > matching thing like is needed *everywhere else* too.
+> > 
+> > How about the patch below?
+> 
+> Looks good.  It should later be moved to a more generic
+> I2C OF matching layer, but fine for now.  Thanks!
+> 
+> You might want to put vendor names in the "compatible"
+> entries, dunno though, maybe these are "cross-vendor"
+> ICs?
 
-> The PS3 bootwrapper files use instructions only available on
-> 64-bit CPUs.  Add the code generation directive '.machine "ppc64"'
-> for toolchains configured for 32-bit CPUs.
->
-> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+You mean like
 
-while this is a fix, why are we even building it Grant's case of  
-building 834x itx.
+	compatible = "ricoh,rs5c372a"
 
-- k
+etc? With this change, plus __init(data) attributes for functions and the 
+array, attached below is version 2 of the patch. Corresponding 
+modifications to the kurobox*.dts will follow separately.
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
+
+Scan the device tree for i2c devices, check their "compatible" property 
+against a hard-coded table, and, if found, register with i2c boardinfo.
+
+Signed-off-by: G. Liakhovetski <g.liakhovetski@gmx.de>
+
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index 3289fab..e07d031 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -305,6 +305,62 @@ err:
+ 
+ arch_initcall(gfar_of_init);
+ 
++#ifdef CONFIG_I2C_BOARDINFO
++#include <linux/i2c.h>
++struct i2c_driver_device {
++	char	*of_device;
++	char	*i2c_driver;
++	char	*i2c_type;
++};
++
++static struct i2c_driver_device i2c_devices[] __initdata = {
++	{"ricoh,rs5c372a", "rtc-rs5c372", "rs5c372a",},
++	{"ricoh,rs5c372b", "rtc-rs5c372", "rs5c372b",},
++	{"ricoh,rv5c386",  "rtc-rs5c372", "rv5c386",},
++	{"ricoh,rv5c387a", "rtc-rs5c372", "rv5c387a",},
++};
++
++static int __init of_find_i2c_driver(struct device_node *node, struct i2c_board_info *info)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
++		if (!of_device_is_compatible(node, i2c_devices[i].of_device))
++			continue;
++		strncpy(info->driver_name, i2c_devices[i].i2c_driver, KOBJ_NAME_LEN);
++		strncpy(info->type, i2c_devices[i].i2c_type, I2C_NAME_SIZE);
++		return 0;
++	}
++	return -ENODEV;
++}
++
++static void __init of_register_i2c_devices(struct device_node *adap_node, int bus_num)
++{
++	struct device_node *node = NULL;
++
++	while ((node = of_get_next_child(adap_node, node))) {
++		struct i2c_board_info info;
++		const u32 *addr;
++		int len;
++
++		addr = of_get_property(node, "reg", &len);
++		if (!addr || len < sizeof(int) || *addr > 0xffff)
++			continue;
++
++		info.irq = irq_of_parse_and_map(node, 0);
++		if (info.irq == NO_IRQ)
++			info.irq = -1;
++
++		if (of_find_i2c_driver(node, &info) < 0)
++			continue;
++
++		info.platform_data = NULL;
++		info.addr = *addr;
++
++		i2c_register_board_info(bus_num, &info, 1);
++	}
++}
++
+ static int __init fsl_i2c_of_init(void)
+ {
+ 	struct device_node *np;
+@@ -349,6 +405,8 @@ static int __init fsl_i2c_of_init(void)
+ 						    fsl_i2c_platform_data));
+ 		if (ret)
+ 			goto unreg;
++
++		of_register_i2c_devices(np, i);
+ 	}
+ 
+ 	return 0;
+@@ -360,6 +418,7 @@ err:
+ }
+ 
+ arch_initcall(fsl_i2c_of_init);
++#endif
+ 
+ #ifdef CONFIG_PPC_83xx
+ static int __init mpc83xx_wdt_init(void)
