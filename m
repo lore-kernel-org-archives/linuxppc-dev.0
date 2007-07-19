@@ -1,19 +1,26 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id BDE3ADDEC0
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 15:50:46 +1000 (EST)
-In-Reply-To: <je1wf5bshh.fsf@sykes.suse.de>
-References: <20070718.182640.-1300542340.kouish@swc.toshiba.co.jp>
-	<7bd7b12c7bd2303039a850a1fee9634c@bga.com>
-	<je1wf5bshh.fsf@sykes.suse.de>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <664cbe49d76cfcba9d8a86e3a6946a2a@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 2/2] fix showing xmon help
-Date: Thu, 19 Jul 2007 00:50:22 -0500
-To: Andreas Schwab <schwab@suse.de>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 75CF1DDE2A
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 17:15:41 +1000 (EST)
+Date: Thu, 19 Jul 2007 09:15:38 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [patch 1/3] ps3: Disk Storage Driver
+In-Reply-To: <20070719053302.GO11657@kernel.dk>
+Message-ID: <Pine.LNX.4.62.0707190914320.12868@pademelon.sonytel.be>
+References: <20070716161539.075822000@pademelon.sonytel.be>
+	<20070716162206.392129000@pademelon.sonytel.be>
+	<20070718163637.3f0e0164.akpm@linux-foundation.org>
+	<20070719053302.GO11657@kernel.dk>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-1567109295-1184829289=:12868"
+Cc: "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Alessandro Rubini <rubini@vision.unipv.it>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,25 +30,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-On Jul 18, 2007, at 11:12 AM, Andreas Schwab wrote:
+---584337861-1567109295-1184829289=:12868
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.62.0707190914571.12868@pademelon.sonytel.be>
 
-> Milton Miller <miltonm@bga.com> writes:
->
->>>                 case '?':
->>> -                       printf(help_string);
->>> +                       xmon_puts(help_string);
->>>                         break;
->>>
->>
->> nonstdio.h #defines printf to xmon_printf.  Please add a similar line
->> for puts, and use the define here.  (It will avoid an unnecessary
->> difference with the user space version).
->
-> User space puts add a newline, which this xmon_puts doesn't.
->
-> Andreas.
+On Thu, 19 Jul 2007, Jens Axboe wrote:
+> On Wed, Jul 18 2007, Andrew Morton wrote:
+> > On Mon, 16 Jul 2007 18:15:40 +0200
+> > Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> > 
+> > > From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> > > 
+> > > Add a Disk Storage Driver for the PS3:
+> > 
+> > Your patchset significantly hits powerpc, scsi and block.  So who gets to
+> > merge this?  Jens?  James?  Paul?
+> > 
+> > Me, I guess ;)
+> 
+> I think Paul was going to take it, or at least Geert hinted as such.
 
-Good point.  This should be xmon_fputs #defined to fputs.
+Yep, but as I heard Paul is on holidays, I was just going to send it to Andrew
+anyway.
 
-milton
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-1567109295-1184829289=:12868--
