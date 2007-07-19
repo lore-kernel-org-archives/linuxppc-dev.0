@@ -1,20 +1,24 @@
-Return-Path: <vitb@kernel.crashing.org>
+Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E8EC8DDEF3
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 02:58:04 +1000 (EST)
-Date: Thu, 19 Jul 2007 20:57:45 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 49/61] 8xx: Update device trees.
-Message-ID: <20070719205745.57f9d5a0@localhost.localdomain>
-In-Reply-To: <F8A0BE8F-8DBE-42DC-B3CD-02EB339A739E@kernel.crashing.org>
-References: <20070718013604.GU15238@ld0162-tx32.am.freescale.net>
-	<F8A0BE8F-8DBE-42DC-B3CD-02EB339A739E@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id B2FF9DDEE1
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 02:58:47 +1000 (EST)
+In-Reply-To: <20070719155207.GA28617@ld0162-tx32.am.freescale.net>
+References: <20070718173024.50204a1a.sfr@canb.auug.org.au>
+	<20070720010742.e60c67a7.sfr@canb.auug.org.au>
+	<20070720011012.4eca281d.sfr@canb.auug.org.au>
+	<20070719155207.GA28617@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3E555E76-1182-4C67-9368-E7E0F4756E69@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 03/12] Consolidate of_device_is_compatible
+Date: Thu, 19 Jul 2007 18:58:27 +0200
+To: Scott Wood <scottwood@freescale.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, wli@holomorphy.com,
+	ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org,
+	sparclinux@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,29 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-just my 2 cents.
-[snip]
-> 
-> > +				fsl,cpm-brg = <1>;
-> > +				fsl,cpm-command = <0090>;
-> 
-> Are these two documented?  Your patch queue is too
-> long for me to check for myself.
-> 
-In fact, there were different approaches to describe CPM, and I am sure this is not the end.
-These aren't documented, and I think we do not need that so far: I am pretty sure this will change
-to something more comfortable as new similar ports will follow-up. Meanwhile, values are self-description
-for anybody familiar with this SoC.
+>> The only difference here is that Sparc uses strncmp to match  
+>> compatibility
+>> names while PowerPC uses strncasecmp.
+>
+> Could we put a comment in saying that both should really just use
+> strcmp(), and that this mechanism should go away once any  
+> compatibility
+> issues are found and addressed?
+>
+> The PowerPC one will need to drop the 'n' soon, as well, but that  
+> should
+> be a separate patch.
 
-> > -	soc885@ff000000 {
-> > +	bcsr@ff080000 {
-> 
-> Maybe use a more generic name, I have no idea what a
-> "BCSR" is.
-> 
-IIRC, QE stuff, when first introduced, had bcsr bindings, that were discussed and agreed here.
+I think both of these are on enough to-do lists that adding
+a comment isn't necessary ;-)
 
 
-
--- 
-Sincerely, Vitaly
+Segher
