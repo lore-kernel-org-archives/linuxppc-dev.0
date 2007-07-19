@@ -1,26 +1,28 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <gregkh@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 26FFFDE016
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 02:36:31 +1000 (EST)
-Message-ID: <469F9301.6080402@freescale.com>
-Date: Thu, 19 Jul 2007 11:36:17 -0500
-From: Scott Wood <scottwood@freescale.com>
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id CD346DDED7
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 02:42:05 +1000 (EST)
+Date: Thu, 19 Jul 2007 09:26:25 -0700
+From: Greg KH <gregkh@suse.de>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [2/2] 2.6.22-git: known regressions
+Message-ID: <20070719162625.GA16505@suse.de>
+References: <469F9125.8040502@googlemail.com> <469F92AF.10405@googlemail.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 53/61] 82xx: Set NOT_COHERENT_CACHE on 8272 with PCI.
-References: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
-	<20070718013611.GY15238@ld0162-tx32.am.freescale.net>
-	<20070718032857.GF18251@localhost.localdomain>
-	<F5E8139F-E8DA-4C41-8B90-E727FD4E346C@kernel.crashing.org>
-	<469E7350.3090308@freescale.com>
-	<97B4A805-6E2A-4F8E-BC56-5BDEE8D6F5F0@kernel.crashing.org>
-In-Reply-To: <97B4A805-6E2A-4F8E-BC56-5BDEE8D6F5F0@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <469F92AF.10405@googlemail.com>
+Cc: Andi Kleen <ak@suse.de>, Theodore Tso <tytso@mit.edu>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Jeff Garzik <jeff@garzik.org>, linuxppc-dev@ozlabs.org,
+	LKML <linux-kernel@vger.kernel.org>, Doug Chapman <doug.chapman@hp.com>,
+	Vasily Tarasov <vtaras@openvz.org>, linux-ide@vger.kernel.org,
+	Tejun Heo <htejun@gmail.com>, Mingming Cao <cmm@us.ibm.com>,
+	linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+	Jean Delvare <khali@linux-fr.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Christoph Lameter <clameter@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,32 +32,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> Can you dump the POCMRx registers and report their values and what / 
-> proc/iomem looks like.
+On Thu, Jul 19, 2007 at 06:34:55PM +0200, Michal Piotrowski wrote:
+> SYSFS
+> 
+> Subject         : sysfs root link count broken in 2.6.22-git5
+> References      : http://lkml.org/lkml/2007/7/15/62
+> Last known good : ?
+> Submitter       : Jean Delvare <khali@linux-fr.org>
+> Caused-By       : ?
+> Handled-By      : Tejun Heo <htejun@gmail.com>
+> Status          : unknown
 
-POTAR0: 0x00080000
-POTAR1: 0x000a0000
-POTAR2: 0x00000000
+This is now fixed in Linus's tree with a patch from Tejun.
 
-POBAR0: 0x00080000
-POBAR1: 0x000a0000
-POBAR2: 0x000f6000
+thanks,
 
-POCMR0: 0xa00e0000
-POCMR1: 0x800e0000
-POCMR2: 0xc00fe000
-
-PITAR0: 0x00000000
-PIBAR0: 0x00000000
-PICMR0: 0xa00fc000
-
--sh-2.05b# cat /proc/iomem
-80000000-9fffffff : /soc@f0000000/pci@10800
-a0000000-bfffffff : /soc@f0000000/pci@10800
-   a0000000-a001ffff : 0000:00:17.0
-     a0000000-a001ffff : e1000
-   a0020000-a003ffff : 0000:00:17.0
-     a0020000-a003ffff : e1000
-
--Scott
+greg k-h
