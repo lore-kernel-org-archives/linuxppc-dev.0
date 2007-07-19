@@ -1,32 +1,27 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4E27EDDE41
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 23:35:26 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6JCVFhK029314
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 08:31:15 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l6JDZGgL535874
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 09:35:16 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6JDZFu6026120
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 09:35:16 -0400
-Message-ID: <469F6892.2020908@linux.vnet.ibm.com>
-Date: Thu, 19 Jul 2007 08:35:14 -0500
-From: Brian King <brking@linux.vnet.ibm.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 20B94DDE41
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 23:52:37 +1000 (EST)
+Date: Thu, 19 Jul 2007 15:52:35 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch 0/4] PS3 storage driver updates (was: Re: [patch 1/3] ps3:
+	Disk Storage Driver)
+In-Reply-To: <20070719021045.c0b994ca.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.62.0707191548070.8661@pademelon.sonytel.be>
+References: <20070716161539.075822000@pademelon.sonytel.be>
+	<20070716162206.392129000@pademelon.sonytel.be>
+	<20070718163637.3f0e0164.akpm@linux-foundation.org>
+	<Pine.LNX.4.62.0707191039430.8661@pademelon.sonytel.be>
+	<20070719021045.c0b994ca.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH 1/4] ibmveth: Enable TCP checksum offload
-References: <11846854701127-patch-mail.ibm.com> <469E9510.7060703@garzik.org>
-In-Reply-To: <469E9510.7060703@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, santil@linux.vnet.ibm.com,
-	rcjenn@linux.vnet.ibm.com
-Reply-To: brking@linux.vnet.ibm.com
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-146660919-1184852977=:8661"
+Cc: "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+	linux-scsi@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,42 +31,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jeff Garzik wrote:
-> Brian King wrote:
->> This patchset enables TCP checksum offload support for IPV4
->> on ibmveth. This completely eliminates the generation and checking of
->> the checksum for packets that are completely virtual and never
->> touch a physical network. A simple TCP_STREAM netperf run on
->> a virtual network with maximum mtu set yielded a ~30% increase
->> in throughput. This feature is enabled by default on systems that
->> support it, but can be disabled with a module option.
->>
->> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---584337861-146660919-1184852977=:8661
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.62.0707191549511.8661@pademelon.sonytel.be>
+
+	Hi Andrew,
+
+On Thu, 19 Jul 2007, Andrew Morton wrote:
+> On Thu, 19 Jul 2007 10:57:53 +0200 (CEST) Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> > On Wed, 18 Jul 2007, Andrew Morton wrote:
+> > > Your patchset significantly hits powerpc, scsi and block.  So who gets to
+> > > merge this?  Jens?  James?  Paul?
+> > > 
+> > > Me, I guess ;)
+> > 
+> > As Paul is on holidays, please take it.
 > 
-> this should be controllable purely via ethtool...
-
-I'll remove the module parameter and resend.
-
->>  struct ibmveth_rx_q_entry {
->>      u16 toggle : 1;
->>      u16 valid : 1;
->> -    u16 reserved : 14;
->> +    u16 reserved : 4;
->> +    u16 no_csum : 1;
->> +    u16 csum_good : 1;
->> +    u16 reserved2 : 8;
->>      u16 offset;
+> OK.
 > 
-> As a general rule, it would be nice to start moving away from bitfields 
-> in this driver
+> > The PS3 storage driver core support is
+> > already in mainline, but the actual drivers aren't, as Paul was waiting for
+> > acks from the maintainers.
+> > 
+> > BTW, do you prefer incremental patches for the comments below, or an update of
+> > the full patchset?
+> 
+> Incremental is preferred, but I convert replacement patches into
+> incremental patches at about 10Hz nowadays.  Whatever's easier.
+> 
+> (Actually, if it's a replacement patch then only I get to see the
+> incremental patch, and the incremental patch is more reviewer-friendly).
 
-I'll take a look at that for a future cleanup patch.
+Here are the updates:
+  [1] ps3disk: use correct bio vector size
+  [2] ps3disk: updates after final review
+  [3] ps3rom: updates after final review
+  [4] ps3flash: updates after final review
 
-Thanks,
+The first one is the bugfix for O_DIRECT, the other 3 patches are the updates
+in response to your review.
 
-Brian
+Thanks for integrating (and forwarding to Linus)!
 
--- 
-Brian King
-Linux on Power Virtualization
-IBM Linux Technology Center
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-146660919-1184852977=:8661--
