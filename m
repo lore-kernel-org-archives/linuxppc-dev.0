@@ -1,24 +1,27 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 58370DDE37
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 19:02:09 +1000 (EST)
-Date: Thu, 19 Jul 2007 11:02:07 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 2/3] ps3: BD/DVD/CD-ROM Storage Driver
-In-Reply-To: <20070718164351.a92ec032.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.62.0707191100270.8661@pademelon.sonytel.be>
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
+	[207.189.120.14])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C791FDDE41
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 19:11:43 +1000 (EST)
+Date: Thu, 19 Jul 2007 02:10:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [patch 1/3] ps3: Disk Storage Driver
+Message-Id: <20070719021045.c0b994ca.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.62.0707191039430.8661@pademelon.sonytel.be>
 References: <20070716161539.075822000@pademelon.sonytel.be>
-	<20070716162206.529280000@pademelon.sonytel.be>
-	<20070718164351.a92ec032.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-1835406229-1184835727=:8661"
+	<20070716162206.392129000@pademelon.sonytel.be>
+	<20070718163637.3f0e0164.akpm@linux-foundation.org>
+	<Pine.LNX.4.62.0707191039430.8661@pademelon.sonytel.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: Jens Axboe <axboe@kernel.dk>,
 	"James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Alessandro Rubini <rubini@vision.unipv.it>,
+	linux-scsi@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+	linux-kernel@vger.kernel.org, Alessandro Rubini <rubini@vision.unipv.it>,
 	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -29,54 +32,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Thu, 19 Jul 2007 10:57:53 +0200 (CEST) Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 
----584337861-1835406229-1184835727=:8661
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Wed, 18 Jul 2007, Andrew Morton wrote:
-> > +struct ps3rom_private {
-> > +	struct ps3_storage_device *dev;
-> > +	struct scsi_cmnd *curr_cmd;
-> > +};
-> > +#define ps3rom_priv(dev)	((dev)->sbd.core.driver_data)
-> > +
+> 	Hi Andrew,
 > 
-> Someone should invent a keyboard which delivers an electric shock when the
-> operator types "#define".   In the meanwhile, I get to do the honours.
+> On Wed, 18 Jul 2007, Andrew Morton wrote:
+> > On Mon, 16 Jul 2007 18:15:40 +0200
+> > Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> > 
+> > > From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> > > 
+> > > Add a Disk Storage Driver for the PS3:
+> > 
+> > Your patchset significantly hits powerpc, scsi and block.  So who gets to
+> > merge this?  Jens?  James?  Paul?
+> > 
+> > Me, I guess ;)
 > 
-> Please don't implement in a macro anything which can be implemented in C.
+> As Paul is on holidays, please take it.
 
-All I needed was a shorthand to access driver_data, for both read and write
-access (you cannot do the latter with C, unless you decouple read and write).
+OK.
 
-> > +			kaddr = kmap_atomic(sgpnt->page, KM_IRQ0);
-> > +			if (!kaddr)
-> > +				return -1;
+> The PS3 storage driver core support is
+> already in mainline, but the actual drivers aren't, as Paul was waiting for
+> acks from the maintainers.
 > 
-> kmap_atomic() cannot fail.  On i386, at least.  If it can fail on any other
-> arch then we have a biiiiig problem.  (Multiple instances of this)
+> BTW, do you prefer incremental patches for the comments below, or an update of
+> the full patchset?
 
-Thanks, fixed!
+Incremental is preferred, but I convert replacement patches into
+incremental patches at about 10Hz nowadays.  Whatever's easier.
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
+(Actually, if it's a replacement patch then only I get to see the
+incremental patch, and the incremental patch is more reviewer-friendly).
 
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1835406229-1184835727=:8661--
+> I didn't have much choice, as most of it was static and I don't need the full
+> libata core anyway.
+> 
+> If I would factor it out, any good suggestion where to put the factored out
+> code?
+
+Take it up with Jeff, please.  If you're keen.  It isn't a lot of code.
+
+> 
+> > > +static int ps3disk_remove(struct ps3_system_bus_device *_dev)
+> > > +{
+> > > +	struct ps3_storage_device *dev = to_ps3_storage_device(&_dev->core);
+> > > +	struct ps3disk_private *priv = ps3disk_priv(dev);
+> > > +
+> > > +	__clear_bit(priv->gendisk->first_minor / PS3DISK_MINORS,
+> > > +		    &ps3disk_mask);
+> > 
+> > I see no locking here which makes this __clear_bit and the above __set_bit
+> > non-racy?
+> 
+> Were .probe()/.remove() made concurrent again? I thought that idea was dropped
+> because it caused too many problems?
+
+I don't _think_ there's any global exclusion on ->probe calls.  For a
+particular driver instance it's hard to see how these thigns can run
+concurrently, dunno.  I guess two hotunplugs coud happen concurrently.
