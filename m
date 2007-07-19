@@ -1,25 +1,27 @@
-Return-Path: <jdl@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 67FB5DDF43
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 02:06:11 +1000 (EST)
-Subject: Re: [PATCH] Add StorCenter DTS first draft.
-From: Jon Loeliger <jdl@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1184795678.25235.269.camel@localhost.localdomain>
-References: <E1IAnwC-0003Xm-6U@jdl.com>
-	<1184722754.25235.183.camel@localhost.localdomain>
-	<5F6EB5F7-C5AE-437F-9DF1-22FE38D7A841@kernel.crashing.org>
-	<1184795678.25235.269.camel@localhost.localdomain>
-Content-Type: text/plain
-Message-Id: <1184861129.16820.2.camel@ld0161-tx32>
-Mime-Version: 1.0
-Date: Thu, 19 Jul 2007 11:05:29 -0500
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Jon Loeliger <jdl@jdl.com>
+Return-Path: <michal.k.k.piotrowski@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
+	by ozlabs.org (Postfix) with ESMTP id 378EDDDED8
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 02:36:21 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k40so468054ugc
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 09:36:20 -0700 (PDT)
+Message-ID: <469F92AF.10405@googlemail.com>
+Date: Thu, 19 Jul 2007 18:34:55 +0200
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [2/2] 2.6.22-git: known regressions
+References: <469F9125.8040502@googlemail.com>
+In-Reply-To: <469F9125.8040502@googlemail.com>
+Content-Type: text/plain; charset=UTF-8
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Andi Kleen <ak@suse.de>, Theodore Tso <tytso@mit.edu>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Jeff Garzik <jeff@garzik.org>, linuxppc-dev@ozlabs.org,
+	Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+	Doug Chapman <doug.chapman@hp.com>,
+	Vasily Tarasov <vtaras@openvz.org>, linux-ide@vger.kernel.org,
+	Tejun Heo <htejun@gmail.com>, Mingming Cao <cmm@us.ibm.com>,
+	linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+	Jean Delvare <khali@linux-fr.org>, Christoph Lameter <clameter@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,24 +31,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-07-18 at 16:54, Benjamin Herrenschmidt wrote:
+Hi all,
 
-> Cache line size is used by the kernel on ppc64 for things like clearing
-> memory (to get the stride between subsequent dcbz) or flushing the
-> cache :-) It's also passed on to userland.
-> 
-> If it's absent from the device-tree, we default to the values in the
-> cputable, but if you're going to put the properties in the tree, don't
-> put a 0 in there. As it is, the day I make the 64 bits code common, your
-> DT will break unless I special case "0".
-> 
-> Ben.
+Here is a list of some known regressions in 2.6.22-git.
 
-So, just to put this issue to rest some, I have
-modified my DTS to have correct values here.
-It was _easy_. ;-)
+Feel free to add new regressions/remove fixed etc.
+http://kernelnewbies.org/known_regressions
 
-But, a followup patch should clean up _other_, existing
-DTS files that have 0 there still.
+List of Aces
 
-jdl
+Name                    Regressions fixed since 21-Jun-2007
+Adrian Bunk                            3
+Andi Kleen                             2
+Andrew Morton                          2
+David Woodhouse                        2
+Hugh Dickins                           2
+Jens Axboe                             2
+
+
+
+FS
+
+Subject         : ia64 build failure from recent diskquota patch
+References      : http://lkml.org/lkml/2007/7/18/407
+Last known good : ?
+Submitter       : Doug Chapman <doug.chapman@hp.com>
+Caused-By       : Vasily Tarasov <vtaras@openvz.org>
+                  commit b716395e2b8e450e294537de0c91476ded2f0395
+Handled-By      : ?
+Status          : unknown
+
+Subject         : ext4 build warnings
+References      : http://lkml.org/lkml/2007/7/18/420
+Last known good : ?
+Submitter       : Jeff Garzik <jeff@garzik.org>
+Caused-By       : ?
+Handled-By      : Mingming Cao <cmm@us.ibm.com>
+Status          : unknown
+
+
+
+IDE
+
+Subject         : compile error if CONFIG_BLOCK not enabled related to linux/ide.h include
+References      : http://lkml.org/lkml/2007/7/18/11
+Last known good : ?
+Submitter       : Kumar Gala <galak@kernel.crashing.org>
+Caused-By       : ?
+Handled-By      : Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Status          : unknown
+
+
+
+Memory management
+
+Subject         : kmalloc zero size changes break i386
+References      : http://lkml.org/lkml/2007/7/19/172
+Last known good : ?
+Submitter       : Andi Kleen <ak@suse.de>
+Caused-By       : Christoph Lameter <clameter@sgi.com>
+                  commit 6cb8f91320d3e720351c21741da795fed580b21b
+Handled-By      : ?
+Status          : unknown
+
+
+
+SYSFS
+
+Subject         : sysfs root link count broken in 2.6.22-git5
+References      : http://lkml.org/lkml/2007/7/15/62
+Last known good : ?
+Submitter       : Jean Delvare <khali@linux-fr.org>
+Caused-By       : ?
+Handled-By      : Tejun Heo <htejun@gmail.com>
+Status          : unknown
+
+
+
+Regards,
+Michal
+
+--
+LOG
+http://www.stardust.webpages.pl/log/
