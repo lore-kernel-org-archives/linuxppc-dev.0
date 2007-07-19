@@ -1,25 +1,22 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0F939DDE11
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 01:32:19 +1000 (EST)
-In-Reply-To: <Pine.LNX.4.60.0707180010330.3535@poirot.grange>
-References: <Pine.LNX.4.60.0706292113240.4227@poirot.grange>
-	<00a85f152aa3547f0f0b4acd7954468a@kernel.crashing.org>
-	<Pine.LNX.4.60.0707022114020.3339@poirot.grange>
-	<2055bb54b9816faaf5b2ceedc9cfa039@kernel.crashing.org>
-	<Pine.LNX.4.60.0707032356270.3876@poirot.grange>
-	<E0E696F1-2F9E-4D6B-A194-EB42BA826BCD@kernel.crashing.org>
-	<Pine.LNX.4.60.0707180010330.3535@poirot.grange>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <87DC7695-382B-4641-B9D9-75ACB49D41A4@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Add of_register_i2c_devices()
-Date: Thu, 19 Jul 2007 17:32:10 +0200
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3ECD2DE165
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 01:33:04 +1000 (EST)
+Message-ID: <469F8427.1060708@freescale.com>
+Date: Thu, 19 Jul 2007 10:32:55 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 04/61] 8xx: Work around CPU15 erratum.
+References: <20070718013259.GC15238@ld0162-tx32.am.freescale.net>
+	<8503FAAA-42DF-4082-A755-773837490CA7@kernel.crashing.org>
+In-Reply-To: <8503FAAA-42DF-4082-A755-773837490CA7@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,27 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Your device is an rs5c372b.  So, that's what you put in
->> your device tree.  Simple so far, right?
->>
->> Now some OF I2C code goes looking for IIC devices in the
->> device tree.  It finds this thing, and from a table or
->> something it derives that it has to tell the kernel I2C
->> layer this is an "rtc-rs5c372".  [It would be nicer if it
->> could just instantiate the correct driver directly, but
->> if that's how the Linux I2C layer works, so be it].
->>
->> No change in the I2C "core" needed, just an OF "compatible"
->> matching thing like is needed *everywhere else* too.
->
-> How about the patch below?
+Segher Boessenkool wrote:
+>> The CPU15 erratum on MPC8xx chips can cause incorrect code execution
+>> under certain circumstances, where there is a conditional or indirect
+>> branch in the last word of a page, with a target in the last cache  line
+>> of the next page.  This patch implements one of the suggested
+>> workarounds, by forcing a TLB miss whenever execution crosses a page
+>> boundary.  This is done by invalidating the pages before and after the
+>> one being loaded into the TLB in the ITLB miss handler.
+> 
+> 
+> So you never found a bug workaround without the terrible
+> overhead of this one?  A shame :-(
 
-Looks good.  It should later be moved to a more generic
-I2C OF matching layer, but fine for now.  Thanks!
+The only lower-overhead workaround I know of requires compiler 
+modifications (and I made it configurable to allow for that possibility).
 
-You might want to put vendor names in the "compatible"
-entries, dunno though, maybe these are "cross-vendor"
-ICs?
-
-
-Segher
+-Scott
