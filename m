@@ -1,24 +1,25 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B58F6DDED2
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 06:13:59 +1000 (EST)
-Date: Thu, 19 Jul 2007 13:13:48 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6E19DDDED0
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 06:16:11 +1000 (EST)
+Message-ID: <469FC682.9050206@freescale.com>
+Date: Thu, 19 Jul 2007 15:16:02 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Powerpc - Include pagemap.h in asm/powerpc/tlb.h
-Message-Id: <20070719131348.170443bb.akpm@linux-foundation.org>
-In-Reply-To: <D9805F9D-04B0-4422-81F1-958B15482A93@kernel.crashing.org>
-References: <20070714012033.GC31649@Krystal>
-	<20070718223034.7388e59f.akpm@linux-foundation.org>
-	<D9805F9D-04B0-4422-81F1-958B15482A93@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 30/61] fsl_soc: Update the way get_brgfreq() finds things
+	in the device tree.
+References: <20070718013538.GB15238@ld0162-tx32.am.freescale.net>
+	<8DC2DA02-3D10-4D14-AC91-E34AEA68E04F@kernel.crashing.org>
+	<469E408F.1080300@freescale.com>
+	<624A5740-A6D3-4AF3-8AA7-100D0FFFF045@kernel.crashing.org>
+In-Reply-To: <624A5740-A6D3-4AF3-8AA7-100D0FFFF045@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,91 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 19 Jul 2007 14:55:23 -0500
-Kumar Gala <galak@kernel.crashing.org> wrote:
+Kumar Gala wrote:
+> On Jul 18, 2007, at 11:32 AM, Scott Wood wrote:
+>> Kumar Gala wrote:
+>>> Does 'fsl,cpm' really mean anything useful?
+>>
+>> Yes.  It's can't be used on its own to show the complete  programming 
+>> model, but there are lots of common things that it does  indicate.
+>>
+>> get_brgfreq() uses it to locate nodes which have an fsl,brg- frequency 
+>> property.
+> 
+> I think we should introduce 'fsl,cpm' in a second pass once its clear  
+> what all the common points are.  We can than also see if QE fits into  
+> it at that point.
 
-> 
-> On Jul 19, 2007, at 12:30 AM, Andrew Morton wrote:
-> 
-> > On Fri, 13 Jul 2007 21:20:33 -0400 Mathieu Desnoyers  
-> > <mathieu.desnoyers@polymtl.ca> wrote:
-> >
-> >> Powerpc - Include pagemap.h in asm/powerpc/tlb.h
-> >>
-> >> Fixes this powerpc build error in 2.6.22-rc6-mm1 for powerpc 64 :
-> >>
-> >> In file included from include2/asm/tlb.h:60,
-> >>                  from /home/compudj/git/linux-2.6-lttng/arch/ 
-> >> powerpc/mm/init_64.
-> >> c:56:
-> >> /home/compudj/git/linux-2.6-lttng/include/asm-generic/tlb.h: In  
-> >> function 'tlb_fl
-> >> ush_mmu':
-> >> /home/compudj/git/linux-2.6-lttng/include/asm-generic/tlb.h:76:  
-> >> error: implicit
-> >> declaration of function 'release_pages'
-> >> /home/compudj/git/linux-2.6-lttng/include/asm-generic/tlb.h: In  
-> >> function 'tlb_re
-> >> move_page':
-> >> /home/compudj/git/linux-2.6-lttng/include/asm-generic/tlb.h:105:  
-> >> error: implicit
-> >>  declaration of function 'page_cache_release'
-> >
-> > You have some wordwrapping going on there.
-> >
-> >> make[2]: *** [arch/powerpc/mm/init_64.o] Error 1
-> >>
-> >> release_pages is declared in linux/pagemap.h, but cannot be  
-> >> included in
-> >> linux/swap.h because of a sparc related comment:
-> >>
-> >> /* only sparc can not include linux/pagemap.h in this file
-> >>  * so leave page_cache_release and release_pages undeclared... */
-> >> #define free_page_and_swap_cache(page) \
-> >>         page_cache_release(page)
-> >> #define free_pages_and_swap_cache(pages, nr) \
-> >>         release_pages((pages), (nr), 0);
-> >
-> > It's always a worry when this happens.  What change made us need this
-> > inclusion?  How come you're hitting it but I (and test.kernel.org,  
-> > at least)
-> > did not?  How come so few other architectures include pagemap.h from
-> > asm/tlb.h?  Why do header files get into such a mess?
-> >
-> >
-> >> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> >> CC: linuxppc-dev@ozlabs.org
-> >> CC: Paul Mackerras <paulus@samba.org>
-> >> ---
-> >>  include/asm-powerpc/tlb.h |    2 ++
-> >>  1 file changed, 2 insertions(+)
-> >>
-> >> Index: linux-2.6-lttng/include/asm-powerpc/tlb.h
-> >> ===================================================================
-> >> --- linux-2.6-lttng.orig/include/asm-powerpc/tlb.h	2007-07-13  
-> >> 11:30:54.000000000 -0400
-> >> +++ linux-2.6-lttng/include/asm-powerpc/tlb.h	2007-07-13  
-> >> 11:31:22.000000000 -0400
-> >> @@ -23,6 +23,8 @@
-> >>  #include <asm/mmu.h>
-> >>  #endif
-> >>
-> >> +#include <linux/pagemap.h>
-> >> +
-> >>  struct mmu_gather;
-> >>
-> >
-> > Oh well.  I queued it up for someone else to worry over ;)
-> 
-> Andrew,
-> 
-> Are you sending this to linus directly or should this go via paul and  
-> me?
-> 
+Upon further thought (and upon being clearly outvoted), I agree -- 
+what's common among CPMs today may not be among future CPMs/QEs.  In the 
+absence of a commitment from marketing to call it something else if 
+certain things change, it's no more meaningful than "xx"-type names.
 
-I queued it up for Paul.  I can send it over to Linus today if we have a
-reason for that.  It's just that I dont understand the patch: does it fix
--mm-only breakage?  Does it fix something which already got fixed, or what?
+>> The CPM binding is changed in so many other ways that are much  harder 
+>> to make backward compatible that I don't really see much  point in 
+>> doing so here.
+> 
+> Can you enumerate some of the other changes.
 
-One might think "gee, it's trivial, just slam it in", but these nested
-includes are often not-trivial and something else can explode as a result.
+The hardest would probably be the PCI node, whose reg property 
+definition changed (the previous tree was including other things, such 
+as DMA controllers, in the PCI register resource).  The CPM node also 
+had its reg property changed, though I don't think anything was using it 
+yet.  The old way of specifying the 8272ads BCSR (in the /memory node) 
+is just too broken to leave in the device tree.
+
+The old compatible names and custom properties could be left in for a 
+little while for existing boards, though.
+
+-Scott
