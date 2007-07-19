@@ -1,14 +1,25 @@
-Return-Path: <avi@qumranet.com>
-Received: from il.qumranet.com (il.qumranet.com [82.166.9.18])
-	by ozlabs.org (Postfix) with ESMTP id D0A22DDF0C
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 01:57:59 +1000 (EST)
-From: Avi Kivity <avi@qumranet.com>
-To: paulus@samba.org
-Subject: [PATCH] powerpc: Allow smp_call_function_single() to current cpu
-Date: Thu, 19 Jul 2007 18:33:48 +0300
-Message-Id: <11848592284075-git-send-email-avi@qumranet.com>
-Cc: kvm-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>
+Return-Path: <jdl@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 67FB5DDF43
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 02:06:11 +1000 (EST)
+Subject: Re: [PATCH] Add StorCenter DTS first draft.
+From: Jon Loeliger <jdl@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1184795678.25235.269.camel@localhost.localdomain>
+References: <E1IAnwC-0003Xm-6U@jdl.com>
+	<1184722754.25235.183.camel@localhost.localdomain>
+	<5F6EB5F7-C5AE-437F-9DF1-22FE38D7A841@kernel.crashing.org>
+	<1184795678.25235.269.camel@localhost.localdomain>
+Content-Type: text/plain
+Message-Id: <1184861129.16820.2.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Thu, 19 Jul 2007 11:05:29 -0500
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,38 +29,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This removes the requirement for callers to get_cpu() to check in simple
-cases.  i386 and x86_64 already received a similar treatment.
+On Wed, 2007-07-18 at 16:54, Benjamin Herrenschmidt wrote:
 
-Signed-off-by: Avi Kivity <avi@qumranet.com>
----
- arch/powerpc/kernel/smp.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
+> Cache line size is used by the kernel on ppc64 for things like clearing
+> memory (to get the stride between subsequent dcbz) or flushing the
+> cache :-) It's also passed on to userland.
+> 
+> If it's absent from the device-tree, we default to the values in the
+> cputable, but if you're going to put the properties in the tree, don't
+> put a 0 in there. As it is, the day I make the 64 bits code common, your
+> DT will break unless I special case "0".
+> 
+> Ben.
 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index d577b71..087c92f 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -284,7 +284,7 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info, int
- 			int wait)
- {
- 	cpumask_t map = CPU_MASK_NONE;
--	int ret = -EBUSY;
-+	int ret = 0;
- 
- 	if (!cpu_online(cpu))
- 		return -EINVAL;
-@@ -292,6 +292,11 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info, int
- 	cpu_set(cpu, map);
- 	if (cpu != get_cpu())
- 		ret = smp_call_function_map(func,info,nonatomic,wait,map);
-+	else {
-+		local_irq_disable();
-+		func(info);
-+		local_irq_enable();
-+	}
- 	put_cpu();
- 	return ret;
- }
--- 
-1.5.2.4
+So, just to put this issue to rest some, I have
+modified my DTS to have correct values here.
+It was _easy_. ;-)
+
+But, a followup patch should clean up _other_, existing
+DTS files that have 0 there still.
+
+jdl
