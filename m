@@ -1,28 +1,40 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
+Return-Path: <cornelia.huck@de.ibm.com>
+Received: from mtagate5.uk.ibm.com (mtagate5.uk.ibm.com [195.212.29.138])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9D3BEDDDF8
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 19:18:15 +1000 (EST)
-Date: Thu, 19 Jul 2007 02:17:52 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
+	(Client CN "mtagate5.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 88AB7DDE09
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 19:26:08 +1000 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate5.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l6J9Q2v7288678
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 09:26:02 GMT
+Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
+	[9.149.37.212])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.4) with
+	ESMTP id l6J9Q24M2953426
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 10:26:02 +0100
+Received: from d06av01.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av01.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l6J9Pj1P002042
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 10:25:46 +0100
+Date: Thu, 19 Jul 2007 11:26:02 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
 To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [patch 2/3] ps3: BD/DVD/CD-ROM Storage Driver
-Message-Id: <20070719021752.35cb7daa.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.62.0707191100270.8661@pademelon.sonytel.be>
+Subject: Re: [patch 1/3] ps3: Disk Storage Driver
+Message-ID: <20070719112602.5e3cb21a@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <Pine.LNX.4.62.0707191039430.8661@pademelon.sonytel.be>
 References: <20070716161539.075822000@pademelon.sonytel.be>
-	<20070716162206.529280000@pademelon.sonytel.be>
-	<20070718164351.a92ec032.akpm@linux-foundation.org>
-	<Pine.LNX.4.62.0707191100270.8661@pademelon.sonytel.be>
+	<20070716162206.392129000@pademelon.sonytel.be>
+	<20070718163637.3f0e0164.akpm@linux-foundation.org>
+	<Pine.LNX.4.62.0707191039430.8661@pademelon.sonytel.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: Jens Axboe <axboe@kernel.dk>,
 	"James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Alessandro Rubini <rubini@vision.unipv.it>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+	linux-scsi@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+	linux-kernel@vger.kernel.org, Alessandro Rubini <rubini@vision.unipv.it>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,31 +44,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 19 Jul 2007 11:02:07 +0200 (CEST) Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+On Thu, 19 Jul 2007 10:57:53 +0200 (CEST),
+Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 
-> On Wed, 18 Jul 2007, Andrew Morton wrote:
-> > > +struct ps3rom_private {
-> > > +	struct ps3_storage_device *dev;
-> > > +	struct scsi_cmnd *curr_cmd;
-> > > +};
-> > > +#define ps3rom_priv(dev)	((dev)->sbd.core.driver_data)
-> > > +
-> > 
-> > Someone should invent a keyboard which delivers an electric shock when the
-> > operator types "#define".   In the meanwhile, I get to do the honours.
-> > 
-> > Please don't implement in a macro anything which can be implemented in C.
-> 
-> All I needed was a shorthand to access driver_data, for both read and write
-> access (you cannot do the latter with C, unless you decouple read and write).
+> Were .probe()/.remove() made concurrent again? I thought that idea was dropped
+> because it caused too many problems?
 
-Oh dear.
-
-	ps3rom_priv(dev) = host;
-
-that's 'orrid.  We have an identifier pretending to be a function, only we
-go and treat it as an lvalue.
-
-I mean, C code should look like C code, and the above just doesn't.
-
-Sigh.
+Well, for a given device, ->probe()/->remove() are locked by dev->sem,
+so that there cannot be two probes/removes for the same device at the
+same time. However, if you have multiple hotplug events pending at the
+same time, it depends on your bus whether it does some serialization or
+whether it allows multiple probes/removes running for different devices.
+(Initial probing of a bus and probing of all devices with a new driver
+is done serialized again, I think that's what you're referring to.)
