@@ -1,17 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Message-ID: <469F7D99.8080303@freescale.com>
-Date: Thu, 19 Jul 2007 10:04:57 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH 17/61] bootwrapper: Add 8xx support.
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CEF62DE6A4
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 01:05:16 +1000 (EST)
+In-Reply-To: <20070718162240.557eea46@localhost.localdomain>
 References: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
-	<20070718013318.GP15238@ld0162-tx32.am.freescale.net>
-	<20070718033026.GG18251@localhost.localdomain>
-	<469E3C11.1090809@freescale.com>
-	<20070719013230.GB20458@localhost.localdomain>
-In-Reply-To: <20070719013230.GB20458@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	<20070718013549.GJ15238@ld0162-tx32.am.freescale.net>
+	<20070718162240.557eea46@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <B8B0658B-8CF3-4E08-9BD7-EB022E1C9F9C@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 38/61] cpm2: Update device trees.
+Date: Thu, 19 Jul 2007 17:04:55 +0200
+To: Vitaly Bordug <vitb@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,19 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Wed, Jul 18, 2007 at 11:13:05AM -0500, Scott Wood wrote:
->>Well, no.  Even on a given board, it depends on the version of u-boot.
->>
->>There's nothing after enet1addr that the bootwrapper cares about, 
->>though, so the only harm is if the device tree has a second network 
->>interface but u-boot doesn't know about it, and the bootwrapper ends up 
->>pulling in junk rather than leaving zeroes.
-> 
-> 
-> That sounds like a terribly fragile way of handling things.
+>> +				             "fsl,cpm-uart";
+>>  				reg = <11a00 20 8000 100>;
+>> -				current-speed = <1c200>;
+> Hmm, how is it supposed to work without speed? I was testing my u- 
+> boot OF bindings for 82xx and spotted into it.
 
-Yes, but that's inherent in the way the bd_t is defined.  The robust way 
-is to get device tree support into u-boot.
+"current-speed" cannot be a required property for serial
+devices (it is only valid if the device is active at boot
+time).
 
--Scott
+
+Segher
