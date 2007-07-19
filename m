@@ -1,13 +1,13 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 19 Jul 2007 12:11:38 +1000
+Date: Thu, 19 Jul 2007 12:39:17 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 2/15] boot: record header bytes in gunzip_start
-Message-ID: <20070719021138.GE20458@localhost.localdomain>
-References: <boot-6-00.miltonm@bga.com> <boot-6-02.miltonm@bga.com>
+Subject: Re: [PATCH 3/15] boot: simplfy gunzip_finish
+Message-ID: <20070719023917.GF20458@localhost.localdomain>
+References: <boot-6-00.miltonm@bga.com> <boot-6-03.miltonm@bga.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <boot-6-02.miltonm@bga.com>
+In-Reply-To: <boot-6-03.miltonm@bga.com>
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,34 +18,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 10, 2007 at 05:08:05PM -0500, Milton Miller wrote:
+On Tue, Jul 10, 2007 at 05:08:32PM -0500, Milton Miller wrote:
 > 
-> Record the number of header bytes skipped in the total bytes read field.
-> 
-> This is needed for the initramfs parsing code to find the end of the zip file.
+> Call gunzip_partial to calculate the remaining length and copy the
+> data to the user buffer.   This makes it shorter and reduces
+> duplication.
 > 
 > Signed-off-by: Milton Miller <miltonm@bga.com>
 
-Ok... I assume you've checked that this is actually the correct
-semantics for that field of the zlib structure?
+Hrm... I guess this is sufficient.  Since we'll shortly be blowing
+away the state anyway, the lack of call to inflateEnd doesn't really
+matter.  Originally I was going to make this function call fatal() if
+the destination didn't have enough space to contain the decompressed
+tail of the image, but obviously I decided aginst that.
 
-> Index: work.git/arch/powerpc/boot/gunzip_util.c
-> ===================================================================
-> --- work.git.orig/arch/powerpc/boot/gunzip_util.c	2007-07-10 03:44:41.000000000 -0500
-> +++ work.git/arch/powerpc/boot/gunzip_util.c	2007-07-10 03:47:35.000000000 -0500
-> @@ -78,6 +78,7 @@ void gunzip_start(struct gunzip_state *s
->  			fatal("inflateInit2 returned %d\n\r", r);
->  	}
->  
-> +	state->s.total_in = hdrlen;
->  	state->s.next_in = src + hdrlen;
->  	state->s.avail_in = srclen - hdrlen;
->  }
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+But, if you're going to do this, you might as well get rid of
+gunzip_finish() entirely, and have the callers using gunzip_partial
+instead.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
