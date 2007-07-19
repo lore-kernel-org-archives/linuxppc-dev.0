@@ -1,25 +1,27 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6E19DDDED0
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 06:16:11 +1000 (EST)
-Message-ID: <469FC682.9050206@freescale.com>
-Date: Thu, 19 Jul 2007 15:16:02 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <geert@linux-m68k.org>
+Received: from asia.telenet-ops.be (asia.telenet-ops.be [195.130.137.74])
+	by ozlabs.org (Postfix) with ESMTP id 146EFDDF75
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 06:26:33 +1000 (EST)
+Date: Thu, 19 Jul 2007 22:26:26 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@linux-m68k.org
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Subject: Re: 2.6.22-git* regression: Kconfig prompts without help text
+In-Reply-To: <Pine.LNX.4.64.0707181916410.5385@fbirervta.pbzchgretzou.qr>
+Message-ID: <Pine.LNX.4.64.0707192219380.18342@anakin>
+References: <469BBDAD.2010908@s5r6.in-berlin.de>
+	<Pine.LNX.4.64.0707181634100.5385@fbirervta.pbzchgretzou.qr>
+	<20070718094119.4a26ae03.randy.dunlap@oracle.com>
+	<Pine.LNX.4.64.0707181916410.5385@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 30/61] fsl_soc: Update the way get_brgfreq() finds things
-	in the device tree.
-References: <20070718013538.GB15238@ld0162-tx32.am.freescale.net>
-	<8DC2DA02-3D10-4D14-AC91-E34AEA68E04F@kernel.crashing.org>
-	<469E408F.1080300@freescale.com>
-	<624A5740-A6D3-4AF3-8AA7-100D0FFFF045@kernel.crashing.org>
-In-Reply-To: <624A5740-A6D3-4AF3-8AA7-100D0FFFF045@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+	Linux/m68k <linux-m68k@vger.kernel.org>,
+	Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,40 +31,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> On Jul 18, 2007, at 11:32 AM, Scott Wood wrote:
->> Kumar Gala wrote:
->>> Does 'fsl,cpm' really mean anything useful?
->>
->> Yes.  It's can't be used on its own to show the complete  programming 
->> model, but there are lots of common things that it does  indicate.
->>
->> get_brgfreq() uses it to locate nodes which have an fsl,brg- frequency 
->> property.
+On Wed, 18 Jul 2007, Jan Engelhardt wrote:
+> Add some help texts to recently-introduced kconfig items
 > 
-> I think we should introduce 'fsl,cpm' in a second pass once its clear  
-> what all the common points are.  We can than also see if QE fits into  
-> it at that point.
+> Index: linux-2.6.23/drivers/macintosh/Kconfig
+> ===================================================================
+> --- linux-2.6.23.orig/drivers/macintosh/Kconfig
+> +++ linux-2.6.23/drivers/macintosh/Kconfig
+> @@ -3,6 +3,12 @@ menuconfig MACINTOSH_DRIVERS
+>  	bool "Macintosh device drivers"
+>  	depends on PPC || MAC || X86
+>  	default y if (PPC_PMAC || MAC)
+> +	---help---
+> +	  Say Y here to get to see options for devices used with Macintosh
+> +	  computers, both PPC and Intel based. This option alone does not add
+                                  ^^^^^
+> +	  any kernel code.
+> +
+> +	  If you say N, all options in this submenu will be skipped and disabled.
 
-Upon further thought (and upon being clearly outvoted), I agree -- 
-what's common among CPMs today may not be among future CPMs/QEs.  In the 
-absence of a commitment from marketing to call it something else if 
-certain things change, it's no more meaningful than "xx"-type names.
+`MAC' is the symbol for m68k Macs.
 
->> The CPM binding is changed in so many other ways that are much  harder 
->> to make backward compatible that I don't really see much  point in 
->> doing so here.
-> 
-> Can you enumerate some of the other changes.
+>From a quick look at drivers/macintosh/Kconfig, all of the entries are for m68k
+and PPC Macs only.  The only thing that depends on X86 is the main menu...
 
-The hardest would probably be the PCI node, whose reg property 
-definition changed (the previous tree was including other things, such 
-as DMA controllers, in the PCI register resource).  The CPM node also 
-had its reg property changed, though I don't think anything was using it 
-yet.  The old way of specifying the 8272ads BCSR (in the /memory node) 
-is just too broken to leave in the device tree.
+Gr{oetje,eeting}s,
 
-The old compatible names and custom properties could be left in for a 
-little while for existing boards, though.
+						Geert
 
--Scott
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
