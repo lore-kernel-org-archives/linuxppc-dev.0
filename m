@@ -1,29 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
+Return-Path: <vitb@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 24887DDEDD
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 02:54:46 +1000 (EST)
-In-Reply-To: <469E4432.5050900@freescale.com>
-References: <1184161957.32199.52.camel@weaponx.rchland.ibm.com>
-	<1184162389.32199.65.camel@weaponx.rchland.ibm.com>
-	<4EAC985A-2F04-465D-AB69-C67807310D7B@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA3030669AF@az33exm25.fsl.freescale.net>
-	<28A3F6B9-512B-4D86-8E0D-A7680CCE2354@kernel.crashing.org>
-	<1184622446.25235.89.camel@localhost.localdomain>
-	<C2D29334-489F-49B0-8220-0D94E89FEAC3@kernel.crashing.org>
-	<1184707558.25235.159.camel@localhost.localdomain>
-	<20070717222507.GA4682@ld0162-tx32.am.freescale.net>
-	<A86AB8AE-E421-457B-ABE8-9AD93CCFCDC8@kernel.crashing.org>
-	<469E4432.5050900@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E617296B-7950-46AC-8400-68168DED057F@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC][PATCH 6/8] Walnut DTS
-Date: Thu, 19 Jul 2007 18:54:32 +0200
-To: Scott Wood <scottwood@freescale.com>
-Cc: Yoder Stuart-B08248 <stuart.yoder@freescale.com>, linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id E8EC8DDEF3
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 02:58:04 +1000 (EST)
+Date: Thu, 19 Jul 2007 20:57:45 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 49/61] 8xx: Update device trees.
+Message-ID: <20070719205745.57f9d5a0@localhost.localdomain>
+In-Reply-To: <F8A0BE8F-8DBE-42DC-B3CD-02EB339A739E@kernel.crashing.org>
+References: <20070718013604.GU15238@ld0162-tx32.am.freescale.net>
+	<F8A0BE8F-8DBE-42DC-B3CD-02EB339A739E@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,27 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Yes indeed.  The problem with your suggested "obvious way"
->
-> I said it was obvious, not obviously correct. :-)
+just my 2 cents.
+[snip]
+> 
+> > +				fsl,cpm-brg = <1>;
+> > +				fsl,cpm-command = <0090>;
+> 
+> Are these two documented?  Your patch queue is too
+> long for me to check for myself.
+> 
+In fact, there were different approaches to describe CPM, and I am sure this is not the end.
+These aren't documented, and I think we do not need that so far: I am pretty sure this will change
+to something more comfortable as new similar ports will follow-up. Meanwhile, values are self-description
+for anybody familiar with this SoC.
 
-I know :-)
-
->> is that you wouldn't get a unit address included if your
->> interrupt-map points (for some entry) at your device tree
->> parent, either.  Not all that hypothetical.
->
-> Ah, good point.  My inclination would be to, rather than check how  
-> we got to the node, check whether it's the device's parent.  If  
-> not, then the presence of #address-cells (other than zero for  
-> compatibility) is an error.  Otherwise, #address-cells is used, and  
-> defaults are handled the same as with reg/ranges translation.
-
-This might work; it is less flexible than the actual interrupt
-mapping definition though (and such flexibility is good, as long
-as you don't abuse it ;-) ).  Anyway, we're stuck with the actual
-current imap recommended practice.  It might not be perfect but
-it does work, is proven in the field, and is the standard.
+> > -	soc885@ff000000 {
+> > +	bcsr@ff080000 {
+> 
+> Maybe use a more generic name, I have no idea what a
+> "BCSR" is.
+> 
+IIRC, QE stuff, when first introduced, had bcsr bindings, that were discussed and agreed here.
 
 
-Segher
+
+-- 
+Sincerely, Vitaly
