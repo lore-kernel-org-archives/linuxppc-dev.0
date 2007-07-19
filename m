@@ -1,11 +1,11 @@
 Return-Path: <grant.likely@secretlab.ca>
-Date: Thu, 19 Jul 2007 12:37:24 -0600
+Date: Thu, 19 Jul 2007 12:37:29 -0600
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 1/4] bootwrapper: In cuImage,
-	print message for ENET devices not found in tree
+Subject: [PATCH 2/4] mpc8349: Add linux,network-index to ethernet nodes in
+	device tree
 In-reply-to: <20070719183415.7458.42622.stgit@trillian>
 To: linuxppc-dev@ozlabs.com
-Message-id: <20070719183723.7458.63748.stgit@trillian>
+Message-id: <20070719183729.7458.41737.stgit@trillian>
 Content-type: text/plain; charset=utf-8; format=fixed
 References: <20070719183415.7458.42622.stgit@trillian>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,37 +19,68 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Grant Likely <grant.likely@secretlab.ca>
 
+cuImage need to know the logical index of the ethernet devices in order
+to assign mac addresses.  This patch adds the needed properties
+
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 CC: Scott Wood <scottwood@freescale.com>
 CC: Kumar Gala <galak@kernel.crashing.org>
 ---
 
- arch/powerpc/boot/devtree.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+ arch/powerpc/boot/dts/mpc8349emitx.dts   |    2 ++
+ arch/powerpc/boot/dts/mpc8349emitxgp.dts |    1 +
+ arch/powerpc/boot/dts/mpc834x_mds.dts    |    2 ++
+ 3 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/boot/devtree.c b/arch/powerpc/boot/devtree.c
-index c995155..8000399 100644
---- a/arch/powerpc/boot/devtree.c
-+++ b/arch/powerpc/boot/devtree.c
-@@ -97,14 +97,14 @@ void __dt_fixup_mac_addresses(u32 startindex, ...)
- 	while ((addr = va_arg(ap, const u8 *))) {
- 		devp = find_node_by_prop_value(NULL, "linux,network-index",
- 					       (void*)&index, sizeof(index));
--
--		printf("ENET%d: local-mac-address <-"
--		       " %02x:%02x:%02x:%02x:%02x:%02x\n\r", index,
--		       addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
--
--		if (devp)
-+		if (devp) {
-+			printf("ENET%d: local-mac-address <-"
-+			       " %02x:%02x:%02x:%02x:%02x:%02x\n\r", index,
-+			       addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
- 			setprop(devp, "local-mac-address", addr, 6);
--
-+		} else {
-+			printf("ENET%d: no device in tree\n\r", index);
-+		}
- 		index++;
- 	}
- 	va_end(ap);
+diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
+index ae9bca5..7c13b38 100644
+--- a/arch/powerpc/boot/dts/mpc8349emitx.dts
++++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
+@@ -141,6 +141,7 @@
+ 			interrupts = <20 8 21 8 22 8>;
+ 			interrupt-parent = < &ipic >;
+ 			phy-handle = < &phy1c >;
++			linux,network-index = <0>;
+ 		};
+ 
+ 		ethernet@25000 {
+@@ -160,6 +161,7 @@
+ 			interrupts = <23 8 24 8 25 8>;
+ 			interrupt-parent = < &ipic >;
+ 			phy-handle = < &phy1f >;
++			linux,network-index = <1>;
+ 		};
+ 
+ 		serial@4500 {
+diff --git a/arch/powerpc/boot/dts/mpc8349emitxgp.dts b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
+index f636528..3c42902 100644
+--- a/arch/powerpc/boot/dts/mpc8349emitxgp.dts
++++ b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
+@@ -116,6 +116,7 @@
+ 			interrupts = <20 8 21 8 22 8>;
+ 			interrupt-parent = < &ipic >;
+ 			phy-handle = < &phy1c >;
++			linux,network-index = <0>;
+ 		};
+ 
+ 		serial@4500 {
+diff --git a/arch/powerpc/boot/dts/mpc834x_mds.dts b/arch/powerpc/boot/dts/mpc834x_mds.dts
+index 310e877..13779cd 100644
+--- a/arch/powerpc/boot/dts/mpc834x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc834x_mds.dts
+@@ -146,6 +146,7 @@
+ 			interrupts = <20 8 21 8 22 8>;
+ 			interrupt-parent = < &ipic >;
+ 			phy-handle = < &phy0 >;
++			linux,network-index = <0>;
+ 		};
+ 
+ 		ethernet@25000 {
+@@ -165,6 +166,7 @@
+ 			interrupts = <23 8 24 8 25 8>;
+ 			interrupt-parent = < &ipic >;
+ 			phy-handle = < &phy1 >;
++			linux,network-index = <1>;
+ 		};
+ 
+ 		serial@4500 {
