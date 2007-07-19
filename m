@@ -1,30 +1,20 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 340FCDE1C8
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 01:48:37 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6JFmY7q008729
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 11:48:34 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l6JFmUc4207824
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 09:48:32 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6JFmLw7032210
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 09:48:21 -0600
-Message-Id: <200707191548.l6JFmKi3032157@d03av03.boulder.ibm.com>
-Subject: [PATCH 3/4] ibmveth: Add ethtool TSO handlers
-To: santil@linux.vnet.ibm.com
-From: Brian King <brking@linux.vnet.ibm.com>
-Date: Thu, 19 Jul 2007 10:48:20 -0500
-In-Reply-To: <1184860086366-patch-mail.ibm.com>
-References: <1184860086366-patch-mail.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, rcjenn@linux.vnet.ibm.com,
-	brking@linux.vnet.ibm.com, netdev@vger.kernel.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8FBA7DE09B
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 01:51:32 +1000 (EST)
+In-Reply-To: <1184750539.27603.7.camel@localhost.localdomain>
+References: <1184750539.27603.7.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <F4643E18-47E4-4077-819F-01E298025BF3@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] Add 8548CDS with Arcadia 3.0 support
+Date: Thu, 19 Jul 2007 17:51:17 +0200
+To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,28 +24,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> +	compatible = "MPC8548CDS", "MPC85xxCDS";
 
-Add handlers for get_tso and get_ufo to prevent errors being printed
-by ethtool.
+No new "xx" please.
 
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
----
+> +	memory {
+> +		device_type = "memory";
+> +		reg = <00000000 08000000>;	// 128M at 0x0
 
- linux-2.6-bjking1/drivers/net/ibmveth.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+memory@0.  Simplified rule: whenever there is a "reg",
+there is an "@".
 
-diff -puN drivers/net/ibmveth.c~ibmveth_ethtool_get_tso drivers/net/ibmveth.c
---- linux-2.6/drivers/net/ibmveth.c~ibmveth_ethtool_get_tso	2007-07-19 08:39:31.000000000 -0500
-+++ linux-2.6-bjking1/drivers/net/ibmveth.c	2007-07-19 08:39:31.000000000 -0500
-@@ -761,7 +761,9 @@ static const struct ethtool_ops netdev_e
- 	.get_tx_csum		= ethtool_op_get_tx_csum,
- 	.set_tx_csum		= ibmveth_set_tx_csum,
- 	.get_rx_csum		= ibmveth_get_rx_csum,
--	.set_rx_csum		= ibmveth_set_rx_csum
-+	.set_rx_csum		= ibmveth_set_rx_csum,
-+	.get_tso			= ethtool_op_get_tso,
-+	.get_ufo			= ethtool_op_get_ufo
- };
- 
- static int ibmveth_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
-_
+> +	soc8548@e0000000 {
+
+soc@e0000000
+
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		device_type = "soc";
+
+No "device_type".  Missing "compatible".
+
+> +		ranges = <0 e0000000 00100000>;
+> +		reg = <e0000000 00100000>;	// CCSRBAR 1M
+
+"reg" and "ranges" overlap, that can't be right.
+
+> +		i2c@3000 {
+> +			device_type = "i2c";
+> +			compatible = "fsl-i2c";
+
+Please put a more exact "compatible" entry in there.  If
+you need to keep "fsl-i2c" as well, for backwards compatibility
+reasons, that's fine; but do put a better name in.
+
+> +			dfsrr;
+
+This wins the prize for worst-name property ever!  :-)
+
+> +		serial@4500 {
+> +			device_type = "serial";
+> +			compatible = "ns16550";
+> +			reg = <4500 100>; 	// reg base, size
+
+I wonder how it can be NS16550-compatible if its register
+bank is a completely different size.
+
+
+> +		pci1: pci@8000 {
+> +			interrupt-map-mask = <f800 0 0 7>;
+> +			interrupt-map = <
+> +
+> +				/* IDSEL 0x2 (PCIX Tsi310 bridge) */
+> +				1000 0 0 1 &mpic 0 1
+> +				1000 0 0 2 &mpic 1 1
+> +				1000 0 0 3 &mpic 2 1
+> +				1000 0 0 4 &mpic 3 1
+
+You map all dev#s' interrupts identically, you could just do
+
+	interrupt-map-mask = <0 0 0 7>
+
+and do one set of four mappings in the interrupt-map, with the
+device number field set to 0.
+
+The mask exists to not have to write out lots of huge tables :-)
+
+> +		pci@9000 {
+> +			interrupt-map-mask = <f800 0 0 7>;
+> +			interrupt-map = <
+> +
+> +				/* IDSEL 0x15 */
+> +				a800 0 0 1 &mpic b 1
+> +				a800 0 0 2 &mpic b 1
+> +				a800 0 0 3 &mpic b 1
+> +				a800 0 0 4 &mpic b 1>;
+
+You can do a similar mask trick here.
+
+> +		mpic: pic@40000 {
+
+interrupt-controller@40000
+
+
+Segher
