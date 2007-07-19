@@ -1,19 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.226])
-	by ozlabs.org (Postfix) with ESMTP id 0911BDDF6C
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 05:49:27 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id l1so581043nzf
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 12:49:26 -0700 (PDT)
-Message-ID: <fa686aa40707191249r1e73f6f7s7f2aa4502919e98a@mail.gmail.com>
-Date: Thu, 19 Jul 2007 13:49:25 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Geoff Levand" <geoffrey.levand@am.sony.com>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>, "Arnd Bergmann" <arnd@arndb.de>,
-	"Scott Wood" <scottwood@freescale.com>
-Subject: BUG: compile failure on ps3-head.S
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 09DCADDF6C
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 05:54:57 +1000 (EST)
+In-Reply-To: <20070718223034.7388e59f.akpm@linux-foundation.org>
+References: <20070714012033.GC31649@Krystal>
+	<20070718223034.7388e59f.akpm@linux-foundation.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <D9805F9D-04B0-4422-81F1-958B15482A93@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Powerpc - Include pagemap.h in asm/powerpc/tlb.h
+Date: Thu, 19 Jul 2007 14:55:23 -0500
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,35 +25,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-commit id bafdb645779c63300763acb383f7b9dd2d427228 (on Linus' tree)
-causes breakage on my mpc8349 build (see below).  I've worked around
-it by removing ps3* from arch/powerpc/boot/Makefile, but I have not
-dug into what the 'proper' solution should be.
 
-Cheers,
-g.
+On Jul 19, 2007, at 12:30 AM, Andrew Morton wrote:
 
-Toolchain: gcc version 4.0.0 (DENX ELDK 4.0 4.0.0)
-Build command: make mpc834x_itxgp_defconfig; make zImage
+> On Fri, 13 Jul 2007 21:20:33 -0400 Mathieu Desnoyers  
+> <mathieu.desnoyers@polymtl.ca> wrote:
+>
+>> Powerpc - Include pagemap.h in asm/powerpc/tlb.h
+>>
+>> Fixes this powerpc build error in 2.6.22-rc6-mm1 for powerpc 64 :
+>>
+>> In file included from include2/asm/tlb.h:60,
+>>                  from /home/compudj/git/linux-2.6-lttng/arch/ 
+>> powerpc/mm/init_64.
+>> c:56:
+>> /home/compudj/git/linux-2.6-lttng/include/asm-generic/tlb.h: In  
+>> function 'tlb_fl
+>> ush_mmu':
+>> /home/compudj/git/linux-2.6-lttng/include/asm-generic/tlb.h:76:  
+>> error: implicit
+>> declaration of function 'release_pages'
+>> /home/compudj/git/linux-2.6-lttng/include/asm-generic/tlb.h: In  
+>> function 'tlb_re
+>> move_page':
+>> /home/compudj/git/linux-2.6-lttng/include/asm-generic/tlb.h:105:  
+>> error: implicit
+>>  declaration of function 'page_cache_release'
+>
+> You have some wordwrapping going on there.
+>
+>> make[2]: *** [arch/powerpc/mm/init_64.o] Error 1
+>>
+>> release_pages is declared in linux/pagemap.h, but cannot be  
+>> included in
+>> linux/swap.h because of a sparc related comment:
+>>
+>> /* only sparc can not include linux/pagemap.h in this file
+>>  * so leave page_cache_release and release_pages undeclared... */
+>> #define free_page_and_swap_cache(page) \
+>>         page_cache_release(page)
+>> #define free_pages_and_swap_cache(pages, nr) \
+>>         release_pages((pages), (nr), 0);
+>
+> It's always a worry when this happens.  What change made us need this
+> inclusion?  How come you're hitting it but I (and test.kernel.org,  
+> at least)
+> did not?  How come so few other architectures include pagemap.h from
+> asm/tlb.h?  Why do header files get into such a mess?
+>
+>
+>> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+>> CC: linuxppc-dev@ozlabs.org
+>> CC: Paul Mackerras <paulus@samba.org>
+>> ---
+>>  include/asm-powerpc/tlb.h |    2 ++
+>>  1 file changed, 2 insertions(+)
+>>
+>> Index: linux-2.6-lttng/include/asm-powerpc/tlb.h
+>> ===================================================================
+>> --- linux-2.6-lttng.orig/include/asm-powerpc/tlb.h	2007-07-13  
+>> 11:30:54.000000000 -0400
+>> +++ linux-2.6-lttng/include/asm-powerpc/tlb.h	2007-07-13  
+>> 11:31:22.000000000 -0400
+>> @@ -23,6 +23,8 @@
+>>  #include <asm/mmu.h>
+>>  #endif
+>>
+>> +#include <linux/pagemap.h>
+>> +
+>>  struct mmu_gather;
+>>
+>
+> Oh well.  I queued it up for someone else to worry over ;)
 
-make ARCH=ppc64 -f scripts/Makefile.build obj=arch/powerpc/boot
-arch/powerpc/boot/zImage
-  ppc_6xx-gcc -m32 -Wp,-MD,arch/powerpc/boot/.ps3-head.o.d
--D__ASSEMBLY__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs
--fno-strict-aliasing -Os -msoft-float -pipe -fomit-frame-pointer
--fno-builtin -fPIC -nostdinc -isystem
-/home/opt/eldk-4.0/usr/bin/../lib/gcc/powerpc-linux/4.0.0/include
--traditional -nostdinc -c -o arch/powerpc/boot/ps3-head.o
-arch/powerpc/boot/ps3-head.S
-arch/powerpc/boot/ps3-head.S: Assembler messages:
-arch/powerpc/boot/ps3-head.S:40: Error: Unrecognized opcode: `clrldi'
-arch/powerpc/boot/ps3-head.S:41: Error: Unrecognized opcode: `mtmsrd'
-make[1]: *** [arch/powerpc/boot/ps3-head.o] Error 1
-make: *** [zImage] Error 2
+Andrew,
 
+Are you sending this to linus directly or should this go via paul and  
+me?
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+- k
