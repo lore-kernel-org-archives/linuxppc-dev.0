@@ -1,17 +1,14 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 19 Jul 2007 11:32:30 +1000
+Date: Thu, 19 Jul 2007 12:10:59 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 17/61] bootwrapper: Add 8xx support.
-Message-ID: <20070719013230.GB20458@localhost.localdomain>
-References: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
-	<20070718013318.GP15238@ld0162-tx32.am.freescale.net>
-	<20070718033026.GG18251@localhost.localdomain>
-	<469E3C11.1090809@freescale.com>
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH 1/15] boot: find initrd location from device-tree
+Message-ID: <20070719021059.GD20458@localhost.localdomain>
+References: <boot-6-00.miltonm@bga.com> <boot-6-01.miltonm@bga.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <469E3C11.1090809@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <boot-6-01.miltonm@bga.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,47 +18,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 18, 2007 at 11:13:05AM -0500, Scott Wood wrote:
-> David Gibson wrote:
-> > On Tue, Jul 17, 2007 at 08:33:18PM -0500, Scott Wood wrote:
-> > [snip]
-> > 
-> >>diff --git a/arch/powerpc/boot/cuboot-8xx.c b/arch/powerpc/boot/cuboot-8xx.c
-> >>new file mode 100644
-> >>index 0000000..35476a0
-> >>--- /dev/null
-> >>+++ b/arch/powerpc/boot/cuboot-8xx.c
-> >>@@ -0,0 +1,47 @@
-> >>+/*
-> >>+ * Old U-boot compatibility for 8xx
-> >>+ *
-> >>+ * Author: Scott Wood <scottwood@freescale.com>
-> >>+ *
-> >>+ * Copyright (c) 2007 Freescale Semiconductor, Inc.
-> >>+ *
-> >>+ * This program is free software; you can redistribute it and/or modify it
-> >>+ * under the terms of the GNU General Public License version 2 as published
-> >>+ * by the Free Software Foundation.
-> >>+ */
-> >>+
-> >>+#include "ops.h"
-> >>+#include "stdio.h"
-> >>+#include "cuboot.h"
-> >>+
-> >>+#define TARGET_8xx
-> >>+#define TARGET_HAS_ETH1
-> > 
-> >            ^^^^^^^^^^^^^^^
-> > Is that really true for all 8xx boards?
+On Tue, Jul 10, 2007 at 05:07:38PM -0500, Milton Miller wrote:
+> Some platforms have a boot agent that can create or modify properties in
+> the device-tree and load images into memory.  Provide a helper to set
+> loader_info used by prep_initrd().
 > 
-> Well, no.  Even on a given board, it depends on the version of u-boot.
-> 
-> There's nothing after enet1addr that the bootwrapper cares about, 
-> though, so the only harm is if the device tree has a second network 
-> interface but u-boot doesn't know about it, and the bootwrapper ends up 
-> pulling in junk rather than leaving zeroes.
+> Signed-off-by: Milton Miller <miltonm@bga.com>
 
-That sounds like a terribly fragile way of handling things.
+Looks reasonable.
+
+Acked-by: David Gibson <david@gibson.dropbear.id.au>
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
