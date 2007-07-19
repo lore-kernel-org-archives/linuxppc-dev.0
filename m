@@ -1,25 +1,17 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 623CADE036
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 01:54:18 +1000 (EST)
-Date: Thu, 19 Jul 2007 10:52:07 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <mgreer@mvista.com>
+Date: Thu, 19 Jul 2007 08:58:15 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 03/12] Consolidate of_device_is_compatible
-Message-ID: <20070719155207.GA28617@ld0162-tx32.am.freescale.net>
-References: <20070718173024.50204a1a.sfr@canb.auug.org.au>
-	<20070720010742.e60c67a7.sfr@canb.auug.org.au>
-	<20070720011012.4eca281d.sfr@canb.auug.org.au>
-Mime-Version: 1.0
+Subject: Re: Do we need to reset the master branch?
+Message-ID: <20070719155815.GA21186@mag.az.mvista.com>
+References: <20070719151746.GB20538@mag.az.mvista.com>
+	<20070720012708.91c77527.sfr@canb.auug.org.au>
+	<20070719153217.GC20538@mag.az.mvista.com>
+	<20070720014432.a46164a8.sfr@canb.auug.org.au>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070720011012.4eca281d.sfr@canb.auug.org.au>
-Cc: sparclinux@vger.kernel.org, ppc-dev <linuxppc-dev@ozlabs.org>,
-	paulus@samba.org, "David S. Miller" <davem@davemloft.net>,
-	wli@holomorphy.com
+In-Reply-To: <20070720014432.a46164a8.sfr@canb.auug.org.au>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,15 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 20, 2007 at 01:10:12AM +1000, Stephen Rothwell wrote:
-> The only difference here is that Sparc uses strncmp to match compatibility
-> names while PowerPC uses strncasecmp.
+On Fri, Jul 20, 2007 at 01:44:32AM +1000, Stephen Rothwell wrote:
+> On Thu, 19 Jul 2007 08:32:17 -0700 "Mark A. Greer" <mgreer@mvista.com> wrote:
+> >
+> > I was in the master branch of powerpc.git and did a 'git-pull'
+> 
+> Sorry, I hadn't updated since this afternoon.  Looks like Paul has reset
+> his master tree to be the same as Linus', so you do need to do a reset.
+> Or checkout a separate branch and use
+> 
+> git fetch -f <powerpc.git tree> master:<whatever branch tracks master>
+> 
+> Using recent git (after 1.5.something), you can track the whole powerpc
+> tree like this:
+> 
+> git remote add powerpc git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
+> git fetch powerpc
+> 
+> This will track the tree in branches called powerpc/<branch> and do
+> resets as necessary.
 
-Could we put a comment in saying that both should really just use
-strcmp(), and that this mechanism should go away once any compatibility
-issues are found and addressed?
+Oh, that's cool  Thanks Stephen.
 
-The PowerPC one will need to drop the 'n' soon, as well, but that should
-be a separate patch.
-
--Scott
+Mark
