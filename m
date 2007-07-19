@@ -1,20 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 13CFFDDF70
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 05:56:52 +1000 (EST)
-In-Reply-To: <11847405503115-git-send-email-afleming@freescale.com>
-References: <11847405503115-git-send-email-afleming@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <AC7300C2-1041-4D80-A8FE-1568C770821D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] Fix error checking in Vitesse IRQ config
-Date: Thu, 19 Jul 2007 14:57:15 -0500
-To: Jeff Garzik <jeff@garzik.org>
-Cc: netdev <netdev@vger.kernel.org>,
-	"linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+Return-Path: <glikely@secretlab.ca>
+Message-ID: <fa686aa40707191300v48ea7ebbj47b883563f11c9df@mail.gmail.com>
+Date: Thu, 19 Jul 2007 14:00:28 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Jerry Van Baren" <gerald.vanbaren@smiths-aerospace.com>
+Subject: Re: [PATCH 3/4] mpc8349emitx: Add chosen node for default stdout path
+In-Reply-To: <469FC275.7050309@smiths-aerospace.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20070719183415.7458.42622.stgit@trillian>
+	<20070719183734.7458.83695.stgit@trillian>
+	<469FB47D.4030009@freescale.com>
+	<fa686aa40707191243wb4ce9c1n86002405c5d01bab@mail.gmail.com>
+	<469FC275.7050309@smiths-aerospace.com>
+Cc: linuxppc-dev@ozlabs.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,59 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On 7/19/07, Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com> wrote:
+> I think the "proper" solution is not to add the /chosen node in the dts
+> but rather to generate a _correct_ one in u-boot.  Note that
+> linux,stdout-path is something that _should_ be generated based on the
+> u-boot configuration (currently it is hard #defined, IMHO it should be
+> part of the u-boot environment).
 
-On Jul 18, 2007, at 1:35 AM, Andy Fleming wrote:
+That works for u-boot; but it doesn't work for cuImage.  As it stands
+now; you need different dts files for the two boot methods.
 
-> phy_read() returns a negative number if there's an error, but the
-> error-checking code in the Vitesse driver's config_intr function
-> triggers if phy_read() returns non-zero.  Correct that.
->
-> Signed-off-by: Andy Fleming <afleming@freescale.com>
+g.
 
-Jeff,
-
-Can you make sure to send this to linus since its need to properly  
-fix the Vitesse phy's used on the 8641HPCN and 8544 DS boards.
-
-thanks
-
-- k
-
-> ---
-> I made a really stupid mistake in the 4 patches I sent out,  
-> earlier.  I
-> thought those patches had been tested, but they hadn't been.  This one
-> corrects a tiny error in the patch, and they have now been tested.   
-> As before
-> this change can be pulled from:
->
-> http://opensource.freescale.com/pub/scm/linux-2.6-85xx.git netdev
->
-> Really, REALLY sorry about that.  I have been given a paper bag of  
-> appropriate
-> size and shape to fit over my head.
->
->  drivers/net/phy/vitesse.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/net/phy/vitesse.c b/drivers/net/phy/vitesse.c
-> index 6a53856..8874497 100644
-> --- a/drivers/net/phy/vitesse.c
-> +++ b/drivers/net/phy/vitesse.c
-> @@ -109,7 +109,7 @@ static int vsc824x_config_intr(struct  
-> phy_device *phydev)
->  		 */
->  		err = phy_read(phydev, MII_VSC8244_ISTAT);
->
-> -		if (err)
-> +		if (err < 0)
->  			return err;
->
->  		err = phy_write(phydev, MII_VSC8244_IMASK, 0);
-> -- 
-> 1.5.0.2.230.gfbe3d-dirty
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
