@@ -1,14 +1,22 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 19 Jul 2007 15:02:41 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 02/11] dtc: move declaration of yyerror
-Message-ID: <20070719050241.GA31131@localhost.localdomain>
-References: <dtc-5-00.miltonm@bga.com> <dtc-5-02.miltonm@bga.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <dtc-5-02.miltonm@bga.com>
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
+	[207.189.120.14])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 16E7FDDEC5
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 15:30:43 +1000 (EST)
+Date: Wed, 18 Jul 2007 22:30:34 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: Powerpc - Include pagemap.h in asm/powerpc/tlb.h
+Message-Id: <20070718223034.7388e59f.akpm@linux-foundation.org>
+In-Reply-To: <20070714012033.GC31649@Krystal>
+References: <20070714012033.GC31649@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,53 +26,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Jul 07, 2007 at 01:18:47AM -0500, Milton Miller wrote:
-> yyerror() is used by both dtc-parser.y and dtc-lexer.l, so move
-> the declaration to srcpos.h.
+On Fri, 13 Jul 2007 21:20:33 -0400 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+
+> Powerpc - Include pagemap.h in asm/powerpc/tlb.h
 > 
-> Signed-off-by: Milton Miller <miltonm@bga.com>
-> --- 
-> eliminates implicit declaration warning.
-
-Eck.  This wasn't necessary: that part of dtc-parser.y is included
-into dtc-parser.tab.h which in turn is included into dtc-lexer.l.
-srcpos.h is supposed to be exclusively for, well, the source position
-stuff.
-
-Please revert.
-
-> Index: dtc/dtc-parser.y
-> ===================================================================
-> --- dtc.orig/dtc-parser.y	2007-06-14 23:16:18.000000000 -0500
-> +++ dtc/dtc-parser.y	2007-06-14 23:16:25.000000000 -0500
-> @@ -26,7 +26,6 @@
->  #include "srcpos.h"
->  
->  int yylex(void);
-> -void yyerror(char const *);
->  cell_t cell_from_string(char *s, unsigned int base);
->  
->  extern struct boot_info *the_boot_info;
-> Index: dtc/srcpos.h
-> ===================================================================
-> --- dtc.orig/srcpos.h	2007-06-14 23:16:18.000000000 -0500
-> +++ dtc/srcpos.h	2007-06-14 23:16:25.000000000 -0500
-> @@ -62,6 +62,7 @@ typedef struct YYLTYPE {
->  
->  
->  
-> +extern void yyerror(char const *);
->  
->  extern int srcpos_filenum;
->  
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> Fixes this powerpc build error in 2.6.22-rc6-mm1 for powerpc 64 :
 > 
+> In file included from include2/asm/tlb.h:60,
+>                  from /home/compudj/git/linux-2.6-lttng/arch/powerpc/mm/init_64.
+> c:56:
+> /home/compudj/git/linux-2.6-lttng/include/asm-generic/tlb.h: In function 'tlb_fl
+> ush_mmu':
+> /home/compudj/git/linux-2.6-lttng/include/asm-generic/tlb.h:76: error: implicit 
+> declaration of function 'release_pages'
+> /home/compudj/git/linux-2.6-lttng/include/asm-generic/tlb.h: In function 'tlb_re
+> move_page':
+> /home/compudj/git/linux-2.6-lttng/include/asm-generic/tlb.h:105: error: implicit
+>  declaration of function 'page_cache_release'
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+You have some wordwrapping going on there.
+
+> make[2]: *** [arch/powerpc/mm/init_64.o] Error 1
+> 
+> release_pages is declared in linux/pagemap.h, but cannot be included in
+> linux/swap.h because of a sparc related comment:
+> 
+> /* only sparc can not include linux/pagemap.h in this file
+>  * so leave page_cache_release and release_pages undeclared... */
+> #define free_page_and_swap_cache(page) \
+>         page_cache_release(page)
+> #define free_pages_and_swap_cache(pages, nr) \
+>         release_pages((pages), (nr), 0);
+
+It's always a worry when this happens.  What change made us need this
+inclusion?  How come you're hitting it but I (and test.kernel.org, at least)
+did not?  How come so few other architectures include pagemap.h from
+asm/tlb.h?  Why do header files get into such a mess?
+
+
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> CC: linuxppc-dev@ozlabs.org
+> CC: Paul Mackerras <paulus@samba.org>
+> ---
+>  include/asm-powerpc/tlb.h |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> Index: linux-2.6-lttng/include/asm-powerpc/tlb.h
+> ===================================================================
+> --- linux-2.6-lttng.orig/include/asm-powerpc/tlb.h	2007-07-13 11:30:54.000000000 -0400
+> +++ linux-2.6-lttng/include/asm-powerpc/tlb.h	2007-07-13 11:31:22.000000000 -0400
+> @@ -23,6 +23,8 @@
+>  #include <asm/mmu.h>
+>  #endif
+>  
+> +#include <linux/pagemap.h>
+> +
+>  struct mmu_gather;
+>  
+
+Oh well.  I queued it up for someone else to worry over ;)
