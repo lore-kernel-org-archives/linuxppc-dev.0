@@ -1,18 +1,24 @@
-Return-Path: <mgreer@mvista.com>
-Date: Thu, 19 Jul 2007 08:58:26 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: Do we need to reset the master branch?
-Message-ID: <20070719155826.GB21186@mag.az.mvista.com>
-References: <20070719151746.GB20538@mag.az.mvista.com>
-	<20070720012708.91c77527.sfr@canb.auug.org.au>
-	<20070719153217.GC20538@mag.az.mvista.com>
-	<20070720014432.a46164a8.sfr@canb.auug.org.au>
-	<20070720014618.a6eec3eb.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070720014618.a6eec3eb.sfr@canb.auug.org.au>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 1B76CDDF9F
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 02:02:09 +1000 (EST)
+Date: Fri, 20 Jul 2007 02:02:08 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 03/12] Consolidate of_device_is_compatible
+Message-Id: <20070720020208.89603f63.sfr@canb.auug.org.au>
+In-Reply-To: <20070719155207.GA28617@ld0162-tx32.am.freescale.net>
+References: <20070718173024.50204a1a.sfr@canb.auug.org.au>
+	<20070720010742.e60c67a7.sfr@canb.auug.org.au>
+	<20070720011012.4eca281d.sfr@canb.auug.org.au>
+	<20070719155207.GA28617@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__20_Jul_2007_02_02_08_+1000_G2H3UcHu26W3/MkK"
+Cc: sparclinux@vger.kernel.org, ppc-dev <linuxppc-dev@ozlabs.org>,
+	paulus@samba.org, "David S. Miller" <davem@davemloft.net>,
+	wli@holomorphy.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,15 +28,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 20, 2007 at 01:46:18AM +1000, Stephen Rothwell wrote:
-> On Fri, 20 Jul 2007 01:44:32 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> >
-> > git remote add powerpc git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
-> > git fetch powerpc
-> > 
-> > This will track the tree in branches called powerpc/<branch> and do
-> > resets as necessary.
-> 
-> You should not make any local commits to the powerpc/* branches, of course.
+--Signature=_Fri__20_Jul_2007_02_02_08_+1000_G2H3UcHu26W3/MkK
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Right.
+Hi Scott,
+
+On Thu, 19 Jul 2007 10:52:07 -0500 Scott Wood <scottwood@freescale.com> wro=
+te:
+>
+> On Fri, Jul 20, 2007 at 01:10:12AM +1000, Stephen Rothwell wrote:
+> > The only difference here is that Sparc uses strncmp to match compatibil=
+ity
+> > names while PowerPC uses strncasecmp.
+>=20
+> Could we put a comment in saying that both should really just use
+> strcmp(), and that this mechanism should go away once any compatibility
+> issues are found and addressed?
+
+That issue was discussed earlier and is high on the list of things to do
+after this lot goes in.  The priority here is to get the consolidation
+started along with no (or few) visible changes.
+
+> The PowerPC one will need to drop the 'n' soon, as well, but that should
+> be a separate patch.
+
+Yes, certainly.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__20_Jul_2007_02_02_08_+1000_G2H3UcHu26W3/MkK
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGn4sFTgG2atn1QN8RAj9YAJ9ckEzA/D/90PLXELt5MG3QMF1CjgCgjlSp
+Z3YXoFnkTsxtJla6tyNuKRY=
+=wRWa
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__20_Jul_2007_02_02_08_+1000_G2H3UcHu26W3/MkK--
