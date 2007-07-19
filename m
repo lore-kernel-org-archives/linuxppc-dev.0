@@ -1,22 +1,25 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
+Return-Path: <axboe@kernel.dk>
+Received: from kernel.dk (brick.kernel.dk [80.160.20.94])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 16E7FDDEC5
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 15:30:43 +1000 (EST)
-Date: Wed, 18 Jul 2007 22:30:34 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: Powerpc - Include pagemap.h in asm/powerpc/tlb.h
-Message-Id: <20070718223034.7388e59f.akpm@linux-foundation.org>
-In-Reply-To: <20070714012033.GC31649@Krystal>
-References: <20070714012033.GC31649@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org
+	(Client CN "A common name", Issuer "A common name" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 433C7DDEBC
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 15:33:27 +1000 (EST)
+Date: Thu, 19 Jul 2007 07:33:02 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 1/3] ps3: Disk Storage Driver
+Message-ID: <20070719053302.GO11657@kernel.dk>
+References: <20070716161539.075822000@pademelon.sonytel.be>
+	<20070716162206.392129000@pademelon.sonytel.be>
+	<20070718163637.3f0e0164.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070718163637.3f0e0164.akpm@linux-foundation.org>
+Cc: "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Alessandro Rubini <rubini@vision.unipv.it>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,62 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 13 Jul 2007 21:20:33 -0400 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-
-> Powerpc - Include pagemap.h in asm/powerpc/tlb.h
+On Wed, Jul 18 2007, Andrew Morton wrote:
+> On Mon, 16 Jul 2007 18:15:40 +0200
+> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 > 
-> Fixes this powerpc build error in 2.6.22-rc6-mm1 for powerpc 64 :
+> > From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> > 
+> > Add a Disk Storage Driver for the PS3:
 > 
-> In file included from include2/asm/tlb.h:60,
->                  from /home/compudj/git/linux-2.6-lttng/arch/powerpc/mm/init_64.
-> c:56:
-> /home/compudj/git/linux-2.6-lttng/include/asm-generic/tlb.h: In function 'tlb_fl
-> ush_mmu':
-> /home/compudj/git/linux-2.6-lttng/include/asm-generic/tlb.h:76: error: implicit 
-> declaration of function 'release_pages'
-> /home/compudj/git/linux-2.6-lttng/include/asm-generic/tlb.h: In function 'tlb_re
-> move_page':
-> /home/compudj/git/linux-2.6-lttng/include/asm-generic/tlb.h:105: error: implicit
->  declaration of function 'page_cache_release'
-
-You have some wordwrapping going on there.
-
-> make[2]: *** [arch/powerpc/mm/init_64.o] Error 1
+> Your patchset significantly hits powerpc, scsi and block.  So who gets to
+> merge this?  Jens?  James?  Paul?
 > 
-> release_pages is declared in linux/pagemap.h, but cannot be included in
-> linux/swap.h because of a sparc related comment:
+> Me, I guess ;)
+
+I think Paul was going to take it, or at least Geert hinted as such.
+
+> > +#define PS3DISK_MAX_DISKS	16
+> > +#define PS3DISK_MINORS		16
+> > +
+> > +#define KERNEL_SECTOR_SIZE	512
 > 
-> /* only sparc can not include linux/pagemap.h in this file
->  * so leave page_cache_release and release_pages undeclared... */
-> #define free_page_and_swap_cache(page) \
->         page_cache_release(page)
-> #define free_pages_and_swap_cache(pages, nr) \
->         release_pages((pages), (nr), 0);
+> Sigh.  We have at least ten separate definitions of SECTOR_SIZE< none of
+> them in the right place.  Cleanup opportunity for someone.
 
-It's always a worry when this happens.  What change made us need this
-inclusion?  How come you're hitting it but I (and test.kernel.org, at least)
-did not?  How come so few other architectures include pagemap.h from
-asm/tlb.h?  Why do header files get into such a mess?
+Indeed, it's universally 512 or << 9, just use that...
 
-
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> CC: linuxppc-dev@ozlabs.org
-> CC: Paul Mackerras <paulus@samba.org>
-> ---
->  include/asm-powerpc/tlb.h |    2 ++
->  1 file changed, 2 insertions(+)
+> > +#ifdef DEBUG
+> > +	unsigned int n = 0;
+> > +	struct bio *bio;
+> > +	rq_for_each_bio(bio, req)
+> > +		n++;
 > 
-> Index: linux-2.6-lttng/include/asm-powerpc/tlb.h
-> ===================================================================
-> --- linux-2.6-lttng.orig/include/asm-powerpc/tlb.h	2007-07-13 11:30:54.000000000 -0400
-> +++ linux-2.6-lttng/include/asm-powerpc/tlb.h	2007-07-13 11:31:22.000000000 -0400
-> @@ -23,6 +23,8 @@
->  #include <asm/mmu.h>
->  #endif
->  
-> +#include <linux/pagemap.h>
-> +
->  struct mmu_gather;
->  
+> I'm surprised that the block core doesn't have a helper to count the number
+> of bios in a request.
 
-Oh well.  I queued it up for someone else to worry over ;)
+What would be the point of such a helper? I've never seen a need for it.
+Geert uses it as debug code here, but the fact is that the number of
+bios in a request is a pretty pointless number. It doesn't tell you
+anything. There's no 1:1 mapping between bios and segments (or anything
+else for that matter), so the exercise is purely pointless.
+
+-- 
+Jens Axboe
