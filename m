@@ -1,23 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3851ADDED8
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 07:40:36 +1000 (EST)
-Subject: Re: [PATCH] Add StorCenter DTS first draft.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <F2806DFF-A43B-4853-A6C0-3D69B0231B06@kernel.crashing.org>
-References: <E1IAnwC-0003Xm-6U@jdl.com>
-	<1184722754.25235.183.camel@localhost.localdomain>
-	<5F6EB5F7-C5AE-437F-9DF1-22FE38D7A841@kernel.crashing.org>
-	<1184795678.25235.269.camel@localhost.localdomain>
-	<F2806DFF-A43B-4853-A6C0-3D69B0231B06@kernel.crashing.org>
-Content-Type: text/plain
-Date: Fri, 20 Jul 2007 07:39:57 +1000
-Message-Id: <1184881198.25235.347.camel@localhost.localdomain>
+Return-Path: <kim.phillips@freescale.com>
+Date: Thu, 19 Jul 2007 16:40:36 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 3/4] mpc8349emitx: Add chosen node for default stdout path
+Message-Id: <20070719164036.f3d4c86d.kim.phillips@freescale.com>
+In-Reply-To: <fa686aa40707191243wb4ce9c1n86002405c5d01bab@mail.gmail.com>
+References: <20070719183415.7458.42622.stgit@trillian>
+	<20070719183734.7458.83695.stgit@trillian>
+	<469FB47D.4030009@freescale.com>
+	<fa686aa40707191243wb4ce9c1n86002405c5d01bab@mail.gmail.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,17 +21,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-07-19 at 19:07 +0200, Segher Boessenkool wrote:
+On Thu, 19 Jul 2007 13:43:17 -0600
+"Grant Likely" <grant.likely@secretlab.ca> wrote:
+
+> On 7/19/07, Scott Wood <scottwood@freescale.com> wrote:
+> > Grant Likely wrote:
+> > > From: Grant Likely <grant.likely@secretlab.ca>
+> > >
+> > > To boot from a cuImage requires the device tree to have a
+> > > linux,stdout-path property in the chosen node.  This patch adds it
+> > > to the .dts files.
+> >
+> > This will break many current u-boots, as they blindly add a /chosen node
+> > regardless of whether one already exists.
 > 
-> So your plan is to prefer the device tree over the cputable, and
-> maybe even deprecate the cputable?  
+> That really should be fixed then.  In the meantime; I'll resubmit the
+> patch to add the chosen node; but with it commented out.
+> 
 
-Nah, you are fine not putting anything, but if it's in the DT it should
-be correct, not "0". Else, just don't put it in the DT.
+the old FLAT_TREE u-boot fdt fixup code renames any existing chosen
+node out of the way, and adds its fixed up version as /chosen.
 
-We use the DT to override cputable but that's mostly useful for things
-like pSeries where you can get some processors in "compatibility" mode
-over another one, or some virtual PVRs, and other fancy things like that
-where the cputable isn't very useful.
+The LIBFDT implementation replaces any existing /chosen with its fixed
+up version.
 
-Ben.
+So it all works out.  Adding chosen/linux,stdout-path properties to the
+kernel dtses is fine.
+
+btw, why are these changes being limited to the ITX and GP?
+
+Kim
