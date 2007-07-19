@@ -1,23 +1,35 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <HNGUYEN@de.ibm.com>
+Received: from mtagate5.de.ibm.com (mtagate5.de.ibm.com [195.212.29.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4ECC2DDF49
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 01:03:10 +1000 (EST)
-Message-ID: <469F7D1C.9040803@freescale.com>
-Date: Thu, 19 Jul 2007 10:02:52 -0500
-From: Scott Wood <scottwood@freescale.com>
+	(Client CN "mtagate5.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 92BC0DDEDD
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 01:04:25 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate5.de.ibm.com (8.13.8/8.13.8) with ESMTP id l6JF4GYo692840
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 15:04:16 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.4) with
+	ESMTP id l6JF48QM1560622
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 17:04:16 +0200
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l6JF3qIq011774
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 17:03:52 +0200
+In-Reply-To: <adalkdesyrs.fsf@cisco.com>
+Subject: Re: [PATCH 01/10] IB/ehca: Support for multiple event queues
+To: Roland Dreier <rdreier@cisco.com>
+Message-ID: <OF00D945EC.C16B2992-ONC125731D.0052335C-C125731D.0052B490@de.ibm.com>
+From: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
+Date: Thu, 19 Jul 2007 17:03:26 +0200
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 37/61] cpm2: Rework 8272ads initialization, and eliminate
-	init_fcc_ioports().
-References: <20070718013548.GI15238@ld0162-tx32.am.freescale.net>
-	<200707190204.44825.arnd@arndb.de>
-In-Reply-To: <200707190204.44825.arnd@arndb.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-type: text/plain; charset=US-ASCII
+Cc: Joachim Fenkes <fenkes@de.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+	"Michael S. Tsirkin" <mst@dev.mellanox.co.il>,
+	OF-General <general@lists.openfabrics.org>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,38 +39,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Wednesday 18 July 2007, Scott Wood wrote:
-> 
->>+static struct cpm_pin mpc8272ads_pins[] = {
->>+       /* SCC1 */
->>+       {3, 30, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
->>+       {3, 31, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
->>+
->>+       /* SCC4 */
->>+       {3, 21, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
->>+       {3, 22, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
->>+
->>+       /* FCC1 */
->>+       {0, 14, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
->>+       {0, 15, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
->>+       {0, 16, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
->>+       {0, 17, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-> 
-> 
-> I guess you considered moving such tables into the device tree at some point,
-> which doesn't seem that difficult at all to an ignorant reviewer like me.
-> 
-> What's the reasoning for putting it into the platform code after all?
-
-Ideally, this would be done by u-boot, and neither the kernel nor the 
-device tree would need to care.  However, u-boot's setting up of the 
-pins was lacking on all of the boards I tested on, so I had to fix it up 
-in the platform code.
-
-I considered putting it in the device tree as the qe code does; if there 
-are many boards like these that need the kernel to set up the pins, it 
-may be worthwhile.  We just need to come up with a good binding (e.g. no 
-using arbitrary enums defined in the kernel).
-
--Scott
+Roland Dreier <rdreier@cisco.com> wrote on 17.07.2007 19:52:55:
+> At a higher level, I'm left wondering why nobody talked about multiple
+> EQs during the last months of the 2.6.22 process and now all of a
+> sudden it becomes urgent in the last few days of the 2.6.23 merge
+> window.  That's not really how I like to merge features....
+OK, let keep multiple eqs for next release with a more stable
+verbs def.
+For the other patch to support MR with large pages we'll resend
+it (without deps on multiple eqs patch) to you soon.
+Regards
+Nam
