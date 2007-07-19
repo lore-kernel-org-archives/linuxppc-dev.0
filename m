@@ -1,27 +1,26 @@
-Return-Path: <michal.k.k.piotrowski@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
-	by ozlabs.org (Postfix) with ESMTP id 378EDDDED8
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 02:36:21 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k40so468054ugc
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 09:36:20 -0700 (PDT)
-Message-ID: <469F92AF.10405@googlemail.com>
-Date: Thu, 19 Jul 2007 18:34:55 +0200
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 26FFFDE016
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 02:36:31 +1000 (EST)
+Message-ID: <469F9301.6080402@freescale.com>
+Date: Thu, 19 Jul 2007 11:36:17 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [2/2] 2.6.22-git: known regressions
-References: <469F9125.8040502@googlemail.com>
-In-Reply-To: <469F9125.8040502@googlemail.com>
-Content-Type: text/plain; charset=UTF-8
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Andi Kleen <ak@suse.de>, Theodore Tso <tytso@mit.edu>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	Jeff Garzik <jeff@garzik.org>, linuxppc-dev@ozlabs.org,
-	Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-	Doug Chapman <doug.chapman@hp.com>,
-	Vasily Tarasov <vtaras@openvz.org>, linux-ide@vger.kernel.org,
-	Tejun Heo <htejun@gmail.com>, Mingming Cao <cmm@us.ibm.com>,
-	linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-	Jean Delvare <khali@linux-fr.org>, Christoph Lameter <clameter@sgi.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 53/61] 82xx: Set NOT_COHERENT_CACHE on 8272 with PCI.
+References: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
+	<20070718013611.GY15238@ld0162-tx32.am.freescale.net>
+	<20070718032857.GF18251@localhost.localdomain>
+	<F5E8139F-E8DA-4C41-8B90-E727FD4E346C@kernel.crashing.org>
+	<469E7350.3090308@freescale.com>
+	<97B4A805-6E2A-4F8E-BC56-5BDEE8D6F5F0@kernel.crashing.org>
+In-Reply-To: <97B4A805-6E2A-4F8E-BC56-5BDEE8D6F5F0@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,86 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+Kumar Gala wrote:
+> Can you dump the POCMRx registers and report their values and what / 
+> proc/iomem looks like.
 
-Here is a list of some known regressions in 2.6.22-git.
+POTAR0: 0x00080000
+POTAR1: 0x000a0000
+POTAR2: 0x00000000
 
-Feel free to add new regressions/remove fixed etc.
-http://kernelnewbies.org/known_regressions
+POBAR0: 0x00080000
+POBAR1: 0x000a0000
+POBAR2: 0x000f6000
 
-List of Aces
+POCMR0: 0xa00e0000
+POCMR1: 0x800e0000
+POCMR2: 0xc00fe000
 
-Name                    Regressions fixed since 21-Jun-2007
-Adrian Bunk                            3
-Andi Kleen                             2
-Andrew Morton                          2
-David Woodhouse                        2
-Hugh Dickins                           2
-Jens Axboe                             2
+PITAR0: 0x00000000
+PIBAR0: 0x00000000
+PICMR0: 0xa00fc000
 
+-sh-2.05b# cat /proc/iomem
+80000000-9fffffff : /soc@f0000000/pci@10800
+a0000000-bfffffff : /soc@f0000000/pci@10800
+   a0000000-a001ffff : 0000:00:17.0
+     a0000000-a001ffff : e1000
+   a0020000-a003ffff : 0000:00:17.0
+     a0020000-a003ffff : e1000
 
-
-FS
-
-Subject         : ia64 build failure from recent diskquota patch
-References      : http://lkml.org/lkml/2007/7/18/407
-Last known good : ?
-Submitter       : Doug Chapman <doug.chapman@hp.com>
-Caused-By       : Vasily Tarasov <vtaras@openvz.org>
-                  commit b716395e2b8e450e294537de0c91476ded2f0395
-Handled-By      : ?
-Status          : unknown
-
-Subject         : ext4 build warnings
-References      : http://lkml.org/lkml/2007/7/18/420
-Last known good : ?
-Submitter       : Jeff Garzik <jeff@garzik.org>
-Caused-By       : ?
-Handled-By      : Mingming Cao <cmm@us.ibm.com>
-Status          : unknown
-
-
-
-IDE
-
-Subject         : compile error if CONFIG_BLOCK not enabled related to linux/ide.h include
-References      : http://lkml.org/lkml/2007/7/18/11
-Last known good : ?
-Submitter       : Kumar Gala <galak@kernel.crashing.org>
-Caused-By       : ?
-Handled-By      : Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Status          : unknown
-
-
-
-Memory management
-
-Subject         : kmalloc zero size changes break i386
-References      : http://lkml.org/lkml/2007/7/19/172
-Last known good : ?
-Submitter       : Andi Kleen <ak@suse.de>
-Caused-By       : Christoph Lameter <clameter@sgi.com>
-                  commit 6cb8f91320d3e720351c21741da795fed580b21b
-Handled-By      : ?
-Status          : unknown
-
-
-
-SYSFS
-
-Subject         : sysfs root link count broken in 2.6.22-git5
-References      : http://lkml.org/lkml/2007/7/15/62
-Last known good : ?
-Submitter       : Jean Delvare <khali@linux-fr.org>
-Caused-By       : ?
-Handled-By      : Tejun Heo <htejun@gmail.com>
-Status          : unknown
-
-
-
-Regards,
-Michal
-
---
-LOG
-http://www.stardust.webpages.pl/log/
+-Scott
