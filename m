@@ -1,22 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.183])
-	by ozlabs.org (Postfix) with ESMTP id 86BFFDDFB8
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 08:16:30 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so840170wag
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 15:16:29 -0700 (PDT)
-Message-ID: <fa686aa40707191516s2a468cf9ka07d1f4369ac4b0e@mail.gmail.com>
-Date: Thu, 19 Jul 2007 16:16:29 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Geoff Levand" <geoffrey.levand@am.sony.com>
-Subject: Re: PS3: Fix build with 32-bit toolchains
-In-Reply-To: <469FDBDC.5030700@am.sony.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <fa686aa40707191249r1e73f6f7s7f2aa4502919e98a@mail.gmail.com>
-	<469FDBDC.5030700@am.sony.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Arnd Bergmann <arnd@arndb.de>
+Return-Path: <kim.phillips@freescale.com>
+Date: Thu, 19 Jul 2007 17:28:06 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 3/4] mpc8349emitx: Add chosen node for default stdout path
+Message-Id: <20070719172806.db53b792.kim.phillips@freescale.com>
+In-Reply-To: <469FDB3B.5000901@freescale.com>
+References: <20070719183415.7458.42622.stgit@trillian>
+	<20070719183734.7458.83695.stgit@trillian>
+	<469FB47D.4030009@freescale.com>
+	<fa686aa40707191243wb4ce9c1n86002405c5d01bab@mail.gmail.com>
+	<20070719164036.f3d4c86d.kim.phillips@freescale.com>
+	<469FDB3B.5000901@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,51 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/19/07, Geoff Levand <geoffrey.levand@am.sony.com> wrote:
-> The PS3 bootwrapper files use instructions only available on
-> 64-bit CPUs.  Add the code generation directive '.machine "ppc64"'
-> for toolchains configured for 32-bit CPUs.
->
-> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+On Thu, 19 Jul 2007 16:44:27 -0500
+Scott Wood <scottwood@freescale.com> wrote:
 
-> ---
-> Paul,
->
-> Please apply for 2.6.23-rc1.
->
->  arch/powerpc/boot/ps3-head.S   |    2 ++
->  arch/powerpc/boot/ps3-hvcall.S |    2 ++
->  2 files changed, 4 insertions(+)
->
-> --- a/arch/powerpc/boot/ps3-head.S
-> +++ b/arch/powerpc/boot/ps3-head.S
-> @@ -20,6 +20,8 @@
->
->  #include "ppc_asm.h"
->
-> +       .machine "ppc64"
-> +
->         .text
->
->  /*
-> --- a/arch/powerpc/boot/ps3-hvcall.S
-> +++ b/arch/powerpc/boot/ps3-hvcall.S
-> @@ -20,6 +20,8 @@
->
->  #include "ppc_asm.h"
->
-> +       .machine "ppc64"
-> +
->  /*
->   * The PS3 hypervisor uses a 64 bit "C" language calling convention.
->   * The routines here marshal arguments between the 32 bit wrapper
->
->
+> Kim Phillips wrote:
+> > the old FLAT_TREE u-boot fdt fixup code renames any existing chosen
+> > node out of the way, and adds its fixed up version as /chosen.
+> > 
+> > The LIBFDT implementation replaces any existing /chosen with its fixed
+> > up version.
+> 
+> Could you point out the code that does this?  I don't see it in either 
+> the old code or the new.
+> 
+
+libfdt (new): do_fdt() calls fdt_chosen(..., force=1), where, in
+fdt_chosen(), the check to not replace the existing node is governed by
+the value of force.
+
+[in gvb's fdt branch, where an 'fdt addr' command is no longer required
+prior to bootm ing, do_bootm_linux() calls fdt_chosen(...,force=0),
+so maybe it should be changed to force=1.]
+
+about the old code, you're right, I don't see it either - I must have
+been remembering running something else that did the rename.  Sorry for
+the noise.
+
+Kim
 
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+
+Kim
