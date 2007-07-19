@@ -1,25 +1,19 @@
-Return-Path: <axboe@kernel.dk>
-Received: from kernel.dk (brick.kernel.dk [80.160.20.94])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "A common name", Issuer "A common name" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 433C7DDEBC
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 15:33:27 +1000 (EST)
-Date: Thu, 19 Jul 2007 07:33:02 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 1/3] ps3: Disk Storage Driver
-Message-ID: <20070719053302.GO11657@kernel.dk>
-References: <20070716161539.075822000@pademelon.sonytel.be>
-	<20070716162206.392129000@pademelon.sonytel.be>
-	<20070718163637.3f0e0164.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070718163637.3f0e0164.akpm@linux-foundation.org>
-Cc: "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Alessandro Rubini <rubini@vision.unipv.it>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 48E0ADDEA3
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 15:45:30 +1000 (EST)
+In-Reply-To: <469E6241.5090604@freescale.com>
+References: <9b26986bc99c74c5e17e08191eb07d67@bga.com>
+	<469E6241.5090604@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <d385cb2ef0d915731d915efc3a8e6dff@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH 10/61] bootwrapper: flatdevtree fixes
+Date: Thu, 19 Jul 2007 00:45:18 -0500
+To: Scott Wood <scottwood@freescale.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,45 +23,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 18 2007, Andrew Morton wrote:
-> On Mon, 16 Jul 2007 18:15:40 +0200
-> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> 
-> > From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> > 
-> > Add a Disk Storage Driver for the PS3:
-> 
-> Your patchset significantly hits powerpc, scsi and block.  So who gets to
-> merge this?  Jens?  James?  Paul?
-> 
-> Me, I guess ;)
+On Jul 18, 2007, at 1:56 PM, Scott Wood wrote:
+> Milton Miller wrote:
+>> In-Reply-To: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
+>> On Wed Jul 18 11:33:08 EST 2007, Scott Wood wrote:
+>>> 1. ft_create_node was returning the internal pointer rather than a 
+>>> phandle.
+>>> 2. ft_find_device_rel was treating lookups relative to root as an 
+>>> error.
+>> No, it is treating lookups relative to NULL as an error.
+>> Your patch changes it to treat lookups relative to the NULL phandle 
+>> as relative to root.
+>
+> Other parts of the code (such as ft_create_node) already do that. 
+> What's wrong with it?
 
-I think Paul was going to take it, or at least Geert hinted as such.
+Well, that behavior may be ok, but the change log should say that is 
+the behavior you are changing.
 
-> > +#define PS3DISK_MAX_DISKS	16
-> > +#define PS3DISK_MINORS		16
-> > +
-> > +#define KERNEL_SECTOR_SIZE	512
-> 
-> Sigh.  We have at least ten separate definitions of SECTOR_SIZE< none of
-> them in the right place.  Cleanup opportunity for someone.
+Ie I would record 2 as:
 
-Indeed, it's universally 512 or << 9, just use that...
+When ft_find_device_rel is asked to find relative to NULL, find 
+realative to root instead of returning an error.
 
-> > +#ifdef DEBUG
-> > +	unsigned int n = 0;
-> > +	struct bio *bio;
-> > +	rq_for_each_bio(bio, req)
-> > +		n++;
-> 
-> I'm surprised that the block core doesn't have a helper to count the number
-> of bios in a request.
+or:
 
-What would be the point of such a helper? I've never seen a need for it.
-Geert uses it as debug code here, but the fact is that the number of
-bios in a request is a pretty pointless number. It doesn't tell you
-anything. There's no 1:1 mapping between bios and segments (or anything
-else for that matter), so the exercise is purely pointless.
+ft_find_device_rel now treats lookups relative to NULL as relative to 
+the root instead of erroring out.
 
--- 
-Jens Axboe
+
+My reading would say that lookups relative to the phandle of root would 
+have workied before, no?
+
+>
+>> I've no objections to the other part, can you split these?
+>
+> No, because change #1 won't work without change #2.
+
+Huh?
+
+I can see how changing a routine to return an external not internal 
+pointer is necessary before changing a caller creates a dependancy for 
+2 on 1, but why does it require lookups relative to the phandle NULL be 
+treated as lookups relative to the root?
+
+milton
