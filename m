@@ -1,15 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 19 Jul 2007 11:32:14 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 05/61] bootwrapper: Change cuImage .gitignore entry to
+	cuImage.*
+Message-ID: <20070719013214.GA20458@localhost.localdomain>
+References: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
+	<20070718013301.GD15238@ld0162-tx32.am.freescale.net>
+	<20070718014200.GB18251@localhost.localdomain>
+	<469E3B27.6040406@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18078.43412.493174.590540@cargo.ozlabs.ibm.com>
-Date: Thu, 19 Jul 2007 10:00:20 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] Treat ISI faults as read faults on classic 32-bit PowerPC
-In-Reply-To: <11847726193856-git-send-email-segher@kernel.crashing.org>
-References: <11847726193856-git-send-email-segher@kernel.crashing.org>
-	<5d56173bee3f9ea0050aa508e7f27cc932af7229.1184104284.git.segher@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <469E3B27.6040406@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,49 +22,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool writes:
-
-> Some old software on ppc32 executes from pages it hasn't marked
-> executable.  Since "classic" hardware doesn't distinguish between
-> execute and read accesses, the do_page_fault() code shouldn't
-> either.  This makes glibc-2.2 work again on such hardware.
+On Wed, Jul 18, 2007 at 11:09:11AM -0500, Scott Wood wrote:
+> David Gibson wrote:
+> > On Tue, Jul 17, 2007 at 08:33:01PM -0500, Scott Wood wrote:
+> > 
+> >>Signed-off-by: Scott Wood <scottwood@freescale.com>
+> >>---
+> >> arch/powerpc/boot/.gitignore |    4 +---
+> >> 1 files changed, 1 insertions(+), 3 deletions(-)
+> >>
+> >>diff --git a/arch/powerpc/boot/.gitignore b/arch/powerpc/boot/.gitignore
+> >>index eec7af7..3270335 100644
+> >>--- a/arch/powerpc/boot/.gitignore
+> >>+++ b/arch/powerpc/boot/.gitignore
+> >>@@ -18,9 +18,7 @@ kernel-vmlinux.strip.c
+> >> kernel-vmlinux.strip.gz
+> >> mktree
+> >> uImage
+> >>-cuImage
+> >>-cuImage.bin.gz
+> >>-cuImage.elf
+> >>+cuImage.*
+> >> zImage
+> >> zImage.chrp
+> >> zImage.coff
+> > 
+> > 
+> > Err... your new wildcard won't match plain 'cuImage'.
 > 
-> Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
-> Cc: Scott Wood <scottwood@freescale.com>
-> Cc: Johannes Berg <johannes@sipsolutions.net>
-> ---
-> [Resend again, ozlabs' greylisting doesn't like me at all.]
-> 
-> Tested by Scott on 32-bit, glibc-2.2.5 and glibc-2.3.3 (no new
-> failures and problem solved), and by Johannes on his glibc-2.4
-> "---p" testcase.  Could use testing on ppc64 and BookE too, for
-> good measure.
+> When is plain "cuImage" ever generated anymore?
 
-Hmmm.  The dangling else clauses are pretty gross, and in fact we have
-the same problem on POWER3 and RS64 processors (to be fair, we had
-the problem before and didn't notice, but we should still fix it).
+Oh, yes...
 
-How about this instead?  Could people test it please?  (Note that
-CPU_FTR_NOEXECUTE is 0 in 32-bit kernels.)
-
-Paul.
-
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 0ece513..99c3093 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -283,7 +283,13 @@ good_area:
- 		/* protection fault */
- 		if (error_code & DSISR_PROTFAULT)
- 			goto bad_area;
--		if (!(vma->vm_flags & VM_EXEC))
-+		/*
-+		 * Allow execution from readable areas if the MMU does not
-+		 * provide separate controls over reading and executing.
-+		 */
-+		if (!(vma->vm_flags & VM_EXEC) &&
-+		    (cpu_has_feature(CPU_FTR_NOEXECUTE) ||
-+		     !(vma->vm_flags & (VM_READ | VM_WRITE))))
- 			goto bad_area;
- #else
- 		pte_t *ptep;
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
