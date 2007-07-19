@@ -1,18 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <469E7350.3090308@freescale.com>
-References: <20070718013137.GA15217@ld0162-tx32.am.freescale.net>
-	<20070718013611.GY15238@ld0162-tx32.am.freescale.net>
-	<20070718032857.GF18251@localhost.localdomain>
-	<F5E8139F-E8DA-4C41-8B90-E727FD4E346C@kernel.crashing.org>
-	<469E7350.3090308@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <97B4A805-6E2A-4F8E-BC56-5BDEE8D6F5F0@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 53/61] 82xx: Set NOT_COHERENT_CACHE on 8272 with PCI.
-Date: Thu, 19 Jul 2007 09:58:01 -0500
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4A9BBDDEB7
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 00:59:43 +1000 (EST)
+Message-ID: <469F7C54.60509@freescale.com>
+Date: Thu, 19 Jul 2007 09:59:32 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 56/61] 82xx: Add pq2fads board support.
+References: <20070718013615.GB15238@ld0162-tx32.am.freescale.net>
+	<200707190154.55368.arnd@arndb.de>
+In-Reply-To: <200707190154.55368.arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,28 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Arnd Bergmann wrote:
+> On Wednesday 18 July 2007, Scott Wood wrote:
+> 
+>>+static void __init pq2fads_setup_arch(void)
+>>+{
+>>+	struct device_node *np;
+>>+	struct resource r;
+>>+	u32 *bcsr;
+> 
+> 
+> bcsr should be __iomem, right?
 
-On Jul 18, 2007, at 3:08 PM, Scott Wood wrote:
+Oops, yes.
 
-> Kumar Gala wrote:
->> On Jul 17, 2007, at 10:28 PM, David Gibson wrote:
->>> Hrm... I for one would be a lot more comfortable with this patch if
->>> you had a theoretical explanation for why it's necessary, in  
->>> addition
->>> to the "seems to fix things".
->
-> Sure, so would I; I just wanted to point out the issue, and make  
-> available a quick fix for anyone else that might be having problems.
->
-> My theoretical explanation is that the hardware is broken. :-P
->
->> I agree w/David.  Have you tried turning on the   
->> CPU_FTR_NEED_COHERENT?  Take a look at include/asm-powerpc/ 
->> cputable.h  and search for the reference to CONFIG_PPC_83xx.
->
-> OK, that appears to work as well.
+> Did you run your code through sparse?
 
-Can you dump the POCMRx registers and report their values and what / 
-proc/iomem looks like.
+No, installing sparse is still on my to-do list.  I guess I should raise 
+its priority. :-)
 
-- k
+-Scott
