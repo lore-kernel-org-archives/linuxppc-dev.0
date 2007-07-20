@@ -1,16 +1,19 @@
-Return-Path: <raj@semihalf.com>
-Received: from mail.semihalf.com (mail.semihalf.com [83.12.36.68])
-	by ozlabs.org (Postfix) with ESMTP id C4E90DDE4A
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.ovro.caltech.edu",
+	Issuer "mail.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 21976DDDE4
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 21 Jul 2007 03:06:31 +1000 (EST)
-Message-ID: <46A0E6E7.3050309@semihalf.com>
-Date: Fri, 20 Jul 2007 18:46:31 +0200
-From: Rafal Jaworowski <raj@semihalf.com>
+	Sat, 21 Jul 2007 03:26:55 +1000 (EST)
+Message-ID: <46A0EE6B.3000904@ovro.caltech.edu>
+Date: Fri, 20 Jul 2007 10:18:35 -0700
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-To: lokowich <lokowich@acdstar.com>
-Subject: Re: SDRAM failures on MPC5200B
-References: <46A0D76E.4030101@acdstar.com>
-In-Reply-To: <46A0D76E.4030101@acdstar.com>
+To: Misbah khan <misbah_khan@engineer.com>
+Subject: Re: Problem faced while using workqueue in the character driver.
+References: <11705912.post@talk.nabble.com>
+In-Reply-To: <11705912.post@talk.nabble.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -23,22 +26,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-lokowich wrote:
-> We're working on bringing up a MPC5200B version of our original MPC5200 
-> board using U-Boot 1.1.4 configured for Icecube/Lite5200B.  Other than 
-> the CPU, the board is identical.  The bootloader crashes just after 
-> relocation to RAM, often with a Program Check Exception, typically a 
-> memory corruption issue.  I noticed failures at different stages after 
-> relocation based on content, suggesting problems with upper SDRAM.  If I 
-> force the initram to 1/2 the determined size (64MB instead of 128MB), 
-> then everything works well through kernel load and initialization.  
-> We've added termination resistors to improve AD signals, to no avail.  
-> Memory tests work fine too.  Any help is appreciated.
+Hi Misbah,
+
+> I am working on a character driver for FPGA, in which i am using a blocked
+> read call on workqueue. The read call will be unblocked by the Interrupt
+> from the Fpga to PPC Cpu.
 > 
+> The problem is that if the process is in blocked mode and then an Interrupt
+> occurs the system gives kernel Panic where as it get unblocked and start
+> reading the data but very soon it gets crashed.
+> 
+> Please send me your suggessins regarding the mentioned problem.
 
-Assuming your RAM chips are fine, are you setting the SDelay register 
-(MBAR + 0x0190)? If not, this can lead to a strange hangs similar to the 
-described. For details please see the current U-Boot's initdram() for 
-icecube, and AN3221.
+Er, without seeing the code, its a bit difficult to suggest
+anything.
 
-Rafal
+Perhaps you are using work-queues incorrectly?
+
+Take a look at:
+
+simple_work_queue.c
+
+In the tar-ball
+
+http://www.ovro.caltech.edu/~dwh/correlator/software/driver_design.tar.gz
+
+Which is described in:
+
+http://www.ovro.caltech.edu/~dwh/correlator/pdf/LNX-723-Hawkins.pdf
+
+There's also a more complex 'COBRA driver' here:
+
+http://www.ovro.caltech.edu/~dwh/correlator/cobra_docs.html
+
+Having an example of a working driver that uses work-queues
+might help you.
+
+Dave
