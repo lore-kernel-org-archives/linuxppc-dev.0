@@ -1,16 +1,16 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 23758DDECA
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 13:33:22 +1000 (EST)
-Date: Thu, 19 Jul 2007 20:33:22 -0700 (PDT)
-Message-Id: <20070719.203322.07642536.davem@davemloft.net>
+	by ozlabs.org (Postfix) with ESMTP id 95B11DDECB
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 14:01:54 +1000 (EST)
+Date: Thu, 19 Jul 2007 21:01:53 -0700 (PDT)
+Message-Id: <20070719.210153.07642381.davem@davemloft.net>
 To: sfr@canb.auug.org.au
-Subject: Re: [PATCH 09/12] Begin consolidation of of_device.h
+Subject: Re: [PATCH 11/12] Create linux/of_platorm.h
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070720011708.7919947c.sfr@canb.auug.org.au>
+In-Reply-To: <20070720011925.f51f998a.sfr@canb.auug.org.au>
 References: <20070718173024.50204a1a.sfr@canb.auug.org.au>
 	<20070720010742.e60c67a7.sfr@canb.auug.org.au>
-	<20070720011708.7919947c.sfr@canb.auug.org.au>
+	<20070720011925.f51f998a.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
@@ -25,10 +25,13 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Fri, 20 Jul 2007 01:17:08 +1000
+Date: Fri, 20 Jul 2007 01:19:25 +1000
 
-> This just moves the common stuff from the arch of_device.h files to
-> linux/of_device.h.
+> Move common stuff from asm-powerpc/of_platform.h to here and
+> move the common bits from asm-sparc*/of_device.h here as well.
+> 
+> Create asm-sparc*/of_platform.h and move appropriate parts of
+> of_device.h to them.
 > 
 > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
