@@ -3,7 +3,7 @@ From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
 Subject: Re: [PATCH 04/14] spufs: add spu stats in sysfs and ctx stat file in
 	spufs
-Date: Fri, 20 Jul 2007 21:10:04 +0200
+Date: Fri, 20 Jul 2007 20:59:25 +0200
 References: <1184908885751-git-send-email-jk@ozlabs.org>
 	<11849088851210-git-send-email-jk@ozlabs.org>
 	<20070720114421.0760cc5b.akpm@linux-foundation.org>
@@ -11,7 +11,7 @@ In-Reply-To: <20070720114421.0760cc5b.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200707202110.05273.arnd@arndb.de>
+Message-Id: <200707202059.26732.arnd@arndb.de>
 Cc: cbe-oss-dev@ozlabs.org, paulus@samba.org, Jeremy Kerr <jk@ozlabs.org>,
 	Andre Detsch <adetsch@br.ibm.com>,
 	Andrew Morton <akpm@linux-foundation.org>, Christoph Hellwig <hch@lst.de>
@@ -48,11 +48,10 @@ other spufs code got merged.
 I'm also still sitting on the fixes (and two new drivers) that I
 submitted to you earlier this week, and asked Linus to pull consequently.
 My plan was to ask Linus again for merging them today, together
-with Jeremy's spufs patches and the updated oprofile stuff and another
-patch from Christoph.
+with Jeremy's spufs patches and the oprofile stuff and another patch
+from Christoph.
 
-Would you prefer me to discard my new git tree and only ask him to pull
-what I had last week instead. Just trying to find out how to avoid
-merge conflicts on this.
+Would you prefer me not to do that but to instead just push out the
+patches I have queued myself?
 
 	Arnd <><
