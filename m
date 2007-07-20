@@ -2,23 +2,26 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C2BBDDDEEA
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 17:18:12 +1000 (EST)
-In-Reply-To: <1184881198.25235.347.camel@localhost.localdomain>
-References: <E1IAnwC-0003Xm-6U@jdl.com>
-	<1184722754.25235.183.camel@localhost.localdomain>
-	<5F6EB5F7-C5AE-437F-9DF1-22FE38D7A841@kernel.crashing.org>
-	<1184795678.25235.269.camel@localhost.localdomain>
-	<F2806DFF-A43B-4853-A6C0-3D69B0231B06@kernel.crashing.org>
-	<1184881198.25235.347.camel@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id A7C1EDDF1A
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 17:33:50 +1000 (EST)
+In-Reply-To: <Pine.LNX.4.60.0707191932300.3365@poirot.grange>
+References: <Pine.LNX.4.60.0706292113240.4227@poirot.grange>
+	<00a85f152aa3547f0f0b4acd7954468a@kernel.crashing.org>
+	<Pine.LNX.4.60.0707022114020.3339@poirot.grange>
+	<2055bb54b9816faaf5b2ceedc9cfa039@kernel.crashing.org>
+	<Pine.LNX.4.60.0707032356270.3876@poirot.grange>
+	<E0E696F1-2F9E-4D6B-A194-EB42BA826BCD@kernel.crashing.org>
+	<Pine.LNX.4.60.0707180010330.3535@poirot.grange>
+	<87DC7695-382B-4641-B9D9-75ACB49D41A4@kernel.crashing.org>
+	<Pine.LNX.4.60.0707191932300.3365@poirot.grange>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <2616BEAA-E5C1-4C01-9ADB-132ED00381B2@kernel.crashing.org>
+Message-Id: <719AE7E4-FE6D-4973-8887-F787EC8ABC85@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] Add StorCenter DTS first draft.
-Date: Fri, 20 Jul 2007 09:14:20 +0200
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+Subject: Re: [PATCH] powerpc: Add of_register_i2c_devices()
+Date: Fri, 20 Jul 2007 09:26:58 +0200
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,26 +31,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> So your plan is to prefer the device tree over the cputable, and
->> maybe even deprecate the cputable?
+>> You might want to put vendor names in the "compatible"
+>> entries, dunno though, maybe these are "cross-vendor"
+>> ICs?
 >
-> Nah, you are fine not putting anything, but if it's in the DT it  
-> should
-> be correct, not "0". Else, just don't put it in the DT.
+> You mean like
+>
+> 	compatible = "ricoh,rs5c372a"
 
-Ah okay.  So we should recommend to not put any of those
-properties into DTS files at all?  If so, I'll create a
-patch to remove them.
+Yeah, like that.  I'm not sure it is needed for these,
+but it won't hurt either.
 
-> We use the DT to override cputable but that's mostly useful for things
-> like pSeries where you can get some processors in "compatibility" mode
-> over another one, or some virtual PVRs, and other fancy things like  
-> that
-> where the cputable isn't very useful.
+> +		strncpy(info->driver_name, i2c_devices[i].i2c_driver,  
+> KOBJ_NAME_LEN);
+> +		strncpy(info->type, i2c_devices[i].i2c_type, I2C_NAME_SIZE);
 
-Yeah, and it's a good idea to have the device tree override
-the cputable always, with real OF, anyway.  (Well there are
-buggy device trees out there, of course ;-) )
+Why not just strcpy(), btw?
+
+> +		addr = of_get_property(node, "reg", &len);
+> +		if (!addr || len < sizeof(int) || *addr > 0xffff)
+> +			continue;
+
+Give a warning when the addr won't fit in 16 bits?
 
 
 Segher
