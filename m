@@ -1,16 +1,16 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 0C6ACDDEB9
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 10:45:32 +1000 (EST)
-Date: Thu, 19 Jul 2007 17:45:31 -0700 (PDT)
-Message-Id: <20070719.174531.03979262.davem@davemloft.net>
+	by ozlabs.org (Postfix) with ESMTP id 8BEF3DDF18
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 11:01:53 +1000 (EST)
+Date: Thu, 19 Jul 2007 18:01:52 -0700 (PDT)
+Message-Id: <20070719.180152.126575168.davem@davemloft.net>
 To: sfr@canb.auug.org.au
-Subject: Re: [PATCH 04/12] Consolidate of_find_property
+Subject: Re: [PATCH 05/12] Consolidate of_get_parent
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070720011127.8c700e59.sfr@canb.auug.org.au>
+In-Reply-To: <20070720011235.8199eca2.sfr@canb.auug.org.au>
 References: <20070718173024.50204a1a.sfr@canb.auug.org.au>
 	<20070720010742.e60c67a7.sfr@canb.auug.org.au>
-	<20070720011127.8c700e59.sfr@canb.auug.org.au>
+	<20070720011235.8199eca2.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
@@ -25,13 +25,10 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Fri, 20 Jul 2007 01:11:27 +1000
+Date: Fri, 20 Jul 2007 01:12:35 +1000
 
-> The only change here is that a readlock is taken while the property list
-> is being traversed on Sparc where it was not taken previously.
-> 
-> Also, Sparc uses strcasecmp to compare property names while PowerPC
-> uses strcmp.
+> This requires creating dummy of_node_{get,put} routines for sparc and
+> sparc64.  It also adds a read_lock around the parent accesses.
 > 
 > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
