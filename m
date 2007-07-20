@@ -1,22 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1B2C1DDEC1
+Return-Path: <raj@semihalf.com>
+Received: from mail.semihalf.com (mail.semihalf.com [83.12.36.68])
+	by ozlabs.org (Postfix) with ESMTP id C4E90DDE4A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 21 Jul 2007 02:58:49 +1000 (EST)
-Message-ID: <46A0E9BE.4020305@freescale.com>
-Date: Fri, 20 Jul 2007 11:58:38 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Sat, 21 Jul 2007 03:06:31 +1000 (EST)
+Message-ID: <46A0E6E7.3050309@semihalf.com>
+Date: Fri, 20 Jul 2007 18:46:31 +0200
+From: Rafal Jaworowski <raj@semihalf.com>
 MIME-Version: 1.0
-To: Misbah khan <misbah_khan@engineer.com>
-Subject: Re: Kmalloc returns which address
-References: <e5eb93010707160659m6a7d0b02p623542739d28ab29@mail.gmail.com>
-	<11705981.post@talk.nabble.com>
-In-Reply-To: <11705981.post@talk.nabble.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: lokowich <lokowich@acdstar.com>
+Subject: Re: SDRAM failures on MPC5200B
+References: <46A0D76E.4030101@acdstar.com>
+In-Reply-To: <46A0D76E.4030101@acdstar.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -28,20 +23,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Misbah khan wrote:
-> hi Suresh
+lokowich wrote:
+> We're working on bringing up a MPC5200B version of our original MPC5200 
+> board using U-Boot 1.1.4 configured for Icecube/Lite5200B.  Other than 
+> the CPU, the board is identical.  The bootloader crashes just after 
+> relocation to RAM, often with a Program Check Exception, typically a 
+> memory corruption issue.  I noticed failures at different stages after 
+> relocation based on content, suggesting problems with upper SDRAM.  If I 
+> force the initram to 1/2 the determined size (64MB instead of 128MB), 
+> then everything works well through kernel load and initialization.  
+> We've added termination resistors to improve AD signals, to no avail.  
+> Memory tests work fine too.  Any help is appreciated.
 > 
-> In linux kmelloc returns the pointer to virtual address not the physical
-> address, to return to the physical address there is different function
-> called ioremap 
-> 
-> for eg :-
-> char *buf_tx =kmalloc(100,GFP_KERNEL); // Tx buffer
-> char *buf_rx=kmalloc(100,GFP_KERNEL); // Rx buffer
-> 
-> ptr_tx=ioremap( buf_tx,100);
-> ptr_rx=ioremap(buf_rx,100);
 
-That's a really easy way to cause a machine check.
+Assuming your RAM chips are fine, are you setting the SDelay register 
+(MBAR + 0x0190)? If not, this can lead to a strange hangs similar to the 
+described. For details please see the current U-Boot's initdram() for 
+icecube, and AN3221.
 
--Scott
+Rafal
