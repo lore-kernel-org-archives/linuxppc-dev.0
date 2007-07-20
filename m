@@ -1,26 +1,15 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id C56F4DDF0E
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 06:26:21 +1000 (EST)
-Date: Fri, 20 Jul 2007 22:26:15 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Add of_register_i2c_devices()
-In-Reply-To: <719AE7E4-FE6D-4973-8887-F787EC8ABC85@kernel.crashing.org>
-Message-ID: <Pine.LNX.4.60.0707202219340.3946@poirot.grange>
-References: <Pine.LNX.4.60.0706292113240.4227@poirot.grange>
-	<00a85f152aa3547f0f0b4acd7954468a@kernel.crashing.org>
-	<Pine.LNX.4.60.0707022114020.3339@poirot.grange>
-	<2055bb54b9816faaf5b2ceedc9cfa039@kernel.crashing.org>
-	<Pine.LNX.4.60.0707032356270.3876@poirot.grange>
-	<E0E696F1-2F9E-4D6B-A194-EB42BA826BCD@kernel.crashing.org>
-	<Pine.LNX.4.60.0707180010330.3535@poirot.grange>
-	<87DC7695-382B-4641-B9D9-75ACB49D41A4@kernel.crashing.org>
-	<Pine.LNX.4.60.0707191932300.3365@poirot.grange>
-	<719AE7E4-FE6D-4973-8887-F787EC8ABC85@kernel.crashing.org>
+Return-Path: <arnd.bergmann@de.ibm.com>
+From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Please pull for-2.6.23 branch of cell-2.6.git
+Date: Fri, 20 Jul 2007 21:55:43 +0200
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200707202155.45002.arnd.bergmann@de.ibm.com>
+Cc: Philippe Elie <phil.el@wanadoo.fr>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, Jeremy Kerr <jk@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,118 +19,118 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 20 Jul 2007, Segher Boessenkool wrote:
+Hi Linus,
 
-> > +		strncpy(info->driver_name, i2c_devices[i].i2c_driver,
-> > KOBJ_NAME_LEN);
-> > +		strncpy(info->type, i2c_devices[i].i2c_type, I2C_NAME_SIZE);
-> 
-> Why not just strcpy(), btw?
+Please pull from
 
-Because target strings are finite length, and sources are just pointers to 
-some constant strings, which one might make arbitrarily long.
+	master.kernel.org:/pub/scm/linux/kernel/git/arnd/cell-2.6.git for-2.6.23
 
-> > +		addr = of_get_property(node, "reg", &len);
-> > +		if (!addr || len < sizeof(int) || *addr > 0xffff)
-> > +			continue;
-> 
-> Give a warning when the addr won't fit in 16 bits?
+This is a number of changes that fell through the cracks because
+it wasn't clear how we were going to merge it in the absence of paulus.
+Mostly bug fixes, except a few features that should we should have
+submitted all along:
 
-Ok, version 3, hopefully last, below.
+* oprofile on Cell SPU
+* SPU affinity
+* Kdump saves SPU state
+* drivers for I/O buffer memory and MSI on the Axon south bridge
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+	Arnd <><
 
-Scan the device tree for i2c devices, check their "compatible" property
-against a hard-coded table, and, if found, register with i2c boardinfo.
+shortlog
 
-Signed-off-by: G. Liakhovetski <g.liakhovetski@gmx.de>
+    [CELL] spufs: rework list management and associated locking
+    [CELL] oprofile: add support to OProfile for profiling CELL BE SPUs
+    [CELL] oprofile: enable SPU switch notification to detect currently active SPU tasks
+    [CELL] spu_base: locking cleanup
+    [CELL] cell: indexing of SPUs based on firmware vicinity properties
+    [CELL] spufs: integration of SPE affinity with the scheduller
+    [CELL] cell: add placement computation for scheduling of affinity contexts
+    [CELL] spufs: extension of spu_create to support affinity definition
+    [CELL] cell: add hardcoded spu vicinity information for QS20
+    [CELL] cell: add vicinity information on spus
+    [CELL] cell: add per BE structure with info about its SPUs
+    [CELL] spufs: use find_first_bit() instead of sched_find_first_bit()
+    [CELL] spufs: remove unused file argument from spufs_run_spu()
+    [CELL] spufs: change decrementer restore timing
+    [CELL] spufs: dont halt decrementer at restore step 47
+    [CELL] spufs: limit saving MFC_CNTL bits
+    [CELL] spufs: fix read and write for decr_status file
+    [CELL] spufs: fix decr_status meanings
+    [CELL] spufs: remove needless context save/restore code
+    [CELL] spufs: fix array size of channel index
+    [CELL] spufs: make sure context are scheduled again after spu_acquire_saved
+    [CELL] spufs: add spu stats in sysfs and ctx stat file in spufs
+    [CELL] spufs: Remove spurious WARN_ON for spu_deactivate for NOSCHED contexts
+    [CELL] spufs: Make signal-notification files readonly for NOSCHED contexts
+    [CELL] spufs: Avoid unexpectedly restaring MFC during context save
+    [CELL] spufs: remove section mismatch warning
+    [CELL] add support for MSI on Axon-based Cell systems
+    [CELL] saving spus information for kexec crash
+    [CELL] driver for DDR2 memory on AXON
+    [CELL] allow linux to map Cell regs on legacy SLOF tree.
+    [CELL] fix cbe_thermal for legacy SLOF tree.
+    [CELL] fix cbe_cpufreq for legacy SLOF tree.
+    [CELL] cbe_cpufreq: reorganize code
+    [CELL] cbe_cpufreq: fix minor issues
+    [CELL] cbe_cpufreq: fix initialization
+    [CELL] cbe_cpufreq: fix latency measurement
+    [CELL] pmi: remove support for mutiple devices.
 
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index 3289fab..727453d 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -305,6 +305,64 @@ err:
- 
- arch_initcall(gfar_of_init);
- 
-+#ifdef CONFIG_I2C_BOARDINFO
-+#include <linux/i2c.h>
-+struct i2c_driver_device {
-+	char	*of_device;
-+	char	*i2c_driver;
-+	char	*i2c_type;
-+};
-+
-+static struct i2c_driver_device i2c_devices[] __initdata = {
-+	{"ricoh,rs5c372a", "rtc-rs5c372", "rs5c372a",},
-+	{"ricoh,rs5c372b", "rtc-rs5c372", "rs5c372b",},
-+	{"ricoh,rv5c386",  "rtc-rs5c372", "rv5c386",},
-+	{"ricoh,rv5c387a", "rtc-rs5c372", "rv5c387a",},
-+};
-+
-+static int __init of_find_i2c_driver(struct device_node *node, struct i2c_board_info *info)
-+{
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
-+		if (!of_device_is_compatible(node, i2c_devices[i].of_device))
-+			continue;
-+		strncpy(info->driver_name, i2c_devices[i].i2c_driver, KOBJ_NAME_LEN);
-+		strncpy(info->type, i2c_devices[i].i2c_type, I2C_NAME_SIZE);
-+		return 0;
-+	}
-+	return -ENODEV;
-+}
-+
-+static void __init of_register_i2c_devices(struct device_node *adap_node, int bus_num)
-+{
-+	struct device_node *node = NULL;
-+
-+	while ((node = of_get_next_child(adap_node, node))) {
-+		struct i2c_board_info info;
-+		const u32 *addr;
-+		int len;
-+
-+		addr = of_get_property(node, "reg", &len);
-+		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
-+			printk(KERN_WARNING "fsl_ioc.c: invalid i2c device entry\n");
-+			continue;
-+		}
-+
-+		info.irq = irq_of_parse_and_map(node, 0);
-+		if (info.irq == NO_IRQ)
-+			info.irq = -1;
-+
-+		if (of_find_i2c_driver(node, &info) < 0)
-+			continue;
-+
-+		info.platform_data = NULL;
-+		info.addr = *addr;
-+
-+		i2c_register_board_info(bus_num, &info, 1);
-+	}
-+}
-+
- static int __init fsl_i2c_of_init(void)
- {
- 	struct device_node *np;
-@@ -349,6 +407,8 @@ static int __init fsl_i2c_of_init(void)
- 						    fsl_i2c_platform_data));
- 		if (ret)
- 			goto unreg;
-+
-+		of_register_i2c_devices(np, i);
- 	}
- 
- 	return 0;
-@@ -360,6 +420,7 @@ err:
- }
- 
- arch_initcall(fsl_i2c_of_init);
-+#endif
- 
- #ifdef CONFIG_PPC_83xx
- static int __init mpc83xx_wdt_init(void)
+diffstat
+
+ arch/powerpc/configs/cell_defconfig                          |    3
+ arch/powerpc/kernel/crash.c                                  |   67 +
+ arch/powerpc/kernel/time.c                                   |    1
+ arch/powerpc/oprofile/Kconfig                                |    7
+ arch/powerpc/oprofile/Makefile                               |    4
+ arch/powerpc/oprofile/cell/pr_util.h                         |   97 +
+ arch/powerpc/oprofile/cell/spu_profiler.c                    |  221 ++++
+ arch/powerpc/oprofile/cell/spu_task_sync.c                   |  484 ++++++++
+ arch/powerpc/oprofile/cell/vma_map.c                         |  287 +++++
+ arch/powerpc/oprofile/common.c                               |   51
+ arch/powerpc/oprofile/op_model_7450.c                        |   14
+ arch/powerpc/oprofile/op_model_cell.c                        |  607 +++++++++--
+ arch/powerpc/oprofile/op_model_fsl_booke.c                   |   11
+ arch/powerpc/oprofile/op_model_pa6t.c                        |   12
+ arch/powerpc/oprofile/op_model_power4.c                      |   11
+ arch/powerpc/oprofile/op_model_rs64.c                        |   10
+ arch/powerpc/platforms/Kconfig                               |   10
+ arch/powerpc/platforms/cell/Kconfig                          |   10
+ arch/powerpc/platforms/cell/Makefile                         |    6
+ arch/powerpc/platforms/cell/axon_msi.c                       |  445 ++++++++
+ arch/powerpc/platforms/cell/cbe_cpufreq.c                    |  217 ---
+ arch/powerpc/platforms/cell/cbe_cpufreq.h                    |   24
+ arch/powerpc/platforms/cell/cbe_cpufreq_pervasive.c          |  115 ++
+ arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c                |  148 ++
+ arch/powerpc/platforms/cell/cbe_regs.c                       |    7
+ arch/powerpc/platforms/cell/cbe_thermal.c                    |   25
+ arch/powerpc/platforms/cell/spu_base.c                       |  295 +++--
+ arch/powerpc/platforms/cell/spu_syscalls.c                   |   17
+ arch/powerpc/platforms/cell/spufs/context.c                  |   42
+ arch/powerpc/platforms/cell/spufs/coredump.c                 |    2
+ arch/powerpc/platforms/cell/spufs/fault.c                    |    8
+ arch/powerpc/platforms/cell/spufs/file.c                     |  104 +
+ arch/powerpc/platforms/cell/spufs/gang.c                     |    6
+ arch/powerpc/platforms/cell/spufs/inode.c                    |  132 ++
+ arch/powerpc/platforms/cell/spufs/run.c                      |   36
+ arch/powerpc/platforms/cell/spufs/sched.c                    |  377 ++++--
+ arch/powerpc/platforms/cell/spufs/spu_restore.c              |    6
+ arch/powerpc/platforms/cell/spufs/spu_restore_dump.h_shipped |  480 ++++----
+ arch/powerpc/platforms/cell/spufs/spufs.h                    |   99 +
+ arch/powerpc/platforms/cell/spufs/switch.c                   |   72 -
+ arch/powerpc/platforms/cell/spufs/syscalls.c                 |   34
+ arch/powerpc/sysdev/Makefile                                 |    1
+ arch/powerpc/sysdev/axonram.c                                |  381 ++++++
+ arch/powerpc/sysdev/pmi.c                                    |   51
+ drivers/oprofile/buffer_sync.c                               |    3
+ drivers/oprofile/event_buffer.h                              |   20
+ drivers/oprofile/oprof.c                                     |   28
+ include/asm-powerpc/oprofile_impl.h                          |   10
+ include/asm-powerpc/pmi.h                                    |    8
+ include/asm-powerpc/spu.h                                    |   62 -
+ include/asm-powerpc/spu_csa.h                                |    8
+ include/linux/dcookies.h                                     |    1
+ include/linux/elf-em.h                                       |    3
+ include/linux/oprofile.h                                     |   35
+ include/linux/syscalls.h                                     |    2
