@@ -1,26 +1,20 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 38FA6DDEB6
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 06:03:32 +1000 (EST)
-Date: Fri, 20 Jul 2007 13:02:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Bob Nelson <rrnelson@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] OProfile - Enable SPU switch notification to detect
-	currently active SPU tasks - update
-Message-Id: <20070720130241.176c50a5.akpm@linux-foundation.org>
-In-Reply-To: <200707201424.07292.rrnelson@linux.vnet.ibm.com>
-References: <200707201424.07292.rrnelson@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc <linuxppc-dev@ozlabs.org>,
-	Maynard Johnson <maynardj@linux.vnet.ibm.com>,
-	Arnd Bergmann <arndb@de.ibm.com>,
-	oprofile <oprofile-list@lists.sourceforge.net>,
-	Philippe Elie <phil.el@wanadoo.fr>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 04/14] spufs: add spu stats in sysfs and ctx stat file in
+	spufs
+Date: Fri, 20 Jul 2007 21:29:20 +0200
+References: <1184908885751-git-send-email-jk@ozlabs.org>
+	<200707202059.26732.arnd@arndb.de>
+	<20070720125553.57e7616e.akpm@linux-foundation.org>
+In-Reply-To: <20070720125553.57e7616e.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200707202129.21455.arnd@arndb.de>
+Cc: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Jeremy Kerr <jk@ozlabs.org>, Andre Detsch <adetsch@br.ibm.com>,
+	Christoph Hellwig <hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,62 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 20 Jul 2007 14:24:07 -0500
-Bob Nelson <rrnelson@linux.vnet.ibm.com> wrote:
+On Friday 20 July 2007, Andrew Morton wrote:
+>=20
+> I think it's better if you do it, please - I'm not doing anything useful
+> here.
 
-> From: Maynard Johnson <mpjohn@us.ibm.com>
-> 
-> This patch adds to the capability of spu_switch_event_register so that
-> the caller is also notified of currently active SPU tasks.
-> Exports spu_switch_event_register and spu_switch_event_unregister so
-> that OProfile can get access to the notifications provided.
-> 
-> Signed-off-by: Maynard Johnson <mpjohn@us.ibm.com>
-> Signed-off-by: Carl Love <carll@us.ibm.com>
-> Signed-off-by: Bob Nelson <rrnelson@us.ibm.com>
-> Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-> Acked-by: Paul Mackerras <paulus@samba.org>
-> 
-> ---
-> 
-> We would like this patch included in -mm and 2.6.23
-> 
-> Changed "for (node = 0; node < MAX_NUMNODES; node++)" loop to 
-> for_each_online_node(node).
-> Added comment to memory barrier.
-> Better info in changelog.
+Ok, I'm giving it some final testing, then send out the pull request.
 
-here it is:
+Do you also want me to handle the ps3 drivers? I think I'd prefer to
+leave those to you if you don't mind.
 
---- a/arch/powerpc/platforms/cell/spufs/sched.c~oprofile-enable-spu-switch-notification-to-detect-currently-active-spu-tasks-update
-+++ a/arch/powerpc/platforms/cell/spufs/sched.c
-@@ -220,13 +220,14 @@ static void notify_spus_active(void)
- 	 * When the awakened processes see their "notify_active" flag is set,
- 	 * they will call spu_switch_notify();
- 	 */
--	for (node = 0; node < MAX_NUMNODES; node++) {
-+	for_each_online_node(node) {
- 		struct spu *spu;
- 		mutex_lock(&spu_prio->active_mutex[node]);
- 		list_for_each_entry(spu, &spu_prio->active_list[node], list) {
- 			struct spu_context *ctx = spu->ctx;
- 			set_bit(SPU_SCHED_NOTIFY_ACTIVE, &ctx->sched_flags);
--			mb();
-+			mb();	/* make sure any tasks woken up below */
-+				/* can see the bit(s) set above */
- 			wake_up_all(&ctx->stop_wq);
- 		}
- 		mutex_unlock(&spu_prio->active_mutex[node]);
-_
+> Bob has just sent out an udpate to the oprofile patches btw. =A0I'll cc y=
+ou
+> on the incrementals in case that's some use.
 
-I still wonder about that barrier.  At the least it should be smp_mb(). 
-But aren't our set_bit() semantics _alone_ sufficient to make this barrier
-unneeded?
+I already have his patch and fixed up the remaining rejects I got against
+Christoph's patch.
 
-If it _is_ possible for the effects of a set_bit() to not be visible to a
-woken-up thread then I suspect we'll have nasty little problems in quite a
-few places.  Maybe wake_up() should itself have a barrier to prevent such
-things?
+> btw, I also found the below which I guess I'll merge:
+>=20
+> From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+>=20
+> allnoconfig results in this:
+=2E..
 
-Doing that would be a documentation-only change, I suspect, given that the
-current implementation of wake_up() starts out with a spin_lock_irqsave().
+Ok.
+
+	Arnd <><
