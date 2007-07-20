@@ -1,14 +1,14 @@
 Return-Path: <rvinson@mvista.com>
 Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id 5EE13DDF54
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 04:56:43 +1000 (EST)
-Message-ID: <46A1056A.3030106@mvista.com>
-Date: Fri, 20 Jul 2007 11:56:42 -0700
+	by ozlabs.org (Postfix) with ESMTP id 25A05DDF2E
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 04:56:49 +1000 (EST)
+Message-ID: <46A10570.2010701@mvista.com>
+Date: Fri, 20 Jul 2007 11:56:48 -0700
 From: Randy Vinson <rvinson@mvista.com>
 MIME-Version: 1.0
 To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
 	Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 3/6] 85xxCDS: Make sure restart resets the PCI bus.
+Subject: [PATCH 4/6] 85xxCDS: Delay 8259 cascade hookup.
 Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,77 +19,98 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->From 5397a82c878055ead34070993acd89dd0d824a52 Mon Sep 17 00:00:00 2001
-From: Randy Vinson <rvinson@linuxbox.(none)>
-Date: Fri, 23 Mar 2007 15:43:37 -0700
-Subject: [PATCH] 85xxCDS: Make sure restart resets the PCI bus.
+>From d51ad0776259dea5402e3ba380e208ef735289eb Mon Sep 17 00:00:00 2001
+From: Randy Vinson <rvinson@mvista.com>
+Date: Thu, 14 Jun 2007 11:02:54 -0700
+Subject: [PATCH] 85xxCDS: Delay 8259 cascade hookup.
 
-The current 85xxCDS restart code fails to reset the PCI bus which can
-lead to odd behavior after the restart. This patch uses the VIA Super
-Southbridge to perform a PCI reset which will reset the entire system.
-NOTE: Since the VIA chip is behind a PCI-to-PCI bridge which can be
-disabled with a switch setting, it may not be possible to perform the
-PCI bus reset. In this case, the code defaults to the previous restart
-mechanism.
+The interrupts of an E100 card inserted in PCI slot 4 may be on at bootup.
+The resulting interrupt flood interacts with the 8259 cascade handler and
+prevents proper boot up. There is a quirk for the E100 that will disable
+the E100's interrupts but to use it, the 8259 cascade hookup must be
+delayed until after the quirk has run. This patch delays the 8259 cascade
+hookup by registering a device_initcall() which runs after the PCI quirk
+for the E100.
 
 Signed-off-by: Randy Vinson <rvinson@mvista.com>
 ---
- arch/powerpc/platforms/85xx/mpc85xx_cds.c |   35 +++++++++++++++++++++++++++++
- 1 files changed, 35 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/85xx/mpc85xx_cds.c |   33 +++++++++++++++++++---------
+ 1 files changed, 22 insertions(+), 11 deletions(-)
 
 diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-index 1db6c81..78e5355 100644
+index 78e5355..963c6f8 100644
 --- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
 +++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-@@ -54,6 +54,37 @@ static volatile u8 *cadmus;
+@@ -158,10 +158,6 @@ static void __init mpc85xx_cds_pic_init(void)
+ 	struct mpic *mpic;
+ 	struct resource r;
+ 	struct device_node *np = NULL;
+-#if defined(CONFIG_PPC_I8259) && defined(CONFIG_PCI)
+-	struct device_node *cascade_node = NULL;
+-	int cascade_irq;
+-#endif
  
- #ifdef CONFIG_PCI
+ 	np = of_find_node_by_type(np, "open-pic");
  
-+static void mpc85xx_cds_restart(char *cmd)
+@@ -185,8 +181,16 @@ static void __init mpc85xx_cds_pic_init(void)
+ 	of_node_put(np);
+ 
+ 	mpic_init(mpic);
++}
+ 
+ #if defined(CONFIG_PPC_I8259) && defined(CONFIG_PCI)
++static int mpc85xx_cds_8259_attach(void)
 +{
-+	struct pci_dev *dev;
-+	u_char tmp;
++	int ret;
++	struct device_node *np = NULL;
++	struct device_node *cascade_node = NULL;
++	int cascade_irq;
 +
-+	if ((dev = pci_get_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_82C686,
-+					NULL))) {
-+
-+		/* Use the VIA Super Southbridge to force a PCI reset */
-+		pci_read_config_byte(dev, 0x47, &tmp);
-+		pci_write_config_byte(dev, 0x47, tmp | 1);
-+
-+		/* Flush the outbound PCI write queues */
-+		pci_read_config_byte(dev, 0x47, &tmp);
-+
-+		/*
-+		 *  At this point, the harware reset should have triggered.
-+		 *  However, if it doesn't work for some mysterious reason,
-+		 *  just fall through to the default reset below.
-+		 */
-+
-+		pci_dev_put(dev);
+ 	/* Initialize the i8259 controller */
+ 	for_each_node_by_type(np, "interrupt-controller")
+ 		if (of_device_is_compatible(np, "chrp,iic")) {
+@@ -196,13 +200,13 @@ static void __init mpc85xx_cds_pic_init(void)
+ 
+ 	if (cascade_node == NULL) {
+ 		printk(KERN_DEBUG "Could not find i8259 PIC\n");
+-		return;
++		return -ENODEV;
+ 	}
+ 
+ 	cascade_irq = irq_of_parse_and_map(cascade_node, 0);
+ 	if (cascade_irq == NO_IRQ) {
+ 		printk(KERN_ERR "Failed to map cascade interrupt\n");
+-		return;
++		return -ENXIO;
+ 	}
+ 
+ 	i8259_init(cascade_node, 0);
+@@ -214,14 +218,21 @@ static void __init mpc85xx_cds_pic_init(void)
+ 	 *  disabled when the last user of the shared IRQ line frees their
+ 	 *  interrupt.
+ 	 */
+-	if (setup_irq(cascade_irq, &mpc85xxcds_8259_irqaction))
++	if ((ret = setup_irq(cascade_irq, &mpc85xxcds_8259_irqaction))) {
+ 		printk(KERN_ERR "Failed to setup cascade interrupt\n");
+-	else
+-		/* Success. Connect our low-level cascade handler. */
+-		set_irq_handler(cascade_irq, mpc85xx_8259_cascade_handler);
+-#endif /* CONFIG_PPC_I8259 */
++		return ret;
 +	}
 +
-+	/*
-+	 *  If we can't find the VIA chip (maybe the P2P bridge is disabled)
-+	 *  or the VIA chip reset didn't work, just use the default reset.
-+	 */
-+	mpc85xx_restart(NULL);
-+}
++	/* Success. Connect our low-level cascade handler. */
++	set_irq_handler(cascade_irq, mpc85xx_8259_cascade_handler);
 +
- static void __init mpc85xx_cds_pci_irq_fixup(struct pci_dev *dev)
- {
- 	u_char c;
-@@ -278,7 +309,11 @@ define_machine(mpc85xx_cds) {
- 	.init_IRQ	= mpc85xx_cds_pic_init,
- 	.show_cpuinfo	= mpc85xx_cds_show_cpuinfo,
- 	.get_irq	= mpic_get_irq,
-+#ifdef CONFIG_PCI
-+	.restart	= mpc85xx_cds_restart,
-+#else
- 	.restart	= mpc85xx_restart,
-+#endif
- 	.calibrate_decr = generic_calibrate_decr,
- 	.progress	= udbg_progress,
- };
++	return 0;
+ }
+ 
++device_initcall(mpc85xx_cds_8259_attach);
++
++#endif /* CONFIG_PPC_I8259 */
++
+ /*
+  * Setup the architecture
+  */
 -- 
 1.5.2.2.549.gaeb59
