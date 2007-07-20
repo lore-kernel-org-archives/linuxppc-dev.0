@@ -1,19 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id B18EFDDF29
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 16:11:53 +1000 (EST)
-Date: Fri, 20 Jul 2007 16:11:45 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] of_detach_node()'s device node argument cannot be const
-Message-Id: <20070720161145.2ff6860c.sfr@canb.auug.org.au>
-In-Reply-To: <11849111183072-git-send-email-segher@kernel.crashing.org>
-References: <11849111183072-git-send-email-segher@kernel.crashing.org>
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
+	[207.189.120.14])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 75671DDF0D
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 16:24:02 +1000 (EST)
+Date: Thu, 19 Jul 2007 23:23:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: Re: [PATCH] [updated] PHY fixed driver: rework release path and
+	update phy_id notation
+Message-Id: <20070719232337.184942e0.akpm@linux-foundation.org>
+In-Reply-To: <20070718233804.24451.22543.stgit@localhost.localdomain>
+References: <20070718233804.24451.22543.stgit@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__20_Jul_2007_16_11_45_+1000_TS+km8Uq.cigqQkU"
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,32 +27,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Fri__20_Jul_2007_16_11_45_+1000_TS+km8Uq.cigqQkU
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 19 Jul 2007 03:38:04 +0400 Vitaly Bordug <vitb@kernel.crashing.org> wrote:
 
-On Fri, 20 Jul 2007 07:58:38 +0200 Segher Boessenkool <segher@kernel.crashi=
-ng.org> wrote:
+> 
+> device_bind_driver() error code returning has been fixed.  
+> release() function has been written, so that to free resources 
+> in correct way; the release path is now clean. 
+>  
+> Before the rework, it used to cause 
+>  Device 'fixed@100:1' does not have a release() function, it is broken 
+>  and must be fixed. 
+>  BUG: at drivers/base/core.c:104 device_release() 
+>   
+>  Call Trace:   
+>   [<ffffffff802ec380>] kobject_cleanup+0x53/0x7e 
+>   [<ffffffff802ec3ab>] kobject_release+0x0/0x9 
+>   [<ffffffff802ecf3f>] kref_put+0x74/0x81 
+>   [<ffffffff8035493b>] fixed_mdio_register_device+0x230/0x265 
+>   [<ffffffff80564d31>] fixed_init+0x1f/0x35 
+>   [<ffffffff802071a4>] init+0x147/0x2fb 
+>   [<ffffffff80223b6e>] schedule_tail+0x36/0x92 
+>   [<ffffffff8020a678>] child_rip+0xa/0x12 
+>   [<ffffffff80311714>] acpi_ds_init_one_object+0x0/0x83 
+>   [<ffffffff8020705d>] init+0x0/0x2fb 
+>   [<ffffffff8020a66e>] child_rip+0x0/0x12   
+>  
+>  
+> Also changed the notation of the fixed phy definition on 
+> mdio bus to the form of <speed>+<duplex> to make it able to be used by 
+> gianfar and ucc_geth that define phy_id strictly as "%d:%d" and cleaned up 
+> the whitespace issues.
+>  
+
+Confused.  Does the above refer to the difference between this patch and
+the previous version, or does it just describe this patch?  Hopefully the
+latter, because the former isn't interesting, long-term.
+
+If is _is_ a full standalone description of this patch then it's a bit hard
+to follow ;)
+
+> +config FIXED_MII_1000_FDX
+> +	bool "Emulation for 1000M Fdx fixed PHY behavior"
+> +	depends on FIXED_PHY
+> +
+> +config FIXED_MII_AMNT
+> +        int "Number of emulated PHYs to allocate "
+> +        depends on FIXED_PHY
+> +        default "1"
+> +        ---help---
+> +        Sometimes it is required to have several independent emulated
+> +        PHYs on the bus (in case of multi-eth but phy-less HW for instance).
+> +        This control will have specified number allocated for each fixed
+> +        PHY type enabled.
+
+Shouldn't these be runtime options (ie: module parameters)?
+
 >
-> ...since it modifies it (when it sets the OF_DETACHED flag).
+> ...
+>
+> + *  Private information hoder for mii_bus
 
-http://patchwork.ozlabs.org/linuxppc/patch?q=3DStephen%20Rothwell&id=3D12212
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__20_Jul_2007_16_11_45_+1000_TS+km8Uq.cigqQkU
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGoFIrTgG2atn1QN8RAscGAJ4lLwRJXXlMQM/NP5vLIcTKcM9+8gCeMR7a
-cLzQNtHKP9GbpK44IUAc14k=
-=vr8+
------END PGP SIGNATURE-----
-
---Signature=_Fri__20_Jul_2007_16_11_45_+1000_TS+km8Uq.cigqQkU--
+tpyo.
