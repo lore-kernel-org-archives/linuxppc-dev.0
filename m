@@ -1,23 +1,24 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 75671DDF0D
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 16:24:02 +1000 (EST)
-Date: Thu, 19 Jul 2007 23:23:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [PATCH] [updated] PHY fixed driver: rework release path and
-	update phy_id notation
-Message-Id: <20070719232337.184942e0.akpm@linux-foundation.org>
-In-Reply-To: <20070718233804.24451.22543.stgit@localhost.localdomain>
-References: <20070718233804.24451.22543.stgit@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C2BBDDDEEA
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 17:18:12 +1000 (EST)
+In-Reply-To: <1184881198.25235.347.camel@localhost.localdomain>
+References: <E1IAnwC-0003Xm-6U@jdl.com>
+	<1184722754.25235.183.camel@localhost.localdomain>
+	<5F6EB5F7-C5AE-437F-9DF1-22FE38D7A841@kernel.crashing.org>
+	<1184795678.25235.269.camel@localhost.localdomain>
+	<F2806DFF-A43B-4853-A6C0-3D69B0231B06@kernel.crashing.org>
+	<1184881198.25235.347.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <2616BEAA-E5C1-4C01-9ADB-132ED00381B2@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] Add StorCenter DTS first draft.
+Date: Fri, 20 Jul 2007 09:14:20 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,64 +28,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 19 Jul 2007 03:38:04 +0400 Vitaly Bordug <vitb@kernel.crashing.org> wrote:
-
-> 
-> device_bind_driver() error code returning has been fixed.  
-> release() function has been written, so that to free resources 
-> in correct way; the release path is now clean. 
->  
-> Before the rework, it used to cause 
->  Device 'fixed@100:1' does not have a release() function, it is broken 
->  and must be fixed. 
->  BUG: at drivers/base/core.c:104 device_release() 
->   
->  Call Trace:   
->   [<ffffffff802ec380>] kobject_cleanup+0x53/0x7e 
->   [<ffffffff802ec3ab>] kobject_release+0x0/0x9 
->   [<ffffffff802ecf3f>] kref_put+0x74/0x81 
->   [<ffffffff8035493b>] fixed_mdio_register_device+0x230/0x265 
->   [<ffffffff80564d31>] fixed_init+0x1f/0x35 
->   [<ffffffff802071a4>] init+0x147/0x2fb 
->   [<ffffffff80223b6e>] schedule_tail+0x36/0x92 
->   [<ffffffff8020a678>] child_rip+0xa/0x12 
->   [<ffffffff80311714>] acpi_ds_init_one_object+0x0/0x83 
->   [<ffffffff8020705d>] init+0x0/0x2fb 
->   [<ffffffff8020a66e>] child_rip+0x0/0x12   
->  
->  
-> Also changed the notation of the fixed phy definition on 
-> mdio bus to the form of <speed>+<duplex> to make it able to be used by 
-> gianfar and ucc_geth that define phy_id strictly as "%d:%d" and cleaned up 
-> the whitespace issues.
->  
-
-Confused.  Does the above refer to the difference between this patch and
-the previous version, or does it just describe this patch?  Hopefully the
-latter, because the former isn't interesting, long-term.
-
-If is _is_ a full standalone description of this patch then it's a bit hard
-to follow ;)
-
-> +config FIXED_MII_1000_FDX
-> +	bool "Emulation for 1000M Fdx fixed PHY behavior"
-> +	depends on FIXED_PHY
-> +
-> +config FIXED_MII_AMNT
-> +        int "Number of emulated PHYs to allocate "
-> +        depends on FIXED_PHY
-> +        default "1"
-> +        ---help---
-> +        Sometimes it is required to have several independent emulated
-> +        PHYs on the bus (in case of multi-eth but phy-less HW for instance).
-> +        This control will have specified number allocated for each fixed
-> +        PHY type enabled.
-
-Shouldn't these be runtime options (ie: module parameters)?
-
+>> So your plan is to prefer the device tree over the cputable, and
+>> maybe even deprecate the cputable?
 >
-> ...
->
-> + *  Private information hoder for mii_bus
+> Nah, you are fine not putting anything, but if it's in the DT it  
+> should
+> be correct, not "0". Else, just don't put it in the DT.
 
-tpyo.
+Ah okay.  So we should recommend to not put any of those
+properties into DTS files at all?  If so, I'll create a
+patch to remove them.
+
+> We use the DT to override cputable but that's mostly useful for things
+> like pSeries where you can get some processors in "compatibility" mode
+> over another one, or some virtual PVRs, and other fancy things like  
+> that
+> where the cputable isn't very useful.
+
+Yeah, and it's a good idea to have the device tree override
+the cputable always, with real OF, anyway.  (Well there are
+buggy device trees out there, of course ;-) )
+
+
+Segher
