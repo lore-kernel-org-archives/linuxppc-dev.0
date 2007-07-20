@@ -1,27 +1,19 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DF695DDED2
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 09:48:55 +1000 (EST)
-Date: Fri, 20 Jul 2007 16:48:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: olof@lixom.net (Olof Johansson)
-Subject: Re: [PATCH v3] pcmcia: CompactFlash driver for PA Semi Electra boards
-Message-Id: <20070720164823.95608e43.akpm@linux-foundation.org>
-In-Reply-To: <20070705144914.GA14284@lixom.net>
-References: <20070625010311.GA31355@lixom.net>
-	<20070625171221.GA6684@lixom.net>
-	<20070625193909.GA26021@infradead.org>
-	<20070625204341.GA8865@lixom.net>
-	<20070705144914.GA14284@lixom.net>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6413EDDECE
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 09:55:31 +1000 (EST)
+Subject: [PATCH] powerpc: mpic protected sources
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@au1.ibm.com>
+In-Reply-To: <OFD54BD0CE.6883770C-ONC125731D.00322C4C-C125731D.00324A9E@de.ibm.com>
+References: <OFD54BD0CE.6883770C-ONC125731D.00322C4C-C125731D.00324A9E@de.ibm.com>
+Content-Type: text/plain
+Date: Sat, 21 Jul 2007 09:55:21 +1000
+Message-Id: <1184975721.5439.33.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
-	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-	miltonm@bga.com
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,111 +23,99 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 5 Jul 2007 09:49:14 -0500
-olof@lixom.net (Olof Johansson) wrote:
+Some HW platforms, such as the new cell blades, requires some MPIC sources
+to be left alone by the operating system. This patch implements support for
+a "protected-sources" property in the mpic controller node containing a list
+of source numbers to be protected against operating system interference.
 
-> Driver for the CompactFlash slot on the PA Semi Electra eval board. It's
-> a simple device sitting on localbus, with interrupts and detect/voltage
-> control over GPIO.
-> 
-> The driver is implemented as an of_platform driver, and adds localbus
-> as a bus being probed by the of_platform framework.
-> 
-> 
-> Signed-off-by: Olof Johansson <olof@lixom.net>
-> 
-> ---
-> 
-> On Mon, Jun 25, 2007 at 03:43:41PM -0500, olof wrote:
-> 
-> > The ifdef is needed since for CONFIG_PCMCIA=n builds, the bus notifier
-> > isn't available. I wanted to do the bus notifier registration explicitly
-> > before the of_platform bus probe to avoid later surprises due to reordered
-> > initcalls in case it was split up in it's own initcall.
-> > 
-> > I could add the code under ifdef as well, but it didn't seem too
-> > critical. Once the second major board comes along I'll probably move it
-> > out to a per-board file, there's no real need for it just yet.
-> 
-> Alright, turns out I still need to declare the extern bus type, which would mean
-> two #ifdefs in one function. Moving it out instead.
-> 
-> I've addressed Milton's comments as well.
-> 
-> Who's maintaining PCMCIA? MAINTAINERS only lists a mailing list, no person. Seems
-> weird for a component that's marked as maintained.
+For those interested in the gory details, the MPIC on the southbridge of
+those blades has some of the processor outputs routed to the cell, and
+at least one routed as a GPIO to the service processor. It will be used
+in the GA product for routing some of the southbridge error interrupts
+to the service processor which implements some of the RAS stuff, such
+as checkstopping when fatal errors occurs before they can propagate.
 
-Dominik Brodowski.  He's having a bit of downtime at present (exams, I
-think).  He expects to return.  Meanwhile, cc'ing me usually has some
-effect.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
->
-> ...
->
-> +static const char driver_name[] = "electra-cf";
->
-> ...
->
-> +static struct of_device_id electra_cf_match[] =
-> +{
-> +	{
-> +		.compatible   = "electra-cf",
-> +	},
-> +	{},
-> +};
+Should probably go in 2.6.23, whether it's a bug fix or not is debatable,
+it's part of a late HW+SW+FW fix of the blades for reliability purposes.
 
-Could have reused driver_name[] here, if that was appropriate.
-
-> +static struct of_platform_driver electra_cf_driver =
-> +{
-> +	.name	   = (char *)driver_name,
-
-ug.  But it's not your fault - we should have always made it const.
-
-> --- mainline.orig/arch/powerpc/platforms/pasemi/setup.c
-> +++ mainline/arch/powerpc/platforms/pasemi/setup.c
-
-I never know who maintains random-scruffy-ppc code like this.  From a peek
-in the git-whatchanged output, it appears to be yourself.
-
-
-Have a few little fixies:
-
---- a/drivers/pcmcia/electra_cf.c~pcmcia-compactflash-driver-for-pa-semi-electra-boards-fix
-+++ a/drivers/pcmcia/electra_cf.c
-@@ -201,9 +201,7 @@ static int __devinit electra_cf_probe(st
- 	if (!cf)
- 		return -ENOMEM;
+Index: linux-work/arch/powerpc/sysdev/mpic.c
+===================================================================
+--- linux-work.orig/arch/powerpc/sysdev/mpic.c	2007-07-19 17:00:32.000000000 +1000
++++ linux-work/arch/powerpc/sysdev/mpic.c	2007-07-19 17:25:21.000000000 +1000
+@@ -877,6 +877,8 @@ static int mpic_host_map(struct irq_host
  
--	init_timer(&cf->timer);
--	cf->timer.function = electra_cf_timer;
--	cf->timer.data = (unsigned long) cf;
-+	setup_timer(&cf->timer, electra_cf_timer, (unsigned long)cf);
- 	cf->irq = NO_IRQ;
+ 	if (hw == mpic->spurious_vec)
+ 		return -EINVAL;
++	if (mpic->protected && test_bit(hw, mpic->protected))
++		return -EINVAL;
  
- 	cf->ofdev = ofdev;
-@@ -340,16 +338,14 @@ static int __devexit electra_cf_remove(s
- 	return 0;
+ #ifdef CONFIG_SMP
+ 	else if (hw >= mpic->ipi_vecs[0]) {
+@@ -1034,6 +1036,25 @@ struct mpic * __init mpic_alloc(struct d
+ 	if (node && of_get_property(node, "big-endian", NULL) != NULL)
+ 		mpic->flags |= MPIC_BIG_ENDIAN;
+ 
++	/* Look for protected sources */
++	if (node) {
++		unsigned int psize, bits, mapsize;
++		const u32 *psrc =
++			of_get_property(node, "protected-sources", &psize);
++		if (psrc) {
++			psize /= 4;
++			bits = intvec_top + 1;
++			mapsize = BITS_TO_LONGS(bits) * sizeof(unsigned long);
++			mpic->protected = alloc_bootmem(mapsize);
++			BUG_ON(mpic->protected == NULL);
++			memset(mpic->protected, 0, mapsize);
++			for (i = 0; i < psize; i++) {
++				if (psrc[i] > intvec_top)
++					continue;
++				__set_bit(psrc[i], mpic->protected);
++			}
++		}
++	}
+ 
+ #ifdef CONFIG_MPIC_WEIRD
+ 	mpic->hw_set = mpic_infos[MPIC_GET_REGSET(flags)];
+@@ -1213,6 +1234,9 @@ void __init mpic_init(struct mpic *mpic)
+ 		u32 vecpri = MPIC_VECPRI_MASK | i |
+ 			(8 << MPIC_VECPRI_PRIORITY_SHIFT);
+ 		
++		/* check if protected */
++		if (mpic->protected && test_bit(i, mpic->protected))
++			continue;
+ 		/* init hw */
+ 		mpic_irq_write(i, MPIC_INFO(IRQ_VECTOR_PRI), vecpri);
+ 		mpic_irq_write(i, MPIC_INFO(IRQ_DESTINATION),
+@@ -1407,6 +1431,14 @@ unsigned int mpic_get_one_irq(struct mpi
+ 			mpic_eoi(mpic);
+ 		return NO_IRQ;
+ 	}
++	if (unlikely(mpic->protected && test_bit(src, mpic->protected))) {
++		if (printk_ratelimit())
++			printk(KERN_WARNING "%s: Got protected source %d !\n",
++			       mpic->name, (int)src);
++		mpic_eoi(mpic);
++		return NO_IRQ;
++	}
++
+ 	return irq_linear_revmap(mpic->irqhost, src);
  }
  
--static struct of_device_id electra_cf_match[] =
--{
-+static struct of_device_id electra_cf_match[] = {
- 	{
- 		.compatible   = "electra-cf",
- 	},
- 	{},
- };
+Index: linux-work/include/asm-powerpc/mpic.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/mpic.h	2007-07-19 16:59:44.000000000 +1000
++++ linux-work/include/asm-powerpc/mpic.h	2007-07-19 17:02:35.000000000 +1000
+@@ -296,6 +296,9 @@ struct mpic
+ 	unsigned int		dcr_base;
+ #endif
  
--static struct of_platform_driver electra_cf_driver =
--{
-+static struct of_platform_driver electra_cf_driver = {
- 	.name	   = (char *)driver_name,
- 	.match_table    = electra_cf_match,
- 	.probe	  = electra_cf_probe,
-@@ -371,4 +367,3 @@ module_exit(electra_cf_exit);
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR ("Olof Johansson <olof@lixom.net>");
- MODULE_DESCRIPTION("PA Semi Electra CF driver");
--
-_
++	/* Protected sources */
++	unsigned long		*protected;
++
+ #ifdef CONFIG_MPIC_WEIRD
+ 	/* Pointer to HW info array */
+ 	u32			*hw_set;
