@@ -1,24 +1,28 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <rubini@mail.gnudd.com>
+Received: from mail.gnudd.com (adsl-203-134.38-151.net24.it [151.38.134.203])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D40DADDE4A
+	by ozlabs.org (Postfix) with ESMTP id D1B28DDEBD
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 20 Jul 2007 21:32:20 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1IBqiX-0001rQ-V0
-	for linuxppc-embedded@ozlabs.org; Fri, 20 Jul 2007 04:32:17 -0700
-Message-ID: <11706536.post@talk.nabble.com>
-Date: Fri, 20 Jul 2007 04:32:17 -0700 (PDT)
-From: Misbah khan <misbah_khan@engineer.com>
+	Fri, 20 Jul 2007 22:27:51 +1000 (EST)
+Received: from mail.gnudd.com (rubini@localhost [127.0.0.1])
+	by mail.gnudd.com (8.13.4/8.13.4/Debian-3sarge3) with ESMTP id
+	l6KCDMPm024064
+	for <linuxppc-embedded@ozlabs.org>; Fri, 20 Jul 2007 14:13:22 +0200
+Received: (from rubini@localhost)
+	by mail.gnudd.com (8.13.4/8.13.4/Submit) id l6KCDMhC024061
+	for linuxppc-embedded@ozlabs.org; Fri, 20 Jul 2007 14:13:22 +0200
+Date: Fri, 20 Jul 2007 14:13:22 +0200
+From: Alessandro Rubini <rubini@gnudd.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: RE: How to access physical memory from user space for MPC8260 chip
-In-Reply-To: <0B45E93C5FF65740AEAE690BF3848B7A4AB178@rennsmail04.eu.thmulti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <e5eb93010707120307h785bf195n7a649363e4e455f@mail.gmail.com>
-	<0B45E93C5FF65740AEAE690BF3848B7A4AB178@rennsmail04.eu.thmulti.com>
+Subject: Re: Kmalloc returns which address
+Message-ID: <20070720121322.GA24055@mail.gnudd.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Sender: rubini@gnudd.com
+In-Reply-To: <11705981.post@talk.nabble.com>
+References: <11705981.post@talk.nabble.com>
+	<e5eb93010707160659m6a7d0b02p623542739d28ab29@mail.gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,51 +34,28 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Physical address you can map to  kernel space using ioremap() function 
-but you are not clear whether you want to map it to the user space / kernel
-space. To map kernel space to user space you should use mmap() functionality
-in your driver.
+Hello.
 
-I hope you got the answer to what you were expecting else send the clear
-query
+> In linux kmelloc returns the pointer to virtual address not the physical
+> address, to return to the physical address there is different function
+> called ioremap 
 
-regard 
-misbah
+Not exactly. Both return virtual addresses. The kmalloc one is allocated
+RAM memory, the ioremap is the virtual address built for you to
+access a physical address you specified (i.e., a device memory area).
 
+>> For Tx and Rx, hardware uses buffers, so I have to allocate buffers and
+>> pass
+>> the pointer to hardware. Can I pass the pointer returned kmalloc?  or  I
+>> should convert it into physical address?
 
-Fillod Stephane wrote:
-> 
-> suresh suresh wrote:
->>I have to map physical memory to user space or kernel space. I am
-> writing >driver for MPC8260 chip and I want to know how to map any
-> 32-bit address >space to user space and kernel space.
-> 
-> Your question is a linuxppc-embedded FAQ. User-land access is documented
-> 
-> in Denx's FAQ[1], and accessible through shorter URL[2]. For more 
-> information, please follow this thread[3] (not ppc specific actually).
-> 
-> [1]
-> http://www.denx.de/twiki/bin/view/PPCEmbedded/DeviceDrivers#Section_Acce
-> ssingPeripheralsFromUserSpace
-> [2] http://tinyurl.com/6c7th
-> [3] http://article.gmane.org/gmane.linux.ports.ppc.embedded/5053
-> 
-> In kernel land, ioremap() is all you need.
-> 
-> Don't forget to use the 'eieio' asm instruction if you want explicit 
-> I/O ordering.
-> 
-> Best Regards,
-> -- 
-> Stephane, the userland ioremap bot
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
+If you allocate with kmalloc, use __pa(addr) to turn the virtual
+address addr into the physical address you need to pass to the device,
+ad DMA access is outside of the virtual view of the address space.
 
--- 
-View this message in context: http://www.nabble.com/How-to-access-physical-memory-from-user-space-for-MPC8260-chip-tf4067159.html#a11706536
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+However, please note that according to how your device is connected
+and what bus it is using, the design can get more hairy, you may need
+to study the consistent memory allocations.
+
+Hope this helps
+/alessandro
