@@ -1,18 +1,36 @@
-Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+Return-Path: <osstklei@de.ibm.com>
+Received: from mtagate7.de.ibm.com (mtagate7.de.ibm.com [195.212.29.156])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9D095DDEC0
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 18:15:22 +1000 (EST)
-Date: Fri, 20 Jul 2007 17:15:09 +0900 (JST)
-Message-Id: <20070720.171509.-1300522247.kouish@swc.toshiba.co.jp>
-To: miltonm@bga.com
-Subject: Re: [PATCH 2/2] fix showing xmon help
-In-Reply-To: <664cbe49d76cfcba9d8a86e3a6946a2a@bga.com>
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
+	(Client CN "mtagate7.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 752D3DDF36
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 18:17:39 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate7.de.ibm.com (8.13.8/8.13.8) with ESMTP id l6K8HZPg075394
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 08:17:35 GMT
+Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
+	[9.149.165.213])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.4) with
+	ESMTP id l6K8HZOr1216628
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 10:17:35 +0200
+Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l6K8HIuF004923
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 10:17:18 +0200
+Message-ID: <46A06F7E.901@de.ibm.com>
+Date: Fri, 20 Jul 2007 10:17:02 +0200
+From: Thomas Klein <osstklei@de.ibm.com>
+MIME-Version: 1.0
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: Possible eHEA performance issue
+References: <4634.1184900524@neuling.org>
+In-Reply-To: <4634.1184900524@neuling.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
+	linux-ppc <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,37 +40,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Milton Miller <miltonm@bga.com> wrote:
-> On Jul 18, 2007, at 11:12 AM, Andreas Schwab wrote:
+Michael Neuling wrote:
+> From ehea_start_xmit in ehea_main.c we have:
 > 
-> > Milton Miller <miltonm@bga.com> writes:
-> >
-> >>>                 case '?':
-> >>> -                       printf(help_string);
-> >>> +                       xmon_puts(help_string);
-> >>>                         break;
-> >>>
-> >>
-> >> nonstdio.h #defines printf to xmon_printf.  Please add a similar
-line
-> >> for puts, and use the define here.  (It will avoid an unnecessary
-> >> difference with the user space version).
-> >
-> > User space puts add a newline, which this xmon_puts doesn't.
-> >
-> > Andreas.
+>     if (unlikely(atomic_read(&pr->swqe_avail) <= 1)) {
+> 	    spin_lock_irqsave(&pr->netif_queue, flags);
+> 	    if (unlikely(atomic_read(&pr->swqe_avail) <= 1)) {
+> 		    pr->p_stats.queue_stopped++;
+> 		    netif_stop_queue(dev);
+> 		    pr->queue_stopped = 1;
+> 	    }
+> 	    spin_unlock_irqrestore(&pr->netif_queue, flags);
+>     }
 > 
-> Good point.  This should be xmon_fputs #defined to fputs.
+> Since the conditions are the same, isn't it likely that the second 'if'
+> is going to be taken.  Hence, shouldn't the second 'unlikely' hint be
+> removed or even changed to likely?
 > 
-> milton
+> Either way, some documentation here as to why it's done this way would
+> be useful.  I assume the atomic_read is cheap compared to the
+> spin_unlock_irqsave, so we quickly check swqe_avail before we check it
+> again properly with the lock on so we can change some stuff.
+> 
+> Mikey
 
-Should we change like below?
+Hi Mike,
 
-define fputs:
- #define fputs(str,stream)  xmon_fputs(str) /* stream is ignored. */
+good point the second if could be a likely(). The impact isn't that big
+because the if statement is true in the unlikely() case that the send queue
+is full - which doesn't happen often. Anyway we will modify this in one of
+the next driver versions. Thanks for the hint!
 
-show the help string:
- fputs(help_string, stdout);
-
-Best regards,
-Kou Ishizaki
+Thomas
