@@ -1,15 +1,29 @@
-Return-Path: <gvb.linuxppc.dev@gmail.com>
-Message-ID: <46A01733.6080609@gmail.com>
-Date: Thu, 19 Jul 2007 22:00:19 -0400
-From: Jerry Van Baren <gvb.linuxppc.dev@gmail.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 3/4] mpc8349emitx: Add chosen node for default stdout path
-References: <20070719183415.7458.42622.stgit@trillian>	<20070719183734.7458.83695.stgit@trillian>	<469FB47D.4030009@freescale.com>	<fa686aa40707191243wb4ce9c1n86002405c5d01bab@mail.gmail.com>	<20070719164036.f3d4c86d.kim.phillips@freescale.com>
-	<469FDB3B.5000901@freescale.com>
-In-Reply-To: <469FDB3B.5000901@freescale.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.com
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 30049DDE39
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 12:59:14 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6K2xAlr016867
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 22:59:10 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l6K2xASv257430
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 20:59:10 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l6K2xAFl032109
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2007 20:59:10 -0600
+Date: Thu, 19 Jul 2007 22:11:10 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: paulus@samba.org
+Subject: Fix ARCH=ppc builds
+Message-ID: <20070720031110.GP3925@crusty.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,44 +33,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> Kim Phillips wrote:
->> the old FLAT_TREE u-boot fdt fixup code renames any existing chosen
->> node out of the way, and adds its fixed up version as /chosen.
+The recent signal rework broke ARCH=ppc builds with the following error:
 
-Not in my experience.  My experience is that it blindly created a second 
-/chosen node.
+CC      arch/powerpc/kernel/signal.o
+arch/powerpc/kernel/signal.c: In function ‘do_signal’:
+arch/powerpc/kernel/signal.c:142: error: implicit declaration of function ‘set_dabr’
+make[1]: *** [arch/powerpc/kernel/signal.o] Error 1
 
->> The LIBFDT implementation replaces any existing /chosen with its fixed
->> up version.
+The patch below fixes it by including a function prototype in
+asm-ppc/system.h
 
-Sort of.  If /chosen doesn't exist, it creates it.
+Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-If /chosen exists and "force" parameter is false, it doesn't touch it. 
-If "force"  is true, it creates or fixes up properties.  The "bootm" 
-command passes in force == false.  The "fdt" command passes in force == 
-true.
-
-The "force" parameter was added to sort of emulate the previous bootm 
-command behavior (but behave better in the case where /chosen already 
-existed).
-
-Such is the price for not totally breaking user expectations.  Hopefully 
-we recalibrate user expectations in the future and improve this.
-
-> Could you point out the code that does this?  I don't see it in either 
-> the old code or the new.
-> 
-> -Scott
-
-Old code - I don't think so.
-
-New code...
-u-boot-fdt repo:
-<http://www.denx.de/cgi-bin/gitweb.cgi?p=u-boot/u-boot-fdt.git;a=blob;f=common/fdt_support.c;h=259bd42cc62c55d11370579a7af0d6519fc34c8d;hb=01f771763ed822145b54819abb9c4516c8216d48#l96>
-
-u-boot repo:
-<http://www.denx.de/cgi-bin/gitweb.cgi?p=u-boot.git;a=blob;f=common/fdt_support.c;h=69099c4275ccb925cce7b7c69afc5ab4f76cfe6f;hb=HEAD#l92>
-
-Hope this makes sense,
-gvb
+diff --git a/include/asm-ppc/system.h b/include/asm-ppc/system.h
+index f1311a8..cc45780 100644
+--- a/include/asm-ppc/system.h
++++ b/include/asm-ppc/system.h
+@@ -54,6 +54,7 @@ extern void show_regs(struct pt_regs * regs);
+ extern void flush_instruction_cache(void);
+ extern void hard_reset_now(void);
+ extern void poweroff_now(void);
++extern int set_dabr(unsigned long dabr);
+ #ifdef CONFIG_6xx
+ extern long _get_L2CR(void);
+ extern long _get_L3CR(void);
