@@ -1,23 +1,22 @@
-Return-Path: <segher@kernel.crashing.org>
+Return-Path: <vitb@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 772A5DDF17
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 17:45:05 +1000 (EST)
-In-Reply-To: <18079.63067.248965.356540@cargo.ozlabs.ibm.com>
-References: <11847726193856-git-send-email-segher@kernel.crashing.org>
-	<5d56173bee3f9ea0050aa508e7f27cc932af7229.1184104284.git.segher@kernel.crashing.org>
-	<18078.43412.493174.590540@cargo.ozlabs.ibm.com>
-	<FB9F7C22-8598-4E72-B663-130A7989925D@kernel.crashing.org>
-	<18079.63067.248965.356540@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <2958BF69-6F26-4CBB-BB71-EC13AAC7E293@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] Treat ISI faults as read faults on classic 32-bit PowerPC
-Date: Fri, 20 Jul 2007 09:42:11 +0200
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>
+	by ozlabs.org (Postfix) with ESMTP id 8799FDDE39
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 17:50:57 +1000 (EST)
+Date: Fri, 20 Jul 2007 11:50:39 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] [updated] PHY fixed driver: rework release path and
+	update phy_id notation
+Message-ID: <20070720115039.05f50f0f@localhost.localdomain>
+In-Reply-To: <20070719232337.184942e0.akpm@linux-foundation.org>
+References: <20070718233804.24451.22543.stgit@localhost.localdomain>
+	<20070719232337.184942e0.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,22 +26,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Should you really be testing VM_READ|VM_WRITE, or should it just
->> be VM_READ?
->
-> We test VM_READ | VM_WRITE | VM_EXEC in the read case below, and that
-> is because we have no HPTE encoding to say "writable but not readable"
-> or "executable but not readable".  Similarly we have no encoding to
-> say "writable but not executable" on classic processors, so if you
-> have just VM_WRITE set, you get a page that is readable, writable and
-> executable.
+On Thu, 19 Jul 2007 23:23:37 -0700
+Andrew Morton wrote:
 
-Ah yes.  I thought "executable requires readable", but
-that is with the CPU its flags, not the Linux flags.
+> On Thu, 19 Jul 2007 03:38:04 +0400 Vitaly Bordug
+> <vitb@kernel.crashing.org> wrote:
+> 
+> > 
+> > device_bind_driver() error code returning has been fixed.  
+> > release() function has been written, so that to free resources 
+> > in correct way; the release path is now clean. 
+> >  
+> > Before the rework, it used to cause 
+> >  Device 'fixed@100:1' does not have a release() function, it is
+> > broken and must be fixed. 
+> >  BUG: at drivers/base/core.c:104 device_release() 
+> >   
+> >  Call Trace:   
+> >   [<ffffffff802ec380>] kobject_cleanup+0x53/0x7e 
+> >   [<ffffffff802ec3ab>] kobject_release+0x0/0x9 
+> >   [<ffffffff802ecf3f>] kref_put+0x74/0x81 
+> >   [<ffffffff8035493b>] fixed_mdio_register_device+0x230/0x265 
+> >   [<ffffffff80564d31>] fixed_init+0x1f/0x35 
+> >   [<ffffffff802071a4>] init+0x147/0x2fb 
+> >   [<ffffffff80223b6e>] schedule_tail+0x36/0x92 
+> >   [<ffffffff8020a678>] child_rip+0xa/0x12 
+> >   [<ffffffff80311714>] acpi_ds_init_one_object+0x0/0x83 
+> >   [<ffffffff8020705d>] init+0x0/0x2fb 
+> >   [<ffffffff8020a66e>] child_rip+0x0/0x12   
+> >  
+> >  
+> > Also changed the notation of the fixed phy definition on 
+> > mdio bus to the form of <speed>+<duplex> to make it able to be used
+> > by gianfar and ucc_geth that define phy_id strictly as "%d:%d" and
+> > cleaned up the whitespace issues.
+> >  
+> 
+> Confused.  Does the above refer to the difference between this patch
+> and the previous version, or does it just describe this patch?
+> Hopefully the latter, because the former isn't interesting, long-term.
+> 
+Latter. IOW, that does mean, that mdio bus registered by this driver, now uses
+same naming conventioun that other PHYLIB things use. Hereby it will make it able to be used in 
+NIC drivers other than fs_enet (and gianfar and ucc_geth are now points of interest).
 
-Would it be a good idea to map Linux flags to CPU flags
-somewhere early in this function?  It might simplify some
-code, and things certainly would become more readable.
+> If is _is_ a full standalone description of this patch then it's a
+> bit hard to follow ;)
+> 
+Hmm -so what are my options - change the description and resubmit?
+> > +config FIXED_MII_1000_FDX
+> > +	bool "Emulation for 1000M Fdx fixed PHY behavior"
+> > +	depends on FIXED_PHY
+> > +
+> > +config FIXED_MII_AMNT
+> > +        int "Number of emulated PHYs to allocate "
+> > +        depends on FIXED_PHY
+> > +        default "1"
+> > +        ---help---
+> > +        Sometimes it is required to have several independent
+> > emulated
+> > +        PHYs on the bus (in case of multi-eth but phy-less HW for
+> > instance).
+> > +        This control will have specified number allocated for each
+> > fixed
+> > +        PHY type enabled.
+> 
+> Shouldn't these be runtime options (ie: module parameters)?
+> 
+I thought about it but this thing is more like the one that will never tend/required to change while\
+configured.. Will add if you see it appropriate though.
+> >
+> > ...
+> >
+> > + *  Private information hoder for mii_bus
+> 
+> tpyo.
+ok
 
-
-Segher
+-- 
+Sincerely, Vitaly
