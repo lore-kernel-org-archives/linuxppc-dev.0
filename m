@@ -1,21 +1,23 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.ovro.caltech.edu",
-	Issuer "mail.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 21976DDDE4
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DBF1ADDED1
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 21 Jul 2007 03:26:55 +1000 (EST)
-Message-ID: <46A0EE6B.3000904@ovro.caltech.edu>
-Date: Fri, 20 Jul 2007 10:18:35 -0700
-From: David Hawkins <dwh@ovro.caltech.edu>
+	Sat, 21 Jul 2007 05:57:27 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IBybL-00008b-Li
+	for linuxppc-embedded@ozlabs.org; Fri, 20 Jul 2007 12:57:23 -0700
+Message-ID: <11714957.post@talk.nabble.com>
+Date: Fri, 20 Jul 2007 12:57:23 -0700 (PDT)
+From: khollan <khollan@daktronics.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Xilinx OPB_PCI support in 2.6
+In-Reply-To: <46772167.5090808@itee.uq.edu.au>
 MIME-Version: 1.0
-To: Misbah khan <misbah_khan@engineer.com>
-Subject: Re: Problem faced while using workqueue in the character driver.
-References: <11705912.post@talk.nabble.com>
-In-Reply-To: <11705912.post@talk.nabble.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+References: <46772167.5090808@itee.uq.edu.au>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,40 +28,9 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Misbah,
 
-> I am working on a character driver for FPGA, in which i am using a blocked
-> read call on workqueue. The read call will be unblocked by the Interrupt
-> from the Fpga to PPC Cpu.
-> 
-> The problem is that if the process is in blocked mode and then an Interrupt
-> occurs the system gives kernel Panic where as it get unblocked and start
-> reading the data but very soon it gets crashed.
-> 
-> Please send me your suggessins regarding the mentioned problem.
+Im also looking for ML410 PCI support.  Any progress on this John?
 
-Er, without seeing the code, its a bit difficult to suggest
-anything.
-
-Perhaps you are using work-queues incorrectly?
-
-Take a look at:
-
-simple_work_queue.c
-
-In the tar-ball
-
-http://www.ovro.caltech.edu/~dwh/correlator/software/driver_design.tar.gz
-
-Which is described in:
-
-http://www.ovro.caltech.edu/~dwh/correlator/pdf/LNX-723-Hawkins.pdf
-
-There's also a more complex 'COBRA driver' here:
-
-http://www.ovro.caltech.edu/~dwh/correlator/cobra_docs.html
-
-Having an example of a working driver that uses work-queues
-might help you.
-
-Dave
+-- 
+View this message in context: http://www.nabble.com/Xilinx-OPB_PCI-support-in-2.6-tf3943615.html#a11714957
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
