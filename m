@@ -1,31 +1,31 @@
 Return-Path: <hnguyen@linux.vnet.ibm.com>
-Received: from mtagate7.de.ibm.com (mtagate7.de.ibm.com [195.212.29.156])
+Received: from mtagate6.de.ibm.com (mtagate6.de.ibm.com [195.212.29.155])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate7.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 58D4ADDEDB
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 23:51:17 +1000 (EST)
+	(Client CN "mtagate6.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 202F2DE185
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 23:51:25 +1000 (EST)
 Received: from d12nrmr1607.megacenter.de.ibm.com
 	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate7.de.ibm.com (8.13.8/8.13.8) with ESMTP id l6KDpBV1450532
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 13:51:11 GMT
-Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
-	[9.149.165.229])
+	by mtagate6.de.ibm.com (8.13.8/8.13.8) with ESMTP id l6KDp29p119892
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 13:51:02 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
 	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.4) with
-	ESMTP id l6KDp2LZ2007176
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 15:51:10 +0200
-Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l6KDok12014646
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 15:50:46 +0200
+	ESMTP id l6KDp2132007168
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 15:51:02 +0200
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l6KDotuQ028974
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2007 15:50:55 +0200
 From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
 To: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org, openib-general@openib.org
-Subject: [PATCH 2/5] ehca: Generate event when SRQ limit reached
-Date: Fri, 20 Jul 2007 16:02:18 +0200
+Subject: [PATCH 3/5] ehca: Make ehca2ib_return_code() non-inline
+Date: Fri, 20 Jul 2007 16:02:46 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
-Message-Id: <200707201602.19142.hnguyen@linux.vnet.ibm.com>
+Message-Id: <200707201602.46415.hnguyen@linux.vnet.ibm.com>
 Cc: fenkes@de.ibm.com, raisch@de.ibm.com, stefan.roscher@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -37,97 +37,74 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 From: Joachim Fenkes <fenkes@de.ibm.com>
-Date: Thu, 19 Jul 2007 20:51:43 +0200
-Subject: [PATCH 2/5] IB/ehca: Generate event when SRQ limit reached
+Date: Thu, 19 Jul 2007 21:13:57 +0200
+Subject: [PATCH 3/5] IB/ehca: Make ehca2ib_return_code() non-inline
+
+It's nowhere in the main path and making it non-inline saves ~1.5K of code.
 
 Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
 ---
- drivers/infiniband/hw/ehca/ehca_irq.c |   42 ++++++++++++++++++++++-----------
- 1 files changed, 28 insertions(+), 14 deletions(-)
+ drivers/infiniband/hw/ehca/ehca_main.c  |   17 +++++++++++++++++
+ drivers/infiniband/hw/ehca/ehca_tools.h |   19 +------------------
+ 2 files changed, 18 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_irq.c b/drivers/infiniband/hw/ehca/ehca_irq.c
-index 4fb01fc..71c0799 100644
---- a/drivers/infiniband/hw/ehca/ehca_irq.c
-+++ b/drivers/infiniband/hw/ehca/ehca_irq.c
-@@ -175,9 +175,8 @@ error_data1:
- 
+diff --git a/drivers/infiniband/hw/ehca/ehca_main.c b/drivers/infiniband/hw/ehca/ehca_main.c
+index 34661c3..3bd7afb 100644
+--- a/drivers/infiniband/hw/ehca/ehca_main.c
++++ b/drivers/infiniband/hw/ehca/ehca_main.c
+@@ -130,6 +130,23 @@ void ehca_free_fw_ctrlblock(void *ptr)
  }
+ #endif
  
--static void qp_event_callback(struct ehca_shca *shca,
--			      u64 eqe,
--			      enum ib_event_type event_type)
-+static void qp_event_callback(struct ehca_shca *shca, u64 eqe,
-+			      enum ib_event_type event_type, int fatal)
- {
- 	struct ib_event event;
- 	struct ehca_qp *qp;
-@@ -191,16 +190,26 @@ static void qp_event_callback(struct ehca_shca *shca,
- 	if (!qp)
- 		return;
- 
--	ehca_error_data(shca, qp, qp->ipz_qp_handle.handle);
-+	if (fatal)
-+		ehca_error_data(shca, qp, qp->ipz_qp_handle.handle);
- 
--	if (!qp->ib_qp.event_handler)
--		return;
-+	event.device = &shca->ib_device;
- 
--	event.device     = &shca->ib_device;
--	event.event      = event_type;
--	event.element.qp = &qp->ib_qp;
-+	if (qp->ext_type == EQPT_SRQ) {
-+		if (!qp->ib_srq.event_handler)
-+			return;
- 
--	qp->ib_qp.event_handler(&event, qp->ib_qp.qp_context);
-+		event.event = fatal ? IB_EVENT_SRQ_ERR : event_type;
-+		event.element.srq = &qp->ib_srq;
-+		qp->ib_srq.event_handler(&event, qp->ib_srq.srq_context);
-+	} else {
-+		if (!qp->ib_qp.event_handler)
-+			return;
-+
-+		event.event = event_type;
-+		event.element.qp = &qp->ib_qp;
-+		qp->ib_qp.event_handler(&event, qp->ib_qp.qp_context);
++int ehca2ib_return_code(u64 ehca_rc)
++{
++	switch (ehca_rc) {
++	case H_SUCCESS:
++		return 0;
++	case H_RESOURCE:             /* Resource in use */
++	case H_BUSY:
++		return -EBUSY;
++	case H_NOT_ENOUGH_RESOURCES: /* insufficient resources */
++	case H_CONSTRAINED:          /* resource constraint */
++	case H_NO_MEM:
++		return -ENOMEM;
++	default:
++		return -EINVAL;
 +	}
++}
++
+ static int ehca_create_slab_caches(void)
+ {
+ 	int ret;
+diff --git a/drivers/infiniband/hw/ehca/ehca_tools.h b/drivers/infiniband/hw/ehca/ehca_tools.h
+index 678b813..57c77a7 100644
+--- a/drivers/infiniband/hw/ehca/ehca_tools.h
++++ b/drivers/infiniband/hw/ehca/ehca_tools.h
+@@ -154,24 +154,7 @@ extern int ehca_debug_level;
+ #define EHCA_BMASK_GET(mask, value) \
+ 	(EHCA_BMASK_MASK(mask) & (((u64)(value)) >> EHCA_BMASK_SHIFTPOS(mask)))
  
- 	return;
- }
-@@ -234,17 +243,17 @@ static void parse_identifier(struct ehca_shca *shca, u64 eqe)
+-
+ /* Converts ehca to ib return code */
+-static inline int ehca2ib_return_code(u64 ehca_rc)
+-{
+-	switch (ehca_rc) {
+-	case H_SUCCESS:
+-		return 0;
+-	case H_RESOURCE:             /* Resource in use */
+-	case H_BUSY:
+-		return -EBUSY;
+-	case H_NOT_ENOUGH_RESOURCES: /* insufficient resources */
+-	case H_CONSTRAINED:          /* resource constraint */
+-	case H_NO_MEM:
+-		return -ENOMEM;
+-	default:
+-		return -EINVAL;
+-	}
+-}
+-
++int ehca2ib_return_code(u64 ehca_rc);
  
- 	switch (identifier) {
- 	case 0x02: /* path migrated */
--		qp_event_callback(shca, eqe, IB_EVENT_PATH_MIG);
-+		qp_event_callback(shca, eqe, IB_EVENT_PATH_MIG, 0);
- 		break;
- 	case 0x03: /* communication established */
--		qp_event_callback(shca, eqe, IB_EVENT_COMM_EST);
-+		qp_event_callback(shca, eqe, IB_EVENT_COMM_EST, 0);
- 		break;
- 	case 0x04: /* send queue drained */
--		qp_event_callback(shca, eqe, IB_EVENT_SQ_DRAINED);
-+		qp_event_callback(shca, eqe, IB_EVENT_SQ_DRAINED, 0);
- 		break;
- 	case 0x05: /* QP error */
- 	case 0x06: /* QP error */
--		qp_event_callback(shca, eqe, IB_EVENT_QP_FATAL);
-+		qp_event_callback(shca, eqe, IB_EVENT_QP_FATAL, 1);
- 		break;
- 	case 0x07: /* CQ error */
- 	case 0x08: /* CQ error */
-@@ -278,6 +287,11 @@ static void parse_identifier(struct ehca_shca *shca, u64 eqe)
- 		ehca_err(&shca->ib_device, "Interface trace stopped.");
- 		break;
- 	case 0x14: /* first error capture info available */
-+		ehca_info(&shca->ib_device, "First error capture available");
-+		break;
-+	case 0x15: /* SRQ limit reached */
-+		qp_event_callback(shca, eqe, IB_EVENT_SRQ_LIMIT_REACHED, 0);
-+		break;
- 	default:
- 		ehca_err(&shca->ib_device, "Unknown identifier: %x on %s.",
- 			 identifier, shca->ib_device.name);
+ #endif /* EHCA_TOOLS_H */
 -- 
 1.5.2
