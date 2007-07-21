@@ -1,15 +1,34 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 5EE89DDE4A
-	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jul 2007 00:37:26 +1000 (EST)
-Date: Sun, 22 Jul 2007 00:37:38 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] quiet section mismatch warning on pcibios_setup
-Message-Id: <20070722003738.cc0854f8.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <tyrlik@us.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4B4D5DDE42
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jul 2007 00:44:49 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6LEiiCi027213
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 10:44:44 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l6LEiiE2217824
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 08:44:44 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l6LEihej031337
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 08:44:44 -0600
+Received: from d03nm126.boulder.ibm.com (d03nm126.boulder.ibm.com
+	[9.17.195.152])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	l6LEihZs031334
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 08:44:43 -0600
+Subject: Matt Tyrlik is out of the office.
+From: Matt Tyrlik <tyrlik@us.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <OF7C549C50.F36D3E13-ON8725731F.00516A34-8725731F.00516A33@us.ibm.com>
+Date: Sat, 21 Jul 2007 08:49:16 -0600
+MIME-Version: 1.0
+Content-type: multipart/alternative;
+	Boundary="0__=08BBF98CDFC2ECA48f9e8a93df938690918c08BBF98CDFC2ECA4"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,32 +38,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-WARNING: vmlinux.o(.text+0x1cefcc): Section mismatch: reference to .init.text:.pcibios_setup (between '.pci_setup' and '.pci_init')
+--0__=08BBF98CDFC2ECA48f9e8a93df938690918c08BBF98CDFC2ECA4
+Content-type: text/plain; charset=US-ASCII
 
-pci_setup() is marked __devinit and calls pcibios_setup.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/pci-common.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I will be out of the office starting  07/13/2007 and will not return until
+07/24/2007.
 
-Built for PowerPC allmodconfig and ppc64_defconfig.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+I will respond to your message when I return.  I will not check e-mail
+while out of the office.
+--0__=08BBF98CDFC2ECA48f9e8a93df938690918c08BBF98CDFC2ECA4
+Content-type: text/html; charset=US-ASCII
+Content-Disposition: inline
 
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 94b4a02..fe7d125 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -166,7 +166,7 @@ int pcibios_add_platform_entries(struct pci_dev *pdev)
- 
- }
- 
--char __init *pcibios_setup(char *str)
-+char __devinit *pcibios_setup(char *str)
- {
- 	return str;
- }
--- 
-1.5.2.3
+<html><body>
+<p>I will be out of the office starting  07/13/2007 and will not return until 07/24/2007.<br>
+<br>
+I will respond to your message when I return.  I will not check e-mail while out of the office.</body></html>
+--0__=08BBF98CDFC2ECA48f9e8a93df938690918c08BBF98CDFC2ECA4--
