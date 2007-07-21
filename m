@@ -1,19 +1,35 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
-	by ozlabs.org (Postfix) with ESMTP id 4F353DDE46
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 14:20:52 +1000 (EST)
-To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-Subject: Re: [ofa-general] [PATCH 5/5] ehca: Support small QP queues
-References: <200707201604.17991.hnguyen@linux.vnet.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 20 Jul 2007 21:20:49 -0700
-In-Reply-To: <200707201604.17991.hnguyen@linux.vnet.ibm.com> (Hoang-Nam
-	Nguyen's message of "Fri, 20 Jul 2007 16:04:17 +0200")
-Message-ID: <adawswu5qvy.fsf@cisco.com>
+Return-Path: <HNGUYEN@de.ibm.com>
+Received: from mtagate7.de.ibm.com (mtagate7.de.ibm.com [195.212.29.156])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate7.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3B73DDDEBC
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 18:23:35 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate7.de.ibm.com (8.13.8/8.13.8) with ESMTP id l6L8NTx6309236
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 08:23:29 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.4) with
+	ESMTP id l6L8NLFt2179254
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 10:23:29 +0200
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l6L8N4AQ029988
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 10:23:05 +0200
+In-Reply-To: <adabqe67632.fsf@cisco.com>
+Subject: Re: [ofa-general] [PATCH 1/5] ehca: Supports large page MRs
+To: Roland Dreier <rdreier@cisco.com>
+Message-ID: <OFDBEFA17C.9FE35C61-ONC125731F.002DE742-C125731F.002E0843@de.ibm.com>
+From: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
+Date: Sat, 21 Jul 2007 10:22:54 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, fenkes@de.ibm.com, stefan.roscher@de.ibm.com,
-	linux-kernel@vger.kernel.org, openib-general@openib.org
+Content-type: text/plain; charset=US-ASCII
+Cc: Joachim Fenkes <fenkes@de.ibm.com>, linux-kernel@vger.kernel.org,
+	openib-general@openib.org, linuxppc-dev@ozlabs.org,
+	general-bounces@lists.openfabrics.org,
+	Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,14 +39,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-thanks, applied.  I fixed this up myself to work with commit 20c2df83,
-which got rid of the destructor argument to kmem_cache_create() -- you
-probably want to check my tree to make sure it's OK.
-
-Also the same as I said before about checkpatch.pl's warning:
-
-WARNING: externs should be avoided in .c files
-#337: FILE: drivers/infiniband/hw/ehca/ehca_pd.c:91:
-+	extern struct kmem_cache *small_qp_cache;
-
-please fix that up when you get a chance
+Hi Roland!
+> I applied this, but I agree with checkpatch.pl:
+>
+>  > WARNING: externs should be avoided in .c files
+>  > #227: FILE: drivers/infiniband/hw/ehca/ehca_mrmw.c:67:
+>  > +extern int ehca_mr_largepage;
+>  >
+>  > WARNING: externs should be avoided in .c files
+>  > #949: FILE: drivers/infiniband/hw/ehca/hcp_if.c:753:
+>  > +   extern int ehca_debug_level;
+>
+> if you need to use a variable in more than one .c file, put the extern
+> declaration in a common header that's included everywhere you use the
+> variable, including the .c file that it is defined in.  That way the
+> compiler can see if you get confused about the type of the variable.
+That's true.
+> When you get a chance, please post a follow-on patch to fix this.
+Sure thing. Will do that for rc2.
+Thanks!
+Nam
