@@ -1,17 +1,15 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id C07B9DDE04
-	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jul 2007 00:22:53 +1000 (EST)
-Date: Sun, 22 Jul 2007 00:23:03 +1000
+	by ozlabs.org (Postfix) with ESMTP id A8669DDE04
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jul 2007 00:24:48 +1000 (EST)
+Date: Sun, 22 Jul 2007 00:25:00 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] constify of_platform_driver name
-Message-Id: <20070722002303.df29f666.sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] hvcs: make some things static and const
+Message-Id: <20070722002500.d27ab5ad.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: LKML <linux-kernel@vger.kernel.org>, wli@holomorphy.com,
-	ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org,
-	sparclinux@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,42 +22,39 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/pcmcia/m8xx_pcmcia.c |    2 +-
- include/linux/of_platform.h  |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/char/hvcs.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-Built for PowerPC allmodconfig and ppc64_defconfig, and for Sparc and
-Sparc64 defconfig.
-
+Built for PowerPC allmodconfig and ppc64_defconfig.
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/drivers/pcmcia/m8xx_pcmcia.c b/drivers/pcmcia/m8xx_pcmcia.c
-index 3c45142..b019854 100644
---- a/drivers/pcmcia/m8xx_pcmcia.c
-+++ b/drivers/pcmcia/m8xx_pcmcia.c
-@@ -1316,7 +1316,7 @@ static struct of_device_id m8xx_pcmcia_match[] = {
- MODULE_DEVICE_TABLE(of, m8xx_pcmcia_match);
+diff --git a/drivers/char/hvcs.c b/drivers/char/hvcs.c
+index 17f96e0..69d8866 100644
+--- a/drivers/char/hvcs.c
++++ b/drivers/char/hvcs.c
+@@ -210,9 +210,9 @@ static struct ktermios hvcs_tty_termios = {
+ static int hvcs_parm_num_devs = -1;
+ module_param(hvcs_parm_num_devs, int, 0);
  
- static struct of_platform_driver m8xx_pcmcia_driver = {
--	.name = (char *)driver_name,
-+	.name = driver_name,
- 	.match_table = m8xx_pcmcia_match,
- 	.probe = m8xx_probe,
- 	.remove = m8xx_remove,
-diff --git a/include/linux/of_platform.h b/include/linux/of_platform.h
-index 5fd44e6..22c3837 100644
---- a/include/linux/of_platform.h
-+++ b/include/linux/of_platform.h
-@@ -31,7 +31,7 @@ extern struct bus_type of_platform_bus_type;
+-char hvcs_driver_name[] = "hvcs";
+-char hvcs_device_node[] = "hvcs";
+-char hvcs_driver_string[]
++static const char hvcs_driver_name[] = "hvcs";
++static const char hvcs_device_node[] = "hvcs";
++static const char hvcs_driver_string[]
+ 	= "IBM hvcs (Hypervisor Virtual Console Server) Driver";
+ 
+ /* Status of partner info rescan triggered via sysfs. */
+@@ -1092,7 +1092,7 @@ static int hvcs_enable_device(struct hvcs_struct *hvcsd, uint32_t unit_address,
+  * NOTICE: Do NOT hold either the hvcs_struct.lock or hvcs_structs_lock when
+  * calling this function or you will get deadlock.
   */
- struct of_platform_driver
+-struct hvcs_struct *hvcs_get_by_index(int index)
++static struct hvcs_struct *hvcs_get_by_index(int index)
  {
--	char			*name;
-+	const char		*name;
- 	struct of_device_id	*match_table;
- 	struct module		*owner;
- 
+ 	struct hvcs_struct *hvcsd = NULL;
+ 	unsigned long flags;
 -- 
 1.5.2.3
