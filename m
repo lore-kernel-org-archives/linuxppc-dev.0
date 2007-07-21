@@ -1,22 +1,42 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.177])
-	by ozlabs.org (Postfix) with ESMTP id 0CFA6DDE45
+Return-Path: <csnook@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id 97EE4DDEE0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 22 Jul 2007 06:17:22 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so1530576wag
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 21 Jul 2007 13:17:21 -0700 (PDT)
-Message-ID: <fa686aa40707211317q47b12a38jbe05e4d2c89767f4@mail.gmail.com>
-Date: Sat, 21 Jul 2007 14:17:21 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "=?ISO-8859-1?Q?Joachim_F=F6rster?=" <mls.JOFT@gmx.de>
-Subject: Re: ML403 / ALSA driver for AC97 Controller
-In-Reply-To: <1185047879.15040.34.camel@localhost>
+	Sun, 22 Jul 2007 02:51:33 +1000 (EST)
+Message-ID: <46A23952.6060207@redhat.com>
+Date: Sat, 21 Jul 2007 12:50:26 -0400
+From: Chris Snook <csnook@redhat.com>
 MIME-Version: 1.0
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Subject: Re: [PATCH][12/37] Clean up duplicate includes in drivers/net/
+References: <200707211702.46375.jesper.juhl@gmail.com>	
+	<46A236FC.2080300@redhat.com>
+	<9a8748490707210948k468f8f32k718d84279aa56ce9@mail.gmail.com>
+In-Reply-To: <9a8748490707210948k468f8f32k718d84279aa56ce9@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <1185047879.15040.34.camel@localhost>
-Cc: linuxppc-embedded@ozlabs.org
+Cc: info@netxen.com, Luke Yang <luke.yang@analog.com>,
+	Judy Fischbach <jfisch@cs.pdx.edu>, Patrick McHardy <kaber@coreworks.de>,
+	bonding-devel@lists.sourceforge.net,
+	Bryan Wu <bryan.wu@analog.com>, kong.lai@tundra.com,
+	Jay Vosburgh <fubar@us.ibm.com>,
+	James Morris <jmorris@namei.org>, linuxppc-embedded@ozlabs.org,
+	Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+	Alex V Lasso <a_villacis@palosanto.com>,
+	Ulrich Kunitz <kune@deine-taler.de>,
+	Chad Tindel <ctindel@users.sourceforge.net>,
+	Amit S Kale <amitkale@netxen.com>, Jay Cliburn <jcliburn@gmail.com>,
+	Samuel Ortiz <samuel@sortiz.org>, Daniel Drake <dsd@gentoo.org>,
+	Brian Pugh <bpugh@cs.pdx.edu>, viro@ftp.linux.org.uk,
+	alexandre.bounine@tundra.com,
+	Pantelis Antoniou <panto@intracom.gr>, netdev@vger.kernel.org,
+	linux-wireless@vger.kernel.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Ralf Baechle <ralf@linux-mips.org>, Vitaly Bordug <vbordug@ru.mvista.com>,
+	Lukasz Stelmach <stlman@poczta.fm>, Ron Mercer <linux-driver@qlogic.com>,
+	atl1-devel@lists.sourceforge.net,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>,
+	James P Ketrenos <ipw2100-admin@linux.intel.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,38 +47,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 7/21/07, Joachim F=F6rster <mls.JOFT@gmx.de> wrote:
-> Hi all,
+Jesper Juhl wrote:
+> On 21/07/07, Chris Snook <csnook@redhat.com> wrote:
+>> Jesper Juhl wrote:
+>> > Hi,
+>> >
+>> > This patch cleans up duplicate includes in
+>> >        drivers/net/
+>> >
+>> >
+>> > Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+>> > ---
+>> >
+>> > diff --git a/drivers/net/atl1/atl1_main.c 
+>> b/drivers/net/atl1/atl1_main.c
+>> > index fd1e156..4a18b88 100644
+>> > --- a/drivers/net/atl1/atl1_main.c
+>> > +++ b/drivers/net/atl1/atl1_main.c
+>> > @@ -75,7 +75,6 @@
+>> >  #include <linux/compiler.h>
+>> >  #include <linux/delay.h>
+>> >  #include <linux/mii.h>
+>> > -#include <linux/interrupt.h>
+>> >  #include <net/checksum.h>
+>> >
+>> >  #include <asm/atomic.h>
+>>
+>> Define "duplicate".  I ask because this patch just got posted a few 
+>> days ago:
+>>
+> 
+> duplicate == present more than once in the same source file.
+> Did you try looking at the includes in the source file the patch modifies?
 
-Thanks Joachim, this is interesting work.  I'd like to see this get
-into mainline.
+Nope!  Mea Culpa.
 
-A few initial comments:
-1. You should post this code as a patch against the kernel tree.
-Links to tarballs are not the best way to get code reviewed.  Post
-your patches to both the ALSA and linuxppc-dev mailing lists.
-2. (get this out of the way quickly) Coding standard doesn't match the
-kernel (indent w/ tabs, keep lines < 80 chars, etc).  You should run
-your code through 'scripts/Lindent' in the kernel tree.  That will
-sort out many of the whitespace issues.
-3. In the same vein, c++ style comments need to be scrubbed.
-4. Do not directly include xparameters.h in your driver.  The driver
-should get it's data from the platform bus registration (of the
-of_device registration when we move to arch/powerpc).
-5. struct 'platform_device devices[]' needs to be moved to
-arch/ppc/sysdev/virtex_devices.c
-6. Have you looked into the new ALSA infrastructure which separates
-Codecs from controllers (in sound/soc)?  It might be a good idea to go
-that route for this driver.
-
-That being said, it looks like good work.  Please cc me when you send
-the next version.
-
-Thanks,
-g.
-
----
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+	-- Chris
