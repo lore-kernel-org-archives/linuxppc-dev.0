@@ -1,20 +1,24 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 339B6DDDE9
-	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jul 2007 03:29:49 +1000 (EST)
-Subject: Re: [PATCH] Fix tas_suspend/resume build warning
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20070722002937.11e234f8.sfr@canb.auug.org.au>
-References: <20070722002937.11e234f8.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Sat, 21 Jul 2007 19:29:26 +0200
-Message-Id: <1185038966.868.5.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: Takashi Iwai <tiwai@suse.de>, linuxppc-dev@ozlabs.org,
-	alsa-devel@alsa-project.org, Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 8DFDBDDED2
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jul 2007 06:05:26 +1000 (EST)
+Date: Sat, 21 Jul 2007 15:18:37 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v3] pcmcia: CompactFlash driver for PA Semi Electra boards
+Message-ID: <20070721201837.GA17814@lixom.net>
+References: <20070625010311.GA31355@lixom.net>
+	<20070625171221.GA6684@lixom.net>
+	<20070625193909.GA26021@infradead.org>
+	<20070625204341.GA8865@lixom.net>
+	<20070705144914.GA14284@lixom.net>
+	<20070720164823.95608e43.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070720164823.95608e43.akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
+	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+	miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,72 +28,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2007-07-22 at 00:29 +1000, Stephen Rothwell wrote:
-> sound/aoa/codecs/snd-aoa-codec-tas.c:750: warning: 'tas_suspend' defined but not used
-> sound/aoa/codecs/snd-aoa-codec-tas.c:760: warning: 'tas_resume' defined but not used
+On Fri, Jul 20, 2007 at 04:48:23PM -0700, Andrew Morton wrote:
 
-Heh. I daresay I never compiled a kernel without PM. Not sure why you'd
-want to, but still good to have it fixed. Thanks.
+> > Who's maintaining PCMCIA? MAINTAINERS only lists a mailing list, no person. Seems
+> > weird for a component that's marked as maintained.
+> 
+> Dominik Brodowski.  He's having a bit of downtime at present (exams, I
+> think).  He expects to return.  Meanwhile, cc'ing me usually has some
+> effect.
 
+Thanks!
 
-[full copy below for Takashi, I suppose it'll go through his tree]
+> > +static const char driver_name[] = "electra-cf";
+> >
+> > ...
+> >
+> > +static struct of_device_id electra_cf_match[] =
+> > +{
+> > +	{
+> > +		.compatible   = "electra-cf",
+> > +	},
+> > +	{},
+> > +};
+> 
+> Could have reused driver_name[] here, if that was appropriate.
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Fix tas_suspend/resume build warning
+Driver name and device tree compatible field is not neccessarily the same,
+even though they do coincide here.
 
-sound/aoa/codecs/snd-aoa-codec-tas.c:750: warning: 'tas_suspend' defined but not used
-sound/aoa/codecs/snd-aoa-codec-tas.c:760: warning: 'tas_resume' defined but not used
+> > --- mainline.orig/arch/powerpc/platforms/pasemi/setup.c
+> > +++ mainline/arch/powerpc/platforms/pasemi/setup.c
+> 
+> I never know who maintains random-scruffy-ppc code like this.  From a peek
+> in the git-whatchanged output, it appears to be yourself.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Acked-by: Johannes Berg <johannes@sipsolutions.net>
----
- sound/aoa/codecs/snd-aoa-codec-tas.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
+Check the top of the file. :)  (Kumar started doing that, I kept it up,
+seems useful). And yes, we do tend to have per-platform maintainers
+on ppc.
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+> Have a few little fixies:
 
-diff --git a/sound/aoa/codecs/snd-aoa-codec-tas.c b/sound/aoa/codecs/snd-aoa-codec-tas.c
-index 2f771f5..3cbfe46 100644
---- a/sound/aoa/codecs/snd-aoa-codec-tas.c
-+++ b/sound/aoa/codecs/snd-aoa-codec-tas.c
-@@ -743,6 +743,7 @@ static int tas_switch_clock(struct codec_info_item *cii, enum clock_switch clock
- 	return 0;
- }
- 
-+#ifdef CONFIG_PM
- /* we are controlled via i2c and assume that is always up
-  * If that wasn't the case, we'd have to suspend once
-  * our i2c device is suspended, and then take note of that! */
-@@ -768,7 +769,6 @@ static int tas_resume(struct tas *tas)
- 	return 0;
- }
- 
--#ifdef CONFIG_PM
- static int _tas_suspend(struct codec_info_item *cii, pm_message_t state)
- {
- 	return tas_suspend(cii->codec_data);
-@@ -778,7 +778,10 @@ static int _tas_resume(struct codec_info_item *cii)
- {
- 	return tas_resume(cii->codec_data);
- }
--#endif
-+#else /* CONFIG_PM */
-+#define _tas_suspend	NULL
-+#define _tas_resume	NULL
-+#endif /* CONFIG_PM */
- 
- static struct codec_info tas_codec_info = {
- 	.transfers = tas_transfers,
-@@ -791,10 +794,8 @@ static struct codec_info tas_codec_info = {
- 	.owner = THIS_MODULE,
- 	.usable = tas_usable,
- 	.switch_clock = tas_switch_clock,
--#ifdef CONFIG_PM
- 	.suspend = _tas_suspend,
- 	.resume = _tas_resume,
--#endif
- };
- 
- static int tas_init_codec(struct aoa_codec *codec)
+Thanks!
+
+Acked-by: Olof Johansson <olof@lixom.net>
+
+> --- a/drivers/pcmcia/electra_cf.c~pcmcia-compactflash-driver-for-pa-semi-electra-boards-fix
+> +++ a/drivers/pcmcia/electra_cf.c
+[...]
