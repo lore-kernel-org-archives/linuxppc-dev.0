@@ -1,35 +1,26 @@
-Return-Path: <HNGUYEN@de.ibm.com>
-Received: from mtagate7.de.ibm.com (mtagate7.de.ibm.com [195.212.29.156])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate7.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3B73DDDEBC
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 18:23:35 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate7.de.ibm.com (8.13.8/8.13.8) with ESMTP id l6L8NTx6309236
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 08:23:29 GMT
-Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
-	[9.149.165.229])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.4) with
-	ESMTP id l6L8NLFt2179254
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 10:23:29 +0200
-Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l6L8N4AQ029988
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 10:23:05 +0200
-In-Reply-To: <adabqe67632.fsf@cisco.com>
-Subject: Re: [ofa-general] [PATCH 1/5] ehca: Supports large page MRs
-To: Roland Dreier <rdreier@cisco.com>
-Message-ID: <OFDBEFA17C.9FE35C61-ONC125731F.002DE742-C125731F.002E0843@de.ibm.com>
-From: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
-Date: Sat, 21 Jul 2007 10:22:54 +0200
+Return-Path: <geert@linux-m68k.org>
+Received: from hoboe2bl1.telenet-ops.be (hoboe2bl1.telenet-ops.be
+	[195.130.137.73]) by ozlabs.org (Postfix) with ESMTP id 3ED65DDEBA
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 18:27:51 +1000 (EST)
+Date: Sat, 21 Jul 2007 10:27:47 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@linux-m68k.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [patch 1/3] m68k/mac: Make mac_hid_mouse_emulate_buttons()
+	declaration visible
+In-Reply-To: <d120d5000707201151q433f1f3eteb479109291a54bd@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0707211026070.18493@anakin>
+References: <20070720164043.523003359@mail.of.borg>
+	<20070720164323.625963918@mail.of.borg>
+	<d120d5000707201047y2d22167co882a10176d79fce4@mail.gmail.com>
+	<20070720183503.GC3801@stusta.de>
+	<d120d5000707201151q433f1f3eteb479109291a54bd@mail.gmail.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Joachim Fenkes <fenkes@de.ibm.com>, linux-kernel@vger.kernel.org,
-	openib-general@openib.org, linuxppc-dev@ozlabs.org,
-	general-bounces@lists.openfabrics.org,
-	Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Adrian Bunk <bunk@stusta.de>, linuxppc-dev@ozlabs.org,
+	linux-input@atrey.karlin.mff.cuni.cz,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,23 +30,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Roland!
-> I applied this, but I agree with checkpatch.pl:
->
->  > WARNING: externs should be avoided in .c files
->  > #227: FILE: drivers/infiniband/hw/ehca/ehca_mrmw.c:67:
->  > +extern int ehca_mr_largepage;
->  >
->  > WARNING: externs should be avoided in .c files
->  > #949: FILE: drivers/infiniband/hw/ehca/hcp_if.c:753:
->  > +   extern int ehca_debug_level;
->
-> if you need to use a variable in more than one .c file, put the extern
-> declaration in a common header that's included everywhere you use the
-> variable, including the .c file that it is defined in.  That way the
-> compiler can see if you get confused about the type of the variable.
-That's true.
-> When you get a chance, please post a follow-on patch to fix this.
-Sure thing. Will do that for rc2.
-Thanks!
-Nam
+On Fri, 20 Jul 2007, Dmitry Torokhov wrote:
+> On 7/20/07, Adrian Bunk <bunk@stusta.de> wrote:
+> > On Fri, Jul 20, 2007 at 01:47:36PM -0400, Dmitry Torokhov wrote:
+> > > On 7/20/07, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > >> From: Geert Uytterhoeven <geert@linux-m68k.org>
+> > >>
+> > >> m68k/mac: Make mac_hid_mouse_emulate_buttons() declaration visible
+> > >>
+> > >> drivers/char/keyboard.c: In function 'kbd_keycode':
+> > >> drivers/char/keyboard.c:1142: error: implicit declaration of function
+> > >> 'mac_hid_mouse_emulate_buttons'
+> > >>
+> > >> The forward declaration of mac_hid_mouse_emulate_buttons() is not visible
+> > >> on
+> > >> m68k because it's hidden in the middle of a big #ifdef block.
+> > >>
+> > >> Move it to <linux/hid.h>, correct the type of the second parameter, and
+> > >> include <linux/hid.h> where needed.
+> > >
+> > > linux/hid.h contains definitions needed for drivers speaking HID
+> > > protocol, I don't think we want to put quirks for legacy keyboard
+> > > driver there. I'd just move the #ifdef within drivers/char/keyboard.c
+> > > for now.
+> > >...
+> > 
+> > If you only move it you will keep the bug of the wrong second parameter.
+> > 
+> > But if you move it to any header file gcc is able to figure out such
+> > errors itself instead of them being nasty runtime errors.
+> > 
+> > Such prototypes in C files are really bad since (like in this case) they
+> > prevent the finding of bugs. It doesn't matter which header file you put
+> > the prototype into (it can even be a new one), but it belongs into a
+> > header file.
+> > 
+> 
+> I am OK with adding a new header file. I was just saying that placing
+> that declaration in linux/hid.h makes about the same sense as putting
+> it into linux/scsi.h
+
+At first I just wanted to move it. Then I thought about the angry
+comments I would get about not moving it to a header file ;-)
+
+<linux/hid.h> looked like the best candidate. <linux/kbd_kern.h> is
+another option.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
