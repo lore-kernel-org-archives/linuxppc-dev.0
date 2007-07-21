@@ -1,22 +1,41 @@
-Return-Path: <xiay@nari-relays.com>
-Received: from mail.nari-relays.com (mail.nari-relays.com [218.94.131.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "Domain-Confidentiality-authority",
-	Issuer "Domain-Confidentiality-authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 73368DDECE
+Return-Path: <jesper.juhl@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
+	by ozlabs.org (Postfix) with ESMTP id 05DAEDDEB9
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 21 Jul 2007 11:53:52 +1000 (EST)
-From: =?gb2312?B?z8TT6g==?= <xiay@nari-relays.com>
-To: <lokowich@acdstar.com>
-References: <mailman.1484.1184968961.8639.linuxppc-embedded@ozlabs.org>
-Subject: Re: SDRAM failures on MPC5200B (Xia Yu)
-Date: Sat, 21 Jul 2007 09:48:06 +0800
-Message-ID: <000601c7cb39$2f4390c0$596657c6@rcs9000.com>
+	Sun, 22 Jul 2007 01:03:44 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k40so796642ugc
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 21 Jul 2007 08:03:44 -0700 (PDT)
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH][12/37] Clean up duplicate includes in drivers/net/
+Date: Sat, 21 Jul 2007 17:02:45 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="gb2312"
-In-Reply-To: <mailman.1484.1184968961.8639.linuxppc-embedded@ozlabs.org>
-Cc: linuxppc-embedded@ozlabs.org
+  charset="us-ascii"
+Message-Id: <200707211702.46375.jesper.juhl@gmail.com>
+Cc: info@netxen.com, Patrick McHardy <kaber@coreworks.de>,
+	Judy Fischbach <jfisch@cs.pdx.edu>, Luke Yang <luke.yang@analog.com>,
+	bonding-devel@lists.sourceforge.net,
+	Bryan Wu <bryan.wu@analog.com>, kong.lai@tundra.com,
+	Jay Vosburgh <fubar@us.ibm.com>,
+	James Morris <jmorris@namei.org>, linuxppc-embedded@ozlabs.org,
+	Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+	Alex V Lasso <a_villacis@palosanto.com>,
+	Ulrich Kunitz <kune@deine-taler.de>,
+	Chad Tindel <ctindel@users.sourceforge.net>,
+	Amit S Kale <amitkale@netxen.com>, Jay Cliburn <jcliburn@gmail.com>,
+	Samuel Ortiz <samuel@sortiz.org>, Brian Pugh <bpugh@cs.pdx.edu>,
+	Daniel Drake <dsd@gentoo.org>, Chris Snook <csnook@redhat.com>,
+	alexandre.bounine@tundra.com,
+	Pantelis Antoniou <panto@intracom.gr>, netdev@vger.kernel.org,
+	Jesper Juhl <jesper.juhl@gmail.com>, linux-wireless@vger.kernel.org,
+	Ralf Baechle <ralf@linux-mips.org>, Vitaly Bordug <vbordug@ru.mvista.com>,
+	Lukasz Stelmach <stlman@poczta.fm>, Ron Mercer <linux-driver@qlogic.com>,
+	atl1-devel@lists.sourceforge.net,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>,
+	James P Ketrenos <ipw2100-admin@linux.intel.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,59 +46,189 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi! According to the MPC5200B user's manual, you should define the S-delay
-register(MBAR + 0x0190) to 0x04 ,and the initialization sequence of the DDR
-should be modified according to the data sheet from MICRON. I have rewrite
-the function as below:
-static void sdram_start (int hi_addr)
-{
-	long hi_addr_bit = hi_addr ? 0x01000000 : 0;
+Hi,
 
-	/* unlock mode register */
-	*(vu_long *)MPC5XXX_SDRAM_CTRL = (SDRAM_CONTROL & 0xefffffff)|
-0x80000000 | hi_addr_bit;
-	__asm__ volatile ("sync");
+This patch cleans up duplicate includes in
+	 drivers/net/
 
-	/* precharge all banks */
-	*(vu_long *)MPC5XXX_SDRAM_CTRL = (SDRAM_CONTROL & 0xefffffff)|
-0x80000002 | hi_addr_bit;
-	__asm__ volatile ("sync");
 
-#if SDRAM_DDR
-	/* set mode register: extended mode */
-	*(vu_long *)MPC5XXX_SDRAM_MODE = SDRAM_EMODE;
-	__asm__ volatile ("sync");
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
 
-	/* set mode register: reset DLL */
-	*(vu_long *)MPC5XXX_SDRAM_MODE = SDRAM_MODE | 0x04000000;
-	__asm__ volatile ("sync");
-#endif
-
-	/* precharge all banks */
-	*(vu_long *)MPC5XXX_SDRAM_CTRL = (SDRAM_CONTROL & 0xefffffff) |
-0x80000002 | hi_addr_bit;
-	__asm__ volatile ("sync");
-
-	/* auto refresh */
-	*(vu_long *)MPC5XXX_SDRAM_CTRL = (SDRAM_CONTROL & 0xefffffff) |
-0x80000004 | hi_addr_bit;
-	__asm__ volatile ("sync");
-	
-	/* auto refresh */
-	*(vu_long *)MPC5XXX_SDRAM_CTRL = (SDRAM_CONTROL & 0xefffffff) |
-0x80000004 | hi_addr_bit;
-	__asm__ volatile ("sync");
-	
-	/* set mode register */
-	*(vu_long *)MPC5XXX_SDRAM_MODE = SDRAM_MODE;
-	__asm__ volatile ("sync");
-
-	/* normal operation */
-	*(vu_long *)MPC5XXX_SDRAM_CTRL = SDRAM_CONTROL | hi_addr_bit;
-	__asm__ volatile ("sync");
-	
-	udelay(3); //delay 400clks;
-
-}
-
-Hope to be helpful!
+diff --git a/drivers/net/atl1/atl1_main.c b/drivers/net/atl1/atl1_main.c
+index fd1e156..4a18b88 100644
+--- a/drivers/net/atl1/atl1_main.c
++++ b/drivers/net/atl1/atl1_main.c
+@@ -75,7 +75,6 @@
+ #include <linux/compiler.h>
+ #include <linux/delay.h>
+ #include <linux/mii.h>
+-#include <linux/interrupt.h>
+ #include <net/checksum.h>
+ 
+ #include <asm/atomic.h>
+diff --git a/drivers/net/bfin_mac.c b/drivers/net/bfin_mac.c
+index 9a08d65..01281ee 100644
+--- a/drivers/net/bfin_mac.c
++++ b/drivers/net/bfin_mac.c
+@@ -47,15 +47,10 @@
+ #include <linux/spinlock.h>
+ #include <linux/ethtool.h>
+ #include <linux/mii.h>
+-
+ #include <linux/netdevice.h>
+ #include <linux/etherdevice.h>
+ #include <linux/skbuff.h>
+-
+ #include <linux/platform_device.h>
+-#include <linux/netdevice.h>
+-#include <linux/etherdevice.h>
+-#include <linux/skbuff.h>
+ 
+ #include <asm/dma.h>
+ #include <linux/dma-mapping.h>
+diff --git a/drivers/net/bonding/bond_sysfs.c b/drivers/net/bonding/bond_sysfs.c
+index 60cccf2..9afd172 100644
+--- a/drivers/net/bonding/bond_sysfs.c
++++ b/drivers/net/bonding/bond_sysfs.c
+@@ -31,7 +31,6 @@
+ #include <linux/inetdevice.h>
+ #include <linux/in.h>
+ #include <linux/sysfs.h>
+-#include <linux/string.h>
+ #include <linux/ctype.h>
+ #include <linux/inet.h>
+ #include <linux/rtnetlink.h>
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index a4a2a0e..27de3d8 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -39,8 +39,6 @@
+ 
+ #include <linux/vmalloc.h>
+ #include <asm/pgtable.h>
+-
+-#include <asm/pgtable.h>
+ #include <asm/irq.h>
+ #include <asm/uaccess.h>
+ 
+diff --git a/drivers/net/gianfar.h b/drivers/net/gianfar.h
+index d8e779c..43c8668 100644
+--- a/drivers/net/gianfar.h
++++ b/drivers/net/gianfar.h
+@@ -45,7 +45,6 @@
+ #include <linux/crc32.h>
+ #include <linux/workqueue.h>
+ #include <linux/ethtool.h>
+-#include <linux/netdevice.h>
+ #include <linux/fsl_devices.h>
+ #include "gianfar_mii.h"
+ 
+diff --git a/drivers/net/gianfar_ethtool.c b/drivers/net/gianfar_ethtool.c
+index 7b411c1..2470903 100644
+--- a/drivers/net/gianfar_ethtool.c
++++ b/drivers/net/gianfar_ethtool.c
+@@ -34,7 +34,6 @@
+ #include <linux/module.h>
+ #include <linux/crc32.h>
+ #include <asm/types.h>
+-#include <asm/uaccess.h>
+ #include <linux/ethtool.h>
+ #include <linux/mii.h>
+ #include <linux/phy.h>
+diff --git a/drivers/net/irda/kingsun-sir.c b/drivers/net/irda/kingsun-sir.c
+index bdd5c97..4c0d379 100644
+--- a/drivers/net/irda/kingsun-sir.c
++++ b/drivers/net/irda/kingsun-sir.c
+@@ -66,7 +66,6 @@
+ #include <linux/errno.h>
+ #include <linux/init.h>
+ #include <linux/slab.h>
+-#include <linux/module.h>
+ #include <linux/kref.h>
+ #include <linux/usb.h>
+ #include <linux/device.h>
+diff --git a/drivers/net/irda/mcs7780.c b/drivers/net/irda/mcs7780.c
+index 0de8672..bfc5752 100644
+--- a/drivers/net/irda/mcs7780.c
++++ b/drivers/net/irda/mcs7780.c
+@@ -50,7 +50,6 @@
+ #include <linux/errno.h>
+ #include <linux/init.h>
+ #include <linux/slab.h>
+-#include <linux/module.h>
+ #include <linux/kref.h>
+ #include <linux/usb.h>
+ #include <linux/device.h>
+diff --git a/drivers/net/mipsnet.c b/drivers/net/mipsnet.c
+index 9853c74..c0f5ad3 100644
+--- a/drivers/net/mipsnet.c
++++ b/drivers/net/mipsnet.c
+@@ -11,7 +11,6 @@
+ #include <linux/module.h>
+ #include <linux/netdevice.h>
+ #include <linux/etherdevice.h>
+-#include <linux/netdevice.h>
+ #include <linux/platform_device.h>
+ #include <asm/io.h>
+ #include <asm/mips-boards/simint.h>
+diff --git a/drivers/net/netxen/netxen_nic_main.c b/drivers/net/netxen/netxen_nic_main.c
+index b703ccf..6ba8e07 100644
+--- a/drivers/net/netxen/netxen_nic_main.c
++++ b/drivers/net/netxen/netxen_nic_main.c
+@@ -39,7 +39,6 @@
+ #include "netxen_nic_phan_reg.h"
+ 
+ #include <linux/dma-mapping.h>
+-#include <linux/vmalloc.h>
+ #include <net/ip.h>
+ 
+ MODULE_DESCRIPTION("NetXen Multi port (1/10) Gigabit Network Driver");
+diff --git a/drivers/net/qla3xxx.c b/drivers/net/qla3xxx.c
+index 8be8be4..c2fc2f7 100755
+--- a/drivers/net/qla3xxx.c
++++ b/drivers/net/qla3xxx.c
+@@ -31,7 +31,6 @@
+ #include <linux/skbuff.h>
+ #include <linux/rtnetlink.h>
+ #include <linux/if_vlan.h>
+-#include <linux/init.h>
+ #include <linux/delay.h>
+ #include <linux/mm.h>
+ 
+diff --git a/drivers/net/tsi108_eth.c b/drivers/net/tsi108_eth.c
+index 1aabc91..a059f3d 100644
+--- a/drivers/net/tsi108_eth.c
++++ b/drivers/net/tsi108_eth.c
+@@ -47,7 +47,6 @@
+ #include <linux/rtnetlink.h>
+ #include <linux/timer.h>
+ #include <linux/platform_device.h>
+-#include <linux/etherdevice.h>
+ 
+ #include <asm/system.h>
+ #include <asm/io.h>
+diff --git a/drivers/net/wireless/ipw2200.h b/drivers/net/wireless/ipw2200.h
+index 626a240..9c973b9 100644
+--- a/drivers/net/wireless/ipw2200.h
++++ b/drivers/net/wireless/ipw2200.h
+@@ -45,7 +45,6 @@
+ 
+ #include <linux/firmware.h>
+ #include <linux/wireless.h>
+-#include <linux/dma-mapping.h>
+ #include <linux/jiffies.h>
+ #include <asm/io.h>
+ 
+diff --git a/drivers/net/wireless/zd1211rw/zd_def.h b/drivers/net/wireless/zd1211rw/zd_def.h
+index deb99d1..505b4d7 100644
+--- a/drivers/net/wireless/zd1211rw/zd_def.h
++++ b/drivers/net/wireless/zd1211rw/zd_def.h
+@@ -21,7 +21,6 @@
+ #include <linux/kernel.h>
+ #include <linux/stringify.h>
+ #include <linux/device.h>
+-#include <linux/kernel.h>
+ 
+ typedef u16 __nocast zd_addr_t;
+ 
