@@ -1,19 +1,19 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 68FE8DDEDB
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 10:35:58 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: mpic protected sources
-Date: Sat, 21 Jul 2007 02:00:55 +0200
-References: <OFD54BD0CE.6883770C-ONC125731D.00322C4C-C125731D.00324A9E@de.ibm.com>
-	<1184975721.5439.33.camel@localhost.localdomain>
-In-Reply-To: <1184975721.5439.33.camel@localhost.localdomain>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
+	by ozlabs.org (Postfix) with ESMTP id 36E60DDE3B
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 14:07:16 +1000 (EST)
+To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+Subject: Re: [ofa-general] [PATCH 1/5] ehca: Supports large page MRs
+References: <200707201601.52277.hnguyen@linux.vnet.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Fri, 20 Jul 2007 21:07:13 -0700
+In-Reply-To: <200707201601.52277.hnguyen@linux.vnet.ibm.com> (Hoang-Nam
+	Nguyen's message of "Fri, 20 Jul 2007 16:01:51 +0200")
+Message-ID: <adabqe67632.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200707210200.56466.arnd@arndb.de>
-Cc: Paul Mackerras <paulus@au1.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, fenkes@de.ibm.com, stefan.roscher@de.ibm.com,
+	linux-kernel@vger.kernel.org, openib-general@openib.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,26 +23,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 21 July 2007, Benjamin Herrenschmidt wrote:
-> 0% probability of being spam.
->=20
-> Full report:
-> No, score=3D-2.5 required=3D5.0 tests=3DAWL,BAYES_00 autolearn=3Dham  ver=
-sion=3D3.1.7-deb =A0
-> Some HW platforms, such as the new cell blades, requires some MPIC sources
-> to be left alone by the operating system. This patch implements support f=
-or
-> a "protected-sources" property in the mpic controller node containing a l=
-ist
-> of source numbers to be protected against operating system interference.
->=20
-> For those interested in the gory details, the MPIC on the southbridge of
-> those blades has some of the processor outputs routed to the cell, and
-> at least one routed as a GPIO to the service processor. It will be used
-> in the GA product for routing some of the southbridge error interrupts
-> to the service processor which implements some of the RAS stuff, such
-> as checkstopping when fatal errors occurs before they can propagate.
->=20
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+I applied this, but I agree with checkpatch.pl:
 
-Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+ > WARNING: externs should be avoided in .c files
+ > #227: FILE: drivers/infiniband/hw/ehca/ehca_mrmw.c:67:
+ > +extern int ehca_mr_largepage;
+ > 
+ > WARNING: externs should be avoided in .c files
+ > #949: FILE: drivers/infiniband/hw/ehca/hcp_if.c:753:
+ > +	extern int ehca_debug_level;
+
+if you need to use a variable in more than one .c file, put the extern
+declaration in a common header that's included everywhere you use the
+variable, including the .c file that it is defined in.  That way the
+compiler can see if you get confused about the type of the variable.
+
+When you get a chance, please post a follow-on patch to fix this.
+
+ - R.
