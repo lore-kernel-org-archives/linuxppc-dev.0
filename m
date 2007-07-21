@@ -1,34 +1,19 @@
-Return-Path: <tyrlik@us.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4B4D5DDE42
-	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jul 2007 00:44:49 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6LEiiCi027213
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 10:44:44 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l6LEiiE2217824
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 08:44:44 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6LEihej031337
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 08:44:44 -0600
-Received: from d03nm126.boulder.ibm.com (d03nm126.boulder.ibm.com
-	[9.17.195.152])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	l6LEihZs031334
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 08:44:43 -0600
-Subject: Matt Tyrlik is out of the office.
-From: Matt Tyrlik <tyrlik@us.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <OF7C549C50.F36D3E13-ON8725731F.00516A34-8725731F.00516A33@us.ibm.com>
-Date: Sat, 21 Jul 2007 08:49:16 -0600
+Return-Path: <jesper.juhl@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
+	by ozlabs.org (Postfix) with ESMTP id 56624DDE41
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jul 2007 01:03:28 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k40so796642ugc
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 08:03:26 -0700 (PDT)
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH][09/37] Clean up duplicate includes in drivers/macintosh/
+Date: Sat, 21 Jul 2007 17:02:30 +0200
 MIME-Version: 1.0
-Content-type: multipart/alternative;
-	Boundary="0__=08BBF98CDFC2ECA48f9e8a93df938690918c08BBF98CDFC2ECA4"
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200707211702.30610.jesper.juhl@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Jesper Juhl <jesper.juhl@gmail.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,21 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---0__=08BBF98CDFC2ECA48f9e8a93df938690918c08BBF98CDFC2ECA4
-Content-type: text/plain; charset=US-ASCII
+Hi,
+
+This patch cleans up duplicate includes in
+	drivers/macintosh/
 
 
-I will be out of the office starting  07/13/2007 and will not return until
-07/24/2007.
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
 
-I will respond to your message when I return.  I will not check e-mail
-while out of the office.
---0__=08BBF98CDFC2ECA48f9e8a93df938690918c08BBF98CDFC2ECA4
-Content-type: text/html; charset=US-ASCII
-Content-Disposition: inline
-
-<html><body>
-<p>I will be out of the office starting  07/13/2007 and will not return until 07/24/2007.<br>
-<br>
-I will respond to your message when I return.  I will not check e-mail while out of the office.</body></html>
---0__=08BBF98CDFC2ECA48f9e8a93df938690918c08BBF98CDFC2ECA4--
+diff --git a/drivers/macintosh/rack-meter.c b/drivers/macintosh/rack-meter.c
+index 4177ff0..2c21d4f 100644
+--- a/drivers/macintosh/rack-meter.c
++++ b/drivers/macintosh/rack-meter.c
+@@ -30,7 +30,6 @@
+ #include <asm/machdep.h>
+ #include <asm/pmac_feature.h>
+ #include <asm/dbdma.h>
+-#include <asm/dbdma.h>
+ #include <asm/macio.h>
+ #include <asm/keylargo.h>
+ 
