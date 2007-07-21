@@ -1,26 +1,24 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from hoboe2bl1.telenet-ops.be (hoboe2bl1.telenet-ops.be
-	[195.130.137.73]) by ozlabs.org (Postfix) with ESMTP id 3ED65DDEBA
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 18:27:51 +1000 (EST)
-Date: Sat, 21 Jul 2007 10:27:47 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@linux-m68k.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [patch 1/3] m68k/mac: Make mac_hid_mouse_emulate_buttons()
-	declaration visible
-In-Reply-To: <d120d5000707201151q433f1f3eteb479109291a54bd@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0707211026070.18493@anakin>
-References: <20070720164043.523003359@mail.of.borg>
-	<20070720164323.625963918@mail.of.borg>
-	<d120d5000707201047y2d22167co882a10176d79fce4@mail.gmail.com>
-	<20070720183503.GC3801@stusta.de>
-	<d120d5000707201151q433f1f3eteb479109291a54bd@mail.gmail.com>
+Return-Path: <gallatin@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
+	by ozlabs.org (Postfix) with ESMTP id 527F2DDEB6
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jul 2007 00:03:11 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k40so791146ugc
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 07:03:10 -0700 (PDT)
+Message-ID: <3cea2ee30707210703p5865ef77j103eb9e7499dd95b@mail.gmail.com>
+Date: Sat, 21 Jul 2007 10:03:09 -0400
+From: "Andrew Gallatin" <gallatin@gmail.com>
+To: "Jan-Bernd Themann" <ossthema@de.ibm.com>
+Subject: Re: [RFC 0/1] lro: Generic Large Receive Offload for TCP traffic
+In-Reply-To: <200707201741.45079.ossthema@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Adrian Bunk <bunk@stusta.de>, linuxppc-dev@ozlabs.org,
-	linux-input@atrey.karlin.mff.cuni.cz,
-	Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <200707201741.45079.ossthema@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
+	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,59 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 20 Jul 2007, Dmitry Torokhov wrote:
-> On 7/20/07, Adrian Bunk <bunk@stusta.de> wrote:
-> > On Fri, Jul 20, 2007 at 01:47:36PM -0400, Dmitry Torokhov wrote:
-> > > On 7/20/07, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > >> From: Geert Uytterhoeven <geert@linux-m68k.org>
-> > >>
-> > >> m68k/mac: Make mac_hid_mouse_emulate_buttons() declaration visible
-> > >>
-> > >> drivers/char/keyboard.c: In function 'kbd_keycode':
-> > >> drivers/char/keyboard.c:1142: error: implicit declaration of function
-> > >> 'mac_hid_mouse_emulate_buttons'
-> > >>
-> > >> The forward declaration of mac_hid_mouse_emulate_buttons() is not visible
-> > >> on
-> > >> m68k because it's hidden in the middle of a big #ifdef block.
-> > >>
-> > >> Move it to <linux/hid.h>, correct the type of the second parameter, and
-> > >> include <linux/hid.h> where needed.
-> > >
-> > > linux/hid.h contains definitions needed for drivers speaking HID
-> > > protocol, I don't think we want to put quirks for legacy keyboard
-> > > driver there. I'd just move the #ifdef within drivers/char/keyboard.c
-> > > for now.
-> > >...
-> > 
-> > If you only move it you will keep the bug of the wrong second parameter.
-> > 
-> > But if you move it to any header file gcc is able to figure out such
-> > errors itself instead of them being nasty runtime errors.
-> > 
-> > Such prototypes in C files are really bad since (like in this case) they
-> > prevent the finding of bugs. It doesn't matter which header file you put
-> > the prototype into (it can even be a new one), but it belongs into a
-> > header file.
-> > 
-> 
-> I am OK with adding a new header file. I was just saying that placing
-> that declaration in linux/hid.h makes about the same sense as putting
-> it into linux/scsi.h
+On 7/20/07, Jan-Bernd Themann <ossthema@de.ibm.com> wrote:
+> Hi,
+>
+> Thanks a lot for your comments so far.
+> This generic LRO patch differs from the last one in several points.
+> A new interface for a "receive in pages" mode has been added and tested
+> with an eHEA prototype. Seems to work well.
+>
+> Does this extended interface seem to be sufficient?
 
-At first I just wanted to move it. Then I thought about the angry
-comments I would get about not moving it to a header file ;-)
+Thank you for this!
 
-<linux/hid.h> looked like the best candidate. <linux/kbd_kern.h> is
-another option.
+At least for me, I find it is best to try to use an interface rather
+than simply reading a diff.  So I will port Myri10GE to use the new
+interface so that I can give better feedback,  I'll try my best to do
+this  by early next week.
 
-Gr{oetje,eeting}s,
+Thank you again,
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Drew
