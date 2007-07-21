@@ -1,15 +1,21 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 2B56CDDED2
-	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jul 2007 08:43:14 +1000 (EST)
-Date: Sun, 22 Jul 2007 00:43:11 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] Update kuroboxH[GD].dts with i2c rtc entries, cleanup
-Message-ID: <Pine.LNX.4.60.0707220028370.13322@poirot.grange>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 238A9DDEF2
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jul 2007 09:54:58 +1000 (EST)
+Date: Sun, 22 Jul 2007 09:55:05 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH] Fix tas_suspend/resume build warning
+Message-Id: <20070722095505.faa33dba.sfr@canb.auug.org.au>
+In-Reply-To: <1185038966.868.5.camel@johannes.berg>
+References: <20070722002937.11e234f8.sfr@canb.auug.org.au>
+	<1185038966.868.5.camel@johannes.berg>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sun__22_Jul_2007_09_55_05_+1000_S5myAM.yt.h79Fzk"
+Cc: Takashi Iwai <tiwai@suse.de>, linuxppc-dev@ozlabs.org,
+	alsa-devel@alsa-project.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,116 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Let's fix rtc on linkstation ppc machines again, plus .dts cleanup as 
-suggested by Segher Boessenkool.
+--Signature=_Sun__22_Jul_2007_09_55_05_+1000_S5myAM.yt.h79Fzk
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+On Sat, 21 Jul 2007 19:29:26 +0200 Johannes Berg <johannes@sipsolutions.net=
+> wrote:
+>
+> On Sun, 2007-07-22 at 00:29 +1000, Stephen Rothwell wrote:
+> > sound/aoa/codecs/snd-aoa-codec-tas.c:750: warning: 'tas_suspend' define=
+d but not used
+> > sound/aoa/codecs/snd-aoa-codec-tas.c:760: warning: 'tas_resume' defined=
+ but not used
+>=20
+> Heh. I daresay I never compiled a kernel without PM. Not sure why you'd
+> want to, but still good to have it fixed. Thanks.
 
-Device tree update: add rtc nodes on i2c, remove bogus 0-size cache-line 
-declarations, rename interrupt-controller nodes, remove erroneous 
-interrupt-parent line, accidentally introduced by a recent patch.
+Thats was a PowerPC ppc64_defconfig build.  Why that has CONFIG_PM not set =
+is anyone's guess :-)
 
-Signed-off-by: G. Liakhovetski <g.liakhovetski@gmx.de>
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-diff --git a/arch/powerpc/boot/dts/kuroboxHD.dts b/arch/powerpc/boot/dts/kuroboxHD.dts
-index a983680..1225374 100644
---- a/arch/powerpc/boot/dts/kuroboxHD.dts
-+++ b/arch/powerpc/boot/dts/kuroboxHD.dts
-@@ -33,12 +33,10 @@ build with: "dtc -f -I dts -O dtb -o kuroboxHD.dtb -V 16 kuroboxHD.dts"
- 		PowerPC,603e { /* Really 8241 */
- 			device_type = "cpu";
- 			reg = <0>;
--			clock-frequency = <bebc200>;	/* Fixed by bootwrapper */
--			timebase-frequency = <1743000>; /* Fixed by bootwrapper */
--			bus-frequency = <0>;		/* From bootloader */
-+			clock-frequency = <bebc200>;	/* Fixed by bootloader */
-+			timebase-frequency = <1743000>; /* Fixed by bootloader */
-+			bus-frequency = <0>;		/* Fixed by bootloader */
- 			/* Following required by dtc but not used */
--			i-cache-line-size = <0>;
--			d-cache-line-size = <0>;
- 			i-cache-size = <4000>;
- 			d-cache-size = <4000>;
- 		};
-@@ -64,11 +62,19 @@ build with: "dtc -f -I dts -O dtb -o kuroboxHD.dtb -V 16 kuroboxHD.dts"
- 			  fef00000 fef00000 00100000>;	/* pci iack */
- 
- 		i2c@80003000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
- 			device_type = "i2c";
- 			compatible = "fsl-i2c";
- 			reg = <80003000 1000>;
- 			interrupts = <5 2>;
- 			interrupt-parent = <&mpic>;
-+
-+			rtc@32 {
-+				device_type = "rtc";
-+				compatible = "ricoh,rs5c372b";
-+				reg = <32>;
-+			};
- 		};
- 
- 		serial@80004500 {
-@@ -91,7 +97,7 @@ build with: "dtc -f -I dts -O dtb -o kuroboxHD.dtb -V 16 kuroboxHD.dts"
- 			interrupt-parent = <&mpic>;
- 		};
- 
--		mpic: pic@80040000 {
-+		mpic: interrupt-controller@80040000 {
- 			#interrupt-cells = <2>;
- 			#address-cells = <0>;
- 			device_type = "open-pic";
-diff --git a/arch/powerpc/boot/dts/kuroboxHG.dts b/arch/powerpc/boot/dts/kuroboxHG.dts
-index 5cf42dc..579aa8b 100644
---- a/arch/powerpc/boot/dts/kuroboxHG.dts
-+++ b/arch/powerpc/boot/dts/kuroboxHG.dts
-@@ -33,12 +33,10 @@ build with: "dtc -f -I dts -O dtb -o kuroboxHG.dtb -V 16 kuroboxHG.dts"
- 		PowerPC,603e { /* Really 8241 */
- 			device_type = "cpu";
- 			reg = <0>;
--			clock-frequency = <fdad680>;	/* Fixed by bootwrapper */
--			timebase-frequency = <1F04000>; /* Fixed by bootwrapper */
--			bus-frequency = <0>;		/* From bootloader */
-+			clock-frequency = <fdad680>;	/* Fixed by bootloader */
-+			timebase-frequency = <1F04000>; /* Fixed by bootloader */
-+			bus-frequency = <0>;		/* Fixed by bootloader */
- 			/* Following required by dtc but not used */
--			i-cache-line-size = <0>;
--			d-cache-line-size = <0>;
- 			i-cache-size = <4000>;
- 			d-cache-size = <4000>;
- 		};
-@@ -64,11 +62,19 @@ build with: "dtc -f -I dts -O dtb -o kuroboxHG.dtb -V 16 kuroboxHG.dts"
- 			  fef00000 fef00000 00100000>;	/* pci iack */
- 
- 		i2c@80003000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
- 			device_type = "i2c";
- 			compatible = "fsl-i2c";
- 			reg = <80003000 1000>;
- 			interrupts = <5 2>;
- 			interrupt-parent = <&mpic>;
-+
-+			rtc@32 {
-+				device_type = "rtc";
-+				compatible = "ricoh,rs5c372b";
-+				reg = <32>;
-+			};
- 		};
- 
- 		serial@80004500 {
-@@ -91,8 +97,7 @@ build with: "dtc -f -I dts -O dtb -o kuroboxHG.dtb -V 16 kuroboxHG.dts"
- 			interrupt-parent = <&mpic>;
- 		};
- 
--		mpic: pic@80040000 {
--			interrupt-parent = <&mpic>;
-+		mpic: interrupt-controller@80040000 {
- 			#interrupt-cells = <2>;
- 			#address-cells = <0>;
- 			device_type = "open-pic";
+--Signature=_Sun__22_Jul_2007_09_55_05_+1000_S5myAM.yt.h79Fzk
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGopzeTgG2atn1QN8RAoIlAJ4yhOc/DGdHTCveA/5/IiZ7QVPV1ACeKR2U
+SHkqfhDEDkvVD2YKQu3bwWE=
+=FnDI
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__22_Jul_2007_09_55_05_+1000_S5myAM.yt.h79Fzk--
