@@ -1,24 +1,19 @@
-Return-Path: <brad@heeltoe.com>
-Received: from gateway.heeltoe.com (gateway.heeltoe.com [66.134.219.32])
-	by ozlabs.org (Postfix) with ESMTP id 00A53DDED8
-	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jul 2007 11:19:18 +1000 (EST)
-Received: from mwave.heeltoe.com (mwave [192.245.4.20])
-	by gateway.heeltoe.com (Postfix) with ESMTP id 72AF311409C
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 20:51:13 -0400 (EDT)
-Received: from mwave.heeltoe.com (localhost.localdomain [127.0.0.1])
-	by mwave.heeltoe.com (8.12.11.20060308/8.12.11) with ESMTP id
-	l6M0pDRQ010980
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 20:51:13 -0400
-Received: from mwave (brad@localhost)
-	by mwave.heeltoe.com (8.12.11.20060308/8.12.11/Submit) with ESMTP id
-	l6M0pDsU010976
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 20:51:13 -0400
-Message-Id: <200707220051.l6M0pDsU010976@mwave.heeltoe.com>
-From: Brad Parker <brad@heeltoe.com>
-To: linuxppc-dev@ozlabs.org
-Subject: 8247 ether_fcc underruns, but only running kernel 
-Date: Sat, 21 Jul 2007 20:51:13 -0400
-Sender: brad@heeltoe.com
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18082.46270.713491.488496@cargo.ozlabs.ibm.com>
+Date: Sun, 22 Jul 2007 11:37:02 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/2] OProfile - Enable SPU switch notification to detect
+	currently active SPU tasks - update
+In-Reply-To: <20070720130241.176c50a5.akpm@linux-foundation.org>
+References: <200707201424.07292.rrnelson@linux.vnet.ibm.com>
+	<20070720130241.176c50a5.akpm@linux-foundation.org>
+Cc: Maynard Johnson <maynardj@linux.vnet.ibm.com>,
+	Philippe Elie <phil.el@wanadoo.fr>, linuxppc <linuxppc-dev@ozlabs.org>,
+	Bob Nelson <rrnelson@linux.vnet.ibm.com>, Arnd Bergmann <arndb@de.ibm.com>,
+	oprofile <oprofile-list@lists.sourceforge.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,21 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Andrew Morton writes:
 
-I have an 8247 which when running u-boot works fine on ethernet, both 10mb
-and 100mb.  It can dhcp and load a kernel.
+> I still wonder about that barrier.  At the least it should be smp_mb(). 
+> But aren't our set_bit() semantics _alone_ sufficient to make this barrier
+> unneeded?
 
-But when I boot the kernel (2.4 or 2.6) the fcc transmits get an underrun
-everytime.  Packets are received fine.  This is on FCC1.
+No, but our wake_up semantics certainly ought to be, if they aren't
+already.  It's the wake_up which implies synchronization with other
+tasks, not the set_bit.
 
-(I'd suspect the tx clock, but ethernet is ok with u-boot.  I double checked
-the clock configs under linux.)
-
-Does this ring a bell with anyone?  I started out with rstconf#
-grounded, (i.e. default speeds), but i also tried both the cpu and cpm
-at 166mhz.  Both acted the same.
-
-I've no doubt got something misconfigured, but what...  I've tried different
-BCR settings.
-
--brad
+Paul.
