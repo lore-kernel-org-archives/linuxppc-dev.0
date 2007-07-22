@@ -1,18 +1,19 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 0E7D7DDF9D
-	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jul 2007 12:10:29 +1000 (EST)
-Date: Sat, 21 Jul 2007 19:10:27 -0700 (PDT)
-Message-Id: <20070721.191027.32096386.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Subject: Re: [PATCH] constify of_platform_driver match_table
+	by ozlabs.org (Postfix) with ESMTP id 0EB54DDE1F
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jul 2007 12:29:05 +1000 (EST)
+Date: Sat, 21 Jul 2007 19:29:04 -0700 (PDT)
+Message-Id: <20070721.192904.10298367.davem@davemloft.net>
+To: ossthema@de.ibm.com
+Subject: Re: [RFC 1/1] lro: Generic Large Receive Offload for TCP traffic
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070722002701.77622474.sfr@canb.auug.org.au>
-References: <20070722002701.77622474.sfr@canb.auug.org.au>
+In-Reply-To: <200707201741.49290.ossthema@de.ibm.com>
+References: <200707201741.49290.ossthema@de.ibm.com>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
-Cc: linux-kernel@vger.kernel.org, wli@holomorphy.com, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, sparclinux@vger.kernel.org, akpm@linux-foundation.org
+Cc: tklein@de.ibm.com, themann@de.ibm.com, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	raisch@de.ibm.com, meder@de.ibm.com, stefan.roscher@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,16 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Sun, 22 Jul 2007 00:27:01 +1000
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Date: Fri, 20 Jul 2007 17:41:48 +0200
 
+> Generic LRO patch
 > 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  include/linux/of_platform.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> Built for PowerPC allmodconfig and ppc64_defconfig and Sparc and Sparc64
-> defconfig.
+> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
 
-Acked-by: David S. Miller <davem@davemloft.net>
+I have no general objections to this patch.
+
+However I'd like to see at least one or two uses of these APIs before
+we put it in, and it sounds as if we have at least two pending and
+in the works if not ready already, so that shouldn't be an issue.
+
+Thanks.
