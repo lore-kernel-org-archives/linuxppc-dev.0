@@ -1,31 +1,20 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C97BADDEB6
-	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jul 2007 11:52:05 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6M1q2w4012642
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 21:52:02 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l6M1q2gM531566
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 21:52:02 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6M1q1SJ012031
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 21:52:01 -0400
-Date: Sat, 21 Jul 2007 21:04:13 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id A5853DDE47
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jul 2007 11:53:44 +1000 (EST)
+Date: Sun, 22 Jul 2007 11:53:54 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Paul Mackerras <paulus@samba.org>
 Subject: Re: Someone broke my allmodconfig build
-Message-ID: <20070722020412.GQ3925@crusty.rchland.ibm.com>
+Message-Id: <20070722115354.0c28d704.sfr@canb.auug.org.au>
+In-Reply-To: <18082.42674.651685.720737@cargo.ozlabs.ibm.com>
 References: <20070722001212.5007001d.sfr@canb.auug.org.au>
 	<18082.42674.651685.720737@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18082.42674.651685.720737@cargo.ozlabs.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, ppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sun__22_Jul_2007_11_53_54_+1000_lZ_7Q_UmDfcSstwz"
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,18 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Jul 22, 2007 at 10:37:06AM +1000, Paul Mackerras wrote:
+--Signature=_Sun__22_Jul_2007_11_53_54_+1000_lZ_7Q_UmDfcSstwz
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Sun, 22 Jul 2007 10:37:06 +1000 Paul Mackerras <paulus@samba.org> wrote:
+>
 > Stephen Rothwell writes:
-> 
+>=20
 > >   WRAP    arch/powerpc/boot/zImage.ps3
-> > /home/sfr/kernels/linus/arch/powerpc/boot/wrapper: line 113: dtc: command not found
+> > /home/sfr/kernels/linus/arch/powerpc/boot/wrapper: line 113: dtc: comma=
+nd not found
 > > make[2]: *** [arch/powerpc/boot/zImage.ps3] Error 1
-> 
+>=20
 > Hmmm, we should be shipping .dtb files with the tree, so people don't
 > have to have dtc installed.
 
-Really?  I don't think we're quite ready for that.  Particularly for the
-embedded boards.  Those DTS files still get lots of churn, and having to
-update both the .dts and .dtb at the same time seems a bit fragile.
+Unless, of course, we ship dtc ...
 
-josh
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sun__22_Jul_2007_11_53_54_+1000_lZ_7Q_UmDfcSstwz
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGori3TgG2atn1QN8RAvITAJwMfoVXHGaGbpo7b7BgBzGTKscknACgi8B7
+wO1Snvw0hax8SLW7Jp1pOKo=
+=LNAm
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__22_Jul_2007_11_53_54_+1000_lZ_7Q_UmDfcSstwz--
