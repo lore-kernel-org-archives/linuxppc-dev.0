@@ -1,11 +1,24 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18082.43262.487474.356610@cargo.ozlabs.ibm.com>
-Date: Sun, 22 Jul 2007 10:46:54 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] Don't compile the PMU power driver on 64-bit PowerPC
+Return-Path: <brad@heeltoe.com>
+Received: from gateway.heeltoe.com (gateway.heeltoe.com [66.134.219.32])
+	by ozlabs.org (Postfix) with ESMTP id 00A53DDED8
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jul 2007 11:19:18 +1000 (EST)
+Received: from mwave.heeltoe.com (mwave [192.245.4.20])
+	by gateway.heeltoe.com (Postfix) with ESMTP id 72AF311409C
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 20:51:13 -0400 (EDT)
+Received: from mwave.heeltoe.com (localhost.localdomain [127.0.0.1])
+	by mwave.heeltoe.com (8.12.11.20060308/8.12.11) with ESMTP id
+	l6M0pDRQ010980
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 20:51:13 -0400
+Received: from mwave (brad@localhost)
+	by mwave.heeltoe.com (8.12.11.20060308/8.12.11/Submit) with ESMTP id
+	l6M0pDsU010976
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jul 2007 20:51:13 -0400
+Message-Id: <200707220051.l6M0pDsU010976@mwave.heeltoe.com>
+From: Brad Parker <brad@heeltoe.com>
+To: linuxppc-dev@ozlabs.org
+Subject: 8247 ether_fcc underruns, but only running kernel 
+Date: Sat, 21 Jul 2007 20:51:13 -0400
+Sender: brad@heeltoe.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,30 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-As reported by Stephen Rothwell, an allmodconfig build on 64-bit
-PowerPC reports these errors:
 
-ERROR: "pmu_batteries" [drivers/power/pmu_battery.ko] undefined!
-ERROR: "pmu_battery_count" [drivers/power/pmu_battery.ko] undefined!
-ERROR: "pmu_power_flags" [drivers/power/pmu_battery.ko] undefined!
+I have an 8247 which when running u-boot works fine on ethernet, both 10mb
+and 100mb.  It can dhcp and load a kernel.
 
-This fixes the problem by not building pmu_battery.ko on ppc64.  There
-are no battery-powered ppc64 machines with an Apple PMU, and we can be
-reasonably confident there never will be.
+But when I boot the kernel (2.4 or 2.6) the fcc transmits get an underrun
+everytime.  Packets are received fine.  This is on FCC1.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
+(I'd suspect the tx clock, but ethernet is ok with u-boot.  I double checked
+the clock configs under linux.)
 
-diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index 3f6e176..58c806e 100644
---- a/drivers/power/Kconfig
-+++ b/drivers/power/Kconfig
-@@ -38,7 +38,7 @@ config BATTERY_DS2760
- 
- config BATTERY_PMU
- 	tristate "Apple PMU battery"
--	depends on ADB_PMU
-+	depends on PPC32 && ADB_PMU
- 	help
- 	  Say Y here to expose battery information on Apple machines
- 	  through the generic battery class.
+Does this ring a bell with anyone?  I started out with rstconf#
+grounded, (i.e. default speeds), but i also tried both the cpu and cpm
+at 166mhz.  Both acted the same.
+
+I've no doubt got something misconfigured, but what...  I've tried different
+BCR settings.
+
+-brad
