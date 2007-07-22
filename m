@@ -1,19 +1,24 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 0EB54DDE1F
-	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jul 2007 12:29:05 +1000 (EST)
-Date: Sat, 21 Jul 2007 19:29:04 -0700 (PDT)
-Message-Id: <20070721.192904.10298367.davem@davemloft.net>
-To: ossthema@de.ibm.com
-Subject: Re: [RFC 1/1] lro: Generic Large Receive Offload for TCP traffic
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200707201741.49290.ossthema@de.ibm.com>
-References: <200707201741.49290.ossthema@de.ibm.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: tklein@de.ibm.com, themann@de.ibm.com, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	raisch@de.ibm.com, meder@de.ibm.com, stefan.roscher@de.ibm.com
+Return-Path: <dtor@insightbb.com>
+Received: from asav06.insightbb.com (gateway.insightbb.com [74.128.0.19])
+	by ozlabs.org (Postfix) with ESMTP id AE4A3DDEFF
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jul 2007 14:22:45 +1000 (EST)
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [patch 1/3] m68k/mac: Make mac_hid_mouse_emulate_buttons()
+	declaration visible
+Date: Sun, 22 Jul 2007 00:22:40 -0400
+References: <20070720164043.523003359@mail.of.borg>
+	<d120d5000707201151q433f1f3eteb479109291a54bd@mail.gmail.com>
+	<Pine.LNX.4.64.0707211026070.18493@anakin>
+In-Reply-To: <Pine.LNX.4.64.0707211026070.18493@anakin>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200707220022.41797.dtor@insightbb.com>
+Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Adrian Bunk <bunk@stusta.de>, linuxppc-dev@ozlabs.org,
+	linux-input@atrey.karlin.mff.cuni.cz,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,17 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-Date: Fri, 20 Jul 2007 17:41:48 +0200
+Hi Geert,
 
-> Generic LRO patch
+On Saturday 21 July 2007 04:27, Geert Uytterhoeven wrote:
+> On Fri, 20 Jul 2007, Dmitry Torokhov wrote:
+> > 
+> > I am OK with adding a new header file. I was just saying that placing
+> > that declaration in linux/hid.h makes about the same sense as putting
+> > it into linux/scsi.h
 > 
-> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+> At first I just wanted to move it. Then I thought about the angry
+> comments I would get about not moving it to a header file ;-)
+> 
+> <linux/hid.h> looked like the best candidate. <linux/kbd_kern.h> is
+> another option.
+> 
 
-I have no general objections to this patch.
+linux/kbd_kern.h sounds much better.
 
-However I'd like to see at least one or two uses of these APIs before
-we put it in, and it sounds as if we have at least two pending and
-in the works if not ready already, so that shouldn't be an issue.
-
-Thanks.
+-- 
+Dmitry
