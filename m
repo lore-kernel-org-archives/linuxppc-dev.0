@@ -1,24 +1,12 @@
-Return-Path: <dtor@insightbb.com>
-Received: from asav06.insightbb.com (gateway.insightbb.com [74.128.0.19])
-	by ozlabs.org (Postfix) with ESMTP id AE4A3DDEFF
-	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jul 2007 14:22:45 +1000 (EST)
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [patch 1/3] m68k/mac: Make mac_hid_mouse_emulate_buttons()
-	declaration visible
-Date: Sun, 22 Jul 2007 00:22:40 -0400
-References: <20070720164043.523003359@mail.of.borg>
-	<d120d5000707201151q433f1f3eteb479109291a54bd@mail.gmail.com>
-	<Pine.LNX.4.64.0707211026070.18493@anakin>
-In-Reply-To: <Pine.LNX.4.64.0707211026070.18493@anakin>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200707220022.41797.dtor@insightbb.com>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Adrian Bunk <bunk@stusta.de>, linuxppc-dev@ozlabs.org,
-	linux-input@atrey.karlin.mff.cuni.cz,
-	Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <viro@ftp.linux.org.uk>
+Date: Sun, 22 Jul 2007 08:10:35 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] ppc64 mismerge
+Message-ID: <20070722071035.GS21668@ftp.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, jk@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,23 +16,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Geert,
+	Mismerge in
+commit 8b6f50ef1d5cc86b278eb42bc91630fad455fb10
+Author: Jeremy Kerr <jk@ozlabs.org>
+Date:   Sat Jul 21 04:37:51 2007 -0700
+    spufs: make signal-notification files readonly for NOSCHED contexts
 
-On Saturday 21 July 2007 04:27, Geert Uytterhoeven wrote:
-> On Fri, 20 Jul 2007, Dmitry Torokhov wrote:
-> > 
-> > I am OK with adding a new header file. I was just saying that placing
-> > that declaration in linux/hid.h makes about the same sense as putting
-> > it into linux/scsi.h
-> 
-> At first I just wanted to move it. Then I thought about the angry
-> comments I would get about not moving it to a header file ;-)
-> 
-> <linux/hid.h> looked like the best candidate. <linux/kbd_kern.h> is
-> another option.
-> 
+structs got duplicated.
 
-linux/kbd_kern.h sounds much better.
-
--- 
-Dmitry
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+diff --git a/arch/powerpc/platforms/cell/spufs/file.c b/arch/powerpc/platforms/cell/spufs/file.c
+index c2aaec5..4100ddc 100644
+--- a/arch/powerpc/platforms/cell/spufs/file.c
++++ b/arch/powerpc/platforms/cell/spufs/file.c
+@@ -941,13 +941,6 @@ static const struct file_operations spufs_signal1_nosched_fops = {
+ 	.mmap = spufs_signal1_mmap,
+ };
+ 
+-static const struct file_operations spufs_signal1_nosched_fops = {
+-	.open = spufs_signal1_open,
+-	.release = spufs_signal1_release,
+-	.write = spufs_signal1_write,
+-	.mmap = spufs_signal1_mmap,
+-};
+-
+ static int spufs_signal2_open(struct inode *inode, struct file *file)
+ {
+ 	struct spufs_inode_info *i = SPUFS_I(inode);
+@@ -1083,13 +1076,6 @@ static const struct file_operations spufs_signal2_nosched_fops = {
+ 	.mmap = spufs_signal2_mmap,
+ };
+ 
+-static const struct file_operations spufs_signal2_nosched_fops = {
+-	.open = spufs_signal2_open,
+-	.release = spufs_signal2_release,
+-	.write = spufs_signal2_write,
+-	.mmap = spufs_signal2_mmap,
+-};
+-
+ static void spufs_signal1_type_set(void *data, u64 val)
+ {
+ 	struct spu_context *ctx = data;
