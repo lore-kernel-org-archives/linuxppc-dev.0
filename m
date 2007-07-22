@@ -1,14 +1,11 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18082.42674.651685.720737@cargo.ozlabs.ibm.com>
-Date: Sun, 22 Jul 2007 10:37:06 +1000
+Message-ID: <18082.43262.487474.356610@cargo.ozlabs.ibm.com>
+Date: Sun, 22 Jul 2007 10:46:54 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: Someone broke my allmodconfig build
-In-Reply-To: <20070722001212.5007001d.sfr@canb.auug.org.au>
-References: <20070722001212.5007001d.sfr@canb.auug.org.au>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] Don't compile the PMU power driver on 64-bit PowerPC
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,21 +15,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stephen Rothwell writes:
+As reported by Stephen Rothwell, an allmodconfig build on 64-bit
+PowerPC reports these errors:
 
->   WRAP    arch/powerpc/boot/zImage.ps3
-> /home/sfr/kernels/linus/arch/powerpc/boot/wrapper: line 113: dtc: command not found
-> make[2]: *** [arch/powerpc/boot/zImage.ps3] Error 1
+ERROR: "pmu_batteries" [drivers/power/pmu_battery.ko] undefined!
+ERROR: "pmu_battery_count" [drivers/power/pmu_battery.ko] undefined!
+ERROR: "pmu_power_flags" [drivers/power/pmu_battery.ko] undefined!
 
-Hmmm, we should be shipping .dtb files with the tree, so people don't
-have to have dtc installed.
+This fixes the problem by not building pmu_battery.ko on ppc64.  There
+are no battery-powered ppc64 machines with an Apple PMU, and we can be
+reasonably confident there never will be.
 
-> ERROR: "pmu_batteries" [drivers/power/pmu_battery.ko] undefined!
-> ERROR: "pmu_battery_count" [drivers/power/pmu_battery.ko] undefined!
-> ERROR: "pmu_power_flags" [drivers/power/pmu_battery.ko] undefined!
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
 
-I'd say CONFIG_BATTERY_PMU needs to depend on PPC32.  There are no
-battery-powered ppc64 machines with an Apple PMU, and we can say
-pretty confidently there never will be.
-
-Paul.
+diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+index 3f6e176..58c806e 100644
+--- a/drivers/power/Kconfig
++++ b/drivers/power/Kconfig
+@@ -38,7 +38,7 @@ config BATTERY_DS2760
+ 
+ config BATTERY_PMU
+ 	tristate "Apple PMU battery"
+-	depends on ADB_PMU
++	depends on PPC32 && ADB_PMU
+ 	help
+ 	  Say Y here to expose battery information on Apple machines
+ 	  through the generic battery class.
