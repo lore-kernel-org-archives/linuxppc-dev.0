@@ -2,15 +2,15 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B0464DDECA
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 06:50:55 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 50BBEDDED4
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 06:50:56 +1000 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH 07/25] [POWERPC] Update PCI nodes in the 83xx/85xx boards
-	device tree
-Date: Mon, 23 Jul 2007 15:49:54 -0500
-Message-Id: <11852238233066-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1185223821183-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 10/25] [POWERPC] Fixup resources on pci_bus for PCIe PHB when
+	no device is connected
+Date: Mon, 23 Jul 2007 15:49:57 -0500
+Message-Id: <11852238271141-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <11852238253550-git-send-email-galak@kernel.crashing.org>
 References: <11852238122538-git-send-email-galak@kernel.crashing.org>
 	<1185223813693-git-send-email-galak@kernel.crashing.org>
 	<11852238151983-git-send-email-galak@kernel.crashing.org>
@@ -18,6 +18,9 @@ References: <11852238122538-git-send-email-galak@kernel.crashing.org>
 	<1185223818821-git-send-email-galak@kernel.crashing.org>
 	<11852238193371-git-send-email-galak@kernel.crashing.org>
 	<1185223821183-git-send-email-galak@kernel.crashing.org>
+	<11852238233066-git-send-email-galak@kernel.crashing.org>
+	<11852238241475-git-send-email-galak@kernel.crashing.org>
+	<11852238253550-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,210 +30,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Roy Zang <tie-fei.zang@freescale.com>
+On the 85xx/86xx PCIe controllers if there is no device connected to the
+PHB we will still allocate a pci_bus for downstream bus of the virtual
+P2P bridge. However the resources allocated to the downstream bus are not
+correct and so we just mimic the resources from the upstream pci_bus.
 
-Updated the 83xx & 85xx device tree PCI related compartible property.
-
-Used the following compatible properties:
-	PCI     "fsl,mpc8349-pci"
-	PCI     "fsl,mpc8540-pci"
-	PCI-X:  "fsl,mpc8540-pcix"
-	PCIe:   "fsl,mpc8548-pcie"
-
-Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/boot/dts/mpc8313erdb.dts    |    2 +-
- arch/powerpc/boot/dts/mpc832x_mds.dts    |    2 +-
- arch/powerpc/boot/dts/mpc832x_rdb.dts    |    2 +-
- arch/powerpc/boot/dts/mpc8349emitx.dts   |    4 ++--
- arch/powerpc/boot/dts/mpc8349emitxgp.dts |    2 +-
- arch/powerpc/boot/dts/mpc834x_mds.dts    |    4 ++--
- arch/powerpc/boot/dts/mpc836x_mds.dts    |    2 +-
- arch/powerpc/boot/dts/mpc8540ads.dts     |    2 +-
- arch/powerpc/boot/dts/mpc8541cds.dts     |    4 ++--
- arch/powerpc/boot/dts/mpc8555cds.dts     |    4 ++--
- arch/powerpc/boot/dts/mpc8560ads.dts     |    2 +-
- 11 files changed, 15 insertions(+), 15 deletions(-)
+ arch/powerpc/platforms/85xx/mpc85xx_cds.c  |    1 +
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    2 +-
+ arch/powerpc/sysdev/fsl_pci.c              |   14 ++++++++++++++
+ arch/powerpc/sysdev/fsl_pci.h              |    1 +
+ 4 files changed, 17 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
-index a1533cc..c5adbe4 100644
---- a/arch/powerpc/boot/dts/mpc8313erdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
-@@ -178,7 +178,7 @@
- 			#size-cells = <2>;
- 			#address-cells = <3>;
- 			reg = <8500 100>;
--			compatible = "83xx";
-+			compatible = "fsl,mpc8349-pci";
- 			device_type = "pci";
- 		};
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+index 2539bb5..9b559eb 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+@@ -272,4 +272,5 @@ define_machine(mpc85xx_cds) {
+ 	.restart	= mpc85xx_restart,
+ 	.calibrate_decr = generic_calibrate_decr,
+ 	.progress	= udbg_progress,
++	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+ };
+diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+index e67e10d..e9eaa07 100644
+--- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
++++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+@@ -431,7 +431,6 @@ mpc86xx_time_init(void)
+ 	return 0;
+ }
  
-diff --git a/arch/powerpc/boot/dts/mpc832x_mds.dts b/arch/powerpc/boot/dts/mpc832x_mds.dts
-index 4fc0c4d..f158ed7 100644
---- a/arch/powerpc/boot/dts/mpc832x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc832x_mds.dts
-@@ -154,7 +154,7 @@
- 			#size-cells = <2>;
- 			#address-cells = <3>;
- 			reg = <8500 100>;
--			compatible = "83xx";
-+			compatible = "fsl,mpc8349-pci";
- 			device_type = "pci";
- 		};
+-
+ define_machine(mpc86xx_hpcn) {
+ 	.name			= "MPC86xx HPCN",
+ 	.probe			= mpc86xx_hpcn_probe,
+@@ -443,4 +442,5 @@ define_machine(mpc86xx_hpcn) {
+ 	.time_init		= mpc86xx_time_init,
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
++	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+ };
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 2eefcde..faafae6 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -142,6 +142,20 @@ int __init fsl_pcie_check_link(struct pci_controller *hose)
+ 	return 0;
+ }
  
-diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-index 447c03f..7c4beff 100644
---- a/arch/powerpc/boot/dts/mpc832x_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-@@ -123,7 +123,7 @@
- 			#size-cells = <2>;
- 			#address-cells = <3>;
- 			reg = <8500 100>;
--			compatible = "83xx";
-+			compatible = "fsl,mpc8349-pci";
- 			device_type = "pci";
- 		};
++void fsl_pcibios_fixup_bus(struct pci_bus *bus)
++{
++	struct pci_controller *hose = (struct pci_controller *) bus->sysdata;
++	int i;
++
++	/* deal with bogus pci_bus when we don't have anything connected on PCIe */
++	if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK) {
++		if (bus->parent) {
++			for (i = 0; i < 4; ++i)
++				bus->resource[i] = bus->parent->resource[i];
++		}
++	}
++}
++
+ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
+ {
+ 	int len;
+diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
+index 700d478..37b04ad 100644
+--- a/arch/powerpc/sysdev/fsl_pci.h
++++ b/arch/powerpc/sysdev/fsl_pci.h
+@@ -82,6 +82,7 @@ struct ccsr_pci {
+ };
  
-diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
-index ae9bca5..502f47c 100644
---- a/arch/powerpc/boot/dts/mpc8349emitx.dts
-+++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
-@@ -197,7 +197,7 @@
- 			#size-cells = <2>;
- 			#address-cells = <3>;
- 			reg = <8500 100>;
--			compatible = "83xx";
-+			compatible = "fsl,mpc8349-pci";
- 			device_type = "pci";
- 		};
+ extern int fsl_add_bridge(struct device_node *dev, int is_primary);
++extern void fsl_pcibios_fixup_bus(struct pci_bus *bus);
  
-@@ -222,7 +222,7 @@
- 			#size-cells = <2>;
- 			#address-cells = <3>;
- 			reg = <8600 100>;
--			compatible = "83xx";
-+			compatible = "fsl,mpc8349-pci";
- 			device_type = "pci";
- 		};
- 
-diff --git a/arch/powerpc/boot/dts/mpc8349emitxgp.dts b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
-index f636528..0b83871 100644
---- a/arch/powerpc/boot/dts/mpc8349emitxgp.dts
-+++ b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
-@@ -154,7 +154,7 @@
- 			#size-cells = <2>;
- 			#address-cells = <3>;
- 			reg = <8600 100>;
--			compatible = "83xx";
-+			compatible = "fsl,mpc8349-pci";
- 			device_type = "pci";
- 		};
- 
-diff --git a/arch/powerpc/boot/dts/mpc834x_mds.dts b/arch/powerpc/boot/dts/mpc834x_mds.dts
-index 310e877..4810997 100644
---- a/arch/powerpc/boot/dts/mpc834x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc834x_mds.dts
-@@ -241,7 +241,7 @@
- 			#size-cells = <2>;
- 			#address-cells = <3>;
- 			reg = <8500 100>;
--			compatible = "83xx";
-+			compatible = "fsl,mpc8349-pci";
- 			device_type = "pci";
- 		};
- 
-@@ -301,7 +301,7 @@
- 			#size-cells = <2>;
- 			#address-cells = <3>;
- 			reg = <8600 100>;
--			compatible = "83xx";
-+			compatible = "fsl,mpc8349-pci";
- 			device_type = "pci";
- 		};
- 
-diff --git a/arch/powerpc/boot/dts/mpc836x_mds.dts b/arch/powerpc/boot/dts/mpc836x_mds.dts
-index 1e914f3..e3f7c12 100644
---- a/arch/powerpc/boot/dts/mpc836x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc836x_mds.dts
-@@ -169,7 +169,7 @@
- 			#size-cells = <2>;
- 			#address-cells = <3>;
- 			reg = <8500 100>;
--			compatible = "83xx";
-+			compatible = "fsl,mpc8349-pci";
- 			device_type = "pci";
- 		};
- 
-diff --git a/arch/powerpc/boot/dts/mpc8540ads.dts b/arch/powerpc/boot/dts/mpc8540ads.dts
-index 364a969..fc8dff9 100644
---- a/arch/powerpc/boot/dts/mpc8540ads.dts
-+++ b/arch/powerpc/boot/dts/mpc8540ads.dts
-@@ -258,7 +258,7 @@
- 			#size-cells = <2>;
- 			#address-cells = <3>;
- 			reg = <8000 1000>;
--			compatible = "85xx";
-+			compatible = "fsl,mpc8540-pcix", "fsl,mpc8540-pci";
- 			device_type = "pci";
- 		};
- 
-diff --git a/arch/powerpc/boot/dts/mpc8541cds.dts b/arch/powerpc/boot/dts/mpc8541cds.dts
-index 070206f..fb0b647 100644
---- a/arch/powerpc/boot/dts/mpc8541cds.dts
-+++ b/arch/powerpc/boot/dts/mpc8541cds.dts
-@@ -193,7 +193,7 @@
- 			#size-cells = <2>;
- 			#address-cells = <3>;
- 			reg = <8000 1000>;
--			compatible = "85xx";
-+			compatible = "fsl,mpc8540-pci";
- 			device_type = "pci";
- 
- 			i8259@19000 {
-@@ -230,7 +230,7 @@
- 			#size-cells = <2>;
- 			#address-cells = <3>;
- 			reg = <9000 1000>;
--			compatible = "85xx";
-+			compatible = "fsl,mpc8540-pci";
- 			device_type = "pci";
- 		};
- 
-diff --git a/arch/powerpc/boot/dts/mpc8555cds.dts b/arch/powerpc/boot/dts/mpc8555cds.dts
-index 17e45d9..c3c8882 100644
---- a/arch/powerpc/boot/dts/mpc8555cds.dts
-+++ b/arch/powerpc/boot/dts/mpc8555cds.dts
-@@ -193,7 +193,7 @@
- 			#size-cells = <2>;
- 			#address-cells = <3>;
- 			reg = <8000 1000>;
--			compatible = "85xx";
-+			compatible = "fsl,mpc8540-pci";
- 			device_type = "pci";
- 
- 			i8259@19000 {
-@@ -230,7 +230,7 @@
- 			#size-cells = <2>;
- 			#address-cells = <3>;
- 			reg = <9000 1000>;
--			compatible = "85xx";
-+			compatible = "fsl,mpc8540-pci";
- 			device_type = "pci";
- 		};
- 
-diff --git a/arch/powerpc/boot/dts/mpc8560ads.dts b/arch/powerpc/boot/dts/mpc8560ads.dts
-index 21ccaaa..16dbe84 100644
---- a/arch/powerpc/boot/dts/mpc8560ads.dts
-+++ b/arch/powerpc/boot/dts/mpc8560ads.dts
-@@ -136,7 +136,7 @@
- 			#interrupt-cells = <1>;
- 			#size-cells = <2>;
- 			#address-cells = <3>;
--			compatible = "85xx";
-+			compatible = "fsl,mpc8540-pcix", "fsl,mpc8540-pci";
- 			device_type = "pci";
- 			reg = <8000 1000>;
- 			clock-frequency = <3f940aa>;
+ #endif /* __POWERPC_FSL_PCI_H */
+ #endif /* __KERNEL__ */
 -- 
 1.5.2.2
