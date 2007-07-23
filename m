@@ -1,21 +1,24 @@
-Return-Path: <drow@false.org>
-Received: from nan.false.org (NaN.false.org [208.75.86.248])
-	by ozlabs.org (Postfix) with ESMTP id 017ADDDEBA
+Return-Path: <schwab@suse.de>
+Received: from mx1.suse.de (ns1.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 66EFFDDE32
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Jul 2007 02:15:18 +1000 (EST)
-Date: Mon, 23 Jul 2007 12:15:12 -0400
-From: Daniel Jacobowitz <drow@false.org>
+	Tue, 24 Jul 2007 02:19:43 +1000 (EST)
+From: Andreas Schwab <schwab@suse.de>
 To: Bill Gatliff <bgat@billgatliff.com>
 Subject: Re: Gdbserver syscall clobber
-Message-ID: <20070723161512.GA3235@caradoc.them.org>
 References: <469B922D.3050701@billgatliff.com>
 	<20070716155348.GA5281@caradoc.them.org>
 	<469E550E.5080905@billgatliff.com>
 	<20070718183143.GA25324@caradoc.them.org>
 	<46A4D1F5.1060005@billgatliff.com>
+Date: Mon, 23 Jul 2007 18:19:37 +0200
+In-Reply-To: <46A4D1F5.1060005@billgatliff.com> (Bill Gatliff's message of
+	"Mon\, 23 Jul 2007 11\:06\:13 -0500")
+Message-ID: <jemyxn6qjq.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <46A4D1F5.1060005@billgatliff.com>
+Content-Type: text/plain; charset=iso-8859-1
 Cc: gdb@sourceware.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,34 +30,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 23, 2007 at 11:06:13AM -0500, Bill Gatliff wrote:
+Bill Gatliff <bgat@billgatliff.com> writes:
+
 > Daniel Jacobowitz wrote:
-> > On Wed, Jul 18, 2007 at 12:59:42PM -0500, Bill Gatliff wrote:
-> >   
-> >> Now, I'm a little rusty on PPC asm (I've been doing a lot of ARM
-> >> lately), but it looks to me like the kernel is setting bit 0 in CR0
-> >> (oris r10, r10, 0x1000) a.k.a LT, but the user side is looking at CR0
-> >> (bnslr+) bit 3 a.k.a. SO.  Or maybe the other way around, I'm not sure
-> >> after reading Sections 1.2 and 2.1 of the Programming Environments manual.
-> >>     
-> >
-> > It's not checking for restart here - userspace isn't supposed to have to.
-> > It's probably checking for error.  Check for the bit of kernel code
-> > that's supposed to back you up two instructions.
-> >
-> >   
-> 
-> I don't see it in this kernel.  What I see is this after the call to the 
-> syscall handler:
+>> On Wed, Jul 18, 2007 at 12:59:42PM -0500, Bill Gatliff wrote:
+>>   
+>>> Now, I'm a little rusty on PPC asm (I've been doing a lot of ARM
+>>> lately), but it looks to me like the kernel is setting bit 0 in CR0
+>>> (oris r10, r10, 0x1000) a.k.a LT, but the user side is looking at CR0
+>>> (bnslr+) bit 3 a.k.a. SO.
 
-Look around do_signal:
+Bits are numbered from left to right, thus 0x10000000 is bit 3 of CR0
 
-                        regs->nip -= 4; /* Back up & retry system call */
-
-If your kernel has corrupted the register containing the syscall
-number at this point, that would explain your problem.  It will then
-do the wrong syscall.  I guess PPC only backs up one instruction.
+Andreas.
 
 -- 
-Daniel Jacobowitz
-CodeSourcery
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
