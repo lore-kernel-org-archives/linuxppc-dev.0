@@ -1,36 +1,20 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 29929DDE37
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 01:17:42 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6NFHdTF003530
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jul 2007 11:17:39 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l6NFHant199278
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jul 2007 09:17:36 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6NFHZRN008588
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jul 2007 09:17:36 -0600
+Return-Path: <mgreer@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id D3BABDDE44
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 01:22:19 +1000 (EST)
+Date: Mon, 23 Jul 2007 08:24:58 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, ppc-dev <linuxppc-dev@ozlabs.org>
 Subject: Re: Someone broke my allmodconfig build
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa40707230807k450ff82dv11201ca3a4ce4c9b@mail.gmail.com>
+Message-ID: <20070723152458.GB29187@mag.az.mvista.com>
 References: <20070722001212.5007001d.sfr@canb.auug.org.au>
 	<18082.42674.651685.720737@cargo.ozlabs.ibm.com>
-	<20070722115354.0c28d704.sfr@canb.auug.org.au>
-	<46A4A9DC.6010602@freescale.com>
-	<fa686aa40707230807k450ff82dv11201ca3a4ce4c9b@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 23 Jul 2007 10:17:31 -0500
-Message-Id: <1185203851.4268.7.camel@weaponx.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Paul Mackerras <paulus@samba.org>,
-	Timur Tabi <timur@freescale.com>, ppc-dev <linuxppc-dev@ozlabs.org>
+	<20070722020412.GQ3925@crusty.rchland.ibm.com>
+	<20070723014337.GC3272@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070723014337.GC3272@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,21 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-07-23 at 09:07 -0600, Grant Likely wrote:
-> On 7/23/07, Timur Tabi <timur@freescale.com> wrote:
-> > Stephen Rothwell wrote:
-> >
-> > >> Hmmm, we should be shipping .dtb files with the tree, so people don't
-> > >> have to have dtc installed.
-> > >
-> > > Unless, of course, we ship dtc ...
-> >
-> > I like that idea.
-> >
-> > I don't know much about the kernel build process, but is it normal to ship C files and have kbuild build them and then use the executables to build the rest of the kernel?
+On Mon, Jul 23, 2007 at 11:43:37AM +1000, David Gibson wrote:
+> On Sat, Jul 21, 2007 at 09:04:13PM -0500, Josh Boyer wrote:
+> > On Sun, Jul 22, 2007 at 10:37:06AM +1000, Paul Mackerras wrote:
+> > > Stephen Rothwell writes:
+> > > 
+> > > >   WRAP    arch/powerpc/boot/zImage.ps3
+> > > > /home/sfr/kernels/linus/arch/powerpc/boot/wrapper: line 113: dtc: command not found
+> > > > make[2]: *** [arch/powerpc/boot/zImage.ps3] Error 1
+> > > 
+> > > Hmmm, we should be shipping .dtb files with the tree, so people don't
+> > > have to have dtc installed.
+> > 
+> > Really?  I don't think we're quite ready for that.  Particularly for the
+> > embedded boards.  Those DTS files still get lots of churn, and having to
+> > update both the .dts and .dtb at the same time seems a bit fragile.
 > 
-> That's how Kconfig is built.
+> I sort of prefer this option in theory, but it's basically
+> impossible.  People updating dts files by patch would also have to
+> update the dtb, which can't be done in a normal patch, since they're
+> binary.
 
-And mktree.
+I agree.  Shipping a magic binary blob, especially ones that haven't
+really settled out, will be a real headache for poeple.
 
-josh
+> I'm working with sfr now on importing dtc into the kernel tree.
+
+IIRC, this was discussed when dtc first came into existence but it was
+pooh-poohed.  I forget why now.
+
+Mark
