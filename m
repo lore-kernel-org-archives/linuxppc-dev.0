@@ -2,19 +2,20 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AD6DBDDEAB
+	by ozlabs.org (Postfix) with ESMTP id 2E97ADDF1C
 	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 06:50:46 +1000 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH 04/25] [POWERPC] Added indirect quirk to handle PCIe PHB that
-	have issue w/no link
-Date: Mon, 23 Jul 2007 15:49:51 -0500
-Message-Id: <1185223818821-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <11852238161546-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 05/25] [POWERPC] FSL: Cleanup how we detect if we are a PCIe
+	controller
+Date: Mon, 23 Jul 2007 15:49:52 -0500
+Message-Id: <11852238193371-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1185223818821-git-send-email-galak@kernel.crashing.org>
 References: <11852238122538-git-send-email-galak@kernel.crashing.org>
 	<1185223813693-git-send-email-galak@kernel.crashing.org>
 	<11852238151983-git-send-email-galak@kernel.crashing.org>
 	<11852238161546-git-send-email-galak@kernel.crashing.org>
+	<1185223818821-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,73 +25,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Added PPC_INDIRECT_TYPE_NO_PCIE_LINK flag to the indirect pci handling
-code to ensure that we don't talk to any device other than the PHB
-if we don't have PCIe link.  Some controllers will lockup if they try
-to do a config cycle to any device on the bus except the PHB.
+Use the PCI capabilities to determine if we are PCIe PHB.  Also use
+PPC_INDIRECT_TYPE_NO_PCIE_LINK since the Freescale PCIe controllers
+will lock the system if they don't have link and you try to do a config
+access to anything but the PHB.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/sysdev/indirect_pci.c |   16 +++++++++++++++-
- include/asm-powerpc/pci-bridge.h   |    5 +++++
- 2 files changed, 20 insertions(+), 1 deletions(-)
+ arch/powerpc/sysdev/fsl_pci.c |   18 +++++++++---------
+ 1 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/indirect_pci.c b/arch/powerpc/sysdev/indirect_pci.c
-index c7e6e85..bc5b4e2 100644
---- a/arch/powerpc/sysdev/indirect_pci.c
-+++ b/arch/powerpc/sysdev/indirect_pci.c
-@@ -35,10 +35,17 @@ indirect_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
- 	u8 cfg_type = 0;
- 	u32 bus_no, reg;
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 10c47b5..69d3c6e 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -102,6 +102,10 @@ static void __devinit quirk_fsl_pcie_transparent(struct pci_dev *dev)
+ 	int i, res_idx = PCI_BRIDGE_RESOURCES;
+ 	struct pci_controller *hose;
  
-+	if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK) {
-+		if (bus->number != hose->first_busno)
-+			return PCIBIOS_DEVICE_NOT_FOUND;
-+		if (devfn != 0)
-+			return PCIBIOS_DEVICE_NOT_FOUND;
-+	}
++	/* if we aren't a PCIe don't bother */
++	if (!pci_find_capability(dev, PCI_CAP_ID_EXP))
++		return ;
 +
- 	if (ppc_md.pci_exclude_device)
- 		if (ppc_md.pci_exclude_device(hose, bus->number, devfn))
- 			return PCIBIOS_DEVICE_NOT_FOUND;
--	
-+
- 	if (hose->indirect_type & PPC_INDIRECT_TYPE_SET_CFG_TYPE)
- 		if (bus->number != hose->first_busno)
- 			cfg_type = 1;
-@@ -83,6 +90,13 @@ indirect_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
- 	u8 cfg_type = 0;
- 	u32 bus_no, reg;
- 
-+	if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK) {
-+		if (bus->number != hose->first_busno)
-+			return PCIBIOS_DEVICE_NOT_FOUND;
-+		if (devfn != 0)
-+			return PCIBIOS_DEVICE_NOT_FOUND;
-+	}
-+
- 	if (ppc_md.pci_exclude_device)
- 		if (ppc_md.pci_exclude_device(hose, bus->number, devfn))
- 			return PCIBIOS_DEVICE_NOT_FOUND;
-diff --git a/include/asm-powerpc/pci-bridge.h b/include/asm-powerpc/pci-bridge.h
-index 7a00b8e..9754357 100644
---- a/include/asm-powerpc/pci-bridge.h
-+++ b/include/asm-powerpc/pci-bridge.h
-@@ -45,10 +45,15 @@ struct pci_controller {
- 	 *   on Freescale PCI-e controllers since they used the PCI_PRIMARY_BUS
- 	 *   to determine which bus number to match on when generating type0
- 	 *   config cycles
-+	 *  NO_PCIE_LINK - the Freescale PCI-e controllers have issues with
-+	 *   hanging if we don't have link and try to do config cycles to
-+	 *   anything but the PHB.  Only allow talking to the PHB if this is
-+	 *   set.
+ 	/*
+ 	 * Make the bridge be transparent.
  	 */
- #define PPC_INDIRECT_TYPE_SET_CFG_TYPE		(0x00000001)
- #define PPC_INDIRECT_TYPE_EXT_REG		(0x00000002)
- #define PPC_INDIRECT_TYPE_SURPRESS_PRIMARY_BUS	(0x00000004)
-+#define PPC_INDIRECT_TYPE_NO_PCIE_LINK		(0x00000008)
- 	u32 indirect_type;
+@@ -167,20 +171,16 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
+ 	hose->first_busno = bus_range ? bus_range[0] : 0x0;
+ 	hose->last_busno = bus_range ? bus_range[1] : 0xff;
  
- 	/* Currently, we limit ourselves to 1 IO range and 3 mem
+-	/* check PCI express bridge */
+-	if (of_device_is_compatible(dev, "fsl,mpc8548-pcie") ||
+-		of_device_is_compatible(dev, "fsl,mpc8641-pcie"))
+-		hose->indirect_type = PPC_INDIRECT_TYPE_EXT_REG |
+-			PPC_INDIRECT_TYPE_SURPRESS_PRIMARY_BUS;
+-
+ 	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4);
+ 	setup_pci_cmd(hose);
+ 
+ 	/* check PCI express link status */
+-	if (of_device_is_compatible(dev, "fsl,mpc8548-pcie") ||
+-		of_device_is_compatible(dev, "fsl,mpc8641-pcie"))
++	if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
++		hose->indirect_type = PPC_INDIRECT_TYPE_EXT_REG |
++			PPC_INDIRECT_TYPE_SURPRESS_PRIMARY_BUS;
+ 		if (fsl_pcie_check_link(hose))
+-			return -ENXIO;
++			hose->indirect_type |= PPC_INDIRECT_TYPE_NO_PCIE_LINK;
++	}
+ 
+ 	printk(KERN_INFO "Found FSL PCI host bridge at 0x%016llx."
+ 		"Firmware bus number: %d->%d\n",
 -- 
 1.5.2.2
