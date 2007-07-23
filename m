@@ -2,15 +2,14 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6D340DDF40
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 06:51:06 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id D9240DDEF8
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 06:51:07 +1000 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH 16/25] [POWERPC] Provide ability to setup P2P bridge registers
-	from struct resource
-Date: Mon, 23 Jul 2007 15:50:03 -0500
-Message-Id: <11852238362041-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <11852238353292-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 18/25] [POWERPC] FSL: Add support for PCI-X controllers
+Date: Mon, 23 Jul 2007 15:50:05 -0500
+Message-Id: <11852238392809-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <11852238383453-git-send-email-galak@kernel.crashing.org>
 References: <11852238122538-git-send-email-galak@kernel.crashing.org>
 	<1185223813693-git-send-email-galak@kernel.crashing.org>
 	<11852238151983-git-send-email-galak@kernel.crashing.org>
@@ -27,6 +26,8 @@ References: <11852238122538-git-send-email-galak@kernel.crashing.org>
 	<11852238322319-git-send-email-galak@kernel.crashing.org>
 	<11852238333649-git-send-email-galak@kernel.crashing.org>
 	<11852238353292-git-send-email-galak@kernel.crashing.org>
+	<11852238362041-git-send-email-galak@kernel.crashing.org>
+	<11852238383453-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,72 +37,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We need the ability to set P2P bridge registers to properly setup the virtual
-P2P bridges that exist in PCIe controllers for some of the embedded setups.
+Some set of 85xx platforms have PCI-X controllers.  The old arch/ppc
+code setup these controllers and we haven't moved it over to arch/powerpc.
+
+We use the PCI-X Capabilties to know if we are in PCI-X mode instead
+of the Global Utilities PORDEVSR.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/kernel/pci_32.c     |   18 ++++++++++++------
- include/asm-powerpc/pci-bridge.h |    2 ++
- 2 files changed, 14 insertions(+), 6 deletions(-)
+ arch/powerpc/sysdev/fsl_pci.c |   13 ++++++++++++-
+ 1 files changed, 12 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
-index bfcfa14..721a694 100644
---- a/arch/powerpc/kernel/pci_32.c
-+++ b/arch/powerpc/kernel/pci_32.c
-@@ -415,15 +415,13 @@ probe_resource(struct pci_bus *parent, struct resource *pr,
- 	return 0;
- }
- 
--static void __init
--update_bridge_base(struct pci_bus *bus, int i)
-+void __init
-+update_bridge_resource(struct pci_dev *dev, struct resource *res)
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index fc3e13e..06a2a9b 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -89,11 +89,22 @@ void __init setup_pci_atmu(struct pci_controller *hose, struct resource *rsrc)
+ void __init setup_pci_cmd(struct pci_controller *hose)
  {
--	struct resource *res = bus->resource[i];
- 	u8 io_base_lo, io_limit_lo;
- 	u16 mem_base, mem_limit;
  	u16 cmd;
- 	unsigned long start, end, off;
--	struct pci_dev *dev = bus->self;
- 	struct pci_controller *hose = dev->sysdata;
- 
- 	if (!hose) {
-@@ -467,12 +465,20 @@ update_bridge_base(struct pci_bus *bus, int i)
- 		pci_write_config_word(dev, PCI_PREF_MEMORY_LIMIT, mem_limit);
- 
- 	} else {
--		DBG(KERN_ERR "PCI: ugh, bridge %s res %d has flags=%lx\n",
--		    pci_name(dev), i, res->flags);
-+		DBG(KERN_ERR "PCI: ugh, bridge %s res has flags=%lx\n",
-+		    pci_name(dev), res->flags);
- 	}
- 	pci_write_config_word(dev, PCI_COMMAND, cmd);
++	int cap_x;
++
+ 	early_read_config_word(hose, 0, 0, PCI_COMMAND, &cmd);
+ 	cmd |= PCI_COMMAND_SERR | PCI_COMMAND_MASTER | PCI_COMMAND_MEMORY
+ 		| PCI_COMMAND_IO;
+ 	early_write_config_word(hose, 0, 0, PCI_COMMAND, cmd);
+-	early_write_config_byte(hose, 0, 0, PCI_LATENCY_TIMER, 0x80);
++
++	cap_x = early_find_capability(hose, 0, 0, PCI_CAP_ID_PCIX);
++	if (cap_x) {
++		int pci_x_cmd = cap_x + PCI_X_CMD;
++		cmd = PCI_X_CMD_MAX_SPLIT | PCI_X_CMD_MAX_READ
++			| PCI_X_CMD_ERO | PCI_X_CMD_DPERR_E;
++		early_write_config_word(hose, 0, 0, pci_x_cmd, cmd);
++	} else {
++		early_write_config_byte(hose, 0, 0, PCI_LATENCY_TIMER, 0x80);
++	}
  }
  
-+static void __init
-+update_bridge_base(struct pci_bus *bus, int i)
-+{
-+	struct resource *res = bus->resource[i];
-+	struct pci_dev *dev = bus->self;
-+	update_bridge_resource(dev, res);
-+}
-+
- static inline void alloc_resource(struct pci_dev *dev, int idx)
- {
- 	struct resource *pr, *r = &dev->resource[idx];
-diff --git a/include/asm-powerpc/pci-bridge.h b/include/asm-powerpc/pci-bridge.h
-index 435bfe8..b7d2ea4 100644
---- a/include/asm-powerpc/pci-bridge.h
-+++ b/include/asm-powerpc/pci-bridge.h
-@@ -93,6 +93,8 @@ extern int early_find_capability(struct pci_controller *hose, int bus,
- extern void setup_indirect_pci(struct pci_controller* hose,
- 			       u32 cfg_addr, u32 cfg_data, u32 flags);
- extern void setup_grackle(struct pci_controller *hose);
-+extern void __init update_bridge_resource(struct pci_dev *dev,
-+					  struct resource *res);
- 
- #else
- 
+ static void __devinit quirk_fsl_pcie_transparent(struct pci_dev *dev)
 -- 
 1.5.2.2
