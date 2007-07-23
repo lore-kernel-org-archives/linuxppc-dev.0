@@ -1,23 +1,26 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E4E3FDDE9A
+Return-Path: <clameter@sgi.com>
+Received: from relay.sgi.com (netops-testserver-3-out.sgi.com [192.48.171.28])
+	by ozlabs.org (Postfix) with ESMTP id 557A1DDE25
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Jul 2007 04:39:17 +1000 (EST)
-Date: Mon, 23 Jul 2007 13:35:11 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Misbah khan <misbah_khan@engineer.com>
-Subject: Re: Kmalloc returns which address
-Message-ID: <20070723183510.GA29223@ld0162-tx32.am.freescale.net>
-References: <e5eb93010707160659m6a7d0b02p623542739d28ab29@mail.gmail.com>
-	<469B92DC.50609@freescale.com> <11737504.post@talk.nabble.com>
+	Tue, 24 Jul 2007 06:41:58 +1000 (EST)
+Date: Mon, 23 Jul 2007 13:34:50 -0700
+From: Christoph Lameter <clameter@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Bugme-new] [Bug 8778] New: Ocotea board: kernel reports access
+	of bad area during boot with DEBUG_SLAB=y
+Message-ID: <20070723133450.3de91b33@schroedinger.engr.sgi.com>
+In-Reply-To: <20070718095537.d344dc0a.akpm@linux-foundation.org>
+References: <bug-8778-10286@http.bugzilla.kernel.org/>
+	<20070718005253.942f0464.akpm@linux-foundation.org>
+	<20070718083425.GA29722@gate.ebshome.net>
+	<1184766070.3699.2.camel@zod.rchland.ibm.com>
+	<20070718155940.GB29722@gate.ebshome.net>
+	<20070718095537.d344dc0a.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <11737504.post@talk.nabble.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: netdev@vger.kernel.org, bart.vanassche@gmail.com, linux-mm@kvack.org,
+	"bugme-daemon@kernel-bugs.osdl.org" <bugme-daemon@bugzilla.kernel.org>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,13 +31,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sun, Jul 22, 2007 at 08:47:47PM -0700, Misbah khan wrote:
-> yes really it would really generate a machine check... but i guess if you
-> convert this virt address to physical address using __pa() then pass it to
-> the ioremap() i guess things will work .
+On Wed, 18 Jul 2007 09:55:37 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-What would be the point?  All you'd get is another virtual mapping.
+> hm.  It should be the case that providing SLAB_HWCACHE_ALIGN at
+> kmem_cache_create() time will override slab-debugging's offsetting
+> of the returned addresses.
 
-Is the DMA mapping API that difficult?
 
--Scott
+That is true for SLUB but not in SLAB. SLAB has always ignored
+SLAB_HWCACHE_ALIGN when debugging is on because of the issues involved
+in placing the redzone values etc.  Could be fun to fix.
