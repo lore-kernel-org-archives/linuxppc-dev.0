@@ -2,18 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 697CADDF13
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 06:50:45 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id AD6DBDDEAB
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 06:50:46 +1000 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH 03/25] [POWERPC] Add the ability to find PCI capabilities
-	early on
-Date: Mon, 23 Jul 2007 15:49:50 -0500
-Message-Id: <11852238161546-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <11852238151983-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 04/25] [POWERPC] Added indirect quirk to handle PCIe PHB that
+	have issue w/no link
+Date: Mon, 23 Jul 2007 15:49:51 -0500
+Message-Id: <1185223818821-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <11852238161546-git-send-email-galak@kernel.crashing.org>
 References: <11852238122538-git-send-email-galak@kernel.crashing.org>
 	<1185223813693-git-send-email-galak@kernel.crashing.org>
 	<11852238151983-git-send-email-galak@kernel.crashing.org>
+	<11852238161546-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,44 +24,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Added early_find_capability that wraps pci_bus_find_capability and uses
-fake_pci_bus() to allow us to call it before we've fully setup the
-pci_controller.
+Added PPC_INDIRECT_TYPE_NO_PCIE_LINK flag to the indirect pci handling
+code to ensure that we don't talk to any device other than the PHB
+if we don't have PCIe link.  Some controllers will lockup if they try
+to do a config cycle to any device on the bus except the PHB.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/kernel/pci_32.c     |    7 +++++++
- include/asm-powerpc/pci-bridge.h |    3 +++
- 2 files changed, 10 insertions(+), 0 deletions(-)
+ arch/powerpc/sysdev/indirect_pci.c |   16 +++++++++++++++-
+ include/asm-powerpc/pci-bridge.h   |    5 +++++
+ 2 files changed, 20 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
-index 0adf077..bfcfa14 100644
---- a/arch/powerpc/kernel/pci_32.c
-+++ b/arch/powerpc/kernel/pci_32.c
-@@ -1468,3 +1468,10 @@ EARLY_PCI_OP(read, dword, u32 *)
- EARLY_PCI_OP(write, byte, u8)
- EARLY_PCI_OP(write, word, u16)
- EARLY_PCI_OP(write, dword, u32)
+diff --git a/arch/powerpc/sysdev/indirect_pci.c b/arch/powerpc/sysdev/indirect_pci.c
+index c7e6e85..bc5b4e2 100644
+--- a/arch/powerpc/sysdev/indirect_pci.c
++++ b/arch/powerpc/sysdev/indirect_pci.c
+@@ -35,10 +35,17 @@ indirect_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
+ 	u8 cfg_type = 0;
+ 	u32 bus_no, reg;
+ 
++	if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK) {
++		if (bus->number != hose->first_busno)
++			return PCIBIOS_DEVICE_NOT_FOUND;
++		if (devfn != 0)
++			return PCIBIOS_DEVICE_NOT_FOUND;
++	}
 +
-+extern int pci_bus_find_capability (struct pci_bus *bus, unsigned int devfn, int cap);
-+int early_find_capability(struct pci_controller *hose, int bus, int devfn,
-+			  int cap)
-+{
-+	return pci_bus_find_capability(fake_pci_bus(hose, bus), devfn, cap);
-+}
+ 	if (ppc_md.pci_exclude_device)
+ 		if (ppc_md.pci_exclude_device(hose, bus->number, devfn))
+ 			return PCIBIOS_DEVICE_NOT_FOUND;
+-	
++
+ 	if (hose->indirect_type & PPC_INDIRECT_TYPE_SET_CFG_TYPE)
+ 		if (bus->number != hose->first_busno)
+ 			cfg_type = 1;
+@@ -83,6 +90,13 @@ indirect_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
+ 	u8 cfg_type = 0;
+ 	u32 bus_no, reg;
+ 
++	if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK) {
++		if (bus->number != hose->first_busno)
++			return PCIBIOS_DEVICE_NOT_FOUND;
++		if (devfn != 0)
++			return PCIBIOS_DEVICE_NOT_FOUND;
++	}
++
+ 	if (ppc_md.pci_exclude_device)
+ 		if (ppc_md.pci_exclude_device(hose, bus->number, devfn))
+ 			return PCIBIOS_DEVICE_NOT_FOUND;
 diff --git a/include/asm-powerpc/pci-bridge.h b/include/asm-powerpc/pci-bridge.h
-index e72c2a6..7a00b8e 100644
+index 7a00b8e..9754357 100644
 --- a/include/asm-powerpc/pci-bridge.h
 +++ b/include/asm-powerpc/pci-bridge.h
-@@ -79,6 +79,9 @@ int early_write_config_word(struct pci_controller *hose, int bus, int dev_fn,
- int early_write_config_dword(struct pci_controller *hose, int bus, int dev_fn,
- 			     int where, u32 val);
+@@ -45,10 +45,15 @@ struct pci_controller {
+ 	 *   on Freescale PCI-e controllers since they used the PCI_PRIMARY_BUS
+ 	 *   to determine which bus number to match on when generating type0
+ 	 *   config cycles
++	 *  NO_PCIE_LINK - the Freescale PCI-e controllers have issues with
++	 *   hanging if we don't have link and try to do config cycles to
++	 *   anything but the PHB.  Only allow talking to the PHB if this is
++	 *   set.
+ 	 */
+ #define PPC_INDIRECT_TYPE_SET_CFG_TYPE		(0x00000001)
+ #define PPC_INDIRECT_TYPE_EXT_REG		(0x00000002)
+ #define PPC_INDIRECT_TYPE_SURPRESS_PRIMARY_BUS	(0x00000004)
++#define PPC_INDIRECT_TYPE_NO_PCIE_LINK		(0x00000008)
+ 	u32 indirect_type;
  
-+extern int early_find_capability(struct pci_controller *hose, int bus,
-+				 int dev_fn, int cap);
-+
- extern void setup_indirect_pci_nomap(struct pci_controller* hose,
- 			       void __iomem *cfg_addr, void __iomem *cfg_data);
- extern void setup_indirect_pci(struct pci_controller* hose,
+ 	/* Currently, we limit ourselves to 1 IO range and 3 mem
 -- 
 1.5.2.2
