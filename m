@@ -1,26 +1,20 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 080CBDDEC6
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 01:47:26 +1000 (EST)
-Message-ID: <46A4CD7B.7070001@freescale.com>
-Date: Mon, 23 Jul 2007 10:47:07 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <rvinson@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id 76E78DDE99
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 04:04:21 +1000 (EST)
+Message-ID: <46A4ED9E.6010307@mvista.com>
+Date: Mon, 23 Jul 2007 11:04:14 -0700
+From: Randy Vinson <rvinson@mvista.com>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: Someone broke my allmodconfig build
-References: <20070722001212.5007001d.sfr@canb.auug.org.au>	
-	<18082.42674.651685.720737@cargo.ozlabs.ibm.com>	
-	<20070722115354.0c28d704.sfr@canb.auug.org.au>	
-	<46A4A9DC.6010602@freescale.com>
-	<fa686aa40707230807k450ff82dv11201ca3a4ce4c9b@mail.gmail.com>
-In-Reply-To: <fa686aa40707230807k450ff82dv11201ca3a4ce4c9b@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Paul Mackerras <paulus@samba.org>,
-	ppc-dev <linuxppc-dev@ozlabs.org>
+To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+Subject: Re: [PATCH 5/6 v2] 85xxCDS: Misc 8548 PCI Corrections.
+References: <46A10578.6030609@mvista.com>	
+	<DF1A9889-840C-4D19-9824-177DFEFE298F@kernel.crashing.org>	
+	<46A133CF.6010407@mvista.com> <46A137C1.3080105@mvista.com>
+	<1185185072.25737.1.camel@localhost.localdomain>
+In-Reply-To: <1185185072.25737.1.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,28 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On 7/23/07, Timur Tabi <timur@freescale.com> wrote:
->> Stephen Rothwell wrote:
->>
->> >> Hmmm, we should be shipping .dtb files with the tree, so people don't
->> >> have to have dtc installed.
->> >
->> > Unless, of course, we ship dtc ...
->>
->> I like that idea.
->>
->> I don't know much about the kernel build process, but is it normal to 
->> ship C files and have kbuild build them and then use the executables 
->> to build the rest of the kernel?
+Zang Roy-r61911 wrote:
+> On Sat, 2007-07-21 at 06:31, Randy Vinson wrote:
 > 
-> That's how Kconfig is built.
+>> @@ -272,10 +272,10 @@ static void __init mpc85xx_cds_setup_arch(void)
+>>         for (np = NULL; (np = of_find_node_by_type(np, "pci")) !=
+>> NULL;) {
+>>                 struct resource rsrc;
+>>                 of_address_to_resource(np, 0, &rsrc);
+>> -               if ((rsrc.start & 0xfffff) == 0x9000)
+>> -                       fsl_add_bridge(np, 0);
+>> -               else
+>> +               if ((rsrc.start & 0xfffff) == 0x8000)
+>>                         fsl_add_bridge(np, 1);
+>> +               else
+>> +                       fsl_add_bridge(np, 0);
+> Why this is needed?
+> For pcie@a000, fsl_add_bridge(np, 0)?
+The old version of the code would call fsl_add_bridge(np, 1) for the
+host bridges @8000 and @a000. When I tried it that way, it didn't work.
+I don't think you can have 2 primary bridges.
 
-Then it shouldn't be too hard to refactor the dtc build environment to make it 
-Kbuild-compatible, and then Paul can pull from Jon's dtc repo whenever it gets updated.
-
-Jon, what do you think?
-
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+Randy V.
