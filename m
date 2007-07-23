@@ -2,11 +2,11 @@ Return-Path: <bgat@billgatliff.com>
 Received: from venus.billgatliff.com (venus.billgatliff.com [209.251.101.201])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BD322DDE98
+	by ozlabs.org (Postfix) with ESMTP id 69949DDEA3
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Jul 2007 01:37:32 +1000 (EST)
-Message-ID: <46A4CB29.9080705@billgatliff.com>
-Date: Mon, 23 Jul 2007 10:37:13 -0500
+	Tue, 24 Jul 2007 01:38:41 +1000 (EST)
+Message-ID: <46A4CB7C.8090806@billgatliff.com>
+Date: Mon, 23 Jul 2007 10:38:36 -0500
 From: Bill Gatliff <bgat@billgatliff.com>
 MIME-Version: 1.0
 To: Bill Gatliff <bgat@billgatliff.com>,  gdb@sourceware.org,
@@ -18,7 +18,7 @@ References: <469B922D.3050701@billgatliff.com>
 	<20070718183143.GA25324@caradoc.them.org>
 In-Reply-To: <20070718183143.GA25324@caradoc.them.org>
 Content-Type: multipart/alternative;
-	boundary="------------000609060503080909060902"
+	boundary="------------020501030308050304050405"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,7 +30,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------000609060503080909060902
+--------------020501030308050304050405
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 
@@ -76,7 +76,7 @@ Bill Gatliff
 bgat@billgatliff.com
 
 
---------------000609060503080909060902
+--------------020501030308050304050405
 Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
@@ -135,4 +135,4 @@ Bill Gatliff
 </body>
 </html>
 
---------------000609060503080909060902--
+--------------020501030308050304050405--
