@@ -1,20 +1,26 @@
-Return-Path: <mgreer@mvista.com>
-Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id D3BABDDE44
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 01:22:19 +1000 (EST)
-Date: Mon, 23 Jul 2007 08:24:58 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: Someone broke my allmodconfig build
-Message-ID: <20070723152458.GB29187@mag.az.mvista.com>
-References: <20070722001212.5007001d.sfr@canb.auug.org.au>
-	<18082.42674.651685.720737@cargo.ozlabs.ibm.com>
-	<20070722020412.GQ3925@crusty.rchland.ibm.com>
-	<20070723014337.GC3272@localhost.localdomain>
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 080CBDDEC6
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 01:47:26 +1000 (EST)
+Message-ID: <46A4CD7B.7070001@freescale.com>
+Date: Mon, 23 Jul 2007 10:47:07 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070723014337.GC3272@localhost.localdomain>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Someone broke my allmodconfig build
+References: <20070722001212.5007001d.sfr@canb.auug.org.au>	
+	<18082.42674.651685.720737@cargo.ozlabs.ibm.com>	
+	<20070722115354.0c28d704.sfr@canb.auug.org.au>	
+	<46A4A9DC.6010602@freescale.com>
+	<fa686aa40707230807k450ff82dv11201ca3a4ce4c9b@mail.gmail.com>
+In-Reply-To: <fa686aa40707230807k450ff82dv11201ca3a4ce4c9b@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Paul Mackerras <paulus@samba.org>,
+	ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +30,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 23, 2007 at 11:43:37AM +1000, David Gibson wrote:
-> On Sat, Jul 21, 2007 at 09:04:13PM -0500, Josh Boyer wrote:
-> > On Sun, Jul 22, 2007 at 10:37:06AM +1000, Paul Mackerras wrote:
-> > > Stephen Rothwell writes:
-> > > 
-> > > >   WRAP    arch/powerpc/boot/zImage.ps3
-> > > > /home/sfr/kernels/linus/arch/powerpc/boot/wrapper: line 113: dtc: command not found
-> > > > make[2]: *** [arch/powerpc/boot/zImage.ps3] Error 1
-> > > 
-> > > Hmmm, we should be shipping .dtb files with the tree, so people don't
-> > > have to have dtc installed.
-> > 
-> > Really?  I don't think we're quite ready for that.  Particularly for the
-> > embedded boards.  Those DTS files still get lots of churn, and having to
-> > update both the .dts and .dtb at the same time seems a bit fragile.
+Grant Likely wrote:
+> On 7/23/07, Timur Tabi <timur@freescale.com> wrote:
+>> Stephen Rothwell wrote:
+>>
+>> >> Hmmm, we should be shipping .dtb files with the tree, so people don't
+>> >> have to have dtc installed.
+>> >
+>> > Unless, of course, we ship dtc ...
+>>
+>> I like that idea.
+>>
+>> I don't know much about the kernel build process, but is it normal to 
+>> ship C files and have kbuild build them and then use the executables 
+>> to build the rest of the kernel?
 > 
-> I sort of prefer this option in theory, but it's basically
-> impossible.  People updating dts files by patch would also have to
-> update the dtb, which can't be done in a normal patch, since they're
-> binary.
+> That's how Kconfig is built.
 
-I agree.  Shipping a magic binary blob, especially ones that haven't
-really settled out, will be a real headache for poeple.
+Then it shouldn't be too hard to refactor the dtc build environment to make it 
+Kbuild-compatible, and then Paul can pull from Jon's dtc repo whenever it gets updated.
 
-> I'm working with sfr now on importing dtc into the kernel tree.
+Jon, what do you think?
 
-IIRC, this was discussed when dtc first came into existence but it was
-pooh-poohed.  I forget why now.
-
-Mark
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
