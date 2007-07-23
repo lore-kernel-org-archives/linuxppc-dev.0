@@ -1,19 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1FAD3DDE34
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 08:06:27 +1000 (EST)
-Subject: Re: 2.6.23-rc1 breaks on JS20 w/SLOF
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Adrian Reber <adrian@lisas.de>
-In-Reply-To: <20070723144745.GA31329@lisas.de>
-References: <20070723144745.GA31329@lisas.de>
-Content-Type: text/plain
-Date: Tue, 24 Jul 2007 08:06:18 +1000
-Message-Id: <1185228378.5439.144.camel@localhost.localdomain>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0B1BDDDEC6
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 08:35:08 +1000 (EST)
+Date: Mon, 23 Jul 2007 17:27:25 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: linuxppc-dev@tux.tmfweb.nl
+Subject: Re: [PATCH] Re: 2.6.22-git hangs during boot on PowerBook G3 in 0.0
+	seconds
+Message-Id: <20070723172725.b1c14885.kim.phillips@freescale.com>
+In-Reply-To: <20070721212845.GA30977@nospam.com>
+References: <20070721192143.GA12144@nospam.com>
+	<20070721212845.GA30977@nospam.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: Rutger Nijlunsing <rutger@nospam.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,94 +27,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-07-23 at 16:47 +0200, Adrian Reber wrote:
-> On a JS20 with SLOF (pretending to be Maple) 2.6.23-rc1 breaks with
-> following oops. 2.6.22 is working. Let me know if I can help debug this.
+On Sat, 21 Jul 2007 23:28:45 +0200
+Rutger Nijlunsing <rutger@nospam.com> wrote:
 
-That would be my fault... looks like it tries to access IO ports before
-the IO space is mapped by the PCI code, and without a legacy ISA range.
-The later is now the only case where IO ports are available before the
-main PCI setup.
-
-I can add some tweak to the maple code to map the ISA stuff even when
-the "isa" node is missing...
-
-Ben.
-
-
-> Maple: Found RTC at IO 0x1070
-> Unable to handle kernel paging request for data at address 0xd000080000001070
-> Faulting instruction address: 0xc00000000004d948
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> SMP NR_CPUS=32 Maple
-> Modules linked in:
-> NIP: c00000000004d948 LR: c00000000004d8e4 CTR: c000000000029308
-> REGS: c00000000088b8e0 TRAP: 0300   Not tainted  (2.6.23-rc1)
-> MSR: 9000000000001032 <ME,IR,DR>  CR: 24000022  XER: 000fffff
-> DAR: d000080000001070, DSISR: 0000000042000000
-> TASK = c00000000079db50[0] 'swapper' THREAD: c000000000888000 CPU: 0
-> GPR00: d000080000000000 c00000000088bb60 c0000000008884a8 000000000000000a 
-> GPR04: d000080000001070 0000000000000001 0000000000000000 0000000000000001 
-> GPR08: 0000000000001070 d000080000001070 0000000000000000 c0000000008b33b0 
-> GPR12: c00000000088bab4 c00000000079e480 0000000000000000 0000000000000000 
-> GPR16: 0000000004000000 0000000000000000 0000000000000000 4000000001400000 
-> GPR20: c000000000752370 0000000001b525e0 0000000000000000 c0000000008b47f0 
-> GPR24: c00000000088be70 c0000000008b4820 000000003b9aca00 c0000000008b47f8 
-> GPR28: 0000000000000000 000000000000000a c000000000821af8 c00000000088bcf0 
-> NIP [c00000000004d948] .maple_clock_read+0x88/0x17c
-> LR [c00000000004d8e4] .maple_clock_read+0x24/0x17c
-> Call Trace:
-> [c00000000088bb60] [c00000000088bbe0] init_thread_union+0x3be0/0x4000 (unreliable)
-> [c00000000088bbf0] [c00000000004dc40] .maple_get_rtc_time+0x28/0x174
-> [c00000000088bc80] [c000000000731000] .maple_get_boot_time+0xe4/0x12c
-> [c00000000088bd60] [c000000000022694] .get_boot_time+0x3c/0xb8
-> [c00000000088be00] [c000000000721088] .time_init+0x290/0x46c
-> [c00000000088bee0] [c000000000716c18] .start_kernel+0x23c/0x3e4
-> [c00000000088bf90] [c000000000008524] .start_here_common+0x54/0xb0
-> Instruction dump:
-> 419e0024 e80a0000 f8410028 7c0903a6 e96a0010 e84a0008 4e800421 e8410028 
-> 4800001c 78892300 7929e002 7c0004ac <98690000> 38000001 980d01dc e97e8008 
-> Kernel panic - not syncing: Attempted to kill the idle task!
-> ------------[ cut here ]------------
-> Badness at arch/powerpc/kernel/smp.c:202
-> NIP: c000000000028ae0 LR: c000000000069410 CTR: c000000000029308
-> REGS: c00000000088b2b0 TRAP: 0700   Tainted: G      D  (2.6.23-rc1)
-> MSR: 9000000000021032 <ME,IR,DR>  CR: 28000022  XER: 000fffff
-> TASK = c00000000079db50[0] 'swapper' THREAD: c000000000888000 CPU: 0
-> GPR00: 0000000000000001 c00000000088b530 c0000000008884a8 c000000000841418 
-> GPR04: 0000000000000000 0000000000000001 0000000000000000 0000000000000001 
-> GPR08: 0000000000000001 c0000000008b4b88 c0000000008c1af8 c000000000841418 
-> GPR12: c000000000008524 c00000000079e480 0000000000000000 0000000000000000 
-> GPR16: 0000000004000000 0000000000000000 0000000000000000 4000000001400000 
-> GPR20: c000000000752370 0000000001b525e0 0000000000000000 c0000000008b47f0 
-> GPR24: c00000000088be70 000000000000000b 000000003b9aca00 000000000000000b 
-> GPR28: c0000000006778f0 0000000000000000 c000000000822a98 0000000000000000 
-> NIP [c000000000028ae0] .smp_call_function_map+0x30/0x2a4
-> LR [c000000000069410] .panic+0x98/0x1b0
-> Call Trace:
-> [c00000000088b530] [c00000000082ebe8] gss_kerberos_pfs+0x16e18/0x25ff0 (unreliable)
-> [c00000000088b5e0] [c000000000069410] .panic+0x98/0x1b0
-> [c00000000088b680] [c00000000006dffc] .do_exit+0x8c/0xa60
-> [c00000000088b750] [c000000000023dcc] .die+0x238/0x264
-> [c00000000088b7f0] [c00000000002d2a8] .bad_page_fault+0xb8/0xd4
-> [c00000000088b870] [c000000000005418] handle_page_fault+0x3c/0x58
-> --- Exception: 300 at .maple_clock_read+0x88/0x17c
->     LR = .maple_clock_read+0x24/0x17c
-> [c00000000088bb60] [c00000000088bbe0] init_thread_union+0x3be0/0x4000 (unreliable)
-> [c00000000088bbf0] [c00000000004dc40] .maple_get_rtc_time+0x28/0x174
-> [c00000000088bc80] [c000000000731000] .maple_get_boot_time+0xe4/0x12c
-> [c00000000088bd60] [c000000000022694] .get_boot_time+0x3c/0xb8
-> [c00000000088be00] [c000000000721088] .time_init+0x290/0x46c
-> [c00000000088bee0] [c000000000716c18] .start_kernel+0x23c/0x3e4
-> [c00000000088bf90] [c000000000008524] .start_here_common+0x54/0xb0
-> Instruction dump:
-> 7c0802a6 fba1ffe8 fbc1fff0 fbe1fff8 7c6b1b78 f8010010 f821ff51 7cdd3378 
-> f8e10100 880d01da 7c000074 7800d182 <0b000000> e922a900 3860ffff e8090000 
-> Rebooting in 180 seconds..
+> On Sat, Jul 21, 2007 at 09:21:43PM +0200, Rutger Nijlunsing wrote:
+> > Hi,
+> > 
+> > I'm trying to boot a new git kernel (2.6.22-g589f1e81), but it hangs
+> > very early (the timestamp is still on 0.000000).
 > 
+> After hours bisecting, I found the one-liner which results in the
+> hang. Now it takes someone else to find out _why_ it causes a hang :)
 > 
-> 		Adrian
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+hmm..I hadn't seen this of_translate_address comment:
+
+ * Note: We consider that crossing any level with #size-cells == 0 to mean
+ * that translation is impossible (that is we are not dealing with a value
+ * that can be mapped to a cpu physical address). This is not really specified
+ * that way, but this is traditionally the way IBM at least do things
+
+so I guess even though size-cells can == 0, of_translate_address should
+remain oblivious.
+
+> 
+> From 6c13e1b55c1f87ed19f3c4623de3df881779edd7 Mon Sep 17 00:00:00 2001
+> From: Rutger Nijlunsing <git-commit@tux.tmfweb.nl>
+> Date: Sat, 21 Jul 2007 23:01:22 +0200
+> Subject: [PATCH] Revert "[POWERPC] Don't complain if size-cells == 0 in prom_parse()"
+> Status: RO
+> Content-Length: 866
+> Lines: 24
+> 
+> After hours of fun git bisecting, finally found the commit to revert
+> to make my PowerBook G3 Lombard boot again. This does not result in
+> the complains the reverted commit was revering to.
+
+..but it does on my MPC8360.
+
+> 
+> This reverts commit fd6e9d3945ee122eb513ada8b17296d243c1ce5e.
+> ---
+>  arch/powerpc/kernel/prom_parse.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/prom_parse.c b/arch/powerpc/kernel/prom_parse.c
+> index 3786dcc..b5c96af 100644
+> --- a/arch/powerpc/kernel/prom_parse.c
+> +++ b/arch/powerpc/kernel/prom_parse.c
+> @@ -24,7 +24,7 @@
+>  /* Max address size we deal with */
+>  #define OF_MAX_ADDR_CELLS	4
+>  #define OF_CHECK_COUNTS(na, ns)	((na) > 0 && (na) <= OF_MAX_ADDR_CELLS && \
+> -			(ns) >= 0)
+> +			(ns) > 0)
+>  
+>  static struct of_bus *of_match_bus(struct device_node *np);
+>  static int __of_address_to_resource(struct device_node *dev,
+> -- 
+> 1.5.2.2
+
+yes, we can revert it, and perhaps do something like:
+
+diff --git a/arch/powerpc/kernel/prom_parse.c b/arch/powerpc/kernel/prom_parse.c
+index 3786dcc..92b7177 100644
+--- a/arch/powerpc/kernel/prom_parse.c
++++ b/arch/powerpc/kernel/prom_parse.c
+@@ -503,7 +503,7 @@ u64 of_translate_address(struct device_node *dev, const u32 
+        /* Cound address cells & copy address locally */
+        bus->count_cells(dev, &na, &ns);
+        if (!OF_CHECK_COUNTS(na, ns)) {
+-               printk(KERN_ERR "prom_parse: Bad cell count for %s\n",
++               DBG("prom_parse: Bad cell count for %s\n",
+                       dev->full_name);
+                goto bail;
+        }
+@@ -531,7 +531,7 @@ u64 of_translate_address(struct device_node *dev, const u32 
+                pbus = of_match_bus(parent);
+                pbus->count_cells(dev, &pna, &pns);
+                if (!OF_CHECK_COUNTS(pna, pns)) {
+-                       printk(KERN_ERR "prom_parse: Bad cell count for %s\n",
++                       DBG("prom_parse: Bad cell count for %s\n",
+                               dev->full_name);
+                        break;
+                }
+
+Ben?
+
+Kim
