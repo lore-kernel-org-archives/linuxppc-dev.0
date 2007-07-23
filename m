@@ -1,31 +1,14 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from ausmtp06.au.ibm.com (ausmtp06.au.ibm.com [202.81.18.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ausmtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DC17EDDFA6
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jul 2007 10:47:20 +1000 (EST)
-Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.18.232])
-	by ausmtp06.au.ibm.com (8.13.8/8.13.8) with ESMTP id l6N0lm1E3227898
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jul 2007 10:47:50 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.250.242])
-	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l6N0kScd038842
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jul 2007 10:46:28 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6N0l26l007074
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jul 2007 10:47:02 +1000
-Date: Wed, 18 Jul 2007 13:26:32 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [patch 02/14] Rename 4xx paths to 40x
-Message-ID: <20070718032632.GE18251@localhost.localdomain>
-References: <20070717181547.310201000@linux.vnet.ibm.com>>
-	<20070717182620.683036000@linux.vnet.ibm.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 23 Jul 2007 11:26:02 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH] Update kuroboxH[GD].dts with i2c rtc entries, cleanup
+Message-ID: <20070723012602.GA3272@localhost.localdomain>
+References: <Pine.LNX.4.60.0707220028370.13322@poirot.grange>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070717182620.683036000@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <Pine.LNX.4.60.0707220028370.13322@poirot.grange>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,15 +18,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 17, 2007 at 01:15:49PM -0500, Josh Boyer wrote:
-> 4xx is a bit of a misnomer for certain things, as they really apply to PowerPC
-> 40x only.  Rename some of the files to clean this up.
+On Sun, Jul 22, 2007 at 12:43:11AM +0200, Guennadi Liakhovetski wrote:
+> Let's fix rtc on linkstation ppc machines again, plus .dts cleanup as 
+> suggested by Segher Boessenkool.
 > 
-> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> Thanks
+> Guennadi
+> ---
+> Guennadi Liakhovetski
+> 
+> Device tree update: add rtc nodes on i2c, remove bogus 0-size cache-line 
+> declarations, rename interrupt-controller nodes, remove erroneous 
+> interrupt-parent line, accidentally introduced by a recent patch.
+> 
+> Signed-off-by: G. Liakhovetski <g.liakhovetski@gmx.de>
+> 
 
-Looks good
 
-Acked-by: David Gibson <david@gibson.dropbear.id.au>
+[snip]
+> @@ -64,11 +62,19 @@ build with: "dtc -f -I dts -O dtb -o kuroboxHD.dtb -V 16 kuroboxHD.dts"
+>  			  fef00000 fef00000 00100000>;	/* pci iack */
+>  
+>  		i2c@80003000 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+>  			device_type = "i2c";
+>  			compatible = "fsl-i2c";
+>  			reg = <80003000 1000>;
+>  			interrupts = <5 2>;
+>  			interrupt-parent = <&mpic>;
+> +
+> +			rtc@32 {
+> +				device_type = "rtc";
+> +				compatible = "ricoh,rs5c372b";
+> +				reg = <32>;
+
+Ok, just making sure that rtc at 0x32 (decimal 50) is correct, rather
+than at decimal 32.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
