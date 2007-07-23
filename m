@@ -2,39 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DCEFDDDEFE
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 06:51:22 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 9F280DDF70
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 07:02:25 +1000 (EST)
+Date: Mon, 23 Jul 2007 16:01:53 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH 24/25] [POWERPC] Add Freescale PCI VENDOR ID and 8641 device
-	IDs
-Date: Mon, 23 Jul 2007 15:50:11 -0500
-Message-Id: <11852238481049-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <11852238472931-git-send-email-galak@kernel.crashing.org>
-References: <11852238122538-git-send-email-galak@kernel.crashing.org>
-	<1185223813693-git-send-email-galak@kernel.crashing.org>
-	<11852238151983-git-send-email-galak@kernel.crashing.org>
-	<11852238161546-git-send-email-galak@kernel.crashing.org>
-	<1185223818821-git-send-email-galak@kernel.crashing.org>
-	<11852238193371-git-send-email-galak@kernel.crashing.org>
-	<1185223821183-git-send-email-galak@kernel.crashing.org>
-	<11852238233066-git-send-email-galak@kernel.crashing.org>
-	<11852238241475-git-send-email-galak@kernel.crashing.org>
-	<11852238253550-git-send-email-galak@kernel.crashing.org>
-	<11852238271141-git-send-email-galak@kernel.crashing.org>
-	<11852238283648-git-send-email-galak@kernel.crashing.org>
-	<1185223830411-git-send-email-galak@kernel.crashing.org>
-	<11852238322319-git-send-email-galak@kernel.crashing.org>
-	<11852238333649-git-send-email-galak@kernel.crashing.org>
-	<11852238353292-git-send-email-galak@kernel.crashing.org>
-	<11852238362041-git-send-email-galak@kernel.crashing.org>
-	<11852238383453-git-send-email-galak@kernel.crashing.org>
-	<11852238392809-git-send-email-galak@kernel.crashing.org>
-	<11852238411823-git-send-email-galak@kernel.crashing.org>
-	<11852238421611-git-send-email-galak@kernel.crashing.org>
-	<11852238432011-git-send-email-galak@kernel.crashing.org>
-	<11852238452609-git-send-email-galak@kernel.crashing.org>
-	<11852238472931-git-send-email-galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Please pull from 'for_paulus' branch
+Message-ID: <Pine.LNX.4.64.0707231556210.4203@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -44,47 +21,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Jon Loeliger <jdl@freescale.com>
+Please pull from 'for_paulus' branch of
 
-Also add 8641/8641D device IDs as well.
-All of which already exist or have been submitted to
-The Linux PCI ID Repository at:
-    http://pci-ids.ucw.cz/
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for_paulus
 
-CC-to: pci-ids@ucw.cz
-Signed-off-by: Jon Loeliger <jdl@freescale.com>
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/sysdev/fsl_pci.c |    4 ++--
- include/linux/pci_ids.h       |    4 ++++
- 2 files changed, 6 insertions(+), 2 deletions(-)
+Sorry I wasn't able to get this pull request out before -rc1 got released,
+but had some issues w/accessing email/accounts this weekend.
 
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 06a2a9b..267edbd 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -253,5 +253,5 @@ DECLARE_PCI_FIXUP_EARLY(0x1957, 0x0024, quirk_fsl_pcie_transparent);
- DECLARE_PCI_FIXUP_EARLY(0x1957, 0x0025, quirk_fsl_pcie_transparent);
- DECLARE_PCI_FIXUP_EARLY(0x1957, 0x0030, quirk_fsl_pcie_transparent);
- DECLARE_PCI_FIXUP_EARLY(0x1957, 0x0031, quirk_fsl_pcie_transparent);
--DECLARE_PCI_FIXUP_EARLY(0x1957, 0x7010, quirk_fsl_pcie_transparent);
--DECLARE_PCI_FIXUP_EARLY(0x1957, 0x7011, quirk_fsl_pcie_transparent);
-+DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8641, quirk_fsl_pcie_transparent);
-+DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8641D, quirk_fsl_pcie_transparent);
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index cbabb9c..3c870f1 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -2075,6 +2075,10 @@
- #define PCI_VENDOR_ID_TDI               0x192E
- #define PCI_DEVICE_ID_TDI_EHCI          0x0101
- 
-+#define PCI_VENDOR_ID_FREESCALE		0x1957
-+#define PCI_DEVICE_ID_MPC8641		0x7010
-+#define PCI_DEVICE_ID_MPC8641D		0x7011
-+
- #define PCI_VENDOR_ID_PASEMI		0x1959
- 
- #define PCI_VENDOR_ID_ATTANSIC		0x1969
--- 
-1.5.2.2
+to receive the following updates:
+
+ arch/powerpc/Kconfig                             |    9
+ arch/powerpc/boot/dts/mpc8313erdb.dts            |    2
+ arch/powerpc/boot/dts/mpc832x_mds.dts            |    2
+ arch/powerpc/boot/dts/mpc832x_rdb.dts            |    2
+ arch/powerpc/boot/dts/mpc8349emitx.dts           |    4
+ arch/powerpc/boot/dts/mpc8349emitxgp.dts         |    2
+ arch/powerpc/boot/dts/mpc834x_mds.dts            |    4
+ arch/powerpc/boot/dts/mpc836x_mds.dts            |    2
+ arch/powerpc/boot/dts/mpc8540ads.dts             |    2
+ arch/powerpc/boot/dts/mpc8541cds.dts             |    4
+ arch/powerpc/boot/dts/mpc8544ds.dts              |  211 ++++++++++++++
+ arch/powerpc/boot/dts/mpc8548cds.dts             |  250 ++++++++++++-----
+ arch/powerpc/boot/dts/mpc8555cds.dts             |    4
+ arch/powerpc/boot/dts/mpc8560ads.dts             |    2
+ arch/powerpc/boot/dts/mpc8568mds.dts             |   54 +++
+ arch/powerpc/boot/dts/mpc8641_hpcn.dts           |    8
+ arch/powerpc/configs/mpc8544_ds_defconfig        |  333 ++++++++++++++---------
+ arch/powerpc/configs/mpc8568mds_defconfig        |  292 ++++++++++++--------
+ arch/powerpc/kernel/pci_32.c                     |   25 +
+ arch/powerpc/platforms/82xx/mpc82xx_ads.c        |    3
+ arch/powerpc/platforms/83xx/pci.c                |    4
+ arch/powerpc/platforms/85xx/Kconfig              |    6
+ arch/powerpc/platforms/85xx/Makefile             |    2
+ arch/powerpc/platforms/85xx/mpc8544_ds.c         |  241 ++++++++++++++++
+ arch/powerpc/platforms/85xx/mpc85xx.h            |    1
+ arch/powerpc/platforms/85xx/mpc85xx_ads.c        |    3
+ arch/powerpc/platforms/85xx/mpc85xx_cds.c        |  122 +++++++-
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c        |    7
+ arch/powerpc/platforms/85xx/pci.c                |   91 ------
+ arch/powerpc/platforms/86xx/Kconfig              |    3
+ arch/powerpc/platforms/86xx/Makefile             |    1
+ arch/powerpc/platforms/86xx/mpc86xx.h            |    5
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c       |   13
+ arch/powerpc/platforms/86xx/pci.c                |  238 ----------------
+ arch/powerpc/platforms/chrp/pci.c                |    7
+ arch/powerpc/platforms/embedded6xx/linkstation.c |    2
+ arch/powerpc/sysdev/Makefile                     |    1
+ arch/powerpc/sysdev/fsl_pci.c                    |  257 +++++++++++++++++
+ arch/powerpc/sysdev/fsl_pci.h                    |   88 ++++++
+ arch/powerpc/sysdev/fsl_pcie.h                   |   94 ------
+ arch/powerpc/sysdev/grackle.c                    |    2
+ arch/powerpc/sysdev/indirect_pci.c               |   53 ++-
+ arch/powerpc/sysdev/mpic.c                       |    1
+ arch/powerpc/sysdev/mv64x60_pci.c                |    2
+ include/asm-powerpc/pci-bridge.h                 |   18 +
+ include/linux/pci_ids.h                          |   17 +
+ 46 files changed, 1664 insertions(+), 830 deletions(-)
+
+Jon Loeliger (1):
+      [POWERPC] Add Freescale PCI VENDOR ID and 8641 device IDs
+
+Kumar Gala (12):
+      [POWERPC] Add the ability to find PCI capabilities early on
+      [POWERPC] Added indirect quirk to handle PCIe PHB that have issue w/no link
+      [POWERPC] FSL: Cleanup how we detect if we are a PCIe controller
+      [POWERPC] Fixup resources on pci_bus for PCIe PHB when no device is connected
+      [POWERPC] 85xx: Added 8568 PCIe support
+      [POWERPC] 85xx: Add quirk to ignore bogus FPGA on CDS
+      [POWERPC] Removed setup_indirect_pci_nomap
+      [POWERPC] Make endianess of cfg_addr for indirect pci ops runtime
+      [POWERPC] Provide ability to setup P2P bridge registers from struct resource
+      [POWERPC] Make sure virtual P2P bridge registers are setup on PCIe PHB
+      [POWERPC] FSL: Add support for PCI-X controllers
+      [POWERPC] 85xx: Added needed MPC85xx PCI device IDs
+
+Randy Vinson (5):
+      [POWERPC] 85xxCDS: Allow 8259 cascade to share an MPIC interrupt line.
+      [POWERPC] 85xxCDS: Make sure restart resets the PCI bus.
+      [POWERPC] 85xxCDS: Delay 8259 cascade hookup.
+      [POWERPC] 85xxCDS: Misc 8548 PCI Corrections.
+      [POWERPC] 85xxCDS: MPC8548 DTS cleanup.
+
+Roy Zang (6):
+      [POWERPC] Create common fsl pci/e files based on 86xx platforms
+      [POWERPC] Add 8548 CDS PCI express controller node and PCI-X device node
+      [POWERPC] Update PCI nodes in the 83xx/85xx boards device tree
+      [POWERPC] Use Freescale pci/pcie common code for 85xx boards
+      [POWERPC] Add basic PCI node for mpc8568mds board
+      [POWERPC] Add basic PCI/PCI Express support for 8544DS board
+
+Zang Roy-r61911 (1):
+      [POWERPC] Rewrite Freescale PCI/PCIe support for 8{3,5,6}xx
