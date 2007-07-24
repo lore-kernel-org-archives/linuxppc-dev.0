@@ -1,30 +1,23 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3A50FDDE40
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 02:45:04 +1000 (EST)
-Date: Tue, 24 Jul 2007 09:43:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [patch 1/3] ps3: Disk Storage Driver
-Message-Id: <20070724094344.c3cabf31.akpm@linux-foundation.org>
-In-Reply-To: <46A5F275.7060905@garzik.org>
-References: <20070716161539.075822000@pademelon.sonytel.be>
-	<20070716162206.392129000@pademelon.sonytel.be>
-	<20070718163637.3f0e0164.akpm@linux-foundation.org>
-	<46A5E610.7000508@shadowen.org> <46A5F275.7060905@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Axboe <axboe@kernel.dk>,
-	"James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-	linux-scsi@vger.kernel.org, Jens,
-	Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-	Alessandro Rubini <rubini@vision.unipv.it>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0A9CEDDE42
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 06:37:40 +1000 (EST)
+Message-ID: <46A6630C.9010502@garzik.org>
+Date: Tue, 24 Jul 2007 16:37:32 -0400
+From: Jeff Garzik <jeff@garzik.org>
+MIME-Version: 1.0
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: Re: [PATCH] eHEA: net_poll support
+References: <200707231605.03459.ossthema@de.ibm.com>
+In-Reply-To: <200707231605.03459.ossthema@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,27 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 24 Jul 2007 08:37:09 -0400 Jeff Garzik <jeff@garzik.org> wrote:
-
-> Andy Whitcroft wrote:
-> > Andrew Morton wrote:
-> > 
-> >>> +	start_sector = req->sector*priv->blocking_factor;
-> >>> +	sectors = req->nr_sectors*priv->blocking_factor;
-> >> s/*/ * /.  checkpatch missed this.
-> > 
-> > Ok, this is something we need to decide on.  Currently we only ask for
-> > consistent spacing on all the mathematic operators.  This is mostly as
-> > we do see a large number of non-spaced uses in defines and the like.
-> > 
-> > I am happy to expand these tests so they are always spaced on both sides
-> > style if that is the preference.
+Jan-Bernd Themann wrote:
+> net_poll support for eHEA added
 > 
-> That is most definitely the preference:  spaces surround operators.
+> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+> ---
 > 
+> 
+>  drivers/net/ehea/ehea.h      |    2 +-
+>  drivers/net/ehea/ehea_main.c |   22 +++++++++++++++++++++-
+>  2 files changed, 22 insertions(+), 2 deletions(-)
 
-I must say that I find it hard to object to
-
-	start = radix_tree_next_hole(&mapping->page_tree, offset, max+1);
-
-but when the expression is more complex the spaces help.
+applied
