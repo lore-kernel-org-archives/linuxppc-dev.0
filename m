@@ -1,24 +1,21 @@
-Return-Path: <gerrit.vandevelde@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
-	by ozlabs.org (Postfix) with ESMTP id CF32ADDEA3
+Return-Path: <dhlii@dlasys.net>
+Received: from mx.dlasys.net (24.152.192.123.res-cmts.eph.ptd.net
+	[24.152.192.123]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D7202DDEC0
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Jul 2007 17:33:34 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so2445541wag
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Jul 2007 00:33:33 -0700 (PDT)
-Message-ID: <d07a51700707240033t7ca17dc1ic6c24c708405b78a@mail.gmail.com>
-Date: Tue, 24 Jul 2007 09:33:33 +0200
-From: "Gerrit Van de Velde" <gerrit.vandevelde@gmail.com>
-To: "Clemens Koller" <clemens.koller@anagramm.de>
-Subject: Re: [U-Boot-Users] MPC8540, UPM Writeburst generating also read bursts
-In-Reply-To: <46A51C3F.2070408@anagramm.de>
+	Tue, 24 Jul 2007 18:21:08 +1000 (EST)
+Received: from [206.223.20.140]
+	by mx.dlasys.net with esmtp (Exim 4.63 #1 (Debian))
+	id 1IDFXs-0000rM-HM
+	for <linuxppc-embedded@ozlabs.org>; Tue, 24 Jul 2007 04:15:04 -0400
+Message-ID: <46A5B5BA.2080707@dlasys.net>
+Date: Tue, 24 Jul 2007 04:18:02 -0400
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <d07a51700707200345g48ae4585wdfe55b02569a6a07@mail.gmail.com>
-	<46A09CF1.1050705@anagramm.de>
-	<d07a51700707230805u347feb73sf97c45676882f89e@mail.gmail.com>
-	<46A51C3F.2070408@anagramm.de>
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: Circular queue
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,70 +26,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello again,
+    Is there a standard linux datastructure and routines to manage
+circular queues ?
 
-> Please don't top-post and please don't remove the list. (use reply-to-all)
-> (and please move this thread over to linuxppc-embedded, as we are OT here)
+    I have a device that is not fundimentally different from a serial
+character device
+    except it is faster and the fundimental data type is 36 bits large.
 
-Ok, I'll never do that again. And the topic has been moved.
+    I have coded my own routines to setup and maintain a simple circular
+queue,
+    but I was hoping that there might be something more standard that
+already exists.
 
-> You don't have single read and write instructions in your UPM?
-> Please post your UPM table.
+    Anyone know of anything ?
+   
 
-I do have single reads and writes. The UPM is as follows (taken from
-the upmtool output)
+   
 
-/* MxMR Configuration Code */
-unsigned long MAMR = 0x40000;
-unsigned long MBMR = 0x40000;
-unsigned long MCMR = 0x40000;
 
-/* UPM Table Configuration Code */
-static unsigned long UPMATable[] =
-{
-	0x0faffc00,  0x0faffc00,  0x0fafdc04,  0x3fbffc01, //Words 0 to 3
-	0xfffffc00,  0xfffffc00,  0xfffffc00,  0xfffffc00, //Words 4 to 7
-	0x0ffffc00,  0x0ffffc00,  0x0ffffc0c,  0x0ffffc0c, //Words 8 to 11
-	0x0ffffc0c,  0x0ffffc0c,  0x0ffffc0c,  0x0ffffc0c, //Words 12 to 15
-	0x0ffffc0c,  0x0ffffc04,  0x3ffffc01,  0xfffffc00, //Words 16 to 19
-	0xfffffc00,  0xfffffc00,  0xfffffc00,  0xfffffc00, //Words 20 to 23
-	0x0fa3fc00,  0x0fa3fc00,  0x0fa3fc04,  0x3fb7fc01, //Words 24 to 27
-	0xfffffc00,  0xfffffc00,  0xfffffc00,  0xfffffc00, //Words 28 to 31
-	0x0ff3fc00,  0x0ff3fc00,  0x0ff3fc0c,  0x0ff3fc0c, //Words 32 to 35
-	0x0ff3fc0c,  0x0ff3fc0c,  0x0ff3fc0c,  0x0ff3fc0c, //Words 36 to 39
-	0x0ff3fc0c,  0x0ff3fc04,  0x3ff7fc00,  0xfffffc01, //Words 40 to 43
-	0xfffffc00,  0xfffffc00,  0xfffffc00,  0xfffffc01, //Words 44 to 47
-	0xfffffc00,  0xfffffc01,  0xfffffc00,  0xfffffc00, //Words 48 to 51
-	0xfffffc00,  0xfffffc00,  0xfffffc00,  0xfffffc00, //Words 52 to 55
-	0xfffffc00,  0xfffffc00,  0xfffffc00,  0xfffffc01, //Words 56 to 59
-	0xfffffc00,  0xfffffc01,  0xfffffc00,  0xfffffc01  //Words 60 to 63
-};
 
-> Do you access the DDR memory aligned in 32byte cacheline sizes?
-> The UPM propably cannot burst unaligned chunks properly.
-> (I'm not sure about that, comments are welcome).
-> 500MBit/s should be easy to handle with the UPM, if done right.
 
-Yes target addresses are aligned to 32 byte words. I 'm not sure what
-you mean with cachelines.
 
-> 1) It makes sense to use the DMA to offload the CPU for copying bulk
-> data if the CPU can be used for other stuff.
+-- 
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
 
-Ok, but currently our MPC8540 is a bit overkill, maybe later in the
-life of our board it will be come necessary but at least not now.
-
-> 2) Can you first make sure that your Gbit link is working fine by copying
-> data from/to the CPU's memory without using the UPM?
-
-That's something I should try first indeed, I'll update you/the list
-if I know about the results
-
-> I guess you will need to post more information about your
-> system (schematics, code, UPM)...
-
-I'll do that when UPM-less writes are much faster and you don't see
-anything strange in the UPM table.
-
-Regards,
-Gerrit Van de Velde
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
