@@ -1,19 +1,24 @@
-Return-Path: <domen.puncer@telargo.com>
-Received: from out001.atlarge.net (out001.atlarge.net [129.41.63.69])
-	by ozlabs.org (Postfix) with ESMTP id AE2D6DDEBE
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 30880DDE9B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Jul 2007 15:14:36 +1000 (EST)
-Date: Tue, 24 Jul 2007 07:14:31 +0200
-From: Domen Puncer <domen.puncer@telargo.com>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: [PATCH] i2c-mpc: don't disable I2C module on stop condition.
-Message-ID: <20070724051431.GF4529@moe.telargo.com>
-References: <20070709071955.GD4186@moe.telargo.com>
-	<Pine.LNX.4.60.0707210154330.3946@poirot.grange>
+	Tue, 24 Jul 2007 17:03:37 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IDEQf-0004wA-IH
+	for linuxppc-embedded@ozlabs.org; Tue, 24 Jul 2007 00:03:33 -0700
+Message-ID: <11757911.post@talk.nabble.com>
+Date: Tue, 24 Jul 2007 00:03:33 -0700 (PDT)
+From: Misbah khan <misbah_khan@engineer.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Kmalloc returns which address
+In-Reply-To: <469B92DC.50609@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.60.0707210154330.3946@poirot.grange>
-Cc: khali@linux-fr.org, i2c@lm-sensors.org, linuxppc-embedded@ozlabs.org
+References: <e5eb93010707160659m6a7d0b02p623542739d28ab29@mail.gmail.com>
+	<469B92DC.50609@freescale.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,70 +29,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Disabling module on stop doesn't work on some CPUs (ie. mpc8241,
-as reported by Guennadi Liakhovetski), so remove that.
 
-Disable I2C module on errors/interrupts to prevent it from
-locking up on mpc5200b.
+Hi Scott
 
+The while idea behind my logic was something this :-
 
-Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
----
-Hi!
+ Conver the physical address into virtual address and every time you read or
+write to that virtual you are reading or writing to the physical address.
+For that i suggested for ioremap(), some may suggest for __pa() to translate
+the physical address to logical address. The whole idea behind this is to
+make the task much easy and less complicated as if you are working on memory
+mapped address.
 
-So I fixed i2c on one board, and broke it on another :-(
-This patch works on both Guennadi's and mine (hey, it might break
-a third one!).
-Jean, can you please push this, if there are no objections
-and "doesn't work for me" reports.
+DMA operation will make the application process to access the device
+directly this i guess is little more complicated in implimentation and
+passing a pointer to the application is a serious security concern untill
+and unless only one thread is accessing .
 
+well i will try this with a test driver as soon as i get the free time and
+let you know with the findings
 
-	Domen
+Thanks 
+Misbah  
 
+Scott Wood-2 wrote:
+> 
+> suresh suresh wrote:
+>> I want know the address return by kmalloc function? is it physical
+>> address
+>> or kernel virtual address.
+> 
+> Kernel virtual.
+> 
+>> For Tx and Rx, hardware uses buffers, so I have to allocate buffers and 
+>> pass
+>> the pointer to hardware. Can I pass the pointer returned kmalloc?  or  I
+>> should convert it into physical address?
+> 
+> You need to convert it; read Documentation/DMA-mapping.txt.
+> 
+> -Scott
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+> 
 
- drivers/i2c/busses/i2c-mpc.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
-
-Index: work-powerpc.git/drivers/i2c/busses/i2c-mpc.c
-===================================================================
---- work-powerpc.git.orig/drivers/i2c/busses/i2c-mpc.c
-+++ work-powerpc.git/drivers/i2c/busses/i2c-mpc.c
-@@ -105,6 +105,7 @@ static int i2c_wait(struct mpc_i2c *i2c,
- 			schedule();
- 			if (time_after(jiffies, orig_jiffies + timeout)) {
- 				pr_debug("I2C: timeout\n");
-+				writeccr(i2c, 0);
- 				result = -EIO;
- 				break;
- 			}
-@@ -116,10 +117,12 @@ static int i2c_wait(struct mpc_i2c *i2c,
- 		result = wait_event_interruptible_timeout(i2c->queue,
- 			(i2c->interrupt & CSR_MIF), timeout * HZ);
- 
--		if (unlikely(result < 0))
-+		if (unlikely(result < 0)) {
- 			pr_debug("I2C: wait interrupted\n");
--		else if (unlikely(!(i2c->interrupt & CSR_MIF))) {
-+			writeccr(i2c, 0);
-+		} else if (unlikely(!(i2c->interrupt & CSR_MIF))) {
- 			pr_debug("I2C: wait timeout\n");
-+			writeccr(i2c, 0);
- 			result = -ETIMEDOUT;
- 		}
- 
-@@ -172,7 +175,6 @@ static void mpc_i2c_start(struct mpc_i2c
- static void mpc_i2c_stop(struct mpc_i2c *i2c)
- {
- 	writeccr(i2c, CCR_MEN);
--	writeccr(i2c, 0);
- }
- 
- static int mpc_write(struct mpc_i2c *i2c, int target,
-@@ -261,6 +263,7 @@ static int mpc_xfer(struct i2c_adapter *
- 	while (readb(i2c->base + MPC_I2C_SR) & CSR_MBB) {
- 		if (signal_pending(current)) {
- 			pr_debug("I2C: Interrupted\n");
-+			writeccr(i2c, 0);
- 			return -EINTR;
- 		}
- 		if (time_after(jiffies, orig_jiffies + HZ)) {
+-- 
+View this message in context: http://www.nabble.com/Kmalloc-returns-which-address-tf4086826.html#a11757911
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
