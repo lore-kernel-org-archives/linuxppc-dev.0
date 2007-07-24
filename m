@@ -1,41 +1,25 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jdl@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5D65FDDE9A
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 01:33:20 +1000 (EST)
-In-Reply-To: <18085.59414.38125.30777@cargo.ozlabs.ibm.com>
-References: <11852238122538-git-send-email-galak@kernel.crashing.org>
-	<1185223813693-git-send-email-galak@kernel.crashing.org>
-	<11852238151983-git-send-email-galak@kernel.crashing.org>
-	<11852238161546-git-send-email-galak@kernel.crashing.org>
-	<1185223818821-git-send-email-galak@kernel.crashing.org>
-	<11852238193371-git-send-email-galak@kernel.crashing.org>
-	<1185223821183-git-send-email-galak@kernel.crashing.org>
-	<11852238233066-git-send-email-galak@kernel.crashing.org>
-	<11852238241475-git-send-email-galak@kernel.crashing.org>
-	<11852238253550-git-send-email-galak@kernel.crashing.org>
-	<11852238271141-git-send-email-galak@kernel.crashing.org>
-	<11852238283648-git-send-email-galak@kernel.crashing.org>
-	<1185223830411-git-send-email-galak@kernel.crashing.org>
-	<11852238322319-git-send-email-galak@kernel.crashing.org>
-	<11852238333649-git-send-email-galak@kernel.crashing.org>
-	<11852238353292-git-send-email-galak@kernel.crashing.org>
-	<11852238362041-git-send-email-galak@kernel.crashing.!
-	org> <11852238383453-git-send-email-galak@kernel.crashing.org>
-	<11852238392809-git-send-email-galak@kernel.crashing.org>
-	<11852238411823-git-send-email-galak@kernel.crashing.org>
-	<11852238421611-git-send-email-galak@kernel.crashing.org>
-	<11852238432011-git-send-email-galak@kernel.crashing.org>
-	<18085.59414.38125.30777@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <5DCD5E82-1122-426E-8FF4-DF1D1A67EB04@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 21/25] [POWERPC] 85xxCDS: Delay 8259 cascade hookup.
-Date: Tue, 24 Jul 2007 10:34:04 -0500
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 72258DDE11
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 02:24:11 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	l6OGO24D002569
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 09:24:06 -0700 (MST)
+Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l6OGO1O3002346
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 11:24:01 -0500 (CDT)
+Subject: [PATCH] 86xx: Remove unnecessary loops_per_jiffy initialization code.
+From: Jon Loeliger <jdl@freescale.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Message-Id: <1185294241.9703.6.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Tue, 24 Jul 2007 11:24:01 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -45,20 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Signed-off-by: Jon Loeliger <jdl@freescale.com>
+---
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |   14 ++------------
+ 1 files changed, 2 insertions(+), 12 deletions(-)
 
-On Jul 24, 2007, at 6:52 AM, Paul Mackerras wrote:
-
-> Kumar Gala writes:
->
->> From: Randy Vinson <rvinson@mvista.com>
->
->> +device_initcall(mpc85xx_cds_8259_attach);
->
-> I don't see any platform test in mpc85xx_cds_8259_attach to make sure
-> it only does its stuff on suitable platforms.  Looks like it needs
-> one.
-
-I've added a is_machine(mpc85xx_cds) into the patch in my tree to  
-handle this.
-
-- k
+diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+index 5b01ec7..566c311 100644
+--- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
++++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+@@ -326,23 +326,13 @@ DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_AL, 0x5249, early_uli5249);
+ static void __init
+ mpc86xx_hpcn_setup_arch(void)
+ {
++#ifdef CONFIG_PCI
+ 	struct device_node *np;
++#endif
+ 
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("mpc86xx_hpcn_setup_arch()", 0);
+ 
+-	np = of_find_node_by_type(NULL, "cpu");
+-	if (np != 0) {
+-		const unsigned int *fp;
+-
+-		fp = of_get_property(np, "clock-frequency", NULL);
+-		if (fp != 0)
+-			loops_per_jiffy = *fp / HZ;
+-		else
+-			loops_per_jiffy = 50000000 / HZ;
+-		of_node_put(np);
+-	}
+-
+ #ifdef CONFIG_PCI
+ 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
+ 		mpc86xx_add_bridge(np);
+-- 
+1.5.0.3
