@@ -2,13 +2,13 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C022FDDD06
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 11:45:45 +1000 (EST)
-Subject: Re: [PATCH 16/25] [POWERPC] Provide ability to setup P2P bridge
-	registers from struct resource
+	by ozlabs.org (Postfix) with ESMTP id 9C810DDE0D
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 11:48:26 +1000 (EST)
+Subject: Re: [PATCH 19/25] [POWERPC] 85xxCDS: Allow 8259 cascade to share
+	an MPIC interrupt line.
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <11852238362041-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <11852238411823-git-send-email-galak@kernel.crashing.org>
 References: <11852238122538-git-send-email-galak@kernel.crashing.org>
 	<1185223813693-git-send-email-galak@kernel.crashing.org>
 	<11852238151983-git-send-email-galak@kernel.crashing.org>
@@ -26,9 +26,12 @@ References: <11852238122538-git-send-email-galak@kernel.crashing.org>
 	<11852238333649-git-send-email-galak@kernel.crashing.org>
 	<11852238353292-git-send-email-galak@kernel.crashing.org>
 	<11852238362041-git-send-email-galak@kernel.crashing.org>
+	<11852238383453-git-send-email-galak@kernel.crashing.org>
+	<11852238392809-git-send-email-galak@kernel.crashing.org>
+	<11852238411823-git-send-email-galak@kernel.crashing.org>
 Content-Type: text/plain
-Date: Tue, 24 Jul 2007 11:45:39 +1000
-Message-Id: <1185241539.5439.192.camel@localhost.localdomain>
+Date: Tue, 24 Jul 2007 11:48:12 +1000
+Message-Id: <1185241693.5439.194.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -41,73 +44,21 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Mon, 2007-07-23 at 15:50 -0500, Kumar Gala wrote:
-> We need the ability to set P2P bridge registers to properly setup the virtual
-> P2P bridges that exist in PCIe controllers for some of the embedded setups.
-> 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> --- a/arch/powerpc/sysdev/mpic.c
+> +++ b/arch/powerpc/sysdev/mpic.c
+> @@ -836,6 +836,7 @@ static struct irq_chip mpic_irq_chip = {
+>         .mask           = mpic_mask_irq,
+>         .unmask         = mpic_unmask_irq,
+>         .eoi            = mpic_end_irq,
+> +       .end            = mpic_unmask_irq,
+>         .set_type       = mpic_set_irq_type,
+>  }; 
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Nope, that doesn't look correct and shouldn't be in this patch in the
+first place.
 
-> ---
->  arch/powerpc/kernel/pci_32.c     |   18 ++++++++++++------
->  include/asm-powerpc/pci-bridge.h |    2 ++
->  2 files changed, 14 insertions(+), 6 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
-> index bfcfa14..721a694 100644
-> --- a/arch/powerpc/kernel/pci_32.c
-> +++ b/arch/powerpc/kernel/pci_32.c
-> @@ -415,15 +415,13 @@ probe_resource(struct pci_bus *parent, struct resource *pr,
->  	return 0;
->  }
->  
-> -static void __init
-> -update_bridge_base(struct pci_bus *bus, int i)
-> +void __init
-> +update_bridge_resource(struct pci_dev *dev, struct resource *res)
->  {
-> -	struct resource *res = bus->resource[i];
->  	u8 io_base_lo, io_limit_lo;
->  	u16 mem_base, mem_limit;
->  	u16 cmd;
->  	unsigned long start, end, off;
-> -	struct pci_dev *dev = bus->self;
->  	struct pci_controller *hose = dev->sysdata;
->  
->  	if (!hose) {
-> @@ -467,12 +465,20 @@ update_bridge_base(struct pci_bus *bus, int i)
->  		pci_write_config_word(dev, PCI_PREF_MEMORY_LIMIT, mem_limit);
->  
->  	} else {
-> -		DBG(KERN_ERR "PCI: ugh, bridge %s res %d has flags=%lx\n",
-> -		    pci_name(dev), i, res->flags);
-> +		DBG(KERN_ERR "PCI: ugh, bridge %s res has flags=%lx\n",
-> +		    pci_name(dev), res->flags);
->  	}
->  	pci_write_config_word(dev, PCI_COMMAND, cmd);
->  }
->  
-> +static void __init
-> +update_bridge_base(struct pci_bus *bus, int i)
-> +{
-> +	struct resource *res = bus->resource[i];
-> +	struct pci_dev *dev = bus->self;
-> +	update_bridge_resource(dev, res);
-> +}
-> +
->  static inline void alloc_resource(struct pci_dev *dev, int idx)
->  {
->  	struct resource *pr, *r = &dev->resource[idx];
-> diff --git a/include/asm-powerpc/pci-bridge.h b/include/asm-powerpc/pci-bridge.h
-> index 435bfe8..b7d2ea4 100644
-> --- a/include/asm-powerpc/pci-bridge.h
-> +++ b/include/asm-powerpc/pci-bridge.h
-> @@ -93,6 +93,8 @@ extern int early_find_capability(struct pci_controller *hose, int bus,
->  extern void setup_indirect_pci(struct pci_controller* hose,
->  			       u32 cfg_addr, u32 cfg_data, u32 flags);
->  extern void setup_grackle(struct pci_controller *hose);
-> +extern void __init update_bridge_resource(struct pci_dev *dev,
-> +					  struct resource *res);
->  
->  #else
->  
+end() is flow control business, not chip business, so it's really
+something that needs to be fixed in the fasteoi handler for -rt I
+suppose.
+
+Ben.
