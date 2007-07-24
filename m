@@ -1,27 +1,31 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <srinivasa@in.ibm.com>
+Received: from ausmtp06.au.ibm.com (ausmtp06.au.ibm.com [202.81.18.155])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5CFD7DDE46
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 19:36:59 +1000 (EST)
-Subject: RE: [PATCH 1/3] Add a new member name to structure irq_host
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Zhang Wei-r63237 <Wei.Zhang@freescale.com>
-In-Reply-To: <46B96294322F7D458F9648B60E15112C74CDC2@zch01exm26.fsl.freescale.net>
-References: <11851892302391-git-send-email-g.chen@freescale.com>
-	<11851892311178-git-send-email-g.chen@freescale.com>
-	<1185228277.5439.141.camel@localhost.localdomain>
-	<1185232974.13740.11.camel@concordia.ozlabs.ibm.com>
-	<1185233771.5439.153.camel@localhost.localdomain>
-	<995B09A8299C2C44B59866F6391D2635A69C88@zch01exm21.fsl.freescale.net>
-	<1185251600.5439.204.camel@localhost.localdomain>
-	<46B96294322F7D458F9648B60E15112C74CDC2@zch01exm26.fsl.freescale.net>
-Content-Type: text/plain
-Date: Tue, 24 Jul 2007 19:36:42 +1000
-Message-Id: <1185269802.5439.246.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Chen Gong-B11801 <G.Chen@freescale.com>,
-	paulus@samba.org
+	(Client CN "ausmtp06.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 356A0DDEB6
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 20:07:14 +1000 (EST)
+Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.18.232])
+	by ausmtp06.au.ibm.com (8.13.8/8.13.8) with ESMTP id l6OA7JBS4075700
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 20:07:22 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.250.243])
+	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l6OA5vHC174090
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 20:05:57 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l6OA6YFI004797
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 20:06:34 +1000
+Received: from [9.124.35.39] (srinivasa-laptop.in.ibm.com [9.124.35.39])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	l6OA6XxE004635
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 20:06:33 +1000
+Message-ID: <46A5CF25.7090905@in.ibm.com>
+Date: Tue, 24 Jul 2007 15:36:29 +0530
+From: Srinivasa Ds <srinivasa@in.ibm.com>
+MIME-Version: 1.0
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: 2.6.23-rc1 build breaks on ppc64.
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,38 +35,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-07-24 at 17:25 +0800, Zhang Wei-r63237 wrote:
-> Hi, Ben, 
-> 
-> Thanks! Please see my inline comments.
-> 
-> > 
-> > Well, you would have to look at a cell blade or pSeries machine
-> > device-tree, I don't have one at hand in DTS form... but basically,
-> > those don't have a 1:1 relationship between hosts and nodes.
-> 
-> Is there any problem when the relationship between hosts and nodes is
-> not 1:1?
-> 
-> The mapping method is defined in irq_alloc_host(). If there is only one
-> host for many nodes,
-> then these nodes will use the same mapping. Such as iic_host, the
-> IRQ_HOST_MAP_LINEAR
-> is used for its all nodes. We do _not_ care which node, we just care
-> which virq is mapped from which host's hw irq.
+  Compilation of 2.6.23-rc1 breaks on ppc64, if CONFIG_SOFTWARE_SUSPEND
+is not set.
+===========================================================
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  CALL    scripts/checksyscalls.sh
+  CHK     include/linux/compile.h
+  CC      arch/powerpc/sysdev/dart_iommu.o
+arch/powerpc/sysdev/dart_iommu.c: In function âiommu_init_late_dartâ:
+arch/powerpc/sysdev/dart_iommu.c:376: error: implicit declaration of
+function âregister_nosave_region_lateâ
+make[1]: *** [arch/powerpc/sysdev/dart_iommu.o] Error 1
+make: *** [arch/powerpc/sysdev] Error 2
+==============================================================
+In include/linux/suspend.h
+===========================================================
+#ifdef CONFIG_PM
+#ifdef CONFIG_SOFTWARE_SUSPEND
+/* kernel/power/snapshot.c */
+extern void __register_nosave_region(unsigned long b, unsigned long e,
+int km);
+static inline void register_nosave_region(unsigned long b, unsigned long e)
+{
+        __register_nosave_region(b, e, 0);
+}
+static inline void register_nosave_region_late(unsigned long b, unsigned
+long e)
+{
+        __register_nosave_region(b, e, 1);
+}
+==========================================================
 
-Sure and it all works fine, I was replying to the suggestion of adding a
-device_node pointer in there.
 
-> > 
-> > Anyway, I discussed with Michael today and it might be a good idea to
-> > provide an optional device node field in the host struct that can be
-> > used by the majority of the PICs that have one host == one node, that
-> > would provide a good default for the name() function.
-> > 
-> 
-> But we have some irq host which has not OF-node bound.
-
-Sure, hence the word 'optional' which would provide a default name.
-
-Ben.
+Thanks
+ Srinivasa DS
+ LTC-ISL
+ IBM India
