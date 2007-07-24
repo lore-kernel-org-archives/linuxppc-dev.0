@@ -1,24 +1,23 @@
-Return-Path: <dtor@insightbb.com>
-Received: from asav04.insightbb.com (gateway.insightbb.com [74.128.0.19])
-	by ozlabs.org (Postfix) with ESMTP id 4C9F1DDE9C
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 10:45:52 +1000 (EST)
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [patch 1/3] m68k/mac: Make mac_hid_mouse_emulate_buttons()
-	declaration visible
-Date: Mon, 23 Jul 2007 20:45:45 -0400
-References: <20070720164043.523003359@mail.of.borg>
-	<200707220022.41797.dtor@insightbb.com>
-	<Pine.LNX.4.64.0707221451140.18493@anakin>
-In-Reply-To: <Pine.LNX.4.64.0707221451140.18493@anakin>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200707232045.47104.dtor@insightbb.com>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Adrian Bunk <bunk@stusta.de>, linuxppc-dev@ozlabs.org,
-	linux-input@atrey.karlin.mff.cuni.cz,
-	Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id ECDBBDDEBA
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 11:37:21 +1000 (EST)
+Subject: Re: [PATCH 03/25] [POWERPC] Add the ability to find PCI
+	capabilities early on
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <11852238161546-git-send-email-galak@kernel.crashing.org>
+References: <11852238122538-git-send-email-galak@kernel.crashing.org>
+	<1185223813693-git-send-email-galak@kernel.crashing.org>
+	<11852238151983-git-send-email-galak@kernel.crashing.org>
+	<11852238161546-git-send-email-galak@kernel.crashing.org>
+Content-Type: text/plain
+Date: Tue, 24 Jul 2007 11:37:10 +1000
+Message-Id: <1185241030.5439.182.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,26 +27,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sunday 22 July 2007 08:51, Geert Uytterhoeven wrote:
-> On Sun, 22 Jul 2007, Dmitry Torokhov wrote:
-> > On Saturday 21 July 2007 04:27, Geert Uytterhoeven wrote:
-> > > On Fri, 20 Jul 2007, Dmitry Torokhov wrote:
-> > > > I am OK with adding a new header file. I was just saying that placing
-> > > > that declaration in linux/hid.h makes about the same sense as putting
-> > > > it into linux/scsi.h
-> > > 
-> > > At first I just wanted to move it. Then I thought about the angry
-> > > comments I would get about not moving it to a header file ;-)
-> > > 
-> > > <linux/hid.h> looked like the best candidate. <linux/kbd_kern.h> is
-> > > another option.
-> > > 
-> > 
-> > linux/kbd_kern.h sounds much better.
+On Mon, 2007-07-23 at 15:49 -0500, Kumar Gala wrote:
+> Added early_find_capability that wraps pci_bus_find_capability and uses
+> fake_pci_bus() to allow us to call it before we've fully setup the
+> pci_controller.
 > 
-> And so it will be.
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-Applied to 'for-linus' branch of input tree, thank you.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
--- 
-Dmitry
+I want to try to get rid of the early stuff at one point, but that will
+not happen before some major rework of powerpc PCI code so for now,
+that's good to go.
+
+Ben.
+
+> ---
+>  arch/powerpc/kernel/pci_32.c     |    7 +++++++
+>  include/asm-powerpc/pci-bridge.h |    3 +++
+>  2 files changed, 10 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
+> index 0adf077..bfcfa14 100644
+> --- a/arch/powerpc/kernel/pci_32.c
+> +++ b/arch/powerpc/kernel/pci_32.c
+> @@ -1468,3 +1468,10 @@ EARLY_PCI_OP(read, dword, u32 *)
+>  EARLY_PCI_OP(write, byte, u8)
+>  EARLY_PCI_OP(write, word, u16)
+>  EARLY_PCI_OP(write, dword, u32)
+> +
+> +extern int pci_bus_find_capability (struct pci_bus *bus, unsigned int devfn, int cap);
+> +int early_find_capability(struct pci_controller *hose, int bus, int devfn,
+> +			  int cap)
+> +{
+> +	return pci_bus_find_capability(fake_pci_bus(hose, bus), devfn, cap);
+> +}
+> diff --git a/include/asm-powerpc/pci-bridge.h b/include/asm-powerpc/pci-bridge.h
+> index e72c2a6..7a00b8e 100644
+> --- a/include/asm-powerpc/pci-bridge.h
+> +++ b/include/asm-powerpc/pci-bridge.h
+> @@ -79,6 +79,9 @@ int early_write_config_word(struct pci_controller *hose, int bus, int dev_fn,
+>  int early_write_config_dword(struct pci_controller *hose, int bus, int dev_fn,
+>  			     int where, u32 val);
+>  
+> +extern int early_find_capability(struct pci_controller *hose, int bus,
+> +				 int dev_fn, int cap);
+> +
+>  extern void setup_indirect_pci_nomap(struct pci_controller* hose,
+>  			       void __iomem *cfg_addr, void __iomem *cfg_data);
+>  extern void setup_indirect_pci(struct pci_controller* hose,
