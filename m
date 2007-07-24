@@ -1,35 +1,26 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <apw@shadowen.org>
+Received: from hellhawk.shadowen.org (hellhawk.shadowen.org [80.68.90.175])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 480F4DDE35
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 22:11:42 +1000 (EST)
+Message-ID: <46A5E610.7000508@shadowen.org>
+Date: Tue, 24 Jul 2007 12:44:16 +0100
+From: Andy Whitcroft <apw@shadowen.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18085.59414.38125.30777@cargo.ozlabs.ibm.com>
-Date: Tue, 24 Jul 2007 21:52:54 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 21/25] [POWERPC] 85xxCDS: Delay 8259 cascade hookup.
-In-Reply-To: <11852238432011-git-send-email-galak@kernel.crashing.org>
-References: <11852238122538-git-send-email-galak@kernel.crashing.org>
-	<1185223813693-git-send-email-galak@kernel.crashing.org>
-	<11852238151983-git-send-email-galak@kernel.crashing.org>
-	<11852238161546-git-send-email-galak@kernel.crashing.org>
-	<1185223818821-git-send-email-galak@kernel.crashing.org>
-	<11852238193371-git-send-email-galak@kernel.crashing.org>
-	<1185223821183-git-send-email-galak@kernel.crashing.org>
-	<11852238233066-git-send-email-galak@kernel.crashing.org>
-	<11852238241475-git-send-email-galak@kernel.crashing.org>
-	<11852238253550-git-send-email-galak@kernel.crashing.org>
-	<11852238271141-git-send-email-galak@kernel.crashing.org>
-	<11852238283648-git-send-email-galak@kernel.crashing.org>
-	<1185223830411-git-send-email-galak@kernel.crashing.org>
-	<11852238322319-git-send-email-galak@kernel.crashing.org>
-	<11852238333649-git-send-email-galak@kernel.crashing.org>
-	<11852238353292-git-send-email-galak@kernel.crashing.org>
-	<11852238362041-git-send-email-galak@kernel.crashing.org>
-	<11852238383453-git-send-email-galak@kernel.crashing.org>
-	<11852238392809-git-send-email-galak@kernel.crashing.org>
-	<11852238411823-git-send-email-galak@kernel.crashing.org>
-	<11852238421611-git-send-email-galak@kernel.crashing.org>
-	<11852238432011-git-send-email-galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 1/3] ps3: Disk Storage Driver
+References: <20070716161539.075822000@pademelon.sonytel.be>	<20070716162206.392129000@pademelon.sonytel.be>
+	<20070718163637.3f0e0164.akpm@linux-foundation.org>
+In-Reply-To: <20070718163637.3f0e0164.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Jens Axboe <axboe@kernel.dk>,
+	"James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Alessandro Rubini <rubini@vision.unipv.it>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,14 +30,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala writes:
+Andrew Morton wrote:
 
-> From: Randy Vinson <rvinson@mvista.com>
+>> +	start_sector = req->sector*priv->blocking_factor;
+>> +	sectors = req->nr_sectors*priv->blocking_factor;
+> 
+> s/*/ * /.  checkpatch missed this.
 
-> +device_initcall(mpc85xx_cds_8259_attach);
+Ok, this is something we need to decide on.  Currently we only ask for
+consistent spacing on all the mathematic operators.  This is mostly as
+we do see a large number of non-spaced uses in defines and the like.
 
-I don't see any platform test in mpc85xx_cds_8259_attach to make sure
-it only does its stuff on suitable platforms.  Looks like it needs
-one.
+I am happy to expand these tests so they are always spaced on both sides
+style if that is the preference.
 
-Paul.
+-apw
