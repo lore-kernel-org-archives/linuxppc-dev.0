@@ -1,31 +1,35 @@
-Return-Path: <srinivasa@in.ibm.com>
-Received: from ausmtp06.au.ibm.com (ausmtp06.au.ibm.com [202.81.18.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ausmtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 356A0DDEB6
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 20:07:14 +1000 (EST)
-Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.18.232])
-	by ausmtp06.au.ibm.com (8.13.8/8.13.8) with ESMTP id l6OA7JBS4075700
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 20:07:22 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.250.243])
-	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l6OA5vHC174090
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 20:05:57 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6OA6YFI004797
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 20:06:34 +1000
-Received: from [9.124.35.39] (srinivasa-laptop.in.ibm.com [9.124.35.39])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	l6OA6XxE004635
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 20:06:33 +1000
-Message-ID: <46A5CF25.7090905@in.ibm.com>
-Date: Tue, 24 Jul 2007 15:36:29 +0530
-From: Srinivasa Ds <srinivasa@in.ibm.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: 2.6.23-rc1 build breaks on ppc64.
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18085.59414.38125.30777@cargo.ozlabs.ibm.com>
+Date: Tue, 24 Jul 2007 21:52:54 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 21/25] [POWERPC] 85xxCDS: Delay 8259 cascade hookup.
+In-Reply-To: <11852238432011-git-send-email-galak@kernel.crashing.org>
+References: <11852238122538-git-send-email-galak@kernel.crashing.org>
+	<1185223813693-git-send-email-galak@kernel.crashing.org>
+	<11852238151983-git-send-email-galak@kernel.crashing.org>
+	<11852238161546-git-send-email-galak@kernel.crashing.org>
+	<1185223818821-git-send-email-galak@kernel.crashing.org>
+	<11852238193371-git-send-email-galak@kernel.crashing.org>
+	<1185223821183-git-send-email-galak@kernel.crashing.org>
+	<11852238233066-git-send-email-galak@kernel.crashing.org>
+	<11852238241475-git-send-email-galak@kernel.crashing.org>
+	<11852238253550-git-send-email-galak@kernel.crashing.org>
+	<11852238271141-git-send-email-galak@kernel.crashing.org>
+	<11852238283648-git-send-email-galak@kernel.crashing.org>
+	<1185223830411-git-send-email-galak@kernel.crashing.org>
+	<11852238322319-git-send-email-galak@kernel.crashing.org>
+	<11852238333649-git-send-email-galak@kernel.crashing.org>
+	<11852238353292-git-send-email-galak@kernel.crashing.org>
+	<11852238362041-git-send-email-galak@kernel.crashing.org>
+	<11852238383453-git-send-email-galak@kernel.crashing.org>
+	<11852238392809-git-send-email-galak@kernel.crashing.org>
+	<11852238411823-git-send-email-galak@kernel.crashing.org>
+	<11852238421611-git-send-email-galak@kernel.crashing.org>
+	<11852238432011-git-send-email-galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,40 +39,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  Compilation of 2.6.23-rc1 breaks on ppc64, if CONFIG_SOFTWARE_SUSPEND
-is not set.
-===========================================================
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  CALL    scripts/checksyscalls.sh
-  CHK     include/linux/compile.h
-  CC      arch/powerpc/sysdev/dart_iommu.o
-arch/powerpc/sysdev/dart_iommu.c: In function âiommu_init_late_dartâ:
-arch/powerpc/sysdev/dart_iommu.c:376: error: implicit declaration of
-function âregister_nosave_region_lateâ
-make[1]: *** [arch/powerpc/sysdev/dart_iommu.o] Error 1
-make: *** [arch/powerpc/sysdev] Error 2
-==============================================================
-In include/linux/suspend.h
-===========================================================
-#ifdef CONFIG_PM
-#ifdef CONFIG_SOFTWARE_SUSPEND
-/* kernel/power/snapshot.c */
-extern void __register_nosave_region(unsigned long b, unsigned long e,
-int km);
-static inline void register_nosave_region(unsigned long b, unsigned long e)
-{
-        __register_nosave_region(b, e, 0);
-}
-static inline void register_nosave_region_late(unsigned long b, unsigned
-long e)
-{
-        __register_nosave_region(b, e, 1);
-}
-==========================================================
+Kumar Gala writes:
 
+> From: Randy Vinson <rvinson@mvista.com>
 
-Thanks
- Srinivasa DS
- LTC-ISL
- IBM India
+> +device_initcall(mpc85xx_cds_8259_attach);
+
+I don't see any platform test in mpc85xx_cds_8259_attach to make sure
+it only does its stuff on suitable platforms.  Looks like it needs
+one.
+
+Paul.
