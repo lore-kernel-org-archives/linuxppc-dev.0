@@ -1,26 +1,19 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 22EF5DDE9C
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 23:44:33 +1000 (EST)
-Message-ID: <46A60235.10107@garzik.org>
-Date: Tue, 24 Jul 2007 09:44:21 -0400
-From: Jeff Garzik <jeff@garzik.org>
-MIME-Version: 1.0
-To: Andreas Schwab <schwab@suse.de>
-Subject: Re: [patch 1/3] ps3: Disk Storage Driver
-References: <20070716161539.075822000@pademelon.sonytel.be>	<20070716162206.392129000@pademelon.sonytel.be>	<20070718163637.3f0e0164.akpm@linux-foundation.org>	<46A5E610.7000508@shadowen.org>
-	<46A5F275.7060905@garzik.org> <je3aze6k1b.fsf@sykes.suse.de>
-In-Reply-To: <je3aze6k1b.fsf@sykes.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Jens Axboe <axboe@kernel.dk>,
-	"James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-	linux-scsi@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-	linux-kernel@vger.kernel.org, Alessandro Rubini <rubini@vision.unipv.it>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Andrew Morton <akpm@linux-foundation.org>
+	by ozlabs.org (Postfix) with ESMTP id 66AF7DDE9A
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 00:09:52 +1000 (EST)
+In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D9010895F78D@EMPBEDEX.empirix.com>
+References: <BD261180E6D35F4D9D32F3E44FD3D9010895F78D@EMPBEDEX.empirix.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=WINDOWS-1252; delsp=yes; format=flowed
+Message-Id: <E6662258-6B06-4124-86E4-F6419B29980F@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Which Git Tree to pull from?
+Date: Tue, 24 Jul 2007 09:10:30 -0500
+To: "Morrison, Tom" <tmorrison@empirix.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,24 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andreas Schwab wrote:
-> Jeff Garzik <jeff@garzik.org> writes:
-> 
->> Andy Whitcroft wrote:
->>> Andrew Morton wrote:
->>>
->>>>> +	start_sector = req->sector*priv->blocking_factor;
->>>>> +	sectors = req->nr_sectors*priv->blocking_factor;
->>>> s/*/ * /.  checkpatch missed this.
->>> Ok, this is something we need to decide on.  Currently we only ask for
->>> consistent spacing on all the mathematic operators.  This is mostly as
->>> we do see a large number of non-spaced uses in defines and the like.
->>>
->>> I am happy to expand these tests so they are always spaced on both sides
->>> style if that is the preference.
->> That is most definitely the preference:  spaces surround operators.
->                                                           ^binary
 
-Yes.  :)
+On Jul 24, 2007, at 7:21 AM, Morrison, Tom wrote:
 
-	Jeff
+> I am a little confused here. I=92ve been working in an older (2.6.11)
+>
+> ppc release and haven=92t been paying much attention to where I
+>
+> should be getting the latest / stable git tree (for powerpc).
+>
+>
+>
+> I am working on an e500/8548 branch =96 it looks like Kumar=92s
+>
+> Git tree looks relatively new with lots of new patches=85?
+
+Do you need PCIe support on 8548?  If so I'd suggest my tree, be =20
+warned it gets rebased from time to time.
+
+- k=
