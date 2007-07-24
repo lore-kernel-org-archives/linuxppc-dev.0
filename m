@@ -1,40 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 648B8DDEBE
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 12:46:22 +1000 (EST)
-In-Reply-To: <1185241693.5439.194.camel@localhost.localdomain>
-References: <11852238122538-git-send-email-galak@kernel.crashing.org>
-	<1185223813693-git-send-email-galak@kernel.crashing.org>
-	<11852238151983-git-send-email-galak@kernel.crashing.org>
-	<11852238161546-git-send-email-galak@kernel.crashing.org>
-	<1185223818821-git-send-email-galak@kernel.crashing.org>
-	<11852238193371-git-send-email-galak@kernel.crashing.org>
-	<1185223821183-git-send-email-galak@kernel.crashing.org>
-	<11852238233066-git-send-email-galak@kernel.crashing.org>
-	<11852238241475-git-send-email-galak@kernel.crashing.org>
-	<11852238253550-git-send-email-galak@kernel.crashing.org>
-	<11852238271141-git-send-email-galak@kernel.crashing.org>
-	<11852238283648-git-send-email-galak@kernel.crashing.org>
-	<1185223830411-git-send-email-galak@kernel.crashing.org>
-	<11852238322319-git-send-email-galak@kernel.crashing.org>
-	<11852238333649-git-send-email-galak@kernel.crashing.org>
-	<11852238353292-git-send-email-galak@kernel.crashing.org>
-	<11852238362041-git-send-email-galak@kernel.crashing.!
-	org> <11852238383453-git-send-email-galak@kernel.crashing.org>
-	<11852238392809-git-send-email-galak@kernel.crashing.org>
-	<11852238411823-git-send-email-galak@kernel.crashing.org>
-	<1185241693.5439.194.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <C75BA37F-82D2-4520-9898-D7BE9A0C4F9C@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 19/25] [POWERPC] 85xxCDS: Allow 8259 cascade to share an
-	MPIC interrupt line.
-Date: Mon, 23 Jul 2007 21:47:03 -0500
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mokuno@sm.sony.co.jp>
+Date: Tue, 24 Jul 2007 11:47:21 +0900
+From: Masakazu Mokuno <mokuno@sm.sony.co.jp>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Subject: Re: [Cbe-oss-dev] [PATCH][36/37] Clean up duplicate includes in
+	sound/ppc/
+In-Reply-To: <200707211704.07263.jesper.juhl@gmail.com>
+References: <200707211704.07263.jesper.juhl@gmail.com>
+Message-Id: <20070724114325.3254.MOKUNO@sm.sony.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -45,26 +22,32 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jul 23, 2007, at 8:48 PM, Benjamin Herrenschmidt wrote:
+On Sat, 21 Jul 2007 17:04:07 +0200
+Jesper Juhl <jesper.juhl@gmail.com> wrote:
 
-> On Mon, 2007-07-23 at 15:50 -0500, Kumar Gala wrote:
->> --- a/arch/powerpc/sysdev/mpic.c
->> +++ b/arch/powerpc/sysdev/mpic.c
->> @@ -836,6 +836,7 @@ static struct irq_chip mpic_irq_chip = {
->>         .mask           = mpic_mask_irq,
->>         .unmask         = mpic_unmask_irq,
->>         .eoi            = mpic_end_irq,
->> +       .end            = mpic_unmask_irq,
->>         .set_type       = mpic_set_irq_type,
->>  };
->
-> Nope, that doesn't look correct and shouldn't be in this patch in the
-> first place.
->
-> end() is flow control business, not chip business, so it's really
-> something that needs to be fixed in the fasteoi handler for -rt I
-> suppose.
+> Hi,
+> 
+> This patch cleans up duplicate includes in
+> 	XXXX/
+> 
+> 
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+> ---
+> 
+> diff --git a/sound/ppc/snd_ps3.c b/sound/ppc/snd_ps3.c
+> index 1aa0b46..27b6189 100644
+> --- a/sound/ppc/snd_ps3.c
+> +++ b/sound/ppc/snd_ps3.c
+> @@ -33,7 +33,6 @@
+>  #include <linux/dmapool.h>
+>  #include <linux/dma-mapping.h>
+>  #include <asm/firmware.h>
+> -#include <linux/io.h>
+>  #include <asm/dma.h>
+>  #include <asm/lv1call.h>
+>  #include <asm/ps3.h>
 
-Ok, I dropped this one for now.
+Acked-by: Masakazu Mokuno <mokuno@sm.sony.co.jp>
 
-- k
+--
+Masakazu MOKUNO
