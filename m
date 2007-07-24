@@ -2,17 +2,39 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4A17FDDEBE
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 12:57:23 +1000 (EST)
-Date: Mon, 23 Jul 2007 21:56:49 -0500 (CDT)
+	by ozlabs.org (Postfix) with ESMTP id E8B17DDEBD
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 13:41:04 +1000 (EST)
+In-Reply-To: <C75BA37F-82D2-4520-9898-D7BE9A0C4F9C@kernel.crashing.org>
+References: <11852238122538-git-send-email-galak@kernel.crashing.org>
+	<1185223813693-git-send-email-galak@kernel.crashing.org>
+	<11852238151983-git-send-email-galak@kernel.crashing.org>
+	<11852238161546-git-send-email-galak@kernel.crashing.org>
+	<1185223818821-git-send-email-galak@kernel.crashing.org>
+	<11852238193371-git-send-email-galak@kernel.crashing.org>
+	<1185223821183-git-send-email-galak@kernel.crashing.org>
+	<11852238233066-git-send-email-galak@kernel.crashing.org>
+	<11852238241475-git-send-email-galak@kernel.crashing.org>
+	<11852238253550-git-send-email-galak@kernel.crashing.org>
+	<11852238271141-git-send-email-galak@kernel.crashing.org>
+	<11852238283648-git-send-email-galak@kernel.crashing.org>
+	<1185223830411-git-send-email-galak@kernel.crashing.org>
+	<11852238322319-git-send-email-galak@kernel.crashing.org>
+	<11852238333649-git-send-email-galak@kernel.crashing.org>
+	<11852238353292-git-send-email-galak@kernel.crashing.org>
+	<11852238362041-git-send-email-galak@kernel.crashing.!
+	! org> <11852238383453-git-send-email-galak@kernel.crashing.org>
+	<11852238392809-git-send-email-galak@kernel.crashing.org>
+	<11852238411823-git-send-email-galak@kernel.crashing.org>
+	<1185241693.5439.194.camel@localhost.localdomain>
+	<C75BA37F-82D2-4520-9898-D7BE9A0C4F9C@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <FCAC4384-F100-4C80-B8CC-70474178110A@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Please pull from 'for_paulus' branch
-In-Reply-To: <Pine.LNX.4.64.0707231556210.4203@blarg.am.freescale.net>
-Message-ID: <Pine.LNX.4.64.0707232152200.12643@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0707231556210.4203@blarg.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: [PATCH 19/25] [POWERPC] 85xxCDS: Allow 8259 cascade to share an
+	MPIC interrupt line.
+Date: Mon, 23 Jul 2007 22:41:49 -0500
+To: Kumar Gala <galak@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,93 +45,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please pull from 'for_paulus' branch of
 
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for_paulus
+On Jul 23, 2007, at 9:47 PM, Kumar Gala wrote:
 
-Updated with Ben's request change to the indirect runtime patch and
-dropped the i8259/mpic patch for now.
+>
+> On Jul 23, 2007, at 8:48 PM, Benjamin Herrenschmidt wrote:
+>
+>> On Mon, 2007-07-23 at 15:50 -0500, Kumar Gala wrote:
+>>> --- a/arch/powerpc/sysdev/mpic.c
+>>> +++ b/arch/powerpc/sysdev/mpic.c
+>>> @@ -836,6 +836,7 @@ static struct irq_chip mpic_irq_chip = {
+>>>         .mask           = mpic_mask_irq,
+>>>         .unmask         = mpic_unmask_irq,
+>>>         .eoi            = mpic_end_irq,
+>>> +       .end            = mpic_unmask_irq,
+>>>         .set_type       = mpic_set_irq_type,
+>>>  };
+>>
+>> Nope, that doesn't look correct and shouldn't be in this patch in the
+>> first place.
+>>
+>> end() is flow control business, not chip business, so it's really
+>> something that needs to be fixed in the fasteoi handler for -rt I
+>> suppose.
+>
+> Ok, I dropped this one for now.
 
-to receive the following updates:
+Just dropped the mpic.c change.
 
- arch/powerpc/Kconfig                             |    9
- arch/powerpc/boot/dts/mpc8313erdb.dts            |    2
- arch/powerpc/boot/dts/mpc832x_mds.dts            |    2
- arch/powerpc/boot/dts/mpc832x_rdb.dts            |    2
- arch/powerpc/boot/dts/mpc8349emitx.dts           |    4
- arch/powerpc/boot/dts/mpc8349emitxgp.dts         |    2
- arch/powerpc/boot/dts/mpc834x_mds.dts            |    4
- arch/powerpc/boot/dts/mpc836x_mds.dts            |    2
- arch/powerpc/boot/dts/mpc8540ads.dts             |    2
- arch/powerpc/boot/dts/mpc8541cds.dts             |    4
- arch/powerpc/boot/dts/mpc8544ds.dts              |  211 ++++++++++++++
- arch/powerpc/boot/dts/mpc8548cds.dts             |  250 ++++++++++++-----
- arch/powerpc/boot/dts/mpc8555cds.dts             |    4
- arch/powerpc/boot/dts/mpc8560ads.dts             |    2
- arch/powerpc/boot/dts/mpc8568mds.dts             |   54 +++
- arch/powerpc/boot/dts/mpc8641_hpcn.dts           |    8
- arch/powerpc/configs/mpc8544_ds_defconfig        |  333 ++++++++++++++---------
- arch/powerpc/configs/mpc8568mds_defconfig        |  292 ++++++++++++--------
- arch/powerpc/kernel/pci_32.c                     |   25 +
- arch/powerpc/platforms/82xx/mpc82xx_ads.c        |    3
- arch/powerpc/platforms/83xx/pci.c                |    4
- arch/powerpc/platforms/85xx/Kconfig              |    6
- arch/powerpc/platforms/85xx/Makefile             |    2
- arch/powerpc/platforms/85xx/mpc8544_ds.c         |  241 ++++++++++++++++
- arch/powerpc/platforms/85xx/mpc85xx.h            |    1
- arch/powerpc/platforms/85xx/mpc85xx_ads.c        |    3
- arch/powerpc/platforms/85xx/mpc85xx_cds.c        |   99 ++++++
- arch/powerpc/platforms/85xx/mpc85xx_mds.c        |    7
- arch/powerpc/platforms/85xx/pci.c                |   91 ------
- arch/powerpc/platforms/86xx/Kconfig              |    3
- arch/powerpc/platforms/86xx/Makefile             |    1
- arch/powerpc/platforms/86xx/mpc86xx.h            |    5
- arch/powerpc/platforms/86xx/mpc86xx_hpcn.c       |   13
- arch/powerpc/platforms/86xx/pci.c                |  238 ----------------
- arch/powerpc/platforms/chrp/pci.c                |    7
- arch/powerpc/platforms/embedded6xx/linkstation.c |    2
- arch/powerpc/sysdev/Makefile                     |    1
- arch/powerpc/sysdev/fsl_pci.c                    |  257 +++++++++++++++++
- arch/powerpc/sysdev/fsl_pci.h                    |   88 ++++++
- arch/powerpc/sysdev/fsl_pcie.h                   |   94 ------
- arch/powerpc/sysdev/grackle.c                    |    2
- arch/powerpc/sysdev/indirect_pci.c               |   59 ++--
- arch/powerpc/sysdev/mpic.c                       |    1
- arch/powerpc/sysdev/mv64x60_pci.c                |    2
- include/asm-powerpc/pci-bridge.h                 |   17 -
- include/linux/pci_ids.h                          |   17 +
- 46 files changed, 1642 insertions(+), 834 deletions(-)
-
-Jon Loeliger (1):
-      [POWERPC] Add Freescale PCI VENDOR ID and 8641 device IDs
-
-Kumar Gala (12):
-      [POWERPC] Add the ability to find PCI capabilities early on
-      [POWERPC] Added indirect quirk to handle PCIe PHB that have issue w/no link
-      [POWERPC] FSL: Cleanup how we detect if we are a PCIe controller
-      [POWERPC] Fixup resources on pci_bus for PCIe PHB when no device is connected
-      [POWERPC] 85xx: Added 8568 PCIe support
-      [POWERPC] 85xx: Add quirk to ignore bogus FPGA on CDS
-      [POWERPC] Removed setup_indirect_pci_nomap
-      [POWERPC] Make endianess of cfg_addr for indirect pci ops runtime
-      [POWERPC] Provide ability to setup P2P bridge registers from struct resource
-      [POWERPC] Make sure virtual P2P bridge registers are setup on PCIe PHB
-      [POWERPC] FSL: Add support for PCI-X controllers
-      [POWERPC] 85xx: Added needed MPC85xx PCI device IDs
-
-Randy Vinson (4):
-      [POWERPC] 85xxCDS: Allow 8259 cascade to share an MPIC interrupt line.
-      [POWERPC] 85xxCDS: Make sure restart resets the PCI bus.
-      [POWERPC] 85xxCDS: Misc 8548 PCI Corrections.
-      [POWERPC] 85xxCDS: MPC8548 DTS cleanup.
-
-Roy Zang (6):
-      [POWERPC] Create common fsl pci/e files based on 86xx platforms
-      [POWERPC] Add 8548 CDS PCI express controller node and PCI-X device node
-      [POWERPC] Update PCI nodes in the 83xx/85xx boards device tree
-      [POWERPC] Use Freescale pci/pcie common code for 85xx boards
-      [POWERPC] Add basic PCI node for mpc8568mds board
-      [POWERPC] Add basic PCI/PCI Express support for 8544DS board
-
-Zang Roy-r61911 (1):
-      [POWERPC] Rewrite Freescale PCI/PCIe support for 8{3,5,6}xx
+- k
