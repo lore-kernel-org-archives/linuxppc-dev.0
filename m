@@ -2,17 +2,39 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 66AF7DDE9A
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 00:09:52 +1000 (EST)
-In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D9010895F78D@EMPBEDEX.empirix.com>
-References: <BD261180E6D35F4D9D32F3E44FD3D9010895F78D@EMPBEDEX.empirix.com>
+	by ozlabs.org (Postfix) with ESMTP id 5D65FDDE9A
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 01:33:20 +1000 (EST)
+In-Reply-To: <18085.59414.38125.30777@cargo.ozlabs.ibm.com>
+References: <11852238122538-git-send-email-galak@kernel.crashing.org>
+	<1185223813693-git-send-email-galak@kernel.crashing.org>
+	<11852238151983-git-send-email-galak@kernel.crashing.org>
+	<11852238161546-git-send-email-galak@kernel.crashing.org>
+	<1185223818821-git-send-email-galak@kernel.crashing.org>
+	<11852238193371-git-send-email-galak@kernel.crashing.org>
+	<1185223821183-git-send-email-galak@kernel.crashing.org>
+	<11852238233066-git-send-email-galak@kernel.crashing.org>
+	<11852238241475-git-send-email-galak@kernel.crashing.org>
+	<11852238253550-git-send-email-galak@kernel.crashing.org>
+	<11852238271141-git-send-email-galak@kernel.crashing.org>
+	<11852238283648-git-send-email-galak@kernel.crashing.org>
+	<1185223830411-git-send-email-galak@kernel.crashing.org>
+	<11852238322319-git-send-email-galak@kernel.crashing.org>
+	<11852238333649-git-send-email-galak@kernel.crashing.org>
+	<11852238353292-git-send-email-galak@kernel.crashing.org>
+	<11852238362041-git-send-email-galak@kernel.crashing.!
+	org> <11852238383453-git-send-email-galak@kernel.crashing.org>
+	<11852238392809-git-send-email-galak@kernel.crashing.org>
+	<11852238411823-git-send-email-galak@kernel.crashing.org>
+	<11852238421611-git-send-email-galak@kernel.crashing.org>
+	<11852238432011-git-send-email-galak@kernel.crashing.org>
+	<18085.59414.38125.30777@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=WINDOWS-1252; delsp=yes; format=flowed
-Message-Id: <E6662258-6B06-4124-86E4-F6419B29980F@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <5DCD5E82-1122-426E-8FF4-DF1D1A67EB04@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Which Git Tree to pull from?
-Date: Tue, 24 Jul 2007 09:10:30 -0500
-To: "Morrison, Tom" <tmorrison@empirix.com>
+Subject: Re: [PATCH 21/25] [POWERPC] 85xxCDS: Delay 8259 cascade hookup.
+Date: Tue, 24 Jul 2007 10:34:04 -0500
+To: Paul Mackerras <paulus@samba.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,21 +46,19 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jul 24, 2007, at 7:21 AM, Morrison, Tom wrote:
+On Jul 24, 2007, at 6:52 AM, Paul Mackerras wrote:
 
-> I am a little confused here. I=92ve been working in an older (2.6.11)
+> Kumar Gala writes:
 >
-> ppc release and haven=92t been paying much attention to where I
+>> From: Randy Vinson <rvinson@mvista.com>
 >
-> should be getting the latest / stable git tree (for powerpc).
+>> +device_initcall(mpc85xx_cds_8259_attach);
 >
->
->
-> I am working on an e500/8548 branch =96 it looks like Kumar=92s
->
-> Git tree looks relatively new with lots of new patches=85?
+> I don't see any platform test in mpc85xx_cds_8259_attach to make sure
+> it only does its stuff on suitable platforms.  Looks like it needs
+> one.
 
-Do you need PCIe support on 8548?  If so I'd suggest my tree, be =20
-warned it gets rebased from time to time.
+I've added a is_machine(mpc85xx_cds) into the patch in my tree to  
+handle this.
 
-- k=
+- k
