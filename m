@@ -2,13 +2,13 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 80C0BDDEBC
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 11:43:31 +1000 (EST)
-Subject: Re: [PATCH 14/25] [POWERPC] Make endianess of cfg_addr for
-	indirect pci ops runtime
+	by ozlabs.org (Postfix) with ESMTP id C022FDDD06
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 11:45:45 +1000 (EST)
+Subject: Re: [PATCH 16/25] [POWERPC] Provide ability to setup P2P bridge
+	registers from struct resource
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <11852238333649-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <11852238362041-git-send-email-galak@kernel.crashing.org>
 References: <11852238122538-git-send-email-galak@kernel.crashing.org>
 	<1185223813693-git-send-email-galak@kernel.crashing.org>
 	<11852238151983-git-send-email-galak@kernel.crashing.org>
@@ -24,9 +24,11 @@ References: <11852238122538-git-send-email-galak@kernel.crashing.org>
 	<1185223830411-git-send-email-galak@kernel.crashing.org>
 	<11852238322319-git-send-email-galak@kernel.crashing.org>
 	<11852238333649-git-send-email-galak@kernel.crashing.org>
+	<11852238353292-git-send-email-galak@kernel.crashing.org>
+	<11852238362041-git-send-email-galak@kernel.crashing.org>
 Content-Type: text/plain
-Date: Tue, 24 Jul 2007 11:43:24 +1000
-Message-Id: <1185241404.5439.190.camel@localhost.localdomain>
+Date: Tue, 24 Jul 2007 11:45:39 +1000
+Message-Id: <1185241539.5439.192.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -39,277 +41,73 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Mon, 2007-07-23 at 15:50 -0500, Kumar Gala wrote:
-> Make it so we do a runtime check to know if we need to write cfg_addr
-> as big or little endian.  This is needed if we want to allow 86xx support
-> to co-exist in the same kernel as other 6xx PPCs.
+> We need the ability to set P2P bridge registers to properly setup the virtual
+> P2P bridges that exist in PCIe controllers for some of the embedded setups.
 > 
 > Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-Nack on that one. Don't add this function pointer. Just have the
-indirect read/write routines test the flag and do the right endian,
-possibly with an inline or a macro if you want to be clean. A function
-ointer is probably slower anyway and I don't want to add more cruft to
-struct pci_controller.
-
-Cheers,
-Ben
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 > ---
->  arch/powerpc/Kconfig                             |    5 -----
->  arch/powerpc/platforms/82xx/mpc82xx_ads.c        |    3 ++-
->  arch/powerpc/platforms/83xx/pci.c                |    4 ++--
->  arch/powerpc/platforms/85xx/Kconfig              |    1 -
->  arch/powerpc/platforms/86xx/Kconfig              |    1 -
->  arch/powerpc/platforms/chrp/pci.c                |    7 ++++---
->  arch/powerpc/platforms/embedded6xx/linkstation.c |    2 +-
->  arch/powerpc/sysdev/fsl_pci.c                    |    3 ++-
->  arch/powerpc/sysdev/grackle.c                    |    2 +-
->  arch/powerpc/sysdev/indirect_pci.c               |   20 +++++++++++++++++---
->  arch/powerpc/sysdev/mv64x60_pci.c                |    2 +-
->  include/asm-powerpc/pci-bridge.h                 |    6 +++++-
->  12 files changed, 35 insertions(+), 21 deletions(-)
+>  arch/powerpc/kernel/pci_32.c     |   18 ++++++++++++------
+>  include/asm-powerpc/pci-bridge.h |    2 ++
+>  2 files changed, 14 insertions(+), 6 deletions(-)
 > 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 3ff90f0..00099ef 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -411,11 +411,6 @@ config PPC_INDIRECT_PCI
->  	default y if 40x || 44x
->  	default n
->  
-> -config PPC_INDIRECT_PCI_BE
-> -	bool
-> -	depends PPC_INDIRECT_PCI
-> -	default n
-> -
->  config EISA
->  	bool
->  
-> diff --git a/arch/powerpc/platforms/82xx/mpc82xx_ads.c b/arch/powerpc/platforms/82xx/mpc82xx_ads.c
-> index da20832..2d1b05b 100644
-> --- a/arch/powerpc/platforms/82xx/mpc82xx_ads.c
-> +++ b/arch/powerpc/platforms/82xx/mpc82xx_ads.c
-> @@ -553,7 +553,8 @@ static void __init mpc82xx_add_bridge(struct device_node *np)
->  
->  	setup_indirect_pci(hose,
->  			   r.start + offsetof(pci_cpm2_t, pci_cfg_addr),
-> -			   r.start + offsetof(pci_cpm2_t, pci_cfg_data));
-> +			   r.start + offsetof(pci_cpm2_t, pci_cfg_data),
-> +			   0);
->  
->  	pci_process_bridge_OF_ranges(hose, np, 1);
->  }
-> diff --git a/arch/powerpc/platforms/83xx/pci.c b/arch/powerpc/platforms/83xx/pci.c
-> index c0e2b89..9206946 100644
-> --- a/arch/powerpc/platforms/83xx/pci.c
-> +++ b/arch/powerpc/platforms/83xx/pci.c
-> @@ -74,11 +74,11 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
->  	 */
->  	/* PCI 1 */
->  	if ((rsrc.start & 0xfffff) == 0x8500) {
-> -		setup_indirect_pci(hose, immr + 0x8300, immr + 0x8304);
-> +		setup_indirect_pci(hose, immr + 0x8300, immr + 0x8304, 0);
->  	}
->  	/* PCI 2 */
->  	if ((rsrc.start & 0xfffff) == 0x8600) {
-> -		setup_indirect_pci(hose, immr + 0x8380, immr + 0x8384);
-> +		setup_indirect_pci(hose, immr + 0x8380, immr + 0x8384, 0);
->  		primary = 0;
->  	}
->  
-> diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-> index 526ddde..4661fcc 100644
-> --- a/arch/powerpc/platforms/85xx/Kconfig
-> +++ b/arch/powerpc/platforms/85xx/Kconfig
-> @@ -51,7 +51,6 @@ config MPC85xx
->  	bool
->  	select PPC_UDBG_16550
->  	select PPC_INDIRECT_PCI if PCI
-> -	select PPC_INDIRECT_PCI_BE if PCI
->  	select MPIC
->  	select FSL_PCI if PCI
->  	select SERIAL_8250_SHARE_IRQ if SERIAL_8250
-> diff --git a/arch/powerpc/platforms/86xx/Kconfig b/arch/powerpc/platforms/86xx/Kconfig
-> index d1c8115..343b76d 100644
-> --- a/arch/powerpc/platforms/86xx/Kconfig
-> +++ b/arch/powerpc/platforms/86xx/Kconfig
-> @@ -14,7 +14,6 @@ endchoice
->  
->  config MPC8641
->  	bool
-> -	select PPC_INDIRECT_PCI_BE if PCI
->  	select FSL_PCI if PCI
->  	select PPC_UDBG_16550
->  	select MPIC
-> diff --git a/arch/powerpc/platforms/chrp/pci.c b/arch/powerpc/platforms/chrp/pci.c
-> index 3690624..28d1647 100644
-> --- a/arch/powerpc/platforms/chrp/pci.c
-> +++ b/arch/powerpc/platforms/chrp/pci.c
-> @@ -181,7 +181,7 @@ setup_python(struct pci_controller *hose, struct device_node *dev)
->  	}
->  	iounmap(reg);
->  
-> -	setup_indirect_pci(hose, r.start + 0xf8000, r.start + 0xf8010);
-> +	setup_indirect_pci(hose, r.start + 0xf8000, r.start + 0xf8010, 0);
+> diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
+> index bfcfa14..721a694 100644
+> --- a/arch/powerpc/kernel/pci_32.c
+> +++ b/arch/powerpc/kernel/pci_32.c
+> @@ -415,15 +415,13 @@ probe_resource(struct pci_bus *parent, struct resource *pr,
+>  	return 0;
 >  }
 >  
->  /* Marvell Discovery II based Pegasos 2 */
-> @@ -277,13 +277,14 @@ chrp_find_bridges(void)
->  			hose->cfg_data = p;
->  			gg2_pci_config_base = p;
->  		} else if (is_pegasos == 1) {
-> -			setup_indirect_pci(hose, 0xfec00cf8, 0xfee00cfc);
-> +			setup_indirect_pci(hose, 0xfec00cf8, 0xfee00cfc, 0);
->  		} else if (is_pegasos == 2) {
->  			setup_peg2(hose, dev);
->  		} else if (!strncmp(model, "IBM,CPC710", 10)) {
->  			setup_indirect_pci(hose,
->  					   r.start + 0x000f8000,
-> -					   r.start + 0x000f8010);
-> +					   r.start + 0x000f8010,
-> +					   0);
->  			if (index == 0) {
->  				dma = of_get_property(dev, "system-dma-base",
->  							&len);
-> diff --git a/arch/powerpc/platforms/embedded6xx/linkstation.c b/arch/powerpc/platforms/embedded6xx/linkstation.c
-> index f4d0a7a..bd5ca58 100644
-> --- a/arch/powerpc/platforms/embedded6xx/linkstation.c
-> +++ b/arch/powerpc/platforms/embedded6xx/linkstation.c
-> @@ -73,7 +73,7 @@ static int __init linkstation_add_bridge(struct device_node *dev)
->  		return -ENOMEM;
->  	hose->first_busno = bus_range ? bus_range[0] : 0;
->  	hose->last_busno = bus_range ? bus_range[1] : 0xff;
-> -	setup_indirect_pci(hose, 0xfec00000, 0xfee00000);
-> +	setup_indirect_pci(hose, 0xfec00000, 0xfee00000, 0);
->  
->  	/* Interpret the "ranges" property */
->  	/* This also maps the I/O region and sets isa_io/mem_base */
-> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-> index c6a30f9..1426642 100644
-> --- a/arch/powerpc/sysdev/fsl_pci.c
-> +++ b/arch/powerpc/sysdev/fsl_pci.c
-> @@ -185,7 +185,8 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
->  	hose->first_busno = bus_range ? bus_range[0] : 0x0;
->  	hose->last_busno = bus_range ? bus_range[1] : 0xff;
->  
-> -	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4);
-> +	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
-> +		INDIRECT_PCI_BIG_ENDIAN);
->  	setup_pci_cmd(hose);
->  
->  	/* check PCI express link status */
-> diff --git a/arch/powerpc/sysdev/grackle.c b/arch/powerpc/sysdev/grackle.c
-> index 4205362..11ad562 100644
-> --- a/arch/powerpc/sysdev/grackle.c
-> +++ b/arch/powerpc/sysdev/grackle.c
-> @@ -55,7 +55,7 @@ static inline void grackle_set_loop_snoop(struct pci_controller *bp, int enable)
->  
->  void __init setup_grackle(struct pci_controller *hose)
+> -static void __init
+> -update_bridge_base(struct pci_bus *bus, int i)
+> +void __init
+> +update_bridge_resource(struct pci_dev *dev, struct resource *res)
 >  {
-> -	setup_indirect_pci(hose, 0xfec00000, 0xfee00000);
-> +	setup_indirect_pci(hose, 0xfec00000, 0xfee00000, 0);
->  	if (machine_is_compatible("PowerMac1,1"))
->  		pci_assign_all_buses = 1;
->  	if (machine_is_compatible("AAPL,PowerBook1998"))
-> diff --git a/arch/powerpc/sysdev/indirect_pci.c b/arch/powerpc/sysdev/indirect_pci.c
-> index ad341f5..33b9b69 100644
-> --- a/arch/powerpc/sysdev/indirect_pci.c
-> +++ b/arch/powerpc/sysdev/indirect_pci.c
-> @@ -26,6 +26,16 @@
->  #define PCI_CFG_OUT out_le32
->  #endif
+> -	struct resource *res = bus->resource[i];
+>  	u8 io_base_lo, io_limit_lo;
+>  	u16 mem_base, mem_limit;
+>  	u16 cmd;
+>  	unsigned long start, end, off;
+> -	struct pci_dev *dev = bus->self;
+>  	struct pci_controller *hose = dev->sysdata;
 >  
-> +static void pci_cfg_out_le(volatile u32 __iomem *addr, u32 val)
+>  	if (!hose) {
+> @@ -467,12 +465,20 @@ update_bridge_base(struct pci_bus *bus, int i)
+>  		pci_write_config_word(dev, PCI_PREF_MEMORY_LIMIT, mem_limit);
+>  
+>  	} else {
+> -		DBG(KERN_ERR "PCI: ugh, bridge %s res %d has flags=%lx\n",
+> -		    pci_name(dev), i, res->flags);
+> +		DBG(KERN_ERR "PCI: ugh, bridge %s res has flags=%lx\n",
+> +		    pci_name(dev), res->flags);
+>  	}
+>  	pci_write_config_word(dev, PCI_COMMAND, cmd);
+>  }
+>  
+> +static void __init
+> +update_bridge_base(struct pci_bus *bus, int i)
 > +{
-> +	out_le32(addr, val);
+> +	struct resource *res = bus->resource[i];
+> +	struct pci_dev *dev = bus->self;
+> +	update_bridge_resource(dev, res);
 > +}
 > +
-> +static void pci_cfg_out_be(volatile u32 __iomem *addr, u32 val)
-> +{
-> +	out_be32(addr, val);
-> +}
-> +
->  static int
->  indirect_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
->  		     int len, u32 *val)
-> @@ -58,7 +68,7 @@ indirect_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
->  	else
->  		reg = offset & 0xfc;
->  
-> -	PCI_CFG_OUT(hose->cfg_addr,
-> +	hose->pci_cfg_out(hose->cfg_addr,
->  		 (0x80000000 | (bus_no << 16)
->  		  | (devfn << 8) | reg | cfg_type));
->  
-> @@ -113,7 +123,7 @@ indirect_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
->  	else
->  		reg = offset & 0xfc;
->  
-> -	PCI_CFG_OUT(hose->cfg_addr,
-> +	hose->pci_cfg_out(hose->cfg_addr,
->  		 (0x80000000 | (bus_no << 16)
->  		  | (devfn << 8) | reg | cfg_type));
->  
-> @@ -149,7 +159,7 @@ static struct pci_ops indirect_pci_ops =
->  };
->  
->  void __init
-> -setup_indirect_pci(struct pci_controller* hose, u32 cfg_addr, u32 cfg_data)
-> +setup_indirect_pci(struct pci_controller* hose, u32 cfg_addr, u32 cfg_data, u32 flags)
+>  static inline void alloc_resource(struct pci_dev *dev, int idx)
 >  {
->  	unsigned long base = cfg_addr & PAGE_MASK;
->  	void __iomem *mbase;
-> @@ -160,4 +170,8 @@ setup_indirect_pci(struct pci_controller* hose, u32 cfg_addr, u32 cfg_data)
->  		mbase = ioremap(cfg_data & PAGE_MASK, PAGE_SIZE);
->  	hose->cfg_data = mbase + (cfg_data & ~PAGE_MASK);
->  	hose->ops = &indirect_pci_ops;
-> +	if (flags & INDIRECT_PCI_BIG_ENDIAN)
-> +		hose->pci_cfg_out = pci_cfg_out_be;
-> +	else
-> +		hose->pci_cfg_out = pci_cfg_out_le;
->  }
-> diff --git a/arch/powerpc/sysdev/mv64x60_pci.c b/arch/powerpc/sysdev/mv64x60_pci.c
-> index 45db86c..9b3baa7 100644
-> --- a/arch/powerpc/sysdev/mv64x60_pci.c
-> +++ b/arch/powerpc/sysdev/mv64x60_pci.c
-> @@ -144,7 +144,7 @@ static int __init mv64x60_add_bridge(struct device_node *dev)
->  	hose->first_busno = bus_range ? bus_range[0] : 0;
->  	hose->last_busno = bus_range ? bus_range[1] : 0xff;
->  
-> -	setup_indirect_pci(hose, rsrc.start, rsrc.start + 4);
-> +	setup_indirect_pci(hose, rsrc.start, rsrc.start + 4, 0);
->  	hose->self_busno = hose->first_busno;
->  
->  	printk(KERN_INFO "Found MV64x60 PCI host bridge at 0x%016llx. "
+>  	struct resource *pr, *r = &dev->resource[idx];
 > diff --git a/include/asm-powerpc/pci-bridge.h b/include/asm-powerpc/pci-bridge.h
-> index 13cb0a9..435bfe8 100644
+> index 435bfe8..b7d2ea4 100644
 > --- a/include/asm-powerpc/pci-bridge.h
 > +++ b/include/asm-powerpc/pci-bridge.h
-> @@ -36,6 +36,7 @@ struct pci_controller {
->  	struct pci_ops *ops;
->  	volatile unsigned int __iomem *cfg_addr;
->  	volatile void __iomem *cfg_data;
-> +	void (*pci_cfg_out)(volatile u32 __iomem *cfg_addr, u32 val);
->  
->  	/*
->  	 * Used for variants of PCI indirect handling and possible quirks:
-> @@ -87,8 +88,10 @@ int early_write_config_dword(struct pci_controller *hose, int bus, int dev_fn,
->  extern int early_find_capability(struct pci_controller *hose, int bus,
->  				 int dev_fn, int cap);
->  
-> +/* Set this for a big-endian cfg_addr */
-> +#define INDIRECT_PCI_BIG_ENDIAN			0x00000001
+> @@ -93,6 +93,8 @@ extern int early_find_capability(struct pci_controller *hose, int bus,
 >  extern void setup_indirect_pci(struct pci_controller* hose,
-> -			       u32 cfg_addr, u32 cfg_data);
-> +			       u32 cfg_addr, u32 cfg_data, u32 flags);
+>  			       u32 cfg_addr, u32 cfg_data, u32 flags);
 >  extern void setup_grackle(struct pci_controller *hose);
+> +extern void __init update_bridge_resource(struct pci_dev *dev,
+> +					  struct resource *res);
 >  
 >  #else
-> @@ -128,6 +131,7 @@ struct pci_controller {
->  	struct pci_ops *ops;
->  	volatile unsigned int __iomem *cfg_addr;
->  	volatile void __iomem *cfg_data;
-> +	void (*pci_cfg_out)(volatile u32 __iomem *cfg_addr, u32 val);
 >  
->  	/* Currently, we limit ourselves to 1 IO range and 3 mem
->  	 * ranges since the common pci_bus structure can't handle more
