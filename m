@@ -1,15 +1,24 @@
-Return-Path: <mroos@linux.ee>
-Received: from smtp2.it.da.ut.ee (smtp2.it.da.ut.ee [193.40.5.67])
-	by ozlabs.org (Postfix) with ESMTP id 88A2CDDE20
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 22:41:33 +1000 (EST)
-Date: Wed, 25 Jul 2007 15:17:43 +0300 (EEST)
-From: Meelis Roos <mroos@linux.ee>
-Sender: mroos@math.ut.ee
-To: linuxppc-dev@ozlabs.org, Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: [PATCH] fix ppc kernels after build-id addition
-Message-ID: <Pine.SOC.4.64.0707251301200.21641@math.ut.ee>
+Return-Path: <akostop@inaccessnetworks.com>
+Received: from inaccessnetworks.com (node3.inaccessnetworks.com
+	[212.205.200.118]) by ozlabs.org (Postfix) with ESMTP id A04CBDDDEB
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 00:22:47 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by inaccessnetworks.com (8.13.6/8.13.5) with ESMTP id l6PEMjwM010210
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 17:22:45 +0300
+Received: from inaccessnetworks.com ([127.0.0.1])
+	by localhost (host11.inaccessnetworks.com [127.0.0.1]) (amavisd-new,
+	port 10024) with LMTP id 09678-18 for <linuxppc-dev@ozlabs.org>;
+	Wed, 25 Jul 2007 17:22:45 +0300 (EEST)
+Received: from phoenix (phoenix.priv.inaccessnetworks.com [192.168.1.7])
+	by inaccessnetworks.com (8.13.6/8.13.5) with ESMTP id l6PEMjLF010206
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 17:22:45 +0300
+Date: Wed, 25 Jul 2007 17:22:40 +0300
+To: linuxppc-dev@ozlabs.org
+Subject: About mdio_bus for 82xx based board
+From: "Alexandros Kostopoulos" <akostop@inaccessnetworks.com>
+Content-Type: text/plain; format=flowed; delsp=yes; charset=iso-8859-7
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <op.tv0x7yvmnhx3hy@phoenix>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,31 +28,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi all,
+I'm trying to make FCC ethernet work with my board, based on an MPC8275  
+processor. I'm using kernel 2.6.22.1
 
-This patch fixes arch/ppc kernels, at least for prep subarch, after 
-build-id addition. Without the patch, kernels were 3 times the size and 
-bootloader refused to load them. Now they are back to normal again.
-The patch is very similar to David Millers sparc patch, just applied to 
-ppc architecture.
+I have the following problems:
 
-Tested only with Roland McGrath's "Use LDFLAGS_MODULE only for .ko 
-links" patch applied - boots and works fine.
+1) When mdiobus_register() called from mii-bitbang.c (fs_enet_mdio_probe()  
+function) attemps to do a device_register for the mdio bus, it actually  
+registers the device with a bus_id in the form [0|1|...]:<phy_addr>, that  
+is the first part a simple integer. This, of course, happens because  
+fs_enet_of_init() (fsl_soc.c) does a  
+platform_device_register_simple("fsl-bb-mdio", i,  NULL, 0); with i being  
+the first part of the bus, starting from 0. Unfortunately, when  
+fs_init_phy() (fs_enet_main.c) calls phy_connect() and therefore  
+phy_attach() (phy_device.c), the latter attempts to find the device in the  
+mdio bus, but it searches using the bus_id registered in the net_device  
+struct, which is in the form of <resource address>:<phy_addr>, eg.  
+f0000000:0, and therefore it fails... I don't know if I am doing something  
+wrong here, so any hint would be greatly appreciated.
 
-Signed-off-by: Meelis Roos <mroos@linux.ee>
+2) Since there are two ethernet@<address> nodes in my device tree,  
+fs_of_enet_init() calls platform_device_register_simple("fsl-bb-mdio",...)  
+twice, therefore creating two mdio busses, 0 and 1, each having the same  
+two devices. For example, if I have two PHYs with addresses 1 and 5, I  
+will get two mdio busses and 4 devices, 0:1, 0:5, 1:1 and 1:5. Well, this  
+doesn't sound right to me, although I am not sure if this is a fatal  
+issue. Any comments?
 
-diff --git a/arch/ppc/kernel/vmlinux.lds.S b/arch/ppc/kernel/vmlinux.lds.S
-index c0aac3f..98c1212 100644
---- a/arch/ppc/kernel/vmlinux.lds.S
-+++ b/arch/ppc/kernel/vmlinux.lds.S
-@@ -91,6 +91,8 @@ SECTIONS
-   . = ALIGN(8192);
-   .data.init_task : { *(.data.init_task) }
- 
-+  NOTES
-+
-   . = ALIGN(4096);
-   __init_begin = .;
-   .init.text : {
+3) Also, if I don't want to enter the phy interrupt in the device tree  
+(there is not one or I want to use PHY_POLL), what should I do? dtc seems  
+to not allow -1 as a value in the reg property.
 
--- 
-Meelis Roos (mroos@linux.ee)
+thank you in advance for your responses
+
+Alex
