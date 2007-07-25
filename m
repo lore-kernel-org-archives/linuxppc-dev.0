@@ -1,21 +1,20 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 25EA2DDE2F
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 10:28:14 +1000 (EST)
-Date: Wed, 25 Jul 2007 17:28:13 -0700 (PDT)
-Message-Id: <20070725.172813.03082027.davem@davemloft.net>
-To: gallatin@myri.com
-Subject: Re: [RFC 0/1] lro: Generic Large Receive Offload for TCP traffic
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <46A785C2.9090708@myri.com>
-References: <200707201741.45079.ossthema@de.ibm.com>
-	<46A785C2.9090708@myri.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: tklein@de.ibm.com, jeff@garzik.org, themann@de.ibm.com,
-	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	raisch@de.ibm.com, linuxppc-dev@ozlabs.org, ossthema@de.ibm.com,
-	meder@de.ibm.com, stefan.roscher@de.ibm.com
+Return-Path: <dave.mccracken@oracle.com>
+Received: from ms-smtp-04.texas.rr.com (ms-smtp-04.texas.rr.com [24.93.47.43])
+	by ozlabs.org (Postfix) with ESMTP id A3FCBDDE9C
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 09:32:03 +1000 (EST)
+From: Dave McCracken <dave.mccracken@oracle.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: pte_offset_map for ppc assumes HIGHPTE
+Date: Wed, 25 Jul 2007 18:30:21 -0500
+References: <acbcf3840707251516w301f834cj5f6a81a494d359ed@mail.gmail.com>
+	<jewswodqcn.fsf@sykes.suse.de>
+	<1185405765.5439.371.camel@localhost.localdomain>
+In-Reply-To: <1185405765.5439.371.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200707251830.21944.dave.mccracken@oracle.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,13 +24,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Andrew Gallatin <gallatin@myri.com>
-Date: Wed, 25 Jul 2007 13:17:54 -0400
+On Wednesday 25 July 2007, Benjamin Herrenschmidt wrote:
+> Depends... if you have CONFIG_HIGHMEM and not CONFIG_HIGHPTE, you are
+> wasting time going through kmap_atomic unnecessarily no ? it will probably
+> not do anything because the PTE page is in lowmem but still...
 
-> I've ported myri10ge to use the new LRO interface.  I have attached a
-> preliminary patch to myri10ge.  I'm very pleased to note that the
-> performance is on-par with my own LRO used by our out-of-tree driver.
-> (except when using mixed MTUS, see performance data below).
+Probably not much time.  You still need to do the page to virtual translation, 
+which kmap_atomic does for you.
 
-Thanks for posting this port and feedback on the generic LRO
-code.
+Dave McCracken
