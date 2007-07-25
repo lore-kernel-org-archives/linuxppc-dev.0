@@ -1,11 +1,15 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <8e5f2a71c9a1317a0191e486989fe4a7d0bce20e.1185366282.git.michael@ellerman.id.au>
-In-Reply-To: <41400bb89c154723f795e998d5ac777345eb9ebc.1185366282.git.michael@ellerman.id.au>
-References: <41400bb89c154723f795e998d5ac777345eb9ebc.1185366282.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 5/5] Export virq mapping via debugfs
-Date: Wed, 25 Jul 2007 22:24:57 +1000 (EST)
+Return-Path: <mroos@linux.ee>
+Received: from smtp2.it.da.ut.ee (smtp2.it.da.ut.ee [193.40.5.67])
+	by ozlabs.org (Postfix) with ESMTP id 88A2CDDE20
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 22:41:33 +1000 (EST)
+Date: Wed, 25 Jul 2007 15:17:43 +0300 (EEST)
+From: Meelis Roos <mroos@linux.ee>
+Sender: mroos@math.ut.ee
+To: linuxppc-dev@ozlabs.org, Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: [PATCH] fix ppc kernels after build-id addition
+Message-ID: <Pine.SOC.4.64.0707251301200.21641@math.ut.ee>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,118 +19,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds a debugfs file "powerpc/virq_mapping", which shows the virtual
-to real mapping of irq numbers. Enable it with CONFIG_VIRQ_DEBUG.
 
-Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
-Signed-off-by: Chen Gong <G.Chen@freescale.com>
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/Kconfig.debug |   10 +++++++
- arch/powerpc/kernel/irq.c  |   63 ++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 73 insertions(+), 0 deletions(-)
+This patch fixes arch/ppc kernels, at least for prep subarch, after 
+build-id addition. Without the patch, kernels were 3 times the size and 
+bootloader refused to load them. Now they are back to normal again.
+The patch is very similar to David Millers sparc patch, just applied to 
+ppc architecture.
 
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index 346cd3b..dbdb7a2 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -124,6 +124,16 @@ config IRQSTACKS
- 	  for handling hard and soft interrupts.  This can help avoid
- 	  overflowing the process kernel stacks.
+Tested only with Roland McGrath's "Use LDFLAGS_MODULE only for .ko 
+links" patch applied - boots and works fine.
+
+Signed-off-by: Meelis Roos <mroos@linux.ee>
+
+diff --git a/arch/ppc/kernel/vmlinux.lds.S b/arch/ppc/kernel/vmlinux.lds.S
+index c0aac3f..98c1212 100644
+--- a/arch/ppc/kernel/vmlinux.lds.S
++++ b/arch/ppc/kernel/vmlinux.lds.S
+@@ -91,6 +91,8 @@ SECTIONS
+   . = ALIGN(8192);
+   .data.init_task : { *(.data.init_task) }
  
-+config VIRQ_DEBUG
-+	bool "Expose hardware/virtual IRQ mapping via debugfs"
-+	depends on DEBUG_FS && PPC_MERGE
-+	help
-+	  This option will show the mapping relationship between hardware irq
-+	  numbers and virtual irq numbers. The mapping is exposed via debugfs
-+	  in the file powerpc/virq_mapping.
++  NOTES
 +
-+	  If you don't know what this means you don't need it.
-+
- config BDI_SWITCH
- 	bool "Include BDI-2000 user context switcher"
- 	depends on DEBUG_KERNEL && PPC32
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index f71432c..651a1d6 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -52,6 +52,7 @@
- #include <linux/mutex.h>
- #include <linux/bootmem.h>
- #include <linux/pci.h>
-+#include <linux/debugfs.h>
- 
- #include <asm/uaccess.h>
- #include <asm/system.h>
-@@ -1006,6 +1007,68 @@ static int irq_late_init(void)
- }
- arch_initcall(irq_late_init);
- 
-+#ifdef CONFIG_VIRQ_DEBUG
-+static int virq_debug_show(struct seq_file *m, void *private)
-+{
-+	unsigned long flags;
-+	irq_desc_t *desc;
-+	const char *p;
-+	char none[] = "none";
-+	int i;
-+
-+	seq_printf(m, "%-5s  %-7s  %-15s  %s\n", "virq", "hwirq",
-+		      "chip name", "host name");
-+
-+	for (i = 1; i < NR_IRQS; i++) {
-+		desc = get_irq_desc(i);
-+		spin_lock_irqsave(&desc->lock, flags);
-+
-+		if (desc->action && desc->action->handler) {
-+			seq_printf(m, "%5d  ", i);
-+			seq_printf(m, "0x%05lx  ", virq_to_hw(i));
-+
-+			if (desc->chip && desc->chip->typename)
-+				p = desc->chip->typename;
-+			else
-+				p = none;
-+			seq_printf(m, "%-15s  ", p);
-+
-+			if (irq_map[i].host && irq_map[i].host->of_node)
-+				p = irq_map[i].host->of_node->full_name;
-+			else
-+				p = none;
-+			seq_printf(m, "%s\n", p);
-+		}
-+
-+		spin_unlock_irqrestore(&desc->lock, flags);
-+	}
-+
-+	return 0;
-+}
-+
-+static int virq_debug_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, virq_debug_show, inode->i_private);
-+}
-+
-+static const struct file_operations virq_debug_fops = {
-+	.open = virq_debug_open,
-+	.read = seq_read,
-+	.llseek = seq_lseek,
-+	.release = single_release,
-+};
-+
-+static int __init irq_debugfs_init(void)
-+{
-+	if (debugfs_create_file("virq_mapping", S_IRUGO, powerpc_debugfs_root,
-+				 NULL, &virq_debug_fops))
-+		return -ENOMEM;
-+
-+	return 0;
-+}
-+__initcall(irq_debugfs_init);
-+#endif /* CONFIG_VIRQ_DEBUG */
-+
- #endif /* CONFIG_PPC_MERGE */
- 
- #ifdef CONFIG_PPC64
+   . = ALIGN(4096);
+   __init_begin = .;
+   .init.text : {
+
 -- 
-1.5.1.3.g7a33b
+Meelis Roos (mroos@linux.ee)
