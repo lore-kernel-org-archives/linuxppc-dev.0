@@ -1,12 +1,12 @@
 Return-Path: <sam@ravnborg.org>
-Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
-	by ozlabs.org (Postfix) with ESMTP id 24BB7DDEC4
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 17:56:16 +1000 (EST)
-Date: Wed, 25 Jul 2007 09:57:30 +0200
+Received: from pasmtpB.tele.dk (pasmtpb.tele.dk [80.160.77.98])
+	by ozlabs.org (Postfix) with ESMTP id 2028BDDEA3
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 19:49:45 +1000 (EST)
+Date: Wed, 25 Jul 2007 11:50:59 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
 To: Nathan Lynch <ntl@pobox.com>
 Subject: Re: "do section mismatch check on full vmlinux" breaks powerpc build
-Message-ID: <20070725075730.GD24093@uranus.ravnborg.org>
+Message-ID: <20070725095059.GA25580@uranus.ravnborg.org>
 References: <20070724224105.GG951@localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -50,18 +50,11 @@ On Tue, Jul 24, 2007 at 05:41:05PM -0500, Nathan Lynch wrote:
 > http://article.gmane.org/gmane.comp.gnu.binutils/33650
 > 
 > Will there be a kbuild fix for this or should I update my binutils?
-> 
-What kbuild does is a very basic link of a number of .o files.
-Why this suddenly breaks I do not fully understand and I see no obvious
-way to fix it in kbuild.
 
-And browsing arch/ppc/kernel/vmlinux.lds.S I see no special handling of .opd.
+Did a bit more testing.
+Im am down to the following to reproduce the fault:
+ /opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/bin/powerpc64-unknown-linux-gnu-ld -m elf64ppc  -r -o vmlinux.o kernel/signal.o arch/powerpc/kernel/vdso.o
 
-Puzzeled?
-I'm not sure how to deal with this one. Would prefer to say that this is
-a binutils bug so fix it there but then I like to provide a workaround
-for those with faulty toolchains.
-I could put the link and the additional modpost check inside a
-CONFIG_SOMETHING....
+Seems that vdso.o and signal.o does not like each other??
 
 	Sam
