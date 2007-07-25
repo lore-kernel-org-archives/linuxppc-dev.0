@@ -1,13 +1,17 @@
 Return-Path: <jdl@jdl.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: dtc: Improve the make install target 
-In-Reply-To: Your message of "Tue, 24 Jul 2007 15:14:52 +1000."
-	<20070724051452.GA28851@localhost.localdomain>
-References: <20070724051452.GA28851@localhost.localdomain> 
-Date: Wed, 25 Jul 2007 10:29:33 -0500
+Received: from jdl.com (jdl.com [208.123.74.7])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id ED344DDEE2
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 02:12:04 +1000 (EST)
+Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.63)
+	(envelope-from <jdl@jdl.com>) id 1IDjSy-0003eC-T4
+	for linuxppc-dev@ozlabs.org; Wed, 25 Jul 2007 11:12:01 -0500
+To: linuxppc-dev@ozlabs.org
+Subject: DTC 1.0.0 Release Coming?
+Date: Wed, 25 Jul 2007 11:12:00 -0500
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1IDint-0003Fn-N1@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+Message-Id: <E1IDjSy-0003eC-T4@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,22 +21,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day David Gibson mumbled:
-> This patch makes various improvements to dtc's make install target:
-> 	- libfdt is also installed.  Specifically, libfdt.a and the
-> two export relevant header files, fdt.h and libfdt.h are installed.
-> 	- ftdump is no longer installed.  It was only ever a
-> development debugging tool and may well go away at some point.
-> 	- In keeping with normal conventions, there is now a PREFIX
-> variable, allowing control of where things are installed (in /usr,
-> /usr/local, /opt, etc.).
-> 	- By default, installed into the user's home directory,
-> instead of /usr.  This is friendlier for self-installers, package
-> builders can easily override PREFIX to restore the old behaviour.
-> 
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Folks,
 
-Applied.
+I'd like to make an official DTC Version 1.0.0 release soon!
+To that end, I've published a repo on jdl.com with a v1.0.0-rc1
+tag on it.  I anticipate some updates to the Documentation before
+a final 1.0.0 release still.  However, if you have something
+you would like to have be in The Real 1.0.0 release, please
+let me know soon!
 
 Thanks,
 jdl
