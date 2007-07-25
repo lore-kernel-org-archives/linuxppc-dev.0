@@ -1,24 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <kou.ishizaki@toshiba.co.jp>
+Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E33F1DDE30
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 12:09:18 +1000 (EST)
-Subject: Re: [PATCH] Re: 2.6.22-git hangs during boot on PowerBook G3 in
-	0.0 seconds
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kim Phillips <kim.phillips@freescale.com>
-In-Reply-To: <20070724185946.722f34b5.kim.phillips@freescale.com>
-References: <20070721192143.GA12144@nospam.com>
-	<20070721212845.GA30977@nospam.com>
-	<20070723172725.b1c14885.kim.phillips@freescale.com>
-	<1185234923.5439.158.camel@localhost.localdomain>
-	<20070724185946.722f34b5.kim.phillips@freescale.com>
-Content-Type: text/plain
-Date: Wed, 25 Jul 2007 12:07:03 +1000
-Message-Id: <1185329223.5439.304.camel@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 2F970DDE9A
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 12:57:50 +1000 (EST)
+Date: Wed, 25 Jul 2007 11:57:35 +0900 (JST)
+Message-Id: <200707250257.l6P2va65006958@toshiba.co.jp>
+Subject: [PATCH] xmon consistency clean up
+To: paulus@samba.org
+From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Rutger Nijlunsing <rutger@nospam.com>
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,36 +21,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This patch cleans up xmon to keep consistency.
 
-> for the enumerated PHYs. As the original commit comment states, I was
-> getting these messages:
-> 
-> prom_parse: Bad cell count for /qe@e0100000/mdio@2120/ethernet-phy@00
-> prom_parse: Bad cell count for /qe@e0100000/mdio@2120/ethernet-phy@01
+In xmon, we should use console I/O functions that are named the same
+as user space stdio functions. But commit
+4d404edce30f911004850d472e05a31efd751662 broke this consistency.
 
-Well, I would say it's a bug to try to translate addresses accross such
-a boundary. Thus the PHY enumeration code is bogus.
+Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+---
 
-> > I also wonder why it hangs on the powerbook... Rutger, I would expect to
-> > see that complaint warning with the reverted patch, what does it say ?
-> > 
-> > My Wallstreet (also based on Grackle) doesn't have the problem. Also can
-> > you send me a tarball of /proc/device-tree ?
-> 
-> I don't have any of those machines, but it seems that older kernels
-> running on the Lombard emitted:
-> 
-> device-tree: Duplicate name in /cpus/PowerPC,750@0, renamed to "l2-cache#1"
-
-That's a different matter.
-
-> messages*.  Experimenting with adding two chosen nodes (due to a prior
-> thread on this list**) results in a hung kernel on the 8360 also, so
-> perhaps they're related (and the kernel's tolerance to duplicate
-> entries has changed, which explains where I had seen the chosen node
-> being renamed).
-> 
-> but yeah, size-cells should be allowed to be 0 (even address-cells) and
-> it may be the case that the Lombard needs some fixup code.
-
-Ben.
+Index: linux-powerpc-git/arch/powerpc/xmon/nonstdio.c
+===================================================================
+--- linux-powerpc-git.orig/arch/powerpc/xmon/nonstdio.c
++++ linux-powerpc-git/arch/powerpc/xmon/nonstdio.c
+@@ -133,7 +133,7 @@ void xmon_printf(const char *format, ...
+ 	xmon_write(xmon_outbuf, n);
+ }
+ 
+-void xmon_puts(const char *str)
++void xmon_fputs(const char *str)
+ {
+ 	xmon_write(str, strlen(str));
+ }
+Index: linux-powerpc-git/arch/powerpc/xmon/nonstdio.h
+===================================================================
+--- linux-powerpc-git.orig/arch/powerpc/xmon/nonstdio.h
++++ linux-powerpc-git/arch/powerpc/xmon/nonstdio.h
+@@ -2,10 +2,11 @@
+ 
+ #define printf	xmon_printf
+ #define putchar	xmon_putchar
++#define fputs(str,stream)	xmon_fputs(str)	/* stream is ignored. */
+ 
+ extern int xmon_putchar(int c);
+ extern int xmon_getchar(void);
+-extern void xmon_puts(const char *);
++extern void xmon_fputs(const char *);
+ extern char *xmon_gets(char *, int);
+ extern void xmon_printf(const char *, ...);
+ extern void xmon_map_scc(void);
+Index: linux-powerpc-git/arch/powerpc/xmon/xmon.c
+===================================================================
+--- linux-powerpc-git.orig/arch/powerpc/xmon/xmon.c
++++ linux-powerpc-git/arch/powerpc/xmon/xmon.c
+@@ -833,7 +833,7 @@ cmds(struct pt_regs *excp)
+ 			mdelay(2000);
+ 			return cmd;
+ 		case '?':
+-			xmon_puts(help_string);
++			fputs(help_string, stdout);
+ 			break;
+ 		case 'b':
+ 			bpt_cmds();
