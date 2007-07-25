@@ -1,20 +1,20 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 49206DDEB9
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 03:43:29 +1000 (EST)
-To: Jeff Garzik <jeff@garzik.org>
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: [PATCH 2/2] [POWERPC] Remove dummy network phy from MPC8313E-RDB
-Date: Wed, 25 Jul 2007 21:43:20 +0400
-Message-ID: <20070725174320.5818.91974.stgit@localhost.localdomain>
-In-Reply-To: <20070725174312.5818.61155.stgit@localhost.localdomain>
-References: <20070725174312.5818.61155.stgit@localhost.localdomain>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 1E730DDEDD
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 03:52:07 +1000 (EST)
+Message-ID: <46A78E3F.1030904@ru.mvista.com>
+Date: Wed, 25 Jul 2007 21:54:07 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	netdev@vger.kernel.org
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] [POWERPC] MPC8349E-mITX: use platform IDE driver
+	for CF	interface
+References: <20070725165318.5331.23795.stgit@localhost.localdomain>	<20070725165326.5331.19920.stgit@localhost.localdomain>
+	<46A78322.3080607@ru.mvista.com>
+In-Reply-To: <46A78322.3080607@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,40 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hello, I wrote:
 
-Cleaned up inexistent network phy from the target dts, added
-necessary property to gianfar node there.
+>>diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
+>>index db0d003..f8f0e8a 100644
+>>--- a/arch/powerpc/boot/dts/mpc8349emitx.dts
+>>+++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
+>>@@ -37,6 +37,15 @@
+>> 		reg = <00000000 10000000>;
+>> 	};
+>> 
+>>+	ide@f0000000 {
+>>+		compatible = "mmio-ide";
+>>+		device_type = "ide";
 
-Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+>     Why not "ata"?
 
----
+    Also, what mmio-ide in the compat properly means in the context of 
+ide_platform which is able to handle both port and memory mapped IDE. I think 
+we must get rid with this crap, and since this IDE register mapping is pretty 
+much board specific, call it something like "mpc8349emitx-ide" instead.
 
- arch/powerpc/boot/dts/mpc8313erdb.dts |    8 +-------
- 1 files changed, 1 insertions(+), 7 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
-index a1533cc..b602a8b 100644
---- a/arch/powerpc/boot/dts/mpc8313erdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
-@@ -98,12 +98,6 @@
- 			reg = <24520 20>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
--			phy1: ethernet-phy@1 {
--				interrupt-parent = < &ipic >;
--				interrupts = <13 8>;
--				reg = <1>;
--				device_type = "ethernet-phy";
--			};
- 			phy4: ethernet-phy@4 {
- 				interrupt-parent = < &ipic >;
- 				interrupts = <14 8>;
-@@ -120,7 +114,7 @@
- 			local-mac-address = [ 00 00 00 00 00 00 ];
- 			interrupts = <25 8 24 8 23 8>;
- 			interrupt-parent = < &ipic >;
--			phy-handle = < &phy1 >;
-+			fixed_speed = <1 1000>;
- 		};
- 
- 		ethernet@25000 {
+MBR, Sergei
