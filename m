@@ -2,13 +2,16 @@ Return-Path: <vitb@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8FDD0DDE9A
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 02:53:26 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 490DFDDF35
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 02:53:31 +1000 (EST)
 To: linux-ide@vger.kernel.org
 From: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: [PATCH 1/2] [IDE] Platform IDE driver (was: MMIO IDE driver)
-Date: Wed, 25 Jul 2007 20:53:18 +0400
-Message-ID: <20070725165318.5331.23795.stgit@localhost.localdomain>
+Subject: [PATCH 2/2] [POWERPC] MPC8349E-mITX: use platform IDE driver for CF
+	interface
+Date: Wed, 25 Jul 2007 20:53:26 +0400
+Message-ID: <20070725165326.5331.19920.stgit@localhost.localdomain>
+In-Reply-To: <20070725165318.5331.23795.stgit@localhost.localdomain>
+References: <20070725165318.5331.23795.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
@@ -22,243 +25,123 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-This is now very similar to pata_platform.c, they both use
-same platform data structure and same resources.
-
-To achieve that, byte_lanes_swapping platform data variable
-and platform specified iops removed from that driver. It's fine,
-since those were never used anyway.
-
-pata_platform and ide_platform are carrying same driver names,
-to easily switch between these drivers, without need to touch
-platform code.
+This updates relevant platform code (freescale mpc8349itx target) 
+to make the CompactFlash work in TrueIDE mode. 
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
 
 ---
 
- drivers/ide/Kconfig               |    8 ++
- drivers/ide/legacy/Makefile       |    2 
- drivers/ide/legacy/ide_platform.c |  181 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 191 insertions(+), 0 deletions(-)
+ arch/powerpc/boot/dts/mpc8349emitx.dts    |    9 ++++
+ arch/powerpc/platforms/83xx/mpc834x_itx.c |   70 +++++++++++++++++++++++++++++
+ 2 files changed, 79 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/ide/Kconfig b/drivers/ide/Kconfig
-index b1a9b81..b5a44da 100644
---- a/drivers/ide/Kconfig
-+++ b/drivers/ide/Kconfig
-@@ -308,6 +308,14 @@ config IDE_GENERIC
- 	help
- 	  If unsure, say Y.
+diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
+index db0d003..f8f0e8a 100644
+--- a/arch/powerpc/boot/dts/mpc8349emitx.dts
++++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
+@@ -37,6 +37,15 @@
+ 		reg = <00000000 10000000>;
+ 	};
  
-+config BLK_DEV_PLATFORM
-+	tristate "Platform driver for IDE interfaces"
-+	help
-+	  This is the platform IDE driver, used mostly for Memory Mapped
-+	  IDE devices, like Compact Flashes running in True IDE mode.
++	ide@f0000000 {
++		compatible = "mmio-ide";
++		device_type = "ide";
++		reg = <f0000000 10 f000020c 4>;
++		ioport_shift = <1>;
++		interrupts = <17 8>;
++		interrupt-parent = < &ipic >;
++	};
 +
-+	  If unsure, say N.
-+
- config BLK_DEV_CMD640
- 	bool "CMD640 chipset bugfix/support"
- 	depends on X86
-diff --git a/drivers/ide/legacy/Makefile b/drivers/ide/legacy/Makefile
-index c797106..4098223 100644
---- a/drivers/ide/legacy/Makefile
-+++ b/drivers/ide/legacy/Makefile
-@@ -7,6 +7,8 @@ obj-$(CONFIG_BLK_DEV_UMC8672)		+= umc8672.o
- 
- obj-$(CONFIG_BLK_DEV_IDECS)		+= ide-cs.o
- 
-+obj-$(CONFIG_BLK_DEV_PLATFORM)		+= ide_platform.o
-+
- # Last of all
- obj-$(CONFIG_BLK_DEV_HD)		+= hd.o
- 
-diff --git a/drivers/ide/legacy/ide_platform.c b/drivers/ide/legacy/ide_platform.c
-new file mode 100644
-index 0000000..0b3f5b5
---- /dev/null
-+++ b/drivers/ide/legacy/ide_platform.c
-@@ -0,0 +1,181 @@
-+/*
-+ * Platform IDE driver
-+ *
-+ * Copyright (C) 2007 MontaVista Software
-+ *
-+ * Maintainer: Kumar Gala <galak@kernel.crashing.org>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/types.h>
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/ide.h>
-+#include <linux/ioport.h>
-+#include <linux/module.h>
+ 	soc8349@e0000000 {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+diff --git a/arch/powerpc/platforms/83xx/mpc834x_itx.c b/arch/powerpc/platforms/83xx/mpc834x_itx.c
+index 40a0194..d63a104 100644
+--- a/arch/powerpc/platforms/83xx/mpc834x_itx.c
++++ b/arch/powerpc/platforms/83xx/mpc834x_itx.c
+@@ -23,6 +23,7 @@
+ #include <linux/delay.h>
+ #include <linux/seq_file.h>
+ #include <linux/root_dev.h>
 +#include <linux/pata_platform.h>
-+#include <linux/io.h>
-+
-+static struct {
-+	void __iomem *plat_ide_mapbase;
-+	void __iomem *plat_ide_alt_mapbase;
-+	ide_hwif_t *hwif;
-+	int index;
-+} hwif_prop;
-+
-+static ide_hwif_t *__devinit plat_ide_locate_hwif(void __iomem *base,
-+	    void __iomem *ctrl, struct pata_platform_info *pdata, int irq,
-+	    int mmio)
+ 
+ #include <asm/system.h>
+ #include <asm/atomic.h>
+@@ -43,6 +44,75 @@ unsigned long isa_io_base = 0;
+ unsigned long isa_mem_base = 0;
+ #endif
+ 
++static int __init mmio_ide_of_init(void)
 +{
-+	unsigned long port = (unsigned long)base;
-+	ide_hwif_t *hwif;
-+	int index, i;
++	struct device_node *np;
++	unsigned int i;
 +
-+	for (index = 0; index < MAX_HWIFS; ++index) {
-+		hwif = ide_hwifs + index;
-+		if (hwif->io_ports[IDE_DATA_OFFSET] == port)
-+			goto found;
-+	}
++	for (np = NULL, i = 0;
++	     (np = of_find_compatible_node(np, "ide", "mmio-ide")) != NULL;
++	     i++) {
++		int ret = 0;
++		struct resource res[3];
++		struct platform_device *pdev = NULL;
++		static struct pata_platform_info pdata;
 +
-+	for (index = 0; index < MAX_HWIFS; ++index) {
-+		hwif = ide_hwifs + index;
-+		if (hwif->io_ports[IDE_DATA_OFFSET] == 0)
-+			goto found;
-+	}
++		memset(res, 0, sizeof(res));
 +
-+	return NULL;
-+
-+found:
-+
-+	hwif->hw.io_ports[IDE_DATA_OFFSET] = port;
-+
-+	port += (1 << pdata->ioport_shift);
-+	for (i = IDE_ERROR_OFFSET; i <= IDE_STATUS_OFFSET;
-+	     i++, port += (1 << pdata->ioport_shift))
-+		hwif->hw.io_ports[i] = port;
-+
-+	hwif->hw.io_ports[IDE_CONTROL_OFFSET] = (unsigned long)ctrl;
-+
-+	memcpy(hwif->io_ports, hwif->hw.io_ports, sizeof(hwif->hw.io_ports));
-+	hwif->hw.irq = hwif->irq = irq;
-+
-+	hwif->hw.dma = NO_DMA;
-+	hwif->hw.chipset = ide_generic;
-+
-+	if (mmio) {
-+		hwif->mmio = 1;
-+		default_hwif_mmiops(hwif);
-+	}
-+
-+	hwif_prop.hwif = hwif;
-+	hwif_prop.index = index;
-+
-+	return hwif;
-+}
-+
-+static int __devinit plat_ide_probe(struct platform_device *pdev)
-+{
-+	struct resource *res_base, *res_alt, *res_irq;
-+	ide_hwif_t *hwif;
-+	struct pata_platform_info *pdata;
-+	int ret = 0;
-+	int mmio = 0;
-+
-+	pdata = pdev->dev.platform_data;
-+
-+	/* get a pointer to the register memory */
-+	res_base = platform_get_resource(pdev, IORESOURCE_IO, 0);
-+	res_alt = platform_get_resource(pdev, IORESOURCE_IO, 1);
-+
-+	if (!res_base || !res_alt) {
-+		res_base = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+		res_alt = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-+		if (!res_base || !res_alt) {
-+			ret = -ENOMEM;
-+			goto out;
++		ret = of_address_to_resource(np, 0, &res[0]);
++		if (ret) {
++			printk(KERN_ERR "mmio-ide.%d: unable to get "
++			       "resource from OF\n", i);
++			goto err0;
 +		}
-+		mmio = 1;
-+	}
 +
-+	res_irq = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
-+	if (!res_irq) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
++		ret = of_address_to_resource(np, 1, &res[1]);
++		if (ret) {
++			printk(KERN_ERR "mmio-ide.%d: unable to get "
++			       "resource from OF\n", i);
++			goto err0;
++		}
 +
-+	if (mmio) {
-+		hwif_prop.plat_ide_mapbase = devm_ioremap(&pdev->dev,
-+			res_base->start, res_base->end - res_base->start + 1);
-+		hwif_prop.plat_ide_alt_mapbase = devm_ioremap(&pdev->dev,
-+			res_alt->start, res_alt->end - res_alt->start + 1);
-+	} else {
-+		hwif_prop.plat_ide_mapbase = devm_ioport_map(&pdev->dev,
-+			res_base->start, res_base->end - res_base->start + 1);
-+		hwif_prop.plat_ide_alt_mapbase = devm_ioport_map(&pdev->dev,
-+			res_alt->start, res_alt->end - res_alt->start + 1);
-+	}
++		res[2].start = res[2].end = irq_of_parse_and_map(np, 0);
++		if (res[2].start == NO_IRQ) {
++			printk(KERN_ERR "mmio-ide.%d: no IRQ\n", i);
++			goto err0;
++		}
++		res[2].name = "pata_platform";
++		res[2].flags = IORESOURCE_IRQ;
 +
-+	hwif = plat_ide_locate_hwif(hwif_prop.plat_ide_mapbase,
-+	         hwif_prop.plat_ide_alt_mapbase, pdata, res_irq->start, mmio);
++		pdata.ioport_shift = *((u32 *)of_get_property(np,
++					"ioport_shift", NULL));
 +
-+	if (!hwif) {
-+		ret = -ENODEV;
-+		goto out;
-+	}
-+	hwif->gendev.parent = &pdev->dev;
-+	hwif->noprobe = 0;
++		pdev = platform_device_alloc("pata_platform", i);
++		if (!pdev)
++			goto err1;
 +
-+	probe_hwif_init(hwif);
++		ret = platform_device_add_data(pdev, &pdata, sizeof(pdata));
++		if (ret)
++			goto err1;
 +
-+	platform_set_drvdata(pdev, hwif);
-+	ide_proc_register_port(hwif);
++		ret = platform_device_add_resources(pdev, res, ARRAY_SIZE(res));
++		if (ret)
++			goto err1;
 +
-+	return 0;
++		ret = platform_device_register(pdev);
++		if (ret)
++			goto err1;
 +
-+out:
-+	return ret;
-+}
-+
-+static int __devexit plat_ide_remove(struct platform_device *pdev)
-+{
-+	ide_hwif_t *hwif = pdev->dev.driver_data;
-+
-+	if (hwif != hwif_prop.hwif) {
-+		dev_printk(KERN_DEBUG, &pdev->dev, "%s: hwif value error",
-+		           pdev->name);
-+	} else {
-+		ide_unregister(hwif_prop.index);
-+		hwif_prop.index = 0;
-+		hwif_prop.hwif = NULL;
++		continue;
++err1:
++		printk(KERN_ERR "mmio-ide.%d: registration failed\n", i);
++		platform_device_del(pdev); /* it will free everything */
++err0:
++		/* Even if some device failed, try others */
++		continue;
 +	}
 +
 +	return 0;
 +}
++device_initcall(mmio_ide_of_init);
 +
-+static struct platform_driver platform_ide_driver = {
-+	.driver {
-+		.name = "pata_platform",
-+	},
-+	.probe = plat_ide_probe,
-+	.remove = __devexit_p(plat_ide_remove),
-+};
-+
-+static int __init platform_ide_init(void)
-+{
-+	return platform_driver_register(&platform_ide_driver);
-+}
-+
-+static void __exit platform_ide_exit(void)
-+{
-+	platform_driver_unregister(&platform_ide_driver);
-+}
-+
-+MODULE_DESCRIPTION("Platform IDE driver");
-+MODULE_LICENSE("GPL");
-+
-+module_init(platform_ide_init);
-+module_exit(platform_ide_exit);
+ /* ************************************************************************
+  *
+  * Setup the architecture
