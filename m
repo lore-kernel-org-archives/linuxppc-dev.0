@@ -1,21 +1,18 @@
-Return-Path: <adrian@rhlx01.hs-esslingen.de>
-Received: from rhlx01.hs-esslingen.de (rhlx01.hs-esslingen.de [129.143.116.10])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "rhlx01.hs-esslingen.de",
-	Issuer "HE CA - G02" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 29712DDE47
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 21:59:24 +1000 (EST)
-Date: Wed, 25 Jul 2007 13:59:20 +0200
-From: Adrian Reber <adrian@lisas.de>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] xmon consistency clean up
+From: Michael Ellerman <michael@ellerman.id.au>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: 2.6.23-rc1 breaks on JS20 w/SLOF
-Message-ID: <20070725115920.GA1149@lisas.de>
-References: <20070723144745.GA31329@lisas.de>
-	<1185228378.5439.144.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1185228378.5439.144.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <1185344499.5439.307.camel@localhost.localdomain>
+References: <200707250257.l6P2va65006958@toshiba.co.jp>
+	<1185344499.5439.307.camel@localhost.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-Je4XqPVY/h3H1If3QiUx"
+Date: Wed, 25 Jul 2007 22:13:50 +1000
+Message-Id: <1185365630.21877.4.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,19 +22,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 24, 2007 at 08:06:18AM +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2007-07-23 at 16:47 +0200, Adrian Reber wrote:
-> > On a JS20 with SLOF (pretending to be Maple) 2.6.23-rc1 breaks with
-> > following oops. 2.6.22 is working. Let me know if I can help debug this.
-> 
-> That would be my fault... looks like it tries to access IO ports before
-> the IO space is mapped by the PCI code, and without a legacy ISA range.
-> The later is now the only case where IO ports are available before the
-> main PCI setup.
-> 
-> I can add some tweak to the maple code to map the ISA stuff even when
-> the "isa" node is missing...
 
-This also happens on JS21 (with SLOF) in a pretty similar way.
+--=-Je4XqPVY/h3H1If3QiUx
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-		Adrian
+On Wed, 2007-07-25 at 16:21 +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2007-07-25 at 11:57 +0900, Ishizaki Kou wrote:
+> > This patch cleans up xmon to keep consistency.
+> >=20
+> > In xmon, we should use console I/O functions that are named the same
+> > as user space stdio functions. But commit
+> > 4d404edce30f911004850d472e05a31efd751662 broke this consistency.
+> >=20
+> > Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+> > ---
+> >=20
+> > Index: linux-powerpc-git/arch/powerpc/xmon/nonstdio.c
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > --- linux-powerpc-git.orig/arch/powerpc/xmon/nonstdio.c
+> > +++ linux-powerpc-git/arch/powerpc/xmon/nonstdio.c
+> > @@ -133,7 +133,7 @@ void xmon_printf(const char *format, ...
+> >         xmon_write(xmon_outbuf, n);
+> >  }
+> > =20
+> > -void xmon_puts(const char *str)
+> > +void xmon_fputs(const char *str)
+> >  {
+> >         xmon_write(str, strlen(str));=20
+>=20
+> Nah, keep it xmon_puts, since it doesn't take a stream argument and
+> define a "puts" for use by xmon core.
+
+But then it needs to add a newline .. and we've gone around in a circle
+again. Funny how the trivialest of patches gets the most review.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-Je4XqPVY/h3H1If3QiUx
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGpz5+dSjSd0sB4dIRAqQGAKCXbOB6Vxez++9gdFuoajJXp6yOKACgiJ7m
+n2DRO3WbbFRfKpNQB0ZbDow=
+=pi/t
+-----END PGP SIGNATURE-----
+
+--=-Je4XqPVY/h3H1If3QiUx--
