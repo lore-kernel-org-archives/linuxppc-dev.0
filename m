@@ -1,19 +1,16 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pasmtpB.tele.dk (pasmtpb.tele.dk [80.160.77.98])
-	by ozlabs.org (Postfix) with ESMTP id 77441DDE99
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 07:32:11 +1000 (EST)
-Date: Wed, 25 Jul 2007 23:33:25 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: "do section mismatch check on full vmlinux" breaks powerpc build
-Message-ID: <20070725213325.GB29855@uranus.ravnborg.org>
-References: <20070724224105.GG951@localdomain>
-	<20070725114356.GB25580@uranus.ravnborg.org>
-	<20070725211610.GJ951@localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070725211610.GJ951@localdomain>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <satyakiran@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.229])
+	by ozlabs.org (Postfix) with ESMTP id 4562CDDEA2
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 08:16:02 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id i21so264981wra
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 15:16:01 -0700 (PDT)
+Message-ID: <acbcf3840707251516w301f834cj5f6a81a494d359ed@mail.gmail.com>
+Date: Wed, 25 Jul 2007 17:16:01 -0500
+From: Satya <satyakiran@gmail.com>
+To: linuxppc-dev@ozlabs.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: pte_offset_map for ppc assumes HIGHPTE
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,62 +20,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 25, 2007 at 04:16:10PM -0500, Nathan Lynch wrote:
-> Hi Sam-
-> 
-> Sam Ravnborg wrote:
-> > On Tue, Jul 24, 2007 at 05:41:05PM -0500, Nathan Lynch wrote:
-> > > 
-> > > 2.6.23-rc1 breaks the build for 64-bit powerpc for me (using
-> > > maple_defconfig):
-> > > 
-> > >   LD      vmlinux.o
-> > > powerpc64-unknown-linux-gnu-ld: dynreloc miscount for
-> > > kernel/built-in.o, section .opd
-> > > powerpc64-unknown-linux-gnu-ld: can not edit opd Bad value
-> > > make: *** [vmlinux.o] Error 1
-> > > 
-> > 
-> > I narrowed it down to the following change to avoid the breakage:
-> > 
-> > diff --git a/include/linux/mm.h b/include/linux/mm.h
-> > index c456c3a..2ea222f 100644
-> > --- a/include/linux/mm.h
-> > +++ b/include/linux/mm.h
-> > @@ -1246,7 +1246,7 @@ void drop_slab(void);
-> >  extern int randomize_va_space;
-> >  #endif
-> >  
-> > -__attribute__((weak)) const char *arch_vma_name(struct vm_area_struct *vma);
-> > +//__attribute__((weak)) const char *arch_vma_name(struct vm_area_struct *vma);
-> >  
-> >  #endif /* __KERNEL__ */
-> >  #endif /* _LINUX_MM_H */
-> > 
-> > So seems that something goes a bit fishy when using weak symbols and this trigges 
-> > a binutils bug.
-> > 
-> > The above line was introdused in the following commit:
-> > 
-> > commit f269fdd1829acc5e53bf57b145003e5733133f2b
-> > Author: David Howells <dhowells@redhat.com>
-> > Date:   Wed Sep 27 01:50:23 2006 -0700
-> > 
-> >     [PATCH] NOMMU: move the fallback arch_vma_name() to a sensible place
-> 
-> 
-> Thanks for looking into this.  Removing the "__attribute__((weak))"
-> from arch_vma_name's declaration in linux/mm.h unbreaks the build for
-> me.
-> 
-> Maybe it shouldn't matter, but it seems unusual to have the weak
-> attribute specified at the function's declaration.  I wasn't able to
-> find any examples of that for other weak functions in the kernel
-> (e.g. sched_clock).
+hello,
+The implementation of pte_offset_map() for ppc assumes that PTEs are
+kept in highmem (CONFIG_HIGHPTE). There is only one implmentation of
+pte_offset_map() as follows (include/asm-ppc/pgtable.h):
 
-Unfortunately removing the weak attribute uncovered that x86_64 has
-two functions with the same name => link error.
-Needs to have that sorted first out but ball is rolling.
-(Se lkml for details)
+#define pte_offset_map(dir, addr)               \
+         ((pte_t *) kmap_atomic(pmd_page(*(dir)), KM_PTE0) + pte_index(addr))
 
-	Sam
+Shouldn't this be made conditional according to CONFIG_HIGHPTE is
+defined or not (as implemented in include/asm-i386/pgtable.h) ?
+
+the same goes for pte_offset_map_nested and the corresponding unmap functions.
+
+thanks,
+Satya Popuri
