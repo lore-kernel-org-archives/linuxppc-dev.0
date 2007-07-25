@@ -1,20 +1,18 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 54E81DDED8
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 05:33:00 +1000 (EST)
-Message-ID: <46A7A5E4.4090105@ru.mvista.com>
-Date: Wed, 25 Jul 2007 23:35:00 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/2] [IDE] Platform IDE driver
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 3145FDDEA0
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 05:37:30 +1000 (EST)
+Date: Wed, 25 Jul 2007 21:37:26 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: Re: [PATCH 1/2] [IDE] Platform IDE driver (was: MMIO IDE driver)
+In-Reply-To: <20070725165318.5331.23795.stgit@localhost.localdomain>
+Message-ID: <Pine.LNX.4.60.0707252130090.6234@poirot.grange>
 References: <20070725165318.5331.23795.stgit@localhost.localdomain>
-	<46A79DE0.8060405@ru.mvista.com> <46A79F14.9040409@freescale.com>
-	<46A7A17C.8090505@ru.mvista.com> <46A7A1D5.7020003@freescale.com>
-In-Reply-To: <46A7A1D5.7020003@freescale.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
+On Wed, 25 Jul 2007, Vitaly Bordug wrote:
 
->>> It doesn't buy us anything in here, but it's conceivable that someone 
->>> may want to write a driver that uses a shift in the I/O accessor 
->>> rather than an array of port offsets,
+> 
+> This is now very similar to pata_platform.c, they both use
+> same platform data structure and same resources.
+> 
+> To achieve that, byte_lanes_swapping platform data variable
+> and platform specified iops removed from that driver. It's fine,
+> since those were never used anyway.
+> 
+> pata_platform and ide_platform are carrying same driver names,
+> to easily switch between these drivers, without need to touch
+> platform code.
 
->>    It wouldn't be IDE driver then, and neither it would be libata 
->> which also does this another way this (despite pata_platform uses 
->> shifts too -- not in the accessors, so no speed loss).
+Why? There's a drivers/ide/arm/ide_arm.c IDe driver that some platforms 
+(not in the mainline) hack to access, e.g., CF cards in true-IDE mode. 
+About a month ago I submitted a patch to arm-linux-kernel switching that 
+driver to using platform-device. I got a reply, that it's not worth it now 
+that IDE is slowly becoming obsolete, and the pata_platform serves the 
+perpose perfectly well. I found this argument reasonable, I had the same 
+doubt, just wanted to double-check. So, why do we now need a new legacy 
+(a/drivers/ide/legacy/ide_platform.c) driver when a "modern" driver 
+exists?
 
-> The device tree is not just for Linux.
-
-    Yeah, and I can't wait to see some other its users. ;-)
-    This doesn't mean that shift is better anyway. If everyone considers it 
-better, I give up. But be warned that shift (stride) is not the only property 
-characterizing register accesses -- the regs might be only accessible as 
-16/32-bit quantities, for example (16-bit is a real world example -- from 
-Amiga or smth of that sort, IIRC).
-
->>> equivalent of the cntlzw innstruction, and shift makes it clear that 
->>> the stride must be power-of-two).  Plus, using shift is consistent 
->>> with what we do on ns16550.
-
->>    Why the heck should we care about the UART code taling about IDE?!
-
-> Consistency?
-
-    We're not obliged to be consistent with every piece of the kernel code.
-
-> -Scott
-
-MBR, Sergei
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
