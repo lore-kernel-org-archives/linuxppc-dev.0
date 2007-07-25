@@ -1,17 +1,39 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <Wei.Zhang@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C8EB7DDEC7
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 16:49:44 +1000 (EST)
-Date: Wed, 25 Jul 2007 01:49:04 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Attempt at addressing head*.S for modpost warnings
-Message-ID: <Pine.LNX.4.64.0707250147150.9086@blarg.am.freescale.net>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B2838DDEBB
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 17:03:50 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l6P73gq9029680
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 00:03:43 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l6P73d5b020427
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 02:03:40 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH 1/3] Add a new member name to structure irq_host
+Date: Wed, 25 Jul 2007 15:03:40 +0800
+Message-ID: <46B96294322F7D458F9648B60E15112C74CEB4@zch01exm26.fsl.freescale.net>
+In-Reply-To: <1185269802.5439.246.camel@localhost.localdomain>
+References: <11851892302391-git-send-email-g.chen@freescale.com>
+	<11851892311178-git-send-email-g.chen@freescale.com>
+	<1185228277.5439.141.camel@localhost.localdomain>
+	<1185232974.13740.11.camel@concordia.ozlabs.ibm.com>
+	<1185233771.5439.153.camel@localhost.localdomain>
+	<995B09A8299C2C44B59866F6391D2635A69C88@zch01exm21.fsl.freescale.net>
+	<1185251600.5439.204.camel@localhost.localdomain>
+	<46B96294322F7D458F9648B60E15112C74CDC2@zch01exm26.fsl.freescale.net>
+	<1185269802.5439.246.camel@localhost.localdomain>
+From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Chen Gong-B11801 <G.Chen@freescale.com>,
+	paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,58 +43,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stephen,
+Hi, Ben,
 
-Paul said you were looking into this issue as well.  Wanted to post what I
-did on ppc32/e500 as a start for you to look at.  I think the other ppc32
-head*.S can follow the same pattern if we like this.  However, wasn't sure
-how to do _ENTRY() for ppc64.
+Thanks!=20
 
-- k
+> Sure, hence the word 'optional' which would provide a default name.
+>=20
 
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 1f155d3..d83cbbb 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -52,9 +52,9 @@
-  *   r7 - End of kernel command line string
-  *
-  */
--	.text
--_GLOBAL(_stext)
--_GLOBAL(_start)
-+	.section	.text.head, "ax"
-+_ENTRY(_stext);
-+_ENTRY(_start);
- 	/*
- 	 * Reserve a word at a fixed location to store the address
- 	 * of abatron_pteptrs
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 0c45855..823a8cb 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -34,6 +34,8 @@ SECTIONS
+About the default name, since platforms we touched are very limited, we
+do not know which name should be proper default name. We just assign
+those default name to 'NULL'  for passing the compiling process. And the
+platform maintain can correct it.
 
- 	/* Text and gots */
- 	.text : {
-+		ALIGN_FUNCTION();
-+		*(.text.head)
- 		_text = .;
- 		TEXT_TEXT
- 		SCHED_TEXT
-diff --git a/include/asm-powerpc/ppc_asm.h b/include/asm-powerpc/ppc_asm.h
-index fa083d8..7ec22d2 100644
---- a/include/asm-powerpc/ppc_asm.h
-+++ b/include/asm-powerpc/ppc_asm.h
-@@ -183,6 +183,11 @@ GLUE(.,name):
-
- #else /* 32-bit */
-
-+#define _ENTRY(n)	\
-+	.stabs __stringify(n:F-1),N_FUN,0,0,n;\
-+	.globl n;	\
-+n:
-+
- #define _GLOBAL(n)	\
- 	.text;		\
- 	.stabs __stringify(n:F-1),N_FUN,0,0,n;\
+Cheers!
+Wei.
