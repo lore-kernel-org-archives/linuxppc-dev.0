@@ -1,24 +1,22 @@
-Return-Path: <akostop@inaccessnetworks.com>
-Received: from inaccessnetworks.com (node3.inaccessnetworks.com
-	[212.205.200.118]) by ozlabs.org (Postfix) with ESMTP id A04CBDDDEB
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 00:22:47 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by inaccessnetworks.com (8.13.6/8.13.5) with ESMTP id l6PEMjwM010210
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 17:22:45 +0300
-Received: from inaccessnetworks.com ([127.0.0.1])
-	by localhost (host11.inaccessnetworks.com [127.0.0.1]) (amavisd-new,
-	port 10024) with LMTP id 09678-18 for <linuxppc-dev@ozlabs.org>;
-	Wed, 25 Jul 2007 17:22:45 +0300 (EEST)
-Received: from phoenix (phoenix.priv.inaccessnetworks.com [192.168.1.7])
-	by inaccessnetworks.com (8.13.6/8.13.5) with ESMTP id l6PEMjLF010206
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 17:22:45 +0300
-Date: Wed, 25 Jul 2007 17:22:40 +0300
-To: linuxppc-dev@ozlabs.org
-Subject: About mdio_bus for 82xx based board
-From: "Alexandros Kostopoulos" <akostop@inaccessnetworks.com>
-Content-Type: text/plain; format=flowed; delsp=yes; charset=iso-8859-7
+Return-Path: <glikely@secretlab.ca>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.225])
+	by ozlabs.org (Postfix) with ESMTP id 20E45DDDD8
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 00:25:54 +1000 (EST)
+Received: by nz-out-0506.google.com with SMTP id l1so167028nzf
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 07:25:53 -0700 (PDT)
+Message-ID: <fa686aa40707250725ob38a9dax3eca9d7b8d03828f@mail.gmail.com>
+Date: Wed, 25 Jul 2007 08:25:53 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: michael@ellerman.id.au
+Subject: Re: [PATCH] xmon consistency clean up
+In-Reply-To: <1185365630.21877.4.camel@concordia.ozlabs.ibm.com>
 MIME-Version: 1.0
-Message-ID: <op.tv0x7yvmnhx3hy@phoenix>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <200707250257.l6P2va65006958@toshiba.co.jp>
+	<1185344499.5439.307.camel@localhost.localdomain>
+	<1185365630.21877.4.camel@concordia.ozlabs.ibm.com>
+Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,38 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
-I'm trying to make FCC ethernet work with my board, based on an MPC8275  
-processor. I'm using kernel 2.6.22.1
+On 7/25/07, Michael Ellerman <michael@ellerman.id.au> wrote:
+> On Wed, 2007-07-25 at 16:21 +1000, Benjamin Herrenschmidt wrote:
+> > Nah, keep it xmon_puts, since it doesn't take a stream argument and
+> > define a "puts" for use by xmon core.
+>
+> But then it needs to add a newline .. and we've gone around in a circle
+> again. Funny how the trivialest of patches gets the most review.
 
-I have the following problems:
+And the bike shed needs to be green.
 
-1) When mdiobus_register() called from mii-bitbang.c (fs_enet_mdio_probe()  
-function) attemps to do a device_register for the mdio bus, it actually  
-registers the device with a bus_id in the form [0|1|...]:<phy_addr>, that  
-is the first part a simple integer. This, of course, happens because  
-fs_enet_of_init() (fsl_soc.c) does a  
-platform_device_register_simple("fsl-bb-mdio", i,  NULL, 0); with i being  
-the first part of the bus, starting from 0. Unfortunately, when  
-fs_init_phy() (fs_enet_main.c) calls phy_connect() and therefore  
-phy_attach() (phy_device.c), the latter attempts to find the device in the  
-mdio bus, but it searches using the bus_id registered in the net_device  
-struct, which is in the form of <resource address>:<phy_addr>, eg.  
-f0000000:0, and therefore it fails... I don't know if I am doing something  
-wrong here, so any hint would be greatly appreciated.
+http://www.freebsd.org/doc/en_US.ISO8859-1/books/faq/misc.html#BIKESHED-PAINTING
 
-2) Since there are two ethernet@<address> nodes in my device tree,  
-fs_of_enet_init() calls platform_device_register_simple("fsl-bb-mdio",...)  
-twice, therefore creating two mdio busses, 0 and 1, each having the same  
-two devices. For example, if I have two PHYs with addresses 1 and 5, I  
-will get two mdio busses and 4 devices, 0:1, 0:5, 1:1 and 1:5. Well, this  
-doesn't sound right to me, although I am not sure if this is a fatal  
-issue. Any comments?
+:-)
 
-3) Also, if I don't want to enter the phy interrupt in the device tree  
-(there is not one or I want to use PHY_POLL), what should I do? dtc seems  
-to not allow -1 as a value in the reg property.
+g.
 
-thank you in advance for your responses
-
-Alex
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
