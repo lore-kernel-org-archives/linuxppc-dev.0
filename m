@@ -1,14 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8857DDDE39
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 15:48:40 +1000 (EST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] Don't try to allocate resources for a POWERPC PHB
-Date: Wed, 25 Jul 2007 00:48:08 -0500
-Message-Id: <11853424881167-git-send-email-galak@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 8811FDDDF7
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 16:21:48 +1000 (EST)
+Subject: Re: [PATCH] xmon consistency clean up
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+In-Reply-To: <200707250257.l6P2va65006958@toshiba.co.jp>
+References: <200707250257.l6P2va65006958@toshiba.co.jp>
+Content-Type: text/plain
+Date: Wed, 25 Jul 2007 16:21:38 +1000
+Message-Id: <1185344499.5439.307.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,48 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The Freescale PCI PHBs actual report back values in the BAR registers
-this causes issues in that we try to allocate resources for them
-and will get error messages like the following on MPC8544 DS:
+On Wed, 2007-07-25 at 11:57 +0900, Ishizaki Kou wrote:
+> This patch cleans up xmon to keep consistency.
+> 
+> In xmon, we should use console I/O functions that are named the same
+> as user space stdio functions. But commit
+> 4d404edce30f911004850d472e05a31efd751662 broke this consistency.
+> 
+> Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+> ---
+> 
+> Index: linux-powerpc-git/arch/powerpc/xmon/nonstdio.c
+> ===================================================================
+> --- linux-powerpc-git.orig/arch/powerpc/xmon/nonstdio.c
+> +++ linux-powerpc-git/arch/powerpc/xmon/nonstdio.c
+> @@ -133,7 +133,7 @@ void xmon_printf(const char *format, ...
+>         xmon_write(xmon_outbuf, n);
+>  }
+>  
+> -void xmon_puts(const char *str)
+> +void xmon_fputs(const char *str)
+>  {
+>         xmon_write(str, strlen(str)); 
 
-PCI: Failed to allocate mem resource #1:80000000@0 for 0000:00:00.0
+Nah, keep it xmon_puts, since it doesn't take a stream argument and
+define a "puts" for use by xmon core.
 
-To address this if we are class PCI_CLASS_PROCESSOR_POWERPC, a normal
-header type, and the PHB don't try to assign resources.
-
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/kernel/pci_32.c |   11 +++++++++++
- 1 files changed, 11 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
-index 721a694..39f8cb1 100644
---- a/arch/powerpc/kernel/pci_32.c
-+++ b/arch/powerpc/kernel/pci_32.c
-@@ -508,6 +508,13 @@ pcibios_allocate_resources(int pass)
- 	struct resource *r;
- 
- 	for_each_pci_dev(dev) {
-+		int class = dev->class >> 8;
-+
-+		if ((class == PCI_CLASS_PROCESSOR_POWERPC) &&
-+		    (dev->hdr_type == PCI_HEADER_TYPE_NORMAL) &&
-+		    (dev->bus->parent == NULL))
-+			continue;
-+
- 		pci_read_config_word(dev, PCI_COMMAND, &command);
- 		for (idx = 0; idx < 6; idx++) {
- 			r = &dev->resource[idx];
-@@ -550,6 +557,10 @@ pcibios_assign_resources(void)
- 		/* Don't touch classless devices and host bridges */
- 		if (!class || class == PCI_CLASS_BRIDGE_HOST)
- 			continue;
-+		if ((class == PCI_CLASS_PROCESSOR_POWERPC) &&
-+		    (dev->hdr_type == PCI_HEADER_TYPE_NORMAL) &&
-+		    (dev->bus->parent == NULL))
-+			continue;
- 
- 		for (idx = 0; idx < 6; idx++) {
- 			r = &dev->resource[idx];
--- 
-1.5.2.2
+Ben.
