@@ -1,20 +1,32 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 490DFDDF35
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 02:53:31 +1000 (EST)
-To: linux-ide@vger.kernel.org
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: [PATCH 2/2] [POWERPC] MPC8349E-mITX: use platform IDE driver for CF
-	interface
-Date: Wed, 25 Jul 2007 20:53:26 +0400
-Message-ID: <20070725165326.5331.19920.stgit@localhost.localdomain>
-In-Reply-To: <20070725165318.5331.23795.stgit@localhost.localdomain>
-References: <20070725165318.5331.23795.stgit@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3C3FFDDE45
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 02:56:49 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6PGujPE006001
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 12:56:45 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l6PGujVU045318
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 10:56:45 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l6PGuijk021553
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 10:56:45 -0600
+Subject: Re: [PATCH] [POWERPC] iSeries: fix section mismatch warnings
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20070725092735.0a5a1c52.sfr@canb.auug.org.au>
+References: <20070725092735.0a5a1c52.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Wed, 25 Jul 2007 11:55:31 -0500
+Message-Id: <1185382531.22237.46.camel@farscape.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,123 +37,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-This updates relevant platform code (freescale mpc8349itx target) 
-to make the CompactFlash work in TrueIDE mode. 
+> diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+> index 8cdd48e..1448af9 100644
+> --- a/arch/powerpc/kernel/head_64.S
+> +++ b/arch/powerpc/kernel/head_64.S
+> @@ -809,8 +809,9 @@ system_reset_iSeries:
+>  	mtmsrd	r24			/* RI on */
+>  	lhz	r24,PACAPACAINDEX(r13)	/* Get processor # */
+>  	cmpwi	0,r24,0			/* Are we processor 0? */
+> -	beq	.__start_initialization_iSeries	/* Start up the first processor */
+> -	mfspr	r4,SPRN_CTRLF
+> +	bne	1f
+> +	b	.__start_initialization_iSeries	/* Start up the first processor */
+> +1:	mfspr	r4,SPRN_CTRLF
+>  	li	r5,CTRL_RUNLATCH	/* Turn off the run light */
+>  	andc	r4,r4,r5
+>  	mtspr	SPRN_CTRLT,r4
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+This part isnt clicking for me.. 
+How does changing a "beq" to a "bne" over a "b" fit into changing
+__start_initialization_iSeries static?  
 
----
 
- arch/powerpc/boot/dts/mpc8349emitx.dts    |    9 ++++
- arch/powerpc/platforms/83xx/mpc834x_itx.c |   70 +++++++++++++++++++++++++++++
- 2 files changed, 79 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
-index db0d003..f8f0e8a 100644
---- a/arch/powerpc/boot/dts/mpc8349emitx.dts
-+++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
-@@ -37,6 +37,15 @@
- 		reg = <00000000 10000000>;
- 	};
- 
-+	ide@f0000000 {
-+		compatible = "mmio-ide";
-+		device_type = "ide";
-+		reg = <f0000000 10 f000020c 4>;
-+		ioport_shift = <1>;
-+		interrupts = <17 8>;
-+		interrupt-parent = < &ipic >;
-+	};
-+
- 	soc8349@e0000000 {
- 		#address-cells = <1>;
- 		#size-cells = <1>;
-diff --git a/arch/powerpc/platforms/83xx/mpc834x_itx.c b/arch/powerpc/platforms/83xx/mpc834x_itx.c
-index 40a0194..d63a104 100644
---- a/arch/powerpc/platforms/83xx/mpc834x_itx.c
-+++ b/arch/powerpc/platforms/83xx/mpc834x_itx.c
-@@ -23,6 +23,7 @@
- #include <linux/delay.h>
- #include <linux/seq_file.h>
- #include <linux/root_dev.h>
-+#include <linux/pata_platform.h>
- 
- #include <asm/system.h>
- #include <asm/atomic.h>
-@@ -43,6 +44,75 @@ unsigned long isa_io_base = 0;
- unsigned long isa_mem_base = 0;
- #endif
- 
-+static int __init mmio_ide_of_init(void)
-+{
-+	struct device_node *np;
-+	unsigned int i;
-+
-+	for (np = NULL, i = 0;
-+	     (np = of_find_compatible_node(np, "ide", "mmio-ide")) != NULL;
-+	     i++) {
-+		int ret = 0;
-+		struct resource res[3];
-+		struct platform_device *pdev = NULL;
-+		static struct pata_platform_info pdata;
-+
-+		memset(res, 0, sizeof(res));
-+
-+		ret = of_address_to_resource(np, 0, &res[0]);
-+		if (ret) {
-+			printk(KERN_ERR "mmio-ide.%d: unable to get "
-+			       "resource from OF\n", i);
-+			goto err0;
-+		}
-+
-+		ret = of_address_to_resource(np, 1, &res[1]);
-+		if (ret) {
-+			printk(KERN_ERR "mmio-ide.%d: unable to get "
-+			       "resource from OF\n", i);
-+			goto err0;
-+		}
-+
-+		res[2].start = res[2].end = irq_of_parse_and_map(np, 0);
-+		if (res[2].start == NO_IRQ) {
-+			printk(KERN_ERR "mmio-ide.%d: no IRQ\n", i);
-+			goto err0;
-+		}
-+		res[2].name = "pata_platform";
-+		res[2].flags = IORESOURCE_IRQ;
-+
-+		pdata.ioport_shift = *((u32 *)of_get_property(np,
-+					"ioport_shift", NULL));
-+
-+		pdev = platform_device_alloc("pata_platform", i);
-+		if (!pdev)
-+			goto err1;
-+
-+		ret = platform_device_add_data(pdev, &pdata, sizeof(pdata));
-+		if (ret)
-+			goto err1;
-+
-+		ret = platform_device_add_resources(pdev, res, ARRAY_SIZE(res));
-+		if (ret)
-+			goto err1;
-+
-+		ret = platform_device_register(pdev);
-+		if (ret)
-+			goto err1;
-+
-+		continue;
-+err1:
-+		printk(KERN_ERR "mmio-ide.%d: registration failed\n", i);
-+		platform_device_del(pdev); /* it will free everything */
-+err0:
-+		/* Even if some device failed, try others */
-+		continue;
-+	}
-+
-+	return 0;
-+}
-+device_initcall(mmio_ide_of_init);
-+
- /* ************************************************************************
-  *
-  * Setup the architecture
+-Will
