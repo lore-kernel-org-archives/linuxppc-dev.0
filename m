@@ -1,19 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 91C97DDEBC
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 16:22:34 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Pegasos keyboard detection
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alan Curry <pacman@theworld.com>
-In-Reply-To: <200707250128.l6P1SWSF1336935@shell01.TheWorld.com>
-References: <200707250128.l6P1SWSF1336935@shell01.TheWorld.com>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2356FDDECF
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 16:43:31 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l6P6hQ7h025847
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2007 23:43:26 -0700 (MST)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l6P6hO4h011418
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 01:43:25 -0500 (CDT)
+Subject: Re: Please pull from 'for_paulus' branch
+From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <Pine.LNX.4.64.0707231556210.4203@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0707231556210.4203@blarg.am.freescale.net>
 Content-Type: text/plain
-Date: Wed, 25 Jul 2007 16:22:28 +1000
-Message-Id: <1185344548.5439.308.camel@localhost.localdomain>
+Message-Id: <1185345799.32679.2.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Date: 25 Jul 2007 14:43:19 +0800
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,17 +34,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-07-24 at 21:28 -0400, Alan Curry wrote:
-> As of 2.6.22 the kernel doesn't recognize the i8042 keyboard/mouse controller
-> on the PegasosPPC. This is because of a feature/bug in the OF device tree:
-> the "device_type" attribute is an empty string instead of "8042" as the
-> kernel expects. This patch (against 2.6.22.1) adds a secondary detection
-> which looks for a device whose *name* is "8042" if there is no device whose
-> *type* is "8042".
+On Tue, 2007-07-24 at 05:01, Kumar Gala wrote:
+> Please pull from 'for_paulus' branch of
 > 
-> Signed-off-by: Alan Curry <pacman@world.std.com>
-
-Doesn't it have something in "compatible" instead ? that would be the
-way to go.
-
-Ben.
+>         master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git
+> for_paulus
+> 
+> Sorry I wasn't able to get this pull request out before -rc1 got
+> released,
+> but had some issues w/accessing email/accounts this weekend.
+> 
+> to receive the following updates:
+Could you help to pick up the 7448hpc2 cuboot support patch:
+http://ozlabs.org/pipermail/linuxppc-dev/2007-July/038952.html
+Roy
