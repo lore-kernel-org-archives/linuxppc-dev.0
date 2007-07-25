@@ -1,14 +1,24 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18086.41995.642267.580108@cargo.ozlabs.ibm.com>
-Date: Wed, 25 Jul 2007 11:14:51 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Morrison, Tom" <tmorrison@empirix.com>
-Subject: Re: Which Git Tree to pull from?
-In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D9010895F78D@EMPBEDEX.empirix.com>
-References: <BD261180E6D35F4D9D32F3E44FD3D9010895F78D@EMPBEDEX.empirix.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E33F1DDE30
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 12:09:18 +1000 (EST)
+Subject: Re: [PATCH] Re: 2.6.22-git hangs during boot on PowerBook G3 in
+	0.0 seconds
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kim Phillips <kim.phillips@freescale.com>
+In-Reply-To: <20070724185946.722f34b5.kim.phillips@freescale.com>
+References: <20070721192143.GA12144@nospam.com>
+	<20070721212845.GA30977@nospam.com>
+	<20070723172725.b1c14885.kim.phillips@freescale.com>
+	<1185234923.5439.158.camel@localhost.localdomain>
+	<20070724185946.722f34b5.kim.phillips@freescale.com>
+Content-Type: text/plain
+Date: Wed, 25 Jul 2007 12:07:03 +1000
+Message-Id: <1185329223.5439.304.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Rutger Nijlunsing <rutger@nospam.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,33 +28,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Morrison, Tom writes:
 
-> I am a little confused here. I've been working in an older (2.6.11) 
+> for the enumerated PHYs. As the original commit comment states, I was
+> getting these messages:
 > 
-> ppc release and haven't been paying much attention to where I 
-> 
-> should be getting the latest / stable git tree (for powerpc).
-> 
->  
-> 
-> I am working on an e500/8548 branch - it looks like Kumar's 
-> 
-> Git tree looks relatively new with lots of new patches...?
+> prom_parse: Bad cell count for /qe@e0100000/mdio@2120/ethernet-phy@00
+> prom_parse: Bad cell count for /qe@e0100000/mdio@2120/ethernet-phy@01
 
-Unlike the bad old days when stuff used to accumulate for ages in
-various trees without getting merged into Linus' tree, these days
-stuff gets merged into Linus' tree and released in the official
-releases pretty promptly.  So Linus' releases are the canonical ones
-for powerpc.
+Well, I would say it's a bug to try to translate addresses accross such
+a boundary. Thus the PHY enumeration code is bogus.
 
-I have a tree where I put stuff that will be going to Linus at the
-next opportunity, but currently it is identical to Linus' tree.  It
-doesn't accumulate any long-term difference from Linus' tree.
+> > I also wonder why it hangs on the powerbook... Rutger, I would expect to
+> > see that complaint warning with the reverted patch, what does it say ?
+> > 
+> > My Wallstreet (also based on Grackle) doesn't have the problem. Also can
+> > you send me a tarball of /proc/device-tree ?
+> 
+> I don't have any of those machines, but it seems that older kernels
+> running on the Lombard emitted:
+> 
+> device-tree: Duplicate name in /cpus/PowerPC,750@0, renamed to "l2-cache#1"
 
-Kumar's tree currently has some stuff for 8xxx pci support that looks
-to have missed the merge window that just closed.  If you want that
-specific stuff you can use his tree.  That stuff should get merged
-into Linus' tree once 2.6.23 has been released.
+That's a different matter.
 
-Paul.
+> messages*.  Experimenting with adding two chosen nodes (due to a prior
+> thread on this list**) results in a hung kernel on the 8360 also, so
+> perhaps they're related (and the kernel's tolerance to duplicate
+> entries has changed, which explains where I had seen the chosen node
+> being renamed).
+> 
+> but yeah, size-cells should be allowed to be 0 (even address-cells) and
+> it may be the case that the Lombard needs some fixup code.
+
+Ben.
