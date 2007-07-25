@@ -1,17 +1,31 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pasmtpB.tele.dk (pasmtpb.tele.dk [80.160.77.98])
-	by ozlabs.org (Postfix) with ESMTP id 2028BDDEA3
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 19:49:45 +1000 (EST)
-Date: Wed, 25 Jul 2007 11:50:59 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: "do section mismatch check on full vmlinux" breaks powerpc build
-Message-ID: <20070725095059.GA25580@uranus.ravnborg.org>
-References: <20070724224105.GG951@localdomain>
+Return-Path: <G.Chen@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id AA8C9DDDD5
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 20:08:12 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	l6PA872a022855
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 03:08:07 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l6PA85SD003894
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2007 05:08:06 -0500 (CDT)
+Subject: Re: modpost warning question
+From: chengong <g.chen@freescale.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <20070725072712.GB24093@uranus.ravnborg.org>
+References: <Pine.LNX.4.64.0707250210520.14366@blarg.am.freescale.net>
+	<20070725072712.GB24093@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Wed, 25 Jul 2007 18:08:03 +0800
+Message-Id: <1185358083.4996.6.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070724224105.GG951@localdomain>
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,40 +35,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 24, 2007 at 05:41:05PM -0500, Nathan Lynch wrote:
-> Hello-
+On Wed, 2007-07-25 at 09:27 +0200, Sam Ravnborg wrote:
+> On Wed, Jul 25, 2007 at 02:14:12AM -0500, Kumar Gala wrote:
+> > I'm seeing the following warning:
+> > 
+> > WARNING: vmlinux.o(.init.text+0x1acdc): Section mismatch: reference to
+> > .exit.text:gfar_mdio_exit (between 'gfar_init' and 'gfar_mdio_init')
+> > 
+> > I don't understand why its not ok to access .exit.text from .init.text
 > 
-> 2.6.23-rc1 breaks the build for 64-bit powerpc for me (using
-> maple_defconfig):
+> Several architectures discards .exit.text in the final linker
+> script (arch/$(ARCH)/kernel/vmlinux.lds.S
 > 
->   LD      vmlinux.o
-> powerpc64-unknown-linux-gnu-ld: dynreloc miscount for
-> kernel/built-in.o, section .opd
-> powerpc64-unknown-linux-gnu-ld: can not edit opd Bad value
-> make: *** [vmlinux.o] Error 1
+> So any references to .exit.text will when a module is build-in result
+> in a linker error because ld will flag it as an error when we reference
+> a symbol in a discarded section.
+But why? Just make kernel size smaller?
 > 
-> This is on a i386 host with:
-> powerpc64-unknown-linux-gnu-gcc (GCC) 4.1.2
-> GNU ld version 2.16.1
+> For the popular architectures (i386,x86_64) we discard .exit.text at
+> runtime so here we do not see the error from ld (sadly).
+>From which version? On my machine I have seen the same problem when
+building i386 target with the version 2.6.21.
 > 
-> Reverting the following commit fixes it:
-> 
-> commit 741f98fe298a73c9d47ed53703c1279a29718581
-> Author: Sam Ravnborg <sam@ravnborg.org>
-> Date:   Tue Jul 17 10:54:06 2007 +0200
-> 
->     kbuild: do section mismatch check on full vmlinux
-> 
-> 
-> However, I see a possibly related binutils patch:
-> http://article.gmane.org/gmane.comp.gnu.binutils/33650
-> 
-> Will there be a kbuild fix for this or should I update my binutils?
-
-Did a bit more testing.
-Im am down to the following to reproduce the fault:
- /opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/bin/powerpc64-unknown-linux-gnu-ld -m elf64ppc  -r -o vmlinux.o kernel/signal.o arch/powerpc/kernel/vdso.o
-
-Seems that vdso.o and signal.o does not like each other??
-
-	Sam
+> 	Sam
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
