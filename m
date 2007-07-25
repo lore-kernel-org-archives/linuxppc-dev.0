@@ -1,11 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <4fc238c0a3de68eb04ebbfbac2bf5ab61d42c167.1185366282.git.michael@ellerman.id.au>
+Message-Id: <8e5f2a71c9a1317a0191e486989fe4a7d0bce20e.1185366282.git.michael@ellerman.id.au>
 In-Reply-To: <41400bb89c154723f795e998d5ac777345eb9ebc.1185366282.git.michael@ellerman.id.au>
 References: <41400bb89c154723f795e998d5ac777345eb9ebc.1185366282.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 4/5] Initialise hwirq for legacy irqs
-Date: Wed, 25 Jul 2007 22:24:56 +1000 (EST)
+Subject: [PATCH 5/5] Export virq mapping via debugfs
+Date: Wed, 25 Jul 2007 22:24:57 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,26 +15,118 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Although no one uses the hwirq value for legacy irqs at the moment, we
-should really setup the correct value in the irq_map.
+This patch adds a debugfs file "powerpc/virq_mapping", which shows the virtual
+to real mapping of irq numbers. Enable it with CONFIG_VIRQ_DEBUG.
 
+Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+Signed-off-by: Chen Gong <G.Chen@freescale.com>
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/kernel/irq.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/powerpc/Kconfig.debug |   10 +++++++
+ arch/powerpc/kernel/irq.c  |   63 ++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 73 insertions(+), 0 deletions(-)
 
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index 346cd3b..dbdb7a2 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -124,6 +124,16 @@ config IRQSTACKS
+ 	  for handling hard and soft interrupts.  This can help avoid
+ 	  overflowing the process kernel stacks.
+ 
++config VIRQ_DEBUG
++	bool "Expose hardware/virtual IRQ mapping via debugfs"
++	depends on DEBUG_FS && PPC_MERGE
++	help
++	  This option will show the mapping relationship between hardware irq
++	  numbers and virtual irq numbers. The mapping is exposed via debugfs
++	  in the file powerpc/virq_mapping.
++
++	  If you don't know what this means you don't need it.
++
+ config BDI_SWITCH
+ 	bool "Include BDI-2000 user context switcher"
+ 	depends on DEBUG_KERNEL && PPC32
 diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 3dd582f..f71432c 100644
+index f71432c..651a1d6 100644
 --- a/arch/powerpc/kernel/irq.c
 +++ b/arch/powerpc/kernel/irq.c
-@@ -487,7 +487,7 @@ struct irq_host *irq_alloc_host(struct device_node *of_node,
- 		host->inval_irq = 0;
- 		/* setup us as the host for all legacy interrupts */
- 		for (i = 1; i < NUM_ISA_INTERRUPTS; i++) {
--			irq_map[i].hwirq = 0;
-+			irq_map[i].hwirq = i;
- 			smp_wmb();
- 			irq_map[i].host = host;
- 			smp_wmb();
+@@ -52,6 +52,7 @@
+ #include <linux/mutex.h>
+ #include <linux/bootmem.h>
+ #include <linux/pci.h>
++#include <linux/debugfs.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/system.h>
+@@ -1006,6 +1007,68 @@ static int irq_late_init(void)
+ }
+ arch_initcall(irq_late_init);
+ 
++#ifdef CONFIG_VIRQ_DEBUG
++static int virq_debug_show(struct seq_file *m, void *private)
++{
++	unsigned long flags;
++	irq_desc_t *desc;
++	const char *p;
++	char none[] = "none";
++	int i;
++
++	seq_printf(m, "%-5s  %-7s  %-15s  %s\n", "virq", "hwirq",
++		      "chip name", "host name");
++
++	for (i = 1; i < NR_IRQS; i++) {
++		desc = get_irq_desc(i);
++		spin_lock_irqsave(&desc->lock, flags);
++
++		if (desc->action && desc->action->handler) {
++			seq_printf(m, "%5d  ", i);
++			seq_printf(m, "0x%05lx  ", virq_to_hw(i));
++
++			if (desc->chip && desc->chip->typename)
++				p = desc->chip->typename;
++			else
++				p = none;
++			seq_printf(m, "%-15s  ", p);
++
++			if (irq_map[i].host && irq_map[i].host->of_node)
++				p = irq_map[i].host->of_node->full_name;
++			else
++				p = none;
++			seq_printf(m, "%s\n", p);
++		}
++
++		spin_unlock_irqrestore(&desc->lock, flags);
++	}
++
++	return 0;
++}
++
++static int virq_debug_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, virq_debug_show, inode->i_private);
++}
++
++static const struct file_operations virq_debug_fops = {
++	.open = virq_debug_open,
++	.read = seq_read,
++	.llseek = seq_lseek,
++	.release = single_release,
++};
++
++static int __init irq_debugfs_init(void)
++{
++	if (debugfs_create_file("virq_mapping", S_IRUGO, powerpc_debugfs_root,
++				 NULL, &virq_debug_fops))
++		return -ENOMEM;
++
++	return 0;
++}
++__initcall(irq_debugfs_init);
++#endif /* CONFIG_VIRQ_DEBUG */
++
+ #endif /* CONFIG_PPC_MERGE */
+ 
+ #ifdef CONFIG_PPC64
 -- 
 1.5.1.3.g7a33b
