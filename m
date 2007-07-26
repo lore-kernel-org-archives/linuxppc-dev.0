@@ -1,15 +1,29 @@
-Return-Path: <cmoszhang@yahoo.com.cn>
-Received: from web15210.mail.cnb.yahoo.com (web15210.mail.cnb.yahoo.com
-	[202.165.105.140]) by ozlabs.org (Postfix) with SMTP id 8C32CDDEBE
+Return-Path: <erik@dd.nec.com.au>
+Received: from ns2.nec.com.au (ns2.nec.com.au [147.76.180.2])
+	by ozlabs.org (Postfix) with ESMTP id 49014DDF17
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 Jul 2007 18:04:45 +1000 (EST)
-Date: Thu, 26 Jul 2007 15:58:04 +0800 (CST)
-From: =?gb2312?q?=C0=FB=C6=BD=20=D5=C5?= <cmoszhang@yahoo.com.cn>
-Subject: i have a question about:ppc pci and frame_buffer
+	Thu, 26 Jul 2007 19:03:39 +1000 (EST)
+Received: from smtp1.nec.com.au (unknown [172.31.8.18])
+	by ns2.nec.com.au (Postfix) with ESMTP
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 26 Jul 2007 19:03:38 +1000 (EST)
+Received: from bohr.dd.nec.com.au (bohr.dd.nec.com.au [172.31.20.11])
+	by deer.dd.nec.com.au (8.12.5/8.12.5/Debian-1) with ESMTP id
+	l6Q93bwX007104
+	for <linuxppc-embedded@ozlabs.org>; Thu, 26 Jul 2007 19:03:37 +1000
+Received: from dvalin ([172.31.20.70])
+	by bohr.dd.nec.com.au (8.12.3/8.12.3/Debian-7.1) with ESMTP id
+	l6Q93Xil016263
+	for <linuxppc-embedded@ozlabs.org>; Thu, 26 Jul 2007 19:03:37 +1000
+Date: Thu, 26 Jul 2007 19:11:10 +1000
 To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-27569218-1185436684=:18053"
-Message-ID: <749612.18053.qm@web15210.mail.cnb.yahoo.com>
+Subject: Re: I have a question about:ppc pci and frame_buffer
+Message-ID: <20070726091110.GB8884@dd.nec.com.au>
+References: <749612.18053.qm@web15210.mail.cnb.yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <749612.18053.qm@web15210.mail.cnb.yahoo.com>
+From: erik@dd.nec.com.au (Erik Christiansen)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,38 +34,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-27569218-1185436684=:18053
-Content-Type: text/plain; charset=gb2312
-Content-Transfer-Encoding: 8bit
+On Thu, Jul 26, 2007 at 03:58:04PM +0800, ???? ?? wrote:
+>   here below is what i want :
+>   #################################################
+>   0..................7  8............15 16..............24 25.................31 
+>            B                    G                   R                TRANS
+>   now it is this:
+>   #################################################
+>   0..................7  8............15 16..............24 25.................31 
+>         TRANS               R                   G                   B
 
-now i have a question:
-  i know ppc is big_endian and pci bus is little_endian.i made a graphics pci card use big_endian.
-  when i use graphics card to show QT 's picture through VGA ,the color is not what i wanted, it's inversed ,others are in right position.
-  here below is what i want :
-  #################################################
-  0..................7  8............15 16..............24 25.................31 
-           B                    G                   R                TRANS
-  now it is this:
-  #################################################
-  0..................7  8............15 16..............24 25.................31 
-        TRANS               R                   G                   B
-  #################################################
-   
-  through mmap, the ppc display the screen color through direct pci bus control ,how can i change it?? 
-  change kernel?? (i don't know where to change)
-  or change others?? 
+In U-boot, there is what you might do yourself, perhaps:
 
-       
----------------------------------
-ÇÀ×¢ÑÅ»¢Ãâ·ÑÓÊÏä3.5GÈÝÁ¿£¬20M¸½¼þ£¡ 
---0-27569218-1185436684=:18053
-Content-Type: text/html; charset=gb2312
-Content-Transfer-Encoding: 8bit
+#define LONGSWAP(x) ((((x) & 0x000000ff) << 24) | (((x) & 0x0000ff00) << 8)|\
+           (((x) & 0x00ff0000) >>  8) | (((x) & 0xff000000) >> 24) )
+#define PCISWAP(x)   LONGSWAP(x)
 
-<div>now i have a question:</div>  <div>i know ppc is big_endian and pci bus is little_endian.i made a graphics pci card use big_endian.</div>  <div>when i use graphics card to show QT 's picture through VGA ,the color is not what i wanted,&nbsp;it's&nbsp;inversed ,others are in right position.</div>  <div>here below is what i want :</div>  <div>#################################################</div>  <div>0..................7&nbsp; 8............15 16..............24 25.................31 </div>  <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;B&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; R&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRANS</div>  <div>now it is this:</div> 
- <div>#################################################</div>  <div>0..................7&nbsp; 8............15 16..............24 25.................31 </div>  <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRANS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; B</div>  <div>#################################################</div>  <div>&nbsp;</div>  <div>through&nbsp;mmap, the ppc display the&nbsp;screen color through direct pci bus control ,how can i change it??&nbsp;</div>  <div>change kernel?? (i don't know where to change)</div>  <div>or change others?? </div><p>&#32;
+Any good for your purpose?
 
-
-
-      <hr size=1><a href="http://cn.mail.yahoo.com" target=blank>ÇÀ×¢ÑÅ»¢Ãâ·ÑÓÊÏä3.5GÈÝÁ¿£¬20M¸½¼þ£¡</a> 
---0-27569218-1185436684=:18053--
+Erik
