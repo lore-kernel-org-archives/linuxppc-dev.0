@@ -2,27 +2,28 @@ Return-Path: <linas@austin.ibm.com>
 Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 89B08DDE30
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 08:30:30 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 3F524DDE17
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 08:34:02 +1000 (EST)
 Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6QMURBQ012041
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 18:30:27 -0400
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6QMXxLd017414
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 18:33:59 -0400
 Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
 	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l6QMURqo531282
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 18:30:27 -0400
+	l6QMXxJi525766
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 18:33:59 -0400
 Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
 	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6QMURQb021703
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 18:30:27 -0400
-Date: Thu, 26 Jul 2007 17:30:26 -0500
+	l6QMXxLP027802
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 18:33:59 -0400
+Date: Thu, 26 Jul 2007 17:33:58 -0500
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/3] powerpc/eeh: tweak printk message.
-Message-ID: <20070726223026.GA21552@austin.ibm.com>
+Subject: [PATCH 2/3] powerpc/eeh: Fix pci bridge handling bug
+Message-ID: <20070726223358.GB21552@austin.ibm.com>
 References: <20070726222935.GJ9876@austin.ibm.com>
+	<20070726223026.GA21552@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070726222935.GJ9876@austin.ibm.com>
+In-Reply-To: <20070726223026.GA21552@austin.ibm.com>
 From: linas@austin.ibm.com (Linas Vepstas)
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -36,32 +37,47 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 
 
-Print return code to print message. Also fix whitespace.
+The EEH code needs to ignore PCI bridges; sort-of. It was ignoring 
+them in the wrong place, and thus failing to set up the
+PCI_DN(dn)->pcidev pointer. Imprudent dereferencing of this pointer
+would lead to a crash on cards with bridges.
 
 Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 
 ----
- arch/powerpc/platforms/pseries/eeh.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/pseries/eeh_cache.c |    9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-Index: linux-2.6.22-git2/arch/powerpc/platforms/pseries/eeh.c
+Index: linux-2.6.22-git2/arch/powerpc/platforms/pseries/eeh_cache.c
 ===================================================================
---- linux-2.6.22-git2.orig/arch/powerpc/platforms/pseries/eeh.c	2007-07-24 16:14:22.000000000 -0500
-+++ linux-2.6.22-git2/arch/powerpc/platforms/pseries/eeh.c	2007-07-25 13:11:09.000000000 -0500
-@@ -750,12 +750,12 @@ int rtas_set_slot_reset(struct pci_dn *p
- 			return 0;
+--- linux-2.6.22-git2.orig/arch/powerpc/platforms/pseries/eeh_cache.c	2007-07-25 13:10:03.000000000 -0500
++++ linux-2.6.22-git2/arch/powerpc/platforms/pseries/eeh_cache.c	2007-07-25 13:13:41.000000000 -0500
+@@ -225,6 +225,10 @@ void pci_addr_cache_insert_device(struct
+ {
+ 	unsigned long flags;
  
- 		if (rc < 0) {
--			printk (KERN_ERR "EEH: unrecoverable slot failure %s\n",
--			        pdn->node->full_name);
-+			printk(KERN_ERR "EEH: unrecoverable slot failure %s\n",
-+			       pdn->node->full_name);
- 			return -1;
- 		}
--		printk (KERN_ERR "EEH: bus reset %d failed on slot %s\n",
--		        i+1, pdn->node->full_name);
-+		printk(KERN_ERR "EEH: bus reset %d failed on slot %s, rc=%d\n",
-+		       i+1, pdn->node->full_name, rc);
- 	}
++	/* Ignore PCI bridges */
++	if ((dev->class >> 16) == PCI_BASE_CLASS_BRIDGE)
++		return;
++
+ 	spin_lock_irqsave(&pci_io_addr_cache_root.piar_lock, flags);
+ 	__pci_addr_cache_insert_device(dev);
+ 	spin_unlock_irqrestore(&pci_io_addr_cache_root.piar_lock, flags);
+@@ -285,16 +289,13 @@ void __init pci_addr_cache_build(void)
+ 	spin_lock_init(&pci_io_addr_cache_root.piar_lock);
  
- 	return -1;
+ 	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
+-		/* Ignore PCI bridges */
+-		if ((dev->class >> 16) == PCI_BASE_CLASS_BRIDGE)
+-			continue;
+ 
+ 		pci_addr_cache_insert_device(dev);
+ 
+ 		dn = pci_device_to_OF_node(dev);
+ 		if (!dn)
+ 			continue;
+-		pci_dev_get (dev);  /* matching put is in eeh_remove_device() */
++		pci_dev_get(dev);  /* matching put is in eeh_remove_device() */
+ 		PCI_DN(dn)->pcidev = dev;
+ 
+ 		eeh_sysfs_add_device(dev);
