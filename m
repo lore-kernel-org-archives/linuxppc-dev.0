@@ -1,21 +1,34 @@
-Return-Path: <CFRIESEN@nortel.com>
-Received: from zrtps0kn.nortel.com (zrtps0kn.nortel.com [47.140.192.55])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "zrtps0kn.nortel.com", Issuer "NORTEL" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id DA7ADDDE18
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 05:38:12 +1000 (EST)
-Received: from zcarhxs1.corp.nortel.com (zcarhxs1.corp.nortel.com
-	[47.129.230.89])
-	by zrtps0kn.nortel.com (Switch-2.2.6/Switch-2.2.0) with ESMTP id
-	l6QJD5o27862
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 19:13:05 GMT
-Message-ID: <46A8F22E.6010701@nortel.com>
-Date: Thu, 26 Jul 2007 13:12:46 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: help with ppc sections?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E5E4BDDE9D
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 05:39:09 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6QJd6NE011818
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 15:39:06 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l6QJd5qx217830
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 13:39:05 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l6QJd5pO030587
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 13:39:05 -0600
+Subject: Re: [PATCH] [POWERPC] iSeries: fix section mismatch warnings
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20070726115601.7733fb96.sfr@canb.auug.org.au>
+References: <20070725092735.0a5a1c52.sfr@canb.auug.org.au>
+	<1185382531.22237.46.camel@farscape.rchland.ibm.com>
+	<20070726115601.7733fb96.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Thu, 26 Jul 2007 14:39:04 -0500
+Message-Id: <1185478744.2669.0.camel@farscape.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,19 +38,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2007-07-26 at 11:56 +1000, Stephen Rothwell wrote:
+> Hi Will,
+> 
+> On Wed, 25 Jul 2007 11:55:31 -0500 Will Schmidt <will_schmidt@vnet.ibm.com> wrote:
+> >
+> > >  	cmpwi	0,r24,0			/* Are we processor 0? */
+> > > -	beq	.__start_initialization_iSeries	/* Start up the first processor */
+> > > -	mfspr	r4,SPRN_CTRLF
+> > > +	bne	1f
+> > > +	b	.__start_initialization_iSeries	/* Start up the first processor */
+> > > +1:	mfspr	r4,SPRN_CTRLF
+> > >  	li	r5,CTRL_RUNLATCH	/* Turn off the run light */
+> > 
+> > This part isnt clicking for me.. 
+> > How does changing a "beq" to a "bne" over a "b" fit into changing
+> > __start_initialization_iSeries static?  
+> 
+> Because I moved __start_initialization_iSeries into another section, it
+> ends up too far away for a conditional branch so something adds a jump
+> table to the .text section and changes this branch to be via that table.
+> Unfortunately, the jump table ends up at the start of the .text and ruins
+> our carefully laid out kernel image.  By inverting the test I can turn
+> the branch into an unconditional one which has a larger possible offse
+> (effectively building the jump table manually).
 
-Hi all,
+Gotcha, thanks for the clarification.  :-)
 
-I'm porting kprobes to 2.6.14, and I think I've got it mostly done.  The 
-last thing that I want to do is to mark flush_icache_range() as part of 
-the .kprobes.text section so that we don't accidently try to probe it.
+-Will
 
-On ppc64 this was done by duplicating the _GLOBAL macro and just 
-modifying the ".section" line.
-
-Unfortunately for me, ppc doesn't have a ".section" line in that macro, 
-so I'm at a bit of a loss.
-
-Anyone got any suggestions, or pointers on where I could read up on it?
-
-Chris
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
