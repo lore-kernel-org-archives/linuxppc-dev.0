@@ -2,18 +2,15 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CCC32DDE38
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 16:07:49 +1000 (EST)
-In-Reply-To: <11853846332917-git-send-email-timur@freescale.com>
-References: <11853846332917-git-send-email-timur@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <8CEA1441-8408-48A9-A023-F072FBC3EEE2@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id D8610DDECC
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 16:28:50 +1000 (EST)
+Date: Thu, 26 Jul 2007 01:28:20 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] POWERPC: Fix definition of global-utilites structure for
-	86xx
-Date: Thu, 26 Jul 2007 01:08:36 -0500
-To: Timur Tabi <timur@freescale.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Please pull from 'fixes-2.6.23' branch
+Message-ID: <Pine.LNX.4.64.0707260127310.30790@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,22 +21,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Please pull from 'fixes-2.6.23' branch of
 
-On Jul 25, 2007, at 12:30 PM, Timur Tabi wrote:
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git fixes-2.6.23
 
-> The current definition of struct ccsr_guts in immap_86xx.h was for  
-> 85xx.
-> This patch fixes that and replaces the vague integer types with  
-> sized types
-> of the correct endianness.  The unused struct ccsr_pci is also  
-> deleted.
->
-> Signed-off-by: Timur Tabi <timur@freescale.com>
-> ---
->  include/asm-powerpc/immap_86xx.h |  151 +++++++++++ 
-> +--------------------------
->  1 files changed, 46 insertions(+), 105 deletions(-)
+to receive the following updates:
 
-Why don't we remove this completely, nothing uses it?
+ arch/powerpc/Kconfig.debug            |    2 +-
+ arch/powerpc/boot/dts/mpc7448hpc2.dts |    2 +-
+ arch/powerpc/boot/dts/mpc8544ds.dts   |    8 ++++++++
+ arch/powerpc/boot/dts/mpc8568mds.dts  |    6 ++++++
+ arch/powerpc/kernel/irq.c             |    8 ++++----
+ arch/powerpc/kernel/pci-common.c      |    2 +-
+ arch/powerpc/kernel/pci_32.c          |   20 +++++++++++++++++++-
+ arch/powerpc/kernel/process.c         |    4 ++++
+ arch/powerpc/kernel/udbg.c            |    2 +-
+ arch/powerpc/sysdev/fsl_pci.c         |    4 ++--
+ arch/powerpc/sysdev/indirect_pci.c    |    1 +
+ 11 files changed, 48 insertions(+), 11 deletions(-)
 
-- k
+Kumar Gala (6):
+      [POWERPC] Fix PCI indirect for big-endian cfg_addr
+      [POWERPC] Don't try to allocate resources for a Freescale POWERPC PHB
+      [POWERPC] Fix ethernet PHY support on MPC8544 DS
+      [POWREPC] Fixup a number of modpost warnings on ppc32
+      [POWERPC] Only allow building of BootX text support on PPC_MULTIPLATFORM
+      [POWERPC] Fix register labels on show_regs() message for 4xx/Book-E
+
+Roy Zang (2):
+      [POWERPC] Fix mpc7448hpc2 tsi108 device_type bug
+      [POWERPC] Fix the ability to reset on MPC8544 DS and MPC8568 MDS boards
