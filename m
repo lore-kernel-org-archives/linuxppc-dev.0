@@ -1,34 +1,18 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E5E4BDDE9D
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 05:39:09 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6QJd6NE011818
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 15:39:06 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l6QJd5qx217830
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 13:39:05 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6QJd5pO030587
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 13:39:05 -0600
-Subject: Re: [PATCH] [POWERPC] iSeries: fix section mismatch warnings
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20070726115601.7733fb96.sfr@canb.auug.org.au>
-References: <20070725092735.0a5a1c52.sfr@canb.auug.org.au>
-	<1185382531.22237.46.camel@farscape.rchland.ibm.com>
-	<20070726115601.7733fb96.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Thu, 26 Jul 2007 14:39:04 -0500
-Message-Id: <1185478744.2669.0.camel@farscape.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
-Reply-To: will_schmidt@vnet.ibm.com
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
+	by ozlabs.org (Postfix) with ESMTP id 1B626DDF01
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 05:40:46 +1000 (EST)
+From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
+To: <avorontsov@ru.mvista.com>
+Subject: RE: [RFC][PATCH] MPC832x_RDB: update dts to use spi,
+	registermmc_spi stub
+Date: Thu, 26 Jul 2007 21:40:23 +0200
+Message-ID: <02bd01c7cfbc$cf213610$02ac10ac@Jocke>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <20070726154747.GA6930@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,37 +22,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-07-26 at 11:56 +1000, Stephen Rothwell wrote:
-> Hi Will,
+ 
+
+> -----Original Message-----
+> From: Anton Vorontsov [mailto:avorontsov@ru.mvista.com] 
+> Sent: den 26 juli 2007 17:48
+> To: Joakim Tjernlund
+> Cc: linuxppc-dev@ozlabs.org
+> Subject: Re: [RFC][PATCH] MPC832x_RDB: update dts to use spi, 
+> registermmc_spi stub
 > 
-> On Wed, 25 Jul 2007 11:55:31 -0500 Will Schmidt <will_schmidt@vnet.ibm.com> wrote:
-> >
-> > >  	cmpwi	0,r24,0			/* Are we processor 0? */
-> > > -	beq	.__start_initialization_iSeries	/* Start up the first processor */
-> > > -	mfspr	r4,SPRN_CTRLF
-> > > +	bne	1f
-> > > +	b	.__start_initialization_iSeries	/* Start up the first processor */
-> > > +1:	mfspr	r4,SPRN_CTRLF
-> > >  	li	r5,CTRL_RUNLATCH	/* Turn off the run light */
+> On Thu, Jul 26, 2007 at 05:36:06PM +0200, Joakim Tjernlund wrote:
+> [...]
+> > >  		spi@4c0 {
+> > >  			device_type = "spi";
+> > > +			device-id = <1>;
+> > >  			compatible = "fsl_spi";
+> > >  			reg = <4c0 40>;
+> > >  			interrupts = <2>;
+> > >  			interrupt-parent = <&qeic>;
+> > > -			mode = "cpu";
+> > > +			mode = "qe";
 > > 
-> > This part isnt clicking for me.. 
-> > How does changing a "beq" to a "bne" over a "b" fit into changing
-> > __start_initialization_iSeries static?  
+> > The driver is still using "cpu" mode. It just happens that 
+> the cpu mode for QE
+> > enabled CPUs isn't 100% compatible with the defacto cpu 
+> mode used by other CPU:s.
 > 
-> Because I moved __start_initialization_iSeries into another section, it
-> ends up too far away for a conditional branch so something adds a jump
-> table to the .text section and changes this branch to be via that table.
-> Unfortunately, the jump table ends up at the start of the .text and ruins
-> our carefully laid out kernel image.  By inverting the test I can turn
-> the branch into an unconditional one which has a larger possible offse
-> (effectively building the jump table manually).
-
-Gotcha, thanks for the clarification.  :-)
-
--Will
-
+> Yup, indeed.
 > 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> > So mode should probably be "cpu_qe" or, even better, if the 
+> drver could
+> 
+> That's easy to change, thanks.
+> 
+> > autodetect that it is running on a QE enabled CPU and 
+> adjust accordinly.
+> > Maybe the Freescale guys have some ideas how to do that.
+> 
+> Ok. Well, for now could we use machine_is() for kind of autodetect?
+> Or it's better leave it as is, and just rename mode to cpu_qe?
+
+Unless the DTS guys thinks otherwise, just rename to "cpu_qe".
+"qe" would then be reserved for true QE mode.
+
+ Jocke
