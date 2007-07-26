@@ -1,23 +1,21 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 72C10DDE1D
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 02:05:04 +1000 (EST)
-Date: Thu, 26 Jul 2007 11:04:55 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>,
-	Zang Roy-r61911 <tie-fei.zang@freescale.com>, linuxppc-dev@ozlabs.org
-Subject: Re: Fwd: [PATCH] bootwrapper: adds cuboot for MPC7448HPC2 platform
-Message-ID: <20070726160455.GA28491@ld0162-tx32.am.freescale.net>
-References: <1184144056.23579.16.camel@localhost.localdomain>
-	<B37B73EC-54FE-442C-A1FF-348D89D3D840@kernel.crashing.org>
-	<20070726065902.GD1149@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070726065902.GD1149@localhost.localdomain>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id E57ECDDED7
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 02:22:19 +1000 (EST)
+Message-ID: <46A8CAB2.5050706@ru.mvista.com>
+Date: Thu, 26 Jul 2007 20:24:18 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 2/2] [POWERPC] MPC8349E-mITX: use platform IDE driver
+	for CF	interface
+References: <20070725165318.5331.23795.stgit@localhost.localdomain>	<20070725165326.5331.19920.stgit@localhost.localdomain>	<46A78322.3080607@ru.mvista.com>
+	<46A78E3F.1030904@ru.mvista.com>	<20070725180145.GA29689@ld0162-tx32.am.freescale.net>	<46A7941F.2050300@ru.mvista.com>
+	<46A798D8.7020906@freescale.com> <46A7A4EC.2020503@ru.mvista.com>
+In-Reply-To: <46A7A4EC.2020503@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,20 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 26, 2007 at 04:59:02PM +1000, David Gibson wrote:
-> > >+#define TARGET_HAS_ENET1
-> > >+#include "ppcboot.h"
-> 
-> Including ppcboot.h without first defining TARGET_* defines which give
-> the type of system seems... fragile at best, broken at worst.  Surely
-> this can only work by accident.
+Hello, I wrote:
 
-What target do you suggest he define?  There happen to be none in
-ppcboot.h that are appropriate, because there are no special fields for
-this target (other than eth1).
+>>>>>   Also, what mmio-ide in the compat properly means in the context 
+>>>>>of ide_platform which is able to handle both port and memory mapped 
+>>>>>IDE.
 
-And yes, it's fragile -- the entire bd_t mechanism is fragile.  In the
-absence of a time machine, there's not much we can do about it other than
-encourage people to upgrade their u-boot.
+>>>>I/O-space is only valid in the context of PCI, ISA, or similar buses, 
+>>>>and
+>>>>the bus-specific reg format indicates whether it's mmio-space or
+>>>>io-space.
 
--Scott
+>>>   You could save time on lecturing me (and use it to look on the 
+>>>driver ;-).
+
+>>Sorry, I misread the question as being a mismatch between the 
+>>capabilities of the device binding and the driver, not about the 
+>>specific compatible name.
+
+>     That too. :-)
+
+>>Something like "generic-ide" would probably be better.
+
+>     I strongly disagree with "generic" part. The generic IDE could only be 
+> said of 1:1 I/O mapped IDE ports, not about this fancy mapping.
+
+    BTW, there's already something called drivers/ide/ide-generic.c... :-)
+
+MBR, Sergei
