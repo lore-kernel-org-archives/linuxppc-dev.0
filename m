@@ -1,17 +1,16 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id BBEDDDDED7
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 00:02:00 +1000 (EST)
-Received: from localhost (unknown [10.150.0.9])
-	by buildserver.ru.mvista.com (Postfix) with ESMTP id 60C278814
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 19:01:59 +0500 (SAMST)
-Date: Thu, 26 Jul 2007 18:01:39 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] mpc832x_rdb.c: prevent using uninitialized variable
-Message-ID: <20070726140139.GA5709@localhost.localdomain>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 27 Jul 2007 00:27:39 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: DTC 1.0.0 Release Coming?
+Message-ID: <20070726142739.GB18684@localhost.localdomain>
+References: <E1IDjSy-0003eC-T4@jdl.com>
+	<20070726030550.GA1149@localhost.localdomain>
+	<E1IE314-0000qF-5x@jdl.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <E1IE314-0000qF-5x@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,34 +20,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If CONFIG_PCI undefined, np will be used uninitialized, thereby
-find_node_by_name(np, "par_io") will fail.
+On Thu, Jul 26, 2007 at 08:04:30AM -0500, Jon Loeliger wrote:
+> So, like, the other day David Gibson mumbled:
+> > On Wed, Jul 25, 2007 at 11:12:00AM -0500, Jon Loeliger wrote:
+> > > Folks,
+> > > 
+> > > I'd like to make an official DTC Version 1.0.0 release soon!
+> > 
+> > It would certainly be great to have a release, since dtc is becoming
+> > necessary for more and more kernel builds.
+> > 
+> > Only thing I'm not really happy with in the current release is the
+> > versioning stuff.  For starters, it always reports my builds as
+> > -dirty, even when they're not.
+> 
+> I think it won't do that once there is a tag available.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/platforms/83xx/mpc832x_rdb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Your 1.0.0-rc1 tag is there, still showing as dirty.
 
-diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-index c5463c7..b16dce2 100644
---- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-@@ -79,14 +79,14 @@ device_initcall(mpc83xx_spi_devices_init);
- static void __init mpc832x_rdb_setup_arch(void)
- {
- #if defined(CONFIG_PCI) || defined(CONFIG_QUICC_ENGINE)
--	struct device_node *np;
-+	struct device_node *np = NULL;
- #endif
- 
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc832x_rdb_setup_arch()", 0);
- 
- #ifdef CONFIG_PCI
--	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
-+	for (; (np = of_find_node_by_type(np, "pci")) != NULL;)
- 		mpc83xx_add_bridge(np);
- 
- 	ppc_md.pci_exclude_device = mpc83xx_exclude_device;
+> > It also seems a bit hideously
+> > complicated for what it does.  I'd prefer to see something simpler
+> > using git-describe to derive the version strings directly from the git
+> > tags themselves.
+> 
+> That is essentially what is there now.  We just need a tag!
+
+Um... no.  The base version comes from the numbers specified in the
+Makefile, not from the git tag.
+
+> >  Obviously we need some sort of cacheing mechanism to
+> > make the versioning work for tarball releases without the git history,
+> > but I think we can handle that with a suitable "make dist" target.
+> 
+> Sure.
+> 
+> > I'll see if I can make a patch or two in the next few days.
+> 
+> I would like to keep the current version mechanism as it
+> is really quite similar to what is in the Kernel now.
+
+First, I don't think it really is - except in superficial aspect of
+how the version number is partitioned - the kernel has no auto version
+generating thing of this type.  Second, I don't see that being similar
+to the kernel's approach has any particular usefulness here, anyway.
+
 -- 
-1.5.0.6
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
