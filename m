@@ -1,20 +1,14 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id DC760DDDEB
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 11:56:08 +1000 (EST)
-Date: Thu, 26 Jul 2007 11:56:01 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: will_schmidt@vnet.ibm.com
-Subject: Re: [PATCH] [POWERPC] iSeries: fix section mismatch warnings
-Message-Id: <20070726115601.7733fb96.sfr@canb.auug.org.au>
-In-Reply-To: <1185382531.22237.46.camel@farscape.rchland.ibm.com>
-References: <20070725092735.0a5a1c52.sfr@canb.auug.org.au>
-	<1185382531.22237.46.camel@farscape.rchland.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__26_Jul_2007_11_56_01_+1000_79Rd8y9ScHaGFWjm"
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 26 Jul 2007 13:05:50 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: DTC 1.0.0 Release Coming?
+Message-ID: <20070726030550.GA1149@localhost.localdomain>
+References: <E1IDjSy-0003eC-T4@jdl.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <E1IDjSy-0003eC-T4@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,50 +18,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__26_Jul_2007_11_56_01_+1000_79Rd8y9ScHaGFWjm
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, Jul 25, 2007 at 11:12:00AM -0500, Jon Loeliger wrote:
+> Folks,
+> 
+> I'd like to make an official DTC Version 1.0.0 release soon!
+> To that end, I've published a repo on jdl.com with a v1.0.0-rc1
+> tag on it.  I anticipate some updates to the Documentation before
+> a final 1.0.0 release still.  However, if you have something
+> you would like to have be in The Real 1.0.0 release, please
+> let me know soon!
 
-Hi Will,
+It would certainly be great to have a release, since dtc is becoming
+necessary for more and more kernel builds.
 
-On Wed, 25 Jul 2007 11:55:31 -0500 Will Schmidt <will_schmidt@vnet.ibm.com>=
- wrote:
->
-> >  	cmpwi	0,r24,0			/* Are we processor 0? */
-> > -	beq	.__start_initialization_iSeries	/* Start up the first processor */
-> > -	mfspr	r4,SPRN_CTRLF
-> > +	bne	1f
-> > +	b	.__start_initialization_iSeries	/* Start up the first processor */
-> > +1:	mfspr	r4,SPRN_CTRLF
-> >  	li	r5,CTRL_RUNLATCH	/* Turn off the run light */
->=20
-> This part isnt clicking for me..=20
-> How does changing a "beq" to a "bne" over a "b" fit into changing
-> __start_initialization_iSeries static? =20
+Only thing I'm not really happy with in the current release is the
+versioning stuff.  For starters, it always reports my builds as
+-dirty, even when they're not.  It also seems a bit hideously
+complicated for what it does.  I'd prefer to see something simpler
+using git-describe to derive the version strings directly from the git
+tags themselves.  Obviously we need some sort of cacheing mechanism to
+make the versioning work for tarball releases without the git history,
+but I think we can handle that with a suitable "make dist" target.
 
-Because I moved __start_initialization_iSeries into another section, it
-ends up too far away for a conditional branch so something adds a jump
-table to the .text section and changes this branch to be via that table.
-Unfortunately, the jump table ends up at the start of the .text and ruins
-our carefully laid out kernel image.  By inverting the test I can turn
-the branch into an unconditional one which has a larger possible offse
-(effectively building the jump table manually).
+I'll see if I can make a patch or two in the next few days.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__26_Jul_2007_11_56_01_+1000_79Rd8y9ScHaGFWjm
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGp/82TgG2atn1QN8RAr24AJ9t5fqxcKDg2gecQZoVjt5xmyPmKgCcCnCL
-lze3N2tIZZoQJl3TuMRh0t4=
-=RJeT
------END PGP SIGNATURE-----
-
---Signature=_Thu__26_Jul_2007_11_56_01_+1000_79Rd8y9ScHaGFWjm--
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
