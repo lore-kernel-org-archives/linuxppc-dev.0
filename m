@@ -1,20 +1,21 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id C6CDADDF60
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 03:43:24 +1000 (EST)
-Message-ID: <46A8DDB4.30306@ru.mvista.com>
-Date: Thu, 26 Jul 2007 21:45:24 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <CFRIESEN@nortel.com>
+Received: from zrtps0kn.nortel.com (zrtps0kn.nortel.com [47.140.192.55])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "zrtps0kn.nortel.com", Issuer "NORTEL" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id DA7ADDDE18
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 05:38:12 +1000 (EST)
+Received: from zcarhxs1.corp.nortel.com (zcarhxs1.corp.nortel.com
+	[47.129.230.89])
+	by zrtps0kn.nortel.com (Switch-2.2.6/Switch-2.2.0) with ESMTP id
+	l6QJD5o27862
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 19:13:05 GMT
+Message-ID: <46A8F22E.6010701@nortel.com>
+Date: Thu, 26 Jul 2007 13:12:46 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
 MIME-Version: 1.0
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] [POWERPC] MPC8349E-mITX: use platform IDE driver
-	for CF	interface
-References: <20070725165318.5331.23795.stgit@localhost.localdomain>	<20070725165326.5331.19920.stgit@localhost.localdomain>	<46A78322.3080607@ru.mvista.com>	<46A78E3F.1030904@ru.mvista.com>	<20070725180145.GA29689@ld0162-tx32.am.freescale.net>	<46A7968D.3070707@ru.mvista.com>	<46A79AA1.3030608@freescale.com>
-	<20070726212118.7fe7abd3@localhost.localdomain>
-In-Reply-To: <20070726212118.7fe7abd3@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+To: linuxppc-dev@ozlabs.org
+Subject: help with ppc sections?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,45 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
 
-Vitaly Bordug wrote:
+Hi all,
 
->>>   I acn undertand your complaint in the context of an OF driver
->>>(which we don't have yet) but "mmio-ide" just means nothing to the
->>>current driver, and it doesn't convery enough info on the
->>>programming interface for the conceivable OF driver, it also does
->>>need to know at least "reg-stride" (and maybe "reg-size" in case
->>>only 16/32-bit accesses can be used).  Well, if such driver will be
->>>written, I/O mapping support will probably be dropped from it, so
->>>indeed, calling it mmio-ide.c would make sense.  But that can be
->>>added when this driver is done, and for now 
+I'm porting kprobes to 2.6.14, and I think I've got it mostly done.  The 
+last thing that I want to do is to mark flush_icache_range() as part of 
+the .kprobes.text section so that we don't accidently try to probe it.
 
->>I don't think the details of what Linux code currently exists should 
->>drive the device tree binding.  That the current patches use 
->>platform_device glue code is an implementation detail (and one I'd 
->>rather see go away, in favor of a driver that supports both 
->>platform_device and of_device).
+On ppc64 this was done by duplicating the _GLOBAL macro and just 
+modifying the ".section" line.
 
->>>I'd really prefer the board name to appear in the "compatible" prop
->>>(to which "mmio-ide" can be appended)...
+Unfortunately for me, ppc doesn't have a ".section" line in that macro, 
+so I'm at a bit of a loss.
 
->>Sure, that's always good...  it was the "instead" that I objected to.
+Anyone got any suggestions, or pointers on where I could read up on it?
 
-> Hmmm. So what is finally suggested devicetree node for this beast - can somebody refine?
-
-> I am a little bit confused about decided device_type
-
-    My understanding is that "ata" has been already used, so there's no sense 
-in introducing "ide". Anyway, Segher will just say that "device_type" shoudn't 
-matter and even be present. ;-)
-
- > and compatible fields...
-
-    In my understanding, as "mmio-ide" currectly makes no sense, it shouldn't 
-even appear there.  And since "mpc8349emitx-cf" (or whatever would be most 
-generic name for those boards with the same type of CF IDE mapping) should be 
-imply the shift value, this property should also be optional, i.e. passing 
-hard coded value with platform_device would do.
-
-MBR, Sergei
+Chris
