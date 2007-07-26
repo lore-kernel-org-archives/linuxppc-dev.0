@@ -1,15 +1,22 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 27 Jul 2007 00:27:39 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: DTC 1.0.0 Release Coming?
-Message-ID: <20070726142739.GB18684@localhost.localdomain>
-References: <E1IDjSy-0003eC-T4@jdl.com>
-	<20070726030550.GA1149@localhost.localdomain>
-	<E1IE314-0000qF-5x@jdl.com>
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9D723DDECC
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 01:14:40 +1000 (EST)
+Message-ID: <46A8BA58.4010208@freescale.com>
+Date: Thu, 26 Jul 2007 10:14:32 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E1IE314-0000qF-5x@jdl.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] POWERPC: Fix definition of global-utilites structure
+	for 86xx
+References: <11853846332917-git-send-email-timur@freescale.com>
+	<8CEA1441-8408-48A9-A023-F072FBC3EEE2@kernel.crashing.org>
+In-Reply-To: <8CEA1441-8408-48A9-A023-F072FBC3EEE2@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,52 +27,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 26, 2007 at 08:04:30AM -0500, Jon Loeliger wrote:
-> So, like, the other day David Gibson mumbled:
-> > On Wed, Jul 25, 2007 at 11:12:00AM -0500, Jon Loeliger wrote:
-> > > Folks,
-> > > 
-> > > I'd like to make an official DTC Version 1.0.0 release soon!
-> > 
-> > It would certainly be great to have a release, since dtc is becoming
-> > necessary for more and more kernel builds.
-> > 
-> > Only thing I'm not really happy with in the current release is the
-> > versioning stuff.  For starters, it always reports my builds as
-> > -dirty, even when they're not.
-> 
-> I think it won't do that once there is a tag available.
+Kumar Gala wrote:
 
-Your 1.0.0-rc1 tag is there, still showing as dirty.
+> Why don't we remove this completely, nothing uses it?
 
-> > It also seems a bit hideously
-> > complicated for what it does.  I'd prefer to see something simpler
-> > using git-describe to derive the version strings directly from the git
-> > tags themselves.
-> 
-> That is essentially what is there now.  We just need a tag!
-
-Um... no.  The base version comes from the numbers specified in the
-Makefile, not from the git tag.
-
-> >  Obviously we need some sort of cacheing mechanism to
-> > make the versioning work for tarball releases without the git history,
-> > but I think we can handle that with a suitable "make dist" target.
-> 
-> Sure.
-> 
-> > I'll see if I can make a patch or two in the next few days.
-> 
-> I would like to keep the current version mechanism as it
-> is really quite similar to what is in the Kernel now.
-
-First, I don't think it really is - except in superficial aspect of
-how the version number is partitioned - the kernel has no auto version
-generating thing of this type.  Second, I don't see that being similar
-to the kernel's approach has any particular usefulness here, anyway.
+Should I respin the patch to include updates to mpc86xx_restart() to use it?
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Timur Tabi
+Linux Kernel Developer @ Freescale
