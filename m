@@ -1,17 +1,21 @@
-Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 92CAADDEF4
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 20:01:01 +1000 (EST)
-Date: Thu, 26 Jul 2007 19:00:56 +0900 (JST)
-Message-Id: <20070726.190056.-432813248.kouish@swc.toshiba.co.jp>
-Subject: [PATCH 2/4] fix celleb sio section warning
-To: paulus@samba.org
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jbe@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 12025DDEF6
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 20:02:42 +1000 (EST)
+Received: from themisto.extern.pengutronix.de ([83.236.181.29] helo=localhost)
+	by metis.extern.pengutronix.de with esmtp (Exim 3.36 #1 (Debian))
+	id 1IE0B7-0003Sg-00
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 12:02:41 +0200
+From: Juergen Beisert <jbe@pengutronix.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Fwd: Re: Kernel Bug when entering something after login
+Date: Thu, 26 Jul 2007 12:02:40 +0200
+References: <200707261047.17297.jbe@pengutronix.de>
+In-Reply-To: <200707261047.17297.jbe@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200707261202.40402.jbe@pengutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,22 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fix following warning:
-WARNING: vmlinux.o(.text+0x45fd4): Section mismatch: reference to .init.text:.early_serial_txx9_setup (between '.txx9_serial_init' and '.txx9_serial_config')
+On Thursday 26 July 2007 10:47, Juergen Beisert wrote:
+> FYI. Valid for current 2.6.22.1 kernel.
 
-Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
----
+Sorry for the noise, tglx sent it allready.
 
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/scc_sio.c
-===================================================================
---- linux-powerpc-git.orig/arch/powerpc/platforms/celleb/scc_sio.c
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/scc_sio.c
-@@ -39,7 +39,7 @@ static struct {
- 	{ 0x800, 1 }	/* 0xFF2800 */
- };
- 
--static int txx9_serial_init(void)
-+static int __init txx9_serial_init(void)
- {
- 	extern int early_serial_txx9_setup(struct uart_port *port);
- 	struct device_node *node;
+Juergen
+=2D-=20
+Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
+=A0Pengutronix - Linux Solutions for Science and Industry
+=A0   Handelsregister: Amtsgericht Hildesheim, HRA 2686
+=A0 =A0 =A0    Vertretung Sued/Muenchen, Germany
+   Phone: +49-8766-939 228 |  Fax: +49-5121-206917-9
