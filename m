@@ -1,21 +1,23 @@
-Return-Path: <tglx@linutronix.de>
-Received: from mail.tglx.de (www.osadl.org [213.239.205.134])
-	by ozlabs.org (Postfix) with ESMTP id 8490EDDE2A
+Return-Path: <pradyumna.sampath@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.177])
+	by ozlabs.org (Postfix) with ESMTP id 675EFDDEE1
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 Jul 2007 19:41:38 +1000 (EST)
-Subject: RE: [PATCH] mpx5200_uart: drop port lock across tty_flip_buffer() call
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Daniel Schnell <daniel.schnell@marel.com>
-In-Reply-To: <DD39B5C3F4963040ADC9768BE7E430CB02178125@is-hdq-exchange.marel.net>
-References: <1185390656.3227.12.camel@chaos>
-	<fa686aa40707251242i6be0e30pd3b4019686308b0@mail.gmail.com>
-	<1185392838.3227.13.camel@chaos>
-	<DD39B5C3F4963040ADC9768BE7E430CB02178125@is-hdq-exchange.marel.net>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 26 Jul 2007 11:41:18 +0200
-Message-Id: <1185442878.3227.23.camel@chaos>
-Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
+	Thu, 26 Jul 2007 22:34:23 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so1223959pyi
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 26 Jul 2007 05:34:21 -0700 (PDT)
+Message-ID: <f87351060707260534k2f87ff47rdcfd0b787d5a0132@mail.gmail.com>
+Date: Thu, 26 Jul 2007 18:04:21 +0530
+From: "Pradyumna Sampath" <pradyumna.sampath@gmail.com>
+To: "Juergen Beisert" <juergen127@kreuzholzen.de>
+Subject: [Trace how to] Kernel Bug when entering something after login
+In-Reply-To: <200707261000.25465.juergen127@kreuzholzen.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <200707251900.47704.juergen127@kreuzholzen.de>
+	<1185390398.3227.8.camel@chaos>
+	<200707261000.25465.juergen127@kreuzholzen.de>
+Cc: linux-rt-users@vger.kernel.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,22 +28,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-07-26 at 09:25 +0000, Daniel Schnell wrote:
-> Thomas Gleixner wrote:
-> 
-> > On Wed, 2007-07-25 at 13:42 -0600, Grant Likely wrote:
-> >> On 7/25/07, Thomas Gleixner <tglx@linutronix.de> wrote:
-> >>> The port lock needs to be dropped across the tty_flip_buffer call,
-> >>> as it would lead to a deadlock with the spin_lock(&port->lock) in
-> >>> uart_start() 
-> >>> 
-> >>> Uncovered by lockdep / preempt-rt
-> >>> 
-> >>> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> 
-> While you are at it 8°> ... the mpc5200-fec driver has serious
-> problems with preempt-rt, similar to what the IBM emac had ....
+Hi Everyone,
 
-Care to whip up a patch ?
+On 7/26/07, Juergen Beisert <juergen127@kreuzholzen.de> wrote:
+> On Wednesday 25 July 2007 21:06, Thomas Gleixner wrote:
+> > Solution below
+>
+> Seems to work now. Thanks.
+>
+> Juergen
+> -
 
-	tglx
+First of all very sorry to cross post.
+
+I discovered the same problem on our MPC5200 and it after patching, it
+now works. But I could somehow not get the call trace and hence could
+not report the bug.
+
+I compiled the kernel with "CONFIG_FUNCTION_TRACE" and then I get
+undefined references on "early_printk". Is there something I am doing
+wrong in the kernel config or was there an additional patch to enable
+this support for MPC5200 ?
+
+I see more bugs when I run "stress" but I cant solve them or even
+report them, because I cant see the trace information.
+
+thanks in advance
+regards
+/prady
+
+-- 
+htp://prady.livejournal.com
