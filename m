@@ -1,20 +1,23 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 37EB4DDF13
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 01:48:10 +1000 (EST)
-Date: Thu, 26 Jul 2007 19:47:47 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Subject: Re: [RFC][PATCH] MPC832x_RDB: update dts to use spi, register
-	mmc_spi stub
-Message-ID: <20070726154747.GA6930@localhost.localdomain>
-References: <20070726135738.GB5643@localhost.localdomain>
-	<02aa01c7cf9a$aebf3bf0$02ac10ac@Jocke>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <02aa01c7cf9a$aebf3bf0$02ac10ac@Jocke>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 72C10DDE1D
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 02:05:04 +1000 (EST)
+Date: Thu, 26 Jul 2007 11:04:55 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>,
+	Zang Roy-r61911 <tie-fei.zang@freescale.com>, linuxppc-dev@ozlabs.org
+Subject: Re: Fwd: [PATCH] bootwrapper: adds cuboot for MPC7448HPC2 platform
+Message-ID: <20070726160455.GA28491@ld0162-tx32.am.freescale.net>
+References: <1184144056.23579.16.camel@localhost.localdomain>
+	<B37B73EC-54FE-442C-A1FF-348D89D3D840@kernel.crashing.org>
+	<20070726065902.GD1149@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070726065902.GD1149@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,43 +27,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 26, 2007 at 05:36:06PM +0200, Joakim Tjernlund wrote:
-[...]
-> >  		spi@4c0 {
-> >  			device_type = "spi";
-> > +			device-id = <1>;
-> >  			compatible = "fsl_spi";
-> >  			reg = <4c0 40>;
-> >  			interrupts = <2>;
-> >  			interrupt-parent = <&qeic>;
-> > -			mode = "cpu";
-> > +			mode = "qe";
+On Thu, Jul 26, 2007 at 04:59:02PM +1000, David Gibson wrote:
+> > >+#define TARGET_HAS_ENET1
+> > >+#include "ppcboot.h"
 > 
-> The driver is still using "cpu" mode. It just happens that the cpu mode for QE
-> enabled CPUs isn't 100% compatible with the defacto cpu mode used by other CPU:s.
+> Including ppcboot.h without first defining TARGET_* defines which give
+> the type of system seems... fragile at best, broken at worst.  Surely
+> this can only work by accident.
 
-Yup, indeed.
+What target do you suggest he define?  There happen to be none in
+ppcboot.h that are appropriate, because there are no special fields for
+this target (other than eth1).
 
-> So mode should probably be "cpu_qe" or, even better, if the drver could
+And yes, it's fragile -- the entire bd_t mechanism is fragile.  In the
+absence of a time machine, there's not much we can do about it other than
+encourage people to upgrade their u-boot.
 
-That's easy to change, thanks.
-
-> autodetect that it is running on a QE enabled CPU and adjust accordinly.
-> Maybe the Freescale guys have some ideas how to do that.
-
-Ok. Well, for now could we use machine_is() for kind of autodetect?
-Or it's better leave it as is, and just rename mode to cpu_qe?
-
->  Jocke
-> 
-> PS.
->    Will be on vacation for a week as of tmw, won't have access
->    during this time.
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+-Scott
