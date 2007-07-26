@@ -1,23 +1,25 @@
-Return-Path: <Martin.Leisner@xerox.com>
-Received: from wbmler2.mail.xerox.com (wbmler2.mail.xerox.com [13.13.138.217])
+Return-Path: <bgat@billgatliff.com>
+Received: from venus.billgatliff.com (venus.billgatliff.com [209.251.101.201])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "wbmler2.mail.xerox.com",
-	Issuer "wbmler2.mail.xerox.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 1E6B2DDED7
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 02DA2DDE41
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 Jul 2007 01:17:56 +1000 (EST)
+	Fri, 27 Jul 2007 02:29:04 +1000 (EST)
+Message-ID: <46A8CBC0.8010909@billgatliff.com>
+Date: Thu, 26 Jul 2007 11:28:48 -0500
+From: Bill Gatliff <bgat@billgatliff.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: support for MPC8220?
-Date: Thu, 26 Jul 2007 11:17:32 -0400
-Message-ID: <556445368AFA1C438794ABDA8901891C066B5B5E@usa0300ms03.na.xerox.net>
-In-Reply-To: <20070724211104.GL1678@pengutronix.de>
-References: <556445368AFA1C438794ABDA8901891C066B5B56@usa0300ms03.na.xerox.net>
-	<20070724211104.GL1678@pengutronix.de>
-From: "Leisner, Martin" <Martin.Leisner@xerox.com>
-To: "Robert Schwebel" <r.schwebel@pengutronix.de>
-Cc: linuxppc-embedded@ozlabs.org
+To: Bill Gatliff <bgat@billgatliff.com>,  gdb@sourceware.org,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: Gdbserver syscall clobber
+References: <469B922D.3050701@billgatliff.com>
+	<20070716155348.GA5281@caradoc.them.org>
+	<469E550E.5080905@billgatliff.com>
+	<20070718183143.GA25324@caradoc.them.org>
+	<46A4D1F5.1060005@billgatliff.com>
+	<20070723161512.GA3235@caradoc.them.org>
+In-Reply-To: <20070723161512.GA3235@caradoc.them.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,40 +30,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-=20
-actually, it's there -- you have to find it (I saw it once, I can't
-find it again).  (other search engines seem to do a better job).
+Daniel Jacobowitz wrote:
+> Look around do_signal:
+>
+>                         regs->nip -= 4; /* Back up & retry system call */
+>
+> If your kernel has corrupted the register containing the syscall
+> number at this point, that would explain your problem.  It will then
+> do the wrong syscall.  I guess PPC only backs up one instruction.
+>
+>   
 
-I think MPC8220 runs well without MMU -- the montavista PRO 3.1 the
-freescale
-site discusses 2.4.20...
+Found the code in do_signal, right where you said it would be.  I threw 
+in a printk or two to see what's up when an ERESTARTSYS is detected, and 
+started getting OOPSes all over the place.  Apparently that's not a good 
+place for printk.  :)
 
-We ran an 8220 at one time on 2.4.20 -- I recall there was some
-flakiness, and we used
-a montavista system, so it must have been 3.1...
+Before I go on, can anyone confirm that gdbserver and/or strace _ever_ 
+worked with circa 2.4.16 PPC kernels?
 
 
-marty
 
-> -----Original Message-----
-> From: Robert Schwebel [mailto:rsc@pengutronix.de] On Behalf=20
-> Of Robert Schwebel
-> Sent: Tuesday, July 24, 2007 5:11 PM
-> To: Leisner, Martin
-> Cc: linuxppc-embedded@ozlabs.org
-> Subject: Re: support for MPC8220?
->=20
-> On Mon, Jul 23, 2007 at 11:27:00AM -0400, Leisner, Martin wrote:
-> > Is there support for MPC8220 in current kernels?
->=20
-> 8220? Are you sure? That part doesn't exist on the freescale site.
->=20
-> Robert=20
-> --=20
->  Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
->  Pengutronix - Linux Solutions for Science and Industry
->    Handelsregister:  Amtsgericht Hildesheim, HRA 2686
->      Hannoversche Str. 2, 31134 Hildesheim, Germany
->    Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
->=20
->=20
+b.g.
+
+-- 
+Bill Gatliff
+bgat@billgatliff.com
