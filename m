@@ -1,10 +1,14 @@
-Return-Path: <benh@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 26 Jul 2007 14:07:14 +1000
-Subject: [PATCH 3/3] powerpc: Fix Maple platform ISA bus
-Message-Id: <20070726040755.50545DDEDA@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18088.10923.67233.336636@cargo.ozlabs.ibm.com>
+Date: Thu, 26 Jul 2007 15:01:31 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Meelis Roos <mroos@linux.ee>
+Subject: Re: [PATCH] fix ppc kernels after build-id addition
+In-Reply-To: <Pine.SOC.4.64.0707251301200.21641@math.ut.ee>
+References: <Pine.SOC.4.64.0707251301200.21641@math.ut.ee>
+Cc: linuxppc-dev@ozlabs.org, Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,28 +18,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The Maple platform has ISA IOs but didn't call the new functions to
-actually map those, thus crashing when trying to access the nvram.
+Meelis Roos writes:
 
-This fixes Maple and js2x using SLOF
+> This patch fixes arch/ppc kernels, at least for prep subarch, after 
+> build-id addition. Without the patch, kernels were 3 times the size and 
+> bootloader refused to load them. Now they are back to normal again.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- 
- arch/powerpc/platforms/maple/pci.c |    3 +++
- 1 file changed, 3 insertions(+)
+I just built an ARCH=ppc kernel for the prep subarch and the vmlinux
+size was normal.  Can you identify exactly why the kernels got so much
+bigger, i.e. what is taking up all the space?
 
-Index: linux-work/arch/powerpc/platforms/maple/pci.c
-===================================================================
---- linux-work.orig/arch/powerpc/platforms/maple/pci.c	2007-07-25 16:29:22.000000000 +1000
-+++ linux-work/arch/powerpc/platforms/maple/pci.c	2007-07-26 10:30:43.000000000 +1000
-@@ -490,6 +490,9 @@ static int __init maple_add_bridge(struc
- 	/* Fixup "bus-range" OF property */
- 	fixup_bus_range(dev);
- 
-+	/* Check for legacy IOs */
-+	isa_bridge_find_early(hose);
-+
- 	return 0;
- }
- 
+Paul.
