@@ -1,14 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 26 Jul 2007 13:05:50 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: DTC 1.0.0 Release Coming?
-Message-ID: <20070726030550.GA1149@localhost.localdomain>
-References: <E1IDjSy-0003eC-T4@jdl.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E1IDjSy-0003eC-T4@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+Message-ID: <18088.5537.900347.861055@cargo.ozlabs.ibm.com>
+Date: Thu, 26 Jul 2007 13:31:45 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Kim Phillips <kim.phillips@freescale.com>
+Subject: Re: [PATCH] Re: 2.6.22-git hangs during boot on PowerBook G3 in 0.0
+	seconds
+In-Reply-To: <20070724185946.722f34b5.kim.phillips@freescale.com>
+References: <20070721192143.GA12144@nospam.com>
+	<20070721212845.GA30977@nospam.com>
+	<20070723172725.b1c14885.kim.phillips@freescale.com>
+	<1185234923.5439.158.camel@localhost.localdomain>
+	<20070724185946.722f34b5.kim.phillips@freescale.com>
+Cc: Rutger Nijlunsing <rutger@nospam.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,32 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 25, 2007 at 11:12:00AM -0500, Jon Loeliger wrote:
-> Folks,
-> 
-> I'd like to make an official DTC Version 1.0.0 release soon!
-> To that end, I've published a repo on jdl.com with a v1.0.0-rc1
-> tag on it.  I anticipate some updates to the Documentation before
-> a final 1.0.0 release still.  However, if you have something
-> you would like to have be in The Real 1.0.0 release, please
-> let me know soon!
+Kim Phillips writes:
 
-It would certainly be great to have a release, since dtc is becoming
-necessary for more and more kernel builds.
+> but yeah, size-cells should be allowed to be 0 (even address-cells) and
+> it may be the case that the Lombard needs some fixup code.
 
-Only thing I'm not really happy with in the current release is the
-versioning stuff.  For starters, it always reports my builds as
--dirty, even when they're not.  It also seems a bit hideously
-complicated for what it does.  I'd prefer to see something simpler
-using git-describe to derive the version strings directly from the git
-tags themselves.  Obviously we need some sort of cacheing mechanism to
-make the versioning work for tarball releases without the git history,
-but I think we can handle that with a suitable "make dist" target.
+So it turns out that the nvram is under the via-pmu node on the
+Lombard.  The via-pmu node has #size-cells == 0, which is correct
+since things under the via-pmu aren't directly accessible.  The nvram
+driver code relies on not being able to translate an address for the
+nvram nodes on machines where the nvram isn't directly accessible.
+That is, it looks for "nvram" nodes, and if it can translate the
+address, assumes it can access the nvram directly.
 
-I'll see if I can make a patch or two in the next few days.
+So nothing is incorrect here except your patch. :)  I'll revert it.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Paul.
