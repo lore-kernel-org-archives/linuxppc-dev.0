@@ -1,16 +1,17 @@
-Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6A1DCDDEDC
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 20:06:14 +1000 (EST)
-Date: Thu, 26 Jul 2007 19:06:08 +0900 (JST)
-Message-Id: <20070726.190608.1649795822.kouish@swc.toshiba.co.jp>
-Subject: [PATCH 4/4] init markings for hvc_beat
-To: paulus@samba.org
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <akostop@inaccessnetworks.com>
+Received: from inaccessnetworks.com (node3.inaccessnetworks.com
+	[212.205.200.118]) by ozlabs.org (Postfix) with ESMTP id 11E26DDE2E
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 20:43:03 +1000 (EST)
+Date: Thu, 26 Jul 2007 13:42:46 +0300
+To: "Scott Wood" <scottwood@freescale.com>
+Subject: Re: About mdio_bus for 82xx based board
+From: "Alexandros Kostopoulos" <akostop@inaccessnetworks.com>
+Content-Type: text/plain; format=flowed; delsp=yes; charset=iso-8859-7
+MIME-Version: 1.0
+References: <op.tv0x7yvmnhx3hy@phoenix>
+	<20070725162305.GA26276@ld0162-tx32.am.freescale.net>
+Message-ID: <op.tv2in7f5nhx3hy@phoenix>
+In-Reply-To: <20070725162305.GA26276@ld0162-tx32.am.freescale.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,30 +22,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fix warnings about section mismatch.
+Hello Scott,
 
-Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
----
+Thanks for your response. I'm trying to apply your patches to vanilla  
+2.6.22.1 kernel, but unfortunately some patches fail, namely:
 
-Index: linux-powerpc-git/drivers/char/hvc_beat.c
-===================================================================
---- linux-powerpc-git.orig/drivers/char/hvc_beat.c
-+++ linux-powerpc-git/drivers/char/hvc_beat.c
-@@ -97,7 +97,7 @@ static int hvc_beat_config(char *p)
- 	return 0;
- }
- 
--static int hvc_beat_console_init(void)
-+static int __init hvc_beat_console_init(void)
- {
- 	if (hvc_beat_useit && machine_is_compatible("Beat")) {
- 		hvc_instantiate(0, 0, &hvc_beat_get_put_ops);
-@@ -106,7 +106,7 @@ static int hvc_beat_console_init(void)
- }
- 
- /* temp */
--static int hvc_beat_init(void)
-+static int __init hvc_beat_init(void)
- {
- 	struct hvc_struct *hp;
- 
+patching file arch/powerpc/boot/dts/mpc8272ads.dts
+Hunk #1 FAILED at 10.
+
+patching file arch/powerpc/boot/Makefile
+Hunk #1 FAILED at 44.
+
+patching file arch/powerpc/boot/Makefile
+Hunk #1 FAILED at 48.
+
+patching file arch/powerpc/platforms/Kconfig
+Hunk #1 FAILED at 19.
+
+and others, and also some patches appear to be already applied.
+
+Maybe I'm patching the wrong kernel version?
+
+thanks
+
+Alex
+
+On Wed, 25 Jul 2007 19:23:05 +0300, Scott Wood <scottwood@freescale.com>  
+wrote:
+
+> On Wed, Jul 25, 2007 at 05:22:40PM +0300, Alexandros Kostopoulos wrote:
+>> 1) When mdiobus_register() called from mii-bitbang.c  
+>> (fs_enet_mdio_probe()
+>> function) attemps to do a device_register for the mdio bus, it actually
+>> registers the device with a bus_id in the form [0|1|...]:<phy_addr>,  
+>> that
+>> is the first part a simple integer. This, of course, happens because
+>> fs_enet_of_init() (fsl_soc.c) does a
+>> platform_device_register_simple("fsl-bb-mdio", i,  NULL, 0); with i  
+>> being
+>> the first part of the bus, starting from 0. Unfortunately, when
+>> fs_init_phy() (fs_enet_main.c) calls phy_connect() and therefore
+>> phy_attach() (phy_device.c), the latter attempts to find the device in  
+>> the
+>> mdio bus, but it searches using the bus_id registered in the net_device
+>> struct, which is in the form of <resource address>:<phy_addr>, eg.
+>> f0000000:0, and therefore it fails... I don't know if I am doing  
+>> something
+>> wrong here, so any hint would be greatly appreciated.
+>
+> The code is broken.  Try applying the set of 61 patches I posted a week
+> or so ago (you'll need to apply them to Paul's tree from around the same
+> time, not the current tree).
+>
+>> 2) Since there are two ethernet@<address> nodes in my device tree,
+>> fs_of_enet_init() calls  
+>> platform_device_register_simple("fsl-bb-mdio",...)
+>> twice, therefore creating two mdio busses, 0 and 1, each having the same
+>> two devices. For example, if I have two PHYs with addresses 1 and 5, I
+>> will get two mdio busses and 4 devices, 0:1, 0:5, 1:1 and 1:5. Well,  
+>> this
+>> doesn't sound right to me, although I am not sure if this is a fatal
+>> issue. Any comments?
+>
+> It's not right -- my patchset gets rid of all of this mess.
+>
+>> 3) Also, if I don't want to enter the phy interrupt in the device tree
+>> (there is not one or I want to use PHY_POLL), what should I do? dtc  
+>> seems
+>> to not allow -1 as a value in the reg property.
+>
+> Leave the property out altogether.
+>
+> -Scott
