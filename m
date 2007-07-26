@@ -1,15 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 30D16DE023
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 16:33:24 +1000 (EST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 6/8] [POWERPC] Fix the ability to reset on MPC8544 DS and
-	MPC8568 MDS boards
-Date: Thu, 26 Jul 2007 01:32:37 -0500
-Message-Id: <11854315682560-git-send-email-galak@kernel.crashing.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 26 Jul 2007 16:59:02 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Fwd: [PATCH] bootwrapper: adds cuboot for MPC7448HPC2 platform
+Message-ID: <20070726065902.GD1149@localhost.localdomain>
+References: <1184144056.23579.16.camel@localhost.localdomain>
+	<B37B73EC-54FE-442C-A1FF-348D89D3D840@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <B37B73EC-54FE-442C-A1FF-348D89D3D840@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,51 +19,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Roy Zang <tie-fei.zang@freescale.com>
+On Thu, Jul 26, 2007 at 01:28:10AM -0500, Kumar Gala wrote:
+> 
+> 
+> Begin forwarded message:
+> 
+> >From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+> >Date: July 11, 2007 3:54:16 AM CDT
+> >To: Paul Mackerras <paulus@samba.org>
+> >Cc: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev list  
+> ><linuxppc-dev@ozlabs.org>
+> >Subject: [PATCH] bootwrapper: adds cuboot for MPC7448HPC2 platform
+> >
+> >From: Roy Zang <tie-fei.zang@freescale.com>
+> >
+> >This patch adds cuboot support for MPC7448HPC2 platform.
+> >The cuImage can be used with legacy u-boot without FDT support.
+> >
+> >Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
 
-Add global-utilities node with has-rstcr on MPC8544 DS and MPC8568 MDS
-boards so they are able to reset properly.
+[snip]
 
-Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/boot/dts/mpc8544ds.dts  |    6 ++++++
- arch/powerpc/boot/dts/mpc8568mds.dts |    6 ++++++
- 2 files changed, 12 insertions(+), 0 deletions(-)
+> >--- /dev/null
+> >+++ b/arch/powerpc/boot/cuboot-hpc2.c
+> >@@ -0,0 +1,48 @@
+> >+/*
+> >+ * Copyright (C) 2007 Freescale Semiconductor, Inc. All rights  
+> >reserved.
+> >+ *
+> >+ * Author: Roy Zang <tie-fei.zang@freescale.com>
+> >+ *
+> >+ * Description:
+> >+ * Old U-boot compatibility for mpc7448hpc2 board
+> >+ * Based on the code of Scott Wood <scottwood@freescale.com>
+> >+ * for 83xx and 85xx.
+> >+ *
+> >+ * This is free software; you can redistribute it and/or modify
+> >+ * it under the terms of  the GNU General  Public License as  
+> >published by
+> >+ * the Free Software Foundation;  either version 2 of the   
+> >License, or
+> >+ * (at your option) any later version.
+> >+ *
+> >+ */
+> >+
+> >+#include "ops.h"
+> >+#include "stdio.h"
+> >+#include "cuboot.h"
+> >+
+> >+#define TARGET_HAS_ENET1
+> >+#include "ppcboot.h"
 
-diff --git a/arch/powerpc/boot/dts/mpc8544ds.dts b/arch/powerpc/boot/dts/mpc8544ds.dts
-index d8ee4a0..4680e20 100644
---- a/arch/powerpc/boot/dts/mpc8544ds.dts
-+++ b/arch/powerpc/boot/dts/mpc8544ds.dts
-@@ -350,6 +350,12 @@
- 
- 		};
- 
-+		global-utilities@e0000 {	//global utilities block
-+			compatible = "fsl,mpc8548-guts";
-+			reg = <e0000 1000>;
-+			fsl,has-rstcr;
-+		};
-+
- 		mpic: pic@40000 {
- 			clock-frequency = <0>;
- 			interrupt-controller;
-diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/boot/dts/mpc8568mds.dts
-index 99fa5a0..b1dcfbe 100644
---- a/arch/powerpc/boot/dts/mpc8568mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8568mds.dts
-@@ -170,6 +170,12 @@
- 			interrupt-parent = <&mpic>;
- 		};
- 
-+		global-utilities@e0000 {	//global utilities block
-+			compatible = "fsl,mpc8548-guts";
-+			reg = <e0000 1000>;
-+			fsl,has-rstcr;
-+		};
-+
- 		pci@8000 {
- 			interrupt-map-mask = <f800 0 0 7>;
- 			interrupt-map = <
+Including ppcboot.h without first defining TARGET_* defines which give
+the type of system seems... fragile at best, broken at worst.  Surely
+this can only work by accident.
+
 -- 
-1.5.2.2
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
