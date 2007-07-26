@@ -1,20 +1,19 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <vbordug@ru.mvista.com>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AAADCDDEE3
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 02:48:41 +1000 (EST)
-Date: Thu, 26 Jul 2007 11:48:33 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH] mpc832x_rdb.c: prevent using uninitialized variable
-Message-ID: <20070726164833.GC28491@ld0162-tx32.am.freescale.net>
-References: <20070726140139.GA5709@localhost.localdomain>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0D022DDEBB
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 03:31:23 +1000 (EST)
+Date: Thu, 26 Jul 2007 21:05:07 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [RFC][PATCH] fsl_soc: add support for fsl_spi
+Message-ID: <20070726210507.18829b9a@vitb.ru.mvista.com>
+In-Reply-To: <20070726164508.GB28491@ld0162-tx32.am.freescale.net>
+References: <20070726135655.GA5643@localhost.localdomain>
+	<20070726164508.GB28491@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070726140139.GA5709@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,12 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 26, 2007 at 06:01:39PM +0400, Anton Vorontsov wrote:
-> If CONFIG_PCI undefined, np will be used uninitialized, thereby
-> find_node_by_name(np, "par_io") will fail.
+On Thu, 26 Jul 2007 11:45:08 -0500
+Scott Wood <scottwood@freescale.com> wrote:
 
-This is the wrong fix -- you should be passing NULL to the par_io call
-rather than np.  Otherwise, if the par_io is earlier in the tree than the
-pci, you won't find it.
+> On Thu, Jul 26, 2007 at 05:56:55PM +0400, Anton Vorontsov wrote:
+> > +void (*fsl_spi_activate_cs)(u8 cs, u8 polarity) = NULL;
+> > +EXPORT_SYMBOL(fsl_spi_activate_cs);
+> > +void (*fsl_spi_deactivate_cs)(u8 cs, u8 polarity) = NULL;
+> > +EXPORT_SYMBOL(fsl_spi_deactivate_cs);
+> 
+> What are these for?  It looks like you're using them to set pins,
+> but that should be done in the firmware (and if the firmware sucks, then
+> do it in the platform code at bootup).
+> 
+That is not exactly the point. 
+I won't respond for Anton, but we already had such hooks justified in SPI case iirc.
 
--Scott
+> > +static int __init fsl_spi_of_init(void)
+> > +{
+> > +	struct device_node *np;
+> > +	unsigned int i;
+> > +
+> > +	for (np = NULL, i = 1;
+> > +	     (np = of_find_compatible_node(np, "spi", "fsl_spi")) != NULL;
+> > +	     i++) {
+> 
+> s/fsl_spi/fsl,mpc8323-spi/, please.
+> 
+> Why not make the fsl spi driver an of_platform device?
+> 
+Because this particular thing is not ppc-only from what I recall.
+
+> -Scott
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+
+-- 
+Sincerely, 
+Vitaly
