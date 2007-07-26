@@ -1,19 +1,27 @@
-Return-Path: <m8@semihalf.com>
-Received: from mail.semihalf.com (mail.semihalf.com [83.12.36.68])
-	by ozlabs.org (Postfix) with ESMTP id 65FF6DDE18
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 07:26:46 +1000 (EST)
-Message-ID: <46A91130.8000907@semihalf.com>
-Date: Thu, 26 Jul 2007 23:25:04 +0200
-From: Marian Balakowicz <m8@semihalf.com>
-MIME-Version: 1.0
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [patch 07/35] pasemi_mac: stop using the pci config space
-	accessors for register read/writes
-References: <20070705170233.258351000@lixom.net>
-	<20070705170235.314700000@lixom.net>
-In-Reply-To: <20070705170235.314700000@lixom.net>
-Content-Type: text/plain; charset=ISO-8859-2
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D63F7DDE1C
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 07:36:59 +1000 (EST)
+Date: Thu, 26 Jul 2007 16:29:21 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] Re: 2.6.22-git hangs during boot on PowerBook G3 in 0.0
+	seconds
+Message-Id: <20070726162921.a60c76ae.kim.phillips@freescale.com>
+In-Reply-To: <18088.6185.491082.875891@cargo.ozlabs.ibm.com>
+References: <20070721192143.GA12144@nospam.com>
+	<20070721212845.GA30977@nospam.com>
+	<20070723172725.b1c14885.kim.phillips@freescale.com>
+	<1185234923.5439.158.camel@localhost.localdomain>
+	<20070724185946.722f34b5.kim.phillips@freescale.com>
+	<18088.6185.491082.875891@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Rutger Nijlunsing <rutger@nospam.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,25 +31,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 26 Jul 2007 13:42:33 +1000
+Paul Mackerras <paulus@samba.org> wrote:
 
-Olof,
+> Kim Phillips writes:
+> 
+> > > In which circumstances are you trying to translate an address with no
+> > > size cell ?
+> > 
+> > for the enumerated PHYs. As the original commit comment states, I was
+> > getting these messages:
+> > 
+> > prom_parse: Bad cell count for /qe@e0100000/mdio@2120/ethernet-phy@00
+> > prom_parse: Bad cell count for /qe@e0100000/mdio@2120/ethernet-phy@01
+> 
+> Specifically, which of_address_to_resource or other call is producing
+> these error messages?
+> 
 
-Olof Johansson wrote:
-> Move away from using the pci config access functions for simple register
-> access.  Our device has all of the registers in the config space (hey,
-> from the hardware point of view it looks reasonable :-), so we need to
-> somehow get to it. Newer firmwares have it in the device tree such that
-> we can just get it and ioremap it there (in case it ever moves in future
-> products). For now, provide a hardcoded fallback for older firmwares.
+Turns out I mistakenly added an mdio type to the platform
+of_platform_bus_probe scan list early on in my ucc phylib migration
+work, and it went unnoticed. Please do a:
 
-I have recently tried to apply a group of your MAC patches that includes the one from this email. Strangely, I got a pretty random kernel panics (or kernel freezes) when this patch is included. Panics happen in a random, places and have random causes. What I observed is that replacing newly introduced mac->iob_regs with the corresponding offset from (already ioremapped) hose->cfg_data removed the problem. So, it seems that dereferencing pointers based on a second ioremap on a subset of 0xe000_0000 addresses is problematic. 
+git-revert 3baee955953957be5496cd28e9c544d9db214262
 
-Here are the questions that come to my mind:
+to remove "[POWERPC] Add 'mdio' to bus scan id list for platforms with
+QE UEC" (in addition to the one you've already reverted).  Reverting
+both these commits eliminates the prom_parse badness messages on the
+MPC8360.
 
-- I am testing on a A2 hw, what what your testing setup, anything newer than this (something closer B0 maybe), did you have a chance to try that on a A2 board?
-- Is there any particular patch or set of patches/updates that this patch may depend on?
+Thanks, and sorry,
 
-Switching from pci accessors to direct in_* out_* calls drops the guard pci spinlock. Initially, I thought that this may be the reason, but it's not, adding the spinlock is not solving the problem. But anyway, shouldn't we be using it to coordinate access?
+Kim
 
-Thanks,
-Marian
+p.s. should the stable team be notified to fix 2.6.22 for
+Lombard-nvram-style machines?
