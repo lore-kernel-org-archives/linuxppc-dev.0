@@ -2,16 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 81016DDE41
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 15:53:12 +1000 (EST)
-Date: Thu, 26 Jul 2007 00:52:34 -0500 (CDT)
+	by ozlabs.org (Postfix) with ESMTP id CCC32DDE38
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 16:07:49 +1000 (EST)
+In-Reply-To: <11853846332917-git-send-email-timur@freescale.com>
+References: <11853846332917-git-send-email-timur@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <8CEA1441-8408-48A9-A023-F072FBC3EEE2@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH] gfar: Fix modpost warning
-Message-ID: <Pine.LNX.4.64.0707260051550.30449@blarg.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] POWERPC: Fix definition of global-utilites structure for
+	86xx
+Date: Thu, 26 Jul 2007 01:08:36 -0500
+To: Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,39 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fix the following modpost warning:
 
-WARNING: vmlinux.o(.init.text+0x1aa6c): Section mismatch: reference to .exit.text:gfar_mdio_exit (between 'gfar_init' and 'gfar_mdio_init')
+On Jul 25, 2007, at 12:30 PM, Timur Tabi wrote:
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- drivers/net/gianfar_mii.c |    2 +-
- drivers/net/gianfar_mii.h |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+> The current definition of struct ccsr_guts in immap_86xx.h was for  
+> 85xx.
+> This patch fixes that and replaces the vague integer types with  
+> sized types
+> of the correct endianness.  The unused struct ccsr_pci is also  
+> deleted.
+>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
+>  include/asm-powerpc/immap_86xx.h |  151 +++++++++++ 
+> +--------------------------
+>  1 files changed, 46 insertions(+), 105 deletions(-)
 
-diff --git a/drivers/net/gianfar_mii.c b/drivers/net/gianfar_mii.c
-index ac3596f..100bf41 100644
---- a/drivers/net/gianfar_mii.c
-+++ b/drivers/net/gianfar_mii.c
-@@ -245,7 +245,7 @@ int __init gfar_mdio_init(void)
- 	return driver_register(&gianfar_mdio_driver);
- }
+Why don't we remove this completely, nothing uses it?
 
--void __exit gfar_mdio_exit(void)
-+void gfar_mdio_exit(void)
- {
- 	driver_unregister(&gianfar_mdio_driver);
- }
-diff --git a/drivers/net/gianfar_mii.h b/drivers/net/gianfar_mii.h
-index 5d34004..b373091 100644
---- a/drivers/net/gianfar_mii.h
-+++ b/drivers/net/gianfar_mii.h
-@@ -42,5 +42,5 @@ struct gfar_mii {
- int gfar_mdio_read(struct mii_bus *bus, int mii_id, int regnum);
- int gfar_mdio_write(struct mii_bus *bus, int mii_id, int regnum, u16 value);
- int __init gfar_mdio_init(void);
--void __exit gfar_mdio_exit(void);
-+void gfar_mdio_exit(void);
- #endif /* GIANFAR_PHY_H */
--- 
-1.5.2.2
+- k
