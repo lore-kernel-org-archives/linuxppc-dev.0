@@ -1,8 +1,8 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18088.5537.900347.861055@cargo.ozlabs.ibm.com>
-Date: Thu, 26 Jul 2007 13:31:45 +1000
+Message-ID: <18088.6185.491082.875891@cargo.ozlabs.ibm.com>
+Date: Thu, 26 Jul 2007 13:42:33 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: Kim Phillips <kim.phillips@freescale.com>
 Subject: Re: [PATCH] Re: 2.6.22-git hangs during boot on PowerBook G3 in 0.0
@@ -25,17 +25,16 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Kim Phillips writes:
 
-> but yeah, size-cells should be allowed to be 0 (even address-cells) and
-> it may be the case that the Lombard needs some fixup code.
+> > In which circumstances are you trying to translate an address with no
+> > size cell ?
+> 
+> for the enumerated PHYs. As the original commit comment states, I was
+> getting these messages:
+> 
+> prom_parse: Bad cell count for /qe@e0100000/mdio@2120/ethernet-phy@00
+> prom_parse: Bad cell count for /qe@e0100000/mdio@2120/ethernet-phy@01
 
-So it turns out that the nvram is under the via-pmu node on the
-Lombard.  The via-pmu node has #size-cells == 0, which is correct
-since things under the via-pmu aren't directly accessible.  The nvram
-driver code relies on not being able to translate an address for the
-nvram nodes on machines where the nvram isn't directly accessible.
-That is, it looks for "nvram" nodes, and if it can translate the
-address, assumes it can access the nvram directly.
-
-So nothing is incorrect here except your patch. :)  I'll revert it.
+Specifically, which of_address_to_resource or other call is producing
+these error messages?
 
 Paul.
