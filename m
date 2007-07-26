@@ -1,23 +1,19 @@
-Return-Path: <pradyumna.sampath@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.177])
-	by ozlabs.org (Postfix) with ESMTP id 675EFDDEE1
+Return-Path: <bwarren@qstreams.com>
+Received: from smtp110.biz.mail.re2.yahoo.com (smtp110.biz.mail.re2.yahoo.com
+	[206.190.53.9]) by ozlabs.org (Postfix) with SMTP id 372C1DDEC7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 Jul 2007 22:34:23 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so1223959pyi
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 Jul 2007 05:34:21 -0700 (PDT)
-Message-ID: <f87351060707260534k2f87ff47rdcfd0b787d5a0132@mail.gmail.com>
-Date: Thu, 26 Jul 2007 18:04:21 +0530
-From: "Pradyumna Sampath" <pradyumna.sampath@gmail.com>
-To: "Juergen Beisert" <juergen127@kreuzholzen.de>
-Subject: [Trace how to] Kernel Bug when entering something after login
-In-Reply-To: <200707261000.25465.juergen127@kreuzholzen.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <200707251900.47704.juergen127@kreuzholzen.de>
-	<1185390398.3227.8.camel@chaos>
-	<200707261000.25465.juergen127@kreuzholzen.de>
-Cc: linux-rt-users@vger.kernel.org, linuxppc-embedded@ozlabs.org
+	Fri, 27 Jul 2007 00:16:06 +1000 (EST)
+Subject: Re: ping command
+From: Ben Warren <bwarren@qstreams.com>
+To: Nethra <nethra_gmit@yahoo.co.in>
+In-Reply-To: <11779249.post@talk.nabble.com>
+References: <11779249.post@talk.nabble.com>
+Content-Type: text/plain
+Date: Thu, 26 Jul 2007 10:09:25 -0400
+Message-Id: <1185458965.6839.8.camel@saruman.qstreams.net>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
+Reply-To: bwarren@qstreams.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,34 +24,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Everyone,
+Nethra,
 
-On 7/26/07, Juergen Beisert <juergen127@kreuzholzen.de> wrote:
-> On Wednesday 25 July 2007 21:06, Thomas Gleixner wrote:
-> > Solution below
->
-> Seems to work now. Thanks.
->
-> Juergen
-> -
+On Wed, 2007-07-25 at 02:29 -0700, Nethra wrote:
+> hi,
+> 
+> I m using custom board same as eval board MPC8272ADS board.
+> 
+> IP assigned for both ethernets are...
+> 
+>               ifconfig eth1 192.168.33.135 up
+> 	 ifconfig eth1 netmask 255.255.248.0
+>  	 route add default gw 192.168.32.47 eth1
+>  
+> 
+> 	 ifconfig eth0 192.168.178.89 up
+> 	 ifconfig eth0netmask 255.255.255.0
+> 	 route add default gw 192.168.178.47 eth0
+> 
+> but if i try for ping 192.168.33.135 command pails by the server of 178
+> series
+> similarly ping 192.168.178.89 command pails by the server of 33 series..
+> 
+> what is the problem..and whre i m going wrong..?
 
-First of all very sorry to cross post.
+What does your routing table show?  (route -n).  It wouldn't hurt to
+also post the output of ifconfig for both interfaces.
 
-I discovered the same problem on our MPC5200 and it after patching, it
-now works. But I could somehow not get the call trace and hence could
-not report the bug.
-
-I compiled the kernel with "CONFIG_FUNCTION_TRACE" and then I get
-undefined references on "early_printk". Is there something I am doing
-wrong in the kernel config or was there an additional patch to enable
-this support for MPC5200 ?
-
-I see more bugs when I run "stress" but I cant solve them or even
-report them, because I cant see the trace information.
-
-thanks in advance
-regards
-/prady
-
--- 
-htp://prady.livejournal.com
+regards,
+Ben
