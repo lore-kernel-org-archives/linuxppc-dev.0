@@ -1,19 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 46793DDF5B
+	(Client CN "mail.ovro.caltech.edu",
+	Issuer "mail.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id E0F57DDF17
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 Jul 2007 05:50:40 +1000 (EST)
-In-Reply-To: <000801c7cf51$f98ebb90$9503a8c0@Ansari>
-References: <000801c7cf51$f98ebb90$9503a8c0@Ansari>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <880B302A-742A-4CC1-BB41-E7BD1CE570C6@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Reboot Command Makes kernel to hang (MPC8560)
-Date: Thu, 26 Jul 2007 14:51:31 -0500
-To: Ansari <ma.harounansari@gdatech.co.in>
+	Fri, 27 Jul 2007 05:56:23 +1000 (EST)
+Message-ID: <46A8FC1F.5070807@ovro.caltech.edu>
+Date: Thu, 26 Jul 2007 12:55:11 -0700
+From: David Hawkins <dwh@ovro.caltech.edu>
+MIME-Version: 1.0
+To: "David H. Lynch Jr." <dhlii@dlasys.net>
+Subject: Re: Circular queue
+References: <46A5B5BA.2080707@dlasys.net>
+In-Reply-To: <46A5B5BA.2080707@dlasys.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,21 +26,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+David H. Lynch Jr. wrote:
+>     Is there a standard linux datastructure and routines to manage
+> circular queues ?
+> 
+>     I have a device that is not fundimentally different from a serial
+> character device
+>     except it is faster and the fundimental data type is 36 bits large.
+> 
+>     I have coded my own routines to setup and maintain a simple circular
+> queue,
+>     but I was hoping that there might be something more standard that
+> already exists.
+> 
+>     Anyone know of anything ?
 
-On Jul 26, 2007, at 1:55 AM, Ansari wrote:
+Hi David,
 
-> Hi all,
->
-> Processor (MPC8560)
->
-> Whenever reboot command is given in the linux console. The  
-> processor gets reset and it loads bootloader , kernel and when  
-> uncompressing the ramdisk it gets hang. The sample log is given  
-> below. Any u please tell me what are the factors that can makes  
-> this to happen.
+Have you looked at the linked-list support? You can use it
+for a circular queue.
 
-This is very board dependant.  The MPC8560 doesn't have a clean way  
-to request reset, and odds are you're only getting the core reset and  
-not the full chip.
+I just copied the following comments from some driver examples
+I wrote a while back:
 
-- k
+http://www.ovro.caltech.edu/~dwh/correlator/software/driver_design.tar.gz
+http://www.ovro.caltech.edu/~dwh/correlator/pdf/LNX-723-Hawkins.pdf
+
+  simple_page_buffer.c
+
+  *-----------------------------------------------------------------
+  * References:
+  * [1] "Linux device drivers", 3rd Ed, J. Corbet, A. Rubini,
+  *      G. Kroah-Hartman, 2005
+  * [2] "Linux kernel development", 2nd Ed., R. Love.
+  *-----------------------------------------------------------------
+  */
+
+  * For details on linked-lists, see p295 [1] and p345 [2].
+
+I didn't look at the code again, but I'm pretty sure I used the
+linked list for a circular buffer.
+
+Cheers
+Dave
