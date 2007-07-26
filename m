@@ -1,19 +1,16 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7A9BBDDEBC
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 13:47:59 +1000 (EST)
+Date: Wed, 25 Jul 2007 22:47:26 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2][POWERPC] Don't try to allocate resources for a POWERPC PHB
+Message-ID: <Pine.LNX.4.64.0707252245310.11707@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18088.6185.491082.875891@cargo.ozlabs.ibm.com>
-Date: Thu, 26 Jul 2007 13:42:33 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: [PATCH] Re: 2.6.22-git hangs during boot on PowerBook G3 in 0.0
-	seconds
-In-Reply-To: <20070724185946.722f34b5.kim.phillips@freescale.com>
-References: <20070721192143.GA12144@nospam.com>
-	<20070721212845.GA30977@nospam.com>
-	<20070723172725.b1c14885.kim.phillips@freescale.com>
-	<1185234923.5439.158.camel@localhost.localdomain>
-	<20070724185946.722f34b5.kim.phillips@freescale.com>
-Cc: Rutger Nijlunsing <rutger@nospam.com>, linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,18 +20,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kim Phillips writes:
+>From e314b31e4650c789829bf870f83ee7ae4be46426 Mon Sep 17 00:00:00 2001
+From: Kumar Gala <galak@kernel.crashing.org>
+Date: Wed, 25 Jul 2007 00:44:11 -0500
+Subject: [PATCH] [POWERPC] Don't try to allocate resources for a POWERPC PHB
 
-> > In which circumstances are you trying to translate an address with no
-> > size cell ?
-> 
-> for the enumerated PHYs. As the original commit comment states, I was
-> getting these messages:
-> 
-> prom_parse: Bad cell count for /qe@e0100000/mdio@2120/ethernet-phy@00
-> prom_parse: Bad cell count for /qe@e0100000/mdio@2120/ethernet-phy@01
+The Freescale PCI PHBs actual report back values in the BAR registers
+this causes issues in that we try to allocate resources for them
+and will get error messages like the following on MPC8544 DS:
 
-Specifically, which of_address_to_resource or other call is producing
-these error messages?
+PCI: Failed to allocate mem resource #1:80000000@0 for 0000:00:00.0
 
-Paul.
+To address this if we are class PCI_CLASS_PROCESSOR_POWERPC, a normal
+header type, and the PHB we clear out all the resources.
+
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+
+Ben suggested to do this by a quirk and blow away the resources which I
+like better.
+
+- k
+
+ arch/powerpc/kernel/pci_32.c |   18 ++++++++++++++++++
+ 1 files changed, 18 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
+index 721a694..ec80779 100644
+--- a/arch/powerpc/kernel/pci_32.c
++++ b/arch/powerpc/kernel/pci_32.c
+@@ -60,6 +60,24 @@ LIST_HEAD(hose_list);
+ static int pci_bus_count;
+
+ static void
++fixup_broken_fsl(struct pci_dev* dev)
++{
++	int i, class = dev->class >> 8;
++
++	if ((class == PCI_CLASS_PROCESSOR_POWERPC) &&
++		(dev->hdr_type == PCI_HEADER_TYPE_NORMAL) &&
++		(dev->bus->parent == NULL)) {
++		for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
++			dev->resource[i].start = 0;
++			dev->resource[i].end = 0;
++			dev->resource[i].flags = 0;
++		}
++	}
++}
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_MOTOROLA, PCI_ANY_ID, fixup_broken_fsl);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_FREESCALE, PCI_ANY_ID, fixup_broken_fsl);
++
++static void
+ fixup_broken_pcnet32(struct pci_dev* dev)
+ {
+ 	if ((dev->class>>8 == PCI_CLASS_NETWORK_ETHERNET)) {
+-- 
+1.5.2.2
