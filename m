@@ -1,11 +1,19 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <akostop@inaccessnetworks.com>
+Received: from inaccessnetworks.com (node3.inaccessnetworks.com
+	[212.205.200.118]) by ozlabs.org (Postfix) with ESMTP id 2C749DDEDA
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jul 2007 22:22:39 +1000 (EST)
+Date: Thu, 26 Jul 2007 15:22:24 +0300
+To: "Alexandros Kostopoulos" <akostop@inaccessnetworks.com>,
+	"Scott Wood" <scottwood@freescale.com>
+Subject: Re: About mdio_bus for 82xx based board
+From: "Alexandros Kostopoulos" <akostop@inaccessnetworks.com>
+Content-Type: text/plain; format=flowed; delsp=yes; charset=iso-8859-7
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18088.36671.181395.477326@cargo.ozlabs.ibm.com>
-Date: Thu, 26 Jul 2007 22:10:39 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-Subject: Please pull powerpc.git merge branch
+References: <op.tv0x7yvmnhx3hy@phoenix>
+	<20070725162305.GA26276@ld0162-tx32.am.freescale.net>
+	<op.tv2in7f5nhx3hy@phoenix> <op.tv2kmbgqnhx3hy@phoenix>
+Message-ID: <op.tv2nbmkonhx3hy@phoenix>
+In-Reply-To: <op.tv2kmbgqnhx3hy@phoenix>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,84 +24,103 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+Well, I've downloaded the latest git from Paul's tree, and some patches  
+still fail (and the mpc8272_ads config doesn't compile). Must I get some  
+other revision of the tree (if yes, how's that done in git - my first time  
+with it )
 
-Please do
+thanks
 
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+alex
 
-to get some bug-fixes for powerpc, as listed below.
 
-Thanks,
-Paul.
+On Thu, 26 Jul 2007 14:24:01 +0300, Alexandros Kostopoulos  
+<akostop@inaccessnetworks.com> wrote:
 
- arch/powerpc/Kconfig.debug                  |    2 -
- arch/powerpc/boot/dts/kuroboxHD.dts         |   18 +++++---
- arch/powerpc/boot/dts/kuroboxHG.dts         |   19 +++++---
- arch/powerpc/boot/dts/mpc7448hpc2.dts       |    2 -
- arch/powerpc/boot/dts/mpc8544ds.dts         |    8 ++++
- arch/powerpc/boot/dts/mpc8568mds.dts        |    6 +++
- arch/powerpc/kernel/head_64.S               |    7 ++-
- arch/powerpc/kernel/iomap.c                 |    8 +++-
- arch/powerpc/kernel/irq.c                   |    8 ++--
- arch/powerpc/kernel/pci-common.c            |   25 +++++++++++
- arch/powerpc/kernel/pci_32.c                |   20 ++++++++-
- arch/powerpc/kernel/process.c               |    4 ++
- arch/powerpc/kernel/prom_parse.c            |    2 -
- arch/powerpc/kernel/setup-common.c          |    4 ++
- arch/powerpc/kernel/udbg.c                  |    2 -
- arch/powerpc/mm/lmb.c                       |    4 +-
- arch/powerpc/platforms/cell/spufs/context.c |    3 +
- arch/powerpc/platforms/cell/spufs/run.c     |    4 ++
- arch/powerpc/platforms/cell/spufs/sched.c   |    4 --
- arch/powerpc/platforms/iseries/lpevents.c   |    2 -
- arch/powerpc/platforms/maple/pci.c          |    3 +
- arch/powerpc/sysdev/fsl_pci.c               |    4 +-
- arch/powerpc/sysdev/fsl_soc.c               |   61 +++++++++++++++++++++++++++
- arch/powerpc/sysdev/indirect_pci.c          |    1 
- include/asm-powerpc/pci-bridge.h            |   20 +++++++++
- include/asm-powerpc/ppc_asm.h               |   12 +++++
- include/asm-powerpc/vio.h                   |    5 ++
- 27 files changed, 221 insertions(+), 37 deletions(-)
-
-Alan Curry (1):
-      [POWERPC] Fix Pegasos keyboard detection
-
-Benjamin Herrenschmidt (3):
-      [POWERPC] Add function to check if address is an IO port
-      [POWERPC] Make pci_iounmap actually unmap things
-      [POWERPC] Fix Maple platform ISA bus
-
-Christoph Hellwig (1):
-      [POWERPC] spusched: Fix initial timeslice calculation
-
-Guennadi Liakhovetski (2):
-      [POWERPC] Add of_register_i2c_devices()
-      [POWERPC] Fix RTC and device tree on linkstation machines
-
-Kumar Gala (6):
-      [POWERPC] Fix PCI indirect for big-endian cfg_addr
-      [POWERPC] Don't try to allocate resources for a Freescale POWERPC PHB
-      [POWERPC] Fix ethernet PHY support on MPC8544 DS
-      [POWREPC] Fixup a number of modpost warnings on ppc32
-      [POWERPC] Only allow building of BootX text support on PPC_MULTIPLATFORM
-      [POWERPC] Fix register labels on show_regs() message for 4xx/Book-E
-
-Manish Ahuja (1):
-      [POWERPC] Fix loop with unsigned long counter variable
-
-Masato Noguchi (1):
-      [POWERPC] spufs: Fix incorrect initialization of cbe_spu_info.spus
-
-Paul Mackerras (1):
-      Revert "[POWERPC] Don't complain if size-cells == 0 in prom_parse()"
-
-Roy Zang (2):
-      [POWERPC] Fix mpc7448hpc2 tsi108 device_type bug
-      [POWERPC] Fix the ability to reset on MPC8544 DS and MPC8568 MDS boards
-
-Stephen Rothwell (3):
-      [POWERPC] iSeries: We need vio_enable_interrupts
-      [POWERPC] iSeries: Fix section mismatch warnings
-      [POWERPC] iSeries: Fix section mismatch warning in lpevents
+> Oops! I've just noticed in your previous mail that I need to apply the  
+> patches to Paul's tree...Sorry 'bout that... my mistake
+>
+> alex
+>
+>
+> On Thu, 26 Jul 2007 13:42:46 +0300, Alexandros Kostopoulos  
+> <akostop@inaccessnetworks.com> wrote:
+>
+>> Hello Scott,
+>>
+>> Thanks for your response. I'm trying to apply your patches to vanilla  
+>> 2.6.22.1 kernel, but unfortunately some patches fail, namely:
+>>
+>> patching file arch/powerpc/boot/dts/mpc8272ads.dts
+>> Hunk #1 FAILED at 10.
+>>
+>> patching file arch/powerpc/boot/Makefile
+>> Hunk #1 FAILED at 44.
+>>
+>> patching file arch/powerpc/boot/Makefile
+>> Hunk #1 FAILED at 48.
+>>
+>> patching file arch/powerpc/platforms/Kconfig
+>> Hunk #1 FAILED at 19.
+>>
+>> and others, and also some patches appear to be already applied.
+>>
+>> Maybe I'm patching the wrong kernel version?
+>>
+>> thanks
+>>
+>> Alex
+>>
+>> On Wed, 25 Jul 2007 19:23:05 +0300, Scott Wood  
+>> <scottwood@freescale.com> wrote:
+>>
+>>> On Wed, Jul 25, 2007 at 05:22:40PM +0300, Alexandros Kostopoulos wrote:
+>>>> 1) When mdiobus_register() called from mii-bitbang.c  
+>>>> (fs_enet_mdio_probe()
+>>>> function) attemps to do a device_register for the mdio bus, it  
+>>>> actually
+>>>> registers the device with a bus_id in the form [0|1|...]:<phy_addr>,  
+>>>> that
+>>>> is the first part a simple integer. This, of course, happens because
+>>>> fs_enet_of_init() (fsl_soc.c) does a
+>>>> platform_device_register_simple("fsl-bb-mdio", i,  NULL, 0); with i  
+>>>> being
+>>>> the first part of the bus, starting from 0. Unfortunately, when
+>>>> fs_init_phy() (fs_enet_main.c) calls phy_connect() and therefore
+>>>> phy_attach() (phy_device.c), the latter attempts to find the device  
+>>>> in the
+>>>> mdio bus, but it searches using the bus_id registered in the  
+>>>> net_device
+>>>> struct, which is in the form of <resource address>:<phy_addr>, eg.
+>>>> f0000000:0, and therefore it fails... I don't know if I am doing  
+>>>> something
+>>>> wrong here, so any hint would be greatly appreciated.
+>>>
+>>> The code is broken.  Try applying the set of 61 patches I posted a week
+>>> or so ago (you'll need to apply them to Paul's tree from around the  
+>>> same
+>>> time, not the current tree).
+>>>
+>>>> 2) Since there are two ethernet@<address> nodes in my device tree,
+>>>> fs_of_enet_init() calls  
+>>>> platform_device_register_simple("fsl-bb-mdio",...)
+>>>> twice, therefore creating two mdio busses, 0 and 1, each having the  
+>>>> same
+>>>> two devices. For example, if I have two PHYs with addresses 1 and 5, I
+>>>> will get two mdio busses and 4 devices, 0:1, 0:5, 1:1 and 1:5. Well,  
+>>>> this
+>>>> doesn't sound right to me, although I am not sure if this is a fatal
+>>>> issue. Any comments?
+>>>
+>>> It's not right -- my patchset gets rid of all of this mess.
+>>>
+>>>> 3) Also, if I don't want to enter the phy interrupt in the device tree
+>>>> (there is not one or I want to use PHY_POLL), what should I do? dtc  
+>>>> seems
+>>>> to not allow -1 as a value in the reg property.
+>>>
+>>> Leave the property out altogether.
+>>>
+>>> -Scott
+>>
+>
