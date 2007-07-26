@@ -1,20 +1,23 @@
-Return-Path: <vbordug@ru.mvista.com>
+Return-Path: <vitb@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0D022DDEBB
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 03:31:23 +1000 (EST)
-Date: Thu, 26 Jul 2007 21:05:07 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [RFC][PATCH] fsl_soc: add support for fsl_spi
-Message-ID: <20070726210507.18829b9a@vitb.ru.mvista.com>
-In-Reply-To: <20070726164508.GB28491@ld0162-tx32.am.freescale.net>
-References: <20070726135655.GA5643@localhost.localdomain>
-	<20070726164508.GB28491@ld0162-tx32.am.freescale.net>
+	by ozlabs.org (Postfix) with ESMTP id 68D2ADDE32
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 03:31:21 +1000 (EST)
+Date: Thu, 26 Jul 2007 21:12:18 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 2/2] [POWERPC] MPC8349E-mITX: use platform IDE driver
+	for CF	interface
+Message-ID: <20070726211218.38b85db1@localhost.localdomain>
+In-Reply-To: <46A78322.3080607@ru.mvista.com>
+References: <20070725165318.5331.23795.stgit@localhost.localdomain>
+	<20070725165326.5331.19920.stgit@localhost.localdomain>
+	<46A78322.3080607@ru.mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,44 +27,166 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 26 Jul 2007 11:45:08 -0500
-Scott Wood <scottwood@freescale.com> wrote:
+On Wed, 25 Jul 2007 21:06:42 +0400
+Sergei Shtylyov wrote:
 
-> On Thu, Jul 26, 2007 at 05:56:55PM +0400, Anton Vorontsov wrote:
-> > +void (*fsl_spi_activate_cs)(u8 cs, u8 polarity) = NULL;
-> > +EXPORT_SYMBOL(fsl_spi_activate_cs);
-> > +void (*fsl_spi_deactivate_cs)(u8 cs, u8 polarity) = NULL;
-> > +EXPORT_SYMBOL(fsl_spi_deactivate_cs);
+> Hello.
 > 
-> What are these for?  It looks like you're using them to set pins,
-> but that should be done in the firmware (and if the firmware sucks, then
-> do it in the platform code at bootup).
+> Vitaly Bordug wrote:
 > 
-That is not exactly the point. 
-I won't respond for Anton, but we already had such hooks justified in SPI case iirc.
+> > This updates relevant platform code (freescale mpc8349itx target) 
+> > to make the CompactFlash work in TrueIDE mode. 
+> 
+>    Erm, I'm not sure it's worth submitting the platform device driver
+> for PowerPC at this point, but well...
+> 
+As Ben already confirmed, it is OK to have "constructor" insert platform device if such is
+required by design.
 
-> > +static int __init fsl_spi_of_init(void)
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+> 
+> >  arch/powerpc/boot/dts/mpc8349emitx.dts    |    9 ++++
+> >  arch/powerpc/platforms/83xx/mpc834x_itx.c |   70
+> > +++++++++++++++++++++++++++++ 2 files changed, 79 insertions(+), 0
+> > deletions(-)
+> 
+> > diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts
+> > b/arch/powerpc/boot/dts/mpc8349emitx.dts index db0d003..f8f0e8a
+> > 100644 --- a/arch/powerpc/boot/dts/mpc8349emitx.dts
+> > +++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
+> > @@ -37,6 +37,15 @@
+> >  		reg = <00000000 10000000>;
+> >  	};
+> >  
+> > +	ide@f0000000 {
+> > +		compatible = "mmio-ide";
+> > +		device_type = "ide";
+> 
+>     Why not "ata"?
+> 
+
+we already argued around this iirc. I have no preferences and will put whatever agreed appropriate finally in here.
+
+> > +		reg = <f0000000 10 f000020c 4>;
+> > +		ioport_shift = <1>;
+> 
+>     Please use hyphen, not underscore in the property names
+> ("device_type" seems an only exception from this rule).
+>     And since using shift instead of size buys you nothing is this
+> case, I'd prefer this property to be called reg-size or reg-stride.
+> 
+> [...]
+> > diff --git a/arch/powerpc/platforms/83xx/mpc834x_itx.c
+> > b/arch/powerpc/platforms/83xx/mpc834x_itx.c index 40a0194..d63a104
+> > 100644 --- a/arch/powerpc/platforms/83xx/mpc834x_itx.c
+> > +++ b/arch/powerpc/platforms/83xx/mpc834x_itx.c
+> [...]
+> > @@ -43,6 +44,75 @@ unsigned long isa_io_base = 0;
+> >  unsigned long isa_mem_base = 0;
+> >  #endif
+> >  
+> > +static int __init mmio_ide_of_init(void)
 > > +{
 > > +	struct device_node *np;
 > > +	unsigned int i;
 > > +
-> > +	for (np = NULL, i = 1;
-> > +	     (np = of_find_compatible_node(np, "spi", "fsl_spi")) != NULL;
+> > +	for (np = NULL, i = 0;
+> > +	     (np = of_find_compatible_node(np, "ide",
+> > "mmio-ide")) != NULL;
 > > +	     i++) {
+> > +		int ret = 0;
 > 
-> s/fsl_spi/fsl,mpc8323-spi/, please.
+>     Unneeded initialization.
 > 
-> Why not make the fsl spi driver an of_platform device?
+> > +		struct resource res[3];
+> > +		struct platform_device *pdev = NULL;
 > 
-Because this particular thing is not ppc-only from what I recall.
+>     Another one.
+> 
 
-> -Scott
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+ok
+> > +		static struct pata_platform_info pdata;
+> > +
+> > +		memset(res, 0, sizeof(res));
+> > +
+> > +		ret = of_address_to_resource(np, 0, &res[0]);
+> > +		if (ret) {
+> > +			printk(KERN_ERR "mmio-ide.%d: unable to
+> > get "
+> > +			       "resource from OF\n", i);
+> > +			goto err0;
+> > +		}
+> > +
+> > +		ret = of_address_to_resource(np, 1, &res[1]);
+> > +		if (ret) {
+> > +			printk(KERN_ERR "mmio-ide.%d: unable to
+> > get "
+> > +			       "resource from OF\n", i);
+> > +			goto err0;
+> 
+>     Erm, these printk's are repetitive, isn't it better to put them
+> under err0 label?
+> 
+> > +		}
+> > +
+> > +		res[2].start = res[2].end =
+> > irq_of_parse_and_map(np, 0);
+> > +		if (res[2].start == NO_IRQ) {
+> > +			printk(KERN_ERR "mmio-ide.%d: no IRQ\n",
+> > i);
+> > +			goto err0;
+> > +		}
+> > +		res[2].name = "pata_platform";
+> > +		res[2].flags = IORESOURCE_IRQ;
+> > +
+> > +		pdata.ioport_shift = *((u32 *)of_get_property(np,
+> > +					"ioport_shift", NULL));
+> > +
+> > +		pdev = platform_device_alloc("pata_platform", i);
+> > +		if (!pdev)
+> > +			goto err1;
+> 
+>     Hm, not err0?
+> 
+agreed.
+
+> > +
+> > +		ret = platform_device_add_data(pdev, &pdata,
+> > sizeof(pdata));
+> > +		if (ret)
+> > +			goto err1;
+> > +
+> > +		ret = platform_device_add_resources(pdev, res,
+> > ARRAY_SIZE(res));
+> > +		if (ret)
+> > +			goto err1;
+> > +
+> > +		ret = platform_device_register(pdev);
+> > +		if (ret)
+> > +			goto err1;
+> > +
+> > +		continue;
+> > +err1:
+> > +		printk(KERN_ERR "mmio-ide.%d: registration
+> > failed\n", i);
+> > +		platform_device_del(pdev); /* it will free
+> > everything */ +err0:
+> > +		/* Even if some device failed, try others */
+> > +		continue;
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +device_initcall(mmio_ide_of_init);
+> > +
+> >  /*
+> > ************************************************************************
+> > *
+> >   * Setup the architecture
+> 
+> MBR, Sergei
 
 
 -- 
-Sincerely, 
-Vitaly
+Sincerely, Vitaly
