@@ -1,29 +1,20 @@
-Return-Path: <erik@dd.nec.com.au>
-Received: from ns2.nec.com.au (ns2.nec.com.au [147.76.180.2])
-	by ozlabs.org (Postfix) with ESMTP id 49014DDF17
+Return-Path: <daniel.schnell@marel.com>
+Received: from mail.marel.com (mail.marel.com [213.167.134.96])
+	by ozlabs.org (Postfix) with ESMTP id CCEA6DDE23
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 Jul 2007 19:03:39 +1000 (EST)
-Received: from smtp1.nec.com.au (unknown [172.31.8.18])
-	by ns2.nec.com.au (Postfix) with ESMTP
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 Jul 2007 19:03:38 +1000 (EST)
-Received: from bohr.dd.nec.com.au (bohr.dd.nec.com.au [172.31.20.11])
-	by deer.dd.nec.com.au (8.12.5/8.12.5/Debian-1) with ESMTP id
-	l6Q93bwX007104
-	for <linuxppc-embedded@ozlabs.org>; Thu, 26 Jul 2007 19:03:37 +1000
-Received: from dvalin ([172.31.20.70])
-	by bohr.dd.nec.com.au (8.12.3/8.12.3/Debian-7.1) with ESMTP id
-	l6Q93Xil016263
-	for <linuxppc-embedded@ozlabs.org>; Thu, 26 Jul 2007 19:03:37 +1000
-Date: Thu, 26 Jul 2007 19:11:10 +1000
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: I have a question about:ppc pci and frame_buffer
-Message-ID: <20070726091110.GB8884@dd.nec.com.au>
-References: <749612.18053.qm@web15210.mail.cnb.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <749612.18053.qm@web15210.mail.cnb.yahoo.com>
-From: erik@dd.nec.com.au (Erik Christiansen)
+	Thu, 26 Jul 2007 19:37:17 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: [PATCH] mpx5200_uart: drop port lock across tty_flip_buffer() call
+Date: Thu, 26 Jul 2007 09:25:05 -0000
+Message-ID: <DD39B5C3F4963040ADC9768BE7E430CB02178125@is-hdq-exchange.marel.net>
+In-Reply-To: <1185392838.3227.13.camel@chaos>
+References: <1185390656.3227.12.camel@chaos><fa686aa40707251242i6be0e30pd3b4019686308b0@mail.gmail.com>
+	<1185392838.3227.13.camel@chaos>
+From: "Daniel Schnell" <daniel.schnell@marel.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,22 +25,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 26, 2007 at 03:58:04PM +0800, ???? ?? wrote:
->   here below is what i want :
->   #################################################
->   0..................7  8............15 16..............24 25.................31 
->            B                    G                   R                TRANS
->   now it is this:
->   #################################################
->   0..................7  8............15 16..............24 25.................31 
->         TRANS               R                   G                   B
+Thomas Gleixner wrote:
 
-In U-boot, there is what you might do yourself, perhaps:
+> On Wed, 2007-07-25 at 13:42 -0600, Grant Likely wrote:
+>> On 7/25/07, Thomas Gleixner <tglx@linutronix.de> wrote:
+>>> The port lock needs to be dropped across the tty_flip_buffer call,
+>>> as it would lead to a deadlock with the spin_lock(&port->lock) in
+>>> uart_start()=20
+>>>=20
+>>> Uncovered by lockdep / preempt-rt
+>>>=20
+>>> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-#define LONGSWAP(x) ((((x) & 0x000000ff) << 24) | (((x) & 0x0000ff00) << 8)|\
-           (((x) & 0x00ff0000) >>  8) | (((x) & 0xff000000) >> 24) )
-#define PCISWAP(x)   LONGSWAP(x)
+While you are at it 8=B0> ... the mpc5200-fec driver has serious =
+problems with preempt-rt, similar to what the IBM emac had ....
 
-Any good for your purpose?
 
-Erik
+Best regards,
+
+Daniel Schnell.
