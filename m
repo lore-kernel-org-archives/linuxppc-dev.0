@@ -1,21 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C5302DDE36
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 01:29:05 +1000 (EST)
-In-Reply-To: <46A8BA58.4010208@freescale.com>
-References: <11853846332917-git-send-email-timur@freescale.com>
-	<8CEA1441-8408-48A9-A023-F072FBC3EEE2@kernel.crashing.org>
-	<46A8BA58.4010208@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <2C3AAEE8-EA91-4DBF-AF3E-D71FF592792A@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] POWERPC: Fix definition of global-utilites structure for
-	86xx
-Date: Thu, 26 Jul 2007 10:29:50 -0500
-To: Timur Tabi <timur@freescale.com>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C70A2DDED8
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 01:29:53 +1000 (EST)
+Message-ID: <46A8BDE1.8080900@freescale.com>
+Date: Thu, 26 Jul 2007 10:29:37 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Alexandros Kostopoulos <akostop@inaccessnetworks.com>
+Subject: Re: About mdio_bus for 82xx based board
+References: <op.tv0x7yvmnhx3hy@phoenix>
+	<20070725162305.GA26276@ld0162-tx32.am.freescale.net>
+	<op.tv2in7f5nhx3hy@phoenix> <op.tv2kmbgqnhx3hy@phoenix>
+	<op.tv2nbmkonhx3hy@phoenix>
+In-Reply-To: <op.tv2nbmkonhx3hy@phoenix>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,17 +28,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Alexandros Kostopoulos wrote:
+> Well, I've downloaded the latest git from Paul's tree, and some patches  
+> still fail (and the mpc8272_ads config doesn't compile). Must I get 
+> some  other revision of the tree (if yes, how's that done in git - my 
+> first time  with it )
 
-On Jul 26, 2007, at 10:14 AM, Timur Tabi wrote:
+They don't apply on top of Paul's current tree -- they apply to his tree 
+as of the time the patchset was posted.  I should have a revised 
+patchset in a week or two (the delay mainly being to add and test a 
+couple new boards).
 
-> Kumar Gala wrote:
->
->> Why don't we remove this completely, nothing uses it?
->
-> Should I respin the patch to include updates to mpc86xx_restart()  
-> to use it?
-
-I'm wondering if we should change to code to use a #define GUT_RSTCR  
-offset value since it only needs one register.
-
-- k
+-Scott
