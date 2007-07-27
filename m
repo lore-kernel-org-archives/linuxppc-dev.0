@@ -1,21 +1,30 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 94C4EDDE25
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jul 2007 09:10:52 +1000 (EST)
-Date: Sat, 28 Jul 2007 03:10:35 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: [PATCH 1/2] [POWERPC] Add support of platforms without PHY to
-	gianfar driver
-Message-ID: <20070728031035.068972ae@localhost.localdomain>
-In-Reply-To: <20070726190417.de30bed6.kim.phillips@freescale.com>
-References: <20070725174312.5818.61155.stgit@localhost.localdomain>
-	<20070726190417.de30bed6.kim.phillips@freescale.com>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D5385DDD0B
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jul 2007 09:29:12 +1000 (EST)
+Date: Fri, 27 Jul 2007 18:29:03 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Re: 2.6.22-git hangs during PCMCIA on PowerBook G3 in
+	0.0 seconds
+Message-Id: <20070727182903.9370d4b6.kim.phillips@freescale.com>
+In-Reply-To: <1185575207.5495.257.camel@localhost.localdomain>
+References: <20070721192143.GA12144@nospam.com>
+	<20070721212845.GA30977@nospam.com>
+	<20070723172725.b1c14885.kim.phillips@freescale.com>
+	<1185234923.5439.158.camel@localhost.localdomain>
+	<20070724185946.722f34b5.kim.phillips@freescale.com>
+	<18088.6185.491082.875891@cargo.ozlabs.ibm.com>
+	<20070726162921.a60c76ae.kim.phillips@freescale.com>
+	<20070727221131.GA18273@nospam.com>
+	<1185575207.5495.257.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Jeff Garzik <jeff@garzik.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,47 +34,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 26 Jul 2007 19:04:17 -0500
-Kim Phillips wrote:
+On Sat, 28 Jul 2007 08:26:47 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> On Wed, 25 Jul 2007 21:43:12 +0400
-> Vitaly Bordug <vitb@kernel.crashing.org> wrote:
-> 
+> On Sat, 2007-07-28 at 00:11 +0200, Rutger Nijlunsing wrote:
+> > > Kim
+> > > 
+> > > p.s. should the stable team be notified to fix 2.6.22 for
+> > > Lombard-nvram-style machines?
 > > 
-> > Gianfar driver is now able to work without real phy subnode,
-> > that is necessary to cope with fixed-link situation, when
-> > SoC is connected to the Ethernet inteface or embedded switch 
-> > without any PHY. In this case, fixed-speed property will
-> > describe such a situation for gianfar driver.
+> > Logically, yes. 
 > > 
-> > The property is in form <duplexity speed>
-> > 
-> > Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
-> > 
-> > ---
-> > 
-> >  arch/powerpc/sysdev/fsl_soc.c |   39
-> > +++++++++++++++++++++++----------------
-> > drivers/net/gianfar.c         |   17 ++++++++++++++---
-> 
-> please run this through checkpatch.pl until it passes.
-> 
-> <snip>
-> > +			bus_id = of_get_property(np,
-> > "fixed_speed",NULL);
-> 
-> hyphens are preferred for new properties.  Plus, isn't fixed-link a
-> better name?  unless you instead want to put speed first and make
-> duplexity an optional second, or possibly even a string.
-> 
-> Also, can we get this new property documented in b-w-of in a separate
-> patch?
-> 
-yes, fixed-link is better name.
-I'll redo the patch, thx
 
-> Kim
+> Two ! Paulus has one :-) Though I'm not sure he uses it often nowadays.
+> 
+I sent the two revert requests to the stable team.
 
-
--- 
-Sincerely, Vitaly
+Kim
