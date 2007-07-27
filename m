@@ -1,18 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 27 Jul 2007 12:00:41 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@jdl.com>, linuxppc-dev@ozlabs.org
-Subject: Re: DTC 1.0.0 Release Coming?
-Message-ID: <20070727020041.GC1561@localhost.localdomain>
-References: <E1IDjSy-0003eC-T4@jdl.com>
-	<20070726030550.GA1149@localhost.localdomain>
-	<E1IE314-0000qF-5x@jdl.com>
-	<20070726142739.GB18684@localhost.localdomain>
-	<E1IE59h-0001tt-JE@jdl.com>
-	<20070727013331.GB1561@localhost.localdomain>
+Return-Path: <david-b@pacbell.net>
+Received: from smtp118.sbc.mail.sp1.yahoo.com (smtp118.sbc.mail.sp1.yahoo.com
+	[69.147.64.91]) by ozlabs.org (Postfix) with SMTP id 7DF67DDE05
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 12:58:12 +1000 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [spi-devel-general] [PATCH 0/4] Few spi_mpc83xx.c fixes and
+	improvements
+Date: Thu, 26 Jul 2007 19:58:08 -0700
+References: <20070726131134.GA3309@localhost.localdomain>
+In-Reply-To: <20070726131134.GA3309@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070727013331.GB1561@localhost.localdomain>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200707261958.09127.david-b@pacbell.net>
+Cc: spi-devel-general@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,29 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 27, 2007 at 11:33:31AM +1000, David Gibson wrote:
-> On Thu, Jul 26, 2007 at 10:21:33AM -0500, Jon Loeliger wrote:
-[snip]
-> > I hve also verified that at least one other independent build
-> > using this approach produces a correct version string for them
-> > as well.
+On Thursday 26 July 2007, Anton Vorontsov wrote:
+> Hi all,
 > 
-> Yes, well, this is the other trouble - the current system is so
-> complex it's very hard to debug and figure out why it's claiming my
-> build is dirty but not yours.
+> These patches based on Linus' tree, as of today.
 
-Ok, figured out why.  When I push, then pop a quilt patch some of the
-files end up with their original contents, but changed timestamps.
-That altered stat information causes git-diff-index to give false
-indications of changed files, so setlocalversion adds the -dirty.
-Running git status, or gitool or various other things causes git to
-notice that the files aren't really changed, updates the index and
-then the version is generated correctly again.
+I don't know mpc83xx ... are there any PPC folk who can see
+any reason not to just merge these patches?  They look OK
+to me, but in this case that doesn't mean much.  :)
 
-Not very robust though.
+If I don't hear otherwise, I'll forward all four of these
+patches upstream on Monday.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+(Anton, thanks for these updates!)
+
+- Dave
