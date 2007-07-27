@@ -1,25 +1,17 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CCA93DDE27
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 14:22:51 +1000 (EST)
-Date: Thu, 26 Jul 2007 21:22:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <pacman@shell01.TheWorld.com>
+Received: from TheWorld.com (pcls5.std.com [192.74.137.145])
+	by ozlabs.org (Postfix) with ESMTP id 389F4DDE27
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 14:48:13 +1000 (EST)
+From: Alan Curry <pacman@TheWorld.com>
+Message-Id: <200707270448.l6R4m1O31531714@shell01.TheWorld.com>
 Subject: Re: [PATCH] powerpc: Pegasos keyboard detection
-Message-Id: <20070726212241.032e9755.akpm@linux-foundation.org>
-In-Reply-To: <1185505222.5495.182.camel@localhost.localdomain>
-References: <200707250128.l6P1SWSF1336935@shell01.TheWorld.com>
-	<1185347565.5439.310.camel@localhost.localdomain>
-	<20070726184800.0bb3b9fb.akpm@linux-foundation.org>
-	<1185505222.5495.182.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Alan Curry <pacman@theworld.com>,
-	linux-kernel@vger.kernel.org
+To: akpm@linux-foundation.org (Andrew Morton)
+Date: Fri, 27 Jul 2007 00:48:01 -0400 (EDT)
+In-Reply-To: <20070726212241.032e9755.akpm@linux-foundation.org> from "Andrew
+	Morton" at Jul 26, 2007 09:22:41 PM
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,35 +21,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 27 Jul 2007 13:00:21 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Andrew Morton writes the following:
+>> > 
+>> > Did this get merged, or otherwise fixed?  Even though the code in there has
+>> > changed quite a bit, it looks to my untrained eye like the fix is still
+>> > applicable?
+>> 
+>> Merged a fixed version:
+>> 
+>> f5d834fc34e61f1a40435981062000e5d2b2baa8
+>> 
+>> (In linus tree as of now)
+>
+>I hope so.  Alan's patch looks rather different from what you have now:
+>fall back to of_find_node_by_name() if of_find_node_by_type() failed.
+>
 
-> On Thu, 2007-07-26 at 18:48 -0700, Andrew Morton wrote:
-> > On Wed, 25 Jul 2007 17:12:45 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> > 
-> > > On Tue, 2007-07-24 at 21:28 -0400, Alan Curry wrote:
-> > > > As of 2.6.22 the kernel doesn't recognize the i8042 keyboard/mouse controller
-> > > > on the PegasosPPC. This is because of a feature/bug in the OF device tree:
-> > > > the "device_type" attribute is an empty string instead of "8042" as the
-> > > > kernel expects. This patch (against 2.6.22.1) adds a secondary detection
-> > > > which looks for a device whose *name* is "8042" if there is no device whose
-> > > > *type* is "8042".
-> > > > 
-> > > > Signed-off-by: Alan Curry <pacman@world.std.com>
-> > > 
-> > > Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > > 
-> > > Note, if there's a volunteer, we could probably turn that code into a
-> > > nice table lookup.
-> > 
-> > Did this get merged, or otherwise fixed?  Even though the code in there has
-> > changed quite a bit, it looks to my untrained eye like the fix is still
-> > applicable?
-> 
-> Merged a fixed version:
-> 
-> f5d834fc34e61f1a40435981062000e5d2b2baa8
-> 
-> (In linus tree as of now)
+Looking at it via gitweb, I think the commit mentioned above is actually the
+same as what I submitted. The diff context lines are different because there
+was a similar patch in between the 2.6.22 release and my patch, which
+apparently fixed the same problem on a different type of machine. It looks
+like these 2 workarounds will function independently of each other.
 
-I hope so.  Alan's patch looks rather different from what you have now:
-fall back to of_find_node_by_name() if of_find_node_by_type() failed.
+The first 8042-detection fix was:
+db0dbae9d9680bce69fe1ce775709e60c8ee9c29
+
+And mine is:
+f5d834fc34e61f1a40435981062000e5d2b2baa8
+
+-- 
+Alan Curry
+pacman@world.std.com
