@@ -4,22 +4,23 @@ Received: from de01egw02.freescale.net (de01egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 54049DDD05
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jul 2007 04:24:00 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 4AA40DDE24
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jul 2007 04:24:41 +1000 (EST)
 Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
 	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l6RINsRG012918
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 11:23:55 -0700 (MST)
+	l6RIObM4013203
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 11:24:37 -0700 (MST)
 Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l6RINsfl016913
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 13:23:54 -0500 (CDT)
-Subject: [PATCH 0/5] Remove unnecessary loops_per_jiffy initialization code
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l6RIOaJg017013
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 13:24:37 -0500 (CDT)
+Subject: [PATCH 1/5] 86xx: Remove unnecessary loops_per_jiffy
+	initialization code.
 From: Jon Loeliger <jdl@freescale.com>
 To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Message-Id: <1185560634.8055.170.camel@ld0161-tx32>
+Message-Id: <1185560676.8055.173.camel@ld0161-tx32>
 Mime-Version: 1.0
-Date: Fri, 27 Jul 2007 13:23:54 -0500
+Date: Fri, 27 Jul 2007 13:24:36 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,19 +30,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch series removes lingering jiffies initialization
-code from several platforms.  Note that the first patch in
-this series for the 86xx has been rebased to current top of
-Paul's repository and replaces an earlier version.
+Signed-off-by: Jon Loeliger <jdl@freescale.com>
+---
 
+Note -- This is a rebased version of an earlier patch
+          from July 17.  That one can be dropped.
 
- arch/powerpc/platforms/52xx/lite5200.c         |   13 ++-----------
- arch/powerpc/platforms/85xx/mpc85xx_ads.c      |   13 -------------
- arch/powerpc/platforms/85xx/mpc85xx_cds.c      |   13 -------------
- arch/powerpc/platforms/85xx/mpc85xx_mds.c      |   11 -----------
- arch/powerpc/platforms/86xx/mpc86xx_hpcn.c     |   14 ++------------
- arch/powerpc/platforms/8xx/mpc86xads_setup.c   |   14 --------------
- arch/powerpc/platforms/8xx/mpc885ads_setup.c   |   14 --------------
- arch/powerpc/platforms/embedded6xx/holly.c     |   12 ------------
- arch/powerpc/platforms/embedded6xx/prpmc2800.c |    7 -------
- 9 files changed, 4 insertions(+), 107 deletions(-)
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |   14 ++------------
+ 1 files changed, 2 insertions(+), 12 deletions(-)
+
+diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+index e9eaa07..de90e6a 100644
+--- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
++++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+@@ -327,23 +327,13 @@ DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_AL, 0x5249, early_uli5249);
+ static void __init
+ mpc86xx_hpcn_setup_arch(void)
+ {
++#ifdef CONFIG_PCI
+ 	struct device_node *np;
++#endif
+ 
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("mpc86xx_hpcn_setup_arch()", 0);
+ 
+-	np = of_find_node_by_type(NULL, "cpu");
+-	if (np != 0) {
+-		const unsigned int *fp;
+-
+-		fp = of_get_property(np, "clock-frequency", NULL);
+-		if (fp != 0)
+-			loops_per_jiffy = *fp / HZ;
+-		else
+-			loops_per_jiffy = 50000000 / HZ;
+-		of_node_put(np);
+-	}
+-
+ #ifdef CONFIG_PCI
+ 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;) {
+ 		struct resource rsrc;
+-- 
+1.5.0.3
