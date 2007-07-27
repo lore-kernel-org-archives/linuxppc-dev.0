@@ -1,23 +1,18 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 83B93DDE21
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 11:48:47 +1000 (EST)
-Date: Thu, 26 Jul 2007 18:48:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Pegasos keyboard detection
-Message-Id: <20070726184800.0bb3b9fb.akpm@linux-foundation.org>
-In-Reply-To: <1185347565.5439.310.camel@localhost.localdomain>
-References: <200707250128.l6P1SWSF1336935@shell01.TheWorld.com>
-	<1185347565.5439.310.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Alan Curry <pacman@theworld.com>,
-	linux-kernel@vger.kernel.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 27 Jul 2007 12:00:41 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@jdl.com>, linuxppc-dev@ozlabs.org
+Subject: Re: DTC 1.0.0 Release Coming?
+Message-ID: <20070727020041.GC1561@localhost.localdomain>
+References: <E1IDjSy-0003eC-T4@jdl.com>
+	<20070726030550.GA1149@localhost.localdomain>
+	<E1IE314-0000qF-5x@jdl.com>
+	<20070726142739.GB18684@localhost.localdomain>
+	<E1IE59h-0001tt-JE@jdl.com>
+	<20070727013331.GB1561@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070727013331.GB1561@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,64 +22,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 25 Jul 2007 17:12:45 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-
-> On Tue, 2007-07-24 at 21:28 -0400, Alan Curry wrote:
-> > As of 2.6.22 the kernel doesn't recognize the i8042 keyboard/mouse controller
-> > on the PegasosPPC. This is because of a feature/bug in the OF device tree:
-> > the "device_type" attribute is an empty string instead of "8042" as the
-> > kernel expects. This patch (against 2.6.22.1) adds a secondary detection
-> > which looks for a device whose *name* is "8042" if there is no device whose
-> > *type* is "8042".
-> > 
-> > Signed-off-by: Alan Curry <pacman@world.std.com>
+On Fri, Jul 27, 2007 at 11:33:31AM +1000, David Gibson wrote:
+> On Thu, Jul 26, 2007 at 10:21:33AM -0500, Jon Loeliger wrote:
+[snip]
+> > I hve also verified that at least one other independent build
+> > using this approach produces a correct version string for them
+> > as well.
 > 
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 
-> Note, if there's a volunteer, we could probably turn that code into a
-> nice table lookup.
+> Yes, well, this is the other trouble - the current system is so
+> complex it's very hard to debug and figure out why it's claiming my
+> build is dirty but not yours.
 
-Did this get merged, or otherwise fixed?  Even though the code in there has
-changed quite a bit, it looks to my untrained eye like the fix is still
-applicable?
+Ok, figured out why.  When I push, then pop a quilt patch some of the
+files end up with their original contents, but changed timestamps.
+That altered stat information causes git-diff-index to give false
+indications of changed files, so setlocalversion adds the -dirty.
+Running git status, or gitool or various other things causes git to
+notice that the files aren't really changed, updates the index and
+then the version is generated correctly again.
 
+Not very robust though.
 
-From: Alan Curry <pacman@TheWorld.com>
-
-As of 2.6.22 the kernel doesn't recognize the i8042 keyboard/mouse
-controller on the PegasosPPC.  This is because of a feature/bug in the OF
-device tree: the "device_type" attribute is an empty string instead of
-"8042" as the kernel expects.  This patch (against 2.6.22.1) adds a
-secondary detection which looks for a device whose *name* is "8042" if
-there is no device whose *type* is "8042".
-
-Signed-off-by: Alan Curry <pacman@world.std.com>
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- arch/powerpc/kernel/setup-common.c |    6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff -puN /dev/null /dev/null
-diff -puN arch/powerpc/kernel/setup-common.c~powerpc-pegasos-keyboard-detection arch/powerpc/kernel/setup-common.c
---- a/arch/powerpc/kernel/setup-common.c~powerpc-pegasos-keyboard-detection
-+++ a/arch/powerpc/kernel/setup-common.c
-@@ -496,6 +496,12 @@ int check_legacy_ioport(unsigned long ba
- 			break;
- 		}
- 		np = of_find_node_by_type(NULL, "8042");
-+		/*
-+		 * Pegasos has no device_type on its 8042 node, look for the
-+		 * name instead
-+		 */
-+		if (!np)
-+			np = of_find_node_by_name(NULL, "8042");
- 		break;
- 	case FDC_BASE: /* FDC1 */
- 		np = of_find_node_by_type(NULL, "fdc");
-_
-
-
-And ALan says that 2.6.22 is bust, but this patch no won't apply there so
-if we want to fix 2.6.22.x then Alan's original patch would be needed.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
