@@ -1,24 +1,21 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7DC89DDE35
+Return-Path: <fvoegel@carangul.com>
+Received: from asgard.akp-net.com (carangul.com [83.149.88.131])
+	by ozlabs.org (Postfix) with ESMTP id 0D4CCDDE0C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 Jul 2007 16:47:04 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1IEJbA-0004J1-Gq
-	for linuxppc-embedded@ozlabs.org; Thu, 26 Jul 2007 23:46:52 -0700
-Message-ID: <11823845.post@talk.nabble.com>
-Date: Thu, 26 Jul 2007 23:46:52 -0700 (PDT)
-From: Nethra <nethra_gmit@yahoo.co.in>
+	Fri, 27 Jul 2007 17:37:48 +1000 (EST)
+Received: from port-87-234-85-38.dynamic.qsc.de ([87.234.85.38] helo=lumpi.x)
+	by asgard.akp-net.com with esmtpa (Exim 4.62)
+	(envelope-from <fvoegel@carangul.com>) id 1IEKOP-00079o-Sf
+	for linuxppc-embedded@ozlabs.org; Fri, 27 Jul 2007 09:37:45 +0200
+Date: Fri, 27 Jul 2007 10:40:23 +0200
+From: "Florian A. Voegel" <fvoegel@carangul.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: ping command
-In-Reply-To: <1185458965.6839.8.camel@saruman.qstreams.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <11779249.post@talk.nabble.com>
-	<1185458965.6839.8.camel@saruman.qstreams.net>
+Subject: Re: creation of jffs2 rootfile system..
+Message-Id: <20070727104023.78048ea4.fvoegel@carangul.com>
+In-Reply-To: <11823840.post@talk.nabble.com>
+References: <11823840.post@talk.nabble.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,82 +27,80 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-root@cashel:~# route -n
-Kernel IP routing table
-Destination     Gateway         Genmask         Flags Metric Ref    Use
-Iface
-192.168.178.0   0.0.0.0         255.255.255.0   U     0      0        0 eth0
-192.168.32.0    0.0.0.0         255.255.248.0   U     0      0        0 eth1
-0.0.0.0         192.168.32.47   0.0.0.0         UG    0      0        0 eth1
-0.0.0.0         192.168.178.47  0.0.0.0         UG    0      0        0 eth0
-root@cashel:~# ifconfig
-eth0      Link encap:Ethernet  HWaddr 00:13:72:FE:A9:02
-          inet addr:192.168.178.89  Bcast:192.168.178.255 
-Mask:255.255.255.0
-          inet6 addr: fe80::213:72ff:fefe:a902/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:15665 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:9285 errors:0 dropped:0 overruns:0 carrier:9019
-          collisions:0 txqueuelen:1000
-          RX bytes:12957285 (12.3 MiB)  TX bytes:2720267 (2.5 MiB)
-          Base address:0x8400
+Hi Nethra,
 
-eth1      Link encap:Ethernet  HWaddr 00:13:72:7E:A9:02
-          inet addr:192.168.33.135  Bcast:192.168.33.255  Mask:255.255.248.0
-          inet6 addr: fe80::213:72ff:fe7e:a902/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:634 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:84 errors:0 dropped:0 overruns:0 carrier:82
-          collisions:0 txqueuelen:1000
-          RX bytes:103558 (101.1 KiB)  TX bytes:12832 (12.5 KiB)
-          Base address:0x8500
+what does your inittab and your startup files look like? It looks like
 
-lo        Link encap:Local Loopback
-          inet6 addr: ::1/128 Scope:Host
-          UP LOOPBACK RUNNING  MTU:16436  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0
-          RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
-
-root@cashel:~#
+- your inittab does not start a getty but rather a shell, thus no login
+- your /proc isn't mounted, and it's needed for ps to work properly
 
 
-On Wed, 2007-07-25 at 02:29 -0700, Nethra wrote:
-> hi,
+Greets,
+
+Florian Voegel
+Carangul.Tech
+
+On Thu, 26 Jul 2007 23:41:32 -0700 (PDT)
+Nethra <nethra_gmit@yahoo.co.in> wrote:
+
 > 
-> I m using custom board same as eval board MPC8272ADS board.
+> when boot the board with jffs2 rootfile system i m getting output like this,
 > 
-> IP assigned for both ethernets are...
+> TCP: Hash tables configured (established 4096 bind 8192)
+> IPv4 over IPv4 tunneling driver
+> NET: Registered protocol family 1
+> NET: Registered protocol family 10
+> IPv6 over IPv4 tunneling driver
+> NET: Registered protocol family 17
+> Disabled Privacy Extensions on device c02527a0(lo)
+> IP-Config: Incomplete network configuration information.
+> Empty flash at 0x0000ffa0 ends at 0x00010000
+> Empty flash at 0x0002ffec ends at 0x00030000
+> Empty flash at 0x0004ffe8 ends at 0x00050000
+> Empty flash at 0x0006ffc8 ends at 0x00070000
+> Empty flash at 0x0008fffc ends at 0x00090000
+> Empty flash at 0x000afffc ends at 0x000b0000
+> Empty flash at 0x000cfffc ends at 0x000d0000
+> Empty flash at 0x000efffc ends at 0x000f0000
+> Empty flash at 0x0010fffc ends at 0x00110000
+> Empty flash at 0x0012fffc ends at 0x00130000
+> Empty flash at 0x0014fffc ends at 0x00150000
+> Empty flash at 0x0016fffc ends at 0x00170000
+> Empty flash at 0x0018fffc ends at 0x00190000
+> Empty flash at 0x001cfffc ends at 0x001d0000
+> Empty flash at 0x001efffc ends at 0x001f0000
+> Empty flash at 0x0020fffc ends at 0x00210000
+> Empty flash at 0x0022fffc ends at 0x00230000
+> Empty flash at 0x0024fffc ends at 0x00250000
+> Empty flash at 0x0026fffc ends at 0x00270000
+> Empty flash at 0x002afffc ends at 0x002b0000
+> Empty flash at 0x002cfffc ends at 0x002d0000
+> VFS: Mounted root (jffs2 filesystem).
+> Freeing unused kernel memory: 108k init
 > 
->               ifconfig eth1 192.168.33.135 up
-> 	 ifconfig eth1 netmask 255.255.248.0
->  	 route add default gw 192.168.32.47 eth1
+> Please press Enter to activate this console.
+> / #
+> / #
+> / #
+> 
+> login prompt itself is not coming and
 >  
+> ps command is not working....
+> # ps
+>   PID  Uid     VmSize Stat Command
+> #
 > 
-> 	 ifconfig eth0 192.168.178.89 up
-> 	 ifconfig eth0netmask 255.255.255.0
-> 	 route add default gw 192.168.178.47 eth0
+> what is the problem..?
 > 
-> but if i try for ping 192.168.33.135 command pails by the server of 178
-> series
-> similarly ping 192.168.178.89 command pails by the server of 33 series..
+> waiting for early response,
+> Nethra
 > 
-> what is the problem..and whre i m going wrong..?
-
-What does your routing table show?  (route -n).  It wouldn't hurt to
-also post the output of ifconfig for both interfaces.
-
-regards,
-Ben
-
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-
-
-
--- 
-View this message in context: http://www.nabble.com/ping-command-tf4141032.html#a11823845
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+> -- 
+> View this message in context: http://www.nabble.com/creation-of-jffs2-rootfile-system..-tf4155759.html#a11823840
+> Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
