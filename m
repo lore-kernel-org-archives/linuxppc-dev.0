@@ -1,17 +1,18 @@
-Return-Path: <pacman@shell01.TheWorld.com>
-Received: from TheWorld.com (pcls5.std.com [192.74.137.145])
-	by ozlabs.org (Postfix) with ESMTP id 389F4DDE27
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 14:48:13 +1000 (EST)
-From: Alan Curry <pacman@TheWorld.com>
-Message-Id: <200707270448.l6R4m1O31531714@shell01.TheWorld.com>
-Subject: Re: [PATCH] powerpc: Pegasos keyboard detection
-To: akpm@linux-foundation.org (Andrew Morton)
-Date: Fri, 27 Jul 2007 00:48:01 -0400 (EDT)
-In-Reply-To: <20070726212241.032e9755.akpm@linux-foundation.org> from "Andrew
-	Morton" at Jul 26, 2007 09:22:41 PM
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <kou.ishizaki@toshiba.co.jp>
+Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E118ADDD0C
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 16:12:00 +1000 (EST)
+Date: Fri, 27 Jul 2007 15:11:28 +0900 (JST)
+Message-Id: <20070727.151128.-1300540472.kouish@swc.toshiba.co.jp>
+To: benh@kernel.crashing.org, michael@ellerman.id.au
+Subject: Re: [PATCH] xmon consistency clean up
+In-Reply-To: <1185365630.21877.4.camel@concordia.ozlabs.ibm.com>
+From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,34 +22,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andrew Morton writes the following:
->> > 
->> > Did this get merged, or otherwise fixed?  Even though the code in there has
->> > changed quite a bit, it looks to my untrained eye like the fix is still
->> > applicable?
->> 
->> Merged a fixed version:
->> 
->> f5d834fc34e61f1a40435981062000e5d2b2baa8
->> 
->> (In linus tree as of now)
->
->I hope so.  Alan's patch looks rather different from what you have now:
->fall back to of_find_node_by_name() if of_find_node_by_type() failed.
->
+Michael Ellerman <michael@ellerman.id.au> wrote:
+> On Wed, 2007-07-25 at 16:21 +1000, Benjamin Herrenschmidt wrote:
+> > On Wed, 2007-07-25 at 11:57 +0900, Ishizaki Kou wrote:
+> > > This patch cleans up xmon to keep consistency.
+> > > 
+> > > In xmon, we should use console I/O functions that are named the
+same
+> > > as user space stdio functions. But commit
+> > > 4d404edce30f911004850d472e05a31efd751662 broke this consistency.
+> > > 
+> > > Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+> > > ---
+> > > 
+> > > Index: linux-powerpc-git/arch/powerpc/xmon/nonstdio.c
+> > >
+===================================================================
+> > > --- linux-powerpc-git.orig/arch/powerpc/xmon/nonstdio.c
+> > > +++ linux-powerpc-git/arch/powerpc/xmon/nonstdio.c
+> > > @@ -133,7 +133,7 @@ void xmon_printf(const char *format, ...
+> > >         xmon_write(xmon_outbuf, n);
+> > >  }
+> > >  
+> > > -void xmon_puts(const char *str)
+> > > +void xmon_fputs(const char *str)
+> > >  {
+> > >         xmon_write(str, strlen(str)); 
+> > 
+> > Nah, keep it xmon_puts, since it doesn't take a stream argument and
+> > define a "puts" for use by xmon core.
+> 
+> But then it needs to add a newline .. and we've gone around in a
+circle
+> again. Funny how the trivialest of patches gets the most review.
 
-Looking at it via gitweb, I think the commit mentioned above is actually the
-same as what I submitted. The diff context lines are different because there
-was a similar patch in between the 2.6.22 release and my patch, which
-apparently fixed the same problem on a different type of machine. It looks
-like these 2 workarounds will function independently of each other.
+In my opinion, our goal is providing stdio functions like fputs to
+xmon.c. So, xmon_fputs need not be compatible with fputs because
+xmon.c doesn't use it directly.
 
-The first 8042-detection fix was:
-db0dbae9d9680bce69fe1ce775709e60c8ee9c29
-
-And mine is:
-f5d834fc34e61f1a40435981062000e5d2b2baa8
-
--- 
-Alan Curry
-pacman@world.std.com
+Best regards,
+Kou Ishizaki
