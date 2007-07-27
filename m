@@ -1,26 +1,25 @@
-Return-Path: <gallatin@myri.com>
-Received: from myri.com (dsl.myri.com [64.172.73.26])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 05291DDD0D
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jul 2007 05:47:28 +1000 (EST)
-Message-ID: <46AA4BBA.5060905@myri.com>
-Date: Fri, 27 Jul 2007 15:47:06 -0400
-From: Andrew Gallatin <gallatin@myri.com>
+Return-Path: <rutger@wingding.demon.nl>
+Received: from post-23.mail.nl.demon.net (post-23.mail.nl.demon.net
+	[194.159.73.193]) by ozlabs.org (Postfix) with ESMTP id C08B6DDE18
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jul 2007 08:11:37 +1000 (EST)
+Date: Sat, 28 Jul 2007 00:11:31 +0200
+From: Rutger Nijlunsing <rutger@nospam.com>
+To: Kim Phillips <kim.phillips@freescale.com>
+Subject: Re: [PATCH] Re: 2.6.22-git hangs during PCMCIA on PowerBook G3 in
+	0.0 seconds
+Message-ID: <20070727221131.GA18273@nospam.com>
+References: <20070721192143.GA12144@nospam.com>
+	<20070721212845.GA30977@nospam.com>
+	<20070723172725.b1c14885.kim.phillips@freescale.com>
+	<1185234923.5439.158.camel@localhost.localdomain>
+	<20070724185946.722f34b5.kim.phillips@freescale.com>
+	<18088.6185.491082.875891@cargo.ozlabs.ibm.com>
+	<20070726162921.a60c76ae.kim.phillips@freescale.com>
 MIME-Version: 1.0
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: Re: [RFC 0/1] lro: Generic Large Receive Offload for TCP traffic
-References: <200707201741.45079.ossthema@de.ibm.com>
-	<46A785C2.9090708@myri.com>
-	<200707271418.49781.ossthema@de.ibm.com>
-In-Reply-To: <200707271418.49781.ossthema@de.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
-	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>,
-	David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070726162921.a60c76ae.kim.phillips@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: linuxppc-dev@tux.tmfweb.nl
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,51 +29,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jan-Bernd Themann wrote:
+> Kim
+> 
+> p.s. should the stable team be notified to fix 2.6.22 for
+> Lombard-nvram-style machines?
 
- > On Wednesday 25 July 2007 19:17, Andrew Gallatin wrote:
+Logically, yes. 
 
- >> 3) Padded frames.
- >>
- >> I may be missing something, but I don't see where you
- >> either strip padding from frames or reject padded frames.
- >> (see the pskb_trim_rcsum() in net/ipv4/ip_input.c:ip_rcv()
- >>
- > I think I missed something :-) Will fix that.
- > In lro_tcp_ip_check we check for the "SKB aggregation interface"
- > the skb->len against ip->tot_len. This catches padded frames as
- > eth_type_trans(skb, dev) reduces the length of the SKB.
- > However, the possible VLAN header is not taken into account.
- > And for the "receive in pages" interface a wrong length is passed
- > as argument as well.
- >
- > I'd suggest to reject padded frames for aggregation as we do now
- > (when bugs are fixed) and thus keep the code simple.
- > I guess that padded frames don't occur too often in high load
- > situations. If we detect a real performance issue we can still
- > change that later.
+Practically it does not matter that much it seems. I've got the
+feeling the Lombard-users-group-size is about one person which is
+going to drop to zero if he doesn't get any further in being able to
+use _any_ PCMCIA card in his machine ;-)
 
-The one case where performance may be at issue is in aggregating Acks
-on connections w/o TCP timestamps where a frame size of 54 bytes is
-padded out to 60.  I did some very quick measurements using netperf
--tTCP_SENDFILE on the same athlons mentioned earlier using our 1.3.1
-driver.  I see a roughly 8% CPU increase (~17% -> ~25%) when I disable
-LRO (and hence Ack aggregation) on the sender.  This works out to an
-increase in service demand from ~0.3 to ~0.44 according to netperf.
-With LRO enabled, our counters show we're aggregating acks at a
-roughly 3:1 ratio.  This is probably an optimization that can be done
-later, but it is helpful.
+For example, PCMCIA (non-cardbus) does not work on Lombard since
+~2.6.12 (2 years old bug instantly crashing the kernel!) according to
+own experiences, Google and own git-bisecting down to 2.6.13,
+compiling and running different kernels. 2.6.12 appears to require the
+'old-style' PCMCIA tools, which I do not have installed and is
+therefore impossible for me to test.
 
-This reminds me.. what would you think about adding some sort of
-counters, ideally per-interface, to expose how well LRO is working?
-At the simplest level, you could add them to the lro mgr struct and
-let drivers export them via ethtool.  I think a central approach might
-be more appropriate.  At any rate, I'd prefer the final
-version to at least have counters to indicate how many packets were
-aggregated, how many packets were flushed, and how many times we
-failed to aggregate something due to insufficient net_lro_desc
-descriptors.
+Links:
+  2.6.12 works with PCMCIA on Lombard:
+    http://www.mascanc.net/~vieri/gnumela.html
+  2.6.13 dead
+    (checked with git)
+  2.6.15 dead (Lombard PCMCIA problems in FC5):
+    http://forums.fedoraforum.org/archive/index.php/t-110657.html
+  2.6.18 dead, 2.6.12 works:
+    http://lists.infradead.org/pipermail/linux-pcmcia/2006-October/004051.html
+  2.6.19 dead (own bug report):
+    http://ozlabs.org/pipermail/linuxppc-dev/2006-November/028617.html
+  2.6.20 dead:
+    http://lists.infradead.org/pipermail/linux-pcmcia/2007-April/004500.html
+  2.6.22 dead (own bug report #2):
+    http://ozlabs.org/pipermail/linuxppc-dev/2007-July/039863.html
 
-Thanks again for taking the lead on this,
+The initial reason to bisect to the now-reverting patch was to get a
+working Lombard. I'd like to get this working or to help out in any
+way, but I don't know how to proceed...
 
-Drew
+-- 
+Rutger Nijlunsing ---------------------------------- eludias ed dse.nl
+never attribute to a conspiracy which can be explained by incompetence
+----------------------------------------------------------------------
