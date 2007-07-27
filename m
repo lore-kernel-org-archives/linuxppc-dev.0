@@ -1,17 +1,22 @@
-Return-Path: <akostop@inaccessnetworks.com>
-Received: from inaccessnetworks.com (node3.inaccessnetworks.com
-	[212.205.200.118]) by ozlabs.org (Postfix) with ESMTP id B5790DDE02
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jul 2007 03:13:00 +1000 (EST)
-Date: Fri, 27 Jul 2007 20:12:46 +0300
-To: "Scott Wood" <scottwood@freescale.com>
-Subject: Re: pq2fads support...
-From: "Alexandros Kostopoulos" <akostop@inaccessnetworks.com>
-Content-Type: text/plain; format=flowed; delsp=yes; charset=iso-8859-7
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0E095DDE2D
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jul 2007 03:45:52 +1000 (EST)
+Message-ID: <46AA2F48.3020702@freescale.com>
+Date: Fri, 27 Jul 2007 12:45:44 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
+To: Alexandros Kostopoulos <akostop@inaccessnetworks.com>
+Subject: Re: pq2fads support...
 References: <op.tv4h01apnhx3hy@phoenix>
 	<20070727163529.GA26893@ld0162-tx32.am.freescale.net>
-Message-ID: <op.tv4vfiaunhx3hy@phoenix>
-In-Reply-To: <20070727163529.GA26893@ld0162-tx32.am.freescale.net>
+	<op.tv4vfiaunhx3hy@phoenix>
+In-Reply-To: <op.tv4vfiaunhx3hy@phoenix>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,44 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thanks for your reply, Scott,
+Alexandros Kostopoulos wrote:
+> Thanks for your reply, Scott,
+> 
+> one question though: I am NOT using the bootwrapper, I'm instead 
+> feeding  dtb and uImage directly to u-boot. This probably means that
+> I should fill  in lots of stuff manually into dts, right?
 
-one question though: I am NOT using the bootwrapper, I'm instead feeding  
-dtb and uImage directly to u-boot. This probably means that I should fill  
-in lots of stuff manually into dts, right? But, (and please forgive my  
-ignorance) who does actually fill in stuff (like e.g. clock-frequency or  
-bus-frequency), except, of course, from the trivial modifications u-boot  
-does to dtb? The wrapper script seems to do nothing more that simply  
-running dtc on dts.
+No, u-boot should fill in the same stuff.  It may require the empty
+fields to be there, though (it definitely requires it if you're using
+the old, non-libfdt code -- if you are, you should also remove the 
+/chosen node, or else you'll get two of them).
 
-Thanks again
+> But, (and please forgive my  ignorance) who does actually fill in
+> stuff (like e.g. clock-frequency or  bus-frequency), except, of
+> course, from the trivial modifications u-boot  does to dtb? The
+> wrapper script seems to do nothing more that simply  running dtc on
+> dts.
 
-Alex
+In the bootwrapper case, it's the code in cuboot-pq2.c and devtree.c. 
+In the no-bootwrapper case, it's u-boot.
 
-On Fri, 27 Jul 2007 19:35:29 +0300, Scott Wood <scottwood@freescale.com>  
-wrote:
-
-> On Fri, Jul 27, 2007 at 03:24:08PM +0300, Alexandros Kostopoulos wrote:
->> In your patch for the pq2fads support, the device tree seems to be  
->> missing
->> a memory node, for which dtc complains loudly. Is this board tested to
->> boot with these patches (because I'm now using this as a template for my
->> board - with your patchset applied to Paul's git)
->
-> Sorry about that -- dtc complains about a lot of silly things, falsely
-> assuming that the result is intended to be a complete tree ready for
-> passing to Linux (which is rarely true).  I'd been running with a patch
-> to remove some of those checks, but it got rejected, and I forgot to
-> stick the templates back into the dts.
->
-> The next patchset will have a dts that works with current dtc; in the
-> meantime, you can add the -f flag to dtc in arch/powerpc/boot/wrapper, or
-> add the missing nodes based on the mpc8272ads device tree (the actual
-> information will be filled in by the bootwrapper).
->
->> PS. What's about this new cpm-serial driver? is this supposed to be a
->> replacement for cpm_uart?
->
-> No, it's a minimal driver for the bootwrapper.
->
-> -Scott
+-Scott
