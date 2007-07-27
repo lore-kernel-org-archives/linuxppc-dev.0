@@ -1,26 +1,18 @@
-Return-Path: <jdl@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 44E85DE033
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jul 2007 04:25:15 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l6RIPAjw013385
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 11:25:10 -0700 (MST)
-Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l6RIP93P017098
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 13:25:09 -0500 (CDT)
-Subject: [PATCH 5/5] embedded6xx: Remove unnecessary loops_per_jiffy
-	initialization code.
-From: Jon Loeliger <jdl@freescale.com>
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Message-Id: <1185560709.8055.178.camel@ld0161-tx32>
-Mime-Version: 1.0
-Date: Fri, 27 Jul 2007 13:25:09 -0500
+Return-Path: <CFRIESEN@nortel.com>
+Received: from zrtps0kn.nortel.com (zrtps0kn.nortel.com [47.140.192.55])
+	by ozlabs.org (Postfix) with ESMTP id 5C1ADDDE02
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jul 2007 04:56:04 +1000 (EST)
+Message-ID: <46AA3FB8.8030301@nortel.com>
+Date: Fri, 27 Jul 2007 12:55:52 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: help with ppc sections?
+References: <46A8F22E.6010701@nortel.com>
+	<fa686aa40707261255x23b06ff4y5fe1527f72c09c5b@mail.gmail.com>
+In-Reply-To: <fa686aa40707261255x23b06ff4y5fe1527f72c09c5b@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,64 +22,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Jon Loeliger <jdl@freescale.com>
----
- arch/powerpc/platforms/embedded6xx/holly.c     |   12 ------------
- arch/powerpc/platforms/embedded6xx/prpmc2800.c |    7 -------
- 2 files changed, 0 insertions(+), 19 deletions(-)
+Grant Likely wrote:
 
-diff --git a/arch/powerpc/platforms/embedded6xx/holly.c b/arch/powerpc/platforms/embedded6xx/holly.c
-index 6292e36..7662091 100644
---- a/arch/powerpc/platforms/embedded6xx/holly.c
-+++ b/arch/powerpc/platforms/embedded6xx/holly.c
-@@ -113,23 +113,11 @@ static void holly_remap_bridge(void)
- 
- static void __init holly_setup_arch(void)
- {
--	struct device_node *cpu;
- 	struct device_node *np;
- 
- 	if (ppc_md.progress)
- 		ppc_md.progress("holly_setup_arch():set_bridge", 0);
- 
--	cpu = of_find_node_by_type(NULL, "cpu");
--	if (cpu) {
--		const unsigned int *fp;
--
--		fp = of_get_property(cpu, "clock-frequency", NULL);
--		if (fp)
--			loops_per_jiffy = *fp / HZ;
--		else
--			loops_per_jiffy = 50000000 / HZ;
--		of_node_put(cpu);
--	}
- 	tsi108_csr_vir_base = get_vir_csrbase();
- 
- 	/* setup PCI host bridge */
-diff --git a/arch/powerpc/platforms/embedded6xx/prpmc2800.c b/arch/powerpc/platforms/embedded6xx/prpmc2800.c
-index 5342095..5467564 100644
---- a/arch/powerpc/platforms/embedded6xx/prpmc2800.c
-+++ b/arch/powerpc/platforms/embedded6xx/prpmc2800.c
-@@ -44,7 +44,6 @@ static void __init prpmc2800_setup_arch(void)
- 	struct device_node *np;
- 	phys_addr_t paddr;
- 	const unsigned int *reg;
--	const unsigned int *prop;
- 
- 	/*
- 	 * ioremap mpp and gpp registers in case they are later
-@@ -62,12 +61,6 @@ static void __init prpmc2800_setup_arch(void)
- 	of_node_put(np);
- 	mv64x60_gpp_reg_base = ioremap(paddr, reg[1]);
- 
--	np = of_find_node_by_type(NULL, "cpu");
--	prop = of_get_property(np, "clock-frequency", NULL);
--	if (prop)
--		loops_per_jiffy = *prop / HZ;
--	of_node_put(np);
--
- #ifdef CONFIG_PCI
- 	mv64x60_pci_init();
- #endif
--- 
-1.5.0.3
+> Mild question; What the *@*#^$! are you doing trying to backport to a
+> 2 year old kernel?!?  :-)
+
+That's what happens in the embedded space.  It's the current version 
+from our distro vendor.  It's also the version that all our different 
+board suppliers could agree to provide support for.
+
+Of course, it's also a royal pain.
+
+>> Unfortunately for me, ppc doesn't have a ".section" line in that macro,
+>> so I'm at a bit of a loss.
+
+> Just add the section.  Should be trivial to do.  You might have to add
+> it to the linker script as well.
+
+I've done the linker script part already.  As for the processor.h bit, 
+does this seem reasonable?  It seems to do the trick based on the 
+function addresses, but I may be missing something and I haven't 
+actually booted it yet.
+
+The ppc64 version appends ',"a"' to the kprobes.text section line.  Is 
+this needed here as well?  Could someone elaborate on exactly what its 
+purpose is?
+
+Thanks,
+
+Chris
+
+
+Index: linux-ias/include/asm-ppc/processor.h
+===================================================================
+--- linux-ias.orig/include/asm-ppc/processor.h
++++ linux-ias/include/asm-ppc/processor.h
+@@ -38,6 +38,13 @@
+
+  #define _GLOBAL(n)\
+  	.stabs __stringify(n:F-1),N_FUN,0,0,n;\
++	.section ".text"; \
++	.globl n;\
++n:
++
++#define _KPROBE(n)\
++	.stabs __stringify(n:F-1),N_FUN,0,0,n;\
++	.section ".kprobes.text","a"; \
+  	.globl n;\
+  n:
