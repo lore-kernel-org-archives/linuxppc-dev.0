@@ -2,20 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C4526DDE21
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 18:51:06 +1000 (EST)
-In-Reply-To: <11854393733580-git-send-email-wei.zhang@freescale.com>
-References: <11854393721520-git-send-email-wei.zhang@freescale.com>
-	<11854393733580-git-send-email-wei.zhang@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id DEA68DDE42
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 18:53:51 +1000 (EST)
+In-Reply-To: <20070726135655.GA5643@localhost.localdomain>
+References: <20070726135655.GA5643@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <98CA70A1-9888-4508-A0E9-0EB28C14945F@kernel.crashing.org>
+Message-Id: <2D3B9342-F5A2-47EB-A153-F47BBD2DEB32@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/5 v3] Add the explanation and a sample of RapidIO OF
-	node to the document of booting-without-of.txt file.
-Date: Fri, 27 Jul 2007 03:51:54 -0500
-To: Zhang Wei <wei.zhang@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] fsl_soc: add support for fsl_spi
+Date: Fri, 27 Jul 2007 03:54:46 -0500
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,70 +24,126 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jul 26, 2007, at 3:42 AM, Zhang Wei wrote:
+On Jul 26, 2007, at 8:56 AM, Anton Vorontsov wrote:
 
-> Add the explanation and a sample of RapidIO OF node to the document  
-> of booting-without-of.txt file.
->
-> Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 > ---
->  Documentation/powerpc/booting-without-of.txt |   37 +++++++++++++++ 
+>  arch/powerpc/sysdev/fsl_soc.c |   76 ++++++++++++++++++++++++++++++ 
 > +++++++++++
->  1 files changed, 37 insertions(+), 0 deletions(-)
->
-> diff --git a/Documentation/powerpc/booting-without-of.txt b/ 
-> Documentation/powerpc/booting-without-of.txt
-> index 76733a3..d89b805 100644
-> --- a/Documentation/powerpc/booting-without-of.txt
-> +++ b/Documentation/powerpc/booting-without-of.txt
-> @@ -1824,6 +1824,43 @@ platforms are moved over to use the  
-> flattened-device-tree model.
->  		fsl,has-rstcr;
->  	};
->
-> +   l) RapidIO
-> +
-> +   RapidIO is a definition of a system interconnect. This node add
-> +   the support for RapidIO processor in kernel. The node name is
-> +   suggested to be 'rapidio'.
-> +
-> +   Required properties:
-> +
-> +    - compatible : Using "fsl,rapidio-delta" for Freescale PowerPC
-> +      RapidIO controller.
-> +    - #address-cells : Address representation for "rapidio" devices.
-> +      This field represents the number of cells needed to represent
-> +      the RapidIO address of the registers.
+>  arch/powerpc/sysdev/fsl_soc.h |    3 ++
+>  2 files changed, 79 insertions(+), 0 deletions(-)
 
-Can you explain this a little further.  I'm a bit confused by  
-'RapidIO address of the registers'.
+There should be 2nd patch with updates to documentation for the SPI  
+device node.
 
-> +      See 1) above for more details on defining #address-cells.
-> +    - reg : Offset and length of the register set for the device
-> +    - ranges : Should be defined as specified in 1) to describe the
-> +      translation of addresses for memory mapped RapidIO memory
-> +      space.
-> +    - interrupts : binding interrupts for this device node,
-> +      please follow below orders:
-> +      <err_irq bell_outb_irq bell_inb_irq msg1_tx_irq msg1_rx_irq
-> +      msg2_tx_irq msg2_rx_irq ... msgN_tx_irq msgN_rx_irq>.
-> +
-> +  Example:
-> +
-> +	rapidio@c0000 {
-> +		compatible = "fsl,rapidio-delta";
-> +		#address-cells = <2>;
-> +		#size-cells = <2>;
-> +		reg = <c0000 20000>;
-> +		ranges = <0 0 c0000000 20000000>;
-> +		interrupt-parent = <&mpic>;
-> +		/* err_irq bell_outb_irq bell_inb_irq msg1_tx_irq msg1_rx_irq
-> +						      msg2_tx_irq msg2_rx_irq */
-> +		interrupts = <30 2 31 2 32 2 35 2 36 2 37 2 38 2>;
-> +	};
-> +
->     More devices will be defined as this spec matures.
 >
->  VII - Specifying interrupt information for devices
+> diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/ 
+> fsl_soc.c
+> index 3289fab..0599851 100644
+> --- a/arch/powerpc/sysdev/fsl_soc.c
+> +++ b/arch/powerpc/sysdev/fsl_soc.c
+> @@ -1125,3 +1125,79 @@ err:
+>  arch_initcall(cpm_smc_uart_of_init);
+>
+>  #endif /* CONFIG_8xx */
+> +
+> +void (*fsl_spi_activate_cs)(u8 cs, u8 polarity) = NULL;
+> +EXPORT_SYMBOL(fsl_spi_activate_cs);
+> +void (*fsl_spi_deactivate_cs)(u8 cs, u8 polarity) = NULL;
+> +EXPORT_SYMBOL(fsl_spi_deactivate_cs);
+> +
+
+I don't think we should do it this way.  We shouldn't arch_initcall()  
+scan for fsl_spi, but have the board code call a function and pass  
+some things into it.
+
+> +static int __init fsl_spi_of_init(void)
+> +{
+> +	struct device_node *np;
+> +	unsigned int i;
+> +
+> +	for (np = NULL, i = 1;
+> +	     (np = of_find_compatible_node(np, "spi", "fsl_spi")) != NULL;
+> +	     i++) {
+> +		int ret = 0;
+> +		const char *devid, *sysclk, *mode, *max_cs;
+> +		struct resource res[2];
+> +		struct platform_device *pdev = NULL;
+> +		struct fsl_spi_platform_data pdata = {
+> +			.activate_cs = fsl_spi_activate_cs,
+> +			.deactivate_cs = fsl_spi_deactivate_cs,
+> +		};
+> +
+> +		memset(res, 0, sizeof(res));
+> +
+> +		devid = of_get_property(np, "device-id", NULL);
+> +		sysclk = of_get_property(np, "sysclk", NULL);
+> +		mode = of_get_property(np, "mode", NULL);
+> +		max_cs = of_get_property(np, "max-chipselect", NULL);
+> +		if (!devid || !sysclk || !mode || !max_cs)
+> +			goto err;
+> +
+> +		pdata.bus_num = *(u32 *)devid;
+> +		pdata.sysclk = *(u32 *)sysclk;
+> +		pdata.max_chipselect = *(u32 *)max_cs;
+> +		if (!strcmp(mode, "qe"))
+> +			pdata.qe_mode = 1;
+> +
+> +		ret = of_address_to_resource(np, 0, &res[0]);
+> +		if (ret)
+> +			goto err;
+> +
+> +		res[1].start = res[2].end = irq_of_parse_and_map(np, 0);
+> +		if (res[1].start == NO_IRQ)
+> +			goto err;
+> +
+> +		res[1].name = "mpc83xx_spi";
+> +		res[1].flags = IORESOURCE_IRQ;;
+> +
+> +		pdev = platform_device_alloc("mpc83xx_spi", i);
+> +		if (!pdev)
+> +			goto err;
+> +
+> +		ret = platform_device_add_data(pdev, &pdata, sizeof(pdata));
+> +		if (ret)
+> +			goto unreg;
+> +
+> +		ret = platform_device_add_resources(pdev, res, ARRAY_SIZE(res));
+> +		if (ret)
+> +			goto unreg;
+> +
+> +		ret = platform_device_register(pdev);
+> +		if (ret)
+> +			goto unreg;
+> +
+> +		continue;
+> +unreg:
+> +		platform_device_del(pdev);
+> +err:
+> +		continue;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +arch_initcall(fsl_spi_of_init);
+> diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/ 
+> fsl_soc.h
+> index 04e145b..c9de2a2 100644
+> --- a/arch/powerpc/sysdev/fsl_soc.h
+> +++ b/arch/powerpc/sysdev/fsl_soc.h
+> @@ -8,5 +8,8 @@ extern phys_addr_t get_immrbase(void);
+>  extern u32 get_brgfreq(void);
+>  extern u32 get_baudrate(void);
+>
+> +extern void (*fsl_spi_activate_cs)(u8 cs, u8 polarity);
+> +extern void (*fsl_spi_deactivate_cs)(u8 cs, u8 polarity);
+> +
+>  #endif
+>  #endif
 > -- 
-> 1.5.1
+> 1.5.0.6
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
