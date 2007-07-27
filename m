@@ -1,18 +1,21 @@
-Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E118ADDD0C
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 16:12:00 +1000 (EST)
-Date: Fri, 27 Jul 2007 15:11:28 +0900 (JST)
-Message-Id: <20070727.151128.-1300540472.kouish@swc.toshiba.co.jp>
-To: benh@kernel.crashing.org, michael@ellerman.id.au
-Subject: Re: [PATCH] xmon consistency clean up
-In-Reply-To: <1185365630.21877.4.camel@concordia.ozlabs.ibm.com>
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	by ozlabs.org (Postfix) with ESMTP id D604ADDDFB
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 16:31:42 +1000 (EST)
+In-Reply-To: <20070726131346.GA3417@localhost.localdomain>
+References: <20070726131134.GA3309@localhost.localdomain>
+	<20070726131346.GA3417@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <250FD11F-9ADC-46CC-B652-1148FC549316@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [spi-devel-general] [PATCH 1/4] [POWERPC][SPI] spi_mpc83xx.c:
+	should turn off SPI unit	while switching any mode.
+Date: Fri, 27 Jul 2007 01:32:27 -0500
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,43 +25,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman <michael@ellerman.id.au> wrote:
-> On Wed, 2007-07-25 at 16:21 +1000, Benjamin Herrenschmidt wrote:
-> > On Wed, 2007-07-25 at 11:57 +0900, Ishizaki Kou wrote:
-> > > This patch cleans up xmon to keep consistency.
-> > > 
-> > > In xmon, we should use console I/O functions that are named the
-same
-> > > as user space stdio functions. But commit
-> > > 4d404edce30f911004850d472e05a31efd751662 broke this consistency.
-> > > 
-> > > Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
-> > > ---
-> > > 
-> > > Index: linux-powerpc-git/arch/powerpc/xmon/nonstdio.c
-> > >
-===================================================================
-> > > --- linux-powerpc-git.orig/arch/powerpc/xmon/nonstdio.c
-> > > +++ linux-powerpc-git/arch/powerpc/xmon/nonstdio.c
-> > > @@ -133,7 +133,7 @@ void xmon_printf(const char *format, ...
-> > >         xmon_write(xmon_outbuf, n);
-> > >  }
-> > >  
-> > > -void xmon_puts(const char *str)
-> > > +void xmon_fputs(const char *str)
-> > >  {
-> > >         xmon_write(str, strlen(str)); 
-> > 
-> > Nah, keep it xmon_puts, since it doesn't take a stream argument and
-> > define a "puts" for use by xmon core.
-> 
-> But then it needs to add a newline .. and we've gone around in a
-circle
-> again. Funny how the trivialest of patches gets the most review.
 
-In my opinion, our goal is providing stdio functions like fputs to
-xmon.c. So, xmon_fputs need not be compatible with fputs because
-xmon.c doesn't use it directly.
+On Jul 26, 2007, at 8:13 AM, Anton Vorontsov wrote:
 
-Best regards,
-Kou Ishizaki
+> Documentation clearly states, that mode should not be changed
+> till SPMODE_ENABLE bit set. I've seen hangs w/o this patch.
+
+Out of interest what board/part do you see the hang on?
+
+- k
