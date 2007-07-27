@@ -2,19 +2,22 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6C886DDE21
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 18:13:11 +1000 (EST)
-In-Reply-To: <20070726135738.GB5643@localhost.localdomain>
-References: <20070726135738.GB5643@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 554E9DDE2A
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 18:21:23 +1000 (EST)
+In-Reply-To: <11854393763547-git-send-email-wei.zhang@freescale.com>
+References: <11854393721520-git-send-email-wei.zhang@freescale.com>
+	<11854393733580-git-send-email-wei.zhang@freescale.com>
+	<11854393741899-git-send-email-wei.zhang@freescale.com>
+	<11854393753986-git-send-email-wei.zhang@freescale.com>
+	<11854393763547-git-send-email-wei.zhang@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <7BACDD73-9097-4139-8331-A1A14A6134D0@kernel.crashing.org>
+Message-Id: <FFA9FE6D-81C8-429C-A0CD-FE356CF98C69@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC][PATCH] MPC832x_RDB: update dts to use spi,
-	register mmc_spi stub
-Date: Fri, 27 Jul 2007 03:14:06 -0500
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 4/5 v3] Add RapidIO support to powerpc architecture.
+Date: Fri, 27 Jul 2007 03:22:11 -0500
+To: Zhang Wei <wei.zhang@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,188 +28,145 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jul 26, 2007, at 8:57 AM, Anton Vorontsov wrote:
+On Jul 26, 2007, at 3:42 AM, Zhang Wei wrote:
 
-> mmc_spi already tested to work. When it will hit mainline
-> the only change that would be needed is replacing "spidev"
-> by "mmc_spi", and adding trivial platform data to mmc_spi
-> driver.
+> This patch adds the RapidIO support to the powerpc architecture.
+> Some files are moved from ppc. OF-tree and OF-device supports are  
+> added.
+> New silicons such as MPC8548, MPC8641 with serial RapidIO  
+> controller are
+> all supported.
+> Memory driver hardware operations are added.
+> Global mport variables are changed to master port private variables.
+> Multi master ports are supported.
 >
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
 > ---
->  arch/powerpc/boot/dts/mpc832x_rdb.dts     |   33 ++++++++++++++++++ 
-> ++-
->  arch/powerpc/platforms/83xx/mpc832x_rdb.c |   46 ++++++++++++++++++ 
+>  arch/powerpc/Kconfig          |    8 +
+>  arch/powerpc/kernel/Makefile  |    1 +
+>  arch/powerpc/kernel/rio.c     |   64 ++
+>  arch/powerpc/sysdev/Makefile  |    1 +
+>  arch/powerpc/sysdev/fsl_rio.c | 1455 ++++++++++++++++++++++++++++++ 
 > +++++++++++
->  2 files changed, 78 insertions(+), 1 deletions(-)
+
+how much of this moved from ppc85xx_rio.c?
+
+>  arch/powerpc/sysdev/fsl_rio.h |   20 +
+>  6 files changed, 1549 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/powerpc/kernel/rio.c
+>  create mode 100644 arch/powerpc/sysdev/fsl_rio.c
+>  create mode 100644 arch/powerpc/sysdev/fsl_rio.h
 >
-> diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/ 
-> boot/dts/mpc832x_rdb.dts
-> index 7c4beff..5dcbdd3 100644
-> --- a/arch/powerpc/boot/dts/mpc832x_rdb.dts
-> +++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-> @@ -183,6 +183,21 @@
->  					1  c  1  0  1  0 	/* TX_EN */
->  					1  d  2  0  1  0>;      /* CRS */
->  			};
-> +			spi1pio:spi_pin@01 {
-> +				pio-map = <
-> +			/* port  pin  dir  open_drain  assignment  has_irq    */
-> +					3  0  3  0  1  0	/* SPI1 MOSI, I/O */
-> +					3  1  3  0  1  0	/* SPI1 MISO, I/O */
-> +					3  2  3  0  1  0	/* SPI1 CLK,  I/O */
-> +					3  3  2  0  1  0>;	/* SPI1 SEL,  I   */
-> +			};
-> +			mmc1pio:mmc_pin@01 {
-> +				pio-map = <
-> +			/* port  pin  dir  open_drain  assignment  has_irq    */
-> +					3  d  1  0  0  0	/* !SD_CS     */
-> +					3  e  2  0  0  0	/* SD_INSERT  */
-> +					3  f  2  0  0  0>;	/* SD_PROTECT */
-> +			};
->  		};
->  	};
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 00099ef..45f32f1 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -492,6 +492,14 @@ source "drivers/pci/Kconfig"
 >
-> @@ -207,20 +222,36 @@
+>  source "drivers/pcmcia/Kconfig"
 >
->  		spi@4c0 {
->  			device_type = "spi";
-> +			device-id = <1>;
+> +config RAPIDIO
+> +	bool "RapidIO support" if MPC8540 || MPC8560 || MPC8641 || MPC8548
+> +	help
+> +	  If you say Y here, the kernel will include drivers and
+> +	  infrastructure code to support RapidIO interconnect devices.
 
-Can we just use the reg value for bus_num in the kernel.
+why not make this depend on something like HAS_RAPIDIO and let the  
+boards select HAS_RAPIDIO if they have it
 
->  			compatible = "fsl_spi";
->  			reg = <4c0 40>;
->  			interrupts = <2>;
->  			interrupt-parent = <&qeic>;
-> -			mode = "cpu";
-> +			mode = "qe";
-> +			sysclk = <5f5e100>; /* 100000000 Hz */
-
-we don't need this in the spi node, its just the system clock  
-frequency which we can get other ways.
-
-> +			max-chipselect = <1>;
-
-I'm not sure how I feel about this in here, I'm thinking it should go.
-
-> +			pio-handle = <&spi1pio>;
 > +
-> +			mmc@01 {
-> +				device_type = "mmc";
-> +				compatible = "mmc-spi";
-> +				device-id = <1>;
-> +				max-speed-hz = <bebc20>; /* 12500000 Hz */
-> +				chip-select = <0>;
-> +				pio-handle = <&mmc1pio>;
-> +			};
-
-we should do this in board code and not the device tree.
-
->  		};
->
->  		spi@500 {
->  			device_type = "spi";
-> +			device-id = <2>;
->  			compatible = "fsl_spi";
->  			reg = <500 40>;
->  			interrupts = <1>;
->  			interrupt-parent = <&qeic>;
->  			mode = "cpu";
-> +			sysclk = <5f5e100>; /* 100000000 Hz */
-> +			max_chipselect = <1>;
->  		};
->
->  		ucc@3000 {
-> diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/ 
-> powerpc/platforms/83xx/mpc832x_rdb.c
-> index b2b28a4..c5463c7 100644
-> --- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-> +++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-> @@ -15,6 +15,7 @@
->   */
->
->  #include <linux/pci.h>
-> +#include <linux/spi/spi.h>
->
->  #include <asm/of_platform.h>
->  #include <asm/time.h>
-> @@ -24,6 +25,7 @@
->  #include <asm/qe_ic.h>
->
->  #include "mpc83xx.h"
-> +#include "../../sysdev/fsl_soc.h"
->
->  #undef DEBUG
->  #ifdef DEBUG
-> @@ -32,6 +34,43 @@
->  #define DBG(fmt...)
->  #endif
->
-> +extern int par_io_data_set(u8 port, u8 pin, u8 val);
+> +source "drivers/rapidio/Kconfig"
 > +
-> +static void mpc83xx_spi_activate_cs(u8 cs, u8 polarity)
+>  source "drivers/pci/hotplug/Kconfig"
+>
+>  endmenu
+> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/ 
+> Makefile
+> index 42c42ec..02d4100 100644
+> --- a/arch/powerpc/kernel/Makefile
+> +++ b/arch/powerpc/kernel/Makefile
+> @@ -70,6 +70,7 @@ pci64-$(CONFIG_PPC64)		+= pci_64.o pci_dn.o isa- 
+> bridge.o
+>  pci32-$(CONFIG_PPC32)		:= pci_32.o
+>  obj-$(CONFIG_PCI)		+= $(pci64-y) $(pci32-y) pci-common.o
+>  obj-$(CONFIG_PCI_MSI)		+= msi.o
+> +obj-$(CONFIG_RAPIDIO)		+= rio.o
+
+should probably live in sysdev/rio.c
+
+>  kexec-$(CONFIG_PPC64)		:= machine_kexec_64.o
+>  kexec-$(CONFIG_PPC32)		:= machine_kexec_32.o
+>  obj-$(CONFIG_KEXEC)		+= machine_kexec.o crash.o $(kexec-y)
+> diff --git a/arch/powerpc/kernel/rio.c b/arch/powerpc/kernel/rio.c
+> new file mode 100644
+> index 0000000..8d41e93
+> --- /dev/null
+> +++ b/arch/powerpc/kernel/rio.c
+> @@ -0,0 +1,64 @@
+> +/*
+> + * RapidIO PowerPC support
+> + *
+> + * Copyright (C) 2007 Freescale Semiconductor, Inc. All rights  
+> reserved.
+> + * Zhang Wei <wei.zhang@freescale.com>, Jun 2007
+> + *
+> + * This program is free software; you can redistribute  it and/or  
+> modify it
+> + * under  the terms of  the GNU General  Public License as  
+> published by the
+> + * Free Software Foundation;  either version 2 of the  License, or  
+> (at your
+> + * option) any later version.
+> + *
+> + * New RapidIO peer-to-peer network initialize with of-device  
+> supoort.
+> + *
+> + */
+> +
+> +#include <linux/init.h>
+> +#include <linux/kernel.h>
+> +#include <linux/rio.h>
+> +
+> +#include <asm/rio.h>
+> +#include <asm/of_device.h>
+> +#include <asm/of_platform.h>
+> +
+> +#include <../sysdev/fsl_rio.h>
+> +
+> +
+> +/* The probe function for RapidIO peer-to-peer network.
+> + */
+> +static int __devinit of_rio_rpn_probe(struct of_device *dev,
+> +				     const struct of_device_id *match)
 > +{
-> +	pr_debug("%s %d %d\n", __func__, cs, polarity);
-> +	par_io_data_set(3, 13, polarity);
-> +}
+> +	int rc;
+> +	printk(KERN_INFO "Setting up RapidIO peer-to-peer network %s\n",
+> +			dev->node->full_name);
 > +
-> +static void mpc83xx_spi_deactivate_cs(u8 cs, u8 polarity)
+> +	rc = fsl_rio_setup(dev);
+> +	if (rc)
+> +		goto out;
+> +
+> +	/* Enumerate all registered ports */
+> +	rc = rio_init_mports();
+> +out:
+> +	return rc;
+> +};
+> +
+> +static struct of_device_id of_rio_rpn_ids[] = {
+> +	{
+> +		.compatible = "fsl,rapidio-delta",
+> +	},
+> +	{},
+> +};
+> +
+> +static struct of_platform_driver of_rio_rpn_driver = {
+> +	.name = "of-rio",
+> +	.match_table = of_rio_rpn_ids,
+> +	.probe = of_rio_rpn_probe,
+> +};
+> +
+> +static __init int of_rio_rpn_init(void)
 > +{
-> +	pr_debug("%s %d %d\n", __func__, cs, polarity);
-> +	par_io_data_set(3, 13, !polarity);
+> +	return of_register_platform_driver(&of_rio_rpn_driver);
 > +}
-> +
-> +static int __init mpc83xx_spi_devices_init(void)
-> +{
-> +	struct spi_board_info spi_bi = {
-> +		.bus_num = 1,
-> +		/*
-> +		 * XXX: This is spidev (spi in userspace) stub, should
-> +		 * be replaced by "mmc_spi" when mmc_spi will hit mainline.
-> +		 */
-> +		.modalias = "spidev",
-> +	};
-> +	struct device_node *np = NULL;
-> +
-> +	np = of_find_compatible_node(np, "mmc", "mmc-spi");
-> +	if (!np)
-> +		return 0;
-> +
-> +	spi_bi.max_speed_hz = *((u32 *)of_get_property(np, "max-speed- 
-> hz", NULL));
-> +	spi_bi.chip_select = *((u32 *)of_get_property(np, "chip-select",  
-> NULL));
-> +
-> +	return spi_register_board_info(&spi_bi, 1);
-> +}
-> +device_initcall(mpc83xx_spi_devices_init);
-> +
->  /*  
-> ********************************************************************** 
-> **
->   *
->   * Setup the architecture
-> @@ -62,8 +101,15 @@ static void __init mpc832x_rdb_setup_arch(void)
->
->  		for (np = NULL; (np = of_find_node_by_name(np, "ucc")) != NULL;)
->  			par_io_of_config(np);
-> +		for (np = NULL; (np = of_find_node_by_name(np, "spi")) != NULL;)
-> +			par_io_of_config(np);
-> +		for (np = NULL; (np = of_find_node_by_name(np, "mmc")) != NULL;)
-> +			par_io_of_config(np);
->  	}
->  #endif				/* CONFIG_QUICC_ENGINE */
-> +
-> +	fsl_spi_activate_cs = mpc83xx_spi_activate_cs;
-> +	fsl_spi_deactivate_cs = mpc83xx_spi_deactivate_cs;
->  }
->
->  static struct of_device_id mpc832x_ids[] = {
-> -- 
-> 1.5.0.6
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
