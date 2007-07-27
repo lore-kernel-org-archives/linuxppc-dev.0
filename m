@@ -1,17 +1,18 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 5BE82DDE2A
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 21:13:10 +1000 (EST)
-Date: Fri, 27 Jul 2007 15:12:42 +0400
+	by ozlabs.org (Postfix) with ESMTP id BE369DDDD5
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 21:46:27 +1000 (EST)
+Date: Fri, 27 Jul 2007 15:45:59 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [RFC][PATCH] fsl_soc: add support for fsl_spi
-Message-ID: <20070727111242.GA11463@localhost.localdomain>
-References: <20070726135655.GA5643@localhost.localdomain>
-	<20070726164508.GB28491@ld0162-tx32.am.freescale.net>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [RFC][PATCH] MPC832x_RDB: update dts to use spi, register
+	mmc_spi stub
+Message-ID: <20070727114559.GB11463@localhost.localdomain>
+References: <20070726135738.GB5643@localhost.localdomain>
+	<7BACDD73-9097-4139-8331-A1A14A6134D0@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-In-Reply-To: <20070726164508.GB28491@ld0162-tx32.am.freescale.net>
+In-Reply-To: <7BACDD73-9097-4139-8331-A1A14A6134D0@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,52 +24,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 26, 2007 at 11:45:08AM -0500, Scott Wood wrote:
-> On Thu, Jul 26, 2007 at 05:56:55PM +0400, Anton Vorontsov wrote:
-> > +void (*fsl_spi_activate_cs)(u8 cs, u8 polarity) = NULL;
-> > +EXPORT_SYMBOL(fsl_spi_activate_cs);
-> > +void (*fsl_spi_deactivate_cs)(u8 cs, u8 polarity) = NULL;
-> > +EXPORT_SYMBOL(fsl_spi_deactivate_cs);
-> 
-> What are these for?  It looks like you're using them to set pins,
-> but that should be done in the firmware (and if the firmware sucks, then
-> do it in the platform code at bootup).
+On Fri, Jul 27, 2007 at 03:14:06AM -0500, Kumar Gala wrote:
+>
+> On Jul 26, 2007, at 8:57 AM, Anton Vorontsov wrote:
+[...]
+>>
+>> @@ -207,20 +222,36 @@
+>>
+>>  		spi@4c0 {
+>>  			device_type = "spi";
+>> +			device-id = <1>;
+>
+> Can we just use the reg value for bus_num in the kernel.
 
-Nope, this is not to set [initial state of] pins. SPI layer needs
-this to trigger MMC's chipselect, it's wired as usual GPIO pin, which
-should be asserted (and then deasserted) by software at proper time.
+Sure, technically nothing prevents this. But, QE specs names
+SPIs by these ids. Plus, from the kernel side spi name will be
+not pretty, it will be spi1216.1. Reg value making little sense
+to the userspace (or kernel-side SPI layer). Still want get
+rid of device-id?
 
-Every board may have different implementation of
-activate_cs/deactivate_cs, in mpc8323_rdb case it's implemented using
-par_io_data_set().
+>>  			compatible = "fsl_spi";
+>>  			reg = <4c0 40>;
+>>  			interrupts = <2>;
+>>  			interrupt-parent = <&qeic>;
+>> -			mode = "cpu";
+>> +			mode = "qe";
+>> +			sysclk = <5f5e100>; /* 100000000 Hz */
+>
+> we don't need this in the spi node, its just the system clock frequency 
+> which we can get other ways.
 
-(1)
-Kumar Gala suggested to not use arch_initcall, but call fsl_spi_init()
-explicitly by board file. So these global *_cs functions will go away.
+Will try, I guess "bus-frequency" property of soc8323 is what I need.
 
-> > +static int __init fsl_spi_of_init(void)
-> > +{
-> > +	struct device_node *np;
-> > +	unsigned int i;
-> > +
-> > +	for (np = NULL, i = 1;
-> > +	     (np = of_find_compatible_node(np, "spi", "fsl_spi")) != NULL;
-> > +	     i++) {
-> 
-> s/fsl_spi/fsl,mpc8323-spi/, please.
+>> +			max-chipselect = <1>;
+>
+> I'm not sure how I feel about this in here, I'm thinking it should go.
 
-Will do for mpc832x_rdb. Should I also prepare patch to change all
-instances of "fsl_spi" in the arch/powerpc/boot/dts/*?
+It's board-specific, i.e. how much chips connected to this SPI bus.
+SPI layer needs this. Otherwise I have to pass it from board file,
+but isn't it fits nicely in the DT?
 
-> Why not make the fsl spi driver an of_platform device?
+>> +			pio-handle = <&spi1pio>;
+>> +
+>> +			mmc@01 {
+>> +				device_type = "mmc";
+>> +				compatible = "mmc-spi";
+>> +				device-id = <1>;
+>> +				max-speed-hz = <bebc20>; /* 12500000 Hz */
+>> +				chip-select = <0>;
+>> +				pio-handle = <&mmc1pio>;
+>> +			};
+>
+> we should do this in board code and not the device tree.
 
-Well, I guess this is rhetoric question. Is fsl_soc.c's
-OF<->platform_devices bindings officially deprecated?
-
-If they're, I'll surely volunteer to convert it to of_platform.
-But then (1) should be solved another way, yet don't know how.
-
-> -Scott
+Well, I've done this initially. But Vitaly hinted that this could
+be done in the DT instead, which made sense to me - mmc is the child
+device of SPI bus. Why do you think it shouldn't be in the DT? I'm
+not arguing, just want understand this.
 
 Thanks!
 
