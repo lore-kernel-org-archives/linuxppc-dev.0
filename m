@@ -1,24 +1,15 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D36C5DDE23
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 17:15:58 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Pegasos keyboard detection
+Subject: Re: Decermenter overflow interrupt atfer the init.d launch.
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070726212241.032e9755.akpm@linux-foundation.org>
-References: <200707250128.l6P1SWSF1336935@shell01.TheWorld.com>
-	<1185347565.5439.310.camel@localhost.localdomain>
-	<20070726184800.0bb3b9fb.akpm@linux-foundation.org>
-	<1185505222.5495.182.camel@localhost.localdomain>
-	<20070726212241.032e9755.akpm@linux-foundation.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <D4037DB6-8832-4057-A9FF-BAD32592E6C9@kernel.crashing.org>
+References: <46A9925A.2060508@yahoo.fr>
+	<D4037DB6-8832-4057-A9FF-BAD32592E6C9@kernel.crashing.org>
 Content-Type: text/plain
-Date: Fri, 27 Jul 2007 17:15:47 +1000
-Message-Id: <1185520547.5495.192.camel@localhost.localdomain>
+Date: Fri, 27 Jul 2007 17:26:20 +1000
+Message-Id: <1185521180.5495.194.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Alan Curry <pacman@theworld.com>,
-	linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,18 +19,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-07-26 at 21:22 -0700, Andrew Morton wrote:
+On Fri, 2007-07-27 at 01:46 -0500, Kumar Gala wrote:
+> On Jul 27, 2007, at 1:36 AM, Nicolas Mederle wrote:
 > 
-> > Merged a fixed version:
-> > 
-> > f5d834fc34e61f1a40435981062000e5d2b2baa8
-> > 
-> > (In linus tree as of now)
+> > Hi,
+> >
+> >        I want to know how the kernel switch the task. Because my  
+> > kernel
+> > start very well, and it launch  the init.d. With the log, i can see  
+> > that
+> > the kernel launch the getty task. But after, there is a decrementer
+> > overflow interrupt  ( vector at adress 900 ). Is it the task  
+> > switch? Or
+> > is it an error in the decrementer init.
 > 
-> I hope so.  Alan's patch looks rather different from what you have
-> now:
-> fall back to of_find_node_by_name() if of_find_node_by_type() failed.
+> This should be a task switch.  The decrementer is used to handle the  
+> periodic interrupt to switch processes.
 
-Which is just waht that commit does :-)
+I would have expected quite of few of these actually before you get
+there :-)
 
 Ben.
