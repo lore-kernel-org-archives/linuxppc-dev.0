@@ -1,22 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F2C85DDE29
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 23:55:10 +1000 (EST)
-In-Reply-To: <20070727114559.GB11463@localhost.localdomain>
-References: <20070726135738.GB5643@localhost.localdomain>
-	<7BACDD73-9097-4139-8331-A1A14A6134D0@kernel.crashing.org>
-	<20070727114559.GB11463@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <5F2144B9-5FFE-4D65-B0BB-24496D2385A5@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC][PATCH] MPC832x_RDB: update dts to use spi,
-	register mmc_spi stub
-Date: Fri, 27 Jul 2007 08:55:58 -0500
-To: avorontsov@ru.mvista.com
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mroos@linux.ee>
+Received: from smtp2.it.da.ut.ee (smtp2.it.da.ut.ee [193.40.5.67])
+	by ozlabs.org (Postfix) with ESMTP id 881F9DDE2B
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jul 2007 01:01:07 +1000 (EST)
+Date: Fri, 27 Jul 2007 18:01:04 +0300 (EEST)
+From: Meelis Roos <mroos@linux.ee>
+Sender: mroos@math.ut.ee
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] fix ppc kernels after build-id addition
+In-Reply-To: <18088.10923.67233.336636@cargo.ozlabs.ibm.com>
+Message-ID: <Pine.SOC.4.64.0707271742450.27338@math.ut.ee>
+References: <Pine.SOC.4.64.0707251301200.21641@math.ut.ee>
+	<18088.10923.67233.336636@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,77 +23,189 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> > This patch fixes arch/ppc kernels, at least for prep subarch, after 
+> > build-id addition. Without the patch, kernels were 3 times the size and 
+> > bootloader refused to load them. Now they are back to normal again.
+> 
+> I just built an ARCH=ppc kernel for the prep subarch and the vmlinux
+> size was normal.  Can you identify exactly why the kernels got so much
+> bigger, i.e. what is taking up all the space?
 
-On Jul 27, 2007, at 6:45 AM, Anton Vorontsov wrote:
+Now I got the previous patches tested and got to this one. Retested with 
+fresh git (build-id patch already applied) and latest Debian unstable 
+(binutils package 2.17cvs20070718-1, GNU ld (GNU Binutils for Debian) 
+2.17.50.20070718).
 
-> On Fri, Jul 27, 2007 at 03:14:06AM -0500, Kumar Gala wrote:
->>
->> On Jul 26, 2007, at 8:57 AM, Anton Vorontsov wrote:
-> [...]
->>>
->>> @@ -207,20 +222,36 @@
->>>
->>>  		spi@4c0 {
->>>  			device_type = "spi";
->>> +			device-id = <1>;
->>
->> Can we just use the reg value for bus_num in the kernel.
->
-> Sure, technically nothing prevents this. But, QE specs names
-> SPIs by these ids. Plus, from the kernel side spi name will be
-> not pretty, it will be spi1216.1. Reg value making little sense
-> to the userspace (or kernel-side SPI layer). Still want get
-> rid of device-id?
->
->>>  			compatible = "fsl_spi";
->>>  			reg = <4c0 40>;
->>>  			interrupts = <2>;
->>>  			interrupt-parent = <&qeic>;
->>> -			mode = "cpu";
->>> +			mode = "qe";
->>> +			sysclk = <5f5e100>; /* 100000000 Hz */
->>
->> we don't need this in the spi node, its just the system clock  
->> frequency
->> which we can get other ways.
->
-> Will try, I guess "bus-frequency" property of soc8323 is what I need.
->
->>> +			max-chipselect = <1>;
->>
->> I'm not sure how I feel about this in here, I'm thinking it should  
->> go.
->
-> It's board-specific, i.e. how much chips connected to this SPI bus.
-> SPI layer needs this. Otherwise I have to pass it from board file,
-> but isn't it fits nicely in the DT?
->
->>> +			pio-handle = <&spi1pio>;
->>> +
->>> +			mmc@01 {
->>> +				device_type = "mmc";
->>> +				compatible = "mmc-spi";
->>> +				device-id = <1>;
->>> +				max-speed-hz = <bebc20>; /* 12500000 Hz */
->>> +				chip-select = <0>;
->>> +				pio-handle = <&mmc1pio>;
->>> +			};
->>
->> we should do this in board code and not the device tree.
->
-> Well, I've done this initially. But Vitaly hinted that this could
-> be done in the DT instead, which made sense to me - mmc is the child
-> device of SPI bus. Why do you think it shouldn't be in the DT? I'm
-> not arguing, just want understand this.
+size -A vmlinux yields the same results (module notes section) and is 
+roughly the same size:
 
-I understand. Look at the dts/device tree from a non-Linux  
-perspective.  From that point of view its not always clear how one  
-would interpret some of the fields or if they are necessary.  I get  
-very concerned when we start trying to describe any devices connect  
-to a bus when the bus doesn't have any specific for things that are  
-just software convention for a given OS.
+vmlinux  :
+section                      size         addr
+.note.gnu.build-id             36          180
+.text                     2399820   3221225472
+.rodata                    378440   3223625728
+.pci_fixup                   1448   3224004168
+__ksymtab                   18376   3224005616
+__ksymtab_gpl                4600   3224023992
+__ksymtab_strings           53334   3224028592
+__param                      1600   3224081928
+__ex_table                  11096   3224084480
+__bug_table                 18276   3224095576
+.data                      126504   3224117248
+.data.page_aligned          12288   3224244224
+.data.read_mostly            5468   3224256512
+.data.cacheline_aligned       256   3224264704
+.data.init_task              8192   3224272896
+.init.text                 103668   3224281088
+.exit.text                   2964   3224384768
+.init.data                  21516   3224387732
+.init.setup                   684   3224409248
+.initcall.init                556   3224409932
+.con_initcall.init              8   3224410488
+__ftr_fixup                   544   3224410496
+.bss                       198296   3224412160
+.stab                        1236            0
+.stabstr                     1783            0
+.comment                    34278            0
+Total                     3405267
 
-The "id" concept and number is from Linux and another OS may have  
-come up w/some other way of describe this.
+The differneces come in under arc/ppc/boot/images.
+Without the patch:
 
-- k
+-rwxr-xr-x 1 mroos mroos    4654112 2007-07-27 17:20 zImage.bugboot
+-rwxr-xr-x 1 mroos mroos    4719626 2007-07-27 17:20 zImage.elf
+-rwxr-xr-x 1 mroos mroos    4655114 2007-07-27 17:20 zImage.prep
+-rw-r--r-- 1 mroos mroos 3224410860 2007-07-27 17:00 vmlinux.bin
+-rw-r--r-- 1 mroos mroos    4604269 2007-07-27 17:14 vmlinux.gz
+
+With the patch:
+
+-rwxr-xr-x 1 mroos mroos 1528864 2007-07-27 02:01 zImage.bugboot
+-rwxr-xr-x 1 mroos mroos 1594378 2007-07-27 02:01 zImage.elf
+-rwxr-xr-x 1 mroos mroos 1529866 2007-07-27 02:01 zImage.prep
+-rwxr-xr-x 1 mroos mroos 3189664 2007-07-27 01:31 vmlinux.bin
+-rw-r--r-- 1 mroos mroos 1476643 2007-07-27 01:31 vmlinux.gz
+
+Without the patch, vmlinux.bin is ... huge. However, only zImage.elf is 
+easily measurable with size.
+
+size -A arch/ppc/boot/images/zImage.elf (without patch):
+section      size       addr
+.text     24964    8388608
+.data   4620288    8417280
+.bss      35660   13037568
+Total   4680912
+
+size -A arch/ppc/boot/images/zImage.elf (with patch): 
+section      size      addr
+.text     24964   8388608
+.data   1495040   8417280
+.bss      35660   9912320
+Total   1555664
+
+It seems the differences come in in .data section.
+
+objdump -t -j .data arch/ppc/boot/images/zImage.elf (without patch):
+
+arch/ppc/boot/images/zImage.elf:     file format elf32-powerpc
+
+SYMBOL TABLE:
+00807000 l    d  .data	00000000 .data
+00808f38 l     O .data	00000130 rs_table
+008090dc l     O .data	00000026 order.2247
+00809182 l     O .data	00000800 lenfix.2194
+00809102 l     O .data	00000080 distfix.2195
+008099c2 l     O .data	00000040 dbase.2118
+00809982 l     O .data	00000040 dext.2119
+00809a40 l     O .data	0000003e lbase.2116
+00809a02 l     O .data	0000003e lext.2117
+008089d0 l     O .data	00000004 key_pending
+00809ab0 l     O .data	00000ff0 font
+00807634 g     O .data	00000200 ctrl_map
+00807434 g     O .data	00000200 altgr_map
+00c6efb5 g       .data	00000000 __image_end
+00808db0 g     O .data	00000015 AC
+00808dc8 g     O .data	000000c0 PCI_slots
+00808e88 g     O .data	00000004 cmd_line
+00807a34 g     O .data	00000200 alt_map
+0080ae48 g       .data	00000000 __image_begin
+00808ea0 g     O .data	00000004 orig_y
+00c6f000 g       .data	00000000 __ramdisk_begin
+00808e9c g     O .data	00000004 cols
+00808234 g     O .data	00000099 func_buf
+00808e90 g     O .data	00000004 hold_residual
+00807c34 g     O .data	00000200 ctrl_alt_map
+00808eac g     O .data	00000004 funcbufsize
+00808eb0 g     O .data	00000004 accent_table_size
+00808e8c g     O .data	00000004 keyb_present
+00808ea8 g     O .data	00000004 funcbufptr
+00807e34 g     O .data	00000400 key_maps
+00808e94 g     O .data	00000004 vidmem
+00808ea4 g     O .data	00000004 keymap_count
+008089d4 g     O .data	000000dc GenVgaTextRegs
+00807834 g     O .data	00000200 shift_ctrl_map
+00807034 g     O .data	00000200 plain_map
+0080702f g       .data	00000000 timebase_period_ns
+00c6f000 g       .data	00000000 __ramdisk_end
+008082d0 g     O .data	00000400 func_table
+00807234 g     O .data	00000200 shift_map
+008086d0 g     O .data	00000300 accent_table
+00808ab0 g     O .data	00000300 TextCLUT
+00807000 g     O .data	0000002f cmd_preset
+00808e98 g     O .data	00000004 lines
+
+objdump -t -j .data arch/ppc/boot/images/zImage.elf (with patch):
+
+/home/mroos/kraam/linux-2.6/arch/ppc/boot/images/zImage.elf:     file format elf32-powerpc
+
+SYMBOL TABLE:
+00807000 l    d  .data	00000000 .data
+00808f38 l     O .data	00000130 rs_table
+008090dc l     O .data	00000026 order.2247
+00809182 l     O .data	00000800 lenfix.2194
+00809102 l     O .data	00000080 distfix.2195
+008099c2 l     O .data	00000040 dbase.2118
+00809982 l     O .data	00000040 dext.2119
+00809a40 l     O .data	0000003e lbase.2116
+00809a02 l     O .data	0000003e lext.2117
+008089d0 l     O .data	00000004 key_pending
+00809ab0 l     O .data	00000ff0 font
+00807634 g     O .data	00000200 ctrl_map
+00807434 g     O .data	00000200 altgr_map
+0097366b g       .data	00000000 __image_end
+00808db0 g     O .data	00000015 AC
+00808dc8 g     O .data	000000c0 PCI_slots
+00808e88 g     O .data	00000004 cmd_line
+00807a34 g     O .data	00000200 alt_map
+0080ae48 g       .data	00000000 __image_begin
+00808ea0 g     O .data	00000004 orig_y
+00974000 g       .data	00000000 __ramdisk_begin
+00808e9c g     O .data	00000004 cols
+00808234 g     O .data	00000099 func_buf
+00808e90 g     O .data	00000004 hold_residual
+00807c34 g     O .data	00000200 ctrl_alt_map
+00808eac g     O .data	00000004 funcbufsize
+00808eb0 g     O .data	00000004 accent_table_size
+00808e8c g     O .data	00000004 keyb_present
+00808ea8 g     O .data	00000004 funcbufptr
+00807e34 g     O .data	00000400 key_maps
+00808e94 g     O .data	00000004 vidmem
+00808ea4 g     O .data	00000004 keymap_count
+008089d4 g     O .data	000000dc GenVgaTextRegs
+00807834 g     O .data	00000200 shift_ctrl_map
+00807034 g     O .data	00000200 plain_map
+0080702f g       .data	00000000 timebase_period_ns
+00974000 g       .data	00000000 __ramdisk_end
+008082d0 g     O .data	00000400 func_table
+00807234 g     O .data	00000200 shift_map
+008086d0 g     O .data	00000300 accent_table
+00808ab0 g     O .data	00000300 TextCLUT
+00807000 g     O .data	0000002f cmd_preset
+00808e98 g     O .data	00000004 lines
+
+The only differences are __image_end, __ramdisk_begin and __ramdisk_end.
+
+What more to look at?
+
+-- 
+Meelis Roos (mroos@linux.ee)
