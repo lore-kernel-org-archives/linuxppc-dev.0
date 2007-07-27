@@ -1,20 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 26DA9DDE27
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 17:54:29 +1000 (EST)
-In-Reply-To: <02bd01c7cfbc$cf213610$02ac10ac@Jocke>
-References: <02bd01c7cfbc$cf213610$02ac10ac@Jocke>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <E1E4D17D-0C51-4E1E-A17B-58D4D9971E8F@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC][PATCH] MPC832x_RDB: update dts to use spi,
-	registermmc_spi stub
-Date: Fri, 27 Jul 2007 02:55:22 -0500
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 73B8DDDE30
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 17:55:08 +1000 (EST)
+Date: Fri, 27 Jul 2007 17:54:49 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Zhang Wei <wei.zhang@freescale.com>
+Subject: Re: [PATCH 3/5 v3] Add the platform device support with RapidIO to
+	MPC8641HPCN platform.
+Message-Id: <20070727175449.e8915b5d.sfr@canb.auug.org.au>
+In-Reply-To: <11854393753986-git-send-email-wei.zhang@freescale.com>
+References: <11854393721520-git-send-email-wei.zhang@freescale.com>
+	<11854393733580-git-send-email-wei.zhang@freescale.com>
+	<11854393741899-git-send-email-wei.zhang@freescale.com>
+	<11854393753986-git-send-email-wei.zhang@freescale.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__27_Jul_2007_17_54_49_+1000_fv+hKl.ew.OoBb9j"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,53 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Fri__27_Jul_2007_17_54_49_+1000_fv+hKl.ew.OoBb9j
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Jul 26, 2007, at 2:40 PM, Joakim Tjernlund wrote:
-
+On Thu, 26 Jul 2007 16:42:50 +0800 Zhang Wei <wei.zhang@freescale.com> wrot=
+e:
 >
->
->> -----Original Message-----
->> From: Anton Vorontsov [mailto:avorontsov@ru.mvista.com]
->> Sent: den 26 juli 2007 17:48
->> To: Joakim Tjernlund
->> Cc: linuxppc-dev@ozlabs.org
->> Subject: Re: [RFC][PATCH] MPC832x_RDB: update dts to use spi,
->> registermmc_spi stub
->>
->> On Thu, Jul 26, 2007 at 05:36:06PM +0200, Joakim Tjernlund wrote:
->> [...]
->>>>  		spi@4c0 {
->>>>  			device_type = "spi";
->>>> +			device-id = <1>;
->>>>  			compatible = "fsl_spi";
->>>>  			reg = <4c0 40>;
->>>>  			interrupts = <2>;
->>>>  			interrupt-parent = <&qeic>;
->>>> -			mode = "cpu";
->>>> +			mode = "qe";
->>>
->>> The driver is still using "cpu" mode. It just happens that
->> the cpu mode for QE
->>> enabled CPUs isn't 100% compatible with the defacto cpu
->> mode used by other CPU:s.
->>
->> Yup, indeed.
->>
->>> So mode should probably be "cpu_qe" or, even better, if the
->> drver could
->>
->> That's easy to change, thanks.
->>
->>> autodetect that it is running on a QE enabled CPU and
->> adjust accordinly.
->>> Maybe the Freescale guys have some ideas how to do that.
->>
->> Ok. Well, for now could we use machine_is() for kind of autodetect?
->> Or it's better leave it as is, and just rename mode to cpu_qe?
->
-> Unless the DTS guys thinks otherwise, just rename to "cpu_qe".
-> "qe" would then be reserved for true QE mode.
+> +#include <asm/of_device.h>
+> +#include <asm/of_platform.h>
 
-Agreed, we need to update booting-without-of.txt.
+These should now be <linux/of_device.h> and <linux/of_platform.h>
 
-- k
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__27_Jul_2007_17_54_49_+1000_fv+hKl.ew.OoBb9j
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGqaTSTgG2atn1QN8RApDmAJ4j7AQLvOW1eHwSgnUD2NWIXr02qgCcDX/q
+mG14ygnsm9uwxnM17BFCCpk=
+=2kyQ
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__27_Jul_2007_17_54_49_+1000_fv+hKl.ew.OoBb9j--
