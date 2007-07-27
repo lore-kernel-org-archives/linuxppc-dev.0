@@ -1,15 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18089.11934.607569.349144@cargo.ozlabs.ibm.com>
-Date: Fri, 27 Jul 2007 09:30:38 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH] make powerpc BUG_ON() OK with pointers and bitwise
-In-Reply-To: <E1IE6JZ-0005QA-R8@ZenIV.linux.org.uk>
-References: <E1IE6JZ-0005QA-R8@ZenIV.linux.org.uk>
-Cc: linuxppc-dev@ozlabs.org, torvalds@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0B6E3DDE25
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 10:04:28 +1000 (EST)
+Date: Thu, 26 Jul 2007 19:04:17 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: Re: [PATCH 1/2] [POWERPC] Add support of platforms without PHY to
+	gianfar driver
+Message-Id: <20070726190417.de30bed6.kim.phillips@freescale.com>
+In-Reply-To: <20070725174312.5818.61155.stgit@localhost.localdomain>
+References: <20070725174312.5818.61155.stgit@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Jeff Garzik <jeff@garzik.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,18 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Al Viro writes:
+On Wed, 25 Jul 2007 21:43:12 +0400
+Vitaly Bordug <vitb@kernel.crashing.org> wrote:
 
-> Since powerpc insists on printing the _value_ of condition
+> 
+> Gianfar driver is now able to work without real phy subnode,
+> that is necessary to cope with fixed-link situation, when
+> SoC is connected to the Ethernet inteface or embedded switch 
+> without any PHY. In this case, fixed-speed property will
+> describe such a situation for gianfar driver.
+> 
+> The property is in form <duplexity speed>
+> 
+> Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+> 
+> ---
+> 
+>  arch/powerpc/sysdev/fsl_soc.c |   39 +++++++++++++++++++++++----------------
+>  drivers/net/gianfar.c         |   17 ++++++++++++++---
 
-We don't _print_ the value of the condition, we give it to a
-conditional-trap instruction which will trap if it is non-zero.
+please run this through checkpatch.pl until it passes.
 
-> and on casting it to long...  At least let's make it a force-cast.
+<snip>
+> +			bus_id = of_get_property(np, "fixed_speed",NULL);
 
-The long cast is to make sure it's sign-extended to the full register
-width.  Adding __force looks fine.
+hyphens are preferred for new properties.  Plus, isn't fixed-link a
+better name?  unless you instead want to put speed first and make
+duplexity an optional second, or possibly even a string.
 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Also, can we get this new property documented in b-w-of in a separate
+patch?
 
-Acked-by: Paul Mackerras <paulus@samba.org>
+Kim
