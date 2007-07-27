@@ -1,19 +1,35 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <Wei.Zhang@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DEA68DDE42
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 18:53:51 +1000 (EST)
-In-Reply-To: <20070726135655.GA5643@localhost.localdomain>
-References: <20070726135655.GA5643@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <2D3B9342-F5A2-47EB-A153-F47BBD2DEB32@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC][PATCH] fsl_soc: add support for fsl_spi
-Date: Fri, 27 Jul 2007 03:54:46 -0500
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 49311DDE2E
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 19:03:09 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l6R933YQ024889
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 02:03:03 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l6R931WT028671
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 04:03:02 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH 4/5 v3] Add RapidIO support to powerpc architecture.
+Date: Fri, 27 Jul 2007 17:03:01 +0800
+Message-ID: <46B96294322F7D458F9648B60E15112C74D156@zch01exm26.fsl.freescale.net>
+In-Reply-To: <FFA9FE6D-81C8-429C-A0CD-FE356CF98C69@kernel.crashing.org>
+References: <11854393721520-git-send-email-wei.zhang@freescale.com>
+	<11854393733580-git-send-email-wei.zhang@freescale.com>
+	<11854393741899-git-send-email-wei.zhang@freescale.com>
+	<11854393753986-git-send-email-wei.zhang@freescale.com>
+	<11854393763547-git-send-email-wei.zhang@freescale.com>
+	<FFA9FE6D-81C8-429C-A0CD-FE356CF98C69@kernel.crashing.org>
+From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,127 +39,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi, Kumar,=20
 
-On Jul 26, 2007, at 8:56 AM, Anton Vorontsov wrote:
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
+> On Jul 26, 2007, at 3:42 AM, Zhang Wei wrote:
+>=20
+> > This patch adds the RapidIO support to the powerpc architecture.
+> > Some files are moved from ppc. OF-tree and OF-device supports are =20
+> > added.
+> > New silicons such as MPC8548, MPC8641 with serial RapidIO =20
+> > controller are
+> > all supported.
+> > Memory driver hardware operations are added.
+> > Global mport variables are changed to master port private variables.
+> > Multi master ports are supported.
+> >
+> > Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+> > ---
+> >  arch/powerpc/Kconfig          |    8 +
+> >  arch/powerpc/kernel/Makefile  |    1 +
+> >  arch/powerpc/kernel/rio.c     |   64 ++
+> >  arch/powerpc/sysdev/Makefile  |    1 +
+> >  arch/powerpc/sysdev/fsl_rio.c | 1455=20
+> ++++++++++++++++++++++++++++++=20
+> > +++++++++++
+>=20
+> how much of this moved from ppc85xx_rio.c?
 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
->  arch/powerpc/sysdev/fsl_soc.c |   76 ++++++++++++++++++++++++++++++ 
-> +++++++++++
->  arch/powerpc/sysdev/fsl_soc.h |    3 ++
->  2 files changed, 79 insertions(+), 0 deletions(-)
+>From the code size, 2/3 are moved from pcc85xx_rio.c with clean up, 1/3
+are new coding.
 
-There should be 2nd patch with updates to documentation for the SPI  
-device node.
+>=20
+> >  arch/powerpc/sysdev/fsl_rio.h |   20 +
+> >  6 files changed, 1549 insertions(+), 0 deletions(-)
+> >  create mode 100644 arch/powerpc/kernel/rio.c
+> >  create mode 100644 arch/powerpc/sysdev/fsl_rio.c
+> >  create mode 100644 arch/powerpc/sysdev/fsl_rio.h
+> >
+> > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> > index 00099ef..45f32f1 100644
+> > --- a/arch/powerpc/Kconfig
+> > +++ b/arch/powerpc/Kconfig
+> > @@ -492,6 +492,14 @@ source "drivers/pci/Kconfig"
+> >
+> >  source "drivers/pcmcia/Kconfig"
+> >
+> > +config RAPIDIO
+> > +	bool "RapidIO support" if MPC8540 || MPC8560 || MPC8641=20
+> || MPC8548
+> > +	help
+> > +	  If you say Y here, the kernel will include drivers and
+> > +	  infrastructure code to support RapidIO interconnect devices.
+>=20
+> why not make this depend on something like HAS_RAPIDIO and let the =20
+> boards select HAS_RAPIDIO if they have it
 
->
-> diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/ 
-> fsl_soc.c
-> index 3289fab..0599851 100644
-> --- a/arch/powerpc/sysdev/fsl_soc.c
-> +++ b/arch/powerpc/sysdev/fsl_soc.c
-> @@ -1125,3 +1125,79 @@ err:
->  arch_initcall(cpm_smc_uart_of_init);
->
->  #endif /* CONFIG_8xx */
-> +
-> +void (*fsl_spi_activate_cs)(u8 cs, u8 polarity) = NULL;
-> +EXPORT_SYMBOL(fsl_spi_activate_cs);
-> +void (*fsl_spi_deactivate_cs)(u8 cs, u8 polarity) = NULL;
-> +EXPORT_SYMBOL(fsl_spi_deactivate_cs);
-> +
+It's more clear, We can know how many and which processors support
+RapidIO. :-)
 
-I don't think we should do it this way.  We shouldn't arch_initcall()  
-scan for fsl_spi, but have the board code call a function and pass  
-some things into it.
+>=20
+> > +
+> > +source "drivers/rapidio/Kconfig"
+> > +
+> >  source "drivers/pci/hotplug/Kconfig"
+> >
+> >  endmenu
+> > diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/=20
+> > Makefile
+> > index 42c42ec..02d4100 100644
+> > --- a/arch/powerpc/kernel/Makefile
+> > +++ b/arch/powerpc/kernel/Makefile
+> > @@ -70,6 +70,7 @@ pci64-$(CONFIG_PPC64)		+=3D=20
+> pci_64.o pci_dn.o isa-=20
+> > bridge.o
+> >  pci32-$(CONFIG_PPC32)		:=3D pci_32.o
+> >  obj-$(CONFIG_PCI)		+=3D $(pci64-y) $(pci32-y) pci-common.o
+> >  obj-$(CONFIG_PCI_MSI)		+=3D msi.o
+> > +obj-$(CONFIG_RAPIDIO)		+=3D rio.o
+>=20
+> should probably live in sysdev/rio.c
 
-> +static int __init fsl_spi_of_init(void)
-> +{
-> +	struct device_node *np;
-> +	unsigned int i;
-> +
-> +	for (np = NULL, i = 1;
-> +	     (np = of_find_compatible_node(np, "spi", "fsl_spi")) != NULL;
-> +	     i++) {
-> +		int ret = 0;
-> +		const char *devid, *sysclk, *mode, *max_cs;
-> +		struct resource res[2];
-> +		struct platform_device *pdev = NULL;
-> +		struct fsl_spi_platform_data pdata = {
-> +			.activate_cs = fsl_spi_activate_cs,
-> +			.deactivate_cs = fsl_spi_deactivate_cs,
-> +		};
-> +
-> +		memset(res, 0, sizeof(res));
-> +
-> +		devid = of_get_property(np, "device-id", NULL);
-> +		sysclk = of_get_property(np, "sysclk", NULL);
-> +		mode = of_get_property(np, "mode", NULL);
-> +		max_cs = of_get_property(np, "max-chipselect", NULL);
-> +		if (!devid || !sysclk || !mode || !max_cs)
-> +			goto err;
-> +
-> +		pdata.bus_num = *(u32 *)devid;
-> +		pdata.sysclk = *(u32 *)sysclk;
-> +		pdata.max_chipselect = *(u32 *)max_cs;
-> +		if (!strcmp(mode, "qe"))
-> +			pdata.qe_mode = 1;
-> +
-> +		ret = of_address_to_resource(np, 0, &res[0]);
-> +		if (ret)
-> +			goto err;
-> +
-> +		res[1].start = res[2].end = irq_of_parse_and_map(np, 0);
-> +		if (res[1].start == NO_IRQ)
-> +			goto err;
-> +
-> +		res[1].name = "mpc83xx_spi";
-> +		res[1].flags = IORESOURCE_IRQ;;
-> +
-> +		pdev = platform_device_alloc("mpc83xx_spi", i);
-> +		if (!pdev)
-> +			goto err;
-> +
-> +		ret = platform_device_add_data(pdev, &pdata, sizeof(pdata));
-> +		if (ret)
-> +			goto unreg;
-> +
-> +		ret = platform_device_add_resources(pdev, res, ARRAY_SIZE(res));
-> +		if (ret)
-> +			goto unreg;
-> +
-> +		ret = platform_device_register(pdev);
-> +		if (ret)
-> +			goto unreg;
-> +
-> +		continue;
-> +unreg:
-> +		platform_device_del(pdev);
-> +err:
-> +		continue;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +arch_initcall(fsl_spi_of_init);
-> diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/ 
-> fsl_soc.h
-> index 04e145b..c9de2a2 100644
-> --- a/arch/powerpc/sysdev/fsl_soc.h
-> +++ b/arch/powerpc/sysdev/fsl_soc.h
-> @@ -8,5 +8,8 @@ extern phys_addr_t get_immrbase(void);
->  extern u32 get_brgfreq(void);
->  extern u32 get_baudrate(void);
->
-> +extern void (*fsl_spi_activate_cs)(u8 cs, u8 polarity);
-> +extern void (*fsl_spi_deactivate_cs)(u8 cs, u8 polarity);
-> +
->  #endif
->  #endif
-> -- 
-> 1.5.0.6
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+This just keep the same position of ppc arch.
+
+Thanks!
+-zw
