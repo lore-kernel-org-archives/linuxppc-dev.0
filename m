@@ -1,22 +1,31 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <dwg@au1.ibm.com>
+Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0B6E3DDE25
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 10:04:28 +1000 (EST)
-Date: Thu, 26 Jul 2007 19:04:17 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] [POWERPC] Add support of platforms without PHY to
-	gianfar driver
-Message-Id: <20070726190417.de30bed6.kim.phillips@freescale.com>
-In-Reply-To: <20070725174312.5818.61155.stgit@localhost.localdomain>
-References: <20070725174312.5818.61155.stgit@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Jeff Garzik <jeff@garzik.org>
+	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id AA05EDDE25
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 10:59:51 +1000 (EST)
+Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.18.232])
+	by ausmtp04.au.ibm.com (8.13.8/8.13.8) with ESMTP id l6R1NJ2l285870
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 11:23:19 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.250.243])
+	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l6R0x7uI249470
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 10:59:07 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l6R0xla9026126
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2007 10:59:47 +1000
+Date: Fri, 27 Jul 2007 10:52:09 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: Linas Vepstas <linas@austin.ibm.com>
+Subject: Re: dlopen source
+Message-ID: <20070727005209.GA904@localhost.localdomain>
+References: <D83235F0F3C86D4D889D8B9A0DA8C6D78D86C2@corpexc01.corp.networkrobots.com>
+	<20070726215928.GG9876@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070726215928.GG9876@austin.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Siva Prasad <sprasad@bivio.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,35 +35,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 25 Jul 2007 21:43:12 +0400
-Vitaly Bordug <vitb@kernel.crashing.org> wrote:
-
+On Thu, Jul 26, 2007 at 04:59:28PM -0500, Linas Vepstas wrote:
+> On Thu, Jul 26, 2007 at 12:47:57PM -0700, Siva Prasad wrote:
+> > Hi,
+> > 
+> > Can some one point to where I can find the source code for dlopen()
+> > function.
 > 
-> Gianfar driver is now able to work without real phy subnode,
-> that is necessary to cope with fixed-link situation, when
-> SoC is connected to the Ethernet inteface or embedded switch 
-> without any PHY. In this case, fixed-speed property will
-> describe such a situation for gianfar driver.
-> 
-> The property is in form <duplexity speed>
-> 
-> Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
-> 
-> ---
-> 
->  arch/powerpc/sysdev/fsl_soc.c |   39 +++++++++++++++++++++++----------------
->  drivers/net/gianfar.c         |   17 ++++++++++++++---
+> ? Should be in glibc, right? I don't remember f it requires binutils
+> pieces or not.
 
-please run this through checkpatch.pl until it passes.
+Yes, it's in glibc.
 
-<snip>
-> +			bus_id = of_get_property(np, "fixed_speed",NULL);
+> (Yes, glibc is a rats nest, so understanding how it works is a whole
+> nuther thing.)
 
-hyphens are preferred for new properties.  Plus, isn't fixed-link a
-better name?  unless you instead want to put speed first and make
-duplexity an optional second, or possibly even a string.
+Quite so.  The dynamic linking code in particular is
+highly... impenetrable :(
 
-Also, can we get this new property documented in b-w-of in a separate
-patch?
-
-Kim
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
