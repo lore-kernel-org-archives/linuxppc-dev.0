@@ -1,19 +1,18 @@
-Return-Path: <bunk@stusta.de>
-Received: from mailhub.stusta.mhn.de (mailout.stusta.mhn.de [141.84.69.5])
-	by ozlabs.org (Postfix) with ESMTP id 7F519DDDCA
-	for <linuxppc-dev@ozlabs.org>; Sun, 29 Jul 2007 01:27:30 +1000 (EST)
-Date: Sat, 28 Jul 2007 17:27:04 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [2.6 patch] arch/powerpc/Kconfig: fix the EMBEDDED6xx dependencies
-Message-ID: <20070728152704.GA30976@stusta.de>
-References: <20061201115410.GV11084@stusta.de>
-	<17779.37050.4039.942954@cargo.ozlabs.ibm.com>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
+	by ozlabs.org (Postfix) with ESMTP id E8B0CDDD05
+	for <linuxppc-dev@ozlabs.org>; Sun, 29 Jul 2007 13:39:17 +1000 (EST)
+To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+Subject: Re: [ofa-general] [PATCH 1/2] ehca: remove checkpatch.pl's warnings
+	"externs should be avoided in .c files"
+References: <200707271254.51055.hnguyen@linux.vnet.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Sat, 28 Jul 2007 20:39:14 -0700
+Message-ID: <adahcnnvpy5.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <17779.37050.4039.942954@cargo.ozlabs.ibm.com>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, stefan.roscher@de.ibm.com,
+	linux-kernel@vger.kernel.org, general@lists.openfabrics.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,24 +22,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Dec 04, 2006 at 02:06:34PM +1100, Paul Mackerras wrote:
-> Adrian Bunk writes:
-> 
-> > This patch changes the EMBEDDED6xx dependencies to the equivalent 
-> > dependency that seems to have been intended.
-> 
-> Nack - CONFIG_EMBEDDED6xx is going away entirely, soon.
+the patch looks fine except your mailer seems to have mangled
+it... can you resend so I can apply it?
 
-Still there - and still with this strange dependency.
-
-> Paul.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+thanks...
