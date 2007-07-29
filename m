@@ -1,17 +1,21 @@
-Return-Path: <m.kozlowski@tuxland.pl>
-Received: from tuxland.pl (xdsl-664.zgora.dialog.net.pl [81.168.226.152])
-	by ozlabs.org (Postfix) with ESMTP id 5688FDDDF5
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jul 2007 03:50:32 +1000 (EST)
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: paulus@samba.org, Andrew Morton <akpm@linux-foundation.org>, pavel@suse.cz,
-	rjw@sisk.pl
-Subject: [PATCH] ppc: chipsfb.c build fix for CONFIG_PM
-Date: Sun, 29 Jul 2007 19:50:28 +0200
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 9ED0CDDDD5
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jul 2007 06:39:23 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 3/5 v3] Add the platform device support with RapidIO to
+	MPC8641HPCN platform.
+Date: Sun, 29 Jul 2007 15:56:35 +0200
+References: <11854393721520-git-send-email-wei.zhang@freescale.com>
+	<11854393741899-git-send-email-wei.zhang@freescale.com>
+	<11854393753986-git-send-email-wei.zhang@freescale.com>
+In-Reply-To: <11854393753986-git-send-email-wei.zhang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-2"
-Message-Id: <200707291950.30261.m.kozlowski@tuxland.pl>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+  charset="iso-8859-1"
+Message-Id: <200707291556.35632.arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,40 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+On Thursday 26 July 2007, Zhang Wei wrote:
+> +
+> +static struct of_device_id mpc86xx_of_ids[] =3D {
+> +=A0=A0=A0=A0=A0=A0=A0{ .type =3D "soc", },
+> +=A0=A0=A0=A0=A0=A0=A0{ .compatible =3D "fsl,rapidio-delta", },
+> +=A0=A0=A0=A0=A0=A0=A0{},
+> +};
 
-	This patch fixes the following build error on powerpc:
+With the device tree source you have posted in 2/5, the rapidio node is
+a child of the soc bus, and it doesn't have any children of its own.
+Therefore it is completely equivalent to _only_ add the soc type
+to mpc86xx_of_ids[], as in=20
 
-  CC      drivers/video/chipsfb.o
-drivers/video/chipsfb.c: In function 'chipsfb_pci_suspend':
-drivers/video/chipsfb.c:461: error: 'PM_SUSPEND_MEM' undeclared (first use in this function)
-drivers/video/chipsfb.c:461: error: (Each undeclared identifier is reported only once
-drivers/video/chipsfb.c:461: error: for each function it appears in.)
-make[2]: *** [drivers/video/chipsfb.o] Blad 1
-make[1]: *** [drivers/video] Blad 2
-make: *** [drivers] Blad 2
+static struct of_device_id mpc86xx_of_ids[] =3D {
+       { .type =3D "soc", },
+       {},
+};
 
+Even if you intend to add children to the rapidio node in the future,
+I'd think it would be more appropriate to have those scanned by
+the rapidio bus driver, not by of_platform.
 
-
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-
- drivers/video/chipsfb.c | 12751 -> 12804 (+53 bytes)
- drivers/video/chipsfb.o |  -> 112880 ( bytes)
-
- drivers/video/chipsfb.c |    5 +++++
- 1 file changed, 5 insertions(+)
-
---- linux-2.6.23-rc1-mm1-a/drivers/video/chipsfb.c	2007-07-26 13:07:41.000000000 +0200
-+++ linux-2.6.23-rc1-mm1-b/drivers/video/chipsfb.c	2007-07-29 19:34:15.000000000 +0200
-@@ -27,6 +27,11 @@
- #include <linux/init.h>
- #include <linux/pci.h>
- #include <linux/console.h>
-+
-+#ifdef CONFIG_PM
-+#include <linux/suspend.h>
-+#endif
-+
- #include <asm/io.h>
-
- #ifdef CONFIG_PMAC_BACKLIGHT
+	Arnd <><
