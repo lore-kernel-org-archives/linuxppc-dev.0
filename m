@@ -1,21 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id DB4C1DDDFF
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jul 2007 07:00:28 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [2.6 patch] arch/powerpc/Kconfig: fix the EMBEDDED6xx dependencies
-Date: Sun, 29 Jul 2007 21:31:37 +0200
-References: <20061201115410.GV11084@stusta.de>
-	<17779.37050.4039.942954@cargo.ozlabs.ibm.com>
-	<20070728152704.GA30976@stusta.de>
-In-Reply-To: <20070728152704.GA30976@stusta.de>
+Return-Path: <m.kozlowski@tuxland.pl>
+Received: from tuxland.pl (xdsl-664.zgora.dialog.net.pl [81.168.226.152])
+	by ozlabs.org (Postfix) with ESMTP id 7F85CDDE07
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jul 2007 07:31:24 +1000 (EST)
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] ppc: chipsfb.c build fix for CONFIG_PM
+Date: Sun, 29 Jul 2007 23:31:21 +0200
+References: <200707291950.30261.m.kozlowski@tuxland.pl>
+	<200707292333.12766.rjw@sisk.pl>
+In-Reply-To: <200707292333.12766.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200707292131.38348.arnd@arndb.de>
-Cc: Andrew Morton <akpm@osdl.org>, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>
+  charset="iso-8859-2"
+Message-Id: <200707292331.22120.m.kozlowski@tuxland.pl>
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	paulus@samba.org, pavel@suse.cz, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,34 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 28 July 2007, Adrian Bunk wrote:
-> On Mon, Dec 04, 2006 at 02:06:34PM +1100, Paul Mackerras wrote:
-> > Adrian Bunk writes:
+> > 	This patch fixes the following build error on powerpc:
 > > 
-> > > This patch changes the EMBEDDED6xx dependencies to the equivalent 
-> > > dependency that seems to have been intended.
-> > 
-> > Nack - CONFIG_EMBEDDED6xx is going away entirely, soon.
+> >   CC      drivers/video/chipsfb.o
+> > drivers/video/chipsfb.c: In function 'chipsfb_pci_suspend':
+> > drivers/video/chipsfb.c:461: error: 'PM_SUSPEND_MEM' undeclared (first use in this function)
+> > drivers/video/chipsfb.c:461: error: (Each undeclared identifier is reported only once
+> > drivers/video/chipsfb.c:461: error: for each function it appears in.)
+> > make[2]: *** [drivers/video/chipsfb.o] Blad 1
+> > make[1]: *** [drivers/video] Blad 2
+> > make: *** [drivers] Blad 2
 > 
-> Still there - and still with this strange dependency.
+> Already fixed in the right way.  Please see:
+> http://www.mail-archive.com/mm-commits@vger.kernel.org/msg22171.html
 
-The last time I sent my patch to clean up CONFIG_EMBEDDED6xx and a few
-other Kconfig options I still left it intact, but it becomes unnecessary
-after that.
+Ah... ok. Didn't see that.
 
-I still think that having high-level options like
+Thanks,
 
-* embedded6xx
-  * MPC7448HPC2
-  * holly
-  * linkstation
-* PPC_83xx
-  * MPC8313_RDB
-  * MPC832x_MDS
-  * MPC832x_RDB
-
-helps keep the platform selection more structured and readable, but the
-dependency on !SMP should probably go into the individual platforms that
-are actually broken, if any, not into the high-level option.
-
-	Arnd <><
+	Mariusz
