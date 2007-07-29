@@ -1,21 +1,19 @@
-Return-Path: <radanter@googlemail.com>
-Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.236])
-	by ozlabs.org (Postfix) with ESMTP id D31FBDDE25
+Return-Path: <mls.JOFT@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id CFE8DDDD09
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 28 Jul 2007 21:20:42 +1000 (EST)
-Received: by qb-out-0506.google.com with SMTP id e11so1033750qbe
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 28 Jul 2007 04:20:40 -0700 (PDT)
-Message-ID: <f75c52840707280420q3a051840s598a30a7bbc35ebc@mail.gmail.com>
-Date: Sat, 28 Jul 2007 12:20:40 +0100
-From: "Richard Danter" <radanter@googlemail.com>
-To: "Chong, Zhia Howe" <zhia.howe.chong@intel.com>
-Subject: Re: EST's VisionClick debugger fixes for Elf files from GNU tools
-In-Reply-To: <ED3AB1534F018544848A18EE0E01E0AC117CCB@pgsmsx414.gar.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_3853_27835189.1185621640094"
-References: <ED3AB1534F018544848A18EE0E01E0AC117CCB@pgsmsx414.gar.corp.intel.com>
+	Sun, 29 Jul 2007 18:48:14 +1000 (EST)
+Subject: Re: ml403 ac97 driver
+From: Joachim =?ISO-8859-1?Q?F=F6rster?= <mls.JOFT@gmx.de>
+To: qin lin <linkinge@gmail.com>
+In-Reply-To: <2ec96d6e0707280204k50efb707q99a824c37f539309@mail.gmail.com>
+References: <28652204.1477431184843737431.JavaMail.nabble@isper.nabble.com>
+	<1184918815.5886.13.camel@localhost>
+	<2ec96d6e0707280204k50efb707q99a824c37f539309@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Sun, 29 Jul 2007 10:48:08 +0200
+Message-Id: <1185698888.6397.37.camel@localhost>
+Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,58 +25,65 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_3853_27835189.1185621640094
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi qin lin,
 
-On 25/07/07, Chong, Zhia Howe <zhia.howe.chong@intel.com> wrote:
->
->  Hi,
->
->             I am currently learning to use VisionClick with the VisionICE
-> II debugger. Are you aware of using it in Linux? I can only use in VxWorks
-> OS. If you know how to use in Linux, mind show me some steps in doing it?
->
+On Sat, 2007-07-28 at 17:04 +0800, qin lin wrote:
+> I have add the driver to kernel as a module in ml403.When i insmod 
+> the module ,there are warnings followed here:
+> [  250.795594] snd-ml403_ac97cr: write access to codec register 0x26
+> with bad value 0x800f / 32783! 
+> [  250.911545] snd-ml403_ac97cr: write access to codec register 0x26
+> with bad value 0xf / 15!
+> [  251.015576] snd-ml403_ac97cr: write access to codec register 0x2a
+> with bad value 0x2801 / 10241!
+> [  251.127524] snd-ml403_ac97cr: write access to codec register 0x2a
+> with bad value 0x3801 / 14337! 
+> 
+> And i check the warring find the warnings should be from function
+> snd_ml403_ac97cr_codec_write() ，i have check the lm4550 codec
+> datasheet to make sure the mask is what you have written.
 
-Yes, depending on what version of vClick and vICE  firmware you have it is
-possible to debug some things in Linux. What are you trying to do exactly?
-Debug the kernel, modules, applications? What is the target? vClick is old
-now, Wind River has newer and much better JTAG/BDM tools (Workbench OCD) for
-working with Linux.
+These warnings are ok. Codec register 0x26 is the "PowerDown
+Status/Control" register and the ALSA AC97 layer tries to write ones to
+the lower 4 bits (which are AFAIK read only bits). LM4550 register 0x2a
+has only one valid bit (lowest), but ALSA tries to write to a not
+existing bit. So my driver masks out these bits.
+The warnings show the invalid numbers ALSA wants to write to these
+registers.
 
-Rich
+> What  confused  me is that where call the fuction
+> snd_ml403_ac97cr_codec_write in the module_init program, would you
+> mind if you point it for me? 
 
-------=_Part_3853_27835189.1185621640094
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Well, the function alsa_card_ml403_ac97cr_init() is registered as the
+module_init function. It registers the driver and the device to the
+kernel via platform_driver/device_register(). As a consequence the
+kernel will call the registered probe() function called
+snd_ml403_ac97cr_probe(). Among other things, the function called
+snd_ml403_ac97cr_mixer() is invoked. Finally this function registers a
+mixer device and the codec_read() and codec_write() functions with the
+ALSA AC97 layer. While registering the ALSA AC97 layer calls the read
+and write functions several times - a kind of initialization sequence.
+That's the usual structure of an ALSA driver - not that simple - I
+know :-) .
 
-On 25/07/07, <b class="gmail_sendername">Chong, Zhia Howe</b> &lt;<a href="mailto:zhia.howe.chong@intel.com">zhia.howe.chong@intel.com</a>&gt; wrote:<div><span class="gmail_quote"></span><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+> There is another problem trouble me .I find a simple test program to
+> check  the codec playback work .But all it said that it cannot find
+> the pcm file.Would you mind if you suggest something or paste what you
+> have do to mknod the device? 
 
+Oh, I forgot to mention that in the README file. I used the "snddevices"
+script found in ALSA's alsa-driver package (form version 1.0.13, but
+version shouldn't matter).
 
+> # ./test_sound.out  /dev/snd/pcmC0D0
+> ALSA lib pcm.c:2090:(snd_pcm_open_noupdate) Unknown
+> PCM /dev/snd/pcmC0D0 
+> cannot open audio device /dev/snd/pcmC0D0 (No such file or directory)
 
+Hmmm, try to create the device files with the script from above and see
+if that happens again ...
+BTW: (After having created the device files) you can also use aplay
+(alsa-utils package) for testing. Where did you find "test_sound"?
 
-
-
-
-
-
-<div link="blue" vlink="purple" lang="EN-US">
-
-<div>
-
-<p><font face="Arial" size="2"><span style="font-size: 10pt; font-family: Arial;">Hi,</span></font></p>
-
-<p><font face="Arial" size="2"><span style="font-size: 10pt; font-family: Arial;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-I am currently learning to use VisionClick with the VisionICE II debugger. Are
-you aware of using it in Linux? I can only use in VxWorks OS. If you know how
-to use in Linux, mind show me some steps in doing it? </span></font></p></div></div></blockquote><div><br>Yes, depending on what version of vClick and vICE&nbsp; firmware you have it
-is possible to debug some things in Linux. What are you trying to do
-exactly? Debug the kernel, modules, applications? What is the target?
-vClick is old now, Wind River has newer and much better JTAG/BDM tools
-(Workbench OCD) for working with Linux.<br>
-<br>
-Rich<br><br></div></div>
-
-------=_Part_3853_27835189.1185621640094--
+ Joachim
