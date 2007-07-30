@@ -1,35 +1,18 @@
-Return-Path: <hnguyen@linux.vnet.ibm.com>
-Received: from mtagate4.uk.ibm.com (mtagate4.uk.ibm.com [195.212.29.137])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate4.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AB866DDE1B
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2007 00:51:26 +1000 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate4.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l6UEpKHN097816
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jul 2007 14:51:20 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
-	[9.149.37.216])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.4) with
-	ESMTP id l6UEpKME3088532
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jul 2007 15:51:20 +0100
-Received: from d06av04.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av04.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l6UEp6ie002443
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jul 2007 15:51:07 +0100
-From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [PATCH 2/5] ehca: Generate event when SRQ limit reached
-Date: Mon, 30 Jul 2007 17:02:59 +0200
-References: <200707201602.19142.hnguyen@linux.vnet.ibm.com>
-	<ada7iou75tn.fsf@cisco.com>
-In-Reply-To: <ada7iou75tn.fsf@cisco.com>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 1E6AEDDE0C
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2007 00:54:57 +1000 (EST)
+Message-ID: <46ADFC36.5060709@ru.mvista.com>
+Date: Mon, 30 Jul 2007 18:56:54 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200707301703.00111.hnguyen@linux.vnet.ibm.com>
-Cc: fenkes@de.ibm.com, linux-kernel@vger.kernel.org, openib-general@openib.org,
-	linuxppc-dev@ozlabs.org, raisch@de.ibm.com, stefan.roscher@de.ibm.com
+To: Zhu Ebony-r57400 <ebony.zhu@freescale.com>
+Subject: Re: [patch][0/5] powerpc V2 : Add support to fully comply
+	with	IEEE-754 standard
+References: <32F3CC26D4DAC44E8ECD07155727A46E8B7F7F@zch01exm20.fsl.freescale.net>
+In-Reply-To: <32F3CC26D4DAC44E8ECD07155727A46E8B7F7F@zch01exm20.fsl.freescale.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,16 +22,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
-> BTW, does your SRQ-capable hardware support generating the "last WQE
-> reached" event?  There's not any reliable way to avoid problems when
-> destroying QPs attached to an SRQ without it, and the IB spec requires
-> CAs that support SRQs to generate it (o11-5.2.5 in chapter 11 of vol 1).
-> 
-> I don't see any code in ehca to generate the event, and IPoIB CM at
-> least will be very unhappy when using SRQs if the event is not
-> generated.
-Thanks for this good catch. We're investigating how to implement this.
-Will keep you updated.
-Regards
-Nam
+Hello.
+
+Zhu Ebony-r57400 wrote:
+
+>>>>>>Did you end up getting testfloat running?  I'd like to see some 
+>>>>>>testing results before accepting these patches.  I think estfloat is
+>>>>>>our best bet at this point.
+
+>>>>>Hi Kumar,
+
+>>>>>I looked into the testfloat suit, and found all the instructions it 
+>>>>>tests (more than 50)should be implemented based on ASM.
+
+>>>>Don't follow?  Can't you build it with the e500 compiler?
+
+>>>The TestFloat suite provided the target of 386-Win32-gcc and 
+>>>SPARC-Solaris-gcc only, and a template for user to porting his own 
+>>>processor. Some general instructions are implemented in C, but some 
+>>>CPU specific instructions like evfsmul need to be implemented 
+>>>assemblely. To build it with e500 compiler we still Have some porting 
+>>>work to do.
+
+>>I wouldn't worry too much about the vector forms.  If the 
+>>scalar single fp and double fp test out ok the vectors are 
+>>pretty much similar enough.
+
+>>Lets just get the scalar versions tested and work out any 
+>>issues there.
+
+> OK, I will focus on scalar SFPF and DPFP versions first.
+
+    Any progress with this patchset?
+
+WBR, Sergei
