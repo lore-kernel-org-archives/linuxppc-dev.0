@@ -1,18 +1,18 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 514D6DDDF9
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2007 03:29:03 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Dave Jiang <djiang@mvista.com>
+Return-Path: <djiang@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id A4B65DDE08
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2007 03:45:36 +1000 (EST)
+Message-ID: <46AE2487.7060103@mvista.com>
+Date: Mon, 30 Jul 2007 10:48:55 -0700
+From: Dave Jiang <djiang@mvista.com>
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
 Subject: Re: [PATCH 2/2] powerpc: MPC85xx EDAC device driver
-Date: Mon, 30 Jul 2007 19:28:50 +0200
 References: <20070726222225.GB10427@blade.az.mvista.com>
 	<200707291606.21612.arnd@arndb.de> <46AE146D.8010504@mvista.com>
-In-Reply-To: <46AE146D.8010504@mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200707301928.51253.arnd@arndb.de>
+	<200707301928.51253.arnd@arndb.de>
+In-Reply-To: <200707301928.51253.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org, norsk5@yahoo.com,
 	bluesmoke-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,38 +24,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 30 July 2007, Dave Jiang wrote:
-> Arnd Bergmann wrote:
-
-> > I'd suggest either to integrate EDAC into the 85xx specific PCI code,
-> > or to have an extra device in the device tree for this.
+Arnd Bergmann wrote:
+> On Monday 30 July 2007, Dave Jiang wrote:
+>> Arnd Bergmann wrote:
 > 
-> How about I create a platform device just for EDAC and leave the PCI of_device
-> to the 85xx PCI code? That would be a lot less modification than adding a
-> device for every PCI hose per DTS file.... Just a thought....
-
-Hmm, I can see your point about not having to change all the device trees,
-but if you really want to have a device for each of them, an of_device seems
-more natural to me than a platform_device.
-
-What about the other option I mentioned, handling the EDAC stuff from the
-fsl_add_bridge() function?
- 
-> > The error handling could use some improvement here. In particular, you should
-> > unregister the buses in the failure path, maybe you need to clean up other
-> > parts as well.
+>>> I'd suggest either to integrate EDAC into the 85xx specific PCI code,
+>>> or to have an extra device in the device tree for this.
+>> How about I create a platform device just for EDAC and leave the PCI of_device
+>> to the 85xx PCI code? That would be a lot less modification than adding a
+>> device for every PCI hose per DTS file.... Just a thought....
 > 
-> I think I want individual "devices" work even some may fail or be missing. For
-> example, even if L2 fails to register, I still want to be able to get the
-> memory controller to report errors. So I really don't want to unregister
-> everything that initialized properly even though some failures exists. Maybe I
-> need to clean it up a little bit.
+> Hmm, I can see your point about not having to change all the device trees,
+> but if you really want to have a device for each of them, an of_device seems
+> more natural to me than a platform_device.
+> 
+> What about the other option I mentioned, handling the EDAC stuff from the
+> fsl_add_bridge() function?
 
-In that case, you shouldn't return failure from the module_init() function,
-because that will remove the module again, while leaving the drivers
-registered.
+I'm not sure I follow your thought on this quite yet. Do you mean the setup of
+either of_device or platform_device or do you mean the actual pci err driver?
+I'm not understanding how doing the setup code in fsl_add_bridge() would allow
+us to prevent the of_device being monopolized by the EDAC driver or the future
+PCI code.... The EDAC driver still needs some sort of "device" to claim one way
+or another right?
 
-Another option might be to have separate modules, or separate initcall()
-statements if the code can not be modular.
+Of course I can go ahead and add the PCI err device in the DTS files for all
+85xx if Kumar is okay with that idea....
 
-	Arnd <><
+-- 
+
+------------------------------------------------------
+Dave Jiang
+Software Engineer
+MontaVista Software, Inc.
+http://www.mvista.com
+------------------------------------------------------
