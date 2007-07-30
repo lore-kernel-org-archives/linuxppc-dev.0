@@ -1,30 +1,30 @@
 Return-Path: <osstklei@de.ibm.com>
-Received: from mtagate6.de.ibm.com (mtagate6.de.ibm.com [195.212.29.155])
+Received: from mtagate8.uk.ibm.com (mtagate8.uk.ibm.com [195.212.29.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate6.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 92083DDE41
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2007 01:51:14 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate6.de.ibm.com (8.13.8/8.13.8) with ESMTP id l6UFp93f430218
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jul 2007 15:51:09 GMT
-Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
-	[9.149.165.213])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.4) with
-	ESMTP id l6UFp9r01814692
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jul 2007 17:51:09 +0200
-Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l6UFoqAu002766
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jul 2007 17:50:52 +0200
+	(Client CN "mtagate8.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 67457DDE9E
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2007 01:52:31 +1000 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate8.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l6UFqQfW132702
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jul 2007 15:52:26 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+	[9.149.37.216])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.4) with
+	ESMTP id l6UFqQx52945226
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jul 2007 16:52:26 +0100
+Received: from d06av04.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av04.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l6UFqCNA030154
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jul 2007 16:52:13 +0100
 From: Thomas Klein <osstklei@de.ibm.com>
 To: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH 2/3] ehea: Simplify resource usage check
-Date: Mon, 30 Jul 2007 17:50:36 +0200
+Subject: [PATCH 3/3] ehea: Eliminated some compiler warnings
+Date: Mon, 30 Jul 2007 17:52:01 +0200
 MIME-Version: 1.0
+Message-Id: <200707301752.02404.osstklei@de.ibm.com>
 Content-Type: text/plain;
   charset="us-ascii"
-Message-Id: <200707301750.36297.osstklei@de.ibm.com>
 Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
 	netdev <netdev@vger.kernel.org>,
 	linux-kernel <linux-kernel@vger.kernel.org>,
@@ -41,48 +41,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Use shorter method to determine whether adapter has configured ports
+Fixed wrongly casted pointers
 
 Signed-off-by: Thomas Klein <tklein@de.ibm.com>
 
 ---
- drivers/net/ehea/ehea_main.c |   18 ++++++------------
- 1 files changed, 6 insertions(+), 12 deletions(-)
+ drivers/net/ehea/ehea_main.c |   25 ++++++++++---------------
+ 1 files changed, 10 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-index d43ab0f..36ca322 100644
+index 36ca322..9756211 100644
 --- a/drivers/net/ehea/ehea_main.c
 +++ b/drivers/net/ehea/ehea_main.c
-@@ -2165,24 +2165,18 @@ static int ehea_clean_all_portres(struct ehea_port *port)
- 	return ret;
- }
+@@ -1326,7 +1326,6 @@ static void write_swqe2_TSO(struct sk_buff *skb,
+ 	u8 *imm_data = &swqe->u.immdata_desc.immediate_data[0];
+ 	int skb_data_size = skb->len - skb->data_len;
+ 	int headersize;
+-	u64 tmp_addr;
  
--static void ehea_remove_adapter_mr (struct ehea_adapter *adapter)
-+static void ehea_remove_adapter_mr(struct ehea_adapter *adapter)
- {
--	int i;
+ 	/* Packet is TCP with TSO enabled */
+ 	swqe->tx_control |= EHEA_SWQE_TSO;
+@@ -1347,9 +1346,8 @@ static void write_swqe2_TSO(struct sk_buff *skb,
+ 			/* set sg1entry data */
+ 			sg1entry->l_key = lkey;
+ 			sg1entry->len = skb_data_size - headersize;
 -
--	for (i=0; i < EHEA_MAX_PORTS; i++)
--		if (adapter->port[i])
--			return;
-+	if (adapter->active_ports)
-+		return;
+-			tmp_addr = (u64)(skb->data + headersize);
+-			sg1entry->vaddr = ehea_map_vaddr(tmp_addr);
++			sg1entry->vaddr =
++				ehea_map_vaddr(skb->data + headersize);
+ 			swqe->descriptors++;
+ 		}
+ 	} else
+@@ -1362,7 +1360,6 @@ static void write_swqe2_nonTSO(struct sk_buff *skb,
+ 	int skb_data_size = skb->len - skb->data_len;
+ 	u8 *imm_data = &swqe->u.immdata_desc.immediate_data[0];
+ 	struct ehea_vsgentry *sg1entry = &swqe->u.immdata_desc.sg_entry;
+-	u64 tmp_addr;
  
- 	ehea_rem_mr(&adapter->mr);
- }
+ 	/* Packet is any nonTSO type
+ 	 *
+@@ -1379,8 +1376,8 @@ static void write_swqe2_nonTSO(struct sk_buff *skb,
+ 			/* copy sg1entry data */
+ 			sg1entry->l_key = lkey;
+ 			sg1entry->len = skb_data_size - SWQE2_MAX_IMM;
+-			tmp_addr = (u64)(skb->data + SWQE2_MAX_IMM);
+-			sg1entry->vaddr = ehea_map_vaddr(tmp_addr);
++			sg1entry->vaddr =
++				ehea_map_vaddr(skb->data + SWQE2_MAX_IMM);
+ 			swqe->descriptors++;
+ 		}
+ 	} else {
+@@ -1395,7 +1392,6 @@ static inline void write_swqe2_data(struct sk_buff *skb, struct net_device *dev,
+ 	struct ehea_vsgentry *sg_list, *sg1entry, *sgentry;
+ 	skb_frag_t *frag;
+ 	int nfrags, sg1entry_contains_frag_data, i;
+-	u64 tmp_addr;
  
--static int ehea_add_adapter_mr (struct ehea_adapter *adapter)
-+static int ehea_add_adapter_mr(struct ehea_adapter *adapter)
- {
--	int i;
+ 	nfrags = skb_shinfo(skb)->nr_frags;
+ 	sg1entry = &swqe->u.immdata_desc.sg_entry;
+@@ -1417,9 +1413,9 @@ static inline void write_swqe2_data(struct sk_buff *skb, struct net_device *dev,
+ 			/* copy sg1entry data */
+ 			sg1entry->l_key = lkey;
+ 			sg1entry->len = frag->size;
+-			tmp_addr =  (u64)(page_address(frag->page)
+-					  + frag->page_offset);
+-			sg1entry->vaddr = ehea_map_vaddr(tmp_addr);
++			sg1entry->vaddr =
++				ehea_map_vaddr(page_address(frag->page)
++					       + frag->page_offset);
+ 			swqe->descriptors++;
+ 			sg1entry_contains_frag_data = 1;
+ 		}
+@@ -1431,10 +1427,9 @@ static inline void write_swqe2_data(struct sk_buff *skb, struct net_device *dev,
+ 
+ 			sgentry->l_key = lkey;
+ 			sgentry->len = frag->size;
 -
--	for (i=0; i < EHEA_MAX_PORTS; i++)
--		if (adapter->port[i])
--			return 0;
-+	if (adapter->active_ports)
-+		return 0;
- 
- 	return ehea_reg_kernel_mr(adapter, &adapter->mr);
- }
+-			tmp_addr = (u64)(page_address(frag->page)
+-					 + frag->page_offset);
+-			sgentry->vaddr = ehea_map_vaddr(tmp_addr);
++			sgentry->vaddr =
++				ehea_map_vaddr(page_address(frag->page)
++					       + frag->page_offset);
+ 			swqe->descriptors++;
+ 		}
+ 	}
 -- 
 1.5.2
