@@ -1,38 +1,17 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1C4B7DDEBC
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2007 03:00:45 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6UH0gUn026923
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jul 2007 13:00:42 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l6UH0fML204066
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jul 2007 11:00:41 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6UH0e95014146
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jul 2007 11:00:41 -0600
-Date: Mon, 30 Jul 2007 12:00:40 -0500
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: Re: [PATCH 0/4][RFC] lro: Generic Large Receive Offload for TCP
-	traffic
-Message-ID: <20070730170038.GA4884@austin.ibm.com>
-References: <200707301724.33865.ossthema@de.ibm.com>
+Return-Path: <girish.sk@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.243])
+	by ozlabs.org (Postfix) with ESMTP id 0186DDDED3
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2007 03:07:50 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so265343anc
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jul 2007 10:07:49 -0700 (PDT)
+Message-ID: <34ac6d890707301007j128e4656tf8319c7b19e362a1@mail.gmail.com>
+Date: Mon, 30 Jul 2007 22:37:49 +0530
+From: "Girish kathalagiri" <girish.sk@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: BUG: scheduling while atomic
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200707301724.33865.ossthema@de.ibm.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
-	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>, Andrew Gallatin <gallatin@myri.com>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>,
-	David Miller <davem@davemloft.net>
+Content-Type: multipart/alternative;
+	boundary="----=_Part_34589_1666409.1185815269568"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,50 +21,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 30, 2007 at 05:24:33PM +0200, Jan-Bernd Themann wrote:
-> 
-> Changes to http://www.spinics.net/lists/netdev/msg36912.html
-> 
-> 1) A new field called "features" has been added to the net_lro_mgr struct.
->    It is set by the driver to indicate:
->    - LRO_F_NAPI:            Use NAPI / netif_rx to pass packets to stack
-> 
->    - LRO_F_EXTRACT_VLAN_ID: Set by driver if HW extracts VLAN IDs for VLAN
->         packets but does not modify ETH protocol (ETH_P_8021Q)
-> 
-> 2) Padded frames are not aggregated for now. Bug fixed
-> 
-> 3) Correct header length now used. No minimal header length for aggregated
->    packets used anymore.
-> 
-> 4) Statistic counters were introduced. They are stored in a new struct in
->    the net_lro_mgr. This has the advantage that no locking is required in
->    cases where the driver uses multiple lro_mgrs for different receive queues.
->    Thus we get the following statistics per lro_mgr / eth device:
->    - Number of aggregated packets
->    - Number of flushed packets
->    - Number of times we run out of lro_desc.
-> 
->    The ratio of "aggregated packets" and "flushed packets" give you an
->    idea how well LRO is working.
+------=_Part_34589_1666409.1185815269568
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I'd like to see an edited form of this, together with an introduction to
-LRO, written up in the Documentation subdirectory.  
+Hi,
+I am running linux-2.6.22.1-rt8 on mpc5200 and on running stress
 
-As someone with some driver experience, but not on te bleeding edge,
-some basc newbie questions pop into mind:
+./stress --cpu 8 --io 4 --vm 2 --vm-bytes 2M --timeout 300s
 
--- what is LRO?
--- Basic principles of operation?
--- Can I use it in my driver?  
--- Does my hardware have to have some special feature before I can use it?
--- What sort of performance improvement does it provide? Throughput?
-   Latency? CPU usage? How does it affect DMA allocation? Does it 
-   improve only a certain type of traffic (large/small packets, etc.)
--- Example code? What's the API? How should my driver use it?
+I get the following stack.But this does not happen with non rt kernel.
 
-Right now, I can maybe find answers by doing lots of googling.  I'd like
-to have some quick way of getting a grip on this.
+   LR = 0xff51fcc
+BUG: scheduling while atomic: stress/0x00000002/739, CPU#0
+Call Trace:
+[c04fbb80] [c0008650] show_stack+0x50/0x190 (unreliable)
+[c04fbbb0] [c0016fc0] __schedule_bug+0x38/0x48
+[c04fbbc0] [c01d4f7c] __schedule+0x3dc/0x450
+[c04fbbf0] [c01d56c8] schedule+0x54/0xf0
+[c04fbc00] [c01d6390] rt_spin_lock_slowlock+0x100/0x224
+[c04fbc60] [c0052198] get_zone_pcp+0x30/0x58
+[c04fbc80] [c0053078] free_hot_cold_page+0x114/0x1fc
+[c04fbcb0] [c0056424] put_page+0x50/0x15c
+[c04fbcd0] [c0069854] free_page_and_swap_cache+0x44/0x80
+[c04fbce0] [c005d760] unmap_vmas+0x2e0/0x788
+[c04fbd70] [c006292c] exit_mmap+0x74/0x108
+[c04fbda0] [c001adc0] mmput+0x54/0xf0
+[c04fbdc0] [c001ecfc] exit_mm+0xc0/0x124
+[c04fbde0] [c001ffd0] do_exit+0x164/0x8bc
+[c04fbe20] [c0020760] do_group_exit+0x38/0x90
+[c04fbe40] [c002ba48] get_signal_to_deliver+0x2ac/0x3c0
+[c04fbe70] [c000739c] do_signal+0x50/0x60c
+[c04fbf40] [c000fec0] do_user_signal+0x74/0xc4
+--- Exception: c00 at 0xfeab1dc
+   LR = 0xff51fcc
 
---linas
-   
+Thanks in advance
+-- 
+Regards,
+Giri
+
+------=_Part_34589_1666409.1185815269568
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi,<br>I am running linux-2.6.22.1-rt8 on mpc5200 and on running stress<br><br>./stress --cpu 8 --io 4 --vm 2 --vm-bytes 2M --timeout 300s<br><br>I get the following stack.But this does not happen with non rt kernel.<br><br>
+ &nbsp; &nbsp;LR = 0xff51fcc<br>BUG: scheduling while atomic: stress/0x00000002/739, CPU#0<br>Call Trace:<br>[c04fbb80] [c0008650] show_stack+0x50/0x190 (unreliable)<br>[c04fbbb0] [c0016fc0] __schedule_bug+0x38/0x48<br>[c04fbbc0] [c01d4f7c] __schedule+0x3dc/0x450
+<br>[c04fbbf0] [c01d56c8] schedule+0x54/0xf0<br>[c04fbc00] [c01d6390] rt_spin_lock_slowlock+0x100<div style="direction: ltr;">/0x224<br>[c04fbc60] [c0052198] get_zone_pcp+0x30/0x58<br>[c04fbc80] [c0053078] free_hot_cold_page+0x114/0x1fc
+<br>[c04fbcb0] [c0056424] put_page+0x50/0x15c<br>[c04fbcd0] [c0069854] free_page_and_swap_cache+0x44/0x80<br>[c04fbce0] [c005d760] unmap_vmas+0x2e0/0x788<br>[c04fbd70] [c006292c] exit_mmap+0x74/0x108<br>[c04fbda0] [c001adc0] mmput+0x54/0xf0
+<br>[c04fbdc0] [c001ecfc] exit_mm+0xc0/0x124<br>[c04fbde0] [c001ffd0] do_exit+0x164/0x8bc<br>[c04fbe20] [c0020760] do_group_exit+0x38/0x90<br>[c04fbe40] [c002ba48] get_signal_to_deliver+0x2ac/0x3c0<br>[c04fbe70] [c000739c] do_signal+0x50/0x60c
+<br>[c04fbf40] [c000fec0] do_user_signal+0x74/0xc4<br>--- Exception: c00 at 0xfeab1dc<br> &nbsp; &nbsp;LR = 0xff51fcc</div><br clear="all">Thanks in advance<br>-- <br>Regards,<br>Giri
+
+------=_Part_34589_1666409.1185815269568--
