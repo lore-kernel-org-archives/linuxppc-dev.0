@@ -1,19 +1,23 @@
-Return-Path: <djiang@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 737F5DDF55
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2007 02:36:55 +1000 (EST)
-Message-ID: <46AE146D.8010504@mvista.com>
-Date: Mon, 30 Jul 2007 09:40:13 -0700
-From: Dave Jiang <djiang@mvista.com>
+Return-Path: <auke-jan.h.kok@intel.com>
+Received: from mga03.intel.com (mga03.intel.com [143.182.124.21])
+	by ozlabs.org (Postfix) with ESMTP id 110EADDED0
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2007 02:38:14 +1000 (EST)
+Message-ID: <46AE13D0.7060902@intel.com>
+Date: Mon, 30 Jul 2007 09:37:36 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 2/2] powerpc: MPC85xx EDAC device driver
-References: <20070726222225.GB10427@blade.az.mvista.com>
-	<200707291606.21612.arnd@arndb.de>
-In-Reply-To: <200707291606.21612.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, norsk5@yahoo.com,
-	bluesmoke-devel@lists.sourceforge.net
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: Re: [PATCH 3/4][RFC] ehea: LRO support
+References: <200707301724.49829.ossthema@de.ibm.com>
+In-Reply-To: <200707301724.49829.ossthema@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
+	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>, Andrew Gallatin <gallatin@myri.com>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,78 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Friday 27 July 2007, Dave Jiang wrote:
->> +static struct of_device_id mpc85xx_pci_err_of_match[] = {
->> +       {
->> +        .type = "pci",
->> +        .compatible = "fsl,mpc8540-pci",
->> +        },
->> +       {},
->> +};
->> +
->> +static struct of_platform_driver mpc85xx_pci_err_driver = {
->> +       .owner = THIS_MODULE,
->> +       .name = "mpc85xx_pci_err",
->> +       .match_table = mpc85xx_pci_err_of_match,
->> +       .probe = mpc85xx_pci_err_probe,
->> +       .remove = mpc85xx_pci_err_remove,
->> +       .driver = {
->> +                  .name = "mpc85xx_pci_err",
->> +                  .owner = THIS_MODULE,
->> +                  },
->> +};
+Jan-Bernd Themann wrote:
+> Added LRO support using the "SKB aggregate" interface
 > 
-> This is  a little problematic, if we want to make the PCI bus implementation
-> use the PCI code from arch/powerpc/kernel/of_platform.c in the future.
-> Right now this is not possible, because that code is still 64-bit only,
-> but that may change in the future. Since only one driver can bind
-> to the pci host bridge device, the mpc85xx_pci_err driver would conflict
-> with the PCI driver itself, which you probably don't intend.
+> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
 > 
-> I'd suggest either to integrate EDAC into the 85xx specific PCI code,
-> or to have an extra device in the device tree for this.
+> ---
+>  drivers/net/ehea/ehea.h         |    9 ++++-
+>  drivers/net/ehea/ehea_ethtool.c |   15 +++++++
+>  drivers/net/ehea/ehea_main.c    |   82 +++++++++++++++++++++++++++++++++++---
+>  3 files changed, 98 insertions(+), 8 deletions(-)
 
-How about I create a platform device just for EDAC and leave the PCI of_device
-to the 85xx PCI code? That would be a lot less modification than adding a
-device for every PCI hose per DTS file.... Just a thought....
+<snip>
 
->> +       res = of_register_platform_driver(&mpc85xx_mc_err_driver) ? : res;
->> +
->> +       res = of_register_platform_driver(&mpc85xx_l2_err_driver) ? : res;
->> +
->> +#ifdef CONFIG_PCI
->> +       res = of_register_platform_driver(&mpc85xx_pci_err_driver) ? : res;
->> +#endif
->> +
->> +       /*
->> +        * need to clear HID1[RFXE] to disable machine check int
->> +        * so we can catch it
->> +        */
->> +       if (edac_op_state == EDAC_OPSTATE_INT) {
->> +               orig_hid1 = mfspr(SPRN_HID1);
->> +
->> +               mtspr(SPRN_HID1, (orig_hid1 & ~0x20000));
->> +       }
->> +
->> +       return res;
->> +}
-> 
-> The error handling could use some improvement here. In particular, you should
-> unregister the buses in the failure path, maybe you need to clean up other
-> parts as well.
+> +module_param(use_lro, int, 0);
+> +module_param(lro_max_aggr, int, 0);
 
-I think I want individual "devices" work even some may fail or be missing. For
-example, even if L2 fails to register, I still want to be able to get the
-memory controller to report errors. So I really don't want to unregister
-everything that initialized properly even though some failures exists. Maybe I
-need to clean it up a little bit.
+this should obviously (and Stephen H. probably agrees) be implemented in ethtool 
+instead, and opens up the question as to what changes we need to add to ethtool. ..
 
--- 
-
-------------------------------------------------------
-Dave Jiang
-Software Engineer
-MontaVista Software, Inc.
-http://www.mvista.com
-------------------------------------------------------
+Auke
