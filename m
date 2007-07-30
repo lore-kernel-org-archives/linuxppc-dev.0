@@ -1,17 +1,22 @@
-Return-Path: <Marc.Dietrich@ap.physik.uni-giessen.de>
-Received: from merkurneu.hrz.uni-giessen.de (merkurneu.hrz.uni-giessen.de
-	[134.176.2.3]) by ozlabs.org (Postfix) with ESMTP id 353C7DDE04
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jul 2007 22:59:05 +1000 (EST)
-From: Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Using video memory on PS3 e.g. as SWAP?
-Date: Mon, 30 Jul 2007 14:24:31 +0200
-References: <200707291904.55700.rene@exactcode.de>
-In-Reply-To: <200707291904.55700.rene@exactcode.de>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
+	by ozlabs.org (Postfix) with ESMTP id 39836DDDD8
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jul 2007 23:54:33 +1000 (EST)
+To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+Subject: Re: [ofa-general] [PATCH 1/2] ehca: remove checkpatch.pl's warnings
+	"externs should be avoided in .c files"
+References: <200707271254.51055.hnguyen@linux.vnet.ibm.com>
+	<adahcnnvpy5.fsf@cisco.com>
+	<200707301507.47575.hnguyen@linux.vnet.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Mon, 30 Jul 2007 06:54:30 -0700
+In-Reply-To: <200707301507.47575.hnguyen@linux.vnet.ibm.com> (Hoang-Nam
+	Nguyen's message of "Mon, 30 Jul 2007 15:07:47 +0200")
+Message-ID: <adabqdut2sp.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200707301424.43750.marc.dietrich@ap.physik.uni-giessen.de>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, stefan.roscher@de.ibm.com,
+	linux-kernel@vger.kernel.org, general@lists.openfabrics.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,27 +26,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Am Sunday 29 July 2007 19:04 schrieb Ren=E9 Rebe:
-> Hi all,
->
-> looking at the PS3 as one of the few PowerPC workstation options the RAM
-> is obviously quite limitted with just 256MB. I wonder if the 256MB of
-> video memory can be mapped or at least be used as super-fast SWAP?
+ > Was going to recreate this patch, but then I saw that you
+ > probably have incorporated it (manually) in your latest git.
+ > Just want to make sure I'm seeing it right.
 
-look here:
-http://forums.ps2dev.org/viewtopic.php?t=3D8267
-
-but the write speed is much slower than disk.
-
-> Or are there news regarding accessing the video chip from Linux beside
-> the unaccelerated frame-buffer?
->
-> Regards,
-
-=2D-=20
-	"The enemy commits atrocities knowingly; if we make unfortunate mistakes, =
-it=20
-is involuntary."
-		 Lord Arthur Ponsonby, "Falsehood in Wartime: Propaganda Lies of the Firs=
-t=20
-World War", 1928
+Yes, I ended up doing it by hand.  Thanks.
