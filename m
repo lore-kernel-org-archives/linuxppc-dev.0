@@ -1,20 +1,30 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound2-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
+Return-Path: <kevcorry@us.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id AA1BCDDDF9
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 06:14:31 +1000 (EST)
-Message-ID: <46AF9820.7050608@am.sony.com>
-Date: Tue, 31 Jul 2007 13:14:24 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 63592DDDFF
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 06:19:56 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6VKJqdS025188
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2007 16:19:52 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l6VKJqo5264828
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2007 14:19:52 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l6VKJqWx012857
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2007 14:19:52 -0600
+From: Kevin Corry <kevcorry@us.ibm.com>
+To: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] PowerPC: Fix num_cpus calculation in smp_call_function_map()
+Date: Tue, 31 Jul 2007 15:19:46 -0500
 MIME-Version: 1.0
-To: =?UTF-8?B?77+9?= <rene@exactcode.de>
-Subject: Re: Using video memory on PS3 e.g. as SWAP?
-References: <200707291904.55700.rene@exactcode.de>
-In-Reply-To: <200707291904.55700.rene@exactcode.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200707311519.48359.kevcorry@us.ibm.com>
+Cc: Carl Love <carll@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,37 +34,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=EF=BF=BD wrote:
-> Hi all,
->=20
-> looking at the PS3 as one of the few PowerPC workstation options the RA=
-M
-> is obviously quite limitted with just 256MB.=20
+[POWERPC]: Fix num_cpus calculation in smp_call_function_map().
 
+In smp_call_function_map(), num_cpus is set to the number of online CPUs minus
+one. However, if the CPU mask does not include all CPUs (except the one we're
+running on), the routine will hang in the first while() loop until the 8 second
+timeout occurs.
 
-Can I recommend in the future you send this kind of PS3 specific inquiry =
-to
-the cbe-oss-dev mailing list?
+The num_cpus should be set to the number of CPUs specified in the mask passed
+into the routine, after we've made any modifications to the mask. With this
+change, we can also get rid of the call to cpus_empty() and avoid adding
+another pass through the bitmask.
 
-  cbe-oss-dev@ozlabs.org
-  https://ozlabs.org/mailman/listinfo/cbe-oss-dev
+Signed-off-by: Kevin Corry <kevcorry@us.ibm.com>
+Signed-off-by: Carl Love <carll@us.ibm.com>
 
-
-> I wonder if the 256MB of
-> video memory can be mapped or at least be used as super-fast SWAP?
-
-
-As Marc mentioned, some work was done using unsupported functionality of
-the current hypervisor.  There is no assurance it will continue to work
-with future system software updates.
-
-
-> Or are there news regarding accessing the video chip from Linux beside
-> the unaccelerated frame-buffer?
-
-
-We plan to improve Linux graphics support, but we have not announced any
-specifics.  The changes may make the above mentioned driver no longer wor=
-k.
-
--Geoff
+Index: linux-2.6.23-rc1/arch/powerpc/kernel/smp.c
+===================================================================
+--- linux-2.6.23-rc1.orig/arch/powerpc/kernel/smp.c
++++ linux-2.6.23-rc1/arch/powerpc/kernel/smp.c
+@@ -212,11 +212,6 @@ int smp_call_function_map(void (*func) (
+ 		atomic_set(&data.finished, 0);
+ 
+ 	spin_lock(&call_lock);
+-	/* Must grab online cpu count with preempt disabled, otherwise
+-	 * it can change. */
+-	num_cpus = num_online_cpus() - 1;
+-	if (!num_cpus)
+-		goto done;
+ 
+ 	/* remove 'self' from the map */
+ 	if (cpu_isset(smp_processor_id(), map))
+@@ -224,7 +219,9 @@ int smp_call_function_map(void (*func) (
+ 
+ 	/* sanity check the map, remove any non-online processors. */
+ 	cpus_and(map, map, cpu_online_map);
+-	if (cpus_empty(map))
++
++	num_cpus = cpus_weight(map);
++	if (!num_cpus)
+ 		goto done;
+ 
+ 	call_data = &data;
