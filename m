@@ -1,55 +1,51 @@
-Return-Path: <yoni.l@slyde-tech.com>
-Received: from smtpin.livedns.co.il (smtpin.livedns.co.il [62.219.78.209])
-	by ozlabs.org (Postfix) with ESMTP id 945DDDDDFC
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 31 Jul 2007 23:53:37 +1000 (EST)
-From: "Yoni Levin" <yoni.l@slyde-tech.com>
-To: "'Scott Wood'" <scottwood@freescale.com>
-Subject: RE: interrupts in mpc8313
-Date: Tue, 31 Jul 2007 16:53:20 +0300
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <46AF3A9C.4090007@freescale.com>
-Message-ID: <DD658DAB65814DF6A223A007EC5735FE.MAI@mail.livedns.co.il>
-Cc: linuxppc-embedded@ozlabs.org
-List-Id: Linux on Embedded PowerPC Developers Mail List
-	<linuxppc-embedded.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
-List-Post: <mailto:linuxppc-embedded@ozlabs.org>
-List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E62B3DDDCA
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 02:15:59 +1000 (EST)
+In-Reply-To: <46B96294322F7D458F9648B60E15112C74D158@zch01exm26.fsl.freescale.net>
+References: <11854393721520-git-send-email-wei.zhang@freescale.com>
+	<11854393733580-git-send-email-wei.zhang@freescale.com>
+	<98CA70A1-9888-4508-A0E9-0EB28C14945F@kernel.crashing.org>
+	<46B96294322F7D458F9648B60E15112C74D158@zch01exm26.fsl.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <363cce0e331102968838e3cb9db5f166@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/5 v3] Add the explanation and a sample of RapidIO OF
+	node to the document of booting-without-of.txt file.
+Date: Tue, 31 Jul 2007 18:15:48 +0200
+To: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
+List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-All I had to do was to add :
-irq_create_mapping(NULL,71)
-and yes it not the exact code , I work with 2 computers...
-thanks.
+>>> +    - #address-cells : Address representation for
+>> "rapidio" devices.
+>>> +      This field represents the number of cells needed to represent
+>>> +      the RapidIO address of the registers.
+>>
+>> Can you explain this a little further.  I'm a bit confused by
+>> 'RapidIO address of the registers'.
+>>
+> I want to present "This field represents the number of cells [needed to
+> represent the RapidIO address] of the registers."
+> Maybe I should remove 'of the registers' to be more clear.
+
+This is completely content-free anyway; the semantics of
+#address-cells (and #size-cells, which you forgot) are
+already defined in the base OF spec; what you _should_ be
+defining here is a) the required value of #address-cells
+for a rapidio bus; and b) how addresses on that bus are
+represented (simply as a 64-bit integer, encoded as a
+pair of 32-bit integers as usual; but it needs to be said).
 
 
------Original Message-----
-From: Scott Wood [mailto:scottwood@freescale.com] 
-Sent: Tuesday, July 31, 2007 4:35 PM
-To: Yoni Levin
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: interrupts in mpc8313
-
-Yoni Levin wrote:
-> I tried to use the function request_irq :
-> 
->  
-> 
-> Ret=Request_irq(71,interrupt_handler,SA_INTERUPT,"dma_irq",NULL);
-
-arch/ppc or arch/powerpc?
-
-If the latter, you need to translate the hardware IRQ into a virtual 
-IRQ.  The easiest way to do this is to put the DMA node into the device 
-tree and use of_irq_to_resource().
-
-Plus, this obviously isn't the exact code you're running, as the 
-spelling and capitalization errors would keep it from compiling.
-
--Scott
+Segher
