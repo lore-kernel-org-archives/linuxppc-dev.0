@@ -1,20 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 05094DDE42
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 08:07:27 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Dave Jiang <djiang@mvista.com>
-Subject: Re: [PATCH 2/2] powerpc: MPC85xx EDAC device driver
-Date: Wed, 1 Aug 2007 00:07:12 +0200
-References: <20070726222225.GB10427@blade.az.mvista.com>
-	<200707302158.16530.arnd@arndb.de> <46AFA040.7070303@mvista.com>
-In-Reply-To: <46AFA040.7070303@mvista.com>
+Return-Path: <m.kozlowski@tuxland.pl>
+Received: from tuxland.pl (xdsl-664.zgora.dialog.net.pl [81.168.226.152])
+	by ozlabs.org (Postfix) with ESMTP id 15478DDE07
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 08:10:06 +1000 (EST)
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 75] drivers/macintosh/therm_adt746x.c: kmalloc + memset
+	conversion to kzalloc
+Date: Wed, 1 Aug 2007 00:10:03 +0200
+References: <200707311845.48807.m.kozlowski@tuxland.pl>
+In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200708010007.12922.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, bluesmoke-devel@lists.sourceforge.net,
-	norsk5@yahoo.com
+  charset="iso-8859-2"
+Message-Id: <200708010010.03964.m.kozlowski@tuxland.pl>
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	kernel-janitors@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,20 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 31 July 2007, Dave Jiang wrote:
-> Actually it seems that for me to grab the interrupt number I have to do the
-> platform device creation in fsl_soc.c and call arch_init() instead of doing it
-> from fsl_add_bridge(). fsl_add_bridge() is called way too early and the mpic
-> interrupt mapping has not been setup yet for me to acquire the interrupt number
-> from of_interrupt_to_resource() call.
+Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
-I think in general, it would be a better solution to have the add_bridge
-code called much later, like we do with the 64 bit PCI code when
-using an of_device for the PCI bridge. I don't think it's easy to
-do though, so that shouldn't stop you from doing it the other way.
+ drivers/macintosh/therm_adt746x.c | 17298 -> 17244 (-54 bytes)
 
-Please make the platform_device a child of the PCI host bridge though,
-so it doesn't need to change if/when the PCI initialization gets changed
-to allow doing it from fsl_pci.
+ drivers/macintosh/therm_adt746x.c |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-	Arnd <><
+--- linux-2.6.23-rc1-mm1-a/drivers/macintosh/therm_adt746x.c	2007-07-26 13:07:42.000000000 +0200
++++ linux-2.6.23-rc1-mm1-b/drivers/macintosh/therm_adt746x.c	2007-07-31 11:18:55.000000000 +0200
+@@ -379,13 +379,10 @@ static int attach_one_thermostat(struct
+ 	if (thermostat)
+ 		return 0;
+
+-	th = (struct thermostat *)
+-		kmalloc(sizeof(struct thermostat), GFP_KERNEL);
+-
++	th = kzalloc(sizeof(struct thermostat), GFP_KERNEL);
+ 	if (!th)
+ 		return -ENOMEM;
+
+-	memset(th, 0, sizeof(*th));
+ 	th->clt.addr = addr;
+ 	th->clt.adapter = adapter;
+ 	th->clt.driver = &thermostat_driver;
