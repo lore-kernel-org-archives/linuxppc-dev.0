@@ -1,23 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 35F55DDD0C
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 08:00:16 +1000 (EST)
-In-Reply-To: <20070727164047.GB26893@ld0162-tx32.am.freescale.net>
-References: <20070726135738.GB5643@localhost.localdomain>
-	<7BACDD73-9097-4139-8331-A1A14A6134D0@kernel.crashing.org>
-	<20070727114559.GB11463@localhost.localdomain>
-	<20070727164047.GB26893@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <dfa3ff8d8c6af28003c7f9f831371358@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC][PATCH] MPC832x_RDB: update dts to use spi,
-	register mmc_spi stub
-Date: Wed, 1 Aug 2007 00:00:06 +0200
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <djiang@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id C034ADDE02
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 08:02:28 +1000 (EST)
+Date: Tue, 31 Jul 2007 15:05:53 -0700
+From: Dave Jiang <djiang@mvista.com>
+To: galak@kernel.crashing.org
+Subject: [PATCH v2 1/3] powerpc: publish 85xx soc dts entries as of_device
+	on cds and ads platforms
+Message-ID: <20070731220553.GA29780@blade.az.mvista.com>
+References: <20070726222021.GA10427@blade.az.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20070726222021.GA10427@blade.az.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, bluesmoke-devel@lists.sourceforge.net,
+	norsk5@yahoo.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,22 +23,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Naming devices for human consumption is a more general problem than
-> device-id addresses; I'd like to see a standard "label" property added 
-> to
-> the device tree spec that software could use to present a 
-> human-friendly
-> label that corresponds to markings on the case, position on the board,
-> etc.
+Publish the devices listed in dts under SOC as of_device just like what
+mpc85xx_mds platforms do. The 85xx cds and ads platforms currently do not
+export the devices in dts as of_device.
 
-For some buses, there is a "slot-names" property; some (non-core)
-bindings seem to define a "location" property.
+I need the memory controller, L2 cache-controller, and the PCI controller
+published as of_device so the mpc85xx EDAC driver can claim them for usage.
 
-For "random" human-readable labelling, i.e. not corresponding to
-physical markings on the hardware, I recommend you look for a
-matching entry in /aliases.  It won't ever be _exactly_ what you
-want though, the Linux device namespace is separate from the
-device tree.
+Signed-off-by: Dave Jiang <djiang@mvista.com>
 
+---
 
-Segher
+Same as the earlier posted patch. Reposting to keep patch numbers consistent
+since there are 3 patches in the series now. 
+
+ arch/powerpc/platforms/85xx/mpc85xx_ads.c |   19 +++++++++++++++++++
+ arch/powerpc/platforms/85xx/mpc85xx_cds.c |   19 +++++++++++++++++++
+ 2 files changed, 38 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+index 40a8286..599d7f7 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+@@ -18,6 +18,8 @@
+ #include <linux/delay.h>
+ #include <linux/seq_file.h>
+ 
++#include <asm/of_device.h>
++#include <asm/of_platform.h>
+ #include <asm/system.h>
+ #include <asm/time.h>
+ #include <asm/machdep.h>
+@@ -254,6 +256,23 @@ static int __init mpc85xx_ads_probe(void)
+         return of_flat_dt_is_compatible(root, "MPC85xxADS");
+ }
+ 
++static struct of_device_id mpc85xx_ids[] = {
++	{ .type = "soc", },
++	{ .compatible = "soc", },
++	{},
++};
++
++static int __init mpc85xx_publish_devices(void)
++{
++	if (!machine_is(mpc85xx_ads))
++		return 0;
++
++	of_platform_bus_probe(NULL, mpc85xx_ids, NULL);
++
++	return 0;
++}
++device_initcall(mpc85xx_publish_devices);
++
+ define_machine(mpc85xx_ads) {
+ 	.name			= "MPC85xx ADS",
+ 	.probe			= mpc85xx_ads_probe,
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+index 6a171e9..5294884 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+@@ -27,6 +27,8 @@
+ #include <linux/interrupt.h>
+ #include <linux/fsl_devices.h>
+ 
++#include <asm/of_device.h>
++#include <asm/of_platform.h>
+ #include <asm/system.h>
+ #include <asm/pgtable.h>
+ #include <asm/page.h>
+@@ -342,6 +344,23 @@ static int __init mpc85xx_cds_probe(void)
+         return of_flat_dt_is_compatible(root, "MPC85xxCDS");
+ }
+ 
++static struct of_device_id mpc85xx_ids[] = {
++	{ .type = "soc", },
++	{ .compatible = "soc", },
++	{},
++};
++
++static int __init mpc85xx_publish_devices(void)
++{
++	if (!machine_is(mpc85xx_cds))
++		return 0;
++
++	of_platform_bus_probe(NULL, mpc85xx_ids, NULL);
++
++	return 0;
++}
++device_initcall(mpc85xx_publish_devices);
++
+ define_machine(mpc85xx_cds) {
+ 	.name		= "MPC85xx CDS",
+ 	.probe		= mpc85xx_cds_probe,
