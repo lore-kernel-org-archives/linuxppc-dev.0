@@ -1,30 +1,20 @@
-Return-Path: <kevcorry@us.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 63592DDDFF
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 06:19:56 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l6VKJqdS025188
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2007 16:19:52 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l6VKJqo5264828
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2007 14:19:52 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l6VKJqWx012857
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2007 14:19:52 -0600
-From: Kevin Corry <kevcorry@us.ibm.com>
-To: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] PowerPC: Fix num_cpus calculation in smp_call_function_map()
-Date: Tue, 31 Jul 2007 15:19:46 -0500
+Return-Path: <djiang@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 77DACDDDE9
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 06:45:41 +1000 (EST)
+Message-ID: <46AFA040.7070303@mvista.com>
+Date: Tue, 31 Jul 2007 13:49:04 -0700
+From: Dave Jiang <djiang@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200707311519.48359.kevcorry@us.ibm.com>
-Cc: Carl Love <carll@us.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 2/2] powerpc: MPC85xx EDAC device driver
+References: <20070726222225.GB10427@blade.az.mvista.com>
+	<200707302046.10010.arnd@arndb.de> <46AE3C06.5060100@mvista.com>
+	<200707302158.16530.arnd@arndb.de>
+In-Reply-To: <200707302158.16530.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, bluesmoke-devel@lists.sourceforge.net,
+	norsk5@yahoo.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,45 +24,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-[POWERPC]: Fix num_cpus calculation in smp_call_function_map().
+Arnd Bergmann wrote:
+> On Monday 30 July 2007, Dave Jiang wrote:
+>> I don't believe that EDAC core has been loaded at the time of 85xx PCI
+>> initialization. Plus, the EDAC driver can be loaded as a kernel module. So that
+>> probably won't work....
+> 
+> ok, good point.
+> 
+>> Also, instead of having centralized EDAC chip driver, 
+>> now you have things scattered over various places. One probably needs to add
+>> 83xx and 86xx code as well and whatever else eventually.
+>>
+>> Maybe we are just better off adding entries in the DTS to get around this
+>> problem....
+> 
+> The best solution may be to look at how it's structured at the
+> register level. If the PCI EDAC registers are implemented separately
+> from the regular PCI registers, a device tree entry would be appropriate.
+> If not, your idea of registering a platform_device from fsl_add_bridge
+> is probably more sensible.
 
-In smp_call_function_map(), num_cpus is set to the number of online CPUs minus
-one. However, if the CPU mask does not include all CPUs (except the one we're
-running on), the routine will hang in the first while() loop until the 8 second
-timeout occurs.
+Actually it seems that for me to grab the interrupt number I have to do the
+platform device creation in fsl_soc.c and call arch_init() instead of doing it
+from fsl_add_bridge(). fsl_add_bridge() is called way too early and the mpic
+interrupt mapping has not been setup yet for me to acquire the interrupt number
+from of_interrupt_to_resource() call.
 
-The num_cpus should be set to the number of CPUs specified in the mask passed
-into the routine, after we've made any modifications to the mask. With this
-change, we can also get rid of the call to cpus_empty() and avoid adding
-another pass through the bitmask.
+-- 
 
-Signed-off-by: Kevin Corry <kevcorry@us.ibm.com>
-Signed-off-by: Carl Love <carll@us.ibm.com>
-
-Index: linux-2.6.23-rc1/arch/powerpc/kernel/smp.c
-===================================================================
---- linux-2.6.23-rc1.orig/arch/powerpc/kernel/smp.c
-+++ linux-2.6.23-rc1/arch/powerpc/kernel/smp.c
-@@ -212,11 +212,6 @@ int smp_call_function_map(void (*func) (
- 		atomic_set(&data.finished, 0);
- 
- 	spin_lock(&call_lock);
--	/* Must grab online cpu count with preempt disabled, otherwise
--	 * it can change. */
--	num_cpus = num_online_cpus() - 1;
--	if (!num_cpus)
--		goto done;
- 
- 	/* remove 'self' from the map */
- 	if (cpu_isset(smp_processor_id(), map))
-@@ -224,7 +219,9 @@ int smp_call_function_map(void (*func) (
- 
- 	/* sanity check the map, remove any non-online processors. */
- 	cpus_and(map, map, cpu_online_map);
--	if (cpus_empty(map))
-+
-+	num_cpus = cpus_weight(map);
-+	if (!num_cpus)
- 		goto done;
- 
- 	call_data = &data;
+------------------------------------------------------
+Dave Jiang
+Software Engineer
+MontaVista Software, Inc.
+http://www.mvista.com
+------------------------------------------------------
