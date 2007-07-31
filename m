@@ -1,15 +1,27 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 23264DDDF5
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2007 16:44:15 +1000 (EST)
-Date: Tue, 31 Jul 2007 16:44:13 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Fix more section mismatches in head_64.S
-Message-Id: <20070731164413.0421b430.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <Leonid.Grossman@neterion.com>
+Received: from owa.neterion.com (mx.neterion.com [72.1.205.142])
+	by ozlabs.org (Postfix) with ESMTP id 7A394DDE11
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2007 14:08:53 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH 0/4][RFC] lro: Generic Large Receive Offload for TCP
+	traffic
+Date: Mon, 30 Jul 2007 23:58:07 -0400
+Message-ID: <78C9135A3D2ECE4B8162EBDCE82CAD7701F7A5DB@nekter>
+In-Reply-To: <46AE232F.3080409@myri.com>
+References: <200707301724.33865.ossthema@de.ibm.com>
+	<20070730170038.GA4884@austin.ibm.com> <46AE232F.3080409@myri.com>
+From: "Leonid Grossman" <Leonid.Grossman@neterion.com>
+To: "Andrew Gallatin" <gallatin@myri.com>,
+	"Linas Vepstas" <linas@austin.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
+	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Christoph Raisch <raisch@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
+	Jan-Bernd Themann <ossthema@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,76 +31,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-WARNING: vmlinux.o(.text+0x8174): Section mismatch: reference to .init.text:.prom_init (between '.__boot_from_prom' and '.__after_prom_start')
-WARNING: vmlinux.o(.text+0x8498): Section mismatch: reference to .init.text:.early_setup (between '.start_here_multiplatform' and '.start_here_common')
-WARNING: vmlinux.o(.text+0x8514): Section mismatch: reference to .init.text:.setup_system (between '.start_here_common' and 'system_call_common')
-WARNING: vmlinux.o(.text+0x8530): Section mismatch: reference to .init.text:.start_kernel (between '.start_here_common' and 'system_call_common')
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/head_64.S |   16 +++++++++-------
- 1 files changed, 9 insertions(+), 7 deletions(-)
 
-Booted in POWER5+.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+> -----Original Message-----
+> From: netdev-owner@vger.kernel.org [mailto:netdev-
+> owner@vger.kernel.org] On Behalf Of Andrew Gallatin
+> Sent: Monday, July 30, 2007 10:43 AM
+> To: Linas Vepstas
+> Cc: Jan-Bernd Themann; netdev; Thomas Klein; Jeff Garzik; Jan-Bernd
+> Themann; linux-kernel; linux-ppc; Christoph Raisch; Marcus Eder;
+Stefan
+> Roscher; David Miller
+> Subject: Re: [PATCH 0/4][RFC] lro: Generic Large Receive Offload for
+> TCP traffic
+>=20
+>=20
+> Here is a quick reply before something more official can
+> be written up:
+>=20
+> Linas Vepstas wrote:
+>=20
+>  > -- what is LRO?
+>=20
+> Large Receive Offload
+>=20
+>  > -- Basic principles of operation?
+>=20
+> LRO is analogous to a receive side version of TSO.  The NIC (or
+> driver) merges several consecutive segments from the same connection,
+> fixing up checksums, etc.  Rather than up to 45 separate 1500 byte
+> frames (meaning up to 45 trips through the network stack), the driver
+> merges them into one 65212 byte frame.  It currently works only
+> with TCP over IPv4.
+>=20
+> LRO was, AFAIK, first though of by Neterion.  They had a paper about
+> it at OLS2005.
+> http://www.linuxinsight.com/files/ols2005/grossman-reprint.pdf
+>=20
+>  > -- Can I use it in my driver?
+>=20
+> Yes, it can be used in any driver.
+>=20
+>  > -- Does my hardware have to have some special feature before I can
+> use it?
+>=20
+> No.
 
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index 1448af9..1718000 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -1672,8 +1672,9 @@ _GLOBAL(__start_initialization_multiplatform)
- 	 * Are we booted from a PROM Of-type client-interface ?
- 	 */
- 	cmpldi	cr0,r5,0
--	bne	.__boot_from_prom		/* yes -> prom */
--
-+	beq	1f
-+	b	.__boot_from_prom		/* yes -> prom */
-+1:
- 	/* Save parameters */
- 	mr	r31,r3
- 	mr	r30,r4
-@@ -1701,7 +1702,7 @@ _GLOBAL(__start_initialization_multiplatform)
- 	bl	.__mmu_off
- 	b	.__after_prom_start
- 
--_STATIC(__boot_from_prom)
-+_INIT_STATIC(__boot_from_prom)
- 	/* Save parameters */
- 	mr	r31,r3
- 	mr	r30,r4
-@@ -1768,9 +1769,10 @@ _STATIC(__after_prom_start)
- 					/*	the source addr		 */
- 
- 	cmpdi	r4,0			/* In some cases the loader may  */
--	beq	.start_here_multiplatform /* have already put us at zero */
-+	bne	1f
-+	b	.start_here_multiplatform /* have already put us at zero */
- 					/* so we can skip the copy.      */
--	LOAD_REG_IMMEDIATE(r5,copy_to_here) /* # bytes of memory to copy */
-+1:	LOAD_REG_IMMEDIATE(r5,copy_to_here) /* # bytes of memory to copy */
- 	sub	r5,r5,r27
- 
- 	li	r6,0x100		/* Start offset, the first 0x100 */
-@@ -1957,7 +1959,7 @@ _GLOBAL(enable_64b_mode)
- /*
-  * This is where the main kernel code starts.
-  */
--_STATIC(start_here_multiplatform)
-+_INIT_STATIC(start_here_multiplatform)
- 	/* get a new offset, now that the kernel has moved. */
- 	bl	.reloc_offset
- 	mr	r26,r3
-@@ -2019,7 +2021,7 @@ _STATIC(start_here_multiplatform)
- 	b	.	/* prevent speculative execution */
- 	
- 	/* This is where all platforms converge execution */
--_STATIC(start_here_common)
-+_INIT_STATIC(start_here_common)
- 	/* relocation is on at this point */
- 
- 	/* The following code sets up the SP and TOC now that we are */
--- 
-1.5.2.4
+Ditto. LRO hw assists (or full LRO offload, meaning that the merge
+happens in the ASIC but the merge criteria are set by the host) are
+quite beneficial, especially as the number of LRO connections gets very
+large (Neterion has IP around fw/hw LRO and will release full hw LRO
+offload in the next ASIC), but as Andrew indicated sw-only LRO
+implementation can be done for any NIC and provides good results -
+especially for non-jumbo workloads.=20
+
+>=20
+>  > -- What sort of performance improvement does it provide?
+Throughput?
+>  >    Latency? CPU usage? How does it affect DMA allocation? Does it
+>  >    improve only a certain type of traffic (large/small packets,
+> etc.)
+>=20
+> The benefit is directly proportional to the packet rate.
+>=20
+> See my reply to the previous RFC for performance information.  The
+> executive summary is that for the myri10ge 10GbE driver on low end
+> hardware with 1500b frames, I've seen it increase throughput by a
+> factor of nearly 2.5x, while at the same time reducing CPU utilization
+> by 17%.  The affect for jumbo frames is less dramatic, but still
+> impressive (1.10x, 14% CPU reduction)
+>=20
+> You can achieve better speedups if your driver receives into
+> high-order pages.
+>=20
+>  > -- Example code? What's the API? How should my driver use it?
+>=20
+> The 3/4 in this patch showed an example of converting a driver
+> to use LRO for skb based receive buffers.   I'm working on
+> a patch for myri10ge that shows how you would use it in a driver
+> which receives into pages.
+>=20
+> Cheers,
+>=20
+> Drew
+> -
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
