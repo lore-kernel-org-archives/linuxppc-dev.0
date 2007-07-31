@@ -1,20 +1,20 @@
-Return-Path: <m.kozlowski@tuxland.pl>
-Received: from tuxland.pl (xdsl-664.zgora.dialog.net.pl [81.168.226.152])
-	by ozlabs.org (Postfix) with ESMTP id 15478DDE07
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 08:10:06 +1000 (EST)
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 75] drivers/macintosh/therm_adt746x.c: kmalloc + memset
-	conversion to kzalloc
-Date: Wed, 1 Aug 2007 00:10:03 +0200
-References: <200707311845.48807.m.kozlowski@tuxland.pl>
-In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Message-Id: <200708010010.03964.m.kozlowski@tuxland.pl>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	kernel-janitors@vger.kernel.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E1762DDE0D
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 08:10:34 +1000 (EST)
+In-Reply-To: <20070726135738.GB5643@localhost.localdomain>
+References: <20070726135738.GB5643@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <692e6dabbfb62dc6d6ace3ea7552ef68@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC][PATCH] MPC832x_RDB: update dts to use spi,
+	register mmc_spi stub
+Date: Wed, 1 Aug 2007 00:10:28 +0200
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+> +			spi1pio:spi_pin@01 {
 
- drivers/macintosh/therm_adt746x.c | 17298 -> 17244 (-54 bytes)
+There should be whitespace after the label.  @01 should be
+spelled @1.  Except there is no "reg" property.  What is this
+stuff, anyway?
 
- drivers/macintosh/therm_adt746x.c |    5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+> +				pio-map = <
+> +			/* port  pin  dir  open_drain  assignment  has_irq    */
+> +					3  0  3  0  1  0	/* SPI1 MOSI, I/O */
+> +					3  1  3  0  1  0	/* SPI1 MISO, I/O */
+> +					3  2  3  0  1  0	/* SPI1 CLK,  I/O */
+> +					3  3  2  0  1  0>;	/* SPI1 SEL,  I   */
+> +			};
 
---- linux-2.6.23-rc1-mm1-a/drivers/macintosh/therm_adt746x.c	2007-07-26 13:07:42.000000000 +0200
-+++ linux-2.6.23-rc1-mm1-b/drivers/macintosh/therm_adt746x.c	2007-07-31 11:18:55.000000000 +0200
-@@ -379,13 +379,10 @@ static int attach_one_thermostat(struct
- 	if (thermostat)
- 		return 0;
 
--	th = (struct thermostat *)
--		kmalloc(sizeof(struct thermostat), GFP_KERNEL);
--
-+	th = kzalloc(sizeof(struct thermostat), GFP_KERNEL);
- 	if (!th)
- 		return -ENOMEM;
-
--	memset(th, 0, sizeof(*th));
- 	th->clt.addr = addr;
- 	th->clt.adapter = adapter;
- 	th->clt.driver = &thermostat_driver;
+Segher
