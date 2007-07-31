@@ -1,20 +1,15 @@
-Return-Path: <djiang@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 77DACDDDE9
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 06:45:41 +1000 (EST)
-Message-ID: <46AFA040.7070303@mvista.com>
-Date: Tue, 31 Jul 2007 13:49:04 -0700
-From: Dave Jiang <djiang@mvista.com>
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 2/2] powerpc: MPC85xx EDAC device driver
-References: <20070726222225.GB10427@blade.az.mvista.com>
-	<200707302046.10010.arnd@arndb.de> <46AE3C06.5060100@mvista.com>
-	<200707302158.16530.arnd@arndb.de>
-In-Reply-To: <200707302158.16530.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, bluesmoke-devel@lists.sourceforge.net,
-	norsk5@yahoo.com
+Return-Path: <dwm@austin.ibm.com>
+In-reply-to: <1185912661.9310.143.camel@enki.eridu> 
+References: <31368.1185909681@falcon10.austin.ibm.com>
+	<1185912661.9310.143.camel@enki.eridu>
+To: Paul Nasrat <pnasrat@redhat.com>
+Subject: Re: ipv6 in yaboot 
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Tue, 31 Jul 2007 16:08:49 -0500
+Message-ID: <32757.1185916129@falcon10.austin.ibm.com>
+From: Doug Maxey <dwm@austin.ibm.com>
+Cc: Linux PowerPC List <linuxppc-dev@ozlabs.org>, yaboot-devel@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,38 +19,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Monday 30 July 2007, Dave Jiang wrote:
->> I don't believe that EDAC core has been loaded at the time of 85xx PCI
->> initialization. Plus, the EDAC driver can be loaded as a kernel module. So that
->> probably won't work....
-> 
-> ok, good point.
-> 
->> Also, instead of having centralized EDAC chip driver, 
->> now you have things scattered over various places. One probably needs to add
->> 83xx and 86xx code as well and whatever else eventually.
->>
->> Maybe we are just better off adding entries in the DTS to get around this
->> problem....
-> 
-> The best solution may be to look at how it's structured at the
-> register level. If the PCI EDAC registers are implemented separately
-> from the regular PCI registers, a device tree entry would be appropriate.
-> If not, your idea of registering a platform_device from fsl_add_bridge
-> is probably more sensible.
 
-Actually it seems that for me to grab the interrupt number I have to do the
-platform device creation in fsl_soc.c and call arch_init() instead of doing it
-from fsl_add_bridge(). fsl_add_bridge() is called way too early and the mpic
-interrupt mapping has not been setup yet for me to acquire the interrupt number
-from of_interrupt_to_resource() call.
+On Tue, 31 Jul 2007 21:11:01 BST, Paul Nasrat wrote:
+>On Tue, 2007-07-31 at 14:21 -0500, Doug Maxey wrote:
+>> Howdy!
+>> 
+>> I just got asked about ipv6 support in yaboot and a quick investigation
+>> showed _no_ knowledge of the address formats in the code.
+>
+>We really just use OF for obp-tftp and don't have our own ip stack, 
 
--- 
+True.  Was just curious about the handling of the address formats, 
+where the xxxx:... will probably be used.  Several spots already make 
+lots of assumptions that the colons are only in the disklabel.
 
-------------------------------------------------------
-Dave Jiang
-Software Engineer
-MontaVista Software, Inc.
-http://www.mvista.com
-------------------------------------------------------
+> as
+>there is no 1275 standard for ipv6 (although some modern IBM firmwares
+>which also have iscsi support it) it's somewhat hard.
+
+Oh, I agree completely.  Publication is still being worked.  The good 
+news is that the description is already there.  Once folks can see the 
+whole enchilada.
+
+>
+>> Should I be submitting an RFC for a full parser that can pick that 
+>> apart?  Or does has someone have code lurking in the shadows, that 
+>> just needed some prompting?  :)
+>
+>Have you tried it with firmware that supports obp-tftp over ipv6?
+
+Heh.  Not yet, but RSN.
