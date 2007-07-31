@@ -1,32 +1,16 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EAB2CDDD0D
+Return-Path: <yoni.l@slyde-tech.com>
+Received: from smtpin.livedns.co.il (smtpin.livedns.co.il [62.219.78.209])
+	by ozlabs.org (Postfix) with ESMTP id AD469DDDE9
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 31 Jul 2007 17:51:01 +1000 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1IFmVI-00027S-9o
-	for linuxppc-embedded@ozlabs.org; Tue, 31 Jul 2007 09:50:52 +0200
-Received: from p54a4cfa3.dip.t-dialin.net ([84.164.207.163])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Tue, 31 Jul 2007 09:50:52 +0200
-Received: from mls.JOFT by p54a4cfa3.dip.t-dialin.net with local (Gmexim 0.1
-	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Tue, 31 Jul 2007 09:50:52 +0200
-To: linuxppc-embedded@ozlabs.org
-From: Joachim =?ISO-8859-1?Q?F=F6rster?= <mls.JOFT@gmx.de>
-Subject: Re: ml403 ac97 driver
-Date: Tue, 31 Jul 2007 09:50:40 +0200
-Message-ID: <1185868239.5527.9.camel@localhost>
-References: <1185698888.6397.37.camel@localhost>
-	<11858308.post@talk.nabble.com> <1185780815.5454.18.camel@localhost>
-	<11859770.post@talk.nabble.com>  <11918008.post@talk.nabble.com>
-Mime-Version: 1.0
-Content-Type: text/plain
-In-Reply-To: <11918008.post@talk.nabble.com>
-Sender: news <news@sea.gmane.org>
+	Tue, 31 Jul 2007 17:59:27 +1000 (EST)
+From: "Yoni Levin" <yoni.l@slyde-tech.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: interrupts in mpc8313
+Date: Tue, 31 Jul 2007 10:53:17 +0300
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0015_01C7D361.01C75E80"
+Message-ID: <1A95C6D899744E16A71AFFB2CF1C11B1.MAI@mail.livedns.co.il>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -37,16 +21,231 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Qin Lin,
+This is a multi-part message in MIME format.
 
-On Mon, 2007-07-30 at 21:22 -0700, Qin Lin wrote:
-> 1.add the lm4550 driver to kernel source
-> (someboby may can add them as a patch to kernel source)
+------=_NextPart_000_0015_01C7D361.01C75E80
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-In fact, in the last few days, I worked on my driver, made changes
-according to Grant Likely's list of comments (see the thread where I
-announced the driver). And right now, I'm preparing a patch against the
-official kernel tree. So, I'll post a patch soon myself - just view more
-days.
+Hi, I am working on the MPC8313E board , 
 
- Joachim
+ 
+
+I work with the DMA that works fine, but I want to get the interrupt when it
+finish.
+
+ 
+
+I am working under linux 2.6.20
+
+ 
+
+I tried to use the function request_irq :
+
+ 
+
+Ret=Request_irq(71,interrupt_handler,SA_INTERUPT,"dma_irq",NULL);
+
+ 
+
+But I receive an error -ENOSYS
+
+ 
+
+Do I need to do something before call the Request_irq?
+
+ 
+
+You know what is wrong?
+
+ 
+
+Thank you for your help, 
+
+ 
+
+Yehonatan.
+
+ 
+
+
+------=_NextPart_000_0015_01C7D361.01C75E80
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	text-align:right;
+	direction:rtl;
+	unicode-bidi:embed;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:595.3pt 841.9pt;
+	margin:72.0pt 90.0pt 72.0pt 90.0pt;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1 dir=3DRTL>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:Arial'>Hi,
+I am working on the MPC8313E board , <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></fo=
+nt></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:Arial'>I
+work with the DMA that works fine, but I want to get the interrupt when =
+it
+finish.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></fo=
+nt></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:Arial'>I
+am working under linux 2.6.20<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></fo=
+nt></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:Arial'>I
+tried to use the function request_irq :<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></fo=
+nt></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><i><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:
+Arial;font-style:italic'>Ret=3DRequest_irq(71,interrupt_handler,SA_INTERU=
+PT,&quot;dma_irq&quot;,NULL);<o:p></o:p></span></font></i></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><i><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:
+Arial;font-style:italic'><o:p>&nbsp;</o:p></span></font></i></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:Arial'>But
+I receive an error -ENOSYS<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></fo=
+nt></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:Arial'>Do
+I need to do something before call the <i><span =
+style=3D'font-style:italic'>Request_irq</span></i>?<o:p></o:p></span></fo=
+nt></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></fo=
+nt></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:Arial'>You
+know what is wrong?<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></fo=
+nt></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:Arial'>Thank
+you for your help, <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></fo=
+nt></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:Arial'>Yehonatan.<o:p></o:p></span>=
+</font></p>
+
+<p class=3DMsoNormal dir=3DRTL><font size=3D2 face=3DArial><span =
+dir=3DLTR
+style=3D'font-size:10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></fo=
+nt></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_0015_01C7D361.01C75E80--
