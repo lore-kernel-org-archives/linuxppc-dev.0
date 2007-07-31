@@ -1,14 +1,20 @@
-Return-Path: <pnasrat@redhat.com>
-Subject: Re: ipv6 in yaboot
-From: Paul Nasrat <pnasrat@redhat.com>
-To: Doug Maxey <dwm@austin.ibm.com>
-In-Reply-To: <31368.1185909681@falcon10.austin.ibm.com>
-References: <31368.1185909681@falcon10.austin.ibm.com>
-Content-Type: text/plain
-Date: Tue, 31 Jul 2007 21:11:01 +0100
-Message-Id: <1185912661.9310.143.camel@enki.eridu>
-Mime-Version: 1.0
-Cc: Linux PowerPC List <linuxppc-dev@ozlabs.org>, yaboot-devel@ozlabs.org
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound2-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id AA1BCDDDF9
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 06:14:31 +1000 (EST)
+Message-ID: <46AF9820.7050608@am.sony.com>
+Date: Tue, 31 Jul 2007 13:14:24 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: =?UTF-8?B?77+9?= <rene@exactcode.de>
+Subject: Re: Using video memory on PS3 e.g. as SWAP?
+References: <200707291904.55700.rene@exactcode.de>
+In-Reply-To: <200707291904.55700.rene@exactcode.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,20 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-07-31 at 14:21 -0500, Doug Maxey wrote:
-> Howdy!
-> 
-> I just got asked about ipv6 support in yaboot and a quick investigation
-> showed _no_ knowledge of the address formats in the code.
+=EF=BF=BD wrote:
+> Hi all,
+>=20
+> looking at the PS3 as one of the few PowerPC workstation options the RA=
+M
+> is obviously quite limitted with just 256MB.=20
 
-We really just use OF for obp-tftp and don't have our own ip stack, as
-there is no 1275 standard for ipv6 (although some modern IBM firmwares
-which also have iscsi support it) it's somewhat hard.
 
-> Should I be submitting an RFC for a full parser that can pick that 
-> apart?  Or does has someone have code lurking in the shadows, that 
-> just needed some prompting?  :)
+Can I recommend in the future you send this kind of PS3 specific inquiry =
+to
+the cbe-oss-dev mailing list?
 
-Have you tried it with firmware that supports obp-tftp over ipv6?
+  cbe-oss-dev@ozlabs.org
+  https://ozlabs.org/mailman/listinfo/cbe-oss-dev
 
-Paul
+
+> I wonder if the 256MB of
+> video memory can be mapped or at least be used as super-fast SWAP?
+
+
+As Marc mentioned, some work was done using unsupported functionality of
+the current hypervisor.  There is no assurance it will continue to work
+with future system software updates.
+
+
+> Or are there news regarding accessing the video chip from Linux beside
+> the unaccelerated frame-buffer?
+
+
+We plan to improve Linux graphics support, but we have not announced any
+specifics.  The changes may make the above mentioned driver no longer wor=
+k.
+
+-Geoff
