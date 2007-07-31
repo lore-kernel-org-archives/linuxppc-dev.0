@@ -1,26 +1,24 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from the-village.bc.nu (unknown [81.2.110.250])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 19850DDE19
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 09:43:16 +1000 (EST)
-In-Reply-To: <1185923183.5380.0.camel@concordia.ozlabs.ibm.com>
-References: <11851892302391-git-send-email-g.chen@freescale.com>
-	<11851892311178-git-send-email-g.chen@freescale.com>
-	<1185228277.5439.141.camel@localhost.localdomain>
-	<1185232974.13740.11.camel@concordia.ozlabs.ibm.com>
-	<f55fea27ac3a248cc99d52462d413e1e@kernel.crashing.org>
-	<1185918267.5495.505.camel@localhost.localdomain>
-	<91856a9e02132d2deb4368eee954c931@kernel.crashing.org>
-	<1185923183.5380.0.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <c18c835d8538e7412d36d9ddf5b62eb6@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] Add a new member name to structure irq_host
-Date: Wed, 1 Aug 2007 01:42:58 +0200
-To: michael@ellerman.id.au
-Cc: linuxppc-dev@ozlabs.org, Chen Gong <g.chen@freescale.com>, paulus@samba.org
+	by ozlabs.org (Postfix) with ESMTP id EE315DDE29
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 09:49:32 +1000 (EST)
+Date: Wed, 1 Aug 2007 00:56:40 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] [POWERPC] MPC8349E-mITX: use platform IDE driver
+	for CF	interface
+Message-ID: <20070801005640.327226db@the-village.bc.nu>
+In-Reply-To: <a414f3b506b7802a717e6e2c08befd1e@kernel.crashing.org>
+References: <20070725165318.5331.23795.stgit@localhost.localdomain>
+	<20070725165326.5331.19920.stgit@localhost.localdomain>
+	<46A78322.3080607@ru.mvista.com> <46A78E3F.1030904@ru.mvista.com>
+	<a414f3b506b7802a717e6e2c08befd1e@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,30 +28,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> In that case, I would display the node full path.
->>
->> Those tend to be quite long, in the cases where there are
->> multiple interrupt controllers in the system; and really
->> useless otherwise.  I think the interrupt controllers should
->> still just fill in the names "manually".
->
-> They tend to be long, but they're unique, which is what you want,
+> The hardware is called (E)IDE, the protocol is called ATA.
+> Or that's what I was told -- I think there's some historic
+> revisionism involved, too.
 
-Yeah -- easy enough to add a sequence number to just about
-anything though.
-
-> and they're only for debugging anyway.
-
-Oh, I thought it would be used wherever the user gets told something
-about the interrupt controller -- like when the interrupt tree would
-be shown in sysfs (yes that's hypothetical still ;-) )
-
->> It's a good thing to have an of_node in the irq_host struct
->> anyway, though :-)
->
-> I posted patches for that last week.
-
-I know, and thank you :-)
-
-
-Segher
+ATA is the interface and standards for the ANSI standards based disk
+attachment. IDE "Integrated Drive Electronics" is a marketing name used
+to cover all sorts of ST412 compatible-ish early interfaces that moved
+the brains onto the disk. IDE doesn't really mean much but "brains on
+disk", ATA is a real standard.
