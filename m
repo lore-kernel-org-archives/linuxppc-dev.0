@@ -1,21 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BB057DDDD5
+Return-Path: <yoni.l@slyde-tech.com>
+Received: from smtpin.livedns.co.il (smtpin.livedns.co.il [62.219.78.209])
+	by ozlabs.org (Postfix) with ESMTP id 945DDDDDFC
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 31 Jul 2007 23:35:35 +1000 (EST)
-Message-ID: <46AF3A9C.4090007@freescale.com>
-Date: Tue, 31 Jul 2007 08:35:24 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Tue, 31 Jul 2007 23:53:37 +1000 (EST)
+From: "Yoni Levin" <yoni.l@slyde-tech.com>
+To: "'Scott Wood'" <scottwood@freescale.com>
+Subject: RE: interrupts in mpc8313
+Date: Tue, 31 Jul 2007 16:53:20 +0300
 MIME-Version: 1.0
-To: Yoni Levin <yoni.l@slyde-tech.com>
-Subject: Re: interrupts in mpc8313
-References: <1A95C6D899744E16A71AFFB2CF1C11B1.MAI@mail.livedns.co.il>
-In-Reply-To: <1A95C6D899744E16A71AFFB2CF1C11B1.MAI@mail.livedns.co.il>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <46AF3A9C.4090007@freescale.com>
+Message-ID: <DD658DAB65814DF6A223A007EC5735FE.MAI@mail.livedns.co.il>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,6 +22,19 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+
+All I had to do was to add :
+irq_create_mapping(NULL,71)
+and yes it not the exact code , I work with 2 computers...
+thanks.
+
+
+-----Original Message-----
+From: Scott Wood [mailto:scottwood@freescale.com] 
+Sent: Tuesday, July 31, 2007 4:35 PM
+To: Yoni Levin
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: interrupts in mpc8313
 
 Yoni Levin wrote:
 > I tried to use the function request_irq :
