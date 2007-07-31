@@ -1,15 +1,19 @@
-Return-Path: <dwm@austin.ibm.com>
-In-reply-to: <1185912661.9310.143.camel@enki.eridu> 
-References: <31368.1185909681@falcon10.austin.ibm.com>
-	<1185912661.9310.143.camel@enki.eridu>
-To: Paul Nasrat <pnasrat@redhat.com>
-Subject: Re: ipv6 in yaboot 
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Tue, 31 Jul 2007 16:08:49 -0500
-Message-ID: <32757.1185916129@falcon10.austin.ibm.com>
-From: Doug Maxey <dwm@austin.ibm.com>
-Cc: Linux PowerPC List <linuxppc-dev@ozlabs.org>, yaboot-devel@ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 62016DDE10
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 07:09:56 +1000 (EST)
+In-Reply-To: <E1IDjSy-0003eC-T4@jdl.com>
+References: <E1IDjSy-0003eC-T4@jdl.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <17492c69d14ff9e430d2e5647a3bd7b7@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: DTC 1.0.0 Release Coming?
+Date: Tue, 31 Jul 2007 23:09:11 +0200
+To: Jon Loeliger <jdl@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,33 +23,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> I'd like to make an official DTC Version 1.0.0 release soon!
+> To that end, I've published a repo on jdl.com with a v1.0.0-rc1
+> tag on it.  I anticipate some updates to the Documentation before
+> a final 1.0.0 release still.  However, if you have something
+> you would like to have be in The Real 1.0.0 release, please
+> let me know soon!
 
-On Tue, 31 Jul 2007 21:11:01 BST, Paul Nasrat wrote:
->On Tue, 2007-07-31 at 14:21 -0500, Doug Maxey wrote:
->> Howdy!
->> 
->> I just got asked about ipv6 support in yaboot and a quick investigation
->> showed _no_ knowledge of the address formats in the code.
->
->We really just use OF for obp-tftp and don't have our own ip stack, 
+It would be nice it it would compile on non-Linux systems.
+Not a showstopper, but it would be nice :-)
 
-True.  Was just curious about the handling of the address formats, 
-where the xxxx:... will probably be used.  Several spots already make 
-lots of assumptions that the colons are only in the disklabel.
 
-> as
->there is no 1275 standard for ipv6 (although some modern IBM firmwares
->which also have iscsi support it) it's somewhat hard.
-
-Oh, I agree completely.  Publication is still being worked.  The good 
-news is that the description is already there.  Once folks can see the 
-whole enchilada.
-
->
->> Should I be submitting an RFC for a full parser that can pick that 
->> apart?  Or does has someone have code lurking in the shadows, that 
->> just needed some prompting?  :)
->
->Have you tried it with firmware that supports obp-tftp over ipv6?
-
-Heh.  Not yet, but RSN.
+Segher
