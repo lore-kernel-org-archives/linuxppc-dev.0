@@ -2,22 +2,21 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9E7AADDE2A
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 08:31:15 +1000 (EST)
-In-Reply-To: <46A7A5E4.4090105@ru.mvista.com>
-References: <20070725165318.5331.23795.stgit@localhost.localdomain>
-	<46A79DE0.8060405@ru.mvista.com> <46A79F14.9040409@freescale.com>
-	<46A7A17C.8090505@ru.mvista.com> <46A7A1D5.7020003@freescale.com>
-	<46A7A5E4.4090105@ru.mvista.com>
+	by ozlabs.org (Postfix) with ESMTP id 1E82EDDE30
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 08:36:23 +1000 (EST)
+In-Reply-To: <46A78E3F.1030904@ru.mvista.com>
+References: <20070725165318.5331.23795.stgit@localhost.localdomain>	<20070725165326.5331.19920.stgit@localhost.localdomain>
+	<46A78322.3080607@ru.mvista.com> <46A78E3F.1030904@ru.mvista.com>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <d04530fcd6e879e0bc059049b7951aef@kernel.crashing.org>
+Message-Id: <a414f3b506b7802a717e6e2c08befd1e@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] [IDE] Platform IDE driver
-Date: Wed, 1 Aug 2007 00:31:04 +0200
+Subject: Re: [PATCH 2/2] [POWERPC] MPC8349E-mITX: use platform IDE driver for
+	CF	interface
+Date: Wed, 1 Aug 2007 00:36:14 +0200
 To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,38 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->     This doesn't mean that shift is better anyway. If everyone 
-> considers it
-> better, I give up. But be warned that shift (stride) is not the only 
-> property
-> characterizing register accesses -- the regs might be only accessible 
-> as
-> 16/32-bit quantities, for example (16-bit is a real world example -- 
-> from
-> Amiga or smth of that sort, IIRC).
-
-More importantly, "reg-shift" doesn't say what part of
-the bigger words to access.  A common example is byte-wide
-registers on a 32-bit-only bus; it's about 50%-50% between
-connecting the registers to the low byte vs. connecting it
-to the byte with the lowest address.
-
-The only realistic way to handle all this is to put some
-knowledge into the device driver.  This does of course
-also mean that no "reg-shift" property is needed; the
-device driver can look at your "compatible" property,
-instead.
-
->>>    Why the heck should we care about the UART code taling about IDE?!
+>>> +	ide@f0000000 {
+>>> +		compatible = "mmio-ide";
+>>> +		device_type = "ide";
 >
->> Consistency?
->
->     We're not obliged to be consistent with every piece of the kernel 
-> code.
+>>     Why not "ata"?
 
-It would be nice to not name similar properties in the
-device tree dissimilarly.  Kernel code doesn't come into
-the picture here.
+The hardware is called (E)IDE, the protocol is called ATA.
+Or that's what I was told -- I think there's some historic
+revisionism involved, too.
+
+>     Also, what mmio-ide in the compat properly means in the context of
+> ide_platform which is able to handle both port and memory mapped IDE. 
+> I think
+> we must get rid with this crap, and since this IDE register mapping is 
+> pretty
+> much board specific, call it something like "mpc8349emitx-ide" instead.
+
+"mmio-ide" simply is not specific enough.  The device_type
+should go, too.
+
+If this IDE interface is board-specific, thee "compatible"
+property should include the board vendor name and board
+name.  Oh, that's what "emitx" tries to do -- it could be
+a bit clearer perhaps ;-)
 
 
 Segher
