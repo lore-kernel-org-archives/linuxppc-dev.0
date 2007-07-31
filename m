@@ -1,21 +1,24 @@
-Return-Path: <djiang@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 88A38DDD0B
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2007 08:57:31 +1000 (EST)
-Message-ID: <46AE6D24.1030801@mvista.com>
-Date: Mon, 30 Jul 2007 15:58:44 -0700
-From: Dave Jiang <djiang@mvista.com>
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AF719DDE38
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2007 10:00:40 +1000 (EST)
+Message-ID: <46AE7B9E.7030505@garzik.org>
+Date: Mon, 30 Jul 2007 20:00:30 -0400
+From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-To: Linas Vepstas <linas@austin.ibm.com>
-Subject: Re: [PATCH 2/2] powerpc: MPC85xx EDAC device driver
-References: <20070726222225.GB10427@blade.az.mvista.com>
-	<200707302046.10010.arnd@arndb.de> <46AE3C06.5060100@mvista.com>
-	<200707302158.16530.arnd@arndb.de> <46AE4764.7020101@mvista.com>
-	<20070730214404.GE4884@austin.ibm.com>
-In-Reply-To: <20070730214404.GE4884@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, bluesmoke-devel@lists.sourceforge.net,
-	norsk5@yahoo.com
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 0/4][RFC] lro: Generic Large Receive Offload for TCP
+	traffic
+References: <200707301724.33865.ossthema@de.ibm.com>	<46AE0F36.8030605@garzik.org>
+	<20070730.154332.72713181.davem@davemloft.net>
+In-Reply-To: <20070730.154332.72713181.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: tklein@de.ibm.com, themann@de.ibm.com, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, raisch@de.ibm.com,
+	linuxppc-dev@ozlabs.org, ossthema@de.ibm.com, meder@de.ibm.com,
+	gallatin@myri.com, stefan.roscher@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +28,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linas Vepstas wrote:
-> On Mon, Jul 30, 2007 at 01:17:40PM -0700, Dave Jiang wrote:
->> Arnd Bergmann wrote:
->>> The best solution may be to look at how it's structured at the
->>> register level. If the PCI EDAC registers are implemented separately
->>> from the regular PCI registers, a device tree entry would be appropriate.
->>> If not, your idea of registering a platform_device from fsl_add_bridge
->>> is probably more sensible.
->>>
->> We can probably do either. From looking at the 8560 and 8548 manuals, the PCI
->> error registers are 0xe00 offset of the start of PCI registers. For example,
->> the PCI registers would start at 0x8000 offset. And the PCI error registers
->> would be at 0xe00 offset from there and would be the very last block of
->> registers. 
+David Miller wrote:
+> From: Jeff Garzik <jeff@garzik.org>
+> Date: Mon, 30 Jul 2007 12:17:58 -0400
 > 
-> Anywhere I can easily get an overview of these "PCI error registers"?
+>> David, thoughts on merging?  I'm not We could stick this into your tree 
+>> or mine.  Whether yours or mine, I would like to keep the driver and 
+>> net-core patches together in the same git tree.
+> 
+> No objections and I'll stick it into my net-2.6.24 tree once I cut
+> that, I'll have the NAPI stuff in there too so I'll keep these two
+> merge nightmares out of your hair :-)
 
-http://www.freescale.com/files/32bit/doc/ref_manual/MPC8548ERM.pdf?fsrch=1
-Page 966. Section 16.3.1.4.
-Is this what you mean?
+Works for me.
+
+Thanks,
+
+	Jeff
