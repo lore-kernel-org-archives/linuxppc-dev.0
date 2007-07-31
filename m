@@ -1,27 +1,15 @@
-Return-Path: <Leonid.Grossman@neterion.com>
-Received: from owa.neterion.com (mx.neterion.com [72.1.205.142])
-	by ozlabs.org (Postfix) with ESMTP id 7A394DDE11
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2007 14:08:53 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH 0/4][RFC] lro: Generic Large Receive Offload for TCP
-	traffic
-Date: Mon, 30 Jul 2007 23:58:07 -0400
-Message-ID: <78C9135A3D2ECE4B8162EBDCE82CAD7701F7A5DB@nekter>
-In-Reply-To: <46AE232F.3080409@myri.com>
-References: <200707301724.33865.ossthema@de.ibm.com>
-	<20070730170038.GA4884@austin.ibm.com> <46AE232F.3080409@myri.com>
-From: "Leonid Grossman" <Leonid.Grossman@neterion.com>
-To: "Andrew Gallatin" <gallatin@myri.com>,
-	"Linas Vepstas" <linas@austin.ibm.com>
-Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
-	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Christoph Raisch <raisch@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Jan-Bernd Themann <ossthema@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>,
-	David Miller <davem@davemloft.net>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id AEA24DDDE4
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2007 17:14:10 +1000 (EST)
+Date: Tue, 31 Jul 2007 17:14:07 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] Fix section mismatch references to alloc_bootmem
+Message-Id: <20070731171407.c1028de4.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,90 +19,217 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+WARNING: vmlinux.o(.text+0x2a9c4): Section mismatch: reference to .init.text:.__alloc_bootmem (between '.update_dn_pci_info' and '.pci_dn_reconfig_notifier')
+WARNING: vmlinux.o(.text+0x36430): Section mismatch: reference to .init.text:.__alloc_bootmem (between '.mpic_msi_init_allocator' and '.find_ht_magic_addr')
+WARNING: vmlinux.o(.text+0x5e804): Section mismatch: reference to .init.text:.__alloc_bootmem (between '.celleb_setup_phb' and '.celleb_fake_pci_write_config')
+WARNING: vmlinux.o(.text+0x5e8e8): Section mismatch: reference to .init.text:.__alloc_bootmem (between '.celleb_setup_phb' and '.celleb_fake_pci_write_config')
+WARNING: vmlinux.o(.text+0x5e968): Section mismatch: reference to .init.text:.__alloc_bootmem (between '.celleb_setup_phb' and '.celleb_fake_pci_write_config')
+WARNING: vmlinux.o(.text+0x5ec50): Section mismatch: reference to .init.text:.free_bootmem (between '.celleb_setup_phb' and '.celleb_fake_pci_write_config')
+WARNING: vmlinux.o(.text+0x5ec70): Section mismatch: reference to .init.text:.free_bootmem (between '.celleb_setup_phb' and '.celleb_fake_pci_write_config')
+WARNING: vmlinux.o(.text+0x5eb88): Section mismatch: reference to .init.text:.free_bootmem (between '.celleb_setup_phb' and '.celleb_fake_pci_write_config')
+WARNING: vmlinux.o(.text+0x5eba8): Section mismatch: reference to .init.text:.free_bootmem (between '.celleb_setup_phb' and '.celleb_fake_pci_write_config')
 
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/kernel/pci_dn.c        |    7 +-----
+ arch/powerpc/lib/Makefile           |    2 +-
+ arch/powerpc/lib/alloc.c            |   22 ++++++++++++++++++
+ arch/powerpc/platforms/celleb/pci.c |   41 +++++++---------------------------
+ arch/powerpc/sysdev/mpic_msi.c      |    6 +----
+ include/asm-powerpc/system.h        |    3 ++
+ 6 files changed, 37 insertions(+), 44 deletions(-)
+ create mode 100644 arch/powerpc/lib/alloc.c
 
-> -----Original Message-----
-> From: netdev-owner@vger.kernel.org [mailto:netdev-
-> owner@vger.kernel.org] On Behalf Of Andrew Gallatin
-> Sent: Monday, July 30, 2007 10:43 AM
-> To: Linas Vepstas
-> Cc: Jan-Bernd Themann; netdev; Thomas Klein; Jeff Garzik; Jan-Bernd
-> Themann; linux-kernel; linux-ppc; Christoph Raisch; Marcus Eder;
-Stefan
-> Roscher; David Miller
-> Subject: Re: [PATCH 0/4][RFC] lro: Generic Large Receive Offload for
-> TCP traffic
->=20
->=20
-> Here is a quick reply before something more official can
-> be written up:
->=20
-> Linas Vepstas wrote:
->=20
->  > -- what is LRO?
->=20
-> Large Receive Offload
->=20
->  > -- Basic principles of operation?
->=20
-> LRO is analogous to a receive side version of TSO.  The NIC (or
-> driver) merges several consecutive segments from the same connection,
-> fixing up checksums, etc.  Rather than up to 45 separate 1500 byte
-> frames (meaning up to 45 trips through the network stack), the driver
-> merges them into one 65212 byte frame.  It currently works only
-> with TCP over IPv4.
->=20
-> LRO was, AFAIK, first though of by Neterion.  They had a paper about
-> it at OLS2005.
-> http://www.linuxinsight.com/files/ols2005/grossman-reprint.pdf
->=20
->  > -- Can I use it in my driver?
->=20
-> Yes, it can be used in any driver.
->=20
->  > -- Does my hardware have to have some special feature before I can
-> use it?
->=20
-> No.
+Built for ppc64_defconfig and allmodconfig.  ppc64_defconfig build booted
+on iSeries 270.
 
-Ditto. LRO hw assists (or full LRO offload, meaning that the merge
-happens in the ASIC but the merge criteria are set by the host) are
-quite beneficial, especially as the number of LRO connections gets very
-large (Neterion has IP around fw/hw LRO and will release full hw LRO
-offload in the next ASIC), but as Andrew indicated sw-only LRO
-implementation can be done for any NIC and provides good results -
-especially for non-jumbo workloads.=20
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
->=20
->  > -- What sort of performance improvement does it provide?
-Throughput?
->  >    Latency? CPU usage? How does it affect DMA allocation? Does it
->  >    improve only a certain type of traffic (large/small packets,
-> etc.)
->=20
-> The benefit is directly proportional to the packet rate.
->=20
-> See my reply to the previous RFC for performance information.  The
-> executive summary is that for the myri10ge 10GbE driver on low end
-> hardware with 1500b frames, I've seen it increase throughput by a
-> factor of nearly 2.5x, while at the same time reducing CPU utilization
-> by 17%.  The affect for jumbo frames is less dramatic, but still
-> impressive (1.10x, 14% CPU reduction)
->=20
-> You can achieve better speedups if your driver receives into
-> high-order pages.
->=20
->  > -- Example code? What's the API? How should my driver use it?
->=20
-> The 3/4 in this patch showed an example of converting a driver
-> to use LRO for skb based receive buffers.   I'm working on
-> a patch for myri10ge that shows how you would use it in a driver
-> which receives into pages.
->=20
-> Cheers,
->=20
-> Drew
-> -
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
+index d7d36df..b483903 100644
+--- a/arch/powerpc/kernel/pci_dn.c
++++ b/arch/powerpc/kernel/pci_dn.c
+@@ -23,8 +23,6 @@
+ #include <linux/pci.h>
+ #include <linux/string.h>
+ #include <linux/init.h>
+-#include <linux/slab.h>
+-#include <linux/bootmem.h>
+ 
+ #include <asm/io.h>
+ #include <asm/prom.h>
+@@ -45,10 +43,7 @@ static void * __devinit update_dn_pci_info(struct device_node *dn, void *data)
+ 	const u32 *regs;
+ 	struct pci_dn *pdn;
+ 
+-	if (mem_init_done)
+-		pdn = kmalloc(sizeof(*pdn), GFP_KERNEL);
+-	else
+-		pdn = alloc_bootmem(sizeof(*pdn));
++	pdn = alloc_maybe_bootmem(sizeof(*pdn), GFP_KERNEL);
+ 	if (pdn == NULL)
+ 		return NULL;
+ 	memset(pdn, 0, sizeof(*pdn));
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index 0a486d4..23bbb1e 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -7,7 +7,7 @@ EXTRA_CFLAGS		+= -mno-minimal-toc
+ endif
+ 
+ ifeq ($(CONFIG_PPC_MERGE),y)
+-obj-y			:= string.o
++obj-y			:= string.o alloc.o
+ obj-$(CONFIG_PPC32)	+= div64.o copy_32.o checksum_32.o
+ endif
+ 
+diff --git a/arch/powerpc/lib/alloc.c b/arch/powerpc/lib/alloc.c
+new file mode 100644
+index 0000000..4a6bc23
+--- /dev/null
++++ b/arch/powerpc/lib/alloc.c
+@@ -0,0 +1,22 @@
++#include <linux/types.h>
++#include <linux/init.h>
++#include <linux/slab.h>
++#include <linux/bootmem.h>
++
++#include <asm/system.h>
++
++void * __init_refok alloc_maybe_bootmem(size_t size, gfp_t mask)
++{
++	if (mem_init_done)
++		return kmalloc(size, mask);
++	else
++		return alloc_bootmem(size);
++}
++
++void __init_refok free_maybe_bootmem(void *ptr, size_t size)
++{
++	if (mem_init_done)
++		kfree(ptr);
++	else
++		free_bootmem((unsigned long)ptr, size);
++}
+diff --git a/arch/powerpc/platforms/celleb/pci.c b/arch/powerpc/platforms/celleb/pci.c
+index e9ac19c..72ce335 100644
+--- a/arch/powerpc/platforms/celleb/pci.c
++++ b/arch/powerpc/platforms/celleb/pci.c
+@@ -29,7 +29,6 @@
+ #include <linux/pci.h>
+ #include <linux/string.h>
+ #include <linux/init.h>
+-#include <linux/bootmem.h>
+ #include <linux/pci_regs.h>
+ 
+ #include <asm/io.h>
+@@ -327,10 +326,7 @@ static int __devinit celleb_setup_fake_pci_device(struct device_node *node,
+ 
+ 	size = 256;
+ 	config = &private->fake_config[devno][fn];
+-	if (mem_init_done)
+-		*config = kzalloc(size, GFP_KERNEL);
+-	else
+-		*config = alloc_bootmem(size);
++	*config = alloc_maybe_bootmem(size, GFP_KERNEL);
+ 	if (*config == NULL) {
+ 		printk(KERN_ERR "PCI: "
+ 		       "not enough memory for fake configuration space\n");
+@@ -341,10 +337,7 @@ static int __devinit celleb_setup_fake_pci_device(struct device_node *node,
+ 
+ 	size = sizeof(struct celleb_pci_resource);
+ 	res = &private->res[devno][fn];
+-	if (mem_init_done)
+-		*res = kzalloc(size, GFP_KERNEL);
+-	else
+-		*res = alloc_bootmem(size);
++	*res = alloc_maybe_bootmem(size, GFP_KERNEL);
+ 	if (*res == NULL) {
+ 		printk(KERN_ERR
+ 		       "PCI: not enough memory for resource data space\n");
+@@ -398,23 +391,10 @@ static int __devinit celleb_setup_fake_pci_device(struct device_node *node,
+ 	return 0;
+ 
+ error:
+-	if (mem_init_done) {
+-		if (config && *config)
+-			kfree(*config);
+-		if (res && *res)
+-			kfree(*res);
+-
+-	} else {
+-		if (config && *config) {
+-			size = 256;
+-			free_bootmem((unsigned long)(*config), size);
+-		}
+-		if (res && *res) {
+-			size = sizeof(struct celleb_pci_resource);
+-			free_bootmem((unsigned long)(*res), size);
+-		}
+-	}
+-
++	if (config && *config)
++		free_maybe_bootmem(*config, 256);
++	if (res && *res)
++		free_maybe_bootmem(*res, sizeof(struct celleb_pci_resource));
+ 	return 1;
+ }
+ 
+@@ -436,12 +416,9 @@ static int __devinit phb_set_bus_ranges(struct device_node *dev,
+ 
+ static void __devinit celleb_alloc_private_mem(struct pci_controller *hose)
+ {
+-	if (mem_init_done)
+-		hose->private_data =
+-			kzalloc(sizeof(struct celleb_pci_private), GFP_KERNEL);
+-	else
+-		hose->private_data =
+-			alloc_bootmem(sizeof(struct celleb_pci_private));
++	hose->private_data =
++		alloc_maybe_bootmem(sizeof(struct celleb_pci_private),
++			GFP_KERNEL);
+ }
+ 
+ int __devinit celleb_setup_phb(struct pci_controller *phb)
+diff --git a/arch/powerpc/sysdev/mpic_msi.c b/arch/powerpc/sysdev/mpic_msi.c
+index b076793..53fa9f5 100644
+--- a/arch/powerpc/sysdev/mpic_msi.c
++++ b/arch/powerpc/sysdev/mpic_msi.c
+@@ -9,7 +9,6 @@
+  */
+ 
+ #include <linux/irq.h>
+-#include <linux/bootmem.h>
+ #include <linux/bitmap.h>
+ #include <linux/msi.h>
+ #include <asm/mpic.h>
+@@ -151,10 +150,7 @@ int mpic_msi_init_allocator(struct mpic *mpic)
+ 	size = BITS_TO_LONGS(mpic->irq_count) * sizeof(long);
+ 	pr_debug("mpic: allocator bitmap size is 0x%x bytes\n", size);
+ 
+-	if (mem_init_done)
+-		mpic->hwirq_bitmap = kmalloc(size, GFP_KERNEL);
+-	else
+-		mpic->hwirq_bitmap = alloc_bootmem(size);
++	mpic->hwirq_bitmap = alloc_maybe_bootmem(size, GFP_KERNEL);
+ 
+ 	if (!mpic->hwirq_bitmap) {
+ 		pr_debug("mpic: ENOMEM allocating allocator bitmap!\n");
+diff --git a/include/asm-powerpc/system.h b/include/asm-powerpc/system.h
+index 41520b7..047b740 100644
+--- a/include/asm-powerpc/system.h
++++ b/include/asm-powerpc/system.h
+@@ -189,6 +189,9 @@ extern int mem_init_done;	/* set on boot once kmalloc can be called */
+ extern unsigned long memory_limit;
+ extern unsigned long klimit;
+ 
++extern void *alloc_maybe_bootmem(size_t size, gfp_t mask);
++extern void free_maybe_bootmem(void *ptr, size_t size);
++
+ extern int powersave_nap;	/* set if nap mode can be used in idle loop */
+ 
+ /*
+-- 
+1.5.2.4
