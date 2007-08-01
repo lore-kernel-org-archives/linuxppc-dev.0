@@ -1,22 +1,30 @@
-Return-Path: <norsk5@yahoo.com>
-Received: from web50104.mail.re2.yahoo.com (web50104.mail.re2.yahoo.com
-	[206.190.38.32]) by ozlabs.org (Postfix) with SMTP id 8F491DDDDB
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Aug 2007 06:34:44 +1000 (EST)
-Date: Wed, 1 Aug 2007 13:34:43 -0700 (PDT)
-From: Doug Thompson <norsk5@yahoo.com>
-Subject: Re: EDAC stats & PCI error recovery (was Re: [PATCH 2/2] powerpc:
-	MPC85xx EDAC device driver)
-To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20070801194857.GL4884@austin.ibm.com>
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id EDEB1DDDF5
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Aug 2007 06:36:18 +1000 (EST)
+Date: Wed, 1 Aug 2007 22:36:04 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Add of_register_i2c_devices()
+In-Reply-To: <19a13f8700d078abc4cab0064a7d0183@kernel.crashing.org>
+Message-ID: <Pine.LNX.4.60.0708012053240.7394@poirot.grange>
+References: <Pine.LNX.4.60.0706292113240.4227@poirot.grange>
+	<00a85f152aa3547f0f0b4acd7954468a@kernel.crashing.org>
+	<Pine.LNX.4.60.0707022114020.3339@poirot.grange>
+	<2055bb54b9816faaf5b2ceedc9cfa039@kernel.crashing.org>
+	<Pine.LNX.4.60.0707032356270.3876@poirot.grange>
+	<E0E696F1-2F9E-4D6B-A194-EB42BA826BCD@kernel.crashing.org>
+	<Pine.LNX.4.60.0707180010330.3535@poirot.grange>
+	<87DC7695-382B-4641-B9D9-75ACB49D41A4@kernel.crashing.org>
+	<Pine.LNX.4.60.0707191932300.3365@poirot.grange>
+	<719AE7E4-FE6D-4973-8887-F787EC8ABC85@kernel.crashing.org>
+	<Pine.LNX.4.60.0707202219340.3946@poirot.grange>
+	<235e0ff22961e25016727c0e74fd0c0f@kernel.crashing.org>
+	<Pine.LNX.4.60.0708010739560.4228@poirot.grange>
+	<19a13f8700d078abc4cab0064a7d0183@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Message-ID: <335267.8821.qm@web50104.mail.re2.yahoo.com>
-Cc: amitkale@netxen.com, linux-scsi@vger.kernel.org,
-	Arnd Bergmann <arnd@arndb.de>, halr@voltaire.com,
-	openib-general@openib.org, munsone@us.ibm.com,
-	linuxppc-dev@ozlabs.org, mpt_linux_developer@lsi.com,
-	norsk5@yahoo.com, Eric.Moore@lsi.com, bluesmoke-devel@lists.sourceforge.net
-Reply-To: dougthompson@xmission.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,219 +34,112 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 1 Aug 2007, Segher Boessenkool wrote:
 
---- Linas Vepstas <linas@austin.ibm.com> wrote:
-
-> On Mon, Jul 30, 2007 at 03:47:05PM -0700, Doug Thompson wrote:
+> > > > > > +		strncpy(info->driver_name, i2c_devices[i].i2c_driver,
+> > > > > > KOBJ_NAME_LEN);
+> > > > > > +		strncpy(info->type, i2c_devices[i].i2c_type,
+> > > > > > I2C_NAME_SIZE);
+> > > > > 
+> > > > > Why not just strcpy(), btw?
+> > > > 
+> > > > Because target strings are finite length, and sources are just pointers
+> > > > to
+> > > > some constant strings, which one might make arbitrarily long.
+> > > 
+> > > So it's no problem if the name or type string gets cut short?
+> > > Just checking :-)
 > > 
-> > --- Linas Vepstas <linas@austin.ibm.com> wrote:
-> > > Also: please note that the linux kernel has a pci error recovery
-> > > mechanism built in; its used by pseries and PCI-E. I'm not clear
-> > > on what any of this has to do with EDAC, which I thought was supposed 
-> > > to be for RAM only. (The EDAC project once talked about doing pci error 
-> > > recovery, but that was years ago, and there is a separate system for
-> > > that, now.)
-> > 
-> > no, edac can/does harvest PCI bus errors, via polling and other hardware error detectors.
+> > Then it just won't match.
 > 
-> Ehh! I had no idea. A few years ago, when I was working on the PCI error
-> recovery, I sent a number of emails to the various EDAC people and mailing 
-> lists that I could find, and never got a response.  I assumed the
-> project was dead. I guess its not ... 
+> strncpy() won't put a terminating zero on there, is everything
+> that uses the resulting string okay with that?
 
-No its not, just some company lay offs stirred the pot, at least for me, for awhile.
-I did see the ibm patches go by, but didn't have the time to check up at that time. I actually,
-didn't know the recovery interface had gotten into the kernel (My failure to watch for them), so I
-was pleasantly surprised at this last OLS to attend the presentation.
+Ok, this might be a problem, I guess. E.g., in 
+drivers/i2c/i2c-core.c::i2c_device_uevent():
 
-> 
-> > But at the current time, few PCI device drivers initialize those callback functions and
-> > thus errors are lost and some IO transactions fail.
-> 
-> There are patches for 6 drivers in mainline (e100, e1000, ixgb, s2io,
-> ipr, lpfc), and two more pending (sym53cxxx, tg3).  So far, I've written 
-> all of them. 
+	if (add_uevent_var(envp, num_envp, &i, buffer, buffer_size, &length,
+			"MODALIAS=%s", client->driver_name))
 
-Great.
-EDAC does nothing for recovery, just logging and stats gathering and presentation.
+and in a couple more places.
 
-> 
-> > Over time, as drivers get updated (might take some time) then drivers
-> > can take some sort of action FOR THEMSELVES
-> 
-> I think I need to do more to raise awareness and interest.
+> Also, if the
+> name gets cut short, it might match some _other_ expected name.
 
-good point
+Don't think this could happen. At least the generic strcmp compares the 
+'\0' too.
 
-> 
-> > Yet, there is no tracking of errors - except for a log message in the log file.
-> > 
-> > There is NO meter on frequency of errors, etc. One must grep the log file and that is not a
-> very
-> > cycle friendly mechanism.
-> 
-> Yeah, there was low interest in stats. There's a core set of stats in
-> /proc/pp64/eeh, but these are clearly arch-specific. I'd ike to move
-> away from those.  Some recent patches added stats to the /sys tree,
-> under the individual pci bridge and device nodes.  Again, these are
-> arch-specific; I'd like to move to some geeral/standardized presentation.
+Now, the bad news (for me at least, as well as for some on #mklinux). To 
+fix the bug I wrote the patch below. Yes, it is lacking a "Signed-..." - 
+on purpose. Here's why. Having written it, I verified, that
 
-the memory error consumers really like the stats of EDAC. Allows them to track trends.
-Cluster types, with thousands of nodes, like the monitoring for both memory and PCI, as well as
-some newer hardware detector harvesting.
+	c[4] = "01234";
 
-> 
-> > The reason I added PCI parity/error device scanning, was that when I was at Linux Networx, we
-> had
-> > parity errors on the PCI-X bus, but didn't know the cause.  After we discovered that a simple
-> > PCI-X riser card had manufacturing problems (quality) and didn't drive lines properly, it
-> caused
-> > parity errors. 
-> 
-> Heh. Not unusual. I've seen/heard of cases with voltages being low,
-> and/or ground-bounce in slots near the end. There's a whole zoo of
-> hardware/firmware bugs that we've had to painfully crawl through and
-> fix. That's why the IBM boxes cost big $$$; here's to hoping that 
-> customers understand why.
+causes a nice compiler warning like:
 
-I understand
+warning: initializer-string for array of chars is too long
 
+Then I asked myself what happens if you do
 
-> 
-> > This feature allowed us to track nodes that were having parity problems, but we had
-> > no METER to know it.
-> > 
-> > Recovery is a good thing, BUT how do you know you having LOTS of errors/recovery events? You
-> need
-> > a meter. EDAC provides that METER
-> 
-> I'm lazy. What source code should I be looking at?  I'm concerned about
-> duplication of function and proliferation of interfaces. I've got my 
-> metering data under (for example)
-> /sys/bus/pci/devices/0001:c0:01.0/eeh_*, mostly very arch specific.
-> The code for this is in arch/powerpc/platforms/pseries/eeh_sysfs.c
+	c[4] = "0123";
 
-http://bluesmoke.sourceforge.net/
+? To my surprise, there was no warning. So, for example, declaring a 
+struct like
 
-is the SF project zone (bluesmoke was the out-of-tree name, changed to EDAC when it came into
-tree, and source forge doesn't allow renaming)
+struct t {
+	char c[4];
+	int i;
+} z;
 
-EDAC info is under:
+and doing
 
-/sys/devices/system/edac/....
+	strcpy(z.c, c);
 
-mc for memory controllers
-pci for pci info.
+silently corrupts z.i. Verified with gcc 3.3.x, 3.4.5, 4.1.2. 4.2 Does 
+emit a warning... Now, am I right that there are lots of places in 
+the kernel where we just initialize arrays of chars like above and then 
+use ctrcpy to copy it to another equally-long string? Which means, if the 
+initialization string is exactly the array length - without the '\0' - we 
+get random memory corruption... And the only safe way is 
 
-very basic, just counters and some controls
+	strncpy(z.c, c, 3);
+	z.c[3] = '\0';
 
+with compilers < 4.2?...
 
-> 
-> > I met with Yanmin Zhang of Intel at OLS after his paper presentation on PCI Express Advanced
-> Error
-> > Reporting in the Kernel, and we talked about this same thing. I am talking with him on having
-> the
-> > recovery code present information into EDAC sysfs area. (hopefully, anyway)
-> 
-> Hmm. OK, where's that?  Back when, I'd talked to Yamin about coming up 
-> with a generic, arch-indep way of driving the recovery routines. But
-> this wasn't exactly easy, and we were still grappling with just getting
-> things working.  Now that things are working, its time to broaden
-> horizons.
+Thanks
+Guennadi
+---
 
-Not very far, but I see the potential.
-When EDAC was received, it was placed where it was in the sysfs from various kernel developers as
-a good spot on its own.
+Fix a bug introduced by my earlier patch, whereby strncpy of too long a 
+line could leave the result unterminated. Instead, just use fixed-size 
+arrays and let the compiler verify the length for us. No need to try to 
+save a few bytes of __initdata anyway. Thanks to Segher Boessenkool for 
+pointing out.
 
-> 
-> Can you point me to the current edac code?
-> find . -print |grep edac is not particuarly revealing at the moment.
-
-drivers/edac
-
-latest is in 2.6.23-rc1.   
-
--rc2 will have a few vital bug fixes. This release is fairly large since 2.6.26 when it first was
-in the tree.
-
-> 
-> > The recovery generates log messages BUT having to periodically 'grep' the log file looking for
-> > errors is not a good use of CPU cycles. grep once for a count and then grep later for a count
-> and
-> > then compare the counts for a delta count per unit time. ugly.
-> 
-> Yep. Maybe send events up to udev?
-
-That is a possibility, yet EDAC consumers like the stats being available as well.
-
-> 
-> > The EDAC solution is to be able to have a Listener thread in user space that can be notified
-> (via
-> > poll()) that an event has occurred.
-> 
-> Hmm. OK, I'm alarmingly nave about udev, but my initial gut instinct is
-> to pipe all such events to udev. Most of user-space has already been
-> given the marching orders to use udev and/or hal for this kind of stuff.
-> So this makes sense to me.
-
-I need a learning process as well on udev.
-It being the unified highway of event notification from kernel to user space. Although, when
-memory errors fires, sometimes they can generate MASSIVE Number of events on every memory access.
-PCI being different might have different constraints. Each needs investigation and classification
-of timing, etc.
-
-> 
-> > There are more than one consumer (error recover) of error events:
-> > 1) driver recovery after a transaction (which is the recovery consumer above)
-> 
-> I had to argue loudly for recovery in the kernel. The problem was that
-> it was impossible to recover erros on scsi devics from userspace (since
-> the block device and filesystems would go bonkers).
-
-I hear you. It took the cluster consumers to demand ROBUST "meters" to for their machines to give
-'validation' (so to speak) of their calculations. Bluesmoke/EDAC became that in our sandbox.
-
-> 
-> > 2) Management agents for health of a node
-> > 3) Maintainance agents for predictive component replacement
-> 
-> Yes, agreed. Care to ask your management agent friends for where they'd
-> like to get these events from (i.e. udev, or somewhere else?)
-
-They are in a learning curve as well.
-Error event processing is still so "young" under linux. Getting people aware of it is the current
-push.
-
-> 
-> > We have MEMORY (edac_mc) devices for chipsets now, but via the new edac_device class, such
-> things
-> > as ECC error tracking on DMA error checkers, FABRIC switchs, L1 and L2 cache ECC events, core
-> CPU
-> > data ECC checkers, etc can be done. I have an out of kernel tree MIPS driver do just this.
-> Other
-> > types of harvesters can be generated as well for other and/or new hardware error detectors.
-> 
-> Ohh. I've got hardware tha does this, but its not currently usng EDAC.
-> There must be some edac mailing list I'm not subscribed to??
-
-the new edac_device class  rolled out in 2.6.23-rc1
-No in tree drivers, but I have a test_device_edac module that uses it and it is in the svn repos.
-
-I need to update the edac tarball to contain this stuff.
-
-for mailing list, goto 
-
-http://bluesmoke.sourceforge.net/
-
-find the subscribe to mailing list action item. Fairly low bandwidth, but has notices, and some
-discussion on things now and then.
-
-bluesmoke-devel@lists.sourceforge.net is the development email
-
-
-doug t
-
-> 
-> --linas
-> 
-> 
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index 727453d..1e567d5 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -309,8 +309,8 @@ arch_initcall(gfar_of_init);
+ #include <linux/i2c.h>
+ struct i2c_driver_device {
+ 	char	*of_device;
+-	char	*i2c_driver;
+-	char	*i2c_type;
++	char	i2c_driver[KOBJ_NAME_LEN];
++	char	i2c_type[I2C_NAME_SIZE];
+ };
+ 
+ static struct i2c_driver_device i2c_devices[] __initdata = {
+@@ -327,8 +327,8 @@ static int __init of_find_i2c_driver(struct device_node *node, struct i2c_board_
+ 	for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
+ 		if (!of_device_is_compatible(node, i2c_devices[i].of_device))
+ 			continue;
+-		strncpy(info->driver_name, i2c_devices[i].i2c_driver, KOBJ_NAME_LEN);
+-		strncpy(info->type, i2c_devices[i].i2c_type, I2C_NAME_SIZE);
++		strcpy(info->driver_name, i2c_devices[i].i2c_driver);
++		strcpy(info->type, i2c_devices[i].i2c_type);
+ 		return 0;
+ 	}
+ 	return -ENODEV;
