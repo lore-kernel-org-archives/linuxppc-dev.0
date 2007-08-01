@@ -1,22 +1,26 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0CE05DDDF8
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Aug 2007 02:45:40 +1000 (EST)
-Date: Wed, 1 Aug 2007 09:44:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rishikesh K Rajak <risrajak@in.ibm.com>
-Subject: Re: build error on powerpc for 2.6.23-rc1-mm2
-Message-Id: <20070801094442.b710279b.akpm@linux-foundation.org>
-In-Reply-To: <OFFC0F3DEC.2DEDE1A8-ON6525732A.002DB5E7-6525732A.002DEF2C@in.ibm.com>
-References: <OFFC0F3DEC.2DEDE1A8-ON6525732A.002DB5E7-6525732A.002DEF2C@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 13B8EDDDF8
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Aug 2007 03:43:09 +1000 (EST)
+Message-ID: <46B0C624.2070000@freescale.com>
+Date: Wed, 01 Aug 2007 12:43:00 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC][PATCH] MPC832x_RDB: update dts to use spi, register mmc_spi
+	stub
+References: <20070726135738.GB5643@localhost.localdomain>
+	<7BACDD73-9097-4139-8331-A1A14A6134D0@kernel.crashing.org>
+	<20070727114559.GB11463@localhost.localdomain>
+	<20070727164047.GB26893@ld0162-tx32.am.freescale.net>
+	<dfa3ff8d8c6af28003c7f9f831371358@kernel.crashing.org>
+In-Reply-To: <dfa3ff8d8c6af28003c7f9f831371358@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,43 +30,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 1 Aug 2007 13:52:05 +0530 Rishikesh K Rajak <risrajak@in.ibm.com> wrote:
+Segher Boessenkool wrote:
+> For some buses, there is a "slot-names" property; some (non-core)
+> bindings seem to define a "location" property.
+> 
+> For "random" human-readable labelling, i.e. not corresponding to
+> physical markings on the hardware, I recommend you look for a
+> matching entry in /aliases.
 
-> 
-> Hi Andrew,
-> 
-> I am getting following error on powerpc almost for allyesconfig,
-> allmodconfig.
-> 
-> Error produced:
-> 
-> PowerPC: allmodconfig,allyesconfig
-> 
->   CC      arch/powerpc/mm/tlb_64.o
-> /home/risrajak/TEST2/TEST/linux/CurrentTest/23-rc1-mm2-testing/linux-2.6.23-rc1/arch/powerpc/lib/copyuser_64.S:
->  Assembler messages:
-> /home/risrajak/TEST2/TEST/linux/CurrentTest/23-rc1-mm2-testing/linux-2.6.23-rc1/arch/powerpc/lib/copyuser_64.S:27:
->  Error: Unrecognized opcode: `mtocrf'
-> /home/risrajak/TEST2/TEST/linux/CurrentTest/23-rc1-mm2-testing/linux-2.6.23-rc1/arch/powerpc/lib/copyuser_64.S:138:
->  Error: Unrecognized opcode: `mtocrf'
-> /home/risrajak/TEST2/TEST/linux/CurrentTest/23-rc1-mm2-testing/linux-2.6.23-rc1/arch/powerpc/lib/copyuser_64.S:153:
->  Error: Unrecognized opcode: `mtocrf'
-> /home/risrajak/TEST2/TEST/linux/CurrentTest/23-rc1-mm2-testing/linux-2.6.23-rc1/arch/powerpc/lib/memcpy_64.S:
->  Assembler messages:
-> /home/risrajak/TEST2/TEST/linux/CurrentTest/23-rc1-mm2-testing/linux-2.6.23-rc1/arch/powerpc/lib/memcpy_64.S:15:
->  Error: Unrecognized opcode: `mtocrf'
-> /home/risrajak/TEST2/TEST/linux/CurrentTest/23-rc1-mm2-testing/linux-2.6.23-rc1/arch/powerpc/lib/memcpy_64.S:131:
->  Error: Unrecognized opcode: `mtocrf'
-> /home/risrajak/TEST2/TEST/linux/CurrentTest/23-rc1-mm2-testing/linux-2.6.23-rc1/arch/powerpc/lib/memcpy_64.S:146:
->  Error: Unrecognized opcode: `mtocrf'
-> make[2]: *** [arch/powerpc/lib/memcpy_64.o] Error 1
-> make[2]: *** Waiting for unfinished jobs....
->   CC      arch/powerpc/sysdev/mpic_u3msi.o
-> make[2]: *** [arch/powerpc/lib/copyuser_64.o] Error 1
-> make[1]: *** [arch/powerpc/lib] Error 2
-> 
+Aliases could work, but are awkward to use for the purposes I'm thinking 
+of (giving the OS a name to present to the user in association with a 
+device).  They're more suited to interactive OF use where the device 
+tree is being directly referenced by the user.
 
-Presumably, disabling CONFIG_POWER4_ONLY would fix that.
+Plus, you're then restricted to valid property names for the alias, 
+whereas with a label property you could use any string, including spaces 
+and such.
 
-It could be that your toolchain is insufficiently recent.  Which
-version of binutils are you using?
+>  It won't ever be _exactly_ what you
+> want though, the Linux device namespace is separate from the
+> device tree.
+
+That's Linux's choice.  Nothing stops it from showing device tree labels 
+  to the user in various situations -- what got me thinking about this 
+was that apparently ALSA lets the driver pass an arbitrary string to 
+identify the device, and it seemed that such a device-tree-derived label 
+would be the most useful to the user.  To use aliases for that, it'd 
+have to get the full path to the audio node, compare it to each alias, 
+and hope it finds one and only one, and that that alias was intended to 
+be a user label and not something else.
+
+-Scott
