@@ -1,17 +1,13 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 1 Aug 2007 15:47:51 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>,
-	linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/6] PowerPC 440EPx: Sequoia DTS
-Message-ID: <20070801054751.GM31391@localhost.localdomain>
-References: <20070730150648.GA5005@ru.mvista.com>
-	<20070801020836.GB31391@localhost.localdomain>
-	<65ff446478a9fd0a48061079d5f04f8f@kernel.crashing.org>
-	<20070801050422.GI31391@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070801050422.GI31391@localhost.localdomain>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] fixes for the SLB shadow buffer 
+In-reply-to: <18096.6654.934841.561238@cargo.ozlabs.ibm.com> 
+References: <17055.1185944172@neuling.org>
+	<18096.6654.934841.561238@cargo.ozlabs.ibm.com>
+Date: Wed, 01 Aug 2007 16:02:27 +1000
+Message-ID: <31580.1185948147@neuling.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,418 +17,130 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 01, 2007 at 03:04:22PM +1000, David Gibson wrote:
-> On Wed, Aug 01, 2007 at 06:57:33AM +0200, Segher Boessenkool wrote:
-> > >> +	UIC0: interrupt-controller0 {
-> > >> +		compatible = "ibm,uic-440gp","ibm,uic";
-> > >
-> > > The first compatible entry should always be the precise model, so in
-> > > this case "ibm,uic-440epx".
-> > 
-> > This isn't really _required_, but it is a very good idea in
-> > almost all cases (the exception is for very generic or legacy
-> > devices).
-> 
-> Well, yes.  That's a "should" not a "must" in rfc-speak.
-> 
-> > > If it is (supposed to be) identical to
-> > > the UIC in the 440GP, it can also have an "ibm,uic-440gp" entry, but
-> > > since I believe all the UICs are supposed to operate the same, I think
-> > > that's implicit in the "ibm,uic" entry.
-> > 
-> > Sure, but there is no harm in having the better qualified 440gp
-> > name in there as well -- bytes are cheap :-)
-> > 
-> > >> +	SDR0: sdr {
-> > >
-> > > What is the SDR?
-> > >
-> > >> +		compatible = "ibm,sdr-440ep";
-> > >> +		dcr-reg = <00e 002>;
-> > >> +	};
-> > >> +
-> > >> +	CPR0: cpr {
-> > >
-> > > And the CPR?
-> > 
-> > Yeah, better names please -- if possible, something that someone
-> > without knowledge of this SoC will understand what it is.
-> 
-> I think the names are probably ok - I'm assuming they're in keeping
-> with the convention I've used of using the same names / abbreviations
-> as in the CPU user manual.  I'm asking just for my own information,
-> although a comment might not be a bad idea.
-> 
-> > >> +				nor_flash@0,0 {
-> > >> +					device_type = "rom";
-> > >> +					compatible = "direct-mapped";
-> > >> +					probe-type = "CFI";
-> > >
-> > > This flash binding needs to be replaced, but I guess that's not really
-> > > your problem.
-> > 
-> > Yeah, that's my problem, thanks for the prod :-)
-> 
-> Also mine.  I've been home sick the last couple of days, but by way of
-> a sharper prod, see my draft work below.  It patches both
-> booting-without-of.txt with a revised binding, and implements it in
-> the physmap_of driver (which needs renaming, but that's another
-> story).  It also revises the ebony device tree as an example.
-> 
-> This is certainly not complete - it defines none of the extra
-> properties that JEDEC chips need (although the mtd drivers'
-> defaults/probing seem to cope for ebony).  And there are various other
-> ommisions.  Still, it's a starting point - something precise for you
-> to flame Segher :-p.
+We sometimes change the vmalloc segment in slb_flush_and_rebolt but we
+never updated with slb shadow buffer.  This fixes it.  Thanks to paulus
+for finding this.
 
-Duh, forgot to attach the actual patch.  Here it is:
+Also added some write barriers to ensure the shadow buffer is always
+valid.
 
-Index: working-2.6/Documentation/powerpc/booting-without-of.txt
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+
+---
+> > +		slb_shadow_update(mk_esid_data(VMALLOC_START, 1),
+> > +				  mk_vsid_data(VMALLOC_START, vflags), 1);
+> 
+> Could you re-jig slb_shadow_update to take ea, slot and vflags, and
+> call mk_[ev]sid_data itself, rather than exposing mk_esid_data and
+> mk_vsid_data, please?
+
+Sure... this closer to what you want?
+
+ arch/powerpc/kernel/entry_64.S   |    2 ++
+ arch/powerpc/mm/hash_utils_64.c  |    6 ++++++
+ arch/powerpc/mm/slb.c            |   19 +++++++++----------
+ include/asm-powerpc/mmu-hash64.h |    3 +++
+ 4 files changed, 20 insertions(+), 10 deletions(-)
+
+Index: linux-2.6-ozlabs/arch/powerpc/kernel/entry_64.S
 ===================================================================
---- working-2.6.orig/Documentation/powerpc/booting-without-of.txt	2007-07-30 17:07:14.000000000 +1000
-+++ working-2.6/Documentation/powerpc/booting-without-of.txt	2007-07-30 17:07:14.000000000 +1000
-@@ -1757,45 +1757,23 @@ platforms are moved over to use the flat
- 		};
- 	};
+--- linux-2.6-ozlabs.orig/arch/powerpc/kernel/entry_64.S
++++ linux-2.6-ozlabs/arch/powerpc/kernel/entry_64.S
+@@ -389,7 +389,9 @@ BEGIN_FTR_SECTION
+ 	ld	r9,PACA_SLBSHADOWPTR(r13)
+ 	li	r12,0
+ 	std	r12,SLBSHADOW_STACKESID(r9) /* Clear ESID */
++	eieio
+ 	std	r7,SLBSHADOW_STACKVSID(r9)  /* Save VSID */
++	eieio
+ 	std	r0,SLBSHADOW_STACKESID(r9)  /* Save ESID */
  
--    j) Flash chip nodes
-+   j) CFI or JEDEC memory-mapped NOR flash
- 
-     Flash chips (Memory Technology Devices) are often used for solid state
-     file systems on embedded devices.
- 
--    Required properties:
-+     - compatible : should contain the specific model of flash chip(s) used
-+       followed by either "cfi-flash" or "jedec-flash"
-+     - reg : Address range of the flash chip
-+     - bank-width : Width (in bytes) of the flash bank.  Equal to the device width
-+       times the number of interleaved chips.
-+     - device-width : (optional) Width of a single flash chip.  If omitted,
-+       assumed to be equal to 'bank-width'.
-+
- 
--     - device_type : has to be "rom"
--     - compatible : Should specify what this flash device is compatible with.
--       Currently, this is most likely to be "direct-mapped" (which
--       corresponds to the MTD physmap mapping driver).
--     - reg : Offset and length of the register set (or memory mapping) for
--       the device.
--     - bank-width : Width of the flash data bus in bytes. Required
--       for the NOR flashes (compatible == "direct-mapped" and others) ONLY.
--
--    Recommended properties :
--
--     - partitions : Several pairs of 32-bit values where the first value is
--       partition's offset from the start of the device and the second one is
--       partition size in bytes with LSB used to signify a read only
--       partition (so, the partition size should always be an even number).
--     - partition-names : The list of concatenated zero terminated strings
--       representing the partition names.
--     - probe-type : The type of probe which should be done for the chip
--       (JEDEC vs CFI actually). Valid ONLY for NOR flashes.
--
--   Example:
--
-- 	flash@ff000000 {
-- 		device_type = "rom";
-- 		compatible = "direct-mapped";
-- 		probe-type = "CFI";
-- 		reg = <ff000000 01000000>;
-- 		bank-width = <4>;
-- 		partitions = <00000000 00f80000
-- 			      00f80000 00080001>;
-- 		partition-names = "fs\0firmware";
-- 	};
-+    Flash partitions
-+     - reg :
-+     - read-only : (optional)
- 
-    k) Global Utilities Block
- 
-Index: working-2.6/drivers/mtd/maps/physmap_of.c
+ 	slbie	r6
+Index: linux-2.6-ozlabs/arch/powerpc/mm/hash_utils_64.c
 ===================================================================
---- working-2.6.orig/drivers/mtd/maps/physmap_of.c	2007-07-30 17:07:11.000000000 +1000
-+++ working-2.6/drivers/mtd/maps/physmap_of.c	2007-07-30 17:07:14.000000000 +1000
-@@ -4,6 +4,9 @@
-  * Copyright (C) 2006 MontaVista Software Inc.
-  * Author: Vitaly Wool <vwool@ru.mvista.com>
-  *
-+ * Revised to handle newer style flash binding by:
-+ *   Copyright (C) 2007 David Gibson, IBM Corporation.
-+ *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-  * Free Software Foundation;  either version 2 of the  License, or (at your
-@@ -30,17 +33,72 @@ struct physmap_flash_info {
- 	struct map_info		map;
- 	struct resource		*res;
- #ifdef CONFIG_MTD_PARTITIONS
--	int			nr_parts;
- 	struct mtd_partition	*parts;
- #endif
- };
+--- linux-2.6-ozlabs.orig/arch/powerpc/mm/hash_utils_64.c
++++ linux-2.6-ozlabs/arch/powerpc/mm/hash_utils_64.c
+@@ -629,6 +629,9 @@ int hash_page(unsigned long ea, unsigned
+ 	cpumask_t tmp;
+ 	int rc, user_region = 0, local = 0;
+ 	int psize;
++#ifdef CONFIG_PPC_64K_PAGES
++	unsigned long vflags;
++#endif
  
--static const char *rom_probe_types[] = { "cfi_probe", "jedec_probe", "map_rom", NULL };
- #ifdef CONFIG_MTD_PARTITIONS
--static const char *part_probe_types[] = { "cmdlinepart", "RedBoot", NULL };
--#endif
-+static int __devinit handle_of_flash_partitions(struct physmap_flash_info *info,
-+						 struct of_device *dev)
-+{
-+	static const char *part_probe_types[]
-+		= { "cmdlinepart", "RedBoot", NULL };
-+	struct device_node *dp = dev->node, *pp;
-+	int nr_parts, i, err;
-+
-+	/* First look for RedBoot table or partitions on the command
-+	 * line, these take precedence over device tree information */
-+	nr_parts = parse_mtd_partitions(info->mtd, part_probe_types,
-+					&info->parts, 0);
-+	if (nr_parts > 0) {
-+		add_mtd_partitions(info->mtd, info->parts, err);
-+		return 0;
-+	}
-+
-+	/* First count the subnodes */
-+	nr_parts = 0;
-+	for (pp = dp->child; pp; pp = pp->sibling)
-+		nr_parts++;
-+
-+	info->parts = kzalloc(nr_parts * sizeof(struct mtd_partition), GFP_KERNEL);
-+	if (!info->parts) {
-+		printk(KERN_ERR "Can't allocate the flash partition data!\n");
-+		return -ENOMEM;
-+	}
-+
-+	for (pp = dp->child, i = 0 ; pp; pp = pp->sibling, i++) {
-+		const u32 *reg;
-+		const char *name;
-+		const void *ro;
-+		int len;
-+
-+		reg = of_get_property(pp, "reg", &len);
-+		if (! reg || (len != 2*sizeof(u32))) {
-+			dev_err(&dev->dev, "Invalid 'reg' on %s\n",
-+				dp->full_name);
-+			err = -EINVAL;
-+			goto fail;
-+		}
-+		info->parts[i].offset = reg[0];
-+		info->parts[i].size = reg[1];
-+
-+		name = of_get_property(pp, "name", &len);
-+		info->parts[i].name = name;
-+
-+		ro = of_get_property(pp, "read-only", &len);
-+		if (ro)
-+			info->parts[i].mask_flags = MTD_WRITEABLE;
-+	}
-+
-+	add_mtd_partitions(info->mtd, info->parts, nr_parts);
-+	return 0;
-+
-+ fail:
-+	kfree(info->parts);
-+	info->parts = NULL;
-+	return err;
-+}
- 
--#ifdef CONFIG_MTD_PARTITIONS
- static int parse_flash_partitions(struct device_node *node,
- 		struct mtd_partition **parts)
- {
-@@ -79,7 +137,14 @@ static int parse_flash_partitions(struct
- err:
- 	return retval;
- }
--#endif
-+#else /* MTD_PARTITIONS */
-+static int __devinit handle_of_flash_partitions(struct physmap_flash_info *info,
-+						 struct device_node *dev)
-+{
-+	add_mtd_device(info->mtd);
-+	return 0;
-+}
-+#endif /* MTD_PARTITIONS */
- 
- static int of_physmap_remove(struct of_device *dev)
- {
-@@ -92,7 +157,7 @@ static int of_physmap_remove(struct of_d
- 
- 	if (info->mtd != NULL) {
- #ifdef CONFIG_MTD_PARTITIONS
--		if (info->nr_parts) {
-+		if (info->parts) {
- 			del_mtd_partitions(info->mtd);
- 			kfree(info->parts);
- 		} else {
-@@ -115,13 +180,45 @@ static int of_physmap_remove(struct of_d
- 	return 0;
- }
- 
-+/* Helper function to handle probing of the obsolete "direct-mapped"
-+ * compatible binding, which has an extra "probe-type" property
-+ * describing the type of flash probe necessary. */
-+static struct mtd_info * __devinit obsolete_probe(struct of_device *dev,
-+						  struct map_info *map)
-+{
-+	struct device_node *dp = dev->node;
-+	const char *of_probe;
-+	struct mtd_info *mtd;
-+	static const char *rom_probe_types[]
-+		= { "cfi_probe", "jedec_probe", "map_rom"};
-+	int i;
-+
-+	of_probe = of_get_property(dp, "probe-type", NULL);
-+	if (!of_probe) {
-+		for (i = 0; i < ARRAY_SIZE(rom_probe_types); i++) {
-+			mtd = do_map_probe(rom_probe_types[i], map);
-+			if (mtd)
-+				return mtd;
-+		}
-+		return NULL;
-+	} else if (strcmp(of_probe, "CFI") == 0) {
-+		return do_map_probe("cfi_probe", map);
-+	} else if (strcmp(of_probe, "JEDEC") == 0) {
-+		return do_map_probe("jedec_probe", map);
-+	} else {
-+ 		if (strcmp(of_probe, "ROM") != 0)
-+			dev_dbg(&dev->dev, "obsolete_probe: don't know probe type "
-+				"'%s', mapping as rom\n", of_probe);
-+		return do_map_probe("mtd_rom", map);
-+	}
-+}
-+
- static int __devinit of_physmap_probe(struct of_device *dev, const struct of_device_id *match)
- {
- 	struct device_node *dp = dev->node;
- 	struct resource res;
- 	struct physmap_flash_info *info;
--	const char **probe_type;
--	const char *of_probe;
-+	const char *probe_type = (const char *)match->data;
- 	const u32 *width;
- 	int err;
- 
-@@ -174,21 +271,11 @@ static int __devinit of_physmap_probe(st
- 
- 	simple_map_init(&info->map);
- 
--	of_probe = of_get_property(dp, "probe-type", NULL);
--	if (of_probe == NULL) {
--		probe_type = rom_probe_types;
--		for (; info->mtd == NULL && *probe_type != NULL; probe_type++)
--			info->mtd = do_map_probe(*probe_type, &info->map);
--	} else if (!strcmp(of_probe, "CFI"))
--		info->mtd = do_map_probe("cfi_probe", &info->map);
--	else if (!strcmp(of_probe, "JEDEC"))
--		info->mtd = do_map_probe("jedec_probe", &info->map);
--	else {
-- 		if (strcmp(of_probe, "ROM"))
--			dev_dbg(&dev->dev, "map_probe: don't know probe type "
--			"'%s', mapping as rom\n", of_probe);
--		info->mtd = do_map_probe("mtd_rom", &info->map);
--	}
-+	if (probe_type)
-+		info->mtd = do_map_probe(probe_type, &info->map);
-+	else
-+		info->mtd = obsolete_probe(dev, &info->map);
-+
- 	if (info->mtd == NULL) {
- 		dev_err(&dev->dev, "map_probe failed\n");
- 		err = -ENXIO;
-@@ -196,18 +283,7 @@ static int __devinit of_physmap_probe(st
+ 	DBG_LOW("hash_page(ea=%016lx, access=%lx, trap=%lx\n",
+ 		ea, access, trap);
+@@ -759,6 +762,9 @@ int hash_page(unsigned long ea, unsigned
+ 		   mmu_psize_defs[mmu_vmalloc_psize].sllp) {
+ 		get_paca()->vmalloc_sllp =
+ 			mmu_psize_defs[mmu_vmalloc_psize].sllp;
++		vflags = SLB_VSID_KERNEL |
++			mmu_psize_defs[mmu_vmalloc_psize].sllp;
++		slb_shadow_update(VMALLOC_START, vflags, 1);
+ 		slb_flush_and_rebolt();
  	}
- 	info->mtd->owner = THIS_MODULE;
- 
--#ifdef CONFIG_MTD_PARTITIONS
--	err = parse_mtd_partitions(info->mtd, part_probe_types, &info->parts, 0);
--	if (err > 0) {
--		add_mtd_partitions(info->mtd, info->parts, err);
--	} else if ((err = parse_flash_partitions(dp, &info->parts)) > 0) {
--		dev_info(&dev->dev, "Using OF partition information\n");
--		add_mtd_partitions(info->mtd, info->parts, err);
--		info->nr_parts = err;
--	} else
--#endif
--
--	add_mtd_device(info->mtd);
-+	handle_of_flash_partitions(info, dev);
- 	return 0;
- 
- err_out:
-@@ -221,6 +297,14 @@ err_out:
- 
- static struct of_device_id of_physmap_match[] = {
- 	{
-+		.compatible	= "cfi-flash",
-+		.data		= (void *)"cfi_probe",
-+	},
-+	{
-+		.compatible	= "jedec-flash",
-+		.data		= (void *)"jedec_probe",
-+	},
-+	{
- 		.type		= "rom",
- 		.compatible	= "direct-mapped"
- 	},
-Index: working-2.6/arch/powerpc/boot/dts/ebony.dts
+ #endif /* CONFIG_PPC_64K_PAGES */
+Index: linux-2.6-ozlabs/arch/powerpc/mm/slb.c
 ===================================================================
---- working-2.6.orig/arch/powerpc/boot/dts/ebony.dts	2007-07-30 17:07:14.000000000 +1000
-+++ working-2.6/arch/powerpc/boot/dts/ebony.dts	2007-07-30 17:07:14.000000000 +1000
-@@ -142,13 +142,16 @@
- 				interrupt-parent = <&UIC1>;
+--- linux-2.6-ozlabs.orig/arch/powerpc/mm/slb.c
++++ linux-2.6-ozlabs/arch/powerpc/mm/slb.c
+@@ -53,18 +53,19 @@ static inline unsigned long mk_vsid_data
+ 	return (get_kernel_vsid(ea) << SLB_VSID_SHIFT) | flags;
+ }
  
- 				small-flash@0,80000 {
--					device_type = "rom";
--					compatible = "direct-mapped";
--					probe-type = "JEDEC";
-+					compatible = "jedec-flash";
- 					bank-width = <1>;
--					partitions = <0 80000>;
--					partition-names = "OpenBIOS";
-+//					partitions = <0 80000>;
-+//					partition-names = "OpenBIOS";
- 					reg = <0 80000 80000>;
-+					#address-cells = <1>;
-+					#size-cells = <1>;
-+					OpenBIOS@0 {
-+						reg = <0 80000>;
-+					};
- 				};
+-static inline void slb_shadow_update(unsigned long esid, unsigned long vsid,
+-				     unsigned long entry)
++void slb_shadow_update(unsigned long ea,
++		       unsigned long flags,
++		       unsigned long entry)
+ {
+ 	/*
+ 	 * Clear the ESID first so the entry is not valid while we are
+ 	 * updating it.
+ 	 */
+ 	get_slb_shadow()->save_area[entry].esid = 0;
+-	barrier();
+-	get_slb_shadow()->save_area[entry].vsid = vsid;
+-	barrier();
+-	get_slb_shadow()->save_area[entry].esid = esid;
++	smp_wmb();
++	get_slb_shadow()->save_area[entry].vsid = mk_vsid_data(ea, flags);
++	smp_wmb();
++	get_slb_shadow()->save_area[entry].esid = mk_esid_data(ea, entry);
  
- 				ds1743@1,0 {
-@@ -158,14 +161,20 @@
- 				};
+ }
  
- 				large-flash@2,0 {
--					device_type = "rom";
--					compatible = "direct-mapped";
--					probe-type = "JEDEC";
-+					compatible = "jedec-flash";
- 					bank-width = <1>;
--					partitions = <0 380000
--						      380000 80000>;
--					partition-names = "fs", "firmware";
-+//					partitions = <0 380000
-+//						      380000 80000>;
-+//					partition-names = "fs", "firmware";
- 					reg = <2 0 400000>;
-+					#address-cells = <1>;
-+					#size-cells = <1>;
-+					fs@0 {
-+						reg = <0 380000>;
-+					};
-+					firmware@380000 {
-+						reg = <380000 80000>;
-+					};
- 				};
+@@ -76,8 +77,7 @@ static inline void create_shadowed_slbe(
+ 	 * we don't get a stale entry here if we get preempted by PHYP
+ 	 * between these two statements.
+ 	 */
+-	slb_shadow_update(mk_esid_data(ea, entry), mk_vsid_data(ea, flags),
+-			  entry);
++	slb_shadow_update(ea, flags, entry);
  
- 				ir@3,0 {
-
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+ 	asm volatile("slbmte  %0,%1" :
+ 		     : "r" (mk_vsid_data(ea, flags)),
+@@ -104,8 +104,7 @@ void slb_flush_and_rebolt(void)
+ 		ksp_esid_data &= ~SLB_ESID_V;
+ 
+ 	/* Only third entry (stack) may change here so only resave that */
+-	slb_shadow_update(ksp_esid_data,
+-			  mk_vsid_data(ksp_esid_data, lflags), 2);
++	slb_shadow_update(get_paca()->kstack, lflags, 2);
+ 
+ 	/* We need to do this all in asm, so we're sure we don't touch
+ 	 * the stack between the slbia and rebolting it. */
+Index: linux-2.6-ozlabs/include/asm-powerpc/mmu-hash64.h
+===================================================================
+--- linux-2.6-ozlabs.orig/include/asm-powerpc/mmu-hash64.h
++++ linux-2.6-ozlabs/include/asm-powerpc/mmu-hash64.h
+@@ -262,6 +262,9 @@ extern void slb_initialize(void);
+ extern void slb_flush_and_rebolt(void);
+ extern void stab_initialize(unsigned long stab);
+ 
++extern void slb_shadow_update(unsigned long ea,
++			      unsigned long flags,
++			      unsigned long entry);
+ #endif /* __ASSEMBLY__ */
+ 
+ /*
