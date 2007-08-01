@@ -1,15 +1,18 @@
-Return-Path: <rvinson@mvista.com>
-Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id 0B2E6DDD0C
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Aug 2007 09:32:58 +1000 (EST)
-Message-ID: <46B11823.9050600@mvista.com>
-Date: Wed, 01 Aug 2007 16:32:51 -0700
-From: Randy Vinson <rvinson@mvista.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id E53DEDDDE6
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Aug 2007 09:35:06 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: DTC 1.0.0 Release Coming?
+Date: Thu, 2 Aug 2007 01:35:03 +0200
+References: <E1IDjSy-0003eC-T4@jdl.com>
+In-Reply-To: <E1IDjSy-0003eC-T4@jdl.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] 85xxCDS: Delete the PCI exclude function.
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200708020135.03477.arnd@arndb.de>
+Cc: Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,52 +22,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->From 8367fd9e98a97ba680d23bf59fa03fcd930dd9e1 Mon Sep 17 00:00:00 2001
-From: Randy Vinson <rvinson@mvista.com>
-Date: Wed, 1 Aug 2007 16:24:48 -0700
-Subject: [PATCH] 85xxCDS: Delete the PCI exclude function.
+On Wednesday 25 July 2007, Jon Loeliger wrote:
+> I'd like to make an official DTC Version 1.0.0 release soon!
+> To that end, I've published a repo on jdl.com with a v1.0.0-rc1
+> tag on it. =A0I anticipate some updates to the Documentation before
+> a final 1.0.0 release still. =A0However, if you have something
+> you would like to have be in The Real 1.0.0 release, please
+> let me know soon!
 
-Now that the FPGA on the 85xxCDS main board has a quirk, we no longer
-need an exclude routine.
+A  bug has been reported in both fedora and debian about /usr/bin/ftdump
+conflicting with a file of the same name in freetype.
 
-Signed-off-by: Randy Vinson <rvinson@mvista.com>
----
- arch/powerpc/platforms/85xx/mpc85xx_cds.c |   16 ----------------
- 1 files changed, 0 insertions(+), 16 deletions(-)
+Can we rename the binary in dtc to avoid this? Maybe /usr/bin/dtc-ftdump
+would be better.
 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-index 6a171e9..d7ee380 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-@@ -54,21 +54,6 @@ static volatile u8 *cadmus;
- 
- #ifdef CONFIG_PCI
- 
--#define ARCADIA_HOST_BRIDGE_IDSEL	17
--#define ARCADIA_2ND_BRIDGE_IDSEL	3
--
--static int mpc85xx_exclude_device(struct pci_controller *hose,
--				  u_char bus, u_char devfn)
--{
--	/* We explicitly do not go past the Tundra 320 Bridge */
--	if ((bus == 1) && (PCI_SLOT(devfn) == ARCADIA_2ND_BRIDGE_IDSEL))
--		return PCIBIOS_DEVICE_NOT_FOUND;
--	if ((bus == 0) && (PCI_SLOT(devfn) == ARCADIA_2ND_BRIDGE_IDSEL))
--		return PCIBIOS_DEVICE_NOT_FOUND;
--	else
--		return PCIBIOS_SUCCESSFUL;
--}
--
- static void mpc85xx_cds_restart(char *cmd)
- {
- 	struct pci_dev *dev;
-@@ -306,7 +291,6 @@ static void __init mpc85xx_cds_setup_arch(void)
- 			fsl_add_bridge(np, 0);
- 	}
- 	ppc_md.pci_irq_fixup = mpc85xx_cds_pci_irq_fixup;
--	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
- #endif
- }
- 
--- 
-1.5.3.rc2.22.g69a9b
+	Arnd <><
+
+http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=3D434890
+https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=3D249638
