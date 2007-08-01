@@ -1,18 +1,14 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <18071.1185935876@bebe.enoyolf.org>
-References: <31368.1185909681@falcon10.austin.ibm.com>
-	<18095.56272.4647.158912@cargo.ozlabs.ibm.com>
-	<18071.1185935876@bebe.enoyolf.org>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <5682bc7e60187e64d80fd99b4ad573df@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: ipv6 in yaboot 
-Date: Wed, 1 Aug 2007 07:12:15 +0200
-To: Doug Maxey <dwm@enoyolf.org>
-Cc: Linux PowerPC List <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Paul Nasrat <pnasrat@redhat.com>, yaboot-devel@ozlabs.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18096.6654.934841.561238@cargo.ozlabs.ibm.com>
+Date: Wed, 1 Aug 2007 15:28:30 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] fixes for the SLB shadow buffer
+In-Reply-To: <17055.1185944172@neuling.org>
+References: <17055.1185944172@neuling.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,29 +18,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> I just got asked about ipv6 support in yaboot and a quick 
->>> investigation
->>> showed _no_ knowledge of the address formats in the code.
->>>
->>> Should I be submitting an RFC for a full parser that can pick that
->>> apart?  Or does has someone have code lurking in the shadows, that
->>> just needed some prompting?  :)
->>
->> I would have thought that yaboot would just be passing any network
->> addresses in text form to some OF method, so it's up to OF to
->> understand ipv6 address formats.  No?
->
-> Yes, yaboot _should_ just pass the text representation around.
-> However, there are places that the context determination, for
-> disklabels, is a simple check for the presence of ':'.
+Michael Neuling writes:
 
-The network address is passed to OF as (part of) the device
-argument for the network device; and colons aren't legal
-characters in a device argument, so any OF implementation that
-would use colons in IPv6 addresses is terminally broken.  This
-is completely analogous to the fact that filesystem paths cannot
-use forward slashes.  (The third disallowed character is the
-at-sign, for completeness).
+> +		slb_shadow_update(mk_esid_data(VMALLOC_START, 1),
+> +				  mk_vsid_data(VMALLOC_START, vflags), 1);
 
+Could you re-jig slb_shadow_update to take ea, slot and vflags, and
+call mk_[ev]sid_data itself, rather than exposing mk_esid_data and
+mk_vsid_data, please?
 
-Segher
+Paul.
