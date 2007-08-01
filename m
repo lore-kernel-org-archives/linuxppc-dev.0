@@ -1,21 +1,22 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id AFEB2DDDE9
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 23:09:51 +1000 (EST)
-Message-ID: <46B08695.6030102@ru.mvista.com>
-Date: Wed, 01 Aug 2007 17:11:49 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 5A3F0DDDF3
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 23:30:51 +1000 (EST)
+Date: Wed, 1 Aug 2007 17:29:48 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] [POWERPC] MPC8349E-mITX: use platform IDE driver
-	for CF	interface
-References: <20070725165318.5331.23795.stgit@localhost.localdomain>	<20070725165326.5331.19920.stgit@localhost.localdomain>
-	<46A78322.3080607@ru.mvista.com> <46A78E3F.1030904@ru.mvista.com>
-	<a414f3b506b7802a717e6e2c08befd1e@kernel.crashing.org>
-In-Reply-To: <a414f3b506b7802a717e6e2c08befd1e@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] MPC832x_RDB: update dts to use spi, register
+	mmc_spi stub
+Message-ID: <20070801132948.GB20200@localhost.localdomain>
+References: <20070726135738.GB5643@localhost.localdomain>
+	<7BACDD73-9097-4139-8331-A1A14A6134D0@kernel.crashing.org>
+	<20070727114559.GB11463@localhost.localdomain>
+	<b3d36996792216ddd9dbae12212a4168@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <b3d36996792216ddd9dbae12212a4168@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,54 +26,100 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+On Wed, Aug 01, 2007 at 12:06:46AM +0200, Segher Boessenkool wrote:
+>>>>  		spi@4c0 {
+>>>>  			device_type = "spi";
+>>>> +			device-id = <1>;
+>>>
+>>> Can we just use the reg value for bus_num in the kernel.
+>>
+>> Sure, technically nothing prevents this. But, QE specs names
+>> SPIs by these ids.
+>
+> As a minimum the property name should start with "fsl," then.
 
-Segher Boessenkool wrote:
+fsl,device-id = <1>;, correct?
 
->>>> +    ide@f0000000 {
->>>> +        compatible = "mmio-ide";
->>>> +        device_type = "ide";
+>> Plus, from the kernel side spi name will be
+>> not pretty, it will be spi1216.1.
+>
+> What, the kernel cannot implement a counter itself?
 
->>>     Why not "ata"?
+Just counter is especially meaningless and confusing. It will
+work in that particular case, though. But then SPI bus number will
+depend on definition order in the dts file. This isn't how SPI
+bus numbers should be assigned. SPI bus numbers taken from specs,
+this is how people know which SPI is which.
 
-> The hardware is called (E)IDE, the protocol is called ATA.
+>>>> +			max-chipselect = <1>;
+>>>
+>>> I'm not sure how I feel about this in here, I'm thinking it should go.
+>>
+>> It's board-specific, i.e. how much chips connected to this SPI bus.
+>
+> It is misnamed then.  It should be automatically derived from
+> the child nodes, though.
+>
+>>>> +			mmc@01 {
+>
+> @01 should be @1.  Except that it is wrong, since there is
+> no "reg" property.
+>
+>>>> +				device_type = "mmc";
+>
+> No device_type please.
+>
+>>>> +				compatible = "mmc-spi";
+>
+> Needs to be more specific.
 
-    Sorry for not denouncing this earlier. :-)
-    ATA is the name of ANSI standard describing IDE.
+Um.. for example? I can't imagine anything specific for this. ;-)
 
-> Or that's what I was told --
+>>>> +				device-id = <1>;
+>
+> Get rid of this.
+>
+>>>> +				max-speed-hz = <bebc20>; /* 12500000 Hz */
+>
+> Just max-speed.
+>
+>>>> +				chip-select = <0>;
+>
+> This should be named "reg".  And the parent needs #address-cells
+> and #size-cells properties.
+>
+>>>> +				pio-handle = <&mmc1pio>;
+>
+> What is this for?
 
-    Re-check your sources. ;-)
+To set up output function of GPIO pin for MMC chip select.
 
- > I think there's some historic revisionism involved, too.
+And well, I've just looked into par_io_of_config(), and I've found
+that pio-handle is mandatory (obviously), and thus let's back to:
 
-    IDE was probably an initial name of the infamous disk hardware/protocol 
-later standardized as ATA, EIDE (being more of a trademark) more or less 
-equals to ATA-2.
+>>> we should do this in board code and not the device tree.
+>>
+>> Well, I've done this initially. But Vitaly hinted that this could
+>> be done in the DT instead, which made sense to me - mmc is the child
+>> device of SPI bus. Why do you think it shouldn't be in the DT? I'm
+>> not arguing, just want understand this.
+>
+> The hardware should be described in the device tree.  This isn't
+> the same as simply copying all your Linux code into it ;-)
 
->>     Also, what mmio-ide in the compat properly means in the context of
->> ide_platform which is able to handle both port and memory mapped IDE. 
->> I think
->> we must get rid with this crap, and since this IDE register mapping is 
->> pretty
->> much board specific, call it something like "mpc8349emitx-ide" instead.
+Ugh. SD/MMC slot is the hardware, isn't it? It have wired SPI pins,
+and chip select pin. To set up this pin, I need mmc node, which means
+that I can't completely move mmc definitions to the board file, as
+suggested by Kumar Gala.
 
-> "mmio-ide" simply is not specific enough.  The device_type
-
-    Yes.
-
-> should go, too.
-
-> If this IDE interface is board-specific, thee "compatible"
-
-    It's "thy", not "thee". ;-)
-
-> property should include the board vendor name and board
-> name.  Oh, that's what "emitx" tries to do -- it could be
-> a bit clearer perhaps ;-)
-
-    Yeah, I forgot about the vondor's "fsl," prefix.
+Advices?
 
 > Segher
 
-MBR, Sergei
+Thanks!
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
