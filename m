@@ -1,23 +1,31 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B0158DDE08
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 18:14:18 +1000 (EST)
-Date: Wed, 1 Aug 2007 01:13:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.23-rc1-mm2
-Message-Id: <20070801011323.6e8d8259.akpm@linux-foundation.org>
-In-Reply-To: <200708011002.30962.m.kozlowski@tuxland.pl>
-References: <20070731230932.a9459617.akpm@linux-foundation.org>
-	<200708011002.30962.m.kozlowski@tuxland.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, gregkh@suse.de, paulus@samba.org,
-	linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9A695DDE11
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 18:18:18 +1000 (EST)
+In-Reply-To: <Pine.LNX.4.60.0708010739560.4228@poirot.grange>
+References: <Pine.LNX.4.60.0706292113240.4227@poirot.grange>
+	<00a85f152aa3547f0f0b4acd7954468a@kernel.crashing.org>
+	<Pine.LNX.4.60.0707022114020.3339@poirot.grange>
+	<2055bb54b9816faaf5b2ceedc9cfa039@kernel.crashing.org>
+	<Pine.LNX.4.60.0707032356270.3876@poirot.grange>
+	<E0E696F1-2F9E-4D6B-A194-EB42BA826BCD@kernel.crashing.org>
+	<Pine.LNX.4.60.0707180010330.3535@poirot.grange>
+	<87DC7695-382B-4641-B9D9-75ACB49D41A4@kernel.crashing.org>
+	<Pine.LNX.4.60.0707191932300.3365@poirot.grange>
+	<719AE7E4-FE6D-4973-8887-F787EC8ABC85@kernel.crashing.org>
+	<Pine.LNX.4.60.0707202219340.3946@poirot.grange>
+	<235e0ff22961e25016727c0e74fd0c0f@kernel.crashing.org>
+	<Pine.LNX.4.60.0708010739560.4228@poirot.grange>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <19a13f8700d078abc4cab0064a7d0183@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Add of_register_i2c_devices()
+Date: Wed, 1 Aug 2007 10:18:08 +0200
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,93 +35,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 1 Aug 2007 10:02:30 +0200 Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
+>>>>> +		strncpy(info->driver_name, i2c_devices[i].i2c_driver,
+>>>>> KOBJ_NAME_LEN);
+>>>>> +		strncpy(info->type, i2c_devices[i].i2c_type, I2C_NAME_SIZE);
+>>>>
+>>>> Why not just strcpy(), btw?
+>>>
+>>> Because target strings are finite length, and sources are just 
+>>> pointers to
+>>> some constant strings, which one might make arbitrarily long.
+>>
+>> So it's no problem if the name or type string gets cut short?
+>> Just checking :-)
+>
+> Then it just won't match.
 
-> Hello,
-> 
-> 	I get this warning. Looking at the comment in kernel/irq/resend.c
-> it's harmless. Is it?
-> 
-> WARNING: at kernel/irq/resend.c:69 check_irq_resend()
->  [<c010456a>] show_trace_log_lvl+0x1a/0x30
->  [<c010508d>] show_trace+0x12/0x14
->  [<c01051e0>] dump_stack+0x15/0x17
->  [<c013b001>] check_irq_resend+0x91/0xa0
->  [<c013ab58>] enable_irq+0xb1/0xb3
->  [<c02d7b81>] ide_config_drive_speed+0xda/0x269
->  [<c02d391c>] ali15x3_tune_chipset+0xcc/0x161
->  [<c02dd367>] ide_tune_dma+0x43/0x4d
->  [<c02d29e0>] ali15x3_config_drive_for_dma+0xf/0x2a
->  [<c02dc89a>] ide_set_dma+0x11/0x40
->  [<c02d41cf>] set_using_dma+0x84/0xd1
->  [<c02d4dfe>] generic_ide_ioctl+0xb9/0x3fb
->  [<c02df7e4>] idedisk_ioctl+0x3f/0x10c
->  [<c023d779>] blkdev_driver_ioctl+0x55/0x5e
->  [<c023da3e>] blkdev_ioctl+0x2bc/0x83e
->  [<c017e5ca>] block_ioctl+0x1b/0x21
->  [<c01664c2>] do_ioctl+0x22/0x71
->  [<c0166566>] vfs_ioctl+0x55/0x28a
->  [<c01667ce>] sys_ioctl+0x33/0x51
->  [<c0103f32>] sysenter_past_esp+0x5f/0x85
->  =======================
+strncpy() won't put a terminating zero on there, is everything
+that uses the resulting string okay with that?  Also, if the
+name gets cut short, it might match some _other_ expected name.
 
-Ingo debug stuff.
+> Have I passed or failed?:-)
 
-> Then reattaching a usb mouse caused this (only once)
-> 
-> usb 2-1: USB disconnect, address 2
-> BUG: atomic counter underflow at:
->  [<c010456a>] show_trace_log_lvl+0x1a/0x30
->  [<c010508d>] show_trace+0x12/0x14
->  [<c01051e0>] dump_stack+0x15/0x17
->  [<c01418cf>] __free_pages+0x50/0x52
->  [<c01418f0>] free_pages+0x1f/0x21
->  [<c010783d>] dma_free_coherent+0x43/0x9c
->  [<c0315067>] hcd_buffer_free+0x43/0x6a
->  [<c030b2b4>] usb_buffer_free+0x23/0x29
->  [<c0346db4>] hid_free_buffers+0x23/0x71
->  [<c0346eb2>] hid_disconnect+0xb0/0xc8
->  [<c0313676>] usb_unbind_interface+0x30/0x72
->  [<c02c6df0>] __device_release_driver+0x6a/0x92
->  [<c02c71c3>] device_release_driver+0x20/0x36
->  [<c02c6736>] bus_remove_device+0x62/0x85
->  [<c02c49f8>] device_del+0x16d/0x27c
->  [<c0310f25>] usb_disable_device+0x7a/0xe2
->  [<c030d0bc>] usb_disconnect+0x94/0xde
->  [<c030e030>] hub_thread+0x2fe/0xc1b
->  [<c0128aee>] kthread+0x36/0x58
->  [<c0104233>] kernel_thread_helper+0x7/0x14
->  =======================
-> uhci_hcd 0000:00:0c.0: dma_pool_free buffer-32, 6b6b6b6b/6b6b6b6b (bad dma)
+Dunno, what is this test, anyway?  :-)
 
-whoa. huuuuuuuuuuge USB bug!
 
-> Every new try shows:
-> 
-> usb 2-1: new low speed USB device using uhci_hcd and address 3
-> usb 2-1: new device found, idVendor=046d, idProduct=c00e
-> usb 2-1: new device strings: Mfr=1, Product=2, SerialNumber=0
-> usb 2-1: Product: USB-PS/2 Optical Mouse
-> usb 2-1: Manufacturer: Logitech
-> usb 2-1: configuration #1 chosen from 1 choice
-> input: Logitech USB-PS/2 Optical Mouse as /class/input/input9
-> input: USB HID v1.10 Mouse [Logitech USB-PS/2 Optical Mouse] on usb-0000:00:0c.0-1
-> usb 2-1: USB disconnect, address 3
-> uhci_hcd 0000:00:0c.0: dma_pool_free buffer-32, 6b6b6b6b/6b6b6b6b (bad dma)
-> 
-> But mouse works ok.
-> 
-
-ok..
-
-> 
-> Second issue as reported earilier allmodconfig fails to build on imac g3.
-> 
->   CC      arch/powerpc/kernel/lparmap.s
->   AS      arch/powerpc/kernel/head_64.o
-> lparmap.c: Assembler messages:
-> lparmap.c:84: Error: file number 1 already allocated
-> make[1]: *** [arch/powerpc/kernel/head_64.o] Blad 1
-> make: *** [arch/powerpc/kernel] Blad 2
-
-hm, someone is working that, I think?
+Segher
