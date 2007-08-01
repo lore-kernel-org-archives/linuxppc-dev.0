@@ -1,22 +1,28 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id A98D1DDDE6
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 22:37:35 +1000 (EST)
-Message-ID: <46B07F04.8040806@ru.mvista.com>
-Date: Wed, 01 Aug 2007 16:39:32 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] [IDE] Platform IDE driver
-References: <20070725165318.5331.23795.stgit@localhost.localdomain>
-	<46A79DE0.8060405@ru.mvista.com> <46A79F14.9040409@freescale.com>
-	<46A7A17C.8090505@ru.mvista.com> <46A7A1D5.7020003@freescale.com>
-	<46A7A5E4.4090105@ru.mvista.com>
-	<d04530fcd6e879e0bc059049b7951aef@kernel.crashing.org>
-In-Reply-To: <d04530fcd6e879e0bc059049b7951aef@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A0D72DDD04
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 22:58:12 +1000 (EST)
+Date: Wed, 1 Aug 2007 14:57:53 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Domen Puncer <domen.puncer@telargo.com>
+Subject: Re: Generic clk.h wrappers? [Was: Re: [PATCH 1/3] powerpc clk.h
+	interface for platforms]
+Message-ID: <20070801125753.GB27199@lst.de>
+References: <20070711093113.GE4375@moe.telargo.com>
+	<200707110856.58463.david-b@pacbell.net>
+	<20070711161633.GA4846@lst.de>
+	<200707111002.55119.david-b@pacbell.net>
+	<20070711203454.GC2301@flint.arm.linux.org.uk>
+	<20070713091203.GE11476@nd47.coderock.org>
+	<20070801072807.GL4529@moe.telargo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070801072807.GL4529@moe.telargo.com>
+Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
+	Christoph Hellwig <hch@lst.de>,
+	Russell King <rmk@arm.linux.org.uk>, linux-mips@linux-mips.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,47 +32,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+On Wed, Aug 01, 2007 at 09:28:07AM +0200, Domen Puncer wrote:
+> > It doesn't make any assumption on struct clk, it's just a
+> > wrapper around functions from clk.h.
+> > Point of this patch was to abstract exported functions, since
+> > arch/powerpc/ can support multiple platfroms in one binary.
+> 
+> So... the thread just ended without any consensus, ACK or whatever.
+> 
+> Choices I see:
+> - have EXPORT_SYMBOL for clk.h functions in ie. lib/clock.c and have
+>   every implemenation fill some global struct.
+> - leave this patch as it is, abstraction only for arch/powerpc/.
+> - or I can just forget about this, and leave it for the next sucker
+>   who will want nicer clock handling in some driver
 
-Segher Boessenkool wrote:
+It seems like arm really wants this optimized to the last cycle
+and no abstraction inbetween so we're probably stuck with the status
+quo.   I'm pretty sure this will get too messy sooner and later and
+people will clean the mess up, but due to the political issues I
+don't think it's fair to put that burden on you just for submitting
+the powerpc implementation.
 
->>     This doesn't mean that shift is better anyway. If everyone 
->> considers it
->> better, I give up. But be warned that shift (stride) is not the only 
->> property
->> characterizing register accesses -- the regs might be only accessible as
->> 16/32-bit quantities, for example (16-bit is a real world example -- from
->> Amiga or smth of that sort, IIRC).
-
-> More importantly, "reg-shift" doesn't say what part of
-> the bigger words to access.  A common example is byte-wide
-> registers on a 32-bit-only bus; it's about 50%-50% between
-> connecting the registers to the low byte vs. connecting it
-> to the byte with the lowest address.
-
-    We already have "big-endian" prop used in MPIC nodes, IIRC. Could try to 
-"reuse" it here as well...
-
-> The only realistic way to handle all this is to put some
-> knowledge into the device driver.  This does of course
-> also mean that no "reg-shift" property is needed; the
-> device driver can look at your "compatible" property,
-> instead.
-
->>>>    Why the heck should we care about the UART code taling about IDE?!
-
->>> Consistency?
-
->>     We're not obliged to be consistent with every piece of the kernel 
->> code.
-
-> It would be nice to not name similar properties in the
-> device tree dissimilarly.  Kernel code doesn't come into
-> the picture here.
-
-    The "reg-shift" prop is yet unaccepted ad-hockery at this point. ;-)
-    So, I don't see why we have to be consistent with it.
-
-> Segher
-
-WBR, Sergei
+So, please leave the patch as-is.
