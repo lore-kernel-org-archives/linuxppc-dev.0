@@ -1,15 +1,15 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] fixes for the SLB shadow buffer 
-In-reply-to: <1186007636.5495.536.camel@localhost.localdomain> 
-References: <17055.1185944172@neuling.org>
-	<18096.6654.934841.561238@cargo.ozlabs.ibm.com>
-	<31580.1185948147@neuling.org>
-	<1186007636.5495.536.camel@localhost.localdomain>
-Date: Thu, 02 Aug 2007 09:32:12 +1000
-Message-ID: <1491.1186011132@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <rvinson@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id 0B2E6DDD0C
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Aug 2007 09:32:58 +1000 (EST)
+Message-ID: <46B11823.9050600@mvista.com>
+Date: Wed, 01 Aug 2007 16:32:51 -0700
+From: Randy Vinson <rvinson@mvista.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH] 85xxCDS: Delete the PCI exclude function.
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,49 +19,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> On Wed, 2007-08-01 at 16:02 +1000, Michael Neuling wrote:
-> > We sometimes change the vmalloc segment in slb_flush_and_rebolt but we
-> > never updated with slb shadow buffer.  This fixes it.  Thanks to paulus
-> > for finding this.
-> > 
-> > Also added some write barriers to ensure the shadow buffer is always
-> > valid.
-> 
-> The shadow is global or per-cpu ?
-> 
-> Because in the later case, I think you need more than that.
+>From 8367fd9e98a97ba680d23bf59fa03fcd930dd9e1 Mon Sep 17 00:00:00 2001
+From: Randy Vinson <rvinson@mvista.com>
+Date: Wed, 1 Aug 2007 16:24:48 -0700
+Subject: [PATCH] 85xxCDS: Delete the PCI exclude function.
 
-It's per CPU.
+Now that the FPGA on the 85xxCDS main board has a quirk, we no longer
+need an exclude routine.
 
-> > @@ -759,6 +762,9 @@ int hash_page(unsigned long ea, unsigned
-> >  		   mmu_psize_defs[mmu_vmalloc_psize].sllp) {
-> >  		get_paca()->vmalloc_sllp =
-> >  			mmu_psize_defs[mmu_vmalloc_psize].sllp;
-> > +		vflags = SLB_VSID_KERNEL |
-> > +			mmu_psize_defs[mmu_vmalloc_psize].sllp;
-> > +		slb_shadow_update(VMALLOC_START, vflags, 1);
-> >  		slb_flush_and_rebolt();
-> >  	}
-> 
-> Later on:
-> 
->         } else if (get_paca()->vmalloc_sllp !=
->                    mmu_psize_defs[mmu_vmalloc_psize].sllp) {
->                 get_paca()->vmalloc_sllp =
->                         mmu_psize_defs[mmu_vmalloc_psize].sllp;
->                 slb_flush_and_rebolt();
->         }
-> 
-> If your shadow is per-cpu, you need to fix that up too.
+Signed-off-by: Randy Vinson <rvinson@mvista.com>
+---
+ arch/powerpc/platforms/85xx/mpc85xx_cds.c |   16 ----------------
+ 1 files changed, 0 insertions(+), 16 deletions(-)
 
-I'm confused... isn't that the same section of code?
-
-> I'm tempted to think you should just expose an slb_vmalloc_update()
-> from slb.c that does the shadow update and calls flush_and_rebolt.
-> That would also get rid of your ifdef on vflags definition (which
-> wasn't necessary in the first place if you had put it inside the
-> if statement anyway).
-
-OK, I'll create an slb_vmalloc_update for the next rev.
-
-Mikey
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+index 6a171e9..d7ee380 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+@@ -54,21 +54,6 @@ static volatile u8 *cadmus;
+ 
+ #ifdef CONFIG_PCI
+ 
+-#define ARCADIA_HOST_BRIDGE_IDSEL	17
+-#define ARCADIA_2ND_BRIDGE_IDSEL	3
+-
+-static int mpc85xx_exclude_device(struct pci_controller *hose,
+-				  u_char bus, u_char devfn)
+-{
+-	/* We explicitly do not go past the Tundra 320 Bridge */
+-	if ((bus == 1) && (PCI_SLOT(devfn) == ARCADIA_2ND_BRIDGE_IDSEL))
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-	if ((bus == 0) && (PCI_SLOT(devfn) == ARCADIA_2ND_BRIDGE_IDSEL))
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-	else
+-		return PCIBIOS_SUCCESSFUL;
+-}
+-
+ static void mpc85xx_cds_restart(char *cmd)
+ {
+ 	struct pci_dev *dev;
+@@ -306,7 +291,6 @@ static void __init mpc85xx_cds_setup_arch(void)
+ 			fsl_add_bridge(np, 0);
+ 	}
+ 	ppc_md.pci_irq_fixup = mpc85xx_cds_pci_irq_fixup;
+-	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
+ #endif
+ }
+ 
+-- 
+1.5.3.rc2.22.g69a9b
