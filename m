@@ -1,27 +1,19 @@
-Return-Path: <mingo@elte.hu>
-Received: from fallback.mail.elte.hu (fallback.mail.elte.hu [157.181.151.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8B966DDDD8
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 19:14:48 +1000 (EST)
-Received: from mx2.mail.elte.hu ([157.181.151.9])
-	by fallback.mail.elte.hu with esmtp (Exim) id 1IG9Nc-000513-4j
-	from <mingo@elte.hu>
-	for <linuxppc-dev@ozlabs.org>; Wed, 01 Aug 2007 10:16:28 +0200
-Date: Wed, 1 Aug 2007 10:16:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.23-rc1-mm2
-Message-ID: <20070801081600.GA30482@elte.hu>
-References: <20070731230932.a9459617.akpm@linux-foundation.org>
-	<200708011002.30962.m.kozlowski@tuxland.pl>
-	<20070801011323.6e8d8259.akpm@linux-foundation.org>
+Return-Path: <m8@semihalf.com>
+Received: from mail.semihalf.com (mail.semihalf.com [83.12.36.68])
+	by ozlabs.org (Postfix) with ESMTP id 593ABDDD0D
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 19:29:28 +1000 (EST)
+Message-ID: <46B051F2.5080101@semihalf.com>
+Date: Wed, 01 Aug 2007 11:27:14 +0200
+From: Marian Balakowicz <m8@semihalf.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070801011323.6e8d8259.akpm@linux-foundation.org>
-Cc: linux-usb-devel@lists.sourceforge.net, gregkh@suse.de,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Mariusz Kozlowski <m.kozlowski@tuxland.pl>, paulus@samba.org
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [patch 07/35] pasemi_mac: stop using the pci config
+	space	accessors for register read/writes
+References: <20070705170233.258351000@lixom.net>	<20070705170235.314700000@lixom.net>	<46A91130.8000907@semihalf.com>
+	<20070728083530.GA4580@lixom.net>
+In-Reply-To: <20070728083530.GA4580@lixom.net>
+Content-Type: text/plain; charset=ISO-8859-2
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,16 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Wed, 1 Aug 2007 10:02:30 +0200 Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
+Olof Johansson wrote:
+> On Thu, Jul 26, 2007 at 11:25:04PM +0200, Marian Balakowicz wrote:
+>>
+>> Olof Johansson wrote:
+>>> Move away from using the pci config access functions for simple register
+>>> access.  Our device has all of the registers in the config space (hey,
+>>> from the hardware point of view it looks reasonable :-), so we need to
+>>> somehow get to it. Newer firmwares have it in the device tree such that
+>>> we can just get it and ioremap it there (in case it ever moves in future
+>>> products). For now, provide a hardcoded fallback for older firmwares.
+>> I have recently tried to apply a group of your MAC patches that
+>> includes the one from this email. Strangely, I got a pretty random
+>> kernel panics (or kernel freezes) when this patch is included. Panics
+>> happen in a random, places and have random causes. What I observed is
+>> that replacing newly introduced mac->iob_regs with the corresponding
+>> offset from (already ioremapped) hose->cfg_data removed the problem. So,
+>> it seems that dereferencing pointers based on a second ioremap on a
+>> subset of 0xe000_0000 addresses is problematic.
 > 
-> > Hello,
-> > 
-> > 	I get this warning. Looking at the comment in kernel/irq/resend.c
-> > it's harmless. Is it?
+> The problem is that the IOB register range is 8K, not 4K. I have since
+> fixed that bug but I didn't repost the patch series. It does cause weird
+> and strange errors to happen since register writes into the second 4K
+> would really go to another mapping somewhere else.
+> 
+> So, the quick fix is to always map 0x2000 in map_one_reg, the slightly better
+> one is to check the PCI dev and only map 2K for the IOB.
 
-yeah, harmless.
+Thanks for the pointer. Using 0x2000 for IOB solves the problem.
 
-	Ingo
+Regards,
+Marian
