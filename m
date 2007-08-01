@@ -1,21 +1,10 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 1 Aug 2007 11:19:00 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: DTC 1.0.0 Release Coming?
-Message-ID: <20070801011900.GA31391@localhost.localdomain>
-References: <E1IDjSy-0003eC-T4@jdl.com>
-	<20070726030550.GA1149@localhost.localdomain>
-	<E1IE314-0000qF-5x@jdl.com>
-	<20070726142739.GB18684@localhost.localdomain>
-	<E1IE59h-0001tt-JE@jdl.com>
-	<20070727013331.GB1561@localhost.localdomain>
-	<20070727020041.GC1561@localhost.localdomain>
-	<ac8f78688ab3769444562b120866ca30@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <ac8f78688ab3769444562b120866ca30@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+Return-Path: <michael@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+Message-Id: <b1077fa5aa8f7d0382fd771e66464c1ace5677fc.1185932073.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH 1/1] Fix parse_drconf_memory() for 64-bit start addresses
+Date: Wed,  1 Aug 2007 11:34:38 +1000 (EST)
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,35 +14,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 31, 2007 at 11:11:57PM +0200, Segher Boessenkool wrote:
-> > Ok, figured out why.  When I push, then pop a quilt patch some of the
-> > files end up with their original contents, but changed timestamps.
-> > That altered stat information causes git-diff-index to give false
-> > indications of changed files, so setlocalversion adds the -dirty.
-> > Running git status, or gitool or various other things causes git to
-> > notice that the files aren't really changed, updates the index and
-> > then the version is generated correctly again.
-> >
-> > Not very robust though.
-> 
-> Well you can't blame that on DTC's build system, nor on the
-> setlocalversion script, and not on Git either; it's a Quilt
-> problem...
+Some new machines use the "ibm,dynamic-reconfiguration-memory" property
+to provide memory layout information, rather than via memory nodes.
 
-No, it's really not - touching the files on a pop is correct behaviour
-for quilt (that way it will correctly trigger a rebuild on make
-systems that aren't as flashy as Kbuild).
+There is a bug in the code to parse this property for start addresses over
+4GB, we throw away the high bits and add apparently duplicate regions. This
+results in a BUG() in free_bootmem_core().
 
-setlocalversion should be ensuring that the verison information is
-based on content, not stat info, which means it needs to do a git
-status or something that will remove the false positives before using
-git-diff-index to determine whether the tree is clean or not.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/mm/numa.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-But I still think my approach of basing the version info directly off
-a hash or the source is nicer still.
-
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index de45aa8..c12adc3 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -307,9 +307,9 @@ static void __init parse_drconf_memory(struct device_node *memory)
+ 	const unsigned int *lm, *dm, *aa;
+ 	unsigned int ls, ld, la;
+ 	unsigned int n, aam, aalen;
+-	unsigned long lmb_size, size;
++	unsigned long lmb_size, size, start;
+ 	int nid, default_nid = 0;
+-	unsigned int start, ai, flags;
++	unsigned int ai, flags;
+ 
+ 	lm = of_get_property(memory, "ibm,lmb-size", &ls);
+ 	dm = of_get_property(memory, "ibm,dynamic-memory", &ld);
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+1.5.1.3.g7a33b
