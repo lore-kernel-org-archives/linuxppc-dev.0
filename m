@@ -1,25 +1,15 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id B368CDDDFE
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Aug 2007 00:20:38 +1000 (EST)
-Message-ID: <46B0972C.3020000@ru.mvista.com>
-Date: Wed, 01 Aug 2007 18:22:36 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] mark PCI resource with start 0 as unassigned
-References: <20061130165202.GA23205@aepfle.de>
-	<20061204123854.GA28159@aepfle.de>
-	<FF278F8E-1F65-488D-8821-86A1D9F3B5DA@kernel.crashing.org>
-	<4574197A.2020204@ru.mvista.com>
-	<4FC2EBCF-C927-435A-9BE3-E4403AFC042D@kernel.crashing.org>
-	<45741DDE.4080509@ru.mvista.com>
-	<20061204132124.4f7c50a9@localhost.localdomain>
-	<52F5B831-5B40-4D40-A77F-4D7484692CAE@kernel.crashing.org>
-In-Reply-To: <52F5B831-5B40-4D40-A77F-4D7484692CAE@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linux-ide@vger.kernel.org, Olaf Hering <olaf@aepfle.de>,
-	Alan <alan@lxorguk.ukuu.org.uk>, linuxppc-dev@ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 966B5DDDE9
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Aug 2007 01:41:25 +1000 (EST)
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Fix a compile warning in pci_32.c
+Date: Wed,  1 Aug 2007 17:41:13 +0200
+Message-Id: <11859828761541-git-send-email-segher@kernel.crashing.org>
+Message-Id: <576c3a210d014003c9d4b26f02a95099346f6716.1185982433.git.segher@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,20 +19,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
+__must_check, so do so.
 
->> setup-pci is for SFF8038i devices. It therefore knows that for  assigned
->> resources they must be I/O. It also assumes that zero is not a  valid I/O
->> port just like zero is not a valid IRQ. Stick a real IDE resource  at 
->> zero and drivers/ide can't cope.
+Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
+---
+ arch/powerpc/kernel/pci_32.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-> But 0 _is_ a valid PCI I/O address.  Do we now have to start
-
-    I wasn't in PCI 2.1 (later the corresponding passage have disppeared).
-
-> using "virtual I/O addresses", analogue to the IRQ situation,
-> or can these bad assumptions be fixed instead?
-
-> Segher
-
-WBR, Sergei
+diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
+index cd35c96..04a3109 100644
+--- a/arch/powerpc/kernel/pci_32.c
++++ b/arch/powerpc/kernel/pci_32.c
+@@ -581,8 +581,11 @@ pcibios_assign_resources(void)
+ 			if ((r->flags & IORESOURCE_UNSET) && r->end &&
+ 			    (!ppc_md.pcibios_enable_device_hook ||
+ 			     !ppc_md.pcibios_enable_device_hook(dev, 1))) {
++				int rc;
++
+ 				r->flags &= ~IORESOURCE_UNSET;
+-				pci_assign_resource(dev, idx);
++				rc = pci_assign_resource(dev, idx);
++				BUG_ON(rc);
+ 			}
+ 		}
+ 
+-- 
+1.5.2.1.144.gabc40-dirty
