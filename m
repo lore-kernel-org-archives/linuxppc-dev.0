@@ -1,29 +1,23 @@
-Return-Path: <Wei.Zhang@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
+	[207.189.120.14])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4EA2BDDEE1
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 18:06:19 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l7186CrV010307
-	for <linuxppc-dev@ozlabs.org>; Wed, 1 Aug 2007 01:06:13 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l718671N021205
-	for <linuxppc-dev@ozlabs.org>; Wed, 1 Aug 2007 03:06:12 -0500 (CDT)
-From: Zhang Wei <wei.zhang@freescale.com>
-To: paulus@samba.org, galak@kernel.crashing.org
-Subject: [PATCH 2/2] Remove ULI chip quirks functions from MPC8641HPCN and
-	MPC8544DS boards.
-Date: Wed,  1 Aug 2007 16:14:28 +0800
-Message-Id: <11859560704050-git-send-email-wei.zhang@freescale.com>
-In-Reply-To: <11859560694083-git-send-email-wei.zhang@freescale.com>
-References: <11859560681182-git-send-email-wei.zhang@freescale.com>
-	<11859560694083-git-send-email-wei.zhang@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B0158DDE08
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 18:14:18 +1000 (EST)
+Date: Wed, 1 Aug 2007 01:13:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.23-rc1-mm2
+Message-Id: <20070801011323.6e8d8259.akpm@linux-foundation.org>
+In-Reply-To: <200708011002.30962.m.kozlowski@tuxland.pl>
+References: <20070731230932.a9459617.akpm@linux-foundation.org>
+	<200708011002.30962.m.kozlowski@tuxland.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, gregkh@suse.de, paulus@samba.org,
+	linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,487 +27,93 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Remove ULI chip quirks functions from MPC8641HPCN and MPC8544DS boards.
-Use common quirks functions instead.
+On Wed, 1 Aug 2007 10:02:30 +0200 Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
 
-Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
-Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
----
- arch/powerpc/platforms/85xx/Kconfig        |    1 +
- arch/powerpc/platforms/85xx/mpc8544_ds.c   |  207 --------------------------
- arch/powerpc/platforms/86xx/Kconfig        |    1 +
- arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |  217 ----------------------------
- 4 files changed, 2 insertions(+), 424 deletions(-)
+> Hello,
+> 
+> 	I get this warning. Looking at the comment in kernel/irq/resend.c
+> it's harmless. Is it?
+> 
+> WARNING: at kernel/irq/resend.c:69 check_irq_resend()
+>  [<c010456a>] show_trace_log_lvl+0x1a/0x30
+>  [<c010508d>] show_trace+0x12/0x14
+>  [<c01051e0>] dump_stack+0x15/0x17
+>  [<c013b001>] check_irq_resend+0x91/0xa0
+>  [<c013ab58>] enable_irq+0xb1/0xb3
+>  [<c02d7b81>] ide_config_drive_speed+0xda/0x269
+>  [<c02d391c>] ali15x3_tune_chipset+0xcc/0x161
+>  [<c02dd367>] ide_tune_dma+0x43/0x4d
+>  [<c02d29e0>] ali15x3_config_drive_for_dma+0xf/0x2a
+>  [<c02dc89a>] ide_set_dma+0x11/0x40
+>  [<c02d41cf>] set_using_dma+0x84/0xd1
+>  [<c02d4dfe>] generic_ide_ioctl+0xb9/0x3fb
+>  [<c02df7e4>] idedisk_ioctl+0x3f/0x10c
+>  [<c023d779>] blkdev_driver_ioctl+0x55/0x5e
+>  [<c023da3e>] blkdev_ioctl+0x2bc/0x83e
+>  [<c017e5ca>] block_ioctl+0x1b/0x21
+>  [<c01664c2>] do_ioctl+0x22/0x71
+>  [<c0166566>] vfs_ioctl+0x55/0x28a
+>  [<c01667ce>] sys_ioctl+0x33/0x51
+>  [<c0103f32>] sysenter_past_esp+0x5f/0x85
+>  =======================
 
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index f581840..34306a7 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -32,6 +32,7 @@ config MPC85xx_MDS
- config MPC8544_DS
- 	bool "Freescale MPC8544 DS"
- 	select PPC_I8259
-+	select PPC_PCI_QUIRKS
- 	select DEFAULT_UIMAGE
- 	help
- 	  This option enables support for the MPC8544 DS board
-diff --git a/arch/powerpc/platforms/85xx/mpc8544_ds.c b/arch/powerpc/platforms/85xx/mpc8544_ds.c
-index 4905f6f..9b9a1f1 100644
---- a/arch/powerpc/platforms/85xx/mpc8544_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc8544_ds.c
-@@ -113,213 +113,6 @@ void __init mpc8544_ds_pic_init(void)
- #endif	/* CONFIG_PPC_I8259 */
- }
- 
--#ifdef CONFIG_PCI
--enum pirq { PIRQA = 8, PIRQB, PIRQC, PIRQD, PIRQE, PIRQF, PIRQG, PIRQH };
--
--/*
-- * Value in  table -- IRQ number
-- */
--const unsigned char uli1575_irq_route_table[16] = {
--	0,		/* 0: Reserved */
--	0x8,
--	0,		/* 2: Reserved */
--	0x2,
--	0x4,
--	0x5,
--	0x7,
--	0x6,
--	0,		/* 8: Reserved */
--	0x1,
--	0x3,
--	0x9,
--	0xb,
--	0,		/* 13: Reserved */
--	0xd,
--	0xf,
--};
--
--static int __devinit
--get_pci_irq_from_of(struct pci_controller *hose, int slot, int pin)
--{
--	struct of_irq oirq;
--	u32 laddr[3];
--	struct device_node *hosenode = hose ? hose->arch_data : NULL;
--
--	if (!hosenode)
--		return -EINVAL;
--
--	laddr[0] = (hose->first_busno << 16) | (PCI_DEVFN(slot, 0) << 8);
--	laddr[1] = laddr[2] = 0;
--	of_irq_map_raw(hosenode, &pin, 1, laddr, &oirq);
--	DBG("mpc8544_ds: pci irq addr %x, slot %d, pin %d, irq %d\n",
--	    laddr[0], slot, pin, oirq.specifier[0]);
--	return oirq.specifier[0];
--}
--
--/*8259*/
--static void __devinit quirk_uli1575(struct pci_dev *dev)
--{
--	unsigned short temp;
--	struct pci_controller *hose = pci_bus_to_host(dev->bus);
--	unsigned char irq2pin[16];
--	unsigned long pirq_map_word = 0;
--	u32 irq;
--	int i;
--
--	/*
--	 * ULI1575 interrupts route setup
--	 */
--	memset(irq2pin, 0, 16);	/* Initialize default value 0 */
--
--	irq2pin[6]=PIRQA+3;	/* enabled mapping for IRQ6 to PIRQD, used by SATA */
--
--	/*
--	 * PIRQE -> PIRQF mapping set manually
--	 *
--	 * IRQ pin   IRQ#
--	 * PIRQE ---- 9
--	 * PIRQF ---- 10
--	 * PIRQG ---- 11
--	 * PIRQH ---- 12
--	 */
--	for (i = 0; i < 4; i++)
--		irq2pin[i + 9] = PIRQE + i;
--
--	/* Set IRQ-PIRQ Mapping to ULI1575 */
--	for (i = 0; i < 16; i++)
--		if (irq2pin[i])
--			pirq_map_word |= (uli1575_irq_route_table[i] & 0xf)
--			    << ((irq2pin[i] - PIRQA) * 4);
--
--	pirq_map_word |= 1<<26;	/* disable INTx in EP mode*/
--
--	/* ULI1575 IRQ mapping conf register default value is 0xb9317542 */
--	DBG("Setup ULI1575 IRQ mapping configuration register value = 0x%x\n",
--		(int)pirq_map_word);
--	pci_write_config_dword(dev, 0x48, pirq_map_word);
--
--#define ULI1575_SET_DEV_IRQ(slot, pin, reg)				\
--	do {								\
--		int irq;						\
--		irq = get_pci_irq_from_of(hose, slot, pin);		\
--		if (irq > 0 && irq < 16) 				\
--			pci_write_config_byte(dev, reg, irq2pin[irq]);	\
--		else							\
--			printk(KERN_WARNING "ULI1575 device"		\
--				"(slot %d, pin %d) irq %d is invalid.\n", \
--				slot, pin, irq);			\
--	} while(0)
--
--	/* USB 1.1 OHCI controller 1, slot 28, pin 1 */
--	ULI1575_SET_DEV_IRQ(28, 1, 0x86);
--
--	/* USB 1.1 OHCI controller 2, slot 28, pin 2 */
--	ULI1575_SET_DEV_IRQ(28, 2, 0x87);
--
--	/* USB 1.1 OHCI controller 3, slot 28, pin 3 */
--	ULI1575_SET_DEV_IRQ(28, 3, 0x88);
--
--	/* USB 2.0 controller, slot 28, pin 4 */
--	irq = get_pci_irq_from_of(hose, 28, 4);
--	if (irq >= 0 && irq <= 15)
--		pci_write_config_dword(dev, 0x74, uli1575_irq_route_table[irq]);
--
--	/* Audio controller, slot 29, pin 1 */
--	ULI1575_SET_DEV_IRQ(29, 1, 0x8a);
--
--	/* Modem controller, slot 29, pin 2 */
--	ULI1575_SET_DEV_IRQ(29, 2, 0x8b);
--
--	/* HD audio controller, slot 29, pin 3 */
--	ULI1575_SET_DEV_IRQ(29, 3, 0x8c);
--
--	/* SMB interrupt: slot 30, pin 1 */
--	ULI1575_SET_DEV_IRQ(30, 1, 0x8e);
--
--	/* PMU ACPI SCI interrupt: slot 30, pin 2 */
--	ULI1575_SET_DEV_IRQ(30, 2, 0x8f);
--
--	/* Serial ATA interrupt: slot 31, pin 1 */
--	ULI1575_SET_DEV_IRQ(31, 1, 0x8d);
--
--	/* Primary PATA IDE IRQ: 14
--	 * Secondary PATA IDE IRQ: 15
--	 */
--	pci_write_config_byte(dev, 0x44, 0x30 | uli1575_irq_route_table[14]);
--	pci_write_config_byte(dev, 0x75, uli1575_irq_route_table[15]);
--
--	/* Set IRQ14 and IRQ15 to legacy IRQs */
--	pci_read_config_word(dev, 0x46, &temp);
--	temp |= 0xc000;
--	pci_write_config_word(dev, 0x46, temp);
--
--	/* Set i8259 interrupt trigger
--	 * IRQ 3:  Level
--	 * IRQ 4:  Level
--	 * IRQ 5:  Level
--	 * IRQ 6:  Level
--	 * IRQ 7:  Level
--	 * IRQ 9:  Level
--	 * IRQ 10: Level
--	 * IRQ 11: Level
--	 * IRQ 12: Level
--	 * IRQ 14: Edge
--	 * IRQ 15: Edge
--	 */
--	outb(0xfa, 0x4d0);
--	outb(0x1e, 0x4d1);
--
--#undef ULI1575_SET_DEV_IRQ
--}
--
--/* SATA */
--static void __devinit quirk_uli5288(struct pci_dev *dev)
--{
--	unsigned char c;
--
--	pci_read_config_byte(dev, 0x83, &c);
--	c |= 0x80;		/* read/write lock */
--	pci_write_config_byte(dev, 0x83, c);
--
--	pci_write_config_byte(dev, 0x09, 0x01);	/* Base class code: storage */
--	pci_write_config_byte(dev, 0x0a, 0x06);	/* IDE disk */
--
--	pci_read_config_byte(dev, 0x83, &c);
--	c &= 0x7f;
--	pci_write_config_byte(dev, 0x83, c);
--
--	pci_read_config_byte(dev, 0x84, &c);
--	c |= 0x01;				/* emulated PATA mode enabled */
--	pci_write_config_byte(dev, 0x84, c);
--}
--
--/* PATA */
--static void __devinit quirk_uli5229(struct pci_dev *dev)
--{
--	unsigned short temp;
--	pci_write_config_word(dev, 0x04, 0x0405);	/* MEM IO MSI */
--	pci_read_config_word(dev, 0x4a, &temp);
--	temp |= 0x1000;				/* Enable Native IRQ 14/15 */
--	pci_write_config_word(dev, 0x4a, temp);
--}
--
--/*Bridge*/
--static void __devinit early_uli5249(struct pci_dev *dev)
--{
--	unsigned char temp;
--	pci_write_config_word(dev, 0x04, 0x0007);	/* mem access */
--	pci_read_config_byte(dev, 0x7c, &temp);
--	pci_write_config_byte(dev, 0x7c, 0x80);	/* R/W lock control */
--	pci_write_config_byte(dev, 0x09, 0x01);	/* set as pci-pci bridge */
--	pci_write_config_byte(dev, 0x7c, temp);	/* restore pci bus debug control */
--	dev->class |= 0x1;
--}
--
--DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AL, 0x1575, quirk_uli1575);
--DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AL, 0x5288, quirk_uli5288);
--DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AL, 0x5229, quirk_uli5229);
--DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_AL, 0x5249, early_uli5249);
--#endif	/* CONFIG_PCI */
- 
- /*
-  * Setup the architecture
-diff --git a/arch/powerpc/platforms/86xx/Kconfig b/arch/powerpc/platforms/86xx/Kconfig
-index 343b76d..9cebfc6 100644
---- a/arch/powerpc/platforms/86xx/Kconfig
-+++ b/arch/powerpc/platforms/86xx/Kconfig
-@@ -6,6 +6,7 @@ choice
- config MPC8641_HPCN
- 	bool "Freescale MPC8641 HPCN"
- 	select PPC_I8259
-+	select PPC_PCI_QUIRKS
- 	select DEFAULT_UIMAGE
- 	help
- 	  This option enables support for the MPC8641 HPCN board.
-diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-index e9eaa07..b958f0e 100644
---- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-+++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-@@ -106,223 +106,6 @@ mpc86xx_hpcn_init_irq(void)
- #endif
- }
- 
--#ifdef CONFIG_PCI
--
--enum pirq{PIRQA = 8, PIRQB, PIRQC, PIRQD, PIRQE, PIRQF, PIRQG, PIRQH};
--const unsigned char uli1575_irq_route_table[16] = {
--	0, 	/* 0: Reserved */
--	0x8, 	/* 1: 0b1000 */
--	0, 	/* 2: Reserved */
--	0x2,	/* 3: 0b0010 */
--	0x4,	/* 4: 0b0100 */
--	0x5, 	/* 5: 0b0101 */
--	0x7,	/* 6: 0b0111 */
--	0x6,	/* 7: 0b0110 */
--	0, 	/* 8: Reserved */
--	0x1,	/* 9: 0b0001 */
--	0x3,	/* 10: 0b0011 */
--	0x9,	/* 11: 0b1001 */
--	0xb,	/* 12: 0b1011 */
--	0, 	/* 13: Reserved */
--	0xd,	/* 14, 0b1101 */
--	0xf,	/* 15, 0b1111 */
--};
--
--static int __devinit
--get_pci_irq_from_of(struct pci_controller *hose, int slot, int pin)
--{
--	struct of_irq oirq;
--	u32 laddr[3];
--	struct device_node *hosenode = hose ? hose->arch_data : NULL;
--
--	if (!hosenode) return -EINVAL;
--
--	laddr[0] = (hose->first_busno << 16) | (PCI_DEVFN(slot, 0) << 8);
--	laddr[1] = laddr[2] = 0;
--	of_irq_map_raw(hosenode, &pin, 1, laddr, &oirq);
--	DBG("mpc86xx_hpcn: pci irq addr %x, slot %d, pin %d, irq %d\n",
--			laddr[0], slot, pin, oirq.specifier[0]);
--	return oirq.specifier[0];
--}
--
--static void __devinit quirk_uli1575(struct pci_dev *dev)
--{
--	unsigned short temp;
--	struct pci_controller *hose = pci_bus_to_host(dev->bus);
--	unsigned char irq2pin[16], c;
--	unsigned long pirq_map_word = 0;
--	u32 irq;
--	int i;
--
--	/*
--	 * ULI1575 interrupts route setup
--	 */
--	memset(irq2pin, 0, 16); /* Initialize default value 0 */
--
--	/*
--	 * PIRQA -> PIRQD mapping read from OF-tree
--	 *
--	 * interrupts for PCI slot0 -- PIRQA / PIRQB / PIRQC / PIRQD
--	 *                PCI slot1 -- PIRQB / PIRQC / PIRQD / PIRQA
--	 */
--	for (i = 0; i < 4; i++){
--		irq = get_pci_irq_from_of(hose, 17, i + 1);
--		if (irq > 0 && irq < 16)
--			irq2pin[irq] = PIRQA + i;
--		else
--			printk(KERN_WARNING "ULI1575 device"
--			    "(slot %d, pin %d) irq %d is invalid.\n",
--			    17, i, irq);
--	}
--
--	/*
--	 * PIRQE -> PIRQF mapping set manually
--	 *
--	 * IRQ pin   IRQ#
--	 * PIRQE ---- 9
--	 * PIRQF ---- 10
--	 * PIRQG ---- 11
--	 * PIRQH ---- 12
--	 */
--	for (i = 0; i < 4; i++) irq2pin[i + 9] = PIRQE + i;
--
--	/* Set IRQ-PIRQ Mapping to ULI1575 */
--	for (i = 0; i < 16; i++)
--		if (irq2pin[i])
--			pirq_map_word |= (uli1575_irq_route_table[i] & 0xf)
--				<< ((irq2pin[i] - PIRQA) * 4);
--
--	/* ULI1575 IRQ mapping conf register default value is 0xb9317542 */
--	DBG("Setup ULI1575 IRQ mapping configuration register value = 0x%x\n",
--			pirq_map_word);
--	pci_write_config_dword(dev, 0x48, pirq_map_word);
--
--#define ULI1575_SET_DEV_IRQ(slot, pin, reg) 				\
--	do { 								\
--		int irq; 						\
--		irq = get_pci_irq_from_of(hose, slot, pin); 		\
--		if (irq > 0 && irq < 16) 				\
--			pci_write_config_byte(dev, reg, irq2pin[irq]); 	\
--		else							\
--			printk(KERN_WARNING "ULI1575 device"		\
--			    "(slot %d, pin %d) irq %d is invalid.\n",	\
--			    slot, pin, irq);				\
--	} while(0)
--
--	/* USB 1.1 OHCI controller 1, slot 28, pin 1 */
--	ULI1575_SET_DEV_IRQ(28, 1, 0x86);
--
--	/* USB 1.1 OHCI controller 2, slot 28, pin 2 */
--	ULI1575_SET_DEV_IRQ(28, 2, 0x87);
--
--	/* USB 1.1 OHCI controller 3, slot 28, pin 3 */
--	ULI1575_SET_DEV_IRQ(28, 3, 0x88);
--
--	/* USB 2.0 controller, slot 28, pin 4 */
--	irq = get_pci_irq_from_of(hose, 28, 4);
--	if (irq >= 0 && irq <=15)
--		pci_write_config_dword(dev, 0x74, uli1575_irq_route_table[irq]);
--
--	/* Audio controller, slot 29, pin 1 */
--	ULI1575_SET_DEV_IRQ(29, 1, 0x8a);
--
--	/* Modem controller, slot 29, pin 2 */
--	ULI1575_SET_DEV_IRQ(29, 2, 0x8b);
--
--	/* HD audio controller, slot 29, pin 3 */
--	ULI1575_SET_DEV_IRQ(29, 3, 0x8c);
--
--	/* SMB interrupt: slot 30, pin 1 */
--	ULI1575_SET_DEV_IRQ(30, 1, 0x8e);
--
--	/* PMU ACPI SCI interrupt: slot 30, pin 2 */
--	ULI1575_SET_DEV_IRQ(30, 2, 0x8f);
--
--	/* Serial ATA interrupt: slot 31, pin 1 */
--	ULI1575_SET_DEV_IRQ(31, 1, 0x8d);
--
--	/* Primary PATA IDE IRQ: 14
--	 * Secondary PATA IDE IRQ: 15
--	 */
--	pci_write_config_byte(dev, 0x44, 0x30 | uli1575_irq_route_table[14]);
--	pci_write_config_byte(dev, 0x75, uli1575_irq_route_table[15]);
--
--	/* Set IRQ14 and IRQ15 to legacy IRQs */
--	pci_read_config_word(dev, 0x46, &temp);
--	temp |= 0xc000;
--	pci_write_config_word(dev, 0x46, temp);
--
--	/* Set i8259 interrupt trigger
--	 * IRQ 3:  Level
--	 * IRQ 4:  Level
--	 * IRQ 5:  Level
--	 * IRQ 6:  Level
--	 * IRQ 7:  Level
--	 * IRQ 9:  Level
--	 * IRQ 10: Level
--	 * IRQ 11: Level
--	 * IRQ 12: Level
--	 * IRQ 14: Edge
--	 * IRQ 15: Edge
--	 */
--	outb(0xfa, 0x4d0);
--	outb(0x1e, 0x4d1);
--
--#undef ULI1575_SET_DEV_IRQ
--
--	/* Disable the HD interface and enable the AC97 interface. */
--	pci_read_config_byte(dev, 0xb8, &c);
--	c &= 0x7f;
--	pci_write_config_byte(dev, 0xb8, c);
--}
--
--static void __devinit quirk_uli5288(struct pci_dev *dev)
--{
--	unsigned char c;
--
--	pci_read_config_byte(dev,0x83,&c);
--	c |= 0x80;
--	pci_write_config_byte(dev, 0x83, c);
--
--	pci_write_config_byte(dev, 0x09, 0x01);
--	pci_write_config_byte(dev, 0x0a, 0x06);
--
--	pci_read_config_byte(dev,0x83,&c);
--	c &= 0x7f;
--	pci_write_config_byte(dev, 0x83, c);
--
--	pci_read_config_byte(dev,0x84,&c);
--	c |= 0x01;
--	pci_write_config_byte(dev, 0x84, c);
--}
--
--static void __devinit quirk_uli5229(struct pci_dev *dev)
--{
--	unsigned short temp;
--	pci_write_config_word(dev, 0x04, 0x0405);
--	dev->class &= ~0x5;
--	pci_read_config_word(dev, 0x4a, &temp);
--	temp |= 0x1000;
--	pci_write_config_word(dev, 0x4a, temp);
--}
--
--static void __devinit early_uli5249(struct pci_dev *dev)
--{
--	unsigned char temp;
--	pci_write_config_word(dev, 0x04, 0x0007);
--	pci_read_config_byte(dev, 0x7c, &temp);
--	pci_write_config_byte(dev, 0x7c, 0x80);
--	pci_write_config_byte(dev, 0x09, 0x01);
--	pci_write_config_byte(dev, 0x7c, temp);
--	dev->class |= 0x1;
--}
--
--DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AL, 0x1575, quirk_uli1575);
--DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AL, 0x5288, quirk_uli5288);
--DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AL, 0x5229, quirk_uli5229);
--DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_AL, 0x5249, early_uli5249);
--#endif /* CONFIG_PCI */
--
- 
- static void __init
- mpc86xx_hpcn_setup_arch(void)
--- 
-1.5.1
+Ingo debug stuff.
+
+> Then reattaching a usb mouse caused this (only once)
+> 
+> usb 2-1: USB disconnect, address 2
+> BUG: atomic counter underflow at:
+>  [<c010456a>] show_trace_log_lvl+0x1a/0x30
+>  [<c010508d>] show_trace+0x12/0x14
+>  [<c01051e0>] dump_stack+0x15/0x17
+>  [<c01418cf>] __free_pages+0x50/0x52
+>  [<c01418f0>] free_pages+0x1f/0x21
+>  [<c010783d>] dma_free_coherent+0x43/0x9c
+>  [<c0315067>] hcd_buffer_free+0x43/0x6a
+>  [<c030b2b4>] usb_buffer_free+0x23/0x29
+>  [<c0346db4>] hid_free_buffers+0x23/0x71
+>  [<c0346eb2>] hid_disconnect+0xb0/0xc8
+>  [<c0313676>] usb_unbind_interface+0x30/0x72
+>  [<c02c6df0>] __device_release_driver+0x6a/0x92
+>  [<c02c71c3>] device_release_driver+0x20/0x36
+>  [<c02c6736>] bus_remove_device+0x62/0x85
+>  [<c02c49f8>] device_del+0x16d/0x27c
+>  [<c0310f25>] usb_disable_device+0x7a/0xe2
+>  [<c030d0bc>] usb_disconnect+0x94/0xde
+>  [<c030e030>] hub_thread+0x2fe/0xc1b
+>  [<c0128aee>] kthread+0x36/0x58
+>  [<c0104233>] kernel_thread_helper+0x7/0x14
+>  =======================
+> uhci_hcd 0000:00:0c.0: dma_pool_free buffer-32, 6b6b6b6b/6b6b6b6b (bad dma)
+
+whoa. huuuuuuuuuuge USB bug!
+
+> Every new try shows:
+> 
+> usb 2-1: new low speed USB device using uhci_hcd and address 3
+> usb 2-1: new device found, idVendor=046d, idProduct=c00e
+> usb 2-1: new device strings: Mfr=1, Product=2, SerialNumber=0
+> usb 2-1: Product: USB-PS/2 Optical Mouse
+> usb 2-1: Manufacturer: Logitech
+> usb 2-1: configuration #1 chosen from 1 choice
+> input: Logitech USB-PS/2 Optical Mouse as /class/input/input9
+> input: USB HID v1.10 Mouse [Logitech USB-PS/2 Optical Mouse] on usb-0000:00:0c.0-1
+> usb 2-1: USB disconnect, address 3
+> uhci_hcd 0000:00:0c.0: dma_pool_free buffer-32, 6b6b6b6b/6b6b6b6b (bad dma)
+> 
+> But mouse works ok.
+> 
+
+ok..
+
+> 
+> Second issue as reported earilier allmodconfig fails to build on imac g3.
+> 
+>   CC      arch/powerpc/kernel/lparmap.s
+>   AS      arch/powerpc/kernel/head_64.o
+> lparmap.c: Assembler messages:
+> lparmap.c:84: Error: file number 1 already allocated
+> make[1]: *** [arch/powerpc/kernel/head_64.o] Blad 1
+> make: *** [arch/powerpc/kernel] Blad 2
+
+hm, someone is working that, I think?
