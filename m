@@ -1,19 +1,25 @@
-Return-Path: <m.kozlowski@tuxland.pl>
-Received: from tuxland.pl (xdsl-664.zgora.dialog.net.pl [81.168.226.152])
-	by ozlabs.org (Postfix) with ESMTP id D16A2DDDE6
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 18:02:36 +1000 (EST)
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.23-rc1-mm2
-Date: Wed, 1 Aug 2007 10:02:30 +0200
-References: <20070731230932.a9459617.akpm@linux-foundation.org>
-In-Reply-To: <20070731230932.a9459617.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200708011002.30962.m.kozlowski@tuxland.pl>
-Cc: linuxppc-dev@ozlabs.org, gregkh@suse.de, paulus@samba.org,
-	linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+Return-Path: <Wei.Zhang@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3115BDDE10
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 18:06:14 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l71869JT014340
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Aug 2007 01:06:09 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l718671J021205
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Aug 2007 03:06:08 -0500 (CDT)
+From: Zhang Wei <wei.zhang@freescale.com>
+To: paulus@samba.org, galak@kernel.crashing.org
+Subject: [PATCH 0/2] Use common quirks routines for ULI chips
+Date: Wed,  1 Aug 2007 16:14:26 +0800
+Message-Id: <11859560681182-git-send-email-wei.zhang@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,87 +29,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+Hi,
 
-	I get this warning. Looking at the comment in kernel/irq/resend.c
-it's harmless. Is it?
+These two patches add common quirks routines for 
+ULI chip on MPC8641HPCN and MPC8544DS board.
+It supposes to support future powerpc platform using ULI chips.
 
-WARNING: at kernel/irq/resend.c:69 check_irq_resend()
- [<c010456a>] show_trace_log_lvl+0x1a/0x30
- [<c010508d>] show_trace+0x12/0x14
- [<c01051e0>] dump_stack+0x15/0x17
- [<c013b001>] check_irq_resend+0x91/0xa0
- [<c013ab58>] enable_irq+0xb1/0xb3
- [<c02d7b81>] ide_config_drive_speed+0xda/0x269
- [<c02d391c>] ali15x3_tune_chipset+0xcc/0x161
- [<c02dd367>] ide_tune_dma+0x43/0x4d
- [<c02d29e0>] ali15x3_config_drive_for_dma+0xf/0x2a
- [<c02dc89a>] ide_set_dma+0x11/0x40
- [<c02d41cf>] set_using_dma+0x84/0xd1
- [<c02d4dfe>] generic_ide_ioctl+0xb9/0x3fb
- [<c02df7e4>] idedisk_ioctl+0x3f/0x10c
- [<c023d779>] blkdev_driver_ioctl+0x55/0x5e
- [<c023da3e>] blkdev_ioctl+0x2bc/0x83e
- [<c017e5ca>] block_ioctl+0x1b/0x21
- [<c01664c2>] do_ioctl+0x22/0x71
- [<c0166566>] vfs_ioctl+0x55/0x28a
- [<c01667ce>] sys_ioctl+0x33/0x51
- [<c0103f32>] sysenter_past_esp+0x5f/0x85
- =======================
+[PATCH 1/2] Add sysdev/pci_quirks.c file into PowerPC architecture with ULI chip quirk functions.
+[PATCH 2/2] Remove ULI chip quirks functions from MPC8641HPCN and MPC8544DS boards.
 
-Then reattaching a usb mouse caused this (only once)
-
-usb 2-1: USB disconnect, address 2
-BUG: atomic counter underflow at:
- [<c010456a>] show_trace_log_lvl+0x1a/0x30
- [<c010508d>] show_trace+0x12/0x14
- [<c01051e0>] dump_stack+0x15/0x17
- [<c01418cf>] __free_pages+0x50/0x52
- [<c01418f0>] free_pages+0x1f/0x21
- [<c010783d>] dma_free_coherent+0x43/0x9c
- [<c0315067>] hcd_buffer_free+0x43/0x6a
- [<c030b2b4>] usb_buffer_free+0x23/0x29
- [<c0346db4>] hid_free_buffers+0x23/0x71
- [<c0346eb2>] hid_disconnect+0xb0/0xc8
- [<c0313676>] usb_unbind_interface+0x30/0x72
- [<c02c6df0>] __device_release_driver+0x6a/0x92
- [<c02c71c3>] device_release_driver+0x20/0x36
- [<c02c6736>] bus_remove_device+0x62/0x85
- [<c02c49f8>] device_del+0x16d/0x27c
- [<c0310f25>] usb_disable_device+0x7a/0xe2
- [<c030d0bc>] usb_disconnect+0x94/0xde
- [<c030e030>] hub_thread+0x2fe/0xc1b
- [<c0128aee>] kthread+0x36/0x58
- [<c0104233>] kernel_thread_helper+0x7/0x14
- =======================
-uhci_hcd 0000:00:0c.0: dma_pool_free buffer-32, 6b6b6b6b/6b6b6b6b (bad dma)
-
-Every new try shows:
-
-usb 2-1: new low speed USB device using uhci_hcd and address 3
-usb 2-1: new device found, idVendor=046d, idProduct=c00e
-usb 2-1: new device strings: Mfr=1, Product=2, SerialNumber=0
-usb 2-1: Product: USB-PS/2 Optical Mouse
-usb 2-1: Manufacturer: Logitech
-usb 2-1: configuration #1 chosen from 1 choice
-input: Logitech USB-PS/2 Optical Mouse as /class/input/input9
-input: USB HID v1.10 Mouse [Logitech USB-PS/2 Optical Mouse] on usb-0000:00:0c.0-1
-usb 2-1: USB disconnect, address 3
-uhci_hcd 0000:00:0c.0: dma_pool_free buffer-32, 6b6b6b6b/6b6b6b6b (bad dma)
-
-But mouse works ok.
-
-
-Second issue as reported earilier allmodconfig fails to build on imac g3.
-
-  CC      arch/powerpc/kernel/lparmap.s
-  AS      arch/powerpc/kernel/head_64.o
-lparmap.c: Assembler messages:
-lparmap.c:84: Error: file number 1 already allocated
-make[1]: *** [arch/powerpc/kernel/head_64.o] Blad 1
-make: *** [arch/powerpc/kernel] Blad 2
-
-
-Regards,
-
-	Mariusz
+Best Regards,
+Zhang Wei
