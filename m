@@ -1,18 +1,28 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from the-village.bc.nu (unknown [81.2.110.250])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 62617DDDF4
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Aug 2007 01:41:28 +1000 (EST)
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Replace a few #defines with empty inline functions
-Date: Wed,  1 Aug 2007 17:41:15 +0200
-Message-Id: <11859828792347-git-send-email-segher@kernel.crashing.org>
-In-Reply-To: <11859828781513-git-send-email-segher@kernel.crashing.org>
-References: <11859828761541-git-send-email-segher@kernel.crashing.org>
-	<11859828781513-git-send-email-segher@kernel.crashing.org>
-Message-Id: <4533e849af9996f5f9ce038e37bf67c4c9012a87.1185982410.git.segher@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 0AB0DDDE30
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Aug 2007 01:44:32 +1000 (EST)
+Date: Wed, 1 Aug 2007 16:51:40 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH] mark PCI resource with start 0 as unassigned
+Message-ID: <20070801165140.3e176cd1@the-village.bc.nu>
+In-Reply-To: <46B0972C.3020000@ru.mvista.com>
+References: <20061130165202.GA23205@aepfle.de>
+	<20061204123854.GA28159@aepfle.de>
+	<FF278F8E-1F65-488D-8821-86A1D9F3B5DA@kernel.crashing.org>
+	<4574197A.2020204@ru.mvista.com>
+	<4FC2EBCF-C927-435A-9BE3-E4403AFC042D@kernel.crashing.org>
+	<45741DDE.4080509@ru.mvista.com>
+	<20061204132124.4f7c50a9@localhost.localdomain>
+	<52F5B831-5B40-4D40-A77F-4D7484692CAE@kernel.crashing.org>
+	<46B0972C.3020000@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-ide@vger.kernel.org, Olaf Hering <olaf@aepfle.de>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,62 +32,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-...so that GCC doesn't complain about unused variables in the
-callers of these.
+On Wed, 01 Aug 2007 18:22:36 +0400
+Sergei Shtylyov <sshtylyov@ru.mvista.com> wrote:
 
-Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
----
- include/asm-powerpc/dma-mapping.h |   24 ++++++++++++++++++------
- 1 files changed, 18 insertions(+), 6 deletions(-)
+> Segher Boessenkool wrote:
+> 
+> >> setup-pci is for SFF8038i devices. It therefore knows that for  assigned
+> >> resources they must be I/O. It also assumes that zero is not a  valid I/O
+> >> port just like zero is not a valid IRQ. Stick a real IDE resource  at 
+> >> zero and drivers/ide can't cope.
+> 
+> > But 0 _is_ a valid PCI I/O address.  Do we now have to start
+> 
+>     I wasn't in PCI 2.1 (later the corresponding passage have disppeared).
 
-diff --git a/include/asm-powerpc/dma-mapping.h b/include/asm-powerpc/dma-mapping.h
-index f6bd804..22b3c40 100644
---- a/include/asm-powerpc/dma-mapping.h
-+++ b/include/asm-powerpc/dma-mapping.h
-@@ -249,8 +249,12 @@ dma_map_single(struct device *dev, void *ptr, size_t size,
- 	return virt_to_bus(ptr);
- }
- 
--/* We do nothing. */
--#define dma_unmap_single(dev, addr, size, dir)	((void)0)
-+static inline void dma_unmap_single(struct device *dev, dma_addr_t dma_addr,
-+				    size_t size,
-+				    enum dma_data_direction direction)
-+{
-+	/* We do nothing. */
-+}
- 
- static inline dma_addr_t
- dma_map_page(struct device *dev, struct page *page,
-@@ -264,8 +268,12 @@ dma_map_page(struct device *dev, struct page *page,
- 	return page_to_bus(page) + offset;
- }
- 
--/* We do nothing. */
--#define dma_unmap_page(dev, handle, size, dir)	((void)0)
-+static inline void dma_unmap_page(struct device *dev, dma_addr_t dma_address,
-+				  size_t size,
-+				  enum dma_data_direction direction)
-+{
-+	/* We do nothing. */
-+}
- 
- static inline int
- dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
-@@ -284,8 +292,12 @@ dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
- 	return nents;
- }
- 
--/* We don't do anything here. */
--#define dma_unmap_sg(dev, sg, nents, dir)	((void)0)
-+static inline void dma_unmap_sg(struct device *dev, struct scatterlist *sg,
-+				int nhwentries,
-+				enum dma_data_direction direction)
-+{
-+	/* We don't do anything here. */
-+}
- 
- #endif /* CONFIG_PPC64 */
- 
--- 
-1.5.2.1.144.gabc40-dirty
+SFF controllers often use 0 to indicate a channel isn't configured and
+present. Libata and old IDE both assume these semantics for an SFF
+IDE device reporting address zero. It matches the hardware behaviour.
+
+I would suggest you don't map one at I/O zero on your PCI.
+
+Alan
