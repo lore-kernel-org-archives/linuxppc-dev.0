@@ -1,10 +1,14 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: paulus@samba.org
-MIME-Version: 1.0
-Subject: [PATCH] fixes for the SLB shadow buffer
-Date: Wed, 01 Aug 2007 14:56:12 +1000
-Message-ID: <17055.1185944172@neuling.org>
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <20070801020836.GB31391@localhost.localdomain>
+References: <20070730150648.GA5005@ru.mvista.com>
+	<20070801020836.GB31391@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <65ff446478a9fd0a48061079d5f04f8f@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/6] PowerPC 440EPx: Sequoia DTS
+Date: Wed, 1 Aug 2007 06:57:33 +0200
+To: David Gibson <david@gibson.dropbear.id.au>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,112 +19,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We sometimes change the vmalloc segment in slb_flush_and_rebolt but we
-never updated with slb shadow buffer.  This fixes it.  Thanks to paulus
-for finding this.
+>> +	UIC0: interrupt-controller0 {
+>> +		compatible = "ibm,uic-440gp","ibm,uic";
+>
+> The first compatible entry should always be the precise model, so in
+> this case "ibm,uic-440epx".
 
-Also added some write barriers to ensure the shadow buffer is always
-valid.
+This isn't really _required_, but it is a very good idea in
+almost all cases (the exception is for very generic or legacy
+devices).
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
-Paulus: unless someone has a problem with my implementation, this should
-        go up for 2.6.23. 
+> If it is (supposed to be) identical to
+> the UIC in the 440GP, it can also have an "ibm,uic-440gp" entry, but
+> since I believe all the UICs are supposed to operate the same, I think
+> that's implicit in the "ibm,uic" entry.
 
- arch/powerpc/kernel/entry_64.S   |    2 ++
- arch/powerpc/mm/hash_utils_64.c  |    7 +++++++
- arch/powerpc/mm/slb.c            |   10 +++++-----
- include/asm-powerpc/mmu-hash64.h |    4 ++++
- 4 files changed, 18 insertions(+), 5 deletions(-)
+Sure, but there is no harm in having the better qualified 440gp
+name in there as well -- bytes are cheap :-)
 
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/entry_64.S
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/entry_64.S
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/entry_64.S
-@@ -389,7 +389,9 @@ BEGIN_FTR_SECTION
- 	ld	r9,PACA_SLBSHADOWPTR(r13)
- 	li	r12,0
- 	std	r12,SLBSHADOW_STACKESID(r9) /* Clear ESID */
-+	eieio
- 	std	r7,SLBSHADOW_STACKVSID(r9)  /* Save VSID */
-+	eieio
- 	std	r0,SLBSHADOW_STACKESID(r9)  /* Save ESID */
- 
- 	slbie	r6
-Index: linux-2.6-ozlabs/arch/powerpc/mm/hash_utils_64.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/mm/hash_utils_64.c
-+++ linux-2.6-ozlabs/arch/powerpc/mm/hash_utils_64.c
-@@ -629,6 +629,9 @@ int hash_page(unsigned long ea, unsigned
- 	cpumask_t tmp;
- 	int rc, user_region = 0, local = 0;
- 	int psize;
-+#ifdef CONFIG_PPC_64K_PAGES
-+	unsigned long vflags;
-+#endif
- 
- 	DBG_LOW("hash_page(ea=%016lx, access=%lx, trap=%lx\n",
- 		ea, access, trap);
-@@ -759,6 +762,10 @@ int hash_page(unsigned long ea, unsigned
- 		   mmu_psize_defs[mmu_vmalloc_psize].sllp) {
- 		get_paca()->vmalloc_sllp =
- 			mmu_psize_defs[mmu_vmalloc_psize].sllp;
-+		vflags = SLB_VSID_KERNEL |
-+			mmu_psize_defs[mmu_vmalloc_psize].sllp;
-+		slb_shadow_update(mk_esid_data(VMALLOC_START, 1),
-+				  mk_vsid_data(VMALLOC_START, vflags), 1);
- 		slb_flush_and_rebolt();
- 	}
- #endif /* CONFIG_PPC_64K_PAGES */
-Index: linux-2.6-ozlabs/arch/powerpc/mm/slb.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/mm/slb.c
-+++ linux-2.6-ozlabs/arch/powerpc/mm/slb.c
-@@ -43,17 +43,17 @@ static void slb_allocate(unsigned long e
- 	slb_allocate_realmode(ea);
- }
- 
--static inline unsigned long mk_esid_data(unsigned long ea, unsigned long slot)
-+unsigned long mk_esid_data(unsigned long ea, unsigned long slot)
- {
- 	return (ea & ESID_MASK) | SLB_ESID_V | slot;
- }
- 
--static inline unsigned long mk_vsid_data(unsigned long ea, unsigned long flags)
-+unsigned long mk_vsid_data(unsigned long ea, unsigned long flags)
- {
- 	return (get_kernel_vsid(ea) << SLB_VSID_SHIFT) | flags;
- }
- 
--static inline void slb_shadow_update(unsigned long esid, unsigned long vsid,
-+void slb_shadow_update(unsigned long esid, unsigned long vsid,
- 				     unsigned long entry)
- {
- 	/*
-@@ -61,9 +61,9 @@ static inline void slb_shadow_update(uns
- 	 * updating it.
- 	 */
- 	get_slb_shadow()->save_area[entry].esid = 0;
--	barrier();
-+	smp_wmb();
- 	get_slb_shadow()->save_area[entry].vsid = vsid;
--	barrier();
-+	smp_wmb();
- 	get_slb_shadow()->save_area[entry].esid = esid;
- 
- }
-Index: linux-2.6-ozlabs/include/asm-powerpc/mmu-hash64.h
-===================================================================
---- linux-2.6-ozlabs.orig/include/asm-powerpc/mmu-hash64.h
-+++ linux-2.6-ozlabs/include/asm-powerpc/mmu-hash64.h
-@@ -262,6 +262,10 @@ extern void slb_initialize(void);
- extern void slb_flush_and_rebolt(void);
- extern void stab_initialize(unsigned long stab);
- 
-+extern unsigned long mk_esid_data(unsigned long ea, unsigned long slot);
-+extern unsigned long mk_vsid_data(unsigned long ea, unsigned long flags);
-+extern void slb_shadow_update(unsigned long esid, unsigned long vsid,
-+			      unsigned long entry);
- #endif /* __ASSEMBLY__ */
- 
- /*
+>> +	SDR0: sdr {
+>
+> What is the SDR?
+>
+>> +		compatible = "ibm,sdr-440ep";
+>> +		dcr-reg = <00e 002>;
+>> +	};
+>> +
+>> +	CPR0: cpr {
+>
+> And the CPR?
+
+Yeah, better names please -- if possible, something that someone
+without knowledge of this SoC will understand what it is.
+
+>> +				nor_flash@0,0 {
+>> +					device_type = "rom";
+>> +					compatible = "direct-mapped";
+>> +					probe-type = "CFI";
+>
+> This flash binding needs to be replaced, but I guess that's not really
+> your problem.
+
+Yeah, that's my problem, thanks for the prod :-)
+
+
+Segher
