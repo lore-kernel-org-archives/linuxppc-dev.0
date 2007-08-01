@@ -1,18 +1,18 @@
-Return-Path: <domen.puncer@telargo.com>
-Received: from out002.atlarge.net (out002.atlarge.net [129.41.63.60])
-	by ozlabs.org (Postfix) with ESMTP id C9CFADDDF5
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 5B753DDD0C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  1 Aug 2007 16:52:08 +1000 (EST)
-Date: Wed, 1 Aug 2007 08:52:03 +0200
-From: Domen Puncer <domen.puncer@telargo.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH] lite5200b: flash definition in dts
-Message-ID: <20070801065203.GK4529@moe.telargo.com>
-References: <20070619095408.GK23294@moe.telargo.com>
+	Wed,  1 Aug 2007 21:20:46 +1000 (EST)
+Message-ID: <46B06C8C.3030106@anagramm.de>
+Date: Wed, 01 Aug 2007 13:20:44 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070619095408.GK23294@moe.telargo.com>
-Cc: Sylvain Munaut <tnt@246tNt.com>
+To: khollan <khollan@daktronics.com>
+Subject: Re: Embedded linux FTP Server
+References: <11935088.post@talk.nabble.com>
+In-Reply-To: <11935088.post@talk.nabble.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,70 +23,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Add flash definition for to lite5200b dts, and while at it
-fix "ranges" for soc node.
+khollan schrieb:
+> Hey
+> 
+> Im looking for a basic ftp server to run on my ML410 Xilinx board, I was
+> looking on the net and couldn't find anything that stands out.  Does anyone
+> have suggestions, or know of something that works well.
+> Thanks
+> kholland
 
+netkit-ftp seems to be standard.
+I am using vsftp because it seems to be good for production.
 
-Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
+The
+http://vsftpd.beasts.org
+http://www.proftpd.org
+http://www.wu-ftpd.org
+are propably the well known/often used ones.
 
----
-Hi!
+And there are also tftp servers (trivial ftp)...
+if that's what you mean with "basic".
+Just choose one from:
+http://crux.nu/portdb/?q=ftp&a=search
 
-Sylvain, it would be nice to have this merged.
-
-# cat /proc/mtd 
-dev:    size   erasesize  name
-mtd0: 01000000 00020000 "data0"
-mtd1: 00f00000 00020000 "data1"
-mtd2: 00100000 00020000 "u-boot"
-
-Some benchmarks:
-read:  2.3 MB/s
-erase: 168 kB/s
-write: 7.3 kB/s
-
-
- arch/powerpc/boot/dts/lite5200b.dts |   24 +++++++++++++++++++++++-
- 1 file changed, 23 insertions(+), 1 deletion(-)
-
-Index: work-powerpc.git/arch/powerpc/boot/dts/lite5200b.dts
-===================================================================
---- work-powerpc.git.orig/arch/powerpc/boot/dts/lite5200b.dts
-+++ work-powerpc.git/arch/powerpc/boot/dts/lite5200b.dts
-@@ -52,7 +52,8 @@
- 		revision = "";			// from bootloader
- 		#interrupt-cells = <3>;
- 		device_type = "soc";
--		ranges = <0 f0000000 f0010000>;
-+		ranges = <00000000 f0000000 00010000
-+			  fe000000 fe000000 02000000>;
- 		reg = <f0000000 00010000>;
- 		bus-frequency = <0>;		// from bootloader
- 		system-frequency = <0>;		// from bootloader
-@@ -403,5 +404,26 @@
- 			compatible = "mpc5200b-sram\0mpc5200-sram\0sram";
- 			reg = <8000 4000>;
- 		};
-+
-+		flash@fe000000 {
-+			device_type = "rom";
-+			compatible = "direct-mapped";
-+			probe-type = "CFI";
-+			reg = <fe000000 01000000>;
-+			bank-width = <1>;
-+			partitions = <00000000 01000000>;
-+			partition-names = "data0";
-+		};
-+
-+		flash@ff000000 {
-+			device_type = "rom";
-+			compatible = "direct-mapped";
-+			probe-type = "CFI";
-+			reg = <ff000000 01000000>;
-+			bank-width = <1>;
-+			partitions = <00000000 00f00000
-+				      00f00000 00100000>;
-+			partition-names = "data1", "u-boot";
-+		};
- 	};
- };
+Regards,
+-- 
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
