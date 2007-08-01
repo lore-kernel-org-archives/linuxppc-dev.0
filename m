@@ -1,28 +1,21 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A0D72DDD04
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 22:58:12 +1000 (EST)
-Date: Wed, 1 Aug 2007 14:57:53 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Domen Puncer <domen.puncer@telargo.com>
-Subject: Re: Generic clk.h wrappers? [Was: Re: [PATCH 1/3] powerpc clk.h
-	interface for platforms]
-Message-ID: <20070801125753.GB27199@lst.de>
-References: <20070711093113.GE4375@moe.telargo.com>
-	<200707110856.58463.david-b@pacbell.net>
-	<20070711161633.GA4846@lst.de>
-	<200707111002.55119.david-b@pacbell.net>
-	<20070711203454.GC2301@flint.arm.linux.org.uk>
-	<20070713091203.GE11476@nd47.coderock.org>
-	<20070801072807.GL4529@moe.telargo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070801072807.GL4529@moe.telargo.com>
-Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
-	Christoph Hellwig <hch@lst.de>,
-	Russell King <rmk@arm.linux.org.uk>, linux-mips@linux-mips.org
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id AFEB2DDDE9
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2007 23:09:51 +1000 (EST)
+Message-ID: <46B08695.6030102@ru.mvista.com>
+Date: Wed, 01 Aug 2007 17:11:49 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] [POWERPC] MPC8349E-mITX: use platform IDE driver
+	for CF	interface
+References: <20070725165318.5331.23795.stgit@localhost.localdomain>	<20070725165326.5331.19920.stgit@localhost.localdomain>
+	<46A78322.3080607@ru.mvista.com> <46A78E3F.1030904@ru.mvista.com>
+	<a414f3b506b7802a717e6e2c08befd1e@kernel.crashing.org>
+In-Reply-To: <a414f3b506b7802a717e6e2c08befd1e@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,26 +25,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 01, 2007 at 09:28:07AM +0200, Domen Puncer wrote:
-> > It doesn't make any assumption on struct clk, it's just a
-> > wrapper around functions from clk.h.
-> > Point of this patch was to abstract exported functions, since
-> > arch/powerpc/ can support multiple platfroms in one binary.
-> 
-> So... the thread just ended without any consensus, ACK or whatever.
-> 
-> Choices I see:
-> - have EXPORT_SYMBOL for clk.h functions in ie. lib/clock.c and have
->   every implemenation fill some global struct.
-> - leave this patch as it is, abstraction only for arch/powerpc/.
-> - or I can just forget about this, and leave it for the next sucker
->   who will want nicer clock handling in some driver
+Hello.
 
-It seems like arm really wants this optimized to the last cycle
-and no abstraction inbetween so we're probably stuck with the status
-quo.   I'm pretty sure this will get too messy sooner and later and
-people will clean the mess up, but due to the political issues I
-don't think it's fair to put that burden on you just for submitting
-the powerpc implementation.
+Segher Boessenkool wrote:
 
-So, please leave the patch as-is.
+>>>> +    ide@f0000000 {
+>>>> +        compatible = "mmio-ide";
+>>>> +        device_type = "ide";
+
+>>>     Why not "ata"?
+
+> The hardware is called (E)IDE, the protocol is called ATA.
+
+    Sorry for not denouncing this earlier. :-)
+    ATA is the name of ANSI standard describing IDE.
+
+> Or that's what I was told --
+
+    Re-check your sources. ;-)
+
+ > I think there's some historic revisionism involved, too.
+
+    IDE was probably an initial name of the infamous disk hardware/protocol 
+later standardized as ATA, EIDE (being more of a trademark) more or less 
+equals to ATA-2.
+
+>>     Also, what mmio-ide in the compat properly means in the context of
+>> ide_platform which is able to handle both port and memory mapped IDE. 
+>> I think
+>> we must get rid with this crap, and since this IDE register mapping is 
+>> pretty
+>> much board specific, call it something like "mpc8349emitx-ide" instead.
+
+> "mmio-ide" simply is not specific enough.  The device_type
+
+    Yes.
+
+> should go, too.
+
+> If this IDE interface is board-specific, thee "compatible"
+
+    It's "thy", not "thee". ;-)
+
+> property should include the board vendor name and board
+> name.  Oh, that's what "emitx" tries to do -- it could be
+> a bit clearer perhaps ;-)
+
+    Yeah, I forgot about the vondor's "fsl," prefix.
+
+> Segher
+
+MBR, Sergei
