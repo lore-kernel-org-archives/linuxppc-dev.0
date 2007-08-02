@@ -1,21 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 37062DDD0C
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 04:57:36 +1000 (EST)
-In-Reply-To: <20070802173536.GA25643@localhost.localdomain>
-References: <20070802173335.GA25369@localhost.localdomain>
-	<20070802173536.GA25643@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <5C596943-5C01-4097-940C-29FF46E49BA7@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2 1/2] [RFC][POWERPC] MPC832x_RDB: update dts to use spi,
-	register mmc_spi stub
-Date: Thu, 2 Aug 2007 13:58:47 -0500
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sprasad@bivio.net>
+Received: from corpexc01.corp.networkrobots.com (nofear-snat.bivio.net
+	[216.142.75.231]) by ozlabs.org (Postfix) with ESMTP id D2945DDDF5
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 05:23:34 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Open Firmware - dts file
+Date: Thu, 2 Aug 2007 12:21:21 -0700
+Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D79AE206@corpexc01.corp.networkrobots.com>
+From: "Siva Prasad" <sprasad@bivio.net>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,51 +19,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-On Aug 2, 2007, at 12:35 PM, Anton Vorontsov wrote:
+I am trying to understand ..
 
-> mmc_spi already tested to work. When it will hit mainline
-> the only change that will be needed is replacing "spidev"
-> by "mmc_spi".
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
->  arch/powerpc/boot/dts/mpc832x_rdb.dts     |   27 +++++++++++++-
->  arch/powerpc/platforms/83xx/mpc832x_rdb.c |   55 ++++++++++++++++++ 
-> +++++++++++
->  2 files changed, 81 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/ 
-> boot/dts/mpc832x_rdb.dts
-> index e9c332f..5ed92ca 100644
-> --- a/arch/powerpc/boot/dts/mpc832x_rdb.dts
-> +++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-> @@ -183,6 +183,21 @@
+1) How a given dts file is embedded into the zImage (how about vmlinux?)
+2) Where does it get stored for later access during booting?
+3) How a specific dts file out of the available in /boot/dts directory
+is chosen?
 
-[snip]
+I am a newbie to this open firmware thing and looking for the right
+pointer to get started.
 
-> @@ -206,16 +221,26 @@
->  		};
->
->  		spi@4c0 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
->  			device_type = "spi";
-> +			fsl,device-id = <1>;
->  			compatible = "fsl_spi";
->  			reg = <4c0 40>;
->  			interrupts = <2>;
->  			interrupt-parent = <&qeic>;
-> -			mode = "cpu";
-> +			mode = "cpu-qe";
-> +			pio-handle = <&spi1pio>;
-> +
-> +			mmc@0 {
-> +				reg = <0>;
-> +				pio-handle = <&mmc0pio>;
-> +			};
->  		};
+Thanks in advance
 
-I'm still against this.  Why don't we just do this in 83xx/mpc832x_rdb.c
-
-- k
+- Siva
