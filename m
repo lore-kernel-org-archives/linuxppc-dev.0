@@ -1,16 +1,24 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 2 Aug 2007 11:00:16 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Valentine Barshak <vbarshak@ru.mvista.com>
-Subject: Re: [PATCH 2/6] PowerPC 440EPx: Sequoia DTS
-Message-ID: <20070802010016.GA798@localhost.localdomain>
-References: <20070730150648.GA5005@ru.mvista.com>
-	<20070801020836.GB31391@localhost.localdomain>
-	<46B094F0.5010401@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <46B094F0.5010401@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6F246DDD0D
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Aug 2007 11:04:40 +1000 (EST)
+Subject: Re: [PATCH] fixes for the SLB shadow buffer
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <1186013135.5495.540.camel@localhost.localdomain>
+References: <17055.1185944172@neuling.org>
+	<18096.6654.934841.561238@cargo.ozlabs.ibm.com>
+	<31580.1185948147@neuling.org>
+	<1186007636.5495.536.camel@localhost.localdomain>
+	<1491.1186011132@neuling.org>
+	<1186013135.5495.540.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 02 Aug 2007 11:04:28 +1000
+Message-Id: <1186016669.5495.544.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,57 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 01, 2007 at 06:13:04PM +0400, Valentine Barshak wrote:
-> David Gibson wrote:
-> > On Mon, Jul 30, 2007 at 07:06:48PM +0400, Valentine Barshak wrote:
-[snip]
-> >> +	SDR0: sdr {
-> > 
-> > What is the SDR?
+
+> The first block of code detects the need for a demotion and changes the
+> global mmu_vmalloc_psize, along with changing the value on the local CPU
+> (and flushing it's SLB). But other CPUs still have the old values.
 > 
-> SDR are System Device Control Registers (chip ID, pin function and stuff).
-> They are accessed by using the configuration address and data (CFGADDR 
-> and CFGDATA) registers.
-
-Ok.
-
-> >> +		compatible = "ibm,sdr-440ep";
-> >> +		dcr-reg = <00e 002>;
-> >> +	};
-> >> +
-> >> +	CPR0: cpr {
-> > 
-> > And the CPR?
+> The second block of code checks if the global value matches the per-CPU
+> value and if not, proceeds to a local SLB flush. That's how the "other"
+> CPUs get the new value.
 > 
-> CPR are Clock/Power-On Reset configuration registers.
-> They are also accessed by using the configuration address and data 
-> (CFGADDR and CFGDATA) registers.
+> If your shadow is per-CPU, it thus needs to be updated in both cases.
 
-Ok, so the rough equivalent of the 440GP's CPC registers (but with an
-entirely different register layout).
+Hrm.. I must have been looking at older sources or lacked caffeine, we
+indeed only do the paca update and the flush&rebolt once.
 
-[snip]
-> >> +			EMAC0: ethernet@ef600e00 {
-> >> +				linux,network-index = <0>;
-> >> +				device_type = "network";
-> >> +				compatible = "ibm,emac-440spe", "ibm,emac4", "ibm,emac-axon";
-> > 
-> > "ibm,emac-axon" is definitely wrong, since this isn't an Axon chip.
-> 
-> The chip uses EMACX_STACR_STAC_READ and EMACX_STACR_STAC_WRITE bits with 
-> mdio_read/mdio_write commands. These are only enabled if the chip is 
-> axon-compatible.
-> ---
-> 	if (device_is_compatible(np, "ibm,emac-axon"))
-> 		dev->features |= EMAC_FTR_HAS_AXON_STACR
-> ---
-
-Then the driver needs fixing; I'll talk to Ben and look into it.
-We'll need something in the device tree to indicate this, but it
-shouldn't be "emac-axon" in compatible.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Ben.
