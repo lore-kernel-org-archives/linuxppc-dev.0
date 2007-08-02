@@ -1,14 +1,16 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 2 Aug 2007 10:14:18 +1000
+Date: Thu, 2 Aug 2007 11:00:16 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: DTC 1.0.0 Release Coming?
-Message-ID: <20070802001418.GA29550@localhost.localdomain>
-References: <E1IDjSy-0003eC-T4@jdl.com> <200708020135.03477.arnd@arndb.de>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: [PATCH 2/6] PowerPC 440EPx: Sequoia DTS
+Message-ID: <20070802010016.GA798@localhost.localdomain>
+References: <20070730150648.GA5005@ru.mvista.com>
+	<20070801020836.GB31391@localhost.localdomain>
+	<46B094F0.5010401@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <200708020135.03477.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <46B094F0.5010401@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,24 +20,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 02, 2007 at 01:35:03AM +0200, Arnd Bergmann wrote:
-> On Wednesday 25 July 2007, Jon Loeliger wrote:
-> > I'd like to make an official DTC Version 1.0.0 release soon!
-> > To that end, I've published a repo on jdl.com with a v1.0.0-rc1
-> > tag on it.  I anticipate some updates to the Documentation before
-> > a final 1.0.0 release still.  However, if you have something
-> > you would like to have be in The Real 1.0.0 release, please
-> > let me know soon!
+On Wed, Aug 01, 2007 at 06:13:04PM +0400, Valentine Barshak wrote:
+> David Gibson wrote:
+> > On Mon, Jul 30, 2007 at 07:06:48PM +0400, Valentine Barshak wrote:
+[snip]
+> >> +	SDR0: sdr {
+> > 
+> > What is the SDR?
 > 
-> A  bug has been reported in both fedora and debian about /usr/bin/ftdump
-> conflicting with a file of the same name in freetype.
-> 
-> Can we rename the binary in dtc to avoid this? Maybe /usr/bin/dtc-ftdump
-> would be better.
+> SDR are System Device Control Registers (chip ID, pin function and stuff).
+> They are accessed by using the configuration address and data (CFGADDR 
+> and CFGDATA) registers.
 
-Better yet, just omit it, since it's really not very useful.  That
-should be happening now that my "improved make install target" patch
-has been merged.
+Ok.
+
+> >> +		compatible = "ibm,sdr-440ep";
+> >> +		dcr-reg = <00e 002>;
+> >> +	};
+> >> +
+> >> +	CPR0: cpr {
+> > 
+> > And the CPR?
+> 
+> CPR are Clock/Power-On Reset configuration registers.
+> They are also accessed by using the configuration address and data 
+> (CFGADDR and CFGDATA) registers.
+
+Ok, so the rough equivalent of the 440GP's CPC registers (but with an
+entirely different register layout).
+
+[snip]
+> >> +			EMAC0: ethernet@ef600e00 {
+> >> +				linux,network-index = <0>;
+> >> +				device_type = "network";
+> >> +				compatible = "ibm,emac-440spe", "ibm,emac4", "ibm,emac-axon";
+> > 
+> > "ibm,emac-axon" is definitely wrong, since this isn't an Axon chip.
+> 
+> The chip uses EMACX_STACR_STAC_READ and EMACX_STACR_STAC_WRITE bits with 
+> mdio_read/mdio_write commands. These are only enabled if the chip is 
+> axon-compatible.
+> ---
+> 	if (device_is_compatible(np, "ibm,emac-axon"))
+> 		dev->features |= EMAC_FTR_HAS_AXON_STACR
+> ---
+
+Then the driver needs fixing; I'll talk to Ben and look into it.
+We'll need something in the device tree to indicate this, but it
+shouldn't be "emac-axon" in compatible.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
