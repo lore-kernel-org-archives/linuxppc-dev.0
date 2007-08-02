@@ -1,16 +1,15 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 5933DDDDFB
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 03:36:48 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 2DF0EDDDFB
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 03:37:07 +1000 (EST)
 Received: from localhost (unknown [10.150.0.9])
-	by buildserver.ru.mvista.com (Postfix) with ESMTP id D772C8810
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Aug 2007 22:36:46 +0500 (SAMST)
-Date: Thu, 2 Aug 2007 21:35:36 +0400
+	by buildserver.ru.mvista.com (Postfix) with ESMTP id 5A4478810
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Aug 2007 22:37:06 +0500 (SAMST)
+Date: Thu, 2 Aug 2007 21:35:56 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 1/2] [RFC][POWERPC] MPC832x_RDB: update dts to use spi,
-	register mmc_spi stub
-Message-ID: <20070802173536.GA25643@localhost.localdomain>
+Subject: [PATCH v2 2/2] [RFC][POWERPC] fsl_soc: add support for fsl_spi
+Message-ID: <20070802173556.GB25643@localhost.localdomain>
 References: <20070802173335.GA25369@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -24,156 +23,157 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-mmc_spi already tested to work. When it will hit mainline
-the only change that will be needed is replacing "spidev"
-by "mmc_spi".
-
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/boot/dts/mpc832x_rdb.dts     |   27 +++++++++++++-
- arch/powerpc/platforms/83xx/mpc832x_rdb.c |   55 +++++++++++++++++++++++++++++
- 2 files changed, 81 insertions(+), 1 deletions(-)
+ arch/powerpc/sysdev/fsl_soc.c |  109 +++++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/fsl_soc.h |   12 +++++
+ 2 files changed, 121 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-index e9c332f..5ed92ca 100644
---- a/arch/powerpc/boot/dts/mpc832x_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-@@ -183,6 +183,21 @@
- 					1  c  1  0  1  0 	/* TX_EN */
- 					1  d  2  0  1  0>;      /* CRS */
- 			};
-+			spi1pio: spi_pin@1 {
-+				pio-map = <
-+			/* port  pin  dir  open_drain  assignment  has_irq    */
-+					3  0  3  0  1  0	/* SPI1 MOSI, I/O */
-+					3  1  3  0  1  0	/* SPI1 MISO, I/O */
-+					3  2  3  0  1  0	/* SPI1 CLK,  I/O */
-+					3  3  2  0  1  0>;	/* SPI1 SEL,  I   */
-+			};
-+			mmc0pio: mmc_pin@0 {
-+				pio-map = <
-+			/* port  pin  dir  open_drain  assignment  has_irq    */
-+					3  d  1  0  0  0	/* !SD_CS     */
-+					3  e  2  0  0  0	/* SD_INSERT  */
-+					3  f  2  0  0  0>;	/* SD_PROTECT */
-+			};
- 		};
- 	};
- 
-@@ -206,16 +221,26 @@
- 		};
- 
- 		spi@4c0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
- 			device_type = "spi";
-+			fsl,device-id = <1>;
- 			compatible = "fsl_spi";
- 			reg = <4c0 40>;
- 			interrupts = <2>;
- 			interrupt-parent = <&qeic>;
--			mode = "cpu";
-+			mode = "cpu-qe";
-+			pio-handle = <&spi1pio>;
-+
-+			mmc@0 {
-+				reg = <0>;
-+				pio-handle = <&mmc0pio>;
-+			};
- 		};
- 
- 		spi@500 {
- 			device_type = "spi";
-+			fsl,device-id = <2>;
- 			compatible = "fsl_spi";
- 			reg = <500 40>;
- 			interrupts = <1>;
-diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-index 93ba957..4cc938f 100644
---- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-@@ -15,6 +15,7 @@
-  */
- 
- #include <linux/pci.h>
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index 727453d..8c0576d 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -23,6 +23,7 @@
+ #include <linux/device.h>
+ #include <linux/platform_device.h>
+ #include <linux/phy.h>
 +#include <linux/spi/spi.h>
+ #include <linux/fsl_devices.h>
+ #include <linux/fs_enet_pd.h>
+ #include <linux/fs_uart_pd.h>
+@@ -1186,3 +1187,111 @@ err:
+ arch_initcall(cpm_smc_uart_of_init);
  
- #include <asm/of_platform.h>
- #include <asm/time.h>
-@@ -24,6 +25,7 @@
- #include <asm/qe_ic.h>
- 
- #include "mpc83xx.h"
-+#include "../../sysdev/fsl_soc.h"
- 
- #undef DEBUG
- #ifdef DEBUG
-@@ -32,6 +34,55 @@
- #define DBG(fmt...)
- #endif
- 
-+extern int par_io_data_set(u8 port, u8 pin, u8 val);
+ #endif /* CONFIG_8xx */
 +
-+static void mpc83xx_spi_activate_cs(u8 cs, u8 polarity)
++static int fsl_spi_get_max_chipselect(struct device_node *spi_node,
++				      struct fsl_spi_board_info *binfo,
++				      s16 bus_num)
 +{
-+	pr_debug("%s %d %d\n", __func__, cs, polarity);
-+	par_io_data_set(3, 13, polarity);
-+}
++	struct device_node *child = NULL;
++	unsigned int i = 0;
++	unsigned int dt_num_children = 0;
++	unsigned int bi_num_children = 0;
 +
-+static void mpc83xx_spi_deactivate_cs(u8 cs, u8 polarity)
-+{
-+	pr_debug("%s %d %d\n", __func__, cs, polarity);
-+	par_io_data_set(3, 13, !polarity);
-+}
++	while ((child = of_get_next_child(spi_node, child)))
++		dt_num_children++;
 +
-+static struct spi_board_info mpc832x_spi_boardinfo = {
-+	.bus_num = 1,
-+	/*
-+	 * XXX: This is spidev (spi in userspace) stub, should
-+	 * be replaced by "mmc_spi" when mmc_spi will hit mainline.
-+	 */
-+	.modalias = "spidev",
-+};
-+
-+static struct fsl_spi_board_info fsl_spi_board_info = {
-+	.activate_cs = mpc83xx_spi_activate_cs,
-+	.deactivate_cs = mpc83xx_spi_deactivate_cs,
-+	.board_infos = &mpc832x_spi_boardinfo,
-+	.num_board_infos = 1,
-+};
-+
-+static int __init mpc832x_spi_init(void)
-+{
-+	struct device_node *np;
-+
-+	np = of_find_node_by_name(NULL, "mmc");
-+	if (!np) {
-+		printk(KERN_ERR "%s: could not find mmc node\n", __func__);
-+		return -ENODEV;
++	for (; i < binfo->num_board_infos; i++) {
++		if (binfo->board_infos[i].bus_num == bus_num)
++			bi_num_children++;
 +	}
 +
-+	mpc832x_spi_boardinfo.chip_select = *((u32 *)of_get_property(np,
-+								"reg", NULL));
-+	mpc832x_spi_boardinfo.max_speed_hz = 50000000;
++	if (dt_num_children != bi_num_children) {
++		printk(KERN_WARNING "%s: board file and device tree are "
++		       "disagreeing about max chipselects: %d vs %d\n",
++		       __func__, bi_num_children, dt_num_children);
++	}
 +
-+	return fsl_spi_init(&fsl_spi_board_info);
++	return max(dt_num_children, bi_num_children);
 +}
 +
-+device_initcall(mpc832x_spi_init);
++int fsl_spi_init(struct fsl_spi_board_info *binfo)
++{
++	struct device_node *np;
++	unsigned int i;
++	u32 sysclk;
 +
- /* ************************************************************************
-  *
-  * Setup the architecture
-@@ -62,6 +113,10 @@ static void __init mpc832x_rdb_setup_arch(void)
++	np = of_find_node_by_type(NULL, "qe");
++	if (!np)
++		return -ENODEV;
++
++	sysclk = *(u32 *)of_get_property(np, "bus-frequency", NULL);
++
++	for (np = NULL, i = 1;
++	     (np = of_find_compatible_node(np, "spi", "fsl_spi")) != NULL;
++	     i++) {
++		int ret = 0;
++		const char *devid;
++		const char *mode;
++		struct resource res[2];
++		struct platform_device *pdev = NULL;
++		struct fsl_spi_platform_data pdata = {
++			.activate_cs = binfo->activate_cs,
++			.deactivate_cs = binfo->deactivate_cs,
++		};
++
++		memset(res, 0, sizeof(res));
++
++		devid = of_get_property(np, "fsl,device-id", NULL);
++		mode = of_get_property(np, "mode", NULL);
++		if (!devid || !mode)
++			goto err;
++
++		pdata.sysclk = sysclk;
++		pdata.bus_num = *(u32 *)devid;
++		pdata.max_chipselect = fsl_spi_get_max_chipselect(np, binfo,
++							pdata.bus_num);
++		if (!pdata.max_chipselect)
++			goto err;
++
++		if (!strcmp(mode, "cpu-qe"))
++			pdata.qe_mode = 1;
++
++		ret = of_address_to_resource(np, 0, &res[0]);
++		if (ret)
++			goto err;
++
++		res[1].start = res[2].end = irq_of_parse_and_map(np, 0);
++		if (res[1].start == NO_IRQ)
++			goto err;
++
++		res[1].name = "mpc83xx_spi";
++		res[1].flags = IORESOURCE_IRQ;;
++
++		pdev = platform_device_alloc("mpc83xx_spi", i);
++		if (!pdev)
++			goto err;
++
++		ret = platform_device_add_data(pdev, &pdata, sizeof(pdata));
++		if (ret)
++			goto unreg;
++
++		ret = platform_device_add_resources(pdev, res,
++						    ARRAY_SIZE(res));
++		if (ret)
++			goto unreg;
++
++		ret = platform_device_register(pdev);
++		if (ret)
++			goto unreg;
++
++		continue;
++unreg:
++		platform_device_del(pdev);
++err:
++		continue;
++	}
++
++	return spi_register_board_info(binfo->board_infos,
++				       binfo->num_board_infos);
++}
++EXPORT_SYMBOL(fsl_spi_init);
+diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
+index 04e145b..a83998d 100644
+--- a/arch/powerpc/sysdev/fsl_soc.h
++++ b/arch/powerpc/sysdev/fsl_soc.h
+@@ -8,5 +8,17 @@ extern phys_addr_t get_immrbase(void);
+ extern u32 get_brgfreq(void);
+ extern u32 get_baudrate(void);
  
- 		for (np = NULL; (np = of_find_node_by_name(np, "ucc")) != NULL;)
- 			par_io_of_config(np);
-+		for (np = NULL; (np = of_find_node_by_name(np, "spi")) != NULL;)
-+			par_io_of_config(np);
-+		for (np = NULL; (np = of_find_node_by_name(np, "mmc")) != NULL;)
-+			par_io_of_config(np);
- 	}
- #endif				/* CONFIG_QUICC_ENGINE */
- }
++struct spi_board_info;
++
++struct fsl_spi_board_info {
++	struct spi_board_info *board_infos;
++	unsigned int num_board_infos;
++
++	void (*activate_cs)(u8 cs, u8 polarity);
++	void (*deactivate_cs)(u8 cs, u8 polarity);
++};
++
++extern int fsl_spi_init(struct fsl_spi_board_info *info);
++
+ #endif
+ #endif
 -- 
 1.5.0.6
