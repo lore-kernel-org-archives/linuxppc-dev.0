@@ -1,27 +1,17 @@
-Return-Path: <ma.harounansari@gdatech.co.in>
-Received: from gdatech.co.in (mail.gdatech.co.in [202.144.30.226])
-	by ozlabs.org (Postfix) with ESMTP id ED055DDDF3
+Return-Path: <yoni.l@slyde-tech.com>
+Received: from smtpin.livedns.co.il (smtpin.livedns.co.il [62.219.78.209])
+	by ozlabs.org (Postfix) with ESMTP id 73B47DDDE6
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  2 Aug 2007 16:48:33 +1000 (EST)
-Received: from [192.168.0.2] (localhost.localdomain [127.0.0.1])
-	by predator.gdatech.co.in (Postfix-out) with ESMTP id 272BE87810D
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  1 Aug 2007 23:48:18 -0700 (PDT)
-Received: from mail.gdatech.co.in (unknown [192.168.0.1])
-	by predator.gdatech.co.in (Postfix-out) with ESMTP id E32E1878102
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  1 Aug 2007 23:48:17 -0700 (PDT)
-Message-ID: <000b01c7d4d1$1ac37920$9503a8c0@Ansari>
-From: "Ansari" <ma.harounansari@gdatech.co.in>
-To: "Kumar Gala" <galak@kernel.crashing.org>,
-	"Clemens Koller" <clemens.koller@anagramm.de>
-References: <000801c7cf51$f98ebb90$9503a8c0@Ansari>	<880B302A-742A-4CC1-BB41-E7BD1CE570C6@kernel.crashing.org><007001c7d341$d3ae29d0$9503a8c0@Ansari><46AF2085.1060603@anagramm.de>
-	<00C9C80A-3276-4BC1-9ADA-48CE2002BADA@kernel.crashing.org>
-Subject: Re: Reboot Command Makes kernel to hang (MPC8560)
-Date: Thu, 2 Aug 2007 12:18:16 +0530
+	Thu,  2 Aug 2007 18:37:31 +1000 (EST)
+From: "Yoni Levin" <yoni.l@slyde-tech.com>
+To: "'Scott Wood'" <scottwood@freescale.com>
+Subject: RE: GPIO interrupts on mpc8313e
+Date: Thu, 2 Aug 2007 11:37:14 +0300
 MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=response
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <20070801183616.GA24549@ld0162-tx32.am.freescale.net>
+Message-ID: <9299F00F70CC4A0EBD33A4EB9E95D9D2.MAI@mail.livedns.co.il>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -33,96 +23,64 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Koller & Kumar
+Yes, I removed the flag (0) and nothing change in both cases the request_irq
+return 0 which is good.
+Then I added enable_irq and I recived :
 
-Thanks for ur reply.
+Unbalanced enable for IRQ 74
+------------[ cut here ]------------
+Badness at c0043578 [verbose debug info unavailable]
+Call Trace:
+[C76C9D00] [C0008648] show_stack+0x48/0x194 (unreliable)
+[C76C9D30] [C0139364] report_bug+0x84/0xac
+[C76C9D40] [C000E398] program_check_exception+0xe0/0x538
+[C76C9D80] [C000FE04] ret_from_except_full+0x0/0x4c
+--- Exception: 700 at enable_irq+0x80/0xb0
+    LR = enable_irq+0x80/0xb0
+[C76C9E50] [C907423C] CreateGPIOHandler+0x28/0x7c [modexample]
+[C76C9E70] [C9074728] init_module+0x2c/0x8c [modexample]
+[C76C9E80] [C003B568] sys_init_module+0x1c4/0x165c
+[C76C9F40] [C000F7BC] ret_from_syscall+0x0/0x38
+--- Exception: c01 at 0xff311f0
+    LR = 0x100316a8
 
-Is there a way to reset the full chip (MPC8560)  whenever core reset occu=
-rs=20
-(using hardware or software) ??
+By the way this is my code :
 
-Regards
-Haroun Ansari M A
-
-
-
-
-
------ Original Message -----=20
-From: "Kumar Gala" <galak@kernel.crashing.org>
-To: "Clemens Koller" <clemens.koller@anagramm.de>
-Cc: "Ansari" <ma.harounansari@gdatech.co.in>; <linuxppc-embedded@ozlabs.o=
-rg>
-Sent: Tuesday, July 31, 2007 7:41 PM
-Subject: Re: Reboot Command Makes kernel to hang (MPC8560)
+static irqreturn_t GPIOinterrupt_handler(int i,void *n,struct pt_regs *
+myRegs)
+{
+	printk("GPIO recived and handled !!!!!!!!!!!!!!!!!!!...\n");
+	return IRQ_HANDLED;	
+}
 
 
 
-On Jul 31, 2007, at 6:44 AM, Clemens Koller wrote:
 
-> Hi, Ansari!
->
-> Ansari schrieb:
->> Hi Kumar,
->> First of all thanks for ur reply .
->> Even i went through the linux source . And i have observe that the=20
->> reboot command used to hard reset the core . I have few doubts can  u=20
->> please clarify me.
->> 1. Is there any way to reset the full chip with out using any  externa=
-l=20
->> signal (MPC8560) ? (like any register that can be used  for reseting t=
-he=20
->> processor)
->
-> I RTFM:
-> It should be the bits RST[1:0] in the Debug Control Register 0  (DBCR0)=
-.
+void CreateGPIOHandler()
+{
 
-This only resets the core on the 8560.
+	unsigned int myirq=irq_create_mapping(NULL,74);
+	enable_irq(74);
+	printk("myirq is : %d \n",myirq);
+	int ret;
 
-> I didn't find details how the external signals are affected:  HRESET_RE=
-Q#=20
-> and friends.
-> The HRESET_REQ# is usually fed back to the CPU's HRESET#.
-> So if the HRESET_REQ# gets asserted by writing to above registers  it=20
-> should really bring
-> down the CPU, it's internal as well as it's external components,  which=
-=20
-> are usually
-> connected to a replication of that signal.
+	ret=- request_irq(74, GPIOinterrupt_handler,0, "GPIO", NULL);
+	printk("ret is : %d \n",ret);
+	
 
-This is roughly correct.  The only way on 8560 to generate
-HRESET_REQ# is to cause a core watchdog timeout.
+}
 
-> However the existence of cpm2_reset() and a qe_reset() (QuiccEngine?)
-> in the code tells me that the above expectations could be wrong.
->
-> Would be nice to have that verified by some hardware guys from=20
-> freescale...
+-----Original Message-----
+From: Scott Wood [mailto:scottwood@freescale.com] 
+Sent: Wednesday, August 01, 2007 9:36 PM
+To: Yoni Levin
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: GPIO interrupts on mpc8313e
 
-cpm2_reset/qe_reset are more related to SW than any HW reset.
+On Wed, Aug 01, 2007 at 02:45:05PM +0300, Yoni Levin wrote:
+> request_irq(74,handler,IRQF_DISABLED,"GPIO",NULL);
+                         ^^^^^^^^^^^^^
 
->
->> 2. Even same reboot command works fine for MPC8540 Processor ?.
->
-> ...because it doesn't have a cpm ?
+Did you try removing that flag (or calling enable_irq())?
 
-That's more luck than anything else.
-
->> 3. what are the factors that makes ramdisk hangs . When its=20
->> uncompressing ?
->
-> Well, side effects ?
->
-> Regards,
-> --=20
-> Clemens Koller
-> __________________________________
-> R&D Imaging Devices
-> Anagramm GmbH
-> Rupert-Mayer-Stra=DFe 45/1
-> Linhof Werksgel=E4nde
-> D-81379 M=FCnchen
-> Tel.089-741518-50
-> Fax 089-741518-19
-> http://www.anagramm-technology.com
+-Scott
