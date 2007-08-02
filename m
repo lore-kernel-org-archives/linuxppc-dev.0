@@ -1,17 +1,21 @@
-Return-Path: <yoni.l@slyde-tech.com>
-Received: from smtpin.livedns.co.il (smtpin.livedns.co.il [62.219.78.209])
-	by ozlabs.org (Postfix) with ESMTP id 5CB14DDE49
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 48DB8DDE2D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  3 Aug 2007 01:39:10 +1000 (EST)
-From: "Yoni Levin" <yoni.l@slyde-tech.com>
-To: "'Scott Wood'" <scottwood@freescale.com>
-Subject: RE: GPIO interrupts on mpc8313e
-Date: Thu, 2 Aug 2007 18:38:52 +0300
+	Fri,  3 Aug 2007 01:41:08 +1000 (EST)
+Message-ID: <46B1FB09.4080100@freescale.com>
+Date: Thu, 02 Aug 2007 10:40:57 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <46B1F5E1.6000301@freescale.com>
-Message-ID: <B6DEC8DD6C474CED998B80706BFC4BCC.MAI@mail.livedns.co.il>
+To: Yoni Levin <yoni.l@slyde-tech.com>
+Subject: Re: GPIO interrupts on mpc8313e
+References: <B6DEC8DD6C474CED998B80706BFC4BCC.MAI@mail.livedns.co.il>
+In-Reply-To: <B6DEC8DD6C474CED998B80706BFC4BCC.MAI@mail.livedns.co.il>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,43 +27,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-myirq=74
-
------Original Message-----
-From: Scott Wood [mailto:scottwood@freescale.com] 
-Sent: Thursday, August 02, 2007 6:19 PM
-To: Yoni Levin
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: GPIO interrupts on mpc8313e
-
 Yoni Levin wrote:
-> Yes, I removed the flag (0) and nothing change in both cases the
-request_irq
-> return 0 which is good.
-> Then I added enable_irq and I recived :
-> 
-> Unbalanced enable for IRQ 74
+> myirq=74
 
-Yeah, sorry, I misremembered what IRQF_DISABLED does.  As Domen pointed 
-out, you need to pass myirq, not 74, to request_irq().
+OK, that's obviously not the problem then, but you still shouldn't rely 
+on them being equal.
 
-> void CreateGPIOHandler()
-> {
-> 
-> 	unsigned int myirq=irq_create_mapping(NULL,74);
-> 	enable_irq(74);
-> 	printk("myirq is : %d \n",myirq);
-> 	int ret;
-> 
-> 	ret=- request_irq(74, GPIOinterrupt_handler,0, "GPIO", NULL);
-> 	printk("ret is : %d \n",ret);
-> 	
-> 
-> }
-
-Even if IRQF_DISABLED did do what I thought it did (I was thinking of 
-IRQ_NOAUTOEN, which is apparently an ARM-only thing), you should never 
-call enable_irq() before request_irq(), or without previously disabling 
-it (either explicitly or via IRQ_NOAUTOEN).
+Try dumping the PIC registers to see which interrupts (if any) are 
+actually pending.
 
 -Scott
