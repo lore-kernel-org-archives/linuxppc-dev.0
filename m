@@ -1,24 +1,27 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.188])
-	by ozlabs.org (Postfix) with ESMTP id AFE2ADDDF4
+Return-Path: <ma.harounansari@gdatech.co.in>
+Received: from gdatech.co.in (mail.gdatech.co.in [202.144.30.226])
+	by ozlabs.org (Postfix) with ESMTP id ED055DDDF3
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  2 Aug 2007 16:23:32 +1000 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so325401rvf
+	Thu,  2 Aug 2007 16:48:33 +1000 (EST)
+Received: from [192.168.0.2] (localhost.localdomain [127.0.0.1])
+	by predator.gdatech.co.in (Postfix-out) with ESMTP id 272BE87810D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 01 Aug 2007 23:23:31 -0700 (PDT)
-Message-ID: <fa686aa40708012323p2eca4b05pd47acac635cf6370@mail.gmail.com>
-Date: Thu, 2 Aug 2007 00:23:31 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Domen Puncer" <domen.puncer@telargo.com>
-Subject: Re: [PATCH] lite5200b: flash definition in dts
-In-Reply-To: <20070802055830.GM4529@moe.telargo.com>
+	Wed,  1 Aug 2007 23:48:18 -0700 (PDT)
+Received: from mail.gdatech.co.in (unknown [192.168.0.1])
+	by predator.gdatech.co.in (Postfix-out) with ESMTP id E32E1878102
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed,  1 Aug 2007 23:48:17 -0700 (PDT)
+Message-ID: <000b01c7d4d1$1ac37920$9503a8c0@Ansari>
+From: "Ansari" <ma.harounansari@gdatech.co.in>
+To: "Kumar Gala" <galak@kernel.crashing.org>,
+	"Clemens Koller" <clemens.koller@anagramm.de>
+References: <000801c7cf51$f98ebb90$9503a8c0@Ansari>	<880B302A-742A-4CC1-BB41-E7BD1CE570C6@kernel.crashing.org><007001c7d341$d3ae29d0$9503a8c0@Ansari><46AF2085.1060603@anagramm.de>
+	<00C9C80A-3276-4BC1-9ADA-48CE2002BADA@kernel.crashing.org>
+Subject: Re: Reboot Command Makes kernel to hang (MPC8560)
+Date: Thu, 2 Aug 2007 12:18:16 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20070619095408.GK23294@moe.telargo.com>
-	<20070801065203.GK4529@moe.telargo.com>
-	<fa686aa40708010541n4d4900cfv7042d6ca685416d1@mail.gmail.com>
-	<20070802055830.GM4529@moe.telargo.com>
+Content-Type: text/plain; format=flowed; charset="iso-8859-1";
+	reply-type=response
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -30,65 +33,96 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 8/1/07, Domen Puncer <domen.puncer@telargo.com> wrote:
-> On 01/08/07 06:41 -0600, Grant Likely wrote:
-> > On 8/1/07, Domen Puncer <domen.puncer@telargo.com> wrote:
-> > > Add flash definition for to lite5200b dts, and while at it
-> > > fix "ranges" for soc node.
-> > >
-> ...
-> > > +++ work-powerpc.git/arch/powerpc/boot/dts/lite5200b.dts
-> > > @@ -52,7 +52,8 @@
-> > >                 revision = "";                  // from bootloader
-> > >                 #interrupt-cells = <3>;
-> > >                 device_type = "soc";
-> > > -               ranges = <0 f0000000 f0010000>;
-> > > +               ranges = <00000000 f0000000 00010000
-> > > +                         fe000000 fe000000 02000000>;
-> >
-> > I don't think this is the right approach.  I think the SoC node is
-> > intended for describing the on-chip devices, and the ranges property
-> > reflects that.  Shouldn't flash nodes be up 1 level?
-> >
+Hi Koller & Kumar
+
+Thanks for ur reply.
+
+Is there a way to reset the full chip (MPC8560)  whenever core reset occu=
+rs=20
+(using hardware or software) ??
+
+Regards
+Haroun Ansari M A
+
+
+
+
+
+----- Original Message -----=20
+From: "Kumar Gala" <galak@kernel.crashing.org>
+To: "Clemens Koller" <clemens.koller@anagramm.de>
+Cc: "Ansari" <ma.harounansari@gdatech.co.in>; <linuxppc-embedded@ozlabs.o=
+rg>
+Sent: Tuesday, July 31, 2007 7:41 PM
+Subject: Re: Reboot Command Makes kernel to hang (MPC8560)
+
+
+
+On Jul 31, 2007, at 6:44 AM, Clemens Koller wrote:
+
+> Hi, Ansari!
 >
-> That would make sense, however, it does not work, probably because:
-> arch/powerpc/kernel/of_platform.c:
-> <snip>
+> Ansari schrieb:
+>> Hi Kumar,
+>> First of all thanks for ur reply .
+>> Even i went through the linux source . And i have observe that the=20
+>> reboot command used to hard reset the core . I have few doubts can  u=20
+>> please clarify me.
+>> 1. Is there any way to reset the full chip with out using any  externa=
+l=20
+>> signal (MPC8560) ? (like any register that can be used  for reseting t=
+he=20
+>> processor)
 >
-> Suggestions?
+> I RTFM:
+> It should be the bits RST[1:0] in the Debug Control Register 0  (DBCR0)=
+.
 
-This is fixable in many ways.  I don't know if there is an established
-convention yet, but it's just a matter of making sure the platform
-setup code adds the devices to the of_platform_bus.  Freescale folks,
-what say you?
+This only resets the core on the 8560.
 
-> BTW. phy's are also not on chip, but are usualy listed under "soc"
-> (ie. mpc885ads.dts). Or rtc chip connected to i2c in kuroboxHD.dts.
+> I didn't find details how the external signals are affected:  HRESET_RE=
+Q#=20
+> and friends.
+> The HRESET_REQ# is usually fed back to the CPU's HRESET#.
+> So if the HRESET_REQ# gets asserted by writing to above registers  it=20
+> should really bring
+> down the CPU, it's internal as well as it's external components,  which=
+=20
+> are usually
+> connected to a replication of that signal.
 
-Phy's are also directly connected to MDIO busses and rtc chips
-directly connected to i2c busses.  Both the MDIO and i2c controllers
-are mapped entirely within the MBAR region which matches the soc node
-range.  Flash seems different to me because it is mapped outside the
-shared region...
+This is roughly correct.  The only way on 8560 to generate
+HRESET_REQ# is to cause a core watchdog timeout.
 
-On the other hand there is PCI whose control registers fall within the
-SoC range; but the memory windows absolutely do not.  If my flash
-argument holds water, then where does that leave PCI which kind of
-straddles the fence.  Gah.  Perhaps I'm getting too wrapped up in
-nothing.  Having the flash node as a child of "soc" still describes
-the platform in an unambiguous way.
+> However the existence of cpm2_reset() and a qe_reset() (QuiccEngine?)
+> in the code tells me that the above expectations could be wrong.
+>
+> Would be nice to have that verified by some hardware guys from=20
+> freescale...
 
-Cheers,
-g.
+cpm2_reset/qe_reset are more related to SW than any HW reset.
 
 >
+>> 2. Even same reboot command works fine for MPC8540 Processor ?.
 >
->         Domen
+> ...because it doesn't have a cpm ?
+
+That's more luck than anything else.
+
+>> 3. what are the factors that makes ramdisk hangs . When its=20
+>> uncompressing ?
 >
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+> Well, side effects ?
+>
+> Regards,
+> --=20
+> Clemens Koller
+> __________________________________
+> R&D Imaging Devices
+> Anagramm GmbH
+> Rupert-Mayer-Stra=DFe 45/1
+> Linhof Werksgel=E4nde
+> D-81379 M=FCnchen
+> Tel.089-741518-50
+> Fax 089-741518-19
+> http://www.anagramm-technology.com
