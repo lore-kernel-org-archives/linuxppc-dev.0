@@ -1,23 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <kim.phillips@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6B47ADDDE7
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Aug 2007 10:05:53 +1000 (EST)
-Subject: Re: [PATCH] fixes for the SLB shadow buffer
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <1491.1186011132@neuling.org>
-References: <17055.1185944172@neuling.org>
-	<18096.6654.934841.561238@cargo.ozlabs.ibm.com>
-	<31580.1185948147@neuling.org>
-	<1186007636.5495.536.camel@localhost.localdomain>
-	<1491.1186011132@neuling.org>
-Content-Type: text/plain
-Date: Thu, 02 Aug 2007 10:05:35 +1000
-Message-Id: <1186013135.5495.540.camel@localhost.localdomain>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8C7AEDDDF3
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Aug 2007 10:20:36 +1000 (EST)
+Date: Wed, 1 Aug 2007 19:20:09 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: "Keith Mund" <keith.mund@clearcube.com>
+Subject: Re: MPC83xx - previous patch to set MBAR
+Message-Id: <20070801192009.656fc2e0.kim.phillips@freescale.com>
+In-Reply-To: <5EACFDEA24DADE42BF109303D305A8093120A6@MAIL.clearcube.com>
+References: <20070801133056.GP3972@stusta.de>
+	<fa686aa40708010653v7e1fb909gb03eb1d4754359bf@mail.gmail.com>
+	<5EACFDEA24DADE42BF109303D305A8093120A6@MAIL.clearcube.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, u-boot-users@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,55 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-08-02 at 09:32 +1000, Michael Neuling wrote:
-> > On Wed, 2007-08-01 at 16:02 +1000, Michael Neuling wrote:
-> > > We sometimes change the vmalloc segment in slb_flush_and_rebolt but we
-> > > never updated with slb shadow buffer.  This fixes it.  Thanks to paulus
-> > > for finding this.
-> > > 
-> > > Also added some write barriers to ensure the shadow buffer is always
-> > > valid.
-> > 
-> > The shadow is global or per-cpu ?
-> > 
-> > Because in the later case, I think you need more than that.
+On Wed, 1 Aug 2007 15:20:22 -0500
+"Keith Mund" <keith.mund@clearcube.com> wrote:
+
+> There was a u-boot 1.1.3 patch for start.S posted on the Freescale LTIB
+
+posts concerning u-boot should go to the u-boot-users list (cc'd).
+
+> site:
+> http://www.bitshrine.org/gpp/u-boot-1.1.3-mpc83xx-cpu-4.patch
 > 
-> It's per CPU.
+> The end result simply adds a line to set MBAR to match IMMRBAR.
 > 
-> > > @@ -759,6 +762,9 @@ int hash_page(unsigned long ea, unsigned
-> > >  		   mmu_psize_defs[mmu_vmalloc_psize].sllp) {
-> > >  		get_paca()->vmalloc_sllp =
-> > >  			mmu_psize_defs[mmu_vmalloc_psize].sllp;
-> > > +		vflags = SLB_VSID_KERNEL |
-> > > +			mmu_psize_defs[mmu_vmalloc_psize].sllp;
-> > > +		slb_shadow_update(VMALLOC_START, vflags, 1);
-> > >  		slb_flush_and_rebolt();
-> > >  	}
-> > 
-> > Later on:
-> > 
-> >         } else if (get_paca()->vmalloc_sllp !=
-> >                    mmu_psize_defs[mmu_vmalloc_psize].sllp) {
-> >                 get_paca()->vmalloc_sllp =
-> >                         mmu_psize_defs[mmu_vmalloc_psize].sllp;
-> >                 slb_flush_and_rebolt();
-> >         }
-> > 
-> > If your shadow is per-cpu, you need to fix that up too.
+>         lis     r3, CFG_IMMRBAR@h
+>         ori     r3, r3, CFG_IMMRBAR@l
+>         stw     r3, IMMRBAR(r4)
+> +       mtspr   MBAR, r3
 > 
-> I'm confused... isn't that the same section of code?
+> Are these patches routinely added to the mainstream u-boot code? 
+> 
+> Is there any reason why this fix is not a good idea?
+> 
+does setting MBAR really fix anything?
 
-The first block of code detects the need for a demotion and changes the
-global mmu_vmalloc_psize, along with changing the value on the local CPU
-(and flushing it's SLB). But other CPUs still have the old values.
+MBAR doesn't live up to its name.  It's a general-purpose scratch
+register - the hardware doesn't do anything with it.  So, wrt integrity
+within u-boot itself, I see no point/value in setting it.  If some
+piece of software needs temporary storage, it can set it and use it as
+it wishes, independent of u-boot.
 
-The second block of code checks if the global value matches the per-CPU
-value and if not, proceeds to a local SLB flush. That's how the "other"
-CPUs get the new value.
-
-If your shadow is per-CPU, it thus needs to be updated in both cases.
-
-Ben.
-
-
-Ben.
+Kim
