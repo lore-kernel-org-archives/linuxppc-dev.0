@@ -1,21 +1,33 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
-	by ozlabs.org (Postfix) with ESMTP id EC781DDE39
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 07:04:02 +1000 (EST)
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] ehca: map 4k firmware context of cq, qp to user space
-References: <200708021139.31695.hnguyen@linux.vnet.ibm.com>
-	<200708021608.16436.arnd@arndb.de>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 02 Aug 2007 14:03:59 -0700
-In-Reply-To: <200708021608.16436.arnd@arndb.de> (Arnd Bergmann's message of
-	"Thu, 2 Aug 2007 16:08:15 +0200")
-Message-ID: <adawswd3ayo.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, raisch@de.ibm.com,
-	paulus@samba.org, general@lists.openfabrics.org,
-	Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3645EDDD0C
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 07:39:55 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
+	l72KXbbO030508
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 16:33:37 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l72Ldq5J207954
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 15:39:52 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l72LdqMd012057
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 15:39:52 -0600
+Date: Thu, 2 Aug 2007 16:39:51 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Hollis Blanchard <hollisb@us.ibm.com>
+Subject: Re: [patch 00/14] Current 4xx patch series
+Message-ID: <20070802163951.11c398ee@weaponx.rchland.ibm.com>
+In-Reply-To: <f8tgfm$e2g$1@sea.gmane.org>
+References: <41060.0659474314$1184697204@news.gmane.org>
+	<f8tgfm$e2g$1@sea.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,7 +37,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > remap_4k_pfn is defined in terms of remap_pfn_range if the base page
- > size if 4k, so you don't need this #ifdef afaics.
+On Thu, 2 Aug 2007 20:57:26 +0000 (UTC)
+Hollis Blanchard <hollisb@us.ibm.com> wrote:
 
-Good point.  I'll wait for an updated patch.
+> On Tue, 17 Jul 2007 13:15:47 -0500, Josh Boyer wrote:
+> 
+> > For those interested, here's my current 4xx patch series.  There are a few
+> > cleanups as a pre-requisite for 40x support, some minimal Walnut support, and
+> > another round of Bamboo patches.  These are all based off of Paul's current
+> > tree.
+> 
+> Bamboo is booting for me with your patches. Let's get them in soon...
+
+I plan on submitting a series to Paul tomorrow-ish for 2.6.24.  Too
+late for 2.6.23.
+
+> > Ethernet for 4xx in general is still provided by the out-of-tree emac rewrite
+> > that Ben and David have poked at.  If it doesn't get merged soon, I'll take
+> > a look at getting it working again.
+> 
+> Please!
+
+Someone brought up the fact that the EMAC rewrite is mostly just
+changing probing code and the guts are still similar to the current
+EMAC driver.  I haven't really looked into it yet, but if that's true,
+I'd be curious as to why it was done that way.
+
+Either way, I'm hoping we can get something into 2.6.24.
+
+josh
