@@ -1,19 +1,23 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id D8C2CDDDD8
+Return-Path: <jwilliams@itee.uq.edu.au>
+Received: from gum.itee.uq.edu.au (gum.itee.uq.edu.au [130.102.66.1])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A5127DDDD8
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  3 Aug 2007 04:29:41 +1000 (EST)
-Message-ID: <46B22291.5000608@anagramm.de>
-Date: Thu, 02 Aug 2007 20:29:37 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
+	Fri,  3 Aug 2007 10:21:57 +1000 (EST)
+Received: from filter2.itee.uq.edu.au (filter2.itee.uq.edu.au [130.102.66.22])
+	by gum.itee.uq.edu.au (8.13.1/8.13.1) with ESMTP id l72Ns0Q1019925
+	for <linuxppc-embedded@ozlabs.org>; Fri, 3 Aug 2007 09:54:01 +1000
+Received: from [130.102.67.75] (g613-9373.itee.uq.edu.au [130.102.67.75])
+	by filter2.itee.uq.edu.au (8.13.1/8.13.1) with ESMTP id l72Nrxop021873
+	for <linuxppc-embedded@ozlabs.org>; Fri, 3 Aug 2007 09:53:59 +1000
+Message-ID: <46B26E97.3040706@itee.uq.edu.au>
+Date: Fri, 03 Aug 2007 09:53:59 +1000
+From: John Williams <jwilliams@itee.uq.edu.au>
 MIME-Version: 1.0
-To: Ansari <ma.harounansari@gdatech.co.in>
-Subject: Re: Reboot Command Makes kernel to hang (MPC8560)
-References: <000801c7cf51$f98ebb90$9503a8c0@Ansari>	<880B302A-742A-4CC1-BB41-E7BD1CE570C6@kernel.crashing.org><007001c7d341$d3ae29d0$9503a8c0@Ansari><46AF2085.1060603@anagramm.de>	<00C9C80A-3276-4BC1-9ADA-48CE2002BADA@kernel.crashing.org>
-	<000b01c7d4d1$1ac37920$9503a8c0@Ansari>
-In-Reply-To: <000b01c7d4d1$1ac37920$9503a8c0@Ansari>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: suspend/resume (Xilinx V4)
+Content-Type: text/plain; charset=us-ascii; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,37 +28,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi, Ansari!
+Hi,
 
-Ansari schrieb:
-> Hi Koller & Kumar
-> 
-> Thanks for ur reply.
-> 
-> Is there a way to reset the full chip (MPC8560)  whenever core reset 
-> occurs (using hardware or software) ??
+Any comments on the status/feasibility of suspend/resume for LinuxPPC on 
+Xilinx devices?
 
-I recommend you to have a look at i.e. the MPC8540ADS reference design
-(as an example, the 8560 should be similar) to see how the reset signals
-are realized. I didn't run into problems with the reset circuitry.
-u-boot resets my thing by issung a "reset" and linux does the same when
-I do a "shutdown -r now" or similar thing.
-Read the code at these places what's happening there.
-AFAICT this is not done by enabling the Watchdog and wait
-until it triggers. (Hence, that would be interesting to try...)
+The only suspend-related traffic I see here in the last 12 months is for 
+the lite5200b board.
 
-In your case I would have a look at the ramdisk code to see where it/what
-fails in the first place.
+Any guesstimates of level of difficulty for such a task on Xilinx 
+PPC405?  The core lite5200b patchset didn't look too hairy (just a 
+modest bit of ASM :), but there would also be Xilinx device driver hooks 
+to consider.
 
-Regards,
--- 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+Also, are there kernel revision dependencies here?  Project is currently 
+on an MVL 2.6.10 tree - but have seen mention of 2.6.17 (?) being 
+earliest with PPC suspend/resume capability.
+
+All info appreciated.  Thanks,
+
+John
