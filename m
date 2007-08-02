@@ -1,25 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A8CA0DDDE7
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Aug 2007 14:28:14 +1000 (EST)
-In-Reply-To: <1186017799.5495.546.camel@localhost.localdomain>
-References: <11859560681182-git-send-email-wei.zhang@freescale.com>
-	<11859560694083-git-send-email-wei.zhang@freescale.com>
-	<1186005360.5495.529.camel@localhost.localdomain>
-	<46B96294322F7D458F9648B60E15112C74D58E@zch01exm26.fsl.freescale.net>
-	<1186017799.5495.546.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <05E0FF5A-03DB-441E-81E8-54BD4A215D32@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] Add sysdev/pci_quirks.c file into PowerPCarchitecture
-	with ULI chip quirk functions.
-Date: Wed, 1 Aug 2007 23:29:12 -0500
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Zhang Wei-r63237 <Wei.Zhang@freescale.com>
+Return-Path: <pacman@shell01.TheWorld.com>
+Received: from TheWorld.com (pcls2.std.com [192.74.137.142])
+	by ozlabs.org (Postfix) with ESMTP id C350CDDDE7
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Aug 2007 14:40:59 +1000 (EST)
+From: Alan Curry <pacman@TheWorld.com>
+Message-Id: <200708020440.l724edCT290676@shell01.TheWorld.com>
+Subject: Re: [PATCH] powerpc: Pegasos keyboard detection
+To: matt@genesi-usa.com (Matt Sealey)
+Date: Thu, 2 Aug 2007 00:40:39 -0400 (EDT)
+In-Reply-To: <46B03561.9090800@genesi-usa.com> from "Matt Sealey" at Aug 01,
+	2007 08:25:21 AM
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,28 +21,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Aug 1, 2007, at 8:23 PM, Benjamin Herrenschmidt wrote:
-
-> On Thu, 2007-08-02 at 09:17 +0800, Zhang Wei-r63237 wrote:
->> Hi, Ben,
->>
->>>
->>> Are we sure that any powerpc machine that uses that ULI chip will  
->>> need
->>> the same quirk setting ?
->>>
->>
->> We can ensure current platforms (as far as we know, MPC8544DS and
->> MPC8641HPCN) using ULI chips in powerpc of kernel need the same quirk
->> setting.
->> And we hope to make them more generic. And if there are some  
->> different
->> setting in the future, we can add special codes.
+Matt Sealey writes the following:
 >
-> All right.
+>Yeah please do a fixup for the boot wrapper.
+>
+>Or, if you have trouble, go into the firmware and type "nvedit", add
+>these lines;
+>
+>" /isa/8042" find-device
+>" 8042" encode-string device-type
+>
+>(then ctrl-c to exit and nvstore to run it on next reboot. Try it without
+>the patch first, on the firmware console, just to be sure I got it right,
+>because I can't test it here)
 
-My feeling is this code is pretty specific to how the ULI M1575 is  
-used on those boards and should only be built for those boards.
+It works from the ok prompt but in the nvramrc it doesn't find the device.
+(pci/isa nodes not created yet?)
 
-- k
+But the larger point:
+
+>
+>You don't need to patch Linux at all. In fact for silly things like this
+>I would recommend against it :)
+
+If the workaround doesn't go into the kernel, everybody with affected
+hardware has to individually find out about the bug (probably by experiencing
+an annoying keyboardless boot) and fix it himself. Is that worth the
+reduction in kernel clutter?
+
+-- 
+Alan Curry
+pacman@world.std.com
