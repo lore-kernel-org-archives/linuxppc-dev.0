@@ -1,23 +1,14 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8C7AEDDDF3
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Aug 2007 10:20:36 +1000 (EST)
-Date: Wed, 1 Aug 2007 19:20:09 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: "Keith Mund" <keith.mund@clearcube.com>
-Subject: Re: MPC83xx - previous patch to set MBAR
-Message-Id: <20070801192009.656fc2e0.kim.phillips@freescale.com>
-In-Reply-To: <5EACFDEA24DADE42BF109303D305A8093120A6@MAIL.clearcube.com>
-References: <20070801133056.GP3972@stusta.de>
-	<fa686aa40708010653v7e1fb909gb03eb1d4754359bf@mail.gmail.com>
-	<5EACFDEA24DADE42BF109303D305A8093120A6@MAIL.clearcube.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, u-boot-users@lists.sourceforge.net
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 2 Aug 2007 10:14:18 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: DTC 1.0.0 Release Coming?
+Message-ID: <20070802001418.GA29550@localhost.localdomain>
+References: <E1IDjSy-0003eC-T4@jdl.com> <200708020135.03477.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <200708020135.03477.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,33 +18,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 1 Aug 2007 15:20:22 -0500
-"Keith Mund" <keith.mund@clearcube.com> wrote:
-
-> There was a u-boot 1.1.3 patch for start.S posted on the Freescale LTIB
-
-posts concerning u-boot should go to the u-boot-users list (cc'd).
-
-> site:
-> http://www.bitshrine.org/gpp/u-boot-1.1.3-mpc83xx-cpu-4.patch
+On Thu, Aug 02, 2007 at 01:35:03AM +0200, Arnd Bergmann wrote:
+> On Wednesday 25 July 2007, Jon Loeliger wrote:
+> > I'd like to make an official DTC Version 1.0.0 release soon!
+> > To that end, I've published a repo on jdl.com with a v1.0.0-rc1
+> > tag on it.  I anticipate some updates to the Documentation before
+> > a final 1.0.0 release still.  However, if you have something
+> > you would like to have be in The Real 1.0.0 release, please
+> > let me know soon!
 > 
-> The end result simply adds a line to set MBAR to match IMMRBAR.
+> A  bug has been reported in both fedora and debian about /usr/bin/ftdump
+> conflicting with a file of the same name in freetype.
 > 
->         lis     r3, CFG_IMMRBAR@h
->         ori     r3, r3, CFG_IMMRBAR@l
->         stw     r3, IMMRBAR(r4)
-> +       mtspr   MBAR, r3
-> 
-> Are these patches routinely added to the mainstream u-boot code? 
-> 
-> Is there any reason why this fix is not a good idea?
-> 
-does setting MBAR really fix anything?
+> Can we rename the binary in dtc to avoid this? Maybe /usr/bin/dtc-ftdump
+> would be better.
 
-MBAR doesn't live up to its name.  It's a general-purpose scratch
-register - the hardware doesn't do anything with it.  So, wrt integrity
-within u-boot itself, I see no point/value in setting it.  If some
-piece of software needs temporary storage, it can set it and use it as
-it wishes, independent of u-boot.
+Better yet, just omit it, since it's really not very useful.  That
+should be happening now that my "improved make install target" patch
+has been merged.
 
-Kim
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
