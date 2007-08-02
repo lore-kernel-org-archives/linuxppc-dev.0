@@ -1,19 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 2DF0EDDDFB
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 03:37:07 +1000 (EST)
-Received: from localhost (unknown [10.150.0.9])
-	by buildserver.ru.mvista.com (Postfix) with ESMTP id 5A4478810
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Aug 2007 22:37:06 +0500 (SAMST)
-Date: Thu, 2 Aug 2007 21:35:56 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 2/2] [RFC][POWERPC] fsl_soc: add support for fsl_spi
-Message-ID: <20070802173556.GB25643@localhost.localdomain>
-References: <20070802173335.GA25369@localhost.localdomain>
+Return-Path: <djiang@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 9182DDDDF3
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 04:01:26 +1000 (EST)
+Date: Thu, 2 Aug 2007 11:04:57 -0700
+From: Dave Jiang <djiang@mvista.com>
+To: galak@kernel.crashing.org
+Subject: [PATCH v3 2/3] powerpc: create pci err platform device for EDAC on
+	mpc85xx
+Message-ID: <20070802180457.GA29926@blade.az.mvista.com>
+References: <20070726222021.GA10427@blade.az.mvista.com>
+	<20070731220749.GB29780@blade.az.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20070802173335.GA25369@localhost.localdomain>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20070731220749.GB29780@blade.az.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, bluesmoke-devel@lists.sourceforge.net,
+	norsk5@yahoo.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,157 +24,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/sysdev/fsl_soc.c |  109 +++++++++++++++++++++++++++++++++++++++++
- arch/powerpc/sysdev/fsl_soc.h |   12 +++++
- 2 files changed, 121 insertions(+), 0 deletions(-)
+Creating a platform device for the PCI error registers in order for the
+mpc85xx EDAC driver to pick up proper resources. This is to prevent the EDAC
+driver from monopolizing the of_device and thus preventing future PCI code from
+using the PCI of_device(s).
 
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index 727453d..8c0576d 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -23,6 +23,7 @@
- #include <linux/device.h>
- #include <linux/platform_device.h>
- #include <linux/phy.h>
-+#include <linux/spi/spi.h>
- #include <linux/fsl_devices.h>
- #include <linux/fs_enet_pd.h>
- #include <linux/fs_uart_pd.h>
-@@ -1186,3 +1187,111 @@ err:
- arch_initcall(cpm_smc_uart_of_init);
+Signed-off-by: Dave Jiang <djiang@mvista.com>
+
+---
+Code reworked to setup the platform device as a child of the PCI of_device.
+The routine has to be called after device_initcall() due to having to wait
+for the of_device to be setup first in order to pick up the parent.
+
+ arch/powerpc/sysdev/fsl_pci.c |   52 +++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 52 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 9fb0ce5..a769bbb 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -19,6 +19,8 @@
+ #include <linux/string.h>
+ #include <linux/init.h>
+ #include <linux/bootmem.h>
++#include <linux/of_platform.h>
++#include <linux/platform_device.h>
  
- #endif /* CONFIG_8xx */
-+
-+static int fsl_spi_get_max_chipselect(struct device_node *spi_node,
-+				      struct fsl_spi_board_info *binfo,
-+				      s16 bus_num)
+ #include <asm/io.h>
+ #include <asm/prom.h>
+@@ -27,6 +29,56 @@
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+ 
++#ifdef CONFIG_85xx
++/* setting up 85xx PCI error platform device for EDAC consumption */
++static int __init mpc85xx_pcierr_setup(void)
 +{
-+	struct device_node *child = NULL;
-+	unsigned int i = 0;
-+	unsigned int dt_num_children = 0;
-+	unsigned int bi_num_children = 0;
++	struct device_node *np = NULL;
++	struct of_device *of_dev;
++	struct platform_device *pdev;
++	struct resource res[2];
++	int id = 0;
++	int err;
 +
-+	while ((child = of_get_next_child(spi_node, child)))
-+		dt_num_children++;
++	for_each_compatible_node(np, "pci", "fsl,mpc8540-pci") {
++		memset(res, 0, sizeof(struct resource) * 2);
++		if (of_address_to_resource(np, 0, &res[0])) {
++			printk(KERN_WARNING "Can't get pci register base!\n");
++			continue;
++		}
 +
-+	for (; i < binfo->num_board_infos; i++) {
-+		if (binfo->board_infos[i].bus_num == bus_num)
-+			bi_num_children++;
-+	}
++		/* move start to where the error registers are */
++		res[0].start += 0xe00;
 +
-+	if (dt_num_children != bi_num_children) {
-+		printk(KERN_WARNING "%s: board file and device tree are "
-+		       "disagreeing about max chipselects: %d vs %d\n",
-+		       __func__, bi_num_children, dt_num_children);
-+	}
++		of_irq_to_resource(np, 0, &res[1]);
 +
-+	return max(dt_num_children, bi_num_children);
-+}
++		of_dev = of_find_device_by_node(np);
++		if (!of_dev)
++			return -ENODEV;
 +
-+int fsl_spi_init(struct fsl_spi_board_info *binfo)
-+{
-+	struct device_node *np;
-+	unsigned int i;
-+	u32 sysclk;
-+
-+	np = of_find_node_by_type(NULL, "qe");
-+	if (!np)
-+		return -ENODEV;
-+
-+	sysclk = *(u32 *)of_get_property(np, "bus-frequency", NULL);
-+
-+	for (np = NULL, i = 1;
-+	     (np = of_find_compatible_node(np, "spi", "fsl_spi")) != NULL;
-+	     i++) {
-+		int ret = 0;
-+		const char *devid;
-+		const char *mode;
-+		struct resource res[2];
-+		struct platform_device *pdev = NULL;
-+		struct fsl_spi_platform_data pdata = {
-+			.activate_cs = binfo->activate_cs,
-+			.deactivate_cs = binfo->deactivate_cs,
-+		};
-+
-+		memset(res, 0, sizeof(res));
-+
-+		devid = of_get_property(np, "fsl,device-id", NULL);
-+		mode = of_get_property(np, "mode", NULL);
-+		if (!devid || !mode)
-+			goto err;
-+
-+		pdata.sysclk = sysclk;
-+		pdata.bus_num = *(u32 *)devid;
-+		pdata.max_chipselect = fsl_spi_get_max_chipselect(np, binfo,
-+							pdata.bus_num);
-+		if (!pdata.max_chipselect)
-+			goto err;
-+
-+		if (!strcmp(mode, "cpu-qe"))
-+			pdata.qe_mode = 1;
-+
-+		ret = of_address_to_resource(np, 0, &res[0]);
-+		if (ret)
-+			goto err;
-+
-+		res[1].start = res[2].end = irq_of_parse_and_map(np, 0);
-+		if (res[1].start == NO_IRQ)
-+			goto err;
-+
-+		res[1].name = "mpc83xx_spi";
-+		res[1].flags = IORESOURCE_IRQ;;
-+
-+		pdev = platform_device_alloc("mpc83xx_spi", i);
++		pdev = platform_device_alloc("mpc85xx_pci_err", id++);
 +		if (!pdev)
-+			goto err;
++			return -ENOMEM;
 +
-+		ret = platform_device_add_data(pdev, &pdata, sizeof(pdata));
-+		if (ret)
-+			goto unreg;
++		err = platform_device_add_resources(pdev, res, 2);
++		if (err)
++			goto error;
 +
-+		ret = platform_device_add_resources(pdev, res,
-+						    ARRAY_SIZE(res));
-+		if (ret)
-+			goto unreg;
++		pdev->dev.parent = &of_dev->dev;
 +
-+		ret = platform_device_register(pdev);
-+		if (ret)
-+			goto unreg;
-+
-+		continue;
-+unreg:
-+		platform_device_del(pdev);
-+err:
-+		continue;
++		err = platform_device_add(pdev);
++		if (err)
++			goto error;
 +	}
++	return 0;
 +
-+	return spi_register_board_info(binfo->board_infos,
-+				       binfo->num_board_infos);
++error:
++	platform_device_put(pdev);
++	return err;
 +}
-+EXPORT_SYMBOL(fsl_spi_init);
-diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
-index 04e145b..a83998d 100644
---- a/arch/powerpc/sysdev/fsl_soc.h
-+++ b/arch/powerpc/sysdev/fsl_soc.h
-@@ -8,5 +8,17 @@ extern phys_addr_t get_immrbase(void);
- extern u32 get_brgfreq(void);
- extern u32 get_baudrate(void);
- 
-+struct spi_board_info;
++late_initcall(mpc85xx_pcierr_setup);
++#endif
 +
-+struct fsl_spi_board_info {
-+	struct spi_board_info *board_infos;
-+	unsigned int num_board_infos;
-+
-+	void (*activate_cs)(u8 cs, u8 polarity);
-+	void (*deactivate_cs)(u8 cs, u8 polarity);
-+};
-+
-+extern int fsl_spi_init(struct fsl_spi_board_info *info);
-+
- #endif
- #endif
--- 
-1.5.0.6
+ /* atmu setup for fsl pci/pcie controller */
+ void __init setup_pci_atmu(struct pci_controller *hose, struct resource *rsrc)
+ {
