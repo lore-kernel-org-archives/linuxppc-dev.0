@@ -1,26 +1,19 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DB766DDDF4
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id D8C2CDDDD8
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  3 Aug 2007 02:56:19 +1000 (EST)
-Date: Thu, 2 Aug 2007 11:56:10 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] lite5200b: flash definition in dts
-Message-ID: <20070802165610.GA5364@ld0162-tx32.am.freescale.net>
-References: <20070619095408.GK23294@moe.telargo.com>
-	<20070801065203.GK4529@moe.telargo.com>
-	<fa686aa40708010541n4d4900cfv7042d6ca685416d1@mail.gmail.com>
-	<20070802055830.GM4529@moe.telargo.com>
-	<fa686aa40708012323p2eca4b05pd47acac635cf6370@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fa686aa40708012323p2eca4b05pd47acac635cf6370@mail.gmail.com>
-Cc: Domen Puncer <domen.puncer@telargo.com>, linuxppc-embedded@ozlabs.org
+	Fri,  3 Aug 2007 04:29:41 +1000 (EST)
+Message-ID: <46B22291.5000608@anagramm.de>
+Date: Thu, 02 Aug 2007 20:29:37 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
+MIME-Version: 1.0
+To: Ansari <ma.harounansari@gdatech.co.in>
+Subject: Re: Reboot Command Makes kernel to hang (MPC8560)
+References: <000801c7cf51$f98ebb90$9503a8c0@Ansari>	<880B302A-742A-4CC1-BB41-E7BD1CE570C6@kernel.crashing.org><007001c7d341$d3ae29d0$9503a8c0@Ansari><46AF2085.1060603@anagramm.de>	<00C9C80A-3276-4BC1-9ADA-48CE2002BADA@kernel.crashing.org>
+	<000b01c7d4d1$1ac37920$9503a8c0@Ansari>
+In-Reply-To: <000b01c7d4d1$1ac37920$9503a8c0@Ansari>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,13 +24,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 02, 2007 at 12:23:31AM -0600, Grant Likely wrote:
-> On the other hand there is PCI whose control registers fall within the
-> SoC range; but the memory windows absolutely do not.  If my flash
-> argument holds water, then where does that leave PCI which kind of
-> straddles the fence.
+Hi, Ansari!
 
-IMHO, PCI should be split into a bus node that sits outside the SoC, and
-a control node that sits inside, with phandles between the two.
+Ansari schrieb:
+> Hi Koller & Kumar
+> 
+> Thanks for ur reply.
+> 
+> Is there a way to reset the full chip (MPC8560)  whenever core reset 
+> occurs (using hardware or software) ??
 
--Scott
+I recommend you to have a look at i.e. the MPC8540ADS reference design
+(as an example, the 8560 should be similar) to see how the reset signals
+are realized. I didn't run into problems with the reset circuitry.
+u-boot resets my thing by issung a "reset" and linux does the same when
+I do a "shutdown -r now" or similar thing.
+Read the code at these places what's happening there.
+AFAICT this is not done by enabling the Watchdog and wait
+until it triggers. (Hence, that would be interesting to try...)
+
+In your case I would have a look at the ramdisk code to see where it/what
+fails in the first place.
+
+Regards,
+-- 
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
