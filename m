@@ -1,30 +1,29 @@
 Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 84903DDDD5
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 06:10:30 +1000 (EST)
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 57767DDDE6
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 06:15:19 +1000 (EST)
 Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
 	[9.17.195.227])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l72J2cUZ003934
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 15:02:38 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l72KFFOC024579
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 16:15:15 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
 	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l72K8rej268186
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 14:08:53 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l72K8rtq007904
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 14:08:53 -0600
-Date: Thu, 2 Aug 2007 15:08:52 -0500
+	l72KFFip268146
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 14:15:15 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l72KFFo2032021
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 14:15:15 -0600
+Date: Thu, 2 Aug 2007 15:15:13 -0500
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [ PATCH ] PowerPC cascade UIC IRQ handler fix.
-Message-ID: <20070802150852.39701576@weaponx.rchland.ibm.com>
-In-Reply-To: <20070802034848.GA837@localhost.localdomain>
-References: <20070730163517.GA10087@ru.mvista.com>
-	<20070802034848.GA837@localhost.localdomain>
+Subject: Re: [PATCH 2/6] PowerPC 440EPx: Sequoia DTS
+Message-ID: <20070802151513.12e9caf7@weaponx.rchland.ibm.com>
+In-Reply-To: <20070801020836.GB31391@localhost.localdomain>
+References: <20070730150648.GA5005@ru.mvista.com>
+	<20070801020836.GB31391@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
@@ -37,28 +36,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2 Aug 2007 13:48:48 +1000
+On Wed, 1 Aug 2007 12:08:36 +1000
 David Gibson <david@gibson.dropbear.id.au> wrote:
 
-> On Mon, Jul 30, 2007 at 08:35:17PM +0400, Valentine Barshak wrote:
-> > PPC44x cascade UIC irq handler fix.
-> > 
-> > According to PPC44x UM, if an interrupt is configured as
-> > level-sensitive, and a clear is attempted on the UIC_SR, the UIC_SR
-> > field is not cleared if the incoming interrupt signal is at the
-> > asserted polarity. This causes us to enter a cascade handler twice,
-> > since we first ack parent UIC interrupt and ack child UIC one after
-> > that. The patch checks child UIC msr value and returns IRQ_HANDLED
-> > if there're no pending interrupts. Otherwise we get a kernel panic
-> > with a "Fatal exception in interrupt" (illegal vector).
-> > The patch also fixes status flags.
+> On Mon, Jul 30, 2007 at 07:06:48PM +0400, Valentine Barshak wrote:
+> > AMCC Sequoia board DTS
 > > 
 > > Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+> > ---
+> >  arch/powerpc/boot/dts/sequoia.dts |  292
+> > ++++++++++++++++++++++++++++++++++++++ 1 files changed, 292
+> > insertions(+)
+> > 
+> > diff -ruN linux.orig/arch/powerpc/boot/dts/sequoia.dts
+> > linux/arch/powerpc/boot/dts/sequoia.dts ---
+> > linux.orig/arch/powerpc/boot/dts/sequoia.dts	1970-01-01
+> > 03:00:00.000000000 +0300 +++
+> > linux/arch/powerpc/boot/dts/sequoia.dts	2007-07-27
+> > 20:44:26.000000000 +0400 @@ -0,0 +1,292 @@ +/*
+> > + * Device Tree Source for AMCC Sequoia
+> > + *
+> > + * Based on Bamboo code by Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> > + * Copyright (c) 2006, 2007 IBM Corp.
+> > + *
+> > + * FIXME: Draft only!
+> > + *
+> > + * This file is licensed under the terms of the GNU General Public
+> > + * License version 2.  This program is licensed "as is" without
+> > + * any warranty of any kind, whether express or implied.
+> > + *
+> > + * To build:
+> > + *   dtc -I dts -O asm -o bamboo.S -b 0 sequoia.dts
+> > + *   dtc -I dts -O dtb -o bamboo.dtb -b 0 sequoia.dts
 > 
-> Hrm... This doesn't seem like the right fix to me.  Instead, I think
-> the cascaded IRQ handler should ack the interrupt on the child first.
-> I'm a little surprised it doesn't at the moment.
+> Needs updating to remove the bamboo references.  In fact we can
+> probably get rid of this "To build" comment that's been copied to just
+> about every dts ever.
+> 
+> > + */
+> > +
+> > +/ {
+> > +	#address-cells = <2>;
+> > +	#size-cells = <1>;
+> > +	model = "amcc,sequoia";
+> > +	compatible = "amcc,sequoia";
+> > +	dcr-parent = <&/cpus/PowerPC,440EPx@0>;
+> > +
+> > +	cpus {
+> > +		#address-cells = <1>;
+> > +		#size-cells = <0>;
+> > +
+> > +		PowerPC,440EPx@0 {
+> > +			device_type = "cpu";
+> > +			reg = <0>;
+> > +			clock-frequency = <0>; /* Filled in by
+> > zImage */
+> > +			timebase-frequency = <0>; /* Filled in by
+> > zImage */
+> > +			i-cache-line-size = <20>;
+> > +			d-cache-line-size = <20>;
+> > +			i-cache-size = <8000>;
+> > +			d-cache-size = <8000>;
+> > +			dcr-controller;
+> > +			dcr-access-method = "native";
+> > +		};
+> > +	};
+> > +
+> > +	memory {
+> > +		device_type = "memory";
+> > +		reg = <0 0 0>; /* Filled in by zImage */
+> > +	};
+> > +
+> > +	UIC0: interrupt-controller0 {
+> > +		compatible = "ibm,uic-440gp","ibm,uic";
+> 
+> The first compatible entry should always be the precise model, so in
+> this case "ibm,uic-440epx".  If it is (supposed to be) identical to
+> the UIC in the 440GP, it can also have an "ibm,uic-440gp" entry, but
+> since I believe all the UICs are supposed to operate the same, I think
+> that's implicit in the "ibm,uic" entry.
 
-Agreed.  Anyone going to hack up a patch for that?
+Most UICs are the same.  There are some oddball chips that either hide
+particular registers because they are unused, or they change the
+addressing stride.  I'm not sure that is a common enough case to worry
+about now though.
 
 josh
