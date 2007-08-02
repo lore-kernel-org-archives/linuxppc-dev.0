@@ -1,31 +1,20 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Return-Path: <bgill@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A553ADDEBA
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 06:35:59 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l72KZrNS014226
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 16:35:53 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l72KZrtg215198
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 14:35:53 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l72KZq70017199
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 14:35:52 -0600
-Date: Thu, 2 Aug 2007 15:35:51 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Valentine Barshak <vbarshak@ru.mvista.com>
-Subject: Re: [PATCH 6/6] PowerPC 440EPx: Sequoia new EMAC support
-Message-ID: <20070802153551.2a8ad14d@weaponx.rchland.ibm.com>
-In-Reply-To: <20070730152339.GA5126@ru.mvista.com>
-References: <20070730152339.GA5126@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D2A35DDEA0
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 06:37:24 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l72KbIOO026853
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 13:37:18 -0700 (MST)
+From: Becky Bruce <becky.bruce@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Fix FSL BookE machine check reporting
+Date: Thu,  2 Aug 2007 15:37:15 -0500
+Message-Id: <11860870353423-git-send-email-becky.bruce@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,36 +24,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 30 Jul 2007 19:23:39 +0400
-Valentine Barshak <vbarshak@ru.mvista.com> wrote:
+Reserved MCSR bits on FSL BookE parts may have spurious values
+when mcheck occurs.  Mask these off when printing the MCSR to
+avoid confusion.  Also, get rid of the MCSR_GL_CI bit defined
+for e500 - this bit doesn't actually have any meaning.
 
-> The patch adds PHY support for the Sequoia board to the new EMAC driver and
-> enables NEW_EMAC for 440EPx Kconfig.
-> The phy code has been written by Stefan Roese.
-> This has been tested with the following version of the EMAC dirver:
-> 
-> http://ozlabs.org/~dgibson/home/emac/powerpc-emac-new-20070516.patch
-> 
-> Signed-off-by: Stefan Roese <sr@denx.de>
-> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
-> ---
->  arch/powerpc/platforms/44x/Kconfig |    5 +---
->  drivers/net/ibm_newemac/phy.c      |   39 +++++++++++++++++++++++++++++++++++++
->  2 files changed, 41 insertions(+), 3 deletions(-)
-> 
-> --- linux.orig/arch/powerpc/platforms/44x/Kconfig	2007-07-30 15:05:50.000000000 +0400
-> +++ linux/arch/powerpc/platforms/44x/Kconfig	2007-07-30 17:59:05.000000000 +0400
-> @@ -47,9 +47,8 @@
->  config 440EPX
->  	bool
->  	select PPC_FPU
-> -# Disabled until the new EMAC Driver is merged.
-> -#	select IBM_NEW_EMAC_EMAC4
-> -#	select IBM_NEW_EMAC_ZMII
-> +	select IBM_NEW_EMAC_EMAC4
-> +	select IBM_NEW_EMAC_ZMII
+Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
+---
+ arch/powerpc/kernel/traps.c     |    4 +---
+ include/asm-powerpc/reg_booke.h |   12 +++++++++++-
+ 2 files changed, 12 insertions(+), 4 deletions(-)
 
-Probably don't want this bit yet.  The EMAC driver isn't really merged
-yet.
-
-josh
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 2bb1cb9..d8502e3 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -299,7 +299,7 @@ static inline int check_io_access(struct pt_regs *regs)
+ #ifndef CONFIG_FSL_BOOKE
+ #define get_mc_reason(regs)	((regs)->dsisr)
+ #else
+-#define get_mc_reason(regs)	(mfspr(SPRN_MCSR))
++#define get_mc_reason(regs)	(mfspr(SPRN_MCSR) & MCSR_MASK)
+ #endif
+ #define REASON_FP		ESR_FP
+ #define REASON_ILLEGAL		(ESR_PIL | ESR_PUO)
+@@ -414,8 +414,6 @@ void machine_check_exception(struct pt_regs *regs)
+ 		printk("Data Cache Push Parity Error\n");
+ 	if (reason & MCSR_DCPERR)
+ 		printk("Data Cache Parity Error\n");
+-	if (reason & MCSR_GL_CI)
+-		printk("Guarded Load or Cache-Inhibited stwcx.\n");
+ 	if (reason & MCSR_BUS_IAERR)
+ 		printk("Bus - Instruction Address Error\n");
+ 	if (reason & MCSR_BUS_RAERR)
+diff --git a/include/asm-powerpc/reg_booke.h b/include/asm-powerpc/reg_booke.h
+index 064405c..8fdc2b4 100644
+--- a/include/asm-powerpc/reg_booke.h
++++ b/include/asm-powerpc/reg_booke.h
+@@ -223,7 +223,6 @@
+ #define MCSR_ICPERR 	0x40000000UL /* I-Cache Parity Error */
+ #define MCSR_DCP_PERR 	0x20000000UL /* D-Cache Push Parity Error */
+ #define MCSR_DCPERR 	0x10000000UL /* D-Cache Parity Error */
+-#define MCSR_GL_CI 	0x00010000UL /* Guarded Load or Cache-Inhibited stwcx. */
+ #define MCSR_BUS_IAERR 	0x00000080UL /* Instruction Address Error */
+ #define MCSR_BUS_RAERR 	0x00000040UL /* Read Address Error */
+ #define MCSR_BUS_WAERR 	0x00000020UL /* Write Address Error */
+@@ -232,6 +231,12 @@
+ #define MCSR_BUS_WBERR 	0x00000004UL /* Write Data Bus Error */
+ #define MCSR_BUS_IPERR 	0x00000002UL /* Instruction parity Error */
+ #define MCSR_BUS_RPERR 	0x00000001UL /* Read parity Error */
++
++/* e500 parts may set unused bits in MCSR; mask these off */
++#define MCSR_MASK	(MCSR_MCP | MCSR_ICPERR | MCSR_DCP_PERR | \
++			MCSR_DCPERR | MCSR_BUS_IAERR | MCSR_BUS_RAERR | \
++			MCSR_BUS_WAERR | MCSR_BUS_IBERR | MCSR_BUS_RBERR | \
++			MCSR_BUS_WBERR | MCSR_BUS_IPERR | MCSR_BUS_RPERR)
+ #endif
+ #ifdef CONFIG_E200
+ #define MCSR_MCP 	0x80000000UL /* Machine Check Input Pin */
+@@ -243,6 +248,11 @@
+ #define MCSR_BUS_DRERR 	0x00000008UL /* Read Bus Error on data load */
+ #define MCSR_BUS_WRERR 	0x00000004UL /* Write Bus Error on buffered
+ 					store or cache line push */
++
++/* e200 parts may set unused bits in MCSR; mask these off */
++#define MCSR_MASK	(MCSR_MCP | MCSR_CP_PERR | MCSR_CPERR | \
++			MCSR_EXCP_ERR | MCSR_BUS_IRERR | MCSR_BUS_DRERR | \
++			MCSR_BUS_WRERR)
+ #endif
+ 
+ /* Bit definitions for the DBSR. */
+-- 
+1.5.0.3
