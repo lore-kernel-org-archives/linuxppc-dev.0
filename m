@@ -1,19 +1,20 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp109.sbc.mail.re2.yahoo.com (smtp109.sbc.mail.re2.yahoo.com
-	[68.142.229.96]) by ozlabs.org (Postfix) with SMTP id CE61BDDDF3
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 07:47:25 +1000 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: spi-devel-general@lists.sourceforge.net
-Subject: Re: [spi-devel-general] [PATCH] [SPI][POWERPC] spi_mpc83xx: in "QE
-	mode" spiclk is sysclk/2
-Date: Thu, 2 Aug 2007 14:47:21 -0700
-References: <20070802142641.GA6309@localhost.localdomain>
-In-Reply-To: <20070802142641.GA6309@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200708021447.22028.david-b@pacbell.net>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2CE6ADDDE9
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 08:37:23 +1000 (EST)
+Subject: Re: [PATCH] Use 1TB segments
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: will_schmidt@vnet.ibm.com
+In-Reply-To: <1186087283.22717.80.camel@farscape.rchland.ibm.com>
+References: <18095.59959.698141.565343@cargo.ozlabs.ibm.com>
+	<1186087283.22717.80.camel@farscape.rchland.ibm.com>
+Content-Type: text/plain
+Date: Fri, 03 Aug 2007 08:37:25 +1000
+Message-Id: <1186094245.5495.637.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,9 +24,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 02 August 2007, Anton Vorontsov wrote:
-> Probably someday mpc83xx_spi->sysclk should be renamed to
-> mpc83xx_spi->spiclk to be less confusing.
 
-Why not "today", with this patch?  That would fix some of
-the root cause of this bug...
+> Is there technical reason why the 'local' variable remains at the end of
+> the parm list for these?   In other cases 'ssize' simply gets added to
+> the end of the parm list. 
+
+Looks nicer to have psize and ssize together :-)
+
+Ben.
