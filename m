@@ -1,23 +1,34 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 67201DDEFB
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 09:32:35 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1IGk9e-00016I-R1
-	for linuxppc-dev@ozlabs.org; Thu, 02 Aug 2007 16:32:30 -0700
-Message-ID: <11975001.post@talk.nabble.com>
-Date: Thu, 2 Aug 2007 16:32:30 -0700 (PDT)
-From: Mit Matelske <mit@sweeet.net>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: FEC driver not working after upgrade
-In-Reply-To: <20070802205107.C069F352659@atlas.denx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <11952546.post@talk.nabble.com>
-	<20070802205107.C069F352659@atlas.denx.de>
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 064ECDDDD5
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 09:56:19 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l72NuGq8010968
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 19:56:16 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l72NuGq8111652
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 17:56:16 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l72NuGnA004638
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 17:56:16 -0600
+Subject: Re: [PATCH] Use 1TB segments
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1186094245.5495.637.camel@localhost.localdomain>
+References: <18095.59959.698141.565343@cargo.ozlabs.ibm.com>
+	<1186087283.22717.80.camel@farscape.rchland.ibm.com>
+	<1186094245.5495.637.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 02 Aug 2007 18:56:14 -0500
+Message-Id: <1186098974.22717.86.camel@farscape.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,30 +38,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-
-wd wrote:
+On Fri, 2007-08-03 at 08:37 +1000, Benjamin Herrenschmidt wrote:
+> > Is there technical reason why the 'local' variable remains at the end of
+> > the parm list for these?   In other cases 'ssize' simply gets added to
+> > the end of the parm list. 
 > 
-> In message <11952546.post@talk.nabble.com> you wrote:
->> 
->> I upgraded from an old 2.4.25 kernel to the latest Denx snapshot and
->> cannot
-> ...
->> I am running a 5200B.  Thanks for any help.
+> Looks nicer to have psize and ssize together :-)
+
+Aah!   And here I thought there was some obscure register usage
+optimization going on..   :-)
+
+-Will
+
 > 
-> Do you really have the latest snapshot, i. e. top of tree from the git
-> repository?
+> Ben.
 > 
-
-Yes sir.  I have the 2007-7-10 snapshot.
-
-Someone posted what I assume to be a similar problem back in March:
-
-http://www.nabble.com/Problems-with-PHY-on-STK5200-tf3326321.html#a9247789
-
-but there was no solution.  Thanks for any and all help.
-
-Mit Matelske
--- 
-View this message in context: http://www.nabble.com/FEC-driver-not-working-after-upgrade-tf4202285.html#a11975001
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
