@@ -1,20 +1,32 @@
-Return-Path: <bgill@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D2A35DDEA0
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 06:37:24 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l72KbIOO026853
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 13:37:18 -0700 (MST)
-From: Becky Bruce <becky.bruce@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Fix FSL BookE machine check reporting
-Date: Thu,  2 Aug 2007 15:37:15 -0500
-Message-Id: <11860870353423-git-send-email-becky.bruce@freescale.com>
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id CD2B6DDDFB
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 06:41:28 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l72KfP99025537
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 16:41:25 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l72KfPgZ215458
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 14:41:25 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l72KfPtu011179
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 14:41:25 -0600
+Subject: Re: [PATCH] Use 1TB segments
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18095.59959.698141.565343@cargo.ozlabs.ibm.com>
+References: <18095.59959.698141.565343@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Thu, 02 Aug 2007 15:41:23 -0500
+Message-Id: <1186087283.22717.80.camel@farscape.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,75 +36,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Reserved MCSR bits on FSL BookE parts may have spurious values
-when mcheck occurs.  Mask these off when printing the MCSR to
-avoid confusion.  Also, get rid of the MCSR_GL_CI bit defined
-for e500 - this bit doesn't actually have any meaning.
+Hi Paul, 
+   just a few questions.  
 
-Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
----
- arch/powerpc/kernel/traps.c     |    4 +---
- include/asm-powerpc/reg_booke.h |   12 +++++++++++-
- 2 files changed, 12 insertions(+), 4 deletions(-)
+On Wed, 2007-08-01 at 12:04 +1000, Paul Mackerras wrote:
+> This makes the kernel use 1TB segments for all kernel mappings and for
+> user addresses of 1TB and above, on machines which support them
+> (currently POWER5+ and POWER6).  We don't currently use 1TB segments
+> for user addresses < 1T, since that would effectively prevent 32-bit
+> processes from using huge pages unless we also had a way to revert to
+> using 256MB segments.
 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 2bb1cb9..d8502e3 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -299,7 +299,7 @@ static inline int check_io_access(struct pt_regs *regs)
- #ifndef CONFIG_FSL_BOOKE
- #define get_mc_reason(regs)	((regs)->dsisr)
- #else
--#define get_mc_reason(regs)	(mfspr(SPRN_MCSR))
-+#define get_mc_reason(regs)	(mfspr(SPRN_MCSR) & MCSR_MASK)
- #endif
- #define REASON_FP		ESR_FP
- #define REASON_ILLEGAL		(ESR_PIL | ESR_PUO)
-@@ -414,8 +414,6 @@ void machine_check_exception(struct pt_regs *regs)
- 		printk("Data Cache Push Parity Error\n");
- 	if (reason & MCSR_DCPERR)
- 		printk("Data Cache Parity Error\n");
--	if (reason & MCSR_GL_CI)
--		printk("Guarded Load or Cache-Inhibited stwcx.\n");
- 	if (reason & MCSR_BUS_IAERR)
- 		printk("Bus - Instruction Address Error\n");
- 	if (reason & MCSR_BUS_RAERR)
-diff --git a/include/asm-powerpc/reg_booke.h b/include/asm-powerpc/reg_booke.h
-index 064405c..8fdc2b4 100644
---- a/include/asm-powerpc/reg_booke.h
-+++ b/include/asm-powerpc/reg_booke.h
-@@ -223,7 +223,6 @@
- #define MCSR_ICPERR 	0x40000000UL /* I-Cache Parity Error */
- #define MCSR_DCP_PERR 	0x20000000UL /* D-Cache Push Parity Error */
- #define MCSR_DCPERR 	0x10000000UL /* D-Cache Parity Error */
--#define MCSR_GL_CI 	0x00010000UL /* Guarded Load or Cache-Inhibited stwcx. */
- #define MCSR_BUS_IAERR 	0x00000080UL /* Instruction Address Error */
- #define MCSR_BUS_RAERR 	0x00000040UL /* Read Address Error */
- #define MCSR_BUS_WAERR 	0x00000020UL /* Write Address Error */
-@@ -232,6 +231,12 @@
- #define MCSR_BUS_WBERR 	0x00000004UL /* Write Data Bus Error */
- #define MCSR_BUS_IPERR 	0x00000002UL /* Instruction parity Error */
- #define MCSR_BUS_RPERR 	0x00000001UL /* Read parity Error */
-+
-+/* e500 parts may set unused bits in MCSR; mask these off */
-+#define MCSR_MASK	(MCSR_MCP | MCSR_ICPERR | MCSR_DCP_PERR | \
-+			MCSR_DCPERR | MCSR_BUS_IAERR | MCSR_BUS_RAERR | \
-+			MCSR_BUS_WAERR | MCSR_BUS_IBERR | MCSR_BUS_RBERR | \
-+			MCSR_BUS_WBERR | MCSR_BUS_IPERR | MCSR_BUS_RPERR)
- #endif
- #ifdef CONFIG_E200
- #define MCSR_MCP 	0x80000000UL /* Machine Check Input Pin */
-@@ -243,6 +248,11 @@
- #define MCSR_BUS_DRERR 	0x00000008UL /* Read Bus Error on data load */
- #define MCSR_BUS_WRERR 	0x00000004UL /* Write Bus Error on buffered
- 					store or cache line push */
-+
-+/* e200 parts may set unused bits in MCSR; mask these off */
-+#define MCSR_MASK	(MCSR_MCP | MCSR_CP_PERR | MCSR_CPERR | \
-+			MCSR_EXCP_ERR | MCSR_BUS_IRERR | MCSR_BUS_DRERR | \
-+			MCSR_BUS_WRERR)
- #endif
- 
- /* Bit definitions for the DBSR. */
--- 
-1.5.0.3
+I think I have a question about "user address < 1T"..  once I think on
+it a bit more it'll either click, or I'll have a question
+articulated. :-)
+
+
+> -static inline void __tlbiel(unsigned long va, unsigned int psize)
+> +static inline void __tlbiel(unsigned long va, int psize, int ssize)
+
+> -static inline void tlbie(unsigned long va, int psize, int local)
+> +static inline void tlbie(unsigned long va, int psize, int ssize, int local)
+
+>  static long native_hpte_insert(unsigned long hpte_group, unsigned long va,
+>  			unsigned long pa, unsigned long rflags,
+> -			unsigned long vflags, int psize)
+> +			unsigned long vflags, int psize, int ssize)
+
+>  static long native_hpte_updatepp(unsigned long slot, unsigned long newpp,
+> -				 unsigned long va, int psize, int local)
+> +				 unsigned long va, int psize, int ssize,
+> +				 int local)
+
+Is there technical reason why the 'local' variable remains at the end of
+the parm list for these?   In other cases 'ssize' simply gets added to
+the end of the parm list. 
+
+> +static int __init htab_dt_scan_seg_sizes(unsigned long node,
+> +					 const char *uname, int depth,
+> +					 void *data)
+> +{
+> +	char *type = of_get_flat_dt_prop(node, "device_type", NULL);
+> +	u32 *prop;
+> +	unsigned long size = 0;
+> +
+> +	/* We are scanning "cpu" nodes only */
+> +	if (type == NULL || strcmp(type, "cpu") != 0)
+> +		return 0;
+> +
+> +	prop = (u32 *)of_get_flat_dt_prop(node, "ibm,processor-segment-sizes",
+> +					  &size);
+> +	if (prop != NULL && size >= 8) {
+> +		if (prop[0] == 0x1c && prop[1] == 0x28) {
+
+This is 0x1c indicating 2^28 for 256M; and 0x28 indicating 2^40 for 1TB
+segments.
+
+Will there ever be a segment size between the two?  Or will the
+representation every vary from this?  i.e. wondering if prop[0] will
+always be for 256M and prop[1] for 1TB.  
+
+> +#define slb_vsid_shift(ssize)	\
+> +	((ssize) == MMU_SEGSIZE_256M? SLB_VSID_SHIFT: SLB_VSID_SHIFT_1T)
+
+> @@ -100,12 +106,13 @@ void slb_flush_and_rebolt(void)
+>  	vflags = SLB_VSID_KERNEL | vmalloc_llp;
+> 
+>  	ksp_esid_data = mk_esid_data(get_paca()->kstack, 2);
+> -	if ((ksp_esid_data & ESID_MASK) == PAGE_OFFSET)
+> +	mask = (mmu_kernel_ssize == MMU_SEGSIZE_256M)? ESID_MASK: ESID_MASK_1T;
+
+Is this one worthy of a #define like the slb_vsid_shift() above? 
+
+> +#define VSID_MULTIPLIER_256M	ASM_CONST(200730139)	/* 28-bit prime */
+
+> +#define VSID_MULTIPLIER_1T	ASM_CONST(12538073)	/* 24-bit prime */
+
+Anything special in how this 24-bit prime value was selected?   (same
+question could be for the 28-bit prime, though I see that value was
+updated at least once a few years back)
+
+-Will
