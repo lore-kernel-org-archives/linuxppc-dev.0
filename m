@@ -1,15 +1,15 @@
-Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A0108DDD08
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Aug 2007 15:12:14 +1000 (EST)
-From: kou.ishizaki@toshiba.co.jp
-Date: Thu, 02 Aug 2007 14:11:49 +0900 (JST)
-Message-Id: <20070802.141149.-1300528740.kouish@swc.toshiba.co.jp>
-To: paulus@samba.org
-Subject: Re: [PATCH] [POWERPC] Fix section mismatch references to
-Cc: sfr@canb.auug.org.au, linuxppc-dev@ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: will_schmidt@vnet.ibm.com
+Subject: Re: [PATCH] fixes for the SLB shadow buffer 
+In-reply-to: <1186004885.22717.50.camel@farscape.rchland.ibm.com> 
+References: <17055.1185944172@neuling.org>
+	<18096.6654.934841.561238@cargo.ozlabs.ibm.com>
+	<31580.1185948147@neuling.org>
+	<1186004885.22717.50.camel@farscape.rchland.ibm.com>
+Date: Thu, 02 Aug 2007 15:56:31 +1000
+Message-ID: <24613.1186034191@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,53 +19,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-alloc_bootmem
-In-Reply-To: <20070731171407.c1028de4.sfr@canb.auug.org.au>
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-X-Mailer: Mew version 4.2 on Emacs 21.3 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> WARNING: vmlinux.o(.text+0x2a9c4): Section mismatch: reference to
-.init.text:.__alloc_bootmem (between '.update_dn_pci_info' and
-'.pci_dn_reconfig_notifier')
-> WARNING: vmlinux.o(.text+0x36430): Section mismatch: reference to
-.init.text:.__alloc_bootmem (between '.mpic_msi_init_allocator' and
-'.find_ht_magic_addr')
-> WARNING: vmlinux.o(.text+0x5e804): Section mismatch: reference to
-.init.text:.__alloc_bootmem (between '.celleb_setup_phb' and
-'.celleb_fake_pci_write_config')
-> WARNING: vmlinux.o(.text+0x5e8e8): Section mismatch: reference to
-.init.text:.__alloc_bootmem (between '.celleb_setup_phb' and
-'.celleb_fake_pci_write_config')
-> WARNING: vmlinux.o(.text+0x5e968): Section mismatch: reference to
-.init.text:.__alloc_bootmem (between '.celleb_setup_phb' and
-'.celleb_fake_pci_write_config')
-> WARNING: vmlinux.o(.text+0x5ec50): Section mismatch: reference to
-.init.text:.free_bootmem (between '.celleb_setup_phb' and
-'.celleb_fake_pci_write_config')
-> WARNING: vmlinux.o(.text+0x5ec70): Section mismatch: reference to
-.init.text:.free_bootmem (between '.celleb_setup_phb' and
-'.celleb_fake_pci_write_config')
-> WARNING: vmlinux.o(.text+0x5eb88): Section mismatch: reference to
-.init.text:.free_bootmem (between '.celleb_setup_phb' and
-'.celleb_fake_pci_write_config')
-> WARNING: vmlinux.o(.text+0x5eba8): Section mismatch: reference to
-.init.text:.free_bootmem (between '.celleb_setup_phb' and
-'.celleb_fake_pci_write_config')
+> > --- linux-2.6-ozlabs.orig/arch/powerpc/kernel/entry_64.S
+> > +++ linux-2.6-ozlabs/arch/powerpc/kernel/entry_64.S
+> > @@ -389,7 +389,9 @@ BEGIN_FTR_SECTION
+> >  	ld	r9,PACA_SLBSHADOWPTR(r13)
+> >  	li	r12,0
+> >  	std	r12,SLBSHADOW_STACKESID(r9) /* Clear ESID */
+> > +	eieio
+> >  	std	r7,SLBSHADOW_STACKVSID(r9)  /* Save VSID */
+> > +	eieio
+> >  	std	r0,SLBSHADOW_STACKESID(r9)  /* Save ESID */
+> > 
+> Hi Michael, 
 > 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> I was going to ask if we really needed both of them, but think I
+> convinced myself that we do.
+>  
+> Do we also want/need an eieio after the /* Save ESID */ statement, or is
+> that somehow handled by the slbie following?
 
+Actually, I think we can remove the barriers all together.
 
-There is no problem in this patch for Celleb platform, and it looks
-fine.
+The ordering depends on how the buffer is accessed.
 
-I have already posted another patch to remove warnings:
-  http://patchwork.ozlabs.org/linuxppc/patch?id=12656
-It will not conflict with this patch, and I hope both of them to be
-applied.
+If each CPU only access it's own shadow buffer, then we are ok, but this
+isn't the case when we take a checkpoint restart, like in POWER6, the
+buffer must be read by a separate CPU.  
 
-Best regards,
-Kou Ishizaki
+But even in the case of a checkpoint restart, the ordering will be
+preserved as the NIA we get as part of the checkpoint will have all
+previous instructions complete and none of the following instructions
+started.
+
+So I guess the questions is, does PHYP even need to access the shadow
+buffer of another CPU, while that other CPU is in flight.  I'm not sure
+that they can as they can't read the entire buffer atomically if the
+target CPU is still active.  So PHYP must stop instructions on the
+target CPU, before it reads it's shadow buffer.  Hence no ordering
+problems.
+
+I should probably talk to some PHYP guys to confirm, but i think we can
+remove all the barriers when writing to the shadow buffer
+
+Mikey
