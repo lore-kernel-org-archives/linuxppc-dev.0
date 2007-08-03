@@ -1,35 +1,22 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from ausmtp06.au.ibm.com (ausmtp06.au.ibm.com [202.81.18.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ausmtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6E547DDDE7
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 11:35:43 +1000 (EST)
-Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.18.232])
-	by ausmtp06.au.ibm.com (8.13.8/8.13.8) with ESMTP id l731cGvr1052724
-	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 11:38:17 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.250.237])
-	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l731Ymek225928
-	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 11:34:48 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l731ZbSg006949
-	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 11:35:37 +1000
-Date: Fri, 3 Aug 2007 10:49:51 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/6] PowerPC 440EPx: Sequoia DTS
-Message-ID: <20070803004951.GB3188@localhost.localdomain>
-References: <20070730150648.GA5005@ru.mvista.com>
-	<20070801020836.GB31391@localhost.localdomain>
-	<65ff446478a9fd0a48061079d5f04f8f@kernel.crashing.org>
-	<20070801050422.GI31391@localhost.localdomain>
-	<20070801054751.GM31391@localhost.localdomain>
-	<20070802151833.5e250f2b@weaponx.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070802151833.5e250f2b@weaponx.rchland.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] fixes for the SLB shadow buffer 
+In-reply-to: <30559.1186046895@neuling.org> 
+References: <17055.1185944172@neuling.org>
+	<18096.6654.934841.561238@cargo.ozlabs.ibm.com>
+	<31580.1185948147@neuling.org>
+	<1186004885.22717.50.camel@farscape.rchland.ibm.com>
+	<24613.1186034191@neuling.org>
+	<1186039870.5495.595.camel@localhost.localdomain>
+	<13166.1186045008@neuling.org>
+	<1186045096.5495.617.camel@localhost.localdomain>
+	<17854.1186045405@neuling.org>
+	<1186046080.5495.620.camel@localhost.localdomain>
+	<30559.1186046895@neuling.org>
+Date: Fri, 03 Aug 2007 11:55:39 +1000
+Message-ID: <1158.1186106139@neuling.org>
+Cc: will_schmidt@vnet.ibm.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,24 +26,128 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 02, 2007 at 03:18:33PM -0500, Josh Boyer wrote:
-> On Wed, 1 Aug 2007 15:47:51 +1000
-> David Gibson <david@gibson.dropbear.id.au> wrote:
-> > 
-> > Duh, forgot to attach the actual patch.  Here it is:
-> 
-> So, no signed-off-by.  Intentional, as it's for comments only?
+We sometimes change the vmalloc segment in slb_flush_and_rebolt but we
+never updated with slb shadow buffer.  This fixes it.  Thanks to paulus
+for finding this.
 
-Pretty much.
+Also added some write barriers to ensure the shadow buffer is always
+valid.
 
-> Also, could you break this out into a separate thread when you do
-> submit it please?  Will make a few people's lives easier since this has
-> nothing to do with 440EPx really :)
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+Integrated more comments from people.
 
-Sure.
+ arch/powerpc/kernel/entry_64.S   |    3 +++
+ arch/powerpc/mm/hash_utils_64.c  |    2 +-
+ arch/powerpc/mm/slb.c            |   28 ++++++++++++++++++----------
+ include/asm-powerpc/mmu-hash64.h |    1 +
+ 4 files changed, 23 insertions(+), 11 deletions(-)
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Index: linux-2.6-ozlabs/arch/powerpc/kernel/entry_64.S
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/kernel/entry_64.S
++++ linux-2.6-ozlabs/arch/powerpc/kernel/entry_64.S
+@@ -389,8 +389,11 @@ BEGIN_FTR_SECTION
+ 	ld	r9,PACA_SLBSHADOWPTR(r13)
+ 	li	r12,0
+ 	std	r12,SLBSHADOW_STACKESID(r9) /* Clear ESID */
++	eieio
+ 	std	r7,SLBSHADOW_STACKVSID(r9)  /* Save VSID */
++	eieio
+ 	std	r0,SLBSHADOW_STACKESID(r9)  /* Save ESID */
++	eieio
+ 
+ 	slbie	r6
+ 	slbie	r6		/* Workaround POWER5 < DD2.1 issue */
+Index: linux-2.6-ozlabs/arch/powerpc/mm/hash_utils_64.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/mm/hash_utils_64.c
++++ linux-2.6-ozlabs/arch/powerpc/mm/hash_utils_64.c
+@@ -759,7 +759,7 @@ int hash_page(unsigned long ea, unsigned
+ 		   mmu_psize_defs[mmu_vmalloc_psize].sllp) {
+ 		get_paca()->vmalloc_sllp =
+ 			mmu_psize_defs[mmu_vmalloc_psize].sllp;
+-		slb_flush_and_rebolt();
++		slb_vmalloc_update();
+ 	}
+ #endif /* CONFIG_PPC_64K_PAGES */
+ 
+Index: linux-2.6-ozlabs/arch/powerpc/mm/slb.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/mm/slb.c
++++ linux-2.6-ozlabs/arch/powerpc/mm/slb.c
+@@ -53,7 +53,8 @@ static inline unsigned long mk_vsid_data
+ 	return (get_kernel_vsid(ea) << SLB_VSID_SHIFT) | flags;
+ }
+ 
+-static inline void slb_shadow_update(unsigned long esid, unsigned long vsid,
++static inline void slb_shadow_update(unsigned long ea,
++				     unsigned long flags,
+ 				     unsigned long entry)
+ {
+ 	/*
+@@ -61,11 +62,11 @@ static inline void slb_shadow_update(uns
+ 	 * updating it.
+ 	 */
+ 	get_slb_shadow()->save_area[entry].esid = 0;
+-	barrier();
+-	get_slb_shadow()->save_area[entry].vsid = vsid;
+-	barrier();
+-	get_slb_shadow()->save_area[entry].esid = esid;
+-
++	smp_wmb();
++	get_slb_shadow()->save_area[entry].vsid = mk_vsid_data(ea, flags);
++	smp_wmb();
++	get_slb_shadow()->save_area[entry].esid = mk_esid_data(ea, entry);
++	smp_wmb();
+ }
+ 
+ static inline void create_shadowed_slbe(unsigned long ea, unsigned long flags,
+@@ -76,8 +77,7 @@ static inline void create_shadowed_slbe(
+ 	 * we don't get a stale entry here if we get preempted by PHYP
+ 	 * between these two statements.
+ 	 */
+-	slb_shadow_update(mk_esid_data(ea, entry), mk_vsid_data(ea, flags),
+-			  entry);
++	slb_shadow_update(ea, flags, entry);
+ 
+ 	asm volatile("slbmte  %0,%1" :
+ 		     : "r" (mk_vsid_data(ea, flags)),
+@@ -104,8 +104,7 @@ void slb_flush_and_rebolt(void)
+ 		ksp_esid_data &= ~SLB_ESID_V;
+ 
+ 	/* Only third entry (stack) may change here so only resave that */
+-	slb_shadow_update(ksp_esid_data,
+-			  mk_vsid_data(ksp_esid_data, lflags), 2);
++	slb_shadow_update(get_paca()->kstack, lflags, 2);
+ 
+ 	/* We need to do this all in asm, so we're sure we don't touch
+ 	 * the stack between the slbia and rebolting it. */
+@@ -123,6 +122,15 @@ void slb_flush_and_rebolt(void)
+ 		     : "memory");
+ }
+ 
++void slb_vmalloc_update(void)
++{
++	unsigned long vflags;
++
++	vflags = SLB_VSID_KERNEL | mmu_psize_defs[mmu_vmalloc_psize].sllp;
++	slb_shadow_update(VMALLOC_START, vflags, 1);
++	slb_flush_and_rebolt();
++}
++
+ /* Flush all user entries from the segment table of the current processor. */
+ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
+ {
+Index: linux-2.6-ozlabs/include/asm-powerpc/mmu-hash64.h
+===================================================================
+--- linux-2.6-ozlabs.orig/include/asm-powerpc/mmu-hash64.h
++++ linux-2.6-ozlabs/include/asm-powerpc/mmu-hash64.h
+@@ -262,6 +262,7 @@ extern void slb_initialize(void);
+ extern void slb_flush_and_rebolt(void);
+ extern void stab_initialize(unsigned long stab);
+ 
++extern void slb_vmalloc_update(void);
+ #endif /* __ASSEMBLY__ */
+ 
+ /*
