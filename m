@@ -1,15 +1,13 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 3 Aug 2007 14:57:05 +1000
+Date: Fri, 3 Aug 2007 15:22:08 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [ PATCH ] PowerPC cascade UIC IRQ handler fix.
-Message-ID: <20070803045705.GA2392@localhost.localdomain>
-References: <20070730163517.GA10087@ru.mvista.com>
-	<20070802034848.GA837@localhost.localdomain>
-	<1186103889.5495.650.camel@localhost.localdomain>
+To: Siva Prasad <sprasad@bivio.net>
+Subject: Re: Open Firmware - dts file
+Message-ID: <20070803052208.GB2392@localhost.localdomain>
+References: <D83235F0F3C86D4D889D8B9A0DA8C6D79AE206@corpexc01.corp.networkrobots.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1186103889.5495.650.camel@localhost.localdomain>
+In-Reply-To: <D83235F0F3C86D4D889D8B9A0DA8C6D79AE206@corpexc01.corp.networkrobots.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,54 +18,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 03, 2007 at 11:18:09AM +1000, Benjamin Herrenschmidt wrote:
-> On Thu, 2007-08-02 at 13:48 +1000, David Gibson wrote:
-> > On Mon, Jul 30, 2007 at 08:35:17PM +0400, Valentine Barshak wrote:
-> > > PPC44x cascade UIC irq handler fix.
-> > > 
-> > > According to PPC44x UM, if an interrupt is configured as level-sensitive,
-> > > and a clear is attempted on the UIC_SR, the UIC_SR field is not
-> > > cleared if the incoming interrupt signal is at the asserted polarity.
-> > > This causes us to enter a cascade handler twice, since we first ack
-> > > parent UIC interrupt and ack child UIC one after that.
-> > > The patch checks child UIC msr value and returns IRQ_HANDLED
-> > > if there're no pending interrupts. Otherwise we get a kernel panic
-> > > with a "Fatal exception in interrupt" (illegal vector).
-> > > The patch also fixes status flags.
-> > > 
-> > > Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
-> > 
-> > Hrm... This doesn't seem like the right fix to me.  Instead, I think
-> > the cascaded IRQ handler should ack the interrupt on the child first.
-> > I'm a little surprised it doesn't at the moment.
+On Thu, Aug 02, 2007 at 12:21:21PM -0700, Siva Prasad wrote:
+> Hi,
 > 
-> Well, we certainly do also need to make the code more solid vs.
-> spurrious interrupts.
+> I am trying to understand ..
+> 
+> 1) How a given dts file is embedded into the zImage (how about vmlinux?)
 
-Actually that's true.  The suggested patch is a good improvement for
-general robustness, but doesn't actually address the real problem.
+The arch/powerpc/boot/wrapper script builds the dts into a device tree
+blob using dtc (the Device Tree Compiler), it then folds the binary
+device tree into a special section in the zImage.
 
-> The main thing is, if the cascade is a level interrupt, it should
-> probably use a smarter cascade handler that masks it, handle the child
-> interrupts, then unmasks it.
+> 2) Where does it get stored for later access during booting?
 
-We already have that, since I just use setup_irq() to set up a cascade
-handler, rather than a custom flow handler.
+The zImage, possibly after adjusting the device tree based on
+information from the firmware, passes the address of the tree to the
+kernel as it invokes it.  The kernel adds the device tree address (as
+well as any further ranges specified in the device tree blob) to its
+internal list of reserved addresses so it won't clobber it with other
+allocations.
 
-The problem is that the standard handle_level_irq() flow handler acks
-before the ISR is called, whereas because of this UIC behaviour, we
-need to ack after the ISR has cleared the interrupt in the source.
-This is not specific to cascades, but is a problem for all
-level-triggered interrupts (i.e. basically everything).
+> 3) How a specific dts file out of the available in /boot/dts directory
+> is chosen?
 
-I think it means we must currently be getting a whole lot of spurious
-interrupts - will do some investigation in a moment.
+Depending on the Kconfig, different Makefile targets will be
+selected.  Those targets then invoke the wrapper script with different
+options, including different dts files into the zImage.
 
-To fix this either we'll need a custom flow handler for UIC, or we can
-use the standard one, but clear the UIC_SR bits from the ->unmask()
-callback for level interrupts.  I'm not entirely sure if the latter
-approach is safe - I *think* it is, but I could do with more
-convincing.
+> I am a newbie to this open firmware thing and looking for the right
+> pointer to get started.
+
+Ok.. do understand that on systems with a full open firmware
+implementation a dts won't generally be used at all.  Instead the
+kernel will read the device tree information from open firmware itself
+and convert it directly into a device tree blob (which will later be
+unpacked into the run-time device tree structure).
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
