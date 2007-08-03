@@ -1,19 +1,16 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 73944DDE02
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 21:37:49 +1000 (EST)
-Message-ID: <46B31352.1060503@ru.mvista.com>
-Date: Fri, 03 Aug 2007 15:36:50 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
+Return-Path: <pradyumna.sampath@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.182])
+	by ozlabs.org (Postfix) with ESMTP id B49B7DDE11
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 21:50:25 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so1628612pyi
+	for <linuxppc-dev@ozlabs.org>; Fri, 03 Aug 2007 04:50:24 -0700 (PDT)
+Message-ID: <f87351060708030450u7fbd38e1o8ee491e523b30e3f@mail.gmail.com>
+Date: Fri, 3 Aug 2007 17:20:24 +0530
+From: "Pradyumna Sampath" <pradyumna.sampath@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: 22.1-rt8 : BUG: scheduling while atomic: stress/0x00000002/739, CPU#0
 MIME-Version: 1.0
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH 5/6] PowerPC 440EPx: Sequoia board support
-References: <20070730151628.GA5100@ru.mvista.com>
-	<20070802153451.5a92947b@weaponx.rchland.ibm.com>
-	<200708030844.13895.sr@denx.de>
-In-Reply-To: <200708030844.13895.sr@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,67 +20,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stefan Roese wrote:
-> On Thursday 02 August 2007, Josh Boyer wrote:
->> On Mon, 30 Jul 2007 19:16:28 +0400
->>> +0400 +++ linux/arch/powerpc/kernel/cputable.c	2007-07-27
->>> 20:44:26.000000000 +0400 @@ -1132,6 +1132,42 @@
->>>  		.dcache_bsize		= 32,
->>>  		.platform		= "ppc440",
->>>  	},
->>> +	{ /* 440EPX  - with Security/Kasumi  */
->>> +		.pvr_mask		= 0xf0000fff,
->>> +		.pvr_value		= 0x200008D0,
->>> +		.cpu_name		= "440EPX - with Security/Kasumi",
->>> +		.cpu_features		= CPU_FTRS_44X,
->>> +		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU, /*
->>> 440EPX has an FPU */ +		.icache_bsize		= 32,
->>> +		.dcache_bsize		= 32,
->>> +	},
->>> +	{ /* 440EPX  - without Security/Kasumi  */
->>> +		.pvr_mask		= 0xf0000fff,
->>> +		.pvr_value		= 0x200008D4,
->>> +		.cpu_name		= "440EPX - no Security/Kasumi",
->>> +		.cpu_features		= CPU_FTRS_44X,
->>> +		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU, /*
->>> 440EPX has an FPU */ +		.icache_bsize		= 32,
->>> +		.dcache_bsize		= 32,
->>> +	},
->>> +	{ /* 440GRX  - with Security/Kasumi  */
->>> +		.pvr_mask		= 0xf0000fff,
->>> +		.pvr_value		= 0x200008D8,
->>> +		.cpu_name		= "440GRX - with Security/Kasumi",
->>> +		.cpu_features		= CPU_FTRS_44X,
->>> +		.cpu_user_features	= COMMON_USER_BOOKE, /* 440GRX has no FPU */
->>> +		.icache_bsize		= 32,
->>> +		.dcache_bsize		= 32,
->>> +	},
->>> +	{ /* 440GRX  - without Security/Kasumi  */
->>> +		.pvr_mask		= 0xf0000fff,
->>> +		.pvr_value		= 0x200008DC,
->>> +		.cpu_name		= "440GRX - no Security/Kasumi",
->>> +		.cpu_features		= CPU_FTRS_44X,
->>> +		.cpu_user_features	= COMMON_USER_BOOKE, /* 440GRX has no FPU */
->>> +		.icache_bsize		= 32,
->>> +		.dcache_bsize		= 32,
->>> +	},
->> Should the 440GRX PVR additions be done in a separate patch?  Or is the
->> PVR and cpu features truly the only difference between 440EPx and
->> 440GRx?
-> 
-> I think it makes sense to add the 440GRx with this patchset too. The 440GRx is 
-> a subset of the 440EPx, missing some stuff like USB, FPU. And the AMCC 
-> Rainier 440GRx eval board is a subset of the Sequoia eval board. So no new 
-> board specific sources should be necessary to support the Rainier, just a 
-> different defconfig file.
-> 
-> Best regards,
-> Stefan
+Hi,
+I am running linux-2.6.22.1-rt8 on mpc5200 and on running stress
 
-I have a Rainier 440GRx board and the PVR is equal to the 440EPx one 
-(0x200008D0). This has to be handled somehow, since the 
-PPC_FEATURE_HAS_FPU flag should *not* be set for 440GRx.
-I'm really not sure how though. Any ideas are greatly appreciated :)
-Is it a h/w bug?
-Thanks,
-Valentine.
+#./stress --cpu 8 --io 4 --vm 2 --vm-bytes 2M --timeout 300s
+
+I get the following stack.But this does not happen with non -rt kernel.
+
+   LR = 0xff51fcc
+BUG: scheduling while atomic: stress/0x00000002/739, CPU#0
+Call Trace:
+[c04fbb80] [c0008650] show_stack+0x50/0x190 (unreliable)
+[c04fbbb0] [c0016fc0] __schedule_bug+0x38/0x48
+[c04fbbc0] [c01d4f7c] __schedule+0x3dc/0x450
+[c04fbbf0] [c01d56c8] schedule+0x54/0xf0
+[c04fbc00] [c01d6390] rt_spin_lock_slowlock+0x100/0x224
+[c04fbc60] [c0052198] get_zone_pcp+0x30/0x58
+[c04fbc80] [c0053078] free_hot_cold_page+0x114/0x1fc
+[c04fbcb0] [c0056424] put_page+0x50/0x15c
+[c04fbcd0] [c0069854] free_page_and_swap_cache+0x44/0x80
+[c04fbce0] [c005d760] unmap_vmas+0x2e0/0x788
+[c04fbd70] [c006292c] exit_mmap+0x74/0x108
+[c04fbda0] [c001adc0] mmput+0x54/0xf0
+[c04fbdc0] [c001ecfc] exit_mm+0xc0/0x124
+[c04fbde0] [c001ffd0] do_exit+0x164/0x8bc
+[c04fbe20] [c0020760] do_group_exit+0x38/0x90
+[c04fbe40] [c002ba48] get_signal_to_deliver+0x2ac/0x3c0
+[c04fbe70] [c000739c] do_signal+0x50/0x60c
+[c04fbf40] [c000fec0] do_user_signal+0x74/0xc4
+--- Exception: c00 at 0xfeab1dc
+   LR = 0xff51fcc
+
+I have also tested the same case on x86 and that does not throw up
+anything. Another observation is the fact is that this happens when
+--vm is > 1. So I am guessing its a very PowerPC specific problem.
+Maybe some part of the vm code for powerpc. This happens for all
+powerpc -rt kernels I have used.
+
+Link to stress is : http://weather.ou.edu/~apw/projects/stress/
+
+A friend of mine has already posted this problem to the rt-preempt
+mailing list. Any pointers suggestions as to where the problem could
+be is most welcome.
+
+Thanks in advance
+regards
+/prady
+-- 
+htp://prady.livejournal.com
