@@ -1,25 +1,24 @@
-Return-Path: <joern@lazybastard.org>
-Received: from longford.lazybastard.org (lazybastard.de [212.112.238.170])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7F7AEDDE11
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Aug 2007 00:27:20 +1000 (EST)
-Date: Fri, 3 Aug 2007 15:41:50 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: Re: [PATCH 1/1] lro: Generic Large Receive Offload for TCP traffic
-Message-ID: <20070803134150.GH19344@lazybastard.org>
-References: <200708031441.20632.ossthema@de.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <200708031441.20632.ossthema@de.ibm.com>
-Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
-	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>, Andrew Gallatin <gallatin@myri.com>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>,
-	David Miller <davem@davemloft.net>
+Return-Path: <akostop@inaccessnetworks.com>
+Received: from inaccessnetworks.com (node3.inaccessnetworks.com
+	[212.205.200.118]) by ozlabs.org (Postfix) with ESMTP id 0AC04DDE19
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Aug 2007 00:59:06 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by inaccessnetworks.com (8.13.6/8.13.5) with ESMTP id l73Ex4cN006232
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 17:59:05 +0300
+Received: from inaccessnetworks.com ([127.0.0.1])
+	by localhost (host11.inaccessnetworks.com [127.0.0.1]) (amavisd-new,
+	port 10024) with LMTP id 06098-03 for <linuxppc-dev@ozlabs.org>;
+	Fri,  3 Aug 2007 17:59:04 +0300 (EEST)
+Received: from phoenix (phoenix.priv.inaccessnetworks.com [192.168.1.7])
+	by inaccessnetworks.com (8.13.6/8.13.5) with ESMTP id l73Ex1vl006222
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 17:59:01 +0300
+To: linuxppc-dev@ozlabs.org
+Subject: pci in arch/powerpc vs arch/ppc
+From: "Alexandros Kostopoulos" <akostop@inaccessnetworks.com>
+Content-Type: text/plain; format=flowed; delsp=yes; charset=iso-8859-7
+MIME-Version: 1.0
+Date: Fri, 03 Aug 2007 17:58:56 +0300
+Message-ID: <op.twhnwi18nhx3hy@phoenix>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,33 +28,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 3 August 2007 14:41:19 +0200, Jan-Bernd Themann wrote:
-> 
-> This patch provides generic Large Receive Offload (LRO) functionality
-> for IPv4/TCP traffic.
-> 
-> LRO combines received tcp packets to a single larger tcp packet and 
-> passes them then to the network stack in order to increase performance
-> (throughput). The interface supports two modes: Drivers can either pass
-> SKBs or fragment lists to the LRO engine. 
+Hi all,
+in the old arch/ppc tree, there was a function called pq2ads_setup_pci()  
+that set up PCI regs for 8272xx, in m82xx_pci.c. I was wandering, where  
+are these registers configured now in arch/powerpc? I can't seem to find  
+these code now.
 
-Maybe this is a stupid question, but why is LRO done at the device
-driver level?
+Also, I can see that now bus 0, dev 0 (which I think represents the host  
+bridge, right?) is now excluded using pq2_pci_exclude_device, but it  
+wasn't in older code. Why is that?
 
-If it is a unversal performance benefit, I would have expected it to be
-done generically, i.e. have all packets moved into network layer pass
-through LRO instead.
-
-> +void lro_flush_pkt(struct net_lro_mgr *lro_mgr,
-> +		   struct iphdr *iph, struct tcphdr *tcph);
-
-In particular this bit looks like it should be driven by a timeout,
-which would be settable via /proc/sys/net/core/lro_timeout or similar.
-
-Jörn
-
--- 
-Rules of Optimization:
-Rule 1: Don't do it.
-Rule 2 (for experts only): Don't do it yet.
--- M.A. Jackson
+thank you in advance...
