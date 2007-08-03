@@ -1,30 +1,31 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <dwg@au1.ibm.com>
+Received: from ausmtp06.au.ibm.com (ausmtp06.au.ibm.com [202.81.18.155])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9587ADDDD8
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 12:50:55 +1000 (EST)
-Subject: Re: [PATCH] fixes for the SLB shadow buffer
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <1158.1186106139@neuling.org>
-References: <17055.1185944172@neuling.org>
-	<18096.6654.934841.561238@cargo.ozlabs.ibm.com>
-	<31580.1185948147@neuling.org>
-	<1186004885.22717.50.camel@farscape.rchland.ibm.com>
-	<24613.1186034191@neuling.org>
-	<1186039870.5495.595.camel@localhost.localdomain>
-	<13166.1186045008@neuling.org>
-	<1186045096.5495.617.camel@localhost.localdomain>
-	<17854.1186045405@neuling.org>
-	<1186046080.5495.620.camel@localhost.localdomain>
-	<30559.1186046895@neuling.org>  <1158.1186106139@neuling.org>
-Content-Type: text/plain
-Date: Fri, 03 Aug 2007 12:50:42 +1000
-Message-Id: <1186109443.5495.652.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	will_schmidt@vnet.ibm.com
+	(Client CN "ausmtp06.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 272BADDDD8
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 12:57:18 +1000 (EST)
+Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.18.232])
+	by ausmtp06.au.ibm.com (8.13.8/8.13.8) with ESMTP id l732xqn44481234
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 12:59:53 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.250.237])
+	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l732uPXq150414
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 12:56:25 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l732vEZJ000315
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 12:57:14 +1000
+Date: Fri, 3 Aug 2007 12:53:34 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: Will Schmidt <will_schmidt@vnet.ibm.com>
+Subject: Re: [PATCH] Use 1TB segments
+Message-ID: <20070803025334.GB6418@localhost.localdomain>
+References: <18095.59959.698141.565343@cargo.ozlabs.ibm.com>
+	<1186087283.22717.80.camel@farscape.rchland.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1186087283.22717.80.camel@farscape.rchland.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,132 +35,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-08-03 at 11:55 +1000, Michael Neuling wrote:
-> We sometimes change the vmalloc segment in slb_flush_and_rebolt but we
-> never updated with slb shadow buffer.  This fixes it.  Thanks to paulus
-> for finding this.
+On Thu, Aug 02, 2007 at 03:41:23PM -0500, Will Schmidt wrote:
+> Hi Paul, 
+>    just a few questions.  
+[snip]
+> > +#define VSID_MULTIPLIER_256M	ASM_CONST(200730139)	/* 28-bit prime */
 > 
-> Also added some write barriers to ensure the shadow buffer is always
-> valid.
+> > +#define VSID_MULTIPLIER_1T	ASM_CONST(12538073)	/* 24-bit prime */
 > 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> Anything special in how this 24-bit prime value was selected?   (same
+> question could be for the 28-bit prime, though I see that value was
+> updated at least once a few years back)
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+I can't speak to the 24-bit value specifically, but I can speak to the
+28-bit one:  I did the rewrite of the SLB miss handler to use that
+multiplicative hash, and changed the prime value when a bug report
+showed problems in the original choice.
 
-> ---
-> Integrated more comments from people.
-> 
->  arch/powerpc/kernel/entry_64.S   |    3 +++
->  arch/powerpc/mm/hash_utils_64.c  |    2 +-
->  arch/powerpc/mm/slb.c            |   28 ++++++++++++++++++----------
->  include/asm-powerpc/mmu-hash64.h |    1 +
->  4 files changed, 23 insertions(+), 11 deletions(-)
-> 
-> Index: linux-2.6-ozlabs/arch/powerpc/kernel/entry_64.S
-> ===================================================================
-> --- linux-2.6-ozlabs.orig/arch/powerpc/kernel/entry_64.S
-> +++ linux-2.6-ozlabs/arch/powerpc/kernel/entry_64.S
-> @@ -389,8 +389,11 @@ BEGIN_FTR_SECTION
->  	ld	r9,PACA_SLBSHADOWPTR(r13)
->  	li	r12,0
->  	std	r12,SLBSHADOW_STACKESID(r9) /* Clear ESID */
-> +	eieio
->  	std	r7,SLBSHADOW_STACKVSID(r9)  /* Save VSID */
-> +	eieio
->  	std	r0,SLBSHADOW_STACKESID(r9)  /* Save ESID */
-> +	eieio
->  
->  	slbie	r6
->  	slbie	r6		/* Workaround POWER5 < DD2.1 issue */
-> Index: linux-2.6-ozlabs/arch/powerpc/mm/hash_utils_64.c
-> ===================================================================
-> --- linux-2.6-ozlabs.orig/arch/powerpc/mm/hash_utils_64.c
-> +++ linux-2.6-ozlabs/arch/powerpc/mm/hash_utils_64.c
-> @@ -759,7 +759,7 @@ int hash_page(unsigned long ea, unsigned
->  		   mmu_psize_defs[mmu_vmalloc_psize].sllp) {
->  		get_paca()->vmalloc_sllp =
->  			mmu_psize_defs[mmu_vmalloc_psize].sllp;
-> -		slb_flush_and_rebolt();
-> +		slb_vmalloc_update();
->  	}
->  #endif /* CONFIG_PPC_64K_PAGES */
->  
-> Index: linux-2.6-ozlabs/arch/powerpc/mm/slb.c
-> ===================================================================
-> --- linux-2.6-ozlabs.orig/arch/powerpc/mm/slb.c
-> +++ linux-2.6-ozlabs/arch/powerpc/mm/slb.c
-> @@ -53,7 +53,8 @@ static inline unsigned long mk_vsid_data
->  	return (get_kernel_vsid(ea) << SLB_VSID_SHIFT) | flags;
->  }
->  
-> -static inline void slb_shadow_update(unsigned long esid, unsigned long vsid,
-> +static inline void slb_shadow_update(unsigned long ea,
-> +				     unsigned long flags,
->  				     unsigned long entry)
->  {
->  	/*
-> @@ -61,11 +62,11 @@ static inline void slb_shadow_update(uns
->  	 * updating it.
->  	 */
->  	get_slb_shadow()->save_area[entry].esid = 0;
-> -	barrier();
-> -	get_slb_shadow()->save_area[entry].vsid = vsid;
-> -	barrier();
-> -	get_slb_shadow()->save_area[entry].esid = esid;
-> -
-> +	smp_wmb();
-> +	get_slb_shadow()->save_area[entry].vsid = mk_vsid_data(ea, flags);
-> +	smp_wmb();
-> +	get_slb_shadow()->save_area[entry].esid = mk_esid_data(ea, entry);
-> +	smp_wmb();
->  }
->  
->  static inline void create_shadowed_slbe(unsigned long ea, unsigned long flags,
-> @@ -76,8 +77,7 @@ static inline void create_shadowed_slbe(
->  	 * we don't get a stale entry here if we get preempted by PHYP
->  	 * between these two statements.
->  	 */
-> -	slb_shadow_update(mk_esid_data(ea, entry), mk_vsid_data(ea, flags),
-> -			  entry);
-> +	slb_shadow_update(ea, flags, entry);
->  
->  	asm volatile("slbmte  %0,%1" :
->  		     : "r" (mk_vsid_data(ea, flags)),
-> @@ -104,8 +104,7 @@ void slb_flush_and_rebolt(void)
->  		ksp_esid_data &= ~SLB_ESID_V;
->  
->  	/* Only third entry (stack) may change here so only resave that */
-> -	slb_shadow_update(ksp_esid_data,
-> -			  mk_vsid_data(ksp_esid_data, lflags), 2);
-> +	slb_shadow_update(get_paca()->kstack, lflags, 2);
->  
->  	/* We need to do this all in asm, so we're sure we don't touch
->  	 * the stack between the slbia and rebolting it. */
-> @@ -123,6 +122,15 @@ void slb_flush_and_rebolt(void)
->  		     : "memory");
->  }
->  
-> +void slb_vmalloc_update(void)
-> +{
-> +	unsigned long vflags;
-> +
-> +	vflags = SLB_VSID_KERNEL | mmu_psize_defs[mmu_vmalloc_psize].sllp;
-> +	slb_shadow_update(VMALLOC_START, vflags, 1);
-> +	slb_flush_and_rebolt();
-> +}
-> +
->  /* Flush all user entries from the segment table of the current processor. */
->  void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
->  {
-> Index: linux-2.6-ozlabs/include/asm-powerpc/mmu-hash64.h
-> ===================================================================
-> --- linux-2.6-ozlabs.orig/include/asm-powerpc/mmu-hash64.h
-> +++ linux-2.6-ozlabs/include/asm-powerpc/mmu-hash64.h
-> @@ -262,6 +262,7 @@ extern void slb_initialize(void);
->  extern void slb_flush_and_rebolt(void);
->  extern void stab_initialize(unsigned long stab);
->  
-> +extern void slb_vmalloc_update(void);
->  #endif /* __ASSEMBLY__ */
->  
->  /*
+Afaict, the value of the prime doesn't matter all that much - in fact
+it doesn't strictly even need to be prime, just co-prime to (2^36-1).
+Originally, I picked the largest 28-bit prime, on the basis that a
+large multiplier should give better scattering/folding.
+
+That turned out to cause problems on some iSeries machines (which
+couldn't do 16M pages) - we were filling up hash buckets with the
+linear mapping.  I figured out that that was because a very large
+28-bit number was in the relevant modulus, sort of equivalent to a
+small negative number.  For a big linear mapping, the hash bucket
+selected strided gradually backwards through the table - there were
+also differences in the high bits of the hash, but they were lost
+because of the limited size of the hash table.
+
+So, I changed the multiplier to the median 28-bit prime, in the hopes
+that that would give better hash scattering across as many bits of the
+VSID as possible.  I don't have much in the way of theoretical
+justification for that, but it fixed the iSeries problem and I've
+never heard of any regressions, so apparently it's not too bad.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
