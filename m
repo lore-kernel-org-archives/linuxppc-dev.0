@@ -1,21 +1,23 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 53F19DDE27
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Aug 2007 06:10:56 +1000 (EST)
-Date: Fri, 3 Aug 2007 15:10:37 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Alexandros Kostopoulos <akostop@inaccessnetworks.com>
-Subject: Re: pci in arch/powerpc vs arch/ppc
-Message-ID: <20070803201036.GA18229@ld0162-tx32.am.freescale.net>
-References: <op.twhnwi18nhx3hy@phoenix>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <op.twhnwi18nhx3hy@phoenix>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <auke-jan.h.kok@intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+	by ozlabs.org (Postfix) with ESMTP id 5E8A8DDE11
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Aug 2007 06:29:39 +1000 (EST)
+Message-ID: <46B39030.7030009@intel.com>
+Date: Fri, 03 Aug 2007 13:29:36 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+MIME-Version: 1.0
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: Re: [PATCH] lro: eHEA example how to use LRO
+References: <200708031441.26841.ossthema@de.ibm.com>
+In-Reply-To: <200708031441.26841.ossthema@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
+	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>, Andrew Gallatin <gallatin@myri.com>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 03, 2007 at 05:58:56PM +0300, Alexandros Kostopoulos wrote:
-> Hi all,
-> in the old arch/ppc tree, there was a function called pq2ads_setup_pci()  
-> that set up PCI regs for 8272xx, in m82xx_pci.c. I was wandering, where  
-> are these registers configured now in arch/powerpc? I can't seem to find  
-> these code now.
+Jan-Bernd Themann wrote:
+> This patch shows how the generic LRO interface is used for SKB mode
+> 
+> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+> 
+> ---
+>  drivers/net/Kconfig             |    1 +
+>  drivers/net/ehea/ehea.h         |    9 ++++-
+>  drivers/net/ehea/ehea_ethtool.c |   15 +++++++
+>  drivers/net/ehea/ehea_main.c    |   84 +++++++++++++++++++++++++++++++++++---
+>  4 files changed, 101 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+> index f8a602c..fec4004 100644
+> --- a/drivers/net/Kconfig
+> +++ b/drivers/net/Kconfig
 
-It's done by the firmware or the bootwrapper.
+<snip>
 
-> Also, I can see that now bus 0, dev 0 (which I think represents the host  
-> bridge, right?) is now excluded using pq2_pci_exclude_device, but it  
-> wasn't in older code. Why is that?
+> +module_param(use_lro, int, 0);
 
-The older code probably either excluded all host bridges by class, or
-just lived with the error message that gets printed on boot.
+Have you looked at my generic lro get/set patch that I posted this week? this 
+adds a useless module parameter while ethtool has all the structure already to 
+accomodate setting lro on/off.
 
--Scott
+Auke
