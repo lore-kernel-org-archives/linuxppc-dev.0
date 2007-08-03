@@ -1,27 +1,27 @@
 Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 11B5BDDE32
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Aug 2007 02:33:13 +1000 (EST)
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4F58DDDEC8
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Aug 2007 02:33:15 +1000 (EST)
 Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
 	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l73GXATe004879
-	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 12:33:10 -0400
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l73GXCQA025357
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 12:33:12 -0400
 Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
 	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l73GXArs207120
-	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 10:33:10 -0600
+	l73GXBVP210690
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 10:33:11 -0600
 Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
 	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l73GXAPf026317
-	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 10:33:10 -0600
-Message-Id: <20070803161710.524454000@linux.vnet.ibm.com>>
+	l73GXB7J026415
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 10:33:11 -0600
+Message-Id: <20070803161710.809842000@linux.vnet.ibm.com>>
 References: <20070803160900.069522000@linux.vnet.ibm.com>>
-Date: Fri, 03 Aug 2007 11:09:03 -0500
+Date: Fri, 03 Aug 2007 11:09:05 -0500
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 To: paulus@samba.org
-Subject: [patch 03/10] Rename 44x bootwrapper
+Subject: [patch 05/10] 40x MMU
 In-Reply-To: <20070803160900.069522000@linux.vnet.ibm.com>>
 Content-Type: text/plain
 Mime-Version: 1.0
@@ -35,212 +35,127 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Rename the 44x.c wrapper file to 4xx.c.  This will allow us to add common
-functions in a single file that can be shared across all of 4xx.
+Add MMU definitions for 40x platforms.  Also fixes two warnings in 40x_mmu.c.
 
 Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
 ---
- arch/powerpc/boot/44x.c    |   85 ---------------------------------------------
- arch/powerpc/boot/4xx.c    |   85 +++++++++++++++++++++++++++++++++++++++++++++
- arch/powerpc/boot/Makefile |    4 +-
- 3 files changed, 87 insertions(+), 87 deletions(-)
+ arch/powerpc/kernel/head_40x.S |    2 -
+ arch/powerpc/mm/40x_mmu.c      |    4 +-
+ include/asm-powerpc/mmu-40x.h  |   65 +++++++++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/mmu.h      |    3 +
+ 4 files changed, 71 insertions(+), 3 deletions(-)
 
---- linux-2.6.orig/arch/powerpc/boot/44x.c
-+++ /dev/null
-@@ -1,85 +0,0 @@
--/*
-- * Copyright 2007 David Gibson, IBM Corporation.
-- *
-- * Based on earlier code:
-- *   Matt Porter <mporter@kernel.crashing.org>
-- *   Copyright 2002-2005 MontaVista Software Inc.
-- *
-- *   Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
-- *   Copyright (c) 2003, 2004 Zultys Technologies
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of the GNU General Public License
-- * as published by the Free Software Foundation; either version
-- * 2 of the License, or (at your option) any later version.
-- */
--#include <stddef.h>
--#include "types.h"
--#include "string.h"
--#include "stdio.h"
--#include "ops.h"
--#include "reg.h"
--#include "dcr.h"
--
--/* Read the 44x memory controller to get size of system memory. */
--void ibm44x_fixup_memsize(void)
--{
--	int i;
--	unsigned long memsize, bank_config;
--
--	memsize = 0;
--	for (i = 0; i < ARRAY_SIZE(sdram_bxcr); i++) {
--		mtdcr(DCRN_SDRAM0_CFGADDR, sdram_bxcr[i]);
--		bank_config = mfdcr(DCRN_SDRAM0_CFGDATA);
--
--		if (bank_config & SDRAM_CONFIG_BANK_ENABLE)
--			memsize += SDRAM_CONFIG_BANK_SIZE(bank_config);
--	}
--
--	dt_fixup_memory(0, memsize);
--}
--
--#define SPRN_DBCR0		0x134
--#define   DBCR0_RST_SYSTEM	0x30000000
--
--void ibm44x_dbcr_reset(void)
--{
--	unsigned long tmp;
--
--	asm volatile (
--		"mfspr	%0,%1\n"
--		"oris	%0,%0,%2@h\n"
--		"mtspr	%1,%0"
--		: "=&r"(tmp) : "i"(SPRN_DBCR0), "i"(DBCR0_RST_SYSTEM)
--		);
--
--}
--
--/* Read 4xx EBC bus bridge registers to get mappings of the peripheral
-- * banks into the OPB address space */
--void ibm4xx_fixup_ebc_ranges(const char *ebc)
--{
--	void *devp;
--	u32 bxcr;
--	u32 ranges[EBC_NUM_BANKS*4];
--	u32 *p = ranges;
--	int i;
--
--	for (i = 0; i < EBC_NUM_BANKS; i++) {
--		mtdcr(DCRN_EBC0_CFGADDR, EBC_BXCR(i));
--		bxcr = mfdcr(DCRN_EBC0_CFGDATA);
--
--		if ((bxcr & EBC_BXCR_BU) != EBC_BXCR_BU_OFF) {
--			*p++ = i;
--			*p++ = 0;
--			*p++ = bxcr & EBC_BXCR_BAS;
--			*p++ = EBC_BXCR_BANK_SIZE(bxcr);
--		}
--	}
--
--	devp = finddevice(ebc);
--	if (! devp)
--		fatal("Couldn't locate EBC node %s\n\r", ebc);
--
--	setprop(devp, "ranges", ranges, (p - ranges) * sizeof(u32));
--}
 --- /dev/null
-+++ linux-2.6/arch/powerpc/boot/4xx.c
-@@ -0,0 +1,85 @@
++++ linux-2.6/include/asm-powerpc/mmu-40x.h
+@@ -0,0 +1,65 @@
++#ifndef _ASM_POWERPC_MMU_40X_H_
++#define _ASM_POWERPC_MMU_40X_H_
++
 +/*
-+ * Copyright 2007 David Gibson, IBM Corporation.
-+ *
-+ * Based on earlier code:
-+ *   Matt Porter <mporter@kernel.crashing.org>
-+ *   Copyright 2002-2005 MontaVista Software Inc.
-+ *
-+ *   Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
-+ *   Copyright (c) 2003, 2004 Zultys Technologies
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
++ * PPC40x support
 + */
-+#include <stddef.h>
-+#include "types.h"
-+#include "string.h"
-+#include "stdio.h"
-+#include "ops.h"
-+#include "reg.h"
-+#include "dcr.h"
 +
-+/* Read the 44x memory controller to get size of system memory. */
-+void ibm44x_fixup_memsize(void)
-+{
-+	int i;
-+	unsigned long memsize, bank_config;
++#define PPC40X_TLB_SIZE 64
 +
-+	memsize = 0;
-+	for (i = 0; i < ARRAY_SIZE(sdram_bxcr); i++) {
-+		mtdcr(DCRN_SDRAM0_CFGADDR, sdram_bxcr[i]);
-+		bank_config = mfdcr(DCRN_SDRAM0_CFGDATA);
++/*
++ * TLB entries are defined by a "high" tag portion and a "low" data
++ * portion.  On all architectures, the data portion is 32-bits.
++ *
++ * TLB entries are managed entirely under software control by reading,
++ * writing, and searchoing using the 4xx-specific tlbre, tlbwr, and tlbsx
++ * instructions.
++ */
 +
-+		if (bank_config & SDRAM_CONFIG_BANK_ENABLE)
-+			memsize += SDRAM_CONFIG_BANK_SIZE(bank_config);
-+	}
++#define	TLB_LO          1
++#define	TLB_HI          0
 +
-+	dt_fixup_memory(0, memsize);
-+}
++#define	TLB_DATA        TLB_LO
++#define	TLB_TAG         TLB_HI
 +
-+#define SPRN_DBCR0		0x134
-+#define   DBCR0_RST_SYSTEM	0x30000000
++/* Tag portion */
 +
-+void ibm44x_dbcr_reset(void)
-+{
-+	unsigned long tmp;
++#define TLB_EPN_MASK    0xFFFFFC00      /* Effective Page Number */
++#define TLB_PAGESZ_MASK 0x00000380
++#define TLB_PAGESZ(x)   (((x) & 0x7) << 7)
++#define   PAGESZ_1K		0
++#define   PAGESZ_4K             1
++#define   PAGESZ_16K            2
++#define   PAGESZ_64K            3
++#define   PAGESZ_256K           4
++#define   PAGESZ_1M             5
++#define   PAGESZ_4M             6
++#define   PAGESZ_16M            7
++#define TLB_VALID       0x00000040      /* Entry is valid */
 +
-+	asm volatile (
-+		"mfspr	%0,%1\n"
-+		"oris	%0,%0,%2@h\n"
-+		"mtspr	%1,%0"
-+		: "=&r"(tmp) : "i"(SPRN_DBCR0), "i"(DBCR0_RST_SYSTEM)
-+		);
++/* Data portion */
 +
-+}
++#define TLB_RPN_MASK    0xFFFFFC00      /* Real Page Number */
++#define TLB_PERM_MASK   0x00000300
++#define TLB_EX          0x00000200      /* Instruction execution allowed */
++#define TLB_WR          0x00000100      /* Writes permitted */
++#define TLB_ZSEL_MASK   0x000000F0
++#define TLB_ZSEL(x)     (((x) & 0xF) << 4)
++#define TLB_ATTR_MASK   0x0000000F
++#define TLB_W           0x00000008      /* Caching is write-through */
++#define TLB_I           0x00000004      /* Caching is inhibited */
++#define TLB_M           0x00000002      /* Memory is coherent */
++#define TLB_G           0x00000001      /* Memory is guarded from prefetch */
 +
-+/* Read 4xx EBC bus bridge registers to get mappings of the peripheral
-+ * banks into the OPB address space */
-+void ibm4xx_fixup_ebc_ranges(const char *ebc)
-+{
-+	void *devp;
-+	u32 bxcr;
-+	u32 ranges[EBC_NUM_BANKS*4];
-+	u32 *p = ranges;
-+	int i;
++#ifndef __ASSEMBLY__
 +
-+	for (i = 0; i < EBC_NUM_BANKS; i++) {
-+		mtdcr(DCRN_EBC0_CFGADDR, EBC_BXCR(i));
-+		bxcr = mfdcr(DCRN_EBC0_CFGDATA);
++typedef unsigned long phys_addr_t;
 +
-+		if ((bxcr & EBC_BXCR_BU) != EBC_BXCR_BU_OFF) {
-+			*p++ = i;
-+			*p++ = 0;
-+			*p++ = bxcr & EBC_BXCR_BAS;
-+			*p++ = EBC_BXCR_BANK_SIZE(bxcr);
-+		}
-+	}
++typedef struct {
++	unsigned long id;
++	unsigned long vdso_base;
++} mm_context_t;
 +
-+	devp = finddevice(ebc);
-+	if (! devp)
-+		fatal("Couldn't locate EBC node %s\n\r", ebc);
++#endif /* !__ASSEMBLY__ */
 +
-+	setprop(devp, "ranges", ranges, (p - ranges) * sizeof(u32));
-+}
---- linux-2.6.orig/arch/powerpc/boot/Makefile
-+++ linux-2.6/arch/powerpc/boot/Makefile
-@@ -31,7 +31,7 @@ endif
++#endif /* _ASM_POWERPC_MMU_40X_H_ */
+--- linux-2.6.orig/include/asm-powerpc/mmu.h
++++ linux-2.6/include/asm-powerpc/mmu.h
+@@ -8,6 +8,9 @@
+ #elif defined(CONFIG_PPC_STD_MMU)
+ /* 32-bit classic hash table MMU */
+ #  include <asm/mmu-hash32.h>
++#elif defined(CONFIG_40x)
++/* 40x-style software loaded TLB */
++#  include <asm/mmu-40x.h>
+ #elif defined(CONFIG_44x)
+ /* 44x-style software loaded TLB */
+ #  include <asm/mmu-44x.h>
+--- linux-2.6.orig/arch/powerpc/mm/40x_mmu.c
++++ linux-2.6/arch/powerpc/mm/40x_mmu.c
+@@ -108,7 +108,7 @@ unsigned long __init mmu_mapin_ram(void)
+ 		pmd_t *pmdp;
+ 		unsigned long val = p | _PMD_SIZE_16M | _PAGE_HWEXEC | _PAGE_HWWRITE;
  
- BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj)
+-		pmdp = pmd_offset(pgd_offset_k(v), v);
++		pmdp = pmd_offset(pud_offset(pgd_offset_k(v), v), v);
+ 		pmd_val(*pmdp++) = val;
+ 		pmd_val(*pmdp++) = val;
+ 		pmd_val(*pmdp++) = val;
+@@ -123,7 +123,7 @@ unsigned long __init mmu_mapin_ram(void)
+ 		pmd_t *pmdp;
+ 		unsigned long val = p | _PMD_SIZE_4M | _PAGE_HWEXEC | _PAGE_HWWRITE;
  
--$(obj)/44x.o: BOOTCFLAGS += -mcpu=440
-+$(obj)/4xx.o: BOOTCFLAGS += -mcpu=440
- $(obj)/ebony.o: BOOTCFLAGS += -mcpu=440
+-		pmdp = pmd_offset(pgd_offset_k(v), v);
++		pmdp = pmd_offset(pud_offset(pgd_offset_k(v), v), v);
+ 		pmd_val(*pmdp) = val;
  
- zlib       := inffast.c inflate.c inftrees.c
-@@ -44,7 +44,7 @@ $(addprefix $(obj)/,$(zlib) gunzip_util.
- src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
- 		ns16550.c serial.c simple_alloc.c div64.S util.S \
- 		gunzip_util.c elf_util.c $(zlib) devtree.c oflib.c ofconsole.c \
--		44x.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c
-+		4xx.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c
- src-plat := of.c cuboot-83xx.c cuboot-85xx.c holly.c \
- 		cuboot-ebony.c treeboot-ebony.c prpmc2800.c \
- 		ps3-head.S ps3-hvcall.S ps3.c
+ 		v += LARGE_PAGE_SIZE_4M;
+--- linux-2.6.orig/arch/powerpc/kernel/head_40x.S
++++ linux-2.6/arch/powerpc/kernel/head_40x.S
+@@ -772,7 +772,7 @@ finish_tlb_load:
+ 	*/
+ 	lwz	r9, tlb_4xx_index@l(0)
+ 	addi	r9, r9, 1
+-	andi.	r9, r9, (PPC4XX_TLB_SIZE-1)
++	andi.	r9, r9, (PPC40X_TLB_SIZE-1)
+ 	stw	r9, tlb_4xx_index@l(0)
+ 
+ 6:
 
 -- 
