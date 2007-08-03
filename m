@@ -2,26 +2,26 @@ Return-Path: <jwboyer@linux.vnet.ibm.com>
 Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EBEFADDE2E
+	by ozlabs.org (Postfix) with ESMTP id 11B5BDDE32
 	for <linuxppc-dev@ozlabs.org>; Sat,  4 Aug 2007 02:33:13 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l73GXApq004875
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l73GXATe004879
 	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 12:33:10 -0400
 Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l73GX9UA263090
-	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 10:33:09 -0600
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l73GXArs207120
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 10:33:10 -0600
 Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
 	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l73GX98W026280
-	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 10:33:09 -0600
-Message-Id: <20070803161710.335369000@linux.vnet.ibm.com>>
+	l73GXAPf026317
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 10:33:10 -0600
+Message-Id: <20070803161710.524454000@linux.vnet.ibm.com>>
 References: <20070803160900.069522000@linux.vnet.ibm.com>>
-Date: Fri, 03 Aug 2007 11:09:02 -0500
+Date: Fri, 03 Aug 2007 11:09:03 -0500
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 To: paulus@samba.org
-Subject: [patch 02/10] 4xx Kconfig cleanup
+Subject: [patch 03/10] Rename 44x bootwrapper
 In-Reply-To: <20070803160900.069522000@linux.vnet.ibm.com>>
 Content-Type: text/plain
 Mime-Version: 1.0
@@ -35,122 +35,212 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Remove some leftover cruft in the 40x Kconfig file.  Also make sure we
-select WANT_DEVICE_TREE for 40x.
+Rename the 44x.c wrapper file to 4xx.c.  This will allow us to add common
+functions in a single file that can be shared across all of 4xx.
 
 Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
 ---
- arch/powerpc/platforms/40x/Kconfig     |   77 ---------------------------------
- arch/powerpc/platforms/Kconfig.cputype |    1 
- 2 files changed, 1 insertion(+), 77 deletions(-)
+ arch/powerpc/boot/44x.c    |   85 ---------------------------------------------
+ arch/powerpc/boot/4xx.c    |   85 +++++++++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/boot/Makefile |    4 +-
+ 3 files changed, 87 insertions(+), 87 deletions(-)
 
---- linux-2.6.orig/arch/powerpc/platforms/40x/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/40x/Kconfig
-@@ -1,16 +1,3 @@
--config 4xx
--	bool
--	depends on 40x || 44x
--	default y
+--- linux-2.6.orig/arch/powerpc/boot/44x.c
++++ /dev/null
+@@ -1,85 +0,0 @@
+-/*
+- * Copyright 2007 David Gibson, IBM Corporation.
+- *
+- * Based on earlier code:
+- *   Matt Porter <mporter@kernel.crashing.org>
+- *   Copyright 2002-2005 MontaVista Software Inc.
+- *
+- *   Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
+- *   Copyright (c) 2003, 2004 Zultys Technologies
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-#include <stddef.h>
+-#include "types.h"
+-#include "string.h"
+-#include "stdio.h"
+-#include "ops.h"
+-#include "reg.h"
+-#include "dcr.h"
 -
--config BOOKE
--	bool
--	depends on 44x
--	default y
+-/* Read the 44x memory controller to get size of system memory. */
+-void ibm44x_fixup_memsize(void)
+-{
+-	int i;
+-	unsigned long memsize, bank_config;
 -
--menu "AMCC 40x options"
--	depends on 40x
+-	memsize = 0;
+-	for (i = 0; i < ARRAY_SIZE(sdram_bxcr); i++) {
+-		mtdcr(DCRN_SDRAM0_CFGADDR, sdram_bxcr[i]);
+-		bank_config = mfdcr(DCRN_SDRAM0_CFGDATA);
 -
- #config BUBINGA
- #	bool "Bubinga"
- #	depends on 40x
-@@ -82,8 +69,6 @@ menu "AMCC 40x options"
- #	help
- #	  This option enables support for the Xilinx ML300 evaluation board.
+-		if (bank_config & SDRAM_CONFIG_BANK_ENABLE)
+-			memsize += SDRAM_CONFIG_BANK_SIZE(bank_config);
+-	}
+-
+-	dt_fixup_memory(0, memsize);
+-}
+-
+-#define SPRN_DBCR0		0x134
+-#define   DBCR0_RST_SYSTEM	0x30000000
+-
+-void ibm44x_dbcr_reset(void)
+-{
+-	unsigned long tmp;
+-
+-	asm volatile (
+-		"mfspr	%0,%1\n"
+-		"oris	%0,%0,%2@h\n"
+-		"mtspr	%1,%0"
+-		: "=&r"(tmp) : "i"(SPRN_DBCR0), "i"(DBCR0_RST_SYSTEM)
+-		);
+-
+-}
+-
+-/* Read 4xx EBC bus bridge registers to get mappings of the peripheral
+- * banks into the OPB address space */
+-void ibm4xx_fixup_ebc_ranges(const char *ebc)
+-{
+-	void *devp;
+-	u32 bxcr;
+-	u32 ranges[EBC_NUM_BANKS*4];
+-	u32 *p = ranges;
+-	int i;
+-
+-	for (i = 0; i < EBC_NUM_BANKS; i++) {
+-		mtdcr(DCRN_EBC0_CFGADDR, EBC_BXCR(i));
+-		bxcr = mfdcr(DCRN_EBC0_CFGDATA);
+-
+-		if ((bxcr & EBC_BXCR_BU) != EBC_BXCR_BU_OFF) {
+-			*p++ = i;
+-			*p++ = 0;
+-			*p++ = bxcr & EBC_BXCR_BAS;
+-			*p++ = EBC_BXCR_BANK_SIZE(bxcr);
+-		}
+-	}
+-
+-	devp = finddevice(ebc);
+-	if (! devp)
+-		fatal("Couldn't locate EBC node %s\n\r", ebc);
+-
+-	setprop(devp, "ranges", ranges, (p - ranges) * sizeof(u32));
+-}
+--- /dev/null
++++ linux-2.6/arch/powerpc/boot/4xx.c
+@@ -0,0 +1,85 @@
++/*
++ * Copyright 2007 David Gibson, IBM Corporation.
++ *
++ * Based on earlier code:
++ *   Matt Porter <mporter@kernel.crashing.org>
++ *   Copyright 2002-2005 MontaVista Software Inc.
++ *
++ *   Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
++ *   Copyright (c) 2003, 2004 Zultys Technologies
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++#include <stddef.h>
++#include "types.h"
++#include "string.h"
++#include "stdio.h"
++#include "ops.h"
++#include "reg.h"
++#include "dcr.h"
++
++/* Read the 44x memory controller to get size of system memory. */
++void ibm44x_fixup_memsize(void)
++{
++	int i;
++	unsigned long memsize, bank_config;
++
++	memsize = 0;
++	for (i = 0; i < ARRAY_SIZE(sdram_bxcr); i++) {
++		mtdcr(DCRN_SDRAM0_CFGADDR, sdram_bxcr[i]);
++		bank_config = mfdcr(DCRN_SDRAM0_CFGDATA);
++
++		if (bank_config & SDRAM_CONFIG_BANK_ENABLE)
++			memsize += SDRAM_CONFIG_BANK_SIZE(bank_config);
++	}
++
++	dt_fixup_memory(0, memsize);
++}
++
++#define SPRN_DBCR0		0x134
++#define   DBCR0_RST_SYSTEM	0x30000000
++
++void ibm44x_dbcr_reset(void)
++{
++	unsigned long tmp;
++
++	asm volatile (
++		"mfspr	%0,%1\n"
++		"oris	%0,%0,%2@h\n"
++		"mtspr	%1,%0"
++		: "=&r"(tmp) : "i"(SPRN_DBCR0), "i"(DBCR0_RST_SYSTEM)
++		);
++
++}
++
++/* Read 4xx EBC bus bridge registers to get mappings of the peripheral
++ * banks into the OPB address space */
++void ibm4xx_fixup_ebc_ranges(const char *ebc)
++{
++	void *devp;
++	u32 bxcr;
++	u32 ranges[EBC_NUM_BANKS*4];
++	u32 *p = ranges;
++	int i;
++
++	for (i = 0; i < EBC_NUM_BANKS; i++) {
++		mtdcr(DCRN_EBC0_CFGADDR, EBC_BXCR(i));
++		bxcr = mfdcr(DCRN_EBC0_CFGDATA);
++
++		if ((bxcr & EBC_BXCR_BU) != EBC_BXCR_BU_OFF) {
++			*p++ = i;
++			*p++ = 0;
++			*p++ = bxcr & EBC_BXCR_BAS;
++			*p++ = EBC_BXCR_BANK_SIZE(bxcr);
++		}
++	}
++
++	devp = finddevice(ebc);
++	if (! devp)
++		fatal("Couldn't locate EBC node %s\n\r", ebc);
++
++	setprop(devp, "ranges", ranges, (p - ranges) * sizeof(u32));
++}
+--- linux-2.6.orig/arch/powerpc/boot/Makefile
++++ linux-2.6/arch/powerpc/boot/Makefile
+@@ -31,7 +31,7 @@ endif
  
--endmenu
--
- # 40x specific CPU modules, selected based on the board above.
- config NP405H
- 	bool
-@@ -126,68 +111,6 @@ config IBM405_ERR77
- config IBM405_ERR51
- 	bool
+ BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj)
  
--menu "AMCC 44x options"
--	depends on 44x
--
--#config BAMBOO
--#	bool "Bamboo"
--#	depends on 44x
--#	default n
--#	select 440EP
--#	help
--#	  This option enables support for the IBM PPC440EP evaluation board.
--
--config EBONY
--	bool "Ebony"
--	depends on 44x
--	default y
--	select 440GP
--	help
--	  This option enables support for the IBM PPC440GP evaluation board.
--
--#config LUAN
--#	bool "Luan"
--#	depends on 44x
--#	default n
--#	select 440SP
--#	help
--#	  This option enables support for the IBM PPC440SP evaluation board.
--
--#config OCOTEA
--#	bool "Ocotea"
--#	depends on 44x
--#	default n
--#	select 440GX
--#	help
--#	  This option enables support for the IBM PPC440GX evaluation board.
--
--endmenu
--
--# 44x specific CPU modules, selected based on the board above.
--config 440EP
--	bool
--	select PPC_FPU
--	select IBM440EP_ERR42
--
--config 440GP
--	bool
--	select IBM_NEW_EMAC_ZMII
--
--config 440GX
--	bool
--
--config 440SP
--	bool
--
--config 440A
--	bool
--	depends on 440GX
--	default y
--
--# 44x errata/workaround config symbols, selected by the CPU models above
--config IBM440EP_ERR42
--	bool
--
- #config XILINX_OCP
- #	bool
- #	depends on XILINX_ML300
---- linux-2.6.orig/arch/powerpc/platforms/Kconfig.cputype
-+++ linux-2.6/arch/powerpc/platforms/Kconfig.cputype
-@@ -40,6 +40,7 @@ config PPC_8xx
- config 40x
- 	bool "AMCC 40x"
- 	select PPC_DCR_NATIVE
-+	select WANT_DEVICE_TREE
+-$(obj)/44x.o: BOOTCFLAGS += -mcpu=440
++$(obj)/4xx.o: BOOTCFLAGS += -mcpu=440
+ $(obj)/ebony.o: BOOTCFLAGS += -mcpu=440
  
- config 44x
- 	bool "AMCC 44x"
+ zlib       := inffast.c inflate.c inftrees.c
+@@ -44,7 +44,7 @@ $(addprefix $(obj)/,$(zlib) gunzip_util.
+ src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
+ 		ns16550.c serial.c simple_alloc.c div64.S util.S \
+ 		gunzip_util.c elf_util.c $(zlib) devtree.c oflib.c ofconsole.c \
+-		44x.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c
++		4xx.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c
+ src-plat := of.c cuboot-83xx.c cuboot-85xx.c holly.c \
+ 		cuboot-ebony.c treeboot-ebony.c prpmc2800.c \
+ 		ps3-head.S ps3-hvcall.S ps3.c
 
 -- 
