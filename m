@@ -1,18 +1,18 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 4E1CDDDDEA
+Return-Path: <pradyumna.sampath@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.180])
+	by ozlabs.org (Postfix) with ESMTP id 8CD50DDE25
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  3 Aug 2007 21:41:34 +1000 (EST)
-Message-ID: <46B3146C.4020100@anagramm.de>
-Date: Fri, 03 Aug 2007 13:41:32 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
+	Fri,  3 Aug 2007 21:53:29 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so1629795pyi
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 03 Aug 2007 04:53:28 -0700 (PDT)
+Message-ID: <f87351060708030453i441be368y1322ae7b308e7ed3@mail.gmail.com>
+Date: Fri, 3 Aug 2007 17:23:27 +0530
+From: "Pradyumna Sampath" <pradyumna.sampath@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: 22.1-rt8: BUG: scheduling while atomic: stress/0x00000002/739, CPU#0
 MIME-Version: 1.0
-To: mahendra varman <mahendravarman15@gmail.com>
-Subject: Re: reg : SM722 Linux driver
-References: <4ac2955e0708030421r3b6d6b0at179e86fb6ff461a6@mail.gmail.com>
-In-Reply-To: <4ac2955e0708030421r3b6d6b0at179e86fb6ff461a6@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,31 +23,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-mahendra varman schrieb:
-> Hi Members
-> 
-> Iam in need of SM722 Linux driver source code for Linux 2.6 or for Linux 2.4
-> 
-> Help me to find the source code
+Hi,
 
-You will find Xfree86 drivers from Siliconmotion here:
-http://www.siliconmotion.com.tw/en/en2/download2c.htm
+First of all Im sorry to crosspost between linuxppc-dev and linuxppc-embedded.
 
-And the siliconmotion driver of Xorg in it's git repository:
-http://gitweb.freedesktop.org/?p=xorg/driver/xf86-video-siliconmotion.git;a=summary
+I am running linux-2.6.22.1-rt8 on mpc5200 and on running stress
 
-I don't think there are in-kernel framebuffer drivers (tried the vesa ones?)
-for the SM722 (==Lynx3DM+), read the code. ;-)
+#./stress --cpu 8 --io 4 --vm 2 --vm-bytes 2M --timeout 300s
 
-Regards,
+I get the following stack.But this does not happen with non -rt kernel.
+
+  LR = 0xff51fcc
+BUG: scheduling while atomic: stress/0x00000002/739, CPU#0
+Call Trace:
+[c04fbb80] [c0008650] show_stack+0x50/0x190 (unreliable)
+[c04fbbb0] [c0016fc0] __schedule_bug+0x38/0x48
+[c04fbbc0] [c01d4f7c] __schedule+0x3dc/0x450
+[c04fbbf0] [c01d56c8] schedule+0x54/0xf0
+[c04fbc00] [c01d6390] rt_spin_lock_slowlock+0x100/0x224
+[c04fbc60] [c0052198] get_zone_pcp+0x30/0x58
+[c04fbc80] [c0053078] free_hot_cold_page+0x114/0x1fc
+[c04fbcb0] [c0056424] put_page+0x50/0x15c
+[c04fbcd0] [c0069854] free_page_and_swap_cache+0x44/0x80
+[c04fbce0] [c005d760] unmap_vmas+0x2e0/0x788
+[c04fbd70] [c006292c] exit_mmap+0x74/0x108
+[c04fbda0] [c001adc0] mmput+0x54/0xf0
+[c04fbdc0] [c001ecfc] exit_mm+0xc0/0x124
+[c04fbde0] [c001ffd0] do_exit+0x164/0x8bc
+[c04fbe20] [c0020760] do_group_exit+0x38/0x90
+[c04fbe40] [c002ba48] get_signal_to_deliver+0x2ac/0x3c0
+[c04fbe70] [c000739c] do_signal+0x50/0x60c
+[c04fbf40] [c000fec0] do_user_signal+0x74/0xc4
+--- Exception: c00 at 0xfeab1dc
+  LR = 0xff51fcc
+
+I have also tested the same case on x86 and that does not throw up
+anything. Another observation is the fact is that this happens when
+--vm is > 1. So I am guessing its a very PowerPC specific problem.
+Maybe some part of the vm code for powerpc. This happens for all
+powerpc -rt kernels I have used.
+
+Link to stress is : http://weather.ou.edu/~apw/projects/stress/
+
+A friend of mine has already posted this problem to the rt-preempt
+mailing list and I have posted this on the linuxppc-dev list as well.
+Any pointers suggestions as to where the problem could
+be is most welcome.
+
+Thanks in advance
+regards
+/prady
+
 -- 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+htp://prady.livejournal.com
