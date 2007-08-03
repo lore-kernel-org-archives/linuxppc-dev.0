@@ -1,18 +1,22 @@
-Return-Path: <pradyumna.sampath@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.180])
-	by ozlabs.org (Postfix) with ESMTP id 8CD50DDE25
+Return-Path: <ssaravanan@arasor.in>
+Received: from xsmtp09.mail2web.com (xsmtp09.mail2web.com [168.144.250.182])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1CD71DDE1B
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  3 Aug 2007 21:53:29 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so1629795pyi
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 03 Aug 2007 04:53:28 -0700 (PDT)
-Message-ID: <f87351060708030453i441be368y1322ae7b308e7ed3@mail.gmail.com>
-Date: Fri, 3 Aug 2007 17:23:27 +0530
-From: "Pradyumna Sampath" <pradyumna.sampath@gmail.com>
+	Sat,  4 Aug 2007 01:47:22 +1000 (EST)
+Received: from [168.144.108.19] (helo=M2W019.mail2web.com)
+	by xsmtp09.mail2web.com with smtp (Exim 4.63)
+	(envelope-from <ssaravanan@arasor.in>) id 1IGyo7-0004qm-Ig
+	for linuxppc-embedded@ozlabs.org; Fri, 03 Aug 2007 11:11:17 -0400
+Message-ID: <380-22007853151115543@M2W019.mail2web.com>
+From: "ssaravanan@arasor.in" <ssaravanan@arasor.in>
 To: linuxppc-embedded@ozlabs.org
-Subject: 22.1-rt8: BUG: scheduling while atomic: stress/0x00000002/739, CPU#0
+Date: Fri, 3 Aug 2007 11:11:15 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-type: text/plain; charset=iso-8859-1
+Subject: How can I boot powerpc kernel?
+Reply-To: ssaravanan@arasor.in
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,56 +27,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+hi all,
 
-First of all Im sorry to crosspost between linuxppc-dev and linuxppc-embedded.
 
-I am running linux-2.6.22.1-rt8 on mpc5200 and on running stress
+ i am  new  to powerpc architecture=2E=2E=2E=2E i have a question that How=
+ i will
+boot powerpc kernel=2E=2E=2E=2E=3F currently i am using MPC8555E network p=
+rocessor=2E=2E
+using uboot and montavista kernel, using this i have tried to boot the
+kernel=2E After verification of images my board is hangs for ever=2E=2E=2E=
+=2EHow can
+i solve this=3F Is that PowerPC required flat tree for booting linux kerne=
+l=3F
+thanks=2E
 
-#./stress --cpu 8 --io 4 --vm 2 --vm-bytes 2M --timeout 300s
+Regards,
+Saravanan=2ES
 
-I get the following stack.But this does not happen with non -rt kernel.
 
-  LR = 0xff51fcc
-BUG: scheduling while atomic: stress/0x00000002/739, CPU#0
-Call Trace:
-[c04fbb80] [c0008650] show_stack+0x50/0x190 (unreliable)
-[c04fbbb0] [c0016fc0] __schedule_bug+0x38/0x48
-[c04fbbc0] [c01d4f7c] __schedule+0x3dc/0x450
-[c04fbbf0] [c01d56c8] schedule+0x54/0xf0
-[c04fbc00] [c01d6390] rt_spin_lock_slowlock+0x100/0x224
-[c04fbc60] [c0052198] get_zone_pcp+0x30/0x58
-[c04fbc80] [c0053078] free_hot_cold_page+0x114/0x1fc
-[c04fbcb0] [c0056424] put_page+0x50/0x15c
-[c04fbcd0] [c0069854] free_page_and_swap_cache+0x44/0x80
-[c04fbce0] [c005d760] unmap_vmas+0x2e0/0x788
-[c04fbd70] [c006292c] exit_mmap+0x74/0x108
-[c04fbda0] [c001adc0] mmput+0x54/0xf0
-[c04fbdc0] [c001ecfc] exit_mm+0xc0/0x124
-[c04fbde0] [c001ffd0] do_exit+0x164/0x8bc
-[c04fbe20] [c0020760] do_group_exit+0x38/0x90
-[c04fbe40] [c002ba48] get_signal_to_deliver+0x2ac/0x3c0
-[c04fbe70] [c000739c] do_signal+0x50/0x60c
-[c04fbf40] [c000fec0] do_user_signal+0x74/0xc4
---- Exception: c00 at 0xfeab1dc
-  LR = 0xff51fcc
+--------------------------------------------------------------------
+mail2web=2Ecom - Microsoft=AE Exchange solutions from a leading provider -=
 
-I have also tested the same case on x86 and that does not throw up
-anything. Another observation is the fact is that this happens when
---vm is > 1. So I am guessing its a very PowerPC specific problem.
-Maybe some part of the vm code for powerpc. This happens for all
-powerpc -rt kernels I have used.
-
-Link to stress is : http://weather.ou.edu/~apw/projects/stress/
-
-A friend of mine has already posted this problem to the rt-preempt
-mailing list and I have posted this on the linuxppc-dev list as well.
-Any pointers suggestions as to where the problem could
-be is most welcome.
-
-Thanks in advance
-regards
-/prady
-
--- 
-htp://prady.livejournal.com
+http://link=2Email2web=2Ecom/Business/Exchange
