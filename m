@@ -1,12 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id EEF6DDDDFE
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 21:10:28 +1000 (EST)
+Message-ID: <46B30CE9.5080905@ru.mvista.com>
+Date: Fri, 03 Aug 2007 15:09:29 +0400
+From: Valentine Barshak <vbarshak@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18099.1109.83340.915328@cargo.ozlabs.ibm.com>
-Date: Fri, 3 Aug 2007 20:32:53 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-Subject: Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [ PATCH ] PowerPC cascade UIC IRQ handler fix.
+References: <20070730163517.GA10087@ru.mvista.com>	<20070802034848.GA837@localhost.localdomain>
+	<20070802150852.39701576@weaponx.rchland.ibm.com>
+In-Reply-To: <20070802150852.39701576@weaponx.rchland.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,51 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+Josh Boyer wrote:
+> On Thu, 2 Aug 2007 13:48:48 +1000
+> David Gibson <david@gibson.dropbear.id.au> wrote:
+> 
+>> On Mon, Jul 30, 2007 at 08:35:17PM +0400, Valentine Barshak wrote:
+>>> PPC44x cascade UIC irq handler fix.
+>>>
+>>> According to PPC44x UM, if an interrupt is configured as
+>>> level-sensitive, and a clear is attempted on the UIC_SR, the UIC_SR
+>>> field is not cleared if the incoming interrupt signal is at the
+>>> asserted polarity. This causes us to enter a cascade handler twice,
+>>> since we first ack parent UIC interrupt and ack child UIC one after
+>>> that. The patch checks child UIC msr value and returns IRQ_HANDLED
+>>> if there're no pending interrupts. Otherwise we get a kernel panic
+>>> with a "Fatal exception in interrupt" (illegal vector).
+>>> The patch also fixes status flags.
+>>>
+>>> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+>> Hrm... This doesn't seem like the right fix to me.  Instead, I think
+>> the cascaded IRQ handler should ack the interrupt on the child first.
+>> I'm a little surprised it doesn't at the moment.
+> 
+> Agreed.  Anyone going to hack up a patch for that?
+> 
+> josh
 
-Please do
-
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
-
-to get another batch of bug-fixes for powerpc.
-
-Thanks,
-Paul.
-
- arch/powerpc/kernel/entry_64.S            |    3 +++
- arch/powerpc/kernel/pci_32.c              |    5 ++++-
- arch/powerpc/kernel/smp.c                 |    9 +++------
- arch/powerpc/mm/hash_low_64.S             |    6 ++++--
- arch/powerpc/mm/hash_utils_64.c           |    2 +-
- arch/powerpc/mm/numa.c                    |    4 ++--
- arch/powerpc/mm/slb.c                     |   28 ++++++++++++++++++----------
- arch/powerpc/platforms/cell/spufs/sched.c |    3 ++-
- arch/powerpc/platforms/powermac/feature.c |    6 ++++--
- arch/powerpc/platforms/ps3/setup.c        |    2 +-
- include/asm-powerpc/mmu-hash64.h          |    1 +
- include/asm-powerpc/pgtable-64k.h         |    8 +++-----
- 12 files changed, 46 insertions(+), 31 deletions(-)
-
-Andre Detsch (1):
-      [POWERPC] spufs: Fix affinity after introduction of node_allowed() calls
-
-Kevin Corry (1):
-      [POWERPC] Fix num_cpus calculation in smp_call_function_map()
-
-Michael Ellerman (1):
-      [POWERPC] Fix parse_drconf_memory() for 64-bit start addresses
-
-Michael Neuling (1):
-      [POWERPC] Fixes for the SLB shadow buffer code
-
-Paul Mackerras (2):
-      [POWERPC] Expand RPN field to 34 bits when using 64k pages
-      [POWERPC] Fix special PTE code for secondary hash bucket
-
-Segher Boessenkool (2):
-      [POWERPC] Fix a compile warning in pci_32.c
-      [POWERPC] Fix a compile warning in powermac/feature.c
-
-Stephen Rothwell (1):
-      [POWERPC] ps3: Fix section mismatch in ps3/setup.c
+Anyways, I don't see why kernel should panic if we get a spurious interrupt.
