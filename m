@@ -2,19 +2,20 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A7ECBDDDFB
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 19:26:59 +1000 (EST)
-In-Reply-To: <18098.62189.596336.471217@cargo.ozlabs.ibm.com>
-References: <11860870353423-git-send-email-becky.bruce@freescale.com>
-	<18098.62189.596336.471217@cargo.ozlabs.ibm.com>
+	by ozlabs.org (Postfix) with ESMTP id DCE98DDE02
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 19:28:46 +1000 (EST)
+In-Reply-To: <200708021447.22028.david-b@pacbell.net>
+References: <20070802142641.GA6309@localhost.localdomain>
+	<200708021447.22028.david-b@pacbell.net>
 Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <03710186-3483-463E-AF3E-4FB7EAC2470E@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <595EE3AF-CDD6-4260-83D9-A3FA3EA1DF95@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Fix FSL BookE machine check reporting
-Date: Fri, 3 Aug 2007 04:28:07 -0500
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [spi-devel-general] [PATCH] [SPI][POWERPC] spi_mpc83xx: in "QE
+	mode" spiclk is sysclk/2
+Date: Fri, 3 Aug 2007 04:29:48 -0500
+To: David Brownell <david-b@pacbell.net>
+Cc: spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,17 +26,16 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Aug 3, 2007, at 4:18 AM, Paul Mackerras wrote:
+On Aug 2, 2007, at 4:47 PM, David Brownell wrote:
 
-> Becky Bruce writes:
+> On Thursday 02 August 2007, Anton Vorontsov wrote:
+>> Probably someday mpc83xx_spi->sysclk should be renamed to
+>> mpc83xx_spi->spiclk to be less confusing.
 >
->> Reserved MCSR bits on FSL BookE parts may have spurious values
->> when mcheck occurs.  Mask these off when printing the MCSR to
->> avoid confusion.  Also, get rid of the MCSR_GL_CI bit defined
->> for e500 - this bit doesn't actually have any meaning.
->
-> Is this needed for 2.6.23?
+> Why not "today", with this patch?  That would fix some of
+> the root cause of this bug...
 
-It would be nice.  I'll queue it up with some other fixes for 2.6.23.
+I'm fine with this as well.  I just called it sysclk to start with  
+since when I wrote the driver it was just for the MPC834x.
 
 - k
