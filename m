@@ -1,29 +1,16 @@
-Return-Path: <stuart.yoder@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E7692DDE37
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Aug 2007 07:55:20 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l73LtER8029812
-	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 14:55:15 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l73LtEsS024135
-	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 16:55:14 -0500 (CDT)
+Return-Path: <tmorrison@empirix.com>
+Received: from empbedex1.empirix.com (empbedex1.empirix.com [12.38.203.54])
+	by ozlabs.org (Postfix) with ESMTP id 9C606DDDFA
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Aug 2007 08:54:14 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Subject: RE: [PATCH 3/3] First cut at PReP support for arch/powerpc
-Date: Fri, 3 Aug 2007 14:55:16 -0700
-Message-ID: <9696D7A991D0824DBA8DFAC74A9C5FA303156076@az33exm25.fsl.freescale.net>
-From: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
-To: "Loeliger Jon-LOELIGER" <jdl@freescale.com>,
-	"David Gibson" <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Subject: Trying to use Device Tree...and getting continuous interrupts from
+	attached 88e1145
+Date: Fri, 3 Aug 2007 18:54:05 -0400
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D90108BE44C2@EMPBEDEX.empirix.com>
+From: "Morrison, Tom" <tmorrison@empirix.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,35 +20,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+All,
 
-> > > > +		MPIC: interrupt-controller@d {
-> > > > +			device_type =3D "open-pic";
-> > > >=20
-> > > > device_type =3D "interrupt-controller".
-> >=20
-> > Not according to the binding in booting-without-of.txt
->=20
-> My understanding here, though possibly flawed, is that the current
-> implementation has "open-pic" but _should_ have "interrupt-controller"
-> as that is the officially correct name.
->=20
-> I _think_ this means we need a transitional period where we update
-> the code to look for "interrupt-controller", and obsoletedly, looks
-> for the "open-pic", while we transition to the new, correct name.
+Connected to eth1 (etsec2) of my mpc8548 cpu is a 88E1145 and I=20
+am trying to get the core functionality running with the device tree
+paradigm - I know the sense of the 88E1145 is active-low for my=20
+mpc8548 board and have it working with an older 2.6.11++ kernel. =20
 
-"open-pic" is the correct value for the device_type property.
-See the binding at:
-http://playground.sun.com/1275/bindings/chrp/chrp1_8a.ps
-That is the definition for open pic interrupt controllers (AFAIK).
+I built this new kernel with the marvell driver - it seemingly=20
+does all the same things we did in the 2.6.11 kernel in separate=20
+spots...
 
-I am not aware of any official binding with "interrupt-controller"=20
-as the device_type.
+Here is the appropriate parts of my device tree for this part of the
+core...
 
-However, the interrupt mapping spec says that all interrupt
-controller (regardless of device_type) must have a=20
-property named "interrupt-controller" to identify
-the device node as an interrupt controller and root of
-a interrupt tree.
-See: http://playground.sun.com/1275/practice/imap/imap0_9d.html
+>>		mdio@24520 {
+>>			#address-cells =3D <1>;
+>>			#size-cells =3D <0>;
+>>			device_type =3D "mdio";
+>>			compatible =3D "gianfar";=09
+>>			reg =3D <24520 20>;
+>>			phy1: ethernet-phy@1 {
+>>				interrupt-parent =3D <&mpic>;
+>>				interrupts =3D <37 1>;
+>>				reg =3D <11>;
+>>				device_type =3D "ethernet-phy";
+>>			};
+>>		};=09
+>>		ethernet@25000 {
+>>			#address-cells =3D <1>;
+>>			#size-cells =3D <0>;
+>>			device_type =3D "network";
+>>			model =3D "eTSEC";
+>>			compatible =3D "gianfar";
+>>			reg =3D <25000 1000>;
+>>			local-mac-address =3D [ 00 00 00 00 00 00 ];
+>>			interrupts =3D <23 2 24 2 28 2>;
+>>			interrupt-parent =3D <&mpic>;
+>>			phy-handle =3D <&phy1>;
+>>		};
+>>		mpic: pic@40000 {
+>>			clock-frequency =3D <0>;
+>>			interrupt-controller;
+>>			#address-cells =3D <0>;
+>>			#interrupt-cells =3D <2>;
+>>			reg =3D <40000 40000>;
+>>			built-in;
+>>			compatible =3D "chrp,open-pic";
+>>			device_type =3D "open-pic";
+>>                        big-endian;
+>>		};
 
-Stuart
+The device tree seems to be parsed OK:
+
+>> of_irq_map_one: dev=3D/soc8548@e0000000/mdio@24520/ethernet-phy@1,
+index=3D0
+>>  	intsize=3D2 intlen=3D2
+>> of_irq_map_raw: =
+par=3D/soc8548@e0000000/pic@40000,intspec=3D[0x00000037
+>>  	0x00000001...],ointsize=3D2
+>> of_irq_map_raw: ipar=3D/soc8548@e0000000/pic@40000, size=3D2
+>> mpic: xlate (2 cells: 0x00000037 0x00000001) to line 0x37 sense 0x8
+
+Now, that looks OK! Those are what I would expect. And when the=20
+mdio/phy are probed, configured, and the 88E1145 interrupt (EXT7=20
+(0x37H)) is enabled, the interrupt never (seemingly) gets cleared,
+and basically hangs the entire box up and eventually it panics!
+
+I don't even have an external phy(SFP) connected to this 88e1148 phy..
+
+I am at a lost - is there something I am missing in device tree?=20
+Help mr. wizard (Kumar?)...
+
+Tom
