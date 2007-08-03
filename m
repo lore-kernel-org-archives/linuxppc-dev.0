@@ -1,22 +1,29 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
-	by ozlabs.org (Postfix) with ESMTP id 677BEDDDDB
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0754BDDDF5
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  3 Aug 2007 10:53:06 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so739577wag
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 02 Aug 2007 17:53:05 -0700 (PDT)
-Message-ID: <fa686aa40708021753p45390d10o3faeaa955356b842@mail.gmail.com>
-Date: Thu, 2 Aug 2007 18:53:04 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "John Williams" <jwilliams@itee.uq.edu.au>
-Subject: Re: suspend/resume (Xilinx V4)
-In-Reply-To: <46B26E97.3040706@itee.uq.edu.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <46B26E97.3040706@itee.uq.edu.au>
-Cc: linuxppc-embedded@ozlabs.org
+	Fri,  3 Aug 2007 18:57:14 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l738v9Ng026498
+	for <linuxppc-embedded@ozlabs.org>; Fri, 3 Aug 2007 01:57:09 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l738v7Oc012020
+	for <linuxppc-embedded@ozlabs.org>; Fri, 3 Aug 2007 03:57:08 -0500 (CDT)
+Subject: [GIT PATCH] ucc_geth fixes for 2.6.22-rc1
+From: Li Yang <leoli@freescale.com>
+To: jeff@garzik.org
+Content-Type: text/plain
+Date: Fri, 03 Aug 2007 17:07:55 +0800
+Message-Id: <1186132075.6230.11.camel@Gundam>
+Mime-Version: 1.0
+Cc: netdev@vger.kernel.org, linuxppc-embedded@ozlabs.org
+Reply-To: leoli@freescale.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,43 +34,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 8/2/07, John Williams <jwilliams@itee.uq.edu.au> wrote:
-> Hi,
->
-> Any comments on the status/feasibility of suspend/resume for LinuxPPC on
-> Xilinx devices?
+Please pull from 'ucc_geth' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/leo/fsl-soc.git ucc_geth
 
-Pretty much non-existant as far as status goes.  Feasibility depends
-entirely on what power management features the Xilinx silicon
-supports.  I haven't looked into whether or not the 405 core can be
-put into sleep states.
+to receive the following fixes:
 
->
-> The only suspend-related traffic I see here in the last 12 months is for
-> the lite5200b board.
->
-> Any guesstimates of level of difficulty for such a task on Xilinx
-> PPC405?  The core lite5200b patchset didn't look too hairy (just a
-> modest bit of ASM :), but there would also be Xilinx device driver hooks
-> to consider.
+ drivers/net/ucc_geth_ethtool.c |    1 -
+ drivers/net/ucc_geth_mii.c     |    3 ++-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-I suspect the driver code will be where most of the effort lies.
+Domen Puncer (1):
+      ucc_geth: fix section mismatch
 
-> Also, are there kernel revision dependencies here?  Project is currently
-> on an MVL 2.6.10 tree - but have seen mention of 2.6.17 (?) being
-> earliest with PPC suspend/resume capability.
+Jan Altenberg (1):
+      ucc_geth: remove get_perm_addr from ucc_geth_ethtool.c
 
-Suspend support for ppc has existed for a long time, but there aren't
-many embedded ppc boards which support it (5200 being a notable
-example).
 
-Personally, I'm keeping up to date with mainline (2.6.22+) on my Virtex tree.
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+diff --git a/drivers/net/ucc_geth_ethtool.c
+b/drivers/net/ucc_geth_ethtool.c
+index a8994c7..64bef7c 100644
+--- a/drivers/net/ucc_geth_ethtool.c
++++ b/drivers/net/ucc_geth_ethtool.c
+@@ -379,7 +379,6 @@ static const struct ethtool_ops uec_ethtool_ops = {
+ 	.get_stats_count        = uec_get_stats_count,
+ 	.get_strings            = uec_get_strings,
+ 	.get_ethtool_stats      = uec_get_ethtool_stats,
+-	.get_perm_addr          = ethtool_op_get_perm_addr,
+ };
+ 
+ void uec_set_ethtool_ops(struct net_device *netdev)
+diff --git a/drivers/net/ucc_geth_mii.c b/drivers/net/ucc_geth_mii.c
+index 5f8c2d3..6c257b8 100644
+--- a/drivers/net/ucc_geth_mii.c
++++ b/drivers/net/ucc_geth_mii.c
+@@ -272,7 +272,8 @@ int __init uec_mdio_init(void)
+ 	return of_register_platform_driver(&uec_mdio_driver);
+ }
+ 
+-void __exit uec_mdio_exit(void)
++/* called from __init ucc_geth_init, therefore can not be __exit */
++void uec_mdio_exit(void)
+ {
+ 	of_unregister_platform_driver(&uec_mdio_driver);
+ }
