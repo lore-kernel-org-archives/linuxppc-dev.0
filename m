@@ -1,34 +1,20 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7B78EDDE20
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Aug 2007 03:15:30 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l73G9A7Q031162
-	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 12:09:10 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l73HFRd4264744
-	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 11:15:27 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l73HFR6D010077
-	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 11:15:27 -0600
-Date: Fri, 3 Aug 2007 12:15:25 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [patch 06/10] 40x decrementer fixes
-Message-ID: <20070803121525.61155586@weaponx.rchland.ibm.com>
-In-Reply-To: <46B35C07.4090806@ru.mvista.com>
-References: <20070803160900.069522000@linux.vnet.ibm.com>
-	<20070803161710.931656000@linux.vnet.ibm.com>
-	<46B35C07.4090806@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <gallatin@myri.com>
+Received: from myri.com (dsl.myri.com [64.172.73.26])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C2F67DDE25
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Aug 2007 03:20:04 +1000 (EST)
+Message-ID: <46B363A8.4010407@myri.com>
+Date: Fri, 03 Aug 2007 13:19:36 -0400
+From: Andrew Gallatin <gallatin@myri.com>
+MIME-Version: 1.0
+To: netdev@vger.kernel.org
+Subject: [PATCH] lro: myri10ge example how to use LRO
+Content-Type: multipart/mixed; boundary="------------050000080608080106020207"
+Cc: tklein@de.ibm.com, jeff@garzik.org, themann@de.ibm.com,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	raisch@de.ibm.com, meder@de.ibm.com, stefan.roscher@de.ibm.com,
+	davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,25 +24,219 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 03 Aug 2007 20:47:03 +0400
-Sergei Shtylyov <sshtylyov@ru.mvista.com> wrote:
+This is a multi-part message in MIME format.
+--------------050000080608080106020207
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> Josh Boyer wrote:
-> 
-> > Allow generic_calibrate_decr to work for 40x platforms.  Given that the hardware
-> > behavior is identical, this also changes the set_dec function to reload the PIT
-> > on 40x to match the behavior 44x currently has.
-> 
->     Why bother doing this?! This will only warrant you imprecise decrementer 
-> interrupts while it should be interrupting at the precise period currently (if 
-> you load PIT once)...
+To follow up on Jan-Bernd Themann's LRO patch earlier today,
+this patch shows how the generic LRO interface can be used for
+page based drivers.
 
-Without some kind of fix, it doesn't function at all.  We can load the
-PIT once, but then we need to make sure ARE is set because if the PIT
-ticks down to zero it just sits there.
+Again, many thanks to Jan-Bernd Themann for leading this effort.
 
-If we want to do that, then fine but it should be common between 40x
-and 44x.  I didn't see much of a reason to differ from what's there
-today.
+Drew
 
-josh
+Singed off by: Andrew Gallatin <gallatin@myri.com>
+
+--------------050000080608080106020207
+Content-Type: text/plain; x-mac-type="0"; x-mac-creator="0";
+ name="myri10ge_lro.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="myri10ge_lro.diff"
+
+diff -urNp a/drivers/net/myri10ge/myri10ge.c b/drivers/net/myri10ge/myri10ge.c
+--- a/drivers/net/myri10ge/myri10ge.c	2007-07-24 15:57:12.000000000 -0400
++++ b/drivers/net/myri10ge/myri10ge.c	2007-08-03 13:07:48.000000000 -0400
+@@ -48,6 +48,7 @@
+ #include <linux/etherdevice.h>
+ #include <linux/if_ether.h>
+ #include <linux/if_vlan.h>
++#include <linux/inet_lro.h>
+ #include <linux/ip.h>
+ #include <linux/inet.h>
+ #include <linux/in.h>
+@@ -62,6 +63,8 @@
+ #include <linux/io.h>
+ #include <linux/log2.h>
+ #include <net/checksum.h>
++#include <net/ip.h>
++#include <net/tcp.h>
+ #include <asm/byteorder.h>
+ #include <asm/io.h>
+ #include <asm/processor.h>
+@@ -89,6 +92,7 @@ MODULE_LICENSE("Dual BSD/GPL");
+ 
+ #define MYRI10GE_EEPROM_STRINGS_SIZE 256
+ #define MYRI10GE_MAX_SEND_DESC_TSO ((65536 / 2048) * 2)
++#define MYRI10GE_MAX_LRO_DESCRIPTORS 8
+ 
+ #define MYRI10GE_NO_CONFIRM_DATA htonl(0xffffffff)
+ #define MYRI10GE_NO_RESPONSE_RESULT 0xffffffff
+@@ -151,6 +155,8 @@ struct myri10ge_rx_done {
+ 	dma_addr_t bus;
+ 	int cnt;
+ 	int idx;
++	struct net_lro_mgr lro_mgr;
++	struct net_lro_desc lro_desc[MYRI10GE_MAX_LRO_DESCRIPTORS];
+ };
+ 
+ struct myri10ge_priv {
+@@ -276,6 +282,14 @@ static int myri10ge_debug = -1;	/* defau
+ module_param(myri10ge_debug, int, 0);
+ MODULE_PARM_DESC(myri10ge_debug, "Debug level (0=none,...,16=all)");
+ 
++static int myri10ge_lro = 1;
++module_param(myri10ge_lro, int, S_IRUGO);
++MODULE_PARM_DESC(myri10ge_lro, "Enable large receive offload\n");
++
++static int myri10ge_lro_max_pkts = MYRI10GE_LRO_MAX_PKTS;
++module_param(myri10ge_lro_max_pkts, int, S_IRUGO);
++MODULE_PARM_DESC(myri10ge_lro, "Number of LRO packets to be aggregated\n");
++
+ static int myri10ge_fill_thresh = 256;
+ module_param(myri10ge_fill_thresh, int, S_IRUGO | S_IWUSR);
+ MODULE_PARM_DESC(myri10ge_fill_thresh, "Number of empty rx slots allowed\n");
+@@ -1019,6 +1033,15 @@ myri10ge_rx_done(struct myri10ge_priv *m
+ 		remainder -= MYRI10GE_ALLOC_SIZE;
+ 	}
+ 
++	if (mgp->csum_flag && myri10ge_lro) {
++		rx_frags[0].page_offset += MXGEFW_PAD;
++		rx_frags[0].size -= MXGEFW_PAD;
++		len -= MXGEFW_PAD;
++		lro_receive_frags(&mgp->rx_done.lro_mgr, rx_frags,
++				  len, len, (void *)(unsigned long)csum, csum);
++		return 1;
++	}
++
+ 	hlen = MYRI10GE_HLEN > len ? len : MYRI10GE_HLEN;
+ 
+ 	/* allocate an skb to attach the page(s) to. */
+@@ -1137,6 +1160,9 @@ static inline void myri10ge_clean_rx_don
+ 	mgp->stats.rx_packets += rx_packets;
+ 	mgp->stats.rx_bytes += rx_bytes;
+ 
++	if (myri10ge_lro)
++		lro_flush_all(&rx_done->lro_mgr);
++
+ 	/* restock receive rings if needed */
+ 	if (mgp->rx_small.fill_cnt - mgp->rx_small.cnt < myri10ge_fill_thresh)
+ 		myri10ge_alloc_rx_pages(mgp, &mgp->rx_small,
+@@ -1378,7 +1404,8 @@ static const char myri10ge_gstrings_stat
+ 	"dropped_pause", "dropped_bad_phy", "dropped_bad_crc32",
+ 	"dropped_unicast_filtered", "dropped_multicast_filtered",
+ 	"dropped_runt", "dropped_overrun", "dropped_no_small_buffer",
+-	"dropped_no_big_buffer"
++	"dropped_no_big_buffer", "LRO aggregated", "LRO flushed",
++	"LRO avg aggr", "LRO no_desc"
+ };
+ 
+ #define MYRI10GE_NET_STATS_LEN      21
+@@ -1444,6 +1471,14 @@ myri10ge_get_ethtool_stats(struct net_de
+ 	data[i++] = (unsigned int)ntohl(mgp->fw_stats->dropped_overrun);
+ 	data[i++] = (unsigned int)ntohl(mgp->fw_stats->dropped_no_small_buffer);
+ 	data[i++] = (unsigned int)ntohl(mgp->fw_stats->dropped_no_big_buffer);
++	data[i++] = mgp->rx_done.lro_mgr.stats.aggregated;
++	data[i++] = mgp->rx_done.lro_mgr.stats.flushed;
++	if (mgp->rx_done.lro_mgr.stats.flushed)
++		data[i++] = mgp->rx_done.lro_mgr.stats.aggregated /
++		    mgp->rx_done.lro_mgr.stats.flushed;
++	else
++		data[i++] = 0;
++	data[i++] = mgp->rx_done.lro_mgr.stats.no_desc;
+ }
+ 
+ static void myri10ge_set_msglevel(struct net_device *netdev, u32 value)
+@@ -1717,10 +1752,69 @@ static void myri10ge_free_irq(struct myr
+ 		pci_disable_msi(pdev);
+ }
+ 
++static int
++myri10ge_get_frag_header(struct skb_frag_struct *frag, void **mac_hdr,
++			 void **ip_hdr, void **tcpudp_hdr,
++			 u64 * hdr_flags, void *priv)
++{
++	struct ethhdr *eh;
++	struct vlan_ethhdr *veh;
++	struct iphdr *iph;
++	u8 *va = page_address(frag->page) + frag->page_offset;
++	unsigned long ll_hlen;
++	__wsum csum = (__wsum) (unsigned long)priv;
++
++	/* find the mac header, aborting if not IPv4 */
++
++	eh = (struct ethhdr *)va;
++	*mac_hdr = eh;
++	ll_hlen = ETH_HLEN;
++	if (eh->h_proto != htons(ETH_P_IP)) {
++		if (eh->h_proto == htons(ETH_P_8021Q)) {
++			veh = (struct vlan_ethhdr *)va;
++			if (veh->h_vlan_encapsulated_proto != htons(ETH_P_IP))
++				return -1;
++
++			ll_hlen += VLAN_HLEN;
++
++			/*
++			 *  HW checksum starts ETH_HLEN bytes into
++			 *  frame, so we must subtract off the VLAN
++			 *  header's checksum before csum can be used
++			 */
++			csum = csum_sub(csum, csum_partial(va + ETH_HLEN,
++							   VLAN_HLEN, 0));
++		} else {
++			return -1;
++		}
++	}
++	*hdr_flags = LRO_IPV4;
++
++	iph = (struct iphdr *)(va + ll_hlen);
++	*ip_hdr = iph;
++	if (iph->protocol != IPPROTO_TCP)
++		return -1;
++	*hdr_flags |= LRO_TCP;
++	*tcpudp_hdr = (u8 *) (*ip_hdr) + (iph->ihl << 2);
++
++	/* verify the IP checksum */
++	if (unlikely(ip_fast_csum((u8 *) iph, iph->ihl)))
++		return -1;
++
++	/* verify the  checksum */
++	if (unlikely(csum_tcpudp_magic(iph->saddr, iph->daddr,
++				       ntohs(iph->tot_len) - (iph->ihl << 2),
++				       IPPROTO_TCP, csum)))
++		return -1;
++
++	return 0;
++}
++
+ static int myri10ge_open(struct net_device *dev)
+ {
+ 	struct myri10ge_priv *mgp;
+ 	struct myri10ge_cmd cmd;
++	struct net_lro_mgr *lro_mgr;
+ 	int status, big_pow2;
+ 
+ 	mgp = netdev_priv(dev);
+@@ -1852,6 +1946,18 @@ static int myri10ge_open(struct net_devi
+ 	mgp->link_state = htonl(~0U);
+ 	mgp->rdma_tags_available = 15;
+ 
++	lro_mgr = &mgp->rx_done.lro_mgr;
++	lro_mgr->dev = dev;
++	lro_mgr->features = LRO_F_NAPI;
++	lro_mgr->ip_summed = CHECKSUM_COMPLETE;
++	lro_mgr->ip_summed_aggr = CHECKSUM_UNNECESSARY;
++	lro_mgr->max_desc = MYRI10GE_MAX_LRO_DESCRIPTORS;
++	lro_mgr->lro_arr = mgp->rx_done.lro_desc;
++	lro_mgr->get_frag_header = myri10ge_get_frag_header;
++	lro_mgr->max_aggr = myri10ge_lro_max_pkts;
++	if (lro_mgr->max_aggr > MAX_SKB_FRAGS)
++		lro_mgr->max_aggr = MAX_SKB_FRAGS;
++
+ 	netif_poll_enable(mgp->dev);	/* must happen prior to any irq */
+ 
+ 	status = myri10ge_send_cmd(mgp, MXGEFW_CMD_ETHERNET_UP, &cmd, 0);
+
+--------------050000080608080106020207--
