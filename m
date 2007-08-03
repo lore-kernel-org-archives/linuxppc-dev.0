@@ -1,32 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id F0E0FDDDE9
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 10:13:44 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l730DeQ2024893
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 20:13:40 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l730DeLC529760
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 20:13:40 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l730DevI007544
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 20:13:40 -0400
-Date: Thu, 2 Aug 2007 19:26:52 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A4AF2DDDE9
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 10:34:53 +1000 (EST)
 Subject: Re: [patch 00/14] Current 4xx patch series
-Message-ID: <20070803002652.GX3925@crusty.rchland.ibm.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20070803002652.GX3925@crusty.rchland.ibm.com>
 References: <41060.0659474314$1184697204@news.gmane.org>
 	<f8tgfm$e2g$1@sea.gmane.org>
 	<20070802163951.11c398ee@weaponx.rchland.ibm.com>
 	<1186094296.5495.638.camel@localhost.localdomain>
+	<20070803002652.GX3925@crusty.rchland.ibm.com>
+Content-Type: text/plain
+Date: Fri, 03 Aug 2007 10:29:44 +1000
+Message-Id: <1186100984.5495.648.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1186094296.5495.638.camel@localhost.localdomain>
 Cc: linuxppc-dev@ozlabs.org, Hollis Blanchard <hollisb@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -37,24 +27,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 03, 2007 at 08:38:16AM +1000, Benjamin Herrenschmidt wrote:
-> On Thu, 2007-08-02 at 16:39 -0500, Josh Boyer wrote:
+On Thu, 2007-08-02 at 19:26 -0500, Josh Boyer wrote:
+> On Fri, Aug 03, 2007 at 08:38:16AM +1000, Benjamin Herrenschmidt wrote:
+> > On Thu, 2007-08-02 at 16:39 -0500, Josh Boyer wrote:
+> > > 
+> > > Someone brought up the fact that the EMAC rewrite is mostly just
+> > > changing probing code and the guts are still similar to the current
+> > > EMAC driver.  I haven't really looked into it yet, but if that's true,
+> > > I'd be curious as to why it was done that way.
 > > 
-> > Someone brought up the fact that the EMAC rewrite is mostly just
-> > changing probing code and the guts are still similar to the current
-> > EMAC driver.  I haven't really looked into it yet, but if that's true,
-> > I'd be curious as to why it was done that way.
+> > Ask :-) What specifically do you want to know ?
 > 
-> Ask :-) What specifically do you want to know ?
+> :)
+> 
+> Are the guts mostly the same, and if so why wasn't the existing driver just
+> modified to do the device tree probing, perhaps in addition to the arch/ppc
+> method?
+>
+> I can answer the "are they similar" myself with inspection, but I just haven't
+> found the time yet.  So just some history about the patch would be good in
+> general I think.
 
-:)
+Guts are the same with subtle differences :-)
 
-Are the guts mostly the same, and if so why wasn't the existing driver just
-modified to do the device tree probing, perhaps in addition to the arch/ppc
-method?
+The main reason not to modify the existing one was because I wanted to
+be conservative and not take any chance at breaking arch/ppc. Also, we
+did that in earlier versions internally (have both OCP and device-tree
+probing) and it's a terrible mess. Since arch/ppc is doomed, I wanted to
+avoid designing something that can do both for no real benefit.
 
-I can answer the "are they similar" myself with inspection, but I just haven't
-found the time yet.  So just some history about the patch would be good in
-general I think.
+There are other subtle differences, such as the locking of the MDIO
+accesses, and locking bits and pieces in general (EMAC wasn't tested in
+SMP environments, and while it was tested with preempt, there are a few
+subtle differences and issues that went unnoticed).
 
-josh
+I also haven't brought back the workarounds for the loss of the Rx clock
+with some PHYs at this stage. I need to get my hand on HW that has this
+issue to be able to decide what to do I believe. The thing is, global
+whacking of clock control registers like the old driver does is a bit
+scary, totally per-chip-type, and requires locking vs. other parts of
+the system that may want to access the same registers etc...
+
+However, some of the chip folks told me it might be possible instead to
+just use loopback mode when there is no link. So I want to investigate
+that possibility first, but for that, I need HW that has the symptoms
+and so far, I think I don't.
+
+Finally, we still need to add in proper DMA unmapping. The current
+driver never unmaps which is a problem on Axon when using the iommu.
+
+Cheers,
+Ben.
