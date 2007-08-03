@@ -1,34 +1,33 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 064ECDDDD5
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 09:56:19 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l72NuGq8010968
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 19:56:16 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l72NuGq8111652
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 17:56:16 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l72NuGnA004638
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 17:56:16 -0600
-Subject: Re: [PATCH] Use 1TB segments
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id F0E0FDDDE9
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 10:13:44 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l730DeQ2024893
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 20:13:40 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l730DeLC529760
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 20:13:40 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l730DevI007544
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 20:13:40 -0400
+Date: Thu, 2 Aug 2007 19:26:52 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1186094245.5495.637.camel@localhost.localdomain>
-References: <18095.59959.698141.565343@cargo.ozlabs.ibm.com>
-	<1186087283.22717.80.camel@farscape.rchland.ibm.com>
-	<1186094245.5495.637.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 02 Aug 2007 18:56:14 -0500
-Message-Id: <1186098974.22717.86.camel@farscape.rchland.ibm.com>
+Subject: Re: [patch 00/14] Current 4xx patch series
+Message-ID: <20070803002652.GX3925@crusty.rchland.ibm.com>
+References: <41060.0659474314$1184697204@news.gmane.org>
+	<f8tgfm$e2g$1@sea.gmane.org>
+	<20070802163951.11c398ee@weaponx.rchland.ibm.com>
+	<1186094296.5495.638.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: will_schmidt@vnet.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1186094296.5495.638.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, Hollis Blanchard <hollisb@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,23 +37,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-08-03 at 08:37 +1000, Benjamin Herrenschmidt wrote:
-> > Is there technical reason why the 'local' variable remains at the end of
-> > the parm list for these?   In other cases 'ssize' simply gets added to
-> > the end of the parm list. 
+On Fri, Aug 03, 2007 at 08:38:16AM +1000, Benjamin Herrenschmidt wrote:
+> On Thu, 2007-08-02 at 16:39 -0500, Josh Boyer wrote:
+> > 
+> > Someone brought up the fact that the EMAC rewrite is mostly just
+> > changing probing code and the guts are still similar to the current
+> > EMAC driver.  I haven't really looked into it yet, but if that's true,
+> > I'd be curious as to why it was done that way.
 > 
-> Looks nicer to have psize and ssize together :-)
+> Ask :-) What specifically do you want to know ?
 
-Aah!   And here I thought there was some obscure register usage
-optimization going on..   :-)
+:)
 
--Will
+Are the guts mostly the same, and if so why wasn't the existing driver just
+modified to do the device tree probing, perhaps in addition to the arch/ppc
+method?
 
-> 
-> Ben.
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+I can answer the "are they similar" myself with inspection, but I just haven't
+found the time yet.  So just some history about the patch would be good in
+general I think.
+
+josh
