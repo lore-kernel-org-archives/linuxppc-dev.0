@@ -1,37 +1,18 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9D5EEDDDF5
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 16:33:07 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l736X1YH014831
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2007 23:33:01 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l736X0QC026520
-	for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2007 01:33:00 -0500 (CDT)
-Subject: Re: [PATCH 1/2] Add sysdev/pci_quirks.c file into
-	PowerPCarchitecture with ULI chip quirk functions.
-From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <05E0FF5A-03DB-441E-81E8-54BD4A215D32@kernel.crashing.org>
-References: <11859560681182-git-send-email-wei.zhang@freescale.com>
-	<11859560694083-git-send-email-wei.zhang@freescale.com>
-	<1186005360.5495.529.camel@localhost.localdomain>
-	<46B96294322F7D458F9648B60E15112C74D58E@zch01exm26.fsl.freescale.net>
-	<1186017799.5495.546.camel@localhost.localdomain>
-	<05E0FF5A-03DB-441E-81E8-54BD4A215D32@kernel.crashing.org>
-Content-Type: text/plain
-Message-Id: <1186122779.10419.0.camel@localhost.localdomain>
-Mime-Version: 1.0
-Date: 03 Aug 2007 14:32:59 +0800
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Zhang Wei-r63237 <Wei.Zhang@freescale.com>
+Return-Path: <SRS0=wAAa=NA=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 1FC01DDDE9
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 16:36:41 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 4/6] PowerPC 440EPx: Sequoia bootwrapper
+Date: Fri, 3 Aug 2007 08:38:25 +0200
+References: <20070730151445.GA5075@ru.mvista.com>
+	<20070802152941.579a55fa@weaponx.rchland.ibm.com>
+In-Reply-To: <20070802152941.579a55fa@weaponx.rchland.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200708030838.25574.sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,29 +22,137 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-08-02 at 12:29, Kumar Gala wrote:
-> On Aug 1, 2007, at 8:23 PM, Benjamin Herrenschmidt wrote:
-> 
-> > On Thu, 2007-08-02 at 09:17 +0800, Zhang Wei-r63237 wrote:
-> >> Hi, Ben,
-> >>
-> >>>
-> >>> Are we sure that any powerpc machine that uses that ULI chip will 
-> >>> need
-> >>> the same quirk setting ?
-> >>>
-> >>
-> >> We can ensure current platforms (as far as we know, MPC8544DS and
-> >> MPC8641HPCN) using ULI chips in powerpc of kernel need the same
-> quirk
-> >> setting.
-> >> And we hope to make them more generic. And if there are some  
-> >> different
-> >> setting in the future, we can add special codes.
-> >
-> > All right.
-> 
-> My feeling is this code is pretty specific to how the ULI M1575 is  
-> used on those boards and should only be built for those boards.
-Until now, it is right.
-Roy
+On Thursday 02 August 2007, Josh Boyer wrote:
+> On Mon, 30 Jul 2007 19:14:45 +0400
+> > +#define SPRN_CCR1 0x378
+> > +void ibm440ep_fixup_clocks(unsigned int sysclk, unsigned int ser_clk)
+> > +{
+> > +	u32 cpu, plb, opb, ebc, tb, uart0, m, vco;
+> > +	u32 reg;
+> > +	u32 fwdva, fwdvb, fbdv, lfbdv, opbdv0, perdv0, spcid0, prbdv0, tmp;
+> > +
+> > +	mtdcr(DCRN_CPR0_ADDR, CPR0_PLLD0);
+> > +	reg = mfdcr(DCRN_CPR0_DATA);
+> > +	tmp = (reg & 0x000F0000) >> 16;
+> > +	fwdva = tmp ? tmp : 16;
+> > +	tmp = (reg & 0x00000700) >> 8;
+> > +	fwdvb = tmp ? tmp : 8;
+> > +	tmp = (reg & 0x1F000000) >> 24;
+> > +	fbdv = tmp ? tmp : 32;
+> > +	lfbdv = (reg & 0x0000007F);
+> > +
+> > +	mtdcr(DCRN_CPR0_ADDR, CPR0_OPBD0);
+> > +	reg = mfdcr(DCRN_CPR0_DATA);
+> > +	tmp = (reg & 0x03000000) >> 24;
+> > +	opbdv0 = tmp ? tmp : 4;
+> > +
+> > +	mtdcr(DCRN_CPR0_ADDR, CPR0_PERD0);
+> > +	reg = mfdcr(DCRN_CPR0_DATA);
+> > +	tmp = (reg & 0x07000000) >> 24;
+> > +	perdv0 = tmp ? tmp : 8;
+> > +
+> > +	mtdcr(DCRN_CPR0_ADDR, CPR0_PRIMBD0);
+> > +	reg = mfdcr(DCRN_CPR0_DATA);
+> > +	tmp = (reg & 0x07000000) >> 24;
+> > +	prbdv0 = tmp ? tmp : 8;
+> > +
+> > +	mtdcr(DCRN_CPR0_ADDR, CPR0_SCPID);
+> > +	reg = mfdcr(DCRN_CPR0_DATA);
+> > +	tmp = (reg & 0x03000000) >> 24;
+> > +	spcid0 = tmp ? tmp : 4;
+> > +
+> > +	/* Calculate M */
+> > +	mtdcr(DCRN_CPR0_ADDR, CPR0_PLLC0);
+> > +	reg = mfdcr(DCRN_CPR0_DATA);
+> > +	tmp = (reg & 0x03000000) >> 24;
+> > +	if (tmp == 0) { /* PLL output */
+> > +		tmp = (reg & 0x20000000) >> 29;
+> > +		if (!tmp) /* PLLOUTA */
+> > +			m = fbdv * lfbdv * fwdva;
+> > +		else
+> > +			m = fbdv * lfbdv * fwdvb;
+> > +	}
+> > +	else if (tmp == 1) /* CPU output */
+> > +		m = fbdv * fwdva;
+> > +	else
+> > +		m = perdv0 * opbdv0 * fwdvb;
+> > +
+> > +	vco = (m * sysclk) + (m >> 1);
+> > +	cpu = vco / fwdva;
+> > +	plb = vco / fwdvb / prbdv0;
+> > +	opb = plb / opbdv0;
+> > +	ebc = plb / perdv0;
+> > +
+> > +	/* FIXME */
+> > +	uart0 = ser_clk;
+> > +
+> > +	/* Figure out timebase.  Either CPU or default TmrClk */
+> > +	asm volatile (
+> > +			"mfspr	%0,%1\n"
+> > +			:
+> > +			"=&r"(reg) : "i"(SPRN_CCR1));
+> > +	if (reg & 0x0080)
+> > +		tb = 25000000; /* TmrClk is 25MHz */
+> > +	else
+> > +		tb = cpu;
+> > +
+> > +	dt_fixup_cpu_clocks(cpu, tb, 0);
+> > +	dt_fixup_clock("/plb", plb);
+> > +	dt_fixup_clock("/plb/opb", opb);
+> > +	dt_fixup_clock("/plb/opb/ebc", ebc);
+> > +	dt_fixup_clock("/plb/opb/serial@ef600300", uart0);
+> > +	dt_fixup_clock("/plb/opb/serial@ef600400", uart0);
+> > +	dt_fixup_clock("/plb/opb/serial@ef600500", uart0);
+> > +	dt_fixup_clock("/plb/opb/serial@ef600600", uart0);
+> > +}
+>
+> We don't need to duplicate this function in two different wrappers.
+> I'll move it into 4xx.c in my next round of patches, so that bamboo and
+> sequoia can just call a common function.
+
+Good idea.
+
+> > +/*
+> > + * 440EPx DDR1/2 memory controller code
+> > + * TODO: move to generic 44x code
+> > + */
+> > +
+> > +/* DDR0_02 */
+> > +#define DDR_START		0x1
+> > +#define DDR_START_SHIFT		0
+> > +#define DDR_MAX_CS_REG		0x3
+> > +#define DDR_MAX_CS_REG_SHIFT	24
+> > +#define DDR_MAX_COL_REG		0xf
+> > +#define DDR_MAX_COL_REG_SHIFT	16
+> > +#define DDR_MAX_ROW_REG		0xf
+> > +#define DDR_MAX_ROW_REG_SHIFT	8
+> > +/* DDR0_08 */
+> > +#define DDR_DDR2_MODE		0x1
+> > +#define DDR_DDR2_MODE_SHIFT	0
+> > +/* DDR0_10 */
+> > +#define DDR_CS_MAP		0x3
+> > +#define DDR_CS_MAP_SHIFT	8
+> > +/* DDR0_14 */
+> > +#define DDR_REDUC		0x1
+> > +#define DDR_REDUC_SHIFT		16
+> > +/* DDR0_42 */
+> > +#define DDR_APIN		0x7
+> > +#define DDR_APIN_SHIFT		24
+> > +/* DDR0_43 */
+> > +#define DDR_COL_SZ		0x7
+> > +#define DDR_COL_SZ_SHIFT	8
+> > +#define DDR_BANK8		0x1
+> > +#define DDR_BANK8_SHIFT		0
+> > +
+> > +#define DDR_GET_VAL(val, mask, shift)	(((val) >> (shift)) & (mask))
+> > +
+> > +static void ibm440epx_fixup_memsize(void)
+>
+> And we should move this at the same time.  Isn't denali used by another
+> CPU as well?
+
+Right now the Denali DDR(2) core is only used by the 440EPx/440GRx. But other 
+AMCC PPC's using it will follow soon.
+
+Best regards,
+Stefan
