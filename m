@@ -1,22 +1,23 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CB095DDE21
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 78615DDDFA
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  4 Aug 2007 06:53:22 +1000 (EST)
-Message-ID: <46B395B5.1040009@freescale.com>
-Date: Fri, 03 Aug 2007 15:53:09 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: khollan <khollan@daktronics.com>
+	Sat,  4 Aug 2007 07:39:41 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IH4ry-0000LC-Bd
+	for linuxppc-embedded@ozlabs.org; Fri, 03 Aug 2007 14:39:38 -0700
+Message-ID: <11991239.post@talk.nabble.com>
+Date: Fri, 3 Aug 2007 14:39:38 -0700 (PDT)
+From: khollan <khollan@daktronics.com>
+To: linuxppc-embedded@ozlabs.org
 Subject: Re: BusyBox passwd requires root privileges
-References: <11990563.post@talk.nabble.com>
-In-Reply-To: <11990563.post@talk.nabble.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+In-Reply-To: <46B395B5.1040009@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+References: <11990563.post@talk.nabble.com> <46B395B5.1040009@freescale.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,13 +28,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-khollan wrote:
-> I log on as a user and I want to use passwd to change that users password but
-> it gives me the 
-> passwd: applet requires root privileges!
-> I can login as root and change all user passwords, but I want individual
-> owners to be able to update their passwords.  Any ideas?
 
-passwd needs to be setuid root.
 
--Scott
+
+Scott Wood-2 wrote:
+> 
+> 
+> passwd needs to be setuid root.
+> 
+> 
+How do you do that?
+-- 
+View this message in context: http://www.nabble.com/BusyBox-passwd-requires-root-privileges-tf4214675.html#a11991239
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
