@@ -1,22 +1,18 @@
-Return-Path: <ssaravanan@arasor.in>
-Received: from xsmtp09.mail2web.com (xsmtp09.mail2web.com [168.144.250.182])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1CD71DDE1B
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 811CEDDE21
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  4 Aug 2007 01:47:22 +1000 (EST)
-Received: from [168.144.108.19] (helo=M2W019.mail2web.com)
-	by xsmtp09.mail2web.com with smtp (Exim 4.63)
-	(envelope-from <ssaravanan@arasor.in>) id 1IGyo7-0004qm-Ig
-	for linuxppc-embedded@ozlabs.org; Fri, 03 Aug 2007 11:11:17 -0400
-Message-ID: <380-22007853151115543@M2W019.mail2web.com>
-From: "ssaravanan@arasor.in" <ssaravanan@arasor.in>
-To: linuxppc-embedded@ozlabs.org
-Date: Fri, 3 Aug 2007 11:11:15 -0400
+	Sat,  4 Aug 2007 01:50:21 +1000 (EST)
+Message-ID: <46B34F32.5050506@ru.mvista.com>
+Date: Fri, 03 Aug 2007 19:52:18 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Subject: How can I boot powerpc kernel?
-Reply-To: ssaravanan@arasor.in
+To: ssaravanan@arasor.in
+Subject: Re: How can I boot powerpc kernel?
+References: <380-22007853151115543@M2W019.mail2web.com>
+In-Reply-To: <380-22007853151115543@M2W019.mail2web.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,25 +23,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-hi all,
+Hello.
 
+ssaravanan@arasor.in wrote:
 
- i am  new  to powerpc architecture=2E=2E=2E=2E i have a question that How=
- i will
-boot powerpc kernel=2E=2E=2E=2E=3F currently i am using MPC8555E network p=
-rocessor=2E=2E
-using uboot and montavista kernel, using this i have tried to boot the
-kernel=2E After verification of images my board is hangs for ever=2E=2E=2E=
-=2EHow can
-i solve this=3F Is that PowerPC required flat tree for booting linux kerne=
-l=3F
-thanks=2E
+>  i am  new  to powerpc architecture.... i have a question that How i will
+> boot powerpc kernel....? currently i am using MPC8555E network processor..
+> using uboot and montavista kernel, using this i have tried to boot the
+> kernel. After verification of images my board is hangs for ever....How can
+> i solve this? Is that PowerPC required flat tree for booting linux kernel?
 
-Regards,
-Saravanan=2ES
+    Yes, you must supply the tree. If you're using U-Boot, the following 
+sequence should boot you Linux:
 
+=> tftpboot 800000 uImage
+=> tftpboot e00000 mpc8555e.dtb
+=> bootm 800000 - e00000
 
---------------------------------------------------------------------
-mail2web=2Ecom - Microsoft=AE Exchange solutions from a leading provider -=
+> thanks.
 
-http://link=2Email2web=2Ecom/Business/Exchange
+> Regards,
+> Saravanan.S
+
+WBR, Sergei
