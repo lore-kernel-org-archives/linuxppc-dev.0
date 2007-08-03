@@ -1,18 +1,17 @@
-Return-Path: <SRS0=wAAa=NA=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 1FC01DDDE9
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2007 16:36:41 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 4/6] PowerPC 440EPx: Sequoia bootwrapper
-Date: Fri, 3 Aug 2007 08:38:25 +0200
-References: <20070730151445.GA5075@ru.mvista.com>
-	<20070802152941.579a55fa@weaponx.rchland.ibm.com>
-In-Reply-To: <20070802152941.579a55fa@weaponx.rchland.ibm.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 3 Aug 2007 16:35:32 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Gabriel Paubert <paubert@iram.es>
+Subject: Re: [PATCH 3/3] First cut at PReP support for arch/powerpc
+Message-ID: <20070803063532.GB14456@localhost.localdomain>
+References: <20070627065335.GD11191@localhost.localdomain>
+	<20070627071008.GA30648@localhost.localdomain>
+	<b1bc50e84cd3f8009eca2b470bea026f@kernel.crashing.org>
+	<20070628100020.GA24215@iram.es>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200708030838.25574.sr@denx.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070628100020.GA24215@iram.es>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,137 +21,250 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 02 August 2007, Josh Boyer wrote:
-> On Mon, 30 Jul 2007 19:14:45 +0400
-> > +#define SPRN_CCR1 0x378
-> > +void ibm440ep_fixup_clocks(unsigned int sysclk, unsigned int ser_clk)
-> > +{
-> > +	u32 cpu, plb, opb, ebc, tb, uart0, m, vco;
-> > +	u32 reg;
-> > +	u32 fwdva, fwdvb, fbdv, lfbdv, opbdv0, perdv0, spcid0, prbdv0, tmp;
-> > +
-> > +	mtdcr(DCRN_CPR0_ADDR, CPR0_PLLD0);
-> > +	reg = mfdcr(DCRN_CPR0_DATA);
-> > +	tmp = (reg & 0x000F0000) >> 16;
-> > +	fwdva = tmp ? tmp : 16;
-> > +	tmp = (reg & 0x00000700) >> 8;
-> > +	fwdvb = tmp ? tmp : 8;
-> > +	tmp = (reg & 0x1F000000) >> 24;
-> > +	fbdv = tmp ? tmp : 32;
-> > +	lfbdv = (reg & 0x0000007F);
-> > +
-> > +	mtdcr(DCRN_CPR0_ADDR, CPR0_OPBD0);
-> > +	reg = mfdcr(DCRN_CPR0_DATA);
-> > +	tmp = (reg & 0x03000000) >> 24;
-> > +	opbdv0 = tmp ? tmp : 4;
-> > +
-> > +	mtdcr(DCRN_CPR0_ADDR, CPR0_PERD0);
-> > +	reg = mfdcr(DCRN_CPR0_DATA);
-> > +	tmp = (reg & 0x07000000) >> 24;
-> > +	perdv0 = tmp ? tmp : 8;
-> > +
-> > +	mtdcr(DCRN_CPR0_ADDR, CPR0_PRIMBD0);
-> > +	reg = mfdcr(DCRN_CPR0_DATA);
-> > +	tmp = (reg & 0x07000000) >> 24;
-> > +	prbdv0 = tmp ? tmp : 8;
-> > +
-> > +	mtdcr(DCRN_CPR0_ADDR, CPR0_SCPID);
-> > +	reg = mfdcr(DCRN_CPR0_DATA);
-> > +	tmp = (reg & 0x03000000) >> 24;
-> > +	spcid0 = tmp ? tmp : 4;
-> > +
-> > +	/* Calculate M */
-> > +	mtdcr(DCRN_CPR0_ADDR, CPR0_PLLC0);
-> > +	reg = mfdcr(DCRN_CPR0_DATA);
-> > +	tmp = (reg & 0x03000000) >> 24;
-> > +	if (tmp == 0) { /* PLL output */
-> > +		tmp = (reg & 0x20000000) >> 29;
-> > +		if (!tmp) /* PLLOUTA */
-> > +			m = fbdv * lfbdv * fwdva;
-> > +		else
-> > +			m = fbdv * lfbdv * fwdvb;
-> > +	}
-> > +	else if (tmp == 1) /* CPU output */
-> > +		m = fbdv * fwdva;
-> > +	else
-> > +		m = perdv0 * opbdv0 * fwdvb;
-> > +
-> > +	vco = (m * sysclk) + (m >> 1);
-> > +	cpu = vco / fwdva;
-> > +	plb = vco / fwdvb / prbdv0;
-> > +	opb = plb / opbdv0;
-> > +	ebc = plb / perdv0;
-> > +
-> > +	/* FIXME */
-> > +	uart0 = ser_clk;
-> > +
-> > +	/* Figure out timebase.  Either CPU or default TmrClk */
-> > +	asm volatile (
-> > +			"mfspr	%0,%1\n"
-> > +			:
-> > +			"=&r"(reg) : "i"(SPRN_CCR1));
-> > +	if (reg & 0x0080)
-> > +		tb = 25000000; /* TmrClk is 25MHz */
-> > +	else
-> > +		tb = cpu;
-> > +
-> > +	dt_fixup_cpu_clocks(cpu, tb, 0);
-> > +	dt_fixup_clock("/plb", plb);
-> > +	dt_fixup_clock("/plb/opb", opb);
-> > +	dt_fixup_clock("/plb/opb/ebc", ebc);
-> > +	dt_fixup_clock("/plb/opb/serial@ef600300", uart0);
-> > +	dt_fixup_clock("/plb/opb/serial@ef600400", uart0);
-> > +	dt_fixup_clock("/plb/opb/serial@ef600500", uart0);
-> > +	dt_fixup_clock("/plb/opb/serial@ef600600", uart0);
-> > +}
->
-> We don't need to duplicate this function in two different wrappers.
-> I'll move it into 4xx.c in my next round of patches, so that bamboo and
-> sequoia can just call a common function.
-
-Good idea.
-
+On Thu, Jun 28, 2007 at 12:00:20PM +0200, Gabriel Paubert wrote:
+> On Thu, Jun 28, 2007 at 10:59:35AM +0200, Segher Boessenkool wrote:
+> > > Here is an implementation to allow PReP systems to boot under the
+> > > arch/powerpc codebase, one of the few remaining platforms supported in
+> > > arch/ppc but not so far in arch/powerpc.
+> > 
+> > > Too big for the list, the patch is at:
+> > > 	http://ozlabs.org/~dgibson/home/prep-support
+> > 
+> > Too lazy to split the patch into bite-size chunks, you mean ;-)
+> > 
+> > Anyway, here goes the DTS bits:
+> > 
 > > +/*
-> > + * 440EPx DDR1/2 memory controller code
-> > + * TODO: move to generic 44x code
+> > + * PReP skeleton device tree
+> > + *
+> > + * Paul Mackerras <paulus@samba.org>
 > > + */
 > > +
-> > +/* DDR0_02 */
-> > +#define DDR_START		0x1
-> > +#define DDR_START_SHIFT		0
-> > +#define DDR_MAX_CS_REG		0x3
-> > +#define DDR_MAX_CS_REG_SHIFT	24
-> > +#define DDR_MAX_COL_REG		0xf
-> > +#define DDR_MAX_COL_REG_SHIFT	16
-> > +#define DDR_MAX_ROW_REG		0xf
-> > +#define DDR_MAX_ROW_REG_SHIFT	8
-> > +/* DDR0_08 */
-> > +#define DDR_DDR2_MODE		0x1
-> > +#define DDR_DDR2_MODE_SHIFT	0
-> > +/* DDR0_10 */
-> > +#define DDR_CS_MAP		0x3
-> > +#define DDR_CS_MAP_SHIFT	8
-> > +/* DDR0_14 */
-> > +#define DDR_REDUC		0x1
-> > +#define DDR_REDUC_SHIFT		16
-> > +/* DDR0_42 */
-> > +#define DDR_APIN		0x7
-> > +#define DDR_APIN_SHIFT		24
-> > +/* DDR0_43 */
-> > +#define DDR_COL_SZ		0x7
-> > +#define DDR_COL_SZ_SHIFT	8
-> > +#define DDR_BANK8		0x1
-> > +#define DDR_BANK8_SHIFT		0
+> > +/ {
+> > +	device_type = "prep";
+> > +	model = "IBM,PReP";
+> > 
+> > Not specific enough, leave it out or fill it in in the bootwrapper.
+> 
+> Motorola also provided PreP boards (MTX and MVME at least).
+> 
+> > 
+> > +	compatible = "prep";
+> > 
+> > Maybe fill this in, too.
+> > 
+> > +	#address-cells = <1>;
+> > +	#size-cells = <1>;
 > > +
-> > +#define DDR_GET_VAL(val, mask, shift)	(((val) >> (shift)) & (mask))
+> > +	cpus {
+> > +		#address-cells = <1>;
+> > +		#size-cells = <0>;
 > > +
-> > +static void ibm440epx_fixup_memsize(void)
->
-> And we should move this at the same time.  Isn't denali used by another
-> CPU as well?
+> > +		cpu@0 {
+> > 
+> > Do all (supported) PReP boards have one CPU only?
+> 
+> Not sure, but I don't have any. I believe that there were
+> dual processors MTX boards, and dual 604 MVME boards were
+> offered (but probably not very popular).
+> 
+> > 
+> > +			device_type = "cpu";
+> > +			reg = <0>;
+> > +			clock-frequency = <0>; // filled in by bootwrapper
+> > +			bus-frequency = <0>; // filled in by bootwrapper
+> > +			timebase-frequency = <0>; // filled in by bootwrapper
+> > +			i-cache-line-size = <0>; // filled in by bootwrapper
+> > +			d-cache-line-size = <0>; // filled in by bootwrapper
+> > +			d-cache-size = <0>; // filled in by bootwrapper
+> > +			i-cache-size = <0>; // filled in by bootwrapper
+> > +			external-control;
+> > 
+> > Really?
+> 
+> Well, is anybody actually using eciwx/ecowx?
 
-Right now the Denali DDR(2) core is only used by the 440EPx/440GRx. But other 
-AMCC PPC's using it will follow soon.
+Eh, I've removed those properties anyway, the kernel never looks at
+them anyway.
 
-Best regards,
-Stefan
+> > +			graphics;
+> > +			performance-monitor;
+> > +
+> > +			l2-cache {
+> > +				device_type = "cache";
+> > +				i-cache-size = <00100000>;
+> > +				d-cache-size = <00100000>;
+> > +				i-cache-sets = <00008000>;
+> > +				d-cache-sets = <00008000>;
+> > +				i-cache-line-size = <00000020>;
+> > +				d-cache-line-size = <00000020>;
+> > 
+> > Drop the leading zeroes, they make my head spin :-)
+> 
+> It's also wrong, my boards have 256kB of L2 cache.
+
+Yeah, I need to fill in the L2 cache information from the residual as
+well.
+
+> > +				cache-unified;
+> > +			};
+> > +		};
+> > +	};
+> > +
+> > +	memory {
+> > +		device_type = "memory";
+> > +		// dummy range here, zImage wrapper will fill in the actual
+> > +		// amount of memory from the residual data
+> > +		reg = <00000000 00000000>;
+> > +	};
+> > +
+> > +	pci@80000000 {
+> > +		device_type = "pci";
+> > +		compatible = "prep";
+> > 
+> > Is that specific enough?
+> 
+> On the MVME5100, actually the mapping is more CHRP like, and PCI I/O
+> space is smaller and at a higher address. Actually for
+> MVME2400/2600/2700, I wrote a bootloader that reprograms the bridge
+> in a CHRP like mode since nobody needs almost 1GB of PCI I/O space
+> but having 1.5GB of PCI memory space is very useful.
+
+Hrm... ok.  Now I'm a bit confused, because I thought what I'd put in
+the device tree for PCI was all based on what was already hardcoded /
+assumed in prep_pci.c anyway.
+
+> > +		clock-frequency = <01fca055>;
+> > +		reg = <80000000 7effffff>;
+> > +		8259-interrupt-acknowledge = <bffffff0>;
+> 
+> Not always. It is at feff0030 on Raven/Falcon/Hawk boards (given
+> by a system address assigned to the 8259 PIC in the residual data).
+> 
+> > +		#address-cells = <3>;
+> > +		#size-cells = <2>;
+> > +		ranges=<01000000 00000000 00000000 80000000 00000000 00800000
+> > +			01000000 00000000 00800000 81000000 00000000 3e800000
+> > +			02000000 00000000 00000000 c0000000 00000000 01000000
+> > +			02000000 00000000 01000000 c1000000 00000000 3e000000>;
+> > +		interrupt-map-mask = <f800 0 0 7>;
+> > +		interrupt-map = <6000 0 0 1	&MPIC 6 0
+> > +				 8000 0 0 1	&MPIC 7 0
+> > +				 9000 0 0 1	&MPIC 2 0
+> > +				 b000 0 0 1	&MPIC 1 0>;
+> > 
+> > I can't believe this "ranges" and interrupt mapping will
+> > work on all PReP systems...
+> 
+> Neither do I.
+> 
+> > +		isa {
+> > +			device_type = "isa";
+> > +			#address-cells = <2>;
+> > +			#size-cells = <1>;
+> > +			#interrupt-cells = <2>;
+> > +			ranges = <00000001 00000000
+> > +				  01005800 00000000 00000000  00010000
+> > +				  00000000 00000000
+> > +				  02005800 00000000 00000000  01000000>;
+> > +
+> > +			parallel {
+> > +				device_type = "parallel";
+> > +				compatible = "ecp", "pnpPNP,400";
+> > 
+> > "pnpPNP,401", "pnpPNP,400"
+
+Adjusted.
+
+> > +				reg =  <00000001 000003bc  00000008
+> > +					00000001 000007bc  00000006>;
+> > +				interrupts = <00000007 00000003>;
+> > +				interrupt-parent = <&PIC8259>;
+> > +			};
+> > +
+> > +			serial@3f8 {
+> > +				device_type = "serial";
+> > +				compatible = "pnpPNP,501";
+> > 
+> > "pnpPNP,501", "pnpPNP,500" I'd say.  Many/some device
+> > tree users will only care it is _some_ 8250 family thing.
+
+Ok.
+
+> > +				clock-frequency = <001c2000>;
+> > +				reg =  <00000001 000003f8  00000008>;
+> > +				interrupts = <00000004 00000003>;
+> > +				interrupt-parent = <&PIC8259>;
+> > +			};
+> > +			serial@2f8 {
+> > +				device_type = "serial";
+> > +				compatible = "pnpPNP,501";
+> > +				clock-frequency = <001c2000>;
+> > +				reg =  <00000001 000002f8  00000008>;
+> > +				interrupts = <00000003 00000003>;
+> > +				interrupt-parent = <&PIC8259>;
+> > +			};
+> 
+> Some of my boards have only one serial port (and also only 1 in the residual data).
+
+Ok, I'll have to think about how to implement that.  Probably wants to
+wait until we've integrated libfdt for more flexible manipulation of
+the device tree.
+
+> > +			PIC8259: interrupt-controller {
+> > +				device_type = "i8259";
+> > 
+> > device_type = "interrupt-controller".
+
+Is that really right?  The MPIC binding, at least, has device_type =
+"open-pic" rather than "interrupt-controller".
+
+> > +				compatible = "prep,iic";
+> > +				reg = <	00000001 00000020  00000002
+> > +					00000001 000000a0  00000002
+> > +					00000001 000004d0  00000002>;
+> > +				interrupts = <00000000 00000003
+> > +					      00000002 00000003>;
+> > +				interrupt-parent = <&MPIC>;
+> > +			};
+> > +		};
+> > +
+> > +		MPIC: interrupt-controller@d {
+> > +			device_type = "open-pic";
+> > 
+> > device_type = "interrupt-controller".
+
+Not according to the binding in booting-without-of.txt
+
+> > +			compatible = "mpic";
+> > +			reg = <	00006800 00000000 00000000  00000000 00000000
+> > +				02006810 00000000 00000000  00000000 00040000>;
+> > +			assigned-addresses = <
+> > +				82006810 00000000 3afc0000  00000000 00040000>;
+> > +		};
+> > +	};
+> > +
+> > +	chosen {
+> > +		linux,stdout-path = "/pci/isa/serial@3f8";
+> > +	};
+> > +};
+> > 
+> > What is the plan here -- have the bootwrapper build the
+> > device tree / fill in the details from the residual data?
+> 
+> I think so. I might have some time to try a more recent kernel
+> on MVME2400/2600 boards next week.
+> 
+> 	Regards,
+> 	Gabriel
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
