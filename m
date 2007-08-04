@@ -1,21 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A2ED6DDE33
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Aug 2007 12:33:50 +1000 (EST)
-Subject: Re: Trying to use Device Tree...and getting continuous interrupts
-	from attached 88e1145
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Morrison, Tom" <tmorrison@empirix.com>
-In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D90108BE44C2@EMPBEDEX.empirix.com>
-References: <BD261180E6D35F4D9D32F3E44FD3D90108BE44C2@EMPBEDEX.empirix.com>
-Content-Type: text/plain
-Date: Sat, 04 Aug 2007 12:33:41 +1000
-Message-Id: <1186194821.5733.8.camel@gruick>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v2] cell: move SPU affinity init to spu_management_of_ops
+Date: Sat, 4 Aug 2007 09:25:48 +0200
+References: <200707252342.50244.adetsch@br.ibm.com> <46B3DC2A.408@am.sony.com>
+In-Reply-To: <46B3DC2A.408@am.sony.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200708040925.49098.arnd@arndb.de>
+Cc: Andre Detsch <adetsch@br.ibm.com>, Paul Mackerras <paulus@samba.org>,
+	hch@lst.de, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,17 +20,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-08-03 at 18:54 -0400, Morrison, Tom wrote:
-> Now, that looks OK! Those are what I would expect. And when the 
-> mdio/phy are probed, configured, and the 88E1145 interrupt (EXT7 
-> (0x37H)) is enabled, the interrupt never (seemingly) gets cleared,
-> and basically hangs the entire box up and eventually it panics!
+On Saturday 04 August 2007, Geoff Levand wrote:
 > 
-> I don't even have an external phy(SFP) connected to this 88e1148 phy..
+> From: Andre Detsch <adetsch@br.ibm.com>
 > 
-> I am at a lost - is there something I am missing in device tree? 
-> Help mr. wizard (Kumar?)... 
+> This patch moves affinity initialization code from spu_base.c to a
+> new spu_management_of_ops function (init_affinity), which is empty
+> in the case of PS3. This fixes a linking problem that was happening
+> when compiling for PS3.
+> Also, some small code style changes were made.
+> 
+> Signed-off-by: Andre Detsch <adetsch@br.ibm.com>
+> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
-Double check you got the interrupt sense and polarity right.
 
-Ben.
+Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
