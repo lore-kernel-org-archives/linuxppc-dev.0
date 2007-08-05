@@ -1,18 +1,22 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id D93F5DDDF5
-	for <linuxppc-dev@ozlabs.org>; Sun,  5 Aug 2007 09:35:13 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: 8250.c::autoconfig() fails loopback test on MPC824[15]
-Date: Sun, 5 Aug 2007 01:35:07 +0200
-References: <Pine.LNX.4.60.0708050106270.4299@poirot.grange>
-In-Reply-To: <Pine.LNX.4.60.0708050106270.4299@poirot.grange>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200708050135.07753.arnd@arndb.de>
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linux-serial@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 13245DDDF5
+	for <linuxppc-dev@ozlabs.org>; Sun,  5 Aug 2007 10:15:29 +1000 (EST)
+Subject: Re: [PATCH 2.6.22.y] ieee1394: revert "sbp2: enforce 32bit DMA
+	mapping"
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+In-Reply-To: <46B4B7C6.1040107@s5r6.in-berlin.de>
+References: <fa.Qn3Snqoik3hhnxcA6HqjGV0Yzck@ifi.uio.no>
+	<46B4B3DC.7020609@shaw.ca>  <46B4B7C6.1040107@s5r6.in-berlin.de>
+Content-Type: text/plain
+Date: Sun, 05 Aug 2007 10:15:26 +1000
+Message-Id: <1186272926.938.8.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Robert Hancock <hancockr@shaw.ca>, linuxppc-dev@ozlabs.org,
+	stable@kernel.org, linux-kernel@vger.kernel.org, Olaf Hering <olh@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,21 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sunday 05 August 2007, Guennadi Liakhovetski wrote:
-> I tried using of_serial.c on a (PPC) MPC8241 based system, which has a 
-> "16650A" compatible double UART built into the SoC. Using of_serial.c 
-> causes the ports to be autoconfigured, and this fails. The loopback test 
-> fails, because the MSR register on 824[15] doesn't implement the 
-> UART_MSR_DCD bit. Question: what's better, teach 8250.c to handle UARTs 
-> without this bit, or set the UPF_SKIP_TEST bit in of_serial.c for these 
-> SOCs to skip the loopback test altogether? The latter is certainly easier 
-> and affects much fewer systems, so, I'd go for that.
 
-Yes, that sounds good. Just make sure you test the "compatible" property
-in the device node for something appropriate. In of_platform_serial_probe(),
-you can then do something like
+> > If setting 32-bit DMA mask fails on ppc64, that sounds like a problem
+> > with the DMA implementation on that architecture. There are enough cards
+> > out there that only support 32-bit DMA that this really needs to work..
+> 
+> Yes, could the PPC folks please have a look at it?  Thanks.
 
-	if (of_device_is_compatible(ofdev, "mpc8241-serial"))
-		flags |= UPF_SKIP_TEST;
+Smells like we may have a bug there. No worries though, all current PPC
+machines have an iommu that will not give out addresses above 32 bits
+anyway, but I'll double check what's up.
 
-	Arnd <><
+Do you see something in dmesg when that happens ?
+
+Ben.
