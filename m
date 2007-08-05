@@ -1,19 +1,20 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id EFF8FDDE07
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2007 00:17:37 +1000 (EST)
-Message-ID: <46B5DC7C.70602@ru.mvista.com>
-Date: Sun, 05 Aug 2007 18:19:40 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id D6DF6DDE0A
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2007 02:41:25 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: 8250.c::autoconfig() fails loopback test on MPC824[15]
+Date: Sun, 5 Aug 2007 18:41:16 +0200
+References: <Pine.LNX.4.60.0708050106270.4299@poirot.grange>
+	<200708050135.07753.arnd@arndb.de>
+	<Pine.LNX.4.60.0708051600550.4120@poirot.grange>
+In-Reply-To: <Pine.LNX.4.60.0708051600550.4120@poirot.grange>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-Subject: Re: [patch 06/10] 40x decrementer fixes
-References: <20070803160900.069522000@linux.vnet.ibm.com> >	
-	<20070803161710.931656000@linux.vnet.ibm.com> >	
-	<46B35C07.4090806@ru.mvista.com> <1186194491.5733.2.camel@gruick>
-In-Reply-To: <1186194491.5733.2.camel@gruick>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200708051841.17471.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, linux-serial@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,36 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
+On Sunday 05 August 2007, Guennadi Liakhovetski wrote:
+> That would be a possibility, but that would mean all 8241/8245 have to 
+> adjust their .dts. Ok, there are not so many of them in the mainline now 
+> (in fact, hardly any apart from linkstation:-)), still. Cannot we use 
+> something already available to just check if we're running on such a CPU? 
+> Worst case - find and parse cpu node, or maybe using some cpu_feature?
 
->>>Allow generic_calibrate_decr to work for 40x platforms.  Given that the hardware
->>>behavior is identical, this also changes the set_dec function to reload the PIT
->>>on 40x to match the behavior 44x currently has.
+It's fundamentally a property of the serial controller implementation,
+not of the processor, so the cpu_features are the wrong place to put
+this. There should at least be a generic way to define thsi in the device
+tree so that _future_ trees can just mark the port as compatible with
+one that has this bug.
 
->>    Why bother doing this?! This will only warrant you imprecise decrementer 
->>interrupts while it should be interrupting at the precise period currently (if 
->>you load PIT once)...
+If you want to work around existing systems that don't mention this
+in the device_tree, you could perhaps use machine_is(foo) to test
+for it.
 
-> Because that's what the kernel timekeeping code expects ? The reference
-> time is the timebase and it doesn't drift.
+Another option altogether would be to allow the device node to
+specify the linux specific serial port flags in a separate property,
+like "linux,uart-port-flags" that contains the same flags that
+setserial can set from user space. That would also be useful
+if you want to specify UPF_MAGIC_MULTIPLIER on certain high-speed
+ports, because it cannot be autoprobed.
 
-> The DEC/PIT is commonly used to trigger any timing, such as what is done
-> for lost interrupts on some platforms. Also, with dynticks, we'll most
-> certainly want variable reload values as well.
-
-    That's another matter. :-)
-    BTW, because of that mere return in set_dec() for the 40x case I had to 
-write to the PIT myself in the decrementer clockevent's set_next_event() 
-method -- while for classic PPC I was just calling set_dec(n-1)...
-
-> So I'm very happy to have Josh change the code that way. It makes things
-> more consistent accross the board and removes confusion.
-
-    Yeah, it's OK now that's my temporary confusion has passed.
-    Well, it wasn't only not only mine -- the set_dec() code was suggesting 
-auto-reload mode, and has been obviosuly copied from <asm-ppc/time.h>, so 
-arch/ppc/ was using the auto-reload mode indeed.
-
-> Ben.
-
-WBR, Sergei
+	Arnd <><
