@@ -1,18 +1,20 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 6480FDDD0A
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2007 00:05:59 +1000 (EST)
-Date: Sun, 5 Aug 2007 16:06:02 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: 8250.c::autoconfig() fails loopback test on MPC824[15]
-In-Reply-To: <200708050135.07753.arnd@arndb.de>
-Message-ID: <Pine.LNX.4.60.0708051600550.4120@poirot.grange>
-References: <Pine.LNX.4.60.0708050106270.4299@poirot.grange>
-	<200708050135.07753.arnd@arndb.de>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 669D0DDD0A
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2007 00:10:59 +1000 (EST)
+Message-ID: <46B5DAE9.9060406@ru.mvista.com>
+Date: Sun, 05 Aug 2007 18:12:57 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-serial@vger.kernel.org
+To: benh@kernel.crashing.org
+Subject: Re: [patch 06/10] 40x decrementer fixes
+References: <20070803160900.069522000@linux.vnet.ibm.com> >	
+	<20070803161710.931656000@linux.vnet.ibm.com> >	
+	<46B35C07.4090806@ru.mvista.com> <46B3617B.10509@ru.mvista.com>
+	<1186194537.5733.4.camel@gruick>
+In-Reply-To: <1186194537.5733.4.camel@gruick>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,32 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 5 Aug 2007, Arnd Bergmann wrote:
+Hello.
 
-> On Sunday 05 August 2007, Guennadi Liakhovetski wrote:
-> > I tried using of_serial.c on a (PPC) MPC8241 based system, which has a 
-> > "16650A" compatible double UART built into the SoC. Using of_serial.c 
-> > causes the ports to be autoconfigured, and this fails. The loopback test 
-> > fails, because the MSR register on 824[15] doesn't implement the 
-> > UART_MSR_DCD bit. Question: what's better, teach 8250.c to handle UARTs 
-> > without this bit, or set the UPF_SKIP_TEST bit in of_serial.c for these 
-> > SOCs to skip the loopback test altogether? The latter is certainly easier 
-> > and affects much fewer systems, so, I'd go for that.
-> 
-> Yes, that sounds good. Just make sure you test the "compatible" property
-> in the device node for something appropriate. In of_platform_serial_probe(),
-> you can then do something like
-> 
-> 	if (of_device_is_compatible(ofdev, "mpc8241-serial"))
-> 		flags |= UPF_SKIP_TEST;
+Benjamin Herrenschmidt wrote:
 
-That would be a possibility, but that would mean all 8241/8245 have to 
-adjust their .dts. Ok, there are not so many of them in the mainline now 
-(in fact, hardly any apart from linkstation:-)), still. Cannot we use 
-something already available to just check if we're running on such a CPU? 
-Worst case - find and parse cpu node, or maybe using some cpu_feature?
+>>>    Why bother doing this?! This will only warrant you imprecise decrementer 
+>>>interrupts while it should be interrupting at the precise period currently (if 
+>>>you load PIT once)...
+>>
+>>    I.e. the error will only accumulate. NAK.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+> No, it won't since the timebase is always used as the reference.
+
+    I meant the error in the interrupt period itself (I know that this gets 
+accounted for) but that was a thinko anyway...
+
+> Ben.
+
+WBR, Sergei
