@@ -1,22 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 82498DDE0F
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2007 07:51:50 +1000 (EST)
-Subject: Re: "Badness at kernel/irq/resend.c:70" on boot - via-pmu?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0708042139300.5037@woody.linux-foundation.org>
-References: <alpine.LFD.0.999.0708032031480.5037@woody.linux-foundation.org>
-	<87sl6ypsx2.fsf@briny.wgtn.ondioline.org>
-	<alpine.LFD.0.999.0708042139300.5037@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 06 Aug 2007 07:51:44 +1000
-Message-Id: <1186350704.938.9.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>, paulus@samba.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 4F008DDE0F
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2007 07:57:35 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: 8250.c::autoconfig() fails loopback test on MPC824[15]
+Date: Sun, 5 Aug 2007 23:57:32 +0200
+References: <Pine.LNX.4.60.0708050106270.4299@poirot.grange>
+	<E1IHnhY-0008PO-IZ@jdl.com>
+	<Pine.LNX.4.60.0708052336360.4120@poirot.grange>
+In-Reply-To: <Pine.LNX.4.60.0708052336360.4120@poirot.grange>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200708052357.32650.arnd@arndb.de>
+Cc: Jon Loeliger <jdl@jdl.com>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+	linux-serial@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,22 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2007-08-04 at 21:41 -0700, Linus Torvalds wrote:
+On Sunday 05 August 2007, Guennadi Liakhovetski wrote:
 > 
-> On Sun, 5 Aug 2007, Paul Collins wrote:
-> > 
-> > I got the message below on boot with 2.6.23-rc2 on my PowerBook.
+> > I supect it will have the same issue in the end, right?
 > 
-> It's a debug message, I think we need to remove it. It's trying to figure 
-> out what goes wrong with one particular machine, and I probably shouldn't 
-> have merged it for mainline.
-> 
-> Ignore it, it will be gone soon enough, and it should happen just once per 
-> boot.
+> ...if you choose to use of_serial.c, yes, if you don't use it and just use 
+> legacy_serial.c, then you're fine.
 
-Actually, it's interesting as that irq shouldn't hit that path :-) Not
-critical (won't break anything), but still something I'll look into just
-in case it hides something bad.
+But of_serial can be a loadable module, which means you still get into
+trouble if you load it, even if the port was originally initialized
+by legacy_serial.
 
-Cheers,
-Ben.
+Maybe the best solution would be for 824[15] to not claim compatibility
+with 8250 at all then. If the device tree contains an entry that matches
+what the generic driver looks for, it better be something that can
+be handled by that driver.
+
+	Arnd <><
