@@ -1,23 +1,22 @@
-Return-Path: <jdl@jdl.com>
-Received: from jdl.com (jdl.com [208.123.74.7])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DF911DDE0F
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2007 07:50:34 +1000 (EST)
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: 8250.c::autoconfig() fails loopback test on MPC824[15] 
-In-Reply-To: Your message of "Sun, 05 Aug 2007 23:39:19 +0200."
-	<Pine.LNX.4.60.0708052336360.4120@poirot.grange>
-References: <Pine.LNX.4.60.0708050106270.4299@poirot.grange>
-	<200708050135.07753.arnd@arndb.de>
-	<Pine.LNX.4.60.0708051600550.4120@poirot.grange>
-	<200708051841.17471.arnd@arndb.de> <E1IHnhY-0008PO-IZ@jdl.com>
-	<Pine.LNX.4.60.0708052336360.4120@poirot.grange>
-Date: Sun, 05 Aug 2007 16:50:29 -0500
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1IHnzZ-0008SZ-2y@jdl.com>
-Cc: linuxppc-dev@ozlabs.org, linux-serial@vger.kernel.org,
-	Arnd Bergmann <arnd@arndb.de>
+	by ozlabs.org (Postfix) with ESMTP id 82498DDE0F
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2007 07:51:50 +1000 (EST)
+Subject: Re: "Badness at kernel/irq/resend.c:70" on boot - via-pmu?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0708042139300.5037@woody.linux-foundation.org>
+References: <alpine.LFD.0.999.0708032031480.5037@woody.linux-foundation.org>
+	<87sl6ypsx2.fsf@briny.wgtn.ondioline.org>
+	<alpine.LFD.0.999.0708042139300.5037@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 06 Aug 2007 07:51:44 +1000
+Message-Id: <1186350704.938.9.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>, paulus@samba.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,29 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day Guennadi Liakhovetski mumbled:
-> On Sun, 5 Aug 2007, Jon Loeliger wrote:
+On Sat, 2007-08-04 at 21:41 -0700, Linus Torvalds wrote:
 > 
-> ...if you choose to use of_serial.c, yes, if you don't use it and just use 
-> legacy_serial.c, then you're fine.
+> On Sun, 5 Aug 2007, Paul Collins wrote:
+> > 
+> > I got the message below on boot with 2.6.23-rc2 on my PowerBook.
+> 
+> It's a debug message, I think we need to remove it. It's trying to figure 
+> out what goes wrong with one particular machine, and I probably shouldn't 
+> have merged it for mainline.
+> 
+> Ignore it, it will be gone soon enough, and it should happen just once per 
+> boot.
 
-Ah, I see.  OK.
+Actually, it's interesting as that irq shouldn't hit that path :-) Not
+critical (won't break anything), but still something I'll look into just
+in case it hides something bad.
 
-> BTW, my offer still holds to see if we can build a single kernel for both 
-> with just specific device-trees, but that's a separate matter:-)
-
-Indeed.  I'm fully on-board with that goal, but it may take a couple
-rounds to refine it into that state.
-
-One question I have is the stupid ethernet driver.  Is the driver
-that is in mainline now usable on the StorCenter?  I haven't
-waded through the supplied vendor patch to verify how it compares
-to the r8169 in mainline yet.
-
-Also, what do you want to do about the Kconfig set up for these then?
-Specifically, do you want to have "TurboStation" and "StorCenter"?
-Or would it make more sense to have something like a generic
-"NAS8241" with sub-choices of "storcenter" and "turbostation"?
-
-Thanks,
-jdl
+Cheers,
+Ben.
