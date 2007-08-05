@@ -1,22 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 13245DDDF5
-	for <linuxppc-dev@ozlabs.org>; Sun,  5 Aug 2007 10:15:29 +1000 (EST)
-Subject: Re: [PATCH 2.6.22.y] ieee1394: revert "sbp2: enforce 32bit DMA
-	mapping"
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-In-Reply-To: <46B4B7C6.1040107@s5r6.in-berlin.de>
-References: <fa.Qn3Snqoik3hhnxcA6HqjGV0Yzck@ifi.uio.no>
-	<46B4B3DC.7020609@shaw.ca>  <46B4B7C6.1040107@s5r6.in-berlin.de>
-Content-Type: text/plain
-Date: Sun, 05 Aug 2007 10:15:26 +1000
-Message-Id: <1186272926.938.8.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Robert Hancock <hancockr@shaw.ca>, linuxppc-dev@ozlabs.org,
-	stable@kernel.org, linux-kernel@vger.kernel.org, Olaf Hering <olh@suse.de>
+Return-Path: <paul@briny.ondioline.org>
+Received: from jenny.ondioline.org (jenny.ondioline.org [66.220.1.122])
+	by ozlabs.org (Postfix) with ESMTP id 67189DDDF9
+	for <linuxppc-dev@ozlabs.org>; Sun,  5 Aug 2007 13:34:44 +1000 (EST)
+From: Paul Collins <paul@briny.ondioline.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: "Badness at kernel/irq/resend.c:70" on boot - via-pmu?
+References: <alpine.LFD.0.999.0708032031480.5037@woody.linux-foundation.org>
+Date: Sun, 05 Aug 2007 15:22:01 +1200
+In-Reply-To: <alpine.LFD.0.999.0708032031480.5037@woody.linux-foundation.org>
+	(Linus Torvalds's message of "Fri, 3 Aug 2007 20:50:43 -0700 (PDT)")
+Message-ID: <87sl6ypsx2.fsf@briny.wgtn.ondioline.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: paulus@samba.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +23,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi Linus,
 
-> > If setting 32-bit DMA mask fails on ppc64, that sounds like a problem
-> > with the DMA implementation on that architecture. There are enough cards
-> > out there that only support 32-bit DMA that this really needs to work..
-> 
-> Yes, could the PPC folks please have a look at it?  Thanks.
+I got the message below on boot with 2.6.23-rc2 on my PowerBook.
 
-Smells like we may have a bug there. No worries though, all current PPC
-machines have an iommu that will not give out addresses above 32 bits
-anyway, but I'll double check what's up.
+I've Cc'd some powerpc folks because via_pmu_interrupt is in the
+Macintosh PMU driver.
 
-Do you see something in dmesg when that happens ?
+Hmm, I just looked back in my logs and I also got that message with
+commit 7a883eaf62f4b943ebec738ce3b0796c67ef5d32.  Before that I used
+6c8dca5d53f95009d4fff00195bf38f277dc4366 and there was no badness
+message logged by that one.  There's only about 480 commits between
+those two, so I can bisect it if necessary.
 
-Ben.
+The call traces differ, so here are both messages.
+
+v2.6.23-rc2:
+
+    ------------[ cut here ]------------
+    Badness at kernel/irq/resend.c:70
+    NIP: c0054ca4 LR: c0054c78 CTR: c00162b0
+    REGS: c0473d80 TRAP: 0700   Not tainted  (2.6.23-rc2-g036acf4f)
+    MSR: 00021032 <ME,IR,DR>  CR: 42000024  XER: 00000000
+    TASK = c04451e0[0] 'swapper' THREAD: c0472000
+    GPR00: 00000001 c0473e30 c04451e0 00000178 0000002f 00600000 c0480000 0000002f 
+    GPR08: 000186a0 c0480000 0048002f 00000400 00000000 00000000 00000000 00000000 
+    GPR16: 00000000 00000000 00000000 00000000 00000000 40900000 00d3bbc0 00000000 
+    GPR24: c0444000 c0480000 c0480000 c043b81c 00000001 0000002f 00024408 c044b1bc 
+    NIP [c0054ca4] check_irq_resend+0x5c/0xc0
+    LR [c0054c78] check_irq_resend+0x30/0xc0
+    Call Trace:
+    [c0473e30] [c0054c78] check_irq_resend+0x30/0xc0 (unreliable)
+    [c0473e50] [c00547d0] enable_irq+0x84/0xa8
+    [c0473e60] [c0220fec] via_pmu_interrupt+0x3d8/0xac0
+    [c0473e90] [c0053dfc] handle_IRQ_event+0x4c/0xa0
+    [c0473eb0] [c0055250] handle_fasteoi_irq+0xac/0x100
+    [c0473ec0] [c0006528] do_IRQ+0x68/0xa8
+    [c0473ed0] [c000ffe8] ret_from_except+0x0/0x14
+    --- Exception: 501 at cpu_idle+0x88/0xd0
+        LR = cpu_idle+0x88/0xd0
+    [c0473f90] [c00090bc] cpu_idle+0xcc/0xd0 (unreliable)
+    [c0473fa0] [c0351f9c] rest_init+0x58/0x68
+    [c0473fb0] [c04189a0] start_kernel+0x260/0x274
+    [c0473ff0] [00003860] 0x3860
+    Instruction dump:
+    4e800421 801f0000 3d20c005 57cb052a 39295030 2f0b0400 7f804800 419e0030 
+    3d20c048 800994e4 7c000034 5400d97e <0f000000> 2f800000 41be0048 38000001 
+
+
+7a883eaf62f4b943ebec738ce3b0796c67ef5d32:
+
+    ------------[ cut here ]------------
+    Badness at kernel/irq/resend.c:70
+    NIP: c0054bfc LR: c0054bd0 CTR: c00162b0
+    REGS: effc3e60 TRAP: 0700   Not tainted  (2.6.23-rc1-g6cc0258f)
+    MSR: 00021032 <ME,IR,DR>  CR: 48000084  XER: 20000000
+    TASK = effc17f0[1] 'swapper' THREAD: effc2000
+    GPR00: 00000001 effc3f10 effc17f0 00000178 0000002f 00000000 c0470000 0000002f 
+    GPR08: 000186a0 c0470000 0048002f 00000000 82000022 00000000 00000000 00000000 
+    GPR16: 00000000 00000000 00000000 00000000 00000000 40900000 00d3ad48 00000000 
+    GPR24: c0443000 c0470000 effc2000 c043ef4c 00000001 0000002f 00024008 c044a1bc 
+    NIP [c0054bfc] check_irq_resend+0x5c/0xc0
+    LR [c0054bd0] check_irq_resend+0x30/0xc0
+    Call Trace:
+    [effc3f10] [c0054bd0] check_irq_resend+0x30/0xc0 (unreliable)
+    [effc3f30] [c0054728] enable_irq+0x84/0xa8
+    [effc3f40] [c0220e74] via_pmu_interrupt+0x3d8/0xac0
+    [effc3f70] [c0430f28] via_pmu_start+0x168/0x190
+    [effc3f80] [c04171e4] kernel_init+0xc8/0x284
+    [effc3ff0] [c0010800] kernel_thread+0x44/0x60
+    Instruction dump:
+    4e800421 801f0000 3d20c005 57cb052a 39294f88 2f0b0400 7f804800 419e0030 
+    3d20c047 800974e4 7c000034 5400d97e <0f000000> 2f800000 41be0048 38000001 
+
+
+-- 
+Paul Collins
+Wellington, New Zealand
+
+Dag vijandelijk luchtschip de huismeester is dood
