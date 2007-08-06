@@ -1,21 +1,25 @@
-Return-Path: <segher@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1BD02DDEBB
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 07:57:42 +1000 (EST)
-In-Reply-To: <46B79562.9020202@genesi-usa.com>
-References: <200708020440.l724edCT290676@shell01.TheWorld.com>
-	<46B79562.9020202@genesi-usa.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <f4545a576abeddf00f076a0cae9e3fdd@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Pegasos keyboard detection
-Date: Mon, 6 Aug 2007 23:57:35 +0200
-To: Matt Sealey <matt@genesi-usa.com>
-Cc: linuxppc-dev@ozlabs.org, Alan Curry <pacman@TheWorld.com>,
-	linux-kernel@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTP id 666A2DDE33
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 08:05:19 +1000 (EST)
+Subject: [PATCH] powerpc: Fix initialization and usage of dma_mask
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Olaf Hering <olh@suse.de>
+In-Reply-To: <1186436597.938.71.camel@localhost.localdomain>
+References: <fa.Qn3Snqoik3hhnxcA6HqjGV0Yzck@ifi.uio.no>
+	<46B4B3DC.7020609@shaw.ca> <46B4B7C6.1040107@s5r6.in-berlin.de>
+	<1186272926.938.8.camel@localhost.localdomain>
+	<46B5824B.1000103@s5r6.in-berlin.de>  <20070806115804.GA1734@suse.de>
+	<1186436597.938.71.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 07 Aug 2007 08:05:10 +1000
+Message-Id: <1186437910.938.79.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	Paul Mackerras <paulus@samba.org>, stable@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,56 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> 2) The fix was in the wrong place anyway, if it was going to be done 
-> anywhere
-> at all it needs to be in 
-> arch/powerpc/kernel/prom_init.c:fixup_device_tree_chrp()
-> like the ISA ranges breakage (which is on Briq) and IDE IRQ 
-> misnumbering fix.
-> Not the keyboard platform driver.
+powerpc has a couple of bugs in the usage of dma_masks that tend to
+break when drivers explicitely try to set a 32 bits mask for example.
 
-Yeah.  In the bootwrapper.
+First the code that generates the pci devices from the OF device-tree
+doesn't initialize the mask properly, then our implementation of
+set_dma_mask() was trying to validate the -previous- mask value, not the
+one passed in as an argument.
 
-> 3) In any case this should be something that is fixed in the firmware, 
-> as any
-> stalwart, stubborn Linux developer will rant at you about.
+This patch should fix these.
 
-Sure, if you *can* get a fix for the firmware.  Until every
-user has this update, fixing it in the kernel wrapper helps
-users.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-> As for Segher, bootwrapper not such a good place as that's still 
-> mussing up
-> the kernel with these fixes. Let the boot loader do it for the OS, and 
-> don't
-> mess up the OS with device-tree fixups.
+Does this fix the problem you've noticed ?
 
-Sure, the bootloader can do it too, but then we need to fix
-every bootloader that's used with Linux on this platform.
-Maybe that's just one, that would make things simple :-)
+(I do still think that sbp2 isn't the right place for that call btw :-)
 
-> After all it may not just be Linux
-> that stumbles on it. Why have the same patch in every OS?
-
-This is just pragmatics: Linux needs the workaround -> Linux
-implements the workaround.  Sure it is not a _proper_ fix, but
-a correctly implemented workaround "fixes" it for all users,
-forever.
-
-> With nvramrc, the fix is done for EVERY operating system from firmware 
-> upwards.
-
-But it's something every user has to do separately.
-
-> The semi-official Genesi line of support and what I have been told by 
-> the board
-> designer is if you need to fix something in the device tree, that is 
-> what nvramrc
-> is for, and that is why Open Firmware runs Forth scripts.
-
-That's hardly the only reason.  But yeah, that's one way to
-implement the workaround, but _we_ (the Linux community) cannot
-do it like that (easily) for all users.
-
-
-Segher
+Index: linux-work/include/asm-powerpc/dma-mapping.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/dma-mapping.h	2007-08-07 07:59:05.000000000 +1000
++++ linux-work/include/asm-powerpc/dma-mapping.h	2007-08-07 07:59:09.000000000 +1000
+@@ -96,7 +96,7 @@
+ 		return -EIO;
+ 	if (dma_ops->set_dma_mask != NULL)
+ 		return dma_ops->set_dma_mask(dev, dma_mask);
+-	if (!dev->dma_mask || !dma_supported(dev, *dev->dma_mask))
++	if (!dev->dma_mask || !dma_supported(dev, dma_mask))
+ 		return -EIO;
+ 	*dev->dma_mask = dma_mask;
+ 	return 0;
+Index: linux-work/arch/powerpc/kernel/pci_64.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/pci_64.c	2007-08-07 08:00:20.000000000 +1000
++++ linux-work/arch/powerpc/kernel/pci_64.c	2007-08-07 08:00:47.000000000 +1000
+@@ -372,6 +372,7 @@
+ 
+ 	dev->current_state = 4;		/* unknown power state */
+ 	dev->error_state = pci_channel_io_normal;
++	dev->dma_mask = 0xffffffff;
+ 
+ 	if (!strcmp(type, "pci") || !strcmp(type, "pciex")) {
+ 		/* a PCI-PCI bridge */
