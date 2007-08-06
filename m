@@ -1,28 +1,31 @@
-Return-Path: <stefanr@s5r6.in-berlin.de>
-Received: from einhorn.in-berlin.de (einhorn.in-berlin.de [192.109.42.8])
+Return-Path: <kniht@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.vr.in-berlin.de",
-	Issuer "IN-Berlin Server CA (G2)" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id E4781DDEBD
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 08:22:46 +1000 (EST)
-Message-ID: <46B79F25.50205@s5r6.in-berlin.de>
-Date: Tue, 07 Aug 2007 00:22:29 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4AD1CDDEBF
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 08:24:02 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l76MNwwk029242
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 18:23:58 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l76MNwBH268446
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 16:23:58 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l76MNwfc010172
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 16:23:58 -0600
+Message-ID: <46B79F7D.6080305@linux.vnet.ibm.com>
+Date: Mon, 06 Aug 2007 17:23:57 -0500
+From: Jon Tollefson <kniht@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2.6.22.y] ieee1394: revert "sbp2: enforce
-	32bit	DMA	mapping"
-References: <fa.Qn3Snqoik3hhnxcA6HqjGV0Yzck@ifi.uio.no>	
-	<46B4B3DC.7020609@shaw.ca> <46B4B7C6.1040107@s5r6.in-berlin.de>	
-	<1186272926.938.8.camel@localhost.localdomain>	
-	<46B5824B.1000103@s5r6.in-berlin.de>	
-	<1186351473.938.21.camel@localhost.localdomain>	
-	<20070806135124.GA2900@suse.de>
-	<1186436848.938.75.camel@localhost.localdomain>
-In-Reply-To: <1186436848.938.75.camel@localhost.localdomain>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] Use 1TB segments
+References: <18095.59959.698141.565343@cargo.ozlabs.ibm.com>
+In-Reply-To: <18095.59959.698141.565343@cargo.ozlabs.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Robert Hancock <hancockr@shaw.ca>, linuxppc-dev@ozlabs.org,
-	stable@kernel.org, linux-kernel@vger.kernel.org, Olaf Hering <olh@suse.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,33 +35,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> Oh and, don't do the set_dma_mask() in sbp2, it has nothing to do there.
-> It should be in the ohci1394 driver.
+Paul Mackerras wrote:
+> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+>   
+A couple of hunks fail in this file when applying to the current tree.
 
-That's not quite right.  OHCI-1394 implementations can go beyond 4GB bus
-address space.  (Although I don't know if there are such implementations
-available.  At least there are two implementations which can set the
-so-called Physical Range bigger than 4GB.)
+...
+> diff --git a/include/asm-powerpc/mmu-hash64.h b/include/asm-powerpc/mmu-hash64.h
+> index 695962f..053f86b 100644
+> --- a/include/asm-powerpc/mmu-hash64.h
+> +++ b/include/asm-powerpc/mmu-hash64.h
+> @@ -47,6 +47,8 @@ extern char initial_stab[];
+>
+>  /* Bits in the SLB VSID word */
+>  #define SLB_VSID_SHIFT		12
+> +#define SLB_VSID_SHIFT_1T	24
+> +#define SLB_VSID_SSIZE_SHIFT	62
+>  #define SLB_VSID_B		ASM_CONST(0xc000000000000000)
+>  #define SLB_VSID_B_256M		ASM_CONST(0x0000000000000000)
+>  #define SLB_VSID_B_1T		ASM_CONST(0x4000000000000000)
+> @@ -66,6 +68,7 @@ extern char initial_stab[];
+>  #define SLB_VSID_USER		(SLB_VSID_KP|SLB_VSID_KS|SLB_VSID_C)
+>
+>  #define SLBIE_C			(0x08000000)
+> +#define SLBIE_SSIZE_SHIFT	25
+>
+>  /*
+>   * Hash table
+> @@ -77,7 +80,7 @@ extern char initial_stab[];
+>  #define HPTE_V_AVPN_SHIFT	7
+>  #define HPTE_V_AVPN		ASM_CONST(0x3fffffffffffff80)
+>  #define HPTE_V_AVPN_VAL(x)	(((x) & HPTE_V_AVPN) >> HPTE_V_AVPN_SHIFT)
+> -#define HPTE_V_COMPARE(x,y)	(!(((x) ^ (y)) & HPTE_V_AVPN))
+> +#define HPTE_V_COMPARE(x,y)	(!(((x) ^ (y)) & 0xffffffffffffff80))
+>  #define HPTE_V_BOLTED		ASM_CONST(0x0000000000000010)
+>  #define HPTE_V_LOCK		ASM_CONST(0x0000000000000008)
+>  #define HPTE_V_LARGE		ASM_CONST(0x0000000000000004)
+> @@ -164,16 +167,25 @@ struct mmu_psize_def
+>  #define MMU_SEGSIZE_256M	0
+>  #define MMU_SEGSIZE_1T		1
+>
+> +/*
+> + * Supported segment sizes
+> + */
+> +#define MMU_SEGSIZE_256M	0
+> +#define MMU_SEGSIZE_1T		1
+>   
+It looks like this is repeating the definitions just above it.
 
-Sbp2 however requires that everything which it DMA-maps resides in the
-Physical Range of the controller.  This way the CPU is not involved in
-most of the data transfers.  The OHCI-1394 controller acts as bus bridge
-between IEEE 1394 bus and local bus, with a 1:1 mapping of IEEE 1394 bus
-addresses to and from local bus addresses --- but not in the whole 48
-bits white IEEE 1394 bus address range, only in the
-implementation-dependent Physical Range.  The minimum Physical Range
-that all OHCI-1394 implementations guarantee is 4GB.  I could actually
-have set a bigger mask in sbp2 when the controller supports a
-programmable bigger range.
 
-So that's the story why that dma_set_mask went into sbp2:  Sbp2 wants
-mappings in a _subset_ of the OHCI-1394 controllers DMA range.
-
-Anyway.  For now I will simply go with what 2.6.23-rc has and what
-2.6.21 had:  No dma_set_mask anywhere in the 1394 subsystem.  We can
-revisit this whenever an actual need arises.
--- 
-Stefan Richter
--=====-=-=== =--- --==-
-http://arcgraph.de/sr/
+Jon
