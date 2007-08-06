@@ -1,19 +1,40 @@
-Return-Path: <domen.puncer@telargo.com>
-Received: from out002.atlarge.net (out002.atlarge.net [129.41.63.60])
-	by ozlabs.org (Postfix) with ESMTP id DF900DDE1A
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2007 16:59:06 +1000 (EST)
-Date: Mon, 6 Aug 2007 08:58:58 +0200
-From: Domen Puncer <domen.puncer@telargo.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 1/3] powerpc clk.h interface for platforms
-Message-ID: <20070806065857.GN4529@moe.telargo.com>
-References: <20070711093113.GE4375@moe.telargo.com>
-	<20070711093220.GF4375@moe.telargo.com>
+Return-Path: <ossthema@de.ibm.com>
+Received: from mtagate8.uk.ibm.com (mtagate8.uk.ibm.com [195.212.29.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate8.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 26744DE10A
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2007 17:32:03 +1000 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate8.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l767Vtol117108
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 07:31:55 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+	[9.149.37.228])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.4) with
+	ESMTP id l767VtRR2666618
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 08:31:55 +0100
+Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l767VmX7026183
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 08:31:49 +0100
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Subject: Re: [PATCH] lro: eHEA example how to use LRO
+Date: Mon, 6 Aug 2007 09:01:51 +0200
+References: <200708031441.26841.ossthema@de.ibm.com>
+	<46B39030.7030009@intel.com>
+In-Reply-To: <46B39030.7030009@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070711093220.GF4375@moe.telargo.com>
-Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
-	Sylvain Munaut <tnt@246tNt.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200708060901.53336.ossthema@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
+	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>, Andrew Gallatin <gallatin@myri.com>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,156 +44,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi!
+Hi Auke,
 
-Paul, what do you say about this?
-Sylvain suggested it could also be integrated with define_machine
-interface.
-
-If it's OK, it would be cool if it got merged in next release cycle.
-
-
-	Domen
-
-On 11/07/07 11:32 +0200, Domen Puncer wrote:
-> clk interface for arch/powerpc, platforms should fill
-> clk_functions.
+On Friday 03 August 2007 22:29, Kok, Auke wrote:
+> Jan-Bernd Themann wrote:
+> > This patch shows how the generic LRO interface is used for SKB mode
+> > 
+> > Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+> > 
+> > ---
+> >  drivers/net/Kconfig             |    1 +
+> >  drivers/net/ehea/ehea.h         |    9 ++++-
+> >  drivers/net/ehea/ehea_ethtool.c |   15 +++++++
+> >  drivers/net/ehea/ehea_main.c    |   84 +++++++++++++++++++++++++++++++++++---
+> >  4 files changed, 101 insertions(+), 8 deletions(-)
+> > 
+> > diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+> > index f8a602c..fec4004 100644
+> > --- a/drivers/net/Kconfig
+> > +++ b/drivers/net/Kconfig
 > 
-> Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
+> <snip>
 > 
-> ---
->  arch/powerpc/kernel/Makefile        |    3 -
->  arch/powerpc/kernel/clock.c         |   82 ++++++++++++++++++++++++++++++++++++
->  include/asm-powerpc/clk_interface.h |   20 ++++++++
->  3 files changed, 104 insertions(+), 1 deletion(-)
+> > +module_param(use_lro, int, 0);
 > 
-> Index: work-powerpc.git/arch/powerpc/kernel/clock.c
-> ===================================================================
-> --- /dev/null
-> +++ work-powerpc.git/arch/powerpc/kernel/clock.c
-> @@ -0,0 +1,82 @@
-> +/*
-> + * Dummy clk implementations for powerpc.
-> + * These need to be overridden in platform code.
-> + */
-> +
-> +#include <linux/clk.h>
-> +#include <linux/err.h>
-> +#include <linux/errno.h>
-> +#include <linux/module.h>
-> +#include <asm/clk_interface.h>
-> +
-> +struct clk_interface clk_functions;
-> +
-> +struct clk *clk_get(struct device *dev, const char *id)
-> +{
-> +	if (clk_functions.clk_get)
-> +		return clk_functions.clk_get(dev, id);
-> +	return ERR_PTR(-ENOSYS);
-> +}
-> +EXPORT_SYMBOL(clk_get);
-> +
-> +void clk_put(struct clk *clk)
-> +{
-> +	if (clk_functions.clk_put)
-> +		clk_functions.clk_put(clk);
-> +}
-> +EXPORT_SYMBOL(clk_put);
-> +
-> +int clk_enable(struct clk *clk)
-> +{
-> +	if (clk_functions.clk_enable)
-> +		return clk_functions.clk_enable(clk);
-> +	return -ENOSYS;
-> +}
-> +EXPORT_SYMBOL(clk_enable);
-> +
-> +void clk_disable(struct clk *clk)
-> +{
-> +	if (clk_functions.clk_disable)
-> +		clk_functions.clk_disable(clk);
-> +}
-> +EXPORT_SYMBOL(clk_disable);
-> +
-> +unsigned long clk_get_rate(struct clk *clk)
-> +{
-> +	if (clk_functions.clk_get_rate)
-> +		return clk_functions.clk_get_rate(clk);
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL(clk_get_rate);
-> +
-> +long clk_round_rate(struct clk *clk, unsigned long rate)
-> +{
-> +	if (clk_functions.clk_round_rate)
-> +		return clk_functions.clk_round_rate(clk, rate);
-> +	return -ENOSYS;
-> +}
-> +EXPORT_SYMBOL(clk_round_rate);
-> +
-> +int clk_set_rate(struct clk *clk, unsigned long rate)
-> +{
-> +	if (clk_functions.clk_set_rate)
-> +		return clk_functions.clk_set_rate(clk, rate);
-> +	return -ENOSYS;
-> +}
-> +EXPORT_SYMBOL(clk_set_rate);
-> +
-> +struct clk *clk_get_parent(struct clk *clk)
-> +{
-> +	if (clk_functions.clk_get_parent)
-> +		return clk_functions.clk_get_parent(clk);
-> +	return ERR_PTR(-ENOSYS);
-> +}
-> +EXPORT_SYMBOL(clk_get_parent);
-> +
-> +int clk_set_parent(struct clk *clk, struct clk *parent)
-> +{
-> +	if (clk_functions.clk_set_parent)
-> +		return clk_functions.clk_set_parent(clk, parent);
-> +	return -ENOSYS;
-> +}
-> +EXPORT_SYMBOL(clk_set_parent);
-> Index: work-powerpc.git/include/asm-powerpc/clk_interface.h
-> ===================================================================
-> --- /dev/null
-> +++ work-powerpc.git/include/asm-powerpc/clk_interface.h
-> @@ -0,0 +1,20 @@
-> +#ifndef __ASM_POWERPC_CLK_INTERFACE_H
-> +#define __ASM_POWERPC_CLK_INTERFACE_H
-> +
-> +#include <linux/clk.h>
-> +
-> +struct clk_interface {
-> +	struct clk*	(*clk_get)	(struct device *dev, const char *id);
-> +	int		(*clk_enable)	(struct clk *clk);
-> +	void		(*clk_disable)	(struct clk *clk);
-> +	unsigned long	(*clk_get_rate)	(struct clk *clk);
-> +	void		(*clk_put)	(struct clk *clk);
-> +	long		(*clk_round_rate) (struct clk *clk, unsigned long rate);
-> +	int 		(*clk_set_rate)	(struct clk *clk, unsigned long rate);
-> +	int		(*clk_set_parent) (struct clk *clk, struct clk *parent);
-> +	struct clk*	(*clk_get_parent) (struct clk *clk);
-> +};
-> +
-> +extern struct clk_interface clk_functions;
-> +
-> +#endif /* __ASM_POWERPC_CLK_INTERFACE_H */
-> Index: work-powerpc.git/arch/powerpc/kernel/Makefile
-> ===================================================================
-> --- work-powerpc.git.orig/arch/powerpc/kernel/Makefile
-> +++ work-powerpc.git/arch/powerpc/kernel/Makefile
-> @@ -12,7 +12,8 @@ endif
->  
->  obj-y				:= semaphore.o cputable.o ptrace.o syscalls.o \
->  				   irq.o align.o signal_32.o pmc.o vdso.o \
-> -				   init_task.o process.o systbl.o idle.o
-> +				   init_task.o process.o systbl.o idle.o \
-> +				   clock.o
->  obj-y				+= vdso32/
->  obj-$(CONFIG_PPC64)		+= setup_64.o binfmt_elf32.o sys_ppc32.o \
->  				   signal_64.o ptrace32.o \
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> Have you looked at my generic lro get/set patch that I posted this week? this 
+> adds a useless module parameter while ethtool has all the structure already to 
+> accomodate setting lro on/off.
+> 
+
+Yes, I saw your patch. Looks very good to me. I will modify our driver soon
+to use ethtool instead of this module parameter.
+
+Thanks for adding this support to the ethtool interface.
