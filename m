@@ -1,22 +1,18 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 9EB60DDF0E
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 05:54:22 +1000 (EST)
-Date: Mon, 6 Aug 2007 21:54:14 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: 8250.c::autoconfig() fails loopback test on MPC824[15]
-In-Reply-To: <1288ff079974aa806119584018bab973@kernel.crashing.org>
-Message-ID: <Pine.LNX.4.60.0708062139140.5694@poirot.grange>
-References: <Pine.LNX.4.60.0708050106270.4299@poirot.grange>
-	<E1IHnhY-0008PO-IZ@jdl.com>
-	<Pine.LNX.4.60.0708052336360.4120@poirot.grange>
-	<200708052357.32650.arnd@arndb.de>
-	<1288ff079974aa806119584018bab973@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>,
-	linux-serial@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <20070801054751.GM31391@localhost.localdomain>
+References: <20070730150648.GA5005@ru.mvista.com>
+	<20070801020836.GB31391@localhost.localdomain>
+	<65ff446478a9fd0a48061079d5f04f8f@kernel.crashing.org>
+	<20070801050422.GI31391@localhost.localdomain>
+	<20070801054751.GM31391@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <59e87834966d80bb143e1683fe751cd1@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/6] PowerPC 440EPx: Sequoia DTS
+Date: Mon, 6 Aug 2007 21:59:24 +0200
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,33 +22,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 6 Aug 2007, Segher Boessenkool wrote:
+>>> Yeah, better names please -- if possible, something that someone
+>>> without knowledge of this SoC will understand what it is.
+>>
+>> I think the names are probably ok - I'm assuming they're in keeping
+>> with the convention I've used of using the same names / abbreviations
+>> as in the CPU user manual.  I'm asking just for my own information,
+>> although a comment might not be a bad idea.
 
-> > Maybe the best solution would be for 824[15] to not claim compatibility
-> > with 8250 at all then.
-> 
-> Or at least it should have a more specific entry for this
-> "special" 16x50 UART, and that one should be probed first.
-> 
-> > If the device tree contains an entry that matches
-> > what the generic driver looks for, it better be something that can
-> > be handled by that driver.
-> 
-> Pretty much; you can't make this rule too strict though,
-> if a device mostly works with the generic driver, you can
-> claim compatibility with it -- keep in mind that that can
-> come back to bite you though, like in this case.  The
-> advantages do outweigh the disadvantages sometimes, it's
-> all a tradeoff; avoid it if possible.
+Fine with me -- I personally prefer "system-device-controller"
+and "clock-power-controller" or similar, but that is mostly a
+matter of taste.  As long as it's human readable it's fine.
 
-Well, the 8250 driver DOES already support devices without the loopback 
-test support, that's what that bit there is for, isn't it? So, we just 
-have to use it, as well as others do (grep -r UPF_SKIP_TEST 
-drivers/serial/). I'll go for the extra compatible property, as suggested, 
-seems like the most commonly accepted wa to handle this (and the easiest 
-to implement).
+> -    Required properties:
+> +     - compatible : should contain the specific model of flash 
+> chip(s) used
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+"if known".
+
+> +       followed by either "cfi-flash" or "jedec-flash"
+
+
+> +    Flash partitions
+> +     - reg :
+> +     - read-only : (optional)
+
+I'll hold off commenting on this until you've finish writing it,
+you probably know my opinion about it anyway :-)
+
+One thing though -- what _exactly_ does "read-only" signify?
+
+
+Segher
