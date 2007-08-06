@@ -1,24 +1,24 @@
 Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <1186438523.938.83.camel@localhost.localdomain>
-References: <20070730150648.GA5005@ru.mvista.com>
-	<20070801020836.GB31391@localhost.localdomain>
-	<65ff446478a9fd0a48061079d5f04f8f@kernel.crashing.org>
-	<20070801050422.GI31391@localhost.localdomain>
-	<20070801054751.GM31391@localhost.localdomain>
-	<46B1F6D4.3070707@ru.mvista.com>
-	<20070803031349.GD6418@localhost.localdomain>
-	<46B34E1F.5060009@ru.mvista.com>
-	<20070806042109.GB6103@localhost.localdomain>
-	<46B76A5A.3030300@ru.mvista.com>
-	<1186438523.938.83.camel@localhost.localdomain>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4911CDDED6
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 09:12:13 +1000 (EST)
+In-Reply-To: <200708070034.19193.m.kozlowski@tuxland.pl>
+References: <20070731230932.a9459617.akpm@linux-foundation.org>
+	<200708062134.16643.m.kozlowski@tuxland.pl>
+	<236b147ed4a92945baa3c6b29e7e5f31@kernel.crashing.org>
+	<200708070034.19193.m.kozlowski@tuxland.pl>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <30b543242f076847597582b8589dadec@kernel.crashing.org>
+Message-Id: <14f932ea857d563d409cc10b570fc085@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2/6] PowerPC 440EPx: Sequoia DTS
-Date: Tue, 7 Aug 2007 01:09:22 +0200
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: 2.6.23-rc1-mm2
+Date: Tue, 7 Aug 2007 01:12:00 +0200
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: linux-usb-devel@lists.sourceforge.net, gregkh@suse.de,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,21 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>     Actually, checking for the presence of all possible perverted
->> mapping
->> props doesn't seem a good idea -- it's simpler to check for the
->> presence of
->> one prop (like "direct-mapped" I was thinking about, or maybe
->> "simple-map").
+>> It seems like things go wrong when lparmap.s is generated with
+>> (DWARF) debug info; could you try building it (manually) with -g0
+>> added on the end of the compile line, and see if head_64.o compiles
+>> okay for you then?  If so, I'll prepare a proper patch for it, I
+>> have a similar one (also for lparmap!) in my queue already...
 >
-> Or more simply... if it's not a direct mapping, it doesn't have a 
-> ranges
-> property and can't be walked down by conventional means.
+> Ok it worked. I had to add -g0 to Makefile under arch/powerpc/kernel 
+> because
+> -g0 was added before -g and didn't have any effect when adding to 
+> Makefile
+> in top dir.
 
-That establishes that the flash address space is mapped 1-1 into
-the host address space; however it doesn't say anything about
-swizzling or interleaving or endianness etc., which are important
-for NOR flash memory because of how the command sets work.
+Yeah, that's why I said "build lparmap.s manually" :-)
+
+> But yes - it compiles now.
+
+Great, I'll combine it with my other lparmap build patch then.
+Thanks for the report and testing!
 
 
 Segher
