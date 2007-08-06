@@ -1,26 +1,26 @@
 Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E2670DDF6D
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 05:42:25 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l76Jheum010311
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 15:43:40 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l76JgMmJ453092
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 15:42:22 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l76JgMZ6009260
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 15:42:22 -0400
-Message-Id: <200708061942.l76JgLrU009242@d01av04.pok.ibm.com>
-Subject: [PATCH 2/6] ibmveth: Implement ethtool hooks to enable/disable
-	checksum offload
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 117C5DDECB
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 05:42:32 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l76JgU7h027065
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 15:42:30 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l76JgTOm256344
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 13:42:29 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l76JgTxG016219
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 13:42:29 -0600
+Message-Id: <200708061942.l76JgSnp016148@d03av04.boulder.ibm.com>
+Subject: [PATCH 3/6] ibmveth: Add ethtool TSO handlers
 To: santil@linux.vnet.ibm.com
 From: Brian King <brking@linux.vnet.ibm.com>
-Date: Mon, 06 Aug 2007 14:42:21 -0500
+Date: Mon, 06 Aug 2007 14:42:27 -0500
 In-Reply-To: <11864293333377-patch-mail.ibm.com>
 References: <11864293333377-patch-mail.ibm.com>
 Cc: linuxppc-dev@ozlabs.org, rcjenn@linux.vnet.ibm.com,
@@ -35,167 +35,27 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-This patch adds the appropriate ethtool hooks to allow for enabling/disabling
-of hypervisor assisted checksum offload for TCP.
+Add handlers for get_tso and get_ufo to prevent errors being printed
+by ethtool.
 
 Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
 ---
 
- linux-2.6-bjking1/drivers/net/ibmveth.c |  118 +++++++++++++++++++++++++++++++-
- linux-2.6-bjking1/drivers/net/ibmveth.h |    1 
- 2 files changed, 117 insertions(+), 2 deletions(-)
+ drivers/net/ibmveth.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff -puN drivers/net/ibmveth.c~ibmveth_csum_offload_ethtool drivers/net/ibmveth.c
---- linux-2.6/drivers/net/ibmveth.c~ibmveth_csum_offload_ethtool	2007-08-01 14:55:14.000000000 -0500
-+++ linux-2.6-bjking1/drivers/net/ibmveth.c	2007-08-01 14:55:14.000000000 -0500
-@@ -641,12 +641,125 @@ static u32 netdev_get_link(struct net_de
- 	return 1;
- }
- 
-+static void ibmveth_set_rx_csum_flags(struct net_device *dev, u32 data)
-+{
-+	struct ibmveth_adapter *adapter = dev->priv;
-+
-+	if (data)
-+		adapter->rx_csum = 1;
-+	else {
-+		adapter->rx_csum = 0;
-+		dev->features &= ~NETIF_F_IP_CSUM;
-+	}
-+}
-+
-+static void ibmveth_set_tx_csum_flags(struct net_device *dev, u32 data)
-+{
-+	struct ibmveth_adapter *adapter = dev->priv;
-+
-+	if (data) {
-+		dev->features |= NETIF_F_IP_CSUM;
-+		adapter->rx_csum = 1;
-+	} else
-+		dev->features &= ~NETIF_F_IP_CSUM;
-+}
-+
-+static int ibmveth_set_csum_offload(struct net_device *dev, u32 data,
-+				    void (*done) (struct net_device *, u32))
-+{
-+	struct ibmveth_adapter *adapter = dev->priv;
-+	union ibmveth_illan_attributes set_attr, clr_attr, ret_attr;
-+	long ret;
-+	int rc1 = 0, rc2 = 0;
-+	int restart = 0;
-+
-+	if (netif_running(dev)) {
-+		restart = 1;
-+		adapter->pool_config = 1;
-+		ibmveth_close(dev);
-+		adapter->pool_config = 0;
-+	}
-+
-+	set_attr.desc = 0;
-+	clr_attr.desc = 0;
-+
-+	if (data)
-+		set_attr.fields.tcp_csum_offload_ipv4 = 1;
-+	else
-+		clr_attr.fields.tcp_csum_offload_ipv4 = 1;
-+
-+	ret = h_illan_attributes(adapter->vdev->unit_address, 0, 0, &ret_attr.desc);
-+
-+	if (ret == H_SUCCESS && !ret_attr.fields.active_trunk &&
-+	    !ret_attr.fields.trunk_priority &&
-+	    ret_attr.fields.csum_offload_padded_pkt_support) {
-+		ret = h_illan_attributes(adapter->vdev->unit_address, clr_attr.desc,
-+					 set_attr.desc, &ret_attr.desc);
-+
-+		if (ret != H_SUCCESS) {
-+			rc1 = -EIO;
-+			ibmveth_error_printk("unable to change checksum offload settings."
-+					     " %d rc=%ld\n", data, ret);
-+
-+			ret = h_illan_attributes(adapter->vdev->unit_address,
-+						 set_attr.desc, clr_attr.desc, &ret_attr.desc);
-+		} else
-+			done(dev, data);
-+	} else {
-+		rc1 = -EIO;
-+		ibmveth_error_printk("unable to change checksum offload settings."
-+				     " %d rc=%ld ret_attr=%lx\n", data, ret, ret_attr.desc);
-+	}
-+
-+	if (restart)
-+		rc2 = ibmveth_open(dev);
-+
-+	return rc1 ? rc1 : rc2;
-+}
-+
-+static int ibmveth_set_rx_csum(struct net_device *dev, u32 data)
-+{
-+	struct ibmveth_adapter *adapter = dev->priv;
-+
-+	if ((data && adapter->rx_csum) || (!data && !adapter->rx_csum))
-+		return 0;
-+
-+	return ibmveth_set_csum_offload(dev, data, ibmveth_set_rx_csum_flags);
-+}
-+
-+static int ibmveth_set_tx_csum(struct net_device *dev, u32 data)
-+{
-+	struct ibmveth_adapter *adapter = dev->priv;
-+	int rc = 0;
-+
-+	if (data && (dev->features & NETIF_F_IP_CSUM))
-+		return 0;
-+	if (!data && !(dev->features & NETIF_F_IP_CSUM))
-+		return 0;
-+
-+	if (data && !adapter->rx_csum)
-+		rc = ibmveth_set_csum_offload(dev, data, ibmveth_set_tx_csum_flags);
-+	else
-+		ibmveth_set_tx_csum_flags(dev, data);
-+
-+	return rc;
-+}
-+
-+static u32 ibmveth_get_rx_csum(struct net_device *dev)
-+{
-+	struct ibmveth_adapter *adapter = dev->priv;
-+	return adapter->rx_csum;
-+}
-+
- static const struct ethtool_ops netdev_ethtool_ops = {
- 	.get_drvinfo		= netdev_get_drvinfo,
- 	.get_settings		= netdev_get_settings,
- 	.get_link		= netdev_get_link,
- 	.get_sg			= ethtool_op_get_sg,
+diff -puN drivers/net/ibmveth.c~ibmveth_ethtool_get_tso drivers/net/ibmveth.c
+--- linux-2.6/drivers/net/ibmveth.c~ibmveth_ethtool_get_tso	2007-07-19 11:18:38.000000000 -0500
++++ linux-2.6-bjking1/drivers/net/ibmveth.c	2007-07-19 11:18:38.000000000 -0500
+@@ -759,7 +759,9 @@ static const struct ethtool_ops netdev_e
  	.get_tx_csum		= ethtool_op_get_tx_csum,
-+	.set_tx_csum		= ibmveth_set_tx_csum,
-+	.get_rx_csum		= ibmveth_get_rx_csum,
-+	.set_rx_csum		= ibmveth_set_rx_csum
+ 	.set_tx_csum		= ibmveth_set_tx_csum,
+ 	.get_rx_csum		= ibmveth_get_rx_csum,
+-	.set_rx_csum		= ibmveth_set_rx_csum
++	.set_rx_csum		= ibmveth_set_rx_csum,
++	.get_tso			= ethtool_op_get_tso,
++	.get_ufo			= ethtool_op_get_ufo
  };
  
  static int ibmveth_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
-@@ -1104,9 +1217,10 @@ static int __devinit ibmveth_probe(struc
- 		ret = h_illan_attributes(dev->unit_address, 0, set_attr.desc,
- 					 &ret_attr.desc);
- 
--		if (ret == H_SUCCESS)
-+		if (ret == H_SUCCESS) {
-+			adapter->rx_csum = 1;
- 			netdev->features |= NETIF_F_IP_CSUM;
--		else
-+		} else
- 			ret = h_illan_attributes(dev->unit_address, set_attr.desc,
- 						 0, &ret_attr.desc);
- 	}
-diff -puN drivers/net/ibmveth.h~ibmveth_csum_offload_ethtool drivers/net/ibmveth.h
---- linux-2.6/drivers/net/ibmveth.h~ibmveth_csum_offload_ethtool	2007-08-01 14:55:14.000000000 -0500
-+++ linux-2.6-bjking1/drivers/net/ibmveth.h	2007-08-01 14:55:14.000000000 -0500
-@@ -137,6 +137,7 @@ struct ibmveth_adapter {
-     struct ibmveth_buff_pool rx_buff_pool[IbmVethNumBufferPools];
-     struct ibmveth_rx_q rx_queue;
-     int pool_config;
-+    int rx_csum;
- 
-     /* adapter specific stats */
-     u64 replenish_task_cycles;
 _
