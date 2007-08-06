@@ -1,31 +1,14 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4EA80DDE1F
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2007 22:25:32 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l76CPTd9032319
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 08:25:29 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l76CPT9m530324
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 08:25:29 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l76CPSnt014807
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 08:25:28 -0400
-Date: Mon, 6 Aug 2007 07:39:02 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: paulus@samba.org, dwg@au1.ibm.com
-Subject: Re: [patch 10/10] Bamboo zImage wrapper
-Message-ID: <20070806123901.GA3925@crusty.rchland.ibm.com>
-References: <20070803160900.069522000@linux.vnet.ibm.com>>
-	<20070803161711.457497000@linux.vnet.ibm.com>
-	<20070806050011.GC11051@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070806050011.GC11051@localhost.localdomain>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 7D4B2DDE11
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2007 23:11:53 +1000 (EST)
+Date: Mon, 6 Aug 2007 17:10:14 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: spi-devel-general@lists.sourceforge.net
+Subject: [PATCH] [SPI][POWERPC] spi_mpc83xx: fix prescale modulus calculation
+Message-ID: <20070806131014.GA6913@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -36,26 +19,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Aug 06, 2007 at 03:00:12PM +1000, David Gibson wrote:
-> On Fri, Aug 03, 2007 at 11:09:10AM -0500, Josh Boyer wrote:
-> > Add a bootwrapper for the AMCC 440EP Bamboo Eval board.  This also adds a
-> > common fixup_clock function for all 440EP(x) chips.
-> 
-> Ok, you have a separate bamboo.c and treeboot-bamboo.c, like with
-> ebony.  However here, therer's only one outermost wrapper -
-> treeboot-bamboo.c which means there's not really any point to this
-> separation.
+Long ago I've noticed (but didn't pay much attention) that
+spi_mpc83xx using PM calculations that differs from what
+specs describe. I.e.
 
-Milton already mentioned this the first time I submitted the patch.
+u8 pm = mpc83xx_spi->spibrg / (spi->max_speed_hz * 4);
 
-> Do you know if there are Bamboo boards with old u-boot versions, or
-> some other bootloader which would make the separation worthwhile
-> later?
+While specs says: "The SPI baud rate generator clock source (either
+system clock or system clock divided by 16, depending on DIV16 bit) is
+divided by 4 * ([PM] + 1), a range from 4 to 64.".
 
-Yes, there are.  And yes, I plan on submitting the cuboot-bamboo.c wrapper
-just as soon as I get a chance to get my board switched back to u-boot.  It's
-actually pretty trivial to keep both PIBS and u-boot on a bamboo board, since
-you can program u-boot into the flash from PIBS and flip some switches to boot
-from it.
+Thus " - 1" is missing in the spi_mpc83xx's formula.
 
-josh
+Why nobody noticed that bug? Probably because sysclk usually less then
+user expects, e.g. you expect 200 MHz, but real clock is 198 MHz,
+and integer rounding helps when this formula is used.
+
+Suppose it's SPI in QE, SYSCLK at 198 MHz, thus SPIBRG at 99MHz, 25 MHz
+requested.
+
+PM = (99MHz / ( 25 MHz * 4 )), PM == 0, output SPICLK will be 24.75 MHz
+
+At lower frequencies this bug is more noticeable, though.
+
+And this bug shows itself in all its beauty if SYSCLK is equal or a bit
+more than you expect (200 MHz SYSCLK, 100 MHz SPIBRG):
+PM = (100MHz / ( 25 MHz * 4 )), PM == 1, output SPICLK will be 12.625 MHz!
+
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/spi/spi_mpc83xx.c |   10 +++++++++-
+ 1 files changed, 9 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/spi/spi_mpc83xx.c b/drivers/spi/spi_mpc83xx.c
+index 446b624..042704b 100644
+--- a/drivers/spi/spi_mpc83xx.c
++++ b/drivers/spi/spi_mpc83xx.c
+@@ -170,7 +170,8 @@ static void mpc83xx_spi_chipselect(struct spi_device *spi, int value)
+ 		regval |= SPMODE_LEN(len);
+ 
+ 		if ((mpc83xx_spi->spibrg / spi->max_speed_hz) >= 64) {
+-			u8 pm = mpc83xx_spi->spibrg / (spi->max_speed_hz * 64);
++			u8 pm = mpc83xx_spi->spibrg / (spi->max_speed_hz * 64) - 1;
++
+ 			if (pm > 0x0f) {
+ 				dev_warn(&spi->dev, "Requested speed is too "
+ 					"low: %d Hz. Will use %d Hz instead.\n",
+@@ -180,6 +181,13 @@ static void mpc83xx_spi_chipselect(struct spi_device *spi, int value)
+ 			regval |= SPMODE_PM(pm) | SPMODE_DIV16;
+ 		} else {
+ 			u8 pm = mpc83xx_spi->spibrg / (spi->max_speed_hz * 4);
++
++			if (pm)
++				pm--;
++			else /* this floods dmesg if using mmc_spi, so dbg */
++				dev_dbg(&spi->dev, "Requested speed is too "
++					"high: %d Hz. Will use %d Hz instead.\n",
++					spi->max_speed_hz, mpc83xx_spi->spibrg / 4);
+ 			regval |= SPMODE_PM(pm);
+ 		}
+ 
+-- 
+1.5.0.6
