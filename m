@@ -1,35 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <afleming@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E6AE2DDE3E
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 04:05:45 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l76I5goT031282
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 14:05:42 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l76I5dEw258688
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 12:05:40 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l76I5UKJ032634
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 12:05:30 -0600
-Date: Mon, 6 Aug 2007 13:05:29 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: Re: [patch 08/10] Bamboo DTS
-Message-ID: <20070806130529.5368fe01@weaponx.rchland.ibm.com>
-In-Reply-To: <1186423283.5970.32.camel@ld0161-tx32>
-References: <20070803160900.069522000@linux.vnet.ibm.com>
-	<20070803161711.202342000@linux.vnet.ibm.com>
-	<20070806045332.GA11051@localhost.localdomain>
-	<1186423283.5970.32.camel@ld0161-tx32>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, David Gibson <dwg@au1.ibm.com>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 45EE0DDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 04:09:46 +1000 (EST)
+In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D90108BE44C2@EMPBEDEX.empirix.com>
+References: <BD261180E6D35F4D9D32F3E44FD3D90108BE44C2@EMPBEDEX.empirix.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3A76C14A-4A1C-48FA-9BEA-39020A131084@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Subject: Re: Trying to use Device Tree...and getting continuous interrupts
+	from attached 88e1145
+Date: Mon, 6 Aug 2007 13:09:35 -0500
+To: "Morrison, Tom" <tmorrison@empirix.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,24 +26,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 06 Aug 2007 13:01:28 -0500
-Jon Loeliger <jdl@freescale.com> wrote:
 
-> On Sun, 2007-08-05 at 23:53, David Gibson wrote:
-> 
-> > > + *
-> > > + * To build:
-> > > + *   dtc -I dts -O asm -o bamboo.S -b 0 bamboo.dts
-> > > + *   dtc -I dts -O dtb -o bamboo.dtb -b 0 bamboo.dts
-> > 
-> > Can we ditch this "to build" boilerplate.  It's just another thing
-> > people frequently forget to update as they copy it from dts to dts.
-> 
-> That's a good idea, I think.  Especially since it is
-> not really accurate for u-boot with libfdt either.
-> I believe it that case it needs to have some extra
-> space reservations made for it as well.
+On Aug 3, 2007, at 17:54, Morrison, Tom wrote:
 
-Yeah, will kill it.
+> All,
+>
+> Connected to eth1 (etsec2) of my mpc8548 cpu is a 88E1145 and I
+> am trying to get the core functionality running with the device tree
+> paradigm - I know the sense of the 88E1145 is active-low for my
+> mpc8548 board and have it working with an older 2.6.11++ kernel.
+>
+> I built this new kernel with the marvell driver - it seemingly
+> does all the same things we did in the 2.6.11 kernel in separate
+> spots...
+>
+> Here is the appropriate parts of my device tree for this part of the
+> core...
+>
+>>> 		mdio@24520 {
+>>> 			#address-cells = <1>;
+>>> 			#size-cells = <0>;
+>>> 			device_type = "mdio";
+>>> 			compatible = "gianfar";	
+>>> 			reg = <24520 20>;
+>>> 			phy1: ethernet-phy@1 {
+>>> 				interrupt-parent = <&mpic>;
+>>> 				interrupts = <37 1>;
 
-josh
+
+How recent of a kernel are you using?  The current kernel assigns the  
+external interrupts to be the low 12 interrupts, which would make  
+your interrupt assignment wrong.
+
+>
+> Now, that looks OK! Those are what I would expect. And when the
+> mdio/phy are probed, configured, and the 88E1145 interrupt (EXT7
+> (0x37H)) is enabled, the interrupt never (seemingly) gets cleared,
+> and basically hangs the entire box up and eventually it panics!
+
+
+Can you determine where it's hanging.  Or whether it is calling  
+phy_interrupt() at all?  phy_interrupt should be disabling the  
+interrupt at the PIC, and then the interrupt should be handled in a  
+work queue.
+
+Andy
