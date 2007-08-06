@@ -1,24 +1,41 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4911CDDED6
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 09:12:13 +1000 (EST)
-In-Reply-To: <200708070034.19193.m.kozlowski@tuxland.pl>
-References: <20070731230932.a9459617.akpm@linux-foundation.org>
-	<200708062134.16643.m.kozlowski@tuxland.pl>
-	<236b147ed4a92945baa3c6b29e7e5f31@kernel.crashing.org>
-	<200708070034.19193.m.kozlowski@tuxland.pl>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <14f932ea857d563d409cc10b570fc085@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: 2.6.23-rc1-mm2
-Date: Tue, 7 Aug 2007 01:12:00 +0200
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Cc: linux-usb-devel@lists.sourceforge.net, gregkh@suse.de,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <hancockr@shaw.ca>
+Received: from pd4mo3so.prod.shaw.ca (shawidc-mo1.cg.shawcable.net
+	[24.71.223.10]) by ozlabs.org (Postfix) with ESMTP id 07272DDECF
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 09:25:39 +1000 (EST)
+Received: from pd2mr3so.prod.shaw.ca
+	(pd2mr3so-qfe3.prod.shaw.ca [10.0.141.108]) by l-daemon
+	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
+	with ESMTP id <0JMD00HGZIAO5800@l-daemon> for linuxppc-dev@ozlabs.org;
+	Mon, 06 Aug 2007 16:25:36 -0600 (MDT)
+Received: from pn2ml10so.prod.shaw.ca ([10.0.121.80])
+	by pd2mr3so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	(built Sep
+	5 2006)) with ESMTP id <0JMD00KFVIAOUJ20@pd2mr3so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Mon, 06 Aug 2007 16:25:36 -0600 (MDT)
+Received: from [192.168.1.113] ([70.64.1.86])
+	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
+	2004))
+	with ESMTP id <0JMD00KD8IAN7O10@l-daemon> for linuxppc-dev@ozlabs.org;
+	Mon, 06 Aug 2007 16:25:36 -0600 (MDT)
+Date: Mon, 06 Aug 2007 16:25:27 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH 2.6.22.y] ieee1394: revert "sbp2: enforce
+	32bit	DMA	mapping"
+In-reply-to: <46B79F25.50205@s5r6.in-berlin.de>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Message-id: <46B79FD7.9020801@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+References: <fa.Qn3Snqoik3hhnxcA6HqjGV0Yzck@ifi.uio.no>
+	<46B4B3DC.7020609@shaw.ca> <46B4B7C6.1040107@s5r6.in-berlin.de>
+	<1186272926.938.8.camel@localhost.localdomain>
+	<46B5824B.1000103@s5r6.in-berlin.de>
+	<1186351473.938.21.camel@localhost.localdomain>
+	<20070806135124.GA2900@suse.de>
+	<1186436848.938.75.camel@localhost.localdomain>
+	<46B79F25.50205@s5r6.in-berlin.de>
+Cc: linuxppc-dev@ozlabs.org, stable@kernel.org, linux-kernel@vger.kernel.org,
+	Olaf Hering <olh@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,24 +45,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> It seems like things go wrong when lparmap.s is generated with
->> (DWARF) debug info; could you try building it (manually) with -g0
->> added on the end of the compile line, and see if head_64.o compiles
->> okay for you then?  If so, I'll prepare a proper patch for it, I
->> have a similar one (also for lparmap!) in my queue already...
->
-> Ok it worked. I had to add -g0 to Makefile under arch/powerpc/kernel 
-> because
-> -g0 was added before -g and didn't have any effect when adding to 
-> Makefile
-> in top dir.
+Stefan Richter wrote:
+> Benjamin Herrenschmidt wrote:
+>> Oh and, don't do the set_dma_mask() in sbp2, it has nothing to do there.
+>> It should be in the ohci1394 driver.
+> 
+> That's not quite right.  OHCI-1394 implementations can go beyond 4GB bus
+> address space.  (Although I don't know if there are such implementations
+> available.  At least there are two implementations which can set the
+> so-called Physical Range bigger than 4GB.)
+> 
+> Sbp2 however requires that everything which it DMA-maps resides in the
+> Physical Range of the controller.  This way the CPU is not involved in
+> most of the data transfers.  The OHCI-1394 controller acts as bus bridge
+> between IEEE 1394 bus and local bus, with a 1:1 mapping of IEEE 1394 bus
+> addresses to and from local bus addresses --- but not in the whole 48
+> bits white IEEE 1394 bus address range, only in the
+> implementation-dependent Physical Range.  The minimum Physical Range
+> that all OHCI-1394 implementations guarantee is 4GB.  I could actually
+> have set a bigger mask in sbp2 when the controller supports a
+> programmable bigger range.
+> 
+> So that's the story why that dma_set_mask went into sbp2:  Sbp2 wants
+> mappings in a _subset_ of the OHCI-1394 controllers DMA range.
+> 
+> Anyway.  For now I will simply go with what 2.6.23-rc has and what
+> 2.6.21 had:  No dma_set_mask anywhere in the 1394 subsystem.  We can
+> revisit this whenever an actual need arises.
 
-Yeah, that's why I said "build lparmap.s manually" :-)
+Not sure this is a very good idea. This seems rather likely to fail on 
+x86_64 machines with >4GB of RAM for example..
 
-> But yes - it compiles now.
-
-Great, I'll combine it with my other lparmap build patch then.
-Thanks for the report and testing!
-
-
-Segher
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
