@@ -2,22 +2,23 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D560BDDE0A
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 04:18:53 +1000 (EST)
-In-Reply-To: <20070801132948.GB20200@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 9BE22DDE39
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 04:24:13 +1000 (EST)
+In-Reply-To: <46B0C624.2070000@freescale.com>
 References: <20070726135738.GB5643@localhost.localdomain>
 	<7BACDD73-9097-4139-8331-A1A14A6134D0@kernel.crashing.org>
 	<20070727114559.GB11463@localhost.localdomain>
-	<b3d36996792216ddd9dbae12212a4168@kernel.crashing.org>
-	<20070801132948.GB20200@localhost.localdomain>
+	<20070727164047.GB26893@ld0162-tx32.am.freescale.net>
+	<dfa3ff8d8c6af28003c7f9f831371358@kernel.crashing.org>
+	<46B0C624.2070000@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <d36303a31bb9cd2ab7cb38a09428e616@kernel.crashing.org>
+Message-Id: <846a10d04d901f23a54f9266eee781d6@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [RFC][PATCH] MPC832x_RDB: update dts to use spi,
 	register mmc_spi stub
-Date: Mon, 6 Aug 2007 20:18:47 +0200
-To: avorontsov@ru.mvista.com
+Date: Mon, 6 Aug 2007 20:24:01 +0200
+To: Scott Wood <scottwood@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,80 +29,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>>  		spi@4c0 {
->>>>>  			device_type = "spi";
->>>>> +			device-id = <1>;
->>>>
->>>> Can we just use the reg value for bus_num in the kernel.
->>>
->>> Sure, technically nothing prevents this. But, QE specs names
->>> SPIs by these ids.
->>
->> As a minimum the property name should start with "fsl," then.
+>> For some buses, there is a "slot-names" property; some (non-core)
+>> bindings seem to define a "location" property.
+>> For "random" human-readable labelling, i.e. not corresponding to
+>> physical markings on the hardware, I recommend you look for a
+>> matching entry in /aliases.
 >
-> fsl,device-id = <1>;, correct?
+> Aliases could work, but are awkward to use for the purposes I'm 
+> thinking of (giving the OS a name to present to the user in 
+> association with a device).
 
-Fine with me.  Someone more familiar with the FSL SoCs might
-have a different opinion about polluting their namespace though.
+Sure; it's just one thing a platform driver could use.
 
->>> Plus, from the kernel side spi name will be
->>> not pretty, it will be spi1216.1.
->>
->> What, the kernel cannot implement a counter itself?
+> Plus, you're then restricted to valid property names for the alias, 
+> whereas with a label property you could use any string, including 
+> spaces and such.
+
+Spaces in a device name are a bad idea anyway ;-)
+
+>>  It won't ever be _exactly_ what you
+>> want though, the Linux device namespace is separate from the
+>> device tree.
 >
-> Just counter is especially meaningless and confusing. It will
-> work in that particular case, though. But then SPI bus number will
-> depend on definition order in the dts file. This isn't how SPI
-> bus numbers should be assigned. SPI bus numbers taken from specs,
-> this is how people know which SPI is which.
+> That's Linux's choice.  Nothing stops it from showing device tree 
+> labels  to the user in various situations -- what got me thinking 
+> about this was that apparently ALSA lets the driver pass an arbitrary 
+> string to identify the device, and it seemed that such a 
+> device-tree-derived label would be the most useful to the user.
 
-Right, so the kernel platform code should number the SPI busses
-based on their position in the device tree, etc.; that doesn't
-mean you should put a Linux-specific "device name" property in
-there.
+Yeah.  The platform code has the final responsibility for those
+names, it can use whatever mechanism is appropriate for that
+platform.
 
->>>>> +				compatible = "mmc-spi";
->>
->> Needs to be more specific.
->
-> Um.. for example? I can't imagine anything specific for this. ;-)
+> To use aliases for that, it'd have to get the full path to the audio 
+> node, compare it to each alias, and hope it finds one and only one,
 
-It should include a vendor name, a device name, and/or a board
-name.  Something that uniquely defines the hardware programming
-model for the device.
+This would of course be split off into a nice prom.c utility
+function, so it isn't much code, just a function call.
 
->>>>> +				pio-handle = <&mmc1pio>;
->>
->> What is this for?
->
-> To set up output function of GPIO pin for MMC chip select.
->
-> And well, I've just looked into par_io_of_config(), and I've found
-> that pio-handle is mandatory (obviously), and thus let's back to:
->
->>>> we should do this in board code and not the device tree.
->>>
->>> Well, I've done this initially. But Vitaly hinted that this could
->>> be done in the DT instead, which made sense to me - mmc is the child
->>> device of SPI bus. Why do you think it shouldn't be in the DT? I'm
->>> not arguing, just want understand this.
->>
->> The hardware should be described in the device tree.  This isn't
->> the same as simply copying all your Linux code into it ;-)
->
-> Ugh. SD/MMC slot is the hardware, isn't it? It have wired SPI pins,
-> and chip select pin. To set up this pin, I need mmc node, which means
-> that I can't completely move mmc definitions to the board file, as
-> suggested by Kumar Gala.
->
-> Advices?
+> and that that alias was intended to be a user label and not something 
+> else.
 
-You need to declare in the SPI node which GPIOs it uses for
-what.  You shouldn't have the actual values to put into the
-GPIO registers in the device tree; the kernel driver can
-figure it out.
-
-Hope this helps,
+Hey at least they're all printable :-)
 
 
 Segher
