@@ -1,23 +1,32 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <46B76A5A.3030300@ru.mvista.com>
-References: <20070730150648.GA5005@ru.mvista.com>
-	<20070801020836.GB31391@localhost.localdomain>
-	<65ff446478a9fd0a48061079d5f04f8f@kernel.crashing.org>
-	<20070801050422.GI31391@localhost.localdomain>
-	<20070801054751.GM31391@localhost.localdomain>
-	<46B1F6D4.3070707@ru.mvista.com>
-	<20070803031349.GD6418@localhost.localdomain>
-	<46B34E1F.5060009@ru.mvista.com>
-	<20070806042109.GB6103@localhost.localdomain>
-	<46B76A5A.3030300@ru.mvista.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <71744f7b099977da5ead771aac8d2ded@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2/6] PowerPC 440EPx: Sequoia DTS
-Date: Mon, 6 Aug 2007 23:03:41 +0200
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <rrbranco@br.ibm.com>
+Received: from igw2.br.ibm.com (igw2.br.ibm.com [32.104.18.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mailgw2.br.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 796EADDE46
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 07:10:37 +1000 (EST)
+Received: from mailhub1.br.ibm.com (mailhub1 [9.18.232.109])
+	by igw2.br.ibm.com (Postfix) with ESMTP id E7BD85BDF7
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2007 17:59:30 -0300 (BRT)
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.18.232.46])
+	by mailhub1.br.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l76LAWi81806506
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 18:10:32 -0300
+Received: from d24av01.br.ibm.com (loopback [127.0.0.1])
+	by d24av01.br.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l76LAW9h023919
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 18:10:32 -0300
+Received: from d24bml03.br.ibm.com (d24bml03.br.ibm.com [9.18.232.78])
+	by d24av01.br.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	l76LAWh1023916
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 18:10:32 -0300
+To: linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+Subject: [PING][PATCH] PPC 4xx HW Watchpoint
+Message-ID: <OFC73E3C0F.0CFFE8F0-ON8325732F.00741361-8325732F.00749AD1@br.ibm.com>
+From: rrbranco@br.ibm.com
+Date: Mon, 6 Aug 2007 18:10:29 -0300
+Content-Type: multipart/alternative;
+	boundary="=_alternative 00749ACE8325732F_="
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,40 +36,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> "bit-swizzling" or something which can be defined to describe some odd
->> connections.  If absent we'd default to direct mapping.  Segher, is
->> that idea going to cause you to scream?
->
->     Actually, checking for the presence of all possible perverted 
-> mapping
-> props doesn't seem a good idea -- it's simpler to check for the 
-> presence of
-> one prop (like "direct-mapped" I was thinking about, or maybe 
-> "simple-map").
+This is a multipart message in MIME format.
+--=_alternative 00749ACE8325732F_=
+Content-Type: text/plain; charset="US-ASCII"
 
-There shouldn't be many "perverted" properties -- really weird
-mappings can just do a special "compatible" value, the standard
-kernel driver can't handle them either, anyway.
+Hello guys,
 
-A few extra property lookups are dirt cheap.  This isn't
-speed-critical code anyway.
+I'm just writting to know if someone have some opinion about the patch I 
+sent a week ago.  I'm not sending it again cause I'm traveling and don't 
+have it here in this machine.
 
->> Well, now you do.  I believe USB usually uses that format, too.
->
->     USB what, hosts or devices?
-
-The unit-address of a device is specified in its parent's
-address space.  USB hosts don't typically have a USB bus as
-parent ;-)  (but they can still have a comma in the unit
-address.  Confused?  Don't be :-) ).
-
->     Hm, right... the option here would be to always have at least one
-> partition and no "reg" property in the MTD node itself... or have 
-> "reg" with
-> no partition and "ranges" if partitions are there... :-)
-
-No way.  "reg" is needed *no matter what* -- I'll not list the
-other problems with that proposal.
+Tks,
 
 
-Segher
+Rodrigo (BSDaemon).
+--=_alternative 00749ACE8325732F_=
+Content-Type: text/html; charset="US-ASCII"
+
+
+<br><font size=2 face="sans-serif">Hello guys,</font>
+<br>
+<br><font size=2 face="sans-serif">I'm just writting to know if someone
+have some opinion about the patch I sent a week ago. &nbsp;I'm not sending
+it again cause I'm traveling and don't have it here in this machine.</font>
+<br>
+<br><font size=2 face="sans-serif">Tks,</font>
+<br>
+<br>
+<br><font size=2 face="sans-serif">Rodrigo (BSDaemon).</font>
+--=_alternative 00749ACE8325732F_=--
