@@ -1,32 +1,24 @@
-Return-Path: <rrbranco@br.ibm.com>
-Received: from igw2.br.ibm.com (igw2.br.ibm.com [32.104.18.25])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mailgw2.br.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 796EADDE46
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 07:10:37 +1000 (EST)
-Received: from mailhub1.br.ibm.com (mailhub1 [9.18.232.109])
-	by igw2.br.ibm.com (Postfix) with ESMTP id E7BD85BDF7
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2007 17:59:30 -0300 (BRT)
-Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.18.232.46])
-	by mailhub1.br.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l76LAWi81806506
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 18:10:32 -0300
-Received: from d24av01.br.ibm.com (loopback [127.0.0.1])
-	by d24av01.br.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l76LAW9h023919
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 18:10:32 -0300
-Received: from d24bml03.br.ibm.com (d24bml03.br.ibm.com [9.18.232.78])
-	by d24av01.br.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	l76LAWh1023916
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 18:10:32 -0300
-To: linuxppc-dev@ozlabs.org
-MIME-Version: 1.0
-Subject: [PING][PATCH] PPC 4xx HW Watchpoint
-Message-ID: <OFC73E3C0F.0CFFE8F0-ON8325732F.00741361-8325732F.00749AD1@br.ibm.com>
-From: rrbranco@br.ibm.com
-Date: Mon, 6 Aug 2007 18:10:29 -0300
-Content-Type: multipart/alternative;
-	boundary="=_alternative 00749ACE8325732F_="
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4FC43DDDF3
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 07:25:27 +1000 (EST)
+In-Reply-To: <200708062134.16643.m.kozlowski@tuxland.pl>
+References: <20070731230932.a9459617.akpm@linux-foundation.org>
+	<200708011002.30962.m.kozlowski@tuxland.pl>
+	<76e360562cd5b50bcd991026e5bead55@kernel.crashing.org>
+	<200708062134.16643.m.kozlowski@tuxland.pl>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <236b147ed4a92945baa3c6b29e7e5f31@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: 2.6.23-rc1-mm2
+Date: Mon, 6 Aug 2007 23:25:06 +0200
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: linux-usb-devel@lists.sourceforge.net, gregkh@suse.de,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,32 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 00749ACE8325732F_=
-Content-Type: text/plain; charset="US-ASCII"
+>>> Second issue as reported earilier allmodconfig fails to build on imac
+>>> g3.
+>>>
+>>>   CC      arch/powerpc/kernel/lparmap.s
+>>>   AS      arch/powerpc/kernel/head_64.o
+>>> lparmap.c: Assembler messages:
+>>> lparmap.c:84: Error: file number 1 already allocated
+>>> make[1]: *** [arch/powerpc/kernel/head_64.o] Blad 1
+>>> make: *** [arch/powerpc/kernel] Blad 2
+>>
+>> Please send me the full output of:
+>>
+>> gcc --version    (or whatever your gcc is called)
+>> ld --version
+>> ld --help        (I know no better way to get the supported binutils
+>>                    targets, and the default target)
+>>
+>> and the lparmap.s file.  You might want to skip sending it
+>> to the lists, it will be a bit big (and off-topic on most
+>> of those lists, anyway).
+>
+> Well ... its 66kB. Not that bad. Please find it attached.
+> Needed gcc and ld info below.
 
-Hello guys,
+Thanks.
 
-I'm just writting to know if someone have some opinion about the patch I 
-sent a week ago.  I'm not sending it again cause I'm traveling and don't 
-have it here in this machine.
-
-Tks,
-
-
-Rodrigo (BSDaemon).
---=_alternative 00749ACE8325732F_=
-Content-Type: text/html; charset="US-ASCII"
+It seems like things go wrong when lparmap.s is generated with
+(DWARF) debug info; could you try building it (manually) with -g0
+added on the end of the compile line, and see if head_64.o compiles
+okay for you then?  If so, I'll prepare a proper patch for it, I
+have a similar one (also for lparmap!) in my queue already...
 
 
-<br><font size=2 face="sans-serif">Hello guys,</font>
-<br>
-<br><font size=2 face="sans-serif">I'm just writting to know if someone
-have some opinion about the patch I sent a week ago. &nbsp;I'm not sending
-it again cause I'm traveling and don't have it here in this machine.</font>
-<br>
-<br><font size=2 face="sans-serif">Tks,</font>
-<br>
-<br>
-<br><font size=2 face="sans-serif">Rodrigo (BSDaemon).</font>
---=_alternative 00749ACE8325732F_=--
+Segher
