@@ -1,23 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B0065DDE26
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp107.biz.mail.re2.yahoo.com (smtp107.biz.mail.re2.yahoo.com
+	[206.190.52.176]) by ozlabs.org (Postfix) with SMTP id 23827DDEBA
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Aug 2007 01:52:48 +1000 (EST)
-Message-ID: <46B743C6.1030905@freescale.com>
-Date: Mon, 06 Aug 2007 10:52:38 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: poorbeyond <poorbeyond@163.com>
-Subject: Re: my cpu is MPC860, kernel version is 2.6.20.14,	the kernel start
-	info in the mail. why does the kernel panic?
-References: <200708051854252184131@163.com>
-In-Reply-To: <200708051854252184131@163.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: Linux-ppc mail list <linuxppc-embedded@ozlabs.org>
+	Tue,  7 Aug 2007 07:19:25 +1000 (EST)
+In-Reply-To: <46B743C6.1030905@freescale.com>
+References: <200708051854252184131@163.com> <46B743C6.1030905@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <A3D38E79-6921-4C9A-BD82-5796B8995BA4@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: my cpu is MPC860, kernel version is 2.6.20.14,
+	the kernel start info in the mail. why does the kernel panic?
+Date: Mon, 6 Aug 2007 14:12:57 -0700
+To: Scott Wood <scottwood@freescale.com>
+Cc: poorbeyond <poorbeyond@163.com>,
+	Linux-ppc mail list <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,27 +25,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-poorbeyond wrote:
-> Linux version 2.6.20.14 (root@localhost.localdomain) (gcc version 4.0.0 (DENX ELDK 4.0 4.0.0)) #1 PREEMPT Sun Aug 5 18:23:18 CST 2007
 
-It wouldn't surprise me if the 8xx code has issues with PREEMPT; try 
-turning it off for now.
+On Aug 6, 2007, at 8:52 AM, Scott Wood wrote:
 
-> 
-> ------------[ cut here ]------------
-> 
-> Badness at 00200880 [verbose debug info unavailable]
-> 
-> Call Trace:
-> 
-> [00285E60] [00008E24]  (unreliable)
-> 
-> [00285E90] [000EBA14] 
-> 
-> [00285EA0] [00003D88] 
+> It wouldn't surprise me if the 8xx code has issues with PREEMPT; try
+> turning it off for now.
 
-Enable verbose debug messages and kallsyms for more useful output.
+What is your reason that 8xx would be any different?
 
-Are you running arch/ppc or arch/powerpc?
-
--Scott
+	-- Dan
