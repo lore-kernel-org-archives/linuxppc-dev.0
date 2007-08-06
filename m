@@ -2,21 +2,21 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 97F20DDE1F
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 05:01:57 +1000 (EST)
-In-Reply-To: <5C596943-5C01-4097-940C-29FF46E49BA7@kernel.crashing.org>
-References: <20070802173335.GA25369@localhost.localdomain>
-	<20070802173536.GA25643@localhost.localdomain>
-	<5C596943-5C01-4097-940C-29FF46E49BA7@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 8BF62DDE43
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 05:10:05 +1000 (EST)
+In-Reply-To: <200708011002.30962.m.kozlowski@tuxland.pl>
+References: <20070731230932.a9459617.akpm@linux-foundation.org>
+	<200708011002.30962.m.kozlowski@tuxland.pl>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <dc2e2d57444f90b10fdda30fada2ed4f@kernel.crashing.org>
+Message-Id: <76e360562cd5b50bcd991026e5bead55@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v2 1/2] [RFC][POWERPC] MPC832x_RDB: update dts to use spi,
-	register mmc_spi stub
-Date: Mon, 6 Aug 2007 21:01:51 +0200
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: 2.6.23-rc1-mm2
+Date: Mon, 6 Aug 2007 21:08:56 +0200
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: linux-usb-devel@lists.sourceforge.net, gregkh@suse.de,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> +			mmc@0 {
->> +				reg = <0>;
->> +				pio-handle = <&mmc0pio>;
->> +			};
->>  		};
+> Second issue as reported earilier allmodconfig fails to build on imac 
+> g3.
 >
-> I'm still against this.  Why don't we just do this in 
-> 83xx/mpc832x_rdb.c
+>   CC      arch/powerpc/kernel/lparmap.s
+>   AS      arch/powerpc/kernel/head_64.o
+> lparmap.c: Assembler messages:
+> lparmap.c:84: Error: file number 1 already allocated
+> make[1]: *** [arch/powerpc/kernel/head_64.o] Blad 1
+> make: *** [arch/powerpc/kernel] Blad 2
 
-Seconded.
+Please send me the full output of:
+
+gcc --version    (or whatever your gcc is called)
+ld --version
+ld --help        (I know no better way to get the supported binutils
+                   targets, and the default target)
+
+and the lparmap.s file.  You might want to skip sending it
+to the lists, it will be a bit big (and off-topic on most
+of those lists, anyway).
 
 
 Segher
