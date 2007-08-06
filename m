@@ -1,26 +1,30 @@
-Return-Path: <segher@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4F410DDE34
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 08:08:27 +1000 (EST)
-In-Reply-To: <20070806163137.136cc689.kim.phillips@freescale.com>
-References: <20070726135738.GB5643@localhost.localdomain>
-	<7BACDD73-9097-4139-8331-A1A14A6134D0@kernel.crashing.org>
-	<20070727114559.GB11463@localhost.localdomain>
-	<b3d36996792216ddd9dbae12212a4168@kernel.crashing.org>
-	<20070801141614.ad6604bb.kim.phillips@freescale.com>
-	<5e9344956c9e6d81f75d14d67064b78e@kernel.crashing.org>
-	<20070806163137.136cc689.kim.phillips@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <2ec8ba15bad689633a8dd8738acc0399@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC][PATCH] MPC832x_RDB: update dts to use spi,
-	register mmc_spi stub
-Date: Tue, 7 Aug 2007 00:08:17 +0200
-To: Kim Phillips <kim.phillips@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 6469CDDE9B
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 08:14:16 +1000 (EST)
+Subject: Re: [PATCH] mark PCI resource with start 0 as unassigned
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <04ce93c63dfaa543b4068d448c8115d8@kernel.crashing.org>
+References: <20061130165202.GA23205@aepfle.de>
+	<20061204123854.GA28159@aepfle.de>
+	<FF278F8E-1F65-488D-8821-86A1D9F3B5DA@kernel.crashing.org>
+	<4574197A.2020204@ru.mvista.com>
+	<4FC2EBCF-C927-435A-9BE3-E4403AFC042D@kernel.crashing.org>
+	<45741DDE.4080509@ru.mvista.com>
+	<20061204132124.4f7c50a9@localhost.localdomain>
+	<52F5B831-5B40-4D40-A77F-4D7484692CAE@kernel.crashing.org>
+	<46B0972C.3020000@ru.mvista.com>
+	<20070801165140.3e176cd1@the-village.bc.nu>
+	<04ce93c63dfaa543b4068d448c8115d8@kernel.crashing.org>
+Content-Type: text/plain
+Date: Tue, 07 Aug 2007 08:14:06 +1000
+Message-Id: <1186438446.938.81.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,31 +34,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>>>> +				max-speed-hz = <bebc20>; /* 12500000 Hz */
->>>>
->>>> Just max-speed.
->>>
->>> Segher, how is this different from:
->>>
->>> http://ozlabs.org/pipermail/linuxppc-dev/2007-April/034557.html
->>
->> Not sure what you mean.  I'm just saying that "speed-hz" is a
->> terrible name, I'm not saying that "max-speed" is perfect at all.
->
-> yet you suggest a /more/ generic name, contrary to your prior comments.
+On Mon, 2007-08-06 at 20:04 +0200, Segher Boessenkool wrote:
+> That's of course the smarter choice, _if_ we have a choice at
+> all -- on PowerPC, the PCI setup on certain platforms is done
+> by the firmware (and we don't want to mess with it for various
+> reasons), and some _do_ map PCI legacy I/O at 0.
+> 
+> Not in this case though, so let's just ignore that possibility
+> until it hits us in the face :-) 
 
-Uh, you mean "hz" doesn't mean "Hertz"?  What a great name,
-then</sarcasm>.
+Agreed. We can always try to remap just that device if it becomes an
+issue.
 
-> My interpretation of your recent comments is that 'max-speed' is now a
-> valid property name for devices such as ucc_geth.  Do I have that 
-> right?
-
-It is (and always was) a _valid_ name.  Whether it is a _good_
-name depends on the context; if there is only one speed it can
-be (reasonably) referring to, it is okay; if not (or even if so),
-you're better off being a bit more verbose in your property names.
-No need to go over the top though, it's all a tradeoff.
-
-
-Segher
+Ben.
