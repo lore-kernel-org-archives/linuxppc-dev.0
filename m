@@ -1,26 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 210F0DDEB8
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 07:47:37 +1000 (EST)
-Subject: Re: [PATCH 2.6.22.y] ieee1394: revert "sbp2: enforce 32bit
-	DMA	mapping"
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olaf Hering <olh@suse.de>
-In-Reply-To: <20070806135124.GA2900@suse.de>
-References: <fa.Qn3Snqoik3hhnxcA6HqjGV0Yzck@ifi.uio.no>
-	<46B4B3DC.7020609@shaw.ca> <46B4B7C6.1040107@s5r6.in-berlin.de>
-	<1186272926.938.8.camel@localhost.localdomain>
-	<46B5824B.1000103@s5r6.in-berlin.de>
-	<1186351473.938.21.camel@localhost.localdomain>
-	<20070806135124.GA2900@suse.de>
-Content-Type: text/plain
-Date: Tue, 07 Aug 2007 07:47:28 +1000
-Message-Id: <1186436848.938.75.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Robert Hancock <hancockr@shaw.ca>, linuxppc-dev@ozlabs.org,
-	Stefan Richter <stefanr@s5r6.in-berlin.de>, stable@kernel.org,
+	by ozlabs.org (Postfix) with ESMTP id 1BD02DDEBB
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 07:57:42 +1000 (EST)
+In-Reply-To: <46B79562.9020202@genesi-usa.com>
+References: <200708020440.l724edCT290676@shell01.TheWorld.com>
+	<46B79562.9020202@genesi-usa.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <f4545a576abeddf00f076a0cae9e3fdd@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Pegasos keyboard detection
+Date: Mon, 6 Aug 2007 23:57:35 +0200
+To: Matt Sealey <matt@genesi-usa.com>
+Cc: linuxppc-dev@ozlabs.org, Alan Curry <pacman@TheWorld.com>,
 	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -31,30 +25,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-08-06 at 15:51 +0200, Olaf Hering wrote:
-> On Mon, Aug 06, Benjamin Herrenschmidt wrote:
-> 
-> > BTW. Any reason why you don't set the DMA mask in the ohci driver rather
-> > than the sbp2 one ?
-> 
-> I used this patch, and the attached CD was found.
-> What dma mask should be used in ohci_probe()?
+> 2) The fix was in the wrong place anyway, if it was going to be done 
+> anywhere
+> at all it needs to be in 
+> arch/powerpc/kernel/prom_init.c:fixup_device_tree_chrp()
+> like the ISA ranges breakage (which is on Briq) and IDE IRQ 
+> misnumbering fix.
+> Not the keyboard platform driver.
 
-Allright. So I see two problems here:
+Yeah.  In the bootwrapper.
 
- - in the code that powerpc uses to generate the PCI tree based on the
-open firmware device-tree (instead of probing the bus), we don't set the
-dma mask to the default ffffffff.
+> 3) In any case this should be something that is fixed in the firmware, 
+> as any
+> stalwart, stubborn Linux developer will rant at you about.
 
- - our implementation of dma_supported() incorrectly tests against the
--previous- dma mask instead of the one we pass in as an argument.
+Sure, if you *can* get a fix for the firmware.  Until every
+user has this update, fixing it in the kernel wrapper helps
+users.
 
-I'll send a patch later today for you guys to test.
+> As for Segher, bootwrapper not such a good place as that's still 
+> mussing up
+> the kernel with these fixes. Let the boot loader do it for the OS, and 
+> don't
+> mess up the OS with device-tree fixups.
 
-In addition, make sure that ieee1394 properly uses the parent PCI dev
-and not some other intermediary struct device for the dma mask. Oh and,
-don't do the set_dma_mask() in sbp2, it has nothing to do there. It
-should be in the ohci1394 driver.
+Sure, the bootloader can do it too, but then we need to fix
+every bootloader that's used with Linux on this platform.
+Maybe that's just one, that would make things simple :-)
 
-Cheers,
-Ben.
+> After all it may not just be Linux
+> that stumbles on it. Why have the same patch in every OS?
+
+This is just pragmatics: Linux needs the workaround -> Linux
+implements the workaround.  Sure it is not a _proper_ fix, but
+a correctly implemented workaround "fixes" it for all users,
+forever.
+
+> With nvramrc, the fix is done for EVERY operating system from firmware 
+> upwards.
+
+But it's something every user has to do separately.
+
+> The semi-official Genesi line of support and what I have been told by 
+> the board
+> designer is if you need to fix something in the device tree, that is 
+> what nvramrc
+> is for, and that is why Open Firmware runs Forth scripts.
+
+That's hardly the only reason.  But yeah, that's one way to
+implement the workaround, but _we_ (the Linux community) cannot
+do it like that (easily) for all users.
+
+
+Segher
