@@ -1,21 +1,21 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 45EE0DDD0B
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 04:09:46 +1000 (EST)
-In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D90108BE44C2@EMPBEDEX.empirix.com>
-References: <BD261180E6D35F4D9D32F3E44FD3D90108BE44C2@EMPBEDEX.empirix.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3A76C14A-4A1C-48FA-9BEA-39020A131084@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: Trying to use Device Tree...and getting continuous interrupts
-	from attached 88e1145
-Date: Mon, 6 Aug 2007 13:09:35 -0500
-To: "Morrison, Tom" <tmorrison@empirix.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 51226DDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 04:09:49 +1000 (EST)
+In-Reply-To: <20070801123400.GA20200@localhost.localdomain>
+References: <20070726135738.GB5643@localhost.localdomain>
+	<692e6dabbfb62dc6d6ace3ea7552ef68@kernel.crashing.org>
+	<20070801123400.GA20200@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <44eb4173dacc69037ea9acfb7880818f@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC][PATCH] MPC832x_RDB: update dts to use spi,
+	register mmc_spi stub
+Date: Mon, 6 Aug 2007 20:09:43 +0200
+To: avorontsov@ru.mvista.com
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,48 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Aug 3, 2007, at 17:54, Morrison, Tom wrote:
-
-> All,
+>>> +			spi1pio:spi_pin@01 {
+>>
+>> There should be whitespace after the label.  @01 should be
+>> spelled @1.  Except there is no "reg" property.
 >
-> Connected to eth1 (etsec2) of my mpc8548 cpu is a 88E1145 and I
-> am trying to get the core functionality running with the device tree
-> paradigm - I know the sense of the 88E1145 is active-low for my
-> mpc8548 board and have it working with an older 2.6.11++ kernel.
+> Hm. I've just tried to keep original style in this particular dts.
+> Want to ack patch below?
+
+Not unless you get rid of the extra zeroes, too :-)
+
+> What is prefered style of <&label> vs. < &label > usage, btw?
 >
-> I built this new kernel with the marvell driver - it seemingly
-> does all the same things we did in the 2.6.11 kernel in separate
-> spots...
+> arch/powerpc/boot/dts$ grep "<&" -r . | wc -l
+> 327
+> arch/powerpc/boot/dts$ grep "< &" -r . | wc -l
+> 92
 >
-> Here is the appropriate parts of my device tree for this part of the
-> core...
+> I can only guess - the first?
+
+I think it looks neater, yes.  I wouldn't worry about it
+too much though.
+
+>> What is this
+>> stuff, anyway?
 >
->>> 		mdio@24520 {
->>> 			#address-cells = <1>;
->>> 			#size-cells = <0>;
->>> 			device_type = "mdio";
->>> 			compatible = "gianfar";	
->>> 			reg = <24520 20>;
->>> 			phy1: ethernet-phy@1 {
->>> 				interrupt-parent = <&mpic>;
->>> 				interrupts = <37 1>;
+> Which one? pio-map for spi? This is GPIO pins configuration, to use
+> dedicated functions (SPI) for these pins, otherwise SPI will not work.
+
+The weird pseudo-nodes, yes.  This really should be handled in
+platform code, not in the device tree; if there is a need to
+describe what GPIOs are used for what, that should be handled
+differently.
+
+> p.s. mpc8272ads.dts is broken wrt spaces/tabs, very.
+
+Care to do a cleanup patch?  Good for your karma ;-)
 
 
-How recent of a kernel are you using?  The current kernel assigns the  
-external interrupts to be the low 12 interrupts, which would make  
-your interrupt assignment wrong.
-
->
-> Now, that looks OK! Those are what I would expect. And when the
-> mdio/phy are probed, configured, and the 88E1145 interrupt (EXT7
-> (0x37H)) is enabled, the interrupt never (seemingly) gets cleared,
-> and basically hangs the entire box up and eventually it panics!
-
-
-Can you determine where it's hanging.  Or whether it is calling  
-phy_interrupt() at all?  phy_interrupt should be disabling the  
-interrupt at the PIC, and then the interrupt should be handled in a  
-work queue.
-
-Andy
+Segher
