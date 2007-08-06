@@ -1,20 +1,25 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 81B2EDDE21
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 02:41:32 +1000 (EST)
-Date: Mon, 6 Aug 2007 20:39:51 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [spi-devel-general] [PATCH] [SPI][POWERPC] spi_mpc83xx: fix
-	prescale modulus?calculation
-Message-ID: <20070806163951.GA1724@localhost.localdomain>
-References: <20070806131014.GA6913@localhost.localdomain>
-	<200708060844.40310.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <200708060844.40310.david-b@pacbell.net>
-Cc: spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 39D4EDDE24
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 03:16:40 +1000 (EST)
+In-Reply-To: <46B07F04.8040806@ru.mvista.com>
+References: <20070725165318.5331.23795.stgit@localhost.localdomain>
+	<46A79DE0.8060405@ru.mvista.com> <46A79F14.9040409@freescale.com>
+	<46A7A17C.8090505@ru.mvista.com> <46A7A1D5.7020003@freescale.com>
+	<46A7A5E4.4090105@ru.mvista.com>
+	<d04530fcd6e879e0bc059049b7951aef@kernel.crashing.org>
+	<46B07F04.8040806@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <ef909c9835ecc57be4f4fa7fdc405889@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/2] [IDE] Platform IDE driver
+Date: Mon, 6 Aug 2007 19:16:27 +0200
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,97 +29,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Aug 06, 2007 at 08:44:40AM -0700, David Brownell wrote:
-> On Monday 06 August 2007, Anton Vorontsov wrote:
-> > +
-> > +                       if (pm)
-> > +                               pm--;
-> > +                       else /* this floods dmesg if using mmc_spi, so dbg */
-> > +                               dev_dbg(&spi->dev, "Requested speed is too "
-> > +                                       "high: %d Hz. Will use %d Hz instead.\n",
-> > +                                       spi->max_speed_hz, mpc83xx_spi->spibrg / 4);
-> 
-> Except that's not worthy of any message whatsoever, so it shouldn't
-> even be a debug message:  user says "give me at most X", driver says
-> "fine", end of story.
-> 
-> I'm more bothered by the earlier message, which gives a rate higher
-> than X instead of cleanly failing.
+>> More importantly, "reg-shift" doesn't say what part of
+>> the bigger words to access.  A common example is byte-wide
+>> registers on a 32-bit-only bus; it's about 50%-50% between
+>> connecting the registers to the low byte vs. connecting it
+>> to the byte with the lowest address.
+>
+>    We already have "big-endian" prop used in MPIC nodes, IIRC. Could 
+> try to "reuse" it here as well...
 
-[...]
-> So the patch should be more like the appended ...
+Sure.  This would be an okay way to handle legacy devices that
+are connected in inventive ways: add "reg-shift" and/or "big-endian"
+properties.  We should make sure this is documented in the
+appropriate bindings though, don't just assume it will work.
 
-Thanks! Reposting here.
+For non-legacy devices, please just use the "compatible"
+property to figure out the endianness etc.; it is a bad idea
+to make a "blablabla-big-endian" compatible value, but you can
+almost often just use a more specific model name instead; and
+typically the device has some other quirks anyway ;-)
 
-- - - -
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: spi_mpc83xx: fix prescale modulus calculation
+>> It would be nice to not name similar properties in the
+>> device tree dissimilarly.  Kernel code doesn't come into
+>> the picture here.
+>
+>    The "reg-shift" prop is yet unaccepted ad-hockery at this point. ;-)
+>    So, I don't see why we have to be consistent with it.
 
-Long ago I've noticed (but didn't pay much attention) that
-spi_mpc83xx using PM calculations that differs from what
-specs describe. I.e.
+Don't treat your ad-hockery ad hoc, that way leads to insanity :-)
 
-u8 pm = mpc83xx_spi->spibrg / (spi->max_speed_hz * 4);
+It's quite important to use good names for all new properties
+you define, so you naturally end up with similar names for
+similar purposes.  Of course it isn't a *requirement*, you're
+right about that.
 
-While specs says: "The SPI baud rate generator clock source (either
-system clock or system clock divided by 16, depending on DIV16 bit) is
-divided by 4 * ([PM] + 1), a range from 4 to 64.".
 
-Thus " - 1" is missing in the spi_mpc83xx's formula.
-
-Why nobody noticed that bug? Probably because sysclk usually less then
-user expects, e.g. you expect 200 MHz, but real clock is 198 MHz,
-and integer rounding helps when this formula is used.
-
-Suppose it's SPI in QE, SYSCLK at 198 MHz, thus SPIBRG at 99MHz, 25 MHz
-requested.
-
-PM = (99MHz / ( 25 MHz * 4 )), PM == 0, output SPICLK will be 24.75 MHz
-
-At lower frequencies this bug is more noticeable, though.
-
-And this bug shows itself in all its beauty if SYSCLK is equal or a bit
-more than you expect (200 MHz SYSCLK, 100 MHz SPIBRG):
-PM = (100MHz / ( 25 MHz * 4 )), PM == 1, output SPICLK will be 12.625 MHz!
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
- drivers/spi/spi_mpc83xx.c |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/spi/spi_mpc83xx.c b/drivers/spi/spi_mpc83xx.c
-index fe69e94..2adf856 100644
---- a/drivers/spi/spi_mpc83xx.c
-+++ b/drivers/spi/spi_mpc83xx.c
-@@ -148,6 +148,8 @@ static void mpc83xx_spi_chipselect(struct spi_device *spi, int value)
- 	if (value == BITBANG_CS_ACTIVE) {
- 		u32 regval = mpc83xx_spi_read_reg(&mpc83xx_spi->base->mode);
- 		u32 len = spi->bits_per_word;
-+		u8 pm;
-+
- 		if (len == 32)
- 			len = 0;
- 		else
-@@ -170,7 +172,7 @@ static void mpc83xx_spi_chipselect(struct spi_device *spi, int value)
- 		regval |= SPMODE_LEN(len);
- 
- 		if ((mpc83xx_spi->spibrg / spi->max_speed_hz) >= 64) {
--			u8 pm = mpc83xx_spi->spibrg / (spi->max_speed_hz * 64);
-+			pm = mpc83xx_spi->spibrg / (spi->max_speed_hz * 64) - 1;
- 			if (pm > 0x0f) {
- 				dev_err(&spi->dev, "Requested speed is too "
- 					"low: %d Hz. Will use %d Hz instead.\n",
-@@ -180,7 +182,9 @@ static void mpc83xx_spi_chipselect(struct spi_device *spi, int value)
- 			}
- 			regval |= SPMODE_PM(pm) | SPMODE_DIV16;
- 		} else {
--			u8 pm = mpc83xx_spi->spibrg / (spi->max_speed_hz * 4);
-+			pm = mpc83xx_spi->spibrg / (spi->max_speed_hz * 4);
-+			if (pm)
-+				pm--;
- 			regval |= SPMODE_PM(pm);
- 		}
- 
--- 
-1.5.0.6
+Segher
