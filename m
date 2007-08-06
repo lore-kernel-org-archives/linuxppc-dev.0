@@ -1,19 +1,31 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 6 Aug 2007 14:31:47 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 2/6] PowerPC 440EPx: Sequoia DTS
-Message-ID: <20070806043147.GC6103@localhost.localdomain>
-References: <20070730150648.GA5005@ru.mvista.com>
-	<20070801020836.GB31391@localhost.localdomain>
-	<65ff446478a9fd0a48061079d5f04f8f@kernel.crashing.org>
-	<20070801050422.GI31391@localhost.localdomain>
-	<20070801054751.GM31391@localhost.localdomain>
-	<46B357D3.1040608@ru.mvista.com>
+Return-Path: <dwg@au1.ibm.com>
+Received: from ausmtp05.au.ibm.com (ausmtp05.au.ibm.com [202.81.18.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "ausmtp05.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7DB51DDE1B
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2007 14:39:48 +1000 (EST)
+Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.18.232])
+	by ausmtp05.au.ibm.com (8.13.8/8.13.8) with ESMTP id l764frDo1753238
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 14:41:53 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.250.244])
+	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l764csxl263274
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 14:38:54 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l764dl6M002641
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 14:39:47 +1000
+Date: Mon, 6 Aug 2007 14:38:55 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [patch 04/10] 4xx bootwrapper reworks
+Message-ID: <20070806043855.GF6103@localhost.localdomain>
+References: <20070803160900.069522000@linux.vnet.ibm.com>>
+	<20070803161710.676644000@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <46B357D3.1040608@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20070803161710.676644000@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,35 +35,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 03, 2007 at 08:29:07PM +0400, Sergei Shtylyov wrote:
-> David Gibson wrote:
+On Fri, Aug 03, 2007 at 11:09:04AM -0500, Josh Boyer wrote:
+> Make the fixup_memsize function common for all of 4xx as several chips share
+> the same SDRAM controller.  Also add functions to reset 40x chips and quiesce
+> the ethernet.
 > 
-> > Duh, forgot to attach the actual patch.  Here it is:
+> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 > 
-> > Index: working-2.6/Documentation/powerpc/booting-without-of.txt
-> > ===================================================================
-> > --- working-2.6.orig/Documentation/powerpc/booting-without-of.txt	2007-07-30 17:07:14.000000000 +1000
-> > +++ working-2.6/Documentation/powerpc/booting-without-of.txt	2007-07-30 17:07:14.000000000 +1000
-> > @@ -1757,45 +1757,23 @@ platforms are moved over to use the flat
-> >  		};
-> >  	};
-> >  
-> > -    j) Flash chip nodes
-> > +   j) CFI or JEDEC memory-mapped NOR flash
-> >  
-> >      Flash chips (Memory Technology Devices) are often used for solid state
-> >      file systems on embedded devices.
-> >  
-> > -    Required properties:
-> > +     - compatible : should contain the specific model of flash chip(s) used
-> > +       followed by either "cfi-flash" or "jedec-flash"
+> ---
+>  arch/powerpc/boot/44x.h   |    4 ----
+>  arch/powerpc/boot/4xx.c   |   36 +++++++++++++++++++++++++++++++-----
+>  arch/powerpc/boot/4xx.h   |   20 ++++++++++++++++++++
+>  arch/powerpc/boot/dcr.h   |    2 ++
+>  arch/powerpc/boot/ebony.c |    3 ++-
+>  5 files changed, 55 insertions(+), 10 deletions(-)
 > 
->     Duh, have nearly forgotten to complain about "-flash" suffix.  Isn't it 
-> superfluous?
+> --- linux-2.6.orig/arch/powerpc/boot/44x.h
+> +++ linux-2.6/arch/powerpc/boot/44x.h
+> @@ -10,10 +10,6 @@
+>  #ifndef _PPC_BOOT_44X_H_
+>  #define _PPC_BOOT_44X_H_
+>  
+> -void ibm44x_fixup_memsize(void);
+> -void ibm4xx_fixup_ebc_ranges(const char *ebc);
+> -
+> -void ibm44x_dbcr_reset(void);
+>  void ebony_init(void *mac0, void *mac1);
+>  
+>  #endif /* _PPC_BOOT_44X_H_ */
+> --- linux-2.6.orig/arch/powerpc/boot/4xx.c
+> +++ linux-2.6/arch/powerpc/boot/4xx.c
+> @@ -21,8 +21,8 @@
+>  #include "reg.h"
+>  #include "dcr.h"
+>  
+> -/* Read the 44x memory controller to get size of system memory. */
+> -void ibm44x_fixup_memsize(void)
+> +/* Read the 4xx SDRAM controller to get size of system memory. */
+> +void ibm4xx_fixup_memsize(void)
+>  {
+>  	int i;
+>  	unsigned long memsize, bank_config;
+> @@ -39,22 +39,48 @@ void ibm44x_fixup_memsize(void)
+>  	dt_fixup_memory(0, memsize);
+>  }
+>  
+> -#define SPRN_DBCR0		0x134
+> -#define   DBCR0_RST_SYSTEM	0x30000000
+> +#define DBCR0_RST_SYSTEM 0x30000000
 
-For CFI, I guess so.  But don't JEDEC standardise other things as well
-as flash?  I think "-flash" makes the description a bit more obvious,
-but I'll be swayed if a few other people chime in with opinions on this.
+Rather than just removing these defines and using hardcoded values,
+I'd prefer to see separate SPRN_DBCR0_40X and SPRN_DBCR0_44X defines.
+
+[snip]
+> +#define EMAC_RESET 0x20000000
+> +#define MAL_RESET 0x80000000
+
+I think the MAL_RESET definition should go in the same place as the
+DCR number definition.
+
+> +void ibm4xx_quiesce_eth(u32 *emac0, u32 *emac1)
+> +{
+
+As I think I said before, I'm not really happy with this being
+hardcoded assuming exactly 2 ethernets.
+
+> +	/* Quiesce the MAL and EMAC(s) since PIBS/OpenBIOS don't do this for us */
+> +	if (emac0)
+> +		*emac0 = EMAC_RESET;
+> +	if (emac1)
+> +		*emac1 = EMAC_RESET;
+> +
+> +	mtdcr(DCRN_MAL0_CFG, MAL_RESET);
+> +}
+[snip]
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
