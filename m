@@ -1,31 +1,30 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from ausmtp06.au.ibm.com (ausmtp06.au.ibm.com [202.81.18.155])
+Return-Path: <Wei.Zhang@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ausmtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9F403DDE1C
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2007 15:00:22 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by ausmtp06.au.ibm.com (8.13.8/8.13.8) with ESMTP id l7652ugQ3408022
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 15:02:56 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.250.242])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l7653qOH141556
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 15:03:52 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l7650JsQ007336
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 15:00:19 +1000
-Date: Mon, 6 Aug 2007 14:53:32 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [patch 08/10] Bamboo DTS
-Message-ID: <20070806045332.GA11051@localhost.localdomain>
-References: <20070803160900.069522000@linux.vnet.ibm.com>>
-	<20070803161711.202342000@linux.vnet.ibm.com>
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 31B2ADDE04
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2007 15:57:23 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l765vGdm028447
+	for <linuxppc-dev@ozlabs.org>; Sun, 5 Aug 2007 22:57:16 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l765vEXX009016
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 00:57:15 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070803161711.202342000@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: Please pull powerpc.git merge branch
+Date: Mon, 6 Aug 2007 13:57:14 +0800
+Message-ID: <46B96294322F7D458F9648B60E15112C7A98ED@zch01exm26.fsl.freescale.net>
+In-Reply-To: <18099.1109.83340.915328@cargo.ozlabs.ibm.com>
+References: <18099.1109.83340.915328@cargo.ozlabs.ibm.com>
+From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+To: "Paul Mackerras" <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,36 +34,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 03, 2007 at 11:09:08AM -0500, Josh Boyer wrote:
-> AMCC Bamboo board DTS
+Hi, Paul,
 
-All the compatible properties should have "XXXX-440ep" as the most
-precise version, in addition to the more general strings.
+How about following patches?
 
-> --- /dev/null
-> +++ linux-2.6/arch/powerpc/boot/dts/bamboo.dts
-> @@ -0,0 +1,248 @@
-> +/*
-> + * Device Tree Source for AMCC Bamboo
-> + *
-> + * Copyright (c) 2006, 2007 IBM Corp.
-> + * Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> + *
-> + * FIXME: Draft only!
-> + *
-> + * This file is licensed under the terms of the GNU General Public
-> + * License version 2.  This program is licensed "as is" without
-> + * any warranty of any kind, whether express or implied.
-> + *
-> + * To build:
-> + *   dtc -I dts -O asm -o bamboo.S -b 0 bamboo.dts
-> + *   dtc -I dts -O dtb -o bamboo.dtb -b 0 bamboo.dts
+[PATCH 1/2] Add sysdev/pci_quirks.c file into PowerPC architecture with
+ULI chip quirk functions.
+URL: http://ozlabs.org/pipermail/linuxppc-dev/2007-August/040363.html
+[PATCH 2/2] Remove ULI chip quirks functions from MPC8641HPCN and
+MPC8544DS boards.
+URL: http://ozlabs.org/pipermail/linuxppc-dev/2007-August/040364.html
 
-Can we ditch this "to build" boilerplate.  It's just another thing
-people frequently forget to update as they copy it from dts to dts.
+[PATCH 1/3] Add a new member name to structure irq_host =20
+URL: http://ozlabs.org/pipermail/linuxppc-dev/2007-July/039896.html
+[PATCH 2/3] Add irq host name for all powerpc interrupt controllors.=20
+URL: http://ozlabs.org/pipermail/linuxppc-dev/2007-July/039897.html
+[PATCH 3/3] Add irq debugfs and virq_mapping for getting the virq=20
+URL: http://ozlabs.org/pipermail/linuxppc-dev/2007-July/039895.html
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+
+Thanks!
+
+Best Regards,
+Zhang Wei
+
+
+
+> -----Original Message-----
+> From: linuxppc-dev-bounces+wei.zhang=3Dfreescale.com@ozlabs.org=20
+> [mailto:linuxppc-dev-bounces+wei.zhang=3Dfreescale.com@ozlabs.or
+> g] On Behalf Of Paul Mackerras
+> Sent: Friday, August 03, 2007 6:33 PM
+> To: torvalds@linux-foundation.org
+> Cc: linuxppc-dev@ozlabs.org
+> Subject: Please pull powerpc.git merge branch
+>=20
+> Linus,
+>=20
+> Please do
+>=20
+> git pull \
+> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+>=20
+> to get another batch of bug-fixes for powerpc.
+>=20
+> Thanks,
+> Paul.
+>=20
+>  arch/powerpc/kernel/entry_64.S            |    3 +++
+>  arch/powerpc/kernel/pci_32.c              |    5 ++++-
+>  arch/powerpc/kernel/smp.c                 |    9 +++------
+>  arch/powerpc/mm/hash_low_64.S             |    6 ++++--
+>  arch/powerpc/mm/hash_utils_64.c           |    2 +-
+>  arch/powerpc/mm/numa.c                    |    4 ++--
+>  arch/powerpc/mm/slb.c                     |   28=20
+> ++++++++++++++++++----------
+>  arch/powerpc/platforms/cell/spufs/sched.c |    3 ++-
+>  arch/powerpc/platforms/powermac/feature.c |    6 ++++--
+>  arch/powerpc/platforms/ps3/setup.c        |    2 +-
+>  include/asm-powerpc/mmu-hash64.h          |    1 +
+>  include/asm-powerpc/pgtable-64k.h         |    8 +++-----
+>  12 files changed, 46 insertions(+), 31 deletions(-)
+>=20
+> Andre Detsch (1):
+>       [POWERPC] spufs: Fix affinity after introduction of=20
+> node_allowed() calls
+>=20
+> Kevin Corry (1):
+>       [POWERPC] Fix num_cpus calculation in smp_call_function_map()
+>=20
+> Michael Ellerman (1):
+>       [POWERPC] Fix parse_drconf_memory() for 64-bit start addresses
+>=20
+> Michael Neuling (1):
+>       [POWERPC] Fixes for the SLB shadow buffer code
+>=20
+> Paul Mackerras (2):
+>       [POWERPC] Expand RPN field to 34 bits when using 64k pages
+>       [POWERPC] Fix special PTE code for secondary hash bucket
+>=20
+> Segher Boessenkool (2):
+>       [POWERPC] Fix a compile warning in pci_32.c
+>       [POWERPC] Fix a compile warning in powermac/feature.c
+>=20
+> Stephen Rothwell (1):
+>       [POWERPC] ps3: Fix section mismatch in ps3/setup.c
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>=20
