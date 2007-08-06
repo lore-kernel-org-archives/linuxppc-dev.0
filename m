@@ -1,40 +1,37 @@
-Return-Path: <ossthema@de.ibm.com>
-Received: from mtagate5.de.ibm.com (mtagate5.de.ibm.com [195.212.29.154])
+Return-Path: <osstklei@de.ibm.com>
+Received: from mtagate4.uk.ibm.com (mtagate4.uk.ibm.com [195.212.29.137])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate5.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1A937DDDDB
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2007 18:21:11 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate5.de.ibm.com (8.13.8/8.13.8) with ESMTP id l768L5g5914318
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 08:21:05 GMT
-Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
-	[9.149.165.212])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.4) with
-	ESMTP id l768L58c1736888
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 10:21:05 +0200
-Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l768L1ib014508
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 10:21:01 +0200
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-To: =?utf-8?q?J=C3=B6rn_Engel?= <joern@logfs.org>
-Subject: Re: [PATCH 1/1] lro: Generic Large Receive Offload for TCP traffic
-Date: Mon, 6 Aug 2007 09:51:11 +0200
-References: <200708031441.20632.ossthema@de.ibm.com>
-	<20070803134150.GH19344@lazybastard.org>
-In-Reply-To: <20070803134150.GH19344@lazybastard.org>
+	(Client CN "mtagate4.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 85508DDDEA
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2007 21:55:09 +1000 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate4.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l76Bt4nj169016
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 11:55:04 GMT
+Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
+	[9.149.37.213])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.4) with
+	ESMTP id l76Bt3cu2945198
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 12:55:04 +0100
+Received: from d06av03.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av03.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l76Bsl3P008790
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 12:54:47 +0100
+From: Thomas Klein <osstklei@de.ibm.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: [RESEND][PATCH 1/3] ehea: Fix workqueue handling
+Date: Mon, 6 Aug 2007 13:54:29 +0200
 MIME-Version: 1.0
+Message-Id: <200708061354.30653.osstklei@de.ibm.com>
 Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200708060951.12408.ossthema@de.ibm.com>
-Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
-	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+  charset="us-ascii"
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
 	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>, Andrew Gallatin <gallatin@myri.com>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>,
-	David Miller <davem@davemloft.net>
+	Christoph Raisch <raisch@de.ibm.com>,
+	Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
+	linux-ppc <linuxppc-dev@ozlabs.org>,
+	Jan-Bernd Themann <ossthema@de.ibm.com>, Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -44,55 +41,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi J=C3=B6rn
+Fix: Workqueue ehea_driver_wq was not destroyed
 
-On Friday 03 August 2007 15:41, J=C3=B6rn Engel wrote:
-> On Fri, 3 August 2007 14:41:19 +0200, Jan-Bernd Themann wrote:
-> >=20
-> > This patch provides generic Large Receive Offload (LRO) functionality
-> > for IPv4/TCP traffic.
-> >=20
-> > LRO combines received tcp packets to a single larger tcp packet and=20
-> > passes them then to the network stack in order to increase performance
-> > (throughput). The interface supports two modes: Drivers can either pass
-> > SKBs or fragment lists to the LRO engine.=20
->=20
-> Maybe this is a stupid question, but why is LRO done at the device
-> driver level?
->=20
-> If it is a unversal performance benefit, I would have expected it to be
-> done generically, i.e. have all packets moved into network layer pass
-> through LRO instead.
+Signed-off-by: Thomas Klein <tklein@de.ibm.com>
 
-The driver seems to be the right place:
-=2D  There is the "page mode" interface that accepts fragment lists instead=
- of
-   SKBs and does generate SKBs only in the end (see Andrew Gallatins=20
-   mails where he described the advantages of this approach)
+---
+ drivers/net/ehea/ehea.h      |    2 +-
+ drivers/net/ehea/ehea_main.c |    1 +
+ 2 files changed, 2 insertions(+), 1 deletions(-)
 
-=2D  Some drivers (in particular for 10G NICs which actually could benefit
-   from LRO) have multiple HW receive queues that do some sort of sorting,
-   thus using one lro_mgr per queue increases the likelyhood of beeing able
-   to do efficient LRO.
-  =20
-
-> > +void lro_flush_pkt(struct net_lro_mgr *lro_mgr,
-> > +		   struct iphdr *iph, struct tcphdr *tcph);
-
-> In particular this bit looks like it should be driven by a timeout,
-> which would be settable via /proc/sys/net/core/lro_timeout or similar.
-
-No, this function is needed for "page mode" as some HW provides
-extra handling for small packets where packets are not stored in preallocat=
-ed=20
-pages but in extra queues. Thus the driver needs a way to flush old sessions
-for this connection and handle these packets in a different way (for exampl=
-e=20
-create a SKB and copy the data there).
-
-Timeouts are not used at all. Experiments showed that flushing at the end=20
-of a NAPI poll round seems to be sufficient (see Andrew's test results)
-and does not affect the latency too badly.
-
-Regards,
-Jan-Bernd
+diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
+index 8ee2c2c..d67f97b 100644
+--- a/drivers/net/ehea/ehea.h
++++ b/drivers/net/ehea/ehea.h
+@@ -39,7 +39,7 @@
+ #include <asm/io.h>
+ 
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0072"
++#define DRV_VERSION	"EHEA_0073"
+ 
+ /* eHEA capability flags */
+ #define DLPAR_PORT_ADD_REM 1
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index 58702f5..d43ab0f 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -3099,6 +3099,7 @@ out:
+ 
+ static void __exit ehea_module_exit(void)
+ {
++	destroy_workqueue(ehea_driver_wq);
+ 	driver_remove_file(&ehea_driver.driver, &driver_attr_capabilities);
+ 	ibmebus_unregister_driver(&ehea_driver);
+ 	ehea_destroy_busmap();
+-- 
+1.5.2
