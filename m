@@ -1,20 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F09C0DDE1E
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2007 23:56:30 +1000 (EST)
-In-Reply-To: <46B96294322F7D458F9648B60E15112C7A98ED@zch01exm26.fsl.freescale.net>
-References: <18099.1109.83340.915328@cargo.ozlabs.ibm.com>
-	<46B96294322F7D458F9648B60E15112C7A98ED@zch01exm26.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <FCAE5E05-7F25-436F-963B-B757765D343A@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Please pull powerpc.git merge branch
-Date: Mon, 6 Aug 2007 08:57:37 -0500
-To: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <david-b@pacbell.net>
+Received: from smtp112.sbc.mail.re2.yahoo.com (smtp112.sbc.mail.re2.yahoo.com
+	[68.142.229.93]) by ozlabs.org (Postfix) with SMTP id 7F956DDD0C
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 01:44:44 +1000 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: spi-devel-general@lists.sourceforge.net
+Subject: Re: [spi-devel-general] [PATCH] [SPI][POWERPC] spi_mpc83xx: fix
+	prescale =?iso-8859-1?q?modulus=09calculation?=
+Date: Mon, 6 Aug 2007 08:44:40 -0700
+References: <20070806131014.GA6913@localhost.localdomain>
+In-Reply-To: <20070806131014.GA6913@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200708060844.40310.david-b@pacbell.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,29 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Monday 06 August 2007, Anton Vorontsov wrote:
+> +
+> +                       if (pm)
+> +                               pm--;
+> +                       else /* this floods dmesg if using mmc_spi, so dbg */
+> +                               dev_dbg(&spi->dev, "Requested speed is too "
+> +                                       "high: %d Hz. Will use %d Hz instead.\n",
+> +                                       spi->max_speed_hz, mpc83xx_spi->spibrg / 4);
 
-On Aug 6, 2007, at 12:57 AM, Zhang Wei-r63237 wrote:
+Except that's not worthy of any message whatsoever, so it shouldn't
+even be a debug message:  user says "give me at most X", driver says
+"fine", end of story.
 
-> Hi, Paul,
->
-> How about following patches?
->
-> [PATCH 1/2] Add sysdev/pci_quirks.c file into PowerPC architecture  
-> with
-> ULI chip quirk functions.
-> URL: http://ozlabs.org/pipermail/linuxppc-dev/2007-August/040363.html
-> [PATCH 2/2] Remove ULI chip quirks functions from MPC8641HPCN and
-> MPC8544DS boards.
-> URL: http://ozlabs.org/pipermail/linuxppc-dev/2007-August/040364.html
->
-> [PATCH 1/3] Add a new member name to structure irq_host
-> URL: http://ozlabs.org/pipermail/linuxppc-dev/2007-July/039896.html
-> [PATCH 2/3] Add irq host name for all powerpc interrupt controllors.
-> URL: http://ozlabs.org/pipermail/linuxppc-dev/2007-July/039897.html
-> [PATCH 3/3] Add irq debugfs and virq_mapping for getting the virq
-> URL: http://ozlabs.org/pipermail/linuxppc-dev/2007-July/039895.html
+I'm more bothered by the earlier message, which gives a rate higher
+than X instead of cleanly failing.
 
-These patches aren't fixing any bugs and would be for 2.6.24 at this  
-point.
-
-- k
+- Dave
