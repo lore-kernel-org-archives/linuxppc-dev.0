@@ -1,15 +1,36 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 7D4B2DDE11
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2007 23:11:53 +1000 (EST)
-Date: Mon, 6 Aug 2007 17:10:14 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: spi-devel-general@lists.sourceforge.net
-Subject: [PATCH] [SPI][POWERPC] spi_mpc83xx: fix prescale modulus calculation
-Message-ID: <20070806131014.GA6913@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E4B32DDDD8
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2007 23:48:20 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l76DmFif027720
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 09:48:15 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l76DmFcL252680
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 07:48:15 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l76DmFEn032305
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 07:48:15 -0600
+Date: Mon, 6 Aug 2007 08:48:13 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: DTC 1.0.0 Release Coming?
+Message-ID: <20070806084813.5432ba91@weaponx.rchland.ibm.com>
+In-Reply-To: <20070727013331.GB1561@localhost.localdomain>
+References: <E1IDjSy-0003eC-T4@jdl.com>
+	<20070726030550.GA1149@localhost.localdomain>
+	<E1IE314-0000qF-5x@jdl.com>
+	<20070726142739.GB18684@localhost.localdomain>
+	<E1IE59h-0001tt-JE@jdl.com>
+	<20070727013331.GB1561@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,65 +40,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Long ago I've noticed (but didn't pay much attention) that
-spi_mpc83xx using PM calculations that differs from what
-specs describe. I.e.
+On Fri, 27 Jul 2007 11:33:31 +1000
+David Gibson <david@gibson.dropbear.id.au> wrote:
 
-u8 pm = mpc83xx_spi->spibrg / (spi->max_speed_hz * 4);
+> On Thu, Jul 26, 2007 at 10:21:33AM -0500, Jon Loeliger wrote:
+> > So, like, the other day David Gibson mumbled:
+> > 
+> > > > > Only thing I'm not really happy with in the current release is the
+> > > > > versioning stuff.  For starters, it always reports my builds as
+> > > > > -dirty, even when they're not.
+> > > > 
+> > > > I think it won't do that once there is a tag available.
+> > > 
+> > > Your 1.0.0-rc1 tag is there, still showing as dirty.
 
-While specs says: "The SPI baud rate generator clock source (either
-system clock or system clock divided by 16, depending on DIV16 bit) is
-divided by 4 * ([PM] + 1), a range from 4 to 64.".
+git vs quilt issue, as you have already discovered.  I've always seen
+that with kernel builds.
 
-Thus " - 1" is missing in the spi_mpc83xx's formula.
+> > > > I would like to keep the current version mechanism as it
+> > > > is really quite similar to what is in the Kernel now.
+> > > 
+> > > First, I don't think it really is - except in superficial aspect of
+> > > how the version number is partitioned
+> > 
+> > I lifted the code from the Kernel's Makefile directly, and tweaked
+> > it slightly for lack of Kconfig aspects.
+> 
+> Ah, yes, ok, I see.  Frankly I really don't think a lot of that stuff
+> makes much sense outside the context of Kbuild.  The whole complex
+> filechk macro, for example - for which there's only one used parameter
+> in dtc's case.
 
-Why nobody noticed that bug? Probably because sysclk usually less then
-user expects, e.g. you expect 200 MHz, but real clock is 198 MHz,
-and integer rounding helps when this formula is used.
+Except didn't you say you were going to work with Stephen to get DTC
+into the kernel source itself?  Keeping things similar to Kbuild might
+help in that effort.
 
-Suppose it's SPI in QE, SYSCLK at 198 MHz, thus SPIBRG at 99MHz, 25 MHz
-requested.
+> > I don't want to tie the code and build mechanism to git too much.
+> > Specifically, we need to be able to support stand-alone tarball
+> > based builds.  For example, I've spoken to the Debian package
+> > maintainer on this issue, and he likes this approach as well as
+> > he says it will make packaging it much easier.
+> 
+> Have a look at the patch I posted.  I haven't sufficiently tested it
+> yet, but it should be able to generated version info for a tarball too
+> (provided the .git-manifest file is included, and I'm intending that
+> will be build by a make dist target).  It will give both the
+> git-derived based version, and a file content derived hash so we can
+> robustly tell different builds apart, all with less code than the
+> current system.
 
-PM = (99MHz / ( 25 MHz * 4 )), PM == 0, output SPICLK will be 24.75 MHz
+That may be.  But I don't see the current approach being too much of a
+problem either.  Especially given that it's already there and it
+works.  Oh, and you sent out your patch saying it wasn't ready for
+merge and with no sign off.  Small but important issues to fix I'd
+think.
 
-At lower frequencies this bug is more noticeable, though.
+This seems to be the last issue holding up a dtc 1.0 release.  Perhaps
+we could go with what exists and see if there really are problems.  It
+can always be fixed later.
 
-And this bug shows itself in all its beauty if SYSCLK is equal or a bit
-more than you expect (200 MHz SYSCLK, 100 MHz SPIBRG):
-PM = (100MHz / ( 25 MHz * 4 )), PM == 1, output SPICLK will be 12.625 MHz!
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/spi/spi_mpc83xx.c |   10 +++++++++-
- 1 files changed, 9 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/spi/spi_mpc83xx.c b/drivers/spi/spi_mpc83xx.c
-index 446b624..042704b 100644
---- a/drivers/spi/spi_mpc83xx.c
-+++ b/drivers/spi/spi_mpc83xx.c
-@@ -170,7 +170,8 @@ static void mpc83xx_spi_chipselect(struct spi_device *spi, int value)
- 		regval |= SPMODE_LEN(len);
- 
- 		if ((mpc83xx_spi->spibrg / spi->max_speed_hz) >= 64) {
--			u8 pm = mpc83xx_spi->spibrg / (spi->max_speed_hz * 64);
-+			u8 pm = mpc83xx_spi->spibrg / (spi->max_speed_hz * 64) - 1;
-+
- 			if (pm > 0x0f) {
- 				dev_warn(&spi->dev, "Requested speed is too "
- 					"low: %d Hz. Will use %d Hz instead.\n",
-@@ -180,6 +181,13 @@ static void mpc83xx_spi_chipselect(struct spi_device *spi, int value)
- 			regval |= SPMODE_PM(pm) | SPMODE_DIV16;
- 		} else {
- 			u8 pm = mpc83xx_spi->spibrg / (spi->max_speed_hz * 4);
-+
-+			if (pm)
-+				pm--;
-+			else /* this floods dmesg if using mmc_spi, so dbg */
-+				dev_dbg(&spi->dev, "Requested speed is too "
-+					"high: %d Hz. Will use %d Hz instead.\n",
-+					spi->max_speed_hz, mpc83xx_spi->spibrg / 4);
- 			regval |= SPMODE_PM(pm);
- 		}
- 
--- 
-1.5.0.6
+josh
