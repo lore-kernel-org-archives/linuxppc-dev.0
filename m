@@ -1,16 +1,27 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Message-ID: <46B792B3.8020000@am.sony.com>
-Date: Mon, 06 Aug 2007 14:29:23 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v2] cell: move SPU affinity init to spu_management_of_ops
-References: <200707252342.50244.adetsch@br.ibm.com> <46B3DC2A.408@am.sony.com>
-	<200708040925.49098.arnd@arndb.de>
-In-Reply-To: <200708040925.49098.arnd@arndb.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org, hch@lst.de,
-	Arnd Bergmann <arnd@arndb.de>, Andre Detsch <adetsch@br.ibm.com>
+Return-Path: <kim.phillips@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 697D1DDE1E
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 07:31:52 +1000 (EST)
+Date: Mon, 6 Aug 2007 16:31:37 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC][PATCH] MPC832x_RDB: update dts to use spi, register
+	mmc_spi stub
+Message-Id: <20070806163137.136cc689.kim.phillips@freescale.com>
+In-Reply-To: <5e9344956c9e6d81f75d14d67064b78e@kernel.crashing.org>
+References: <20070726135738.GB5643@localhost.localdomain>
+	<7BACDD73-9097-4139-8331-A1A14A6134D0@kernel.crashing.org>
+	<20070727114559.GB11463@localhost.localdomain>
+	<b3d36996792216ddd9dbae12212a4168@kernel.crashing.org>
+	<20070801141614.ad6604bb.kim.phillips@freescale.com>
+	<5e9344956c9e6d81f75d14d67064b78e@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,26 +31,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Saturday 04 August 2007, Geoff Levand wrote:
->> 
->> From: Andre Detsch <adetsch@br.ibm.com>
->> 
->> This patch moves affinity initialization code from spu_base.c to a
->> new spu_management_of_ops function (init_affinity), which is empty
->> in the case of PS3. This fixes a linking problem that was happening
->> when compiling for PS3.
->> Also, some small code style changes were made.
->> 
->> Signed-off-by: Andre Detsch <adetsch@br.ibm.com>
->> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+On Mon, 6 Aug 2007 20:25:13 +0200
+Segher Boessenkool <segher@kernel.crashing.org> wrote:
+
+> >>>>> +				max-speed-hz = <bebc20>; /* 12500000 Hz */
+> >>
+> >> Just max-speed.
+> >
+> > Segher, how is this different from:
+> >
+> > http://ozlabs.org/pipermail/linuxppc-dev/2007-April/034557.html
 > 
-> 
-> Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+> Not sure what you mean.  I'm just saying that "speed-hz" is a
+> terrible name, I'm not saying that "max-speed" is perfect at all.
 
-Hi Paul,
+yet you suggest a /more/ generic name, contrary to your prior comments.
 
-As this one fixes a build breakage, I would like you to queue it
-up for Linus to pull at the next opportunity.
+My interpretation of your recent comments is that 'max-speed' is now a
+valid property name for devices such as ucc_geth.  Do I have that right?
 
--Geoff
+Kim
