@@ -1,24 +1,16 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4FC43DDDF3
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 07:25:27 +1000 (EST)
-In-Reply-To: <200708062134.16643.m.kozlowski@tuxland.pl>
-References: <20070731230932.a9459617.akpm@linux-foundation.org>
-	<200708011002.30962.m.kozlowski@tuxland.pl>
-	<76e360562cd5b50bcd991026e5bead55@kernel.crashing.org>
-	<200708062134.16643.m.kozlowski@tuxland.pl>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <236b147ed4a92945baa3c6b29e7e5f31@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: 2.6.23-rc1-mm2
-Date: Mon, 6 Aug 2007 23:25:06 +0200
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Cc: linux-usb-devel@lists.sourceforge.net, gregkh@suse.de,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Message-ID: <46B792B3.8020000@am.sony.com>
+Date: Mon, 06 Aug 2007 14:29:23 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH v2] cell: move SPU affinity init to spu_management_of_ops
+References: <200707252342.50244.adetsch@br.ibm.com> <46B3DC2A.408@am.sony.com>
+	<200708040925.49098.arnd@arndb.de>
+In-Reply-To: <200708040925.49098.arnd@arndb.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org, hch@lst.de,
+	Arnd Bergmann <arnd@arndb.de>, Andre Detsch <adetsch@br.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,37 +20,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> Second issue as reported earilier allmodconfig fails to build on imac
->>> g3.
->>>
->>>   CC      arch/powerpc/kernel/lparmap.s
->>>   AS      arch/powerpc/kernel/head_64.o
->>> lparmap.c: Assembler messages:
->>> lparmap.c:84: Error: file number 1 already allocated
->>> make[1]: *** [arch/powerpc/kernel/head_64.o] Blad 1
->>> make: *** [arch/powerpc/kernel] Blad 2
->>
->> Please send me the full output of:
->>
->> gcc --version    (or whatever your gcc is called)
->> ld --version
->> ld --help        (I know no better way to get the supported binutils
->>                    targets, and the default target)
->>
->> and the lparmap.s file.  You might want to skip sending it
->> to the lists, it will be a bit big (and off-topic on most
->> of those lists, anyway).
->
-> Well ... its 66kB. Not that bad. Please find it attached.
-> Needed gcc and ld info below.
+Arnd Bergmann wrote:
+> On Saturday 04 August 2007, Geoff Levand wrote:
+>> 
+>> From: Andre Detsch <adetsch@br.ibm.com>
+>> 
+>> This patch moves affinity initialization code from spu_base.c to a
+>> new spu_management_of_ops function (init_affinity), which is empty
+>> in the case of PS3. This fixes a linking problem that was happening
+>> when compiling for PS3.
+>> Also, some small code style changes were made.
+>> 
+>> Signed-off-by: Andre Detsch <adetsch@br.ibm.com>
+>> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+> 
+> 
+> Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
-Thanks.
+Hi Paul,
 
-It seems like things go wrong when lparmap.s is generated with
-(DWARF) debug info; could you try building it (manually) with -g0
-added on the end of the compile line, and see if head_64.o compiles
-okay for you then?  If so, I'll prepare a proper patch for it, I
-have a similar one (also for lparmap!) in my queue already...
+As this one fixes a build breakage, I would like you to queue it
+up for Linus to pull at the next opportunity.
 
-
-Segher
+-Geoff
