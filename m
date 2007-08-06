@@ -1,31 +1,14 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 97213DDE10
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2007 13:34:13 +1000 (EST)
-Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.18.232])
-	by ausmtp04.au.ibm.com (8.13.8/8.13.8) with ESMTP id l763b9mP309232
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 13:37:09 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.250.244])
-	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l763XF6H154514
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 13:33:15 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l763Y8qR026289
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 13:34:08 +1000
-Date: Sat, 4 Aug 2007 17:45:38 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [patch 02/10] 4xx Kconfig cleanup
-Message-ID: <20070804074538.GA5662@localhost.localdomain>
-References: <20070803160900.069522000@linux.vnet.ibm.com>>
-	<20070803161710.335369000@linux.vnet.ibm.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 6 Aug 2007 14:02:49 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Yoder Stuart-B08248 <stuart.yoder@freescale.com>
+Subject: Re: [PATCH 3/3] First cut at PReP support for arch/powerpc
+Message-ID: <20070806040249.GA6103@localhost.localdomain>
+References: <9696D7A991D0824DBA8DFAC74A9C5FA303156076@az33exm25.fsl.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070803161710.335369000@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA303156076@az33exm25.fsl.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,27 +18,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 03, 2007 at 11:09:02AM -0500, Josh Boyer wrote:
-> Remove some leftover cruft in the 40x Kconfig file.  Also make sure we
-> select WANT_DEVICE_TREE for 40x.
+On Fri, Aug 03, 2007 at 02:55:16PM -0700, Yoder Stuart-B08248 wrote:
 > 
-> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> > > > > +		MPIC: interrupt-controller@d {
+> > > > > +			device_type = "open-pic";
+> > > > > 
+> > > > > device_type = "interrupt-controller".
+> > > 
+> > > Not according to the binding in booting-without-of.txt
+> > 
+> > My understanding here, though possibly flawed, is that the current
+> > implementation has "open-pic" but _should_ have "interrupt-controller"
+> > as that is the officially correct name.
+> > 
+> > I _think_ this means we need a transitional period where we update
+> > the code to look for "interrupt-controller", and obsoletedly, looks
+> > for the "open-pic", while we transition to the new, correct name.
 > 
-> ---
->  arch/powerpc/platforms/40x/Kconfig     |   77 ---------------------------------
->  arch/powerpc/platforms/Kconfig.cputype |    1 
->  2 files changed, 1 insertion(+), 77 deletions(-)
+> "open-pic" is the correct value for the device_type property.
+> See the binding at:
+> http://playground.sun.com/1275/bindings/chrp/chrp1_8a.ps
+> That is the definition for open pic interrupt controllers (AFAIK).
 > 
-> --- linux-2.6.orig/arch/powerpc/platforms/40x/Kconfig
-> +++ linux-2.6/arch/powerpc/platforms/40x/Kconfig
-> @@ -1,16 +1,3 @@
-> -config 4xx
-> -	bool
-> -	depends on 40x || 44x
-> -	default y
+> I am not aware of any official binding with "interrupt-controller" 
+> as the device_type.
 
-You've removed this one, but I don't see you re-add it anywhere.  We
-still need to define the CONFIG_4xx symbol or things will break..
+That's what I thought.
+
+> However, the interrupt mapping spec says that all interrupt
+> controller (regardless of device_type) must have a 
+> property named "interrupt-controller" to identify
+> the device node as an interrupt controller and root of
+> a interrupt tree.
+> See: http://playground.sun.com/1275/practice/imap/imap0_9d.html
+
+Ah, yes.  Added to both the mpic and 8259.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
