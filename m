@@ -1,21 +1,16 @@
 Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <1186154678.9004.22.camel@ld0161-tx32>
-References: <20070627065335.GD11191@localhost.localdomain>
-	<20070627071008.GA30648@localhost.localdomain>
-	<b1bc50e84cd3f8009eca2b470bea026f@kernel.crashing.org>
-	<20070628100020.GA24215@iram.es>
-	<20070803063532.GB14456@localhost.localdomain>
-	<1186154678.9004.22.camel@ld0161-tx32>
+In-Reply-To: <20070806040249.GA6103@localhost.localdomain>
+References: <9696D7A991D0824DBA8DFAC74A9C5FA303156076@az33exm25.fsl.freescale.net>
+	<20070806040249.GA6103@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <b2fbd55160457499993f42a04031af29@kernel.crashing.org>
+Message-Id: <acbb5c6cec93d20a19f48e86bc5e7a73@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH 3/3] First cut at PReP support for arch/powerpc
-Date: Mon, 6 Aug 2007 21:43:43 +0200
-To: Jon Loeliger <jdl@freescale.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Date: Mon, 6 Aug 2007 21:45:01 +0200
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Yoder Stuart-B08248 <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,26 +20,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>> +		MPIC: interrupt-controller@d {
->>>> +			device_type = "open-pic";
->>>>
->>>> device_type = "interrupt-controller".
->>
->> Not according to the binding in booting-without-of.txt
+>> However, the interrupt mapping spec says that all interrupt
+>> controller (regardless of device_type) must have a
+>> property named "interrupt-controller" to identify
+>> the device node as an interrupt controller and root of
+>> a interrupt tree.
+>> See: http://playground.sun.com/1275/practice/imap/imap0_9d.html
 >
-> My understanding here, though possibly flawed, is that the current
-> implementation has "open-pic" but _should_ have "interrupt-controller"
-> as that is the officially correct name.
->
-> I _think_ this means we need a transitional period where we update
-> the code to look for "interrupt-controller", and obsoletedly, looks
-> for the "open-pic", while we transition to the new, correct name.
->
-> I'm just betting that if I'm wrong Segher will tell me! :-)
+> Ah, yes.  Added to both the mpic and 8259.
 
-You're wrong :-)
+See?  Even if I make mistakes some good comes from it!
 
-The kernel shouldn't look at device_type at all.
+;-) ;-) ;-)
 
 
 Segher
