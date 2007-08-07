@@ -1,19 +1,21 @@
-Return-Path: <jeynergilcaga@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.189])
-	by ozlabs.org (Postfix) with ESMTP id B0F43DDDFA
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CE12EDDE29
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Aug 2007 19:05:36 +1000 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so1174347rvf
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 07 Aug 2007 02:05:35 -0700 (PDT)
-Message-ID: <cad107560708070205u683655frcfccfbe344a914ca@mail.gmail.com>
-Date: Tue, 7 Aug 2007 17:05:35 +0800
-From: "Jeyner Gil Caga" <jeynergilcaga@gmail.com>
+	Tue,  7 Aug 2007 21:32:58 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IINJ0-0006Kw-TL
+	for linuxppc-embedded@ozlabs.org; Tue, 07 Aug 2007 04:32:54 -0700
+Message-ID: <12032525.post@talk.nabble.com>
+Date: Tue, 7 Aug 2007 04:32:54 -0700 (PDT)
+From: Mirek23 <miroslaw.dach@psi.ch>
 To: linuxppc-embedded@ozlabs.org
-Subject: Sequoia PPC440EPx GPIO Inquiry
+Subject: signals handling in the kernel
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_36513_8509247.1186477535150"
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,28 +26,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_36513_8509247.1186477535150
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-Hi,
+Hi All,
 
-I have a Sequoia evaluation board PPC440EPx and it has some GPIOs. This
-board is running on Linux 2.6.21. I would like to make use of two GPIOs, to
-control LEDs but I don't know how to do it.
+    I would like to send signals from the interrupt handler routine (in the
+kernel) to the user application (in user space).
+I have googled on that net and I have found that it could be done with the
+function:
+kill_proc_info.
 
-May I ask if anyone has done sequoia GPIO controls? How is it done?
+When I have compiled my module which uses the kill_proc_info I have got and
+error messge:
 
-Thanks,
-Jeyner
+WARNING: "kill_proc_info" [drivers/char/xilinx_gpio/xilinx_gpio.ko]
+undefined!
+make[1]: *** [__modpost] Error 1
+make: *** [modules] Error 2
 
-------=_Part_36513_8509247.1186477535150
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+The  kill_proc_info source code is in the kernel/signal.c file. Due to
+unknown reason the kill_proc_info symbol is not exported with EXPORT_SYMBOL
+entry.
 
-<br>Hi,<br><br>I have a Sequoia evaluation board PPC440EPx and it has some GPIOs. This board is running on Linux 2.6.21. I would like to make use of two GPIOs, to control LEDs but I don&#39;t know how to do it.<br><br>May I ask if anyone has done sequoia GPIO controls? How is it done?
-<br><br>Thanks,<br>Jeyner
 
-------=_Part_36513_8509247.1186477535150--
+I can modify the file kernel/signal.c adding the line
+EXPORT_SYMBOL(kill_proc_info) but maybe it is a good reason in order not to
+use this function straight. If so what would be the best way to send a
+signal form the kernel interrupt handler routine to the user space together
+with the siginfo data.
+
+Best Regards
+
+Mirek
+   
+-- 
+View this message in context: http://www.nabble.com/signals-handling-in-the-kernel-tf4229566.html#a12032525
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
