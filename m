@@ -1,21 +1,24 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.ovro.caltech.edu",
-	Issuer "mail.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 859AEDDE2E
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1617CDDE3B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Aug 2007 04:32:53 +1000 (EST)
-Message-ID: <46B8BA93.8020909@ovro.caltech.edu>
-Date: Tue, 07 Aug 2007 11:31:47 -0700
-From: David Hawkins <dwh@ovro.caltech.edu>
+	Wed,  8 Aug 2007 04:39:34 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IITxq-0002IR-9o
+	for linuxppc-embedded@ozlabs.org; Tue, 07 Aug 2007 11:39:30 -0700
+Message-ID: <12039968.post@talk.nabble.com>
+Date: Tue, 7 Aug 2007 11:39:30 -0700 (PDT)
+From: khollan <khollan@daktronics.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: BusyBox passwd requires root privileges
+In-Reply-To: <46B3A44E.1030508@freescale.com>
 MIME-Version: 1.0
-To: Mirek23 <miroslaw.dach@psi.ch>
-Subject: Re: signals handling in the kernel
-References: <12032525.post@talk.nabble.com> <46B8A3C9.7060806@ovro.caltech.edu>
-In-Reply-To: <46B8A3C9.7060806@ovro.caltech.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+References: <11990563.post@talk.nabble.com> <46B395B5.1040009@freescale.com>
+	<11991239.post@talk.nabble.com> <46B3A44E.1030508@freescale.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,31 +30,24 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Hi Mirek,
 
->>     I would like to send signals from the interrupt handler
->> routine (in the kernel) to the user application (in user space).
->> I have googled on that net and I have found that it could be done with the
->> function: kill_proc_info.
+Scott Wood-2 wrote:
 > 
-> Look in Rubini for the section regarding asynchronous
-> notification, Ch 6.
 > 
-> The callback to generate SIGIO is fasync.
+> Make sure it's owned by root, and chmod 4755 the binary.  I'm not sure 
+> how to go about telling busybox to drop suid when invoked as something 
+> else.  It'd probably be better to build two busyboxes, one with all suid 
+> commands and the other with the rest.
 > 
+> -Scott
+> 
+> 
+I chmod 4755 to the passwd binary and it worked.  Before I did that I also
+added a Busybox.conf file in /etc with this in it...
+[SUID]
+passwd = ssx root.root
 
-Actually, before you go off and implement something, can
-you describe why you want to use signals.
-
-I mistakenly used signals once to indicate notification of
-an event. Then when I wanted multiple events from multiple
-boards I found the problem with signals; you don't know
-who sent it.
-
-Using select() on multiple file descriptors ended up being
-a more appropriate solution for my application. That
-solution also works nicely with the ACE C++ ACE_Reactor
-pattern.
-
-Cheers,
-Dave
+I don't know if I needed that or not but it works now. Thanks
+-- 
+View this message in context: http://www.nabble.com/BusyBox-passwd-requires-root-privileges-tf4214675.html#a12039968
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
