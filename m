@@ -1,20 +1,20 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
-	[66.98.186.96])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3825ADDEB9
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2007 02:25:59 +1000 (EST)
-Message-ID: <46B89D5D.9090506@genesi-usa.com>
-Date: Tue, 07 Aug 2007 17:27:09 +0100
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
-To: Alan Curry <pacman@theworld.com>
-Subject: Re: [PATCH] powerpc: Pegasos keyboard detection
-References: <200708070416.l774G3Qf728075@shell01.TheWorld.com>
-In-Reply-To: <200708070416.l774G3Qf728075@shell01.TheWorld.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <20070807034136.GC13522@localhost.localdomain>
+References: <20070730150648.GA5005@ru.mvista.com>
+	<20070801020836.GB31391@localhost.localdomain>
+	<65ff446478a9fd0a48061079d5f04f8f@kernel.crashing.org>
+	<20070801050422.GI31391@localhost.localdomain>
+	<20070801054751.GM31391@localhost.localdomain>
+	<59e87834966d80bb143e1683fe751cd1@kernel.crashing.org>
+	<20070807034136.GC13522@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <03211b7766f4a21c90889344f843a564@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/6] PowerPC 440EPx: Sequoia DTS
+Date: Tue, 7 Aug 2007 18:33:01 +0200
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,37 +24,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+>>>>> Yeah, better names please -- if possible, something that someone
+>>>>> without knowledge of this SoC will understand what it is.
+>>>>
+>>>> I think the names are probably ok - I'm assuming they're in keeping
+>>>> with the convention I've used of using the same names / 
+>>>> abbreviations
+>>>> as in the CPU user manual.  I'm asking just for my own information,
+>>>> although a comment might not be a bad idea.
+>>
+>> Fine with me -- I personally prefer "system-device-controller"
+>> and "clock-power-controller" or similar, but that is mostly a
+>> matter of taste.  As long as it's human readable it's fine.
+>
+> Actually, it occurs to me that I've only sometimes been using that
+> convention for the names:  basically just for the weirdo chip control
+> devices that don't have a more widespread generic name.
 
-Okay, you don't need to be an experienced Open Firmware developer.
+It's pretty darn hard to make good sensible "generic names" for
+some of the devices on a SoC; using the acronym that's in the
+documentation for that SoC certainly isn't the worst choice.
 
-In fact I know we have had experienced Open Firmware developers who have
-said that our firmware sucks (some comment about "shitty German engineering",
-I really did quit caring after that point) because they could not run probe-all
-from the "ok" prompt.
+>>> +    Flash partitions
+>>> +     - reg :
+>>> +     - read-only : (optional)
+>>
+>> I'll hold off commenting on this until you've finish writing it,
+>> you probably know my opinion about it anyway :-)
+>
+> Heh.. actually I was kind of hoping for your input on what's still
+> missing.  For example, I don't know what the necessary extra
+> properties for JEDEC chips are.
 
-In the first few pages of the OF spec, it very clearly states that this will
-probably make your system explode.
+I meant for the "partitions" stuff only.
 
-So even experts do not know what they are doing. I don't expect users to.
-But as an engineer, here, I think patching the device-type in the boot
-wrapper (be it the chrp boot loader) is the wrong place, because we have
-had real experts here (Ben, Segher etc.) complain that fixing the device
-tree in the boot wrapper is no substitute for a correctly working
-firmware.
+For the JEDEC chips, we need a "vendor-id" and "device-id"
+property at least (or similar names -- whatever is general
+practice for this); both are a single byte, encoded as with
+encode-int.
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+>> One thing though -- what _exactly_ does "read-only" signify?
+>
+> That's... a good question.
 
-Alan Curry wrote:
-> I'm almost sorry I spoke up...
-> 
-> Matt Sealey writes the following:
->> Okay before you add to the nvramrc you also need to add probe-all to build the
->> device tree first; I assumed this was common knowledge.
-> 
-> Maybe for experienced OpenFirmware developers; this is the first time I've
-> had to touch the stuff. So first I had to learn Forth. To patch the kernel
-> you only need to know C. (Of course I already knew C -- it's common
-> knowledge.)
-> 
+Yeah.  It seems to me that the way it is currently used is
+pure policy enforcement, which doesn't belong in the device
+tree.
+
+
+Segher
