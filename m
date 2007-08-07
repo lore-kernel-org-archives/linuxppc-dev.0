@@ -1,20 +1,24 @@
-Return-Path: <akostop@inaccessnetworks.com>
-Received: from inaccessnetworks.com (node3.inaccessnetworks.com
-	[212.205.200.118]) by ozlabs.org (Postfix) with ESMTP id 3DA0CDDE32
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 19:07:08 +1000 (EST)
-Date: Tue, 07 Aug 2007 12:06:46 +0300
-To: "Kumar Gala" <galak@kernel.crashing.org>,
-	"Scott Wood" <scottwood@freescale.com>
-Subject: Re: pci in arch/powerpc vs arch/ppc
-From: "Alexandros Kostopoulos" <akostop@inaccessnetworks.com>
-Content-Type: text/plain; format=flowed; delsp=yes; charset=iso-8859-7
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 4EB9CDDDFD
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 20:55:31 +1000 (EST)
+Date: Tue, 7 Aug 2007 14:53:46 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC][PATCH] MPC832x_RDB: update dts to use spi, register
+	mmc_spi stub
+Message-ID: <20070807105346.GB13606@localhost.localdomain>
+References: <20070726135738.GB5643@localhost.localdomain>
+	<7BACDD73-9097-4139-8331-A1A14A6134D0@kernel.crashing.org>
+	<20070727114559.GB11463@localhost.localdomain>
+	<b3d36996792216ddd9dbae12212a4168@kernel.crashing.org>
+	<20070801132948.GB20200@localhost.localdomain>
+	<d36303a31bb9cd2ab7cb38a09428e616@kernel.crashing.org>
 MIME-Version: 1.0
-References: <op.twhnwi18nhx3hy@phoenix>
-	<20070803201036.GA18229@ld0162-tx32.am.freescale.net>
-	<F081E320-CFF9-497C-87D5-50E2E5C15A24@kernel.crashing.org>
-Message-ID: <op.twol4cixnhx3hy@phoenix>
-In-Reply-To: <F081E320-CFF9-497C-87D5-50E2E5C15A24@kernel.crashing.org>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <d36303a31bb9cd2ab7cb38a09428e616@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,51 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Except from some macros arch/powerpc/include/asm/io.h / mpc8260_pci9.h, I  
-can seem to find anywhere the code regarding PCI Erratum 9. The defined  
-macros(in io.h) for read/write are sufficient as a workaround for PCI9?  
-Who does DMA and register initialization for this (it used to be done in  
-arch/ppc/syslib/m8260_pci_erratum9.c in arc/ppc). Maybe u-boot or the  
-bootwrapper?
-
-Another question regarding resource allocation: when  
-alloc_resource(pci_32.c), called from pcibios_allocate_resources(), during  
-pcibios init, attempts to allocate resources using request_resource(), the  
-request fails. This seems to happen because the previously scanned PCI  
-devices request resources in the form, e.g. 00000- 0000f (i.e. starting  
- from zero), and this should be mapped somewhere else in cpu mem space. My  
-question (in order to find my bug) is, who performs this mapping, from PCI  
-space to CPU space, the kernel (and if yes, where?) or the host bridge (in  
-which case, I've probably failed to configure it properly).
-
-Thank you
-
-On Sat, 04 Aug 2007 19:39:58 +0300, Kumar Gala <galak@kernel.crashing.org>  
-wrote:
-
->
-> On Aug 3, 2007, at 3:10 PM, Scott Wood wrote:
->
->> On Fri, Aug 03, 2007 at 05:58:56PM +0300, Alexandros Kostopoulos wrote:
->>> Hi all,
->>> in the old arch/ppc tree, there was a function called  
->>> pq2ads_setup_pci()
->>> that set up PCI regs for 8272xx, in m82xx_pci.c. I was wandering, where
->>> are these registers configured now in arch/powerpc? I can't seem to  
->>> find
->>> these code now.
+On Mon, Aug 06, 2007 at 08:18:47PM +0200, Segher Boessenkool wrote:
+[...]
+>>> The hardware should be described in the device tree.  This isn't
+>>> the same as simply copying all your Linux code into it ;-)
 >>
->> It's done by the firmware or the bootwrapper.
->
->>> Also, I can see that now bus 0, dev 0 (which I think represents the  
->>> host
->>> bridge, right?) is now excluded using pq2_pci_exclude_device, but it
->>> wasn't in older code. Why is that?
+>> Ugh. SD/MMC slot is the hardware, isn't it? It have wired SPI pins,
+>> and chip select pin. To set up this pin, I need mmc node, which means
+>> that I can't completely move mmc definitions to the board file, as
+>> suggested by Kumar Gala.
 >>
->> The older code probably either excluded all host bridges by class, or
->> just lived with the error message that gets printed on boot.
+>> Advices?
 >
-> This will change in 2.6.24.  I've fixed the reason we excluded the host  
-> bridges on Freescale host bridges.
->
-> - k
+> You need to declare in the SPI node which GPIOs it uses for
+> what.  You shouldn't have the actual values to put into the
+> GPIO registers in the device tree; the kernel driver can
+> figure it out.
+
+Well, how SPI differs from UCC in that regard? This is how mpc832x_mds.dts,
+mpc832x_rdb.dts, mpc836x_mds.dts, ... doing things already for UCC pins.
+And then what pio-map exists for?.. In my understanding pio-map tries to
+describe hardware (GPIO) wiring, exactly how SPI (and UCC) nodes trying
+to use it.
+
+Heh.. anyway, it's really hard to find proper logic around device tree,
+do's and don'ts, so I'll just follow your suggestions in hope that I'll
+get it as time goes by. ;-)
+
+> Hope this helps,
+
+Thanks!
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
