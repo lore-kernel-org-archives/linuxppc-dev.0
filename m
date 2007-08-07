@@ -1,21 +1,19 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CE12EDDE29
+Return-Path: <channyboy@gmail.com>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.185])
+	by ozlabs.org (Postfix) with ESMTP id 7DD0EDDE11
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Aug 2007 21:32:58 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1IINJ0-0006Kw-TL
-	for linuxppc-embedded@ozlabs.org; Tue, 07 Aug 2007 04:32:54 -0700
-Message-ID: <12032525.post@talk.nabble.com>
-Date: Tue, 7 Aug 2007 04:32:54 -0700 (PDT)
-From: Mirek23 <miroslaw.dach@psi.ch>
+	Tue,  7 Aug 2007 22:36:28 +1000 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so1207765rvf
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 07 Aug 2007 05:36:27 -0700 (PDT)
+Message-ID: <fccc6f400708070536y366c0fcbt18f77d5aaacfb7e@mail.gmail.com>
+Date: Tue, 7 Aug 2007 08:36:27 -0400
+From: "Channy Tremblay" <channyboy@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: signals handling in the kernel
+Subject: Were to start? With MPC8272 and embedded Linux.
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/alternative;
+	boundary="----=_Part_41713_3605908.1186490187095"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,38 +24,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+------=_Part_41713_3605908.1186490187095
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Hi All,
+Hi list!
 
-    I would like to send signals from the interrupt handler routine (in the
-kernel) to the user application (in user space).
-I have googled on that net and I have found that it could be done with the
-function:
-kill_proc_info.
+First post for me.
 
-When I have compiled my module which uses the kill_proc_info I have got and
-error messge:
+We're starting a project with an MPC8272 that will eventually be on a custom
+board we are building.
 
-WARNING: "kill_proc_info" [drivers/char/xilinx_gpio/xilinx_gpio.ko]
-undefined!
-make[1]: *** [__modpost] Error 1
-make: *** [modules] Error 2
+Here is a list of things I have:
 
-The  kill_proc_info source code is in the kernel/signal.c file. Due to
-unknown reason the kill_proc_info symbol is not exported with EXPORT_SYMBOL
-entry.
+- EmbeddedPlanet with MPC8272 but no BSP (do I need one?)
+- VisionProbe II with VisionClick
 
+I am planning on using DENX and U-Boot.
 
-I can modify the file kernel/signal.c adding the line
-EXPORT_SYMBOL(kill_proc_info) but maybe it is a good reason in order not to
-use this function straight. If so what would be the best way to send a
-signal form the kernel interrupt handler routine to the user space together
-with the siginfo data.
+Can I put a Linux image with the VisionProbe II?
 
-Best Regards
+Thanks,
 
-Mirek
-   
--- 
-View this message in context: http://www.nabble.com/signals-handling-in-the-kernel-tf4229566.html#a12032525
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+Channy
+
+------=_Part_41713_3605908.1186490187095
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi list!<br><br>First post for me.<br><br>We&#39;re starting a project with an MPC8272 that will eventually be on a custom board we are building.&nbsp; <br><br>Here is a list of things I have:<br><br>- EmbeddedPlanet with MPC8272 but no BSP (do I need one?)
+<br>- VisionProbe II with VisionClick<br><br>I am planning on using DENX and U-Boot.<br><br>Can I put a Linux image with the VisionProbe II? <br><br>Thanks,<br><br>Channy<br><br><br>
+
+------=_Part_41713_3605908.1186490187095--
