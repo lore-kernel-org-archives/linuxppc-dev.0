@@ -1,31 +1,18 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C4761DDE46
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 09:54:52 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l76Nsnfq001027
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 19:54:49 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l76NsnN7266686
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 17:54:49 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l76Nsn7f032662
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2007 17:54:49 -0600
-Date: Mon, 6 Aug 2007 19:08:25 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: rrbranco@br.ibm.com
-Subject: Re: [PING][PATCH] PPC 4xx HW Watchpoint
-Message-ID: <20070807000824.GB3925@crusty.rchland.ibm.com>
-References: <OFC73E3C0F.0CFFE8F0-ON8325732F.00741361-8325732F.00749AD1@br.ibm.com>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: Please pull powerpc.git merge branch
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <FCAE5E05-7F25-436F-963B-B757765D343A@kernel.crashing.org>
+References: <18099.1109.83340.915328@cargo.ozlabs.ibm.com>
+	<46B96294322F7D458F9648B60E15112C7A98ED@zch01exm26.fsl.freescale.net>
+	<FCAE5E05-7F25-436F-963B-B757765D343A@kernel.crashing.org>
+Date: Tue, 07 Aug 2007 11:06:17 +1000
+Message-Id: <1186448777.19257.0.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <OFC73E3C0F.0CFFE8F0-ON8325732F.00741361-8325732F.00749AD1@br.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset="us-ascii"
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Zhang Wei-r63237 <Wei.Zhang@freescale.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,14 +22,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Aug 06, 2007 at 06:10:29PM -0300, rrbranco@br.ibm.com wrote:
-> Hello guys,
+On Mon, 2007-08-06 at 08:57 -0500, Kumar Gala wrote:
+> On Aug 6, 2007, at 12:57 AM, Zhang Wei-r63237 wrote:
 > 
-> I'm just writting to know if someone have some opinion about the patch I 
-> sent a week ago.  I'm not sending it again cause I'm traveling and don't 
-> have it here in this machine.
+> > Hi, Paul,
+> >
+> > How about following patches?
+> >
+> > [PATCH 1/2] Add sysdev/pci_quirks.c file into PowerPC architecture  
+> > with
+> > ULI chip quirk functions.
+> > URL: http://ozlabs.org/pipermail/linuxppc-dev/2007-August/040363.html
+> > [PATCH 2/2] Remove ULI chip quirks functions from MPC8641HPCN and
+> > MPC8544DS boards.
+> > URL: http://ozlabs.org/pipermail/linuxppc-dev/2007-August/040364.html
+> >
+> > [PATCH 1/3] Add a new member name to structure irq_host
+> > URL: http://ozlabs.org/pipermail/linuxppc-dev/2007-July/039896.html
+> > [PATCH 2/3] Add irq host name for all powerpc interrupt controllors.
+> > URL: http://ozlabs.org/pipermail/linuxppc-dev/2007-July/039897.html
+> > [PATCH 3/3] Add irq debugfs and virq_mapping for getting the virq
+> > URL: http://ozlabs.org/pipermail/linuxppc-dev/2007-July/039895.html
+> 
+> These patches aren't fixing any bugs and would be for 2.6.24 at this  
+> point.
 
-Sorry Rodrigo.  I'll try to find some time this week to review it.  It's been
-on my list, I just haven't gotten to it yet.
+And I reworked them and posted new versions.
 
-josh
+cheers
+
+-- 
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: This is a digitally signed message part
+Url : http://ozlabs.org/pipermail/linuxppc-dev/attachments/20070807/bfb21f14/attachment.pgp 
