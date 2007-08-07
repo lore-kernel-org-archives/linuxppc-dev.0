@@ -3,21 +3,18 @@ Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
 	[66.98.186.96])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5F412DDE47
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2007 02:20:26 +1000 (EST)
-Message-ID: <46B89C10.7090507@genesi-usa.com>
-Date: Tue, 07 Aug 2007 17:21:36 +0100
+	by ozlabs.org (Postfix) with ESMTP id 3825ADDEB9
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2007 02:25:59 +1000 (EST)
+Message-ID: <46B89D5D.9090506@genesi-usa.com>
+Date: Tue, 07 Aug 2007 17:27:09 +0100
 From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
+To: Alan Curry <pacman@theworld.com>
 Subject: Re: [PATCH] powerpc: Pegasos keyboard detection
-References: <200708020440.l724edCT290676@shell01.TheWorld.com>
-	<46B79562.9020202@genesi-usa.com>
-	<f4545a576abeddf00f076a0cae9e3fdd@kernel.crashing.org>
-In-Reply-To: <f4545a576abeddf00f076a0cae9e3fdd@kernel.crashing.org>
+References: <200708070416.l774G3Qf728075@shell01.TheWorld.com>
+In-Reply-To: <200708070416.l774G3Qf728075@shell01.TheWorld.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Alan Curry <pacman@TheWorld.com>,
-	linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,40 +25,36 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Segher Boessenkool wrote:
-> 
-> That's hardly the only reason.  But yeah, that's one way to
-> implement the workaround, but _we_ (the Linux community) cannot
-> do it like that (easily) for all users.
+Okay, you don't need to be an experienced Open Firmware developer.
 
-But you're the guy who told us our firmware sucks and we should fix our
-firmware rather than clutter Linux with too many fixups. There are about
-200 lines of code required to bring the Efika device tree up to the
-Linux "specification" of a 5200B device tree, which will never make it
-into code. Pegasos is ostensibly the same way.
+In fact I know we have had experienced Open Firmware developers who have
+said that our firmware sucks (some comment about "shitty German engineering",
+I really did quit caring after that point) because they could not run probe-all
+from the "ok" prompt.
 
-Linux is already a bad enough moving target, and none of these fixes help
-other operating systems or developers, if we only patch Linux, and only
-say, you must run the latest Linux kernel version, and the latest U-Boot,
-and the latest FDT binary, and encourage users to upgrade it all regardless
-of your worries.
+In the first few pages of the OF spec, it very clearly states that this will
+probably make your system explode.
 
-So, there are two opinions here;
-
-1) the reports as we had when Efika was released and continually levied
-against Pegasos firmware, that the firmware is broken and must be fixed
-to comply, and no fixes will be considered because "bplan sucks and must
-fix it"
-
-2) As long as the patches are 2 lines big, you will allow them in, because
-it is too much for a user to update firmware or run a script to boot?
-
-Would you guys rather we shipped a boot script that ran the OS, fixed
-all these issues in-place in-firmware, so Linux did not have to have these
-workarounds, or are you accepting patches now? Because I can write those
-200 lines of code to work around Efika device tree mistakes you yourself
-complained about at Christmas last year..
+So even experts do not know what they are doing. I don't expect users to.
+But as an engineer, here, I think patching the device-type in the boot
+wrapper (be it the chrp boot loader) is the wrong place, because we have
+had real experts here (Ben, Segher etc.) complain that fixing the device
+tree in the boot wrapper is no substitute for a correctly working
+firmware.
 
 -- 
 Matt Sealey <matt@genesi-usa.com>
 Genesi, Manager, Developer Relations
+
+Alan Curry wrote:
+> I'm almost sorry I spoke up...
+> 
+> Matt Sealey writes the following:
+>> Okay before you add to the nvramrc you also need to add probe-all to build the
+>> device tree first; I assumed this was common knowledge.
+> 
+> Maybe for experienced OpenFirmware developers; this is the first time I've
+> had to touch the stuff. So first I had to learn Forth. To patch the kernel
+> you only need to know C. (Of course I already knew C -- it's common
+> knowledge.)
+> 
