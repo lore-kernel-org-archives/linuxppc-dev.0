@@ -1,22 +1,32 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 7 Aug 2007 14:12:59 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <dwg@au1.ibm.com>
+Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 50A2DDDF3A
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 14:13:06 +1000 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by ausmtp04.au.ibm.com (8.13.8/8.13.8) with ESMTP id l774G8WF267002
+	for <linuxppc-dev@ozlabs.org>; Tue, 7 Aug 2007 14:16:08 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.250.237])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l774Gbfk094394
+	for <linuxppc-dev@ozlabs.org>; Tue, 7 Aug 2007 14:16:37 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l774D3GR027323
+	for <linuxppc-dev@ozlabs.org>; Tue, 7 Aug 2007 14:13:04 +1000
+Date: Tue, 7 Aug 2007 14:11:31 +1000
+From: David Gibson <dwg@au1.ibm.com>
 To: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH 2/6] PowerPC 440EPx: Sequoia DTS
-Message-ID: <20070807041259.GF13522@localhost.localdomain>
+Message-ID: <20070807041131.GE13522@localhost.localdomain>
 References: <20070730150648.GA5005@ru.mvista.com>
 	<20070801020836.GB31391@localhost.localdomain>
-	<65ff446478a9fd0a48061079d5f04f8f@kernel.crashing.org>
-	<20070801050422.GI31391@localhost.localdomain>
-	<20070801054751.GM31391@localhost.localdomain>
-	<46B1F6D4.3070707@ru.mvista.com>
-	<20070803031349.GD6418@localhost.localdomain>
-	<46B34E1F.5060009@ru.mvista.com>
-	<20070806042109.GB6103@localhost.localdomain>
-	<163e1bcdc507ddcde3193e842c96da43@kernel.crashing.org>
+	<20070802151513.12e9caf7@weaponx.rchland.ibm.com>
+	<a9100305ca02c8609458c72edb99342c@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <163e1bcdc507ddcde3193e842c96da43@kernel.crashing.org>
+In-Reply-To: <a9100305ca02c8609458c72edb99342c@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,57 +37,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Aug 06, 2007 at 10:54:33PM +0200, Segher Boessenkool wrote:
-> > Aha!  Ok, now I understand the sorts of situations you're talking
-> > about.  By "not direct mapped", I thought you were talking about some
-> > kind of access via address/data registers on some indirect bus
-> > controller, rather than weird variations on endianness and
-> > bit-swizzling.
+On Mon, Aug 06, 2007 at 10:15:39PM +0200, Segher Boessenkool wrote:
+> >>> +	UIC0: interrupt-controller0 {
+> >>> +		compatible = "ibm,uic-440gp","ibm,uic";
+> >>
+> >> The first compatible entry should always be the precise model, so in
+> >> this case "ibm,uic-440epx".  If it is (supposed to be) identical to
+> >> the UIC in the 440GP, it can also have an "ibm,uic-440gp" entry, but
+> >> since I believe all the UICs are supposed to operate the same, I think
+> >> that's implicit in the "ibm,uic" entry.
 > >
-> > Hrm.. this is a property of how the flash is wired onto the bus,
-> > rather than of the flash chips themselves, so I'm not entirely sure
-> > where description of it belongs.
-> >
-> > Simplest option seems to me to add a property "endianness" or
-> > "bit-swizzling" or something which can be defined to describe some odd
-> > connections.  If absent we'd default to direct mapping.  Segher, is
-> > that idea going to cause you to scream?
+> > Most UICs are the same.  There are some oddball chips that either hide
+> > particular registers because they are unused, or they change the
+> > addressing stride.  I'm not sure that is a common enough case to worry
+> > about now though.
 > 
-> No, that's fine with me.  I would recommend either using a
-> _good_ _descriptive_ name for such a property describing the
-> swizzling, if this swizzling is common; or just put the whole
-> bloody weirdo address permutation into some nice big array,
-> something like
+> You only need to worry about the oddball cases in the device
+> trees for a device that uses one off those.
 > 
-> address-permutation = <0 1 3 2 4 5 7 6 e f d c a b 9 8>;
+> It is prudent to put the exact name of the device you're
+> working with in there whenever possible, in case you later
+> discover it has some quirks.  If that doesn't happen, the
+> kernel can happily keep probing on the more generic name.
 
-Yes, I was contemplating something like that.
-
-[snip]
-> > So I left out ranges, on the grounds that there isn't actually
-> > anything at present which will attempt to access flash partitions
-> > "generically" as a device tree device.
-> 
-> It looks good to me like this.
-> 
-> In a real OF, the "register" access for the flash partition
-> node would be handled by its parent node, which would know
-> to do the direct-mapping thing (at least mapping it to _its_
-> parent, which typically asks the nodes further up, etc.)
-> 
-> For the kernel world, we should just document it in the binding.
-> 
-> > I'm not sold on this approach, but I haven't heard you give a better
-> > argument yet.
-> 
-> I haven't heard or thought of anything better either.  Using "ranges"
-> is conceptually wrong, even ignoring the technical problems that come
-> with it.
-
-Why is "ranges" conceptually wrong?
-
-To be honest this looks rather to me like another case where having
-overlapping 'reg' and 'ranges' would actually make sense.
+Right.  In that case I suggest the sequoia just specify:
+	compatible = "ibm,uic-440epx", "ibm,uic";
+Because we have no particular reason to think that the 440EPx version
+of UIC is any more similar to the 440GP version of UIC than it is to
+the "normal" UIC.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
