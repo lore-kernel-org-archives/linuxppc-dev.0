@@ -1,23 +1,33 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E8BA6DDE18
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2007 08:16:39 +1000 (EST)
-Message-ID: <46B8EF42.1010708@garzik.org>
-Date: Tue, 07 Aug 2007 18:16:34 -0400
-From: Jeff Garzik <jeff@garzik.org>
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id DE9DFDDE2D
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2007 08:33:02 +1000 (EST)
+Date: Wed, 8 Aug 2007 00:32:58 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Segher Boessenkool <segher@kernel.crashing.org>,
+	Scott Wood <scottwood@freescale.com>
+Subject: [PATCH] powerpc: fix i2c device string format
+In-Reply-To: <46B0F030.9030007@freescale.com>
+Message-ID: <Pine.LNX.4.60.0708080023030.8493@poirot.grange>
+References: <Pine.LNX.4.60.0706292113240.4227@poirot.grange>
+	<00a85f152aa3547f0f0b4acd7954468a@kernel.crashing.org>
+	<Pine.LNX.4.60.0707022114020.3339@poirot.grange>
+	<2055bb54b9816faaf5b2ceedc9cfa039@kernel.crashing.org>
+	<Pine.LNX.4.60.0707032356270.3876@poirot.grange>
+	<E0E696F1-2F9E-4D6B-A194-EB42BA826BCD@kernel.crashing.org>
+	<Pine.LNX.4.60.0707180010330.3535@poirot.grange>
+	<87DC7695-382B-4641-B9D9-75ACB49D41A4@kernel.crashing.org>
+	<Pine.LNX.4.60.0707191932300.3365@poirot.grange>
+	<719AE7E4-FE6D-4973-8887-F787EC8ABC85@kernel.crashing.org>
+	<Pine.LNX.4.60.0707202219340.3946@poirot.grange>
+	<235e0ff22961e25016727c0e74fd0c0f@kernel.crashing.org>
+	<Pine.LNX.4.60.0708010739560.4228@poirot.grange>
+	<19a13f8700d078abc4cab0064a7d0183@kernel.crashing.org>
+	<Pine.LNX.4.60.0708012053240.7394@poirot.grange>
+	<46B0F030.9030007@freescale.com>
 MIME-Version: 1.0
-To: brking@linux.vnet.ibm.com
-Subject: Re: [PATCH 2/6] ibmveth: Implement ethtool hooks to enable/disable
-	checksum offload
-References: <11864293333377-patch-mail.ibm.com>
-	<200708061942.l76JgLrU009242@d01av04.pok.ibm.com>
-	<46B8E891.80403@garzik.org> <46B8ED10.1060701@linux.vnet.ibm.com>
-In-Reply-To: <46B8ED10.1060701@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, rcjenn@linux.vnet.ibm.com,
-	santil@linux.vnet.ibm.com, netdev@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,42 +37,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Brian King wrote:
-> Jeff Garzik wrote:
->> Brian King wrote:
->>> This patch adds the appropriate ethtool hooks to allow for enabling/disabling
->>> of hypervisor assisted checksum offload for TCP.
->>>
->>> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
->>> ---
->>>
->>>  linux-2.6-bjking1/drivers/net/ibmveth.c |  118 +++++++++++++++++++++++++++++++-
->>>  linux-2.6-bjking1/drivers/net/ibmveth.h |    1 
->>>  2 files changed, 117 insertions(+), 2 deletions(-)
->>>
->>> diff -puN drivers/net/ibmveth.c~ibmveth_csum_offload_ethtool drivers/net/ibmveth.c
->>> --- linux-2.6/drivers/net/ibmveth.c~ibmveth_csum_offload_ethtool	2007-08-01 14:55:14.000000000 -0500
->>> +++ linux-2.6-bjking1/drivers/net/ibmveth.c	2007-08-01 14:55:14.000000000 -0500
->>> @@ -641,12 +641,125 @@ static u32 netdev_get_link(struct net_de
->>>  	return 1;
->>>  }
->>>  
->>> +static void ibmveth_set_rx_csum_flags(struct net_device *dev, u32 data)
->>> +{
->>> +	struct ibmveth_adapter *adapter = dev->priv;
->>> +
->>> +	if (data)
->>> +		adapter->rx_csum = 1;
->>> +	else {
->>> +		adapter->rx_csum = 0;
->>> +		dev->features &= ~NETIF_F_IP_CSUM;
->> why does this RX-related code clear a TX-related flag?
-> 
-> Its related to how the pSeries firmware works. The firmware provides an interface
-> to enable "checksum offload", which means both tx and rx checksum offload from
-> the firmware's point of view. The firmware does not support enabling checksum
-> offload for only rx. If I disable it for rx I have to disable it for tx as
-> well, otherwise the firmware will reject all future tx buffers I throw at it
-> that are not checksummed.
+On Wed, 1 Aug 2007, Segher Boessenkool wrote:
 
-ACK once you add a comment describing this :)
+> strncpy() won't put a terminating zero on there, is everything
+> that uses the resulting string okay with that?  Also, if the
+> name gets cut short, it might match some _other_ expected name.
+
+On Wed, 1 Aug 2007, Scott Wood wrote:
+
+> You could use strlcpy() instead, which always leaves a zero terminator.
+
+The patch below does exactly this - uses strlcpy() to guarantee strings in 
+i2c device type and driver_name fields are 0-terminated.
+
+Signed-off-by: G. Liakhovetski <g.liakhovetski@gmx.de>
+
+---
+
+Trying to follow the "canonical" patch format: Paul, please queue this 
+patch for 2.6.24. It is not critical, as there no strings at the moment in 
+fsl_soc.c, that exceed i2c limits. So, it's just a precaution measure.
+
+Thanks
+Guennadi
+
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index 727453d..2ef7036 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -327,8 +327,8 @@ static int __init of_find_i2c_driver(struct device_node *node, struct i2c_board_
+ 	for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
+ 		if (!of_device_is_compatible(node, i2c_devices[i].of_device))
+ 			continue;
+-		strncpy(info->driver_name, i2c_devices[i].i2c_driver, KOBJ_NAME_LEN);
+-		strncpy(info->type, i2c_devices[i].i2c_type, I2C_NAME_SIZE);
++		strlcpy(info->driver_name, i2c_devices[i].i2c_driver, KOBJ_NAME_LEN);
++		strlcpy(info->type, i2c_devices[i].i2c_type, I2C_NAME_SIZE);
+ 		return 0;
+ 	}
+ 	return -ENODEV;
