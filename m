@@ -1,26 +1,23 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <matt@genesi-usa.com>
+Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
+	[66.98.186.96])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 67085DDE46
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2007 02:11:49 +1000 (EST)
-In-Reply-To: <20070807105346.GB13606@localhost.localdomain>
-References: <20070726135738.GB5643@localhost.localdomain>
-	<7BACDD73-9097-4139-8331-A1A14A6134D0@kernel.crashing.org>
-	<20070727114559.GB11463@localhost.localdomain>
-	<b3d36996792216ddd9dbae12212a4168@kernel.crashing.org>
-	<20070801132948.GB20200@localhost.localdomain>
-	<d36303a31bb9cd2ab7cb38a09428e616@kernel.crashing.org>
-	<20070807105346.GB13606@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <2cc0345aaf781a6d01e33df08f12bc97@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC][PATCH] MPC832x_RDB: update dts to use spi,
-	register mmc_spi stub
-Date: Tue, 7 Aug 2007 18:11:42 +0200
-To: avorontsov@ru.mvista.com
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 5F412DDE47
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2007 02:20:26 +1000 (EST)
+Message-ID: <46B89C10.7090507@genesi-usa.com>
+Date: Tue, 07 Aug 2007 17:21:36 +0100
+From: Matt Sealey <matt@genesi-usa.com>
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Pegasos keyboard detection
+References: <200708020440.l724edCT290676@shell01.TheWorld.com>
+	<46B79562.9020202@genesi-usa.com>
+	<f4545a576abeddf00f076a0cae9e3fdd@kernel.crashing.org>
+In-Reply-To: <f4545a576abeddf00f076a0cae9e3fdd@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Alan Curry <pacman@TheWorld.com>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,54 +27,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>> The hardware should be described in the device tree.  This isn't
->>>> the same as simply copying all your Linux code into it ;-)
->>>
->>> Ugh. SD/MMC slot is the hardware, isn't it? It have wired SPI pins,
->>> and chip select pin. To set up this pin, I need mmc node, which means
->>> that I can't completely move mmc definitions to the board file, as
->>> suggested by Kumar Gala.
->>>
->>> Advices?
->>
->> You need to declare in the SPI node which GPIOs it uses for
->> what.  You shouldn't have the actual values to put into the
->> GPIO registers in the device tree; the kernel driver can
->> figure it out.
->
-> Well, how SPI differs from UCC in that regard?
 
-Not at all, I think.  You just copied a bad example that
-shouldn't exist like that at all :-(
+Segher Boessenkool wrote:
+> 
+> That's hardly the only reason.  But yeah, that's one way to
+> implement the workaround, but _we_ (the Linux community) cannot
+> do it like that (easily) for all users.
 
-> This is how mpc832x_mds.dts,
-> mpc832x_rdb.dts, mpc836x_mds.dts, ... doing things already for UCC 
-> pins.
-> And then what pio-map exists for?.. In my understanding pio-map tries 
-> to
-> describe hardware (GPIO) wiring, exactly how SPI (and UCC) nodes trying
-> to use it.
+But you're the guy who told us our firmware sucks and we should fix our
+firmware rather than clutter Linux with too many fixups. There are about
+200 lines of code required to bring the Efika device tree up to the
+Linux "specification" of a 5200B device tree, which will never make it
+into code. Pegasos is ostensibly the same way.
 
-Yeah.  It however contains lots more information that really
-should be implicit in the driver using it (like, GPIO output
-lines that are marked "no interrupt" -- what a surprise, duh).
+Linux is already a bad enough moving target, and none of these fixes help
+other operating systems or developers, if we only patch Linux, and only
+say, you must run the latest Linux kernel version, and the latest U-Boot,
+and the latest FDT binary, and encourage users to upgrade it all regardless
+of your worries.
 
-As far as I can see the devices that need some GPIOs should
-just say which GPIOs (on what GPIO controller) they use, and
-that's about it, the kernel device drivers can handle the
-rest (since they need to know lots more implicit information
-_anyway_, there is no point in describing more details in the
-device tree, esp. since many of those details describe only
-how a device is used, not what it _is_).
+So, there are two opinions here;
 
-Anyway, not your fault, I'd prefer not to see the madness
-spread though :-)
+1) the reports as we had when Efika was released and continually levied
+against Pegasos firmware, that the firmware is broken and must be fixed
+to comply, and no fixes will be considered because "bplan sucks and must
+fix it"
 
-> Heh.. anyway, it's really hard to find proper logic around device tree,
-> do's and don'ts, so I'll just follow your suggestions in hope that I'll
-> get it as time goes by. ;-)
+2) As long as the patches are 2 lines big, you will allow them in, because
+it is too much for a user to update firmware or run a script to boot?
 
-:-)
+Would you guys rather we shipped a boot script that ran the OS, fixed
+all these issues in-place in-firmware, so Linux did not have to have these
+workarounds, or are you accepting patches now? Because I can write those
+200 lines of code to work around Efika device tree mistakes you yourself
+complained about at Christmas last year..
 
-
-Segher
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
