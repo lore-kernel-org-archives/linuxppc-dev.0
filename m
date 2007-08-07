@@ -1,21 +1,21 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.ovro.caltech.edu",
-	Issuer "mail.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 949BDDDE34
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C4A2EDDE38
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Aug 2007 02:55:38 +1000 (EST)
-Message-ID: <46B8A3C9.7060806@ovro.caltech.edu>
-Date: Tue, 07 Aug 2007 09:54:33 -0700
-From: David Hawkins <dwh@ovro.caltech.edu>
+	Wed,  8 Aug 2007 04:02:25 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IITNu-0001KT-KJ
+	for linuxppc-embedded@ozlabs.org; Tue, 07 Aug 2007 11:02:22 -0700
+Message-ID: <12039337.post@talk.nabble.com>
+Date: Tue, 7 Aug 2007 11:02:22 -0700 (PDT)
+From: khollan <khollan@daktronics.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Telnet on ML410
 MIME-Version: 1.0
-To: Mirek23 <miroslaw.dach@psi.ch>
-Subject: Re: signals handling in the kernel
-References: <12032525.post@talk.nabble.com>
-In-Reply-To: <12032525.post@talk.nabble.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,17 +26,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Mirek,
 
->     I would like to send signals from the interrupt handler
-> routine (in the kernel) to the user application (in user space).
-> I have googled on that net and I have found that it could be done with the
-> function: kill_proc_info.
+Hi
 
-Look in Rubini for the section regarding asynchronous
-notification, Ch 6.
+Im trying to get telnetd from busybox to work on my ML410.  Im running the
+telnetd in the init.d but when I connect to the ML410 with telnet I just get
+a blank screen without any prompt or login.  Any thoughts.  Here is my
+inittab file if that will help, I think it has to do with how my console is
+setup since Im using the uartlite.  Im new to this so any help would be
+great.
+::sysinit:/etc/init.d/rcS
 
-The callback to generate SIGIO is fasync.
+# TERMINALS
+#::askfirst:/bin/login
+::askfirst:/sbin/getty -L 9600 ttyUL0
 
-Cheers
-Dave
+# What to do at the "Three Finger Salute"
+# NOTE: This will not work over a serial port!
+:12345:ctrlaltdel:/sbin/reboot
+
+# What to do at shutdown/reboot
+:6:shutdown:/bin/umount -a -r
+:6:shutdown:/sbin/swapoff -a
+
+# Stuff to do when restarting the init process
+::restart:/sbin/init
+-- 
+View this message in context: http://www.nabble.com/Telnet-on-ML410-tf4231739.html#a12039337
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
