@@ -1,34 +1,24 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6E000DDE16
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2007 23:11:22 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l77C4pkc004262
-	for <linuxppc-dev@ozlabs.org>; Tue, 7 Aug 2007 08:04:51 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l77DBGrH207258
-	for <linuxppc-dev@ozlabs.org>; Tue, 7 Aug 2007 07:11:16 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l77DBFfS012118
-	for <linuxppc-dev@ozlabs.org>; Tue, 7 Aug 2007 07:11:16 -0600
-Date: Tue, 7 Aug 2007 08:11:14 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: David Gibson <dwg@au1.ibm.com>
-Subject: Re: [patch 08/10] Bamboo DTS
-Message-ID: <20070807081114.7ca87fd2@weaponx.rchland.ibm.com>
-In-Reply-To: <20070806045332.GA11051@localhost.localdomain>
-References: <20070803160900.069522000@linux.vnet.ibm.com>
-	<20070803161711.202342000@linux.vnet.ibm.com>
-	<20070806045332.GA11051@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9AA9EDDE18
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2007 01:20:29 +1000 (EST)
+Message-ID: <46B88DAC.70005@freescale.com>
+Date: Tue, 07 Aug 2007 10:20:12 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Alexandros Kostopoulos <akostop@inaccessnetworks.com>
+Subject: Re: pci in arch/powerpc vs arch/ppc
+References: <op.twhnwi18nhx3hy@phoenix>
+	<20070803201036.GA18229@ld0162-tx32.am.freescale.net>
+	<F081E320-CFF9-497C-87D5-50E2E5C15A24@kernel.crashing.org>
+	<op.twol4cixnhx3hy@phoenix>
+In-Reply-To: <op.twol4cixnhx3hy@phoenix>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,39 +28,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 6 Aug 2007 14:53:32 +1000
-David Gibson <dwg@au1.ibm.com> wrote:
+Alexandros Kostopoulos wrote:
+> Except from some macros arch/powerpc/include/asm/io.h / mpc8260_pci9.h, 
+> I  can seem to find anywhere the code regarding PCI Erratum 9. The 
+> defined  macros(in io.h) for read/write are sufficient as a workaround 
+> for PCI9?  Who does DMA and register initialization for this (it used to 
+> be done in  arch/ppc/syslib/m8260_pci_erratum9.c in arc/ppc). Maybe 
+> u-boot or the  bootwrapper?
 
-> On Fri, Aug 03, 2007 at 11:09:08AM -0500, Josh Boyer wrote:
-> > AMCC Bamboo board DTS
-> 
-> All the compatible properties should have "XXXX-440ep" as the most
-> precise version, in addition to the more general strings.
+I don't think the workaround exists yet in arch/powerpc, despite the 
+config option.
 
-Done.
+> Another question regarding resource allocation: when  
+> alloc_resource(pci_32.c), called from pcibios_allocate_resources(), 
+> during  pcibios init, attempts to allocate resources using 
+> request_resource(), the  request fails. This seems to happen because the 
+> previously scanned PCI  devices request resources in the form, e.g. 
+> 00000- 0000f (i.e. starting  from zero), and this should be mapped 
+> somewhere else in cpu mem space. My  question (in order to find my bug) 
+> is, who performs this mapping, from PCI  space to CPU space, the kernel 
+> (and if yes, where?) or the host bridge (in  which case, I've probably 
+> failed to configure it properly).
 
-> > --- /dev/null
-> > +++ linux-2.6/arch/powerpc/boot/dts/bamboo.dts
-> > @@ -0,0 +1,248 @@
-> > +/*
-> > + * Device Tree Source for AMCC Bamboo
-> > + *
-> > + * Copyright (c) 2006, 2007 IBM Corp.
-> > + * Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> > + *
-> > + * FIXME: Draft only!
-> > + *
-> > + * This file is licensed under the terms of the GNU General Public
-> > + * License version 2.  This program is licensed "as is" without
-> > + * any warranty of any kind, whether express or implied.
-> > + *
-> > + * To build:
-> > + *   dtc -I dts -O asm -o bamboo.S -b 0 bamboo.dts
-> > + *   dtc -I dts -O dtb -o bamboo.dtb -b 0 bamboo.dts
-> 
-> Can we ditch this "to build" boilerplate.  It's just another thing
-> people frequently forget to update as they copy it from dts to dts.
+If the error message is the one I'm thinking of (it always helps to post 
+the actual messages), that's normal for when the PCI bus hasn't been 
+probed by the firmware.  Linux first tries to use the BARs as they're 
+already set, which will obviously fail because they haven't been set, 
+and then it will properly allocated them.  It's harmless verbosity, 
+though it'd be nice to have a flag to tell the PCI layer to not bother 
+trying to preserve any existing BARs.
 
-Removed.
-
-josh
+-Scott
