@@ -1,15 +1,21 @@
-Return-Path: <Glenn.G.Hart@us.westinghouse.com>
-Received: from swec9607.wecnq.com (swec9607.wecnq.com [147.72.234.65])
-	by ozlabs.org (Postfix) with ESMTP id 786FADDE39
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.ovro.caltech.edu",
+	Issuer "mail.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 949BDDDE34
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Aug 2007 02:03:01 +1000 (EST)
-Subject: Linux with data2mem
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <OF56B29E3B.75AC018C-ON85257330.0055CDE0-85257330.0056CDD1@ct.wec.com>
-From: Glenn.G.Hart@us.westinghouse.com
-Date: Tue, 7 Aug 2007 11:48:07 -0400
+	Wed,  8 Aug 2007 02:55:38 +1000 (EST)
+Message-ID: <46B8A3C9.7060806@ovro.caltech.edu>
+Date: Tue, 07 Aug 2007 09:54:33 -0700
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+To: Mirek23 <miroslaw.dach@psi.ch>
+Subject: Re: signals handling in the kernel
+References: <12032525.post@talk.nabble.com>
+In-Reply-To: <12032525.post@talk.nabble.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,72 +26,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I have created a Linux kernel and file system into an ELF file.  I have the
-bit file from my Xilinx V4 FX12LC.  According to the documentation I have
-read I should be able to use data2mem to create one bit file which I can
-program the FPGA with.  I have not been able to get data2mem to work
-correctly.  Has anybody been able to do this?  I started with my
-system_bd.bmm file from implementation directory.  Executing the command:
+Hi Mirek,
 
-data2mem -2m system_bd.bmm -bt system.bit -bd zImage.initrd.elf -o b
-newsys.bit
+>     I would like to send signals from the interrupt handler
+> routine (in the kernel) to the user application (in user space).
+> I have googled on that net and I have found that it could be done with the
+> function: kill_proc_info.
 
-yields:
+Look in Rubini for the section regarding asynchronous
+notification, Ch 6.
 
-ERROR:Data2MEM:33 - Matching ADDRESS_SPACE for code segment #0 not found in
-'sys
-tem_bd.bmm'.
-    Code segment #0 occupies [0x00400000:0x0062AFFF]
+The callback to generate SIGIO is fasync.
 
-
-
-This is my linux kernel I believe, but I cannot find any documentation I
-what to do.  I think I need to modify my system_bd.bmm file:
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// Processor 'ppc405_0', ID 100, memory map.
-//
-///////////////////////////////////////////////////////////////////////////////
-
-ADDRESS_MAP ppc405_0 PPC405 100
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-    //
-    // Processor 'ppc405_0' address space
-'plb_bram_if_cntlr_1_bram_combined' 0xFFFFC000:0xFFFFFFFF (16 KB).
-    //
-
-///////////////////////////////////////////////////////////////////////////////
-
-    ADDRESS_SPACE plb_bram_if_cntlr_1_bram_combined RAMB16
-[0xFFFFC000:0xFFFFFFFF]
-        BUS_BLOCK
-            plb_bram_if_cntlr_1_bram/plb_bram_if_cntlr_1_bram/ramb16_0
-[63:56] PLACED = X1Y9;
-            plb_bram_if_cntlr_1_bram/plb_bram_if_cntlr_1_bram/ramb16_1
-[55:48] PLACED = X2Y10;
-            plb_bram_if_cntlr_1_bram/plb_bram_if_cntlr_1_bram/ramb16_2
-[47:40] PLACED = X1Y10;
-            plb_bram_if_cntlr_1_bram/plb_bram_if_cntlr_1_bram/ramb16_3
-[39:32] PLACED = X2Y9;
-            plb_bram_if_cntlr_1_bram/plb_bram_if_cntlr_1_bram/ramb16_4
-[31:24] PLACED = X2Y13;
-            plb_bram_if_cntlr_1_bram/plb_bram_if_cntlr_1_bram/ramb16_5
-[23:16] PLACED = X2Y8;
-            plb_bram_if_cntlr_1_bram/plb_bram_if_cntlr_1_bram/ramb16_6
-[15:8] PLACED = X2Y12;
-            plb_bram_if_cntlr_1_bram/plb_bram_if_cntlr_1_bram/ramb16_7
-[7:0] PLACED = X2Y11;
-        END_BUS_BLOCK;
-    END_ADDRESS_SPACE;
-
-END_ADDRESS_MAP;
-
-Thanks for any help you can offer.
-
-Glenn
+Cheers
+Dave
