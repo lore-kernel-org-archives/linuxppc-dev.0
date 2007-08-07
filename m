@@ -1,18 +1,22 @@
 Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <20070807034136.GC13522@localhost.localdomain>
+In-Reply-To: <20070807032806.GE15619@localhost.localdomain>
 References: <20070730150648.GA5005@ru.mvista.com>
 	<20070801020836.GB31391@localhost.localdomain>
 	<65ff446478a9fd0a48061079d5f04f8f@kernel.crashing.org>
 	<20070801050422.GI31391@localhost.localdomain>
 	<20070801054751.GM31391@localhost.localdomain>
-	<59e87834966d80bb143e1683fe751cd1@kernel.crashing.org>
-	<20070807034136.GC13522@localhost.localdomain>
+	<46B1F6D4.3070707@ru.mvista.com>
+	<20070803031349.GD6418@localhost.localdomain>
+	<46B34E1F.5060009@ru.mvista.com>
+	<20070806042109.GB6103@localhost.localdomain>
+	<46B76A5A.3030300@ru.mvista.com>
+	<20070807032806.GE15619@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <03211b7766f4a21c90889344f843a564@kernel.crashing.org>
+Message-Id: <e20238f937f1328cc3db88840b3c7fc3@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH 2/6] PowerPC 440EPx: Sequoia DTS
-Date: Tue, 7 Aug 2007 18:33:01 +0200
+Date: Tue, 7 Aug 2007 18:43:35 +0200
 To: David Gibson <david@gibson.dropbear.id.au>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,52 +28,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> Yeah, better names please -- if possible, something that someone
->>>>> without knowledge of this SoC will understand what it is.
->>>>
->>>> I think the names are probably ok - I'm assuming they're in keeping
->>>> with the convention I've used of using the same names / 
->>>> abbreviations
->>>> as in the CPU user manual.  I'm asking just for my own information,
->>>> although a comment might not be a bad idea.
+>>> Aha!  Ok, now I understand the sorts of situations you're talking
+>>> about.  By "not direct mapped", I thought you were talking about some
+>>> kind of access via address/data registers on some indirect bus
+>>> controller, rather than weird variations on endianness and
+>>> bit-swizzling.
 >>
->> Fine with me -- I personally prefer "system-device-controller"
->> and "clock-power-controller" or similar, but that is mostly a
->> matter of taste.  As long as it's human readable it's fine.
+>>     No, that would be just too ridiculous for a NOR flash -- I hope. 
+>> :-)
 >
-> Actually, it occurs to me that I've only sometimes been using that
-> convention for the names:  basically just for the weirdo chip control
-> devices that don't have a more widespread generic name.
+> Heh.  In my experience, very little is so ridiculous that some
+> embedded vendor won't do it.
 
-It's pretty darn hard to make good sensible "generic names" for
-some of the devices on a SoC; using the acronym that's in the
-documentation for that SoC certainly isn't the worst choice.
+True -- but if you can't map the NOR into the CPU address space,
+there are cheaper alternatives.  Most embedded vendors care about
+that, too ;-)
 
->>> +    Flash partitions
->>> +     - reg :
->>> +     - read-only : (optional)
+>>     So, you're saying that the 1:1 address correspondence rule stops 
+>> to apply
+>> here?
+>
+> Well.. it all depends what exactly you consider the address space of
+> the flash bank.  By which I mean the whole shmozzle represented by the
+> device node, not the individual flash chips.  It's not immediately
+> obvious whether or not that should include any swizzling done by the
+> bus wiring.
+
+The parent device/bus shouldn't care, from its viewpoint the flash
+bank is just one linear hunk of address space.  For reading or
+writing the flash bank appears linear to the CPU as well (at least
+that's the only thing our current proposed binding supports); the
+only thing that gets "interesting" is sending commands to the flash
+chips.
+
+> It would be possible, I guess, to define a 'swizzled-ranges' property
+> or something which allows child devices to be embedded in the parent's
+> address range in a not-direct way.
+
+Let's not even consider this please.
+
+> However, the swizzling on the
+> flash bank is really a property of the flash bank,
+
+Yeah, it's the "fine structure" of the flash bank.  Something
+only the flash driver has to deal with.  So no contaminating the
+parent device node, thank you.
+
+>>> Simplest option seems to me to add a property "endianness" or
 >>
->> I'll hold off commenting on this until you've finish writing it,
->> you probably know my opinion about it anyway :-)
->
-> Heh.. actually I was kind of hoping for your input on what's still
-> missing.  For example, I don't know what the necessary extra
-> properties for JEDEC chips are.
+>>     And we even have a precedent of "big-endian" prop in the MPIC 
+>> nodes
+>> (although I'm not sure why it's needed there).
 
-I meant for the "partitions" stuff only.
-
-For the JEDEC chips, we need a "vendor-id" and "device-id"
-property at least (or similar names -- whatever is general
-practice for this); both are a single byte, encoded as with
-encode-int.
-
->> One thing though -- what _exactly_ does "read-only" signify?
->
-> That's... a good question.
-
-Yeah.  It seems to me that the way it is currently used is
-pure policy enforcement, which doesn't belong in the device
-tree.
+A single register read (32-bit registers) gives a big-endian value
+on some MPIC implementations, and wrong-endian on others.  The
+device driver really needs to know -- it really should just figure
+it out from the "compatible" property though.
 
 
 Segher
