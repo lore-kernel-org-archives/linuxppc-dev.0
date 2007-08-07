@@ -1,19 +1,19 @@
 Return-Path: <jacmet@sunsite.dk>
 Received: from kuuvir01.barco.com (kuumail.barco.com [32.58.34.195])
-	by ozlabs.org (Postfix) with SMTP id 584A5DDE23
+	by ozlabs.org (Postfix) with SMTP id E7CFADDE05
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Aug 2007 17:18:16 +1000 (EST)
+	Tue,  7 Aug 2007 17:21:35 +1000 (EST)
 Received: from peko by sleipner.barco.com with local (Exim 4.60)
-	(envelope-from <jacmet@sunsite.dk>) id 1IIJKG-0002Mr-OR
-	for linuxppc-embedded@ozlabs.org; Tue, 07 Aug 2007 09:17:56 +0200
-From: Peter Korsgaard <peter.korsgaard@barco.com>
+	(envelope-from <jacmet@sunsite.dk>) id 1IIJ3t-0001u0-4Y
+	for linuxppc-embedded@ozlabs.org; Tue, 07 Aug 2007 09:01:01 +0200
+From: Peter Korsgaard <jacmet@sunsite.dk>
 To: linuxppc-embedded@ozlabs.org
 Subject: Re: [PATCH] Consolidate XILINX_VIRTEX board support
 References: <20070806225642.7D72A7B005B@mail34-fra.bigfish.com>
-Date: Tue, 07 Aug 2007 09:17:56 +0200
+Date: Tue, 07 Aug 2007 09:01:01 +0200
 In-Reply-To: <20070806225642.7D72A7B005B@mail34-fra.bigfish.com> (Wolfgang
 	Reissnegger's message of "Mon, 06 Aug 2007 15:57:25 -0700")
-Message-ID: <87vebryfrv.fsf@sleipner.barco.com>
+Message-ID: <87zm13ygk2.fsf@sleipner.barco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
