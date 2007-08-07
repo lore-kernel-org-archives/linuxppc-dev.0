@@ -1,23 +1,20 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DF9AEDDE08
+	by ozlabs.org (Postfix) with ESMTP id 8F0CDDDD01
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Aug 2007 06:09:16 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1IIVMf-00052n-SM
-	for linuxppc-embedded@ozlabs.org; Tue, 07 Aug 2007 13:09:13 -0700
-Message-ID: <12041502.post@talk.nabble.com>
-Date: Tue, 7 Aug 2007 13:09:13 -0700 (PDT)
-From: khollan <khollan@daktronics.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Telnet on ML410
-In-Reply-To: <12039337.post@talk.nabble.com>
+	Wed,  8 Aug 2007 07:19:59 +1000 (EST)
+Message-ID: <46B8E1F9.3000404@garzik.org>
+Date: Tue, 07 Aug 2007 17:19:53 -0400
+From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <12039337.post@talk.nabble.com>
+To: leoli@freescale.com
+Subject: Re: [GIT PATCH] ucc_geth fixes for 2.6.22-rc1
+References: <1186132075.6230.11.camel@Gundam>
+In-Reply-To: <1186132075.6230.11.camel@Gundam>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: netdev@vger.kernel.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,13 +25,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Li Yang wrote:
+> Please pull from 'ucc_geth' branch of
+> master.kernel.org:/pub/scm/linux/kernel/git/leo/fsl-soc.git ucc_geth
+> 
+> to receive the following fixes:
+> 
+>  drivers/net/ucc_geth_ethtool.c |    1 -
+>  drivers/net/ucc_geth_mii.c     |    3 ++-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> Domen Puncer (1):
+>       ucc_geth: fix section mismatch
+> 
+> Jan Altenberg (1):
+>       ucc_geth: remove get_perm_addr from ucc_geth_ethtool.c
 
-Figured it out I needed to make device nodes 
-cd /dev
-mknod ptmx c 5 2
-cd /dev/pts
-mknod 0 c 136 0
-
--- 
-View this message in context: http://www.nabble.com/Telnet-on-ML410-tf4231739.html#a12041502
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+pulled
