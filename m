@@ -1,21 +1,20 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C4A2EDDE38
+	by ozlabs.org (Postfix) with ESMTP id 2DD78DDE41
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Aug 2007 04:02:25 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1IITNu-0001KT-KJ
-	for linuxppc-embedded@ozlabs.org; Tue, 07 Aug 2007 11:02:22 -0700
-Message-ID: <12039337.post@talk.nabble.com>
-Date: Tue, 7 Aug 2007 11:02:22 -0700 (PDT)
-From: khollan <khollan@daktronics.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Telnet on ML410
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed,  8 Aug 2007 04:10:36 +1000 (EST)
+In-Reply-To: <20070807152644.73689DDE38@ozlabs.org>
+References: <20070807152644.73689DDE38@ozlabs.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <D7E4BC5A-FC9F-4C08-A680-05900135DC1E@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Linux PPC 8555--TSec initialisation
+Date: Tue, 7 Aug 2007 13:11:37 -0500
+To: shashikumar@aspirecom.net
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,30 +26,16 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Hi
+On Aug 7, 2007, at 1:51 AM, Shashikumar wrote:
 
-Im trying to get telnetd from busybox to work on my ML410.  Im running the
-telnetd in the init.d but when I connect to the ML410 with telnet I just get
-a blank screen without any prompt or login.  Any thoughts.  Here is my
-inittab file if that will help, I think it has to do with how my console is
-setup since Im using the uartlite.  Im new to this so any help would be
-great.
-::sysinit:/etc/init.d/rcS
+> Hi,
+>
+> I am using PPC8555. I need to initialize TSEC. Can anybody help me  
+> How to
+> initialize TSEC on chip of ppc8555.
+>
+> Thanks in advance
 
-# TERMINALS
-#::askfirst:/bin/login
-::askfirst:/sbin/getty -L 9600 ttyUL0
+It should be initialized by the driver in drivers/net/gianfar*
 
-# What to do at the "Three Finger Salute"
-# NOTE: This will not work over a serial port!
-:12345:ctrlaltdel:/sbin/reboot
-
-# What to do at shutdown/reboot
-:6:shutdown:/bin/umount -a -r
-:6:shutdown:/sbin/swapoff -a
-
-# Stuff to do when restarting the init process
-::restart:/sbin/init
--- 
-View this message in context: http://www.nabble.com/Telnet-on-ML410-tf4231739.html#a12039337
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+- k
