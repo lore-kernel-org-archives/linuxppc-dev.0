@@ -1,22 +1,22 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 8 Aug 2007 10:35:05 +1000
+Date: Wed, 8 Aug 2007 10:48:20 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH 2/6] PowerPC 440EPx: Sequoia DTS
-Message-ID: <20070808003505.GB25082@localhost.localdomain>
-References: <65ff446478a9fd0a48061079d5f04f8f@kernel.crashing.org>
+Message-ID: <20070808004820.GC25082@localhost.localdomain>
+References: <20070801020836.GB31391@localhost.localdomain>
+	<65ff446478a9fd0a48061079d5f04f8f@kernel.crashing.org>
 	<20070801050422.GI31391@localhost.localdomain>
 	<20070801054751.GM31391@localhost.localdomain>
 	<46B1F6D4.3070707@ru.mvista.com>
 	<20070803031349.GD6418@localhost.localdomain>
 	<46B34E1F.5060009@ru.mvista.com>
-	<20070806042109.GB6103@localhost.localdomain>
-	<46B76A5A.3030300@ru.mvista.com>
-	<20070807032806.GE15619@localhost.localdomain>
-	<e20238f937f1328cc3db88840b3c7fc3@kernel.crashing.org>
+	<f8e837f0c3f73a9b47d52be05f1d54cc@kernel.crashing.org>
+	<20070807040918.GD13522@localhost.localdomain>
+	<2c959d4df36f91dd9ee900d415c836f9@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <e20238f937f1328cc3db88840b3c7fc3@kernel.crashing.org>
+In-Reply-To: <2c959d4df36f91dd9ee900d415c836f9@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,55 +27,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 07, 2007 at 06:43:35PM +0200, Segher Boessenkool wrote:
-> >>> Aha!  Ok, now I understand the sorts of situations you're talking
-> >>> about.  By "not direct mapped", I thought you were talking about some
-> >>> kind of access via address/data registers on some indirect bus
-> >>> controller, rather than weird variations on endianness and
-> >>> bit-swizzling.
-> >>
-> >>     No, that would be just too ridiculous for a NOR flash -- I hope. 
-> >> :-)
+On Tue, Aug 07, 2007 at 06:58:20PM +0200, Segher Boessenkool wrote:
+> >> Most characters are allowed in the unit-address...  The following
+> >> is just fine: "my-secret-base@the-moon".  ISA uses letters to
+> >> distinguish between its different address spaces, for example.
 > >
-> > Heh.  In my experience, very little is so ridiculous that some
-> > embedded vendor won't do it.
+> > Yeah, I should probably make dtc a bit more flexible about accepting
+> > that, too.  At present, it only takes hex digits and ',', since those
+> > are the common character.
 > 
-> True -- but if you can't map the NOR into the CPU address space,
-> there are cheaper alternatives.  Most embedded vendors care about
-> that, too ;-)
-> 
-> >>     So, you're saying that the 1:1 address correspondence rule stops 
-> >> to apply
-> >> here?
+> Sounds good.  And then the legacy ISA devices in existing
+> DTS files should be changed to say @i60 instead of @60, etc.
+> (@60 is correct since the default is legacy I/O space, but
+> it's good the be more verbose in those cases).
+
+Ok, I'll look into that.  No promises that it will be real soon,
+though.
+
+> >> David, can multiple devices sit on the same chip-select
+> >> on EBC, or on the same "minor" address?  If not, you can
+> >> simplify your unit address representation.
 > >
-> > Well.. it all depends what exactly you consider the address space of
-> > the flash bank.  By which I mean the whole shmozzle represented by the
-> > device node, not the individual flash chips.  It's not immediately
-> > obvious whether or not that should include any swizzling done by the
-> > bus wiring.
+> > As far as I know, multiple devices could sit on the same chip select:
+> > provided there was enough address decoding logic in or around the
+> > devices, and that there existing bus timing parameters which would
+> > work with all the devices on a chip select (or "bank" in the
+> > terminology of the EBC bridge documentation).
 > 
-> The parent device/bus shouldn't care, from its viewpoint the flash
-> bank is just one linear hunk of address space.  For reading or
-> writing the flash bank appears linear to the CPU as well (at least
-> that's the only thing our current proposed binding supports); the
-> only thing that gets "interesting" is sending commands to the flash
-> chips.
-> 
-> > It would be possible, I guess, to define a 'swizzled-ranges' property
-> > or something which allows child devices to be embedded in the parent's
-> > address range in a not-direct way.
-> 
-> Let's not even consider this please.
-> 
-> > However, the swizzling on the
-> > flash bank is really a property of the flash bank,
-> 
-> Yeah, it's the "fine structure" of the flash bank.  Something
-> only the flash driver has to deal with.  So no contaminating the
-> parent device node, thank you.
+> Ah, that's what multiple banks are for!
 
-Sounds like we're in agreement, then.
+Yes.
 
+> > Devices on different banks can certainly have the same address/offset
+> > within the bank - e.g. on Ebony most of the devices are at offset 0.
+> > The OPB address range for each bank is separately programmable in the
+> > EBC bridge DCRs.
+> 
+> Okay, seems like the <bank,offset> representation is the simplest
+> possible, then.  Good.  <rubber stamp>
+
+Excellent.  I should really do a proper write-up for b-o-f.txt, I
+guess.
+
+> > (Incidentally, this is why I created the binding in this way, rather
+> > than just using the firmware established addresses in OPB space, which
+> > are usually fixed for a particular board/platform.  This way provides
+> > enough information that, if necessary, the kernel or another client
+> > can reprogram the EBC from scratch to access the various devices
+> > present.  Well.. actually fully reprogramming would also need the the
+> > bus timing parameters, which I was thinking of adding information
+> > before, but I haven't gotten to it yet.)
+> 
+> It gives a full "as simple as possible but no simpler" description
+> of the hardware, so it's just fine independent of whether you want
+> to reprogram the EBC or not.
+
+That was the idea.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
