@@ -1,22 +1,22 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 8 Aug 2007 10:48:20 +1000
+Date: Wed, 8 Aug 2007 11:13:24 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH 2/6] PowerPC 440EPx: Sequoia DTS
-Message-ID: <20070808004820.GC25082@localhost.localdomain>
-References: <20070801020836.GB31391@localhost.localdomain>
-	<65ff446478a9fd0a48061079d5f04f8f@kernel.crashing.org>
+Message-ID: <20070808011324.GD25082@localhost.localdomain>
+References: <65ff446478a9fd0a48061079d5f04f8f@kernel.crashing.org>
 	<20070801050422.GI31391@localhost.localdomain>
 	<20070801054751.GM31391@localhost.localdomain>
 	<46B1F6D4.3070707@ru.mvista.com>
 	<20070803031349.GD6418@localhost.localdomain>
 	<46B34E1F.5060009@ru.mvista.com>
-	<f8e837f0c3f73a9b47d52be05f1d54cc@kernel.crashing.org>
-	<20070807040918.GD13522@localhost.localdomain>
-	<2c959d4df36f91dd9ee900d415c836f9@kernel.crashing.org>
+	<20070806042109.GB6103@localhost.localdomain>
+	<163e1bcdc507ddcde3193e842c96da43@kernel.crashing.org>
+	<20070807041259.GF13522@localhost.localdomain>
+	<b055a84cbb23ef7287c1d585c1810a74@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <2c959d4df36f91dd9ee900d415c836f9@kernel.crashing.org>
+In-Reply-To: <b055a84cbb23ef7287c1d585c1810a74@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,62 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 07, 2007 at 06:58:20PM +0200, Segher Boessenkool wrote:
-> >> Most characters are allowed in the unit-address...  The following
-> >> is just fine: "my-secret-base@the-moon".  ISA uses letters to
-> >> distinguish between its different address spaces, for example.
+On Tue, Aug 07, 2007 at 06:51:04PM +0200, Segher Boessenkool wrote:
+> >> address-permutation = <0 1 3 2 4 5 7 6 e f d c a b 9 8>;
 > >
-> > Yeah, I should probably make dtc a bit more flexible about accepting
-> > that, too.  At present, it only takes hex digits and ',', since those
-> > are the common character.
+> > Yes, I was contemplating something like that.
 > 
-> Sounds good.  And then the legacy ISA devices in existing
-> DTS files should be changed to say @i60 instead of @60, etc.
-> (@60 is correct since the default is legacy I/O space, but
-> it's good the be more verbose in those cases).
+> Let's not define this until we need it though :-)
 
-Ok, I'll look into that.  No promises that it will be real soon,
-though.
+Indeed.
 
-> >> David, can multiple devices sit on the same chip-select
-> >> on EBC, or on the same "minor" address?  If not, you can
-> >> simplify your unit address representation.
+> >> I haven't heard or thought of anything better either.  Using "ranges"
+> >> is conceptually wrong, even ignoring the technical problems that come
+> >> with it.
 > >
-> > As far as I know, multiple devices could sit on the same chip select:
-> > provided there was enough address decoding logic in or around the
-> > devices, and that there existing bus timing parameters which would
-> > work with all the devices on a chip select (or "bank" in the
-> > terminology of the EBC bridge documentation).
+> > Why is "ranges" conceptually wrong?
 > 
-> Ah, that's what multiple banks are for!
+> The flash partitions aren't separate devices sitting on a
+> "flash bus", they are "sub-devices" of their parent.
 
-Yes.
+Well, yes, but nonetheless the partitions show up as part of the
+overall physical address space.  How do you encode that other than in
+'ranges'?
 
-> > Devices on different banks can certainly have the same address/offset
-> > within the bank - e.g. on Ebony most of the devices are at offset 0.
-> > The OPB address range for each bank is separately programmable in the
-> > EBC bridge DCRs.
+> > To be honest this looks rather to me like another case where having
+> > overlapping 'reg' and 'ranges' would actually make sense.
 > 
-> Okay, seems like the <bank,offset> representation is the simplest
-> possible, then.  Good.  <rubber stamp>
+> It never makes sense.  You should give the "master" device
+> the full "reg" range it covers, and have it define its own
+> address space; "sub-devices" can carve out their little hunk
+> from that.  You don't want more than one device owning the
+> same address range in the same address space.
 
-Excellent.  I should really do a proper write-up for b-o-f.txt, I
-guess.
-
-> > (Incidentally, this is why I created the binding in this way, rather
-> > than just using the firmware established addresses in OPB space, which
-> > are usually fixed for a particular board/platform.  This way provides
-> > enough information that, if necessary, the kernel or another client
-> > can reprogram the EBC from scratch to access the various devices
-> > present.  Well.. actually fully reprogramming would also need the the
-> > bus timing parameters, which I was thinking of adding information
-> > before, but I haven't gotten to it yet.)
-> 
-> It gives a full "as simple as possible but no simpler" description
-> of the hardware, so it's just fine independent of whether you want
-> to reprogram the EBC or not.
-
-That was the idea.
+Why not?  After all, the physical address ranges of the flash
+partitions really do overlap with that of the flash device as a whole.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
