@@ -1,29 +1,29 @@
-Return-Path: <jyoung5@us.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Return-Path: <agl@us.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B1014DDE99
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 04:45:14 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l78IjAo1020746
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2007 14:45:10 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l78IjAhw521998
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2007 14:45:10 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l78IjARc018547
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2007 14:45:10 -0400
-Subject: Sequoia 440EPx patches not working
-From: Jerone Young <jyoung5@us.ibm.com>
-To: linuxppc-dev@ozlabs.org
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3F6E4DDECD
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 04:47:55 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l78Ilq0V001421
+	for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2007 14:47:52 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l78Ill9Z157554
+	for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2007 12:47:48 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l78IlkSs015184
+	for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2007 12:47:47 -0600
+Subject: [Documentation] Page Table Layout diagrams
+From: Adam Litke <agl@us.ibm.com>
+To: linux-mm <linux-mm@kvack.org>
 Content-Type: text/plain
-Date: Wed, 08 Aug 2007 13:45:10 -0500
-Message-Id: <1186598710.5459.7.camel@laptop>
+Date: Wed, 08 Aug 2007 13:47:45 -0500
+Message-Id: <1186598865.23817.76.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: vbarshark@ru.mvista.com
-Reply-To: jyoung5@us.ibm.com
+Cc: linuxppc-dev@ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,30 +33,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Using the Sequoia (AMCC 440EPx) patches recently submitted to the list I
-am unable to boot to fully boot a uImage built with these patches under
-Uboot. It appears to hang in very early boot.
+Hello all.  In an effort to understand how the page tables are laid out
+across various architectures I put together some diagrams.  I have
+posted them on the linux-mm wiki: http://linux-mm.org/PageTableStructure
+and I hope they will be useful to others.  
 
+Just to make sure I am not spreading misinformation, could a few of you
+experts take a quick look at the three diagrams I've got finished so far
+and point out any errors I have made?  Thanks.
 
-Here is the output:
-=> tftp 400000 sequoia/uImage                                                   
-ENET Speed is 100 Mbps - FULL duplex connection (EMAC0)                         
-Using ppc_4xx_eth0 device                                                       
-TFTP from server 9.53.41.24; our IP address is 9.53.41.38                       
-Filename 'sequoia/uImage'.                                                      
-Load address: 0x400000                                                          
-Loading: #################################################################      
-         #################################################################      
-         #################################################################      
-         #######################                                                
-done                                                                            
-Bytes transferred = 1112434 (10f972 hex)                                        
-=> bootm 400000                                                                 
-## Booting image at 00400000 ...                                                
-   Image Name:   Linux-2.6.23-rc2                                               
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)                   
-   Data Size:    1112370 Bytes =  1.1 MB                                        
-   Load Address: 00000000                                                       
-   Entry Point:  00000000                                                       
-   Verifying Checksum ... OK                                                    
-   Uncompressing Kernel Image ... OK 
+-- 
+Adam Litke - (agl at us.ibm.com)
+IBM Linux Technology Center
