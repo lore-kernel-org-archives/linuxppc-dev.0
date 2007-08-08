@@ -1,14 +1,14 @@
 Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 14C81DDEC4
+	by ozlabs.org (Postfix) with ESMTP id 0E2B8DDE30
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Aug 2007 02:49:35 +1000 (EST)
-Message-ID: <46B9F419.7060202@freescale.com>
-Date: Wed, 08 Aug 2007 11:49:29 -0500
+	Thu,  9 Aug 2007 02:55:28 +1000 (EST)
+Message-ID: <46B9F57A.9070604@freescale.com>
+Date: Wed, 08 Aug 2007 11:55:22 -0500
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
 To: Yoni Levin <yoni.l@slyde-tech.com>
@@ -32,19 +32,9 @@ Yoni Levin wrote:
 > 
 > I saw that I need to use swab32 to any read\write operation from registers,
 
-Only little endian registers (such as PCI).
-
-> Why in the mpc8313 reference in registers description some bits look like
-> 31,30,29,.,3,2,1,0
-> 
-> And some: 0,1,2,3.,30,31
-
-Most PowerPC documentation numbers bits in the same endianness as the 
-bytes in the register.
-
-> Is it just mistake? Or some registers are different then other? 
-
-I consider big-endian bit numbering to be a mistake, but good luck 
-getting them to fix it. :-)
+BTW, you should be using in/out_le32() (or for PCI MMIO, readl/writel) 
+rather than swab32().  This will be more efficient since it can use the 
+lwbrx/stwbrx instructions, and it will keep working even if the code is 
+run little-endian.
 
 -Scott
