@@ -1,22 +1,16 @@
-Return-Path: <antonkowalski@gmail.com>
-Received: from ik-out-1112.google.com (ik-out-1112.google.com [66.249.90.177])
-	by ozlabs.org (Postfix) with ESMTP id F1BCCDDEE0
+Return-Path: <joseph.robertson@sanmina-sci.com>
+Received: from mail75.messagelabs.com (mail75.messagelabs.com [216.82.250.3])
+	by ozlabs.org (Postfix) with SMTP id 8D798DDE9B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Aug 2007 05:42:46 +1000 (EST)
-Received: by ik-out-1112.google.com with SMTP id b35so126087ika
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 08 Aug 2007 12:42:44 -0700 (PDT)
-Message-ID: <e835b80a0708081242k2a9bfd34jdd1328081644ebf7@mail.gmail.com>
-Date: Wed, 8 Aug 2007 15:42:42 -0400
-From: "Anton Kowalski" <antonkowalski@gmail.com>
-To: "Benedict, Michael" <MBenedict@twacs.com>
-Subject: Re: no output to serial console from /init process on ml405
-In-Reply-To: <CF7E46FCFF66AD478BB72724345289EC2797CE@twx-exch01.twacs.local>
+	Thu,  9 Aug 2007 06:34:48 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <e835b80a0708080428q59378732x52ee40f9702f5692@mail.gmail.com>
-	<CF7E46FCFF66AD478BB72724345289EC2797CE@twx-exch01.twacs.local>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C7D9FB.8ED866C4"
+Subject: Cypress C67X00 driver question
+Date: Wed, 8 Aug 2007 15:34:45 -0500
+Message-ID: <939D37AEB47F1F49B88FAB6599B6023501A17257@hsv1dafpew02.das.gov.sanm.corp>
+From: "Robertson, Joseph M." <joseph.robertson@sanmina-sci.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,87 +21,137 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Indeed I hadn't set up the compulsary links correctly. In reading
-through the devices.txt document I realized that I don't have /proc
-mounted either. So the following links might not make much sense until
-/proc is up.
+This is a multi-part message in MIME format.
 
-    slink /dev/fd /proc/self/fd 777 0 0
-    slink /dev/stdin /proc/self/fd/0 777 0 0
-    slink /dev/stdout /proc/self/fd/1 777 0 0
-    slink /dev/stderr /proc/self/fd/2 777 0 0
-
-Thanks for your help.
-Anton
+------_=_NextPart_001_01C7D9FB.8ED866C4
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
 
-On 8/8/07, Benedict, Michael <MBenedict@twacs.com> wrote:
-> Just a guess, but do you have stdout and friends defined as recommended
-> in the Compulsory links section of Documentation/devices.txt?
->         -Michael
->
-> > -----Original Message-----
-> > From:
-> > linuxppc-embedded-bounces+mbenedict=twacs.com@ozlabs.org
-> > [mailto:linuxppc-embedded-bounces+mbenedict=twacs.com@ozlabs.o
-> rg] On Behalf Of Anton Kowalski
-> > Sent: Wednesday, August 08, 2007 6:28 AM
-> > To: linuxppc-embedded@ozlabs.org
-> > Subject: no output to serial console from /init process on ml405
-> >
-> > Hi All:
-> >
-> > I'm trying to bring up linux 2.6.21.1 on an ml405 board. The kernel
-> > boots fine but the init process does not produce any output. The /init
-> > program resides in an initramfs file system and I believe the /dev
-> > device files have been set up correctly. Here's an excerpt from my
-> > initramfs specification:
-> >
-> >     dir /dev 755 0 0
-> >     nod /dev/console 644 0 0 c 5 1
-> >     nod /dev/ttyS0 644 0 0 c 4 64
-> >
-> > (I am able to open these files from the init program. I tested this by
-> > sleeping for a specified time on success.)
-> >
-> > Also, printk continues to function after /init terminates and before
-> > the kernel panics.
-> >
-> > Here are the last few lines of the console output:
-> >
-> > [    0.507478] Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports,
-> > IRQ sharing disabled
-> > [    0.513862] serial8250.0: ttyS0 at MMIO 0x80201003 (irq =
-> > 3) is a 16550A
-> > [    2.927509] RAMDISK driver initialized: 1 RAM disks of 8192K size
-> > 1024 blocksize
-> > [    3.018391] tun: Universal TUN/TAP device driver, 1.6
-> > [    3.079115] tun: (C) 1999-2004 Max Krasnyansky <maxk@qualcomm.com>
-> > [    3.154919] mice: PS/2 mouse device common for all mice
-> > [    3.218021] TCP cubic registered
-> > [    3.257034] NET: Registered protocol family 1
-> > [    3.309405] NET: Registered protocol family 17
-> > [    3.363462] Freeing unused kernel memory: 300k init
-> > [   23.488277] Kernel panic - not syncing: Attempted to kill init!
-> > [   23.559517] Rebooting in 180 seconds..<NULL>
-> >
-> > I'm using the plb uart and the 8250.c driver. (The obp uartlite driver
-> > didn't work so I switched.) The kernel and the init program were
-> > compiled with eldk.
-> >
-> > Any insights into resolving this problem are greatly appreciated.
-> >
-> >
-> > Anton
-> > _______________________________________________
-> > Linuxppc-embedded mailing list
-> > Linuxppc-embedded@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> >
-> >
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
+Hi=20all,
+First=20off=20big=20thanks=20to=20the=20guys=20working=20on=20the=20Cypres=
+s=20USB=20C67X00=20driver!=20=20
+Without=20them=20I=20would=20not=20even=20be=20this=20far.
+
+But=20my=20question=20for=20them=20is:=20=20How=20are=20you=20guys=20initi=
+alizing=20the=20Cypress=20chip?
+It=20looks=20like=20the=20driver=20is=20expecting=20the=20cypress=20to=20b=
+e=20programmed=20and=20ready.
+
+I=20have=20a=20FPGA=20design=20with=20a=20Cypress=20C67300=20which=20has=20=
+no=20eeprom=20or=20cpld,=20so=20it=20just=20comes=20up=20blank=20in=20copr=
+ocessor=20mode.
+
+I=20believe=20I=20need=20to=20'program'=20the=20chip=20and=20kick=20it=20b=
+efore=20the=20driver=20loads=20is=20that=20right?
+Has=20anyone=20ever=20done=20this=20before?=20=20
+The=20Cypress=20docs=20do=20not=20even=20begin=20to=20provide=20a=20simple=
+=20example=20of=20the=20minimum=20registers=20to=20set
+before=20the=20usb=20will=20'work'.=20=20I=20just=20need=202=20hosts.
+
+Thanks,
+
+Joe=20Robertson
+x8259
+Joseph.Robertson@sanmina-sci.com
+
+
+CONFIDENTIALITY
+This=20e-mail=20message=20and=20any=20attachments=20thereto,=20is=20intend=
+ed=20only=20for=20use=20by=20the=20addressee(s)=20named=20herein=20and=20m=
+ay=20contain=20legally=20privileged=20and/or=20confidential=20information.=
+=20If=20you=20are=20not=20the=20intended=20recipient=20of=20this=20e-mail=20=
+message,=20you=20are=20hereby=20notified=20that=20any=20dissemination,=20d=
+istribution=20or=20copying=20of=20this=20e-mail=20message,=20and=20any=20a=
+ttachments=20thereto,=20is=20strictly=20prohibited.=20=20If=20you=20have=20=
+received=20this=20e-mail=20message=20in=20error,=20please=20immediately=20=
+notify=20the=20sender=20and=20permanently=20delete=20the=20original=20and=20=
+any=20copies=20of=20this=20email=20and=20any=20prints=20thereof.
+ABSENT=20AN=20EXPRESS=20STATEMENT=20TO=20THE=20CONTRARY=20HEREINABOVE,=20T=
+HIS=20E-MAIL=20IS=20NOT=20INTENDED=20AS=20A=20SUBSTITUTE=20FOR=20A=20WRITI=
+NG.=20=20Notwithstanding=20the=20Uniform=20Electronic=20Transactions=20Act=
+=20or=20the=20applicability=20of=20any=20other=20law=20of=20similar=20subs=
+tance=20and=20effect,=20absent=20an=20express=20statement=20to=20the=20con=
+trary=20hereinabove,=20this=20e-mail=20message=20its=20contents,=20and=20a=
+ny=20attachments=20hereto=20are=20not=20intended=20to=20represent=20an=20o=
+ffer=20or=20acceptance=20to=20enter=20into=20a=20contract=20and=20are=20no=
+t=20otherwise=20intended=20to=20bind=20the=20sender,=20Sanmina-SCI=20Corpo=
+ration=20(or=20any=20of=20its=20subsidiaries),=20or=20any=20other=20person=
+=20or=20entity.
+------_=_NextPart_001_01C7D9FB.8ED866C4
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE=20HTML=20PUBLIC=20"-//W3C//DTD=20HTML=203.2//EN">
+<HTML>
+<HEAD>
+<META=20HTTP-EQUIV=3D"Content-Type"=20CONTENT=3D"text/html;=20charset=3Dis=
+o-8859-1">
+<META=20NAME=3D"Generator"=20CONTENT=3D"MS=20Exchange=20Server=20version=20=
+6.5.7652.24">
+<TITLE>Cypress=20C67X00=20driver=20question</TITLE>
+</HEAD>
+<BODY>
+<!--=20Converted=20from=20text/plain=20format=20-->
+<BR>
+
+<P><FONT=20SIZE=3D2>Hi=20all,<BR>
+First=20off=20big=20thanks=20to=20the=20guys=20working=20on=20the=20Cypres=
+s=20USB=20C67X00=20driver!&nbsp;<BR>
+Without=20them=20I=20would=20not=20even=20be=20this=20far.<BR>
+<BR>
+But=20my=20question=20for=20them=20is:&nbsp;=20How=20are=20you=20guys=20in=
+itializing=20the=20Cypress=20chip?<BR>
+It=20looks=20like=20the=20driver=20is=20expecting=20the=20cypress=20to=20b=
+e=20programmed=20and=20ready.<BR>
+<BR>
+I=20have=20a=20FPGA=20design=20with=20a=20Cypress=20C67300=20which=20has=20=
+no=20eeprom=20or=20cpld,=20so=20it=20just=20comes=20up=20blank=20in=20copr=
+ocessor=20mode.<BR>
+<BR>
+I=20believe=20I=20need=20to=20'program'=20the=20chip=20and=20kick=20it=20b=
+efore=20the=20driver=20loads=20is=20that=20right?<BR>
+Has=20anyone=20ever=20done=20this=20before?&nbsp;<BR>
+The=20Cypress=20docs=20do=20not=20even=20begin=20to=20provide=20a=20simple=
+=20example=20of=20the=20minimum=20registers=20to=20set<BR>
+before=20the=20usb=20will=20'work'.&nbsp;=20I=20just=20need=202=20hosts.<B=
+R>
+<BR>
+Thanks,<BR>
+<BR>
+Joe=20Robertson<BR>
+x8259<BR>
+Joseph.Robertson@sanmina-sci.com<BR>
+<BR>
+</FONT>
+</P>
+
+
+<BR>
+CONFIDENTIALITY<BR>
+This=20e-mail=20message=20and=20any=20attachments=20thereto,=20is=20intend=
+ed=20only=20for=20use=20by=20the=20addressee(s)=20named=20herein=20and=20m=
+ay=20contain=20legally=20privileged=20and/or=20confidential=20information.=
+=20If=20you=20are=20not=20the=20intended=20recipient=20of=20this=20e-mail=20=
+message,=20you=20are=20hereby=20notified=20that=20any=20dissemination,=20d=
+istribution=20or=20copying=20of=20this=20e-mail=20message,=20and=20any=20a=
+ttachments=20thereto,=20is=20strictly=20prohibited.=20=20If=20you=20have=20=
+received=20this=20e-mail=20message=20in=20error,=20please=20immediately=20=
+notify=20the=20sender=20and=20permanently=20delete=20the=20original=20and=20=
+any=20copies=20of=20this=20email=20and=20any=20prints=20thereof.<BR>
+ABSENT=20AN=20EXPRESS=20STATEMENT=20TO=20THE=20CONTRARY=20HEREINABOVE,=20T=
+HIS=20E-MAIL=20IS=20NOT=20INTENDED=20AS=20A=20SUBSTITUTE=20FOR=20A=20WRITI=
+NG.=20=20Notwithstanding=20the=20Uniform=20Electronic=20Transactions=20Act=
+=20or=20the=20applicability=20of=20any=20other=20law=20of=20similar=20subs=
+tance=20and=20effect,=20absent=20an=20express=20statement=20to=20the=20con=
+trary=20hereinabove,=20this=20e-mail=20message=20its=20contents,=20and=20a=
+ny=20attachments=20hereto=20are=20not=20intended=20to=20represent=20an=20o=
+ffer=20or=20acceptance=20to=20enter=20into=20a=20contract=20and=20are=20no=
+t=20otherwise=20intended=20to=20bind=20the=20sender,=20Sanmina-SCI=20Corpo=
+ration=20(or=20any=20of=20its=20subsidiaries),=20or=20any=20other=20person=
+=20or=20entity.<BR>
+</BODY>
+</HTML>
+------_=_NextPart_001_01C7D9FB.8ED866C4--
