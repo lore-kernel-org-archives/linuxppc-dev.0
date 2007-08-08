@@ -1,22 +1,24 @@
-Return-Path: <imrek@atomki.hu>
-Received: from imrek.org (strawberry.diszk.unideb.hu [193.6.143.139])
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 97EB9DDE2E
+	by ozlabs.org (Postfix) with ESMTP id EBE92DDE3B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Aug 2007 13:41:00 +1000 (EST)
-Received: from localhost ([127.0.0.1]) by imrek.org with esmtp (Exim 4.63)
-	(envelope-from <imrek@atomki.hu>) id 1IIbuG-00032n-8I
-	for linuxppc-embedded@ozlabs.org; Wed, 08 Aug 2007 05:08:20 +0200
-Date: Wed, 8 Aug 2007 05:08:20 +0200 (CEST)
-From: jozsef imrek <imrek@atomki.hu>
+	Wed,  8 Aug 2007 17:32:45 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IIg26-0003Hs-FA
+	for linuxppc-embedded@ozlabs.org; Wed, 08 Aug 2007 00:32:42 -0700
+Message-ID: <12048448.post@talk.nabble.com>
+Date: Wed, 8 Aug 2007 00:32:42 -0700 (PDT)
+From: Mirek23 <miroslaw.dach@psi.ch>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Linux with data2mem
-In-Reply-To: <OF56B29E3B.75AC018C-ON85257330.0055CDE0-85257330.0056CDD1@ct.wec.com>
-Message-ID: <Pine.LNX.4.61.0708080455410.11634@imrek.org>
-References: <OF56B29E3B.75AC018C-ON85257330.0055CDE0-85257330.0056CDD1@ct.wec.com>
+Subject: Re: signals handling in the kernel
+In-Reply-To: <46B8BA93.8020909@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+References: <12032525.post@talk.nabble.com> <46B8A3C9.7060806@ovro.caltech.edu>
+	<46B8BA93.8020909@ovro.caltech.edu>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,38 +29,75 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 7 Aug 2007 Glenn.G.Hart@us.westinghouse.com wrote:
 
-> ERROR:Data2MEM:33 - Matching ADDRESS_SPACE for code segment #0 not found in
-> 'sys
-> tem_bd.bmm'.
->    Code segment #0 occupies [0x00400000:0x0062AFFF]
->
+Hi Dave,
 
-...
+       I run embedded Linux on ppc405 (ml403 xilinx evaluation board). I use
+the GPIO based device build on FPGA part of the xilinx chip.  My gpio device
+generates interrupts whenever it changes its state.
+I use Montavista gpio driver with some modifications to react on interrupts.
+Each time when interrupt occurs the interrupt handler routine is called.
+This routine sends the signal to the application in user space to trigger
+it. When the application is triggered it reads the data from the GPIO
+device.
 
-> ///////////////////////////////////////////////////////////////////////////////
->
->    ADDRESS_SPACE plb_bram_if_cntlr_1_bram_combined RAMB16
-> [0xFFFFC000:0xFFFFFFFF]
+I read that in this situation the best is to use signals. In my case the
+ideal would be to use kill_proc_info which sends to the application the
+Signal with info data were I intended to put just one integer value. Such a
+value determines how to react for the signal on the application level.
+
+Would you have some other suggestion better then the kill_proc_info function
+use or even different technique then signaling.
+
+Could you please direct me to the Rubini documentation which you have
+mentioned in your last post.
+
+Many thanks 
+
+Mirek 
 
 
-make sure that the memory range your software wants to use is backed
-by real memory. it seems that your elf expects itself to be loaded at
-0x00400000:0x0062AFFF, but you block memory is at 0xFFFFC000:0xFFFFFFFF
-(use readelf -l to find out what address ranges does your software want
-to use).
 
 
-probably what you want is a boot loader in the bram, not the kernel image
-(the zImage). the boot loader would load the linux kernel into the main
-memory (starting at memory address 0x00000000).
-
-
+David Hawkins-3 wrote:
+> 
+> 
+> Hi Mirek,
+> 
+>>>     I would like to send signals from the interrupt handler
+>>> routine (in the kernel) to the user application (in user space).
+>>> I have googled on that net and I have found that it could be done with
+>>> the
+>>> function: kill_proc_info.
+>> 
+>> Look in Rubini for the section regarding asynchronous
+>> notification, Ch 6.
+>> 
+>> The callback to generate SIGIO is fasync.
+>> 
+> 
+> Actually, before you go off and implement something, can
+> you describe why you want to use signals.
+> 
+> I mistakenly used signals once to indicate notification of
+> an event. Then when I wanted multiple events from multiple
+> boards I found the problem with signals; you don't know
+> who sent it.
+> 
+> Using select() on multiple file descriptors ended up being
+> a more appropriate solution for my application. That
+> solution also works nicely with the ACE C++ ACE_Reactor
+> pattern.
+> 
+> Cheers,
+> Dave
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+> 
 
 -- 
-mazsi
-
-----------------------------------------------------------------
-strawberry fields forever!                       imrek@atomki.hu
-----------------------------------------------------------------
+View this message in context: http://www.nabble.com/signals-handling-in-the-kernel-tf4229566.html#a12048448
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
