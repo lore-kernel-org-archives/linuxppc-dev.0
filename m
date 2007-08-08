@@ -1,33 +1,35 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A1789DDEEF
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 06:06:27 +1000 (EST)
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D04FFDDF42
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 06:07:22 +1000 (EST)
 Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
 	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l78K6OSL012378
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2007 16:06:24 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
+	l78J0pdG026128
+	for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2007 15:00:51 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
 	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l78K6GUh171246
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2007 14:06:17 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l78K6GGq002728
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2007 14:06:16 -0600
-Date: Wed, 8 Aug 2007 15:06:15 -0500
+	l78K7Jfj049752
+	for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2007 14:07:19 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l78K7JOm016325
+	for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2007 14:07:19 -0600
+Date: Wed, 8 Aug 2007 15:07:13 -0500
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 5/6] pseries: fix jumbled no_logging flag.
-Message-ID: <20070808200615.GE20134@austin.ibm.com>
+Subject: [PATCH 6/6] pseries: eliminate global var
+Message-ID: <20070808200713.GF20134@austin.ibm.com>
 References: <20070808195916.GA20055@austin.ibm.com>
 	<20070808200115.GA20134@austin.ibm.com>
 	<20070808200210.GB20134@austin.ibm.com>
 	<20070808200337.GC20134@austin.ibm.com>
 	<20070808200448.GD20134@austin.ibm.com>
+	<20070808200615.GE20134@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070808200448.GD20134@austin.ibm.com>
+In-Reply-To: <20070808200615.GE20134@austin.ibm.com>
 From: linas@austin.ibm.com (Linas Vepstas)
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -40,95 +42,117 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Get rid of the jumbled usage of the no_logging flag. Its use 
-spans several directories, and is incorrectly/misleadingly
-documented. Instead, two changes:
-1) nvram will accept error log as soon as its ready.
-2) logging to nvram stops on the first fatal error reported.
+Eliminate the use of error_log_cnt as a global var shared across
+differnt directories. Pass it as a subroutine arg instead.
 
 Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 
 ----
- arch/powerpc/kernel/nvram_64.c         |    8 --------
- arch/powerpc/platforms/pseries/rtasd.c |   14 ++++++--------
- 2 files changed, 6 insertions(+), 16 deletions(-)
+ arch/powerpc/kernel/nvram_64.c         |   10 +++++-----
+ arch/powerpc/platforms/pseries/rtasd.c |    7 ++++---
+ include/asm-powerpc/nvram.h            |   15 ++++++++++-----
+ 3 files changed, 19 insertions(+), 13 deletions(-)
 
 Index: linux-2.6.22-git2/arch/powerpc/kernel/nvram_64.c
 ===================================================================
---- linux-2.6.22-git2.orig/arch/powerpc/kernel/nvram_64.c	2007-08-08 12:21:05.000000000 -0500
-+++ linux-2.6.22-git2/arch/powerpc/kernel/nvram_64.c	2007-08-08 12:21:16.000000000 -0500
-@@ -38,10 +38,6 @@ static struct nvram_partition * nvram_pa
+--- linux-2.6.22-git2.orig/arch/powerpc/kernel/nvram_64.c	2007-08-08 12:21:16.000000000 -0500
++++ linux-2.6.22-git2/arch/powerpc/kernel/nvram_64.c	2007-08-08 12:24:01.000000000 -0500
+@@ -38,8 +38,6 @@ static struct nvram_partition * nvram_pa
  static long nvram_error_log_index = -1;
  static long nvram_error_log_size = 0;
  
--int no_logging = 1; 	/* Until we initialize everything,
--			 * make sure we don't try logging
--			 * anything */
+-extern volatile int error_log_cnt;
 -
- extern volatile int error_log_cnt;
- 
  struct err_log_info {
-@@ -637,10 +633,6 @@ int nvram_write_error_log(char * buff, i
+ 	int error_type;
+ 	unsigned int seq_num;
+@@ -627,7 +625,8 @@ void __exit nvram_cleanup(void)
+  * sequence #: The unique sequence # for each event. (until it wraps)
+  * error log: The error log from event_scan
+  */
+-int nvram_write_error_log(char * buff, int length, unsigned int err_type)
++int nvram_write_error_log(char * buff, int length,
++                          unsigned int err_type, unsigned int error_log_cnt)
+ {
+ 	int rc;
  	loff_t tmp_index;
- 	struct err_log_info info;
- 	
--	if (no_logging) {
--		return -EPERM;
--	}
--
- 	if (nvram_error_log_index == -1) {
- 		return -ESPIPE;
+@@ -665,7 +664,8 @@ int nvram_write_error_log(char * buff, i
+  *
+  * Reads nvram for error log for at most 'length'
+  */
+-int nvram_read_error_log(char * buff, int length, unsigned int * err_type)
++int nvram_read_error_log(char * buff, int length,
++                         unsigned int * err_type, unsigned int * error_log_cnt)
+ {
+ 	int rc;
+ 	loff_t tmp_index;
+@@ -691,7 +691,7 @@ int nvram_read_error_log(char * buff, in
+ 		return rc;
  	}
+ 
+-	error_log_cnt = info.seq_num;
++	*error_log_cnt = info.seq_num;
+ 	*err_type = info.error_type;
+ 
+ 	return 0;
+Index: linux-2.6.22-git2/include/asm-powerpc/nvram.h
+===================================================================
+--- linux-2.6.22-git2.orig/include/asm-powerpc/nvram.h	2007-07-08 18:32:17.000000000 -0500
++++ linux-2.6.22-git2/include/asm-powerpc/nvram.h	2007-08-08 13:34:27.000000000 -0500
+@@ -62,14 +62,19 @@ struct nvram_partition {
+ 	unsigned int index;
+ };
+ 
+-
+-extern int nvram_write_error_log(char * buff, int length, unsigned int err_type);
+-extern int nvram_read_error_log(char * buff, int length, unsigned int * err_type);
+-extern int nvram_clear_error_log(void);
+ extern struct nvram_partition *nvram_find_partition(int sig, const char *name);
+ 
+-extern int pSeries_nvram_init(void);
+ extern int mmio_nvram_init(void);
++
++#ifdef CONFIG_PPC_PSERIES
++extern int pSeries_nvram_init(void);
++extern int nvram_write_error_log(char * buff, int length,
++					 unsigned int err_type, unsigned int err_seq);
++extern int nvram_read_error_log(char * buff, int length,
++					 unsigned int * err_type, unsigned int *err_seq);
++extern int nvram_clear_error_log(void);
++#endif /* CONFIG_PPC_PSERIES */
++
+ #endif /* __KERNEL__ */
+ 
+ /* PowerMac specific nvram stuffs */
 Index: linux-2.6.22-git2/arch/powerpc/platforms/pseries/rtasd.c
 ===================================================================
---- linux-2.6.22-git2.orig/arch/powerpc/platforms/pseries/rtasd.c	2007-08-08 12:20:44.000000000 -0500
-+++ linux-2.6.22-git2/arch/powerpc/platforms/pseries/rtasd.c	2007-08-08 12:21:16.000000000 -0500
-@@ -53,7 +53,8 @@ static unsigned int rtas_event_scan_rate
+--- linux-2.6.22-git2.orig/arch/powerpc/platforms/pseries/rtasd.c	2007-08-08 12:21:16.000000000 -0500
++++ linux-2.6.22-git2/arch/powerpc/platforms/pseries/rtasd.c	2007-08-08 12:50:40.000000000 -0500
+@@ -56,7 +56,7 @@ static int full_rtas_msgs = 0;
+ /* Stop logging to nvram after first fatal error */
+ static int no_more_logging;
  
- static int full_rtas_msgs = 0;
+-volatile int error_log_cnt = 0;
++static int error_log_cnt;
  
--extern int no_logging;
-+/* Stop logging to nvram after first fatal error */
-+static int no_more_logging;
- 
- volatile int error_log_cnt = 0;
- 
-@@ -216,7 +217,7 @@ void pSeries_log_error(char *buf, unsign
- 	}
+ /*
+  * Since we use 32 bit RTAS, the physical address of this must be below
+@@ -218,7 +218,7 @@ void pSeries_log_error(char *buf, unsign
  
  	/* Write error to NVRAM */
--	if (!no_logging && !(err_type & ERR_FLAG_BOOT))
-+	if (!no_more_logging && !(err_type & ERR_FLAG_BOOT))
- 		nvram_write_error_log(buf, len, err_type);
+ 	if (!no_more_logging && !(err_type & ERR_FLAG_BOOT))
+-		nvram_write_error_log(buf, len, err_type);
++		nvram_write_error_log(buf, len, err_type, error_log_cnt);
  
  	/*
-@@ -228,8 +229,8 @@ void pSeries_log_error(char *buf, unsign
- 		printk_log_rtas(buf, len);
+ 	 * rtas errors can occur during boot, and we do want to capture
+@@ -412,7 +412,8 @@ static int rtasd(void *unused)
  
- 	/* Check to see if we need to or have stopped logging */
--	if (fatal || no_logging) {
--		no_logging = 1;
-+	if (fatal || no_more_logging) {
-+		no_more_logging = 1;
- 		spin_unlock_irqrestore(&rtasd_log_lock, s);
- 		return;
- 	}
-@@ -301,7 +302,7 @@ static ssize_t rtas_log_read(struct file
- 
- 	spin_lock_irqsave(&rtasd_log_lock, s);
- 	/* if it's 0, then we know we got the last one (the one in NVRAM) */
--	if (rtas_log_size == 0 && !no_logging)
-+	if (rtas_log_size == 0 && !no_more_logging)
- 		nvram_clear_error_log();
- 	spin_unlock_irqrestore(&rtasd_log_lock, s);
- 
-@@ -413,9 +414,6 @@ static int rtasd(void *unused)
+ 	/* See if we have any error stored in NVRAM */
  	memset(logdata, 0, rtas_error_log_max);
- 	rc = nvram_read_error_log(logdata, rtas_error_log_max, &err_type);
+-	rc = nvram_read_error_log(logdata, rtas_error_log_max, &err_type);
++	rc = nvram_read_error_log(logdata, rtas_error_log_max,
++	                          &err_type, &error_log_cnt);
  
--	/* We can use rtas_log_buf now */
--	no_logging = 0;
--
  	if (!rc) {
  		if (err_type != ERR_FLAG_ALREADY_LOGGED) {
- 			pSeries_log_error(logdata, err_type | ERR_FLAG_BOOT, 0);
