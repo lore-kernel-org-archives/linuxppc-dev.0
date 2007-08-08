@@ -1,26 +1,28 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <linas@austin.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0B87DDDEB6
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 05:56:14 +1000 (EST)
-Message-ID: <46BA1FD2.4000705@freescale.com>
-Date: Wed, 08 Aug 2007 14:56:02 -0500
-From: Scott Wood <scottwood@freescale.com>
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D8118DDEFC
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 05:59:20 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l78JxH8G031291
+	for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2007 15:59:17 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l78JxHQ0551976
+	for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2007 15:59:17 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l78JxH52018786
+	for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2007 15:59:17 -0400
+Date: Wed, 8 Aug 2007 14:59:16 -0500
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 0/6] pseries: rtas & nvram cleanup/simpilification
+Message-ID: <20070808195916.GA20055@austin.ibm.com>
 MIME-Version: 1.0
-To: Alexandros Kostopoulos <akostop@inaccessnetworks.com>
-Subject: Re: pci in arch/powerpc vs arch/ppc
-References: <op.twhnwi18nhx3hy@phoenix>
-	<20070803201036.GA18229@ld0162-tx32.am.freescale.net>
-	<F081E320-CFF9-497C-87D5-50E2E5C15A24@kernel.crashing.org>
-	<op.twol4cixnhx3hy@phoenix> <46B88DAC.70005@freescale.com>
-	<op.twqn4vtsnhx3hy@phoenix> <op.twqvg3i0nhx3hy@phoenix>,
-	<op.twqvg3i0nhx3hy@phoenix> <twig.1186602365.9125@inaccessnetworks.com>
-In-Reply-To: <twig.1186602365.9125@inaccessnetworks.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,31 +32,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Alexandros Kostopoulos wrote:
-> I was referring to the allocation of primary bus' IO space based on the 
-> device tree. I understand that IO-space resources are relative to the start 
-> of the primary bus' IO space. But I think the primary bus IO space allocation 
-> itself is broken. Let me explain with an example:
-> 
-> In mpc8272ads.dts, the ranges property for pci is:
-> 
-> ranges = <42000000 0 80000000 80000000 0 20000000
->           02000000 0 a0000000 a0000000 0 20000000
->           01000000 0 00000000 f6000000 0 02000000>;
-> 
-> The third obviously corresponds to IO space. So, shouldn't the res->start for 
-> the host bridge be set to f6000000 ?
 
-No, because as I said, res->start is relative to the start of IO-space. 
-  The in/out functions add isa_io_base to the address.
+Paul,
 
-> Because, currently, based on what I've 
-> described in my previous mail, it gets set to 0. It seems to me like a matter 
-> of incorrect parsing of the device tree from pci_process_bridge_OF_ranges() 
-> for IO space.
+Please apply te following for 2.6.24
 
-It is not, at least not in this case.  It does appear to be ignoring the 
-possibility that it needs to do further translation of the address 
-through parent buses, though.
+The following sequence of patches cleanup, simplify and shorten
+the pseries code having to do with error logging. Several
+global variables shared across directories are removed, and
+the rtasd initialization sequence is rearranged and simplified,
+making the flow of control clearer. A minor buglet is fixed,
+and error mesages can now be logged earlier in the boot sequence.
 
--Scott
+--linas
+ 
