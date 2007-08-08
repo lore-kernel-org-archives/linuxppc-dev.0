@@ -1,23 +1,25 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
-	by ozlabs.org (Postfix) with ESMTP id 9EC7CDDEED
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 02:08:27 +1000 (EST)
-To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-Subject: Re: [PATCH] ehca: map 4k firmware context of cq, qp to user space
-References: <200708021139.31695.hnguyen@linux.vnet.ibm.com>
-	<adawswd3ayo.fsf@cisco.com>
-	<200708031036.20859.hnguyen@linux.vnet.ibm.com>
-	<200708081613.39837.hnguyen@linux.vnet.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 08 Aug 2007 09:08:20 -0700
-In-Reply-To: <200708081613.39837.hnguyen@linux.vnet.ibm.com> (Hoang-Nam
-	Nguyen's message of "Wed, 8 Aug 2007 16:13:39 +0200")
-Message-ID: <ada3ayuqaa3.fsf@cisco.com>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3232FDDE9D
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 02:24:35 +1000 (EST)
+Message-ID: <46B9EE34.9000003@freescale.com>
+Date: Wed, 08 Aug 2007 11:24:20 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, paulus@samba.org,
-	general@lists.openfabrics.org, stefan.roscher@de.ibm.com
+To: Alexandros Kostopoulos <akostop@inaccessnetworks.com>
+Subject: Re: pci in arch/powerpc vs arch/ppc
+References: <op.twhnwi18nhx3hy@phoenix>
+	<20070803201036.GA18229@ld0162-tx32.am.freescale.net>
+	<F081E320-CFF9-497C-87D5-50E2E5C15A24@kernel.crashing.org>
+	<op.twol4cixnhx3hy@phoenix> <46B88DAC.70005@freescale.com>
+	<op.twqn4vtsnhx3hy@phoenix> <op.twqrwwx2nhx3hy@phoenix>
+In-Reply-To: <op.twqrwwx2nhx3hy@phoenix>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,10 +29,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > Haven't got any ack for this updated patch yet. Anyway, since it contains
- > another bug as shown below, please ignore this patch. We'll send a patch 
- > set that includes the proper version of this patch later.
+Alexandros Kostopoulos wrote:
+>> Well, the error message is:
+>> PCI:0000:00:16.0: Resource 0: 0000000000000000-0000000000000fff (f=200)
+>> PCI: Cannot allocate resource region 0 of device 0000:00:16.0
+>> PCI:  parent is c03c4058: 0000000080000000-00000000bfffffff (f=200)
+[snip]
+> Oops, I think I found it. I think resources are allocated properly in  
+> pci_assign_resource(), and you were probably talking about the PCI 
+> device  BAR, not the host bridge POBARs, right. So the error message in 
+> my  previous mail is the one you say it's ok?
 
-Yes, sorry, I'm a bit behind applying patches.
+Yes.
 
-Anyway, OK I'll wait for a fixed patch and drop this one :)
+-Scott
