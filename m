@@ -1,22 +1,21 @@
-Return-Path: <wolfgang.reissnegger@xilinx.com>
-Received: from outbound6-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 1E01EDDEE7
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 14C81DDEC4
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Aug 2007 02:42:07 +1000 (EST)
-Date: Wed, 08 Aug 2007 09:42:02 -0700
-From: Wolfgang Reissnegger <wolfgang.reissnegger@xilinx.com>
+	Thu,  9 Aug 2007 02:49:35 +1000 (EST)
+Message-ID: <46B9F419.7060202@freescale.com>
+Date: Wed, 08 Aug 2007 11:49:29 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Anton Kowalski <antonkowalski@gmail.com>
-Subject: Re: no output to serial console from /init process on ml405
-References: <e835b80a0708080428q59378732x52ee40f9702f5692@mail.gmail.com>	
-	<20070808153630.AF2D91A88050@mail200-sin.bigfish.com>
-	<e835b80a0708080927x115ef07bw62e546dd6200d252@mail.gmail.com>
-In-Reply-To: <e835b80a0708080927x115ef07bw62e546dd6200d252@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Message-Id: <20070808164205.017C3370065@mail150-sin.bigfish.com>
+To: Yoni Levin <yoni.l@slyde-tech.com>
+Subject: Re: how the bytes ordered in mpc8313
+References: <CE785D12544843B49C5D1315CAE61C23.MAI@mail.livedns.co.il>
+In-Reply-To: <CE785D12544843B49C5D1315CAE61C23.MAI@mail.livedns.co.il>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -28,96 +27,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-The thing that points to a problem with init is:
-  Kernel panic - not syncing: Attempted to kill init!
+Yoni Levin wrote:
+> I have mpc83xx,
+> 
+> I saw that I need to use swab32 to any read\write operation from registers,
 
-What is the string that is supposed to be printed? Maybe the printf
-tries to print a string at an invalid address, causing init to crash?
+Only little endian registers (such as PCI).
 
-Also, you can check if you set the option for console on serial output:
-  Location:
-    -> Device Drivers
-      -> Character devices
-        -> Serial drivers
-          -> 8250/16550 and compatible serial support (SERIAL_8250 [=y])
+> Why in the mpc8313 reference in registers description some bits look like
+> 31,30,29,.,3,2,1,0
+> 
+> And some: 0,1,2,3.,30,31
 
-Cheers,
-   Wolfgang
+Most PowerPC documentation numbers bits in the same endianness as the 
+bytes in the register.
 
-Anton Kowalski wrote:
-> Wolfgang,
-> 
-> Thanks, I'll try your suggestion.
-> 
-> It's worth noting that the init executable is calling into the
-> kernel.
-> 
-> I put a printk in sys_write, which is on the call path of printf()
-> and the output is sent to the console. However, the output of printf
-> is not to be seen. This suggests the problem is perhaps in the serial
->  device setup?
-> 
-> Anton
-> 
-> On 8/8/07, Wolfgang Reissnegger <wolfgang.reissnegger@xilinx.com>
-> wrote:
->> Hi Anton,
->> 
->> it looks as if your init executable is not doing the right thing
->> and for some reason terminates. Maybe your inittab configuration is
->> wrong? Maybe the init executable has been compiled with the wrong
->> options?
->> 
->> You can try to copy another executable (e.g. sh, getty) into /init
->> and see if you get any output. If you see anything doing that then
->> most likely there's something wrong with your init executable.
->> 
->> Wolfgang
->> 
->> Anton Kowalski wrote:
->>> Hi All:
->>> 
->>> I'm trying to bring up linux 2.6.21.1 on an ml405 board. The
->>> kernel boots fine but the init process does not produce any
->>> output. The /init program resides in an initramfs file system and
->>> I believe the /dev device files have been set up correctly.
->>> Here's an excerpt from my initramfs specification:
->>> 
->>> dir /dev 755 0 0 nod /dev/console 644 0 0 c 5 1 nod /dev/ttyS0
->>> 644 0 0 c 4 64
->>> 
->>> (I am able to open these files from the init program. I tested
->>> this by sleeping for a specified time on success.)
->>> 
->>> Also, printk continues to function after /init terminates and
->>> before the kernel panics.
->>> 
->>> Here are the last few lines of the console output:
->>> 
->>> [    0.507478] Serial: 8250/16550 driver $Revision: 1.90 $ 4
->>> ports, IRQ sharing disabled [    0.513862] serial8250.0: ttyS0 at
->>> MMIO 0x80201003 (irq = 3) is a 16550A [    2.927509] RAMDISK
->>> driver initialized: 1 RAM disks of 8192K size 1024 blocksize [
->>> 3.018391] tun: Universal TUN/TAP device driver, 1.6 [
->>> 3.079115] tun: (C) 1999-2004 Max Krasnyansky <maxk@qualcomm.com> 
->>> [    3.154919] mice: PS/2 mouse device common for all mice [
->>> 3.218021] TCP cubic registered [    3.257034] NET: Registered
->>> protocol family 1 [    3.309405] NET: Registered protocol family
->>> 17 [    3.363462] Freeing unused kernel memory: 300k init [
->>> 23.488277] Kernel panic - not syncing: Attempted to kill init! [
->>> 23.559517] Rebooting in 180 seconds..<NULL>
->>> 
->>> I'm using the plb uart and the 8250.c driver. (The obp uartlite
->>> driver didn't work so I switched.) The kernel and the init
->>> program were compiled with eldk.
->>> 
->>> Any insights into resolving this problem are greatly appreciated.
->>> 
->>> 
->>> 
->>> Anton _______________________________________________ 
->>> Linuxppc-embedded mailing list Linuxppc-embedded@ozlabs.org 
->>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->>> 
->> 
-> 
+> Is it just mistake? Or some registers are different then other? 
+
+I consider big-endian bit numbering to be a mistake, but good luck 
+getting them to fix it. :-)
+
+-Scott
