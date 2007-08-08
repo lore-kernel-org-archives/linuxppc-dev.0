@@ -1,33 +1,11 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6063ADDE07
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 07:29:57 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l78KNPjg016011
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2007 16:23:25 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l78LTriq156364
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2007 15:29:53 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l78LTreO012384
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2007 15:29:53 -0600
-Date: Wed, 8 Aug 2007 16:29:51 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Hollis Blanchard <hollisb@us.ibm.com>
-Subject: Re: Fix small race in 44x tlbie function
-Message-ID: <20070808162951.46491bc7@weaponx.rchland.ibm.com>
-In-Reply-To: <f9d9td$nov$1@sea.gmane.org>
-References: <20070807042050.GJ13522@localhost.localdomain>
-	<f9d9td$nov$1@sea.gmane.org>
+Return-Path: <mniyer@vnet.ibm.com>
+Subject: Export DCR symbols - resubmitting
+From: Murali Iyer <mniyer@vnet.ibm.com>
+To: Linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Content-Type: multipart/mixed; boundary="=-Bbn2/oGYJwtPjaB4CXL3"
+Date: Wed, 08 Aug 2007 16:46:49 -0500
+Message-Id: <1186609609.4053.19.camel@macg5-2.rchland.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,22 +15,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 8 Aug 2007 20:43:25 +0000 (UTC)
-Hollis Blanchard <hollisb@us.ibm.com> wrote:
 
-> On Tue, 07 Aug 2007 14:20:50 +1000, David Gibson wrote:
-> > 
-> > This patch fixes the problem in both arch/ppc and arch/powerpc by
-> > inhibiting interrupts (even critical and debug interrupts) across the
-> > relevant instructions.
-> 
-> How could a critical or debug interrupt modify the contents of MMUCR?
+--=-Bbn2/oGYJwtPjaB4CXL3
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Interrupts from UICs can be configured as critical.  If one of those
-triggers, (or any other CE triggers) and causes a tlb miss, you have a
-race.  The watchdog timer interrupt also is a CE IIRC.
+Hi,
 
-CE and DE are admittedly a much smaller race, but still possible.
-Masking EE off is the largest one.
+This patch is needed in order to compile kernel modules that uses some
+of the DCR functions. For example, compiling powerpc emac driver as
+module it is needed.
 
-josh
+Arnd, Dennis Spathis pinged me about this today and I thought it was a
+closed issue but still open. If you find it okay please upstream it or
+let me know if any modifications needed. Thanks.
+
+-- 
+Bye,
+
+Murali
+
+
+--=-Bbn2/oGYJwtPjaB4CXL3
+Content-Disposition: attachment; filename=export-dcr-symbols.diff
+Content-Type: text/x-patch; name=export-dcr-symbols.diff; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+Subject: Export few DCR symbols for kernel modules
+
+In order to compile drivers as modules that uses some of the
+DCR functions, we need to export the symbols. Example, EMAC
+driver and other drivers that are under development uses these
+some of the functions.
+
+This patch applies cleanly against 2.6.23-rc1 kernel and ready
+for inclusion.
+
+From: Murali Iyer
+
+Signed-off-by: Murali Iyer <mniyer@us.ibm.com>
+Index: linux-2.6.22/arch/powerpc/sysdev/dcr.c
+===================================================================
+--- linux-2.6.22.orig/arch/powerpc/sysdev/dcr.c
++++ linux-2.6.22/arch/powerpc/sysdev/dcr.c
+@@ -33,6 +33,7 @@ unsigned int dcr_resource_start(struct d
+ 
+ 	return dr[index * 2];
+ }
++EXPORT_SYMBOL_GPL(dcr_resource_start);
+ 
+ unsigned int dcr_resource_len(struct device_node *np, unsigned int index)
+ {
+@@ -44,6 +45,7 @@ unsigned int dcr_resource_len(struct dev
+ 
+ 	return dr[index * 2 + 1];
+ }
++EXPORT_SYMBOL_GPL(dcr_resource_len);
+ 
+ #ifndef CONFIG_PPC_DCR_NATIVE
+ 
+@@ -122,6 +124,7 @@ dcr_host_t dcr_map(struct device_node *d
+ 	ret.token -= dcr_n * ret.stride;
+ 	return ret;
+ }
++EXPORT_SYMBOL_GPL(dcr_map);
+ 
+ void dcr_unmap(dcr_host_t host, unsigned int dcr_n, unsigned int dcr_c)
+ {
+@@ -133,5 +136,6 @@ void dcr_unmap(dcr_host_t host, unsigned
+ 	iounmap(h.token);
+ 	h.token = NULL;
+ }
++EXPORT_SYMBOL_GPL(dcr_unmap);
+ 
+ #endif /* !defined(CONFIG_PPC_DCR_NATIVE) */
+
+--=-Bbn2/oGYJwtPjaB4CXL3--
