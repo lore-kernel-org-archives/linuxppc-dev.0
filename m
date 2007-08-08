@@ -2,15 +2,15 @@ Return-Path: <bounces@nabble.com>
 Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EBE92DDE3B
+	by ozlabs.org (Postfix) with ESMTP id 9F98BDDE1A
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Aug 2007 17:32:45 +1000 (EST)
+	Wed,  8 Aug 2007 18:15:23 +1000 (EST)
 Received: from isper.nabble.com ([192.168.236.156])
 	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1IIg26-0003Hs-FA
-	for linuxppc-embedded@ozlabs.org; Wed, 08 Aug 2007 00:32:42 -0700
-Message-ID: <12048448.post@talk.nabble.com>
-Date: Wed, 8 Aug 2007 00:32:42 -0700 (PDT)
+	(envelope-from <bounces@nabble.com>) id 1IIghM-0004TE-D5
+	for linuxppc-embedded@ozlabs.org; Wed, 08 Aug 2007 01:15:20 -0700
+Message-ID: <12048974.post@talk.nabble.com>
+Date: Wed, 8 Aug 2007 01:15:20 -0700 (PDT)
 From: Mirek23 <miroslaw.dach@psi.ch>
 To: linuxppc-embedded@ozlabs.org
 Subject: Re: signals handling in the kernel
@@ -32,31 +32,30 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 Hi Dave,
 
-       I run embedded Linux on ppc405 (ml403 xilinx evaluation board). I use
-the GPIO based device build on FPGA part of the xilinx chip.  My gpio device
-generates interrupts whenever it changes its state.
-I use Montavista gpio driver with some modifications to react on interrupts.
-Each time when interrupt occurs the interrupt handler routine is called.
-This routine sends the signal to the application in user space to trigger
-it. When the application is triggered it reads the data from the GPIO
-device.
+     I have found the book by Rubini you have mentioned:
+http://www.oreilly.com/catalog/linuxdrive3/book/index.csp
 
-I read that in this situation the best is to use signals. In my case the
-ideal would be to use kill_proc_info which sends to the application the
-Signal with info data were I intended to put just one integer value. Such a
-value determines how to react for the signal on the application level.
+I did not find however what would be the best way to propagate interrupt
+signals to the USER level / notify the client that interrupt has occurred.
 
-Would you have some other suggestion better then the kill_proc_info function
-use or even different technique then signaling.
+I have checked also in the kernel 2.4 kernel/signal.c file and
+kill_proc_info symbol was there exported but in the kernel 2.6 it is not a
+case. I have modified the kernel/signal.c file inserting the line:
 
-Could you please direct me to the Rubini documentation which you have
-mentioned in your last post.
+EXPORT_SYMBOL(kill_proc_info);
 
-Many thanks 
+and I use the kill_proc_info straight from the interrupt handler routine. I
+do not know however if it is a safe 
+solution. This what does not work with kill_proc_info is that (struct
+siginfo *) pInfo->si_value.sival_int
+is not passed to the user space. To pass an integer value I use (struct
+siginfo *) pInfo->si_code instead.
+This works but it is not an elegant solution since the si_code is meant to
+be used for something else.
 
-Mirek 
+Best Regards
 
-
+Mirek
 
 
 David Hawkins-3 wrote:
@@ -99,5 +98,5 @@ David Hawkins-3 wrote:
 > 
 
 -- 
-View this message in context: http://www.nabble.com/signals-handling-in-the-kernel-tf4229566.html#a12048448
+View this message in context: http://www.nabble.com/signals-handling-in-the-kernel-tf4229566.html#a12048974
 Sent from the linuxppc-embedded mailing list archive at Nabble.com.
