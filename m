@@ -1,19 +1,16 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 2DA41DDE1F
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2007 17:17:52 +1000 (EST)
-Date: Wed, 8 Aug 2007 17:17:38 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: geoffrey.levand@am.sony.com
-Subject: Re: [patch 0/3] PS3 bugfix patches for 2.6.23
-Message-Id: <20070808171738.40d99505.sfr@canb.auug.org.au>
-In-Reply-To: <20070808033119.833895506@am.sony.com>
-References: <20070808033119.833895506@am.sony.com>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: Device tree aware EMAC driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Tony Breeds <tony@bakeyournoodle.com>
+In-Reply-To: <20070808031643.GK10345@bakeyournoodle.com>
+References: <20070807062231.GB8351@localhost.localdomain>
+	<20070808031643.GK10345@bakeyournoodle.com>
+Content-Type: text/plain
+Date: Wed, 08 Aug 2007 17:33:23 +1000
+Message-Id: <1186558403.938.166.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__8_Aug_2007_17_17_38_+1000_3g=7euyrL+bKSa0J"
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,68 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__8_Aug_2007_17_17_38_+1000_3g=7euyrL+bKSa0J
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Geoff,
+>  * c++ style comments
 
-On Tue, 07 Aug 2007 20:31:19 -0700 geoffrey.levand@am.sony.com wrote:
->
-> This small set of PS3 bugfix patches for 2.6.23.
->=20
->   [patch 1/3] PS3: Fix storage probe logic
->   [patch 2/3] PS3: Remove incomplete message
->   [patch 3/3] PS3: Update ps3_defconfig
->=20
-> Patch 1 fixes a cold startup timing bug in the hard disk probe logic.
->=20
-> Patch 2 removes the 'incomplete' message in the PS3 Kconfig.  We now
-> have all drivers and platform support needed to build a kernel for the
-> PS3.  The only major thing missing is wireless networking support, which
-> we plan to have ready for 2.6.24.
+Ouch... I haven't removed them all ? I promise I didn't -add- any :-)
 
-$ mkdir ../ps3
-$ make O=3D../ps3 ps3_defconfig
-$ make O=3D../ps3
-	.
-	.
-  LD      .tmp_vmlinux1
-arch/powerpc/platforms/built-in.o: In function `of_has_vicinity':
-/home/sfr/kernels/linus/arch/powerpc/platforms/cell/spu_base.c:681: undefin=
-ed reference to `.spu_devnode'
-arch/powerpc/platforms/built-in.o: In function `init_aff_fw_vicinity_node':
-/home/sfr/kernels/linus/arch/powerpc/platforms/cell/spu_base.c:726: undefin=
-ed reference to `.spu_devnode'
-arch/powerpc/platforms/built-in.o: In function `aff_devnode_spu':
-/home/sfr/kernels/linus/arch/powerpc/platforms/cell/spu_base.c:690: undefin=
-ed reference to `.spu_devnode'
-arch/powerpc/platforms/built-in.o: In function `aff_node_next_to':
-/home/sfr/kernels/linus/arch/powerpc/platforms/cell/spu_base.c:703: undefin=
-ed reference to `.spu_devnode'
-/home/sfr/kernels/linus/arch/powerpc/platforms/cell/spu_base.c:705: undefin=
-ed reference to `.spu_devnode'
-arch/powerpc/platforms/built-in.o:/home/sfr/kernels/linus/arch/powerpc/plat=
-forms/cell/spu_base.c:649: more undefined references to `.spu_devnode' foll=
-ow
-make[1]: *** [.tmp_vmlinux1] Error 1
-make: *** [_all] Error 2
+>  * in emac_probe():
+> 	+	/* Wait for dependent devices */
+> 	+	err = -ENODEV;
+> 	+	err = emac_wait_deps(dev);
+>     The initialisation to -ENODEV is pointless right?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Leftover from when it was coded differently yes.
 
---Signature=_Wed__8_Aug_2007_17_17_38_+1000_3g=7euyrL+bKSa0J
-Content-Type: application/pgp-signature
+>  * s/get_property/of_get_property/g  or you'll make sfr grumpy ;)
+>  * In drivers/net/ibm_newemac/Makefile, I think the preferred method is
+>    to use ibm_newemac-y rather than ibm_newemac-objs.
+> 
+> Is there any reason to leave config IBM_NEW_EMAC (and IBM_EMAC) in
+> drivers/net/Kconfig ?  It seems to me they'd be nicer to in the
+> appropriate drivers/net/*Kconfig.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Probably.
 
-iD8DBQFGuW4eTgG2atn1QN8RAksPAJ4tBlywfJL0ZlyGh8IGcQx+JKDkawCgh5kS
-jX7qukCbef3wg2qeuxAJ63M=
-=qJQU
------END PGP SIGNATURE-----
-
---Signature=_Wed__8_Aug_2007_17_17_38_+1000_3g=7euyrL+bKSa0J--
+Ben.
