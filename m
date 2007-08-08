@@ -1,17 +1,16 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id CA42FDDE2B
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2007 13:16:43 +1000 (EST)
-Date: Wed, 8 Aug 2007 13:16:43 +1000
-To: LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
-	David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: Device tree aware EMAC driver
-Message-ID: <20070808031643.GK10345@bakeyournoodle.com>
-References: <20070807062231.GB8351@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20070807062231.GB8351@localhost.localdomain>
-From: tony@bakeyournoodle.com (Tony Breeds)
+Return-Path: <geoff@white.local.net>
+Received: from outbound10-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 94D6CDDE34
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2007 13:58:39 +1000 (EST)
+Message-Id: <20070808033119.833895506@am.sony.com>
+Date: Tue, 07 Aug 2007 20:31:19 -0700
+From: geoffrey.levand@am.sony.com
+To: paulus@samba.org
+Subject: [patch 0/3] PS3 bugfix patches for 2.6.23
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,38 +20,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 07, 2007 at 04:22:31PM +1000, David Gibson wrote:
-> Based on BenH's earlier work, this is a new version of the EMAC driver
-> for the built-in ethernet found on PowerPC 4xx embedded CPUs.  The
-> same ASIC is also found in the Axon bridge chip.  This new version is
-> designed to work in the arch/powerpc tree, using the device tree to
-> probe the device, rather than the old and ugly arch/ppc OCP layer.
+Hi Paul,
 
-<snip>
+This small set of PS3 bugfix patches for 2.6.23.
 
-Hi David,
-	I had a look over the patch FWIW, asside from the points below
-looks good.
+  [patch 1/3] PS3: Fix storage probe logic
+  [patch 2/3] PS3: Remove incomplete message
+  [patch 3/3] PS3: Update ps3_defconfig
 
-Minor nits:
- * Shouldn't ndev->priv accesses, use netdev_priv() ?  if not a comment
-   somewhere about why not will keep the janators off your back.
- * c++ style comments
- * in emac_probe():
-	+	/* Wait for dependent devices */
-	+	err = -ENODEV;
-	+	err = emac_wait_deps(dev);
-    The initialisation to -ENODEV is pointless right?
- * s/get_property/of_get_property/g  or you'll make sfr grumpy ;P
- * In drivers/net/ibm_newemac/Makefile, I think the preferred method is
-   to use ibm_newemac-y rather than ibm_newemac-objs.
+Patch 1 fixes a cold startup timing bug in the hard disk probe logic.
 
-Is there any reason to leave config IBM_NEW_EMAC (and IBM_EMAC) in
-drivers/net/Kconfig ?  It seems to me they'd be nicer to in the
-appropriate drivers/net/*Kconfig.
+Patch 2 removes the 'incomplete' message in the PS3 Kconfig.  We now
+have all drivers and platform support needed to build a kernel for the
+PS3.  The only major thing missing is wireless networking support, which
+we plan to have ready for 2.6.24.
 
+-Geoff
 
-Yours Tony
-
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+-- 
