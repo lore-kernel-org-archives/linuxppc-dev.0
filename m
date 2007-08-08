@@ -1,24 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound4-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C3E87DDE37
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 02:30:04 +1000 (EST)
-Message-ID: <46B9EF7D.8060908@freescale.com>
-Date: Wed, 08 Aug 2007 11:29:49 -0500
-From: Scott Wood <scottwood@freescale.com>
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id B3354DDED7
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 02:39:13 +1000 (EST)
+Message-ID: <46B9F1A6.9070004@am.sony.com>
+Date: Wed, 08 Aug 2007 09:39:02 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-To: Alexandros Kostopoulos <akostop@inaccessnetworks.com>
-Subject: MPC8260 PCI9 erratum
-References: <op.twhnwi18nhx3hy@phoenix>
-	<20070803201036.GA18229@ld0162-tx32.am.freescale.net>
-	<F081E320-CFF9-497C-87D5-50E2E5C15A24@kernel.crashing.org>
-	<op.twol4cixnhx3hy@phoenix> <46B88DAC.70005@freescale.com>
-	<op.twqn4vtsnhx3hy@phoenix>
-In-Reply-To: <op.twqn4vtsnhx3hy@phoenix>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: paulus@samba.org
+Subject: [patch 2/3 v2] PS3: Remove incomplete message
+References: <20070808033119.833895506@am.sony.com>
+	<20070808033120.055823394@am.sony.com>
+In-Reply-To: <20070808033120.055823394@am.sony.com>
+Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -29,17 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Alexandros Kostopoulos wrote:
-> On Tue, 07 Aug 2007 18:20:12 +0300, Scott Wood 
-> <scottwood@freescale.com>  wrote:
->> I don't think the workaround exists yet in arch/powerpc, despite the  
->> config option.
->>
-> Is there a plan to be implemented on arch/powerpc, or devices with the  
-> erratum will have to keep on using the legacy arch/ppc code?
+Remove the Kconfig message that indicates the PS3 platform support is
+incomplete.
 
-I don't have any immediate plans to move it over (and I don't think I 
-have easy access to affected hardware to test on); I can't speak for any 
-plans others might have.  Patches are of course welcome. :-)
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+---
+v2 changes: 
+ o Fix typo pointed out by Geert
 
--Scott
+ arch/powerpc/platforms/ps3/Kconfig |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+--- a/arch/powerpc/platforms/ps3/Kconfig
++++ b/arch/powerpc/platforms/ps3/Kconfig
+@@ -1,5 +1,5 @@
+ config PPC_PS3
+-	bool "Sony PS3 (incomplete)"
++	bool "Sony PS3"
+ 	depends on PPC_MULTIPLATFORM && PPC64
+ 	select PPC_CELL
+ 	select USB_ARCH_HAS_OHCI
+@@ -10,10 +10,10 @@ config PPC_PS3
+ 	select MEMORY_HOTPLUG
+ 	help
+ 	  This option enables support for the Sony PS3 game console
+-	  and other platforms using the PS3 hypervisor.
+-	  Support for this platform is not yet complete, so
+-	  enabling this will not result in a bootable kernel on a
+-	  PS3 system.
++	  and other platforms using the PS3 hypervisor.  Enabling this
++	  option will allow building otheros.bld, a kernel image suitable
++	  for programming into flash memory, and vmlinux, a kernel image
++	  suitable for loading via kexec.
+ 
+ menu "PS3 Platform Options"
+ 	depends on PPC_PS3
