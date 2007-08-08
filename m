@@ -1,16 +1,21 @@
-Return-Path: <yoni.l@slyde-tech.com>
-Received: from smtpin.livedns.co.il (smtpin.livedns.co.il [62.219.78.209])
-	by ozlabs.org (Postfix) with ESMTP id 73B9BDDE48
+Return-Path: <wolfgang.reissnegger@xilinx.com>
+Received: from outbound8-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id BB256DDEBA
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Aug 2007 01:27:21 +1000 (EST)
-From: "Yoni Levin" <yoni.l@slyde-tech.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: how the bytes ordered in mpc8313
-Date: Wed, 8 Aug 2007 18:26:48 +0300
+	Thu,  9 Aug 2007 01:36:33 +1000 (EST)
+Date: Wed, 08 Aug 2007 08:36:26 -0700
+From: Wolfgang Reissnegger <wolfgang.reissnegger@xilinx.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0003_01C7D9E9.AF697580"
-Message-ID: <CE785D12544843B49C5D1315CAE61C23.MAI@mail.livedns.co.il>
+To: Anton Kowalski <antonkowalski@gmail.com>
+Subject: Re: no output to serial console from /init process on ml405
+References: <e835b80a0708080428q59378732x52ee40f9702f5692@mail.gmail.com>
+In-Reply-To: <e835b80a0708080428q59378732x52ee40f9702f5692@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20070808153630.AF2D91A88050@mail200-sin.bigfish.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,126 +26,64 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hi Anton,
 
-------=_NextPart_000_0003_01C7D9E9.AF697580
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+it looks as if your init executable is not doing the right thing and for
+some reason terminates. Maybe your inittab configuration is wrong? Maybe
+the init executable has been compiled with the wrong options?
 
-I have mpc83xx,
+You can try to copy another executable (e.g. sh, getty) into /init and
+see if you get any output. If you see anything doing that then most
+likely there's something wrong with your init executable.
 
-I saw that I need to use swab32 to any read\write operation from registers,
+Wolfgang
 
-I don't understand why I need it?
-
-Do I need it for all registers?
-
-Why in the mpc8313 reference in registers description some bits look like
-31,30,29,.,3,2,1,0
-
-And some: 0,1,2,3.,30,31
-
-Is it just mistake? Or some registers are different then other? 
-
-
-------=_NextPart_000_0003_01C7D9E9.AF697580
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	text-align:right;
-	direction:rtl;
-	unicode-bidi:embed;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:595.3pt 841.9pt;
-	margin:72.0pt 90.0pt 72.0pt 90.0pt;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1 dir=3DRTL>
-
-<p class=3DMsoNormal dir=3DLTR =
-style=3D'text-align:left;direction:ltr;unicode-bidi:
-embed'><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>I
-have mpc83xx,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal dir=3DLTR =
-style=3D'text-align:left;direction:ltr;unicode-bidi:
-embed'><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>I
-saw that I need to use swab32 to any read\write operation from =
-registers,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal dir=3DLTR =
-style=3D'text-align:left;direction:ltr;unicode-bidi:
-embed'><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>I
-don&#8217;t understand why I need it?<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal dir=3DLTR =
-style=3D'text-align:left;direction:ltr;unicode-bidi:
-embed'><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>Do
-I need it for all registers?<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal dir=3DLTR =
-style=3D'text-align:left;direction:ltr;unicode-bidi:
-embed'><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>Why
-in the mpc8313 reference in registers description some bits look like =
-31,30,29,&#8230;,3,2,1,0<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal dir=3DLTR =
-style=3D'text-align:left;direction:ltr;unicode-bidi:
-embed'><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>And
-some: 0,1,2,3&#8230;,30,31<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal dir=3DLTR =
-style=3D'text-align:left;direction:ltr;unicode-bidi:
-embed'><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>Is
-it just mistake? Or some registers are different then other? =
-<o:p></o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_0003_01C7D9E9.AF697580--
+Anton Kowalski wrote:
+> Hi All:
+> 
+> I'm trying to bring up linux 2.6.21.1 on an ml405 board. The kernel
+> boots fine but the init process does not produce any output. The /init
+> program resides in an initramfs file system and I believe the /dev
+> device files have been set up correctly. Here's an excerpt from my
+> initramfs specification:
+> 
+>     dir /dev 755 0 0
+>     nod /dev/console 644 0 0 c 5 1
+>     nod /dev/ttyS0 644 0 0 c 4 64
+> 
+> (I am able to open these files from the init program. I tested this by
+> sleeping for a specified time on success.)
+> 
+> Also, printk continues to function after /init terminates and before
+> the kernel panics.
+> 
+> Here are the last few lines of the console output:
+> 
+> [    0.507478] Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports,
+> IRQ sharing disabled
+> [    0.513862] serial8250.0: ttyS0 at MMIO 0x80201003 (irq = 3) is a 16550A
+> [    2.927509] RAMDISK driver initialized: 1 RAM disks of 8192K size
+> 1024 blocksize
+> [    3.018391] tun: Universal TUN/TAP device driver, 1.6
+> [    3.079115] tun: (C) 1999-2004 Max Krasnyansky <maxk@qualcomm.com>
+> [    3.154919] mice: PS/2 mouse device common for all mice
+> [    3.218021] TCP cubic registered
+> [    3.257034] NET: Registered protocol family 1
+> [    3.309405] NET: Registered protocol family 17
+> [    3.363462] Freeing unused kernel memory: 300k init
+> [   23.488277] Kernel panic - not syncing: Attempted to kill init!
+> [   23.559517] Rebooting in 180 seconds..<NULL>
+> 
+> I'm using the plb uart and the 8250.c driver. (The obp uartlite driver
+> didn't work so I switched.) The kernel and the init program were
+> compiled with eldk.
+> 
+> Any insights into resolving this problem are greatly appreciated.
+> 
+> 
+> Anton
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
