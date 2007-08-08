@@ -1,18 +1,25 @@
-Return-Path: <CFRIESEN@nortel.com>
-Received: from zrtps0kp.nortel.com (zrtps0kp.nortel.com [47.140.192.56])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "zrtps0kp.nortel.com", Issuer "NORTEL" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 43F1FDDEDC
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 02:24:35 +1000 (EST)
-Message-ID: <46B9EE37.6060600@nortel.com>
-Date: Wed, 08 Aug 2007 10:24:23 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C3E87DDE37
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 02:30:04 +1000 (EST)
+Message-ID: <46B9EF7D.8060908@freescale.com>
+Date: Wed, 08 Aug 2007 11:29:49 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Re: help with ppc sections -- no luck, any ideas?
-References: <46A8F22E.6010701@nortel.com>
-In-Reply-To: <46A8F22E.6010701@nortel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Alexandros Kostopoulos <akostop@inaccessnetworks.com>
+Subject: MPC8260 PCI9 erratum
+References: <op.twhnwi18nhx3hy@phoenix>
+	<20070803201036.GA18229@ld0162-tx32.am.freescale.net>
+	<F081E320-CFF9-497C-87D5-50E2E5C15A24@kernel.crashing.org>
+	<op.twol4cixnhx3hy@phoenix> <46B88DAC.70005@freescale.com>
+	<op.twqn4vtsnhx3hy@phoenix>
+In-Reply-To: <op.twqn4vtsnhx3hy@phoenix>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,66 +29,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Alexandros Kostopoulos wrote:
+> On Tue, 07 Aug 2007 18:20:12 +0300, Scott Wood 
+> <scottwood@freescale.com>  wrote:
+>> I don't think the workaround exists yet in arch/powerpc, despite the  
+>> config option.
+>>
+> Is there a plan to be implemented on arch/powerpc, or devices with the  
+> erratum will have to keep on using the legacy arch/ppc code?
 
-Well, I've played around with the sections a bit more, and just can't 
-seem to get it to work.  As soon as I apply the following, the kernel 
-refuses to boot.  (And if I remove the changes to _GLOBAL, then it 
-refuses to boot if I enable CONFIG_KPROBES.)
+I don't have any immediate plans to move it over (and I don't think I 
+have easy access to affected hardware to test on); I can't speak for any 
+plans others might have.  Patches are of course welcome. :-)
 
-
-Index: linux/include/asm-ppc/processor.h
-===================================================================
---- linux.orig/include/asm-ppc/processor.h	2007-08-02 16:12:16.000000000 
--0600
-+++ linux/include/asm-ppc/processor.h	2007-08-02 16:26:06.000000000 -0600
-@@ -38,9 +38,20 @@
-
-  #define _GLOBAL(n)\
-  	.stabs __stringify(n:F-1),N_FUN,0,0,n;\
-+	.section ".text"; \
-  	.globl n;\
-  n:
-
-+#ifdef CONFIG_KPROBES
-+#define _KPROBE(n)\
-+	.stabs __stringify(n:F-1),N_FUN,0,0,n;\
-+	.section ".kprobes.text","a"; \
-+	.globl n;\
-+n:
-+#else
-+#define _KPROBE(n) _GLOBAL(n)
-+#endif
-+
-  /*
-   * this is the minimum allowable io space due to the location
-   * of the io areas on prep (first one at 0x80000000) but
-Index: linux/arch/ppc/kernel/misc.S
-===================================================================
---- linux.orig/arch/ppc/kernel/misc.S	2007-08-02 16:12:16.000000000 -0600
-+++ linux/arch/ppc/kernel/misc.S	2007-08-02 16:24:43.000000000 -0600
-@@ -624,7 +624,7 @@
-   *
-   * flush_icache_range(unsigned long start, unsigned long stop)
-   */
--_GLOBAL(flush_icache_range)
-+_KPROBE(flush_icache_range)
-  BEGIN_FTR_SECTION
-  	blr				/* for 601, do nothing */
-  END_FTR_SECTION_IFCLR(CPU_FTR_SPLIT_ID_CACHE)
-
-
-
-
-
-Based on Segher's comments I tried changing it to:
-
-+	.section ".text","ax"; \
-
-
-but that didn't work either.
-
-
-Anyone else got any suggestions on how I might force 
-flush_icache_range() into a ".kprobes.text" section?
-
-Chris
+-Scott
