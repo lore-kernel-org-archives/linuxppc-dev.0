@@ -1,37 +1,28 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D04FFDDF42
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 06:07:22 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l78J0pdG026128
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2007 15:00:51 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l78K7Jfj049752
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2007 14:07:19 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l78K7JOm016325
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2007 14:07:19 -0600
-Date: Wed, 8 Aug 2007 15:07:13 -0500
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 6/6] pseries: eliminate global var
-Message-ID: <20070808200713.GF20134@austin.ibm.com>
-References: <20070808195916.GA20055@austin.ibm.com>
-	<20070808200115.GA20134@austin.ibm.com>
-	<20070808200210.GB20134@austin.ibm.com>
-	<20070808200337.GC20134@austin.ibm.com>
-	<20070808200448.GD20134@austin.ibm.com>
-	<20070808200615.GE20134@austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070808200615.GE20134@austin.ibm.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 53B35DDE1B
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 06:43:39 +1000 (EST)
+Received: from list by ciao.gmane.org with local (Exim 4.43)
+	id 1IIsNR-0004f9-7n
+	for linuxppc-dev@ozlabs.org; Wed, 08 Aug 2007 22:43:33 +0200
+Received: from bi01p1.co.us.ibm.com ([32.97.110.142])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Wed, 08 Aug 2007 22:43:33 +0200
+Received: from hollisb by bi01p1.co.us.ibm.com with local (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Wed, 08 Aug 2007 22:43:33 +0200
+To: linuxppc-dev@ozlabs.org
+From: Hollis Blanchard <hollisb@us.ibm.com>
+Subject: Re: Fix small race in 44x tlbie function
+Date: Wed, 8 Aug 2007 20:43:25 +0000 (UTC)
+Message-ID: <f9d9td$nov$1@sea.gmane.org>
+References: <20070807042050.GJ13522@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Sender: news <news@sea.gmane.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,118 +32,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, 07 Aug 2007 14:20:50 +1000, David Gibson wrote:
+> 
+> This patch fixes the problem in both arch/ppc and arch/powerpc by
+> inhibiting interrupts (even critical and debug interrupts) across the
+> relevant instructions.
 
-Eliminate the use of error_log_cnt as a global var shared across
-differnt directories. Pass it as a subroutine arg instead.
+How could a critical or debug interrupt modify the contents of MMUCR?
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-
-----
- arch/powerpc/kernel/nvram_64.c         |   10 +++++-----
- arch/powerpc/platforms/pseries/rtasd.c |    7 ++++---
- include/asm-powerpc/nvram.h            |   15 ++++++++++-----
- 3 files changed, 19 insertions(+), 13 deletions(-)
-
-Index: linux-2.6.22-git2/arch/powerpc/kernel/nvram_64.c
-===================================================================
---- linux-2.6.22-git2.orig/arch/powerpc/kernel/nvram_64.c	2007-08-08 12:21:16.000000000 -0500
-+++ linux-2.6.22-git2/arch/powerpc/kernel/nvram_64.c	2007-08-08 12:24:01.000000000 -0500
-@@ -38,8 +38,6 @@ static struct nvram_partition * nvram_pa
- static long nvram_error_log_index = -1;
- static long nvram_error_log_size = 0;
- 
--extern volatile int error_log_cnt;
--
- struct err_log_info {
- 	int error_type;
- 	unsigned int seq_num;
-@@ -627,7 +625,8 @@ void __exit nvram_cleanup(void)
-  * sequence #: The unique sequence # for each event. (until it wraps)
-  * error log: The error log from event_scan
-  */
--int nvram_write_error_log(char * buff, int length, unsigned int err_type)
-+int nvram_write_error_log(char * buff, int length,
-+                          unsigned int err_type, unsigned int error_log_cnt)
- {
- 	int rc;
- 	loff_t tmp_index;
-@@ -665,7 +664,8 @@ int nvram_write_error_log(char * buff, i
-  *
-  * Reads nvram for error log for at most 'length'
-  */
--int nvram_read_error_log(char * buff, int length, unsigned int * err_type)
-+int nvram_read_error_log(char * buff, int length,
-+                         unsigned int * err_type, unsigned int * error_log_cnt)
- {
- 	int rc;
- 	loff_t tmp_index;
-@@ -691,7 +691,7 @@ int nvram_read_error_log(char * buff, in
- 		return rc;
- 	}
- 
--	error_log_cnt = info.seq_num;
-+	*error_log_cnt = info.seq_num;
- 	*err_type = info.error_type;
- 
- 	return 0;
-Index: linux-2.6.22-git2/include/asm-powerpc/nvram.h
-===================================================================
---- linux-2.6.22-git2.orig/include/asm-powerpc/nvram.h	2007-07-08 18:32:17.000000000 -0500
-+++ linux-2.6.22-git2/include/asm-powerpc/nvram.h	2007-08-08 13:34:27.000000000 -0500
-@@ -62,14 +62,19 @@ struct nvram_partition {
- 	unsigned int index;
- };
- 
--
--extern int nvram_write_error_log(char * buff, int length, unsigned int err_type);
--extern int nvram_read_error_log(char * buff, int length, unsigned int * err_type);
--extern int nvram_clear_error_log(void);
- extern struct nvram_partition *nvram_find_partition(int sig, const char *name);
- 
--extern int pSeries_nvram_init(void);
- extern int mmio_nvram_init(void);
-+
-+#ifdef CONFIG_PPC_PSERIES
-+extern int pSeries_nvram_init(void);
-+extern int nvram_write_error_log(char * buff, int length,
-+					 unsigned int err_type, unsigned int err_seq);
-+extern int nvram_read_error_log(char * buff, int length,
-+					 unsigned int * err_type, unsigned int *err_seq);
-+extern int nvram_clear_error_log(void);
-+#endif /* CONFIG_PPC_PSERIES */
-+
- #endif /* __KERNEL__ */
- 
- /* PowerMac specific nvram stuffs */
-Index: linux-2.6.22-git2/arch/powerpc/platforms/pseries/rtasd.c
-===================================================================
---- linux-2.6.22-git2.orig/arch/powerpc/platforms/pseries/rtasd.c	2007-08-08 12:21:16.000000000 -0500
-+++ linux-2.6.22-git2/arch/powerpc/platforms/pseries/rtasd.c	2007-08-08 12:50:40.000000000 -0500
-@@ -56,7 +56,7 @@ static int full_rtas_msgs = 0;
- /* Stop logging to nvram after first fatal error */
- static int no_more_logging;
- 
--volatile int error_log_cnt = 0;
-+static int error_log_cnt;
- 
- /*
-  * Since we use 32 bit RTAS, the physical address of this must be below
-@@ -218,7 +218,7 @@ void pSeries_log_error(char *buf, unsign
- 
- 	/* Write error to NVRAM */
- 	if (!no_more_logging && !(err_type & ERR_FLAG_BOOT))
--		nvram_write_error_log(buf, len, err_type);
-+		nvram_write_error_log(buf, len, err_type, error_log_cnt);
- 
- 	/*
- 	 * rtas errors can occur during boot, and we do want to capture
-@@ -412,7 +412,8 @@ static int rtasd(void *unused)
- 
- 	/* See if we have any error stored in NVRAM */
- 	memset(logdata, 0, rtas_error_log_max);
--	rc = nvram_read_error_log(logdata, rtas_error_log_max, &err_type);
-+	rc = nvram_read_error_log(logdata, rtas_error_log_max,
-+	                          &err_type, &error_log_cnt);
- 
- 	if (!rc) {
- 		if (err_type != ERR_FLAG_ALREADY_LOGGED) {
+-- 
+Hollis Blanchard
+IBM Linux Technology Center
