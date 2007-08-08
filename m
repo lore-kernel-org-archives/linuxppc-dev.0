@@ -1,19 +1,20 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id D87A1DDEB9
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2007 17:51:53 +1000 (EST)
-Date: Wed, 8 Aug 2007 09:51:52 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] [POWERPC] Fix more section mismatches in head_64.S
-In-Reply-To: <20070731164413.0421b430.sfr@canb.auug.org.au>
-Message-ID: <Pine.LNX.4.62.0708080951220.24807@pademelon.sonytel.be>
-References: <20070731164413.0421b430.sfr@canb.auug.org.au>
+Return-Path: <akostop@inaccessnetworks.com>
+Received: from inaccessnetworks.com (node3.inaccessnetworks.com
+	[212.205.200.118]) by ozlabs.org (Postfix) with ESMTP id 61D5CDDE0D
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2007 21:42:51 +1000 (EST)
+Date: Wed, 08 Aug 2007 14:42:34 +0300
+To: "Scott Wood" <scottwood@freescale.com>
+Subject: Re: pci in arch/powerpc vs arch/ppc
+From: "Alexandros Kostopoulos" <akostop@inaccessnetworks.com>
+Content-Type: text/plain; format=flowed; delsp=yes; charset=iso-8859-7
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-1941930714-1186559512=:24807"
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+References: <op.twhnwi18nhx3hy@phoenix>
+	<20070803201036.GA18229@ld0162-tx32.am.freescale.net>
+	<F081E320-CFF9-497C-87D5-50E2E5C15A24@kernel.crashing.org>
+	<op.twol4cixnhx3hy@phoenix> <46B88DAC.70005@freescale.com>
+Message-ID: <op.twqn4vtsnhx3hy@phoenix>
+In-Reply-To: <46B88DAC.70005@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,41 +24,110 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Tue, 07 Aug 2007 18:20:12 +0300, Scott Wood <scottwood@freescale.com>=
+  =
 
----584337861-1941930714-1186559512=:24807
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+wrote:
 
-On Tue, 31 Jul 2007, Stephen Rothwell wrote:
-> WARNING: vmlinux.o(.text+0x8174): Section mismatch: reference to .init.text:.prom_init (between '.__boot_from_prom' and '.__after_prom_start')
-> WARNING: vmlinux.o(.text+0x8498): Section mismatch: reference to .init.text:.early_setup (between '.start_here_multiplatform' and '.start_here_common')
-> WARNING: vmlinux.o(.text+0x8514): Section mismatch: reference to .init.text:.setup_system (between '.start_here_common' and 'system_call_common')
-> WARNING: vmlinux.o(.text+0x8530): Section mismatch: reference to .init.text:.start_kernel (between '.start_here_common' and 'system_call_common')
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> Alexandros Kostopoulos wrote:
+>> Except from some macros arch/powerpc/include/asm/io.h / mpc8260_pci9.=
+h,  =
 
-Nice, the last few section warnings in my PS3 build went away!
+>> I  can seem to find anywhere the code regarding PCI Erratum 9. The  =
 
-Acked-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+>> defined  macros(in io.h) for read/write are sufficient as a workaroun=
+d  =
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
+>> for PCI9?  Who does DMA and register initialization for this (it used=
+  =
 
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1941930714-1186559512=:24807--
+>> to be done in  arch/ppc/syslib/m8260_pci_erratum9.c in arc/ppc). Mayb=
+e  =
+
+>> u-boot or the  bootwrapper?
+>
+> I don't think the workaround exists yet in arch/powerpc, despite the  =
+
+> config option.
+>
+
+Is there a plan to be implemented on arch/powerpc, or devices with the  =
+
+erratum will have to keep on using the legacy arch/ppc code?
+
+>> Another question regarding resource allocation: when   =
+
+>> alloc_resource(pci_32.c), called from pcibios_allocate_resources(),  =
+
+>> during  pcibios init, attempts to allocate resources using  =
+
+>> request_resource(), the  request fails. This seems to happen because =
+ =
+
+>> the previously scanned PCI  devices request resources in the form, e.=
+g.  =
+
+>> 00000- 0000f (i.e. starting  from zero), and this should be mapped  =
+
+>> somewhere else in cpu mem space. My  question (in order to find my bu=
+g)  =
+
+>> is, who performs this mapping, from PCI  space to CPU space, the kern=
+el  =
+
+>> (and if yes, where?) or the host bridge (in  which case, I've probabl=
+y  =
+
+>> failed to configure it properly).
+>
+> If the error message is the one I'm thinking of (it always helps to po=
+st  =
+
+> the actual messages), that's normal for when the PCI bus hasn't been  =
+
+> probed by the firmware.  Linux first tries to use the BARs as they're =
+ =
+
+> already set, which will obviously fail because they haven't been set, =
+ =
+
+> and then it will properly allocated them.  It's harmless verbosity,  =
+
+> though it'd be nice to have a flag to tell the PCI layer to not bother=
+  =
+
+> trying to preserve any existing BARs.
+>
+
+Well, the error message is:
+PCI:0000:00:16.0: Resource 0: 0000000000000000-0000000000000fff (f=3D200=
+)
+PCI: Cannot allocate resource region 0 of device 0000:00:16.0
+PCI:  parent is c03c4058: 0000000080000000-00000000bfffffff (f=3D200)
+
+The thing is, POBARs are already setup by uboot. However the resource  =
+
+allocation for the PCI devices (not the host bridge) fails in  =
+
+request_resource (which seems to use the region requested by the device =
+as  =
+
+is and not some mapped region in the cpu address space), and I can not  =
+
+find where in the code happens the mapping from PCI to local bus mem  =
+
+region. I mean, each PCI device requests some region, e.g. from 0000-00f=
+f  =
+
+and this is mapped to some region in the PCI outbound window, right. For=
+  =
+
+some reason this fails in my case, and I cannot find where in the code  =
+
+this mapping should happen.
+
+Thank you for your help
+
+Alex
+
+> -Scott
