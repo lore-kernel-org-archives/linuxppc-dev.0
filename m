@@ -2,22 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7E4ABDDE47
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 08:55:59 +1000 (EST)
-Subject: Re: pci in arch/powerpc vs arch/ppc
+	by ozlabs.org (Postfix) with ESMTP id 7C7D5DDEB6
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 09:01:35 +1000 (EST)
+Subject: Re: Fix small race in 44x tlbie function
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexandros Kostopoulos <akostop@inaccessnetworks.com>
-In-Reply-To: <op.twqvg3i0nhx3hy@phoenix>
-References: <op.twhnwi18nhx3hy@phoenix>
-	<20070803201036.GA18229@ld0162-tx32.am.freescale.net>
-	<F081E320-CFF9-497C-87D5-50E2E5C15A24@kernel.crashing.org>
-	<op.twol4cixnhx3hy@phoenix> <46B88DAC.70005@freescale.com>
-	<op.twqn4vtsnhx3hy@phoenix>  <op.twqvg3i0nhx3hy@phoenix>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20070808162951.46491bc7@weaponx.rchland.ibm.com>
+References: <20070807042050.GJ13522@localhost.localdomain>
+	<f9d9td$nov$1@sea.gmane.org>
+	<20070808162951.46491bc7@weaponx.rchland.ibm.com>
 Content-Type: text/plain
-Date: Thu, 09 Aug 2007 08:55:47 +1000
-Message-Id: <1186613748.938.205.camel@localhost.localdomain>
+Date: Thu, 09 Aug 2007 09:01:29 +1000
+Message-Id: <1186614089.938.207.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Hollis Blanchard <hollisb@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,27 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-08-08 at 17:21 +0300, Alexandros Kostopoulos wrote:
-> I've noticed the following: In function pci_process_bridge_OF_ranges, when  
-> parsing the ranges for MEM and I/O space, the res->start for mem is  
-> correctly set to ranges[na+2], which is the cpu address in the ranges  
-> property. However, in I/O related code, res->start is set to ranges[2],  
-> which is in the PCI address field of the ranges property (and in my case  
-> is 0, as is also for the mpc8272ads case as well). Thus, the res->start of  
-> the I/O of the bridge is 0, which leads to the first device with I/O space  
-> (a davicom ethernet device) been also assigned a I/O region starting at 0.  
-> Finally, the dmfe (davicom ethernet driver over PCI) fails with "dmfe: I/O  
-> base is zero". So, is the implementation of pci_process_bridge_OF_ranges  
-> correct ? shouldn't res->start = ranges[na+2] for I/O as well?
+On Wed, 2007-08-08 at 16:29 -0500, Josh Boyer wrote:
+> On Wed, 8 Aug 2007 20:43:25 +0000 (UTC)
+> Hollis Blanchard <hollisb@us.ibm.com> wrote:
+> 
+> > On Tue, 07 Aug 2007 14:20:50 +1000, David Gibson wrote:
+> > > 
+> > > This patch fixes the problem in both arch/ppc and arch/powerpc by
+> > > inhibiting interrupts (even critical and debug interrupts) across the
+> > > relevant instructions.
+> > 
+> > How could a critical or debug interrupt modify the contents of MMUCR?
+> 
+> Interrupts from UICs can be configured as critical.  If one of those
+> triggers, (or any other CE triggers) and causes a tlb miss, you have a
+> race.  The watchdog timer interrupt also is a CE IIRC.
+> 
+> CE and DE are admittedly a much smaller race, but still possible.
+> Masking EE off is the largest one.
 
-The current code indeed assumes that IO space of a PCI host bridges starts
-at 0 local always. We "fixed" that in the 64 bits variant but not the 32 bits
-one (yet...).
+There is a much bigger problem if CEs can do tlb misses though... they
+can interrupt the tlb miss handler itself, either between the two halves
+of a tlb write, or between the write to MMUCR and the write to the tlb,
+and I suspect both cases will cause trouble.
 
-Note that if we're going to fix it, we probably also need to change various
-bits of resource fixup code as well that makes that assumption.
-
-Might be worth trying making more of that stuff common between 32 and 64
-bits (I hear the noise of people trying to get me merge the pci code .. :-)
+We might want to check if we were in the TLB miss handler upon return
+from the CE and MCE handlers, and in this case, restart them (just
+return to the faulting instruction, that is use srr0 instead of
+csrr0/mcsrr0).
 
 Ben.
