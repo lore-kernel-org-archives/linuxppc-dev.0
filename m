@@ -1,16 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: Device tree aware EMAC driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20070808050937.GF20482@localhost.localdomain>
-References: <20070807062231.GB8351@localhost.localdomain>
-	<20070808031643.GK10345@bakeyournoodle.com>
-	<20070808050937.GF20482@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 08 Aug 2007 17:34:54 +1000
-Message-Id: <1186558494.938.168.camel@localhost.localdomain>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 53DBBDDEAB
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2007 17:47:46 +1000 (EST)
+Date: Wed, 8 Aug 2007 17:47:40 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: geoffrey.levand@am.sony.com
+Subject: Re: [patch 0/3] PS3 bugfix patches for 2.6.23
+Message-Id: <20070808174740.8426f5f6.sfr@canb.auug.org.au>
+In-Reply-To: <20070808171738.40d99505.sfr@canb.auug.org.au>
+References: <20070808033119.833895506@am.sony.com>
+	<20070808171738.40d99505.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__8_Aug_2007_17_47_40_+1000_EqV1Df+K2h9jZmwQ"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,13 +24,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-08-08 at 15:09 +1000, David Gibson wrote:
-> 
-> Eh, all the c++ comments are FIXMEs anyway.  I'm inclined to leave
-> them.
+--Signature=_Wed__8_Aug_2007_17_47_40_+1000_EqV1Df+K2h9jZmwQ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ahah... maybe I -did- add some of those then :-) I do use C++ comments
-for FIXME's on purpose, because they are ugly, it improves the changes
-that I actually get to fix whatever needs fixing :-)
+Hi Geoff,
 
-Ben.
+On Wed, 8 Aug 2007 17:17:38 +1000 Stephen Rothwell <sfr@canb.auug.org.au>
+wrote:
+>
+>   LD      .tmp_vmlinux1
+> arch/powerpc/platforms/built-in.o: In function `of_has_vicinity':
+> /home/sfr/kernels/linus/arch/powerpc/platforms/cell/spu_base.c:681:
+> undefined reference to `.spu_devnode'
+
+Ben pointed out patch "[PATCH v2] cell: move SPU affinity init to
+spu_management_of_ops" to me.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__8_Aug_2007_17_47_40_+1000_EqV1Df+K2h9jZmwQ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGuXUhTgG2atn1QN8RAtNeAJ92PFoZWAsZMx9XPN/bgvF15OTjFgCeLsHT
+MfvIrQEHb5mKEDnreTzWnMw=
+=Xzt4
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__8_Aug_2007_17_47_40_+1000_EqV1Df+K2h9jZmwQ--
