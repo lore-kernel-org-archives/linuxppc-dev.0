@@ -1,23 +1,24 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8B432DDD08
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 16:31:22 +1000 (EST)
-Message-ID: <46BAB4AF.7010001@garzik.org>
-Date: Thu, 09 Aug 2007 02:31:11 -0400
-From: Jeff Garzik <jeff@garzik.org>
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 0/1] lro: Generic Large Receive Offload for TCP traffic
-References: <200708031441.14780.ossthema@de.ibm.com>
-	<20070808.231144.22645124.davem@davemloft.net>
-In-Reply-To: <20070808.231144.22645124.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: tklein@de.ibm.com, themann@de.ibm.com, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, raisch@de.ibm.com,
-	linuxppc-dev@ozlabs.org, ossthema@de.ibm.com, meder@de.ibm.com,
-	gallatin@myri.com, stefan.roscher@de.ibm.com
+	by ozlabs.org (Postfix) with ESMTP id 5956DDDE30
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 16:34:29 +1000 (EST)
+In-Reply-To: <20070809053423.GJ8261@localhost.localdomain>
+References: <20070807042050.GJ13522@localhost.localdomain>
+	<BDA0DE7D-8AD8-4116-ABE0-2DF6AE72A516@kernel.crashing.org>
+	<20070808110029.43c110ef@weaponx.rchland.ibm.com>
+	<57F869A4-38DE-4CC9-A07D-C3A873CE9268@kernel.crashing.org>
+	<20070809053423.GJ8261@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <CEBBAD6A-9C83-4E9A-9752-8F089894E56C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Fix small race in 44x tlbie function
+Date: Thu, 9 Aug 2007 01:35:27 -0500
+To: David Gibson <dwg@au1.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Volkmar Uhlig <vuhlig@us.ibm.com>,
+	Paul Mackerras <paulus@samba.org>, Todd Inglett <tinglett@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,23 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Miller wrote:
-> From: Jan-Bernd Themann <ossthema@de.ibm.com>
-> Date: Fri, 3 Aug 2007 14:41:14 +0200
-> 
->> I think this patch could be the final version for now. It has been tested
->> on two platforms (power and x86_64) and works very well.
-> 
-> I checked in the LRO patch and the two sample driver ports
-> to net-2.6.24, thanks!
+>>>> Did you actually see this happen?
+>>>
+>>> Yes.
+>>
+>> When?
+>>
+>> We don't have critical wired to anything, I don't expect watchdog to
+>> cause another fault.. so just wondering.
+>
+> On debug (trace) interrupts on blue gene.
 
-Good to hear, thanks all.
+Do you know why the debug code caused a fault?
 
-I'll ponder whether I want to rebase netdev-2.6.git#upstream (2.6.24 
-queue) on top of net-2.6.24.  I might put it off until the pain 
-threshold rises, or I might go ahead and do it.  Undecided.
-
-Either way, I'll want you to push to Linus before I do, when the next 
-merge window opens.
-
-	Jeff
+- k
