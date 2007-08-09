@@ -1,33 +1,16 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EC32ADDE1C
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 09:53:08 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l78Nr56m021399
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2007 19:53:05 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l78Nr4RU527392
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2007 19:53:04 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l78Nr4PO005199
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2007 19:53:04 -0400
-Date: Wed, 8 Aug 2007 19:06:46 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Fix small race in 44x tlbie function
-Message-ID: <20070809000646.GD3925@crusty.rchland.ibm.com>
-References: <20070807042050.GJ13522@localhost.localdomain>
-	<f9d9td$nov$1@sea.gmane.org>
-	<20070808162951.46491bc7@weaponx.rchland.ibm.com>
-	<1186614089.938.207.camel@localhost.localdomain>
-Mime-Version: 1.0
+Return-Path: <ntl@pobox.com>
+Received: from sceptre.pobox.com (sceptre.pobox.com [207.106.133.20])
+	by ozlabs.org (Postfix) with ESMTP id ADF09DDE9F
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 10:51:02 +1000 (EST)
+Date: Wed, 8 Aug 2007 19:50:44 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC/PATCH] remove gratuitous reads from maple pci config space
+	methods
+Message-ID: <20070809005044.GD10114@localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1186614089.938.207.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, Hollis Blanchard <hollisb@us.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,38 +20,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 09, 2007 at 09:01:29AM +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2007-08-08 at 16:29 -0500, Josh Boyer wrote:
-> > On Wed, 8 Aug 2007 20:43:25 +0000 (UTC)
-> > Hollis Blanchard <hollisb@us.ibm.com> wrote:
-> > 
-> > > On Tue, 07 Aug 2007 14:20:50 +1000, David Gibson wrote:
-> > > > 
-> > > > This patch fixes the problem in both arch/ppc and arch/powerpc by
-> > > > inhibiting interrupts (even critical and debug interrupts) across the
-> > > > relevant instructions.
-> > > 
-> > > How could a critical or debug interrupt modify the contents of MMUCR?
-> > 
-> > Interrupts from UICs can be configured as critical.  If one of those
-> > triggers, (or any other CE triggers) and causes a tlb miss, you have a
-> > race.  The watchdog timer interrupt also is a CE IIRC.
-> > 
-> > CE and DE are admittedly a much smaller race, but still possible.
-> > Masking EE off is the largest one.
-> 
-> There is a much bigger problem if CEs can do tlb misses though... they
-> can interrupt the tlb miss handler itself, either between the two halves
-> of a tlb write, or between the write to MMUCR and the write to the tlb,
-> and I suspect both cases will cause trouble.
+The maple pci configuration space write methods read the written
+location immediately after the write is performed, presumably in order
+to flush the write.  However, configuration space writes are not
+allowed to be posted, making these reads gratuitous.  Furthermore,
+this behavior potentially causes us to violate the PCI PM spec when
+changing between e.g. D0 and D3 states, because a delay of up to 10ms
+may be required before the OS accesses configuration space after the
+write which initiates the transition.  It definitely causes a system
+hang for me with a Broadcom 5721 PCIE network adapter, which is fixed
+by this change.
 
-Yes.
+Remove the gratuitous reads from u3_agp_write_config,
+u3_ht_write_config, and u4_pcie_write_config.
 
-> We might want to check if we were in the TLB miss handler upon return
-> from the CE and MCE handlers, and in this case, restart them (just
-> return to the faulting instruction, that is use srr0 instead of
-> csrr0/mcsrr0).
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
+---
+ arch/powerpc/platforms/maple/pci.c |    9 ---------
+ 1 files changed, 0 insertions(+), 9 deletions(-)
 
-Something should be looked at, yeah.  
-
-josh
+diff --git a/arch/powerpc/platforms/maple/pci.c b/arch/powerpc/platforms/maple/pci.c
+index 2542403..b095eaa 100644
+--- a/arch/powerpc/platforms/maple/pci.c
++++ b/arch/powerpc/platforms/maple/pci.c
+@@ -169,15 +169,12 @@ static int u3_agp_write_config(struct pci_bus *bus, unsigned int devfn,
+ 	switch (len) {
+ 	case 1:
+ 		out_8(addr, val);
+-		(void) in_8(addr);
+ 		break;
+ 	case 2:
+ 		out_le16(addr, val);
+-		(void) in_le16(addr);
+ 		break;
+ 	default:
+ 		out_le32(addr, val);
+-		(void) in_le32(addr);
+ 		break;
+ 	}
+ 	return PCIBIOS_SUCCESSFUL;
+@@ -268,15 +265,12 @@ static int u3_ht_write_config(struct pci_bus *bus, unsigned int devfn,
+ 	switch (len) {
+ 	case 1:
+ 		out_8(addr, val);
+-		(void) in_8(addr);
+ 		break;
+ 	case 2:
+ 		out_le16(addr, val);
+-		(void) in_le16(addr);
+ 		break;
+ 	default:
+ 		out_le32(addr, val);
+-		(void) in_le32(addr);
+ 		break;
+ 	}
+ 	return PCIBIOS_SUCCESSFUL;
+@@ -376,15 +370,12 @@ static int u4_pcie_write_config(struct pci_bus *bus, unsigned int devfn,
+         switch (len) {
+         case 1:
+                 out_8(addr, val);
+-                (void) in_8(addr);
+                 break;
+         case 2:
+                 out_le16(addr, val);
+-                (void) in_le16(addr);
+                 break;
+         default:
+                 out_le32(addr, val);
+-                (void) in_le32(addr);
+                 break;
+         }
+         return PCIBIOS_SUCCESSFUL;
+-- 
+1.5.2.4
