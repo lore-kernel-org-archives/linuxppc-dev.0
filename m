@@ -1,34 +1,40 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 18DE1DDEFE
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2007 06:46:58 +1000 (EST)
-Date: Thu, 9 Aug 2007 22:46:55 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: fix i2c device string format
-In-Reply-To: <3368b27f860fafb35d10f6352e9055bf@kernel.crashing.org>
-Message-ID: <Pine.LNX.4.60.0708092233130.5995@poirot.grange>
-References: <Pine.LNX.4.60.0706292113240.4227@poirot.grange>
-	<00a85f152aa3547f0f0b4acd7954468a@kernel.crashing.org>
-	<Pine.LNX.4.60.0707022114020.3339@poirot.grange>
-	<2055bb54b9816faaf5b2ceedc9cfa039@kernel.crashing.org>
-	<Pine.LNX.4.60.0707032356270.3876@poirot.grange>
-	<E0E696F1-2F9E-4D6B-A194-EB42BA826BCD@kernel.crashing.org>
-	<Pine.LNX.4.60.0707180010330.3535@poirot.grange>
-	<87DC7695-382B-4641-B9D9-75ACB49D41A4@kernel.crashing.org>
-	<Pine.LNX.4.60.0707191932300.3365@poirot.grange>
-	<719AE7E4-FE6D-4973-8887-F787EC8ABC85@kernel.crashing.org>
-	<Pine.LNX.4.60.0707202219340.3946@poirot.grange>
-	<235e0ff22961e25016727c0e74fd0c0f@kernel.crashing.org>
-	<Pine.LNX.4.60.0708010739560.4228@poirot.grange>
-	<19a13f8700d078abc4cab0064a7d0183@kernel.crashing.org>
-	<Pine.LNX.4.60.0708012053240.7394@poirot.grange>
-	<46B0F030.9030007@freescale.com>
-	<Pine.LNX.4.60.0708080023030.8493@poirot.grange>
-	<3368b27f860fafb35d10f6352e9055bf@kernel.crashing.org>
+Return-Path: <linas@austin.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A403FDDF15
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2007 06:56:46 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l79KufJO016086
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 16:56:41 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l79KufbL161860
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 14:56:41 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l79KufFQ017786
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 14:56:41 -0600
+Date: Thu, 9 Aug 2007 15:56:41 -0500
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 6/6 v2] pseries: eliminate global var
+Message-ID: <20070809205641.GW25995@austin.ibm.com>
+References: <20070808195916.GA20055@austin.ibm.com>
+	<20070808200115.GA20134@austin.ibm.com>
+	<20070808200210.GB20134@austin.ibm.com>
+	<20070808200337.GC20134@austin.ibm.com>
+	<20070808200448.GD20134@austin.ibm.com>
+	<20070808200615.GE20134@austin.ibm.com>
+	<20070808200713.GF20134@austin.ibm.com>
+	<20070808215714.GB10114@localdomain>
+	<20070808222223.GH25995@austin.ibm.com>
+	<20070809010224.GE10114@localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070809010224.GE10114@localdomain>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Nathan Lynch <ntl@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,62 +44,110 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 9 Aug 2007, Segher Boessenkool wrote:
 
-> > > strncpy() won't put a terminating zero on there, is everything
-> > > that uses the resulting string okay with that?  Also, if the
-> > > name gets cut short, it might match some _other_ expected name.
-> > 
-> > On Wed, 1 Aug 2007, Scott Wood wrote:
-> > 
-> > > You could use strlcpy() instead, which always leaves a zero terminator.
-> > 
-> > The patch below does exactly this - uses strlcpy() to guarantee strings in
-> > i2c device type and driver_name fields are 0-terminated.
-> 
-> You're not checking the return values of these calls.  This would
-> be a good function to put attribute warn_unused_result on :-)
+Eliminate the use of error_log_cnt as a global var shared across
+differnt directories. Pass it as a subroutine arg instead.
 
-hm... Well, the worst that could happen, if an "evil" programmer defines 
-too long a name, it gets truncated, and then binds to a wrong driver, 
-well, the worst that can happen is that your hardware gets damaged, not a 
-big thing. However, some might disagree, so, below is a new version... 
-Wrap some long lines while at that.
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 
-Signed-off-by: G. Liakhovetski <g.liakhovetski@gmx.de>
+----
 
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index 727453d..c0d66df 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -320,21 +320,26 @@ static struct i2c_driver_device i2c_devices[] __initdata = {
- 	{"ricoh,rv5c387a", "rtc-rs5c372", "rv5c387a",},
+Respin of earlier patch, with the CONFIG_PSERIES junk removed from the
+header file.
+
+ arch/powerpc/kernel/nvram_64.c         |   10 +++++-----
+ arch/powerpc/platforms/pseries/rtasd.c |    7 ++++---
+ include/asm-powerpc/nvram.h            |    6 ++++--
+ 3 files changed, 13 insertions(+), 10 deletions(-)
+
+Index: linux-2.6.22-git2/arch/powerpc/kernel/nvram_64.c
+===================================================================
+--- linux-2.6.22-git2.orig/arch/powerpc/kernel/nvram_64.c	2007-08-08 12:21:16.000000000 -0500
++++ linux-2.6.22-git2/arch/powerpc/kernel/nvram_64.c	2007-08-08 12:24:01.000000000 -0500
+@@ -38,8 +38,6 @@ static struct nvram_partition * nvram_pa
+ static long nvram_error_log_index = -1;
+ static long nvram_error_log_size = 0;
+ 
+-extern volatile int error_log_cnt;
+-
+ struct err_log_info {
+ 	int error_type;
+ 	unsigned int seq_num;
+@@ -627,7 +625,8 @@ void __exit nvram_cleanup(void)
+  * sequence #: The unique sequence # for each event. (until it wraps)
+  * error log: The error log from event_scan
+  */
+-int nvram_write_error_log(char * buff, int length, unsigned int err_type)
++int nvram_write_error_log(char * buff, int length,
++                          unsigned int err_type, unsigned int error_log_cnt)
+ {
+ 	int rc;
+ 	loff_t tmp_index;
+@@ -665,7 +664,8 @@ int nvram_write_error_log(char * buff, i
+  *
+  * Reads nvram for error log for at most 'length'
+  */
+-int nvram_read_error_log(char * buff, int length, unsigned int * err_type)
++int nvram_read_error_log(char * buff, int length,
++                         unsigned int * err_type, unsigned int * error_log_cnt)
+ {
+ 	int rc;
+ 	loff_t tmp_index;
+@@ -691,7 +691,7 @@ int nvram_read_error_log(char * buff, in
+ 		return rc;
+ 	}
+ 
+-	error_log_cnt = info.seq_num;
++	*error_log_cnt = info.seq_num;
+ 	*err_type = info.error_type;
+ 
+ 	return 0;
+Index: linux-2.6.22-git2/include/asm-powerpc/nvram.h
+===================================================================
+--- linux-2.6.22-git2.orig/include/asm-powerpc/nvram.h	2007-07-08 18:32:17.000000000 -0500
++++ linux-2.6.22-git2/include/asm-powerpc/nvram.h	2007-08-09 15:41:43.000000000 -0500
+@@ -63,8 +63,10 @@ struct nvram_partition {
  };
  
--static int __init of_find_i2c_driver(struct device_node *node, struct i2c_board_info *info)
-+static int __init of_find_i2c_driver(struct device_node *node,
-+				     struct i2c_board_info *info)
- {
- 	int i;
  
- 	for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
- 		if (!of_device_is_compatible(node, i2c_devices[i].of_device))
- 			continue;
--		strncpy(info->driver_name, i2c_devices[i].i2c_driver, KOBJ_NAME_LEN);
--		strncpy(info->type, i2c_devices[i].i2c_type, I2C_NAME_SIZE);
-+		if (strlcpy(info->driver_name, i2c_devices[i].i2c_driver,
-+			    KOBJ_NAME_LEN) >= KOBJ_NAME_LEN ||
-+		    strlcpy(info->type, i2c_devices[i].i2c_type,
-+			    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
-+			return -ENOMEM;
- 		return 0;
- 	}
- 	return -ENODEV;
- }
+-extern int nvram_write_error_log(char * buff, int length, unsigned int err_type);
+-extern int nvram_read_error_log(char * buff, int length, unsigned int * err_type);
++extern int nvram_write_error_log(char * buff, int length,
++					 unsigned int err_type, unsigned int err_seq);
++extern int nvram_read_error_log(char * buff, int length,
++					 unsigned int * err_type, unsigned int *err_seq);
+ extern int nvram_clear_error_log(void);
+ extern struct nvram_partition *nvram_find_partition(int sig, const char *name);
  
--static void __init of_register_i2c_devices(struct device_node *adap_node, int bus_num)
-+static void __init of_register_i2c_devices(struct device_node *adap_node,
-+					   int bus_num)
- {
- 	struct device_node *node = NULL;
+Index: linux-2.6.22-git2/arch/powerpc/platforms/pseries/rtasd.c
+===================================================================
+--- linux-2.6.22-git2.orig/arch/powerpc/platforms/pseries/rtasd.c	2007-08-08 12:21:16.000000000 -0500
++++ linux-2.6.22-git2/arch/powerpc/platforms/pseries/rtasd.c	2007-08-08 12:50:40.000000000 -0500
+@@ -56,7 +56,7 @@ static int full_rtas_msgs = 0;
+ /* Stop logging to nvram after first fatal error */
+ static int no_more_logging;
  
+-volatile int error_log_cnt = 0;
++static int error_log_cnt;
+ 
+ /*
+  * Since we use 32 bit RTAS, the physical address of this must be below
+@@ -218,7 +218,7 @@ void pSeries_log_error(char *buf, unsign
+ 
+ 	/* Write error to NVRAM */
+ 	if (!no_more_logging && !(err_type & ERR_FLAG_BOOT))
+-		nvram_write_error_log(buf, len, err_type);
++		nvram_write_error_log(buf, len, err_type, error_log_cnt);
+ 
+ 	/*
+ 	 * rtas errors can occur during boot, and we do want to capture
+@@ -412,7 +412,8 @@ static int rtasd(void *unused)
+ 
+ 	/* See if we have any error stored in NVRAM */
+ 	memset(logdata, 0, rtas_error_log_max);
+-	rc = nvram_read_error_log(logdata, rtas_error_log_max, &err_type);
++	rc = nvram_read_error_log(logdata, rtas_error_log_max,
++	                          &err_type, &error_log_cnt);
+ 
+ 	if (!rc) {
+ 		if (err_type != ERR_FLAG_ALREADY_LOGGED) {
