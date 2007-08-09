@@ -1,18 +1,17 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <20070809041632.GA13921@localdomain>
-References: <20070809005044.GD10114@localdomain>
-	<20070809030555.GA8261@localhost.localdomain>
-	<20070809041632.GA13921@localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <40561246eaa06210a2a607aa7ed67b02@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC/PATCH] remove gratuitous reads from maple pci config space
-	methods
-Date: Thu, 9 Aug 2007 12:40:52 +0200
-To: Nathan Lynch <ntl@pobox.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 7292FDDE1E
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 20:59:57 +1000 (EST)
+Message-ID: <46BAF36F.4030801@ru.mvista.com>
+Date: Thu, 09 Aug 2007 14:58:55 +0400
+From: Valentine Barshak <vbarshak@ru.mvista.com>
+MIME-Version: 1.0
+To: Jerone Young <jyoung5@us.ibm.com>, linuxppc-dev@ozlabs.org
+Subject: Re: Sequoia 440EPx patches not working
+References: <1186598710.5459.7.camel@laptop>
+	<20070809030856.GC8261@localhost.localdomain>
+In-Reply-To: <20070809030856.GC8261@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,23 +21,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> It might be worth checking that there isn't a particular reason for
->> these.  Just because posting writes are forbidden doesn't mean a
->> particular bridge won't screw it up...
->
-> Well, I had already checked with Ben, who wrote the code, and my
-> understanding is that the reads are intended to work around some
-> misbehaving Apple bridges,
+David Gibson wrote:
+> On Wed, Aug 08, 2007 at 01:45:10PM -0500, Jerone Young wrote:
+>> Using the Sequoia (AMCC 440EPx) patches recently submitted to the list I
+>> am unable to boot to fully boot a uImage built with these patches under
+>> Uboot. It appears to hang in very early boot.
+> 
+> I'm guessing this is an old version of u-boot, that's not device tree
+> aware.  That would need a cuImage, not a uImage, and IIRC the posted
+> patches didn't yet have cuboot support for Sequoia.
+> 
 
-None of the PCI interfaces on the U3 or U4 bridges have that
-problem as far as I know.  I think the workaround was copied
-from code for older Apple bridges?
-
-> but that a sync after the write (implied by
-> releasing pci_lock in the generic pci code) should suffice for those.
-
-I don't see how a sync could help here at all, not more than
-an eieio anyway?
-
-
-Segher
+The patches do have cuImage support.
+I have a Sequoia board with uBoot 1.1.6 and it boots cuImage fine.
