@@ -1,19 +1,20 @@
 Return-Path: <mls.JOFT@gmx.de>
 Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id E373ADDF03
+	by ozlabs.org (Postfix) with SMTP id B25ACDDE49
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Aug 2007 05:44:49 +1000 (EST)
-Subject: Re: [alsa-devel] [PATCH 1/2] Xlinx ML403 AC97 Controller
-	Reference	device driver
+	Fri, 10 Aug 2007 06:01:43 +1000 (EST)
+Subject: Re: [PATCH 1/2] Xlinx ML403 AC97 Controller Reference device driver
 From: Joachim =?ISO-8859-1?Q?F=F6rster?= <mls.JOFT@gmx.de>
-To: Takashi Iwai <tiwai@suse.de>
-In-Reply-To: <s5hsl6sws0s.wl%tiwai@suse.de>
-References: <1186655810.7420.26.camel@localhost> <s5hsl6sws0s.wl%tiwai@suse.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <fa686aa40708091049m46607037jafe4b479ae52db43@mail.gmail.com>
+References: <1186655810.7420.26.camel@localhost>
+	<fa686aa40708091049m46607037jafe4b479ae52db43@mail.gmail.com>
 Content-Type: text/plain
-Date: Thu, 09 Aug 2007 21:44:46 +0200
-Message-Id: <1186688686.28843.61.camel@localhost>
+Date: Thu, 09 Aug 2007 22:01:40 +0200
+Message-Id: <1186689700.28843.76.camel@localhost>
 Mime-Version: 1.0
-Cc: alsa-devel <alsa-devel@alsa-project.org>,
+Cc: Takashi Iwai <tiwai@suse.de>, alsa-devel <alsa-devel@alsa-project.org>,
+	Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
 	Lorenz Kolb <lorenz.kolb@lkmail.de>,
 	"linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -26,81 +27,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Takashi,
+Hi Grant,
 
-before posting a corrected version, I would like to ask some unclear
-things (I think I understood the rest):
-
-On Thu, 2007-08-09 at 19:13 +0200, Takashi Iwai wrote:
-> (snip)
-> > +static int index[SNDRV_CARDS] = SNDRV_DEFAULT_IDX;
-> > +static char *id[SNDRV_CARDS] = SNDRV_DEFAULT_STR;
-> > +static int enable[SNDRV_CARDS] = SNDRV_DEFAULT_ENABLE;
+On Thu, 2007-08-09 at 11:49 -0600, Grant Likely wrote:
+> > diff --git a/sound/ppc/Makefile b/sound/ppc/Makefile
+> > index eacee2d..827f2f5 100644
+> > --- a/sound/ppc/Makefile
+> > +++ b/sound/ppc/Makefile
 > 
-> Can the driver really support multiple instances?
-> If not, better to avoid these arrays.
+> Couldn't this end up on MicroBlaze too?  If so, sound/ppc is the wrong place.
 
-Well, while I wrote the driver I considered that there might be more
-than one instance - though I didn't test it and I won't be able to test
-it (no such hardware available - with more than one LM4550 chip).
-So, shall I remove it?
+Well, I don't know. The only arch depended calls I use (am aware of) are
+in/out_be32(), so this _might_ work for mb, too. (I won't be able to
+test that in the next few months ...)
 
-> > +struct lm4550_reg lm4550_regfile[64] = {
-> > +	{.reg = 0x00,
-> > +	 .flag = LM4550_REG_NOSAVE | LM4550_REG_FAKEREAD,
-> > +	 .def = 0x0D50},
+On Thu, 2007-08-09 at 11:17 -0700, Stephen Neuendorffer wrote: 
+>  I second grant here... this should eventually work on microblaze, too,
+> so putting it drivers/ and using XILINX_DRIVERS instead of XILINX_VIRTEX
+> (based on the patch Wolfgang recently posted) would probably be preferable.
 > 
-> Better to use C99 style initialization here, e.g.
+> > +
+> > +config SND_ML403_AC97CR
+> > +       tristate "Xilinx ML403 AC97 Controller Reference"
+> > +       depends on SND && XILINX_VIRTEX
 > 
-> 	[0x00] = { .... },
-> 	[0x02] = { .... },
-> 	[0x7e] = { .... },
+> Steve
+
+So, like Stephen Neuendorffer said, I should move it to sound/drivers,
+right? Takashi?
+
+
+On Thu, 2007-08-09 at 11:49 -0600, Grant Likely wrote:
+> > +snd-ml403_ac97cr-objs := ml403_ac97cr.o
 > 
-> so you can avoid writing empty items.
-> The index value could be also AC97_XXX, such as [AC97_MASTER] =
-> {...}.
-> 
-> What is the purpose of reg field at all, BTW?  I guess it's
-> superfluous.
+> This line is only needed if you're compiling multiple .c files into one .ko
 
-No, it's there to provide a shadow copy of the codec's (LM4550)
-registers. It contains default values and (while driver is running)
-current values, which were written to the hardware. I had to introduce
-this, because Xilinx's AC97 Controller Reference has a very ugly bug: It
-provides a "register access finish" bit, so the driver is able to tell
-when a register read or write access is finished. Unfortunately this
-particular bit only works in the range of 0 to 100 times since board
-reset. After that many register access it just remains saying: I'm _not_
-ready. But in fact, in most cases (98%) the correct value already is the
-read register (assume we have just said to the control that we want to
-read a register).
-I thought, ok we have such RegAccessFinished bit, so use it, if we have
-to, until it doesn't work anymore.
-So, through a shadow copy of most registers (some cannot be shadow or it
-makes no sence) I can provide the values without having to actually read
-from the controller/codec. The regfile also contains info which register
-might be shadowed, if values get saved at all (if written) ...
-Furthermore ALSA's AC97 layer does heavy initialization access series on
-the codec, which I tried to "mask out" completely
-(LM4550_REG_FAKEPROBE).
+Ah, well, then I have to rename the main .c file. But all the other ALSA
+drivers seem to _not_ include the "snd-" in front of it (ok, except the
+new PS3 driver and maybe other new ones?)
 
-> > +#define LM4550_RF_FLAG(reg)  lm4550_regfile[reg / 2].flag
-<snip>
-> > +static void lm4550_regfile_init(void)
-> > +{
-> > +	int i;
-> > +	for (i = 0; i < 128; i = i + 2)
-> > +		if (LM4550_RF_FLAG(i) & LM4550_REG_FAKEPROBE)
-> > +			LM4550_RF_VAL(i) = LM4550_RF_DEF(i);
-> 
-> "MACRO(x) = XXX" looks a bit strange to me.
+> I'll try adding your patches to my tree this afternoon.
 
-Hmmm, ok. I thought about that, too. I think, I'll spell them out?
-
-> RATE_CONTINUOUS and RATE_KNOW are usually exclusive.
-
-Ok, so what I want is RATE_CONTINUOUS, right? (because the LM4550
-supports 4000 to 48000kHz in 1Hz steps)
-BTW: What is RATE_KNOT good for?
+I made patch against your tree, too (like a said before). Tell me, then
+I post it ...
 
  Joachim
