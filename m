@@ -1,19 +1,25 @@
-Return-Path: <vitb@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B4DB0DDE32
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 22:56:21 +1000 (EST)
-Date: Thu, 9 Aug 2007 16:56:12 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: jyoung5@us.ibm.com
-Subject: Re: Sequoia 440EPx patches not working
-Message-ID: <20070809165612.12100334@localhost.localdomain>
-In-Reply-To: <1186598710.5459.7.camel@laptop>
-References: <1186598710.5459.7.camel@laptop>
+	by ozlabs.org (Postfix) with ESMTP id 62A24DDE0F
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 23:06:10 +1000 (EST)
+Subject: Re: Fix small race in 44x tlbie function
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20070809120450.GE3925@crusty.rchland.ibm.com>
+References: <20070807042050.GJ13522@localhost.localdomain>
+	<BDA0DE7D-8AD8-4116-ABE0-2DF6AE72A516@kernel.crashing.org>
+	<20070808110029.43c110ef@weaponx.rchland.ibm.com>
+	<57F869A4-38DE-4CC9-A07D-C3A873CE9268@kernel.crashing.org>
+	<20070809120450.GE3925@crusty.rchland.ibm.com>
+Content-Type: text/plain
+Date: Thu, 09 Aug 2007 23:05:36 +1000
+Message-Id: <1186664737.481.28.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, vbarshark@ru.mvista.com
+Cc: Volkmar Uhlig <vuhlig@us.ibm.com>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, Todd Inglett <tinglett@us.ibm.com>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,47 +29,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 08 Aug 2007 13:45:10 -0500
-Jerone Young wrote:
-
-> Using the Sequoia (AMCC 440EPx) patches recently submitted to the
-> list I am unable to boot to fully boot a uImage built with these
-> patches under Uboot. It appears to hang in very early boot.
+On Thu, 2007-08-09 at 07:04 -0500, Josh Boyer wrote:
 > 
+> > We don't have critical wired to anything, I don't expect watchdog
+> to  
+> > cause another fault.. so just wondering.
 > 
-> Here is the output:
-> => tftp 400000
-> sequoia/uImage ENET Speed is 100 Mbps - FULL duplex connection
-> (EMAC0) Using ppc_4xx_eth0
-> device TFTP from server 9.53.41.24; our IP address is
-> 9.53.41.38 Filename
-> 'sequoia/uImage'. Load address:
-> 0x400000 Loading:
-> #################################################################
-> #################################################################
-> #################################################################
-> #######################
-> done Bytes transferred = 1112434 (10f972
-> hex) => bootm
-> 400000 ## Booting image at
-> 00400000 ... Image Name:
-> Linux-2.6.23-rc2 Image Type:   PowerPC Linux Kernel Image (gzip
-> compressed) Data Size:    1112370 Bytes =  1.1
-> MB Load Address:
-> 00000000 Entry Point:
-> 00000000 Verifying Checksum ...
-> OK Uncompressing Kernel Image ... OK 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> We being who?  I'm slightly confused here. 
 
-This seems to be a wrong image..
+I think Kumar doesn't know that we are talking about the BG kernel which
+has more things "wired" to CRIT than what is upstream at the moment :-)
 
-Are you using "make zImage" ?
-
-The proper uImage after that command would be smth like cuImage* then...
-
--- 
-Sincerely, Vitaly
+Ben.
