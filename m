@@ -1,24 +1,21 @@
-Return-Path: <willis@arlut.utexas.edu>
-Received: from ns2.arlut.utexas.edu (ns2.arlut.utexas.edu [146.6.211.1])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 713B4DDE32
+Return-Path: <jacmet@sunsite.dk>
+Received: from kuuvir01.barco.com (kuumail.barco.com [32.58.34.195])
+	by ozlabs.org (Postfix) with SMTP id 0CBE6DDE37
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Aug 2007 08:18:31 +1000 (EST)
-Subject: Re: Fedora 7 on a non FPU system
-From: Michael Brian Willis <willis@arlut.utexas.edu>
-To: Clemens Koller <clemens.koller@anagramm.de>
-In-Reply-To: <46B8E76F.3020403@anagramm.de>
-References: <20070313043050.GB82243@server.idefix.lan>
-	<513703.69187.qm@web302.biz.mail.mud.yahoo.com>
-	<20070314043305.GB27011@server.idefix.lan>
-	<20070314065411.GD14658@moe.telargo.com>
-	<1186508561.5592.26.camel@louie> <46B8E76F.3020403@anagramm.de>
-Content-Type: text/plain
-Date: Wed, 08 Aug 2007 17:18:22 -0500
-Message-Id: <1186611502.12665.26.camel@louie>
-Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
+	Thu,  9 Aug 2007 17:08:48 +1000 (EST)
+Received: from peko by sleipner.barco.com with local (Exim 4.60)
+	(envelope-from <jacmet@sunsite.dk>) id 1IJ28P-0004Ou-WF
+	for linuxppc-embedded@ozlabs.org; Thu, 09 Aug 2007 09:08:42 +0200
+From: Peter Korsgaard <peter.korsgaard@barco.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Cypress C67X00 driver question
+References: <939D37AEB47F1F49B88FAB6599B6023501A17257@hsv1dafpew02.das.gov.sanm.corp>
+Date: Thu, 09 Aug 2007 09:08:41 +0200
+In-Reply-To: <939D37AEB47F1F49B88FAB6599B6023501A17257@hsv1dafpew02.das.gov.sanm.corp>
+	(Joseph M. Robertson's message of "Wed, 8 Aug 2007 15:34:45 -0500")
+Message-ID: <87lkclw5fq.fsf@sleipner.barco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,47 +26,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-08-07 at 23:43 +0200, Clemens Koller wrote:
+>>>>> "RJM" == Robertson, Joseph M <joseph.robertson@sanmina-sci.com> writes:
 
-> You can either use FPU emulation or do the floating point stuff on the e500
-> core's SPE (Signal Processing Engine) which is AFAIK not supported by any
-> major distribution.
+Hi,
 
-I do have FPU emulation enabled in the kernel. I was able to get a
-Yellow Dog 4.1 root filesystem to work. However when I move up to
-YellowDog 5.0 or to Fedora 7, I have system lags. (For example, shortly
-after boot-up, date and top do not behave properly. For example top
-displays "nan" values. However a few minutes after boot up everything
-seems fine.)
+RJM> Hi all, First off big thanks to the guys working on the Cypress
+RJM> USB C67X00 driver!  Without them I would not even be this far.
 
-I suspect that the newest distribution versions rely more heavily on
-full FPU functionality while the older distributions don't. Which might
-be why older distributions seem to work a little better. 
+You're welcome.
 
+RJM> But my question for them is: How are you guys initializing the
+RJM> Cypress chip?  It looks like the driver is expecting the cypress
+RJM> to be programmed and ready.
 
+No, you don't need to program anything. The driver only uses he
+Cypress BIOS programmed in ROM in the chip.
 
-> CRUX - not a "major distro", because it's targeted at "experienced Linux users".
-> I am running my selfmade version of "embedded CRUX" on my MPC8540 Boards
-> based on http://cruxppc.sunsite.dk/wp/index.php which now fully supports
-> the e500 core features.
+You just need to register a struct platform_device in your board code
+with the base address, IRQ and port configuration - Something like:
 
-Thanks, I will start looking into using CRUX. 
+#include <linux/usb/c67x00.h
 
+..
 
+static struct resource c67x00_resources[] = {
+        [0] = {
+                .start  = 0x84000000,
+                .end    = 0x8400000f,
+                .flags  = IORESOURCE_MEM,
+        },
+        [1] = {
+                .start  = 3,
+                .end    = 3,
+                .flags  = IORESOURCE_IRQ,
+        },
+};
 
-> I bootstrapped the toolchain (binutils, (e)glibc, gcc and friends) from scratch
+static struct c67x00_platform_data c67x00_data = {
+        .sie_config             = C67X00_SIE1_HOST | C67X00_SIE2_HOST,
+        .hpi_regstep            = 0x02,
+};
 
-Did you find any documentation that was helpful when you did this? 
-I'm not really sure how to start this process. Do you basically just
-download binutils, glibc etc... and compile them using the gcc that
-comes with CRUX? 
+static struct platform_device c67x00 = {
+        .name                   = "c67x00",
+        .id                     = 0,
+        .num_resources          = ARRAY_SIZE(c67x00_resources),
+        .resource               = c67x00_resources,
+        .dev.platform_data      = &c67x00_data,
+};
 
-
-
-Thanks again for all your help!
-
-Regards, 
-
-Michael Willis
-Applied Research Labs-University of Texas
-willis@arlut.utexas.edu
+-- 
+Bye, Peter Korsgaard
