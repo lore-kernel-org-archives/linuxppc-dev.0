@@ -1,16 +1,18 @@
 Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <20070809030752.GB8261@localhost.localdomain>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 317C8DDEDF
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2007 06:21:07 +1000 (EST)
+In-Reply-To: <20070808170728.GA21118@localhost.localdomain>
 References: <20070808170728.GA21118@localhost.localdomain>
-	<20070808170921.GA21487@localhost.localdomain>
-	<20070809030752.GB8261@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <af4642f6ed6a4bc167161ac73ad75350@kernel.crashing.org>
+Message-Id: <0aede121098dd1b4ed6cdf9ca43b20fe@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v3 1/2] [POWERPC] MPC832x_RDB: update dts to use spi,
-	register mmc_spi stub
-Date: Thu, 9 Aug 2007 22:15:44 +0200
-To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH v3 0/2] SPI support for fsl_soc and mpc832x_rdb
+Date: Thu, 9 Aug 2007 22:21:02 +0200
+To: avorontsov@ru.mvista.com
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,14 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Hrm... Freescale is using these 'fsl,device-id' properties, I'm
-> guessing they're basically the same thing as the 'cell-index' used in
-> the EMAC binding.
->
-> We should co-ordinate better on this, if it's to become a
-> convention...
+>   - cosmetic cleanups (@01 -> @1);
 
-That means we shouldn't coordinate on this, right?
+That's a correctness fix, not just cosmetics.
+
+>   - other non-mandatory (device-id, device_type, compatible, ...)
+>     properties removed from mmc node, today board file is using
+>     of_find_node_by_name(), instead of of_find_compatible_node();
+
+That's the wrong way around -- a driver (or platform code, same
+thing) isn't using "compatible", while it should, so you remove
+"compatible"?
 
 
 Segher
