@@ -1,21 +1,22 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.188])
-	by ozlabs.org (Postfix) with ESMTP id 60A05DDD0C
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.185])
+	by ozlabs.org (Postfix) with ESMTP id 75768DDE16
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Aug 2007 03:49:09 +1000 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so387982rvf
+	Fri, 10 Aug 2007 04:04:48 +1000 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so390656rvf
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 09 Aug 2007 10:49:07 -0700 (PDT)
-Message-ID: <fa686aa40708091049m46607037jafe4b479ae52db43@mail.gmail.com>
-Date: Thu, 9 Aug 2007 11:49:06 -0600
+	Thu, 09 Aug 2007 11:04:47 -0700 (PDT)
+Message-ID: <fa686aa40708091104m36ec9c8es195407487b9ec1d5@mail.gmail.com>
+Date: Thu, 9 Aug 2007 12:04:47 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
 To: "=?ISO-8859-1?Q?Joachim_F=F6rster?=" <mls.JOFT@gmx.de>
-Subject: Re: [PATCH 1/2] Xlinx ML403 AC97 Controller Reference device driver
-In-Reply-To: <1186655810.7420.26.camel@localhost>
+Subject: Re: [PATCH 2/2] [VIRTEX] Register AC97 Controller Reference with the
+	platform bus
+In-Reply-To: <1186655824.7420.27.camel@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <1186655810.7420.26.camel@localhost>
+References: <1186655824.7420.27.camel@localhost>
 Cc: alsa-devel <alsa-devel@alsa-project.org>,
 	Lorenz Kolb <lorenz.kolb@lkmail.de>,
 	"linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
@@ -32,123 +33,85 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 On 8/9/07, Joachim F=F6rster <mls.JOFT@gmx.de> wrote:
 > From: Joachim Foerster <JOFT@gmx.de>
 >
-> Add ALSA support for the opb_ac97_controller_ref_v1_00_a ip core found
-> in Xilinx' ML403 reference design.
->
-> Known issue: Currently this driver hits a WARN_ON_ONCE(1) statement in
-> kernel/irq/resend.c (line 70). According to Linus
-> (http://lkml.org/lkml/2007/8/5/5) this may be ignored, right? I haven't
-> had a look into this "problem" yet.
->
 > (Patch for Linus' master branch, date 2007/08/08)
 >
-> This patchset _will_ be published on
-> http://www.esic-solutions.com/support.html soon (like the first version
-> of the driver (tar file), but this may take some days ...).
-
-Comments below
-
-> diff --git a/sound/ppc/Makefile b/sound/ppc/Makefile
-> index eacee2d..827f2f5 100644
-> --- a/sound/ppc/Makefile
-> +++ b/sound/ppc/Makefile
-
-Couldn't this end up on MicroBlaze too?  If so, sound/ppc is the wrong plac=
-e.
-
-> @@ -4,7 +4,9 @@
->  #
+> Signed-off-by: Joachim Foerster <JOFT@gmx.de>
+> ---
+>  arch/ppc/syslib/virtex_devices.c |   28 ++++++++++++++++++++++++++++
+>  1 files changed, 28 insertions(+), 0 deletions(-)
 >
->  snd-powermac-objs :=3D powermac.o pmac.o awacs.o burgundy.o daca.o tumbl=
-er.o keywest.o beep.o
-> +snd-ml403_ac97cr-objs :=3D ml403_ac97cr.o
-
-This line is only needed if you're compiling multiple .c files into one .ko
-
+> diff --git a/arch/ppc/syslib/virtex_devices.c b/arch/ppc/syslib/virtex_de=
+vices.c
+> index 62a9495..0d6f0ac 100644
+> --- a/arch/ppc/syslib/virtex_devices.c
+> +++ b/arch/ppc/syslib/virtex_devices.c
+> @@ -121,6 +121,29 @@
+>         }, \
+>  }
 >
->  # Toplevel Module Dependency
->  obj-$(CONFIG_SND_POWERMAC)     +=3D snd-powermac.o
->  obj-$(CONFIG_SND_PS3)          +=3D snd_ps3.o
-> +obj-$(CONFIG_SND_ML403_AC97CR) +=3D snd-ml403_ac97cr.o
-> diff --git a/sound/ppc/ml403_ac97cr.c b/sound/ppc/ml403_ac97cr.c
-> new file mode 100644
-> index 0000000..99791d7
-> --- /dev/null
-> +++ b/sound/ppc/ml403_ac97cr.c
-> @@ -0,0 +1,1274 @@
-> +
-> +/*  ALSA driver for Xilinx ML403 AC97 Controller Reference
-> + *    IP: opb_ac97_controller_ref_v1_00_a (EDK 8.1i)
-> + *    IP: opb_ac97_controller_ref_v1_00_a (EDK 9.1i)
-> + *
-> + *  Copyright (c) by 2007  Joachim Foerster <JOFT@gmx.de>
-> + *
-> + *   This program is free software; you can redistribute it and/or modif=
-y
-> + *   it under the terms of the GNU General Public License as published b=
-y
-> + *   the Free Software Foundation; either version 2 of the License, or
-> + *   (at your option) any later version.
-> + *
-> + *   This program is distributed in the hope that it will be useful,
-> + *   but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + *   GNU General Public License for more details.
-> + *
-> + *   You should have received a copy of the GNU General Public License
-> + *   along with this program; if not, write to the Free Software
-> + *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-130=
-7 USA
-> + *
-> + */
-> +
-> +#include <sound/driver.h>
-> +#include <linux/init.h>
-> +#include <linux/moduleparam.h>
-> +
-> +#include <linux/platform_device.h>
-> +
-> +#include <linux/ioport.h>
-> +#include <asm/io.h>
-> +#include <linux/interrupt.h>
-> +
-> +/* HZ */
-> +#include <linux/param.h>
-> +/* jiffies, time_*() */
-> +#include <linux/jiffies.h>
-> +/* schedule_timeout*() */
-> +#include <linux/sched.h>
-> +/* spin_lock*() */
-> +#include <linux/spinlock.h>
-> +
-> +/* snd_printk(), snd_printd() */
-> +#include <sound/core.h>
-> +#include <sound/pcm.h>
-> +#include <sound/pcm_params.h>
-> +#include <sound/initval.h>
-> +#include <sound/ac97_codec.h>
-> +
-> +
-> +#define SND_ML403_AC97CR_DRIVER "ml403_ac97cr"
-> +
-> +MODULE_AUTHOR("Joachim Foerster <JOFT@gmx.de>");
-> +MODULE_DESCRIPTION("Xilinx ML403 AC97 Controller Reference");
-> +MODULE_LICENSE("GPL");
-> +MODULE_SUPPORTED_DEVICE("{{Xilinx,ML403 AC97 Controller Reference}}");
-> +MODULE_VERSION("0.0.1-pre2");
+> +#define XPAR_AC97_CONTROLLER_REFERENCE(num) { \
+> +       .name =3D "ml403_ac97cr",       \
+> +       .id =3D num, \
+> +       .num_resources =3D 3, \
+> +       .resource =3D (struct resource[]) { \
+> +               { \
+> +                       .start =3D XPAR_OPB_AC97_CONTROLLER_REF_0_BASEADD=
+R, \
+> +                       .end =3D XPAR_OPB_AC97_CONTROLLER_REF_0_HIGHADDR,=
+ \
 
-This patch is targeted for mainline inclusion (which gives you the
-kernel version number).  Do you really want to maintain a separate
-version number that needs to be update manually?  I'd drop the
-MODULE_VERSION line.
+This will make each instance try to use the same device!  Replace
+'_0_' with '_##num##_'
 
-<snip>
+> +                       .flags =3D IORESOURCE_MEM, \
+> +               }, \
+> +               { \
+> +                       .start =3D XPAR_OPB_INTC_0_OPB_AC97_CONTROLLER_RE=
+F_0_PLAYBACK_INTERRUPT_INTR, \
+> +                       .end =3D XPAR_OPB_INTC_0_OPB_AC97_CONTROLLER_REF_=
+0_PLAYBACK_INTERRUPT_INTR, \
 
-I'm not an ALSA expert, so I didn't review the rest of the code in
-detail (but I didn't see anything to comment on with a quick review).
-I'll try adding your patches to my tree this afternoon.
+ditto; in this case you need to change the second _0_.  _INTC_0_ is
+already the correct form.
 
-g.
+> +                       .flags =3D IORESOURCE_IRQ, \
+> +               }, \
+> +               { \
+> +                       .start =3D XPAR_OPB_INTC_0_OPB_AC97_CONTROLLER_RE=
+F_0_RECORD_INTERRUPT_INTR, \
+> +                       .end =3D XPAR_OPB_INTC_0_OPB_AC97_CONTROLLER_REF_=
+0_RECORD_INTERRUPT_INTR, \
+
+ditto
+
+> +                        .flags =3D IORESOURCE_IRQ, \
+> +               }, \
+> +        }, \
+> +}
+> +
+>  /* UART 8250 driver platform data table */
+>  struct plat_serial8250_port virtex_serial_platform_data[] =3D {
+>  #if defined(XPAR_UARTNS550_0_BASEADDR)
+> @@ -221,6 +244,11 @@ struct platform_device virtex_platform_devices[] =3D=
+ {
+>  #if defined(XPAR_TFT_3_BASEADDR)
+>         XPAR_TFT(3),
+>  #endif
+> +
+> +       /* AC97 Controller Reference instances */
+> +#if defined(XPAR_OPB_AC97_CONTROLLER_REF_0_BASEADDR)
+> +       XPAR_AC97_CONTROLLER_REFERENCE(0),
+> +#endif
+>  };
+>
+>  /* Early serial support functions */
+> --
+> 1.5.2.4
+>
+>
+>
+>
+
 
 --=20
 Grant Likely, B.Sc., P.Eng.
