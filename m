@@ -1,18 +1,23 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 69DD2DDE1E
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2007 02:22:21 +1000 (EST)
-Message-ID: <46BB3F00.6060802@ru.mvista.com>
-Date: Thu, 09 Aug 2007 20:21:20 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-MIME-Version: 1.0
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: Sequoia 440EPx patches not working
-References: <1186598710.5459.7.camel@laptop>	<20070809030856.GC8261@localhost.localdomain>	<46BAF36F.4030801@ru.mvista.com>
-	<20070809083443.2b2f5407@zod.rchland.ibm.com>
-In-Reply-To: <20070809083443.2b2f5407@zod.rchland.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A6D24DDEBE
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2007 02:30:45 +1000 (EST)
+In-Reply-To: <46B89C10.7090507@genesi-usa.com>
+References: <200708020440.l724edCT290676@shell01.TheWorld.com>
+	<46B79562.9020202@genesi-usa.com>
+	<f4545a576abeddf00f076a0cae9e3fdd@kernel.crashing.org>
+	<46B89C10.7090507@genesi-usa.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <909c5e405e5cd26bca3aff13fe55adbc@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Pegasos keyboard detection
+Date: Thu, 9 Aug 2007 18:30:35 +0200
+To: Matt Sealey <matt@genesi-usa.com>
+Cc: linuxppc-dev@ozlabs.org, Alan Curry <pacman@TheWorld.com>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,26 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Josh Boyer wrote:
-> On Thu, 09 Aug 2007 14:58:55 +0400
-> Valentine Barshak <vbarshak@ru.mvista.com> wrote:
-> 
->> David Gibson wrote:
->>> On Wed, Aug 08, 2007 at 01:45:10PM -0500, Jerone Young wrote:
->>>> Using the Sequoia (AMCC 440EPx) patches recently submitted to the
->>>> list I am unable to boot to fully boot a uImage built with these
->>>> patches under Uboot. It appears to hang in very early boot.
->>> I'm guessing this is an old version of u-boot, that's not device
->>> tree aware.  That would need a cuImage, not a uImage, and IIRC the
->>> posted patches didn't yet have cuboot support for Sequoia.
->>>
->> The patches do have cuImage support.
->> I have a Sequoia board with uBoot 1.1.6 and it boots cuImage fine.
-> 
-> Speaking of those patches, are you planning on rebasing them against
-> the latest 4xx series I sent out soon?  That should have some cleanups
-> that make adding sequoia support a bit easier.
-> 
-> josh
+>> That's hardly the only reason.  But yeah, that's one way to
+>> implement the workaround, but _we_ (the Linux community) cannot
+>> do it like that (easily) for all users.
+>
+> But you're the guy who told us our firmware sucks and we should fix our
+> firmware
 
-Yes, I do :)
+Yes, and?  You _should_ fix your firmware, it is buggy after all.
+Esp. back then as it wasn't shipping yet.
+
+> rather than clutter Linux with too many fixups.
+
+Also, putting fixups in the wrapper is a wholly different thing from
+putting fixups deep inside the kernel code proper.
+
+> Linux is already a bad enough moving target, and none of these fixes 
+> help
+> other operating systems or developers, if we only patch Linux,
+
+But that's not Linux' concern.  You might care, we don't.  Is
+this so hard to understand?
+
+> 1) the reports as we had when Efika was released and continually levied
+> against Pegasos firmware, that the firmware is broken and must be fixed
+> to comply, and no fixes will be considered because "bplan sucks and 
+> must
+> fix it"
+>
+> 2) As long as the patches are 2 lines big, you will allow them in, 
+> because
+> it is too much for a user to update firmware or run a script to boot?
+
+Our only two concerns are what is best on technical grounds, and what
+is best for our users.
+
+> Would you guys rather we shipped a boot script that ran the OS, fixed
+> all these issues in-place in-firmware, so Linux did not have to have 
+> these
+> workarounds,
+
+Sure, if you can do that, that would be great.
+
+
+Segher
