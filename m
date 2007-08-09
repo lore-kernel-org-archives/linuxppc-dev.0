@@ -1,23 +1,21 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound6-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
-	[207.46.163.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 87B2BDDE1E
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AEFABDDECB
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Aug 2007 04:17:16 +1000 (EST)
+	Fri, 10 Aug 2007 04:17:27 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IJCZX-0000iT-66
+	for linuxppc-embedded@ozlabs.org; Thu, 09 Aug 2007 11:17:23 -0700
+Message-ID: <12077740.post@talk.nabble.com>
+Date: Thu, 9 Aug 2007 11:17:23 -0700 (PDT)
+From: khollan <khollan@daktronics.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: BusyBox Mount
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: [PATCH 1/2] Xlinx ML403 AC97 Controller Reference device driver
-Date: Thu, 9 Aug 2007 11:17:11 -0700
-In-Reply-To: <1186655810.7420.26.camel@localhost>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: =?iso-8859-1?Q?Joachim_F=F6rster?= <mls.JOFT@gmx.de>,
-	<linuxppc-embedded@ozlabs.org>
-Message-Id: <20070809181713.77B24708062@mail66-cpk.bigfish.com>
-Cc: alsa-devel <alsa-devel@alsa-project.org>,
-	Lorenz Kolb <lorenz.kolb@lkmail.de>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,15 +26,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-=20
-I second grant here... this should eventually work on microblaze, too,
-so putting it drivers/ and using XILINX_DRIVERS instead of XILINX_VIRTEX
-(based on the patch Wolfgang recently posted) would probably be =
-preferable.
 
-> +
-> +config SND_ML403_AC97CR
-> +       tristate "Xilinx ML403 AC97 Controller Reference"
-> +       depends on SND && XILINX_VIRTEX
+Hi
 
-Steve
+I want to mount the first partion of my compact flash in a users home folder
+during bootup.  This partion should be owned by the user and be read write
+and executable.  I am using the command:
+mount -t vfat /dev/xsa1 /home/Dak
+in the rcS startup script.  This works fine but it is owned by the root, if
+I try to change the ownership with chown as root it says that Operation not
+permitted, if I Chmod to 777 it appears to take but when you ls -l it out it
+says that it is onlt rw by the owner root.
+Any suggestions
+khollan
+-- 
+View this message in context: http://www.nabble.com/BusyBox-Mount-tf4244254.html#a12077740
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
