@@ -2,30 +2,28 @@ Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
 Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EF142DDDF8
+	by ozlabs.org (Postfix) with ESMTP id 41F2DDDEC7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Aug 2007 23:47:04 +1000 (EST)
+	Thu,  9 Aug 2007 23:56:34 +1000 (EST)
 Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1IJ8Ll-0003E7-FB
-	for linuxppc-embedded@ozlabs.org; Thu, 09 Aug 2007 15:46:53 +0200
+	id 1IJ8Uz-0004AD-EA
+	for linuxppc-embedded@ozlabs.org; Thu, 09 Aug 2007 15:56:25 +0200
 Received: from p5497ff37.dip.t-dialin.net ([84.151.255.55])
 	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
 	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Thu, 09 Aug 2007 15:46:53 +0200
+	for <linuxppc-embedded@ozlabs.org>; Thu, 09 Aug 2007 15:56:25 +0200
 Received: from dzu by p5497ff37.dip.t-dialin.net with local (Gmexim 0.1
 	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Thu, 09 Aug 2007 15:46:53 +0200
+	for <linuxppc-embedded@ozlabs.org>; Thu, 09 Aug 2007 15:56:25 +0200
 To: linuxppc-embedded@ozlabs.org
 From: Detlev Zundel <dzu@denx.de>
-Subject: Re: signals handling in the kernel
-Date: Thu, 09 Aug 2007 15:47:12 +0200
-Message-ID: <m2ps1wyg4f.fsf@ohwell.denx.de>
-References: <12032525.post@talk.nabble.com> <46B8A3C9.7060806@ovro.caltech.edu>
-	<46B8BA93.8020909@ovro.caltech.edu> <12048974.post@talk.nabble.com>
+Subject: Re: Were to start? With MPC8272 and embedded Linux.
+Date: Thu, 09 Aug 2007 15:56:40 +0200
+Message-ID: <m2k5s4yfon.fsf@ohwell.denx.de>
+References: <fccc6f400708070536y366c0fcbt18f77d5aaacfb7e@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: news <news@sea.gmane.org>
-Cc: Mirek23 <miroslaw.dach@psi.ch>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -36,28 +34,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Miroslaw,
+Hi Channy,
 
-> I did not find however what would be the best way to propagate interrupt
-> signals to the USER level / notify the client that interrupt has occurred.
+> We're starting a project with an MPC8272 that will eventually be on a custom
+> board we are building. 
+>
+> Here is a list of things I have:
+>
+> - EmbeddedPlanet with MPC8272 but no BSP (do I need one?)
 
-Follow the advice given here before (and in the book you mention), and
-implement poll() in the driver and use select() from userspace to
-react to it.  That's the natural solution in the Unix context for what
-you are trying to do.  It is not a coincidence that I can only find 3
-references to kill_proc below drivers/.
+You need a kernel that supports your specific board, yes.  According
+to the Embedded Planet web page, there should be a 2.6.10 BSP
+available.  This will be based on arch/ppc being dead in less than
+twelve months, so for the long term you should start looking for
+support for your board in recent kernels, i.e. arch/powerpc.
 
-Of course you are welcome to solve your actual problem (using
-kill_proc like e.g. drivers/char/watchdog/wd.c) but I am very sure
-that you will rediscover the information in the preceding paragraph
-the hard way.
+> - VisionProbe II with VisionClick
+>
+> I am planning on using DENX and U-Boot.
 
-Bets wishes
+Congratulations.  We will be perfectly happy helping you on a
+professional basis, but maybe you only want to use our free toolchain
+ELDK, though :)
+
+> Can I put a Linux image with the VisionProbe II?
+
+Put where?  In RAM, in flash?  I would think that any self-respecting
+JTAG debugger should be capable of doing this, but I only know the
+BDI2000.
+
+Cheers
   Detlev
 
 -- 
-You get 3 opportunities to advertise your Rock band, no more.
-           -- Proposed Symbolics guidelines for mail messages (1984)
+In God we trust.  All others we monitor
+                       -- NSA motto
 --
 DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
 HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
