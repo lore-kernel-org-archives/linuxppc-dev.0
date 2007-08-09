@@ -1,35 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E264EDE13E
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2007 05:46:00 +1000 (EST)
-In-Reply-To: <Pine.LNX.4.60.0708080023030.8493@poirot.grange>
-References: <Pine.LNX.4.60.0706292113240.4227@poirot.grange>
-	<00a85f152aa3547f0f0b4acd7954468a@kernel.crashing.org>
-	<Pine.LNX.4.60.0707022114020.3339@poirot.grange>
-	<2055bb54b9816faaf5b2ceedc9cfa039@kernel.crashing.org>
-	<Pine.LNX.4.60.0707032356270.3876@poirot.grange>
-	<E0E696F1-2F9E-4D6B-A194-EB42BA826BCD@kernel.crashing.org>
-	<Pine.LNX.4.60.0707180010330.3535@poirot.grange>
-	<87DC7695-382B-4641-B9D9-75ACB49D41A4@kernel.crashing.org>
-	<Pine.LNX.4.60.0707191932300.3365@poirot.grange>
-	<719AE7E4-FE6D-4973-8887-F787EC8ABC85@kernel.crashing.org>
-	<Pine.LNX.4.60.0707202219340.3946@poirot.grange>
-	<235e0ff22961e25016727c0e74fd0c0f@kernel.crashing.org>
-	<Pine.LNX.4.60.0708010739560.4228@poirot.grange>
-	<19a13f8700d078abc4cab0064a7d0183@kernel.crashing.org>
-	<Pine.LNX.4.60.0708012053240.7394@poirot.grange>
-	<46B0F030.9030007@freescale.com>
-	<Pine.LNX.4.60.0708080023030.8493@poirot.grange>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <3368b27f860fafb35d10f6352e9055bf@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: fix i2c device string format
-Date: Thu, 9 Aug 2007 21:45:46 +0200
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 9BAC3DDE18
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2007 05:47:25 +1000 (EST)
+Date: Thu, 9 Aug 2007 15:03:27 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Nathan Lynch <ntl@pobox.com>
+Subject: Re: [RFC/PATCH] remove gratuitous reads from maple pci config
+	space methods
+Message-ID: <20070809200327.GB14344@lixom.net>
+References: <20070809005044.GD10114@localdomain>
+	<1186620933.938.211.camel@localhost.localdomain>
+	<20070809010431.GF10114@localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070809010431.GF10114@localdomain>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,21 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> strncpy() won't put a terminating zero on there, is everything
->> that uses the resulting string okay with that?  Also, if the
->> name gets cut short, it might match some _other_ expected name.
->
-> On Wed, 1 Aug 2007, Scott Wood wrote:
->
->> You could use strlcpy() instead, which always leaves a zero 
->> terminator.
->
-> The patch below does exactly this - uses strlcpy() to guarantee 
-> strings in
-> i2c device type and driver_name fields are 0-terminated.
+On Wed, Aug 08, 2007 at 08:04:32PM -0500, Nathan Lynch wrote:
+> Benjamin Herrenschmidt wrote:
+> > On Wed, 2007-08-08 at 19:50 -0500, Nathan Lynch wrote:
+> > > 
+> > > Remove the gratuitous reads from u3_agp_write_config,
+> > > u3_ht_write_config, and u4_pcie_write_config.
+> > > 
+> > > Signed-off-by: Nathan Lynch <ntl@pobox.com>
+> > 
+> > Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > ---
+> > 
+> > Thanks ! Care to fix powermac too ? :-)
+> 
+> Sure, I'll get it tomorrow... looks like pasemi cribbed the powermac
+> code too :)
 
-You're not checking the return values of these calls.  This would
-be a good function to put attribute warn_unused_result on :-)
+Yeah, it originated either from powermac or maple so it's there too. Feel
+free to fix it too while you're at it.
 
 
-Segher
+-Olof
