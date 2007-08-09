@@ -1,38 +1,31 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A403FDDF15
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2007 06:56:46 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l79KufJO016086
-	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 16:56:41 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l79KufbL161860
-	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 14:56:41 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l79KufFQ017786
-	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 14:56:41 -0600
-Date: Thu, 9 Aug 2007 15:56:41 -0500
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D3FC7DDF0C
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2007 07:01:54 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l79L39ZH002025
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 17:03:09 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l79L1pHw532198
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 17:01:51 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l79L1pB4012071
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 17:01:51 -0400
+Date: Thu, 9 Aug 2007 16:01:50 -0500
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 6/6 v2] pseries: eliminate global var
-Message-ID: <20070809205641.GW25995@austin.ibm.com>
+Subject: [PATCH 1/6 v2] pseries: avoid excess rtas calls
+Message-ID: <20070809210150.GX25995@austin.ibm.com>
 References: <20070808195916.GA20055@austin.ibm.com>
 	<20070808200115.GA20134@austin.ibm.com>
-	<20070808200210.GB20134@austin.ibm.com>
-	<20070808200337.GC20134@austin.ibm.com>
-	<20070808200448.GD20134@austin.ibm.com>
-	<20070808200615.GE20134@austin.ibm.com>
-	<20070808200713.GF20134@austin.ibm.com>
-	<20070808215714.GB10114@localdomain>
-	<20070808222223.GH25995@austin.ibm.com>
-	<20070809010224.GE10114@localdomain>
+	<20070808215738.GC10114@localdomain>
+	<20070808222011.GG25995@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070809010224.GE10114@localdomain>
+In-Reply-To: <20070808222011.GG25995@austin.ibm.com>
 From: linas@austin.ibm.com (Linas Vepstas)
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Nathan Lynch <ntl@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -45,109 +38,77 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Eliminate the use of error_log_cnt as a global var shared across
-differnt directories. Pass it as a subroutine arg instead.
+We don't need to look up the rtas event token once per 
+cpu per second. This avoids some misc device-tree lookups
+and string ops and so provides some minor performance 
+improvement.
 
 Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 
 ----
+Revised commit-log message.
 
-Respin of earlier patch, with the CONFIG_PSERIES junk removed from the
-header file.
+ arch/powerpc/platforms/pseries/rtasd.c |   15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
 
- arch/powerpc/kernel/nvram_64.c         |   10 +++++-----
- arch/powerpc/platforms/pseries/rtasd.c |    7 ++++---
- include/asm-powerpc/nvram.h            |    6 ++++--
- 3 files changed, 13 insertions(+), 10 deletions(-)
-
-Index: linux-2.6.22-git2/arch/powerpc/kernel/nvram_64.c
-===================================================================
---- linux-2.6.22-git2.orig/arch/powerpc/kernel/nvram_64.c	2007-08-08 12:21:16.000000000 -0500
-+++ linux-2.6.22-git2/arch/powerpc/kernel/nvram_64.c	2007-08-08 12:24:01.000000000 -0500
-@@ -38,8 +38,6 @@ static struct nvram_partition * nvram_pa
- static long nvram_error_log_index = -1;
- static long nvram_error_log_size = 0;
- 
--extern volatile int error_log_cnt;
--
- struct err_log_info {
- 	int error_type;
- 	unsigned int seq_num;
-@@ -627,7 +625,8 @@ void __exit nvram_cleanup(void)
-  * sequence #: The unique sequence # for each event. (until it wraps)
-  * error log: The error log from event_scan
-  */
--int nvram_write_error_log(char * buff, int length, unsigned int err_type)
-+int nvram_write_error_log(char * buff, int length,
-+                          unsigned int err_type, unsigned int error_log_cnt)
- {
- 	int rc;
- 	loff_t tmp_index;
-@@ -665,7 +664,8 @@ int nvram_write_error_log(char * buff, i
-  *
-  * Reads nvram for error log for at most 'length'
-  */
--int nvram_read_error_log(char * buff, int length, unsigned int * err_type)
-+int nvram_read_error_log(char * buff, int length,
-+                         unsigned int * err_type, unsigned int * error_log_cnt)
- {
- 	int rc;
- 	loff_t tmp_index;
-@@ -691,7 +691,7 @@ int nvram_read_error_log(char * buff, in
- 		return rc;
- 	}
- 
--	error_log_cnt = info.seq_num;
-+	*error_log_cnt = info.seq_num;
- 	*err_type = info.error_type;
- 
- 	return 0;
-Index: linux-2.6.22-git2/include/asm-powerpc/nvram.h
-===================================================================
---- linux-2.6.22-git2.orig/include/asm-powerpc/nvram.h	2007-07-08 18:32:17.000000000 -0500
-+++ linux-2.6.22-git2/include/asm-powerpc/nvram.h	2007-08-09 15:41:43.000000000 -0500
-@@ -63,8 +63,10 @@ struct nvram_partition {
- };
- 
- 
--extern int nvram_write_error_log(char * buff, int length, unsigned int err_type);
--extern int nvram_read_error_log(char * buff, int length, unsigned int * err_type);
-+extern int nvram_write_error_log(char * buff, int length,
-+					 unsigned int err_type, unsigned int err_seq);
-+extern int nvram_read_error_log(char * buff, int length,
-+					 unsigned int * err_type, unsigned int *err_seq);
- extern int nvram_clear_error_log(void);
- extern struct nvram_partition *nvram_find_partition(int sig, const char *name);
- 
 Index: linux-2.6.22-git2/arch/powerpc/platforms/pseries/rtasd.c
 ===================================================================
---- linux-2.6.22-git2.orig/arch/powerpc/platforms/pseries/rtasd.c	2007-08-08 12:21:16.000000000 -0500
-+++ linux-2.6.22-git2/arch/powerpc/platforms/pseries/rtasd.c	2007-08-08 12:50:40.000000000 -0500
-@@ -56,7 +56,7 @@ static int full_rtas_msgs = 0;
- /* Stop logging to nvram after first fatal error */
- static int no_more_logging;
+--- linux-2.6.22-git2.orig/arch/powerpc/platforms/pseries/rtasd.c	2007-07-08 18:32:17.000000000 -0500
++++ linux-2.6.22-git2/arch/powerpc/platforms/pseries/rtasd.c	2007-08-07 17:57:13.000000000 -0500
+@@ -44,10 +44,13 @@ static unsigned long rtas_log_start;
+ static unsigned long rtas_log_size;
  
--volatile int error_log_cnt = 0;
-+static int error_log_cnt;
+ static int surveillance_timeout = -1;
+-static unsigned int rtas_event_scan_rate;
+ static unsigned int rtas_error_log_max;
+ static unsigned int rtas_error_log_buffer_max;
  
- /*
-  * Since we use 32 bit RTAS, the physical address of this must be below
-@@ -218,7 +218,7 @@ void pSeries_log_error(char *buf, unsign
++/* RTAS service tokens */
++static unsigned int event_scan;
++static unsigned int rtas_event_scan_rate;
++
+ static int full_rtas_msgs = 0;
  
- 	/* Write error to NVRAM */
- 	if (!no_more_logging && !(err_type & ERR_FLAG_BOOT))
--		nvram_write_error_log(buf, len, err_type);
-+		nvram_write_error_log(buf, len, err_type, error_log_cnt);
+ extern int no_logging;
+@@ -381,7 +384,7 @@ static int get_eventscan_parms(void)
+ 	return 0;
+ }
  
- 	/*
- 	 * rtas errors can occur during boot, and we do want to capture
-@@ -412,7 +412,8 @@ static int rtasd(void *unused)
+-static void do_event_scan(int event_scan)
++static void do_event_scan(void)
+ {
+ 	int error;
+ 	do {
+@@ -408,7 +411,7 @@ static void do_event_scan_all_cpus(long 
+ 	cpu = first_cpu(cpu_online_map);
+ 	for (;;) {
+ 		set_cpus_allowed(current, cpumask_of_cpu(cpu));
+-		do_event_scan(rtas_token("event-scan"));
++		do_event_scan();
+ 		set_cpus_allowed(current, CPU_MASK_ALL);
  
- 	/* See if we have any error stored in NVRAM */
- 	memset(logdata, 0, rtas_error_log_max);
--	rc = nvram_read_error_log(logdata, rtas_error_log_max, &err_type);
-+	rc = nvram_read_error_log(logdata, rtas_error_log_max,
-+	                          &err_type, &error_log_cnt);
+ 		/* Drop hotplug lock, and sleep for the specified delay */
+@@ -426,12 +429,11 @@ static void do_event_scan_all_cpus(long 
+ static int rtasd(void *unused)
+ {
+ 	unsigned int err_type;
+-	int event_scan = rtas_token("event-scan");
+ 	int rc;
  
- 	if (!rc) {
- 		if (err_type != ERR_FLAG_ALREADY_LOGGED) {
+ 	daemonize("rtasd");
+ 
+-	if (event_scan == RTAS_UNKNOWN_SERVICE || get_eventscan_parms() == -1)
++	if (get_eventscan_parms() == -1)
+ 		goto error;
+ 
+ 	rtas_log_buf = vmalloc(rtas_error_log_buffer_max*LOG_NUMBER);
+@@ -486,7 +488,8 @@ static int __init rtas_init(void)
+ 		return 0;
+ 
+ 	/* No RTAS */
+-	if (rtas_token("event-scan") == RTAS_UNKNOWN_SERVICE) {
++	event_scan = rtas_token("event-scan");
++	if (event_scan == RTAS_UNKNOWN_SERVICE) {
+ 		printk(KERN_DEBUG "rtasd: no event-scan on system\n");
+ 		return -ENODEV;
+ 	}
