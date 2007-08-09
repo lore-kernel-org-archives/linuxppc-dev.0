@@ -1,20 +1,20 @@
 Return-Path: <jyoung5@us.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 500B8DDEA3
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 23:42:16 +1000 (EST)
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 664AADDE08
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2007 00:37:23 +1000 (EST)
 Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l79DgCFl030443
-	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 09:42:12 -0400
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l79EccMD003829
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 10:38:38 -0400
 Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
 	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l79DgCEI391134
-	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 09:42:12 -0400
+	l79EbJHT399694
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 10:37:19 -0400
 Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
 	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l79DgC8a032300
-	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 09:42:12 -0400
+	l79EbJqd007215
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 10:37:19 -0400
 Subject: Re: Sequoia 440EPx patches not working
 From: Jerone Young <jyoung5@us.ibm.com>
 To: Vitaly Bordug <vitb@kernel.crashing.org>
@@ -22,8 +22,8 @@ In-Reply-To: <20070809165612.12100334@localhost.localdomain>
 References: <1186598710.5459.7.camel@laptop>
 	<20070809165612.12100334@localhost.localdomain>
 Content-Type: text/plain
-Date: Thu, 09 Aug 2007 08:42:04 -0500
-Message-Id: <1186666924.5547.4.camel@laptop>
+Date: Thu, 09 Aug 2007 09:37:18 -0500
+Message-Id: <1186670238.5547.25.camel@laptop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, vbarshark@ru.mvista.com
 Reply-To: jyoung5@us.ibm.com
@@ -36,11 +36,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Nope definitely using a uImage. I'll try a fresh source and try again ..
-I did base it on kernel.org git tree so I'll try instead with 2.6.23-rc2
-and see what happens.
+So did a rebase on kernel.org 2.6.23-rc2 patch (as opposed the latest
+git). I am using Uboot version  1.2.0-gc0c292b2. This is the version
+that came with the board. It still appears to hang during early boot on
+my Sequoia.
 
-n Thu, 2007-08-09 at 16:56 +0400, Vitaly Bordug wrote:
+Trying the cuImage.sequoia.bin.gz just result in Uboot giving "Bad Magic
+Number" when trying to boot it. This is also the same for using
+cuImage.sequoia.elf. 
+
+So when I use the uImage file it will load but just hang after it's
+loaded. I'm building it using "make uImage CROSS_COMPILE=<cross prefix>
+ARCH=powerpc" on an x86 box.
+
+I'll see what else I could possibly be doing wrong (maybe something
+happened to the patch when I grabbed it off of gmane and the web filters
+did something to it, I did have to fix a problem where in the
+sequoia.dts file the web filter replace "@" with " at ". This was simple
+enough to fix. Maybe something else when wrong. I'll see what else I can
+look at.
+
+On Thu, 2007-08-09 at 16:56 +0400, Vitaly Bordug wrote:
 > On Wed, 08 Aug 2007 13:45:10 -0500
 > Jerone Young wrote:
 > 
