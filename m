@@ -1,38 +1,33 @@
 Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 97B6BDDEA3
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 23:27:10 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l79DSOf9023505
-	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 09:28:24 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l79DR5GW396836
-	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 09:27:05 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l79DR5PM031624
-	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 09:27:05 -0400
-Date: Thu, 9 Aug 2007 08:26:59 -0500
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id CD53DDDEB6
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2007 23:34:51 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l79DYm58013476
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 09:34:48 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l79DYmZt263544
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 07:34:48 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l79DYmcK005415
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 07:34:48 -0600
+Date: Thu, 9 Aug 2007 08:34:43 -0500
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Fix small race in 44x tlbie function
-Message-ID: <20070809082659.0df0af0a@zod.rchland.ibm.com>
-In-Reply-To: <1186664737.481.28.camel@localhost.localdomain>
-References: <20070807042050.GJ13522@localhost.localdomain>
-	<BDA0DE7D-8AD8-4116-ABE0-2DF6AE72A516@kernel.crashing.org>
-	<20070808110029.43c110ef@weaponx.rchland.ibm.com>
-	<57F869A4-38DE-4CC9-A07D-C3A873CE9268@kernel.crashing.org>
-	<20070809120450.GE3925@crusty.rchland.ibm.com>
-	<1186664737.481.28.camel@localhost.localdomain>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: Sequoia 440EPx patches not working
+Message-ID: <20070809083443.2b2f5407@zod.rchland.ibm.com>
+In-Reply-To: <46BAF36F.4030801@ru.mvista.com>
+References: <1186598710.5459.7.camel@laptop>
+	<20070809030856.GC8261@localhost.localdomain>
+	<46BAF36F.4030801@ru.mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: Uhlig <vuhlig@us.ibm.com>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>,
-	Todd Inglett <tinglett@us.ibm.com>, Volkmar,
-	David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,24 +37,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 09 Aug 2007 23:05:36 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Thu, 09 Aug 2007 14:58:55 +0400
+Valentine Barshak <vbarshak@ru.mvista.com> wrote:
 
-> On Thu, 2007-08-09 at 07:04 -0500, Josh Boyer wrote:
+> David Gibson wrote:
+> > On Wed, Aug 08, 2007 at 01:45:10PM -0500, Jerone Young wrote:
+> >> Using the Sequoia (AMCC 440EPx) patches recently submitted to the
+> >> list I am unable to boot to fully boot a uImage built with these
+> >> patches under Uboot. It appears to hang in very early boot.
 > > 
-> > > We don't have critical wired to anything, I don't expect watchdog
-> > to  
-> > > cause another fault.. so just wondering.
+> > I'm guessing this is an old version of u-boot, that's not device
+> > tree aware.  That would need a cuImage, not a uImage, and IIRC the
+> > posted patches didn't yet have cuboot support for Sequoia.
 > > 
-> > We being who?  I'm slightly confused here. 
 > 
-> I think Kumar doesn't know that we are talking about the BG kernel
-> which has more things "wired" to CRIT than what is upstream at the
-> moment :-)
+> The patches do have cuImage support.
+> I have a Sequoia board with uBoot 1.1.6 and it boots cuImage fine.
 
-Ah, sure.  But even though we don't have much upstream that uses CE,
-that doesn't mean someone can't reprogram the UICs on their boards to
-use CE for some things, for example.  I know of at least one project
-that has done that in the past.
+Speaking of those patches, are you planning on rebasing them against
+the latest 4xx series I sent out soon?  That should have some cleanups
+that make adding sequoia support a bit easier.
 
 josh
