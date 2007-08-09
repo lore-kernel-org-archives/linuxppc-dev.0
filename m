@@ -1,15 +1,29 @@
-Return-Path: <ntl@pobox.com>
-Received: from sceptre.pobox.com (sceptre.pobox.com [207.106.133.20])
-	by ozlabs.org (Postfix) with ESMTP id 47A5DDDEFD
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2007 07:43:36 +1000 (EST)
-From: Nathan Lynch <ntl@pobox.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] remove gratuitous reads from powermac pci config space methods
-Date: Thu,  9 Aug 2007 16:43:28 -0500
-Message-Id: <11866958083866-git-send-email-ntl@pobox.com>
-In-Reply-To: 1186620933.938.211.camel@localhost.localdomain
-References: 1186620933.938.211.camel@localhost.localdomain
-Cc: Paul Mackerras <paulus@samba.org>
+Return-Path: <linas@austin.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 45FBADDECD
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2007 09:27:05 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l79NR10F001682
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 19:27:01 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l79NR1hb263604
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 17:27:01 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l79NR1iR003625
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 17:27:01 -0600
+Date: Thu, 9 Aug 2007 18:27:00 -0500
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 1/2] pseries: device node status can be "ok" or "okay"
+Message-ID: <20070809232700.GY25995@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,75 +33,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The powermac pci configuration space write methods read the written
-location immediately after the write is performed, presumably in order
-to flush the write.  However, configuration space writes are not
-allowed to be posted, making these reads gratuitous.  Furthermore,
-this behavior potentially causes us to violate the PCI PM spec when
-changing between e.g. D0 and D3 states, because a delay of up to 10ms
-may be required before the OS accesses configuration space after the
-write which initiates the transition.
 
-Remove the unnecessary reads from macrisc_write_config,
-u3_ht_write_config, and u4_pcie_write_config.
+It seems that some versions of firmware will report a device
+node status as the string "okay". As we are not expecting this
+string, the device node will be ignored by the EEH subsystem.
+Which means EEH will not be enabled. 
 
+When EEH is not enabled, PCI errors will be converted into 
+Machine Check exceptions, and we'll have a very unhappy system. 
 
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
----
- arch/powerpc/platforms/powermac/pci.c |    9 ---------
- 1 files changed, 0 insertions(+), 9 deletions(-)
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 
-diff --git a/arch/powerpc/platforms/powermac/pci.c b/arch/powerpc/platforms/powermac/pci.c
-index 92586db..bf1f5d1 100644
---- a/arch/powerpc/platforms/powermac/pci.c
-+++ b/arch/powerpc/platforms/powermac/pci.c
-@@ -209,15 +209,12 @@ static int macrisc_write_config(struct pci_bus *bus, unsigned int devfn,
- 	switch (len) {
- 	case 1:
- 		out_8(addr, val);
--		(void) in_8(addr);
- 		break;
- 	case 2:
- 		out_le16(addr, val);
--		(void) in_le16(addr);
- 		break;
- 	default:
- 		out_le32(addr, val);
--		(void) in_le32(addr);
- 		break;
- 	}
- 	return PCIBIOS_SUCCESSFUL;
-@@ -440,15 +437,12 @@ static int u3_ht_write_config(struct pci_bus *bus, unsigned int devfn,
- 	switch (len) {
- 	case 1:
- 		out_8(addr, val);
--		(void) in_8(addr);
- 		break;
- 	case 2:
- 		out_le16(addr, val);
--		(void) in_le16(addr);
- 		break;
- 	default:
- 		out_le32((u32 __iomem *)addr, val);
--		(void) in_le32(addr);
- 		break;
- 	}
- 	return PCIBIOS_SUCCESSFUL;
-@@ -545,15 +539,12 @@ static int u4_pcie_write_config(struct pci_bus *bus, unsigned int devfn,
- 	switch (len) {
- 	case 1:
- 		out_8(addr, val);
--		(void) in_8(addr);
- 		break;
- 	case 2:
- 		out_le16(addr, val);
--		(void) in_le16(addr);
- 		break;
- 	default:
- 		out_le32(addr, val);
--		(void) in_le32(addr);
- 		break;
- 	}
- 	return PCIBIOS_SUCCESSFUL;
--- 
-1.5.2.4
+----
+
+Paul,
+
+This is a bug with serious reprecussions ... but appearently 
+affects only a few systems, so far.  I've never seen it before. 
+Your pick as to whether to jam this into 2.6.23 or wait until 
+later.
+
+--linas
+
+ arch/powerpc/platforms/pseries/eeh.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6.22-git2/arch/powerpc/platforms/pseries/eeh.c
+===================================================================
+--- linux-2.6.22-git2.orig/arch/powerpc/platforms/pseries/eeh.c	2007-08-09 18:00:09.000000000 -0500
++++ linux-2.6.22-git2/arch/powerpc/platforms/pseries/eeh.c	2007-08-09 18:03:14.000000000 -0500
+@@ -955,7 +955,7 @@ static void *early_enable_eeh(struct dev
+ 	pdn->eeh_freeze_count = 0;
+ 	pdn->eeh_false_positives = 0;
+ 
+-	if (status && strcmp(status, "ok") != 0)
++	if (status && strncmp(status, "ok", 2) != 0)
+ 		return NULL;	/* ignore devices with bad status */
+ 
+ 	/* Ignore bad nodes. */
