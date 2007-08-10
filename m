@@ -1,21 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.235])
-	by ozlabs.org (Postfix) with ESMTP id 37470DDEDC
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 5987CDDEDA
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 11 Aug 2007 00:14:30 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id l1so366636nzf
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Aug 2007 07:14:28 -0700 (PDT)
-Message-ID: <fa686aa40708100714m469fb7bdm3757ccf35f6a97db@mail.gmail.com>
-Date: Fri, 10 Aug 2007 08:14:24 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: windstorm <likunarmstrong@gmail.com>
-Subject: Re: some questions about XUP and the generation of ace file
-In-Reply-To: <c46c91d0708100613m61d8a6d9gc4ca8b379e59fca6@mail.gmail.com>
+	Sat, 11 Aug 2007 00:18:47 +1000 (EST)
+Message-ID: <46BC7447.1000105@ru.mvista.com>
+Date: Fri, 10 Aug 2007 18:20:55 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <c46c91d0708100613m61d8a6d9gc4ca8b379e59fca6@mail.gmail.com>
+To: ssaravanan@arasor.in
+Subject: Re: i couldn't get display in Console?
+References: <380-2200784910242271@M2W022.mail2web.com>
+In-Reply-To: <380-2200784910242271@M2W022.mail2web.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,82 +23,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 8/10/07, windstorm <likunarmstrong@gmail.com> wrote:
-> Hello all:
->
-> I am trying to transfer the Linux onto XUP board. The kernel source I
-> used is from the git trees from andrei konovalov or grant likely. But
-> I encounter two questions now.
->
-> 1 Generally, I should correct the kernel source file
-> arch/ppc/boot/common/ns16550.c, In that file, changing SERIAL_BAUD
-> from 9600 to 38400  makes the bootloader talk at 38400. I always do it
-> when I use standard kernel source. But this time I found out that the
-> ns16550.c's path is arch/ppc/boot/, not arch/ppc/boot/common/, and
-> there was no "SERIAL_BAUD" string any more. So, how can I control the
-> baud rate?
+Hello.
 
-???
+ssaravanan@arasor.in wrote:
 
-I don't know what you're referring to.  ns16550.c is in
-arch/ppc/boot/common on my tree, and it still contains the SERIAL_BAUD
-#define.
+>  when i am booting montavista kernel using uboot i couldn't get any message
+> on Console...
+> i can view the booting messages by "Dumping the printk Log Buffer".  i am
+> passing the "bootargs=console=ttyS0,115200 root=/dev/ram0 rw"...is that i
 
->
-> 2 I have compiled the kernel and obtained a Image.elf whose size is
-> 1.7MB, and then it's time for creating a system.ace file which I can
-> put onto a compact flash card.  I Changed the file xupGenace.opt like
-> the follow:
+    I suspect you should use ttyCPM0 instead of ttyS0. Thi board very likely 
+has CPM2, so its UARTs are the only ones that exist.
 
-You can do this, but I don't think it's a particularly good idea.
-Binding the kernel image into an ACE file results in a *very* large
-ace file, and it's slow.  Consider the fact that doing it that way
-means that you're transferring the entire 1.7MB image via JTAG.
+> have to make any modification in kernel configuration to support
+> appropriate serial port for display boot messags.. find the attached printk
 
-I've also seem problems where DDR isn't fully initialized before the
-SystemACE tries to transfer the image which results in a non-booting
-system.
+    You should enable CONFIG_SERIAL_CPM (if it's not already enabled).
 
-What I do, is I've got a small bootloader that lives in BRAM and is
-just smart enough to load an elf file off of the CF card.  If I can
-get permission to do so, I'll publish the source for my utility.
+> buffer screen shot? can anybody help?
 
->
-> -jprog
-> -board user
-> -target ppc_hw
-> -hw ./implementation/download.bit
-> -elf zImage.elf
-> -configdevice devicenr 1 idcode 0x1127e093 irlength 14 partname xc2vp30
-> -debugdevice devicenr 1 cpunr 1
-> -ace system.ace
->
-> and executed the command: xmd -tcl genace.tcl -opt genace.opt
->
-> and the result I saw is:  Using GenACE option file : genace.opt
-> Error: Executable zImage.elf does not contain start address..
->
-> I examine the information by google, some said that it's the bug of
-> development tools without sp, but both my ISE and EDK was patched.
-> Others said that it's because of the "mb-objdump", we should chage it
-> into "powerpc-eaci-objdump", and actually I had done this correction.
-> BUT, the error still here.
->
-> Could anyone please to help me about this question? I will be very grateful.
+    You have actually replied only to me, not the maillist
 
-Very odd.  I haven't seen this problem myself so I can't be much help. sorry.
+> Regards,
+> Saravanan.S
 
->
-> BTW, could any kind person send any basic config file, which had been
-> proved that the kernel compiled based on it could work good on XUP
-> board?
-
-I don't have that board, sorry
-
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+WBR, Sergei
