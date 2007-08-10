@@ -1,22 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound1-fra-R.bigfish.com (outbound-fra.frontbridge.com
+	[62.209.45.174])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6D656DDDEB
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 48D19DDDFA
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 11 Aug 2007 00:35:53 +1000 (EST)
-In-Reply-To: <fa686aa40708091154t55ca4df7q7be2acf5662e6076@mail.gmail.com>
-References: <20070806225642.7D72A7B005B@mail34-fra.bigfish.com>
-	<200708070124.04748.arnd@arndb.de>
-	<fa686aa40708091154t55ca4df7q7be2acf5662e6076@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <004650C7-11FB-4A77-A797-148A7FDBD29D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Consolidate XILINX_VIRTEX board support
-Date: Fri, 10 Aug 2007 09:37:09 -0500
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-embedded@ozlabs.org
+	Sat, 11 Aug 2007 01:36:40 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Device Tree tool [was RE: [PATCH] Consolidate XILINX_VIRTEX
+	boardsupport]
+Date: Fri, 10 Aug 2007 08:36:16 -0700
+In-Reply-To: <fa686aa40708100648h361bebbcp841318d87c92c45b@mail.gmail.com>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>,
+	"Koss, Mike \(Mission Systems\)" <mike.koss@ngc.com>
+Message-Id: <20070810153619.0471D190055@mail15-fra.bigfish.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,26 +29,98 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Aug 9, 2007, at 1:54 PM, Grant Likely wrote:
+The main thing that Grant's script lacks is the ability to pull in
+default
+parameters that aren't listed in the MPD for a core, but not in the MHS
+file...
+I think the only way to easily solve that is to live within EDK's bsp
+generation, unfortunately...
 
-> On 8/6/07, Arnd Bergmann <arnd@arndb.de> wrote:
->> On Tuesday 07 August 2007, Wolfgang Reissnegger wrote:
->>>
->>> Make support for Xilinx boards more generic, making it easier
->>> to add new boards. Add initial support for xupv2p and ml410 boards.
->>
->> I really think we shouldn't add stuff to arch/ppc at this point,
->> it has been deprecated for over two years now.
->
-> Naahh, this is pretty benign stuff.  I say let it go in.  :-)
->
-> These changes are low risk and they don't hurt anything.  If Virtex
-> support worked in arch/powerpc then I'd agree, but for now it allows
-> us to keep the virtex device driver support somewhat current.
+BTW: I'm currently hacking away to see if I can get a microblaze system
+booting
+using a flat device tree...  I haven't decided if it's worth it to go
+that
+route in the end yet, but...
 
-We've clearly stated for a while that only bug fixes should be going  
-into arch/ppc.  This looks like new board support.
+Steve
 
-Also, be aware that arch/ppc is going away in Jun 2008. :)
-
-- k
+> -----Original Message-----
+> From:=20
+> linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org
+> =20
+> [mailto:linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@oz
+labs.org] On Behalf Of Grant Likely
+> Sent: Friday, August 10, 2007 6:48 AM
+> To: Koss, Mike (Mission Systems)
+> Cc: linuxppc-embedded@ozlabs.org
+> Subject: Re: Device Tree tool [was RE: [PATCH] Consolidate=20
+> XILINX_VIRTEX boardsupport]
+>=20
+> On 8/10/07, Koss, Mike (Mission Systems) <mike.koss@ngc.com> wrote:
+> >
+> > <<SNIPPAGE>>
+> > > > > diff --git a/arch/ppc/platforms/4xx/xparameters/xparameters.h
+> > > > > b/arch/ppc/platforms/4xx/xparameters/xparameters.h
+> > > > > index 01aa043..34d9844 100644
+> > > > > --- a/arch/ppc/platforms/4xx/xparameters/xparameters.h
+> > > > > +++ b/arch/ppc/platforms/4xx/xparameters/xparameters.h
+> > > > > @@ -15,8 +15,12 @@
+> > > > >
+> > > > > #if defined(CONFIG_XILINX_ML300)
+> > > > > #include "xparameters_ml300.h"
+> > > > > +#elif defined(CONFIG_XILINX_XUPV2P)  #include
+> > > > > +"xparameters_xupv2p.h"
+> > > > > #elif defined(CONFIG_XILINX_ML403)
+> > > > > #include "xparameters_ml403.h"
+> > > > > +#elif defined(CONFIG_XILINX_ML41x)
+> > > > > + #include "xparameters_ml41x.h"
+> > > > > #else
+> > > > > /* Add other board xparameter includes here before=20
+> the #else */
+> > > > > #error No xparameters_*.h file included
+> > > >
+> > > > see comment above.
+> >
+> > > This whole xparams stuff is a special case; but it is=20
+> going away for
+> > arch/powerpc.  xparameters.h is generated by the xilinx EDK=20
+> tool and it
+> > is painful to work with in the Linux context.  For=20
+> arch/powerpc, I've
+> > got a tool that generates a device tree from the FPGA=20
+> hardware design.
+> >
+> > What is the tool that you are using and are you willing to=20
+> share it at
+> > this point? I'm currently working on some code to generate platform
+> > files for our internal drivers and the ll_temac vs using the ugle
+> > xparam's file. I'd like to not duplicate, or actually=20
+> assist, any effort
+> > in this area.
+>=20
+> It's on my git tree; http://git.secretlab.ca
+>=20
+> I've also got some feedback from the Xilinx folks in the form of a
+> patch, but I haven't integrated it yet.  Pretty experimental stuff,
+> I'll probably end up rewriting it from scratch before it's done.
+>=20
+> Cheers,
+> g.
+>=20
+> >
+> > -- Mike Koss
+> >
+> >
+>=20
+>=20
+> --=20
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
+> grant.likely@secretlab.ca
+> (403) 399-0195
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>=20
+>=20
