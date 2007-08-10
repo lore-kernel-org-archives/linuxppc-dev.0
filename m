@@ -1,25 +1,26 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 39AB6DDEC6
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2007 11:32:40 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by ausmtp04.au.ibm.com (8.13.8/8.13.8) with ESMTP id l7A1ZoZh182120
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2007 11:35:51 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.250.242])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l7A1XfHt182858
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2007 11:33:41 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l7A1U7AQ004301
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2007 11:30:08 +1000
-Date: Fri, 10 Aug 2007 11:30:01 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 65FD9DDEC4
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2007 11:38:12 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7A1c6Jk025160
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 21:38:06 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l7A1c6Fw532124
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 21:38:06 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l7A1c50Q028054
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Aug 2007 21:38:06 -0400
+Date: Thu, 9 Aug 2007 20:37:54 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: David Gibson <dwg@au1.ibm.com>
 Subject: Re: DTC 1.0.0 Release Coming?
-Message-ID: <20070810013001.GF17370@localhost.localdomain>
+Message-ID: <20070809203754.2e9192c5@zod.rchland.ibm.com>
+In-Reply-To: <20070810013001.GF17370@localhost.localdomain>
 References: <E1IDjSy-0003eC-T4@jdl.com>
 	<20070726030550.GA1149@localhost.localdomain>
 	<E1IE314-0000qF-5x@jdl.com>
@@ -27,9 +28,9 @@ References: <E1IDjSy-0003eC-T4@jdl.com>
 	<E1IE59h-0001tt-JE@jdl.com>
 	<20070727013331.GB1561@localhost.localdomain>
 	<20070806084813.5432ba91@weaponx.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070806084813.5432ba91@weaponx.rchland.ibm.com>
+	<20070810013001.GF17370@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -40,85 +41,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Aug 06, 2007 at 08:48:13AM -0500, Josh Boyer wrote:
-> On Fri, 27 Jul 2007 11:33:31 +1000
-> David Gibson <david@gibson.dropbear.id.au> wrote:
-> 
-> > On Thu, Jul 26, 2007 at 10:21:33AM -0500, Jon Loeliger wrote:
-> > > So, like, the other day David Gibson mumbled:
-> > > 
-> > > > > > Only thing I'm not really happy with in the current release is the
-> > > > > > versioning stuff.  For starters, it always reports my builds as
-> > > > > > -dirty, even when they're not.
-> > > > > 
-> > > > > I think it won't do that once there is a tag available.
-> > > > 
-> > > > Your 1.0.0-rc1 tag is there, still showing as dirty.
-> 
-> git vs quilt issue, as you have already discovered.  I've always seen
-> that with kernel builds.
+On Fri, 10 Aug 2007 11:30:01 +1000
+David Gibson <dwg@au1.ibm.com> wrote:
 
-Yeah, ick.
+> > Except didn't you say you were going to work with Stephen to get DTC
+> > into the kernel source itself?  Keeping things similar to Kbuild might
+> > help in that effort.
+> 
+> Actually, after discussions with Stephen and Paulus, we decided not to
+> take this route.  In any case having Kbuild like versioning wouldn't
+> actually help us any in integrating into a full Kbuild system.
 
-> > > > > I would like to keep the current version mechanism as it
-> > > > > is really quite similar to what is in the Kernel now.
-> > > > 
-> > > > First, I don't think it really is - except in superficial aspect of
-> > > > how the version number is partitioned
-> > > 
-> > > I lifted the code from the Kernel's Makefile directly, and tweaked
-> > > it slightly for lack of Kconfig aspects.
+Can you elaborate why you decided not to?  I'm just curious.
+
+> > > Have a look at the patch I posted.  I haven't sufficiently tested it
+> > > yet, but it should be able to generated version info for a tarball too
+> > > (provided the .git-manifest file is included, and I'm intending that
+> > > will be build by a make dist target).  It will give both the
+> > > git-derived based version, and a file content derived hash so we can
+> > > robustly tell different builds apart, all with less code than the
+> > > current system.
 > > 
-> > Ah, yes, ok, I see.  Frankly I really don't think a lot of that stuff
-> > makes much sense outside the context of Kbuild.  The whole complex
-> > filechk macro, for example - for which there's only one used parameter
-> > in dtc's case.
+> > That may be.  But I don't see the current approach being too much of a
+> > problem either.  Especially given that it's already there and it
+> > works.  Oh, and you sent out your patch saying it wasn't ready for
+> > merge and with no sign off.  Small but important issues to fix I'd
+> > think.
 > 
-> Except didn't you say you were going to work with Stephen to get DTC
-> into the kernel source itself?  Keeping things similar to Kbuild might
-> help in that effort.
+> Yeah, it lacks a make dist target, and needs a bit more work to
+> support that properly.  Never mind, I'll revisit this post the 1.0
+> release.
 
-Actually, after discussions with Stephen and Paulus, we decided not to
-take this route.  In any case having Kbuild like versioning wouldn't
-actually help us any in integrating into a full Kbuild system.
+Ok.
 
-> > > I don't want to tie the code and build mechanism to git too much.
-> > > Specifically, we need to be able to support stand-alone tarball
-> > > based builds.  For example, I've spoken to the Debian package
-> > > maintainer on this issue, and he likes this approach as well as
-> > > he says it will make packaging it much easier.
-> > 
-> > Have a look at the patch I posted.  I haven't sufficiently tested it
-> > yet, but it should be able to generated version info for a tarball too
-> > (provided the .git-manifest file is included, and I'm intending that
-> > will be build by a make dist target).  It will give both the
-> > git-derived based version, and a file content derived hash so we can
-> > robustly tell different builds apart, all with less code than the
-> > current system.
-> 
-> That may be.  But I don't see the current approach being too much of a
-> problem either.  Especially given that it's already there and it
-> works.  Oh, and you sent out your patch saying it wasn't ready for
-> merge and with no sign off.  Small but important issues to fix I'd
-> think.
-
-Yeah, it lacks a make dist target, and needs a bit more work to
-support that properly.  Never mind, I'll revisit this post the 1.0
-release.
-
-> This seems to be the last issue holding up a dtc 1.0 release.  Perhaps
-> we could go with what exists and see if there really are problems.  It
-> can always be fixed later.
-> 
-> josh
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+josh
