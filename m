@@ -1,17 +1,18 @@
-Return-Path: <jdl@jdl.com>
-Received: from jdl.com (jdl.com [208.123.74.7])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4D3E4DDE9C
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2007 11:01:39 +1000 (EST)
-Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.63)
-	(envelope-from <jdl@jdl.com>) id 1IJIsf-0003VN-RE
-	for linuxppc-dev@ozlabs.org; Thu, 09 Aug 2007 20:01:34 -0500
-To: linuxppc-dev@ozlabs.org
-Subject: DTC 1.0.0 Release
-Date: Thu, 09 Aug 2007 20:01:33 -0500
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1IJIsf-0003VN-RE@jdl.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 10 Aug 2007 11:02:17 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v3 1/2] [POWERPC] MPC832x_RDB: update dts to use spi,
+	register mmc_spi stub
+Message-ID: <20070810010217.GA17370@localhost.localdomain>
+References: <20070808170728.GA21118@localhost.localdomain>
+	<20070808170921.GA21487@localhost.localdomain>
+	<20070809030752.GB8261@localhost.localdomain>
+	<af4642f6ed6a4bc167161ac73ad75350@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <af4642f6ed6a4bc167161ac73ad75350@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,22 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hey guys,
+On Thu, Aug 09, 2007 at 10:15:44PM +0200, Segher Boessenkool wrote:
+> > Hrm... Freescale is using these 'fsl,device-id' properties, I'm
+> > guessing they're basically the same thing as the 'cell-index' used in
+> > the EMAC binding.
+> >
+> > We should co-ordinate better on this, if it's to become a
+> > convention...
+> 
+> That means we shouldn't coordinate on this, right?
 
-Well, I tagged and released an official DTC v1.0.0 Release
-and pushed it out to jdl.com just now.  You can grab the
-git repo directly:
+Heh.  Either one is kind of ugly, I'll grant you.
 
-    git://www.jdl.com/software/dtc.git
+But, many SoCs do have a notion of device "number", which is relevant
+for programming other general control registers in places.  We need to
+encode it somehow, and it would be good to have a consistent way of
+doing it.
 
-or download a tarball here:
-
-    http://www.jdl.com/software/dtc-1.0.0.tgz
-
-As usual, please let me know of any issues with it.
-
-Thanks,
-jdl
-
-
-PS -- Hey Becky!  So there!  My status report doesn't lie!
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
