@@ -1,18 +1,12 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: DTC 1.0.0 Release
-From: Michael Ellerman <michael@ellerman.id.au>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20070810012541.GE17370@localhost.localdomain>
-References: <E1IJIsf-0003VN-RE@jdl.com>
-	<20070810012541.GE17370@localhost.localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-hKGK+Xw32Y3SQQYHLyfs"
-Date: Fri, 10 Aug 2007 13:25:20 +1000
-Message-Id: <1186716320.13427.0.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
-Reply-To: michael@ellerman.id.au
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] Use 1TB segments 
+In-reply-to: <18095.59959.698141.565343@cargo.ozlabs.ibm.com> 
+References: <18095.59959.698141.565343@cargo.ozlabs.ibm.com>
+Date: Fri, 10 Aug 2007 13:53:08 +1000
+Message-ID: <32438.1186717988@neuling.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,56 +16,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> +static int __init htab_dt_scan_seg_sizes(unsigned long node,
+> +					 const char *uname, int depth,
+> +					 void *data)
+> +{
+> +	char *type = of_get_flat_dt_prop(node, "device_type", NULL);
+> +	u32 *prop;
+> +	unsigned long size = 0;
+> +
+> +	/* We are scanning "cpu" nodes only */
+> +	if (type == NULL || strcmp(type, "cpu") != 0)
+> +		return 0;
+> +
+> +	prop = (u32 *)of_get_flat_dt_prop(node, "ibm,processor-segment-sizes",
+> +					  &size);
+> +	if (prop != NULL && size >= 8) {
+> +		if (prop[0] == 0x1c && prop[1] == 0x28) {
+> +			DBG("1T segment support detected\n");
+> +			cur_cpu_spec->cpu_features |= CPU_FTR_1T_SEGMENT;
+> +		}
 
---=-hKGK+Xw32Y3SQQYHLyfs
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Shouldn't this iterate through the property prop and _only_ look for a
+0x28 entry rather than assuming the first two are going to be 0x1c and
+0x28?
 
-On Fri, 2007-08-10 at 11:25 +1000, David Gibson wrote:
-> On Thu, Aug 09, 2007 at 08:01:33PM -0500, Jon Loeliger wrote:
-> > Hey guys,
-> >=20
-> > Well, I tagged and released an official DTC v1.0.0 Release
-> > and pushed it out to jdl.com just now.  You can grab the
-> > git repo directly:
-> >=20
-> >     git://www.jdl.com/software/dtc.git
-> >=20
-> > or download a tarball here:
-> >=20
-> >     http://www.jdl.com/software/dtc-1.0.0.tgz
-> >=20
-> > As usual, please let me know of any issues with it.
->=20
-> Well, I'm not thrilled about the versioning, nor some inaccuracies in
-> the new documentation.  But as you say in the commit message, it's
-> about bloody time, we can fix the problems later.
+Something like:
+	prop = (u32 *)of_get_flat_dt_prop(node, "ibm,processor-segment-sizes",
+					  &size);
+	if (prop != NULL) 
+		for (i = 0; i < size/4; i++)
+			if (prop[1] == 0x28)
+				DBG("1T segment support detected\n");
+				cur_cpu_spec->cpu_features |=
+					  CPU_FTR_1T_SEGMENT;
 
-Everyone knows not to use x.0.0 releases anyway, so hurry up and push
-out 1.0.1 ;)
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-hKGK+Xw32Y3SQQYHLyfs
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGu9qgdSjSd0sB4dIRAo5LAJ99lmGyXbjm/7kLJ1vsIbIQT+SKAwCfQrpz
-6pDpdD9bWHpEejW0vyijYxI=
-=Xwn8
------END PGP SIGNATURE-----
-
---=-hKGK+Xw32Y3SQQYHLyfs--
+Mikey
