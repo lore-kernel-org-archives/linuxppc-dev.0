@@ -1,21 +1,28 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
-	[66.98.186.96])
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B1676DDE44
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Aug 2007 05:22:13 +1000 (EST)
-Message-ID: <46BCBB2C.2040408@genesi-usa.com>
-Date: Fri, 10 Aug 2007 20:23:24 +0100
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] pseries: device node status can be "ok" or "okay"
-References: <20070809232700.GY25995@austin.ibm.com>
-	<769ccd8091fc725571c5a695a70af4b9@kernel.crashing.org>
-In-Reply-To: <769ccd8091fc725571c5a695a70af4b9@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DB8ECDDDF5
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Aug 2007 05:28:59 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7AJSuij025122
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2007 15:28:56 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l7AJSuaZ214646
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2007 13:28:56 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l7AJStxo011672
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2007 13:28:56 -0600
+Subject: [PATCH 1/6] ibmveth: Enable TCP checksum offload
+To: santil@linux.vnet.ibm.com
+From: Brian King <brking@linux.vnet.ibm.com>
+Date: Fri, 10 Aug 2007 14:28:54 -0500
+Message-Id: <11867741331983-patch-mail.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, rcjenn@linux.vnet.ibm.com,
+	brking@linux.vnet.ibm.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,25 +33,195 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Segher Boessenkool wrote:
->> It seems that some versions of firmware will report a device
->> node status as the string "okay". As we are not expecting this
->> string, the device node will be ignored by the EEH subsystem.
->> Which means EEH will not be enabled.
->>
->> When EEH is not enabled, PCI errors will be converted into
->> Machine Check exceptions, and we'll have a very unhappy system.
-> 
->> -	if (status && strcmp(status, "ok") != 0)
->> +	if (status && strncmp(status, "ok", 2) != 0)
->>  		return NULL;	/* ignore devices with bad status */
-> 
-> Shouldn't you check for the two literal strings, instead of
-> only matching the common prefix?  Seems safer.
+This patchset enables TCP checksum offload support for IPV4
+on ibmveth. This completely eliminates the generation and checking of
+the checksum for packets that are completely virtual and never
+touch a physical network. A simple TCP_STREAM netperf run on
+a virtual network with maximum mtu set yielded a ~30% increase
+in throughput. This feature is enabled by default on systems that
+support it, but can be disabled with a module option.
 
-What are the chances that the status string is "oklahoma" or
-"okeechobee" or "okinawa"?
+Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+---
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+ linux-2.6-bjking1/drivers/net/ibmveth.c |   53 ++++++++++++++++++++++++++++++++
+ linux-2.6-bjking1/drivers/net/ibmveth.h |   41 +++++++++++++++++++++++-
+ 2 files changed, 92 insertions(+), 2 deletions(-)
+
+diff -puN drivers/net/ibmveth.c~ibmveth_csum_offload drivers/net/ibmveth.c
+--- linux-2.6/drivers/net/ibmveth.c~ibmveth_csum_offload	2007-08-09 13:08:21.000000000 -0500
++++ linux-2.6-bjking1/drivers/net/ibmveth.c	2007-08-09 13:08:21.000000000 -0500
+@@ -47,6 +47,8 @@
+ #include <linux/mm.h>
+ #include <linux/ethtool.h>
+ #include <linux/proc_fs.h>
++#include <linux/in.h>
++#include <linux/ip.h>
+ #include <asm/semaphore.h>
+ #include <asm/hvcall.h>
+ #include <asm/atomic.h>
+@@ -131,6 +133,11 @@ static inline int ibmveth_rxq_frame_leng
+ 	return (adapter->rx_queue.queue_addr[adapter->rx_queue.index].length);
+ }
+ 
++static inline int ibmveth_rxq_csum_good(struct ibmveth_adapter *adapter)
++{
++	return (adapter->rx_queue.queue_addr[adapter->rx_queue.index].csum_good);
++}
++
+ /* setup the initial settings for a buffer pool */
+ static void ibmveth_init_buffer_pool(struct ibmveth_buff_pool *pool, u32 pool_index, u32 pool_size, u32 buff_size, u32 pool_active)
+ {
+@@ -684,6 +691,24 @@ static int ibmveth_start_xmit(struct sk_
+ 					desc[0].fields.length, DMA_TO_DEVICE);
+ 	desc[0].fields.valid   = 1;
+ 
++	if (skb->ip_summed == CHECKSUM_PARTIAL &&
++	    ip_hdr(skb)->protocol != IPPROTO_TCP && skb_checksum_help(skb)) {
++		ibmveth_error_printk("tx: failed to checksum packet\n");
++		tx_dropped++;
++		goto out;
++	}
++
++	if (skb->ip_summed == CHECKSUM_PARTIAL) {
++		unsigned char *buf = skb_transport_header(skb) + skb->csum_offset;
++
++		desc[0].fields.no_csum = 1;
++		desc[0].fields.csum_good = 1;
++
++		/* Need to zero out the checksum */
++		buf[0] = 0;
++		buf[1] = 0;
++	}
++
+ 	if(dma_mapping_error(desc[0].fields.address)) {
+ 		ibmveth_error_printk("tx: unable to map initial fragment\n");
+ 		tx_map_failed++;
+@@ -702,6 +727,10 @@ static int ibmveth_start_xmit(struct sk_
+ 				frag->size, DMA_TO_DEVICE);
+ 		desc[curfrag+1].fields.length = frag->size;
+ 		desc[curfrag+1].fields.valid  = 1;
++		if (skb->ip_summed == CHECKSUM_PARTIAL) {
++			desc[curfrag+1].fields.no_csum = 1;
++			desc[curfrag+1].fields.csum_good = 1;
++		}
+ 
+ 		if(dma_mapping_error(desc[curfrag+1].fields.address)) {
+ 			ibmveth_error_printk("tx: unable to map fragment %d\n", curfrag);
+@@ -792,7 +821,11 @@ static int ibmveth_poll(struct net_devic
+ 			} else {
+ 				int length = ibmveth_rxq_frame_length(adapter);
+ 				int offset = ibmveth_rxq_frame_offset(adapter);
++				int csum_good = ibmveth_rxq_csum_good(adapter);
++
+ 				skb = ibmveth_rxq_get_buffer(adapter);
++				if (csum_good)
++					skb->ip_summed = CHECKSUM_UNNECESSARY;
+ 
+ 				ibmveth_rxq_harvest_buffer(adapter);
+ 
+@@ -962,8 +995,10 @@ static void ibmveth_poll_controller(stru
+ static int __devinit ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
+ {
+ 	int rc, i;
++	long ret;
+ 	struct net_device *netdev;
+ 	struct ibmveth_adapter *adapter;
++	union ibmveth_illan_attributes set_attr, ret_attr;
+ 
+ 	unsigned char *mac_addr_p;
+ 	unsigned int *mcastFilterSize_p;
+@@ -1057,6 +1092,24 @@ static int __devinit ibmveth_probe(struc
+ 
+ 	ibmveth_debug_printk("registering netdev...\n");
+ 
++	ret = h_illan_attributes(dev->unit_address, 0, 0, &ret_attr.desc);
++
++	if (ret == H_SUCCESS && !ret_attr.fields.active_trunk &&
++	    !ret_attr.fields.trunk_priority &&
++	    ret_attr.fields.csum_offload_padded_pkt_support) {
++		set_attr.desc = 0;
++		set_attr.fields.tcp_csum_offload_ipv4 = 1;
++
++		ret = h_illan_attributes(dev->unit_address, 0, set_attr.desc,
++					 &ret_attr.desc);
++
++		if (ret == H_SUCCESS)
++			netdev->features |= NETIF_F_IP_CSUM;
++		else
++			ret = h_illan_attributes(dev->unit_address, set_attr.desc,
++						 0, &ret_attr.desc);
++	}
++
+ 	rc = register_netdev(netdev);
+ 
+ 	if(rc) {
+diff -puN drivers/net/ibmveth.h~ibmveth_csum_offload drivers/net/ibmveth.h
+--- linux-2.6/drivers/net/ibmveth.h~ibmveth_csum_offload	2007-08-09 13:08:21.000000000 -0500
++++ linux-2.6-bjking1/drivers/net/ibmveth.h	2007-08-09 13:08:21.000000000 -0500
+@@ -67,6 +67,21 @@ static inline long h_send_logical_lan(un
+ 	return rc;
+ }
+ 
++static inline long h_illan_attributes(unsigned long unit_address,
++				      unsigned long reset_mask, unsigned long set_mask,
++				      unsigned long *ret_attributes)
++{
++	long rc;
++	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
++
++	rc = plpar_hcall(H_ILLAN_ATTRIBUTES, retbuf, unit_address,
++			 reset_mask, set_mask);
++
++	*ret_attributes = retbuf[0];
++
++	return rc;
++}
++
+ #define h_multicast_ctrl(ua, cmd, mac) \
+   plpar_hcall_norets(H_MULTICAST_CTRL, ua, cmd, mac)
+ 
+@@ -141,7 +156,9 @@ struct ibmveth_adapter {
+ struct ibmveth_buf_desc_fields {
+     u32 valid : 1;
+     u32 toggle : 1;
+-    u32 reserved : 6;
++    u32 reserved : 4;
++    u32 no_csum : 1;
++    u32 csum_good : 1;
+     u32 length : 24;
+     u32 address;
+ };
+@@ -151,10 +168,30 @@ union ibmveth_buf_desc {
+     struct ibmveth_buf_desc_fields fields;
+ };
+ 
++struct ibmveth_illan_attributes_fields {
++	u32 reserved;
++	u32 reserved2 : 18;
++	u32 csum_offload_padded_pkt_support : 1;
++	u32 reserved3 : 1;
++	u32 trunk_priority : 4;
++	u32 reserved4 : 5;
++	u32 tcp_csum_offload_ipv6 : 1;
++	u32 tcp_csum_offload_ipv4 : 1;
++	u32 active_trunk : 1;
++};
++
++union ibmveth_illan_attributes {
++	u64 desc;
++	struct ibmveth_illan_attributes_fields fields;
++};
++
+ struct ibmveth_rx_q_entry {
+     u16 toggle : 1;
+     u16 valid : 1;
+-    u16 reserved : 14;
++    u16 reserved : 4;
++    u16 no_csum : 1;
++    u16 csum_good : 1;
++    u16 reserved2 : 8;
+     u16 offset;
+     u32 length;
+     u64 correlator;
+_
