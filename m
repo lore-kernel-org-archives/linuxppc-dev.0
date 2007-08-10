@@ -1,28 +1,17 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A84A9DDE9B
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Aug 2007 07:00:07 +1000 (EST)
-In-Reply-To: <20070810025944.GI17370@localhost.localdomain>
-References: <E1IDjSy-0003eC-T4@jdl.com>
-	<20070726030550.GA1149@localhost.localdomain>
-	<E1IE314-0000qF-5x@jdl.com>
-	<20070726142739.GB18684@localhost.localdomain>
-	<E1IE59h-0001tt-JE@jdl.com>
-	<20070727013331.GB1561@localhost.localdomain>
-	<20070806084813.5432ba91@weaponx.rchland.ibm.com>
-	<20070810013001.GF17370@localhost.localdomain>
-	<20070809203754.2e9192c5@zod.rchland.ibm.com>
-	<20070810025944.GI17370@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <f54fc5f2d8c125a2f07c38bac6e998f8@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: DTC 1.0.0 Release Coming?
-Date: Fri, 10 Aug 2007 22:59:00 +0200
-To: David Gibson <dwg@au1.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 2F430DDD0B
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Aug 2007 07:21:11 +1000 (EST)
+Date: Fri, 10 Aug 2007 23:21:29 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: DTC 1.0.0 Release
+Message-ID: <20070810212129.GA16948@aepfle.de>
+References: <E1IJIsf-0003VN-RE@jdl.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <E1IJIsf-0003VN-RE@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,18 +21,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> Actually, after discussions with Stephen and Paulus, we decided not 
->>> to
->>> take this route.  In any case having Kbuild like versioning wouldn't
->>> actually help us any in integrating into a full Kbuild system.
->>
->> Can you elaborate why you decided not to?  I'm just curious.
->
-> We decided that since a formal dtc release was imminent, it would be
-> simpler to make dtc a new kernel build requirement,
+On Thu, Aug 09, Jon Loeliger wrote:
 
-For _all_ kernel builds?  Most people building a powerpc
-kernel don't need it.
+> As usual, please let me know of any issues with it.
 
+tests/truncated_property.c:45: warning: 'err' is used uninitialized in this function
 
-Segher
+(untested patch)
+
+---
+ tests/truncated_property.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+--- a/tests/truncated_property.c
++++ b/tests/truncated_property.c
+@@ -33,7 +33,6 @@ int main(int argc, char *argv[])
+ {
+ 	void *fdt = &_truncated_property;
+ 	const void *prop;
+-	int err;
+ 	int len;
+ 
+ 	test_init(argc, argv);
+@@ -43,7 +42,7 @@ int main(int argc, char *argv[])
+ 		FAIL("fdt_getprop() succeeded on truncated property");
+ 	if (len != -FDT_ERR_BADSTRUCTURE)
+ 		FAIL("fdt_getprop() failed with \"%s\" instead of \"%s\"",
+-		     fdt_strerror(err), fdt_strerror(-FDT_ERR_BADSTRUCTURE));
++		     fdt_strerror(len), fdt_strerror(-FDT_ERR_BADSTRUCTURE));
+ 
+ 	PASS();
+ }
