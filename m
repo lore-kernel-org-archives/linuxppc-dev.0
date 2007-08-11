@@ -1,24 +1,22 @@
-Return-Path: <compudj@krystal.dyndns.org>
-Received: from tomts13-srv.bellnexxia.net (tomts13.bellnexxia.net
-	[209.226.175.34]) by ozlabs.org (Postfix) with ESMTP id 98208DDEDD
-	for <linuxppc-dev@ozlabs.org>; Sun, 12 Aug 2007 23:35:56 +1000 (EST)
-Received: from krystal.dyndns.org ([76.65.103.147])
-	by tomts13-srv.bellnexxia.net
-	(InterMail vM.5.01.06.13 201-253-122-130-113-20050324) with ESMTP id
-	<20070812133554.JZHY13659.tomts13-srv.bellnexxia.net@krystal.dyndns.org>
-	for <linuxppc-dev@ozlabs.org>; Sun, 12 Aug 2007 09:35:54 -0400
-Date: Sun, 12 Aug 2007 09:35:52 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: 2.6.23-rc2-mm2 build error on MIPS and ARM
-Message-ID: <20070812133552.GA21643@Krystal>
-References: <20070811025802.GA15885@Krystal>
-	<1186825800.32314.2.camel@localhost>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [RFC/PATCH] remove gratuitous reads from maple pci config
+	space methods
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <6681fdad128303fc62c86c2345aa33a4@kernel.crashing.org>
+References: <20070809005044.GD10114@localdomain>
+	<20070809030555.GA8261@localhost.localdomain>
+	<20070809041632.GA13921@localdomain>
+	<40561246eaa06210a2a607aa7ed67b02@kernel.crashing.org>
+	<20070809212420.GD13921@localdomain>
+	<6681fdad128303fc62c86c2345aa33a4@kernel.crashing.org>
+Content-Type: text/plain
+Date: Sat, 11 Aug 2007 18:41:29 -0500
+Message-Id: <1186875689.1576.44.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1186825800.32314.2.camel@localhost>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>,
+	Paul Mackerras <paulus@samba.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,59 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Martin Schwidefsky (schwidefsky@de.ibm.com) wrote:
-> On Fri, 2007-08-10 at 22:58 -0400, Mathieu Desnoyers wrote:
-> > I got the following errors when building 2.6.23-rc2-mm2 on both mips and
-> > arm. Both errors are very much alike.
-> 
-> That attached patch should fix it for arm and mips. I'll try a few more
-> architectures until I'm fed up with compiling cross-compilers..
-> 
 
-It fixes the problem for me, thanks!
+> It should be fine on PowerMac as well -- all G5s use U3/U4,
+> the workaround is for certain older Apple bridge chips.
 
-Tested-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Yeah, remove them. The workaround that is needed afaik is really only
+the one that reads back the -address- before accessing the data register
+(and I think it's sill needed on U3), but it's unrelated to what that
+patch changes.
 
-Mathieu
+As I said on IRC, I suspect those reads come from misguided attempts on
+my part to avoid the processor itself posting those writes, since we
+want config space access to be synchronous all the way. In that case,
+however, a sync will do the job just fine to ensure the previous write
+did hit the bridge.
 
-
-> -- 
-> blue skies,
->   Martin.
-> 
-> "Reality continues to ruin my life." - Calvin.
-> ---
-> Subject: [PATCH] move mm_struct and vm_area_struct, compile fix.
-> 
-> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> 
-> Include <asm/page.h> in <linux/mm_types.h> to make mips and arm
-> compile again after mm_struct and vm_area_struct have been moved.
-> 
-> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> ---
-> 
->  include/linux/mm_types.h |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff -urpN linux-2.6/include/linux/mm_types.h
-> linux-2.6-patched/include/linux/mm_types.h
-> --- linux-2.6/include/linux/mm_types.h	2007-08-11 11:30:10.000000000
-> +0200
-> +++ linux-2.6-patched/include/linux/mm_types.h	2007-08-11
-> 11:32:42.000000000 +0200
-> @@ -11,6 +11,7 @@
->  #include <linux/rwsem.h>
->  #include <linux/completion.h>
->  #include <asm/mmu.h>
-> +#include <asm/page.h>
->  
->  struct address_space;
->  
-> 
-> 
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Cheers,
+Ben.
