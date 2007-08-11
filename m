@@ -1,22 +1,29 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [RFC/PATCH] remove gratuitous reads from maple pci config
-	space methods
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B106EDDEC8
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Aug 2007 05:49:26 +1000 (EST)
+Subject: Re: pci in arch/powerpc vs arch/ppc
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <6681fdad128303fc62c86c2345aa33a4@kernel.crashing.org>
-References: <20070809005044.GD10114@localdomain>
-	<20070809030555.GA8261@localhost.localdomain>
-	<20070809041632.GA13921@localdomain>
-	<40561246eaa06210a2a607aa7ed67b02@kernel.crashing.org>
-	<20070809212420.GD13921@localdomain>
-	<6681fdad128303fc62c86c2345aa33a4@kernel.crashing.org>
+In-Reply-To: <2b043cf24b0f5ddda06fcf1f01cb62f3@kernel.crashing.org>
+References: <op.twhnwi18nhx3hy@phoenix>
+	<20070803201036.GA18229@ld0162-tx32.am.freescale.net>
+	<F081E320-CFF9-497C-87D5-50E2E5C15A24@kernel.crashing.org>
+	<op.twol4cixnhx3hy@phoenix> <46B88DAC.70005@freescale.com>
+	<op.twqn4vtsnhx3hy@phoenix> <op.twqvg3i0nhx3hy@phoenix> ,
+	<op.twqvg3i0nhx3hy@phoenix> <twig.1186602365.9125@inaccessnetworks.com>
+	, <twig.1186602365.9125@inaccessnetworks.com>
+	<twig.1186611635.44657@inaccessnetworks.com>
+	<46BB2CE2.2060207@freescale.com>
+	<2b043cf24b0f5ddda06fcf1f01cb62f3@kernel.crashing.org>
 Content-Type: text/plain
-Date: Sat, 11 Aug 2007 18:41:29 -0500
-Message-Id: <1186875689.1576.44.camel@localhost.localdomain>
+Date: Sat, 11 Aug 2007 18:28:07 -0500
+Message-Id: <1186874887.1576.41.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>,
-	Paul Mackerras <paulus@samba.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org,
+	Alexandros Kostopoulos <akostop@inaccessnetworks.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,20 +33,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2007-08-09 at 17:56 +0200, Segher Boessenkool wrote:
+> > It means the bus on which legacy I/O ports can be found.  It's a fairly
+> > broken concept; each host bridge should really be treated as a
+> > completely separate entity, and if something like a VGA card has legacy
+> > I/O ports that need to be used, they should be looked for on the same
+> > PCI bus as the card itself.  Legacy ISA ports should be discovered
+> > through the device tree (or platform devices, or whatever) that
+> > explicitly state which PCI-to-ISA bridge they're under.
+> 
+> Currently, Linux does not allow multiple PCI domains to use
+> overlapping legacy I/O ranges.  Yeah it's a pain.
 
-> It should be fine on PowerMac as well -- all G5s use U3/U4,
-> the workaround is for certain older Apple bridge chips.
+I have a plan I exposed a little while ago to handle that. We need that
+for VGA cards among others anyway.
 
-Yeah, remove them. The workaround that is needed afaik is really only
-the one that reads back the -address- before accessing the data register
-(and I think it's sill needed on U3), but it's unrelated to what that
-patch changes.
+The idea is basically a call around the lines of
+pci_convert_legacy_resource(struct resource *r);
 
-As I said on IRC, I suspect those reads come from misguided attempts on
-my part to avoid the processor itself posting those writes, since we
-want config space access to be synchronous all the way. In that case,
-however, a sync will do the job just fine to ensure the previous write
-did hit the bridge.
+You fill up the resource with flags = MEM/IO and start/end being your
+legacy range, and it returns a "fixed" resource that you can use with
+inX/outX, or whatever else.
 
-Cheers,
+Haven't had time to code something up, and we need to provide a default
+impl. for all archs too ... but feel free to volunteer and beat me to
+it :-)
+
 Ben.
