@@ -1,20 +1,18 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Sun, 12 Aug 2007 18:16:04 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v3 1/2] [POWERPC] MPC832x_RDB: update dts to use spi,
-	register mmc_spi stub
-Message-ID: <20070812081604.GA6458@localhost.localdomain>
-References: <20070808170728.GA21118@localhost.localdomain>
-	<20070808170921.GA21487@localhost.localdomain>
-	<20070809030752.GB8261@localhost.localdomain>
-	<af4642f6ed6a4bc167161ac73ad75350@kernel.crashing.org>
-	<20070810010217.GA17370@localhost.localdomain>
-	<5cad6d634a7cb6c8c37adbb15db8dfc2@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5cad6d634a7cb6c8c37adbb15db8dfc2@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <geert@linux-m68k.org>
+Received: from asia.telenet-ops.be (asia.telenet-ops.be [195.130.137.74])
+	by ozlabs.org (Postfix) with ESMTP id 4B8E6DDEFD
+	for <linuxppc-dev@ozlabs.org>; Sun, 12 Aug 2007 19:43:47 +1000 (EST)
+Message-Id: <20070812094119.910815432@mail.of.borg>
+References: <20070812094050.522858761@mail.of.borg>
+Date: Sun, 12 Aug 2007 11:41:00 +0200
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch 10/10] m68k/mac: Make mac_hid_mouse_emulate_buttons()
+	declaration visible
+Cc: linux-input@atrey.karlin.mff.cuni.cz, linuxppc-dev@ozlabs.org,
+	linux-m68k@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +22,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 10, 2007 at 10:42:51PM +0200, Segher Boessenkool wrote:
-> >>> We should co-ordinate better on this, if it's to become a
-> >>> convention...
-> >>
-> >> That means we shouldn't coordinate on this, right?
-> >
-> > Heh.  Either one is kind of ugly, I'll grant you.
-> >
-> > But, many SoCs do have a notion of device "number", which is relevant
-> > for programming other general control registers in places.  We need to
-> > encode it somehow, and it would be good to have a consistent way of
-> > doing it.
-> 
-> I'm not convinced there isn't a more direct way to represent
-> the relevant relationships.
-> 
-> Either way, we don't have enough experience with this stuff
-> yet to know what works well and what doesn't (at least, I
-> don't, and I haven't seen any evidence that others do); so
-> I'd prefer to keep this in per-device bindings for now; it
-> should be there anyhow, but once we do have experience with
-> it we could do some recommendation.
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Well of course it will remain in the per-device bindings.  But just
-because these are in different per-device bindings doesn't mean we
-can't *try* to use consistent property names for similar things...
+m68k/mac: Make mac_hid_mouse_emulate_buttons() declaration visible
+
+drivers/char/keyboard.c: In function 'kbd_keycode':
+drivers/char/keyboard.c:1142: error: implicit declaration of function 'mac_hid_mouse_emulate_buttons'
+
+The forward declaration of mac_hid_mouse_emulate_buttons() is not visible on
+m68k because it's hidden in the middle of a big #ifdef block.
+
+Move it to <linux/kbd_kern.h>, correct the type of the second parameter, and
+include <linux/kbd_kern.h> where needed.
+
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/char/keyboard.c     |    4 ----
+ drivers/macintosh/mac_hid.c |    1 +
+ include/linux/kbd_kern.h    |    3 +++
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+--- a/drivers/char/keyboard.c
++++ b/drivers/char/keyboard.c
+@@ -1022,10 +1022,6 @@ static const unsigned short x86_keycodes
+ 	308,310,313,314,315,317,318,319,320,357,322,323,324,325,276,330,
+ 	332,340,365,342,343,344,345,346,356,270,341,368,369,370,371,372 };
+ 
+-#ifdef CONFIG_MAC_EMUMOUSEBTN
+-extern int mac_hid_mouse_emulate_buttons(int, int, int);
+-#endif /* CONFIG_MAC_EMUMOUSEBTN */
+-
+ #ifdef CONFIG_SPARC
+ static int sparc_l1_a_state = 0;
+ extern void sun_do_break(void);
+--- a/drivers/macintosh/mac_hid.c
++++ b/drivers/macintosh/mac_hid.c
+@@ -13,6 +13,7 @@
+ #include <linux/sysctl.h>
+ #include <linux/input.h>
+ #include <linux/module.h>
++#include <linux/kbd_kern.h>
+ 
+ 
+ static struct input_dev *emumousebtn;
+--- a/include/linux/kbd_kern.h
++++ b/include/linux/kbd_kern.h
+@@ -161,4 +161,7 @@ static inline void con_schedule_flip(str
+ 	schedule_delayed_work(&t->buf.work, 0);
+ }
+ 
++/* mac_hid.c */
++extern int mac_hid_mouse_emulate_buttons(int, unsigned int, int);
++
+ #endif
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
