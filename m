@@ -1,13 +1,9 @@
-Return-Path: <wuyinliangpin00@hotmail.com>
-Received: from bay0-omc1-s35.bay0.hotmail.com (bay0-omc1-s35.bay0.hotmail.com
-	[65.54.246.107]) by ozlabs.org (Postfix) with ESMTP id 68B5ADDF0C
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 12 Aug 2007 12:50:43 +1000 (EST)
-Message-ID: <BAY117-F32033EE00655919C556AB9A9E30@phx.gbl>
-From: =?gb2312?B?0Owg1Ms=?= <wuyinliangpin00@hotmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: no words output in console on 852t board with kernel 2.6.15 
-Date: Sun, 12 Aug 2007 10:50:39 +0800
+Return-Path: <eemingliu@hotmail.com>
+Message-ID: <BAY138-F25C6B0625737531B77D706B2E30@phx.gbl>
+From: "Ming Liu" <eemingliu@hotmail.com>
+To: Linuxppc-embedded@ozlabs.org
+Subject: basic and stupid question on wait_event and wake_up
+Date: Sun, 12 Aug 2007 13:57:01 +0000
 Mime-Version: 1.0
 Content-Type: text/plain; charset=gb2312; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -20,22 +16,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello all,
+Dear all,
+I am reading LDD(V3) chapter 6 on the topic of wait_event(queue, condition) 
+and wake_up(queue) functions. I am quite confused on the sayings. One is 
+"Until condition evaluates to a true value, the process continues to 
+sleep", which looks like that 'condition' is the one who wake up the 
+process from its sleeping. However the other saying is "The basic function 
+that wakes up sleeping processes is called wake_up, and wake_up wakes up 
+all processes waiting on the given queue" So who is the exact one to wake 
+the sleeping process up at all, condition or wake_up? From my 
+understanding, if the condition becomes true, then the sleeping process 
+will leave its sleeping status and wake up. Then what's the use of wake_up 
+function? 
 
-I try to run  linux 2.6.15  on a 852T custom board but can't see any words 
-by console.
-I have located the problem with leds and see that the program hangs in 
-function dma_alloc_coherent of cpm_uart_allocbuf in file cpm_uart_cpm1.c.
+My senario could be described as: in my char device driver, I use one ioctl 
+command to initiate a DMA transfer. After all related registers are 
+initiated, this process will be put to sleep for saving CPU cycles. In the 
+interrupt handler which is for a DMA_done, I wake that process up and 
+resume its following executing. With this method, in my application program 
+if I release a DMA initiation command, it is a Blocking operation and it 
+will wait until the DMA transfer is done. 
 
+Perhaps my question is quite simple or basic. Thanks for any explanation 
+and comment on this topic in my senario from you experts. Thanks a lot.
 
-Is there anyone who has already seen similar problem or can give some 
-advise?
-my kernel configure bases on TQM850L_defconfig and use smc1 as uart .
-
-Thanks
-xuyun00
-
-...............
+Br
+Ming
 
 _________________________________________________________________
-享用世界上最大的电子邮件系统— MSN Hotmail。  http://www.hotmail.com  
+与联机的朋友进行交流，请使用 MSN Messenger:  http://messenger.msn.com/cn  
