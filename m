@@ -1,17 +1,19 @@
-Return-Path: <mail4mz@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.186])
-	by ozlabs.org (Postfix) with ESMTP id 81969DDEEE
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Aug 2007 07:04:36 +1000 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so862858rvf
-	for <linuxppc-dev@ozlabs.org>; Sun, 12 Aug 2007 14:04:36 -0700 (PDT)
-Message-ID: <5c9cd53b0708121404p5e2b8311l5a20ec481a6bed59@mail.gmail.com>
-Date: Sun, 12 Aug 2007 17:04:35 -0400
-From: "mike zheng" <mail4mz@gmail.com>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Error: unsupported relocation against CSRR0
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_2474_5858464.1186952675603"
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 15115DDF0C
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Aug 2007 07:05:31 +1000 (EST)
+Subject: Re: Oops on boot with 2.6.23-rc2-g2c9d365c
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Guido Guenther <agx@sigxcpu.org>
+In-Reply-To: <20070811224241.GA9770@bogon.ms20.nix>
+References: <20070811224241.GA9770@bogon.ms20.nix>
+Content-Type: text/plain
+Date: Sun, 12 Aug 2007 16:05:36 -0500
+Message-Id: <1186952737.1576.48.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,62 +23,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_2474_5858464.1186952675603
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Sun, 2007-08-12 at 00:42 +0200, Guido Guenther wrote:
+> Hi,
+> I'm seeing the following oops on a Powerbook 6,1 with
+> 2.6.23-rc2-g2c9d365c (and also with earlier 2.6.23, 2.6.22 is fine) and
+> am quiet clueless. Any ideas before ist start bisecting?
 
-Hi All,
+I think it's a bogus WARN_ON, just remove it.
 
-I have "unsupported relocation against" problem, while compiling entry.S in
-2.4 Kernel against e500 core.  Does anyone know what is the problem? Is
-there any option I missed?
+Ben.
 
-Thanks in advance,
-
-MikeZ
-
-
-/kernel->   powerpc-linux-gnuspe-gcc -m32 -Wp,-MD,arch/ppc/kernel/.entry.o.d
--nostdinc -isystem
-/opt/mtwk/usr/local/gcc-3_4-e500-glibc-2.3.4-dp/powerpc-linux-gnuspe/lib/gcc/powerpc-linux-gnuspe/3.4.3/include
--D__KERNEL__ -Iinclude  -Iarch/ppc -D__ASSEMBLY__ -Iarch/ppc -Wa,-me500    -c
--o arch/ppc/kernel/entry.o arch/ppc/kernel/entry.S
-arch/ppc/kernel/entry.S: Assembler messages:
-
-entry.S:819: Error: unsupported relocation against CSRR0
-entry.S:820: Error: unsupported relocation against CSRR1
-entry.S:888: Error: unsupported relocation against MCSRR0
-entry.S:889: Error: unsupported relocation against MCSRR1
-entry.S:909: Error: unsupported relocation against CSRR0
-entry.S:911: Error: unsupported relocation against CSRR1
-
-
-
-entry.S
-
-819   mtspr CSRR0, r11
-820   mtspr CSRR1, r12
-
-------=_Part_2474_5858464.1186952675603
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-<div>Hi All,</div>
-<div>&nbsp;</div>
-<div>I have &quot;unsupported relocation against&quot; problem, while compiling entry.S in 2.4 Kernel against&nbsp;e500 core.&nbsp; Does anyone know what is the problem? Is there any option I missed?</div>
-<div><br>Thanks in advance,</div>
-<div>&nbsp;</div>
-<div>MikeZ</div>
-<div>&nbsp;</div>
-<div>
-<p class="MsoPlainText" style="MARGIN: 0in 0in 0pt"><font face="Courier New" size="2">/kernel-&gt;<span style="mso-spacerun: yes">&nbsp;&nbsp; </span>powerpc-linux-gnuspe-gcc -m32 -Wp,-MD,arch/ppc/kernel/.entry.o.d -nostdinc -isystem /opt/mtwk/usr/local/gcc-3_4-
-e500-glibc-2.3.4-dp/powerpc-linux-gnuspe/lib/gcc/powerpc-linux-gnuspe/3.4.3/include -D__KERNEL__ -Iinclude<span style="mso-spacerun: yes">&nbsp; </span>-Iarch/ppc -D__ASSEMBLY__ -Iarch/ppc -Wa,-me500<span style="mso-spacerun: yes">
-&nbsp;&nbsp;&nbsp; </span>-c -o arch/ppc/kernel/entry.o arch/ppc/kernel/entry.S<br>arch/ppc/kernel/entry.S: Assembler messages:</font></p><font face="Courier New" size="2">
-<p class="MsoPlainText" style="MARGIN: 0in 0in 0pt"><font face="Courier New" size="2">entry.S:819: Error: unsupported relocation against CSRR0<br>entry.S:820: Error: unsupported relocation against CSRR1<br>entry.S:888: Error: unsupported relocation against MCSRR0
-<br>entry.S:889: Error: unsupported relocation against MCSRR1<br>entry.S:909: Error: unsupported relocation against CSRR0<br>entry.S:911: Error: unsupported relocation against CSRR1</font><br></p>
-<p class="MsoPlainText" style="MARGIN: 0in 0in 0pt"><br><br></p></font><font size="2"><font face="Courier New"><span lang="PT-BR" style="mso-ansi-language: PT-BR">entry.S<br><br>819<span style="mso-tab-count: 1">&nbsp;&nbsp; </span>
-mtspr CSRR0, r11<br></span>820<span style="mso-tab-count: 1">&nbsp;&nbsp; </span>mtspr CSRR1, r12</font></font><br></div>
-
-------=_Part_2474_5858464.1186952675603--
+>  -- Guido
+> 
+> Registering PowerMac CPU frequency driver
+> Low: 533 Mhz, High: 867 Mhz, Boot: 866 Mhz
+> ------------[ cut here ]------------
+> Badness at kernel/irq/resend.c:70
+> NIP: c0050b2c LR: c0050b00 CTR: c0016738
+> REGS: cff43c30 TRAP: 0700   Not tainted  (2.6.23-rc2-g2c9d365c)
+> MSR: 00021032 <ME,IR,DR>  CR: 48002084  XER: 20000000
+> TASK = cff41830[1] 'swapper' THREAD: cff42000
+> GPR00: 00000001 cff43ce0 cff41830 00000178 0000002f 80000000 00000000 0000002f 
+> GPR08: 000186a0 c02a0000 4048002f 00000000 00082208 00000000 00000000 00000000 
+> GPR16: 00000000 00000000 00000000 00000000 00000000 41400000 01668460 00000000 
+> GPR24: c0273000 c02a0000 c02a0000 00000000 00000000 0000002f 00024008 c0279fb8 
+> NIP [c0050b2c] check_irq_resend+0x5c/0xc0
+> LR [c0050b00] check_irq_resend+0x30/0xc0
+> Call Trace:
+> [cff43ce0] [c0050b00] check_irq_resend+0x30/0xc0 (unreliable)
+> [cff43d00] [c0050658] enable_irq+0x84/0xa8
+> [cff43d10] [c014ab54] pmu_resume+0x80/0xc4
+> [cff43d20] [c00219d4] pmu_set_cpu_speed+0x19c/0x1b4
+> [cff43db0] [c002157c] do_set_cpu_speed+0xb4/0x160
+> [cff43dd0] [c002176c] pmac_cpufreq_target+0x48/0x6c
+> [cff43df0] [c01719f8] __cpufreq_driver_target+0x38/0x50
+> [cff43e00] [c017384c] cpufreq_governor_userspace+0x1c8/0x224
+> [cff43e20] [c0171dd4] __cpufreq_governor+0x64/0xbc
+> [cff43e40] [c01728bc] __cpufreq_set_policy+0x174/0x19c
+> [cff43e60] [c01735b0] cpufreq_add_dev+0x258/0x2f8
+> [cff43f20] [c013d9a4] sysdev_driver_register+0x78/0xe8
+> [cff43f40] [c01732dc] cpufreq_register_driver+0xa4/0x120
+> [cff43f50] [c025880c] pmac_cpufreq_setup+0x66c/0x688
+> [cff43f80] [c024a1e4] kernel_init+0xc8/0x284
+> [cff43ff0] [c001084c] kernel_thread+0x44/0x60
+> Instruction dump:
+> 4e800421 801f0000 3d20c005 57cb052a 39290eb8 2f0b0400 7f804800 419e0030 
+> 3d20c02a 80098508 7c000034 5400d97e <0f000000> 2f800000 41be0048 38000001 
+> io scheduler noop registered (default)
+> io scheduler cfq registered
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
