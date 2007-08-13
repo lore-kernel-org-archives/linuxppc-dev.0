@@ -1,21 +1,19 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D4FDADDF2A
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Aug 2007 01:57:45 +1000 (EST)
-Date: Mon, 13 Aug 2007 10:57:34 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH, RFC] wake up from a serial port
-Message-ID: <20070813155734.GB17535@ld0162-tx32.am.freescale.net>
-References: <Pine.LNX.4.60.0708130015430.3895@poirot.grange>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 26013DDE2F
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Aug 2007 02:57:31 +1000 (EST)
+Subject: Re: [PATCH] via-pmu: Fix typo in printk
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Buesch <mb@bu3sch.de>
+In-Reply-To: <200708122238.34985.mb@bu3sch.de>
+References: <200708122238.34985.mb@bu3sch.de>
+Content-Type: text/plain
+Date: Mon, 13 Aug 2007 11:57:21 -0500
+Message-Id: <1187024241.5330.0.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.60.0708130015430.3895@poirot.grange>
-Cc: linuxppc-dev@ozlabs.org, linux-serial@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Aug 13, 2007 at 12:27:30AM +0200, Guennadi Liakhovetski wrote:
-> A number of Linkstation models from Buffalo Technology with PPC, ARM, and 
-> also MIPS (I think) CPUs have a power-management controller connected to a 
-> UART. Among other things that chip controlls power and reset buttons. 
-> Working on a standby support for one of these systems (ppc mpc8241 based), 
-> the only suitable wakeup source there is the power button, which means, I 
-> have to configure one of the two system UARTs to not be suspendsd. Using 
-> the device_*_wakeup API doesn't quite work because both serial ports share 
-> one device. The below patch proposes a new port flag UPF_MAY_WAKEUP to 
-> configure such UARTs. It also adds support for a new "can-wakeup" serial 
-> node property to the legacy_serial driver.
+On Sun, 2007-08-12 at 22:38 +0200, Michael Buesch wrote:
+> This fixes a typo in a printk message.
+> 
+> Signed-off-by: Michael Buesch <mb@bu3sch.de>
 
-Shouldn't the ability to wakeup be configured through sysfs, rather than
-encoded into the device tree?  I'm assuming this is just a matter of
-configuration, and not that the hardware supports waking from one and not
-the other.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
--Scott
+> 
+> Index: linux-2.6/drivers/macintosh/via-pmu.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/macintosh/via-pmu.c	2007-05-26 19:56:27.000000000 +0200
+> +++ linux-2.6/drivers/macintosh/via-pmu.c	2007-08-12 22:36:27.000000000 +0200
+> @@ -410,7 +410,7 @@ static int __init via_pmu_start(void)
+>  
+>  	irq = irq_of_parse_and_map(vias, 0);
+>  	if (irq == NO_IRQ) {
+> -		printk(KERN_ERR "via-pmu: can't map interruptn");
+> +		printk(KERN_ERR "via-pmu: can't map interrupt\n");
+>  		return -ENODEV;
+>  	}
+>  	if (request_irq(irq, via_pmu_interrupt, 0, "VIA-PMU", (void *)0)) {
+> 
