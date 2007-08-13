@@ -1,14 +1,16 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 13 Aug 2007 10:50:55 +1000
+Date: Mon, 13 Aug 2007 11:05:33 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: DTC 1.0.0 Release
-Message-ID: <20070813005055.GC15738@localhost.localdomain>
-References: <E1IJIsf-0003VN-RE@jdl.com> <20070810212129.GA16948@aepfle.de>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Device tree aware EMAC driver
+Message-ID: <20070813010533.GA18526@localhost.localdomain>
+References: <20070807062231.GB8351@localhost.localdomain>
+	<20070808031643.GK10345@bakeyournoodle.com>
+	<7af683d3d78a51373d071b126c51b53a@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070810212129.GA16948@aepfle.de>
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+In-Reply-To: <7af683d3d78a51373d071b126c51b53a@kernel.crashing.org>
+Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,15 +20,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 10, 2007 at 11:21:29PM +0200, Olaf Hering wrote:
-> On Thu, Aug 09, Jon Loeliger wrote:
+On Fri, Aug 10, 2007 at 10:39:31PM +0200, Segher Boessenkool wrote:
+> >  * In drivers/net/ibm_newemac/Makefile, I think the preferred method is
+> >    to use ibm_newemac-y rather than ibm_newemac-objs.
 > 
-> > As usual, please let me know of any issues with it.
-> 
-> tests/truncated_property.c:45: warning: 'err' is used uninitialized
-> in this function
+> I thought it was the other way around, so I checked with the
+> Kbuild maintainer, and indeed you are correct.
 
-Looks good.  If you had a Signed-off-by, I'd add an Acked-by...
+Changed accordingly.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
