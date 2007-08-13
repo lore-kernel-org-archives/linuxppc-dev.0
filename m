@@ -1,14 +1,13 @@
 Return-Path: <joe@perches.com>
 Received: from perches.com (DSL022.labridge.com [206.117.136.22])
-	by ozlabs.org (Postfix) with ESMTP id 527DDDDED9
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Aug 2007 16:31:26 +1000 (EST)
-Date: Sun, 12 Aug 2007 23:31:09 -0700
+	by ozlabs.org (Postfix) with ESMTP id 796CEDDED9
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Aug 2007 16:31:33 +1000 (EST)
+Date: Sun, 12 Aug 2007 23:31:18 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, tnt@246tNt.com,
-	linuxppc-embedded@ozlabs.org, linuxppc-dev@ozlabs.org,
+To: torvalds@linux-foundation.org, olof@lixom.net, linuxppc-dev@ozlabs.org,
 	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH] [291/2many] MAINTAINERS - LINUX FOR POWERPC EMBEDDED MPC52XX
-Message-ID: <46bffaad.AUgmjGFlO0xv860X%joe@perches.com>
+Subject: [PATCH] [296/2many] MAINTAINERS - LINUX FOR POWERPC PA SEMI PWRFICIENT
+Message-ID: <46bffab6.9F8kfme4utaitNZV%joe@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,15 +24,14 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 8282088..0862965 100644
+index a289176..6fdca8b 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -2795,6 +2795,8 @@ W:	http://www.penguinppc.org/
+@@ -2837,6 +2837,7 @@ M:	olof@lixom.net
+ W:	http://www.pasemi.com/
  L:	linuxppc-dev@ozlabs.org
- L:	linuxppc-embedded@ozlabs.org
- S:	Maintained
-+F:	arch/powerpc/platforms/52xx/
-+F:	include/asm-powerpc/mpc52xx.h
+ S:	Supported
++F:	arch/powerpc/platforms/pasemi/
  
- LINUX FOR POWERPC EMBEDDED PPC4XX
- P:	Matt Porter
+ LLC (802.2)
+ P:	Arnaldo Carvalho de Melo
