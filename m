@@ -1,19 +1,14 @@
 Return-Path: <domen.puncer@telargo.com>
-Received: from out002.atlarge.net (out002.atlarge.net [129.41.63.60])
-	by ozlabs.org (Postfix) with ESMTP id 9D3F7DDEDF
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 13 Aug 2007 17:21:38 +1000 (EST)
-Date: Mon, 13 Aug 2007 09:21:31 +0200
+Date: Mon, 13 Aug 2007 09:54:23 +0200
 From: Domen Puncer <domen.puncer@telargo.com>
-To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-	linuxppc-embedded@ozlabs.org, netdev@vger.kernel.org
-Subject: Re: [RFC PATCH v0.1] net driver: mpc52xx fec
-Message-ID: <20070813072131.GD13994@moe.telargo.com>
-References: <20070810095153.GC13994@moe.telargo.com>
-	<20070810130225.GE3375@ghostprotocols.net>
+To: Ming Liu <eemingliu@hotmail.com>
+Subject: Re: basic and stupid question on wait_event and wake_up
+Message-ID: <20070813075423.GE13994@moe.telargo.com>
+References: <BAY138-F25C6B0625737531B77D706B2E30@phx.gbl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070810130225.GE3375@ghostprotocols.net>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <BAY138-F25C6B0625737531B77D706B2E30@phx.gbl>
+Cc: Linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,125 +19,93 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 10/08/07 10:02 -0300, Arnaldo Carvalho de Melo wrote:
-> Em Fri, Aug 10, 2007 at 11:51:53AM +0200, Domen Puncer escreveu:
-> > +static u8 null_mac[6];
-> 
-> const
+On 12/08/07 13:57 +0000, Ming Liu wrote:
+> Dear all,
+> I am reading LDD(V3) chapter 6 on the topic of wait_event(queue, conditio=
+n)=20
+> and wake_up(queue) functions. I am quite confused on the sayings. One is=
+=20
+> "Until condition evaluates to a true value, the process continues to=20
+> sleep", which looks like that 'condition' is the one who wake up the=20
+> process from its sleeping. However the other saying is "The basic functio=
+n=20
+> that wakes up sleeping processes is called wake_up, and wake_up wakes up=
+=20
+> all processes waiting on the given queue" So who is the exact one to wake=
+=20
+> the sleeping process up at all, condition or wake_up? From my=20
+> understanding, if the condition becomes true, then the sleeping process=
+=20
+> will leave its sleeping status and wake up. Then what's the use of wake_u=
+p=20
+> function?=20
 
-OK.
+I understand it this way:
+- condition
+  Just checking the condition is one way (if you don't have a wake_up
+  source, like an interrupt), but that's not really what wait_event does.
+  It would be something like
+	while (condition) {
+		msleep(10);
+	}
+  There was some talk on poll_wait(), but I don't know what happened to
+  it.
 
-...
-> > +static void fec_set_paddr(struct net_device *dev, u8 *mac)
-> > +{
-> > +	struct fec_priv *priv = netdev_priv(dev);
-> > +	struct mpc52xx_fec __iomem *fec = priv->fec;
-> > +
-> > +	out_be32(&fec->paddr1, *(u32*)(&mac[0]));
-> > +	out_be32(&fec->paddr2, (*(u16*)(&mac[4]) << 16) | FEC_PADDR2_TYPE);
-> 
-> spaces after the types on casts to pointers
+- wake_up
+  Just wake_up isn't enough, you get a race:
+  |   interrupt handler   |   process      |
+  ------------------------------------------
+  |   do_something()      |                |
+  |   wake_up()           |                |
+  |   ...                 |   wait on wq   |
 
-I assume you mean: out_be32(&fec->paddr1, *(u32 *)(&mac[0]));
+  And so you have a process waiting on waitqueue, that just missed the
+  wakeup. Obviously should not be used.
 
-> 
-> > +}
-> > +
-> > +static void fec_get_paddr(struct net_device *dev, u8 *mac)
-> > +{
-> > +	struct fec_priv *priv = netdev_priv(dev);
-> > +	struct mpc52xx_fec __iomem *fec = priv->fec;
-> > +
-> > +	*(u32*)(&mac[0]) = in_be32(&fec->paddr1);
-> > +	*(u16*)(&mac[4]) = in_be32(&fec->paddr2) >> 16;
-> 
-> ditto
+- wake_up & condition
+  |   interrupt handler   |   process      |
+  ------------------------------------------
+  |   flag =3D 1            |                |
+  |   wake_up()           |                |
+  |   ...                 |   wait_event   |
+  |   ...                 |   flag =3D 0     |
 
-OK.
-
-> 
-> > +}
-> > +
-> > +static int fec_set_mac_address(struct net_device *dev, void *addr)
-> > +{
-> > +	struct sockaddr *sock = (struct sockaddr *)addr;
-> 
-> no need for a cast, addr is a void pointer
-
-Right, missed this one.
-
-> 
-> > +
-> > +	memcpy(dev->dev_addr, sock->sa_data, dev->addr_len);
-> > +
-> > +	fec_set_paddr(dev, sock->sa_data);
-> > +	return 0;
-> 
-> Why always return 0? make it void
-
-Because struct net_device->set_mac_address's prototype is like that.
-
-> 
-> > +}
-> > +
-> > +static void fec_free_rx_buffers(struct bcom_task *s)
-> > +{
-> > +	struct sk_buff *skb;
-> > +
-> > +	while (!bcom_queue_empty(s)) {
-> > +		skb = bcom_retrieve_buffer(s, NULL, NULL);
-> > +		kfree_skb(skb);
-> > +	}
-> > +}
-> > +
-> > +static int fec_alloc_rx_buffers(struct bcom_task *rxtsk)
-> > +{
-> > +	while (!bcom_queue_full(rxtsk)) {
-> > +		struct sk_buff *skb;
-> > +		struct bcom_fec_bd *bd;
-> > +
-> > +		skb = dev_alloc_skb(FEC_RX_BUFFER_SIZE);
-> > +		if (skb == 0)
-> 
-> Test against NULL
-
-Right. I also fixed other stuff sparse reports.
-
-> 
-> > +			return -EAGAIN;
-> > +
-
-...
-> > +
-> > +	if (new_state && netif_msg_link(priv)) {
-> > +		phy_print_status(phydev);
-> > +	}
-> 
-> No need for {}, this if has only one statement
-
-OK.
-
-...
-> > +static int __init
-> > +mpc52xx_fec_init(void)
-> > +{
-> > +	int ret;
-> > +	if ((ret = fec_mdio_init())) {
-> 
-> Why not:
-> 
-> 	int ret = fec_mdio_init();
-> 	if (ret) {
-> 
-> Less parenthesis, looks more clear
-
-I prefer it like that too.
+  This will work properly and if wait_event misses a wake_up, the
+  condition check (flag)  will kick in before putting it to sleep.
 
 
-Thanks Arnaldo!
+>=20
+> My senario could be described as: in my char device driver, I use one ioc=
+tl=20
+> command to initiate a DMA transfer. After all related registers are=20
+> initiated, this process will be put to sleep for saving CPU cycles. In th=
+e=20
+> interrupt handler which is for a DMA_done, I wake that process up and=20
+> resume its following executing. With this method, in my application progr=
+am=20
+> if I release a DMA initiation command, it is a Blocking operation and it=
+=20
+> will wait until the DMA transfer is done.=20
 
-
-Any other comments on code functionality, design?
+Looks like you should use the "wake_up and condition" option.
 
 
 	Domen
+
+>=20
+> Perhaps my question is quite simple or basic. Thanks for any explanation=
+=20
+> and comment on this topic in my senario from you experts. Thanks a lot.
+>=20
+> Br
+> Ming
+>=20
+> _________________________________________________________________
+> =E4=B8=8E=E8=81=94=E6=9C=BA=E7=9A=84=E6=9C=8B=E5=8F=8B=E8=BF=9B=E8=A1=8C=
+=E4=BA=A4=E6=B5=81=EF=BC=8C=E8=AF=B7=E4=BD=BF=E7=94=A8 MSN Messenger:  http=
+://messenger.msn.com/cn =20
+>=20
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
