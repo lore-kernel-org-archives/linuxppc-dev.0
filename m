@@ -3,15 +3,15 @@ Received: from mail.embeddedspecialties.com (mail.embeddedspecialties.com
 	[74.94.113.177])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 42C08DDE1B
+	by ozlabs.org (Postfix) with ESMTP id 12930DDF13
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Aug 2007 08:48:43 +1000 (EST)
-Subject: [PATCH] tsec: Allow Ten Bit Interface to be configurable
+	Tue, 14 Aug 2007 08:57:37 +1000 (EST)
+Subject: [PATCH] [UPDATED] tsec: Allow Ten Bit Interface to be configurable
 From: Joe Hamman <joe.hamman@embeddedspecialties.com>
 To: galak@kernel.crashing.org
 Content-Type: text/plain
-Date: Mon, 13 Aug 2007 17:28:54 -0500
-Message-Id: <1187044134.9536.4.camel@server>
+Date: Mon, 13 Aug 2007 17:37:49 -0500
+Message-Id: <1187044669.10295.4.camel@server>
 Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
 Reply-To: joe.hamman@embeddedspecialties.com
@@ -31,8 +31,12 @@ event of a conflict with another device.
 Signed-off by: Joe Hamman <joe.hamman@embeddedspecialties.com>
 ---
 
+Please ignore the last patch - I missed a cut & paste error on the range
+that my testing didn't catch.
+---
+
 diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index 81ef81c..ba67b3b 100644
+index 81ef81c..b4813d9 100644
 --- a/drivers/net/Kconfig
 +++ b/drivers/net/Kconfig
 @@ -2276,6 +2276,14 @@ config GFAR_NAPI
@@ -42,7 +46,7 @@ index 81ef81c..ba67b3b 100644
 +config GFAR_TBIPA_VALUE
 +	hex "Ten Bit Interface Port Address Value"
 +	depends on GIANFAR
-+	range 0 0x1f if BFIN_MAC_USE_L1
++	range 0 0x1f
 +	default "0x1f"
 +	help
 +	  Select an address that does not conflict with other addresses on the board.
