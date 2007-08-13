@@ -1,21 +1,16 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id D35A2DDEF5
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Aug 2007 07:14:24 +1000 (EST)
-Date: Mon, 13 Aug 2007 23:14:22 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH, RFC] wake up from a serial port
-In-Reply-To: <46C0C419.6060009@freescale.com>
-Message-ID: <Pine.LNX.4.60.0708132307200.5643@poirot.grange>
-References: <Pine.LNX.4.60.0708130015430.3895@poirot.grange>
-	<20070813155734.GB17535@ld0162-tx32.am.freescale.net>
-	<Pine.LNX.4.60.0708132207530.5643@poirot.grange>
-	<46C0C419.6060009@freescale.com>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Message-ID: <46C0DA2B.6080407@am.sony.com>
+Date: Mon, 13 Aug 2007 15:24:43 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-serial@vger.kernel.org,
-	Greg KH <greg@kroah.com>
+To: joe@perches.com
+Subject: Re: [PATCH] [392/2many] MAINTAINERS - PS3 PLATFORM SUPPORT
+References: <46bffb71.JWcVvIR5pg3biTEh%joe@perches.com>
+In-Reply-To: <46bffb71.JWcVvIR5pg3biTEh%joe@perches.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,54 +20,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 13 Aug 2007, Scott Wood wrote:
+From: joe@perches.com
 
-> Guennadi Liakhovetski wrote:
-> > 
-> > # ls -l /sys/devices/platform/serial8250.0/tty*
-> > lrwxrwxrwx 1 root root 0 Aug 13 22:05
-> > /sys/devices/platform/serial8250.0/tty:ttyS0 -> ../../../class/tty/ttyS0
-> > lrwxrwxrwx 1 root root 0 Aug 13 22:05
-> > /sys/devices/platform/serial8250.0/tty:ttyS1 -> ../../../class/tty/ttyS1
-> > 
-> > And placing some wakeup file under the class/tty/ directory doesn't seem
-> > very consistent with the current policy - until now they only live under
-> > devices/... (Greg added to cc:).
-> 
-> Hmm... I'd assumed each port would have its own device directory.  Would
-> anything break horribly if it were changed so that each tty:ttySx is a
-> directory, which contains both a wakeup file and the symlink?
+Add file pattern to MAINTAINER entry
 
-Yeah, I'd love to know the answer too:-) As you see, atm it is one 
-platform device as defined in arch/powerpc/kernel/legacy_serial.c:
-
-static struct platform_device serial_device = {
-	.name	= "serial8250",
-	.id	= PLAT8250_DEV_PLATFORM,
-	.dev	= {
-		.platform_data = legacy_serial_ports,
-	},
-};
-
-with a list of ports in platform data:
-
-static struct plat_serial8250_port legacy_serial_ports[MAX_LEGACY_SERIAL_PORTS+1];
-
-Hence one device directory. Same on a PC
-
-$ ls -l /sys/devices/platform/serial8250/tty*
-lrwxrwxrwx  1 root root 0 Aug 13 23:10 /sys/devices/platform/serial8250/tty:ttyS0 -> ../../../class/tty/ttyS0
-lrwxrwxrwx  1 root root 0 Aug 13 23:10 /sys/devices/platform/serial8250/tty:ttyS1 -> ../../../class/tty/ttyS1
-lrwxrwxrwx  1 root root 0 Aug 13 23:10 /sys/devices/platform/serial8250/tty:ttyS2 -> ../../../class/tty/ttyS2
-lrwxrwxrwx  1 root root 0 Aug 13 23:10 /sys/devices/platform/serial8250/tty:ttyS3 -> ../../../class/tty/ttyS3
-
-> You should get the interrupt, but not until after the PM code enables IRQs.
-> Are you saying that the interrupt handler runs before then?
-
-Great, it is working correctly then! Don't think the ISR runs return from 
-PM, no.
-
-Thanks
-Guennadi
+Signed-off-by: Joe Perches <joe@perches.com>
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
-Guennadi Liakhovetski
+I also maintain the file include/asm-powerpc/lv1call.h.
+This updated patch adds that file.
+
+-Geoff
+
+ MAINTAINERS |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3015,6 +3015,13 @@ M:	geoffrey.levand@am.sony.com
+ L:	linuxppc-dev@ozlabs.org
+ L:	cbe-oss-dev@ozlabs.org
+ S:	Supported
++F:	arch/powerpc/boot/ps3*
++F:	arch/powerpc/platforms/ps3/
++F:	drivers/*/ps3*
++F:	drivers/ps3/
++F:	drivers/usb/host/*ps3.c
++F:	include/asm-powerpc/ps3*
++F:	include/asm-powerpc/lv1call.h
+ 
+ PVRUSB2 VIDEO4LINUX DRIVER
+ P:	Mike Isely
