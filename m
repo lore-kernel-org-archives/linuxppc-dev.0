@@ -1,25 +1,22 @@
-Return-Path: <fthain@telegraphics.com.au>
-Received: from loopy.telegraphics.com.au (loopy.telegraphics.com.au
-	[202.45.126.152]) by ozlabs.org (Postfix) with ESMTP id 2A89EDDEAB
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Aug 2007 23:30:13 +1000 (EST)
-Date: Mon, 13 Aug 2007 23:09:30 +1000 (EST)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Michael Schmitz <schmitz@mail.biophys.uni-duesseldorf.de>
-Subject: Re: [patch 10/10] m68k/mac: Make mac_hid_mouse_emulate_buttons()
-	declaration visible
-In-Reply-To: <Pine.LNX.4.58.0708131432560.32732@om.biophys.uni-duesseldorf.de>
-Message-ID: <Pine.LNX.4.64.0708132253530.21364@loopy.telegraphics.com.au>
-References: <20070812094050.522858761@mail.of.borg>
-	<20070812094119.910815432@mail.of.borg>
-	<Pine.LNX.4.58.0708131432560.32732@om.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-m68k@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	debian-68k@lists.debian.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>,
-	linux-input@atrey.karlin.mff.cuni.cz,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>
+Return-Path: <b07421@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C135BDDE22
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Aug 2007 01:53:45 +1000 (EST)
+Date: Mon, 13 Aug 2007 10:53:26 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: "Morrison, Tom" <tmorrison@empirix.com>
+Subject: Re: Early UART setup on 2.6 kernel for mpc85xx
+Message-ID: <20070813155326.GA17535@ld0162-tx32.am.freescale.net>
+References: <mailman.1.1186797602.26064.linuxppc-dev@ozlabs.org>
+	<BD261180E6D35F4D9D32F3E44FD3D90108D46267@EMPBEDEX.empirix.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D90108D46267@EMPBEDEX.empirix.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,30 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Aug 13, 2007 at 07:09:40AM -0400, Morrison, Tom wrote:
+> >> In order to debug the kernel 2.6, I want setup serial port with 
+> >> UART on mpc85xx as early as possible. I add the register access 
+> >> code at the beginning of  platform_init(). For example, I try 
+> >> to write THR register(0xe0004500). However the system just 
+> >> hanging there with this line.
 
+Make sure there's a mapping in the TLB for that address.
 
-On Mon, 13 Aug 2007, Michael Schmitz wrote:
+> FWIW, you really can't debug the earliest init code 
+> because most of that is in assembly. Get a JTAG emulator
+> (BDI or Lauterbach) and start stepping through.
 
-> > From: Geert Uytterhoeven <geert@linux-m68k.org>
-> >
-> > m68k/mac: Make mac_hid_mouse_emulate_buttons() declaration visible
-> 
-> With buttons emulation being available via uinput event devices, do we 
-> still need the kernel mouse button emulation? At least on powerpc, it 
-> was declared deprecated long ago ...
->
-> Anyone using mouseemu on m68k Mac?
+It's quite possible to debug assembly code without JTAG. :-)
 
-Yes, and on powermac too. It provides the paste key for gpm and I'm quite 
-fond of it. But if there's a better alternative, I'll happily try it 
-instead.
-
--f
-
-> 
-> 	Michael
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-m68k" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+-Scott
