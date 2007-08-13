@@ -1,36 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Return-Path: <matt@genesi-usa.com>
+Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
+	[66.98.186.96])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 627F9DDF0F
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1586BDDDCA
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Aug 2007 03:39:54 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7DHdmHD032681
-	for <linuxppc-embedded@ozlabs.org>; Mon, 13 Aug 2007 13:39:48 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l7DHdl7p208870
-	for <linuxppc-embedded@ozlabs.org>; Mon, 13 Aug 2007 11:39:47 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l7DHdlG6018493
-	for <linuxppc-embedded@ozlabs.org>; Mon, 13 Aug 2007 11:39:47 -0600
-Date: Mon, 13 Aug 2007 12:39:45 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH] [292/2many] MAINTAINERS - LINUX FOR POWERPC EMBEDDED
-	PPC4XX
-Message-ID: <20070813123945.6ea0d77b@weaponx.rchland.ibm.com>
-In-Reply-To: <1187026501.10249.158.camel@localhost>
-References: <46bffaaf.2ObqORfh5YL/9ILj%joe@perches.com>
-	<20070813061854.644e6e5e@zod.rchland.ibm.com>
-	<1187026501.10249.158.camel@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org, linuxppc-embedded@ozlabs.org
+	Tue, 14 Aug 2007 03:42:45 +1000 (EST)
+Message-ID: <46C0985B.9040401@genesi-usa.com>
+Date: Mon, 13 Aug 2007 18:43:55 +0100
+From: Matt Sealey <matt@genesi-usa.com>
+MIME-Version: 1.0
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: MPC5200 and Bestcomm
+References: <9e4733910708130927l70163a80vf0362ee8649a6c29@mail.gmail.com>	<fa686aa40708130934v912eda2r691d2db30a9bc17c@mail.gmail.com>	<9e4733910708130950y38f60687ma7957cf42a758cdd@mail.gmail.com>
+	<9e4733910708130952m9c5e512xe41fec3a02435298@mail.gmail.com>
+In-Reply-To: <9e4733910708130952m9c5e512xe41fec3a02435298@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -41,22 +27,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 13 Aug 2007 10:35:01 -0700
-Joe Perches <joe@perches.com> wrote:
+The current (2.6.22) patchset for the Efika is being held here for
+the moment; http://dev.gentoo.org/~nixnut/efika/
 
-> On Mon, 2007-08-13 at 06:18 -0500, Josh Boyer wrote:
-> > You're missing arch/ppc/platforms/4xx/, among other things.
-> > Also, we're in the middle of merging 4xx to arch/powerpc.
+That's everything you 'really need' and it's probably the same as
+this patch list.
+
+However practically none of it is mainline-worthy at the moment,
+Sylvain has detailed too many things he thinks is wrong with it.
+
+I'm having a go with the new ethernet driver patch right now (a
+customer asked me for a prebuilt kernel..) so I can get on with
+testing that. The most important ones for rewrites besides that
+are the AC97 driver (which is a little.. sparse) and actually
+using the ATA task.
+
+I'll put in a decent request here for any work on this subject to
+please at least attempt to retrieve the tasks from the Efika
+firmware rather than replacing them in Linux gratuituously.
+I understand this doesn't help the Lite5200 guys.. but.. pretty
+please with a cherry on top? :]
+
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
+
+Jon Smirl wrote:
+> Another series is being posted to the Efika boards.
 > 
-> We can leave the whole block unmodified until you're ready.
+> 0001-powerpc-exports-rheap-symbol-to-modules.patch
+> 0002-powerpc-Changes-the-config-mechanism-for-rheap.patch
+> 0003-powerpc-ppc32-Update-mpc52xx_psc-structure-with-B-r.patch
+> 0004-powerpc-BestComm-core-support-for-Freescale-MPC5200.patch
+> 0005-powerpc-BestcComm-ATA-task-support.patch
+> 0006-powerpc-BestcComm-FEC-task-support.patch
+> 0007-powerpc-BestcComm-GenBD-task-support.patch
+> 0008-drivers-net-Add-support-for-Freescale-MPC5200-SoC-i.patch
+> 0009-sound-Add-support-for-Freescale-MPC5200-AC97-interf.patch
+> 0010-powerpc-In-rheap.c-move-the-EXPORT_SYMBOL-and-use.patch
+> 0011-powerpc-BestComm-move-the-EXPORT_SYMBOL-and-use-th.patch
+> 0012-powerpc-BestComm-ATA-task-move-the-EXPORT_SYMBOL-a.patch
+> 0013-powerpc-BestComm-FEC-task-move-the-EXPORT_SYMBOL-a.patch
+> 0014-powerpc-BestComm-GenBD-task-move-the-EXPORT_SYMBOL.patch
+> 0015-powerpc-BestComm-Replace-global-variable-bcom-by-b.patch
+> 0016-powerpc-Make-the-BestComm-driver-a-standard-of_plat.patch
+> 0017-powerpc-Fix-typo-in-BestComm-ATA-task-support-code.patch
+> 0018-powerpc-BestComm-ATA-task-microcode-insert-copyri.patch
+> 0019-powerpc-BestComm-FEC-task-microcode-insert-copyri.patch
+> 0020-powerpc-BestComm-GenBD-task-microcode-insert-copy.patch
+> 0021-powerpc-Fix-errors-in-bcom-bcom_eng-renaming.patch
+> 0081-mpc52xx-correct-calculation-of-FEC-RX-errors.patch
+> 0082-powerpc-pata_mpc52xx-suspend.patch
 > 
-> LINUX FOR POWERPC EMBEDDED PPC4XX
-> P:	Matt Porter
-> M:	mporter@kernel.crashing.org
-> W:	http://www.penguinppc.org/
-> L:	linuxppc-embedded@ozlabs.org
-> S:	Maintained
-
-Yeah.  I would actually prefer that, thanks.
-
-josh 
