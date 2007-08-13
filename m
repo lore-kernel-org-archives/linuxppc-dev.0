@@ -1,35 +1,16 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 485C3DDF25
+Return-Path: <yonil@slydetech.com>
+Received: from slydetech.com (saigdsl.bb.netvision.net.il [212.143.159.55])
+	by ozlabs.org (Postfix) with ESMTP id B3479DDE1C
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 13 Aug 2007 21:19:55 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l7DADErK006813
-	for <linuxppc-embedded@ozlabs.org>; Mon, 13 Aug 2007 06:13:14 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l7DBJp9l264670
-	for <linuxppc-embedded@ozlabs.org>; Mon, 13 Aug 2007 05:19:51 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l7DBJp6X021337
-	for <linuxppc-embedded@ozlabs.org>; Mon, 13 Aug 2007 05:19:51 -0600
-Date: Mon, 13 Aug 2007 06:18:54 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: joe@perches.com
-Subject: Re: [PATCH] [292/2many] MAINTAINERS - LINUX FOR POWERPC EMBEDDED
-	PPC4XX
-Message-ID: <20070813061854.644e6e5e@zod.rchland.ibm.com>
-In-Reply-To: <46bffaaf.2ObqORfh5YL/9ILj%joe@perches.com>
-References: <46bffaaf.2ObqORfh5YL/9ILj%joe@perches.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org, linuxppc-embedded@ozlabs.org
+	Mon, 13 Aug 2007 21:57:49 +1000 (EST)
+Subject: Power Managment (mpc83xx)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C7DD9F.5B9170DC"
+Date: Mon, 13 Aug 2007 14:44:50 +0300
+Message-ID: <6954FEB9E3130645ABAFEE8D5E2C7C141FE8B6@slydesvr.Slyde.local>
+From: "Yoni Levin" <yonil@slydetech.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -40,25 +21,157 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sun, 12 Aug 2007 23:31:11 -0700
-joe@perches.com wrote:
+This is a multi-part message in MIME format.
 
-> Add file pattern to MAINTAINER entry
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 0862965..38810b7 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -2804,6 +2804,8 @@ M:	mporter@kernel.crashing.org
->  W:	http://www.penguinppc.org/
->  L:	linuxppc-embedded@ozlabs.org
->  S:	Maintained
-> +F:	arch/ppc/syslib/ppc4xx_*
-> +F:	include/asm-ppc/ppc4xx_*
+------_=_NextPart_001_01C7DD9F.5B9170DC
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-You're missing arch/ppc/platforms/4xx/, among other things.  Also, we're
-in the middle of merging 4xx to arch/powerpc.
+I have mpc83xx, and I work with Linux 2.6
 
-josh
+I am trying to use power management states.=20
+
+I succeed to get into D1 state (echo standby > /sys/power/state),
+
+And to waked up by GPIO.
+
+But when I try tried echo mem > /sys/power/state it waked up by reset
+(that stuck in the middle)
+
+Or echo disk > /sys/power/state didn't went to sleep at all.
+
+There is a way to get into economic power state (less power then D1
+(standby)) and to wake up fast?
+
+=20
+
+
+------_=_NextPart_001_01C7DD9F.5B9170DC
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	text-align:right;
+	direction:rtl;
+	unicode-bidi:embed;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal;
+	font-family:Arial;
+	color:windowtext;}
+span.EmailStyle18
+	{mso-style-type:personal-reply;
+	font-family:Arial;
+	color:navy;}
+@page Section1
+	{size:595.3pt 841.9pt;
+	margin:72.0pt 90.0pt 72.0pt 90.0pt;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1 dir=3DRTL>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;color:navy'>I</span></font><font size=3D2 =
+face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial'> have mpc83xx,<font =
+color=3Dnavy><span
+style=3D'color:navy'> and I work with Linux =
+2.6<o:p></o:p></span></font></span></font></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;color:navy'>I am trying to use power management =
+states. <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;color:navy'>I succeed to get into D1 state (echo =
+standby &gt;
+/sys/power/state),<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;color:navy'>And to waked up by =
+GPIO.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;color:navy'>But when I try tried echo mem &gt;
+/sys/power/state it waked up by reset (that </span></font><font size=3D1
+color=3D"#000099" face=3DArial><span =
+style=3D'font-size:9.0pt;font-family:Arial;
+color:#000099'>stuck </span></span></font><font size=3D2 color=3Dnavy =
+face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:navy'>in the =
+middle)<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;color:navy'>Or echo disk &gt; /sys/power/state =
+didn&#8217;t went
+to sleep at all.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;color:navy'>There is a way to get into economic power =
+state
+(less power then D1 (standby)) and to wake up =
+fast?<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal dir=3DLTR =
+style=3D'text-align:left;direction:ltr;unicode-bidi:
+embed'><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01C7DD9F.5B9170DC--
