@@ -1,13 +1,35 @@
-Return-Path: <eemingliu@hotmail.com>
-Message-ID: <BAY138-F400F2CE580BD3EB48B9A3CB2DC0@phx.gbl>
-In-Reply-To: <20070813093107.GG13994@moe.telargo.com>
-From: "Ming Liu" <eemingliu@hotmail.com>
-To: domen.puncer@telargo.com
-Subject: Re: basic and stupid question on wait_event and wake_up
-Date: Mon, 13 Aug 2007 09:46:17 +0000
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 485C3DDF25
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 13 Aug 2007 21:19:55 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
+	l7DADErK006813
+	for <linuxppc-embedded@ozlabs.org>; Mon, 13 Aug 2007 06:13:14 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l7DBJp9l264670
+	for <linuxppc-embedded@ozlabs.org>; Mon, 13 Aug 2007 05:19:51 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l7DBJp6X021337
+	for <linuxppc-embedded@ozlabs.org>; Mon, 13 Aug 2007 05:19:51 -0600
+Date: Mon, 13 Aug 2007 06:18:54 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: joe@perches.com
+Subject: Re: [PATCH] [292/2many] MAINTAINERS - LINUX FOR POWERPC EMBEDDED
+	PPC4XX
+Message-ID: <20070813061854.644e6e5e@zod.rchland.ibm.com>
+In-Reply-To: <46bffaaf.2ObqORfh5YL/9ILj%joe@perches.com>
+References: <46bffaaf.2ObqORfh5YL/9ILj%joe@perches.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=gb2312; format=flowed
-Cc: Linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -18,39 +40,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thank you so much for your explanation. Now I am quite clear on this topic. 
+On Sun, 12 Aug 2007 23:31:11 -0700
+joe@perches.com wrote:
 
+> Add file pattern to MAINTAINER entry
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 0862965..38810b7 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -2804,6 +2804,8 @@ M:	mporter@kernel.crashing.org
+>  W:	http://www.penguinppc.org/
+>  L:	linuxppc-embedded@ozlabs.org
+>  S:	Maintained
+> +F:	arch/ppc/syslib/ppc4xx_*
+> +F:	include/asm-ppc/ppc4xx_*
 
-Domen, Sorry for my misspelling of your name. That should be "Domen" not 
-"Momen". Sorry for that. :)
+You're missing arch/ppc/platforms/4xx/, among other things.  Also, we're
+in the middle of merging 4xx to arch/powerpc.
 
-BR
-Ming
-
-
->From: Domen Puncer <domen.puncer@telargo.com>
->To: Ming Liu <eemingliu@hotmail.com>
->CC: Linuxppc-embedded@ozlabs.org
->Subject: Re: basic and stupid question on wait_event and wake_up
->Date: Mon, 13 Aug 2007 11:31:07 +0200
->
->On 13/08/07 09:22 +0000, Ming Liu wrote:
-> > Dear Momen,
-> > OK. I see now. So you mean condition is only to judge whether a 
-sleeping
-> > process could be waken up or not when wake_up() is executed in other
-> > processes or interrupt handlers. What really wakes the process up is 
-still
-> > the function of wake_up, right? We just execute wake_up() and then 
-check if
-> > condition is true. If yes, the process will leave its sleeping and wake 
-up;
-> > if not, it keep sleeping. Am I right?
->
->Right.
->
->
->	Domen
-
-_________________________________________________________________
-√‚∑—œ¬‘ÿ MSN Explorer:   http://explorer.msn.com/lccn/  
+josh
