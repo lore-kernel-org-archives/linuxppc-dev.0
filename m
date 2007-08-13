@@ -1,22 +1,19 @@
-Return-Path: <johan@borkhuis.com>
-Received: from smtp-vbr6.xs4all.nl (smtp-vbr6.xs4all.nl [194.109.24.26])
-	by ozlabs.org (Postfix) with ESMTP id D511FDDEFE
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Aug 2007 06:31:20 +1000 (EST)
-Received: from borkhuis.com (borkhuis.xs4all.nl [80.127.44.59])
-	by smtp-vbr6.xs4all.nl (8.13.8/8.13.8) with ESMTP id l7DKNMKi018577
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Aug 2007 22:23:22 +0200 (CEST)
-	(envelope-from johan@borkhuis.com)
-Received: from johanspc (johan.borkhuis.com [192.168.253.123])
-	by borkhuis.com (8.13.8/8.13.8) with ESMTP id l7DKNF6O031766
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Aug 2007 22:23:21 +0200
-From: "Johan Borkhuis" <johan@borkhuis.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: PCI BAR mapping problem
-Date: Mon, 13 Aug 2007 22:23:02 +0200
-Message-ID: <!~!UENERkVCMDkAAQACAAAAAAAAAAAAAAAAABgAAAAAAAAAJIdfqg5uLEqqfQ4KDmHrt8KAAAAQAAAA7FyaMEVWBEOa2ga+dPbyowEAAAAA@borkhuis.com>
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 7DF56DDE2D
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Aug 2007 06:41:58 +1000 (EST)
+Date: Mon, 13 Aug 2007 22:41:55 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH, RFC] wake up from a serial port
+In-Reply-To: <20070813155734.GB17535@ld0162-tx32.am.freescale.net>
+Message-ID: <Pine.LNX.4.60.0708132207530.5643@poirot.grange>
+References: <Pine.LNX.4.60.0708130015430.3895@poirot.grange>
+	<20070813155734.GB17535@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-serial@vger.kernel.org,
+	Greg KH <greg@kroah.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,67 +23,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+On Mon, 13 Aug 2007, Scott Wood wrote:
 
-I am having some problems with the initialization of BAR registers of 
-the PCI bus. I have a number of devices connected to the bus, which have 
-a BAR-size of less than PAGE_SIZE. For example:
+> On Mon, Aug 13, 2007 at 12:27:30AM +0200, Guennadi Liakhovetski wrote:
+> > A number of Linkstation models from Buffalo Technology with PPC, ARM, and 
+> > also MIPS (I think) CPUs have a power-management controller connected to a 
+> > UART. Among other things that chip controlls power and reset buttons. 
+> > Working on a standby support for one of these systems (ppc mpc8241 based), 
+> > the only suitable wakeup source there is the power button, which means, I 
+> > have to configure one of the two system UARTs to not be suspendsd. Using 
+> > the device_*_wakeup API doesn't quite work because both serial ports share 
+> > one device. The below patch proposes a new port flag UPF_MAY_WAKEUP to 
+> > configure such UARTs. It also adds support for a new "can-wakeup" serial 
+> > node property to the legacy_serial driver.
+> 
+> Shouldn't the ability to wakeup be configured through sysfs, rather than
+> encoded into the device tree?  I'm assuming this is just a matter of
+> configuration, and not that the hardware supports waking from one and not
+> the other.
 
-01:00.0 Network controller: VMIC: Unknown device 5565 (rev 01)
-        Subsystem: PLX Technology, Inc.: Unknown device 9656
-        Flags: bus master, 66Mhz, medium devsel, latency 128, IRQ 52
-        Memory at 00000000dfeffe00 (32-bit, non-prefetchable) [size=512]
-        I/O ports at e0ffff00 [size=256]
-        Memory at 00000000dfeffdc0 (32-bit, non-prefetchable) [size=64]
-        Memory at 00000000d8000000 (32-bit, non-prefetchable) [size=64M]
-        Capabilities: [40] Power Management version 0
-        Capabilities: [48] #00 [0080]
+Well, sort of. One of them is more "natural" - it has a button on the 
+front panel, to use the other one you have to modify the hardware. 
+However, I like the idea - generally it does seem to be a better approach 
+to have it run-time configurable over sysfs... Only - how? The only 
+differentitaion ATM between the two ports are these two links:
 
-I want to access the PCI-areas from from user space, so I try to do an 
-mmap. The returned address is however rounded to multiple of PAGE_SIZE 
-(=0x1000). To access for example BAR0, I have to use the return-value 
-from mmap+0xE00. And in the above case, I am able to access the BAR0 and 
-BAR2 areas with only 1 mmap call, as the 2 addresses are within one page. 
-The problem is that, when running my code on a I386 platform the BAR 
-registers are mapped at address 0x0 of the returned area.
+# ls -l /sys/devices/platform/serial8250.0/tty*
+lrwxrwxrwx 1 root root 0 Aug 13 22:05 /sys/devices/platform/serial8250.0/tty:ttyS0 -> ../../../class/tty/ttyS0
+lrwxrwxrwx 1 root root 0 Aug 13 22:05 /sys/devices/platform/serial8250.0/tty:ttyS1 -> ../../../class/tty/ttyS1
 
-When looking at the PCI init code (arch/ppc/syslib/pci_auto.c) I see 
-that the BAR-base address and/or size is not corrected for PAGE_SIZE. Is 
-this correct behaviour?
+And placing some wakeup file under the class/tty/ directory doesn't seem 
+very consistent with the current policy - until now they only live under 
+devices/... (Greg added to cc:).
 
-I could image the following line being changed from:
-        bar_value = (*upper_limit - bar_size) & ~(bar_size - 1);
-to:
-        bar_value = ((*upper_limit - bar_size) & ~(bar_size - 1)) &
-~(PAGE_SIZE-1);
+Actually, it is good you replied, Scott:-) I wanted to ask you about the 
+following: I've switched to your generic suspend/resume routines using the 
+_TLF_NAPPING bit, the arch_suspend_{dis,en}able_irqs() hooks... On wakeup 
+your _TLF_NAPPING trick should bypass calling the ISR and jump directly to 
+the resume code. However, on wakeup, it looks like I do get the wakeup 
+interrupt too. Is it the correct behaviour and is this the (approximately) 
+correct explanation why:
 
-The PCI area is assigned using a top-down method. Using this statement 
-the bar_value is rounded down to the first PAGE_SIZE boundary.
-This gives the following output:
+1. the AVR connected to ttyS0 sends 1 byte on button press and 1 byte on 
+button release. So, normally you would get 2 bytes and 2 interupts for one 
+such button down-up.
 
-01:00.0 Network controller: VMIC: Unknown device 5565 (rev 01)
-        Subsystem: PLX Technology, Inc.: Unknown device 9656
-        Flags: bus master, 66Mhz, medium devsel, latency 128, IRQ 52
-        Memory at 00000000dfeff000 (32-bit, non-prefetchable) [size=512]
-        I/O ports at e0fff000 [size=256]
-        Memory at 00000000dfefe000 (32-bit, non-prefetchable) [size=64]
-        Memory at 00000000d8000000 (32-bit, non-prefetchable) [size=64M]
-        Capabilities: [40] Power Management version 0
-        Capabilities: [48] #00 [0080]
+2. Interrupt is configured as edge (is it correct - haven't found in 
+mpc8245um, UARTs are usually edge), so, 
 
-My architecture: MVME3100 board with PPC8540 processor.
+--- button down -> byte #1 -> IRQ line active -> IC interrupts
+--- on resume interrupts are disabled, an EOI is performed (the line is 
+	still active)
+--- interrupts are re-enabled 
 
-Note:
-I posted this message to the embedded PPC mailing list, but as this is a
-more generic linux-ppc issue, it could be discussed here as well.
+3. a second interrupt for the same byte is delivered.
 
-Kind regards,
-        Johan Borkhuis
+I'm just trying to understand whether this is the correct and expected 
+behaviour or something is wrong here.
 
--- 
-         o o o o o o o . . .   ___J_o_h_a_n___B_o_r_k_h_u_i_s___
-        o      _____           ||   http://www.borkhuis.com    |
-      .][__n_n_|DD[  ====_____  |      johan@borkhuis.com      |
-     >(________|__|_[_________]_|______________________________|
-     _/oo OOOOO oo`  ooo   ooo  'o!o!o                    o!o!o`
-=== VxWorks-FAQ: http://www.xs4all.nl/~borkhuis/vxworks/vxworks.html ===
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
