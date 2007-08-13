@@ -1,20 +1,21 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] [43/2many] MAINTAINERS - AOA (Apple Onboard Audio)
-	ALSA DRIVER
-From: Michael Ellerman <michael@ellerman.id.au>
-To: joe@perches.com
-In-Reply-To: <46bff8b4.nGsvrO+zx5IWj+A6%joe@perches.com>
-References: <46bff8b4.nGsvrO+zx5IWj+A6%joe@perches.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-zUvc+fxifubz63AfX3S9"
-Date: Mon, 13 Aug 2007 16:54:37 +1000
-Message-Id: <1186988077.32127.2.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, johannes@sipsolutions.net,
-	torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <tmorrison@empirix.com>
+Received: from empbedex1.empirix.com (empbedex1.empirix.com [12.38.203.54])
+	by ozlabs.org (Postfix) with ESMTP id 34098DDEFD
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Aug 2007 21:01:39 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Trying to use Device Tree...and getting continuous interrupts
+	from attached 88e1145
+Date: Mon, 13 Aug 2007 07:01:30 -0400
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D90108D46262@EMPBEDEX.empirix.com>
+In-Reply-To: <3A76C14A-4A1C-48FA-9BEA-39020A131084@freescale.com>
+References: <BD261180E6D35F4D9D32F3E44FD3D90108BE44C2@EMPBEDEX.empirix.com>
+	<3A76C14A-4A1C-48FA-9BEA-39020A131084@freescale.com>
+From: "Morrison, Tom" <tmorrison@empirix.com>
+To: "Andy Fleming" <afleming@freescale.com>,
+	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,50 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+It turns out that Andy was right and I had not understand the=20
+NEW MPIC format for the definition of the external interrupts.
+This was different than the 2.6.11++ kernel...
 
---=-zUvc+fxifubz63AfX3S9
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Thank you Ben & Andy for your suggestions, unfortunately,
+I had to learn the hard way that it was more fundamental
+than I had imagined...
 
-On Sun, 2007-08-12 at 23:22 -0700, joe@perches.com wrote:
-> Add file pattern to MAINTAINER entry
->=20
-> Signed-off-by: Joe Perches <joe@perches.com>
->=20
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index e2e88f3..016f342 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -420,6 +420,7 @@ M:	johannes@sipsolutions.net
->  L:	linuxppc-dev@ozlabs.org
->  L:	alsa-devel@alsa-project.org (subscribers-only)
->  S:	Maintained
-> +F:	sound/oao/
+I continue to have problems, but I will itemize those in a
+separate email.
 
-Should be aoa.
+Tom Morrison
 
-cheers
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+-----Original Message-----
+From: Andy Fleming [mailto:afleming@freescale.com]=20
+Sent: Monday, August 06, 2007 2:10 PM
+To: Morrison, Tom
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: Trying to use Device Tree...and getting continuous
+interrupts from attached 88e1145
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+<Snip>
+>>> 		mdio@24520 {
+>>> 			#address-cells =3D <1>;
+>>> 			#size-cells =3D <0>;
+>>> 			device_type =3D "mdio";
+>>> 			compatible =3D "gianfar";=09
+>>> 			reg =3D <24520 20>;
+>>> 			phy1: ethernet-phy@1 {
+>>> 				interrupt-parent =3D <&mpic>;
+>>> 				interrupts =3D <37 1>;
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
 
---=-zUvc+fxifubz63AfX3S9
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+> How recent of a kernel are you using?  The current kernel assigns=20
+> the  external interrupts to be the low 12 interrupts, which would make
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGwAAtdSjSd0sB4dIRAtBKAJ94YhEUOxFBNTBAyma3UcyCQztmBQCfXTPj
-SpFkCCOFuW894gwMhtXyDuc=
-=AJkb
------END PGP SIGNATURE-----
-
---=-zUvc+fxifubz63AfX3S9--
+> your interrupt assignment wrong.
