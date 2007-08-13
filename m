@@ -1,32 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 762C0DDE99
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Aug 2007 21:17:04 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7DBGwST026329
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Aug 2007 07:16:58 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l7DBGwCp184084
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Aug 2007 05:16:58 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l7DBGwaA017644
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Aug 2007 05:16:58 -0600
-Date: Mon, 13 Aug 2007 06:16:01 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: joe@perches.com
-Subject: Re: [PATCH] [289/2many] MAINTAINERS - LINUX FOR POWERPC
-Message-ID: <20070813061601.50bbefe0@zod.rchland.ibm.com>
-In-Reply-To: <46bffaa9.Up0nOpoPeVCIyvqc%joe@perches.com>
-References: <46bffaa9.Up0nOpoPeVCIyvqc%joe@perches.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: paulus@samba.org, akpm@linux-foundation.org, torvalds@linux-foundation.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 872F7DDEFA
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Aug 2007 22:32:06 +1000 (EST)
+Message-ID: <46C04F07.3040909@ru.mvista.com>
+Date: Mon, 13 Aug 2007 16:31:03 +0400
+From: Valentine Barshak <vbarshak@ru.mvista.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [ PATCH ] PowerPC cascade UIC IRQ handler fix.
+References: <20070730163517.GA10087@ru.mvista.com>
+	<20070802034848.GA837@localhost.localdomain>
+	<1186103889.5495.650.camel@localhost.localdomain>
+	<20070803045705.GA2392@localhost.localdomain>
+	<20070803062346.GA14456@localhost.localdomain>
+	<20070813010848.GC18526@localhost.localdomain>
+In-Reply-To: <20070813010848.GC18526@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,25 +26,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 12 Aug 2007 23:31:05 -0700
-joe@perches.com wrote:
-
-> Add file pattern to MAINTAINER entry
+David Gibson wrote:
+> On Fri, Aug 03, 2007 at 04:23:46PM +1000, David Gibson wrote:
+>> On Fri, Aug 03, 2007 at 02:57:05PM +1000, David Gibson wrote:
+>>> On Fri, Aug 03, 2007 at 11:18:09AM +1000, Benjamin Herrenschmidt wrote:
+>>>> On Thu, 2007-08-02 at 13:48 +1000, David Gibson wrote:
+>>>>> On Mon, Jul 30, 2007 at 08:35:17PM +0400, Valentine Barshak wrote:
+>>>>>> PPC44x cascade UIC irq handler fix.
+>>>>>>
+>>>>>> According to PPC44x UM, if an interrupt is configured as level-sensitive,
+>>>>>> and a clear is attempted on the UIC_SR, the UIC_SR field is not
+>>>>>> cleared if the incoming interrupt signal is at the asserted polarity.
+>>>>>> This causes us to enter a cascade handler twice, since we first ack
+>>>>>> parent UIC interrupt and ack child UIC one after that.
+>>>>>> The patch checks child UIC msr value and returns IRQ_HANDLED
+>>>>>> if there're no pending interrupts. Otherwise we get a kernel panic
+>>>>>> with a "Fatal exception in interrupt" (illegal vector).
+>>>>>> The patch also fixes status flags.
+>>>>>>
+>>>>>> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+>>>>> Hrm... This doesn't seem like the right fix to me.  Instead, I think
+>>>>> the cascaded IRQ handler should ack the interrupt on the child first.
+>>>>> I'm a little surprised it doesn't at the moment.
+>>>> Well, we certainly do also need to make the code more solid vs.
+>>>> spurrious interrupts.
+>>> Actually that's true.  The suggested patch is a good improvement for
+>>> general robustness, but doesn't actually address the real problem.
+>>>
+>>>> The main thing is, if the cascade is a level interrupt, it should
+>>>> probably use a smarter cascade handler that masks it, handle the child
+>>>> interrupts, then unmasks it.
+>>> We already have that, since I just use setup_irq() to set up a cascade
+>>> handler, rather than a custom flow handler.
+>>>
+>>> The problem is that the standard handle_level_irq() flow handler acks
+>>> before the ISR is called, whereas because of this UIC behaviour, we
+>>> need to ack after the ISR has cleared the interrupt in the source.
+>>> This is not specific to cascades, but is a problem for all
+>>> level-triggered interrupts (i.e. basically everything).
+>>>
+>>> I think it means we must currently be getting a whole lot of spurious
+>>> interrupts - will do some investigation in a moment.
+>>>
+>>> To fix this either we'll need a custom flow handler for UIC, or we can
+>>> use the standard one, but clear the UIC_SR bits from the ->unmask()
+>>> callback for level interrupts.  I'm not entirely sure if the latter
+>>> approach is safe - I *think* it is, but I could do with more
+>>> convincing.
+>> Ok, here's a patch which fixes up the flow handling on the UIC.  It
+>> needs some polish yet, but should be ok to test.  Valentine, can you
+>> test this on your setup, *without* your original proposed patch.
+>> Eventually, for robustness, we'll want something like your original
+>> patch as well for robustness, but in the meantime leaving it out
+>> should tell us if my patch is actually having the intended effect.
 > 
-> Signed-off-by: Joe Perches <joe@perches.com>
+> Valentine, it would be really helpful if you could test this on the
+> problem you observed with the cascade interrupt.  Any word on this?
 > 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index c643ebe..1d1da70 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -2775,6 +2775,8 @@ W:	http://www.penguinppc.org/
->  L:	linuxppc-dev@ozlabs.org
->  T:	git kernel.org:/pub/scm/linux/kernel/git/paulus/powerpc.git
->  S:	Supported
-> +F:	arch/powerpc
-> +F:	include/asm-powerpc/
 
-There's also the arch/ppc, include/asm-ppc directories until they get
-removed.
+Thanks David,
+the patch works fine here (without the original one).
+Don't think we really need a "fastcall" here on a powerpc though.
+The original patch also fixes a minor issue with /proc/interrupts
+(the the "if (trigger)" stuff).
+Currently level-triggered interrupts are displayed as edge-triggered 
+ones and vice versa.
 
-josh
+Thanks,
+Valentine.
