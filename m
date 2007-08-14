@@ -1,26 +1,22 @@
-Return-Path: <joe.hamman@embeddedspecialties.com>
-Received: from mail.embeddedspecialties.com (mail.embeddedspecialties.com
-	[74.94.113.177])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 33359DDE3E
+Return-Path: <Leonid@a-k-a.net>
+Received: from mis011.exch011.intermedia.net (mis011.exch011.intermedia.net
+	[64.78.21.10]) by ozlabs.org (Postfix) with ESMTP id 94A15DDE17
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Aug 2007 02:50:52 +1000 (EST)
-From: "Joe Hamman" <joe.hamman@embeddedspecialties.com>
-To: "'Scott Wood'" <scottwood@freescale.com>,
-	"'Andy Fleming'" <afleming@freescale.com>
-References: <1187044669.10295.4.camel@server>	<3FE16C0A-892F-4481-999A-A699C0C70BF9@kernel.crashing.org>	<013b01c7de23$5baa7d70$6f00a8c0@ESIDT>
-	<1B668DF2-9909-4D43-AAFF-3A2ADFA283B2@freescale.com>
-	<46C1D553.4000201@freescale.com>
-Subject: RE: [PATCH] [UPDATED] tsec: Allow Ten Bit Interface to be configurable
-Date: Tue, 14 Aug 2007 11:50:46 -0500
-Message-ID: <018801c7de93$43390e80$6f00a8c0@ESIDT>
+	Wed, 15 Aug 2007 03:27:51 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <46C1D553.4000201@freescale.com>
+	charset="US-ASCII"
+Subject: RE: Best Linux tree for Xilinx support.
+Date: Tue, 14 Aug 2007 10:28:20 -0700
+Message-ID: <406A31B117F2734987636D6CCC93EE3C02053B0F@ehost011-3.exch011.intermedia.net>
+In-Reply-To: <20070814050748.EE7C2D0075@mail26-fra.bigfish.com>
+References: <20070806225642.7D72A7B005B@mail34-fra.bigfish.com><fa686aa40708091142n520f222amec7c6a76786c7fcc@mail.gmail.com>
+	<fa686aa40708102137o25b83daar82a40471756a3f2b@mail.gmail.com>
+	<406A31B117F2734987636D6CCC93EE3C02053A10@ehost011-3.exch011.intermedia.net>
+	<20070814050748.EE7C2D0075@mail26-fra.bigfish.com>
+From: "Leonid" <Leonid@a-k-a.net>
+To: "Wolfgang Reissnegger" <wolfgang.reissnegger@xilinx.com>
 Cc: linuxppc-embedded@ozlabs.org
-Reply-To: joe.hamman@embeddedspecialties.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,76 +27,124 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Scott Wood [mailto:scottwood@freescale.com]
-> Sent: Tuesday, August 14, 2007 11:16 AM
-> To: Andy Fleming
-> Cc: joe.hamman@embeddedspecialties.com; linuxppc-embedded@ozlabs.org
-> Subject: Re: [PATCH] [UPDATED] tsec: Allow Ten Bit Interface to be
-> configurable
-> 
-> Andy Fleming wrote:
-> > It's actually a per-tsec property.  There's not one tbi, there's one
-> > per TSEC.  The one on TSEC 0 is special in that it can interfere with
-> > PHYs on the MDIO bus.
-> >
-> > So I would suggest making it a property of the ethernet node:
-> >
-> > ethernet@24000 {
-> > ...
-> > tbipa = <1f>;
-> > ...
-> > }
-> 
-> "tbipa" isn't likely to pass the Segher test. :-)
-> 
-> If the TBI address is in PHY-space, then it should go in the MDIO bus.
-> For the second TSEC, create a second MDIO bus node.
-> 
+Hi Wolfgang:
 
-How about something like this?
+Thank you very much for the information. What kernel.org version your
+tree is based on?
 
-		mdio@24520 {
-			#address-cells = <1>;
-			#size-cells = <0>;
-			device_type = "mdio";
-			compatible = "gianfar";
-			reg = <24520 20>;
-			phy1f: ethernet-phy@1f {
-				reg = <1f>;
-				device_type = "ethernet-phy";
-			};
-			phy0: ethernet-phy@0 {
-				reg = <0>;
-				device_type = "ethernet-phy";
-			};
-			phy1: ethernet-phy@1 {
-				reg = <1>;
-				device_type = "ethernet-phy";
-			};
-			phy2: ethernet-phy@2 {
-				reg = <2>;
-				device_type = "ethernet-phy";
-			};
-			tbi1e: ethernet-tbi@1e {
-				reg = <1e>;
-				device_type = "ethernet-tbi";
-			};
-		};
+As you noticed, it will be rather reference tree to set some coding
+standard, namely where files are located, how drivers are included,
+etc... So, I would appreciate if I can get a glimpse of your suggested
+tree structure, actual sources are not even required.
 
-		ethernet@24000 {
-			#address-cells = <1>;
-			#size-cells = <0>;
-			device_type = "network";
-			model = "eTSEC";
-			compatible = "gianfar";
-			reg = <24000 1000>;
-			mac-address = [ 00 E0 0C 00 73 00 ];
-			interrupts = <1d 2 1e 2 22 2>;
-			interrupt-parent = <&mpic>;
-			phy-handle = <&phy1f>;
-			tbi-handle = <&tbi1e>;
-		};
+Previous support for Xilinx was more oriented toward PPC405 core in
+Virtex FPGA and everything was naturally concentrated under
+arch/ppc/platform/4xx.
 
+I deem such approach is not very good one. I'm using precisely same IP
+cores like GPIO, EMAC, SPI, CAN, etc... in Virtex and Spartan FPGAs
+which means (OK, may be cores are different somewhat for different FPGAs
+but low level Xilinx code is the same). That means at least 2 different
+CPU architectures (PPC and Microblaze).=20
 
-Joe
+You certainly gave thought to such an issue. What tree structure do you
+suggest? There are 3 groups of Xilinx files to place in the Linux tree:
+
+- common .h files (like xbasic_types.h);
+- common .c files, used by several cores (like all DMA stuff).
+- specific core .h/.c files (say xemac.h and xemac.c).
+
+They all kind of "architecture independent" (at least 2 architectures
+can be used - MB and PPC).
+
+Of course, except tree structure there are several other (not completely
+independent) questions to answer like:
+
+A How EDK project parameters get into Linux kernel? This is huge issue
+which can be divided on several items.
+
+A.1. Do you also suppose that some special type of BSP (.tcl script,
+defined by OS parameter of MSS file) shall run or you assume that it
+will be regular xaparameters.h file, prepared by standard standalone
+BSP? In latter case xparamerts.h needs manual editing since it doesn't
+have all parameters required by certain cores.=20
+
+A.2. There is also a question how these definitions get into .c and Make
+files. Petalogix has interesting solution when they bump all XILINX
+parameters to autoconf.h and .config files thus making them available
+for both compiler and make. What's your approach?
+
+A.3. If .config is not prepared automatically, then all configuration
+must be done via "make menuconfig" meaning Kconfig files shall be
+modified. Do you intend having several FPGA flags like CONFIG_VIRTEX and
+CONFIG_SPARTAN? Drivers' inclusion will depend on one of them.
+
+A.4. Is it assumed that Xilinx low level code will stay intact as it is
+supplied with EDK package or you are going to prepare special Linux
+Xilinx set (mostly because of name convention)?
+
+B How drivers get registered - via platform devices structure in
+virtex.c file or something different?
+
+All these questions have been discussed by the community but I somehow
+missed a conclusion if any took place. Does anything (kind of memo or
+readme) exist on these subjects?
+
+Thanks,
+
+Leonid.
+
+-----Original Message-----
+From: Wolfgang Reissnegger [mailto:wolfgang.reissnegger@xilinx.com]=20
+Sent: Monday, August 13, 2007 10:08 PM
+To: Leonid
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Best Linux tree for Xilinx support.
+
+Hi Leonid,
+
+I am in the process of publishing a Xilinx Linux git tree which will
+contain most of the drivers for Xilinx IP including recent contributions
+from Grant Likely, John Williams, Joachim Foerster and others.
+
+This tree will be available on the Xilinx git server soon, however it
+will be a non-supported (and likely unstable) tree. Its main purpose is
+to provide a common code base for development and a channel to push new
+driver code out into the community.
+
+I am still waiting on IT to set up the new server machine. I will post
+an announcement once the server is up and running.
+
+Cheers,
+   Wolfgang
+
+Leonid wrote:
+> Hi:
+>=20
+> I have several boards with different architectures (Microblaze, PPC),=20
+> running Linux/uClinux and using Xilinx IP cores. I use both Virtex and
+
+> Spartan FPGAs.
+>=20
+> Historically I'm using different kernels for them, starting from=20
+> uClinux 2.4, all way through Linux 2.6.16 and 2.6.19. I patched them=20
+> here and there to get working.
+>=20
+> I certainly feel a need to move to some standard kernel tree.
+>=20
+> I understand that you guys are in some advanced steps of integrating=20
+> Xilinx into Linux. What would be my best choice of Linux kernel now?
+>=20
+> I see the following options:
+>=20
+> - download some GIT tree your are using (which one?).
+> - get latest tree from kernel.org and patch it using your patches=20
+> (where I can get them?).
+> - ??
+>=20
+> Please advise,
+>=20
+> Thanks,
+>=20
+> Leonid.
+>=20
