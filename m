@@ -1,20 +1,19 @@
-Return-Path: <Leonid@a-k-a.net>
-Received: from mis011.exch011.intermedia.net (mis011.exch011.intermedia.net
-	[64.78.21.10]) by ozlabs.org (Postfix) with ESMTP id 1ED6EDDE0D
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5D3D0DDD0D
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Aug 2007 12:47:03 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: Best Linux tree for Xilinx support.
-Date: Mon, 13 Aug 2007 19:47:35 -0700
-Message-ID: <406A31B117F2734987636D6CCC93EE3C02053A10@ehost011-3.exch011.intermedia.net>
-In-Reply-To: <fa686aa40708102137o25b83daar82a40471756a3f2b@mail.gmail.com>
-References: <20070806225642.7D72A7B005B@mail34-fra.bigfish.com><fa686aa40708091142n520f222amec7c6a76786c7fcc@mail.gmail.com>
-	<fa686aa40708102137o25b83daar82a40471756a3f2b@mail.gmail.com>
-From: "Leonid" <Leonid@a-k-a.net>
-To: "Grant Likely" <grant.likely@secretlab.ca>,
-	"Wolfgang Reissnegger" <wolfgang.reissnegger@xilinx.com>
+	Tue, 14 Aug 2007 13:07:59 +1000 (EST)
+In-Reply-To: <1187044669.10295.4.camel@server>
+References: <1187044669.10295.4.camel@server>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3FE16C0A-892F-4481-999A-A699C0C70BF9@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [UPDATED] tsec: Allow Ten Bit Interface to be configurable
+Date: Mon, 13 Aug 2007 22:09:37 -0500
+To: joe.hamman@embeddedspecialties.com
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,30 +25,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi:
 
-I have several boards with different architectures (Microblaze, PPC),
-running Linux/uClinux and using Xilinx IP cores. I use both Virtex and
-Spartan FPGAs.
+On Aug 13, 2007, at 5:37 PM, Joe Hamman wrote:
 
-Historically I'm using different kernels for them, starting from uClinux
-2.4, all way through Linux 2.6.16 and 2.6.19. I patched them here and
-there to get working.
+> Allow the address of the Ten Bit Interface (TBI) to be changed in the
+> event of a conflict with another device.
+>
+> Signed-off by: Joe Hamman <joe.hamman@embeddedspecialties.com>
+> ---
+>
+> Please ignore the last patch - I missed a cut & paste error on the  
+> range
+> that my testing didn't catch.
 
-I certainly feel a need to move to some standard kernel tree.
+I think we'd rather this came from the device tree.
 
-I understand that you guys are in some advanced steps of integrating
-Xilinx into Linux. What would be my best choice of Linux kernel now?
-
-I see the following options:
-
-- download some GIT tree your are using (which one?).
-- get latest tree from kernel.org and patch it using your patches (where
-I can get them?).
-- ??
-
-Please advise,
-
-Thanks,
-
-Leonid.
+- k
