@@ -1,18 +1,20 @@
-Return-Path: <gregkh@suse.de>
-Received: from mx1.suse.de (ns1.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 33F9DDDF10
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Aug 2007 09:42:25 +1000 (EST)
-Subject: patch powerpc-fix-size-check-for-hugetlbfs.patch queued to -stable
-	tree
-To: benh@kernel.crashing.org, gregkh@suse.de,
-	linuxppc-dev@ozlabs.org, paulus@samba.org
-From: <gregkh@suse.de>
-Date: Mon, 13 Aug 2007 16:26:27 -0700
-In-Reply-To: <1186551855.938.164.camel@localhost.localdomain>
-Message-Id: <20070813234218.4796D14540D0@imap.suse.de>
-Cc: stable-commits@vger.kernel.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 14 Aug 2007 11:35:10 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: [ PATCH ] PowerPC cascade UIC IRQ handler fix.
+Message-ID: <20070814013510.GA31123@localhost.localdomain>
+References: <20070730163517.GA10087@ru.mvista.com>
+	<20070802034848.GA837@localhost.localdomain>
+	<1186103889.5495.650.camel@localhost.localdomain>
+	<20070803045705.GA2392@localhost.localdomain>
+	<20070803062346.GA14456@localhost.localdomain>
+	<20070813010848.GC18526@localhost.localdomain>
+	<46C04F07.3040909@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <46C04F07.3040909@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,62 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Aug 13, 2007 at 04:31:03PM +0400, Valentine Barshak wrote:
+[snip]
+> >> Ok, here's a patch which fixes up the flow handling on the UIC.  It
+> >> needs some polish yet, but should be ok to test.  Valentine, can you
+> >> test this on your setup, *without* your original proposed patch.
+> >> Eventually, for robustness, we'll want something like your original
+> >> patch as well for robustness, but in the meantime leaving it out
+> >> should tell us if my patch is actually having the intended effect.
+> > 
+> > Valentine, it would be really helpful if you could test this on the
+> > problem you observed with the cascade interrupt.  Any word on this?
+> > 
+> 
+> Thanks David,
+> the patch works fine here (without the original one).
 
-This is a note to let you know that we have just queued up the patch titled
+Ok, great.
 
-     Subject: powerpc: Fix size check for hugetlbfs
+> Don't think we really need a "fastcall" here on a powerpc though.
 
-to the 2.6.22-stable tree.  Its filename is
+Oh, yeah, that's just copied from the generic handle_level_irq().
 
-     powerpc-fix-size-check-for-hugetlbfs.patch
+> The original patch also fixes a minor issue with /proc/interrupts
+> (the the "if (trigger)" stuff).
+> Currently level-triggered interrupts are displayed as edge-triggered 
+> ones and vice versa.
 
-A git repo of this tree can be found at 
-    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+Yes, we'll still want two patches similar to your original: one to fix
+the cosmetic /proc/interrupts problem, the other to make the cascade
+handler more robust against spurious interrupts.  I just wanted to see
+if this flow handler change fixed the basic problem.
 
-
->From benh@kernel.crashing.org  Mon Aug 13 16:17:09 2007
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 08 Aug 2007 15:44:15 +1000
-Subject: powerpc: Fix size check for hugetlbfs
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Cc: Paul Mackerras <paulus@samba.org>, stable@kernel.org
-Message-ID: <1186551855.938.164.camel@localhost.localdomain>
-
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-My "slices" address space management code that was added in 2.6.22
-implementation of get_unmapped_area() doesn't properly check that the
-size is a multiple of the requested page size. This allows userland to
-create VMAs that aren't a multiple of the huge page size with hugetlbfs
-(since hugetlbfs entirely relies on get_unmapped_area() to do that
-checking) which leads to a kernel BUG() when such areas are torn down.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
---- linux-work.orig/arch/powerpc/mm/slice.c	2007-08-08 15:16:06.000000000 +1000
-+++ linux-work/arch/powerpc/mm/slice.c	2007-08-08 15:16:41.000000000 +1000
-@@ -405,6 +405,8 @@ unsigned long slice_get_unmapped_area(un
- 
- 	if (len > mm->task_size)
- 		return -ENOMEM;
-+	if (len & ((1ul << pshift) - 1))
-+		return -EINVAL;
- 	if (fixed && (addr & ((1ul << pshift) - 1)))
- 		return -EINVAL;
- 	if (fixed && addr > (mm->task_size - len))
-
-
-_______________________________________________
-stable mailing list
-stable@linux.kernel.org
-http://linux.kernel.org/mailman/listinfo/stable
-
-
-
-Patches currently in stable-queue which might be from benh@kernel.crashing.org are
-
-queue-2.6.22/ppc-revert-don-t-complain-if-size-cells-0-in-prom_parse.patch
-queue-2.6.22/ppc-revert-add-mdio-to-bus-scan-id-list-for-platforms-with-qe-uec.patch
-queue-2.6.22/powerpc-fix-size-check-for-hugetlbfs.patch
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
