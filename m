@@ -1,35 +1,17 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 37993DDE42
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 05:22:56 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7EIHtWO002089
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Aug 2007 14:17:55 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l7EJMqbK510562
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Aug 2007 15:22:52 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l7EJMpu4019746
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Aug 2007 15:22:51 -0400
-Received: from zod.rchland.ibm.com (wecm-9-67-139-20.wecm.ibm.com
-	[9.67.139.20])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	l7EJMpPd019709
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Aug 2007 15:22:51 -0400
-Date: Tue, 14 Aug 2007 14:21:48 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Return-Path: <mail4mz@gmail.com>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.190])
+	by ozlabs.org (Postfix) with ESMTP id 38D52DDE34
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 06:14:11 +1000 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so1285757rvf
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Aug 2007 13:14:10 -0700 (PDT)
+Message-ID: <5c9cd53b0708141314o57440c62waffb4cca3f2be0b9@mail.gmail.com>
+Date: Tue, 14 Aug 2007 16:14:09 -0400
+From: "mike zheng" <mail4mz@gmail.com>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/4] PowerPC 440EPx: Sequoia defconfig
-Message-ID: <20070814142148.40bd7a57@zod.rchland.ibm.com>
-In-Reply-To: <20070814184500.GA10087@ru.mvista.com>
-References: <20070814184107.GA6696@ru.mvista.com>
-	<20070814184500.GA10087@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: System crash on boot_e500.S
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_4955_24118053.1187122449993"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,44 +21,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 14 Aug 2007 22:45:00 +0400
-Valentine Barshak <vbarshak@ru.mvista.com> wrote:
+------=_Part_4955_24118053.1187122449993
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> Sequoia defconfig
-> 
-> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
-> ---
->  arch/powerpc/configs/sequoia_defconfig |  783 +++++++++++++++++++++++++++++++++
->  1 files changed, 783 insertions(+)
-> 
-> diff -ruN linux-2.6.orig/arch/powerpc/configs/sequoia_defconfig linux-2.6/arch/powerpc/configs/sequoia_defconfig
-> --- linux-2.6.orig/arch/powerpc/configs/sequoia_defconfig	1970-01-01 03:00:00.000000000 +0300
-> +++ linux-2.6/arch/powerpc/configs/sequoia_defconfig	2007-08-14 17:18:07.000000000 +0400
-> @@ -0,0 +1,783 @@
-> +#
-> +# Automatically generated make config: don't edit
-> +# Linux kernel version: 2.6.23-rc1
-> +# Fri Jul 27 20:46:07 2007
-> +#
-> +# CONFIG_PPC64 is not set
-> +
-> +#
-> +# Processor support
-> +#
-> +# CONFIG_6xx is not set
-> +# CONFIG_PPC_85xx is not set
-> +# CONFIG_PPC_8xx is not set
-> +# CONFIG_40x is not set
-> +CONFIG_44x=y
-> +# CONFIG_E200 is not set
-> +CONFIG_PPC_FPU=y
+ Hi All,
 
-...
+I am trying to bring up MPC8548 CDS board on 2.4 kernel. I have problem in
+the head_e500.S. The "mtspr SRR0, r7; mtspr SRR1 r6" does not work for me.
+The content of R7 and R6 are not moved to SRR0 and SRR1.  I am using the
+tool-chain from Freescale for 2.6 kernel.
 
-> +CONFIG_MATH_EMULATION=y
+Any idea on this issue?
 
-You shouldn't need both FPU and MATH_EMULATION.  Bamboo had the same
-bug in it's defconfig until recently, so you can blame me if you'd
-like :)
+Thanks,
 
-josh
+Mike
+
+
+
+Code of head_e500.S:
+
+
+      slwi  r6,r6,5     /* setup new context with other address space */
+      bl    1f          /* Find our address */
+1:    mflr  r9
+      rlwimi      r7,r9,0,20,31
+      addi  r7,r7,24
+      mtspr SRR0,r7           ........No change in SRR0
+      mtspr SRR1,r6           ........No change in SRR1
+      rfi                     ........System crash
+
+/* 4. Clear out PIDs & Search info */      l
+      li    r6,0
+      mtspr SPRN_PID0,r6
+      mtspr SPRN_PID1,r6
+      mtspr SPRN_PID2,r6
+      mtspr SPRN_MAS6,r6
+
+------=_Part_4955_24118053.1187122449993
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<span class="ppt" id="_user_linuxppc-dev@ozlabs.org">
+<div class="MsoPlainText" style="MARGIN: 0in 0in 0pt"><font size="2"><font face="Courier New"><span style="mso-tab-count: 1">Hi All,</span></font></font></div>
+<div class="MsoPlainText" style="MARGIN: 0in 0in 0pt"><font size="2"><font face="Courier New"><span style="mso-tab-count: 1"></span></font></font>&nbsp;</div>
+<div class="MsoPlainText" style="MARGIN: 0in 0in 0pt"><font size="2"><font face="Courier New"><span style="mso-tab-count: 1">I&nbsp;am trying to bring&nbsp;up MPC8548 CDS board on 2.4 kernel.&nbsp;I have problem in the head_e500.S. The &quot;mtspr SRR0, r7; mtspr SRR1 r6&quot;&nbsp;does not work for me. The content of R7 and R6&nbsp;are not moved to SRR0 and&nbsp;SRR1.&nbsp; I am using the tool-chain from Freescale for 
+2.6 kernel.&nbsp;</span></font></font></div>
+<div class="MsoPlainText" style="MARGIN: 0in 0in 0pt"><font size="2"><font face="Courier New"><span style="mso-tab-count: 1"></span></font></font>&nbsp;</div>
+<div class="MsoPlainText" style="MARGIN: 0in 0in 0pt"><font size="2"><font face="Courier New"><span style="mso-tab-count: 1">Any idea on this&nbsp;issue?</span></font></font></div>
+<div class="MsoPlainText" style="MARGIN: 0in 0in 0pt"><font size="2"><font face="Courier New"><span style="mso-tab-count: 1"></span></font></font>&nbsp;</div>
+<div class="MsoPlainText" style="MARGIN: 0in 0in 0pt"><font size="2"><font face="Courier New"><span style="mso-tab-count: 1">Thanks,</span></font></font></div>
+<div class="MsoPlainText" style="MARGIN: 0in 0in 0pt"><font size="2"><font face="Courier New"><span style="mso-tab-count: 1"></span></font></font>&nbsp;</div>
+<div class="MsoPlainText" style="MARGIN: 0in 0in 0pt"><font size="2"><font face="Courier New"><span style="mso-tab-count: 1">Mike</span></font></font></div>
+<div class="MsoPlainText" style="MARGIN: 0in 0in 0pt"><font size="2"><font face="Courier New"><span style="mso-tab-count: 1"></span></font></font>&nbsp;</div>
+<div class="MsoPlainText" style="MARGIN: 0in 0in 0pt"><font size="2"><font face="Courier New"><span style="mso-tab-count: 1"></span></font></font>&nbsp;</div>
+<div class="MsoPlainText" style="MARGIN: 0in 0in 0pt"><font size="2"><font face="Courier New"><span style="mso-tab-count: 1"></span></font></font>&nbsp;</div>
+<div class="MsoPlainText" style="MARGIN: 0in 0in 0pt"><font size="2"><font face="Courier New"><span style="mso-tab-count: 1">Code of head_e500.S:</span></font></font></div>
+<div class="MsoPlainText" style="MARGIN: 0in 0in 0pt"><font size="2"><font face="Courier New"><span style="mso-tab-count: 1"></span></font></font>&nbsp;</div>
+<div class="MsoPlainText" style="MARGIN: 0in 0in 0pt"><font size="2"><font face="Courier New"><span style="mso-tab-count: 1">&nbsp;</span></font></font></div>
+<div class="MsoPlainText" style="MARGIN: 0in 0in 0pt"><font size="2"><font face="Courier New"><span style="mso-tab-count: 1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>slwi<span style="mso-tab-count: 1">&nbsp; </span>r6,r6,5<span style="mso-tab-count: 2">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>/* setup new context with other address space */<br><span style="mso-tab-count: 1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>bl<span style="mso-tab-count: 1">&nbsp;&nbsp;&nbsp; </span>1f<span style="mso-tab-count: 2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>/* Find our address */
+<br></font></font><font size="2"><font face="Courier New"><span lang="PT-BR" style="mso-ansi-language: PT-BR">1:<span style="mso-tab-count: 1">&nbsp;&nbsp;&nbsp; </span>mflr<span style="mso-tab-count: 1">&nbsp; </span>r9<br><span style="mso-tab-count: 1">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>rlwimi<span style="mso-tab-count: 1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>r7,r9,0,20,31<br><span style="mso-tab-count: 1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>addi<span style="mso-tab-count: 1">&nbsp; </span>r7,r7,24<br><span style="mso-tab-count: 1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>
+mtspr<span style="mso-tab-count: 1"> </span>SRR0,r7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ........No change in SRR0<br><span style="mso-tab-count: 1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span>mtspr<span style="mso-tab-count: 1"> </span>SRR1,r6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;........No&nbsp;change in SRR1
+<br><span style="mso-tab-count: 1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>rfi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ........System crash<br><br>/* 4. Clear out PIDs &amp; Search info */<span style="mso-tab-count: 1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>l</font></font></div>
+<div class="MsoPlainText" style="MARGIN: 0in 0in 0pt"><font size="2"><font face="Courier New">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;li<span style="mso-tab-count: 1">&nbsp;&nbsp;&nbsp; </span>r6,0<br><span style="mso-tab-count: 1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>mtspr<span style="mso-tab-count: 1">
+ </span>SPRN_PID0,r6<br><span style="mso-tab-count: 1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>mtspr<span style="mso-tab-count: 1"> </span>SPRN_PID1,r6<br><span style="mso-tab-count: 1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>mtspr<span style="mso-tab-count: 1"> </span>SPRN_PID2,r6
+<br><span style="mso-tab-count: 1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>mtspr<span style="mso-tab-count: 1"> </span>SPRN_MAS6,r6</font></font><br>&nbsp;</div></span>
+
+------=_Part_4955_24118053.1187122449993--
