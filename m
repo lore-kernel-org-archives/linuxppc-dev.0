@@ -1,22 +1,20 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
+Return-Path: <bgill@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EF872DDDFC
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 04:42:12 +1000 (EST)
-Received: from vaxon.spb.rtsoft.ru (localhost.localdomain [127.0.0.1])
-	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1) with ESMTP id l7EIf8Wi008918
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Aug 2007 22:41:08 +0400
-Received: (from vaxon@localhost)
-	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1/Submit) id l7EIf8fX008908
-	for linuxppc-dev@ozlabs.org; Tue, 14 Aug 2007 22:41:08 +0400
-Date: Tue, 14 Aug 2007 22:41:07 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 926A0DDE3F
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 04:45:52 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l7EIjl4M002315
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Aug 2007 11:45:48 -0700 (MST)
+From: Becky Bruce <becky.bruce@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 0/4] PowerPC 440EPx: Initial Sequoia support take 2
-Message-ID: <20070814184107.GA6696@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH] Update lmb.h include protection to ASM_POWERPC
+Date: Tue, 14 Aug 2007 13:45:44 -0500
+Message-Id: <11871171442275-git-send-email-becky.bruce@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,15 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The following patches add initial PowerPC 440EPx Sequoia board support.
-The code is based mainly on the Bamboo board support by Josh Boyer and
-should be applied on top of the "[patch 00/10] 4xx patch series for 2.6.24"
-which adds Bamboo support, since Sequoia shares some code pieces with Bamboo.
-These patches have been modified based on the comments for the previous
-440EPx Sequoia patch series.
+This file was protected by _PPC64_LMB_H, which is confusing, as the 32-bit code
+also uses the lmb these days.  Changed to _ASM_POWERPC_LMB_H.
 
-The 2.6.24 4xx patch series is included in the following git tree:
-git pull git://git.infradead.org/users/jwboyer/powerpc.git for-2.6.24
+Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
+---
+ include/asm-powerpc/lmb.h |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-Thanks,
-Valentine.
+diff --git a/include/asm-powerpc/lmb.h b/include/asm-powerpc/lmb.h
+index 0c5880f..b5f9f4c 100644
+--- a/include/asm-powerpc/lmb.h
++++ b/include/asm-powerpc/lmb.h
+@@ -1,5 +1,5 @@
+-#ifndef _PPC64_LMB_H
+-#define _PPC64_LMB_H
++#ifndef _ASM_POWERPC_LMB_H
++#define _ASM_POWERPC_LMB_H
+ #ifdef __KERNEL__
+ 
+ /*
+@@ -77,4 +77,4 @@ lmb_end_pfn(struct lmb_region *type, unsigned long region_nr)
+ }
+ 
+ #endif /* __KERNEL__ */
+-#endif /* _PPC64_LMB_H */
++#endif /* _ASM_POWERPC_LMB_H */
+-- 
+1.5.0.3
