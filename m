@@ -1,23 +1,26 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <joe.hamman@embeddedspecialties.com>
+Received: from mail.embeddedspecialties.com (mail.embeddedspecialties.com
+	[74.94.113.177])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4BAB4DDEE4
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 33359DDE3E
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Aug 2007 02:16:27 +1000 (EST)
-Message-ID: <46C1D553.4000201@freescale.com>
-Date: Tue, 14 Aug 2007 11:16:19 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH] [UPDATED] tsec: Allow Ten Bit Interface to be configurable
+	Wed, 15 Aug 2007 02:50:52 +1000 (EST)
+From: "Joe Hamman" <joe.hamman@embeddedspecialties.com>
+To: "'Scott Wood'" <scottwood@freescale.com>,
+	"'Andy Fleming'" <afleming@freescale.com>
 References: <1187044669.10295.4.camel@server>	<3FE16C0A-892F-4481-999A-A699C0C70BF9@kernel.crashing.org>	<013b01c7de23$5baa7d70$6f00a8c0@ESIDT>
 	<1B668DF2-9909-4D43-AAFF-3A2ADFA283B2@freescale.com>
-In-Reply-To: <1B668DF2-9909-4D43-AAFF-3A2ADFA283B2@freescale.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	<46C1D553.4000201@freescale.com>
+Subject: RE: [PATCH] [UPDATED] tsec: Allow Ten Bit Interface to be configurable
+Date: Tue, 14 Aug 2007 11:50:46 -0500
+Message-ID: <018801c7de93$43390e80$6f00a8c0@ESIDT>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <46C1D553.4000201@freescale.com>
 Cc: linuxppc-embedded@ozlabs.org
+Reply-To: joe.hamman@embeddedspecialties.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,22 +31,76 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Andy Fleming wrote:
-> It's actually a per-tsec property.  There's not one tbi, there's one  
-> per TSEC.  The one on TSEC 0 is special in that it can interfere with  
-> PHYs on the MDIO bus.
+> -----Original Message-----
+> From: Scott Wood [mailto:scottwood@freescale.com]
+> Sent: Tuesday, August 14, 2007 11:16 AM
+> To: Andy Fleming
+> Cc: joe.hamman@embeddedspecialties.com; linuxppc-embedded@ozlabs.org
+> Subject: Re: [PATCH] [UPDATED] tsec: Allow Ten Bit Interface to be
+> configurable
 > 
-> So I would suggest making it a property of the ethernet node:
+> Andy Fleming wrote:
+> > It's actually a per-tsec property.  There's not one tbi, there's one
+> > per TSEC.  The one on TSEC 0 is special in that it can interfere with
+> > PHYs on the MDIO bus.
+> >
+> > So I would suggest making it a property of the ethernet node:
+> >
+> > ethernet@24000 {
+> > ...
+> > tbipa = <1f>;
+> > ...
+> > }
 > 
-> ethernet@24000 {
-> ...
-> tbipa = <1f>;
-> ...
-> }
+> "tbipa" isn't likely to pass the Segher test. :-)
+> 
+> If the TBI address is in PHY-space, then it should go in the MDIO bus.
+> For the second TSEC, create a second MDIO bus node.
+> 
 
-"tbipa" isn't likely to pass the Segher test. :-)
+How about something like this?
 
-If the TBI address is in PHY-space, then it should go in the MDIO bus. 
-For the second TSEC, create a second MDIO bus node.
+		mdio@24520 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			device_type = "mdio";
+			compatible = "gianfar";
+			reg = <24520 20>;
+			phy1f: ethernet-phy@1f {
+				reg = <1f>;
+				device_type = "ethernet-phy";
+			};
+			phy0: ethernet-phy@0 {
+				reg = <0>;
+				device_type = "ethernet-phy";
+			};
+			phy1: ethernet-phy@1 {
+				reg = <1>;
+				device_type = "ethernet-phy";
+			};
+			phy2: ethernet-phy@2 {
+				reg = <2>;
+				device_type = "ethernet-phy";
+			};
+			tbi1e: ethernet-tbi@1e {
+				reg = <1e>;
+				device_type = "ethernet-tbi";
+			};
+		};
 
--Scott
+		ethernet@24000 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			device_type = "network";
+			model = "eTSEC";
+			compatible = "gianfar";
+			reg = <24000 1000>;
+			mac-address = [ 00 E0 0C 00 73 00 ];
+			interrupts = <1d 2 1e 2 22 2>;
+			interrupt-parent = <&mpic>;
+			phy-handle = <&phy1f>;
+			tbi-handle = <&tbi1e>;
+		};
+
+
+Joe
