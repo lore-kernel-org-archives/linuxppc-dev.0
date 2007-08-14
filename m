@@ -1,19 +1,22 @@
-Return-Path: <becky.bruce@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C2CF8DDEDE
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 04:08:48 +1000 (EST)
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <0BA10F2B-06FE-411A-9E46-BE1623715A23@freescale.com>
-From: Becky Bruce <becky.bruce@freescale.com>
-Subject: ft_ordered removal  patch status?
-Date: Tue, 14 Aug 2007 13:08:49 -0500
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id EF872DDDFC
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 04:42:12 +1000 (EST)
+Received: from vaxon.spb.rtsoft.ru (localhost.localdomain [127.0.0.1])
+	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1) with ESMTP id l7EIf8Wi008918
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Aug 2007 22:41:08 +0400
+Received: (from vaxon@localhost)
+	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1/Submit) id l7EIf8fX008908
+	for linuxppc-dev@ozlabs.org; Tue, 14 Aug 2007 22:41:08 +0400
+Date: Tue, 14 Aug 2007 22:41:07 +0400
+From: Valentine Barshak <vbarshak@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 0/4] PowerPC 440EPx: Initial Sequoia support take 2
+Message-ID: <20070814184107.GA6696@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,15 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Paul,
+The following patches add initial PowerPC 440EPx Sequoia board support.
+The code is based mainly on the Bamboo board support by Josh Boyer and
+should be applied on top of the "[patch 00/10] 4xx patch series for 2.6.24"
+which adds Bamboo support, since Sequoia shares some code pieces with Bamboo.
+These patches have been modified based on the comments for the previous
+440EPx Sequoia patch series.
 
-Is there a reason this hasn't been picked up:
-
-http://ozlabs.org/pipermail/linuxppc-dev/2007-May/035906.html
-
-It fixes a build warning in the tree and removes some dead code. It  
-appears to still apply cleanly to the top of your tree.... if there  
-are issues please let me know so I can fix them.
+The 2.6.24 4xx patch series is included in the following git tree:
+git pull git://git.infradead.org/users/jwboyer/powerpc.git for-2.6.24
 
 Thanks,
-Becky
+Valentine.
