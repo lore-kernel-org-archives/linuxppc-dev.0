@@ -1,24 +1,23 @@
-Return-Path: <joe.hamman@embeddedspecialties.com>
-Received: from mail.embeddedspecialties.com (mail.embeddedspecialties.com
-	[74.94.113.177])
+Return-Path: <wolfgang.reissnegger@xilinx.com>
+Received: from outbound3-fra-R.bigfish.com (outbound-fra.frontbridge.com
+	[62.209.45.174])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3D734DDE9E
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 3EAD7DDEC7
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Aug 2007 13:29:49 +1000 (EST)
-From: "Joe Hamman" <joe.hamman@embeddedspecialties.com>
-To: "'Kumar Gala'" <galak@kernel.crashing.org>
-References: <1187044669.10295.4.camel@server>
-	<3FE16C0A-892F-4481-999A-A699C0C70BF9@kernel.crashing.org>
-Subject: RE: [PATCH] [UPDATED] tsec: Allow Ten Bit Interface to be configurable
-Date: Mon, 13 Aug 2007 22:29:44 -0500
-Message-ID: <013b01c7de23$5baa7d70$6f00a8c0@ESIDT>
+	Tue, 14 Aug 2007 15:07:54 +1000 (EST)
+Date: Mon, 13 Aug 2007 22:07:45 -0700
+From: Wolfgang Reissnegger <wolfgang.reissnegger@xilinx.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <3FE16C0A-892F-4481-999A-A699C0C70BF9@kernel.crashing.org>
+To: Leonid <Leonid@a-k-a.net>
+Subject: Re: Best Linux tree for Xilinx support.
+References: <20070806225642.7D72A7B005B@mail34-fra.bigfish.com><fa686aa40708091142n520f222amec7c6a76786c7fcc@mail.gmail.com>
+	<fa686aa40708102137o25b83daar82a40471756a3f2b@mail.gmail.com>
+	<406A31B117F2734987636D6CCC93EE3C02053A10@ehost011-3.exch011.intermedia.net>
+In-Reply-To: <406A31B117F2734987636D6CCC93EE3C02053A10@ehost011-3.exch011.intermedia.net>
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20070814050748.EE7C2D0075@mail26-fra.bigfish.com>
 Cc: linuxppc-embedded@ozlabs.org
-Reply-To: joe.hamman@embeddedspecialties.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,69 +28,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Leonid,
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Monday, August 13, 2007 10:10 PM
-> To: joe.hamman@embeddedspecialties.com
-> Cc: linuxppc-embedded@ozlabs.org
-> Subject: Re: [PATCH] [UPDATED] tsec: Allow Ten Bit Interface to be
-> configurable
-> 
-> 
-> On Aug 13, 2007, at 5:37 PM, Joe Hamman wrote:
-> 
-> > Allow the address of the Ten Bit Interface (TBI) to be changed in the
-> > event of a conflict with another device.
-> >
-> > Signed-off by: Joe Hamman <joe.hamman@embeddedspecialties.com>
-> > ---
-> >
-> > Please ignore the last patch - I missed a cut & paste error on the
-> > range
-> > that my testing didn't catch.
-> 
-> I think we'd rather this came from the device tree.
-> 
-Duh, that makes sense ;-)
+I am in the process of publishing a Xilinx Linux git tree which will
+contain most of the drivers for Xilinx IP including recent contributions
+from Grant Likely, John Williams, Joachim Foerster and others.
 
-Has there been any discussion yet?  Maybe something like this:
+This tree will be available on the Xilinx git server soon, however it
+will be a non-supported (and likely unstable) tree. Its main purpose is
+to provide a common code base for development and a channel to push new
+driver code out into the community.
 
-		mdio@24520 {
-			#address-cells = <1>;
-			#size-cells = <0>;
-			device_type = "mdio";
-			compatible = "gianfar";
-			reg = <24520 20>;
-			phy0: ethernet-phy@0 {
-				interrupt-parent = <&mpic>;
-				interrupts = <a 1>;
-				reg = <0>;
-				device_type = "ethernet-phy";
-			};
-			phy1: ethernet-phy@1 {
-				interrupt-parent = <&mpic>;
-				interrupts = <a 1>;
-				reg = <1>;
-				device_type = "ethernet-phy";
-			};
-			phy2: ethernet-phy@2 {
-				interrupt-parent = <&mpic>;
-				interrupts = <a 1>;
-				reg = <2>;
-				device_type = "ethernet-phy";
-			};
-			phy3: ethernet-phy@3 {
-				interrupt-parent = <&mpic>;
-				interrupts = <a 1>;
-				reg = <3>;
-				device_type = "ethernet-phy";
-			};
-			tbi:  ethernet-tbi@1f {
-				reg = <1f>;
-				device_type = "ethernet-tbi";
-			};
-		};
+I am still waiting on IT to set up the new server machine. I will post
+an announcement once the server is up and running.
 
-Thanks,
-Joe
+Cheers,
+   Wolfgang
+
+Leonid wrote:
+> Hi:
+> 
+> I have several boards with different architectures (Microblaze, PPC),
+> running Linux/uClinux and using Xilinx IP cores. I use both Virtex and
+> Spartan FPGAs.
+> 
+> Historically I'm using different kernels for them, starting from uClinux
+> 2.4, all way through Linux 2.6.16 and 2.6.19. I patched them here and
+> there to get working.
+> 
+> I certainly feel a need to move to some standard kernel tree.
+> 
+> I understand that you guys are in some advanced steps of integrating
+> Xilinx into Linux. What would be my best choice of Linux kernel now?
+> 
+> I see the following options:
+> 
+> - download some GIT tree your are using (which one?).
+> - get latest tree from kernel.org and patch it using your patches (where
+> I can get them?).
+> - ??
+> 
+> Please advise,
+> 
+> Thanks,
+> 
+> Leonid.
+> 
