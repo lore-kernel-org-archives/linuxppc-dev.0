@@ -1,21 +1,17 @@
-Return-Path: <jdl@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 61D2CDDF0D
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 06:40:24 +1000 (EST)
-Subject: Re: System crash on boot_e500.S
-From: Jon Loeliger <jdl@freescale.com>
-To: mike zheng <mail4mz@gmail.com>
-In-Reply-To: <5c9cd53b0708141314o57440c62waffb4cca3f2be0b9@mail.gmail.com>
-References: <5c9cd53b0708141314o57440c62waffb4cca3f2be0b9@mail.gmail.com>
-Content-Type: text/plain
-Message-Id: <1187124014.32650.80.camel@ld0161-tx32>
-Mime-Version: 1.0
-Date: Tue, 14 Aug 2007 15:40:14 -0500
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <tmorrison@empirix.com>
+Received: from empbedex1.empirix.com (empbedex1.empirix.com [12.38.203.54])
+	by ozlabs.org (Postfix) with ESMTP id 7FEAADDEC7
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 07:37:16 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Discontiguous Memory for MPC85xx Series
+Date: Tue, 14 Aug 2007 17:37:12 -0400
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D90108DF1D41@EMPBEDEX.empirix.com>
+In-Reply-To: <mailman.1682.1187119378.2006.linuxppc-dev@ozlabs.org>
+References: <mailman.1682.1187119378.2006.linuxppc-dev@ozlabs.org>
+From: "Morrison, Tom" <tmorrison@empirix.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-08-14 at 15:14, mike zheng wrote:
-> Hi All,
->  
-> I am trying to bring up MPC8548 CDS board on 2.4 kernel. I have
-> problem in the head
+I am working on a separate project where there is a
+discontiguous physical memory map . In looking at
+solutions, it looks like the way to go is to=20
+use something like a SPARSEMEM option.=20
 
-Ow, it hurts when I do this!
+FWIW, it even mentions something about discontinuous=20
+memory in the Device Tree example about the 970 CPU
+(Documentation/powerpc/booting-without-of.txt)
 
-> _e500.S. The "mtspr SRR0, r7; mtspr SRR1 r6" does not work for me. The
-> content of R7 and R6 are not moved to SRR0 and SRR1.  I am using the
-> tool-chain from Freescale for 2.6 kernel. 
->  
-> Any idea on this issue?
+I am wondering if there is an implementation for
+SPARSEMEM or DISCONTIGMEM being worked on in the=20
+powerpc branch that I could use for the mpc85xx family?=20
 
-Maybe use current 2.6 code?
+Or does somebody have another suggestion on how=20
+I would do this?
 
-jdl
+Thanks in advance you can suggest!
+
+Tom Morrison
+Principal S/W Engineer
+Empirix, Inc (www.empirix.com)
+tmorrison@empirix.com
+(781) 266 - 3567
