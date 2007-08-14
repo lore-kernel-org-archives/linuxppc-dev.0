@@ -1,11 +1,16 @@
 Return-Path: <dgibson@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>, Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Date: Tue, 14 Aug 2007 16:45:34 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 3/3] Improve robustness of the UIC cascade handler
-In-Reply-To: <20070814034811.GA8791@localhost.localdomain>
-Message-Id: <20070814035242.CAE2BDDEFD@ozlabs.org>
-Date: Tue, 14 Aug 2007 13:52:42 +1000 (EST)
-Cc: linuxppc-dev@ozlabs.org
+To: gregkh@suse.de
+Subject: Re: patch powerpc-fix-size-check-for-hugetlbfs.patch queued to
+	-stable tree
+Message-ID: <20070814064534.GE8791@localhost.localdomain>
+References: <1186551855.938.164.camel@localhost.localdomain>
+	<20070813234218.4796D14540D0@imap.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070813234218.4796D14540D0@imap.suse.de>
+Cc: stable-commits@vger.kernel.org, paulus@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,33 +20,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-At present the cascade interrupt handler for the UIC (interrupt
-controller on 4xx embedded chips) will misbehave badly if it is called
-spuriously - that is if the handler is invoked when no interrupts are
-asserted in the child UIC.
+On Mon, Aug 13, 2007 at 04:26:27PM -0700, gregkh@suse.de wrote:
+> 
+> This is a note to let you know that we have just queued up the patch titled
+> 
+>      Subject: powerpc: Fix size check for hugetlbfs
+> 
+> to the 2.6.22-stable tree.  Its filename is
+> 
+>      powerpc-fix-size-check-for-hugetlbfs.patch
+> 
+> A git repo of this tree can be found at 
+>     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+> 
+> 
+> >From benh@kernel.crashing.org  Mon Aug 13 16:17:09 2007
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Date: Wed, 08 Aug 2007 15:44:15 +1000
+> Subject: powerpc: Fix size check for hugetlbfs
+> To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+> Cc: Paul Mackerras <paulus@samba.org>, stable@kernel.org
+> Message-ID: <1186551855.938.164.camel@localhost.localdomain>
+> 
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
+> My "slices" address space management code that was added in 2.6.22
+> implementation of get_unmapped_area() doesn't properly check that the
+> size is a multiple of the requested page size. This allows userland to
+> create VMAs that aren't a multiple of the huge page size with hugetlbfs
+> (since hugetlbfs entirely relies on get_unmapped_area() to do that
+> checking) which leads to a kernel BUG() when such areas are torn down.
 
-Although spurious interrupts shouldn't happen, it's good to behave
-robustly if they do.  This patch does so by checking for and ignoring
-spurious interrupts.
+Ok, I said I was going to look into a libhugetlbfs testcase for this.
+Doesn't appear there's specifically a testcase for misaligned size -
+I'll add one.
 
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+However, it seems the current kernel, on ppc64, gives a testcase
+failure on 'misaligned_offset', because it's not failing a mapping
+with a non-hugepage aligned file offset.  I'm not sure (yet) if this
+failure is also caused by the new slice code, but it seems a likely
+candidate.
 
----
- arch/powerpc/sysdev/uic.c |    3 +++
- 1 file changed, 3 insertions(+)
+Still investigating...
 
-Index: working-2.6/arch/powerpc/sysdev/uic.c
-===================================================================
---- working-2.6.orig/arch/powerpc/sysdev/uic.c	2007-08-14 13:46:02.000000000 +1000
-+++ working-2.6/arch/powerpc/sysdev/uic.c	2007-08-14 13:46:02.000000000 +1000
-@@ -266,6 +266,9 @@ irqreturn_t uic_cascade(int virq, void *
- 	int subvirq;
- 
- 	msr = mfdcr(uic->dcrbase + UIC_MSR);
-+	if (!msr) /* spurious interrupt */
-+		return IRQ_HANDLED;
-+
- 	src = 32 - ffs(msr);
- 
- 	subvirq = irq_linear_revmap(uic->irqhost, src);
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
