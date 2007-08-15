@@ -1,20 +1,21 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 0AA66DDE26
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 23:54:02 +1000 (EST)
-Message-ID: <46C3053C.10108@ru.mvista.com>
-Date: Wed, 15 Aug 2007 17:53:00 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
+Return-Path: <mail4mz@gmail.com>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.185])
+	by ozlabs.org (Postfix) with ESMTP id 76EABDDE26
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 23:58:00 +1000 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so1488970rvf
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 06:57:59 -0700 (PDT)
+Message-ID: <5c9cd53b0708150657k71531bdbl848375d5d80faf21@mail.gmail.com>
+Date: Wed, 15 Aug 2007 09:57:59 -0400
+From: "mike zheng" <mail4mz@gmail.com>
+To: "Jon Loeliger" <jdl@freescale.com>
+Subject: Re: System crash on boot_e500.S
+In-Reply-To: <1187124014.32650.80.camel@ld0161-tx32>
 MIME-Version: 1.0
-To: Valentine Barshak <vbarshak@ru.mvista.com>,
-	linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 4/4] PowerPC 440EPx: Sequoia board support
-References: <20070814184107.GA6696@ru.mvista.com>
-	<20070814190409.GA12520@ru.mvista.com>
-	<20070815034808.GC22849@localhost.localdomain>
-In-Reply-To: <20070815034808.GC22849@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: David Gibson <david@gibson.dropbear.id.au>
+Content-Type: multipart/alternative;
+	boundary="----=_Part_5504_23768597.1187186279408"
+References: <5c9cd53b0708141314o57440c62waffb4cca3f2be0b9@mail.gmail.com>
+	<1187124014.32650.80.camel@ld0161-tx32>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,204 +25,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Tue, Aug 14, 2007 at 11:04:09PM +0400, Valentine Barshak wrote:
->> AMCC 440EPx Sequoia board support.
->> The second bit (0x4) in the 440EPx/440GRx PVR value indicates
->> the Security/Kasumi engine absence if set.
->> This bit has been removed from the pvr mask to use a single
->> cputable entry for with/without Security/Kasumi cpu versions.
->>
->>
->> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
->> ---
->>  arch/powerpc/kernel/cputable.c       |   18 +++++++++
->>  arch/powerpc/kernel/head_44x.S       |    2 -
->>  arch/powerpc/platforms/44x/Kconfig   |   17 ++++++++-
->>  arch/powerpc/platforms/44x/Makefile  |    1 
->>  arch/powerpc/platforms/44x/sequoia.c |   66 +++++++++++++++++++++++++++++++++++
->>  5 files changed, 102 insertions(+), 2 deletions(-)
->>
->> diff -ruN linux-2.6.orig/arch/powerpc/kernel/cputable.c linux-2.6/arch/powerpc/kernel/cputable.c
->> --- linux-2.6.orig/arch/powerpc/kernel/cputable.c	2007-08-14 17:11:18.000000000 +0400
->> +++ linux-2.6/arch/powerpc/kernel/cputable.c	2007-08-14 19:37:54.000000000 +0400
->> @@ -1132,6 +1132,24 @@
->>  		.dcache_bsize		= 32,
->>  		.platform		= "ppc440",
->>  	},
->> +	{ /* 440EPX */
->> +		.pvr_mask		= 0xf0000ffb,
->> +		.pvr_value		= 0x200008D0,
->> +		.cpu_name		= "440EPX",
->> +		.cpu_features		= CPU_FTRS_44X,
->> +		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
->> +		.icache_bsize		= 32,
->> +		.dcache_bsize		= 32,
->> +	},
->> +	{ /* 440GRX */
->> +		.pvr_mask		= 0xf0000ffb,
->> +		.pvr_value		= 0x200008D8,
->> +		.cpu_name		= "440GRX",
->> +		.cpu_features		= CPU_FTRS_44X,
->> +		.cpu_user_features	= COMMON_USER_BOOKE,
->> +		.icache_bsize		= 32,
->> +		.dcache_bsize		= 32,
->> +	},
->>  	{	/* 440GP Rev. B */
->>  		.pvr_mask		= 0xf0000fff,
->>  		.pvr_value		= 0x40000440,
->> diff -ruN linux-2.6.orig/arch/powerpc/kernel/head_44x.S linux-2.6/arch/powerpc/kernel/head_44x.S
->> --- linux-2.6.orig/arch/powerpc/kernel/head_44x.S	2007-08-14 17:11:19.000000000 +0400
->> +++ linux-2.6/arch/powerpc/kernel/head_44x.S	2007-08-14 17:18:43.000000000 +0400
->> @@ -217,7 +217,7 @@
->>  	lis	r4,interrupt_base@h	/* IVPR only uses the high 16-bits */
->>  	mtspr	SPRN_IVPR,r4
->>  
->> -#ifdef CONFIG_440EP
->> +#if defined(CONFIG_440EP) || defined(CONFIG_440EPX)
-> 
-> Since we should now be able to support both 440GP and 440EP boards in
-> the same kernel, this probably needs to become a feature section.
-> 
+------=_Part_5504_23768597.1187186279408
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Thanks for pointing that out.
-Talking about this, there appears to be more stuff that would need to 
-become feature sections. There're lots of other ifdefs in 
-arch/powerpc/kernel/head_44x.S, like ifdef CONFIG_PPC_FPU or ifdef 
-CONFIG_440A
-Looks like all these things have to be detected dynamically and 
-configured properly at runtime since we tend to support more than one 
-CPU in the same kernel.
-I think this should come as a separate patch, that replaces all these 
-ifdefs with the FTR_SECTION stuff.
-Thanks,
-Valentine.
+Did you done similar work before? Current 2.6 code need many other files,  I
+have following errors when I try to use the head_e500.S from 2.6 code:
 
->>  	/* Clear DAPUIB flag in CCR0 (enable APU between CPU and FPU) */
->>  	mfspr	r2,SPRN_CCR0
->>  	lis	r3,0xffef
->> diff -ruN linux-2.6.orig/arch/powerpc/platforms/44x/Kconfig linux-2.6/arch/powerpc/platforms/44x/Kconfig
->> --- linux-2.6.orig/arch/powerpc/platforms/44x/Kconfig	2007-08-14 17:11:17.000000000 +0400
->> +++ linux-2.6/arch/powerpc/platforms/44x/Kconfig	2007-08-14 20:36:19.000000000 +0400
->> @@ -14,6 +14,14 @@
->>  	help
->>  	  This option enables support for the IBM PPC440GP evaluation board.
->>  
->> +config SEQUOIA
->> +	bool "Sequoia"
->> +	depends on 44x
->> +	default n
->> +	select 440EPX
->> +	help
->> +	  This option enables support for the AMCC PPC440EPX evaluation board.
->> +
->>  #config LUAN
->>  #	bool "Luan"
->>  #	depends on 44x
->> @@ -37,6 +45,13 @@
->>  	select IBM440EP_ERR42
->>  #	select IBM_NEW_EMAC_ZMII
->>  
->> +config 440EPX
->> +	bool
->> +	select PPC_FPU
->> +# Disabled until the new EMAC Driver is merged.
->> +#	select IBM_NEW_EMAC_EMAC4
->> +#	select IBM_NEW_EMAC_ZMII
->> +
->>  config 440GP
->>  	bool
->>  # Disabled until the new EMAC Driver is merged.
->> @@ -50,7 +65,7 @@
->>  
->>  config 440A
->>  	bool
->> -	depends on 440GX
->> +	depends on 440GX || 440EPX
->>  	default y
->>  
->>  # 44x errata/workaround config symbols, selected by the CPU models above
->> diff -ruN linux-2.6.orig/arch/powerpc/platforms/44x/Makefile linux-2.6/arch/powerpc/platforms/44x/Makefile
->> --- linux-2.6.orig/arch/powerpc/platforms/44x/Makefile	2007-08-14 17:11:17.000000000 +0400
->> +++ linux-2.6/arch/powerpc/platforms/44x/Makefile	2007-08-14 17:18:43.000000000 +0400
->> @@ -1,3 +1,4 @@
->>  obj-$(CONFIG_44x)	:= misc_44x.o
->>  obj-$(CONFIG_EBONY)	+= ebony.o
->>  obj-$(CONFIG_BAMBOO) += bamboo.o
->> +obj-$(CONFIG_SEQUOIA)	+= sequoia.o
->> diff -ruN linux-2.6.orig/arch/powerpc/platforms/44x/sequoia.c linux-2.6/arch/powerpc/platforms/44x/sequoia.c
->> --- linux-2.6.orig/arch/powerpc/platforms/44x/sequoia.c	1970-01-01 03:00:00.000000000 +0300
->> +++ linux-2.6/arch/powerpc/platforms/44x/sequoia.c	2007-08-14 20:12:26.000000000 +0400
->> @@ -0,0 +1,66 @@
->> +/*
->> + * Sequoia board specific routines
->> + *
->> + * Valentine Barshak <vbarshak@ru.mvista.com>
->> + * Copyright 2007 MontaVista Software Inc.
->> + *
->> + * Based on the Bamboo code by
->> + * Josh Boyer <jwboyer@linux.vnet.ibm.com>
->> + * Copyright 2007 IBM Corporation
->> + *
->> + * This program is free software; you can redistribute  it and/or modify it
->> + * under  the terms of  the GNU General  Public License as published by the
->> + * Free Software Foundation;  either version 2 of the  License, or (at your
->> + * option) any later version.
->> + */
->> +#include <linux/init.h>
->> +#include <asm/machdep.h>
->> +#include <asm/prom.h>
->> +#include <asm/udbg.h>
->> +#include <asm/time.h>
->> +#include <asm/uic.h>
->> +#include <asm/of_platform.h>
->> +#include "44x.h"
->> +
->> +static struct of_device_id sequoia_of_bus[] = {
->> +	{ .compatible = "ibm,plb", },
->> +	{ .compatible = "ibm,opb", },
->> +	{ .compatible = "ibm,ebc", },
->> +	{},
->> +};
->> +
->> +static int __init sequoia_device_probe(void)
->> +{
->> +	if (!machine_is(sequoia))
->> +		return 0;
->> +
->> +	of_platform_bus_probe(NULL, sequoia_of_bus, NULL);
->> +
->> +	return 0;
->> +}
->> +device_initcall(sequoia_device_probe);
->> +
->> +static int __init sequoia_probe(void)
->> +{
->> +	unsigned long root = of_get_flat_dt_root();
->> +
->> +	if (!of_flat_dt_is_compatible(root, "amcc,sequoia"))
->> +		return 0;
->> +
->> +	return 1;
->> +}
->> +
->> +static void __init sequoia_setup_arch(void)
->> +{
->> +}
->> +
->> +define_machine(sequoia) {
->> +	.name 				= "Sequoia",
->> +	.probe 				= sequoia_probe,
->> +	.setup_arch			= sequoia_setup_arch,
->> +	.progress 			= udbg_progress,
->> +	.init_IRQ 			= uic_init_tree,
->> +	.get_irq 			= uic_get_irq,
->> +	.restart			= ppc44x_reset_system,
->> +	.calibrate_decr			= generic_calibrate_decr,
->> +};
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->>
-> 
+
+/kernel->   powerpc-linux-gnuspe-gcc -m32 -Wp,-MD,arch/ppc/kernel/.entry.o.d
+-nostdinc -isystem /opt/mtwk/usr/local/gcc-3_4-
+e500-glibc-2.3.4-dp/powerpc-linux-gnuspe/lib/gcc/powerpc-linux-gnuspe/3.4.3/include
+-D__KERNEL__ -Iinclude  -Iarch/ppc -D__ASSEMBLY__ -Iarch/ppc -Wa,-me500     -c
+-o arch/ppc/kernel/entry.o arch/ppc/kernel/entry.S
+arch/ppc/kernel/entry.S: Assembler messages:
+
+entry.S:819: Error: unsupported relocation against CSRR0
+entry.S:820: Error: unsupported relocation against CSRR1
+entry.S:888: Error: unsupported relocation against MCSRR0
+entry.S:889: Error: unsupported relocation against MCSRR1
+entry.S:909: Error: unsupported relocation against CSRR0
+entry.S:911: Error: unsupported relocation against CSRR1
+
+
+
+entry.S
+
+819   mtspr CSRR0, r11
+820   mtspr CSRR1, r12
+
+
+
+
+
+On 8/14/07, Jon Loeliger <jdl@freescale.com> wrote:
+>
+> On Tue, 2007-08-14 at 15:14, mike zheng wrote:
+> > Hi All,
+> >
+> > I am trying to bring up MPC8548 CDS board on 2.4 kernel. I have
+> > problem in the head
+>
+> Ow, it hurts when I do this!
+>
+> > _e500.S. The "mtspr SRR0, r7; mtspr SRR1 r6" does not work for me. The
+> > content of R7 and R6 are not moved to SRR0 and SRR1.  I am using the
+> > tool-chain from Freescale for 2.6 kernel.
+> >
+> > Any idea on this issue?
+>
+> Maybe use current 2.6 code?
+>
+> jdl
+>
+>
+>
+
+------=_Part_5504_23768597.1187186279408
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<div>Did you done similar work before? Current 2.6 code need many other files,&nbsp;&nbsp;I have following errors when I try to use the head_e500.S from 2.6 code:</div>
+<div>&nbsp;</div>
+<div>
+<div>
+<p style="MARGIN: 0in 0in 0pt"><font face="Courier New" size="2">/kernel-&gt;<span>&nbsp;&nbsp; </span>powerpc-linux-gnuspe-gcc -m32 -Wp,-MD,arch/ppc/kernel/.entry.o.d -nostdinc -isystem /opt/mtwk/usr/local/gcc-3_4- e500-glibc-2.3.4-dp
+ /powerpc-linux-gnuspe/lib/gcc/powerpc-linux-gnuspe/3.4.3/include -D__KERNEL__ -Iinclude<span>&nbsp; </span>-Iarch/ppc -D__ASSEMBLY__ -Iarch/ppc -Wa,-me500<span> &nbsp;&nbsp;&nbsp; </span>-c -o arch/ppc/kernel/entry.o arch/ppc/kernel/entry.S
+<br>arch/ppc/kernel/entry.S: Assembler messages:</font></p><font face="Courier New" size="2">
+<p style="MARGIN: 0in 0in 0pt"><font face="Courier New" size="2">entry.S:819: Error: unsupported relocation against CSRR0<br>entry.S:820: Error: unsupported relocation against CSRR1<br>entry.S:888: Error: unsupported relocation against MCSRR0 
+<br>entry.S:889: Error: unsupported relocation against MCSRR1<br>entry.S:909: Error: unsupported relocation against CSRR0<br>entry.S:911: Error: unsupported relocation against CSRR1</font><br></p>
+<p style="MARGIN: 0in 0in 0pt"><br><br></p></font><font size="2"><font face="Courier New"><span lang="PT-BR">entry.S<br><br>819<span>&nbsp;&nbsp; </span>mtspr CSRR0, r11<br></span>820<span>&nbsp;&nbsp; </span>mtspr CSRR1, r12</font></font><br>
+<font size="2">&nbsp;</font></div><span></span><br>&nbsp;</div><br><br>
+<div><span class="gmail_quote">On 8/14/07, <b class="gmail_sendername">Jon Loeliger</b> &lt;<a href="mailto:jdl@freescale.com">jdl@freescale.com</a>&gt; wrote:</span>
+<blockquote class="gmail_quote" style="PADDING-LEFT: 1ex; MARGIN: 0px 0px 0px 0.8ex; BORDER-LEFT: #ccc 1px solid">On Tue, 2007-08-14 at 15:14, mike zheng wrote:<br>&gt; Hi All,<br>&gt;<br>&gt; I am trying to bring up MPC8548 CDS board on 
+2.4 kernel. I have<br>&gt; problem in the head<br><br>Ow, it hurts when I do this!<br><br>&gt; _e500.S. The &quot;mtspr SRR0, r7; mtspr SRR1 r6&quot; does not work for me. The<br>&gt; content of R7 and R6 are not moved to SRR0 and SRR1.&nbsp;&nbsp;I am using the
+<br>&gt; tool-chain from Freescale for 2.6 kernel.<br>&gt;<br>&gt; Any idea on this issue?<br><br>Maybe use current 2.6 code?<br><br>jdl<br><br><br></blockquote></div><br>
+
+------=_Part_5504_23768597.1187186279408--
