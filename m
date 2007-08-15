@@ -1,24 +1,23 @@
-Return-Path: <becky.bruce@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AF41DDDE48
+Return-Path: <mls.JOFT@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 81D53DDEBD
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Aug 2007 02:17:04 +1000 (EST)
-In-Reply-To: <5c9cd53b0708150659u2ba88a9as5055b42fb1e2be67@mail.gmail.com>
-References: <5c9cd53b0708141321h62f0ddd1k3a57a37f52e93894@mail.gmail.com>
-	<36201C92-F117-4273-9FA7-13665CF0C6DB@freescale.com>
-	<5c9cd53b0708150659u2ba88a9as5055b42fb1e2be67@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <FC996AA4-4C5F-4B36-A9E9-5F931D054F1C@freescale.com>
-From: Becky Bruce <becky.bruce@freescale.com>
-Subject: Re: System crash on boot_e500.S on 2.4Kernel
-Date: Wed, 15 Aug 2007 11:17:08 -0500
-To: mike zheng <mail4mz@gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Thu, 16 Aug 2007 04:45:29 +1000 (EST)
+Subject: Re: [PATCH] [ML403-AC97CR] Fix (device/driver) name registered
+	with platform bus
+From: Joachim Foerster <mls.JOFT@gmx.de>
+To: Takashi Iwai <tiwai@suse.de>
+In-Reply-To: <1186849433.20835.33.camel@localhost>
+References: <1186655810.7420.26.camel@localhost>
+	<s5hsl6sws0s.wl%tiwai@suse.de>  <1186849433.20835.33.camel@localhost>
+Content-Type: text/plain
+Date: Wed, 15 Aug 2007 20:45:22 +0200
+Message-Id: <1187203522.1376.18.camel@localhost>
+Mime-Version: 1.0
+Cc: alsa-devel <alsa-devel@alsa-project.org>,
+	Lorenz Kolb <lorenz.kolb@lkmail.de>,
+	Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,125 +28,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi all,
 
-On Aug 15, 2007, at 8:59 AM, mike zheng wrote:
+below, you'll find a very small patch: In the current state, platform
+bus _never_ activates (= calls probe() callback on) the driver, because
+the driver's name has a dash and the device's name has an underscore. I
+made this horrible change _after_ I tested the final patch, which I
+posted on Saturday. Sorry.
 
-> I use BDI to debug these two instructions. And here are the output  
-> of BDI just before the "rfi". The content of R6, R7 is different  
-> from SRR0(SPR26) and SRR1(SPR27).
+From: Joachim Foerster <JOFT@gmx.de>
 
-I see you have not printed the pc/nia once you stop.  Are you sure  
-you're stopped where you think?  Please check this.
+Names inside struct platform_device and struct platform_driver seem to
+need underscores instead of dashes.
 
--B
+(Patch for Linus' master branch, date 2007/08/08 _including_ my patches
+sent on Saturday)
 
->
-> cds8548>res run
->
-> - TARGET: processing user reset request
->
-> - BDI asserts HRESET
->
-> - Reset JTAG controller passed
->
-> - JTAG exists check passed
->
-> - IDCODE is 0x0003901D
->
-> - SVR is 0x80390011
->
-> - PVR is 0x80210010
->
-> - CCSRBAR is 0x0_ff700000
->
-> - BDI removes HRESET
->
-> - TARGET: Target PVR is 0x80210010
->
-> - TARGET: resetting target passed
->
-> cds8548>halt
->
-> Target CPU : MPC85xx (e500v2 rev.1)
->
-> Target state : halted
->
-> Debug entry cause : COP halt
->
-> Current PC : 0xfff82560
->
-> Current CR : 0x88000042
->
-> Current MSR : 0x00021200
->
-> Current LR : 0xfff8aa4c
->
-> Current CCSRBAR : 0x0_e0000000
->
-> cds8548>ci
->
-> cds8548>bi 0x0000015c
->
-> Breakpoint identification is 0
->
-> cds8548>go
->
-> - TARGET: stopped
->
-> cds8548>rd
->
-> GPR00: 00000000 0ffabd20 00000200 00000008
->
-> GPR04: 00000000 00000001 00000020 00000160
->
-> GPR08: 1f8b0808 00000148 0ffabace 0ffe08b0
->
-> GPR12: 00000006 764deddb 10000300 007fff00
->
-> GPR16: 00000001 ffffffff 007fff25 0ffff9d8
->
-> GPR20: 007ffeb0 00000000 0fffaa3c 0ffae490
->
-> GPR24: 00000000 00000003 02000040 007fff25
->
-> GPR28: 007fff00 0ffab3b8 0fcd6000 007ffeb0
->
-> CR : 24024022 MSR: 00021200
->
-> cds8548>rdspr 26
->
-> SPR 26 : 0xfff81300 - 519424
->
-> cds8548>rdspr 27
->
-> SPR 27 : 0x00001000 4096
->
-> cds8548>
->
->
->
->
->
->
-> On 8/14/07, Andy Fleming <afleming@freescale.com> wrote:
-> On Aug 14, 2007, at 15:21, mike zheng wrote:
->
-> >
-> > Hi All,
-> >
-> > I am trying to bring up MPC8548 CDS board on 2.4 kernel. I have
-> > problem in the head_e500.S. The "mtspr SRR0, r7; mtspr SRR1 r6"
-> > does not work for me. The content of R7 and R6 are not moved to
-> > SRR0 and SRR1.  I am using the tool-chain from Freescale for 2.6
-> > kernel.
-> >
-> > Any idea on this issue?
->
-> Just to check...how do you know it doesn't work?
->
-> Andy
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Signed-off-by: Joachim Foerster <JOFT@gmx.de>
+---
+ arch/ppc/syslib/virtex_devices.c |    2 +-
+ sound/drivers/ml403-ac97cr.c     |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/ppc/syslib/virtex_devices.c b/arch/ppc/syslib/virtex_devices.c
+index d0b04d6..9fa10b1 100644
+--- a/arch/ppc/syslib/virtex_devices.c
++++ b/arch/ppc/syslib/virtex_devices.c
+@@ -122,7 +122,7 @@
+ }
+ 
+ #define XPAR_AC97_CONTROLLER_REFERENCE(num) { \
+-	.name = "ml403-ac97cr", \
++	.name = "ml403_ac97cr", \
+ 	.id = num, \
+ 	.num_resources = 3, \
+ 	.resource = (struct resource[]) { \
+diff --git a/sound/drivers/ml403-ac97cr.c b/sound/drivers/ml403-ac97cr.c
+index 2222315..2636249 100644
+--- a/sound/drivers/ml403-ac97cr.c
++++ b/sound/drivers/ml403-ac97cr.c
+@@ -66,7 +66,7 @@
+ #include "pcm-indirect2.h"
+ 
+ 
+-#define SND_ML403_AC97CR_DRIVER "ml403-ac97cr"
++#define SND_ML403_AC97CR_DRIVER "ml403_ac97cr"
+ 
+ MODULE_AUTHOR("Joachim Foerster <JOFT@gmx.de>");
+ MODULE_DESCRIPTION("Xilinx ML403 AC97 Controller Reference");
+-- 
+1.5.2.4
