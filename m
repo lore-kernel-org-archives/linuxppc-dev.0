@@ -1,14 +1,14 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 15 Aug 2007 13:46:22 +1000
+Date: Wed, 15 Aug 2007 13:48:08 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Valentine Barshak <vbarshak@ru.mvista.com>
-Subject: Re: [PATCH 3/4] PowerPC 440EPx: Sequoia bootwrapper
-Message-ID: <20070815034622.GB22849@localhost.localdomain>
+Subject: Re: [PATCH 4/4] PowerPC 440EPx: Sequoia board support
+Message-ID: <20070815034808.GC22849@localhost.localdomain>
 References: <20070814184107.GA6696@ru.mvista.com>
-	<20070814185355.GA12472@ru.mvista.com>
+	<20070814190409.GA12520@ru.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070814185355.GA12472@ru.mvista.com>
+In-Reply-To: <20070814190409.GA12520@ru.mvista.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,136 +19,186 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 14, 2007 at 10:53:55PM +0400, Valentine Barshak wrote:
-> Bootwrapper code for AMCC 440EPx Sequoia board.
-> The DDR2 Denali controller support has been moved to
->  arch/powerpc/boot/4xx.c
-> The code also uses 440EP clocking fixups
-> initially provided for 440EP Bamboo.
+On Tue, Aug 14, 2007 at 11:04:09PM +0400, Valentine Barshak wrote:
+> AMCC 440EPx Sequoia board support.
+> The second bit (0x4) in the 440EPx/440GRx PVR value indicates
+> the Security/Kasumi engine absence if set.
+> This bit has been removed from the pvr mask to use a single
+> cputable entry for with/without Security/Kasumi cpu versions.
+> 
 > 
 > Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+> ---
+>  arch/powerpc/kernel/cputable.c       |   18 +++++++++
+>  arch/powerpc/kernel/head_44x.S       |    2 -
+>  arch/powerpc/platforms/44x/Kconfig   |   17 ++++++++-
+>  arch/powerpc/platforms/44x/Makefile  |    1 
+>  arch/powerpc/platforms/44x/sequoia.c |   66 +++++++++++++++++++++++++++++++++++
+>  5 files changed, 102 insertions(+), 2 deletions(-)
+> 
+> diff -ruN linux-2.6.orig/arch/powerpc/kernel/cputable.c linux-2.6/arch/powerpc/kernel/cputable.c
+> --- linux-2.6.orig/arch/powerpc/kernel/cputable.c	2007-08-14 17:11:18.000000000 +0400
+> +++ linux-2.6/arch/powerpc/kernel/cputable.c	2007-08-14 19:37:54.000000000 +0400
+> @@ -1132,6 +1132,24 @@
+>  		.dcache_bsize		= 32,
+>  		.platform		= "ppc440",
+>  	},
+> +	{ /* 440EPX */
+> +		.pvr_mask		= 0xf0000ffb,
+> +		.pvr_value		= 0x200008D0,
+> +		.cpu_name		= "440EPX",
+> +		.cpu_features		= CPU_FTRS_44X,
+> +		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
+> +		.icache_bsize		= 32,
+> +		.dcache_bsize		= 32,
+> +	},
+> +	{ /* 440GRX */
+> +		.pvr_mask		= 0xf0000ffb,
+> +		.pvr_value		= 0x200008D8,
+> +		.cpu_name		= "440GRX",
+> +		.cpu_features		= CPU_FTRS_44X,
+> +		.cpu_user_features	= COMMON_USER_BOOKE,
+> +		.icache_bsize		= 32,
+> +		.dcache_bsize		= 32,
+> +	},
+>  	{	/* 440GP Rev. B */
+>  		.pvr_mask		= 0xf0000fff,
+>  		.pvr_value		= 0x40000440,
+> diff -ruN linux-2.6.orig/arch/powerpc/kernel/head_44x.S linux-2.6/arch/powerpc/kernel/head_44x.S
+> --- linux-2.6.orig/arch/powerpc/kernel/head_44x.S	2007-08-14 17:11:19.000000000 +0400
+> +++ linux-2.6/arch/powerpc/kernel/head_44x.S	2007-08-14 17:18:43.000000000 +0400
+> @@ -217,7 +217,7 @@
+>  	lis	r4,interrupt_base@h	/* IVPR only uses the high 16-bits */
+>  	mtspr	SPRN_IVPR,r4
+>  
+> -#ifdef CONFIG_440EP
+> +#if defined(CONFIG_440EP) || defined(CONFIG_440EPX)
 
-[snip]
-> diff -ruN linux-2.6.orig/arch/powerpc/boot/cuboot-sequoia.c linux-2.6/arch/powerpc/boot/cuboot-sequoia.c
-> --- linux-2.6.orig/arch/powerpc/boot/cuboot-sequoia.c	1970-01-01 03:00:00.000000000 +0300
-> +++ linux-2.6/arch/powerpc/boot/cuboot-sequoia.c	2007-08-14 17:25:37.000000000 +0400
-> @@ -0,0 +1,31 @@
+Since we should now be able to support both 440GP and 440EP boards in
+the same kernel, this probably needs to become a feature section.
+
+>  	/* Clear DAPUIB flag in CCR0 (enable APU between CPU and FPU) */
+>  	mfspr	r2,SPRN_CCR0
+>  	lis	r3,0xffef
+> diff -ruN linux-2.6.orig/arch/powerpc/platforms/44x/Kconfig linux-2.6/arch/powerpc/platforms/44x/Kconfig
+> --- linux-2.6.orig/arch/powerpc/platforms/44x/Kconfig	2007-08-14 17:11:17.000000000 +0400
+> +++ linux-2.6/arch/powerpc/platforms/44x/Kconfig	2007-08-14 20:36:19.000000000 +0400
+> @@ -14,6 +14,14 @@
+>  	help
+>  	  This option enables support for the IBM PPC440GP evaluation board.
+>  
+> +config SEQUOIA
+> +	bool "Sequoia"
+> +	depends on 44x
+> +	default n
+> +	select 440EPX
+> +	help
+> +	  This option enables support for the AMCC PPC440EPX evaluation board.
+> +
+>  #config LUAN
+>  #	bool "Luan"
+>  #	depends on 44x
+> @@ -37,6 +45,13 @@
+>  	select IBM440EP_ERR42
+>  #	select IBM_NEW_EMAC_ZMII
+>  
+> +config 440EPX
+> +	bool
+> +	select PPC_FPU
+> +# Disabled until the new EMAC Driver is merged.
+> +#	select IBM_NEW_EMAC_EMAC4
+> +#	select IBM_NEW_EMAC_ZMII
+> +
+>  config 440GP
+>  	bool
+>  # Disabled until the new EMAC Driver is merged.
+> @@ -50,7 +65,7 @@
+>  
+>  config 440A
+>  	bool
+> -	depends on 440GX
+> +	depends on 440GX || 440EPX
+>  	default y
+>  
+>  # 44x errata/workaround config symbols, selected by the CPU models above
+> diff -ruN linux-2.6.orig/arch/powerpc/platforms/44x/Makefile linux-2.6/arch/powerpc/platforms/44x/Makefile
+> --- linux-2.6.orig/arch/powerpc/platforms/44x/Makefile	2007-08-14 17:11:17.000000000 +0400
+> +++ linux-2.6/arch/powerpc/platforms/44x/Makefile	2007-08-14 17:18:43.000000000 +0400
+> @@ -1,3 +1,4 @@
+>  obj-$(CONFIG_44x)	:= misc_44x.o
+>  obj-$(CONFIG_EBONY)	+= ebony.o
+>  obj-$(CONFIG_BAMBOO) += bamboo.o
+> +obj-$(CONFIG_SEQUOIA)	+= sequoia.o
+> diff -ruN linux-2.6.orig/arch/powerpc/platforms/44x/sequoia.c linux-2.6/arch/powerpc/platforms/44x/sequoia.c
+> --- linux-2.6.orig/arch/powerpc/platforms/44x/sequoia.c	1970-01-01 03:00:00.000000000 +0300
+> +++ linux-2.6/arch/powerpc/platforms/44x/sequoia.c	2007-08-14 20:12:26.000000000 +0400
+> @@ -0,0 +1,66 @@
 > +/*
-> + * Old U-boot compatibility for Sequoia
+> + * Sequoia board specific routines
 > + *
-> + * Based on Ebony code by David Gibson <david@gibson.dropbear.id.au>
-> + *
-> + * Copyright 2007 David Gibson, IBM Corporatio.
-> + *   Based on cuboot-83xx.c, which is:
-> + * Copyright (c) 2007 Freescale Semiconductor, Inc.
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of the GNU General Public License version 2 as published
-> + * by the Free Software Foundation.
-> + */
-> +
-> +#include "ops.h"
-> +#include "stdio.h"
-> +#include "44x.h"
-> +#include "cuboot.h"
-> +
-> +#define TARGET_4xx
-> +#define TARGET_44x
-
-Surely you need to be more specific than that to select the correct
-bd_t structure?
-
-> +#include "ppcboot.h"
-> +
-> +static bd_t bd;
-> +
-> +void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-> +                   unsigned long r6, unsigned long r7)
-> +{
-> +	CUBOOT_INIT();
-> +	sequoia_init(&bd.bi_enetaddr, &bd.bi_enet1addr);
-> +}
-> diff -ruN linux-2.6.orig/arch/powerpc/boot/Makefile linux-2.6/arch/powerpc/boot/Makefile
-> --- linux-2.6.orig/arch/powerpc/boot/Makefile	2007-08-14 17:11:16.000000000 +0400
-> +++ linux-2.6/arch/powerpc/boot/Makefile	2007-08-14 17:25:38.000000000 +0400
-> @@ -44,10 +44,11 @@
->  src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
->  		ns16550.c serial.c simple_alloc.c div64.S util.S \
->  		gunzip_util.c elf_util.c $(zlib) devtree.c oflib.c ofconsole.c \
-> -		4xx.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c bamboo.c
-> +		4xx.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c bamboo.c \
-> +		sequoia.c
->  src-plat := of.c cuboot-83xx.c cuboot-85xx.c holly.c \
->  		cuboot-ebony.c treeboot-ebony.c prpmc2800.c \
-> -		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c
-> +		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-sequoia.c
->  src-boot := $(src-wlib) $(src-plat) empty.c
->  
->  src-boot := $(addprefix $(obj)/, $(src-boot))
-> @@ -143,6 +144,7 @@
->  image-$(CONFIG_PPC_85xx)		+= cuImage.85xx
->  image-$(CONFIG_EBONY)			+= treeImage.ebony cuImage.ebony
->  image-$(CONFIG_BAMBOO)			+= treeImage.bamboo
-> +image-$(CONFIG_SEQUOIA)			+= cuImage.sequoia
->  endif
->  
->  # For 32-bit powermacs, build the COFF and miboot images
-> diff -ruN linux-2.6.orig/arch/powerpc/boot/sequoia.c linux-2.6/arch/powerpc/boot/sequoia.c
-> --- linux-2.6.orig/arch/powerpc/boot/sequoia.c	1970-01-01 03:00:00.000000000 +0300
-> +++ linux-2.6/arch/powerpc/boot/sequoia.c	2007-08-14 20:52:10.000000000 +0400
-
-Unless another bootloader is expected to come along for Sequoia,
-there's no reason to separate sequoia.c from cuboot-sequoia.c
-
-> @@ -0,0 +1,48 @@
-> +/*;5A
 > + * Valentine Barshak <vbarshak@ru.mvista.com>
-> + * Copyright 2007 MontaVista Software, Inc
+> + * Copyright 2007 MontaVista Software Inc.
 > + *
-> + * Based on Bamboo code by Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> + * Copyright IBM Corporation, 2007
+> + * Based on the Bamboo code by
+> + * Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> + * Copyright 2007 IBM Corporation
 > + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; version 2 of the License
+> + * This program is free software; you can redistribute  it and/or modify it
+> + * under  the terms of  the GNU General  Public License as published by the
+> + * Free Software Foundation;  either version 2 of the  License, or (at your
+> + * option) any later version.
 > + */
-> +#include <stdarg.h>
-> +#include <stddef.h>
-> +#include "types.h"
-> +#include "elf.h"
-> +#include "string.h"
-> +#include "stdio.h"
-> +#include "page.h"
-> +#include "ops.h"
-> +#include "dcr.h"
-> +#include "4xx.h"
+> +#include <linux/init.h>
+> +#include <asm/machdep.h>
+> +#include <asm/prom.h>
+> +#include <asm/udbg.h>
+> +#include <asm/time.h>
+> +#include <asm/uic.h>
+> +#include <asm/of_platform.h>
 > +#include "44x.h"
 > +
-> +extern char _dtb_start[];
-> +extern char _dtb_end[];
+> +static struct of_device_id sequoia_of_bus[] = {
+> +	{ .compatible = "ibm,plb", },
+> +	{ .compatible = "ibm,opb", },
+> +	{ .compatible = "ibm,ebc", },
+> +	{},
+> +};
 > +
-> +static u8 *sequoia_mac0, *sequoia_mac1;
-> +
-> +
-> +static void sequoia_fixups(void)
+> +static int __init sequoia_device_probe(void)
 > +{
-> +	unsigned long sysclk = 33333333;
+> +	if (!machine_is(sequoia))
+> +		return 0;
 > +
-> +	ibm440ep_fixup_clocks(sysclk, 11059200);
-> +	ibm4xx_fixup_ebc_ranges("/plb/opb/ebc");
-> +	ibm4xx_denali_fixup_memsize();
-> +	dt_fixup_mac_addresses(sequoia_mac0, sequoia_mac1);
+> +	of_platform_bus_probe(NULL, sequoia_of_bus, NULL);
+> +
+> +	return 0;
+> +}
+> +device_initcall(sequoia_device_probe);
+> +
+> +static int __init sequoia_probe(void)
+> +{
+> +	unsigned long root = of_get_flat_dt_root();
+> +
+> +	if (!of_flat_dt_is_compatible(root, "amcc,sequoia"))
+> +		return 0;
+> +
+> +	return 1;
 > +}
 > +
-> +void sequoia_init(void *mac0, void *mac1)
+> +static void __init sequoia_setup_arch(void)
 > +{
-> +	platform_ops.fixups = sequoia_fixups;
-> +	platform_ops.exit = ibm44x_dbcr_reset;
-> +	sequoia_mac0 = mac0;
-> +	sequoia_mac1 = mac1;
-> +	ft_init(_dtb_start, 0, 32);
-> +	serial_console_init();
 > +}
+> +
+> +define_machine(sequoia) {
+> +	.name 				= "Sequoia",
+> +	.probe 				= sequoia_probe,
+> +	.setup_arch			= sequoia_setup_arch,
+> +	.progress 			= udbg_progress,
+> +	.init_IRQ 			= uic_init_tree,
+> +	.get_irq 			= uic_get_irq,
+> +	.restart			= ppc44x_reset_system,
+> +	.calibrate_decr			= generic_calibrate_decr,
+> +};
 > _______________________________________________
 > Linuxppc-dev mailing list
 > Linuxppc-dev@ozlabs.org
