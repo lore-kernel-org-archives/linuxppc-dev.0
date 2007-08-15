@@ -1,32 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18114.39893.913684.592560@cargo.ozlabs.ibm.com>
-Date: Wed, 15 Aug 2007 16:23:17 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH] powerpc: fix i2c device string format
-In-Reply-To: <Pine.LNX.4.60.0708092233130.5995@poirot.grange>
-References: <Pine.LNX.4.60.0706292113240.4227@poirot.grange>
-	<00a85f152aa3547f0f0b4acd7954468a@kernel.crashing.org>
-	<Pine.LNX.4.60.0707022114020.3339@poirot.grange>
-	<2055bb54b9816faaf5b2ceedc9cfa039@kernel.crashing.org>
-	<Pine.LNX.4.60.0707032356270.3876@poirot.grange>
-	<E0E696F1-2F9E-4D6B-A194-EB42BA826BCD@kernel.crashing.org>
-	<Pine.LNX.4.60.0707180010330.3535@poirot.grange>
-	<87DC7695-382B-4641-B9D9-75ACB49D41A4@kernel.crashing.org>
-	<Pine.LNX.4.60.0707191932300.3365@poirot.grange>
-	<719AE7E4-FE6D-4973-8887-F787EC8ABC85@kernel.crashing.org>
-	<Pine.LNX.4.60.0707202219340.3946@poirot.grange>
-	<235e0ff22961e25016727c0e74fd0c0f@kernel.crashing.org>
-	<Pine.LNX.4.60.0708010739560.4228@poirot.grange>
-	<19a13f8700d078abc4cab0064a7d0183@kernel.crashing.org>
-	<Pine.LNX.4.60.0708012053240.7394@poirot.grange>
-	<46B0F030.9030007@freescale.com>
-	<Pine.LNX.4.60.0708080023030.8493@poirot.grange>
-	<3368b27f860fafb35d10f6352e9055bf@kernel.crashing.org>
-	<Pine.LNX.4.60.0708092233130.5995@poirot.grange>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <geert@linux-m68k.org>
+Received: from ananke.telenet-ops.be (ananke.telenet-ops.be [195.130.137.78])
+	by ozlabs.org (Postfix) with ESMTP id 58694DDEBE
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 19:49:58 +1000 (EST)
+Message-Id: <20070815094849.163898629@mail.of.borg>
+References: <20070815094539.181979221@mail.of.borg>
+Date: Wed, 15 Aug 2007 11:45:42 +0200
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch 03/10] m68k/mac: Make mac_hid_mouse_emulate_buttons()
+	declaration visible
+Cc: linux-input@atrey.karlin.mff.cuni.cz, linuxppc-dev@ozlabs.org,
+	linux-m68k@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,33 +22,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Guennadi Liakhovetski writes:
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 
-> On Thu, 9 Aug 2007, Segher Boessenkool wrote:
-> 
-> > > > strncpy() won't put a terminating zero on there, is everything
-> > > > that uses the resulting string okay with that?  Also, if the
-> > > > name gets cut short, it might match some _other_ expected name.
-> > > 
-> > > On Wed, 1 Aug 2007, Scott Wood wrote:
-> > > 
-> > > > You could use strlcpy() instead, which always leaves a zero terminator.
-> > > 
-> > > The patch below does exactly this - uses strlcpy() to guarantee strings in
-> > > i2c device type and driver_name fields are 0-terminated.
-> > 
-> > You're not checking the return values of these calls.  This would
-> > be a good function to put attribute warn_unused_result on :-)
-> 
-> hm... Well, the worst that could happen, if an "evil" programmer defines 
-> too long a name, it gets truncated, and then binds to a wrong driver, 
-> well, the worst that can happen is that your hardware gets damaged, not a 
-> big thing. However, some might disagree, so, below is a new version... 
-> Wrap some long lines while at that.
+m68k/mac: Make mac_hid_mouse_emulate_buttons() declaration visible
 
-That's not a commit message I can use.  Please repost with an
-informative commit message that says what the motivation for the
-change is, plus anything other information that would be useful for
-someone looking at this in a couple of years' time.
+drivers/char/keyboard.c: In function 'kbd_keycode':
+drivers/char/keyboard.c:1142: error: implicit declaration of function 'mac_hid_mouse_emulate_buttons'
 
-Paul.
+The forward declaration of mac_hid_mouse_emulate_buttons() is not visible on
+m68k because it's hidden in the middle of a big #ifdef block.
+
+Move it to <linux/kbd_kern.h>, correct the type of the second parameter, and
+include <linux/kbd_kern.h> where needed.
+
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/char/keyboard.c     |    4 ----
+ drivers/macintosh/mac_hid.c |    1 +
+ include/linux/kbd_kern.h    |    3 +++
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+--- a/drivers/char/keyboard.c
++++ b/drivers/char/keyboard.c
+@@ -1022,10 +1022,6 @@ static const unsigned short x86_keycodes
+ 	308,310,313,314,315,317,318,319,320,357,322,323,324,325,276,330,
+ 	332,340,365,342,343,344,345,346,356,270,341,368,369,370,371,372 };
+ 
+-#ifdef CONFIG_MAC_EMUMOUSEBTN
+-extern int mac_hid_mouse_emulate_buttons(int, int, int);
+-#endif /* CONFIG_MAC_EMUMOUSEBTN */
+-
+ #ifdef CONFIG_SPARC
+ static int sparc_l1_a_state = 0;
+ extern void sun_do_break(void);
+--- a/drivers/macintosh/mac_hid.c
++++ b/drivers/macintosh/mac_hid.c
+@@ -13,6 +13,7 @@
+ #include <linux/sysctl.h>
+ #include <linux/input.h>
+ #include <linux/module.h>
++#include <linux/kbd_kern.h>
+ 
+ 
+ static struct input_dev *emumousebtn;
+--- a/include/linux/kbd_kern.h
++++ b/include/linux/kbd_kern.h
+@@ -161,4 +161,7 @@ static inline void con_schedule_flip(str
+ 	schedule_delayed_work(&t->buf.work, 0);
+ }
+ 
++/* mac_hid.c */
++extern int mac_hid_mouse_emulate_buttons(int, unsigned int, int);
++
+ #endif
+
+-- 
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
