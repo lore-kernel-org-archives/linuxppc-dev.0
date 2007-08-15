@@ -1,19 +1,31 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 09CFDDDEAB
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 02:57:56 +1000 (EST)
-Message-ID: <46C33056.8090901@ru.mvista.com>
-Date: Wed, 15 Aug 2007 20:56:54 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-MIME-Version: 1.0
-To: Valentine Barshak <vbarshak@ru.mvista.com>,
-	linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/4] PowerPC 440EPx: Sequoia DTS
-References: <20070814184107.GA6696@ru.mvista.com>
-	<20070814184843.GA12438@ru.mvista.com>
-	<20070815034359.GA22849@localhost.localdomain>
-In-Reply-To: <20070815034359.GA22849@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <jyoung5@us.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E9BA3DDE46
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 03:37:50 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7FHbkNu016269
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 13:37:46 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l7FHbkgu131710
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 13:37:46 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l7FHbk8x017700
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 13:37:46 -0400
+Subject: Re: [PATCH 3/4] PowerPC 440EPx: Sequoia bootwrapper
+From: Jerone Young <jyoung5@us.ibm.com>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+In-Reply-To: <20070814185355.GA12472@ru.mvista.com>
+References: <20070814185355.GA12472@ru.mvista.com>
+Content-Type: text/plain
+Date: Wed, 15 Aug 2007 12:37:45 -0500
+Message-Id: <1187199465.7628.5.camel@laptop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: jyoung5@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,351 +35,279 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Tue, Aug 14, 2007 at 10:48:43PM +0400, Valentine Barshak wrote:
->> AMCC Sequoia device tree.
->>
->> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
->> ---
->>  arch/powerpc/boot/dts/sequoia.dts |  289 ++++++++++++++++++++++++++++++++++++++
->>  1 files changed, 289 insertions(+)
->>
->> diff -ruN linux-2.6.orig/arch/powerpc/boot/dts/sequoia.dts linux-2.6/arch/powerpc/boot/dts/sequoia.dts
->> --- linux-2.6.orig/arch/powerpc/boot/dts/sequoia.dts	1970-01-01 03:00:00.000000000 +0300
->> +++ linux-2.6/arch/powerpc/boot/dts/sequoia.dts	2007-08-14 19:32:56.000000000 +0400
->> @@ -0,0 +1,289 @@
->> +/*
->> + * Device Tree Source for AMCC Sequoia
->> + *
->> + * Based on Bamboo code by Josh Boyer <jwboyer@linux.vnet.ibm.com>
->> + * Copyright (c) 2006, 2007 IBM Corp.
->> + *
->> + * FIXME: Draft only!
->> + *
->> + * This file is licensed under the terms of the GNU General Public
->> + * License version 2.  This program is licensed "as is" without
->> + * any warranty of any kind, whether express or implied.
->> + *
->> + */
->> +
->> +/ {
->> +	#address-cells = <2>;
->> +	#size-cells = <1>;
->> +	model = "amcc,sequoia";
->> +	compatible = "amcc,sequoia";
->> +	dcr-parent = <&/cpus/PowerPC,440EPx@0>;
->> +
->> +	cpus {
->> +		#address-cells = <1>;
->> +		#size-cells = <0>;
->> +
->> +		PowerPC,440EPx@0 {
->> +			device_type = "cpu";
->> +			reg = <0>;
->> +			clock-frequency = <0>; /* Filled in by zImage */
->> +			timebase-frequency = <0>; /* Filled in by zImage */
->> +			i-cache-line-size = <20>;
->> +			d-cache-line-size = <20>;
->> +			i-cache-size = <8000>;
->> +			d-cache-size = <8000>;
->> +			dcr-controller;
->> +			dcr-access-method = "native";
->> +		};
->> +	};
->> +
->> +	memory {
->> +		device_type = "memory";
->> +		reg = <0 0 0>; /* Filled in by zImage */
->> +	};
->> +
->> +	UIC0: interrupt-controller0 {
->> +		compatible = "ibm,uic-440epx","ibm,uic";
->> +		interrupt-controller;
->> +		cell-index = <0>;
->> +		dcr-reg = <0c0 009>;
->> +		#address-cells = <0>;
->> +		#size-cells = <0>;
->> +		#interrupt-cells = <2>;
->> +	};
->> +
->> +	UIC1: interrupt-controller1 {
->> +		compatible = "ibm,uic-440epx","ibm,uic";
->> +		interrupt-controller;
->> +		cell-index = <1>;
->> +		dcr-reg = <0d0 009>;
->> +		#address-cells = <0>;
->> +		#size-cells = <0>;
->> +		#interrupt-cells = <2>;
->> +		interrupts = <1e 4 1f 4>; /* cascade */
->> +		interrupt-parent = <&UIC0>;
->> +	};
->> +
->> +	UIC2: interrupt-controller2 {
->> +		compatible = "ibm,uic-440epx","ibm,uic";
->> +		interrupt-controller;
->> +		cell-index = <2>;
->> +		dcr-reg = <0e0 009>;
->> +		#address-cells = <0>;
->> +		#size-cells = <0>;
->> +		#interrupt-cells = <2>;
->> +		interrupts = <1c 4 1d 4>; /* cascade */
->> +		interrupt-parent = <&UIC0>;
->> +	};
->> +
->> +	SDR0: sdr {
->> +		compatible = "ibm,sdr-440epx", "ibm,sdr-440ep";
-> 
-> Ok, I take it the 440EP really does have SDR and CPR devices with
-> which the EPx variants are compatible?
+What source tree patch based on? The latest kernel.org git tree does not
+have arch/powerpc/boot/4xx.c or arch/powerpc/boot/4xx.h . This patch is
+attempting to patch these files.
 
-Right.
-
+On Tue, 2007-08-14 at 22:53 +0400, Valentine Barshak wrote:
+> Bootwrapper code for AMCC 440EPx Sequoia board.
+> The DDR2 Denali controller support has been moved to
+>  arch/powerpc/boot/4xx.c
+> The code also uses 440EP clocking fixups
+> initially provided for 440EP Bamboo.
 > 
->> +		dcr-reg = <00e 002>;
->> +	};
->> +
->> +	CPR0: cpr {
->> +		compatible = "ibm,cpr-440epx", "ibm,sdr-440ep";
->> +		dcr-reg = <00c 002>;
->> +	};
->> +
->> +	plb {
->> +		compatible = "ibm,plb-440epx", "ibm,plb4";
->> +		#address-cells = <2>;
->> +		#size-cells = <1>;
->> +		ranges;
->> +		clock-frequency = <0>; /* Filled in by zImage */
->> +
->> +		SDRAM0: sdram {
->> +			device_type = "memory-controller";
->> +			compatible = "ibm,sdram-44x-ddr2denali";
+> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+> ---
+>  arch/powerpc/boot/44x.h            |    1 
+>  arch/powerpc/boot/4xx.c            |  108 +++++++++++++++++++++++++++++++++++++
+>  arch/powerpc/boot/4xx.h            |    1 
+>  arch/powerpc/boot/Makefile         |    6 +-
+>  arch/powerpc/boot/cuboot-sequoia.c |   31 ++++++++++
+>  arch/powerpc/boot/sequoia.c        |   48 ++++++++++++++++
+>  6 files changed, 193 insertions(+), 2 deletions(-)
 > 
-> Should have an ibm,sdram-440epx entry as well, just in case of chip
-> specific bugs / workarounds.
-
-OK
-
+> diff -ruN linux-2.6.orig/arch/powerpc/boot/44x.h linux-2.6/arch/powerpc/boot/44x.h
+> --- linux-2.6.orig/arch/powerpc/boot/44x.h	2007-08-14 17:11:16.000000000 +0400
+> +++ linux-2.6/arch/powerpc/boot/44x.h	2007-08-14 17:25:37.000000000 +0400
+> @@ -12,5 +12,6 @@
 > 
->> +			dcr-reg = <010 2>;
->> +		};
->> +
->> +		DMA0: dma {
->> +			compatible = "ibm,dma-440epx", "ibm,dma-4xx";
->> +			dcr-reg = <100 027>;
->> +		};
->> +
->> +		MAL0: mcmal {
->> +			compatible = "ibm,mcmal-440epx", "ibm,mcmal-440spe", "ibm,mcmal2";
+>  void ebony_init(void *mac0, void *mac1);
+>  void bamboo_init(void);
+> +void sequoia_init(void *mac0, void *mac1);
 > 
-> What's the 440spe entry about?
-
-Will remove. No need in 440spe with the updated EMAC driver.
-
+>  #endif /* _PPC_BOOT_44X_H_ */
+> diff -ruN linux-2.6.orig/arch/powerpc/boot/4xx.c linux-2.6/arch/powerpc/boot/4xx.c
+> --- linux-2.6.orig/arch/powerpc/boot/4xx.c	2007-08-14 17:11:16.000000000 +0400
+> +++ linux-2.6/arch/powerpc/boot/4xx.c	2007-08-14 20:16:57.000000000 +0400
+> @@ -39,6 +39,114 @@
+>  	dt_fixup_memory(0, memsize);
+>  }
 > 
->> +			dcr-reg = <180 62>;
->> +			num-tx-chans = <4>;
->> +			num-rx-chans = <4>;
->> +			interrupt-parent = <&MAL0>;
->> +			interrupts = <0 1 2 3 4>;
->> +			#interrupt-cells = <1>;
->> +			#address-cells = <0>;
->> +			#size-cells = <0>;
->> +			interrupt-map = </*TXEOB*/ 0 &UIC0 a 4
->> +					/*RXEOB*/ 1 &UIC0 b 4
->> +					/*SERR*/  2 &UIC1 0 4
->> +					/*TXDE*/  3 &UIC1 1 4
->> +					/*RXDE*/  4 &UIC1 2 4>;
->> +			interrupt-map-mask = <ffffffff>;
->> +		};
->> +
->> +		POB0: opb {
->> +		  	compatible = "ibm,opb-440epx", "ibm,opb";
->> +			#address-cells = <1>;
->> +			#size-cells = <1>;
->> +			/* Bamboo is oddball in the 44x world and doesn't use the ERPN
->> +			 * bits.
->> +			 */
+> +/* 4xx DDR1/2 Denali memory controller support */
+> +/* DDR0 registers */
+> +#define DDR0_02			2
+> +#define DDR0_08			8
+> +#define DDR0_10			10
+> +#define DDR0_14			14
+> +#define DDR0_42			42
+> +#define DDR0_43			43
+> +
+> +/* DDR0_02 */
+> +#define DDR_START		0x1
+> +#define DDR_START_SHIFT		0
+> +#define DDR_MAX_CS_REG		0x3
+> +#define DDR_MAX_CS_REG_SHIFT	24
+> +#define DDR_MAX_COL_REG		0xf
+> +#define DDR_MAX_COL_REG_SHIFT	16
+> +#define DDR_MAX_ROW_REG		0xf
+> +#define DDR_MAX_ROW_REG_SHIFT	8
+> +/* DDR0_08 */
+> +#define DDR_DDR2_MODE		0x1
+> +#define DDR_DDR2_MODE_SHIFT	0
+> +/* DDR0_10 */
+> +#define DDR_CS_MAP		0x3
+> +#define DDR_CS_MAP_SHIFT	8
+> +/* DDR0_14 */
+> +#define DDR_REDUC		0x1
+> +#define DDR_REDUC_SHIFT		16
+> +/* DDR0_42 */
+> +#define DDR_APIN		0x7
+> +#define DDR_APIN_SHIFT		24
+> +/* DDR0_43 */
+> +#define DDR_COL_SZ		0x7
+> +#define DDR_COL_SZ_SHIFT	8
+> +#define DDR_BANK8		0x1
+> +#define DDR_BANK8_SHIFT		0
+> +
+> +#define DDR_GET_VAL(val, mask, shift)	(((val) >> (shift)) & (mask))
+> +
+> +static inline u32 mfdcr_sdram0(u32 reg)
+> +{
+> +        mtdcr(DCRN_SDRAM0_CFGADDR, reg);
+> +        return mfdcr(DCRN_SDRAM0_CFGDATA);
+> +}
+> +
+> +void ibm4xx_denali_fixup_memsize(void)
+> +{
+> +	u32 val, max_cs, max_col, max_row;
+> +	u32 cs, col, row, bank, dpath;
+> +	unsigned long memsize;
+> +
+> +	val = mfdcr_sdram0(DDR0_02);
+> +	if (!DDR_GET_VAL(val, DDR_START, DDR_START_SHIFT))
+> +		fatal("DDR controller is not initialized\n");
+> +
+> +	/* get maximum cs col and row values */
+> +	max_cs  = DDR_GET_VAL(val, DDR_MAX_CS_REG, DDR_MAX_CS_REG_SHIFT);
+> +	max_col = DDR_GET_VAL(val, DDR_MAX_COL_REG, DDR_MAX_COL_REG_SHIFT);
+> +	max_row = DDR_GET_VAL(val, DDR_MAX_ROW_REG, DDR_MAX_ROW_REG_SHIFT);
+> +
+> +	/* get CS value */
+> +	val = mfdcr_sdram0(DDR0_10);
+> +
+> +	val = DDR_GET_VAL(val, DDR_CS_MAP, DDR_CS_MAP_SHIFT);
+> +	cs = 0;
+> +	while (val) {
+> +		if (val && 0x1)
+> +			cs++;
+> +		val = val >> 1;
+> +	}
+> +
+> +	if (!cs)
+> +		fatal("No memory installed\n");
+> +	if (cs > max_cs)
+> +		fatal("DDR wrong CS configuration\n");
+> +
+> +	/* get data path bytes */
+> +	val = mfdcr_sdram0(DDR0_14);
+> +
+> +	if (DDR_GET_VAL(val, DDR_REDUC, DDR_REDUC_SHIFT))
+> +		dpath = 8; /* 64 bits */
+> +	else
+> +		dpath = 4; /* 32 bits */
+> +
+> +	/* get adress pins (rows) */
+> +	val = mfdcr_sdram0(DDR0_42);
+> +
+> +	row = DDR_GET_VAL(val, DDR_APIN, DDR_APIN_SHIFT);
+> +	if (row > max_row)
+> +		fatal("DDR wrong APIN configuration\n");
+> +	row = max_row - row;
+> +
+> +	/* get collomn size and banks */
+> +	val = mfdcr_sdram0(DDR0_43);
+> +
+> +	col = DDR_GET_VAL(val, DDR_COL_SZ, DDR_COL_SZ_SHIFT);
+> +	if (col > max_col)
+> +		fatal("DDR wrong COL configuration\n");
+> +	col = max_col - col;
+> +
+> +	if (DDR_GET_VAL(val, DDR_BANK8, DDR_BANK8_SHIFT))
+> +		bank = 8; /* 8 banks */
+> +	else
+> +		bank = 4; /* 4 banks */
+> +
+> +	memsize = cs * (1 << (col+row)) * bank * dpath;
+> +	dt_fixup_memory(0, memsize);
+> +}
+> +
+>  #define DBCR0_RST_SYSTEM 0x30000000
 > 
-> This incorrect and outdated comment is still here.
-
-Sorry :)
-
+>  void ibm44x_dbcr_reset(void)
+> diff -ruN linux-2.6.orig/arch/powerpc/boot/4xx.h linux-2.6/arch/powerpc/boot/4xx.h
+> --- linux-2.6.orig/arch/powerpc/boot/4xx.h	2007-08-14 17:11:16.000000000 +0400
+> +++ linux-2.6/arch/powerpc/boot/4xx.h	2007-08-14 20:24:22.000000000 +0400
+> @@ -12,6 +12,7 @@
+>  #define _POWERPC_BOOT_4XX_H_
 > 
->> +		  	ranges = <00000000 1 00000000 80000000
->> +			          80000000 1 80000000 80000000>;
->> +		  	interrupt-parent = <&UIC1>;
->> +		  	interrupts = <7 4>;
->> +		  	clock-frequency = <0>; /* Filled in by zImage */
->> +
->> +			EBC0: ebc {
->> +				compatible = "ibm,ebc-440epx";
+>  void ibm4xx_fixup_memsize(void);
+> +void ibm4xx_denali_fixup_memsize(void);
+>  void ibm44x_dbcr_reset(void);
+>  void ibm40x_dbcr_reset(void);
+>  void ibm4xx_quiesce_eth(u32 *emac0, u32 *emac1);
+> diff -ruN linux-2.6.orig/arch/powerpc/boot/cuboot-sequoia.c linux-2.6/arch/powerpc/boot/cuboot-sequoia.c
+> --- linux-2.6.orig/arch/powerpc/boot/cuboot-sequoia.c	1970-01-01 03:00:00.000000000 +0300
+> +++ linux-2.6/arch/powerpc/boot/cuboot-sequoia.c	2007-08-14 17:25:37.000000000 +0400
+> @@ -0,0 +1,31 @@
+> +/*
+> + * Old U-boot compatibility for Sequoia
+> + *
+> + * Based on Ebony code by David Gibson <david@gibson.dropbear.id.au>
+> + *
+> + * Copyright 2007 David Gibson, IBM Corporatio.
+> + *   Based on cuboot-83xx.c, which is:
+> + * Copyright (c) 2007 Freescale Semiconductor, Inc.
+> + *
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms of the GNU General Public License version 2 as published
+> + * by the Free Software Foundation.
+> + */
+> +
+> +#include "ops.h"
+> +#include "stdio.h"
+> +#include "44x.h"
+> +#include "cuboot.h"
+> +
+> +#define TARGET_4xx
+> +#define TARGET_44x
+> +#include "ppcboot.h"
+> +
+> +static bd_t bd;
+> +
+> +void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+> +                   unsigned long r6, unsigned long r7)
+> +{
+> +	CUBOOT_INIT();
+> +	sequoia_init(&bd.bi_enetaddr, &bd.bi_enet1addr);
+> +}
+> diff -ruN linux-2.6.orig/arch/powerpc/boot/Makefile linux-2.6/arch/powerpc/boot/Makefile
+> --- linux-2.6.orig/arch/powerpc/boot/Makefile	2007-08-14 17:11:16.000000000 +0400
+> +++ linux-2.6/arch/powerpc/boot/Makefile	2007-08-14 17:25:38.000000000 +0400
+> @@ -44,10 +44,11 @@
+>  src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
+>  		ns16550.c serial.c simple_alloc.c div64.S util.S \
+>  		gunzip_util.c elf_util.c $(zlib) devtree.c oflib.c ofconsole.c \
+> -		4xx.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c bamboo.c
+> +		4xx.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c bamboo.c \
+> +		sequoia.c
+>  src-plat := of.c cuboot-83xx.c cuboot-85xx.c holly.c \
+>  		cuboot-ebony.c treeboot-ebony.c prpmc2800.c \
+> -		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c
+> +		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-sequoia.c
+>  src-boot := $(src-wlib) $(src-plat) empty.c
 > 
-> Should have "ibm,ebc" too.
-
-OK
-
+>  src-boot := $(addprefix $(obj)/, $(src-boot))
+> @@ -143,6 +144,7 @@
+>  image-$(CONFIG_PPC_85xx)		+= cuImage.85xx
+>  image-$(CONFIG_EBONY)			+= treeImage.ebony cuImage.ebony
+>  image-$(CONFIG_BAMBOO)			+= treeImage.bamboo
+> +image-$(CONFIG_SEQUOIA)			+= cuImage.sequoia
+>  endif
 > 
->> +				dcr-reg = <012 2>;
->> +				#address-cells = <2>;
->> +				#size-cells = <1>;
->> +				clock-frequency = <0>; /* Filled in by zImage */
->> +				interrupts = <5 1>;
->> +				interrupt-parent = <&UIC1>;
->> +
->> +				nor_flash@0,0 {
->> +					device_type = "rom";
->> +					compatible = "direct-mapped";
->> +					probe-type = "CFI";
->> +					bank-width = <2>;
->> +					partitions = <	0	180000
->> +							180000	200000
->> +							380000	3aa0000
->> +							3e20000	140000
->> +							3f60000	40000
->> +							3fa0000	60000>;
->> +					partition-names = "Kernel", "ramdisk", "file system",
->> +								"kozio", "env", "u-boot";
->> +					reg = <0 000000 4000000>;
->> +				};
->> +
->> +			};
->> +
->> +			UART0: serial@ef600300 {
->> +		   		device_type = "serial";
->> +		   		compatible = "ns16550";
->> +		   		reg = <ef600300 8>;
->> +		   		virtual-reg = <ef600300>;
->> +		   		clock-frequency = <0>; /* Filled in by zImage */
->> +		   		current-speed = <1c200>;
->> +		   		interrupt-parent = <&UIC0>;
->> +		   		interrupts = <0 4>;
->> +	   		};
->> +
->> +			UART1: serial@ef600400 {
->> +		   		device_type = "serial";
->> +		   		compatible = "ns16550";
->> +		   		reg = <ef600400 8>;
->> +		   		virtual-reg = <ef600400>;
->> +		   		clock-frequency = <0>;
->> +		   		current-speed = <0>;
->> +		   		interrupt-parent = <&UIC0>;
->> +		   		interrupts = <1 4>;
->> +	   		};
->> +
->> +			UART2: serial@ef600500 {
->> +		   		device_type = "serial";
->> +		   		compatible = "ns16550";
->> +		   		reg = <ef600500 8>;
->> +		   		virtual-reg = <ef600500>;
->> +		   		clock-frequency = <0>;
->> +		   		current-speed = <0>;
->> +		   		interrupt-parent = <&UIC1>;
->> +		   		interrupts = <3 4>;
->> +	   		};
->> +
->> +			UART3: serial@ef600600 {
->> +		   		device_type = "serial";
->> +		   		compatible = "ns16550";
->> +		   		reg = <ef600600 8>;
->> +		   		virtual-reg = <ef600600>;
->> +		   		clock-frequency = <0>;
->> +		   		current-speed = <0>;
->> +		   		interrupt-parent = <&UIC1>;
->> +		   		interrupts = <4 4>;
->> +	   		};
->> +
->> +			IIC0: i2c@ef600700 {
->> +				device_type = "i2c";
->> +				compatible = "ibm,iic-440epx", "ibm,iic";
->> +				reg = <ef600700 14>;
->> +				interrupt-parent = <&UIC0>;
->> +				interrupts = <2 4>;
->> +			};
->> +
->> +			IIC1: i2c@ef600800 {
->> +				device_type = "i2c";
->> +				compatible = "ibm,iic-440epx", "ibm,iic";
->> +				reg = <ef600800 14>;
->> +				interrupt-parent = <&UIC0>;
->> +				interrupts = <7 4>;
->> +			};
->> +
->> +			ZMII0: emac-zmii@ef600d00 {
->> +				device_type = "zmii-interface";
->> +				compatible = "ibm,zmii-440epx", "ibm,zmii";
->> +				reg = <ef600d00 c>;
->> +			};
->> +
->> +			EMAC0: ethernet@ef600e00 {
->> +				linux,network-index = <0>;
->> +				device_type = "network";
->> +				compatible = "ibm,emac-440epx", "ibm,emac-440spe", "ibm,emac4";
-> 
-> Again what's the ibm,emac-440spe about?
-
-It's about to be removed from here :)
-
-> 
->> +				interrupt-parent = <&EMAC0>;
->> +				interrupts = <0 1>;
->> +				#interrupt-cells = <1>;
->> +				#address-cells = <0>;
->> +				#size-cells = <0>;
->> +				interrupt-map = </*Status*/ 0 &UIC0 18 4
->> +						/*Wake*/  1 &UIC1 1d 4>;
->> +				reg = <ef600e00 70>;
->> +				local-mac-address = [000000000000];
->> +				mal-device = <&MAL0>;
->> +				mal-tx-channel = <0 1>;
->> +				mal-rx-channel = <0>;
->> +				cell-index = <0>;
->> +				max-frame-size = <5dc>;
->> +				rx-fifo-size = <1000>;
->> +				tx-fifo-size = <800>;
->> +				phy-mode = "rmii";
->> +				phy-map = <00000000>;
->> +				zmii-device = <&ZMII0>;
->> +				zmii-channel = <0>;
->> +			};
->> +
->> +			EMAC1: ethernet@ef600f00 {
->> +				linux,network-index = <1>;
->> +				device_type = "network";
->> +				compatible = "ibm,emac-440epx", "ibm,emac-440spe", "ibm,emac4";
->> +				interrupt-parent = <&EMAC1>;
->> +				interrupts = <0 1>;
->> +				#interrupt-cells = <1>;
->> +				#address-cells = <0>;
->> +				#size-cells = <0>;
->> +				interrupt-map = </*Status*/ 0 &UIC0 19 4
->> +						/*Wake*/  1 &UIC1 1f 4>;
->> +				reg = <ef600f00 70>;
->> +				local-mac-address = [000000000000];
->> +				mal-device = <&MAL0>;
->> +				mal-tx-channel = <2 3>;
->> +				mal-rx-channel = <1>;
->> +				cell-index = <1>;
->> +				max-frame-size = <5dc>;
->> +				rx-fifo-size = <1000>;
->> +				tx-fifo-size = <800>;
->> +				phy-mode = "rmii";
->> +				phy-map = <00000000>;
->> +				zmii-device = <&ZMII0>;
->> +				zmii-channel = <1>;
->> +			};
->> +		};
->> +	};
->> +
->> +	chosen {
->> +		linux,stdout-path = "/plb/opb/serial@ef600300";
->> +		bootargs = "console=ttyS0,115200";
->> +	};
->> +};
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->>
-> 
-Thanks,
-Valentine.
+>  # For 32-bit powermacs, build the COFF and miboot images
+> diff -ruN linux-2.6.orig/arch/powerpc/boot/sequoia.c linux-2.6/arch/powerpc/boot/sequoia.c
+> --- linux-2.6.orig/arch/powerpc/boot/sequoia.c	1970-01-01 03:00:00.000000000 +0300
+> +++ linux-2.6/arch/powerpc/boot/sequoia.c	2007-08-14 20:52:10.000000000 +0400
+> @@ -0,0 +1,48 @@
+> +/*
+> + * Valentine Barshak <vbarshak@ru.mvista.com>
+> + * Copyright 2007 MontaVista Software, Inc
+> + *
+> + * Based on Bamboo code by Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> + * Copyright IBM Corporation, 2007
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; version 2 of the License
+> + */
+> +#include <stdarg.h>
+> +#include <stddef.h>
+> +#include "types.h"
+> +#include "elf.h"
+> +#include "string.h"
+> +#include "stdio.h"
+> +#include "page.h"
+> +#include "ops.h"
+> +#include "dcr.h"
+> +#include "4xx.h"
+> +#include "44x.h"
+> +
+> +extern char _dtb_start[];
+> +extern char _dtb_end[];
+> +
+> +static u8 *sequoia_mac0, *sequoia_mac1;
+> +
+> +
+> +static void sequoia_fixups(void)
+> +{
+> +	unsigned long sysclk = 33333333;
+> +
+> +	ibm440ep_fixup_clocks(sysclk, 11059200);
+> +	ibm4xx_fixup_ebc_ranges("/plb/opb/ebc");
+> +	ibm4xx_denali_fixup_memsize();
+> +	dt_fixup_mac_addresses(sequoia_mac0, sequoia_mac1);
+> +}
+> +
+> +void sequoia_init(void *mac0, void *mac1)
+> +{
+> +	platform_ops.fixups = sequoia_fixups;
+> +	platform_ops.exit = ibm44x_dbcr_reset;
+> +	sequoia_mac0 = mac0;
+> +	sequoia_mac1 = mac1;
+> +	ft_init(_dtb_start, 0, 32);
+> +	serial_console_init();
+> +}
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
