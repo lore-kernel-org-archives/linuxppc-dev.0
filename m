@@ -1,17 +1,15 @@
-Return-Path: <SRS0=iJC6=NM=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 87939DDED4
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 16:40:19 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/4] PowerPC 440EPx: Sequoia DTS
-Date: Wed, 15 Aug 2007 08:39:21 +0200
-References: <20070814184843.GA12438@ru.mvista.com>
-In-Reply-To: <20070814184843.GA12438@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200708150839.21655.sr@denx.de>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 9490ADDEE0
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 16:42:13 +1000 (EST)
+Date: Wed, 15 Aug 2007 16:42:12 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] Use of_get_property in ipmi code
+Message-Id: <20070815164212.4228dce4.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Corey Minyard <minyard@mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,331 +19,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 14 August 2007, Valentine Barshak wrote:
-> AMCC Sequoia device tree.
 
-Please find some comments below.
+get_property has been renamed to of_get_property.
 
-> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
-> ---
->  arch/powerpc/boot/dts/sequoia.dts |  289
-> ++++++++++++++++++++++++++++++++++++++ 1 files changed, 289 insertions(+)
->
-> diff -ruN linux-2.6.orig/arch/powerpc/boot/dts/sequoia.dts
-> linux-2.6/arch/powerpc/boot/dts/sequoia.dts ---
-> linux-2.6.orig/arch/powerpc/boot/dts/sequoia.dts	1970-01-01
-> 03:00:00.000000000 +0300 +++
-> linux-2.6/arch/powerpc/boot/dts/sequoia.dts	2007-08-14 19:32:56.000000000
-> +0400 @@ -0,0 +1,289 @@
-> +/*
-> + * Device Tree Source for AMCC Sequoia
-> + *
-> + * Based on Bamboo code by Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> + * Copyright (c) 2006, 2007 IBM Corp.
-> + *
-> + * FIXME: Draft only!
-> + *
-> + * This file is licensed under the terms of the GNU General Public
-> + * License version 2.  This program is licensed "as is" without
-> + * any warranty of any kind, whether express or implied.
-> + *
-> + */
-> +
-> +/ {
-> +	#address-cells = <2>;
-> +	#size-cells = <1>;
-> +	model = "amcc,sequoia";
-> +	compatible = "amcc,sequoia";
-> +	dcr-parent = <&/cpus/PowerPC,440EPx@0>;
-> +
-> +	cpus {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		PowerPC,440EPx@0 {
-> +			device_type = "cpu";
-> +			reg = <0>;
-> +			clock-frequency = <0>; /* Filled in by zImage */
-> +			timebase-frequency = <0>; /* Filled in by zImage */
-> +			i-cache-line-size = <20>;
-> +			d-cache-line-size = <20>;
-> +			i-cache-size = <8000>;
-> +			d-cache-size = <8000>;
-> +			dcr-controller;
-> +			dcr-access-method = "native";
-> +		};
-> +	};
-> +
-> +	memory {
-> +		device_type = "memory";
-> +		reg = <0 0 0>; /* Filled in by zImage */
-> +	};
-> +
-> +	UIC0: interrupt-controller0 {
-> +		compatible = "ibm,uic-440epx","ibm,uic";
-> +		interrupt-controller;
-> +		cell-index = <0>;
-> +		dcr-reg = <0c0 009>;
-> +		#address-cells = <0>;
-> +		#size-cells = <0>;
-> +		#interrupt-cells = <2>;
-> +	};
-> +
-> +	UIC1: interrupt-controller1 {
-> +		compatible = "ibm,uic-440epx","ibm,uic";
-> +		interrupt-controller;
-> +		cell-index = <1>;
-> +		dcr-reg = <0d0 009>;
-> +		#address-cells = <0>;
-> +		#size-cells = <0>;
-> +		#interrupt-cells = <2>;
-> +		interrupts = <1e 4 1f 4>; /* cascade */
-> +		interrupt-parent = <&UIC0>;
-> +	};
-> +
-> +	UIC2: interrupt-controller2 {
-> +		compatible = "ibm,uic-440epx","ibm,uic";
-> +		interrupt-controller;
-> +		cell-index = <2>;
-> +		dcr-reg = <0e0 009>;
-> +		#address-cells = <0>;
-> +		#size-cells = <0>;
-> +		#interrupt-cells = <2>;
-> +		interrupts = <1c 4 1d 4>; /* cascade */
-> +		interrupt-parent = <&UIC0>;
-> +	};
-> +
-> +	SDR0: sdr {
-> +		compatible = "ibm,sdr-440epx", "ibm,sdr-440ep";
-> +		dcr-reg = <00e 002>;
-> +	};
-> +
-> +	CPR0: cpr {
-> +		compatible = "ibm,cpr-440epx", "ibm,sdr-440ep";
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/char/ipmi/ipmi_si_intf.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-sdr-440ep? I assume you really mean:
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-+		compatible = "ibm,cpr-440epx", "ibm,cpr-440ep";
-
-> +		dcr-reg = <00c 002>;
-> +	};
-> +
-> +	plb {
-> +		compatible = "ibm,plb-440epx", "ibm,plb4";
-> +		#address-cells = <2>;
-> +		#size-cells = <1>;
-> +		ranges;
-> +		clock-frequency = <0>; /* Filled in by zImage */
-> +
-> +		SDRAM0: sdram {
-> +			device_type = "memory-controller";
-> +			compatible = "ibm,sdram-44x-ddr2denali";
-> +			dcr-reg = <010 2>;
-> +		};
-> +
-> +		DMA0: dma {
-> +			compatible = "ibm,dma-440epx", "ibm,dma-4xx";
-> +			dcr-reg = <100 027>;
-> +		};
-> +
-> +		MAL0: mcmal {
-> +			compatible = "ibm,mcmal-440epx", "ibm,mcmal-440spe", "ibm,mcmal2";
-> +			dcr-reg = <180 62>;
-> +			num-tx-chans = <4>;
-> +			num-rx-chans = <4>;
-> +			interrupt-parent = <&MAL0>;
-> +			interrupts = <0 1 2 3 4>;
-> +			#interrupt-cells = <1>;
-> +			#address-cells = <0>;
-> +			#size-cells = <0>;
-> +			interrupt-map = </*TXEOB*/ 0 &UIC0 a 4
-> +					/*RXEOB*/ 1 &UIC0 b 4
-> +					/*SERR*/  2 &UIC1 0 4
-> +					/*TXDE*/  3 &UIC1 1 4
-> +					/*RXDE*/  4 &UIC1 2 4>;
-> +			interrupt-map-mask = <ffffffff>;
-> +		};
-> +
-> +		POB0: opb {
-> +		  	compatible = "ibm,opb-440epx", "ibm,opb";
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +			/* Bamboo is oddball in the 44x world and doesn't use the ERPN
-> +			 * bits.
-> +			 */
-
-Bamboo? And the 440EPx does use the ERPN bits.
-
-> +		  	ranges = <00000000 1 00000000 80000000
-> +			          80000000 1 80000000 80000000>;
-> +		  	interrupt-parent = <&UIC1>;
-> +		  	interrupts = <7 4>;
-> +		  	clock-frequency = <0>; /* Filled in by zImage */
-> +
-> +			EBC0: ebc {
-> +				compatible = "ibm,ebc-440epx";
-> +				dcr-reg = <012 2>;
-> +				#address-cells = <2>;
-> +				#size-cells = <1>;
-> +				clock-frequency = <0>; /* Filled in by zImage */
-> +				interrupts = <5 1>;
-> +				interrupt-parent = <&UIC1>;
-> +
-> +				nor_flash@0,0 {
-> +					device_type = "rom";
-> +					compatible = "direct-mapped";
-> +					probe-type = "CFI";
-> +					bank-width = <2>;
-> +					partitions = <	0	180000
-> +							180000	200000
-> +							380000	3aa0000
-> +							3e20000	140000
-> +							3f60000	40000
-> +							3fa0000	60000>;
-> +					partition-names = "Kernel", "ramdisk", "file system",
-> +								"kozio", "env", "u-boot";
-> +					reg = <0 000000 4000000>;
-> +				};
-> +
-> +			};
-> +
-> +			UART0: serial@ef600300 {
-> +		   		device_type = "serial";
-> +		   		compatible = "ns16550";
-> +		   		reg = <ef600300 8>;
-> +		   		virtual-reg = <ef600300>;
-> +		   		clock-frequency = <0>; /* Filled in by zImage */
-> +		   		current-speed = <1c200>;
-> +		   		interrupt-parent = <&UIC0>;
-> +		   		interrupts = <0 4>;
-> +	   		};
-> +
-> +			UART1: serial@ef600400 {
-> +		   		device_type = "serial";
-> +		   		compatible = "ns16550";
-> +		   		reg = <ef600400 8>;
-> +		   		virtual-reg = <ef600400>;
-> +		   		clock-frequency = <0>;
-> +		   		current-speed = <0>;
-> +		   		interrupt-parent = <&UIC0>;
-> +		   		interrupts = <1 4>;
-> +	   		};
-> +
-> +			UART2: serial@ef600500 {
-> +		   		device_type = "serial";
-> +		   		compatible = "ns16550";
-> +		   		reg = <ef600500 8>;
-> +		   		virtual-reg = <ef600500>;
-> +		   		clock-frequency = <0>;
-> +		   		current-speed = <0>;
-> +		   		interrupt-parent = <&UIC1>;
-> +		   		interrupts = <3 4>;
-> +	   		};
-> +
-> +			UART3: serial@ef600600 {
-> +		   		device_type = "serial";
-> +		   		compatible = "ns16550";
-> +		   		reg = <ef600600 8>;
-> +		   		virtual-reg = <ef600600>;
-> +		   		clock-frequency = <0>;
-> +		   		current-speed = <0>;
-> +		   		interrupt-parent = <&UIC1>;
-> +		   		interrupts = <4 4>;
-> +	   		};
-> +
-> +			IIC0: i2c@ef600700 {
-> +				device_type = "i2c";
-> +				compatible = "ibm,iic-440epx", "ibm,iic";
-> +				reg = <ef600700 14>;
-> +				interrupt-parent = <&UIC0>;
-> +				interrupts = <2 4>;
-> +			};
-> +
-> +			IIC1: i2c@ef600800 {
-> +				device_type = "i2c";
-> +				compatible = "ibm,iic-440epx", "ibm,iic";
-> +				reg = <ef600800 14>;
-> +				interrupt-parent = <&UIC0>;
-> +				interrupts = <7 4>;
-> +			};
-> +
-> +			ZMII0: emac-zmii@ef600d00 {
-> +				device_type = "zmii-interface";
-> +				compatible = "ibm,zmii-440epx", "ibm,zmii";
-> +				reg = <ef600d00 c>;
-> +			};
-> +
-> +			EMAC0: ethernet@ef600e00 {
-> +				linux,network-index = <0>;
-> +				device_type = "network";
-> +				compatible = "ibm,emac-440epx", "ibm,emac-440spe", "ibm,emac4";
-> +				interrupt-parent = <&EMAC0>;
-> +				interrupts = <0 1>;
-> +				#interrupt-cells = <1>;
-> +				#address-cells = <0>;
-> +				#size-cells = <0>;
-> +				interrupt-map = </*Status*/ 0 &UIC0 18 4
-> +						/*Wake*/  1 &UIC1 1d 4>;
-> +				reg = <ef600e00 70>;
-> +				local-mac-address = [000000000000];
-> +				mal-device = <&MAL0>;
-> +				mal-tx-channel = <0 1>;
-> +				mal-rx-channel = <0>;
-> +				cell-index = <0>;
-> +				max-frame-size = <5dc>;
-> +				rx-fifo-size = <1000>;
-> +				tx-fifo-size = <800>;
-> +				phy-mode = "rmii";
-> +				phy-map = <00000000>;
-> +				zmii-device = <&ZMII0>;
-> +				zmii-channel = <0>;
-> +			};
-> +
-> +			EMAC1: ethernet@ef600f00 {
-> +				linux,network-index = <1>;
-> +				device_type = "network";
-> +				compatible = "ibm,emac-440epx", "ibm,emac-440spe", "ibm,emac4";
-> +				interrupt-parent = <&EMAC1>;
-> +				interrupts = <0 1>;
-> +				#interrupt-cells = <1>;
-> +				#address-cells = <0>;
-> +				#size-cells = <0>;
-> +				interrupt-map = </*Status*/ 0 &UIC0 19 4
-> +						/*Wake*/  1 &UIC1 1f 4>;
-> +				reg = <ef600f00 70>;
-> +				local-mac-address = [000000000000];
-> +				mal-device = <&MAL0>;
-> +				mal-tx-channel = <2 3>;
-> +				mal-rx-channel = <1>;
-> +				cell-index = <1>;
-> +				max-frame-size = <5dc>;
-> +				rx-fifo-size = <1000>;
-> +				tx-fifo-size = <800>;
-> +				phy-mode = "rmii";
-> +				phy-map = <00000000>;
-> +				zmii-device = <&ZMII0>;
-> +				zmii-channel = <1>;
-> +			};
-> +		};
-> +	};
-> +
-> +	chosen {
-> +		linux,stdout-path = "/plb/opb/serial@ef600300";
-> +		bootargs = "console=ttyS0,115200";
-> +	};
-> +};
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
-
-
-Best regards,
-Stefan
-
-=====================================================================
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
-=====================================================================
+diff --git a/drivers/char/ipmi/ipmi_si_intf.c b/drivers/char/ipmi/ipmi_si_intf.c
+index 96d2f9e..d57083a 100644
+--- a/drivers/char/ipmi/ipmi_si_intf.c
++++ b/drivers/char/ipmi/ipmi_si_intf.c
+@@ -2251,19 +2251,19 @@ static int __devinit ipmi_of_probe(struct of_device *dev,
+ 		return ret;
+ 	}
+ 
+-	regsize = get_property(np, "reg-size", &proplen);
++	regsize = of_get_property(np, "reg-size", &proplen);
+ 	if (regsize && proplen != 4) {
+ 		dev_warn(&dev->dev, PFX "invalid regsize from OF\n");
+ 		return -EINVAL;
+ 	}
+ 
+-	regspacing = get_property(np, "reg-spacing", &proplen);
++	regspacing = of_get_property(np, "reg-spacing", &proplen);
+ 	if (regspacing && proplen != 4) {
+ 		dev_warn(&dev->dev, PFX "invalid regspacing from OF\n");
+ 		return -EINVAL;
+ 	}
+ 
+-	regshift = get_property(np, "reg-shift", &proplen);
++	regshift = of_get_property(np, "reg-shift", &proplen);
+ 	if (regshift && proplen != 4) {
+ 		dev_warn(&dev->dev, PFX "invalid regshift from OF\n");
+ 		return -EINVAL;
+-- 
+1.5.2.4
