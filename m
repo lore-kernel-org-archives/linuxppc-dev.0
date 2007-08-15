@@ -1,18 +1,15 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from ananke.telenet-ops.be (ananke.telenet-ops.be [195.130.137.78])
-	by ozlabs.org (Postfix) with ESMTP id 58694DDEBE
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 19:49:58 +1000 (EST)
-Message-Id: <20070815094849.163898629@mail.of.borg>
-References: <20070815094539.181979221@mail.of.borg>
-Date: Wed, 15 Aug 2007 11:45:42 +0200
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 03/10] m68k/mac: Make mac_hid_mouse_emulate_buttons()
-	declaration visible
-Cc: linux-input@atrey.karlin.mff.cuni.cz, linuxppc-dev@ozlabs.org,
-	linux-m68k@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	linux-kernel@vger.kernel.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 030BFDDEB8
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 20:53:28 +1000 (EST)
+Date: Wed, 15 Aug 2007 20:53:26 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] Fix section mismatch in crash_dump.c
+Message-Id: <20070815205326.317c5394.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,68 +19,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+WARNING: vmlinux.o(.text+0x23258): Section mismatch: reference to .init.text:.lmb_reserve (between '.reserve_kdump_trampoline' and '.restore_processor_state')
 
-m68k/mac: Make mac_hid_mouse_emulate_buttons() declaration visible
-
-drivers/char/keyboard.c: In function 'kbd_keycode':
-drivers/char/keyboard.c:1142: error: implicit declaration of function 'mac_hid_mouse_emulate_buttons'
-
-The forward declaration of mac_hid_mouse_emulate_buttons() is not visible on
-m68k because it's hidden in the middle of a big #ifdef block.
-
-Move it to <linux/kbd_kern.h>, correct the type of the second parameter, and
-include <linux/kbd_kern.h> where needed.
-
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/char/keyboard.c     |    4 ----
- drivers/macintosh/mac_hid.c |    1 +
- include/linux/kbd_kern.h    |    3 +++
- 3 files changed, 4 insertions(+), 4 deletions(-)
-
---- a/drivers/char/keyboard.c
-+++ b/drivers/char/keyboard.c
-@@ -1022,10 +1022,6 @@ static const unsigned short x86_keycodes
- 	308,310,313,314,315,317,318,319,320,357,322,323,324,325,276,330,
- 	332,340,365,342,343,344,345,346,356,270,341,368,369,370,371,372 };
- 
--#ifdef CONFIG_MAC_EMUMOUSEBTN
--extern int mac_hid_mouse_emulate_buttons(int, int, int);
--#endif /* CONFIG_MAC_EMUMOUSEBTN */
--
- #ifdef CONFIG_SPARC
- static int sparc_l1_a_state = 0;
- extern void sun_do_break(void);
---- a/drivers/macintosh/mac_hid.c
-+++ b/drivers/macintosh/mac_hid.c
-@@ -13,6 +13,7 @@
- #include <linux/sysctl.h>
- #include <linux/input.h>
- #include <linux/module.h>
-+#include <linux/kbd_kern.h>
- 
- 
- static struct input_dev *emumousebtn;
---- a/include/linux/kbd_kern.h
-+++ b/include/linux/kbd_kern.h
-@@ -161,4 +161,7 @@ static inline void con_schedule_flip(str
- 	schedule_delayed_work(&t->buf.work, 0);
- }
- 
-+/* mac_hid.c */
-+extern int mac_hid_mouse_emulate_buttons(int, unsigned int, int);
-+
- #endif
+ arch/powerpc/kernel/crash_dump.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 -- 
-Gr{oetje,eeting}s,
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+diff --git a/arch/powerpc/kernel/crash_dump.c b/arch/powerpc/kernel/crash_dump.c
+index 2f6f5a7..ffa91d6 100644
+--- a/arch/powerpc/kernel/crash_dump.c
++++ b/arch/powerpc/kernel/crash_dump.c
+@@ -25,7 +25,7 @@
+ #define DBG(fmt...)
+ #endif
+ 
+-void reserve_kdump_trampoline(void)
++void __init reserve_kdump_trampoline(void)
+ {
+ 	lmb_reserve(0, KDUMP_RESERVE_LIMIT);
+ }
+-- 
+1.5.2.4
