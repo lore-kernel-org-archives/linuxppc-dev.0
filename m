@@ -1,15 +1,12 @@
 Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 4E1F7DDEC0
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 20:58:25 +1000 (EST)
-Date: Wed, 15 Aug 2007 20:58:23 +1000
+Date: Wed, 15 Aug 2007 21:02:11 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Fix section mismatch in pasemi/iommu.c
-Message-Id: <20070815205823.b0a04715.sfr@canb.auug.org.au>
+Subject: [PATCH] [POWERPC] Fix section mismatch in scc_sio.c
+Message-Id: <20070815210211.9e6c8038.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: Olof Johansson <olof@lixom.net>, ppc-dev <linuxppc-dev@ozlabs.org>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,40 +16,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These functions are only called by __init functions.
-
-WARNING: vmlinux.o(.text+0x56aa0): Section mismatch: reference to .init.text:.lmb_alloc (between '.iob_init' and '.iommu_init_early_pasemi')
+WARNING: vmlinux.o(.text+0x69d0c): Section mismatch: reference to .init.text:.early_serial_txx9_setup (between '.txx9_serial_init' and '.cpu_affinity_set')
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/platforms/pasemi/iommu.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/celleb/scc_sio.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/arch/powerpc/platforms/pasemi/iommu.c b/arch/powerpc/platforms/pasemi/iommu.c
-index f33b21b..c910ec9 100644
---- a/arch/powerpc/platforms/pasemi/iommu.c
-+++ b/arch/powerpc/platforms/pasemi/iommu.c
-@@ -187,7 +187,7 @@ static void pci_dma_dev_setup_pasemi(struct pci_dev *dev)
- static void pci_dma_bus_setup_null(struct pci_bus *b) { }
- static void pci_dma_dev_setup_null(struct pci_dev *d) { }
+diff --git a/arch/powerpc/platforms/celleb/scc_sio.c b/arch/powerpc/platforms/celleb/scc_sio.c
+index bcd25f5..d219b60 100644
+--- a/arch/powerpc/platforms/celleb/scc_sio.c
++++ b/arch/powerpc/platforms/celleb/scc_sio.c
+@@ -39,7 +39,7 @@ static struct {
+ 	{ 0x800, 1 }	/* 0xFF2800 */
+ };
  
--int iob_init(struct device_node *dn)
-+int __init iob_init(struct device_node *dn)
+-static int txx9_serial_init(void)
++static int __init txx9_serial_init(void)
  {
- 	unsigned long tmp;
- 	u32 regword;
-@@ -233,7 +233,7 @@ int iob_init(struct device_node *dn)
- 
- 
- /* These are called very early. */
--void iommu_init_early_pasemi(void)
-+void __init iommu_init_early_pasemi(void)
- {
- 	int iommu_off;
- 
+ 	extern int early_serial_txx9_setup(struct uart_port *port);
+ 	struct device_node *node;
 -- 
 1.5.2.4
