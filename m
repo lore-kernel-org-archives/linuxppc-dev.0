@@ -1,19 +1,25 @@
-Return-Path: <joseph.robertson@sanmina-sci.com>
-Received: from mail53.messagelabs.com (mail53.messagelabs.com [216.82.249.211])
-	by ozlabs.org (Postfix) with SMTP id DAE8DDDE38
+Return-Path: <mail4mz@gmail.com>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.187])
+	by ozlabs.org (Postfix) with ESMTP id 44FA2DDE3E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Aug 2007 05:48:26 +1000 (EST)
+	Thu, 16 Aug 2007 07:12:42 +1000 (EST)
+Received: by rv-out-0910.google.com with SMTP id f5so28787rvb
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 15 Aug 2007 14:12:40 -0700 (PDT)
+Message-ID: <5c9cd53b0708151412v2f5feb74v9e0b49d114b83021@mail.gmail.com>
+Date: Wed, 15 Aug 2007 17:12:40 -0400
+From: "mike zheng" <mail4mz@gmail.com>
+To: "Becky Bruce" <becky.bruce@freescale.com>
+Subject: Re: System crash on boot_e500.S on 2.4Kernel
+In-Reply-To: <FC996AA4-4C5F-4B36-A9E9-5F931D054F1C@freescale.com>
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C7DF75.3CCE6132"
-Subject: FW: Cypress C67X00 driver question
-Date: Wed, 15 Aug 2007 14:47:44 -0500
-Message-ID: <939D37AEB47F1F49B88FAB6599B6023501A1726F@hsv1dafpew02.das.gov.sanm.corp>
-References: <939D37AEB47F1F49B88FAB6599B6023501A17257@hsv1dafpew02.das.gov.sanm.corp>
-	<87lkclw5fq.fsf@sleipner.barco.com>
-	<939D37AEB47F1F49B88FAB6599B6023501A1726C@hsv1dafpew02.das.gov.sanm.corp>
-From: "Robertson, Joseph M." <joseph.robertson@sanmina-sci.com>
-To: <linuxppc-embedded@ozlabs.org>
+	boundary="----=_Part_5892_22188120.1187212360616"
+References: <5c9cd53b0708141321h62f0ddd1k3a57a37f52e93894@mail.gmail.com>
+	<36201C92-F117-4273-9FA7-13665CF0C6DB@freescale.com>
+	<5c9cd53b0708150659u2ba88a9as5055b42fb1e2be67@mail.gmail.com>
+	<FC996AA4-4C5F-4B36-A9E9-5F931D054F1C@freescale.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,329 +30,211 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+------=_Part_5892_22188120.1187212360616
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-------_=_NextPart_001_01C7DF75.3CCE6132
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Here is the PC value before the rfi:
 
-Sorry,=20replied=20to=20wrong=20address...
+cds8458>halt
+           Target CPU:           : MPC85xx (e500v2 rev.1)
+           Target state            : halted
+           Debug entry cause  : instruction breakpoint
+           Current PC             : 0x0000015c
+           Current CR             : 0x24024022
+           Current MSR          : 0x00012100
+           Current LR              :0x00000148
+           Current CCSRBAR  :0x0_e000000
 
------Original=20Message-----
-From:=20Robertson,=20Joseph=20M.
-Sent:=20Wed=208/15/2007=202:18=20PM
-To:=20Peter=20Korsgaard
-Subject:=20RE:=20Cypress=20C67X00=20driver=20question
-=20
-Hi,
+After the rfi:
 
-Ok=20call=20me=20dense,=20but=20I=20still=20get=20a=20problem.=20=20
-I=20put=20some=20messages=20in=20the=20driver.=20=20I=20see=20the=20c67x00=
-_drv=20init,=20and=20also=20udc_init.
-But=20no=20hdc=20init=20and=20no=20probing.=20=20And=20my=20ports=20are=20=
-not=20powered.
-I=20built=20the=20system=20to=20use=20c67x00_hdc,=20and=20I=20want=202=20h=
-osts=20enabled.
-
-RE:=20The=20CYPRESS=20C67300=20and=20ROM.=20=20=20By=20the=20docs,=20this=20=
-thing=20comes=20up=20dead.=20=20It=20comes=20up=20HPI,=20co-processor=20mo=
-de=20and=20waits.
-All=20the=20defaut=20values=20are=200=20=3D=20disabled,=20off,=20etc.
-
-Actually=20I=20have=20to=20get=20my=20hardware=20guys=20to=20double-check=20=
-that,=20and=20also=20my=20port=20wiring,=20but=20thats=20another=20story.
-
-Where=20does=20'platform_device=20c67x00'=20go?=20=20That=20is,=20should=20=
-it=20be=20sent/used=20by=20some=20init=20function?=20=20All=20I=20could=20=
-find=20was=20c67x00_sie?
-
-Thanks=20again.
-
-Joe=20Robertson
-Joseph.Robertson@sanmina-sci.com
+#step timeout defected
+ cds8458>halt
+           Target CPU:           : MPC85xx (e500v2 rev.1)
+           Target state            : halted
+           Debug entry cause  : COP halt
+           Current PC             : 0xfff81300
+           Current CR             : 0x24024022
+           Current MSR          : 0x00001000
+           Current LR              :0x00000148
+           Current CCSRBAR  :0x0_e000000
 
 
 
------Original=20Message-----
-From:=20linuxppc-embedded-bounces+joseph.robertson=3Dsanmina-sci.com@ozlab=
-s.org=20on=20behalf=20of=20Peter=20Korsgaard
-Sent:=20Thu=208/9/2007=202:08=20AM
-To:=20linuxppc-embedded@ozlabs.org
-Subject:=20Re:=20Cypress=20C67X00=20driver=20question
-=20
->>>>>=20"RJM"=20=3D=3D=20Robertson,=20Joseph=20M=20<joseph.robertson@sanmi=
-na-sci.com>=20writes:
+On 8/15/07, Becky Bruce <becky.bruce@freescale.com> wrote:
+>
+>
+> On Aug 15, 2007, at 8:59 AM, mike zheng wrote:
+>
+> > I use BDI to debug these two instructions. And here are the output
+> > of BDI just before the "rfi". The content of R6, R7 is different
+> > from SRR0(SPR26) and SRR1(SPR27).
+>
+> I see you have not printed the pc/nia once you stop.  Are you sure
+> you're stopped where you think?  Please check this.
+>
+> -B
+>
+> >
+> > cds8548>res run
+> >
+> > - TARGET: processing user reset request
+> >
+> > - BDI asserts HRESET
+> >
+> > - Reset JTAG controller passed
+> >
+> > - JTAG exists check passed
+> >
+> > - IDCODE is 0x0003901D
+> >
+> > - SVR is 0x80390011
+> >
+> > - PVR is 0x80210010
+> >
+> > - CCSRBAR is 0x0_ff700000
+> >
+> > - BDI removes HRESET
+> >
+> > - TARGET: Target PVR is 0x80210010
+> >
+> > - TARGET: resetting target passed
+> >
+> > cds8548>halt
+> >
+> > Target CPU : MPC85xx (e500v2 rev.1)
+> >
+> > Target state : halted
+> >
+> > Debug entry cause : COP halt
+> >
+> > Current PC : 0xfff82560
+> >
+> > Current CR : 0x88000042
+> >
+> > Current MSR : 0x00021200
+> >
+> > Current LR : 0xfff8aa4c
+> >
+> > Current CCSRBAR : 0x0_e0000000
+> >
+> > cds8548>ci
+> >
+> > cds8548>bi 0x0000015c
+> >
+> > Breakpoint identification is 0
+> >
+> > cds8548>go
+> >
+> > - TARGET: stopped
+> >
+> > cds8548>rd
+> >
+> > GPR00: 00000000 0ffabd20 00000200 00000008
+> >
+> > GPR04: 00000000 00000001 00000020 00000160
+> >
+> > GPR08: 1f8b0808 00000148 0ffabace 0ffe08b0
+> >
+> > GPR12: 00000006 764deddb 10000300 007fff00
+> >
+> > GPR16: 00000001 ffffffff 007fff25 0ffff9d8
+> >
+> > GPR20: 007ffeb0 00000000 0fffaa3c 0ffae490
+> >
+> > GPR24: 00000000 00000003 02000040 007fff25
+> >
+> > GPR28: 007fff00 0ffab3b8 0fcd6000 007ffeb0
+> >
+> > CR : 24024022 MSR: 00021200
+> >
+> > cds8548>rdspr 26
+> >
+> > SPR 26 : 0xfff81300 - 519424
+> >
+> > cds8548>rdspr 27
+> >
+> > SPR 27 : 0x00001000 4096
+> >
+> > cds8548>
+> >
+> >
+> >
+> >
+> >
+> >
+> > On 8/14/07, Andy Fleming <afleming@freescale.com> wrote:
+> > On Aug 14, 2007, at 15:21, mike zheng wrote:
+> >
+> > >
+> > > Hi All,
+> > >
+> > > I am trying to bring up MPC8548 CDS board on 2.4 kernel. I have
+> > > problem in the head_e500.S. The "mtspr SRR0, r7; mtspr SRR1 r6"
+> > > does not work for me. The content of R7 and R6 are not moved to
+> > > SRR0 and SRR1.  I am using the tool-chain from Freescale for 2.6
+> > > kernel.
+> > >
+> > > Any idea on this issue?
+> >
+> > Just to check...how do you know it doesn't work?
+> >
+> > Andy
+> >
+> > _______________________________________________
+> > Linuxppc-embedded mailing list
+> > Linuxppc-embedded@ozlabs.org
+> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>
 
-Hi,
+------=_Part_5892_22188120.1187212360616
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-RJM>=20Hi=20all,=20First=20off=20big=20thanks=20to=20the=20guys=20working=20=
-on=20the=20Cypress
-RJM>=20USB=20C67X00=20driver!=20=20Without=20them=20I=20would=20not=20even=
-=20be=20this=20far.
+<div>Here is the PC value before the rfi:</div>
+<div>&nbsp;</div>
+<div>cds8458&gt;halt</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Target CPU:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : MPC85xx (e500v2 rev.1)</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Target state&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : halted</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Debug entry cause&nbsp; : instruction breakpoint</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Current PC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : 0x0000015c</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Current CR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : 0x24024022</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Current MSR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : 0x00012100</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Current LR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :0x00000148</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Current CCSRBAR&nbsp; :0x0_e000000</div>
+<div>&nbsp;</div>
+<div>After the rfi:</div>
+<div>&nbsp;</div>
+<div>#step timeout defected</div>
+<div>
+<div>cds8458&gt;halt</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Target CPU:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : MPC85xx (e500v2 rev.1)</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Target state&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : halted</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Debug entry cause&nbsp; : COP halt</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Current PC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : 0xfff81300</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Current CR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : 0x24024022</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Current MSR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : 0x00001000</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Current LR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :0x00000148</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Current CCSRBAR&nbsp; :0x0_e000000</div></div>
+<div><br><br>&nbsp;</div>
+<div><span class="gmail_quote">On 8/15/07, <b class="gmail_sendername">Becky Bruce</b> &lt;<a href="mailto:becky.bruce@freescale.com">becky.bruce@freescale.com</a>&gt; wrote:</span>
+<blockquote class="gmail_quote" style="PADDING-LEFT: 1ex; MARGIN: 0px 0px 0px 0.8ex; BORDER-LEFT: #ccc 1px solid"><br>On Aug 15, 2007, at 8:59 AM, mike zheng wrote:<br><br>&gt; I use BDI to debug these two instructions. And here are the output
+<br>&gt; of BDI just before the &quot;rfi&quot;. The content of R6, R7 is different<br>&gt; from SRR0(SPR26) and SRR1(SPR27).<br><br>I see you have not printed the pc/nia once you stop.&nbsp;&nbsp;Are you sure<br>you&#39;re stopped where you think?&nbsp;&nbsp;Please check this.
+<br><br>-B<br><br>&gt;<br>&gt; cds8548&gt;res run<br>&gt;<br>&gt; - TARGET: processing user reset request<br>&gt;<br>&gt; - BDI asserts HRESET<br>&gt;<br>&gt; - Reset JTAG controller passed<br>&gt;<br>&gt; - JTAG exists check passed
+<br>&gt;<br>&gt; - IDCODE is 0x0003901D<br>&gt;<br>&gt; - SVR is 0x80390011<br>&gt;<br>&gt; - PVR is 0x80210010<br>&gt;<br>&gt; - CCSRBAR is 0x0_ff700000<br>&gt;<br>&gt; - BDI removes HRESET<br>&gt;<br>&gt; - TARGET: Target PVR is 0x80210010
+<br>&gt;<br>&gt; - TARGET: resetting target passed<br>&gt;<br>&gt; cds8548&gt;halt<br>&gt;<br>&gt; Target CPU : MPC85xx (e500v2 rev.1)<br>&gt;<br>&gt; Target state : halted<br>&gt;<br>&gt; Debug entry cause : COP halt<br>
+&gt;<br>&gt; Current PC : 0xfff82560<br>&gt;<br>&gt; Current CR : 0x88000042<br>&gt;<br>&gt; Current MSR : 0x00021200<br>&gt;<br>&gt; Current LR : 0xfff8aa4c<br>&gt;<br>&gt; Current CCSRBAR : 0x0_e0000000<br>&gt;<br>&gt; cds8548&gt;ci
+<br>&gt;<br>&gt; cds8548&gt;bi 0x0000015c<br>&gt;<br>&gt; Breakpoint identification is 0<br>&gt;<br>&gt; cds8548&gt;go<br>&gt;<br>&gt; - TARGET: stopped<br>&gt;<br>&gt; cds8548&gt;rd<br>&gt;<br>&gt; GPR00: 00000000 0ffabd20 00000200 00000008
+<br>&gt;<br>&gt; GPR04: 00000000 00000001 00000020 00000160<br>&gt;<br>&gt; GPR08: 1f8b0808 00000148 0ffabace 0ffe08b0<br>&gt;<br>&gt; GPR12: 00000006 764deddb 10000300 007fff00<br>&gt;<br>&gt; GPR16: 00000001 ffffffff 007fff25 0ffff9d8
+<br>&gt;<br>&gt; GPR20: 007ffeb0 00000000 0fffaa3c 0ffae490<br>&gt;<br>&gt; GPR24: 00000000 00000003 02000040 007fff25<br>&gt;<br>&gt; GPR28: 007fff00 0ffab3b8 0fcd6000 007ffeb0<br>&gt;<br>&gt; CR : 24024022 MSR: 00021200
+<br>&gt;<br>&gt; cds8548&gt;rdspr 26<br>&gt;<br>&gt; SPR 26 : 0xfff81300 - 519424<br>&gt;<br>&gt; cds8548&gt;rdspr 27<br>&gt;<br>&gt; SPR 27 : 0x00001000 4096<br>&gt;<br>&gt; cds8548&gt;<br>&gt;<br>&gt;<br>&gt;<br>&gt;<br>
+&gt;<br>&gt;<br>&gt; On 8/14/07, Andy Fleming &lt;<a href="mailto:afleming@freescale.com">afleming@freescale.com</a>&gt; wrote:<br>&gt; On Aug 14, 2007, at 15:21, mike zheng wrote:<br>&gt;<br>&gt; &gt;<br>&gt; &gt; Hi All,
+<br>&gt; &gt;<br>&gt; &gt; I am trying to bring up MPC8548 CDS board on 2.4 kernel. I have<br>&gt; &gt; problem in the head_e500.S. The &quot;mtspr SRR0, r7; mtspr SRR1 r6&quot;<br>&gt; &gt; does not work for me. The content of R7 and R6 are not moved to
+<br>&gt; &gt; SRR0 and SRR1.&nbsp;&nbsp;I am using the tool-chain from Freescale for 2.6<br>&gt; &gt; kernel.<br>&gt; &gt;<br>&gt; &gt; Any idea on this issue?<br>&gt;<br>&gt; Just to check...how do you know it doesn&#39;t work?<br>
+&gt;<br>&gt; Andy<br>&gt;<br>&gt; _______________________________________________<br>&gt; Linuxppc-embedded mailing list<br>&gt; <a href="mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org</a><br>&gt; <a href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded">
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a><br><br></blockquote></div><br>
 
-You're=20welcome.
-
-RJM>=20But=20my=20question=20for=20them=20is:=20How=20are=20you=20guys=20i=
-nitializing=20the
-RJM>=20Cypress=20chip?=20=20It=20looks=20like=20the=20driver=20is=20expect=
-ing=20the=20cypress
-RJM>=20to=20be=20programmed=20and=20ready.
-
-No,=20you=20don't=20need=20to=20program=20anything.=20The=20driver=20only=20=
-uses=20he
-Cypress=20BIOS=20programmed=20in=20ROM=20in=20the=20chip.
-
-You=20just=20need=20to=20register=20a=20struct=20platform_device=20in=20yo=
-ur=20board=20code
-with=20the=20base=20address,=20IRQ=20and=20port=20configuration=20-=20Some=
-thing=20like:
-
-#include=20<linux/usb/c67x00.h
-
-..
-
-static=20struct=20resource=20c67x00_resources[]=20=3D=20{
-=20=20=20=20=20=20=20=20[0]=20=3D=20{
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20.start=20=20=3D=200x840000=
-00,
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20.end=20=20=20=20=3D=200x84=
-00000f,
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20.flags=20=20=3D=20IORESOUR=
-CE_MEM,
-=20=20=20=20=20=20=20=20},
-=20=20=20=20=20=20=20=20[1]=20=3D=20{
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20.start=20=20=3D=203,
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20.end=20=20=20=20=3D=203,
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20.flags=20=20=3D=20IORESOUR=
-CE_IRQ,
-=20=20=20=20=20=20=20=20},
-};
-
-static=20struct=20c67x00_platform_data=20c67x00_data=20=3D=20{
-=20=20=20=20=20=20=20=20.sie_config=20=20=20=20=20=20=20=20=20=20=20=20=20=
-=3D=20C67X00_SIE1_HOST=20|=20C67X00_SIE2_HOST,
-=20=20=20=20=20=20=20=20.hpi_regstep=20=20=20=20=20=20=20=20=20=20=20=20=3D=
-=200x02,
-};
-
-static=20struct=20platform_device=20c67x00=20=3D=20{
-=20=20=20=20=20=20=20=20.name=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=
-=20=20=20=20=3D=20"c67x00",
-=20=20=20=20=20=20=20=20.id=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=
-=20=20=20=20=20=3D=200,
-=20=20=20=20=20=20=20=20.num_resources=20=20=20=20=20=20=20=20=20=20=3D=20=
-ARRAY_SIZE(c67x00_resources),
-=20=20=20=20=20=20=20=20.resource=20=20=20=20=20=20=20=20=20=20=20=20=20=20=
-=20=3D=20c67x00_resources,
-=20=20=20=20=20=20=20=20.dev.platform_data=20=20=20=20=20=20=3D=20&c67x00_=
-data,
-};
-
---=20
-Bye,=20Peter=20Korsgaard
-_______________________________________________
-Linuxppc-embedded=20mailing=20list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-
-
-
-CONFIDENTIALITY
-This=20e-mail=20message=20and=20any=20attachments=20thereto,=20is=20intend=
-ed=20only=20for=20use=20by=20the=20addressee(s)=20named=20herein=20and=20m=
-ay=20contain=20legally=20privileged=20and/or=20confidential=20information.=
-=20If=20you=20are=20not=20the=20intended=20recipient=20of=20this=20e-mail=20=
-message,=20you=20are=20hereby=20notified=20that=20any=20dissemination,=20d=
-istribution=20or=20copying=20of=20this=20e-mail=20message,=20and=20any=20a=
-ttachments=20thereto,=20is=20strictly=20prohibited.=20=20If=20you=20have=20=
-received=20this=20e-mail=20message=20in=20error,=20please=20immediately=20=
-notify=20the=20sender=20and=20permanently=20delete=20the=20original=20and=20=
-any=20copies=20of=20this=20email=20and=20any=20prints=20thereof.
-ABSENT=20AN=20EXPRESS=20STATEMENT=20TO=20THE=20CONTRARY=20HEREINABOVE,=20T=
-HIS=20E-MAIL=20IS=20NOT=20INTENDED=20AS=20A=20SUBSTITUTE=20FOR=20A=20WRITI=
-NG.=20=20Notwithstanding=20the=20Uniform=20Electronic=20Transactions=20Act=
-=20or=20the=20applicability=20of=20any=20other=20law=20of=20similar=20subs=
-tance=20and=20effect,=20absent=20an=20express=20statement=20to=20the=20con=
-trary=20hereinabove,=20this=20e-mail=20message=20its=20contents,=20and=20a=
-ny=20attachments=20hereto=20are=20not=20intended=20to=20represent=20an=20o=
-ffer=20or=20acceptance=20to=20enter=20into=20a=20contract=20and=20are=20no=
-t=20otherwise=20intended=20to=20bind=20the=20sender,=20Sanmina-SCI=20Corpo=
-ration=20(or=20any=20of=20its=20subsidiaries),=20or=20any=20other=20person=
-=20or=20entity.
-------_=_NextPart_001_01C7DF75.3CCE6132
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE=20HTML=20PUBLIC=20"-//W3C//DTD=20HTML=203.2//EN">
-<HTML>
-<HEAD>
-<META=20HTTP-EQUIV=3D"Content-Type"=20CONTENT=3D"text/html;=20charset=3Dis=
-o-8859-1">
-<META=20NAME=3D"Generator"=20CONTENT=3D"MS=20Exchange=20Server=20version=20=
-6.5.7652.24">
-<TITLE>FW:=20Cypress=20C67X00=20driver=20question</TITLE>
-</HEAD>
-<BODY>
-<!--=20Converted=20from=20text/plain=20format=20-->
-
-<P><FONT=20SIZE=3D2>Sorry,=20replied=20to=20wrong=20address...<BR>
-<BR>
------Original=20Message-----<BR>
-From:=20Robertson,=20Joseph=20M.<BR>
-Sent:=20Wed=208/15/2007=202:18=20PM<BR>
-To:=20Peter=20Korsgaard<BR>
-Subject:=20RE:=20Cypress=20C67X00=20driver=20question<BR>
-<BR>
-Hi,<BR>
-<BR>
-Ok=20call=20me=20dense,=20but=20I=20still=20get=20a=20problem.&nbsp;<BR>
-I=20put=20some=20messages=20in=20the=20driver.&nbsp;=20I=20see=20the=20c67=
-x00_drv=20init,=20and=20also=20udc_init.<BR>
-But=20no=20hdc=20init=20and=20no=20probing.&nbsp;=20And=20my=20ports=20are=
-=20not=20powered.<BR>
-I=20built=20the=20system=20to=20use=20c67x00_hdc,=20and=20I=20want=202=20h=
-osts=20enabled.<BR>
-<BR>
-RE:=20The=20CYPRESS=20C67300=20and=20ROM.&nbsp;&nbsp;=20By=20the=20docs,=20=
-this=20thing=20comes=20up=20dead.&nbsp;=20It=20comes=20up=20HPI,=20co-proc=
-essor=20mode=20and=20waits.<BR>
-All=20the=20defaut=20values=20are=200=20=3D=20disabled,=20off,=20etc.<BR>
-<BR>
-Actually=20I=20have=20to=20get=20my=20hardware=20guys=20to=20double-check=20=
-that,=20and=20also=20my=20port=20wiring,=20but=20thats=20another=20story.<=
-BR>
-<BR>
-Where=20does=20'platform_device=20c67x00'=20go?&nbsp;=20That=20is,=20shoul=
-d=20it=20be=20sent/used=20by=20some=20init=20function?&nbsp;=20All=20I=20c=
-ould=20find=20was=20c67x00_sie?<BR>
-<BR>
-Thanks=20again.<BR>
-<BR>
-Joe=20Robertson<BR>
-Joseph.Robertson@sanmina-sci.com<BR>
-<BR>
-<BR>
-<BR>
------Original=20Message-----<BR>
-From:=20linuxppc-embedded-bounces+joseph.robertson=3Dsanmina-sci.com@ozlab=
-s.org=20on=20behalf=20of=20Peter=20Korsgaard<BR>
-Sent:=20Thu=208/9/2007=202:08=20AM<BR>
-To:=20linuxppc-embedded@ozlabs.org<BR>
-Subject:=20Re:=20Cypress=20C67X00=20driver=20question<BR>
-<BR>
-&gt;&gt;&gt;&gt;&gt;=20&quot;RJM&quot;=20=3D=3D=20Robertson,=20Joseph=20M=20=
-&lt;joseph.robertson@sanmina-sci.com&gt;=20writes:<BR>
-<BR>
-Hi,<BR>
-<BR>
-RJM&gt;=20Hi=20all,=20First=20off=20big=20thanks=20to=20the=20guys=20worki=
-ng=20on=20the=20Cypress<BR>
-RJM&gt;=20USB=20C67X00=20driver!&nbsp;=20Without=20them=20I=20would=20not=20=
-even=20be=20this=20far.<BR>
-<BR>
-You're=20welcome.<BR>
-<BR>
-RJM&gt;=20But=20my=20question=20for=20them=20is:=20How=20are=20you=20guys=20=
-initializing=20the<BR>
-RJM&gt;=20Cypress=20chip?&nbsp;=20It=20looks=20like=20the=20driver=20is=20=
-expecting=20the=20cypress<BR>
-RJM&gt;=20to=20be=20programmed=20and=20ready.<BR>
-<BR>
-No,=20you=20don't=20need=20to=20program=20anything.=20The=20driver=20only=20=
-uses=20he<BR>
-Cypress=20BIOS=20programmed=20in=20ROM=20in=20the=20chip.<BR>
-<BR>
-You=20just=20need=20to=20register=20a=20struct=20platform_device=20in=20yo=
-ur=20board=20code<BR>
-with=20the=20base=20address,=20IRQ=20and=20port=20configuration=20-=20Some=
-thing=20like:<BR>
-<BR>
-#include=20&lt;linux/usb/c67x00.h<BR>
-<BR>
-..<BR>
-<BR>
-static=20struct=20resource=20c67x00_resources[]=20=3D=20{<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20[0]=20=3D=20{<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;=20.start&nbsp;=20=3D=200x84000000,<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;=20.end&nbsp;&nbsp;&nbsp;=20=3D=200x8400000f,<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;=20.flags&nbsp;=20=3D=20IORESOURCE_MEM,<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20},<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20[1]=20=3D=20{<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;=20.start&nbsp;=20=3D=203,<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;=20.end&nbsp;&nbsp;&nbsp;=20=3D=203,<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;=20.flags&nbsp;=20=3D=20IORESOURCE_IRQ,<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20},<BR>
-};<BR>
-<BR>
-static=20struct=20c67x00_platform_data=20c67x00_data=20=3D=20{<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20.sie_config&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20=3D=20C67X00_SIE1=
-_HOST=20|=20C67X00_SIE2_HOST,<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20.hpi_regstep&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20=3D=200x02,<BR>
-};<BR>
-<BR>
-static=20struct=20platform_device=20c67x00=20=3D=20{<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20.name&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;=20=3D=20&quot;c67x00&quot;,<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20.id&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;=20=3D=200,<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20.num_resources&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20=3D=20ARRAY_SIZE(c67x00_resource=
-s),<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20.resource&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20=3D=20c=
-67x00_resources,<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20.dev.platform_data&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;=20=3D=20&amp;c67x00_data,<BR>
-};<BR>
-<BR>
---<BR>
-Bye,=20Peter=20Korsgaard<BR>
-_______________________________________________<BR>
-Linuxppc-embedded=20mailing=20list<BR>
-Linuxppc-embedded@ozlabs.org<BR>
-<A=20HREF=3D"https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https:=
-//ozlabs.org/mailman/listinfo/linuxppc-embedded</A><BR>
-<BR>
-<BR>
-</FONT>
-</P>
-
-
-<BR>
-CONFIDENTIALITY<BR>
-This=20e-mail=20message=20and=20any=20attachments=20thereto,=20is=20intend=
-ed=20only=20for=20use=20by=20the=20addressee(s)=20named=20herein=20and=20m=
-ay=20contain=20legally=20privileged=20and/or=20confidential=20information.=
-=20If=20you=20are=20not=20the=20intended=20recipient=20of=20this=20e-mail=20=
-message,=20you=20are=20hereby=20notified=20that=20any=20dissemination,=20d=
-istribution=20or=20copying=20of=20this=20e-mail=20message,=20and=20any=20a=
-ttachments=20thereto,=20is=20strictly=20prohibited.=20=20If=20you=20have=20=
-received=20this=20e-mail=20message=20in=20error,=20please=20immediately=20=
-notify=20the=20sender=20and=20permanently=20delete=20the=20original=20and=20=
-any=20copies=20of=20this=20email=20and=20any=20prints=20thereof.<BR>
-ABSENT=20AN=20EXPRESS=20STATEMENT=20TO=20THE=20CONTRARY=20HEREINABOVE,=20T=
-HIS=20E-MAIL=20IS=20NOT=20INTENDED=20AS=20A=20SUBSTITUTE=20FOR=20A=20WRITI=
-NG.=20=20Notwithstanding=20the=20Uniform=20Electronic=20Transactions=20Act=
-=20or=20the=20applicability=20of=20any=20other=20law=20of=20similar=20subs=
-tance=20and=20effect,=20absent=20an=20express=20statement=20to=20the=20con=
-trary=20hereinabove,=20this=20e-mail=20message=20its=20contents,=20and=20a=
-ny=20attachments=20hereto=20are=20not=20intended=20to=20represent=20an=20o=
-ffer=20or=20acceptance=20to=20enter=20into=20a=20contract=20and=20are=20no=
-t=20otherwise=20intended=20to=20bind=20the=20sender,=20Sanmina-SCI=20Corpo=
-ration=20(or=20any=20of=20its=20subsidiaries),=20or=20any=20other=20person=
-=20or=20entity.<BR>
-</BODY>
-</HTML>
-------_=_NextPart_001_01C7DF75.3CCE6132--
+------=_Part_5892_22188120.1187212360616--
