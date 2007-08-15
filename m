@@ -1,29 +1,28 @@
 Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CF82BDDEC0
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 05:14:23 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7FJEKVh029490
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 15:14:20 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
-	l7FJEJrY210848
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 13:14:19 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l7FJEJww018957
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 13:14:19 -0600
-Date: Wed, 15 Aug 2007 14:13:01 -0500
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 80060DDEC9
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 05:14:47 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7FJG3Ih014118
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 15:16:03 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.4) with ESMTP id
+	l7FJEifp410500
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 15:14:44 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l7FJEh5V021283
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 15:14:43 -0400
+Date: Wed, 15 Aug 2007 14:13:26 -0500
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH 1/3] Fix setting of irq trigger type in UIC driver
-Message-ID: <20070815141301.5bb9c7bd@zod.rchland.ibm.com>
-In-Reply-To: <20070814035242.8EED6DDEF4@ozlabs.org>
+Subject: Re: [PATCH 2/3] Fix irq flow handler for 4xx UIC
+Message-ID: <20070815141326.77278a10@zod.rchland.ibm.com>
+In-Reply-To: <20070814035242.9674EDDEF0@ozlabs.org>
 References: <20070814034811.GA8791@localhost.localdomain>
-	<20070814035242.8EED6DDEF4@ozlabs.org>
+	<20070814035242.9674EDDEF0@ozlabs.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
@@ -39,15 +38,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 On Tue, 14 Aug 2007 13:52:42 +1000 (EST)
 David Gibson <david@gibson.dropbear.id.au> wrote:
 
-> The UIC (interrupt controller in 4xx embedded CPUs) driver currently
-> missets the IRQ_lEVEL flag in desc->status, due to a thinko.  This
-> patch fixes the bug.
+> At present the driver for the UIC (the embedded interrupt controller
+> in 4xx chips) uses the handle_level_irq() flow handler.  It turns out
+> this does not correctly handle level triggered interrupts on the UIC.
 > 
-> Currently this is only a cosmetic problem (affects the output in
-> /proc/interrupts), however subsequent patches will use the IRQ_LEVEL
-> flag to affect flow handling.
+> Specifically, acknowledging an irq on the UIC (i.e. clearing the
+> relevant bit in UIC_SR) will have no effect for a level interrupt
+> which is still asserted by the external device, even if the irq is
+> already masked.  Therefore, unlike handle_level_irq() we must ack the
+> interrupt after invoking the ISR (which should cause the device to
+> stop asserting the irq) instead of acking it when we mask it, before
+> the ISR.
 > 
-> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+> This patch implements this change, in a new handle_uic_irq(), a
+> customised irq flow handler for the UIC.  For edge triggered
+> interrupts, handle_uic_irq() still uses the old flow - we must ack
+> edge triggered interrupt before the ISR not after, or we could miss a
+> second event which occurred between invoking the ISR and acking the
+> irq.
+> 
 > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
 Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
