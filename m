@@ -1,17 +1,23 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 08280DDEB6
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 01:23:58 +1000 (EST)
-Date: Wed, 15 Aug 2007 10:40:51 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] [POWERPC] Fix section mismatch in pasemi/iommu.c
-Message-ID: <20070815154051.GA16232@lixom.net>
-References: <20070815205823.b0a04715.sfr@canb.auug.org.au>
-MIME-Version: 1.0
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DF045DDE16
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 02:03:09 +1000 (EST)
+Date: Wed, 15 Aug 2007 11:02:54 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: mike zheng <mail4mz@gmail.com>
+Subject: Re: System crash on boot_e500.S
+Message-ID: <20070815160254.GA9049@ld0162-tx32.am.freescale.net>
+References: <5c9cd53b0708141314o57440c62waffb4cca3f2be0b9@mail.gmail.com>
+	<1187124014.32650.80.camel@ld0161-tx32>
+	<5c9cd53b0708150657k71531bdbl848375d5d80faf21@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070815205823.b0a04715.sfr@canb.auug.org.au>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+In-Reply-To: <5c9cd53b0708150657k71531bdbl848375d5d80faf21@mail.gmail.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,15 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 15, 2007 at 08:58:23PM +1000, Stephen Rothwell wrote:
-> These functions are only called by __init functions.
+On Wed, Aug 15, 2007 at 09:57:59AM -0400, mike zheng wrote:
+> Did you done similar work before? Current 2.6 code need many other files,  I
+> have following errors when I try to use the head_e500.S from 2.6 code:
 > 
-> WARNING: vmlinux.o(.text+0x56aa0): Section mismatch: reference to .init.text:.lmb_alloc (between '.iob_init' and '.iommu_init_early_pasemi')
 > 
+> /kernel->   powerpc-linux-gnuspe-gcc -m32 -Wp,-MD,arch/ppc/kernel/.entry.o.d
+> -nostdinc -isystem /opt/mtwk/usr/local/gcc-3_4-
+> e500-glibc-2.3.4-dp/powerpc-linux-gnuspe/lib/gcc/powerpc-linux-gnuspe/3.4.3/include
+> -D__KERNEL__ -Iinclude  -Iarch/ppc -D__ASSEMBLY__ -Iarch/ppc -Wa,-me500     -c
+> -o arch/ppc/kernel/entry.o arch/ppc/kernel/entry.S
+> arch/ppc/kernel/entry.S: Assembler messages:
+> 
+> entry.S:819: Error: unsupported relocation against CSRR0
+> entry.S:820: Error: unsupported relocation against CSRR1
+> entry.S:888: Error: unsupported relocation against MCSRR0
+> entry.S:889: Error: unsupported relocation against MCSRR1
+> entry.S:909: Error: unsupported relocation against CSRR0
+> entry.S:911: Error: unsupported relocation against CSRR1
 
-Thanks! It was drowning in the other warnings, I'd never noticed it.
+Try arch/powerpc; arch/ppc is deprecated.
 
-
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-
-Acked-by: Olof Johansson <olof@lixom.net>
+-Scott
