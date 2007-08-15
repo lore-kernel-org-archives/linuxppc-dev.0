@@ -1,27 +1,39 @@
-Return-Path: <mail4mz@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.187])
-	by ozlabs.org (Postfix) with ESMTP id C087BDDE2D
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 07:23:44 +1000 (EST)
-Received: by rv-out-0910.google.com with SMTP id f5so30448rvb
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 14:23:43 -0700 (PDT)
-Message-ID: <5c9cd53b0708151423r1c9748e5jbd460cd72585020c@mail.gmail.com>
-Date: Wed, 15 Aug 2007 17:23:43 -0400
-From: "mike zheng" <mail4mz@gmail.com>
-To: "Scott Wood" <scottwood@freescale.com>
-Subject: Re: System crash on boot_e500.S
-In-Reply-To: <46C368D1.7000403@freescale.com>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id CBAF8DDE47
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 07:29:13 +1000 (EST)
+Message-ID: <46C3701E.3090205@freescale.com>
+Date: Wed, 15 Aug 2007 16:29:02 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_5936_21959735.1187213023642"
-References: <5c9cd53b0708141314o57440c62waffb4cca3f2be0b9@mail.gmail.com>
-	<1187124014.32650.80.camel@ld0161-tx32>
-	<5c9cd53b0708150657k71531bdbl848375d5d80faf21@mail.gmail.com>
-	<20070815160254.GA9049@ld0162-tx32.am.freescale.net>
-	<A9A39446-A8B0-44D7-ABF4-E9918FCC2843@kernel.crashing.org>
-	<16A6A248-880E-483A-AFDD-2A225F4B6864@freescale.com>
-	<5c9cd53b0708151353u67e10e03lf12c3971e4f3d63@mail.gmail.com>
-	<46C368D1.7000403@freescale.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH] powerpc: fix i2c device string format
+References: <Pine.LNX.4.60.0706292113240.4227@poirot.grange>
+	<2055bb54b9816faaf5b2ceedc9cfa039@kernel.crashing.org>
+	<Pine.LNX.4.60.0707032356270.3876@poirot.grange>
+	<E0E696F1-2F9E-4D6B-A194-EB42BA826BCD@kernel.crashing.org>
+	<Pine.LNX.4.60.0707180010330.3535@poirot.grange>
+	<87DC7695-382B-4641-B9D9-75ACB49D41A4@kernel.crashing.org>
+	<Pine.LNX.4.60.0707191932300.3365@poirot.grange>
+	<719AE7E4-FE6D-4973-8887-F787EC8ABC85@kernel.crashing.org>
+	<Pine.LNX.4.60.0707202219340.3946@poirot.grange>
+	<235e0ff22961e25016727c0e74fd0c0f@kernel.crashing.org>
+	<Pine.LNX.4.60.0708010739560.4228@poirot.grange>
+	<19a13f8700d078abc4cab0064a7d0183@kernel.crashing.org>
+	<Pine.LNX.4.60.0708012053240.7394@poirot.grange>
+	<46B0F030.9030007@freescale.com>
+	<Pine.LNX.4.60.0708080023030.8493@poirot.grange>
+	<3368b27f860fafb35d10f6352e9055bf@kernel.crashing.org>
+	<Pine.LNX.4.60.0708092233130.5995@poirot.grange>
+	<18114.39893.913684.592560@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.60.0708152106090.10160@poirot.grange>
+In-Reply-To: <Pine.LNX.4.60.0708152106090.10160@poirot.grange>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,90 +43,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_5936_21959735.1187213023642
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Guennadi Liakhovetski wrote:
+> diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+> index 727453d..c0d66df 100644
+> --- a/arch/powerpc/sysdev/fsl_soc.c
+> +++ b/arch/powerpc/sysdev/fsl_soc.c
+> @@ -320,21 +320,26 @@ static struct i2c_driver_device i2c_devices[] __initdata = {
+>  	{"ricoh,rv5c387a", "rtc-rs5c372", "rv5c387a",},
+>  };
+>  
+> -static int __init of_find_i2c_driver(struct device_node *node, struct i2c_board_info *info)
+> +static int __init of_find_i2c_driver(struct device_node *node,
+> +				     struct i2c_board_info *info)
+>  {
+>  	int i;
+>  
+>  	for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
+>  		if (!of_device_is_compatible(node, i2c_devices[i].of_device))
+>  			continue;
+> -		strncpy(info->driver_name, i2c_devices[i].i2c_driver, KOBJ_NAME_LEN);
+> -		strncpy(info->type, i2c_devices[i].i2c_type, I2C_NAME_SIZE);
+> +		if (strlcpy(info->driver_name, i2c_devices[i].i2c_driver,
+> +			    KOBJ_NAME_LEN) >= KOBJ_NAME_LEN ||
+> +		    strlcpy(info->type, i2c_devices[i].i2c_type,
+> +			    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
+> +			return -ENOMEM;
+>  		return 0;
+>  	}
+>  	return -ENODEV;
+>  }
 
-On 8/15/07, Scott Wood <scottwood@freescale.com> wrote:
->
-> mike zheng wrote:
-> > Unfortunately, all the applications are running on 2.4 kernel. I can not
-> > just throw the 2.4 kernel.
->
-> And in what way does 2.6 break these applications?
-
-
-All the device drivers are based on 2.4 kernel. We plan to upgrade to 2.6 in
-the middle of next year.
-
-> I took the some core specific code from
-> > ppc.bkbits.net, such as head_e500.S and mpc85xx_cds_common.c. I assume
-> the
-> > image should work on the 8548 CDS board, or at least for the bootup. I
-> shall
-> > able to have the serial port working in platform_init(). However , the
-> > code stops in the head_e500.S. This does not make any sense. Please
-> correct
-> > me if I am wrong.
->
-> Of course it makes sense -- you can't just go around ripping random
-> files from a codebase, sticking them in a version from several years
-> earlier, and expecting it to "just work".
-
-
-All those files are e500 core specific. When we use bootm from Uboot to
-start the kernel, head_e500.S is first file being called, and then the
-mpc85xx_cds_common.c. I also merged some BOOKE related include files into
-our source tree as well.
-
-Our 2.4 kernel version is different from ppc.bkbits.net. I did not expect it
-"just work". However the serial console should come out when platform_init()
-called. Everything before that is the same for any processor with e500 core.
-
-
-
-
-> Any suggest or comment is welcome, I am struggling with this issue for
-> > almost one week...... :-(
->
-> How long would you have struggled with getting your applications running
-> on a more recent kernel instead?
-
-
-Don't know, maybe 16 weeks. That is out of my control. I only deal with the
-kernel.....:-)
+BTW, is there any reason this stuff is fsl_soc specific?  I'd think 
+prom_parse.c (or better yet, drivers/of/ or drivers/i2c/, now that some 
+OF calls have been factored out) would be a better place.
 
 -Scott
->
-
-------=_Part_5936_21959735.1187213023642
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-<br><br>
-<div><span class="gmail_quote">On 8/15/07, <b class="gmail_sendername">Scott Wood</b> &lt;<a href="mailto:scottwood@freescale.com">scottwood@freescale.com</a>&gt; wrote:</span>
-<blockquote class="gmail_quote" style="PADDING-LEFT: 1ex; MARGIN: 0px 0px 0px 0.8ex; BORDER-LEFT: #ccc 1px solid">mike zheng wrote:<br>&gt; Unfortunately, all the applications are running on 2.4 kernel. I can not<br>&gt; just throw the 
-2.4 kernel.<br><br>And in what way does 2.6 break these applications?</blockquote>
-<div>&nbsp;</div>
-<div>All the device drivers are based on 2.4 kernel. We plan to upgrade to 2.6 in the middle of next year. </div><br>
-<blockquote class="gmail_quote" style="PADDING-LEFT: 1ex; MARGIN: 0px 0px 0px 0.8ex; BORDER-LEFT: #ccc 1px solid">&gt; I took the some core specific code from<br>&gt; <a href="http://ppc.bkbits.net">ppc.bkbits.net</a>, such as head_e500.S and mpc85xx_cds_common.c. I assume the
-<br>&gt; image should work on the 8548 CDS board, or at least for the bootup. I shall<br>&gt; able to have the serial port working in platform_init(). However , the<br>&gt; code stops in the head_e500.S. This does not make any sense. Please correct
-<br>&gt; me if I am wrong.<br><br>Of course it makes sense -- you can&#39;t just go around ripping random<br>files from a codebase, sticking them in a version from several years<br>earlier, and expecting it to &quot;just work&quot;.
-</blockquote>
-<div>&nbsp;</div>
-<div>All those files are e500 core specific. When we use bootm from Uboot to start the kernel, head_e500.S is first file being called, and then the mpc85xx_cds_common.c. I also merged some BOOKE related include files into our source tree as well.
-</div>
-<div>&nbsp;</div>
-<div>Our 2.4 kernel version is different from <a href="http://ppc.bkbits.net">ppc.bkbits.net</a>. I did not expect it &quot;just work&quot;. However the serial console should come out when platform_init() called. Everything before that is the same for any processor with e500 core. 
-</div>
-<div>&nbsp;</div>
-<div>&nbsp;</div><br>
-<blockquote class="gmail_quote" style="PADDING-LEFT: 1ex; MARGIN: 0px 0px 0px 0.8ex; BORDER-LEFT: #ccc 1px solid">&gt; Any suggest or comment is welcome, I am struggling with this issue for<br>&gt; almost one week...... :-(
-<br><br>How long would you have struggled with getting your applications running<br>on a more recent kernel instead?</blockquote>
-<div>&nbsp;</div>
-<div>Don&#39;t know, maybe 16 weeks. That is out of my control. I only deal with the kernel.....:-)</div><br>
-<blockquote class="gmail_quote" style="PADDING-LEFT: 1ex; MARGIN: 0px 0px 0px 0.8ex; BORDER-LEFT: #ccc 1px solid">-Scott<br></blockquote></div><br>
-
-------=_Part_5936_21959735.1187213023642--
