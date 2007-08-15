@@ -1,23 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.239])
-	by ozlabs.org (Postfix) with ESMTP id 17D8CDDE36
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound5-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 9D370DDE46
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Aug 2007 00:04:02 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id l1so771908nzf
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Aug 2007 07:04:01 -0700 (PDT)
-Message-ID: <fa686aa40708150703h375cc250uc9ec447574c91d1d@mail.gmail.com>
-Date: Wed, 15 Aug 2007 08:03:57 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-Subject: Re: Device Tree tool [was RE: [PATCH] Consolidate
-	XILINX_VIRTEXboardsupport]
-In-Reply-To: <20070814215438.3C7AA1B7006C@mail148-cpk.bigfish.com>
+	Thu, 16 Aug 2007 02:14:33 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20070810153619.0471D190055@mail15-fra.bigfish.com>
-	<20070814215438.3C7AA1B7006C@mail148-cpk.bigfish.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Device Tree tool [was RE: [PATCH] Consolidate
+	XILINX_VIRTEXboardsupport]
+Date: Wed, 15 Aug 2007 09:14:27 -0700
+In-Reply-To: <2934.5453-20654-824518122-1187160093@seznam.cz>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Michal Simek" <Monstr@seznam.cz>
+Message-Id: <20070815161429.17C80EF8057@mail82-blu.bigfish.com>
 Cc: microblaze-uclinux@itee.uq.edu.au, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -29,69 +27,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 8/14/07, Stephen Neuendorffer <stephen.neuendorffer@xilinx.com> wrote:
->
-> > BTW: I'm currently hacking away to see if I can get a
-> > microblaze system
-> > booting
-> > using a flat device tree...  I haven't decided if it's worth it to go
-> > that
-> > route in the end yet, but...
-> >
-> > Steve
->
-> I've managed to get the first step working: a microblaze system
-> advertising of_devices in 2.6 using a flat device tree.  The next task
-> is to
-> reimplement probe() for a driver or two (probably the xilinx_emac driver
-> first).   My plan is to have the driver advertise both through
-> of_platform_bus, and
-> through the regular platform bus, and have a config option that either
-> advertises
-> the devices through of and links in the device tree, or using the
-> exising
-> platform_device mechanism.
+I don't have an EDK script.  I'm currently using a hacked version of=20
+Grant's gen_mhs_devtree.py script, and then I modified the resulting
+device
+tree in an effort to get things working.  In the long term, I think
+having
+an EDK script will be necessary to ensure that all of the information is
+in the device tree.
 
-That's fantastic.  Yes, I think that is the right approach to have
-both platform_bus and of_platform bus bindings in the drivers.
+Michal: what do you need from me?
 
->
-> Grant:  Does this make sense (in terms of dealing with drivers) with
-> your plans for
-> moving Virtex platforms to arch/powerpc?  I'd like to avoid duplicating
-> work on the
-> drivers, if possible.
+Steve
 
-Absolutely
-
->
-> Is there a concensus on how microblaze systems should get booted?
-> Currently,
-> I'm linking the device tree directly into the kernel itself, loading the
-> whole
-> mess using SystemAce and the start address jumps directly into the
-> kernel, which
-> is quite a bit different than the way powerpc works.  It's certainly
-> simpler:
-> maybe too simple.  At the same time, replicating
-> the complexity of arch/powerpc with separate boot code may or may not be
-> worth it...
-> Any thoughts?
-
-It is a good starting point, and I think it is important that this
-remain an option (ie. for boards without a bootloader).  However, it
-is a really good idea to support the notion of passing in a device
-tree from a bootloader (u-boot).  As Michal mentioned, u-boot already
-has the code to support this, and u-boot is able to update the device
-tree directly.  The key feature here is being able to support multiple
-FPGA designs from a single kernel image because the device tree gives
-us some level of abstraction on the hardware design.
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+> -----Original Message-----
+> From: Michal Simek [mailto:Monstr@seznam.cz]=20
+> Sent: Tuesday, August 14, 2007 11:42 PM
+> To: Stephen Neuendorffer
+> Cc: Grant Likely; microblaze-uclinux@itee.uq.edu.au;=20
+> linuxppc-embedded@ozlabs.org
+> Subject: RE: Device Tree tool [was RE: [PATCH] Consolidate=20
+> XILINX_VIRTEXboardsupport]
+>=20
+> Hi,
+>=20
+> >I've managed to get the first step working: a microblaze system
+> >advertising of_devices in 2.6 using a flat device tree. =20
+>=20
+> It's great news.
+>=20
+> >Is there a concensus on how microblaze systems should get booted?
+> >Currently,
+> >I'm linking the device tree directly into the kernel itself,=20
+> loading the
+> >whole
+> >mess using SystemAce and the start address jumps directly into the
+> >kernel, which
+> >is quite a bit different than the way powerpc works.  It's certainly
+> >simpler:
+> >maybe too simple.  At the same time, replicating
+> >the complexity of arch/powerpc with separate boot code may=20
+> or may not be
+> >worth it...
+> >Any thoughts?
+>=20
+> Microblaze can be boot via U-BOOT. U-BOOT supports FDT for=20
+> some PowerPC boards.
+> I would like to help with this part of bootloader code.=20
+>=20
+> Do you have any EDK script for generation FDT?=20
+>=20
+> Best regards,
+> Michal Simek
+>=20
+>=20
