@@ -1,16 +1,16 @@
 Return-Path: <vbarshak@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 5553DDDEBE
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 22:10:25 +1000 (EST)
-Message-ID: <46C2ECF2.1090603@ru.mvista.com>
-Date: Wed, 15 Aug 2007 16:09:22 +0400
+	by ozlabs.org (Postfix) with ESMTP id 84B2EDDEC9
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2007 22:12:30 +1000 (EST)
+Message-ID: <46C2ED70.5010108@ru.mvista.com>
+Date: Wed, 15 Aug 2007 16:11:28 +0400
 From: Valentine Barshak <vbarshak@ru.mvista.com>
 MIME-Version: 1.0
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH 2/4] PowerPC 440EPx: Sequoia DTS
-References: <20070814184843.GA12438@ru.mvista.com>
-	<200708150839.21655.sr@denx.de>
-In-Reply-To: <200708150839.21655.sr@denx.de>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/4] PowerPC 440EPx: Sequoia defconfig
+References: <20070814184107.GA6696@ru.mvista.com>	<20070814184500.GA10087@ru.mvista.com>
+	<20070814142148.40bd7a57@zod.rchland.ibm.com>
+In-Reply-To: <20070814142148.40bd7a57@zod.rchland.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -22,338 +22,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stefan Roese wrote:
-> On Tuesday 14 August 2007, Valentine Barshak wrote:
->> AMCC Sequoia device tree.
+Josh Boyer wrote:
+> On Tue, 14 Aug 2007 22:45:00 +0400
+> Valentine Barshak <vbarshak@ru.mvista.com> wrote:
 > 
-> Please find some comments below.
-> 
+>> Sequoia defconfig
+>>
 >> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
 >> ---
->>  arch/powerpc/boot/dts/sequoia.dts |  289
->> ++++++++++++++++++++++++++++++++++++++ 1 files changed, 289 insertions(+)
+>>  arch/powerpc/configs/sequoia_defconfig |  783 +++++++++++++++++++++++++++++++++
+>>  1 files changed, 783 insertions(+)
 >>
->> diff -ruN linux-2.6.orig/arch/powerpc/boot/dts/sequoia.dts
->> linux-2.6/arch/powerpc/boot/dts/sequoia.dts ---
->> linux-2.6.orig/arch/powerpc/boot/dts/sequoia.dts	1970-01-01
->> 03:00:00.000000000 +0300 +++
->> linux-2.6/arch/powerpc/boot/dts/sequoia.dts	2007-08-14 19:32:56.000000000
->> +0400 @@ -0,0 +1,289 @@
->> +/*
->> + * Device Tree Source for AMCC Sequoia
->> + *
->> + * Based on Bamboo code by Josh Boyer <jwboyer@linux.vnet.ibm.com>
->> + * Copyright (c) 2006, 2007 IBM Corp.
->> + *
->> + * FIXME: Draft only!
->> + *
->> + * This file is licensed under the terms of the GNU General Public
->> + * License version 2.  This program is licensed "as is" without
->> + * any warranty of any kind, whether express or implied.
->> + *
->> + */
+>> diff -ruN linux-2.6.orig/arch/powerpc/configs/sequoia_defconfig linux-2.6/arch/powerpc/configs/sequoia_defconfig
+>> --- linux-2.6.orig/arch/powerpc/configs/sequoia_defconfig	1970-01-01 03:00:00.000000000 +0300
+>> +++ linux-2.6/arch/powerpc/configs/sequoia_defconfig	2007-08-14 17:18:07.000000000 +0400
+>> @@ -0,0 +1,783 @@
+>> +#
+>> +# Automatically generated make config: don't edit
+>> +# Linux kernel version: 2.6.23-rc1
+>> +# Fri Jul 27 20:46:07 2007
+>> +#
+>> +# CONFIG_PPC64 is not set
 >> +
->> +/ {
->> +	#address-cells = <2>;
->> +	#size-cells = <1>;
->> +	model = "amcc,sequoia";
->> +	compatible = "amcc,sequoia";
->> +	dcr-parent = <&/cpus/PowerPC,440EPx@0>;
->> +
->> +	cpus {
->> +		#address-cells = <1>;
->> +		#size-cells = <0>;
->> +
->> +		PowerPC,440EPx@0 {
->> +			device_type = "cpu";
->> +			reg = <0>;
->> +			clock-frequency = <0>; /* Filled in by zImage */
->> +			timebase-frequency = <0>; /* Filled in by zImage */
->> +			i-cache-line-size = <20>;
->> +			d-cache-line-size = <20>;
->> +			i-cache-size = <8000>;
->> +			d-cache-size = <8000>;
->> +			dcr-controller;
->> +			dcr-access-method = "native";
->> +		};
->> +	};
->> +
->> +	memory {
->> +		device_type = "memory";
->> +		reg = <0 0 0>; /* Filled in by zImage */
->> +	};
->> +
->> +	UIC0: interrupt-controller0 {
->> +		compatible = "ibm,uic-440epx","ibm,uic";
->> +		interrupt-controller;
->> +		cell-index = <0>;
->> +		dcr-reg = <0c0 009>;
->> +		#address-cells = <0>;
->> +		#size-cells = <0>;
->> +		#interrupt-cells = <2>;
->> +	};
->> +
->> +	UIC1: interrupt-controller1 {
->> +		compatible = "ibm,uic-440epx","ibm,uic";
->> +		interrupt-controller;
->> +		cell-index = <1>;
->> +		dcr-reg = <0d0 009>;
->> +		#address-cells = <0>;
->> +		#size-cells = <0>;
->> +		#interrupt-cells = <2>;
->> +		interrupts = <1e 4 1f 4>; /* cascade */
->> +		interrupt-parent = <&UIC0>;
->> +	};
->> +
->> +	UIC2: interrupt-controller2 {
->> +		compatible = "ibm,uic-440epx","ibm,uic";
->> +		interrupt-controller;
->> +		cell-index = <2>;
->> +		dcr-reg = <0e0 009>;
->> +		#address-cells = <0>;
->> +		#size-cells = <0>;
->> +		#interrupt-cells = <2>;
->> +		interrupts = <1c 4 1d 4>; /* cascade */
->> +		interrupt-parent = <&UIC0>;
->> +	};
->> +
->> +	SDR0: sdr {
->> +		compatible = "ibm,sdr-440epx", "ibm,sdr-440ep";
->> +		dcr-reg = <00e 002>;
->> +	};
->> +
->> +	CPR0: cpr {
->> +		compatible = "ibm,cpr-440epx", "ibm,sdr-440ep";
+>> +#
+>> +# Processor support
+>> +#
+>> +# CONFIG_6xx is not set
+>> +# CONFIG_PPC_85xx is not set
+>> +# CONFIG_PPC_8xx is not set
+>> +# CONFIG_40x is not set
+>> +CONFIG_44x=y
+>> +# CONFIG_E200 is not set
+>> +CONFIG_PPC_FPU=y
 > 
-> sdr-440ep? I assume you really mean:
+> ...
 > 
-> +		compatible = "ibm,cpr-440epx", "ibm,cpr-440ep";
+>> +CONFIG_MATH_EMULATION=y
+> 
+> You shouldn't need both FPU and MATH_EMULATION.  Bamboo had the same
+> bug in it's defconfig until recently, so you can blame me if you'd
+> like :)
+> 
 
-Oops, thanks for noticing that.
+OK, I'll correct this one.
+Thanks for noticing that :)
 
-> 
->> +		dcr-reg = <00c 002>;
->> +	};
->> +
->> +	plb {
->> +		compatible = "ibm,plb-440epx", "ibm,plb4";
->> +		#address-cells = <2>;
->> +		#size-cells = <1>;
->> +		ranges;
->> +		clock-frequency = <0>; /* Filled in by zImage */
->> +
->> +		SDRAM0: sdram {
->> +			device_type = "memory-controller";
->> +			compatible = "ibm,sdram-44x-ddr2denali";
->> +			dcr-reg = <010 2>;
->> +		};
->> +
->> +		DMA0: dma {
->> +			compatible = "ibm,dma-440epx", "ibm,dma-4xx";
->> +			dcr-reg = <100 027>;
->> +		};
->> +
->> +		MAL0: mcmal {
->> +			compatible = "ibm,mcmal-440epx", "ibm,mcmal-440spe", "ibm,mcmal2";
->> +			dcr-reg = <180 62>;
->> +			num-tx-chans = <4>;
->> +			num-rx-chans = <4>;
->> +			interrupt-parent = <&MAL0>;
->> +			interrupts = <0 1 2 3 4>;
->> +			#interrupt-cells = <1>;
->> +			#address-cells = <0>;
->> +			#size-cells = <0>;
->> +			interrupt-map = </*TXEOB*/ 0 &UIC0 a 4
->> +					/*RXEOB*/ 1 &UIC0 b 4
->> +					/*SERR*/  2 &UIC1 0 4
->> +					/*TXDE*/  3 &UIC1 1 4
->> +					/*RXDE*/  4 &UIC1 2 4>;
->> +			interrupt-map-mask = <ffffffff>;
->> +		};
->> +
->> +		POB0: opb {
->> +		  	compatible = "ibm,opb-440epx", "ibm,opb";
->> +			#address-cells = <1>;
->> +			#size-cells = <1>;
->> +			/* Bamboo is oddball in the 44x world and doesn't use the ERPN
->> +			 * bits.
->> +			 */
-> 
-> Bamboo? And the 440EPx does use the ERPN bits.
-
-I'll remove the comment.
-
-> 
->> +		  	ranges = <00000000 1 00000000 80000000
->> +			          80000000 1 80000000 80000000>;
->> +		  	interrupt-parent = <&UIC1>;
->> +		  	interrupts = <7 4>;
->> +		  	clock-frequency = <0>; /* Filled in by zImage */
->> +
->> +			EBC0: ebc {
->> +				compatible = "ibm,ebc-440epx";
->> +				dcr-reg = <012 2>;
->> +				#address-cells = <2>;
->> +				#size-cells = <1>;
->> +				clock-frequency = <0>; /* Filled in by zImage */
->> +				interrupts = <5 1>;
->> +				interrupt-parent = <&UIC1>;
->> +
->> +				nor_flash@0,0 {
->> +					device_type = "rom";
->> +					compatible = "direct-mapped";
->> +					probe-type = "CFI";
->> +					bank-width = <2>;
->> +					partitions = <	0	180000
->> +							180000	200000
->> +							380000	3aa0000
->> +							3e20000	140000
->> +							3f60000	40000
->> +							3fa0000	60000>;
->> +					partition-names = "Kernel", "ramdisk", "file system",
->> +								"kozio", "env", "u-boot";
->> +					reg = <0 000000 4000000>;
->> +				};
->> +
->> +			};
->> +
->> +			UART0: serial@ef600300 {
->> +		   		device_type = "serial";
->> +		   		compatible = "ns16550";
->> +		   		reg = <ef600300 8>;
->> +		   		virtual-reg = <ef600300>;
->> +		   		clock-frequency = <0>; /* Filled in by zImage */
->> +		   		current-speed = <1c200>;
->> +		   		interrupt-parent = <&UIC0>;
->> +		   		interrupts = <0 4>;
->> +	   		};
->> +
->> +			UART1: serial@ef600400 {
->> +		   		device_type = "serial";
->> +		   		compatible = "ns16550";
->> +		   		reg = <ef600400 8>;
->> +		   		virtual-reg = <ef600400>;
->> +		   		clock-frequency = <0>;
->> +		   		current-speed = <0>;
->> +		   		interrupt-parent = <&UIC0>;
->> +		   		interrupts = <1 4>;
->> +	   		};
->> +
->> +			UART2: serial@ef600500 {
->> +		   		device_type = "serial";
->> +		   		compatible = "ns16550";
->> +		   		reg = <ef600500 8>;
->> +		   		virtual-reg = <ef600500>;
->> +		   		clock-frequency = <0>;
->> +		   		current-speed = <0>;
->> +		   		interrupt-parent = <&UIC1>;
->> +		   		interrupts = <3 4>;
->> +	   		};
->> +
->> +			UART3: serial@ef600600 {
->> +		   		device_type = "serial";
->> +		   		compatible = "ns16550";
->> +		   		reg = <ef600600 8>;
->> +		   		virtual-reg = <ef600600>;
->> +		   		clock-frequency = <0>;
->> +		   		current-speed = <0>;
->> +		   		interrupt-parent = <&UIC1>;
->> +		   		interrupts = <4 4>;
->> +	   		};
->> +
->> +			IIC0: i2c@ef600700 {
->> +				device_type = "i2c";
->> +				compatible = "ibm,iic-440epx", "ibm,iic";
->> +				reg = <ef600700 14>;
->> +				interrupt-parent = <&UIC0>;
->> +				interrupts = <2 4>;
->> +			};
->> +
->> +			IIC1: i2c@ef600800 {
->> +				device_type = "i2c";
->> +				compatible = "ibm,iic-440epx", "ibm,iic";
->> +				reg = <ef600800 14>;
->> +				interrupt-parent = <&UIC0>;
->> +				interrupts = <7 4>;
->> +			};
->> +
->> +			ZMII0: emac-zmii@ef600d00 {
->> +				device_type = "zmii-interface";
->> +				compatible = "ibm,zmii-440epx", "ibm,zmii";
->> +				reg = <ef600d00 c>;
->> +			};
->> +
->> +			EMAC0: ethernet@ef600e00 {
->> +				linux,network-index = <0>;
->> +				device_type = "network";
->> +				compatible = "ibm,emac-440epx", "ibm,emac-440spe", "ibm,emac4";
->> +				interrupt-parent = <&EMAC0>;
->> +				interrupts = <0 1>;
->> +				#interrupt-cells = <1>;
->> +				#address-cells = <0>;
->> +				#size-cells = <0>;
->> +				interrupt-map = </*Status*/ 0 &UIC0 18 4
->> +						/*Wake*/  1 &UIC1 1d 4>;
->> +				reg = <ef600e00 70>;
->> +				local-mac-address = [000000000000];
->> +				mal-device = <&MAL0>;
->> +				mal-tx-channel = <0 1>;
->> +				mal-rx-channel = <0>;
->> +				cell-index = <0>;
->> +				max-frame-size = <5dc>;
->> +				rx-fifo-size = <1000>;
->> +				tx-fifo-size = <800>;
->> +				phy-mode = "rmii";
->> +				phy-map = <00000000>;
->> +				zmii-device = <&ZMII0>;
->> +				zmii-channel = <0>;
->> +			};
->> +
->> +			EMAC1: ethernet@ef600f00 {
->> +				linux,network-index = <1>;
->> +				device_type = "network";
->> +				compatible = "ibm,emac-440epx", "ibm,emac-440spe", "ibm,emac4";
->> +				interrupt-parent = <&EMAC1>;
->> +				interrupts = <0 1>;
->> +				#interrupt-cells = <1>;
->> +				#address-cells = <0>;
->> +				#size-cells = <0>;
->> +				interrupt-map = </*Status*/ 0 &UIC0 19 4
->> +						/*Wake*/  1 &UIC1 1f 4>;
->> +				reg = <ef600f00 70>;
->> +				local-mac-address = [000000000000];
->> +				mal-device = <&MAL0>;
->> +				mal-tx-channel = <2 3>;
->> +				mal-rx-channel = <1>;
->> +				cell-index = <1>;
->> +				max-frame-size = <5dc>;
->> +				rx-fifo-size = <1000>;
->> +				tx-fifo-size = <800>;
->> +				phy-mode = "rmii";
->> +				phy-map = <00000000>;
->> +				zmii-device = <&ZMII0>;
->> +				zmii-channel = <1>;
->> +			};
->> +		};
->> +	};
->> +
->> +	chosen {
->> +		linux,stdout-path = "/plb/opb/serial@ef600300";
->> +		bootargs = "console=ttyS0,115200";
->> +	};
->> +};
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
-> 
-> 
-> Best regards,
-> Stefan
-> 
-> =====================================================================
-> DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-> HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-> Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
-> =====================================================================
+> josh
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
