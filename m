@@ -1,19 +1,20 @@
-Return-Path: <j.borkhuis@dutchspace.nl>
-Received: from kirk.dutchspace.nl (kirk.dutchspace.nl [193.200.147.14])
-	by ozlabs.org (Postfix) with ESMTP id 64149DDED0
+Return-Path: <ssaravanan@mail2web.com>
+Received: from xsmtp04.mail2web.com (xsmtp04.mail2web.com [168.144.250.226])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7C155DDE40
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Aug 2007 18:01:40 +1000 (EST)
-Received: from [10.21.30.78] (snitkin.dutchspace.nl [10.21.30.78])
-	by kirk.dutchspace.nl (8.11.7p1+Sun/8.10.2) with ESMTP id l7G7vrN00777
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Aug 2007 09:57:53 +0200 (MEST)
-Message-ID: <46C40460.2000806@dutchspace.nl>
-Date: Thu, 16 Aug 2007 10:01:36 +0200
-From: Johan Borkhuis <j.borkhuis@dutchspace.nl>
+	Thu, 16 Aug 2007 22:03:35 +1000 (EST)
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Problem getting a webserver running
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C7DFFA.7EF5E24E"
+Date: Thu, 16 Aug 2007 07:40:08 -0400
+Message-ID: <F3D55679E1DCFF49A57570501B70475F070D83B5@CL5EXBE04.ad2.softcom.biz>
+References: <8779714.1620021187264042248.JavaMail.nabble@isper.nabble.com>
+From: "dnl" <ssaravanan@mail2web.com>
+To: <afleming@freescale.com>
+Subject: My Kernel hangs after images verification and no boot msgs on Console?
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,15 +25,70 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+This is a multi-part message in MIME format.
 
-I am trying to get a webserver on my embedded target box (an MVME3100 
-PPC board, running ELDK 4.1 with kernel 2.6.14). I can start httpd, but 
-when I try to connect I do not get any data. The connection is 
-established (using telnet localhost 80), but I do not get any data back 
-from the server. I also do not see any entries in the logfile.
-Also, when I use appWeb or GoAhead webserver, I see the same problem. 
-What could be causing this?
+------_=_NextPart_001_01C7DFFA.7EF5E24E
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Kind regards,
-    Johan Borkhuis
+=20
+Hi Andy,
+
+I am using MPC8555CDS board, montavista kernel, and  uboot for board =
+bringup...
+when i am booting montavista kernel using uboot i didn't get any message =
+on Console...
+
+ 1. i can view the booting messages by "Dumping the printk Log Buffer".=20
+ 2. i am passing the "bootargs=3Dconsole=3DttyS0,115200 root=3D/dev/ram0 =
+rw"
+
+How can i get boot messages on serial console?
+
+Regards,
+Saravanan.S
+
+
+------_=_NextPart_001_01C7DFFA.7EF5E24E
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7652.24">
+<TITLE>My Kernel hangs after images verification and no boot msgs on =
+Console?</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+
+<P><FONT SIZE=3D2><BR>
+Hi Andy,<BR>
+<BR>
+I am using MPC8555CDS board, montavista kernel, and&nbsp; uboot for =
+board bringup...<BR>
+when i am booting montavista kernel using uboot i didn't get any message =
+on Console...<BR>
+<BR>
+&nbsp;1. i can view the booting messages by &quot;Dumping the printk Log =
+Buffer&quot;.<BR>
+&nbsp;2. i am passing the &quot;bootargs=3Dconsole=3DttyS0,115200 =
+root=3D/dev/ram0 rw&quot;<BR>
+<BR>
+How can i get boot messages on serial console?<BR>
+<BR>
+Regards,<BR>
+Saravanan.S<BR>
+<BR>
+</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C7DFFA.7EF5E24E--
