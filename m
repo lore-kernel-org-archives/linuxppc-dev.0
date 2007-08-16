@@ -1,19 +1,32 @@
-Return-Path: <ssaravanan@mail2web.com>
-Received: from xsmtp04.mail2web.com (xsmtp04.mail2web.com [168.144.250.226])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7C155DDE40
+Return-Path: <Haiying.Wang@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C11C0DDE32
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Aug 2007 22:03:35 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C7DFFA.7EF5E24E"
-Date: Thu, 16 Aug 2007 07:40:08 -0400
-Message-ID: <F3D55679E1DCFF49A57570501B70475F070D83B5@CL5EXBE04.ad2.softcom.biz>
+	Fri, 17 Aug 2007 00:19:08 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l7GEJ3qS025938 for <linuxppc-embedded@ozlabs.org>;
+	Thu, 16 Aug 2007 07:19:03 -0700 (MST)
+Received: from az33exm23.fsl.freescale.net (az33exm23.am.freescale.net
+	[10.64.32.8])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l7GEJ2Ki028993
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 16 Aug 2007 09:19:02 -0500 (CDT)
+Subject: Re: My Kernel hangs after images verification and no boot msgs on
+	Console?
+From: Haiying Wang <Haiying.Wang@freescale.com>
+To: dnl <ssaravanan@mail2web.com>
+In-Reply-To: <F3D55679E1DCFF49A57570501B70475F070D83B5@CL5EXBE04.ad2.softcom.biz>
 References: <8779714.1620021187264042248.JavaMail.nabble@isper.nabble.com>
-From: "dnl" <ssaravanan@mail2web.com>
-To: <afleming@freescale.com>
-Subject: My Kernel hangs after images verification and no boot msgs on Console?
+	<F3D55679E1DCFF49A57570501B70475F070D83B5@CL5EXBE04.ad2.softcom.biz>
+Content-Type: text/plain
+Date: Thu, 16 Aug 2007 10:19:00 -0400
+Message-Id: <1187273941.3034.2.camel@udp097531uds.am.freescale.net>
+Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,70 +38,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Thu, 2007-08-16 at 07:40 -0400, dnl wrote:
+> 
 
-------_=_NextPart_001_01C7DFFA.7EF5E24E
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-=20
-Hi Andy,
-
-I am using MPC8555CDS board, montavista kernel, and  uboot for board =
-bringup...
-when i am booting montavista kernel using uboot i didn't get any message =
-on Console...
-
- 1. i can view the booting messages by "Dumping the printk Log Buffer".=20
- 2. i am passing the "bootargs=3Dconsole=3DttyS0,115200 root=3D/dev/ram0 =
-rw"
-
-How can i get boot messages on serial console?
-
-Regards,
-Saravanan.S
-
-
-------_=_NextPart_001_01C7DFFA.7EF5E24E
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7652.24">
-<TITLE>My Kernel hangs after images verification and no boot msgs on =
-Console?</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
-
-<P><FONT SIZE=3D2><BR>
-Hi Andy,<BR>
-<BR>
-I am using MPC8555CDS board, montavista kernel, and&nbsp; uboot for =
-board bringup...<BR>
-when i am booting montavista kernel using uboot i didn't get any message =
-on Console...<BR>
-<BR>
-&nbsp;1. i can view the booting messages by &quot;Dumping the printk Log =
-Buffer&quot;.<BR>
-&nbsp;2. i am passing the &quot;bootargs=3Dconsole=3DttyS0,115200 =
-root=3D/dev/ram0 rw&quot;<BR>
-<BR>
-How can i get boot messages on serial console?<BR>
-<BR>
-Regards,<BR>
-Saravanan.S<BR>
-<BR>
-</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C7DFFA.7EF5E24E--
+>  1. i can view the booting messages by "Dumping the printk Log
+> Buffer".
+>  2. i am passing the "bootargs=console=ttyS0,115200 root=/dev/ram0 rw"
+> 
+> How can i get boot messages on serial console?
+> 
+Set console = ttyS1,115200 instead of ttyS0.
