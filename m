@@ -1,19 +1,16 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 2E7EEDDECC
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 17:22:07 +1000 (EST)
-Date: Thu, 16 Aug 2007 09:22:05 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-Subject: Re: [PATCH] [POWERPC] Invalid semicolon after if statement
-In-Reply-To: <Pine.LNX.4.64.0708151644090.15670@kivilampi-30.cs.helsinki.fi>
-Message-ID: <Pine.LNX.4.62.0708160920010.6037@pademelon.sonytel.be>
-References: <Pine.LNX.4.64.0708151644090.15670@kivilampi-30.cs.helsinki.fi>
+Return-Path: <sassmann@suse.de>
+Message-ID: <46C405B3.2040401@suse.de>
+Date: Thu, 16 Aug 2007 10:07:15 +0200
+From: Stefan Assmann <sassmann@suse.de>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-1810050672-1187248925=:6037"
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: PS3 improved video mode autodetection for HDMI/DVI
+References: <Pine.LNX.4.62.0707121029320.12797@pademelon.sonytel.be>
+In-Reply-To: <Pine.LNX.4.62.0707121029320.12797@pademelon.sonytel.be>
+Content-Type: text/plain; charset=UTF-8
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>,
+	Ben Collins <ben.collins@ubuntu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,60 +20,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Geert Uytterhoeven schrieb:
+> If it fails, please add `#define DEBUG' to drivers/ps3/ps3av.c, send me the
+> `Monitor Info' output in the kernel log (dmesg), and tell me which of the
+> PS3 video modes (1-13) work and which don't. ps3av has a quirk database for
+> monitors that advertise non-working modes, so it can probably be fixed.
+> (BTW, even if autodetect works fine, I always welcome this information)
+>   
+Samsung SyncMaster 226BW
 
----584337861-1810050672-1187248925=:6037
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+The autodetection leaves me with an unsupported resolution. I tried
+adding the monitor to the quirk list. Works fine now. Using 720p as
+default  resolution might be worth a thought. This should work on all HD
+screen.
 
-On Thu, 16 Aug 2007, [ISO-8859-1] Ilpo J鋜vinen wrote:
-> A similar fix to netfilter from Eric Dumazet inspired me to
-> look around a bit by using some grep/sed stuff as looking for
-> this kind of bugs seemed easy to automate. This is one of them
-> I found where it looks like this semicolon is not valid.
-> 
-> Signed-off-by: Ilpo J鋜vinen <ilpo.jarvinen@helsinki.fi>
-> ---
-> 
-> ...Since I'm not familiar with these parts of the kernel, you might know 
-> better than I do if this is stuff is valid...
-> 
->  arch/powerpc/mm/hash_utils_64.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-> index f178957..a47151e 100644
-> --- a/arch/powerpc/mm/hash_utils_64.c
-> +++ b/arch/powerpc/mm/hash_utils_64.c
-> @@ -795,7 +795,7 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
->  
->  #ifdef CONFIG_PPC_MM_SLICES
->  	/* We only prefault standard pages for now */
-> -	if (unlikely(get_slice_psize(mm, ea) != mm->context.user_psize));
-> +	if (unlikely(get_slice_psize(mm, ea) != mm->context.user_psize))
->  		return;
->  #endif
+GOOD: 2,3,5,7,8,10,11,12,13
+BAD: 1,4,6,9
 
-Interestingly the test has `unlikely'. So the bug showed up in the `likely'
-case...
+Monitor Info: size 96
+avport: 00
+monitor_id:  4c 2d 7f 02 32 32 45 4d 0d 11
+monitor_type: 02
+monitor_name: SyncMaster
+resolution_60: bits: 0000000d native: 00000000
+resolution_50: bits: 00000000 native: 00000000
+resolution_other: bits: 00000000 native: 00000000
+resolution_vesa: bits: 00000001 native: 00000000
+color space    rgb: 01
+color space yuv444: 00
+color space yuv422: 00
+color info   red: X 0293 Y 0155
+color info green: X 0125 Y 0269
+color info  blue: X 009c Y 0051
+color info white: X 0141 Y 0151
+color info gamma:  000000dc
+supported_AI: 00
+speaker_info: 00
+num of audio: 00
+ps3av_hdmi_get_id: Using supported mode 4
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
 
-Sony Network and Software Technology Center Europe
-The Corporate Village 路 Da Vincilaan 7-D1 路 B-1935 Zaventem 路 Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 路 B-1840 Londerzeel 路 Belgium	
-VAT BE 0413.825.160 路 RPR Brussels	
-Fortis Bank Zaventem 路 Swift GEBABEBB08A 路 IBAN BE39001382358619
----584337861-1810050672-1187248925=:6037--
+btw, I get the following message while booting:
+PS3AV_CID_AV_VIDEO_DISABLE_SIG: failed 2 port 10
+
+does this ring a bell? I'm using kernel 2.6.22 with ps3 patches
+
+Stefan
