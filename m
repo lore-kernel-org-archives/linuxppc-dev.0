@@ -1,19 +1,26 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 78A28DDEBB
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 03:00:59 +1000 (EST)
-Date: Thu, 16 Aug 2007 19:01:09 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: adding Pegasus IDE quirk for pata_via
-Message-ID: <20070816170109.GB26962@aepfle.de>
-References: <20070404111635.GA1855@aepfle.de> <461A3C10.3050104@genesi-usa.com>
-	<20070409154026.4d8a0774@the-village.bc.nu>
-	<20070410162229.GA508@aepfle.de>
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id CE0EDDDDF7
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 03:46:12 +1000 (EST)
+Message-ID: <46C48D53.1050208@freescale.com>
+Date: Thu, 16 Aug 2007 12:45:55 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20070410162229.GA508@aepfle.de>
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v2] powerpc: add setmaskedbits macros
+References: <11872134502476-git-send-email-timur@freescale.com>	
+	<2DFE7EFC-6B9F-4149-83AE-5502DD25C14C@kernel.crashing.org>	
+	<46C46AB7.6070903@freescale.com>	
+	<9CE3D32E-B9C6-43B8-B944-45CE1DCCE8A2@kernel.crashing.org>	
+	<46C46C9A.2000107@freescale.com>
+	<1187282419.30809.35.camel@localhost.localdomain>
+In-Reply-To: <1187282419.30809.35.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,8 +30,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 10, Olaf Hering wrote:
+Benjamin Herrenschmidt wrote:
 
-> Where is the correct place for drivers/ata?
+>> The second example is actually a trick that lets me set some bits and clear 
+>> others in one shot, so for the gumr_h register, all of the above values are 
+>> single bits.  I guess that's not a good example.
+> 
+> Such tricks deserve at least a comment.
 
-so, where is the place for via irq quirks in libata?
+Would it be better if the function were called setclrbits_xxx(), and advertise 
+that it can be used to set multi-bit fields *and* set and clear bits at the 
+same time?
+
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
