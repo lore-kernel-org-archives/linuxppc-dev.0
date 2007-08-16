@@ -1,12 +1,31 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Thu, 16 Aug 2007 14:26:07 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Fix section mismatch in pci code
-Message-Id: <20070816142607.5612ccd5.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, cbe-oss-dev@ozlabs.org
+Return-Path: <dwg@au1.ibm.com>
+Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id AA2ACDDE9C
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 15:23:52 +1000 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
+	by ausmtp04.au.ibm.com (8.13.8/8.13.8) with ESMTP id l7G5RKwt319054
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 15:27:20 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l7G5No9h1298514
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 15:23:50 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l7G6NnGv030893
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 16:23:50 +1000
+Date: Thu, 16 Aug 2007 15:12:56 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: Adam Litke <agl@us.ibm.com>
+Subject: Re: [Documentation] Page Table Layout diagrams
+Message-ID: <20070816051256.GF3540@localhost.localdomain>
+References: <1186598865.23817.76.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1186598865.23817.76.camel@localhost.localdomain>
+Cc: linux-mm <linux-mm@kvack.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,168 +35,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Create a helper function (alloc_maybe_bootmem) that is marked __init_refok
-to limit the chances of mistakenly refferring to other __init routines.
+On Wed, Aug 08, 2007 at 01:47:45PM -0500, Adam Litke wrote:
+> Hello all.  In an effort to understand how the page tables are laid out
+> across various architectures I put together some diagrams.  I have
+> posted them on the linux-mm wiki: http://linux-mm.org/PageTableStructure
+> and I hope they will be useful to others.  
+> 
+> Just to make sure I am not spreading misinformation, could a few of you
+> experts take a quick look at the three diagrams I've got finished so far
+> and point out any errors I have made?  Thanks.
 
-WARNING: vmlinux.o(.text+0x2a9c4): Section mismatch: reference to .init.text:.__alloc_bootmem (between '.update_dn_pci_info' and '.pci_dn_reconfig_notifier')
-WARNING: vmlinux.o(.text+0x36430): Section mismatch: reference to .init.text:.__alloc_bootmem (between '.mpic_msi_init_allocator' and '.find_ht_magic_addr')
-WARNING: vmlinux.o(.text+0x5e804): Section mismatch: reference to .init.text:.__alloc_bootmem (between '.celleb_setup_phb' and '.celleb_fake_pci_write_config')
-WARNING: vmlinux.o(.text+0x5e8e8): Section mismatch: reference to .init.text:.__alloc_bootmem (between '.celleb_setup_phb' and '.celleb_fake_pci_write_config')
-WARNING: vmlinux.o(.text+0x5e968): Section mismatch: reference to .init.text:.__alloc_bootmem (between '.celleb_setup_phb' and '.celleb_fake_pci_write_config')
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/pci_dn.c        |    7 +------
- arch/powerpc/lib/Makefile           |    2 +-
- arch/powerpc/lib/alloc.c            |   14 ++++++++++++++
- arch/powerpc/platforms/celleb/pci.c |   19 +++++--------------
- arch/powerpc/sysdev/mpic_msi.c      |    6 +-----
- include/asm-powerpc/system.h        |    2 ++
- 6 files changed, 24 insertions(+), 26 deletions(-)
- create mode 100644 arch/powerpc/lib/alloc.c
+Nice.  Didn't spot any innaccuracies.
 
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-index d7d36df..b483903 100644
---- a/arch/powerpc/kernel/pci_dn.c
-+++ b/arch/powerpc/kernel/pci_dn.c
-@@ -23,8 +23,6 @@
- #include <linux/pci.h>
- #include <linux/string.h>
- #include <linux/init.h>
--#include <linux/slab.h>
--#include <linux/bootmem.h>
- 
- #include <asm/io.h>
- #include <asm/prom.h>
-@@ -45,10 +43,7 @@ static void * __devinit update_dn_pci_info(struct device_node *dn, void *data)
- 	const u32 *regs;
- 	struct pci_dn *pdn;
- 
--	if (mem_init_done)
--		pdn = kmalloc(sizeof(*pdn), GFP_KERNEL);
--	else
--		pdn = alloc_bootmem(sizeof(*pdn));
-+	pdn = alloc_maybe_bootmem(sizeof(*pdn), GFP_KERNEL);
- 	if (pdn == NULL)
- 		return NULL;
- 	memset(pdn, 0, sizeof(*pdn));
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index 0a486d4..23bbb1e 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -7,7 +7,7 @@ EXTRA_CFLAGS		+= -mno-minimal-toc
- endif
- 
- ifeq ($(CONFIG_PPC_MERGE),y)
--obj-y			:= string.o
-+obj-y			:= string.o alloc.o
- obj-$(CONFIG_PPC32)	+= div64.o copy_32.o checksum_32.o
- endif
- 
-diff --git a/arch/powerpc/lib/alloc.c b/arch/powerpc/lib/alloc.c
-new file mode 100644
-index 0000000..e58c805
---- /dev/null
-+++ b/arch/powerpc/lib/alloc.c
-@@ -0,0 +1,14 @@
-+#include <linux/types.h>
-+#include <linux/init.h>
-+#include <linux/slab.h>
-+#include <linux/bootmem.h>
-+
-+#include <asm/system.h>
-+
-+void * __init_refok alloc_maybe_bootmem(size_t size, gfp_t mask)
-+{
-+	if (mem_init_done)
-+		return kmalloc(size, mask);
-+	else
-+		return alloc_bootmem(size);
-+}
-diff --git a/arch/powerpc/platforms/celleb/pci.c b/arch/powerpc/platforms/celleb/pci.c
-index e9ac19c..f847c32 100644
---- a/arch/powerpc/platforms/celleb/pci.c
-+++ b/arch/powerpc/platforms/celleb/pci.c
-@@ -327,10 +327,7 @@ static int __devinit celleb_setup_fake_pci_device(struct device_node *node,
- 
- 	size = 256;
- 	config = &private->fake_config[devno][fn];
--	if (mem_init_done)
--		*config = kzalloc(size, GFP_KERNEL);
--	else
--		*config = alloc_bootmem(size);
-+	*config = alloc_maybe_bootmem(size, GFP_KERNEL);
- 	if (*config == NULL) {
- 		printk(KERN_ERR "PCI: "
- 		       "not enough memory for fake configuration space\n");
-@@ -341,10 +338,7 @@ static int __devinit celleb_setup_fake_pci_device(struct device_node *node,
- 
- 	size = sizeof(struct celleb_pci_resource);
- 	res = &private->res[devno][fn];
--	if (mem_init_done)
--		*res = kzalloc(size, GFP_KERNEL);
--	else
--		*res = alloc_bootmem(size);
-+	*res = alloc_maybe_bootmem(size, GFP_KERNEL);
- 	if (*res == NULL) {
- 		printk(KERN_ERR
- 		       "PCI: not enough memory for resource data space\n");
-@@ -436,12 +430,9 @@ static int __devinit phb_set_bus_ranges(struct device_node *dev,
- 
- static void __devinit celleb_alloc_private_mem(struct pci_controller *hose)
- {
--	if (mem_init_done)
--		hose->private_data =
--			kzalloc(sizeof(struct celleb_pci_private), GFP_KERNEL);
--	else
--		hose->private_data =
--			alloc_bootmem(sizeof(struct celleb_pci_private));
-+	hose->private_data =
-+		alloc_maybe_bootmem(sizeof(struct celleb_pci_private),
-+			GFP_KERNEL);
- }
- 
- int __devinit celleb_setup_phb(struct pci_controller *phb)
-diff --git a/arch/powerpc/sysdev/mpic_msi.c b/arch/powerpc/sysdev/mpic_msi.c
-index b076793..53fa9f5 100644
---- a/arch/powerpc/sysdev/mpic_msi.c
-+++ b/arch/powerpc/sysdev/mpic_msi.c
-@@ -9,7 +9,6 @@
-  */
- 
- #include <linux/irq.h>
--#include <linux/bootmem.h>
- #include <linux/bitmap.h>
- #include <linux/msi.h>
- #include <asm/mpic.h>
-@@ -151,10 +150,7 @@ int mpic_msi_init_allocator(struct mpic *mpic)
- 	size = BITS_TO_LONGS(mpic->irq_count) * sizeof(long);
- 	pr_debug("mpic: allocator bitmap size is 0x%x bytes\n", size);
- 
--	if (mem_init_done)
--		mpic->hwirq_bitmap = kmalloc(size, GFP_KERNEL);
--	else
--		mpic->hwirq_bitmap = alloc_bootmem(size);
-+	mpic->hwirq_bitmap = alloc_maybe_bootmem(size, GFP_KERNEL);
- 
- 	if (!mpic->hwirq_bitmap) {
- 		pr_debug("mpic: ENOMEM allocating allocator bitmap!\n");
-diff --git a/include/asm-powerpc/system.h b/include/asm-powerpc/system.h
-index f9e2a04..06b0d88 100644
---- a/include/asm-powerpc/system.h
-+++ b/include/asm-powerpc/system.h
-@@ -181,6 +181,8 @@ extern int mem_init_done;	/* set on boot once kmalloc can be called */
- extern unsigned long memory_limit;
- extern unsigned long klimit;
- 
-+extern void *alloc_maybe_bootmem(size_t size, gfp_t mask);
-+
- extern int powersave_nap;	/* set if nap mode can be used in idle loop */
- 
- /*
--- 
-1.5.2.4
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
