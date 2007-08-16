@@ -1,13 +1,13 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 59808DDE19
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 08:23:39 +1000 (EST)
-Date: Thu, 16 Aug 2007 00:23:37 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Scott Wood <scottwood@freescale.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id A26FEDDE48
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 10:36:23 +1000 (EST)
+Date: Thu, 16 Aug 2007 10:36:16 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 Subject: Re: [PATCH] powerpc: fix i2c device string format
-In-Reply-To: <46C3701E.3090205@freescale.com>
-Message-ID: <Pine.LNX.4.60.0708160016040.10160@poirot.grange>
+Message-Id: <20070816103616.4e2e35b7.sfr@canb.auug.org.au>
+In-Reply-To: <Pine.LNX.4.60.0708152106090.10160@poirot.grange>
 References: <Pine.LNX.4.60.0706292113240.4227@poirot.grange>
 	<Pine.LNX.4.60.0707032356270.3876@poirot.grange>
 	<E0E696F1-2F9E-4D6B-A194-EB42BA826BCD@kernel.crashing.org>
@@ -26,9 +26,10 @@ References: <Pine.LNX.4.60.0706292113240.4227@poirot.grange>
 	<Pine.LNX.4.60.0708092233130.5995@poirot.grange>
 	<18114.39893.913684.592560@cargo.ozlabs.ibm.com>
 	<Pine.LNX.4.60.0708152106090.10160@poirot.grange>
-	<46C3701E.3090205@freescale.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__16_Aug_2007_10_36_16_+1000_V=6gZp6qmkElj6=p"
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -39,22 +40,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 15 Aug 2007, Scott Wood wrote:
+--Signature=_Thu__16_Aug_2007_10_36_16_+1000_V=6gZp6qmkElj6=p
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> BTW, is there any reason this stuff is fsl_soc specific?  I'd think
-> prom_parse.c (or better yet, drivers/of/ or drivers/i2c/, now that some OF
-> calls have been factored out) would be a better place.
+On Wed, 15 Aug 2007 21:15:03 +0200 (CEST) Guennadi Liakhovetski <g.liakhove=
+tski@gmx.de> wrote:
+>
+> diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+> index 727453d..c0d66df 100644
+> --- a/arch/powerpc/sysdev/fsl_soc.c
+> +++ b/arch/powerpc/sysdev/fsl_soc.c
+> @@ -320,21 +320,26 @@ static struct i2c_driver_device i2c_devices[] __ini=
+tdata =3D {
+>  	{"ricoh,rv5c387a", "rtc-rs5c372", "rv5c387a",},
+>  };
+> =20
+> -static int __init of_find_i2c_driver(struct device_node *node, struct i2=
+c_board_info *info)
+> +static int __init of_find_i2c_driver(struct device_node *node,
+> +				     struct i2c_board_info *info)
 
-Minimal intrusion:-) Initially in your patch you added the 
-of_register_i2c_devices() function to prom_parse.c, of_find_i2c_driver() 
-is just an abstracted out search function, that is practically inlined in 
-the former one. I moved of_register_i2c_devices() into fsl_soc.c because 
-that's where its only (ATM) caller fsl_i2c_of_init() is. So, this way it's 
-all nicely inlined by the compiler, and we don't need any external 
-functions... If we get another user of this function, sure, we can move it 
-out. So far no other i2c bus driver is trying to parse OF i2c tree.
+Please don't do unrelated formatting changes in a patch.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__16_Aug_2007_10_36_16_+1000_V=6gZp6qmkElj6=p
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGw5wFTgG2atn1QN8RAsVSAKCOlQS/UJSSOdFhNyNTPIdL3gwcJQCghHIj
+0O6hGJZW4u/E1OOy20otkVY=
+=/jED
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__16_Aug_2007_10_36_16_+1000_V=6gZp6qmkElj6=p--
