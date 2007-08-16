@@ -1,23 +1,34 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+Return-Path: <HNGUYEN@de.ibm.com>
+Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.29.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 197A2DDEEA
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 02:40:34 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] Invalid semicolon after if statement
-References: <Pine.LNX.4.64.0708151644090.15670@kivilampi-30.cs.helsinki.fi>
-	<1187251702.8375.43.camel@concordia.ozlabs.ibm.com>
-	<fa88c3e5b4b0f896a16688a525bcd744@kernel.crashing.org>
-Date: Thu, 16 Aug 2007 18:40:27 +0200
-In-Reply-To: <fa88c3e5b4b0f896a16688a525bcd744@kernel.crashing.org> (Segher
-	Boessenkool's message of "Thu\, 16 Aug 2007 16\:03\:29 +0200")
-Message-ID: <je7inva0w4.fsf@sykes.suse.de>
+	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A7F32DDE3A
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 02:48:26 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate1.de.ibm.com (8.13.8/8.13.8) with ESMTP id l7GGmKYD552532
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 16:48:20 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.5) with
+	ESMTP id l7GGmK4s1560652
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 18:48:20 +0200
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l7GGmJYJ012345
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 18:48:20 +0200
+In-Reply-To: <adatzqz1mjx.fsf@cisco.com>
+Subject: Re: [ofa-general] [PATCH 7/7] IB/ehca: Prevent overwriting QP init
+	attributes given by caller
+To: Roland Dreier <rdreier@cisco.com>
+Message-ID: <OF50DCEF62.940E3D7F-ONC1257339.005C150A-C1257339.005C4CA8@de.ibm.com>
+From: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
+Date: Thu, 16 Aug 2007 18:48:18 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-	paulus@samba.org, linuxppc-dev@ozlabs.org
+Content-type: text/plain; charset=US-ASCII
+Cc: Joachim Fenkes <fenkes@de.ibm.com>, linux-kernel@vger.kernel.org,
+	openib-general@openib.org, Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
+	linuxppc-dev@ozlabs.org, general-bounces@lists.openfabrics.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,23 +38,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool <segher@kernel.crashing.org> writes:
+general-bounces@lists.openfabrics.org wrote on 16.08.2007 18:17:22:
 
->> Thanks to the frickin compiler for warning us, not.
+> I don't understand this patch.  <rdma/ib_verbs.h> says this about
+> ib_create_qp():
 >
-> 4.3: "warning: suggest braces around empty body in an 'if' statement"
+>  * @qp_init_attr: A list of initial attributes required to create the
+>  *   QP.  If QP creation succeeds, then the attributes are updated to
+>  *   the actual capabilities of the created QP.
 >
-> 4.1: "warning: empty body in an if-statement"
->
-> Your GCC is too old :-)
-
-This warning is only enabled by -Wextra.  Only 4.3 has a separate option
-for it (-Wempty-body).
-
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+> So it seems the current code is actually correct and your patch breaks
+> it??
+Yes. That's absolutely true. Please ignore it.
+Thanks!
+Nam
