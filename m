@@ -1,19 +1,19 @@
 Return-Path: <Geert.Uytterhoeven@sonycom.com>
 Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id D8760DDEC6
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 17:19:13 +1000 (EST)
-Date: Thu, 16 Aug 2007 09:19:11 +0200 (CEST)
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 2E7EEDDECC
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 17:22:07 +1000 (EST)
+Date: Thu, 16 Aug 2007 09:22:05 +0200 (CEST)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Sender: geert@sonytel.be
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH v2] powerpc: add setmaskedbits macros
-In-Reply-To: <1187236548.8375.13.camel@concordia.ozlabs.ibm.com>
-Message-ID: <Pine.LNX.4.62.0708160917330.6037@pademelon.sonytel.be>
-References: <11872134502476-git-send-email-timur@freescale.com>
-	<1187236548.8375.13.camel@concordia.ozlabs.ibm.com>
+To: =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
+Subject: Re: [PATCH] [POWERPC] Invalid semicolon after if statement
+In-Reply-To: <Pine.LNX.4.64.0708151644090.15670@kivilampi-30.cs.helsinki.fi>
+Message-ID: <Pine.LNX.4.62.0708160920010.6037@pademelon.sonytel.be>
+References: <Pine.LNX.4.64.0708151644090.15670@kivilampi-30.cs.helsinki.fi>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-311844886-1187248751=:6037"
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, Timur Tabi <timur@freescale.com>
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-1810050672-1187248925=:6037"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,27 +26,40 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
   This message is in MIME format.  The first part should be readable text,
   while the remaining parts are likely unreadable without MIME-aware tools.
 
----584337861-311844886-1187248751=:6037
+---584337861-1810050672-1187248925=:6037
 Content-Type: TEXT/PLAIN; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 
-On Thu, 16 Aug 2007, Michael Ellerman wrote:
-> Can you extract the masking logic, rather than repeating it 7 times:
+On Thu, 16 Aug 2007, [ISO-8859-1] Ilpo J鋜vinen wrote:
+> A similar fix to netfilter from Eric Dumazet inspired me to
+> look around a bit by using some grep/sed stuff as looking for
+> this kind of bugs seemed easy to automate. This is one of them
+> I found where it looks like this semicolon is not valid.
 > 
-> #define maskbits(a, v, m)	((a) & ~(m) | (v))
+> Signed-off-by: Ilpo J鋜vinen <ilpo.jarvinen@helsinki.fi>
+> ---
 > 
-> And if you're going to the trouble of making a macro, why not make it a
-> bit more useful and have it check that the value and the mask match, ie:
+> ...Since I'm not familiar with these parts of the kernel, you might know 
+> better than I do if this is stuff is valid...
 > 
-> (v & ~m == 0)
+>  arch/powerpc/mm/hash_utils_64.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> Final random thought, you could make the size/endian an argument:
-> 
-> #define setmaskedbits(a, v, m, s)  out_##s((a), (in_##s(a) & ~(m) | (v))
+> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+> index f178957..a47151e 100644
+> --- a/arch/powerpc/mm/hash_utils_64.c
+> +++ b/arch/powerpc/mm/hash_utils_64.c
+> @@ -795,7 +795,7 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
+>  
+>  #ifdef CONFIG_PPC_MM_SLICES
+>  	/* We only prefault standard pages for now */
+> -	if (unlikely(get_slice_psize(mm, ea) != mm->context.user_psize));
+> +	if (unlikely(get_slice_psize(mm, ea) != mm->context.user_psize))
+>  		return;
+>  #endif
 
-For readability, you can change the parameter names `v' and `m' to e.g. `set'
-and `clear' (or `clr'), so people don't have to look through the actual
-definitions to know which one comes first?
+Interestingly the test has `unlikely'. So the bug showed up in the `likely'
+case...
 
 With kind regards,
  
@@ -66,4 +79,4 @@ A division of Sony Service Centre (Europe) N.V.
 Registered office: Technologielaan 7 路 B-1840 Londerzeel 路 Belgium	
 VAT BE 0413.825.160 路 RPR Brussels	
 Fortis Bank Zaventem 路 Swift GEBABEBB08A 路 IBAN BE39001382358619
----584337861-311844886-1187248751=:6037--
+---584337861-1810050672-1187248925=:6037--
