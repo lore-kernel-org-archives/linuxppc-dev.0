@@ -1,33 +1,23 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C0280DDE9B
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 02:38:56 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7GGcqh3031132
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 12:38:52 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l7GGcpPE246748
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 10:38:51 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l7GGcpqD020445
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 10:38:51 -0600
-Date: Thu, 16 Aug 2007 11:38:50 -0500
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH 1/2] Add scaled time to taskstats based process accounting
-Message-ID: <20070816163850.GU4261@austin.ibm.com>
-References: <20070816070922.37B5370074@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070816070922.37B5370074@localhost.localdomain>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 57A32DDEBF
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 02:40:28 +1000 (EST)
+Subject: Re: [PATCH v2] powerpc: add setmaskedbits macros
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <46C46C9A.2000107@freescale.com>
+References: <11872134502476-git-send-email-timur@freescale.com>
+	<2DFE7EFC-6B9F-4149-83AE-5502DD25C14C@kernel.crashing.org>
+	<46C46AB7.6070903@freescale.com>
+	<9CE3D32E-B9C6-43B8-B944-45CE1DCCE8A2@kernel.crashing.org>
+	<46C46C9A.2000107@freescale.com>
+Content-Type: text/plain
+Date: Thu, 16 Aug 2007 11:40:18 -0500
+Message-Id: <1187282419.30809.35.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,37 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 16, 2007 at 05:09:22PM +1000, Michael Neuling wrote:
-> This adds two items to the taststats struct to account for user and
-> system time based on scaling the CPU frequency and instruction issue
-> rates.
+On Thu, 2007-08-16 at 10:26 -0500, Timur Tabi wrote:
+> Kumar Gala wrote:
 > 
-> Adds account_(user|system)_time_scaled callbacks which architectures
-> can use to account for time using this mechanism.
+> >>     setmaskedbits_be32(&uccp->gumr_l,
+> >>         UCC_SLOW_GUMR_L_MODE_QMC | UCC_SLOW_GUMR_L_TDCR_1 |
+> >>         UCC_SLOW_GUMR_L_RDCR_16,
+> >>                 UCC_SLOW_GUMR_L_MODE_MASK | UCC_SLOW_GUMR_L_TDCR_MASK |
+> >>         UCC_SLOW_GUMR_L_RDCR_MASK);
+> >>
+> >>     setmaskedbits_be32(&uccp->gumr_h,
+> >>         UCC_SLOW_GUMR_H_SUART | UCC_SLOW_GUMR_H_TRX |
+> >>         UCC_SLOW_GUMR_H_TTX, UCC_SLOW_GUMR_H_RFW);
+> > 
+> > Can you also show what the UCC_SLOW* values look like.
+> 
+> The second example is actually a trick that lets me set some bits and clear 
+> others in one shot, so for the gumr_h register, all of the above values are 
+> single bits.  I guess that's not a good example.
 
-There's something simple here that I just don't understand.
+Such tricks deserve at least a comment.
 
->  /*
-> + * Account scaled user cpu time to a process.
-> + * @p: the process that the cpu time gets accounted to
-> + * @cputime: the cpu time spent in user space since the last update
-> + */
-> +void account_user_time_scaled(struct task_struct *p, cputime_t cputime)
-> +{
-> +	p->utimescaled = cputime_add(p->utimescaled, cputime);
-> +}
-
-My gut impression (maybe wrong?) is that the scaled time is,
-in a certain sense, "more accurate" than the unscaled time.
-In fact, the unscaled time gives me the impression of being
-rather meaningless, as it has no particular significance
-with respect to the wall-clock, and it also doesn't give
-any accurate hint of how much cpu resource was actually
-consumed.
-
-If one has a cpu with frequency scaling, then when would
-one ever be interested in the non-scaled time? If the answer
-is "never", then why not just always use the scaled time,
-instead of adding more stuff to the kernel structs?
-
---linas
+Ben.
