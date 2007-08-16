@@ -1,23 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <schwab@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 57A32DDEBF
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 02:40:28 +1000 (EST)
-Subject: Re: [PATCH v2] powerpc: add setmaskedbits macros
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Timur Tabi <timur@freescale.com>
-In-Reply-To: <46C46C9A.2000107@freescale.com>
-References: <11872134502476-git-send-email-timur@freescale.com>
-	<2DFE7EFC-6B9F-4149-83AE-5502DD25C14C@kernel.crashing.org>
-	<46C46AB7.6070903@freescale.com>
-	<9CE3D32E-B9C6-43B8-B944-45CE1DCCE8A2@kernel.crashing.org>
-	<46C46C9A.2000107@freescale.com>
-Content-Type: text/plain
-Date: Thu, 16 Aug 2007 11:40:18 -0500
-Message-Id: <1187282419.30809.35.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 197A2DDEEA
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 02:40:34 +1000 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] Invalid semicolon after if statement
+References: <Pine.LNX.4.64.0708151644090.15670@kivilampi-30.cs.helsinki.fi>
+	<1187251702.8375.43.camel@concordia.ozlabs.ibm.com>
+	<fa88c3e5b4b0f896a16688a525bcd744@kernel.crashing.org>
+Date: Thu, 16 Aug 2007 18:40:27 +0200
+In-Reply-To: <fa88c3e5b4b0f896a16688a525bcd744@kernel.crashing.org> (Segher
+	Boessenkool's message of "Thu\, 16 Aug 2007 16\:03\:29 +0200")
+Message-ID: <je7inva0w4.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+	paulus@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,25 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-08-16 at 10:26 -0500, Timur Tabi wrote:
-> Kumar Gala wrote:
-> 
-> >>     setmaskedbits_be32(&uccp->gumr_l,
-> >>         UCC_SLOW_GUMR_L_MODE_QMC | UCC_SLOW_GUMR_L_TDCR_1 |
-> >>         UCC_SLOW_GUMR_L_RDCR_16,
-> >>                 UCC_SLOW_GUMR_L_MODE_MASK | UCC_SLOW_GUMR_L_TDCR_MASK |
-> >>         UCC_SLOW_GUMR_L_RDCR_MASK);
-> >>
-> >>     setmaskedbits_be32(&uccp->gumr_h,
-> >>         UCC_SLOW_GUMR_H_SUART | UCC_SLOW_GUMR_H_TRX |
-> >>         UCC_SLOW_GUMR_H_TTX, UCC_SLOW_GUMR_H_RFW);
-> > 
-> > Can you also show what the UCC_SLOW* values look like.
-> 
-> The second example is actually a trick that lets me set some bits and clear 
-> others in one shot, so for the gumr_h register, all of the above values are 
-> single bits.  I guess that's not a good example.
+Segher Boessenkool <segher@kernel.crashing.org> writes:
 
-Such tricks deserve at least a comment.
+>> Thanks to the frickin compiler for warning us, not.
+>
+> 4.3: "warning: suggest braces around empty body in an 'if' statement"
+>
+> 4.1: "warning: empty body in an if-statement"
+>
+> Your GCC is too old :-)
 
-Ben.
+This warning is only enabled by -Wextra.  Only 4.3 has a separate option
+for it (-Wempty-body).
+
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
