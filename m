@@ -1,13 +1,13 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 16 Aug 2007 13:58:27 +1000
+Date: Thu, 16 Aug 2007 13:55:24 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] [POWERPC] tidy up CONFIG_PPC_MM_SLICES code
-Message-ID: <20070816035827.GC3540@localhost.localdomain>
-References: <20070815165118.ee72d00c.sfr@canb.auug.org.au>
+Subject: Re: [PATCH] [POWERPC] fix non HUGETLB_PAGE build warning
+Message-ID: <20070816035524.GB3540@localhost.localdomain>
+References: <20070815163355.061a8e6d.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070815165118.ee72d00c.sfr@canb.auug.org.au>
+In-Reply-To: <20070815163355.061a8e6d.sfr@canb.auug.org.au>
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,8 +18,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 15, 2007 at 04:51:18PM +1000, Stephen Rothwell wrote:
-> This removes some of the #ifdefs from .c files.
+On Wed, Aug 15, 2007 at 04:33:55PM +1000, Stephen Rothwell wrote:
+> arch/powerpc/mm/mmu_context_64.c: In function 'init_new_context':
+> arch/powerpc/mm/mmu_context_64.c:31: warning: unused variable 'new_context'
 > 
 > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
