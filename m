@@ -1,15 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id B6AF8DDE9C
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 11:19:22 +1000 (EST)
-Date: Thu, 16 Aug 2007 11:19:19 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Remove some duplicate declarations from pmac.h
-Message-Id: <20070816111919.c8923dcc.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D365DDDEBA
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2007 13:21:05 +1000 (EST)
+In-Reply-To: <11872134502476-git-send-email-timur@freescale.com>
+References: <11872134502476-git-send-email-timur@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <2DFE7EFC-6B9F-4149-83AE-5502DD25C14C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v2] powerpc: add setmaskedbits macros
+Date: Wed, 15 Aug 2007 22:22:36 -0500
+To: Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,36 +24,31 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/platforms/powermac/pmac.h |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
+On Aug 15, 2007, at 4:30 PM, Timur Tabi wrote:
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+> This patch adds the setmaskedbits_xxx() macros, which are used to  
+> set a
+> multiple-bit bit pattern in a register.  The macros include a mask,  
+> which
+> zeros the respective bits before applying the value via a bitwise-OR.
+> There are big-endian and little-endian versions for 8, 16, 32, and  
+> 64 bits.
+>
+> These new macros are useful because the setbits macros can only be  
+> used
+> to set single-bit fields.  For example, if you have a 32-bit register
+> where bits 17-20 need to be set to 0100, you would do
+> setmaskedbits_be32(p, 4 << 11, 0xF << 11).
+>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
+>
+> Updated the changelog to include a reason why you'd want these macros.
+> I have a number of new SOC device drivers coming up that will use  
+> these
+> macros, if this patch is accepted.
 
-diff --git a/arch/powerpc/platforms/powermac/pmac.h b/arch/powerpc/platforms/powermac/pmac.h
-index 6e090a7..fcde070 100644
---- a/arch/powerpc/platforms/powermac/pmac.h
-+++ b/arch/powerpc/platforms/powermac/pmac.h
-@@ -22,9 +22,6 @@ extern void pmac_read_rtc_time(void);
- extern void pmac_calibrate_decr(void);
- extern void pmac_pci_irq_fixup(struct pci_dev *);
- extern void pmac_pci_init(void);
--extern unsigned long pmac_ide_get_base(int index);
--extern void pmac_ide_init_hwif_ports(hw_regs_t *hw,
--	unsigned long data_port, unsigned long ctrl_port, int *irq);
- 
- extern void pmac_nvram_update(void);
- extern unsigned char pmac_nvram_read_byte(int addr);
-@@ -33,7 +30,6 @@ extern int pmac_pci_enable_device_hook(struct pci_dev *dev, int initial);
- extern void pmac_pcibios_after_init(void);
- extern int of_show_percpuinfo(struct seq_file *m, int i);
- 
--extern void pmac_pci_init(void);
- extern void pmac_setup_pci_dma(void);
- extern void pmac_check_ht_link(void);
- 
--- 
-1.5.2.4
+Can you post a driver that uses this.  I'm interested in seeing what  
+the readability is really like using these macros.
+
+- k
