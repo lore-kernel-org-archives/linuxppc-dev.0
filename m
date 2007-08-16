@@ -1,21 +1,22 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 27673DDE33
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 00:03:47 +1000 (EST)
-In-Reply-To: <1187251702.8375.43.camel@concordia.ozlabs.ibm.com>
-References: <Pine.LNX.4.64.0708151644090.15670@kivilampi-30.cs.helsinki.fi>
-	<1187251702.8375.43.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <fa88c3e5b4b0f896a16688a525bcd744@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] Invalid semicolon after if statement
-Date: Thu, 16 Aug 2007 16:03:29 +0200
-To: michael@ellerman.id.au
-Cc: =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-	linuxppc-dev@ozlabs.org, paulus@samba.org
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0E302DDE41
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 01:18:23 +1000 (EST)
+Message-ID: <46C46AB7.6070903@freescale.com>
+Date: Thu, 16 Aug 2007 10:18:15 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v2] powerpc: add setmaskedbits macros
+References: <11872134502476-git-send-email-timur@freescale.com>
+	<2DFE7EFC-6B9F-4149-83AE-5502DD25C14C@kernel.crashing.org>
+In-Reply-To: <2DFE7EFC-6B9F-4149-83AE-5502DD25C14C@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,13 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Thanks to the frickin compiler for warning us, not.
+Kumar Gala wrote:
 
-4.3: "warning: suggest braces around empty body in an 'if' statement"
+> Can you post a driver that uses this.  I'm interested in seeing what the 
+> readability is really like using these macros.
 
-4.1: "warning: empty body in an if-statement"
+I do not yet have any drivers ready, but I can give you an example:
 
-Your GCC is too old :-)
+	setmaskedbits_be32(&uccp->gumr_l,
+		UCC_SLOW_GUMR_L_MODE_QMC | UCC_SLOW_GUMR_L_TDCR_1 |
+		UCC_SLOW_GUMR_L_RDCR_16,
+                 UCC_SLOW_GUMR_L_MODE_MASK | UCC_SLOW_GUMR_L_TDCR_MASK |
+		UCC_SLOW_GUMR_L_RDCR_MASK);
 
+	setmaskedbits_be32(&uccp->gumr_h,
+		UCC_SLOW_GUMR_H_SUART | UCC_SLOW_GUMR_H_TRX |
+		UCC_SLOW_GUMR_H_TTX, UCC_SLOW_GUMR_H_RFW);
 
-Segher
+The alternative to using a macro like this is to do this:
+
+	reg = in_be32(p);
+	reg &= ~some-mask-bits;
+	reg |= some-other-bits;
+	out_be32(p, reg);
+
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
