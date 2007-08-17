@@ -1,23 +1,11 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 5142CDDEA3
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 18:14:07 +1000 (EST)
-Date: Fri, 17 Aug 2007 18:13:52 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 3/3] [POWERPC] Stop include asm-ppc when building
-	ARCH=powerpc for ppc32
-Message-Id: <20070817181352.d29117be.sfr@canb.auug.org.au>
-In-Reply-To: <Pine.LNX.4.64.0708170215360.15311@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0708170157140.15311@blarg.am.freescale.net>
-	<Pine.LNX.4.64.0708170212210.15311@blarg.am.freescale.net>
-	<Pine.LNX.4.64.0708170213040.15311@blarg.am.freescale.net>
-	<Pine.LNX.4.64.0708170215360.15311@blarg.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__17_Aug_2007_18_13_52_+1000_BWfAMsWX4OmamWoV"
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <j.borkhuis@dutchspace.nl>
+Message-ID: <46C56DCB.2000809@dutchspace.nl>
+Date: Fri, 17 Aug 2007 11:43:39 +0200
+From: Johan Borkhuis <j.borkhuis@dutchspace.nl>
+MIME-Version: 1.0
+To: Linuxppc-dev@ozlabs.org
+Subject: [PATCH]ppc: fix unalligned PCI BAR-mapping
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,56 +15,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Fri__17_Aug_2007_18_13_52_+1000_BWfAMsWX4OmamWoV
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hello,
 
-On Fri, 17 Aug 2007 02:15:54 -0500 (CDT) Kumar Gala <galak@kernel.crashing.=
-org> wrote:
->
-> @@ -172,18 +168,15 @@ install:
->  archclean:
->  	$(Q)$(MAKE) $(clean)=3D$(boot)
->=20
-> -archmrproper:
-> -	$(Q)rm -rf arch/$(ARCH)/include
-> -
->  archprepare: checkbin
->=20
-> -ifeq ($(CONFIG_PPC32),y)
-> -# Temporary hack until we have migrated to asm-powerpc
-> -include/asm: arch/$(ARCH)/include/asm
-> -arch/$(ARCH)/include/asm: FORCE
-> -	$(Q)if [ ! -d arch/$(ARCH)/include ]; then mkdir -p arch/$(ARCH)/includ=
-e; fi
-> -	$(Q)ln -fsn $(srctree)/include/asm-$(OLDARCH) arch/$(ARCH)/include/asm
-> -endif
-> +#ifeq ($(CONFIG_PPC32),y)
-> +## Temporary hack until we have migrated to asm-powerpc
-> +#include/asm: arch/$(ARCH)/include/asm
-> +#arch/$(ARCH)/include/asm: FORCE
-> +#	$(Q)if [ ! -d arch/$(ARCH)/include ]; then mkdir -p arch/$(ARCH)/inclu=
-de; fi
-> +#	$(Q)ln -fsn $(srctree)/include/asm-$(OLDARCH) arch/$(ARCH)/include/asm
-> +#endif
+The following patch makes sure that all areas referred to through a BAR 
+register in a PCI device are aligned on a PAGE_SIZE boundary.
+When looking at the result of the PCI initialization, the BAR registers 
+are filled with values that make sure the areas are directly adjacent. 
+This is a problem when trying to map these memory areas into user space 
+(using mmap). Mmap will only map pages, so to access the mapped area the 
+user must know the offset of the BAR register within the page.
+When comparing this to the i386 architecture, the areas are aligned on 
+boundaries.
 
-Why not just remove it?  git will preserve it if we find a use for it.
+The following patch makes sure that all BAR areas are aligned on page 
+boundaries, by rounding down the address to the next page boundary. BAR 
+areas are mapped from the top down, so by just masking with 
+~(PAGE_SIZE-1) the address is aligned with the page.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+This is the first time I propose a patch for the Linux kernel, so please 
+help me if I do something wrong here, or (in case this patch is 
+acceptable) how to get this into the kernel tree.
 
---Signature=_Fri__17_Aug_2007_18_13_52_+1000_BWfAMsWX4OmamWoV
-Content-Type: application/pgp-signature
+Kind regards,
+    Johan Borkhuis
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGxVjFTgG2atn1QN8RAjS4AJ96KH0nasiDoxs0Qb5uKy2QHutkmwCfR+l3
-CkDIS5pZW07nUiOItfAkds8=
-=VBuv
------END PGP SIGNATURE-----
-
---Signature=_Fri__17_Aug_2007_18_13_52_+1000_BWfAMsWX4OmamWoV--
+=======================
+diff -u linux-org/arch/ppc/syslib/pci_auto.c 
+linux/arch/ppc/syslib/pci_auto.c
+--- linux-org/arch/ppc/syslib/pci_auto.c    2007-01-14 
+02:26:54.000000000 +0100
++++ linux/arch/ppc/syslib/pci_auto.c    2007-08-17 11:19:25.000000000 +0200
+@@ -87,7 +87,7 @@
+         bar_size = ~(bar_response & addr_mask) + 1;
+ 
+         /* Allocate a base address */
+-        bar_value = (*upper_limit - bar_size) & ~(bar_size - 1);
++        bar_value = ((*upper_limit - bar_size) & ~(bar_size - 1)) & 
+~(PAGE_SIZE-1);
+ 
+         /* Write it out and update our limit */
+         early_write_config_dword(hose,
