@@ -1,22 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
+	[207.189.120.14])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4D2CCDDE2F
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2007 04:33:55 +1000 (EST)
-In-Reply-To: <20070818021917.142f0c45.sfr@canb.auug.org.au>
-References: <Pine.LNX.4.64.0708170823150.31758@blarg.am.freescale.net>
-	<20070818015542.b8e2df67.sfr@canb.auug.org.au>
-	<6E87D0B2-29EB-4068-9BF0-F8373C61B256@kernel.crashing.org>
-	<20070818021917.142f0c45.sfr@canb.auug.org.au>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <EC40CB42-1A1E-4D44-9B82-F009A5DF7665@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] Fix 8xx compile failure
-Date: Fri, 17 Aug 2007 13:35:36 -0500
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 31AF4DDD0D
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2007 05:00:19 +1000 (EST)
+Date: Fri, 17 Aug 2007 11:59:51 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michael Neuling <mikey@neuling.org>, Jay Lan <jlan@engr.sgi.com>
+Subject: Re: [PATCH 1/2] Add scaled time to taskstats based process accounting
+Message-Id: <20070817115951.e1368a7d.akpm@linux-foundation.org>
+In-Reply-To: <19998.1187312981@neuling.org>
+References: <20070816070922.37B5370074@localhost.localdomain>
+	<46C3FC41.4000609@linux.vnet.ibm.com>
+	<19998.1187312981@neuling.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Benjamin, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, balbir@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,38 +28,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 17 Aug 2007 11:09:41 +1000
+Michael Neuling <mikey@neuling.org> wrote:
 
-On Aug 17, 2007, at 11:19 AM, Stephen Rothwell wrote:
+> This adds items to the taststats struct to account for user and system
+> time based on scaling the CPU frequency and instruction issue rates.
+> 
+> Adds account_(user|system)_time_scaled callbacks which architectures
+> can use to account for time using this mechanism.
+> 
+> ...
+> 
+> Index: linux-2.6-ozlabs/include/linux/kernel_stat.h
+> ===================================================================
+> --- linux-2.6-ozlabs.orig/include/linux/kernel_stat.h
+> +++ linux-2.6-ozlabs/include/linux/kernel_stat.h
+> @@ -52,7 +52,9 @@ static inline int kstat_irqs(int irq)
+>  }
+>  
+>  extern void account_user_time(struct task_struct *, cputime_t);
+> +extern void account_user_time_scaled(struct task_struct *, cputime_t);
+>  extern void account_system_time(struct task_struct *, int, cputime_t);
+> +extern void account_system_time_scaled(struct task_struct *, cputime_t);
+>  extern void account_steal_time(struct task_struct *, cputime_t);
+>  
+>  #endif /* _LINUX_KERNEL_STAT_H */
+> Index: linux-2.6-ozlabs/include/linux/sched.h
+> ===================================================================
+> --- linux-2.6-ozlabs.orig/include/linux/sched.h
+> +++ linux-2.6-ozlabs/include/linux/sched.h
+> @@ -1020,7 +1020,7 @@ struct task_struct {
+>  	int __user *clear_child_tid;		/* CLONE_CHILD_CLEARTID */
+>  
+>  	unsigned int rt_priority;
+> -	cputime_t utime, stime;
+> +	cputime_t utime, stime, utimescaled, stimescaled;
 
-> Hi Kumar,
->
-> On Fri, 17 Aug 2007 11:11:20 -0500 Kumar Gala  
-> <galak@kernel.crashing.org> wrote:
->>
->> On Aug 17, 2007, at 10:55 AM, Stephen Rothwell wrote:
->>
->>> On Fri, 17 Aug 2007 08:24:02 -0500 (CDT) Kumar Gala
->>> <galak@kernel.crashing.org> wrote:
->>>>
->>>> diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/
->>>> fsl_soc.c
->>>> index 727453d..f6943fc 100644
->>>> --- a/arch/powerpc/sysdev/fsl_soc.c
->>>> +++ b/arch/powerpc/sysdev/fsl_soc.c
->>>> @@ -36,6 +36,7 @@
->>>>  #include <sysdev/fsl_soc.h>
->>>>  #include <mm/mmu_decl.h>
->>>>  #include <asm/cpm2.h>
->>>> +#include <asm/of_platform.h>
->>>
->>> linux/of_platform.h should be used these days.
->>
->> ok fixed.
->
-> I notice that the master branch of your tree has both includes in this
-> file now :-)  Git's merges are not always perfect.
+Adding 8 or 16 bytes to the task_struct for all architectures for something
+which only powerpc uses?
 
-And I had such great hopes for keeping the master branch up to date  
-and sane... should all now be fixed.
+Is there any prospect that other CPUs can use this?
 
-- k
+>  	unsigned long nvcsw, nivcsw; /* context switch counts */
+>  	struct timespec start_time; 		/* monotonic time */
+>  	struct timespec real_start_time;	/* boot based time */
+> Index: linux-2.6-ozlabs/include/linux/taskstats.h
+> ===================================================================
+> --- linux-2.6-ozlabs.orig/include/linux/taskstats.h
+> +++ linux-2.6-ozlabs/include/linux/taskstats.h
+> @@ -31,7 +31,7 @@
+>   */
+>  
+>  
+> -#define TASKSTATS_VERSION	5
+> +#define TASKSTATS_VERSION	6
+>  #define TS_COMM_LEN		32	/* should be >= TASK_COMM_LEN
+>  					 * in linux/sched.h */
+>  
+> @@ -85,9 +85,12 @@ struct taskstats {
+>  	 * On some architectures, value will adjust for cpu time stolen
+>  	 * from the kernel in involuntary waits due to virtualization.
+>  	 * Value is cumulative, in nanoseconds, without a corresponding count
+> -	 * and wraps around to zero silently on overflow
+> +	 * and wraps around to zero silently on overflow.  The
+> +	 * _scaled_ version accounts for cpus which can scale the
+> +	 * number of instructions executed each cycle.
+>  	 */
+>  	__u64	cpu_run_real_total;
+> +	__u64	cpu_scaled_run_real_total;
+>  
+>  	/* cpu "virtual" running time
+>  	 * Uses time intervals seen by the kernel i.e. no adjustment
+> @@ -142,6 +145,10 @@ struct taskstats {
+>  	__u64	write_char;		/* bytes written */
+>  	__u64	read_syscalls;		/* read syscalls */
+>  	__u64	write_syscalls;		/* write syscalls */
+> +
+> +	/* time accounting for SMT machines */
+> +	__u64	ac_utimescaled;		/* utime scaled on frequency etc */
+> +	__u64	ac_stimescaled;		/* stime scaled on frequency etc */
+>  	/* Extended accounting fields end */
+
+umm, should we be adding new fields in the middle of this message?  I
+thought we should only add to the end, for back-compatibility, but maybe I
+misremember.
