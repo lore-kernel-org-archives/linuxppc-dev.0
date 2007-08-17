@@ -1,19 +1,31 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2966DDDE25
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 23:48:28 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id l7HDmLUX017577
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 08:48:25 -0500
-Date: Fri, 17 Aug 2007 08:48:40 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: RFC: [PATCH] Fixup modpost warnings in head*.S for ppc32
-Message-ID: <Pine.LNX.4.64.0708170847120.29396@blarg.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DB124DDE41
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2007 00:05:41 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7HE5bio031448
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 10:05:37 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l7HE5aXI249646
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 08:05:36 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l7HE5aeR012465
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 08:05:36 -0600
+Date: Fri, 17 Aug 2007 09:05:35 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: RFC: [PATCH] Fixup modpost warnings in head*.S for ppc32
+Message-ID: <20070817090535.0586160a@weaponx.rchland.ibm.com>
+In-Reply-To: <Pine.LNX.4.64.0708170847120.29396@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0708170847120.29396@blarg.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,169 +35,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Addess the following modpost warnings we get out of the ppc32 head files:
+On Fri, 17 Aug 2007 08:48:40 -0500 (CDT)
+Kumar Gala <galak@kernel.crashing.org> wrote:
 
-WARNING: vmlinux.o(.text+0x358): Section mismatch: reference to .init.text:early_init (between 'skpinv' and 'interrupt_base')
-WARNING: vmlinux.o(.text+0x380): Section mismatch: reference to .init.text:machine_init (between 'skpinv' and 'interrupt_base')
-WARNING: vmlinux.o(.text+0x384): Section mismatch: reference to .init.text:MMU_init (between 'skpinv' and 'interrupt_base')
-WARNING: vmlinux.o(.text+0x3aa): Section mismatch: reference to .init.text:start_kernel (between 'skpinv' and 'interrupt_base')
-WARNING: vmlinux.o(.text+0x3ae): Section mismatch: reference to .init.text:start_kernel (between 'skpinv' and 'interrupt_base')
+> diff --git a/arch/powerpc/kernel/head_4xx.S b/arch/powerpc/kernel/head_4xx.S
+> index adc7f80..a0c9151 100644
+> --- a/arch/powerpc/kernel/head_4xx.S
+> +++ b/arch/powerpc/kernel/head_4xx.S
+> @@ -53,9 +53,9 @@
+>   *
+>   * This is all going to change RSN when we add bi_recs.......  -- Dan
+>   */
+> -	.text
+> -_GLOBAL(_stext)
+> -_GLOBAL(_start)
+> +	.section	.text.head, "ax"
+> +_ENTRY(_stext);
+> +_ENTRY(_start);
 
-diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-index 7d73a13..6d332db 100644
---- a/arch/powerpc/kernel/head_32.S
-+++ b/arch/powerpc/kernel/head_32.S
-@@ -48,20 +48,17 @@
- 	mtspr	SPRN_DBAT##n##L,RB;	\
- 1:
+FYI, I renamed this file to head_40x.S in my current for-2.6.24
+series.  Hopefully Paul will pull that soon.
 
--	.text
-+	.section	.text.head, "ax"
- 	.stabs	"arch/powerpc/kernel/",N_SO,0,0,0f
- 	.stabs	"head_32.S",N_SO,0,0,0f
- 0:
--	.globl	_stext
--_stext:
-+_ENTRY(_stext);
-
- /*
-  * _start is defined this way because the XCOFF loader in the OpenFirmware
-  * on the powermac expects the entry point to be a procedure descriptor.
-  */
--	.text
--	.globl	_start
--_start:
-+_ENTRY(_start);
- 	/*
- 	 * These are here for legacy reasons, the kernel used to
- 	 * need to look like a coff function entry for the pmac
-@@ -841,7 +838,7 @@ relocate_kernel:
-  * r3 = dest addr, r4 = source addr, r5 = copy limit, r6 = start offset
-  * on exit, r3, r4, r5 are unchanged, r6 is updated to be >= r5.
-  */
--_GLOBAL(copy_and_flush)
-+_ENTRY(copy_and_flush)
- 	addi	r5,r5,-4
- 	addi	r6,r6,-4
- 4:	li	r0,L1_CACHE_BYTES/4
-@@ -954,9 +951,9 @@ __secondary_start:
-  * included in CONFIG_6xx
-  */
- #if !defined(CONFIG_6xx)
--_GLOBAL(__save_cpu_setup)
-+_ENTRY(__save_cpu_setup)
- 	blr
--_GLOBAL(__restore_cpu_setup)
-+_ENTRY(__restore_cpu_setup)
- 	blr
- #endif /* !defined(CONFIG_6xx) */
-
-@@ -1080,7 +1077,7 @@ start_here:
- /*
-  * Set up the segment registers for a new context.
-  */
--_GLOBAL(set_context)
-+_ENTRY(set_context)
- 	mulli	r3,r3,897	/* multiply context by skew factor */
- 	rlwinm	r3,r3,4,8,27	/* VSID = (context & 0xfffff) << 4 */
- 	addis	r3,r3,0x6000	/* Set Ks, Ku bits */
-diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
-index 8869596..7b0fda9 100644
---- a/arch/powerpc/kernel/head_44x.S
-+++ b/arch/powerpc/kernel/head_44x.S
-@@ -50,9 +50,9 @@
-  *   r7 - End of kernel command line string
-  *
-  */
--	.text
--_GLOBAL(_stext)
--_GLOBAL(_start)
-+	.section	.text.head, "ax"
-+_ENTRY(_stext);
-+_ENTRY(_start);
- 	/*
- 	 * Reserve a word at a fixed location to store the address
- 	 * of abatron_pteptrs
-diff --git a/arch/powerpc/kernel/head_4xx.S b/arch/powerpc/kernel/head_4xx.S
-index adc7f80..a0c9151 100644
---- a/arch/powerpc/kernel/head_4xx.S
-+++ b/arch/powerpc/kernel/head_4xx.S
-@@ -53,9 +53,9 @@
-  *
-  * This is all going to change RSN when we add bi_recs.......  -- Dan
-  */
--	.text
--_GLOBAL(_stext)
--_GLOBAL(_start)
-+	.section	.text.head, "ax"
-+_ENTRY(_stext);
-+_ENTRY(_start);
-
- 	/* Save parameters we are passed.
- 	*/
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 901be47..a6ecdd6 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -38,12 +38,9 @@
- #else
- #define DO_8xx_CPU6(val, reg)
- #endif
--	.text
--	.globl	_stext
--_stext:
--	.text
--	.globl	_start
--_start:
-+	.section	.text.head, "ax"
-+_ENTRY(_stext);
-+_ENTRY(_start);
-
- /* MPC8xx
-  * This port was done on an MBX board with an 860.  Right now I only
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 1f155d3..d83cbbb 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -52,9 +52,9 @@
-  *   r7 - End of kernel command line string
-  *
-  */
--	.text
--_GLOBAL(_stext)
--_GLOBAL(_start)
-+	.section	.text.head, "ax"
-+_ENTRY(_stext);
-+_ENTRY(_start);
- 	/*
- 	 * Reserve a word at a fixed location to store the address
- 	 * of abatron_pteptrs
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 0c45855..823a8cb 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -34,6 +34,8 @@ SECTIONS
-
- 	/* Text and gots */
- 	.text : {
-+		ALIGN_FUNCTION();
-+		*(.text.head)
- 		_text = .;
- 		TEXT_TEXT
- 		SCHED_TEXT
-diff --git a/include/asm-powerpc/ppc_asm.h b/include/asm-powerpc/ppc_asm.h
-index 6532572..4763f67 100644
---- a/include/asm-powerpc/ppc_asm.h
-+++ b/include/asm-powerpc/ppc_asm.h
-@@ -195,6 +195,11 @@ GLUE(.,name):
-
- #else /* 32-bit */
-
-+#define _ENTRY(n)	\
-+	.stabs __stringify(n:F-1),N_FUN,0,0,n;\
-+	.globl n;	\
-+n:
-+
- #define _GLOBAL(n)	\
- 	.text;		\
- 	.stabs __stringify(n:F-1),N_FUN,0,0,n;\
+josh
