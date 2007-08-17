@@ -1,17 +1,15 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id A4C74DDE33
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2007 00:33:00 +1000 (EST)
-Date: Fri, 17 Aug 2007 16:33:11 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH] advertise correct IDE mode on Pegasos2
-Message-ID: <20070817143311.GA32390@aepfle.de>
-References: <20070404111635.GA1855@aepfle.de>
-	<20070817131048.GA31192@aepfle.de>
+Return-Path: <j.borkhuis@dutchspace.nl>
+Message-ID: <46C5B288.2010308@dutchspace.nl>
+Date: Fri, 17 Aug 2007 16:36:56 +0200
+From: Johan Borkhuis <j.borkhuis@dutchspace.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20070817131048.GA31192@aepfle.de>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: Patches for ppc?
+References: <46C5519E.6010300@dutchspace.nl>
+	<1187353616.2778.358.camel@shinybook.infradead.org>
+In-Reply-To: <1187353616.2778.358.camel@shinybook.infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,33 +19,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 17, Olaf Hering wrote:
+David Woodhouse wrote:
+> On Fri, 2007-08-17 at 09:43 +0200, Johan Borkhuis wrote:
+>   
+>> I am working with a PPC-kernel, and came across a problem with the PCI 
+>> initialisation. On this mailing list I see a lot of patches, but they 
+>> are all for the PowerPC architecture. Are patches for the PPC 
+>> architecture still processed?
+>>
+>> I know that the ppc-architecture is being phased out, but for the moment 
+>> I am stuck with it, as the board I am working with is not supported in 
+>> the powerpc architecture. 
+>>     
+>
+> If you've having to submit or look for patches, it sounds like it isn't
+> working with the obsolete arch/ppc either. Time to update, perhaps?
+>
+>   
+Well, this is one of the minor issues I have with the ppc architecture, 
+but I am quite happy with it. Even for this I could make a workaround, 
+but I guess this is something that other might stumble upon.
 
-Still not 100% perfect.
+I would like to move to powerpc, but for the moment there is no official 
+support for powerpc, for ppc there is, but I don't have the time to move 
+this to powerpc. So I am afraid I don't have much choice.
 
-> +		prom_printf("Fixing up IDE class-code on Pegasos...\n");
-> +		rc = prom_getprop(ph, "class-code", prop, sizeof(u32));
-> +		if (rc == sizeof(u32)) {
-> +			prop[0] &= ~0x5;
-> +			prom_setprop(ph, name, "class-code", prop, sizeof(u32));
-> +		}
+Kind regards,
 
-This updates the class code in the device-tree, but sysfs still shows
-the old value.
-
-> +	pci_read_config_byte(viaide, PCI_CLASS_PROG, &progif);
-> +	pci_write_config_byte(viaide, PCI_CLASS_PROG, progif & ~0x5);
-
-Is this a readonly register by any chance?
-Appending a 'viaide->class &= ~0x5;' changes the code paths in
-do_ide_setup_pci_device(), now IDE prints 'not 100%% native mode,
-will probe irqs later'. Where are the irqs supposed to come from?
-
-> -#ifdef CONFIG_PPC_CHRP
-> -	if(machine_is(chrp) && _chrp_type == _CHRP_Pegasos) {
-> -		hwif->irq = hwif->channel ? 15 : 14;
-> -	}
-> -#endif
-
-Maybe we should just leave this in and dont bother about the arch
-specific tweak?
+-- 
+Johan Borkhuis                                  Dutch Space BV
+email:        j.borkhuis@dutchspace.nl          Newtonweg 1
+phone:        071-5245788                       Leiden
+fax:          071-5245499                       The Netherlands
