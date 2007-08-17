@@ -1,20 +1,16 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 9A8DFDDE2E
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2007 06:52:00 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/3] [POWERPC] Copy over headers from arch/ppc to
-	arch/powerpc that we need
-Date: Fri, 17 Aug 2007 19:42:25 +0200
-References: <Pine.LNX.4.64.0708170157140.15311@blarg.am.freescale.net>
-	<Pine.LNX.4.64.0708170213040.15311@blarg.am.freescale.net>
-	<200708171905.52855.arnd@arndb.de>
-In-Reply-To: <200708171905.52855.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200708171942.25914.arnd@arndb.de>
+Return-Path: <mikpe@user.it.uu.se>
+Received: from aun.it.uu.se (aun.it.uu.se [130.238.12.36])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7705ADDE33
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2007 07:08:24 +1000 (EST)
+Date: Fri, 17 Aug 2007 22:51:23 +0200 (MEST)
+Message-Id: <200708172051.l7HKpNtq009682@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: alan@lxorguk.ukuu.org.uk, jeff@garzik.org
+Subject: Re: [PATCH 1/1] libata: pata_pdc2027x PLL input clock fix
+Cc: dwm@enoyolf.org, mikpe@it.uu.se, linux-ide@vger.kernel.org,
+	bahadir.balban@gmail.com, linuxppc-dev@ozlabs.org, albertl@mail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,17 +20,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 17 August 2007, Arnd Bergmann wrote:
-> The m8260_pci.h file is not namespace clean, it defines macros like
-> PCI_CFG_ADDR_REG that are likely to create conflicts at some point of
-> time. Since the only file including this header is 
-> arch/powerpc/platforms/82xx/m82xx_pci.h, I'd suggest merging the two,
-> to make sure nobody can accidentally include it.
+On Thu, 16 Aug 2007 21:19:40 +0100, Alan Cox wrote:
+> > > Unfortunately this breaks pata_pdc2027x on my PowerMac G3:
+> > 
+> > Did this ever get resolved?
+> 
+> All went quiet so I assume its gone away ?
 
-Upon closer inspection, none of the definitions in this file are
-actually used in arch/powerpc, or should be.
+-ENOTIME
 
-So, can we just kill that file, as you did with the others in your
-first patch?
-
-	Arnd <><
+The regression is still there in 2.6.23-rc3 (I just checked),
+but I haven't had time to debug it yet. I'll try to do something
+about it this weekend.
