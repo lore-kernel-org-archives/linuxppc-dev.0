@@ -1,15 +1,16 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id E9AE0DDE38
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 14:53:42 +1000 (EST)
-Date: Thu, 16 Aug 2007 22:57:39 -0500
-From: Olof Johansson <olof@lixom.net>
-To: paulus@samba.org
-Subject: [PATCH] pasemi: Another IOMMU bugfix for 64K PAGE_SIZE
-Message-ID: <20070817035739.GA8294@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: [PATCH 1/2] Add scaled time to taskstats based process accounting
+In-reply-to: <46C52872.9060408@linux.vnet.ibm.com> 
+References: <20070816070922.37B5370074@localhost.localdomain>
+	<46C3FC41.4000609@linux.vnet.ibm.com>
+	<13529.1187310208@neuling.org>
+	<46C52872.9060408@linux.vnet.ibm.com>
+Date: Fri, 17 Aug 2007 14:56:44 +1000
+Message-ID: <13853.1187326604@neuling.org>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,41 +20,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-More fallout from the switch from PAGE_SIZE based IOMMU to the native page
-size for the driver. By pure luck it happened to work most of the time, since
-we end up invalidating the wrong entries in the TLB.
+In message <46C52872.9060408@linux.vnet.ibm.com> you wrote:
+> Michael Neuling wrote:
+> >> I'd also request for you to add a cpu_scaled_run_real_total for use
+> >> by delay accounting. cpu_scaled_run_real_total should be similar in
+> >> functionality to cpu_run_real_total.
+> > 
+> > Will do.  Should I add cpu_scaled_run_real_total to the end of the
+> > struct taskstat, or next to cpu_run_real_total?
+> > 
+> 
+> Please add it to the end, that helps maintain binary compatibility
+> across all versions of taskstats.
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+OK
 
+> 
+> >>>  	/* Note: this timer irq context must be accounted for as well. */
+> >>> -	if (user_tick)
+> >>> +	if (user_tick) {
+> >>>  		account_user_time(p, jiffies_to_cputime(1));
+> >>> -	else
+> >>> +		account_user_time_scaled(p, jiffies_to_cputime(1));
+> >>> +	} else {
+> >>>  		account_system_time(p, HARDIRQ_OFFSET, jiffies_to_cputime(1));
+> >>> +		account_system_time_scaled(p, jiffies_to_cputime(1));
+> >>> +	}
+> >> I am a little confused here, scaled accounting and regular accounting
+> >> go hand in hand?
+> > 
+> > We need to account for scaled and normal time in this generic code.
+> > All other calls to account_(user|system)_time are in arch code.  
+> > 
+> 
+> So the assumption here is that we ran at full frequency during
+> this time, is my understanding correct?
 
-Index: linux-2.6/arch/powerpc/platforms/pasemi/iommu.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/pasemi/iommu.c
-+++ linux-2.6/arch/powerpc/platforms/pasemi/iommu.c
-@@ -93,7 +93,7 @@ static void iobmap_build(struct iommu_ta
- 
- 	pr_debug("iobmap: build at: %lx, %lx, addr: %lx\n", index, npages, uaddr);
- 
--	bus_addr = (tbl->it_offset + index) << PAGE_SHIFT;
-+	bus_addr = (tbl->it_offset + index) << IOBMAP_PAGE_SHIFT;
- 
- 	ip = ((u32 *)tbl->it_base) + index;
- 
-@@ -118,7 +118,7 @@ static void iobmap_free(struct iommu_tab
- 
- 	pr_debug("iobmap: free at: %lx, %lx\n", index, npages);
- 
--	bus_addr = (tbl->it_offset + index) << PAGE_SHIFT;
-+	bus_addr = (tbl->it_offset + index) << IOBMAP_PAGE_SHIFT;
- 
- 	ip = ((u32 *)tbl->it_base) + index;
- 
-@@ -137,7 +137,7 @@ static void iommu_table_iobmap_setup(voi
- 	iommu_table_iobmap.it_busno = 0;
- 	iommu_table_iobmap.it_offset = 0;
- 	/* it_size is in number of entries */
--	iommu_table_iobmap.it_size = 0x80000000 >> PAGE_SHIFT;
-+	iommu_table_iobmap.it_size = 0x80000000 >> IOBMAP_PAGE_SHIFT;
- 
- 	/* Initialize the common IOMMU code */
- 	iommu_table_iobmap.it_base = (unsigned long)iob_l2_base;
+Yes.  
+
+I guess we could keep a per CPU last scaling factor for this case
+(similar to what we are storing in the POWERPC paca)
+
+Mikey
