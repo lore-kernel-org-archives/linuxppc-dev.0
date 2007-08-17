@@ -1,22 +1,18 @@
-Return-Path: <b04825@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1B5B0DDE11
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2007 04:26:09 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l7HIQ4FJ028073
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 11:26:04 -0700 (MST)
-From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2] powerpc: Fix definition of global-utilites structure for
-	86xx
-Date: Fri, 17 Aug 2007 13:26:01 -0500
-Message-Id: <11873751612052-git-send-email-timur@freescale.com>
-Cc: Timur Tabi <timur@freescale.com>
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 5B1CDDDE29
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2007 04:27:06 +1000 (EST)
+Date: Fri, 17 Aug 2007 20:27:17 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org,
+	Paul Mackeras <paulus@samba.org>
+Subject: [PATCH] advertise correct IDE mode on Pegasos2
+Message-ID: <20070817182717.GA656@aepfle.de>
+References: <20070404111635.GA1855@aepfle.de>
+	<20070817131048.GA31192@aepfle.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20070817131048.GA31192@aepfle.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,195 +22,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The current definition of struct ccsr_guts in immap_86xx.h was for 85xx.
-This patch fixes that and replaces the vague integer types with sized types
-of the correct endianness.  The unused struct ccsr_pci is also deleted.
+The built-in IDE controller is configured in legacy mode,
+but the PCI registers advertise native mode.
+Force the PCI class into legacy mode. This allows pata_via to access
+two drives.
+The Pegasos specific irq enforcement in the via82cxxx driver
+must stay because there is aparently no generic way to setup irq per channel.
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
+Tested on Pegasos2 with firmware version 20040810, and two IDE disks.
+
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
+
 ---
+ arch/powerpc/kernel/prom_init.c   |   11 ++++++++---
+ arch/powerpc/platforms/chrp/pci.c |   29 +++++++++++++++++++++++++++++
+ 2 files changed, 37 insertions(+), 3 deletions(-)
 
-This is for for-2.6.24.
-
-I created this patch because I have a new driver coming up that uses the 
-global-utilities structure, so I need these changes made.
-
- include/asm-powerpc/immap_86xx.h |  151 ++++++++++++--------------------------
- 1 files changed, 46 insertions(+), 105 deletions(-)
-
-diff --git a/include/asm-powerpc/immap_86xx.h b/include/asm-powerpc/immap_86xx.h
-index 59b9e07..4d087fd 100644
---- a/include/asm-powerpc/immap_86xx.h
-+++ b/include/asm-powerpc/immap_86xx.h
-@@ -1,124 +1,65 @@
--/*
-+/**
-  * MPC86xx Internal Memory Map
-  *
-- * Author: Jeff Brown
-+ * Authors: Jeff Brown
-+ *          Timur Tabi <timur@freescale.com>
-  *
-- * Copyright 2004 Freescale Semiconductor, Inc
-+ * Copyright 2004,2007 Freescale Semiconductor, Inc
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-  * Free Software Foundation;  either version 2 of the  License, or (at your
-  * option) any later version.
-  *
-+ * This header file defines structures for various 86xx SOC devices that are
-+ * used by multiple source files.
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -2044,6 +2044,7 @@ static void __init fixup_device_tree_map
+ /*
+  * Pegasos and BriQ lacks the "ranges" property in the isa node
+  * Pegasos needs decimal IRQ 14/15, not hexadecimal
++ * Pegasos has the IDE configured in legacy mode, but advertised as native
   */
- 
- #ifndef __ASM_POWERPC_IMMAP_86XX_H__
- #define __ASM_POWERPC_IMMAP_86XX_H__
- #ifdef __KERNEL__
- 
--/* Eventually this should define all the IO block registers in 86xx */
--
--/* PCI Registers */
--typedef struct ccsr_pci {
--	uint	cfg_addr;	/* 0x.000 - PCI Configuration Address Register */
--	uint	cfg_data;	/* 0x.004 - PCI Configuration Data Register */
--	uint	int_ack;	/* 0x.008 - PCI Interrupt Acknowledge Register */
--	char	res1[3060];
--	uint	potar0;		/* 0x.c00 - PCI Outbound Transaction Address Register 0 */
--	uint	potear0;	/* 0x.c04 - PCI Outbound Translation Extended Address Register 0 */
--	uint	powbar0;	/* 0x.c08 - PCI Outbound Window Base Address Register 0 */
--	char	res2[4];
--	uint	powar0;		/* 0x.c10 - PCI Outbound Window Attributes Register 0 */
--	char	res3[12];
--	uint	potar1;		/* 0x.c20 - PCI Outbound Transaction Address Register 1 */
--	uint	potear1;	/* 0x.c24 - PCI Outbound Translation Extended Address Register 1 */
--	uint	powbar1;	/* 0x.c28 - PCI Outbound Window Base Address Register 1 */
--	char	res4[4];
--	uint	powar1;		/* 0x.c30 - PCI Outbound Window Attributes Register 1 */
--	char	res5[12];
--	uint	potar2;		/* 0x.c40 - PCI Outbound Transaction Address Register 2 */
--	uint	potear2;	/* 0x.c44 - PCI Outbound Translation Extended Address Register 2 */
--	uint	powbar2;	/* 0x.c48 - PCI Outbound Window Base Address Register 2 */
--	char	res6[4];
--	uint	powar2;		/* 0x.c50 - PCI Outbound Window Attributes Register 2 */
--	char	res7[12];
--	uint	potar3;		/* 0x.c60 - PCI Outbound Transaction Address Register 3 */
--	uint	potear3;	/* 0x.c64 - PCI Outbound Translation Extended Address Register 3 */
--	uint	powbar3;	/* 0x.c68 - PCI Outbound Window Base Address Register 3 */
--	char	res8[4];
--	uint	powar3;		/* 0x.c70 - PCI Outbound Window Attributes Register 3 */
--	char	res9[12];
--	uint	potar4;		/* 0x.c80 - PCI Outbound Transaction Address Register 4 */
--	uint	potear4;	/* 0x.c84 - PCI Outbound Translation Extended Address Register 4 */
--	uint	powbar4;	/* 0x.c88 - PCI Outbound Window Base Address Register 4 */
--	char	res10[4];
--	uint	powar4;		/* 0x.c90 - PCI Outbound Window Attributes Register 4 */
--	char	res11[268];
--	uint	pitar3;		/* 0x.da0 - PCI Inbound Translation Address Register 3  */
--	char	res12[4];
--	uint	piwbar3;	/* 0x.da8 - PCI Inbound Window Base Address Register 3 */
--	uint	piwbear3;	/* 0x.dac - PCI Inbound Window Base Extended Address Register 3 */
--	uint	piwar3;		/* 0x.db0 - PCI Inbound Window Attributes Register 3 */
--	char	res13[12];
--	uint	pitar2;		/* 0x.dc0 - PCI Inbound Translation Address Register 2  */
--	char	res14[4];
--	uint	piwbar2;	/* 0x.dc8 - PCI Inbound Window Base Address Register 2 */
--	uint	piwbear2;	/* 0x.dcc - PCI Inbound Window Base Extended Address Register 2 */
--	uint	piwar2;		/* 0x.dd0 - PCI Inbound Window Attributes Register 2 */
--	char	res15[12];
--	uint	pitar1;		/* 0x.de0 - PCI Inbound Translation Address Register 1  */
--	char	res16[4];
--	uint	piwbar1;	/* 0x.de8 - PCI Inbound Window Base Address Register 1 */
--	char	res17[4];
--	uint	piwar1;		/* 0x.df0 - PCI Inbound Window Attributes Register 1 */
--	char	res18[12];
--	uint	err_dr;		/* 0x.e00 - PCI Error Detect Register */
--	uint	err_cap_dr;	/* 0x.e04 - PCI Error Capture Disable Register */
--	uint	err_en;		/* 0x.e08 - PCI Error Enable Register */
--	uint	err_attrib;	/* 0x.e0c - PCI Error Attributes Capture Register */
--	uint	err_addr;	/* 0x.e10 - PCI Error Address Capture Register */
--	uint	err_ext_addr;	/* 0x.e14 - PCI Error Extended Address Capture Register */
--	uint	err_dl;		/* 0x.e18 - PCI Error Data Low Capture Register */
--	uint	err_dh;		/* 0x.e1c - PCI Error Data High Capture Register */
--	uint	gas_timr;	/* 0x.e20 - PCI Gasket Timer Register */
--	uint	pci_timr;	/* 0x.e24 - PCI Timer Register */
--	char	res19[472];
--} ccsr_pci_t;
--
- /* Global Utility Registers */
--typedef struct ccsr_guts {
--	uint	porpllsr;	/* 0x.0000 - POR PLL Ratio Status Register */
--	uint	porbmsr;	/* 0x.0004 - POR Boot Mode Status Register */
--	uint	porimpscr;	/* 0x.0008 - POR I/O Impedance Status and Control Register */
--	uint	pordevsr;	/* 0x.000c - POR I/O Device Status Register */
--	uint	pordbgmsr;	/* 0x.0010 - POR Debug Mode Status Register */
--	char	res1[12];
--	uint	gpporcr;	/* 0x.0020 - General-Purpose POR Configuration Register */
--	char	res2[12];
--	uint	gpiocr;		/* 0x.0030 - GPIO Control Register */
--	char	res3[12];
--	uint	gpoutdr;	/* 0x.0040 - General-Purpose Output Data Register */
--	char	res4[12];
--	uint	gpindr;		/* 0x.0050 - General-Purpose Input Data Register */
--	char	res5[12];
--	uint	pmuxcr;		/* 0x.0060 - Alternate Function Signal Multiplex Control */
--	char	res6[12];
--	uint	devdisr;	/* 0x.0070 - Device Disable Control */
--	char	res7[12];
--	uint	powmgtcsr;	/* 0x.0080 - Power Management Status and Control Register */
--	char	res8[12];
--	uint	mcpsumr;	/* 0x.0090 - Machine Check Summary Register */
--	char	res9[12];
--	uint	pvr;		/* 0x.00a0 - Processor Version Register */
--	uint	svr;		/* 0x.00a4 - System Version Register */
--	char	res10[3416];
--	uint	clkocr;		/* 0x.0e00 - Clock Out Select Register */
--	char	res11[12];
--	uint	ddrdllcr;	/* 0x.0e10 - DDR DLL Control Register */
--	char	res12[12];
--	uint	lbcdllcr;	/* 0x.0e20 - LBC DLL Control Register */
--	char	res13[61916];
--} ccsr_guts_t;
-+struct ccsr_guts {
-+	__be32	porpllsr;	/* 0x.0000 - POR PLL Ratio Status */
-+	__be32	porbmsr;	/* 0x.0004 - POR Boot Mode Status */
-+	__be32	porimpscr;	/* 0x.0008 - POR I/O Impedance Status & Cntrl */
-+	__be32	pordevsr;	/* 0x.000c - POR I/O Device Status */
-+	__be32	pordbgmsr;	/* 0x.0010 - POR Debug Mode Status */
-+	u8	res1[0x20 - 0x14];
-+	__be32	porcir;		/* 0x.0020 - POR Configuration Information */
-+	u8	res2[0x30 - 0x24];
-+	__be32	gpiocr;		/* 0x.0030 - GPIO Control */
-+	u8	res3[0x40 - 0x34];
-+	__be32	gpoutdr;	/* 0x.0040 - General-Purpose Output Data */
-+	u8	res4[0x50 - 0x44];
-+	__be32	gpindr;		/* 0x.0050 - General-Purpose Input Data */
-+	u8	res5[0x60 - 0x54];
-+	__be32	pmuxcr;		/* 0x.0060 - Alt. Func. Signal Mux Cntrl */
-+	u8	res6[0x70 - 0x64];
-+	__be32	devdisr;	/* 0x.0070 - Device Disable Control */
-+	u8	res7[0x80 - 0x74];
-+	__be32	powmgtcsr;	/* 0x.0080 - Power Management Status & Cntrl */
-+	u8	res8[0x90 - 0x84];
-+	__be32	mcpsumr;	/* 0x.0090 - Machine Check Summary */
-+	__be32	rstrscr;	/* 0x.0094 - Reset Request Status and Control */
-+	u8	res9[0xA0 - 0x98];
-+	__be32	pvr;		/* 0x.00a0 - Processor Version */
-+	__be32	svr;		/* 0x.00a4 - System Version */
-+	u8	res10[0xB0 - 0xA8];
-+	__be32	rstcr;		/* 0x.00b0 - Reset Control */
-+	u8	res11[0xB20 - 0xB4];
-+	__be32	ddr1clkdr;	/* 0x.0b20 - DDRC1 Clock Disable */
-+	__be32	ddr2clkdr;	/* 0x.0b24 - DDRC2 Clock Disable */
-+	u8	res12[0xE00 - 0xB28];
-+	__be32	clkocr;		/* 0x.0e00 - Clock Out Select */
-+	u8	res13[0xF04 - 0xE04];
-+	__be32	srds1cr0;	/* 0x.0f04 - SerDes1 Control Register 0 */
-+	__be32	srds1cr1;	/* 0x.0f08 - SerDes1 Control Register 0 */
-+	u8	res14[0xF40 - 0xF0C];
-+	__be32	srds2cr0;	/* 0x.0f40 - SerDes1 Control Register 0 */
-+	__be32	srds2cr1;	/* 0x.0f44 - SerDes1 Control Register 0 */
-+};
- 
- #endif /* __ASM_POWERPC_IMMAP_86XX_H__ */
- #endif /* __KERNEL__ */
--- 
-1.5.2.4
+ static void __init fixup_device_tree_chrp(void)
+ {
+@@ -2081,9 +2082,13 @@ static void __init fixup_device_tree_chr
+ 		prom_printf("Fixing up IDE interrupt on Pegasos...\n");
+ 		prop[0] = 14;
+ 		prop[1] = 0x0;
+-		prop[2] = 15;
+-		prop[3] = 0x0;
+-		prom_setprop(ph, name, "interrupts", prop, 4*sizeof(u32));
++		prom_setprop(ph, name, "interrupts", prop, 2*sizeof(u32));
++		prom_printf("Fixing up IDE class-code on Pegasos...\n");
++		rc = prom_getprop(ph, "class-code", prop, sizeof(u32));
++		if (rc == sizeof(u32)) {
++			prop[0] &= ~0x5;
++			prom_setprop(ph, name, "class-code", prop, sizeof(u32));
++		}
+ 	}
+ }
+ #else
+--- a/arch/powerpc/platforms/chrp/pci.c
++++ b/arch/powerpc/platforms/chrp/pci.c
+@@ -338,3 +338,32 @@ void chrp_pci_fixup_winbond_ata(struct p
+ }
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_WINBOND, PCI_DEVICE_ID_WINBOND_82C105,
+ 		chrp_pci_fixup_winbond_ata);
++
++/* Pegasos2 firmware version 20040810 configures the built-in IDE controller
++ * in legacy mode, but sets the PCI registers to PCI native mode.
++ * The chip can only operate in legacy mode, so force the PCI class into legacy
++ * mode as well. The same fixup must be done to the class-code property in
++ * the IDE node /pci@80000000/ide@C,1
++ */
++static void chrp_pci_fixup_vt8231_ata(struct pci_dev *viaide)
++{
++	u8 progif;
++	struct pci_dev *viaisa;
++
++	if (!machine_is(chrp) || _chrp_type != _CHRP_Pegasos)
++		return;
++	if (viaide->irq != 14)
++		return;
++
++	viaisa = pci_get_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_8231, NULL);
++	if (!viaisa)
++		return;
++	printk("Fixing VIA IDE, force legacy mode on '%s'\n", viaide->dev.bus_id);
++
++	pci_read_config_byte(viaide, PCI_CLASS_PROG, &progif);
++	pci_write_config_byte(viaide, PCI_CLASS_PROG, progif & ~0x5);
++	viaide->class &= ~0x5;
++
++	pci_dev_put(viaisa);
++}
++DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_82C586_1, chrp_pci_fixup_vt8231_ata);
