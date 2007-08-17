@@ -1,21 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 08D3FDDE9D
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2007 02:19:24 +1000 (EST)
-Date: Sat, 18 Aug 2007 02:19:17 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] Fix 8xx compile failure
-Message-Id: <20070818021917.142f0c45.sfr@canb.auug.org.au>
-In-Reply-To: <6E87D0B2-29EB-4068-9BF0-F8373C61B256@kernel.crashing.org>
-References: <Pine.LNX.4.64.0708170823150.31758@blarg.am.freescale.net>
-	<20070818015542.b8e2df67.sfr@canb.auug.org.au>
-	<6E87D0B2-29EB-4068-9BF0-F8373C61B256@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sat__18_Aug_2007_02_19_17_+1000_2nt3xHk7WZtbX6+S"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <b04825@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 76011DDE1E
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2007 02:33:40 +1000 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: linuxppc-dev@ozlabs.org, Geert.Uytterhoeven@sonycom.com,
+	michael@ellerman.id.au, paulus@samba.org, galak@kernel.crashing.org,
+	benh@kernel.crashing.org
+Subject: [PATCH] powerpc: add clrsetbits macros
+Date: Fri, 17 Aug 2007 11:33:07 -0500
+Message-Id: <1187368387816-git-send-email-timur@freescale.com>
+Cc: Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,53 +23,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sat__18_Aug_2007_02_19_17_+1000_2nt3xHk7WZtbX6+S
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patch adds the clrsetbits_xxx() macros, which are used to set and clear
+multiple bits in a single read-modify-write operation.  Specify the bits to
+clear in the 'clear' parameter and the bits to set in the 'set' parameter.
+These macros can also be used to set a multiple-bit bit pattern using a mask,
+by specifying the mask in the 'clear' parameter and the new bit pattern in the
+'set' parameter.  There are big-endian and little-endian versions for 8, 16,
+32, and 64 bits.
 
-Hi Kumar,
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
 
-On Fri, 17 Aug 2007 11:11:20 -0500 Kumar Gala <galak@kernel.crashing.org> w=
-rote:
->
-> On Aug 17, 2007, at 10:55 AM, Stephen Rothwell wrote:
->=20
-> > On Fri, 17 Aug 2007 08:24:02 -0500 (CDT) Kumar Gala =20
-> > <galak@kernel.crashing.org> wrote:
-> >>
-> >> diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/=20
-> >> fsl_soc.c
-> >> index 727453d..f6943fc 100644
-> >> --- a/arch/powerpc/sysdev/fsl_soc.c
-> >> +++ b/arch/powerpc/sysdev/fsl_soc.c
-> >> @@ -36,6 +36,7 @@
-> >>  #include <sysdev/fsl_soc.h>
-> >>  #include <mm/mmu_decl.h>
-> >>  #include <asm/cpm2.h>
-> >> +#include <asm/of_platform.h>
-> >
-> > linux/of_platform.h should be used these days.
->=20
-> ok fixed.
+Renamed setclrbits to clrsetbits, since the clear is done first.
 
-I notice that the master branch of your tree has both includes in this
-file now :-)  Git's merges are not always perfect.
+This patch is for for-2.6.24, assuming I can get everyone to like it.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+ include/asm-powerpc/io.h |   27 +++++++++++++++++++++++++++
+ 1 files changed, 27 insertions(+), 0 deletions(-)
 
---Signature=_Sat__18_Aug_2007_02_19_17_+1000_2nt3xHk7WZtbX6+S
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGxcqLTgG2atn1QN8RAjgVAKCFdM0PIwTO2B5900GDvvnK+IgbZACcCnx4
-YJiE5o5un+rvATc+8n7xoLc=
-=+l7f
------END PGP SIGNATURE-----
-
---Signature=_Sat__18_Aug_2007_02_19_17_+1000_2nt3xHk7WZtbX6+S--
+diff --git a/include/asm-powerpc/io.h b/include/asm-powerpc/io.h
+index bb8d965..0af2f7e 100644
+--- a/include/asm-powerpc/io.h
++++ b/include/asm-powerpc/io.h
+@@ -734,6 +734,33 @@ static inline void * bus_to_virt(unsigned long address)
+ #define setbits16(_addr, _v) out_be16((_addr), in_be16(_addr) |  (_v))
+ #define clrbits16(_addr, _v) out_be16((_addr), in_be16(_addr) & ~(_v))
+ 
++/* Clear and set bits in one shot.  These macros can be used to clear and
++ * set multiple bits in a register using a single read-modify-write.  These
++ * macros can also be used to set a multiple-bit bit pattern using a mask,
++ * by specifying the mask in the 'clear' parameter and the new bit pattern
++ * in the 'set' parameter.
++ */
++
++#ifdef __powerpc64__
++#define clrsetbits_be64(addr, clear, set) \
++	out_be64((addr), (in_be64(addr) & ~(clear)) | (set))
++#define clrsetbits_le64(addr, clear, set) \
++	out_le64((addr), (in_le64(addr) & ~(clear)) | (set))
++#endif
++
++#define clrsetbits_be32(addr, clear, set) \
++	out_be32((addr), (in_be32(addr) & ~(clear)) | (set))
++#define clrsetbits_be16(addr, clear, set) \
++	out_be16((addr), (in_be16(addr) & ~(clear)) | (set))
++
++#define clrsetbits_le32(addr, clear, set) \
++	out_le32((addr), (in_le32(addr) & ~(clear)) | (set))
++#define clrsetbits_le16(addr, clear, set) \
++	out_le16((addr), (in_le16(addr) & ~(clear)) | (set))
++
++#define clrsetbits_8(addr, clear, set) \
++	out_8((addr), (in_8(addr) & ~(clear)) | (set))
++
+ #endif /* __KERNEL__ */
+ 
+ #endif /* _ASM_POWERPC_IO_H */
+-- 
+1.5.2.4
