@@ -1,22 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 05468DDE98
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2007 09:25:42 +1000 (EST)
-In-Reply-To: <Pine.LNX.4.64.0708170213040.15311@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0708170157140.15311@blarg.am.freescale.net>
-	<Pine.LNX.4.64.0708170212210.15311@blarg.am.freescale.net>
-	<Pine.LNX.4.64.0708170213040.15311@blarg.am.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <a79f1cbe580d675c6bb231e4e3a0326b@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2/3] [POWERPC] Copy over headers from arch/ppc to
-	arch/powerpc that we need
-Date: Sat, 18 Aug 2007 01:25:34 +0200
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <satyakiran@gmail.com>
+Message-ID: <acbcf3840708171628k242e96ffl2b65011bf6d39512@mail.gmail.com>
+Date: Fri, 17 Aug 2007 18:28:50 -0500
+From: Satya <satyakiran@gmail.com>
+To: "Johan Borkhuis" <j.borkhuis@dutchspace.nl>
+Subject: Re: Patches for ppc?
+In-Reply-To: <46C5B40F.5040209@dutchspace.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <46C5519E.6010300@dutchspace.nl>
+	<1187353616.2778.358.camel@shinybook.infradead.org>
+	<46C5B288.2010308@dutchspace.nl>
+	<1187361603.2778.382.camel@shinybook.infradead.org>
+	<46C5B40F.5040209@dutchspace.nl>
+Cc: Linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,21 +22,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->  include/asm-powerpc/8xx_immap.h   |  564 +++++++++++++++++
->  include/asm-powerpc/commproc.h    |  692 ++++++++++++++++++++
->  include/asm-powerpc/cpm2.h        | 1248 
-> +++++++++++++++++++++++++++++++++++++
->  include/asm-powerpc/gg2.h         |   61 ++
->  include/asm-powerpc/highmem.h     |  135 ++++
->  include/asm-powerpc/hydra.h       |  102 +++
->  include/asm-powerpc/immap_cpm2.h  |  648 +++++++++++++++++++
->  include/asm-powerpc/kgdb.h        |   57 ++
->  include/asm-powerpc/m8260_pci.h   |  187 ++++++
->  include/asm-powerpc/mpc10x.h      |  180 ++++++
->  include/asm-powerpc/mpc52xx_psc.h |  191 ++++++
+hi,
+what's the issue with arch/ppc again? why is it being phased out? I am
+working with the IBM Blue Gene/L which is based on ppc440. I need to
+get a patch in too! :)
 
-Can't we move most of this to the dir where they are used,
-instead?
+I noticed that head_44x.S has been copied to arch/powerpc/kernel in
+the current head tree, but is it functional yet? has everything been
+moved to arch/powerpc ? how about the include files ?
 
+thanks!
+satya.
 
-Segher
+On 8/17/07, Johan Borkhuis <j.borkhuis@dutchspace.nl> wrote:
+> David Woodhouse wrote:
+> > On Fri, 2007-08-17 at 16:36 +0200, Johan Borkhuis wrote:
+> >
+> >> Well, this is one of the minor issues I have with the ppc architecture,
+> >> but I am quite happy with it. Even for this I could make a workaround,
+> >> but I guess this is something that other might stumble upon.
+> >>
+> >> I would like to move to powerpc, but for the moment there is no official
+> >> support for powerpc, for ppc there is, but I don't have the time to move
+> >> this to powerpc. So I am afraid I don't have much choice.
+> >>
+> >
+> > It's times like this you suddenly realise you should have paid the extra
+> > cash for a licence which allows you access to the source code?
+> >
+> >
+> That is not the problem: we have access to all the sources, but I am
+> waiting for the official support for the powerpc architecure. I am using
+> an MVME3100 board from Motorola and I know that they are working on it,
+> but it is not released (yet).
+>
+> Kind regards,
+>     Johan Borkhuis
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
