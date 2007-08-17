@@ -1,23 +1,17 @@
-Return-Path: <robertlazarski@gmail.com>
-Received: from ik-out-1112.google.com (ik-out-1112.google.com [66.249.90.183])
-	by ozlabs.org (Postfix) with ESMTP id 1C6B9DDDD8
+Return-Path: <ravi.rao@rflelect.com>
+Received: from noteshub1.teal.com (mail.teal.com [67.155.213.211])
+	by ozlabs.org (Postfix) with ESMTP id 26727DDE20
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 18 Aug 2007 00:03:35 +1000 (EST)
-Received: by ik-out-1112.google.com with SMTP id b35so118047ika
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Aug 2007 07:03:33 -0700 (PDT)
-Message-ID: <f87675ee0708170703t632db650o95fd7ec16f587c37@mail.gmail.com>
-Date: Fri, 17 Aug 2007 10:03:31 -0400
-From: "robert lazarski" <robertlazarski@gmail.com>
-Subject: Re: external IRQ's
-Cc: linuxppc-embedded@ozlabs.org
-In-Reply-To: <46C4C4E6.9070406@freescale.com>
+	Sat, 18 Aug 2007 00:22:33 +1000 (EST)
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: system hang in early_init
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <f87675ee0708160751u14f96dbcs3ad35a147b70a3f3@mail.gmail.com>
-	<46C47A1D.5030303@freescale.com>
-	<f87675ee0708161434i9f38b0dg123a767822cf7402@mail.gmail.com>
-	<46C4C4E6.9070406@freescale.com>
+Message-ID: <OF1175F445.15D3933E-ON8525733A.004D6246-8525733A.004D7B50@rflelect.com>
+From: ravi.rao@rflelect.com
+Date: Fri, 17 Aug 2007 10:07:21 -0400
+Content-Type: multipart/alternative;
+	boundary="=_alternative 004D7B488525733A_="
+Cc: IS_Department%TealCorp@rflelect.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,40 +22,81 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 8/16/07, Scott Wood <scottwood@freescale.com> wrote:
-> robert lazarski wrote:
-> > Why <1d 2 1e 2 22 2> ? I can't seem to parse these numbers
->
-> They alternate between IRQ numbers and level/sense information, and the
-> IRQ numbers are the internal IRQ number plus 16.
+This is a multipart message in MIME format.
+--=_alternative 004D7B488525733A_=
+Content-Type: text/plain; charset="US-ASCII"
 
-Thanks, The "internal IRQ number plus 16" part is the info I was
-lacking. However by 'internal IRQ' do you mean DMA? I just asked the
-hardware engineer and that's what he thought you may have meant.
+Hi Chris,
+    It seems that my PPC405 V2Pro system is hanging in the function 
+early_init, in arch/ppc/kernel/setup.c. Using LEDs, I've been able to 
+determine that the following line seems to be where it dies:
+memset_io(PTRRELOC(&__bss_start), 0, _end - __bss_start);
 
-So in '1d'  the first cell is the irq and the second cell is the sense
-level, how is the '1' calculated from 'internal IRQ number plus 16' .
-Thanks for you patience, I'm just not getting that part yet.
+Looking in System.map, I see that __bss_start is 0xC013F000 and _end is 
+0xC014DA60, with a whole bunch of stuff in between.
+Any idea what might cause this?
 
->
-> > - how do I
-> > know what to use for my external interupts 1,2 for phy's 0,1 using a
-> > 88E1121R and for external interupts 3,4 for phy's 2,3 using a 88E1111
-> > ?
->
-> I thought it was interrupts 0-3, not 1-4?
+I saw Ur posting on the net I am facing the same problem with my EP405 
+target . Did you resolve the problem if so can you please provide me some 
+info..
+Thanks,
+Ravishankar Govindarao
+RFL Electronics Inc.
+E-mail : Ravi.Rao@rflelect.com
+Voice: 973.334.3100 Ext. 233
+Fax: 973.334.3863
+ 
+CONFIDENTIALITY NOTE
+This e-mail, including any attachments, may contain confidential and/or 
+legally privileged information.  The Information is intended only for the 
+use of the individual or entity named on this e-mail .  If you are not the 
+intended recipient, you are hereby notified that any disclosure, copying, 
+distribution, or the taking of any action in reliance on the contents of 
+this transmitted Information is strictly prohibited.  Further, if you are 
+not the intended recipient, please notify us by return e-mail and delete 
+the Information promptly.
+ 
+ 
+ 
+--=_alternative 004D7B488525733A_=
+Content-Type: text/html; charset="US-ASCII"
 
-It was 0-3 ;-)
 
->
-> If, like the CDS board, you have level-triggered active-low phy
-> interrupts, then <0 1>, <1 1>, <2 1>, and <3 1>.  If not, then choose an
-> appropriate value for the second cell based on booting-without-of.txt.
->
-
-Kool, think I got this part. Do the 0-3 irq's in the mdio node
-influence in any way the ethernet nodes irq's - the <1d 2 1e 2 22 2>
-in this example ?
-
-Thanks!
-Robert
+<br><font size=2 face="sans-serif">Hi Chris,</font>
+<br><font size=2 face="sans-serif">&nbsp; &nbsp; </font><font size=3><tt>It
+seems that my PPC405 V2Pro system is hanging in the function <br>
+early_init, in arch/ppc/kernel/setup.c. Using LEDs, I've been able to <br>
+determine that the following line seems to be where it dies:<br>
+memset_io(PTRRELOC(&amp;__bss_start), 0, _end - __bss_start);<br>
+<br>
+Looking in System.map, I see that __bss_start is 0xC013F000 and _end is
+<br>
+0xC014DA60, with a whole bunch of stuff in between.<br>
+Any idea what might cause this?</tt></font>
+<br>
+<br><font size=2 face="sans-serif">I saw Ur posting on the net I am facing
+the same problem with my EP405 target . Did you resolve the problem if
+so can you please provide me some info..</font>
+<br><font size=2 face="sans-serif">Thanks,<br>
+</font><font size=2 face="Tms Rmn">Ravishankar Govindarao<br>
+RFL Electronics Inc.<br>
+E-mail</font><font size=1 face="Tms Rmn"> </font><font size=2 face="Tms Rmn">:
+</font><a href=mailto:Ravi.Rao@rflelect.com><font size=2 color=blue face="Tms Rmn"><u>Ravi.Rao@rflelect.com</u></font></a>
+<br><font size=2 face="Tms Rmn">Voice: 973.334.3100 Ext. 233<br>
+Fax: 973.334.3863</font>
+<p><font size=2 face="Tms Rmn">&nbsp;</font>
+<div align=center>
+<br><font size=2 color=blue face="Tms Rmn"><u>CONFIDENTIALITY NOTE</u></font></div>
+<br><font size=1 face="Tms Rmn">This e-mail, including any attachments,
+may contain confidential and/or legally privileged information.&nbsp; The
+Information is intended only for the use of the individual or entity named
+on this e-mail</font><font size=1 face="Tms Rmn"> </font><font size=1 face="Tms Rmn">.&nbsp;
+If you are not the intended recipient, you are hereby notified that any
+disclosure, copying, distribution, or the taking of any action in reliance
+on the contents of this transmitted Information is strictly prohibited.&nbsp;
+Further, if you are not the intended recipient, please notify us by return
+e-mail and delete the Information promptly.</font>
+<p><font size=2 face="Tms Rmn">&nbsp;</font>
+<p><font size=2 face="Tms Rmn">&nbsp;</font>
+<p><font size=3>&nbsp;</font>
+--=_alternative 004D7B488525733A_=--
