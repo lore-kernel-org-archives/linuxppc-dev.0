@@ -1,19 +1,32 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 30831DDE3B
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 23:24:34 +1000 (EST)
-In-Reply-To: <Pine.LNX.4.64.0708170000160.20987@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0708170000160.20987@blarg.am.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <1B3B9B5A-34D3-41DA-83F8-AFDE30DDFD3F@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Please pull from 'fixes-2.6.23' branch
-Date: Fri, 17 Aug 2007 08:26:21 -0500
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2F798DDDE7
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 23:35:31 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
+	l7HCSgvn025023
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 08:28:42 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l7HDZRj1261332
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 07:35:28 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l7HDZRAL024885
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 07:35:27 -0600
+Date: Fri, 17 Aug 2007 08:35:26 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: for-2.6.24 branch in powerpc.git created
+Message-ID: <20070817083526.75cc90be@weaponx.rchland.ibm.com>
+In-Reply-To: <18117.1110.955352.469650@cargo.ozlabs.ibm.com>
+References: <18117.1110.955352.469650@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,43 +36,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 17 Aug 2007 12:13:42 +1000
+Paul Mackerras <paulus@samba.org> wrote:
 
-On Aug 17, 2007, at 12:02 AM, Kumar Gala wrote:
+> I have made a for-2.6.24 branch in powerpc.git and pushed the
+> following patches to it.
 
-> Please pull from 'fixes-2.6.23' branch of
->
-> 	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git  
-> fixes-2.6.23
->
-> to receive the following updates:
->
->  arch/powerpc/boot/dts/mpc8544ds.dts        |   88 ++++------
->  arch/powerpc/boot/dts/mpc8641_hpcn.dts     |  114 ++----------
->  arch/powerpc/kernel/traps.c                |    4
->  arch/powerpc/platforms/85xx/Kconfig        |    1
->  arch/powerpc/platforms/85xx/mpc8544_ds.c   |  214  
-> +-----------------------
->  arch/powerpc/platforms/86xx/Kconfig        |    1
->  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |  224  
-> +------------------------
->  arch/powerpc/platforms/Kconfig             |    8
->  arch/powerpc/platforms/Makefile            |    3
->  arch/powerpc/platforms/fsl_uli1575.c       |  255 +++++++++++++++++ 
-> ++++++++++++
->  arch/powerpc/sysdev/rtc_cmos_setup.c       |   15 +
->  include/asm-powerpc/reg_booke.h            |   12 +
->  12 files changed, 386 insertions(+), 553 deletions(-)
->
-> Becky Bruce (1):
->       [POWERPC] Fix FSL BookE machine check reporting
->
-> Kumar Gala (2):
->       [POWERPC] Add interrupt resource for RTC CMOS driver
->       [POWERPC] Fix interrupt routing and setup of ULI M1575 on FSL  
-> boards
+Care to pick up the 4xx series (sending a separate pull request) and
+this one below?
 
-I've added the following fix to this branch:
+http://patchwork.ozlabs.org/linuxppc/patch?id=12799
 
-[PATCH] [POWERPC] Fix 8xx compile failure
-
-- k
+thx,
+josh
