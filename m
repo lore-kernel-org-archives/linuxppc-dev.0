@@ -1,29 +1,19 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 690F5DDDE7
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 23:46:31 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7HDkRtA026523
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 09:46:27 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l7HDkPgc269058
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 07:46:26 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l7HDkPNP000740
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 07:46:25 -0600
-Date: Fri, 17 Aug 2007 08:46:23 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: paulus@samba.org
-Subject: Please pull from 'for-2.6.24' branch
-Message-ID: <20070817084623.3e9835d0@weaponx.rchland.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2966DDDE25
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 23:48:28 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id l7HDmLUX017577
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 08:48:25 -0500
+Date: Fri, 17 Aug 2007 08:48:40 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: RFC: [PATCH] Fixup modpost warnings in head*.S for ppc32
+Message-ID: <Pine.LNX.4.64.0708170847120.29396@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,71 +23,169 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Paul,
+Addess the following modpost warnings we get out of the ppc32 head files:
 
-Please pull from the 'for-2.6.24' branch of
+WARNING: vmlinux.o(.text+0x358): Section mismatch: reference to .init.text:early_init (between 'skpinv' and 'interrupt_base')
+WARNING: vmlinux.o(.text+0x380): Section mismatch: reference to .init.text:machine_init (between 'skpinv' and 'interrupt_base')
+WARNING: vmlinux.o(.text+0x384): Section mismatch: reference to .init.text:MMU_init (between 'skpinv' and 'interrupt_base')
+WARNING: vmlinux.o(.text+0x3aa): Section mismatch: reference to .init.text:start_kernel (between 'skpinv' and 'interrupt_base')
+WARNING: vmlinux.o(.text+0x3ae): Section mismatch: reference to .init.text:start_kernel (between 'skpinv' and 'interrupt_base')
 
-	git://git.infradead.org/~jwboyer/powerpc.git for-2.6.24
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index 7d73a13..6d332db 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -48,20 +48,17 @@
+ 	mtspr	SPRN_DBAT##n##L,RB;	\
+ 1:
 
-It contains the patches sent in
+-	.text
++	.section	.text.head, "ax"
+ 	.stabs	"arch/powerpc/kernel/",N_SO,0,0,0f
+ 	.stabs	"head_32.S",N_SO,0,0,0f
+ 0:
+-	.globl	_stext
+-_stext:
++_ENTRY(_stext);
 
-http://ozlabs.org/pipermail/linuxppc-dev/2007-August/040512.html
+ /*
+  * _start is defined this way because the XCOFF loader in the OpenFirmware
+  * on the powermac expects the entry point to be a procedure descriptor.
+  */
+-	.text
+-	.globl	_start
+-_start:
++_ENTRY(_start);
+ 	/*
+ 	 * These are here for legacy reasons, the kernel used to
+ 	 * need to look like a coff function entry for the pmac
+@@ -841,7 +838,7 @@ relocate_kernel:
+  * r3 = dest addr, r4 = source addr, r5 = copy limit, r6 = start offset
+  * on exit, r3, r4, r5 are unchanged, r6 is updated to be >= r5.
+  */
+-_GLOBAL(copy_and_flush)
++_ENTRY(copy_and_flush)
+ 	addi	r5,r5,-4
+ 	addi	r6,r6,-4
+ 4:	li	r0,L1_CACHE_BYTES/4
+@@ -954,9 +951,9 @@ __secondary_start:
+  * included in CONFIG_6xx
+  */
+ #if !defined(CONFIG_6xx)
+-_GLOBAL(__save_cpu_setup)
++_ENTRY(__save_cpu_setup)
+ 	blr
+-_GLOBAL(__restore_cpu_setup)
++_ENTRY(__restore_cpu_setup)
+ 	blr
+ #endif /* !defined(CONFIG_6xx) */
 
-rebased on top of your for-2.6.24 branch with the acks from David
-included in the commits. Diffstat and shortlog below.
+@@ -1080,7 +1077,7 @@ start_here:
+ /*
+  * Set up the segment registers for a new context.
+  */
+-_GLOBAL(set_context)
++_ENTRY(set_context)
+ 	mulli	r3,r3,897	/* multiply context by skew factor */
+ 	rlwinm	r3,r3,4,8,27	/* VSID = (context & 0xfffff) << 4 */
+ 	addis	r3,r3,0x6000	/* Set Ks, Ku bits */
+diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
+index 8869596..7b0fda9 100644
+--- a/arch/powerpc/kernel/head_44x.S
++++ b/arch/powerpc/kernel/head_44x.S
+@@ -50,9 +50,9 @@
+  *   r7 - End of kernel command line string
+  *
+  */
+-	.text
+-_GLOBAL(_stext)
+-_GLOBAL(_start)
++	.section	.text.head, "ax"
++_ENTRY(_stext);
++_ENTRY(_start);
+ 	/*
+ 	 * Reserve a word at a fixed location to store the address
+ 	 * of abatron_pteptrs
+diff --git a/arch/powerpc/kernel/head_4xx.S b/arch/powerpc/kernel/head_4xx.S
+index adc7f80..a0c9151 100644
+--- a/arch/powerpc/kernel/head_4xx.S
++++ b/arch/powerpc/kernel/head_4xx.S
+@@ -53,9 +53,9 @@
+  *
+  * This is all going to change RSN when we add bi_recs.......  -- Dan
+  */
+-	.text
+-_GLOBAL(_stext)
+-_GLOBAL(_start)
++	.section	.text.head, "ax"
++_ENTRY(_stext);
++_ENTRY(_start);
 
-josh
+ 	/* Save parameters we are passed.
+ 	*/
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 901be47..a6ecdd6 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -38,12 +38,9 @@
+ #else
+ #define DO_8xx_CPU6(val, reg)
+ #endif
+-	.text
+-	.globl	_stext
+-_stext:
+-	.text
+-	.globl	_start
+-_start:
++	.section	.text.head, "ax"
++_ENTRY(_stext);
++_ENTRY(_start);
 
- arch/powerpc/Makefile                          |    2 +-
- arch/powerpc/boot/44x.c                        |   85 ---
- arch/powerpc/boot/44x.h                        |    5 +-
- arch/powerpc/boot/4xx.c                        |  192 ++++++
- arch/powerpc/boot/4xx.h                        |   21 +
- arch/powerpc/boot/Makefile                     |    7 +-
- arch/powerpc/boot/bamboo.c                     |   45 ++
- arch/powerpc/boot/dcr.h                        |   13 +
- arch/powerpc/boot/dts/bamboo.dts               |  244 ++++++++
- arch/powerpc/boot/ebony.c                      |    3 +-
- arch/powerpc/boot/treeboot-bamboo.c            |   27 +
- arch/powerpc/configs/bamboo_defconfig          |  775 ++++++++++++++++++++++++
- arch/powerpc/kernel/Makefile                   |    2 +-
- arch/powerpc/kernel/{head_4xx.S => head_40x.S} |    3 +-
- arch/powerpc/kernel/ppc_ksyms.c                |    2 +-
- arch/powerpc/kernel/time.c                     |    2 +-
- arch/powerpc/mm/{4xx_mmu.c => 40x_mmu.c}       |    4 +-
- arch/powerpc/mm/Makefile                       |    2 +-
- arch/powerpc/platforms/{4xx => 40x}/Kconfig    |   77 ---
- arch/powerpc/platforms/{4xx => 40x}/Makefile   |    0 
- arch/powerpc/platforms/44x/Kconfig             |   15 +-
- arch/powerpc/platforms/44x/Makefile            |    1 +
- arch/powerpc/platforms/44x/bamboo.c            |   66 ++
- arch/powerpc/platforms/Kconfig.cputype         |    1 +
- include/asm-powerpc/mmu-40x.h                  |   65 ++
- include/asm-powerpc/mmu.h                      |    3 +
- include/asm-powerpc/time.h                     |    2 +-
- 27 files changed, 1477 insertions(+), 187 deletions(-)
- delete mode 100644 arch/powerpc/boot/44x.c
- create mode 100644 arch/powerpc/boot/4xx.c
- create mode 100644 arch/powerpc/boot/4xx.h
- create mode 100644 arch/powerpc/boot/bamboo.c
- create mode 100644 arch/powerpc/boot/dts/bamboo.dts
- create mode 100644 arch/powerpc/boot/treeboot-bamboo.c
- create mode 100644 arch/powerpc/configs/bamboo_defconfig
- rename arch/powerpc/kernel/{head_4xx.S => head_40x.S} (100%)
- rename arch/powerpc/mm/{4xx_mmu.c => 40x_mmu.c} (97%)
- rename arch/powerpc/platforms/{4xx => 40x}/Kconfig (68%)
- rename arch/powerpc/platforms/{4xx => 40x}/Makefile (100%)
- create mode 100644 arch/powerpc/platforms/44x/bamboo.c
- create mode 100644 include/asm-powerpc/mmu-40x.h
+ /* MPC8xx
+  * This port was done on an MBX board with an 860.  Right now I only
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 1f155d3..d83cbbb 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -52,9 +52,9 @@
+  *   r7 - End of kernel command line string
+  *
+  */
+-	.text
+-_GLOBAL(_stext)
+-_GLOBAL(_start)
++	.section	.text.head, "ax"
++_ENTRY(_stext);
++_ENTRY(_start);
+ 	/*
+ 	 * Reserve a word at a fixed location to store the address
+ 	 * of abatron_pteptrs
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 0c45855..823a8cb 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -34,6 +34,8 @@ SECTIONS
 
-Josh Boyer (10):
-      Rename 4xx paths to 40x
-      4xx Kconfig cleanup
-      Rename 44x bootwrapper
-      4xx bootwrapper reworks
-      40x MMU
-      40x decrementer fixes
-      Fix 40x build
-      Bamboo DTS
-      Bamboo board support
-      Bamboo zImage wrapper
+ 	/* Text and gots */
+ 	.text : {
++		ALIGN_FUNCTION();
++		*(.text.head)
+ 		_text = .;
+ 		TEXT_TEXT
+ 		SCHED_TEXT
+diff --git a/include/asm-powerpc/ppc_asm.h b/include/asm-powerpc/ppc_asm.h
+index 6532572..4763f67 100644
+--- a/include/asm-powerpc/ppc_asm.h
++++ b/include/asm-powerpc/ppc_asm.h
+@@ -195,6 +195,11 @@ GLUE(.,name):
+
+ #else /* 32-bit */
+
++#define _ENTRY(n)	\
++	.stabs __stringify(n:F-1),N_FUN,0,0,n;\
++	.globl n;	\
++n:
++
+ #define _GLOBAL(n)	\
+ 	.text;		\
+ 	.stabs __stringify(n:F-1),N_FUN,0,0,n;\
