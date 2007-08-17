@@ -1,25 +1,20 @@
-Return-Path: <balbir@linux.vnet.ibm.com>
-Received: from ausmtp05.au.ibm.com (ausmtp05.au.ibm.com [202.81.18.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ausmtp05.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 71F45DDD0D
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2007 05:08:28 +1000 (EST)
-Message-ID: <46C5F226.8050603@linux.vnet.ibm.com>
-Date: Sat, 18 Aug 2007 00:38:22 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 61CE8DDDF9
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2007 06:15:30 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/3] [POWERPC] Copy over headers from arch/ppc to
+	arch/powerpc that we need
+Date: Fri, 17 Aug 2007 19:05:52 +0200
+References: <Pine.LNX.4.64.0708170157140.15311@blarg.am.freescale.net>
+	<Pine.LNX.4.64.0708170212210.15311@blarg.am.freescale.net>
+	<Pine.LNX.4.64.0708170213040.15311@blarg.am.freescale.net>
+In-Reply-To: <Pine.LNX.4.64.0708170213040.15311@blarg.am.freescale.net>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] Add scaled time to taskstats based process accounting
-References: <20070816070922.37B5370074@localhost.localdomain>
-	<46C3FC41.4000609@linux.vnet.ibm.com>
-	<19998.1187312981@neuling.org>
-	<20070817115951.e1368a7d.akpm@linux-foundation.org>
-In-Reply-To: <20070817115951.e1368a7d.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Michael Neuling <mikey@neuling.org>, Benjamin@ozlabs.org,
-	Jay Lan <jlan@engr.sgi.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: balbir@linux.vnet.ibm.com
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200708171905.52855.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,99 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andrew Morton wrote:
-> On Fri, 17 Aug 2007 11:09:41 +1000
-> Michael Neuling <mikey@neuling.org> wrote:
-> 
->> This adds items to the taststats struct to account for user and system
->> time based on scaling the CPU frequency and instruction issue rates.
->>
->> Adds account_(user|system)_time_scaled callbacks which architectures
->> can use to account for time using this mechanism.
->>
->> ...
->>
->> Index: linux-2.6-ozlabs/include/linux/kernel_stat.h
->> ===================================================================
->> --- linux-2.6-ozlabs.orig/include/linux/kernel_stat.h
->> +++ linux-2.6-ozlabs/include/linux/kernel_stat.h
->> @@ -52,7 +52,9 @@ static inline int kstat_irqs(int irq)
->>  }
->>  
->>  extern void account_user_time(struct task_struct *, cputime_t);
->> +extern void account_user_time_scaled(struct task_struct *, cputime_t);
->>  extern void account_system_time(struct task_struct *, int, cputime_t);
->> +extern void account_system_time_scaled(struct task_struct *, cputime_t);
->>  extern void account_steal_time(struct task_struct *, cputime_t);
->>  
->>  #endif /* _LINUX_KERNEL_STAT_H */
->> Index: linux-2.6-ozlabs/include/linux/sched.h
->> ===================================================================
->> --- linux-2.6-ozlabs.orig/include/linux/sched.h
->> +++ linux-2.6-ozlabs/include/linux/sched.h
->> @@ -1020,7 +1020,7 @@ struct task_struct {
->>  	int __user *clear_child_tid;		/* CLONE_CHILD_CLEARTID */
->>  
->>  	unsigned int rt_priority;
->> -	cputime_t utime, stime;
->> +	cputime_t utime, stime, utimescaled, stimescaled;
-> 
-> Adding 8 or 16 bytes to the task_struct for all architectures for something
-> which only powerpc uses?
-> 
-> Is there any prospect that other CPUs can use this?
-> 
->>  	unsigned long nvcsw, nivcsw; /* context switch counts */
->>  	struct timespec start_time; 		/* monotonic time */
->>  	struct timespec real_start_time;	/* boot based time */
->> Index: linux-2.6-ozlabs/include/linux/taskstats.h
->> ===================================================================
->> --- linux-2.6-ozlabs.orig/include/linux/taskstats.h
->> +++ linux-2.6-ozlabs/include/linux/taskstats.h
->> @@ -31,7 +31,7 @@
->>   */
->>  
->>  
->> -#define TASKSTATS_VERSION	5
->> +#define TASKSTATS_VERSION	6
->>  #define TS_COMM_LEN		32	/* should be >= TASK_COMM_LEN
->>  					 * in linux/sched.h */
->>  
->> @@ -85,9 +85,12 @@ struct taskstats {
->>  	 * On some architectures, value will adjust for cpu time stolen
->>  	 * from the kernel in involuntary waits due to virtualization.
->>  	 * Value is cumulative, in nanoseconds, without a corresponding count
->> -	 * and wraps around to zero silently on overflow
->> +	 * and wraps around to zero silently on overflow.  The
->> +	 * _scaled_ version accounts for cpus which can scale the
->> +	 * number of instructions executed each cycle.
->>  	 */
->>  	__u64	cpu_run_real_total;
->> +	__u64	cpu_scaled_run_real_total;
->>  
->>  	/* cpu "virtual" running time
->>  	 * Uses time intervals seen by the kernel i.e. no adjustment
->> @@ -142,6 +145,10 @@ struct taskstats {
->>  	__u64	write_char;		/* bytes written */
->>  	__u64	read_syscalls;		/* read syscalls */
->>  	__u64	write_syscalls;		/* write syscalls */
->> +
->> +	/* time accounting for SMT machines */
->> +	__u64	ac_utimescaled;		/* utime scaled on frequency etc */
->> +	__u64	ac_stimescaled;		/* stime scaled on frequency etc */
->>  	/* Extended accounting fields end */
-> 
-> umm, should we be adding new fields in the middle of this message?  I
-> thought we should only add to the end, for back-compatibility, but maybe I
-> misremember.
-> 
+On Friday 17 August 2007, Kumar Gala wrote:
+> To build arch/powerpc without including asm-ppc/ we need these files
+> in asm-powerpc/
 
+Looks mostly good, but
 
-You remember correctly, I've asked Michael to make those changes.
+>  include/asm-powerpc/8xx_immap.h   |  564 +++++++++++++++++
+>  include/asm-powerpc/commproc.h    |  692 ++++++++++++++++++++
+>  include/asm-powerpc/cpm2.h        | 1248 +++++++++++++++++++++++++++++++++++++
+>  include/asm-powerpc/gg2.h         |   61 ++
+>  include/asm-powerpc/highmem.h     |  135 ++++
+>  include/asm-powerpc/hydra.h       |  102 +++
+>  include/asm-powerpc/immap_cpm2.h  |  648 +++++++++++++++++++
+>  include/asm-powerpc/kgdb.h        |   57 ++
+>  include/asm-powerpc/m8260_pci.h   |  187 ++++++
 
+The m8260_pci.h file is not namespace clean, it defines macros like
+PCI_CFG_ADDR_REG that are likely to create conflicts at some point of
+time. Since the only file including this header is 
+arch/powerpc/platforms/82xx/m82xx_pci.h, I'd suggest merging the two,
+to make sure nobody can accidentally include it.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Some of the other files also have minor style bitrot, e.g. use of
+volatile pointers, typedefs and CamelCase identifiers, though none
+of them should prevent the move.
+
+	Arnd <><
