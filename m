@@ -1,16 +1,17 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH 1/2] Add scaled time to taskstats based process accounting
-In-reply-to: <46C52872.9060408@linux.vnet.ibm.com> 
-References: <20070816070922.37B5370074@localhost.localdomain>
-	<46C3FC41.4000609@linux.vnet.ibm.com>
-	<13529.1187310208@neuling.org>
-	<46C52872.9060408@linux.vnet.ibm.com>
-Date: Fri, 17 Aug 2007 14:56:44 +1000
-Message-ID: <13853.1187326604@neuling.org>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4148BDDE9F
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2007 15:01:56 +1000 (EST)
+Date: Fri, 17 Aug 2007 00:02:11 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Please pull from 'fixes-2.6.23' branch
+Message-ID: <Pine.LNX.4.64.0708170000160.20987@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,45 +21,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <46C52872.9060408@linux.vnet.ibm.com> you wrote:
-> Michael Neuling wrote:
-> >> I'd also request for you to add a cpu_scaled_run_real_total for use
-> >> by delay accounting. cpu_scaled_run_real_total should be similar in
-> >> functionality to cpu_run_real_total.
-> > 
-> > Will do.  Should I add cpu_scaled_run_real_total to the end of the
-> > struct taskstat, or next to cpu_run_real_total?
-> > 
-> 
-> Please add it to the end, that helps maintain binary compatibility
-> across all versions of taskstats.
+Please pull from 'fixes-2.6.23' branch of
 
-OK
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git fixes-2.6.23
 
-> 
-> >>>  	/* Note: this timer irq context must be accounted for as well. */
-> >>> -	if (user_tick)
-> >>> +	if (user_tick) {
-> >>>  		account_user_time(p, jiffies_to_cputime(1));
-> >>> -	else
-> >>> +		account_user_time_scaled(p, jiffies_to_cputime(1));
-> >>> +	} else {
-> >>>  		account_system_time(p, HARDIRQ_OFFSET, jiffies_to_cputime(1));
-> >>> +		account_system_time_scaled(p, jiffies_to_cputime(1));
-> >>> +	}
-> >> I am a little confused here, scaled accounting and regular accounting
-> >> go hand in hand?
-> > 
-> > We need to account for scaled and normal time in this generic code.
-> > All other calls to account_(user|system)_time are in arch code.  
-> > 
-> 
-> So the assumption here is that we ran at full frequency during
-> this time, is my understanding correct?
+to receive the following updates:
 
-Yes.  
+ arch/powerpc/boot/dts/mpc8544ds.dts        |   88 ++++------
+ arch/powerpc/boot/dts/mpc8641_hpcn.dts     |  114 ++----------
+ arch/powerpc/kernel/traps.c                |    4
+ arch/powerpc/platforms/85xx/Kconfig        |    1
+ arch/powerpc/platforms/85xx/mpc8544_ds.c   |  214 +-----------------------
+ arch/powerpc/platforms/86xx/Kconfig        |    1
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |  224 +------------------------
+ arch/powerpc/platforms/Kconfig             |    8
+ arch/powerpc/platforms/Makefile            |    3
+ arch/powerpc/platforms/fsl_uli1575.c       |  255 +++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/rtc_cmos_setup.c       |   15 +
+ include/asm-powerpc/reg_booke.h            |   12 +
+ 12 files changed, 386 insertions(+), 553 deletions(-)
 
-I guess we could keep a per CPU last scaling factor for this case
-(similar to what we are storing in the POWERPC paca)
+Becky Bruce (1):
+      [POWERPC] Fix FSL BookE machine check reporting
 
-Mikey
+Kumar Gala (2):
+      [POWERPC] Add interrupt resource for RTC CMOS driver
+      [POWERPC] Fix interrupt routing and setup of ULI M1575 on FSL boards
