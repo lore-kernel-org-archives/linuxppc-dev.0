@@ -1,19 +1,10 @@
-Return-Path: <b04825@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 76011DDE1E
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2007 02:33:40 +1000 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org, Geert.Uytterhoeven@sonycom.com,
-	michael@ellerman.id.au, paulus@samba.org, galak@kernel.crashing.org,
-	benh@kernel.crashing.org
-Subject: [PATCH] powerpc: add clrsetbits macros
-Date: Fri, 17 Aug 2007 11:33:07 -0500
-Message-Id: <1187368387816-git-send-email-timur@freescale.com>
-Cc: Timur Tabi <timur@freescale.com>
+Return-Path: <dale@farnsworth.org>
+Date: 17 Aug 2007 09:32:55 -0700
+Message-ID: <20070817163255.26694.qmail@farnsworth.org>
+From: "Dale Farnsworth" <dale@farnsworth.org>
+To: galak@kernel.crashing.org, Linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] [POWERPC] Add interrupt resource for RTC CMOS driver
+In-Reply-To: <Pine.LNX.4.64.0708170002400.21006@blarg.am.freescale.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,61 +14,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds the clrsetbits_xxx() macros, which are used to set and clear
-multiple bits in a single read-modify-write operation.  Specify the bits to
-clear in the 'clear' parameter and the bits to set in the 'set' parameter.
-These macros can also be used to set a multiple-bit bit pattern using a mask,
-by specifying the mask in the 'clear' parameter and the new bit pattern in the
-'set' parameter.  There are big-endian and little-endian versions for 8, 16,
-32, and 64 bits.
+> The RTC CMOS driver expects the interrupt to be a resource of the platform
+> device.  Use a fixed interrupt value of 8 since on PPC if we are using this
+> its off an i8259 which we ensure has interrupt numbers 0..15.
+> 
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+>  arch/powerpc/sysdev/rtc_cmos_setup.c |   15 +++++++++++----
+>  1 files changed, 11 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/powerpc/sysdev/rtc_cmos_setup.c
+> b/arch/powerpc/sysdev/rtc_cmos_setup.c
+> index e276048..1d2be7d 100644
+> --- a/arch/powerpc/sysdev/rtc_cmos_setup.c
+> +++ b/arch/powerpc/sysdev/rtc_cmos_setup.c
+> @@ -20,14 +20,16 @@ static int  __init add_rtc(void)
+>  {
+>  	struct device_node *np;
+>  	struct platform_device *pd;
+> -	struct resource res;
+> +	struct resource res[2];
+>  	int ret;
+> 
+> +	memset(&res, 0, sizeof(res));
+> +
+>  	np = of_find_compatible_node(NULL, NULL, "pnpPNP,b00");
+>  	if (!np)
+>  		return -ENODEV;
+> 
+> -	ret = of_address_to_resource(np, 0, &res);
+> +	ret = of_address_to_resource(np, 0, &res[0]);
+>  	of_node_put(np);
+>  	if (ret)
+>  		return ret;
+> @@ -36,11 +38,16 @@ static int  __init add_rtc(void)
+>  	 * RTC_PORT(x) is hardcoded in asm/mc146818rtc.h.  Verify that the
+>  	 * address provided by the device node matches.
+>  	 */
+> -	if (res.start != RTC_PORT(0))
+> +	if (res[0].start != RTC_PORT(0))
+>  		return -EINVAL;
+> 
+> +	res[1].start = 8;
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
+Please add a comment to the source code (similar to that in changelog)
+explaining the reason for the 8.
 
-Renamed setclrbits to clrsetbits, since the clear is done first.
-
-This patch is for for-2.6.24, assuming I can get everyone to like it.
-
- include/asm-powerpc/io.h |   27 +++++++++++++++++++++++++++
- 1 files changed, 27 insertions(+), 0 deletions(-)
-
-diff --git a/include/asm-powerpc/io.h b/include/asm-powerpc/io.h
-index bb8d965..0af2f7e 100644
---- a/include/asm-powerpc/io.h
-+++ b/include/asm-powerpc/io.h
-@@ -734,6 +734,33 @@ static inline void * bus_to_virt(unsigned long address)
- #define setbits16(_addr, _v) out_be16((_addr), in_be16(_addr) |  (_v))
- #define clrbits16(_addr, _v) out_be16((_addr), in_be16(_addr) & ~(_v))
- 
-+/* Clear and set bits in one shot.  These macros can be used to clear and
-+ * set multiple bits in a register using a single read-modify-write.  These
-+ * macros can also be used to set a multiple-bit bit pattern using a mask,
-+ * by specifying the mask in the 'clear' parameter and the new bit pattern
-+ * in the 'set' parameter.
-+ */
-+
-+#ifdef __powerpc64__
-+#define clrsetbits_be64(addr, clear, set) \
-+	out_be64((addr), (in_be64(addr) & ~(clear)) | (set))
-+#define clrsetbits_le64(addr, clear, set) \
-+	out_le64((addr), (in_le64(addr) & ~(clear)) | (set))
-+#endif
-+
-+#define clrsetbits_be32(addr, clear, set) \
-+	out_be32((addr), (in_be32(addr) & ~(clear)) | (set))
-+#define clrsetbits_be16(addr, clear, set) \
-+	out_be16((addr), (in_be16(addr) & ~(clear)) | (set))
-+
-+#define clrsetbits_le32(addr, clear, set) \
-+	out_le32((addr), (in_le32(addr) & ~(clear)) | (set))
-+#define clrsetbits_le16(addr, clear, set) \
-+	out_le16((addr), (in_le16(addr) & ~(clear)) | (set))
-+
-+#define clrsetbits_8(addr, clear, set) \
-+	out_8((addr), (in_8(addr) & ~(clear)) | (set))
-+
- #endif /* __KERNEL__ */
- 
- #endif /* _ASM_POWERPC_IO_H */
--- 
-1.5.2.4
+-Dale Farnsworth
