@@ -1,16 +1,22 @@
-Return-Path: <mikpe@user.it.uu.se>
-Received: from aun.it.uu.se (aun.it.uu.se [130.238.12.36])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7705ADDE33
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2007 07:08:24 +1000 (EST)
-Date: Fri, 17 Aug 2007 22:51:23 +0200 (MEST)
-Message-Id: <200708172051.l7HKpNtq009682@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: alan@lxorguk.ukuu.org.uk, jeff@garzik.org
-Subject: Re: [PATCH 1/1] libata: pata_pdc2027x PLL input clock fix
-Cc: dwm@enoyolf.org, mikpe@it.uu.se, linux-ide@vger.kernel.org,
-	bahadir.balban@gmail.com, linuxppc-dev@ozlabs.org, albertl@mail.com
+	by ozlabs.org (Postfix) with ESMTP id 05468DDE98
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2007 09:25:42 +1000 (EST)
+In-Reply-To: <Pine.LNX.4.64.0708170213040.15311@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0708170157140.15311@blarg.am.freescale.net>
+	<Pine.LNX.4.64.0708170212210.15311@blarg.am.freescale.net>
+	<Pine.LNX.4.64.0708170213040.15311@blarg.am.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <a79f1cbe580d675c6bb231e4e3a0326b@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/3] [POWERPC] Copy over headers from arch/ppc to
+	arch/powerpc that we need
+Date: Sat, 18 Aug 2007 01:25:34 +0200
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,15 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 16 Aug 2007 21:19:40 +0100, Alan Cox wrote:
-> > > Unfortunately this breaks pata_pdc2027x on my PowerMac G3:
-> > 
-> > Did this ever get resolved?
-> 
-> All went quiet so I assume its gone away ?
+>  include/asm-powerpc/8xx_immap.h   |  564 +++++++++++++++++
+>  include/asm-powerpc/commproc.h    |  692 ++++++++++++++++++++
+>  include/asm-powerpc/cpm2.h        | 1248 
+> +++++++++++++++++++++++++++++++++++++
+>  include/asm-powerpc/gg2.h         |   61 ++
+>  include/asm-powerpc/highmem.h     |  135 ++++
+>  include/asm-powerpc/hydra.h       |  102 +++
+>  include/asm-powerpc/immap_cpm2.h  |  648 +++++++++++++++++++
+>  include/asm-powerpc/kgdb.h        |   57 ++
+>  include/asm-powerpc/m8260_pci.h   |  187 ++++++
+>  include/asm-powerpc/mpc10x.h      |  180 ++++++
+>  include/asm-powerpc/mpc52xx_psc.h |  191 ++++++
 
--ENOTIME
+Can't we move most of this to the dir where they are used,
+instead?
 
-The regression is still there in 2.6.23-rc3 (I just checked),
-but I haven't had time to debug it yet. I'll try to do something
-about it this weekend.
+
+Segher
