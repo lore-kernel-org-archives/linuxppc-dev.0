@@ -1,17 +1,19 @@
-Return-Path: <djiang@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id D4073DDE3E
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2007 03:27:48 +1000 (EST)
-Message-ID: <46C5DBA1.4030306@mvista.com>
-Date: Fri, 17 Aug 2007 10:32:17 -0700
-From: Dave Jiang <djiang@mvista.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: for-2.6.24 branch in powerpc.git created
-References: <18117.1110.955352.469650@cargo.ozlabs.ibm.com>
-In-Reply-To: <18117.1110.955352.469650@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 05E02DDD06
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2007 03:53:41 +1000 (EST)
+Date: Fri, 17 Aug 2007 12:53:20 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: jgarzik@pobox.com
+Subject: [PATCH 0/7] fs_enet patches
+Message-ID: <20070817175320.GA8259@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,22 +23,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras wrote:
-> I have made a for-2.6.24 branch in powerpc.git and pushed the
-> following patches to it.
-> 
-> Paul.
+The following patchset includes several updates for the fs_enet driver,
+the most prominent being conversion to an of_platform device (with
+platform_device code remaining until arch/ppc goes away).  It also
+includes a generic MDIO bitbang library, and converts fs_enet to use it.
 
-Paul,
-  Are these two patches ready for 2.6.24? Thx!
-http://patchwork.ozlabs.org/linuxppc/patch?id=12627
-http://patchwork.ozlabs.org/linuxppc/patch?id=12749
+I have a powerpc patch (ep8248e board support) that depends on the MDIO
+bitbang library, so it may be better to ack them for Paul to pick up --
+but if not, I can postpone the ep8248e patch until the merge window.
 
--- 
-
-------------------------------------------------------
-Dave Jiang
-Software Engineer
-MontaVista Software, Inc.
-http://www.mvista.com
-------------------------------------------------------
+-Scott
