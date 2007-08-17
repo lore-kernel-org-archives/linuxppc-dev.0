@@ -1,20 +1,19 @@
 Return-Path: <b07421@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0CF23DDEDB
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2007 03:54:21 +1000 (EST)
-Date: Fri, 17 Aug 2007 12:54:08 -0500
+	by ozlabs.org (Postfix) with ESMTP id 20FEEDDE41
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2007 04:17:32 +1000 (EST)
+Date: Fri, 17 Aug 2007 13:17:18 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: jgarzik@pobox.com
-Subject: [PATCH 6/7] fs_enet: Be an of_platform device when
+Subject: [PATCH 6/7 v2] fs_enet: Be an of_platform device when
 	CONFIG_PPC_CPM_NEW_BINDING is set.
-Message-ID: <20070817175408.GF9218@ld0162-tx32.am.freescale.net>
+Message-ID: <20070817181718.GA15792@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070817175320.GA8259@ld0162-tx32.am.freescale.net>
 Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -38,6 +37,9 @@ mii-bitbang.c now also uses the generic bitbang code.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
+Sorry, the previous version of this patch had bb_ops in the wrong
+place, and wouldn't build when not using the new binding.
+
  drivers/net/fs_enet/Kconfig        |    1 +
  drivers/net/fs_enet/fs_enet-main.c |  286 ++++++++++++++++++++++--
  drivers/net/fs_enet/fs_enet.h      |   55 +-----
@@ -62,7 +64,7 @@ index e27ee21..2765e49 100644
  
  config FS_ENET_HAS_FEC
 diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
-index a4b76cd..33cdabf 100644
+index 0ec30a8..7bf29a2 100644
 --- a/drivers/net/fs_enet/fs_enet-main.c
 +++ b/drivers/net/fs_enet/fs_enet-main.c
 @@ -44,12 +44,18 @@
@@ -498,7 +500,7 @@ index f8c7ee8..a130332 100644
  void fs_init_bds(struct net_device *dev);
  void fs_cleanup_bds(struct net_device *dev);
 diff --git a/drivers/net/fs_enet/mac-fcc.c b/drivers/net/fs_enet/mac-fcc.c
-index 8b30361..10e2a2b 100644
+index 8b30361..dc943fd 100644
 --- a/drivers/net/fs_enet/mac-fcc.c
 +++ b/drivers/net/fs_enet/mac-fcc.c
 @@ -42,6 +42,10 @@
@@ -683,7 +685,7 @@ index 8b30361..10e2a2b 100644
  
  /*************************************************************************/
 diff --git a/drivers/net/fs_enet/mac-fec.c b/drivers/net/fs_enet/mac-fec.c
-index 04b4f80..ef305e2 100644
+index 04b4f80..d1259b5 100644
 --- a/drivers/net/fs_enet/mac-fec.c
 +++ b/drivers/net/fs_enet/mac-fec.c
 @@ -43,6 +43,10 @@
@@ -745,7 +747,7 @@ index 04b4f80..ef305e2 100644
  	u32 siel;
  
 diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
-index 7540966..6ec6b7d 100644
+index 7540966..0cb0b71 100644
 --- a/drivers/net/fs_enet/mac-scc.c
 +++ b/drivers/net/fs_enet/mac-scc.c
 @@ -43,6 +43,10 @@
@@ -858,7 +860,7 @@ index 7540966..6ec6b7d 100644
  	u32 siel;
  
 diff --git a/drivers/net/fs_enet/mii-bitbang.c b/drivers/net/fs_enet/mii-bitbang.c
-index d384010..fc92ec7 100644
+index d384010..9262e31 100644
 --- a/drivers/net/fs_enet/mii-bitbang.c
 +++ b/drivers/net/fs_enet/mii-bitbang.c
 @@ -14,301 +14,267 @@
@@ -1000,6 +1002,14 @@ index d384010..fc92ec7 100644
  }
  
 -static inline void mii_delay(struct bb_info *bitbang )
++static struct mdio_bitbang_ops bb_ops = {
++	.owner = THIS_MODULE,
++	.set_mdc = mdc,
++	.set_mdio_dir = mdio_dir,
++	.set_mdio_data = mdio,
++	.get_mdio_data = mdio_read,
++};
++
 +#ifdef CONFIG_PPC_CPM_NEW_BINDING
 +static int __devinit fs_mii_bitbang_init(struct mii_bus *bus,
 +                                         struct device_node *np)
@@ -1122,14 +1132,6 @@ index d384010..fc92ec7 100644
  }
  
 -static int fs_enet_mii_bb_read(struct mii_bus *bus , int phy_id, int location)
-+static struct mdio_bitbang_ops bb_ops = {
-+	.owner = THIS_MODULE,
-+	.set_mdc = mdc,
-+	.set_mdio_dir = mdio_dir,
-+	.set_mdio_data = mdio,
-+	.get_mdio_data = mdio_read,
-+};
-+
 +static int __devinit fs_enet_mdio_probe(struct of_device *ofdev,
 +                                        const struct of_device_id *match)
  {
@@ -1414,7 +1416,7 @@ index d384010..fc92ec7 100644
 -
 +#endif
 diff --git a/drivers/net/fs_enet/mii-fec.c b/drivers/net/fs_enet/mii-fec.c
-index 53db696..71e07b0 100644
+index 53db696..7de3d05 100644
 --- a/drivers/net/fs_enet/mii-fec.c
 +++ b/drivers/net/fs_enet/mii-fec.c
 @@ -36,6 +36,10 @@
