@@ -1,14 +1,12 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@osdl.org>
-Subject: [PATCH 1/2] Add scaled time to taskstats based process accounting 
-In-reply-to: <46C3FC41.4000609@linux.vnet.ibm.com> 
-References: <20070816070922.37B5370074@localhost.localdomain>
-	<46C3FC41.4000609@linux.vnet.ibm.com>
-Date: Fri, 17 Aug 2007 11:09:41 +1000
-Message-ID: <19998.1187312981@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	balbir@linux.vnet.ibm.com
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <18116.61743.176219.283510@cargo.ozlabs.ibm.com>
+Date: Fri, 17 Aug 2007 10:51:59 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@linux-foundation.org
+Subject: Please pull powerpc.git merge branch
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,192 +16,137 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds items to the taststats struct to account for user and system
-time based on scaling the CPU frequency and instruction issue rates.
+Linus,
 
-Adds account_(user|system)_time_scaled callbacks which architectures
-can use to account for time using this mechanism.
+Please do
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
-Updated based on comments from Balbir
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
- include/linux/kernel_stat.h |    2 ++
- include/linux/sched.h       |    2 +-
- include/linux/taskstats.h   |   11 +++++++++--
- kernel/delayacct.c          |    6 ++++++
- kernel/fork.c               |    2 ++
- kernel/sched.c              |   21 +++++++++++++++++++++
- kernel/timer.c              |    7 +++++--
- kernel/tsacct.c             |    4 ++++
- 8 files changed, 50 insertions(+), 5 deletions(-)
+I have added one more patch from Ilpo J=E4rvinen since the last pull
+request, removing an incorrect semicolon.
 
-Index: linux-2.6-ozlabs/include/linux/kernel_stat.h
-===================================================================
---- linux-2.6-ozlabs.orig/include/linux/kernel_stat.h
-+++ linux-2.6-ozlabs/include/linux/kernel_stat.h
-@@ -52,7 +52,9 @@ static inline int kstat_irqs(int irq)
- }
- 
- extern void account_user_time(struct task_struct *, cputime_t);
-+extern void account_user_time_scaled(struct task_struct *, cputime_t);
- extern void account_system_time(struct task_struct *, int, cputime_t);
-+extern void account_system_time_scaled(struct task_struct *, cputime_t);
- extern void account_steal_time(struct task_struct *, cputime_t);
- 
- #endif /* _LINUX_KERNEL_STAT_H */
-Index: linux-2.6-ozlabs/include/linux/sched.h
-===================================================================
---- linux-2.6-ozlabs.orig/include/linux/sched.h
-+++ linux-2.6-ozlabs/include/linux/sched.h
-@@ -1020,7 +1020,7 @@ struct task_struct {
- 	int __user *clear_child_tid;		/* CLONE_CHILD_CLEARTID */
- 
- 	unsigned int rt_priority;
--	cputime_t utime, stime;
-+	cputime_t utime, stime, utimescaled, stimescaled;
- 	unsigned long nvcsw, nivcsw; /* context switch counts */
- 	struct timespec start_time; 		/* monotonic time */
- 	struct timespec real_start_time;	/* boot based time */
-Index: linux-2.6-ozlabs/include/linux/taskstats.h
-===================================================================
---- linux-2.6-ozlabs.orig/include/linux/taskstats.h
-+++ linux-2.6-ozlabs/include/linux/taskstats.h
-@@ -31,7 +31,7 @@
-  */
- 
- 
--#define TASKSTATS_VERSION	5
-+#define TASKSTATS_VERSION	6
- #define TS_COMM_LEN		32	/* should be >= TASK_COMM_LEN
- 					 * in linux/sched.h */
- 
-@@ -85,9 +85,12 @@ struct taskstats {
- 	 * On some architectures, value will adjust for cpu time stolen
- 	 * from the kernel in involuntary waits due to virtualization.
- 	 * Value is cumulative, in nanoseconds, without a corresponding count
--	 * and wraps around to zero silently on overflow
-+	 * and wraps around to zero silently on overflow.  The
-+	 * _scaled_ version accounts for cpus which can scale the
-+	 * number of instructions executed each cycle.
- 	 */
- 	__u64	cpu_run_real_total;
-+	__u64	cpu_scaled_run_real_total;
- 
- 	/* cpu "virtual" running time
- 	 * Uses time intervals seen by the kernel i.e. no adjustment
-@@ -142,6 +145,10 @@ struct taskstats {
- 	__u64	write_char;		/* bytes written */
- 	__u64	read_syscalls;		/* read syscalls */
- 	__u64	write_syscalls;		/* write syscalls */
-+
-+	/* time accounting for SMT machines */
-+	__u64	ac_utimescaled;		/* utime scaled on frequency etc */
-+	__u64	ac_stimescaled;		/* stime scaled on frequency etc */
- 	/* Extended accounting fields end */
- 
- #define TASKSTATS_HAS_IO_ACCOUNTING
-Index: linux-2.6-ozlabs/kernel/delayacct.c
-===================================================================
---- linux-2.6-ozlabs.orig/kernel/delayacct.c
-+++ linux-2.6-ozlabs/kernel/delayacct.c
-@@ -115,6 +115,12 @@ int __delayacct_add_tsk(struct taskstats
- 	tmp += timespec_to_ns(&ts);
- 	d->cpu_run_real_total = (tmp < (s64)d->cpu_run_real_total) ? 0 : tmp;
- 
-+	tmp = (s64)d->cpu_scaled_run_real_total;
-+	cputime_to_timespec(tsk->utimescaled + tsk->stimescaled, &ts);
-+	tmp += timespec_to_ns(&ts);
-+	d->cpu_scaled_run_real_total =
-+		(tmp < (s64)d->cpu_scaled_run_real_total) ? 0 : tmp;
-+
- 	/*
- 	 * No locking available for sched_info (and too expensive to add one)
- 	 * Mitigate by taking snapshot of values
-Index: linux-2.6-ozlabs/kernel/fork.c
-===================================================================
---- linux-2.6-ozlabs.orig/kernel/fork.c
-+++ linux-2.6-ozlabs/kernel/fork.c
-@@ -1045,6 +1045,8 @@ static struct task_struct *copy_process(
- 
- 	p->utime = cputime_zero;
- 	p->stime = cputime_zero;
-+	p->utimescaled = cputime_zero;
-+	p->stimescaled = cputime_zero;
- 
- #ifdef CONFIG_TASK_XACCT
- 	p->rchar = 0;		/* I/O counter: bytes read */
-Index: linux-2.6-ozlabs/kernel/sched.c
-===================================================================
---- linux-2.6-ozlabs.orig/kernel/sched.c
-+++ linux-2.6-ozlabs/kernel/sched.c
-@@ -3249,6 +3249,16 @@ void account_user_time(struct task_struc
- }
- 
- /*
-+ * Account scaled user cpu time to a process.
-+ * @p: the process that the cpu time gets accounted to
-+ * @cputime: the cpu time spent in user space since the last update
-+ */
-+void account_user_time_scaled(struct task_struct *p, cputime_t cputime)
-+{
-+	p->utimescaled = cputime_add(p->utimescaled, cputime);
-+}
-+
-+/*
-  * Account system cpu time to a process.
-  * @p: the process that the cpu time gets accounted to
-  * @hardirq_offset: the offset to subtract from hardirq_count()
-@@ -3280,6 +3290,17 @@ void account_system_time(struct task_str
- }
- 
- /*
-+ * Account scaled system cpu time to a process.
-+ * @p: the process that the cpu time gets accounted to
-+ * @hardirq_offset: the offset to subtract from hardirq_count()
-+ * @cputime: the cpu time spent in kernel space since the last update
-+ */
-+void account_system_time_scaled(struct task_struct *p, cputime_t cputime)
-+{
-+	p->stimescaled = cputime_add(p->stimescaled, cputime);
-+}
-+
-+/*
-  * Account for involuntary wait time.
-  * @p: the process from which the cpu time has been stolen
-  * @steal: the cpu time spent in involuntary wait
-Index: linux-2.6-ozlabs/kernel/timer.c
-===================================================================
---- linux-2.6-ozlabs.orig/kernel/timer.c
-+++ linux-2.6-ozlabs/kernel/timer.c
-@@ -826,10 +826,13 @@ void update_process_times(int user_tick)
- 	int cpu = smp_processor_id();
- 
- 	/* Note: this timer irq context must be accounted for as well. */
--	if (user_tick)
-+	if (user_tick) {
- 		account_user_time(p, jiffies_to_cputime(1));
--	else
-+		account_user_time_scaled(p, jiffies_to_cputime(1));
-+	} else {
- 		account_system_time(p, HARDIRQ_OFFSET, jiffies_to_cputime(1));
-+		account_system_time_scaled(p, jiffies_to_cputime(1));
-+	}
- 	run_local_timers();
- 	if (rcu_pending(cpu))
- 		rcu_check_callbacks(cpu, user_tick);
-Index: linux-2.6-ozlabs/kernel/tsacct.c
-===================================================================
---- linux-2.6-ozlabs.orig/kernel/tsacct.c
-+++ linux-2.6-ozlabs/kernel/tsacct.c
-@@ -62,6 +62,10 @@ void bacct_add_tsk(struct taskstats *sta
- 	rcu_read_unlock();
- 	stats->ac_utime	 = cputime_to_msecs(tsk->utime) * USEC_PER_MSEC;
- 	stats->ac_stime	 = cputime_to_msecs(tsk->stime) * USEC_PER_MSEC;
-+	stats->ac_utimescaled =
-+		cputime_to_msecs(tsk->utimescaled) * USEC_PER_MSEC;
-+	stats->ac_stimescaled =
-+		cputime_to_msecs(tsk->stimescaled) * USEC_PER_MSEC;
- 	stats->ac_minflt = tsk->min_flt;
- 	stats->ac_majflt = tsk->maj_flt;
- 
+Paul.
+
+ arch/powerpc/boot/flatdevtree.c            |   18 ------------------
+ arch/powerpc/kernel/Makefile               |    1 +
+ arch/powerpc/kernel/misc=5F32.S              |   12 +++++++++++-
+ arch/powerpc/mm/hash=5Futils=5F64.c            |    2 +-
+ arch/powerpc/platforms/cell/spu=5Fsyscalls.c |    1 +
+ arch/powerpc/platforms/ps3/device-init.c   |    2 +-
+ arch/ppc/kernel/misc.S                     |   12 +++++++++++-
+ 7 files changed, 26 insertions(+), 22 deletions(-)
+
+commit 2b02d13996fe28478e45605de9bd8bdca25718de
+Author: Ilpo J=C3=A4rvinen <ilpo.jarvinen@helsinki.fi>
+Date:   Thu Aug 16 08:03:35 2007 +1000
+
+    [POWERPC] Fix invalid semicolon after if statement
+   =20
+    A similar fix to netfilter from Eric Dumazet inspired me to
+    look around a bit by using some grep/sed stuff as looking for
+    this kind of bugs seemed easy to automate.  This is one of them
+    I found where it looks like this semicolon is not valid.
+   =20
+    Signed-off-by: Ilpo J=C3=A4rvinen <ilpo.jarvinen@helsinki.fi>
+    Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
+
+commit 2de69124e86682c3427adb4136e097854841e467
+Author: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Date:   Wed Aug 15 02:30:13 2007 +1000
+
+    [POWERPC] ps3: Fix no storage devices found
+   =20
+    Fix probing of PS3 storage devices: in the success case, we should =
+set
+    `error' to zero, not `result'.
+   =20
+    Without this patch no storage devices are found.
+   =20
+    Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
+
+commit 55a910a81d0c3014abc20b9efa73c595b3e68339
+Author: Roland McGrath <roland@redhat.com>
+Date:   Sat Aug 11 09:03:11 2007 +1000
+
+    [POWERPC] Fix for assembler -g
+   =20
+    ppc64 does the unusual thing of using #include on a compiler-genera=
+ted
+    assembly file (lparmap.s) from an assembly source file (head=5F64.S=
+).
+    This runs afoul of my recent patch to pass -gdwarf2 to the assemble=
+r
+    under CONFIG=5FDEBUG=5FINFO.  This patch avoids the problem by disa=
+bling
+    DWARF generation (-g0) when producing lparmap.s.
+   =20
+    Signed-off-by: Roland McGrath <roland@redhat.com>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
+
+commit aa1cf632bd6f998cb4567ccf1a9d2e5daaa9fb44
+Author: David Gibson <david@gibson.dropbear.id.au>
+Date:   Tue Aug 7 14:20:50 2007 +1000
+
+    [POWERPC] Fix small race in 44x tlbie function
+   =20
+    The 440 family of processors don't have a tlbie instruction.  So, w=
+e
+    implement TLB invalidates by explicitly searching the TLB with tlbs=
+x.,
+    then clobbering the relevant entry, if any.  Unfortunately the PID =
+for
+    the search needs to be stored in the MMUCR register, which is also
+    used by the TLB miss handler.  Interrupts were enabled in =5Ftlbie(=
+), so
+    an interrupt between loading the MMUCR and the tlbsx could cause
+    incorrect search results, and thus a failure to invalide TLB entrie=
+s
+    which needed to be invalidated.
+   =20
+    This fixes the problem in both arch/ppc and arch/powerpc by inhibit=
+ing
+    interrupts (even critical and debug interrupts) across the relevant=
+
+    instructions.
+   =20
+    Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+    Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
+
+commit fa6b769a8e981afea869285982640168f76774df
+Author: Becky Bruce <becky.bruce@freescale.com>
+Date:   Sat May 12 03:49:39 2007 +1000
+
+    [POWERPC] Remove unused code causing a compile warning
+   =20
+    AFAICT, nobody is using ft=5Fordered(), and it causes a build warni=
+ng
+    to be generated.  This patch cleans that up by removing the functio=
+n
+    and the commented-out code that calls it.
+   =20
+    Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
+    Acked-by: David Gibson <david@gibson.dropbear.id.au>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
+
+commit ad941fe4b6b83999863f49dfba7b3d2cebc4ced5
+Author: Jeremy Kerr <jk@ozlabs.org>
+Date:   Mon Aug 13 13:22:44 2007 +1000
+
+    [POWERPC] cell: Fix errno for modular spufs=5Fcreate with invalid n=
+eighbour
+   =20
+    At present, spu=5Fcreate with an invalid neighbo(u)r will return -E=
+NOSYS,
+    not -EBADF, but only when spufs.o is built as a module.
+   =20
+    This change adds the appropriate errno, making the behaviour the sa=
+me
+    as the built-in case.
+   =20
+    Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+    Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
