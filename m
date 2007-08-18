@@ -1,23 +1,21 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BC386DDE1E
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2007 19:36:25 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: 2.6.23-rc3 broken on G5
-References: <jelkccftt6.fsf@sykes.suse.de>
-	<18116.52843.212978.281399@cargo.ozlabs.ibm.com>
-	<jefy2j6qtq.fsf@sykes.suse.de>
-	<18118.41979.148016.177427@cargo.ozlabs.ibm.com>
-Date: Sat, 18 Aug 2007 11:36:19 +0200
-In-Reply-To: <18118.41979.148016.177427@cargo.ozlabs.ibm.com> (Paul
-	Mackerras's message of "Sat\, 18 Aug 2007 17\:47\:07 +1000")
-Message-ID: <jey7g9i3qk.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 06BF4DDE02
+	for <linuxppc-dev@ozlabs.org>; Sun, 19 Aug 2007 02:31:53 +1000 (EST)
+In-Reply-To: <4948353cd5e9c566a8151eca8c4bbcb7@kernel.crashing.org>
+References: <A0830B08-2A3A-4BC1-BAAB-82D1C1D3CB7E@kernel.crashing.org>
+	<4948353cd5e9c566a8151eca8c4bbcb7@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <0D968216-6743-498E-9723-F029FF3746C1@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: still using stabs debug format?
+Date: Sat, 18 Aug 2007 11:33:31 -0500
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	Ed Swarthout <Ed.Swarthout@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@samba.org> writes:
 
-> How much RAM does your machine have?
+On Aug 17, 2007, at 7:54 PM, Segher Boessenkool wrote:
 
-1.25 GB.  It also has an nvidia gfx card, in case it matters.
+>> Is anyone really still using the stabs format for kernel debug?
+>>
+>> can we kill off the .stabs references?
+>
+> What, you want to replace them with dwarf markup?  Or just
+> get rid of the debug info completely?
 
-Andreas.
+There are two users today:
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+* N_SO for file information we can easily make into .file
+* N_FUN used in _GLOBAL() that marks it a 'function' is a bit  
+misleading since we use this for both functions and data.  Not sure  
+what to do about that one, any suggestions?
+
+- k
