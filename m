@@ -2,19 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6F815DDE33
-	for <linuxppc-dev@ozlabs.org>; Sun, 19 Aug 2007 02:34:43 +1000 (EST)
-In-Reply-To: <20070817181718.GA15792@ld0162-tx32.am.freescale.net>
-References: <20070817181718.GA15792@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <55FCD650-548C-40C9-8B1E-16259EF93F1D@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 6632ADDDFC
+	for <linuxppc-dev@ozlabs.org>; Sun, 19 Aug 2007 03:05:23 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id l7IH5IIY008433
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2007 12:05:19 -0500
+Date: Sat, 18 Aug 2007 12:05:36 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 6/7 v2] fs_enet: Be an of_platform device when
-	CONFIG_PPC_CPM_NEW_BINDING is set.
-Date: Sat, 18 Aug 2007 11:36:24 -0500
-To: Scott Wood <scottwood@freescale.com>
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 0/3 v2] Remove need for include/asm-ppc
+Message-ID: <Pine.LNX.4.64.0708181203320.31362@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,29 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This patch series removes the need for include/asm-ppc in the ARCH=powerpc
+build for ppc32.  They exist in the following git tree:
 
-On Aug 17, 2007, at 1:17 PM, Scott Wood wrote:
+  master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for-2.6.24
 
-> The existing OF glue code was crufty and broken.  Rather than fix  
-> it, it
-> will be removed, and the ethernet driver now talks to the device tree
-> directly.
->
-> The old, non-CONFIG_PPC_CPM_NEW_BINDING code can go away once CPM
-> platforms are dropped from arch/ppc (which will hopefully be soon),  
-> and
-> existing arch/powerpc boards that I wasn't able to test on for this
-> patchset get converted (which should be even sooner).
->
-> mii-bitbang.c now also uses the generic bitbang code.
->
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
-> Sorry, the previous version of this patch had bb_ops in the wrong
-> place, and wouldn't build when not using the new binding.
+posting here for everyone else to see.
 
-This patch seems to mix moving to using the device tree directly w/o  
-some other modifications.  Can it be broken into those two changes as  
-they'd be easier to review.
+Updated with changes suggested by Arnd & Segher. (removal 82xx pci header
+and moving some headers under platforms if not globally needed).
 
 - k
