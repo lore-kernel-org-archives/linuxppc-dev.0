@@ -2,20 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 06BF4DDE02
-	for <linuxppc-dev@ozlabs.org>; Sun, 19 Aug 2007 02:31:53 +1000 (EST)
-In-Reply-To: <4948353cd5e9c566a8151eca8c4bbcb7@kernel.crashing.org>
-References: <A0830B08-2A3A-4BC1-BAAB-82D1C1D3CB7E@kernel.crashing.org>
-	<4948353cd5e9c566a8151eca8c4bbcb7@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 6F815DDE33
+	for <linuxppc-dev@ozlabs.org>; Sun, 19 Aug 2007 02:34:43 +1000 (EST)
+In-Reply-To: <20070817181718.GA15792@ld0162-tx32.am.freescale.net>
+References: <20070817181718.GA15792@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <0D968216-6743-498E-9723-F029FF3746C1@kernel.crashing.org>
+Message-Id: <55FCD650-548C-40C9-8B1E-16259EF93F1D@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: still using stabs debug format?
-Date: Sat, 18 Aug 2007 11:33:31 -0500
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	Ed Swarthout <Ed.Swarthout@freescale.com>
+Subject: Re: [PATCH 6/7 v2] fs_enet: Be an of_platform device when
+	CONFIG_PPC_CPM_NEW_BINDING is set.
+Date: Sat, 18 Aug 2007 11:36:24 -0500
+To: Scott Wood <scottwood@freescale.com>
+Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,20 +25,28 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Aug 17, 2007, at 7:54 PM, Segher Boessenkool wrote:
+On Aug 17, 2007, at 1:17 PM, Scott Wood wrote:
 
->> Is anyone really still using the stabs format for kernel debug?
->>
->> can we kill off the .stabs references?
+> The existing OF glue code was crufty and broken.  Rather than fix  
+> it, it
+> will be removed, and the ethernet driver now talks to the device tree
+> directly.
 >
-> What, you want to replace them with dwarf markup?  Or just
-> get rid of the debug info completely?
+> The old, non-CONFIG_PPC_CPM_NEW_BINDING code can go away once CPM
+> platforms are dropped from arch/ppc (which will hopefully be soon),  
+> and
+> existing arch/powerpc boards that I wasn't able to test on for this
+> patchset get converted (which should be even sooner).
+>
+> mii-bitbang.c now also uses the generic bitbang code.
+>
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> ---
+> Sorry, the previous version of this patch had bb_ops in the wrong
+> place, and wouldn't build when not using the new binding.
 
-There are two users today:
-
-* N_SO for file information we can easily make into .file
-* N_FUN used in _GLOBAL() that marks it a 'function' is a bit  
-misleading since we use this for both functions and data.  Not sure  
-what to do about that one, any suggestions?
+This patch seems to mix moving to using the device tree directly w/o  
+some other modifications.  Can it be broken into those two changes as  
+they'd be easier to review.
 
 - k
