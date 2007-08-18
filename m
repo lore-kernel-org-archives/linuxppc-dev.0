@@ -1,17 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18118.13541.470351.661964@cargo.ozlabs.ibm.com>
-Date: Sat, 18 Aug 2007 09:53:09 +1000
-From: Paul Mackerras <paulus@samba.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7401BDDE49
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2007 10:54:40 +1000 (EST)
+In-Reply-To: <A0830B08-2A3A-4BC1-BAAB-82D1C1D3CB7E@kernel.crashing.org>
+References: <A0830B08-2A3A-4BC1-BAAB-82D1C1D3CB7E@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <4948353cd5e9c566a8151eca8c4bbcb7@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: still using stabs debug format?
+Date: Sat, 18 Aug 2007 02:54:27 +0200
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] Fix interrupt routing and setup of ULI M1575 on
-	FSL boards
-In-Reply-To: <D6CFE4FC-5112-450B-B13F-2DC40165EB71@kernel.crashing.org>
-References: <Pine.LNX.4.64.0708170003210.21006@blarg.am.freescale.net>
-	<18117.22358.723442.148999@cargo.ozlabs.ibm.com>
-	<D6CFE4FC-5112-450B-B13F-2DC40165EB71@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	Ed Swarthout <Ed.Swarthout@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,16 +24,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala writes:
+> Is anyone really still using the stabs format for kernel debug?
+>
+> can we kill off the .stabs references?
 
-> Its a regression in that the ULI M1575 doesn't really work properly  
-> on some of these boards in certain situations.
+What, you want to replace them with dwarf markup?  Or just
+get rid of the debug info completely?
 
-Well, "it doesn't work" isn't of itself a regression, a regression is
-"it used to work and now it doesn't".
 
-In any case the lateness x largeness product (LxL) of that patch is a
-bit too high.  Is there a simpler way to fix it that doesn't involve
-moving all that code around?
-
-Paul.
+Segher
