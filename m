@@ -1,20 +1,19 @@
-Return-Path: <domen.puncer@telargo.com>
-Received: from out001.atlarge.net (out001.atlarge.net [129.41.63.69])
-	by ozlabs.org (Postfix) with ESMTP id E12B5DDE26
+Return-Path: <kkboyanov@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.232])
+	by ozlabs.org (Postfix) with ESMTP id 95924DDE3C
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 20 Aug 2007 18:31:42 +1000 (EST)
-Date: Mon, 20 Aug 2007 10:31:37 +0200
-From: Domen Puncer <domen.puncer@telargo.com>
-To: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: [RFC PATCH v0.1] net driver: mpc52xx fec
-Message-ID: <20070820083137.GJ13994@moe.telargo.com>
-References: <20070810095153.GC13994@moe.telargo.com>
-	<20070818100643.GA31233@nd47.coderock.org>
-	<46C8643B.7010104@genesi-usa.com>
+	Mon, 20 Aug 2007 18:40:04 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id 71so901304wri
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 20 Aug 2007 01:40:03 -0700 (PDT)
+Message-ID: <929bf310708200140w6efc57f6k81a1339845059e2d@mail.gmail.com>
+Date: Mon, 20 Aug 2007 10:40:03 +0200
+From: "Konstantin Boyanov" <kkboyanov@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Driver for device behind a PCI-VME bridge
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <46C8643B.7010104@genesi-usa.com>
-Cc: Domen Puncer <domen@coderock.org>, linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_Part_112948_14477232.1187599203373"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,100 +24,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 19/08/07 16:39 +0100, Matt Sealey wrote:
-> Domen,
-> 
-> Do it in a Forth script, or in nvramrc (after probe-all). Don't clutter
-> Linux with more fixups. The Efika PHY isn't going to change to something
-> else and it's a bog standard no-frills MII PHY anyway.
+------=_Part_112948_14477232.1187599203373
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Fine with me, but I'm worried people won't update nvramrc.
+Hi list,
 
-Currently I have this:
---- start ---
+I'm currently reading the LDD 3rd Edition and trying to create a device
+driver for a custom device located on VME bus. I have already linux
+2.6.15running on the master board, as well as the device driver for
+the PCI-VME
+bridge. The main problem I have is understanding how to "attach" my driver
+for the custom device to the bridge device driver.
+The bridge device driver is implemented as a class, i.e. doesn't define a
+new bus type. Should I define a new class for my driver, or should I connect
+it somehow to the existing one (maybe by something as "subclass")?
+All I want to do is to redirect I/O reads and writes to the VME bus, but I
+got no clue as to how to use the existing VME bridge driver for this
+purpose. After I get through this I think all other things (VME interrupt
+registration & handling, etc.) will be straightforward.
+The LDD 3rd book states that defining a new bus type is the last thing one
+would like to do, instead defining a class is far better approach. Why is
+that?
 
-s" /builtin" find-device
+Any recommendations and sharing of practical experience are highly
+appreciated.
 
-new-device
-        1 encode-int s" #address-cells" property
-        0 encode-int s" #size-cells" property
-        s" mdio" 2dup device-name device-type
-        s" mpc5200b-fec-phy" s" compatible" property
-        0xf0003000 0x400 reg
+Best Regards,
+Konstantin
 
-        0x2 encode-int
-        0x5 encode-int
-        0x3 encode-int
-        encode+ encode+
-        s" interupts" property
+------=_Part_112948_14477232.1187599203373
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-        new-device
-                s" ethernet-phy@0" device-name
-                s" ethernet-phy" device-type
-                0 encode-int s" reg" property
+Hi list,<br><br>I&#39;m currently reading the LDD 3rd Edition and trying to
+create a device driver for a custom device located on VME bus. I have
+already linux 2.6.15 running on the master board, as well as the device
+driver for the PCI-VME bridge. The main problem I have is understanding
+how to &quot;attach&quot; my driver for the custom device to the bridge device
+driver.
+<br>The bridge device driver is implemented as a class, i.e. doesn&#39;t
+define a new bus type. Should I define a new class for my driver, or
+should I connect it somehow to the existing one (maybe by something as
+&quot;subclass&quot;)?<br>All I want to do is to redirect I/O reads and writes to the VME bus, but I got no clue as to how to use the existing VME bridge driver for this purpose. After I get through this I think all other things (VME interrupt registration &amp; handling, etc.) will be straightforward.
+<br>The LDD 3rd book states that defining a new bus type is the last
+thing one would like to do, instead defining a class is far better
+approach. Why is that?<br><br>Any recommendations and sharing of practical experience are highly appreciated.
+<br><br>Best Regards,<br><span class="sg">Konstantin</span>
 
-                my-self \ save our phandle to stack
-                ihandle>phandle
-        finish-device
-finish-device
-
-s" /builtin/ethernet" find-device
-        encode-int      \ phy's phandle
-        s" phy-handle" property
-device-end
-
----  end  ---
-
-But I have a problem with it, possibly due to my not-knowledge of Forth.
-Compatible keep getting set to:
-	compatible            "/builtin/etherne"
-
-
-
-<spin>
-> If you insist on using prom_init and fixups, yaboot has the best
-> examples of call-method and interpret, both readable and fairly
-> easily available.
-
-Thanks.
-
-
-	Domen
-
-> > On 10/08/07 11:51 +0200, Domen Puncer wrote:
-> >> Index: work-powerpc.git/arch/powerpc/boot/dts/lite5200b.dts
-> >> ===================================================================
-> >> --- work-powerpc.git.orig/arch/powerpc/boot/dts/lite5200b.dts
-> >> +++ work-powerpc.git/arch/powerpc/boot/dts/lite5200b.dts
-> >> +		mdio@3000 {
-> >> +			#address-cells = <1>;
-> >> +			#size-cells = <0>;
-> >> +			device_type = "mdio";
-> >> +			compatible = "mpc5200b-fec-phy";
-> >> +			reg = <3000 400>;	// fec range, since we need to setup fec interrupts
-> >> +			interrupts = <2 5 0>;	// these are for "mii command finished", not link changes & co.
-> >> +			interrupt-parent = <&mpc5200_pic>;
-> >> +
-> >> +			phy0:ethernet-phy@0 {
-> >> +				device_type = "ethernet-phy";
-> >> +				reg = <0>;
-> >> +			};
-> >>  		};
-> > 
-> > I am struggling with this part on Efika.
-> > I would like to add this to the device tree from
-> > fixup_device_tree_efika() (arch/powerpc/kernel/prom_init.c).
-> > 
-> > AFAICS client-services doesn't offer anything like new-device,
-> > so I guess "interpret" or "call-method" will have to be used.
-> > 
-> > I have read some docs, but I'm still wandering in the dark.
-> > Can I please get an example?
-> > Pretty please with a cherry on top?
-> > 
-> > 
-> > 	Domen
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+------=_Part_112948_14477232.1187599203373--
