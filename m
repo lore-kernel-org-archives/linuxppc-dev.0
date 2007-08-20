@@ -1,19 +1,23 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Date: Mon, 20 Aug 2007 16:00:00 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Stefan Assmann <sassmann@suse.de>
-Subject: Re: PS3 improved video mode autodetection for HDMI/DVI
-In-Reply-To: <46C405B3.2040401@suse.de>
-Message-ID: <Pine.LNX.4.62.0708201541230.6197@pademelon.sonytel.be>
-References: <Pine.LNX.4.62.0707121029320.12797@pademelon.sonytel.be>
-	<46C405B3.2040401@suse.de>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7619CDDFBD
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Aug 2007 00:00:16 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id l7KE0CUM023655
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2007 09:00:13 -0500
+Date: Mon, 20 Aug 2007 09:00:28 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 2/3 v3] Copy over headers from arch/ppc to arch/powerpc that
+	we need
+In-Reply-To: <Pine.LNX.4.64.0708200856510.16457@blarg.am.freescale.net>
+Message-ID: <Pine.LNX.4.64.0708200857500.16457@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0708200854160.16444@blarg.am.freescale.net>
+	<Pine.LNX.4.64.0708200856510.16457@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-1544178799-1187617695=:6197"
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>,
-	Ben Collins <ben.collins@ubuntu.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,90 +27,139 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+To build arch/powerpc without including asm-ppc/ we need these files
+in asm-powerpc/
 
----584337861-1544178799-1187617695=:6197
-Content-Type: TEXT/PLAIN; CHARSET=UTF-8
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.62.0708201548221.6197@pademelon.sonytel.be>
+Moved some headers under arch/powerpc/platforms if they were only used by
+platform or driver files and fixed up the source file includes to match
+the new locations
 
-	Hi Stefan,
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
 
-On Thu, 16 Aug 2007, Stefan Assmann wrote:
-> Geert Uytterhoeven schrieb:
-> > If it fails, please add `#define DEBUG' to drivers/ps3/ps3av.c, send me the
-> > `Monitor Info' output in the kernel log (dmesg), and tell me which of the
-> > PS3 video modes (1-13) work and which don't. ps3av has a quirk database for
-> > monitors that advertise non-working modes, so it can probably be fixed.
-> > (BTW, even if autodetect works fine, I always welcome this information)
-> >   
-> Samsung SyncMaster 226BW
-> 
-> The autodetection leaves me with an unsupported resolution. I tried
+Fixed ans-lcd and hydra related build issues.
 
-Thanks for the info!
+ arch/powerpc/platforms/chrp/gg2.h                |   61 ++
+ arch/powerpc/platforms/chrp/pci.c                |    2 +-
+ arch/powerpc/platforms/chrp/setup.c              |    2 +-
+ arch/powerpc/platforms/embedded6xx/linkstation.c |    3 +-
+ arch/powerpc/platforms/embedded6xx/ls_uart.c     |    3 +-
+ arch/powerpc/platforms/embedded6xx/mpc10x.h      |  180 ++++
+ drivers/macintosh/ans-lcd.c                      |    3 +-
+ drivers/macintosh/ans-lcd.h                      |   11 +
+ include/asm-powerpc/8xx_immap.h                  |  564 ++++++++++
+ include/asm-powerpc/commproc.h                   |  692 ++++++++++++
+ include/asm-powerpc/cpm2.h                       | 1248 ++++++++++++++++++++++
+ include/asm-powerpc/highmem.h                    |  135 +++
+ include/asm-powerpc/hydra.h                      |  102 ++
+ include/asm-powerpc/immap_cpm2.h                 |  648 +++++++++++
+ include/asm-powerpc/kgdb.h                       |   57 +
+ include/asm-powerpc/mpc52xx_psc.h                |  191 ++++
+ include/asm-ppc/ans-lcd.h                        |   11 -
+ 17 files changed, 3897 insertions(+), 16 deletions(-)
+ create mode 100644 arch/powerpc/platforms/chrp/gg2.h
+ create mode 100644 arch/powerpc/platforms/embedded6xx/mpc10x.h
+ create mode 100644 drivers/macintosh/ans-lcd.h
+ create mode 100644 include/asm-powerpc/8xx_immap.h
+ create mode 100644 include/asm-powerpc/commproc.h
+ create mode 100644 include/asm-powerpc/cpm2.h
+ create mode 100644 include/asm-powerpc/highmem.h
+ create mode 100644 include/asm-powerpc/hydra.h
+ create mode 100644 include/asm-powerpc/immap_cpm2.h
+ create mode 100644 include/asm-powerpc/kgdb.h
+ create mode 100644 include/asm-powerpc/mpc52xx_psc.h
+ delete mode 100644 include/asm-ppc/ans-lcd.h
 
-> adding the monitor to the quirk list. Works fine now. Using 720p as
+File creation/movement removed from patch.
 
-So this patch helps? I'll add it.
+diff --git a/arch/powerpc/platforms/chrp/pci.c b/arch/powerpc/platforms/chrp/pci.c
+index 0c6dba9..a01c4ac 100644
+--- a/arch/powerpc/platforms/chrp/pci.c
++++ b/arch/powerpc/platforms/chrp/pci.c
+@@ -13,7 +13,6 @@
+ #include <asm/irq.h>
+ #include <asm/hydra.h>
+ #include <asm/prom.h>
+-#include <asm/gg2.h>
+ #include <asm/machdep.h>
+ #include <asm/sections.h>
+ #include <asm/pci-bridge.h>
+@@ -21,6 +20,7 @@
+ #include <asm/rtas.h>
 
---- a/drivers/ps3/ps3av.c
-+++ b/drivers/ps3/ps3av.c
-@@ -731,6 +731,9 @@ static const struct ps3av_monitor_quirk 
- 		.monitor_name	= "L226WTQ",
- 		.clear_60	= PS3AV_RESBIT_1920x1080I |
- 				  PS3AV_RESBIT_1920x1080P
-+	}, {
-+		.monitor_name	= "SyncMaster",
-+		.clear_60	= PS3AV_RESBIT_1920x1080I
- 	}
- };
- 
-> default  resolution might be worth a thought. This should work on all HD
-> screen.
+ #include "chrp.h"
++#include "gg2.h"
 
-I'm considering to remove the 1080i modes from ps3av_preferred_modes[], as
-many HDMI screens seem to have problems with interlaced modes.
-That would decrease the size of psav_monitor_quirks[] (note that I currently
-don't add screens that advertise broken modes if their best advertised video
-mode does work).
-In addition 1080i looks bad on most screens that support it anyway.
+ /* LongTrail */
+ void __iomem *gg2_pci_config_base;
+diff --git a/arch/powerpc/platforms/chrp/setup.c b/arch/powerpc/platforms/chrp/setup.c
+index dde5ef4..96498ad 100644
+--- a/arch/powerpc/platforms/chrp/setup.c
++++ b/arch/powerpc/platforms/chrp/setup.c
+@@ -37,7 +37,6 @@
+ #include <asm/io.h>
+ #include <asm/pgtable.h>
+ #include <asm/prom.h>
+-#include <asm/gg2.h>
+ #include <asm/pci-bridge.h>
+ #include <asm/dma.h>
+ #include <asm/machdep.h>
+@@ -51,6 +50,7 @@
+ #include <asm/xmon.h>
 
-What do people think?
+ #include "chrp.h"
++#include "gg2.h"
 
-In contrast to this, many screens (like yours) seem to support 1080p, while
-they don't advertise it. So perhaps we need .set* fields in
-psav_monitor_quirks[], too? I'm a bit reluctant to do that, as many vendors
-are not very specific when it comes to the monitor_name field (my collection
-has e.g. `SAMSUNG', `SyncMaster', `SONY TV').
+ void rtas_indicator_progress(char *, unsigned short);
 
-> btw, I get the following message while booting:
-> PS3AV_CID_AV_VIDEO_DISABLE_SIG: failed 2 port 10
-> 
-> does this ring a bell? I'm using kernel 2.6.22 with ps3 patches
+diff --git a/arch/powerpc/platforms/embedded6xx/linkstation.c b/arch/powerpc/platforms/embedded6xx/linkstation.c
+index 8c60e02..61ca02c 100644
+--- a/arch/powerpc/platforms/embedded6xx/linkstation.c
++++ b/arch/powerpc/platforms/embedded6xx/linkstation.c
+@@ -18,9 +18,10 @@
+ #include <asm/time.h>
+ #include <asm/prom.h>
+ #include <asm/mpic.h>
+-#include <asm/mpc10x.h>
+ #include <asm/pci-bridge.h>
 
-Do you put your kernel in FLASH ROM (otheros.bld)?
-Does it still happen after upgrading to a kernel that has
-ps3-wip/ps3av-vesa-stripes-workaround.diff applied (e.g. Geoff's current git
-tree)?
++#include "mpc10x.h"
++
+ static struct mtd_partition linkstation_physmap_partitions[] = {
+ 	{
+ 		.name   = "mtd_firmimg",
+diff --git a/arch/powerpc/platforms/embedded6xx/ls_uart.c b/arch/powerpc/platforms/embedded6xx/ls_uart.c
+index f7a4def..0d9f150 100644
+--- a/arch/powerpc/platforms/embedded6xx/ls_uart.c
++++ b/arch/powerpc/platforms/embedded6xx/ls_uart.c
+@@ -4,10 +4,11 @@
+ #include <linux/serial_reg.h>
+ #include <linux/serial_8250.h>
+ #include <asm/io.h>
+-#include <asm/mpc10x.h>
+ #include <asm/prom.h>
+ #include <asm/termbits.h>
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
++#include "mpc10x.h"
++
+ static void __iomem *avr_addr;
+ static unsigned long avr_clock;
 
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1544178799-1187617695=:6197--
+diff --git a/drivers/macintosh/ans-lcd.c b/drivers/macintosh/ans-lcd.c
+index e54c4d9..73c50bc 100644
+--- a/drivers/macintosh/ans-lcd.c
++++ b/drivers/macintosh/ans-lcd.c
+@@ -14,9 +14,10 @@
+ #include <asm/uaccess.h>
+ #include <asm/sections.h>
+ #include <asm/prom.h>
+-#include <asm/ans-lcd.h>
+ #include <asm/io.h>
+
++#include "ans-lcd.h"
++
+ #define ANSLCD_ADDR		0xf301c000
+ #define ANSLCD_CTRL_IX 0x00
+ #define ANSLCD_DATA_IX 0x10
+-- 
+1.5.2.2
