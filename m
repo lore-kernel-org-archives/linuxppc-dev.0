@@ -1,33 +1,21 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1F27BDDE2E
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Aug 2007 01:37:25 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7KFbMAc032604
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2007 11:37:22 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l7KFbL1g212914
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2007 09:37:21 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l7KFbLf0028967
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2007 09:37:21 -0600
-Date: Mon, 20 Aug 2007 10:37:19 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 0/3 v2] Remove need for include/asm-ppc
-Message-ID: <20070820103719.23f50f64@weaponx.rchland.ibm.com>
-In-Reply-To: <A4E8D00C-87DB-4C59-A6C4-70D437ED9988@kernel.crashing.org>
-References: <Pine.LNX.4.64.0708181203320.31362@blarg.am.freescale.net>
-	<20070820060000.GA26100@localhost.localdomain>
-	<A4E8D00C-87DB-4C59-A6C4-70D437ED9988@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Date: Mon, 20 Aug 2007 17:43:08 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Stefan Assmann <sassmann@suse.de>
+Subject: Re: PS3 improved video mode autodetection for HDMI/DVI
+In-Reply-To: <46C9B172.9030309@suse.de>
+Message-ID: <Pine.LNX.4.62.0708201740080.6197@pademelon.sonytel.be>
+References: <Pine.LNX.4.62.0707121029320.12797@pademelon.sonytel.be>
+	<46C405B3.2040401@suse.de>
+	<Pine.LNX.4.62.0708201541230.6197@pademelon.sonytel.be>
+	<46C9B172.9030309@suse.de>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-1098284444-1187624588=:6197"
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>,
+	Ben Collins <ben.collins@ubuntu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,41 +25,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 20 Aug 2007 10:32:43 -0500
-Kumar Gala <galak@kernel.crashing.org> wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> 
-> On Aug 20, 2007, at 1:00 AM, David Gibson wrote:
-> 
-> > On Sat, Aug 18, 2007 at 12:05:36PM -0500, Kumar Gala wrote:
-> >> This patch series removes the need for include/asm-ppc in the  
-> >> ARCH=powerpc
-> >> build for ppc32.  They exist in the following git tree:
+---584337861-1098284444-1187624588=:6197
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+On Mon, 20 Aug 2007, Stefan Assmann wrote:
+> >> btw, I get the following message while booting:
+> >> PS3AV_CID_AV_VIDEO_DISABLE_SIG: failed 2 port 10
 > >>
-> >>   master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git  
-> >> for-2.6.24
-> >>
-> >> posting here for everyone else to see.
-> >>
-> >> Updated with changes suggested by Arnd & Segher. (removal 82xx pci  
-> >> header
-> >> and moving some headers under platforms if not globally needed).
+> >> does this ring a bell? I'm using kernel 2.6.22 with ps3 patches
+> >>     
 > >
-> > Nice!  I'm hoping the next step after this is to do the other way
-> > around - make ARCH=ppc builds independent of things in arch/powerpc or
-> > include/asm-powerpc, which is almost the more important change.
-> 
-> Maybe, hadn't thought about that case.  One thing at a time :)
-> 
-> Do we want to go and move stuff back out of arch/powerpc/kernel back  
-> into arch/ppc/kernel?  or just include files?
+> > Do you put your kernel in FLASH ROM (otheros.bld)?
+> > Does it still happen after upgrading to a kernel that has
+> > ps3-wip/ps3av-vesa-stripes-workaround.diff applied (e.g. Geoff's current git
+> > tree)?
+> >   
+> Yes kernel is written to flash memory. I added
+> ps3-wip/ps3av-vesa-stripes-workaround.diff to my source tree, the
+> message persists, even using Geoff's git tree with my .config file and
+> running oldconfig didn't change the behavior. I'll append my .config
+> file. The message is the very first line printed at kernel boot.
 
-What would be the point of doing that?  I would think we want the
-opposite, in that we want to reuse as much of arch/powerpc during
-arch/ppc compiles as possible.  Sort of shows how much is "left" to
-port.
+I know you could get the PS3AV_CID_AV_VIDEO_DISABLE_SIG message in some cases
+when booting immediately into a VESA mode.
 
-Also, making arch/ppc compile stand-alone again would be "wasted" work,
-since it's going to die anyway.
+I see you have
 
-josh
+    CONFIG_CMDLINE="quiet sysrq=1 panic=42 video=ps3fb:mode:0"
+
+Does it go away if you remove the `video=...'?
+
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-1098284444-1187624588=:6197--
