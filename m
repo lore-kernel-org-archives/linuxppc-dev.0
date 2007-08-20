@@ -1,14 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 20 Aug 2007 16:00:00 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 0/3 v2] Remove need for include/asm-ppc
-Message-ID: <20070820060000.GA26100@localhost.localdomain>
-References: <Pine.LNX.4.64.0708181203320.31362@blarg.am.freescale.net>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.0708181203320.31362@blarg.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+Message-ID: <18121.11597.723258.808538@cargo.ozlabs.ibm.com>
+Date: Mon, 20 Aug 2007 15:57:33 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Kumar Gala <galak@kernel.crashing.org>,
+    linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 3/3 v2][POWERPC] Stop include asm-ppc when building
+	ARCH=powerpc for ppc32
+In-Reply-To: <18121.11392.459659.535657@cargo.ozlabs.ibm.com>
+References: <Pine.LNX.4.64.0708181203320.31362@blarg.am.freescale.net>
+	<Pine.LNX.4.64.0708181206070.31362@blarg.am.freescale.net>
+	<Pine.LNX.4.64.0708181207530.31362@blarg.am.freescale.net>
+	<Pine.LNX.4.64.0708181210390.31362@blarg.am.freescale.net>
+	<18121.11392.459659.535657@cargo.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,23 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Aug 18, 2007 at 12:05:36PM -0500, Kumar Gala wrote:
-> This patch series removes the need for include/asm-ppc in the ARCH=powerpc
-> build for ppc32.  They exist in the following git tree:
-> 
->   master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for-2.6.24
-> 
-> posting here for everyone else to see.
-> 
-> Updated with changes suggested by Arnd & Segher. (removal 82xx pci header
-> and moving some headers under platforms if not globally needed).
+I wrote:
 
-Nice!  I'm hoping the next step after this is to do the other way
-around - make ARCH=ppc builds independent of things in arch/powerpc or
-include/asm-powerpc, which is almost the more important change.
+> On 32-bit powermac, I get:
+> 
+>   CC [M]  drivers/macintosh/ans-lcd.o
+> /home/paulus/kernel/powerpc/drivers/macintosh/ans-lcd.c:17:25: error: asm/ans-lcd.h: No such file or directory
+> 
+> plus a whole pile of things undefined after that.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+And on mpc7448_hpc2 I get
+
+  CC      arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.o
+In file included from /home/paulus/kernel/powerpc/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c:43:
+/home/paulus/kernel/powerpc/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.h:19:25: error: asm/ppcboot.h: No such file or directory
+
+Paul.
