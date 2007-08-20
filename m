@@ -1,22 +1,19 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
-	[66.98.186.96])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EA7C0DDE1E
+Return-Path: <lim@taicom.com.cn>
+Received: from mxvip1.hichina.com (mxvip1.hichina.com [218.106.248.51])
+	by ozlabs.org (Postfix) with ESMTP id D4BCDDDE1E
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 20 Aug 2007 01:38:21 +1000 (EST)
-Message-ID: <46C8643B.7010104@genesi-usa.com>
-Date: Sun, 19 Aug 2007 16:39:39 +0100
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
-To: Domen Puncer <domen@coderock.org>
-Subject: Re: [RFC PATCH v0.1] net driver: mpc52xx fec
-References: <20070810095153.GC13994@moe.telargo.com>
-	<20070818100643.GA31233@nd47.coderock.org>
-In-Reply-To: <20070818100643.GA31233@nd47.coderock.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+	Mon, 20 Aug 2007 15:55:42 +1000 (EST)
+Date: Mon, 20 Aug 2007 13:55:08 +0800
+From: "=?gb2312?B?wO7D9w==?=" <lim@taicom.com.cn>
+To: linux-arch@vger.kernel.org <linux-arch@vger.kernel.org>,
+	linux-kernel@vger.kernel.org <linux-kernel@vger.kernel.org>
+Subject: some error about nfs
+Message-ID: <200708201354599646376@taicom.com.cn>
+Mime-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="=====001_Dragon818603305352_====="
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Reply-To: lim@taicom.com.cn
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,65 +24,68 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Domen,
+This is a multi-part message in MIME format.
 
-Do it in a Forth script, or in nvramrc (after probe-all). Don't clutter
-Linux with more fixups. The Efika PHY isn't going to change to something
-else and it's a bog standard no-frills MII PHY anyway.
+--=====001_Dragon818603305352_=====
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: base64
 
-I think it is a distinction that the OF docs forgot to make, that the
-client interface is *all those Forth words* and not just the 6 or 7
-distinct, special callable functions like claim (they exist because of
-the simple fact that claiming memory shouldn't involve claiming memory
-and such other paradoxes) and call-method. Call-method is a perfectly
-valid way of doing things.
+aGVsbG8sZXZlcnlvbmUNCndoZW4gSSBvcGVuIG5mcyBvbiBteSBsaW51eCBzZXJ2ZXIsIGFuZCBz
+ZXQgdGhlIGJvb3RhcmdzIGluIHRoZSB1Ym9vdCwgdGhlcmUgaXMgc29tZSBlcnJvciBsaWtlIHRo
+aXM6DQoNCklQLUNvbmZpZzogRGV2aWNlIGBvZmYnIG5vdCBmb3VuZC4NCmlwX3RhYmxlczogKEMp
+IDIwMDAtMjAwMiBOZXRmaWx0ZXIgY29yZSB0ZWFtDQpORVQ0OiBVbml4IGRvbWFpbiBzb2NrZXRz
+IDEuMC9TTVAgZm9yIExpbnV4IE5FVDQuMC4NCk5FVDQ6IEV0aGVybmV0IEJyaWRnZSAwMDggZm9y
+IE5FVDQuMA0KbGVjLmM6IEF1ZyAyMCAyMDA3IDEzOjAxOjI1IGluaXRpYWxpemVkDQpMb29raW5n
+IHVwIHBvcnQgb2YgUlBDIDEwMDAwMy8yIG9uIDE5Mi4xNjguMi4xNzINClJQQzogc2VuZG1zZyBy
+ZXR1cm5lZCBlcnJvciAxMDENCnBvcnRtYXA6IFJQQyBjYWxsIHJldHVybmVkIGVycm9yIDEwMQ0K
+Um9vdC1ORlM6IFVuYWJsZSB0byBnZXQgbmZzZCBwb3J0IG51bWJlciBmcm9tIHNlcnZlciwgdXNp
+bmcgZGVmYXVsdA0KTG9va2luZyB1cCBwb3J0IG9mIFJQQyAxMDAwMDUvMSBvbiAxOTIuMTY4LjIu
+MTcyDQpSUEM6IHNlbmRtc2cgcmV0dXJuZWQgZXJyb3IgMTAxDQpwb3J0bWFwOiBSUEMgY2FsbCBy
+ZXR1cm5lZCBlcnJvciAxMDENClJvb3QtTkZTOiBVbmFibGUgdG8gZ2V0IG1vdW50ZCBwb3J0IG51
+bWJlciBmcm9tIHNlcnZlciwgdXNpbmcgZGVmYXVsdA0KUlBDOiBzZW5kbXNnIHJldHVybmVkIGVy
+cm9yIDEwMQ0KbW91bnQ6IFJQQyBjYWxsIHJldHVybmVkIGVycm9yIDEwMQ0KUm9vdC1ORlM6IFNl
+cnZlciByZXR1cm5lZCBlcnJvciAtMTAxIHdoaWxlIG1vdW50aW5nIC9ob21lL2xpbS9SYW1kaXNr
+DQogDQp3aGF0IGlzIHdyb25nLCBhbmQgd2hhdCBzaG91bGQgSSBkbyA/CQkJCQ0KLS0tLS0tLS0t
+LS0tLS0NCsDuIMP3DQoNCk1TTjpsaW0ubGl2ZUBtc24uY29tDQoNCs7xyrW33La3o6yyu7bPzPTV
+vQ0KMjAwNy0wOC0yMA0K
+--=====001_Dragon818603305352_=====
+Content-Type: image/gif;
+	name="man_016.gif"
+Content-Transfer-Encoding: base64
+Content-Disposition: FoxmailIcon;
+	filename="man_016.gif"
 
-But, I'd really recommend you please think of a different way.. if you
-want to spec out a device tree entry for it I'll update my script which
-I am probably going to stick as an 'official' Genesi support file in
-the next week.
+R0lGODlhKAAoAPcGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAQAAAcAAAwAABEAABgAAB0AABwB
+ARUEAxEGBA8HBQ8IBg4JBw4KCA4LCg8ODRAPDRMPDBYQChgQChkRCRoRCR0TCiIXDicaECoeFywh
+Gy8hFzIgFTQiFTkkFDsmFj0nGD8pG0MsH0UuIEcvIEcvIEcwI0guH0kpHE0bE1EEBU4AAksAAUwA
+AU8AAVEAAVUAAlcBAlgBA1sGBWAPCmIYDmQlEmMvFmI1GWE4G186IV08KWA+KmNCK2dEKmpFKGxH
+K3BKLnRMMHlQNH1TOIZYOYxdO5BfPpJhQZNiQpZkQ5dlRJZmRo9lSX9lU29mYmhscGdxe2dzfmh1
+gWt4hG98iHSAi3qFj3+Jk4ONl4aPmIiPl4qOlIyMjo+IhJWCdZ17ZKN3WKZ1U6l0UKp0Tq11TrB2
+TrR3TrZ5ULd6Ubl7Ur19VMGAVcGAVsKAVsKAVsKAVsKAVcKBVcKAVcKBVsKBVsKBVsOBWMSCWcWC
+WcWCWsaEW8eFXMiGXciIX8eJYceKYseLZMiMZcqNZcyPZs+RZ9KSaNKTadOTaNKRZ9GPZdCOY86M
+YMqHU8aBRMJ7NMB0I8FzHMFxF8Z1F8l2F8x5F9F8GNaAGN6EGeKHGuWJGuaKGueLGueLGueLGueL
+GueLGueLGueLG+eMG+eMG+eMHOeNIeaQLeSWQ+KbVOGfZOCjb9+kdN+lduCmeOCneeGne+KofOGo
+feGoft+pgd2phNuqiNqrjNirkNetlNSumdqwlt6ykuK0jea1iee1h+i2h+m4iOq5iOy6ie28iu69
+i/C/jfHBj/LEkPPGkvTHk/XJlPXKlfXKlfXKlvTLmfLMne/No+rPruLSvdXb4c7i9srj+8fj/snk
+/crk/cnk/cbj/sbj/sbj/sbj/sbj/sbj/sbj/sbj/sbj/sbj/sbj/sbj/sbj/sbj/sbj/sfh+sbe
+9cXb8cPZ77/V6r3S57fL36/E2Ki90qC3zZ+2y560yp2zyJyyx5yzyCH5BAgAAAYALAAAAAAoACgA
+AAj+AL35M0CwoMGDCBMq9Mawi8KHEB8y9IYlosWLEyte3LiQoUaOIAtmfBgiRMiOFBVW+Xjy4MiD
+F7BgoYCE4IcnLAgieTJCJxMJEPV5PBiCDBkQI+YQTKqE4JQ5NQ3MmYMCor+hBYmMOSphjVIDSacQ
+nPpk7BwiVrFSuDLmygUDSqYulStV7oepTDQ8vJqSghUibw0gmfo16ZwRhg8bXiMEbUK+WCToPcji
+TeGpQhILQUFYSU6DI/RCZlFWQ9WCEpjMneOZMBMiU1gAPbjEzxID9TwSeXJ3zhslpwsankJk6hsh
+D4X48aM64wgmiY0DXw2VyWkJiEc0JtKTyHIhFib+giGo4ckTy4S/Siju+4nX9OnReo8jwcrEehYQ
+Yh9R5a0GIu/NsYZ5BBaYk3coWIDPRN7oA8JBDTRQBTctCLecYwQFdhAROYHBIEP1hDCZATMkwU0w
+MSyQ0Aw7aINiDDE0cFAXH050hRDIERRMMDvEoIABVETiRy1okKgNNz3EMIOKEiBngYc1MiTGXWvk
+pCEFaDQDiR+7NGOSGCg0oKIBEhAXglBRTmTBe4agUcWbxTzzTCN+HPNMMUtUaAAFKSBhGRFYpMlg
+C4PNkYgtyDwjzaLSNGLAMYwu+gwyuCQyFQuBCiplb4XMkoyijDqaTKSLIjOLH1NJgKamAz3lhyz+
+n0YqKqnPGNPIVFOEJ2g9YISgwAIsTNWILs3IqaijkEZqKqpzsBCCGFF20YIFC8yQgwwSWNbpMch0
+iwwjI+DSjDPOTGqMI6iWJaYFVkA7EQMzyJDDvDksMJgfjeBizDH84lILv8kEfMwshUz1QQMw/qBE
+BxZgsSC9EM+gwVSFyFILLhhnrPEsW55FIoyZqKJKJj80DDHEcM3hByOyzOIIIjDH7MgsdM4hlgEw
+xhCyyKpwUsLJ9C6ggbaNONJEEkgn/YQjlr6hQU05b8Izz/ICrYAGwfqRCCSNdO1114mgigJnOMMo
+9dSqGIAwxA188IYEcWkdSRpIEEHEEnSE3ayhB5Z5MAPIaPdcAonzzlCmzXDPQUgijDeeCCHNdjUV
+EQvAqMPOaGfSgQINHI6XAVP4QcjopKMq21OEafC3Dj9gjjYTLxjAQoBKlLnc7X68wYIHAdpsgAw/
+fDK1z4Fz8oMB2xHxQWoF8jYCelM11UAPU39yvBGBi8yJEdwb8UMJ4HewnxDwIcei8CLX/gIn2bfP
+MyeJp/fGCAvIEMPZmn+AeUAAOw==
 
-If you insist on using prom_init and fixups, yaboot has the best
-examples of call-method and interpret, both readable and fairly
-easily available.
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
-
-Domen Puncer wrote:
-> Hi!
-> 
-> On 10/08/07 11:51 +0200, Domen Puncer wrote:
->> Index: work-powerpc.git/arch/powerpc/boot/dts/lite5200b.dts
->> ===================================================================
->> --- work-powerpc.git.orig/arch/powerpc/boot/dts/lite5200b.dts
->> +++ work-powerpc.git/arch/powerpc/boot/dts/lite5200b.dts
->> +		mdio@3000 {
->> +			#address-cells = <1>;
->> +			#size-cells = <0>;
->> +			device_type = "mdio";
->> +			compatible = "mpc5200b-fec-phy";
->> +			reg = <3000 400>;	// fec range, since we need to setup fec interrupts
->> +			interrupts = <2 5 0>;	// these are for "mii command finished", not link changes & co.
->> +			interrupt-parent = <&mpc5200_pic>;
->> +
->> +			phy0:ethernet-phy@0 {
->> +				device_type = "ethernet-phy";
->> +				reg = <0>;
->> +			};
->>  		};
-> 
-> I am struggling with this part on Efika.
-> I would like to add this to the device tree from
-> fixup_device_tree_efika() (arch/powerpc/kernel/prom_init.c).
-> 
-> AFAICS client-services doesn't offer anything like new-device,
-> so I guess "interpret" or "call-method" will have to be used.
-> 
-> I have read some docs, but I'm still wandering in the dark.
-> Can I please get an example?
-> Pretty please with a cherry on top?
-> 
-> 
-> 	Domen
+--=====001_Dragon818603305352_=====--
