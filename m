@@ -1,19 +1,23 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <b07421@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 638D9DDD0D
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2007 05:19:09 +1000 (EST)
-In-Reply-To: <9050bda20708191111n497e1565h87eb9a2423a6ba56@mail.gmail.com>
-References: <9050bda20708191111n497e1565h87eb9a2423a6ba56@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <e034e26666986dc56279ab552d80fbe7@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: LINKSTATION default config update for linux-2.6.23-rc3
-Date: Sun, 19 Aug 2007 21:18:59 +0200
-To: "Jonathan Li" <jonli447@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, g.liakhovetski@gmx.de
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id AC397DDDFD
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2007 11:29:29 +1000 (EST)
+Date: Sun, 19 Aug 2007 20:29:13 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 6/7 v2] fs_enet: Be an of_platform device when
+	CONFIG_PPC_CPM_NEW_BINDING is set.
+Message-ID: <20070820012913.GA25222@ld0162-tx32.am.freescale.net>
+References: <20070817181718.GA15792@ld0162-tx32.am.freescale.net>
+	<55FCD650-548C-40C9-8B1E-16259EF93F1D@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <55FCD650-548C-40C9-8B1E-16259EF93F1D@kernel.crashing.org>
+Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,16 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Please update the default config in linux-2.6.23 for the LINKSTATION
-> board with the following changes:
->
-> SK98LIN SysKonnect driver is deprecated.  Use SKGE instead.
+On Sat, Aug 18, 2007 at 11:36:24AM -0500, Kumar Gala wrote:
+> This patch seems to mix moving to using the device tree directly w/o  
+> some other modifications.  Can it be broken into those two changes as  
+> they'd be easier to review.
 
-/me confused...
+The last iteration of these patches, I got complaints that I was
+splitting them up too fine-grained.  I don't think it's productive to
+keep iterating on exactly how much is in any given patch until I hit the
+right combination of granularity and whoever happens to be reading e-mail
+when I submit.
 
-None of SK98LIN, SKGE, SKY2 are in the linkstation_defconfig --
-not unsurprisingly, since the hardware doesn't contain any such
-chip.
+In the case of this particular patch, most of what isn't directly related
+to converting to using the device tree directly is fixing problems that I
+encountered in doing so -- what value is there in coming up with
+intermediary versions that kind-of-sort-of make sense, on a good day, if
+you don't look to closely?  The existing codebase is crap, and if every
+logical change were its own patch, the patchset would be ten times as
+long, and take ten times as long to produce.  Note that I did separate
+what I thought were the more relevant-to-review and/or highly indpendent
+changes.
 
+The major thing I see in this patch that could have been usefully
+separated out was the conversion of mii_bitbang.c to use the generic code
+introduced by patch 1.  However, that would require retrieving and
+retesting the intermediate version, and I don't think there's sufficient
+damage to reviewability (apart perhaps from diff's stupidity in thinking
+that a single "{" is relevant common ground between completely unrelated
+chunks of code) relative to the cost in preparing such a split.
 
-Segher
+Is there anything of the actual content of the patch that you object to,
+or have a question about?
+
+-Scott
