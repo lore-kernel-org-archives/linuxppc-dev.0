@@ -1,20 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.228])
-	by ozlabs.org (Postfix) with ESMTP id B3E5DDDE33
+Return-Path: <rwoodworth@securics.com>
+Received: from securics.com (unknown [128.198.58.14])
+	by ozlabs.org (Postfix) with ESMTP id 8A542DDE3B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 21 Aug 2007 03:17:33 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id l1so455671nzf
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 20 Aug 2007 10:17:32 -0700 (PDT)
-Message-ID: <fa686aa40708201017r45a122eel1d48ef8ca6e79ed3@mail.gmail.com>
-Date: Mon, 20 Aug 2007 11:17:31 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Peter Korsgaard" <jacmet@sunsite.dk>, "Peter Korsgaard" <jacmet@gmail.com>,
-	"Linux PPC Linux PPC" <linuxppc-embedded@ozlabs.org>
-Subject: Cypress c67x00 patches
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 21 Aug 2007 03:26:59 +1000 (EST)
+Subject: Re: Xilinx Virtex4 FX PPC
+From: Robert Woodworth <rwoodworth@securics.com>
+To: Josh Boyer <jwboyer@jdub.homelinux.org>
+In-Reply-To: <20070820113549.7cc3ac45@weaponx.rchland.ibm.com>
+References: <1187625654.6336.28.camel@PisteOff>
+	<20070820113549.7cc3ac45@weaponx.rchland.ibm.com>
+Content-Type: text/plain
+Date: Mon, 20 Aug 2007 11:26:57 -0600
+Message-Id: <1187630817.6336.34.camel@PisteOff>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,20 +24,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Peter,
+On Mon, 2007-08-20 at 11:35 -0500, Josh Boyer wrote:
+> On Mon, 20 Aug 2007 10:00:54 -0600
+> Robert Woodworth <rwoodworth@securics.com> wrote:
+> 
+> > Problem 2:  Build my own rootfs.
+> > If I try to build my own programs (busybox and bash at this point) with
+> > shared libc using the same glibc from my toolchain, I get an "Illegal
+> > instruction" error.  Is my glibc not compatible with my Xilinx PPC 405??
+> > 
+> > 
+> > If I try to build a rootfs with debian ppc packages I have the same
+> > "Illegal instruction" error.
+> > 
+> > 
+> > 
+> > Question 1:
+> > Do I need a special glibc for the Xilinx PPC 405????  
+> > Does a normal PPC glibc have more "advanced" instructions compiled in
+> > that will not work on a Xilinx PPC 405??
+> 
+> Make sure you're building glibc with soft-fp, or make sure you have
+> CONFIG_MATH_EMULATION enabled in your kernel.  The PPC 405 doesn't have
+> an FPU.
+> 
+> josh
 
-A while ago I sent you this patch:
 
-http://patchwork.ozlabs.org/linuxppc-embedded/patch?order=submitter&id=11729
+CONFIG_MATH_EMULATION fixed it!!
 
-It is *completely and utterly* wrong.  If you've applied it, the you
-probably want to remove it from your tree.  :-)
 
-Cheers,
-g.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+What are the opinions out there? 
+Kernel fp or glibc soft-fp??
+
+I don't have a need for floating point in my final application anyway.
