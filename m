@@ -1,17 +1,16 @@
 Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CEB30DDE27
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Aug 2007 02:37:07 +1000 (EST)
-Date: Mon, 20 Aug 2007 11:36:59 -0500
+	by ozlabs.org (Postfix) with ESMTP id 77B8BDDE29
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Aug 2007 02:38:26 +1000 (EST)
+Date: Mon, 20 Aug 2007 11:38:12 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: paulus@samba.org
-Subject: [PATCH 3/4] Use strcasecmp() rather than strncasecmp() when
-	determining device node compatibility.
-Message-ID: <20070820163659.GB29912@ld0162-tx32.am.freescale.net>
+To: galak@kernel.crashing.org
+Subject: [PATCH 4/4] fsl_soc.c cleanup
+Message-ID: <20070820163812.GC29912@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20070820163619.GA29889@ld0162-tx32.am.freescale.net>
@@ -25,30 +24,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The current code assumes "foo-bar" must always be compatible with a node
-compatible with "foo", which breaks device trees where this is not so.
+1. Fix get_immrbase() to use ranges, rather than reg.
 
-The "case" part is also wrong according to Open Firmware, but it's more
-likely to have drivers and/or device trees depending on it, and thus
-needs to be handled more carefully.
+It is not always the case that the SoC's first reg property points
+to the beginning of the entire SoC block.
+
+2. Update the way get_brgfreq() finds things in the device tree.
+
+It now uses names that are less namespace polluting.  The old names
+are supported until all boards are converted.
+
+3. "size" is changed from unsigned int to int, to match what
+of_get_property() expects.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- include/asm-powerpc/prom.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/powerpc/sysdev/fsl_soc.c |   38 +++++++++++++++++++++++++++-----------
+ 1 files changed, 27 insertions(+), 11 deletions(-)
 
-diff --git a/include/asm-powerpc/prom.h b/include/asm-powerpc/prom.h
-index 6720837..b5dd101 100644
---- a/include/asm-powerpc/prom.h
-+++ b/include/asm-powerpc/prom.h
-@@ -24,7 +24,7 @@
- #define OF_ROOT_NODE_ADDR_CELLS_DEFAULT	1
- #define OF_ROOT_NODE_SIZE_CELLS_DEFAULT	1
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index a9953c5..fff9f54 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -51,11 +51,20 @@ phys_addr_t get_immrbase(void)
  
--#define of_compat_cmp(s1, s2, l)	strncasecmp((s1), (s2), (l))
-+#define of_compat_cmp(s1, s2, l)	strcasecmp((s1), (s2))
- #define of_prop_cmp(s1, s2)		strcmp((s1), (s2))
- #define of_node_cmp(s1, s2)		strcasecmp((s1), (s2))
+ 	soc = of_find_node_by_type(NULL, "soc");
+ 	if (soc) {
+-		unsigned int size;
+-		const void *prop = of_get_property(soc, "reg", &size);
++		int size;
++		u32 naddr;
++		const u32 *prop = of_get_property(soc, "#address-cells", &size);
++
++		if (prop && size == 4)
++			naddr = *prop;
++		else
++			naddr = 2;
++
++		prop = of_get_property(soc, "ranges", &size);
++
++		if (prop && size >= 12)
++			immrbase = of_translate_address(soc, prop + naddr);
+ 
+-		if (prop)
+-			immrbase = of_translate_address(soc, prop);
+ 		of_node_put(soc);
+ 	};
+ 
+@@ -75,16 +84,23 @@ u32 get_brgfreq(void)
+ 	if (brgfreq != -1)
+ 		return brgfreq;
+ 
+-	node = of_find_node_by_type(NULL, "cpm");
++	node = of_find_compatible_node(NULL, NULL, "fsl,cpm1");
++	if (!node)
++		node = of_find_compatible_node(NULL, NULL, "fsl,cpm2");
++	if (!node)
++		node = of_find_node_by_type(NULL, "cpm");
+ 	if (node) {
+-		unsigned int size;
+-		const unsigned int *prop = of_get_property(node,
+-					"brg-frequency", &size);
++		int size;
++		const unsigned int *prop;
+ 
+-		if (prop)
++		prop = of_get_property(node, "fsl,brg-frequency", &size);
++		if (!prop)
++			prop = of_get_property(node, "brg-frequency", &size);
++		if (prop && size == 4)
+ 			brgfreq = *prop;
++
+ 		of_node_put(node);
+-	};
++	}
+ 
+ 	return brgfreq;
+ }
+@@ -102,7 +118,7 @@ u32 get_baudrate(void)
+ 
+ 	node = of_find_node_by_type(NULL, "serial");
+ 	if (node) {
+-		unsigned int size;
++		int size;
+ 		const unsigned int *prop = of_get_property(node,
+ 				"current-speed", &size);
  
 -- 
 1.5.0.3
