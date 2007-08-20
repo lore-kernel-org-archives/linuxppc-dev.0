@@ -2,20 +2,21 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7619CDDFBD
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Aug 2007 00:00:16 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 3442FDDE4A
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Aug 2007 00:03:04 +1000 (EST)
 Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id l7KE0CUM023655
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2007 09:00:13 -0500
-Date: Mon, 20 Aug 2007 09:00:28 -0500 (CDT)
+	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id l7KE30tU023840
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2007 09:03:01 -0500
+Date: Mon, 20 Aug 2007 09:03:17 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/3 v3] Copy over headers from arch/ppc to arch/powerpc that
-	we need
-In-Reply-To: <Pine.LNX.4.64.0708200856510.16457@blarg.am.freescale.net>
-Message-ID: <Pine.LNX.4.64.0708200857500.16457@blarg.am.freescale.net>
+Subject: [PATCH 3/3 v3] Stop include asm-ppc when building ARCH=powerpc for
+	ppc32
+In-Reply-To: <Pine.LNX.4.64.0708200857500.16457@blarg.am.freescale.net>
+Message-ID: <Pine.LNX.4.64.0708200902440.16457@blarg.am.freescale.net>
 References: <Pine.LNX.4.64.0708200854160.16444@blarg.am.freescale.net>
 	<Pine.LNX.4.64.0708200856510.16457@blarg.am.freescale.net>
+	<Pine.LNX.4.64.0708200857500.16457@blarg.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,139 +28,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-To build arch/powerpc without including asm-ppc/ we need these files
-in asm-powerpc/
-
-Moved some headers under arch/powerpc/platforms if they were only used by
-platform or driver files and fixed up the source file includes to match
-the new locations
+We no longer have any dependancies on include/asm-ppc so we can get ride
+of the makefile hacks to include it in the build process.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
+ arch/powerpc/Makefile |   17 +----------------
+ 1 files changed, 1 insertions(+), 16 deletions(-)
 
-Fixed ans-lcd and hydra related build issues.
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 6c1e36c..d6ab02e 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -63,8 +63,7 @@ endif
 
- arch/powerpc/platforms/chrp/gg2.h                |   61 ++
- arch/powerpc/platforms/chrp/pci.c                |    2 +-
- arch/powerpc/platforms/chrp/setup.c              |    2 +-
- arch/powerpc/platforms/embedded6xx/linkstation.c |    3 +-
- arch/powerpc/platforms/embedded6xx/ls_uart.c     |    3 +-
- arch/powerpc/platforms/embedded6xx/mpc10x.h      |  180 ++++
- drivers/macintosh/ans-lcd.c                      |    3 +-
- drivers/macintosh/ans-lcd.h                      |   11 +
- include/asm-powerpc/8xx_immap.h                  |  564 ++++++++++
- include/asm-powerpc/commproc.h                   |  692 ++++++++++++
- include/asm-powerpc/cpm2.h                       | 1248 ++++++++++++++++++++++
- include/asm-powerpc/highmem.h                    |  135 +++
- include/asm-powerpc/hydra.h                      |  102 ++
- include/asm-powerpc/immap_cpm2.h                 |  648 +++++++++++
- include/asm-powerpc/kgdb.h                       |   57 +
- include/asm-powerpc/mpc52xx_psc.h                |  191 ++++
- include/asm-ppc/ans-lcd.h                        |   11 -
- 17 files changed, 3897 insertions(+), 16 deletions(-)
- create mode 100644 arch/powerpc/platforms/chrp/gg2.h
- create mode 100644 arch/powerpc/platforms/embedded6xx/mpc10x.h
- create mode 100644 drivers/macintosh/ans-lcd.h
- create mode 100644 include/asm-powerpc/8xx_immap.h
- create mode 100644 include/asm-powerpc/commproc.h
- create mode 100644 include/asm-powerpc/cpm2.h
- create mode 100644 include/asm-powerpc/highmem.h
- create mode 100644 include/asm-powerpc/hydra.h
- create mode 100644 include/asm-powerpc/immap_cpm2.h
- create mode 100644 include/asm-powerpc/kgdb.h
- create mode 100644 include/asm-powerpc/mpc52xx_psc.h
- delete mode 100644 include/asm-ppc/ans-lcd.h
+ LDFLAGS_vmlinux	:= -Bstatic
 
-File creation/movement removed from patch.
+-# The -Iarch/$(ARCH)/include is temporary while we are merging
+-CPPFLAGS-$(CONFIG_PPC32) := -Iarch/$(ARCH) -Iarch/$(ARCH)/include
++CPPFLAGS-$(CONFIG_PPC32) := -Iarch/$(ARCH)
+ AFLAGS-$(CONFIG_PPC32)	:= -Iarch/$(ARCH)
+ CFLAGS-$(CONFIG_PPC64)	:= -mminimal-toc -mtraceback=none  -mcall-aixdesc
+ CFLAGS-$(CONFIG_PPC32)	:= -Iarch/$(ARCH) -ffixed-r2 -mmultiple
+@@ -72,9 +71,6 @@ CPPFLAGS	+= $(CPPFLAGS-y)
+ AFLAGS		+= $(AFLAGS-y)
+ CFLAGS		+= -msoft-float -pipe $(CFLAGS-y)
+ CPP		= $(CC) -E $(CFLAGS)
+-# Temporary hack until we have migrated to asm-powerpc
+-LINUXINCLUDE-$(CONFIG_PPC32)	:= -Iarch/$(ARCH)/include
+-LINUXINCLUDE    += $(LINUXINCLUDE-y)
 
-diff --git a/arch/powerpc/platforms/chrp/pci.c b/arch/powerpc/platforms/chrp/pci.c
-index 0c6dba9..a01c4ac 100644
---- a/arch/powerpc/platforms/chrp/pci.c
-+++ b/arch/powerpc/platforms/chrp/pci.c
-@@ -13,7 +13,6 @@
- #include <asm/irq.h>
- #include <asm/hydra.h>
- #include <asm/prom.h>
--#include <asm/gg2.h>
- #include <asm/machdep.h>
- #include <asm/sections.h>
- #include <asm/pci-bridge.h>
-@@ -21,6 +20,7 @@
- #include <asm/rtas.h>
+ CHECKFLAGS	+= -m$(SZ) -D__powerpc__ -D__powerpc$(SZ)__
 
- #include "chrp.h"
-+#include "gg2.h"
+@@ -172,19 +168,8 @@ install:
+ archclean:
+ 	$(Q)$(MAKE) $(clean)=$(boot)
 
- /* LongTrail */
- void __iomem *gg2_pci_config_base;
-diff --git a/arch/powerpc/platforms/chrp/setup.c b/arch/powerpc/platforms/chrp/setup.c
-index dde5ef4..96498ad 100644
---- a/arch/powerpc/platforms/chrp/setup.c
-+++ b/arch/powerpc/platforms/chrp/setup.c
-@@ -37,7 +37,6 @@
- #include <asm/io.h>
- #include <asm/pgtable.h>
- #include <asm/prom.h>
--#include <asm/gg2.h>
- #include <asm/pci-bridge.h>
- #include <asm/dma.h>
- #include <asm/machdep.h>
-@@ -51,6 +50,7 @@
- #include <asm/xmon.h>
+-archmrproper:
+-	$(Q)rm -rf arch/$(ARCH)/include
+-
+ archprepare: checkbin
 
- #include "chrp.h"
-+#include "gg2.h"
-
- void rtas_indicator_progress(char *, unsigned short);
-
-diff --git a/arch/powerpc/platforms/embedded6xx/linkstation.c b/arch/powerpc/platforms/embedded6xx/linkstation.c
-index 8c60e02..61ca02c 100644
---- a/arch/powerpc/platforms/embedded6xx/linkstation.c
-+++ b/arch/powerpc/platforms/embedded6xx/linkstation.c
-@@ -18,9 +18,10 @@
- #include <asm/time.h>
- #include <asm/prom.h>
- #include <asm/mpic.h>
--#include <asm/mpc10x.h>
- #include <asm/pci-bridge.h>
-
-+#include "mpc10x.h"
-+
- static struct mtd_partition linkstation_physmap_partitions[] = {
- 	{
- 		.name   = "mtd_firmimg",
-diff --git a/arch/powerpc/platforms/embedded6xx/ls_uart.c b/arch/powerpc/platforms/embedded6xx/ls_uart.c
-index f7a4def..0d9f150 100644
---- a/arch/powerpc/platforms/embedded6xx/ls_uart.c
-+++ b/arch/powerpc/platforms/embedded6xx/ls_uart.c
-@@ -4,10 +4,11 @@
- #include <linux/serial_reg.h>
- #include <linux/serial_8250.h>
- #include <asm/io.h>
--#include <asm/mpc10x.h>
- #include <asm/prom.h>
- #include <asm/termbits.h>
-
-+#include "mpc10x.h"
-+
- static void __iomem *avr_addr;
- static unsigned long avr_clock;
-
-diff --git a/drivers/macintosh/ans-lcd.c b/drivers/macintosh/ans-lcd.c
-index e54c4d9..73c50bc 100644
---- a/drivers/macintosh/ans-lcd.c
-+++ b/drivers/macintosh/ans-lcd.c
-@@ -14,9 +14,10 @@
- #include <asm/uaccess.h>
- #include <asm/sections.h>
- #include <asm/prom.h>
--#include <asm/ans-lcd.h>
- #include <asm/io.h>
-
-+#include "ans-lcd.h"
-+
- #define ANSLCD_ADDR		0xf301c000
- #define ANSLCD_CTRL_IX 0x00
- #define ANSLCD_DATA_IX 0x10
+-ifeq ($(CONFIG_PPC32),y)
+-# Temporary hack until we have migrated to asm-powerpc
+-include/asm: arch/$(ARCH)/include/asm
+-arch/$(ARCH)/include/asm: FORCE
+-	$(Q)if [ ! -d arch/$(ARCH)/include ]; then mkdir -p arch/$(ARCH)/include; fi
+-	$(Q)ln -fsn $(srctree)/include/asm-$(OLDARCH) arch/$(ARCH)/include/asm
+-endif
+-
+ # Use the file '.tmp_gas_check' for binutils tests, as gas won't output
+ # to stdout and these checks are run even on install targets.
+ TOUT	:= .tmp_gas_check
 -- 
 1.5.2.2
