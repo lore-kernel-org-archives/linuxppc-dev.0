@@ -4,13 +4,14 @@ Received: from de01egw01.freescale.net (de01egw01.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3BEC0DDE17
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Aug 2007 03:40:05 +1000 (EST)
-Date: Mon, 20 Aug 2007 12:39:54 -0500
+	by ozlabs.org (Postfix) with ESMTP id 1FDD2DDEBA
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Aug 2007 03:39:59 +1000 (EST)
+Date: Mon, 20 Aug 2007 12:39:51 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: paulus@samba.org
-Subject: [PATCH 08/20] bootwrapper: serial_console_init() fixes.
-Message-ID: <20070820173954.GG30562@ld0162-tx32.am.freescale.net>
+Subject: [PATCH 06/20] bootwrapper: Add 16-bit I/O, sync(), eieio(),
+	and barrier().
+Message-ID: <20070820173951.GE30562@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20070820173920.GA30546@ld0162-tx32.am.freescale.net>
@@ -24,57 +25,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-1. Search the entire compatible list for serial devices.
-
-The serial code previously did a simple strcmp on the compatible
-node; this fails when the match string is not the first compatible
-listed.  Use dt_is_compatible() instead.
-
-2. Don't call serial_edit_cmdline if getc isn't defined.
+Also, include types.h from io.h, so callers don't have to.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/boot/serial.c |   12 +++++-------
- 1 files changed, 5 insertions(+), 7 deletions(-)
+ arch/powerpc/boot/io.h |   49 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 49 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/boot/serial.c b/arch/powerpc/boot/serial.c
-index eaa0d3a..3ce7f65 100644
---- a/arch/powerpc/boot/serial.c
-+++ b/arch/powerpc/boot/serial.c
-@@ -114,18 +114,14 @@ int serial_console_init(void)
- {
- 	void *devp;
- 	int rc = -1;
--	char compat[MAX_PROP_LEN];
- 
- 	devp = serial_get_stdout_devp();
- 	if (devp == NULL)
- 		goto err_out;
- 
--	if (getprop(devp, "compatible", compat, sizeof(compat)) < 0)
--		goto err_out;
--
--	if (!strcmp(compat, "ns16550"))
-+	if (dt_is_compatible(devp, "ns16550"))
- 		rc = ns16550_console_init(devp, &serial_cd);
--	else if (!strcmp(compat, "marvell,mpsc"))
-+	else if (dt_is_compatible(devp, "marvell,mpsc"))
- 		rc = mpsc_console_init(devp, &serial_cd);
- 
- 	/* Add other serial console driver calls here */
-@@ -133,10 +129,12 @@ int serial_console_init(void)
- 	if (!rc) {
- 		console_ops.open = serial_open;
- 		console_ops.write = serial_write;
--		console_ops.edit_cmdline = serial_edit_cmdline;
- 		console_ops.close = serial_close;
- 		console_ops.data = &serial_cd;
- 
-+		if (serial_cd.getc)
-+			console_ops.edit_cmdline = serial_edit_cmdline;
+diff --git a/arch/powerpc/boot/io.h b/arch/powerpc/boot/io.h
+index 32974ed..ccaedae 100644
+--- a/arch/powerpc/boot/io.h
++++ b/arch/powerpc/boot/io.h
+@@ -1,5 +1,8 @@
+ #ifndef _IO_H
+ #define __IO_H
 +
- 		return 0;
- 	}
- err_out:
++#include "types.h"
++
+ /*
+  * Low-level I/O routines.
+  *
+@@ -20,6 +23,37 @@ static inline void out_8(volatile unsigned char *addr, int val)
+ 			     : "=m" (*addr) : "r" (val));
+ }
+ 
++static inline unsigned in_le16(const volatile u16 *addr)
++{
++	unsigned ret;
++
++	__asm__ __volatile__("lhbrx %0,0,%1; twi 0,%0,0; isync"
++			     : "=r" (ret) : "r" (addr), "m" (*addr));
++
++	return ret;
++}
++
++static inline unsigned in_be16(const volatile u16 *addr)
++{
++	unsigned ret;
++
++	__asm__ __volatile__("lhz%U1%X1 %0,%1; twi 0,%0,0; isync"
++			     : "=r" (ret) : "m" (*addr));
++	return ret;
++}
++
++static inline void out_le16(volatile u16 *addr, int val)
++{
++	__asm__ __volatile__("sthbrx %1,0,%2; sync" : "=m" (*addr)
++			     : "r" (val), "r" (addr));
++}
++
++static inline void out_be16(volatile u16 *addr, int val)
++{
++	__asm__ __volatile__("sth%U0%X0 %1,%0; sync"
++			     : "=m" (*addr) : "r" (val));
++}
++
+ static inline unsigned in_le32(const volatile unsigned *addr)
+ {
+ 	unsigned ret;
+@@ -50,4 +84,19 @@ static inline void out_be32(volatile unsigned *addr, int val)
+ 			     : "=m" (*addr) : "r" (val));
+ }
+ 
++static inline void sync(void)
++{
++	asm volatile("sync" : : : "memory");
++}
++
++static inline void eieio(void)
++{
++	asm volatile("eieio" : : : "memory");
++}
++
++static inline void barrier(void)
++{
++	asm volatile("" : : : "memory");
++}
++
+ #endif /* _IO_H */
 -- 
 1.5.0.3
