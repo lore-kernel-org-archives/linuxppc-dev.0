@@ -4,14 +4,13 @@ Received: from de01egw02.freescale.net (de01egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0A584DDE49
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Aug 2007 03:40:21 +1000 (EST)
-Date: Mon, 20 Aug 2007 12:40:11 -0500
+	by ozlabs.org (Postfix) with ESMTP id A948CDDE1C
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Aug 2007 03:40:29 +1000 (EST)
+Date: Mon, 20 Aug 2007 12:40:10 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: paulus@samba.org
-Subject: [PATCH 19/20] bootwrapper: Only print MAC addresses when the node is
-	actually present.
-Message-ID: <20070820174011.GR30562@ld0162-tx32.am.freescale.net>
+Subject: [PATCH 18/20] bootwrapper: Add a zImage.bin.<platform> target.
+Message-ID: <20070820174010.GQ30562@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20070820173920.GA30546@ld0162-tx32.am.freescale.net>
@@ -25,38 +24,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Some firmwares (such as PlanetCore) only provide a base MAC address, and
-expect the kernel to set certain bits to generate the addresses for the
-other ports.  As such, MAC addresses are generated that may not correspond
-to actual hardware.
+This target produces a flat binary rather than an ELF file, and prints
+the start address for the user to jump to (since it is unfortunately not
+fixed).
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/boot/devtree.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
+ arch/powerpc/boot/Makefile |    5 ++++-
+ arch/powerpc/boot/wrapper  |   11 +++++++++++
+ 2 files changed, 15 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/boot/devtree.c b/arch/powerpc/boot/devtree.c
-index a92c8fb..73fa5a8 100644
---- a/arch/powerpc/boot/devtree.c
-+++ b/arch/powerpc/boot/devtree.c
-@@ -100,12 +100,14 @@ void __dt_fixup_mac_addresses(u32 startindex, ...)
- 		devp = find_node_by_prop_value(NULL, "linux,network-index",
- 					       (void*)&index, sizeof(index));
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index cd00711..6e7f518 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -124,7 +124,7 @@ endif
+ # args (to if_changed): 1 = (this rule), 2 = platform, 3 = dts 4=dtb 5=initrd
+ quiet_cmd_wrap	= WRAP    $@
+       cmd_wrap	=$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
+-		$(if $3, -s $3)$(if $4, -d $4)$(if $5, -i $5) vmlinux
++		$(if $3, -s $3)$(if $4, -d $4)$(if $5, -i $5) $6 vmlinux
  
--		printf("ENET%d: local-mac-address <-"
--		       " %02x:%02x:%02x:%02x:%02x:%02x\n\r", index,
--		       addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
-+		if (devp) {
-+			printf("ENET%d: local-mac-address <-"
-+			       " %02x:%02x:%02x:%02x:%02x:%02x\n\r", index,
-+			       addr[0], addr[1], addr[2],
-+			       addr[3], addr[4], addr[5]);
+ image-$(CONFIG_PPC_PSERIES)		+= zImage.pseries
+ image-$(CONFIG_PPC_MAPLE)		+= zImage.pseries
+@@ -177,6 +177,9 @@ endif
+ $(obj)/zImage.initrd.%: vmlinux $(wrapperbits) $(dts)
+ 	$(call if_changed,wrap,$*,$(dts),,$(obj)/ramdisk.image.gz)
  
--		if (devp)
- 			setprop(devp, "local-mac-address", addr, 6);
-+		}
++$(obj)/zImage.bin.%: vmlinux $(wrapperbits) $(dts)
++	$(call if_changed,wrap,$*,$(dts),,,--binary)
++
+ $(obj)/zImage.%: vmlinux $(wrapperbits) $(dts)
+ 	$(call if_changed,wrap,$*,$(dts))
  
- 		index++;
- 	}
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index 65f6854..09c17fb 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -30,6 +30,7 @@ dtb=
+ dts=
+ cacheit=
+ gzip=.gz
++binary=
+ 
+ # cross-compilation prefix
+ CROSS=
+@@ -44,6 +45,7 @@ usage() {
+     echo 'Usage: wrapper [-o output] [-p platform] [-i initrd]' >&2
+     echo '       [-d devtree] [-s tree.dts] [-c] [-C cross-prefix]' >&2
+     echo '       [-D datadir] [-W workingdir] [--no-gzip] [vmlinux]' >&2
++    echo '       [--binary]' >&2
+     exit 1
+ }
+ 
+@@ -95,6 +97,9 @@ while [ "$#" -gt 0 ]; do
+     --no-gzip)
+         gzip=
+         ;;
++    --binary)
++        binary=y
++        ;;
+     -?)
+ 	usage
+ 	;;
+@@ -295,3 +300,9 @@ ps3)
+     gzip --force -9 --stdout "$ofile.bin" > "$object/otheros.bld"
+     ;;
+ esac
++
++if [ -n "$binary" ]; then
++    mv "$ofile" "$ofile".elf
++    ${CROSS}objcopy -O binary "$ofile".elf "$ofile"
++    echo Entry point for $ofile is $entry.
++fi
 -- 
 1.5.0.3
