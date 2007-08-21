@@ -1,20 +1,15 @@
-Return-Path: <npiggin@suse.de>
-Received: from mx2.suse.de (ns2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2CEC3DDE1D
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Aug 2007 12:21:25 +1000 (EST)
-Date: Tue, 21 Aug 2007 04:21:20 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [patch 1/2] powerpc: smp_wmb speedup
-Message-ID: <20070821022119.GD2909@wotan.suse.de>
-References: <20070821021143.GB2909@wotan.suse.de>
-	<20070821021652.GC2909@wotan.suse.de>
-Mime-Version: 1.0
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 21 Aug 2007 12:42:00 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 10/20] bootwrapper: Add CPM serial driver.
+Message-ID: <20070821024200.GJ15469@localhost.localdomain>
+References: <20070820173920.GA30546@ld0162-tx32.am.freescale.net>
+	<20070820173957.GI30562@ld0162-tx32.am.freescale.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070821021652.GC2909@wotan.suse.de>
-Cc: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <20070820173957.GI30562@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,39 +19,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sorry, this is patch 2/2 of course.
+On Mon, Aug 20, 2007 at 12:39:57PM -0500, Scott Wood wrote:
+> This serial port is used on all 8xx, many 82xx, and some 85xx chips.
+> 
+> The driver requires that the port has already been set up by the firmware
+> and/or platform code.
+> 
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
 
-On Tue, Aug 21, 2007 at 04:16:52AM +0200, Nick Piggin wrote:
-> This one is perhaps not as straightforward. I'm pretty limited in the types
-> of powerpc machines I can test with, so I don't actually know whether this
-> is the right thing to do on power5/6 etc. I can supply the simple test program
-> I used if anybody is interested.
-> 
-> ---
-> On my dual G5, lwsync is over 5 times faster than eieio when used in a simple
-> test case (that actually makes real use of lwsync to provide write ordering).
-> 
-> This is not surprising, as it avoids the IO access synchronisation of eieio,
-> and still permits the important relaxation of executing loads before stores.
-> The on sub-architectures where lwsync is unavailable, eieio is retained, as
-> it should be faster than the alternative full sync (eieio is a proper subset
-> of sync).
-> 
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
-> 
-> Index: linux-2.6/include/asm-powerpc/system.h
-> ===================================================================
-> --- linux-2.6.orig/include/asm-powerpc/system.h
-> +++ linux-2.6/include/asm-powerpc/system.h
-> @@ -43,7 +43,11 @@
->  #ifdef CONFIG_SMP
->  #define smp_mb()	mb()
->  #define smp_rmb()	__asm__ __volatile__ (__stringify(LWSYNC) : : : "memory")
-> +#ifdef __SUBARCH_HAS_LWSYNC
-> +#define smp_wmb()	__asm__ __volatile__ (__stringify(LWSYNC) : : : "memory")
-> +#else
->  #define smp_wmb()	eieio()
-> +#endif
->  #define smp_read_barrier_depends()	read_barrier_depends()
->  #else
->  #define smp_mb()	barrier()
+Acked-by: David Gibson <david@gibson.dropbear.id.au>
+
+[snip]
+> diff --git a/arch/powerpc/boot/serial.c b/arch/powerpc/boot/serial.c
+> index 944f0ee..d47f8e0 100644
+> --- a/arch/powerpc/boot/serial.c
+> +++ b/arch/powerpc/boot/serial.c
+> @@ -121,6 +121,11 @@ int serial_console_init(void)
+>  		rc = ns16550_console_init(devp, &serial_cd);
+>  	else if (dt_is_compatible(devp, "marvell,mpsc"))
+>  		rc = mpsc_console_init(devp, &serial_cd);
+> +	else if (dt_is_compatible(devp, "fsl,cpm1-scc-uart") ||
+> +	         dt_is_compatible(devp, "fsl,cpm1-smc-uart") ||
+> +	         dt_is_compatible(devp, "fsl,cpm2-scc-uart") ||
+> +	         dt_is_compatible(devp, "fsl,cpm2-smc-uart"))
+> +		rc = cpm_console_init(devp, &serial_cd);
+
+If all these variants admit a compatible driver, there really should
+be defined a compatible value that they all include in the device
+tree.   But I guess you'd still need all these tests for device trees
+which didn't have it.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
