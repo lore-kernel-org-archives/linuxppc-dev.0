@@ -1,23 +1,24 @@
-Return-Path: <domen.puncer@telargo.com>
-Received: from out001.atlarge.net (out001.atlarge.net [129.41.63.69])
-	by ozlabs.org (Postfix) with ESMTP id 2FB1EDDE18
+Return-Path: <kkboyanov@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.227])
+	by ozlabs.org (Postfix) with ESMTP id C6CB4DDE0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 21 Aug 2007 15:49:58 +1000 (EST)
-Date: Tue, 21 Aug 2007 07:49:54 +0200
-From: Domen Puncer <domen.puncer@telargo.com>
-To: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: [RFC PATCH v0.1] net driver: mpc52xx fec
-Message-ID: <20070821054954.GM13994@moe.telargo.com>
-References: <20070810095153.GC13994@moe.telargo.com>
-	<20070818100643.GA31233@nd47.coderock.org>
-	<46C8643B.7010104@genesi-usa.com>
-	<20070820083137.GJ13994@moe.telargo.com>
-	<20070820131346.GA2406@nd47.coderock.org>
-	<46C9E562.7030601@genesi-usa.com>
+	Tue, 21 Aug 2007 17:56:13 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id 71so1167538wri
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 21 Aug 2007 00:56:12 -0700 (PDT)
+Message-ID: <929bf310708210056s2b699500x36c6b1ae83881496@mail.gmail.com>
+Date: Tue, 21 Aug 2007 09:56:12 +0200
+From: "Konstantin Boyanov" <kkboyanov@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Driver for device behind a PCI-VME bridge
+In-Reply-To: <929bf310708210055k3970c3chfc097ff776af439a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <46C9E562.7030601@genesi-usa.com>
-Cc: Domen Puncer <domen@coderock.org>, linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_Part_126588_29144553.1187682972554"
+References: <929bf310708200140w6efc57f6k81a1339845059e2d@mail.gmail.com>
+	<46C954AA.7050609@dutchspace.nl>
+	<929bf310708200158m3dab7669j56e4dbf2d84f17a@mail.gmail.com>
+	<929bf310708210055k3970c3chfc097ff776af439a@mail.gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,43 +29,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 20/08/07 20:02 +0100, Matt Sealey wrote:
-> Are you sure this is correct for the Efika?
+------=_Part_126588_29144553.1187682972554
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-It works (tm).
+Hi again,
 
-> 
-> The MPC5200B manual makes a decent distinction between MII operation and
-> straight MDIO?
+After some googling I came to the conclusion that the best approach to
+understanding how to write a driver for a device behind a PCI-XXX bridge is
+to look at the source for the USB subsystem, although the USB subsystem is
+actually a bus subssytem and not a class.
 
-Uh? From what I read MDIO are the lines of MII.
+Correct me if I'm wrong.
 
+Regards,
+Konstantin
 
-	Domen
+------=_Part_126588_29144553.1187682972554
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> 
-> -- 
-> Matt Sealey <matt@genesi-usa.com>
-> Genesi, Manager, Developer Relations
-> 
-> Domen Puncer wrote:
-> >On 20/08/07 10:31 +0200, Domen Puncer wrote:
-> >>On 19/08/07 16:39 +0100, Matt Sealey wrote:
-> >>>Domen,
-> >>>
-> >>>Do it in a Forth script, or in nvramrc (after probe-all). Don't clutter
-> >>>Linux with more fixups. The Efika PHY isn't going to change to something
-> >>>else and it's a bog standard no-frills MII PHY anyway.
-> >>Fine with me, but I'm worried people won't update nvramrc.
-> >>
-> >...
-> >>But I have a problem with it, possibly due to my not-knowledge of Forth.
-> >>Compatible keep getting set to:
-> >>	compatible            "/builtin/etherne"
-> >
-> >I missed the encode-string.
-> >
-> >Matt, can you please add attached Forth script to Efika updates.
-> >
-> >
-> >	Domen
+<span class="gmail_quote"><br></span>
+<div>Hi again,</div>
+<div>&nbsp;</div>
+<div>After some googling&nbsp;I came to the conclusion that the best approach to understanding how to write a driver for a device behind a PCI-XXX bridge is to look at the source for the USB subsystem, although the USB subsystem is actually a bus subssytem and not a class. 
+</div>
+<div>&nbsp;</div>
+<div>Correct me if I&#39;m wrong.</div>
+<div>&nbsp;</div>
+<div>Regards,</div><span class="sg">
+<div>Konstantin</div></span>
+
+------=_Part_126588_29144553.1187682972554--
