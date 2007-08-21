@@ -1,20 +1,15 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E2AABDDEA0
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Aug 2007 22:13:19 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1INSbl-0005q8-0D
-	for linuxppc-dev@ozlabs.org; Tue, 21 Aug 2007 05:13:17 -0700
-Message-ID: <12253417.post@talk.nabble.com>
-Date: Tue, 21 Aug 2007 05:13:16 -0700 (PDT)
-From: sivaji <rameshmrm@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Skipping the host bridge in arch/powerpc
+Return-Path: <matt@genesi-usa.com>
+Message-ID: <46CADC61.3050506@genesi-usa.com>
+Date: Tue, 21 Aug 2007 13:36:49 +0100
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Matt Sealey <matt@genesi-usa.com>, ppc-dev <linuxppc-dev@ozlabs.org>,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: OF /chosen/initrd,* variables - patch, official?
+References: <46CAC89F.2040100@genesi-usa.com> <46CACAAE.5000304@genesi-usa.com>
+	<20070821113232.GB1111@localhost.localdomain>
+In-Reply-To: <20070821113232.GB1111@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,15 +19,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+David Gibson wrote:
+> On Tue, Aug 21, 2007 at 12:21:18PM +0100, Matt Sealey wrote:
+>> Damn, I should use patchwork more efficiently;
+>>
+>> http://patchwork.ozlabs.org/linuxppc/patch?q=initrd&filter=none&id=12168
+>>
+>> Does anyone have any suggestion on the best way to integrate this so that
+>> it "just works" on OF platforms? It seems only to be usable way too late
+>> in boot to work, this code would have to be called in boot/main.c which seems
+>> relatively.. impossible to achieve.. or called in some specialised platform
+>> init code..
+> 
+> It would have to be called from platform_init().  If called in main()
+> it would clobber any other platform-specific initialization of the
+> initrd parameters in loader_info.
 
-Hai,
-        I am using the kernel 2.6.21. In the file
-(arch/ppc/syslib/pci_auto.c) we have the function pciauto_bus_scan(). In
-this function it will skip the host birdge. But in the arch/powepc directory
-we don't have that types of file and the function pciauto_bus_scan() also
-removed.
-I want to know where the function was moved in arch/powerpc directory ?
-How the host bridge was skip in the arch/powerpc directory. 
+So just to get this straight.. platform_init would be the function called from
+md.init or would be better at md.setup_arch?
+
+My goal right now is get something for CHRP (Pegasos) and Efika and try not
+to cause problems for anything else, but also really try not to clutter the
+thing with config checks, platform checks etc.
+
 -- 
-View this message in context: http://www.nabble.com/Skipping-the-host-bridge-in-arch-powerpc-tf4304798.html#a12253417
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
