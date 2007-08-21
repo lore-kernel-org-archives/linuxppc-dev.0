@@ -1,20 +1,19 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 46257DDE08
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 01:27:27 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 97F12DDEF5
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 01:29:23 +1000 (EST)
 Received: from localhost (unknown [10.150.0.9])
-	by buildserver.ru.mvista.com (Postfix) with ESMTP id 28B068810
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Aug 2007 20:27:25 +0500 (SAMST)
-Date: Tue, 21 Aug 2007 19:27:45 +0400
+	by buildserver.ru.mvista.com (Postfix) with ESMTP id 26DE58810
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Aug 2007 20:29:22 +0500 (SAMST)
+Date: Tue, 21 Aug 2007 19:29:42 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v5 0/2] SPI support for fsl_soc and mpc832x_rdb
-Message-ID: <20070821152745.GA28986@localhost.localdomain>
-References: <20070821134537.GA7428@localhost.localdomain>
+Subject: [PATCH v5 1/2] [POWERPC] fsl_soc: add support for fsl_spi
+Message-ID: <20070821152942.GA633@localhost.localdomain>
+References: <20070821152745.GA28986@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-In-Reply-To: <20070821134537.GA7428@localhost.localdomain>
-Reply-To: avorontsov@ru.mvista.com
+In-Reply-To: <20070821152745.GA28986@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,18 +23,127 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 21, 2007 at 05:45:37PM +0400, Anton Vorontsov wrote:
-> Hi all,
-> 
-> Thanks for the previous reviews, this is v4 against Linus' tree,
-> as of today.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ arch/powerpc/sysdev/fsl_soc.c |   84 +++++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/fsl_soc.h |    7 +++
+ 2 files changed, 91 insertions(+), 0 deletions(-)
 
-Okay, here is brand-new, shiny v5. Today and only today it comes
-without section mismatch warnings, don't miss your chance. Get it
-free of charge! ;-)
-
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index 1cf29c9..2bdaeb2 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -24,6 +24,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/of_platform.h>
+ #include <linux/phy.h>
++#include <linux/spi/spi.h>
+ #include <linux/fsl_devices.h>
+ #include <linux/fs_enet_pd.h>
+ #include <linux/fs_uart_pd.h>
+@@ -1187,3 +1188,86 @@ err:
+ arch_initcall(cpm_smc_uart_of_init);
+ 
+ #endif /* CONFIG_8xx */
++
++int __init fsl_spi_init(struct spi_board_info *board_infos,
++			unsigned int num_board_infos,
++			void (*activate_cs)(u8 cs, u8 polarity),
++			void (*deactivate_cs)(u8 cs, u8 polarity))
++{
++	struct device_node *np;
++	unsigned int i;
++	u32 sysclk;
++
++	np = of_find_node_by_type(NULL, "qe");
++	if (!np)
++		return -ENODEV;
++
++	sysclk = *(u32 *)of_get_property(np, "bus-frequency", NULL);
++
++	for (np = NULL, i = 1;
++	     (np = of_find_compatible_node(np, "spi", "fsl_spi")) != NULL;
++	     i++) {
++		int ret = 0;
++		unsigned int j;
++		const char *mode;
++		struct resource res[2];
++		struct platform_device *pdev = NULL;
++		struct fsl_spi_platform_data pdata = {
++			.activate_cs = activate_cs,
++			.deactivate_cs = deactivate_cs,
++		};
++
++		memset(res, 0, sizeof(res));
++
++		mode = of_get_property(np, "mode", NULL);
++		pdata.sysclk = sysclk;
++		pdata.bus_num = *(u32 *)of_get_property(np, "reg", NULL);
++
++		for (j = 0; j < num_board_infos; j++) {
++			if (board_infos[j].bus_num == pdata.bus_num)
++				pdata.max_chipselect++;
++		}
++
++		if (!pdata.max_chipselect)
++			goto err;
++
++		if (!strcmp(mode, "cpu-qe"))
++			pdata.qe_mode = 1;
++
++		ret = of_address_to_resource(np, 0, &res[0]);
++		if (ret)
++			goto err;
++
++		res[1].start = res[2].end = irq_of_parse_and_map(np, 0);
++		if (res[1].start == NO_IRQ)
++			goto err;
++
++		res[1].name = "mpc83xx_spi";
++		res[1].flags = IORESOURCE_IRQ;;
++
++		pdev = platform_device_alloc("mpc83xx_spi", i);
++		if (!pdev)
++			goto err;
++
++		ret = platform_device_add_data(pdev, &pdata, sizeof(pdata));
++		if (ret)
++			goto unreg;
++
++		ret = platform_device_add_resources(pdev, res,
++						    ARRAY_SIZE(res));
++		if (ret)
++			goto unreg;
++
++		ret = platform_device_register(pdev);
++		if (ret)
++			goto unreg;
++
++		continue;
++unreg:
++		platform_device_del(pdev);
++err:
++		continue;
++	}
++
++	return spi_register_board_info(board_infos, num_board_infos);
++}
+diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
+index 04e145b..618d91d 100644
+--- a/arch/powerpc/sysdev/fsl_soc.h
++++ b/arch/powerpc/sysdev/fsl_soc.h
+@@ -8,5 +8,12 @@ extern phys_addr_t get_immrbase(void);
+ extern u32 get_brgfreq(void);
+ extern u32 get_baudrate(void);
+ 
++struct spi_board_info;
++
++extern int fsl_spi_init(struct spi_board_info *board_infos,
++			unsigned int num_board_infos,
++			void (*activate_cs)(u8 cs, u8 polarity),
++			void (*deactivate_cs)(u8 cs, u8 polarity));
++
+ #endif
+ #endif
 -- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+1.5.0.6
