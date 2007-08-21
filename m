@@ -1,15 +1,14 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 21 Aug 2007 13:06:41 +1000
+Date: Tue, 21 Aug 2007 13:16:58 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 16/20] bootwrapper: Move strncmp() and strchr() from
-	flatdevtree_env.h to string.h.
-Message-ID: <20070821030641.GP15469@localhost.localdomain>
+Subject: Re: [PATCH 17/20] bootwrapper: Add PlanetCore firmware support.
+Message-ID: <20070821031658.GQ15469@localhost.localdomain>
 References: <20070820173920.GA30546@ld0162-tx32.am.freescale.net>
-	<20070820174007.GO30562@ld0162-tx32.am.freescale.net>
+	<20070820174008.GP30562@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070820174007.GO30562@ld0162-tx32.am.freescale.net>
+In-Reply-To: <20070820174008.GP30562@ld0162-tx32.am.freescale.net>
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,77 +19,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Aug 20, 2007 at 12:40:07PM -0500, Scott Wood wrote:
-> strncmp() will be needed for PlanetCore firmware support.
+On Mon, Aug 20, 2007 at 12:40:08PM -0500, Scott Wood wrote:
+> This is a library that board code can use to extract information from the
+> PlanetCore configuration keys.  PlanetCore is used on various boards from
+> Embedded Planet.
 > 
 > Signed-off-by: Scott Wood <scottwood@freescale.com>
 
-Hmm.  They should be moved, but if we are, I'm inclined to implement
-them in string.S with the rest of the string functions, rather than as
-inlines.  Below is a patch I've had in my queue for some time which
-does exactly that for strchr().
+[snip]
+;5B;5B;5B> diff --git a/arch/powerpc/boot/planetcore.c b/arch/powerpc/boot/planetcore.c
+> new file mode 100644
+> index 0000000..e0f85e6
+> --- /dev/null
+> +++ b/arch/powerpc/boot/planetcore.c
+> @@ -0,0 +1,160 @@
+> +/*
+> + * PlanetCore configuration data support functions
+> + *
+> + * Author: Scott Wood <scottwood@freescale.com>
+> + *
+> + * Copyright (c) 2007 Freescale Semiconductor, Inc.
+> + *
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms of the GNU General Public License version 2 as published
+> + * by the Free Software Foundation.
+> + */
+> +
+> +#include "stdio.h"
+> +#include "stdlib.h"
+> +#include "ops.h"
+> +#include "planetcore.h"
+> +#include "io.h"
 
-Move bootwrapper's strchr() from .h to string.S
+Some comments describing the Planetcore table format wouldn't go
+astray.  I vaguely recall it from when I worked with an EP405 years
+and years ago, but...
 
-Currently the bootwrapper has an implementation of strchr(), but it's
-done as an inline in flatdevtree_env.h, rather than implemented in
-string.S with the rest of the string functions.  This patch moves it
-to string.S, matching the other string functions.
+> +void planetcore_prepare_table(char *table)
+> +{
+> +	int last_was_newline = 0;
+> +
+> +	while (*table != 10 || !last_was_newline) {
+> +		if (*table == 10) {
+> +			*table = 0;
+> +			last_was_newline = 1;
+> +		} else {
+> +			last_was_newline = 0;
+> +		}
+> +
+> +		table++;
+> +	}
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Hrm.. this loop makes my brain hurt.  It's correct as far as I can
+determine what it's supposed to be doing, but I think there's got to
+be a way to make what it's doing a little more obvious.
 
-Index: working-2.6/arch/powerpc/boot/string.S
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/string.S	2007-06-28 14:30:16.000000000 +1000
-+++ working-2.6/arch/powerpc/boot/string.S	2007-06-28 14:38:01.000000000 +1000
-@@ -49,6 +49,17 @@
- 	bne	1b
- 	blr
- 
-+	.globl	strchr
-+strchr:
-+	addi	r3,r3,-1
-+1:	lbzu	r0,1(r3)
-+	cmpw	0,r0,r4
-+	beqlr
-+	cmpwi	0,r0,0
-+	bne	1b
-+	li	r3,0
-+	blr
-+
- 	.globl	strcmp
- strcmp:
- 	addi	r5,r3,-1
-Index: working-2.6/arch/powerpc/boot/string.h
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/string.h	2007-06-28 14:38:52.000000000 +1000
-+++ working-2.6/arch/powerpc/boot/string.h	2007-06-28 14:39:14.000000000 +1000
-@@ -5,6 +5,7 @@
- extern char *strcpy(char *dest, const char *src);
- extern char *strncpy(char *dest, const char *src, size_t n);
- extern char *strcat(char *dest, const char *src);
-+extern char *strchr(const char *s, int c);
- extern int strcmp(const char *s1, const char *s2);
- extern size_t strlen(const char *s);
- extern size_t strnlen(const char *s, size_t count);
-Index: working-2.6/arch/powerpc/boot/flatdevtree_env.h
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/flatdevtree_env.h	2007-06-28 14:39:55.000000000 +1000
-+++ working-2.6/arch/powerpc/boot/flatdevtree_env.h	2007-06-28 14:40:00.000000000 +1000
-@@ -36,12 +36,4 @@
- 	return __res;
- }
- 
--static inline char *strchr(const char *s, int c)
--{
--	for (; *s != (char)c; ++s)
--		if (*s == '\0')
--			return NULL;
--	return (char *)s;
--}
--
- #endif /* _PPC_BOOT_FLATDEVTREE_ENV_H_ */
-
+> +	*table = 0;
+> +}
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
