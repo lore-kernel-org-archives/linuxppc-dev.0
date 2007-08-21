@@ -1,21 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <b07421@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 50B5BDDE9D
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 05:43:26 +1000 (EST)
-In-Reply-To: <46CB37D4.2080609@austin.ibm.com>
-References: <20070821021143.GB2909@wotan.suse.de>
-	<46CB37D4.2080609@austin.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <d9f43b5c31fde5851a7af1d0f36eb134@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [patch 1/2] powerpc: rmb fix
-Date: Tue, 21 Aug 2007 21:43:17 +0200
-To: Joel Schopp <jschopp@austin.ibm.com>
-Cc: Nick Piggin <npiggin@suse.de>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7EF06DDE36
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 07:10:57 +1000 (EST)
+Date: Tue, 21 Aug 2007 16:10:48 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: paulus@samba.org
+Subject: [PATCH] Check _PAGE_RW and _PAGE_PRESENT on kernel addresses.
+Message-ID: <20070821211048.GA8432@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,39 +23,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>  #define mb()   __asm__ __volatile__ ("sync" : : : "memory")
->> -#define rmb()  __asm__ __volatile__ (__stringify(LWSYNC) : : : 
->> "memory")
->> +#define rmb()  __asm__ __volatile__ ("sync" : : : "memory")
->>  #define wmb()  __asm__ __volatile__ ("sync" : : : "memory")
->>  #define read_barrier_depends()  do { } while(0)
->>
->> @@ -42,7 +42,7 @@
->>  #ifdef __KERNEL__
->>  #ifdef CONFIG_SMP
->>  #define smp_mb()	mb()
->> -#define smp_rmb()	rmb()
->> +#define smp_rmb()	__asm__ __volatile__ (__stringify(LWSYNC) : : : 
->> "memory")
->>  #define smp_wmb()	eieio()
->>  #define smp_read_barrier_depends()	read_barrier_depends()
->>  #else
->
-> I had to think about this one for awhile.  It looks at first glance to 
-> be the right
-> thing to do.  But I do wonder how long rmb() has been lwsync
+Previously, the TLB miss handlers assumed that pages above KERNELBASE are
+always present and read/write.  This assumption is false in the case of
+CONFIG_DEBUG_PAGEALLOC.
 
-Since the {ppc,ppc64} -> powerpc merge.
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/kernel/head_32.S |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-> and if as a practical matter that has caused any problems?
-
-It has not as far as I know.
-
-> If this isn't causing any problems maybe there
-> is some loigic we are overlooking?
-
-The I/O accessor functions enforce the necessary ordering
-already I believe.
-
-
-Segher
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index 7d73a13..2d3b804 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -475,10 +475,10 @@ InstructionTLBMiss:
+ 	li	r1,_PAGE_USER|_PAGE_PRESENT /* low addresses tested as user */
+ 	lwz	r2,PGDIR(r2)
+ 	blt+	112f
++	mfspr	r2,SPRN_SRR1		/* and MSR_PR bit from SRR1 */
++	rlwinm	r1,r2,32-12,29,29	/* shift MSR_PR to _PAGE_USER posn */
+ 	lis	r2,swapper_pg_dir@ha	/* if kernel address, use */
+ 	addi	r2,r2,swapper_pg_dir@l	/* kernel page table */
+-	mfspr	r1,SPRN_SRR1		/* and MSR_PR bit from SRR1 */
+-	rlwinm	r1,r1,32-12,29,29	/* shift MSR_PR to _PAGE_USER posn */
+ 112:	tophys(r2,r2)
+ 	rlwimi	r2,r3,12,20,29		/* insert top 10 bits of address */
+ 	lwz	r2,0(r2)		/* get pmd entry */
+@@ -549,10 +549,10 @@ DataLoadTLBMiss:
+ 	li	r1,_PAGE_USER|_PAGE_PRESENT /* low addresses tested as user */
+ 	lwz	r2,PGDIR(r2)
+ 	blt+	112f
++	mfspr	r2,SPRN_SRR1		/* and MSR_PR bit from SRR1 */
++	rlwinm	r1,r2,32-12,29,29	/* shift MSR_PR to _PAGE_USER posn */
+ 	lis	r2,swapper_pg_dir@ha	/* if kernel address, use */
+ 	addi	r2,r2,swapper_pg_dir@l	/* kernel page table */
+-	mfspr	r1,SPRN_SRR1		/* and MSR_PR bit from SRR1 */
+-	rlwinm	r1,r1,32-12,29,29	/* shift MSR_PR to _PAGE_USER posn */
+ 112:	tophys(r2,r2)
+ 	rlwimi	r2,r3,12,20,29		/* insert top 10 bits of address */
+ 	lwz	r2,0(r2)		/* get pmd entry */
+@@ -621,10 +621,10 @@ DataStoreTLBMiss:
+ 	li	r1,_PAGE_RW|_PAGE_USER|_PAGE_PRESENT /* access flags */
+ 	lwz	r2,PGDIR(r2)
+ 	blt+	112f
++	mfspr	r2,SPRN_SRR1		/* and MSR_PR bit from SRR1 */
++	rlwimi	r1,r2,32-12,29,29	/* shift MSR_PR to _PAGE_USER posn */
+ 	lis	r2,swapper_pg_dir@ha	/* if kernel address, use */
+ 	addi	r2,r2,swapper_pg_dir@l	/* kernel page table */
+-	mfspr	r1,SPRN_SRR1		/* and MSR_PR bit from SRR1 */
+-	rlwinm	r1,r1,32-12,29,29	/* shift MSR_PR to _PAGE_USER posn */
+ 112:	tophys(r2,r2)
+ 	rlwimi	r2,r3,12,20,29		/* insert top 10 bits of address */
+ 	lwz	r2,0(r2)		/* get pmd entry */
+-- 
+1.5.0.3
