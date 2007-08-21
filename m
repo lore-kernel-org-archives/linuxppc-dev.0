@@ -1,17 +1,20 @@
-Return-Path: <rameshmrm@gmail.com>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.235])
-	by ozlabs.org (Postfix) with ESMTP id 85787DDE29
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Aug 2007 19:25:04 +1000 (EST)
-Received: by wx-out-0506.google.com with SMTP id h27so1386247wxd
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Aug 2007 02:25:01 -0700 (PDT)
-Message-ID: <a12d1c3d0708210225k54a89463jdb58b199da059717@mail.gmail.com>
-Date: Tue, 21 Aug 2007 14:55:01 +0530
-From: "ramesh mrm" <rameshmrm@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: 
+Return-Path: <sassmann@suse.de>
+Message-ID: <46CAD366.4010405@suse.de>
+Date: Tue, 21 Aug 2007 13:58:30 +0200
+From: Stefan Assmann <sassmann@suse.de>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_1599_28799418.1187688301539"
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: PS3 improved video mode autodetection for HDMI/DVI
+References: <Pine.LNX.4.62.0707121029320.12797@pademelon.sonytel.be>
+	<46C405B3.2040401@suse.de>
+	<Pine.LNX.4.62.0708201541230.6197@pademelon.sonytel.be>
+	<46C9B172.9030309@suse.de>
+	<Pine.LNX.4.62.0708201740080.6197@pademelon.sonytel.be>
+In-Reply-To: <Pine.LNX.4.62.0708201740080.6197@pademelon.sonytel.be>
+Content-Type: text/plain; charset=UTF-8
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>,
+	Ben Collins <ben.collins@ubuntu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,30 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_1599_28799418.1187688301539
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Geert Uytterhoeven schrieb:
+> I know you could get the PS3AV_CID_AV_VIDEO_DISABLE_SIG message in some cases
+> when booting immediately into a VESA mode.
+>
+> I see you have
+>
+>     CONFIG_CMDLINE="quiet sysrq=1 panic=42 video=ps3fb:mode:0"
+>
+> Does it go away if you remove the `video=...'?
+>   
+removing video=ps3fb:mode:0 from CONFIG_CMDLINE has no effect.
 
-Hai,
-        I am using the kernel 2.6.21. In the file
-(arch/ppc/syslib/pci_auto.c) we have the function pciauto_bus_scan(). In
-this function it will skip the host birdge. But in the arch/powepc
-directory we don't have that types of file and the function
-pciauto_bus_scan() also removed.
-I want to know where the function was moved in arch/powerpc directory ?
-How the host bridge was skip in the arch/powerpc directory.
-
-Thanks and Regards
-Ramesh
-
-------=_Part_1599_28799418.1187688301539
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-<div id="mb_0">Hai,<br>&nbsp; &nbsp; &nbsp; &nbsp; I am using the kernel 2.6.21. In the file<br>(arch/ppc/syslib/pci_auto.c) we have the function pciauto_bus_scan(). In<br>this function it will skip the host birdge. But in the arch/powepc<br>
-directory we don&#39;t have that types of file and the function <br>pciauto_bus_scan() also removed.<br>I want to know where the function was moved in arch/powerpc directory ?<br>How the host bridge was skip in the arch/powerpc directory.
-<br><br>Thanks and Regards<br><span class="sg">Ramesh<br></span></div>
-
-------=_Part_1599_28799418.1187688301539--
+Stefan
