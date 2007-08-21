@@ -1,17 +1,19 @@
-Return-Path: <matt@genesi-usa.com>
-Message-ID: <46CAE177.3010508@genesi-usa.com>
-Date: Tue, 21 Aug 2007 13:58:31 +0100
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
-To: Matt Sealey <matt@genesi-usa.com>, ppc-dev <linuxppc-dev@ozlabs.org>,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: OF /chosen/initrd,* variables - patch, official?
-References: <46CAC89F.2040100@genesi-usa.com> <46CACAAE.5000304@genesi-usa.com>
-	<20070821113232.GB1111@localhost.localdomain>
-	<46CADC61.3050506@genesi-usa.com>
-	<20070821124253.GC1111@localhost.localdomain>
-In-Reply-To: <20070821124253.GC1111@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7F7FCDDEBD
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Aug 2007 23:13:52 +1000 (EST)
+In-Reply-To: <12253307.post@talk.nabble.com>
+References: <12253307.post@talk.nabble.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <BFF367AA-0AF7-4C91-A66B-8DB1779BB58C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Regarding PCIExpress Problem in MPC8641D
+Date: Tue, 21 Aug 2007 08:15:50 -0500
+To: sivaji <rameshmrm@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,21 +24,35 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-David Gibson wrote:
-> Uh... no... this is in the bootwrapper, long before ppc_md even
-> exists.  platform_init() is called from arch/powerpc/boot/crt0.S,
-> immediately before main().
+On Aug 21, 2007, at 7:09 AM, sivaji wrote:
 
-Oh *THAT* platform init.
+>
+> Hai,
+>
+> Currently I am involved in the testing of a MPC8641D based board  
+> designed by
+> us. We have planned to test the PCI Express interface through a  
+> back to back
+> interface, host being mpc8641d and target is mpc8548.
+>
+> When trying a target DMA transaction we are not able to access the  
+> host
+> memory using pci Express bus. We are facingDMA Transfer Error.  
+> Without DMA
+> we are able to access the host memory from the target and target  
+> memory from
+> the host.
+>
+>
+> The processor rev number is 2.0. The external irq[0-3] are pulled  
+> down and
+> the polarity is active low and it is level sensitive.
+>
+> Memory base address : 0x80000000 size:512MB
+> I/O base address    : 0xe2000000 size:16MB.
+> Kernel Version	    : 2.6.21
 
-So I could just drop a
+I suggest upgrading to 2.6.23-rc3.  There are a number of PCIe  
+related fixes that have gone in.
 
-} else {
-	dt_find_initrd();
-}
-
-.. at the end and nobody would be too disgusted or have any problems?
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+- k
