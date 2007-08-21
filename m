@@ -1,15 +1,16 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id CAABBDDE30
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Aug 2007 14:55:56 +1000 (EST)
-Date: Tue, 21 Aug 2007 14:45:38 +1000
+	by ozlabs.org (Postfix) with ESMTP id 96397DDE40
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Aug 2007 14:55:57 +1000 (EST)
+Date: Tue, 21 Aug 2007 14:55:49 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH 3/4] [POWERPC] Move the iSeries exception vectors
-Message-Id: <20070821144538.4c6ce421.sfr@canb.auug.org.au>
-In-Reply-To: <20070821144422.776257e3.sfr@canb.auug.org.au>
+Subject: [PATCH 4/4] [POWERPC] Split out iSeries specific exception macros
+Message-Id: <20070821145549.61a842d5.sfr@canb.auug.org.au>
+In-Reply-To: <20070821144538.4c6ce421.sfr@canb.auug.org.au>
 References: <20070821144222.e240bbf0.sfr@canb.auug.org.au>
 	<20070821144422.776257e3.sfr@canb.auug.org.au>
+	<20070821144538.4c6ce421.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>
@@ -22,321 +23,251 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-out of head_64.S and into platforms/iseries/head.S
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/kernel/head_64.S         |  136 ---------------------------------
- arch/powerpc/platforms/iseries/head.S |  136 +++++++++++++++++++++++++++++++++
- 2 files changed, 136 insertions(+), 136 deletions(-)
+ arch/powerpc/platforms/iseries/exception.h |   58 ++++++++++++++++++++++
+ arch/powerpc/platforms/iseries/head.S      |   15 +++---
+ include/asm-powerpc/exception.h            |   71 +++++-----------------------
+ 3 files changed, 78 insertions(+), 66 deletions(-)
+ create mode 100644 arch/powerpc/platforms/iseries/exception.h
 
 Built for iseries_defconfig, pseries_defconfig, ppc64_defconfig,
-allmodconfig and booted on iSeries 270 for iseries_defconfig and
+allmodconfig, booted on iSeries 270 for iseries_defconfig and
+ppc64_defconfig and booted on pSeries POWER5+ for pseries_defconfig and
 ppc64_defconfig.
+
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index fe6122b..33c4e8c 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -358,142 +358,6 @@ machine_check_fwnmi:
- 	mtspr	SPRN_SPRG1,r13		/* save r13 */
- 	EXCEPTION_PROLOG_PSERIES_FORCE_64BIT(PACA_EXMC, machine_check_common)
- 
--#ifdef CONFIG_PPC_ISERIES
--/***  ISeries-LPAR interrupt handlers ***/
--
--	STD_EXCEPTION_ISERIES(0x200, machine_check, PACA_EXMC)
--
--	.globl data_access_iSeries
--data_access_iSeries:
--	mtspr	SPRN_SPRG1,r13
--BEGIN_FTR_SECTION
--	mtspr	SPRN_SPRG2,r12
--	mfspr	r13,SPRN_DAR
--	mfspr	r12,SPRN_DSISR
--	srdi	r13,r13,60
--	rlwimi	r13,r12,16,0x20
--	mfcr	r12
--	cmpwi	r13,0x2c
--	beq	.do_stab_bolted_iSeries
--	mtcrf	0x80,r12
--	mfspr	r12,SPRN_SPRG2
--END_FTR_SECTION_IFCLR(CPU_FTR_SLB)
--	EXCEPTION_PROLOG_ISERIES_1(PACA_EXGEN)
--	EXCEPTION_PROLOG_ISERIES_2
--	b	data_access_common
--
--.do_stab_bolted_iSeries:
--	mtcrf	0x80,r12
--	mfspr	r12,SPRN_SPRG2
--	EXCEPTION_PROLOG_ISERIES_1(PACA_EXSLB)
--	EXCEPTION_PROLOG_ISERIES_2
--	b	.do_stab_bolted
--
--	.globl	data_access_slb_iSeries
--data_access_slb_iSeries:
--	mtspr	SPRN_SPRG1,r13		/* save r13 */
--	mfspr	r13,SPRN_SPRG3		/* get paca address into r13 */
--	std	r3,PACA_EXSLB+EX_R3(r13)
--	mfspr	r3,SPRN_DAR
--	std	r9,PACA_EXSLB+EX_R9(r13)
--	mfcr	r9
--#ifdef __DISABLED__
--	cmpdi	r3,0
--	bge	slb_miss_user_iseries
--#endif
--	std	r10,PACA_EXSLB+EX_R10(r13)
--	std	r11,PACA_EXSLB+EX_R11(r13)
--	std	r12,PACA_EXSLB+EX_R12(r13)
--	mfspr	r10,SPRN_SPRG1
--	std	r10,PACA_EXSLB+EX_R13(r13)
--	ld	r12,PACALPPACAPTR(r13)
--	ld	r12,LPPACASRR1(r12)
--	b	.slb_miss_realmode
--
--	STD_EXCEPTION_ISERIES(0x400, instruction_access, PACA_EXGEN)
--
--	.globl	instruction_access_slb_iSeries
--instruction_access_slb_iSeries:
--	mtspr	SPRN_SPRG1,r13		/* save r13 */
--	mfspr	r13,SPRN_SPRG3		/* get paca address into r13 */
--	std	r3,PACA_EXSLB+EX_R3(r13)
--	ld	r3,PACALPPACAPTR(r13)
--	ld	r3,LPPACASRR0(r3)	/* get SRR0 value */
--	std	r9,PACA_EXSLB+EX_R9(r13)
--	mfcr	r9
--#ifdef __DISABLED__
--	cmpdi	r3,0
--	bge	.slb_miss_user_iseries
--#endif
--	std	r10,PACA_EXSLB+EX_R10(r13)
--	std	r11,PACA_EXSLB+EX_R11(r13)
--	std	r12,PACA_EXSLB+EX_R12(r13)
--	mfspr	r10,SPRN_SPRG1
--	std	r10,PACA_EXSLB+EX_R13(r13)
--	ld	r12,PACALPPACAPTR(r13)
--	ld	r12,LPPACASRR1(r12)
--	b	.slb_miss_realmode
--
--#ifdef __DISABLED__
--slb_miss_user_iseries:
--	std	r10,PACA_EXGEN+EX_R10(r13)
--	std	r11,PACA_EXGEN+EX_R11(r13)
--	std	r12,PACA_EXGEN+EX_R12(r13)
--	mfspr	r10,SPRG1
--	ld	r11,PACA_EXSLB+EX_R9(r13)
--	ld	r12,PACA_EXSLB+EX_R3(r13)
--	std	r10,PACA_EXGEN+EX_R13(r13)
--	std	r11,PACA_EXGEN+EX_R9(r13)
--	std	r12,PACA_EXGEN+EX_R3(r13)
--	EXCEPTION_PROLOG_ISERIES_2
--	b	slb_miss_user_common
--#endif
--
--	MASKABLE_EXCEPTION_ISERIES(0x500, hardware_interrupt)
--	STD_EXCEPTION_ISERIES(0x600, alignment, PACA_EXGEN)
--	STD_EXCEPTION_ISERIES(0x700, program_check, PACA_EXGEN)
--	STD_EXCEPTION_ISERIES(0x800, fp_unavailable, PACA_EXGEN)
--	MASKABLE_EXCEPTION_ISERIES(0x900, decrementer)
--	STD_EXCEPTION_ISERIES(0xa00, trap_0a, PACA_EXGEN)
--	STD_EXCEPTION_ISERIES(0xb00, trap_0b, PACA_EXGEN)
--
--	.globl	system_call_iSeries
--system_call_iSeries:
--	mr	r9,r13
--	mfspr	r13,SPRN_SPRG3
--	EXCEPTION_PROLOG_ISERIES_2
--	b	system_call_common
--
--	STD_EXCEPTION_ISERIES( 0xd00, single_step, PACA_EXGEN)
--	STD_EXCEPTION_ISERIES( 0xe00, trap_0e, PACA_EXGEN)
--	STD_EXCEPTION_ISERIES( 0xf00, performance_monitor, PACA_EXGEN)
--
--decrementer_iSeries_masked:
--	/* We may not have a valid TOC pointer in here. */
--	li	r11,1
--	ld	r12,PACALPPACAPTR(r13)
--	stb	r11,LPPACADECRINT(r12)
--	LOAD_REG_IMMEDIATE(r12, tb_ticks_per_jiffy)
--	lwz	r12,0(r12)
--	mtspr	SPRN_DEC,r12
--	/* fall through */
--
--hardware_interrupt_iSeries_masked:
--	mtcrf	0x80,r9		/* Restore regs */
--	ld	r12,PACALPPACAPTR(r13)
--	ld	r11,LPPACASRR0(r12)
--	ld	r12,LPPACASRR1(r12)
--	mtspr	SPRN_SRR0,r11
--	mtspr	SPRN_SRR1,r12
--	ld	r9,PACA_EXGEN+EX_R9(r13)
--	ld	r10,PACA_EXGEN+EX_R10(r13)
--	ld	r11,PACA_EXGEN+EX_R11(r13)
--	ld	r12,PACA_EXGEN+EX_R12(r13)
--	ld	r13,PACA_EXGEN+EX_R13(r13)
--	rfid
--	b	.	/* prevent speculative execution */
--#endif /* CONFIG_PPC_ISERIES */
--
- /*** Common interrupt handlers ***/
- 
- 	STD_EXCEPTION_COMMON(0x100, system_reset, .system_reset_exception)
+diff --git a/arch/powerpc/platforms/iseries/exception.h b/arch/powerpc/platforms/iseries/exception.h
+new file mode 100644
+index 0000000..5b3f285
+--- /dev/null
++++ b/arch/powerpc/platforms/iseries/exception.h
+@@ -0,0 +1,58 @@
++#ifndef _ASM_POWERPC_ISERIES_EXCEPTION_H
++#define _ASM_POWERPC_ISERIES_EXCEPTION_H
++/*
++ * Extracted from head_64.S
++ *
++ *  PowerPC version
++ *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
++ *
++ *  Rewritten by Cort Dougan (cort@cs.nmt.edu) for PReP
++ *    Copyright (C) 1996 Cort Dougan <cort@cs.nmt.edu>
++ *  Adapted for Power Macintosh by Paul Mackerras.
++ *  Low-level exception handlers and MMU support
++ *  rewritten by Paul Mackerras.
++ *    Copyright (C) 1996 Paul Mackerras.
++ *
++ *  Adapted for 64bit PowerPC by Dave Engebretsen, Peter Bergner, and
++ *    Mike Corrigan {engebret|bergner|mikejc}@us.ibm.com
++ *
++ *  This file contains the low-level support and setup for the
++ *  PowerPC-64 platform, including trap and interrupt dispatch.
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License
++ *  as published by the Free Software Foundation; either version
++ *  2 of the License, or (at your option) any later version.
++ */
++#include <asm/exception.h>
++
++#define EXCEPTION_PROLOG_ISERIES_1					\
++	mfmsr	r10;							\
++	ld	r12,PACALPPACAPTR(r13);					\
++	ld	r11,LPPACASRR0(r12);					\
++	ld	r12,LPPACASRR1(r12);					\
++	ori	r10,r10,MSR_RI;						\
++	mtmsrd	r10,1
++
++#define STD_EXCEPTION_ISERIES(n, label, area)				\
++	.globl label##_iSeries;						\
++label##_iSeries:							\
++	HMT_MEDIUM;							\
++	mtspr	SPRN_SPRG1,r13;		/* save r13 */			\
++	EXCEPTION_PROLOG_1(area);					\
++	EXCEPTION_PROLOG_ISERIES_1;					\
++	b	label##_common
++
++#define MASKABLE_EXCEPTION_ISERIES(n, label)				\
++	.globl label##_iSeries;						\
++label##_iSeries:							\
++	HMT_MEDIUM;							\
++	mtspr	SPRN_SPRG1,r13;		/* save r13 */			\
++	EXCEPTION_PROLOG_1(PACA_EXGEN);					\
++	lbz	r10,PACASOFTIRQEN(r13);					\
++	cmpwi	0,r10,0;						\
++	beq-	label##_iSeries_masked;					\
++	EXCEPTION_PROLOG_ISERIES_1;					\
++	b	label##_common;						\
++
++#endif	/* _ASM_POWERPC_ISERIES_EXCEPTION_H */
 diff --git a/arch/powerpc/platforms/iseries/head.S b/arch/powerpc/platforms/iseries/head.S
-index b6e2f8c..b5f6006 100644
+index b5f6006..e9a3435 100644
 --- a/arch/powerpc/platforms/iseries/head.S
 +++ b/arch/powerpc/platforms/iseries/head.S
-@@ -30,6 +30,8 @@
+@@ -30,9 +30,10 @@
  #include <asm/asm-offsets.h>
  #include <asm/thread_info.h>
  #include <asm/ptrace.h>
-+#include <asm/exception.h>
-+#include <asm/cputable.h>
+-#include <asm/exception.h>
+ #include <asm/cputable.h>
  
++#include "exception.h"
++
  	.text
  
-@@ -83,6 +85,140 @@ iSeries_secondary_smp_loop:
- 	b	1b			/* If SMP not configured, secondaries
- 					 * loop forever */
+ 	.globl system_reset_iSeries
+@@ -104,15 +105,15 @@ BEGIN_FTR_SECTION
+ 	mtcrf	0x80,r12
+ 	mfspr	r12,SPRN_SPRG2
+ END_FTR_SECTION_IFCLR(CPU_FTR_SLB)
+-	EXCEPTION_PROLOG_ISERIES_1(PACA_EXGEN)
+-	EXCEPTION_PROLOG_ISERIES_2
++	EXCEPTION_PROLOG_1(PACA_EXGEN)
++	EXCEPTION_PROLOG_ISERIES_1
+ 	b	data_access_common
  
-+/***  ISeries-LPAR interrupt handlers ***/
-+
-+	STD_EXCEPTION_ISERIES(0x200, machine_check, PACA_EXMC)
-+
-+	.globl data_access_iSeries
-+data_access_iSeries:
-+	mtspr	SPRN_SPRG1,r13
-+BEGIN_FTR_SECTION
-+	mtspr	SPRN_SPRG2,r12
-+	mfspr	r13,SPRN_DAR
-+	mfspr	r12,SPRN_DSISR
-+	srdi	r13,r13,60
-+	rlwimi	r13,r12,16,0x20
-+	mfcr	r12
-+	cmpwi	r13,0x2c
-+	beq	.do_stab_bolted_iSeries
-+	mtcrf	0x80,r12
-+	mfspr	r12,SPRN_SPRG2
-+END_FTR_SECTION_IFCLR(CPU_FTR_SLB)
-+	EXCEPTION_PROLOG_ISERIES_1(PACA_EXGEN)
-+	EXCEPTION_PROLOG_ISERIES_2
-+	b	data_access_common
-+
-+.do_stab_bolted_iSeries:
-+	mtcrf	0x80,r12
-+	mfspr	r12,SPRN_SPRG2
-+	EXCEPTION_PROLOG_ISERIES_1(PACA_EXSLB)
-+	EXCEPTION_PROLOG_ISERIES_2
-+	b	.do_stab_bolted
-+
-+	.globl	data_access_slb_iSeries
-+data_access_slb_iSeries:
-+	mtspr	SPRN_SPRG1,r13		/* save r13 */
-+	mfspr	r13,SPRN_SPRG3		/* get paca address into r13 */
-+	std	r3,PACA_EXSLB+EX_R3(r13)
-+	mfspr	r3,SPRN_DAR
-+	std	r9,PACA_EXSLB+EX_R9(r13)
+ .do_stab_bolted_iSeries:
+ 	mtcrf	0x80,r12
+ 	mfspr	r12,SPRN_SPRG2
+-	EXCEPTION_PROLOG_ISERIES_1(PACA_EXSLB)
+-	EXCEPTION_PROLOG_ISERIES_2
++	EXCEPTION_PROLOG_1(PACA_EXSLB)
++	EXCEPTION_PROLOG_ISERIES_1
+ 	b	.do_stab_bolted
+ 
+ 	.globl	data_access_slb_iSeries
+@@ -171,7 +172,7 @@ slb_miss_user_iseries:
+ 	std	r10,PACA_EXGEN+EX_R13(r13)
+ 	std	r11,PACA_EXGEN+EX_R9(r13)
+ 	std	r12,PACA_EXGEN+EX_R3(r13)
+-	EXCEPTION_PROLOG_ISERIES_2
++	EXCEPTION_PROLOG_ISERIES_1
+ 	b	slb_miss_user_common
+ #endif
+ 
+@@ -187,7 +188,7 @@ slb_miss_user_iseries:
+ system_call_iSeries:
+ 	mr	r9,r13
+ 	mfspr	r13,SPRN_SPRG3
+-	EXCEPTION_PROLOG_ISERIES_2
++	EXCEPTION_PROLOG_ISERIES_1
+ 	b	system_call_common
+ 
+ 	STD_EXCEPTION_ISERIES( 0xd00, single_step, PACA_EXGEN)
+diff --git a/include/asm-powerpc/exception.h b/include/asm-powerpc/exception.h
+index 1980ed3..d850c8e 100644
+--- a/include/asm-powerpc/exception.h
++++ b/include/asm-powerpc/exception.h
+@@ -62,6 +62,16 @@
+ 	ori	reg,reg,(label)@l;	/* virt addr of handler ... */
+ #endif
+ 
++#define EXCEPTION_PROLOG_1(area)				\
++	mfspr	r13,SPRN_SPRG3;		/* get paca address into r13 */	\
++	std	r9,area+EX_R9(r13);	/* save r9 - r12 */		\
++	std	r10,area+EX_R10(r13);					\
++	std	r11,area+EX_R11(r13);					\
++	std	r12,area+EX_R12(r13);					\
++	mfspr	r9,SPRN_SPRG1;						\
++	std	r9,area+EX_R13(r13);					\
 +	mfcr	r9
-+#ifdef __DISABLED__
-+	cmpdi	r3,0
-+	bge	slb_miss_user_iseries
-+#endif
-+	std	r10,PACA_EXSLB+EX_R10(r13)
-+	std	r11,PACA_EXSLB+EX_R11(r13)
-+	std	r12,PACA_EXSLB+EX_R12(r13)
-+	mfspr	r10,SPRN_SPRG1
-+	std	r10,PACA_EXSLB+EX_R13(r13)
-+	ld	r12,PACALPPACAPTR(r13)
-+	ld	r12,LPPACASRR1(r12)
-+	b	.slb_miss_realmode
 +
-+	STD_EXCEPTION_ISERIES(0x400, instruction_access, PACA_EXGEN)
-+
-+	.globl	instruction_access_slb_iSeries
-+instruction_access_slb_iSeries:
-+	mtspr	SPRN_SPRG1,r13		/* save r13 */
-+	mfspr	r13,SPRN_SPRG3		/* get paca address into r13 */
-+	std	r3,PACA_EXSLB+EX_R3(r13)
-+	ld	r3,PACALPPACAPTR(r13)
-+	ld	r3,LPPACASRR0(r3)	/* get SRR0 value */
-+	std	r9,PACA_EXSLB+EX_R9(r13)
-+	mfcr	r9
-+#ifdef __DISABLED__
-+	cmpdi	r3,0
-+	bge	slb_miss_user_iseries
-+#endif
-+	std	r10,PACA_EXSLB+EX_R10(r13)
-+	std	r11,PACA_EXSLB+EX_R11(r13)
-+	std	r12,PACA_EXSLB+EX_R12(r13)
-+	mfspr	r10,SPRN_SPRG1
-+	std	r10,PACA_EXSLB+EX_R13(r13)
-+	ld	r12,PACALPPACAPTR(r13)
-+	ld	r12,LPPACASRR1(r12)
-+	b	.slb_miss_realmode
-+
-+#ifdef __DISABLED__
-+slb_miss_user_iseries:
-+	std	r10,PACA_EXGEN+EX_R10(r13)
-+	std	r11,PACA_EXGEN+EX_R11(r13)
-+	std	r12,PACA_EXGEN+EX_R12(r13)
-+	mfspr	r10,SPRG1
-+	ld	r11,PACA_EXSLB+EX_R9(r13)
-+	ld	r12,PACA_EXSLB+EX_R3(r13)
-+	std	r10,PACA_EXGEN+EX_R13(r13)
-+	std	r11,PACA_EXGEN+EX_R9(r13)
-+	std	r12,PACA_EXGEN+EX_R3(r13)
-+	EXCEPTION_PROLOG_ISERIES_2
-+	b	slb_miss_user_common
-+#endif
-+
-+	MASKABLE_EXCEPTION_ISERIES(0x500, hardware_interrupt)
-+	STD_EXCEPTION_ISERIES(0x600, alignment, PACA_EXGEN)
-+	STD_EXCEPTION_ISERIES(0x700, program_check, PACA_EXGEN)
-+	STD_EXCEPTION_ISERIES(0x800, fp_unavailable, PACA_EXGEN)
-+	MASKABLE_EXCEPTION_ISERIES(0x900, decrementer)
-+	STD_EXCEPTION_ISERIES(0xa00, trap_0a, PACA_EXGEN)
-+	STD_EXCEPTION_ISERIES(0xb00, trap_0b, PACA_EXGEN)
-+
-+	.globl	system_call_iSeries
-+system_call_iSeries:
-+	mr	r9,r13
-+	mfspr	r13,SPRN_SPRG3
-+	EXCEPTION_PROLOG_ISERIES_2
-+	b	system_call_common
-+
-+	STD_EXCEPTION_ISERIES( 0xd00, single_step, PACA_EXGEN)
-+	STD_EXCEPTION_ISERIES( 0xe00, trap_0e, PACA_EXGEN)
-+	STD_EXCEPTION_ISERIES( 0xf00, performance_monitor, PACA_EXGEN)
-+
-+decrementer_iSeries_masked:
-+	/* We may not have a valid TOC pointer in here. */
-+	li	r11,1
-+	ld	r12,PACALPPACAPTR(r13)
-+	stb	r11,LPPACADECRINT(r12)
-+	LOAD_REG_IMMEDIATE(r12, tb_ticks_per_jiffy)
-+	lwz	r12,0(r12)
-+	mtspr	SPRN_DEC,r12
-+	/* fall through */
-+
-+hardware_interrupt_iSeries_masked:
-+	mtcrf	0x80,r9		/* Restore regs */
-+	ld	r12,PACALPPACAPTR(r13)
-+	ld	r11,LPPACASRR0(r12)
-+	ld	r12,LPPACASRR1(r12)
-+	mtspr	SPRN_SRR0,r11
-+	mtspr	SPRN_SRR1,r12
-+	ld	r9,PACA_EXGEN+EX_R9(r13)
-+	ld	r10,PACA_EXGEN+EX_R10(r13)
-+	ld	r11,PACA_EXGEN+EX_R11(r13)
-+	ld	r12,PACA_EXGEN+EX_R12(r13)
-+	ld	r13,PACA_EXGEN+EX_R13(r13)
-+	rfid
-+	b	.	/* prevent speculative execution */
-+
- _INIT_STATIC(__start_initialization_iSeries)
- 	/* Clear out the BSS */
- 	LOAD_REG_IMMEDIATE(r11,__bss_stop)
+ /*
+  * Equal to EXCEPTION_PROLOG_PSERIES, except that it forces 64bit mode.
+  * The firmware calls the registered system_reset_fwnmi and
+@@ -70,14 +80,7 @@
+  * This firmware bug is present on POWER4 and JS20.
+  */
+ #define EXCEPTION_PROLOG_PSERIES_FORCE_64BIT(area, label)		\
+-	mfspr	r13,SPRN_SPRG3;		/* get paca address into r13 */	\
+-	std	r9,area+EX_R9(r13);	/* save r9 - r12 */		\
+-	std	r10,area+EX_R10(r13);					\
+-	std	r11,area+EX_R11(r13);					\
+-	std	r12,area+EX_R12(r13);					\
+-	mfspr	r9,SPRN_SPRG1;						\
+-	std	r9,area+EX_R13(r13);					\
+-	mfcr	r9;							\
++	EXCEPTION_PROLOG_1(area);					\
+ 	clrrdi	r12,r13,32;		/* get high part of &label */	\
+ 	mfmsr	r10;							\
+ 	/* force 64bit mode */						\
+@@ -94,14 +97,7 @@
+ 	b	.	/* prevent speculative execution */
+ 
+ #define EXCEPTION_PROLOG_PSERIES(area, label)				\
+-	mfspr	r13,SPRN_SPRG3;		/* get paca address into r13 */	\
+-	std	r9,area+EX_R9(r13);	/* save r9 - r12 */		\
+-	std	r10,area+EX_R10(r13);					\
+-	std	r11,area+EX_R11(r13);					\
+-	std	r12,area+EX_R12(r13);					\
+-	mfspr	r9,SPRN_SPRG1;						\
+-	std	r9,area+EX_R13(r13);					\
+-	mfcr	r9;							\
++	EXCEPTION_PROLOG_1(area);					\
+ 	clrrdi	r12,r13,32;		/* get high part of &label */	\
+ 	mfmsr	r10;							\
+ 	mfspr	r11,SPRN_SRR0;		/* save SRR0 */			\
+@@ -114,28 +110,6 @@
+ 	b	.	/* prevent speculative execution */
+ 
+ /*
+- * This is the start of the interrupt handlers for iSeries
+- * This code runs with relocation on.
+- */
+-#define EXCEPTION_PROLOG_ISERIES_1(area)				\
+-	mfspr	r13,SPRN_SPRG3;		/* get paca address into r13 */	\
+-	std	r9,area+EX_R9(r13);	/* save r9 - r12 */		\
+-	std	r10,area+EX_R10(r13);					\
+-	std	r11,area+EX_R11(r13);					\
+-	std	r12,area+EX_R12(r13);					\
+-	mfspr	r9,SPRN_SPRG1;						\
+-	std	r9,area+EX_R13(r13);					\
+-	mfcr	r9
+-
+-#define EXCEPTION_PROLOG_ISERIES_2					\
+-	mfmsr	r10;							\
+-	ld	r12,PACALPPACAPTR(r13);					\
+-	ld	r11,LPPACASRR0(r12);					\
+-	ld	r12,LPPACASRR1(r12);					\
+-	ori	r10,r10,MSR_RI;						\
+-	mtmsrd	r10,1
+-
+-/*
+  * The common exception prolog is used for all except a few exceptions
+  * such as a segment miss on a kernel address.  We have to be prepared
+  * to take another exception from the point where we first touch the
+@@ -247,27 +221,6 @@ label##_pSeries:							\
+ 	rfid;								\
+ 	b	.	/* prevent speculative execution */
+ 
+-#define STD_EXCEPTION_ISERIES(n, label, area)		\
+-	.globl label##_iSeries;				\
+-label##_iSeries:					\
+-	HMT_MEDIUM;					\
+-	mtspr	SPRN_SPRG1,r13;		/* save r13 */	\
+-	EXCEPTION_PROLOG_ISERIES_1(area);		\
+-	EXCEPTION_PROLOG_ISERIES_2;			\
+-	b	label##_common
+-
+-#define MASKABLE_EXCEPTION_ISERIES(n, label)				\
+-	.globl label##_iSeries;						\
+-label##_iSeries:							\
+-	HMT_MEDIUM;							\
+-	mtspr	SPRN_SPRG1,r13;		/* save r13 */			\
+-	EXCEPTION_PROLOG_ISERIES_1(PACA_EXGEN);				\
+-	lbz	r10,PACASOFTIRQEN(r13);					\
+-	cmpwi	0,r10,0;						\
+-	beq-	label##_iSeries_masked;					\
+-	EXCEPTION_PROLOG_ISERIES_2;					\
+-	b	label##_common;						\
+-
+ #ifdef CONFIG_PPC_ISERIES
+ #define DISABLE_INTS				\
+ 	li	r11,0;				\
 -- 
 1.5.2.4
