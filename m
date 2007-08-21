@@ -1,19 +1,18 @@
-Return-Path: <rameshmrm@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.234])
-	by ozlabs.org (Postfix) with ESMTP id C23ECDDDF8
+Return-Path: <computer-service@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 7E64FDDECB
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 21 Aug 2007 19:24:29 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id 71so1183524wri
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 21 Aug 2007 02:24:28 -0700 (PDT)
-Message-ID: <a12d1c3d0708210224i4e23394es4d3b095d9eb16e17@mail.gmail.com>
-Date: Tue, 21 Aug 2007 14:54:27 +0530
-From: "ramesh mrm" <rameshmrm@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: 
+	Tue, 21 Aug 2007 22:19:53 +1000 (EST)
+Message-ID: <46CAD865.3030107@gmx.de>
+Date: Tue, 21 Aug 2007 14:19:49 +0200
+From: Computer - Service <computer-service@gmx.de>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_1587_1871621.1187688267787"
+To: linuxppc-embedded@ozlabs.org
+Subject: Linux 2.6.23.rc3 boot issues  on XUPV2P
+References: <46CAC89F.2040100@genesi-usa.com> <46CACAAE.5000304@genesi-usa.com>
+	<20070821113232.GB1111@localhost.localdomain>
+In-Reply-To: <20070821113232.GB1111@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,29 +23,63 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_1587_1871621.1187688267787
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi all.
 
-Hai,
-        I am using the kernel 2.6.21. In the file
-(arch/ppc/syslib/pci_auto.c) we have the function pciauto_bus_scan(). In
-this function it will skip the host birdge. But in the arch/powepc
-directory we don't have that types of file and the function
-pciauto_bus_scan() also removed.
-I want to know where the function was moved in arch/powerpc directory ?
-How the host bridge was skip in the arch/powerpc directory.
+I try to port Linux 2.6 on my XUPV2P Board which is based on ML300.
 
-Thanks and Regards
-Ramesh
+It runs sometimes, but for the usual case it just doesn't.
+My problem is the initialization.
+I have no clue why I get different values almost every time.
+This is a log from the same zImage.elf, which is just loaded certain 
+times in the row:
 
-------=_Part_1587_1871621.1187688267787
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+loaded at:     00400000 005331A0
+board data at: 0000000E 0000008A
+relocated to:  00404084 00404100
+zimage at:     00404EB9 00530A50
+avail ram:     00534000 3B784800
 
-Hai,<br>&nbsp; &nbsp; &nbsp; &nbsp; I am using the kernel 2.6.21. In the file<br>(arch/ppc/syslib/pci_auto.c) we have the function pciauto_bus_scan(). In<br>this function it will skip the host birdge. But in the arch/powepc<br>directory we don&#39;t have that types of file and the function
-<br>pciauto_bus_scan() also removed.<br>I want to know where the function was moved in arch/powerpc directory ?<br>How the host bridge was skip in the arch/powerpc directory.<br><br>Thanks and Regards<br>Ramesh<br>
+Linux/PPC load: console=ttyS0,9600
+Uncompressing Linux...done.
+Now booting the kernel
 
-------=_Part_1587_1871621.1187688267787--
+loaded at:     00400000 005331A0
+board data at: 00000000 0000007C
+relocated to:  00404084 00404100
+zimage at:     00404EB9 00530A50
+avail ram:     00534000 7C9E2378
+
+Linux/PPC load: console=ttyS0,9600
+Uncompressing Linux...done.
+Now booting the kernel
+
+loaded at:     00400000 005331A0
+board data at: 40000000 4000007C
+relocated to:  00404084 00404100
+zimage at:     00404EB9 00530A50
+avail ram:     00534000 00000000
+
+Linux/PPC load: console=ttyS0,9600
+Uncompressing Linux...oops... out of memory
+pause
+
+loaded at:     00400000 005331A0
+board data at: 00000001 0000007D
+relocated to:  00404084 00404100
+zimage at:     00404EB9 00530A50
+avail ram:     00534000 9E23787C
+
+Linux/PPC load: console=ttyS0,9600
+Uncompressing Linux...done.
+Now booting the kernel
+[    0.000000] Linux version 2.6.23-rc3 (warkentin@iss2) (gcc version 
+4.1.1) #1                                          Tue Aug 21 14:01:45 
+CEST 2007
+[    0.000000] Xilinx ML300 Reference System (Virtex-II Pro)
+[    0.000000] Zone PFN ranges:
+[    0.000000]   DMA             0 ->   196608
+
+
+and just if the "avial ram" is about 10000000 it boots.
+
+Anyone some idea why it could happens?
