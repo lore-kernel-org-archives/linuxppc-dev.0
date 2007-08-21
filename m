@@ -1,20 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <20070821052514.GC21169@localhost.localdomain>
-References: <46C5519E.6010300@dutchspace.nl>
-	<1187353616.2778.358.camel@shinybook.infradead.org>
-	<46C5B288.2010308@dutchspace.nl>
-	<1187361603.2778.382.camel@shinybook.infradead.org>
-	<46C5B40F.5040209@dutchspace.nl>
-	<acbcf3840708171628k242e96ffl2b65011bf6d39512@mail.gmail.com>
-	<20070821052514.GC21169@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <ae3d7296a5c3e83f19817a04841d099f@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: Patches for ppc?
-Date: Tue, 21 Aug 2007 17:14:41 +0200
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: Linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 46257DDE08
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 01:27:27 +1000 (EST)
+Received: from localhost (unknown [10.150.0.9])
+	by buildserver.ru.mvista.com (Postfix) with ESMTP id 28B068810
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Aug 2007 20:27:25 +0500 (SAMST)
+Date: Tue, 21 Aug 2007 19:27:45 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v5 0/2] SPI support for fsl_soc and mpc832x_rdb
+Message-ID: <20070821152745.GA28986@localhost.localdomain>
+References: <20070821134537.GA7428@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20070821134537.GA7428@localhost.localdomain>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,14 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> It's not a question of indivudual files being copied over - things are
-> done differently in arch/powerpc.  Things are gradually being ported
-> over to arch/powerpc as people get the time - that's why arch/ppc
-> isn't gone yet.
+On Tue, Aug 21, 2007 at 05:45:37PM +0400, Anton Vorontsov wrote:
+> Hi all,
+> 
+> Thanks for the previous reviews, this is v4 against Linus' tree,
+> as of today.
 
-And to be blunt, one of the points of arch/powerpc vs. arch/ppc is
-to actually leave behind some stuff.  "If no one ports it, no one
-wants it".
+Okay, here is brand-new, shiny v5. Today and only today it comes
+without section mismatch warnings, don't miss your chance. Get it
+free of charge! ;-)
 
-
-Segher
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
