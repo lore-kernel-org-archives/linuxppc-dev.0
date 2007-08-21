@@ -1,19 +1,20 @@
-Return-Path: <matt@genesi-usa.com>
-Message-ID: <46CAF5B4.9040606@genesi-usa.com>
-Date: Tue, 21 Aug 2007 15:24:52 +0100
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
-To: Matt Sealey <matt@genesi-usa.com>, ppc-dev <linuxppc-dev@ozlabs.org>,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: OF /chosen/initrd,* variables - patch, official?
-References: <46CAC89F.2040100@genesi-usa.com> <46CACAAE.5000304@genesi-usa.com>
-	<20070821113232.GB1111@localhost.localdomain>
-	<46CADC61.3050506@genesi-usa.com>
-	<20070821124253.GC1111@localhost.localdomain>
-	<46CAE177.3010508@genesi-usa.com>
-	<20070821135449.GA7438@localhost.localdomain>
-In-Reply-To: <20070821135449.GA7438@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <20070821052514.GC21169@localhost.localdomain>
+References: <46C5519E.6010300@dutchspace.nl>
+	<1187353616.2778.358.camel@shinybook.infradead.org>
+	<46C5B288.2010308@dutchspace.nl>
+	<1187361603.2778.382.camel@shinybook.infradead.org>
+	<46C5B40F.5040209@dutchspace.nl>
+	<acbcf3840708171628k242e96ffl2b65011bf6d39512@mail.gmail.com>
+	<20070821052514.GC21169@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <ae3d7296a5c3e83f19817a04841d099f@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Patches for ppc?
+Date: Tue, 21 Aug 2007 17:14:41 +0200
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: Linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,28 +24,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Tue, Aug 21, 2007 at 01:58:31PM +0100, Matt Sealey wrote:
->> David Gibson wrote:
->>> Uh... no... this is in the bootwrapper, long before ppc_md even
->>> exists.  platform_init() is called from arch/powerpc/boot/crt0.S,
->>> immediately before main().
->> Oh *THAT* platform init.
->>
->> So I could just drop a
->>
->> } else {
->> 	dt_find_initrd();
->> }
->>
->> .. at the end and nobody would be too disgusted or have any problems?
-> 
-> Err.. at the end of what?  Each platform has it's own version of
-> platform_init().
+> It's not a question of indivudual files being copied over - things are
+> done differently in arch/powerpc.  Things are gradually being ported
+> over to arch/powerpc as people get the time - that's why arch/ppc
+> isn't gone yet.
 
-arch/powerpc/boot/of.c since it's not really relevant to me for non-OF
-platforms?
+And to be blunt, one of the points of arch/powerpc vs. arch/ppc is
+to actually leave behind some stuff.  "If no one ports it, no one
+wants it".
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+
+Segher
