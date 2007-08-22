@@ -1,13 +1,11 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20070822170732.517188445@arndb.de>
-References: <20070822170124.764128591@arndb.de>
-Date: Wed, 22 Aug 2007 19:01:28 +0200
+Message-Id: <20070822170124.764128591@arndb.de>
+Date: Wed, 22 Aug 2007 19:01:24 +0200
 From: Arnd Bergmann <arnd@arndb.de>
 To: paulus@samba.org
-Subject: [patch 4/5] axonram: do not delete gendisks queue in error path
-Cc: Maximilian <maxim@de.ibm.com>, linuxppc-dev@ozlabs.org,
-	Arnd Bergmann <arnd.bergmann@de.ibm.com>,
-	linux-kernel@vger.kernel.org, cbe-oss-dev@ozlabs.org
+Subject: [patch 0/5] (hopefully) final 2.6.23 fixes for cell platform
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,34 +15,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Maxim Shchetynin <maxim@de.ibm.com>
-On exit do not delete gendisk's queue because this is already done by
-del_gendisk(). Doing it twice may cause memory damage.
+Hi Paul,
 
-Signed-off-by: Maximilian <maxim@de.ibm.com>
-Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
----
+A few bugs came up on the cell platform when testing on the lastest
+prototype version of a future hardware. The first three patches are
+all meant to track changes required for the fixes that have gone
+into the firmware. Patch 4 is for a bug that showed up during testing,
+and the final patch is the defconfig update that you probably want
+to do for the other platforms as well.
 
-Index: linux-2.6/arch/powerpc/sysdev/axonram.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/sysdev/axonram.c
-+++ linux-2.6/arch/powerpc/sysdev/axonram.c
-@@ -281,8 +281,6 @@ failed:
- 		if (bank->irq_id != NO_IRQ)
- 			free_irq(bank->irq_id, device);
- 		if (bank->disk != NULL) {
--			if (bank->disk->queue != NULL)
--				blk_cleanup_queue(bank->disk->queue);
- 			if (bank->disk->major > 0)
- 				unregister_blkdev(bank->disk->major,
- 						bank->disk->disk_name);
-@@ -310,7 +308,6 @@ axon_ram_remove(struct of_device *device
- 
- 	device_remove_file(&device->dev, &dev_attr_ecc);
- 	free_irq(bank->irq_id, device);
--	blk_cleanup_queue(bank->disk->queue);
- 	unregister_blkdev(bank->disk->major, bank->disk->disk_name);
- 	del_gendisk(bank->disk);
- 	iounmap((void __iomem *) bank->io_addr);
+Please forward for inclusion in 2.6.23!
+
+	Arnd <><
+
+diffstat:
+
+ platforms/cell/cbe_regs.h    |    8 +
+ platforms/cell/cbe_thermal.c |    6 -
+ platforms/cell/pervasive.c   |   26 +++++
+ platforms/cell/spu_manage.c  |    2
+ sysdev/axonram.c             |   46 ++------
+ configs/cell_defconfig       |  220 ++++++++++++------------------------
+ 6 files changed, 121 insertions(+), 187 deletions(-)
+
 
 --
