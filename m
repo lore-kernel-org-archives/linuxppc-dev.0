@@ -1,33 +1,35 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <ossthema@de.ibm.com>
+Received: from mtagate2.de.ibm.com (mtagate2.de.ibm.com [195.212.29.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E7473DDE3F
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 00:31:51 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7MEVmTK002449
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 10:31:48 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l7MEVlkm227838
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 08:31:47 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l7MEVl7s001611
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 08:31:47 -0600
-Date: Wed, 22 Aug 2007 09:31:45 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: RFC: [PATCH v2] Fixup modpost warnings in head*.S for ppc32
-Message-ID: <20070822093145.68c57585@weaponx.rchland.ibm.com>
-In-Reply-To: <490B1783-FA20-4DD8-A580-E71398B9928F@kernel.crashing.org>
-References: <Pine.LNX.4.64.0708220856530.31744@blarg.am.freescale.net>
-	<20070822090315.7e0010c4@weaponx.rchland.ibm.com>
-	<490B1783-FA20-4DD8-A580-E71398B9928F@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+	(Client CN "mtagate2.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8A0BCDDDF8
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 00:53:22 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate2.de.ibm.com (8.13.8/8.13.8) with ESMTP id l7MErHpE163028
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 14:53:17 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.5) with
+	ESMTP id l7MErH5k2322460
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 16:53:17 +0200
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l7MErHK7015107
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 16:53:17 +0200
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: [PATCH 1/4] ehea: fix interface to DLPAR tools
+Date: Wed, 22 Aug 2007 16:20:58 +0200
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200708221620.59078.ossthema@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,89 +39,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 22 Aug 2007 09:08:31 -0500
-Kumar Gala <galak@kernel.crashing.org> wrote:
+Userspace DLPAR tool expects decimal numbers to be written to
+and read from sysfs entries.
 
-> 
-> On Aug 22, 2007, at 9:03 AM, Josh Boyer wrote:
-> 
-> > On Wed, 22 Aug 2007 08:58:31 -0500 (CDT)
-> > Kumar Gala <galak@kernel.crashing.org> wrote:
-> >
-> >> Addess the following modpost warnings we get out of the ppc32 head
-> >> files:
-> >>
-> >> WARNING: vmlinux.o(.text+0x358): Section mismatch: reference  
-> >> to .init.text:early_init (between 'skpinv' and 'interrupt_base')
-> >> WARNING: vmlinux.o(.text+0x380): Section mismatch: reference  
-> >> to .init.text:machine_init (between 'skpinv' and 'interrupt_base')
-> >> WARNING: vmlinux.o(.text+0x384): Section mismatch: reference  
-> >> to .init.text:MMU_init (between 'skpinv' and 'interrupt_base')
-> >> WARNING: vmlinux.o(.text+0x3aa): Section mismatch: reference  
-> >> to .init.text:start_kernel (between 'skpinv' and 'interrupt_base')
-> >> WARNING: vmlinux.o(.text+0x3ae): Section mismatch: reference  
-> >> to .init.text:start_kernel (between 'skpinv' and 'interrupt_base')
-> >>
-> >> Does anyone have any issues with this?  This version cleans up 40x  
-> >> based
-> >> on the latest for-2.6.24 tree and removes the stabs defn from _ENTRY.
-> >
-> > No signed-off-by on purpose?
-> 
-> Yes, since its an RFC, I explicitly didn't put a signed-off-by :)
+Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
 
-Ok.  I can never tell if people just forgot or if they really meant
-to.  Maybe we should be like Ben and do: Not-Signed-off-by ;)
 
-> >> diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/ 
-> >> head_40x.S
-> >> index a8e0457..00bdb6d 100644
-> >> --- a/arch/powerpc/kernel/head_40x.S
-> >> +++ b/arch/powerpc/kernel/head_40x.S
-> >> @@ -52,9 +52,9 @@
-> >>   *
-> >>   * This is all going to change RSN when we add bi_recs.......  --  
-> >> Dan
-> >>   */
-> >> -	.text
-> >> -_GLOBAL(_stext)
-> >> -_GLOBAL(_start)
-> >> +	.section	.text.head, "ax"
-> >> +_ENTRY(_stext);
-> >> +_ENTRY(_start);
-> >>
-> >>  	/* Save parameters we are passed.
-> >>  	*/
-> >> @@ -89,9 +89,9 @@ turn_on_mmu:
-> >>   */
-> >>  	. = 0xc0
-> >>  crit_save:
-> >> -_GLOBAL(crit_r10)
-> >> +_ENTRY(crit_r10)
-> >>  	.space	4
-> >> -_GLOBAL(crit_r11)
-> >> +_ENTRY(crit_r11)
-> >>  	.space	4
-> >>
-> >>  /*
-> >> @@ -814,7 +814,7 @@ finish_tlb_load:
-> >>   * The PowerPC 4xx family of processors do not have an FPU, so  
-> >> this just
-> >>   * returns.
-> >>   */
-> >> -_GLOBAL(giveup_fpu)
-> >> +_ENTRY(giveup_fpu)
-> >>  	blr
-> >
-> > I had moved this bit below initial_mmu instead in my version.  I
-> > realize there isn't much difference from a technical point of view,  
-> > but
-> > it seems misleading to label this one as _ENTRY.
-> 
-> Do you want to move both crit_r10/r11 & giveup_fpu or just giveup_fpu?
+---
+ drivers/net/ehea/ehea_main.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-I just moved giveup_fpu.  Moving crit_r10/r11 was more work than my 5
-minute fixup allowed :).  Really, this isn't a big deal either way so
-don't stress too much about it.
-
-josh
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index 9756211..22d000f 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -2490,7 +2490,7 @@ static ssize_t ehea_show_port_id(struct device *dev,
+ 				 struct device_attribute *attr, char *buf)
+ {
+ 	struct ehea_port *port = container_of(dev, struct ehea_port, ofdev.dev);
+-	return sprintf(buf, "0x%X", port->logical_port_id);
++	return sprintf(buf, "%d", port->logical_port_id);
+ }
+ 
+ static DEVICE_ATTR(log_port_id, S_IRUSR | S_IRGRP | S_IROTH, ehea_show_port_id,
+@@ -2781,7 +2781,7 @@ static ssize_t ehea_probe_port(struct device *dev,
+ 
+ 	u32 logical_port_id;
+ 
+-	sscanf(buf, "%X", &logical_port_id);
++	sscanf(buf, "%d", &logical_port_id);
+ 
+ 	port = ehea_get_port(adapter, logical_port_id);
+ 
+@@ -2834,7 +2834,7 @@ static ssize_t ehea_remove_port(struct device *dev,
+ 	int i;
+ 	u32 logical_port_id;
+ 
+-	sscanf(buf, "%X", &logical_port_id);
++	sscanf(buf, "%d", &logical_port_id);
+ 
+ 	port = ehea_get_port(adapter, logical_port_id);
+ 
+-- 
+1.5.2
