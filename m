@@ -1,21 +1,19 @@
-Return-Path: <npiggin@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DB465DDEB9
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 13:15:12 +1000 (EST)
-Date: Wed, 22 Aug 2007 05:15:06 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [patch 1/2] powerpc: rmb fix
-Message-ID: <20070822031506.GA26374@wotan.suse.de>
-References: <20070821021143.GB2909@wotan.suse.de>
-	<46CB37D4.2080609@austin.ibm.com>
-	<d9f43b5c31fde5851a7af1d0f36eb134@kernel.crashing.org>
-Mime-Version: 1.0
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id CE332DDE99
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 13:21:58 +1000 (EST)
+Date: Tue, 21 Aug 2007 21:26:43 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc: Rework SMP timebase handoff for pasemi
+Message-ID: <20070822022643.GA9050@lixom.net>
+References: <20070821220631.GA4304@lixom.net>
+	<18123.37125.712301.914626@cargo.ozlabs.ibm.com>
+	<20070822021212.GA8060@lixom.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <d9f43b5c31fde5851a7af1d0f36eb134@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <20070822021212.GA8060@lixom.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,49 +23,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 21, 2007 at 09:43:17PM +0200, Segher Boessenkool wrote:
-> >> #define mb()   __asm__ __volatile__ ("sync" : : : "memory")
-> >>-#define rmb()  __asm__ __volatile__ (__stringify(LWSYNC) : : : 
-> >>"memory")
-> >>+#define rmb()  __asm__ __volatile__ ("sync" : : : "memory")
-> >> #define wmb()  __asm__ __volatile__ ("sync" : : : "memory")
-> >> #define read_barrier_depends()  do { } while(0)
-> >>
-> >>@@ -42,7 +42,7 @@
-> >> #ifdef __KERNEL__
-> >> #ifdef CONFIG_SMP
-> >> #define smp_mb()	mb()
-> >>-#define smp_rmb()	rmb()
-> >>+#define smp_rmb()	__asm__ __volatile__ (__stringify(LWSYNC) : : : 
-> >>"memory")
-> >> #define smp_wmb()	eieio()
-> >> #define smp_read_barrier_depends()	read_barrier_depends()
-> >> #else
-> >
-> >I had to think about this one for awhile.  It looks at first glance to 
-> >be the right
-> >thing to do.  But I do wonder how long rmb() has been lwsync
-> 
-> Since the {ppc,ppc64} -> powerpc merge.
-> 
-> >and if as a practical matter that has caused any problems?
-> 
-> It has not as far as I know.
-> 
-> >If this isn't causing any problems maybe there
-> >is some loigic we are overlooking?
-> 
-> The I/O accessor functions enforce the necessary ordering
-> already I believe.
+Rework timebase handoff to play nice with configurations with more than
+2 cores, as well as with CPU hotplug.
 
-Hmm, I never followed those discussions last year about IO ordering, and
-I can't see where (if) it was documented anywhere :(
+Previous scheme just pushed out the current timebase from the giving
+core to all cores without caring if they wanted it or not, nor checking
+if they'd taken it. The taking side didn't make sure the giving side
+had provided a value yet either. In other words, it was completely broken.
 
-It appears that legacy code is handled by defining the old IO accessors to
-be completely ordered, and introducing new __raw_ variants that are not
-(OTOH, it seems like other architectures are implementing __raw prefix as
-inorder unless there is a _relaxed postfix).
 
-Drivers are definitely using these __raw_ accessors, and from a quick
-look, they do appear to be hoping that *mb() is going to order access for
-them.
+Signed-off-by: Olof Johansson <olof@lixom.net>
+
+Index: mainline/arch/powerpc/platforms/pasemi/setup.c
+===================================================================
+--- mainline.orig/arch/powerpc/platforms/pasemi/setup.c
++++ mainline/arch/powerpc/platforms/pasemi/setup.c
+@@ -50,26 +50,30 @@ static void pas_restart(char *cmd)
+ 
+ #ifdef CONFIG_SMP
+ static DEFINE_SPINLOCK(timebase_lock);
++static unsigned long timebase;
+ 
+ static void __devinit pas_give_timebase(void)
+ {
+-	unsigned long tb;
+-
+ 	spin_lock(&timebase_lock);
+ 	mtspr(SPRN_TBCTL, TBCTL_FREEZE);
+-	tb = mftb();
+-	mtspr(SPRN_TBCTL, TBCTL_UPDATE_LOWER | (tb & 0xffffffff));
+-	mtspr(SPRN_TBCTL, TBCTL_UPDATE_UPPER | (tb >> 32));
+-	mtspr(SPRN_TBCTL, TBCTL_RESTART);
++	isync();
++	timebase = get_tb();
+ 	spin_unlock(&timebase_lock);
+-	pr_debug("pas_give_timebase: cpu %d gave tb %lx\n",
+-		 smp_processor_id(), tb);
++
++	while (timebase)
++		barrier();
++	mtspr(SPRN_TBCTL, TBCTL_RESTART);
+ }
+ 
+ static void __devinit pas_take_timebase(void)
+ {
+-	pr_debug("pas_take_timebase: cpu %d has tb %lx\n",
+-		 smp_processor_id(), mftb());
++	while (!timebase)
++		smp_rmb();
++
++	spin_lock(&timebase_lock);
++	set_tb(timebase >> 32, timebase & 0xffffffff);
++	timebase = 0;
++	spin_unlock(&timebase_lock);
+ }
+ 
+ struct smp_ops_t pas_smp_ops = {
