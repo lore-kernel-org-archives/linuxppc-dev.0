@@ -1,19 +1,14 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E2002DDE34
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 23:28:58 +1000 (EST)
-In-Reply-To: <12268833.post@talk.nabble.com>
-References: <12268833.post@talk.nabble.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <BEAC6061-FBAC-45EE-9D2A-C0904DDFECAD@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: 2.6.23-rc3 is not booting
-Date: Wed, 22 Aug 2007 08:30:58 -0500
-To: sivaji <rameshmrm@gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@jdub.homelinux.org>
+Date: Wed, 22 Aug 2007 07:29:56 -0500
+From: Josh Boyer <jwboyer@jdub.homelinux.org>
+To: Meelis Roos <mroos@linux.ee>
+Subject: Re: How to port PReP to arch/powerpc?
+Message-ID: <20070822072956.56b7df46@vader.jdub.homelinux.org>
+In-Reply-To: <Pine.SOC.4.64.0708221444510.5639@math.ut.ee>
+References: <Pine.SOC.4.64.0708221444510.5639@math.ut.ee>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,35 +18,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 22 Aug 2007 14:50:07 +0300 (EEST)
+Meelis Roos <mroos@linux.ee> wrote:
 
-On Aug 22, 2007, at 1:32 AM, sivaji wrote:
+> It seems no one cares for arch/ppc any more but the move to powerpc was 
+> not finished completely (PReP subarch was not migrated but sees users, I 
+> do not know about the user base of the other subarches). So I have been 
+> thinking about migrating PReP support to arch/powerpc myself since I use 
+> it.
 
->
-> Hai,
->          I am using the kernel 2.6.23-rc3. i am trying to boot this  
-> kernel
-> to my 8641D board. It was not booting.
-> I go the following message
->
-> Bytes transferred = 1505 (5e1 hex)
-> ## Booting image at 00200000 ...
->    Image Name:   Linux-2.6.23-rc3
->    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
->    Data Size:    1801717 Bytes =  1.7 MB
->    Load Address: 00000000
->    Entry Point:  00000000
->    Verifying Checksum ... OK
->    Uncompressing Kernel Image ... OK
->    Booting using flat device tree at 0x800000
->
-> Whether the problem belongs to device tree? I am using the  
-> mpc8641_hpcn.dts
-> file
->
-> Pls Advice me.
+The merge is still on-going.  So it's not "finished" at all.
 
-What rev board/silicon do you have?  I'd suggest building the kernel  
-w/o PCI support and see what happens.  Make sure you've got the  
-latest dts from the kernel tree.
+> Any general guidelines or specific hints about that? I have looked 
+> around in the code and some pieces are clearly PReP specific (setup, 
+> pci, boot) but others seem wuite a bit mixed up with other subarches.
 
-- k
+David Gibson and Rob Landley had a quite interesting discussion about
+PReP last night on IRC.  You might want to contact them and see if they
+came to any conclusions.
+
+josh
