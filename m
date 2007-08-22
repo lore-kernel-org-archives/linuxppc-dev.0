@@ -1,18 +1,21 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 7B5DCDDE9D
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 13:07:27 +1000 (EST)
-Date: Tue, 21 Aug 2007 21:12:12 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] powerpc: Fix race in the pasemi timebase calibration
-Message-ID: <20070822021212.GA8060@lixom.net>
-References: <20070821220631.GA4304@lixom.net>
-	<18123.37125.712301.914626@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
+Return-Path: <npiggin@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DB465DDEB9
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 13:15:12 +1000 (EST)
+Date: Wed, 22 Aug 2007 05:15:06 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [patch 1/2] powerpc: rmb fix
+Message-ID: <20070822031506.GA26374@wotan.suse.de>
+References: <20070821021143.GB2909@wotan.suse.de>
+	<46CB37D4.2080609@austin.ibm.com>
+	<d9f43b5c31fde5851a7af1d0f36eb134@kernel.crashing.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18123.37125.712301.914626@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <d9f43b5c31fde5851a7af1d0f36eb134@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,45 +25,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 22, 2007 at 11:27:33AM +1000, Paul Mackerras wrote:
-> Olof Johansson writes:
+On Tue, Aug 21, 2007 at 09:43:17PM +0200, Segher Boessenkool wrote:
+> >> #define mb()   __asm__ __volatile__ ("sync" : : : "memory")
+> >>-#define rmb()  __asm__ __volatile__ (__stringify(LWSYNC) : : : 
+> >>"memory")
+> >>+#define rmb()  __asm__ __volatile__ ("sync" : : : "memory")
+> >> #define wmb()  __asm__ __volatile__ ("sync" : : : "memory")
+> >> #define read_barrier_depends()  do { } while(0)
+> >>
+> >>@@ -42,7 +42,7 @@
+> >> #ifdef __KERNEL__
+> >> #ifdef CONFIG_SMP
+> >> #define smp_mb()	mb()
+> >>-#define smp_rmb()	rmb()
+> >>+#define smp_rmb()	__asm__ __volatile__ (__stringify(LWSYNC) : : : 
+> >>"memory")
+> >> #define smp_wmb()	eieio()
+> >> #define smp_read_barrier_depends()	read_barrier_depends()
+> >> #else
+> >
+> >I had to think about this one for awhile.  It looks at first glance to 
+> >be the right
+> >thing to do.  But I do wonder how long rmb() has been lwsync
 > 
-> > Make sure the new timebase value is available by the time take_timebase
-> > completes. Otherwise take_timebase might race with give_timebase,
-> > causing severe badness when the value later is modified (think looong
-> > hang trying to catch up with a very large number of lost ticks).
+> Since the {ppc,ppc64} -> powerpc merge.
 > 
-> OK.
+> >and if as a practical matter that has caused any problems?
 > 
-> > @@ -61,6 +62,7 @@ static void __devinit pas_give_timebase(
-> >  	mtspr(SPRN_TBCTL, TBCTL_UPDATE_LOWER | (tb & 0xffffffff));
-> >  	mtspr(SPRN_TBCTL, TBCTL_UPDATE_UPPER | (tb >> 32));
-> >  	mtspr(SPRN_TBCTL, TBCTL_RESTART);
-> > +	timebase_avail = 1;
+> It has not as far as I know.
 > 
-> No memory barrier before setting timebase_avail?  Shouldn't there be
-> one?
+> >If this isn't causing any problems maybe there
+> >is some loigic we are overlooking?
+> 
+> The I/O accessor functions enforce the necessary ordering
+> already I believe.
 
-Technically there's no previous memory access to put that barrier up
-against since they're all SPR ops, but an isync after the mtspr would
-be warranted.
+Hmm, I never followed those discussions last year about IO ordering, and
+I can't see where (if) it was documented anywhere :(
 
-> Actually I don't understand that code at all.  Your give_timebase
-> seems to freeze the timebase, read it, set it to the same value and
-> restart, all without synchronizing with the other cpu, and your
-> take_timebase does nothing except print the timebase.  How does that
-> work?
+It appears that legacy code is handled by defining the old IO accessors to
+be completely ordered, and introducing new __raw_ variants that are not
+(OTOH, it seems like other architectures are implementing __raw prefix as
+inorder unless there is a _relaxed postfix).
 
-The TBCTL functions control the TBs of all cores. I.e. current
-give_timebase will push out the current TB of the booting core to all
-others in the system.
-
-And yes, I had misunderstood the timebase calibration back when I
-implemented it, not realizing we do a give+take for each cpu coming
-up. It should really look more like the pseries implementation, only
-using TBCTL to freeze/thaw and do the handover manually. That'll be CPU
-hotplug-proof as well.
-
-New patch reworking all of this coming. Thanks for the reality check.
-
--Olof
+Drivers are definitely using these __raw_ accessors, and from a quick
+look, they do appear to be hoping that *mb() is going to order access for
+them.
