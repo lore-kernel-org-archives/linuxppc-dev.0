@@ -1,12 +1,14 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id CAEE5DDE9D
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 13:54:25 +1000 (EST)
-Date: Wed, 22 Aug 2007 13:44:58 +1000
+	by ozlabs.org (Postfix) with ESMTP id AC005DDE9D
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 13:54:26 +1000 (EST)
+Date: Wed, 22 Aug 2007 13:46:44 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Move iSeries startup code out of head_64.S
-Message-Id: <20070822134458.ed7a89f9.sfr@canb.auug.org.au>
+Subject: [PATCH] [POWERPC] Move the exception macros into a header file
+Message-Id: <20070822134644.b3eeffa6.sfr@canb.auug.org.au>
+In-Reply-To: <20070822134458.ed7a89f9.sfr@canb.auug.org.au>
+References: <20070822134458.ed7a89f9.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>
@@ -19,161 +21,397 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+It makes head_64.S a bit more readable and will allow us to move the
+iSeries excetions elsewhere.
+
+This also removes the last line of the comment:
+
+ * The following macros define the code that appears as
+ * the prologue to each of the exception handlers.  They
+ * are split into two parts to allow a single kernel binary
+ * to be used for pSeries and iSeries.
+ * LOL.  One day... - paulus
+
+Anything is possible. :-)
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/kernel/head_64.S              |   86 +--------------------
- arch/powerpc/platforms/iseries/Makefile    |    1 +
- arch/powerpc/platforms/iseries/exception.S |  114 ++++++++++++++++++++++++++++
- include/asm-powerpc/ppc_asm.h              |   14 ++++
- 4 files changed, 131 insertions(+), 84 deletions(-)
- create mode 100644 arch/powerpc/platforms/iseries/exception.S
+ arch/powerpc/kernel/head_64.S   |  336 +------------------------------------
+ include/asm-powerpc/exception.h |  356 +++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 357 insertions(+), 335 deletions(-)
+ create mode 100644 include/asm-powerpc/exception.h
 
-This version creates platforms/iseries/exception.S instead of head.S.
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
 diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index 1e6d9cc..97f089b 100644
+index 97f089b..fe6122b 100644
 --- a/arch/powerpc/kernel/head_64.S
 +++ b/arch/powerpc/kernel/head_64.S
-@@ -802,56 +802,6 @@ system_call_iSeries:
- 	STD_EXCEPTION_ISERIES( 0xe00, trap_0e, PACA_EXGEN)
- 	STD_EXCEPTION_ISERIES( 0xf00, performance_monitor, PACA_EXGEN)
+@@ -35,6 +35,7 @@
+ #include <asm/thread_info.h>
+ #include <asm/firmware.h>
+ #include <asm/page_64.h>
++#include <asm/exception.h>
  
--	.globl system_reset_iSeries
--system_reset_iSeries:
--	mfspr	r13,SPRN_SPRG3		/* Get paca address */
--	mfmsr	r24
--	ori	r24,r24,MSR_RI
--	mtmsrd	r24			/* RI on */
--	lhz	r24,PACAPACAINDEX(r13)	/* Get processor # */
--	cmpwi	0,r24,0			/* Are we processor 0? */
--	bne	1f
--	b	.__start_initialization_iSeries	/* Start up the first processor */
--1:	mfspr	r4,SPRN_CTRLF
--	li	r5,CTRL_RUNLATCH	/* Turn off the run light */
--	andc	r4,r4,r5
--	mtspr	SPRN_CTRLT,r4
--
--1:
--	HMT_LOW
--#ifdef CONFIG_SMP
--	lbz	r23,PACAPROCSTART(r13)	/* Test if this processor
--					 * should start */
--	sync
--	LOAD_REG_IMMEDIATE(r3,current_set)
--	sldi	r28,r24,3		/* get current_set[cpu#] */
--	ldx	r3,r3,r28
--	addi	r1,r3,THREAD_SIZE
--	subi	r1,r1,STACK_FRAME_OVERHEAD
--
--	cmpwi	0,r23,0
--	beq	iSeries_secondary_smp_loop	/* Loop until told to go */
--	bne	__secondary_start		/* Loop until told to go */
--iSeries_secondary_smp_loop:
--	/* Let the Hypervisor know we are alive */
--	/* 8002 is a call to HvCallCfg::getLps, a harmless Hypervisor function */
--	lis	r3,0x8002
--	rldicr	r3,r3,32,15		/* r0 = (r3 << 32) & 0xffff000000000000 */
--#else /* CONFIG_SMP */
--	/* Yield the processor.  This is required for non-SMP kernels
--		which are running on multi-threaded machines. */
--	lis	r3,0x8000
--	rldicr	r3,r3,32,15		/* r3 = (r3 << 32) & 0xffff000000000000 */
--	addi	r3,r3,18		/* r3 = 0x8000000000000012 which is "yield" */
--	li	r4,0			/* "yield timed" */
--	li	r5,-1			/* "yield forever" */
--#endif /* CONFIG_SMP */
--	li	r0,-1			/* r0=-1 indicates a Hypervisor call */
--	sc				/* Invoke the hypervisor via a system call */
--	mfspr	r13,SPRN_SPRG3		/* Put r13 back ???? */
--	b	1b			/* If SMP not configured, secondaries
--					 * loop forever */
--
- decrementer_iSeries_masked:
- 	/* We may not have a valid TOC pointer in here. */
- 	li	r11,1
-@@ -1622,39 +1572,6 @@ _GLOBAL(generic_secondary_smp_init)
- 	b	__secondary_start
- #endif
+ #define DO_SOFT_DISABLE
  
+@@ -145,344 +146,9 @@ exception_marker:
+ 	.text
+ 
+ /*
+- * The following macros define the code that appears as
+- * the prologue to each of the exception handlers.  They
+- * are split into two parts to allow a single kernel binary
+- * to be used for pSeries and iSeries.
+- * LOL.  One day... - paulus
+- */
+-
+-/*
+- * We make as much of the exception code common between native
+- * exception handlers (including pSeries LPAR) and iSeries LPAR
+- * implementations as possible.
+- */
+-
+-/*
+  * This is the start of the interrupt handlers for pSeries
+  * This code runs with relocation off.
+  */
+-#define EX_R9		0
+-#define EX_R10		8
+-#define EX_R11		16
+-#define EX_R12		24
+-#define EX_R13		32
+-#define EX_SRR0		40
+-#define EX_DAR		48
+-#define EX_DSISR	56
+-#define EX_CCR		60
+-#define EX_R3		64
+-#define EX_LR		72
+-
+-/*
+- * We're short on space and time in the exception prolog, so we can't
+- * use the normal SET_REG_IMMEDIATE macro. Normally we just need the
+- * low halfword of the address, but for Kdump we need the whole low
+- * word.
+- */
+-#ifdef CONFIG_CRASH_DUMP
+-#define LOAD_HANDLER(reg, label)					\
+-	oris	reg,reg,(label)@h;	/* virt addr of handler ... */	\
+-	ori	reg,reg,(label)@l;	/* .. and the rest */
+-#else
+-#define LOAD_HANDLER(reg, label)					\
+-	ori	reg,reg,(label)@l;	/* virt addr of handler ... */
+-#endif
+-
+-/*
+- * Equal to EXCEPTION_PROLOG_PSERIES, except that it forces 64bit mode.
+- * The firmware calls the registered system_reset_fwnmi and
+- * machine_check_fwnmi handlers in 32bit mode if the cpu happens to run
+- * a 32bit application at the time of the event.
+- * This firmware bug is present on POWER4 and JS20.
+- */
+-#define EXCEPTION_PROLOG_PSERIES_FORCE_64BIT(area, label)		\
+-	mfspr	r13,SPRN_SPRG3;		/* get paca address into r13 */	\
+-	std	r9,area+EX_R9(r13);	/* save r9 - r12 */		\
+-	std	r10,area+EX_R10(r13);					\
+-	std	r11,area+EX_R11(r13);					\
+-	std	r12,area+EX_R12(r13);					\
+-	mfspr	r9,SPRN_SPRG1;						\
+-	std	r9,area+EX_R13(r13);					\
+-	mfcr	r9;							\
+-	clrrdi	r12,r13,32;		/* get high part of &label */	\
+-	mfmsr	r10;							\
+-	/* force 64bit mode */						\
+-	li	r11,5;			/* MSR_SF_LG|MSR_ISF_LG */	\
+-	rldimi	r10,r11,61,0;		/* insert into top 3 bits */	\
+-	/* done 64bit mode */						\
+-	mfspr	r11,SPRN_SRR0;		/* save SRR0 */			\
+-	LOAD_HANDLER(r12,label)						\
+-	ori	r10,r10,MSR_IR|MSR_DR|MSR_RI;				\
+-	mtspr	SPRN_SRR0,r12;						\
+-	mfspr	r12,SPRN_SRR1;		/* and SRR1 */			\
+-	mtspr	SPRN_SRR1,r10;						\
+-	rfid;								\
+-	b	.	/* prevent speculative execution */
+-
+-#define EXCEPTION_PROLOG_PSERIES(area, label)				\
+-	mfspr	r13,SPRN_SPRG3;		/* get paca address into r13 */	\
+-	std	r9,area+EX_R9(r13);	/* save r9 - r12 */		\
+-	std	r10,area+EX_R10(r13);					\
+-	std	r11,area+EX_R11(r13);					\
+-	std	r12,area+EX_R12(r13);					\
+-	mfspr	r9,SPRN_SPRG1;						\
+-	std	r9,area+EX_R13(r13);					\
+-	mfcr	r9;							\
+-	clrrdi	r12,r13,32;		/* get high part of &label */	\
+-	mfmsr	r10;							\
+-	mfspr	r11,SPRN_SRR0;		/* save SRR0 */			\
+-	LOAD_HANDLER(r12,label)						\
+-	ori	r10,r10,MSR_IR|MSR_DR|MSR_RI;				\
+-	mtspr	SPRN_SRR0,r12;						\
+-	mfspr	r12,SPRN_SRR1;		/* and SRR1 */			\
+-	mtspr	SPRN_SRR1,r10;						\
+-	rfid;								\
+-	b	.	/* prevent speculative execution */
+-
+-/*
+- * This is the start of the interrupt handlers for iSeries
+- * This code runs with relocation on.
+- */
+-#define EXCEPTION_PROLOG_ISERIES_1(area)				\
+-	mfspr	r13,SPRN_SPRG3;		/* get paca address into r13 */	\
+-	std	r9,area+EX_R9(r13);	/* save r9 - r12 */		\
+-	std	r10,area+EX_R10(r13);					\
+-	std	r11,area+EX_R11(r13);					\
+-	std	r12,area+EX_R12(r13);					\
+-	mfspr	r9,SPRN_SPRG1;						\
+-	std	r9,area+EX_R13(r13);					\
+-	mfcr	r9
+-
+-#define EXCEPTION_PROLOG_ISERIES_2					\
+-	mfmsr	r10;							\
+-	ld	r12,PACALPPACAPTR(r13);					\
+-	ld	r11,LPPACASRR0(r12);					\
+-	ld	r12,LPPACASRR1(r12);					\
+-	ori	r10,r10,MSR_RI;						\
+-	mtmsrd	r10,1
+-
+-/*
+- * The common exception prolog is used for all except a few exceptions
+- * such as a segment miss on a kernel address.  We have to be prepared
+- * to take another exception from the point where we first touch the
+- * kernel stack onwards.
+- *
+- * On entry r13 points to the paca, r9-r13 are saved in the paca,
+- * r9 contains the saved CR, r11 and r12 contain the saved SRR0 and
+- * SRR1, and relocation is on.
+- */
+-#define EXCEPTION_PROLOG_COMMON(n, area)				   \
+-	andi.	r10,r12,MSR_PR;		/* See if coming from user	*/ \
+-	mr	r10,r1;			/* Save r1			*/ \
+-	subi	r1,r1,INT_FRAME_SIZE;	/* alloc frame on kernel stack	*/ \
+-	beq-	1f;							   \
+-	ld	r1,PACAKSAVE(r13);	/* kernel stack to use		*/ \
+-1:	cmpdi	cr1,r1,0;		/* check if r1 is in userspace	*/ \
+-	bge-	cr1,2f;			/* abort if it is		*/ \
+-	b	3f;							   \
+-2:	li	r1,(n);			/* will be reloaded later	*/ \
+-	sth	r1,PACA_TRAP_SAVE(r13);					   \
+-	b	bad_stack;						   \
+-3:	std	r9,_CCR(r1);		/* save CR in stackframe	*/ \
+-	std	r11,_NIP(r1);		/* save SRR0 in stackframe	*/ \
+-	std	r12,_MSR(r1);		/* save SRR1 in stackframe	*/ \
+-	std	r10,0(r1);		/* make stack chain pointer	*/ \
+-	std	r0,GPR0(r1);		/* save r0 in stackframe	*/ \
+-	std	r10,GPR1(r1);		/* save r1 in stackframe	*/ \
+-	ACCOUNT_CPU_USER_ENTRY(r9, r10);				   \
+-	std	r2,GPR2(r1);		/* save r2 in stackframe	*/ \
+-	SAVE_4GPRS(3, r1);		/* save r3 - r6 in stackframe	*/ \
+-	SAVE_2GPRS(7, r1);		/* save r7, r8 in stackframe	*/ \
+-	ld	r9,area+EX_R9(r13);	/* move r9, r10 to stackframe	*/ \
+-	ld	r10,area+EX_R10(r13);					   \
+-	std	r9,GPR9(r1);						   \
+-	std	r10,GPR10(r1);						   \
+-	ld	r9,area+EX_R11(r13);	/* move r11 - r13 to stackframe	*/ \
+-	ld	r10,area+EX_R12(r13);					   \
+-	ld	r11,area+EX_R13(r13);					   \
+-	std	r9,GPR11(r1);						   \
+-	std	r10,GPR12(r1);						   \
+-	std	r11,GPR13(r1);						   \
+-	ld	r2,PACATOC(r13);	/* get kernel TOC into r2	*/ \
+-	mflr	r9;			/* save LR in stackframe	*/ \
+-	std	r9,_LINK(r1);						   \
+-	mfctr	r10;			/* save CTR in stackframe	*/ \
+-	std	r10,_CTR(r1);						   \
+-	lbz	r10,PACASOFTIRQEN(r13);				   \
+-	mfspr	r11,SPRN_XER;		/* save XER in stackframe	*/ \
+-	std	r10,SOFTE(r1);						   \
+-	std	r11,_XER(r1);						   \
+-	li	r9,(n)+1;						   \
+-	std	r9,_TRAP(r1);		/* set trap number		*/ \
+-	li	r10,0;							   \
+-	ld	r11,exception_marker@toc(r2);				   \
+-	std	r10,RESULT(r1);		/* clear regs->result		*/ \
+-	std	r11,STACK_FRAME_OVERHEAD-16(r1); /* mark the frame	*/
+-
+-/*
+- * Exception vectors.
+- */
+-#define STD_EXCEPTION_PSERIES(n, label)			\
+-	. = n;						\
+-	.globl label##_pSeries;				\
+-label##_pSeries:					\
+-	HMT_MEDIUM;					\
+-	mtspr	SPRN_SPRG1,r13;		/* save r13 */	\
+-	EXCEPTION_PROLOG_PSERIES(PACA_EXGEN, label##_common)
+-
+-#define HSTD_EXCEPTION_PSERIES(n, label)		\
+-	. = n;						\
+-	.globl label##_pSeries;				\
+-label##_pSeries:					\
+-	HMT_MEDIUM;					\
+-	mtspr	SPRN_SPRG1,r20;		/* save r20 */	\
+-	mfspr	r20,SPRN_HSRR0;		/* copy HSRR0 to SRR0 */ \
+-	mtspr	SPRN_SRR0,r20;				\
+-	mfspr	r20,SPRN_HSRR1;		/* copy HSRR0 to SRR0 */ \
+-	mtspr	SPRN_SRR1,r20;				\
+-	mfspr	r20,SPRN_SPRG1;		/* restore r20 */ \
+-	mtspr	SPRN_SPRG1,r13;		/* save r13 */	\
+-	EXCEPTION_PROLOG_PSERIES(PACA_EXGEN, label##_common)
+-
+-
+-#define MASKABLE_EXCEPTION_PSERIES(n, label)				\
+-	. = n;								\
+-	.globl label##_pSeries;						\
+-label##_pSeries:							\
+-	HMT_MEDIUM;							\
+-	mtspr	SPRN_SPRG1,r13;		/* save r13 */			\
+-	mfspr	r13,SPRN_SPRG3;		/* get paca address into r13 */	\
+-	std	r9,PACA_EXGEN+EX_R9(r13);	/* save r9, r10 */	\
+-	std	r10,PACA_EXGEN+EX_R10(r13);				\
+-	lbz	r10,PACASOFTIRQEN(r13);					\
+-	mfcr	r9;							\
+-	cmpwi	r10,0;							\
+-	beq	masked_interrupt;					\
+-	mfspr	r10,SPRN_SPRG1;						\
+-	std	r10,PACA_EXGEN+EX_R13(r13);				\
+-	std	r11,PACA_EXGEN+EX_R11(r13);				\
+-	std	r12,PACA_EXGEN+EX_R12(r13);				\
+-	clrrdi	r12,r13,32;		/* get high part of &label */	\
+-	mfmsr	r10;							\
+-	mfspr	r11,SPRN_SRR0;		/* save SRR0 */			\
+-	LOAD_HANDLER(r12,label##_common)				\
+-	ori	r10,r10,MSR_IR|MSR_DR|MSR_RI;				\
+-	mtspr	SPRN_SRR0,r12;						\
+-	mfspr	r12,SPRN_SRR1;		/* and SRR1 */			\
+-	mtspr	SPRN_SRR1,r10;						\
+-	rfid;								\
+-	b	.	/* prevent speculative execution */
+-
+-#define STD_EXCEPTION_ISERIES(n, label, area)		\
+-	.globl label##_iSeries;				\
+-label##_iSeries:					\
+-	HMT_MEDIUM;					\
+-	mtspr	SPRN_SPRG1,r13;		/* save r13 */	\
+-	EXCEPTION_PROLOG_ISERIES_1(area);		\
+-	EXCEPTION_PROLOG_ISERIES_2;			\
+-	b	label##_common
+-
+-#define MASKABLE_EXCEPTION_ISERIES(n, label)				\
+-	.globl label##_iSeries;						\
+-label##_iSeries:							\
+-	HMT_MEDIUM;							\
+-	mtspr	SPRN_SPRG1,r13;		/* save r13 */			\
+-	EXCEPTION_PROLOG_ISERIES_1(PACA_EXGEN);				\
+-	lbz	r10,PACASOFTIRQEN(r13);					\
+-	cmpwi	0,r10,0;						\
+-	beq-	label##_iSeries_masked;					\
+-	EXCEPTION_PROLOG_ISERIES_2;					\
+-	b	label##_common;						\
+-
 -#ifdef CONFIG_PPC_ISERIES
--_INIT_STATIC(__start_initialization_iSeries)
--	/* Clear out the BSS */
--	LOAD_REG_IMMEDIATE(r11,__bss_stop)
--	LOAD_REG_IMMEDIATE(r8,__bss_start)
--	sub	r11,r11,r8		/* bss size			*/
--	addi	r11,r11,7		/* round up to an even double word */
--	rldicl. r11,r11,61,3		/* shift right by 3		*/
--	beq	4f
--	addi	r8,r8,-8
--	li	r0,0
--	mtctr	r11			/* zero this many doublewords	*/
--3:	stdu	r0,8(r8)
--	bdnz	3b
--4:
--	LOAD_REG_IMMEDIATE(r1,init_thread_union)
--	addi	r1,r1,THREAD_SIZE
--	li	r0,0
--	stdu	r0,-STACK_FRAME_OVERHEAD(r1)
+-#define DISABLE_INTS				\
+-	li	r11,0;				\
+-	stb	r11,PACASOFTIRQEN(r13);		\
+-BEGIN_FW_FTR_SECTION;				\
+-	stb	r11,PACAHARDIRQEN(r13);		\
+-END_FW_FTR_SECTION_IFCLR(FW_FEATURE_ISERIES);	\
+-BEGIN_FW_FTR_SECTION;				\
+-	mfmsr	r10;				\
+-	ori	r10,r10,MSR_EE;			\
+-	mtmsrd	r10,1;				\
+-END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISERIES)
 -
--	LOAD_REG_IMMEDIATE(r2,__toc_start)
--	addi	r2,r2,0x4000
--	addi	r2,r2,0x4000
+-#else
+-#define DISABLE_INTS				\
+-	li	r11,0;				\
+-	stb	r11,PACASOFTIRQEN(r13);		\
+-	stb	r11,PACAHARDIRQEN(r13)
 -
--	bl	.iSeries_early_setup
--	bl	.early_setup
--
--	/* relocation is on at this point */
--
--	b	.start_here_common
 -#endif /* CONFIG_PPC_ISERIES */
 -
+-#define ENABLE_INTS				\
+-	ld	r12,_MSR(r1);			\
+-	mfmsr	r11;				\
+-	rlwimi	r11,r12,0,MSR_EE;		\
+-	mtmsrd	r11,1
 -
- _STATIC(__mmu_off)
- 	mfmsr	r3
- 	andi.	r0,r3,MSR_IR|MSR_DR
-@@ -1902,6 +1819,7 @@ _GLOBAL(pmac_secondary_start)
-  *   r13   = paca virtual address
-  *   SPRG3 = paca virtual address
-  */
-+	.globl	__secondary_start
- __secondary_start:
- 	/* Set thread priority to MEDIUM */
- 	HMT_MEDIUM
-@@ -2032,7 +1950,7 @@ _INIT_STATIC(start_here_multiplatform)
- 	b	.	/* prevent speculative execution */
- 	
- 	/* This is where all platforms converge execution */
--_INIT_STATIC(start_here_common)
-+_INIT_GLOBAL(start_here_common)
- 	/* relocation is on at this point */
- 
- 	/* The following code sets up the SP and TOC now that we are */
-diff --git a/arch/powerpc/platforms/iseries/Makefile b/arch/powerpc/platforms/iseries/Makefile
-index 13ac301..60db509 100644
---- a/arch/powerpc/platforms/iseries/Makefile
-+++ b/arch/powerpc/platforms/iseries/Makefile
-@@ -2,6 +2,7 @@ EXTRA_CFLAGS	+= -mno-minimal-toc
- 
- extra-y += dt.o
- 
-+obj-y += exception.o
- obj-y += hvlog.o hvlpconfig.o lpardata.o setup.o dt_mod.o mf.o lpevents.o \
- 	hvcall.o proc.o htab.o iommu.o misc.o irq.o
- obj-$(CONFIG_PCI) += pci.o vpdinfo.o
-diff --git a/arch/powerpc/platforms/iseries/exception.S b/arch/powerpc/platforms/iseries/exception.S
+-#define STD_EXCEPTION_COMMON(trap, label, hdlr)		\
+-	.align	7;					\
+-	.globl label##_common;				\
+-label##_common:						\
+-	EXCEPTION_PROLOG_COMMON(trap, PACA_EXGEN);	\
+-	DISABLE_INTS;					\
+-	bl	.save_nvgprs;				\
+-	addi	r3,r1,STACK_FRAME_OVERHEAD;		\
+-	bl	hdlr;					\
+-	b	.ret_from_except
+-
+-/*
+- * Like STD_EXCEPTION_COMMON, but for exceptions that can occur
+- * in the idle task and therefore need the special idle handling.
+- */
+-#define STD_EXCEPTION_COMMON_IDLE(trap, label, hdlr)	\
+-	.align	7;					\
+-	.globl label##_common;				\
+-label##_common:						\
+-	EXCEPTION_PROLOG_COMMON(trap, PACA_EXGEN);	\
+-	FINISH_NAP;					\
+-	DISABLE_INTS;					\
+-	bl	.save_nvgprs;				\
+-	addi	r3,r1,STACK_FRAME_OVERHEAD;		\
+-	bl	hdlr;					\
+-	b	.ret_from_except
+-
+-#define STD_EXCEPTION_COMMON_LITE(trap, label, hdlr)	\
+-	.align	7;					\
+-	.globl label##_common;				\
+-label##_common:						\
+-	EXCEPTION_PROLOG_COMMON(trap, PACA_EXGEN);	\
+-	FINISH_NAP;					\
+-	DISABLE_INTS;					\
+-	bl	.ppc64_runlatch_on;			\
+-	addi	r3,r1,STACK_FRAME_OVERHEAD;		\
+-	bl	hdlr;					\
+-	b	.ret_from_except_lite
+-
+-/*
+- * When the idle code in power4_idle puts the CPU into NAP mode,
+- * it has to do so in a loop, and relies on the external interrupt
+- * and decrementer interrupt entry code to get it out of the loop.
+- * It sets the _TLF_NAPPING bit in current_thread_info()->local_flags
+- * to signal that it is in the loop and needs help to get out.
+- */
+-#ifdef CONFIG_PPC_970_NAP
+-#define FINISH_NAP				\
+-BEGIN_FTR_SECTION				\
+-	clrrdi	r11,r1,THREAD_SHIFT;		\
+-	ld	r9,TI_LOCAL_FLAGS(r11);		\
+-	andi.	r10,r9,_TLF_NAPPING;		\
+-	bnel	power4_fixup_nap;		\
+-END_FTR_SECTION_IFSET(CPU_FTR_CAN_NAP)
+-#else
+-#define FINISH_NAP
+-#endif
+-
+-/*
+- * Start of pSeries system interrupt routines
+- */
+ 	. = 0x100
+ 	.globl __start_interrupts
+ __start_interrupts:
+diff --git a/include/asm-powerpc/exception.h b/include/asm-powerpc/exception.h
 new file mode 100644
-index 0000000..b6e2f8c
+index 0000000..1980ed3
 --- /dev/null
-+++ b/arch/powerpc/platforms/iseries/exception.S
-@@ -0,0 +1,114 @@
++++ b/include/asm-powerpc/exception.h
+@@ -0,0 +1,356 @@
++#ifndef _ASM_POWERPC_EXCEPTION_H
++#define _ASM_POWERPC_EXCEPTION_H
 +/*
-+ *  Low level routines for legacy iSeries support.
-+ *
-+ *  Extracted from head_64.S
++ * Extracted from head_64.S
 + *
 + *  PowerPC version
 + *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
@@ -196,118 +434,335 @@ index 0000000..b6e2f8c
 + *  as published by the Free Software Foundation; either version
 + *  2 of the License, or (at your option) any later version.
 + */
++/*
++ * The following macros define the code that appears as
++ * the prologue to each of the exception handlers.  They
++ * are split into two parts to allow a single kernel binary
++ * to be used for pSeries and iSeries.
++ *
++ * We make as much of the exception code common between native
++ * exception handlers (including pSeries LPAR) and iSeries LPAR
++ * implementations as possible.
++ */
 +
-+#include <asm/reg.h>
-+#include <asm/ppc_asm.h>
-+#include <asm/asm-offsets.h>
-+#include <asm/thread_info.h>
-+#include <asm/ptrace.h>
++#define EX_R9		0
++#define EX_R10		8
++#define EX_R11		16
++#define EX_R12		24
++#define EX_R13		32
++#define EX_SRR0		40
++#define EX_DAR		48
++#define EX_DSISR	56
++#define EX_CCR		60
++#define EX_R3		64
++#define EX_LR		72
 +
-+	.text
++/*
++ * We're short on space and time in the exception prolog, so we can't
++ * use the normal SET_REG_IMMEDIATE macro. Normally we just need the
++ * low halfword of the address, but for Kdump we need the whole low
++ * word.
++ */
++#ifdef CONFIG_CRASH_DUMP
++#define LOAD_HANDLER(reg, label)					\
++	oris	reg,reg,(label)@h;	/* virt addr of handler ... */	\
++	ori	reg,reg,(label)@l;	/* .. and the rest */
++#else
++#define LOAD_HANDLER(reg, label)					\
++	ori	reg,reg,(label)@l;	/* virt addr of handler ... */
++#endif
 +
-+	.globl system_reset_iSeries
-+system_reset_iSeries:
-+	mfspr	r13,SPRN_SPRG3		/* Get paca address */
-+	mfmsr	r24
-+	ori	r24,r24,MSR_RI
-+	mtmsrd	r24			/* RI on */
-+	lhz	r24,PACAPACAINDEX(r13)	/* Get processor # */
-+	cmpwi	0,r24,0			/* Are we processor 0? */
-+	bne	1f
-+	b	.__start_initialization_iSeries	/* Start up the first processor */
-+1:	mfspr	r4,SPRN_CTRLF
-+	li	r5,CTRL_RUNLATCH	/* Turn off the run light */
-+	andc	r4,r4,r5
-+	mtspr	SPRN_CTRLT,r4
++/*
++ * Equal to EXCEPTION_PROLOG_PSERIES, except that it forces 64bit mode.
++ * The firmware calls the registered system_reset_fwnmi and
++ * machine_check_fwnmi handlers in 32bit mode if the cpu happens to run
++ * a 32bit application at the time of the event.
++ * This firmware bug is present on POWER4 and JS20.
++ */
++#define EXCEPTION_PROLOG_PSERIES_FORCE_64BIT(area, label)		\
++	mfspr	r13,SPRN_SPRG3;		/* get paca address into r13 */	\
++	std	r9,area+EX_R9(r13);	/* save r9 - r12 */		\
++	std	r10,area+EX_R10(r13);					\
++	std	r11,area+EX_R11(r13);					\
++	std	r12,area+EX_R12(r13);					\
++	mfspr	r9,SPRN_SPRG1;						\
++	std	r9,area+EX_R13(r13);					\
++	mfcr	r9;							\
++	clrrdi	r12,r13,32;		/* get high part of &label */	\
++	mfmsr	r10;							\
++	/* force 64bit mode */						\
++	li	r11,5;			/* MSR_SF_LG|MSR_ISF_LG */	\
++	rldimi	r10,r11,61,0;		/* insert into top 3 bits */	\
++	/* done 64bit mode */						\
++	mfspr	r11,SPRN_SRR0;		/* save SRR0 */			\
++	LOAD_HANDLER(r12,label)						\
++	ori	r10,r10,MSR_IR|MSR_DR|MSR_RI;				\
++	mtspr	SPRN_SRR0,r12;						\
++	mfspr	r12,SPRN_SRR1;		/* and SRR1 */			\
++	mtspr	SPRN_SRR1,r10;						\
++	rfid;								\
++	b	.	/* prevent speculative execution */
 +
-+1:
-+	HMT_LOW
-+#ifdef CONFIG_SMP
-+	lbz	r23,PACAPROCSTART(r13)	/* Test if this processor
-+					 * should start */
-+	sync
-+	LOAD_REG_IMMEDIATE(r3,current_set)
-+	sldi	r28,r24,3		/* get current_set[cpu#] */
-+	ldx	r3,r3,r28
-+	addi	r1,r3,THREAD_SIZE
-+	subi	r1,r1,STACK_FRAME_OVERHEAD
++#define EXCEPTION_PROLOG_PSERIES(area, label)				\
++	mfspr	r13,SPRN_SPRG3;		/* get paca address into r13 */	\
++	std	r9,area+EX_R9(r13);	/* save r9 - r12 */		\
++	std	r10,area+EX_R10(r13);					\
++	std	r11,area+EX_R11(r13);					\
++	std	r12,area+EX_R12(r13);					\
++	mfspr	r9,SPRN_SPRG1;						\
++	std	r9,area+EX_R13(r13);					\
++	mfcr	r9;							\
++	clrrdi	r12,r13,32;		/* get high part of &label */	\
++	mfmsr	r10;							\
++	mfspr	r11,SPRN_SRR0;		/* save SRR0 */			\
++	LOAD_HANDLER(r12,label)						\
++	ori	r10,r10,MSR_IR|MSR_DR|MSR_RI;				\
++	mtspr	SPRN_SRR0,r12;						\
++	mfspr	r12,SPRN_SRR1;		/* and SRR1 */			\
++	mtspr	SPRN_SRR1,r10;						\
++	rfid;								\
++	b	.	/* prevent speculative execution */
 +
-+	cmpwi	0,r23,0
-+	beq	iSeries_secondary_smp_loop	/* Loop until told to go */
-+	b	__secondary_start		/* Loop until told to go */
-+iSeries_secondary_smp_loop:
-+	/* Let the Hypervisor know we are alive */
-+	/* 8002 is a call to HvCallCfg::getLps, a harmless Hypervisor function */
-+	lis	r3,0x8002
-+	rldicr	r3,r3,32,15		/* r0 = (r3 << 32) & 0xffff000000000000 */
-+#else /* CONFIG_SMP */
-+	/* Yield the processor.  This is required for non-SMP kernels
-+		which are running on multi-threaded machines. */
-+	lis	r3,0x8000
-+	rldicr	r3,r3,32,15		/* r3 = (r3 << 32) & 0xffff000000000000 */
-+	addi	r3,r3,18		/* r3 = 0x8000000000000012 which is "yield" */
-+	li	r4,0			/* "yield timed" */
-+	li	r5,-1			/* "yield forever" */
-+#endif /* CONFIG_SMP */
-+	li	r0,-1			/* r0=-1 indicates a Hypervisor call */
-+	sc				/* Invoke the hypervisor via a system call */
-+	mfspr	r13,SPRN_SPRG3		/* Put r13 back ???? */
-+	b	1b			/* If SMP not configured, secondaries
-+					 * loop forever */
++/*
++ * This is the start of the interrupt handlers for iSeries
++ * This code runs with relocation on.
++ */
++#define EXCEPTION_PROLOG_ISERIES_1(area)				\
++	mfspr	r13,SPRN_SPRG3;		/* get paca address into r13 */	\
++	std	r9,area+EX_R9(r13);	/* save r9 - r12 */		\
++	std	r10,area+EX_R10(r13);					\
++	std	r11,area+EX_R11(r13);					\
++	std	r12,area+EX_R12(r13);					\
++	mfspr	r9,SPRN_SPRG1;						\
++	std	r9,area+EX_R13(r13);					\
++	mfcr	r9
 +
-+_INIT_STATIC(__start_initialization_iSeries)
-+	/* Clear out the BSS */
-+	LOAD_REG_IMMEDIATE(r11,__bss_stop)
-+	LOAD_REG_IMMEDIATE(r8,__bss_start)
-+	sub	r11,r11,r8		/* bss size			*/
-+	addi	r11,r11,7		/* round up to an even double word */
-+	rldicl. r11,r11,61,3		/* shift right by 3		*/
-+	beq	4f
-+	addi	r8,r8,-8
-+	li	r0,0
-+	mtctr	r11			/* zero this many doublewords	*/
-+3:	stdu	r0,8(r8)
-+	bdnz	3b
-+4:
-+	LOAD_REG_IMMEDIATE(r1,init_thread_union)
-+	addi	r1,r1,THREAD_SIZE
-+	li	r0,0
-+	stdu	r0,-STACK_FRAME_OVERHEAD(r1)
++#define EXCEPTION_PROLOG_ISERIES_2					\
++	mfmsr	r10;							\
++	ld	r12,PACALPPACAPTR(r13);					\
++	ld	r11,LPPACASRR0(r12);					\
++	ld	r12,LPPACASRR1(r12);					\
++	ori	r10,r10,MSR_RI;						\
++	mtmsrd	r10,1
 +
-+	LOAD_REG_IMMEDIATE(r2,__toc_start)
-+	addi	r2,r2,0x4000
-+	addi	r2,r2,0x4000
++/*
++ * The common exception prolog is used for all except a few exceptions
++ * such as a segment miss on a kernel address.  We have to be prepared
++ * to take another exception from the point where we first touch the
++ * kernel stack onwards.
++ *
++ * On entry r13 points to the paca, r9-r13 are saved in the paca,
++ * r9 contains the saved CR, r11 and r12 contain the saved SRR0 and
++ * SRR1, and relocation is on.
++ */
++#define EXCEPTION_PROLOG_COMMON(n, area)				   \
++	andi.	r10,r12,MSR_PR;		/* See if coming from user	*/ \
++	mr	r10,r1;			/* Save r1			*/ \
++	subi	r1,r1,INT_FRAME_SIZE;	/* alloc frame on kernel stack	*/ \
++	beq-	1f;							   \
++	ld	r1,PACAKSAVE(r13);	/* kernel stack to use		*/ \
++1:	cmpdi	cr1,r1,0;		/* check if r1 is in userspace	*/ \
++	bge-	cr1,2f;			/* abort if it is		*/ \
++	b	3f;							   \
++2:	li	r1,(n);			/* will be reloaded later	*/ \
++	sth	r1,PACA_TRAP_SAVE(r13);					   \
++	b	bad_stack;						   \
++3:	std	r9,_CCR(r1);		/* save CR in stackframe	*/ \
++	std	r11,_NIP(r1);		/* save SRR0 in stackframe	*/ \
++	std	r12,_MSR(r1);		/* save SRR1 in stackframe	*/ \
++	std	r10,0(r1);		/* make stack chain pointer	*/ \
++	std	r0,GPR0(r1);		/* save r0 in stackframe	*/ \
++	std	r10,GPR1(r1);		/* save r1 in stackframe	*/ \
++	ACCOUNT_CPU_USER_ENTRY(r9, r10);				   \
++	std	r2,GPR2(r1);		/* save r2 in stackframe	*/ \
++	SAVE_4GPRS(3, r1);		/* save r3 - r6 in stackframe	*/ \
++	SAVE_2GPRS(7, r1);		/* save r7, r8 in stackframe	*/ \
++	ld	r9,area+EX_R9(r13);	/* move r9, r10 to stackframe	*/ \
++	ld	r10,area+EX_R10(r13);					   \
++	std	r9,GPR9(r1);						   \
++	std	r10,GPR10(r1);						   \
++	ld	r9,area+EX_R11(r13);	/* move r11 - r13 to stackframe	*/ \
++	ld	r10,area+EX_R12(r13);					   \
++	ld	r11,area+EX_R13(r13);					   \
++	std	r9,GPR11(r1);						   \
++	std	r10,GPR12(r1);						   \
++	std	r11,GPR13(r1);						   \
++	ld	r2,PACATOC(r13);	/* get kernel TOC into r2	*/ \
++	mflr	r9;			/* save LR in stackframe	*/ \
++	std	r9,_LINK(r1);						   \
++	mfctr	r10;			/* save CTR in stackframe	*/ \
++	std	r10,_CTR(r1);						   \
++	lbz	r10,PACASOFTIRQEN(r13);				   \
++	mfspr	r11,SPRN_XER;		/* save XER in stackframe	*/ \
++	std	r10,SOFTE(r1);						   \
++	std	r11,_XER(r1);						   \
++	li	r9,(n)+1;						   \
++	std	r9,_TRAP(r1);		/* set trap number		*/ \
++	li	r10,0;							   \
++	ld	r11,exception_marker@toc(r2);				   \
++	std	r10,RESULT(r1);		/* clear regs->result		*/ \
++	std	r11,STACK_FRAME_OVERHEAD-16(r1); /* mark the frame	*/
 +
-+	bl	.iSeries_early_setup
-+	bl	.early_setup
++/*
++ * Exception vectors.
++ */
++#define STD_EXCEPTION_PSERIES(n, label)			\
++	. = n;						\
++	.globl label##_pSeries;				\
++label##_pSeries:					\
++	HMT_MEDIUM;					\
++	mtspr	SPRN_SPRG1,r13;		/* save r13 */	\
++	EXCEPTION_PROLOG_PSERIES(PACA_EXGEN, label##_common)
 +
-+	/* relocation is on at this point */
++#define HSTD_EXCEPTION_PSERIES(n, label)		\
++	. = n;						\
++	.globl label##_pSeries;				\
++label##_pSeries:					\
++	HMT_MEDIUM;					\
++	mtspr	SPRN_SPRG1,r20;		/* save r20 */	\
++	mfspr	r20,SPRN_HSRR0;		/* copy HSRR0 to SRR0 */ \
++	mtspr	SPRN_SRR0,r20;				\
++	mfspr	r20,SPRN_HSRR1;		/* copy HSRR0 to SRR0 */ \
++	mtspr	SPRN_SRR1,r20;				\
++	mfspr	r20,SPRN_SPRG1;		/* restore r20 */ \
++	mtspr	SPRN_SPRG1,r13;		/* save r13 */	\
++	EXCEPTION_PROLOG_PSERIES(PACA_EXGEN, label##_common)
 +
-+	b	.start_here_common
-diff --git a/include/asm-powerpc/ppc_asm.h b/include/asm-powerpc/ppc_asm.h
-index 6532572..211fdae 100644
---- a/include/asm-powerpc/ppc_asm.h
-+++ b/include/asm-powerpc/ppc_asm.h
-@@ -155,6 +155,20 @@ name: \
- 	.type GLUE(.,name),@function; \
- GLUE(.,name):
- 
-+#define _INIT_GLOBAL(name) \
-+	.section ".text.init.refok"; \
-+	.align 2 ; \
-+	.globl name; \
-+	.globl GLUE(.,name); \
-+	.section ".opd","aw"; \
-+name: \
-+	.quad GLUE(.,name); \
-+	.quad .TOC.@tocbase; \
-+	.quad 0; \
-+	.previous; \
-+	.type GLUE(.,name),@function; \
-+GLUE(.,name):
 +
- #define _KPROBE(name) \
- 	.section ".kprobes.text","a"; \
- 	.align 2 ; \
++#define MASKABLE_EXCEPTION_PSERIES(n, label)				\
++	. = n;								\
++	.globl label##_pSeries;						\
++label##_pSeries:							\
++	HMT_MEDIUM;							\
++	mtspr	SPRN_SPRG1,r13;		/* save r13 */			\
++	mfspr	r13,SPRN_SPRG3;		/* get paca address into r13 */	\
++	std	r9,PACA_EXGEN+EX_R9(r13);	/* save r9, r10 */	\
++	std	r10,PACA_EXGEN+EX_R10(r13);				\
++	lbz	r10,PACASOFTIRQEN(r13);					\
++	mfcr	r9;							\
++	cmpwi	r10,0;							\
++	beq	masked_interrupt;					\
++	mfspr	r10,SPRN_SPRG1;						\
++	std	r10,PACA_EXGEN+EX_R13(r13);				\
++	std	r11,PACA_EXGEN+EX_R11(r13);				\
++	std	r12,PACA_EXGEN+EX_R12(r13);				\
++	clrrdi	r12,r13,32;		/* get high part of &label */	\
++	mfmsr	r10;							\
++	mfspr	r11,SPRN_SRR0;		/* save SRR0 */			\
++	LOAD_HANDLER(r12,label##_common)				\
++	ori	r10,r10,MSR_IR|MSR_DR|MSR_RI;				\
++	mtspr	SPRN_SRR0,r12;						\
++	mfspr	r12,SPRN_SRR1;		/* and SRR1 */			\
++	mtspr	SPRN_SRR1,r10;						\
++	rfid;								\
++	b	.	/* prevent speculative execution */
++
++#define STD_EXCEPTION_ISERIES(n, label, area)		\
++	.globl label##_iSeries;				\
++label##_iSeries:					\
++	HMT_MEDIUM;					\
++	mtspr	SPRN_SPRG1,r13;		/* save r13 */	\
++	EXCEPTION_PROLOG_ISERIES_1(area);		\
++	EXCEPTION_PROLOG_ISERIES_2;			\
++	b	label##_common
++
++#define MASKABLE_EXCEPTION_ISERIES(n, label)				\
++	.globl label##_iSeries;						\
++label##_iSeries:							\
++	HMT_MEDIUM;							\
++	mtspr	SPRN_SPRG1,r13;		/* save r13 */			\
++	EXCEPTION_PROLOG_ISERIES_1(PACA_EXGEN);				\
++	lbz	r10,PACASOFTIRQEN(r13);					\
++	cmpwi	0,r10,0;						\
++	beq-	label##_iSeries_masked;					\
++	EXCEPTION_PROLOG_ISERIES_2;					\
++	b	label##_common;						\
++
++#ifdef CONFIG_PPC_ISERIES
++#define DISABLE_INTS				\
++	li	r11,0;				\
++	stb	r11,PACASOFTIRQEN(r13);		\
++BEGIN_FW_FTR_SECTION;				\
++	stb	r11,PACAHARDIRQEN(r13);		\
++END_FW_FTR_SECTION_IFCLR(FW_FEATURE_ISERIES);	\
++BEGIN_FW_FTR_SECTION;				\
++	mfmsr	r10;				\
++	ori	r10,r10,MSR_EE;			\
++	mtmsrd	r10,1;				\
++END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISERIES)
++
++#else
++#define DISABLE_INTS				\
++	li	r11,0;				\
++	stb	r11,PACASOFTIRQEN(r13);		\
++	stb	r11,PACAHARDIRQEN(r13)
++
++#endif /* CONFIG_PPC_ISERIES */
++
++#define ENABLE_INTS				\
++	ld	r12,_MSR(r1);			\
++	mfmsr	r11;				\
++	rlwimi	r11,r12,0,MSR_EE;		\
++	mtmsrd	r11,1
++
++#define STD_EXCEPTION_COMMON(trap, label, hdlr)		\
++	.align	7;					\
++	.globl label##_common;				\
++label##_common:						\
++	EXCEPTION_PROLOG_COMMON(trap, PACA_EXGEN);	\
++	DISABLE_INTS;					\
++	bl	.save_nvgprs;				\
++	addi	r3,r1,STACK_FRAME_OVERHEAD;		\
++	bl	hdlr;					\
++	b	.ret_from_except
++
++/*
++ * Like STD_EXCEPTION_COMMON, but for exceptions that can occur
++ * in the idle task and therefore need the special idle handling.
++ */
++#define STD_EXCEPTION_COMMON_IDLE(trap, label, hdlr)	\
++	.align	7;					\
++	.globl label##_common;				\
++label##_common:						\
++	EXCEPTION_PROLOG_COMMON(trap, PACA_EXGEN);	\
++	FINISH_NAP;					\
++	DISABLE_INTS;					\
++	bl	.save_nvgprs;				\
++	addi	r3,r1,STACK_FRAME_OVERHEAD;		\
++	bl	hdlr;					\
++	b	.ret_from_except
++
++#define STD_EXCEPTION_COMMON_LITE(trap, label, hdlr)	\
++	.align	7;					\
++	.globl label##_common;				\
++label##_common:						\
++	EXCEPTION_PROLOG_COMMON(trap, PACA_EXGEN);	\
++	FINISH_NAP;					\
++	DISABLE_INTS;					\
++	bl	.ppc64_runlatch_on;			\
++	addi	r3,r1,STACK_FRAME_OVERHEAD;		\
++	bl	hdlr;					\
++	b	.ret_from_except_lite
++
++/*
++ * When the idle code in power4_idle puts the CPU into NAP mode,
++ * it has to do so in a loop, and relies on the external interrupt
++ * and decrementer interrupt entry code to get it out of the loop.
++ * It sets the _TLF_NAPPING bit in current_thread_info()->local_flags
++ * to signal that it is in the loop and needs help to get out.
++ */
++#ifdef CONFIG_PPC_970_NAP
++#define FINISH_NAP				\
++BEGIN_FTR_SECTION				\
++	clrrdi	r11,r1,THREAD_SHIFT;		\
++	ld	r9,TI_LOCAL_FLAGS(r11);		\
++	andi.	r10,r9,_TLF_NAPPING;		\
++	bnel	power4_fixup_nap;		\
++END_FTR_SECTION_IFSET(CPU_FTR_CAN_NAP)
++#else
++#define FINISH_NAP
++#endif
++
++#endif	/* _ASM_POWERPC_EXCEPTION_H */
 -- 
 1.5.2.4
