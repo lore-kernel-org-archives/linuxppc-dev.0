@@ -1,22 +1,27 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
+	[207.189.120.14])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6E5DFDDF0F
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 09:26:26 +1000 (EST)
-In-Reply-To: <200708230039.07061.arnd@arndb.de>
-References: <18124.1591.112487.322248@cargo.ozlabs.ibm.com>
-	<653AD812-D186-4876-BF52-F3A5D887B82E@kernel.crashing.org>
-	<694575D6-C4BC-4FFB-91C1-B692181CEF6F@kernel.crashing.org>
-	<200708230039.07061.arnd@arndb.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <9CF80662-71B6-4EA4-AEC5-CDF0842D5F26@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Patches added to powerpc.git for-2.6.24 branch
-Date: Wed, 22 Aug 2007 18:28:22 -0500
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 95698DDEEB
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 09:54:08 +1000 (EST)
+Date: Wed, 22 Aug 2007 16:53:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jason Wessel <jason.wessel@windriver.com>
+Subject: Re: [Kgdb-bugreport] 2.6.23-rc3-mm1: kgdb build failure on powerpc
+Message-Id: <20070822165318.b82da13c.akpm@linux-foundation.org>
+In-Reply-To: <46CCBC3C.7010307@windriver.com>
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+	<200708222104.29432.m.kozlowski@tuxland.pl>
+	<20070822124743.fc316963.akpm@linux-foundation.org>
+	<46CCBC3C.7010307@windriver.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: kgdb-bugreport@lists.sourceforge.net, amitkale@linsyssoft.com,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +31,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 22 Aug 2007 17:44:12 -0500
+Jason Wessel <jason.wessel@windriver.com> wrote:
 
-On Aug 22, 2007, at 5:39 PM, Arnd Bergmann wrote:
+> Perhaps there is a cleaner way to do the same thing and avoid the 
+> cmpxchg all together.  I used the attached patch to eliminate the 
+> cmpxchg operation.
+> 
+> 
+> Jason.
+> 
+> 
+> [kgdb_enter_atomic.patch  text/plain (2.0KB)]
+> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+> 
+> ---
+>  kernel/kgdb.c |   18 ++++++++++++++++--
+>  1 file changed, 16 insertions(+), 2 deletions(-)
+> 
+> --- a/kernel/kgdb.c
+> +++ b/kernel/kgdb.c
+> @@ -121,6 +121,7 @@ struct task_struct *kgdb_usethread, *kgd
+>  
+>  int debugger_step;
+>  atomic_t debugger_active;
+> +static atomic_t kgdb_sync = ATOMIC_INIT(-1);
+>  
+>  /* Our I/O buffers. */
+>  static char remcom_in_buffer[BUFMAX];
+> @@ -638,8 +639,14 @@ static void kgdb_wait(struct pt_regs *re
+>  	kgdb_info[processor].task = current;
+>  	atomic_set(&procindebug[processor], 1);
+>  
+> +	/* The master processor must be active to enter here, but this is
+> +	 * gaurd in case the master processor had not been selected if
+> +	 * this was an entry via nmi.
+> +	 */
+> +	while (!atomic_read(&debugger_active));
 
-> On Wednesday 22 August 2007, Kumar Gala wrote:
->> I think we can all agree that the amiga*.h, zorro.h and traps.h can
->> be ignored since they have to do with amiga/apus support.
->
-> arch/powerpc/kernel/setup_32.c unconditionally #includes <asm/ 
-> amigappc.h>,
-> the rest looks unused indeed.
+eek.  We're in the process of hunting down and eliminating exactly this
+construct.  There have been cases where the compiler cached the
+atomic_read() result in a register, turning the above into an infinite
+loop.
 
-Yeah, that's fixed up in my patches.
+Plus we should never add power-burners like that into the kernel anyway. 
+That loop should have a cpu_relax() in it.  Which will also fix the
+compiler problem described above.
 
-- k
+Thirdly, please always add a newline when coding statements like that:
+
+	while (expr())
+		;
