@@ -1,19 +1,24 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AE854DDEE1
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 07:08:42 +1000 (EST)
-Date: Thu, 23 Aug 2007 01:08:26 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 4/7] fs_enet: mac-fcc: Eliminate __fcc-* macros.
-Message-ID: <20070823010826.6ae3452d@localhost.localdomain>
-In-Reply-To: <20070817175402.GD9218@ld0162-tx32.am.freescale.net>
-References: <20070817175320.GA8259@ld0162-tx32.am.freescale.net>
-	<20070817175402.GD9218@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1004EDDEC9
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 07:16:21 +1000 (EST)
+Message-ID: <46CCA79D.40003@freescale.com>
+Date: Wed, 22 Aug 2007 16:16:13 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: Re: [PATCH 6/7 v2] fs_enet: Be an of_platform device when
+	CONFIG_PPC_CPM_NEW_BINDING is set.
+References: <20070817181718.GA15792@ld0162-tx32.am.freescale.net>
+	<20070821130155.43898b68@localhost.localdomain>
+	<46CB172D.9010807@freescale.com>
+	<20070823010057.74e1355a@localhost.localdomain>
+In-Reply-To: <20070823010057.74e1355a@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,80 +29,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 17 Aug 2007 12:54:02 -0500
-Scott Wood wrote:
-
-> These macros accomplish nothing other than defeating type checking.
+Vitaly Bordug wrote:
+> yes, wrong snippet what about
 > 
-> This patch also fixes one instance of the wrong register size being
-> used that was revealed by enabling type checking.
 > 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
->  drivers/net/fs_enet/mac-fcc.c |   25 ++++++++-----------------
->  1 files changed, 8 insertions(+), 17 deletions(-)
+>> #ifdef CONFIG_CPM2 +	r = fs_enet_mdio_bb_init(); +	if (r != 0) +
+>> goto out_mdio_bb; +#endif +#ifdef CONFIG_8xx +	r =
+>> fs_enet_mdio_fec_init(); +	if (r != 0) +		goto out_mdio_fec; 
+>> +#endif
 > 
-> diff --git a/drivers/net/fs_enet/mac-fcc.c
-> b/drivers/net/fs_enet/mac-fcc.c index ad3c5fa..8b30361 100644
-> --- a/drivers/net/fs_enet/mac-fcc.c
-> +++ b/drivers/net/fs_enet/mac-fcc.c
-> @@ -48,28 +48,19 @@
->  
->  /* FCC access macros */
->  
-> -#define __fcc_out32(addr, x)	out_be32((unsigned *)addr, x)
-> -#define __fcc_out16(addr, x)	out_be16((unsigned short *)addr,
-> x) -#define __fcc_out8(addr, x)	out_8((unsigned char *)addr, x)
-> -#define __fcc_in32(addr)	in_be32((unsigned *)addr)
-> -#define __fcc_in16(addr)	in_be16((unsigned short *)addr)
-> -#define __fcc_in8(addr)		in_8((unsigned char *)addr)
-> -
-> -/* parameter space */
-> -
->  /* write, read, set bits, clear bits */
-> -#define W32(_p, _m, _v)	__fcc_out32(&(_p)->_m, (_v))
-> -#define R32(_p, _m)	__fcc_in32(&(_p)->_m)
-> +#define W32(_p, _m, _v)	out_be32(&(_p)->_m, (_v))
-> +#define R32(_p, _m)	in_be32(&(_p)->_m)
->  #define S32(_p, _m, _v)	W32(_p, _m, R32(_p, _m) | (_v))
->  #define C32(_p, _m, _v)	W32(_p, _m, R32(_p, _m) & ~(_v))
->  
-> -#define W16(_p, _m, _v)	__fcc_out16(&(_p)->_m, (_v))
-> -#define R16(_p, _m)	__fcc_in16(&(_p)->_m)
-> +#define W16(_p, _m, _v)	out_be16(&(_p)->_m, (_v))
-> +#define R16(_p, _m)	in_be16(&(_p)->_m)
->  #define S16(_p, _m, _v)	W16(_p, _m, R16(_p, _m) | (_v))
->  #define C16(_p, _m, _v)	W16(_p, _m, R16(_p, _m) & ~(_v))
->  
-> -#define W8(_p, _m, _v)	__fcc_out8(&(_p)->_m, (_v))
-> -#define R8(_p, _m)	__fcc_in8(&(_p)->_m)
-> +#define W8(_p, _m, _v)	out_8(&(_p)->_m, (_v))
-> +#define R8(_p, _m)	in_8(&(_p)->_m)
->  #define S8(_p, _m, _v)	W8(_p, _m, R8(_p, _m) | (_v))
->  #define C8(_p, _m, _v)	W8(_p, _m, R8(_p, _m) & ~(_v))
->  
-> @@ -290,7 +281,7 @@ static void restart(struct net_device *dev)
->  
->  	/* clear everything (slow & steady does it) */
->  	for (i = 0; i < sizeof(*ep); i++)
-> -		__fcc_out8((char *)ep + i, 0);
-> +		out_8((char *)ep + i, 0);
->  
-Perhaps W8() here, to keep consistency?
+> 
+> We had to pray and hope that 8xx would only have fec, and cpm2 has
+> some bitbanged stuff. now we can inquire dts and know for sure, at
+> least it seems so.
 
+Yeah, that sucks.  We should add kconfig options for each mii type, and
+let them have their own init functions.
 
->  	/* get physical address */
->  	rx_bd_base_phys = fep->ring_mem_addr;
-> @@ -495,7 +486,7 @@ static void tx_kickstart(struct net_device *dev)
->  	struct fs_enet_private *fep = netdev_priv(dev);
->  	fcc_t *fccp = fep->fcc.fccp;
->  
-> -	S32(fccp, fcc_ftodr, 0x80);
-> +	S16(fccp, fcc_ftodr, 0x8000);
->  }
->  
->  static u32 get_int_events(struct net_device *dev)
+That only affects the initcalls (and kernel size), though; it still uses 
+the phy-handle to decide what mdio controller to actually talk to.
 
+>> How is that different from the old code, where you're hosed without
+>>  fep->fpi->bus_id?
+>> 
+> 
+> 
+> I wasn't defending old code, and consider "old code is POS, new one
+> is just great" game meaningless. I am just stating the problem, that
+> we'll have to address later. On 8xx even reference boards may be 
+> without phy at all.
 
--- 
-Sincerely, Vitaly
+OK -- would it suffice to just never call any phylib functions and
+always assume the link is up if the phy-handle property is undefined?
+
+> ok, agreed, size is most serious judge here. we'll definitely have to
+> revisit pin problem later too (because custom designs sometimes
+> switch contradictory devices on-the-fly, disable soc parts for
+> alternative function, etc.)
+
+If it's really on-the-fly (and not jumpered/once-per-boot), then board 
+code should expose some kind of API to switch the functions, acting like 
+a hotplug bus.  Associating it with open/close of the device won't work 
+if one of the devices is something like USB which needs to start working 
+without any internal open()-like action.
+
+-Scott
