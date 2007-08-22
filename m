@@ -1,17 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 22 Aug 2007 11:10:06 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 10/20] bootwrapper: Add CPM serial driver.
-Message-ID: <20070822011006.GC12472@localhost.localdomain>
-References: <20070820173920.GA30546@ld0162-tx32.am.freescale.net>
-	<20070820173957.GI30562@ld0162-tx32.am.freescale.net>
-	<20070821024200.GJ15469@localhost.localdomain>
-	<46CB0FB9.5000706@freescale.com>
-MIME-Version: 1.0
+Return-Path: <npiggin@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E4749DDE38
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 11:16:56 +1000 (EST)
+Date: Wed, 22 Aug 2007 03:16:51 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [patch 1/2] powerpc: rmb fix
+Message-ID: <20070822011651.GA6799@wotan.suse.de>
+References: <20070821021143.GB2909@wotan.suse.de>
+	<46CB37D4.2080609@austin.ibm.com>
+	<d9f43b5c31fde5851a7af1d0f36eb134@kernel.crashing.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <46CB0FB9.5000706@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+In-Reply-To: <d9f43b5c31fde5851a7af1d0f36eb134@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,50 +25,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 21, 2007 at 11:15:53AM -0500, Scott Wood wrote:
-> David Gibson wrote:
-> >>diff --git a/arch/powerpc/boot/serial.c b/arch/powerpc/boot/serial.c
-> >>index 944f0ee..d47f8e0 100644
-> >>--- a/arch/powerpc/boot/serial.c
-> >>+++ b/arch/powerpc/boot/serial.c
-> >>@@ -121,6 +121,11 @@ int serial_console_init(void)
-> >> 		rc = ns16550_console_init(devp, &serial_cd);
-> >> 	else if (dt_is_compatible(devp, "marvell,mpsc"))
-> >> 		rc = mpsc_console_init(devp, &serial_cd);
-> >>+	else if (dt_is_compatible(devp, "fsl,cpm1-scc-uart") ||
-> >>+	         dt_is_compatible(devp, "fsl,cpm1-smc-uart") ||
-> >>+	         dt_is_compatible(devp, "fsl,cpm2-scc-uart") ||
-> >>+	         dt_is_compatible(devp, "fsl,cpm2-smc-uart"))
-> >>+		rc = cpm_console_init(devp, &serial_cd);
-> > 
-> > 
-> > If all these variants admit a compatible driver, there really should
-> > be defined a compatible value that they all include in the device
-> > tree.
+On Tue, Aug 21, 2007 at 09:43:17PM +0200, Segher Boessenkool wrote:
+> >> #define mb()   __asm__ __volatile__ ("sync" : : : "memory")
+> >>-#define rmb()  __asm__ __volatile__ (__stringify(LWSYNC) : : : 
+> >>"memory")
+> >>+#define rmb()  __asm__ __volatile__ ("sync" : : : "memory")
+> >> #define wmb()  __asm__ __volatile__ ("sync" : : : "memory")
+> >> #define read_barrier_depends()  do { } while(0)
+> >>
+> >>@@ -42,7 +42,7 @@
+> >> #ifdef __KERNEL__
+> >> #ifdef CONFIG_SMP
+> >> #define smp_mb()	mb()
+> >>-#define smp_rmb()	rmb()
+> >>+#define smp_rmb()	__asm__ __volatile__ (__stringify(LWSYNC) : : : 
+> >>"memory")
+> >> #define smp_wmb()	eieio()
+> >> #define smp_read_barrier_depends()	read_barrier_depends()
+> >> #else
+> >
+> >I had to think about this one for awhile.  It looks at first glance to 
+> >be the right
+> >thing to do.  But I do wonder how long rmb() has been lwsync
 > 
-> That's what I did last time, and several people complained. :-)
+> Since the {ppc,ppc64} -> powerpc merge.
 > 
-> The issue was that while there is a lot in common between these 
-> variants, there's no one common subset that can be used to drive the 
-> device without knowledge of what variant it is (or knowledge of where 
-> the firmware placed the descriptors).
+> >and if as a practical matter that has caused any problems?
+> 
+> It has not as far as I know.
+> 
+> >If this isn't causing any problems maybe there
+> >is some loigic we are overlooking?
+> 
+> The I/O accessor functions enforce the necessary ordering
+> already I believe.
 
-Ah, ok.  Fair enough then.
+Ah, it looks like you might be right, IO should appear to go in-order, in
+which case the rmb() would simply need to order cacheable loads. Interesting
+way to do things... are drivers simply not up to scratch enough to allow
+out of order IO?
 
-> > But I guess you'd still need all these tests for device trees
-> > which didn't have it.
-> 
-> Nah, this is a new binding.
-> 
-> -Scott
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+Anyway, this raises another question -- if IO accessors have the right
+ordering, why is wmb() not an lwsync as well? There appears to be many
+more wmb() calls than rmb()...
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Thanks,
+Nick
