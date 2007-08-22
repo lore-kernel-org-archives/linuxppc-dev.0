@@ -1,15 +1,14 @@
-Return-Path: <fernando@oss.ntt.co.jp>
-Received: from serv1.oss.ntt.co.jp (ns.oss.ntt.co.jp [222.151.198.98])
-	by ozlabs.org (Postfix) with ESMTP id CA856DDEA3
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 18:24:11 +1000 (EST)
-Subject: [PATCH] ppc: remove unused sys_free_irq
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao <fernando@oss.ntt.co.jp>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain
-Date: Wed, 22 Aug 2007 17:24:09 +0900
-Message-Id: <1187771049.25624.26.camel@sebastian.kern.oss.ntt.co.jp>
-Mime-Version: 1.0
-Cc: paulus@samba.org, linux-kernel@vger.kernel.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <18124.1417.743332.974941@cargo.ozlabs.ibm.com>
+Date: Wed, 22 Aug 2007 19:44:41 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao <fernando@oss.ntt.co.jp>
+Subject: Re: [PATCH] ppc: remove unused amiga_request_irq and mach_request_irq
+In-Reply-To: <1187767237.25624.11.camel@sebastian.kern.oss.ntt.co.jp>
+References: <1187767237.25624.11.camel@sebastian.kern.oss.ntt.co.jp>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,35 +18,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-sys_free_irq is never used, so delete it.
+Fernando Luis V=E1zquez Cao writes:
 
-Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
----
+> amiga=5Frequest=5Firq and mach=5Frequest=5Firq are never used, so del=
+ete them.
 
-diff -urNp linux-2.6.23-rc3-orig/arch/ppc/amiga/ints.c linux-2.6.23-rc3/arch/ppc/amiga/ints.c
---- linux-2.6.23-rc3-orig/arch/ppc/amiga/ints.c	2007-08-22 17:14:32.000000000 +0900
-+++ linux-2.6.23-rc3/arch/ppc/amiga/ints.c	2007-08-22 17:15:27.000000000 +0900
-@@ -75,23 +75,6 @@ irq_node_t *new_irq_node(void)
- 	return NULL;
- }
- 
--void sys_free_irq(unsigned int irq, void *dev_id)
--{
--	if (irq < IRQ1 || irq > IRQ7) {
--		printk("%s: Incorrect IRQ %d\n", __FUNCTION__, irq);
--		return;
--	}
--
--	if (irq_list[irq].dev_id != dev_id)
--		printk("%s: Removing probably wrong IRQ %d from %s\n",
--		       __FUNCTION__, irq, irq_list[irq].devname);
--
--	irq_list[irq].handler = (*mach_default_handler)[irq];
--	irq_list[irq].flags   = 0;
--	irq_list[irq].dev_id  = NULL;
--	irq_list[irq].devname = default_names[irq];
--}
--
- asmlinkage void process_int(unsigned long vec, struct pt_regs *fp)
- {
- 	if (vec >= VEC_INT1 && vec <= VEC_INT7 && !MACH_IS_BVME6000) {
+OK, but is there a particular reason you want to do this=3F
+
+The whole of arch/ppc is going away eventually, so I don't think we
+need to remove it piece by piece.
+
+Paul.
