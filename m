@@ -1,20 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 38625DDE40
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 00:22:16 +1000 (EST)
-In-Reply-To: <20070821152942.GA633@localhost.localdomain>
-References: <20070821152745.GA28986@localhost.localdomain>
-	<20070821152942.GA633@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <74A1E294-97A9-4CC6-8AEF-62EDF0838EA5@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v5 1/2] [POWERPC] fsl_soc: add support for fsl_spi
-Date: Wed, 22 Aug 2007 09:24:17 -0500
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0577EDDEC2
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 00:22:20 +1000 (EST)
+Message-ID: <46CC4694.4000503@freescale.com>
+Date: Wed, 22 Aug 2007 09:22:12 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Patches added to powerpc.git for-2.6.24 branch
+References: <18124.1591.112487.322248@cargo.ozlabs.ibm.com>
+	<46CC2FB3.4000200@freescale.com>
+	<C3CB0CDB-AA2B-4D24-AEA6-1A7305B5B311@kernel.crashing.org>
+In-Reply-To: <C3CB0CDB-AA2B-4D24-AEA6-1A7305B5B311@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,143 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Kumar Gala wrote:
 
-On Aug 21, 2007, at 10:29 AM, Anton Vorontsov wrote:
+> I think the clrsetbits macros needs some further cleanup.  I think 
+> Stephen mentioned doing something like we do for DEF_MMIO_OUT_BE() to 
+> only have one 'actual' macro.
 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
->  arch/powerpc/sysdev/fsl_soc.c |   84 ++++++++++++++++++++++++++++++ 
-> +++++++++++
->  arch/powerpc/sysdev/fsl_soc.h |    7 +++
->  2 files changed, 91 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/ 
-> fsl_soc.c
-> index 1cf29c9..2bdaeb2 100644
-> --- a/arch/powerpc/sysdev/fsl_soc.c
-> +++ b/arch/powerpc/sysdev/fsl_soc.c
-> @@ -24,6 +24,7 @@
->  #include <linux/platform_device.h>
->  #include <linux/of_platform.h>
->  #include <linux/phy.h>
-> +#include <linux/spi/spi.h>
->  #include <linux/fsl_devices.h>
->  #include <linux/fs_enet_pd.h>
->  #include <linux/fs_uart_pd.h>
-> @@ -1187,3 +1188,86 @@ err:
->  arch_initcall(cpm_smc_uart_of_init);
->
->  #endif /* CONFIG_8xx */
-> +
-> +int __init fsl_spi_init(struct spi_board_info *board_infos,
-> +			unsigned int num_board_infos,
-> +			void (*activate_cs)(u8 cs, u8 polarity),
-> +			void (*deactivate_cs)(u8 cs, u8 polarity))
-> +{
-> +	struct device_node *np;
-> +	unsigned int i;
-> +	u32 sysclk;
-> +
-> +	np = of_find_node_by_type(NULL, "qe");
-> +	if (!np)
-> +		return -ENODEV;
-> +
-> +	sysclk = *(u32 *)of_get_property(np, "bus-frequency", NULL);
-> +
-> +	for (np = NULL, i = 1;
-> +	     (np = of_find_compatible_node(np, "spi", "fsl_spi")) != NULL;
-> +	     i++) {
-> +		int ret = 0;
-> +		unsigned int j;
-> +		const char *mode;
-> +		struct resource res[2];
-> +		struct platform_device *pdev = NULL;
-> +		struct fsl_spi_platform_data pdata = {
-> +			.activate_cs = activate_cs,
-> +			.deactivate_cs = deactivate_cs,
-> +		};
-> +
-> +		memset(res, 0, sizeof(res));
-> +
-> +		mode = of_get_property(np, "mode", NULL);
-> +		pdata.sysclk = sysclk;
-> +		pdata.bus_num = *(u32 *)of_get_property(np, "reg", NULL);
-> +
-> +		for (j = 0; j < num_board_infos; j++) {
-> +			if (board_infos[j].bus_num == pdata.bus_num)
-> +				pdata.max_chipselect++;
-> +		}
-> +
-> +		if (!pdata.max_chipselect)
-> +			goto err;
-> +
-> +		if (!strcmp(mode, "cpu-qe"))
-> +			pdata.qe_mode = 1;
-> +
-> +		ret = of_address_to_resource(np, 0, &res[0]);
-> +		if (ret)
-> +			goto err;
-> +
-> +		res[1].start = res[2].end = irq_of_parse_and_map(np, 0);
-> +		if (res[1].start == NO_IRQ)
-> +			goto err;
-> +
-> +		res[1].name = "mpc83xx_spi";
-> +		res[1].flags = IORESOURCE_IRQ;;
+Yeah I saw that one, but on IRC a few people said they don't like ##, so I 
+decided against it.  Are you saying I should change it anyway?
 
-double ;;
+> The immap_86xx.h will go through me since its FSL code.
 
-can we not use of_irq_to_resource() ?
+I was thinking some more about that file this morning.  If you want, I can 
+rename it to guts.h since it only has one structure in it, and then also 
+update a few other files that use the global utilities registers to use that 
+structure instead of using macros.
 
-> +
-> +		pdev = platform_device_alloc("mpc83xx_spi", i);
-> +		if (!pdev)
-> +			goto err;
-> +
-> +		ret = platform_device_add_data(pdev, &pdata, sizeof(pdata));
-> +		if (ret)
-> +			goto unreg;
-> +
-> +		ret = platform_device_add_resources(pdev, res,
-> +						    ARRAY_SIZE(res));
-> +		if (ret)
-> +			goto unreg;
-> +
-> +		ret = platform_device_register(pdev);
-> +		if (ret)
-> +			goto unreg;
-> +
-> +		continue;
-> +unreg:
-> +		platform_device_del(pdev);
-> +err:
-> +		continue;
-> +	}
-> +
-> +	return spi_register_board_info(board_infos, num_board_infos);
-> +}
-> diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/ 
-> fsl_soc.h
-> index 04e145b..618d91d 100644
-> --- a/arch/powerpc/sysdev/fsl_soc.h
-> +++ b/arch/powerpc/sysdev/fsl_soc.h
-> @@ -8,5 +8,12 @@ extern phys_addr_t get_immrbase(void);
->  extern u32 get_brgfreq(void);
->  extern u32 get_baudrate(void);
->
-> +struct spi_board_info;
-> +
-> +extern int fsl_spi_init(struct spi_board_info *board_infos,
-> +			unsigned int num_board_infos,
-> +			void (*activate_cs)(u8 cs, u8 polarity),
-> +			void (*deactivate_cs)(u8 cs, u8 polarity));
-> +
->  #endif
->  #endif
-> -- 
-> 1.5.0.6
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
