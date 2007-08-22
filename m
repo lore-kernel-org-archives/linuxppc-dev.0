@@ -1,18 +1,18 @@
-Return-Path: <ravi.rao@rflelect.com>
-Received: from noteshub1.teal.com (mail.teal.com [67.155.213.211])
-	by ozlabs.org (Postfix) with ESMTP id 283F7DDEFF
+Return-Path: <Mark_Gibson@Trimble.com>
+Received: from snvl-smtp1.trimble.com (snvl-smtp1.trimble.com [155.63.64.31])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "snvl-smtp1.trimble.com", Issuer "Trimble CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 3B524DDEC7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 23 Aug 2007 06:39:45 +1000 (EST)
-In-Reply-To: <20070822153626.C415873007B@mail29-sin.bigfish.com>
-To: wolfgang.reissnegger@xilinx.com
-Subject: Need the bdi cfg file for taihu PPCEP405 Eval board
+	Thu, 23 Aug 2007 08:49:18 +1000 (EST)
 MIME-Version: 1.0
-Message-ID: <OF4E3437FA.70738D18-ON8525733F.00715D10-8525733F.007168AC@rflelect.com>
-From: ravi.rao@rflelect.com
-Date: Wed, 22 Aug 2007 16:39:46 -0400
-Content-Type: multipart/alternative;
-	boundary="=_alternative 007168A58525733F_="
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Getting lite5200 debian X11 up and running with CoralP 
+Date: Wed, 22 Aug 2007 15:41:27 -0700
+Message-ID: <37882A527B66E049AA08BCD291CEE35E0596592B@uss-am-xch-02.am.trimblecorp.net>
+From: "Mark Gibson" <Mark_Gibson@Trimble.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,60 +23,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 007168A58525733F_=
-Content-Type: text/plain; charset="US-ASCII"
+Hi,
+I've been working on getting the lite5200 board running with the Denx
+supplied coralP X11 drivers. I have the Fujitsu PCI card and the console
+is working on it.  The denx site has tons of info and really got me up
+and running in record time.  The X11 drivers and video are exactly what
+I need to get going, but I have now started to drown in my lack of
+experience.=20
 
-Hi All,
-   Can one of you please email me the bdi config file for Taihu Eval 
-board. I need to attach bdi200 and do some debugging on that..
+I followed the denx app note to get debian up:
+http://www.denx.de/wiki/DULG/AN2004_08_DebianOnPowerpcInstallationHowto
+
+I used the 2.4.25 Kernel from denx (modified a bit to support USB HID
+and to change the PCI address for my CoralPA card).
+
+
+
+I have had two problems - both related to X11 / X / XF86.
+
+1 - I have used apt to retrieve X and can run it using the generic
+framebuffer. I get the cross-hatch background and the 'X' cursor only.
+The only window manager APT will let me get is olvm, which I can't seem
+to get to start up. I have a feeling that using debian-woody has left me
+with a too-limited set of X packages (or the supporting libs/etc) to get
+past this.
+    =3D=3D Has anyone had debian-woody and the zvideo app running??
+
+2 - When I use the denx drivers from the denx site I have this issue:
+  (II) Module mb86290: vendor=3D"The XFree86 Project"
+        compiled for 4.3.0.1, module version =3D 0.1.0
+        Module class: XFree86 Video Driver
+        ABI class: XFree86 Video Driver, version 0.6
+  (EE) module ABI minor version (6) is newer than the server's version
+(4)
+  (II) UnloadModule: "mb86290"
+  (II) Unloading /usr/X11R6/lib/modules/drivers/mb86290_drv.o
+  (EE) Failed to load module "mb86290" (module requirement mismatch, 0)
+  =20
+
+Any insight would be appreciated.
+
 Thanks,
-Ravishankar Govindarao
-RFL Electronics Inc.
-E-mail : Ravi.Rao@rflelect.com
-Voice: 973.334.3100 Ext. 233
-Fax: 973.334.3863
- 
-CONFIDENTIALITY NOTE
-This e-mail, including any attachments, may contain confidential and/or 
-legally privileged information.  The Information is intended only for the 
-use of the individual or entity named on this e-mail .  If you are not the 
-intended recipient, you are hereby notified that any disclosure, copying, 
-distribution, or the taking of any action in reliance on the contents of 
-this transmitted Information is strictly prohibited.  Further, if you are 
-not the intended recipient, please notify us by return e-mail and delete 
-the Information promptly.
- 
- 
- 
---=_alternative 007168A58525733F_=
-Content-Type: text/html; charset="US-ASCII"
-
-
-<br><font size=2 face="sans-serif">Hi All,</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp;Can one of you please email
-me the bdi config file for Taihu Eval board. I need to attach bdi200 and
-do some debugging on that..</font>
-<br><font size=2 face="sans-serif">Thanks,<br>
-</font><font size=2 face="Tms Rmn">Ravishankar Govindarao<br>
-RFL Electronics Inc.<br>
-E-mail</font><font size=1 face="Tms Rmn"> </font><font size=2 face="Tms Rmn">:
-</font><a href=mailto:Ravi.Rao@rflelect.com><font size=2 color=blue face="Tms Rmn"><u>Ravi.Rao@rflelect.com</u></font></a>
-<br><font size=2 face="Tms Rmn">Voice: 973.334.3100 Ext. 233<br>
-Fax: 973.334.3863</font>
-<p><font size=2 face="Tms Rmn">&nbsp;</font>
-<div align=center>
-<br><font size=2 color=blue face="Tms Rmn"><u>CONFIDENTIALITY NOTE</u></font></div>
-<br><font size=1 face="Tms Rmn">This e-mail, including any attachments,
-may contain confidential and/or legally privileged information.&nbsp; The
-Information is intended only for the use of the individual or entity named
-on this e-mail</font><font size=1 face="Tms Rmn"> </font><font size=1 face="Tms Rmn">.&nbsp;
-If you are not the intended recipient, you are hereby notified that any
-disclosure, copying, distribution, or the taking of any action in reliance
-on the contents of this transmitted Information is strictly prohibited.&nbsp;
-Further, if you are not the intended recipient, please notify us by return
-e-mail and delete the Information promptly.</font>
-<p><font size=2 face="Tms Rmn">&nbsp;</font>
-<p><font size=2 face="Tms Rmn">&nbsp;</font>
-<p><font size=3>&nbsp;</font>
---=_alternative 007168A58525733F_=--
+Mark
