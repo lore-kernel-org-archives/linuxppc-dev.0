@@ -1,21 +1,19 @@
-Return-Path: <jwboyer@jdub.homelinux.org>
-Received: from jdub.homelinux.org (unknown [209.180.55.243])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 97C12DDE3B
+Return-Path: <rwoodworth@securics.com>
+Received: from securics.com (mail.securics.com [128.198.58.14])
+	by ozlabs.org (Postfix) with ESMTP id E4ADDDDE44
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 22 Aug 2007 11:13:32 +1000 (EST)
-Date: Tue, 21 Aug 2007 20:13:27 -0500
-From: Josh Boyer <jwboyer@jdub.homelinux.org>
-To: wolfgang.reissnegger@xilinx.com
+	Wed, 22 Aug 2007 13:04:26 +1000 (EST)
 Subject: Re: [PATCH 3/3] Add support for xupv2p and ml410 boards.
-Message-ID: <20070821201327.046a95fd@vader.jdub.homelinux.org>
+From: Robert Woodworth <rwoodworth@securics.com>
+To: wolfgang.reissnegger@xilinx.com
 In-Reply-To: <20070822005048.CF66B31005A@mail77-blu.bigfish.com>
 References: <1187743993171-git-send-email-wolfgang.reissnegger@xilinx.com>
 	<1187743993360-git-send-email-wolfgang.reissnegger@xilinx.com>
 	<20070822005048.CF66B31005A@mail77-blu.bigfish.com>
+Content-Type: text/plain
+Date: Tue, 21 Aug 2007 21:04:24 -0600
+Message-Id: <1187751864.6266.6.camel@PisteOff>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 Cc: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
 	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -28,62 +26,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 21 Aug 2007 17:53:13 -0700
-wolfgang.reissnegger@xilinx.com wrote:
+Should the xparameters????.h file *really* be included in the tree?
 
+This file is completely board/EDK/ISE/synthesis specific.  I'd rather it
+not be included and have people copy theirs from EDK.   
+Or as I have done, sym-link it from my EDK project.
+
+
+Woody.
+
+
+
+On Tue, 2007-08-21 at 17:53 -0700, wolfgang.reissnegger@xilinx.com
+wrote:
 > From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-> 
-> xupv2p support generates MAC addresses based on a silicon serial ID.
 
-General reminder, no new code will be accepted in arch/ppc.  It's in
-bugfix state only.
-
-I of course have no problems with people sending patches for new stuff,
-but I don't want people to get the idea that it will wind up in tree.
-
-
-> +#include <linux/xilinx_devices.h>
-> +#include <platforms/4xx/xparameters/xparameters.h>
-> +
-> +int virtex_device_fixup(struct platform_device *dev)
-
-Could this be a static function?
-
-> +{
-> +#ifdef XPAR_ONEWIRE_0_BASEADDR
-> +	int i;
-> +	// Use the Silicon Serial ID attached on the onewire bus to
-> +	// generate sensible MAC addresses.
-
-No C++ style comments please.
-
-> +	unsigned char *p_onewire = ioremap(XPAR_ONEWIRE_0_BASEADDR, 6);
-
-What happens if ioremap fails?
-
-> +	struct xemac_platform_data *pdata = dev->dev.platform_data;
-> +	if (strcmp(dev->name, "xilinx_emac") == 0) {
-> +		printk(KERN_INFO "Fixup MAC address for %s:%d\n",
-> +		       dev->name, dev->id);
-> +		// FIXME.. this doesn't seem to return data that is consistent
-> +		// with the self test... why not?
-> +		pdata->mac_addr[0] = 0x00;
-> +		pdata->mac_addr[1] = 0x0A;
-> +		pdata->mac_addr[2] = 0x35;
-> +		pdata->mac_addr[3] = dev->id;
-> +		pdata->mac_addr[4] = p_onewire[4];
-> +		pdata->mac_addr[5] = p_onewire[5];
-> +		pr_debug(KERN_INFO
-> +			 "MAC address is now %2x:%2x:%2x:%2x:%2x:%2x\n",
-> +			 pdata->mac_addr[0], pdata->mac_addr[1],
-> +			 pdata->mac_addr[2], pdata->mac_addr[3],
-> +			 pdata->mac_addr[4], pdata->mac_addr[5]);
-> +	}
-> +	iounmap(p_onewire);
-> +#endif
-> +	return 0;
-> +}
-
+> diff --git a/arch/ppc/platforms/4xx/xparameters/xparameters.h b/arch/ppc/platforms/4xx/xparameters/xparameters.h
+> index 01aa043..34d9844 100644
+> --- a/arch/ppc/platforms/4xx/xparameters/xparameters.h
+> +++ b/arch/ppc/platforms/4xx/xparameters/xparameters.h
+> @@ -15,8 +15,12 @@
+>  
+>  #if defined(CONFIG_XILINX_ML300)
+>    #include "xparameters_ml300.h"
+> +#elif defined(CONFIG_XILINX_XUPV2P)
+> +  #include "xparameters_xupv2p.h"
+>  #elif defined(CONFIG_XILINX_ML403)
+>    #include "xparameters_ml403.h"
+> +#elif defined(CONFIG_XILINX_ML41x)
+> +  #include "xparameters_ml41x.h"
+>  #else
+>    /* Add other board xparameter includes here before the #else */
+>    #error No xparameters_*.h file included
+> diff --git a/arch/ppc/platforms/4xx/xparameters/xparameters_ml41x.h b/arch/ppc/platforms/4xx/xparameters/xparameters_ml41x.h
+> new file mode 100644
+> index 0000000..06dac67
 > --- /dev/null
 > +++ b/arch/ppc/platforms/4xx/xparameters/xparameters_ml41x.h
 > @@ -0,0 +1,277 @@
@@ -95,7 +72,8 @@ What happens if ioremap fails?
 > +* DO NOT EDIT.
 > +*
 > +* Copyright (c) 2005 Xilinx, Inc.  All rights reserved. 
-
-All rights reserved is not compatible with the GPL I don't think...
-
-josh
+> +* 
+> +* Description: Driver parameters
+> +*
+> +*******************************************************************/
+> +
