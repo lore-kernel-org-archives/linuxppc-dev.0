@@ -1,20 +1,17 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 22 Aug 2007 11:44:29 +1000
+Date: Wed, 22 Aug 2007 11:47:52 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: OF /chosen/initrd,* variables - patch, official?
-Message-ID: <20070822014429.GF12472@localhost.localdomain>
-References: <46CAC89F.2040100@genesi-usa.com> <46CACAAE.5000304@genesi-usa.com>
-	<20070821113232.GB1111@localhost.localdomain>
-	<46CADC61.3050506@genesi-usa.com>
-	<20070821124253.GC1111@localhost.localdomain>
-	<46CAE177.3010508@genesi-usa.com>
-	<20070821135449.GA7438@localhost.localdomain>
-	<46CAF5B4.9040606@genesi-usa.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 12/20] bootwrapper: Add 8xx cuboot support.
+Message-ID: <20070822014752.GG12472@localhost.localdomain>
+References: <20070820173920.GA30546@ld0162-tx32.am.freescale.net>
+	<20070820174001.GK30562@ld0162-tx32.am.freescale.net>
+	<20070821024432.GL15469@localhost.localdomain>
+	<46CB10C5.2090405@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <46CAF5B4.9040606@genesi-usa.com>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, linuxppc-embedded@ozlabs.org
+In-Reply-To: <46CB10C5.2090405@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,32 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 21, 2007 at 03:24:52PM +0100, Matt Sealey wrote:
+On Tue, Aug 21, 2007 at 11:20:21AM -0500, Scott Wood wrote:
 > David Gibson wrote:
-> > On Tue, Aug 21, 2007 at 01:58:31PM +0100, Matt Sealey wrote:
-> >> David Gibson wrote:
-> >>> Uh... no... this is in the bootwrapper, long before ppc_md even
-> >>> exists.  platform_init() is called from arch/powerpc/boot/crt0.S,
-> >>> immediately before main().
-> >> Oh *THAT* platform init.
-> >>
-> >> So I could just drop a
-> >>
-> >> } else {
-> >> 	dt_find_initrd();
-> >> }
-> >>
-> >> .. at the end and nobody would be too disgusted or have any problems?
+> > On Mon, Aug 20, 2007 at 12:40:01PM -0500, Scott Wood wrote:
 > > 
-> > Err.. at the end of what?  Each platform has it's own version of
-> > platform_init().
+> >>This allows booting on legacy, non-device-tree aware versions of
+> >>U-boot.
+> > 
+> > 
+> > Is this really sufficient for all 8xx platforms?
 > 
-> arch/powerpc/boot/of.c since it's not really relevant to me for non-OF
-> platforms?
+> It should be enough for all u-boot-based 8xx boards, barring some u-boot 
+> which needs special fixups (as is done in cuboot-pq2.c).  If such a need 
+> arises, they can be added to cuboot-8xx.c (if they're generic enough to 
+> work on all boards, even if not actually needed) or to a board-specific 
+> platform file (which can coexist just fine with the generic 8xx
+> one).
 
-Err... it would have to be a somewhat strange OF implementation that
-gives the linux,initrd-* properties sane values before entry...  I
-doubt we want to do this for all real OF systems.
+Ok.  Presumably our bd_t won't exactly line up for all 8xx (since it
+varies from platform to platform, yes?) - but I gather the only bits
+we use do match up.  That's probably worth a comment, so that someone
+doesn't try using some later bd_t field which is only in the right
+place for some 8xx systems.
+
+Otherwise,
+
+Acked-by: David Gibson <david@gibson.dropbear.id.au>
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
