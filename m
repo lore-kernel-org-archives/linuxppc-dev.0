@@ -1,20 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id B04B3DDEBC
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 13:54:28 +1000 (EST)
-Date: Wed, 22 Aug 2007 13:49:41 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Exception numbers are not relevent to iSeries
-Message-Id: <20070822134941.f077b982.sfr@canb.auug.org.au>
-In-Reply-To: <20070822134837.ec6501f9.sfr@canb.auug.org.au>
-References: <20070822134458.ed7a89f9.sfr@canb.auug.org.au>
-	<20070822134644.b3eeffa6.sfr@canb.auug.org.au>
-	<20070822134724.f14053f5.sfr@canb.auug.org.au>
-	<20070822134837.ec6501f9.sfr@canb.auug.org.au>
+Return-Path: <npiggin@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id AE518DDECA
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 13:55:44 +1000 (EST)
+Date: Wed, 22 Aug 2007 05:55:39 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [patch 1/2] powerpc: rmb fix
+Message-ID: <20070822035539.GB26374@wotan.suse.de>
+References: <20070821021143.GB2909@wotan.suse.de>
+	<46CB37D4.2080609@austin.ibm.com>
+	<d9f43b5c31fde5851a7af1d0f36eb134@kernel.crashing.org>
+	<20070822011651.GA6799@wotan.suse.de>
+	<dfbba0a8b6a15d1b563bdfcadc49e8eb@kernel.crashing.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <dfbba0a8b6a15d1b563bdfcadc49e8eb@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,96 +27,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-so remove them from the macros.
+On Wed, Aug 22, 2007 at 05:29:50AM +0200, Segher Boessenkool wrote:
+> >>>If this isn't causing any problems maybe there
+> >>>is some loigic we are overlooking?
+> >>
+> >>The I/O accessor functions enforce the necessary ordering
+> >>already I believe.
+> >
+> >Ah, it looks like you might be right, IO should appear to go in-order, 
+> >in
+> >which case the rmb() would simply need to order cacheable loads. 
+> >Interesting
+> >way to do things... are drivers simply not up to scratch enough to 
+> >allow
+> >out of order IO?
+> 
+> The powerpc kernel needs to have full sync insns in every I/O
+> accessor in order to enforce all the ordering rules Linux demands.
+> It's a bloody shame, but the alternative would be to make the
+> barriers lots more expensive.  A third alternative would be to
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/platforms/iseries/exception.S |   24 ++++++++++++------------
- arch/powerpc/platforms/iseries/exception.h |    4 ++--
- 2 files changed, 14 insertions(+), 14 deletions(-)
+Well lots more expensive compared to what you have now. But what
+you have now is like having those expensive barriers between
+*every* io access.
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
-diff --git a/arch/powerpc/platforms/iseries/exception.S b/arch/powerpc/platforms/iseries/exception.S
-index e9a3435..5381038 100644
---- a/arch/powerpc/platforms/iseries/exception.S
-+++ b/arch/powerpc/platforms/iseries/exception.S
-@@ -88,7 +88,7 @@ iSeries_secondary_smp_loop:
+> have barrier ops that do not order everything, but just A vs. B
+> for various choices of A and B (coherent accesses, MMIO accesses,
+> etc.)
  
- /***  ISeries-LPAR interrupt handlers ***/
- 
--	STD_EXCEPTION_ISERIES(0x200, machine_check, PACA_EXMC)
-+	STD_EXCEPTION_ISERIES(machine_check, PACA_EXMC)
- 
- 	.globl data_access_iSeries
- data_access_iSeries:
-@@ -137,7 +137,7 @@ data_access_slb_iSeries:
- 	ld	r12,LPPACASRR1(r12)
- 	b	.slb_miss_realmode
- 
--	STD_EXCEPTION_ISERIES(0x400, instruction_access, PACA_EXGEN)
-+	STD_EXCEPTION_ISERIES(instruction_access, PACA_EXGEN)
- 
- 	.globl	instruction_access_slb_iSeries
- instruction_access_slb_iSeries:
-@@ -176,13 +176,13 @@ slb_miss_user_iseries:
- 	b	slb_miss_user_common
- #endif
- 
--	MASKABLE_EXCEPTION_ISERIES(0x500, hardware_interrupt)
--	STD_EXCEPTION_ISERIES(0x600, alignment, PACA_EXGEN)
--	STD_EXCEPTION_ISERIES(0x700, program_check, PACA_EXGEN)
--	STD_EXCEPTION_ISERIES(0x800, fp_unavailable, PACA_EXGEN)
--	MASKABLE_EXCEPTION_ISERIES(0x900, decrementer)
--	STD_EXCEPTION_ISERIES(0xa00, trap_0a, PACA_EXGEN)
--	STD_EXCEPTION_ISERIES(0xb00, trap_0b, PACA_EXGEN)
-+	MASKABLE_EXCEPTION_ISERIES(hardware_interrupt)
-+	STD_EXCEPTION_ISERIES(alignment, PACA_EXGEN)
-+	STD_EXCEPTION_ISERIES(program_check, PACA_EXGEN)
-+	STD_EXCEPTION_ISERIES(fp_unavailable, PACA_EXGEN)
-+	MASKABLE_EXCEPTION_ISERIES(decrementer)
-+	STD_EXCEPTION_ISERIES(trap_0a, PACA_EXGEN)
-+	STD_EXCEPTION_ISERIES(trap_0b, PACA_EXGEN)
- 
- 	.globl	system_call_iSeries
- system_call_iSeries:
-@@ -191,9 +191,9 @@ system_call_iSeries:
- 	EXCEPTION_PROLOG_ISERIES_1
- 	b	system_call_common
- 
--	STD_EXCEPTION_ISERIES( 0xd00, single_step, PACA_EXGEN)
--	STD_EXCEPTION_ISERIES( 0xe00, trap_0e, PACA_EXGEN)
--	STD_EXCEPTION_ISERIES( 0xf00, performance_monitor, PACA_EXGEN)
-+	STD_EXCEPTION_ISERIES(single_step, PACA_EXGEN)
-+	STD_EXCEPTION_ISERIES(trap_0e, PACA_EXGEN)
-+	STD_EXCEPTION_ISERIES(performance_monitor, PACA_EXGEN)
- 
- decrementer_iSeries_masked:
- 	/* We may not have a valid TOC pointer in here. */
-diff --git a/arch/powerpc/platforms/iseries/exception.h b/arch/powerpc/platforms/iseries/exception.h
-index 5b3f285..ced45a8 100644
---- a/arch/powerpc/platforms/iseries/exception.h
-+++ b/arch/powerpc/platforms/iseries/exception.h
-@@ -34,7 +34,7 @@
- 	ori	r10,r10,MSR_RI;						\
- 	mtmsrd	r10,1
- 
--#define STD_EXCEPTION_ISERIES(n, label, area)				\
-+#define STD_EXCEPTION_ISERIES(label, area)				\
- 	.globl label##_iSeries;						\
- label##_iSeries:							\
- 	HMT_MEDIUM;							\
-@@ -43,7 +43,7 @@ label##_iSeries:							\
- 	EXCEPTION_PROLOG_ISERIES_1;					\
- 	b	label##_common
- 
--#define MASKABLE_EXCEPTION_ISERIES(n, label)				\
-+#define MASKABLE_EXCEPTION_ISERIES(label)				\
- 	.globl label##_iSeries;						\
- label##_iSeries:							\
- 	HMT_MEDIUM;							\
--- 
-1.5.2.4
+The non-smp_ variant is supposed to order everything, AFAIK. Maybe
+you could get more fancy and have PIO vs MMIO etc etc. but it looks
+like this whole area is in a pretty sticky state anyway so let's
+not think about that.
+
+
+> >Anyway, this raises another question -- if IO accessors have the right
+> >ordering, why is wmb() not an lwsync as well? There appears to be many
+> >more wmb() calls than rmb()...
+> 
+> Input MMIO accessors are {sync, load, stall pipeline until load came 
+> back}.
+> That's a full ordering on both sides.
+> 
+> Output MMIO on the other hand is done with {sync, store}.  Now since
+> wmb() has to order MMIO writes vs. main memory writes, we need a full
+> sync here.  On some (most, all?) CPUs an eieio is actually enough btw.
+> The barrier insn could be put at the end of all MMIO write ops too,
+> but I believe that would be more expensive (in execution time; in code
+> size it definitely would be, of course).
+
+Ah, that explains why wmb() is a sync. Doesn't seem like a very good
+idea though, if the rationale of having fully ordered IO accessors was
+because drivers didn't have enough barriers in them.
