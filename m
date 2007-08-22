@@ -1,24 +1,20 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9D361DDEBC
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 05:48:03 +1000 (EST)
-Date: Wed, 22 Aug 2007 12:47:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Subject: Re: 2.6.23-rc3-mm1: kgdb build failure on powerpc
-Message-Id: <20070822124743.fc316963.akpm@linux-foundation.org>
-In-Reply-To: <200708222104.29432.m.kozlowski@tuxland.pl>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
-	<200708222104.29432.m.kozlowski@tuxland.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: kgdb-bugreport@lists.sourceforge.net, amitkale@linsyssoft.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, jason.wessel@windriver.com
+Return-Path: <jesse.barnes@intel.com>
+Received: from mga03.intel.com (mga03.intel.com [143.182.124.21])
+	by ozlabs.org (Postfix) with ESMTP id 46849DDD07
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 05:05:50 +1000 (EST)
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: wmb vs mmiowb
+Date: Wed, 22 Aug 2007 12:02:11 -0700
+References: <20070822045714.GD26374@wotan.suse.de>
+	<alpine.LFD.0.999.0708221049560.30176@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0708221049560.30176@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200708221202.12403.jesse.barnes@intel.com>
+Cc: Nick Piggin <npiggin@suse.de>, linux-ia64@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,33 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 22 Aug 2007 21:04:28 +0200
-Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
+On Wednesday, August 22, 2007 11:07 am Linus Torvalds wrote:
+> > It really seems like it is some completely different concept from a
+> > barrier. And it shows, on the platform where it really matters
+> > (sn2), where the thing actually spins.
+>
+> I agree that it probably isn't a "write barrier" per se. Think of it
+> as a "tie two subsystems together" thing.
 
-> Hello,
-> 
-> 	Got that on imac g3.
-> 
->   CC      kernel/kgdb.o
-> kernel/kgdb.c: In function 'kgdb_handle_exception':
-> kernel/kgdb.c:940: error: invalid lvalue in unary '&'
-> kernel/kgdb.c:940: warning: type defaults to 'int' in declaration of '_o_'
-> kernel/kgdb.c:940: error: invalid lvalue in unary '&'
-> kernel/kgdb.c:940: warning: type defaults to 'int' in declaration of '_n_'
-> kernel/kgdb.c:940: error: invalid lvalue in unary '&'
-> kernel/kgdb.c:940: error: invalid lvalue in unary '&'
-> kernel/kgdb.c:940: error: invalid lvalue in unary '&'
-> kernel/kgdb.c:940: warning: type defaults to 'int' in declaration of 'type name'
-> make[1]: *** [kernel/kgdb.o] Blad 1
-> make: *** [kernel] Blad 2
-> 
+Right, maybe it's not the best name, but as long as you separate your 
+memory access types, you can think of it as a real write barrier, just 
+for mmio accesses (well uncached access really).
 
-I'm not surprised.
+> (And it doesn't just matter on sn2. It also matters on powerpc64,
+> although I think they just set a flag and do the *real* sync in the
+> spin_unlock() path).
 
-	while (cmpxchg(&atomic_read(&debugger_active), 0, (procid + 1)) != 0) {
+Yeah, they keep threatening to use this instead, but I'm not sure how 
+easy it would be.  Also they may have more devices/drivers to worry 
+about than sn2, so maybe changing over would mean too much driver 
+debugging (well auditing really since it's not that hard to know where 
+to put them).  Irix actually had an io_unlock() routine that did this 
+implicitly, but iirc that was shot down for Linux...
 
-a) cmpxchg isn't available on all architectures
-
-b) we can't just go and take the address of atomic_read()'s return value!
-
-c) that's pretty ugly-looking stuff anyway.
+Jesse
