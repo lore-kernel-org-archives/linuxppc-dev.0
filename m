@@ -2,18 +2,16 @@ Return-Path: <vitb@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B4CE1DDEC9
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 07:01:18 +1000 (EST)
-Date: Thu, 23 Aug 2007 01:00:57 +0400
+	by ozlabs.org (Postfix) with ESMTP id BE9BADDEB8
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 07:04:55 +1000 (EST)
+Date: Thu, 23 Aug 2007 01:04:37 +0400
 From: Vitaly Bordug <vitb@kernel.crashing.org>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 6/7 v2] fs_enet: Be an of_platform device when
-	CONFIG_PPC_CPM_NEW_BINDING is set.
-Message-ID: <20070823010057.74e1355a@localhost.localdomain>
-In-Reply-To: <46CB172D.9010807@freescale.com>
-References: <20070817181718.GA15792@ld0162-tx32.am.freescale.net>
-	<20070821130155.43898b68@localhost.localdomain>
-	<46CB172D.9010807@freescale.com>
+Subject: Re: [PATCH 2/7] fs_enet: Whitespace cleanup.
+Message-ID: <20070823010437.39a25b69@localhost.localdomain>
+In-Reply-To: <20070817175359.GB9218@ld0162-tx32.am.freescale.net>
+References: <20070817175320.GA8259@ld0162-tx32.am.freescale.net>
+	<20070817175359.GB9218@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
@@ -26,155 +24,202 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 21 Aug 2007 11:47:41 -0500
-Scott Wood <scottwood@freescale.com> wrote:
+On Fri, 17 Aug 2007 12:53:59 -0500
+Scott Wood wrote:
 
-> Vitaly Bordug wrote:
-> > On Fri, 17 Aug 2007 13:17:18 -0500
-> > Scott Wood wrote:
-> > 
-> > 
-> >>The existing OF glue code was crufty and broken.  Rather than fix
-> >>it, it will be removed, and the ethernet driver now talks to the
-> >>device tree directly.
-> >>
-> > 
-> > A bit short description, I'd rather expect some specific
-> > improvements list, that are now up and running using device tree.
-> > Or if it is just move to new infrastucture, let's state that, too.
-> 
-> Some of specific binding changes (there are too many to exhaustively 
-> list) are enumerated in the "new CPM binding" patch, which I'll send 
-> after Kumar's include/asm-ppc patch goes in (since it modifies one of 
-> those files).
-> 
-ok
-> >>+#ifdef CONFIG_PPC_CPM_NEW_BINDING
-> >>+static int __devinit find_phy(struct device_node *np,
-> >>+                              struct fs_platform_info *fpi)
-> >>+{
-> >>+	struct device_node *phynode, *mdionode;
-> >>+	struct resource res;
-> >>+	int ret = 0, len;
-> >>+
-> >>+	const u32 *data = of_get_property(np, "phy-handle", &len);
-> >>+	if (!data || len != 4)
-> >>+		return -EINVAL;
-> >>+
-> >>+	phynode = of_find_node_by_phandle(*data);
-> >>+	if (!phynode)
-> >>+		return -EINVAL;
-> >>+
-> >>+	mdionode = of_get_parent(phynode);
-> >>+	if (!phynode)
-> >>+		goto out_put_phy;
-> >>+
-> >>+	ret = of_address_to_resource(mdionode, 0, &res);
-> >>+	if (ret)
-> >>+		goto out_put_mdio;
-> >>+
-> >>+	data = of_get_property(phynode, "reg", &len);
-> >>+	if (!data || len != 4)
-> >>+		goto out_put_mdio;
-> >>+
-> >>+	snprintf(fpi->bus_id, 16, PHY_ID_FMT, res.start, *data);
-> >>+
-> >>+out_put_mdio:
-> >>+	of_node_put(mdionode);
-> >>+out_put_phy:
-> >>+	of_node_put(phynode);
-> >>+	return ret;
-> >>+}
-> > 
-> > And without phy node? 
-> 
-> It returns -EINVAL. :-)
-> 
-> >>+#ifdef CONFIG_FS_ENET_HAS_FEC
-> >>+#define IS_FEC(match) ((match)->data == &fs_fec_ops)
-> >>+#else
-> >>+#define IS_FEC(match) 0
-> >>+#endif
-> >>+
-> > 
-> > Since we're talking directly with device tree, why bother with
-> > CONFIG_ stuff? We are able to figure it out from dts..
-> 
-> We are figuring it out from the DTS (that's what match->data is).  I 
-> just didn't want boards without a FEC to have to build in support for
-> it and waste memory.
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
 
-yes, wrong snippet
-what about 
-
-> #ifdef CONFIG_CPM2
-> +	r = fs_enet_mdio_bb_init();
-> +	if (r != 0)
-> +		goto out_mdio_bb;
-> +#endif
-> +#ifdef CONFIG_8xx
-> +	r = fs_enet_mdio_fec_init();
-> +	if (r != 0)
-> +		goto out_mdio_fec;
-> +#endif
-
-We had to pray and hope that 8xx would only have fec, and cpm2 has some bitbanged stuff. now we can inquire dts and know for sure, at least it seems so.
+Acked-by: Vitaly Bordug <vitb@kernel.crashing.org>
 
 
+> ---
+>  drivers/net/fs_enet/fs_enet-main.c |   85
+> ++++++++++++++++-------------------
+> drivers/net/fs_enet/fs_enet.h      |    4 +-
+> drivers/net/fs_enet/mac-fcc.c      |    1 -
+> drivers/net/fs_enet/mii-fec.c      |    1 - 4 files changed, 41
+> insertions(+), 50 deletions(-)
+> 
+> diff --git a/drivers/net/fs_enet/fs_enet-main.c
+> b/drivers/net/fs_enet/fs_enet-main.c index a4a2a0e..f261b90 100644
+> --- a/drivers/net/fs_enet/fs_enet-main.c
+> +++ b/drivers/net/fs_enet/fs_enet-main.c
+> @@ -353,7 +353,6 @@ static void fs_enet_tx(struct net_device *dev)
+>  
+>  	do_wake = do_restart = 0;
+>  	while (((sc = CBDR_SC(bdp)) & BD_ENET_TX_READY) == 0) {
+> -
+>  		dirtyidx = bdp - fep->tx_bd_base;
+>  
+>  		if (fep->tx_free == fep->tx_ring)
+> @@ -454,7 +453,6 @@ fs_enet_interrupt(int irq, void *dev_id)
+>  
+>  	nr = 0;
+>  	while ((int_events = (*fep->ops->get_int_events)(dev)) != 0)
+> { -
+>  		nr++;
+>  
+>  		int_clr_events = int_events;
+> @@ -710,45 +708,43 @@ static void fs_timeout(struct net_device *dev)
+>   *-----------------------------------------------------------------------------*/
+>  static void generic_adjust_link(struct  net_device *dev)
+>  {
+> -       struct fs_enet_private *fep = netdev_priv(dev);
+> -       struct phy_device *phydev = fep->phydev;
+> -       int new_state = 0;
+> -
+> -       if (phydev->link) {
+> -
+> -               /* adjust to duplex mode */
+> -               if (phydev->duplex != fep->oldduplex){
+> -                       new_state = 1;
+> -                       fep->oldduplex = phydev->duplex;
+> -               }
+> -
+> -               if (phydev->speed != fep->oldspeed) {
+> -                       new_state = 1;
+> -                       fep->oldspeed = phydev->speed;
+> -               }
+> -
+> -               if (!fep->oldlink) {
+> -                       new_state = 1;
+> -                       fep->oldlink = 1;
+> -                       netif_schedule(dev);
+> -                       netif_carrier_on(dev);
+> -                       netif_start_queue(dev);
+> -               }
+> -
+> -               if (new_state)
+> -                       fep->ops->restart(dev);
+> -
+> -       } else if (fep->oldlink) {
+> -               new_state = 1;
+> -               fep->oldlink = 0;
+> -               fep->oldspeed = 0;
+> -               fep->oldduplex = -1;
+> -               netif_carrier_off(dev);
+> -               netif_stop_queue(dev);
+> -       }
+> -
+> -       if (new_state && netif_msg_link(fep))
+> -               phy_print_status(phydev);
+> +	struct fs_enet_private *fep = netdev_priv(dev);
+> +	struct phy_device *phydev = fep->phydev;
+> +	int new_state = 0;
+> +
+> +	if (phydev->link) {
+> +		/* adjust to duplex mode */
+> +		if (phydev->duplex != fep->oldduplex) {
+> +			new_state = 1;
+> +			fep->oldduplex = phydev->duplex;
+> +		}
+> +
+> +		if (phydev->speed != fep->oldspeed) {
+> +			new_state = 1;
+> +			fep->oldspeed = phydev->speed;
+> +		}
+> +
+> +		if (!fep->oldlink) {
+> +			new_state = 1;
+> +			fep->oldlink = 1;
+> +			netif_schedule(dev);
+> +			netif_carrier_on(dev);
+> +			netif_start_queue(dev);
+> +		}
+> +
+> +		if (new_state)
+> +			fep->ops->restart(dev);
+> +	} else if (fep->oldlink) {
+> +		new_state = 1;
+> +		fep->oldlink = 0;
+> +		fep->oldspeed = 0;
+> +		fep->oldduplex = -1;
+> +		netif_carrier_off(dev);
+> +		netif_stop_queue(dev);
+> +	}
+> +
+> +	if (new_state && netif_msg_link(fep))
+> +		phy_print_status(phydev);
+>  }
+>  
+>  
+> @@ -792,7 +788,6 @@ static int fs_init_phy(struct net_device *dev)
+>  	return 0;
+>  }
+>  
+> -
+>  static int fs_enet_open(struct net_device *dev)
+>  {
+>  	struct fs_enet_private *fep = netdev_priv(dev);
+> @@ -978,7 +973,7 @@ static struct net_device *fs_init_instance(struct
+> device *dev, #endif
+>  
+>  #ifdef CONFIG_FS_ENET_HAS_SCC
+> -	if (fs_get_scc_index(fpi->fs_no) >=0 )
+> +	if (fs_get_scc_index(fpi->fs_no) >= 0)
+>  		fep->ops = &fs_scc_ops;
+>  #endif
+>  
+> @@ -1069,9 +1064,8 @@ static struct net_device
+> *fs_init_instance(struct device *dev, 
+>  	return ndev;
+>  
+> -      err:
+> +err:
+>  	if (ndev != NULL) {
+> -
+>  		if (registered)
+>  			unregister_netdev(ndev);
+>  
+> @@ -1262,7 +1256,6 @@ static int __init fs_init(void)
+>  err:
+>  	cleanup_immap();
+>  	return r;
+> -	
+>  }
+>  
+>  static void __exit fs_cleanup(void)
+> diff --git a/drivers/net/fs_enet/fs_enet.h
+> b/drivers/net/fs_enet/fs_enet.h index 569be22..72a61e9 100644
+> --- a/drivers/net/fs_enet/fs_enet.h
+> +++ b/drivers/net/fs_enet/fs_enet.h
+> @@ -15,8 +15,8 @@
+>  #include <asm/commproc.h>
+>  
+>  struct fec_info {
+> -        fec_t*  fecp;
+> -	u32     mii_speed;
+> +	fec_t *fecp;
+> +	u32 mii_speed;
+>  };
+>  #endif
+>  
+> diff --git a/drivers/net/fs_enet/mac-fcc.c
+> b/drivers/net/fs_enet/mac-fcc.c index 5603121..ad3c5fa 100644
+> --- a/drivers/net/fs_enet/mac-fcc.c
+> +++ b/drivers/net/fs_enet/mac-fcc.c
+> @@ -86,7 +86,6 @@
+>  static inline int fcc_cr_cmd(struct fs_enet_private *fep, u32 mcn,
+> u32 op) {
+>  	const struct fs_platform_info *fpi = fep->fpi;
+> -
+>  	cpm2_map_t *immap = fs_enet_immap;
+>  	cpm_cpm2_t *cpmp = &immap->im_cpm;
+>  	u32 v;
+> diff --git a/drivers/net/fs_enet/mii-fec.c
+> b/drivers/net/fs_enet/mii-fec.c index 0a563a8..53db696 100644
+> --- a/drivers/net/fs_enet/mii-fec.c
+> +++ b/drivers/net/fs_enet/mii-fec.c
+> @@ -113,7 +113,6 @@ static int fs_enet_fec_mii_read(struct mii_bus
+> *bus , int phy_id, int location) }
+>  
+>  	return ret;
+> -
+>  }
+>  
+>  static int fs_enet_fec_mii_write(struct mii_bus *bus, int phy_id,
+> int location, u16 val)
 
-> 
-> >>+	fpi->rx_ring = 32;
-> >>+	fpi->tx_ring = 32;
-> >>+	fpi->rx_copybreak = 240;
-> >>+	fpi->use_napi = 0;
-> >>+	fpi->napi_weight = 17;
-> >>+
-> > 
-> > 
-> > move params over to  dts?
-> 
-> No.  These aren't attributes of the hardware, they're choices the
-> driver makes about how much memory to use and how to interact with
-> the rest of the kernel.
-> 
-> >>+	ret = find_phy(ofdev->node, fpi);
-> >>+	if (ret)
-> >>+		goto out_free_fpi;
-> >>+
-> > 
-> > so we're hosed without phy node.
-> 
-> How is that different from the old code, where you're hosed without 
-> fep->fpi->bus_id?
-> 
-
-I wasn't defending old code, and consider "old code is POS, new one is just great" game meaningless.
-I am just stating the problem, that we'll have to address later. On 8xx even reference boards may be 
-without phy at all.
-
-> >>+static struct of_device_id fs_enet_match[] = {
-> >>+#ifdef CONFIG_FS_ENET_HAS_SCC
-> > 
-> > 
-> > same nagging. Are we able to get rid of Kconfig arcane defining
-> > which SoC currently plays the game for fs_enet?
-> 
-> No, it's still needed for mpc885ads to determine pin setup and 
-> conflicting device tree node removal (though that could go away if
-> the device tree is changed to reflect the jumper settings).
-> 
-> It's also useful for excluding unwanted code.  I don't like using 
-> 8xx/CPM2 as the decision point for that -- why should I build in 
-> mac-scc.c if I have no intention of using an SCC ethernet (either 
-> because my board doesn't have one, or because it's slow and conflicts 
-> with other devices)?
-
-ok, agreed, size is most serious judge here. we'll definitely have to revisit pin problem later too
-(because custom designs sometimes switch contradictory devices on-the-fly, disable soc parts for alternative function, etc.) QE-like pin encoding may be an option for this or not- I'm inclined to look at
-most resource-safe approach.
-
-> 
-> -Scott
 
 -- 
 Sincerely, Vitaly
