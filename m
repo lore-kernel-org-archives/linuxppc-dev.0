@@ -1,22 +1,18 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 7A251DDF06
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 01:13:46 +1000 (EST)
-Date: Wed, 22 Aug 2007 19:13:59 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v6 0/2] SPI support for fsl_soc and mpc832x_rdb
-Message-ID: <20070822151359.GA23060@localhost.localdomain>
-References: <20070821134537.GA7428@localhost.localdomain>
-	<20070821152745.GA28986@localhost.localdomain>
-	<3DC4D103-C7C1-42CC-AEE6-38CFB8836E82@kernel.crashing.org>
-	<20070822145415.GA22595@localhost.localdomain>
-	<1968F4E2-90F9-46A2-ADC2-DEF28F22CCEA@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <1968F4E2-90F9-46A2-ADC2-DEF28F22CCEA@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D1546DDEE1
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 01:24:47 +1000 (EST)
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <75EDD900-3B5E-4D08-9311-13B6510EDE6E@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: asm-ppc header issues when building ARCH=powerpc
+Date: Wed, 22 Aug 2007 10:19:21 -0500
+To: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+Cc: Paul Mackerras <paulus@samba.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,48 +22,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 22, 2007 at 10:01:13AM -0500, Kumar Gala wrote:
->
-> On Aug 22, 2007, at 9:54 AM, Anton Vorontsov wrote:
->
->> On Wed, Aug 22, 2007 at 09:22:47AM -0500, Kumar Gala wrote:
->>>
->>> On Aug 21, 2007, at 10:27 AM, Anton Vorontsov wrote:
->>>
->>>> On Tue, Aug 21, 2007 at 05:45:37PM +0400, Anton Vorontsov wrote:
->>>>> Hi all,
->>>>>
->>>>> Thanks for the previous reviews, this is v4 against Linus' tree,
->>>>> as of today.
->>>>
->>>> Okay, here is brand-new, shiny v5. Today and only today it comes
->>>> without section mismatch warnings, don't miss your chance. Get it
->>>> free of charge! ;-)
->>>
->>> This looks good, have some minor cleanup nits.
->>
->> Much thanks, fixed.
->
-> np.  Do you know what effect the modalias being wrong has on current 
-> functionality?
+Guys,
 
-No effect in the `kernel oops' meanings, nothing too bad will happen.
+I was wondering if I could get your help with looking at the  
+following lists and determining if we have an issue or not related  
+the following files:
 
-But personally I vote for spidev stub to stay. This way I (and anybody
-else) can actually test SPI (and MMC) even without mmc_spi driver, i.e.
-using Documentation/spi/spidev_test.c (already in Linus' tree).
+Getting some classification on these would be good.  Possibly  
+classifications, doesn't build in ARCH=powerpc, remove include, real  
+issue, etc.
 
-> and when mmc_spi gets added?
+- k
 
-Let's hope in v2.6.24. IIRC it's already in -mm for some time, and it's
-pretty mature already, thanks to David Brownell.
+./include/asm-powerpc/irq.h:#include <asm/mpc83xx.h>	- protected by ! 
+CONFIG_PPC_MERGE
 
-> - k
+./drivers/ide/ppc/mpc8xx.c:#include <asm/residual.h>
 
-Thanks,
+./drivers/mtd/maps/tqm834x.c:#include <asm/ppcboot.h>
+./drivers/mtd/maps/pq2fads.c:#include <asm/ppcboot.h>
 
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+./drivers/i2c/busses/i2c-ibm_iic.c:#include <asm/ibm4xx.h>
+./drivers/mtd/maps/walnut.c:#include <asm/ibm4xx.h>
+./include/asm-powerpc/irq.h:#include <asm/ibm4xx.h>	- protected by ! 
+CONFIG_PPC_MERGE
+
+./drivers/mtd/maps/ebony.c:#include <asm/ibm44x.h>
+./drivers/mtd/maps/ocotea.c:#include <asm/ibm44x.h>
+./drivers/mtd/nand/ndfc.c:#include <asm/ibm44x.h>
+./include/asm-powerpc/irq.h:#include <asm/ibm44x.h>	- protected by ! 
+CONFIG_PPC_MERGE
+
+./drivers/i2c/busses/i2c-ibm_iic.c:#include <asm/ocp.h>
+./drivers/net/ucc_geth_mii.c:#include <asm/ocp.h>	- just bogus, needs  
+removal
+./drivers/net/ibm_emac/ibm_emac_core.c:#include <asm/ocp.h>
+./drivers/net/ibm_emac/ibm_emac_core.h:#include <asm/ocp.h>
+./drivers/net/ibm_emac/ibm_emac_tah.h:#include <asm/ocp.h>
+./drivers/net/ibm_emac/ibm_emac_phy.c:#include <asm/ocp.h>
+./drivers/net/ibm_emac/ibm_emac_mal.c:#include <asm/ocp.h>
+./drivers/net/ibm_emac/ibm_emac_zmii.h:#include <asm/ocp.h>
+
+./drivers/macintosh/adb-iop.c:#include <asm/bootinfo.h>
+./drivers/char/vme_scc.c:#include <asm/bootinfo.h>
+./drivers/char/serial167.c:#include <asm/bootinfo.h>
+./drivers/serial/dz.c:#include <asm/bootinfo.h>
+./drivers/mtd/devices/ms02-nv.c:#include <asm/bootinfo.h>
+./drivers/net/macsonic.c:#include <asm/bootinfo.h>
+./drivers/net/jazzsonic.c:#include <asm/bootinfo.h>
+./drivers/video/pmag-aa-fb.c:#include <asm/bootinfo.h>
+./drivers/video/maxinefb.c:#include <asm/bootinfo.h>
+./drivers/video/logo/logo.c:#include <asm/bootinfo.h>
+./drivers/video/valkyriefb.c:#include <asm/bootinfo.h>
+./drivers/video/macfb.c:#include <asm/bootinfo.h>
