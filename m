@@ -1,12 +1,21 @@
-Return-Path: <olof@lixom.net>
-Date: Wed, 22 Aug 2007 19:26:37 -0500
-From: Olof Johansson <olof@lixom.net>
-To: paulus@ozlabs.org
-Subject: [PATCH] Move serial_dev_init to device_initcall()
-Message-ID: <20070823002637.GA24332@lixom.net>
+Return-Path: <jason.wessel@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id 0F364DDF39
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 11:24:28 +1000 (EST)
+Message-ID: <46CCBC3C.7010307@windriver.com>
+Date: Wed, 22 Aug 2007 17:44:12 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Kgdb-bugreport] 2.6.23-rc3-mm1: kgdb build failure on powerpc
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>	<200708222104.29432.m.kozlowski@tuxland.pl>
+	<20070822124743.fc316963.akpm@linux-foundation.org>
+In-Reply-To: <20070822124743.fc316963.akpm@linux-foundation.org>
+Content-Type: multipart/mixed; boundary="------------020302000603070906050901"
+Cc: kgdb-bugreport@lists.sourceforge.net, amitkale@linsyssoft.com,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,42 +25,136 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-With the I/O space rewrite by BenH, the legacy_serial serial_dev_init()
-initcall is now called before I/O space is setup, but it's dependent on
-it being available.
+This is a multi-part message in MIME format.
+--------------020302000603070906050901
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Since there's no way to make dependencies between initcalls, we'll just
-have to move it to device_initcall(). Yes, it's suboptimal but I'm not
-aware of any better solution at this time.
+Andrew Morton wrote:
+> On Wed, 22 Aug 2007 21:04:28 +0200
+> Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
+>
+>   
+>> Hello,
+>>
+>> 	Got that on imac g3.
+>>
+>>   CC      kernel/kgdb.o
+>> kernel/kgdb.c: In function 'kgdb_handle_exception':
+>> kernel/kgdb.c:940: error: invalid lvalue in unary '&'
+>> kernel/kgdb.c:940: warning: type defaults to 'int' in declaration of '_o_'
+>> kernel/kgdb.c:940: error: invalid lvalue in unary '&'
+>> kernel/kgdb.c:940: warning: type defaults to 'int' in declaration of '_n_'
+>> kernel/kgdb.c:940: error: invalid lvalue in unary '&'
+>> kernel/kgdb.c:940: error: invalid lvalue in unary '&'
+>> kernel/kgdb.c:940: error: invalid lvalue in unary '&'
+>> kernel/kgdb.c:940: warning: type defaults to 'int' in declaration of 'type name'
+>> make[1]: *** [kernel/kgdb.o] Blad 1
+>> make: *** [kernel] Blad 2
+>>
+>>     
+>
+>   
+Against the tip of the kernel + kgdb patches this config builds.  I 
+wonder if is the compiler or the macros for atomic_read or cmpxchg have 
+changed for in the -mm tree.  Perhaps it is not relevant though if you 
+read on.
+> I'm not surprised.
+>
+> 	while (cmpxchg(&atomic_read(&debugger_active), 0, (procid + 1)) != 0) {
+>
+> a) cmpxchg isn't available on all architectures
+>
+>   
+It was available for all the archs that the kgdb had been implemented on 
+at the time.
+> b) we can't just go and take the address of atomic_read()'s return value!
+>
+>   
+Perhaps yes, perhaps no I guess it depends on what actually gets 
+generated...  In the past the intent of this was to guard for the race 
+to be the master processor and looked like some attempt to do it 
+atomically.  This code had been in use for a number of years at this point.
+> c) that's pretty ugly-looking stuff anyway.
+>
+>   
+
+Perhaps there is a cleaner way to do the same thing and avoid the 
+cmpxchg all together.  I used the attached patch to eliminate the 
+cmpxchg operation.
 
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+Jason.
+
+--------------020302000603070906050901
+Content-Type: text/plain;
+ name="kgdb_enter_atomic.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="kgdb_enter_atomic.patch"
+
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 
 ---
+ kernel/kgdb.c |   18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
 
-I think I might have one of the few hardware platforms with UART on PIO,
-at least if noone else has already hit this. It was introduced by BenH's
-rewrite of the I/O space allocation earlier, and the problem is that by
-the time serial_dev_init() runs, the hose io_base_virt isn't available.
-
-I still see the platform devices register before the PCI ones, so it
-looks like init order is undisturbed by this change. Still, it'd be good
-to hear test feedback from other platforms as needed. It's uncertain what
-platforms the comments above serial_dev_init() about needing overrides
-applies for, so I don't know which ones might be sensitive to call order
-changes.
-
-
-Index: mainline/arch/powerpc/kernel/legacy_serial.c
-===================================================================
---- mainline.orig/arch/powerpc/kernel/legacy_serial.c
-+++ mainline/arch/powerpc/kernel/legacy_serial.c
-@@ -493,7 +493,7 @@ static int __init serial_dev_init(void)
+--- a/kernel/kgdb.c
++++ b/kernel/kgdb.c
+@@ -121,6 +121,7 @@ struct task_struct *kgdb_usethread, *kgd
  
- 	return platform_device_register(&serial_device);
- }
--arch_initcall(serial_dev_init);
-+device_initcall(serial_dev_init);
+ int debugger_step;
+ atomic_t debugger_active;
++static atomic_t kgdb_sync = ATOMIC_INIT(-1);
  
+ /* Our I/O buffers. */
+ static char remcom_in_buffer[BUFMAX];
+@@ -638,8 +639,14 @@ static void kgdb_wait(struct pt_regs *re
+ 	kgdb_info[processor].task = current;
+ 	atomic_set(&procindebug[processor], 1);
  
- /*
++	/* The master processor must be active to enter here, but this is
++	 * gaurd in case the master processor had not been selected if
++	 * this was an entry via nmi.
++	 */
++	while (!atomic_read(&debugger_active));
++
+ 	/* Wait till master processor goes completely into the debugger.
+-	 * FIXME: this looks racy */
++	 */
+ 	while (!atomic_read(&procindebug[atomic_read(&debugger_active) - 1])) {
+ 		int i = 10;	/* an arbitrary number */
+ 
+@@ -973,8 +980,13 @@ int kgdb_handle_exception(int ex_vector,
+ 	/* Hold debugger_active */
+ 	procid = raw_smp_processor_id();
+ 
+-	while (cmpxchg(&atomic_read(&debugger_active), 0, (procid + 1)) != 0) {
++	while (1) {
+ 		int i = 25;	/* an arbitrary number */
++		if (atomic_read(&kgdb_sync) < 0 &&
++			atomic_inc_and_test(&kgdb_sync)) {
++			atomic_set(&debugger_active, procid + 1);
++			break;
++		}
+ 
+ 		while (--i)
+ 			cpu_relax();
+@@ -991,6 +1003,7 @@ int kgdb_handle_exception(int ex_vector,
+ 	if (atomic_read(&cpu_doing_single_step) != -1 &&
+ 	    atomic_read(&cpu_doing_single_step) != procid) {
+ 		atomic_set(&debugger_active, 0);
++		atomic_set(&kgdb_sync, -1);
+ 		clocksource_touch_watchdog();
+ 		kgdb_softlock_skip[procid] = 1;
+ 		local_irq_restore(flags);
+@@ -1557,6 +1570,7 @@ int kgdb_handle_exception(int ex_vector,
+  kgdb_restore:
+ 	/* Free debugger_active */
+ 	atomic_set(&debugger_active, 0);
++	atomic_set(&kgdb_sync, -1);
+ 	clocksource_touch_watchdog();
+ 	kgdb_softlock_skip[processor] = 1;
+ 	local_irq_restore(flags);
+
+--------------020302000603070906050901--
