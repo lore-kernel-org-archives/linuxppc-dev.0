@@ -1,18 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6741BDDE04
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 10:17:54 +1000 (EST)
-Date: Tue, 21 Aug 2007 19:18:00 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Linus Torvalds <torvalds@osdl.org>
-Subject: Please pull from 'fixes-2.6.23' branch
-Message-ID: <Pine.LNX.4.64.0708211917250.14411@blarg.am.freescale.net>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 22 Aug 2007 11:09:07 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 05/20] bootwrapper: flatdevtree fixes
+Message-ID: <20070822010907.GA12472@localhost.localdomain>
+References: <20070820173920.GA30546@ld0162-tx32.am.freescale.net>
+	<20070820173949.GD30562@ld0162-tx32.am.freescale.net>
+	<20070821023044.GF15469@localhost.localdomain>
+	<46CB0E56.2020601@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <46CB0E56.2020601@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,59 +21,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please pull from 'fixes-2.6.23' branch of
+On Tue, Aug 21, 2007 at 11:09:58AM -0500, Scott Wood wrote:
+> David Gibson wrote:
+> > On Mon, Aug 20, 2007 at 12:39:49PM -0500, Scott Wood wrote:
+> > 
+> >>1. ft_create_node was returning the internal pointer rather than a phandle.
+> >>2. ft_find_device_rel was treating a "top" phandle of NULL as an error,
+> >>rather than as the root of the tree.
+> >>3. Return the node's name when getprop() is called with the "name"
+> >>property.
+> > 
+> > 
+> > Hrm.  I'm not convinced.  (1) certainly needs fixing.  (2) is kind of
+> > unclear - there is an ft_find_device() after all for doing root-based
+> > searches.
+> 
+> The point of #2 was as part of the fix to #1 -- otherwise, the same 
+> check for NULL would have to be moved into ft_create_node to 
+> conditionally call ft_find_device or ft_find_device_rel.
 
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git fixes-2.6.23
+Um... oh, ok, I hadn't spotted that (1) made ft_create() use
+find_device_rel().  That sounds doubly wrong: you have the internal
+offset pointer, you should be able to create a phandle using the
+phandle allocation stuff, rather than having to refind the node you've
+just created from the parent.
 
-to receive the following updates:
+> The non-relative function should probably be removed, though.
 
- arch/powerpc/sysdev/fsl_pci.c |    2 ++
- include/linux/pci_ids.h       |    6 ++++--
- 2 files changed, 6 insertions(+), 2 deletions(-)
+Well, yes, I wouldn't have much problem with just having a relative
+version.
 
-Kumar Gala (1):
-      [POWERPC] Fix PCI Device ID for MPC8544/8533 processors
+Come to that, I don't actually care all that much what happens to
+flatdevtree.c, seeing as I intend to replace it with libfdt, just as
+soon as I can get enough other things off my plate.
 
-commit 15f6ddc7d9cf96f2ee88897c7164198ed6e45a77
-Author: Kumar Gala <galak@kernel.crashing.org>
-Date:   Tue Aug 21 19:15:31 2007 -0500
+> >  (3) I really dislike;  I just don't see the point.
+> 
+> It's needed by dt_get_path().
 
-    [POWERPC] Fix PCI Device ID for MPC8544/8533 processors
+No, it isn't.  dt_get_path() needs *some* way of getting the name of a
+node, but it could be a separate function, which I think would be
+preferable rather than folding it into getprop - you don't need to
+search for the name, so a getname() function would have quite a
+different structure to getprop().
 
-    The initial user manuals for MPC8544/8533 had some issues with properly
-    documenting the device IDs for MPC8544/8533.  These processors are almost
-    identical and both show up on the reference boards.
-
-    Fix up the quirks for PCIe support to handle MPC8533/E.
-
-    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 9fb0ce5..114c90f 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -251,6 +251,8 @@ DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8568E, quirk_fsl_pcie_transpare
- DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8568, quirk_fsl_pcie_transparent);
- DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8567E, quirk_fsl_pcie_transparent);
- DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8567, quirk_fsl_pcie_transparent);
-+DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8533E, quirk_fsl_pcie_transparent);
-+DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8533, quirk_fsl_pcie_transparent);
- DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8544E, quirk_fsl_pcie_transparent);
- DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8544, quirk_fsl_pcie_transparent);
- DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8641, quirk_fsl_pcie_transparent);
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index 07fc574..8938d59 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -2092,8 +2092,10 @@
- #define PCI_DEVICE_ID_MPC8568		0x0021
- #define PCI_DEVICE_ID_MPC8567E		0x0022
- #define PCI_DEVICE_ID_MPC8567		0x0023
--#define PCI_DEVICE_ID_MPC8544E		0x0030
--#define PCI_DEVICE_ID_MPC8544		0x0031
-+#define PCI_DEVICE_ID_MPC8533E		0x0030
-+#define PCI_DEVICE_ID_MPC8533		0x0031
-+#define PCI_DEVICE_ID_MPC8544E		0x0032
-+#define PCI_DEVICE_ID_MPC8544		0x0033
- #define PCI_DEVICE_ID_MPC8641		0x7010
- #define PCI_DEVICE_ID_MPC8641D		0x7011
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
