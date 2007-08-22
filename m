@@ -1,25 +1,16 @@
-Return-Path: <nielsen.esben@googlemail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
-	by ozlabs.org (Postfix) with ESMTP id 99224DDEA2
+Return-Path: <ravi.rao@rflelect.com>
+Received: from noteshub1.teal.com (mail.teal.com [67.155.213.211])
+	by ozlabs.org (Postfix) with ESMTP id 79EB8DDF03
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 22 Aug 2007 20:21:01 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id c10so109204nfd
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 22 Aug 2007 03:21:00 -0700 (PDT)
-Date: Wed, 22 Aug 2007 12:20:46 +0200 (CEST)
-From: Esben Nielsen <nielsen.esben@googlemail.com>
-To: Robert Woodworth <rwoodworth@securics.com>
-Subject: Re: [PATCH 3/3] Add support for xupv2p and ml410 boards.
-In-Reply-To: <1187751864.6266.6.camel@PisteOff>
-Message-ID: <Pine.LNX.4.64.0708221214210.4037@frodo.shire>
-References: <1187743993171-git-send-email-wolfgang.reissnegger@xilinx.com>
-	<1187743993360-git-send-email-wolfgang.reissnegger@xilinx.com>
-	<20070822005048.CF66B31005A@mail77-blu.bigfish.com>
-	<1187751864.6266.6.camel@PisteOff>
+	Thu, 23 Aug 2007 00:53:29 +1000 (EST)
+To: linuxppc-embedded@ozlabs.org
+Subject: Kerenel crashes every other Boot..
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-	linuxppc-embedded@ozlabs.org
+Message-ID: <OF486D59BE.E9F90F84-ON8525733F.005162F2-8525733F.0051B481@rflelect.com>
+From: ravi.rao@rflelect.com
+Date: Wed, 22 Aug 2007 10:53:29 -0400
+Content-Type: multipart/alternative;
+	boundary="=_alternative 0051B47F8525733F_="
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,74 +21,65 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multipart message in MIME format.
+--=_alternative 0051B47F8525733F_=
+Content-Type: text/plain; charset="US-ASCII"
+
+Hi All,
+    I have a PPC 405EP custom target. I based most of my software on the 
+EP405 Taihu reference and now I am able to load the 2.6.21 kernel and with 
+a minimum initramfs I also get the busy box prompt. I see a strange poblem 
+it fails(linux crashes) every other boot. Can any one please tell me what 
+may be happening ???
+Thanks,
+Ravishankar Govindarao
+RFL Electronics Inc.
+E-mail : Ravi.Rao@rflelect.com
+Voice: 973.334.3100 Ext. 233
+Fax: 973.334.3863
+ 
+CONFIDENTIALITY NOTE
+This e-mail, including any attachments, may contain confidential and/or 
+legally privileged information.  The Information is intended only for the 
+use of the individual or entity named on this e-mail .  If you are not the 
+intended recipient, you are hereby notified that any disclosure, copying, 
+distribution, or the taking of any action in reliance on the contents of 
+this transmitted Information is strictly prohibited.  Further, if you are 
+not the intended recipient, please notify us by return e-mail and delete 
+the Information promptly.
+ 
+ 
+ 
+--=_alternative 0051B47F8525733F_=
+Content-Type: text/html; charset="US-ASCII"
 
 
-On Tue, 21 Aug 2007, Robert Woodworth wrote:
-
-> Should the xparameters????.h file *really* be included in the tree?
->
-> This file is completely board/EDK/ISE/synthesis specific.  I'd rather it
-> not be included and have people copy theirs from EDK.
-> Or as I have done, sym-link it from my EDK project.
->
->
-> Woody.
->
-
-The solution below is in line with what we do in our 2.4 kernel to support
-several of our own boards.
-When you distribute the kernel you have to distribute the source as well. 
-You thus have to include xparameters.h such the kernel can be rebuild by 
-the receiver.
-
-Esben
-
->
->
-> On Tue, 2007-08-21 at 17:53 -0700, wolfgang.reissnegger@xilinx.com
-> wrote:
->> From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
->
->> diff --git a/arch/ppc/platforms/4xx/xparameters/xparameters.h b/arch/ppc/platforms/4xx/xparameters/xparameters.h
->> index 01aa043..34d9844 100644
->> --- a/arch/ppc/platforms/4xx/xparameters/xparameters.h
->> +++ b/arch/ppc/platforms/4xx/xparameters/xparameters.h
->> @@ -15,8 +15,12 @@
->>
->>  #if defined(CONFIG_XILINX_ML300)
->>    #include "xparameters_ml300.h"
->> +#elif defined(CONFIG_XILINX_XUPV2P)
->> +  #include "xparameters_xupv2p.h"
->>  #elif defined(CONFIG_XILINX_ML403)
->>    #include "xparameters_ml403.h"
->> +#elif defined(CONFIG_XILINX_ML41x)
->> +  #include "xparameters_ml41x.h"
->>  #else
->>    /* Add other board xparameter includes here before the #else */
->>    #error No xparameters_*.h file included
->> diff --git a/arch/ppc/platforms/4xx/xparameters/xparameters_ml41x.h b/arch/ppc/platforms/4xx/xparameters/xparameters_ml41x.h
->> new file mode 100644
->> index 0000000..06dac67
->> --- /dev/null
->> +++ b/arch/ppc/platforms/4xx/xparameters/xparameters_ml41x.h
->> @@ -0,0 +1,277 @@
->> +
->> +/*******************************************************************
->> +*
->> +* CAUTION: This file is automatically generated by libgen.
->> +* Version: Xilinx EDK 8.2.02 EDK_Im_Sp2.4
->> +* DO NOT EDIT.
->> +*
->> +* Copyright (c) 2005 Xilinx, Inc.  All rights reserved.
->> +*
->> +* Description: Driver parameters
->> +*
->> +*******************************************************************/
->> +
->
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
+<br><font size=2 face="sans-serif">Hi All,</font>
+<br><font size=2 face="sans-serif">&nbsp; &nbsp; I have a PPC 405EP custom
+target. I based most of my software on the EP405 Taihu reference and now
+I am able to load the 2.6.21 kernel and with a minimum initramfs I also
+get the busy box prompt. I see a strange poblem it fails(linux crashes)
+every other boot. Can any one please tell me what may be happening ???</font>
+<br><font size=2 face="sans-serif">Thanks,<br>
+</font><font size=2 face="Tms Rmn">Ravishankar Govindarao<br>
+RFL Electronics Inc.<br>
+E-mail</font><font size=1 face="Tms Rmn"> </font><font size=2 face="Tms Rmn">:
+</font><a href=mailto:Ravi.Rao@rflelect.com><font size=2 color=blue face="Tms Rmn"><u>Ravi.Rao@rflelect.com</u></font></a>
+<br><font size=2 face="Tms Rmn">Voice: 973.334.3100 Ext. 233<br>
+Fax: 973.334.3863</font>
+<p><font size=2 face="Tms Rmn">&nbsp;</font>
+<div align=center>
+<br><font size=2 color=blue face="Tms Rmn"><u>CONFIDENTIALITY NOTE</u></font></div>
+<br><font size=1 face="Tms Rmn">This e-mail, including any attachments,
+may contain confidential and/or legally privileged information.&nbsp; The
+Information is intended only for the use of the individual or entity named
+on this e-mail</font><font size=1 face="Tms Rmn"> </font><font size=1 face="Tms Rmn">.&nbsp;
+If you are not the intended recipient, you are hereby notified that any
+disclosure, copying, distribution, or the taking of any action in reliance
+on the contents of this transmitted Information is strictly prohibited.&nbsp;
+Further, if you are not the intended recipient, please notify us by return
+e-mail and delete the Information promptly.</font>
+<p><font size=2 face="Tms Rmn">&nbsp;</font>
+<p><font size=2 face="Tms Rmn">&nbsp;</font>
+<p><font size=3>&nbsp;</font>
+--=_alternative 0051B47F8525733F_=--
