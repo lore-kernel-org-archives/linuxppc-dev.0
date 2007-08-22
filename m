@@ -1,19 +1,22 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id CE332DDE99
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 13:21:58 +1000 (EST)
-Date: Tue, 21 Aug 2007 21:26:43 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc: Rework SMP timebase handoff for pasemi
-Message-ID: <20070822022643.GA9050@lixom.net>
-References: <20070821220631.GA4304@lixom.net>
-	<18123.37125.712301.914626@cargo.ozlabs.ibm.com>
-	<20070822021212.GA8060@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070822021212.GA8060@lixom.net>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 04F2CDDE08
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 13:30:18 +1000 (EST)
+In-Reply-To: <20070822011651.GA6799@wotan.suse.de>
+References: <20070821021143.GB2909@wotan.suse.de>
+	<46CB37D4.2080609@austin.ibm.com>
+	<d9f43b5c31fde5851a7af1d0f36eb134@kernel.crashing.org>
+	<20070822011651.GA6799@wotan.suse.de>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <dfbba0a8b6a15d1b563bdfcadc49e8eb@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [patch 1/2] powerpc: rmb fix
+Date: Wed, 22 Aug 2007 05:29:50 +0200
+To: Nick Piggin <npiggin@suse.de>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,59 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Rework timebase handoff to play nice with configurations with more than
-2 cores, as well as with CPU hotplug.
+>>> If this isn't causing any problems maybe there
+>>> is some loigic we are overlooking?
+>>
+>> The I/O accessor functions enforce the necessary ordering
+>> already I believe.
+>
+> Ah, it looks like you might be right, IO should appear to go in-order, 
+> in
+> which case the rmb() would simply need to order cacheable loads. 
+> Interesting
+> way to do things... are drivers simply not up to scratch enough to 
+> allow
+> out of order IO?
 
-Previous scheme just pushed out the current timebase from the giving
-core to all cores without caring if they wanted it or not, nor checking
-if they'd taken it. The taking side didn't make sure the giving side
-had provided a value yet either. In other words, it was completely broken.
+The powerpc kernel needs to have full sync insns in every I/O
+accessor in order to enforce all the ordering rules Linux demands.
+It's a bloody shame, but the alternative would be to make the
+barriers lots more expensive.  A third alternative would be to
+have barrier ops that do not order everything, but just A vs. B
+for various choices of A and B (coherent accesses, MMIO accesses,
+etc.)
+
+> Anyway, this raises another question -- if IO accessors have the right
+> ordering, why is wmb() not an lwsync as well? There appears to be many
+> more wmb() calls than rmb()...
+
+Input MMIO accessors are {sync, load, stall pipeline until load came 
+back}.
+That's a full ordering on both sides.
+
+Output MMIO on the other hand is done with {sync, store}.  Now since
+wmb() has to order MMIO writes vs. main memory writes, we need a full
+sync here.  On some (most, all?) CPUs an eieio is actually enough btw.
+The barrier insn could be put at the end of all MMIO write ops too,
+but I believe that would be more expensive (in execution time; in code
+size it definitely would be, of course).
 
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
-
-Index: mainline/arch/powerpc/platforms/pasemi/setup.c
-===================================================================
---- mainline.orig/arch/powerpc/platforms/pasemi/setup.c
-+++ mainline/arch/powerpc/platforms/pasemi/setup.c
-@@ -50,26 +50,30 @@ static void pas_restart(char *cmd)
- 
- #ifdef CONFIG_SMP
- static DEFINE_SPINLOCK(timebase_lock);
-+static unsigned long timebase;
- 
- static void __devinit pas_give_timebase(void)
- {
--	unsigned long tb;
--
- 	spin_lock(&timebase_lock);
- 	mtspr(SPRN_TBCTL, TBCTL_FREEZE);
--	tb = mftb();
--	mtspr(SPRN_TBCTL, TBCTL_UPDATE_LOWER | (tb & 0xffffffff));
--	mtspr(SPRN_TBCTL, TBCTL_UPDATE_UPPER | (tb >> 32));
--	mtspr(SPRN_TBCTL, TBCTL_RESTART);
-+	isync();
-+	timebase = get_tb();
- 	spin_unlock(&timebase_lock);
--	pr_debug("pas_give_timebase: cpu %d gave tb %lx\n",
--		 smp_processor_id(), tb);
-+
-+	while (timebase)
-+		barrier();
-+	mtspr(SPRN_TBCTL, TBCTL_RESTART);
- }
- 
- static void __devinit pas_take_timebase(void)
- {
--	pr_debug("pas_take_timebase: cpu %d has tb %lx\n",
--		 smp_processor_id(), mftb());
-+	while (!timebase)
-+		smp_rmb();
-+
-+	spin_lock(&timebase_lock);
-+	set_tb(timebase >> 32, timebase & 0xffffffff);
-+	timebase = 0;
-+	spin_unlock(&timebase_lock);
- }
- 
- struct smp_ops_t pas_smp_ops = {
+Segher
