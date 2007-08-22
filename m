@@ -1,22 +1,35 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
+Return-Path: <linas@austin.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D2F48DDECD
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 04:08:15 +1000 (EST)
-Date: Wed, 22 Aug 2007 11:07:32 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nick Piggin <npiggin@suse.de>
-Subject: Re: wmb vs mmiowb
-In-Reply-To: <20070822045714.GD26374@wotan.suse.de>
-Message-ID: <alpine.LFD.0.999.0708221049560.30176@woody.linux-foundation.org>
-References: <20070822045714.GD26374@wotan.suse.de>
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 117ABDDEC6
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 04:37:55 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
+	l7MHUt5Y004163
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 13:30:55 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l7MIaDIe269122
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 12:37:52 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l7MITLkv024785
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 12:29:22 -0600
+Date: Wed, 22 Aug 2007 13:28:59 -0500
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] ppc: remove unused amiga_request_irq and mach_request_irq
+Message-ID: <20070822182859.GX4261@austin.ibm.com>
+References: <1187767237.25624.11.camel@sebastian.kern.oss.ntt.co.jp>
+	<18124.1417.743332.974941@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
-Cc: linux-ia64@vger.kernel.org, Jesse Barnes <jesse.barnes@intel.com>,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <18124.1417.743332.974941@cargo.ozlabs.ibm.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org,
+	Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao <fernando@oss.ntt.co.jp>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,68 +39,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-
-On Wed, 22 Aug 2007, Nick Piggin wrote:
+On Wed, Aug 22, 2007 at 07:44:41PM +1000, Paul Mackerras wrote:
+> Fernando Luis Vázquez Cao writes:
 > 
-> It took me more than a glance to see what the difference is supposed to be
-> between wmb() and mmiowb(). I think especially because mmiowb isn't really
-> like a write barrier.
+> > amiga_request_irq and mach_request_irq are never used, so delete them.
+> 
+> OK, but is there a particular reason you want to do this?
+> 
+> The whole of arch/ppc is going away eventually, so I don't think we
+> need to remove it piece by piece.
 
-Well, it is, but it isn't. Not on its own - but together with a "normal" 
-barrier it is.
+Its often easier to port/move stuff if you clean it up first.
 
-> wmb is supposed to order all writes coming out of a single CPU, so that's
-> pretty simple.
-
-No. wmb orders all *normal* writes coming out of a single CPU.
-
-It may not do anything at all for "uncached" IO writes that aren't part of 
-the cache coherency, and that are handled using totally different queues 
-(both inside and outside of the CPU)!
-
-Now, on x86, the CPU actually tends to order IO writes *more* than it 
-orders any other writes (they are mostly entirely synchronous, unless the 
-area has been marked as write merging), but at least on PPC, it's the 
-other way around: without the cache as a serialization entry, you end up 
-having a totally separate queueu to serialize, and a regular-memory write 
-barrier does nothing at all to the IO queue.
-
-So think of the IO write queue as something totally asynchronous that has 
-zero connection to the normal write ordering - and then think of mmiowb() 
-as a way to *insert* a synchronization point.
-
-In particular, the normal synchronization primitives (spinlocks, mutexes 
-etc) are guaranteed to synchronize only normal memory accesses. So if you 
-do MMIO inside a spinlock, since the MMIO writes are totally asyncronous 
-wrt the normal memory accesses, the MMIO write can escape outside the 
-spinlock unless you have somethign that serializes the MMIO accesses with 
-the normal memory accesses.
-
-So normally you'd see "mmiowb()" always *paired* with a normal memory 
-barrier! The "mmiowb()" ends up synchronizing the MMIO writes with the 
-normal memory accesses, and then the normal memory barrier acts as a 
-barrier for subsequent writes.
-
-Of course, the normal memory barrier would usually be a "spin_unlock()" or 
-something like that, not a "wmb()". In fact, I don't think the powerpc 
-implementation (as an example of this) will actually synchronize with 
-anything *but* a spin_unlock().
-
-> It really seems like it is some completely different concept from a
-> barrier. And it shows, on the platform where it really matters (sn2), where
-> the thing actually spins.
-
-I agree that it probably isn't a "write barrier" per se. Think of it as a 
-"tie two subsystems together" thing.
-
-(And it doesn't just matter on sn2. It also matters on powerpc64, although 
-I think they just set a flag and do the *real* sync in the spin_unlock() 
-path).
-
-Side note: the thing that makes "mmiowb()" even more exciting is that it's 
-not just the CPU, it's the fabric outside the CPU that matters too. That's 
-why the sn2 needs this - but the powerpc example shows a case where the 
-ordering requirement actually comes from the CPU itself.
-
-			Linus
+--linas
