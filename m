@@ -1,21 +1,17 @@
-Return-Path: <npiggin@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E4749DDE38
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 11:16:56 +1000 (EST)
-Date: Wed, 22 Aug 2007 03:16:51 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [patch 1/2] powerpc: rmb fix
-Message-ID: <20070822011651.GA6799@wotan.suse.de>
-References: <20070821021143.GB2909@wotan.suse.de>
-	<46CB37D4.2080609@austin.ibm.com>
-	<d9f43b5c31fde5851a7af1d0f36eb134@kernel.crashing.org>
-Mime-Version: 1.0
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 22 Aug 2007 11:20:42 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 17/20] bootwrapper: Add PlanetCore firmware support.
+Message-ID: <20070822012042.GD12472@localhost.localdomain>
+References: <20070820173920.GA30546@ld0162-tx32.am.freescale.net>
+	<20070820174008.GP30562@ld0162-tx32.am.freescale.net>
+	<20070821031658.GQ15469@localhost.localdomain>
+	<46CB12DB.3020505@freescale.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <d9f43b5c31fde5851a7af1d0f36eb134@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <46CB12DB.3020505@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,49 +21,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 21, 2007 at 09:43:17PM +0200, Segher Boessenkool wrote:
-> >> #define mb()   __asm__ __volatile__ ("sync" : : : "memory")
-> >>-#define rmb()  __asm__ __volatile__ (__stringify(LWSYNC) : : : 
-> >>"memory")
-> >>+#define rmb()  __asm__ __volatile__ ("sync" : : : "memory")
-> >> #define wmb()  __asm__ __volatile__ ("sync" : : : "memory")
-> >> #define read_barrier_depends()  do { } while(0)
-> >>
-> >>@@ -42,7 +42,7 @@
-> >> #ifdef __KERNEL__
-> >> #ifdef CONFIG_SMP
-> >> #define smp_mb()	mb()
-> >>-#define smp_rmb()	rmb()
-> >>+#define smp_rmb()	__asm__ __volatile__ (__stringify(LWSYNC) : : : 
-> >>"memory")
-> >> #define smp_wmb()	eieio()
-> >> #define smp_read_barrier_depends()	read_barrier_depends()
-> >> #else
-> >
-> >I had to think about this one for awhile.  It looks at first glance to 
-> >be the right
-> >thing to do.  But I do wonder how long rmb() has been lwsync
+On Tue, Aug 21, 2007 at 11:29:15AM -0500, Scott Wood wrote:
+> David Gibson wrote:
+> >>+void planetcore_prepare_table(char *table)
+> >>+{
+> >>+	int last_was_newline = 0;
+> >>+
+> >>+	while (*table != 10 || !last_was_newline) {
+> >>+		if (*table == 10) {
+> >>+			*table = 0;
+> >>+			last_was_newline = 1;
+> >>+		} else {
+> >>+			last_was_newline = 0;
+> >>+		}
+> >>+
+> >>+		table++;
+> >>+	}
+> > 
+> > 
+> > Hrm.. this loop makes my brain hurt.  It's correct as far as I can
+> > determine what it's supposed to be doing, but I think there's got to
+> > be a way to make what it's doing a little more obvious.
 > 
-> Since the {ppc,ppc64} -> powerpc merge.
+> How about something like this:
 > 
-> >and if as a practical matter that has caused any problems?
+> char last = 0;
 > 
-> It has not as far as I know.
+> while (1) {
+> 	if (*table == '\n') {
+> 		*table = 0;
 > 
-> >If this isn't causing any problems maybe there
-> >is some loigic we are overlooking?
+> 		if (last == *table)
+> 			return;
+> 	}
 > 
-> The I/O accessor functions enforce the necessary ordering
-> already I believe.
+> 	last = *table++;
+> }
 
-Ah, it looks like you might be right, IO should appear to go in-order, in
-which case the rmb() would simply need to order cacheable loads. Interesting
-way to do things... are drivers simply not up to scratch enough to allow
-out of order IO?
+*thinks*
 
-Anyway, this raises another question -- if IO accessors have the right
-ordering, why is wmb() not an lwsync as well? There appears to be many
-more wmb() calls than rmb()...
+How about:
 
-Thanks,
-Nick
+do {
+	if (*table == '\n')
+		*table = '\0';
+	table++;
+} while (*(table-1) || (*table != '\n'));
+*table = '\0';
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
