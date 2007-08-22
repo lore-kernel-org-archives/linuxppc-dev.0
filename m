@@ -1,22 +1,14 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4351EDDE08
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 13:33:26 +1000 (EST)
-In-Reply-To: <20070822031506.GA26374@wotan.suse.de>
-References: <20070821021143.GB2909@wotan.suse.de>
-	<46CB37D4.2080609@austin.ibm.com>
-	<d9f43b5c31fde5851a7af1d0f36eb134@kernel.crashing.org>
-	<20070822031506.GA26374@wotan.suse.de>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <1afbd9c8892724e484f29532802a3405@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [patch 1/2] powerpc: rmb fix
-Date: Wed, 22 Aug 2007 05:33:16 +0200
-To: Nick Piggin <npiggin@suse.de>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18123.45841.46703.125743@cargo.ozlabs.ibm.com>
+Date: Wed, 22 Aug 2007 13:52:49 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] Check _PAGE_RW and _PAGE_PRESENT on kernel addresses.
+In-Reply-To: <20070821211048.GA8432@ld0162-tx32.am.freescale.net>
+References: <20070821211048.GA8432@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,32 +18,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> The I/O accessor functions enforce the necessary ordering
->> already I believe.
->
-> Hmm, I never followed those discussions last year about IO ordering, 
-> and
-> I can't see where (if) it was documented anywhere :(
+Scott Wood writes:
 
-The comments in system.h weren't updated with the last fix, I think.
+> Previously, the TLB miss handlers assumed that pages above KERNELBASE are
+> always present and read/write.  This assumption is false in the case of
+> CONFIG_DEBUG_PAGEALLOC.
 
-> It appears that legacy code is handled by defining the old IO 
-> accessors to
-> be completely ordered, and introducing new __raw_ variants that are not
-> (OTOH, it seems like other architectures are implementing __raw prefix 
-> as
-> inorder unless there is a _relaxed postfix).
+>  	blt+	112f
+> +	mfspr	r2,SPRN_SRR1		/* and MSR_PR bit from SRR1 */
+> +	rlwinm	r1,r2,32-12,29,29	/* shift MSR_PR to _PAGE_USER posn */
+>  	lis	r2,swapper_pg_dir@ha	/* if kernel address, use */
+>  	addi	r2,r2,swapper_pg_dir@l	/* kernel page table */
+> -	mfspr	r1,SPRN_SRR1		/* and MSR_PR bit from SRR1 */
+> -	rlwinm	r1,r1,32-12,29,29	/* shift MSR_PR to _PAGE_USER posn */
 
-__raw_XX() is for platform code only, which can do the needed
-barriers without having to use the heavy hammer like everything
-else unfortunately does.
+I don't see that just moving those two lines up changes anything.  If
+you turned the rlwinm into an rlwimi (as you did in the DataStoreTLBMiss
+case) then it might make more sense.  Is this just an oversight?
 
-> Drivers are definitely using these __raw_ accessors, and from a quick
-> look, they do appear to be hoping that *mb() is going to order access 
-> for
-> them.
-
-Which drivers?
-
-
-Segher
+Paul.
