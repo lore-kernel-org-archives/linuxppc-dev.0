@@ -1,24 +1,18 @@
-Return-Path: <npiggin@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 94B09DDE4A
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 14:20:43 +1000 (EST)
-Date: Thu, 23 Aug 2007 06:20:38 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: wmb vs mmiowb
-Message-ID: <20070823042038.GI18788@wotan.suse.de>
-References: <20070822045714.GD26374@wotan.suse.de>
-	<alpine.LFD.0.999.0708221049560.30176@woody.linux-foundation.org>
-	<200708221202.12403.jesse.barnes@intel.com>
-	<20070823022043.GB18788@wotan.suse.de>
-	<alpine.LFD.0.999.0708221953360.30176@woody.linux-foundation.org>
+Return-Path: <fernando@oss.ntt.co.jp>
+Received: from serv1.oss.ntt.co.jp (serv1.oss.ntt.co.jp [222.151.198.98])
+	by ozlabs.org (Postfix) with ESMTP id 16D09DDF38
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 15:27:30 +1000 (EST)
+Subject: Re: [PATCH] ppc: remove unused amiga_request_irq and mach_request_irq
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao <fernando@oss.ntt.co.jp>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18124.1417.743332.974941@cargo.ozlabs.ibm.com>
+References: <1187767237.25624.11.camel@sebastian.kern.oss.ntt.co.jp>
+	<18124.1417.743332.974941@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 23 Aug 2007 14:27:27 +0900
+Message-Id: <1187846847.12759.38.camel@sebastian.kern.oss.ntt.co.jp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.LFD.0.999.0708221953360.30176@woody.linux-foundation.org>
-Cc: linux-ia64@vger.kernel.org, Jesse Barnes <jesse.barnes@intel.com>,
-	linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,41 +22,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 22, 2007 at 07:57:56PM -0700, Linus Torvalds wrote:
+On Wed, 2007-08-22 at 19:44 +1000, Paul Mackerras wrote: 
+> Fernando Luis Vázquez Cao writes:
 > 
+> > amiga_request_irq and mach_request_irq are never used, so delete them.
 > 
-> On Thu, 23 Aug 2007, Nick Piggin wrote:
-> >
-> > > Irix actually had an io_unlock() routine that did this 
-> > > implicitly, but iirc that was shot down for Linux...
-> > 
-> > Why was it shot down? Seems like a pretty good idea to me ;)
-> 
-> It's horrible. We'd need it for *every* single spinlock type. We have lots 
-> of them. 
-> 
-> So the choice is between:
-> 
->  - sane:
-> 
-> 	mmiowb()
-> 
->    followed by any of the existing "spin_unlock()" variants (plain, 
->    _irq(), _bh(), _irqrestore())
-> 
->  - insane: multiply our current set of unlock primitives by two, by making 
->    "io" versions for them all:
-> 
-> 	spin_unlock_io[_irq|_irqrestore|_bh]()
-> 
-> but there's actually an EVEN WORSE problem with the stupid Irix approach, 
-> namely that it requires that the unlocker be aware of the exact details of 
-> what happens inside the lock. If the locking is done at an outer layer, 
-> that's not at all obvious!
+> OK, but is there a particular reason you want to do this?
+Hi Paul,
 
-Also, FWIW, there are some advantages of deferring the mmiowb thingy
-until the point of unlock. The disadvantage is that the caller may not
-know if the inner layer performed ios that require the mmiowb, but
-the advantage of waiting until unlock is that the wait is deferred
-for as long as possible, and will hopefully be a shorter one when
-performed later.
+Thank you for your reply.
+
+I am currently auditing all the interrupt handlers and related code
+(request_irq(), free_irq(), and others of that ilk) and, in the process,
+I found some dead code. Getting rid of this cruft would just make my
+life easier.
+
+The final goal of this audit is to determine whether the Linux interrupt
+handlers are kdump-ready. With the advent of kdump it is now possible
+that device drivers have to handle pending interrupts generated in the
+context of a previous kernel. Any pending interrupts will come in as
+soon as the IRQ is allocated, but, unfortunately, not all the device
+drivers handle this situation properly.
+
+Besides, I am also trying to determine if applying this patch:
+http://lkml.org/lkml/2007/7/19/687
+is a sane thing to do.
+
+> The whole of arch/ppc is going away eventually, so I don't think we
+> need to remove it piece by piece.
+As Linas mentioned in his reply, cleaning things up first will probably
+make things easier for you too.
+
+Please consider merging the four patches I sent to the PPC mailing list.
+
+Fernando
