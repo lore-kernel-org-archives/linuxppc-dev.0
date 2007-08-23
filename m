@@ -1,15 +1,24 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 23 Aug 2007 13:37:03 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Josh Boyer <jwboyer@jdub.homelinux.org>
-Subject: Re: How to port PReP to arch/powerpc?
-Message-ID: <20070823033703.GK7042@localhost.localdomain>
-References: <Pine.SOC.4.64.0708221444510.5639@math.ut.ee>
-	<20070822072956.56b7df46@vader.jdub.homelinux.org>
-MIME-Version: 1.0
+Return-Path: <npiggin@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0ABB4DDF38
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 13:54:54 +1000 (EST)
+Date: Thu, 23 Aug 2007 05:54:48 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: wmb vs mmiowb
+Message-ID: <20070823035448.GG18788@wotan.suse.de>
+References: <20070822045714.GD26374@wotan.suse.de>
+	<alpine.LFD.0.999.0708221049560.30176@woody.linux-foundation.org>
+	<200708221202.12403.jesse.barnes@intel.com>
+	<20070823022043.GB18788@wotan.suse.de>
+	<alpine.LFD.0.999.0708221953360.30176@woody.linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070822072956.56b7df46@vader.jdub.homelinux.org>
-Cc: Meelis Roos <mroos@linux.ee>, linuxppc-dev@ozlabs.net
+In-Reply-To: <alpine.LFD.0.999.0708221953360.30176@woody.linux-foundation.org>
+Cc: linux-ia64@vger.kernel.org, Jesse Barnes <jesse.barnes@intel.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,32 +28,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 22, 2007 at 07:29:56AM -0500, Josh Boyer wrote:
-> On Wed, 22 Aug 2007 14:50:07 +0300 (EEST)
-> Meelis Roos <mroos@linux.ee> wrote:
+On Wed, Aug 22, 2007 at 07:57:56PM -0700, Linus Torvalds wrote:
 > 
-> > It seems no one cares for arch/ppc any more but the move to powerpc was 
-> > not finished completely (PReP subarch was not migrated but sees users, I 
-> > do not know about the user base of the other subarches). So I have been 
-> > thinking about migrating PReP support to arch/powerpc myself since I use 
-> > it.
 > 
-> The merge is still on-going.  So it's not "finished" at all.
+> On Thu, 23 Aug 2007, Nick Piggin wrote:
+> >
+> > > Irix actually had an io_unlock() routine that did this 
+> > > implicitly, but iirc that was shot down for Linux...
+> > 
+> > Why was it shot down? Seems like a pretty good idea to me ;)
 > 
-> > Any general guidelines or specific hints about that? I have looked 
-> > around in the code and some pieces are clearly PReP specific (setup, 
-> > pci, boot) but others seem wuite a bit mixed up with other subarches.
+> It's horrible. We'd need it for *every* single spinlock type. We have lots 
+> of them. 
 > 
-> David Gibson and Rob Landley had a quite interesting discussion about
-> PReP last night on IRC.  You might want to contact them and see if they
-> came to any conclusions.
+> So the choice is between:
+> 
+>  - sane:
+> 
+> 	mmiowb()
+> 
+>    followed by any of the existing "spin_unlock()" variants (plain, 
+>    _irq(), _bh(), _irqrestore())
+> 
+>  - insane: multiply our current set of unlock primitives by two, by making 
+>    "io" versions for them all:
+> 
+> 	spin_unlock_io[_irq|_irqrestore|_bh]()
+> 
+> but there's actually an EVEN WORSE problem with the stupid Irix approach, 
+> namely that it requires that the unlocker be aware of the exact details of 
+> what happens inside the lock. If the locking is done at an outer layer, 
+> that's not at all obvious!
 
-Yes, my draft PReP support patch, tweaked this morning to build again
-(changes roughly identical to Rob Landley's patch, I believe) is at:
-	http://ozlabs.org/~dgibson/home/tmp/prep-support
+OK, but we'd have some kind of functions that are called not to
+serialise the CPUs, but to serialise the IO. It would be up to
+the calling code to already provide CPU synchronisation.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+serialize_io(); / unserialize_io(); / a nicer name
+
+If we could pass in some kind of relevant resoure (eg. the IO
+memory or device or something), then we might even be able to
+put debug checks there to ensure two CPUs are never inside the
+same critical IO section at once.
+
+ 
+> In other words, Irix (once again) made a horrible and idiotic choice. 
+
+We could make a better one. I don't think mmiowb is really insane, but
+I'd worry it being confused with a regular type of barrier and that CPU
+synchronisation needs to be provided for it to work or make sense.
+ 
+
+> Big surprise. Irix was probably the flakiest and worst of all the 
+> commercial proprietary unixes. No taste.
+
+Is it? I've never used it ;)
