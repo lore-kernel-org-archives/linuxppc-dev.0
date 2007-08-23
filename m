@@ -1,17 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <npiggin@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3CB0FDDF1D
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 14:16:29 +1000 (EST)
-Date: Wed, 22 Aug 2007 23:16:39 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Please pull from 'for-2.6.24' branch
-Message-ID: <Pine.LNX.4.64.0708222314420.8543@blarg.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 94B09DDE4A
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 14:20:43 +1000 (EST)
+Date: Thu, 23 Aug 2007 06:20:38 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: wmb vs mmiowb
+Message-ID: <20070823042038.GI18788@wotan.suse.de>
+References: <20070822045714.GD26374@wotan.suse.de>
+	<alpine.LFD.0.999.0708221049560.30176@woody.linux-foundation.org>
+	<200708221202.12403.jesse.barnes@intel.com>
+	<20070823022043.GB18788@wotan.suse.de>
+	<alpine.LFD.0.999.0708221953360.30176@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.LFD.0.999.0708221953360.30176@woody.linux-foundation.org>
+Cc: linux-ia64@vger.kernel.org, Jesse Barnes <jesse.barnes@intel.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,63 +28,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please pull from 'for-2.6.24' branch of
+On Wed, Aug 22, 2007 at 07:57:56PM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Thu, 23 Aug 2007, Nick Piggin wrote:
+> >
+> > > Irix actually had an io_unlock() routine that did this 
+> > > implicitly, but iirc that was shot down for Linux...
+> > 
+> > Why was it shot down? Seems like a pretty good idea to me ;)
+> 
+> It's horrible. We'd need it for *every* single spinlock type. We have lots 
+> of them. 
+> 
+> So the choice is between:
+> 
+>  - sane:
+> 
+> 	mmiowb()
+> 
+>    followed by any of the existing "spin_unlock()" variants (plain, 
+>    _irq(), _bh(), _irqrestore())
+> 
+>  - insane: multiply our current set of unlock primitives by two, by making 
+>    "io" versions for them all:
+> 
+> 	spin_unlock_io[_irq|_irqrestore|_bh]()
+> 
+> but there's actually an EVEN WORSE problem with the stupid Irix approach, 
+> namely that it requires that the unlocker be aware of the exact details of 
+> what happens inside the lock. If the locking is done at an outer layer, 
+> that's not at all obvious!
 
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for-2.6.24
-
-This has been rebased against your latest for-2.6.24 branch and includes
-the removal of <asm/bootinfo.h> to drivers/macintosh/adb-iop.c.
-
-All other driver related patches have been sent to their maintainers.
-(IDE, MTD, NET).
-
-I think this is as good as it gets.
-
-to receive the following updates:
-
- arch/powerpc/Makefile                             |   17
- arch/powerpc/kernel/setup_32.c                    |    2
- arch/powerpc/platforms/52xx/lite5200.c            |    1
- arch/powerpc/platforms/82xx/m82xx_pci.h           |    2
- arch/powerpc/platforms/82xx/mpc82xx.c             |    1
- arch/powerpc/platforms/82xx/mpc82xx_ads.c         |    1
- arch/powerpc/platforms/82xx/pq2ads.h              |    1
- arch/powerpc/platforms/83xx/mpc832x_mds.c         |    1
- arch/powerpc/platforms/83xx/mpc834x_itx.c         |    1
- arch/powerpc/platforms/83xx/mpc834x_mds.c         |    1
- arch/powerpc/platforms/83xx/mpc836x_mds.c         |    1
- arch/powerpc/platforms/85xx/mpc85xx_cds.c         |    1
- arch/powerpc/platforms/85xx/mpc85xx_mds.c         |    1
- arch/powerpc/platforms/8xx/m8xx_setup.c           |    4
- arch/powerpc/platforms/8xx/mpc86xads.h            |    1
- arch/powerpc/platforms/8xx/mpc86xads_setup.c      |    1
- arch/powerpc/platforms/8xx/mpc885ads.h            |    1
- arch/powerpc/platforms/8xx/mpc885ads_setup.c      |    1
- arch/powerpc/platforms/chrp/gg2.h                 |   61 +
- arch/powerpc/platforms/chrp/pci.c                 |    2
- arch/powerpc/platforms/chrp/setup.c               |    2
- arch/powerpc/platforms/chrp/smp.c                 |    1
- arch/powerpc/platforms/embedded6xx/linkstation.c  |    3
- arch/powerpc/platforms/embedded6xx/ls_uart.c      |    4
- arch/powerpc/platforms/embedded6xx/mpc10x.h       |  180 +++
- arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c |    1
- arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.h |   21
- arch/powerpc/platforms/powermac/bootx_init.c      |    1
- drivers/macintosh/adb-iop.c                       |    1
- drivers/macintosh/ans-lcd.c                       |    3
- drivers/macintosh/ans-lcd.h                       |   11
- include/asm-powerpc/8xx_immap.h                   |  564 +++++++++
- include/asm-powerpc/commproc.h                    |  692 ++++++++++++
- include/asm-powerpc/cpm2.h                        | 1248 ++++++++++++++++++++++
- include/asm-powerpc/highmem.h                     |  135 ++
- include/asm-powerpc/hydra.h                       |  102 +
- include/asm-powerpc/immap_cpm2.h                  |  648 +++++++++++
- include/asm-powerpc/kgdb.h                        |   57 +
- include/asm-powerpc/mpc52xx_psc.h                 |  191 +++
- include/asm-ppc/ans-lcd.h                         |   11
- 40 files changed, 3900 insertions(+), 78 deletions(-)
-
-Kumar Gala (3):
-      [POWERPC] Remove old includes from arch/ppc
-      [POWERPC] Copy over headers from arch/ppc to arch/powerpc that we need
-      [POWERPC] Stop include asm-ppc when building ARCH=powerpc for ppc32
+Also, FWIW, there are some advantages of deferring the mmiowb thingy
+until the point of unlock. The disadvantage is that the caller may not
+know if the inner layer performed ios that require the mmiowb, but
+the advantage of waiting until unlock is that the wait is deferred
+for as long as possible, and will hopefully be a shorter one when
+performed later.
