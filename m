@@ -1,27 +1,35 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 7E628DDEBB
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 17:24:38 +1000 (EST)
-Date: Fri, 24 Aug 2007 09:24:36 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: asm-ppc header issues when building ARCH=powerpc
-In-Reply-To: <9185AE94-7B04-4DC7-8B9D-C92D13AC6D6F@kernel.crashing.org>
-Message-ID: <Pine.LNX.4.62.0708240923520.19123@pademelon.sonytel.be>
-References: <75EDD900-3B5E-4D08-9311-13B6510EDE6E@kernel.crashing.org>
-	<2F7E4C06-9AC3-458A-B1E3-CA6E0BDD189A@kernel.crashing.org>
-	<20070823033318.GJ7042@localhost.localdomain>
-	<F19C9986-9E53-47F3-835D-C93DA9C3ADED@kernel.crashing.org>
-	<20070823185632.GA3571@cynthia.pants.nu>
-	<Pine.LNX.4.62.0708240909370.19123@pademelon.sonytel.be>
-	<9185AE94-7B04-4DC7-8B9D-C92D13AC6D6F@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-782885298-1187940276=:19123"
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8DAB5DDED1
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 23:53:47 +1000 (EST)
+Received: from e6.ny.us.ibm.com ([192.168.1.106])
+	by pokfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	l7OBmB4H022242
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 07:48:11 -0400
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7OBjwwp006245
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 07:45:58 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l7OBiaei523570
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 07:44:36 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l7OBia9V012269
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 07:44:36 -0400
+Subject: Re: [PATCH] Remove barriers from the SLB shadow buffer update
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <3992.1187938717@neuling.org>
+References: <3992.1187938717@neuling.org>
+Content-Type: text/plain
+Date: Thu, 23 Aug 2007 15:36:20 -0500
+Message-Id: <1187901380.4767.17.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,46 +39,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----584337861-782885298-1187940276=:19123
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Fri, 24 Aug 2007, Kumar Gala wrote:
-> On Aug 24, 2007, at 2:10 AM, Geert Uytterhoeven wrote:
-> > On Thu, 23 Aug 2007, Brad Boyer wrote:
-> > > Just as an extra note, the file drivers/macintosh/adb-iop.c is m68k only,
-> > > so you should probably leave that alone as well. It probably doesn't need
-> > > that header, but the change should really come from the 68k side of
-> > > things.
-> > 
-> > Thanks, it's indeed not needed.
+On Fri, 2007-08-24 at 16:58 +1000, Michael Neuling wrote:
+> After talking to an IBM POWER hypervisor design and development (PHYP)
+> guy, there seems to be no need for memory barriers when updating the SLB
+> shadow buffer provided we only update it from the current CPU, which we
+> do.
 > 
-> If its ok that the removal comes from my patchset that would be great.  I'm
-> tired of re-spinning these patches at this point ;)
+> Also, these guys see no need in the future for these barriers.
 
-Sure, less work for me! ;-)
+Does this result in a significant performance gain?  I'm just curious.
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-782885298-1187940276=:19123--
+josh
