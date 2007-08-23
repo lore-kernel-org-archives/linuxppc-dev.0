@@ -1,19 +1,29 @@
-Return-Path: <flar@cynthia.pants.nu>
-Date: Thu, 23 Aug 2007 11:56:32 -0700
-From: Brad Boyer <flar@allandria.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: asm-ppc header issues when building ARCH=powerpc
-Message-ID: <20070823185632.GA3571@cynthia.pants.nu>
-References: <75EDD900-3B5E-4D08-9311-13B6510EDE6E@kernel.crashing.org>
-	<2F7E4C06-9AC3-458A-B1E3-CA6E0BDD189A@kernel.crashing.org>
-	<20070823033318.GJ7042@localhost.localdomain>
-	<F19C9986-9E53-47F3-835D-C93DA9C3ADED@kernel.crashing.org>
-Mime-Version: 1.0
+Return-Path: <linas@austin.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9485CDDE22
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 09:09:42 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7NN9XxU007803
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 19:09:33 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l7NN9XRh083720
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 17:09:33 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l7NN9Xn2013963
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 17:09:33 -0600
+Date: Thu, 23 Aug 2007 18:09:32 -0500
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc: prom_init whitespace cleanup, typo fix.
+Message-ID: <20070823230932.GE4282@austin.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <F19C9986-9E53-47F3-835D-C93DA9C3ADED@kernel.crashing.org>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,35 +33,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 22, 2007 at 11:16:03PM -0500, Kumar Gala wrote:
-> On Aug 22, 2007, at 10:33 PM, David Gibson wrote:
-> >> My analysis of <asm/bootinfo.h> usage:
-> >>
-> >> ./drivers/macintosh/adb-iop.c:#include <asm/bootinfo.h>	 remove
-> >> ./drivers/char/vme_scc.c:#include <asm/bootinfo.h>		68k only
-> >> ./drivers/char/serial167.c:#include <asm/bootinfo.h>		68k only
-> >> ./drivers/serial/dz.c:#include <asm/bootinfo.h>		 decstation
-> >> ./drivers/mtd/devices/ms02-nv.c:#include <asm/bootinfo.h>	decstation
-> >> ./drivers/net/macsonic.c:#include <asm/bootinfo.h>		68k
-> >> ./drivers/net/jazzsonic.c:#include <asm/bootinfo.h>		mips
-> >> ./drivers/video/pmag-aa-fb.c:#include <asm/bootinfo.h>		mips
-> >> ./drivers/video/maxinefb.c:#include <asm/bootinfo.h>		mips
-> >> ./drivers/video/logo/logo.c:#include <asm/bootinfo.h>		mips
-> >> ./drivers/video/macfb.c:#include <asm/bootinfo.h>		68k
-> >> ./drivers/video/valkyriefb.c:#include <asm/bootinfo.h>		68k
-> >
-> > Uh.. I'm pretty sure valkyriefb.c is for (old) PowerMacs, not 68k.
-> 
-> It appears to be both.  If you look at the include its protected by a  
-> #ifdef CONFIG_MAC which we is only defined on m68k.
 
-According to drivers/video/macfb.c, both the Quadra 630 and Performa 588
-have the Valkyrie chip for their video. I don't remember which ppc based
-models have it, but it's definitely on both architectures.
+Whitespace cleanup: badly indented lines.
+Typo in comment.
 
-Just as an extra note, the file drivers/macintosh/adb-iop.c is m68k only,
-so you should probably leave that alone as well. It probably doesn't need
-that header, but the change should really come from the 68k side of things.
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+---
+Yeah, OK, so the patch is lame. Stuff caught my eye while reading code.
 
-	Brad Boyer
-	flar@allandria.com
+ arch/powerpc/kernel/prom_init.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+Index: linux-2.6.22-git2/arch/powerpc/kernel/prom_init.c
+===================================================================
+--- linux-2.6.22-git2.orig/arch/powerpc/kernel/prom_init.c	2007-07-08 18:32:17.000000000 -0500
++++ linux-2.6.22-git2/arch/powerpc/kernel/prom_init.c	2007-08-23 17:27:37.000000000 -0500
+@@ -1197,7 +1197,7 @@ static void __init prom_initialize_tce_t
+ 		if ((type[0] == 0) || (strstr(type, RELOC("pci")) == NULL))
+ 			continue;
+ 
+-		/* Keep the old logic in tack to avoid regression. */
++		/* Keep the old logic intact to avoid regression. */
+ 		if (compatible[0] != 0) {
+ 			if ((strstr(compatible, RELOC("python")) == NULL) &&
+ 			    (strstr(compatible, RELOC("Speedwagon")) == NULL) &&
+@@ -2224,7 +2224,7 @@ static void __init fixup_device_tree(voi
+ 
+ static void __init prom_find_boot_cpu(void)
+ {
+-       	struct prom_t *_prom = &RELOC(prom);
++	struct prom_t *_prom = &RELOC(prom);
+ 	u32 getprop_rval;
+ 	ihandle prom_cpu;
+ 	phandle cpu_pkg;
+@@ -2244,7 +2244,7 @@ static void __init prom_find_boot_cpu(vo
+ static void __init prom_check_initrd(unsigned long r3, unsigned long r4)
+ {
+ #ifdef CONFIG_BLK_DEV_INITRD
+-       	struct prom_t *_prom = &RELOC(prom);
++	struct prom_t *_prom = &RELOC(prom);
+ 
+ 	if (r3 && r4 && r4 != 0xdeadbeef) {
+ 		unsigned long val;
+@@ -2277,7 +2277,7 @@ unsigned long __init prom_init(unsigned 
+ 			       unsigned long pp,
+ 			       unsigned long r6, unsigned long r7)
+ {	
+-       	struct prom_t *_prom;
++	struct prom_t *_prom;
+ 	unsigned long hdr;
+ 	unsigned long offset = reloc_offset();
+ 
+@@ -2336,8 +2336,8 @@ unsigned long __init prom_init(unsigned 
+ 	/*
+ 	 * Copy the CPU hold code
+ 	 */
+-       	if (RELOC(of_platform) != PLATFORM_POWERMAC)
+-       		copy_and_flush(0, KERNELBASE + offset, 0x100, 0);
++	if (RELOC(of_platform) != PLATFORM_POWERMAC)
++		copy_and_flush(0, KERNELBASE + offset, 0x100, 0);
+ 
+ 	/*
+ 	 * Do early parsing of command line
