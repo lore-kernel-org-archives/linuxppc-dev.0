@@ -2,20 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 37A36DDEF2
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 17:26:46 +1000 (EST)
-Subject: Re: wmb vs mmiowb
+	by ozlabs.org (Postfix) with ESMTP id 86E7ADDF0E
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 17:30:20 +1000 (EST)
+Subject: Re: Device tree aware EMAC driver
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0708221049560.30176@woody.linux-foundation.org>
-References: <20070822045714.GD26374@wotan.suse.de>
-	<alpine.LFD.0.999.0708221049560.30176@woody.linux-foundation.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20070823035601.GL7042@localhost.localdomain>
+References: <20070823035601.GL7042@localhost.localdomain>
 Content-Type: text/plain
-Date: Thu, 23 Aug 2007 09:27:15 +0200
-Message-Id: <1187854035.5972.4.camel@localhost.localdomain>
+Date: Thu, 23 Aug 2007 09:30:36 +0200
+Message-Id: <1187854236.5972.6.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Nick Piggin <npiggin@suse.de>, linux-ia64@vger.kernel.org,
-	Jesse Barnes <jesse.barnes@intel.com>, linuxppc-dev@ozlabs.org
+Cc: netdev@oss.sgi.com, Jeff Garzik <jgarzik@pobox.com>,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,13 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2007-08-23 at 13:56 +1000, David Gibson wrote:
+> 
+> 
+> Jeff, I've discussed this with BenH, and although there are some
+> problems with the driver still, we think it's good enough to merge in
+> 2.6.24, the warts can be fixed up later.  Please apply...
 
-> Of course, the normal memory barrier would usually be a "spin_unlock()" or 
-> something like that, not a "wmb()". In fact, I don't think the powerpc 
-> implementation (as an example of this) will actually synchronize with 
-> anything *but* a spin_unlock().
+Or to be more precise:
 
-We are even more sneaky in the sense that we set a per-cpu flag on any
-MMIO write and do the sync automatically in spin_unlock() :-)
+This driver will work well for 4xx platforms and will allow us to move a
+big step toward getting rid of arch/ppc. The issues with DMA mapping
+really only concern the case where this is used within the cell "Axon"
+southbridge, which doesn't happen on any released product at this stage.
 
 Ben.
