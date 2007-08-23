@@ -1,29 +1,17 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9485CDDE22
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 09:09:42 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7NN9XxU007803
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 19:09:33 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l7NN9XRh083720
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 17:09:33 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l7NN9Xn2013963
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 17:09:33 -0600
-Date: Thu, 23 Aug 2007 18:09:32 -0500
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc: prom_init whitespace cleanup, typo fix.
-Message-ID: <20070823230932.GE4282@austin.ibm.com>
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id CFF01DDE3C
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 09:22:00 +1000 (EST)
+Date: Fri, 24 Aug 2007 01:21:57 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] Move serial_dev_init to device_initcall()
+In-Reply-To: <20070823002637.GA24332@lixom.net>
+Message-ID: <Pine.LNX.4.60.0708240117460.3246@poirot.grange>
+References: <20070823002637.GA24332@lixom.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,65 +21,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 22 Aug 2007, Olof Johansson wrote:
 
-Whitespace cleanup: badly indented lines.
-Typo in comment.
+> With the I/O space rewrite by BenH, the legacy_serial serial_dev_init()
+> initcall is now called before I/O space is setup, but it's dependent on
+> it being available.
+> 
+> Since there's no way to make dependencies between initcalls, we'll just
+> have to move it to device_initcall(). Yes, it's suboptimal but I'm not
+> aware of any better solution at this time.
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+Do I understand it right, that with this change all UARTs, controlled by 
+legacy_serial will be initialized later, and that for example console 
+output will be first possible later? Maybe, if there is really no other 
+possibility for I/O space devices, we could have both calls
+
+arch_initcall(serial_mem_dev_init);
+device_initcall(serial_io_dev_init);
+
+so, that at least MEMIO based UARTs could still initialize as before?
+
+Thanks
+Guennadi
 ---
-Yeah, OK, so the patch is lame. Stuff caught my eye while reading code.
-
- arch/powerpc/kernel/prom_init.c |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
-
-Index: linux-2.6.22-git2/arch/powerpc/kernel/prom_init.c
-===================================================================
---- linux-2.6.22-git2.orig/arch/powerpc/kernel/prom_init.c	2007-07-08 18:32:17.000000000 -0500
-+++ linux-2.6.22-git2/arch/powerpc/kernel/prom_init.c	2007-08-23 17:27:37.000000000 -0500
-@@ -1197,7 +1197,7 @@ static void __init prom_initialize_tce_t
- 		if ((type[0] == 0) || (strstr(type, RELOC("pci")) == NULL))
- 			continue;
- 
--		/* Keep the old logic in tack to avoid regression. */
-+		/* Keep the old logic intact to avoid regression. */
- 		if (compatible[0] != 0) {
- 			if ((strstr(compatible, RELOC("python")) == NULL) &&
- 			    (strstr(compatible, RELOC("Speedwagon")) == NULL) &&
-@@ -2224,7 +2224,7 @@ static void __init fixup_device_tree(voi
- 
- static void __init prom_find_boot_cpu(void)
- {
--       	struct prom_t *_prom = &RELOC(prom);
-+	struct prom_t *_prom = &RELOC(prom);
- 	u32 getprop_rval;
- 	ihandle prom_cpu;
- 	phandle cpu_pkg;
-@@ -2244,7 +2244,7 @@ static void __init prom_find_boot_cpu(vo
- static void __init prom_check_initrd(unsigned long r3, unsigned long r4)
- {
- #ifdef CONFIG_BLK_DEV_INITRD
--       	struct prom_t *_prom = &RELOC(prom);
-+	struct prom_t *_prom = &RELOC(prom);
- 
- 	if (r3 && r4 && r4 != 0xdeadbeef) {
- 		unsigned long val;
-@@ -2277,7 +2277,7 @@ unsigned long __init prom_init(unsigned 
- 			       unsigned long pp,
- 			       unsigned long r6, unsigned long r7)
- {	
--       	struct prom_t *_prom;
-+	struct prom_t *_prom;
- 	unsigned long hdr;
- 	unsigned long offset = reloc_offset();
- 
-@@ -2336,8 +2336,8 @@ unsigned long __init prom_init(unsigned 
- 	/*
- 	 * Copy the CPU hold code
- 	 */
--       	if (RELOC(of_platform) != PLATFORM_POWERMAC)
--       		copy_and_flush(0, KERNELBASE + offset, 0x100, 0);
-+	if (RELOC(of_platform) != PLATFORM_POWERMAC)
-+		copy_and_flush(0, KERNELBASE + offset, 0x100, 0);
- 
- 	/*
- 	 * Do early parsing of command line
+Guennadi Liakhovetski
