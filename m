@@ -1,19 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jdl@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CFBCBDDDF8
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 06:45:15 +1000 (EST)
-In-Reply-To: <1187900581.28951.17.camel@ld0161-tx32>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BC58ADDE09
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 07:05:11 +1000 (EST)
+Subject: Re: [PATCH 0/5] Remove unnecessary loops_per_jiffy initialization code
+From: Jon Loeliger <jdl@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <CF601BCB-6F43-4CE2-A70B-0790DDBB19F7@kernel.crashing.org>
 References: <1185560634.8055.170.camel@ld0161-tx32>
 	<1187900581.28951.17.camel@ld0161-tx32>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <CF601BCB-6F43-4CE2-A70B-0790DDBB19F7@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 0/5] Remove unnecessary loops_per_jiffy initialization code
-Date: Thu, 23 Aug 2007 15:47:14 -0500
-To: Jon Loeliger <jdl@freescale.com>
+	<CF601BCB-6F43-4CE2-A70B-0790DDBB19F7@kernel.crashing.org>
+Content-Type: text/plain
+Message-Id: <1187903099.28951.19.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Thu, 23 Aug 2007 16:04:59 -0500
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,35 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2007-08-23 at 15:47, Kumar Gala wrote:
 
-On Aug 23, 2007, at 3:23 PM, Jon Loeliger wrote:
+> > Any reason why patches 1/5 and 2/5, for 86xx and 85xx respectively,
+> > did not get applied and ushered upstream with the others?
+> 
+> No, I'm glad you said something cause I assumed paul grabbed them all.
+> 
+> I'll grab them in my tree once I beat paul into pulling the include  
+> fixup changes.
+> 
+> - k
 
-> On Fri, 2007-07-27 at 13:23, Jon Loeliger wrote:
->> This patch series removes lingering jiffies initialization
->> code from several platforms.  Note that the first patch in
->> this series for the 86xx has been rebased to current top of
->> Paul's repository and replaces an earlier version.
->>
->>
->>  arch/powerpc/platforms/52xx/lite5200.c         |   13 ++-----------
->>  arch/powerpc/platforms/85xx/mpc85xx_ads.c      |   13 -------------
->>  arch/powerpc/platforms/85xx/mpc85xx_cds.c      |   13 -------------
->>  arch/powerpc/platforms/85xx/mpc85xx_mds.c      |   11 -----------
->>  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c     |   14 ++------------
->>  arch/powerpc/platforms/8xx/mpc86xads_setup.c   |   14 --------------
->>  arch/powerpc/platforms/8xx/mpc885ads_setup.c   |   14 --------------
->>  arch/powerpc/platforms/embedded6xx/holly.c     |   12 ------------
->>  arch/powerpc/platforms/embedded6xx/prpmc2800.c |    7 -------
->>  9 files changed, 4 insertions(+), 107 deletions(-)
->
-> Kumar,
->
-> Any reason why patches 1/5 and 2/5, for 86xx and 85xx respectively,
-> did not get applied and ushered upstream with the others?
+OK, sounds good.
 
-No, I'm glad you said something cause I assumed paul grabbed them all.
-
-I'll grab them in my tree once I beat paul into pulling the include  
-fixup changes.
-
-- k
+Thanks,
+jdl
