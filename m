@@ -1,24 +1,22 @@
-Return-Path: <segher@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B478DDDE9F
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 03:57:39 +1000 (EST)
-In-Reply-To: <20070822035539.GB26374@wotan.suse.de>
-References: <20070821021143.GB2909@wotan.suse.de>
-	<46CB37D4.2080609@austin.ibm.com>
-	<d9f43b5c31fde5851a7af1d0f36eb134@kernel.crashing.org>
-	<20070822011651.GA6799@wotan.suse.de>
-	<dfbba0a8b6a15d1b563bdfcadc49e8eb@kernel.crashing.org>
-	<20070822035539.GB26374@wotan.suse.de>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <7dc0bb83644f4cd44b4810a99d0003a1@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [patch 1/2] powerpc: rmb fix
-Date: Thu, 23 Aug 2007 19:57:20 +0200
-To: Nick Piggin <npiggin@suse.de>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+	by ozlabs.org (Postfix) with ESMTP id A2043DDE9F
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 03:58:31 +1000 (EST)
+In-Reply-To: <20070823173314.GA18412@ld0162-tx32.am.freescale.net>
+References: <75EDD900-3B5E-4D08-9311-13B6510EDE6E@kernel.crashing.org>
+	<20070823024757.GC7042@localhost.localdomain>
+	<20070823173314.GA18412@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <924BAE00-7BB4-4BE8-8DF6-52B7807EFE2C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: asm-ppc header issues when building ARCH=powerpc
+Date: Thu, 23 Aug 2007 13:00:24 -0500
+To: Scott Wood <scottwood@freescale.com>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,37 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> The powerpc kernel needs to have full sync insns in every I/O
->> accessor in order to enforce all the ordering rules Linux demands.
->> It's a bloody shame, but the alternative would be to make the
->> barriers lots more expensive.  A third alternative would be to
+
+On Aug 23, 2007, at 12:33 PM, Scott Wood wrote:
+
+> On Thu, Aug 23, 2007 at 12:47:57PM +1000, David Gibson wrote:
+>>> ./drivers/mtd/maps/tqm834x.c:#include <asm/ppcboot.h>
+>>> ./drivers/mtd/maps/pq2fads.c:#include <asm/ppcboot.h>
+>>
+>> Although these both have an extern of type bd_t (defined in
+>> ppcboot.h), afaict they don't actually use it, so these should be
+>> removable.
 >
-> Well lots more expensive compared to what you have now. But what
-> you have now is like having those expensive barriers between
-> *every* io access.
+> They look like they're using it to me...  See the bd->bi_flashstart  
+> and
+> bd->bi_flashsize references in init_pq2fads_mtd.
 
-Yeah.  But I/O reads are very expensive anyway, and the barriers
-are used for more than just I/O ordering.
+Both of these are dead in one way or another.  pq2fads.c isn't in the  
+makefile and you can't Kconfig tqm834x.c into existence.  Thus my  
+patch to remove them.
 
-I/O writes are a different thing; ideally, they would use only
-eieio, if anything at all.
-
-Maybe the tradeoff isn't optimal.  The I/O primitives didn't have
-all those "sync"s in there before, they got added because some bad
-interaction with spinlocks was discovered, if my memory isn't failing
-me.
-
->> have barrier ops that do not order everything, but just A vs. B
->> for various choices of A and B (coherent accesses, MMIO accesses,
->> etc.)
->
-> The non-smp_ variant is supposed to order everything, AFAIK. Maybe
-> you could get more fancy and have PIO vs MMIO etc etc. but it looks
-> like this whole area is in a pretty sticky state anyway so let's
-> not think about that.
-
-*Thinking* about it is fun.  Trying to get the code merged would be
-a different thing ;-)
-
-
-Segher
+- k
