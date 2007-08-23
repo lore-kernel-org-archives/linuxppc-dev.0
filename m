@@ -1,18 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C5F91DDF09
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 12:51:03 +1000 (EST)
-Date: Wed, 22 Aug 2007 21:51:03 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH] ucc_geth: kill unused include
-Message-ID: <Pine.LNX.4.64.0708222144440.6464@blarg.am.freescale.net>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 23 Aug 2007 12:47:57 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: asm-ppc header issues when building ARCH=powerpc
+Message-ID: <20070823024757.GC7042@localhost.localdomain>
+References: <75EDD900-3B5E-4D08-9311-13B6510EDE6E@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: netdev@vger.kernel.org, Li Yang <leoli@freescale.com>,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <75EDD900-3B5E-4D08-9311-13B6510EDE6E@kernel.crashing.org>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,33 +19,113 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The ucc_geth_mii code is based on the gianfar_mii code that use to include
-ocp.h.  ucc never need this and it causes issues when we want to kill
-arch/ppc includes from arch/powerpc.
+On Wed, Aug 22, 2007 at 10:19:21AM -0500, Kumar Gala wrote:
+> Guys,
+> 
+> I was wondering if I could get your help with looking at the  
+> following lists and determining if we have an issue or not related  
+> the following files:
+> 
+> Getting some classification on these would be good.  Possibly  
+> classifications, doesn't build in ARCH=powerpc, remove include, real  
+> issue, etc.
+> 
+> - k
+> 
+> ./include/asm-powerpc/irq.h:#include <asm/mpc83xx.h>	- protected by ! 
+> CONFIG_PPC_MERGE
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
+irq.h seems to have a big slab of CONFIG_PPC_MERGE dependent stuff.
+Looks like a good candidate for splitting into asm-ppc/irq.h and
+asm-powerpc/irq.h
 
-Jeff, if you issue with this for 2.6.23, I'd prefer to push this via
-the powerpc.git trees in 2.6.24 as part of a larger cleanup.  Let me know
-one way or the other.
+> ./drivers/ide/ppc/mpc8xx.c:#include <asm/residual.h>
 
-- k
+Since mpc8xx is certainly not PReP, I don't think there's any way it
+ought to be including residual.h
 
- drivers/net/ucc_geth_mii.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+> ./drivers/mtd/maps/tqm834x.c:#include <asm/ppcboot.h>
+> ./drivers/mtd/maps/pq2fads.c:#include <asm/ppcboot.h>
 
-diff --git a/drivers/net/ucc_geth_mii.c b/drivers/net/ucc_geth_mii.c
-index 6c257b8..df884f0 100644
---- a/drivers/net/ucc_geth_mii.c
-+++ b/drivers/net/ucc_geth_mii.c
-@@ -32,7 +32,6 @@
- #include <linux/mm.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
--#include <asm/ocp.h>
- #include <linux/crc32.h>
- #include <linux/mii.h>
- #include <linux/phy.h>
+Although these both have an extern of type bd_t (defined in
+ppcboot.h), afaict they don't actually use it, so these should be
+removable.  Longer term, all these ugly hardcoded map files should be
+relegated to arch/ppc only, replaced with physmap_of and suitable
+information in the device tree for arch/powerpc.  However, being able
+to build them on arch/powerpc may be useful during transition.
+
+> ./drivers/i2c/busses/i2c-ibm_iic.c:#include <asm/ibm4xx.h>
+
+This driver will need significant reworking to port to arch/powerpc
+(similar to the treatment ibm_emac has received).  Such rework will
+remove the dependency on ibm4xx.h and ocp.h
+
+> ./drivers/mtd/maps/walnut.c:#include <asm/ibm4xx.h>
+
+Suspect it's not needed.  But in any case, this too should be replaced
+by physmap_of for arch/powerpc.
+
+> ./include/asm-powerpc/irq.h:#include <asm/ibm4xx.h>	- protected by ! 
+> CONFIG_PPC_MERGE
+> 
+> ./drivers/mtd/maps/ebony.c:#include <asm/ibm44x.h>
+
+Ebony flash now works with physmap_of, so this is only used on
+arch/ppc.
+
+> ./drivers/mtd/maps/ocotea.c:#include <asm/ibm44x.h>
+
+As for drivers/mtd/maps/walnut.c.
+
+> ./drivers/mtd/nand/ndfc.c:#include <asm/ibm44x.h>
+
+This probably also wants rework to make a device-tree-aware
+arch/powerpc version.
+
+> ./include/asm-powerpc/irq.h:#include <asm/ibm44x.h>	- protected by ! 
+> CONFIG_PPC_MERGE
+> 
+> ./drivers/i2c/busses/i2c-ibm_iic.c:#include <asm/ocp.h>
+
+See above.
+
+> ./drivers/net/ucc_geth_mii.c:#include <asm/ocp.h>	- just bogus, needs  
+> removal
+> ./drivers/net/ibm_emac/ibm_emac_core.c:#include <asm/ocp.h>
+> ./drivers/net/ibm_emac/ibm_emac_core.h:#include <asm/ocp.h>
+> ./drivers/net/ibm_emac/ibm_emac_tah.h:#include <asm/ocp.h>
+> ./drivers/net/ibm_emac/ibm_emac_phy.c:#include <asm/ocp.h>
+> ./drivers/net/ibm_emac/ibm_emac_mal.c:#include <asm/ocp.h>
+> ./drivers/net/ibm_emac/ibm_emac_zmii.h:#include <asm/ocp.h>
+
+ibm_emac is arch/ppc only.  BenH and my 'ibm_newemac' patch adds a
+new, device-tree aware arch/powerpc port of this driver.
+
+> 
+> ./drivers/macintosh/adb-iop.c:#include <asm/bootinfo.h>
+
+I think this is just unnecessary, maybe also for a bunch of the ones
+below.
+
+> ./drivers/char/vme_scc.c:#include <asm/bootinfo.h>
+> ./drivers/char/serial167.c:#include <asm/bootinfo.h>
+> ./drivers/serial/dz.c:#include <asm/bootinfo.h>
+> ./drivers/mtd/devices/ms02-nv.c:#include <asm/bootinfo.h>
+> ./drivers/net/macsonic.c:#include <asm/bootinfo.h>
+> ./drivers/net/jazzsonic.c:#include <asm/bootinfo.h>
+> ./drivers/video/pmag-aa-fb.c:#include <asm/bootinfo.h>
+> ./drivers/video/maxinefb.c:#include <asm/bootinfo.h>
+> ./drivers/video/logo/logo.c:#include <asm/bootinfo.h>
+> ./drivers/video/valkyriefb.c:#include <asm/bootinfo.h>
+> ./drivers/video/macfb.c:#include <asm/bootinfo.h>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
+
 -- 
-1.5.2.4
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
