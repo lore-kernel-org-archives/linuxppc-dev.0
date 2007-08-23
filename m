@@ -1,19 +1,15 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 23FEADDF20
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 13:36:27 +1000 (EST)
-Date: Thu, 23 Aug 2007 13:36:21 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: bogus vscsi dt node on iseries
-Message-Id: <20070823133621.830245c4.sfr@canb.auug.org.au>
-In-Reply-To: <20070822175121.GA21233@aepfle.de>
-References: <20070822175121.GA21233@aepfle.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__23_Aug_2007_13_36_21_+1000_KNDsf45im6FEvllx"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 23 Aug 2007 13:37:03 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Josh Boyer <jwboyer@jdub.homelinux.org>
+Subject: Re: How to port PReP to arch/powerpc?
+Message-ID: <20070823033703.GK7042@localhost.localdomain>
+References: <Pine.SOC.4.64.0708221444510.5639@math.ut.ee>
+	<20070822072956.56b7df46@vader.jdub.homelinux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070822072956.56b7df46@vader.jdub.homelinux.org>
+Cc: Meelis Roos <mroos@linux.ee>, linuxppc-dev@ozlabs.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,33 +19,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__23_Aug_2007_13_36_21_+1000_KNDsf45im6FEvllx
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, Aug 22, 2007 at 07:29:56AM -0500, Josh Boyer wrote:
+> On Wed, 22 Aug 2007 14:50:07 +0300 (EEST)
+> Meelis Roos <mroos@linux.ee> wrote:
+> 
+> > It seems no one cares for arch/ppc any more but the move to powerpc was 
+> > not finished completely (PReP subarch was not migrated but sees users, I 
+> > do not know about the user base of the other subarches). So I have been 
+> > thinking about migrating PReP support to arch/powerpc myself since I use 
+> > it.
+> 
+> The merge is still on-going.  So it's not "finished" at all.
+> 
+> > Any general guidelines or specific hints about that? I have looked 
+> > around in the code and some pieces are clearly PReP specific (setup, 
+> > pci, boot) but others seem wuite a bit mixed up with other subarches.
+> 
+> David Gibson and Rob Landley had a quite interesting discussion about
+> PReP last night on IRC.  You might want to contact them and see if they
+> came to any conclusions.
 
-On Wed, 22 Aug 2007 19:51:21 +0200 Olaf Hering <olaf@aepfle.de> wrote:
->
->=20
-> Does anyone know why dt_vdevices() creates a vscsi node on legacy iseries?
-> I'm sure only viodasd and viocd is required as blockdevice type.
+Yes, my draft PReP support patch, tweaked this morning to build again
+(changes roughly identical to Rob Landley's patch, I believe) is at:
+	http://ozlabs.org/~dgibson/home/tmp/prep-support
 
-Because the IBM vscsi client (in theory) works on legacy iSeries.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__23_Aug_2007_13_36_21_+1000_KNDsf45im6FEvllx
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGzQC5TgG2atn1QN8RAuU7AJ9EmJh6QzoMU/hUlAVOP5Eyz0/mCgCcCiUp
-nhdDoghJoSSZ0si3m3CKnis=
-=sz2c
------END PGP SIGNATURE-----
-
---Signature=_Thu__23_Aug_2007_13_36_21_+1000_KNDsf45im6FEvllx--
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
