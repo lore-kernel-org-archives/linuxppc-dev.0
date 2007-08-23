@@ -1,19 +1,27 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 5BCA2DDE08
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 05:08:10 +1000 (EST)
-Date: Thu, 23 Aug 2007 13:13:10 -0500
-From: Olof Johansson <olof@lixom.net>
-To: jgarzik@pobox.com
-Subject: [PATCH v2] [02/10] pasemi_mac: Stop using the pci config space
-	accessors for register read/writes
-Message-ID: <20070823181310.GB31882@lixom.net>
-References: <20070817205413.548020000@lixom.net>
-	<20070822141248.GC16830@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070822141248.GC16830@lixom.net>
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <jdl@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id CC366DDE05
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 06:23:07 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l7NKN2qB022429
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 13:23:02 -0700 (MST)
+Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l7NKN15k019049
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 15:23:01 -0500 (CDT)
+Subject: Re: [PATCH 0/5] Remove unnecessary loops_per_jiffy initialization code
+From: Jon Loeliger <jdl@freescale.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1185560634.8055.170.camel@ld0161-tx32>
+References: <1185560634.8055.170.camel@ld0161-tx32>
+Content-Type: text/plain
+Message-Id: <1187900581.28951.17.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Thu, 23 Aug 2007 15:23:01 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,242 +31,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Move away from using the pci config access functions for simple register
-access.  Our device has all of the registers in the config space (hey,
-from the hardware point of view it looks reasonable :-), so we need to
-somehow get to it. Newer firmwares have it in the device tree such that
-we can just get it and ioremap it there (in case it ever moves in future
-products). For now, provide a hardcoded fallback for older firmwares.
+On Fri, 2007-07-27 at 13:23, Jon Loeliger wrote:
+> This patch series removes lingering jiffies initialization
+> code from several platforms.  Note that the first patch in
+> this series for the 86xx has been rebased to current top of
+> Paul's repository and replaces an earlier version.
+> 
+> 
+>  arch/powerpc/platforms/52xx/lite5200.c         |   13 ++-----------
+>  arch/powerpc/platforms/85xx/mpc85xx_ads.c      |   13 -------------
+>  arch/powerpc/platforms/85xx/mpc85xx_cds.c      |   13 -------------
+>  arch/powerpc/platforms/85xx/mpc85xx_mds.c      |   11 -----------
+>  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c     |   14 ++------------
+>  arch/powerpc/platforms/8xx/mpc86xads_setup.c   |   14 --------------
+>  arch/powerpc/platforms/8xx/mpc885ads_setup.c   |   14 --------------
+>  arch/powerpc/platforms/embedded6xx/holly.c     |   12 ------------
+>  arch/powerpc/platforms/embedded6xx/prpmc2800.c |    7 -------
+>  9 files changed, 4 insertions(+), 107 deletions(-)
 
+Kumar,
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+Any reason why patches 1/5 and 2/5, for 86xx and 85xx respectively,
+did not get applied and ushered upstream with the others?
 
-
----
-
-Updated: Removed explicit inlines, cleaned up read functions, fixed
-grammar.
-
-
-Index: mainline/drivers/net/pasemi_mac.c
-===================================================================
---- mainline.orig/drivers/net/pasemi_mac.c
-+++ mainline/drivers/net/pasemi_mac.c
-@@ -83,44 +83,35 @@ static struct pasdma_status *dma_status;
- 
- static unsigned int read_iob_reg(struct pasemi_mac *mac, unsigned int reg)
- {
--	unsigned int val;
--
--	pci_read_config_dword(mac->iob_pdev, reg, &val);
--	return val;
-+	return in_le32(mac->iob_regs+reg);
- }
- 
- static void write_iob_reg(struct pasemi_mac *mac, unsigned int reg,
- 			  unsigned int val)
- {
--	pci_write_config_dword(mac->iob_pdev, reg, val);
-+	out_le32(mac->iob_regs+reg, val);
- }
- 
- static unsigned int read_mac_reg(struct pasemi_mac *mac, unsigned int reg)
- {
--	unsigned int val;
--
--	pci_read_config_dword(mac->pdev, reg, &val);
--	return val;
-+	return in_le32(mac->regs+reg);
- }
- 
- static void write_mac_reg(struct pasemi_mac *mac, unsigned int reg,
- 			  unsigned int val)
- {
--	pci_write_config_dword(mac->pdev, reg, val);
-+	out_le32(mac->regs+reg, val);
- }
- 
- static unsigned int read_dma_reg(struct pasemi_mac *mac, unsigned int reg)
- {
--	unsigned int val;
--
--	pci_read_config_dword(mac->dma_pdev, reg, &val);
--	return val;
-+	return in_le32(mac->dma_regs+reg);
- }
- 
- static void write_dma_reg(struct pasemi_mac *mac, unsigned int reg,
- 			  unsigned int val)
- {
--	pci_write_config_dword(mac->dma_pdev, reg, val);
-+	out_le32(mac->dma_regs+reg, val);
- }
- 
- static int pasemi_get_mac_addr(struct pasemi_mac *mac)
-@@ -585,7 +576,6 @@ static int pasemi_mac_clean_tx(struct pa
- 	}
- 	mac->tx->next_to_clean += count;
- 	spin_unlock_irqrestore(&mac->tx->lock, flags);
--
- 	netif_wake_queue(mac->netdev);
- 
- 	return count;
-@@ -1076,6 +1066,73 @@ static int pasemi_mac_poll(struct net_de
- 	}
- }
- 
-+static void __iomem * __devinit map_onedev(struct pci_dev *p, int index)
-+{
-+	struct device_node *dn;
-+	void __iomem *ret;
-+
-+	dn = pci_device_to_OF_node(p);
-+	if (!dn)
-+		goto fallback;
-+
-+	ret = of_iomap(dn, index);
-+	if (!ret)
-+		goto fallback;
-+
-+	return ret;
-+fallback:
-+	/* This is hardcoded and ugly, but we have some firmware versions
-+	 * that don't provide the register space in the device tree. Luckily
-+	 * they are at well-known locations so we can just do the math here.
-+	 */
-+	return ioremap(0xe0000000 + (p->devfn << 12), 0x2000);
-+}
-+
-+static int __devinit pasemi_mac_map_regs(struct pasemi_mac *mac)
-+{
-+	struct resource res;
-+	struct device_node *dn;
-+	int err;
-+
-+	mac->dma_pdev = pci_get_device(PCI_VENDOR_ID_PASEMI, 0xa007, NULL);
-+	if (!mac->dma_pdev) {
-+		dev_err(&mac->pdev->dev, "Can't find DMA Controller\n");
-+		return -ENODEV;
-+	}
-+
-+	mac->iob_pdev = pci_get_device(PCI_VENDOR_ID_PASEMI, 0xa001, NULL);
-+	if (!mac->iob_pdev) {
-+		dev_err(&mac->pdev->dev, "Can't find I/O Bridge\n");
-+		return -ENODEV;
-+	}
-+
-+	mac->regs = map_onedev(mac->pdev, 0);
-+	mac->dma_regs = map_onedev(mac->dma_pdev, 0);
-+	mac->iob_regs = map_onedev(mac->iob_pdev, 0);
-+
-+	if (!mac->regs || !mac->dma_regs || !mac->iob_regs) {
-+		dev_err(&mac->pdev->dev, "Can't map registers\n");
-+		return -ENODEV;
-+	}
-+
-+	/* The dma status structure is located in the I/O bridge, and
-+	 * is cache coherent.
-+	 */
-+	if (!dma_status) {
-+		dn = pci_device_to_OF_node(mac->iob_pdev);
-+		if (dn)
-+			err = of_address_to_resource(dn, 1, &res);
-+		if (!dn || err) {
-+			/* Fallback for old firmware */
-+			res.start = 0xfd800000;
-+			res.end = res.start + 0x1000;
-+		}
-+		dma_status = __ioremap(res.start, res.end-res.start, 0);
-+	}
-+
-+	return 0;
-+}
-+
- static int __devinit
- pasemi_mac_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- {
-@@ -1104,21 +1161,6 @@ pasemi_mac_probe(struct pci_dev *pdev, c
- 
- 	mac->pdev = pdev;
- 	mac->netdev = dev;
--	mac->dma_pdev = pci_get_device(PCI_VENDOR_ID_PASEMI, 0xa007, NULL);
--
--	if (!mac->dma_pdev) {
--		dev_err(&pdev->dev, "Can't find DMA Controller\n");
--		err = -ENODEV;
--		goto out_free_netdev;
--	}
--
--	mac->iob_pdev = pci_get_device(PCI_VENDOR_ID_PASEMI, 0xa001, NULL);
--
--	if (!mac->iob_pdev) {
--		dev_err(&pdev->dev, "Can't find I/O Bridge\n");
--		err = -ENODEV;
--		goto out_put_dma_pdev;
--	}
- 
- 	/* These should come out of the device tree eventually */
- 	mac->dma_txch = index;
-@@ -1161,12 +1203,9 @@ pasemi_mac_probe(struct pci_dev *pdev, c
- 	dev->poll = pasemi_mac_poll;
- 	dev->features = NETIF_F_HW_CSUM;
- 
--	/* The dma status structure is located in the I/O bridge, and
--	 * is cache coherent.
--	 */
--	if (!dma_status)
--		/* XXXOJN This should come from the device tree */
--		dma_status = __ioremap(0xfd800000, 0x1000, 0);
-+	err = pasemi_mac_map_regs(mac);
-+	if (err)
-+		goto out;
- 
- 	mac->rx_status = &dma_status->rx_sta[mac->dma_rxch];
- 	mac->tx_status = &dma_status->tx_sta[mac->dma_txch];
-@@ -1193,10 +1232,17 @@ pasemi_mac_probe(struct pci_dev *pdev, c
- 	return err;
- 
- out:
--	pci_dev_put(mac->iob_pdev);
--out_put_dma_pdev:
--	pci_dev_put(mac->dma_pdev);
--out_free_netdev:
-+	if (mac->iob_pdev)
-+		pci_dev_put(mac->iob_pdev);
-+	if (mac->dma_pdev)
-+		pci_dev_put(mac->dma_pdev);
-+	if (mac->dma_regs)
-+		iounmap(mac->dma_regs);
-+	if (mac->iob_regs)
-+		iounmap(mac->iob_regs);
-+	if (mac->regs)
-+		iounmap(mac->regs);
-+
- 	free_netdev(dev);
- out_disable_device:
- 	pci_disable_device(pdev);
-@@ -1220,6 +1266,10 @@ static void __devexit pasemi_mac_remove(
- 	pci_dev_put(mac->dma_pdev);
- 	pci_dev_put(mac->iob_pdev);
- 
-+	iounmap(mac->regs);
-+	iounmap(mac->dma_regs);
-+	iounmap(mac->iob_regs);
-+
- 	pci_set_drvdata(pdev, NULL);
- 	free_netdev(netdev);
- }
-Index: mainline/drivers/net/pasemi_mac.h
-===================================================================
---- mainline.orig/drivers/net/pasemi_mac.h
-+++ mainline/drivers/net/pasemi_mac.h
-@@ -52,6 +52,9 @@ struct pasemi_mac_rxring {
- 
- struct pasemi_mac {
- 	struct net_device *netdev;
-+	void __iomem *regs;
-+	void __iomem *dma_regs;
-+	void __iomem *iob_regs;
- 	struct pci_dev *pdev;
- 	struct pci_dev *dma_pdev;
- 	struct pci_dev *iob_pdev;
+Thanks,
+jdl
