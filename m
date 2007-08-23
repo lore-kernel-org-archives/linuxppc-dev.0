@@ -1,21 +1,19 @@
-Return-Path: <jason.wessel@windriver.com>
-Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id ED358DDEEB
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 13:25:31 +1000 (EST)
-Message-ID: <46CCFE2C.4050306@windriver.com>
-Date: Wed, 22 Aug 2007 22:25:32 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Kgdb-bugreport] 2.6.23-rc3-mm1: kgdb build failure on powerpc
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>	<200708222104.29432.m.kozlowski@tuxland.pl>	<20070822124743.fc316963.akpm@linux-foundation.org>	<46CCBC3C.7010307@windriver.com>
-	<20070822165318.b82da13c.akpm@linux-foundation.org>
-In-Reply-To: <20070822165318.b82da13c.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: kgdb-bugreport@lists.sourceforge.net, amitkale@linsyssoft.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id EA885DDEEB
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 13:25:32 +1000 (EST)
+In-Reply-To: <20070823130913.2e9db6eb.sfr@canb.auug.org.au>
+References: <20070823130913.2e9db6eb.sfr@canb.auug.org.au>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <1A23DF12-65EB-4236-B78A-ADF1DDF0FFFD@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/2] [POWERPC] Remove cmd_line from head*.S
+Date: Wed, 22 Aug 2007 22:27:31 -0500
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,36 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andrew Morton wrote:
-> On Wed, 22 Aug 2007 17:44:12 -0500
-> Jason Wessel <jason.wessel@windriver.com> wrote:
->
->   
->> +	while (!atomic_read(&debugger_active));
->>     
->
-> eek.  We're in the process of hunting down and eliminating exactly this
-> construct.  There have been cases where the compiler cached the
-> atomic_read() result in a register, turning the above into an infinite
-> loop.
->
-> Plus we should never add power-burners like that into the kernel anyway. 
-> That loop should have a cpu_relax() in it.  Which will also fix the
-> compiler problem described above.
->
->   
-Agreed, and fixed with a cpu_relax.
 
-> Thirdly, please always add a newline when coding statements like that:
+On Aug 22, 2007, at 10:09 PM, Stephen Rothwell wrote:
+
+> It is just a C char array, so declare it thusly.
 >
-> 	while (expr())
-> 		;
->   
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  arch/powerpc/kernel/head_32.S        |    8 --------
+>  arch/powerpc/kernel/head_44x.S       |    8 --------
+>  arch/powerpc/kernel/head_4xx.S       |    7 -------
+>  arch/powerpc/kernel/head_64.S        |    8 --------
+>  arch/powerpc/kernel/head_8xx.S       |    8 --------
+>  arch/powerpc/kernel/head_fsl_booke.S |    8 --------
+>  arch/powerpc/kernel/prom.c           |    2 ++
+>  7 files changed, 2 insertions(+), 47 deletions(-)
+>
+> -- 
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
 
-The other instances I found of the same problem in the kgdb core are 
-fixed too.
+[snip]
 
-I merged all the changes into the for_mm branch in the kgdb git tree.
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index 0028fe6..dc85005 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -60,6 +60,8 @@
+>  #endif
+>
+>
+> +char cmd_line[COMMAND_LINE_SIZE];
+> +
 
-Thanks,
-Jason.
+would this be better in setup-common.c?
+
+>  static int __initdata dt_root_addr_cells;
+>  static int __initdata dt_root_size_cells;
+>
+
+- k
