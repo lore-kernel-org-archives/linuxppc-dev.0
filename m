@@ -1,22 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A2043DDE9F
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 03:58:31 +1000 (EST)
-In-Reply-To: <20070823173314.GA18412@ld0162-tx32.am.freescale.net>
-References: <75EDD900-3B5E-4D08-9311-13B6510EDE6E@kernel.crashing.org>
-	<20070823024757.GC7042@localhost.localdomain>
-	<20070823173314.GA18412@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <924BAE00-7BB4-4BE8-8DF6-52B7807EFE2C@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: asm-ppc header issues when building ARCH=powerpc
-Date: Thu, 23 Aug 2007 13:00:24 -0500
-To: Scott Wood <scottwood@freescale.com>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <20070823020147.GB7042@localhost.localdomain>
+References: <20070820173920.GA30546@ld0162-tx32.am.freescale.net>
+	<20070820173949.GD30562@ld0162-tx32.am.freescale.net>
+	<20070821023044.GF15469@localhost.localdomain>
+	<46CB0E56.2020601@freescale.com>
+	<20070822010907.GA12472@localhost.localdomain>
+	<20070822172456.GA22932@ld0162-tx32.am.freescale.net>
+	<20070823020147.GB7042@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <7fe3a52180df5275c4428a04acbe3ea7@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 05/20] bootwrapper: flatdevtree fixes
+Date: Thu, 23 Aug 2007 20:00:26 +0200
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,23 +24,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> Actually, in any case, I don't think we want to implement get_path()
+> this way for real OF.  Better to have get_path() itself as a callback:
+> on real OF I believe we can directly ask for the full path to a given
+> phandle,
 
-On Aug 23, 2007, at 12:33 PM, Scott Wood wrote:
+Yes.  "package-to-path" from the client interface.
 
-> On Thu, Aug 23, 2007 at 12:47:57PM +1000, David Gibson wrote:
->>> ./drivers/mtd/maps/tqm834x.c:#include <asm/ppcboot.h>
->>> ./drivers/mtd/maps/pq2fads.c:#include <asm/ppcboot.h>
->>
->> Although these both have an extern of type bd_t (defined in
->> ppcboot.h), afaict they don't actually use it, so these should be
->> removable.
->
-> They look like they're using it to me...  See the bd->bi_flashstart  
-> and
-> bd->bi_flashsize references in init_pq2fads_mtd.
 
-Both of these are dead in one way or another.  pq2fads.c isn't in the  
-makefile and you can't Kconfig tqm834x.c into existence.  Thus my  
-patch to remove them.
-
-- k
+Segher
