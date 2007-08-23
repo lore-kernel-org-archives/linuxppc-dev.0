@@ -1,18 +1,18 @@
-Return-Path: <Mark_Gibson@Trimble.com>
-Received: from snvl-smtp1.trimble.com (snvl-smtp1.trimble.com [155.63.64.31])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "snvl-smtp1.trimble.com", Issuer "Trimble CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 3B524DDEC7
+Return-Path: <SRS0=wcvd=NU=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 23DBADDF48
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 23 Aug 2007 08:49:18 +1000 (EST)
+	Thu, 23 Aug 2007 15:52:09 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Need the bdi cfg file for taihu PPCEP405 Eval board
+Date: Thu, 23 Aug 2007 07:52:49 +0200
+References: <OF4E3437FA.70738D18-ON8525733F.00715D10-8525733F.007168AC@rflelect.com>
+In-Reply-To: <OF4E3437FA.70738D18-ON8525733F.00715D10-8525733F.007168AC@rflelect.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: Getting lite5200 debian X11 up and running with CoralP 
-Date: Wed, 22 Aug 2007 15:41:27 -0700
-Message-ID: <37882A527B66E049AA08BCD291CEE35E0596592B@uss-am-xch-02.am.trimblecorp.net>
-From: "Mark Gibson" <Mark_Gibson@Trimble.com>
-To: <linuxppc-embedded@ozlabs.org>
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_xCSzG9IwLELkMtV"
+Message-Id: <200708230752.49526.sr@denx.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,45 +23,128 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-I've been working on getting the lite5200 board running with the Denx
-supplied coralP X11 drivers. I have the Fujitsu PCI card and the console
-is working on it.  The denx site has tons of info and really got me up
-and running in record time.  The X11 drivers and video are exactly what
-I need to get going, but I have now started to drown in my lack of
-experience.=20
+--Boundary-00=_xCSzG9IwLELkMtV
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I followed the denx app note to get debian up:
-http://www.denx.de/wiki/DULG/AN2004_08_DebianOnPowerpcInstallationHowto
+On Wednesday 22 August 2007, ravi.rao@rflelect.com wrote:
+>    Can one of you please email me the bdi config file for Taihu Eval
+> board. I need to attach bdi200 and do some debugging on that..
 
-I used the 2.4.25 Kernel from denx (modified a bit to support USB HID
-and to change the PCI address for my CoralPA card).
+I don't have a config file for the Taihu, but I attached one for a board 
+that's quite similar to the AMCC Taihu. Needs some small changes perhaps. 
+Just give it a try.
+
+Best regards,
+Stefan
+
+=====================================================================
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+=====================================================================
+
+--Boundary-00=_xCSzG9IwLELkMtV
+Content-Type: text/plain;
+  charset="iso-8859-15";
+  name="zeus.cfg"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="zeus.cfg"
+
+;bdiGDB configuration file for Zeus for U-Boot
+; --------------------------------------------
+;
+[INIT]
+; init core register
+WSPR	954	0x00000000      ;DCWR: Disable data cache write-thru
+WSPR	1018	0x00000000	;DCCR: Disable data cache
+WSPR	1019	0x00000000	;ICCR: Disable instruction cache
+WSPR	982	0xFFF80000	;EVPR: Exception Vector Table @0x00000000
+
+;
+WDCR    0x0F9   0x00000010	; enable WR# (PCI_INT/WR# multiplexing)
+
+; Setup PLL
+; CPU=133MHz
+; PLB=133MHz
+; OPB=66MHz
+; EBC=33MHz
+WDCR    0x0F0    0x00001203
+WDCR    0x0F4    0x8042223E
 
 
+; Setup Peripheral Bus
 
-I have had two problems - both related to X11 / X / XF86.
+; CS0 (default mode)
+WDCR	18	0x00000010	;Select PB0AP
+WDCR	19	0x05815600	;PB0AP: NOR Flash/SRAM
+WDCR	18	0x00000000	;Select PB0CR
+WDCR	19	0xff09a000	;PB0CR: BAS=0xFF0,BS=4MB,BU=R/W,BW=16bit
 
-1 - I have used apt to retrieve X and can run it using the generic
-framebuffer. I get the cross-hatch background and the 'X' cursor only.
-The only window manager APT will let me get is olvm, which I can't seem
-to get to start up. I have a feeling that using debian-woody has left me
-with a too-limited set of X packages (or the supporting libs/etc) to get
-past this.
-    =3D=3D Has anyone had debian-woody and the zvideo app running??
+; Setup SDRAM Controller
+WDCR	16	0x00000080	;Select SDTR1
+WDCR	17	0x01074015	;SDTR1: SDRAM Timing Register
+WDCR	16	0x00000040	;Select MB0CF
+WDCR	17	0x00084001	;MB0CF: 16MB @ 0x00000000
+WDCR	16	0x00000030	;Select RTR
+WDCR	17	0x07f00000	;RTR: Refresh Timing Register
+WDCR	16	0x00000020	;Select MCOPT1
+WDCR	17	0x80800000	;MCOPT1: Enable SDRAM Controller
 
-2 - When I use the denx drivers from the denx site I have this issue:
-  (II) Module mb86290: vendor=3D"The XFree86 Project"
-        compiled for 4.3.0.1, module version =3D 0.1.0
-        Module class: XFree86 Video Driver
-        ABI class: XFree86 Video Driver, version 0.6
-  (EE) module ABI minor version (6) is newer than the server's version
-(4)
-  (II) UnloadModule: "mb86290"
-  (II) Unloading /usr/X11R6/lib/modules/drivers/mb86290_drv.o
-  (EE) Failed to load module "mb86290" (module requirement mismatch, 0)
-  =20
 
-Any insight would be appreciated.
+; Setup MMU info - these lines must be uncommented to debug Linux kernel
+;WM32    0x000000f4  0x00000000  ;invalidate kernel  page table base
+;WM32    0x000000f8  0x00000000  ;invalidate process page table base
+;WM32    0x000000f0  0xc00000f4  ;invalidate page table base
 
-Thanks,
-Mark
+; Setup OCM
+WDCR    0x01A   0xEC000000
+WDCR    0x01B   0xC0000000
+
+[TARGET]
+JTAGCLOCK   0                   ;use 16 MHz JTAG clock
+CPUTYPE     405 		;the used target CPU type
+BDIMODE     AGENT   	        ;the BDI working mode (LOADONLY | AGENT)
+WAKEUP      1000                ;wakeup time after reset
+BREAKMODE   HARD      	        ;SOFT or HARD, HARD uses PPC hardware breakpoint
+STEPMODE    HWBP                ;JTAG or HWBP, HWPB uses one or two hardware breakpoints
+;VECTOR      CATCH               ;catch unhandled exceptions
+;MMU         XLAT 0xC0000000     ;enable virtual address mode
+;PTBASE      0x000000f0          ;address where kernel/user stores pointer to page table
+;SIO         7 9600              ;TCP port for serial IO
+
+;REGLIST     SPR                 ;select register to transfer to GDB
+REGLIST      ALL                 ;select register to transfer to GDB
+;SCANPRED    2 2                 ;JTAG devices connected before PPC400
+;SCANSUCC    3 3                 ;JTAG devices connected after PPC400
+
+[HOST]
+IP          10.0.0.152
+FORMAT      BIN
+FILE        /tftpboot/zeus/u-boot.bin
+LOAD        MANUAL 	       ;load code MANUAL or AUTO after reset
+DEBUGPORT   2001
+PROMPT      zeus>
+
+[FLASH]
+WORKSPACE   0x100000  ;workspace in on-chip SRAM for fast programming algorithm
+CHIPTYPE    MIRRORX16    ;Flash type
+CHIPSIZE    0x1000000    ;16MB The size of one flash chip in bytes
+BUSWIDTH    16          ;The width of the flash memory bus in bits (8 | 16 | 32)
+FILE        /tftpboot/zeus/u-boot.bin
+FORMAT      BIN 0xFFFC0000
+
+; Erase just the last seven blocks for U-Boot
+ERASE       0xFFFC0000
+ERASE       0xFFFE0000
+
+[REGS]
+IDCR1	0x010	0x011	;MEMCFGADR and MEMCFGDATA
+IDCR2	0x012	0x013	;EBCCFGADR and EBCCFGDATA
+;IDCR3	0x014	0x015	;KIAR and KIDR
+FILE    /tftpboot/BDI2000/reg405ep.def
+
+--Boundary-00=_xCSzG9IwLELkMtV--
