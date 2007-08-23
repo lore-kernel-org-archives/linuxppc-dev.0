@@ -1,20 +1,18 @@
-Return-Path: <fernando@oss.ntt.co.jp>
-Received: from serv1.oss.ntt.co.jp (ns.oss.ntt.co.jp [222.151.198.98])
-	by ozlabs.org (Postfix) with ESMTP id 2D6CADDF38
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 15:29:22 +1000 (EST)
-Subject: Re: [PATCH] ppc: remove unused amiga_request_irq and mach_request_irq
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao <fernando@oss.ntt.co.jp>
-To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20070822182859.GX4261@austin.ibm.com>
-References: <1187767237.25624.11.camel@sebastian.kern.oss.ntt.co.jp>
-	<18124.1417.743332.974941@cargo.ozlabs.ibm.com>
-	<20070822182859.GX4261@austin.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 23 Aug 2007 14:29:19 +0900
-Message-Id: <1187846959.12759.41.camel@sebastian.kern.oss.ntt.co.jp>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 3C345DDEFE
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 15:42:11 +1000 (EST)
+Date: Thu, 23 Aug 2007 07:42:39 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: bogus vscsi dt node on iseries
+Message-ID: <20070823054239.GA24251@aepfle.de>
+References: <20070822175121.GA21233@aepfle.de>
+	<20070823133621.830245c4.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20070823133621.830245c4.sfr@canb.auug.org.au>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,18 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-08-22 at 13:28 -0500, Linas Vepstas wrote: 
-> On Wed, Aug 22, 2007 at 07:44:41PM +1000, Paul Mackerras wrote:
-> > Fernando Luis Vázquez Cao writes:
-> > 
-> > > amiga_request_irq and mach_request_irq are never used, so delete them.
-> > 
-> > OK, but is there a particular reason you want to do this?
-> > 
-> > The whole of arch/ppc is going away eventually, so I don't think we
-> > need to remove it piece by piece.
-> 
-> Its often easier to port/move stuff if you clean it up first.
-Agreed. It would make things easier for me too.
+On Thu, Aug 23, Stephen Rothwell wrote:
 
-Fernando
+> On Wed, 22 Aug 2007 19:51:21 +0200 Olaf Hering <olaf@aepfle.de> wrote:
+> >
+> > 
+> > Does anyone know why dt_vdevices() creates a vscsi node on legacy iseries?
+> > I'm sure only viodasd and viocd is required as blockdevice type.
+> 
+> Because the IBM vscsi client (in theory) works on legacy iSeries.
+
+I'm asking because there are many unneeded nodes.
+Have you tried to create only the nodes for disks/cds that are really
+present and modify viodasd to use only device-tree data?
