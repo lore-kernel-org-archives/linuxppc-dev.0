@@ -1,21 +1,23 @@
-Return-Path: <jesse.barnes@intel.com>
-Received: from mga03.intel.com (mga03.intel.com [143.182.124.21])
-	by ozlabs.org (Postfix) with ESMTP id 2069ADDE9F
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 03:06:29 +1000 (EST)
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Nick Piggin <npiggin@suse.de>
-Subject: Re: wmb vs mmiowb
-Date: Thu, 23 Aug 2007 10:02:38 -0700
-References: <20070822045714.GD26374@wotan.suse.de>
-	<200708221202.12403.jesse.barnes@intel.com>
-	<20070823022043.GB18788@wotan.suse.de>
-In-Reply-To: <20070823022043.GB18788@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200708231002.39429.jesse.barnes@intel.com>
-Cc: linux-ia64@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <b07421@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 41EABDDE44
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 03:33:27 +1000 (EST)
+Date: Thu, 23 Aug 2007 12:33:14 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>,
+	"linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
+Subject: Re: asm-ppc header issues when building ARCH=powerpc
+Message-ID: <20070823173314.GA18412@ld0162-tx32.am.freescale.net>
+References: <75EDD900-3B5E-4D08-9311-13B6510EDE6E@kernel.crashing.org>
+	<20070823024757.GC7042@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070823024757.GC7042@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,30 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > Yeah, they keep threatening to use this instead, but I'm not sure
-> > how easy it would be.  Also they may have more devices/drivers to
-> > worry about than sn2, so maybe changing over would mean too much
-> > driver debugging (well auditing really since it's not that hard to
-> > know where to put them).  Irix actually had an io_unlock() routine
-> > that did this implicitly, but iirc that was shot down for Linux...
->
-> Why was it shot down? Seems like a pretty good idea to me ;)
+On Thu, Aug 23, 2007 at 12:47:57PM +1000, David Gibson wrote:
+> > ./drivers/mtd/maps/tqm834x.c:#include <asm/ppcboot.h>
+> > ./drivers/mtd/maps/pq2fads.c:#include <asm/ppcboot.h>
+> 
+> Although these both have an extern of type bd_t (defined in
+> ppcboot.h), afaict they don't actually use it, so these should be
+> removable.
 
-Well, like Linus said, it had some significant downsides (though I think 
-Irix had fewer lock types, so the multiplicative effect wasn't so bad 
-there).
+They look like they're using it to me...  See the bd->bi_flashstart and
+bd->bi_flashsize references in init_pq2fads_mtd.
 
-> I'm clueless when it comes to drivers, but I see a lot of mmiowb()
-> that are not paired with spin_unlock. How are these obvious? (ie.
-> what is the pattern?) It looks like some might be lockless FIFOs (or
-> maybe I'm just not aware of where the locks are). Can you just
-> quickly illustrate the problem being solved?
-
-Wow, it certainly has proliferated since it was added to the tree. :)
-
-I didn't audit all the uses, but it seems like many of them get it 
-right, i.e. mmiowb() before spin_unlock() where PIO has been done.  I'd 
-have to look carefully to see whether lockless usages are correct, it's 
-likely they're not.
-
-Jesse
+-Scott
