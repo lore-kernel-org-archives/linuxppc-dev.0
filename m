@@ -1,20 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0FFD8DDFD2
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 13:24:40 +1000 (EST)
-In-Reply-To: <20070823131032.04d929e7.sfr@canb.auug.org.au>
-References: <20070823130913.2e9db6eb.sfr@canb.auug.org.au>
-	<20070823131032.04d929e7.sfr@canb.auug.org.au>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <DDBA4998-5BCC-413A-9759-3815693A68E6@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] [POWERPC] Size swapper_pg_dir correctly
-Date: Wed, 22 Aug 2007 22:26:35 -0500
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+Return-Path: <jason.wessel@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id ED358DDEEB
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 13:25:31 +1000 (EST)
+Message-ID: <46CCFE2C.4050306@windriver.com>
+Date: Wed, 22 Aug 2007 22:25:32 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Kgdb-bugreport] 2.6.23-rc3-mm1: kgdb build failure on powerpc
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>	<200708222104.29432.m.kozlowski@tuxland.pl>	<20070822124743.fc316963.akpm@linux-foundation.org>	<46CCBC3C.7010307@windriver.com>
+	<20070822165318.b82da13c.akpm@linux-foundation.org>
+In-Reply-To: <20070822165318.b82da13c.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: kgdb-bugreport@lists.sourceforge.net, amitkale@linsyssoft.com,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,39 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Aug 22, 2007, at 10:10 PM, Stephen Rothwell wrote:
-
-> David Gibson pointed out that swapper_pg_dir actually need to be
-> PGD_TABLE_SIZE bytes long not PAGE_SIZE.  This actually saves 64k in
-> the bss for a ppc64_defconfig kernel built with CONFIG_PPC_64K_PAGES.
+Andrew Morton wrote:
+> On Wed, 22 Aug 2007 17:44:12 -0500
+> Jason Wessel <jason.wessel@windriver.com> wrote:
 >
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  arch/powerpc/kernel/asm-offsets.c |    4 ++++
->  arch/powerpc/kernel/head_64.S     |    2 +-
->  include/asm-powerpc/pgtable-4k.h  |    2 ++
->  include/asm-powerpc/pgtable-64k.h |    2 ++
->  4 files changed, 9 insertions(+), 1 deletions(-)
+>   
+>> +	while (!atomic_read(&debugger_active));
+>>     
 >
-> --  
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
+> eek.  We're in the process of hunting down and eliminating exactly this
+> construct.  There have been cases where the compiler cached the
+> atomic_read() result in a register, turning the above into an infinite
+> loop.
 >
-> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/ 
-> kernel/asm-offsets.c
-> index a408053..0ae5d57 100644
-> --- a/arch/powerpc/kernel/asm-offsets.c
-> +++ b/arch/powerpc/kernel/asm-offsets.c
-> @@ -320,5 +320,9 @@ int main(void)
->  	DEFINE(VMALLOC_START_ESID, GET_ESID(VMALLOC_START));
->  	DEFINE(VMALLOC_START_VSID, KERNEL_VSID(VMALLOC_START));
->  #endif
-> +
-> +#ifdef CONFIG_PPC64
-> +	DEFINE(PGD_TABLE_SIZE, PGD_TABLE_SIZE);
-> +#endif
+> Plus we should never add power-burners like that into the kernel anyway. 
+> That loop should have a cpu_relax() in it.  Which will also fix the
+> compiler problem described above.
+>
+>   
+Agreed, and fixed with a cpu_relax.
 
-Why limit this to ppc64?  The cleanup should be reasonable for all ppc.
+> Thirdly, please always add a newline when coding statements like that:
+>
+> 	while (expr())
+> 		;
+>   
 
-- k
+The other instances I found of the same problem in the kgdb core are 
+fixed too.
+
+I merged all the changes into the for_mm branch in the kgdb git tree.
+
+Thanks,
+Jason.
