@@ -1,20 +1,22 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id AD2FCDDEFC
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 21:35:52 +1000 (EST)
-Received: from localhost (unknown [10.150.0.9])
-	by buildserver.ru.mvista.com (Postfix) with ESMTP id 447EE8817
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 16:35:51 +0500 (SAMST)
-Date: Thu, 23 Aug 2007 15:36:00 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v7 3/3] [POWERPC] MPC832x_RDB: update dts to use SPI1 in
-	QE, register mmc_spi stub
-Message-ID: <20070823113600.GC18080@localhost.localdomain>
-References: <20070823113349.GA11870@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20070823113349.GA11870@localhost.localdomain>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AD027DDDFC
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 23:16:23 +1000 (EST)
+In-Reply-To: <20070823161351.2a5f8096.sfr@canb.auug.org.au>
+References: <20070823130913.2e9db6eb.sfr@canb.auug.org.au>
+	<20070823131032.04d929e7.sfr@canb.auug.org.au>
+	<DDBA4998-5BCC-413A-9759-3815693A68E6@kernel.crashing.org>
+	<20070823161351.2a5f8096.sfr@canb.auug.org.au>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <F4073FFB-78FF-4276-BBD4-3C57CCC6DA63@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] [POWERPC] Size swapper_pg_dir correctly
+Date: Thu, 23 Aug 2007 08:17:04 -0500
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,99 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-mmc_spi already tested to work. When it will hit mainline
-the only change that will be needed is replacing "spidev"
-with "mmc_spi".
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/boot/dts/mpc832x_rdb.dts     |    2 +-
- arch/powerpc/platforms/83xx/mpc832x_rdb.c |   46 +++++++++++++++++++++++++++++
- 2 files changed, 47 insertions(+), 1 deletions(-)
+On Aug 23, 2007, at 1:13 AM, Stephen Rothwell wrote:
 
-diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-index e9c332f..1ac0025 100644
---- a/arch/powerpc/boot/dts/mpc832x_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-@@ -211,7 +211,7 @@
- 			reg = <4c0 40>;
- 			interrupts = <2>;
- 			interrupt-parent = <&qeic>;
--			mode = "cpu";
-+			mode = "cpu-qe";
- 		};
- 
- 		spi@500 {
-diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-index e021b08..7ddb527 100644
---- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-@@ -15,6 +15,7 @@
-  */
- 
- #include <linux/pci.h>
-+#include <linux/spi/spi.h>
- 
- #include <asm/of_platform.h>
- #include <asm/time.h>
-@@ -22,6 +23,7 @@
- #include <asm/udbg.h>
- #include <asm/qe.h>
- #include <asm/qe_ic.h>
-+#include <sysdev/fsl_soc.h>
- 
- #include "mpc83xx.h"
- 
-@@ -32,6 +34,50 @@
- #define DBG(fmt...)
- #endif
- 
-+static void mpc83xx_spi_activate_cs(u8 cs, u8 polarity)
-+{
-+	pr_debug("%s %d %d\n", __func__, cs, polarity);
-+	par_io_data_set(3, 13, polarity);
-+}
-+
-+static void mpc83xx_spi_deactivate_cs(u8 cs, u8 polarity)
-+{
-+	pr_debug("%s %d %d\n", __func__, cs, polarity);
-+	par_io_data_set(3, 13, !polarity);
-+}
-+
-+static struct spi_board_info mpc832x_spi_boardinfo = {
-+	.bus_num = 0x4c0,
-+	.chip_select = 0,
-+	.max_speed_hz = 50000000,
-+	/*
-+	 * XXX: This is spidev (spi in userspace) stub, should
-+	 * be replaced by "mmc_spi" when mmc_spi will hit mainline.
-+	 */
-+	.modalias = "spidev",
-+};
-+
-+static int __init mpc832x_spi_init(void)
-+{
-+	if (!machine_is(mpc832x_rdb))
-+		return 0;
-+
-+	par_io_config_pin(3,  0, 3, 0, 1, 0); /* SPI1 MOSI, I/O */
-+	par_io_config_pin(3,  1, 3, 0, 1, 0); /* SPI1 MISO, I/O */
-+	par_io_config_pin(3,  2, 3, 0, 1, 0); /* SPI1 CLK,  I/O */
-+	par_io_config_pin(3,  3, 2, 0, 1, 0); /* SPI1 SEL,  I   */
-+
-+	par_io_config_pin(3, 13, 1, 0, 0, 0); /* !SD_CS,    O */
-+	par_io_config_pin(3, 14, 2, 0, 0, 0); /* SD_INSERT, I */
-+	par_io_config_pin(3, 15, 2, 0, 0, 0); /* SD_PROTECT,I */
-+
-+	return fsl_spi_init(&mpc832x_spi_boardinfo, 1,
-+			    mpc83xx_spi_activate_cs,
-+			    mpc83xx_spi_deactivate_cs);
-+}
-+
-+device_initcall(mpc832x_spi_init);
-+
- /* ************************************************************************
-  *
-  * Setup the architecture
--- 
-1.5.0.6
+> On Wed, 22 Aug 2007 22:26:35 -0500 Kumar Gala  
+> <galak@kernel.crashing.org> wrote:
+>>
+>>> +#ifdef CONFIG_PPC64
+>>> +	DEFINE(PGD_TABLE_SIZE, PGD_TABLE_SIZE);
+>>> +#endif
+>>
+>> Why limit this to ppc64?  The cleanup should be reasonable for all  
+>> ppc.
+>
+> Because PGD_TABLE_SIZE only exists for ppc64 :-) for ppc32 the
+> swapper_pg_dir will always be 1 page, right?
+
+No, it can be 2 pages if we do > 32-bit physical on 44x/fsl_booke.
+
+> So we could have
+> #define PGD_TABLE_SIZE PAGE_SIZE
+> for 32 bit and then go around and change the swapper_pg_dir's, but  
+> that
+> would be a separate patch.
+
+- k
