@@ -1,23 +1,21 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5A31EDDED6
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 16:00:36 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1IO5k7-0005fH-KO
-	for linuxppc-dev@ozlabs.org; Wed, 22 Aug 2007 23:00:31 -0700
-Message-ID: <12288012.post@talk.nabble.com>
-Date: Wed, 22 Aug 2007 23:00:31 -0700 (PDT)
-From: sivaji <rameshmrm@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Section mismatch warning
-In-Reply-To: <C5046FD2-6781-4E6E-847B-1BDB24E5D81F@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <12286518.post@talk.nabble.com>
-	<C5046FD2-6781-4E6E-847B-1BDB24E5D81F@kernel.crashing.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 68C7FDDF0F
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 16:14:03 +1000 (EST)
+Date: Thu, 23 Aug 2007 16:13:51 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] [POWERPC] Size swapper_pg_dir correctly
+Message-Id: <20070823161351.2a5f8096.sfr@canb.auug.org.au>
+In-Reply-To: <DDBA4998-5BCC-413A-9759-3815693A68E6@kernel.crashing.org>
+References: <20070823130913.2e9db6eb.sfr@canb.auug.org.au>
+	<20070823131032.04d929e7.sfr@canb.auug.org.au>
+	<DDBA4998-5BCC-413A-9759-3815693A68E6@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__23_Aug_2007_16_13_51_+1000_3ynvb930n/BHWoeV"
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,53 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Thu__23_Aug_2007_16_13_51_+1000_3ynvb930n/BHWoeV
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-
-Hi,
-        I applied the patch(13066). After that i got following error.
- arch/powerpc/kernel/vmlinux.lds:59: parse error
-
-I added the following lines in the vmlinux.lds file
-  ALIGN_FUNCTION();
-  *(.text.head)
-
-Then i removed the ALIGN_FUNCTION() in the vmlinux.lds file. The parse error
-was overcome. I don't know after removing the ALIGN_FUNCTION why the error
-was overcome. 
-
+On Wed, 22 Aug 2007 22:26:35 -0500 Kumar Gala <galak@kernel.crashing.org> w=
+rote:
 >
-> Hi,
->         When compiling the 2.6.23-rc3 kernel,  i got following warning
-> messages.
->
-> WARNING: vmlinux.o(.text+0x18): Section mismatch: reference to
-> .init.text:early_init (between '__start' and '__after_mmu_off')
-> WARNING: vmlinux.o(.text+0x3834): Section mismatch: reference to
-> .init.text:machine_init (between 'start_here' and 'set_context')
-> WARNING: vmlinux.o(.text+0x383c): Section mismatch: reference to
-> .init.text:MMU_init (between 'start_here' and 'set_context')
-> WARNING: vmlinux.o(.text+0x3866): Section mismatch: reference to
-> .init.text:start_kernel (between 'start_here' and 'set_context')
-> WARNING: vmlinux.o(.text+0x386a): Section mismatch: reference to
-> .init.text:start_kernel (between 'start_here' and 'set_context')
->
-> Processor            : 8641D
-> Give some idea how to overcome this warning.
+> > +#ifdef CONFIG_PPC64
+> > +	DEFINE(PGD_TABLE_SIZE, PGD_TABLE_SIZE);
+> > +#endif
+>=20
+> Why limit this to ppc64?  The cleanup should be reasonable for all ppc.
 
-There is a patch posted on the list for this.  I doubt will fix these  
-for 2.6.23 as they are just warnings.
+Because PGD_TABLE_SIZE only exists for ppc64 :-) for ppc32 the
+swapper_pg_dir will always be 1 page, right?
 
-http://patchwork.ozlabs.org/linuxppc/patch?id=13066
+So we could have
+#define PGD_TABLE_SIZE PAGE_SIZE
+for 32 bit and then go around and change the swapper_pg_dir's, but that
+would be a separate patch.
 
-- k
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
+--Signature=_Thu__23_Aug_2007_16_13_51_+1000_3ynvb930n/BHWoeV
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
+iD8DBQFGzSWqTgG2atn1QN8RAq8tAJwPFLAEiFYHZc6mI392s+JbgwZ3hQCgjepk
+0dCkrTC39+6BR+69IeQEYzM=
+=jtUC
+-----END PGP SIGNATURE-----
 
--- 
-View this message in context: http://www.nabble.com/Section-mismatch-warning-tf4315101.html#a12288012
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+--Signature=_Thu__23_Aug_2007_16_13_51_+1000_3ynvb930n/BHWoeV--
