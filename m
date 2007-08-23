@@ -1,19 +1,22 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 23 Aug 2007 12:01:47 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 05/20] bootwrapper: flatdevtree fixes
-Message-ID: <20070823020147.GB7042@localhost.localdomain>
-References: <20070820173920.GA30546@ld0162-tx32.am.freescale.net>
-	<20070820173949.GD30562@ld0162-tx32.am.freescale.net>
-	<20070821023044.GF15469@localhost.localdomain>
-	<46CB0E56.2020601@freescale.com>
-	<20070822010907.GA12472@localhost.localdomain>
-	<20070822172456.GA22932@ld0162-tx32.am.freescale.net>
-MIME-Version: 1.0
+Return-Path: <npiggin@suse.de>
+Received: from mx2.suse.de (ns2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E0B7DDDEF9
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 12:20:49 +1000 (EST)
+Date: Thu, 23 Aug 2007 04:20:43 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Jesse Barnes <jesse.barnes@intel.com>
+Subject: Re: wmb vs mmiowb
+Message-ID: <20070823022043.GB18788@wotan.suse.de>
+References: <20070822045714.GD26374@wotan.suse.de>
+	<alpine.LFD.0.999.0708221049560.30176@woody.linux-foundation.org>
+	<200708221202.12403.jesse.barnes@intel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070822172456.GA22932@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+In-Reply-To: <200708221202.12403.jesse.barnes@intel.com>
+Cc: linux-ia64@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,60 +26,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 22, 2007 at 12:24:56PM -0500, Scott Wood wrote:
-> On Wed, Aug 22, 2007 at 11:09:07AM +1000, David Gibson wrote:
-> > On Tue, Aug 21, 2007 at 11:09:58AM -0500, Scott Wood wrote:
-> > > The point of #2 was as part of the fix to #1 -- otherwise, the same 
-> > > check for NULL would have to be moved into ft_create_node to 
-> > > conditionally call ft_find_device or ft_find_device_rel.
-> > 
-> > Um... oh, ok, I hadn't spotted that (1) made ft_create() use
-> > find_device_rel().  That sounds doubly wrong: you have the internal
-> > offset pointer, you should be able to create a phandle using the
-> > phandle allocation stuff, rather than having to refind the node you've
-> > just created from the parent.
+On Wed, Aug 22, 2007 at 12:02:11PM -0700, Jesse Barnes wrote:
+> On Wednesday, August 22, 2007 11:07 am Linus Torvalds wrote:
+> > > It really seems like it is some completely different concept from a
+> > > barrier. And it shows, on the platform where it really matters
+> > > (sn2), where the thing actually spins.
+> >
+> > I agree that it probably isn't a "write barrier" per se. Think of it
+> > as a "tie two subsystems together" thing.
 > 
-> Yeah, that'd make more sense.
+> Right, maybe it's not the best name, but as long as you separate your 
+> memory access types, you can think of it as a real write barrier, just 
+> for mmio accesses (well uncached access really).
+
+If we have the following situation (all vars start at 0)
+CPU0			CPU1			CPU2
+spin_lock(&lock);				~
+A = 1;						~
+wmb();						~
+B = 2;						~
+spin_unlock(&lock);				X = B;
+			spin_lock(&lock);	rmb();
+			A = 10;			Y = A;
+			wmb();			~
+			B = 11;			~
+			spin_unlock(&lock);	~
+
+(I use the '~' just to show CPU2 is not specifically temporally
+related to CPU0 or CPU1).
+
+Then CPU2 could have X==11 and Y==1, according to the Linux abstract
+memory consistency model, couldn't it? I think so, and I think this
+is what your mmiowb is trying to protect. In the above situation,
+CPU2 would just use the spinlock -- I don't think we have a simple
+primitive that CPU0 and 1 can call to prevent this reordering at
+CPU2. An IO device obviously can't use a spinlock :).
+
+
+> > (And it doesn't just matter on sn2. It also matters on powerpc64,
+> > although I think they just set a flag and do the *real* sync in the
+> > spin_unlock() path).
 > 
-> > > >  (3) I really dislike;  I just don't see the point.
-> > > 
-> > > It's needed by dt_get_path().
-> > 
-> > No, it isn't.  dt_get_path() needs *some* way of getting the name of a
-> > node, but it could be a separate function, which I think would be
-> > preferable rather than folding it into getprop - you don't need to
-> > search for the name, so a getname() function would have quite a
-> > different structure to getprop().
-> 
-> I'd rather not add a new entry in ops just for that; it's more of an
-> attribute of the dtb format that name is handled specially.  IIUC, on
-> real OF you'd use the same code for both.
+> Yeah, they keep threatening to use this instead, but I'm not sure how 
+> easy it would be.  Also they may have more devices/drivers to worry 
+> about than sn2, so maybe changing over would mean too much driver 
+> debugging (well auditing really since it's not that hard to know where 
+> to put them).  Irix actually had an io_unlock() routine that did this 
+> implicitly, but iirc that was shot down for Linux...
 
-Actually, no - sorry, that's the other problem with this, which I
-forgot to mention.  On real OF, the "name" property contains the
-node's name *without the unit address*; that is, only the portion
-before the '@'.  So your getprop change does not match real OF
-behaviour - and real OF behaviour will not do what you want for
-dt_get_path().
+Why was it shot down? Seems like a pretty good idea to me ;)
 
-Actually, in any case, I don't think we want to implement get_path()
-this way for real OF.  Better to have get_path() itself as a callback:
-on real OF I believe we can directly ask for the full path to a given
-phandle, the get name based implementation can then be made specific
-to the flat device tree.
+I'm clueless when it comes to drivers, but I see a lot of mmiowb()
+that are not paired with spin_unlock. How are these obvious? (ie.
+what is the pattern?) It looks like some might be lockless FIFOs (or
+maybe I'm just not aware of where the locks are). Can you just quickly
+illustrate the problem being solved?
 
-Or actually, I think we might be able to come up with a get_path()
-implementation for flat tree that's less hideous than repeatedly
-calling get_parent() which is an ugly, ugly operation on the flat tree
-(and will get worse with libfdt).
-
-> Plus, something might come along that needs to dynamically look for
-> either name or something else.  It's more flexible this way.
-
-Hrm... "something might come along" just seems contrived to me.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Thanks,
+Nick
