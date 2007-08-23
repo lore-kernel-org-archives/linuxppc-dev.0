@@ -1,19 +1,19 @@
-Return-Path: <euphoria@arcor.de>
-Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
-	[151.189.21.50])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1DB62DDE00
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 08:41:06 +1000 (EST)
-Message-ID: <46CE0CF6.2010804@arcor.de>
-Date: Fri, 24 Aug 2007 00:40:54 +0200
-From: Florian Boelstler <euphoria@arcor.de>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [RFC] xmon: setjmp / longjmp implementation problems
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: paulus@samba.org
+Return-Path: <flar@cynthia.pants.nu>
+Date: Thu, 23 Aug 2007 11:56:32 -0700
+From: Brad Boyer <flar@allandria.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: asm-ppc header issues when building ARCH=powerpc
+Message-ID: <20070823185632.GA3571@cynthia.pants.nu>
+References: <75EDD900-3B5E-4D08-9311-13B6510EDE6E@kernel.crashing.org>
+	<2F7E4C06-9AC3-458A-B1E3-CA6E0BDD189A@kernel.crashing.org>
+	<20070823033318.GJ7042@localhost.localdomain>
+	<F19C9986-9E53-47F3-835D-C93DA9C3ADED@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <F19C9986-9E53-47F3-835D-C93DA9C3ADED@kernel.crashing.org>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,64 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Wed, Aug 22, 2007 at 11:16:03PM -0500, Kumar Gala wrote:
+> On Aug 22, 2007, at 10:33 PM, David Gibson wrote:
+> >> My analysis of <asm/bootinfo.h> usage:
+> >>
+> >> ./drivers/macintosh/adb-iop.c:#include <asm/bootinfo.h>	 remove
+> >> ./drivers/char/vme_scc.c:#include <asm/bootinfo.h>		68k only
+> >> ./drivers/char/serial167.c:#include <asm/bootinfo.h>		68k only
+> >> ./drivers/serial/dz.c:#include <asm/bootinfo.h>		 decstation
+> >> ./drivers/mtd/devices/ms02-nv.c:#include <asm/bootinfo.h>	decstation
+> >> ./drivers/net/macsonic.c:#include <asm/bootinfo.h>		68k
+> >> ./drivers/net/jazzsonic.c:#include <asm/bootinfo.h>		mips
+> >> ./drivers/video/pmag-aa-fb.c:#include <asm/bootinfo.h>		mips
+> >> ./drivers/video/maxinefb.c:#include <asm/bootinfo.h>		mips
+> >> ./drivers/video/logo/logo.c:#include <asm/bootinfo.h>		mips
+> >> ./drivers/video/macfb.c:#include <asm/bootinfo.h>		68k
+> >> ./drivers/video/valkyriefb.c:#include <asm/bootinfo.h>		68k
+> >
+> > Uh.. I'm pretty sure valkyriefb.c is for (old) PowerMacs, not 68k.
+> 
+> It appears to be both.  If you look at the include its protected by a  
+> #ifdef CONFIG_MAC which we is only defined on m68k.
 
-I was hunting an ugly problem in the NuBus PowerMac port of Linux [1]
-for a while now (that platform isn't included in mainline kernel and
-still is based on 2.4 kernel series).
-Linux was successfully built using gcc-3.3.5/binutils-2.15 so far.
+According to drivers/video/macfb.c, both the Quadra 630 and Performa 588
+have the Valkyrie chip for their video. I don't remember which ppc based
+models have it, but it's definitely on both architectures.
 
-Later toolchain versions (e.g. gcc-3.4.5/binutils-2.15) turned out to
-break things during hardware detection on the NuBus.
-Looking at the relevant code sections shows that the register probing
-code is based on the setjmp/longjmp implementation [2] found in xmon.
-Regarding the "ppc" platform that code almost matches at least up to
-mainline kernel 2.6.20.1 [3].
-On the "powerpc" platform the code did dramatically change [4].
+Just as an extra note, the file drivers/macintosh/adb-iop.c is m68k only,
+so you should probably leave that alone as well. It probably doesn't need
+that header, but the change should really come from the 68k side of things.
 
-I was extracting both implementations to a simple userspace application
-to be able to easily try different compiler versions and optimization
-levels.
-Eventually I found out that the temporary solution is to build the
-ppc-implementation using -O1 for gcc versions >3.3.5.
-
-Since I found a comment by Paul in arch/ppc/xmon/setjmp.c: "NB this file
-must be compiled with -O2.", I was wondering which toolchain versions
-are/were used to compile xmon-enabled kernels for the ppc and powerpc
-platform.
-Since -O2 seems to be the default for 2.6 kernels as well, I am
-wondering what gcc version is known to build a kernel with xmon support.
-Are there are any known gcc versions, which are causing trouble with
-xmon (actually its setjmp/longjmp implementation)?
-
-
-Some details of toolchain tests follow:
-
-"ppc" implementation:
-When -O2 is used gcc-3.4.5 inlines static functions by default, which
-turned out to be the first problem. Even when "static" is removed the
-resulting program flow reflects an infinite loop (when longjumped
-function returns).
-I found out that -O1 with gcc-3.4.5 generates code, which resembles the
-functionality of gcc-3.3.5 with -O2. I.e. a working version of
-setjmp/longjmp. A segmentation fault occurs when no optimization level
-is used.
-With gcc-4.1.0 no successful working build was possible.
-
-"powerpc" implementation:
-The binary works with no optimization level, -O0 and -O1 with gcc-3.4.5.
-Using -O2 turns the resulting code into an infinite loop again.
-With gcc-4.1.0/binutils-2.16.1 only -O0 generated a useful binary.
-
-
-Thanks for any suggestions!
-
-  Florian
-
-
-[1] http://nubus-pmac.sf.net
-[2]
-http://nubus-pmac.cvs.sourceforge.net/nubus-pmac/linuxppc-2.4-nubus/arch/ppc/platforms/nbpmac_setup.c
-Lines 162-194
-[3] http://lxr.linux.no/source/arch/ppc/xmon/setjmp.c?a=ppc
-[4] http://lxr.linux.no/source/arch/powerpc/xmon/setjmp.S?a=ppc
+	Brad Boyer
+	flar@allandria.com
