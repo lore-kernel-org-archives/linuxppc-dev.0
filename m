@@ -1,20 +1,28 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from mx.dlasys.net (24.152.192.123.res-cmts.eph.ptd.net
-	[24.152.192.123]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 86DE5DDF4A
+Return-Path: <kkboyanov@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.236])
+	by ozlabs.org (Postfix) with ESMTP id 0109CDDECD
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 23 Aug 2007 16:46:37 +1000 (EST)
-Message-ID: <46CD2CAF.5040104@dlasys.net>
-Date: Thu, 23 Aug 2007 02:43:59 -0400
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
+	Thu, 23 Aug 2007 17:47:47 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id 71so339103wri
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 23 Aug 2007 00:47:45 -0700 (PDT)
+Message-ID: <929bf310708230047n70bfe883gb963eba6e254b479@mail.gmail.com>
+Date: Thu, 23 Aug 2007 09:47:45 +0200
+From: "Konstantin Boyanov" <kkboyanov@gmail.com>
+To: "Johan Borkhuis" <j.borkhuis@dutchspace.nl>
+Subject: Re: Driver for device behind a PCI-VME bridge
+In-Reply-To: <46CAE973.6040306@dutchspace.nl>
 MIME-Version: 1.0
-To: Josh Boyer <jwboyer@jdub.homelinux.org>
-Subject: Re: [PATCH] Consolidate XILINX_VIRTEX board support
-References: <20070806225642.7D72A7B005B@mail34-fra.bigfish.com>	<87vebryfrv.fsf@sleipner.barco.com>	<46C79E33.8090600@dlasys.net>
-	<20070818205752.049d2bc6@vader.jdub.homelinux.org>
-In-Reply-To: <20070818205752.049d2bc6@vader.jdub.homelinux.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Type: multipart/alternative;
+	boundary="----=_Part_151991_16638288.1187855265285"
+References: <929bf310708200140w6efc57f6k81a1339845059e2d@mail.gmail.com>
+	<46C954AA.7050609@dutchspace.nl>
+	<929bf310708200158m3dab7669j56e4dbf2d84f17a@mail.gmail.com>
+	<929bf310708210055k3970c3chfc097ff776af439a@mail.gmail.com>
+	<929bf310708210056s2b699500x36c6b1ae83881496@mail.gmail.com>
+	<46CAA332.9060907@dutchspace.nl>
+	<929bf310708210249x3cf8342aq4523d2a895d78eb@mail.gmail.com>
+	<46CAE973.6040306@dutchspace.nl>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,42 +34,61 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Josh Boyer wrote:
->> arch/boot/simple/embed_config.c jusst seems to be a random collection
->> of board specific code anyway.
->> A giant case statement implimented with #ifdef's. It is just
->> screaming to be done some better way.
+------=_Part_151991_16638288.1187855265285
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
->>
->> You mean like a device tree?  ;)
->>
->> josh
->>     
-Maybe, I am waiting to see somebody move something to device tree so 
-that I can get a better grasp of what it is and how it works.
- From what little I know I think it is going to be very significant for 
-my BSP - we are trying to use a single binary for alot of different
-boards, or the same board with different firmware. From what I am 
-gathering I can have the loader pass a device tree to the kernel
-and the device tree will basically describe the hardware to the kernel.
+Hi again,
 
-Only at the moment I don't have the time to learn enough to attempt to 
-lead the charge moving xilinx stuff to powerpc.
-
-Is there a way to do this in small peices ?
-
-It would be nice to end some of the debate on how to setup ppc/4xx for 
-multiple xilinx targets and just get it over with and move to powerpc
-device tree, ...
-But I can't beat others up for what I can't find time for myself.
+First of all thanks for reply.
 
 
--- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+> I attached a diff to the 3.7 version of the Motorola patch. I hope this
+> will help you. This is not the Xenomai version, but the standard version
+> with VME interrupts per level. The mechanism for Xenomai is identical,
+> but I don't know yet about the legal status of this. The attached patch
+> has also been provided to Motorola.
 
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
+
+I've got the 3.5 version of the driver, and tried to find newer one. Where
+do you get this new releases and patches?
+Nevertheless thanks for the patch.
+
+I also had some ssh problems, but AFAICR I had to enable UNIX98PTYS and
+> BSDPTYS, and create the entries in /dev/ for the BSD ptys (/dev/ttypXX
+> and /dev/ptyXX).
+
+
+I also had these two options enabled, but still the kernel hangs at boot
+time just after trying to initialize SCSI devices... Without Xenomai this
+problem doesn't occur. I'm wondering what is that makes Xenomai mess up
+things so badly?
+
+Best regards,
+Konstantin Boyanov
+
+------=_Part_151991_16638288.1187855265285
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<div>Hi again,</div>
+<div>&nbsp;</div>
+<div>First of all thanks for reply.<br>&nbsp;</div>
+<div>
+<blockquote class="gmail_quote" style="PADDING-LEFT: 1ex; MARGIN: 0px 0px 0px 0.8ex; BORDER-LEFT: #ccc 1px solid">I attached a diff to the 3.7 version of the Motorola patch. I hope this<br>will help you. This is not the Xenomai version, but the standard version
+<br>with VME interrupts per level. The mechanism for Xenomai is identical,<br>but I don&#39;t know yet about the legal status of this. The attached patch<br>has also been provided to Motorola.</blockquote>
+<div>&nbsp;</div>
+<div>I&#39;ve got the 3.5 version of the driver, and tried to find newer one. Where do you get this new releases and patches?</div>
+<div>Nevertheless thanks for the patch.</div><br>
+<blockquote class="gmail_quote" style="PADDING-LEFT: 1ex; MARGIN: 0px 0px 0px 0.8ex; BORDER-LEFT: #ccc 1px solid">I also had some ssh problems, but AFAICR I had to enable UNIX98PTYS and<br>BSDPTYS, and create the entries in /dev/ for the BSD ptys (/dev/ttypXX
+<br>and /dev/ptyXX).</blockquote>
+<div>&nbsp;</div>
+<div>I also had these two options enabled, but still the kernel hangs at boot time just after trying to initialize SCSI devices... Without Xenomai this problem doesn&#39;t occur. I&#39;m wondering what is that makes Xenomai mess up things so badly?
+</div>
+<div>&nbsp;</div>
+<div>Best regards,</div>
+<div>Konstantin Boyanov</div></div>
+
+------=_Part_151991_16638288.1187855265285--
