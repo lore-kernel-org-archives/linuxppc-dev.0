@@ -1,21 +1,16 @@
-Return-Path: <jesse.barnes@intel.com>
-Received: from mga03.intel.com (mga03.intel.com [143.182.124.21])
-	by ozlabs.org (Postfix) with ESMTP id F1421DDE2F
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 03:00:09 +1000 (EST)
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: wmb vs mmiowb
-Date: Thu, 23 Aug 2007 09:56:16 -0700
-References: <20070822045714.GD26374@wotan.suse.de>
-	<alpine.LFD.0.999.0708221049560.30176@woody.linux-foundation.org>
-	<1187854035.5972.4.camel@localhost.localdomain>
-In-Reply-To: <1187854035.5972.4.camel@localhost.localdomain>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: kou.ishizaki@toshiba.co.jp
+Subject: Re: [Cbe-oss-dev] [patch 1/5] spu_manage: use newer physical-id
+Date: Thu, 23 Aug 2007 18:12:19 +0200
+References: <20070823.180152.-1300528381.kouish@swc.toshiba.co.jp>
+In-Reply-To: <20070823.180152.-1300528381.kouish@swc.toshiba.co.jp>
 MIME-Version: 1.0
+Message-Id: <200708231812.20493.arnd@arndb.de>
 Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200708230956.17049.jesse.barnes@intel.com>
-Cc: Nick Piggin <npiggin@suse.de>, linux-ia64@vger.kernel.org,
-	Linus Torvalds <torvalds@linux-foundation.org>, linuxppc-dev@ozlabs.org
+  charset="iso-8859-15"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
+	cbe-oss-dev@ozlabs.org, jk@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,25 +20,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday, August 23, 2007 12:27 am Benjamin Herrenschmidt wrote:
-> > Of course, the normal memory barrier would usually be a
-> > "spin_unlock()" or something like that, not a "wmb()". In fact, I
-> > don't think the powerpc implementation (as an example of this) will
-> > actually synchronize with anything *but* a spin_unlock().
->
-> We are even more sneaky in the sense that we set a per-cpu flag on
-> any MMIO write and do the sync automatically in spin_unlock() :-)
+On Thursday 23 August 2007, kou.ishizaki@toshiba.co.jp wrote:
+> Please check "unit-id" if "physical-id" doesn't exist. Because Celleb
+> uses "unit-id" to provide spe_id.
 
-Yeah, that's a reasonable thing to do, and in fact I think there's code 
-to do something similar when a task is switched out (this keeps user 
-level drivers from having do mmiowb() type things).
+Ok, I need to discuss this with Christian then, to make sure we get to
+a version that works everywhere. Paul, please ignore this patch for now.
 
-FWIW, I think I had an earlier version of the patch that used the name 
-pioflush() or something similar, the only confusing thing about that 
-name is that the primitive doesn't actually force I/Os down to the 
-device level, just to the closest bridge.
+I've update the git repository to only have the other four patches.
 
-It'll be interesting to see if upcoming x86 designs share this problem 
-(e.g. large HT or CSI topologies).
-
-Jesse
+	Arnd <><
