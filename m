@@ -1,20 +1,19 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18126.6446.158988.391247@cargo.ozlabs.ibm.com>
-Date: Fri, 24 Aug 2007 09:33:02 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Andreas Schwab <schwab@suse.de>
-Subject: Re: 2.6.23-rc3 broken on G5
-In-Reply-To: <jetzqvk9of.fsf@sykes.suse.de>
-References: <jelkccftt6.fsf@sykes.suse.de>
-	<18116.52843.212978.281399@cargo.ozlabs.ibm.com>
-	<jefy2j6qtq.fsf@sykes.suse.de>
-	<18118.41979.148016.177427@cargo.ozlabs.ibm.com>
-	<jey7g9i3qk.fsf@sykes.suse.de>
-	<18119.42120.893384.555002@cargo.ozlabs.ibm.com>
-	<jetzqvk9of.fsf@sykes.suse.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <miltonm@sullivan.realtime.net>
+Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8325BDDE3C
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 09:38:45 +1000 (EST)
+Date: Thu, 23 Aug 2007 18:17:29 -0500 (CDT)
+Message-Id: <200708232317.l7NNHTjq011892@sullivan.realtime.net>
+From: Milton Miller <miltonm@bga.com>
+Sender: Milton Miller <miltonm@realtime.net>
+To: Stephen Rothwell                    <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 1/2] [POWERPC] Remove cmd_line from head*.S
+In-Reply-To: <1A23DF12-65EB-4236-B78A-ADF1DDF0FFFD@kernel.crashing.org>
+References: <1A23DF12-65EB-4236-B78A-ADF1DDF0FFFD@kernel.crashing.org>,
+	<20070823130913.2e9db6eb.sfr@canb.auug.org.au>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andreas Schwab writes:
 
-> That didn't change anything visibly.
+On Thu Aug 23 13:27:31 EST 2007, Kumar Gala wrote:
+> On Aug 22, 2007, at 10:09 PM, Stephen Rothwell wrote:
+>>
+>> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+>> index 0028fe6..dc85005 100644
+>> --- a/arch/powerpc/kernel/prom.c
+>> +++ b/arch/powerpc/kernel/prom.c
+>> @@ -60,6 +60,8 @@
+>>  #endif
+>>
+>>
+>> +char cmd_line[COMMAND_LINE_SIZE];
+>> +
+>
+> would this be better in setup-common.c?
+>
 
-OK, please try this one and let me know if it fixes it.
 
-Paul.
+I strongly agree with Kumar.  It doesn't belong in prom.c
 
-diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index a73d2d7..1ca87eb 100644
---- a/arch/powerpc/mm/slb.c
-+++ b/arch/powerpc/mm/slb.c
-@@ -89,7 +89,7 @@ void slb_flush_and_rebolt(void)
- 	vflags = SLB_VSID_KERNEL | vmalloc_llp;
- 
- 	ksp_esid_data = mk_esid_data(get_paca()->kstack, 2);
--	if ((ksp_esid_data & ESID_MASK) == PAGE_OFFSET) {
-+	if ((ksp_esid_data & ESID_MASK) <= PAGE_OFFSET) {
- 		ksp_esid_data &= ~SLB_ESID_V;
- 		slb_shadow_clear(2);
- 	} else {
+milton
