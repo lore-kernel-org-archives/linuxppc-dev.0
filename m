@@ -1,19 +1,16 @@
 Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EA885DDEEB
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 13:25:32 +1000 (EST)
-In-Reply-To: <20070823130913.2e9db6eb.sfr@canb.auug.org.au>
-References: <20070823130913.2e9db6eb.sfr@canb.auug.org.au>
+In-Reply-To: <75EDD900-3B5E-4D08-9311-13B6510EDE6E@kernel.crashing.org>
+References: <75EDD900-3B5E-4D08-9311-13B6510EDE6E@kernel.crashing.org>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <1A23DF12-65EB-4236-B78A-ADF1DDF0FFFD@kernel.crashing.org>
+Message-Id: <2F7E4C06-9AC3-458A-B1E3-CA6E0BDD189A@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] [POWERPC] Remove cmd_line from head*.S
-Date: Wed, 22 Aug 2007 22:27:31 -0500
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+Subject: Re: asm-ppc header issues when building ARCH=powerpc
+Date: Wed, 22 Aug 2007 22:33:55 -0500
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,42 +21,33 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Aug 22, 2007, at 10:09 PM, Stephen Rothwell wrote:
+On Aug 22, 2007, at 10:19 AM, Kumar Gala wrote:
 
-> It is just a C char array, so declare it thusly.
+> Guys,
 >
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  arch/powerpc/kernel/head_32.S        |    8 --------
->  arch/powerpc/kernel/head_44x.S       |    8 --------
->  arch/powerpc/kernel/head_4xx.S       |    7 -------
->  arch/powerpc/kernel/head_64.S        |    8 --------
->  arch/powerpc/kernel/head_8xx.S       |    8 --------
->  arch/powerpc/kernel/head_fsl_booke.S |    8 --------
->  arch/powerpc/kernel/prom.c           |    2 ++
->  7 files changed, 2 insertions(+), 47 deletions(-)
+> I was wondering if I could get your help with looking at the
+> following lists and determining if we have an issue or not related
+> the following files:
 >
-> -- 
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
+> Getting some classification on these would be good.  Possibly
+> classifications, doesn't build in ARCH=powerpc, remove include, real
+> issue, etc.
+>
+> - k
 
-[snip]
+My analysis of <asm/bootinfo.h> usage:
 
-> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> index 0028fe6..dc85005 100644
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -60,6 +60,8 @@
->  #endif
->
->
-> +char cmd_line[COMMAND_LINE_SIZE];
-> +
-
-would this be better in setup-common.c?
-
->  static int __initdata dt_root_addr_cells;
->  static int __initdata dt_root_size_cells;
->
+./drivers/macintosh/adb-iop.c:#include <asm/bootinfo.h>		remove
+./drivers/char/vme_scc.c:#include <asm/bootinfo.h>		68k only
+./drivers/char/serial167.c:#include <asm/bootinfo.h>		68k only
+./drivers/serial/dz.c:#include <asm/bootinfo.h>			decstation
+./drivers/mtd/devices/ms02-nv.c:#include <asm/bootinfo.h>	decstation
+./drivers/net/macsonic.c:#include <asm/bootinfo.h>		68k
+./drivers/net/jazzsonic.c:#include <asm/bootinfo.h>		mips
+./drivers/video/pmag-aa-fb.c:#include <asm/bootinfo.h>		mips
+./drivers/video/maxinefb.c:#include <asm/bootinfo.h>		mips
+./drivers/video/logo/logo.c:#include <asm/bootinfo.h>		mips
+./drivers/video/macfb.c:#include <asm/bootinfo.h>		68k
+./drivers/video/valkyriefb.c:#include <asm/bootinfo.h>		68k
 
 - k
