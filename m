@@ -1,27 +1,21 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 95698DDEEB
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 09:54:08 +1000 (EST)
-Date: Wed, 22 Aug 2007 16:53:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jason Wessel <jason.wessel@windriver.com>
-Subject: Re: [Kgdb-bugreport] 2.6.23-rc3-mm1: kgdb build failure on powerpc
-Message-Id: <20070822165318.b82da13c.akpm@linux-foundation.org>
-In-Reply-To: <46CCBC3C.7010307@windriver.com>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
-	<200708222104.29432.m.kozlowski@tuxland.pl>
-	<20070822124743.fc316963.akpm@linux-foundation.org>
-	<46CCBC3C.7010307@windriver.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 4C4CBDDE9E
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 10:31:09 +1000 (EST)
+Date: Thu, 23 Aug 2007 10:31:03 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] [02/10] pasemi_mac: Stop using the pci config space
+	accessors for register read/writes
+Message-Id: <20070823103103.a1815a07.sfr@canb.auug.org.au>
+In-Reply-To: <20070822141248.GC16830@lixom.net>
+References: <20070817205413.548020000@lixom.net>
+	<20070822141248.GC16830@lixom.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: kgdb-bugreport@lists.sourceforge.net, amitkale@linsyssoft.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-	Paul Mackerras <paulus@samba.org>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__23_Aug_2007_10_31_03_+1000_N5WdhekWD3pD01YF"
+Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,54 +25,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 22 Aug 2007 17:44:12 -0500
-Jason Wessel <jason.wessel@windriver.com> wrote:
+--Signature=_Thu__23_Aug_2007_10_31_03_+1000_N5WdhekWD3pD01YF
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Perhaps there is a cleaner way to do the same thing and avoid the 
-> cmpxchg all together.  I used the attached patch to eliminate the 
-> cmpxchg operation.
-> 
-> 
-> Jason.
-> 
-> 
-> [kgdb_enter_atomic.patch  text/plain (2.0KB)]
-> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-> 
-> ---
->  kernel/kgdb.c |   18 ++++++++++++++++--
->  1 file changed, 16 insertions(+), 2 deletions(-)
-> 
-> --- a/kernel/kgdb.c
-> +++ b/kernel/kgdb.c
-> @@ -121,6 +121,7 @@ struct task_struct *kgdb_usethread, *kgd
->  
->  int debugger_step;
->  atomic_t debugger_active;
-> +static atomic_t kgdb_sync = ATOMIC_INIT(-1);
->  
->  /* Our I/O buffers. */
->  static char remcom_in_buffer[BUFMAX];
-> @@ -638,8 +639,14 @@ static void kgdb_wait(struct pt_regs *re
->  	kgdb_info[processor].task = current;
->  	atomic_set(&procindebug[processor], 1);
->  
-> +	/* The master processor must be active to enter here, but this is
-> +	 * gaurd in case the master processor had not been selected if
-> +	 * this was an entry via nmi.
-> +	 */
-> +	while (!atomic_read(&debugger_active));
+Hi Olof,
 
-eek.  We're in the process of hunting down and eliminating exactly this
-construct.  There have been cases where the compiler cached the
-atomic_read() result in a register, turning the above into an infinite
-loop.
+On Wed, 22 Aug 2007 09:12:48 -0500 Olof Johansson <olof@lixom.net> wrote:
+>
+> -static unsigned int read_iob_reg(struct pasemi_mac *mac, unsigned int re=
+g)
+> +static inline unsigned int read_iob_reg(struct pasemi_mac *mac, unsigned=
+ int reg)
+          ^^^^^^
+For static functions in C files, we tend not to bother marking them
+inline any more as the compiler does a pretty good job theses days.
 
-Plus we should never add power-burners like that into the kernel anyway. 
-That loop should have a cpu_relax() in it.  Which will also fix the
-compiler problem described above.
+>  {
+>  	unsigned int val;
+> =20
+> -	pci_read_config_dword(mac->iob_pdev, reg, &val);
+> +	val =3D in_le32(mac->iob_regs+reg);
+> +
+>  	return val;
 
-Thirdly, please always add a newline when coding statements like that:
+Why not just "return in_le32(mac->iob_regs+reg);" ?
+And similarly below?
 
-	while (expr())
-		;
+> +static inline void __iomem * __devinit map_onedev(struct pci_dev *p, int=
+ index)
+          ^^^^^^                ^^^^^^^^^
+Mixing inline and __*init is just plain silly :-)
+
+> +fallback:
+> +	/* This is hardcoded and ugly, but we have some firmware versions
+> +	 * who don't provide the register space in the device tree. Luckily
+           ^^^
+"that"
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__23_Aug_2007_10_31_03_+1000_N5WdhekWD3pD01YF
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGzNVLTgG2atn1QN8RAtYqAJ44BLpY7ycf+VNZdMOZTt3Jro8oOwCfUo5a
+YXoprYiexVRdRxj4dSvIgQA=
+=aUb7
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__23_Aug_2007_10_31_03_+1000_N5WdhekWD3pD01YF--
