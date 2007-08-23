@@ -1,32 +1,25 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from ausmtp05.au.ibm.com (ausmtp05.au.ibm.com [202.81.18.154])
+Return-Path: <torvalds@linux-foundation.org>
+Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
+	[207.189.120.14])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ausmtp05.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CF30DDDFA3
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 12:53:23 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by ausmtp05.au.ibm.com (8.13.8/8.13.8) with ESMTP id l7N2tJ4k6144080
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 12:55:20 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.250.242])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l7N2us2g183792
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 12:56:54 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l7N2rKCu008436
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 12:53:20 +1000
-Date: Thu, 23 Aug 2007 12:49:37 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: asm-ppc header issues when building ARCH=powerpc
-Message-ID: <20070823024937.GD7042@localhost.localdomain>
-References: <75EDD900-3B5E-4D08-9311-13B6510EDE6E@kernel.crashing.org>
-	<20070822143047.6c8a0d4e@weaponx.rchland.ibm.com>
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 51C9ADDF24
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 12:58:40 +1000 (EST)
+Date: Wed, 22 Aug 2007 19:57:56 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Nick Piggin <npiggin@suse.de>
+Subject: Re: wmb vs mmiowb
+In-Reply-To: <20070823022043.GB18788@wotan.suse.de>
+Message-ID: <alpine.LFD.0.999.0708221953360.30176@woody.linux-foundation.org>
+References: <20070822045714.GD26374@wotan.suse.de>
+	<alpine.LFD.0.999.0708221049560.30176@woody.linux-foundation.org>
+	<200708221202.12403.jesse.barnes@intel.com>
+	<20070823022043.GB18788@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070822143047.6c8a0d4e@weaponx.rchland.ibm.com>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Content-Type: TEXT/PLAIN; charset=us-ascii
+Cc: linux-ia64@vger.kernel.org, Jesse Barnes <jesse.barnes@intel.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,33 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 22, 2007 at 02:30:47PM -0500, Josh Boyer wrote:
-> On Wed, 22 Aug 2007 10:19:21 -0500
-> Kumar Gala <galak@kernel.crashing.org> wrote:
-> 
-> > Guys,
-> > 
-> > I was wondering if I could get your help with looking at the  
-> > following lists and determining if we have an issue or not related  
-> > the following files:
-> > 
-> > Getting some classification on these would be good.  Possibly  
-> > classifications, doesn't build in ARCH=powerpc, remove include, real  
-> > issue, etc.
-> 
-> Sure.
-> 
-> > ./drivers/i2c/busses/i2c-ibm_iic.c:#include <asm/ocp.h>
-> > ./drivers/i2c/busses/i2c-ibm_iic.c:#include <asm/ibm4xx.h>
-> 
-> These one depends on IBM_OCP in Kconfig.  We don't select/enable that on
-> any existing arch/powerpc 4xx stuff so it won't be built anyway.
 
-Nor will we ever enable IBM_OCP in arch/powerpc: the device tree
-entirely obsoletes the OCP crap.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+On Thu, 23 Aug 2007, Nick Piggin wrote:
+>
+> > Irix actually had an io_unlock() routine that did this 
+> > implicitly, but iirc that was shot down for Linux...
+> 
+> Why was it shot down? Seems like a pretty good idea to me ;)
+
+It's horrible. We'd need it for *every* single spinlock type. We have lots 
+of them. 
+
+So the choice is between:
+
+ - sane:
+
+	mmiowb()
+
+   followed by any of the existing "spin_unlock()" variants (plain, 
+   _irq(), _bh(), _irqrestore())
+
+ - insane: multiply our current set of unlock primitives by two, by making 
+   "io" versions for them all:
+
+	spin_unlock_io[_irq|_irqrestore|_bh]()
+
+but there's actually an EVEN WORSE problem with the stupid Irix approach, 
+namely that it requires that the unlocker be aware of the exact details of 
+what happens inside the lock. If the locking is done at an outer layer, 
+that's not at all obvious!
+
+In other words, Irix (once again) made a horrible and idiotic choice. 
+
+Big surprise. Irix was probably the flakiest and worst of all the 
+commercial proprietary unixes. No taste.
+
+		Linus
