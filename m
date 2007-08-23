@@ -1,21 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 4C4CBDDE9E
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 10:31:09 +1000 (EST)
-Date: Thu, 23 Aug 2007 10:31:03 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH] [02/10] pasemi_mac: Stop using the pci config space
-	accessors for register read/writes
-Message-Id: <20070823103103.a1815a07.sfr@canb.auug.org.au>
-In-Reply-To: <20070822141248.GC16830@lixom.net>
-References: <20070817205413.548020000@lixom.net>
-	<20070822141248.GC16830@lixom.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__23_Aug_2007_10_31_03_+1000_N5WdhekWD3pD01YF"
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
+Return-Path: <b04825@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BE458DDF02
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 11:07:36 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l7N17UVx022849
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 18:07:31 -0700 (MST)
+From: Timur Tabi <timur@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [POWERPC] add clrsetbits macros
+Date: Wed, 22 Aug 2007 20:07:28 -0500
+Message-Id: <11878312483155-git-send-email-timur@freescale.com>
+Cc: Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,59 +25,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__23_Aug_2007_10_31_03_+1000_N5WdhekWD3pD01YF
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patch adds the clrsetbits_xxx() macros, which are used to set and clear
+multiple bits in a single read-modify-write operation.  Specify the bits to
+clear in the 'clear' parameter and the bits to set in the 'set' parameter.
+These macros can also be used to set a multiple-bit bit pattern using a mask,
+by specifying the mask in the 'clear' parameter and the new bit pattern in the
+'set' parameter.  There are big-endian and little-endian versions for 8, 16,
+32, and 64 bits.
 
-Hi Olof,
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
 
-On Wed, 22 Aug 2007 09:12:48 -0500 Olof Johansson <olof@lixom.net> wrote:
->
-> -static unsigned int read_iob_reg(struct pasemi_mac *mac, unsigned int re=
-g)
-> +static inline unsigned int read_iob_reg(struct pasemi_mac *mac, unsigned=
- int reg)
-          ^^^^^^
-For static functions in C files, we tend not to bother marking them
-inline any more as the compiler does a pretty good job theses days.
+put back the original functions and just based them off clrsetbits().
 
->  {
->  	unsigned int val;
-> =20
-> -	pci_read_config_dword(mac->iob_pdev, reg, &val);
-> +	val =3D in_le32(mac->iob_regs+reg);
-> +
->  	return val;
+ include/asm-powerpc/io.h |   23 +++++++++++++++++++++++
+ 1 files changed, 23 insertions(+), 0 deletions(-)
 
-Why not just "return in_le32(mac->iob_regs+reg);" ?
-And similarly below?
-
-> +static inline void __iomem * __devinit map_onedev(struct pci_dev *p, int=
- index)
-          ^^^^^^                ^^^^^^^^^
-Mixing inline and __*init is just plain silly :-)
-
-> +fallback:
-> +	/* This is hardcoded and ugly, but we have some firmware versions
-> +	 * who don't provide the register space in the device tree. Luckily
-           ^^^
-"that"
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__23_Aug_2007_10_31_03_+1000_N5WdhekWD3pD01YF
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGzNVLTgG2atn1QN8RAtYqAJ44BLpY7ycf+VNZdMOZTt3Jro8oOwCfUo5a
-YXoprYiexVRdRxj4dSvIgQA=
-=aUb7
------END PGP SIGNATURE-----
-
---Signature=_Thu__23_Aug_2007_10_31_03_+1000_N5WdhekWD3pD01YF--
+diff --git a/include/asm-powerpc/io.h b/include/asm-powerpc/io.h
+index 4c0b550..38f03bc 100644
+--- a/include/asm-powerpc/io.h
++++ b/include/asm-powerpc/io.h
+@@ -737,6 +737,29 @@ static inline void * bus_to_virt(unsigned long address)
+ #define setbits8(_addr, _v) out_8((_addr), in_8(_addr) |  (_v))
+ #define clrbits8(_addr, _v) out_8((_addr), in_8(_addr) & ~(_v))
+ 
++/* Clear and set bits in one shot.  These macros can be used to clear and
++ * set multiple bits in a register using a single read-modify-write.  These
++ * macros can also be used to set a multiple-bit bit pattern using a mask,
++ * by specifying the mask in the 'clear' parameter and the new bit pattern
++ * in the 'set' parameter.
++ */
++
++#define clrsetbits(type, addr, clear, set) \
++	out_##type((addr), (in_##type(addr) & ~(clear)) | (set))
++
++#ifdef __powerpc64__
++#define clrsetbits_be64(addr, clear, set) clrsetbits(be64, addr, clear, set)
++#define clrsetbits_le64(addr, clear, set) clrsetbits(le64, addr, clear, set)
++#endif
++
++#define clrsetbits_be32(addr, clear, set) clrsetbits(be32, addr, clear, set)
++#define clrsetbits_le32(addr, clear, set) clrsetbits(le32, addr, clear, set)
++
++#define clrsetbits_be16(addr, clear, set) clrsetbits(be16, addr, clear, set)
++#define clrsetbits_le16(addr, clear, set) clrsetbits(le32, addr, clear, set)
++
++#define clrsetbits_8(addr, clear, set) clrsetbits(8, addr, clear, set)
++
+ #endif /* __KERNEL__ */
+ 
+ #endif /* _ASM_POWERPC_IO_H */
+-- 
+1.5.2.4
