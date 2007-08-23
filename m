@@ -1,21 +1,12 @@
-Return-Path: <b04825@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BE458DDF02
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 11:07:36 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l7N17UVx022849
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2007 18:07:31 -0700 (MST)
-From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [POWERPC] add clrsetbits macros
-Date: Wed, 22 Aug 2007 20:07:28 -0500
-Message-Id: <11878312483155-git-send-email-timur@freescale.com>
-Cc: Timur Tabi <timur@freescale.com>
+Return-Path: <olof@lixom.net>
+Date: Wed, 22 Aug 2007 19:26:37 -0500
+From: Olof Johansson <olof@lixom.net>
+To: paulus@ozlabs.org
+Subject: [PATCH] Move serial_dev_init to device_initcall()
+Message-ID: <20070823002637.GA24332@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,55 +16,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds the clrsetbits_xxx() macros, which are used to set and clear
-multiple bits in a single read-modify-write operation.  Specify the bits to
-clear in the 'clear' parameter and the bits to set in the 'set' parameter.
-These macros can also be used to set a multiple-bit bit pattern using a mask,
-by specifying the mask in the 'clear' parameter and the new bit pattern in the
-'set' parameter.  There are big-endian and little-endian versions for 8, 16,
-32, and 64 bits.
+With the I/O space rewrite by BenH, the legacy_serial serial_dev_init()
+initcall is now called before I/O space is setup, but it's dependent on
+it being available.
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
+Since there's no way to make dependencies between initcalls, we'll just
+have to move it to device_initcall(). Yes, it's suboptimal but I'm not
+aware of any better solution at this time.
+
+
+Signed-off-by: Olof Johansson <olof@lixom.net>
+
 ---
 
-put back the original functions and just based them off clrsetbits().
+I think I might have one of the few hardware platforms with UART on PIO,
+at least if noone else has already hit this. It was introduced by BenH's
+rewrite of the I/O space allocation earlier, and the problem is that by
+the time serial_dev_init() runs, the hose io_base_virt isn't available.
 
- include/asm-powerpc/io.h |   23 +++++++++++++++++++++++
- 1 files changed, 23 insertions(+), 0 deletions(-)
+I still see the platform devices register before the PCI ones, so it
+looks like init order is undisturbed by this change. Still, it'd be good
+to hear test feedback from other platforms as needed. It's uncertain what
+platforms the comments above serial_dev_init() about needing overrides
+applies for, so I don't know which ones might be sensitive to call order
+changes.
 
-diff --git a/include/asm-powerpc/io.h b/include/asm-powerpc/io.h
-index 4c0b550..38f03bc 100644
---- a/include/asm-powerpc/io.h
-+++ b/include/asm-powerpc/io.h
-@@ -737,6 +737,29 @@ static inline void * bus_to_virt(unsigned long address)
- #define setbits8(_addr, _v) out_8((_addr), in_8(_addr) |  (_v))
- #define clrbits8(_addr, _v) out_8((_addr), in_8(_addr) & ~(_v))
+
+Index: mainline/arch/powerpc/kernel/legacy_serial.c
+===================================================================
+--- mainline.orig/arch/powerpc/kernel/legacy_serial.c
++++ mainline/arch/powerpc/kernel/legacy_serial.c
+@@ -493,7 +493,7 @@ static int __init serial_dev_init(void)
  
-+/* Clear and set bits in one shot.  These macros can be used to clear and
-+ * set multiple bits in a register using a single read-modify-write.  These
-+ * macros can also be used to set a multiple-bit bit pattern using a mask,
-+ * by specifying the mask in the 'clear' parameter and the new bit pattern
-+ * in the 'set' parameter.
-+ */
-+
-+#define clrsetbits(type, addr, clear, set) \
-+	out_##type((addr), (in_##type(addr) & ~(clear)) | (set))
-+
-+#ifdef __powerpc64__
-+#define clrsetbits_be64(addr, clear, set) clrsetbits(be64, addr, clear, set)
-+#define clrsetbits_le64(addr, clear, set) clrsetbits(le64, addr, clear, set)
-+#endif
-+
-+#define clrsetbits_be32(addr, clear, set) clrsetbits(be32, addr, clear, set)
-+#define clrsetbits_le32(addr, clear, set) clrsetbits(le32, addr, clear, set)
-+
-+#define clrsetbits_be16(addr, clear, set) clrsetbits(be16, addr, clear, set)
-+#define clrsetbits_le16(addr, clear, set) clrsetbits(le32, addr, clear, set)
-+
-+#define clrsetbits_8(addr, clear, set) clrsetbits(8, addr, clear, set)
-+
- #endif /* __KERNEL__ */
+ 	return platform_device_register(&serial_device);
+ }
+-arch_initcall(serial_dev_init);
++device_initcall(serial_dev_init);
  
- #endif /* _ASM_POWERPC_IO_H */
--- 
-1.5.2.4
+ 
+ /*
