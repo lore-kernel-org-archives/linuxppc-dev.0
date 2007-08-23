@@ -1,21 +1,19 @@
-Return-Path: <npiggin@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 19B5BDDE42
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 11:59:22 +1000 (EST)
-Date: Thu, 23 Aug 2007 03:59:16 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: wmb vs mmiowb
-Message-ID: <20070823015916.GA18788@wotan.suse.de>
-References: <20070822045714.GD26374@wotan.suse.de>
-	<alpine.LFD.0.999.0708221049560.30176@woody.linux-foundation.org>
-Mime-Version: 1.0
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 23 Aug 2007 12:01:47 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 05/20] bootwrapper: flatdevtree fixes
+Message-ID: <20070823020147.GB7042@localhost.localdomain>
+References: <20070820173920.GA30546@ld0162-tx32.am.freescale.net>
+	<20070820173949.GD30562@ld0162-tx32.am.freescale.net>
+	<20070821023044.GF15469@localhost.localdomain>
+	<46CB0E56.2020601@freescale.com>
+	<20070822010907.GA12472@localhost.localdomain>
+	<20070822172456.GA22932@ld0162-tx32.am.freescale.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.LFD.0.999.0708221049560.30176@woody.linux-foundation.org>
-Cc: linux-ia64@vger.kernel.org, Jesse Barnes <jesse.barnes@intel.com>,
-	linuxppc-dev@ozlabs.org
+In-Reply-To: <20070822172456.GA22932@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,116 +23,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 22, 2007 at 11:07:32AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Wed, 22 Aug 2007, Nick Piggin wrote:
+On Wed, Aug 22, 2007 at 12:24:56PM -0500, Scott Wood wrote:
+> On Wed, Aug 22, 2007 at 11:09:07AM +1000, David Gibson wrote:
+> > On Tue, Aug 21, 2007 at 11:09:58AM -0500, Scott Wood wrote:
+> > > The point of #2 was as part of the fix to #1 -- otherwise, the same 
+> > > check for NULL would have to be moved into ft_create_node to 
+> > > conditionally call ft_find_device or ft_find_device_rel.
 > > 
-> > It took me more than a glance to see what the difference is supposed to be
-> > between wmb() and mmiowb(). I think especially because mmiowb isn't really
-> > like a write barrier.
+> > Um... oh, ok, I hadn't spotted that (1) made ft_create() use
+> > find_device_rel().  That sounds doubly wrong: you have the internal
+> > offset pointer, you should be able to create a phandle using the
+> > phandle allocation stuff, rather than having to refind the node you've
+> > just created from the parent.
 > 
-> Well, it is, but it isn't. Not on its own - but together with a "normal" 
-> barrier it is.
- 
-But it is stronger (or different) to write barrier semantics, because it
-enforces the order in which a 3rd party (the IO device) sees writes from
-multiple CPUs. The rest of our barrier concept is based purely on the
-POV of the single entity executing the barrier.
-
-Now it's needed because the IO device is not participating in the same
-synchronisation logic that the CPUs are, which is why I say it is more
-like a synchronisation primitive than a barrier primitive.
-
-
-> > wmb is supposed to order all writes coming out of a single CPU, so that's
-> > pretty simple.
+> Yeah, that'd make more sense.
 > 
-> No. wmb orders all *normal* writes coming out of a single CPU.
-
-I'm pretty sure wmb() should order *all* writes, and smp_wmb() is what
-you're thinking of for ordering regular writes to cacheable memory.
- 
-
-> It may not do anything at all for "uncached" IO writes that aren't part of 
-> the cache coherency, and that are handled using totally different queues 
-> (both inside and outside of the CPU)!
+> > > >  (3) I really dislike;  I just don't see the point.
+> > > 
+> > > It's needed by dt_get_path().
+> > 
+> > No, it isn't.  dt_get_path() needs *some* way of getting the name of a
+> > node, but it could be a separate function, which I think would be
+> > preferable rather than folding it into getprop - you don't need to
+> > search for the name, so a getname() function would have quite a
+> > different structure to getprop().
 > 
-> Now, on x86, the CPU actually tends to order IO writes *more* than it 
-> orders any other writes (they are mostly entirely synchronous, unless the 
-> area has been marked as write merging), but at least on PPC, it's the 
-> other way around: without the cache as a serialization entry, you end up 
-> having a totally separate queueu to serialize, and a regular-memory write 
-> barrier does nothing at all to the IO queue.
+> I'd rather not add a new entry in ops just for that; it's more of an
+> attribute of the dtb format that name is handled specially.  IIUC, on
+> real OF you'd use the same code for both.
 
-Well PPC AFAIKS doesn't need the special synchronisation semantics of
-this mmiowb primitive -- the reason it is not a noop is because the API
-seems to also imply a wmb() (which is fine, and you'd normally want that
-eg.  uncacheable stores must be ordered with the spin_unlock store).
+Actually, no - sorry, that's the other problem with this, which I
+forgot to mention.  On real OF, the "name" property contains the
+node's name *without the unit address*; that is, only the portion
+before the '@'.  So your getprop change does not match real OF
+behaviour - and real OF behaviour will not do what you want for
+dt_get_path().
 
-It is just implemented with the PPC sync instruction, which just orders
-all stores coming out of _this_ CPU. Their IO fabric must prevent IOs
-from being reordered between CPUs if they're executed in a known order
-(which is what Altix does not prevent).
+Actually, in any case, I don't think we want to implement get_path()
+this way for real OF.  Better to have get_path() itself as a callback:
+on real OF I believe we can directly ask for the full path to a given
+phandle, the get name based implementation can then be made specific
+to the flat device tree.
 
- 
-> So think of the IO write queue as something totally asynchronous that has 
-> zero connection to the normal write ordering - and then think of mmiowb() 
-> as a way to *insert* a synchronization point.
+Or actually, I think we might be able to come up with a get_path()
+implementation for flat tree that's less hideous than repeatedly
+calling get_parent() which is an ugly, ugly operation on the flat tree
+(and will get worse with libfdt).
 
-If wmb (the non _smp one) orders all stores including IO stores, then it
-should be sufficient to prevent IO writes from leaking out of a critical
-section. The problem is that the "reader" (the IO device) itself is not
-coherent. So _synchronisation_ point is right; it is not really a barrier.
-Basically it says all IO writes issued by this CPU at this point will be
-seen before any other IO writes issued by any other CPUs subsequently.
+> Plus, something might come along that needs to dynamically look for
+> either name or something else.  It's more flexible this way.
 
-make_mmio_coherent()? queue_mmio_writes()? (I'd still prefer some kind of
-acquire/release API that shows why CPU/CPU order matters too, and how it
-is taken care of).
+Hrm... "something might come along" just seems contrived to me.
 
-
-> > It really seems like it is some completely different concept from a
-> > barrier. And it shows, on the platform where it really matters (sn2), where
-> > the thing actually spins.
-> 
-> I agree that it probably isn't a "write barrier" per se. Think of it as a 
-> "tie two subsystems together" thing.
-
-Yes, in a way it is more like that. Which does fit with my suggestions
-for a name.
-
-
-> (And it doesn't just matter on sn2. It also matters on powerpc64, although 
-> I think they just set a flag and do the *real* sync in the spin_unlock() 
-> path).
-> 
-> Side note: the thing that makes "mmiowb()" even more exciting is that it's 
-> not just the CPU, it's the fabric outside the CPU that matters too. That's 
-> why the sn2 needs this - but the powerpc example shows a case where the 
-> ordering requirement actually comes from the CPU itself.
-
-Well I think sn2 is the *only* reason it matters.  When the ordering
-requirement is coming from the CPU itself, that *is* just a traditional
-write barrier (one which orders normal and io writes).
-
-The funny things powerpc are doing in spin_unlock/etc. are a different
-issue. Basically they are just helping along device drivers who get this
-wrong and assume spinlocks order IOs; our lack of an acquire/release API
-for IOs... they're just trying to get through this sorry state of affairs
-without going insane ;) Powerpc is special here because their ordering
-instructions distinguish between normal and IO, wheras most others don't
-(including ia64, alpha, etc), so _most_ others do get their IOs ordered by
-critical sections. This is a different issue to the mmiowb one (but still
-shows that our APIs could be improved).
-
-Why don't we get a nice easy spin_lock_io/spin_unlock_io, which takes
-care of all the mmiowb and iowrite vs spin unlock problems? (individual
-IOs within the lock would still need to be ordered as approprite).
-
-Then we could also have a serialize_io()/unserialize_io() that takes
-care of the same things but can be used when we have something other
-than a spinlock for ordering CPUs (serialize_io may be a noop, but it
-is good to ensure people are thinking about how they're excluding
-other CPUs here -- if other CPUs are not excluded, then any code calling
-mmiowb is buggy, right?).
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
