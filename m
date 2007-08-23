@@ -1,22 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C544CDDF1D
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 13:08:19 +1000 (EST)
-In-Reply-To: <20070823024937.GD7042@localhost.localdomain>
-References: <75EDD900-3B5E-4D08-9311-13B6510EDE6E@kernel.crashing.org>
-	<20070822143047.6c8a0d4e@weaponx.rchland.ibm.com>
-	<20070823024937.GD7042@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <4FA0E2BC-BDD3-403F-882F-C2CDEC53BBC8@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: asm-ppc header issues when building ARCH=powerpc
-Date: Wed, 22 Aug 2007 22:09:52 -0500
-To: David Gibson <dwg@au1.ibm.com>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 7B42FDDDD5
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2007 13:10:35 +1000 (EST)
+Date: Thu, 23 Aug 2007 13:09:13 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH 1/2] [POWERPC] Remove cmd_line from head*.S
+Message-Id: <20070823130913.2e9db6eb.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,35 +19,145 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+It is just a C char array, so declare it thusly.
 
-On Aug 22, 2007, at 9:49 PM, David Gibson wrote:
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/kernel/head_32.S        |    8 --------
+ arch/powerpc/kernel/head_44x.S       |    8 --------
+ arch/powerpc/kernel/head_4xx.S       |    7 -------
+ arch/powerpc/kernel/head_64.S        |    8 --------
+ arch/powerpc/kernel/head_8xx.S       |    8 --------
+ arch/powerpc/kernel/head_fsl_booke.S |    8 --------
+ arch/powerpc/kernel/prom.c           |    2 ++
+ 7 files changed, 2 insertions(+), 47 deletions(-)
 
-> On Wed, Aug 22, 2007 at 02:30:47PM -0500, Josh Boyer wrote:
->> On Wed, 22 Aug 2007 10:19:21 -0500
->> Kumar Gala <galak@kernel.crashing.org> wrote:
->>
->>> Guys,
->>>
->>> I was wondering if I could get your help with looking at the
->>> following lists and determining if we have an issue or not related
->>> the following files:
->>>
->>> Getting some classification on these would be good.  Possibly
->>> classifications, doesn't build in ARCH=powerpc, remove include, real
->>> issue, etc.
->>
->> Sure.
->>
->>> ./drivers/i2c/busses/i2c-ibm_iic.c:#include <asm/ocp.h>
->>> ./drivers/i2c/busses/i2c-ibm_iic.c:#include <asm/ibm4xx.h>
->>
->> These one depends on IBM_OCP in Kconfig.  We don't select/enable  
->> that on
->> any existing arch/powerpc 4xx stuff so it won't be built anyway.
->
-> Nor will we ever enable IBM_OCP in arch/powerpc: the device tree
-> entirely obsoletes the OCP crap.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Agreed.  We shouldn't taint arch/powerpc with OCP :)
-
-- k
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index 7d73a13..de2fa61 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -1300,14 +1300,6 @@ empty_zero_page:
+ swapper_pg_dir:
+ 	.space	4096
+ 
+-/*
+- * This space gets a copy of optional info passed to us by the bootstrap
+- * Used to pass parameters into the kernel like root=/dev/sda1, etc.
+- */
+-	.globl	cmd_line
+-cmd_line:
+-	.space	512
+-
+ 	.globl intercept_table
+ intercept_table:
+ 	.long 0, 0, i0x200, i0x300, i0x400, 0, i0x600, i0x700
+diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
+index 8869596..e4068ff 100644
+--- a/arch/powerpc/kernel/head_44x.S
++++ b/arch/powerpc/kernel/head_44x.S
+@@ -744,14 +744,6 @@ exception_stack_bottom:
+ exception_stack_top:
+ 
+ /*
+- * This space gets a copy of optional info passed to us by the bootstrap
+- * which is used to pass parameters into the kernel like root=/dev/sda1, etc.
+- */
+-	.globl	cmd_line
+-cmd_line:
+-	.space	512
+-
+-/*
+  * Room for two PTE pointers, usually the kernel and current user pointers
+  * to their respective root page table.
+  */
+diff --git a/arch/powerpc/kernel/head_4xx.S b/arch/powerpc/kernel/head_4xx.S
+index adc7f80..958805b 100644
+--- a/arch/powerpc/kernel/head_4xx.S
++++ b/arch/powerpc/kernel/head_4xx.S
+@@ -1007,13 +1007,6 @@ critical_stack_top:
+ 	.globl	exception_stack_top
+ exception_stack_top:
+ 
+-/* This space gets a copy of optional info passed to us by the bootstrap
+- * which is used to pass parameters into the kernel like root=/dev/sda1, etc.
+- */
+-	.globl	cmd_line
+-cmd_line:
+-	.space	512
+-
+ /* Room for two PTE pointers, usually the kernel and current user pointers
+  * to their respective root page table.
+  */
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index 33c4e8c..381d07a 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -1538,11 +1538,3 @@ empty_zero_page:
+ 	.globl	swapper_pg_dir
+ swapper_pg_dir:
+ 	.space	PAGE_SIZE
+-
+-/*
+- * This space gets a copy of optional info passed to us by the bootstrap
+- * Used to pass parameters into the kernel like root=/dev/sda1, etc.
+- */
+-	.globl	cmd_line
+-cmd_line:
+-	.space	COMMAND_LINE_SIZE
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 901be47..22e1a3c 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -835,14 +835,6 @@ empty_zero_page:
+ swapper_pg_dir:
+ 	.space	4096
+ 
+-/*
+- * This space gets a copy of optional info passed to us by the bootstrap
+- * Used to pass parameters into the kernel like root=/dev/sda1, etc.
+- */
+-	.globl	cmd_line
+-cmd_line:
+-	.space	512
+-
+ /* Room for two PTE table poiners, usually the kernel and current user
+  * pointer to their respective root page table (pgdir).
+  */
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 1f155d3..5f47adb 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -1050,14 +1050,6 @@ exception_stack_bottom:
+ exception_stack_top:
+ 
+ /*
+- * This space gets a copy of optional info passed to us by the bootstrap
+- * which is used to pass parameters into the kernel like root=/dev/sda1, etc.
+- */
+-	.globl	cmd_line
+-cmd_line:
+-	.space	512
+-
+-/*
+  * Room for two PTE pointers, usually the kernel and current user pointers
+  * to their respective root page table.
+  */
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 0028fe6..dc85005 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -60,6 +60,8 @@
+ #endif
+ 
+ 
++char cmd_line[COMMAND_LINE_SIZE];
++
+ static int __initdata dt_root_addr_cells;
+ static int __initdata dt_root_size_cells;
+ 
+-- 
+1.5.2.4
