@@ -1,23 +1,25 @@
-Return-Path: <orutsch@sympatec.com>
-Received: from sympatec.com (mail.sympatec.net [217.5.250.35])
-	(using SSLv3 with cipher DES-CBC3-SHA (168/168 bits))
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7FA19DDE2B
+	by ozlabs.org (Postfix) with ESMTP id 19A5BDDE3B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 23 Aug 2007 18:25:28 +1000 (EST)
-Received: from [172.20.3.151] (account rutsch [172.20.3.151] verified)
-	by sympatec.com (CommuniGate Pro SMTP 5.1.4)
-	with ESMTPSA id 1948531 for linuxppc-embedded@ozlabs.org;
-	Thu, 23 Aug 2007 09:27:25 +0200
-Message-ID: <46CD3618.70801@sympatec.com>
-Date: Thu, 23 Aug 2007 09:24:08 +0200
-From: Oliver Rutsch <orutsch@sympatec.com>
-MIME-Version: 1.0
+	Thu, 23 Aug 2007 20:57:03 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IOAN2-0004bg-3D
+	for linuxppc-embedded@ozlabs.org; Thu, 23 Aug 2007 03:57:00 -0700
+Message-ID: <12291367.post@talk.nabble.com>
+Date: Thu, 23 Aug 2007 03:57:00 -0700 (PDT)
+From: Mirek23 <miroslaw.dach@psi.ch>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: STK5200 pci_enable_device problem
-References: <7B9A8FF57DBB524190E98CABF6E56F078FAE4E@itri.bte.mam.gov.tr>
-In-Reply-To: <7B9A8FF57DBB524190E98CABF6E56F078FAE4E@itri.bte.mam.gov.tr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: signals handling in the kernel
+In-Reply-To: <46C9C70D.9080903@ovro.caltech.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+References: <12032525.post@talk.nabble.com> <46B8A3C9.7060806@ovro.caltech.edu>
+	<46B8BA93.8020909@ovro.caltech.edu> <12234438.post@talk.nabble.com>
+	<46C9C70D.9080903@ovro.caltech.edu>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,32 +30,103 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Mustafa,
 
-> Hi all,
-> 
-[...]
-> 
-> My pci driver is able to scan pci bus and find succesfully the pci
-> device. After this point, pci_enable_device function returns
-> following error:
-> 
-> PCI:  Device 00:18.0 not available because of resource collisions
-> 
+Hi David,
 
-Which ELDK and kernel do you use? I had the same problem on this board 
-with a PLX9054 based PCI card on a 2.4.25 kernel. I switched to the 2.6 
-kernel and the 4.1 ELDK and the card was scanned correctly.
-But keep in mind that the linux PLX drivers do not work out of the box 
-with a big endian platform like the MPC5200. Although there is a 
-BIG_ENDIAN flag in the makefiles there are still some places left in the 
-driver code which have to be patched (the parts with int64 adresses).
-It's not so easy to compile the PLX drivers on the 4.1 ELDK because of 
-missing headers in the ppc architecture. I managed to build the drivers 
-for the 2.6.19 kernel and I was able to work with the card except the 
-DMA routines (still working on this issue).
+    Thank you for your hints. I was not aware about race conditions in
+signal handling routines. So far I did not noticed any anomalies when
+running my server since I use only one interrupt which refers to only one
+signal. 
+I would be interested however in the solution you have suggested with:
+SIGIO and fasync() 
 
-Hope this helps. Bye,
+Would you be so kind to provide me with some example code.
+
+Best Regards
+
+Mirek
+
+
+
+
+David Hawkins-3 wrote:
+> 
+> Hi Mirek,
+> 
+>> In my case I found somehow more convenient to deal with
+>> signals.
+> 
+> Ok.
+> 
+>> The server program which I use was originally written
+>> for VxWorks. In VxWorks there was no separation betwenn
+>> the user and kernel space. When the interrupt occured
+>> in VxWorks the interrupt service routine was called.
+>> The interrupt service routine was implemented in the server. 
+>> 
+>> I found it somehow easier to use signals to trigger signal handler
+>> (previously in VxWorks interrupt service routine) than changing the
+>> structure of the server to deal with select().
+> 
+> I guess it depends on what you consider 'easier'.
+> Signals have potential race conditions, and so using
+> select() is safer. I find it 'easier' to have less
+> problems, so would spend the time to make the server
+> use select().
+> 
+> But, you are free to ignore this advice. :)
+> 
+>> I hope however that there is no fundamental problem with
+>> sending signals from kernel (interrupt service routine)
+>> to the user space.
+> 
+> There are potential race conditions. I'm not sure if this
+> problem was 2.4 kernel specific, or 2.6 kernel specific,
+> or signals specific. I think its signals specific.
+> 
+> A web search should yield more info on this. Try googling
+> 'signals race condition', and it looks like its a problem
+> still.
+> 
+> So it depends on whether your server is running in
+> a critical, and secure system, as to whether you want
+> to stick with signals.
+> 
+>> I do not know why the function kill_proc_info does not 
+>> export its symbol within the kernel 2.6.21 .
+>> With previous version of the kernel 2.4 and early 2.6.*
+>> the kill_proc_info symbol was exported.
+> 
+> If SIGIO is sufficient for you, then just use the driver
+> fasync() call-back mechanism. The example code I referred
+> to has an example. If its not clear to you, I can
+> explain it.
+> 
+> If you're having to modify some corner of the kernel not
+> used by many, then I'm sure your solution is not the
+> correct one, and you won't get anyone helping you
+> when things go wrong.
+> 
+> So, take the experience of others; re-write the server
+> to use signals. If the server was well written to start
+> with you should be able to call the 'signal handler'
+> function after returning from your select() call with
+> the handle ready. It shouldn't be that hard.
+> 
+> Come on, you've just returned from holiday, it should
+> be no sweat to code up a new server :)
+> 
+> Regards,
+> Dave
+> 
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+> 
 
 -- 
-Dipl. Ing. Oliver Rutsch
+View this message in context: http://www.nabble.com/signals-handling-in-the-kernel-tf4229566.html#a12291367
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
