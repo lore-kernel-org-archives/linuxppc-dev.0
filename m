@@ -1,19 +1,23 @@
-Return-Path: <willis@arlut.utexas.edu>
-Received: from ns2.arlut.utexas.edu (ns2.arlut.utexas.edu [146.6.211.1])
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E4F66DDDF7
+	(Client CN "mail.ovro.caltech.edu",
+	Issuer "mail.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 3F6D0DDDFD
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 24 Aug 2007 02:09:03 +1000 (EST)
-Subject: Re: Flash paritioning and JFFS2
-From: Michael Brian Willis <willis@arlut.utexas.edu>
+	Fri, 24 Aug 2007 02:34:03 +1000 (EST)
+Message-ID: <46CDB6B7.4040907@ovro.caltech.edu>
+Date: Thu, 23 Aug 2007 09:32:55 -0700
+From: David Hawkins <dwh@ovro.caltech.edu>
+MIME-Version: 1.0
 To: Mirek23 <miroslaw.dach@psi.ch>
-In-Reply-To: <12293748.post@talk.nabble.com>
-References: <12293748.post@talk.nabble.com>
-Content-Type: text/plain
-Date: Thu, 23 Aug 2007 11:08:57 -0500
-Message-Id: <1187885337.5160.55.camel@louie>
-Mime-Version: 1.0
+Subject: Re: signals handling in the kernel
+References: <12032525.post@talk.nabble.com>
+	<46B8A3C9.7060806@ovro.caltech.edu>	<46B8BA93.8020909@ovro.caltech.edu>
+	<12234438.post@talk.nabble.com>	<46C9C70D.9080903@ovro.caltech.edu>
+	<12291367.post@talk.nabble.com>
+In-Reply-To: <12291367.post@talk.nabble.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,46 +29,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-08-23 at 06:36 -0700, Mirek23 wrote:
-> Could someone advice me how to configure Linux kernel to make use of the
-> Flash (with above mentioned partitions and JFFS2.
+Hi Mirek,
 
-The Denx U-boot and Linux Guide (DULG) will tell you how to configure
-the kernel for MTD devices and will give some good general information: 
-http://www.denx.de/wiki/view/DULG/FlashFilesystemsMTD
+> Thank you for your hints. I was not aware about race
+> conditions in signal handling routines. So far I did
+> not noticed any anomalies when running my server
+> since I use only one interrupt which refers to only one
+> signal. I would be interested however in the solution
+> you have suggested with: SIGIO and fasync() 
+> 
+> Would you be so kind to provide me with some example code.
 
+Look at simple_driver.c and simple_driver_test.c in
 
+http://www.ovro.caltech.edu/~dwh/correlator/software/driver_design.tar.gz
+http://www.ovro.caltech.edu/~dwh/correlator/cobra_docs.html
 
-> I do not know however which specific options to enable for MTD/JFFS2 since
-> it has many sub options.
+Note that I used the old signals API in the user-space test:
 
-The following post has some relevant information for your setup:
-http://osdir.com/ml/linux.uclinux.devel/2005-12/msg00130.html
+    /* Connect up the signal handler */
+    signal(SIGIO, &sigio_handler);
 
+But you should really use the new signals API. I can't
+remember the reason, it'll be explained in the Robbins&Robbins
+book I reference below.
 
+Note that another issue with signals is that they are
+not queued. So if you have multiple events, you might
+miss one.
 
-> I do not know also where to place:
-> -the partition information (which I have mentioned above) 
+I found a reference to unreliable signals. Take a look
+at the signals chapter in "Advanced Programming in the Unix
+Environment", by Stevens. However, that book is a bit old
+now. The lack of safety may now only apply to that specific
+signals API.
 
-The partition information probably should go in a file that you create
-for your board located at "drivers/mtd/maps/<your_file>.c"
- 
+Another nice book is "Unix Systems Programming", by Robbins
+and Robbins. Look in Chapter 8. Especially Section 8.6. That
+section discusses the problems you'll face when your signal
+interrupts POSIX calls, and functions that are signal handler
+safe.
 
-> -the start (0xFF800000) and end (0xFFBFFFFF) physical location of my Flash
-> memory.
+These types of issues would not be faced using select().
+Hence the reason I can't remember the details on using
+signals; as I rarely use them. The exception is that I
+do catch ctrl-C to then shut down a process cleanly.
+However, most of my user-space code is written using the
+ACE C++ classes and infra-structure, and in that case you
+deal with signals by creating an event handler, and
+registering it with a reactor, which is implemented with,
+you guessed it, select().  Notice the theme ... :)
 
-I think this information just needs to be defined in your board's .h
-file in u-boot. I don't think you need to specify this in any linux
-config files. 
+The ACE C++ libraries are detailed in: "C++ Network
+Programming" Volume 1 & 2 by Huston and Schmidt, and
+in "The ACE programmers guide", by Huston et al.
 
-
-
-I hope this info helps. 
-
-
-Regards, 
-
-Michael Willis
-Applied Research Labs - University of Texas
-willis@arlut.utexas.edu
- 
+Cheers,
+Dave
