@@ -1,21 +1,36 @@
-Return-Path: <akepner@sgi.com>
-Received: from relay.sgi.com (netops-testserver-4-out.sgi.com [192.48.171.29])
-	by ozlabs.org (Postfix) with ESMTP id F0A65DDED3
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Aug 2007 01:38:09 +1000 (EST)
-From: akepner@sgi.com
-Date: Fri, 24 Aug 2007 08:37:03 -0700
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Return-Path: <dlstevens@us.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id CDAFEDDED0
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Aug 2007 02:51:08 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7OGp1JK022880
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 12:51:01 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l7OGp18K235210
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 10:51:01 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l7OGp0K3011225
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 10:51:00 -0600
+In-Reply-To: <20070824085203.42f4305c@freepuppy.rosehill.hemminger.net>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+MIME-Version: 1.0
 Subject: Re: RFC: issues concerning the next NAPI interface
-Message-ID: <20070824153703.GN5592@sgi.com>
-References: <200708241559.17055.ossthema@de.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <200708241559.17055.ossthema@de.ibm.com>
+Message-ID: <OF0002C3DB.2E4C4A38-ON88257341.005B1253-88257341.005C7C2A@us.ibm.com>
+From: David Stevens <dlstevens@us.ibm.com>
+Date: Fri, 24 Aug 2007 09:50:58 -0700
+Content-Type: text/plain; charset="US-ASCII"
 Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
 	netdev <netdev@vger.kernel.org>,
 	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
+	Christoph Raisch <raisch@de.ibm.com>, netdev-owner@vger.kernel.org,
+	linux-ppc <linuxppc-dev@ozlabs.org>, akepner@sgi.com,
+	Marcus Eder <meder@de.ibm.com>, Jan-Bernd Themann <ossthema@de.ibm.com>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,24 +40,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 24, 2007 at 03:59:16PM +0200, Jan-Bernd Themann wrote:
-> .......
-> 3) On modern systems the incoming packets are processed very fast. Especially
->    on SMP systems when we use multiple queues we process only a few packets
->    per napi poll cycle. So NAPI does not work very well here and the interrupt 
->    rate is still high. What we need would be some sort of timer polling mode 
->    which will schedule a device after a certain amount of time for high load 
->    situations. With high precision timers this could work well. Current
->    usual timers are too slow. A finer granularity would be needed to keep the
->    latency down (and queue length moderate).
+Stephen Hemminger <shemminger@linux-foundation.org> wrote on 08/24/2007 
+08:52:03 AM:
+
 > 
+> You need hardware support for deferred interrupts. Most devices have it 
+> (e1000, sky2, tg3)
+> and it interacts well with NAPI. It is not a generic thing you want done 
+by the stack,
+> you want the hardware to hold off interrupts until X packets or Y usecs 
+have expired.
 
-We found the same on ia64-sn systems with tg3 a couple of years 
-ago. Using simple interrupt coalescing ("don't interrupt until 
-you've received N packets or M usecs have elapsed") worked 
-reasonably well in practice. If your h/w supports that (and I'd 
-guess it does, since it's such a simple thing), you might try 
-it.
+        For generic hardware that doesn't support it, couldn't you use an 
+estimater
+and adjust the timer dynamicly in software based on sampled values? Switch 
+to per-packet
+interrupts when the receive rate is low...
+        Actually, that's how I thought NAPI worked before I found out 
+otherwise (ie,
+before I looked :-)).
 
--- 
-Arthur
+        The hardware-accelerated one is essentially siloing as done by 
+ancient serial
+devices on UNIX systems. If you had a tunable for a target count, and an 
+estimator
+for the time interval, then switch to per-packet when the estimator 
+exceeds a tunable
+max threshold (and also, I suppose, if you near overflowing the ring on 
+the min
+timer granularity), you get almost all of it, right?
+        Problem is if it increases rapidly, you may drop packets before 
+you notice
+that the ring is full in the current estimated interval.
+
+ +-DLS
