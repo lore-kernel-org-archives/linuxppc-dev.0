@@ -1,37 +1,25 @@
-Return-Path: <ossthema@de.ibm.com>
-Received: from mtagate1.uk.ibm.com (mtagate1.uk.ibm.com [195.212.29.134])
+Return-Path: <jchapman@katalix.com>
+Received: from s36.avahost.net (s36.avahost.net [74.53.95.194])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate1.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 02585DDED7
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Aug 2007 07:12:42 +1000 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate1.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l7OLCcBf078210
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 21:12:38 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
-	[9.149.37.228])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.5) with
-	ESMTP id l7OLCcm22486524
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 22:12:38 +0100
-Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l7OLCYYs030094
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 22:12:35 +0100
-Message-ID: <46CF499C.60009@de.ibm.com>
-Date: Fri, 24 Aug 2007 23:11:56 +0200
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 65105DDEFD
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Aug 2007 07:19:13 +1000 (EST)
+Message-ID: <46CF127D.1090609@katalix.com>
+Date: Fri, 24 Aug 2007 18:16:45 +0100
+From: James Chapman <jchapman@katalix.com>
 MIME-Version: 1.0
-To: Linas Vepstas <linas@austin.ibm.com>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
 Subject: Re: RFC: issues concerning the next NAPI interface
-References: <8VHRR-45R-17@gated-at.bofh.it> <8VKwj-8ke-27@gated-at.bofh.it>
-	<E1IOeSm-0000bm-Jo@be1.lrz> <20070824204243.GI4282@austin.ibm.com>
-In-Reply-To: <20070824204243.GI4282@austin.ibm.com>
+References: <200708241559.17055.ossthema@de.ibm.com>	<20070824153703.GN5592@sgi.com>	<200708241747.16592.ossthema@de.ibm.com>
+	<20070824085203.42f4305c@freepuppy.rosehill.hemminger.net>
+In-Reply-To: <20070824085203.42f4305c@freepuppy.rosehill.hemminger.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
 	netdev <netdev@vger.kernel.org>,
 	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Bodo Eggert <7eggert@gmx.de>,
-	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
+	Christoph Raisch <raisch@de.ibm.com>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, akepner@sgi.com,
+	Marcus Eder <meder@de.ibm.com>, Jan-Bernd Themann <ossthema@de.ibm.com>,
 	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -42,77 +30,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linas Vepstas schrieb:
-> On Fri, Aug 24, 2007 at 09:04:56PM +0200, Bodo Eggert wrote:
->   
->> Linas Vepstas <linas@austin.ibm.com> wrote:
->>     
->>> On Fri, Aug 24, 2007 at 03:59:16PM +0200, Jan-Bernd Themann wrote:
->>>       
->>>> 3) On modern systems the incoming packets are processed very fast. Especially
->>>> on SMP systems when we use multiple queues we process only a few packets
->>>> per napi poll cycle. So NAPI does not work very well here and the interrupt
->>>> rate is still high.
->>>>         
->>> worst-case network ping-pong app: send one
->>> packet, wait for reply, send one packet, etc.
->>>       
->> Possible solution / possible brainfart:
+Stephen Hemminger wrote:
+> On Fri, 24 Aug 2007 17:47:15 +0200
+> Jan-Bernd Themann <ossthema@de.ibm.com> wrote:
+> 
+>> Hi,
 >>
->> Introduce a timer, but don't start to use it to combine packets unless you
->> receive n packets within the timeframe. If you receive less than m packets
->> within one timeframe, stop using the timer. The system should now have a
->> decent response time when the network is idle, and when the network is
->> busy, nobody will complain about the latency.-)
->>     
->
-> Ohh, that was inspirational. Let me free-associate some wild ideas.
->
-> Suppose we keep a running average of the recent packet arrival rate,
-> Lets say its 10 per millisecond ("typical" for a gigabit eth runnning
-> flat-out).  If we could poll the driver at a rate of 10-20 per
-> millisecond (i.e. letting the OS do other useful work for 0.05 millisec),
-> then we could potentially service the card without ever having to enable 
-> interrupts on the card, and without hurting latency.
->
-> If the packet arrival rate becomes slow enough, we go back to an
-> interrupt-driven scheme (to keep latency down).
->
-> The main problem here is that, even for HZ=1000 machines, this amounts 
-> to 10-20 polls per jiffy.  Which, if implemented in kernel, requires 
-> using the high-resolution timers. And, umm, don't the HR timers require
-> a cpu timer interrupt to make them go? So its not clear that this is much
-> of a win.
->   
-That is indeed a good question. At least for 10G eHEA we see
-that the average number of packets/poll cycle is very low.
-With high precision timers we could control the poll interval
-better and thus make sure we get enough packets on the queue in
-high load situations to benefit from LRO while keeping the
-latency moderate. When the traffic load is low we could just
-stick to plain NAPI. I don't know how expensive hp timers are,
-we probably just have to test it (when they are available for
-POWER in our case). However, having more packets
-per poll run would make LRO more efficient and thus the total
-CPU utilization would decrease.
+>> On Friday 24 August 2007 17:37, akepner@sgi.com wrote:
+>>> On Fri, Aug 24, 2007 at 03:59:16PM +0200, Jan-Bernd Themann wrote:
+>>>> .......
+>>>> 3) On modern systems the incoming packets are processed very fast. Especially
+>>>>    on SMP systems when we use multiple queues we process only a few packets
+>>>>    per napi poll cycle. So NAPI does not work very well here and the interrupt 
+>>>>    rate is still high. What we need would be some sort of timer polling mode 
+>>>>    which will schedule a device after a certain amount of time for high load 
+>>>>    situations. With high precision timers this could work well. Current
+>>>>    usual timers are too slow. A finer granularity would be needed to keep the
+>>>>    latency down (and queue length moderate).
+>>>>
+>>> We found the same on ia64-sn systems with tg3 a couple of years 
+>>> ago. Using simple interrupt coalescing ("don't interrupt until 
+>>> you've received N packets or M usecs have elapsed") worked 
+>>> reasonably well in practice. If your h/w supports that (and I'd 
+>>> guess it does, since it's such a simple thing), you might try 
+>>> it.
+>>>
+>> I don't see how this should work. Our latest machines are fast enough that they
+>> simply empty the queue during the first poll iteration (in most cases).
+>> Even if you wait until X packets have been received, it does not help for
+>> the next poll cycle. The average number of packets we process per poll queue
+>> is low. So a timer would be preferable that periodically polls the 
+>> queue, without the need of generating a HW interrupt. This would allow us
+>> to wait until a reasonable amount of packets have been received in the meantime
+>> to keep the poll overhead low. This would also be useful in combination
+>> with LRO.
+>>
+> 
+> You need hardware support for deferred interrupts. Most devices have it (e1000, sky2, tg3)
+> and it interacts well with NAPI. It is not a generic thing you want done by the stack,
+> you want the hardware to hold off interrupts until X packets or Y usecs have expired.
 
-I guess on most systems there are not many different network
-cards working in parallel. So if the driver could set the poll
-interval for its devices, it could be well optimized depending
-on the NICs characteristics.
+Does hardware interrupt mitigation really interact well with NAPI? In my 
+experience, holding off interrupts for X packets or Y usecs does more 
+harm than good; such hardware features are useful only when the OS has 
+no NAPI-like mechanism.
 
-Maybe it would be good enough to have a timer that schedules
-the device for NAPI (and thus triggers SoftIRQs, which will
-trigger NAPI). Whether this timer would be used via a generic
-interface or would be implemented as a proprietary solution
-would depend on whether other drivers want / need this feature
-as well. Drivers / NICs that work fine with plain NAPI don't
-have to use timer :-)
+When tuning NAPI drivers for packets/sec performance (which is a good 
+indicator of driver performance), I make sure that the driver stays in 
+NAPI polled mode while it has any rx or tx work to do. If the CPU is 
+fast enough that all work is always completed on each poll, I have the 
+driver stay in polled mode until dev->poll() is called N times with no 
+work being done. This keeps interrupts disabled for reasonable traffic 
+levels, while minimizing packet processing latency. No need for hardware 
+interrupt mitigation.
 
-I tried to implement something with "normal" timers, but the result
-was everything but great. The timers seem to be far too slow.
-I'm not sure if it helps to increase it from 1000HZ to 2500HZ
-or more.
+> The parameters for controlling it are already in ethtool, the issue is finding a good
+> default set of values for a wide range of applications and architectures. Maybe some
+> heuristic based on processor speed would be a good starting point. The dynamic irq
+> moderation stuff is not widely used because it is too hard to get right.
 
-Regards,
-Jan-Bernd
+I agree. It would be nice to find a way for the typical user to derive 
+best values for these knobs for his/her particular system. Perhaps a 
+tool using pktgen and network device phy internal loopback could be 
+developed?
+
+-- 
+James Chapman
+Katalix Systems Ltd
+http://www.katalix.com
+Catalysts for your Embedded Linux software development
