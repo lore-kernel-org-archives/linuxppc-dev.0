@@ -1,14 +1,37 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id DBFE7DDEFA
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Aug 2007 05:42:05 +1000 (EST)
-Date: Fri, 24 Aug 2007 21:42:01 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] fix undefined reference to device_power_up/resume
-Message-ID: <20070824194201.GA8737@aepfle.de>
+Return-Path: <linas@austin.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D60DFDDECF
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Aug 2007 06:42:48 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7OKgikJ009261
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 16:42:44 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l7OKgixd270330
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 14:42:44 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l7OKgi7Q022428
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 14:42:44 -0600
+Date: Fri, 24 Aug 2007 15:42:44 -0500
+To: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: RFC: issues concerning the next NAPI interface
+Message-ID: <20070824204243.GI4282@austin.ibm.com>
+References: <8VHRR-45R-17@gated-at.bofh.it> <8VKwj-8ke-27@gated-at.bofh.it>
+	<E1IOeSm-0000bm-Jo@be1.lrz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <E1IOeSm-0000bm-Jo@be1.lrz>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Christoph Raisch <raisch@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
+	Jan-Bernd Themann <ossthema@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,193 +41,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Aug 24, 2007 at 09:04:56PM +0200, Bodo Eggert wrote:
+> Linas Vepstas <linas@austin.ibm.com> wrote:
+> > On Fri, Aug 24, 2007 at 03:59:16PM +0200, Jan-Bernd Themann wrote:
+> >> 3) On modern systems the incoming packets are processed very fast. Especially
+> >> on SMP systems when we use multiple queues we process only a few packets
+> >> per napi poll cycle. So NAPI does not work very well here and the interrupt
+> >> rate is still high.
+> > 
+> > worst-case network ping-pong app: send one
+> > packet, wait for reply, send one packet, etc.
+> 
+> Possible solution / possible brainfart:
+> 
+> Introduce a timer, but don't start to use it to combine packets unless you
+> receive n packets within the timeframe. If you receive less than m packets
+> within one timeframe, stop using the timer. The system should now have a
+> decent response time when the network is idle, and when the network is
+> busy, nobody will complain about the latency.-)
 
-Current Linus tree fails to link on pmac32:
+Ohh, that was inspirational. Let me free-associate some wild ideas.
 
-drivers/built-in.o: In function `pmac_wakeup_devices':
-via-pmu.c:(.text+0x5bab4): undefined reference to `device_power_up'
-via-pmu.c:(.text+0x5bb08): undefined reference to `device_resume'
-drivers/built-in.o: In function `pmac_suspend_devices':
-via-pmu.c:(.text+0x5c260): undefined reference to `device_power_down'
-via-pmu.c:(.text+0x5c27c): undefined reference to `device_resume'
-make[1]: *** [.tmp_vmlinux1] Error 1
+Suppose we keep a running average of the recent packet arrival rate,
+Lets say its 10 per millisecond ("typical" for a gigabit eth runnning
+flat-out).  If we could poll the driver at a rate of 10-20 per
+millisecond (i.e. letting the OS do other useful work for 0.05 millisec),
+then we could potentially service the card without ever having to enable 
+interrupts on the card, and without hurting latency.
 
-changing CONFIG_PM > CONFIG_PM_SLEEP leads to:
+If the packet arrival rate becomes slow enough, we go back to an
+interrupt-driven scheme (to keep latency down).
 
-drivers/built-in.o: In function `pmu_led_set':
-via-pmu-led.c:(.text+0x5cdca): undefined reference to `pmu_sys_suspended'
-via-pmu-led.c:(.text+0x5cdce): undefined reference to `pmu_sys_suspended'
-drivers/built-in.o: In function `pmu_req_done':
-via-pmu-led.c:(.text+0x5ce3e): undefined reference to `pmu_sys_suspended'
-via-pmu-led.c:(.text+0x5ce42): undefined reference to `pmu_sys_suspended'
-drivers/built-in.o: In function `adb_init':
-(.init.text+0x4c5c): undefined reference to `pmu_register_sleep_notifier'
-make[1]: *** [.tmp_vmlinux1] Error 1
+The main problem here is that, even for HZ=1000 machines, this amounts 
+to 10-20 polls per jiffy.  Which, if implemented in kernel, requires 
+using the high-resolution timers. And, umm, don't the HR timers require
+a cpu timer interrupt to make them go? So its not clear that this is much
+of a win.
 
-So change even more places from PM to PM_SLEEP to allow linking.
+The eHEA is a 10 gigabit device, so it can expect 80-100 packets per
+millisecond for large packets, and even more, say 1K packets per
+millisec, for small packets. (Even the spec for my 1Gb spidernet card
+claims its internal rate is 1M packets/sec.) 
 
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
+Another possiblity is to set HZ to 5000 or 20000 or something humongous
+... after all cpu's are now faster! But, since this might be wasteful,
+maybe we could make HZ be dynamically variable: have high HZ rates when
+there's lots of network/disk activity, and low HZ rates when not. That
+means a non-constant jiffy.
 
----
- drivers/macintosh/adb.c     |    4 ++--
- drivers/macintosh/via-pmu.c |   34 +++++++++++++++++-----------------
- include/linux/pmu.h         |    2 +-
- 3 files changed, 20 insertions(+), 20 deletions(-)
-
---- a/drivers/macintosh/adb.c
-+++ b/drivers/macintosh/adb.c
-@@ -89,7 +89,7 @@ static int sleepy_trackpad;
- static int autopoll_devs;
- int __adb_probe_sync;
+If all drivers used interrupt mitigation, then the variable-high
+frequency jiffy could take thier place, and be more "fair" to everyone.
+Most drivers would be polled most of the time when they're busy, and 
+only use interrupts when they're not.
  
--#ifdef CONFIG_PM
-+#ifdef CONFIG_PM_SLEEP
- static void adb_notify_sleep(struct pmu_sleep_notifier *self, int when);
- static struct pmu_sleep_notifier adb_sleep_notifier = {
- 	adb_notify_sleep,
-@@ -313,7 +313,7 @@ int __init adb_init(void)
- 		printk(KERN_WARNING "Warning: no ADB interface detected\n");
- 		adb_controller = NULL;
- 	} else {
--#ifdef CONFIG_PM
-+#ifdef CONFIG_PM_SLEEP
- 		pmu_register_sleep_notifier(&adb_sleep_notifier);
- #endif /* CONFIG_PM */
- #ifdef CONFIG_PPC
---- a/drivers/macintosh/via-pmu.c
-+++ b/drivers/macintosh/via-pmu.c
-@@ -152,10 +152,10 @@ static spinlock_t pmu_lock;
- static u8 pmu_intr_mask;
- static int pmu_version;
- static int drop_interrupts;
--#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
-+#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
- static int option_lid_wakeup = 1;
--#endif /* CONFIG_PM && CONFIG_PPC32 */
--#if (defined(CONFIG_PM)&&defined(CONFIG_PPC32))||defined(CONFIG_PMAC_BACKLIGHT_LEGACY)
-+#endif /* CONFIG_PM_SLEEP && CONFIG_PPC32 */
-+#if (defined(CONFIG_PM_SLEEP)&&defined(CONFIG_PPC32))||defined(CONFIG_PMAC_BACKLIGHT_LEGACY)
- static int sleep_in_progress;
- #endif
- static unsigned long async_req_locks;
-@@ -875,7 +875,7 @@ proc_read_options(char *page, char **sta
- {
- 	char *p = page;
- 
--#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
-+#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
- 	if (pmu_kind == PMU_KEYLARGO_BASED &&
- 	    pmac_call_feature(PMAC_FTR_SLEEP_STATE,NULL,0,-1) >= 0)
- 		p += sprintf(p, "lid_wakeup=%d\n", option_lid_wakeup);
-@@ -916,7 +916,7 @@ proc_write_options(struct file *file, co
- 	*(val++) = 0;
- 	while(*val == ' ')
- 		val++;
--#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
-+#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
- 	if (pmu_kind == PMU_KEYLARGO_BASED &&
- 	    pmac_call_feature(PMAC_FTR_SLEEP_STATE,NULL,0,-1) >= 0)
- 		if (!strcmp(label, "lid_wakeup"))
-@@ -1738,7 +1738,7 @@ pmu_present(void)
- 	return via != 0;
- }
- 
--#ifdef CONFIG_PM
-+#ifdef CONFIG_PM_SLEEP
- 
- static LIST_HEAD(sleep_notifiers);
- 
-@@ -1769,9 +1769,9 @@ pmu_unregister_sleep_notifier(struct pmu
- 	return 0;
- }
- EXPORT_SYMBOL(pmu_unregister_sleep_notifier);
--#endif /* CONFIG_PM */
-+#endif /* CONFIG_PM_SLEEP */
- 
--#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
-+#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
- 
- /* Sleep is broadcast last-to-first */
- static void broadcast_sleep(int when)
-@@ -2390,7 +2390,7 @@ powerbook_sleep_3400(void)
- 	return 0;
- }
- 
--#endif /* CONFIG_PM && CONFIG_PPC32 */
-+#endif /* CONFIG_PM_SLEEP && CONFIG_PPC32 */
- 
- /*
-  * Support for /dev/pmu device
-@@ -2573,7 +2573,7 @@ pmu_ioctl(struct inode * inode, struct f
- 	int error = -EINVAL;
- 
- 	switch (cmd) {
--#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
-+#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
- 	case PMU_IOC_SLEEP:
- 		if (!capable(CAP_SYS_ADMIN))
- 			return -EACCES;
-@@ -2601,7 +2601,7 @@ pmu_ioctl(struct inode * inode, struct f
- 			return put_user(0, argp);
- 		else
- 			return put_user(1, argp);
--#endif /* CONFIG_PM && CONFIG_PPC32 */
-+#endif /* CONFIG_PM_SLEEP && CONFIG_PPC32 */
- 
- #ifdef CONFIG_PMAC_BACKLIGHT_LEGACY
- 	/* Compatibility ioctl's for backlight */
-@@ -2757,7 +2757,7 @@ pmu_polled_request(struct adb_request *r
-  * to do suspend-to-disk.
-  */
- 
--#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
-+#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
- 
- int pmu_sys_suspended;
- 
-@@ -2792,7 +2792,7 @@ static int pmu_sys_resume(struct sys_dev
- 	return 0;
- }
- 
--#endif /* CONFIG_PM && CONFIG_PPC32 */
-+#endif /* CONFIG_PM_SLEEP && CONFIG_PPC32 */
- 
- static struct sysdev_class pmu_sysclass = {
- 	set_kset_name("pmu"),
-@@ -2803,10 +2803,10 @@ static struct sys_device device_pmu = {
- };
- 
- static struct sysdev_driver driver_pmu = {
--#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
-+#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
- 	.suspend	= &pmu_sys_suspend,
- 	.resume		= &pmu_sys_resume,
--#endif /* CONFIG_PM && CONFIG_PPC32 */
-+#endif /* CONFIG_PM_SLEEP && CONFIG_PPC32 */
- };
- 
- static int __init init_pmu_sysfs(void)
-@@ -2841,10 +2841,10 @@ EXPORT_SYMBOL(pmu_wait_complete);
- EXPORT_SYMBOL(pmu_suspend);
- EXPORT_SYMBOL(pmu_resume);
- EXPORT_SYMBOL(pmu_unlock);
--#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
-+#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
- EXPORT_SYMBOL(pmu_enable_irled);
- EXPORT_SYMBOL(pmu_battery_count);
- EXPORT_SYMBOL(pmu_batteries);
- EXPORT_SYMBOL(pmu_power_flags);
--#endif /* CONFIG_PM && CONFIG_PPC32 */
-+#endif /* CONFIG_PM_SLEEP && CONFIG_PPC32 */
- 
---- a/include/linux/pmu.h
-+++ b/include/linux/pmu.h
-@@ -226,7 +226,7 @@ extern unsigned int pmu_power_flags;
- extern void pmu_backlight_init(void);
- 
- /* some code needs to know if the PMU was suspended for hibernation */
--#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
-+#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
- extern int pmu_sys_suspended;
- #else
- /* if power management is not configured it can't be suspended */
+--linas
