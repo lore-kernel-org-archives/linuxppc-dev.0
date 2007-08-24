@@ -1,37 +1,23 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 74F09DDF13
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Aug 2007 07:51:08 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7OLp5bE022117
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 17:51:05 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l7OLp4Om218360
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 15:51:04 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l7OLp491023209
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 15:51:04 -0600
-Date: Fri, 24 Aug 2007 16:51:03 -0500
-To: David Miller <davem@davemloft.net>
-Subject: Re: RFC: issues concerning the next NAPI interface
-Message-ID: <20070824215103.GO4282@austin.ibm.com>
-References: <20070824085203.42f4305c@freepuppy.rosehill.hemminger.net>
-	<OF0002C3DB.2E4C4A38-ON88257341.005B1253-88257341.005C7C2A@us.ibm.com>
-	<20070824.144436.59664160.davem@davemloft.net>
+Return-Path: <dgibson@ozlabs.org>
+Date: Sat, 25 Aug 2007 08:17:10 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 05/20] bootwrapper: flatdevtree fixes
+Message-ID: <20070824221710.GA674@localhost.localdomain>
+References: <20070820173920.GA30546@ld0162-tx32.am.freescale.net>
+	<20070820173949.GD30562@ld0162-tx32.am.freescale.net>
+	<20070821023044.GF15469@localhost.localdomain>
+	<46CB0E56.2020601@freescale.com>
+	<20070822010907.GA12472@localhost.localdomain>
+	<20070822172456.GA22932@ld0162-tx32.am.freescale.net>
+	<20070823020147.GB7042@localhost.localdomain>
+	<46CDC86E.2070907@freescale.com>
+	<20070824010122.GA7281@localhost.localdomain>
+	<20070824144837.GA18753@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070824.144436.59664160.davem@davemloft.net>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: tklein@de.ibm.com, netdev-owner@vger.kernel.org, themann@de.ibm.com,
-	netdev@vger.kernel.org, shemminger@linux-foundation.org,
-	dlstevens@us.ibm.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, raisch@de.ibm.com, meder@de.ibm.com,
-	akepner@sgi.com, ossthema@de.ibm.com, stefan.roscher@de.ibm.com
+In-Reply-To: <20070824144837.GA18753@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,18 +27,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 24, 2007 at 02:44:36PM -0700, David Miller wrote:
-> From: David Stevens <dlstevens@us.ibm.com>
-> Date: Fri, 24 Aug 2007 09:50:58 -0700
+On Fri, Aug 24, 2007 at 09:48:37AM -0500, Scott Wood wrote:
+> On Fri, Aug 24, 2007 at 11:01:22AM +1000, David Gibson wrote:
+> > On Thu, Aug 23, 2007 at 12:48:30PM -0500, Scott Wood wrote:
+> > > It's likely to be ugly no matter what, though I'll try to come up with 
+> > > something slightly nicer.  If I were doing this code from scratch, I'd 
+> > > probably liven the tree first and reflatten it to pass to the kernel.
+> > 
+> > Eh, probably not worth bothering doing an actual implementation at
+> > this stage - I'll have to redo it for libfdt anyway.
 > 
-> >         Problem is if it increases rapidly, you may drop packets
-> > before you notice that the ring is full in the current estimated
-> > interval.
+> Too late, I already wrote it -- it wasn't as bad as I thought it would
+> be.
+
+Well, there you go.
+
+> > flatdevtree uses some of the information it caches in the phandle
+> > context stuff to remember who's the parent of a node.  libfdt uses raw
+> > offsets into the structure, so the *only* way to implement
+> > get_parent() is to rescan the dt from the beginning, keeping track of
+> > parents until reaching the given node.
 > 
-> This is one of many reasons why hardware interrupt mitigation
-> is really needed for this.
+> What is the benefit of doing it that way?
 
-When turning off interrupts, don't turn them *all* off.
-Leave the queue-full interrupt always on.
+Most other operations are simpler like this - no more futzing around
+converting between phandles and offsets and back again at the
+beginning and end of most functions.
 
---linas
+More importantly, it allows libfdt to be "stateless" in the sense that
+you can manipulate the device tree without having to maintain any
+context or state structure apart from the device tree blob itself.
+That's particularly handy for doing read-only accesses really early
+with a minimum of fuss.
+
+In particular, it means libfdt does not need malloc().  That can be
+rather useful for some that's supposed to be embeddable in a variety
+of strange, constrained environments such as bootloaders and
+firmwares.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
