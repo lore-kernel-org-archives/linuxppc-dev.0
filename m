@@ -1,21 +1,18 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 476BEDDEBC
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Aug 2007 05:05:58 +1000 (EST)
-Date: Fri, 24 Aug 2007 13:11:04 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH v2] [02/10] pasemi_mac: Stop using the pci config space
-	accessors for register read/writes
-Message-ID: <20070824181104.GA17171@lixom.net>
-References: <20070817205413.548020000@lixom.net>
-	<20070822141248.GC16830@lixom.net>
-	<20070823181310.GB31882@lixom.net>
-	<20070824140531.ff7d66bf.sfr@canb.auug.org.au>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 9A9A2DDF52
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Aug 2007 05:08:03 +1000 (EST)
+Message-ID: <46CF2D2C.2050306@ru.mvista.com>
+Date: Fri, 24 Aug 2007 23:10:36 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070824140531.ff7d66bf.sfr@canb.auug.org.au>
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/6] PowerPC 440EPx: Sequoia DTS
+References: <20070730150648.GA5005@ru.mvista.com>	<20070801020836.GB31391@localhost.localdomain>	<65ff446478a9fd0a48061079d5f04f8f@kernel.crashing.org>	<20070801050422.GI31391@localhost.localdomain>	<20070801054751.GM31391@localhost.localdomain>	<46B1F6D4.3070707@ru.mvista.com>	<20070803031349.GD6418@localhost.localdomain>	<46B34E1F.5060009@ru.mvista.com>	<20070806042109.GB6103@localhost.localdomain>	<163e1bcdc507ddcde3193e842c96da43@kernel.crashing.org>	<20070807041259.GF13522@localhost.localdomain>
+	<b055a84cbb23ef7287c1d585c1810a74@kernel.crashing.org>
+In-Reply-To: <b055a84cbb23ef7287c1d585c1810a74@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,25 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 24, 2007 at 02:05:31PM +1000, Stephen Rothwell wrote:
-> On Thu, 23 Aug 2007 13:13:10 -0500 Olof Johansson <olof@lixom.net> wrote:
-> >
-> >  out:
-> > -	pci_dev_put(mac->iob_pdev);
-> > -out_put_dma_pdev:
-> > -	pci_dev_put(mac->dma_pdev);
-> > -out_free_netdev:
-> > +	if (mac->iob_pdev)
-> > +		pci_dev_put(mac->iob_pdev);
-> > +	if (mac->dma_pdev)
-> > +		pci_dev_put(mac->dma_pdev);
-> 
-> It is not documented as such (as far as I can see), but pci_dev_put is
-> safe to call with NULL. And there are other places in the kernel that
-> explicitly use that fact.
+Segher Boessenkool wrote:
 
-Some places check, others do not. I'll leave it be for now but might take
-care of it during some future cleanup. Thanks for point it out though.
+>>>address-permutation = <0 1 3 2 4 5 7 6 e f d c a b 9 8>;
 
+>>Yes, I was contemplating something like that.
 
--Olof
+> Let's not define this until we need it though :-)
+
+    Let's ot even think of it, since this will end up in a "catch all" driver, 
+and yet this may be not enough when the flash doesn't support 8-but R/W, for 
+example (I've already quoted it...
+
+>>>I haven't heard or thought of anything better either.  Using "ranges"
+>>>is conceptually wrong, even ignoring the technical problems that come
+>>>with it.
+>>Why is "ranges" conceptually wrong?
+
+> The flash partitions aren't separate devices sitting on a
+
+    Yeah, that's why I decided not to go that from the very start... though 
+wait: I didn't do this simply because they'renot devices.
+That lead me to interesting question: do device tree have something for the 
+disk partitions?
+
+> "flash bus", they are "sub-devices" of their parent.
+
+    They're quite an abstaction of a device -- althogh Linux treats them as 
+separate devices indeed.
+
+>>To be honest this looks rather to me like another case where having
+>>overlapping 'reg' and 'ranges' would actually make sense.
+
+> It never makes sense.  You should give the "master" device
+> the full "reg" range it covers, and have it define its own
+> address space; "sub-devices" can carve out their little hunk
+> from that.  You don't want more than one device owning the
+> same address range in the same address space.
+
+    So, no "ranges" prop in MTD node is necessary? Phew... :-)
+
+> Segher
+
+WBR, Sergei
