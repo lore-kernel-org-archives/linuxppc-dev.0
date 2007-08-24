@@ -1,14 +1,22 @@
-Return-Path: <dale@farnsworth.org>
-Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	by ozlabs.org (Postfix) with SMTP id 73158DDEF9
+Return-Path: <glikely@secretlab.ca>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.239])
+	by ozlabs.org (Postfix) with ESMTP id E798FDDED8
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 25 Aug 2007 02:20:28 +1000 (EST)
-Date: 24 Aug 2007 09:13:05 -0700
-Message-ID: <20070824161305.27479.qmail@farnsworth.org>
-From: "Dale Farnsworth" <dale@farnsworth.org>
-To: joachim.bader@diehl-aerospace.de, linuxppc-embedded@ozlabs.org
-Subject: Re: [linux kernel 2.6.19] ethernet driver for Marvell bridge GT-64260
-In-Reply-To: <OF2C2E8C6F.3860730F-ONC1257341.004B3D4B-C1257341.004C2882@diehl-gruppe.de>
+	Sat, 25 Aug 2007 04:21:09 +1000 (EST)
+Received: by nz-out-0506.google.com with SMTP id l1so578196nzf
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 24 Aug 2007 11:21:08 -0700 (PDT)
+Message-ID: <fa686aa40708241121s359fbaf2r7adb8886a2d3ff65@mail.gmail.com>
+Date: Fri, 24 Aug 2007 12:21:07 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: woyuzhilei <woyuzhilei@163.com>
+Subject: Re: Problems on porting linux 2.6 to xilinx ML410
+In-Reply-To: <200708241111513591137@163.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <200708241111513591137@163.com>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,29 +27,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> I continue the work of ThomasB to get a linux kernel 2.6.19 up and running
-> on a PPC750FX based platform using a GT-64260.
-> From Thomas I got a patched mv643xx_eth driver which is ported to support
-> the 64260, too.
-> Now the driver is integrated and runs complete through initialisation
-> bringing up an eth0 device.
-> The initialisation seams to be ok (no error messages), the device is up
-> and routing information is setup.
-> Now I try to ping a remote station but I receive nothing and I get no
-> feedback from the remote compter.
-> As soon as I turn of the net interface (ifconfig eth0 down) I get the
-> message "Tx time out or no link?)
-> Is there anything else I can check? Any idea what may cause this problem?
+On 8/23/07, woyuzhilei <woyuzhilei@163.com> wrote:
+>
+>
+> Hey:
+>     Recently I'm doing some project on Xilinx Ml410 evaluation board.The
+> first step is porting linux 2.6 to ml410,but I got some problems on this,and
+> my project cann't proceed,so I come to you for some help.
+>     I use the linux kernel source tree download from
+> http://git.secretlab.ca/git/linux-2.6-virtex.git  (The
+> latest one).Add the file the xparameters.h,xparameter_ml40x.h.  Then add
+> arch/ppc/platforms/4xx/xilinx_generic_ppc.c(Use the patch I
+> get here),and change it's name to ml40x.c,then I make some necessay change
+> of the configuration files to accept selecting a Ml40x type board.
 
-Steven Hill posted his patch series merging gt64260 ethernet support to
-the netdev mailing list last month.  You might look at:
+You shouldn't need to do all of this; only the xparameters_ml40x.h
+file is needed.  To get started, I'd just use replace
+xparameters_ml403.h with your custom xparameters_ml40x.h and use the
+ml403 board port.  Once you've got it booting, you can get more fancy.
 
-	http://lists.openwall.net/netdev/2007/07/19/22
+> Then
+> compile the kernel,and get the image file from arch/ppc/boot/images, (On
+> kernel compiling,the only device driver  I sellect is " 8250/16550 and
+> compatible serial support ").After that  I download the zImage.elf file to
+> the target board,and run it.But there is no output from the serial port at
+> all.Am I doing somthing wrong?I really don't know goes wrong.
+>     Can anyone here help me with this?Any help from you is appreciated.Thank
+> you very much!
 
-and related patches.
+Make sure you've got 16550 console support enabled and
+'console=/dev/ttyS0' in your kernel command line.
 
-The differences between 64260 and 64360 are so large that they are
-unlikely to be merged into a single driver, but a separate driver
-is a possibility if someone steps up to do the work.
+Cheers,
+g.
 
--Dale
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
