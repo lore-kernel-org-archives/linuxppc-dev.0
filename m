@@ -1,21 +1,25 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 24 Aug 2007 11:01:22 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 05/20] bootwrapper: flatdevtree fixes
-Message-ID: <20070824010122.GA7281@localhost.localdomain>
-References: <20070820173920.GA30546@ld0162-tx32.am.freescale.net>
-	<20070820173949.GD30562@ld0162-tx32.am.freescale.net>
-	<20070821023044.GF15469@localhost.localdomain>
-	<46CB0E56.2020601@freescale.com>
-	<20070822010907.GA12472@localhost.localdomain>
-	<20070822172456.GA22932@ld0162-tx32.am.freescale.net>
-	<20070823020147.GB7042@localhost.localdomain>
-	<46CDC86E.2070907@freescale.com>
-MIME-Version: 1.0
+Return-Path: <npiggin@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4FEA3DDE3E
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 12:47:29 +1000 (EST)
+Date: Fri, 24 Aug 2007 04:47:23 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [patch 1/2] powerpc: rmb fix
+Message-ID: <20070824024723.GA6989@wotan.suse.de>
+References: <20070821021143.GB2909@wotan.suse.de>
+	<46CB37D4.2080609@austin.ibm.com>
+	<d9f43b5c31fde5851a7af1d0f36eb134@kernel.crashing.org>
+	<20070822011651.GA6799@wotan.suse.de>
+	<dfbba0a8b6a15d1b563bdfcadc49e8eb@kernel.crashing.org>
+	<20070822035539.GB26374@wotan.suse.de>
+	<7dc0bb83644f4cd44b4810a99d0003a1@kernel.crashing.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <46CDC86E.2070907@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+In-Reply-To: <7dc0bb83644f4cd44b4810a99d0003a1@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,55 +29,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 23, 2007 at 12:48:30PM -0500, Scott Wood wrote:
-> David Gibson wrote:
-> > Actually, no - sorry, that's the other problem with this, which I
-> > forgot to mention.  On real OF, the "name" property contains the
-> > node's name *without the unit address*; that is, only the portion
-> > before the '@'.  So your getprop change does not match real OF
-> > behaviour - and real OF behaviour will not do what you want for
-> > dt_get_path().
+On Thu, Aug 23, 2007 at 07:57:20PM +0200, Segher Boessenkool wrote:
+> >>The powerpc kernel needs to have full sync insns in every I/O
+> >>accessor in order to enforce all the ordering rules Linux demands.
+> >>It's a bloody shame, but the alternative would be to make the
+> >>barriers lots more expensive.  A third alternative would be to
+> >
+> >Well lots more expensive compared to what you have now. But what
+> >you have now is like having those expensive barriers between
+> >*every* io access.
 > 
-> Ah, OK.
+> Yeah.  But I/O reads are very expensive anyway, and the barriers
+> are used for more than just I/O ordering.
+
+rmb() should only be used when IO ordering matters. smp_rmb() is
+for regular ordering.
+
+So doesn't the fact IO reads are very expensive anyway lend more
+weight _to have_ the full IO ordering in rmb()?
+
+
+> I/O writes are a different thing; ideally, they would use only
+> eieio, if anything at all.
+
+For IO to IO ordering, yes eieio would be ideal. I don't know that
+there is really such a primitive for that in Linux. io_wmb().
+
+ 
+> Maybe the tradeoff isn't optimal.  The I/O primitives didn't have
+> all those "sync"s in there before, they got added because some bad
+> interaction with spinlocks was discovered, if my memory isn't failing
+> me.
+
+I think it may have been because IO ops are pretty strongly ordered
+on x86, and it was thought that a fair amount of code was relying on
+that. So the old primitives were made quite strongly ordered, and
+new ones were added to avoid the overhead. Unfortunately, you can't
+actually use the unordered ones unless you have working barrier
+instructions. Hence why I think rmb() should be an IO barrier.
+
+But I'm not pushing this too hard. You guys all know the gory ppc
+details better than I, so I'll just leave it with you to work out
+whether it is the right thing to do.
+
+
+> >>have barrier ops that do not order everything, but just A vs. B
+> >>for various choices of A and B (coherent accesses, MMIO accesses,
+> >>etc.)
+> >
+> >The non-smp_ variant is supposed to order everything, AFAIK. Maybe
+> >you could get more fancy and have PIO vs MMIO etc etc. but it looks
+> >like this whole area is in a pretty sticky state anyway so let's
+> >not think about that.
 > 
-> > Actually, in any case, I don't think we want to implement get_path()
-> > this way for real OF.  Better to have get_path() itself as a callback:
-> > on real OF I believe we can directly ask for the full path to a given
-> > phandle, the get name based implementation can then be made specific
-> > to the flat device tree.
-> > 
-> > Or actually, I think we might be able to come up with a get_path()
-> > implementation for flat tree that's less hideous than repeatedly
-> > calling get_parent() which is an ugly, ugly operation on the flat tree
-> 
-> It's likely to be ugly no matter what, though I'll try to come up with 
-> something slightly nicer.  If I were doing this code from scratch, I'd 
-> probably liven the tree first and reflatten it to pass to the kernel.
+> *Thinking* about it is fun.  Trying to get the code merged would be
+> a different thing ;-)
 
-Eh, probably not worth bothering doing an actual implementation at
-this stage - I'll have to redo it for libfdt anyway.
-
-> > (and will get worse with libfdt).
-> 
-> Why is that?
-
-flatdevtree uses some of the information it caches in the phandle
-context stuff to remember who's the parent of a node.  libfdt uses raw
-offsets into the structure, so the *only* way to implement
-get_parent() is to rescan the dt from the beginning, keeping track of
-parents until reaching the given node.
-
-> >>Plus, something might come along that needs to dynamically look for
-> >>either name or something else.  It's more flexible this way.
-> > 
-> > Hrm... "something might come along" just seems contrived to me.
-> 
-> Well, I generally prefer doing things the more flexible way in the 
-> absence of a good reason not to.  OF returning the bare name is a good 
-> reason not to.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+;)
