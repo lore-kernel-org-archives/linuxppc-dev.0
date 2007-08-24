@@ -1,25 +1,26 @@
 Return-Path: <npiggin@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4FEA3DDE3E
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 12:47:29 +1000 (EST)
-Date: Fri, 24 Aug 2007 04:47:23 +0200
+	by ozlabs.org (Postfix) with ESMTP id EAFCCDDD0C
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 12:59:21 +1000 (EST)
+Date: Fri, 24 Aug 2007 04:59:16 +0200
 From: Nick Piggin <npiggin@suse.de>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [patch 1/2] powerpc: rmb fix
-Message-ID: <20070824024723.GA6989@wotan.suse.de>
-References: <20070821021143.GB2909@wotan.suse.de>
-	<46CB37D4.2080609@austin.ibm.com>
-	<d9f43b5c31fde5851a7af1d0f36eb134@kernel.crashing.org>
-	<20070822011651.GA6799@wotan.suse.de>
-	<dfbba0a8b6a15d1b563bdfcadc49e8eb@kernel.crashing.org>
-	<20070822035539.GB26374@wotan.suse.de>
-	<7dc0bb83644f4cd44b4810a99d0003a1@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: wmb vs mmiowb
+Message-ID: <20070824025916.GB6989@wotan.suse.de>
+References: <20070822045714.GD26374@wotan.suse.de>
+	<alpine.LFD.0.999.0708221049560.30176@woody.linux-foundation.org>
+	<200708221202.12403.jesse.barnes@intel.com>
+	<20070823022043.GB18788@wotan.suse.de>
+	<alpine.LFD.0.999.0708221953360.30176@woody.linux-foundation.org>
+	<20070823042038.GI18788@wotan.suse.de>
+	<alpine.LFD.0.999.0708230915000.30176@woody.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <7dc0bb83644f4cd44b4810a99d0003a1@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <alpine.LFD.0.999.0708230915000.30176@woody.linux-foundation.org>
+Cc: linux-ia64@vger.kernel.org, Jesse Barnes <jesse.barnes@intel.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,60 +30,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 23, 2007 at 07:57:20PM +0200, Segher Boessenkool wrote:
-> >>The powerpc kernel needs to have full sync insns in every I/O
-> >>accessor in order to enforce all the ordering rules Linux demands.
-> >>It's a bloody shame, but the alternative would be to make the
-> >>barriers lots more expensive.  A third alternative would be to
-> >
-> >Well lots more expensive compared to what you have now. But what
-> >you have now is like having those expensive barriers between
-> >*every* io access.
+On Thu, Aug 23, 2007 at 09:16:42AM -0700, Linus Torvalds wrote:
 > 
-> Yeah.  But I/O reads are very expensive anyway, and the barriers
-> are used for more than just I/O ordering.
-
-rmb() should only be used when IO ordering matters. smp_rmb() is
-for regular ordering.
-
-So doesn't the fact IO reads are very expensive anyway lend more
-weight _to have_ the full IO ordering in rmb()?
-
-
-> I/O writes are a different thing; ideally, they would use only
-> eieio, if anything at all.
-
-For IO to IO ordering, yes eieio would be ideal. I don't know that
-there is really such a primitive for that in Linux. io_wmb().
-
- 
-> Maybe the tradeoff isn't optimal.  The I/O primitives didn't have
-> all those "sync"s in there before, they got added because some bad
-> interaction with spinlocks was discovered, if my memory isn't failing
-> me.
-
-I think it may have been because IO ops are pretty strongly ordered
-on x86, and it was thought that a fair amount of code was relying on
-that. So the old primitives were made quite strongly ordered, and
-new ones were added to avoid the overhead. Unfortunately, you can't
-actually use the unordered ones unless you have working barrier
-instructions. Hence why I think rmb() should be an IO barrier.
-
-But I'm not pushing this too hard. You guys all know the gory ppc
-details better than I, so I'll just leave it with you to work out
-whether it is the right thing to do.
-
-
-> >>have barrier ops that do not order everything, but just A vs. B
-> >>for various choices of A and B (coherent accesses, MMIO accesses,
-> >>etc.)
-> >
-> >The non-smp_ variant is supposed to order everything, AFAIK. Maybe
-> >you could get more fancy and have PIO vs MMIO etc etc. but it looks
-> >like this whole area is in a pretty sticky state anyway so let's
-> >not think about that.
 > 
-> *Thinking* about it is fun.  Trying to get the code merged would be
-> a different thing ;-)
+> On Thu, 23 Aug 2007, Nick Piggin wrote:
+> > 
+> > Also, FWIW, there are some advantages of deferring the mmiowb thingy
+> > until the point of unlock.
+> 
+> And that is exactly what ppc64 does.
+> 
+> But you're missing a big point: for 99.9% of all hardware, mmiowb() is a 
+> total no-op. So when you talk about "advantages", you're not talking about 
+> any *real* advantage, are you?
 
-;)
+You're in a feisty mood today ;)
+
+I guess on the 0.1% of hradware where it is not a noop, there might be a
+real advantage... but that was just handwaving anyway. My real point was
+that I'd like things to be more easily understandable.
+
+I think we are agreed at this point that mmiowb without some form of CPU
+synchronisation is a bug, and it is also not of the same type of barrier
+that we normally think about in the kernel (it could be like a MPI style
+rendezvous barrier between the CPU and the IO fabric). Anyway, point is
+that device drivers seem to have enough on their plate already.
+
+Look at bcm43xx, for example. Most of this guy's mmiowb()s are completely
+wrong and should be wmb(). mmiowb() is only a wmb() on ppc because as I
+said, ppc's spin_unlock does not order IOs like most other architectures.
+On alpha, for example, spin_unlock does order IOs, so mmiowb is a noop,
+and this is broken (non-sn2 ia64 should also be a noop here, because
+their unlock orders IOs, but it seems that mmiowb semantics are so non
+obvious that they either got it wrong themselves, or assumed device
+drivers surely would).
