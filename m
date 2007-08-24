@@ -1,26 +1,19 @@
-Return-Path: <jchapman@katalix.com>
-Received: from s36.avahost.net (s36.avahost.net [74.53.95.194])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 65105DDEFD
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Aug 2007 07:19:13 +1000 (EST)
-Message-ID: <46CF127D.1090609@katalix.com>
-Date: Fri, 24 Aug 2007 18:16:45 +0100
-From: James Chapman <jchapman@katalix.com>
-MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@linux-foundation.org>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id D44DFDDDD5
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Aug 2007 07:32:22 +1000 (EST)
+Date: Fri, 24 Aug 2007 14:32:20 -0700 (PDT)
+Message-Id: <20070824.143220.55503163.davem@davemloft.net>
+To: ossthema@de.ibm.com
 Subject: Re: RFC: issues concerning the next NAPI interface
-References: <200708241559.17055.ossthema@de.ibm.com>	<20070824153703.GN5592@sgi.com>	<200708241747.16592.ossthema@de.ibm.com>
-	<20070824085203.42f4305c@freepuppy.rosehill.hemminger.net>
-In-Reply-To: <20070824085203.42f4305c@freepuppy.rosehill.hemminger.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, akepner@sgi.com,
-	Marcus Eder <meder@de.ibm.com>, Jan-Bernd Themann <ossthema@de.ibm.com>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200708241559.17055.ossthema@de.ibm.com>
+References: <200708241559.17055.ossthema@de.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Cc: tklein@de.ibm.com, themann@de.ibm.com, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	raisch@de.ibm.com, meder@de.ibm.com, stefan.roscher@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,72 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stephen Hemminger wrote:
-> On Fri, 24 Aug 2007 17:47:15 +0200
-> Jan-Bernd Themann <ossthema@de.ibm.com> wrote:
-> 
->> Hi,
->>
->> On Friday 24 August 2007 17:37, akepner@sgi.com wrote:
->>> On Fri, Aug 24, 2007 at 03:59:16PM +0200, Jan-Bernd Themann wrote:
->>>> .......
->>>> 3) On modern systems the incoming packets are processed very fast. Especially
->>>>    on SMP systems when we use multiple queues we process only a few packets
->>>>    per napi poll cycle. So NAPI does not work very well here and the interrupt 
->>>>    rate is still high. What we need would be some sort of timer polling mode 
->>>>    which will schedule a device after a certain amount of time for high load 
->>>>    situations. With high precision timers this could work well. Current
->>>>    usual timers are too slow. A finer granularity would be needed to keep the
->>>>    latency down (and queue length moderate).
->>>>
->>> We found the same on ia64-sn systems with tg3 a couple of years 
->>> ago. Using simple interrupt coalescing ("don't interrupt until 
->>> you've received N packets or M usecs have elapsed") worked 
->>> reasonably well in practice. If your h/w supports that (and I'd 
->>> guess it does, since it's such a simple thing), you might try 
->>> it.
->>>
->> I don't see how this should work. Our latest machines are fast enough that they
->> simply empty the queue during the first poll iteration (in most cases).
->> Even if you wait until X packets have been received, it does not help for
->> the next poll cycle. The average number of packets we process per poll queue
->> is low. So a timer would be preferable that periodically polls the 
->> queue, without the need of generating a HW interrupt. This would allow us
->> to wait until a reasonable amount of packets have been received in the meantime
->> to keep the poll overhead low. This would also be useful in combination
->> with LRO.
->>
-> 
-> You need hardware support for deferred interrupts. Most devices have it (e1000, sky2, tg3)
-> and it interacts well with NAPI. It is not a generic thing you want done by the stack,
-> you want the hardware to hold off interrupts until X packets or Y usecs have expired.
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Date: Fri, 24 Aug 2007 15:59:16 +0200
 
-Does hardware interrupt mitigation really interact well with NAPI? In my 
-experience, holding off interrupts for X packets or Y usecs does more 
-harm than good; such hardware features are useful only when the OS has 
-no NAPI-like mechanism.
+> =A0 =A0It would be nice if it is possible to schedule queues to other=
+ CPU's, or
+> =A0 =A0at least to use interrupts to put the queue to another cpu (no=
+t nice for =
 
-When tuning NAPI drivers for packets/sec performance (which is a good 
-indicator of driver performance), I make sure that the driver stays in 
-NAPI polled mode while it has any rx or tx work to do. If the CPU is 
-fast enough that all work is always completed on each poll, I have the 
-driver stay in polled mode until dev->poll() is called N times with no 
-work being done. This keeps interrupts disabled for reasonable traffic 
-levels, while minimizing packet processing latency. No need for hardware 
-interrupt mitigation.
+> =A0 =A0as you never know which one you will hit). =
 
-> The parameters for controlling it are already in ethtool, the issue is finding a good
-> default set of values for a wide range of applications and architectures. Maybe some
-> heuristic based on processor speed would be a good starting point. The dynamic irq
-> moderation stuff is not widely used because it is too hard to get right.
+> =A0 =A0I'm not sure how bad the tradeoff would be.
 
-I agree. It would be nice to find a way for the typical user to derive 
-best values for these knobs for his/her particular system. Perhaps a 
-tool using pktgen and network device phy internal loopback could be 
-developed?
+Once the per-cpu NAPI poll queues start needing locks, much of the
+gain will be lost.  This is strictly what we want to avoid.
 
--- 
-James Chapman
-Katalix Systems Ltd
-http://www.katalix.com
-Catalysts for your Embedded Linux software development
+We need real facilities for IRQ distribution policies.  With that none
+of this is an issue.
+
+This is also a platform specific problem with IRQ behavior, the IRQ
+distibution scheme you mention would never occur on sparc64 for
+example.  We use a fixed round-robin distribution of interrupts to
+CPUS there, they don't move.
+
+Each scheme has it's advantages, but you want a difference scheme here
+than what is implemented and the fix is therefore not in the
+networking :-)
+
+Furthermore, most cards that will be using multi-queue will be
+using hashes on the packet headers to choose the MSI-X interrupt
+and thus the cpu to be targetted.  Those cards will want fixed
+instead of dynamic interrupt to cpu distribution schemes as well,
+so your problem is not unique and they'll need the same fix as
+you do.
