@@ -1,22 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 54227DDE24
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 14:05:42 +1000 (EST)
-Date: Fri, 24 Aug 2007 14:05:31 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9D6B5DDDF9
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2007 14:59:10 +1000 (EST)
+Subject: Re: [PATCH] Move serial_dev_init to device_initcall()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH v2] [02/10] pasemi_mac: Stop using the pci config space
-	accessors for register read/writes
-Message-Id: <20070824140531.ff7d66bf.sfr@canb.auug.org.au>
-In-Reply-To: <20070823181310.GB31882@lixom.net>
-References: <20070817205413.548020000@lixom.net>
-	<20070822141248.GC16830@lixom.net>
-	<20070823181310.GB31882@lixom.net>
+In-Reply-To: <20070823231510.GA5619@lixom.net>
+References: <20070823002637.GA24332@lixom.net>
+	<Pine.LNX.4.60.0708240117460.3246@poirot.grange>
+	<20070823231510.GA5619@lixom.net>
+Content-Type: text/plain
+Date: Fri, 24 Aug 2007 06:59:38 +0200
+Message-Id: <1187931578.5972.25.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__24_Aug_2007_14_05_31_+1000_is0RHKOjeyeyY/Sp"
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,41 +25,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Fri__24_Aug_2007_14_05_31_+1000_is0RHKOjeyeyY/Sp
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 2007-08-23 at 18:15 -0500, Olof Johansson wrote:
+> On Fri, Aug 24, 2007 at 01:21:57AM +0200, Guennadi Liakhovetski wrote:
+> > On Wed, 22 Aug 2007, Olof Johansson wrote:
+> > 
+> > > With the I/O space rewrite by BenH, the legacy_serial serial_dev_init()
+> > > initcall is now called before I/O space is setup, but it's dependent on
+> > > it being available.
+> > > 
+> > > Since there's no way to make dependencies between initcalls, we'll just
+> > > have to move it to device_initcall(). Yes, it's suboptimal but I'm not
+> > > aware of any better solution at this time.
+> > 
+> > Do I understand it right, that with this change all UARTs, controlled by 
+> > legacy_serial will be initialized later, and that for example console 
+> > output will be first possible later?
+> 
+> Yes, unfortunately. Unless they've got a udbg driver, since that
+> would give console output during early boot anyway (even without using
+> EARLY_DEBUG).
 
-On Thu, 23 Aug 2007 13:13:10 -0500 Olof Johansson <olof@lixom.net> wrote:
->
->  out:
-> -	pci_dev_put(mac->iob_pdev);
-> -out_put_dma_pdev:
-> -	pci_dev_put(mac->dma_pdev);
-> -out_free_netdev:
-> +	if (mac->iob_pdev)
-> +		pci_dev_put(mac->iob_pdev);
-> +	if (mac->dma_pdev)
-> +		pci_dev_put(mac->dma_pdev);
+Legacy ports should get udbg first.
 
-It is not documented as such (as far as I can see), but pci_dev_put is
-safe to call with NULL. And there are other places in the kernel that
-explicitly use that fact.
+> > Maybe, if there is really no other 
+> > possibility for I/O space devices, we could have both calls
+> >
+> > arch_initcall(serial_mem_dev_init);
+> > device_initcall(serial_io_dev_init);
+> > 
+> > so, that at least MEMIO based UARTs could still initialize as before?
+> 
+> That's quite a hack, I hope we can avoid it. Maybe Ben has some suggestion
+> on how to get the IO setup earlier instead.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+IO space allocation now relies on get_vm_area() which can't be done too
+early (not in setup_arch) which is why I allocate all PCI IO space at
+PHB scanning time, which is a subsys initcall.
 
---Signature=_Fri__24_Aug_2007_14_05_31_+1000_is0RHKOjeyeyY/Sp
-Content-Type: application/pgp-signature
+An option would be to do it from some other init call, but that's a bit
+ugly. That means PCI would be split into setup_arch() setting up PHBs,
+that initcall allocating the IO spaces, and later, the actual scan.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+It would be tricky though as my current interface relies on pci_bus
+structures. So you would also need to re-split that into a low-level
+that works on the PHB and a high level version that works on the bus.
 
-iD8DBQFGzlkUTgG2atn1QN8RAtKLAJ9wigSW2fn7t1hxx31DxeXH5sA7MwCgllYb
-PvAfjEOfp+P5lPb62Cb8CZg=
-=lj3f
------END PGP SIGNATURE-----
+Is this really necessary ?
 
---Signature=_Fri__24_Aug_2007_14_05_31_+1000_is0RHKOjeyeyY/Sp--
+Ben.
