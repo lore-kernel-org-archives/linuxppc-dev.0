@@ -1,14 +1,17 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 1F327DDEA3
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Aug 2007 19:14:00 +1000 (EST)
-Date: Sat, 25 Aug 2007 11:13:58 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] atyfb: force 29MHz xtal on G3 PowerBooks
-Message-ID: <20070825091358.GA12235@aepfle.de>
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 241C0DDE02
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Aug 2007 19:29:48 +1000 (EST)
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: [PATCH 0/3][POWERPC] Add PCI support for 44xEPx
+Date: Sat, 25 Aug 2007 13:29:39 +0400
+Message-ID: <20070825091440.4087.1428.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
+Cc: Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,23 +21,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The following series is a port of 440EPx (sequoia) PCI host bridge from
+arch/ppc. It was initiated with some inconsistencies observed in pci_32.c
+pci ranges parsing, so I've eventually merged pci_32 and pci_64 of
+pci_process_bridge_OF_ranges() into one, that should be able to handle
+64-bit phys addresses, including fancy 44x 36-bit addressing.
 
-The atyfb does not work on my 233MHz PowerBook with Mach64 LP, when the
-kernel is booted from firmware. aty_ld_pll_ct() returns 0x22 and xtal
-remains at 14.31818. When booted from MacOS, aty_ld_pll_ct() returns 0x3c
-and xtal is changed to 29.498928.
-Google indicates that all 4 PowerBook models need the higher value.
+Actual PCI stuff was implemented more as a use-case for the upper, and is
+more or less straight port from arch/ppc. It assumes 
 
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
+[PATCH 0/4] PowerPC 440EPx: Initial Sequoia support take 2
 
---- a/drivers/video/aty/atyfb_base.c
-+++ b/drivers/video/aty/atyfb_base.c
-@@ -2411,7 +2411,7 @@ static int __devinit aty_init(struct fb_
- 				diff1 = -diff1;
- 			if (diff2 < 0)
- 				diff2 = -diff2;
--			if (diff2 < diff1) {
-+			if (diff2 < diff1 || (M64_HAS(G3_PB_1024x768))) {
- 				par->ref_clk_per = 1000000000000ULL / 29498928;
- 				xtal = "29.498928";
- 			}
+from Valentine applied, and hereby is for for-2.6.24 branch of jwb's tree
+(git pull git://git.infradead.org/users/jwboyer/powerpc.git for-2.6.24)
+
+-- 
+Sincerely, Vitaly
