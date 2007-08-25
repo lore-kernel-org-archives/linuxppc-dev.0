@@ -1,24 +1,11 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 41CA5DDE2B
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Aug 2007 11:19:58 +1000 (EST)
-Date: Sat, 25 Aug 2007 11:19:47 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH v2] [02/10] pasemi_mac: Stop using the pci config space
-	accessors for register read/writes
-Message-Id: <20070825111947.03326126.sfr@canb.auug.org.au>
-In-Reply-To: <20070824181104.GA17171@lixom.net>
-References: <20070817205413.548020000@lixom.net>
-	<20070822141248.GC16830@lixom.net>
-	<20070823181310.GB31882@lixom.net>
-	<20070824140531.ff7d66bf.sfr@canb.auug.org.au>
-	<20070824181104.GA17171@lixom.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sat__25_Aug_2007_11_19_47_+1000_emKxv+4N=YrETn77"
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18127.40596.224163.488277@cargo.ozlabs.ibm.com>
+Date: Sat, 25 Aug 2007 13:14:28 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [2.6.23 PATCH] Fix SLB initialization at boot time
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,38 +15,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sat__25_Aug_2007_11_19_47_+1000_emKxv+4N=YrETn77
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This partially reverts edd0622bd2e8f755c960827e15aa6908c3c5aa94.
 
-On Fri, 24 Aug 2007 13:11:04 -0500 Olof Johansson <olof@lixom.net> wrote:
->
-> On Fri, Aug 24, 2007 at 02:05:31PM +1000, Stephen Rothwell wrote:
-> >=20
-> > It is not documented as such (as far as I can see), but pci_dev_put is
-> > safe to call with NULL. And there are other places in the kernel that
-> > explicitly use that fact.
->=20
-> Some places check, others do not. I'll leave it be for now but might take
-> care of it during some future cleanup. Thanks for point it out though.
+It turns out that the part of that commit that aimed to ensure that we
+created an SLB entry for the kernel stack on secondary CPUs when
+starting the CPU didn't achieve its aim, and in fact caused a
+regression, because get_paca()->kstack is not initialized at the point
+where slb_initialize is called.
 
-No worries.
+This therefore just reverts that part of that commit, while keeping
+the change to slb_flush_and_rebolt, which is correct and necessary.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sat__25_Aug_2007_11_19_47_+1000_emKxv+4N=YrETn77
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGz4O9TgG2atn1QN8RAn4AAJ4p1By/HopIDnyDA1qnzRDVNUkQPgCgjVcv
-H7WpqCrskV0gFHn6wfwl3P0=
-=tyQL
------END PGP SIGNATURE-----
-
---Signature=_Sat__25_Aug_2007_11_19_47_+1000_emKxv+4N=YrETn77--
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+index a73d2d7..ff1811a 100644
+--- a/arch/powerpc/mm/slb.c
++++ b/arch/powerpc/mm/slb.c
+@@ -74,6 +74,22 @@ static inline void slb_shadow_clear(unsigned long entry)
+ 	get_slb_shadow()->save_area[entry].esid = 0;
+ }
+ 
++static inline void create_shadowed_slbe(unsigned long ea, unsigned long flags,
++					unsigned long entry)
++{
++	/*
++	 * Updating the shadow buffer before writing the SLB ensures
++	 * we don't get a stale entry here if we get preempted by PHYP
++	 * between these two statements.
++	 */
++	slb_shadow_update(ea, flags, entry);
++
++	asm volatile("slbmte  %0,%1" :
++		     : "r" (mk_vsid_data(ea, flags)),
++		       "r" (mk_esid_data(ea, entry))
++		     : "memory" );
++}
++
+ void slb_flush_and_rebolt(void)
+ {
+ 	/* If you change this make sure you change SLB_NUM_BOLTED
+@@ -226,12 +242,16 @@ void slb_initialize(void)
+ 	vflags = SLB_VSID_KERNEL | vmalloc_llp;
+ 
+ 	/* Invalidate the entire SLB (even slot 0) & all the ERATS */
+-	slb_shadow_update(PAGE_OFFSET, lflags, 0);
+-	asm volatile("isync; slbia; sync; slbmte  %0,%1; isync" ::
+-		     "r" (get_slb_shadow()->save_area[0].vsid),
+-		     "r" (get_slb_shadow()->save_area[0].esid) : "memory");
+-
+-	slb_shadow_update(VMALLOC_START, vflags, 1);
+-
+-	slb_flush_and_rebolt();
++	asm volatile("isync":::"memory");
++	asm volatile("slbmte  %0,%0"::"r" (0) : "memory");
++	asm volatile("isync; slbia; isync":::"memory");
++	create_shadowed_slbe(PAGE_OFFSET, lflags, 0);
++
++	create_shadowed_slbe(VMALLOC_START, vflags, 1);
++
++	/* We don't bolt the stack for the time being - we're in boot,
++	 * so the stack is in the bolted segment.  By the time it goes
++	 * elsewhere, we'll call _switch() which will bolt in the new
++	 * one. */
++	asm volatile("isync":::"memory");
+ }
