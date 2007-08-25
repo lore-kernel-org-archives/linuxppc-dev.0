@@ -1,14 +1,15 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 5EE57DDDFB
-	for <linuxppc-dev@ozlabs.org>; Sun, 26 Aug 2007 04:32:59 +1000 (EST)
-Date: Sat, 25 Aug 2007 20:32:59 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
-Subject: [PATCH] bmac: add simple ethtool support for network manager
-Message-ID: <20070825183259.GA14478@aepfle.de>
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 702C5DDE09
+	for <linuxppc-dev@ozlabs.org>; Sun, 26 Aug 2007 08:08:10 +1000 (EST)
+Date: Sun, 26 Aug 2007 00:08:11 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: linkstation updates
+Message-ID: <Pine.LNX.4.60.0708252358440.3809@poirot.grange>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,49 +19,112 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+1. Fix RTC type - it is a rs5c372a, not rs5c372b
+2. Configure both UART interrupts edge-triggered
+3. Add a license header to ls_uart.c
+4. Check for running on linkstation in a late_initcall() function. Needed 
+   for multiplatform builds, even though linkstation doesn't support them 
+   yet
+5. Remove unneeded #include from linkstation.c
 
-NetworkManager will not start dhcpd on an interface unless it reports
-link-up state via ethtool.
-
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 
 ---
- drivers/net/bmac.c |   13 +++++++++++++
- 1 file changed, 13 insertions(+)
 
---- a/drivers/net/bmac.c
-+++ b/drivers/net/bmac.c
-@@ -19,6 +19,7 @@
- #include <linux/spinlock.h>
- #include <linux/crc32.h>
- #include <linux/bitrev.h>
-+#include <linux/ethtool.h>
- #include <asm/prom.h>
- #include <asm/dbdma.h>
- #include <asm/io.h>
-@@ -1246,6 +1247,17 @@ static void bmac_reset_and_enable(struct
- 	}
- 	spin_unlock_irqrestore(&bp->lock, flags);
- }
-+static void bmac_get_drvinfo(struct net_device *dev, struct ethtool_drvinfo *info)
-+{
-+	struct bmac_data *bp = netdev_priv(dev);
-+	strcpy(info->driver, "bmac");
-+	strcpy(info->bus_info, bp->mdev->ofdev.dev.bus_id);
-+}
+Nothing critical - just queue this for .24, please.
+
+Thanks
+Guennadi
+
+ boot/dts/kuroboxHD.dts              |    4 ++--
+ boot/dts/kuroboxHG.dts              |    4 ++--
+ platforms/embedded6xx/linkstation.c |    1 -
+ platforms/embedded6xx/ls_uart.c     |   14 ++++++++++++++
+ 4 files changed, 18 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/kuroboxHD.dts b/arch/powerpc/boot/dts/kuroboxHD.dts
+index 1225374..63ba351 100644
+--- a/arch/powerpc/boot/dts/kuroboxHD.dts
++++ b/arch/powerpc/boot/dts/kuroboxHD.dts
+@@ -72,7 +72,7 @@ build with: "dtc -f -I dts -O dtb -o kuroboxHD.dtb -V 16 kuroboxHD.dts"
+ 
+ 			rtc@32 {
+ 				device_type = "rtc";
+-				compatible = "ricoh,rs5c372b";
++				compatible = "ricoh,rs5c372a";
+ 				reg = <32>;
+ 			};
+ 		};
+@@ -83,7 +83,7 @@ build with: "dtc -f -I dts -O dtb -o kuroboxHD.dtb -V 16 kuroboxHD.dts"
+ 			reg = <80004500 8>;
+ 			clock-frequency = <5d08d88>;
+ 			current-speed = <2580>;
+-			interrupts = <9 2>;
++			interrupts = <9 0>;
+ 			interrupt-parent = <&mpic>;
+ 		};
+ 
+diff --git a/arch/powerpc/boot/dts/kuroboxHG.dts b/arch/powerpc/boot/dts/kuroboxHG.dts
+index 579aa8b..e8ce0e3 100644
+--- a/arch/powerpc/boot/dts/kuroboxHG.dts
++++ b/arch/powerpc/boot/dts/kuroboxHG.dts
+@@ -72,7 +72,7 @@ build with: "dtc -f -I dts -O dtb -o kuroboxHG.dtb -V 16 kuroboxHG.dts"
+ 
+ 			rtc@32 {
+ 				device_type = "rtc";
+-				compatible = "ricoh,rs5c372b";
++				compatible = "ricoh,rs5c372a";
+ 				reg = <32>;
+ 			};
+ 		};
+@@ -83,7 +83,7 @@ build with: "dtc -f -I dts -O dtb -o kuroboxHG.dtb -V 16 kuroboxHG.dts"
+ 			reg = <80004500 8>;
+ 			clock-frequency = <7c044a8>;
+ 			current-speed = <2580>;
+-			interrupts = <9 2>;
++			interrupts = <9 0>;
+ 			interrupt-parent = <&mpic>;
+ 		};
+ 
+diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
+diff --git a/arch/powerpc/platforms/embedded6xx/linkstation.c b/arch/powerpc/platforms/embedded6xx/linkstation.c
+index ab9e3f9..8ee0f0b 100644
+--- a/arch/powerpc/platforms/embedded6xx/linkstation.c
++++ b/arch/powerpc/platforms/embedded6xx/linkstation.c
+@@ -11,7 +11,6 @@
+  */
+ 
+ #include <linux/kernel.h>
+-#include <linux/pci.h>
+ #include <linux/initrd.h>
+ #include <linux/mtd/physmap.h>
+ 
+diff --git a/arch/powerpc/platforms/embedded6xx/ls_uart.c b/arch/powerpc/platforms/embedded6xx/ls_uart.c
+index d0bee9f..0729641 100644
+--- a/arch/powerpc/platforms/embedded6xx/ls_uart.c
++++ b/arch/powerpc/platforms/embedded6xx/ls_uart.c
+@@ -1,3 +1,14 @@
++/*
++ * AVR power-management chip interface for the Buffalo Linkstation /
++ * Kurobox Platform.
++ *
++ * Author: 2006 (c) G. Liakhovetski
++ *	 g.liakhovetski@gmx.de
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2.  This program is licensed "as is" without any warranty of
++ * any kind, whether express or implied.
++ */
+ #include <linux/workqueue.h>
+ #include <linux/string.h>
+ #include <linux/delay.h>
+@@ -106,6 +117,9 @@ static int __init ls_uarts_init(void)
+ 	phys_addr_t phys_addr;
+ 	int len;
+ 
++	if (!machine_is(linkstation))
++		return 0;
 +
-+static const struct ethtool_ops bmac_ethtool_ops = {
-+	.get_drvinfo		= bmac_get_drvinfo,
-+	.get_link		= ethtool_op_get_link,
-+};
- 
- static int __devinit bmac_probe(struct macio_dev *mdev, const struct of_device_id *match)
- {
-@@ -1311,6 +1323,7 @@ static int __devinit bmac_probe(struct m
- 
- 	dev->open = bmac_open;
- 	dev->stop = bmac_close;
-+	dev->ethtool_ops = &bmac_ethtool_ops;
- 	dev->hard_start_xmit = bmac_output;
- 	dev->get_stats = bmac_stats;
- 	dev->set_multicast_list = bmac_set_multicast;
+ 	avr = of_find_node_by_path("/soc10x/serial@80004500");
+ 	if (!avr)
+ 		return -EINVAL;
