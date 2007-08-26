@@ -1,15 +1,15 @@
 Return-Path: <g.liakhovetski@gmx.de>
 Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 702C5DDE09
-	for <linuxppc-dev@ozlabs.org>; Sun, 26 Aug 2007 08:08:10 +1000 (EST)
-Date: Sun, 26 Aug 2007 00:08:11 +0200 (CEST)
+	by ozlabs.org (Postfix) with SMTP id BFEB9DDE01
+	for <linuxppc-dev@ozlabs.org>; Sun, 26 Aug 2007 10:03:46 +1000 (EST)
+Date: Sun, 26 Aug 2007 02:03:49 +0200 (CEST)
 From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: linkstation updates
-Message-ID: <Pine.LNX.4.60.0708252358440.3809@poirot.grange>
+Subject: [PATCH, RFC] linkstation: implement standby
+Message-ID: <Pine.LNX.4.60.0708260157330.3809@poirot.grange>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Paul Mackerras <paulus@samba.org>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,112 +19,168 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-1. Fix RTC type - it is a rs5c372a, not rs5c372b
-2. Configure both UART interrupts edge-triggered
-3. Add a license header to ls_uart.c
-4. Check for running on linkstation in a late_initcall() function. Needed 
-   for multiplatform builds, even though linkstation doesn't support them 
-   yet
-5. Remove unneeded #include from linkstation.c
+Implement suspend/resume for "mpc10x" compatible fsl host PCI controllers, 
+use it for linkstation standby.
 
 Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 
 ---
 
-Nothing critical - just queue this for .24, please.
+This requires patches from Scott Wood from this thread: 
+http://ozlabs.org/pipermail/linuxppc-dev/2007-July/039109.html and my 
+recent patch to implement wakeup from serial ports.
 
 Thanks
 Guennadi
 
- boot/dts/kuroboxHD.dts              |    4 ++--
- boot/dts/kuroboxHG.dts              |    4 ++--
- platforms/embedded6xx/linkstation.c |    1 -
- platforms/embedded6xx/ls_uart.c     |   14 ++++++++++++++
- 4 files changed, 18 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/embedded6xx/linkstation.c |   57 +++++++++++++++++++++++
+ arch/powerpc/sysdev/fsl_soc.c                    |   44 +++++++++++++++++
+ arch/powerpc/sysdev/fsl_soc.h                    |    6 ++
+ include/asm-powerpc/mpc6xx.h                     |    2
+ 4 files changed, 108 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/boot/dts/kuroboxHD.dts b/arch/powerpc/boot/dts/kuroboxHD.dts
-index 1225374..63ba351 100644
---- a/arch/powerpc/boot/dts/kuroboxHD.dts
-+++ b/arch/powerpc/boot/dts/kuroboxHD.dts
-@@ -72,7 +72,7 @@ build with: "dtc -f -I dts -O dtb -o kuroboxHD.dtb -V 16 kuroboxHD.dts"
- 
- 			rtc@32 {
- 				device_type = "rtc";
--				compatible = "ricoh,rs5c372b";
-+				compatible = "ricoh,rs5c372a";
- 				reg = <32>;
- 			};
- 		};
-@@ -83,7 +83,7 @@ build with: "dtc -f -I dts -O dtb -o kuroboxHD.dtb -V 16 kuroboxHD.dts"
- 			reg = <80004500 8>;
- 			clock-frequency = <5d08d88>;
- 			current-speed = <2580>;
--			interrupts = <9 2>;
-+			interrupts = <9 0>;
- 			interrupt-parent = <&mpic>;
- 		};
- 
-diff --git a/arch/powerpc/boot/dts/kuroboxHG.dts b/arch/powerpc/boot/dts/kuroboxHG.dts
-index 579aa8b..e8ce0e3 100644
---- a/arch/powerpc/boot/dts/kuroboxHG.dts
-+++ b/arch/powerpc/boot/dts/kuroboxHG.dts
-@@ -72,7 +72,7 @@ build with: "dtc -f -I dts -O dtb -o kuroboxHG.dtb -V 16 kuroboxHG.dts"
- 
- 			rtc@32 {
- 				device_type = "rtc";
--				compatible = "ricoh,rs5c372b";
-+				compatible = "ricoh,rs5c372a";
- 				reg = <32>;
- 			};
- 		};
-@@ -83,7 +83,7 @@ build with: "dtc -f -I dts -O dtb -o kuroboxHG.dtb -V 16 kuroboxHG.dts"
- 			reg = <80004500 8>;
- 			clock-frequency = <7c044a8>;
- 			current-speed = <2580>;
--			interrupts = <9 2>;
-+			interrupts = <9 0>;
- 			interrupt-parent = <&mpic>;
- 		};
- 
-diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
 diff --git a/arch/powerpc/platforms/embedded6xx/linkstation.c b/arch/powerpc/platforms/embedded6xx/linkstation.c
 index ab9e3f9..8ee0f0b 100644
 --- a/arch/powerpc/platforms/embedded6xx/linkstation.c
 +++ b/arch/powerpc/platforms/embedded6xx/linkstation.c
-@@ -11,7 +11,6 @@
-  */
- 
- #include <linux/kernel.h>
--#include <linux/pci.h>
- #include <linux/initrd.h>
- #include <linux/mtd/physmap.h>
- 
-diff --git a/arch/powerpc/platforms/embedded6xx/ls_uart.c b/arch/powerpc/platforms/embedded6xx/ls_uart.c
-index d0bee9f..0729641 100644
---- a/arch/powerpc/platforms/embedded6xx/ls_uart.c
-+++ b/arch/powerpc/platforms/embedded6xx/ls_uart.c
-@@ -1,3 +1,14 @@
-+/*
-+ * AVR power-management chip interface for the Buffalo Linkstation /
-+ * Kurobox Platform.
-+ *
-+ * Author: 2006 (c) G. Liakhovetski
-+ *	 g.liakhovetski@gmx.de
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2.  This program is licensed "as is" without any warranty of
-+ * any kind, whether express or implied.
-+ */
- #include <linux/workqueue.h>
- #include <linux/string.h>
- #include <linux/delay.h>
-@@ -106,6 +117,9 @@ static int __init ls_uarts_init(void)
- 	phys_addr_t phys_addr;
- 	int len;
- 
+@@ -197,3 +197,60 @@ define_machine(linkstation){
+ 	.halt	 		= linkstation_halt,
+ 	.calibrate_decr 	= generic_calibrate_decr,
+ };
++
++#ifdef CONFIG_PM
++
++#include <sysdev/fsl_soc.h>
++#include <asm/mpc6xx.h>
++
++static int ls_pm_valid(suspend_state_t state)
++{
++	switch (state) {
++	case PM_SUSPEND_STANDBY:
++		return 1;
++	default:
++		return 0;
++	}
++}
++
++static int ls_pm_enter(suspend_state_t state)
++{
++	char ier;
++	int ret = 0;
++	u64 tb;
++
++	if ((ret = mpc10x_suspend(state)) < 0)
++		return ret;
++
++	/* Get timebase */
++	tb = get_tb();
++
++	/* put CPU to sleep, re-enabling interrupts */
++	mpc6xx_enter_sleep();
++
++	local_irq_disable();
++
++	set_tb(tb >> 32, tb & 0xfffffffful);
++
++fail:
++	mpc10x_resume(state);
++
++	return ret;
++}
++
++static struct pm_ops ls_pm_ops = {
++	.valid		= ls_pm_valid,
++	.enter		= ls_pm_enter,
++};
++
++static int __init ls_pm_init(void)
++{
 +	if (!machine_is(linkstation))
 +		return 0;
 +
- 	avr = of_find_node_by_path("/soc10x/serial@80004500");
- 	if (!avr)
- 		return -EINVAL;
++	pm_set_ops(&ls_pm_ops);
++	return 0;
++}
++
++device_initcall(ls_pm_init);
++#endif
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index 727453d..c0d66df 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -1186,3 +1186,47 @@ err:
+ arch_initcall(cpm_smc_uart_of_init);
+ 
+ #endif /* CONFIG_8xx */
++
++#ifdef CONFIG_PM
++#include <linux/pci.h>
++#include <asm/pci-bridge.h>
++
++#define	MPC10X_LP_REF_EN	(1<<12)
++#define	MPC10X_PM		(1<<7)
++#define MPC10X_DOZE		(1<<5)
++#define	MPC10X_NAP		(1<<4)
++#define	MPC10X_SLEEP		(1<<3)
++
++int mpc10x_suspend(suspend_state_t state)
++{
++	struct pci_dev *bridge;
++	u16 pmcr1;
++
++	bridge = pci_find_slot(0, 0);
++	if (!bridge)
++		return -ENODEV;
++
++	pci_read_config_word(bridge, 0x70, &pmcr1);
++	pmcr1 &= ~(MPC10X_DOZE | MPC10X_NAP);
++	pmcr1 |= MPC10X_PM | MPC10X_SLEEP | MPC10X_LP_REF_EN;
++	pci_write_config_word(bridge, 0x70, pmcr1);
++
++	return 0;
++}
++
++int mpc10x_resume(suspend_state_t state)
++{
++	struct pci_dev *bridge;
++	u16 pmcr1;
++
++	bridge = pci_find_slot(0, 0);
++	if (!bridge)
++		return -ENODEV;
++
++	pci_read_config_word(bridge, 0x70, &pmcr1);
++	pmcr1 &= ~(MPC10X_PM | MPC10X_DOZE | MPC10X_SLEEP | MPC10X_NAP | MPC10X_LP_REF_EN);
++	pci_write_config_word(bridge, 0x70, pmcr1);
++
++	return 0;
++}
++#endif
+diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
+index 04e145b..bcb96cf 100644
+--- a/arch/powerpc/sysdev/fsl_soc.h
++++ b/arch/powerpc/sysdev/fsl_soc.h
+@@ -8,5 +8,11 @@ extern phys_addr_t get_immrbase(void);
+ extern u32 get_brgfreq(void);
+ extern u32 get_baudrate(void);
+ 
++#ifdef CONFIG_PM
++#include <linux/pm.h>
++extern int mpc10x_suspend(suspend_state_t state);
++extern int mpc10x_resume(suspend_state_t state);
++#endif
++
+ #endif
+ #endif
+diff --git a/include/asm-powerpc/mpc6xx.h b/include/asm-powerpc/mpc6xx.h
+index 01a33ed..be86967 100644
+--- a/include/asm-powerpc/mpc6xx.h
++++ b/include/asm-powerpc/mpc6xx.h
+@@ -1,6 +1,6 @@
+ #ifndef __ASM_POWERPC_MPC6xx_H
+ #define __ASM_POWERPC_MPC6xx_H
+ 
+-void mpc6xx_enter_sleep(void);
++extern void mpc6xx_enter_sleep(void);
+ 
+ #endif
