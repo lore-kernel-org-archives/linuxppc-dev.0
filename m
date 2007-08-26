@@ -1,19 +1,18 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id B0C84DDDDB
-	for <linuxppc-dev@ozlabs.org>; Sun, 26 Aug 2007 11:08:36 +1000 (EST)
-Date: Sun, 26 Aug 2007 11:08:30 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH, RFC] linkstation: implement standby
-Message-Id: <20070826110830.dfe6ea24.sfr@canb.auug.org.au>
-In-Reply-To: <Pine.LNX.4.60.0708260157330.3809@poirot.grange>
-References: <Pine.LNX.4.60.0708260157330.3809@poirot.grange>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sun__26_Aug_2007_11_08_30_+1000_cH7VJvUkjfhc5E_R"
-Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org
+Return-Path: <rbrito@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
+	by ozlabs.org (Postfix) with ESMTP id 319D8DDE05
+	for <linuxppc-dev@ozlabs.org>; Sun, 26 Aug 2007 12:37:17 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so130620anc
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Aug 2007 19:37:16 -0700 (PDT)
+Message-ID: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>
+Date: Sat, 25 Aug 2007 23:37:16 -0300
+From: "=?ISO-8859-1?Q?Rog=E9rio_Brito?=" <rbrito@gmail.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	debian-powerpc@lists.debian.org
+Subject: Sleep problems with kernels >= 2.6.21 on powerpc
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,51 +22,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sun__26_Aug_2007_11_08_30_+1000_cH7VJvUkjfhc5E_R
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi.
 
-On Sun, 26 Aug 2007 02:03:49 +0200 (CEST) Guennadi Liakhovetski <g.liakhove=
-tski@gmx.de> wrote:
->
-> +static int ls_pm_enter(suspend_state_t state)
-> +{
-> +	char ier;
-> +	int ret =3D 0;
-> +	u64 tb;
-> +
-> +	if ((ret =3D mpc10x_suspend(state)) < 0)
-> +		return ret;
-> +
-> +	/* Get timebase */
-> +	tb =3D get_tb();
-> +
-> +	/* put CPU to sleep, re-enabling interrupts */
-> +	mpc6xx_enter_sleep();
-> +
-> +	local_irq_disable();
-> +
-> +	set_tb(tb >> 32, tb & 0xfffffffful);
-> +
-> +fail:
+Unfortunately, it seems that kernels later than 2.6.21 have problems
+letting my powerpc iBook (G3 processor) going to sleep (suspend to
+ram).
 
-Unused label?
+The userland that I am using is a Debian testing (lenny) and the
+default kernel that comes with it is 2.6.22, with some patches applied
+and pbbuttonsd (as the daemon for making the machine sleep).
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+With kernel 2.6.21, from Debian (and other earlier kernels), the
+symptoms that I see when I press the power button is that the machine
+goes to sleep and the led that indicates that the machine is sleeping
+is blinking normally.
 
---Signature=_Sun__26_Aug_2007_11_08_30_+1000_cH7VJvUkjfhc5E_R
-Content-Type: application/pgp-signature
+If I, on the other hand, use Debian's kernel 2.6.22 or compile my own
+kernel with just the necessary parts for my work (version 2.6.23-rc3
+taken from kernel.org), then I can't make the machine sleep: when I
+press the button, it acts like if I had, in sequence, pressed anything
+to wake it up (say, like pressing shift).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+I have already grabbed Linus's git tree and I am willing to do some
+cycles of "git bisect" to discover the point where it stopped working.
 
-iD8DBQFG0NKUTgG2atn1QN8RAoV8AJ4zFSSVpZh54FVgXYo9sPYnt7Hr3ACfRkJC
-RjlQLdK9pglb/EMO0awtVIY=
-=9GuF
------END PGP SIGNATURE-----
+I just thought that others may have seen such behaviour before or, if
+not, that being informative about what I see is of use for debugging
+this.
 
---Signature=_Sun__26_Aug_2007_11_08_30_+1000_cH7VJvUkjfhc5E_R--
+I would also appreciate any guidance on this as I wish kernel 2.6.23
+to be working again on powerpc machines.
+
+Please, if any tests are required, don't hesitate to ask me and I will
+try to whatever is needed to restore the correct behaviour of sleep
+with the Linux kernel.
+
+I have copied mailing lists that I think that are relevant. If they
+aren't, then please let me know. I would also appreciate if I were
+kept on carbon copies as I am only subscribed to debian-powerpc at the
+moment.
+
+
+Regards, Rog=E9rio Brito.
+
+P.S.: It unfortunately doesn't matter if I switch to a console or if I
+am in X when I press the power button with recent kernels.
