@@ -1,23 +1,22 @@
-Return-Path: <jchapman@katalix.com>
-Received: from s36.avahost.net (s36.avahost.net [74.53.95.194])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 36784DDE1F
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Aug 2007 05:41:28 +1000 (EST)
-Message-ID: <46D1D634.7060007@katalix.com>
-Date: Sun, 26 Aug 2007 20:36:20 +0100
-From: James Chapman <jchapman@katalix.com>
+Return-Path: <michal.k.k.piotrowski@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.179])
+	by ozlabs.org (Postfix) with ESMTP id 2FB62DDED4
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Aug 2007 09:21:57 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so1658470wag
+	for <linuxppc-dev@ozlabs.org>; Sun, 26 Aug 2007 16:21:56 -0700 (PDT)
+Message-ID: <6bffcb0e0708261621q25316becqce7b3ae2176f45a8@mail.gmail.com>
+Date: Mon, 27 Aug 2007 01:21:56 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "=?ISO-8859-1?Q?Rog=E9rio_Brito?=" <rbrito@gmail.com>
+Subject: Re: Sleep problems with kernels >= 2.6.21 on powerpc
+In-Reply-To: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-Subject: Re: RFC: issues concerning the next NAPI interface
-References: <200708241747.16592.ossthema@de.ibm.com>	<20070824085203.42f4305c@freepuppy.rosehill.hemminger.net>	<46CF127D.1090609@katalix.com>
-	<20070824.144711.18301866.davem@davemloft.net>
-In-Reply-To: <20070824.144711.18301866.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: tklein@de.ibm.com, themann@de.ibm.com, stefan.roscher@de.ibm.com,
-	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	raisch@de.ibm.com, linuxppc-dev@ozlabs.org, akepner@sgi.com,
-	meder@de.ibm.com, ossthema@de.ibm.com, shemminger@linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+	=?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>,
+	linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org,
+	Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,39 +26,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Miller wrote:
-> From: James Chapman <jchapman@katalix.com>
-> Date: Fri, 24 Aug 2007 18:16:45 +0100
-> 
->> Does hardware interrupt mitigation really interact well with NAPI?
-> 
-> It interacts quite excellently.
+Hi
 
-If NAPI disables interrupts and keeps them disabled while there are more 
-packets arriving or more transmits being completed, why do hardware 
-interrupt mitigation / coalescing features of the network silicon help?
+[Adding STR wizards to CC]
 
-> There was a long saga about this with tg3 and huge SGI numa
-> systems with large costs for interrupt processing, and the
-> fix was to do a minimal amount of interrupt mitigation and
-> this basically cleared up all the problems.
-> 
-> Someone should reference that thread _now_ before this discussion goes
-> too far and we repeat a lot of information and people like myself have
-> to stay up all night correcting the misinformation and
-> misunderstandings that are basically guarenteed for this topic :)
+On 26/08/07, Rog=E9rio Brito <rbrito@gmail.com> wrote:
+> Hi.
+>
+> Unfortunately, it seems that kernels later than 2.6.21 have problems
+> letting my powerpc iBook (G3 processor) going to sleep (suspend to
+> ram).
+>
+> The userland that I am using is a Debian testing (lenny) and the
+> default kernel that comes with it is 2.6.22, with some patches applied
+> and pbbuttonsd (as the daemon for making the machine sleep).
+>
+> With kernel 2.6.21, from Debian (and other earlier kernels), the
+> symptoms that I see when I press the power button is that the machine
+> goes to sleep and the led that indicates that the machine is sleeping
+> is blinking normally.
+>
+> If I, on the other hand, use Debian's kernel 2.6.22 or compile my own
+> kernel with just the necessary parts for my work (version 2.6.23-rc3
+> taken from kernel.org), then I can't make the machine sleep: when I
+> press the button, it acts like if I had, in sequence, pressed anything
+> to wake it up (say, like pressing shift).
+>
+> I have already grabbed Linus's git tree and I am willing to do some
+> cycles of "git bisect" to discover the point where it stopped working.
+>
+> I just thought that others may have seen such behaviour before or, if
+> not, that being informative about what I see is of use for debugging
+> this.
+>
+> I would also appreciate any guidance on this as I wish kernel 2.6.23
+> to be working again on powerpc machines.
+>
+> Please, if any tests are required, don't hesitate to ask me and I will
+> try to whatever is needed to restore the correct behaviour of sleep
+> with the Linux kernel.
+>
+> I have copied mailing lists that I think that are relevant. If they
+> aren't, then please let me know. I would also appreciate if I were
+> kept on carbon copies as I am only subscribed to debian-powerpc at the
+> moment.
+>
+>
+> Regards, Rog=E9rio Brito.
+>
+> P.S.: It unfortunately doesn't matter if I switch to a console or if I
+> am in X when I press the power button with recent kernels.
+> -
 
-I hope I'm not spreading misinformation. :) The original poster was 
-observing NAPI going in/out of polled mode because the CPU is fast 
-enough to process all work per poll. I've seen the same and I'm 
-suggesting that the NAPI driver keeps itself in polled mode for N polls 
-or M jiffies after it sees workdone=0. This has always worked for me in 
-packet forwarding scenarios to maximize packets/sec and minimize 
-latency. I'm considering putting a patch together to add this as another 
-tuning knob, hence I'm keen to understand what I'm missing. :)
+Regards,
+Michal
 
--- 
-James Chapman
-Katalix Systems Ltd
-http://www.katalix.com
-Catalysts for your Embedded Linux software development
+--=20
+LOG
+http://www.stardust.webpages.pl/log/
