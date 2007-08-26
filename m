@@ -1,18 +1,21 @@
-Return-Path: <rbrito@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
-	by ozlabs.org (Postfix) with ESMTP id 319D8DDE05
-	for <linuxppc-dev@ozlabs.org>; Sun, 26 Aug 2007 12:37:17 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so130620anc
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Aug 2007 19:37:16 -0700 (PDT)
-Message-ID: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>
-Date: Sat, 25 Aug 2007 23:37:16 -0300
-From: "=?ISO-8859-1?Q?Rog=E9rio_Brito?=" <rbrito@gmail.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	debian-powerpc@lists.debian.org
-Subject: Sleep problems with kernels >= 2.6.21 on powerpc
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 9B8AEDDE04
+	for <linuxppc-dev@ozlabs.org>; Sun, 26 Aug 2007 19:10:59 +1000 (EST)
+Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
+	by mail-out.m-online.net (Postfix) with ESMTP id F1A69221409
+	for <linuxppc-dev@ozlabs.org>; Sun, 26 Aug 2007 11:10:56 +0200 (CEST)
+Received: from ibook.aepfle.de (DSL01.83.171.160.67.ip-pool.NEFkom.net
+	[83.171.160.67])
+	by mail.mnet-online.de (Postfix) with ESMTP id E8A9C903C6
+	for <linuxppc-dev@ozlabs.org>; Sun, 26 Aug 2007 11:10:56 +0200 (CEST)
+Date: Sun, 26 Aug 2007 11:10:59 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] fix pmac_zilog debug arg
+Message-ID: <20070826091059.GA17651@aepfle.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,48 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi.
 
-Unfortunately, it seems that kernels later than 2.6.21 have problems
-letting my powerpc iBook (G3 processor) going to sleep (suspend to
-ram).
+drivers/serial/pmac_zilog.c:1590: warning: format '%d' expects type 'int', but argument 3 has type 'pm_message_t'
 
-The userland that I am using is a Debian testing (lenny) and the
-default kernel that comes with it is 2.6.22, with some patches applied
-and pbbuttonsd (as the daemon for making the machine sleep).
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
-With kernel 2.6.21, from Debian (and other earlier kernels), the
-symptoms that I see when I press the power button is that the machine
-goes to sleep and the led that indicates that the machine is sleeping
-is blinking normally.
+---
+ drivers/serial/pmac_zilog.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-If I, on the other hand, use Debian's kernel 2.6.22 or compile my own
-kernel with just the necessary parts for my work (version 2.6.23-rc3
-taken from kernel.org), then I can't make the machine sleep: when I
-press the button, it acts like if I had, in sequence, pressed anything
-to wake it up (say, like pressing shift).
-
-I have already grabbed Linus's git tree and I am willing to do some
-cycles of "git bisect" to discover the point where it stopped working.
-
-I just thought that others may have seen such behaviour before or, if
-not, that being informative about what I see is of use for debugging
-this.
-
-I would also appreciate any guidance on this as I wish kernel 2.6.23
-to be working again on powerpc machines.
-
-Please, if any tests are required, don't hesitate to ask me and I will
-try to whatever is needed to restore the correct behaviour of sleep
-with the Linux kernel.
-
-I have copied mailing lists that I think that are relevant. If they
-aren't, then please let me know. I would also appreciate if I were
-kept on carbon copies as I am only subscribed to debian-powerpc at the
-moment.
-
-
-Regards, Rog=E9rio Brito.
-
-P.S.: It unfortunately doesn't matter if I switch to a console or if I
-am in X when I press the power button with recent kernels.
+--- a/drivers/serial/pmac_zilog.c
++++ b/drivers/serial/pmac_zilog.c
+@@ -1587,7 +1587,7 @@ static int pmz_suspend(struct macio_dev 
+ 	if (pm_state.event == mdev->ofdev.dev.power.power_state.event)
+ 		return 0;
+ 
+-	pmz_debug("suspend, switching to state %d\n", pm_state);
++	pmz_debug("suspend, switching to state %d\n", pm_state.event);
+ 
+ 	state = pmz_uart_reg.state + uap->port.line;
+ 
