@@ -1,14 +1,13 @@
 Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc3-s32.bay0.hotmail.com (bay0-omc3-s32.bay0.hotmail.com
-	[65.54.246.232]) by ozlabs.org (Postfix) with ESMTP id 7BE2BDDDFF
+Received: from bay0-omc1-s14.bay0.hotmail.com (bay0-omc1-s14.bay0.hotmail.com
+	[65.54.246.86]) by ozlabs.org (Postfix) with ESMTP id 980E7DDDFC
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 26 Aug 2007 02:13:28 +1000 (EST)
-Message-ID: <BAY138-F2688F974AD576B420B7F72B2D00@phx.gbl>
-In-Reply-To: <fa686aa40708250824v486d2228g29250aad6b517c42@mail.gmail.com>
+	Mon, 27 Aug 2007 02:10:25 +1000 (EST)
+Message-ID: <BAY138-F28B91E8B47A7F29AB017C5B2D10@phx.gbl>
 From: "Ming Liu" <eemingliu@hotmail.com>
 To: grant.likely@secretlab.ca
-Subject: Re: how to get your linux-2.6-virtex tree?
-Date: Sat, 25 Aug 2007 16:13:23 +0000
+Subject: NFS failed in linux-2.6-virtex tree for xilinx ML403
+Date: Sun, 26 Aug 2007 16:09:06 +0000
 Mime-Version: 1.0
 Content-Type: text/plain; charset=gb2312; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
@@ -23,45 +22,50 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 Dear Grant,
-That's right!!! My git's version is quite old. OK then. Thus I will upgrade 
-my git and obtain your kernel tree. Thanks for your help.
+I am bringing up your linux-2.6-virtex tree. However the following problem 
+happened:
 
-BR
+eth0: XTemac: speed set to 1000Mb/s
+eth0: XTemac: Send Threshold = 16, Receive Threshold = 2
+eth0: XTemac: Send Wait bound = 1, Receive Wait bound = 1
+IP-Config: Complete:
+      device=eth0, addr=192.168.0.4, mask=255.255.255.0, gw=192.168.0.3,
+     host=192.168.0.4, domain=, nis-domain=(none),
+     bootserver=192.168.0.3, rootserver=192.168.0.3, rootpath=
+Looking up port of RPC 100003/2 on 192.168.0.3
+rpcbind: server 192.168.0.3 not responding, timed out
+Root-NFS: Unable to get nfsd port number from server, using default
+Looking up port of RPC 100005/1 on 192.168.0.3
+rpcbind: server 192.168.0.3 not responding, timed out
+Root-NFS: Unable to get mountd port number from server, using default
+mount: server 0.0.0.16 not responding, timed out
+Root-NFS: Server returned error -5 while mounting 
+/home/mingliu/ml403_rootfs
+VFS: Unable to mount root fs via NFS, trying floppy.
+VFS: Cannot open root device "nfs" or unknown-block(2,0)
+Please append a correct "root=" boot option; here are the available 
+partitions:
+fe00     509544 xsa (driver?)
+  fe01      98248 xsa1
+  fe02     402192 xsa2
+1f00       8192 mtdblock0 (driver?)
+Kernel panic - not syncing: VFS: Unable to mount root fs on 
+unknown-block(2,0)
+Rebooting in 180 seconds..
+
+My CMD_LINE is "root=/dev/nfs 
+nfsaddrs=192.168.0.4:192.168.0.3:192.168.0.3:255.255.255.0 rw 
+nfsroot=192.168.0.3:/home/mingliu/ml403_rootfs console=ttyS0,9600 mem=32M"
+
+First of all, I can exclude the problem of my host PC, because the old 
+2.6.10 version could run with nfs and root directory mounted successfully. 
+So what's wrong with the NFS support in the new kernel? It's quite strange 
+that in the information above, why "mount: server 0.0.0.16 not responding", 
+rather than the server of 192.168.0.3 which should be there? Do you have 
+any hint? Thanks a lot in advance.
+
+Best Regards
 Ming
 
-
->From: "Grant Likely" <grant.likely@secretlab.ca>
->To: "Ming Liu" <eemingliu@hotmail.com>
->CC: linuxppc-embedded@ozlabs.org
->Subject: Re: how to get your linux-2.6-virtex tree?
->Date: Sat, 25 Aug 2007 09:24:31 -0600
->
->On 8/25/07, Ming Liu <eemingliu@hotmail.com> wrote:
-> > Dear Grant,
-> >
-> > >What does 'dig git.secretlab.ca' tell you?  I see this:
-> > >;; ANSWER SECTION:
-> > >git.secretlab.ca.       1320    IN      A       208.123.74.12
-> >
-> > I released 'dig git.secretlab.ca' and saw this:
-> > ;; QUESTION SECTION:
-> > ;git.secretlab.ca.              IN      A
-> >
-> > ;; ANSWER SECTION:
-> > git.secretlab.ca.       855     IN      A       208.123.74.12
->
->Upgrade to a newer version of git.  git.secretlab.ca uses the virtual
->hosting feature of git daemon, but you need to be using git version >
->1.5
->
->Cheers,
->g.
->
->--
->Grant Likely, B.Sc., P.Eng.
->Secret Lab Technologies Ltd.
->grant.likely@secretlab.ca
->(403) 399-0195
-
 _________________________________________________________________
-与联机的朋友进行交流，请使用 MSN Messenger:  http://messenger.msn.com/cn  
+免费下载 MSN Explorer:   http://explorer.msn.com/lccn/  
