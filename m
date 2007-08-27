@@ -1,18 +1,18 @@
 Return-Path: <wd@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id B87E0DDED8
+	by ozlabs.org (Postfix) with ESMTP id 4D2E8DDF00
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Aug 2007 05:10:19 +1000 (EST)
-To: Domen Puncer <domen.puncer@telargo.com>
+	Tue, 28 Aug 2007 05:14:21 +1000 (EST)
+To: "Mustafa Cayir" <mustafa.cayir@bte.mam.gov.tr>
 From: Wolfgang Denk <wd@denx.de>
-Subject: Re: pata_mpc52xx - no interrupts when using bestcomm/dma?
+Subject: Re: STK5200 pci_enable_device problem
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 27 Aug 2007 11:44:54 +0200."
-	<20070827094454.GQ13994@moe.telargo.com>
-Date: Mon, 27 Aug 2007 21:10:16 +0200
+In-reply-to: Your message of "Mon, 27 Aug 2007 14:08:12 +0300."
+	<7B9A8FF57DBB524190E98CABF6E56F070B927E@itri.bte.mam.gov.tr>
+Date: Mon, 27 Aug 2007 21:14:19 +0200
 Sender: wd@denx.de
-Message-Id: <20070827191017.0856024044@gemini.denx.de>
+Message-Id: <20070827191419.9A9CE24044@gemini.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,16 +24,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20070827094454.GQ13994@moe.telargo.com> you wrote:
+In message <7B9A8FF57DBB524190E98CABF6E56F070B927E@itri.bte.mam.gov.tr> you wrote:
 > 
-> The problem is that I can't seem to get any interrupts
-> (not ata, not bestcomm task), when setting up MWDMA/UDMA mode.
+> i use 2.4.25 kernel and eldk 3.1.1 on TQM5200 board. i tried denx 2.6.19
+> kernel to port on TQM5200 but i couldn't.
+> Did you port 2.6 kernel on TQM5200? Did pci device start working
+> succesfully after porting 2.6 kernel to TQM5200 board.
 
-First, please check the errata. There are some issues in this area  -
-one  involves the ATA controller not handling automatic pause for DMA
-transfers (controller will corrupt FIFO data when there is  any  sig-
-nificant transfer load - system freezes, kernel crashes); another one
-is erratum 158: "ATA interrupt is not affected by FIFO errors."
+Current top-of-tree in our git repo has been tested with a Intel
+EEPRO100 network card in the ST5200's PCI slot. It's working.
 
 Best regards,
 
@@ -43,5 +42,5 @@ Wolfgang Denk
 DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
 HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Conscious is when you are aware of something, and conscience is  when
-you wish you weren't.
+Unsichtbar macht sich die Dummheit, indem sie immer  größere  Ausmaße
+annimmt.                             -- Bertold Brecht: Der Tui-Roman
