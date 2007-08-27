@@ -1,14 +1,22 @@
-Return-Path: <anton@ozlabs.org>
-Date: Mon, 27 Aug 2007 15:31:57 -0500
-From: Anton Blanchard <anton@samba.org>
-To: Chris Friesen <cfriesen@nortel.com>
-Subject: Re: what is ~1MB of memory allocated at fffea000-fffff000 on ppc64?
-Message-ID: <20070827203157.GD13612@kryten>
-References: <46D3326C.3000505@nortel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <46D3326C.3000505@nortel.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id CDA05DDEDF
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Aug 2007 06:37:23 +1000 (EST)
+Date: Mon, 27 Aug 2007 13:37:21 -0700 (PDT)
+Message-Id: <20070827.133721.59473971.davem@davemloft.net>
+To: ossthema@de.ibm.com
+Subject: Re: RFC: issues concerning the next NAPI interface
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200708271147.01890.ossthema@de.ibm.com>
+References: <46D1D634.7060007@katalix.com>
+	<20070826.185815.93042514.davem@davemloft.net>
+	<200708271147.01890.ossthema@de.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: tklein@de.ibm.com, themann@de.ibm.com, stefan.roscher@de.ibm.com,
+	netdev@vger.kernel.org, jchapman@katalix.com, raisch@de.ibm.com,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	akepner@sgi.com, meder@de.ibm.com, shemminger@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,24 +26,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Date: Mon, 27 Aug 2007 11:47:01 +0200
 
-Hi,
+> So the question is simply: Do we want drivers that need (benefit
+> from) a timer based polling support to implement their own timers
+> each, or should there be a generic support?
 
-> I've got a ppc64 box running 2.6.14.  64-bit kernel, 32-bit userspace. 
-> It has a ~86KB chunk of memory near the top of the process address 
-> space, and I'm not sure who's setting it up and what the purpose is.  In 
-> /proc/<pid>/maps it looks like this:
-> 
-> fffea000-fffff000 rw-p fffea000 00:00 0
-> 
-> Can anyone enlighten me as to what this is for and who is allocating it?
+I'm trying to figure out how an hrtimer implementation would
+even work.
 
-Looks like your process stack. BTW we leave the top page
-(0xfffff000 - 0xffffffff) unmapped mostly because of test cases that
-expect
-
-*(unsigned long *)-1UL
-
-to fail.
-
-Anton
+Would you start the timer from the chip interrupt handler?  If so,
+that's taking two steps backwards as you've already taken all of the
+overhead of running the interrupt handler.
