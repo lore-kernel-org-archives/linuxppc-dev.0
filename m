@@ -1,21 +1,18 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 89F2ADDF15
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 7D066DDE9B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Aug 2007 04:07:31 +1000 (EST)
-In-Reply-To: <F1F6EC0C8B75034F9E3A79FC85122E8EA18371@aquib01a>
-References: <F1F6EC0C8B75034F9E3A79FC85122E8EA18371@aquib01a>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <ABC17B04-C603-42B1-8B74-56197D9D953D@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: MDIO bus hotplug
-Date: Mon, 27 Aug 2007 13:07:14 -0500
-To: DI BACCO ANTONIO - technolabs <Antonio.DiBacco@technolabs.it>
+	Tue, 28 Aug 2007 04:58:56 +1000 (EST)
+To: Oliver Rutsch <orutsch@sympatec.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: STK5200 pci_enable_device problem
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 27 Aug 2007 08:25:03 +0200."
+	<46D26E3F.8040309@sympatec.com>
+Date: Mon, 27 Aug 2007 20:58:53 +0200
+Sender: wd@denx.de
+Message-Id: <20070827185853.76E3A24047@gemini.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,38 +24,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In message <46D26E3F.8040309@sympatec.com> you wrote:
+> 
+>  >> It's not so easy to compile the PLX drivers on the 4.1 ELDK because of
+>  >> missing headers in the ppc architecture. I managed to build the drivers
+>  >> for the 2.6.19 kernel and I was able to work with the card except the
+>  >> DMA routines (still working on this issue).
+>  >
+>  > WHy don't you use the arch/powerpc configuration, then? Note that the
+>  > STK5200 has never been supported in a  2.6  kernel  with  a  arch/ppc
+>  > configuration.
+>  >
+> 
+> Because I found at least a lite5200 configuration in the 4.1 ELDK 
+> (2.6.19.2 kernel) in the ARCH/ppc architecure. With ARCH/powerpc I only 
 
-On Aug 27, 2007, at 06:12, DI BACCO ANTONIO - technolabs wrote:
+You will find many completely unsupported board configurations in the
+kernel.org tree, too. The fact that somethign  is  present  does  not
+mean anything.
 
-> Hi,
->
-> I have an hot pluggable MDIO bus (connected to MDC, MDIO of an  
-> MPC880) and thus I would like to rescan the bus on certain events  
-> (for example fs_enet_open) to access the numerous PHYs I have on  
-> this bus. I saw that it is "simply" a matter of calling  
-> mdiobus_register but I would like an advice how to design the  
-> modification
+> Is there support for the TQM5200 and the STK5200 with ARCH/powerpc in 
+> newer kernels? I'm still using the 3.1.1 ELDK for the TQM5200 as it have 
+> everything I need and I don't need to use the PLX card in this board 
+> (although it would have been nice if I got it working...).
 
+The TQM5200 / STK5200 are supported in our linux-2.6-denx  tree  with
+an  arch/powerpc  configuration; also lite5200b. Note that - like all
+MPC5200 support in the 2.6 kernel - this is all work in progress.
 
-There are a few problems, here:
+Best regards,
 
-1)  Do you expect only to add/remove PHYs, or to completely swap out  
-the entire set?
+Wolfgang Denk
 
-2)  If you bring up one interface, swap out the PHYs, and then bring  
-up a second interface, the first one will be broken
-
-I think the best solution is to add the capability for the PHY Lib to  
-tell attached ethernet controllers that the PHY has been disconnected/ 
-deallocated.  Perhaps protected by a CONFIG_ option.
-
-Then you would add support for taking down a PHY, and probably the  
-whole bus, on the fly.  This would require making sure that all  
-outstanding transactions are done, and may be as simple as invoking  
-mdiobus_unregister.  The tricky part is that we really need to have  
-some way to tell the ethernet controllers that were up that the new  
-bus is there.  If we're really fancy, the PHY Lib could even hook  
-those controllers up automatically, but it may be necessary for the  
-drivers to change which address they connect to.
-
-Andy
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+It is dangerous to be right on a subject  on  which  the  established
+authorities are wrong.                                    -- Voltaire
