@@ -1,16 +1,20 @@
-Return-Path: <Antonio.DiBacco@technolabs.it>
-Received: from smtp.technolabs.it (unknown [213.82.155.20])
-	by ozlabs.org (Postfix) with ESMTP id DB0DDDE683
+Return-Path: <g.schardt@fz-juelich.de>
+Received: from zam837.fz-juelich.de (zam837.fz-juelich.de [134.94.100.69])
+	by ozlabs.org (Postfix) with SMTP id 87D42DDE9E
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 27 Aug 2007 21:12:39 +1000 (EST)
+	Mon, 27 Aug 2007 23:01:32 +1000 (EST)
+Received: from [134.94.232.103] (zel201.zel.kfa-juelich.de
+	[134.94.232.103])by zam837.fz-juelich.de (Postfix) with ESMTP id
+	B837310008B4for <linuxppc-embedded@ozlabs.org>;
+	Mon, 27 Aug 2007 14:55:29 +0200 (CEST)
+Message-ID: <46D2C9A5.9030708@fz-juelich.de>
+Date: Mon, 27 Aug 2007 14:55:01 +0200
+From: schardt <g.schardt@fz-juelich.de>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C7E89B.298A4B7E"
-Subject: MDIO bus hotplug
-Date: Mon, 27 Aug 2007 13:12:31 +0200
-Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8EA18371@aquib01a>
-From: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
-To: <linuxppc-embedded@ozlabs.org>
+To: linuxppc-embedded@ozlabs.org
+Subject: Newbie and linux on virtex-II ppc
+Content-Type: text/plain;
+	charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,64 +25,58 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hello,
 
-------_=_NextPart_001_01C7E89B.298A4B7E
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+im a student from germany and i try to run linux on a virtex-II with
+integrated powerpc.
+i use the developer board DS-DB-2VP4/7-FG456 from Memec ( i think its
+now avnet)
 
-Hi,
-=20
-I have an hot pluggable MDIO bus (connected to MDC, MDIO of an MPC880)
-and thus I would like to rescan the bus on certain events (for example
-fs_enet_open) to access the numerous PHYs I have on this bus. I saw that
-it is "simply" a matter of calling mdiobus_register but I would like an
-advice how to design the modification
-=20
-=20
-MPC880 with linux-2.6.19.2
-=20
-Best regards,
-Antonio.
+i hope my questions are not too stupid :-)
 
-------_=_NextPart_001_01C7E89B.298A4B7E
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+what is running :
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2900.2802" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D408020311-27082007>Hi,</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D408020311-27082007></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D408020311-27082007>I have =
-an hot=20
-pluggable MDIO bus (connected to&nbsp;MDC, MDIO&nbsp;of&nbsp;an MPC880) =
-and thus=20
-I would like to rescan the bus on certain events (for example=20
-fs_enet_open)&nbsp;to access the numerous PHYs I have on this bus. I saw =
-that it=20
-is "simply" a matter of calling mdiobus_register but I would like an =
-advice how=20
-to design the modification</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D408020311-27082007></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D408020311-27082007></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D408020311-27082007>MPC880 =
-with=20
-linux-2.6.19.2</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D408020311-27082007></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D408020311-27082007>Best=20
-regards,</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D408020311-27082007>Antonio.</SPAN></FONT></DIV></BODY></HTML>
+  - Xilinx EDK project (standalone program running fine, and BSP files
+are generated)
+    the project has only one UARTLITE, 82MB SDRAM and a few kByte
+blockram, and the systemace interface
+ 
+  - crosscompiler toolchain works
 
-------_=_NextPart_001_01C7E89B.298A4B7E--
+  - after modified some defines in the xparameters.h i got a linux 2.4.
+kernel (linuxppc) without compiler errors
+    and yes, the uartlite driver is enabled :)
+
+
+but, when downloading the zImage.elf via XMD to the SDRAM and starting
+it with the run command nothing happens , or  i think that nothings
+happens because the serial port is quiet.
+
+is it possible to run a kernel that way ? or need i some kind of
+bootloader ?
+or is this complete the wrong way ?
+
+Regards
+Georg
+
+
+
+ 
+ 
+
+
+
+
+
+-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
+Forschungszentrum Jülich GmbH
+52425 Jülich
+
+Sitz der Gesellschaft: Jülich
+Eingetragen im Handelsregister des Amtsgerichts Düren Nr. HR B 3498
+Vorsitzende des Aufsichtsrats: MinDirig'in Bärbel Brumme-Bothe
+Vorstand: Prof. Dr. Achim Bachem (Vorsitzender), Dr. Ulrich Krafft (stellv. 
+Vorsitzender)
+-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
