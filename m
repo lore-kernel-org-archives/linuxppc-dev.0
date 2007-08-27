@@ -1,20 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jchapman@katalix.com>
+Received: from s36.avahost.net (s36.avahost.net [74.53.95.194])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 10E57DDEE7
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Aug 2007 01:46:09 +1000 (EST)
-In-Reply-To: <20070827154426.GA10453@ld0162-tx32.am.freescale.net>
-References: <Pine.LNX.4.64.0708271025170.15438@blarg.am.freescale.net>
-	<20070827154426.GA10453@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <26709A38-27D1-4342-9763-88D5B359858E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] 85xx: Renamed mpc8544_ds.c to mpc85xx_ds.c
-Date: Mon, 27 Aug 2007 10:48:19 -0500
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id E3A22DE0D5
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Aug 2007 01:51:44 +1000 (EST)
+Message-ID: <46D2F301.7050105@katalix.com>
+Date: Mon, 27 Aug 2007 16:51:29 +0100
+From: James Chapman <jchapman@katalix.com>
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+Subject: Re: RFC: issues concerning the next NAPI interface
+References: <46CF127D.1090609@katalix.com>	<20070824.144711.18301866.davem@davemloft.net>	<46D1D634.7060007@katalix.com>
+	<20070826.185815.93042514.davem@davemloft.net>
+In-Reply-To: <20070826.185815.93042514.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: tklein@de.ibm.com, themann@de.ibm.com, stefan.roscher@de.ibm.com,
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	raisch@de.ibm.com, linuxppc-dev@ozlabs.org, akepner@sgi.com,
+	meder@de.ibm.com, ossthema@de.ibm.com, shemminger@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +27,111 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+David Miller wrote:
+> From: James Chapman <jchapman@katalix.com>
+> Date: Sun, 26 Aug 2007 20:36:20 +0100
+> 
+>> David Miller wrote:
+>>> From: James Chapman <jchapman@katalix.com>
+>>> Date: Fri, 24 Aug 2007 18:16:45 +0100
+>>>
+>>>> Does hardware interrupt mitigation really interact well with NAPI?
+>>> It interacts quite excellently.
+>> If NAPI disables interrupts and keeps them disabled while there are more 
+>> packets arriving or more transmits being completed, why do hardware 
+>> interrupt mitigation / coalescing features of the network silicon help?
+> 
+> Because if your packet rate is low enough such that the cpu can
+> process the interrupt fast enough and thus only one packet gets
+> processed per NAPI poll, the cost of going into and out of NAPI mode
+> dominates the packet processing costs.
 
-On Aug 27, 2007, at 10:44 AM, Scott Wood wrote:
+In the second half of my previous reply (which seems to have been 
+deleted), I suggest a way to avoid this problem without using hardware 
+interrupt mitigation / coalescing. Original text is quoted below.
 
-> On Mon, Aug 27, 2007 at 10:25:53AM -0500, Kumar Gala wrote:
->> diff --git a/arch/powerpc/platforms/85xx/mpc8544_ds.c b/arch/ 
->> powerpc/platforms/85xx/mpc8544_ds.c
->> deleted file mode 100644
->> index 0f834d8..0000000
->> --- a/arch/powerpc/platforms/85xx/mpc8544_ds.c
->> +++ /dev/null
->> @@ -1,186 +0,0 @@
->> -/*
->> - * MPC8544 DS Board Setup
->> - *
-> [snip]
->> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/ 
->> powerpc/platforms/85xx/mpc85xx_ds.c
->> new file mode 100644
->> index 0000000..0f834d8
->> --- /dev/null
->> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
->> @@ -0,0 +1,186 @@
->> +/*
->> + * MPC8544 DS Board Setup
->> + *
->
-> If you pass -M to git-format-patch, it'll detect renames rather than
-> showing a large delete followed by a large create.
+ >> I've seen the same and I'm suggesting that the NAPI driver keeps
+ >> itself in polled mode for N polls or M jiffies after it sees
+ >> workdone=0. This has always worked for me in packet forwarding
+ >> scenarios to maximize packets/sec and minimize latency.
 
-thanks, will do that in the future. :)
+To implement this, there's no need for timers, hrtimers or generic NAPI 
+support that others have suggested. A driver's poll() would set an 
+internal flag and record the current jiffies value when finding 
+workdone=0 rather than doing an immediate napi_complete(). Early in 
+poll() it would test this flag and if set, do a low-cost test to see if 
+it had any work to do. If no work, it would check the saved jiffies 
+value and do the napi_complete() only if no work has been done for a 
+configurable number of jiffies. This keeps interrupts disabled longer at 
+the expense of many more calls to poll() where no work is done. So 
+critical to this scheme is modifying the driver's poll() to fastpath the 
+case of having no work to do while waiting for its local jiffy count to 
+expire.
 
-- k
+Here's an untested patch for tg3 that illustrates the idea.
+
+diff --git a/drivers/net/tg3.c b/drivers/net/tg3.c
+index 710dccc..59e151b 100644
+--- a/drivers/net/tg3.c
++++ b/drivers/net/tg3.c
+@@ -3473,6 +3473,24 @@ static int tg3_poll(struct napi_struct *napi,
+  	struct tg3_hw_status *sblk = tp->hw_status;
+  	int work_done = 0;
+
++	/* fastpath having no work while we're holding ourself in
++	 * polled mode
++	 */
++	if ((tp->exit_poll_time) && (!tg3_has_work(tp))) {
++		if (time_after(jiffies, tp->exit_poll_time)) {
++			tp->exit_poll_time = 0;
++			/* tell net stack and NIC we're done */
++			netif_rx_complete(netdev, napi);
++			tg3_restart_ints(tp);
++		}
++		return 0;
++	}
++
++	/* if we get here, there might be work to do so disable the
++	 * poll hold fastpath above
++	 */
++	tp->exit_poll_time = 0;
++
+  	/* handle link change and other phy events */
+  	if (!(tp->tg3_flags &
+  	      (TG3_FLAG_USE_LINKCHG_REG |
+@@ -3511,11 +3529,11 @@ static int tg3_poll(struct napi_struct *napi,
+  	} else
+  		sblk->status &= ~SD_STATUS_UPDATED;
+
+-	/* if no more work, tell net stack and NIC we're done */
+-	if (!tg3_has_work(tp)) {
+-		netif_rx_complete(netdev, napi);
+-		tg3_restart_ints(tp);
+-	}
++	/* if no more work, set the time in jiffies when we should
++	 * exit polled mode
++	 */
++	if (!tg3_has_work(tp))
++		tp->exit_poll_time = jiffies + 2;
+
+  	return work_done;
+  }
+diff --git a/drivers/net/tg3.h b/drivers/net/tg3.h
+index a6a23bb..a0d24d3 100644
+--- a/drivers/net/tg3.h
++++ b/drivers/net/tg3.h
+@@ -2163,6 +2163,7 @@ struct tg3 {
+  	u32				last_tag;
+
+  	u32				msg_enable;
++	unsigned long			exit_poll_time;
+
+  	/* begin "tx thread" cacheline section */
+  	void				(*write32_tx_mbox) (struct tg3 *, u32,
+
+
+-- 
+James Chapman
+Katalix Systems Ltd
+http://www.katalix.com
+Catalysts for your Embedded Linux software development
