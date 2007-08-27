@@ -1,37 +1,23 @@
-Return-Path: <ossthema@de.ibm.com>
-Received: from mtagate3.uk.ibm.com (mtagate3.uk.ibm.com [195.212.29.136])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate3.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BAC3BDDF06
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Aug 2007 19:47:20 +1000 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate3.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l7R9lF3U201538
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Aug 2007 09:47:15 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
-	[9.149.37.228])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.5) with
-	ESMTP id l7R9lFiU3027132
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Aug 2007 10:47:15 +0100
-Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l7R9l8cM027060
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Aug 2007 10:47:08 +0100
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-To: David Miller <davem@davemloft.net>
-Subject: Re: RFC: issues concerning the next NAPI interface
-Date: Mon, 27 Aug 2007 11:47:01 +0200
-References: <46CF127D.1090609@katalix.com> <46D1D634.7060007@katalix.com>
-	<20070826.185815.93042514.davem@davemloft.net>
-In-Reply-To: <20070826.185815.93042514.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200708271147.01890.ossthema@de.ibm.com>
-Cc: tklein@de.ibm.com, themann@de.ibm.com, stefan.roscher@de.ibm.com,
-	netdev@vger.kernel.org, jchapman@katalix.com, raisch@de.ibm.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	akepner@sgi.com, meder@de.ibm.com, shemminger@linux-foundation.org
+Return-Path: <daenzer@debian.org>
+Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
+	by ozlabs.org (Postfix) with ESMTP id 54A47DDF7F
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Aug 2007 18:59:11 +1000 (EST)
+Subject: Re: Sleep problems with kernels >= 2.6.21 on powerpc
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <daenzer@debian.org>
+To: =?ISO-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
+In-Reply-To: <20070827065246.GA21220@ime.usp.br>
+References: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>
+	<6bffcb0e0708261621q25316becqce7b3ae2176f45a8@mail.gmail.com>
+	<20070827065246.GA21220@ime.usp.br>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 27 Aug 2007 10:37:27 +0200
+Message-Id: <1188203847.10738.357.camel@thor.sulgenrain.local>
+Mime-Version: 1.0
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+	=?ISO-8859-1?Q?Rog=E9rio?= Brito <rbrito@gmail.com>,
+	linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+	linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org,
+	Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,44 +27,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 27 August 2007 03:58, David Miller wrote:
-> From: James Chapman <jchapman@katalix.com>
-> Date: Sun, 26 Aug 2007 20:36:20 +0100
-> 
-> > David Miller wrote:
-> > > From: James Chapman <jchapman@katalix.com>
-> > > Date: Fri, 24 Aug 2007 18:16:45 +0100
-> > > 
-> > >> Does hardware interrupt mitigation really interact well with NAPI?
-> > > 
-> > > It interacts quite excellently.
-> > 
-> > If NAPI disables interrupts and keeps them disabled while there are more 
-> > packets arriving or more transmits being completed, why do hardware 
-> > interrupt mitigation / coalescing features of the network silicon help?
-> 
-> Because if your packet rate is low enough such that the cpu can
-> process the interrupt fast enough and thus only one packet gets
-> processed per NAPI poll, the cost of going into and out of NAPI mode
-> dominates the packet processing costs.
+On Mon, 2007-08-27 at 03:52 -0300, Rog=C3=A9rio Brito wrote:
+>=20
+> I did 13 compiles with git bisect and some of them were unsucessfuly
+> compiled, which I am afraid that may miss the real cause if I tag them as
+> being "bad" (which I did).
 
-As far as I understand your argumentation, NAPI is supposed to work well only
-for HW with coalescing features (concerning dropping the interrupt rate).
-NAPI itself does not provide a reliable functionality to reduce the
-number of interrupts, especially not for systems with only 1 NIC. 
-NAPI will only wait for some time when the budget is exceeded
-and the softIRQs don't call net_rx_action again. This seems to be the case
-after 10 rounds. That means NAPI really waits after 300 x 10 packets 
-have been processed in a row (worst case).
+Yes, don't mark such cases as bad or good but look for a nearby commit
+that compiles.
 
-As a matter of fact there is HW that does not have this feature. There seems
-to be HW which does not work well with plain NAPI.
-This HW performs well if the operation system supports HP timers 
-(and when they are used either in the device driver or polling engine).
 
-So the question is simply: Do we want drivers that need (benefit from)
-a timer based polling support to implement their own timers each, 
-or should there be a generic support? 
-
-Thanks,
-Jan-Bernd
+--=20
+Earthling Michel D=C3=A4nzer           |          http://tungstengraphics.c=
+om
+Libre software enthusiast         |          Debian, X and DRI developer
