@@ -1,17 +1,16 @@
-Return-Path: <SRS0=QhAZ=NY=denx.de=sr@srs.kundenserver.de>
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
+Return-Path: <vitb@kernel.crashing.org>
+Date: Mon, 27 Aug 2007 10:50:06 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: David Gibson <david@gibson.dropbear.id.au>
 Subject: Re: [PATCH 2/3] [POWERPC] Add pci node to sequoia dts
-Date: Mon, 27 Aug 2007 08:38:48 +0200
+Message-ID: <20070827105006.41fa2d60@localhost.localdomain>
+In-Reply-To: <20070827015417.GB12804@localhost.localdomain>
 References: <20070825091440.4087.1428.stgit@localhost.localdomain>
-	<200708270807.17351.sr@denx.de>
-	<20070827062135.GC7306@localhost.localdomain>
-In-Reply-To: <20070827062135.GC7306@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200708270838.48675.sr@denx.de>
-Cc: David Gibson <david@gibson.dropbear.id.au>
+	<20070825092954.4087.95333.stgit@localhost.localdomain>
+	<20070827015417.GB12804@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,51 +20,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 27 August 2007, David Gibson wrote:
-> On Mon, Aug 27, 2007 at 08:07:17AM +0200, Stefan Roese wrote:
-> [snip]
->
-> > > I usually put device_type, compatible and reg at the top of the block,
-> > > to announce what the node actually is before giving all the details.
-> > >
-> > > Also, apart from the stray space in the compatible, I'm guessing that
-> > > the 440EPx bridge is actually more-or-less like the PCI bridges on
-> > > other 4xx chips, so we should have a more general compatible string
-> > > too.
-> >
-> > Yes, it is "more-or-less" like any other 4xx PCI core. So it really would
-> > make sense to define it more generally. Something like:
-> >
-> > 			compatible = "ibm,pci-440epx", "ibm,pci4xx";
-> >
-> > or even:
-> >
-> > 			compatible = "ibm,pci-440epx", "ibm,pci";
-> >
-> > ?
->
-> Hrm.. "xx" is ugly, and "ibm,pci" isn't specific enough.  I think
-> we're better off just using the oldest similar chip.  Since this is
-> vanilla PCI, I think that makes it "ibm,pci-405gp"
+On Mon, 27 Aug 2007 11:54:17 +1000
+David Gibson wrote:
 
-Fine with me.
+> On Sat, Aug 25, 2007 at 01:29:54PM +0400, Vitaly Bordug wrote:
+> > 
+> > Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+> > Signed-off-by: Stefan Roese <sr@denx.de>
+> > 
+> > ---
+> > 
+> >  arch/powerpc/boot/dts/sequoia.dts |   26 ++++++++++++++++++++++++++
+> >  1 files changed, 26 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/boot/dts/sequoia.dts
+> > b/arch/powerpc/boot/dts/sequoia.dts index ef6f41c..8eb258f 100644
+> > --- a/arch/powerpc/boot/dts/sequoia.dts
+> > +++ b/arch/powerpc/boot/dts/sequoia.dts
+> > @@ -92,6 +92,32 @@
+> >  		#size-cells = <1>;
+> >  		ranges;
+> >  		clock-frequency = <0>; /* Filled in by zImage */
+> > +		
+> > +		pci {
+> > +			/* irqs are routed to irq67, dependless of
+> > devsel/PIRQx */
+> > +			interrupt-map-mask = <0 0 0 0>;
+> > +			interrupt-map = <0 0 0 0 &UIC2 3
+> > 8>; +
+> > +			interrupt-parent = <&UIC2>;
+> > +			interrupts = <3 8>;
+> > +	    
+> > +			bus-range = <0 0>;
+> > +	
+> > +			/* 
+> > +			 * mem is at 80000000 set up indirectly
+> > +			 * io is at 0001_e800_0000
+> > +			 */
+> > +			ranges = <02000000 0 80000000 1 80000000 0
+> > 10000000
+> > +				01000000 0 00000000 1 e8000000 0
+> > 00100000>; +
+> > +			#interrupt-cells = <1>;
+> > +			#size-cells = <2>;
+> > +			#address-cells = <3>;
+> > +
+> > +    			reg = <1 eec00000 40 1 ef400000
+> > 40>;  /* phb cfg, phb reg */
+> > +			compatible = "ibm, 440epx";
+> > +			device_type = "pci";
+> 
+> I usually put device_type, compatible and reg at the top of the block,
+> to announce what the node actually is before giving all the details.
+> 
+ok
+> Also, apart from the stray space in the compatible, I'm guessing that
+> the 440EPx bridge is actually more-or-less like the PCI bridges on
+> other 4xx chips, so we should have a more general compatible string
+> too.
+> 
+heh, with a sole PCI impl on 4xx it does not hurt to have more general
+stuff here.
+what is proposed, "amcc,4xx"?
+> Is the 440EPx a vanilla PCI or a PCI-X bridge?  If the later that
+> should be reflected in the name and compatible as well.
+> 
+"The 32-bit PCI bridge is compatible with he PCI Specification, Version
+2.2 (it does not support 5V operation) "
+so seems to be vanilla PCI.
 
-> > > Is the 440EPx a vanilla PCI or a PCI-X bridge?  If the later that
-> > > should be reflected in the name and compatible as well.
-> >
-> > It's a vanilla PCI bridge.
->
-> Ok, so it is different from 440GP which is PCI-X.
+> > +		};
+> >  
+> >  		SDRAM0: sdram {
+> >  			device_type = "memory-controller";
+> > 
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@ozlabs.org
+> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> > 
+> 
 
-Yes. There are some common parts (IIRC), but there are differences. Perhaps 
-both, IBM-PCI and IBM-PCI-X can be integrated into one source too, but I 
-think we should start with PCI-only right now.
 
-Best regards,
-Stefan
-
-=====================================================================
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
-=====================================================================
+-- 
+Sincerely, Vitaly
