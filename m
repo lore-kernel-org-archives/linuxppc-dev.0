@@ -1,16 +1,22 @@
-Return-Path: <miroslaw.dach@psi.ch>
-Received: from MAILSEND01.psi.ch (mailsend01.psi.ch [129.129.191.53])
-	by ozlabs.org (Postfix) with ESMTP id F40B7DE352
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.178])
+	by ozlabs.org (Postfix) with ESMTP id 86C2BDDF54
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Aug 2007 00:48:57 +1000 (EST)
-Date: Mon, 27 Aug 2007 16:36:48 +0200 (CEST)
-From: Miroslaw Dach <miroslaw.dach@psi.ch>
-To: Grant Likely <grant.likely@secretlab.ca>
+	Tue, 28 Aug 2007 00:53:30 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m34so2521574wag
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 27 Aug 2007 07:53:29 -0700 (PDT)
+Message-ID: <fa686aa40708270753u1411796fv698d3b39ee908599@mail.gmail.com>
+Date: Mon, 27 Aug 2007 08:53:28 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Miroslaw Dach" <miroslaw.dach@psi.ch>
 Subject: Re: Linux doesn not boot from u-boot on ML403
-In-Reply-To: <fa686aa40708270724r3d1a3bd3jccbc161475e93343@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44.0708271634110.30948-100000@slslc02.psi.ch>
+In-Reply-To: <Pine.LNX.4.44.0708271634110.30948-100000@slslc02.psi.ch>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+References: <fa686aa40708270724r3d1a3bd3jccbc161475e93343@mail.gmail.com>
+	<Pine.LNX.4.44.0708271634110.30948-100000@slslc02.psi.ch>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -22,50 +28,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Grant,
+On 8/27/07, Miroslaw Dach <miroslaw.dach@psi.ch> wrote:
+> Hi Grant,
+>
+>         Thank you for your response.
+>
+> My u-boot bootargs is set to:
+> console=ttyUL0,9600 root=/dev/nfs rw nfsroot=129.117.144.113:/opt/eldk41/ppc_4xx,tcp  ip=::::virtex4-mirek:eth0:dhcp panic=1
 
-	Thank you for your response.
+Drop the ',9600'.  It's irrelevant for uartlite.
 
-My u-boot bootargs is set to:
-console=ttyUL0,9600 root=/dev/nfs rw nfsroot=129.117.144.113:/opt/eldk41/ppc_4xx,tcp  ip=::::virtex4-mirek:eth0:dhcp panic=1
+>
+> where I can find __log_buf for kernel messages?
 
-where I can find __log_buf for kernel messages?
+Search for __log_buf in System.map (in the kernel source tree).  Use a
+debugger to look at the memory.
 
-
-
-Best Regards
-
-Mirek
-
-
-
-On Mon, 27 Aug 2007, Grant Likely wrote:
-
-> On 8/27/07, Mirek23 <miroslaw.dach@psi.ch> wrote:
-> > 4. I am trying to start the kernel
-> >
-> > => bootm 0x1000000
-> >
-> > ## Booting image at 01000000 ...
-> > Image Name:   Linux-2.6.21-rc6
-> > Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-> > Data Size:    991375 Bytes = 968.1 kB
-> > Load Address: 00000000
-> > Entry Point:  00000000
-> > Verifying Checksum ... OK
-> > Uncompressing Kernel Image ... OK
-> 
-> Have you looked in __log_buf for kernel messages?
-> What does your u-boot env look like?
-> Do you have 'console=ttyUL0' or 'console=ttyS0' in the kernel command line?
-> 
-> Cheers,
-> g.
-> 
-> 
+g.
 
 -- 
-=============================================================================
-          Miroslaw Dach (Miroslaw.Dach@psi.ch) - SLS/Controls Group 
-                PSI - Paul Scherrer Institut CH-5232 Villigen
-=============================================================================
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
