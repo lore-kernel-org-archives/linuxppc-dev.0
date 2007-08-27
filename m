@@ -1,15 +1,23 @@
-Return-Path: <Glenn.G.Hart@us.westinghouse.com>
-Received: from swec9607.wecnq.com (swec9607.wecnq.com [147.72.234.65])
-	by ozlabs.org (Postfix) with ESMTP id 32C81DDEEA
+Return-Path: <orutsch@sympatec.com>
+Received: from sympatec.com (mail.sympatec.net [217.5.250.35])
+	(using SSLv3 with cipher DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9E9E8DDF67
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 27 Aug 2007 10:53:12 +1000 (EST)
-Subject: Network Bad Kernel Access
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <OF268312ED.06BF1E68-ON85257344.0004544A-85257344.00059541@ct.wec.com>
-From: Glenn.G.Hart@us.westinghouse.com
-Date: Sun, 26 Aug 2007 21:00:58 -0400
+	Mon, 27 Aug 2007 16:26:22 +1000 (EST)
+Received: from [172.20.3.151] (account rutsch [172.20.3.151] verified)
+	by sympatec.com (CommuniGate Pro SMTP 5.1.4)
+	with ESMTPSA id 1970004 for linuxppc-embedded@ozlabs.org;
+	Mon, 27 Aug 2007 08:29:36 +0200
+Message-ID: <46D26E3F.8040309@sympatec.com>
+Date: Mon, 27 Aug 2007 08:25:03 +0200
+From: Oliver Rutsch <orutsch@sympatec.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: STK5200 pci_enable_device problem
+References: <20070826211021.BD3E724047@gemini.denx.de>
+In-Reply-To: <20070826211021.BD3E724047@gemini.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,57 +28,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I am having a problem with my network.  I am using a V4FX12 running linux
-2.6.21 with the TEMAC.  I am running the PPC at 300 MHz and the TEMAC is
-configured for DMA and DRE on the Xmit and the Recv.  I have tried varying
-the FIFO depth and enabling/disabling the checksum offloading.  All produce
-the error below when under heavy network traffic (specifically sending data
-from the PPC).  Has anybody seen this?  It seems like I am overflowing some
-memory, but I am not sure what/where to increase it.
+Hi,
 
-Thanks,
-Glenn
+[...]
 
+ >> It's not so easy to compile the PLX drivers on the 4.1 ELDK because of
+ >> missing headers in the ppc architecture. I managed to build the drivers
+ >> for the 2.6.19 kernel and I was able to work with the card except the
+ >> DMA routines (still working on this issue).
+ >
+ > WHy don't you use the arch/powerpc configuration, then? Note that the
+ > STK5200 has never been supported in a  2.6  kernel  with  a  arch/ppc
+ > configuration.
+ >
 
+Because I found at least a lite5200 configuration in the 4.1 ELDK 
+(2.6.19.2 kernel) in the ARCH/ppc architecure. With ARCH/powerpc I only 
+had a few configurations for other modules and I wasn't able to build a 
+running kernel for the TQM5200 (maybe my fault).
+Is there support for the TQM5200 and the STK5200 with ARCH/powerpc in 
+newer kernels? I'm still using the 3.1.1 ELDK for the TQM5200 as it have 
+everything I need and I don't need to use the PLX card in this board 
+(although it would have been nice if I got it working...).
 
-[  484.696738] Oops: kernel access of bad area, sig: 11 [#1]
-[  484.761286] NIP: c00e1ef4 LR: c00cfec0 CTR: c00cfe34
-[  484.820650] REGS: c0483b10 TRAP: 0300   Not tainted  (2.6.21)
-[  484.889378] MSR: 00029030 <EE,ME,IR,DR>  CR: 93005999  XER: e0000000
-[  484.965410] DAR: bb857caf, DSISR: 00000000
-[  485.014365] TASK = c0648b60[129] 'rcS' THREAD: c0482000
-[  485.074765] GPR00: c04fdfb8 c0483bc0 c0648b60 bb857c2b c04fd9a0 c0483bcc
-04000000 ff107ac0
-[  485.174747] GPR08: 0000000f c04fdfb8 c04d2478 00010001 00648d10 1003c2e0
-00000000 00000001
-[  485.274732] GPR16: 00000003 c0483ed8 00004fd8 000005b4 000005b4 00000000
-00000000 0001679c
-[  485.374716] GPR24: 7ff8b398 3002afe0 0000000f c04d2000 c04d23b8 c06bbe60
-00000003 c04d2320
-[  485.476784] NIP [c00e1ef4] kfree_skb+0x8/0x3c
-[  485.528858] LR [c00cfec0] SgSendHandlerBH+0x8c/0x1cc
-[  485.588223] Call Trace:
-[  485.617389] [c0483bc0] [c00cfec0] SgSendHandlerBH+0x8c/0x1cc
-(unreliable)
-[  485.698628] [c0483bf0] [c0019218] tasklet_action+0x90/0xd4
-[  485.764241] [c0483c00] [c0018ebc] __do_softirq+0x64/0xd0
-[  485.827772] [c0483c20] [c00064a8] do_softirq+0x40/0x58
-[  485.889221] [c0483c30] [c0018f74] irq_exit+0x38/0x48
-[  485.948586] [c0483c40] [c0006450] do_IRQ+0x88/0xa0
-[  486.005868] [c0483c50] [c00032d8] ret_from_except+0x0/0x18
-[  486.071483] [c0483d10] [c0483d00] 0xc0483d00
-[  486.122516] [c0483d20] [c00e17d4] __alloc_skb+0x48/0x11c
-[  486.186048] [c0483d40] [c0109218] tcp_sendmsg+0x1ac/0xc40
-[  486.250621] [c0483db0] [c0126b58] inet_sendmsg+0x60/0x74
-[  486.314152] [c0483dd0] [c00dcf34] sock_aio_write+0xe0/0xfc
-[  486.379765] [c0483e30] [c0050910] do_sync_write+0xb8/0x10c
-[  486.445381] [c0483ef0] [c0050a40] vfs_write+0xdc/0x10c
-[  486.506829] [c0483f10] [c0050b48] sys_write+0x4c/0x8c
-[  486.567236] [c0483f40] [c0002c90] ret_from_syscall+0x0/0x3c
-[  486.633888] Instruction dump:
-[  486.669300] 0f000000 7fe3fb78 7d6803a6 4e800021 80010014 7fe3fb78
-7c0803a6 bbc10008
-[  486.761992] 38210010 4bfffe78 2c030000 4d820020 <80030084> 39230084
-2f800001 409e0008
-[  486.858162] Kernel panic - not syncing: Aiee, killing interrupt handler!
-[  486.938382] Rebooting in 180 seconds..
+Bye,
+
+-- 
+Dipl. Ing. Oliver Rutsch
