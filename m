@@ -1,22 +1,19 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 6990CDDEDE
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Aug 2007 07:56:03 +1000 (EST)
-Date: Mon, 27 Aug 2007 14:56:00 -0700 (PDT)
-Message-Id: <20070827.145600.102570576.davem@davemloft.net>
-To: jchapman@katalix.com
-Subject: Re: RFC: issues concerning the next NAPI interface
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <46D34517.4010505@katalix.com>
-References: <46D2F301.7050105@katalix.com>
-	<20070827.140251.95055210.davem@davemloft.net>
-	<46D34517.4010505@katalix.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: tklein@de.ibm.com, themann@de.ibm.com, stefan.roscher@de.ibm.com,
-	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	raisch@de.ibm.com, linuxppc-dev@ozlabs.org, akepner@sgi.com,
-	meder@de.ibm.com, ossthema@de.ibm.com, shemminger@linux-foundation.org
+Return-Path: <CFRIESEN@nortel.com>
+Received: from zrtps0kn.nortel.com (zrtps0kn.nortel.com [47.140.192.55])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "zrtps0kn.nortel.com", Issuer "NORTEL" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 4AE17DDF00
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Aug 2007 08:05:54 +1000 (EST)
+Message-ID: <46D34A9E.7010501@nortel.com>
+Date: Mon, 27 Aug 2007 16:05:18 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+MIME-Version: 1.0
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: what is ~1MB of memory allocated at fffea000-fffff000 on ppc64?
+References: <46D3326C.3000505@nortel.com> <20070827203157.GD13612@kryten>
+In-Reply-To: <20070827203157.GD13612@kryten>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,20 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: James Chapman <jchapman@katalix.com>
-Date: Mon, 27 Aug 2007 22:41:43 +0100
+Anton Blanchard wrote:
+> Hi,
+> 
+> 
+>>I've got a ppc64 box running 2.6.14.  64-bit kernel, 32-bit userspace. 
+>>It has a ~86KB chunk of memory near the top of the process address 
+>>space, and I'm not sure who's setting it up and what the purpose is.  In 
+>>/proc/<pid>/maps it looks like this:
+>>
+>>fffea000-fffff000 rw-p fffea000 00:00 0
+>>
+>>Can anyone enlighten me as to what this is for and who is allocating it?
+> 
+> 
+> Looks like your process stack. BTW we leave the top page
+> (0xfffff000 - 0xffffffff) unmapped mostly because of test cases that
+> expect
+> 
+> *(unsigned long *)-1UL
+> 
+> to fail.
 
-> I don't recall saying anything in previous posts about this. Are you 
-> confusing my posts with Jan-Bernd's?
 
-Yes, my bad.
+Doh.  Of course, that's almost certainly it.
 
-> Jan-Bernd has been talking about using hrtimers to _reschedule_
-> NAPI. My posts are suggesting an alternative mechanism that keeps
-> NAPI active (with interrupts disabled) for a jiffy or two after it
-> would otherwise have gone idle in order to avoid too many interrupts
-> when the packet rate is such that NAPI thrashes between poll-on and
-> poll-off.
+For some background, we're running an emulator that uses a null pointer 
+value of 0xffff0000 and we want any accesses to that address to trap.
 
-So in this scheme what runs ->poll() to process incoming packets?
-The hrtimer?
+Do you anticipate any issues with the following change?
+
+-#define TASK_SIZE_USER32 (0x0000000100000000UL - (1*PAGE_SIZE))
++#define TASK_SIZE_USER32 (0x00000000FFFF0000UL - (1*PAGE_SIZE))
+
+
+Thanks,
+
+Chris
