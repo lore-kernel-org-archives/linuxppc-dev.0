@@ -1,28 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.181])
-	by ozlabs.org (Postfix) with ESMTP id 7F760DDE0F
+Return-Path: <miroslaw.dach@psi.ch>
+Received: from MAILSEND01.psi.ch (mailsend01.psi.ch [129.129.191.53])
+	by ozlabs.org (Postfix) with ESMTP id 4767BDDDFD
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Aug 2007 23:30:21 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so2257980wag
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Aug 2007 06:30:20 -0700 (PDT)
-Message-ID: <fa686aa40708280630x67856334qaf2e0dd59ecb95bf@mail.gmail.com>
-Date: Tue, 28 Aug 2007 07:30:19 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: schardt <g.schardt@fz-juelich.de>
-Subject: Re: Newbie and linux on virtex-II ppc
-In-Reply-To: <46D4221D.8030500@fz-juelich.de>
+	Tue, 28 Aug 2007 23:37:19 +1000 (EST)
+Date: Tue, 28 Aug 2007 15:37:18 +0200 (CEST)
+From: Miroslaw Dach <miroslaw.dach@psi.ch>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Linux doesn not boot from u-boot on ML403
+In-Reply-To: <fa686aa40708280602vc00920do459a087c25b830e1@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44.0708281531060.3856-100000@slslc02.psi.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <46D2C9A5.9030708@fz-juelich.de>
-	<fa686aa40708270609x453092eye6eaf83b65ac2dee@mail.gmail.com>
-	<46D2CFFB.6050602@fz-juelich.de>
-	<fa686aa40708270719s1fd230e9g188948ef02b3eda7@mail.gmail.com>
-	<46D41298.7060109@fz-juelich.de>
-	<fa686aa40708280606p67fd74p9287d041d955c538@mail.gmail.com>
-	<46D4221D.8030500@fz-juelich.de>
-Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Leonid <Leonid@a-k-a.net>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,44 +22,63 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 8/28/07, schardt <g.schardt@fz-juelich.de> wrote:
-> Grant Likely wrote:
+Hi Grant,
+
+	Thanks for your answer.
+I have found in the System.map :
+c020f0c4 b __log_buf
+
+Is the address c020f0c4 relative to the .data segment?
+
+I understand that when the system hangs I should type in the XMD window 
+stop.
+
+Is there anyway to examine the memory from the XMD window? or should I 
+reload the u-boot and examine the memory from u-boot?
+
+Best Regards
+
+Mirek
+
+
+
+On Tue, 28 Aug 2007, Grant Likely wrote:
+
+> On 8/28/07, Miroslaw Dach <miroslaw.dach@psi.ch> wrote:
+> > Linux/PPC load: console=ttyUL0,9600 root=/dev/nfs rw
+> > nfsroot=129.117.144.113:/opt/eldk41/ppc_4xx,tcp
+> > ip=::::virtex4-mirek:eth0:dhcp panic=1
+> > Uncompressing Linux...
 > >
-> > You've got 2 choices:
-> > 1. use the new sysace driver; it's already in mainline.  The new
-> > driver is faster, but it doesn't handle hotswap of the CF card (yet)
 > >
-> But where in menuconfig could i find the sysace driver ? i'm blind, i
-> think :)
-
-Which version of kernel are you using?  The new sysace driver was
-merged into 2.6.22
-
->
-> > 2. use the EDK driver; easiest way is to use my tree which already has
-> > it merged:  http://git.secretlab.ca
+> > After that system just hangs.
+> >
+> > I do not understand why it is possible to run zImage.elf straight from jtag
+> > but it hangs when started from u-boot.
+> >
+> > Is it any fundamental problem with running Linux from u-boot on ML403
+> > (Virtex-4) boards?
+> 
+> No there isn't.  It should work.  Most likely the kernel did not hang
+> immediately, but rather the console is not setup correctly.  You need
+> to halt the processor after the hang and look at __log_buf in memory
+> (Find the address in System.map).
+> 
+> Cheers,
+> g.
+> 
+> >
+> > Best Regards
+> >
+> > Mirek
 > >
 > >
-> i made an EDK update and now i have the linux_2_2 os in the software
-> options. the bsp with all drivers is generated.
-> and now ?
->  - copy to kernel tree
->  - use the xmake  to build the kernel, or make ?
-
-Don't use EDK to build you're kernel.  It's too fragile and you need
-to use the *exact* version of kernel that EDK expects.  You're better
-off to manually copy the xparams file from the generated BSP.  (ie.
-Don't let EDK know where your real kernel source tree is)
-
->
-> and why is there no dokumentation :)
-
-Care to write some?
-
-g.
+> 
+> 
+> 
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+=============================================================================
+          Miroslaw Dach (Miroslaw.Dach@psi.ch) - SLS/Controls Group 
+                PSI - Paul Scherrer Institut CH-5232 Villigen
+=============================================================================
