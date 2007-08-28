@@ -4,13 +4,13 @@ Received: from de01egw02.freescale.net (de01egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 75EEDDDE34
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 06:14:48 +1000 (EST)
-Date: Tue, 28 Aug 2007 15:14:40 -0500
+	by ozlabs.org (Postfix) with ESMTP id AA455DDEC1
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 06:14:50 +1000 (EST)
+Date: Tue, 28 Aug 2007 15:14:42 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: jgarzik@pobox.com
-Subject: [PATCH v3 3/8] fs_enet: Include linux/string.h from linux/fs_enet_pd.h
-Message-ID: <20070828201440.GB24145@ld0162-tx32.am.freescale.net>
+Subject: [PATCH v3 4/8] fs_enet: Don't share the interrupt.
+Message-ID: <20070828201442.GC24145@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20070828201127.GA24068@ld0162-tx32.am.freescale.net>
@@ -24,24 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It is needed for strstr().
+This driver can't handle an interrupt immediately after request_irq
+(making it fail with CONFIG_DEBUG_SHIRQ), and has unshared interrupts
+on all hardware I'm aware of.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- include/linux/fs_enet_pd.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/net/fs_enet/fs_enet-main.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/fs_enet_pd.h b/include/linux/fs_enet_pd.h
-index 543cd3c..815c6f9 100644
---- a/include/linux/fs_enet_pd.h
-+++ b/include/linux/fs_enet_pd.h
-@@ -16,6 +16,7 @@
- #ifndef FS_ENET_PD_H
- #define FS_ENET_PD_H
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index f261b90..da79a45 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -667,7 +667,7 @@ static int fs_request_irq(struct net_device *dev, int irq, const char *name,
+ 	struct fs_enet_private *fep = netdev_priv(dev);
  
-+#include <linux/string.h>
- #include <asm/types.h>
+ 	(*fep->ops->pre_request_irq)(dev, irq);
+-	return request_irq(irq, irqf, IRQF_SHARED, name, dev);
++	return request_irq(irq, irqf, 0, name, dev);
+ }
  
- #define FS_ENET_NAME	"fs_enet"
+ static void fs_free_irq(struct net_device *dev, int irq)
 -- 
 1.5.0.3
