@@ -1,14 +1,27 @@
-Return-Path: <jofsama@yahoo.com>
-Received: from web51603.mail.re2.yahoo.com (web51603.mail.re2.yahoo.com
-	[206.190.38.208]) by ozlabs.org (Postfix) with SMTP id 50FE3DDE03
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 14:25:54 +1000 (EST)
-Date: Tue, 28 Aug 2007 21:19:13 -0700 (PDT)
-From: Jarrod O'Flaherty <jofsama@yahoo.com>
-Subject: Where to put tip to fix very jerky mouse on iBook G3?
-To: linuxppc-dev@ozlabs.org
+Return-Path: <bcasavan@sgi.com>
+Received: from relay.sgi.com (netops-testserver-3-out.sgi.com [192.48.171.28])
+	by ozlabs.org (Postfix) with ESMTP id 7D9F9DDF4F
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 06:56:31 +1000 (EST)
+Date: Tue, 28 Aug 2007 15:56:28 -0500 (CDT)
+From: Brent Casavant <bcasavan@sgi.com>
+Sender: bcasavan@pkunk.americas.sgi.com
+To: Nick Piggin <npiggin@suse.de>
+Subject: Re: wmb vs mmiowb
+In-Reply-To: <20070824030904.GC6989@wotan.suse.de>
+Message-ID: <20070828151737.P5403@pkunk.americas.sgi.com>
+References: <20070822045714.GD26374@wotan.suse.de>
+	<alpine.LFD.0.999.0708221049560.30176@woody.linux-foundation.org>
+	<200708221202.12403.jesse.barnes@intel.com>
+	<20070823022043.GB18788@wotan.suse.de>
+	<alpine.LFD.0.999.0708221953360.30176@woody.linux-foundation.org>
+	<20070823042038.GI18788@wotan.suse.de>
+	<alpine.LFD.0.999.0708230915000.30176@woody.linux-foundation.org>
+	<1187886462.5972.17.camel@localhost.localdomain>
+	<20070824030904.GC6989@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Message-ID: <221915.41093.qm@web51603.mail.re2.yahoo.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-ia64@vger.kernel.org
+Reply-To: Brent Casavant <bcasavan@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,95 +31,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 24 Aug 2007, Nick Piggin wrote:
 
-Hi All,
- 
-SHORT VERSION:
---------------
+> And all platforms other than sn2 don't appear to reorder IOs after
+> they leave the CPU, so only sn2 needs to do the mmiowb thing before
+> spin_unlock.
 
-1. I had a problem with my USB mouse on an iBook G3.
-2. It took a lot of hard work to solve the problem.
-3. I'd like to know where to put my solution for others to find (and find easily!
-;).
+I'm sure all of the following is already known to most readers, but
+I thought the paragraph above might potentially cause confusion as
+to the nature of the problem mmiowb() is solving on SN2.  So for
+the record...
 
-For more details read on...
+SN2 does not reorder IOs issued from a single CPU (that would be
+insane).  Neither does it reorder IOs once they've reached the IO
+fabric (equally insane).  From an individual CPU's perspective, all
+IOs that it issues to a device will arrive at that device in program
+order.
 
+(In this entire message, all IOs are assumed to be memory-mapped.)
 
-LONG VERSION:
--------------
+The problem mmiowb() helps solve on SN2 is the ordering of IOs issued
+from multiple CPUs to a single device.  That ordering is undefined, as
+IO transactions are not ordered across CPUs.  That is, if CPU A issues
+an IO at time T, and CPU B at time T+1, CPU B's IO may arrive at the
+IO fabric before CPU A's IO, particularly if CPU B happens to be closer
+than CPU B to the target IO bridge on the NUMA network.
 
-I am wondering where I should put this tip/solution I worked out for fixing a very
-jerky mouse pointer under X on my iBook G3.
- 
-The problem goes something like this:
- - While running X (happens in both Gnome and KDE)
- - and using the mouse
- - the pointer will freeze 
- - at irregular intervals
- - for about 0.5 sec or so
- - then jump, to where it (probably?) "should be"
- - by which point I have "over moved" the mouse
- - and missed the button I was trying to hit
- - all of which
- - results in a system which is very hard to use.
+The simplistic method to solve this is a lock around the section
+issuing IOs, thereby ensuring serialization of access to the IO
+device.  However, as SN2 does not enforce an ordering between normal
+memory transactions and memory-mapped IO transactions, you cannot
+be sure that an IO transaction will arrive at the IO fabric "on the
+correct side" of the unlock memory transaction using this scheme.
 
-I noted that the problem was *less* pronounced when the system was under heavy load
-(eg. by running system monitor - which takes a lot of CPU!). This made sense once I
-discovered the cause of the jerkiness.
+Enter mmiowb().
 
-The specs of the machine/setup are:
- - Apple iBook G3 600MHz
- - 384 MB RAM
- - USB Mouse Connected
- - Debian Etch (4.0)
+mmiowb() causes SN2 to drain the pending IOs from the current CPU's
+node.  Once the IOs are drained the CPU can safely unlock a normal
+memory based lock without fear of the unlock's memory write passing
+any outstanding IOs from that CPU.
 
-And uname -a gives:
- >> Linux ibook3 2.6.18-5-powerpc #1 Sun Aug 12 21:01:27 UTC 2007 ppc GNU/Linux
- 
-So, as for the solution...
+Brent
 
-It turns out the cause is apparently the CPU frequency switching done by (power
-saving part of) the linux kernel.
-
-I don't believe the issue is necessarily with the kernel itself, though I could be
-wrong. It seems more likely it is some hardware problem, where a CPU frequency
-change causes a pause in processing. And perhaps only with this generation and model
-of iBook?
-
-For anyone else who has this problem, my tip is to: 
- - Try disabling the cpu frequency switching of the linux kernel.
-
-To do so, my current method is to execute:
- >> echo 600000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-
-This confines the governor to using a range between 600 and 600MHz, instead of
-between 400 and 600MHz as it is at bootup, which effectively disables frequency
-switching.
-
-It took me about 2 days to work out the cause and above solution. I actually found
-one very fleeting hint indicating a link between such system hiccups and CPU
-frequency changes on a website while Googling early one, but it was another 1.5 days
-before, after trying a bunch of other methods, I decided I really should work out if
-completely disabling it would do the trick. Playing with governors, which I did at
-various points, did seem to help some, but didn't make the problem disappear
-altogether. 
-
-Unfortunately, no amount of Googling since then has brought up that "life saving"
-site, or any other that mentions anything similar. So I guess I was very lucky I
-found it!
-
-I also guess not too many other people have suffered this problem, since, as I said,
-I can't get much on Google about the issue. But just in case someone does try
-installing Debian + Linux 2.6 on an iBook G3 and does just happen to have the same
-problem crop up, I thought I should park my tip somewhere they would be able to find
-it.
-
-My question therefore is:
- > Where should we be putting such tips on issues with Linux on iBook hardware?
-
-Any and all advice is appreciated (including how to disable frequency switching
-permanently!).
- 
-
-Cheers,
-Jarrod.
+-- 
+Brent Casavant                          All music is folk music.  I ain't
+bcasavan@sgi.com                        never heard a horse sing a song.
+Silicon Graphics, Inc.                    -- Louis Armstrong
