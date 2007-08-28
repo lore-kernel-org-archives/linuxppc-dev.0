@@ -1,17 +1,18 @@
-Return-Path: <miroslaw.dach@psi.ch>
-Received: from MAILSEND01.psi.ch (mailsend01.psi.ch [129.129.191.53])
-	by ozlabs.org (Postfix) with ESMTP id B247DDDF55
+Return-Path: <jochen@scram.de>
+Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id B6D56DDF63
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Aug 2007 21:18:39 +1000 (EST)
-Date: Tue, 28 Aug 2007 13:18:37 +0200 (CEST)
-From: Miroslaw Dach <miroslaw.dach@psi.ch>
-To: Grant Likely <grant.likely@secretlab.ca>, Leonid <Leonid@a-k-a.net>
-Subject: Re: Linux doesn not boot from u-boot on ML403
-In-Reply-To: <fa686aa40708270753u1411796fv698d3b39ee908599@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44.0708281300570.31877-100000@slslc02.psi.ch>
+	Tue, 28 Aug 2007 21:43:47 +1000 (EST)
+Message-ID: <46D40510.3060805@scram.de>
+Date: Tue, 28 Aug 2007 13:20:48 +0200
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: [PATCH] ppc32/8xx: Fix r3 trashing due to 8MB TLB page instantiation
+Content-Type: multipart/mixed; boundary="------------000709070107090300080001"
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,89 +23,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I have done additional test with my u-boot and linux kernel.
+This is a multi-part message in MIME format.
+--------------000709070107090300080001
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-I have downloaded u-boot(.elf) and zImage.elf via jtag to SDRAM:
+Instantiation of 8MB pages on the TLB cache for the kernel static
+mapping trashes r3 register on !CONFIG_8xx_CPU6 configurations.
+This ensures r3 gets saved and restored.
 
-The SDRAM has 32 MB: 
-Address Map for Processor ppc405_0
-  (0x00000000-0x01ffffff) DDR_SDRAM_1   plb
+This has been posted to linuxppc-embedded by Marcelo Tosatti
+<marcelo@kvack.org>, but only an incomplete version of the patch
+has been applied in c51e078f82096a7d35ac8ec2416272e843a0e1c4.
+This patch adds the rest of the fix.
 
-The steps I have doe are as following:
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+---
+ arch/ppc/kernel/head_8xx.S |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-1. XMD% dow -data zImage.elf 0xe00000
-2. XMD% dow u-boot.elf
-        section, .text: 0x00800000-0x0081513c
-        section, .resetvec: 0x0081513c-0x00815140
-        section, .rodata: 0x00815140-0x00817ce0
-        section, .reloc: 0x00817d00-0x00818674
-        section, .data: 0x00818674-0x00818b08
-        section, .data.rel: 0x00818b08-0x00818b34
-        section, .data.rel.local: 0x00818b34-0x00818f6c
-        section, .u_boot_cmd: 0x00818f6c-0x008191dc
-        section, .bss: 0x00819200-0x0081dd04
-Downloaded Program u-boot.elf
-Setting PC with program start addr = 0x00800100
-PC reset to 0x00800100, Clearing MSR Register
+This can be pulled from git://git.bocc.de/dbox2.git ppc-fixes
 
-3. XMD% run
+--------------000709070107090300080001
+Content-Type: text/x-patch;
+ name="d14ebb1e9d133983252a14f2ef037f76969ab3c6.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="d14ebb1e9d133983252a14f2ef037f76969ab3c6.diff"
 
-------------------------------------------------------------------
-                output on the serial port
-------------------------------------------------------------------
+diff --git a/arch/ppc/kernel/head_8xx.S b/arch/ppc/kernel/head_8xx.S
+index 944c35c..eb8d26f 100644
+--- a/arch/ppc/kernel/head_8xx.S
++++ b/arch/ppc/kernel/head_8xx.S
+@@ -495,9 +495,7 @@ LoadLargeDTLB:
+ 	lwz	r11, 4(r0)
  
-U-Boot 1.2.0 (Aug 28 2007 - 11:56:19)
+ 	lwz	r12, 16(r0)
+-#ifdef CONFIG_8xx_CPU6
+ 	lwz	r3, 8(r0)
+-#endif
+ 	rfi
+ 
+ /* This is the data TLB error on the MPC8xx.  This could be due to
 
 
-U-Boot: checkboard
-DRAM:  U-Boot: initdram
-32 MB
-Using default environment
-
-In:    serial
-Out:   serial
-Err:   serial
-Hit any key to stop autoboot:  0 
-=> 
-
-U-Boot 1.2.0 (Aug 27 2007 - 14:23:15)
-
-
-U-Boot: checkboard
-DRAM:  U-Boot: initdram
-32 MB
-Using default environment
-
-In:    serial
-Out:   serial
-Err:   serial
-Hit any key to stop autoboot:  0 
-=> bootelf 0xe00000
-Loading .text @ 0x00400000 (14028 bytes)
-Loading .data @ 0x00404000 (995328 bytes)
-Clearing .bss @ 0x004f7000 (8504 bytes)
-## Starting application at 0x00400000 ...
-
-loaded at:     00400000 004F9138
-board data at: 004F7120 004F7138
-relocated to:  004040B4 004040CC
-zimage at:     00404E59 004F6EE8
-avail ram:     004FA000 01FFFFFF
-
-Linux/PPC load: console=ttyUL0,9600 root=/dev/nfs rw 
-nfsroot=129.117.144.113:/opt/eldk41/ppc_4xx,tcp  
-ip=::::virtex4-mirek:eth0:dhcp panic=1
-Uncompressing Linux...
-
-
-After that system just hangs.
-
-I do not understand why it is possible to run zImage.elf straight from jtag
-but it hangs when started from u-boot.
-
-Is it any fundamental problem with running Linux from u-boot on ML403 
-(Virtex-4) boards?
-
-Best Regards
-
-Mirek
+--------------000709070107090300080001--
