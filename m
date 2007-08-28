@@ -1,17 +1,29 @@
-Return-Path: <miroslaw.dach@psi.ch>
-Received: from MAILSEND01.psi.ch (mailsend01.psi.ch [129.129.191.53])
-	by ozlabs.org (Postfix) with ESMTP id 4767BDDDFD
+Return-Path: <g.schardt@fz-juelich.de>
+Received: from zam837.fz-juelich.de (zam837.fz-juelich.de [134.94.100.69])
+	by ozlabs.org (Postfix) with SMTP id 21993DDE29
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Aug 2007 23:37:19 +1000 (EST)
-Date: Tue, 28 Aug 2007 15:37:18 +0200 (CEST)
-From: Miroslaw Dach <miroslaw.dach@psi.ch>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: Linux doesn not boot from u-boot on ML403
-In-Reply-To: <fa686aa40708280602vc00920do459a087c25b830e1@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44.0708281531060.3856-100000@slslc02.psi.ch>
+	Tue, 28 Aug 2007 23:39:39 +1000 (EST)
+Received: from [134.94.232.103] (zel201.zel.kfa-juelich.de
+	[134.94.232.103])by zam837.fz-juelich.de (Postfix) with ESMTP id
+	519931000A1Bfor <linuxppc-embedded@ozlabs.org>;
+	Tue, 28 Aug 2007 15:39:38 +0200 (CEST)
+Message-ID: <46D4257C.7060208@fz-juelich.de>
+Date: Tue, 28 Aug 2007 15:39:08 +0200
+From: schardt <g.schardt@fz-juelich.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Leonid <Leonid@a-k-a.net>, linuxppc-embedded@ozlabs.org
+Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
+Subject: Re: Newbie and linux on virtex-II ppc
+References: <46D2C9A5.9030708@fz-juelich.de>
+	<fa686aa40708270609x453092eye6eaf83b65ac2dee@mail.gmail.com>
+	<46D2CFFB.6050602@fz-juelich.de>
+	<fa686aa40708270719s1fd230e9g188948ef02b3eda7@mail.gmail.com>
+	<46D41298.7060109@fz-juelich.de>
+	<fa686aa40708280606p67fd74p9287d041d955c538@mail.gmail.com>
+	<46D4221D.8030500@fz-juelich.de>
+	<fa686aa40708280630x67856334qaf2e0dd59ecb95bf@mail.gmail.com>
+In-Reply-To: <fa686aa40708280630x67856334qaf2e0dd59ecb95bf@mail.gmail.com>
+Content-Type: text/plain;
+	charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,63 +34,78 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Grant,
+Grant Likely wrote:
+> On 8/28/07, schardt <g.schardt@fz-juelich.de> wrote:
+>   
+>> Grant Likely wrote:
+>>     
+>>> You've got 2 choices:
+>>> 1. use the new sysace driver; it's already in mainline.  The new
+>>> driver is faster, but it doesn't handle hotswap of the CF card (yet)
+>>>
+>>>       
+>> But where in menuconfig could i find the sysace driver ? i'm blind, i
+>> think :)
+>>     
+>
+> Which version of kernel are you using?  The new sysace driver was
+> merged into 2.6.22
+>
+>   
+linux-2.6.22.5
+>>> 2. use the EDK driver; easiest way is to use my tree which already hasGrant Likely <grant.likely@secretlab.ca>
+>>> it merged:  http://git.secretlab.ca
+>>>
+>>>
+>>>       
+>> i made an EDK update and now i have the linux_2_2 os in the software
+>> options. the bsp with all drivers is generated.
+>> and now ?
+>>  - copy to kernel tree
+>>  - use the xmake  to build the kernel, or make ?
+>>     
+> Grant Likely <grant.likely@secretlab.ca>
+> Don't use EDK to build you're kernel.  It's too fragile and you need
+> to use the *exact* version of kernel that EDK expects.  You're better
+> off to manually copy the xparams file from the generated BSP.  (ie.
+> Don't let EDK know where your real kernel source tree is)
+>   
+wuh ? i dont need all the driver from the generatet bsp files ? what
+about the gpios and leds  ?
 
-	Thanks for your answer.
-I have found in the System.map :
-c020f0c4 b __log_buf
+i compile the kernel with a self made cross toolchain, not with the edk.
+until now i copied the bsp files into the kernel tree (modfied some
+defines) und compile with "make zImage". But know with the linux_2_6
+option there is some more stuff in the bsp directory and i don't know
+what to do with :)
 
-Is the address c020f0c4 relative to the .data segment?
+>   
+>> and why is there no dokumentation :)
+>>     
+>
+> Care to write some?
+>
+>   
+huh, not really :)
+im just a little newbie
 
-I understand that when the system hangs I should type in the XMD window 
-stop.
+G
 
-Is there anyway to examine the memory from the XMD window? or should I 
-reload the u-boot and examine the memory from u-boot?
-
-Best Regards
-
-Mirek
-
-
-
-On Tue, 28 Aug 2007, Grant Likely wrote:
-
-> On 8/28/07, Miroslaw Dach <miroslaw.dach@psi.ch> wrote:
-> > Linux/PPC load: console=ttyUL0,9600 root=/dev/nfs rw
-> > nfsroot=129.117.144.113:/opt/eldk41/ppc_4xx,tcp
-> > ip=::::virtex4-mirek:eth0:dhcp panic=1
-> > Uncompressing Linux...
-> >
-> >
-> > After that system just hangs.
-> >
-> > I do not understand why it is possible to run zImage.elf straight from jtag
-> > but it hangs when started from u-boot.
-> >
-> > Is it any fundamental problem with running Linux from u-boot on ML403
-> > (Virtex-4) boards?
-> 
-> No there isn't.  It should work.  Most likely the kernel did not hang
-> immediately, but rather the console is not setup correctly.  You need
-> to halt the processor after the hang and look at __log_buf in memory
-> (Find the address in System.map).
-> 
-> Cheers,
 > g.
-> 
-> >
-> > Best Regards
-> >
-> > Mirek
-> >
-> >
-> 
-> 
-> 
+>
+>   
 
--- 
-=============================================================================
-          Miroslaw Dach (Miroslaw.Dach@psi.ch) - SLS/Controls Group 
-                PSI - Paul Scherrer Institut CH-5232 Villigen
-=============================================================================
+
+
+-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
+Forschungszentrum Jülich GmbH
+52425 Jülich
+
+Sitz der Gesellschaft: Jülich
+Eingetragen im Handelsregister des Amtsgerichts Düren Nr. HR B 3498
+Vorsitzende des Aufsichtsrats: MinDirig'in Bärbel Brumme-Bothe
+Vorstand: Prof. Dr. Achim Bachem (Vorsitzender), Dr. Ulrich Krafft (stellv. 
+Vorsitzender)
+-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
