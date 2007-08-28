@@ -1,21 +1,16 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 29E4BDDDFF
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Aug 2007 23:26:58 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Masakazu Mokuno <mokuno@sm.sony.co.jp>
-Subject: Re: [PATCH] PS3: fix the bug the major version part is not compared
-References: <20070828211415.C2B5.MOKUNO@sm.sony.co.jp>
-Date: Tue, 28 Aug 2007 15:26:50 +0200
-In-Reply-To: <20070828211415.C2B5.MOKUNO@sm.sony.co.jp> (Masakazu Mokuno's
-	message of "Tue\, 28 Aug 2007 21\:32\:29 +0900")
-Message-ID: <jehcmj3i3p.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <krafft@de.ibm.com>
+Date: Tue, 28 Aug 2007 16:20:11 +0200
+From: Christian Krafft <krafft@de.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [Cbe-oss-dev] [patch 1/5] spu_manage: use newer physical-id
+Message-ID: <20070828162011.5356afaa@localhost>
+In-Reply-To: <200708231812.20493.arnd@arndb.de>
+References: <20070823.180152.-1300528381.kouish@swc.toshiba.co.jp>
+	<200708231812.20493.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, jk@ozlabs.org,
+	krafft@de.ibm.com, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,39 +20,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Masakazu Mokuno <mokuno@sm.sony.co.jp> writes:
+On Thu, 23 Aug 2007 18:12:19 +0200
+Arnd Bergmann <arnd@arndb.de> wrote:
 
-> Fix the bug that the major version part of the firmware 
-> is not compared.
->
-> Signed-off-by: Masakazu Mokuno <mokuno@sm.sony.co.jp>
-> CC: Geoff Levand <geoffrey.levand@am.sony.com>
-> ---
->  arch/powerpc/platforms/ps3/setup.c |    2 +-
->  include/asm-powerpc/ps3.h          |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
->
-> --- a/arch/powerpc/platforms/ps3/setup.c
-> +++ b/arch/powerpc/platforms/ps3/setup.c
-> @@ -54,7 +54,7 @@ void ps3_get_firmware_version(union ps3_
->  }
->  EXPORT_SYMBOL_GPL(ps3_get_firmware_version);
->  
-> -int ps3_compare_firmware_version(u16 major, u16 minor, u16 rev)
-> +s64 ps3_compare_firmware_version(u16 major, u16 minor, u16 rev)
->  {
->  	union ps3_firmware_version x;
->  
+> On Thursday 23 August 2007, kou.ishizaki@toshiba.co.jp wrote:
+> > Please check "unit-id" if "physical-id" doesn't exist. Because Celleb
+> > uses "unit-id" to provide spe_id.
 
-Better yet: normalize the return value.
+Sorry for the late answer, wasn't on cc
+and had to receive all mails of the last 6 month once again :-(
 
-	return (ps3_firmware_version.raw > x.raw) -
-               (ps3_firmware_version.raw < x.raw);
+Can you check if the patch below is working with celleb device tree ?
 
-Andreas.
+------
+Subject: spu_manage: fix spu_unit_number for celleb device tree
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+From: Christian Krafft <krafft@de.ibm.com>
+
+New device trees provide "physical-id".
+Celleb device tree provide the "unit-id".
+Legacy device tree used the reg property for the physical id of an spe.
+This patch fixes find_spu_unit_number to look for the spu id in that order.
+The length is checked to avoid misinterpretation in case the attributes
+unit-id or reg do not contain the id.
+
+Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+
+Index: linux/arch/powerpc/platforms/cell/spu_manage.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux.orig/arch/powerpc/platforms/cell/spu_manage.c
++++ linux/arch/powerpc/platforms/cell/spu_manage.c
+@@ -48,10 +48,18 @@ static u64 __init find_spu_unit_number(s
+ {
+ 	const unsigned int *prop;
+ 	int proplen;
++
++	/* new device trees should provide the physical-id attribute */
+ 	prop =3D of_get_property(spe, "physical-id", &proplen);
+ 	if (proplen =3D=3D 4)
+ 		return (u64)*prop;
+=20
++	/* celleb device tree provides the unit-id */
++	prop =3D of_get_property(spe, "unit-id", &proplen);
++	if (proplen =3D=3D 4)
++		return (u64)*prop;
++
++	/* legacy device trees provide the id in the reg attribute */
+ 	prop =3D of_get_property(spe, "reg", &proplen);
+ 	if (proplen =3D=3D 4)
+ 		return (u64)*prop;
+
+
+--=20
+Mit freundlichen Gr=FCssen,
+kind regards,
+
+Christian Krafft
+IBM Systems & Technology Group,=20
+Linux Kernel Development
+IT Specialist
