@@ -1,15 +1,15 @@
-Return-Path: <mgaouar@solacom.com>
-Received: from solacom.com (unknown [209.217.64.195])
-	by ozlabs.org (Postfix) with ESMTP id 3D34BDDE26
+Return-Path: <Antonio.DiBacco@technolabs.it>
+Received: from smtp.technolabs.it (unknown [213.82.155.20])
+	by ozlabs.org (Postfix) with ESMTP id 63477DDDF5
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 29 Aug 2007 04:25:08 +1000 (EST)
+	Wed, 29 Aug 2007 04:56:13 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C7E99F.05B1BE38"
-Subject: Linux kernel config for ep8280m
-Date: Tue, 28 Aug 2007 14:12:40 -0400
-Message-ID: <9A1468054ED2FD40907CC3B2C1871D400106CC70@hermes.versatel.com>
-From: "Manil Gaouar" <mgaouar@solacom.com>
+	boundary="----_=_NextPart_001_01C7E9A5.19551EAD"
+Subject: ppc_8xx-gcc from eldk strange behaviour
+Date: Tue, 28 Aug 2007 20:56:10 +0200
+Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E2649AF@aquib01a>
+From: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
 To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,114 +23,77 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C7E99F.05B1BE38
+------_=_NextPart_001_01C7E9A5.19551EAD
 Content-Type: text/plain;
-	charset="us-ascii"
+	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
-Hi there,
+Consider the following C code snippet:
 
-=20
+#include <stdio.h>
 
-I want to compile the kernel for my ep8280m board from EmbeddedPlanet
-with a PPC 8270 CPU and I can not find any config in the
-arch/ppc/configs/ for this board, is there anything that I can use
-instead, or does anyone already have this config file?
+int main()
+{
+  char x =3D -4;
+   =20
+  if (x < 0)
+    printf("x is negative\n");
+  else
+    printf("x is positive\n"); =20
+}
 
-=20
+If I compile it with host gcc, there is no warning and the message "x is =
+negative" is printed.
+If I compile it with ppc_8xx-gcc there is a warning "main.c:11: warning: =
+comparison is always false due to limited range of data type" and the =
+program prints message "x is positive".=20
+To correct the problem I have to put signed before char.
 
-I've found ep82xxm_config for u-boot but nothing similar for Linux...
+Bye,
+Antonio.
 
-=20
-
-Thx for your help and time
-
-
-------_=_NextPart_001_01C7E99F.05B1BE38
+------_=_NextPart_001_01C7E9A5.19551EAD
 Content-Type: text/html;
-	charset="us-ascii"
+	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
 <META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7235.2">
+<TITLE>ppc_8xx-gcc from eldk strange behaviour</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
 
-</head>
+<P><FONT SIZE=3D2>Consider the following C code snippet:<BR>
+<BR>
+#include &lt;stdio.h&gt;<BR>
+<BR>
+int main()<BR>
+{<BR>
+&nbsp; char x =3D -4;<BR>
+&nbsp;&nbsp;&nbsp;<BR>
+&nbsp; if (x &lt; 0)<BR>
+&nbsp;&nbsp;&nbsp; printf(&quot;x is negative\n&quot;);<BR>
+&nbsp; else<BR>
+&nbsp;&nbsp;&nbsp; printf(&quot;x is positive\n&quot;);&nbsp;<BR>
+}<BR>
+<BR>
+If I compile it with host gcc, there is no warning and the message =
+&quot;x is negative&quot; is printed.<BR>
+If I compile it with ppc_8xx-gcc there is a warning &quot;main.c:11: =
+warning: comparison is always false due to limited range of data =
+type&quot; and the program prints message &quot;x is positive&quot;.<BR>
+To correct the problem I have to put signed before char.<BR>
+<BR>
+Bye,<BR>
+Antonio.</FONT>
+</P>
 
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Hi there,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I want to compile the kernel for my ep8280m board =
-from
-EmbeddedPlanet with a PPC 8270 CPU and I can not find any config in the =
-arch/ppc/configs/
-for this board, is there anything that I can use instead, or does anyone
-already have this config file?<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I&#8217;ve found ep82xxm_config for u-boot but =
-nothing
-similar for Linux&#8230;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Thx for your help and =
-time<o:p></o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01C7E99F.05B1BE38--
+</BODY>
+</HTML>
+------_=_NextPart_001_01C7E9A5.19551EAD--
