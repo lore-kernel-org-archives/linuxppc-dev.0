@@ -1,22 +1,20 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 3A273DDE2D
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 06:21:54 +1000 (EST)
-Date: Tue, 28 Aug 2007 13:21:52 -0700 (PDT)
-Message-Id: <20070828.132152.38706038.davem@davemloft.net>
-To: ossthema@de.ibm.com
-Subject: Re: RFC: issues concerning the next NAPI interface
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200708281319.03903.ossthema@de.ibm.com>
-References: <200708271147.01890.ossthema@de.ibm.com>
-	<20070827.133721.59473971.davem@davemloft.net>
-	<200708281319.03903.ossthema@de.ibm.com>
+Return-Path: <b07421@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 83DE9DDE08
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 06:24:06 +1000 (EST)
+Date: Tue, 28 Aug 2007 15:16:21 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: galak@kernel.crashing.org
+Subject: [PATCH 3/3] Add early debug console for CPM serial ports.
+Message-ID: <20070828201621.GC24210@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: tklein@de.ibm.com, themann@de.ibm.com, stefan.roscher@de.ibm.com,
-	netdev@vger.kernel.org, jchapman@katalix.com, raisch@de.ibm.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	akepner@sgi.com, meder@de.ibm.com, shemminger@linux-foundation.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070828201127.GA24068@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,30 +24,184 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-Date: Tue, 28 Aug 2007 13:19:03 +0200
+This code assumes that the ports have been previously set up, with
+buffers in DPRAM, and the descriptor address defined by platform code.
 
-> I will try the following scheme (once we get hrtimers): Each device
-> (queue) has a hrtimer.  Schedule the timer in the poll function
-> instead of reactivating IRQs when a high load situation has been
-> detected and all packets have been emptied from the receive queue.
-> The timer function could then just call netif_rx_schedule to
-> register the rx_queue for NAPI again.
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/Kconfig.debug       |    9 +++++++
+ arch/powerpc/kernel/head_32.S    |   16 +++++++++++++
+ arch/powerpc/kernel/udbg.c       |    2 +
+ arch/powerpc/sysdev/Makefile     |    1 +
+ arch/powerpc/sysdev/cpm_common.c |   44 ++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/cpm_common.h |   16 +++++++++++++
+ include/asm-powerpc/udbg.h       |    1 +
+ 7 files changed, 89 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/sysdev/cpm_common.c
+ create mode 100644 arch/powerpc/sysdev/cpm_common.h
 
-Interrupt mitigation only works if it helps you avoid interrupts.
-This scheme potentially makes more of them happen.
-
-The hrtimer is just another interrupt, a cpu locally triggered one,
-but it has much of the same costs nonetheless.
-
-So if you set this timer, it triggers, and no packets arrive, you are
-taking more interrupts and doing more work than if you had disabled
-NAPI.
-
-In fact, for certain packet rates, your scheme would result in
-twice as many interrupts than the current scheme.
-
-This is one of several reasons why hardware is the only truly proper
-place for this kind of logic.  Only the hardware can see the packet
-arrive, and do the interrupt deferral without any cpu intervention
-whatsoever.
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index 22acece..d471154 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -211,6 +211,15 @@ config PPC_EARLY_DEBUG_44x
+ 	  Select this to enable early debugging for IBM 44x chips via the
+ 	  inbuilt serial port.
+ 
++config PPC_EARLY_DEBUG_CPM
++	bool "Early serial debugging for Freescale CPM-based serial ports"
++	depends on SERIAL_CPM
++	select PIN_TLB if PPC_8xx
++	help
++	  Select this to enable early debugging for Freescale chips
++	  using a CPM-based serial port.  This assumes that the bootwrapper
++	  has run, and set up the CPM in a particular way.
++
+ endchoice
+ 
+ config PPC_EARLY_DEBUG_44x_PHYSLOW
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index 7d73a13..e950a75 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -152,6 +152,9 @@ __after_mmu_off:
+ #if defined(CONFIG_BOOTX_TEXT)
+ 	bl	setup_disp_bat
+ #endif
++#ifdef CONFIG_PPC_EARLY_DEBUG_CPM
++	bl	setup_cpm_bat
++#endif
+ 
+ /*
+  * Call setup_cpu for CPU 0 and initialize 6xx Idle
+@@ -1248,6 +1251,19 @@ setup_disp_bat:
+ 	blr
+ #endif /* CONFIG_BOOTX_TEXT */
+ 
++#ifdef CONFIG_PPC_EARLY_DEBUG_CPM
++setup_cpm_bat:
++	lis	r8, 0xf000
++	ori	r8, r8,	0x002a
++	mtspr	SPRN_DBAT1L, r8
++
++	lis	r11, 0xf000
++	ori	r11, r11, (BL_1M << 2) | 2
++	mtspr	SPRN_DBAT1U, r11
++
++	blr
++#endif
++
+ #ifdef CONFIG_8260
+ /* Jump into the system reset for the rom.
+  * We first disable the MMU, and then jump to the ROM reset address.
+diff --git a/arch/powerpc/kernel/udbg.c b/arch/powerpc/kernel/udbg.c
+index 0f9b4ea..d723070 100644
+--- a/arch/powerpc/kernel/udbg.c
++++ b/arch/powerpc/kernel/udbg.c
+@@ -54,6 +54,8 @@ void __init udbg_early_init(void)
+ #elif defined(CONFIG_PPC_EARLY_DEBUG_44x)
+ 	/* PPC44x debug */
+ 	udbg_init_44x_as1();
++#elif defined(CONFIG_PPC_EARLY_DEBUG_CPM)
++	udbg_init_cpm();
+ #endif
+ }
+ 
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index 08ce31e..5063e74 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -34,6 +34,7 @@ endif
+ 
+ # Temporary hack until we have migrated to asm-powerpc
+ ifeq ($(ARCH),powerpc)
++obj-$(CONFIG_CPM1)$(CONFIG_CPM2) += cpm_common.o
+ obj-$(CONFIG_CPM2)		+= cpm2_common.o cpm2_pic.o
+ obj-$(CONFIG_8xx)		+= mpc8xx_pic.o commproc.o
+ obj-$(CONFIG_UCODE_PATCH)	+= micropatch.o
+diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
+new file mode 100644
+index 0000000..1972a8f
+--- /dev/null
++++ b/arch/powerpc/sysdev/cpm_common.c
+@@ -0,0 +1,44 @@
++/*
++ * Common CPM code
++ *
++ * Author: Scott Wood <scottwood@freescale.com>
++ *
++ * Copyright 2007 Freescale Semiconductor, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of version 2 of the GNU General Public License as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/init.h>
++#include <asm/udbg.h>
++#include <asm/io.h>
++#include <asm/system.h>
++#include <mm/mmu_decl.h>
++#include "cpm_common.h"
++
++#ifdef CONFIG_PPC_EARLY_DEBUG_CPM
++static void udbg_putc_cpm(char c)
++{
++	u8 __iomem *txbuf = (u8 __iomem __force *)in_be32(&cpm_udbg_txdesc[1]);
++
++	if (c == '\n')
++		udbg_putc('\r');
++
++	while (in_be32(&cpm_udbg_txdesc[0]) & 0x80000000)
++		;
++
++	out_8(txbuf, c);
++	out_be32(&cpm_udbg_txdesc[0], 0xa0000001);
++}
++
++void __init udbg_init_cpm(void)
++{
++	if (cpm_udbg_txdesc) {
++#ifdef CONFIG_CPM2
++		setbat(1, 0xf0000000, 0xf0000000, 1024*1024, _PAGE_IO);
++#endif
++		udbg_putc = udbg_putc_cpm;
++	}
++}
++#endif
+diff --git a/arch/powerpc/sysdev/cpm_common.h b/arch/powerpc/sysdev/cpm_common.h
+new file mode 100644
+index 0000000..f42343f
+--- /dev/null
++++ b/arch/powerpc/sysdev/cpm_common.h
+@@ -0,0 +1,16 @@
++#ifndef _POWERPC_SYSDEV_CPM_COMMON_H
++#define _POWERPC_SYSDEV_CPM_COMMON_H
++
++#include <linux/types.h>
++
++/*
++ * Board code must define this address if the early console is used.
++ *
++ * Note that this is not multi-platform safe, and thus the CPM
++ * UDBG console must only be enabled when only a single platform
++ * is selected.  It is done this way because udbg init runs before
++ * platform probing.
++ */
++extern u32 __iomem *cpm_udbg_txdesc;
++
++#endif
+diff --git a/include/asm-powerpc/udbg.h b/include/asm-powerpc/udbg.h
+index ce9d82f..a9e0b0e 100644
+--- a/include/asm-powerpc/udbg.h
++++ b/include/asm-powerpc/udbg.h
+@@ -48,6 +48,7 @@ extern void __init udbg_init_rtas_console(void);
+ extern void __init udbg_init_debug_beat(void);
+ extern void __init udbg_init_btext(void);
+ extern void __init udbg_init_44x_as1(void);
++extern void __init udbg_init_cpm(void);
+ 
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_UDBG_H */
+-- 
+1.5.0.3
