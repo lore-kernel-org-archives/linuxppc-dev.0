@@ -1,23 +1,32 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 54B39DDE36
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 03:51:27 +1000 (EST)
-Received: from vaxon.spb.rtsoft.ru (localhost.localdomain [127.0.0.1])
-	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1) with ESMTP id l7SHoMHX007612
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Aug 2007 21:50:22 +0400
-Received: (from vaxon@localhost)
-	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1/Submit) id l7SHoM6E007609
-	for linuxppc-dev@ozlabs.org; Tue, 28 Aug 2007 21:50:22 +0400
-Date: Tue, 28 Aug 2007 21:50:22 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/4] PowerPC 440EPx: Sequoia board support
-Message-ID: <20070828175022.GA7556@ru.mvista.com>
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id EA5FCDDDF7
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 04:09:30 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7SI9R9q025854
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Aug 2007 14:09:27 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l7SI9N9u170342
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Aug 2007 12:09:24 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l7SI9NVF028477
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Aug 2007 12:09:23 -0600
+Date: Tue, 28 Aug 2007 13:09:21 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: [PATCH 1/4] PowerPC 440EPx: Sequoia bootwrapper
+Message-ID: <20070828130921.13809093@weaponx.rchland.ibm.com>
+In-Reply-To: <20070828165610.GA1552@ru.mvista.com>
+References: <20070828165321.GA1501@ru.mvista.com>
+	<20070828165610.GA1552@ru.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070828170007.GA1605@ru.mvista.com>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,177 +36,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Same as above, just corrected the plb bus entry in the sequoia_of_bus array
-It should be "ibm,plb4" instead of "ibm,plb". The original bamboo code has the
-same problem.
+On Tue, 28 Aug 2007 20:56:10 +0400
+Valentine Barshak <vbarshak@ru.mvista.com> wrote:
 
-AMCC PPC440EPx Sequoia board support.
+> +/* 4xx DDR1/2 Denali memory controller support */
+> +/* DDR0 registers */
+> +#define DDR0_02			2
+> +#define DDR0_08			8
+> +#define DDR0_10			10
+> +#define DDR0_14			14
+> +#define DDR0_42			42
+> +#define DDR0_43			43
+> +
+> +/* DDR0_02 */
+> +#define DDR_START		0x1
+> +#define DDR_START_SHIFT		0
+> +#define DDR_MAX_CS_REG		0x3
+> +#define DDR_MAX_CS_REG_SHIFT	24
+> +#define DDR_MAX_COL_REG		0xf
+> +#define DDR_MAX_COL_REG_SHIFT	16
+> +#define DDR_MAX_ROW_REG		0xf
+> +#define DDR_MAX_ROW_REG_SHIFT	8
+> +/* DDR0_08 */
+> +#define DDR_DDR2_MODE		0x1
+> +#define DDR_DDR2_MODE_SHIFT	0
+> +/* DDR0_10 */
+> +#define DDR_CS_MAP		0x3
+> +#define DDR_CS_MAP_SHIFT	8
+> +/* DDR0_14 */
+> +#define DDR_REDUC		0x1
+> +#define DDR_REDUC_SHIFT		16
+> +/* DDR0_42 */
+> +#define DDR_APIN		0x7
+> +#define DDR_APIN_SHIFT		24
+> +/* DDR0_43 */
+> +#define DDR_COL_SZ		0x7
+> +#define DDR_COL_SZ_SHIFT	8
+> +#define DDR_BANK8		0x1
+> +#define DDR_BANK8_SHIFT		0
+> +
+> +#define DDR_GET_VAL(val, mask, shift)	(((val) >> (shift)) & (mask))
 
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
----
- arch/powerpc/kernel/cputable.c       |   18 +++++++++
- arch/powerpc/kernel/head_44x.S       |    2 -
- arch/powerpc/platforms/44x/Kconfig   |   17 ++++++++-
- arch/powerpc/platforms/44x/Makefile  |    1 
- arch/powerpc/platforms/44x/sequoia.c |   66 +++++++++++++++++++++++++++++++++++
- 5 files changed, 102 insertions(+), 2 deletions(-)
+Hm.  Having these as just DDR_... seems like it would lead to confusion
+if there are other DDR controllers that get added later.  But I'm not
+too picky either way.
 
-diff -ruN linux-2.6.orig/arch/powerpc/kernel/cputable.c linux-2.6/arch/powerpc/kernel/cputable.c
---- linux-2.6.orig/arch/powerpc/kernel/cputable.c	2007-08-27 14:08:42.000000000 +0400
-+++ linux-2.6/arch/powerpc/kernel/cputable.c	2007-08-28 17:04:51.000000000 +0400
-@@ -1132,6 +1132,24 @@
- 		.dcache_bsize		= 32,
- 		.platform		= "ppc440",
- 	},
-+	{ /* 440EPX */
-+		.pvr_mask		= 0xf0000ffb,
-+		.pvr_value		= 0x200008D0,
-+		.cpu_name		= "440EPX",
-+		.cpu_features		= CPU_FTRS_44X,
-+		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
-+		.icache_bsize		= 32,
-+		.dcache_bsize		= 32,
-+	},
-+	{ /* 440GRX */
-+		.pvr_mask		= 0xf0000ffb,
-+		.pvr_value		= 0x200008D8,
-+		.cpu_name		= "440GRX",
-+		.cpu_features		= CPU_FTRS_44X,
-+		.cpu_user_features	= COMMON_USER_BOOKE,
-+		.icache_bsize		= 32,
-+		.dcache_bsize		= 32,
-+	},
- 	{	/* 440GP Rev. B */
- 		.pvr_mask		= 0xf0000fff,
- 		.pvr_value		= 0x40000440,
-diff -ruN linux-2.6.orig/arch/powerpc/kernel/head_44x.S linux-2.6/arch/powerpc/kernel/head_44x.S
---- linux-2.6.orig/arch/powerpc/kernel/head_44x.S	2007-08-27 14:08:43.000000000 +0400
-+++ linux-2.6/arch/powerpc/kernel/head_44x.S	2007-08-28 17:04:51.000000000 +0400
-@@ -217,7 +217,7 @@
- 	lis	r4,interrupt_base@h	/* IVPR only uses the high 16-bits */
- 	mtspr	SPRN_IVPR,r4
- 
--#ifdef CONFIG_440EP
-+#if defined(CONFIG_440EP) || defined(CONFIG_440EPX)
- 	/* Clear DAPUIB flag in CCR0 (enable APU between CPU and FPU) */
- 	mfspr	r2,SPRN_CCR0
- 	lis	r3,0xffef
-diff -ruN linux-2.6.orig/arch/powerpc/platforms/44x/Kconfig linux-2.6/arch/powerpc/platforms/44x/Kconfig
---- linux-2.6.orig/arch/powerpc/platforms/44x/Kconfig	2007-08-27 14:08:43.000000000 +0400
-+++ linux-2.6/arch/powerpc/platforms/44x/Kconfig	2007-08-28 17:04:51.000000000 +0400
-@@ -14,6 +14,14 @@
- 	help
- 	  This option enables support for the IBM PPC440GP evaluation board.
- 
-+config SEQUOIA
-+	bool "Sequoia"
-+	depends on 44x
-+	default n
-+	select 440EPX
-+	help
-+	  This option enables support for the AMCC PPC440EPX evaluation board.
-+
- #config LUAN
- #	bool "Luan"
- #	depends on 44x
-@@ -37,6 +45,13 @@
- 	select IBM440EP_ERR42
- #	select IBM_NEW_EMAC_ZMII
- 
-+config 440EPX
-+	bool
-+	select PPC_FPU
-+# Disabled until the new EMAC Driver is merged.
-+#	select IBM_NEW_EMAC_EMAC4
-+#	select IBM_NEW_EMAC_ZMII
-+
- config 440GP
- 	bool
- # Disabled until the new EMAC Driver is merged.
-@@ -50,7 +65,7 @@
- 
- config 440A
- 	bool
--	depends on 440GX
-+	depends on 440GX || 440EPX
- 	default y
- 
- # 44x errata/workaround config symbols, selected by the CPU models above
-diff -ruN linux-2.6.orig/arch/powerpc/platforms/44x/Makefile linux-2.6/arch/powerpc/platforms/44x/Makefile
---- linux-2.6.orig/arch/powerpc/platforms/44x/Makefile	2007-08-27 14:08:43.000000000 +0400
-+++ linux-2.6/arch/powerpc/platforms/44x/Makefile	2007-08-28 17:04:51.000000000 +0400
-@@ -1,3 +1,4 @@
- obj-$(CONFIG_44x)	:= misc_44x.o
- obj-$(CONFIG_EBONY)	+= ebony.o
- obj-$(CONFIG_BAMBOO) += bamboo.o
-+obj-$(CONFIG_SEQUOIA)	+= sequoia.o
-diff -ruN linux-2.6.orig/arch/powerpc/platforms/44x/sequoia.c linux-2.6/arch/powerpc/platforms/44x/sequoia.c
---- linux-2.6.orig/arch/powerpc/platforms/44x/sequoia.c	1970-01-01 03:00:00.000000000 +0300
-+++ linux-2.6/arch/powerpc/platforms/44x/sequoia.c	2007-08-28 17:04:51.000000000 +0400
-@@ -0,0 +1,66 @@
-+/*
-+ * Sequoia board specific routines
-+ *
-+ * Valentine Barshak <vbarshak@ru.mvista.com>
-+ * Copyright 2007 MontaVista Software Inc.
-+ *
-+ * Based on the Bamboo code by
-+ * Josh Boyer <jwboyer@linux.vnet.ibm.com>
-+ * Copyright 2007 IBM Corporation
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+#include <linux/init.h>
-+#include <asm/machdep.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
-+#include <asm/time.h>
-+#include <asm/uic.h>
-+#include <asm/of_platform.h>
-+#include "44x.h"
-+
-+static struct of_device_id sequoia_of_bus[] = {
-+	{ .compatible = "ibm,plb4", },
-+	{ .compatible = "ibm,opb", },
-+	{ .compatible = "ibm,ebc", },
-+	{},
-+};
-+
-+static int __init sequoia_device_probe(void)
-+{
-+	if (!machine_is(sequoia))
-+		return 0;
-+
-+	of_platform_bus_probe(NULL, sequoia_of_bus, NULL);
-+
-+	return 0;
-+}
-+device_initcall(sequoia_device_probe);
-+
-+static int __init sequoia_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	if (!of_flat_dt_is_compatible(root, "amcc,sequoia"))
-+		return 0;
-+
-+	return 1;
-+}
-+
-+static void __init sequoia_setup_arch(void)
-+{
-+}
-+
-+define_machine(sequoia) {
-+	.name 				= "Sequoia",
-+	.probe 				= sequoia_probe,
-+	.setup_arch			= sequoia_setup_arch,
-+	.progress 			= udbg_progress,
-+	.init_IRQ 			= uic_init_tree,
-+	.get_irq 			= uic_get_irq,
-+	.restart			= ppc44x_reset_system,
-+	.calibrate_decr			= generic_calibrate_decr,
-+};
+> diff -ruN linux-2.6.orig/arch/powerpc/boot/4xx.h linux-2.6/arch/powerpc/boot/4xx.h
+> --- linux-2.6.orig/arch/powerpc/boot/4xx.h	2007-08-27 14:08:42.000000000 +0400
+> +++ linux-2.6/arch/powerpc/boot/4xx.h	2007-08-28 17:04:51.000000000 +0400
+> @@ -12,6 +12,7 @@
+>  #define _POWERPC_BOOT_4XX_H_
+> 
+>  void ibm4xx_fixup_memsize(void);
+> +void ibm4xx_denali_fixup_memsize(void);
+>  void ibm44x_dbcr_reset(void);
+>  void ibm40x_dbcr_reset(void);
+>  void ibm4xx_quiesce_eth(u32 *emac0, u32 *emac1);
+> diff -ruN linux-2.6.orig/arch/powerpc/boot/cuboot-sequoia.c linux-2.6/arch/powerpc/boot/cuboot-sequoia.c
+> --- linux-2.6.orig/arch/powerpc/boot/cuboot-sequoia.c	1970-01-01 03:00:00.000000000 +0300
+> +++ linux-2.6/arch/powerpc/boot/cuboot-sequoia.c	2007-08-28 17:21:55.000000000 +0400
+> @@ -0,0 +1,67 @@
+
+<snip>
+
+> +
+> +#include <stdarg.h>
+> +#include <stddef.h>
+> +#include "types.h"
+> +#include "elf.h"
+> +#include "string.h"
+> +#include "stdio.h"
+> +#include "page.h"
+> +#include "ops.h"
+> +#include "dcr.h"
+> +#include "4xx.h"
+> +#include "44x.h"
+> +#include "cuboot.h"
+> +
+> +#define TARGET_4xx
+> +#define TARGET_44x
+> +#include "ppcboot.h"
+> +
+> +static bd_t bd;
+> +static u8 *sequoia_mac0, *sequoia_mac1;
+> +
+> +extern char _dtb_start[];
+> +extern char _dtb_end[];
+
+These got added to ops.h in commit 2f1d4899321be so you don't need to
+specify them here anymore.
+
+josh
