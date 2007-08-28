@@ -1,16 +1,17 @@
-Return-Path: <Udo.Visser@heidelberg.com>
-Received: from wiems06002.ceu.heidelberg.com (wiems06002.ceu.heidelberg.com
-	[193.99.214.201]) by ozlabs.org (Postfix) with ESMTP id 72660DDF01
+Return-Path: <miroslaw.dach@psi.ch>
+Received: from MAILSEND01.psi.ch (mailsend01.psi.ch [129.129.191.53])
+	by ozlabs.org (Postfix) with ESMTP id B247DDDF55
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Aug 2007 19:55:27 +1000 (EST)
+	Tue, 28 Aug 2007 21:18:39 +1000 (EST)
+Date: Tue, 28 Aug 2007 13:18:37 +0200 (CEST)
+From: Miroslaw Dach <miroslaw.dach@psi.ch>
+To: Grant Likely <grant.likely@secretlab.ca>, Leonid <Leonid@a-k-a.net>
+Subject: Re: Linux doesn not boot from u-boot on ML403
+In-Reply-To: <fa686aa40708270753u1411796fv698d3b39ee908599@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44.0708281300570.31877-100000@slslc02.psi.ch>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: ppc/powerpc, remote debugging (ptrace), floating point variables
-Date: Tue, 28 Aug 2007 11:40:17 +0200
-Message-ID: <40D0BF15B1434F469B8639BF3A31D6F20B5F28@wiems02014.ceu.corp.heidelberg.com>
-From: "Visser, Udo RD-IS-E23" <Udo.Visser@heidelberg.com>
-To: <linuxppc-embedded@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,53 +22,89 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+I have done additional test with my u-boot and linux kernel.
 
-Hello world, ;-)
+I have downloaded u-boot(.elf) and zImage.elf via jtag to SDRAM:
 
-when stepping through my own software, which is using floating point =
-variables, gdb showed weird results (mostly NAN=B4s) for these =
-variables. Running the software without gdb did not show any problems. =
-The software is compiled with floating point instructions and the =
-results (without gdb) are OK.
+The SDRAM has 32 MB: 
+Address Map for Processor ppc405_0
+  (0x00000000-0x01ffffff) DDR_SDRAM_1   plb
 
-My setup:
+The steps I have doe are as following:
 
-MPC8349 target, "home grown", much like the MPC8349EMDS, running 2.6.16 =
-(ppc)
-GDB, gdbserver 6.3 connected via ethernet with my Linux Host.
+1. XMD% dow -data zImage.elf 0xe00000
+2. XMD% dow u-boot.elf
+        section, .text: 0x00800000-0x0081513c
+        section, .resetvec: 0x0081513c-0x00815140
+        section, .rodata: 0x00815140-0x00817ce0
+        section, .reloc: 0x00817d00-0x00818674
+        section, .data: 0x00818674-0x00818b08
+        section, .data.rel: 0x00818b08-0x00818b34
+        section, .data.rel.local: 0x00818b34-0x00818f6c
+        section, .u_boot_cmd: 0x00818f6c-0x008191dc
+        section, .bss: 0x00819200-0x0081dd04
+Downloaded Program u-boot.elf
+Setting PC with program start addr = 0x00800100
+PC reset to 0x00800100, Clearing MSR Register
 
+3. XMD% run
 
-What I did to get rid of the described problem:
-
-In module:     arch/powerpc/kernel/process.c
-In function:   void flush_fp_to_thread(struct tast_struct *tsk)
-
-I changed the line:  giveup_fpu(current);
-to:                  giveup_fpu(tsk);
-
-
-Now my questions: Has anybody else had such problems?
-                  Have I found a bug, or will I encounter any yet =
-unknown problems in the near future?
-
-I would appreciate any comment on my changes, especially from the =
-maintainers.
-
-Thank you very much
-
-Udo Visser
-
-Heidelberger Druckmaschinen AG
-RD IMAGING SYSTEMS    RD-IS-E23
+------------------------------------------------------------------
+                output on the serial port
+------------------------------------------------------------------
+ 
+U-Boot 1.2.0 (Aug 28 2007 - 11:56:19)
 
 
-Confidentiality note:
-The information in this email and any attachment may contain =
-confidential and proprietary information of Heidelberger Druckmaschinen =
-AG and/or its affiliates and may be privileged or otherwise protected =
-from disclosure. If you are not the intended recipient, you are hereby =
-notified that any review, reliance or distribution by others or =
-forwarding without express permission is strictly prohibited and may =
-cause liability. In case you have received this message due to an error =
-in transmission, we kindly ask you to notify the sender immediately and =
-to delete this email and any attachment from your system.
+U-Boot: checkboard
+DRAM:  U-Boot: initdram
+32 MB
+Using default environment
+
+In:    serial
+Out:   serial
+Err:   serial
+Hit any key to stop autoboot:  0 
+=> 
+
+U-Boot 1.2.0 (Aug 27 2007 - 14:23:15)
+
+
+U-Boot: checkboard
+DRAM:  U-Boot: initdram
+32 MB
+Using default environment
+
+In:    serial
+Out:   serial
+Err:   serial
+Hit any key to stop autoboot:  0 
+=> bootelf 0xe00000
+Loading .text @ 0x00400000 (14028 bytes)
+Loading .data @ 0x00404000 (995328 bytes)
+Clearing .bss @ 0x004f7000 (8504 bytes)
+## Starting application at 0x00400000 ...
+
+loaded at:     00400000 004F9138
+board data at: 004F7120 004F7138
+relocated to:  004040B4 004040CC
+zimage at:     00404E59 004F6EE8
+avail ram:     004FA000 01FFFFFF
+
+Linux/PPC load: console=ttyUL0,9600 root=/dev/nfs rw 
+nfsroot=129.117.144.113:/opt/eldk41/ppc_4xx,tcp  
+ip=::::virtex4-mirek:eth0:dhcp panic=1
+Uncompressing Linux...
+
+
+After that system just hangs.
+
+I do not understand why it is possible to run zImage.elf straight from jtag
+but it hangs when started from u-boot.
+
+Is it any fundamental problem with running Linux from u-boot on ML403 
+(Virtex-4) boards?
+
+Best Regards
+
+Mirek
