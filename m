@@ -1,23 +1,26 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.178])
-	by ozlabs.org (Postfix) with ESMTP id 04442DDE06
+Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.178])
+	by ozlabs.org (Postfix) with ESMTP id 2B5C3DDD0C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Aug 2007 23:02:47 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so2249728wag
+	Tue, 28 Aug 2007 23:06:32 +1000 (EST)
+Received: by el-out-1112.google.com with SMTP id r27so408109ele
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Aug 2007 06:02:45 -0700 (PDT)
-Message-ID: <fa686aa40708280602vc00920do459a087c25b830e1@mail.gmail.com>
-Date: Tue, 28 Aug 2007 07:02:44 -0600
+	Tue, 28 Aug 2007 06:06:30 -0700 (PDT)
+Message-ID: <fa686aa40708280606p67fd74p9287d041d955c538@mail.gmail.com>
+Date: Tue, 28 Aug 2007 07:06:28 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: "Miroslaw Dach" <miroslaw.dach@psi.ch>
-Subject: Re: Linux doesn not boot from u-boot on ML403
-In-Reply-To: <Pine.LNX.4.44.0708281300570.31877-100000@slslc02.psi.ch>
+To: schardt <g.schardt@fz-juelich.de>,
+	"Linux PPC Linux PPC" <linuxppc-embedded@ozlabs.org>
+Subject: Re: Newbie and linux on virtex-II ppc
+In-Reply-To: <46D41298.7060109@fz-juelich.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <fa686aa40708270753u1411796fv698d3b39ee908599@mail.gmail.com>
-	<Pine.LNX.4.44.0708281300570.31877-100000@slslc02.psi.ch>
-Cc: Leonid <Leonid@a-k-a.net>, linuxppc-embedded@ozlabs.org
+References: <46D2C9A5.9030708@fz-juelich.de>
+	<fa686aa40708270609x453092eye6eaf83b65ac2dee@mail.gmail.com>
+	<46D2CFFB.6050602@fz-juelich.de>
+	<fa686aa40708270719s1fd230e9g188948ef02b3eda7@mail.gmail.com>
+	<46D41298.7060109@fz-juelich.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,36 +31,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 8/28/07, Miroslaw Dach <miroslaw.dach@psi.ch> wrote:
-> Linux/PPC load: console=ttyUL0,9600 root=/dev/nfs rw
-> nfsroot=129.117.144.113:/opt/eldk41/ppc_4xx,tcp
-> ip=::::virtex4-mirek:eth0:dhcp panic=1
-> Uncompressing Linux...
+On 8/28/07, schardt <g.schardt@fz-juelich.de> wrote:
+> Hi Grant,
 >
+> i need your help again :)
 >
-> After that system just hangs.
->
-> I do not understand why it is possible to run zImage.elf straight from jtag
-> but it hangs when started from u-boot.
->
-> Is it any fundamental problem with running Linux from u-boot on ML403
-> (Virtex-4) boards?
+> my 2.6. kernel is running. now i want to add the system ace driver to
+> mount a rootfs on the systemace-flash.
+> but i don't know how to import the EKD driver to the linux kernel, or is
+> there a ready to go driver in the kernel tree ?
+> i didn't find anything...
 
-No there isn't.  It should work.  Most likely the kernel did not hang
-immediately, but rather the console is not setup correctly.  You need
-to halt the processor after the hang and look at __log_buf in memory
-(Find the address in System.map).
+You've got 2 choices:
+1. use the new sysace driver; it's already in mainline.  The new
+driver is faster, but it doesn't handle hotswap of the CF card (yet)
+2. use the EDK driver; easiest way is to use my tree which already has
+it merged:  http://git.secretlab.ca
 
 Cheers,
 g.
-
->
-> Best Regards
->
-> Mirek
->
->
-
 
 -- 
 Grant Likely, B.Sc., P.Eng.
