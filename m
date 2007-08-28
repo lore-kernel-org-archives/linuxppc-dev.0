@@ -1,16 +1,14 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 28 Aug 2007 10:21:28 +1000
+Date: Tue, 28 Aug 2007 11:38:08 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH 3/3] [POWERPC] Add PCI support for AMCC 440EPx (sequoia)
-Message-ID: <20070828002128.GA3470@localhost.localdomain>
-References: <20070825091440.4087.1428.stgit@localhost.localdomain>
-	<20070825093001.4087.18160.stgit@localhost.localdomain>
-	<20070827015719.GD12804@localhost.localdomain>
-	<200708270821.35209.sr@denx.de>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: RFC: [PATCH] Copy over headers from arch/powerpc to arch/ppc to
+	decouple them
+Message-ID: <20070828013808.GC3470@localhost.localdomain>
+References: <Pine.LNX.4.64.0708270945580.11455@blarg.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200708270821.35209.sr@denx.de>
+In-Reply-To: <Pine.LNX.4.64.0708270945580.11455@blarg.am.freescale.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,24 +19,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Aug 27, 2007 at 08:21:35AM +0200, Stefan Roese wrote:
-> On Monday 27 August 2007, David Gibson wrote:
-> > On Sat, Aug 25, 2007 at 01:30:01PM +0400, Vitaly Bordug wrote:
-[snip]
-> > Unless there really is something peculiar about the EPx bridge
-> > compared to say the GP, EP and other 4xx bridges, this should have a
-> > more general name.
+On Mon, Aug 27, 2007 at 09:49:04AM -0500, Kumar Gala wrote:
+> Move over includes files that have CONFIG_PPC_MERGE in them to decouple
+> to interdepencies between ARCH=powerpc & ARCH=ppc.
 > 
-> We originally started naming this file sequoia-pci.c and changed it to be 
-> 440EPx specific (just by renaming). But you are right of course. We should 
-> make it even more generic for 4xx PCI support. Perhaps we will overlook some 
-> problems with other 4xx platforms, but those should be solved when other 
-> platforms (Josh: 440ep and 405gp? ;)) will be added.
+> Duplicate the following headers in both locations and remove CONFIG_PPC_MERGE:
 > 
-> So what should it be called? arch/powerpc/syslib/ppc4xx_pci.c ?
+> <asm/dcr.h>
+> <asm/i8259.h>
+> <asm/ipic.h>
+> <asm/irq.h>
+> 
+> ---
+> 
+> Not sure what people think about this since removing include asm-powerpc
+> from ARCH=ppc builds will require a bunch of other copies beyond these
+> which had a CONFIG_PPC_MERGE in them.
 
-Sounds ok, except that it's sysdev, not syslib in arch/powerpc of
-course.
+Seems sensible to me.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
