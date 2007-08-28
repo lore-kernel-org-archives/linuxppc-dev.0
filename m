@@ -1,16 +1,17 @@
 Return-Path: <b07421@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4ED8BDE960
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 06:24:59 +1000 (EST)
-Date: Tue, 28 Aug 2007 15:17:21 -0500
+	by ozlabs.org (Postfix) with ESMTP id B46DEDE995
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 06:25:00 +1000 (EST)
+Date: Tue, 28 Aug 2007 15:17:22 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: galak@kernel.crashing.org
-Subject: [PATCH 4/9] 8xx: Work around CPU15 erratum.
-Message-ID: <20070828201721.GD24260@ld0162-tx32.am.freescale.net>
+Subject: [PATCH 5/9] 8xx: Don't call non-existent Soft_emulate_8xx from
+	SoftwareEmulation.
+Message-ID: <20070828201722.GE24260@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20070828201127.GA24068@ld0162-tx32.am.freescale.net>
@@ -24,63 +25,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The CPU15 erratum on MPC8xx chips can cause incorrect code execution
-under certain circumstances, where there is a conditional or indirect
-branch in the last word of a page, with a target in the last cache line
-of the next page.  This patch implements one of the suggested
-workarounds, by forcing a TLB miss whenever execution crosses a page
-boundary.  This is done by invalidating the pages before and after the
-one being loaded into the TLB in the ITLB miss handler.
+On arch/ppc, Soft_emulate_8xx was used when full math emulation was
+turned off to emulate a minimal subset of floating point load/store
+instructions, to avoid needing a soft-float toolchain.  This function
+is called, but not present, on arch/powerpc, causing a build error
+if floating point emulation is turned off.
+
+As:
+1. soft-float toolchains are now common,
+2. partial emulation could mislead someone into thinking they have
+a soft-float userspace because things usually work, only to have it
+fail when actual FP gets executed under unusual circumstances, and
+3. full emulation is still available for those who need to run
+non-soft-float userspace,
+
+I'm deleting the call rather than moving Soft_emulate_8xx over to
+arch/powerpc.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/kernel/head_8xx.S     |    6 ++++++
- arch/powerpc/platforms/8xx/Kconfig |   16 ++++++++++++++++
- 2 files changed, 22 insertions(+), 0 deletions(-)
+ arch/powerpc/kernel/traps.c |   16 +++-------------
+ 1 files changed, 3 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index e40e122..dd223df 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -301,6 +301,12 @@ InstructionTLBMiss:
- 	stw	r10, 0(r0)
- 	stw	r11, 4(r0)
- 	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
-+#ifdef CONFIG_8xx_CPU15
-+	addi	r11, r10, 0x1000
-+	tlbie	r11
-+	addi	r11, r10, -0x1000
-+	tlbie	r11
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index d8502e3..28ac64c 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -911,9 +911,10 @@ void performance_monitor_exception(struct pt_regs *regs)
+ #ifdef CONFIG_8xx
+ void SoftwareEmulation(struct pt_regs *regs)
+ {
++#ifdef CONFIG_MATH_EMULATION
+ 	extern int do_mathemu(struct pt_regs *);
+-	extern int Soft_emulate_8xx(struct pt_regs *);
+ 	int errcode;
 +#endif
- 	DO_8xx_CPU6(0x3780, r3)
- 	mtspr	SPRN_MD_EPN, r10	/* Have to use MD_EPN for walk, MI_EPN can't */
- 	mfspr	r10, SPRN_M_TWB	/* Get level 1 table entry address */
-diff --git a/arch/powerpc/platforms/8xx/Kconfig b/arch/powerpc/platforms/8xx/Kconfig
-index 39bb8c5..b8dd515 100644
---- a/arch/powerpc/platforms/8xx/Kconfig
-+++ b/arch/powerpc/platforms/8xx/Kconfig
-@@ -99,6 +99,22 @@ config 8xx_CPU6
  
- 	  If in doubt, say N here.
+ 	CHECK_FULL_REGS(regs);
  
-+config 8xx_CPU15
-+	bool "CPU15 Silicon Errata"
-+	default y
-+	help
-+	  This enables a workaround for erratum CPU15 on MPC8xx chips.
-+	  This bug can cause incorrect code execution under certain
-+	  circumstances.  This workaround adds some overhead (a TLB miss
-+	  every time execution crosses a page boundary), and you may wish
-+	  to disable it if you have worked around the bug in the compiler
-+	  (by not placing conditional branches or branches to LR or CTR
-+	  in the last word of a page, with a target of the last cache
-+	  line in the next page), or if you have used some other
-+	  workaround.
-+
-+	  If in doubt, say Y here.
-+
- choice
- 	prompt "Microcode patch selection"
- 	default NO_UCODE_PATCH
+@@ -944,18 +945,7 @@ void SoftwareEmulation(struct pt_regs *regs)
+ 	}
+ 
+ #else
+-	errcode = Soft_emulate_8xx(regs);
+-	switch (errcode) {
+-	case 0:
+-		emulate_single_step(regs);
+-		return;
+-	case 1:
+-		_exception(SIGILL, regs, ILL_ILLOPC, regs->nip);
+-		return;
+-	case -EFAULT:
+-		_exception(SIGSEGV, regs, SEGV_MAPERR, regs->nip);
+-		return;
+-	}
++	_exception(SIGILL, regs, ILL_ILLOPC, regs->nip);
+ #endif
+ }
+ #endif /* CONFIG_8xx */
 -- 
 1.5.0.3
