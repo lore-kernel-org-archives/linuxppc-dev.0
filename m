@@ -1,21 +1,21 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 30F07DDE08
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Aug 2007 22:55:26 +1000 (EST)
-Message-ID: <46D41AFE.8010806@ru.mvista.com>
-Date: Tue, 28 Aug 2007 16:54:22 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
+Return-Path: <schwab@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 29E4BDDDFF
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Aug 2007 23:26:58 +1000 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Masakazu Mokuno <mokuno@sm.sony.co.jp>
+Subject: Re: [PATCH] PS3: fix the bug the major version part is not compared
+References: <20070828211415.C2B5.MOKUNO@sm.sony.co.jp>
+Date: Tue, 28 Aug 2007 15:26:50 +0200
+In-Reply-To: <20070828211415.C2B5.MOKUNO@sm.sony.co.jp> (Masakazu Mokuno's
+	message of "Tue\, 28 Aug 2007 21\:32\:29 +0900")
+Message-ID: <jehcmj3i3p.fsf@sykes.suse.de>
 MIME-Version: 1.0
-To: Valentine Barshak <vbarshak@ru.mvista.com>,
-	linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 3/4] PowerPC 440EPx: Sequoia bootwrapper
-References: <20070814184107.GA6696@ru.mvista.com>
-	<20070814185355.GA12472@ru.mvista.com>
-	<20070815034622.GB22849@localhost.localdomain>
-	<46C2F022.8070106@ru.mvista.com>
-	<20070816055135.GH3540@localhost.localdomain>
-In-Reply-To: <20070816055135.GH3540@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,75 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Wed, Aug 15, 2007 at 04:22:58PM +0400, Valentine Barshak wrote:
->> David Gibson wrote:
->>> On Tue, Aug 14, 2007 at 10:53:55PM +0400, Valentine Barshak wrote:
->>>> Bootwrapper code for AMCC 440EPx Sequoia board.
->>>> The DDR2 Denali controller support has been moved to
->>>>  arch/powerpc/boot/4xx.c
->>>> The code also uses 440EP clocking fixups
->>>> initially provided for 440EP Bamboo.
->>>>
->>>> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
->>> [snip]
->>>> diff -ruN linux-2.6.orig/arch/powerpc/boot/cuboot-sequoia.c linux-2.6/arch/powerpc/boot/cuboot-sequoia.c
->>>> --- linux-2.6.orig/arch/powerpc/boot/cuboot-sequoia.c	1970-01-01 03:00:00.000000000 +0300
->>>> +++ linux-2.6/arch/powerpc/boot/cuboot-sequoia.c	2007-08-14 17:25:37.000000000 +0400
->>>> @@ -0,0 +1,31 @@
->>>> +/*
->>>> + * Old U-boot compatibility for Sequoia
->>>> + *
->>>> + * Based on Ebony code by David Gibson <david@gibson.dropbear.id.au>
->>>> + *
->>>> + * Copyright 2007 David Gibson, IBM Corporatio.
->>>> + *   Based on cuboot-83xx.c, which is:
->>>> + * Copyright (c) 2007 Freescale Semiconductor, Inc.
->>>> + *
->>>> + * This program is free software; you can redistribute it and/or modify it
->>>> + * under the terms of the GNU General Public License version 2 as published
->>>> + * by the Free Software Foundation.
->>>> + */
->>>> +
->>>> +#include "ops.h"
->>>> +#include "stdio.h"
->>>> +#include "44x.h"
->>>> +#include "cuboot.h"
->>>> +
->>>> +#define TARGET_4xx
->>>> +#define TARGET_44x
->>> Surely you need to be more specific than that to select the correct
->>> bd_t structure?
->> Both TARGET_4xx and TARGET_44x should be selected for 44x. Otherwise I 
->> get wrong bd_t structure (wrong offsets to the eth0/eth1 MAC addresses). 
->> In the older arch/ppc code it used to be CONFIG_4xx and it was selected 
->> for CONFIG_40x and CONFIG_44x as well.
-> 
-> Yes, I'm not objecting to those TARGET macros, but I'd be very
-> surprised if you don't need more to really get the correct bd_t
-> structure.
+Masakazu Mokuno <mokuno@sm.sony.co.jp> writes:
 
-Sorry, I don't quite follow.
-As far as I can tell the bd_t structure looks OK.
-Could you be more specific, please?
-What exactly do you think I need to get the correct bd_t?
-Thanks,
-Valentine.
+> Fix the bug that the major version part of the firmware 
+> is not compared.
+>
+> Signed-off-by: Masakazu Mokuno <mokuno@sm.sony.co.jp>
+> CC: Geoff Levand <geoffrey.levand@am.sony.com>
+> ---
+>  arch/powerpc/platforms/ps3/setup.c |    2 +-
+>  include/asm-powerpc/ps3.h          |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+>
+> --- a/arch/powerpc/platforms/ps3/setup.c
+> +++ b/arch/powerpc/platforms/ps3/setup.c
+> @@ -54,7 +54,7 @@ void ps3_get_firmware_version(union ps3_
+>  }
+>  EXPORT_SYMBOL_GPL(ps3_get_firmware_version);
+>  
+> -int ps3_compare_firmware_version(u16 major, u16 minor, u16 rev)
+> +s64 ps3_compare_firmware_version(u16 major, u16 minor, u16 rev)
+>  {
+>  	union ps3_firmware_version x;
+>  
 
-> 
-> [snip]
->>>> diff -ruN linux-2.6.orig/arch/powerpc/boot/sequoia.c linux-2.6/arch/powerpc/boot/sequoia.c
->>>> --- linux-2.6.orig/arch/powerpc/boot/sequoia.c	1970-01-01 03:00:00.000000000 +0300
->>>> +++ linux-2.6/arch/powerpc/boot/sequoia.c	2007-08-14 20:52:10.000000000 +0400
->>> Unless another bootloader is expected to come along for Sequoia,
->>> there's no reason to separate sequoia.c from cuboot-sequoia.c
->> The previous version of Sequoia series had treeboot-sequoia.c, but I've 
->> removed it since only u-boot is used now.
->> I'm not sure if there are any other bootloaders expected, but is it OK 
->> if I leave 2 separate files just in case? :)
-> 
-> Not unless you have a particular reason to expect another bootloader
-> will come along, which doesn't seem that likely to me.  Or rather the
-> only likely future bootloader I'd see is newer versions of u-boot
-> which are device tree aware and handled separately anyway.
-> 
+Better yet: normalize the return value.
+
+	return (ps3_firmware_version.raw > x.raw) -
+               (ps3_firmware_version.raw < x.raw);
+
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
