@@ -1,19 +1,23 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-	by ozlabs.org (Postfix) with ESMTP id CB9B1DDE28
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Aug 2007 18:50:42 +1000 (EST)
-Subject: Re: [PATCH 1/5] Add an optional device_node pointer to the irq_host
-From: Michael Ellerman <michael@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <460e86e8b5a08c23dcbedb5d4bd484a519246dd3.1188290811.git.michael@ellerman.id.au>
-References: <460e86e8b5a08c23dcbedb5d4bd484a519246dd3.1188290811.git.michael@ellerman.id.au>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-lWtIXoBPNKMHYFx4+cSA"
-Date: Tue, 28 Aug 2007 18:50:41 +1000
-Message-Id: <1188291041.10161.7.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Reply-To: michael@ellerman.id.au
+Return-Path: <jchapman@katalix.com>
+Received: from s36.avahost.net (s36.avahost.net [74.53.95.194])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4838BDDF38
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Aug 2007 19:23:15 +1000 (EST)
+Message-ID: <46D3E971.4010909@katalix.com>
+Date: Tue, 28 Aug 2007 10:22:57 +0100
+From: James Chapman <jchapman@katalix.com>
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+Subject: Re: RFC: issues concerning the next NAPI interface
+References: <46D2F301.7050105@katalix.com>	<20070827.140251.95055210.davem@davemloft.net>	<46D34517.4010505@katalix.com>
+	<20070827.145600.102570576.davem@davemloft.net>
+In-Reply-To: <20070827.145600.102570576.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: tklein@de.ibm.com, themann@de.ibm.com, stefan.roscher@de.ibm.com,
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	raisch@de.ibm.com, linuxppc-dev@ozlabs.org, akepner@sgi.com,
+	meder@de.ibm.com, ossthema@de.ibm.com, shemminger@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,44 +27,106 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+David Miller wrote:
+> From: James Chapman <jchapman@katalix.com>
+> Date: Mon, 27 Aug 2007 22:41:43 +0100
+> 
+>> I don't recall saying anything in previous posts about this. Are you 
+>> confusing my posts with Jan-Bernd's?
+> 
+> Yes, my bad.
+> 
+>> Jan-Bernd has been talking about using hrtimers to _reschedule_
+>> NAPI. My posts are suggesting an alternative mechanism that keeps
+>> NAPI active (with interrupts disabled) for a jiffy or two after it
+>> would otherwise have gone idle in order to avoid too many interrupts
+>> when the packet rate is such that NAPI thrashes between poll-on and
+>> poll-off.
+> 
+> So in this scheme what runs ->poll() to process incoming packets?
+> The hrtimer?
 
---=-lWtIXoBPNKMHYFx4+cSA
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+No, the regular NAPI networking core calls ->poll() as usual; no timers 
+are involved. This scheme simply delays the napi_complete() from the 
+driver so the device stays in the poll list longer. It means that its 
+->poll() will be called when there is no work to do for 1-2 jiffies, 
+hence the optimization at the top of ->poll() to efficiently handle that 
+case. The device's ->poll() is called by the NAPI core until it has 
+continuously done no work for 1-2 jiffies, at which point it finally 
+does the netif_rx_complete() and re-enables its interrupts.
 
-On Tue, 2007-08-28 at 18:47 +1000, Michael Ellerman wrote:
-> The majority of irq_host implementations (3 out of 4) are associated
-> with a device_node, and need to stash it somewhere. Rather than having
-> it somewhere different for each host, add an optional device_node pointer
-> to the irq_host structure.
->=20
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+If people feel that holding the device in the poll list for 1-2 jiffies 
+is too long (because there are too many wasted polls), a counter could 
+be used to to delay the netif_rx_complete() by N polls instead. N would 
+be a value depending on CPU speed. I use the jiffy sampling method 
+because it results in some natural randomization of the actual delay 
+depending on when the jiffy value was sampled in relation to the jiffy tick.
 
-This series is basically unchanged since I last sent it, but applies
-cleanly now onto the powerpc-for-2.6.24 branch.
+Here is the tg3 patch again that illustrates the idea. The patch changes 
+only the ->poll() routine; note how the netif_rx_complete() call is delayed.
 
-cheers
+diff --git a/drivers/net/tg3.c b/drivers/net/tg3.c
+index 710dccc..59e151b 100644
+--- a/drivers/net/tg3.c
++++ b/drivers/net/tg3.c
+@@ -3473,6 +3473,24 @@ static int tg3_poll(struct napi_struct *napi,
+      struct tg3_hw_status *sblk = tp->hw_status;
+      int work_done = 0;
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
++    /* fastpath having no work while we're holding ourself in
++     * polled mode
++     */
++    if ((tp->exit_poll_time) && (!tg3_has_work(tp))) {
++        if (time_after(jiffies, tp->exit_poll_time)) {
++            tp->exit_poll_time = 0;
++            /* tell net stack and NIC we're done */
++            netif_rx_complete(netdev, napi);
++            tg3_restart_ints(tp);
++        }
++        return 0;
++    }
++
++    /* if we get here, there might be work to do so disable the
++     * poll hold fastpath above
++     */
++    tp->exit_poll_time = 0;
++
+      /* handle link change and other phy events */
+      if (!(tp->tg3_flags &
+            (TG3_FLAG_USE_LINKCHG_REG |
+@@ -3511,11 +3529,11 @@ static int tg3_poll(struct napi_struct *napi,
+      } else
+          sblk->status &= ~SD_STATUS_UPDATED;
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+-    /* if no more work, tell net stack and NIC we're done */
+-    if (!tg3_has_work(tp)) {
+-        netif_rx_complete(netdev, napi);
+-        tg3_restart_ints(tp);
+-    }
++    /* if no more work, set the time in jiffies when we should
++     * exit polled mode
++     */
++    if (!tg3_has_work(tp))
++        tp->exit_poll_time = jiffies + 2;
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+      return work_done;
+  }
+diff --git a/drivers/net/tg3.h b/drivers/net/tg3.h
+index a6a23bb..a0d24d3 100644
+--- a/drivers/net/tg3.h
++++ b/drivers/net/tg3.h
+@@ -2163,6 +2163,7 @@ struct tg3 {
+      u32                last_tag;
 
---=-lWtIXoBPNKMHYFx4+cSA
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+      u32                msg_enable;
++    unsigned long            exit_poll_time;
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+      /* begin "tx thread" cacheline section */
+      void                (*write32_tx_mbox) (struct tg3 *, u32,
 
-iD8DBQBG0+HhdSjSd0sB4dIRArQ9AKCj9YsiKrUFt30COrKylaIB5BqsBwCgr1hU
-sefztok2d9AqT1z/EEzLuhw=
-=5421
------END PGP SIGNATURE-----
 
---=-lWtIXoBPNKMHYFx4+cSA--
+-- 
+James Chapman
+Katalix Systems Ltd
+http://www.katalix.com
+Catalysts for your Embedded Linux software development
